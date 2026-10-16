@@ -16,13 +16,15 @@ import {
   SlidersHorizontal,
   Sun,
   Thermometer,
-  TreePine,
   Wind,
   Moon,
   Monitor,
   X,
 } from "lucide-react";
 import { CityModel } from "./CityModel";
+import { AccessibleDialog } from "./components/AccessibleDialog";
+import { MicroclimatePanel } from "./components/MicroclimatePanel";
+import { PanelErrorBoundary } from "./components/PanelErrorBoundary";
 import {
   CampusTrafficSimulation,
   TrafficSafetyPanel,
@@ -41,6 +43,8 @@ import {
 } from "./features/energy/installations/installationPlanApi.mjs";
 import trafficData from "./utils/trafficData.json";
 import { isD4ElementId } from "./utils/d4BuildingData.mjs";
+import { useWeatherFeed } from "./hooks/useWeatherFeed";
+import { useTrafficFeed } from "./simulation/hooks/useTrafficFeed";
 import {
   CAMPUS_LOCATION,
   createSimulationDate,
@@ -91,9 +95,50 @@ function formatShortTime(timestamp) {
   });
 }
 
+const FEED_TONE_COLORS = {
+  success: "var(--colors-semantic-success)",
+  warning: "var(--colors-semantic-warning)",
+  danger: "var(--colors-semantic-danger)",
+  neutral: "var(--colors-ink-subtle)",
+};
+
+const WEATHER_STATE_TONES = { live: "success", stale: "warning", error: "danger", loading: "neutral" };
+const TRAFFIC_STATE_TONES = { live: "success", "camera-off": "warning", offline: "danger" };
+
+function formatClockTime(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+}
+
 function getCompassDirection(degrees) {
   const directions = ["북", "북동", "동", "남동", "남", "남서", "서", "북서"];
   return directions[Math.round(degrees / 45) % directions.length];
+}
+
+// 탭 버튼 공통 스타일. 선택된 탭은 패널 표면 위에 띄워 보여 준다.
+function tabButtonClassName(isActive) {
+  return `flex-1 py-2 text-xs font-[600] rounded-md transition-colors ${
+    isActive
+      ? "bg-[var(--colors-surface-1)] shadow-sm text-[var(--colors-ink)] border border-[var(--colors-hairline)]"
+      : "text-[var(--colors-ink-subtle)] hover:text-[var(--colors-ink)]"
+  }`;
+}
+
+// 3D Canvas를 감싼 PanelErrorBoundary의 fallback(<div role="alert">)이 장면 배경 위에서도
+// 읽히도록 패널 표면 위에 올린다. 평소에는 Canvas 컨테이너만 있으므로 아무 영향이 없다.
+const CANVAS_FALLBACK_SURFACE_CLASS =
+  "[&>[role=alert]]:rounded-[12px] [&>[role=alert]]:border [&>[role=alert]]:border-[var(--colors-hairline)] [&>[role=alert]]:bg-[var(--colors-surface-1)] [&>[role=alert]]:px-5 [&>[role=alert]]:py-4 [&>[role=alert]]:text-sm [&>[role=alert]]:font-medium [&>[role=alert]]:shadow-[0_20px_48px_rgba(0,0,0,0.28)] [&>[role=alert]>button]:mt-3 [&>[role=alert]>button]:font-[600] [&>[role=alert]>button]:underline";
+
+// Canvas 안쪽 Suspense의 fallback으로 마운트되어 있는 동안만 DOM 쪽 로딩 표시를 켠다.
+// R3F 트리 안에서는 DOM 요소를 그릴 수 없으므로 상태만 바깥으로 올린다.
+function SceneLoadingSignal({ onChange }) {
+  useEffect(() => {
+    onChange(true);
+    return () => onChange(false);
+  }, [onChange]);
+  return null;
 }
 
 function FloatingPanel({ className = "", children }) {
@@ -193,6 +238,7 @@ function SliderRow({ label, valueLabel, min, max, step = 1, value, onValueChange
 export default function App() {
   useSimulationSocket();
   const orbitControlsRef = useRef(null);
+  const panelRef = useRef(null);
   const [selectedId, setSelectedId] = useState("");
   const [selectedBuildingId, setSelectedBuildingId] = useState("D4");
   const [editorRequest, setEditorRequest] = useState(null);
@@ -202,9 +248,18 @@ export default function App() {
   const installationLoadGenerationRef = useRef(0);
   const installationPlanClient = useMemo(() => createInstallationPlanClient(), []);
   const [mode, setMode] = useState("simulation");
-  const [weatherData, setWeatherData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const weatherFeed = useWeatherFeed();
+  const trafficFeed = useTrafficFeed();
+  const { data: weatherData, state: weatherState, message: weatherMessage, lastUpdatedAt, refresh: refreshWeather } = weatherFeed;
+  const [isWeatherRefreshing, setIsWeatherRefreshing] = useState(false);
+  const handleWeatherRefresh = useCallback(async () => {
+    setIsWeatherRefreshing(true);
+    try {
+      await refreshWeather();
+    } finally {
+      setIsWeatherRefreshing(false);
+    }
+  }, [refreshWeather]);
   const [currentTime, setCurrentTime] = useState(() => new Date());
   const [sunMonth, setSunMonth] = useState(() => new Date().getMonth() + 1);
   const [sunDay, setSunDay] = useState(() => new Date().getDate());
@@ -219,47 +274,14 @@ export default function App() {
   const [popupData, setPopupData] = useState(null);
   const [popupLoading, setPopupLoading] = useState(false);
   const [popupError, setPopupError] = useState(null);
-  const [trafficStats, setTrafficStats] = useState({ entered: 0, exited: 0, current_cars: 0, total_spaces: 50, is_running: false });
   const [buildingViewMode, setBuildingViewMode] = useState("campus");
   const [installationRefreshKey, setInstallationRefreshKey] = useState(0);
-
-  const refreshWeather = useCallback(() => {
-    const apiUrl = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
-    setLoading(true);
-    setError(null);
-
-    fetch(`${apiUrl}/environment/full`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        setWeatherData(data);
-      })
-      .catch((fetchError) => {
-        console.error("환경 데이터 조회 실패:", fetchError);
-        setError(fetchError.message);
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    refreshWeather();
-  }, [refreshWeather]);
+  const [installationLoadError, setInstallationLoadError] = useState(false);
+  const [isSceneLoading, setIsSceneLoading] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    const trafficTimer = setInterval(() => {
-      fetch("http://localhost:8001/api/traffic")
-        .then(res => res.json())
-        .then(data => setTrafficStats(data))
-        .catch(() => {}); // ignore errors if API is not running
-    }, 2000);
-    return () => clearInterval(trafficTimer);
   }, []);
 
   useEffect(() => {
@@ -270,6 +292,21 @@ export default function App() {
     document.documentElement.dataset.theme = activeTheme;
     document.documentElement.style.colorScheme = activeTheme;
   }, [themeMode]);
+
+  const closeSettings = useCallback(() => {
+    setIsSettingsOpen(false);
+  }, []);
+
+  const isPanelVisible = buildingViewMode === "campus" && isPanelOpen;
+
+  // 닫힌 패널은 화면 밖으로 밀려날 뿐 DOM에 남아 있으므로 포커스·접근성 트리에서 제외한다.
+  // React 18은 `inert` 불리언 속성을 지원하지 않아 ref로 직접 토글한다.
+  useEffect(() => {
+    const panel = panelRef.current;
+    if (!panel) return;
+    if (isPanelVisible) panel.removeAttribute("inert");
+    else panel.setAttribute("inert", "");
+  }, [isPanelVisible]);
 
   const activeWeather = useMemo(() => {
     if (!weatherData?.base_weather) return null;
@@ -327,13 +364,32 @@ export default function App() {
   const sceneBackground = sunState.visible ? "#d6e0e6" : "#09111d";
   const sunAltitudeDegrees = (sunState.altitude * 180) / Math.PI;
   const sunBearingDegrees = ((sunState.azimuth * 180) / Math.PI + 540) % 360;
-  const systemStatus = loading
-    ? "기상 데이터 갱신 중"
-    : error
-      ? "API 연결 필요"
-      : mode === "simulation"
-        ? "시뮬레이션 가동 중"
-        : "실시간 연동 정상";
+  const isSimulationMode = mode === "simulation";
+  const weatherFreshness = weatherData?.freshness?.weather;
+  const observedClock = formatClockTime(weatherFreshness?.observed_at)
+    ?? formatClockTime(weatherFreshness?.fetched_at)
+    ?? formatClockTime(lastUpdatedAt);
+  const lastGoodClock = formatClockTime(weatherFreshness?.fetched_at) ?? formatClockTime(lastUpdatedAt);
+  const systemStatus = isSimulationMode
+    ? "시뮬레이션 모드"
+    : weatherState === "live"
+      ? `실시간 연동 정상${observedClock ? ` · 관측 ${observedClock}` : ""}`
+      : weatherState === "stale"
+        ? "저장된 기상 데이터 표시 중"
+        : weatherState === "error"
+          ? weatherMessage
+          : "기상 데이터 갱신 중";
+  const systemStatusTone = isSimulationMode ? "neutral" : (WEATHER_STATE_TONES[weatherState] ?? "neutral");
+  const isWeatherBusy = weatherState === "loading" || isWeatherRefreshing;
+  const weatherLastGoodLabel = weatherState !== "live" && weatherData && lastGoodClock
+    ? `마지막 정상 수신 ${lastGoodClock}`
+    : null;
+  const lastGoodCaption = weatherLastGoodLabel ? (
+    <div className="mt-1 text-xs font-medium text-[var(--colors-ink-muted)]">{weatherLastGoodLabel}</div>
+  ) : null;
+  const trafficStats = trafficFeed.stats;
+  const isTrafficLive = trafficFeed.state === "live";
+  const trafficTone = TRAFFIC_STATE_TONES[trafficFeed.state] ?? "neutral";
 
   // const period = currentTime.getHours() < 12 ? "오전" : "오후";
 
@@ -393,6 +449,7 @@ export default function App() {
       installationLoadGenerationRef.current += 1;
       setInstallationPlans([]);
       setRepresentativePlanId(null);
+      setInstallationLoadError(false);
     }
     setSelectedId(displayName);
     setSelectedBuildingId(buildingId);
@@ -409,6 +466,7 @@ export default function App() {
     let active = true;
     setInstallationPlans([]);
     setRepresentativePlanId(null);
+    setInstallationLoadError(false);
     Promise.all([
       installationPlanClient.listDetails(selectedBuildingId, { signal: controller.signal }),
       installationPlanClient.getRepresentative(selectedBuildingId, { signal: controller.signal }),
@@ -420,6 +478,7 @@ export default function App() {
       if (!active || installationLoadGenerationRef.current !== requestGeneration || loadError?.name === "AbortError") return;
       setInstallationPlans([]);
       setRepresentativePlanId(null);
+      setInstallationLoadError(true);
     });
     return () => {
       active = false;
@@ -436,6 +495,10 @@ export default function App() {
     installationLoadGenerationRef.current += 1;
     setRepresentativePlanId(representative?.installationPlanId ?? null);
     setOverlayRefreshKey((value) => value + 1);
+  }, []);
+
+  const retryInstallationPlans = useCallback(() => {
+    setInstallationRefreshKey((value) => value + 1);
   }, []);
 
   const fetchMicroclimate = useCallback(async (elementId) => {
@@ -536,65 +599,87 @@ export default function App() {
     setPopupError(null);
   }, []);
 
+  // 다른 탭으로 옮겨 갔다가도 선택한 건물의 미기후 패널을 다시 열 수 있게 한다. 아직 받아 둔
+  // 데이터가 없으면(에너지 탭의 건물 목록에서 고른 경우 등) 지금 선택된 건물 기준으로 조회한다.
+  const openMicroclimateTab = useCallback(() => {
+    if (!popupData && !popupLoading && !popupError && selectedBuildingId) {
+      fetchMicroclimate(`BLD_${selectedBuildingId}`);
+      return;
+    }
+    setActiveTab("microclimate");
+  }, [fetchMicroclimate, popupData, popupError, popupLoading, selectedBuildingId]);
+  const showMicroclimateTab = Boolean(selectedId) || activeTab === "microclimate";
+
   return (
-    <div className="dashboard-root relative h-screen w-screen overflow-hidden bg-[var(--colors-canvas)] text-[var(--colors-ink)]">
+    <div className="dashboard-root relative h-dvh w-screen overflow-hidden bg-[var(--colors-canvas)] text-[var(--colors-ink)]">
       <div className="absolute inset-0" style={{ background: sceneBackground }} />
 
-      <div className="absolute inset-0 z-0">
-        <Canvas camera={{ position: [0, 260, 260], fov: 50 }} shadows>
-          <color attach="background" args={[sceneBackground]} />
-          <fog attach="fog" args={[sceneBackground, 450, 800]} />
-          <ambientLight intensity={sunState.visible ? 1.55 : 0.5} />
-          <directionalLight
-            castShadow
-            intensity={sunState.visible ? 2.2 : 0.35}
-            position={sunVector}
-            shadow-mapSize-width={2048}
-            shadow-mapSize-height={2048}
-          />
-          {sunState.visible && (
-            <mesh position={sunVector.map(v => v * 100)}>
-              <sphereGeometry args={[10, 32, 32]} />
-              <meshBasicMaterial color="#ffe87c" />
-            </mesh>
-          )}
-          <Sky
-            distance={450000}
-            sunPosition={sunVector}
-            inclination={sunState.visible ? 0.52 : 0.08}
-            azimuth={0.25}
-            turbidity={8}
-            rayleigh={0.7}
-          />
-          <Suspense fallback={null}>
-            <CityModel
-              position={[0, 0, 0]}
-              controlsRef={orbitControlsRef}
-              isNight={!sunState.visible}
-              selectedId={selectedId}
-              onSelect={handleSelect}
-              onBuildingClick={handleBuildingClick}
-              onBuildingProximity={handleBuildingProximity}
-              onD4Enter={handleD4Enter}
+      <div className={`absolute inset-0 z-0 flex items-center justify-center ${CANVAS_FALLBACK_SURFACE_CLASS}`}>
+        <PanelErrorBoundary label="3D 캠퍼스" message="3D 캠퍼스 모델을 불러오지 못했습니다">
+          <Canvas camera={{ position: [0, 260, 260], fov: 50 }} shadows>
+            <color attach="background" args={[sceneBackground]} />
+            <fog attach="fog" args={[sceneBackground, 450, 800]} />
+            <ambientLight intensity={sunState.visible ? 1.55 : 0.5} />
+            <directionalLight
+              castShadow
+              intensity={sunState.visible ? 2.2 : 0.35}
+              position={sunVector}
+              shadow-mapSize-width={2048}
+              shadow-mapSize-height={2048}
             />
-            <CampusTrafficSimulation />
-          </Suspense>
-          <OrbitControls
-            ref={orbitControlsRef}
-            enableDamping
-            dampingFactor={0.05}
-            enableZoom
-            zoomSpeed={1}
-            minDistance={30}
-            maxDistance={520}
-            minPolarAngle={Math.PI / 6}
-            maxPolarAngle={Math.PI / 2.2}
-            target={[0, 0, 0]}
-          />
-        </Canvas>
+            {sunState.visible && (
+              <mesh position={sunVector.map(v => v * 100)}>
+                <sphereGeometry args={[10, 32, 32]} />
+                <meshBasicMaterial color="#ffe87c" />
+              </mesh>
+            )}
+            <Sky
+              distance={450000}
+              sunPosition={sunVector}
+              inclination={sunState.visible ? 0.52 : 0.08}
+              azimuth={0.25}
+              turbidity={8}
+              rayleigh={0.7}
+            />
+            <Suspense fallback={<SceneLoadingSignal onChange={setIsSceneLoading} />}>
+              <CityModel
+                position={[0, 0, 0]}
+                controlsRef={orbitControlsRef}
+                isNight={!sunState.visible}
+                selectedId={selectedId}
+                onSelect={handleSelect}
+                onBuildingClick={handleBuildingClick}
+                onBuildingProximity={handleBuildingProximity}
+                onD4Enter={handleD4Enter}
+              />
+              <CampusTrafficSimulation />
+            </Suspense>
+            <OrbitControls
+              ref={orbitControlsRef}
+              enableDamping
+              dampingFactor={0.05}
+              enableZoom
+              zoomSpeed={1}
+              minDistance={30}
+              maxDistance={520}
+              minPolarAngle={Math.PI / 6}
+              maxPolarAngle={Math.PI / 2.2}
+              target={[0, 0, 0]}
+            />
+          </Canvas>
+        </PanelErrorBoundary>
       </div>
 
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(1,1,2,0.02)_0%,rgba(1,1,2,0.08)_50%,rgba(1,1,2,0.16)_100%)]" />
+
+      {isSceneLoading && (
+        <div role="status" className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center">
+          <div className="flex items-center gap-3 rounded-[12px] border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] px-4 py-3 text-sm font-medium text-[var(--colors-ink-muted)] shadow-[0_20px_48px_rgba(0,0,0,0.28)]">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--colors-hairline)] border-t-[var(--colors-primary)]" />
+            3D 캠퍼스 모델을 불러오는 중입니다
+          </div>
+        </div>
+      )}
 
       {buildingViewMode === "section" && (
         <D4SectionExperience
@@ -618,9 +703,13 @@ export default function App() {
       {buildingViewMode === "campus" && (
       <button
         onClick={() => setIsPanelOpen(v => !v)}
+        aria-label={isPanelOpen ? "패널 닫기" : "패널 열기"}
+        title={isPanelOpen ? "패널 닫기" : "패널 열기"}
         className="pointer-events-auto absolute z-20 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-14 rounded-l-xl border border-r-0 border-[var(--colors-hairline)] shadow-lg transition-right duration-300"
         style={{
-          right: isPanelOpen ? '440px' : '0px',
+          right: isPanelOpen
+            ? 'min(var(--dashboard-panel-width), calc(100vw - 1.75rem))'
+            : '0px',
           backgroundColor: 'var(--colors-surface-1)',
           transition: 'right 0.3s ease',
         }}
@@ -630,8 +719,14 @@ export default function App() {
       )}
 
       <div
-        className="pointer-events-none absolute top-0 bottom-0 z-10 w-[440px]"
-        style={{ right: buildingViewMode === "campus" && isPanelOpen ? '0' : '-440px', transition: 'right 0.3s ease' }}
+        ref={panelRef}
+        aria-hidden={isPanelVisible ? undefined : "true"}
+        className="pointer-events-none absolute top-0 bottom-0 z-10 w-[var(--dashboard-panel-width)]"
+        style={{
+          right: isPanelVisible ? '0' : 'calc(-1 * min(var(--dashboard-panel-width), 100vw))',
+          width: 'min(var(--dashboard-panel-width), 100vw)',
+          transition: 'right 0.3s ease',
+        }}
       >
         <div
           className="pointer-events-auto h-full w-full border-l border-[var(--colors-hairline)] shadow-2xl flex flex-col"
@@ -654,442 +749,392 @@ export default function App() {
                   key={tab.id}
                   data-qa={`dashboard-tab-${tab.id}`}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 py-2 text-xs font-[600] rounded-md transition-colors ${activeTab === tab.id ? "bg-[var(--colors-surface-1)] shadow-sm text-[var(--colors-ink)] border border-[var(--colors-hairline)]" : "text-[var(--colors-ink-subtle)] hover:text-[var(--colors-ink)]"}`}
+                  className={tabButtonClassName(activeTab === tab.id)}
                 >
                   {tab.label}
                 </button>
               ))}
+              {showMicroclimateTab && (
+                <button
+                  type="button"
+                  data-qa="dashboard-tab-microclimate"
+                  onClick={openMicroclimateTab}
+                  className={tabButtonClassName(activeTab === "microclimate")}
+                >
+                  미기후
+                </button>
+              )}
             </div>
           </div>
 
           {/* Content Area */}
           <div className="flex-1 overflow-y-auto px-6 pb-8 space-y-6">
             {activeTab === "dashboard" && (
-              <>
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <div className="font-[600] text-3xl leading-[1.2] tracking-[-0.8px] font-['Linear_Display']">{formattedTime}</div>
-                    <div className="mt-1 flex items-center gap-1 text-sm font-medium text-[var(--colors-ink-muted)]">
-                      <CalendarDays size={14} />
-                      {formattedDate}
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setIsSettingsOpen(true)}
-                      className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] text-[var(--colors-ink-muted)] transition hover:text-[var(--colors-ink)] hover:bg-[var(--colors-surface-2)]"
-                    >
-                      <Settings size={18} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={refreshWeather}
-                      disabled={loading}
-                      className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] text-[var(--colors-ink-muted)] transition hover:text-[var(--colors-ink)] hover:bg-[var(--colors-surface-2)] disabled:opacity-50"
-                    >
-                      <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] p-4 flex justify-between items-center">
-                  <div className="text-sm font-medium text-[var(--colors-ink-subtle)]">시스템 상태</div>
-                  <div className="flex items-center gap-2 text-base font-[700]">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[var(--colors-semantic-success)] shadow-[0_0_8px_var(--colors-semantic-success)]" />
-                    {systemStatus}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] p-4">
-                    <div className="flex items-center gap-2 text-sm font-medium text-[var(--colors-ink-subtle)]">
-                      <Thermometer size={16} /> 현재 기온
-                    </div>
-                    <div className="mt-3 text-2xl font-semibold tracking-[-0.8px]">
-                      {activeWeather?.temperature ?? "-"}°C
-                    </div>
-                  </div>
-                  <div className="rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] p-4">
-                    <div className="flex items-center gap-2 text-sm font-medium text-[var(--colors-ink-subtle)]">
-                      <Wind size={16} /> 풍속 / 습도
-                    </div>
-                    <div className="mt-3 text-sm font-semibold text-[var(--colors-ink)]">
-                      {activeWeather?.wind_speed ?? "-"}m/s · {activeWeather?.humidity ?? "-"}%
-                    </div>
-                  </div>
-                  <div className="rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] p-4">
-                    <div className="flex items-center gap-2 text-sm font-medium text-[var(--colors-ink-subtle)]">
-                      <Cloud size={16} /> 하늘 상태
-                    </div>
-                    <div className="mt-3 text-sm font-semibold text-[var(--colors-ink)]">
-                      {activeWeather?.sky ?? weatherData?.summary?.sky_status ?? "맑음"}
-                    </div>
-                  </div>
-                  <div className="rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] p-4">
-                    <div className="flex items-center gap-2 text-sm font-medium text-[var(--colors-ink-subtle)]">
-                      <Sun size={16} /> 태양 고도
-                    </div>
-                    <div className="mt-3 text-sm font-semibold text-[var(--colors-ink)]">
-                      {formatNumber(sunAltitudeDegrees, 1)}°
-                    </div>
-                  </div>
-                  <div className="col-span-2 rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] p-4">
-                    <div className="flex items-center gap-2 text-sm font-medium text-[var(--colors-ink-subtle)]">
-                      <Gauge size={16} /> 대기질
-                    </div>
-                    <div className="mt-3 text-sm font-semibold text-[var(--colors-ink)]">
-                      {weatherData?.summary?.air_quality_status ?? "보통"}
-                    </div>
-                  </div>
-                </div>
-                {(activeAlerts.length > 0 || weatherTimeline.length > 0) && (
-                  <div className="grid gap-2">
-                    {activeAlerts.map((alert) => (
-                      <div
-                        key={alert.id}
-                        className="flex items-center gap-2 rounded-lg border border-[rgba(94,106,210,0.35)] bg-[rgba(94,106,210,0.14)] px-3 py-2 text-sm font-medium text-[var(--colors-ink)]"
-                      >
-                        <AlertTriangle size={16} className="text-[var(--colors-primary)]" />
-                        {alert.label}
+              <PanelErrorBoundary label="기본 현황">
+                <>
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <div className="font-[600] text-3xl leading-[1.2] tracking-[-0.8px] font-['Linear_Display']">{formattedTime}</div>
+                      <div className="mt-1 flex items-center gap-1 text-sm font-medium text-[var(--colors-ink-muted)]">
+                        <CalendarDays size={14} />
+                        {formattedDate}
                       </div>
-                    ))}
-                    {weatherTimeline.map((item, index) => (
-                      <div
-                        key={`${item.fcstTime ?? index}`}
-                        className="flex items-center justify-between rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] px-3 py-2 text-sm"
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        aria-label="설정"
+                        title="설정"
+                        onClick={() => setIsSettingsOpen(true)}
+                        className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] text-[var(--colors-ink-muted)] transition hover:text-[var(--colors-ink)] hover:bg-[var(--colors-surface-2)]"
                       >
-                        <span className="font-medium text-[var(--colors-ink-subtle)]">{item.fcstTime ?? `${index + 1}차 예보`}</span>
-                        <span className="font-[700] text-[var(--colors-ink)]">
-                          {item.tmp ?? item.temperature ?? "-"}°C
-                        </span>
-                      </div>
-                    ))}
+                        <Settings size={18} />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="기상 데이터 새로고침"
+                        title="기상 데이터 새로고침"
+                        onClick={handleWeatherRefresh}
+                        disabled={isWeatherBusy}
+                        className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] text-[var(--colors-ink-muted)] transition hover:text-[var(--colors-ink)] hover:bg-[var(--colors-surface-2)] disabled:opacity-50"
+                      >
+                        <RefreshCw size={18} className={isWeatherBusy ? "animate-spin" : ""} />
+                      </button>
+                    </div>
                   </div>
-                )}
-              </>
+
+                  <div className="rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] p-4 flex justify-between items-center gap-3">
+                    <div className="shrink-0 text-sm font-medium text-[var(--colors-ink-subtle)]">시스템 상태</div>
+                    <div data-qa="weather-status" className="flex min-w-0 items-center gap-2 text-right text-base font-[700]">
+                      <span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: FEED_TONE_COLORS[systemStatusTone] }} />
+                      <span className="min-w-0 break-keep">{systemStatus}</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] p-4">
+                      <div className="flex items-center gap-2 text-sm font-medium text-[var(--colors-ink-subtle)]">
+                        <Thermometer size={16} /> 현재 기온
+                      </div>
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <span className="text-2xl font-semibold tracking-[-0.8px]">{activeWeather?.temperature ?? "-"}°C</span>
+                        {isSimulationMode && (
+                          <span className="dashboard-status-badge inline-flex items-center border border-[var(--colors-hairline-strong)] font-[700] leading-4">
+                            시뮬레이션 값
+                          </span>
+                        )}
+                      </div>
+                      {!isSimulationMode && lastGoodCaption}
+                    </div>
+                    <div className="rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] p-4">
+                      <div className="flex items-center gap-2 text-sm font-medium text-[var(--colors-ink-subtle)]">
+                        <Wind size={16} /> 풍속 / 습도
+                      </div>
+                      <div className="mt-3 text-sm font-semibold text-[var(--colors-ink)]">
+                        {activeWeather?.wind_speed ?? "-"}m/s · {activeWeather?.humidity ?? "-"}%
+                      </div>
+                      {lastGoodCaption}
+                    </div>
+                    <div className="rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] p-4">
+                      <div className="flex items-center gap-2 text-sm font-medium text-[var(--colors-ink-subtle)]">
+                        <Cloud size={16} /> 하늘 상태
+                      </div>
+                      <div className="mt-3 text-sm font-semibold text-[var(--colors-ink)]">
+                        {activeWeather?.sky ?? weatherData?.summary?.sky_status ?? "-"}
+                      </div>
+                      {lastGoodCaption}
+                    </div>
+                    <div className="rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] p-4">
+                      <div className="flex items-center gap-2 text-sm font-medium text-[var(--colors-ink-subtle)]">
+                        <Sun size={16} /> 태양 고도
+                      </div>
+                      <div className="mt-3 text-sm font-semibold text-[var(--colors-ink)]">
+                        {formatNumber(sunAltitudeDegrees, 1)}°
+                      </div>
+                    </div>
+                    <div className="col-span-2 rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] p-4">
+                      <div className="flex items-center gap-2 text-sm font-medium text-[var(--colors-ink-subtle)]">
+                        <Gauge size={16} /> 대기질
+                      </div>
+                      <div className="mt-3 text-sm font-semibold text-[var(--colors-ink)]">
+                        {weatherData?.summary?.air_quality_status ?? "-"}
+                      </div>
+                      {lastGoodCaption}
+                    </div>
+                  </div>
+                  {(activeAlerts.length > 0 || weatherTimeline.length > 0) && (
+                    <div className="grid gap-2">
+                      {activeAlerts.map((alert) => (
+                        <div
+                          key={alert.id}
+                          className="flex items-center gap-2 rounded-lg border border-[rgba(94,106,210,0.35)] bg-[rgba(94,106,210,0.14)] px-3 py-2 text-sm font-medium text-[var(--colors-ink)]"
+                        >
+                          <AlertTriangle size={16} className="text-[var(--colors-primary)]" />
+                          {alert.label}
+                        </div>
+                      ))}
+                      {weatherTimeline.map((item, index) => (
+                        <div
+                          key={`${item.fcstTime ?? index}`}
+                          className="flex items-center justify-between rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] px-3 py-2 text-sm"
+                        >
+                          <span className="font-medium text-[var(--colors-ink-subtle)]">{item.fcstTime ?? `${index + 1}차 예보`}</span>
+                          <span className="font-[700] text-[var(--colors-ink)]">
+                            {item.tmp ?? item.temperature ?? "-"}°C
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              </PanelErrorBoundary>
             )}
 
             {activeTab === "microclimate" && (
-              <div className="space-y-4">
-                <div
-                  className="flex items-start justify-between rounded-lg px-4 py-3"
-                  style={{ background: popupData ? popupData.thermal.risk_color : "var(--colors-surface-2)" }}
-                >
-                  <div>
-                    <div className="text-[11px] font-extrabold uppercase tracking-[0.08em]" style={{ color: popupData ? "rgba(255,255,255,0.85)" : "var(--colors-primary)" }}>
-                      MICROCLIMATE
-                    </div>
-                    <h3
-                      className="mt-0.5 font-[700] text-[16px] tracking-[-0.1px]"
-                      style={{ color: popupData ? "white" : "var(--colors-ink)" }}
-                    >
-                      {popupData?.name ?? selectedId}
-                    </h3>
-                    {popupData && (
-                      <div className="mt-0.5 text-sm" style={{ color: "rgba(255,255,255,0.85)" }}>
-                        {popupData.zone_id} · {popupData.thermal.stress_category}
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    onClick={closeMicroclimatePanel}
-                    className="transition-opacity hover:opacity-70"
-                    style={{ color: popupData ? "white" : "var(--colors-ink-muted)" }}
-                    aria-label="미기후 패널 닫기"
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
-
-                {popupLoading && (
-                  <div className="flex items-center justify-center gap-3 px-2 py-8 text-sm text-[var(--colors-ink-muted)]">
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--colors-hairline)] border-t-[var(--colors-primary)]" />
-                    미기후 데이터 불러오는 중…
-                  </div>
-                )}
-
-                {popupError && !popupLoading && (
-                  <div className="flex items-center gap-2 px-2 py-6 text-sm text-[var(--colors-semantic-danger,#D32F2F)]">
-                    <AlertTriangle size={16} /> {popupError}
-                  </div>
-                )}
-
-                {popupData && !popupLoading && (() => {
-                  const { thermal, factors, delta, reasons, base_weather } = popupData;
-                  const riskBg = `${thermal.risk_color}18`;
-                  const factorMeta = {
-                    shade:       { Icon: Sun,       label: "그늘" },
-                    vegetation:  { Icon: TreePine,  label: "녹지" },
-                    wind:        { Icon: Wind,      label: "통풍" },
-                    radiation:   { Icon: Thermometer, label: "복사" },
-                    material_heat: { Icon: Gauge,   label: "재질열" },
-                  };
-                  return (
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-4 gap-2">
-                        {[
-                          { label: "기온",   value: `${thermal.local_temp}°C` },
-                          { label: "체감",   value: `${thermal.feels_like}°C` },
-                          { label: "UTCI",   value: `${thermal.utci}°C` },
-                          { label: "WBGT",   value: `${thermal.wbgt}°C` },
-                        ].map(({ label, value }) => (
-                          <div key={label} className="rounded-lg p-2 text-center" style={{ background: riskBg }}>
-                            <div className="text-[10px] font-medium text-[var(--colors-ink-subtle)]">{label}</div>
-                            <div className="mt-1 text-[13px] font-[900] text-[var(--colors-ink)]">{value}</div>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div>
-                        <div className="mb-1.5 flex items-center justify-between text-sm">
-                          <span className="text-[var(--colors-ink-subtle)]">위험도</span>
-                          <span className="font-[700]" style={{ color: thermal.risk_color }}>{thermal.risk_level}</span>
-                        </div>
-                        <div className="h-1.5 overflow-hidden rounded-full bg-[var(--colors-surface-2)]">
-                          <div className="h-full rounded-full" style={{ width: `${(thermal.risk_score / 4) * 100}%`, background: thermal.risk_color }} />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-4 gap-1.5">
-                        {Object.entries(factors).slice(0, 4).map(([key, val]) => {
-                          const meta = factorMeta[key] ?? { label: key };
-                          const Icon = meta.Icon;
-                          return (
-                            <div key={key} className="rounded-lg p-2 text-center bg-[var(--colors-surface-2)]">
-                              {Icon && <Icon size={12} className="mx-auto mb-1 text-[var(--colors-ink-muted)]" />}
-                              <div className="text-[10px] font-medium text-[var(--colors-ink-subtle)]">{meta.label}</div>
-                              <div className="mt-0.5 text-[10px] font-[800] text-[var(--colors-ink)]">{val.level}</div>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {delta?.label && (
-                        <div
-                          className="rounded-lg px-3 py-2 text-[12px] font-[700]"
-                          style={{ background: riskBg, color: delta.temp > 0 ? "#D32F2F" : "#1976D2" }}
-                        >
-                          📍 {delta.label}
-                        </div>
-                      )}
-
-                      {reasons?.length > 0 && (
-                        <div>
-                          <div className="mb-1.5 text-sm font-medium text-[var(--colors-ink-subtle)]">원인 분석</div>
-                          <ul className="space-y-1">
-                            {reasons.map((r) => (
-                              <li key={r} className="flex items-start gap-1.5 text-[12px] text-[var(--colors-ink-muted)]">
-                                <span className="mt-0.5 shrink-0 font-[900]" style={{ color: thermal.risk_color }}>·</span>
-                                {r}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      <div className="flex gap-3 border-t border-[var(--colors-hairline)] pt-3 text-[12px] font-[700] text-[var(--colors-ink-subtle)]">
-                        <span>🌡 {base_weather.temperature}°C</span>
-                        <span>💧 {base_weather.humidity}%</span>
-                        <span>💨 {base_weather.wind_speed}m/s</span>
-                      </div>
-                    </div>
-                  );
-                })()}
-
-                {!popupData && !popupLoading && !popupError && (
-                  <div className="px-2 text-sm leading-6 text-[var(--colors-ink-muted)]">
-                    이 건물의 상세 미기후 데이터를 선택해 확인하세요.
-                  </div>
-                )}
-              </div>
+              <PanelErrorBoundary label="미기후">
+                <MicroclimatePanel
+                  data={popupData}
+                  loading={popupLoading}
+                  error={popupError}
+                  title={selectedId}
+                  onClose={closeMicroclimatePanel}
+                />
+              </PanelErrorBoundary>
             )}
 
             {activeTab === "parking_safety" && (
-              <div className="space-y-6">
-                <div className="pb-4 border-b border-[var(--colors-hairline)]/50">
-                  <div className="text-base font-[700] text-[var(--colors-ink)] flex items-center gap-2">
-                    <Car size={18} className="text-[var(--colors-primary)]" />
-                    D4 입출차 현황
+              <PanelErrorBoundary label="주차·안전">
+                <div className="space-y-6">
+                  <div className="pb-4 border-b border-[var(--colors-hairline)]/50">
+                    <div className="text-base font-[700] text-[var(--colors-ink)] flex items-center gap-2">
+                      <Car size={18} className="text-[var(--colors-primary)]" />
+                      D4 입출차 현황
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <div className="mb-3 text-sm font-[700] text-[var(--colors-ink-subtle)] flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-                    실시간 주차 현황
+                  <div>
+                    <div data-qa="traffic-status" className="mb-3 text-sm font-[700] text-[var(--colors-ink-subtle)] flex items-center gap-2">
+                      <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: FEED_TONE_COLORS[trafficTone] }} />
+                      <span className="min-w-0 break-words break-keep">{trafficFeed.message}</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <MetricCard label="주차 대수" value={isTrafficLive ? `${trafficStats?.current_cars ?? 0}대` : "-"} hint={isTrafficLive ? `총 ${trafficStats?.total_spaces ?? "-"}면` : "-"} accent />
+                      <MetricCard label="누적 입차" value={isTrafficLive ? `${trafficStats?.entered ?? 0}대` : "-"} hint="오늘" />
+                      <MetricCard label="누적 출차" value={isTrafficLive ? `${trafficStats?.exited ?? 0}대` : "-"} hint="오늘" />
+                    </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    <MetricCard label="주차 대수" value={`${trafficStats?.current_cars ?? 0}대`} hint={`총 ${trafficStats?.total_spaces ?? 50}면`} accent />
-                    <MetricCard label="누적 입차" value={`${trafficStats?.entered ?? 0}대`} hint="오늘" />
-                    <MetricCard label="누적 출차" value={`${trafficStats?.exited ?? 0}대`} hint="오늘" />
-                  </div>
-                </div>
 
-                <TrafficSafetyPanel />
-                <div className="pb-4 border-b border-[var(--colors-hairline)]/50">
-                  <div className="text-base font-[700] text-[var(--colors-ink)] flex items-center gap-2">
-                    <ShieldAlert size={18} className="text-[var(--colors-primary)]" />
-                    안전 모니터링
+                  <TrafficSafetyPanel />
+                  <div className="pb-4 border-b border-[var(--colors-hairline)]/50">
+                    <div className="text-base font-[700] text-[var(--colors-ink)] flex items-center gap-2">
+                      <ShieldAlert size={18} className="text-[var(--colors-primary)]" />
+                      안전 모니터링
+                    </div>
                   </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <MetricCard label="위험 구역 접수" value={`${trafficData.length}건`} hint="최근 24시간 기준" />
-                  <MetricCard
-                    label="AI 자동 분류"
-                    value={`${trafficData.filter((item) => item.ai_confidence >= 0.45).length}건`}
-                    hint="우선 처리 대상"
-                    accent
-                  />
-                </div>
-                <div className="pt-2">
-                  <div className="mb-3 text-sm font-[700] text-[var(--colors-ink-subtle)] flex items-center gap-2">
-                    <ShieldAlert size={14} />
-                    안전 및 방범 로그
+                  <div className="grid grid-cols-2 gap-3">
+                    <MetricCard label="위험 구역 접수" value={`${trafficData.length}건`} hint="샘플 데이터" />
+                    <MetricCard
+                      label="AI 자동 분류"
+                      value={`${trafficData.filter((item) => item.ai_confidence >= 0.45).length}건`}
+                      hint="우선 처리 대상"
+                      accent
+                    />
                   </div>
-                  <div className="space-y-2">
-                    {riskReports.map((item) => (
-                      <div
-                        key={item.report_id}
-                        className="rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] px-4 py-3"
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <div>
-                            <div className="text-sm font-[700] text-[var(--colors-ink)]">{item.category}</div>
-                            <div className="mt-1 text-[13px] font-medium text-[var(--colors-ink-subtle)]">
-                              {formatShortTime(item.timestamp)}
+                  <div className="pt-2">
+                    <div className="mb-3 text-sm font-[700] text-[var(--colors-ink-subtle)] flex items-center gap-2">
+                      <ShieldAlert size={14} />
+                      위험 구역 접수 현황 (샘플 데이터)
+                    </div>
+                    <div className="space-y-2">
+                      {riskReports.map((item) => (
+                        <div
+                          key={item.report_id}
+                          className="rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] px-4 py-3"
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <div className="text-sm font-[700] text-[var(--colors-ink)]">{item.category}</div>
+                              <div className="mt-1 text-[13px] font-medium text-[var(--colors-ink-subtle)]">
+                                {formatShortTime(item.timestamp)}
+                              </div>
                             </div>
+                            <span className="rounded-full border border-[var(--colors-hairline)] bg-[var(--colors-canvas)] px-2 py-1 text-[12px] font-[700] text-[var(--colors-ink-muted)]">
+                              {item.status}
+                            </span>
                           </div>
-                          <span className="rounded-full border border-[var(--colors-hairline)] bg-[var(--colors-canvas)] px-2 py-1 text-[12px] font-[700] text-[var(--colors-ink-muted)]">
-                            {item.status}
-                          </span>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
+              </PanelErrorBoundary>
             )}
 
             {activeTab === "energy" && (
-              <div className="space-y-4">
-                <VWorldCampusStatus
-                  onSelection={(selection) => selectBuilding(selection)}
-                  className="w-full"
-                />
-                <RepresentativePlanOverlayController
-                  buildingIds={CAMPUS_REPRESENTATIVE_BUILDING_IDS}
-                  refreshKey={overlayRefreshKey}
-                  onOverlayDataChange={() => {}}
-                  onBuildingSelect={(buildingId) => {
-                    const elementId = selectBuilding({
-                      elementId: `BLD_${buildingId}`,
-                      buildingId,
-                      displayName: buildingId,
-                    });
-                    if (isD4ElementId(elementId)) openD4Section();
-                  }}
-                  className="w-full"
-                  widthClassName="max-w-none"
-                />
-                <BuildingAnalysis
-                  key={`${selectedBuildingId}:${representativePlanId ?? "none"}`}
-                  buildingId={selectedBuildingId}
-                  plans={installationPlans}
-                  representativePlanId={representativePlanId}
-                />
-                <CampusComparison
-                  onOpenRecommendation={(request) => {
-                    setSelectedBuildingId(request.buildingId);
-                    openD4Section(request);
-                  }}
-                />
-                <EnergyDashboard key={selectedBuildingId} buildingId={selectedBuildingId} />
-              </div>
+              <PanelErrorBoundary label="에너지">
+                <div className="space-y-4">
+                  {installationLoadError && (
+                    <div
+                      role="alert"
+                      data-qa="installation-plan-error"
+                      className="flex items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm font-medium text-[var(--colors-ink)]"
+                      style={{
+                        backgroundColor: "color-mix(in srgb, var(--colors-semantic-danger) 14%, var(--colors-surface-1))",
+                        borderColor: "color-mix(in srgb, var(--colors-semantic-danger) 30%, var(--colors-hairline))",
+                      }}
+                    >
+                      <span className="flex min-w-0 items-center gap-2">
+                        <AlertTriangle size={16} aria-hidden="true" className="shrink-0 text-[var(--colors-semantic-danger)]" />
+                        <span className="min-w-0 break-keep">설치 계획을 불러오지 못했습니다</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={retryInstallationPlans}
+                        className="shrink-0 rounded-md border border-[var(--colors-hairline-strong)] bg-[var(--colors-surface-1)] px-3 py-1.5 text-sm font-[600] text-[var(--colors-ink)] transition hover:bg-[var(--colors-surface-2)]"
+                      >
+                        다시 시도
+                      </button>
+                    </div>
+                  )}
+                  <VWorldCampusStatus
+                    onSelection={(selection) => selectBuilding(selection)}
+                    className="w-full"
+                  />
+                  <RepresentativePlanOverlayController
+                    buildingIds={CAMPUS_REPRESENTATIVE_BUILDING_IDS}
+                    refreshKey={overlayRefreshKey}
+                    onOverlayDataChange={() => {}}
+                    onBuildingSelect={(buildingId) => {
+                      const elementId = selectBuilding({
+                        elementId: `BLD_${buildingId}`,
+                        buildingId,
+                        displayName: buildingId,
+                      });
+                      if (isD4ElementId(elementId)) openD4Section();
+                    }}
+                    className="w-full"
+                    widthClassName="max-w-none"
+                  />
+                  <BuildingAnalysis
+                    key={`${selectedBuildingId}:${representativePlanId ?? "none"}`}
+                    buildingId={selectedBuildingId}
+                    plans={installationPlans}
+                    representativePlanId={representativePlanId}
+                  />
+                  <CampusComparison
+                    onOpenRecommendation={(request) => {
+                      setSelectedBuildingId(request.buildingId);
+                      openD4Section(request);
+                    }}
+                  />
+                  <EnergyDashboard key={selectedBuildingId} buildingId={selectedBuildingId} />
+                </div>
+              </PanelErrorBoundary>
             )}
 
             {activeTab === "environment" && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between gap-4 pb-4 border-b border-[var(--colors-hairline)]/50">
-                  <div className="flex items-center gap-2 text-base font-[700]">
-                    <SlidersHorizontal size={18} className="text-[var(--colors-primary)]" />
-                    환경 시뮬레이션
+              <PanelErrorBoundary label="환경 시뮬">
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between gap-4 pb-4 border-b border-[var(--colors-hairline)]/50">
+                    <div className="flex items-center gap-2 text-base font-[700]">
+                      <SlidersHorizontal size={18} className="text-[var(--colors-primary)]" />
+                      환경 시뮬레이션
+                    </div>
+                    <div className="flex rounded-md border border-[var(--colors-hairline)] bg-[var(--colors-canvas)] p-1 text-sm font-[600]">
+                      <button
+                        type="button"
+                        onClick={() => setMode("live")}
+                        className={`rounded px-3 py-1.5 transition-colors ${mode === "live" ? "bg-[var(--colors-surface-2)] shadow-sm text-[var(--colors-ink)] border border-[var(--colors-hairline)]" : "text-[var(--colors-ink-subtle)]"}`}
+                      >
+                        Live
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setMode("simulation")}
+                        className={`rounded px-3 py-1.5 transition-colors ${mode === "simulation" ? "bg-[var(--colors-primary)] shadow-sm text-white" : "text-[var(--colors-ink-subtle)]"}`}
+                      >
+                        Sim
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex rounded-md border border-[var(--colors-hairline)] bg-[var(--colors-canvas)] p-1 text-sm font-[600]">
-                    <button
-                      type="button"
-                      onClick={() => setMode("live")}
-                      className={`rounded px-3 py-1.5 transition-colors ${mode === "live" ? "bg-[var(--colors-surface-2)] shadow-sm text-[var(--colors-ink)] border border-[var(--colors-hairline)]" : "text-[var(--colors-ink-subtle)]"}`}
-                    >
-                      Live
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setMode("simulation")}
-                      className={`rounded px-3 py-1.5 transition-colors ${mode === "simulation" ? "bg-[var(--colors-primary)] shadow-sm text-white" : "text-[var(--colors-ink-subtle)]"}`}
-                    >
-                      Sim
-                    </button>
+                  <div className="space-y-4">
+                    <div className="text-sm font-[700] text-[var(--colors-ink-subtle)]">가상 환경 파라미터</div>
+                    <SliderRow
+                      label="온도 조절"
+                      valueLabel={`${simTemp}°C`}
+                      min={-10}
+                      max={40}
+                      value={simTemp}
+                      onValueChange={setSimTemp}
+                    />
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-3 pt-2">
+                      <SliderRow
+                        label="월"
+                        valueLabel={`${sunMonth}월`}
+                        min={1}
+                        max={12}
+                        value={sunMonth}
+                        onValueChange={setSunMonth}
+                      />
+                      <SliderRow
+                        label="일"
+                        valueLabel={`${sunDay}일`}
+                        min={1}
+                        max={31}
+                        value={sunDay}
+                        onValueChange={setSunDay}
+                      />
+                      <SliderRow
+                        label="시"
+                        valueLabel={`${sunHour}시`}
+                        min={0}
+                        max={23}
+                        value={sunHour}
+                        onValueChange={setSunHour}
+                      />
+                      <SliderRow
+                        label="분"
+                        valueLabel={`${sunMinute}분`}
+                        min={0}
+                        max={59}
+                        value={sunMinute}
+                        onValueChange={setSunMinute}
+                      />
+                    </div>
+                    <div className="mt-4 flex items-center justify-between rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] px-3 py-2 text-xs">
+                      <span className="text-[var(--colors-ink-subtle)]">태양 방향</span>
+                      <span className="font-semibold text-[var(--colors-ink)]">
+                        {getCompassDirection(sunBearingDegrees)} {sunBearingDegrees.toFixed(0)}° · 고도{" "}
+                        {sunAltitudeDegrees.toFixed(1)}°
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div className="space-y-4">
-                  <div className="text-sm font-[700] text-[var(--colors-ink-subtle)]">가상 환경 파라미터</div>
-                  <SliderRow
-                    label="온도 조절"
-                    valueLabel={`${simTemp}°C`}
-                    min={-10}
-                    max={40}
-                    value={simTemp}
-                    onValueChange={setSimTemp}
-                  />
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-3 pt-2">
-                    <SliderRow
-                      label="월"
-                      valueLabel={`${sunMonth}월`}
-                      min={1}
-                      max={12}
-                      value={sunMonth}
-                      onValueChange={setSunMonth}
-                    />
-                    <SliderRow
-                      label="일"
-                      valueLabel={`${sunDay}일`}
-                      min={1}
-                      max={31}
-                      value={sunDay}
-                      onValueChange={setSunDay}
-                    />
-                    <SliderRow
-                      label="시"
-                      valueLabel={`${sunHour}시`}
-                      min={0}
-                      max={23}
-                      value={sunHour}
-                      onValueChange={setSunHour}
-                    />
-                    <SliderRow
-                      label="분"
-                      valueLabel={`${sunMinute}분`}
-                      min={0}
-                      max={59}
-                      value={sunMinute}
-                      onValueChange={setSunMinute}
-                    />
-                  </div>
-                  <div className="mt-4 flex items-center justify-between rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] px-3 py-2 text-xs">
-                    <span className="text-[var(--colors-ink-subtle)]">태양 방향</span>
-                    <span className="font-semibold text-[var(--colors-ink)]">
-                      {getCompassDirection(sunBearingDegrees)} {sunBearingDegrees.toFixed(0)}° · 고도{" "}
-                      {sunAltitudeDegrees.toFixed(1)}°
-                    </span>
-                  </div>
-                </div>
-              </div>
+              </PanelErrorBoundary>
             )}
           </div>
 
-          {error && (
-            <div className="m-5 mt-auto p-4 rounded-lg bg-[var(--colors-semantic-danger)]/10 text-sm font-medium text-[var(--colors-semantic-danger)] text-center border border-[var(--colors-semantic-danger)]/20 shadow-lg">
-              기상 API 통신 오류: {error}
+          {weatherState === "error" && (
+            <div
+              role="alert"
+              data-qa="weather-error-banner"
+              className="mx-6 mb-6 mt-2 flex shrink-0 items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm font-medium text-[var(--colors-ink)]"
+              style={{
+                backgroundColor: "color-mix(in srgb, var(--colors-semantic-danger) 14%, var(--colors-surface-1))",
+                borderColor: "color-mix(in srgb, var(--colors-semantic-danger) 30%, var(--colors-hairline))",
+              }}
+            >
+              <span className="flex min-w-0 items-center gap-2">
+                <AlertTriangle size={16} aria-hidden="true" className="shrink-0 text-[var(--colors-semantic-danger)]" />
+                <span className="min-w-0 break-keep">{weatherMessage}</span>
+              </span>
+              <button
+                type="button"
+                onClick={handleWeatherRefresh}
+                disabled={isWeatherBusy}
+                className="shrink-0 rounded-md border border-[var(--colors-hairline-strong)] bg-[var(--colors-surface-1)] px-3 py-1.5 text-sm font-[600] text-[var(--colors-ink)] transition hover:bg-[var(--colors-surface-2)] disabled:opacity-50"
+              >
+                다시 시도
+              </button>
             </div>
           )}
         </div>
@@ -1098,36 +1143,44 @@ export default function App() {
       {/* Settings Modal */}
       {isSettingsOpen && (
         <div className="pointer-events-auto absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <FloatingPanel className="min-w-[400px] px-0 py-0 overflow-hidden shadow-2xl">
-            <div className="flex items-center justify-between border-b border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] px-5 py-4">
-              <h3 className="font-[600] text-[18px] text-[var(--colors-ink)] tracking-[-0.1px]">설정</h3>
-              <button onClick={() => setIsSettingsOpen(false)} className="text-[var(--colors-ink-muted)] hover:text-[var(--colors-ink)] transition-colors">
-                <X size={18} />
-              </button>
-            </div>
-            <div className="p-6 space-y-6">
-              <div>
-                <div className="mb-3 text-[13px] font-medium text-[var(--colors-ink-subtle)]">테마</div>
-                <div className="flex rounded-full border border-[var(--colors-hairline)] bg-[var(--colors-canvas)] p-1">
-                  {[
-                    { value: "light", icon: <Sun size={14} />, label: "라이트" },
-                    { value: "system", icon: <Monitor size={14} />, label: "시스템" },
-                    { value: "dark", icon: <Moon size={14} />, label: "다크" },
-                  ].map(({ value, icon, label }) => (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => setThemeMode(value)}
-                      className={`flex flex-1 items-center justify-center gap-2 rounded-full px-3 py-2 text-sm transition ${themeMode === value ? "bg-[var(--colors-surface-2)] text-[var(--colors-ink)]" : "text-[var(--colors-ink-subtle)] hover:text-[var(--colors-ink)]"}`}
-                    >
-                      {icon}
-                      {label}
-                    </button>
-                  ))}
+          <AccessibleDialog open onClose={closeSettings} title="설정" className="[&>h2]:sr-only">
+            <FloatingPanel className="w-[min(400px,calc(100vw-2rem))] px-0 py-0 overflow-hidden shadow-2xl">
+              <div className="flex items-center justify-between border-b border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] px-5 py-4">
+                <h3 className="font-[600] text-[18px] text-[var(--colors-ink)] tracking-[-0.1px]">설정</h3>
+                <button
+                  type="button"
+                  aria-label="닫기"
+                  title="닫기"
+                  onClick={closeSettings}
+                  className="text-[var(--colors-ink-muted)] hover:text-[var(--colors-ink)] transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="p-6 space-y-6">
+                <div>
+                  <div className="mb-3 text-[13px] font-medium text-[var(--colors-ink-subtle)]">테마</div>
+                  <div className="flex rounded-full border border-[var(--colors-hairline)] bg-[var(--colors-canvas)] p-1">
+                    {[
+                      { value: "light", icon: <Sun size={14} />, label: "라이트" },
+                      { value: "system", icon: <Monitor size={14} />, label: "시스템" },
+                      { value: "dark", icon: <Moon size={14} />, label: "다크" },
+                    ].map(({ value, icon, label }) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setThemeMode(value)}
+                        className={`flex flex-1 items-center justify-center gap-2 rounded-full px-3 py-2 text-sm transition ${themeMode === value ? "bg-[var(--colors-surface-2)] text-[var(--colors-ink)]" : "text-[var(--colors-ink-subtle)] hover:text-[var(--colors-ink)]"}`}
+                      >
+                        {icon}
+                        {label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          </FloatingPanel>
+            </FloatingPanel>
+          </AccessibleDialog>
         </div>
       )}
     </div>
