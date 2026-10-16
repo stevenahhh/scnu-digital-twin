@@ -480,26 +480,29 @@ export default function App() {
         representativeRefreshKey={overlayRefreshKey}
         overlaysCovered={isPanelVisible && panelCoversViewport}
         overlayInsetRight={isPanelVisible && !panelCoversViewport ? "var(--dashboard-panel-width)" : "0px"}
+        // 야간 음영·햇빛·그라데이션은 지도 영상만 어둡게 해야 하므로 렌더러가 지도 바로 위·지도 위 문구와 버튼 아래에 그린다.
+        mapBackdrop={(
+          <>
+            <div
+              id="vworld-available-area"
+              className="pointer-events-none absolute bottom-0 left-0 top-0 z-[1] transition-[right,background-color] duration-300"
+              style={{
+                right: isPanelVisible ? "var(--dashboard-panel-width)" : "0px",
+                backgroundColor: `rgba(3, 10, 24, ${nightOverlayOpacity})`,
+              }}
+            />
+            <div
+              className="pointer-events-none absolute bottom-0 left-0 top-0 z-[2] transition-[right,opacity] duration-300"
+              style={{
+                right: isPanelVisible ? "var(--dashboard-panel-width)" : "0px",
+                background: `radial-gradient(circle at ${sunGlowX}% ${sunGlowY}%, rgba(255, 218, 138, ${sunGlowOpacity}) 0%, transparent 42%)`,
+              }}
+            />
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(1,1,2,0.02)_0%,rgba(1,1,2,0.08)_50%,rgba(1,1,2,0.16)_100%)]" />
+          </>
+        )}
       />
       </div>
-
-      <div
-        id="vworld-available-area"
-        className="pointer-events-none absolute bottom-0 left-0 top-0 z-[1] transition-[right,background-color] duration-300"
-        style={{
-          right: isPanelVisible ? "var(--dashboard-panel-width)" : "0px",
-          backgroundColor: `rgba(3, 10, 24, ${nightOverlayOpacity})`,
-        }}
-      />
-      <div
-        className="pointer-events-none absolute bottom-0 left-0 top-0 z-[2] transition-[right,opacity] duration-300"
-        style={{
-          right: isPanelVisible ? "var(--dashboard-panel-width)" : "0px",
-          background: `radial-gradient(circle at ${sunGlowX}% ${sunGlowY}%, rgba(255, 218, 138, ${sunGlowOpacity}) 0%, transparent 42%)`,
-        }}
-      />
-
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(1,1,2,0.02)_0%,rgba(1,1,2,0.08)_50%,rgba(1,1,2,0.16)_100%)]" />
 
       {/* 패널 토글 버튼 */}
       {!isD4SectionOpen && (

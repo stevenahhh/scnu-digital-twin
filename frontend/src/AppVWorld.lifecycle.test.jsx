@@ -15,7 +15,8 @@ vi.mock("./features/energy/installations/installationPlanApi.mjs", async (import
   return { ...actual, createInstallationPlanClient: () => installationClient };
 });
 vi.mock("./vworld/VWorldRenderer", () => ({
-  default: ({ onSelection, onRepresentativeInstallationPlanChange, onD4SectionChange, overlaysCovered, overlayInsetRight }) => <div data-testid="vworld-renderer" data-overlays-covered={String(Boolean(overlaysCovered))} data-overlay-inset-right={overlayInsetRight}>
+  default: ({ onSelection, onRepresentativeInstallationPlanChange, onD4SectionChange, overlaysCovered, overlayInsetRight, mapBackdrop }) => <div data-testid="vworld-renderer" data-overlays-covered={String(Boolean(overlaysCovered))} data-overlay-inset-right={overlayInsetRight}>
+    {mapBackdrop}
     <button type="button" onClick={() => onSelection({ elementId: "BLD_D4", buildingId: "D4", displayName: "D4" })}>D4 선택</button>
     <button type="button" onClick={() => onRepresentativeInstallationPlanChange({ buildingId: "D4", installationPlanId: "plan-new" })}>새 대표 선택</button>
     <button type="button" onClick={() => { onSelection({ elementId: "BLD_D4", buildingId: "D4", displayName: "D4" }); onD4SectionChange(true); }}>D4 상세 열기</button>
@@ -98,6 +99,18 @@ describe("AppVWorld installation selection lifecycle", () => {
       window.dispatchEvent(new Event("resize"));
     });
     expect(renderer.dataset.overlayInsetRight).toBe("0px");
+  });
+
+  it("hands the night tint to the map renderer, which draws it under the map controls", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<App />);
+    const renderer = screen.getByTestId("vworld-renderer");
+    const tint = container.querySelector("#vworld-available-area");
+    expect(renderer.contains(tint)).toBe(true);
+    expect(tint.style.right).toBe("var(--dashboard-panel-width)");
+
+    await user.click(screen.getByRole("button", { name: "패널 닫기" }));
+    expect(tint.style.right).toBe("0px");
   });
 
   it("hides the dashboard panel and its toggle while the D4 detail experience is open and restores them after it closes", async () => {

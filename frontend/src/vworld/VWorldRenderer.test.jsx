@@ -420,4 +420,16 @@ describe("VWorldRenderer map control layout", () => {
     rerender(<VWorldRenderer onSelection={vi.fn()} simulationDate={simulationDate} overlayInsetRight="0px" />);
     expect(overlays.style.right).toBe("0px");
   });
+
+  it("draws the map backdrop right above the map and below the map controls", async () => {
+    mocks.vw = createVw();
+    window.__scnuVWorldMapInstance = retainedMap();
+    render(<VWorldRenderer onSelection={vi.fn()} simulationDate={simulationDate} mapBackdrop={<div data-testid="map-backdrop" />} />);
+
+    const backdrop = screen.getByTestId("map-backdrop");
+    const overlays = (await screen.findByRole("button", { name: "D4 공과대학 3호관 상세 보기" })).closest('[data-qa="vworld-map-overlays"]');
+    expect(backdrop.previousElementSibling.id).toBe("vmap");
+    expect(backdrop.nextElementSibling).toBe(overlays);
+    expect(overlays.contains(backdrop)).toBe(false);
+  });
 });

@@ -86,6 +86,7 @@ export default function VWorldRenderer({
   onD4SectionChange,
   overlaysCovered = false,
   overlayInsetRight = "0px",
+  mapBackdrop = null,
 }) {
   const onSelectionRef = useRef(onSelection);
   const simulationDateRef = useRef(simulationDate);
@@ -349,6 +350,7 @@ export default function VWorldRenderer({
   return (
     <div className="relative h-full w-full">
       <div id={VWORLD_MAP_ID} className="h-full w-full" />
+      {mapBackdrop}
       {/* 지도 위 문구와 버튼은 열린 패널을 뺀 지도 영역 안에만 둔다. 상태 문구는 위쪽 왼쪽 열, 지도 조작은 아래쪽 왼쪽 열에
           쌓는다. 절대 위치는 두 열에만 주어 화면이 좁아도 서로 겹치거나 패널 밑으로 들어가지 않는다. */}
       <div
