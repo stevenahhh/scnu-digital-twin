@@ -97,6 +97,9 @@ export default function VWorldRenderer({
   const cameraControllerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasLoadError, setHasLoadError] = useState(false);
+  const [loadErrorMessage, setLoadErrorMessage] = useState("");
+  const [campusStatus, setCampusStatus] = useState(null);
+  const [trafficStatus, setTrafficStatus] = useState(null);
   const [isD4SectionOpen, setIsD4SectionOpen] = useState(false);
   const [detailRequest, setDetailRequest] = useState(null);
   const [selectedRoadZoneName, setSelectedRoadZoneName] = useState(null);
@@ -171,7 +174,9 @@ export default function VWorldRenderer({
         createCampusBoundary(vw);
         createD4VWorldModel(vw);
         try {
-          campusGltfModelRef.current = await createCampusGltfOverlay(map);
+          campusGltfModelRef.current = await createCampusGltfOverlay(map, {
+            onStatus: setCampusStatus,
+          });
           if (isDisposed) {
             removeCampusGltfOverlay(map, campusGltfModelRef.current);
             campusGltfModelRef.current = null;
@@ -182,7 +187,14 @@ export default function VWorldRenderer({
           console.warn("Campus GLB overlay could not be loaded; keeping the D4 fallback model.", error);
         }
         trafficSimulationRef.current?.dispose();
-        trafficSimulationRef.current = createVWorldTrafficSimulation({ map });
+        trafficSimulationRef.current = createVWorldTrafficSimulation({
+          map,
+          // 끊긴 뒤 재시도하는 동안에는 "연결 끊김"을 유지해 배지가 깜빡이지 않게 한다.
+          onStatus: (status) =>
+            setTrafficStatus((previous) =>
+              status.state === "connecting" && previous?.state === "disconnected" ? previous : status,
+            ),
+        });
         handleOverlayDataChange(overlayDataRef.current);
         createD4CoordinateMarker(vw);
 
@@ -257,6 +269,7 @@ export default function VWorldRenderer({
         if (isDisposed) return;
 
         console.error("VWorld renderer initialization failed.", error);
+        setLoadErrorMessage(error?.message ?? "VWorld 지도를 불러오지 못했습니다.");
         setHasLoadError(true);
         setIsLoading(false);
       }
@@ -311,15 +324,32 @@ export default function VWorldRenderer({
       )}
       {hasLoadError && (
         <div
-          className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center p-4"
+          className="absolute inset-x-0 top-0 z-10 flex justify-center p-4"
           role="alert"
         >
-          <div className="dashboard-status-badge px-3 py-2 text-xs">
-            VWorld 지도를 불러오지 못했습니다.
+          <div className="dashboard-status-badge flex items-center gap-3 px-3 py-2 text-xs">
+            <span>{loadErrorMessage}</span>
+            <button type="button" className="underline" onClick={() => window.location.reload()}>
+              다시 시도
+            </button>
           </div>
         </div>
       )}
       {!isD4SectionOpen && <VWorldCampusStatus onSelection={(selection) => onSelectionRef.current(selection)} />}
+      {!isD4SectionOpen && (campusStatus?.state === "terrain-timeout" || campusStatus?.state === "error") && (
+        <div className="dashboard-status-badge absolute left-6 top-16 z-20 px-3 py-2 text-xs" role="status">
+          {campusStatus.message}
+        </div>
+      )}
+      {!isD4SectionOpen && trafficStatus && (
+        <div className="dashboard-status-badge absolute right-6 top-6 z-20 px-3 py-2 text-xs" role="status">
+          {trafficStatus.state === "live"
+            ? "교통 시뮬레이션 연결됨"
+            : trafficStatus.state === "connecting"
+              ? "교통 시뮬레이션 연결 중"
+              : "교통 시뮬레이션 연결 끊김"}
+        </div>
+      )}
       {!isD4SectionOpen && (
         <RepresentativePlanOverlayController
           buildingIds={CAMPUS_REPRESENTATIVE_BUILDING_IDS}

@@ -7,9 +7,15 @@ const mocks = vi.hoisted(() => ({
   createdIds: [],
   receivedBuildingIds: [],
   vw: null,
+  loaderError: null,
 }));
 
-vi.mock("./webglSdkLoader.mjs", () => ({ loadVWorldWebGlSdk: vi.fn(async () => mocks.vw) }));
+vi.mock("./webglSdkLoader.mjs", () => ({
+  loadVWorldWebGlSdk: vi.fn(async () => {
+    if (mocks.loaderError) throw mocks.loaderError;
+    return mocks.vw;
+  }),
+}));
 vi.mock("./sunSimulation.mjs", () => ({ applyVWorldSunSimulation: vi.fn() }));
 vi.mock("./VWorldCampusStatus", () => ({ VWorldCampusStatus: () => null }));
 vi.mock("./RepresentativePlanOverlayController", () => ({
@@ -85,6 +91,7 @@ afterEach(() => {
   delete window.__scnuVWorldMapInstance;
   mocks.createdIds.length = 0;
   mocks.receivedBuildingIds.length = 0;
+  mocks.loaderError = null;
 });
 
 class ResizeObserver {
@@ -103,5 +110,29 @@ describe("VWorldRenderer retained map integration", () => {
     await waitFor(() => expect(mocks.createdIds).toContain("SCNU_REPRESENTATIVE_PANEL_strict-plan_array-1"));
     expect(mocks.vw.Map).not.toHaveBeenCalled();
     expect(new Set(mocks.receivedBuildingIds)).toEqual(new Set(["C1", "D1", "D2", "D3", "D4"]));
+  });
+
+  it("renders the SDK loader error message and retry action", async () => {
+    mocks.loaderError = new Error("VWorld API 키가 없습니다. frontend/.env 에 VITE_VWORLD_API_KEY 를 설정하세요.");
+    const reload = vi.fn();
+    const originalLocation = window.location;
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: { ...originalLocation, reload },
+    });
+    render(<VWorldRenderer onSelection={vi.fn()} />);
+
+    await waitFor(() => expect(document.querySelector('[role="alert"]')).not.toBeNull());
+    expect(document.querySelector('[role="alert"]').textContent).toContain(
+      "VWorld API 키가 없습니다. frontend/.env 에 VITE_VWORLD_API_KEY 를 설정하세요.",
+    );
+    const retryButton = document.querySelector('[role="alert"] button');
+    expect(retryButton.textContent).toContain("다시 시도");
+    retryButton.click();
+    expect(reload).toHaveBeenCalledOnce();
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: originalLocation,
+    });
   });
 });
