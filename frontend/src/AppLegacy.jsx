@@ -603,13 +603,17 @@ export default function App() {
   }, [fetchMicroclimate, popupData, popupError, popupLoading, selectedBuildingId]);
   const showMicroclimateTab = Boolean(selectedId) || activeTab === "microclimate";
 
+  // 루트는 overflow: clip으로 자른다. hidden은 스크롤 컨테이너라서, 닫힌 패널이 화면 밖에 만드는 공간 때문에
+  // Tab 포커스가 화면 밖 요소로 가면 브라우저가 대시보드 전체를 옆으로 밀어 둔 채 남긴다.
   return (
-    <div className="dashboard-root relative h-dvh w-screen overflow-hidden bg-[var(--colors-canvas)] text-[var(--colors-ink)]">
+    <div className="dashboard-root relative h-dvh w-screen overflow-clip bg-[var(--colors-canvas)] text-[var(--colors-ink)]">
       <div className="absolute inset-0" style={{ background: sceneBackground }} />
 
       <div className={`absolute inset-0 z-0 flex items-center justify-center ${CANVAS_FALLBACK_SURFACE_CLASS}`}>
         <PanelErrorBoundary label="3D 캠퍼스" message="3D 캠퍼스 모델을 불러오지 못했습니다">
-          <Canvas camera={{ position: [0, 260, 260], fov: 50 }} shadows>
+          {/* R3F 래퍼의 기본 overflow: hidden은 스크롤 컨테이너라서, Tab으로 캔버스 밖 라벨에 포커스가 가면
+              브라우저가 래퍼를 스크롤해 3D 화면이 밀린 채 남는다. clip은 똑같이 잘라 내되 스크롤되지 않는다. */}
+          <Canvas camera={{ position: [0, 260, 260], fov: 50 }} shadows style={{ overflow: "clip" }}>
             <color attach="background" args={[sceneBackground]} />
             <fog attach="fog" args={[sceneBackground, 450, 800]} />
             <ambientLight intensity={sunState.visible ? 1.55 : 0.5} />

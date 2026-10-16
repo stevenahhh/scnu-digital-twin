@@ -95,6 +95,18 @@ body {
   color: var(--colors-ink);
 }
 
+/* VWorld SDK는 navigation: false여도 키보드 이동 컨트롤(좌로·우로·위로·아래로 이동, 닫기)을 지도 바로 아래
+   보이지 않는 곳에 포커스 가능한 채로 남긴다. Tab이 여기에 닿으면 브라우저가 뷰어를 스크롤해 지도가 밀리고
+   아래에 빈 띠가 남는다. 이 컨트롤을 여는 SDK 도구 모음은 이미 꺼져 있고 Legacy에도 키보드 지도 이동이 없으므로
+   숨긴다. 뷰어도 포커스로 스크롤되지 않게 clip으로 자른다. #vmap은 VWorldRenderer의 VWORLD_MAP_ID다. */
+#vmap .dt-api-map--move {
+  display: none;
+}
+
+#vmap .cesium-viewer {
+  overflow: clip;
+}
+
 @media (max-width: 439px) {
   :root { --dashboard-panel-width: 100vw; }
   .dashboard-root select,

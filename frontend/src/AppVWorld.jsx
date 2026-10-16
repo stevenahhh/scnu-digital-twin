@@ -450,8 +450,10 @@ export default function App() {
     setOverlayRefreshKey((value) => value + 1);
   }, []);
 
+  // 루트는 overflow: clip으로 자른다. hidden은 스크롤 컨테이너라서, 닫힌 패널이 화면 밖에 만드는 공간 때문에
+  // Tab 포커스가 화면 밖 요소로 가면 브라우저가 대시보드 전체를 옆으로 밀어 둔 채 남긴다.
   return (
-    <div className="dashboard-root relative h-dvh w-screen overflow-hidden bg-[var(--colors-canvas)] text-[var(--colors-ink)]">
+    <div className="dashboard-root relative h-dvh w-screen overflow-clip bg-[var(--colors-canvas)] text-[var(--colors-ink)]">
       <div className="absolute inset-0" style={{ background: sceneBackground }} />
 
       <div className="absolute inset-0 z-0">
