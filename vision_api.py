@@ -1,11 +1,15 @@
+import os
+os.environ.setdefault("YOLO_AUTOINSTALL", "False")
+
 import cv2
 import argparse
 import threading
+from datetime import datetime, timezone
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from ultralytics import YOLO
 import uvicorn
-import asyncio
 
 app = FastAPI()
 
@@ -17,26 +21,40 @@ app.add_middleware(
 )
 
 # Global state for API
+traffic_stats_lock = threading.Lock()
 traffic_stats = {
     "entered": 0,
     "exited": 0,
     "current_cars": 0,
     "total_spaces": 50,
-    "is_running": False
+    "is_running": False,
+    "error": None,
+    "started_at": None,
+    "last_frame_at": None,
 }
 
-def run_vision_model(source, line_ratio, direction, conf, spaces):
+def run_vision_model(source, model_path, line_ratio, direction, conf, spaces):
     global traffic_stats
-    
-    print(f"Loading YOLO model... source={source}")
-    model = YOLO('car_vision_model/yolov8s.pt')
-    
+
     if source.isdigit():
         source = int(source)
-        
+
     cap = cv2.VideoCapture(source)
     if not cap.isOpened():
+        with traffic_stats_lock:
+            traffic_stats["is_running"] = False
+            traffic_stats["error"] = f"영상 소스를 열 수 없습니다: {source}"
         print(f"Error opening video source: {source}")
+        return
+
+    try:
+        print(f"Loading YOLO model... path={model_path}")
+        model = YOLO(str(model_path))
+    except Exception:
+        cap.release()
+        with traffic_stats_lock:
+            traffic_stats["is_running"] = False
+            traffic_stats["error"] = f"모델을 불러오지 못했습니다: {model_path}"
         return
 
     video_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -46,14 +64,20 @@ def run_vision_model(source, line_ratio, direction, conf, spaces):
     COUNTING_LINE_Y = int(video_height * line_ratio)
 
     track_history = {}
-    traffic_stats["total_spaces"] = spaces
-    traffic_stats["is_running"] = True
+    with traffic_stats_lock:
+        traffic_stats["total_spaces"] = spaces
+        traffic_stats["is_running"] = True
+        traffic_stats["error"] = None
+        traffic_stats["started_at"] = datetime.now(timezone.utc).isoformat()
+        traffic_stats["last_frame_at"] = None
     print("Vision model processing started in background.")
 
     while cap.isOpened():
         success, frame = cap.read()
         if not success:
             continue
+        with traffic_stats_lock:
+            traffic_stats["last_frame_at"] = datetime.now(timezone.utc).isoformat()
 
         results = model.track(
             frame, 
@@ -90,23 +114,33 @@ def run_vision_model(source, line_ratio, direction, conf, spaces):
                             is_exited = True
 
                     if is_entered:
-                        traffic_stats["entered"] += 1
-                        traffic_stats["current_cars"] += 1
-                        print(f"Car Entered! ID: {track_id}, Total IN: {traffic_stats['entered']}")
+                        with traffic_stats_lock:
+                            traffic_stats["entered"] += 1
+                            traffic_stats["current_cars"] += 1
+                            entered = traffic_stats["entered"]
+                        print(f"Car Entered! ID: {track_id}, Total IN: {entered}")
                     elif is_exited:
-                        traffic_stats["exited"] += 1
-                        traffic_stats["current_cars"] = max(0, traffic_stats["current_cars"] - 1)
-                        print(f"Car Exited! ID: {track_id}, Total OUT: {traffic_stats['exited']}")
+                        with traffic_stats_lock:
+                            traffic_stats["exited"] += 1
+                            traffic_stats["current_cars"] = max(0, traffic_stats["current_cars"] - 1)
+                            exited = traffic_stats["exited"]
+                        print(f"Car Exited! ID: {track_id}, Total OUT: {exited}")
 
                 track_history[track_id] = center_y
+    cap.release()
+    with traffic_stats_lock:
+        traffic_stats["is_running"] = False
 
 @app.get("/api/traffic")
 def get_traffic_stats():
-    return traffic_stats
+    with traffic_stats_lock:
+        return traffic_stats.copy()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--source', type=str, default='0', help='Camera index (e.g. 0) or stream URL')
+    parser.add_argument('--model', type=Path, default=Path(__file__).resolve().parent / 'car_vision_model' / 'yolov8s.pt')
+    parser.add_argument('--host', type=str, default='0.0.0.0')
     parser.add_argument('--line', type=float, default=0.5)
     parser.add_argument('--direction', type=str, default='up_to_down')
     parser.add_argument('--conf', type=float, default=0.4)
@@ -114,9 +148,9 @@ if __name__ == "__main__":
     parser.add_argument('--port', type=int, default=8001)
     args = parser.parse_args()
 
-    t = threading.Thread(target=run_vision_model, args=(args.source, args.line, args.direction, args.conf, args.spaces))
+    t = threading.Thread(target=run_vision_model, args=(args.source, args.model, args.line, args.direction, args.conf, args.spaces))
     t.daemon = True
     t.start()
 
     print(f"Starting API server on port {args.port}...")
-    uvicorn.run(app, host="0.0.0.0", port=args.port)
+    uvicorn.run(app, host=args.host, port=args.port)
