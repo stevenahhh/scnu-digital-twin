@@ -154,6 +154,22 @@ describe("VWorldRenderer retained map integration", () => {
     expect(screen.getByText("캠퍼스 3D 모델을 불러오지 못했습니다")).toBeTruthy();
   });
 
+  it("keeps the D4 fallback model when the campus GLB fails before the overlay is returned", async () => {
+    const { createCampusGltfOverlay } = await import("./campusGltfOverlay.mjs");
+    createCampusGltfOverlay.mockImplementationOnce(async (_map, _cesium, options) => {
+      options.onStatus({ state: "error", message: "캠퍼스 3D 모델을 불러오지 못했습니다" });
+      return { id: "SCNU_D4_GLTF_OVERLAY" };
+    });
+    mocks.vw = createVw();
+    const map = retainedMap();
+    window.__scnuVWorldMapInstance = map;
+    render(<VWorldRenderer onSelection={vi.fn()} simulationDate={new Date("2026-05-18T12:00:00+09:00")} />);
+
+    await waitFor(() => expect(mocks.createdIds).toContain("SCNU_REPRESENTATIVE_PANEL_strict-plan_array-1"));
+    expect(map.removeObjectById).not.toHaveBeenCalledWith(D4_VWORLD_MODEL_IDS[0]);
+    expect(screen.getByText("캠퍼스 3D 모델을 불러오지 못했습니다")).toBeTruthy();
+  });
+
   it("shows a Korean message instead of raw exception text for non-loader initialization errors", async () => {
     mocks.loaderError = new TypeError("map.getViewer is not a function");
     try {
