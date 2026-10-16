@@ -16,9 +16,12 @@ test("default entry remains Legacy without requiring the VWorld SDK", async () =
 
 test("separate VWorld entry bootstraps the SDK before its React app", async () => {
   const html = await readFile(new URL("../../index-vworld.html", import.meta.url), "utf8");
+  const boot = html.indexOf('id="vworld-boot-status"');
   const sdk = html.indexOf("https://map.vworld.kr/js/webglMapInit.js.do");
   const app = html.indexOf('src="/src/index-vworld.jsx"');
 
+  assert(boot >= 0, "VWorld index must show a boot status");
+  assert(boot < sdk, "boot status must precede the VWorld SDK");
   assert(sdk >= 0, "VWorld index must load the VWorld WebGL SDK");
   assert(app > sdk, "VWorld SDK must load before the VWorld React app entry");
   assert.match(html, /apiKey=%VITE_VWORLD_API_KEY%/);

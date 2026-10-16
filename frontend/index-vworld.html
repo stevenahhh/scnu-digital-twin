@@ -12,6 +12,19 @@
 
 <body>
   <div id="root" class="h-dvh w-screen"></div>
+  <div id="vworld-boot-status" role="status" aria-live="polite" style="position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; background: #101114; color: #fff; font-family: sans-serif;">
+    VWorld 지도를 불러오는 중입니다
+  </div>
+  <script>
+    window.setTimeout(() => {
+      if (!window.vw) {
+        const status = document.getElementById("vworld-boot-status");
+        if (status) {
+          status.textContent = "VWorld 서버 응답이 지연되고 있습니다. 네트워크와 API 키를 확인하세요.";
+        }
+      }
+    }, 15000);
+  </script>
   <script src="https://map.vworld.kr/js/webglMapInit.js.do?version=3.0&apiKey=%VITE_VWORLD_API_KEY%"></script>
   <script type="module" src="/src/index-vworld.jsx"></script>
 </body>
