@@ -15,6 +15,8 @@ const SCENARIOS = [
 
 const STATUS_LABEL = { running: "실행 중", paused: "일시정지", stopped: "정지" };
 const RISK_LABEL = { normal: "정상", caution: "주의", warning: "경고", danger: "위험" };
+const TRIP_STATUS_LABEL = { moving: "이동 중", completed: "완료", waiting: "대기 중", stopped: "정지" };
+const INTERACTION_STATE_LABEL = { NONE: "없음", CONFLICT: "상충", NEAR_MISS: "아차사고", HARD_BRAKE: "급제동" };
 
 const AGENT_TYPE_LABEL = { car: "자동차", person: "보행자", scooter: "킥보드" };
 const ROUTE_DEBUG_ENABLED = import.meta.env.DEV || String(import.meta.env.VITE_SIMULATION_DEBUG).toLowerCase() === "true";
@@ -27,7 +29,7 @@ function formatDuration(seconds = 0) {
 }
 
 function MiniMetric({ label, value, tone = "normal" }) {
-  const toneClass = tone === "danger" ? "text-red-600" : tone === "warning" ? "text-amber-600" : "text-[var(--colors-ink)]";
+  const toneClass = tone === "danger" ? "text-[var(--colors-danger)]" : tone === "warning" ? "text-[var(--colors-warning)]" : "text-[var(--colors-ink)]";
   return (
     <div className="border-b border-[var(--colors-hairline)] py-2">
       <div className="text-[11px] font-[700] text-[var(--colors-ink-subtle)]">{label}</div>
@@ -61,7 +63,8 @@ export function TrafficSafetyPanel() {
   };
 
   const start = async () => {
-    await call("/api/simulation/scenario", { scenario, counts, risk_events_enabled: eventsEnabled });
+    const scenarioResult = await call("/api/simulation/scenario", { scenario, counts, risk_events_enabled: eventsEnabled });
+    if (!scenarioResult) return;
     await call("/api/simulation/start", { scenario, counts });
   };
   const updateCount = (type, value) => setCounts((current) => ({ ...current, [type]: Math.max(0, Number(value) || 0) }));
@@ -90,9 +93,9 @@ export function TrafficSafetyPanel() {
         <MiniMetric label="정상 / 주의" value={`${snapshot.statistics.normal_count} / ${snapshot.statistics.caution_count}`} />
         <MiniMetric label="경고" value={`${snapshot.statistics.warning_count}`} tone="warning" />
         <MiniMetric label="위험" value={`${snapshot.statistics.danger_count}`} tone="danger" />
-        <MiniMetric label="완료 Trip" value={Object.values(snapshot.statistics.completed_trips || {}).reduce((sum, value) => sum + Number(value || 0), 0)} />
+        <MiniMetric label="완료된 이동" value={Object.values(snapshot.statistics.completed_trips || {}).reduce((sum, value) => sum + Number(value || 0), 0)} />
         <MiniMetric label="현재 위험" value={snapshot.statistics.current_risks || 0} tone="warning" />
-        <MiniMetric label="Near Miss" value={snapshot.statistics.near_miss_count || 0} tone="danger" />
+        <MiniMetric label="아차사고" value={snapshot.statistics.near_miss_count || 0} tone="danger" />
       </div>
       <div className="flex items-center justify-between text-[12px] font-[700] text-[var(--colors-ink-muted)]">
         <span>시뮬레이션 {snapshot.simulationTime.toFixed(1)}초 · {snapshot.demandProfile}</span><span>속도 ×{speed}</span>
@@ -100,7 +103,7 @@ export function TrafficSafetyPanel() {
       {snapshot.statistics.network_coverage && (
         <div className="rounded-md bg-[var(--colors-surface-2)] p-3 text-[11px]">
           <div className="mb-2 flex items-center justify-between font-[800]">
-            <span>Campus Network Coverage</span>
+            <span>캠퍼스 네트워크 범위</span>
             <span>{snapshot.statistics.network_runtime?.mode || "-"}</span>
           </div>
           <div className="grid grid-cols-3 gap-2 text-[var(--colors-ink-subtle)]">
@@ -159,23 +162,23 @@ export function TrafficSafetyPanel() {
             <div className="space-y-3 rounded-md bg-[var(--colors-surface-2)] p-3 text-[12px]">
               <div className="flex items-center justify-between"><span className="text-sm font-[900]">{agent.id}</span><span className="font-[800]">{AGENT_TYPE_LABEL[agent.type] || agent.type}</span></div>
               <div className="grid grid-cols-[80px_1fr] gap-x-2 gap-y-1">
-                <span className="text-[var(--colors-ink-subtle)]">From</span><span className="font-[700]">{agent.origin_name}</span>
-                <span className="text-[var(--colors-ink-subtle)]">To</span><span className="font-[700]">{agent.destination_name}</span>
+                <span className="text-[var(--colors-ink-subtle)]">출발</span><span className="font-[700]">{agent.origin_name}</span>
+                <span className="text-[var(--colors-ink-subtle)]">도착</span><span className="font-[700]">{agent.destination_name}</span>
                 <span className="text-[var(--colors-ink-subtle)]">속도</span><span>{(Number(agent.speed || 0) * 3.6).toFixed(1)} km/h</span>
-                <span className="text-[var(--colors-ink-subtle)]">상태</span><span>{agent.trip_status} · {agent.interaction_state || "NONE"}</span>
+                <span className="text-[var(--colors-ink-subtle)]">상태</span><span>{TRIP_STATUS_LABEL[agent.trip_status] || "알 수 없음"} · {INTERACTION_STATE_LABEL[agent.interaction_state || "NONE"] || "알 수 없음"}</span>
                 <span className="text-[var(--colors-ink-subtle)]">경로</span><span className="truncate" title={agent.current_route}>{agent.current_route}</span>
                 <span className="text-[var(--colors-ink-subtle)]">행동 유형</span><span>{agent.behavior_profile?.name || "-"}</span>
               </div>
               <div className="border-t border-[var(--colors-hairline)] pt-2">
-                <div className="mb-1 font-[800]">Safety</div>
+                <div className="mb-1 font-[800]">안전</div>
                 <div className="grid grid-cols-2 gap-1">
                   <span>Risk {RISK_LABEL[agent.risk_level] || agent.risk_level}</span><span>TTC {agent.current_ttc == null ? "-" : `${agent.current_ttc}s`}</span>
                   <span>PET {metrics.minimum_pet == null ? "-" : `${metrics.minimum_pet}s`}</span><span>Conflicts {metrics.conflict_count || 0}</span>
-                  <span>Near Miss {metrics.near_miss_count || 0}</span><span>Hard Brake {metrics.hard_brake_count || 0}</span>
+                  <span>아차사고 {metrics.near_miss_count || 0}</span><span>급제동 {metrics.hard_brake_count || 0}</span>
                 </div>
               </div>
               <div className="border-t border-[var(--colors-hairline)] pt-2">
-                <div className="mb-1 font-[800]">Trip</div>
+                <div className="mb-1 font-[800]">이동</div>
                 <div className="grid grid-cols-2 gap-1">
                   <span>거리 {Math.round(metrics.trip_distance || 0)}m</span><span>시간 {formatDuration(metrics.travel_time)}</span>
                   <span>평균 {((metrics.average_speed || 0) * 3.6).toFixed(1)} km/h</span><span>대기 {formatDuration(metrics.waiting_time)}</span>
@@ -187,7 +190,7 @@ export function TrafficSafetyPanel() {
       </div>
 
       <div className="border-t border-[var(--colors-hairline)] pt-4">
-        <div className="mb-2 text-sm font-[800]">Simulation Timeline</div>
+        <div className="mb-2 text-sm font-[800]">시뮬레이션 타임라인</div>
         <div className="max-h-36 space-y-1 overflow-y-auto text-[11px]">
           {(snapshot.timeline || []).length === 0 && <div className="text-[var(--colors-ink-subtle)]">기록된 이벤트가 없습니다.</div>}
           {(snapshot.timeline || []).slice(0, 30).map((item, index) => <div key={`${item.type}-${item.event_id || item.trip_id || item.agent_id}-${index}`} className="flex justify-between border-b border-[var(--colors-hairline)] py-1"><span>{item.type} · {item.agent_id || (item.object_ids || []).join(" ↔ ")}</span><span>{Number(item.simulation_time || 0).toFixed(1)}s</span></div>)}
@@ -201,7 +204,7 @@ export function TrafficSafetyPanel() {
         <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
           {snapshot.riskEvents.length === 0 && <div className="py-4 text-center text-[12px] text-[var(--colors-ink-subtle)]">감지된 이벤트가 없습니다.</div>}
           {snapshot.riskEvents.slice(0, 20).map((event) => (
-            <div key={event.event_id} className="border-l-2 border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] px-3 py-2 text-[12px]" style={{ borderLeftColor: event.risk_level === "danger" ? "#dc2626" : "#f59e0b" }}>
+            <div key={event.event_id} className="border-l-2 border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] px-3 py-2 text-[12px]" style={{ borderLeftColor: `var(--colors-${event.risk_level === "danger" ? "danger" : "warning"})` }}>
               <div className="flex items-center justify-between gap-2"><span className="font-[800]">{RISK_LABEL[event.risk_level] || event.risk_level} · {event.location_id || "위치 미상"}</span><span className="font-[800]">{event.risk_score}점</span></div>
               <div className="mt-1 text-[var(--colors-ink-subtle)]">{(event.object_ids || []).join(" ↔ ")}</div>
               <div className="mt-1 text-[var(--colors-ink-muted)]">TTC {event.ttc == null ? "-" : `${event.ttc}s`} · PET {event.pet == null ? "-" : `${event.pet}s`} · 최소거리 {event.minimum_distance ?? event.distance}m</div>
