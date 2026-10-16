@@ -11,6 +11,9 @@ export const CAMPUS_GLTF_OVERLAY_CONFIG = Object.freeze({
   headingDegrees: -90,
   fallbackGroundHeightMeters: 40,
   terrainOffsetMeters: 0.5,
+  // The D4 anchor ground is about 65 m above the ellipsoid. A steady reading outside this band is the bare
+  // ellipsoid (about 0 m, what the globe shows when terrain tiles fail) or a coarse startup tile, not terrain.
+  groundHeightRangeMeters: Object.freeze({ min: 20, max: 120 }),
   modelScale: Object.freeze({ east: 1.602, north: 1.602, up: 1.602 }),
 });
 
@@ -24,6 +27,10 @@ function terrainHeight(viewer, Cesium, longitude, latitude) {
   return Number.isFinite(sampledHeight)
     ? sampledHeight
     : CAMPUS_GLTF_OVERLAY_CONFIG.fallbackGroundHeightMeters;
+}
+
+function isPlausibleGroundHeight(height, { min, max } = CAMPUS_GLTF_OVERLAY_CONFIG.groundHeightRangeMeters) {
+  return Number.isFinite(height) && height >= min && height <= max;
 }
 
 export function createCampusModelMatrix(viewer, Cesium, config = CAMPUS_GLTF_OVERLAY_CONFIG) {
@@ -68,9 +75,11 @@ export function createCampusModelMatrix(viewer, Cesium, config = CAMPUS_GLTF_OVE
 // coarse tile is already resident and reports the anchor anywhere from -98 m to
 // +133 m, which buries the campus under the terrain. `tilesLoaded` alone is not
 // enough: it flickers true early in startup while the anchor tile is still
-// coarse. Require the loaded flag AND two consecutive identical readings, then
-// re-anchor exactly once. Re-anchoring later is unsafe - the coarse readings
-// come back when the camera leaves the campus and its tiles are evicted.
+// coarse, and when terrain tiles fail it turns true over the bare ellipsoid
+// (about 0 m). Require the loaded flag, a height inside groundHeightRangeMeters
+// AND two consecutive identical readings, then re-anchor exactly once.
+// Re-anchoring later is unsafe - the coarse readings come back when the camera
+// leaves the campus and its tiles are evicted.
 const LOAD_FAILED_STATUS = Object.freeze({
   state: "error",
   message: "캠퍼스 3D 모델을 불러오지 못했습니다",
@@ -94,7 +103,7 @@ function reanchorWhenTerrainLoaded(viewer, Cesium, model, onStatus, schedule = s
       CAMPUS_GLTF_OVERLAY_CONFIG.anchor.latitude,
     ));
 
-    if (globe?.tilesLoaded === true && Number.isFinite(height)) {
+    if (globe?.tilesLoaded === true && isPlausibleGroundHeight(height)) {
       if (confirming !== null && Math.abs(height - confirming) <= TERRAIN_READY.toleranceMeters) {
         model.modelMatrix = createCampusModelMatrix(viewer, Cesium);
         onStatus?.({

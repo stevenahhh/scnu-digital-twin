@@ -120,6 +120,55 @@ test("reports terrain timeout when terrain never becomes ready", async () => {
   assert.equal(statuses[1].message, "지형 높이를 확인하지 못해 건물 높이가 부정확할 수 있습니다");
 });
 
+test("does not anchor to the bare ellipsoid that a failed terrain load leaves behind", async () => {
+  const callbacks = [];
+  const statuses = [];
+  const originalSetTimeout = globalThis.setTimeout;
+  globalThis.setTimeout = (callback) => { callbacks.push(callback); return 0; };
+  try {
+    const viewer = {
+      scene: {
+        globe: { tilesLoaded: true, getHeight: () => -0.002 },
+        primitives: { add: (model) => model },
+      },
+    };
+    await createCampusGltfOverlay({ _wsViewer: viewer }, fakeCesium(), {
+      onStatus: (status) => statuses.push(status),
+    });
+    while (callbacks.length) callbacks.shift()();
+  } finally {
+    globalThis.setTimeout = originalSetTimeout;
+  }
+  assert.deepEqual(statuses.map(({ state }) => state), ["loading", "terrain-timeout"]);
+  assert.equal(statuses[1].message, "지형 높이를 확인하지 못해 건물 높이가 부정확할 수 있습니다");
+});
+
+test("waits past a coarse startup height and anchors once at the real ground height", async () => {
+  const callbacks = [];
+  const statuses = [];
+  const readings = [133, 133, 65.2, 65.2, 65.2];
+  let reads = 0;
+  const originalSetTimeout = globalThis.setTimeout;
+  globalThis.setTimeout = (callback) => { callbacks.push(callback); return 0; };
+  let model;
+  try {
+    const viewer = {
+      scene: {
+        globe: { tilesLoaded: true, getHeight: () => readings[Math.min(reads++, readings.length - 1)] },
+        primitives: { add: (value) => value },
+      },
+    };
+    model = await createCampusGltfOverlay({ _wsViewer: viewer }, fakeCesium(), {
+      onStatus: (status) => statuses.push(status),
+    });
+    while (callbacks.length) callbacks.shift()();
+  } finally {
+    globalThis.setTimeout = originalSetTimeout;
+  }
+  assert.deepEqual(statuses.map(({ state }) => state), ["loading", "anchored"]);
+  assert.equal(model.modelMatrix.left.left.left.origin.height, 65.2 + CAMPUS_GLTF_OVERLAY_CONFIG.terrainOffsetMeters);
+});
+
 test("reports model load errors and rethrows them", async () => {
   const failure = new Error("model load failed");
   const statuses = [];
