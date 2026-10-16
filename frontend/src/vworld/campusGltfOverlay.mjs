@@ -64,6 +64,49 @@ export function createCampusModelMatrix(viewer, Cesium, config = CAMPUS_GLTF_OVE
   );
 }
 
+// Until the globe finishes loading its tiles, getHeight answers from whatever
+// coarse tile is already resident and reports the anchor anywhere from -98 m to
+// +133 m, which buries the campus under the terrain. `tilesLoaded` alone is not
+// enough: it flickers true early in startup while the anchor tile is still
+// coarse. Require the loaded flag AND two consecutive identical readings, then
+// re-anchor exactly once. Re-anchoring later is unsafe - the coarse readings
+// come back when the camera leaves the campus and its tiles are evicted.
+const TERRAIN_READY = Object.freeze({
+  intervalMs: 250,
+  toleranceMeters: 0.1,
+  maxWaitMs: 30000,
+});
+
+function reanchorWhenTerrainLoaded(viewer, Cesium, model, schedule = setTimeout) {
+  let waited = 0;
+  let confirming = null;
+
+  const poll = () => {
+    if (model.isDestroyed?.()) return;
+    const globe = viewer.scene?.globe;
+    const height = globe?.getHeight?.(Cesium.Cartographic.fromDegrees(
+      CAMPUS_GLTF_OVERLAY_CONFIG.anchor.longitude,
+      CAMPUS_GLTF_OVERLAY_CONFIG.anchor.latitude,
+    ));
+
+    if (globe?.tilesLoaded === true && Number.isFinite(height)) {
+      if (confirming !== null && Math.abs(height - confirming) <= TERRAIN_READY.toleranceMeters) {
+        model.modelMatrix = createCampusModelMatrix(viewer, Cesium);
+        return;
+      }
+      confirming = height;
+    } else {
+      confirming = null;
+    }
+
+    waited += TERRAIN_READY.intervalMs;
+    if (waited >= TERRAIN_READY.maxWaitMs) return;
+    schedule(poll, TERRAIN_READY.intervalMs)?.unref?.();
+  };
+
+  schedule(poll, TERRAIN_READY.intervalMs);
+}
+
 export async function createCampusGltfOverlay(map, Cesium = globalThis.window?.Cesium) {
   const viewer = getViewer(map);
   const fromGltf = Cesium?.Model?.fromGltfAsync ?? Cesium?.Model?.fromGltf;
@@ -85,6 +128,7 @@ export async function createCampusGltfOverlay(map, Cesium = globalThis.window?.C
   });
   model.id = "SCNU_D4_GLTF_OVERLAY";
   viewer.scene.primitives.add(model);
+  reanchorWhenTerrainLoaded(viewer, Cesium, model);
   return model;
 }
 
