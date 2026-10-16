@@ -20,7 +20,20 @@
       if (!window.vw) {
         const status = document.getElementById("vworld-boot-status");
         if (status) {
-          status.textContent = "VWorld 서버 응답이 지연되고 있습니다. 네트워크와 API 키를 확인하세요.";
+          status.textContent = "";
+          const wrapper = document.createElement("div");
+          wrapper.style.cssText = "display: grid; gap: 12px; justify-items: center; text-align: center; padding: 0 24px;";
+          const message = document.createElement("p");
+          message.style.margin = "0";
+          message.textContent = "VWorld 서버 응답이 지연되고 있습니다. 네트워크와 API 키를 확인하세요.";
+          const retry = document.createElement("button");
+          retry.type = "button";
+          retry.style.cssText = "min-height: 44px; padding: 0 16px; border-radius: 8px; border: 1px solid #5e6ad2; background: #5e6ad2; color: #fff; font: inherit; font-weight: 700; cursor: pointer;";
+          retry.textContent = "다시 시도";
+          retry.addEventListener("click", () => window.location.reload());
+          wrapper.appendChild(message);
+          wrapper.appendChild(retry);
+          status.appendChild(wrapper);
         }
       }
     }, 15000);
