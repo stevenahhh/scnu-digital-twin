@@ -119,5 +119,6 @@ bun run dev:vworld
 - VWorld renders at `http://127.0.0.1:5173/index-vworld.html`.
 - A native VWorld building opens the matching `BLD_*` detail.
 - The D4 coordinate marker opens the same detail path.
-- Traffic failures may be silent by design; inspect the `8001` endpoint directly.
+- Traffic failures are visible: the 주차·안전 card shows `영상 분석 서버 연결 없음`, or
+  `카메라·모델 미작동` with the server's reason. `GET :8001/api/traffic` shows the raw state.
 
