@@ -1,5 +1,5 @@
 /* @vitest-environment jsdom */
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { StrictMode, useEffect } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -50,6 +50,7 @@ vi.mock("./RepresentativePlanOverlayController", () => ({
 }));
 
 import VWorldRenderer from "./VWorldRenderer.jsx";
+import { D4_VWORLD_MODEL_IDS } from "./d4VWorldModel.mjs";
 
 class Geometry {
   setId(value) { this.id = value; }
@@ -128,6 +129,29 @@ describe("VWorldRenderer retained map integration", () => {
     const [, cesiumArg, options] = createCampusGltfOverlay.mock.calls.at(-1);
     expect(cesiumArg).toBe(window.Cesium);
     expect(typeof options?.onStatus).toBe("function");
+  });
+
+  it("puts the D4 fallback model back when the campus GLB fails after the overlay was returned", async () => {
+    const { createCampusGltfOverlay } = await import("./campusGltfOverlay.mjs");
+    let reportStatus = null;
+    createCampusGltfOverlay.mockImplementationOnce(async (_map, _cesium, options) => {
+      reportStatus = options.onStatus;
+      return { id: "SCNU_D4_GLTF_OVERLAY" };
+    });
+    mocks.vw = createVw();
+    const map = retainedMap();
+    window.__scnuVWorldMapInstance = map;
+    render(<VWorldRenderer onSelection={vi.fn()} simulationDate={new Date("2026-05-18T12:00:00+09:00")} />);
+
+    await waitFor(() => expect(mocks.createdIds).toContain("SCNU_REPRESENTATIVE_PANEL_strict-plan_array-1"));
+    expect(map.removeObjectById).toHaveBeenCalledWith(D4_VWORLD_MODEL_IDS[0]);
+    const d4Created = () => mocks.createdIds.filter((id) => D4_VWORLD_MODEL_IDS.includes(id)).length;
+    const before = d4Created();
+
+    act(() => reportStatus({ state: "error", message: "캠퍼스 3D 모델을 불러오지 못했습니다" }));
+
+    expect(d4Created()).toBe(before + D4_VWORLD_MODEL_IDS.length);
+    expect(screen.getByText("캠퍼스 3D 모델을 불러오지 못했습니다")).toBeTruthy();
   });
 
   it("shows a Korean message instead of raw exception text for non-loader initialization errors", async () => {

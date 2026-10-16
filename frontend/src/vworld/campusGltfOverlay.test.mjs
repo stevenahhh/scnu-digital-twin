@@ -136,3 +136,62 @@ test("reports model load errors and rethrows them", async () => {
   assert.deepEqual(statuses.map(({ state }) => state), ["loading", "error"]);
   assert.equal(statuses[1].message, "캠퍼스 3D 모델을 불러오지 못했습니다");
 });
+
+test("reports a failed download on Cesium 1.99, where fromGltf returns before the model loads", async () => {
+  const statuses = [];
+  const callbacks = [];
+  const removed = [];
+  let destroyed = false;
+  let rejectReady;
+  const Cesium = fakeCesium();
+  delete Cesium.Model.fromGltfAsync;
+  Cesium.Model.fromGltf = (options) => ({
+    options,
+    readyPromise: new Promise((resolve, reject) => { rejectReady = reject; }),
+    isDestroyed: () => destroyed,
+  });
+  const viewer = {
+    scene: {
+      globe: { tilesLoaded: true, getHeight: () => 31.5 },
+      primitives: {
+        length: 0,
+        add: (model) => model,
+        remove: (model) => { removed.push(model); destroyed = true; return true; },
+      },
+    },
+  };
+  const originalSetTimeout = globalThis.setTimeout;
+  globalThis.setTimeout = (callback) => { callbacks.push(callback); return 0; };
+  let model;
+  try {
+    model = await createCampusGltfOverlay({ _wsViewer: viewer }, Cesium, {
+      onStatus: (status) => statuses.push(status),
+    });
+    rejectReady(new Error("Failed to load model: /campus-buildings.glb"));
+    await new Promise((resolve) => setImmediate(resolve));
+    while (callbacks.length) callbacks.shift()();
+  } finally {
+    globalThis.setTimeout = originalSetTimeout;
+  }
+  assert.deepEqual(statuses.map(({ state }) => state), ["loading", "error"]);
+  assert.equal(statuses[1].message, "캠퍼스 3D 모델을 불러오지 못했습니다");
+  assert.deepEqual(removed, [model]);
+});
+
+test("does not read the deprecated readyPromise when Cesium has fromGltfAsync", async () => {
+  const Cesium = fakeCesium();
+  Cesium.Model.fromGltfAsync = async (options) => Object.defineProperty({ options }, "readyPromise", {
+    get() { throw new Error("readyPromise was read although fromGltfAsync exists"); },
+  });
+  const originalSetTimeout = globalThis.setTimeout;
+  globalThis.setTimeout = () => 0;
+  try {
+    const model = await createCampusGltfOverlay(
+      { _wsViewer: { scene: { globe: { getHeight: () => 31.5 }, primitives: { length: 0, add: (value) => value } } } },
+      Cesium,
+    );
+    assert.equal(model.id, "SCNU_D4_GLTF_OVERLAY");
+  } finally {
+    globalThis.setTimeout = originalSetTimeout;
+  }
+});

@@ -179,16 +179,29 @@ export default function VWorldRenderer({
 
         createCampusBoundary(vw);
         createD4VWorldModel(vw);
+        let d4FallbackRemoved = false;
         try {
           campusGltfModelRef.current = await createCampusGltfOverlay(map, window.Cesium, {
-            onStatus: setCampusStatus,
+            onStatus: (status) => {
+              setCampusStatus(status);
+              // Cesium 1.99 reports a failed download only after the overlay was returned and the
+              // D4 fallback below was removed, so put the fallback back.
+              if (status.state === "error" && d4FallbackRemoved && !isDisposed) {
+                d4FallbackRemoved = false;
+                campusGltfModelRef.current = null;
+                createD4VWorldModel(vw);
+              }
+            },
           });
           if (isDisposed) {
             removeCampusGltfOverlay(map, campusGltfModelRef.current);
             campusGltfModelRef.current = null;
             return;
           }
-          if (campusGltfModelRef.current) removeD4VWorldModel(map);
+          if (campusGltfModelRef.current) {
+            removeD4VWorldModel(map);
+            d4FallbackRemoved = true;
+          }
         } catch (error) {
           console.warn("Campus GLB overlay could not be loaded; keeping the D4 fallback model.", error);
         }
