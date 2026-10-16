@@ -50,11 +50,12 @@ def run_vision_model(source, model_path, line_ratio, direction, conf, spaces):
     try:
         print(f"Loading YOLO model... path={model_path}")
         model = YOLO(str(model_path))
-    except Exception:
+    except Exception as exc:
         cap.release()
         with traffic_stats_lock:
             traffic_stats["is_running"] = False
             traffic_stats["error"] = f"모델을 불러오지 못했습니다: {model_path}"
+        print(f"Failed to load YOLO model {model_path}: {exc!r}")
         return
 
     video_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
