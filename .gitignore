@@ -43,6 +43,14 @@ Thumbs.db
 # =========================
 .env
 .env.*
+!.env.example
+.venv/
+.pytest_cache/
+weather/data/*.sqlite3
+weather/data/*.sqlite3-*
+weather/data/weather-cache.json
+dist-vworld/
+docs/vworld-key.local.js
 
 # =========================
 # Streamlit 캐시
