@@ -33,35 +33,41 @@ fake_data.py
 - Run scripts from `TrafficSafety/`; all CSV and image paths are cwd-relative.
 - `process_data.py` loads EasyOCR and `jhgan/ko-sroberta-multitask` eagerly.
   First execution downloads/loads large models.
+- Python 3.12 is recommended for EasyOCR and PyTorch wheel availability.
 - CSVs are prototype persistence and some are checked in as scenario evidence.
 - Korean labels, report IDs, grade weights, and scenario records are part of the
   demonstration, not shared contracts with the main dashboard.
 
-## CURRENT BLOCKER
-
-`fake_data.py`, `process_data.py`, `dashboard.py`, and `user_management.py`
-contain unresolved Git conflict markers and duplicated branches. The PoC is not
-syntax-valid until a deliberate conflict-resolution task selects the intended
-versions and verifies the full CSV pipeline.
-
 ## ANTI-PATTERNS
 
-- Do not run or regenerate CSV artifacts before resolving the conflict markers.
-- Do not delete one conflict side blindly; compare scenario rows and scoring
-  behavior first.
+- Regenerating sample data rewrites the tracked `campus_safety_combined.csv`,
+  `final_merit_result.csv`, and `user_profiles_updated.csv`; commit those changes
+  intentionally or restore them with
+  `git checkout -- TrafficSafety/*.csv`.
 - Do not add fixed sleeps around model loading; use observable readiness when
   converting these scripts into services or tests.
 - Do not call manual probe scripts automated tests without assertions and
   deterministic model/input contracts.
 - Do not move these dependencies into `weather/requirements.txt`; this is a
-  separate PoC and currently has no dedicated manifest.
+  separate PoC with its own `TrafficSafety/requirements.txt`.
 
-## INTENDED COMMANDS AFTER CONFLICT RESOLUTION
+## INSTALLATION AND RUN ORDER
 
-```powershell
-cd TrafficSafety
-python fake_data.py
-python process_data.py
-python user_management.py
-streamlit run dashboard.py
+Install dependencies from the repository root:
+
+```sh
+python -m pip install -r TrafficSafety/requirements.txt
+```
+
+Run the dashboard using the committed sample CSVs; it only reads
+`final_merit_result.csv`:
+
+```sh
+cd TrafficSafety && streamlit run dashboard.py
+```
+
+Optionally regenerate sample data from the `TrafficSafety/` directory:
+
+```sh
+python fake_data.py && python process_data.py && python user_management.py
 ```
