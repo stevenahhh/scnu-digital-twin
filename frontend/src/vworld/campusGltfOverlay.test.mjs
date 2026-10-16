@@ -169,6 +169,39 @@ test("waits past a coarse startup height and anchors once at the real ground hei
   assert.equal(model.modelMatrix.left.left.left.origin.height, 65.2 + CAMPUS_GLTF_OVERLAY_CONFIG.terrainOffsetMeters);
 });
 
+test("reports the terrain warning after 30 s of wall time even when polls run late", async () => {
+  const callbacks = [];
+  const statuses = [];
+  let clock = 0;
+  const originalSetTimeout = globalThis.setTimeout;
+  const originalNow = Date.now;
+  globalThis.setTimeout = (callback) => { callbacks.push(callback); return 0; };
+  Date.now = () => clock;
+  let polls = 0;
+  try {
+    const viewer = {
+      scene: {
+        globe: { tilesLoaded: true, getHeight: () => -0.002 },
+        primitives: { add: (model) => model },
+      },
+    };
+    await createCampusGltfOverlay({ _wsViewer: viewer }, fakeCesium(), {
+      onStatus: (status) => statuses.push({ state: status.state, at: clock }),
+    });
+    while (callbacks.length) {
+      clock += 1000;
+      polls += 1;
+      callbacks.shift()();
+    }
+  } finally {
+    globalThis.setTimeout = originalSetTimeout;
+    Date.now = originalNow;
+  }
+  assert.deepEqual(statuses.map(({ state }) => state), ["loading", "terrain-timeout"]);
+  assert.equal(statuses[1].at, 30000);
+  assert.equal(polls, 30);
+});
+
 test("reports model load errors and rethrows them", async () => {
   const failure = new Error("model load failed");
   const statuses = [];

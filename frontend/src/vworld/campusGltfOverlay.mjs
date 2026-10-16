@@ -92,6 +92,9 @@ const TERRAIN_READY = Object.freeze({
 });
 
 function reanchorWhenTerrainLoaded(viewer, Cesium, model, onStatus, schedule = setTimeout) {
+  // Polls run late while Cesium renders, so the limit is wall time; the poll count only keeps
+  // tests with a synchronous scheduler finite.
+  const startedAt = Date.now();
   let waited = 0;
   let confirming = null;
 
@@ -118,7 +121,7 @@ function reanchorWhenTerrainLoaded(viewer, Cesium, model, onStatus, schedule = s
     }
 
     waited += TERRAIN_READY.intervalMs;
-    if (waited >= TERRAIN_READY.maxWaitMs) {
+    if (waited >= TERRAIN_READY.maxWaitMs || Date.now() - startedAt >= TERRAIN_READY.maxWaitMs) {
       onStatus?.({
         state: "terrain-timeout",
         message: "지형 높이를 확인하지 못해 건물 높이가 부정확할 수 있습니다",
