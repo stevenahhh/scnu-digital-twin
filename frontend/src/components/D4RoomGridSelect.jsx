@@ -154,23 +154,25 @@ export function D4RoomGridSelect({
   onBack,
 }) {
   return (
-    <div className="flex h-full w-full items-center justify-center gap-6 px-4">
-      <div className="w-[20vw] min-w-[320px] max-w-[400px] shrink-0">
+    // lg 미만에서는 장면 열 아래에 상세 카드를 쌓고(order-last) 이 루트가 세로 스크롤을 맡는다.
+    // 스크롤 클래스는 max-lg 변형으로만 붙인다: 루트에 `overflow-y-auto`를 그대로 쓰면
+    // D4SectionExperience의 휠 종료 판정(closest(".overflow-y-auto"))이 데스크톱에서도 막힌다.
+    <div className="flex h-full w-full flex-col items-center gap-6 px-4 py-6 max-lg:overflow-y-auto lg:flex-row lg:justify-center lg:py-0">
+      <div className="order-last w-full shrink-0 lg:order-none lg:w-[20vw] lg:min-w-[320px] lg:max-w-[400px]">
         <RoomDetailCard room={selectedRoom} status={selectedRoomStatus} onBack={onBack} />
       </div>
 
-      <div className="flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-5">
-        <div className="flex w-full items-center justify-between gap-4">
+      <div className="flex w-full min-w-0 flex-col items-center gap-5 lg:h-full lg:flex-1 lg:justify-center">
+        <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-4">
           <button
             type="button"
             onClick={onBack}
-            className="flex items-center gap-1.5 rounded-md border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] px-3 py-2 text-[13px] font-[700] text-[var(--colors-ink-muted)] transition hover:text-[var(--colors-ink)] hover:bg-[var(--colors-surface-2)]"
+            className="flex items-center gap-1.5 justify-self-start whitespace-nowrap rounded-md border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] px-3 py-2 text-[13px] font-[700] text-[var(--colors-ink-muted)] transition hover:text-[var(--colors-ink)] hover:bg-[var(--colors-surface-2)]"
           >
             <ChevronLeft size={16} />
             D4 건물 내부 보기
           </button>
-          <div className="text-lg font-[900] text-[var(--colors-ink)]">{building.displayName}</div>
-          <div className="w-[140px]" />
+          <div className="text-center text-lg font-[900] text-[var(--colors-ink)]">{building.displayName}</div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -221,7 +223,7 @@ export function D4RoomGridSelect({
             이 층에는 등록된 강의실이 없습니다.
           </div>
         ) : (
-          <div className="h-[56vh] w-full min-w-[500px] max-w-[900px]">
+          <div className="h-[32vh] min-h-[220px] w-full max-w-[900px] lg:h-[56vh] lg:min-w-[500px]">
             <D4RoomGridScene
               rooms={rooms}
               roomUsageById={roomUsageById}

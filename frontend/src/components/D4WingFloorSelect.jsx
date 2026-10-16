@@ -4,7 +4,7 @@ import { formatRoomNumber, getWingById } from "../utils/d4BuildingData.mjs";
 
 function InUseRoomList({ rooms, onSelectRoom }) {
   return (
-    <div className="flex h-[64vh] w-[340px] shrink-0 flex-col rounded-[16px] border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] p-4 shadow-lg">
+    <div className="flex max-h-[64vh] w-full max-w-[560px] shrink-0 flex-col rounded-[16px] border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] p-4 shadow-lg lg:h-[64vh] lg:w-[340px]">
       <div className="flex items-center justify-between">
         <div className="text-[13px] font-[900] text-[var(--colors-ink)]">사용 중인 강의실</div>
         <span className="rounded-full bg-[var(--colors-primary)] px-2 py-0.5 text-[11px] font-[800] text-white">{rooms.length}</span>
@@ -42,21 +42,23 @@ function InUseRoomList({ rooms, onSelectRoom }) {
 
 export function D4WingFloorSelect({ building, activeWingId, onSelectWing, onSelectFloor, onBack, inUseRooms = [], onSelectInUseRoom }) {
   return (
-    <div className="flex h-full w-full items-center justify-center gap-6 overflow-x-auto px-4">
-      <div className="w-[340px] shrink-0" aria-hidden="true" />
+    // lg 미만에서는 장면과 목록을 세로로 쌓고 이 루트가 세로 스크롤을 맡는다.
+    // 스크롤 클래스는 max-lg 변형으로만 붙인다: 루트에 `overflow-y-auto`를 그대로 쓰면
+    // D4SectionExperience의 휠 종료 판정(closest(".overflow-y-auto"))이 데스크톱에서도 막힌다.
+    <div className="flex h-full w-full flex-col items-center gap-6 px-4 py-6 max-lg:overflow-y-auto lg:flex-row lg:justify-center lg:py-0">
+      <div className="hidden w-[340px] lg:block" aria-hidden="true" />
 
-      <div className="flex shrink-0 flex-col items-center justify-center gap-6">
-        <div className="flex w-full max-w-[560px] items-center justify-between">
+      <div className="flex w-full max-w-[560px] shrink-0 flex-col items-center justify-center gap-6 lg:w-[560px]">
+        <div className="grid w-full max-w-[560px] grid-cols-[1fr_auto_1fr] items-center gap-4">
           <button
             type="button"
             onClick={onBack}
-            className="flex items-center gap-1.5 rounded-md border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] px-3 py-2 text-[13px] font-[700] text-[var(--colors-ink-muted)] transition hover:text-[var(--colors-ink)] hover:bg-[var(--colors-surface-2)]"
+            className="flex items-center gap-1.5 justify-self-start whitespace-nowrap rounded-md border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] px-3 py-2 text-[13px] font-[700] text-[var(--colors-ink-muted)] transition hover:text-[var(--colors-ink)] hover:bg-[var(--colors-surface-2)]"
           >
             <ChevronLeft size={16} />
             캠퍼스 전체 보기
           </button>
-          <div className="text-lg font-[900] text-[var(--colors-ink)]">{building.displayName}</div>
-          <div className="w-[132px]" />
+          <div className="text-center text-lg font-[900] text-[var(--colors-ink)]">{building.displayName}</div>
         </div>
 
         <div className="flex rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] p-1">
@@ -76,7 +78,7 @@ export function D4WingFloorSelect({ building, activeWingId, onSelectWing, onSele
           ))}
         </div>
 
-        <div className="h-[64vh] w-[560px]">
+        <div className="h-[48vh] min-h-[280px] w-full lg:h-[64vh]">
           <D4WingFloorScene building={building} activeWingId={activeWingId} onSelectFloor={onSelectFloor} />
         </div>
 
