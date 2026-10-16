@@ -1,3 +1,5 @@
+import { WEATHER_API_URL } from "../../../simulation/utils/apiConfig.js";
+
 export class InstallationPlanContractError extends TypeError {
   constructor(field, message) {
     super(`${field}: ${message}`);
@@ -143,7 +145,7 @@ async function checked(response, options = {}) {
   return options.parse ? options.parse(value) : value;
 }
 
-export function createInstallationPlanClient(apiBase = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000", fetchImpl = fetch) {
+export function createInstallationPlanClient(apiBase = WEATHER_API_URL, fetchImpl = fetch) {
   const jsonHeaders = { Accept: "application/json", "Content-Type": "application/json" };
   const planPath = (id) => `${apiBase}/energy/installation-plans/${encodeURIComponent(id)}`;
   const representativePath = (buildingId) => `${apiBase}/energy/buildings/${encodeURIComponent(buildingId)}/representative-plan`;

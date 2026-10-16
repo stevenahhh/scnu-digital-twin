@@ -2,6 +2,7 @@ import { AlertTriangle, ArrowUpRight, Building2, RefreshCw, Sparkles } from "luc
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { parseCampusComparison, parseRecommendationResponse } from "./campusComparison.mjs";
 import { toKoreanEnergyError } from "../shared/energyErrorMessages.mjs";
+import { WEATHER_API_URL } from "../../../simulation/utils/apiConfig.js";
 
 async function json(response) {
   const body = await response.json().catch(() => null);
@@ -9,7 +10,7 @@ async function json(response) {
   return body;
 }
 
-export function createCampusComparisonClient(apiBase = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000", fetchImpl = fetch) {
+export function createCampusComparisonClient(apiBase = WEATHER_API_URL, fetchImpl = fetch) {
   return {
     async load({ date, weatherPreset, signal }) {
       const response = await fetchImpl(`${apiBase}/energy/rankings?date=${encodeURIComponent(date)}&weather_preset=${encodeURIComponent(weatherPreset)}&representative_only=true`, { signal, headers: { Accept: "application/json" } });

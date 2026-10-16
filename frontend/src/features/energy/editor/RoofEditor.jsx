@@ -7,6 +7,7 @@ import { RoofEditorControls } from "./RoofEditorControls";
 import { RoofEditorScene } from "./RoofEditorScene";
 import { addArray, createRoofEditorState, deleteSelectedArray, dismissInvalidPreview, moveSelectedArray, replaceScenarioArrays, selectArray, summarizeLayout, undoLatestEdit, updateSelectedArray } from "./roofEditorState.mjs";
 import { toKoreanEnergyError } from "../shared/energyErrorMessages.mjs";
+import { WEATHER_API_URL } from "../../../simulation/utils/apiConfig.js";
 
 const DEFAULT_SCENARIO_ID = "D4-scenario-south-2x8";
 const initialStatus = { busy: false, kind: "idle", message: "" };
@@ -17,7 +18,7 @@ export function RoofEditor({ buildingId = "D4", scenarioId = DEFAULT_SCENARIO_ID
   const [status, setStatus] = useState(initialStatus);
   const planNameRef = useRef("");
   const requestRef = useRef({ generation: 0, controller: null });
-  const apiBase = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
+  const apiBase = WEATHER_API_URL;
   const planClient = useMemo(() => installationPlanClient ?? createInstallationPlanClient(apiBase), [apiBase, installationPlanClient]);
 
   const beginRequest = useCallback(() => {

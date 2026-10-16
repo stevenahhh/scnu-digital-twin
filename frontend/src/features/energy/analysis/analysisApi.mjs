@@ -1,3 +1,4 @@
+import { WEATHER_API_URL } from "../../../simulation/utils/apiConfig.js";
 import { analysisScenarioInput, parseAnalysisRun, parseAnalysisScenario } from "./analysisContracts.mjs";
 
 export class AnalysisApiError extends Error {
@@ -18,7 +19,7 @@ async function json(response) {
   return body;
 }
 
-export function createBuildingAnalysisClient(apiBase = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000", fetchImpl = fetch) {
+export function createBuildingAnalysisClient(apiBase = WEATHER_API_URL, fetchImpl = fetch) {
   const request = (path, options = {}) => fetchImpl(`${apiBase}${path}`, { headers: { Accept: "application/json", ...(options.body ? { "Content-Type": "application/json" } : {}) }, ...options }).then(json);
   return {
     createScenario(input, signal) {
