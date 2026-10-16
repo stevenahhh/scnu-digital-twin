@@ -1,90 +1,77 @@
-## Frontend (legacy + VWorld 분기)
+## Frontend (Legacy + VWorld)
 
-이 디렉토리는 `dev-vw` 브랜치에서 Legacy 화면과 VWorld 화면을 동시에 운용할 수 있게 구성된 실행 가이드입니다.
+이 디렉터리에는 두 개의 대시보드가 함께 들어 있습니다. Legacy(`index.html`, Three.js)와 VWorld(`index-vworld.html`)는 별개의 제품이라 공통 동작을 바꾸면 두 빌드를 모두 확인해야 합니다.
 
-### 실행 전제
+### 환경 변수
 
-필수 환경 변수: `frontend/.env.local`
+`.env.example` 을 `.env` (또는 `.env.local`)로 복사해서 씁니다. 실제 API 키는 커밋하지 마세요.
 
-```text
-VITE_API_URL=http://127.0.0.1:8000
-```
-
-`VITE_VWORLD_API_KEY`는 VWorld 모드에서만 필요합니다.
-
-#### 모드별 `.env.local` 예시
-
-- **Legacy (기본)만 필요한 경우**
-
-```text
-VITE_API_URL=http://127.0.0.1:8000
-```
-
-- **VWorld 실행 시 추가**
-
-```text
-VITE_API_URL=http://127.0.0.1:8000
-VITE_VWORLD_API_KEY=발급받은_VWORLD_API_KEY
-```
-
-- Legacy 모드: `VITE_API_URL`만 있으면 실행 가능
-- VWorld 모드: `VITE_VWORLD_API_KEY` 추가 필요
-
-### 실행 런북 (항상 같은 순서)
-
-```powershell
-cd "<저장소 경로>\frontend"
-bun install
-```
-
-#### Legacy
-
-```powershell
-bun run dev:legacy
-```
-
-- 브라우저: `http://127.0.0.1:5173`
-
-#### VWorld
-
-```powershell
-bun run dev:vworld
-```
-
-- 브라우저: `http://127.0.0.1:5173/index-vworld.html`
-
-### 빌드
-
-```powershell
-bun run build             # Legacy (dist/)
-bun run build:vworld       # VWorld (dist-vworld/)
+```bash
+cd frontend && cp .env.example .env
 ```
 
 ```powershell
-cd "<저장소 경로>\frontend"
-bun run preview
+cd frontend; cp .env.example .env
 ```
 
-### 체크리스트
+| 변수 | 기본값 | 필요한 모드 | 설명 |
+|---|---|---|---|
+| `VITE_API_URL` | `http://127.0.0.1:8000` | 공통 | 기상·미기후·에너지 API (weather 서비스). 정식 이름입니다. |
+| `VITE_WEATHER_API_URL` | 없음 | 공통 | `VITE_API_URL` 의 예전 별칭. 아직 읽긴 하지만 새 설정에는 쓰지 마세요. |
+| `VITE_VISION_API_URL` | `http://127.0.0.1:8001` | 공통 | 교통 영상 분석 API (`vision_api.py`, `GET /api/traffic`). |
+| `VITE_SIMULATION_API_URL` | `http://127.0.0.1:8002` | 공통 | 교통 시뮬레이션 HTTP API. |
+| `VITE_SIMULATION_WS_URL` | `ws://127.0.0.1:8002/ws/simulation` | 공통 | 교통 시뮬레이션 WebSocket. |
+| `VITE_VWORLD_API_KEY` | 빈 값 | VWorld | VWorld 지도 SDK 키. 없으면 VWorld 화면에 키 누락 안내가 뜹니다. |
 
-#### 공통
+Legacy 모드는 `VITE_API_URL` 만 있어도 뜹니다. 영상 분석이나 시뮬레이션 서버가 꺼져 있으면 해당 패널만 연결 없음 상태로 표시됩니다.
 
-- 지도 상 건물 클릭 시 오른쪽 패널/팝업이 표시되는지
-- D4(공과대학 3호관) 좌표 마커 클릭 동작 확인
-- 개발자 도구 콘솔에 `vw` 객체 생성 오류가 없는지
+### 개발 서버
 
-#### 실행 모드별
+```bash
+cd frontend && bun install
+```
 
-- **Legacy 모드**: `bun run dev:legacy`
-  - `http://127.0.0.1:5173` 접속
-- **VWorld 모드**: `bun run dev:vworld`
-  - `http://127.0.0.1:5173/index-vworld.html` 접속
+```powershell
+cd frontend; bun install
+```
 
-### 빠른 동작 점검 체크리스트
+Legacy (`http://127.0.0.1:5173`):
 
-- 공통
-  - 앱 진입 후 화면이 렌더링되는지 확인
-  - 좌측/우측 패널 전환이 정상 동작하는지 확인
-- VWorld 모드
-  - 지도 SDK 스크립트 오류 없이 지도 렌더링 확인
-  - `.env.local`의 `VITE_VWORLD_API_KEY`가 유효한지 확인
+```bash
+cd frontend && bun run dev:legacy
+```
+
+```powershell
+cd frontend; bun run dev:legacy
+```
+
+VWorld (`http://127.0.0.1:5173/index-vworld.html`):
+
+```bash
+cd frontend && bun run dev:vworld
+```
+
+```powershell
+cd frontend; bun run dev:vworld
+```
+
+### 테스트와 빌드
+
+```bash
+cd frontend && bun run test && bun run build && bun run build:vworld
+```
+
+```powershell
+cd frontend; bun run test; bun run build; bun run build:vworld
+```
+
+`build` 는 `dist/`, `build:vworld` 는 `dist-vworld/` 에 결과물을 만듭니다. 빌드 결과는 `bun run preview` 로 확인할 수 있습니다.
+
+### 점검 체크리스트
+
+- 건물을 클릭하면 오른쪽 패널이나 팝업이 뜨는지
+- D4(공과대학 3호관) 좌표 마커 클릭이 동작하는지
+- VWorld 모드에서 콘솔에 `vw` 객체 생성 오류가 없는지
+- 기상 서버가 응답하지 않을 때 `기상 서버에 연결할 수 없습니다` 같은 상태 문구와 `다시 시도` 버튼이 보이는지
+
+미기후 팝업 API 계약은 [WEATHER_API.md](./WEATHER_API.md) 에 정리되어 있습니다.
