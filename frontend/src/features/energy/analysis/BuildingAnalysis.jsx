@@ -12,11 +12,17 @@ function localDate() {
 
 const inputClass = "mt-1 h-10 w-full rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] px-2 text-xs text-[var(--colors-ink)]";
 const labelClass = "text-[11px] font-bold text-[var(--colors-ink-subtle)]";
+const EMPTY_PLANS_MESSAGES = Object.freeze({
+  loading: "설치 계획을 불러오는 중입니다.",
+  error: "설치 계획을 불러오지 못해 분석할 수 없습니다.",
+  ready: "분석할 설치 계획이 없습니다.",
+});
 
 export function BuildingAnalysis({
   buildingId,
   buildingName = buildingId,
   plans = [],
+  plansStatus = "ready",
   representativePlanId,
   initialDate = localDate(),
   client,
@@ -117,7 +123,7 @@ export function BuildingAnalysis({
       <p className="mt-1 text-xs leading-5 text-[var(--colors-ink-subtle)]">대표 설치 계획을 무태양광 기준선 및 선택 대안과 동일 조건으로 비교합니다.</p>
     </header>
 
-    {plans.length === 0 ? <div className="rounded-xl border border-dashed border-[var(--colors-hairline-strong)] p-6 text-center text-sm text-[var(--colors-ink-muted)]">분석할 설치 계획이 없습니다.</div> : <>
+    {plans.length === 0 ? <div className="rounded-xl border border-dashed border-[var(--colors-hairline-strong)] p-6 text-center text-sm text-[var(--colors-ink-muted)]">{EMPTY_PLANS_MESSAGES[plansStatus] ?? EMPTY_PLANS_MESSAGES.ready}</div> : <>
       <div className="grid grid-cols-2 gap-2">
         <label className={labelClass}>분석 날짜<span className="flex items-center gap-1"><CalendarDays size={12}/><input aria-label="분석 날짜" type="date" value={state.draft.date} onChange={change("date")} className={inputClass}/></span></label>
         <label className={labelClass}>기상 프리셋<select aria-label="기상 프리셋" value={state.draft.conditions.weatherPreset} onChange={condition("weatherPreset")} className={inputClass}><option value="clear">맑음</option><option value="partly_cloudy">부분 흐림</option><option value="overcast">흐림</option></select></label>

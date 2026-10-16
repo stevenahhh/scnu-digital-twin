@@ -14,7 +14,7 @@ vi.mock("./simulation", () => ({
   useSimulationSocket: vi.fn(),
 }));
 vi.mock("./features/energy/analysis", () => ({
-  BuildingAnalysis: () => <div>건물 에너지 분석</div>,
+  BuildingAnalysis: ({ plansStatus }) => <div data-plans-status={plansStatus}>건물 에너지 분석</div>,
 }));
 vi.mock("./features/energy/campus/CampusComparisonPanel", () => ({
   CampusComparison: () => <div>캠퍼스 태양광 비교</div>,
@@ -97,6 +97,24 @@ describe("VWorld and Legacy feature parity", () => {
     expect(toggle.getAttribute("title")).toBe("패널 닫기");
     await user.click(toggle);
     expect(screen.getByRole("button", { name: "패널 열기" }).getAttribute("title")).toBe("패널 열기");
+  });
+
+  it("tells the energy analysis whether installation plans are loading, failed or ready", async () => {
+    let finishLoading;
+    installationClient.listDetails.mockImplementationOnce(() => new Promise((resolve) => { finishLoading = resolve; }));
+    const view = render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "에너지" }));
+    expect(screen.getByText("건물 에너지 분석").getAttribute("data-plans-status")).toBe("loading");
+    await act(async () => finishLoading([]));
+    expect(screen.getByText("건물 에너지 분석").getAttribute("data-plans-status")).toBe("ready");
+    view.unmount();
+
+    installationClient.listDetails.mockRejectedValueOnce(new TypeError("Failed to fetch"));
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "에너지" }));
+    expect(await screen.findByText("설치 계획을 불러오지 못했습니다")).toBeTruthy();
+    expect(screen.getByText("건물 에너지 분석").getAttribute("data-plans-status")).toBe("error");
   });
 
   it("shows the traffic offline message in the parking card when the traffic fetch rejects", async () => {

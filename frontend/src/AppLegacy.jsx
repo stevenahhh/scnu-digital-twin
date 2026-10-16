@@ -252,7 +252,7 @@ export default function App() {
   const [popupError, setPopupError] = useState(null);
   const [buildingViewMode, setBuildingViewMode] = useState("campus");
   const [installationRefreshKey, setInstallationRefreshKey] = useState(0);
-  const [installationLoadError, setInstallationLoadError] = useState(false);
+  const [installationPlansStatus, setInstallationPlansStatus] = useState("loading");
   const [isSceneLoading, setIsSceneLoading] = useState(false);
 
   useEffect(() => {
@@ -425,7 +425,7 @@ export default function App() {
       installationLoadGenerationRef.current += 1;
       setInstallationPlans([]);
       setRepresentativePlanId(null);
-      setInstallationLoadError(false);
+      setInstallationPlansStatus("loading");
     }
     setSelectedId(displayName);
     setSelectedBuildingId(buildingId);
@@ -442,7 +442,7 @@ export default function App() {
     let active = true;
     setInstallationPlans([]);
     setRepresentativePlanId(null);
-    setInstallationLoadError(false);
+    setInstallationPlansStatus("loading");
     Promise.all([
       installationPlanClient.listDetails(selectedBuildingId, { signal: controller.signal }),
       installationPlanClient.getRepresentative(selectedBuildingId, { signal: controller.signal }),
@@ -450,11 +450,12 @@ export default function App() {
       if (!active || installationLoadGenerationRef.current !== requestGeneration) return;
       setInstallationPlans(plans);
       setRepresentativePlanId(representative?.installationPlanId ?? null);
+      setInstallationPlansStatus("ready");
     }).catch((loadError) => {
       if (!active || installationLoadGenerationRef.current !== requestGeneration || loadError?.name === "AbortError") return;
       setInstallationPlans([]);
       setRepresentativePlanId(null);
-      setInstallationLoadError(true);
+      setInstallationPlansStatus("error");
     });
     return () => {
       active = false;
@@ -465,10 +466,12 @@ export default function App() {
   const handleInstallationPlansChange = useCallback((plans) => {
     installationLoadGenerationRef.current += 1;
     setInstallationPlans(plans);
+    setInstallationPlansStatus("ready");
   }, []);
 
   const handleRepresentativeInstallationPlanChange = useCallback((representative) => {
     installationLoadGenerationRef.current += 1;
+    setInstallationPlansStatus("ready");
     setRepresentativePlanId(representative?.installationPlanId ?? null);
     setOverlayRefreshKey((value) => value + 1);
   }, []);
@@ -948,7 +951,7 @@ export default function App() {
             {activeTab === "energy" && (
               <PanelErrorBoundary label="에너지">
                 <div className="space-y-4">
-                  {installationLoadError && (
+                  {installationPlansStatus === "error" && (
                     <div
                       role="alert"
                       data-qa="installation-plan-error"
@@ -994,6 +997,7 @@ export default function App() {
                     key={`${selectedBuildingId}:${representativePlanId ?? "none"}`}
                     buildingId={selectedBuildingId}
                     plans={installationPlans}
+                    plansStatus={installationPlansStatus}
                     representativePlanId={representativePlanId}
                   />
                   <CampusComparison
