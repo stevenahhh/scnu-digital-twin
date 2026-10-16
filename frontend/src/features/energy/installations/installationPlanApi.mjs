@@ -146,7 +146,7 @@ async function checked(response, options = {}) {
 export function createInstallationPlanClient(apiBase = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000", fetchImpl = fetch) {
   const jsonHeaders = { Accept: "application/json", "Content-Type": "application/json" };
   const planPath = (id) => `${apiBase}/energy/installation-plans/${encodeURIComponent(id)}`;
-  const representativePath = (buildingId) => `${apiBase}/energy/buildings/${encodeURIComponent(buildingId)}/representative-installation-plan`;
+  const representativePath = (buildingId) => `${apiBase}/energy/buildings/${encodeURIComponent(buildingId)}/representative-plan`;
   return {
     async list(buildingId, { signal } = {}) {
       const response = await fetchImpl(`${apiBase}/energy/buildings/${encodeURIComponent(buildingId)}/installation-plans`, { headers: { Accept: "application/json" }, signal });

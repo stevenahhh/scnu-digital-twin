@@ -21,7 +21,7 @@ test("installation plan client binds every CRUD and representative route and pre
   const fetchImpl = async (url, options = {}) => {
     requests.push({ url, options });
     if (options.method === "DELETE") return { ok: true, status: 204, json: async () => null };
-    if (url.endsWith("/representative-installation-plan")) {
+    if (url.endsWith("/representative-plan")) {
       if (options.method === "DELETE") return { ok: true, status: 204, json: async () => null };
       return response({ building_id: "D4", installation_plan_id: "plan-1", selected_at: "2026-08-04T10:00:00+09:00" });
     }
@@ -51,9 +51,9 @@ test("installation plan client binds every CRUD and representative route and pre
     ["http://api.test/energy/installation-plans/plan-1", "PUT"],
     ["http://api.test/energy/installation-plans", "POST"],
     ["http://api.test/energy/installation-plans/plan-1", "DELETE"],
-    ["http://api.test/energy/buildings/D4/representative-installation-plan", "GET"],
-    ["http://api.test/energy/buildings/D4/representative-installation-plan", "PUT"],
-    ["http://api.test/energy/buildings/D4/representative-installation-plan", "DELETE"],
+    ["http://api.test/energy/buildings/D4/representative-plan", "GET"],
+    ["http://api.test/energy/buildings/D4/representative-plan", "PUT"],
+    ["http://api.test/energy/buildings/D4/representative-plan", "DELETE"],
   ]);
   const createBody = JSON.parse(requests[2].options.body);
   assert.equal(createBody.arrays[0].origin_x_m, 10);
