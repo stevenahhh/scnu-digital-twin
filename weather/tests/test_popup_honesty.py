@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 import sys
 
@@ -39,10 +38,6 @@ def test_missing_temperature_raises_weather_input_missing():
 
 
 def test_popup_formatter_preserves_baseline_keys_and_adds_freshness():
-    baseline = json.loads(
-        Path("/var/folders/rq/qv2klg3545dd43p09b965vkm0000gn/T/"
-             "ulw-scnu-dt.p9h9hGkSFV/qa/popup-baseline.json").read_text()
-    )
     popup = format_popup_response(
         element_id="BLD_D4",
         name="공과대학 3호관",
@@ -55,7 +50,6 @@ def test_popup_formatter_preserves_baseline_keys_and_adds_freshness():
         freshness={"status": "fresh"},
     )
 
-    assert list(baseline) == POPUP_BASELINE_KEYS
     assert set(popup) == set(POPUP_BASELINE_KEYS) | {"freshness"}
     assert popup["freshness"] == {"status": "fresh"}
 

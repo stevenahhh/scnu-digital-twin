@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { MicroclimatePanel, describeFreshness } from "./MicroclimatePanel.jsx";
 
-// Fixture literal: RUN_TMP/qa/popup-baseline.json (GET /microclimate/elements/BLD_D4/popup).
+// Fixture literal: a GET /microclimate/elements/BLD_D4/popup response from the weather API (the popup contract's baseline keys).
 const POPUP_BASELINE = {
   element_id: "BLD_D4",
   name: "공과대학 3호관",
