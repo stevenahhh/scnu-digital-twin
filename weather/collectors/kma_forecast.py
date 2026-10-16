@@ -4,12 +4,11 @@ import re
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-import requests
+import config
+from .upstream import UpstreamError, request_json
 
-from config import KMA_SERVICE_KEY, KMA_NX, KMA_NY
 
-
-BASE_URL = "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst"
+BASE_URL = config.KMA_BASE_URL + "/1360000/VilageFcstInfoService_2.0/getVilageFcst"
 KST = timezone(timedelta(hours=9))
 
 SKY_MAP = {
@@ -110,22 +109,35 @@ def fetch_kma_forecast(limit: int | None = 12, now: datetime | None = None) -> l
 
     base_date, base_time = get_latest_forecast_base_datetime(now.replace(tzinfo=None))
 
+    if not config.KMA_SERVICE_KEY:
+        raise UpstreamError("KMA", "missing_key", "KMA service key is not configured")
+
     params = {
-        "serviceKey": KMA_SERVICE_KEY,
+        "serviceKey": config.KMA_SERVICE_KEY,
         "pageNo": 1,
         "numOfRows": 1000,
         "dataType": "JSON",
         "base_date": base_date,
         "base_time": base_time,
-        "nx": KMA_NX,
-        "ny": KMA_NY,
+        "nx": config.KMA_NX,
+        "ny": config.KMA_NY,
     }
 
-    response = requests.get(BASE_URL, params=params, timeout=15)
-    response.raise_for_status()
-    data = response.json()
+    data = request_json(
+        "KMA",
+        BASE_URL,
+        params,
+        connect_timeout=config.WEATHER_UPSTREAM_CONNECT_TIMEOUT_S,
+        read_timeout=config.WEATHER_UPSTREAM_READ_TIMEOUT_S,
+    )
+    items_payload = data["response"]["body"]["items"]
+    items = items_payload.get("item", []) if isinstance(items_payload, dict) else items_payload
+    if not items:
+        raise UpstreamError("KMA", "no_data", "No forecast items returned")
+    observed_at = datetime.strptime(
+        f"{base_date}{base_time}", "%Y%m%d%H%M"
+    ).replace(tzinfo=KST).isoformat()
 
-    items = data["response"]["body"]["items"]["item"]
     forecast_map: dict[tuple[str, str], dict[str, Any]] = {}
 
     for item in items:
@@ -140,6 +152,7 @@ def fetch_kma_forecast(limit: int | None = 12, now: datetime | None = None) -> l
             forecast_map[key] = {
                 "base_date": base_date,
                 "base_time": base_time,
+                "observed_at": observed_at,
                 "fcst_date": fcst_date,
                 "fcst_time": fcst_time,
                 "timestamp": timestamp,
