@@ -303,6 +303,8 @@ export default function App() {
 
   const panelCoversViewport = usePanelCoversViewport();
   const isMapCoveredByPanel = isPanelVisible && panelCoversViewport;
+  // 3D 지도 위 안내는 열린 패널을 뺀 지도 영역 가운데에 둔다. 좌우 여백(px-10)은 지도 영역 오른쪽 끝의 패널 토글을 비켜 간다.
+  const mapInsetRight = isPanelVisible && !panelCoversViewport ? "var(--dashboard-panel-width)" : "0px";
 
   // 좁은 화면에서 열린 패널은 지도 전체를 덮는다. 그 밑의 3D 지도(캠퍼스 라벨 포함)와 3D 로딩 안내는
   // 보이지 않으므로 포커스·클릭·보조 기술 대상에서 뺀다. 패널이 지도를 다 덮지 않는 넓은 화면은 그대로 둔다.
@@ -626,7 +628,12 @@ export default function App() {
       <div className="absolute inset-0" style={{ background: sceneBackground }} />
 
       <div ref={mapLayerRef} data-qa="campus-map-layer" className={`absolute inset-0 z-0 flex items-center justify-center ${CANVAS_FALLBACK_SURFACE_CLASS}`}>
-        <PanelErrorBoundary label="3D 캠퍼스" message="3D 캠퍼스 모델을 불러오지 못했습니다">
+        <PanelErrorBoundary
+          label="3D 캠퍼스"
+          message="3D 캠퍼스 모델을 불러오지 못했습니다"
+          fallbackClassName="absolute inset-y-0 left-0 flex items-center justify-center px-10 transition-[right] duration-300"
+          fallbackStyle={{ right: mapInsetRight }}
+        >
           {/* R3F 래퍼의 기본 overflow: hidden은 스크롤 컨테이너라서, Tab으로 캔버스 밖 라벨에 포커스가 가면
               브라우저가 래퍼를 스크롤해 3D 화면이 밀린 채 남는다. clip은 똑같이 잘라 내되 스크롤되지 않는다. */}
           <Canvas camera={{ position: [0, 260, 260], fov: 50 }} shadows style={{ overflow: "clip" }}>
@@ -688,7 +695,12 @@ export default function App() {
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(1,1,2,0.02)_0%,rgba(1,1,2,0.08)_50%,rgba(1,1,2,0.16)_100%)]" />
 
       {isSceneLoading && (
-        <div ref={sceneStatusRef} role="status" className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center">
+        <div
+          ref={sceneStatusRef}
+          role="status"
+          className="pointer-events-none absolute inset-y-0 left-0 z-[5] flex items-center justify-center px-10 transition-[right] duration-300"
+          style={{ right: mapInsetRight }}
+        >
           <div className="flex items-center gap-3 rounded-[12px] border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] px-4 py-3 text-sm font-medium text-[var(--colors-ink-muted)] shadow-[0_20px_48px_rgba(0,0,0,0.28)]">
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--colors-hairline)] border-t-[var(--colors-primary)]" />
             {isSceneSlow ? (

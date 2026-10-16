@@ -42,4 +42,29 @@ describe("PanelErrorBoundary", () => {
     expect(screen.getByText("healthy child")).toBeTruthy();
     vi.restoreAllMocks();
   });
+
+  it("places the fallback in the frame it is given and renders it bare without one", () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const framed = render(
+        <PanelErrorBoundary label="Canvas" message="3D 캠퍼스 모델을 불러오지 못했습니다" fallbackClassName="map-frame" fallbackStyle={{ right: "440px" }}>
+          <ThrowingChild />
+        </PanelErrorBoundary>,
+      );
+      const frame = framed.container.firstElementChild;
+      expect(frame.className).toBe("map-frame");
+      expect(frame.style.right).toBe("440px");
+      expect(frame.firstElementChild.getAttribute("role")).toBe("alert");
+      framed.unmount();
+
+      const bare = render(
+        <PanelErrorBoundary label="Weather">
+          <ThrowingChild />
+        </PanelErrorBoundary>,
+      );
+      expect(bare.container.firstElementChild.getAttribute("role")).toBe("alert");
+    } finally {
+      errorSpy.mockRestore();
+    }
+  });
 });

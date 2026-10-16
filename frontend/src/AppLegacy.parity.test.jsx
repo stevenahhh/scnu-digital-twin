@@ -13,11 +13,12 @@ vi.mock("@react-three/drei", () => ({
   OrbitControls: () => null,
   Sky: () => null,
 }));
-const sceneMock = vi.hoisted(() => ({ suspend: false }));
+const sceneMock = vi.hoisted(() => ({ suspend: false, fail: false }));
 vi.mock("./CityModel", () => ({
-  // suspend가 켜지면 끝나지 않는 Promise를 던져 Suspense fallback이 계속 떠 있게 한다.
+  // suspend가 켜지면 끝나지 않는 Promise를 던져 Suspense fallback이 계속 떠 있게 한다. fail이 켜지면 오류를 던져 3D 실패 안내를 띄운다.
   CityModel: (props) => {
     sceneMock.cityModelProps = props;
+    if (sceneMock.fail) throw new Error("3D model failed");
     if (sceneMock.suspend) throw new Promise(() => {});
     return null;
   },
@@ -222,5 +223,42 @@ describe("Legacy and VWorld feature parity", () => {
     vi.stubGlobal("innerWidth", 1024);
     fireEvent(window, new Event("resize"));
     expect(mapLayer.hasAttribute("inert")).toBe(false);
+  });
+
+  it("centres the 3D loading notice in the map area left of the open panel, clear of the panel toggle", () => {
+    sceneMock.suspend = true;
+    try {
+      render(<App />);
+      const notice = screen.getByText(SCENE_LOADING).closest('[role="status"]');
+      expect(notice.style.right).toBe("var(--dashboard-panel-width)");
+      expect(notice.className).toMatch(/\binset-y-0\b/);
+      expect(notice.className).toMatch(/\bpx-10\b/);
+
+      fireEvent.click(screen.getByRole("button", { name: "패널 닫기" }));
+      expect(notice.style.right).toBe("0px");
+
+      fireEvent.click(screen.getByRole("button", { name: "패널 열기" }));
+      expect(notice.style.right).toBe("var(--dashboard-panel-width)");
+    } finally {
+      sceneMock.suspend = false;
+    }
+  });
+
+  it("frames the 3D failure notice the same way", () => {
+    sceneMock.fail = true;
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      render(<App />);
+      const frame = screen.getByText("3D 캠퍼스 모델을 불러오지 못했습니다").closest('[role="alert"]').parentElement;
+      expect(frame.style.right).toBe("var(--dashboard-panel-width)");
+      expect(frame.className).toMatch(/\binset-y-0\b/);
+      expect(frame.className).toMatch(/\bpx-10\b/);
+
+      fireEvent.click(screen.getByRole("button", { name: "패널 닫기" }));
+      expect(frame.style.right).toBe("0px");
+    } finally {
+      sceneMock.fail = false;
+      errorSpy.mockRestore();
+    }
   });
 });
