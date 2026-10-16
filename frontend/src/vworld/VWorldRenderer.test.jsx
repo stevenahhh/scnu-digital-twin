@@ -17,6 +17,10 @@ vi.mock("./webglSdkLoader.mjs", () => ({
   }),
 }));
 vi.mock("./sunSimulation.mjs", () => ({ applyVWorldSunSimulation: vi.fn() }));
+vi.mock("./campusGltfOverlay.mjs", () => ({
+  createCampusGltfOverlay: vi.fn(async () => null),
+  removeCampusGltfOverlay: vi.fn(),
+}));
 vi.mock("./VWorldCampusStatus", () => ({ VWorldCampusStatus: () => null }));
 vi.mock("./RepresentativePlanOverlayController", () => ({
   RepresentativePlanOverlayController: ({ buildingIds, onOverlayDataChange }) => {
@@ -110,6 +114,19 @@ describe("VWorldRenderer retained map integration", () => {
     await waitFor(() => expect(mocks.createdIds).toContain("SCNU_REPRESENTATIVE_PANEL_strict-plan_array-1"));
     expect(mocks.vw.Map).not.toHaveBeenCalled();
     expect(new Set(mocks.receivedBuildingIds)).toEqual(new Set(["C1", "D1", "D2", "D3", "D4"]));
+  });
+
+  it("passes Cesium before the status options when creating the campus GLB overlay", async () => {
+    const { createCampusGltfOverlay } = await import("./campusGltfOverlay.mjs");
+    createCampusGltfOverlay.mockClear();
+    mocks.vw = createVw();
+    window.__scnuVWorldMapInstance = retainedMap();
+    render(<VWorldRenderer onSelection={vi.fn()} simulationDate={new Date("2026-05-18T12:00:00+09:00")} />);
+
+    await waitFor(() => expect(createCampusGltfOverlay).toHaveBeenCalled());
+    const [, cesiumArg, options] = createCampusGltfOverlay.mock.calls.at(-1);
+    expect(cesiumArg).toBe(window.Cesium);
+    expect(typeof options?.onStatus).toBe("function");
   });
 
   it("renders the SDK loader error message and retry action", async () => {

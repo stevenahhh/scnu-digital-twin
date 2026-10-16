@@ -174,7 +174,7 @@ export default function VWorldRenderer({
         createCampusBoundary(vw);
         createD4VWorldModel(vw);
         try {
-          campusGltfModelRef.current = await createCampusGltfOverlay(map, {
+          campusGltfModelRef.current = await createCampusGltfOverlay(map, window.Cesium, {
             onStatus: setCampusStatus,
           });
           if (isDisposed) {
