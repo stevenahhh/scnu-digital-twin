@@ -142,7 +142,20 @@ export function D4SectionExperience({
       const target = [remembered, returnFocusRef?.current].find(
         (candidate) => candidate instanceof Element && candidate.isConnected,
       );
-      target?.focus();
+      if (!target) return;
+      target.focus();
+      if (document.activeElement === target) return;
+      // 대상이 아직 숨겨져 있으면(Legacy 캠퍼스 라벨은 3D 장면 렌더러가 한두 프레임 뒤에 다시 보이게 한다) 포커스가 무시되므로,
+      // 다른 요소가 포커스를 가져가지 않은 동안만 몇 프레임 더 시도한다.
+      let frames = 0;
+      const retry = () => {
+        const focusIsIdle = document.activeElement === null || document.activeElement === document.body;
+        if (!focusIsIdle || !target.isConnected || frames >= 30) return;
+        frames += 1;
+        target.focus();
+        if (document.activeElement !== target) requestAnimationFrame(retry);
+      };
+      requestAnimationFrame(retry);
     };
   }, []);
 

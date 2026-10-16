@@ -1,5 +1,5 @@
 /* @vitest-environment jsdom */
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -141,6 +141,18 @@ describe("D4SectionExperience focus", () => {
     expect(opener.isConnected).toBe(false);
     unmount();
     expect(document.activeElement).toBe(fallback);
+  });
+
+  it("keeps returning focus while the opener cannot take it yet, then stops once it has it", async () => {
+    const opener = addOutsideButton("열기");
+    opener.focus();
+    const { unmount } = render(<D4SectionExperience onClose={vi.fn()} />);
+    // Legacy 캠퍼스 라벨처럼 닫히는 순간에는 아직 포커스를 받을 수 없는 열기 요소를 흉내 낸다.
+    opener.disabled = true;
+    unmount();
+    expect(document.activeElement).not.toBe(opener);
+    opener.disabled = false;
+    await waitFor(() => expect(document.activeElement).toBe(opener));
   });
 
   it("wraps Tab and Shift+Tab between the first and last focusable controls", () => {
