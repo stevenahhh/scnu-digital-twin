@@ -50,4 +50,34 @@ describe("D4SectionExperience modes", () => {
     expect(onRepresentativeChange).toHaveBeenCalledWith({ installationPlanId: "plan-2" });
     expect(onPlanSaved).toHaveBeenCalledWith({ id: "plan-2" });
   });
+
+  it("exits the dialog with Escape", async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    render(<D4SectionExperience onClose={onClose} />);
+    await user.keyboard("{Escape}");
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("leaves Escape to the roof editor while it is open", async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    render(<D4SectionExperience onClose={onClose} startInstallation />);
+    await user.click(screen.getByRole("button", { name: "대안 편집" }));
+    expect(screen.getByText(/옥상 설치 편집기 plan-2/)).toBeTruthy();
+    await user.keyboard("{Escape}");
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it("switches and focuses mode tabs with ArrowRight", async () => {
+    const user = userEvent.setup();
+    render(<D4SectionExperience onClose={vi.fn()} />);
+    const roomsTab = screen.getByRole("tab", { name: "공간 탐색" });
+    roomsTab.focus();
+    await user.keyboard("{ArrowRight}");
+    const installationTab = screen.getByRole("tab", { name: "태양광 설치" });
+    expect(installationTab.getAttribute("aria-selected")).toBe("true");
+    expect(document.activeElement).toBe(installationTab);
+    expect(installationTab.getAttribute("aria-controls")).toBeTruthy();
+  });
 });
