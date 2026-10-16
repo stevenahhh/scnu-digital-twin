@@ -2,16 +2,16 @@ export const CAMPUS_GLTF_OVERLAY_CONFIG = Object.freeze({
   url: "/campus-buildings.glb",
   d4SceneNodeIndex: 250,
   anchor: Object.freeze({ longitude: 127.4764043, latitude: 34.9700548 }),
-  // uni.glb's transformed BLD_D4 center/base in local east/north/up metres.
+  // BLD_D4 (node 250) base-center in campus-buildings.glb mapped to Cesium model-local (glTF z, x, yMin); glTF Y-up→Z-up then Z-up→X-up axis correction; export node scale 0.62421715 → 1/0.62421715 = 1.602; heading -90 because model +X (glTF z) points south
   d4LocalAnchorMeters: Object.freeze({
-    east: 46.51332723884707,
-    north: 266.5741379078058,
-    up: 36.85701517946295,
+    east: -266.574,
+    north: 46.513,
+    up: 36.857,
   }),
-  headingDegrees: -14.5,
+  headingDegrees: -90,
   fallbackGroundHeightMeters: 40,
   terrainOffsetMeters: 0.5,
-  modelScale: Object.freeze({ east: 1, north: 1, up: 1 }),
+  modelScale: Object.freeze({ east: 1.602, north: 1.602, up: 1.602 }),
 });
 
 function getViewer(map) {
@@ -77,7 +77,7 @@ const TERRAIN_READY = Object.freeze({
   maxWaitMs: 30000,
 });
 
-function reanchorWhenTerrainLoaded(viewer, Cesium, model, schedule = setTimeout) {
+function reanchorWhenTerrainLoaded(viewer, Cesium, model, onStatus, schedule = setTimeout) {
   let waited = 0;
   let confirming = null;
 
@@ -92,6 +92,10 @@ function reanchorWhenTerrainLoaded(viewer, Cesium, model, schedule = setTimeout)
     if (globe?.tilesLoaded === true && Number.isFinite(height)) {
       if (confirming !== null && Math.abs(height - confirming) <= TERRAIN_READY.toleranceMeters) {
         model.modelMatrix = createCampusModelMatrix(viewer, Cesium);
+        onStatus?.({
+          state: "anchored",
+          message: "지형 높이를 확인해 캠퍼스 모델 위치를 보정했습니다",
+        });
         return;
       }
       confirming = height;
@@ -100,17 +104,29 @@ function reanchorWhenTerrainLoaded(viewer, Cesium, model, schedule = setTimeout)
     }
 
     waited += TERRAIN_READY.intervalMs;
-    if (waited >= TERRAIN_READY.maxWaitMs) return;
+    if (waited >= TERRAIN_READY.maxWaitMs) {
+      onStatus?.({
+        state: "terrain-timeout",
+        message: "지형 높이를 확인하지 못해 건물 높이가 부정확할 수 있습니다",
+      });
+      return;
+    }
     schedule(poll, TERRAIN_READY.intervalMs)?.unref?.();
   };
 
   schedule(poll, TERRAIN_READY.intervalMs);
 }
 
-export async function createCampusGltfOverlay(map, Cesium = globalThis.window?.Cesium) {
+export async function createCampusGltfOverlay(
+  map,
+  Cesium = globalThis.window?.Cesium,
+  { onStatus } = {},
+) {
   const viewer = getViewer(map);
   const fromGltf = Cesium?.Model?.fromGltfAsync ?? Cesium?.Model?.fromGltf;
   if (!viewer || !fromGltf) return null;
+
+  onStatus?.({ state: "loading", message: "캠퍼스 3D 모델을 불러오는 중입니다" });
 
   for (let index = viewer.scene.primitives.length - 1; index >= 0; index -= 1) {
     const primitive = viewer.scene.primitives.get(index);
@@ -119,16 +135,25 @@ export async function createCampusGltfOverlay(map, Cesium = globalThis.window?.C
     }
   }
 
-  const model = await fromGltf.call(Cesium.Model, {
-    url: CAMPUS_GLTF_OVERLAY_CONFIG.url,
-    modelMatrix: createCampusModelMatrix(viewer, Cesium),
-    allowPicking: true,
-    minimumPixelSize: 0,
-    shadows: Cesium.ShadowMode?.DISABLED,
-  });
+  let model;
+  try {
+    model = await fromGltf.call(Cesium.Model, {
+      url: CAMPUS_GLTF_OVERLAY_CONFIG.url,
+      modelMatrix: createCampusModelMatrix(viewer, Cesium),
+      allowPicking: true,
+      minimumPixelSize: 0,
+      shadows: Cesium.ShadowMode?.DISABLED,
+    });
+  } catch (error) {
+    onStatus?.({
+      state: "error",
+      message: "캠퍼스 3D 모델을 불러오지 못했습니다",
+    });
+    throw error;
+  }
   model.id = "SCNU_D4_GLTF_OVERLAY";
   viewer.scene.primitives.add(model);
-  reanchorWhenTerrainLoaded(viewer, Cesium, model);
+  reanchorWhenTerrainLoaded(viewer, Cesium, model, onStatus);
   return model;
 }
 
