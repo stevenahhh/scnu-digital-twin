@@ -130,6 +130,20 @@ describe("VWorldRenderer retained map integration", () => {
     expect(typeof options?.onStatus).toBe("function");
   });
 
+  it("shows a Korean message instead of raw exception text for non-loader initialization errors", async () => {
+    mocks.loaderError = new TypeError("map.getViewer is not a function");
+    try {
+      render(<VWorldRenderer onSelection={vi.fn()} />);
+
+      await waitFor(() => expect(document.querySelector('[role="alert"]')).not.toBeNull());
+      const alertText = document.querySelector('[role="alert"]').textContent;
+      expect(alertText).toContain("VWorld 지도를 불러오지 못했습니다.");
+      expect(alertText).not.toContain("getViewer");
+    } finally {
+      mocks.loaderError = null;
+    }
+  });
+
   it("reports the D4 detail experience opening so the app can hold its building popup", async () => {
     const onD4SectionChange = vi.fn();
     mocks.vw = createVw();
@@ -143,7 +157,7 @@ describe("VWorldRenderer retained map integration", () => {
   });
 
   it("renders the SDK loader error message and retry action", async () => {
-    mocks.loaderError = new Error("VWorld API 키가 없습니다. frontend/.env 에 VITE_VWORLD_API_KEY 를 설정하세요.");
+    mocks.loaderError = Object.assign(new Error("VWorld API 키가 없습니다. frontend/.env 에 VITE_VWORLD_API_KEY 를 설정하세요."), { code: "VWORLD_KEY_MISSING" });
     const reload = vi.fn();
     const originalLocation = window.location;
     Object.defineProperty(window, "location", {

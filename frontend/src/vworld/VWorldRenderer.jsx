@@ -275,7 +275,8 @@ export default function VWorldRenderer({
         if (isDisposed) return;
 
         console.error("VWorld renderer initialization failed.", error);
-        setLoadErrorMessage(error?.message ?? "VWorld 지도를 불러오지 못했습니다.");
+        // 로더 오류(code 보유)만 정리된 한국어 안내를 갖는다. 그 밖의 예외 문구는 콘솔에만 남긴다.
+        setLoadErrorMessage(error?.code ? error.message : "VWorld 지도를 불러오지 못했습니다.");
         setHasLoadError(true);
         setIsLoading(false);
       }
