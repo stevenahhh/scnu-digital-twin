@@ -83,6 +83,20 @@ describe("D4SectionExperience modes", () => {
   });
 });
 
+describe("D4SectionExperience narrow-screen layout", () => {
+  it("keeps the mode tab labels on one line and lifts the 지도 button to the top below md", () => {
+    render(<D4SectionExperience onClose={vi.fn()} />);
+    const tablist = screen.getByRole("tablist");
+    expect(tablist.className.split(/\s+/)).toContain("w-max");
+    expect(tablist.className.split(/\s+/)).toContain("right-4");
+    expect(tablist.className.split(/\s+/)).toContain("md:left-1/2");
+    const mapButtonBar = screen.getByRole("button", { name: "캠퍼스 지도로 돌아가기" }).parentElement;
+    expect(mapButtonBar.className.split(/\s+/)).toContain("top-4");
+    expect(mapButtonBar.className.split(/\s+/)).toContain("md:bottom-6");
+    expect(mapButtonBar.className.split(/\s+/)).not.toContain("bottom-4");
+  });
+});
+
 describe("D4SectionExperience focus", () => {
   // 다이얼로그 밖의 버튼은 React 바깥에서 만들어 테스트 안에서 자유롭게 DOM에서 떼어낼 수 있게 한다.
   const outsideButtons = [];

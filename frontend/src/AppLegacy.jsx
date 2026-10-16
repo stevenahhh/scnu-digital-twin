@@ -644,6 +644,7 @@ export default function App() {
                 onBuildingClick={handleBuildingClick}
                 onBuildingProximity={handleBuildingProximity}
                 onD4Enter={handleD4Enter}
+                labelsHidden={buildingViewMode !== "campus"}
               />
               <CampusTrafficSimulation />
             </Suspense>

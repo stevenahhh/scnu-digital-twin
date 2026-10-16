@@ -120,6 +120,9 @@ export function CityModel({
   onD4Enter,
   controlsRef,
   isNight = false,
+  // D4 상세가 열려 있는 동안 켜진다. 투명한 상세 화면 뒤로 라벨이 비치지 않게 숨기되,
+  // 상세를 연 라벨이 닫힌 뒤 포커스를 돌려받을 수 있도록 마운트는 유지한다.
+  labelsHidden = false,
   ...props
 }) {
   const { scene } = useGLTF("/uni.glb");
@@ -348,10 +351,12 @@ export function CityModel({
             zIndexRange={[120, 0]}
           >
             <div
+              data-qa="campus-label"
               className="pointer-events-auto flex flex-col items-center whitespace-nowrap"
               style={{
                 transform: `translate(-50%, calc(-100% - 4px)) scale(${labelScale})`,
                 transformOrigin: "bottom center",
+                visibility: labelsHidden ? "hidden" : undefined,
               }}
             >
               <button

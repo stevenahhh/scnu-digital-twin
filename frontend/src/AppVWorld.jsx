@@ -195,6 +195,7 @@ export default function App() {
   const [installationPlansStatus, setInstallationPlansStatus] = useState("loading");
   const [overlayRefreshKey, setOverlayRefreshKey] = useState(0);
   const installationLoadGenerationRef = useRef(0);
+  const panelRef = useRef(null);
   const installationPlanClient = useMemo(() => createInstallationPlanClient(), []);
   const [mode, setMode] = useState("simulation");
   const weatherFeed = useWeatherFeed();
@@ -425,6 +426,17 @@ export default function App() {
     setIsSettingsOpen(false);
   }, []);
 
+  const isPanelVisible = isPanelOpen && !isD4SectionOpen;
+
+  // 닫힌 패널은 화면 밖으로 밀려날 뿐 DOM에 남아 있으므로 포커스·접근성 트리에서 제외한다.
+  // React 18은 `inert` 불리언 속성을 지원하지 않아 ref로 직접 토글한다.
+  useEffect(() => {
+    const panel = panelRef.current;
+    if (!panel) return;
+    if (isPanelVisible) panel.removeAttribute("inert");
+    else panel.setAttribute("inert", "");
+  }, [isPanelVisible]);
+
   const handleInstallationPlansChange = useCallback((plans) => {
     installationLoadGenerationRef.current += 1;
     setInstallationPlans(plans);
@@ -469,14 +481,14 @@ export default function App() {
         id="vworld-available-area"
         className="pointer-events-none absolute bottom-0 left-0 top-0 z-[1] transition-[right,background-color] duration-300"
         style={{
-          right: isPanelOpen ? "var(--dashboard-panel-width)" : "0px",
+          right: isPanelVisible ? "var(--dashboard-panel-width)" : "0px",
           backgroundColor: `rgba(3, 10, 24, ${nightOverlayOpacity})`,
         }}
       />
       <div
         className="pointer-events-none absolute bottom-0 left-0 top-0 z-[2] transition-[right,opacity] duration-300"
         style={{
-          right: isPanelOpen ? "var(--dashboard-panel-width)" : "0px",
+          right: isPanelVisible ? "var(--dashboard-panel-width)" : "0px",
           background: `radial-gradient(circle at ${sunGlowX}% ${sunGlowY}%, rgba(255, 218, 138, ${sunGlowOpacity}) 0%, transparent 42%)`,
         }}
       />
@@ -484,6 +496,7 @@ export default function App() {
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(1,1,2,0.02)_0%,rgba(1,1,2,0.08)_50%,rgba(1,1,2,0.16)_100%)]" />
 
       {/* 패널 토글 버튼 */}
+      {!isD4SectionOpen && (
       <button
         onClick={() => setIsPanelOpen(v => !v)}
         aria-label={isPanelOpen ? "패널 닫기" : "패널 열기"}
@@ -499,11 +512,15 @@ export default function App() {
       >
         {isPanelOpen ? <ChevronRight size={16} className="text-[var(--colors-ink-subtle)]" /> : <ChevronLeft size={16} className="text-[var(--colors-ink-subtle)]" />}
       </button>
+      )}
 
       <div
+        ref={panelRef}
+        data-qa="dashboard-panel"
+        aria-hidden={isPanelVisible ? undefined : "true"}
         className="pointer-events-none absolute top-0 bottom-0 z-10 w-[var(--dashboard-panel-width)]"
         style={{
-          right: isPanelOpen ? '0' : 'calc(-1 * min(var(--dashboard-panel-width), 100vw))',
+          right: isPanelVisible ? '0' : 'calc(-1 * min(var(--dashboard-panel-width), 100vw))',
           width: 'min(var(--dashboard-panel-width), 100vw)',
           transition: 'right 0.3s ease',
         }}

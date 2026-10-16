@@ -60,4 +60,24 @@ describe("AppVWorld installation selection lifecycle", () => {
     await user.click(screen.getByRole("button", { name: "D4 상세 닫기" }));
     expect(await screen.findByRole("dialog", { name: "D4" })).toBeTruthy();
   });
+
+  it("hides the dashboard panel and its toggle while the D4 detail experience is open and restores them after it closes", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<App />);
+    const panel = () => container.querySelector('[data-qa="dashboard-panel"]');
+
+    expect(screen.getByRole("button", { name: "패널 닫기" })).toBeTruthy();
+    expect(panel().hasAttribute("aria-hidden")).toBe(false);
+    expect(panel().hasAttribute("inert")).toBe(false);
+
+    await user.click(screen.getByRole("button", { name: "D4 상세 열기" }));
+    expect(screen.queryByRole("button", { name: "패널 닫기" })).toBeNull();
+    expect(panel().getAttribute("aria-hidden")).toBe("true");
+    expect(panel().hasAttribute("inert")).toBe(true);
+
+    await user.click(screen.getByRole("button", { name: "D4 상세 닫기" }));
+    expect(screen.getByRole("button", { name: "패널 닫기" })).toBeTruthy();
+    expect(panel().hasAttribute("aria-hidden")).toBe(false);
+    expect(panel().hasAttribute("inert")).toBe(false);
+  });
 });

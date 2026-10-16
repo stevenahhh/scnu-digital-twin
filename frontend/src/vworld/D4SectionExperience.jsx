@@ -261,12 +261,13 @@ export function D4SectionExperience({
     </div>
   )}
 
-      <div className="pointer-events-auto absolute left-1/2 top-4 z-50 flex -translate-x-1/2 overflow-hidden rounded-lg border border-[var(--colors-hairline-strong)] bg-[var(--colors-surface-1)] p-1 shadow-lg" role="tablist" aria-label={`${buildingId} 상세 모드`}>
+      {/* md 미만에서는 모드 탭을 오른쪽에 붙이고 '지도' 버튼을 상단 왼쪽으로 올려, 서로 겹치거나 하단 강의실 목록을 가리지 않게 한다. */}
+      <div className="pointer-events-auto absolute right-4 top-4 z-50 flex w-max overflow-hidden rounded-lg border border-[var(--colors-hairline-strong)] bg-[var(--colors-surface-1)] p-1 shadow-lg md:left-1/2 md:right-auto md:-translate-x-1/2" role="tablist" aria-label={`${buildingId} 상세 모드`}>
         {buildingId === "D4" && <button ref={(element) => { modeTabRefs.current[0] = element; }} id="d4-rooms-tab" type="button" role="tab" aria-controls={ROOMS_PANEL_ID} aria-selected={experienceMode === "rooms"} tabIndex={experienceMode === "rooms" ? 0 : -1} onKeyDown={(event) => handleModeTabKeyDown(event, 0)} onClick={() => setExperienceMode("rooms")} className={`flex h-10 items-center gap-2 rounded-md px-3 text-xs font-extrabold focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--colors-primary)] ${experienceMode === "rooms" ? "bg-[var(--colors-surface-3)] text-[var(--colors-ink)]" : "text-[var(--colors-ink-subtle)]"}`}><Building2 size={16} /> 공간 탐색</button>}
         <button ref={(element) => { modeTabRefs.current[buildingId === "D4" ? 1 : 0] = element; }} id="d4-installation-tab" type="button" role="tab" aria-controls={INSTALLATION_PANEL_ID} aria-selected={experienceMode === "installation"} tabIndex={experienceMode === "installation" ? 0 : -1} onKeyDown={(event) => handleModeTabKeyDown(event, buildingId === "D4" ? 1 : 0)} onClick={() => { setExperienceMode("installation"); setIsPlanEditorOpen(false); }} className={`flex h-10 items-center gap-2 rounded-md px-3 text-xs font-extrabold focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--colors-primary)] ${experienceMode === "installation" ? "bg-[var(--colors-primary)] text-white" : "text-[var(--colors-ink-subtle)]"}`}><Sun size={16} /> 태양광 설치</button>
       </div>
 
-      <div className={`pointer-events-auto absolute left-4 z-50 flex overflow-hidden rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] shadow-lg sm:left-6 ${experienceMode === "installation" ? "top-4" : "bottom-4 sm:bottom-6"}`}>
+      <div className={`pointer-events-auto absolute left-4 z-50 flex overflow-hidden rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] shadow-lg sm:left-6 ${experienceMode === "installation" ? "top-4" : "top-4 md:top-auto md:bottom-6"}`}>
         <button type="button" onClick={onClose} className="flex h-11 items-center gap-2 px-3 text-[12px] font-[800] text-[var(--colors-ink-muted)] transition-colors hover:bg-[var(--colors-surface-2)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--colors-primary)]" aria-label="캠퍼스 지도로 돌아가기" title="캠퍼스 지도로 돌아가기">
           <ArrowLeft size={16} /> 지도
         </button>
