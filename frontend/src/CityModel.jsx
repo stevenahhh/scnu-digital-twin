@@ -3,6 +3,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import commonElements from "../../common/data/common_elemetns.json";
+import { resolveBuildingMeta } from "./utils/buildingLabels.mjs";
 
 // 클릭하지 않아도 카메라가 이 거리 안으로 들어오면 "가까이 간" 것으로 본다.
 // 클릭 시 자동으로 붙는 카메라 거리(FOCUS_CAMERA_OFFSET 기준 약 94유닛)보다 살짝
@@ -48,7 +49,11 @@ function getSelectableMeta(object) {
 
   if (!rawName) return null;
 
-  const elementId = BUILDING_MAP[rawName] || rawName;
+  const buildingMeta = resolveBuildingMeta(rawName, {
+    elementNames: ELEMENT_NAME_MAP,
+    buildingMap: BUILDING_MAP,
+    blockedIds: BLOCKED_ELEMENT_IDS,
+  });
   const lowerName = `${rawName}`.toLowerCase();
 
   if (
@@ -56,18 +61,15 @@ function getSelectableMeta(object) {
     lowerName.includes("topography") ||
     lowerName.includes("terrain") ||
     lowerName.includes("ground") ||
-    BLOCKED_ELEMENT_IDS.has(elementId)
+    !buildingMeta
   ) {
-    return null;
-  }
-
-  if (!elementId.startsWith("BLD_")) {
     return null;
   }
 
   return {
     name: rawName,
-    elementId,
+    elementId: buildingMeta.elementId,
+    label: buildingMeta.label,
   };
 }
 
@@ -101,7 +103,7 @@ function buildLabelAnchors(scene) {
     const center = box.getCenter(new THREE.Vector3());
     anchors.set(meta.elementId, {
       name: meta.name,
-      displayName: ELEMENT_NAME_MAP.get(meta.elementId) || meta.name,
+      displayName: meta.label,
       elementId: meta.elementId,
       position: [center.x, box.max.y + 6, center.z],
     });
