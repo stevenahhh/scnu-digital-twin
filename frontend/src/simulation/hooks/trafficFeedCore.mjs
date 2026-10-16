@@ -6,13 +6,7 @@ const MESSAGES = {
 
 export function classifyTrafficResult({ ok, status, body, error }) {
   if (error) {
-    return {
-      state: "offline",
-      stats: null,
-      message: error.name === "TimeoutError"
-        ? "영상 분석 서버 응답이 지연되고 있습니다"
-        : MESSAGES.offline,
-    };
+    return { state: "offline", stats: null, message: MESSAGES.offline };
   }
 
   if (!ok || status < 200 || status >= 300) {

@@ -34,7 +34,7 @@ test("classifies an aborted timeout as offline with timeout text", async () => {
   );
 
   assert.equal(result.state, "offline");
-  assert.equal(result.message, "영상 분석 서버 응답이 지연되고 있습니다");
+  assert.equal(result.message, "영상 분석 서버 연결 없음");
 });
 
 test("classifies a stopped camera and retains server error text", () => {
