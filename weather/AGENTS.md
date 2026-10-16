@@ -11,11 +11,14 @@ and UI-ready building popup responses.
 ```text
 weather/
 ├── api/app.py                 # FastAPI app and all HTTP routes
-├── collectors/                # External KMA/AirKorea adapters
+├── collectors/                # KMA/AirKorea adapters, upstream.py, cache.py
 ├── domain/                    # Legacy zone-level environment model
 ├── processors/                # Element microclimate and thermal pipeline
 ├── data/                      # Campus zones and generated feature inputs
-├── config.py                  # Campus coordinates and current service config
+├── energy/                    # Energy/solar persistence and models
+├── tests/                     # pytest suite, run from the repository root
+├── config.py                  # Env-based keys, timeouts, cache settings
+├── .env.example               # Template for the optional weather/.env
 ├── main.py                    # CLI-style environment output
 └── UPDATE_MRT_HANDOFF.md      # Estimated-material compatibility contract
 ```
@@ -31,11 +34,14 @@ weather/
 | Element calculation | `processors/pipeline.py` | Microclimate then thermal index |
 | Radiation/material model | `processors/radiation.py`, `processors/materials.py` | Estimated physics |
 | Popup schema | `processors/popup_formatter.py` | UI-ready compatibility surface |
+| Upstream errors, cache | `collectors/upstream.py`, `collectors/cache.py` | Timeouts, stale cache |
 | Feature source | `data/microclimate_features.json` | `{metadata, features}` wrapper |
 
 ## CONVENTIONS
 
-- Start from `weather/`; imports assume that directory is on `sys.path`.
+- Start from the repository root with `--app-dir weather`; imports such as
+  `from config import ...` need `weather/` on `sys.path`. `python weather/main.py`
+  also works from the root.
 - Route flow is collector -> normalized weather -> element feature ->
   `run_pipeline_for_element`/`run_pipeline_all` -> formatter or aggregate.
 - Feature loading must return the nested `features` array, not the raw wrapper.
@@ -50,22 +56,47 @@ weather/
 
 ## ANTI-PATTERNS
 
-- Do not add, duplicate, or expose service credentials. `config.py` already
-  requires a dedicated secret-migration follow-up.
+- Do not add, duplicate, or expose service credentials. Keys come only from
+  the environment or `weather/.env` (`KMA_SERVICE_KEY`, `AIRKOREA_SERVICE_KEY`).
 - Do not describe development sample features or estimated MRT as observations.
 - Do not silently change `common/data/common_elemetns.json` element IDs.
 - Do not remove fallback provenance from timeline frames.
 - Do not break existing popup fields while refining materials or radiation.
 
+## CONTRACTS
+
+- **Upstream error (C1).** Every `/microclimate/*` and `/environment/*` route
+  with no usable data returns HTTP 503 with `Retry-After: 60` and
+  `{"detail": {"code", "source", "reason", "message_ko", "message_en", "retry_after_s"}}`.
+  `code` is `weather_upstream_unavailable` or `weather_api_key_missing`;
+  `source` is `kma_current`, `kma_forecast`, or `airkorea`. Unknown element ids
+  keep their 404. Unexpected faults return 500 with `code: internal_error`,
+  never raw exception text. Energy routes are separate.
+- **Freshness (C3).** Every 200 from those routes carries
+  `freshness: {weather, forecast, air_quality}`. Each entry has `source`
+  (`live` or `cache`), `observed_at`, `fetched_at`, `age_seconds` (from
+  `fetched_at`), and `stale`. Unused sources are `null`; a failed air-quality
+  lookup is `{"stale": true, "error": <kind>}`. Sample-feature responses add
+  `"sample_data": true`.
+- **Configuration (C4).** See the root `AGENTS.md` CONFIGURATION section.
+
 ## COMMANDS
 
+Run from the repository root.
+
+```bash
+.venv/bin/python -m pip install -r weather/requirements.txt
+.venv/bin/python -m uvicorn api.app:app --app-dir weather --host 127.0.0.1 --port 8000
+.venv/bin/python weather/main.py
+.venv/bin/python -m pytest weather/tests
+.venv/bin/python -m compileall -q weather/api weather/collectors weather/domain weather/processors weather/energy weather/main.py weather/config.py
+```
 ```powershell
-python -m venv weather\venv
-.\weather\venv\Scripts\Activate.ps1
-python -m pip install -r weather\requirements.txt
-python -m uvicorn weather.api.app:app --host 127.0.0.1 --port 8000 --reload
-python weather/main.py
-python -m compileall -q weather/api weather/collectors weather/domain weather/processors weather/main.py weather/config.py
+.venv\Scripts\python.exe -m pip install -r weather\requirements.txt
+.venv\Scripts\python.exe -m uvicorn api.app:app --app-dir weather --host 127.0.0.1 --port 8000
+.venv\Scripts\python.exe weather\main.py
+.venv\Scripts\python.exe -m pytest weather\tests
+.venv\Scripts\python.exe -m compileall -q weather\api weather\collectors weather\domain weather\processors weather\energy weather\main.py weather\config.py
 ```
 
 ## CHECKS
@@ -74,6 +105,7 @@ python -m compileall -q weather/api weather/collectors weather/domain weather/pr
 - `GET /environment/full` exercises current weather and timeline assembly.
 - `GET /microclimate/elements/{BLD_ID}/popup` exercises the complete UI path.
 - External collectors use network timeouts; a failure there is not a VWorld SDK
-  failure.
-- There is no dedicated automated Python test suite in this repository.
-
+  failure. Expect 503 or a stale `freshness` entry, not a hang.
+- `weather/tests` holds the pytest suite: energy API and persistence, weather
+  scenarios, collectors, popup honesty, upstream errors, cache, microclimate
+  resilience, and config env loading.

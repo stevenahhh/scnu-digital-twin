@@ -7,7 +7,7 @@
 ## OVERVIEW
 
 SCNU campus digital-twin prototype: a React/Three.js or VWorld dashboard, a
-FastAPI weather/microclimate service, and local computer-vision and safety
+FastAPI weather/microclimate service, a traffic simulation service, and local computer-vision and safety
 proofs of concept. JavaScript UI and Python services are separate runtimes
 joined by HTTP and shared `BLD_*` element identifiers.
 
@@ -20,9 +20,11 @@ joined by HTTP and shared `BLD_*` element identifiers.
 ├── car_vision_model/          # YOLO gate counter plus its own React client
 ├── TrafficSafety/             # Separate OCR/NLP/Streamlit safety PoC
 ├── common/data/               # Cross-domain campus and element contracts
+├── backend/simulation/        # Traffic simulation API on port 8002
 ├── docs/                      # Static demonstration artifacts
 ├── vision_api.py              # Dashboard traffic endpoint on port 8001
-└── README.md                  # Three-service local runbook and Git workflow
+├── pytest.ini                 # Root pytest config (weather/tests, backend/tests)
+└── README.md                  # Local runbook and Git workflow
 ```
 
 Ignore `.omo/`, `.playwright-mcp/`, virtual environments, `__pycache__/`, and
@@ -42,7 +44,8 @@ build outputs when mapping product code.
 | Campus data contracts | `common/data/` | IDs and geometry consumed across domains |
 | Dashboard traffic feed | `vision_api.py` | `GET /api/traffic`, default port 8001 |
 | WebSocket vision demo | `car_vision_model/` | Separate server and React 19 client |
-| Safety-report PoC | `TrafficSafety/` | Currently contains unresolved merge markers |
+| Traffic simulation | `backend/simulation/main.py` | FastAPI + WebSocket, port 8002 |
+| Safety-report PoC | `TrafficSafety/` | Separate OCR/NLP/Streamlit PoC |
 
 ## CODE MAP
 
@@ -62,9 +65,10 @@ build outputs when mapping product code.
 
 - Branch from `dev` as `feature/<name>`; merge through a PR back into `dev`.
   `main` is reserved for deployment-ready source.
-- Run services from their documented working directories. Weather modules use
-  imports such as `from config import ...`, so repository-root execution is not
-  equivalent to execution from `weather/`.
+- Run services from their documented working directories. Weather starts from
+  the repository root with `--app-dir weather`, because its modules use imports
+  such as `from config import ...`. Simulation imports resolve from `backend/`:
+  use `--app-dir backend` from the root (or run inside `backend/`).
 - Legacy and VWorld are parallel products, not aliases. Both builds must remain
   valid when shared dashboard behavior changes.
 - `common/data/common_elemetns.json` is misspelled but is a live contract.
@@ -86,43 +90,97 @@ build outputs when mapping product code.
   provide the complete payload.
 - Do not treat development fallback features from `weather/api/app.py` as
   production observations.
-- Do not use root `server.py` as the normal launcher; it contains a stale,
-  machine-specific static directory. Follow `README.md` entry points instead.
 - Do not assume YOLO assets are present: model files are gitignored and must be
   provisioned locally.
-- Do not clean up `TrafficSafety/` merge markers incidentally. That broken state
-  predates this knowledge base and needs a deliberate conflict-resolution task.
+- Do not describe a degraded weather response as live data. When the upstream
+  fails, routes return 503 (see Weather contracts below) or cached data marked
+  by `freshness`.
 
 ## COMMANDS
 
-```powershell
-# Main dashboard
-cd frontend
-bun install
-bun run dev:legacy
-bun run dev:vworld
-bun run test
-bun run build
-bun run build:vworld
-cd ..
+Every command runs from the repository root. Python commands call the shared
+`.venv` interpreter by path. Frontend commands use Bun's `--cwd`.
 
-# Weather API
-cd weather
-python -m pip install -r requirements.txt
-uvicorn api.app:app --host 127.0.0.1 --port 8000 --reload
-cd ..
-
-# Dashboard traffic API (from repository root)
-python -m pip install -r car_vision_model/requirements_server.txt
-python vision_api.py --source 0 --port 8001
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -r weather/requirements.txt
+.venv/bin/python -m pip install -r backend/simulation/requirements.txt
+.venv/bin/python -m pip install -r car_vision_model/requirements_server.txt
+bun install --cwd frontend
 ```
+```powershell
+py -m venv .venv
+.venv\Scripts\python.exe -m pip install -r weather\requirements.txt
+.venv\Scripts\python.exe -m pip install -r backend\simulation\requirements.txt
+.venv\Scripts\python.exe -m pip install -r car_vision_model\requirements_server.txt
+bun install --cwd frontend
+```
+
+Services, one terminal each:
+
+```bash
+.venv/bin/python -m uvicorn api.app:app --app-dir weather --host 127.0.0.1 --port 8000
+.venv/bin/python vision_api.py --source 0 --port 8001
+.venv/bin/python -m uvicorn simulation.main:app --app-dir backend --host 127.0.0.1 --port 8002
+bun run --cwd frontend dev:legacy
+bun run --cwd frontend dev:vworld
+```
+```powershell
+.venv\Scripts\python.exe -m uvicorn api.app:app --app-dir weather --host 127.0.0.1 --port 8000
+.venv\Scripts\python.exe vision_api.py --source 0 --port 8001
+.venv\Scripts\python.exe -m uvicorn simulation.main:app --app-dir backend --host 127.0.0.1 --port 8002
+bun run --cwd frontend dev:legacy
+bun run --cwd frontend dev:vworld
+```
+
+Tests and builds:
+
+```bash
+bun run --cwd frontend test
+bun run --cwd frontend build
+bun run --cwd frontend build:vworld
+.venv/bin/python -m pytest
+```
+```powershell
+bun run --cwd frontend test
+bun run --cwd frontend build
+bun run --cwd frontend build:vworld
+.venv\Scripts\python.exe -m pytest
+```
+
+`bun run test` covers both frontend test layers. Root `pytest` reads
+`pytest.ini` and runs `weather/tests` and `backend/tests`.
+
+## CONFIGURATION
+
+Backend (`weather/config.py`). A variable already in the environment wins, even
+when empty; `weather/.env` only fills gaps. Copy `weather/.env.example` to start.
+
+- `KMA_SERVICE_KEY`: data.go.kr Decoding key. `AIRKOREA_SERVICE_KEY` falls back to it.
+- `KMA_BASE_URL`, `AIRKOREA_BASE_URL`: origins only, default `apis.data.go.kr`.
+- `WEATHER_UPSTREAM_CONNECT_TIMEOUT_S` (3), `WEATHER_UPSTREAM_READ_TIMEOUT_S` (7),
+  `WEATHER_UPSTREAM_RETRY_AFTER_S` (60).
+- `WEATHER_CACHE_TTL_KMA_CURRENT_S` (600), `WEATHER_CACHE_TTL_KMA_FORECAST_S` (3600),
+  `WEATHER_CACHE_TTL_AIRKOREA_S` (1800), `WEATHER_CACHE_MAX_STALE_S` (10800).
+- `WEATHER_CACHE_FILE`: default `weather/data/weather-cache.json`; empty disables it.
+- `WEATHER_ENERGY_DB`: energy SQLite path.
+
+Frontend (`frontend/.env`, copied from `frontend/.env.example`): `VITE_API_URL` (weather; `VITE_WEATHER_API_URL`
+is a deprecated alias), `VITE_VISION_API_URL` (default `http://127.0.0.1:8001`),
+`VITE_SIMULATION_API_URL`, `VITE_SIMULATION_WS_URL`, `VITE_VWORLD_API_KEY`.
+
+Vision: `--model`, `--host` (default `0.0.0.0`), `--port`; Ultralytics
+auto-install is off (`YOLO_AUTOINSTALL=False`). Car demo: `--port` or
+`CAR_DEMO_PORT`, default 8003.
+
+Weather contracts: see `weather/AGENTS.md` for the 503 upstream error body and
+the `freshness` field that every `/microclimate/*` and `/environment/*` route
+returns.
 
 ## NOTES
 
-- Local runtime is normally three processes: weather `8000`, vision `8001`,
-  frontend `5173`.
-- VWorld mode needs `VITE_VWORLD_API_KEY`; both modes use `VITE_API_URL`.
+- Local runtime is four processes: weather `8000`, vision `8001`, simulation
+  `8002`, frontend `5173`.
 - KMA/AirKorea calls may delay or time out while map and popup UI remain usable.
 - Vision startup loads a YOLO model and camera/stream; first launch can be slow.
 - No repository CI workflow was found. Validation is local and domain-specific.
-
