@@ -327,11 +327,39 @@
 
       .handle {
         overflow: hidden;
+        color: var(--text-primary);
         font-size: 11px;
         font-weight: 600;
         line-height: 1.25;
+      }
+
+      .handle-name {
+        overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+      }
+
+      .identity-meta {
+        display: flex;
+        min-width: 0;
+        align-items: center;
+        gap: var(--space-1);
+        margin-top: 2px;
+      }
+
+      .role-badge {
+        flex: 0 0 auto;
+        padding: 1px 3px;
+        border: 1px solid color-mix(in srgb, var(--accent-primary) 35%, var(--border-default));
+        border-radius: 3px;
+        background: color-mix(in srgb, var(--accent-primary) 9%, var(--surface-report));
+        color: var(--accent-soft);
+        font-family: var(--font-mono);
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        line-height: 1;
+        text-transform: uppercase;
       }
 
       .alias {
@@ -793,8 +821,8 @@
               <div class="identity">
                 <div class="identity-mark">SA</div>
                 <div class="identity-copy">
-                  <div class="handle">stevenahhh</div>
-                  <div class="alias">Sungwang Ahn · 2 identities merged</div>
+                  <div class="handle"><span class="handle-name">stevenahhh</span></div>
+                  <div class="identity-meta"><span class="role-badge">Maintainer</span><div class="alias">Sungwang Ahn · 2 identities merged</div></div>
                 </div>
               </div>
               <div class="bar-track" aria-label="전체 84개 커밋 중 46개">
@@ -808,8 +836,8 @@
               <div class="identity">
                 <div class="identity-mark">JG</div>
                 <div class="identity-copy">
-                  <div class="handle">JangGayeon</div>
-                  <div class="alias">PLT · gayeon · aliases merged</div>
+                  <div class="handle"><span class="handle-name">JangGayeon</span></div>
+                  <div class="identity-meta"><span class="role-badge">Maintainer</span><div class="alias">PLT · gayeon · aliases merged</div></div>
                 </div>
               </div>
               <div class="bar-track" aria-label="전체 84개 커밋 중 14개">
@@ -823,8 +851,8 @@
               <div class="identity">
                 <div class="identity-mark">WK</div>
                 <div class="identity-copy">
-                  <div class="handle">wndkfl</div>
-                  <div class="alias">2 email identities merged</div>
+                  <div class="handle"><span class="handle-name">wndkfl</span></div>
+                  <div class="identity-meta"><span class="role-badge">Maintainer</span><div class="alias">2 email identities merged</div></div>
                 </div>
               </div>
               <div class="bar-track" aria-label="전체 84개 커밋 중 10개">
@@ -838,8 +866,8 @@
               <div class="identity">
                 <div class="identity-mark">S3</div>
                 <div class="identity-copy">
-                  <div class="handle">SEON3345</div>
-                  <div class="alias">GitHub contributor</div>
+                  <div class="handle"><span class="handle-name">SEON3345</span></div>
+                  <div class="identity-meta"><span class="role-badge">Maintainer</span><div class="alias">GitHub contributor</div></div>
                 </div>
               </div>
               <div class="bar-track" aria-label="전체 84개 커밋 중 9개">
@@ -853,8 +881,8 @@
               <div class="identity">
                 <div class="identity-mark">KM</div>
                 <div class="identity-copy">
-                  <div class="handle">KdlsMH</div>
-                  <div class="alias">GitHub contributor</div>
+                  <div class="handle"><span class="handle-name">KdlsMH</span></div>
+                  <div class="identity-meta"><span class="role-badge">Maintainer</span><div class="alias">GitHub contributor</div></div>
                 </div>
               </div>
               <div class="bar-track" aria-label="전체 84개 커밋 중 4개">
@@ -868,8 +896,8 @@
               <div class="identity">
                 <div class="identity-mark">BD</div>
                 <div class="identity-copy">
-                  <div class="handle">bdyong</div>
-                  <div class="alias">GitHub contributor</div>
+                  <div class="handle"><span class="handle-name">bdyong</span></div>
+                  <div class="identity-meta"><span class="role-badge">Maintainer</span><div class="alias">GitHub contributor</div></div>
                 </div>
               </div>
               <div class="bar-track" aria-label="전체 84개 커밋 중 1개">
