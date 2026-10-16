@@ -89,6 +89,16 @@ describe("VWorld and Legacy feature parity", () => {
     }
   });
 
+  it("names the panel toggle with the shared C5 vocabulary and a matching title", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const toggle = screen.getByRole("button", { name: "패널 닫기" });
+    expect(toggle.getAttribute("title")).toBe("패널 닫기");
+    await user.click(toggle);
+    expect(screen.getByRole("button", { name: "패널 열기" }).getAttribute("title")).toBe("패널 열기");
+  });
+
   it("shows the traffic offline message in the parking card when the traffic fetch rejects", async () => {
     const fetchMock = stubFetch({ traffic: rejectNetwork });
     render(<App />);

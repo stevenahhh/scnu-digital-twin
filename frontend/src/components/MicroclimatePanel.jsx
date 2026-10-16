@@ -25,7 +25,7 @@ export const MICROCLIMATE_STRINGS = Object.freeze({
   observed: "관측",
   loading: "미기후 데이터 불러오는 중…",
   empty: "이 건물의 상세 미기후 데이터를 선택해 확인하세요.",
-  close: "미기후 패널 닫기",
+  close: "닫기",
   risk: "위험도",
   reasons: "원인 분석",
 });
@@ -142,6 +142,7 @@ export function MicroclimatePanel({ data, loading = false, error = null, onClose
           className="transition-opacity hover:opacity-70"
           style={{ color: onRisk ? "white" : "var(--colors-ink-muted)" }}
           aria-label={MICROCLIMATE_STRINGS.close}
+          title={MICROCLIMATE_STRINGS.close}
         >
           <X size={18} />
         </button>

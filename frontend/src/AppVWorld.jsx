@@ -507,7 +507,8 @@ export default function App() {
       {/* 패널 토글 버튼 */}
       <button
         onClick={() => setIsPanelOpen(v => !v)}
-        aria-label={isPanelOpen ? "대시보드 패널 닫기" : "대시보드 패널 열기"}
+        aria-label={isPanelOpen ? "패널 닫기" : "패널 열기"}
+        title={isPanelOpen ? "패널 닫기" : "패널 열기"}
         className="pointer-events-auto absolute z-20 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-14 rounded-l-xl border border-r-0 border-[var(--colors-hairline)] shadow-lg transition-right duration-300"
         style={{
           right: isPanelOpen

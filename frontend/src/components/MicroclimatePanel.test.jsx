@@ -79,7 +79,7 @@ describe("MicroclimatePanel", () => {
     expect(screen.queryByTestId("microclimate-freshness")).toBeNull();
     expect(screen.queryByText("기상 데이터 없음")).toBeNull();
 
-    fireEvent.click(screen.getByRole("button", { name: "미기후 패널 닫기" }));
+    fireEvent.click(screen.getByRole("button", { name: "닫기" }));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
