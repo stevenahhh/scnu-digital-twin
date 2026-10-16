@@ -41,12 +41,14 @@ test("baseline-characterizes current D4 roof source dimensions without using the
   assert.equal(D4_ROOF_SCENARIO_FIXTURE.coordinateSystem, "roof-local-meters");
 });
 
-test("round-trips the D4 roof/scenario fixture and derives 16 modules at 7.056 kWp", () => {
+test("round-trips the D4 roof/scenario fixture and derives its panel capacity", () => {
   const parsed = parseRoofLayoutDocument(JSON.parse(JSON.stringify(D4_ROOF_SCENARIO_FIXTURE)));
   assert.deepEqual(parsed, D4_ROOF_SCENARIO_FIXTURE);
+  const array = D4_ROOF_SCENARIO_FIXTURE.scenarios[0].arrays[0];
+  const moduleCount = array.rows * array.columns;
   assert.deepEqual(summarizePanelArray(parsed.scenarios[0].arrays[0], parsed.modules), {
-    moduleCount: 16,
-    capacityKwp: 7.056,
+    moduleCount,
+    capacityKwp: moduleCount * parsed.modules[0].nominalPowerWp / 1000,
   });
 });
 

@@ -5,7 +5,25 @@ import { loadEnergyEditorDocument, loadEnergyScenario, saveEnergyScenario, toSce
 
 const apiScenario = {
   id: "D4-scenario-south-2x8", building_id: "D4", name: "D4 roof installation", weather_preset: "clear", created_at: "2026-01-01T00:00:00+09:00", updated_at: "2026-01-01T00:00:00+09:00", intervals: [],
-  arrays: [{ id: "D4-array-south-2x8", scenario_id: "D4-scenario-south-2x8", roof_id: "D4-roof-west", roof_zone_id: "D4-roof-west-main", module_id: "module-default-441wp", origin_x_m: 10, origin_y_m: 10, rows: 2, columns: 8, azimuth_deg: 180, tilt_deg: 25, orientation: "portrait", module_width_m: 1.05, module_length_m: 2.1, module_efficiency_percent: 20, module_nominal_power_wp: 441, inter_panel_gap_m: 0.02 }],
+  arrays: structuredClone(D4_ROOF_SCENARIO_FIXTURE.scenarios[0].arrays).map((array) => ({
+    id: array.id,
+    scenario_id: array.scenarioId,
+    roof_id: array.roofId,
+    roof_zone_id: array.roofZoneId,
+    module_id: array.moduleId,
+    origin_x_m: D4_ROOF_SCENARIO_FIXTURE.scenarios[0].arrays[0].originMeters.xMeters,
+    origin_y_m: D4_ROOF_SCENARIO_FIXTURE.scenarios[0].arrays[0].originMeters.yMeters,
+    azimuth_deg: array.azimuthDeg,
+    tilt_deg: array.tiltDeg,
+    module_width_m: D4_ROOF_SCENARIO_FIXTURE.modules[0].widthMeters,
+    module_length_m: D4_ROOF_SCENARIO_FIXTURE.modules[0].lengthMeters,
+    module_efficiency_percent: D4_ROOF_SCENARIO_FIXTURE.modules[0].efficiencyPercent,
+    module_nominal_power_wp: D4_ROOF_SCENARIO_FIXTURE.modules[0].nominalPowerWp,
+    inter_panel_gap_m: 0.02,
+    rows: D4_ROOF_SCENARIO_FIXTURE.scenarios[0].arrays[0].rows,
+    columns: D4_ROOF_SCENARIO_FIXTURE.scenarios[0].arrays[0].columns,
+    orientation: D4_ROOF_SCENARIO_FIXTURE.scenarios[0].arrays[0].orientation,
+  })),
 };
 
 test("save binds exact roof-local fields to PUT /energy and reload restores them", async () => {
