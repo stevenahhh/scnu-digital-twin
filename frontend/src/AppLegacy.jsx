@@ -45,6 +45,8 @@ import trafficData from "./utils/trafficData.json";
 import { isD4ElementId } from "./utils/d4BuildingData.mjs";
 import { useWeatherFeed } from "./hooks/useWeatherFeed";
 import { useTrafficFeed } from "./simulation/hooks/useTrafficFeed";
+import { FEED_TONE_COLORS, TRAFFIC_STATE_TONES, WEATHER_STATE_TONES, formatClockTime } from "./hooks/feedStatus.mjs";
+import { WEATHER_API_URL } from "./simulation/utils/apiConfig";
 import {
   CAMPUS_LOCATION,
   createSimulationDate,
@@ -93,23 +95,6 @@ function formatShortTime(timestamp) {
     hour: "2-digit",
     minute: "2-digit",
   });
-}
-
-const FEED_TONE_COLORS = {
-  success: "var(--colors-semantic-success)",
-  warning: "var(--colors-semantic-warning)",
-  danger: "var(--colors-semantic-danger)",
-  neutral: "var(--colors-ink-subtle)",
-};
-
-const WEATHER_STATE_TONES = { live: "success", stale: "warning", error: "danger", loading: "neutral" };
-const TRAFFIC_STATE_TONES = { live: "success", "camera-off": "warning", offline: "danger" };
-
-function formatClockTime(value) {
-  if (!value) return null;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-  return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 }
 
 function getCompassDirection(degrees) {
@@ -250,23 +235,14 @@ export default function App() {
   const [mode, setMode] = useState("simulation");
   const weatherFeed = useWeatherFeed();
   const trafficFeed = useTrafficFeed();
-  const { data: weatherData, state: weatherState, message: weatherMessage, lastUpdatedAt, refresh: refreshWeather } = weatherFeed;
-  const [isWeatherRefreshing, setIsWeatherRefreshing] = useState(false);
-  const handleWeatherRefresh = useCallback(async () => {
-    setIsWeatherRefreshing(true);
-    try {
-      await refreshWeather();
-    } finally {
-      setIsWeatherRefreshing(false);
-    }
-  }, [refreshWeather]);
+  const { data: weatherData, state: weatherState, message: weatherMessage, lastUpdatedAt, isRefreshing: isWeatherRefreshing, refresh: refreshWeather } = weatherFeed;
   const [currentTime, setCurrentTime] = useState(() => new Date());
   const [sunMonth, setSunMonth] = useState(() => new Date().getMonth() + 1);
   const [sunDay, setSunDay] = useState(() => new Date().getDate());
   const [sunHour, setSunHour] = useState(() => new Date().getHours());
   const [sunMinute, setSunMinute] = useState(() => new Date().getMinutes());
   const [simTemp, setSimTemp] = useState(20);
-  const [activeTab, setActiveTab] = useState("dashboard"); // dashboard, parking, safety, energy, environment
+  const [activeTab, setActiveTab] = useState("dashboard"); // dashboard, parking_safety, energy, environment, microclimate
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSimulatorOpen, setIsSimulatorOpen] = useState(true);
@@ -505,7 +481,7 @@ export default function App() {
     setActiveTab("microclimate");
     setIsPanelOpen(true);
 
-    const apiUrl = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
+    const apiUrl = WEATHER_API_URL;
     setPopupLoading(true);
     setPopupError(null);
     setPopupData(null);
@@ -794,7 +770,7 @@ export default function App() {
                         type="button"
                         aria-label="기상 데이터 새로고침"
                         title="기상 데이터 새로고침"
-                        onClick={handleWeatherRefresh}
+                        onClick={refreshWeather}
                         disabled={isWeatherBusy}
                         className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] text-[var(--colors-ink-muted)] transition hover:text-[var(--colors-ink)] hover:bg-[var(--colors-surface-2)] disabled:opacity-50"
                       >
@@ -1129,7 +1105,7 @@ export default function App() {
               </span>
               <button
                 type="button"
-                onClick={handleWeatherRefresh}
+                onClick={refreshWeather}
                 disabled={isWeatherBusy}
                 className="shrink-0 rounded-md border border-[var(--colors-hairline-strong)] bg-[var(--colors-surface-1)] px-3 py-1.5 text-sm font-[600] text-[var(--colors-ink)] transition hover:bg-[var(--colors-surface-2)] disabled:opacity-50"
               >
