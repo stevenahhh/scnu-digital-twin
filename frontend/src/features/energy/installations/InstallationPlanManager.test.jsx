@@ -32,7 +32,7 @@ describe("InstallationPlanManager", () => {
     render(<InstallationPlanManager buildingId="D4" client={api} onEditPlan={onEditPlan} onPlansChange={onPlansChange} createPlanDraft={() => ({ name: "신규안", arrays })} />);
 
     expect(await screen.findByRole("heading", { name: "설치 계획" })).toBeTruthy();
-    expect(screen.getByText("대표 계획")).toBeTruthy();
+    expect(await screen.findByText("대표 계획")).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "대안 편집" }));
     expect(onEditPlan).toHaveBeenCalledWith(expect.objectContaining({ id: "plan-2" }));
 
