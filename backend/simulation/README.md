@@ -2,19 +2,34 @@
 
 이 합본의 기본 `data/routes.geojson`은 임시 데모가 아니라 팀원 버전의
 `road_zones_wgs84.geojson` 92개 도로 영역에서 생성한 로컬 미터 중심선입니다.
-재생성 방법과 좌표 연결 근거는 저장소 루트의
-`TRAFFIC_SIMULATION_INTEGRATION.md`를 참고하세요.
+재생성은 `backend/build_routes_from_road_zones.py`로 합니다.
 
 SUMO 없이 동작하는 순천대학교 캠퍼스 OD/Graph 시뮬레이터입니다. 자동차, 보행자, 킥보드는 Origin과 Destination을 가진 Trip으로 이동하고, 도착·체류·다음 Trip·외부 제거 lifecycle을 거칩니다. 거리/TTC/예상 진행선 교차 기반 위험 이벤트를 WebSocket으로 보냅니다.
 
 ## 실행
 
+의존성은 저장소 루트의 `.venv` 하나에 설치합니다. 설치 방법은 루트 `README.md`의 "설치"를 따르세요. 서버는 `backend` 폴더에서 띄웁니다(아래 명령은 저장소 루트 기준).
+
 ```bash
-cd backend
-python3 -m venv .venv-simulation
-source .venv-simulation/bin/activate
-python -m pip install -r simulation/requirements.txt
-python -m uvicorn simulation.main:app --reload --port 8002
+cd backend && ../.venv/bin/python -m uvicorn simulation.main:app --host 127.0.0.1 --port 8002
+```
+
+```powershell
+cd backend; ..\.venv\Scripts\python -m uvicorn simulation.main:app --host 127.0.0.1 --port 8002
+```
+
+상태 확인: `http://127.0.0.1:8002/health`
+
+## 테스트
+
+시뮬레이션 테스트는 `backend/tests`에 있고 저장소 루트에서 돌립니다.
+
+```bash
+.venv/bin/python -m pytest backend/tests
+```
+
+```powershell
+.venv\Scripts\python.exe -m pytest backend\tests
 ```
 
 기본 업데이트 주기는 100ms이며 `SIMULATION_UPDATE_INTERVAL_MS=200`처럼 변경할 수 있습니다. Weather API가 없으면 기본 맑은 날씨로 계속 실행합니다.
