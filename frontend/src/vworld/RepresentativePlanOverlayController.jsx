@@ -5,6 +5,7 @@ import {
   hasVerifiedVWorldRoofTransform,
   loadRepresentativePlanOverlays,
 } from "./representativePlanOverlay.mjs";
+import { toKoreanEnergyError } from "../features/energy/shared/energyErrorMessages.mjs";
 
 /**
  * UI/controller leaf for a VWorld representative-plan layer.
@@ -45,7 +46,7 @@ export function RepresentativePlanOverlayController({
     }).catch((error) => {
       if (!active || error?.name === "AbortError") return;
       setOverlays([]);
-      setState({ status: "error", message: error?.message || "대표 설치 계획을 불러오지 못했습니다." });
+      setState({ status: "error", message: toKoreanEnergyError(error) });
       callbackRef.current?.([]);
     });
     return () => {

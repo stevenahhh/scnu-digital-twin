@@ -73,12 +73,12 @@ describe("InstallationPlanManager", () => {
     await user.clear(screen.getByLabelText("대안 계획 이름"));
     await user.type(screen.getByLabelText("대안 계획 이름"), "동측 대안");
     await user.click(screen.getByRole("button", { name: "대안 이름 저장" }));
-    expect((await screen.findByRole("alert")).textContent).toContain("updated plan identity must match");
+    expect((await screen.findByRole("alert")).textContent).toContain("서버 응답 형식이 올바르지 않습니다");
     expect(onPlansChange).not.toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({ id: "plan-other" })]));
 
     api.copy.mockResolvedValueOnce({ ...plans[0], id: "plan-copy", buildingId: "D5", name: "기준안 복사본" });
     await user.click(screen.getByRole("button", { name: "기준안 복사" }));
-    expect((await screen.findByRole("alert")).textContent).toContain("copied plan must match");
+    expect((await screen.findByRole("alert")).textContent).toContain("서버 응답 형식이 올바르지 않습니다");
     expect(onPlansChange).not.toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({ id: "plan-copy" })]));
   });
 
@@ -89,7 +89,7 @@ describe("InstallationPlanManager", () => {
     render(<InstallationPlanManager buildingId="D4" client={api} createPlanDraft={() => ({ name: "신규안", arrays })} />);
     await screen.findByLabelText("기준안 계획 이름");
     await user.click(screen.getByRole("button", { name: "대안 삭제" }));
-    expect((await screen.findByRole("alert")).textContent).toContain("삭제 실패");
+    expect((await screen.findByRole("alert")).textContent).toContain("요청을 처리하지 못했습니다");
   });
 
   it("publishes a non-first loaded representative and replaces it using installationPlanId", async () => {
@@ -148,7 +148,7 @@ describe("InstallationPlanManager", () => {
     await waitFor(() => expect(api.list).toHaveBeenCalledWith("D4", expect.anything()));
 
     view.rerender(<InstallationPlanManager buildingId="D5" client={api} onPlansChange={onPlansChange} onRepresentativeChange={onRepresentativeChange} />);
-    expect((await screen.findByRole("alert")).textContent).toContain("D5 조회 실패");
+    expect((await screen.findByRole("alert")).textContent).toContain("요청을 처리하지 못했습니다");
     await act(async () => { resolveD4(plans); });
 
     expect(onPlansChange).not.toHaveBeenCalledWith(plans);
@@ -163,7 +163,7 @@ describe("InstallationPlanManager", () => {
     const onRepresentativeChange = vi.fn();
     render(<InstallationPlanManager buildingId="D4" client={api} onPlansChange={onPlansChange} onRepresentativeChange={onRepresentativeChange} />);
 
-    expect((await screen.findByRole("alert")).textContent).toContain("requested building must match");
+    expect((await screen.findByRole("alert")).textContent).toContain("서버 응답 형식이 올바르지 않습니다");
     expect(onPlansChange).not.toHaveBeenCalledWith(plans);
     expect(onPlansChange).toHaveBeenLastCalledWith([]);
     expect(onRepresentativeChange).toHaveBeenLastCalledWith(null);

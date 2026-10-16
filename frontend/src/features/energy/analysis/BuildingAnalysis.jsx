@@ -4,6 +4,7 @@ import { createBuildingAnalysisClient } from "./analysisApi.mjs";
 import { buildAnalysisReport, parseAnalysisRun } from "./analysisContracts.mjs";
 import { analysisReducer, createAnalysisState } from "./analysisState.mjs";
 import { AnalysisInsights, AnalysisKpis, AnalysisSeriesChart } from "./BuildingAnalysisPanels.jsx";
+import { toKoreanEnergyError } from "../shared/energyErrorMessages.mjs";
 
 function localDate() {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
@@ -54,7 +55,7 @@ export function BuildingAnalysis({
         requestId: id,
         scenarios: scenarioResult.status === "fulfilled" ? scenarioResult.value : [],
         runs: runResult.status === "fulfilled" ? runResult.value.map(normalizeRun) : [],
-        error: failures[0]?.message ?? null,
+        error: failures.length ? toKoreanEnergyError(failures[0]) : null,
       });
     })();
     return () => controller.abort();
@@ -98,7 +99,7 @@ export function BuildingAnalysis({
       dispatch({ type: "report", requestId: id, report: buildAnalysisReport(report), scenarioId: definition.id });
       onRun(report);
     } catch (error) {
-      if (error?.name !== "AbortError" && id === requestId.current) dispatch({ type: "failure", requestId: id, error: error?.message || "건물 분석을 실행하지 못했습니다." });
+      if (error?.name !== "AbortError" && id === requestId.current) dispatch({ type: "failure", requestId: id, error: toKoreanEnergyError(error) });
     } finally {
       if (execution.current === controller) execution.current = null;
     }

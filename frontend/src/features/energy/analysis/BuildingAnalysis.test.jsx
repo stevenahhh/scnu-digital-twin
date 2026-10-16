@@ -164,7 +164,7 @@ describe("BuildingAnalysis", () => {
     const client = clientWith({ createScenario: vi.fn().mockRejectedValue(new Error("definition offline")) });
     const view = render(<BuildingAnalysis buildingId="D4" plans={plans} initialDate="2026-05-18" client={client} />);
     await user.click(screen.getByRole("button", { name: "분석 실행" }));
-    expect((await screen.findByRole("alert")).textContent).toContain("definition offline");
+    expect((await screen.findByRole("alert")).textContent).toContain("요청을 처리하지 못했습니다");
     expect(client.runScenario).not.toHaveBeenCalled();
     expect(screen.queryByText("대표 계획 발전")).toBeNull();
 
@@ -172,7 +172,7 @@ describe("BuildingAnalysis", () => {
     view.unmount();
     render(<BuildingAnalysis buildingId="D4" plans={plans} initialDate="2026-05-18" client={runFailure} />);
     await user.click(screen.getByRole("button", { name: "분석 실행" }));
-    expect((await screen.findByRole("alert")).textContent).toContain("atomic run failed");
+    expect((await screen.findByRole("alert")).textContent).toContain("요청을 처리하지 못했습니다");
     expect(screen.queryByText("대표 계획 발전")).toBeNull();
   });
 });

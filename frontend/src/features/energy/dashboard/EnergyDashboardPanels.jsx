@@ -57,7 +57,7 @@ export function EnergyChart({ data }) {
 export function LossBreakdown({ data }) {
   return <section data-qa="energy-loss" className={`${surface} p-4`} aria-labelledby="energy-loss-title">
     <h3 id="energy-loss-title" className="text-sm font-extrabold">발전 손실 구조</h3>
-    <div className="mt-3 flex items-center justify-between text-xs"><span>시스템 손실</span><strong>시스템 손실 {formatPercent(data.losses.systemLossFraction)}</strong></div>
+    <div className="mt-3 flex items-center justify-between text-xs"><span>시스템 손실</span><strong>{formatPercent(data.losses.systemLossFraction)}</strong></div>
     <div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--colors-surface-3)]"><div className="h-full bg-[var(--colors-primary)]" style={{ width: formatPercent(data.losses.systemLossFraction) }} /></div>
     <p className="mt-3 text-[11px] leading-5 text-[var(--colors-ink-subtle)]">배선·인버터 등 모델 일괄 계수입니다. 개별 손실 에너지는 API가 제공하지 않아 표시하지 않습니다.</p>
   </section>;

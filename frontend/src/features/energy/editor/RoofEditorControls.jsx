@@ -45,7 +45,7 @@ export function RoofEditorControls({ buildingId = "D4", arrays = [], selectedArr
       </div></fieldset>
     </div>}
 
-    {violations.length > 0 && <div className="mt-4 rounded-md border border-red-400/60 bg-red-950/70 px-3 py-2 text-xs font-semibold leading-5 text-red-100" role="alert"><ul>{violations.map((violation) => <li key={`${violation.code}-${violation.obstacleId ?? violation.otherArrayId ?? "layout"}`}>{violation.messageKo}</li>)}</ul><span className="block font-normal text-red-200/80">Esc 키로 마지막 유효 배치로 돌아갑니다.</span></div>}
+    {violations.length > 0 && <div className="mt-4 rounded-md border border-red-400/60 bg-red-950/70 px-3 py-2 text-xs font-semibold leading-5 text-red-100" role="alert"><strong>오류:</strong><ul>{violations.map((violation) => <li key={`${violation.code}-${violation.obstacleId ?? violation.otherArrayId ?? "layout"}`}>{violation.messageKo}</li>)}</ul><span className="block font-normal text-red-200/80">Esc 키로 마지막 유효 배치로 돌아갑니다.</span></div>}
     {status.message && <p className={`mt-3 text-xs font-semibold ${status.kind === "error" ? "text-red-300" : "text-emerald-300"}`} role="status">{status.message}</p>}
 
     <div className="mt-4 grid grid-cols-2 gap-2">

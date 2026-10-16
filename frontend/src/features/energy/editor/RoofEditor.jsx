@@ -6,6 +6,7 @@ import { loadEnergyEditorDocument, saveEnergyScenario, toScenarioPayload } from 
 import { RoofEditorControls } from "./RoofEditorControls";
 import { RoofEditorScene } from "./RoofEditorScene";
 import { addArray, createRoofEditorState, deleteSelectedArray, dismissInvalidPreview, moveSelectedArray, replaceScenarioArrays, selectArray, summarizeLayout, undoLatestEdit, updateSelectedArray } from "./roofEditorState.mjs";
+import { toKoreanEnergyError } from "../shared/energyErrorMessages.mjs";
 
 const DEFAULT_SCENARIO_ID = "D4-scenario-south-2x8";
 const initialStatus = { busy: false, kind: "idle", message: "" };
@@ -48,7 +49,7 @@ export function RoofEditor({ buildingId = "D4", scenarioId = DEFAULT_SCENARIO_ID
       setStatus({ busy: false, kind: "success", message: "저장된 배치를 불러왔습니다." });
     } catch (error) {
       if (isFresh() && error?.name !== "AbortError") {
-        setStatus({ busy: false, kind: "error", message: error.message });
+        setStatus({ busy: false, kind: "error", message: toKoreanEnergyError(error) });
       }
     }
   }, [apiBase, beginRequest, buildingId, installationPlanId, planClient, scenarioId]);
@@ -96,7 +97,7 @@ export function RoofEditor({ buildingId = "D4", scenarioId = DEFAULT_SCENARIO_ID
       setStatus({ busy: false, kind: "success", message: "배치를 저장했습니다." });
     } catch (error) {
       if (isFresh() && error?.name !== "AbortError") {
-        setStatus({ busy: false, kind: "error", message: error.message });
+        setStatus({ busy: false, kind: "error", message: toKoreanEnergyError(error) });
       }
     }
   };

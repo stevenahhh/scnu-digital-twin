@@ -1,6 +1,7 @@
 import { Copy, Edit3, Plus, Save, Star, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createInstallationPlanClient, InstallationPlanContractError } from "./installationPlanApi.mjs";
+import { toKoreanEnergyError } from "../shared/energyErrorMessages.mjs";
 
 const buttonClass = "inline-flex min-h-10 items-center justify-center gap-1.5 rounded-md border border-[var(--colors-hairline-strong)] px-3 text-xs font-extrabold transition-colors hover:bg-[var(--colors-surface-3)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--colors-primary)] disabled:cursor-not-allowed disabled:opacity-40";
 const NOOP = () => {};
@@ -86,7 +87,7 @@ export function InstallationPlanManager({
         publishPlans([]);
         setRepresentativeId(null);
         callbacksRef.current.onRepresentativeChange(null);
-        setState({ status: "error", message: error?.message || "설치 계획을 불러오지 못했습니다." });
+        setState({ status: "error", message: toKoreanEnergyError(error) });
       }
     });
     return () => {
@@ -110,7 +111,7 @@ export function InstallationPlanManager({
       await operation({ signal: controller.signal, isFresh });
     } catch (error) {
       if (isFresh() && error?.name !== "AbortError") {
-        setState({ status: "error", message: error?.message || "설치 계획 작업에 실패했습니다." });
+        setState({ status: "error", message: toKoreanEnergyError(error) });
       }
     } finally {
       if (isFresh()) {

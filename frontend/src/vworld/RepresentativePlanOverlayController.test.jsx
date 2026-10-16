@@ -69,7 +69,7 @@ describe("RepresentativePlanOverlayController", () => {
   it("reports loading failures without publishing stale data", async () => {
     const onOverlayDataChange = vi.fn();
     render(<RepresentativePlanOverlayController buildingIds={["D4"]} loadOverlays={vi.fn().mockRejectedValue(new Error("대표안 조회 실패"))} onOverlayDataChange={onOverlayDataChange} />);
-    expect((await screen.findByRole("alert")).textContent).toContain("대표안 조회 실패");
+    expect((await screen.findByRole("alert")).textContent).toContain("요청을 처리하지 못했습니다");
     expect(onOverlayDataChange).toHaveBeenCalledWith([]);
   });
 });
