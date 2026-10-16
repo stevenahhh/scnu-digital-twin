@@ -1,5 +1,5 @@
 /* @vitest-environment jsdom */
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -17,6 +17,7 @@ vi.mock("../components/D4RoomGridSelect", () => ({
 vi.mock("../features/energy/editor/RoofEditor", () => ({ RoofEditor: ({ installationPlanId, onPlanSaved }) => <div>옥상 설치 편집기 {installationPlanId}<button onClick={() => onPlanSaved?.({ id: installationPlanId })}>편집 저장</button></div> }));
 vi.mock("../features/energy/installations/InstallationPlanManager", () => ({ InstallationPlanManager: ({ onEditPlan, onPlansChange, onRepresentativeChange }) => <div>설치 계획 관리자<button onClick={() => onEditPlan({ id: "plan-2" })}>대안 편집</button><button onClick={() => onPlansChange(["plan-2"])}>목록 발행</button><button onClick={() => onRepresentativeChange({ installationPlanId: "plan-2" })}>대표 발행</button></div> }));
 import { D4SectionExperience } from "./D4SectionExperience";
+import { FOCUSABLE_SELECTOR } from "../components/AccessibleDialog";
 
 afterEach(cleanup);
 
@@ -79,5 +80,67 @@ describe("D4SectionExperience modes", () => {
     expect(installationTab.getAttribute("aria-selected")).toBe("true");
     expect(document.activeElement).toBe(installationTab);
     expect(installationTab.getAttribute("aria-controls")).toBeTruthy();
+  });
+});
+
+describe("D4SectionExperience focus", () => {
+  // 다이얼로그 밖의 버튼은 React 바깥에서 만들어 테스트 안에서 자유롭게 DOM에서 떼어낼 수 있게 한다.
+  const outsideButtons = [];
+  const addOutsideButton = (label) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = label;
+    document.body.appendChild(button);
+    outsideButtons.push(button);
+    return button;
+  };
+  afterEach(() => {
+    outsideButtons.splice(0).forEach((button) => button.remove());
+  });
+
+  it("moves focus onto the selected mode tab inside the dialog when it opens", () => {
+    const opener = addOutsideButton("열기");
+    opener.focus();
+    expect(document.activeElement).toBe(opener);
+    render(<D4SectionExperience onClose={vi.fn()} />);
+    const selectedTab = screen.getByRole("tab", { selected: true });
+    expect(selectedTab.getAttribute("aria-selected")).toBe("true");
+    expect(document.activeElement).toBe(selectedTab);
+    expect(screen.getByRole("dialog").contains(document.activeElement)).toBe(true);
+  });
+
+  it("returns focus to the opener when the dialog unmounts", () => {
+    const opener = addOutsideButton("열기");
+    opener.focus();
+    const { unmount } = render(<D4SectionExperience onClose={vi.fn()} />);
+    expect(document.activeElement).not.toBe(opener);
+    unmount();
+    expect(document.activeElement).toBe(opener);
+  });
+
+  it("falls back to returnFocusRef when the opener has left the DOM", () => {
+    const opener = addOutsideButton("열기");
+    const fallback = addOutsideButton("대체 포커스");
+    opener.focus();
+    const { unmount } = render(<D4SectionExperience onClose={vi.fn()} returnFocusRef={{ current: fallback }} />);
+    opener.remove();
+    expect(opener.isConnected).toBe(false);
+    unmount();
+    expect(document.activeElement).toBe(fallback);
+  });
+
+  it("wraps Tab and Shift+Tab between the first and last focusable controls", () => {
+    render(<D4SectionExperience onClose={vi.fn()} />);
+    const dialog = screen.getByRole("dialog");
+    const focusables = dialog.querySelectorAll(FOCUSABLE_SELECTOR);
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    expect(first).not.toBe(last);
+    last.focus();
+    expect(fireEvent.keyDown(last, { key: "Tab" })).toBe(false);
+    expect(document.activeElement).toBe(first);
+    first.focus();
+    expect(fireEvent.keyDown(first, { key: "Tab", shiftKey: true })).toBe(false);
+    expect(document.activeElement).toBe(last);
   });
 });

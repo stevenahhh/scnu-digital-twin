@@ -21,7 +21,12 @@ vi.mock("./campusGltfOverlay.mjs", () => ({
   createCampusGltfOverlay: vi.fn(async () => null),
   removeCampusGltfOverlay: vi.fn(),
 }));
-vi.mock("./D4SectionExperience", () => ({ D4SectionExperience: () => <div>D4 상세 화면</div> }));
+vi.mock("./D4SectionExperience", () => ({
+  D4SectionExperience: (props) => {
+    mocks.d4Props = props;
+    return <div>D4 상세 화면<button type="button" onClick={props.onClose}>D4 상세 닫기</button></div>;
+  },
+}));
 vi.mock("./VWorldCampusStatus", () => ({ VWorldCampusStatus: () => null }));
 vi.mock("./RepresentativePlanOverlayController", () => ({
   RepresentativePlanOverlayController: ({ buildingIds, onOverlayDataChange, className }) => {
@@ -194,6 +199,21 @@ describe("VWorldRenderer retained map integration", () => {
     fireEvent.click(await screen.findByRole("button", { name: "D4 공과대학 3호관 상세 보기" }));
     await waitFor(() => expect(onD4SectionChange).toHaveBeenLastCalledWith(true));
     expect(await screen.findByText("D4 상세 화면")).toBeTruthy();
+  });
+
+  it("hands the re-rendered D4 opener to the detail experience as its focus return target", async () => {
+    mocks.vw = createVw();
+    window.__scnuVWorldMapInstance = retainedMap();
+    render(<VWorldRenderer onSelection={vi.fn()} simulationDate={new Date("2026-05-18T12:00:00+09:00")} />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "D4 공과대학 3호관 상세 보기" }));
+    expect(await screen.findByText("D4 상세 화면")).toBeTruthy();
+    const { returnFocusRef } = mocks.d4Props;
+    expect(screen.queryByRole("button", { name: "D4 공과대학 3호관 상세 보기" })).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "D4 상세 닫기" }));
+    const opener = await screen.findByRole("button", { name: "D4 공과대학 3호관 상세 보기" });
+    expect(returnFocusRef.current).toBe(opener);
   });
 
   it("renders the SDK loader error message and retry action", async () => {

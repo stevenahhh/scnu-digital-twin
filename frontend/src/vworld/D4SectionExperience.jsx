@@ -1,6 +1,7 @@
 import { ArrowLeft, Building2, Sun } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { FOCUSABLE_SELECTOR } from "../components/AccessibleDialog";
 import { D4RoomGridSelect } from "../components/D4RoomGridSelect";
 import { D4WingFloorSelect } from "../components/D4WingFloorSelect";
 import { RoofEditor } from "../features/energy/editor/RoofEditor";
@@ -30,6 +31,7 @@ export function D4SectionExperience({
   onRepresentativeChange,
   planRefreshKey,
   startInstallation = false,
+  returnFocusRef,
 }) {
   const [experienceMode, setExperienceMode] = useState(startInstallation ? "installation" : "rooms");
   const [isPlanEditorOpen, setIsPlanEditorOpen] = useState(Boolean(scenarioId || installationPlanId));
@@ -44,6 +46,7 @@ export function D4SectionExperience({
   // 살짝 페이드인되어 건물 기능 UI만 그 위에 자연스럽게 나타나는 느낌을 준다.
   const [hasEntered, setHasEntered] = useState(false);
   const modeTabRefs = useRef([]);
+  const dialogRef = useRef(null);
   useEffect(() => {
     const raf = requestAnimationFrame(() => setHasEntered(true));
     return () => cancelAnimationFrame(raf);
@@ -128,6 +131,42 @@ export function D4SectionExperience({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose, isRoofEditorOpen]);
 
+  // 상세 화면이 열리면 포커스를 선택된 모드 탭(없으면 다이얼로그 루트)으로 옮기고,
+  // 닫힐 때는 열기 전에 포커스가 있던 요소(없거나 사라졌으면 returnFocusRef)로 되돌린다.
+  useEffect(() => {
+    const previous = document.activeElement;
+    const remembered = previous && previous !== document.body ? previous : null;
+    const selectedTab = modeTabRefs.current.find((tab) => tab?.getAttribute("aria-selected") === "true");
+    (selectedTab ?? dialogRef.current)?.focus();
+    return () => {
+      const target = [remembered, returnFocusRef?.current].find(
+        (candidate) => candidate instanceof Element && candidate.isConnected,
+      );
+      target?.focus();
+    };
+  }, []);
+
+  // Tab/Shift+Tab은 다이얼로그 안에서만 순환한다 (AccessibleDialog와 같은 규칙).
+  const handleDialogKeyDown = (event) => {
+    if (event.key !== "Tab") return;
+    const dialog = dialogRef.current;
+    const items = [...dialog.querySelectorAll(FOCUSABLE_SELECTOR)];
+    if (items.length === 0) {
+      event.preventDefault();
+      dialog.focus();
+      return;
+    }
+    const first = items[0];
+    const last = items[items.length - 1];
+    if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+
   const handleModeTabKeyDown = (event, index) => {
     const tabs = modeTabRefs.current.filter(Boolean);
     let nextIndex;
@@ -151,13 +190,16 @@ export function D4SectionExperience({
 
   return createPortal(
     <div
-      className={`fixed inset-0 z-[100] min-h-0 overflow-hidden transition-opacity duration-500 ease-out ${
+      ref={dialogRef}
+      className={`fixed inset-0 z-[100] min-h-0 overflow-hidden outline-none transition-opacity duration-500 ease-out ${
         hasEntered ? "opacity-100" : "opacity-0"
       }`}
       onWheel={handleZoomOutWheel}
+      onKeyDown={handleDialogKeyDown}
       role="dialog"
       aria-modal="true"
       aria-labelledby={EXPERIENCE_TITLE_ID}
+      tabIndex={-1}
     >
       <h1 id={EXPERIENCE_TITLE_ID} className="sr-only">D4 공과대학 3호관 상세 경험</h1>
       {experienceMode === "rooms" ? (

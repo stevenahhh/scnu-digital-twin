@@ -102,6 +102,8 @@ export default function VWorldRenderer({
   const [campusStatus, setCampusStatus] = useState(null);
   const [trafficStatus, setTrafficStatus] = useState(null);
   const [isD4SectionOpen, setIsD4SectionOpen] = useState(false);
+  // D4 상세를 여는 버튼은 상세가 열린 동안 사라졌다가 닫히면 다시 그려지므로, 닫을 때 포커스를 돌려받을 새 버튼을 ref로 넘긴다.
+  const d4OpenerRef = useRef(null);
   const [detailRequest, setDetailRequest] = useState(null);
   const [selectedRoadZoneName, setSelectedRoadZoneName] = useState(null);
 
@@ -396,6 +398,7 @@ export default function VWorldRenderer({
       )}
       {!isD4SectionOpen && (
         <button
+          ref={d4OpenerRef}
           type="button"
           className="dashboard-ghost-button absolute bottom-6 left-6 z-10 min-h-11 px-4 text-xs font-extrabold shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--colors-primary)]"
           onClick={() => {
@@ -451,6 +454,7 @@ export default function VWorldRenderer({
             onPlansChange={onInstallationPlansChange}
             onRepresentativeChange={onRepresentativeInstallationPlanChange}
             planRefreshKey={installationPlanRefreshKey}
+            returnFocusRef={d4OpenerRef}
             onClose={() => {
               setIsD4SectionOpen(false);
               setDetailRequest(null);
