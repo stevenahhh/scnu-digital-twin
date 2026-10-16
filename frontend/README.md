@@ -33,7 +33,7 @@ VITE_VWORLD_API_KEY=발급받은_VWORLD_API_KEY
 ### 실행 런북 (항상 같은 순서)
 
 ```powershell
-cd C:\Users\steve\Desktop\projects\qwe\symmetrical-octo-umbrella\frontend
+cd "<저장소 경로>\frontend"
 bun install
 ```
 
@@ -61,7 +61,7 @@ bun run build:vworld       # VWorld (dist-vworld/)
 ```
 
 ```powershell
-cd C:\Users\steve\Desktop\projects\qwe\symmetrical-octo-umbrella\frontend
+cd "<저장소 경로>\frontend"
 bun run preview
 ```
 

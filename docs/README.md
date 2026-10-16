@@ -22,21 +22,21 @@
 
 ```powershell
 # 1) Weather Backend (127.0.0.1:8000)
-cd C:\Users\steve\Desktop\projects\qwe\symmetrical-octo-umbrella\weather
+cd "<저장소 경로>\weather"
 python -m venv venv
 .\venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 uvicorn api.app:app --host 127.0.0.1 --port 8000 --reload
 
 # 2) Vision API (127.0.0.1:8001)
-cd C:\Users\steve\Desktop\projects\qwe\symmetrical-octo-umbrella
+cd "<저장소 경로>"
 python -m venv .venv-vision
 .\.venv-vision\Scripts\Activate.ps1
 python -m pip install -r car_vision_model\requirements_server.txt
 python vision_api.py --source 0 --port 8001
 
 # 3) Frontend (127.0.0.1:5173)
-cd C:\Users\steve\Desktop\projects\qwe\symmetrical-octo-umbrella\frontend
+cd "<저장소 경로>\frontend"
 @"
 VITE_VWORLD_API_KEY=발급받은_VWORLD_API_KEY
 VITE_API_URL=http://127.0.0.1:8000
