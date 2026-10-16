@@ -13,7 +13,14 @@ vi.mock("@react-three/drei", () => ({
   OrbitControls: () => null,
   Sky: () => null,
 }));
-vi.mock("./CityModel", () => ({ CityModel: () => null }));
+const sceneMock = vi.hoisted(() => ({ suspend: false }));
+vi.mock("./CityModel", () => ({
+  // suspend가 켜지면 끝나지 않는 Promise를 던져 Suspense fallback이 계속 떠 있게 한다.
+  CityModel: () => {
+    if (sceneMock.suspend) throw new Promise(() => {});
+    return null;
+  },
+}));
 vi.mock("./simulation", () => ({
   CampusTrafficSimulation: () => null,
   TrafficSafetyPanel: () => null,
@@ -43,6 +50,9 @@ const C5_TABS = ["기본 현황", "주차·안전", "에너지", "환경 시뮬"
 const TRAFFIC_OFFLINE = "영상 분석 서버 연결 없음";
 const TRAFFIC_LIVE = "실시간 영상 분석 중";
 const WEATHER_NETWORK = "기상 서버에 연결할 수 없습니다";
+const SCENE_LOADING = "3D 캠퍼스 모델을 불러오는 중입니다";
+const SCENE_SLOW = "3D 캠퍼스 모델 응답이 지연되고 있습니다. 네트워크를 확인하세요.";
+const SCENE_SLOW_AFTER_MS = 15000;
 
 const okJson = (body) => ({ ok: true, status: 200, json: async () => body });
 const rejectNetwork = async () => {
@@ -158,5 +168,40 @@ describe("Legacy and VWorld feature parity", () => {
     await user.click(retry);
     await waitFor(() => expect(countCalls(fetchMock, "/environment/full")).toBe(weatherCallsBefore + 1));
     expect(await screen.findByText(WEATHER_NETWORK)).toBeTruthy();
+  });
+
+  it("shows the delay message with a reloading 다시 시도 button once the 3D model has been loading for 15 s", async () => {
+    sceneMock.suspend = true;
+    vi.useFakeTimers();
+    try {
+      render(<App />);
+
+      const badge = screen.getByText(SCENE_LOADING).closest('[role="status"]');
+      expect(badge).toBeTruthy();
+      expect(screen.queryByText(SCENE_SLOW)).toBeNull();
+      expect(within(badge).queryByRole("button", { name: "다시 시도" })).toBeNull();
+
+      await act(async () => {
+        vi.advanceTimersByTime(SCENE_SLOW_AFTER_MS - 1);
+      });
+      expect(screen.queryByText(SCENE_SLOW)).toBeNull();
+
+      await act(async () => {
+        vi.advanceTimersByTime(1);
+      });
+      const slowBadge = screen.getByText(SCENE_SLOW).closest('[role="status"]');
+      const retry = within(slowBadge).getByRole("button", { name: "다시 시도" });
+      expect(retry.getAttribute("type")).toBe("button");
+      expect(screen.queryByText(SCENE_LOADING)).toBeNull();
+
+      const reload = vi.fn();
+      vi.stubGlobal("location", { ...window.location, reload });
+      fireEvent.click(retry);
+      expect(reload).toHaveBeenCalledTimes(1);
+    } finally {
+      sceneMock.suspend = false;
+      vi.unstubAllGlobals();
+      vi.useRealTimers();
+    }
   });
 });

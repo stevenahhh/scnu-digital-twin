@@ -116,6 +116,9 @@ function tabButtonClassName(isActive) {
 const CANVAS_FALLBACK_SURFACE_CLASS =
   "[&>[role=alert]]:rounded-[12px] [&>[role=alert]]:border [&>[role=alert]]:border-[var(--colors-hairline)] [&>[role=alert]]:bg-[var(--colors-surface-1)] [&>[role=alert]]:px-5 [&>[role=alert]]:py-4 [&>[role=alert]]:text-sm [&>[role=alert]]:font-medium [&>[role=alert]]:shadow-[0_20px_48px_rgba(0,0,0,0.28)] [&>[role=alert]>button]:mt-3 [&>[role=alert]>button]:font-[600] [&>[role=alert]>button]:underline";
 
+// 3D 모델 로딩이 이 시간을 넘기면 지연 안내와 다시 시도 버튼을 보여 준다.
+const SCENE_SLOW_AFTER_MS = 15000;
+
 // Canvas 안쪽 Suspense의 fallback으로 마운트되어 있는 동안만 DOM 쪽 로딩 표시를 켠다.
 // R3F 트리 안에서는 DOM 요소를 그릴 수 없으므로 상태만 바깥으로 올린다.
 function SceneLoadingSignal({ onChange }) {
@@ -254,6 +257,17 @@ export default function App() {
   const [installationRefreshKey, setInstallationRefreshKey] = useState(0);
   const [installationPlansStatus, setInstallationPlansStatus] = useState("loading");
   const [isSceneLoading, setIsSceneLoading] = useState(false);
+  const [isSceneSlow, setIsSceneSlow] = useState(false);
+
+  // 모델 로딩이 SCENE_SLOW_AFTER_MS를 넘기면 지연 안내를 켠다. 로딩이 끝나면 타이머와 지연 상태를 함께 되돌린다.
+  useEffect(() => {
+    if (!isSceneLoading) {
+      setIsSceneSlow(false);
+      return undefined;
+    }
+    const timer = window.setTimeout(() => setIsSceneSlow(true), SCENE_SLOW_AFTER_MS);
+    return () => window.clearTimeout(timer);
+  }, [isSceneLoading]);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -655,7 +669,20 @@ export default function App() {
         <div role="status" className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center">
           <div className="flex items-center gap-3 rounded-[12px] border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] px-4 py-3 text-sm font-medium text-[var(--colors-ink-muted)] shadow-[0_20px_48px_rgba(0,0,0,0.28)]">
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--colors-hairline)] border-t-[var(--colors-primary)]" />
-            3D 캠퍼스 모델을 불러오는 중입니다
+            {isSceneSlow ? (
+              <>
+                <span className="min-w-0 break-keep">3D 캠퍼스 모델 응답이 지연되고 있습니다. 네트워크를 확인하세요.</span>
+                <button
+                  type="button"
+                  onClick={() => window.location.reload()}
+                  className="pointer-events-auto shrink-0 rounded-md border border-[var(--colors-hairline-strong)] bg-[var(--colors-surface-1)] px-3 py-1.5 text-sm font-[600] text-[var(--colors-ink)] transition hover:bg-[var(--colors-surface-2)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--colors-primary)]"
+                >
+                  다시 시도
+                </button>
+              </>
+            ) : (
+              "3D 캠퍼스 모델을 불러오는 중입니다"
+            )}
           </div>
         </div>
       )}
