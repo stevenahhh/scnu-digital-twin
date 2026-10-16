@@ -41,14 +41,20 @@ function Tower({ wing, x, isActive, onSelectFloor }) {
               <boxGeometry args={[BOX_WIDTH, BOX_HEIGHT, BOX_DEPTH]} />
               <meshStandardMaterial color={isActive ? ACTIVE_COLOR : IDLE_COLOR} transparent opacity={0.88} />
             </mesh>
-            <Html position={[0, 0, BOX_DEPTH / 2 + 0.02]} center distanceFactor={11} style={{ pointerEvents: "none" }}>
-              <div
-                className={`pointer-events-none min-w-[40px] rounded-[4px] px-2 py-1 text-center text-[13px] font-[800] ${
+            <Html position={[0, 0, BOX_DEPTH / 2 + 0.02]} center distanceFactor={11}>
+              <button
+                type="button"
+                aria-label={`${floor}층 선택`}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onSelectFloor(wing.id, floor);
+                }}
+                className={`pointer-events-auto min-w-[40px] rounded-[4px] px-2 py-1 text-center text-[13px] font-[800] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 ${
                   isActive ? "bg-black/15 text-white" : "bg-white/60 text-slate-600"
                 }`}
               >
                 {floor === 0 ? "B1" : `${floor}F`}
-              </div>
+              </button>
             </Html>
           </group>
         );

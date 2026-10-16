@@ -31,22 +31,32 @@ function RoomBox({ room, x, z, width, isSelected, isInUse, onSelect }) {
         <boxGeometry args={[boxWidth, isUtility ? BOX_HEIGHT * 0.6 : BOX_HEIGHT, ROW_DEPTH - GAP]} />
         <meshStandardMaterial color={isUtility ? UTILITY_COLOR : isSelected ? SELECTED_COLOR : IDLE_COLOR} />
       </mesh>
-      <Html position={[0, (isUtility ? BOX_HEIGHT * 0.3 : BOX_HEIGHT / 2) + 0.06, 0]} center distanceFactor={11} style={{ pointerEvents: "none" }}>
-        <div
-          className={`pointer-events-none flex flex-col items-center gap-1 whitespace-nowrap rounded-md px-2 py-1 text-center text-[12px] font-[800] ${
+      <Html position={[0, (isUtility ? BOX_HEIGHT * 0.3 : BOX_HEIGHT / 2) + 0.06, 0]} center distanceFactor={11}>
+        {isUtility ? (
+          <div className="pointer-events-none flex flex-col items-center gap-1 whitespace-nowrap rounded-md px-2 py-1 text-center text-[12px] font-[800] text-slate-400">
+            {room.roomNumber}
+          </div>
+        ) : (
+          <button
+            type="button"
+            aria-label={`${room.roomNumber} 강의실 상세`}
+            onClick={(event) => {
+              event.stopPropagation();
+              onSelect(room.id);
+            }}
+            className={`pointer-events-auto flex flex-col items-center gap-1 whitespace-nowrap rounded-md px-2 py-1 text-center text-[12px] font-[800] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 ${
             isUtility ? "text-slate-400" : isSelected ? "bg-black/15 text-white" : "text-slate-600"
-          }`}
-          style={{ maxWidth: `${Math.max(70, boxWidth * 34)}px`, whiteSpace: boxWidth > 1.6 ? "nowrap" : "normal" }}
-        >
-          {isUtility ? room.roomNumber : formatRoomNumber(room.roomNumber)}
-          {!isUtility && (
+            }`}
+            style={{ maxWidth: `${Math.max(70, boxWidth * 34)}px`, whiteSpace: boxWidth > 1.6 ? "nowrap" : "normal" }}
+          >
+            {formatRoomNumber(room.roomNumber)}
             <span
               className={`h-1.5 w-1.5 rounded-full ${
                 isInUse ? (isSelected ? "bg-white" : "bg-[var(--colors-primary)]") : "bg-slate-300"
               }`}
             />
-          )}
-        </div>
+          </button>
+        )}
       </Html>
     </group>
   );
