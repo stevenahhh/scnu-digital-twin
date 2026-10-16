@@ -1,9 +1,10 @@
 import { Html, useGLTF } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import commonElements from "../../common/data/common_elemetns.json";
 import { resolveBuildingMeta } from "./utils/buildingLabels.mjs";
+import { isCampusLabelVisible } from "./utils/campusLabelVisibility.mjs";
 
 // 클릭하지 않아도 카메라가 이 거리 안으로 들어오면 "가까이 간" 것으로 본다.
 // 클릭 시 자동으로 붙는 카메라 거리(FOCUS_CAMERA_OFFSET 기준 약 94유닛)보다 살짝
@@ -123,15 +124,23 @@ export function CityModel({
   // D4 상세가 열려 있는 동안 켜진다. 투명한 상세 화면 뒤로 라벨이 비치지 않게 숨기되,
   // 상세를 연 라벨이 닫힌 뒤 포커스를 돌려받을 수 있도록 마운트는 유지한다.
   labelsHidden = false,
+  // 열린 대시보드 패널 요소. 패널 밑으로 들어간 라벨은 숨겨 키보드 포커스가 보이지 않는 곳으로 가지 않게 한다.
+  occluderRef,
   ...props
 }) {
   const { scene } = useGLTF("/uni.glb");
-  const { camera } = useThree();
+  const { camera, gl } = useThree();
   const [targetPos, setTargetPos] = useState(null);
   const [isAutoFocusing, setIsAutoFocusing] = useState(false);
   const [labelScale, setLabelScale] = useState(1);
   const closeElementIdRef = useRef(null);
   const isInsideD4Ref = useRef(false);
+  const labelElementsRef = useRef(new Map());
+  const labelsHiddenRef = useRef(labelsHidden);
+
+  useLayoutEffect(() => {
+    labelsHiddenRef.current = labelsHidden;
+  }, [labelsHidden]);
 
   useEffect(() => {
     const controls = controlsRef?.current;
@@ -278,6 +287,25 @@ export function CityModel({
     }
   });
 
+  // 라벨은 가운데 점이 캔버스 안에 있고 열린 대시보드 패널 밑에 있지 않을 때만 보인다.
+  // visibility: hidden은 Tab 순서와 접근성 트리에서도 빠지므로 키보드 포커스가 보이지 않는 라벨로 가지 않는다.
+  // D4 상세가 열린 동안(labelsHidden)은 모두 숨긴다. 위치를 모두 읽은 뒤에 쓰기를 해 레이아웃 계산을 한 번으로 줄인다.
+  useFrame(() => {
+    const labels = labelElementsRef.current;
+    if (labels.size === 0) return;
+    const area = gl.domElement.getBoundingClientRect();
+    const occluder = occluderRef?.current?.getBoundingClientRect() ?? null;
+    const hideAll = labelsHiddenRef.current;
+    const decisions = [...labels.values()].map((element) => [
+      element,
+      !hideAll && isCampusLabelVisible(element.getBoundingClientRect(), area, occluder),
+    ]);
+    for (const [element, visible] of decisions) {
+      const next = visible ? "" : "hidden";
+      if (element.style.visibility !== next) element.style.visibility = next;
+    }
+  });
+
   const handleClick = (e) => {
     if (e.delta > 2) return;
 
@@ -351,12 +379,15 @@ export function CityModel({
             zIndexRange={[120, 0]}
           >
             <div
+              ref={(element) => {
+                if (element) labelElementsRef.current.set(anchor.elementId, element);
+                else labelElementsRef.current.delete(anchor.elementId);
+              }}
               data-qa="campus-label"
               className="pointer-events-auto flex flex-col items-center whitespace-nowrap"
               style={{
                 transform: `translate(-50%, calc(-100% - 4px)) scale(${labelScale})`,
                 transformOrigin: "bottom center",
-                visibility: labelsHidden ? "hidden" : undefined,
               }}
             >
               <button

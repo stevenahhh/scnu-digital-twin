@@ -84,6 +84,7 @@ export default function VWorldRenderer({
   onRepresentativeInstallationPlanChange,
   representativeRefreshKey,
   onD4SectionChange,
+  overlaysCovered = false,
 }) {
   const onSelectionRef = useRef(onSelection);
   const simulationDateRef = useRef(simulationDate);
@@ -93,6 +94,7 @@ export default function VWorldRenderer({
   const overlayObjectIdsRef = useRef([]);
   const highlightedRoadZoneRef = useRef(null);
   const highlightedRoadZoneIdsRef = useRef([]);
+  const overlaysRef = useRef(null);
   const campusGltfModelRef = useRef(null);
   const trafficSimulationRef = useRef(null);
   const cameraControllerRef = useRef(null);
@@ -334,105 +336,116 @@ export default function VWorldRenderer({
     };
   }, [handleOverlayDataChange]);
 
+  // 좁은 화면에서 열린 대시보드 패널은 지도 전체를 덮는다. 그 밑의 지도 오버레이는 보이지 않으므로
+  // 포커스·클릭·보조 기술 대상에서 뺀다. D4 상세는 이 묶음 밖에 두어 영향을 받지 않는다.
+  useEffect(() => {
+    const overlays = overlaysRef.current;
+    if (!overlays) return;
+    if (overlaysCovered) overlays.setAttribute("inert", "");
+    else overlays.removeAttribute("inert");
+  }, [overlaysCovered]);
+
   return (
     <div className="relative h-full w-full">
       <div id={VWORLD_MAP_ID} className="h-full w-full" />
-      {isLoading && !hasLoadError && (
-        <div
-          aria-live="polite"
-          className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center p-4"
-          role="status"
-        >
-          <div className="dashboard-status-badge flex items-center gap-2 px-3 py-2 text-xs">
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--colors-hairline)] border-t-[var(--colors-primary)]" />
-            VWorld 지도를 불러오는 중입니다.
+      <div ref={overlaysRef} data-qa="vworld-map-overlays" className="contents">
+        {isLoading && !hasLoadError && (
+          <div
+            aria-live="polite"
+            className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center p-4"
+            role="status"
+          >
+            <div className="dashboard-status-badge flex items-center gap-2 px-3 py-2 text-xs">
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--colors-hairline)] border-t-[var(--colors-primary)]" />
+              VWorld 지도를 불러오는 중입니다.
+            </div>
           </div>
-        </div>
-      )}
-      {hasLoadError && (
-        <div
-          className="absolute inset-x-0 top-0 z-10 flex justify-center p-4"
-          role="alert"
-        >
-          <div className="dashboard-status-badge flex items-center gap-3 px-3 py-2 text-xs">
-            <span>{loadErrorMessage}</span>
-            <button type="button" className="underline" onClick={() => window.location.reload()}>
-              다시 시도
+        )}
+        {hasLoadError && (
+          <div
+            className="absolute inset-x-0 top-0 z-10 flex justify-center p-4"
+            role="alert"
+          >
+            <div className="dashboard-status-badge flex items-center gap-3 px-3 py-2 text-xs">
+              <span>{loadErrorMessage}</span>
+              <button type="button" className="underline" onClick={() => window.location.reload()}>
+                다시 시도
+              </button>
+            </div>
+          </div>
+        )}
+        {!isD4SectionOpen && <VWorldCampusStatus onSelection={(selection) => onSelectionRef.current(selection)} />}
+        {/* 캠퍼스 상태 칩과 대표 설치 계획 카드는 한 세로 스택에 둔다. 절대 위치는 스택에만 주어 카드가 칩을 가리지 못하게 한다. */}
+        {!isD4SectionOpen && (
+          <div
+            data-qa="vworld-left-stack"
+            className="pointer-events-none absolute left-6 top-6 z-20 flex max-w-[calc(100%-3rem)] flex-col items-start gap-3"
+          >
+            {(campusStatus?.state === "terrain-timeout" || campusStatus?.state === "error") && (
+              <div className="dashboard-status-badge pointer-events-auto px-3 py-2 text-xs" role="status">
+                {campusStatus.message}
+              </div>
+            )}
+            <RepresentativePlanOverlayController
+              buildingIds={CAMPUS_REPRESENTATIVE_BUILDING_IDS}
+              refreshKey={representativeRefreshKey}
+              onOverlayDataChange={handleOverlayDataChange}
+              onBuildingSelect={(buildingId) => onSelectionRef.current({
+                elementId: `BLD_${buildingId}`,
+                buildingId,
+                displayName: buildingId,
+              })}
+              className="pointer-events-auto"
+            />
+          </div>
+        )}
+        {!isD4SectionOpen && trafficStatus && (
+          <div className="dashboard-status-badge absolute right-6 top-6 z-20 px-3 py-2 text-xs" role="status">
+            {trafficStatus.state === "live"
+              ? "교통 시뮬레이션 연결됨"
+              : trafficStatus.state === "connecting"
+                ? "교통 시뮬레이션 연결 중"
+                : "교통 시뮬레이션 연결 끊김"}
+          </div>
+        )}
+        {!isD4SectionOpen && (
+          <button
+            ref={d4OpenerRef}
+            type="button"
+            className="dashboard-ghost-button absolute bottom-6 left-6 z-10 min-h-11 px-4 text-xs font-extrabold shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--colors-primary)]"
+            onClick={() => {
+              activateCoordinateMarkerSelection(D4_COORDINATE_MARKER, onSelectionRef.current);
+              setIsD4SectionOpen(true);
+            }}
+          >
+            D4 공과대학 3호관 상세 보기
+          </button>
+        )}
+        {!isD4SectionOpen && selectedRoadZoneName && (
+          <div
+            role="status"
+            className="dashboard-status-badge pointer-events-auto absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 px-3 py-2 text-xs font-extrabold shadow-lg"
+          >
+            <MapPin size={14} className="text-[var(--colors-primary)]" />
+            도로 구역 · {selectedRoadZoneName}
+            <button
+              type="button"
+              onClick={() => {
+                if (highlightedRoadZoneRef.current && mapRef.current) {
+                  clearRoadZoneOverlays(mapRef.current, highlightedRoadZoneIdsRef.current);
+                }
+                highlightedRoadZoneRef.current = null;
+                highlightedRoadZoneIdsRef.current = [];
+                setSelectedRoadZoneName(null);
+              }}
+              aria-label="도로 구역 정보 닫기"
+              className="ml-1 rounded p-0.5 text-[var(--colors-ink-subtle)] hover:text-[var(--colors-ink)]"
+            >
+              <X size={13} />
             </button>
           </div>
-        </div>
-      )}
-      {!isD4SectionOpen && <VWorldCampusStatus onSelection={(selection) => onSelectionRef.current(selection)} />}
-      {/* 캠퍼스 상태 칩과 대표 설치 계획 카드는 한 세로 스택에 둔다. 절대 위치는 스택에만 주어 카드가 칩을 가리지 못하게 한다. */}
-      {!isD4SectionOpen && (
-        <div
-          data-qa="vworld-left-stack"
-          className="pointer-events-none absolute left-6 top-6 z-20 flex max-w-[calc(100%-3rem)] flex-col items-start gap-3"
-        >
-          {(campusStatus?.state === "terrain-timeout" || campusStatus?.state === "error") && (
-            <div className="dashboard-status-badge pointer-events-auto px-3 py-2 text-xs" role="status">
-              {campusStatus.message}
-            </div>
-          )}
-          <RepresentativePlanOverlayController
-            buildingIds={CAMPUS_REPRESENTATIVE_BUILDING_IDS}
-            refreshKey={representativeRefreshKey}
-            onOverlayDataChange={handleOverlayDataChange}
-            onBuildingSelect={(buildingId) => onSelectionRef.current({
-              elementId: `BLD_${buildingId}`,
-              buildingId,
-              displayName: buildingId,
-            })}
-            className="pointer-events-auto"
-          />
-        </div>
-      )}
-      {!isD4SectionOpen && trafficStatus && (
-        <div className="dashboard-status-badge absolute right-6 top-6 z-20 px-3 py-2 text-xs" role="status">
-          {trafficStatus.state === "live"
-            ? "교통 시뮬레이션 연결됨"
-            : trafficStatus.state === "connecting"
-              ? "교통 시뮬레이션 연결 중"
-              : "교통 시뮬레이션 연결 끊김"}
-        </div>
-      )}
-      {!isD4SectionOpen && (
-        <button
-          ref={d4OpenerRef}
-          type="button"
-          className="dashboard-ghost-button absolute bottom-6 left-6 z-10 min-h-11 px-4 text-xs font-extrabold shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--colors-primary)]"
-          onClick={() => {
-            activateCoordinateMarkerSelection(D4_COORDINATE_MARKER, onSelectionRef.current);
-            setIsD4SectionOpen(true);
-          }}
-        >
-          D4 공과대학 3호관 상세 보기
-        </button>
-      )}
-      {!isD4SectionOpen && selectedRoadZoneName && (
-        <div
-          role="status"
-          className="dashboard-status-badge pointer-events-auto absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 px-3 py-2 text-xs font-extrabold shadow-lg"
-        >
-          <MapPin size={14} className="text-[var(--colors-primary)]" />
-          도로 구역 · {selectedRoadZoneName}
-          <button
-            type="button"
-            onClick={() => {
-              if (highlightedRoadZoneRef.current && mapRef.current) {
-                clearRoadZoneOverlays(mapRef.current, highlightedRoadZoneIdsRef.current);
-              }
-              highlightedRoadZoneRef.current = null;
-              highlightedRoadZoneIdsRef.current = [];
-              setSelectedRoadZoneName(null);
-            }}
-            aria-label="도로 구역 정보 닫기"
-            className="ml-1 rounded p-0.5 text-[var(--colors-ink-subtle)] hover:text-[var(--colors-ink)]"
-          >
-            <X size={13} />
-          </button>
-        </div>
-      )}
+        )}
+      </div>
       {isD4SectionOpen && (
         <Suspense
           fallback={

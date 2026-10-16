@@ -20,6 +20,7 @@ import {
   X,
 } from "lucide-react";
 import VWorldRenderer from "./vworld/VWorldRenderer";
+import { usePanelCoversViewport } from "./hooks/usePanelCoversViewport";
 import { AccessibleDialog } from "./components/AccessibleDialog";
 import { MicroclimatePanel } from "./components/MicroclimatePanel";
 import { PanelErrorBoundary } from "./components/PanelErrorBoundary";
@@ -427,6 +428,7 @@ export default function App() {
   }, []);
 
   const isPanelVisible = isPanelOpen && !isD4SectionOpen;
+  const panelCoversViewport = usePanelCoversViewport();
 
   // 닫힌 패널은 화면 밖으로 밀려날 뿐 DOM에 남아 있으므로 포커스·접근성 트리에서 제외한다.
   // React 18은 `inert` 불리언 속성을 지원하지 않아 ref로 직접 토글한다.
@@ -476,6 +478,7 @@ export default function App() {
         onInstallationPlansChange={handleInstallationPlansChange}
         onRepresentativeInstallationPlanChange={handleRepresentativeInstallationPlanChange}
         representativeRefreshKey={overlayRefreshKey}
+        overlaysCovered={isPanelVisible && panelCoversViewport}
       />
       </div>
 

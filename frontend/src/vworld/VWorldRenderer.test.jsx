@@ -216,6 +216,24 @@ describe("VWorldRenderer retained map integration", () => {
     expect(returnFocusRef.current).toBe(opener);
   });
 
+  it("takes the map overlays out of focus while the open dashboard panel covers the map, but never the D4 detail", async () => {
+    mocks.vw = createVw();
+    window.__scnuVWorldMapInstance = retainedMap();
+    const simulationDate = new Date("2026-05-18T12:00:00+09:00");
+    const { rerender } = render(<VWorldRenderer onSelection={vi.fn()} simulationDate={simulationDate} overlaysCovered />);
+
+    const opener = await screen.findByRole("button", { name: "D4 공과대학 3호관 상세 보기" });
+    const overlays = opener.closest('[data-qa="vworld-map-overlays"]');
+    expect(overlays.hasAttribute("inert")).toBe(true);
+
+    rerender(<VWorldRenderer onSelection={vi.fn()} simulationDate={simulationDate} overlaysCovered={false} />);
+    expect(overlays.hasAttribute("inert")).toBe(false);
+
+    fireEvent.click(opener);
+    const detail = await screen.findByText("D4 상세 화면");
+    expect(detail.closest('[data-qa="vworld-map-overlays"]')).toBeNull();
+  });
+
   it("renders the SDK loader error message and retry action", async () => {
     mocks.loaderError = Object.assign(new Error("VWorld API 키가 없습니다. frontend/.env 에 VITE_VWORLD_API_KEY 를 설정하세요."), { code: "VWORLD_KEY_MISSING" });
     const reload = vi.fn();

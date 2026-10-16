@@ -16,7 +16,8 @@ vi.mock("@react-three/drei", () => ({
 const sceneMock = vi.hoisted(() => ({ suspend: false }));
 vi.mock("./CityModel", () => ({
   // suspend가 켜지면 끝나지 않는 Promise를 던져 Suspense fallback이 계속 떠 있게 한다.
-  CityModel: () => {
+  CityModel: (props) => {
+    sceneMock.cityModelProps = props;
     if (sceneMock.suspend) throw new Promise(() => {});
     return null;
   },
@@ -203,5 +204,23 @@ describe("Legacy and VWorld feature parity", () => {
       vi.unstubAllGlobals();
       vi.useRealTimers();
     }
+  });
+
+  it("takes the 3D map out of focus while the open panel covers a narrow viewport, and hands CityModel the panel that hides labels", () => {
+    vi.stubGlobal("innerWidth", 390);
+    const { container } = render(<App />);
+    const mapLayer = container.querySelector('[data-qa="campus-map-layer"]');
+    expect(sceneMock.cityModelProps.occluderRef.current).toBe(container.querySelector('[data-qa="dashboard-panel"]'));
+    expect(mapLayer.hasAttribute("inert")).toBe(true);
+
+    fireEvent.click(screen.getByRole("button", { name: "패널 닫기" }));
+    expect(mapLayer.hasAttribute("inert")).toBe(false);
+
+    fireEvent.click(screen.getByRole("button", { name: "패널 열기" }));
+    expect(mapLayer.hasAttribute("inert")).toBe(true);
+
+    vi.stubGlobal("innerWidth", 1024);
+    fireEvent(window, new Event("resize"));
+    expect(mapLayer.hasAttribute("inert")).toBe(false);
   });
 });

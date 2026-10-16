@@ -31,6 +31,7 @@ import {
   useSimulationSocket,
 } from "./simulation";
 import { D4SectionExperience } from "./vworld/D4SectionExperience";
+import { usePanelCoversViewport } from "./hooks/usePanelCoversViewport";
 import { VWorldCampusStatus } from "./vworld/VWorldCampusStatus";
 import { RepresentativePlanOverlayController } from "./vworld/RepresentativePlanOverlayController";
 import { CAMPUS_REPRESENTATIVE_BUILDING_IDS } from "./vworld/representativePlanOverlay.mjs";
@@ -227,6 +228,8 @@ export default function App() {
   useSimulationSocket();
   const orbitControlsRef = useRef(null);
   const panelRef = useRef(null);
+  const mapLayerRef = useRef(null);
+  const sceneStatusRef = useRef(null);
   const [selectedId, setSelectedId] = useState("");
   const [selectedBuildingId, setSelectedBuildingId] = useState("D4");
   const [editorRequest, setEditorRequest] = useState(null);
@@ -297,6 +300,19 @@ export default function App() {
     if (isPanelVisible) panel.removeAttribute("inert");
     else panel.setAttribute("inert", "");
   }, [isPanelVisible]);
+
+  const panelCoversViewport = usePanelCoversViewport();
+  const isMapCoveredByPanel = isPanelVisible && panelCoversViewport;
+
+  // 좁은 화면에서 열린 패널은 지도 전체를 덮는다. 그 밑의 3D 지도(캠퍼스 라벨 포함)와 3D 로딩 안내는
+  // 보이지 않으므로 포커스·클릭·보조 기술 대상에서 뺀다. 패널이 지도를 다 덮지 않는 넓은 화면은 그대로 둔다.
+  useEffect(() => {
+    for (const element of [mapLayerRef.current, sceneStatusRef.current]) {
+      if (!element) continue;
+      if (isMapCoveredByPanel) element.setAttribute("inert", "");
+      else element.removeAttribute("inert");
+    }
+  }, [isMapCoveredByPanel, isSceneLoading]);
 
   const activeWeather = useMemo(() => {
     if (!weatherData?.base_weather) return null;
@@ -609,7 +625,7 @@ export default function App() {
     <div className="dashboard-root relative h-dvh w-screen overflow-clip bg-[var(--colors-canvas)] text-[var(--colors-ink)]">
       <div className="absolute inset-0" style={{ background: sceneBackground }} />
 
-      <div className={`absolute inset-0 z-0 flex items-center justify-center ${CANVAS_FALLBACK_SURFACE_CLASS}`}>
+      <div ref={mapLayerRef} data-qa="campus-map-layer" className={`absolute inset-0 z-0 flex items-center justify-center ${CANVAS_FALLBACK_SURFACE_CLASS}`}>
         <PanelErrorBoundary label="3D 캠퍼스" message="3D 캠퍼스 모델을 불러오지 못했습니다">
           {/* R3F 래퍼의 기본 overflow: hidden은 스크롤 컨테이너라서, Tab으로 캔버스 밖 라벨에 포커스가 가면
               브라우저가 래퍼를 스크롤해 3D 화면이 밀린 채 남는다. clip은 똑같이 잘라 내되 스크롤되지 않는다. */}
@@ -649,6 +665,7 @@ export default function App() {
                 onBuildingProximity={handleBuildingProximity}
                 onD4Enter={handleD4Enter}
                 labelsHidden={buildingViewMode !== "campus"}
+                occluderRef={panelRef}
               />
               <CampusTrafficSimulation />
             </Suspense>
@@ -671,7 +688,7 @@ export default function App() {
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(1,1,2,0.02)_0%,rgba(1,1,2,0.08)_50%,rgba(1,1,2,0.16)_100%)]" />
 
       {isSceneLoading && (
-        <div role="status" className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center">
+        <div ref={sceneStatusRef} role="status" className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center">
           <div className="flex items-center gap-3 rounded-[12px] border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] px-4 py-3 text-sm font-medium text-[var(--colors-ink-muted)] shadow-[0_20px_48px_rgba(0,0,0,0.28)]">
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--colors-hairline)] border-t-[var(--colors-primary)]" />
             {isSceneSlow ? (
@@ -731,6 +748,7 @@ export default function App() {
 
       <div
         ref={panelRef}
+        data-qa="dashboard-panel"
         aria-hidden={isPanelVisible ? undefined : "true"}
         className="pointer-events-none absolute top-0 bottom-0 z-10 w-[var(--dashboard-panel-width)]"
         style={{
