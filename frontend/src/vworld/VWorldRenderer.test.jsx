@@ -24,7 +24,7 @@ vi.mock("./campusGltfOverlay.mjs", () => ({
 vi.mock("./D4SectionExperience", () => ({ D4SectionExperience: () => <div>D4 상세 화면</div> }));
 vi.mock("./VWorldCampusStatus", () => ({ VWorldCampusStatus: () => null }));
 vi.mock("./RepresentativePlanOverlayController", () => ({
-  RepresentativePlanOverlayController: ({ buildingIds, onOverlayDataChange }) => {
+  RepresentativePlanOverlayController: ({ buildingIds, onOverlayDataChange, className }) => {
     useEffect(() => {
       mocks.receivedBuildingIds.push(...buildingIds);
       onOverlayDataChange([{
@@ -45,7 +45,7 @@ vi.mock("./RepresentativePlanOverlayController", () => ({
       }]);
       return () => onOverlayDataChange([]);
     }, [onOverlayDataChange]);
-    return null;
+    return <aside aria-label="대표 설치 계획 지도 레이어" className={className} />;
   },
 }));
 
@@ -218,5 +218,39 @@ describe("VWorldRenderer retained map integration", () => {
       configurable: true,
       value: originalLocation,
     });
+  });
+});
+
+describe("VWorldRenderer left overlay stack", () => {
+  it.each([
+    { state: "terrain-timeout", message: "지형 높이를 확인하지 못해 건물 높이가 부정확할 수 있습니다" },
+    { state: "error", message: "캠퍼스 3D 모델을 불러오지 못했습니다" },
+  ])("stacks the $state chip above the representative plan card instead of under it", async (status) => {
+    const { createCampusGltfOverlay } = await import("./campusGltfOverlay.mjs");
+    let reportStatus = null;
+    createCampusGltfOverlay.mockImplementationOnce(async (_map, _cesium, options) => {
+      reportStatus = options.onStatus;
+      return null;
+    });
+    mocks.vw = createVw();
+    window.__scnuVWorldMapInstance = retainedMap();
+    render(<VWorldRenderer onSelection={vi.fn()} simulationDate={new Date("2026-05-18T12:00:00+09:00")} />);
+
+    await waitFor(() => expect(mocks.createdIds).toContain("SCNU_REPRESENTATIVE_PANEL_strict-plan_array-1"));
+    expect(screen.queryByText(status.message)).toBeNull();
+
+    act(() => reportStatus(status));
+
+    const chip = screen.getByText(status.message);
+    const card = screen.getByLabelText("대표 설치 계획 지도 레이어");
+    const stack = chip.parentElement;
+    expect(chip.getAttribute("role")).toBe("status");
+    expect(card.parentElement).toBe(stack);
+    expect(stack.getAttribute("data-qa")).toBe("vworld-left-stack");
+    expect(stack.className).toContain("flex-col");
+    const children = Array.from(stack.children);
+    expect(children.indexOf(chip)).toBeLessThan(children.indexOf(card));
+    expect(chip.className).not.toContain("absolute");
+    expect(chip.className).not.toContain("top-16");
   });
 });

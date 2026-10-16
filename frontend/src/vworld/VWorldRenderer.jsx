@@ -361,9 +361,28 @@ export default function VWorldRenderer({
         </div>
       )}
       {!isD4SectionOpen && <VWorldCampusStatus onSelection={(selection) => onSelectionRef.current(selection)} />}
-      {!isD4SectionOpen && (campusStatus?.state === "terrain-timeout" || campusStatus?.state === "error") && (
-        <div className="dashboard-status-badge absolute left-6 top-16 z-20 px-3 py-2 text-xs" role="status">
-          {campusStatus.message}
+      {/* 캠퍼스 상태 칩과 대표 설치 계획 카드는 한 세로 스택에 둔다. 절대 위치는 스택에만 주어 카드가 칩을 가리지 못하게 한다. */}
+      {!isD4SectionOpen && (
+        <div
+          data-qa="vworld-left-stack"
+          className="pointer-events-none absolute left-6 top-6 z-20 flex max-w-[calc(100%-3rem)] flex-col items-start gap-3"
+        >
+          {(campusStatus?.state === "terrain-timeout" || campusStatus?.state === "error") && (
+            <div className="dashboard-status-badge pointer-events-auto px-3 py-2 text-xs" role="status">
+              {campusStatus.message}
+            </div>
+          )}
+          <RepresentativePlanOverlayController
+            buildingIds={CAMPUS_REPRESENTATIVE_BUILDING_IDS}
+            refreshKey={representativeRefreshKey}
+            onOverlayDataChange={handleOverlayDataChange}
+            onBuildingSelect={(buildingId) => onSelectionRef.current({
+              elementId: `BLD_${buildingId}`,
+              buildingId,
+              displayName: buildingId,
+            })}
+            className="pointer-events-auto"
+          />
         </div>
       )}
       {!isD4SectionOpen && trafficStatus && (
@@ -374,19 +393,6 @@ export default function VWorldRenderer({
               ? "교통 시뮬레이션 연결 중"
               : "교통 시뮬레이션 연결 끊김"}
         </div>
-      )}
-      {!isD4SectionOpen && (
-        <RepresentativePlanOverlayController
-          buildingIds={CAMPUS_REPRESENTATIVE_BUILDING_IDS}
-          refreshKey={representativeRefreshKey}
-          onOverlayDataChange={handleOverlayDataChange}
-          onBuildingSelect={(buildingId) => onSelectionRef.current({
-            elementId: `BLD_${buildingId}`,
-            buildingId,
-            displayName: buildingId,
-          })}
-          className="absolute left-6 top-6 z-20"
-        />
       )}
       {!isD4SectionOpen && (
         <button
