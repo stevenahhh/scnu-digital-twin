@@ -238,6 +238,8 @@ export default function App() {
   const [popupData, setPopupData] = useState(null);
   const [popupLoading, setPopupLoading] = useState(false);
   const [popupError, setPopupError] = useState(null);
+  // D4 상세 화면(자체 대화상자)이 열린 동안에는 건물 팝업을 띄우지 않는다. 화면 뒤에 가린 팝업이 키보드 포커스를 가두지 않게 한다.
+  const [isD4SectionOpen, setIsD4SectionOpen] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -464,6 +466,7 @@ export default function App() {
       <div className="absolute inset-0 z-0">
       <VWorldRenderer
         onSelection={handleVWorldSelection}
+        onD4SectionChange={setIsD4SectionOpen}
         simulationDate={sunSimulationDate}
         editorRequest={editorRequest}
         onEditorClose={() => {
@@ -893,7 +896,7 @@ export default function App() {
 
       {/* Building Info Modal */}
       <AccessibleDialog
-        open={Boolean(selectedId)}
+        open={Boolean(selectedId) && !isD4SectionOpen}
         onClose={closeMicroclimatePopup}
         title={popupData?.name ?? selectedId}
         className="pointer-events-auto absolute left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 [&>h2]:sr-only"

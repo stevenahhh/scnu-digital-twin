@@ -1,5 +1,5 @@
 /* @vitest-environment jsdom */
-import { cleanup, render, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { StrictMode, useEffect } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -21,6 +21,7 @@ vi.mock("./campusGltfOverlay.mjs", () => ({
   createCampusGltfOverlay: vi.fn(async () => null),
   removeCampusGltfOverlay: vi.fn(),
 }));
+vi.mock("./D4SectionExperience", () => ({ D4SectionExperience: () => <div>D4 상세 화면</div> }));
 vi.mock("./VWorldCampusStatus", () => ({ VWorldCampusStatus: () => null }));
 vi.mock("./RepresentativePlanOverlayController", () => ({
   RepresentativePlanOverlayController: ({ buildingIds, onOverlayDataChange }) => {
@@ -127,6 +128,18 @@ describe("VWorldRenderer retained map integration", () => {
     const [, cesiumArg, options] = createCampusGltfOverlay.mock.calls.at(-1);
     expect(cesiumArg).toBe(window.Cesium);
     expect(typeof options?.onStatus).toBe("function");
+  });
+
+  it("reports the D4 detail experience opening so the app can hold its building popup", async () => {
+    const onD4SectionChange = vi.fn();
+    mocks.vw = createVw();
+    window.__scnuVWorldMapInstance = retainedMap();
+    render(<VWorldRenderer onSelection={vi.fn()} onD4SectionChange={onD4SectionChange} simulationDate={new Date("2026-05-18T12:00:00+09:00")} />);
+
+    await waitFor(() => expect(onD4SectionChange).toHaveBeenCalledWith(false));
+    fireEvent.click(await screen.findByRole("button", { name: "D4 공과대학 3호관 상세 보기" }));
+    await waitFor(() => expect(onD4SectionChange).toHaveBeenLastCalledWith(true));
+    expect(await screen.findByText("D4 상세 화면")).toBeTruthy();
   });
 
   it("renders the SDK loader error message and retry action", async () => {

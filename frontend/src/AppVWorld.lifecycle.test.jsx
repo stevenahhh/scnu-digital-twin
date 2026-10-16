@@ -15,9 +15,11 @@ vi.mock("./features/energy/installations/installationPlanApi.mjs", async (import
   return { ...actual, createInstallationPlanClient: () => installationClient };
 });
 vi.mock("./vworld/VWorldRenderer", () => ({
-  default: ({ onSelection, onRepresentativeInstallationPlanChange }) => <div>
+  default: ({ onSelection, onRepresentativeInstallationPlanChange, onD4SectionChange }) => <div>
     <button type="button" onClick={() => onSelection({ elementId: "BLD_D4", buildingId: "D4", displayName: "D4" })}>D4 선택</button>
     <button type="button" onClick={() => onRepresentativeInstallationPlanChange({ buildingId: "D4", installationPlanId: "plan-new" })}>새 대표 선택</button>
+    <button type="button" onClick={() => { onSelection({ elementId: "BLD_D4", buildingId: "D4", displayName: "D4" }); onD4SectionChange(true); }}>D4 상세 열기</button>
+    <button type="button" onClick={() => onD4SectionChange(false)}>D4 상세 닫기</button>
   </div>,
 }));
 vi.mock("./features/energy/analysis", () => ({ BuildingAnalysis: ({ representativePlanId }) => <div data-testid="app-representative">{representativePlanId ?? "none"}</div> }));
@@ -47,5 +49,15 @@ describe("AppVWorld installation selection lifecycle", () => {
 
     await act(async () => { resolveRepresentative({ buildingId: "D4", installationPlanId: "plan-old" }); });
     expect(screen.getByTestId("app-representative").textContent).toBe("plan-new");
+  });
+
+  it("holds the building popup while the D4 detail experience is open and shows it after the experience closes", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole("button", { name: "D4 상세 열기" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: "D4 상세 닫기" }));
+    expect(await screen.findByRole("dialog", { name: "D4" })).toBeTruthy();
   });
 });

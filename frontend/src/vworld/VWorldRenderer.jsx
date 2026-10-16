@@ -83,6 +83,7 @@ export default function VWorldRenderer({
   onInstallationPlansChange,
   onRepresentativeInstallationPlanChange,
   representativeRefreshKey,
+  onD4SectionChange,
 }) {
   const onSelectionRef = useRef(onSelection);
   const simulationDateRef = useRef(simulationDate);
@@ -107,6 +108,11 @@ export default function VWorldRenderer({
   useEffect(() => {
     onSelectionRef.current = onSelection;
   }, [onSelection]);
+
+  // D4 상세 화면은 자체 대화상자다. 열려 있는 동안 앱이 건물 팝업을 겹쳐 띄우지 않도록 상태를 알린다.
+  useEffect(() => {
+    onD4SectionChange?.(isD4SectionOpen);
+  }, [isD4SectionOpen, onD4SectionChange]);
 
   useEffect(() => {
     if (editorRequest?.scenarioId || editorRequest?.installationPlanId) {
