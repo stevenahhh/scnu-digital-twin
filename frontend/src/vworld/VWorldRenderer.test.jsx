@@ -1,5 +1,5 @@
 /* @vitest-environment jsdom */
-import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { StrictMode, useEffect } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   receivedBuildingIds: [],
   vw: null,
   loaderError: null,
+  trafficOnStatus: null,
 }));
 
 vi.mock("./webglSdkLoader.mjs", () => ({
@@ -27,7 +28,20 @@ vi.mock("./D4SectionExperience", () => ({
     return <div>D4 상세 화면<button type="button" onClick={props.onClose}>D4 상세 닫기</button></div>;
   },
 }));
-vi.mock("./VWorldCampusStatus", () => ({ VWorldCampusStatus: () => null }));
+vi.mock("./VWorldCampusStatus", () => ({
+  VWorldCampusStatus: ({ className }) => <aside data-testid="campus-status" className={className} />,
+}));
+vi.mock("./trafficSimulationOverlay.mjs", () => ({
+  createVWorldTrafficSimulation: vi.fn((options) => {
+    mocks.trafficOnStatus = options.onStatus;
+    return { dispose: vi.fn() };
+  }),
+}));
+vi.mock("./roadZones.mjs", async (importOriginal) => ({
+  ...(await importOriginal()),
+  setRoadZoneHighlighted: vi.fn(() => []),
+  clearRoadZoneOverlays: vi.fn(),
+}));
 vi.mock("./RepresentativePlanOverlayController", () => ({
   RepresentativePlanOverlayController: ({ buildingIds, onOverlayDataChange, className }) => {
     useEffect(() => {
@@ -56,6 +70,7 @@ vi.mock("./RepresentativePlanOverlayController", () => ({
 
 import VWorldRenderer from "./VWorldRenderer.jsx";
 import { D4_VWORLD_MODEL_IDS } from "./d4VWorldModel.mjs";
+import { findRoadZoneAt, ROAD_ZONES } from "./roadZones.mjs";
 
 class Geometry {
   setId(value) { this.id = value; }
@@ -103,6 +118,7 @@ afterEach(() => {
   mocks.createdIds.length = 0;
   mocks.receivedBuildingIds.length = 0;
   mocks.loaderError = null;
+  mocks.trafficOnStatus = null;
 });
 
 class ResizeObserver {
@@ -290,5 +306,118 @@ describe("VWorldRenderer left overlay stack", () => {
     expect(children.indexOf(chip)).toBeLessThan(children.indexOf(card));
     expect(chip.className).not.toContain("absolute");
     expect(chip.className).not.toContain("top-16");
+  });
+});
+
+describe("VWorldRenderer map control layout", () => {
+  const simulationDate = new Date("2026-05-18T12:00:00+09:00");
+  const terrainMessage = "지형 높이를 확인하지 못해 건물 높이가 부정확할 수 있습니다";
+
+  function roadZonePoint() {
+    for (const zone of ROAD_ZONES) {
+      const ring = zone.rings[0];
+      const xs = ring.map(([x]) => x);
+      const ys = ring.map(([, y]) => y);
+      const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+      for (let i = 1; i < 40; i += 1) {
+        for (let j = 1; j < 40; j += 1) {
+          const longitude = x0 + ((x1 - x0) * i) / 40;
+          const latitude = y0 + ((y1 - y0) * j) / 40;
+          if (findRoadZoneAt(longitude, latitude)?.id === zone.id) return { zone, longitude, latitude };
+        }
+      }
+    }
+    throw new Error("no road-zone interior point");
+  }
+
+  it("stacks the terrain chip, the traffic badge and the plan card in that order in the top-left column", async () => {
+    const { createCampusGltfOverlay } = await import("./campusGltfOverlay.mjs");
+    let reportStatus = null;
+    createCampusGltfOverlay.mockImplementationOnce(async (_map, _cesium, options) => {
+      reportStatus = options.onStatus;
+      return null;
+    });
+    mocks.vw = createVw();
+    window.__scnuVWorldMapInstance = retainedMap();
+    render(<VWorldRenderer onSelection={vi.fn()} simulationDate={simulationDate} />);
+
+    await waitFor(() => expect(mocks.trafficOnStatus).toBeTypeOf("function"));
+    act(() => {
+      reportStatus({ state: "terrain-timeout", message: terrainMessage });
+      mocks.trafficOnStatus({ state: "live" });
+    });
+
+    const column = document.querySelector('[data-qa="vworld-left-stack"]');
+    const chip = screen.getByText(terrainMessage);
+    const traffic = screen.getByText("교통 시뮬레이션 연결됨");
+    const card = screen.getByLabelText("대표 설치 계획 지도 레이어");
+    for (const element of [chip, traffic, card]) expect(element.parentElement).toBe(column);
+    const children = Array.from(column.children);
+    expect(children.indexOf(chip)).toBeLessThan(children.indexOf(traffic));
+    expect(children.indexOf(traffic)).toBeLessThan(children.indexOf(card));
+    expect(traffic.getAttribute("role")).toBe("status");
+    expect(traffic.className).not.toMatch(/\babsolute\b/);
+  });
+
+  it("puts a map load failure and its retry first in the top-left column", async () => {
+    mocks.loaderError = Object.assign(new Error("VWorld SDK를 불러오지 못했습니다. 네트워크를 확인하세요."), { code: "VWORLD_SDK_UNAVAILABLE" });
+    render(<VWorldRenderer onSelection={vi.fn()} simulationDate={simulationDate} />);
+
+    const alert = (await screen.findByText("VWorld SDK를 불러오지 못했습니다. 네트워크를 확인하세요.")).closest('[role="alert"]');
+    const column = document.querySelector('[data-qa="vworld-left-stack"]');
+    expect(column.firstElementChild).toBe(alert);
+    expect(within(alert).getByRole("button", { name: "다시 시도" })).toBeTruthy();
+    expect(alert.className).toMatch(/\bpointer-events-auto\b/);
+  });
+
+  it("shows the map loading message first in the top-left column while the map starts", async () => {
+    const { createCampusGltfOverlay } = await import("./campusGltfOverlay.mjs");
+    createCampusGltfOverlay.mockImplementationOnce(() => new Promise(() => {}));
+    mocks.vw = createVw();
+    window.__scnuVWorldMapInstance = retainedMap();
+    render(<VWorldRenderer onSelection={vi.fn()} simulationDate={simulationDate} />);
+
+    await waitFor(() => expect(mocks.createdIds).toContain("SCNU_CAMPUS_AREA"));
+    const loading = screen.getByText("VWorld 지도를 불러오는 중입니다.").closest('[role="status"]');
+    const column = document.querySelector('[data-qa="vworld-left-stack"]');
+    expect(column.firstElementChild).toBe(loading);
+  });
+
+  it("keeps the SOLAR card, a selected road-zone chip and the D4 opener in one bottom-left column", async () => {
+    const map = retainedMap();
+    mocks.vw = createVw();
+    window.__scnuVWorldMapInstance = map;
+    render(<VWorldRenderer onSelection={vi.fn()} simulationDate={simulationDate} />);
+
+    await waitFor(() => expect(map.onClick.addEventListener).toHaveBeenCalled());
+    const handleMapClick = map.onClick.addEventListener.mock.calls.at(-1)[0];
+    const { zone, longitude, latitude } = roadZonePoint();
+    act(() => handleMapClick(null, null, { longitudeDD: longitude, latitudeDD: latitude }, null));
+
+    const chip = (await screen.findByRole("button", { name: "도로 구역 정보 닫기" })).closest('[role="status"]');
+    expect(chip.textContent).toContain(zone.name);
+    const opener = screen.getByRole("button", { name: "D4 공과대학 3호관 상세 보기" });
+    const campus = screen.getByTestId("campus-status");
+    const column = opener.parentElement;
+    expect(column.getAttribute("data-qa")).toBe("vworld-bottom-stack");
+    for (const element of [campus, chip]) expect(element.parentElement).toBe(column);
+    const children = Array.from(column.children);
+    expect(children.indexOf(campus)).toBeLessThan(children.indexOf(chip));
+    expect(children.indexOf(chip)).toBeLessThan(children.indexOf(opener));
+    for (const element of [campus, chip, opener]) expect(element.className).not.toMatch(/\babsolute\b/);
+    expect(campus.className).toBe("hidden max-w-[280px] lg:block");
+  });
+
+  it("lays the map overlays out inside the visible map area", async () => {
+    mocks.vw = createVw();
+    window.__scnuVWorldMapInstance = retainedMap();
+    const { rerender } = render(<VWorldRenderer onSelection={vi.fn()} simulationDate={simulationDate} overlayInsetRight="var(--dashboard-panel-width)" />);
+
+    const overlays = (await screen.findByRole("button", { name: "D4 공과대학 3호관 상세 보기" })).closest('[data-qa="vworld-map-overlays"]');
+    expect(overlays.className).toMatch(/\babsolute\b/);
+    expect(overlays.style.right).toBe("var(--dashboard-panel-width)");
+
+    rerender(<VWorldRenderer onSelection={vi.fn()} simulationDate={simulationDate} overlayInsetRight="0px" />);
+    expect(overlays.style.right).toBe("0px");
   });
 });

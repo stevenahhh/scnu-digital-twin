@@ -479,6 +479,7 @@ export default function App() {
         onRepresentativeInstallationPlanChange={handleRepresentativeInstallationPlanChange}
         representativeRefreshKey={overlayRefreshKey}
         overlaysCovered={isPanelVisible && panelCoversViewport}
+        overlayInsetRight={isPanelVisible && !panelCoversViewport ? "var(--dashboard-panel-width)" : "0px"}
       />
       </div>
 
