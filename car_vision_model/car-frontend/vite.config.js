@@ -9,7 +9,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/ws': {
-        target: 'ws://127.0.0.1:8000',
+        target: `ws://127.0.0.1:${process.env.CAR_DEMO_PORT ?? 8003}`,
         ws: true,
       }
     }
