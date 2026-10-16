@@ -71,6 +71,11 @@ export function createCampusModelMatrix(viewer, Cesium, config = CAMPUS_GLTF_OVE
   );
 }
 
+const LOAD_FAILED_STATUS = Object.freeze({
+  state: "error",
+  message: "캠퍼스 3D 모델을 불러오지 못했습니다",
+});
+
 // Until the globe finishes loading its tiles, getHeight answers from whatever
 // coarse tile is already resident and reports the anchor anywhere from -98 m to
 // +133 m, which buries the campus under the terrain. `tilesLoaded` alone is not
@@ -80,11 +85,6 @@ export function createCampusModelMatrix(viewer, Cesium, config = CAMPUS_GLTF_OVE
 // AND two consecutive identical readings, then re-anchor exactly once.
 // Re-anchoring later is unsafe - the coarse readings come back when the camera
 // leaves the campus and its tiles are evicted.
-const LOAD_FAILED_STATUS = Object.freeze({
-  state: "error",
-  message: "캠퍼스 3D 모델을 불러오지 못했습니다",
-});
-
 const TERRAIN_READY = Object.freeze({
   intervalMs: 250,
   toleranceMeters: 0.1,

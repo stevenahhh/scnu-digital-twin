@@ -43,6 +43,7 @@ describe("BuildingAnalysis", () => {
     expect(screen.queryByText("분석할 설치 계획이 없습니다.")).toBeNull();
     view.rerender(<BuildingAnalysis buildingId="D4" plans={[]} plansStatus="ready" initialDate="2026-05-18" client={client} />);
     expect(screen.getByText("분석할 설치 계획이 없습니다.")).toBeTruthy();
+    // Not a sleep: lets the mocked client's listScenarios/listRuns promises settle inside act before the test ends.
     await act(async () => {});
   });
 

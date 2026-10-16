@@ -24,7 +24,7 @@ test("classifies an HTTP 500 response as offline", () => {
   });
 });
 
-test("classifies an aborted timeout as offline with timeout text", async () => {
+test("classifies an aborted timeout as offline with the C5 offline text", async () => {
   const result = await fetchTrafficOnce(
     (_url, { signal }) => new Promise((_resolve, reject) => {
       signal.addEventListener("abort", () => reject(signal.reason), { once: true });
