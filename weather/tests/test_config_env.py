@@ -42,6 +42,22 @@ def test_dotenv_parsing_and_environment_precedence(config_module, tmp_path, monk
     assert config.WEATHER_CACHE_FILE == ""
 
 
+def test_relative_cache_file_resolves_against_the_repository_root(config_module, tmp_path, monkeypatch):
+    monkeypatch.delenv("WEATHER_CACHE_FILE", raising=False)
+    monkeypatch.chdir(tmp_path / "weather")
+    config = importlib.reload(config_module)
+    assert config.WEATHER_CACHE_FILE == str(tmp_path.resolve() / "weather" / "data" / "weather-cache.json")
+
+    monkeypatch.setenv("WEATHER_CACHE_FILE", "custom/cache.json")
+    config = importlib.reload(config_module)
+    assert config.WEATHER_CACHE_FILE == str(tmp_path.resolve() / "custom" / "cache.json")
+
+    absolute = tmp_path / "elsewhere" / "cache.json"
+    monkeypatch.setenv("WEATHER_CACHE_FILE", str(absolute))
+    config = importlib.reload(config_module)
+    assert config.WEATHER_CACHE_FILE == str(absolute)
+
+
 def test_defaults_fallbacks_and_numeric_parsing(config_module, monkeypatch):
     monkeypatch.delenv("KMA_SERVICE_KEY", raising=False)
     monkeypatch.delenv("AIRKOREA_SERVICE_KEY", raising=False)

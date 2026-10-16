@@ -43,6 +43,33 @@ def test_kma_current_parses_observed_at_and_retries_no_data(monkeypatch):
     assert result["temperature"] == 21.5
 
 
+@pytest.mark.parametrize("items_payload", ["", None, {"item": []}])
+def test_kma_current_treats_an_empty_items_payload_as_no_data(monkeypatch, items_payload):
+    calls = []
+
+    def fake_request(source, url, params, **kwargs):
+        calls.append(params["base_time"])
+        return {"response": {"header": {"resultCode": "00"}, "body": {"items": items_payload}}}
+
+    monkeypatch.setattr(kma_current.config, "KMA_SERVICE_KEY", "test-key")
+    monkeypatch.setattr(kma_current, "request_json", fake_request)
+
+    with pytest.raises(UpstreamError) as error:
+        kma_current.fetch_kma_current(datetime(2025, 1, 2, 4, 30))
+
+    assert error.value.kind == "no_data"
+    assert calls == ["0300", "0200"]
+
+
+def test_kma_current_accepts_a_single_item_object(monkeypatch):
+    monkeypatch.setattr(kma_current.config, "KMA_SERVICE_KEY", "test-key")
+    monkeypatch.setattr(kma_current, "request_json", lambda *args, **kwargs: response({"category": "T1H", "obsrValue": "18.0"}))
+
+    result = kma_current.fetch_kma_current(datetime(2025, 1, 2, 4, 30))
+
+    assert result["temperature"] == 18.0
+
+
 @pytest.mark.parametrize("error_kind", ["timeout", "connection"])
 def test_kma_current_does_not_retry_transport_errors(monkeypatch, error_kind):
     calls = []

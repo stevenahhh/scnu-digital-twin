@@ -162,7 +162,8 @@ when empty; `weather/.env` only fills gaps. Copy `weather/.env.example` to start
   `WEATHER_UPSTREAM_RETRY_AFTER_S` (60).
 - `WEATHER_CACHE_TTL_KMA_CURRENT_S` (600), `WEATHER_CACHE_TTL_KMA_FORECAST_S` (3600),
   `WEATHER_CACHE_TTL_AIRKOREA_S` (1800), `WEATHER_CACHE_MAX_STALE_S` (10800).
-- `WEATHER_CACHE_FILE`: default `weather/data/weather-cache.json`; empty disables it.
+- `WEATHER_CACHE_FILE`: default `weather/data/weather-cache.json`; a relative path resolves
+  against the repository root; empty disables it. A failed write is logged, never an error.
 - `WEATHER_ENERGY_DB`: energy SQLite path.
 
 Frontend (`frontend/.env`, copied from `frontend/.env.example`): `VITE_API_URL` (weather; `VITE_WEATHER_API_URL`

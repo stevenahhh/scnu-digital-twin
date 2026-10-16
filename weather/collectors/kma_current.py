@@ -30,6 +30,15 @@ BASE_URL = config.KMA_BASE_URL + "/1360000/VilageFcstInfoService_2.0/getUltraSrt
 KST = timezone(timedelta(hours=9))
 
 
+def _observation_items(data: dict) -> list:
+    """초단기실황 item 목록. 빈 문자열·누락·단일 dict 응답도 목록으로 맞춘다(예보 수집기와 같은 규칙)."""
+    payload = data["response"]["body"]["items"]
+    items = payload.get("item", []) if isinstance(payload, dict) else payload
+    if isinstance(items, dict):
+        items = [items]
+    return items if isinstance(items, list) else []
+
+
 # =========================================================
 # 보조: 기준시각 계산
 # =========================================================
@@ -149,8 +158,7 @@ def fetch_kma_current(now: datetime | None = None) -> dict:
             connect_timeout=config.WEATHER_UPSTREAM_CONNECT_TIMEOUT_S,
             read_timeout=config.WEATHER_UPSTREAM_READ_TIMEOUT_S,
         )
-        items = data["response"]["body"]["items"]["item"]
-        if not items:
+        if not _observation_items(data):
             raise UpstreamError("KMA", "no_data", "No current observations returned")
         return data
 
@@ -163,7 +171,7 @@ def fetch_kma_current(now: datetime | None = None) -> dict:
         base_date, base_time = previous.strftime("%Y%m%d"), previous.strftime("%H00")
         data = fetch(base_date, base_time)
 
-    items = data["response"]["body"]["items"]["item"]
+    items = _observation_items(data)
     observed_at = datetime.strptime(
         f"{base_date}{base_time}", "%Y%m%d%H%M"
     ).replace(tzinfo=KST).isoformat()

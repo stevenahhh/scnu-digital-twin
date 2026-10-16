@@ -63,7 +63,18 @@ WEATHER_CACHE_TTL_KMA_FORECAST_S = _number("WEATHER_CACHE_TTL_KMA_FORECAST_S", 3
 WEATHER_CACHE_TTL_AIRKOREA_S = _number("WEATHER_CACHE_TTL_AIRKOREA_S", 1800)
 WEATHER_CACHE_MAX_STALE_S = _number("WEATHER_CACHE_MAX_STALE_S", 10800)
 WEATHER_UPSTREAM_RETRY_AFTER_S = _number("WEATHER_UPSTREAM_RETRY_AFTER_S", 60)
-WEATHER_CACHE_FILE = _setting("WEATHER_CACHE_FILE", "weather/data/weather-cache.json")
+_REPOSITORY_ROOT = Path(__file__).resolve().parent.parent
+
+
+def _repository_path(value: str) -> str:
+    """상대 경로는 실행 위치가 아니라 저장소 루트 기준으로 푼다. 빈 값은 '끄기'라는 뜻이라 그대로 둔다."""
+    if not value:
+        return value
+    path = Path(value)
+    return str(path if path.is_absolute() else _REPOSITORY_ROOT / path)
+
+
+WEATHER_CACHE_FILE = _repository_path(_setting("WEATHER_CACHE_FILE", "weather/data/weather-cache.json"))
 
 # 순천대학교 근처 격자 좌표
 KMA_NX = 67

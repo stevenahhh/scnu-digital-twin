@@ -133,6 +133,18 @@ def test_persistence_round_trip_between_instances(tmp_path) -> None:
     )
 
 
+def test_unwritable_persistence_path_still_returns_the_live_value(tmp_path, caplog) -> None:
+    blocker = tmp_path / "blocker"
+    blocker.write_text("a file where the cache directory should be", encoding="utf-8")
+    cache = TTLCache(blocker / "cache.json")
+    with caplog.at_level("WARNING", logger="weather.collectors.cache"):
+        result = cache.get_or_fetch("weather", lambda: "live", ttl_s=10, max_stale_s=60, now=100)
+    assert (result.value, result.source, result.stale) == ("live", "live", False)
+    assert "weather cache persist" in caplog.text
+    again = cache.get_or_fetch("weather", lambda: pytest.fail("fresh entry should be served from memory"), ttl_s=10, max_stale_s=60, now=105)
+    assert (again.value, again.source) == ("live", "cache")
+
+
 def test_corrupt_persistence_file_is_ignored(tmp_path) -> None:
     path = tmp_path / "cache.json"
     path.write_text("{invalid", encoding="utf-8")

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import tempfile
 import threading
@@ -10,6 +11,8 @@ from pathlib import Path
 from typing import Callable, Generic, TypeVar
 
 T = TypeVar("T")
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -27,6 +30,7 @@ class TTLCache:
         self._failures: dict[str, tuple[float, Exception]] = {}
         self._locks: dict[str, threading.Lock] = {}
         self._lock = threading.Lock()
+        self._persist_lock = threading.Lock()
         self._persist_path = Path(persist_path) if persist_path is not None else None
         if self._persist_path is not None:
             try:
@@ -51,23 +55,32 @@ class TTLCache:
     def _persist(self) -> None:
         if self._persist_path is None:
             return
-        self._persist_path.parent.mkdir(parents=True, exist_ok=True)
-        with self._lock:
-            snapshot = dict(self._entries)
-        payload = {
-            key: {"value": value, "fetched_at": fetched_at}
-            for key, (value, fetched_at) in snapshot.items()
-        }
-        fd, temporary = tempfile.mkstemp(dir=self._persist_path.parent)
-        try:
-            with os.fdopen(fd, "w", encoding="utf-8") as stream:
-                json.dump(payload, stream)
-                stream.flush()
-                os.fsync(stream.fileno())
-            os.replace(temporary, self._persist_path)
-        finally:
-            if os.path.exists(temporary):
-                os.unlink(temporary)
+        # 저장은 선택 기능이다. 파일을 쓸 수 없어도 받아 온 실시간 값은 그대로 돌려주고 원인은 로그로 남긴다.
+        # 스냅샷과 쓰기를 한 잠금 안에서 해서 오래된 스냅샷이 더 새 파일을 덮어쓰지 못하게 한다.
+        with self._persist_lock:
+            with self._lock:
+                snapshot = dict(self._entries)
+            payload = {
+                key: {"value": value, "fetched_at": fetched_at}
+                for key, (value, fetched_at) in snapshot.items()
+            }
+            try:
+                self._persist_path.parent.mkdir(parents=True, exist_ok=True)
+                fd, temporary = tempfile.mkstemp(dir=self._persist_path.parent)
+            except OSError as error:
+                logger.warning("weather cache persist skipped (%s): %s", self._persist_path, error)
+                return
+            try:
+                with os.fdopen(fd, "w", encoding="utf-8") as stream:
+                    json.dump(payload, stream)
+                    stream.flush()
+                    os.fsync(stream.fileno())
+                os.replace(temporary, self._persist_path)
+            except OSError as error:
+                logger.warning("weather cache persist failed (%s): %s", self._persist_path, error)
+            finally:
+                if os.path.exists(temporary):
+                    os.unlink(temporary)
 
     def get_or_fetch(
         self,
