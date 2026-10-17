@@ -5,16 +5,9 @@ import { TrafficSimulationLayer } from "./components/TrafficSimulationLayer";
 import { NetworkDebugLayer } from "./components/NetworkDebugLayer";
 import { RouteDigitizerLayer } from "./components/RouteDigitizerLayer";
 import { useRouteEditorStore } from "./stores/routeEditorStore";
+import { CAMPUS_TRAFFIC_COORDINATE_CONFIG } from "./utils/campusTrafficCoordinates.mjs";
 
-// routes.geojson uses local east/north meters relative to the configured D4
-// coordinate. The GLB was exported with this uniform scale and CityModel
-// recenters its selectable-building anchors around the origin.
-export const CAMPUS_TRAFFIC_COORDINATE_CONFIG = Object.freeze({
-  origin: { x: -214.35, y: 24, z: -93.251 },
-  scale: 0.6242171526,
-  rotation_degrees: 0,
-  invert_z: true,
-});
+export { CAMPUS_TRAFFIC_COORDINATE_CONFIG };
 
 const DOWN = new THREE.Vector3(0, -1, 0);
 

@@ -5,6 +5,7 @@ import * as THREE from "three";
 import commonElements from "../../common/data/common_elemetns.json";
 import { resolveBuildingMeta } from "./utils/buildingLabels.mjs";
 import { isCampusLabelVisible } from "./utils/campusLabelVisibility.mjs";
+import { campusModelCenter } from "./simulation/utils/campusTrafficCoordinates.mjs";
 
 // 클릭하지 않아도 카메라가 이 거리 안으로 들어오면 "가까이 간" 것으로 본다.
 // 클릭 시 자동으로 붙는 카메라 거리(FOCUS_CAMERA_OFFSET 기준 약 94유닛)보다 살짝
@@ -199,12 +200,13 @@ export function CityModel({
     return buildLabelAnchors(scene);
   }, [scene]);
 
+  // 교통 시뮬레이션(차량·보행자·위험 지점)은 BLD_D4 라벨 앵커가 교통 좌표 원점에 오는 화면 좌표계를 기준으로 보정됐다.
+  // 라벨 평균으로 재중심화하면 라벨 규칙이 바뀔 때마다 모델만 움직여 둘이 어긋나므로, D4 앵커로 기준점을 정한다.
   const center = useMemo(() => {
-    if (labelAnchors.length === 0) return new THREE.Vector3(0, 0, 0);
-    const c = new THREE.Vector3();
-    labelAnchors.forEach(anchor => c.add(new THREE.Vector3(...anchor.position)));
-    c.divideScalar(labelAnchors.length);
-    return c;
+    const d4Anchor = labelAnchors.find((anchor) => anchor.elementId === D4_ELEMENT_ID);
+    if (!d4Anchor) return new THREE.Vector3(0, 0, 0);
+    const { x, z } = campusModelCenter(d4Anchor.position);
+    return new THREE.Vector3(x, 0, z);
   }, [labelAnchors]);
 
   useFrame(() => {
