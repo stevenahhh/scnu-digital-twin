@@ -6,13 +6,14 @@ import { NetworkDebugLayer } from "./components/NetworkDebugLayer";
 import { RouteDigitizerLayer } from "./components/RouteDigitizerLayer";
 import { useRouteEditorStore } from "./stores/routeEditorStore";
 import { CAMPUS_TRAFFIC_COORDINATE_CONFIG } from "./utils/campusTrafficCoordinates.mjs";
+import { CAMPUS_MODEL_URL } from "../campusModelAsset.mjs";
 
 export { CAMPUS_TRAFFIC_COORDINATE_CONFIG };
 
 const DOWN = new THREE.Vector3(0, -1, 0);
 
 export function CampusTrafficSimulation() {
-  const { scene } = useGLTF("/uni.glb");
+  const { scene } = useGLTF(CAMPUS_MODEL_URL);
   const raycaster = useMemo(() => new THREE.Raycaster(), []);
   const cache = useRef(new Map());
   const editorEnabled = useRouteEditorStore((state) => state.enabled);

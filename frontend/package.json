@@ -8,7 +8,9 @@
     "build": "vite build",
     "build:vworld": "vite build --mode vworld --outDir dist-vworld",
     "preview": "vite preview",
-    "test": "node scripts/run-tests.mjs"
+    "test": "node scripts/run-tests.mjs",
+    "model:fetch": "bun scripts/campus-model/fetch-sources.mjs",
+    "model:build": "bun scripts/campus-model/build-campus-model.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.122.0",

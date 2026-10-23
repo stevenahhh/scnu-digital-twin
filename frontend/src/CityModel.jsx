@@ -6,6 +6,7 @@ import commonElements from "../../common/data/common_elemetns.json";
 import { resolveBuildingMeta } from "./utils/buildingLabels.mjs";
 import { isCampusLabelVisible } from "./utils/campusLabelVisibility.mjs";
 import { campusModelCenter } from "./simulation/utils/campusTrafficCoordinates.mjs";
+import { CAMPUS_MODEL_URL } from "./campusModelAsset.mjs";
 
 // 클릭하지 않아도 카메라가 이 거리 안으로 들어오면 "가까이 간" 것으로 본다.
 // 클릭 시 자동으로 붙는 카메라 거리(FOCUS_CAMERA_OFFSET 기준 약 94유닛)보다 살짝
@@ -129,7 +130,7 @@ export function CityModel({
   occluderRef,
   ...props
 }) {
-  const { scene } = useGLTF("/uni.glb");
+  const { scene } = useGLTF(CAMPUS_MODEL_URL);
   const { camera, gl } = useThree();
   const [targetPos, setTargetPos] = useState(null);
   const [isAutoFocusing, setIsAutoFocusing] = useState(false);
@@ -182,6 +183,7 @@ export function CityModel({
   useEffect(() => {
     if (!scene) return;
 
+    const anisotropy = gl.capabilities.getMaxAnisotropy();
     scene.traverse((child) => {
       if (!child.isMesh) return;
 
@@ -192,8 +194,14 @@ export function CityModel({
       if (!child.userData.originalColor && child.material.color) {
         child.userData.originalColor = child.material.color.clone();
       }
+      // campus-v2.glb: sharper ground/facade textures at grazing angles, and window glow only at night.
+      if (child.material.map) child.material.map.anisotropy = anisotropy;
+      if (child.material.emissiveMap) {
+        child.userData.hasWindowGlow = true;
+        child.material.emissiveIntensity = 0;
+      }
     });
-  }, [scene]);
+  }, [gl, scene]);
 
   const labelAnchors = useMemo(() => {
     if (!scene) return [];
@@ -226,6 +234,10 @@ export function CityModel({
             : baseColor;
 
         child.material.color.lerp(targetColor, 0.05);
+        if (child.userData.hasWindowGlow) {
+          const glow = isNight ? 1 : 0;
+          child.material.emissiveIntensity += (glow - child.material.emissiveIntensity) * 0.05;
+        }
       });
     }
 
@@ -411,4 +423,4 @@ export function CityModel({
   );
 }
 
-useGLTF.preload("/uni.glb");
+useGLTF.preload(CAMPUS_MODEL_URL);
