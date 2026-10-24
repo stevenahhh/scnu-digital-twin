@@ -25,6 +25,9 @@ node --test src/campusModelAsset.test.mjs
 | `stages/markings.mjs` | road markings: the photo detections of `data/photo/markings.geojson` checked against the photo and the surveyed ground, estimated crossings where canopy hides the paint, and the `Road_Markings` decal mesh on the Topography triangles (see Road markings) |
 | `stages/ground.mjs` | procedural ground layer (land cover, ground features from `osm-ground.json`), the orthophoto laid over it (photo paint under the markings suppressed), ground material, Topography chunks and the surface the markings lie on (`topographySurface`) |
 | `stages/trees.mjs` | `placeTrees` (placement masks, CHMv2-driven placement; runs before the ground) and `buildTrees` (species geometry, instanced tree nodes) |
+| `stages/furniture.mjs` | `loadFurniture` (the surveyed outdoor objects, the footprints trees keep out of and the photo areas the ground suppresses; runs before the trees) and `buildFurniture` (the merged `Furniture` / `Furniture_Glass` nodes and the estimated benches; runs after the ground) (see Street furniture) |
+| `stages/lights.mjs` | `placeLamps` (surveyed lamps plus estimated ones along the walkway outlines), `buildLights` (`Lamps_heads`, `Lamps_pools`) and the lamp poles drawn into `Furniture` |
+| `lib/solids.mjs` | the solid-modelling kit the furniture and lamps share (boxes, beams, poles, prisms, cones; flat-shaded, oriented by geometry) |
 | `lib/geometry.mjs` | plan-view ring helpers (area, centroid, point-in-ring, cleaning) |
 | `lib/ortho.mjs` | the VWorld z19 mosaic in `data/ortho/` and its Web Mercator frame |
 | `lib/orthoGround.mjs` | orthophoto ground composition and the photo colour calibration (see Orthophoto ground) |
@@ -48,6 +51,7 @@ node --test src/campusModelAsset.test.mjs
 | `docs/assets/data/walkways_wgs84.geojson` | A003 sidewalk outlines (closed rings along kerb and back edge, some open lines): paved areas and kerbs |
 | `docs/assets/data/crosswalks_wgs84.geojson` | digitised crosswalk polygons: only where a crossing the photo shows no zebra for gets estimated bars |
 | `data/photo/markings.geojson` | painted road markings traced from the NGII 2025 orthophoto (see `data/photo/README.md`): the `Road_Markings` mesh |
+| `data/photo/objects-campus.geojson` | outdoor objects surveyed on the NGII 2025 orthophoto over every tile of EXTENT (see `data/photo/README.md`): street lamps, signals, signs, walls, fences, planters, benches, shelters, pergolas, gazebos, the stands and the 구령대, sports equipment, the footbridge and the plaza structures (see Street furniture) |
 
 `fetch/ortho.mjs` (also run by `fetch-sources.mjs`) caches the z19 WMTS tiles over EXTENT in `.cache/`
 (ignored by git) and writes them, unresampled, into the committed mosaic `data/ortho/`. VWorld data is
@@ -294,7 +298,9 @@ covers gets no proxy. That node keeps its own label. Records under 12 m² are no
   tree crowns (see Orthophoto ground).
 - `Road_Markings`: the painted road markings the orthophoto shows, one decal mesh on the terrain (see Road markings).
 - `Trees_*`: instanced broadleaf, round and pine trees placed over CHMv2 canopy (see Trees above),
-  kept off buildings, roads and walkways.
+  kept off buildings, roads, walkways and the roofed street furniture.
+- `Furniture`, `Furniture_Glass`, `Lamps_heads`, `Lamps_pools`: every surveyed outdoor object, the lamps and the
+  estimated path lamps and benches (see Street furniture).
 
 ## Road markings (`stages/markings.mjs`)
 
@@ -336,6 +342,103 @@ with a white/yellow palette texture as base colour and emissive map (no vertex c
 emissive map at night, so the paint stays faintly visible after dark (`KHR_materials_emissive_strength` 0.18).
 One mesh, one draw call; about 16,000 triangles and 38 KB in the packed GLB. Positions, widths and estimated
 crossings are estimates traced from imagery, not survey data.
+
+## Street furniture (`stages/furniture.mjs`, `stages/lights.mjs`)
+
+`data/photo/objects-campus.geojson` is the campus-wide survey of outdoor objects on the NGII 2025 orthophoto: 175
+objects over all 154 tiles of EXTENT, each with its method, confidence and an estimated `height_m` with its
+`height_source` (survey method, coverage and limits in `data/photo/README.md`). Every object is built at its
+surveyed position. Shapes, colours and heights come from the SCNU 360 VR tour, which is a visual reference only:
+nothing is copied from it and nothing links to it.
+
+| Survey kind | Built as |
+|---|---|
+| `street_lamp` | see Lamps below |
+| `traffic_signal_pole` | 6.6 m pole, horizontal mast arm over the OSM arterial (1.5 m past its centreline, 3.5-9 m), two four-lens heads; one lens per face is lit at night (red or green) through `Lamps_heads` |
+| `sign_pole` | 2.8 m post with a sign plate facing the nearest carriageway; the gate billboard (VR scene_a19) is a 3.6 m board on two legs |
+| `low_wall`, `retaining_wall`, `planter` (lines) | walls along the line, 0.3-0.4 m thick, top following the ground; the stone retaining wall carries a railing |
+| `planter` (polygons), `plaza_structure/planter` | kerbed beds with a lawn or soil top; the 3 x 3 plaza squares are 0.15 m high (VR scene_c1 shows them almost flush, not the survey's 0.5 m) |
+| `fence` | posts and rails; mesh fences and ball-stop nets add a translucent net panel |
+| `bench` | slatted benches facing the paved side; the long white court bench is one backless bench |
+| `bus_stop_shelter` | posts, roof in the surveyed colour, glass back and side panes, bench; court shelters without glass; the 447 m² school-bus canopy as posts every 5 m and a translucent roof |
+| `pergola` | posts every 3 m along both edges, edge beams, cross slats every 0.55 m or a solid roof where the photo shows one (polygons: posts along the outline) |
+| `gazebo` | raised floor, posts, cone or pyramid roof over the surveyed roof outline |
+| `bike_rack` | mono-pitch canopy (translucent or blue) on posts, hoop stands every 0.9 m |
+| `reviewing_stand` (구령대) | VR scene_a15: white single-storey base with teal doors and windows toward the track, turf terrace in four tiers, a flat canopy (green roof as in the photo, white fascia and soffit) on seven square columns, teal railings, two side stairs rising outward. The 구령대 is also the GIS record `A15 운동장 본부석`; the buildings stage keeps its label and pick proxy but no longer draws its generic mass |
+| `stadium_seating` | VR scene_a15: white front wall, `seat_rows` (12) terraced concrete rows rising away from the field, orange-yellow seats between stair aisles (both ends and every ~22 m) with blue seats spelling `@SCNU` (south stand) and `SCNU` (north stand) over rows 1-10 as in VR scene_a15, back wall and blue top railing |
+| `sports_goal`, `sports_hoop`, `floodlight_pole` | football (7.32 x 2.44 m) and futsal (3 x 2 m) goals facing their partner, with nets; hoop stands facing each other; 8 m floodlights aimed at the pitch |
+| `footbridge`, `trash_station` | deck between the abutment heights with railings; a row of blue bins |
+| `plaza_structure` | fountain (coping ring, water, pedestal and bowl), central pond (coping wall, planted island with plinth and bronze sculpture per VR scene_c1; the water stays the photo's), parasols, kiosk, sculptures; outdoor steps and stepped terraces as steps fitted to the terrain slope |
+
+Positions: points are pole roots placed on the photo, or data.go.kr points the survey kept; lines are wall, fence,
+bench and pergola axes; polygons are roof or seat outlines traced on the photo. Those outlines include the photo's
+relief lean, so every roofed object is moved back by the lean field fitted in REG (`registration.json`,
+`gis_buildings.transform.lean_field_m_per_m_height`; 0.01-0.7 m here) before it is built. Every object takes its
+base from the drawn terrain surface (`topographySurface`).
+
+Decisions taken against the survey, logged by the build and listed in the `Furniture` node extras:
+
+- OC0111, the SCNU letter monument, is left out. Only VR scene_a19 shows it (confidence 0.2); the 2025 photo shows
+  that corner of the gate plaza under construction, so it is not consistent with the photo.
+- OB0010 was surveyed as a white roofed pergola. VR scene_a19 shows no roof there, only the stepped arc of the
+  finished plaza, and the photo shows a curved edge with a thin shadow, so it is built as a two-tier curved step.
+- Parasols and the kiosk get 2.4 m instead of the generic 0.5 m `plaza_structure` default.
+- Steps are built only where the terrain climbs at least 0.6 m across the outline (OC0096, OC0169). OC0071, OC0085
+  and OC0105 lie on flat terrain in `uni.glb`, so their steps stay in the photo texture.
+
+### Lamps
+
+Every `street_lamp` of the survey is a lamp: the poles placed on the photo and the data.go.kr 순천시_가로등 points
+the survey kept on footways, verges and medians. The data.go.kr points it rejected (on roofs, on the gate
+carriageway) are gone, and `data/streetlights.json` is no longer read. A surveyed pole that falls inside a modelled
+building footprint is moved 0.6 m outside the nearest footprint edge (the build logs it; OC0084).
+
+Types (estimated from VR scene_a19 and the campus panoramas): `arterial` (8 m galvanised pole, single curved arm, LED
+cobra head 2.1 m out) for data.go.kr points and lamps by the arterial; `campusRoad` (the same shape at 6 m) for lamps
+beside a carriageway; `path` (4 m dark post-top lantern) elsewhere. Arms point at the nearest carriageway (OSM
+centrelines or road-zone edges).
+
+Estimated lamps fill campus paths and roads the photo cannot resolve (4-6 m poles under canopy cast 2-3 m shadows).
+They walk the A003 walkway outlines (`walkways_wgs84.geojson`: closed rings are the kerb plus the back edge of a
+sidewalk, filled even-odd per feature; open lines are cut outlines), one candidate every 27 m (the measured
+data.go.kr spacing), 0.45 m inside the paved side. A candidate is kept only on campus (within 60 m of a campus
+building, outside off-campus lots, 20 m or more from the public arterial), off every road (road zones, crosswalks,
+asphalt outside the walkways), at least 1 m from buildings, 1.5 m from surveyed objects, 13.5 m from surveyed lamps
+and 20 m from other estimated lamps. Bicycle lanes get none. Where the outer side of the outline is road, the lamp is
+a `campusRoad` lamp facing it; otherwise a `path` lantern. The build fails if an estimated lamp lands on a road zone,
+a crosswalk or in a building.
+
+`Lamps_heads` merges every luminaire and the signal lenses into one primitive (`Lamp_Head`, emissive mask: dark
+housing, warm lens, red/green/amber signal lenses). `Lamps_pools` is the instanced ground disc under each lit head
+(radius 7.5 / 5.5 / 4.5 m by type), drawn by CityModel at night only. The node extras list every lamp as
+`[id, type, height m, estimated, x, z]`.
+
+### Estimated benches
+
+The photo resolves 3 benches. VR scene_c1 shows long dark-blue box benches beside the tree pits on both long sides of
+the central pond; they are placed from VR (4 per side, 7 m apart, 4.5 m outside the pond). Elsewhere one bench every
+54 m along the walkway outlines, 0.9 m outside the paved edge on lawn (the surface class 1.2 m further out must be
+lawn too), facing the path, on campus, off roads and buildings, 1.5 m from objects and lamps and 30 m from other
+benches. All are flagged estimated in the build log and the node extras (`estimatedBenches`).
+
+### Photo suppression
+
+The ground stage keeps the photo from drawing what is now 3D (`composeOrthoGround` in `lib/orthoGround.mjs`): the
+roof outline traced on the photo and the footprint under it of every roofed object (shelters, pergolas, gazebos,
+bike shelters, the stands and the 구령대, bins, kiosk, parasols) are filled like building footprints (0.3 m margin,
+with the surface class painted under them), and for every pole placed on the photo the head (moved by the lean) and
+the thin cast shadow (azimuth 272.5°, 0.53 m per metre of height, 0.6 m wide) are refilled from the photo around
+them. data.go.kr poles are left alone: they are metre-level positions, so their photo poles are elsewhere.
+
+### Draw calls and size
+
+`Furniture` is one opaque primitive with vertex colours (it casts shadows, so 2 draw calls with the shadow pass),
+`Furniture_Glass` one translucent primitive that casts none (1 draw call), and `Lamps_heads` stays one primitive.
+`scripts/perf/bench.mjs --quality low` measures 131 / 28 / 127 draw calls (overview / d4 / oblique15) against 128 / 27 /
+124 before, with 0 console errors; `campus-v2.glb` grows from 3,578,368 B to 4,051,068 B (about 46,000 furniture
+triangles). Packed positions are 14-bit over the campus (about 5 cm steps), so no
+part is thinner than 6 cm. CityModel keeps both furniture meshes out of pointer raycasts. Every position is from the
+photo or a rule, and every shape and height an estimate: none of it is survey data.
 
 ## Frame
 

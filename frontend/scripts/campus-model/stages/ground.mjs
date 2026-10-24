@@ -571,9 +571,11 @@ export function topographySurface(heightAt) {
 
 const jpeg = async (png, quality = 86) => new Bun.Image(png).jpeg({ quality }).toBuffer();
 
-// paint: rings (model units) of the vector road markings whose paint the photo must not show twice (stages/markings.mjs).
-// Returns the Topography surface the markings are laid on.
-export async function buildGround({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots, paint, paintMargin, treeInstances }) {
+// paint: rings (model units) of the vector road markings whose paint the photo must not show twice (stages/markings.mjs);
+// structures / objectHoles: rings of the street furniture the photo must not show twice (stages/furniture.mjs).
+// Returns the Topography surface the markings are laid on, and the surface-class raster (groundInfo) the lamp and
+// bench rules read.
+export async function buildGround({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots, paint, paintMargin, treeInstances, structures = [], objectHoles = [] }) {
   const { heightAt, roadZones, landcoverAt } = inputs;
   const walkways = await loadWalkways();
 
@@ -744,9 +746,12 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
     crowns: Object.values(treeInstances).flat(),
     paint,
     paintMargin,
+    structures,
+    objectHoles,
   });
   console.log(
     `ground: photo paint suppressed under ${paint.length} vector markings (${photo.paintPixels} px refilled, ${paintMargin} m margin); ` +
+    `furniture: ${structures.length} roof/footprint rings filled (${(photo.shares.structure * 100).toFixed(2)} %), ${objectHoles.length} pole head/shadow holes (${photo.objectPixels} px refilled); ` +
     `relief lean of ${photo.lean.found} of ${photo.lean.searched} building parts found in the photo (median ${photo.lean.medianRate?.toFixed(3) ?? "-"} m per m), ` +
     `largest: ${photo.lean.largest.join(", ")}`,
   );
@@ -832,5 +837,8 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
     }
   }
   glb.addNode({ name: "Topography", children: topographyChildren }, { root: true });
-  return { surface: topographySurface(heightAt) };
+  return {
+    surface: topographySurface(heightAt),
+    groundInfo: { width: ground.width, height: ground.height, px: PX, labels: ground.labels, classes: SURFACE_CLASS },
+  };
 }

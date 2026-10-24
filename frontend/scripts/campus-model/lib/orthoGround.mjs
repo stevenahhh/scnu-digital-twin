@@ -5,7 +5,11 @@
 //   2. What the model draws itself must not stay in the photo, or it doubles up:
 //      - road markings: the photo's own paint under every vector marking (stages/markings.mjs) plus `paintMargin`
 //        metres is refilled from the unmasked pixels around it before anything else reads the photo (normalised box
-//        means at growing radii, INPAINT_RADII_PX), so the marking mesh is the only paint there;
+//        means at growing radii, INPAINT_RADII_PX), so the marking mesh is the only paint there; the heads and thin
+//        cast shadows of the poles the furniture stage now draws (`objectHoles`) are refilled the same way;
+//      - street furniture: roofs that are now 3D (stages/furniture.mjs `structures`: the roof outline traced on the
+//        photo and the footprint under it, plus STRUCTURE_MARGIN_M) are filled like building footprints, but with
+//        the surface class painted under them;
 //      - buildings: every modelled footprint plus a margin (0.6 m + 3 % of the height), swept along the building's
 //        relief lean. The photo is a mosaic of two flight strips, so roofs are displaced from their footprints by up
 //        to about 0.3 m per metre of height, south in the north of the campus and north in the south, with the
@@ -102,6 +106,7 @@ const CLASS_COUNT = 5;
 
 // ---------------------------------------------------------------- composition
 const BUILDING_MARGIN_M = 0.6;
+const STRUCTURE_MARGIN_M = 0.3;
 const BUILDING_LEAN = 0.03; // metres of margin per metre of height
 const LEAN_MIN_HEIGHT_M = 4;
 const LEAN_MAX_RATE = 0.34; // metres of roof offset per metre of height searched (measured lean: median 0.24, p90 0.31)
@@ -307,8 +312,9 @@ function localMeans(sums, count, bw, bh, local, wide, fallback) {
 // toPixel([x, z]) maps model units to raster pixels and pixelCentre(px, py) back; metresPerPixel and
 // unitsPerPixel give the raster scale. buildings: [{ parts: [{ outer, holes, heightMetres, tower? }] }]; crowns:
 // [{ x, z, radius }] in model units; paint: rings (model units) of the vector road markings, suppressed in the photo
-// with `paintMargin` metres around them. Returns build-log stats.
-export function composeOrthoGround({ ground, classes, ortho, calibration, toPixel, pixelCentre, metresPerPixel, unitsPerPixel, buildings, crowns, paint = [], paintMargin = 0 }) {
+// with `paintMargin` metres around them; structures and objectHoles: rings (model units) of the street furniture (see
+// above). Returns build-log stats.
+export function composeOrthoGround({ ground, classes, ortho, calibration, toPixel, pixelCentre, metresPerPixel, unitsPerPixel, buildings, crowns, paint = [], paintMargin = 0, structures = [], objectHoles = [] }) {
   const { width, height } = ground;
   const size = width * height;
   const pxPerMetre = 1 / metresPerPixel;
@@ -337,9 +343,10 @@ export function composeOrthoGround({ ground, classes, ortho, calibration, toPixe
     }
   }
 
-  // 1b. the photo's paint under the vector road markings
+  // 1b. the photo's paint under the vector road markings, and the pole heads and shadows of the furniture
   let paintPixels = 0;
-  if (paint.length) {
+  let objectPixels = 0;
+  if (paint.length || objectHoles.length) {
     const hole = maskRaster(width, height);
     const marginPx = paintMargin * pxPerMetre;
     for (const ring of paint) {
@@ -347,7 +354,11 @@ export function composeOrthoGround({ ground, classes, ortho, calibration, toPixe
       hole.fill([pixels]);
       hole.stroke([...pixels, pixels[0]], 2 * marginPx);
     }
-    paintPixels = refill(photo, width, height, hole.data);
+    const paintOnly = hole.data.reduce((sum, v) => sum + v, 0);
+    for (const ring of objectHoles) hole.fill([ring.map(toPixel)]);
+    const filled = refill(photo, width, height, hole.data);
+    paintPixels = paintOnly;
+    objectPixels = filled - paintOnly;
   }
 
   // 2. masks: kind 0 photo, 1 fill, 2 relit shadow, 3 photo kept inside a grove
@@ -386,6 +397,12 @@ export function composeOrthoGround({ ground, classes, ortho, calibration, toPixe
         sweep(tower.hull.map(toPixel), [offset.dx * scale, offset.dy * scale], towerMargin);
       }
     }
+  }
+  const structure = maskRaster(width, height);
+  for (const ring of structures) {
+    const pixels = ring.map(toPixel);
+    structure.fill([pixels]);
+    structure.stroke([...pixels, pixels[0]], 2 * STRUCTURE_MARGIN_M * pxPerMetre);
   }
   const crown = maskRaster(width, height);
   const crownMarginPx = CROWN_MARGIN_M * pxPerMetre;
@@ -428,7 +445,7 @@ export function composeOrthoGround({ ground, classes, ortho, calibration, toPixe
   };
   const kind = new Uint8Array(size);
   const surface = new Uint8Array(size);
-  const counts = { building: 0, crown: 0, street: 0, grove: 0, shadow: 0 };
+  const counts = { building: 0, structure: 0, crown: 0, street: 0, grove: 0, shadow: 0 };
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
       const p = y * width + x;
@@ -441,6 +458,9 @@ export function composeOrthoGround({ ground, classes, ortho, calibration, toPixe
       if (building.data[p]) {
         kind[p] = 1;
         counts.building += 1;
+      } else if (structure.data[p]) {
+        kind[p] = 1;
+        counts.structure += 1;
       } else if ((classes[p] === SURFACE_CLASS.PAVING || classes[p] === SURFACE_CLASS.ASPHALT) && excessGreen(r, g, b) > VEG_EXG) {
         kind[p] = 1;
         counts.street += 1;
@@ -558,6 +578,7 @@ export function composeOrthoGround({ ground, classes, ortho, calibration, toPixe
     metresPerPixel,
     shares: Object.fromEntries(Object.entries(counts).map(([key, n]) => [key, n / size])),
     paintPixels,
+    objectPixels,
     lean: {
       searched: leans.length,
       found: found.length,

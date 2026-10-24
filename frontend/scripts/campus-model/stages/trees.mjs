@@ -11,8 +11,10 @@ import { Raster, mulberry32 } from "../lib/raster.mjs";
 
 const CHM_PNG = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "chm.png");
 const WALKWAYS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..", "docs", "assets", "data", "walkways_wgs84.geojson");
-// walkways_wgs84.geojson `widt` is the paved width in metres (MEASURED); null/zero falls back to 2.4 m (as ground.mjs).
-const WALKWAY_FALLBACK_WIDTH_M = 2.4;
+// walkways_wgs84.geojson (A003 sidewalks) holds outlines, not centrelines (see stages/ground.mjs): closed rings along the
+// kerb and the back edge of each paved area, filled even-odd per feature, and open lines where an outline is cut. Trees
+// keep off the paved area and an EDGE_STONE_M band on every outline (as ground.mjs).
+const EDGE_STONE_M = 0.3;
 // Per-instance tree height (ESTIMATED from CHMv2, an estimate and not a measurement): crown top = local
 // CHMv2 maximum under the instance's crown footprint, at least CROWN_TOP_SEARCH_M (ASSUMED) - crowns are
 // centred on random canopy cells, not on tree tops, so the footprint holds the tree's top; clamped to TREE_HEIGHT_RANGE_M (ASSUMED); 8 m where
@@ -124,12 +126,12 @@ function lumpyCrown(radius, height, seed) {
 
 // Placement runs before the ground stage, which needs the crown footprints (stages/ground.mjs keeps the
 // orthophoto's own crowns out from under them); buildTrees emits the instanced nodes from it later.
-export function placeTrees({ inputs, selectableBuildings, campusBuildings, offCampusLots }) {
+// blockedRings: plan rings (model units) of the street furniture trees must not grow through (stages/furniture.mjs).
+export function placeTrees({ inputs, selectableBuildings, campusBuildings, offCampusLots, blockedRings = [] }) {
   const { heightAt, roadZones } = inputs;
-  const walkways = JSON.parse(readFileSync(WALKWAYS, "utf8")).features.flatMap(({ geometry, properties }) => {
-    const width = Number(properties?.widt) > 0 ? Number(properties.widt) : WALKWAY_FALLBACK_WIDTH_M;
-    const lines = geometry.type === "LineString" ? [geometry.coordinates] : geometry.coordinates;
-    return lines.map((line) => ({ width, line: line.map(([lon, lat]) => geoToModel(lon, lat)) }));
+  const walkways = JSON.parse(readFileSync(WALKWAYS, "utf8")).features.map(({ geometry }) => {
+    const lines = (geometry.type === "LineString" ? [geometry.coordinates] : geometry.coordinates).map((line) => line.map(([lon, lat]) => geoToModel(lon, lat)));
+    return { lines, rings: lines.filter((line) => line.length >= 4 && line[0][0] === line.at(-1)[0] && line[0][1] === line.at(-1)[1]) };
   });
 
   // ---- blocked / near-campus masks
@@ -144,7 +146,11 @@ export function placeTrees({ inputs, selectableBuildings, campusBuildings, offCa
     }
     for (const polygon of roadZones) mask.fillPolygon(polygon.map(unit), () => [255, 0, 0]);
     for (const lot of offCampusLots) mask.fillPolygon([unit(lot)], () => [128, 0, 0]);
-    for (const { width, line } of walkways) mask.strokePolyline(unit(line), metres(width), () => [255, 0, 0]);
+    for (const { lines, rings } of walkways) {
+      if (rings.length) mask.fillPolygon(rings.map(unit), () => [255, 0, 0]);
+      for (const line of lines) mask.strokePolyline(unit(line), metres(EDGE_STONE_M), () => [255, 0, 0]);
+    }
+    for (const ring of blockedRings) mask.fillPolygon([unit(ring)], () => [255, 0, 0]);
     for (let i = 0; i < blocked.length; i += 1) {
       blocked[i] = mask.data[i * 3] > 0 ? 1 : 0;
       nearCampus[i] = mask.data[i * 3] === 255 ? 1 : 0;
@@ -152,7 +158,10 @@ export function placeTrees({ inputs, selectableBuildings, campusBuildings, offCa
     // street edge = within STREET_EDGE_M of a road zone or walkway
     const street = new Raster(WIDTH, DEPTH);
     for (const polygon of roadZones) street.fillPolygon(polygon.map(unit), () => [255, 0, 0]);
-    for (const { width, line } of walkways) street.strokePolyline(unit(line), metres(width + 2 * STREET_EDGE_M), () => [255, 0, 0]);
+    for (const { lines, rings } of walkways) {
+      if (rings.length) street.fillPolygon(rings.map(unit), () => [255, 0, 0]);
+      for (const line of lines) street.strokePolyline(unit(line), metres(2 * STREET_EDGE_M), () => [255, 0, 0]);
+    }
     for (const polygon of roadZones) {
       for (const ring of polygon) street.strokePolyline(unit([...ring, ring[0]]), metres(2 * STREET_EDGE_M), () => [255, 0, 0]);
     }

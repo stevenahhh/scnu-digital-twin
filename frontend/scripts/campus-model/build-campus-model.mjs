@@ -7,7 +7,7 @@
 //   - data/cop30.png               Copernicus GLO-30 heights for the outer terrain ring (fetch/terrain.mjs)
 //   - docs/assets/data/*.geojson   road zones, walkways and crosswalks
 //   - data/photo/markings.geojson  road markings traced from the NGII 2025 orthophoto
-//   - data/streetlights.json       real street-lamp positions (fetch/streetlights.mjs)
+//   - data/photo/objects-campus.geojson  street furniture and lamps surveyed on the NGII 2025 orthophoto
 // Everything stays in uni.glb's scene frame (see lib/frame.mjs), so CityModel's recentering,
 // the traffic simulation and the BLD_* selection contract keep working unchanged.
 //
@@ -20,7 +20,11 @@
 //   outerTerrain.mjs  the OuterTerrain hill ring around EXTENT, feathered onto Topography's edge
 //   trees.mjs     placement masks and positions (placeTrees, before the ground, which keeps the photo's crowns
 //                 out from under them), species geometry and instanced Trees_* nodes (buildTrees)
-//   lights.mjs    instanced Lamps_heads / Lamps_pools (real and estimated lamp positions)
+//   furniture.mjs the surveyed outdoor objects (loadFurniture, before the trees and the ground: footprints trees keep
+//                 out of, photo areas the ground suppresses) and the merged Furniture / Furniture_Glass nodes
+//                 (buildFurniture, after the ground, on the drawn terrain)
+//   lights.mjs    lamp positions (placeLamps: surveyed lamps plus estimated ones along the walkway outlines), the
+//                 merged Lamps_heads and the instanced Lamps_pools
 // Plan-view ring helpers live in lib/geometry.mjs.
 //
 // Outputs: the uncompressed scripts/campus-model/.build/campus-v2.raw.glb, which pack.mjs turns into
@@ -34,7 +38,8 @@ import { EXTENT, SCENE_UNITS_PER_METRE } from "./lib/frame.mjs";
 import { GlbBuilder } from "./lib/glb.mjs";
 import { buildBuildings } from "./stages/buildings.mjs";
 import { buildGround } from "./stages/ground.mjs";
-import { buildLights } from "./stages/lights.mjs";
+import { buildFurniture, loadFurniture } from "./stages/furniture.mjs";
+import { buildLights, placeLamps } from "./stages/lights.mjs";
 import { SUPPRESS_MARGIN_M, buildMarkings, describeMarkings, loadMarkings } from "./stages/markings.mjs";
 import { buildOuterTerrain } from "./stages/outerTerrain.mjs";
 import { loadInputs } from "./stages/sources.mjs";
@@ -50,18 +55,23 @@ const HEIGHT_STEP = 2;
 const inputs = await loadInputs();
 
 const glb = new GlbBuilder();
-const { selectableBuildings, campusBuildings, offCampusLots } = await buildBuildings({ glb, inputs });
-const treePlacement = placeTrees({ inputs, selectableBuildings, campusBuildings, offCampusLots });
+const furniture = loadFurniture();
+const { selectableBuildings, campusBuildings, offCampusLots } = await buildBuildings({ glb, inputs, detailedStructures: furniture.detailedStructures });
+const treePlacement = placeTrees({ inputs, selectableBuildings, campusBuildings, offCampusLots, blockedRings: furniture.treeBlock });
 const markings = await loadMarkings({ inputs, buildings: [...selectableBuildings, ...campusBuildings] });
 console.log(describeMarkings(markings));
-const { surface } = await buildGround({
+const { surface, groundInfo } = await buildGround({
   glb, inputs, selectableBuildings, campusBuildings, offCampusLots,
   paint: markings.paint, paintMargin: SUPPRESS_MARGIN_M, treeInstances: treePlacement.treeInstances,
+  structures: furniture.photoMask.structures, objectHoles: furniture.photoMask.holes,
 });
 const markingMesh = buildMarkings({ glb, markings, surface });
 const outerTerrain = await buildOuterTerrain({ glb, inputs });
 const treeInstances = buildTrees({ glb, placement: treePlacement });
-buildLights({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots });
+const groundAt = (x, z) => surface.height(x, z);
+const { lamps, stats: lampStats, sites } = placeLamps({ inputs, furniture, selectableBuildings, campusBuildings, offCampusLots, groundInfo });
+const { glow } = buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs, groundAt });
+buildLights({ glb, lamps, stats: lampStats, groundAt, glow });
 
 // ---------------------------------------------------------------- height sidecar
 // The terrain heightfield (scene units) sampled every HEIGHT_STEP units over EXTENT, row-major with

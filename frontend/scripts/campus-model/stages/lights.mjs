@@ -1,76 +1,302 @@
-// Lights stage: street lamps as two instanced nodes, with no real-time lights.
-//   Lamps_heads  pole + arm + head in one primitive (Lamp_Head). The head is masked by a tiny emissive
-//                texture, so only it glows; CityModel drives the glow with the night weight.
-//   Lamps_pools  a ground-aligned disc under each head (Lamp_Pool, unlit, vertex-colour falloff) that
-//                CityModel draws additively at night and hides by day.
+// Lights stage: street lamps, with no real-time lights.
+//   Lamps_heads  every luminaire (cobra heads, path lanterns) plus the traffic-signal lenses of stages/furniture.mjs,
+//                merged into one primitive (Lamp_Head). An emissive mask texture picks the parts that glow (lamp lenses
+//                warm white, the lit signal aspect red or green); CityModel drives the glow with the night weight.
+//   Lamps_pools  a ground-aligned disc under each lit head (Lamp_Pool, unlit, vertex-colour falloff) that CityModel
+//                draws additively at night and hides by day.
+// Poles, arms and footings are solid furniture: appendLampSolids() draws them into the Furniture primitive.
 // Positions:
-//   - real: data/streetlights.json (data.go.kr 15064740 순천시_가로등, data date 2021-09-01). City road
-//     lamps only; none stand inside the campus (none within 250 m of D4).
-//   - estimated: campus lamps placed along the walkway centrelines every LAMP_SPACING_M, on the walkway
-//     edge, skipping spots a real lamp already lights. These are ESTIMATED positions, not surveyed ones;
-//     the node extras and the build log say so.
-// Lamp heights, head size and pool radii are ASSUMED (typical road / pedestrian luminaires).
+//   - surveyed: every street_lamp of data/photo/objects-campus.geojson (NGII 2025 photo survey, data/photo/README.md):
+//     pole roots placed by eye on the photo, and the data.go.kr 순천시_가로등 points the survey kept because the photo
+//     shows them on a footway, verge or median (metre-level positions). The survey rejected the data.go.kr points on
+//     roofs and on the gate carriageway, so those lamps are gone; data/streetlights.json is no longer read here.
+//   - estimated: campus paths and campus roads, placed by rule along the A003 walkway outlines (closed rings are the
+//     kerb plus back edge of a sidewalk, not centrelines): every LAMP_SPACING_M along an outline, LAMP_INSET_M inside
+//     the paved area, and only where the photo survey has no lamp within SURVEYED_CLEARANCE_M. Never on roads, in
+//     buildings, on bicycle lanes or on a surveyed object. These are ESTIMATED positions; the node extras say so.
+// Lamp heights, arm reach, head size and pool radii are ESTIMATED from the SCNU 360 VR tour (scene_a19: grey pole,
+// single curved arm, LED cobra head on the arterial; slim dark post-top lanterns on campus paths).
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { EXTENT, geoToModel, metres } from "../lib/frame.mjs";
-import { pointInRing } from "../lib/geometry.mjs";
+import { pointInRing, segmentDistance } from "../lib/geometry.mjs";
 import { MeshData } from "../lib/meshData.mjs";
 import { encodePng } from "../lib/png.mjs";
+import { Raster } from "../lib/raster.mjs";
+import { frame, local, rgb } from "../lib/solids.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const STREETLIGHTS = path.join(HERE, "..", "data", "streetlights.json");
 const WALKWAYS = path.resolve(HERE, "../../../..", "docs", "assets", "data", "walkways_wgs84.geojson");
-const WALKWAY_FALLBACK_WIDTH_M = 2.4; // as ground.mjs
+const GROUND_FEATURES = path.join(HERE, "..", "data", "osm-ground.json");
+const BICYCLE_LANE = "A0033327"; // as ground.mjs
 
-// Median nearest-neighbour spacing of the real lamps near campus is ~27 m (MEASURED from the CSV);
-// estimated lamps reuse it (ASSUMED placement).
-const LAMP_SPACING_M = 27;
-// An estimated lamp is dropped when a real or already placed lamp is this close.
-const REAL_CLEARANCE_M = LAMP_SPACING_M / 2;
-const ESTIMATED_CLEARANCE_M = 18;
-// Estimated lamps only on walkways within this distance of a campus building (keeps them on campus).
-const CAMPUS_REACH_M = 60;
-// ASSUMED luminaire sizes: road lamps 8 m with a 7 m pool, pedestrian lamps 4.5 m with a 4.5 m pool.
-const ROAD_LAMP = { heightM: 8, poolRadiusM: 7 };
-const PATH_LAMP = { heightM: 4.5, poolRadiusM: 4.5 };
-// Archetype in metres for a 6 m pole; instances scale it uniformly to their height.
-const ARCHETYPE_HEIGHT_M = 6;
-const ARM_REACH_M = 1.5;
+// Median nearest-neighbour spacing of the data.go.kr lamps near campus is ~27 m (MEASURED from the CSV); estimated
+// lamps reuse it (ASSUMED placement).
+export const LAMP_SPACING_M = 27;
+const LAMP_INSET_M = 0.45; // pole centre inside the paved edge (ASSUMED)
+const SURVEYED_CLEARANCE_M = LAMP_SPACING_M / 2;
+const ESTIMATED_CLEARANCE_M = 20;
+const CAMPUS_REACH_M = 60; // estimated lamps only within this distance of a campus building (keeps them on campus)
+const ARTERIAL_CLEARANCE_M = 20; // the public arterial east of the gate has its own surveyed lamps
+const OBJECT_CLEARANCE_M = 1.5;
+const SURVEYED_OUTSIDE_M = 0.6;
+const BUILDING_CLEARANCE_M = 1.0;
 const POOL_LIFT_M = 0.12;
 
-// u < 0.5 of the 8x8 mask is black (pole/arm), u > 0.5 is white (head). UVs sit on texel centres far
-// from the edge, so filtering and lossy WebP leave the pole dark.
-const POLE_UV = [0.125, 0.5];
-const HEAD_UV = [0.875, 0.5];
+// ESTIMATED luminaire types (VR scene_a19 and the campus panoramas). reach: arm reach of the head centre from the pole.
+export const LAMP_TYPES = Object.freeze({
+  arterial: { heightM: 8, reachM: 2.1, poolRadiusM: 7.5, label: "arterial cobra-head lamp, single curved arm" },
+  campusRoad: { heightM: 6, reachM: 1.5, poolRadiusM: 5.5, label: "campus road lamp, single curved arm" },
+  path: { heightM: 4, reachM: 0, poolRadiusM: 4.5, label: "campus path post-top lantern" },
+});
 
-function box(mesh, [x0, y0, z0], [x1, y1, z1], uv) {
-  const s = metres(1);
-  const p = (x, y, z) => [x * s, y * s, z * s];
-  const uvs = [uv, uv, uv, uv];
-  mesh.quad(p(x0, y0, z1), p(x1, y0, z1), p(x1, y1, z1), p(x0, y1, z1), uvs); // +z
-  mesh.quad(p(x1, y0, z0), p(x0, y0, z0), p(x0, y1, z0), p(x1, y1, z0), uvs); // -z
-  mesh.quad(p(x1, y0, z1), p(x1, y0, z0), p(x1, y1, z0), p(x1, y1, z1), uvs); // +x
-  mesh.quad(p(x0, y0, z0), p(x0, y0, z1), p(x0, y1, z1), p(x0, y1, z0), uvs); // -x
-  mesh.quad(p(x0, y1, z1), p(x1, y1, z1), p(x1, y1, z0), p(x0, y1, z0), uvs); // top
-  mesh.quad(p(x0, y0, z0), p(x1, y0, z0), p(x1, y0, z1), p(x0, y0, z1), uvs); // bottom
+// Emissive mask (32 x 32, see buildLights): UV centres of its bands. dark never glows.
+export const GLOW_UV = Object.freeze({ dark: [0.125, 0.25], warm: [0.375, 0.25], red: [0.625, 0.25], green: [0.875, 0.25], amber: [0.375, 0.75] });
+
+const GALVANISED = rgb("#9ea4a8");
+const PATH_POLE = rgb("#3c4a48");
+const FOOTING = rgb("#b5b2aa");
+
+function nearestOnPolyline(p, line, closed = false) {
+  let best = { distance: Infinity, point: null };
+  const n = closed ? line.length : line.length - 1;
+  for (let i = 0; i < n; i += 1) {
+    const a = line[i];
+    const b = line[(i + 1) % line.length];
+    const dx = b[0] - a[0];
+    const dz = b[1] - a[1];
+    const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / (dx * dx + dz * dz || 1)));
+    const q = [a[0] + t * dx, a[1] + t * dz];
+    const d = Math.hypot(q[0] - p[0], q[1] - p[1]);
+    if (d < best.distance) best = { distance: d, point: q };
+  }
+  return best;
 }
 
-// Pole along +y, arm and head reaching +x. Scale 1 = ARCHETYPE_HEIGHT_M.
-function lampArchetype() {
-  const mesh = new MeshData();
-  const h = ARCHETYPE_HEIGHT_M;
-  box(mesh, [-0.09, 0, -0.09], [0.09, h, 0.09], POLE_UV);
-  box(mesh, [0, h - 0.16, -0.05], [ARM_REACH_M - 0.3, h - 0.04, 0.05], POLE_UV);
-  box(mesh, [ARM_REACH_M - 0.6, h - 0.3, -0.18], [ARM_REACH_M, h - 0.12, 0.18], HEAD_UV);
-  return mesh;
+export function roadNetwork(inputs) {
+  const osm = JSON.parse(readFileSync(GROUND_FEATURES, "utf8")).osm.lines ?? [];
+  const toModel = (line) => line.map(([lon, lat]) => geoToModel(lon, lat));
+  return {
+    arterials: osm.filter((l) => l.kind === "arterial").map((l) => toModel(l.line)),
+    connectors: osm.filter((l) => l.kind === "connector").map((l) => toModel(l.line)),
+    zoneRings: inputs.roadZones.map((polygon) => polygon[0]),
+  };
+}
+
+// Unit plan direction from p toward the nearest carriageway (OSM centrelines or road-zone edges), or null.
+export function towardRoad(p, roads, maxM = 20) {
+  let best = { distance: Infinity, point: null };
+  for (const line of [...roads.arterials, ...roads.connectors]) {
+    const hit = nearestOnPolyline(p, line);
+    if (hit.distance < best.distance) best = hit;
+  }
+  for (const ring of roads.zoneRings) {
+    const hit = nearestOnPolyline(p, ring, true);
+    if (hit.distance < best.distance) best = hit;
+  }
+  if (!best.point || best.distance > metres(maxM) || best.distance < 1e-6) return null;
+  return [(best.point[0] - p[0]) / best.distance, (best.point[1] - p[1]) / best.distance];
+}
+
+export const distanceToLines = (p, lines) => Math.min(Infinity, ...lines.map((line) => nearestOnPolyline(p, line).distance));
+
+// Distance (scene units) from p to a surveyed object's geometry (0 inside a polygon).
+export function objectDistance(p, object) {
+  if (object.point) return Math.hypot(object.point[0] - p[0], object.point[1] - p[1]);
+  if (object.ring) return pointInRing(p, object.ring) ? 0 : nearestOnPolyline(p, object.ring, true).distance;
+  return nearestOnPolyline(p, object.line).distance;
+}
+
+// Lamp list: surveyed lamps, then estimated ones. groundInfo: the ground stage's surface-class raster.
+export function placeLamps({ inputs, furniture, selectableBuildings, campusBuildings, offCampusLots, groundInfo }) {
+  const roads = roadNetwork(inputs);
+  const lamps = [];
+
+  // ---- surveyed. A pole the photo shows next to a building can fall just inside the modelled footprint (footprints and
+  // the photo disagree by up to a metre at a roof edge): it is moved to SURVEYED_OUTSIDE_M outside the nearest footprint
+  // edge and listed in the stats.
+  const buildingRings = [...selectableBuildings, ...campusBuildings].flatMap((b) => b.parts.map((part) => part.outer));
+  const moved = [];
+  for (const object of furniture.objects.filter((o) => o.kind === "street_lamp")) {
+    let at = object.point;
+    const host = buildingRings.find((ring) => pointInRing(at, ring));
+    if (host) {
+      const edge = nearestOnPolyline(at, host, true);
+      const away = [(edge.point[0] - at[0]) / edge.distance, (edge.point[1] - at[1]) / edge.distance];
+      const to = [edge.point[0] + away[0] * metres(SURVEYED_OUTSIDE_M), edge.point[1] + away[1] * metres(SURVEYED_OUTSIDE_M)];
+      moved.push(`${object.id} ${(Math.hypot(to[0] - at[0], to[1] - at[1]) / metres(1)).toFixed(2)} m`);
+      at = to;
+    }
+    const p = object.p;
+    const nearArterial = distanceToLines(at, roads.arterials) < metres(30);
+    const nearRoad = towardRoad(at, roads, 6) !== null;
+    const type = p.method === "data.go.kr" || /arterial/.test(p.style?.form ?? "") || nearArterial ? "arterial" : nearRoad ? "campusRoad" : "path";
+    const dir = towardRoad(at, roads) ?? [1, 0];
+    lamps.push({ id: object.id, type, at, dir, heightM: LAMP_TYPES[type].heightM, estimated: false, source: p.method, confidence: p.confidence });
+  }
+  const surveyedCount = lamps.length;
+
+  // ---- estimated, along the A003 walkway outlines
+  const { width, height, px, labels, classes } = groundInfo;
+  const toPixel = ([x, z]) => [(x - EXTENT.minX) * px, (z - EXTENT.minZ) * px];
+  const indexOf = ([x, z]) => {
+    const ix = Math.floor((x - EXTENT.minX) * px);
+    const iy = Math.floor((z - EXTENT.minZ) * px);
+    return ix < 0 || iy < 0 || ix >= width || iy >= height ? -1 : iy * width + ix;
+  };
+  const walkways = JSON.parse(readFileSync(WALKWAYS, "utf8")).features
+    .filter(({ properties }) => properties.scls !== BICYCLE_LANE)
+    .map(({ geometry }) => {
+      const lines = (geometry.type === "LineString" ? [geometry.coordinates] : geometry.coordinates).map((line) => line.map(([lon, lat]) => geoToModel(lon, lat)));
+      const rings = lines.filter((line) => line.length >= 4 && line[0][0] === line.at(-1)[0] && line[0][1] === line.at(-1)[1]);
+      return { lines, rings };
+    });
+  // paved walkway area: closed rings filled even-odd per feature (a ring inside another is a hole)
+  const area = new Raster(width, height);
+  for (const w of walkways) if (w.rings.length) area.fillPolygon(w.rings.map((ring) => ring.map(toPixel)), () => [255, 0, 0]);
+  const blocked = new Raster(width, height);
+  const white = () => [255, 0, 0];
+  for (const building of [...selectableBuildings, ...campusBuildings]) {
+    for (const part of building.parts) {
+      const ring = part.outer.map(toPixel);
+      blocked.fillPolygon([ring], white);
+      blocked.strokePolyline([...ring, ring[0]], 2 * metres(BUILDING_CLEARANCE_M) * px, white);
+    }
+  }
+  for (const polygon of inputs.roadZones) blocked.fillPolygon(polygon.map((ring) => ring.map(toPixel)), white);
+  for (const ring of inputs.crosswalks) blocked.fillPolygon([ring.map(toPixel)], white);
+  for (const lot of offCampusLots) blocked.fillPolygon([lot.map(toPixel)], white);
+  const inArea = (p) => {
+    const k = indexOf(p);
+    return k >= 0 && area.data[k * 3] > 0;
+  };
+  // road: asphalt outside the paved walkway area (carriageways, the traced arterial) or a road zone / crosswalk
+  const isRoad = (p) => {
+    const k = indexOf(p);
+    if (k < 0) return false;
+    return (labels[k] === classes.ASPHALT && area.data[k * 3] === 0) || blocked.data[k * 3] > 0;
+  };
+  const onCampus = (p) =>
+    !offCampusLots.some((lot) => pointInRing(p, lot)) &&
+    buildingRings.some((ring) => ring.some(([x, z], i) => segmentDistance(p, [x, z], ring[(i + 1) % ring.length]) < metres(CAMPUS_REACH_M))) &&
+    distanceToLines(p, roads.arterials) > metres(ARTERIAL_CLEARANCE_M);
+  const objects = furniture.objects;
+  const near = (p, list, clearanceM) => list.some((lamp) => Math.hypot(lamp.at[0] - p[0], lamp.at[1] - p[1]) < metres(clearanceM));
+  const spacing = metres(LAMP_SPACING_M);
+  const inset = metres(LAMP_INSET_M);
+  const reasons = { offCampus: 0, notPaved: 0, road: 0, object: 0, surveyed: 0, estimated: 0 };
+  for (const w of walkways) {
+    for (const outline of w.lines) {
+      let carry = spacing / 2;
+      for (let s = 0; s + 1 < outline.length; s += 1) {
+        const [ax, az] = outline[s];
+        const [bx, bz] = outline[s + 1];
+        const length = Math.hypot(bx - ax, bz - az);
+        if (length < 1e-6) continue;
+        const ux = (bx - ax) / length;
+        const uz = (bz - az) / length;
+        for (let t = carry; t <= length; t += spacing) {
+          const edge = [ax + ux * t, az + uz * t];
+          const left = [edge[0] - uz * inset, edge[1] + ux * inset];
+          const right = [edge[0] + uz * inset, edge[1] - ux * inset];
+          const paved = inArea(left) && !inArea(right) ? left : inArea(right) && !inArea(left) ? right : null;
+          if (!paved) {
+            reasons.notPaved += 1;
+            continue;
+          }
+          const inward = [(paved[0] - edge[0]) / inset, (paved[1] - edge[1]) / inset];
+          const outside = [edge[0] - inward[0] * metres(1.2), edge[1] - inward[1] * metres(1.2)];
+          if (!onCampus(paved)) reasons.offCampus += 1;
+          else if (isRoad(paved)) reasons.road += 1;
+          else if (objects.some((o) => objectDistance(paved, o) < metres(OBJECT_CLEARANCE_M))) reasons.object += 1;
+          else if (near(paved, lamps.slice(0, surveyedCount), SURVEYED_CLEARANCE_M)) reasons.surveyed += 1;
+          else if (near(paved, lamps.slice(surveyedCount), ESTIMATED_CLEARANCE_M)) reasons.estimated += 1;
+          else {
+            const kerb = isRoad(outside);
+            const type = kerb ? "campusRoad" : "path";
+            lamps.push({ id: `EL${String(lamps.length - surveyedCount).padStart(3, "0")}`, type, at: paved, dir: kerb ? [-inward[0], -inward[1]] : [ux, uz], heightM: LAMP_TYPES[type].heightM, estimated: true, source: "rule", confidence: null });
+          }
+        }
+        carry = (((carry - length) % spacing) + spacing) % spacing;
+      }
+    }
+  }
+  // Placement contract: no estimated lamp on a road zone, crosswalk or in a building footprint, and no surveyed lamp
+  // in a building (surveyed footway lamps may sit inside the coarse road zones, whose edges run into the sidewalks).
+  const inBuilding = (lamp) => buildingRings.some((ring) => pointInRing(lamp.at, ring));
+  const offenders = lamps.filter((lamp) => inBuilding(lamp) || (lamp.estimated && (
+    inputs.roadZones.some((polygon) => pointInRing(lamp.at, polygon[0])) ||
+    inputs.crosswalks.some((ring) => pointInRing(lamp.at, ring)))));
+  const stats = {
+    surveyed: surveyedCount,
+    estimated: lamps.length - surveyedCount,
+    byType: Object.fromEntries(Object.keys(LAMP_TYPES).map((type) => [type, { surveyed: lamps.filter((l) => !l.estimated && l.type === type).length, estimated: lamps.filter((l) => l.estimated && l.type === type).length }])),
+    skipped: reasons,
+    movedOutOfFootprints: moved,
+    offenders: offenders.map((lamp) => lamp.id),
+  };
+  // The same site tests place the estimated benches (stages/furniture.mjs).
+  const labelAt = (p) => {
+    const k = indexOf(p);
+    return k < 0 ? -1 : labels[k];
+  };
+  return { lamps, stats, sites: { walkways, inArea, isRoad, onCampus, labelAt, classes } };
+}
+
+// The head centre of a lamp (scene units) and the frame its arm and head are built in.
+function lampFrame(lamp, groundAt) {
+  const [x, z] = lamp.at;
+  return frame([x, groundAt(x, z), z], lamp.dir);
+}
+
+// Poles, arms and footings (solid furniture). Arterial and campus-road lamps share one shape scaled to their height.
+export function appendLampSolids(kit, lamps, groundAt) {
+  for (const lamp of lamps) {
+    const f = lampFrame(lamp, groundAt);
+    const k = lamp.heightM / LAMP_TYPES.arterial.heightM;
+    const base = f.o[1] - metres(0.1);
+    if (lamp.type === "path") {
+      kit.box(f, [-0.16, 0.16], [-0.16, 0.16], [-0.1, 0.25], FOOTING);
+      kit.pole(lamp.at, base, f.o[1] + metres(3.62), 0.065, 0.055, PATH_POLE, { sides: 6 });
+      continue;
+    }
+    kit.box(f, [-0.25, 0.25], [-0.25, 0.25], [-0.1, 0.3], FOOTING);
+    const top = 7.55 * k;
+    kit.pole(lamp.at, base, f.o[1] + metres(top), 0.12 * k + 0.02, 0.07, GALVANISED);
+    // single curved arm: rises from the pole top and levels out toward the head (VR scene_a19)
+    const reach = LAMP_TYPES[lamp.type].reachM;
+    const arm = [[0, top - 0.1], [0.3 * reach, top + 0.3 * k], [0.62 * reach, top + 0.48 * k], [reach - 0.3, top + 0.52 * k]];
+    for (let i = 0; i + 1 < arm.length; i += 1) {
+      kit.beam(local(f, arm[i][0], 0, arm[i][1]), local(f, arm[i + 1][0], 0, arm[i + 1][1]), 0.08, 0.08, GALVANISED);
+    }
+  }
+}
+
+// Luminaires into the glow kit (UV-painted): cobra housings with a warm lens underneath, path lanterns with warm sides.
+function appendLampHeads(glow, lamps, groundAt) {
+  for (const lamp of lamps) {
+    const f = lampFrame(lamp, groundAt);
+    const k = lamp.heightM / LAMP_TYPES.arterial.heightM;
+    if (lamp.type === "path") {
+      const h0 = 3.6;
+      glow.box(f, [-0.17, 0.17], [-0.17, 0.17], [h0, h0 + 0.42], { top: GLOW_UV.dark, side: GLOW_UV.warm }, { bottom: true });
+      const apex = local(f, 0, 0, h0 + 0.62);
+      glow.cone(apex, [[-0.24, -0.24], [0.24, -0.24], [0.24, 0.24], [-0.24, 0.24]].map(([s, t]) => local(f, s, t, h0 + 0.42)), GLOW_UV.dark);
+      continue;
+    }
+    const reach = LAMP_TYPES[lamp.type].reachM;
+    const top = 7.55 * k + 0.52 * k;
+    // housing 0.8 x 0.34 x 0.14 m, its lens a little below the housing so the two never share a plane
+    glow.box(f, [reach - 0.45, reach + 0.38], [-0.17, 0.17], [top - 0.1, top + 0.06], GLOW_UV.dark);
+    glow.face([local(f, reach - 0.36, -0.13, top - 0.115), local(f, reach + 0.3, -0.13, top - 0.115), local(f, reach + 0.3, 0.13, top - 0.115), local(f, reach - 0.36, 0.13, top - 0.115)], [0, -1, 0], GLOW_UV.warm);
+  }
 }
 
 // Unit disc facing up: warm centre fading to black at the rim (additive, so black adds nothing).
 function poolArchetype(segments = 24) {
   const mesh = new MeshData({ uvs: false, colors: true });
   const up = [0, 1, 0];
-  // roughly (1 - r^2)^2: bright centre, no visible rim
   const rings = [[0, 255], [0.25, 225], [0.5, 145], [0.7, 66], [0.85, 20], [1, 0]];
   const centre = mesh.vertex([0, 0, 0], up, undefined, [255, 255, 255, 255]);
   const ringStart = rings.slice(1).map(([radius, level]) => {
@@ -95,115 +321,28 @@ function poolArchetype(segments = 24) {
   return mesh;
 }
 
-function nearestOnSegment([px, pz], [ax, az], [bx, bz]) {
-  const dx = bx - ax;
-  const dz = bz - az;
-  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / (dx * dx + dz * dz || 1)));
-  return [ax + t * dx, az + t * dz];
-}
+// Emits Lamps_heads (the glow kit from stages/furniture.mjs plus every luminaire) and Lamps_pools.
+export function buildLights({ glb, lamps, stats, groundAt, glow }) {
+  appendLampHeads(glow, lamps, groundAt);
 
-function nearestOnRings(point, rings) {
-  let best = null;
-  let bestDistance = Infinity;
-  for (const ring of rings) {
-    for (let i = 0; i < ring.length; i += 1) {
-      const q = nearestOnSegment(point, ring[i], ring[(i + 1) % ring.length]);
-      const d = Math.hypot(q[0] - point[0], q[1] - point[1]);
-      if (d < bestDistance) {
-        bestDistance = d;
-        best = q;
-      }
-    }
-  }
-  return { point: best, distance: bestDistance };
-}
-
-const inExtent = ([x, z]) => x > EXTENT.minX + 2 && x < EXTENT.maxX - 2 && z > EXTENT.minZ + 2 && z < EXTENT.maxZ - 2;
-
-export function buildLights({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots }) {
-  const { heightAt, roadZones } = inputs;
-  const source = JSON.parse(readFileSync(STREETLIGHTS, "utf8"));
-  const lamps = [];
-
-  // ---- real lamps (MEASURED positions), arm toward the nearest road edge
-  const roadRings = roadZones.map((polygon) => polygon[0]);
-  const real = source.lamps.map(([id, lon, lat]) => ({ id, at: geoToModel(lon, lat) })).filter(({ at }) => inExtent(at));
-  for (const { at } of real) {
-    const road = nearestOnRings(at, roadRings);
-    const dir = road.distance > 1e-3 && road.distance < metres(15) ? [road.point[0] - at[0], road.point[1] - at[1]] : [1, 0];
-    lamps.push({ at, dir, ...ROAD_LAMP, estimated: false });
-  }
-  const nn = real.map(({ at }, i) => Math.min(...real.filter((_, j) => j !== i).map((o) => Math.hypot(o.at[0] - at[0], o.at[1] - at[1]))));
-  nn.sort((a, b) => a - b);
-  const medianSpacingM = nn.length ? nn[nn.length >> 1] / metres(1) : 0;
-
-  // ---- estimated campus lamps along walkway centrelines
-  const buildingRings = [...selectableBuildings, ...campusBuildings].flatMap((b) => b.parts.map((part) => part.outer));
-  const walkways = JSON.parse(readFileSync(WALKWAYS, "utf8")).features.flatMap(({ geometry, properties }) => {
-    const width = Number(properties.widt) > 0 ? Number(properties.widt) : WALKWAY_FALLBACK_WIDTH_M;
-    const lines = geometry.type === "LineString" ? [geometry.coordinates] : geometry.coordinates;
-    return lines.map((line) => ({ width, line: line.map(([lon, lat]) => geoToModel(lon, lat)) }));
-  });
-  const spacing = metres(LAMP_SPACING_M);
-  const tooClose = (p, clearance, estimatedOnly) =>
-    lamps.some((lamp) => (!estimatedOnly || lamp.estimated) && Math.hypot(lamp.at[0] - p[0], lamp.at[1] - p[1]) < metres(clearance));
-  let skipped = 0;
-  for (const { width, line } of walkways) {
-    let carry = spacing / 2;
-    for (let s = 0; s + 1 < line.length; s += 1) {
-      const [ax, az] = line[s];
-      const [bx, bz] = line[s + 1];
-      const length = Math.hypot(bx - ax, bz - az);
-      if (length < 1e-6) continue;
-      const ux = (bx - ax) / length;
-      const uz = (bz - az) / length;
-      for (let t = carry; t <= length; t += spacing) {
-        const centre = [ax + ux * t, az + uz * t];
-        const side = metres(width / 2 + 0.5);
-        const at = [centre[0] - uz * side, centre[1] + ux * side];
-        const offCampus =
-          !inExtent(at) ||
-          offCampusLots.some((lot) => pointInRing(at, lot)) ||
-          buildingRings.some((ring) => pointInRing(at, ring)) ||
-          nearestOnRings(at, buildingRings).distance > metres(CAMPUS_REACH_M);
-        if (offCampus || tooClose(at, REAL_CLEARANCE_M, false) || tooClose(at, ESTIMATED_CLEARANCE_M, true)) {
-          skipped += 1;
-          continue;
-        }
-        lamps.push({ at, dir: [centre[0] - at[0], centre[1] - at[1]], ...PATH_LAMP, estimated: true });
-      }
-      carry = (((carry - length) % spacing) + spacing) % spacing;
-    }
-  }
-
-  // ---- instances
   const n = lamps.length;
-  const heads = { translations: new Float32Array(n * 3), rotations: new Float32Array(n * 4), scales: new Float32Array(n * 3) };
   const pools = { translations: new Float32Array(n * 3), rotations: new Float32Array(n * 4), scales: new Float32Array(n * 3) };
   lamps.forEach((lamp, i) => {
-    const [x, z] = lamp.at;
-    const length = Math.hypot(lamp.dir[0], lamp.dir[1]) || 1;
-    const dx = lamp.dir[0] / length;
-    const dz = lamp.dir[1] / length;
-    // rotation about +y by angle maps local +x to (cos, 0, -sin)
-    const angle = Math.atan2(-dz, dx);
-    const quaternion = [0, Math.sin(angle / 2), 0, Math.cos(angle / 2)];
-    const scale = lamp.heightM / ARCHETYPE_HEIGHT_M;
-    heads.translations.set([x, heightAt(x, z), z], i * 3);
-    heads.rotations.set(quaternion, i * 4);
-    heads.scales.set([scale, scale, scale], i * 3);
-    const reach = metres((ARM_REACH_M - 0.3) * scale);
-    const px = x + dx * reach;
-    const pz = z + dz * reach;
-    const radius = metres(lamp.poolRadiusM);
-    pools.translations.set([px, heightAt(px, pz) + metres(POOL_LIFT_M), pz], i * 3);
-    pools.rotations.set(quaternion, i * 4);
+    const f = lampFrame(lamp, groundAt);
+    const reach = metres(LAMP_TYPES[lamp.type].reachM);
+    const px = f.o[0] + f.u[0] * reach;
+    const pz = f.o[2] + f.u[1] * reach;
+    const radius = metres(LAMP_TYPES[lamp.type].poolRadiusM);
+    pools.translations.set([px, groundAt(px, pz) + metres(POOL_LIFT_M), pz], i * 3);
+    pools.rotations.set([0, 0, 0, 1], i * 4);
     pools.scales.set([radius, 1, radius], i * 3);
   });
 
-  const mask = new Uint8Array(8 * 8 * 3);
-  for (let y = 0; y < 8; y += 1) for (let x = 4; x < 8; x += 1) mask.fill(255, (y * 8 + x) * 3, (y * 8 + x) * 3 + 3);
-  const maskTexture = glb.addTexture(encodePng(8, 8, 3, mask), "image/png", { repeat: false });
+  // 32 x 32 emissive mask, bands 8 px wide: top half dark | warm | red | green, bottom half dark | amber | dark | dark.
+  const mask = new Uint8Array(32 * 32 * 3);
+  const bands = [[[0, 0, 0], [255, 255, 255], [255, 0, 0], [0, 255, 0]], [[0, 0, 0], [255, 170, 0], [0, 0, 0], [0, 0, 0]]];
+  for (let y = 0; y < 32; y += 1) for (let x = 0; x < 32; x += 1) mask.set(bands[y >> 4][x >> 3], (y * 32 + x) * 3);
+  const maskTexture = glb.addTexture(encodePng(32, 32, 3, mask), "image/png", { repeat: false });
   glb.extensionsUsed.add("KHR_materials_emissive_strength");
   glb.extensionsUsed.add("KHR_materials_unlit");
   const headMaterial = glb.addMaterial({
@@ -221,23 +360,30 @@ export function buildLights({ glb, inputs, selectableBuildings, campusBuildings,
     extensions: { KHR_materials_unlit: {} },
   });
 
-  const estimatedCount = lamps.filter((lamp) => lamp.estimated).length;
   const extras = {
-    lampsReal: n - estimatedCount,
-    lampsEstimated: estimatedCount,
-    realSource: `${source.source}, data date ${source.dataDate}`,
-    estimatedNote: `estimated positions: campus lamps placed every ${LAMP_SPACING_M} m along walkways (not surveyed)`,
-    // instance order: real lamps first, then estimated ones
-    estimatedFromInstance: n - estimatedCount,
+    lampsSurveyed: stats.surveyed,
+    lampsEstimated: stats.estimated,
+    lampTypes: Object.fromEntries(Object.entries(LAMP_TYPES).map(([type, t]) => [type, { ...t, ...stats.byType[type] }])),
+    surveyedSource: "data/photo/objects-campus.geojson street_lamp (NGII 2025 orthophoto survey; data.go.kr 순천시_가로등 points kept only where the photo shows a footway, verge or median)",
+    estimatedNote: `estimated positions: campus lamps every ${LAMP_SPACING_M} m along the A003 walkway outlines where the photo resolves none (not surveyed)`,
+    heightsNote: "lamp heights, arm reach and head sizes are estimates from the SCNU 360 VR tour, not measurements",
+    movedOutOfFootprints: stats.movedOutOfFootprints,
+    // pool instance order: surveyed lamps first, then estimated ones
+    estimatedFromInstance: stats.surveyed,
+    // [id, type, height m (estimated), estimated position 0/1, x, z (scene units)]
+    lamps: lamps.map((lamp) => [lamp.id, lamp.type, lamp.heightM, lamp.estimated ? 1 : 0, Number(lamp.at[0].toFixed(2)), Number(lamp.at[1].toFixed(2))]),
   };
-  const headMesh = glb.addMesh("Lamps_heads", [lampArchetype().toPrimitive(headMaterial)]);
-  glb.addNode({ name: "Lamps_heads", mesh: headMesh, extensions: glb.instancingExtension(heads), extras }, { root: true });
+  const headMesh = glb.addMesh("Lamps_heads", [glow.toPrimitive(headMaterial)]);
+  glb.addNode({ name: "Lamps_heads", mesh: headMesh, extras }, { root: true });
   const poolMesh = glb.addMesh("Lamps_pools", [poolArchetype().toPrimitive(poolMaterial)]);
-  glb.addNode({ name: "Lamps_pools", mesh: poolMesh, extensions: glb.instancingExtension(pools), extras }, { root: true });
+  glb.addNode({ name: "Lamps_pools", mesh: poolMesh, extensions: glb.instancingExtension(pools), extras: { lamps: n } }, { root: true });
 
+  const types = Object.entries(stats.byType).map(([type, c]) => `${type} ${c.surveyed}+${c.estimated}`).join(", ");
   console.log(
-    `lights: ${n} lamps = ${n - estimatedCount} real (${source.source}, ${source.dataDate}; median spacing ${medianSpacingM.toFixed(1)} m) ` +
-    `+ ${estimatedCount} estimated positions along walkways every ${LAMP_SPACING_M} m (${skipped} spots skipped); 2 instanced nodes, 0 lights`,
+    `lights: ${n} lamps = ${stats.surveyed} surveyed (photo survey) + ${stats.estimated} estimated along walkway outlines every ${LAMP_SPACING_M} m ` +
+    `(${types}; skipped ${Object.entries(stats.skipped).map(([k, v]) => `${k} ${v}`).join(", ")}); ` +
+    `Lamps_heads ${glow.triangleCount} triangles, 1 merged + 1 instanced node, 0 lights` +
+    (stats.movedOutOfFootprints.length ? `; surveyed lamps moved out of a building footprint: ${stats.movedOutOfFootprints.join(", ")}` : ""),
   );
-  return { real: n - estimatedCount, estimated: estimatedCount };
+  if (stats.offenders.length) throw new Error(`lights: lamps on a road, crosswalk or building: ${stats.offenders.join(", ")}`);
 }

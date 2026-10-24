@@ -645,7 +645,9 @@ function buildingPrimitives(building, seed, { heightAt, facadeMaterial, tiles, l
 }
 
 // ---------------------------------------------------------------- stage
-export async function buildBuildings({ glb, inputs }) {
+// detailedStructures: plan rings of the structures stages/furniture.mjs models in detail (the 구령대). A campus
+// footprint holding one keeps its label, pick proxy, photo mask and tree mask, but its generic mass is not drawn.
+export async function buildBuildings({ glb, inputs, detailedStructures = [] }) {
   const { source, footprints, roadZones, heightAt } = inputs;
 
   // ---- building selection
@@ -849,6 +851,7 @@ export async function buildBuildings({ glb, inputs }) {
     heightLog.push({ label: part.name || "(unnamed)", footprintSource: part.footprintSource, floorsSource: part.floorsSource, ...height });
     campusBuildings.push({
       index: part.index,
+      drawnByFurniture: detailedStructures.some((ring) => pointInRing(ringCentroid(ring), part.outer)),
       displayName: part.name,
       label: part.label,
       nodeId: part.nodeId,
@@ -999,7 +1002,13 @@ export async function buildBuildings({ glb, inputs }) {
   const selectablePrimitives = selectableBuildings.map((building, index) => buildingPrimitives(building, 1000 + index, primitivesContext));
   const merged = new Map();
   campusBuildings.forEach((building, index) => {
-    buildingPrimitives(building, 5000 + index, primitivesContext).forEach((primitive) => {
+    // A structure the furniture stage draws still allocates its AO charts, so the baked AO atlas layout stays valid.
+    const primitives = buildingPrimitives(building, 5000 + index, primitivesContext);
+    if (building.drawnByFurniture) {
+      console.log(`buildings: ${building.label ?? building.displayName} is drawn by stages/furniture.mjs; its generic mass is left out (label and pick proxy kept)`);
+      return;
+    }
+    primitives.forEach((primitive) => {
       if (!merged.has(primitive.material)) merged.set(primitive.material, aoMesh(primitive.colors ? { colors: true } : undefined));
       const target = merged.get(primitive.material);
       target.append({ positions: primitive.positions, normals: primitive.normals, uvs: primitive.uvs, colors: primitive.colors, indices: primitive.indices });

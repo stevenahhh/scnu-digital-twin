@@ -71,7 +71,8 @@ const NON_CASTER_PARENT_PATTERN = /^Trees_.*_trunk/;
 const ROAD_MARKING_MATERIAL_NAME = "Road_Marking";
 const ROAD_MARKING_POLYGON_OFFSET = Object.freeze({ factor: -1, units: -4 });
 // 가로등(Lamp_*): 실제 조명 없이 밤에만 머리(Lamp_Head)가 빛나고 바닥 빛 웅덩이(Lamp_Pool)를 가산 합성으로 그린다.
-// 그림자·클릭 대상에서 빼고, 웅덩이는 낮에는 숨겨 드로우콜을 쓰지 않는다. 캠퍼스 안쪽 가로등 위치는 추정값이다.
+// 그림자·클릭 대상에서 빼고, 웅덩이는 낮에는 숨겨 드로우콜을 쓰지 않는다. 가로등 위치는 항공사진 조사값이고,
+// 사진으로 찾지 못한 캠퍼스 보행로 가로등은 규칙으로 놓은 추정값이다. 신호등 렌즈도 같은 머리 메시에 들어 있어 밤에 빛난다.
 const LAMP_MATERIAL_PATTERN = /^Lamp_/;
 const LAMP_POOL_MATERIAL_NAME = "Lamp_Pool";
 const LAMP_POOL_STRENGTH = 1;
@@ -82,6 +83,11 @@ const LAMP_POOL_FALLOFF = 4.5;
 // 평평한 원판이 경사진 지형·도로면 아래로 들어가 직선으로 잘려 보이지 않게, 시점 공간에서 카메라 쪽으로 조금(장면 단위, 약 0.8 m)
 // 당겨 깊이 검사만 통과시킨다. 가산 합성이고 깊이를 쓰지 않으므로 다른 물체의 깊이에는 영향이 없다.
 const LAMP_POOL_DEPTH_BIAS = 0.5;
+// 야외 시설물(Furniture*, 생성기 stages/furniture.mjs): 벽·관람석·구령대·쉘터·퍼걸러·벤치 등을 재질마다 하나로 합친 메시다.
+// 삼각형이 캠퍼스 전체에 퍼져 있어 포인터가 움직일 때마다 검사하지 않도록 클릭 판정에서 뺀다. 반투명 유리·그물
+// (Furniture_Glass)은 그림자를 드리우지 않는다. 위치는 항공사진 조사값이고 모양·높이는 VR 투어를 보고 정한 추정값이다.
+const FURNITURE_MATERIAL_PATTERN = /^Furniture/;
+const FURNITURE_GLASS_MATERIAL_NAME = "Furniture_Glass";
 function applyLampPoolFalloff(material) {
   material.vertexColors = false;
   material.onBeforeCompile = (shader) => {
@@ -410,8 +416,10 @@ export function CityModel({
       }
 
       const isRoadMarking = child.material?.name === ROAD_MARKING_MATERIAL_NAME;
+      const isFurniture = FURNITURE_MATERIAL_PATTERN.test(child.material?.name ?? "");
       const isNonCaster =
         isRoadMarking ||
+        child.material?.name === FURNITURE_GLASS_MATERIAL_NAME ||
         child.material?.name === NON_CASTER_MATERIAL_NAME ||
         NON_CASTER_PARENT_PATTERN.test(child.parent?.name ?? "") ||
         NON_CASTER_PARENT_PATTERN.test(child.name);
@@ -419,6 +427,7 @@ export function CityModel({
       if (isNonCaster) nonCasterNames.push(child.name);
       child.receiveShadow = true;
       child.material = child.material.clone();
+      if (isFurniture) child.raycast = () => {};
       if (isRoadMarking) {
         child.raycast = () => {};
         child.material.polygonOffset = true;
