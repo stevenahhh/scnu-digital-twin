@@ -14,6 +14,11 @@ export const LANDCOVER = Object.freeze({
 // Canopy at or above this height (metres, CHMv2) counts as TREE whatever the MCEE class says.
 export const CANOPY_TREE_METRES = 3;
 
+// Georeference of data/chm.png (fetch/canopy.mjs writes the CHMv2 window CHM_WINDOW of tile
+// 1321121212): EPSG:3857 metres of the top-left pixel corner and the pixel size, read from the tile's
+// GeoTIFF header so the build needs no network access.
+export const CHM_GEOREF = Object.freeze({ originX: 14190062.541359024, originY: 4160688.400347028, pixelSize: 1.19432856695596 });
+
 // MCEE sports grounds (l3 622) at least this large are running tracks/fields; smaller ones are courts.
 export const TRACK_MIN_AREA_M2 = 3000;
 
