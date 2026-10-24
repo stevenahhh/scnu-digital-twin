@@ -15,21 +15,26 @@ const SKY_TURBIDITY = 8;
 const SKY_RAYLEIGH = 0.7;
 // Tuned together at 15:00 KST: with the sky environment at 0.9 the sun was too weak against the
 // sky's diffuse light and building shadows disappeared; 4.0 / 0.45 keeps the same overall brightness.
-const SUN_INTENSITY = 4.0;
-const SKY_ENVIRONMENT_INTENSITY = 0.45;
+// Those were three r163 values. r186 takes the specular share out of direct and ambient diffuse light and
+// prefilters the sky environment with GGX instead of a Gaussian blur. Measured on the A8 views (linear
+// radiance, r163 vs r186): sun -3.3 %, ambient and hemisphere -2.5 %, environment +3 to +12 % (+8.5 % at
+// the default camera). The sun, environment, ambient and night-fill levels below are the r163 ones scaled
+// by x1.033, x0.93 and x1.025 so the picture stays the same.
+const SUN_INTENSITY = 4.13;
+const SKY_ENVIRONMENT_INTENSITY = 0.42;
 // Twilight fades the sun out and blends the ambient between the day and night levels with
 // getDaylightWeight (full above 6 deg, zero at -6 deg) instead of switching at 0 deg. The sun light never
 // goes below MIN_LIGHT_ALTITUDE (getShadowLightPosition) and has no night level: a key that followed the
 // sun under the horizon lit slopes from below the ground and threw building shadows up the hillside.
-const DAY_AMBIENT = 0.15;
-const NIGHT_AMBIENT = 0.05;
-// Without the sun, roads, lawns and roofs fall to the 0.05 ambient (near-black). A cool sky / dark ground
+const DAY_AMBIENT = 0.154;
+const NIGHT_AMBIENT = 0.051;
+// Without the sun, roads, lawns and roofs fall to the night ambient (near-black). A cool sky / dark ground
 // hemisphere fill (moon and sky-glow stand-in, not a measured night level) fades in as daylight fades,
 // so the road layout still reads at night. Emissive windows and the additive lamp pools are unaffected
 // by it and keep their contrast.
 const NIGHT_FILL_SKY = "#9fb4d6";
 const NIGHT_FILL_GROUND = "#3a342c";
-const NIGHT_FILL_INTENSITY = 0.9;
+const NIGHT_FILL_INTENSITY = 0.92;
 
 const isMobileDevice = () =>
   typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent);
@@ -69,7 +74,7 @@ export function CampusLighting({ sunVector, sunAltitude, shadowMapSize: requeste
     const deviceLimit = getShadowMapSize({ maxTextureSize, isMobile: isMobileDevice() });
     return Math.min(requestedShadowMapSize ?? deviceLimit, deviceLimit);
   }, [maxTextureSize, requestedShadowMapSize]);
-  // three r163 allocates the shadow map once and never resizes it, and ShadowBaker keeps the map frozen.
+  // three (r163 and r186 alike) allocates the shadow map once and never resizes it, and ShadowBaker keeps the map frozen.
   // On a tier change drop the old map so the next (re-baked) shadow pass allocates it at the new size.
   useLayoutEffect(() => {
     const shadow = sunLightRef.current?.shadow;

@@ -40,11 +40,11 @@ production `dist/` build.
   timezone set to Asia/Seoul. It aborts if `UNMASKED_RENDERER_WEBGL` reports
   SwiftShader.
 - Patches `THREE.Scene.prototype.onBeforeRender` / `onAfterRender`, which three
-  r163 calls once per `render()`, around both the shadow pass and the main pass.
+  (r163 and r186) calls once per `render()`, around both the shadow pass and the main pass.
   The `onBeforeRender` hook:
   - grabs the renderer and sets `renderer.info.autoReset = false`;
   - calls `renderer.info.reset()` at frame start, so shadow-pass draws are counted
-    (r163 resets `info` after `shadowMap.render`);
+    (r163 resets `info` after `shadowMap.render`, r186 before it);
   - pins the camera to the current view;
   - wraps the frame in `EXT_disjoint_timer_query_webgl2` `TIME_ELAPSED_EXT`
     queries.

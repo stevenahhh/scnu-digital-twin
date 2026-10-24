@@ -19,7 +19,7 @@ const BLOOM_MAX_INTENSITY = 0.35;
 const BLOOM_RADIUS = 0.5;
 const BLOOM_LEVELS = 5;
 
-// three r163 재질은 톤 매핑 -> sRGB 인코딩 -> 안개 순서로 계산하므로 안개가 화면(sRGB) 공간에서 섞인다.
+// three 재질은(r163·r186 모두) 톤 매핑 -> sRGB 인코딩 -> 안개 순서로 계산하므로 안개가 화면(sRGB) 공간에서 섞인다.
 // 컴포저의 선형 버퍼에 그리면 안개가 선형 공간에서 섞여 장면 전체가 뿌옇게 뜬다(Low 화면과 다른 그림).
 // RenderPass가 장면을 그리는 동안만 입력 버퍼를 three가 화면처럼 다루는 대상(isXRRenderTarget, sRGB)으로
 // 표시해 재질이 Low와 똑같이 톤 매핑·인코딩·안개를 계산하게 한다. 그린 뒤에는 다시 Linear로 돌려둔다:

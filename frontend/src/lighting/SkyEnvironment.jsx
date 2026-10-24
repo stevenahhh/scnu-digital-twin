@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { Sky } from "three/examples/jsm/objects/Sky.js";
+// Same Preetham class as drei's visible <Sky>. three's own examples Sky changed in r18x (procedural clouds
+// on by default, no final gamma curve), so it would light the scene with a different sky than the dome shows.
+import { Sky } from "three-stdlib";
 import { NIGHT_SKY_SRGB } from "./atmosphere.mjs";
 import { applySkyNightFade } from "./skyNightFade.mjs";
 
@@ -24,6 +26,9 @@ export function SkyEnvironment({ sunPosition, turbidity = 8, rayleigh = 0.7, int
   const pmrem = useMemo(() => new THREE.PMREMGenerator(gl), [gl]);
   const sky = useMemo(() => {
     const object = new Sky();
+    // three-stdlib's Sky shares one ShaderMaterial between all instances, drei's visible dome included.
+    // The copy gets its own, so its night fade, sun-disc removal and uniforms don't leak into the dome.
+    object.material = object.material.clone();
     object.scale.setScalar(450000);
     applySkyNightFade(object.material, NIGHT_SKY_LINEAR);
     if (object.material.uniforms.showSunDisc) {

@@ -94,8 +94,8 @@ const initScript = (clock) => `(() => {
   };
 
   // Called from Scene.prototype.onBeforeRender: after the scene graph update, before the frustum,
-  // the shadow pass and the main pass. r163 resets renderer.info after shadowMap.render, so autoReset
-  // is turned off and the reset happens here to count shadow draws too.
+  // the shadow pass and the main pass. r163 resets renderer.info after shadowMap.render (r186 before it),
+  // so autoReset is turned off and the reset happens here to count shadow draws on either version.
   B.before = (renderer, scene, camera) => {
     B.renderCalls++;
     if (!B.renderer) {
