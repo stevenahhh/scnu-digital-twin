@@ -10,6 +10,7 @@ bun run model:build   # regenerate public/campus-v2.glb from committed inputs (n
 bun run model:fetch   # refresh data/ (network; the land cover step needs VITE_VWORLD_API_KEY in the env or frontend/.env)
 bun scripts/campus-model/fetch/osm.mjs   # refresh data/osm-ground.json (network, no key)
 bun scripts/campus-model/fetch/ortho.mjs # refresh data/ortho/ (VWorld z19 mosaic; the key is needed only for tiles missing from .cache/)
+bun scripts/campus-model/fetch/lod4Facades.mjs [--debug <dir>] # refresh data/lod4-facades.json (keyless VWorld LOD4 tiles, cached in .cache/lod4/)
 node --test src/campusModelAsset.test.mjs
 ```
 
@@ -20,12 +21,14 @@ node --test src/campusModelAsset.test.mjs
 | File | Role |
 |---|---|
 | `stages/sources.mjs` | uni.glb scene, heightfield, building footprints, GeoJSON layers, land cover |
-| `stages/buildings.mjs` | building selection, facade/roof materials, roof colours and solar panels from the orthophoto, building meshes and nodes |
+| `stages/buildings.mjs` | building selection, floor/height corrections, facade looks and cells, tower masses, roof colours and solar panels from the orthophoto, building meshes and nodes |
 | `stages/ground.mjs` | procedural ground layer (land cover, ground features from `osm-ground.json`), the orthophoto laid over it, ground material, Topography chunks, crosswalk stripes |
 | `stages/trees.mjs` | `placeTrees` (placement masks, CHMv2-driven placement; runs before the ground) and `buildTrees` (species geometry, instanced tree nodes) |
 | `lib/geometry.mjs` | plan-view ring helpers (area, centroid, point-in-ring, cleaning) |
 | `lib/ortho.mjs` | the VWorld z19 mosaic in `data/ortho/` and its Web Mercator frame |
 | `lib/orthoGround.mjs` | orthophoto ground composition and the photo colour calibration (see Orthophoto ground) |
+| `lib/facadeAtlas.mjs` | the facade atlas: one painted tile per facade look, its emissive, normal and metallic-roughness maps (see Facades) |
+| `lib/textures.mjs` | roof membrane and rooftop-equipment textures, and the detail-map builder the facade atlas shares |
 | `lib/roofPhoto.mjs` | roof colour sampling and solar-panel detection (see Roof colours and solar panels) |
 
 ## Inputs
@@ -37,6 +40,8 @@ node --test src/campusModelAsset.test.mjs
 | `data/landcover.png` | ground classes (paved, grass, tree, soil, track, court) per scene unit, from MCEE land cover and CHMv2 canopy |
 | `data/ortho/vworld-satellite-z19.jpg` + `.json` | VWorld Satellite z19 tile mosaic (Web Mercator, 3584 x 2816 px, about 0.245 m/px) and its tile range: ground albedo, roof colours, solar panels |
 | `data/chm.png` | CHMv2 canopy height (8-bit metres); tree placement and crown sizes |
+| `data/scnu-facades.json` | curated facade looks (class, colours, window layout, piers, bands, entrance, eave colour) and per-building entries: look, floor/height corrections, tower masses, entrance side (see Facades) |
+| `data/lod4-facades.json` | per SCNU footprint: the VWorld LOD4 models over it, their facade palette, wall height and roof levels with outlines (fetch/lod4Facades.mjs) |
 | `data/osm-ground.json` | ground features painted into the texture (see below) |
 | `docs/assets/data/road_zones_wgs84.geojson` | asphalt road surfaces |
 | `docs/assets/data/walkways_wgs84.geojson` | paved walkways |
@@ -101,9 +106,11 @@ outline. Samples in cast shadow, on photovoltaic modules (dark slate blue in thi
 crowns (green and rough, unlike a smooth painted green roof) are left out; the roof colour is the
 per-channel median of the rest, calibrated like the ground. A roof with fewer than 30 % usable samples
 (hidden by crowns, in shadow, outside the mosaic) keeps the light membrane unless an OSM roof tag
-(`data/osm-roof-tags.json`) colours it. `BLD_*` roofs get one `Roof_Photo_<rgb>` variant of `Roof_Membrane`
-each (every node has its own roof primitive anyway); the merged `CampusBuildings` roof keeps one material
-and carries the colours as `COLOR_0`, so no roof adds a draw call. Node extras carry `roofColour`,
+(`data/osm-roof-tags.json`) colours it. Every roof, `BLD_*` nodes and the merged `CampusBuildings` roof alike,
+carries its colour as `COLOR_0` on the one `Roof_Membrane` material, so no roof adds a draw call or a material.
+(`BLD_*` roofs had their own `Roof_Photo_<rgb>` material variants until 2026-10-24. The dashboard tints material
+colours at night and on hover, which mixes a material's colour towards the tint but multiplies a vertex colour by
+it, so the vertex-coloured campus roofs rendered darker than `BLD_*` roofs of the same colour.) Node extras carry `roofColour`,
 `roofSurface` (light, grey, dark, green) and `roofColourSource`.
 
 Solar panels: the panel samples of each footprint part are gridded along its longest edge (1.5 m + 3 % of
@@ -127,6 +134,38 @@ height is at least 3 m (`CANOPY_TREE_METRES`), in random order. Each crown gets 
 of 1 + 0.25 x the local canopy height (2-5.5 m) and keeps its mean radius (`CROWN_SPACING` 1.0) from
 the others. `model:build` logs how much of the canopy the crowns cover and fails above 12,000
 instances. The broadleaf, round and pine archetypes and their mix are unchanged.
+
+### Facades (`data/scnu-facades.json`, `lib/facadeAtlas.mjs`)
+
+Every wall of every building is drawn with one material, `Facade_Atlas`. Its colour texture (2048 px wide, as
+tall as the looks in use need) holds one tile per facade look, four bays wide and four storey rows tall: two
+upper-storey rows with the same colours and different lit windows, the ground storey with a plinth band, and the
+ground storey with an entrance in its middle two bays. The emissive (window glow), normal and metallic-roughness
+maps are at half resolution. A wall edge holds a whole number of bays (its length over the look's bay, the bay
+stretched to fit) and a mass its whole number of storeys (its floor count), so the window rows follow the floors.
+Every cell of up to four bays and one storey maps into one row of the tile, so the texture never wraps; the tile's
+8 px gutters repeat its own content for filtering. Upper cells pick a row and an orientation at random, for
+lit-window variety at night. The entrance is on the wall facing the entry's `entranceBearing`, else on the
+longest wall; buildings with an entry get a 2.2 m canopy slab over the doors. The parapet takes the look's eave
+colour per vertex (`COLOR_0`), so tiled and painted eaves cost no material. `CampusBuildings` draws all its walls
+with one primitive.
+
+Looks are curated per building from the SCNU 360 VR tour panoramas (`vr.scnu.ac.kr/360vr`, `scene_<code>`;
+viewed as a visual reference only, nothing is copied or linked) and checked against the VWorld LOD4 facade
+photos. A look gives the pattern (punched windows, ribbon windows, curtain wall, greenhouse), the wall texture
+(brick, render, panel, concrete, stone, metal), wall, trim, glass, frame and spandrel colours, window size and count
+per bay, piers, floor bands, accent spandrels or window surrounds, a glazed ground storey, entrance canopy and sign
+colours, and the eave colour. Buildings without an entry take the greenhouse look (온실), the annex look
+(부속 시설, `(추정)` or under 150 m²) or a plain render look. Colours, window layouts and canopies are estimates, not
+measurements. Node extras carry `facadeLook`, `facadeClass` and `facadeSource`.
+
+`fetch/lod4Facades.mjs` walks the keyless VWorld 3D Tiles tileset `facility_LOD4/Jeollanam-do/Suncheon-si` to its
+finest b3dm tiles over the SCNU footprints (cached in `.cache/lod4/`, gitignored) and decodes each model
+(CESIUM_RTC centre, WEB3D_quantized_attributes positions). Most textures are Crunch-compressed; crnlib as built
+for Cesium 1.80 (zlib licence) is fetched once from unpkg into the cache to transcode them and is never committed.
+Per footprint it writes the models, the colour modes of the wall texels, the wall height and the roof levels with
+their outlines. `--debug <dir>` writes unrolled facade images (perimeter x height, 0.25 m/px) for inspection.
+Stored and used under consent D1 (`출처: 브이월드`).
 
 ### Building footprints and heights
 
@@ -167,7 +206,14 @@ The build data contains no VWorld records (`vworld-buildings.json` is no longer 
 
 Height rule (`heightOf` in `stages/buildings.mjs`), giving the roof-slab height in metres:
 
-- A source height is used when it gives 2.5-6.5 m per floor, or when floors are unknown.
+- A curated entry in `data/scnu-facades.json` wins. On campus the register attributes of GIS건물통합정보 sit on
+  the wrong footprints: C2 carried 41동 진리관's 12 floors and 35.7 m, C3 40동 창조관's 11 floors and 32.3 m, A6
+  4동 정보전산원's 4 floors, A2 37동 공동실험실습관's 6 floors, and E2, E6 and E8 each other's. VWorld
+  `LT_C_BLDGINFO` names the building each register record belongs to (`dong_nm`), so the entries take floors and
+  height from the record with the building's own name, checked against the VWorld LOD4 roof levels
+  (`data/lod4-facades.json`) and the VR views. `model:build` lists every correction.
+- A source height is used when it gives 2.5-5 m per floor (2.5-6.5 m until 2026-10-24; the build logs what the
+  old limit would have given), or when floors are unknown.
 - Otherwise height = floors x 4.4 m for SCNU buildings, or floors x 3.8 m for others. These are
   the medians of building-register height/floors in the bbox: 4.39 m over 26 SCNU buildings and
   3.76 m over 153 buildings. A building is SCNU when its name starts with `순천대학교` or its
@@ -175,6 +221,11 @@ Height rule (`heightOf` in `stages/buildings.mjs`), giving the roof-slab height 
 - The minimum is 3.5 m. The 0.9 m parapet is added as geometry on top of flat roofs.
 - A `BLD_*` node without floors keeps its `uni.glb` outline height. Other campus buildings
   without floors get the 3.5 m minimum.
+- An entry's `tower` adds a taller mass on the part: the convex hull of the named VWorld LOD4 roof levels,
+  clipped to the footprint, standing on the part's roof (A1 대학본부, 8 floors on a 3-floor podium; A5 진리관, 12
+  floors on the 2-floor A4 annex; A6 창조관, 11 floors on 6). The podium's parapet leaves out the stretches under
+  the tower. `useRecordFootprint` lets a `uni.glb` node take the register footprint around it when its own outline
+  leaves most of the building out (BLD_A4, whose outline missed the 진리관 tower).
 
 All of these heights are estimates, not measurements. Node extras carry `heightSource`.
 
@@ -220,9 +271,9 @@ covers gets no proxy. That node keeps its own label. Records under 12 m² are no
 ## What the model contains
 
 - `BLD_*` nodes: every building id from `uni.glb`, rebuilt with estimated heights from floor
-  counts (see above), procedural facades (concrete ribbon windows, brick, beige render, glass curtain wall,
-  greenhouse), flat roofs with parapets, rooftop equipment, roof colours from the orthophoto and the solar
-  panels it shows (estimates), and window glow used at night.
+  counts (see above), per-building facade looks on the facade atlas (see Facades), tower masses where VWorld
+  LOD4 shows one, flat roofs with parapets in the eave colour, rooftop equipment, roof colours from the
+  orthophoto and the solar panels it shows (estimates), and window glow used at night.
   `BLD_D4` keeps its original outline because its bounding-box centre anchors the traffic frame.
 - `CampusBuildings`: other university buildings from the footprint file (named `순천대학교`, or
   unnamed ones inside the campus next to a campus road). Off-campus buildings are left out; their lots are

@@ -1,24 +1,26 @@
 // Building stage: match uni.glb's BLD_* nodes to the footprints in data/gis-buildings.json, pick
-// campus/off-campus buildings, build their facade/roof materials and meshes, and emit the nodes.
-// Every facade/roof primitive also gets TEXCOORD_1 into one ambient-occlusion atlas (see aoLayout
-// below); data/ao-buildings.png, baked from the raw GLB by bake/bake-ao.mjs, becomes their
-// occlusionTexture when its layout hash matches this build's. Roof colours and rooftop solar panels come from
-// the VWorld z19 orthophoto (lib/roofPhoto.mjs; estimates, not measurements).
+// campus/off-campus buildings, give each its facade look and storey count, build their meshes and emit the nodes.
+// Facades: every wall is drawn with one Facade_Atlas material whose tiles hold the looks of data/scnu-facades.json
+// (lib/facadeAtlas.mjs); walls are cut into cells of whole bays and whole storeys, so window rows follow the floor
+// counts. Every facade/roof primitive also gets TEXCOORD_1 into one ambient-occlusion atlas (see aoLayout below);
+// data/ao-buildings.png, baked from the raw GLB by bake/bake-ao.mjs, becomes their occlusionTexture when its layout
+// hash matches this build's. Roof colours and rooftop solar panels come from the VWorld z19 orthophoto
+// (lib/roofPhoto.mjs; estimates, not measurements).
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { ROWS, TILE_BAYS, buildFacadeAtlas, canopyUv, hex, plinthUv, tileUv } from "../lib/facadeAtlas.mjs";
 import { geoToModel, metres } from "../lib/frame.mjs";
 import { MeshData } from "../lib/meshData.mjs";
 import { mulberry32 } from "../lib/raster.mjs";
-import { EQUIPMENT_MODULE_UV, EQUIPMENT_PLAIN_UV, FACADE_BAYS, FACADE_FLOORS, ROOF_METRES, beigePunchedFacade, brickPunchedFacade, concreteRibbonFacade, equipmentAtlas, glassCurtainFacade, greenhouseFacade, roofTexture } from "../lib/textures.mjs";
+import { EQUIPMENT_MODULE_UV, EQUIPMENT_PLAIN_UV, ROOF_METRES, equipmentAtlas, roofTexture } from "../lib/textures.mjs";
 import { MODULE_DEPTH_M, MODULE_TILT_DEGREES, panelModules, sampleRoofPhoto } from "../lib/roofPhoto.mjs";
 import { pointInRing, ringArea, ringCentroid, segmentDistance } from "../lib/geometry.mjs";
 import { meshFootprint, toModelRing } from "./sources.mjs";
 
-export const STYLE = Object.freeze({ CONCRETE: "concrete", BRICK: "brick", BEIGE: "beige", GLASS: "glass", GREENHOUSE: "greenhouse" });
 const UNIT_AREA = metres(1) ** 2;
-const BAY = metres(3.6);
 const PARAPET = metres(0.9);
+const DATA = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data");
 
 const jpeg = async (png, quality = 86) => new Bun.Image(png).jpeg({ quality }).toBuffer();
 
@@ -28,14 +30,22 @@ const SCNU_STOREY = 4.4;
 const STOREY = 3.8;
 const MIN_HEIGHT = 3.5;
 const SCNU_NAME = /^순천대학교/;
+// A source height is used when it gives 2.5-5 m per storey. Outside that window it belongs to another register
+// record (on campus the register attributes sit on the wrong footprints, see data/scnu-facades.json) or counts a
+// stage tower or chimney, so floors x storey height is used instead.
+const MIN_STOREY_METRES = 2.5;
+const MAX_STOREY_METRES = 5;
 
 // Roof-slab height in metres (the 0.9 m parapet is added on top as geometry, see PARAPET) and where it
-// came from, or null when the record has neither a height nor a floor count. A source height is used
-// when it gives 2.5-6.5 m per storey (or when floors are unknown); otherwise floors x storey height.
-export function heightOf(part, isSCNU) {
+// came from, or null when the record has neither a height nor a floor count. A curated height
+// (data/scnu-facades.json) wins; a source height is used when it gives MIN-MAX_STOREY_METRES per storey (or when
+// floors are unknown); otherwise floors x storey height. maxStorey exists so the build can log what the former
+// 6.5 m limit would have given.
+export function heightOf(part, isSCNU, maxStorey = MAX_STOREY_METRES) {
+  if (part.heightOverride) return { heightMetres: Math.max(part.heightMetres, MIN_HEIGHT), heightSource: part.heightOverride };
   const floors = part.floors || 0;
   const height = part.heightMetres || 0;
-  if (height > 0 && (!floors || (height / floors >= 2.5 && height / floors <= 6.5))) {
+  if (height > 0 && (!floors || (height / floors >= MIN_STOREY_METRES && height / floors <= maxStorey))) {
     return { heightMetres: Math.max(height, MIN_HEIGHT), heightSource: "source height" };
   }
   if (floors > 0) {
@@ -53,23 +63,111 @@ function assumedHeight(name, isSCNU) {
   return { heightMetres: Math.max(floors * storey, MIN_HEIGHT), heightSource: `assumed: ${floors} floors x ${storey} m (no floor data)` };
 }
 
-export function styleFor(name, fallback, seed) {
-  if (/온실/.test(name)) return STYLE.GREENHOUSE;
-  if (fallback) return fallback;
-  if (/체육관|공급실|창고|공장/.test(name)) return STYLE.CONCRETE;
-  return [STYLE.CONCRETE, STYLE.BEIGE, STYLE.BRICK, STYLE.GLASS, STYLE.CONCRETE][seed % 5];
+const isGroundFeature = (part) => part.areaMetres > 8000 && part.floors <= 1;
+
+// ---------------------------------------------------------------- facade catalogue
+// data/scnu-facades.json: facade looks and per-building entries (look, floor/height corrections, LOD4 tower masses,
+// entrance side). A uni.glb node takes the entry naming its id; a footprint record the entry with its exact name,
+// else the one with its registry code. Annexes and estimated names (부속 시설, (추정)) never take a building's entry.
+// data/lod4-facades.json (fetch/lod4Facades.mjs) supplies the roof-level outlines the tower masses use.
+const CODE = /(?:^|\s)([A-F]\d{1,2})(?=\s)/;
+const ANNEX = /부속 시설|\(추정\)/;
+const bareName = (name) => (name ?? "").replace(/^순천대학교\s*/, "").trim();
+
+function loadCatalogue() {
+  const file = JSON.parse(readFileSync(path.join(DATA, "scnu-facades.json"), "utf8"));
+  const looks = new Map(file.looks.map((look) => [look.id, look]));
+  const byNode = new Map();
+  const byName = new Map();
+  const byCode = new Map();
+  for (const entry of file.buildings) {
+    if (!looks.has(entry.look)) throw new Error(`scnu-facades.json: ${entry.node ?? entry.name ?? entry.code} uses unknown look ${entry.look}`);
+    if (entry.node) byNode.set(entry.node, entry);
+    else if (entry.name) byName.set(entry.name, entry);
+    else byCode.set(entry.code, entry);
+  }
+  const lod4File = path.join(DATA, "lod4-facades.json");
+  const lod4 = existsSync(lod4File) ? new Map(JSON.parse(readFileSync(lod4File, "utf8")).buildings.map((b) => [b.footprintSource, b])) : new Map();
+  return { looks, byNode, byName, byCode, lod4 };
 }
 
-const isGroundFeature = (part) => part.areaMetres > 8000 && part.floors <= 1;
+function recordEntry(catalogue, name) {
+  const label = bareName(name);
+  if (catalogue.byName.has(label)) return catalogue.byName.get(label);
+  if (!label || ANNEX.test(label)) return null;
+  const code = CODE.exec(` ${label} `)?.[1];
+  return code ? catalogue.byCode.get(code) ?? null : null;
+}
+
+// Buildings without an entry: greenhouses, service annexes, then a plain render look.
+function genericLook(name, areaMetres, isSCNU) {
+  const label = bareName(name);
+  if (/온실/.test(label)) return "greenhouse";
+  if (ANNEX.test(label) || areaMetres < 150) return "annex";
+  return isSCNU || SCNU_NAME.test(name ?? "") || /^[A-F]\d/.test(label) ? "generic-scnu" : "generic";
+}
+
+function convexHull(points) {
+  const sorted = [...points].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const half = (list) => {
+    const out = [];
+    for (const p of list) {
+      while (out.length >= 2 && cross(out.at(-2), out.at(-1), p) <= 0) out.pop();
+      out.push(p);
+    }
+    return out.slice(0, -1);
+  };
+  return [...half(sorted), ...half([...sorted].reverse())];
+}
+
+// subject (any simple ring) clipped by a convex ring (Sutherland-Hodgman).
+function clipConvex(subject, clip) {
+  const sign = Math.sign(ringArea(clip)) || 1;
+  let output = subject;
+  for (let i = 0; i < clip.length && output.length >= 3; i += 1) {
+    const a = clip[i];
+    const b = clip[(i + 1) % clip.length];
+    const side = (p) => sign * ((b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0]));
+    const input = output;
+    output = [];
+    for (let k = 0; k < input.length; k += 1) {
+      const p = input[k];
+      const q = input[(k + 1) % input.length];
+      const sp = side(p);
+      const sq = side(q);
+      if (sp >= 0) output.push(p);
+      if ((sp >= 0) !== (sq >= 0)) {
+        const t = sp / (sp - sq);
+        output.push([p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]);
+      }
+    }
+  }
+  return output;
+}
+
+// A part's masses: the part itself and, when its entry gives a tower, the taller mass over the LOD4 roof-level
+// outline clipped to the part, standing on the part's roof.
+function partMasses(part) {
+  const masses = [{ outer: part.outer, holes: part.holes, heightMetres: part.heightMetres, floors: part.floors, fromMetres: 0 }];
+  if (part.tower) {
+    const ring = clipConvex(part.outer, part.tower.hull);
+    if (ring.length >= 3 && Math.abs(ringArea(ring)) / UNIT_AREA > 40 && part.tower.heightMetres > part.heightMetres + 3) {
+      masses[0].under = ring;
+      masses.push({ outer: ring, holes: [], heightMetres: part.tower.heightMetres, floors: part.tower.floors, fromMetres: part.heightMetres, tower: true });
+    }
+  }
+  return masses;
+}
 
 // ---------------------------------------------------------------- roof colours
 // A roof takes the median colour of its footprint in the VWorld z19 orthophoto (lib/roofPhoto.mjs: shadow,
 // tree-crown and solar-panel samples left out, calibrated to an albedo estimate like the ground). Where the photo
 // gives none (outside the mosaic, hidden by crowns or shadow), data/osm-roof-tags.json (fetch/roofTags.mjs)
 // can still colour it from a tag on a footprint it matches: roof:colour, else a green-roof tag (roof:garden=yes
-// or a vegetated roof:material), else building:colour. Everything else keeps the light membrane. BLD_* roofs get
-// a Roof_Membrane variant per colour (each node has its own roof primitive anyway); the merged CampusBuildings
-// roof keeps one material and carries the colours as COLOR_0, so no roof adds a draw call.
+// or a vegetated roof:material), else building:colour. Everything else keeps the light membrane. Every roof, BLD_*
+// nodes and the merged CampusBuildings roof alike, carries its colour as COLOR_0 on the one Roof_Membrane
+// material, so no roof adds a draw call or a material and all of them take the dashboard's tints the same way.
 const ROOF_TAGS = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "osm-roof-tags.json");
 const NAMED_COLOURS = {
   white: [255, 255, 255], whitesmoke: [245, 245, 245], silver: [192, 192, 192], lightgrey: [211, 211, 211],
@@ -106,7 +204,7 @@ export function roofColourFromTags(tags) {
 }
 
 const srgbToLinear = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
-// The membrane texture is near white (222, 224, 220), so baseColorFactor = target / texture base, linear.
+// The membrane texture is near white (222, 224, 220), so the colour factor (COLOR_0) = target / texture base, linear.
 const roofFactor = (rgb) => [...rgb.map((c, i) => Math.min(1, srgbToLinear(c / 255) / srgbToLinear([222, 224, 220][i] / 255))), 1];
 
 // ---------------------------------------------------------------- AO atlas layout (TEXCOORD_1)
@@ -221,15 +319,44 @@ function atlasLayoutHash(bytes) {
 }
 
 // ---------------------------------------------------------------- geometry
-function addWalls(mesh, ring, outward, base, ground, top, floorHeight, charts) {
-  const area = ringArea(ring);
-  // A ring that is counter-clockwise in (x, z) has its interior on the left; walls face right.
-  const ordered = (area > 0) === outward ? [...ring].reverse() : ring;
+// A ring ordered so that its walls face outward (or inward, for courtyard rings): a ring that is counter-clockwise
+// in (x, z) has its interior on the left, and quads face right.
+const orderedRing = (ring, outward) => ((ringArea(ring) > 0) === outward ? [...ring].reverse() : ring);
+
+// Compass bearing (0 = north, 90 = east) of the outward normal of edge a -> b of an ordered ring (+x east, +z south).
+const edgeBearing = (a, b) => ((Math.atan2(-(b[1] - a[1]), -(b[0] - a[0])) * 180) / Math.PI + 360) % 360;
+
+// Stretches [t0, t1] of edge a -> b that lie outside `ring` (sampled every half metre); all of it without a ring.
+function openRuns(a, b, length, ring) {
+  if (!ring) return [[0, 1]];
+  const steps = Math.max(1, Math.ceil(length / metres(0.5)));
+  const covered = (t) => {
+    const p = [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+    return pointInRing(p, ring) || minEdgeDistance(p, [ring]) < metres(0.3);
+  };
+  const runs = [];
+  let start = null;
+  for (let k = 0; k < steps; k += 1) {
+    const open = !covered((k + 0.5) / steps);
+    if (open && start === null) start = k / steps;
+    if (!open && start !== null) {
+      runs.push([start, k / steps]);
+      start = null;
+    }
+  }
+  if (start !== null) runs.push([start, 1]);
+  return runs;
+}
+
+// Plain walls of a ring from base to top (parapets, rooftop plant, pick proxies), optionally leaving out the
+// stretches covered by `skip` (a tower standing on the roof) and coloured per vertex.
+function addWalls(mesh, ring, outward, base, top, charts, { skip = null, colour } = {}) {
+  const ordered = orderedRing(ring, outward);
   let distance = 0;
   let chart = -1;
   let chartStart = 0;
   const depth = top - base;
-  const v = (y) => -(y - ground) / (floorHeight * FACADE_FLOORS);
+  const flat = [[0, 0], [0, 0], [0, 0], [0, 0]];
   for (let i = 0; i < ordered.length; i += 1) {
     const a = ordered[i];
     const b = ordered[(i + 1) % ordered.length];
@@ -239,23 +366,124 @@ function addWalls(mesh, ring, outward, base, ground, top, floorHeight, charts) {
       chart = charts.open();
       chartStart = distance;
     }
-    const u0 = distance / (BAY * FACADE_BAYS);
-    const u1 = (distance + length) / (BAY * FACADE_BAYS);
-    mesh.quad(
-      [a[0], base, a[1]],
-      [b[0], base, b[1]],
-      [b[0], top, b[1]],
-      [a[0], top, a[1]],
-      [[u0, v(base)], [u1, v(base)], [u1, v(top)], [u0, v(top)]],
-    );
-    if (charts) {
-      const s0 = distance - chartStart;
-      const s1 = s0 + length;
-      mesh.ao.push(s0, depth, chart, s1, depth, chart, s1, 0, chart, s0, 0, chart);
+    for (const [t0, t1] of openRuns(a, b, length, skip)) {
+      const p = (t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+      const [p0, p1] = [p(t0), p(t1)];
+      mesh.quad([p0[0], base, p0[1]], [p1[0], base, p1[1]], [p1[0], top, p1[1]], [p0[0], top, p0[1]], flat, colour);
+      if (charts) {
+        const s0 = distance - chartStart + t0 * length;
+        const s1 = distance - chartStart + t1 * length;
+        mesh.ao.push(s0, depth, chart, s1, depth, chart, s1, 0, chart, s0, 0, chart);
+      }
     }
     distance += length;
   }
   if (charts) charts.close(chart, distance - chartStart, depth);
+}
+
+// Facade of one ring as atlas cells (lib/facadeAtlas.mjs). Each edge holds a whole number of bays (its length over
+// the look's bay, at least one; the bay stretches to fit, so windows never run round a corner) and the mass its
+// whole number of storeys, so window rows follow the floor count. A cell is up to TILE_BAYS bays of one storey and
+// maps into one row of the look's tile: the ground row for the first storey, the entrance row for the middle bays
+// of the entrance edge, one of two upper rows (and either orientation) above. Walls start `bottom`; a mass standing
+// on the ground also gets the strip below the ground line (down to `base`) in the plinth band. Edges shorter than
+// half a bay take a sliver of plain wall. The entrance edge can carry a canopy slab over the doors.
+const CANOPY_DEPTH = metres(2.2);
+const CANOPY_THICKNESS = metres(0.3);
+function addFacade(mesh, ordered, { base, ground, bottom, top, floors, look, tile, entranceEdge = -1, canopy = false, seed, charts }) {
+  const storey = (top - ground) / floors;
+  const lowest = bottom > ground + 1e-6 ? bottom : base;
+  const depth = top - lowest;
+  const bay = metres(look.bay ?? 3.6);
+  const rng = mulberry32(seed);
+  let distance = 0;
+  let chart = -1;
+  let chartStart = 0;
+  for (let i = 0; i < ordered.length; i += 1) {
+    const a = ordered[i];
+    const b = ordered[(i + 1) % ordered.length];
+    const length = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    if (charts && (chart < 0 || (distance > chartStart && distance - chartStart + length > AO_MAX_CHART))) {
+      if (chart >= 0) charts.close(chart, distance - chartStart, depth);
+      chart = charts.open();
+      chartStart = distance;
+    }
+    const s0 = distance - chartStart;
+    const point = (t, y, out = 0) => [a[0] + (b[0] - a[0]) * t + ((a[1] - b[1]) / length) * out, y, a[1] + (b[1] - a[1]) * t + ((b[0] - a[0]) / length) * out];
+    const cell = (t0, t1, y0, y1, uv) => {
+      mesh.quad(point(t0, y0), point(t1, y0), point(t1, y1), point(t0, y1), uv);
+      if (charts) mesh.ao.push(s0 + t0 * length, top - y0, chart, s0 + t1 * length, top - y0, chart, s0 + t1 * length, top - y1, chart, s0 + t0 * length, top - y1, chart);
+    };
+    if (length > 1e-6) {
+      if (lowest === base) {
+        const [p0, p1] = [plinthUv(tile, 0), plinthUv(tile, TILE_BAYS)];
+        cell(0, 1, base, ground, [p0, p1, p1, p0]);
+      }
+      const bays = Math.max(1, Math.round(length / bay));
+      const sliver = length < bay * 0.45;
+      for (let s = 0; s < floors; s += 1) {
+        const y0 = ground + s * storey;
+        const y1 = y0 + storey;
+        if (y1 <= bottom + 1e-6) continue;
+        const from = Math.max(y0, bottom);
+        const f0 = (from - y0) / storey;
+        const row = s === 0 ? ROWS.GROUND : rng() < 0.5 ? ROWS.UPPER_A : ROWS.UPPER_B;
+        const emit = (g0, g1, tileRow, b0, b1) => {
+          cell(g0 / bays, g1 / bays, from, y1, [tileUv(tile, tileRow, b0, f0), tileUv(tile, tileRow, b1, f0), tileUv(tile, tileRow, b1, 1), tileUv(tile, tileRow, b0, 1)]);
+        };
+        if (sliver) {
+          emit(0, bays, row, 0, Math.min(0.3, length / bay));
+          continue;
+        }
+        const groups = [];
+        const push = (from0, to) => {
+          for (let g = from0; g < to; g += TILE_BAYS) groups.push([g, Math.min(to, g + TILE_BAYS), row]);
+        };
+        if (s === 0 && i === entranceEdge) {
+          const k = Math.min(TILE_BAYS, bays);
+          const e0 = Math.floor((bays - k) / 2);
+          push(0, e0);
+          groups.push([e0, e0 + k, ROWS.ENTRANCE]);
+          push(e0 + k, bays);
+          if (canopy) {
+            const middle = (e0 + k / 2) / bays;
+            const half = Math.min(k / 2, 1) / bays;
+            addCanopy(mesh, point, middle - half, middle + half, ground + Math.min(0.72 * storey, metres(3.6)), canopyUv(tile), charts ? [s0 + middle * length, top - ground - Math.min(0.72 * storey, metres(3.6)), chart] : null);
+          }
+        } else {
+          push(0, bays);
+        }
+        for (const [g0, g1, tileRow] of groups) {
+          const k = g1 - g0;
+          if (tileRow === ROWS.ENTRANCE) emit(g0, g1, tileRow, TILE_BAYS / 2 - k / 2, TILE_BAYS / 2 + k / 2);
+          else if (tileRow !== ROWS.GROUND && rng() < 0.5) emit(g0, g1, tileRow, TILE_BAYS, TILE_BAYS - k);
+          else emit(g0, g1, tileRow, 0, k);
+        }
+      }
+    }
+    distance += length;
+  }
+  if (charts) charts.close(chart, distance - chartStart, depth);
+}
+
+// Canopy slab over the doors: top, underside, front and both ends, all on the canopy fascia colour of the tile and
+// on one AO texel of the wall behind it (zero UV1 area, so the bake leaves the wall's texels to the wall).
+function addCanopy(mesh, point, t0, t1, y, uv, ao) {
+  const yb = y;
+  const yt = y + CANOPY_THICKNESS;
+  const d = CANOPY_DEPTH;
+  const uvs = [uv, uv, uv, uv];
+  const faces = [
+    [point(t0, yb, d), point(t1, yb, d), point(t1, yt, d), point(t0, yt, d)],
+    [point(t0, yt, 0), point(t0, yt, d), point(t1, yt, d), point(t1, yt, 0)],
+    [point(t0, yb, 0), point(t1, yb, 0), point(t1, yb, d), point(t0, yb, d)],
+    [point(t0, yb, 0), point(t0, yb, d), point(t0, yt, d), point(t0, yt, 0)],
+    [point(t1, yb, d), point(t1, yb, 0), point(t1, yt, 0), point(t1, yt, d)],
+  ];
+  for (const face of faces) {
+    mesh.quad(...face, uvs);
+    if (ao) for (let k = 0; k < 4; k += 1) mesh.ao.push(...ao);
+  }
 }
 
 function addBox(mesh, cx, cz, sx, sz, y0, y1, angle, charts) {
@@ -263,7 +491,7 @@ function addBox(mesh, cx, cz, sx, sz, y0, y1, angle, charts) {
   const sin = Math.sin(angle);
   const corner = (dx, dz) => [cx + dx * cos - dz * sin, cz + dx * sin + dz * cos];
   const ring = [corner(-sx / 2, -sz / 2), corner(sx / 2, -sz / 2), corner(sx / 2, sz / 2), corner(-sx / 2, sz / 2)];
-  addWalls(mesh, ring, true, y0, y0, y1, 1, charts);
+  addWalls(mesh, ring, true, y0, y1, charts);
   const from = mesh.vertexCount;
   mesh.horizontalPolygon(ring, [], y1);
   charts.addPlanar(mesh, from);
@@ -301,69 +529,102 @@ function minEdgeDistance(point, rings) {
   return best;
 }
 
+// The entrance wall of a building: on its largest ground mass, the edge whose outward normal is closest to the
+// entry's entranceBearing among edges at least half as long as the longest, else the longest edge.
+function entranceOf(building, entry) {
+  const part = building.parts.filter((p) => p.outer?.length >= 3).sort((p, q) => Math.abs(ringArea(q.outer)) - Math.abs(ringArea(p.outer)))[0];
+  if (!part) return null;
+  const ordered = orderedRing(part.outer, true);
+  const edges = ordered.map((a, i) => {
+    const b = ordered[(i + 1) % ordered.length];
+    return { i, length: Math.hypot(b[0] - a[0], b[1] - a[1]), bearing: edgeBearing(a, b) };
+  });
+  const longest = Math.max(...edges.map((e) => e.length));
+  const bearing = entry?.entranceBearing;
+  const pick = bearing === undefined
+    ? edges.reduce((best, e) => (e.length > best.length ? e : best))
+    : edges.filter((e) => e.length >= longest * 0.5).reduce((best, e) => {
+      const off = (x) => Math.abs(((x - bearing + 540) % 360) - 180);
+      return off(e.bearing) < off(best.bearing) ? e : best;
+    });
+  return { part, edge: pick.i };
+}
+
 // Photovoltaic modules (lib/roofPhoto.mjs): MODULE_LIFT (0.35 m, ASSUMED rack height) above the roof slab, tilted
 // towards the south; a top face on the module region of the Roof_Equipment atlas and a plain back face.
 const MODULE_LIFT = metres(0.35);
 const MODULE_RISE = metres(MODULE_DEPTH_M * Math.sin((MODULE_TILT_DEGREES * Math.PI) / 180));
 
-function buildingPrimitives(building, seed, { heightAt, facadeMaterials, roofMaterial, parapetMaterial, equipmentMaterial, charts }) {
+const linearByte = (rgb) => [...rgb.map((c) => Math.round(srgbToLinear(c / 255) * 255)), 255];
+
+function buildingPrimitives(building, seed, { heightAt, facadeMaterial, tiles, looks, roofMaterial, parapetMaterial, equipmentMaterial, charts }) {
+  const look = looks.get(building.look);
+  const tile = tiles.get(building.look);
+  const greenhouse = look.pattern === "greenhouse";
   const walls = aoMesh();
   const roof = aoMesh(building.roofColour ? { colors: true } : undefined);
-  // Parapet and equipment carry an (unused) TEXCOORD_0 so that their TEXCOORD_1 is a valid set index.
-  const parapet = aoMesh();
+  // Parapet and equipment carry an (unused) TEXCOORD_0 so that their TEXCOORD_1 is a valid set index. The parapet
+  // (coping band) takes the look's eave colour per vertex, so tiled and painted eaves cost no material.
+  const parapet = aoMesh({ colors: true });
+  const parapetColour = linearByte(hex(look.parapet ?? look.wall));
   const equipment = aoMesh();
   const rng = mulberry32(seed);
+  const entrance = entranceOf(building, building.entry);
   for (const [partIndex, part] of building.parts.entries()) {
     if (!part.outer || part.outer.length < 3) continue;
     const samples = [...part.outer, ringCentroid(part.outer)].map(([x, z]) => heightAt(x, z));
     const ground = Math.min(...samples);
     const base = ground - metres(1.5);
-    const height = metres(part.heightMetres);
-    const top = ground + height;
-    const floors = Math.max(1, part.floors || Math.round(part.heightMetres / 3.6));
-    const floorHeight = Math.min(metres(5), Math.max(metres(3), height / floors));
-    addWalls(walls, part.outer, true, base, ground, top, floorHeight, charts);
-    part.holes.forEach((hole) => addWalls(walls, hole, false, base, ground, top, floorHeight, charts));
-    const roofFrom = roof.vertexCount;
-    roof.horizontalPolygon(part.outer, part.holes, top, { uvScale: 1 / metres(ROOF_METRES), color: building.roofColour });
-    // Per-part quarter-turn and offset of the roof texture, so neighbouring roofs do not share one
-    // grid. Its own generator keeps rng (equipment layout, hence the AO layout hash) unchanged.
-    const uvRng = mulberry32(seed * 7919 + roofFrom);
-    const turn = Math.floor(uvRng() * 4);
-    const [ou, ov] = [uvRng(), uvRng()];
-    for (let k = roofFrom * 2; k < roof.uvs.length; k += 2) {
-      const [u, v] = [roof.uvs[k], roof.uvs[k + 1]];
-      const [ru, rv] = [[u, v], [-v, u], [-u, -v], [v, -u]][turn];
-      roof.uvs[k] = ru + ou;
-      roof.uvs[k + 1] = rv + ov;
-    }
-    charts.addPlanar(roof, roofFrom);
-    const roofChart = charts.charts.length - 1;
-    const roofMin = [Math.min(...part.outer.map((p) => p[0])), Math.min(...part.outer.map((p) => p[1]))];
-    if (building.style !== STYLE.GREENHOUSE) {
-      for (const ring of [part.outer, ...part.holes]) {
-        addWalls(parapet, ring, true, top, top, top + PARAPET, 1, charts);
-        addWalls(parapet, ring, false, top, top, top + PARAPET, 1, charts);
+    for (const [massIndex, mass] of partMasses(part).entries()) {
+      const top = ground + metres(mass.heightMetres);
+      const floors = Math.max(1, mass.floors || Math.round(mass.heightMetres / 3.6));
+      const facade = { base, ground, bottom: ground + metres(mass.fromMetres), top, floors, look, tile, seed: seed * 31 + partIndex * 7 + massIndex, charts };
+      const onEntrance = massIndex === 0 && entrance?.part === part;
+      addFacade(walls, orderedRing(mass.outer, true), { ...facade, entranceEdge: onEntrance ? entrance.edge : -1, canopy: onEntrance && Boolean(building.entry) && !greenhouse });
+      mass.holes.forEach((hole) => addFacade(walls, orderedRing(hole, false), facade));
+      const roofFrom = roof.vertexCount;
+      roof.horizontalPolygon(mass.outer, mass.holes, top, { uvScale: 1 / metres(ROOF_METRES), color: building.roofColour });
+      // Per-part quarter-turn and offset of the roof texture, so neighbouring roofs do not share one
+      // grid. Its own generator keeps rng (equipment layout, hence the AO layout hash) unchanged.
+      const uvRng = mulberry32(seed * 7919 + roofFrom);
+      const turn = Math.floor(uvRng() * 4);
+      const [ou, ov] = [uvRng(), uvRng()];
+      for (let k = roofFrom * 2; k < roof.uvs.length; k += 2) {
+        const [u, v] = [roof.uvs[k], roof.uvs[k + 1]];
+        const [ru, rv] = [[u, v], [-v, u], [-u, -v], [v, -u]][turn];
+        roof.uvs[k] = ru + ou;
+        roof.uvs[k + 1] = rv + ov;
       }
-      const areaMetres = Math.abs(ringArea(part.outer)) / UNIT_AREA;
+      charts.addPlanar(roof, roofFrom);
+      const roofChart = charts.charts.length - 1;
+      const roofMin = [Math.min(...mass.outer.map((p) => p[0])), Math.min(...mass.outer.map((p) => p[1]))];
+      if (greenhouse) continue;
+      for (const ring of [mass.outer, ...mass.holes]) {
+        addWalls(parapet, ring, true, top, top + PARAPET, charts, { skip: mass.under, colour: parapetColour });
+        addWalls(parapet, ring, false, top, top + PARAPET, charts, { skip: mass.under, colour: parapetColour });
+      }
+      const areaMetres = Math.abs(ringArea(mass.outer)) / UNIT_AREA;
       const units = areaMetres > 300 ? Math.min(6, 1 + Math.floor(areaMetres / 700)) : 0;
-      const angle = dominantAngle(part.outer);
-      const xs = part.outer.map((p) => p[0]);
-      const zs = part.outer.map((p) => p[1]);
+      const angle = dominantAngle(mass.outer);
+      const xs = mass.outer.map((p) => p[0]);
+      const zs = mass.outer.map((p) => p[1]);
       const boxesFrom = equipment.vertexCount;
       for (let placed = 0, tries = 0; placed < units && tries < 80; tries += 1) {
         const sx = metres(2.5 + rng() * 4);
         const sz = metres(2 + rng() * 3);
         const cx = Math.min(...xs) + rng() * (Math.max(...xs) - Math.min(...xs));
         const cz = Math.min(...zs) + rng() * (Math.max(...zs) - Math.min(...zs));
-        if (!pointInRing([cx, cz], part.outer) || part.holes.some((h) => pointInRing([cx, cz], h))) continue;
-        if (minEdgeDistance([cx, cz], [part.outer, ...part.holes]) < Math.hypot(sx, sz) / 2 + metres(1.2)) continue;
+        if (!pointInRing([cx, cz], mass.outer) || mass.holes.some((h) => pointInRing([cx, cz], h))) continue;
+        if (mass.under && (pointInRing([cx, cz], mass.under) || minEdgeDistance([cx, cz], [mass.under]) < Math.hypot(sx, sz) / 2)) continue;
+        if (minEdgeDistance([cx, cz], [mass.outer, ...mass.holes]) < Math.hypot(sx, sz) / 2 + metres(1.2)) continue;
         addBox(equipment, cx, cz, sx, sz, top, top + metres(1.4 + rng() * 1.6), angle, charts);
         placed += 1;
       }
       // Plant samples the plain half of the Roof_Equipment atlas.
       for (let k = boxesFrom * 2; k < equipment.uvs.length; k += 2) [equipment.uvs[k], equipment.uvs[k + 1]] = EQUIPMENT_PLAIN_UV;
-      // Modules reuse the roof's AO chart (they sit just above it), so the AO layout does not change.
+      // Modules reuse the roof's AO chart (they sit just above it), so the AO layout does not change. They belong to
+      // the part's own roof; under a tower they are hidden inside it.
+      if (massIndex > 0) continue;
       for (const corners of building.panelModules?.[partIndex] ?? []) {
         const low = top + MODULE_LIFT;
         const [lowA, lowB, highB, highA] = corners.map(([x, z], k) => [x, k < 2 ? low : low + MODULE_RISE, z]);
@@ -376,8 +637,8 @@ function buildingPrimitives(building, seed, { heightAt, facadeMaterials, roofMat
     }
   }
   return [
-    aoPrimitive(walls, facadeMaterials[building.style]),
-    aoPrimitive(roof, building.roofMaterial ?? roofMaterial),
+    aoPrimitive(walls, facadeMaterial),
+    aoPrimitive(roof, roofMaterial),
     aoPrimitive(parapet, parapetMaterial),
     aoPrimitive(equipment, equipmentMaterial),
   ];
@@ -391,9 +652,14 @@ export async function buildBuildings({ glb, inputs }) {
   // Records data/scnu-building-names.json marks as demolished (absent from current imagery) are not modelled.
   const demolished = footprints.filter((b) => b.status === "demolished");
   console.log(`demolished SCNU records skipped: ${demolished.length} (${demolished.map((b) => b.footprintSource.replace(/^.* record /, "record ")).join(", ")})`);
+  const catalogue = loadCatalogue();
+  // Floor/height corrections from data/scnu-facades.json: on campus the register attributes of GIS건물통합정보 sit on
+  // the wrong footprints (VWorld LT_C_BLDGINFO dong_nm names the building each record belongs to).
+  const corrections = [];
   const footprintParts = footprints.flatMap((b, index) => (b.status === "demolished" ? [] : b.polygons.map((polygon) => {
     const [outer, ...holes] = polygon.map(toModelRing);
-    return {
+    const entry = recordEntry(catalogue, b.label ?? b.name);
+    const part = {
       index,
       name: b.name,
       nameSource: b.nameSource,
@@ -407,7 +673,15 @@ export async function buildBuildings({ glb, inputs }) {
       holes,
       centroid: ringCentroid(outer),
       areaMetres: Math.abs(ringArea(outer)) / UNIT_AREA,
+      entry,
     };
+    if (entry?.floors || entry?.heightMetres) {
+      corrections.push(`${b.label ?? b.name} (${b.footprintSource.replace(/^.* record /, "record ")}): floors ${b.floors || "-"} -> ${entry.floors ?? b.floors}, ` +
+        `height ${b.heightMetres || "-"} m -> ${entry.heightMetres ?? "rule"} m (${entry.floorsSource ?? "floors unchanged"}; ${entry.heightSource ?? "height rule"})`);
+      if (entry.floors) Object.assign(part, { floors: entry.floors, floorsSource: entry.floorsSource });
+      if (entry.heightMetres) Object.assign(part, { heightMetres: entry.heightMetres, heightOverride: entry.heightSource });
+    }
+    return part;
   })));
 
   const bldNodes = source.scene.children.flatMap((object, index) => {
@@ -451,13 +725,42 @@ export async function buildBuildings({ glb, inputs }) {
     console.log(`footprint shift onto uni.glb: ${(dx / metres(1)).toFixed(2)} m east, ${(-dz / metres(1)).toFixed(2)} m north (median of ${deltas.length} matches)`);
   }
 
+  // Tower masses (data/scnu-facades.json tower): the convex hull of the named VWorld LOD4 roof levels, shifted like
+  // the footprints; partMasses clips it to the part.
+  const towers = [];
+  for (const part of footprintParts) {
+    const tower = part.entry?.tower;
+    if (!tower) continue;
+    const levels = catalogue.lod4.get(tower.lod4)?.roofLevels;
+    const points = (tower.levels ?? [0]).flatMap((k) => levels?.[k]?.hull ?? []);
+    if (points.length < 3) {
+      console.warn(`tower for ${part.label ?? part.name}: no VWorld LOD4 roof level ${tower.levels} for ${tower.lod4} in lod4-facades.json; left out`);
+      continue;
+    }
+    const hull = convexHull(points.map(([lon, lat]) => {
+      const [x, z] = geoToModel(lon, lat);
+      return [x + footprintShift[0], z + footprintShift[1]];
+    }));
+    part.tower = { floors: tower.floors, heightMetres: tower.heightMetres, floorsSource: tower.floorsSource, hull };
+    towers.push(`${part.label ?? part.name} (${part.footprintSource.replace(/^.* record /, "record ")}): ${tower.floors} floors, ${tower.heightMetres} m over LOD4 roof level ${(tower.levels ?? [0]).join("+")}`);
+  }
+
   const used = new Set();
   const selectableBuildings = [];
   const heightLog = [];
+  // Heights the former 6.5 m storey limit would have given differently (logged).
+  const ratioChanges = [];
+  const heightWithLog = (part, isSCNU, label) => {
+    const now = heightOf(part, isSCNU);
+    const before = heightOf(part, isSCNU, 6.5);
+    if (now && before && Math.abs(now.heightMetres - before.heightMetres) > 0.05) {
+      ratioChanges.push(`${label}: ${before.heightMetres.toFixed(1)} m (${before.heightSource}) -> ${now.heightMetres.toFixed(1)} m (${now.heightSource})`);
+    }
+    return now;
+  };
 
-  for (const { object, index, rawName, footprint } of bldNodes) {
+  for (const { object, rawName, footprint } of bldNodes) {
     const materialName = [].concat(object.material)[0]?.name ?? "";
-    const fallbackStyle = /Brick/.test(materialName) ? STYLE.BRICK : /Glass/.test(materialName) ? STYLE.GREENHOUSE : null;
     const inside = matchesIn(footprint.outer);
     // No footprint centred inside the outline: take floors from one whose outline contains its centre.
     const outlineCentre = ringCentroid(footprint.outer);
@@ -466,29 +769,39 @@ export async function buildBuildings({ glb, inputs }) {
     const sourceHeight = (footprint.topY - footprint.minY) / metres(1);
     const kept = { heightMetres: Math.max(sourceHeight, MIN_HEIGHT), heightSource: "uni.glb outline height" };
     const name = matches.map((part) => part.name).find(Boolean) ?? "";
-    // BLD_D4 anchors the traffic frame through its bounding box, so it keeps the original outline.
-    const keepOutline = rawName === "BLD_D4" || !inside.length || !areaAgrees(inside, footprint.outer);
-    const heights = matches.map((part) => heightOf(part, true)).filter(Boolean);
+    // BLD_D4 anchors the traffic frame through its bounding box, so it keeps the original outline. A node whose
+    // outline is only a corner of the record around it keeps that outline too, unless the record's entry asks for
+    // the record's footprint (useRecordFootprint: the uni.glb outline leaves most of the building out).
+    const useRecord = !inside.length && matches.length > 0 && matches.every((m) => m.entry?.useRecordFootprint);
+    const keepOutline = rawName === "BLD_D4" || (!inside.length && !useRecord) || (inside.length > 0 && !areaAgrees(inside, footprint.outer));
+    const heights = matches.map((part) => heightWithLog(part, true, `${rawName} ${bareName(part.label ?? part.name)}`)).filter(Boolean);
     const parts = keepOutline
       ? [{
         outer: footprint.outer,
         holes: footprint.holes,
         ...(heights.length ? heights.reduce((a, b) => (b.heightMetres > a.heightMetres ? b : a)) : kept),
         floors: Math.max(0, ...matches.map((m) => m.floors || 0)) || Math.round(sourceHeight / 3.6),
+        tower: matches.find((m) => m.tower)?.tower,
       }]
-      : matches.map((part) => ({ outer: part.outer, holes: part.holes, ...(heightOf(part, true) ?? kept), floors: part.floors }));
+      : matches.map((part) => ({ outer: part.outer, holes: part.holes, ...(heightOf(part, true) ?? kept), floors: part.floors, tower: part.tower }));
+    let floorsSource = [...new Set(matches.map((m) => m.floorsSource).filter((s) => s && s !== "none"))].join(", ") || "none";
+    // A node entry sets the look, and floors/height where several nodes share one record (BLD_C1, BLD_C1.001).
+    const nodeEntry = catalogue.byNode.get(rawName);
+    if (nodeEntry?.floors || nodeEntry?.heightMetres) {
+      corrections.push(`${rawName} ${bareName(name)}: floors ${parts[0].floors} -> ${nodeEntry.floors ?? parts[0].floors}, height ${parts[0].heightMetres.toFixed(1)} m ` +
+        `(${parts[0].heightSource}) -> ${nodeEntry.heightMetres ?? parts[0].heightMetres} m (${nodeEntry.floorsSource ?? "floors unchanged"}; ${nodeEntry.heightSource ?? "height unchanged"})`);
+      for (const part of parts) {
+        if (nodeEntry.floors) part.floors = nodeEntry.floors;
+        if (nodeEntry.heightMetres) Object.assign(part, { heightMetres: nodeEntry.heightMetres, heightSource: nodeEntry.heightSource });
+      }
+      if (nodeEntry.floorsSource) floorsSource = nodeEntry.floorsSource;
+    }
+    const entry = nodeEntry ?? matches.map((m) => m.entry).find(Boolean) ?? null;
+    const look = entry?.look ?? (/Glass/.test(materialName) ? "greenhouse" : genericLook(name, Math.abs(ringArea(footprint.outer)) / UNIT_AREA, true));
     const footprintSource = keepOutline ? "uni.glb outline" : [...new Set(matches.map((m) => m.footprintSource))].join(", ");
-    const floorsSource = [...new Set(matches.map((m) => m.floorsSource).filter((s) => s && s !== "none"))].join(", ") || "none";
+    if (useRecord) corrections.push(`${rawName}: footprint uni.glb outline -> ${footprintSource} (useRecordFootprint)`);
     heightLog.push({ label: rawName, footprintSource, floorsSource, heightSource: parts[0].heightSource, heightMetres: parts[0].heightMetres });
-    selectableBuildings.push({
-      nodeName: rawName,
-      displayName: name,
-      style: styleFor(name, fallbackStyle, index),
-      footprintSource,
-      floorsSource,
-      heightSource: parts[0].heightSource,
-      parts,
-    });
+    selectableBuildings.push({ nodeName: rawName, displayName: name, look, entry, footprintSource, floorsSource, heightSource: parts[0].heightSource, parts });
   }
 
   // Campus area: inside the hull of known campus buildings and close to a campus road zone.
@@ -532,7 +845,7 @@ export async function buildBuildings({ glb, inputs }) {
       continue;
     }
     const isSCNU = SCNU_NAME.test(part.name) || bldNodes.some(({ footprint }) => part.outer.some((p) => pointInRing(p, footprint.outer)));
-    const height = heightOf(part, isSCNU) ?? assumedHeight(part.name, isSCNU);
+    const height = heightWithLog(part, isSCNU, part.label ?? (part.name || "(unnamed)")) ?? assumedHeight(part.name, isSCNU);
     heightLog.push({ label: part.name || "(unnamed)", footprintSource: part.footprintSource, floorsSource: part.floorsSource, ...height });
     campusBuildings.push({
       index: part.index,
@@ -542,8 +855,9 @@ export async function buildBuildings({ glb, inputs }) {
       nameSource: part.nameSource,
       footprintSource: part.footprintSource,
       floorsSource: part.floorsSource,
-      style: styleFor(part.name, null, part.index),
-      parts: [{ outer: part.outer, holes: part.holes, ...height, floors: part.floors }],
+      entry: part.entry,
+      look: part.entry?.look ?? genericLook(part.label ?? part.name, part.areaMetres, isSCNU),
+      parts: [{ outer: part.outer, holes: part.holes, ...height, floors: part.floors, tower: part.tower }],
     });
   }
 
@@ -553,38 +867,38 @@ export async function buildBuildings({ glb, inputs }) {
   const bySource = Object.groupBy(heightLog, (entry) => entry.heightSource.replace(/: .*/, ""));
   console.log(`height sources: ${Object.entries(bySource).map(([key, list]) => `${key} ${list.length}`).join(", ")}; ` +
     `floor rule used for ${(bySource.estimated ?? []).length} buildings: ${(bySource.estimated ?? []).map((e) => e.label).join(", ")}`);
+  console.log(`floor/height corrections (data/scnu-facades.json): ${corrections.length}`);
+  for (const line of corrections) console.log(`  ${line}`);
+  console.log(`storey-height rule (2.5-5 m per storey, was 2.5-6.5 m) changed ${ratioChanges.length}: ${ratioChanges.join("; ") || "none"}`);
+  console.log(`tower masses over VWorld LOD4 roof levels: ${towers.join("; ") || "none"}`);
 
   // ---- materials
-  const facadeSources = {
-    [STYLE.CONCRETE]: await concreteRibbonFacade(),
-    [STYLE.BRICK]: await brickPunchedFacade(),
-    [STYLE.BEIGE]: await beigePunchedFacade(),
-    [STYLE.GLASS]: await glassCurtainFacade(),
-    [STYLE.GREENHOUSE]: await greenhouseFacade(),
-  };
   // Detail maps (U42) ship as PNG in the raw GLB; the pack step re-encodes every texture as WebP.
   // Roughness and metal come from the packed map (G, B), so both factors are 1.
   const detailTextures = (textures) => ({
     normalTexture: { index: glb.addTexture(textures.normal, "image/png"), texCoord: 0 },
     metallicRoughnessTexture: { index: glb.addTexture(textures.arm, "image/png"), texCoord: 0 },
   });
-  const facadeMaterials = {};
-  for (const [style, textures] of Object.entries(facadeSources)) {
-    const color = glb.addTexture(await jpeg(textures.color), "image/jpeg");
-    const emissive = glb.addTexture(await jpeg(textures.emissive, 80), "image/jpeg");
-    const { normalTexture, metallicRoughnessTexture } = detailTextures(textures);
-    facadeMaterials[style] = glb.addMaterial({
-      name: `Facade_${style}`,
-      pbrMetallicRoughness: {
-        baseColorTexture: { index: color },
-        metallicRoughnessTexture,
-        metallicFactor: 1,
-        roughnessFactor: 1,
-      },
-      normalTexture,
-      emissiveTexture: { index: emissive },
-      emissiveFactor: [1, 1, 1],
-    });
+  // Facade atlas: one tile per look in use (lib/facadeAtlas.mjs); every wall of every building on one material.
+  const usedLooks = [...new Set([...selectableBuildings, ...campusBuildings].map((b) => b.look))];
+  const facadeAtlas = await buildFacadeAtlas(usedLooks.map((id) => ({ ...catalogue.looks.get(id), id })));
+  const clamped = { repeat: false };
+  const facadeMaterial = glb.addMaterial({
+    name: "Facade_Atlas",
+    pbrMetallicRoughness: {
+      baseColorTexture: { index: glb.addTexture(await jpeg(facadeAtlas.color, 90), "image/jpeg", clamped) },
+      metallicRoughnessTexture: { index: glb.addTexture(facadeAtlas.arm, "image/png", clamped), texCoord: 0 },
+      metallicFactor: 1,
+      roughnessFactor: 1,
+    },
+    normalTexture: { index: glb.addTexture(facadeAtlas.normal, "image/png", clamped), texCoord: 0 },
+    emissiveTexture: { index: glb.addTexture(await jpeg(facadeAtlas.emissive, 85), "image/jpeg", clamped) },
+    emissiveFactor: [1, 1, 1],
+  });
+  {
+    const byLook = Map.groupBy([...selectableBuildings, ...campusBuildings], (b) => b.look);
+    console.log(`facade atlas: ${usedLooks.length} looks, ${facadeAtlas.width} x ${facadeAtlas.height} px, one Facade_Atlas material; ` +
+      [...byLook].map(([id, list]) => `${id} ${list.length}`).join(", "));
   }
   const roof = await roofTexture();
   const roofDetail = detailTextures(roof);
@@ -600,7 +914,8 @@ export async function buildBuildings({ glb, inputs }) {
   });
   const parapetMaterial = glb.addMaterial({
     name: "Roof_Parapet",
-    pbrMetallicRoughness: { baseColorFactor: [0.78, 0.77, 0.74, 1], metallicFactor: 0, roughnessFactor: 0.9 },
+    // The coping colour of each building's look comes per vertex (COLOR_0), so the factor is white.
+    pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1], metallicFactor: 0, roughnessFactor: 0.9 },
     // Single-sided: the parapet already has an inward and an outward quad per edge. Double-sided, the two
     // coincident quads z-fight, which shows once their baked AO differs (open sky outside, roof inside).
   });
@@ -622,7 +937,6 @@ export async function buildBuildings({ glb, inputs }) {
     ["BLD_D2", "blue skylights and glazed wing ends read as modules on z19; no PV modelled"],
     ["BLD_B3", "the strip along the north parapet is facade and gutter shade on z19, not PV"],
   ]);
-  const variants = new Map();
   {
     const photoLog = [];
     const panelLog = [];
@@ -632,7 +946,7 @@ export async function buildBuildings({ glb, inputs }) {
       const photo = sampleRoofPhoto(inputs.ortho, inputs.orthoCalibration, building.parts);
       const review = PANEL_REVIEW.get(building.nodeName);
       building.panelModules = building.parts.map((part) =>
-        (photo.status === "photo" && !review && building.style !== STYLE.GREENHOUSE ? panelModules(inputs.ortho, part, part.heightMetres).modules : []));
+        (photo.status === "photo" && !review && catalogue.looks.get(building.look).pattern !== "greenhouse" ? panelModules(inputs.ortho, part, part.heightMetres).modules : []));
       const modules = building.panelModules.reduce((n, list) => n + list.length, 0);
       if (modules) panelLog.push(`${label} ${modules}`);
       if (review) panelLog.push(`${label} none (${review})`);
@@ -663,27 +977,18 @@ export async function buildBuildings({ glb, inputs }) {
       building.roofColourSource = `OSM ${match.osm} ${match.colour.tag}`;
       applied.push(`${building.nodeName ?? (building.displayName || "(unnamed)")} <- ${building.roofColourSource}`);
     }
-    const hex = (rgb) => rgb.map((c) => c.toString(16).padStart(2, "0")).join("");
-    for (const building of selectableBuildings) {
-      if (!building.roofColourRgb) continue;
-      const key = hex(building.roofColourRgb);
-      if (!variants.has(key)) {
-        const base = glb.json.materials[roofMaterial];
-        variants.set(key, glb.addMaterial({
-          ...base,
-          name: `Roof_${building.roofColourSource.startsWith("OSM") ? "Tagged" : "Photo"}_${key}`,
-          pbrMetallicRoughness: { ...base.pbrMetallicRoughness, baseColorFactor: roofFactor(building.roofColourRgb) },
-        }));
-      }
-      building.roofMaterial = variants.get(key);
-    }
-    for (const building of campusBuildings) {
+    // Every roof carries its colour as COLOR_0 on the one Roof_Membrane material, BLD_* nodes as well as the merged
+    // CampusBuildings roof. BLD_* roofs used to get a Roof_Photo_* material variant instead; the dashboard tints
+    // material colours (night, hover), which mixes a variant's colour towards the tint but multiplies a vertex
+    // colour by it, so the vertex-coloured campus roofs rendered darker than BLD_* roofs of the same colour.
+    for (const building of [...selectableBuildings, ...campusBuildings]) {
+      if (!building.roofColourRgb && building.nodeName) continue;
       const factor = building.roofColourRgb ? roofFactor(building.roofColourRgb) : [1, 1, 1, 1];
       building.roofColour = factor.map((v) => Math.round(v * 255));
     }
     console.log(
       `roof colours: ${Object.values(surfaces).reduce((a, b) => a + b, 0)} from the orthophoto (${Object.entries(surfaces).map(([k, n]) => `${k} ${n}`).join(", ")}), ` +
-      `${applied.length} from OSM tags${applied.length ? ` (${applied.join("; ")})` : ""}, ${variants.size} BLD roof variants; no photo colour: ${photoLog.join("; ") || "none"}`,
+      `${applied.length} from OSM tags${applied.length ? ` (${applied.join("; ")})` : ""}, all as COLOR_0 on Roof_Membrane; no photo colour: ${photoLog.join("; ") || "none"}`,
     );
     console.log(`solar panels (estimated from the orthophoto): ${panelLog.join("; ") || "none"}`);
   }
@@ -695,7 +1000,7 @@ export async function buildBuildings({ glb, inputs }) {
   // ---- meshes and nodes
   // All primitives are built first so the AO charts can be packed before any TEXCOORD_1 is written.
   const charts = new AoCharts();
-  const primitivesContext = { heightAt, facadeMaterials, roofMaterial, parapetMaterial, equipmentMaterial, charts };
+  const primitivesContext = { heightAt, facadeMaterial, tiles: facadeAtlas.tiles, looks: catalogue.looks, roofMaterial, parapetMaterial, equipmentMaterial, charts };
   const selectablePrimitives = selectableBuildings.map((building, index) => buildingPrimitives(building, 1000 + index, primitivesContext));
   const merged = new Map();
   campusBuildings.forEach((building, index) => {
@@ -737,7 +1042,7 @@ export async function buildBuildings({ glb, inputs }) {
     const bakedFor = atlasLayoutHash(atlas);
     if (bakedFor === aoLayout.hash) {
       const texture = glb.addTexture(atlas, "image/png", { repeat: false });
-      for (const material of [...Object.values(facadeMaterials), roofMaterial, ...variants.values(), parapetMaterial, equipmentMaterial]) {
+      for (const material of [facadeMaterial, roofMaterial, parapetMaterial, equipmentMaterial]) {
         glb.json.materials[material].occlusionTexture = { index: texture, texCoord: 1 };
       }
       console.log(`building AO atlas: ${path.basename(AO_ATLAS)} (${atlas.length} B) attached as occlusionTexture`);
@@ -760,7 +1065,15 @@ export async function buildBuildings({ glb, inputs }) {
         displayName: building.displayName,
         source: building.footprintSource,
         floorsSource: building.floorsSource,
-        heightSource: building.heightSource,
+        heightSource: building.parts[0].heightSource ?? building.heightSource,
+        facadeLook: building.look,
+        facadeClass: catalogue.looks.get(building.look).class,
+        facadeSource: `${catalogue.looks.get(building.look).sources} (colours and window layout estimated)`,
+        ...(building.parts.some((p) => p.tower) ? {
+          towerFloors: building.parts.find((p) => p.tower).tower.floors,
+          towerHeightMetres: building.parts.find((p) => p.tower).tower.heightMetres,
+          towerSource: `${building.parts.find((p) => p.tower).tower.floorsSource}; outline from the VWorld LOD4 roof level (estimated)`,
+        } : {}),
         ...(building.roofColourSource ? { roofColourSource: building.roofColourSource } : {}),
         ...(building.roofColourRgb ? { roofColour: `#${building.roofColourRgb.map((c) => c.toString(16).padStart(2, "0")).join("")}` } : {}),
         ...(building.roofSurface ? { roofSurface: building.roofSurface } : {}),
@@ -791,9 +1104,11 @@ export async function buildBuildings({ glb, inputs }) {
     const prism = new MeshData({ uvs: false });
     for (const part of group.flatMap((b) => b.parts)) {
       const ground = Math.min(...[...part.outer, ringCentroid(part.outer)].map(([x, z]) => heightAt(x, z)));
-      const top = ground + metres(part.heightMetres) + PARAPET;
-      addWalls(prism, part.outer, true, ground - metres(1.5), ground, top, 1, null);
-      prism.horizontalPolygon(part.outer, part.holes, top);
+      for (const mass of partMasses(part)) {
+        const top = ground + metres(mass.heightMetres) + PARAPET;
+        addWalls(prism, mass.outer, true, mass.fromMetres ? ground + metres(mass.fromMetres) : ground - metres(1.5), top, null);
+        prism.horizontalPolygon(mass.outer, mass.holes, top);
+      }
     }
     const [first] = group;
     glb.addNode({
