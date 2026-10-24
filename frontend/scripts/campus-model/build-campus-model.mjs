@@ -3,6 +3,7 @@
 //   - public/uni.glb               terrain heights, the original BLD_* ids and their footprints
 //   - data/gis-buildings.json      building footprints, floor counts and heights (fetch-sources.mjs)
 //   - data/landcover.png           satellite-derived ground classes (fetch-sources.mjs)
+//   - data/cop30.png               Copernicus GLO-30 heights for the outer terrain ring (fetch/terrain.mjs)
 //   - docs/assets/data/*.geojson   road zones, walkways and crosswalks
 // Everything stays in uni.glb's scene frame (see lib/frame.mjs), so CityModel's recentering,
 // the traffic simulation and the BLD_* selection contract keep working unchanged.
@@ -11,6 +12,7 @@
 //   sources.mjs   loads the inputs and builds the terrain heightfield
 //   buildings.mjs selects BLD_*/CampusBuildings, their materials, meshes and nodes
 //   ground.mjs    paints the ground texture, Topography chunks and crosswalk stripes
+//   outerTerrain.mjs  the OuterTerrain hill ring around EXTENT, feathered onto Topography's edge
 //   trees.mjs     species geometry, placement masks and instanced Trees_* nodes
 // Plan-view ring helpers live in lib/geometry.mjs.
 //
@@ -25,6 +27,7 @@ import { EXTENT, SCENE_UNITS_PER_METRE } from "./lib/frame.mjs";
 import { GlbBuilder } from "./lib/glb.mjs";
 import { buildBuildings } from "./stages/buildings.mjs";
 import { buildGround } from "./stages/ground.mjs";
+import { buildOuterTerrain } from "./stages/outerTerrain.mjs";
 import { loadInputs } from "./stages/sources.mjs";
 import { buildTrees } from "./stages/trees.mjs";
 
@@ -40,6 +43,7 @@ const inputs = await loadInputs();
 const glb = new GlbBuilder();
 const { selectableBuildings, campusBuildings, offCampusLots, markingMaterial } = await buildBuildings({ glb, inputs });
 await buildGround({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots, markingMaterial });
+const outerTerrain = await buildOuterTerrain({ glb, inputs });
 const treeInstances = buildTrees({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots });
 
 // ---------------------------------------------------------------- height sidecar
@@ -76,6 +80,11 @@ console.log(
   `campus-v2.glb: ${(bytes.length / 1048576).toFixed(2)} MiB, ${selectableBuildings.length} BLD nodes, ` +
   `${campusBuildings.length} other campus buildings, ${treeCount} trees ` +
   `(${Object.entries(treeInstances).map(([k, v]) => `${k} ${v.length}`).join(", ")}), ${inputs.crosswalks.length} crosswalks`,
+);
+console.log(
+  `OuterTerrain: ${outerTerrain.vertexCount} vertices, ${outerTerrain.triangleCount} triangles ` +
+  `(${outerTerrain.vertexCountBefore} / ${outerTerrain.triangleCountBefore} before simplify), ` +
+  `COP30 vertical offset ${outerTerrain.offsetMetres.toFixed(2)} m; ${outerTerrain.attribution}`,
 );
 console.log(`raw model written to ${path.relative(FRONTEND, OUTPUT)}; bun run model:pack ships it`);
 console.log(`campus-v2-height.bin: ${sidecar.meta.width} x ${sidecar.meta.height} u16, ${sidecar.bytes.length} B`);

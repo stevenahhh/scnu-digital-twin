@@ -8,6 +8,7 @@ with `?model=uni` to compare.
 cd frontend
 bun run model:build   # regenerate public/campus-v2.glb from committed inputs (no network)
 bun run model:fetch   # refresh data/ (network; the land cover step needs VITE_VWORLD_API_KEY in the env or frontend/.env)
+bun scripts/campus-model/fetch/osm.mjs   # refresh data/osm-ground.json (network, no key)
 node --test src/campusModelAsset.test.mjs
 ```
 
@@ -19,8 +20,8 @@ node --test src/campusModelAsset.test.mjs
 |---|---|
 | `stages/sources.mjs` | uni.glb scene, heightfield, building footprints, GeoJSON layers, land cover |
 | `stages/buildings.mjs` | building selection, facade/roof materials, building meshes and nodes |
-| `stages/ground.mjs` | ground texture, ground material, Topography chunks, crosswalk stripes |
-| `stages/trees.mjs` | species geometry, placement masks, instanced tree nodes |
+| `stages/ground.mjs` | ground texture (land cover, ground features from `osm-ground.json`), ground material, Topography chunks, crosswalk stripes |
+| `stages/trees.mjs` | species geometry, placement masks, CHMv2-driven placement, instanced tree nodes |
 | `lib/geometry.mjs` | plan-view ring helpers (area, centroid, point-in-ring, cleaning) |
 
 ## Inputs
@@ -30,6 +31,8 @@ node --test src/campusModelAsset.test.mjs
 | `public/uni.glb` | terrain heights, original `BLD_*` node names and outlines |
 | `data/gis-buildings.json` | building footprints (lon/lat) with `name`, `floors`, `undergroundFloors`, `heightMetres`, `areaMetres`, `usability`, `structure`, `approvalDate`, `pnu`, and per record `footprintSource` / `floorsSource` |
 | `data/landcover.png` | ground classes (paved, grass, tree, soil, track, court) per scene unit, classified from VWorld satellite tiles |
+| `data/chm.png` | CHMv2 canopy height (8-bit metres); tree placement and crown sizes |
+| `data/osm-ground.json` | ground features painted into the texture (see below) |
 | `docs/assets/data/road_zones_wgs84.geojson` | asphalt road surfaces |
 | `docs/assets/data/walkways_wgs84.geojson` | paved walkways |
 | `docs/assets/data/crosswalks_wgs84.geojson` | crosswalk stripes |
@@ -37,14 +40,51 @@ node --test src/campusModelAsset.test.mjs
 `fetch-sources.mjs` caches satellite tiles in `.cache/` (ignored by git); only the derived
 `landcover.png` is committed. The API key is read at run time and never written to any output.
 
+### Ground features (`data/osm-ground.json`)
+
+`fetch/osm.mjs` writes one JSON file with three sections, each under its own licence:
+
+| Section | Source | Licence | Painted as |
+|---|---|---|---|
+| `osm` | OpenStreetMap `api.openstreetmap.org/api/0.6/map` for the bbox (split into quadrants if the API refuses the area): `leisure=stadium/track/pitch/sports_centre/playground`, `sport=*`, surface `amenity=parking`, `area:highway`, `highway=pedestrian` + `area=yes`, `place=square`, `natural=water`, `landuse=basin` | ODbL 1.0, © OpenStreetMap contributors | ponds (water with a stone rim), plazas (2 m pavers), parking (asphalt with 2.5 x 5 m bay lines); pitches only where no MCEE outline covers them; the stadium selects the track outline |
+| `facilities` | MCEE `lv3_2025y` class 141 (문화·체육·휴양시설) polygons, same WFS and cache as the land cover | KOGL Type 1 | the running track (8 lanes of 1.22 m with lane lines, red D-zones, football pitch with markings) fitted to the outline inside the OSM stadium; courts and the plaza's oval lawn where a label applies |
+| `supplements` | project-authored | - | surface labels (which MCEE outline is the basketball, futsal, multi or tennis court, or the oval lawn), and estimated circles for the red roundabout of the central intersection and the plaza fountain, which neither source maps |
+
+The supplement positions and sizes are estimates. Replace them once OSM maps those features.
+
+### Trees
+
+`Trees_*` instances follow CHMv2 canopy cover: crowns are centred on unblocked cells whose canopy
+height is at least 3 m (`CANOPY_TREE_METRES`), in random order. Each crown gets an estimated radius
+of 1 + 0.25 x the local canopy height (2-5.5 m) and keeps its mean radius (`CROWN_SPACING` 1.0) from
+the others. `model:build` logs how much of the canopy the crowns cover and fails above 12,000
+instances. The broadleaf, round and pine archetypes and their mix are unchanged.
+
 ### Building footprints and heights
 
-The intended source is 국토교통부 GIS건물통합정보 (data.go.kr 15083092, KOGL Type 1; VWorld catalog
-`ds_id=20171128DS00010`, `AL_D010_46_*.zip`). Its file download needs a VWorld login, so
-`fetch/buildings.mjs` can't fetch it, and no reader for it exists yet. Until it does,
-`gis-buildings.json` comes from:
+`gis-buildings.json` is built from 국토교통부 GIS건물통합정보 (data.go.kr 15083092, KOGL Type 1; VWorld
+catalog `ds_id=20171128DS00010`). Its download needs a VWorld login, so place the zip by hand in
+`.cache/gis/` (gitignored), e.g. `.cache/gis/AL_D010_12_20261009.zip` (code 12 = 전남광주통합특별시,
+both shapefile sets in it are read). `model:fetch` then runs `fetch/gis_buildings.py` through
+`uv run --no-project --with pyproj==3.8.0` (needs `uv` on PATH). The helper streams the shapefiles
+straight from the zip, transforms EPSG:5186 (from the `.prj`) to EPSG:4326, and keeps buildings whose
+every vertex lies inside the bbox (lon 127.4715-127.4880, lat 34.9640-34.9765). The newest
+`AL_D010_*.zip` in `.cache/gis/` is used. The output is byte-identical across runs for the same zip
+and the same OSM/registry responses.
 
-| Field | Source |
+| Field | Source (zip present) |
+|---|---|
+| footprints | GIS건물통합정보 shape; `footprintSource` = `GIS건물통합정보 <shp> record <n>` |
+| `name` | DBF `A24` 건물명 + `A25` 동명. Buildings named 순천대학교, on the same PNU as one, or inside OSM's `amenity=university` polygon get the prefix `순천대학교`, plus the SCNU registry code (e.g. `D4`) when a registry point falls inside the footprint |
+| `floors` / `undergroundFloors` | `A26` 지상층수 / `A27` 지하층수; where `A26` is missing, the SCNU registry floor directory (`floorsSource` = `SCNU registry <code>`), else none |
+| `heightMetres` | `A16` 높이 (building-register value; 0 when blank or overflowed) |
+| `usability`, `structure`, `approvalDate`, `pnu` | `A9` 주용도, `A11` 구조, `A13` 사용승인일, `A2` PNU |
+| `areaMetres` | area of the footprint polygon (not the register's `A12` 건축면적) |
+| buildings GIS lacks | OSM footprint when less than 30 % of it lies under GIS footprints (sampled on a 1 m grid); `footprintSource` = `OSM way/<id> (not in GIS건물통합정보)`, floors as in the OSM fallback |
+
+Without the zip, `model:fetch` falls back to OSM for every footprint:
+
+| Field | Source (no zip) |
 |---|---|
 | footprints | © OpenStreetMap contributors, ODbL 1.0 (`api.openstreetmap.org/api/0.6/map` for the bbox). Buildings inside OSM's `amenity=university` campus polygon get the name prefix `순천대학교` |
 | floors | SCNU campus registry floor directory (`POST w1.scnu.ac.kr/SCNU/campus/list.do`), only when it lists floors 1..N; else OSM `building:levels`; else none |
@@ -54,8 +94,8 @@ The build data contains no VWorld records (`vworld-buildings.json` is no longer 
 `gis-buildings.json` is missing, `stages/sources.mjs` falls back to a local, uncommitted
 `vworld-buildings.json` with a warning. That fallback exists only for local development.
 
-`model:fetch` logs one line per building with its OSM id and floors source. `model:build` logs
-the footprint, floors and height source of every modelled building.
+`model:fetch` logs one line per building with its footprint and floors source, then the totals.
+`model:build` logs the footprint, floors and height source of every modelled building.
 
 Height rule (`heightOf` in `stages/buildings.mjs`), giving the roof-slab height in metres:
 
@@ -70,8 +110,8 @@ Height rule (`heightOf` in `stages/buildings.mjs`), giving the roof-slab height 
 
 All of these heights are estimates, not measurements. Node extras carry `heightSource`.
 
-OSM outlines are traced from imagery and sit about 3 m off the cadastral frame of `uni.glb`.
-The build shifts all footprints by the median centroid offset of one-to-one `BLD_*` matches and
+OSM outlines are traced from imagery and sit about 3 m off the cadastral frame of `uni.glb`;
+GIS건물통합정보 outlines follow the cadastral frame. The build shifts all footprints by the median centroid offset of one-to-one `BLD_*` matches and
 logs the shift. A `BLD_*` node takes the OSM outline only when the matched area is within 15 %
 of its `uni.glb` outline; otherwise it keeps the `uni.glb` outline, and `BLD_D4` always keeps it.
 
@@ -85,10 +125,11 @@ of its `uni.glb` outline; otherwise it keeps the `uni.glb` outline, and `BLD_D4`
   unnamed ones inside the campus next to a campus road). Off-campus buildings are left out; their lots are
   painted as plain ground.
 - `Topography`: chunked terrain using `uni.glb`'s ground heights (structures in the old terrain
-  mesh are filtered out), textured with land cover, roads, walkways and curbs.
+  mesh are filtered out), textured with land cover, roads, walkways, curbs and the ground features above (track,
+  courts, plazas, parking, ponds, roundabout).
 - `Crosswalks`: zebra stripes from the crosswalk polygons.
-- `Trees_*`: instanced broadleaf, round and pine trees placed by Poisson sampling over
-  satellite tree cover, kept off buildings, roads and walkways.
+- `Trees_*`: instanced broadleaf, round and pine trees placed over CHMv2 canopy (see Trees above),
+  kept off buildings, roads and walkways.
 
 ## Frame
 
