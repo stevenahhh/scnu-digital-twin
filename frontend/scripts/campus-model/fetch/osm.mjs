@@ -13,6 +13,12 @@
 //                  parking  amenity=parking (surface lots only)
 //                  plaza    area:highway=pedestrian|footway, highway=pedestrian + area=yes, place=square
 //                  water    natural=water, landuse=basin
+//                The section also carries `lines` (open ways) for the arterial road east of the campus:
+//                  arterial   highway=trunk|primary|secondary (and _link)
+//                  connector  other carriageways (tertiary .. service, not parking aisles or
+//                             driveways) that share a node with an arterial (junction mouths)
+//                  crossing   footway=crossing ways that are marked (crossing:markings on the way,
+//                             or a member highway=crossing node with markings)
 //   facilities   MCEE level-3 land cover (lv3_2025y, KOGL Type 1) polygons of class 141
 //                (문화·체육·휴양시설). They outline the running track, the courts and the plaza's
 //                oval lawn far more closely than OSM, which maps only the stadium and two loose
@@ -26,6 +32,9 @@ import { BBOX, CACHE, DATA, TIMEOUT_MS, USER_AGENT } from "./common.mjs";
 const API = "https://api.openstreetmap.org/api/0.6/map.json";
 const MAX_SPLIT_DEPTH = 3;
 const KEEP_TAGS = ["name", "leisure", "sport", "surface", "amenity", "parking", "area:highway", "highway", "place", "natural", "water", "landuse"];
+const LINE_KEEP_TAGS = ["name", "ref", "highway", "service", "lanes", "oneway", "width", "surface", "footway", "crossing", "crossing:markings"];
+const ARTERIAL = /^(trunk|primary|secondary)(_link)?$/;
+const CARRIAGEWAY = /^(tertiary|tertiary_link|unclassified|residential|living_street|service)$/;
 
 const MCEE_WFS = "https://api.mcee.go.kr/geoserver/wfs";
 const MCEE_LAYER = "lv3_2025y";
@@ -44,6 +53,11 @@ const MCEE_CACHE = path.join(CACHE, "mcee");
 //   roundabout  the red-paved roundabout of the central intersection. OSM maps only its two oneway
 //               carriageways (ways 1364521191/1364521192), MCEE folds it into class 154 (road).
 //   fountain    the fountain at the west end of the plaza's oval lawn; mapped by neither source.
+//   reclass     an OSM area painted as another surface: OSM way 367126960 (natural=water, pond, west of
+//               the stadium) is a sunken lawn on current imagery, not open water.
+//   parking     surface car-park bays OSM does not map (no amenity=parking / parking_space there):
+//               a single row of bays along `axis`, `depthMetres` deep, `bayMetres` per bay (2.5 m
+//               perpendicular, 6 m parallel). The three rows line the access road west of the stadium.
 // Positions and radii are estimates, not survey values; replace them once OSM maps the features.
 const SUPPLEMENTS = [
   { kind: "surface", note: "blue basketball court (full court)", at: [127.4831566,34.9679874], surface: "basketball", headingDegrees: 12 },
@@ -54,6 +68,10 @@ const SUPPLEMENTS = [
   { kind: "surface", note: "oval lawn in the central plaza", at: [127.4800853,34.9695595], surface: "lawn" },
   { kind: "roundabout", note: "central intersection roundabout (estimate)", centre: [127.4806378, 34.9692591], radiusMetres: 11 },
   { kind: "fountain", note: "central plaza fountain (estimate)", centre: [127.4799993, 34.9695797], radiusMetres: 3.6 },
+  { kind: "reclass", note: "OSM pond west of the stadium is a sunken lawn (estimate)", osm: "way/367126960", surface: "lawn" },
+  { kind: "parking", note: "bays along the building west of the access road (estimate)", axis: [[127.4810799, 34.9688447], [127.4809641, 34.9684043]], depthMetres: 5, bayMetres: 2.5 },
+  { kind: "parking", note: "parallel bays on the north kerb of the access road (estimate)", axis: [[127.4812904, 34.9684072], [127.4817167, 34.9683451]], depthMetres: 2.5, bayMetres: 6 },
+  { kind: "parking", note: "bays south of the access road (estimate)", axis: [[127.4812887, 34.9683155], [127.4815764, 34.9682772]], depthMetres: 5, bayMetres: 2.5 },
 ];
 
 const round7 = ([lon, lat]) => [Number(lon.toFixed(7)), Number(lat.toFixed(7))];
@@ -109,6 +127,28 @@ export function groundKind(tags) {
   return null;
 }
 
+// Open road ways for the arterial east of the campus (see the header): node lists -> coordinates.
+function roadLines(ways, nodeOf, crossingNodes) {
+  const inBox = (coords) => coords.some((p) => pointInRing(p, BOX_RING));
+  const coordsOf = (way) => way.nodes.map((id) => nodeOf.get(id));
+  const all = [...ways.values()].filter((w) => w.tags?.highway && w.nodes.every((id) => nodeOf.has(id)) && inBox(coordsOf(w)));
+  const arterials = all.filter((w) => ARTERIAL.test(w.tags.highway));
+  const arterialNodes = new Set(arterials.flatMap((w) => w.nodes));
+  const marked = (value) => value !== undefined && value !== "no";
+  const kindOf = (w) => {
+    if (ARTERIAL.test(w.tags.highway)) return "arterial";
+    if (CARRIAGEWAY.test(w.tags.highway) && !["parking_aisle", "driveway"].includes(w.tags.service) && w.nodes.some((id) => arterialNodes.has(id))) return "connector";
+    if (w.tags.footway === "crossing" && (marked(w.tags["crossing:markings"]) || w.nodes.some((id) => crossingNodes.has(id)))) return "crossing";
+    return null;
+  };
+  return all.flatMap((w) => {
+    const kind = kindOf(w);
+    if (!kind) return [];
+    const tags = Object.fromEntries(LINE_KEEP_TAGS.filter((k) => w.tags[k] !== undefined).map((k) => [k, w.tags[k]]));
+    return [{ id: `way/${w.id}`, kind, tags, line: coordsOf(w).map(round7) }];
+  }).sort((a, b) => a.id.localeCompare(b.id, "en", { numeric: true }));
+}
+
 async function fetchOsmFeatures() {
   const elements = await fetchBox(BBOX);
   const nodeOf = new Map();
@@ -119,6 +159,9 @@ async function fetchOsmFeatures() {
     if (element.type === "way") ways.set(element.id, element);
     if (element.type === "relation") relations.set(element.id, element);
   }
+  const crossingNodes = new Set(
+    elements.filter((e) => e.type === "node" && e.tags?.highway === "crossing" && e.tags["crossing:markings"] !== undefined && e.tags["crossing:markings"] !== "no").map((e) => e.id),
+  );
   const features = [];
   for (const element of [...ways.values(), ...relations.values()]) {
     const kind = groundKind(element.tags);
@@ -137,7 +180,7 @@ async function fetchOsmFeatures() {
     const tags = Object.fromEntries(KEEP_TAGS.filter((k) => element.tags[k] !== undefined).map((k) => [k, element.tags[k]]));
     features.push({ id: `${element.type}/${element.id}`, kind, tags, rings: coords.map((ring) => ring.map(round7)) });
   }
-  return features.sort((a, b) => a.id.localeCompare(b.id, "en", { numeric: true }));
+  return { features: features.sort((a, b) => a.id.localeCompare(b.id, "en", { numeric: true })), lines: roadLines(ways, nodeOf, crossingNodes) };
 }
 
 // ---------------------------------------------------------------- MCEE facilities
@@ -190,7 +233,7 @@ async function fetchMceeFacilities() {
 
 // ---------------------------------------------------------------- output
 export async function fetchGroundFeatures() {
-  const [osm, facilities] = await Promise.all([fetchOsmFeatures(), fetchMceeFacilities()]);
+  const [{ features: osm, lines }, facilities] = await Promise.all([fetchOsmFeatures(), fetchMceeFacilities()]);
   return {
     fetched: new Date().toISOString().slice(0, 10),
     bbox: BBOX,
@@ -199,6 +242,7 @@ export async function fetchGroundFeatures() {
       licence: "ODbL 1.0",
       attribution: "© OpenStreetMap contributors",
       features: osm,
+      lines,
     },
     facilities: {
       source: `MCEE level-3 land cover WFS (${MCEE_WFS}), layer ${MCEE_LAYER}, l3_code ${MCEE_FACILITY_CODE}`,
@@ -219,6 +263,7 @@ export async function writeGroundFeatures() {
   const counts = ground.osm.features.reduce((acc, f) => ({ ...acc, [f.kind]: (acc[f.kind] ?? 0) + 1 }), {});
   console.log(
     `osm-ground.json: ${ground.osm.features.length} OSM features ${JSON.stringify(counts)}, ` +
+    `${ground.osm.lines.length} OSM road lines ${JSON.stringify(ground.osm.lines.reduce((acc, l) => ({ ...acc, [l.kind]: (acc[l.kind] ?? 0) + 1 }), {}))}, ` +
     `${ground.facilities.features.length} MCEE facility polygons, ${ground.supplements.features.length} project supplements`,
   );
 }

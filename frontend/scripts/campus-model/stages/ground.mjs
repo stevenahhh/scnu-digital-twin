@@ -225,17 +225,19 @@ function surfaceShader(label, polygonFrame) {
   }
 }
 
-// Parking lot: asphalt with double-loaded rows of 2.5 x 5 m bays along the lot's long axis.
-function parkingShader(frame) {
+// Parking lot: asphalt with double-loaded rows of `bay` x `depth` m bays (6 m aisle) along the lot's
+// long axis; OSM lots use 2.5 x 5 m.
+function parkingShader(frame, bay = 2.5, depth = 5) {
+  const module = depth * 2 + 6;
   return (px, py) => {
     const [s, t] = toLocal(frame, px, py);
     const base = grain(SURFACE.parking, px, py, 29, 0.1);
     const across = t + frame.halfWidth - 0.6;
-    const inRow = ((across % 16) + 16) % 16;
+    const inRow = ((across % module) + module) % module;
     let d = Infinity;
-    if (across > 0 && Math.abs(s) < frame.halfLength - 0.6 && (inRow < 5 || inRow > 11)) {
-      d = Math.abs(((s % 2.5) + 2.5) % 2.5 - 1.25) - 1.25;
-      d = Math.min(Math.abs(d), Math.abs(inRow < 5 ? inRow : 16 - inRow));
+    if (across > 0 && Math.abs(s) < frame.halfLength - 0.6 && (inRow < depth || inRow > module - depth)) {
+      d = Math.abs(((s % bay) + bay) % bay - bay / 2) - bay / 2;
+      d = Math.min(Math.abs(d), Math.abs(inRow < depth ? inRow : module - inRow));
     }
     return mix(base, LINE_WHITE, lineCover(d) * 0.7);
   };
@@ -256,7 +258,11 @@ async function loadGroundFeatures() {
   const toModel = (ring) => ring.map(([lon, lat]) => geoToModel(lon, lat));
   const osm = data.osm.features.map((f) => ({ ...f, rings: f.rings.map(toModel) }));
   const facilities = data.facilities.features.map((f) => ({ rings: f.rings.map(toModel) }));
-  const supplements = data.supplements.features.map((f) => ({ ...f, point: geoToModel(...(f.at ?? f.centre)) }));
+  const supplements = data.supplements.features.map((f) => ({
+    ...f,
+    ...(f.at || f.centre ? { point: geoToModel(...(f.at ?? f.centre)) } : {}),
+    ...(f.axis ? { axis: toModel(f.axis) } : {}),
+  }));
   const areaM2 = (ring) => Math.abs(ringArea(ring)) / SCENE_UNITS_PER_METRE ** 2;
   const stadiums = osm.filter((f) => f.kind === "stadium");
   const labels = supplements.filter((f) => f.kind === "surface");
@@ -268,7 +274,7 @@ async function loadGroundFeatures() {
     if (own.length) painted.push({ ...facility, labels: own });
     else if (areaM2(outer) >= 8000 && stadiums.some((s) => pointInRing(centroid, s.rings[0]))) painted.push({ ...facility, track: true });
   }
-  return { osm, facilities: painted, supplements, unlabelledLabels: labels.filter((l) => !painted.some((p) => p.labels?.includes(l))) };
+  return { osm, lines: data.osm.lines ?? [], facilities: painted, supplements, unlabelledLabels: labels.filter((l) => !painted.some((p) => p.labels?.includes(l))) };
 }
 
 async function paintGroundFeatures(ground, toPixel) {
@@ -276,11 +282,20 @@ async function paintGroundFeatures(ground, toPixel) {
   if (features.unlabelledLabels.length) throw new Error(`osm-ground.json: surface labels outside every facility polygon: ${features.unlabelledLabels.map((l) => l.note).join("; ")}`);
   const pixelRings = (rings) => rings.map((ring) => ring.map(toPixel));
   const ofKind = (kind) => features.osm.filter((f) => f.kind === kind);
+  const reclassed = new Map(features.supplements.filter((f) => f.kind === "reclass").map((f) => [f.osm, f.surface]));
+  for (const [id, surface] of reclassed) {
+    const area = features.osm.find((f) => f.id === id);
+    if (!area) throw new Error(`osm-ground.json: reclass target ${id} is not an OSM area`);
+    if (surface !== "lawn") throw new Error(`osm-ground.json: unknown reclass surface ${surface}`);
+    ground.fillPolygon(pixelRings(area.rings), (x, y) => grain(SURFACE.lawn, x, y, 28, 0.1));
+  }
   for (const water of ofKind("water")) {
+    if (reclassed.has(water.id)) continue;
     ground.fillPolygon(pixelRings(water.rings), (x, y) => grain(SURFACE.water, x, y, 31, 0.06));
     for (const ring of water.rings) ground.strokePolyline([...ring, ring[0]].map(toPixel), metres(0.8) * PX, () => SURFACE.rim);
   }
   return {
+    lines: features.lines,
     surfaces(afterPlazas) {
       for (const plaza of ofKind("plaza")) ground.fillPolygon(pixelRings(plaza.rings), paverShader(orientedFrame(plaza.rings[0])));
       afterPlazas();
@@ -323,6 +338,11 @@ async function paintGroundFeatures(ground, toPixel) {
       }
     },
     overRoads() {
+      // Estimated bays (supplements): painted over the road zones, which already cover parts of them.
+      for (const lot of features.supplements.filter((f) => f.kind === "parking")) {
+        const ring = parkingRing(lot.axis, lot.depthMetres);
+        ground.fillPolygon([ring.map(toPixel)], parkingShader(orientedFrame(ring), lot.bayMetres, lot.depthMetres));
+      }
       for (const roundabout of features.supplements.filter((f) => f.kind === "roundabout")) {
         const [cx, cy] = toPixel(roundabout.point);
         const r = metres(roundabout.radiusMetres) * PX;
@@ -333,6 +353,191 @@ async function paintGroundFeatures(ground, toPixel) {
       }
     },
   };
+}
+
+// Rectangle `depthMetres` wide centred on the two-point axis (model units).
+function parkingRing([[ax, az], [bx, bz]], depthMetres) {
+  const length = Math.hypot(bx - ax, bz - az);
+  const half = metres(depthMetres) / 2;
+  const nx = (-(bz - az) / length) * half;
+  const nz = ((bx - ax) / length) * half;
+  return [[ax + nx, az + nz], [bx + nx, bz + nz], [bx - nx, bz - nz], [ax - nx, az - nz]];
+}
+
+// ---------------------------------------------------------------- arterial road
+// The arterial east of the campus (Jungang-ro) lies outside the measured road zones. Its carriageway
+// follows the OSM centreline (osm-ground.json `osm.lines`): every SAMPLE_M along the line the asphalt
+// runs out to the nearest measured A003 walkway (edge stones included), building or off-campus lot on
+// each side, so the surveyed sidewalks bound it and the OSM line's few-metre offset does not show. With
+// nothing within ARTERIAL_MAX_HALF_M a side falls back to ARTERIAL_FALLBACK_HALF_M (ESTIMATED).
+// Connectors (side roads sharing a node with the arterial) are traced the same way from the junction
+// until they reach a measured road zone or CONNECTOR_MAX_M, without markings.
+// Markings are an ESTIMATED layout (OSM has no lane data here): a yellow double centre line midway
+// between the sidewalks, dashed white lane lines every LANE_M (3 m dash, 5 m gap), none within
+// JUNCTION_CLEAR_M of a junction node or CROSSING_CLEAR_M of a marked crossing. Marked OSM crossings
+// on this asphalt join the Crosswalks mesh, CROSSING_WIDTH_M wide (ESTIMATED).
+const SAMPLE_M = 1;
+const MARCH_M = 0.2;
+const ARTERIAL_MAX_HALF_M = 16;
+const ARTERIAL_FALLBACK_HALF_M = 8;
+const CONNECTOR_MAX_HALF_M = 8;
+const CONNECTOR_FALLBACK_HALF_M = 4;
+const CONNECTOR_MAX_M = 60;
+const LANE_M = 3.25;
+const JUNCTION_CLEAR_M = 6;
+const CROSSING_CLEAR_M = 4;
+const CROSSING_WIDTH_M = 4;
+const LINE_YELLOW = [214, 172, 58];
+
+const cover = (distance, halfWidth) => clamp01((halfWidth + M_PER_PX / 2 - Math.abs(distance)) / M_PER_PX);
+
+// Points every SAMPLE_M along a polyline (model units) with unit direction u and arc length s (m).
+function resample(line) {
+  const out = [];
+  let s = 0;
+  for (let i = 0; i + 1 < line.length; i += 1) {
+    const [ax, az] = line[i];
+    const [bx, bz] = line[i + 1];
+    const length = Math.hypot(bx - ax, bz - az) / SCENE_UNITS_PER_METRE;
+    if (length < 1e-6) continue;
+    const u = [(bx - ax) / (length * SCENE_UNITS_PER_METRE), (bz - az) / (length * SCENE_UNITS_PER_METRE)];
+    const first = out.length ? Math.ceil((s - out.at(-1).s) / SAMPLE_M) * SAMPLE_M - (s - out.at(-1).s) : 0;
+    for (let d = first; d < length; d += SAMPLE_M) out.push({ p: [ax + u[0] * metres(d), az + u[1] * metres(d)], u, s: s + d });
+    s += length;
+  }
+  const [x, z] = line.at(-1);
+  if (out.length) out.push({ p: [x, z], u: out.at(-1).u, s });
+  return out;
+}
+
+const median = (values, radius) => values.map((_, i) => {
+  const window = values.slice(Math.max(0, i - radius), i + radius + 1).filter((v) => v !== null).sort((a, b) => a - b);
+  return window.length ? window[window.length >> 1] : null;
+});
+const mean = (values, radius) => values.map((_, i) => {
+  const window = values.slice(Math.max(0, i - radius), i + radius + 1);
+  return window.reduce((a, b) => a + b, 0) / window.length;
+});
+const segmentDistance = ([px, pz], [ax, az], [bx, bz]) => {
+  const dx = bx - ax;
+  const dz = bz - az;
+  const k = clamp01(((px - ax) * dx + (pz - az) * dz) / (dx * dx + dz * dz || 1));
+  return Math.hypot(px - ax - dx * k, pz - az - dz * k);
+};
+
+function paintArterials({ ground, toPixel, lines, block, roadZoneMask, asphalt, crosswalks }) {
+  const toModel = (line) => line.map(([lon, lat]) => geoToModel(lon, lat));
+  const arterials = lines.filter((l) => l.kind === "arterial").map((l) => toModel(l.line));
+  const connectors = lines.filter((l) => l.kind === "connector").map((l) => toModel(l.line));
+  const crossings = lines.filter((l) => l.kind === "crossing").map((l) => toModel(l.line));
+  const key = ([x, z]) => `${x.toFixed(4)},${z.toFixed(4)}`;
+  const arterialKeys = new Set(arterials.flat().map(key));
+  const junctions = connectors.flat().filter((p) => arterialKeys.has(key(p)));
+  const pixelIndex = ([x, z]) => {
+    const [px, py] = toPixel([x, z]);
+    const ix = Math.floor(px);
+    const iy = Math.floor(py);
+    return ix < 0 || iy < 0 || ix >= ground.width || iy >= ground.height ? -1 : iy * ground.width + ix;
+  };
+  // Metres from p along direction n to the first blocked pixel or the raster edge; null if p is blocked.
+  const march = (p, n, maxMetres) => {
+    for (let d = 0; d <= maxMetres; d += MARCH_M) {
+      const index = pixelIndex([p[0] + n[0] * metres(d), p[1] + n[1] * metres(d)]);
+      if (index < 0) return d;
+      if (block[index]) return d === 0 ? null : d;
+    }
+    return Infinity;
+  };
+  const strips = [];
+  const trace = (samples, maxHalf, fallbackHalf) => {
+    const sides = samples.map(({ p, u }) => {
+      const n = [-u[1], u[0]];
+      const left = march(p, [-n[0], -n[1]], maxHalf);
+      const right = march(p, n, maxHalf);
+      if (left === null || right === null) return [null, null];
+      return [left === Infinity ? fallbackHalf : left, right === Infinity ? fallbackHalf : right];
+    });
+    const left = median(sides.map((s) => s[0]), 3);
+    const right = median(sides.map((s) => s[1]), 3);
+    return samples.map((sample, i) => ({ ...sample, n: [-sample.u[1], sample.u[0]], left: left[i], right: right[i] }));
+  };
+  for (const line of arterials) {
+    const samples = trace(resample(line), ARTERIAL_MAX_HALF_M, ARTERIAL_FALLBACK_HALF_M).filter((s) => pixelIndex(s.p) >= 0);
+    if (!samples.some((s) => s.left !== null)) continue;
+    const centre = mean(samples.map((s) => (s.left === null ? 0 : (s.right - s.left) / 2)), 10);
+    samples.forEach((s, i) => {
+      s.centre = centre[i];
+      s.marked = s.left !== null && s.left + s.right >= 8 &&
+        junctions.every((j) => Math.hypot(j[0] - s.p[0], j[1] - s.p[1]) > metres(JUNCTION_CLEAR_M)) &&
+        crossings.every((c) => c.every((_, k) => k === 0 || segmentDistance(s.p, c[k - 1], c[k]) > metres(CROSSING_CLEAR_M)));
+    });
+    strips.push({ samples, markings: true });
+  }
+  for (const line of connectors) {
+    for (const [index, p] of line.entries()) {
+      if (!arterialKeys.has(key(p))) continue;
+      for (const part of [line.slice(index), line.slice(0, index + 1).reverse()]) {
+        if (part.length < 2) continue;
+        const samples = [];
+        for (const sample of resample(part)) {
+          const at = pixelIndex(sample.p);
+          if (at < 0 || sample.s > CONNECTOR_MAX_M || (sample.s > 2 && roadZoneMask[at])) break;
+          samples.push(sample);
+        }
+        if (samples.length >= 2) strips.push({ samples: trace(samples, CONNECTOR_MAX_HALF_M, CONNECTOR_FALLBACK_HALF_M), markings: false });
+      }
+    }
+  }
+  const edge = (s, side) => (side < 0
+    ? [s.p[0] - s.n[0] * metres(s.left), s.p[1] - s.n[1] * metres(s.left)]
+    : [s.p[0] + s.n[0] * metres(s.right), s.p[1] + s.n[1] * metres(s.right)]);
+  const quads = [];
+  for (const { samples, markings } of strips) {
+    for (let i = 0; i + 1 < samples.length; i += 1) {
+      const a = samples[i];
+      const b = samples[i + 1];
+      if (a.left === null || b.left === null) continue;
+      const ring = [edge(a, -1), edge(b, -1), edge(b, 1), edge(a, 1)];
+      quads.push(ring);
+      const marked = markings && a.marked && b.marked;
+      ground.fillPolygon([ring.map(toPixel)], (x, y) => {
+        const base = asphalt(x, y);
+        if (!marked) return base;
+        const [mx, mz] = pixelToModel(x, y);
+        const dx = mx - a.p[0];
+        const dz = mz - a.p[1];
+        const along = (dx * a.u[0] + dz * a.u[1]) / SCENE_UNITS_PER_METRE;
+        const k = clamp01(along / SAMPLE_M);
+        const t = (dx * a.n[0] + dz * a.n[1]) / SCENE_UNITS_PER_METRE - (a.centre + (b.centre - a.centre) * k);
+        const half = (a.left + a.right + (b.left + b.right - a.left - a.right) * k) / 2;
+        // Real lines are 0.15 m; at ~0.4 m per texel the double yellow line is one 0.5 m band and lane
+        // lines are drawn 0.3 m wide so they survive texture compression and mipmapping.
+        let colour = mix(base, LINE_YELLOW, cover(t, 0.25) * 0.95);
+        if (((((a.s + along) % 8) + 8) % 8) < 3) {
+          for (let lane = LANE_M; lane < half - 1.5; lane += LANE_M) colour = mix(colour, LINE_WHITE, cover(Math.abs(t) - lane, 0.15) * 0.95);
+        }
+        return colour;
+      });
+    }
+  }
+  // Marked crossings whose midpoint lies on the traced asphalt and not on an existing crosswalk.
+  const painted = maskOf(ground.width, ground.height, (r) => { for (const ring of quads) r.fillPolygon([ring.map(toPixel)], () => [255, 255, 255]); });
+  const centroid = (ring) => ring.reduce((acc, [x, z]) => [acc[0] + x / ring.length, acc[1] + z / ring.length], [0, 0]);
+  const existing = crosswalks.map(centroid);
+  const added = [];
+  for (const line of crossings) {
+    const a = line[0];
+    const b = line.at(-1);
+    const middle = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+    const at = pixelIndex(middle);
+    if (at < 0 || !painted[at] || existing.some((c) => Math.hypot(c[0] - middle[0], c[1] - middle[1]) < metres(5))) continue;
+    const length = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    const half = metres(CROSSING_WIDTH_M) / 2;
+    const nx = (-(b[1] - a[1]) / length) * half;
+    const nz = ((b[0] - a[0]) / length) * half;
+    added.push([[a[0] + nx, a[1] + nz], [b[0] + nx, b[1] + nz], [b[0] - nx, b[1] - nz], [a[0] - nx, a[1] - nz]]);
+  }
+  return { strips: strips.length, quads: quads.length, crosswalks: added };
 }
 
 const jpeg = async (png, quality = 86) => new Bun.Image(png).jpeg({ quality }).toBuffer();
@@ -462,6 +667,25 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
     });
     paintWalkways((x, y) => lots[y * ground.width + x] === 1);
   }
+  const white = () => [255, 255, 255];
+  const arterial = paintArterials({
+    ground,
+    toPixel,
+    lines: groundFeatures.lines,
+    block: maskOf(ground.width, ground.height, (r) => {
+      for (const w of walkwayPixels) r.strokePolyline(w.points, pavedWidth(w, WALKWAY_EDGE_M), white);
+      for (const lot of offCampusLots) r.fillPolygon([lot.map(toPixel)], white);
+      for (const building of [...selectableBuildings, ...campusBuildings]) {
+        for (const part of building.parts) r.fillPolygon([part.outer.map(toPixel)], white);
+      }
+    }),
+    roadZoneMask: maskOf(ground.width, ground.height, (r) => {
+      for (const polygon of roadZones) r.fillPolygon(polygon.map((ring) => ring.map(toPixel)), white);
+    }),
+    asphalt,
+    crosswalks,
+  });
+  console.log(`arterial: ${arterial.strips} traced strips (${arterial.quads} quads), ${arterial.crosswalks.length} OSM crossings added to Crosswalks`);
   for (const building of [...selectableBuildings, ...campusBuildings]) {
     for (const part of building.parts) {
       ground.strokePolyline([...part.outer, part.outer[0]].map(toPixel), metres(2.2) * PX, () => [182, 178, 170]);
@@ -533,7 +757,7 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
   {
     const stripes = new MeshData({ uvs: false });
     const lift = metres(0.08);
-    for (const ring of crosswalks) {
+    for (const ring of [...crosswalks, ...arterial.crosswalks]) {
       if (ring.length < 4) continue;
       const [p0, p1, p2] = ring;
       const e0 = [p1[0] - p0[0], p1[1] - p0[1]];

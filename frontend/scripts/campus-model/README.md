@@ -48,9 +48,16 @@ node --test src/campusModelAsset.test.mjs
 |---|---|---|---|
 | `osm` | OpenStreetMap `api.openstreetmap.org/api/0.6/map` for the bbox (split into quadrants if the API refuses the area): `leisure=stadium/track/pitch/sports_centre/playground`, `sport=*`, surface `amenity=parking`, `area:highway`, `highway=pedestrian` + `area=yes`, `place=square`, `natural=water`, `landuse=basin` | ODbL 1.0, © OpenStreetMap contributors | ponds (water with a stone rim), plazas (2 m pavers), parking (asphalt with 2.5 x 5 m bay lines); pitches only where no MCEE outline covers them; the stadium selects the track outline |
 | `facilities` | MCEE `lv3_2025y` class 141 (문화·체육·휴양시설) polygons, same WFS and cache as the land cover | KOGL Type 1 | the running track (8 lanes of 1.22 m with lane lines, red D-zones, football pitch with markings) fitted to the outline inside the OSM stadium; courts and the plaza's oval lawn where a label applies |
-| `supplements` | project-authored | - | surface labels (which MCEE outline is the basketball, futsal, multi or tennis court, or the oval lawn), and estimated circles for the red roundabout of the central intersection and the plaza fountain, which neither source maps |
+| `supplements` | project-authored | - | surface labels (which MCEE outline is the basketball, futsal, multi or tennis court, or the oval lawn), estimated circles for the red roundabout of the central intersection and the plaza fountain, which neither source maps, a `reclass` that paints the OSM pond west of the stadium (way 367126960, a sunken lawn on current imagery) as lawn, and three estimated rows of car-park bays along the access road west of the stadium (no `amenity=parking` there in OSM) |
 
 The supplement positions and sizes are estimates. Replace them once OSM maps those features.
+
+`osm.lines` (same OSM licence) holds open ways for the arterial east of the campus (Jungang-ro, outside the
+measured road zones): `arterial` centrelines (`highway=trunk/primary/secondary`), `connector` side roads that
+share a node with an arterial, and marked `crossing` ways. The ground stage paints the arterial as asphalt
+between the nearest measured A003 walkways on each side, with an estimated marking layout (yellow centre line,
+dashed lanes every 3.25 m); junction mouths are traced until they meet a road zone; marked crossings on that
+asphalt become 4 m zebra crossings in the `Crosswalks` mesh (width estimated).
 
 ### Trees
 
