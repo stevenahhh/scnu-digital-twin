@@ -6,7 +6,10 @@ The covered area is the model `EXTENT` from `lib/frame.mjs` (scene x -2..502, z 
 Two generator units consume them:
 
 - `markings.geojson`: painted road markings, used by M1 (markings).
-- `objects.geojson`: street furniture and structures, used by S1 (furniture).
+- `objects.geojson`: street furniture and structures, used by S1 (furniture). Superseded by `objects-campus.geojson`.
+- `objects-campus.geojson`: campus-wide survey of outdoor objects over every tile of `EXTENT`, used by S1. It
+  contains the 31 `objects.geojson` features unchanged in position and id (`from_objects_geojson: true`), plus the
+  campus-wide survey. See [objects-campus.geojson](#objects-campusgeojson-campus-wide-survey).
 
 Both files are WGS84 (CRS84) GeoJSON with 8-decimal coordinates. Every feature carries `source: "ngii-2025-ortho"`.
 Generated 2026-10-24.
@@ -52,10 +55,145 @@ disabled-parking bays end up in `parking_line` or `other` as white.
 | fence (LineString) | 1 |
 | bench, bollard | 0 (not resolvable at 0.25 m) |
 
-**Coverage warning.** Small objects (poles, signals, signs, walls, fences, benches) were placed by eye **only
+**Coverage warning (objects.geojson only; superseded by objects-campus.geojson).** Small objects (poles, signals, signs, walls, fences, benches) were placed by eye **only
 inside the eight `survey_windows`** listed in the file properties: main gate, central roundabout, central plaza,
 sports-field stands, and four random windows. Outside those windows this file has no small objects. That is
 not evidence of absence. Large structures were placed where they were looked at.
+
+### objects-campus.geojson (campus-wide survey)
+
+175 features: the 31 from `objects.geojson` plus 144 new ones. They were surveyed 2026-10-25 over 154 tiles of 60 x 60 m.
+Each tile was looked at on the photo at full 0.25 m resolution, upsampled 3x.
+
+| kind | total | from objects.geojson | new |
+|---|---:|---:|---:|
+| street_lamp | 54 | 5 | 49 |
+| plaza_structure (planters, fountain, pond, parasols, outdoor steps, stepped terraces, kiosk, sculptures, gate monument) | 25 | 10 | 15 |
+| fence (railings, mesh fences, ball-stop nets; LineString) | 17 | 1 | 16 |
+| planter (raised beds, planter walls, tree planters, kerbed islands) | 15 | 0 | 15 |
+| pergola (Polygon, or LineString with `width_m`) | 9 | 1 | 8 |
+| gazebo (pavilions, 정자) | 8 | 0 | 8 |
+| bus_stop_shelter (includes the school-bus canopy and court shelters) | 7 | 1 | 6 |
+| traffic_signal_pole | 6 | 4 | 2 |
+| low_wall | 6 | 3 | 3 |
+| floodlight_pole (futsal pitch) | 6 | 0 | 6 |
+| sign_pole (includes the gate billboard) | 4 | 3 | 1 |
+| sports_goal | 4 | 0 | 4 |
+| bench | 3 | 0 | 3 |
+| stadium_seating | 2 | 2 | 0 |
+| bike_rack (bicycle shelter canopies) | 2 | 0 | 2 |
+| sports_hoop | 2 | 0 | 2 |
+| retaining_wall | 2 | 0 | 2 |
+| reviewing_stand (구령대) | 1 | 1 | 0 |
+| footbridge | 1 | 0 | 1 |
+| trash_station | 1 | 0 | 1 |
+
+No CCTV poles or outdoor stages were resolvable. The 2025 photo shows the main-gate SW plaza under construction.
+The SCNU letter monument there comes from VR only (`method: "vr"`, confidence 0.2).
+
+**By method.**
+
+| method | n | meaning |
+|---|---:|---|
+| by-eye-photo | 130 | placed by eye on the photo. `method_detail` keeps the older `by-eye` / `roof-blob` / `shadow-root` labels |
+| data.go.kr | 42 | a data.go.kr lamp point that was looked at on the photo and kept because it lies on a footway, verge or median |
+| vr | 2 | existence and position from VR, because the photo predates the object or cannot show it |
+| shadow | 1 | signal mast-arm shadow |
+
+**data.go.kr lamp points.** 52 of these points fall inside EXTENT:
+
+- 42 kept as `street_lamp`. They are on the surrounding public roads: the stream-side road, the arterial east of
+  the gate, and the commercial streets.
+- 1 reused as the position of a signal pole.
+- 9 rejected because they sit on roofs or on the gate carriageway. They are listed in `properties.rejected_hints`.
+
+Kept points are **not** moved onto pole bases, because the pole roots are not resolvable at this sun height. Treat
+them as metre-level positions. The VR check below shows 2-5 m offsets.
+
+**Confidence histogram** (all 175):
+
+| confidence | <0.2 | 0.2-0.3 | 0.3-0.4 | 0.4-0.5 | 0.5-0.6 | 0.6-0.7 | 0.7-0.8 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| n | 1 | 4 | 66 | 49 | 33 | 7 | 15 |
+
+**Heights.** Every feature has `height_m` with `estimated: true` and `height_source`. Where there was no shadow or VR
+evidence, `height_source` names a kind default: lamps 8 m (arterial type), signals 6.5 m, fences 1.5 m, and so on.
+
+**VR style hints** are stored in `style` and `vr_scene`:
+
+- reviewing stand (scene_a15): white base, three steps up to a turf terrace, a flat white canopy on seven square
+  columns, and two side stairs.
+- stadium seating (scene_a15): about 12 rows (+-1) of blue and yellow-orange seats.
+- arterial lamps (scene_a19): grey pole with a single curved arm and an LED cobra head.
+- central-plaza planters (scene_c1): square stone planters. Long dark-blue linear benches run beside them; they
+  were not located individually.
+- central pond (scene_c1): bronze sculpture on a planted island.
+
+**Survey grid.** The grid is stored in `properties.survey_grid`:
+
+- 60 m tiles (240 px) starting at crop pixel (40, 41), 14 columns x 11 rows. Tile id `Tjjii` is row `jj`,
+  column `ii`.
+- Each tile records `px_bbox` (crop pixels; the crop origin is `crop_origin_full_image_px`), `wgs84_bbox`,
+  `in_extent_m2`, `n_objects` and a survey note.
+- All 154 tiles that intersect EXTENT were surveyed.
+- Map of objects per tile: `-` means surveyed with none found (forest, roofs, parking), digits are counts (9 means 9 or more).
+
+```text
+    00 01 02 03 04 05 06 07 08 09 10 11 12 13   (column; x grows east)
+00   -  -  -  -  1  3  3  2  -  2  3  4  -  -
+01   -  -  1  -  -  3  -  4  3  4  -  4  2  -
+02   1  1  -  1  -  -  1  1  -  1  -  -  2  -
+03   -  1  1  1  -  -  1  6  1  1  2  1  2  -
+04   -  -  -  1  5  -  -  9  -  1  -  1  5  -
+05   -  -  1  -  1  1  1  1  -  2  1  -  9  6
+06   -  -  1  -  -  1  1  -  4  3  1  3  5  3
+07   -  -  3  2  -  1  -  2  -  1  -  9  -  2
+08   -  -  -  -  -  -  1  3  2  -  2  4  2  2
+09   -  -  -  -  -  -  1  2  1  -  -  1  -  1
+10   -  -  -  -  -  -  -  -  -  -  -  -  -  -   (row 10 is a 10 m strip at the south edge)
+```
+
+**What the survey can and cannot see.**
+
+- At 0.25 m GSD with the sun at about 62°, a 4-6 m campus path lamp casts a 2-3 m shadow, about 10 px, and
+  usually under tree canopy. Most campus-interior lamps are therefore **not** in this file. Only 7 campus-interior
+  lamp candidates have a visible head dot and shadow (confidence 0.3).
+- Benches are mostly missed: 3 candidates. The plaza linear benches are seen in VR only.
+- Empty tiles prove only that nothing was resolvable. S1 still needs a rule-based fill for path lamps and benches,
+  labelled as estimated.
+- Structures (roofs, stands, shelters, pergolas, gazebos, planters, fences around courts) are reliable to about 1 m.
+
+**VR check of 20 lamps.**
+
+- Only scene_a19 (main gate, drone pano) has a fitted pose. Its yaw offset (-74.5°), position (-4.0 m E,
+  -6.5 m N of the tour.xml lat/lng) and camera height (15 m) were fitted by maximising photo zebra-bar overlap
+  with white paint in three views.
+- The 20 checked lamps are every lamp within 175 m of that camera. That is a complete set inside the calibrated
+  reach, not a random sample from the campus.
+- Each lamp's base was projected with an 8 m vertical marker, and the views were looked at one by one.
+
+| verdict | n | ids |
+|---|---:|---|
+| match (pole at the marker, within ~2 m) | 4 | OB0005, OC0086, OC0098, OC0100 |
+| partial (pole 1-3 m away) | 4 | OB0004, OC0097, OC0132, OC0167 |
+| mismatch (no pole within ~3 m) | 3 | OC0087, OC0099, OC0130 |
+| unclear (canopy or clutter at the marker) | 4 | OC0110, OC0131, OC0151, OC0152 |
+| occluded (behind a building or trees) | 5 | OC0077, OC0113-OC0116 |
+
+Verdicts are stored per feature in `vr_check`. Confidence was raised by 0.15 for a match and 0.05 for a partial, and
+lowered by 0.1 for a mismatch.
+
+**Overlay check.**
+
+- Every tile was rendered with the read-back GeoJSON drawn on the photo and looked at.
+- Fixes made from that check:
+  - two candidates dropped: a signal that sat on the carriageway (T0111) and a planter on a parking stall (T0210).
+  - three features re-placed: the red pergola in T0403, the planted island in T0602 and a lawn shelter in T0808.
+- The sheets are scratch files and are not committed: `.../scratch/OBJ/contact/sheet_01..13.jpg` (12 tiles
+  each, in grid order) and `fixes.jpg`.
+- VR lamp checks are in `.../scratch/OBJ/vr_lampcheck_1..3.jpg`, and the tile grid index is in
+  `.../scratch/OBJ/grid_index.jpg`.
+- The survey state (per-tile detections, notes, rejected hints, VR pose) is in `.../scratch/OBJ/survey_state.pkl`.
 
 ## Method
 
