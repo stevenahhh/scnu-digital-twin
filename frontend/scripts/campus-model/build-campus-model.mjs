@@ -5,6 +5,7 @@
 //   - data/landcover.png           satellite-derived ground classes (fetch-sources.mjs)
 //   - data/cop30.png               Copernicus GLO-30 heights for the outer terrain ring (fetch/terrain.mjs)
 //   - docs/assets/data/*.geojson   road zones, walkways and crosswalks
+//   - data/streetlights.json       real street-lamp positions (fetch/streetlights.mjs)
 // Everything stays in uni.glb's scene frame (see lib/frame.mjs), so CityModel's recentering,
 // the traffic simulation and the BLD_* selection contract keep working unchanged.
 //
@@ -14,6 +15,7 @@
 //   ground.mjs    paints the ground texture, Topography chunks and crosswalk stripes
 //   outerTerrain.mjs  the OuterTerrain hill ring around EXTENT, feathered onto Topography's edge
 //   trees.mjs     species geometry, placement masks and instanced Trees_* nodes
+//   lights.mjs    instanced Lamps_heads / Lamps_pools (real and estimated lamp positions)
 // Plan-view ring helpers live in lib/geometry.mjs.
 //
 // Outputs: the uncompressed scripts/campus-model/.build/campus-v2.raw.glb, which pack.mjs turns into
@@ -27,6 +29,7 @@ import { EXTENT, SCENE_UNITS_PER_METRE } from "./lib/frame.mjs";
 import { GlbBuilder } from "./lib/glb.mjs";
 import { buildBuildings } from "./stages/buildings.mjs";
 import { buildGround } from "./stages/ground.mjs";
+import { buildLights } from "./stages/lights.mjs";
 import { buildOuterTerrain } from "./stages/outerTerrain.mjs";
 import { loadInputs } from "./stages/sources.mjs";
 import { buildTrees } from "./stages/trees.mjs";
@@ -45,6 +48,7 @@ const { selectableBuildings, campusBuildings, offCampusLots, markingMaterial } =
 await buildGround({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots, markingMaterial });
 const outerTerrain = await buildOuterTerrain({ glb, inputs });
 const treeInstances = buildTrees({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots });
+buildLights({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots });
 
 // ---------------------------------------------------------------- height sidecar
 // The terrain heightfield (scene units) sampled every HEIGHT_STEP units over EXTENT, row-major with
