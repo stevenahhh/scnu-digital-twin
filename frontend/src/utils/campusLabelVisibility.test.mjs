@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { parseHeightfield } from "../terrain/heightfield.mjs";
 import {
   campusLabelRectsOverlap,
+  isAnchorOccludedByTerrain,
   isCampusLabelVisible,
   selectVisibleCampusLabels,
 } from "./campusLabelVisibility.mjs";
@@ -184,6 +186,40 @@ test("between equal labels the closer one stays", () => {
     { id: "near", rect: rect(120, 105, 80, 20), selected: false, hasPopup: true, distance: 10 },
   ];
   assert.deepEqual([...selectVisibleCampusLabels(labels, canvas)], ["near"]);
+});
+
+// 0..100 x 0..100 grid, step 2. Flat at y 10 except a ridge 40 m high along x 48..52.
+function ridgeField() {
+  const width = 51;
+  const height = 51;
+  const bytes = new Uint8Array(width * height * 2);
+  const view = new DataView(bytes.buffer);
+  for (let j = 0; j < height; j += 1) {
+    for (let i = 0; i < width; i += 1) view.setUint16((j * width + i) * 2, i >= 24 && i <= 26 ? 4000 : 0, true);
+  }
+  return parseHeightfield({ width, height, originX: 0, originZ: 0, step: 2, minY: 10, scale: 0.01 }, bytes);
+}
+
+test("an anchor behind a ridge taller than the line of sight is occluded", () => {
+  assert.equal(isAnchorOccludedByTerrain(ridgeField(), [10, 30, 50], [90, 25, 50]), true);
+});
+
+test("an anchor seen over the ridge, or on the camera's side of it, is not occluded", () => {
+  const field = ridgeField();
+  assert.equal(isAnchorOccludedByTerrain(field, [10, 120, 50], [90, 25, 50]), false);
+  assert.equal(isAnchorOccludedByTerrain(field, [10, 30, 50], [40, 25, 50]), false);
+});
+
+test("terrain within the clearance of the sight line does not occlude", () => {
+  const field = ridgeField();
+  // The sight line passes the ridge top (y 50) at y 49.5.
+  assert.equal(isAnchorOccludedByTerrain(field, [0, 49.5, 50], [100, 49.5, 50]), false);
+  assert.equal(isAnchorOccludedByTerrain(field, [0, 49.5, 50], [100, 49.5, 50], { clearance: 0 }), true);
+});
+
+test("no heightfield, or a sight line outside the grid, never occludes", () => {
+  assert.equal(isAnchorOccludedByTerrain(null, [10, 30, 50], [90, 25, 50]), false);
+  assert.equal(isAnchorOccludedByTerrain(ridgeField(), [-300, 0, -300], [-200, 0, -300]), false);
 });
 
 test("a label hidden by the panel does not push an overlapping label off screen", () => {

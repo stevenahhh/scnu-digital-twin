@@ -1,3 +1,5 @@
+import { sampleHeight } from "../terrain/heightfield.mjs";
+
 // Legacy 캠퍼스 라벨을 화면에 둘지(그래서 키보드 포커스와 보조 기술에 내놓을지) 정한다.
 // 라벨의 가운데 점이 캔버스 안에 있고 열린 대시보드 패널 밑에 있지 않을 때만 보인다고 본다.
 // 가운데가 보이면 포커스 표시도 보인다. 사각형은 getBoundingClientRect() 모양(left/top/right/bottom)이면 된다.
@@ -11,6 +13,24 @@ export function isCampusLabelVisible(label, area, occluder = null) {
   const x = (label.left + label.right) / 2;
   const y = (label.top + label.bottom) / 2;
   return containsPoint(area, x, y) && !(occluder && containsPoint(occluder, x, y));
+}
+
+// 카메라에서 라벨 앵커까지의 선분이 지형(높이 사이드카) 아래로 들어가면 앵커가 언덕 뒤에 가려졌다고 본다.
+// 선분을 격자 간격(field.step)마다 표본화해 지형 높이가 선분 높이보다 clearance 넘게 높은 점이 하나라도 있으면 true.
+// 격자 밖 표본은 건너뛴다(가리지 않음). camera·anchor는 사이드카와 같은 모델 좌표계의 [x, y, z]다.
+// 지형만 본다. 건물이 건물을 가리는 경우는 판정하지 않는다.
+export function isAnchorOccludedByTerrain(field, camera, anchor, { clearance = 1, maxSamples = 512 } = {}) {
+  if (!field) return false;
+  const dx = anchor[0] - camera[0];
+  const dy = anchor[1] - camera[1];
+  const dz = anchor[2] - camera[2];
+  const samples = Math.min(maxSamples, Math.ceil(Math.hypot(dx, dz) / field.step));
+  for (let k = 1; k < samples; k += 1) {
+    const t = k / samples;
+    const ground = sampleHeight(field, camera[0] + dx * t, camera[2] + dz * t);
+    if (ground !== null && ground > camera[1] + dy * t + clearance) return true;
+  }
+  return false;
 }
 
 // 가장자리가 맞닿기만 한 두 라벨은 겹친 것으로 보지 않는다.
