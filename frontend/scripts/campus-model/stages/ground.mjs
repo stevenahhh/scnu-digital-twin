@@ -586,7 +586,9 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
   };
   const asphalt = (x, y) => {
     const k = 0.9 + hashNoise(x, y, 4) * 0.12 + smoothNoise(x, y, 40, 5) * 0.06;
-    return [70 * k, 73 * k, 77 * k];
+    // Weathered asphalt reads mid grey in the reference imagery; the earlier 70/73/77 rendered near-black
+    // once ground AO and the overcast sky were applied (estimated albedo, not measured).
+    return [120 * k, 123 * k, 127 * k];
   };
   // Block pavers (~0.2 x 0.1 m) are below texture resolution: warm grey with fine mottling.
   const blockPaver = (x, y) => {
@@ -595,7 +597,7 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
   };
   const bicycleLane = (x, y) => {
     const k = 0.92 + hashNoise(x, y, 9) * 0.1 + smoothNoise(x, y, 30, 10) * 0.05;
-    return [150 * k, 76 * k, 64 * k];
+    return [138 * k, 88 * k, 78 * k];
   };
   const WALKWAY_SHADERS = { blockPaver, asphalt, bicycle: bicycleLane, existing: paving };
   const walkwayPixels = walkways.map((w) => ({ ...w, points: w.line.map(toPixel) }));
