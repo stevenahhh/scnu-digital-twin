@@ -17,6 +17,12 @@ import {
   getAutumnWeight,
   getNightWeight,
 } from "./lighting/season.mjs";
+import {
+  CROWN_ALBEDO_SCALE,
+  CROWN_MATERIAL_NAMES,
+  calibrateCrownInstance,
+  calibrateCrownMaterial,
+} from "./lighting/foliage.mjs";
 
 // 클릭하지 않아도 카메라가 이 거리 안으로 들어오면 "가까이 간" 것으로 본다.
 // 클릭 시 자동으로 붙는 카메라 거리(FOCUS_CAMERA_OFFSET 기준 약 94유닛)보다 살짝
@@ -407,6 +413,30 @@ export function CityModel({
       child.material = child.material.clone();
       child.userData.selectableName = getSelectableMeta(child)?.name ?? null;
 
+      // 수관 색 보정(lighting/foliage.mjs): 재질 색은 정사영상의 어두운 수관 쪽으로 낮추고, 나무마다 다른 인스턴스 색은
+      // 밝기 차이만 남기고 색조 차이를 줄인다. 한 번만 옮긴다.
+      // 보정한 여름 색(crownSummer)을 남겨 두어 다시 마운트돼도 두 번 보정하지 않고, 단풍도 이 색에서 출발한다.
+      if (child.isInstancedMesh && CROWN_MATERIAL_NAMES.has(child.material.name) && !child.userData.crownSummer) {
+        if (!child.instanceColor) {
+          for (let i = 0; i < child.count; i += 1) child.setColorAt(i, new THREE.Color(1, 1, 1));
+        }
+        const raw = child.material.color;
+        const calibratedMaterial = calibrateCrownMaterial([raw.r, raw.g, raw.b]);
+        const instance = child.instanceColor.array;
+        const summer = new Float32Array(child.count * 3);
+        const tint = [0, 0, 0];
+        for (let i = 0; i < child.count; i += 1) {
+          calibrateCrownInstance([instance[i * 3], instance[i * 3 + 1], instance[i * 3 + 2]], tint);
+          for (let c = 0; c < 3; c += 1) {
+            instance[i * 3 + c] = tint[c];
+            summer[i * 3 + c] = tint[c] * calibratedMaterial[c];
+          }
+        }
+        child.material.color.setRGB(...calibratedMaterial);
+        child.instanceColor.needsUpdate = true;
+        child.userData.crownSummer = summer;
+      }
+
       if (!child.userData.originalColor && child.material.color) {
         child.userData.originalColor = child.material.color.clone();
       }
@@ -414,22 +444,17 @@ export function CityModel({
         tintedMeshes.push(child);
       }
       if (child.isInstancedMesh && AUTUMN_MATERIAL_NAMES.has(child.material.name)) {
-        if (!child.instanceColor) {
-          for (let i = 0; i < child.count; i += 1) child.setColorAt(i, new THREE.Color(1, 1, 1));
-        }
-        const material = child.userData.originalColor;
-        const instance = child.instanceColor.array;
-        // 여름 수관 색 = 재질 색 x 인스턴스 색. 단풍 색을 만든 뒤 다시 재질 색으로 나눠 인스턴스 색에 쓴다.
-        const summer = new Float32Array(child.count * 3);
+        // 여름 수관 색 = 보정한 재질 색 x 인스턴스 색(crownSummer). 단풍 색을 만든 뒤 다시 재질 색으로 나눠 인스턴스 색에 쓴다.
+        // 단풍 팔레트도 수관과 같은 비율로 어둡게 해 초록 나무와 물든 나무의 밝기 관계를 그대로 둔다.
+        const summer = child.userData.crownSummer;
         const profiles = [];
         let luminanceSum = 0;
         for (let i = 0; i < child.count; i += 1) {
-          summer[i * 3] = instance[i * 3] * material.r;
-          summer[i * 3 + 1] = instance[i * 3 + 1] * material.g;
-          summer[i * 3 + 2] = instance[i * 3 + 2] * material.b;
           luminanceSum +=
             0.2126 * summer[i * 3] + 0.7152 * summer[i * 3 + 1] + 0.0722 * summer[i * 3 + 2];
-          profiles.push(getAutumnProfile(autumnIndex));
+          const profile = getAutumnProfile(autumnIndex);
+          profile.color = profile.color.map((value) => value * CROWN_ALBEDO_SCALE);
+          profiles.push(profile);
           autumnIndex += 1;
         }
         autumnCrowns.push({
