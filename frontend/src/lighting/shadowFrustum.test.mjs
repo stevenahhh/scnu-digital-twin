@@ -70,7 +70,8 @@ test("camera space matches Object3D.lookAt from the light toward the origin", ()
 
 test("every campus mesh centre is inside the shadow camera for azimuths 0, 45, 90 and 135 deg", async () => {
   const centres = await readCampusMeshCentres();
-  assert.ok(centres.length >= 145, `expected the campus meshes, got ${centres.length}`);
+  // pack.mjs joins the 108 Topography_* chunks into one primitive, which leaves 130 primitives.
+  assert.ok(centres.length >= 125, `expected the campus meshes, got ${centres.length}`);
   // 13.6 deg is the winter 09:00 KST sun (longest shadows); 75 deg is near the summer noon sun.
   for (const altitudeDegrees of [13.6, 45, 75]) {
     for (const azimuthDegrees of [0, 45, 90, 135]) {
