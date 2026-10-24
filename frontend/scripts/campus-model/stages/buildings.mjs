@@ -6,10 +6,10 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { metres } from "../lib/frame.mjs";
+import { geoToModel, metres } from "../lib/frame.mjs";
 import { MeshData } from "../lib/meshData.mjs";
 import { mulberry32 } from "../lib/raster.mjs";
-import { FACADE_BAYS, FACADE_FLOORS, beigePunchedFacade, brickPunchedFacade, concreteRibbonFacade, glassCurtainFacade, greenhouseFacade, roofTexture } from "../lib/textures.mjs";
+import { FACADE_BAYS, FACADE_FLOORS, ROOF_METRES, beigePunchedFacade, brickPunchedFacade, concreteRibbonFacade, glassCurtainFacade, greenhouseFacade, roofTexture } from "../lib/textures.mjs";
 import { pointInRing, ringArea, ringCentroid, segmentDistance } from "../lib/geometry.mjs";
 import { meshFootprint, toModelRing } from "./sources.mjs";
 
@@ -59,6 +59,50 @@ export function styleFor(name, fallback, seed) {
 }
 
 const isGroundFeature = (part) => part.areaMetres > 8000 && part.floors <= 1;
+
+// ---------------------------------------------------------------- roof colours (open data only)
+// data/osm-roof-tags.json (fetch/roofTags.mjs) lists the OSM buildings with roof/building colour tags.
+// A roof takes a colour only from a tag on a footprint it matches: roof:colour, else a green-roof tag
+// (roof:garden=yes or a vegetated roof:material), else building:colour. Everything else keeps the
+// light membrane. Colours are never sampled from imagery.
+const ROOF_TAGS = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "osm-roof-tags.json");
+const NAMED_COLOURS = {
+  white: [255, 255, 255], whitesmoke: [245, 245, 245], silver: [192, 192, 192], lightgrey: [211, 211, 211],
+  lightgray: [211, 211, 211], grey: [128, 128, 128], gray: [128, 128, 128], darkgrey: [169, 169, 169],
+  darkgray: [169, 169, 169], dimgray: [105, 105, 105], dimgrey: [105, 105, 105], black: [0, 0, 0],
+  red: [255, 0, 0], darkred: [139, 0, 0], maroon: [128, 0, 0], brown: [165, 42, 42], orange: [255, 165, 0],
+  yellow: [255, 255, 0], beige: [245, 245, 220], tan: [210, 180, 140], green: [0, 128, 0],
+  darkgreen: [0, 100, 0], olive: [128, 128, 0], blue: [0, 0, 255], navy: [0, 0, 128], lightblue: [173, 216, 230],
+  teal: [0, 128, 128],
+};
+// Assumed display colour for a tagged green roof (the tag says "vegetated", not which green).
+const GREEN_ROOF = [104, 132, 76];
+const VEGETATED = /^(grass|plants|vegetation|green|sedum)$/;
+
+export function parseColour(value) {
+  const text = String(value ?? "").trim().toLowerCase();
+  const hex = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/.exec(text);
+  if (hex) {
+    const digits = hex[1].length === 3 ? [...hex[1]].map((d) => d + d) : hex[1].match(/../g);
+    return digits.map((d) => Number.parseInt(d, 16));
+  }
+  return NAMED_COLOURS[text.replace(/[\s_-]/g, "")] ?? null;
+}
+
+// { rgb, tag } from a tag set, or null when no tag gives a usable colour.
+export function roofColourFromTags(tags) {
+  const roof = parseColour(tags["roof:colour"] ?? tags["roof:color"]);
+  if (roof) return { rgb: roof, tag: `roof:colour=${tags["roof:colour"] ?? tags["roof:color"]}` };
+  if (tags["roof:garden"] === "yes") return { rgb: GREEN_ROOF, tag: "roof:garden=yes (assumed green)" };
+  if (VEGETATED.test(tags["roof:material"] ?? "")) return { rgb: GREEN_ROOF, tag: `roof:material=${tags["roof:material"]} (assumed green)` };
+  const building = parseColour(tags["building:colour"] ?? tags["building:color"]);
+  if (building) return { rgb: building, tag: `building:colour=${tags["building:colour"] ?? tags["building:color"]}` };
+  return null;
+}
+
+const srgbToLinear = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+// The membrane texture is near white (222, 224, 220), so baseColorFactor = target / texture base, linear.
+const roofFactor = (rgb) => [...rgb.map((c, i) => Math.min(1, srgbToLinear(c / 255) / srgbToLinear([222, 224, 220][i] / 255))), 1];
 
 // ---------------------------------------------------------------- AO atlas layout (TEXCOORD_1)
 // Each wall ring is unrolled into charts of (distance along the ring, depth below the wall top), cut
@@ -271,7 +315,18 @@ function buildingPrimitives(building, seed, { heightAt, facadeMaterials, roofMat
     addWalls(walls, part.outer, true, base, ground, top, floorHeight, charts);
     part.holes.forEach((hole) => addWalls(walls, hole, false, base, ground, top, floorHeight, charts));
     const roofFrom = roof.vertexCount;
-    roof.horizontalPolygon(part.outer, part.holes, top, { uvScale: 1 / metres(10) });
+    roof.horizontalPolygon(part.outer, part.holes, top, { uvScale: 1 / metres(ROOF_METRES) });
+    // Per-part quarter-turn and offset of the roof texture, so neighbouring roofs do not share one
+    // grid. Its own generator keeps rng (equipment layout, hence the AO layout hash) unchanged.
+    const uvRng = mulberry32(seed * 7919 + roofFrom);
+    const turn = Math.floor(uvRng() * 4);
+    const [ou, ov] = [uvRng(), uvRng()];
+    for (let k = roofFrom * 2; k < roof.uvs.length; k += 2) {
+      const [u, v] = [roof.uvs[k], roof.uvs[k + 1]];
+      const [ru, rv] = [[u, v], [-v, u], [-u, -v], [v, -u]][turn];
+      roof.uvs[k] = ru + ou;
+      roof.uvs[k + 1] = rv + ov;
+    }
     charts.addPlanar(roof, roofFrom);
     if (building.style !== STYLE.GREENHOUSE) {
       for (const ring of [part.outer, ...part.holes]) {
@@ -297,7 +352,7 @@ function buildingPrimitives(building, seed, { heightAt, facadeMaterials, roofMat
   }
   return [
     aoPrimitive(walls, facadeMaterials[building.style]),
-    aoPrimitive(roof, roofMaterial),
+    aoPrimitive(roof, building.roofMaterial ?? roofMaterial),
     aoPrimitive(parapet, parapetMaterial),
     aoPrimitive(equipment, equipmentMaterial),
   ];
@@ -345,6 +400,7 @@ export async function buildBuildings({ glb, inputs }) {
   // Footprints traced from imagery (OSM) sit a few metres off the cadastral frame uni.glb uses. The
   // median centroid offset over one-to-one matches of similar area moves them onto uni.glb (and onto
   // the roads); for cadastral footprints it comes out close to zero.
+  let footprintShift;
   {
     const deltas = bldNodes.flatMap(({ footprint }) => {
       const matches = matchesIn(footprint.outer);
@@ -360,6 +416,7 @@ export async function buildBuildings({ glb, inputs }) {
       part.holes = part.holes.map(move);
       part.centroid = ringCentroid(part.outer);
     }
+    footprintShift = [dx, dz];
     console.log(`footprint shift onto uni.glb: ${(dx / metres(1)).toFixed(2)} m east, ${(-dz / metres(1)).toFixed(2)} m north (median of ${deltas.length} matches)`);
   }
 
@@ -514,6 +571,41 @@ export async function buildBuildings({ glb, inputs }) {
     name: "Roof_Equipment",
     pbrMetallicRoughness: { baseColorFactor: [0.6, 0.63, 0.66, 1], metallicFactor: 0.4, roughnessFactor: 0.6 },
   });
+  // Tagged roof colours: one Roof_Membrane variant per distinct colour, created only when used.
+  {
+    const file = existsSync(ROOF_TAGS) ? JSON.parse(readFileSync(ROOF_TAGS, "utf8")) : null;
+    if (!file) console.warn(`roof colours: ${path.basename(ROOF_TAGS)} missing (bun scripts/campus-model/fetch/roofTags.mjs); all roofs membrane`);
+    const tagged = (file?.buildings ?? []).map((entry) => {
+      const [x, z] = geoToModel(...entry.centre);
+      return { ...entry, point: [x + footprintShift[0], z + footprintShift[1]], colour: roofColourFromTags(entry.tags) };
+    });
+    const variants = new Map();
+    const applied = [];
+    for (const building of [...selectableBuildings, ...campusBuildings]) {
+      const match = tagged.find((entry) => building.parts.some((part) => pointInRing(entry.point, part.outer) &&
+        !part.holes.some((hole) => pointInRing(entry.point, hole))));
+      if (!match) continue;
+      const label = building.nodeName ?? (building.displayName || "(unnamed)");
+      if (!match.colour) {
+        console.log(`roof colour ${label}: OSM ${match.osm} tags ${JSON.stringify(match.tags)} give no colour; membrane kept`);
+        continue;
+      }
+      const key = match.colour.rgb.join(",");
+      if (!variants.has(key)) {
+        const base = glb.json.materials[roofMaterial];
+        variants.set(key, glb.addMaterial({
+          ...base,
+          name: `Roof_Tagged_${match.colour.rgb.map((c) => c.toString(16).padStart(2, "0")).join("")}`,
+          pbrMetallicRoughness: { ...base.pbrMetallicRoughness, baseColorFactor: roofFactor(match.colour.rgb) },
+        }));
+      }
+      building.roofMaterial = variants.get(key);
+      building.roofColourSource = `OSM ${match.osm} ${match.colour.tag}`;
+      applied.push(`${label} <- ${building.roofColourSource}`);
+    }
+    console.log(`roof colours: ${applied.length} buildings tagged (${tagged.length} tagged of ${file?.scanned ?? 0} OSM buildings scanned)` +
+      `${applied.length ? `: ${applied.join("; ")}` : "; all roofs keep the light membrane"}`);
+  }
   const markingMaterial = glb.addMaterial({
     name: "Road_Marking",
     pbrMetallicRoughness: { baseColorFactor: [0.93, 0.93, 0.9, 1], metallicFactor: 0, roughnessFactor: 0.7 },
@@ -588,6 +680,7 @@ export async function buildBuildings({ glb, inputs }) {
         source: building.footprintSource,
         floorsSource: building.floorsSource,
         heightSource: building.heightSource,
+        ...(building.roofColourSource ? { roofColourSource: building.roofColourSource } : {}),
       },
     }, { root: true });
   });

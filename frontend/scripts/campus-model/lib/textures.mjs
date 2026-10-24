@@ -20,8 +20,11 @@ const SIZE = TILE * FACADE_BAYS;
 // nominal 4.0 m (the build stretches storeys to 3-5 m, so relief scale is approximate vertically).
 const ATLAS_METRES_X = 3.6 * FACADE_BAYS;
 const ATLAS_METRES_Y = 4.0 * FACADE_FLOORS;
-// The roof texture covers 10 m x 10 m (uvScale 1 / metres(10) in stages/buildings.mjs).
-const ROOF_METRES = 10;
+// The roof texture covers 20 m x 20 m (uvScale 1 / metres(ROOF_METRES) in stages/buildings.mjs) at
+// 3.9 cm/px, 8 x 8 membrane sheets of 2.5 m.
+export const ROOF_METRES = 20;
+const ROOF_SIZE = 512;
+const ROOF_SHEETS = 8;
 
 const MATERIALS = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "materials");
 
@@ -63,7 +66,11 @@ async function loadTile(name, map, width, height) {
 }
 
 // kinds: Uint8Array(width*height) of surface kinds; classes[kind] = { height (m, + towards the
-// viewer), roughness, metal, detail (CC0 relief applies) }; tile = { name, metres, strength } or null.
+// viewer), roughness, metal, detail (CC0 relief applies) }; tile = { name, metres, strength,
+// roughness?, shuffle? } or null. roughness (default 1) scales the tile's roughness contrast.
+// shuffle (a seed) gives every tile cell its own rotation/flip and wrap offset of the CC0 tile, so
+// the tile no longer repeats in a grid; cells are square and their edges should sit under painted
+// joints, where the slope field is discontinuous.
 // Returns PNG-encoded { normal, arm }.
 async function detailMaps({ width, height, metresX, metresY, kinds, classes, tile }) {
   const dx = metresX / width;
@@ -110,11 +117,31 @@ async function detailMaps({ width, height, metresX, metresY, kinds, classes, til
     meanX /= n;
     meanY /= n;
     meanRough /= n;
+    const roughAmount = tile.roughness ?? 1;
     // Tile-mean slope is removed so a tile scanned at a slant does not tilt the whole wall.
     detail = (x, y) => {
-      const k = Math.min(th - 1, Math.floor(y * repeatsY * th / height) % th) * tw +
-        Math.min(tw - 1, Math.floor(x * repeatsX * tw / width) % tw);
-      return [(sx[k] - meanX) * tile.strength, (sy[k] - meanY) * tile.strength, rough[k] / meanRough];
+      let a = Math.min(tw - 1, Math.floor(x * repeatsX * tw / width) % tw);
+      let b = Math.min(th - 1, Math.floor(y * repeatsY * th / height) % th);
+      let fx = 1;
+      let fy = 1;
+      let swap = false;
+      if (tile.shuffle !== undefined) {
+        // Image-space gradient of the sampled tile is (-sx, sy); flipping an axis negates that
+        // component and swapping the axes swaps them, which the slope remap below mirrors.
+        const cx = Math.floor(x * repeatsX / width);
+        const cy = Math.floor(y * repeatsY / height);
+        const t = Math.floor(hashNoise(cx, cy, tile.shuffle) * 8);
+        if (t & 1) { a = tw - 1 - a; fx = -1; }
+        if (t & 2) { b = th - 1 - b; fy = -1; }
+        if (t & 4) { [a, b] = [b, a]; swap = true; }
+        a = (a + Math.floor(hashNoise(cx, cy, tile.shuffle + 1) * tw)) % tw;
+        b = (b + Math.floor(hashNoise(cx, cy, tile.shuffle + 2) * th)) % th;
+      }
+      const k = b * tw + a;
+      const ux = (sx[k] - meanX) * tile.strength;
+      const uy = (sy[k] - meanY) * tile.strength;
+      const roughScale = 1 + (rough[k] / meanRough - 1) * roughAmount;
+      return swap ? [-fx * uy, -fy * ux, roughScale] : [fx * ux, fy * uy, roughScale];
     };
   }
 
@@ -300,17 +327,40 @@ export function greenhouseFacade() {
   });
 }
 
+// Value noise that tiles with period `size` px (size / scale cells per side; scale divides size).
+function periodicNoise(x, y, scale, size, seed) {
+  const cells = size / scale;
+  const fx = x / scale;
+  const fy = y / scale;
+  const ix = Math.floor(fx);
+  const iy = Math.floor(fy);
+  const sx = (fx - ix) ** 2 * (3 - 2 * (fx - ix));
+  const sy = (fy - iy) ** 2 * (3 - 2 * (fy - iy));
+  const h = (i, j) => hashNoise(((i % cells) + cells) % cells, ((j % cells) + cells) % cells, seed);
+  const a = h(ix, iy);
+  const b = h(ix + 1, iy);
+  const c = h(ix, iy + 1);
+  const d = h(ix + 1, iy + 1);
+  return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy;
+}
+
 // Light grey single-ply membrane with raised lap seams every 2.5 m. The satellite comparison
 // (qa/compare-G1) shows SCNU roofs light grey to white, so the base is near white; the baked AO
-// atlas and the lighting darken it on screen.
+// atlas and the lighting darken it on screen. Against visible tiling from above: the texture spans
+// 20 m, every 2.5 m sheet has its own slight tint and its own rotation/offset of the CC0 relief and
+// roughness (cut along the seams), a 5 m-scale weathering variation runs across the sheets, and
+// stages/buildings.mjs rotates and offsets the roof UVs per building.
 export async function roofTexture() {
-  const size = 256;
+  const size = ROOF_SIZE;
+  const sheet = size / ROOF_SHEETS;
   const raster = new Raster(size, size);
   const kinds = new Uint8Array(size * size);
   rect(raster, 0, 0, size, size, (x, y) => {
-    const seam = x % 64 === 0 || y % 64 === 0;
+    const seam = x % sheet === 0 || y % sheet === 0;
     if (seam) kinds[y * size + x] = SEAM;
-    const k = 0.94 + smoothNoise(x, y, 18, 4) * 0.08 + (seam ? -0.08 : 0);
+    const sheetTint = (hashNoise(Math.floor(x / sheet), Math.floor(y / sheet), 12) - 0.5) * 0.05;
+    const k = 0.93 + periodicNoise(x, y, 16, size, 4) * 0.06 + periodicNoise(x, y, 128, size, 5) * 0.07 +
+      sheetTint + (seam ? -0.08 : 0);
     return tint([222, 224, 220], k);
   });
   const maps = await detailMaps({
@@ -323,7 +373,7 @@ export async function roofTexture() {
       [WALL]: { height: 0, roughness: 0.95, metal: 0, detail: true },
       [SEAM]: { height: 0.008, roughness: 0.9, metal: 0, detail: false },
     },
-    tile: { name: "roof", metres: 2.0, strength: 0.8 },
+    tile: { name: "roof", metres: ROOF_METRES / ROOF_SHEETS, strength: 0.8, roughness: 0.5, shuffle: 31 },
   });
   return { color: encodePng(size, size, 3, raster.data), ...maps };
 }
