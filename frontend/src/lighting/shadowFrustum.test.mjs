@@ -8,13 +8,31 @@ import {
   SHADOW_CAMERA_BOUNDS,
   SHADOW_CAMERA_FAR,
   SHADOW_LIGHT_DISTANCE,
+  MIN_LIGHT_ALTITUDE,
   getShadowCameraBounds,
+  getShadowLightPosition,
   getShadowMapSize,
   isInsideShadowCamera,
   toShadowCameraSpace,
 } from "./shadowFrustum.mjs";
 
 const DEG = Math.PI / 180;
+
+test("the sun light never goes below the horizon and keeps the sun azimuth", () => {
+  const elevation = ([x, y, z]) => Math.atan2(y, Math.hypot(x, z));
+  const azimuth = ([x, , z]) => Math.atan2(z, x);
+  // 20:00 KST, sun about 28 deg below the horizon in the west-north-west.
+  const night = getSunVector({ altitude: -28 * DEG, azimuth: 1.2 });
+  const position = getShadowLightPosition(night);
+  assert.ok(Math.abs(elevation(position) - MIN_LIGHT_ALTITUDE) < 1e-9);
+  assert.ok(Math.abs(azimuth(position) - azimuth(night)) < 1e-9);
+  assert.ok(Math.abs(Math.hypot(...position) - SHADOW_LIGHT_DISTANCE) < 1e-6);
+  // A sun above the minimum is used as is, at the light distance.
+  const day = getSunVector({ altitude: 40 * DEG, azimuth: 0.3 });
+  const dayPosition = getShadowLightPosition(day);
+  const length = Math.hypot(...day);
+  dayPosition.forEach((v, index) => assert.ok(Math.abs(v - (day[index] / length) * SHADOW_LIGHT_DISTANCE) < 1e-9));
+});
 
 // glTF normalized integer -> float, per component type (5120 byte, 5121 ubyte, 5122 short, 5123 ushort).
 const NORMALIZE = { 5120: (v) => Math.max(v / 127, -1), 5121: (v) => v / 255, 5122: (v) => Math.max(v / 32767, -1), 5123: (v) => v / 65535 };

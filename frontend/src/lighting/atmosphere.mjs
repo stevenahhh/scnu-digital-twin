@@ -11,6 +11,20 @@ const toHex = (rgb) => `#${rgb.map((v) => Math.round(v).toString(16).padStart(2,
 const mix = (a, b, t) => a.map((v, index) => v + (b[index] - v) * t);
 const clamp01 = (value) => Math.min(1, Math.max(0, value));
 
+// The night fog colour as sRGB components (0..1), for shaders that mix it in after colour-space encoding.
+export const NIGHT_SKY_SRGB = NIGHT.map((v) => v / 255);
+
+// three's Preetham Sky never goes dark: with the sun far below the horizon it still draws a purple-brown
+// twilight glow, which shows as a brown band above the ridge against the navy night fog and also feeds
+// the sky environment light. The dome is faded to the night fog colour as the sun sinks from 0 to
+// -12 deg (end of nautical twilight), so the afterglow still shows through civil twilight.
+const SKY_NIGHT_FULL_DEGREES = -12;
+
+export function getSkyNightMix(altitude) {
+  const t = clamp01(((altitude * 180) / Math.PI) / SKY_NIGHT_FULL_DEGREES);
+  return t * t * (3 - 2 * t);
+}
+
 // Fog colour by sun altitude (radians): night below the horizon, warm haze near it, day haze above 25 deg.
 export function getFogColor(altitude) {
   const degrees = (altitude * 180) / Math.PI;

@@ -2,8 +2,9 @@ import { useLayoutEffect, useMemo, useRef } from "react";
 import { useThree } from "@react-three/fiber";
 import { Sky } from "@react-three/drei";
 import * as THREE from "three";
-import { CAMPUS_FOG_DENSITY, getFogColor } from "./atmosphere.mjs";
-import { SHADOW_CAMERA_BOUNDS, SHADOW_LIGHT_DISTANCE, getShadowMapSize } from "./shadowFrustum.mjs";
+import { CAMPUS_FOG_DENSITY, NIGHT_SKY_SRGB, getFogColor, getSkyNightMix } from "./atmosphere.mjs";
+import { SHADOW_CAMERA_BOUNDS, getShadowLightPosition, getShadowMapSize } from "./shadowFrustum.mjs";
+import { applySkyNightFade } from "./skyNightFade.mjs";
 import { SkyEnvironment } from "./SkyEnvironment";
 import { SUN_ALTITUDE_KEY, getDaylightWeight, getSkySunAltitude } from "./season.mjs";
 
@@ -16,13 +17,13 @@ const SKY_RAYLEIGH = 0.7;
 // sky's diffuse light and building shadows disappeared; 4.0 / 0.45 keeps the same overall brightness.
 const SUN_INTENSITY = 4.0;
 const SKY_ENVIRONMENT_INTENSITY = 0.45;
-// Night levels (moonlight-ish key, dim ambient). Twilight blends sun and ambient between the day and
-// night levels with getDaylightWeight (full above 6 deg, night at -6 deg) instead of switching at 0 deg.
-const NIGHT_SUN_INTENSITY = 0.35;
+// Twilight fades the sun out and blends the ambient between the day and night levels with
+// getDaylightWeight (full above 6 deg, zero at -6 deg) instead of switching at 0 deg. The sun light never
+// goes below MIN_LIGHT_ALTITUDE (getShadowLightPosition) and has no night level: a key that followed the
+// sun under the horizon lit slopes from below the ground and threw building shadows up the hillside.
 const DAY_AMBIENT = 0.15;
 const NIGHT_AMBIENT = 0.05;
-// After sunset the directional light follows the sun below the horizon, so it lights the ground from
-// underneath and roads, lawns and roofs fall to the 0.05 ambient (near-black). A cool sky / dark ground
+// Without the sun, roads, lawns and roofs fall to the 0.05 ambient (near-black). A cool sky / dark ground
 // hemisphere fill (moon and sky-glow stand-in, not a measured night level) fades in as daylight fades,
 // so the road layout still reads at night. Emissive windows and the additive lamp pools are unaffected
 // by it and keep their contrast.
@@ -40,6 +41,13 @@ export function CampusLighting({ sunVector, sunAltitude, shadowMapSize: requeste
   const scene = useThree((state) => state.scene);
   const invalidate = useThree((state) => state.invalidate);
   const sunLightRef = useRef(null);
+  const skyRef = useRef(null);
+  const skyNightMix = getSkyNightMix(sunAltitude);
+  // The visible dome fades to the sRGB night fog colour (it is drawn to the screen after encoding).
+  useLayoutEffect(() => {
+    applySkyNightFade(skyRef.current.material, NIGHT_SKY_SRGB).skyNightMix.value = skyNightMix;
+    invalidate();
+  }, [invalidate, skyNightMix]);
   // CityModel reads the same altitude for its window-glow and night-tint ramps.
   useLayoutEffect(() => {
     scene.userData[SUN_ALTITUDE_KEY] = sunAltitude;
@@ -72,10 +80,7 @@ export function CampusLighting({ sunVector, sunAltitude, shadowMapSize: requeste
     gl.shadowMap.needsUpdate = true;
     invalidate();
   }, [gl, invalidate, shadowMapSize]);
-  const lightPosition = useMemo(() => {
-    const length = Math.hypot(...sunVector) || 1;
-    return sunVector.map((v) => (v / length) * SHADOW_LIGHT_DISTANCE);
-  }, [sunVector]);
+  const lightPosition = useMemo(() => getShadowLightPosition(sunVector), [sunVector]);
 
   return (
     <>
@@ -85,7 +90,7 @@ export function CampusLighting({ sunVector, sunAltitude, shadowMapSize: requeste
       <directionalLight
         ref={sunLightRef}
         castShadow
-        intensity={NIGHT_SUN_INTENSITY + (SUN_INTENSITY - NIGHT_SUN_INTENSITY) * daylight}
+        intensity={SUN_INTENSITY * daylight}
         position={lightPosition}
         shadow-mapSize={[shadowMapSize, shadowMapSize]}
         shadow-camera-left={SHADOW_CAMERA_BOUNDS.left}
@@ -98,8 +103,14 @@ export function CampusLighting({ sunVector, sunAltitude, shadowMapSize: requeste
         shadow-normalBias={0.4}
         shadow-radius={2}
       />
-      <Sky distance={450000} sunPosition={skySunVector} turbidity={SKY_TURBIDITY} rayleigh={SKY_RAYLEIGH} />
-      <SkyEnvironment sunPosition={skySunVector} turbidity={SKY_TURBIDITY} rayleigh={SKY_RAYLEIGH} intensity={SKY_ENVIRONMENT_INTENSITY} />
+      <Sky ref={skyRef} distance={450000} sunPosition={skySunVector} turbidity={SKY_TURBIDITY} rayleigh={SKY_RAYLEIGH} />
+      <SkyEnvironment
+        sunPosition={skySunVector}
+        turbidity={SKY_TURBIDITY}
+        rayleigh={SKY_RAYLEIGH}
+        intensity={SKY_ENVIRONMENT_INTENSITY}
+        nightMix={skyNightMix}
+      />
     </>
   );
 }

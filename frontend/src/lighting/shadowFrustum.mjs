@@ -25,6 +25,25 @@ export function getShadowCameraBounds({ width, depth, margin = 1 } = CAMPUS_BOX_
 
 export const SHADOW_CAMERA_BOUNDS = getShadowCameraBounds();
 
+// Lowest elevation of the shadow-casting light (radians). Below the horizon the sun would light the scene
+// from underneath the ground: slopes facing it were lit from below and buildings threw box-shaped
+// shadows up the hillside behind them. The light keeps the sun's azimuth but never sinks below this.
+export const MIN_LIGHT_ALTITUDE = (3 * Math.PI) / 180;
+
+// Position of the sun light for a sun direction vector: same azimuth, elevation clamped to minAltitude.
+export function getShadowLightPosition(sunVector, { distance = SHADOW_LIGHT_DISTANCE, minAltitude = MIN_LIGHT_ALTITUDE } = {}) {
+  const [x, y, z] = sunVector;
+  const horizontal = Math.hypot(x, z);
+  const altitude = Math.atan2(y, horizontal);
+  if (altitude >= minAltitude) {
+    const length = Math.hypot(x, y, z) || 1;
+    return [x, y, z].map((v) => (v / length) * distance);
+  }
+  const [dx, dz] = horizontal > 0 ? [x / horizontal, z / horizontal] : [1, 0];
+  const cos = Math.cos(minAltitude);
+  return [dx * cos * distance, Math.sin(minAltitude) * distance, dz * cos * distance];
+}
+
 // 2048² gives 0.31 units (~0.5 m) per texel at +-320; desktop GPUs that allow 4096² halve that.
 export function getShadowMapSize({ maxTextureSize, isMobile }) {
   return maxTextureSize >= 4096 && !isMobile ? 4096 : 2048;
