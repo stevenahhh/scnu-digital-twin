@@ -354,9 +354,9 @@ By method: 591 `detect` and 324 `trace`.
 
 ### Corrections to markings.geojson
 
-These are in `properties.corrections` (479 entries): `{id, was, action, kind?, reason}`.
+These are in `properties.corrections` (480 entries): `{id, was, action, kind?, reason}`.
 
-- `delete` (278): the feature is not paint. They are roof edges, kerb stones, cars, shadows, crossing-frame
+- `delete` (279): the feature is not paint. They are roof edges, kerb stones, cars, shadows, crossing-frame
   artefacts or field rows. This includes most of the `other` features.
 - `kind` (201): the feature is paint with the wrong kind. Mostly yellow `centre_line_yellow` / `edge_line`
   features that are kerb no-parking lines, `other` features that are lane dashes, stop lines, text, diamonds or
@@ -464,6 +464,14 @@ Pieces of one fitted model share `properties.group` (`hump ...`, `median ...`, `
 `guide ...`, `zebra ...`). `markings-gate.json` (written by `bake/markings-gate.mjs`) holds every candidate's
 measured paint support and the chip-review verdicts (`review`: 186 "not paint", 28 "paint"); see the Road markings
 section of the generator README for how the stage uses them and for the drawn/rejected counts.
+
+### G1 additions (2026-10-25)
+
+Browser QA at the main gate (T0510) still showed photo paint where no piece was drawn. Five hand traces, fitted to
+the paint's half-maximum edges on the sheet: the two stop lines across the inbound and outbound lanes (MX01742,
+MX01744, 0.5 m wide), a lane line ending on the outbound one (MX01745) and two lane dashes (MX01743, half in tree
+shadow, and MX01746). MX01746 replaces MK00926, a white dash that `markings.geojson` read as a yellow centre line
+(white support 0.71, yellow 0), now deleted by a correction.
 
 ## Licence
 

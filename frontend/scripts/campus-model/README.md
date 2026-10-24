@@ -310,7 +310,7 @@ to it within 5 mm; methods, hand checks and recall in `data/photo/README.md`):
 
 - `data/photo/markings.geojson`, the detection pass;
 - `data/photo/markings-extra.geojson`, the completion pass: paint the first pass missed (`method` detect or trace)
-  and `properties.corrections`, the first-pass ids that are not paint (`delete`, 278) or carry the wrong kind
+  and `properties.corrections`, the first-pass ids that are not paint (`delete`, 279) or carry the wrong kind
   (`kind`, 201). M3 (2026-10-25) appended 651 hand traces (`note` "M3 trace: ..."): the gate's raised crossing,
   island lines, guide dashes and arrows, the roundabout rim dashes and ladder strip, striped humps and hatched medians
   re-traced as their bands, blue bays as fill and symbol, shaded stall rows and a zebra in deep shadow. Pieces of one
@@ -338,23 +338,23 @@ candidate is drawn only when the photo backs it:
    the larger when it contains the smaller three times over, else the better supported.
 
 A rejected candidate is not drawn and its paint stays in the photo: the ground stage refills the photo under drawn
-pieces only (their holes stay photo). The 2026-10-25 build: 2,730 candidates, 2,054 drawn (24 estimated crossing
-bars), 214 rejected by the paint gate, 177 by eye, 188 duplicates, 97 left out by context:
+pieces only (their holes stay photo). The 2026-10-25 build: 2,734 candidates, 2,059 drawn (24 estimated crossing
+bars), 213 rejected by the paint gate, 177 by eye, 188 duplicates, 97 left out by context:
 
 | kind | drawn | gate | by eye | duplicate | context |
 |---|---:|---:|---:|---:|---:|
 | zebra_bar | 739 (22 est.) | 11 | 11 | 6 | 0 |
-| lane_line_dashed | 285 | 11 | 3 | 52 | 1 |
+| lane_line_dashed | 287 | 11 | 3 | 52 | 1 |
 | speed_bump (bands of striped humps and raised crossings) | 213 | 48 | 5 | 0 | 2 |
 | parking_line | 152 | 23 | 89 | 57 | 16 |
 | text | 124 | 0 | 2 | 17 | 1 |
 | kerb_no_parking | 122 (2 est.) | 38 | 7 | 2 | 17 |
 | hatch | 109 | 9 | 8 | 7 | 1 |
-| centre_line_yellow | 93 | 24 | 2 | 2 | 19 |
+| centre_line_yellow | 93 | 23 | 2 | 2 | 19 |
 | disabled_parking | 68 | 35 | 27 | 8 | 7 |
-| stop_line | 35 | 3 | 1 | 4 | 1 |
+| stop_line | 37 | 3 | 1 | 4 | 1 |
 | chevron | 28 | 1 | 0 | 1 | 0 |
-| lane_line_solid | 22 | 3 | 11 | 14 | 15 |
+| lane_line_solid | 23 | 3 | 11 | 14 | 15 |
 | edge_line | 14 | 5 | 11 | 1 | 16 |
 | arrows, diamonds, give-way, bike box | 50 | 3 | 0 | 13 | 1 |
 

@@ -53,6 +53,13 @@ const EDGE_WIDEN = 0.6;
 // clearing on the north-west edge carried 160 m (or even 40 m) out read as a brown band across the forested hill
 // behind BLD_D4 in the 공대 3호관 preset; over 12 m it only closes the seam.
 const COLOUR_FEATHER_M = 12;
+// Bare soil on the edge strip (a reddish, unvegetated sample: (R - G) / (R + G + B) in linear light; bare soil on the
+// photo reads 0.2-0.25, vegetation below 0, asphalt and paving about 0) does not continue outside EXTENT: the clearing
+// on the west edge north of BLD_D4 ends at the edge and the VWorld tiles west of it show closed forest. So outside the
+// edge vertices themselves the soil share of the edge colour is replaced by the backdrop tone, and the soil stops at the
+// seam instead of fading over the first band rows (ASSUMED thresholds, from the edge strip's own samples).
+const SOIL_RATIO_FROM = 0.05;
+const SOIL_RATIO_TO = 0.15;
 // Share of the daylight ground lighting that is indirect (sky + ambient), the part three.js scales by
 // the AO map (ASSUMED from CampusLighting's sun 4.0 / sky 0.45 / ambient 0.15 at 15:00).
 const INDIRECT_SHARE = 0.35;
@@ -213,7 +220,9 @@ export async function buildOuterTerrain({ glb, inputs }) {
     const far = mix(LOWLAND, HILLSIDE, smoothstep((metresAboveLow - 15) / 45)).map(toLinear);
     const halfWidth = EDGE_HALF_WIDTH + d * EDGE_WIDEN;
     const shade = 1 - INDIRECT_SHARE * (1 - groundAoAt(x, z, halfWidth)[0]);
-    const near = groundColourAt(x, z, halfWidth).map((c) => c * shade);
+    const edge = groundColourAt(x, z, halfWidth);
+    const soil = d > 0 ? smoothstep(((edge[0] - edge[1]) / (edge[0] + edge[1] + edge[2] + 1e-6) - SOIL_RATIO_FROM) / (SOIL_RATIO_TO - SOIL_RATIO_FROM)) : 0;
+    const near = mix(edge.map((c) => c * shade), far, soil);
     return mix(near, far, smoothstep(d / colourFeather)).map((c) => Math.round(Math.min(1, c) * 255));
   };
 
