@@ -22,7 +22,8 @@ node --test src/campusModelAsset.test.mjs
 |---|---|
 | `stages/sources.mjs` | uni.glb scene, heightfield, building footprints, GeoJSON layers, land cover |
 | `stages/buildings.mjs` | building selection, floor/height corrections, facade looks and cells, tower masses, roof colours and solar panels from the orthophoto, building meshes and nodes |
-| `stages/ground.mjs` | procedural ground layer (land cover, ground features from `osm-ground.json`), the orthophoto laid over it, ground material, Topography chunks, crosswalk stripes |
+| `stages/markings.mjs` | road markings: the photo detections of `data/photo/markings.geojson` checked against the photo and the surveyed ground, estimated crossings where canopy hides the paint, and the `Road_Markings` decal mesh on the Topography triangles (see Road markings) |
+| `stages/ground.mjs` | procedural ground layer (land cover, ground features from `osm-ground.json`), the orthophoto laid over it (photo paint under the markings suppressed), ground material, Topography chunks and the surface the markings lie on (`topographySurface`) |
 | `stages/trees.mjs` | `placeTrees` (placement masks, CHMv2-driven placement; runs before the ground) and `buildTrees` (species geometry, instanced tree nodes) |
 | `lib/geometry.mjs` | plan-view ring helpers (area, centroid, point-in-ring, cleaning) |
 | `lib/ortho.mjs` | the VWorld z19 mosaic in `data/ortho/` and its Web Mercator frame |
@@ -44,8 +45,9 @@ node --test src/campusModelAsset.test.mjs
 | `data/lod4-facades.json` | per SCNU footprint: the VWorld LOD4 models over it, their facade palette, wall height and roof levels with outlines (fetch/lod4Facades.mjs) |
 | `data/osm-ground.json` | ground features painted into the texture (see below) |
 | `docs/assets/data/road_zones_wgs84.geojson` | asphalt road surfaces |
-| `docs/assets/data/walkways_wgs84.geojson` | paved walkways |
-| `docs/assets/data/crosswalks_wgs84.geojson` | crosswalk stripes |
+| `docs/assets/data/walkways_wgs84.geojson` | A003 sidewalk outlines (closed rings along kerb and back edge, some open lines): paved areas and kerbs |
+| `docs/assets/data/crosswalks_wgs84.geojson` | digitised crosswalk polygons: only where a crossing the photo shows no zebra for gets estimated bars |
+| `data/photo/markings.geojson` | painted road markings traced from the NGII 2025 orthophoto (see `data/photo/README.md`): the `Road_Markings` mesh |
 
 `fetch/ortho.mjs` (also run by `fetch-sources.mjs`) caches the z19 WMTS tiles over EXTENT in `.cache/`
 (ignored by git) and writes them, unresampled, into the committed mosaic `data/ortho/`. VWorld data is
@@ -61,16 +63,16 @@ never written to any output.
 |---|---|---|---|
 | `osm` | OpenStreetMap `api.openstreetmap.org/api/0.6/map` for the bbox (split into quadrants if the API refuses the area): `leisure=stadium/track/pitch/sports_centre/playground`, `sport=*`, surface `amenity=parking`, `area:highway`, `highway=pedestrian` + `area=yes`, `place=square`, `natural=water`, `landuse=basin` | ODbL 1.0, © OpenStreetMap contributors | ponds (water with a stone rim), plazas (2 m pavers), parking (asphalt with 2.5 x 5 m bay lines); pitches only where no MCEE outline covers them; the stadium selects the track outline |
 | `facilities` | MCEE `lv3_2025y` class 141 (문화·체육·휴양시설) polygons, same WFS and cache as the land cover | KOGL Type 1 | the running track (8 lanes of 1.22 m with lane lines, red D-zones, football pitch with markings) fitted to the outline inside the OSM stadium; courts and the plaza's oval lawn where a label applies |
-| `supplements` | project-authored | - | surface labels (which MCEE outline is the basketball, futsal, multi or tennis court, or the oval lawn), estimated circles for the red roundabout of the central intersection and the plaza fountain, which neither source maps, a `reclass` that paints the OSM pond west of the stadium (way 367126960, a sunken lawn on current imagery) as lawn, and three estimated rows of car-park bays along the access road west of the stadium (no `amenity=parking` there in OSM) |
+| `supplements` | project-authored | - | surface labels (which MCEE outline is the basketball, futsal, multi or tennis court, or the oval lawn), circles for the red roundabout of the central intersection (estimated centre, radius 10.7 m fitted to its painted rim on the NGII 2025 orthophoto) and the plaza fountain (estimated), which neither source maps, a `reclass` that paints the OSM pond west of the stadium (way 367126960, a sunken lawn on current imagery) as lawn, and three estimated rows of car-park bays along the access road west of the stadium (no `amenity=parking` there in OSM) |
 
 The supplement positions and sizes are estimates. Replace them once OSM maps those features.
 
 `osm.lines` (same OSM licence) holds open ways for the arterial east of the campus (Jungang-ro, outside the
 measured road zones): `arterial` centrelines (`highway=trunk/primary/secondary`), `connector` side roads that
-share a node with an arterial, and marked `crossing` ways. The ground stage paints the arterial as asphalt
-between the nearest measured A003 walkways on each side, with an estimated marking layout (yellow centre line,
-dashed lanes every 3.25 m); junction mouths are traced until they meet a road zone; marked crossings on that
-asphalt become 4 m zebra crossings in the `Crosswalks` mesh (width estimated).
+share a node with an arterial, and marked `crossing` ways. The ground stage paints the arterial as plain asphalt
+between the nearest measured A003 walkways on each side; junction mouths are traced until they meet a road zone.
+Its lane lines, centre lines and crossings are the photo's own (see Road markings). The OSM crossing ways lie up
+to 3 m off the painted zebras at the main gate, so they only decide where an estimated crossing goes.
 
 ### Orthophoto ground (`lib/orthoGround.mjs`)
 
@@ -81,8 +83,16 @@ features) is still painted, at the same resolution, and every pixel records the 
 as (natural ground, light paving, asphalt, painted sports surfaces, off-campus lots). The photo replaces it
 everywhere except where the photo would double what the model draws itself:
 
-- under every modelled footprint plus a margin of 0.6 m + 3 % of the building's height (roof edges and
-  facades lean outward in the photo);
+- under every road marking the model draws (`stages/markings.mjs`), plus 0.3 m: the photo's own paint is refilled
+  from the photo around it (normalised box means at 2-32 px) before anything else reads the photo, so no paint
+  shows twice;
+- under every modelled footprint plus a margin of 0.6 m + 3 % of the building's height, swept along the relief
+  lean of the photo: the mosaic joins two flight strips, so roofs are displaced from their footprints by up to
+  about 0.3 m per metre of height (south in the north of the campus, north in the south) with the facade in
+  between. For every part at least 4 m tall the roof outline is searched in the photo (the offset within
+  0.34 x height with the strongest brightness step across the outline, kept when it beats the median offset by
+  25 %), and the footprint swept to that offset is masked; towers sweep with their own height. The build logs the
+  offsets (median 0.225 m per metre; BLD_D4 8.5 m at 29 m);
 - under a modelled tree crown (+0.4 m) in the open, and wherever the photo shows vegetation on a surface
   painted as paving or asphalt (street trees over roads, walkways and plazas, where the model has no tree).
   Inside groves (crowns cover at least 60 % of the ground within 8 m) the photo canopy stays, so the gaps
@@ -282,9 +292,50 @@ covers gets no proxy. That node keeps its own label. Records under 12 m² are no
   mesh are filtered out), textured with the VWorld z19 orthophoto at 0.2465 m per texel, with the procedural
   layer (land cover, roads, walkways, curbs and the ground features above) filling in under buildings and
   tree crowns (see Orthophoto ground).
-- `Crosswalks`: zebra stripes from the crosswalk polygons.
+- `Road_Markings`: the painted road markings the orthophoto shows, one decal mesh on the terrain (see Road markings).
 - `Trees_*`: instanced broadleaf, round and pine trees placed over CHMv2 canopy (see Trees above),
   kept off buildings, roads and walkways.
+
+## Road markings (`stages/markings.mjs`)
+
+`data/photo/markings.geojson` lists the painted markings detected in the NGII 2025 orthophoto, the same photograph
+as the ground texture (registered to it within 5 mm; method, hand checks and recall in `data/photo/README.md`).
+`loadMarkings` turns them into plan-view pieces before the ground is painted, so the ground stage can suppress the
+photo's own paint under them, and `buildMarkings` lays the pieces on the terrain after it:
+
+| Detection | Drawn as |
+|---|---|
+| `zebra_bar` | each bar at its detected centre and length, along its crossing's mean axis, 0.50 m wide (estimated; see below). A crossing whose bars are fused to a painted frame (`fused_frame`) is its outline polygon |
+| lines (`lane_line_*`, `edge_line`, `centre_line_yellow`, `parking_line`) | stroked 0.15 m wide; `double` yellow centre lines as two 0.15 m lines 0.15 m either side of the detected centreline; `dotted` guide lines as their dots |
+| `arrow`, `text`, `hatch`, `parking_line` polygons | the detected polygon (the painted shape; the kind labels are often wrong) |
+| `other` | left out: about half are car roofs, kerbs, fences and roof edges |
+
+The bar width is below the photo's resolution. Folding the bar profiles of 25 crossings over the 0.903 m period,
+the second harmonic shows the bars wider than the gaps in 73-92 % of them; the duty of 0.52-0.58 gives 0.47-0.52 m
+bars, drawn at 0.50 m with 0.40 m gaps.
+
+A detection is left out when its centroid lies inside a modelled building or an A003 sidewalk, when a polygon is
+mostly surrounded by vegetation, when the photo shows a cast shadow beside it on the side away from the morning sun
+(azimuth 92.5°, elevation 62°: cars and walls cast one, paint does not), and, for the line kinds the detection's
+hand check found least reliable (solid lane, edge and centre lines), when it lies off the road (road zones, OSM
+parking, or within 12 m of an OSM arterial or connector). The build logs every count.
+
+Crossings: the OSM crossing ways and the digitised crosswalk polygons never draw stripes. One that matches a
+detected zebra is drawn from the photo alone; the build logs how far the OSM way lies off it. One without a
+detected zebra whose area the photo shows mostly under canopy gets estimated bars (0.903 m period, 0.50 m bars;
+OSM ways 4.57 m wide after REG's translation, polygons trimmed by their median 1.45 m overrun). Under a cast
+shadow alone, or on open asphalt, it stays undrawn: the relit photo keeps whatever paint it has. Estimated pieces
+are counted separately in the build log and in the node extras (`markingsEstimated`).
+
+The mesh: every piece is triangulated and split along the Topography grid lines and diagonals wherever a flat
+triangle would leave the terrain by more than 5 mm, so each triangle lies on one terrain triangle
+(`topographySurface` in `stages/ground.mjs` reproduces the chunk triangulation), 4 cm above it, with the
+terrain's interpolated normals. Packed positions are 14-bit over the campus (about 5 cm steps), so CityModel draws
+the material with a polygon offset; it casts no shadow and takes no pointer raycasts. One `Road_Marking` material
+with a white/yellow palette texture as base colour and emissive map (no vertex colours): the dashboard lights every
+emissive map at night, so the paint stays faintly visible after dark (`KHR_materials_emissive_strength` 0.18).
+One mesh, one draw call; about 16,000 triangles and 38 KB in the packed GLB. Positions, widths and estimated
+crossings are estimates traced from imagery, not survey data.
 
 ## Frame
 

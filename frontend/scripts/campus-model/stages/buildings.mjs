@@ -992,11 +992,6 @@ export async function buildBuildings({ glb, inputs }) {
     );
     console.log(`solar panels (estimated from the orthophoto): ${panelLog.join("; ") || "none"}`);
   }
-  const markingMaterial = glb.addMaterial({
-    name: "Road_Marking",
-    pbrMetallicRoughness: { baseColorFactor: [0.93, 0.93, 0.9, 1], metallicFactor: 0, roughnessFactor: 0.7 },
-  });
-
   // ---- meshes and nodes
   // All primitives are built first so the AO charts can be packed before any TEXCOORD_1 is written.
   const charts = new AoCharts();
@@ -1127,5 +1122,5 @@ export async function buildBuildings({ glb, inputs }) {
   }
   console.log(`SCNU pick proxies: ${proxies.size} (${[...proxies].map(([id, [b]]) => `${id} ${b.label}`).join("; ")})`);
 
-  return { selectableBuildings, campusBuildings, offCampusLots, markingMaterial };
+  return { selectableBuildings, campusBuildings, offCampusLots };
 }

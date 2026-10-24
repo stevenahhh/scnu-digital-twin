@@ -66,7 +66,7 @@ const SUPPLEMENTS = [
   { kind: "surface", note: "multi court (green apron, red court)", at: [127.483195,34.9675667], surface: "multi", headingDegrees: 102 },
   { kind: "surface", note: "tennis courts (테니스장)", at: [127.4831938,34.9671985], surface: "tennis", headingDegrees: 102 },
   { kind: "surface", note: "oval lawn in the central plaza", at: [127.4800853,34.9695595], surface: "lawn" },
-  { kind: "roundabout", note: "central intersection roundabout (estimate)", centre: [127.4806378, 34.9692591], radiusMetres: 11 },
+  { kind: "roundabout", note: "central intersection roundabout (centre estimated; radius 10.7 m fitted to the painted rim on the NGII 2025 orthophoto, 2026-10-24)", centre: [127.4806378, 34.9692591], radiusMetres: 10.7 },
   { kind: "fountain", note: "central plaza fountain (estimate)", centre: [127.4799993, 34.9695797], radiusMetres: 3.6 },
   { kind: "reclass", note: "OSM pond west of the stadium is a sunken lawn (estimate)", osm: "way/367126960", surface: "lawn" },
   { kind: "parking", note: "bays along the building west of the access road (estimate)", axis: [[127.4810799, 34.9688447], [127.4809641, 34.9684043]], depthMetres: 5, bayMetres: 2.5 },

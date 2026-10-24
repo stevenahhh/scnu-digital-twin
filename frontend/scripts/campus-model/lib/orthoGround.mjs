@@ -3,8 +3,15 @@
 // composeOrthoGround() turns the procedural ground raster that stages/ground.mjs paints into the photo ground:
 //   1. The mosaic is resampled bilinearly into the raster's model frame.
 //   2. What the model draws itself must not stay in the photo, or it doubles up:
-//      - buildings: every modelled footprint plus a margin that grows with the building's height, because roof
-//        edges and facades lean outward in the photo (relief displacement; ASSUMED 0.6 m + 3 % of the height);
+//      - road markings: the photo's own paint under every vector marking (stages/markings.mjs) plus `paintMargin`
+//        metres is refilled from the unmasked pixels around it before anything else reads the photo (normalised box
+//        means at growing radii, INPAINT_RADII_PX), so the marking mesh is the only paint there;
+//      - buildings: every modelled footprint plus a margin (0.6 m + 3 % of the height), swept along the building's
+//        relief lean. The photo is a mosaic of two flight strips, so roofs are displaced from their footprints by up
+//        to about 0.3 m per metre of height, south in the north of the campus and north in the south, with the
+//        facade between base and roof. Per building part at least LEAN_MIN_HEIGHT_M tall the roof outline is searched
+//        in the photo (the offset within LEAN_MAX_RATE x height that maximises the brightness step across the
+//        outline) and the mask covers the footprint swept to that offset (towers with their own height);
 //      - crowns: the ground under a modelled tree crown (plus CROWN_MARGIN_M) that stands in the open, and photo
 //        vegetation over the surfaces the generator paints as paving (street trees over roads, walkways and
 //        plazas, where the model has no tree). Inside groves (modelled crowns cover at least GROVE_DENSITY of
@@ -96,6 +103,12 @@ const CLASS_COUNT = 5;
 // ---------------------------------------------------------------- composition
 const BUILDING_MARGIN_M = 0.6;
 const BUILDING_LEAN = 0.03; // metres of margin per metre of height
+const LEAN_MIN_HEIGHT_M = 4;
+const LEAN_MAX_RATE = 0.34; // metres of roof offset per metre of height searched (measured lean: median 0.24, p90 0.31)
+const LEAN_EDGE_PX = 2; // the brightness step is read this far inside and outside the outline
+const LEAN_MIN_CONTRAST = 1.25; // the best offset must beat the median offset of the search disc by this factor
+const INPAINT_RADII_PX = [2, 4, 8, 16, 32];
+const INPAINT_MIN_VALID = 0.15; // share of a window that must be unmasked before its mean fills a pixel
 const CROWN_MARGIN_M = 0.4;
 const GROVE_RADIUS_M = 8;
 const GROVE_DENSITY = 0.6;
@@ -160,6 +173,92 @@ function maskRaster(width, height) {
   };
 }
 
+// Refills the photo pixels marked in `hole` (raster frame, sRGB bytes in place) with the mean of the unmasked pixels
+// around each: the smallest radius of INPAINT_RADII_PX whose window is at least INPAINT_MIN_VALID unmasked wins.
+function refill(photo, width, height, hole) {
+  const size = width * height;
+  const valid = new Float32Array(size);
+  const channels = [new Float32Array(size), new Float32Array(size), new Float32Array(size)];
+  let todo = [];
+  for (let p = 0; p < size; p += 1) {
+    if (hole[p]) {
+      todo.push(p);
+      continue;
+    }
+    valid[p] = 1;
+    for (let ch = 0; ch < 3; ch += 1) channels[ch][p] = photo[p * 3 + ch];
+  }
+  const filled = todo.length;
+  for (const radius of INPAINT_RADII_PX) {
+    if (!todo.length) break;
+    const share = boxMean(valid, width, height, radius);
+    const means = channels.map((values) => boxMean(values, width, height, radius));
+    const next = [];
+    for (const p of todo) {
+      if (share[p] < INPAINT_MIN_VALID) {
+        next.push(p);
+        continue;
+      }
+      for (let ch = 0; ch < 3; ch += 1) photo[p * 3 + ch] = Math.round(means[ch][p] / share[p]);
+    }
+    todo = next;
+  }
+  if (todo.length) throw new Error(`paint suppression: ${todo.length} pixels have no unmasked photo within ${INPAINT_RADII_PX.at(-1)} px`);
+  return filled;
+}
+
+// Roof offset of a building outline in the photo (raster pixels): the integer offset within `radius` that maximises the
+// mean brightness step across the outline, or null when it does not stand out (LEAN_MIN_CONTRAST).
+function roofOffset(ring, radius, luma, width, height) {
+  const area = ring.reduce((sum, p, i) => sum + p[0] * ring[(i + 1) % ring.length][1] - ring[(i + 1) % ring.length][0] * p[1], 0);
+  const sign = area > 0 ? 1 : -1;
+  const inner = [];
+  const outer = [];
+  for (let i = 0; i < ring.length; i += 1) {
+    const [ax, ay] = ring[i];
+    const [bx, by] = ring[(i + 1) % ring.length];
+    const length = Math.hypot(bx - ax, by - ay);
+    if (length < 1) continue;
+    const ex = (bx - ax) / length;
+    const ey = (by - ay) / length;
+    const nx = ey * sign;
+    const ny = -ex * sign;
+    for (let s = 0.5; s < length; s += 2) {
+      const x = ax + ex * s;
+      const y = ay + ey * s;
+      inner.push([Math.round(x - nx * LEAN_EDGE_PX), Math.round(y - ny * LEAN_EDGE_PX)]);
+      outer.push([Math.round(x + nx * LEAN_EDGE_PX), Math.round(y + ny * LEAN_EDGE_PX)]);
+    }
+  }
+  if (inner.length < 8) return null;
+  const scores = [];
+  let best = null;
+  for (let dy = -radius; dy <= radius; dy += 1) {
+    for (let dx = -radius; dx <= radius; dx += 1) {
+      if (dx * dx + dy * dy > radius * radius) continue;
+      let sum = 0;
+      let n = 0;
+      for (let k = 0; k < inner.length; k += 1) {
+        const xi = inner[k][0] + dx;
+        const yi = inner[k][1] + dy;
+        const xo = outer[k][0] + dx;
+        const yo = outer[k][1] + dy;
+        if (xi < 0 || yi < 0 || xo < 0 || yo < 0 || xi >= width || xo >= width || yi >= height || yo >= height) continue;
+        sum += Math.abs(luma[yi * width + xi] - luma[yo * width + xo]);
+        n += 1;
+      }
+      if (n < inner.length / 2) continue;
+      const score = sum / n;
+      scores.push(score);
+      if (!best || score > best.score) best = { dx, dy, score };
+    }
+  }
+  if (!best) return null;
+  scores.sort((a, b) => a - b);
+  const contrast = best.score / scores[scores.length >> 1];
+  return contrast >= LEAN_MIN_CONTRAST ? { dx: best.dx, dy: best.dy, contrast } : null;
+}
+
 // Summed-area table over a (bw x bh) grid; returns sum over the window of radius r blocks around (x, y).
 function boxSummer(values, bw, bh) {
   const table = new Float64Array((bw + 1) * (bh + 1));
@@ -206,9 +305,10 @@ function localMeans(sums, count, bw, bh, local, wide, fallback) {
 
 // ground: the procedural Raster (sRGB), overwritten with the composite. classes[p]: SURFACE_CLASS per pixel.
 // toPixel([x, z]) maps model units to raster pixels and pixelCentre(px, py) back; metresPerPixel and
-// unitsPerPixel give the raster scale. buildings: [{ parts: [{ outer, holes, heightMetres }] }]; crowns:
-// [{ x, z, radius }] in model units. Returns build-log stats.
-export function composeOrthoGround({ ground, classes, ortho, calibration, toPixel, pixelCentre, metresPerPixel, unitsPerPixel, buildings, crowns }) {
+// unitsPerPixel give the raster scale. buildings: [{ parts: [{ outer, holes, heightMetres, tower? }] }]; crowns:
+// [{ x, z, radius }] in model units; paint: rings (model units) of the vector road markings, suppressed in the photo
+// with `paintMargin` metres around them. Returns build-log stats.
+export function composeOrthoGround({ ground, classes, ortho, calibration, toPixel, pixelCentre, metresPerPixel, unitsPerPixel, buildings, crowns, paint = [], paintMargin = 0 }) {
   const { width, height } = ground;
   const size = width * height;
   const pxPerMetre = 1 / metresPerPixel;
@@ -237,13 +337,54 @@ export function composeOrthoGround({ ground, classes, ortho, calibration, toPixe
     }
   }
 
+  // 1b. the photo's paint under the vector road markings
+  let paintPixels = 0;
+  if (paint.length) {
+    const hole = maskRaster(width, height);
+    const marginPx = paintMargin * pxPerMetre;
+    for (const ring of paint) {
+      const pixels = ring.map(toPixel);
+      hole.fill([pixels]);
+      hole.stroke([...pixels, pixels[0]], 2 * marginPx);
+    }
+    paintPixels = refill(photo, width, height, hole.data);
+  }
+
   // 2. masks: kind 0 photo, 1 fill, 2 relit shadow, 3 photo kept inside a grove
   const building = maskRaster(width, height);
-  for (const { parts } of buildings) {
+  const brightness = new Float32Array(size);
+  for (let p = 0; p < size; p += 1) brightness[p] = luma(photo[p * 3], photo[p * 3 + 1], photo[p * 3 + 2]);
+  const leans = [];
+  // The footprint swept to `offset` (pixels): the displaced outline and the quads its edges sweep.
+  const sweep = (pixels, [ox, oy], marginPx) => {
+    const moved = pixels.map(([x, y]) => [x + ox, y + oy]);
+    building.fill([moved]);
+    pixels.forEach((a, i) => {
+      const b = pixels[(i + 1) % pixels.length];
+      building.fill([[a, b, moved[(i + 1) % pixels.length], moved[i]]]);
+    });
+    building.stroke([...moved, moved[0]], 2 * marginPx);
+  };
+  for (const { parts, nodeName, displayName } of buildings) {
     for (const part of parts) {
       const marginPx = (BUILDING_MARGIN_M + BUILDING_LEAN * part.heightMetres) * pxPerMetre;
-      building.fill([part.outer.map(toPixel)]);
+      const pixels = part.outer.map(toPixel);
+      building.fill([pixels]);
       for (const ring of [part.outer, ...part.holes]) building.stroke([...ring, ring[0]].map(toPixel), 2 * marginPx);
+      if (part.heightMetres < LEAN_MIN_HEIGHT_M) continue;
+      const offset = roofOffset(pixels, Math.ceil(LEAN_MAX_RATE * part.heightMetres * pxPerMetre), brightness, width, height);
+      if (!offset) {
+        leans.push({ name: nodeName ?? displayName, height: part.heightMetres, metres: null });
+        continue;
+      }
+      sweep(pixels, [offset.dx, offset.dy], marginPx);
+      leans.push({ name: nodeName ?? displayName, height: part.heightMetres, metres: Math.hypot(offset.dx, offset.dy) * metresPerPixel, offset });
+      const tower = part.tower;
+      if (tower?.hull?.length >= 3 && tower.heightMetres > part.heightMetres) {
+        const scale = tower.heightMetres / part.heightMetres;
+        const towerMargin = (BUILDING_MARGIN_M + BUILDING_LEAN * tower.heightMetres) * pxPerMetre;
+        sweep(tower.hull.map(toPixel), [offset.dx * scale, offset.dy * scale], towerMargin);
+      }
     }
   }
   const crown = maskRaster(width, height);
@@ -409,10 +550,19 @@ export function composeOrthoGround({ ground, classes, ortho, calibration, toPixe
       }
     }
   }
+  const found = leans.filter((lean) => lean.metres !== null);
+  const rates = found.map((lean) => lean.metres / lean.height).sort((a, b) => a - b);
   return {
     width,
     height,
     metresPerPixel,
     shares: Object.fromEntries(Object.entries(counts).map(([key, n]) => [key, n / size])),
+    paintPixels,
+    lean: {
+      searched: leans.length,
+      found: found.length,
+      medianRate: rates.length ? rates[rates.length >> 1] : null,
+      largest: [...found].sort((a, b) => b.metres - a.metres).slice(0, 8).map((lean) => `${lean.name ?? "(campus)"} ${lean.metres.toFixed(1)} m at ${lean.height.toFixed(0)} m`),
+    },
   };
 }

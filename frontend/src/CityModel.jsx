@@ -64,6 +64,12 @@ const FOCUS_CAMERA_OFFSET = new THREE.Vector3(60, 50, 60);
 // 줄기는 수관 그림자에 묻힌다. 둘 다 그림자를 받는 것(receiveShadow)은 유지한다.
 const NON_CASTER_MATERIAL_NAME = "Ground";
 const NON_CASTER_PARENT_PATTERN = /^Trees_.*_trunk/;
+// 노면 표시(Road_Marking, 생성기 stages/markings.mjs): 항공사진에서 찾은 도색을 지형 삼각형 위 4 cm에 얹은 얇은 메시다.
+// 압축된 위치값이 약 5 cm 단위로 반올림되어 지면과 겹칠 수 있으므로 폴리곤 오프셋으로 늘 지면 앞에 그린다.
+// 평평한 도색이라 그림자를 드리우지 않고, 캠퍼스 전체에 걸친 삼각형을 포인터가 움직일 때마다 검사하지 않도록 클릭 판정에서도 뺀다.
+// 밤에는 다른 발광 재질처럼 emissiveMap으로 은은하게 빛난다(밝기는 GLB의 emissive strength).
+const ROAD_MARKING_MATERIAL_NAME = "Road_Marking";
+const ROAD_MARKING_POLYGON_OFFSET = Object.freeze({ factor: -1, units: -4 });
 // 가로등(Lamp_*): 실제 조명 없이 밤에만 머리(Lamp_Head)가 빛나고 바닥 빛 웅덩이(Lamp_Pool)를 가산 합성으로 그린다.
 // 그림자·클릭 대상에서 빼고, 웅덩이는 낮에는 숨겨 드로우콜을 쓰지 않는다. 캠퍼스 안쪽 가로등 위치는 추정값이다.
 const LAMP_MATERIAL_PATTERN = /^Lamp_/;
@@ -403,7 +409,9 @@ export function CityModel({
         return;
       }
 
+      const isRoadMarking = child.material?.name === ROAD_MARKING_MATERIAL_NAME;
       const isNonCaster =
+        isRoadMarking ||
         child.material?.name === NON_CASTER_MATERIAL_NAME ||
         NON_CASTER_PARENT_PATTERN.test(child.parent?.name ?? "") ||
         NON_CASTER_PARENT_PATTERN.test(child.name);
@@ -411,6 +419,12 @@ export function CityModel({
       if (isNonCaster) nonCasterNames.push(child.name);
       child.receiveShadow = true;
       child.material = child.material.clone();
+      if (isRoadMarking) {
+        child.raycast = () => {};
+        child.material.polygonOffset = true;
+        child.material.polygonOffsetFactor = ROAD_MARKING_POLYGON_OFFSET.factor;
+        child.material.polygonOffsetUnits = ROAD_MARKING_POLYGON_OFFSET.units;
+      }
       child.userData.selectableName = getSelectableMeta(child)?.name ?? null;
 
       // 수관 색 보정(lighting/foliage.mjs): 재질 색은 정사영상의 어두운 수관 쪽으로 낮추고, 나무마다 다른 인스턴스 색은

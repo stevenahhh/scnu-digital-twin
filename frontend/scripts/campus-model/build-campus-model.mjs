@@ -6,6 +6,7 @@
 //   - data/ortho/                  VWorld z19 orthophoto mosaic for the ground and roof colours (fetch/ortho.mjs)
 //   - data/cop30.png               Copernicus GLO-30 heights for the outer terrain ring (fetch/terrain.mjs)
 //   - docs/assets/data/*.geojson   road zones, walkways and crosswalks
+//   - data/photo/markings.geojson  road markings traced from the NGII 2025 orthophoto
 //   - data/streetlights.json       real street-lamp positions (fetch/streetlights.mjs)
 // Everything stays in uni.glb's scene frame (see lib/frame.mjs), so CityModel's recentering,
 // the traffic simulation and the BLD_* selection contract keep working unchanged.
@@ -13,7 +14,9 @@
 // This file only sequences the stages (scripts/campus-model/stages/):
 //   sources.mjs   loads the inputs and builds the terrain heightfield
 //   buildings.mjs selects BLD_*/CampusBuildings, their materials, meshes and nodes
-//   ground.mjs    paints the ground texture (orthophoto over the procedural layer), Topography chunks and crosswalk stripes
+//   markings.mjs  road markings from the photo detection (loadMarkings, before the ground, which suppresses the photo's
+//                 own paint under them) and their decal mesh on the Topography triangles (buildMarkings)
+//   ground.mjs    paints the ground texture (orthophoto over the procedural layer) and the Topography chunks
 //   outerTerrain.mjs  the OuterTerrain hill ring around EXTENT, feathered onto Topography's edge
 //   trees.mjs     placement masks and positions (placeTrees, before the ground, which keeps the photo's crowns
 //                 out from under them), species geometry and instanced Trees_* nodes (buildTrees)
@@ -32,6 +35,7 @@ import { GlbBuilder } from "./lib/glb.mjs";
 import { buildBuildings } from "./stages/buildings.mjs";
 import { buildGround } from "./stages/ground.mjs";
 import { buildLights } from "./stages/lights.mjs";
+import { SUPPRESS_MARGIN_M, buildMarkings, describeMarkings, loadMarkings } from "./stages/markings.mjs";
 import { buildOuterTerrain } from "./stages/outerTerrain.mjs";
 import { loadInputs } from "./stages/sources.mjs";
 import { buildTrees, placeTrees } from "./stages/trees.mjs";
@@ -46,9 +50,15 @@ const HEIGHT_STEP = 2;
 const inputs = await loadInputs();
 
 const glb = new GlbBuilder();
-const { selectableBuildings, campusBuildings, offCampusLots, markingMaterial } = await buildBuildings({ glb, inputs });
+const { selectableBuildings, campusBuildings, offCampusLots } = await buildBuildings({ glb, inputs });
 const treePlacement = placeTrees({ inputs, selectableBuildings, campusBuildings, offCampusLots });
-await buildGround({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots, markingMaterial, treeInstances: treePlacement.treeInstances });
+const markings = await loadMarkings({ inputs, buildings: [...selectableBuildings, ...campusBuildings] });
+console.log(describeMarkings(markings));
+const { surface } = await buildGround({
+  glb, inputs, selectableBuildings, campusBuildings, offCampusLots,
+  paint: markings.paint, paintMargin: SUPPRESS_MARGIN_M, treeInstances: treePlacement.treeInstances,
+});
+const markingMesh = buildMarkings({ glb, markings, surface });
 const outerTerrain = await buildOuterTerrain({ glb, inputs });
 const treeInstances = buildTrees({ glb, placement: treePlacement });
 buildLights({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots });
@@ -86,7 +96,8 @@ const treeCount = Object.values(treeInstances).reduce((sum, list) => sum + list.
 console.log(
   `campus-v2.glb: ${(bytes.length / 1048576).toFixed(2)} MiB, ${selectableBuildings.length} BLD nodes, ` +
   `${campusBuildings.length} other campus buildings, ${treeCount} trees ` +
-  `(${Object.entries(treeInstances).map(([k, v]) => `${k} ${v.length}`).join(", ")}), ${inputs.crosswalks.length} crosswalks`,
+  `(${Object.entries(treeInstances).map(([k, v]) => `${k} ${v.length}`).join(", ")}), ${markings.pieces.length} road-marking pieces ` +
+  `(${markingMesh.triangles} triangles, ${markingMesh.vertices} vertices from ${markingMesh.sourceTriangles} before conforming to the terrain)`,
 );
 console.log(
   `OuterTerrain: ${outerTerrain.vertexCount} vertices, ${outerTerrain.triangleCount} triangles ` +
