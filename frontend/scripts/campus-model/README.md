@@ -11,6 +11,18 @@ bun run model:fetch   # refresh data/ (network + VITE_VWORLD_API_KEY in the env 
 node --test src/campusModelAsset.test.mjs
 ```
 
+## Layout
+
+`build-campus-model.mjs` only sequences the stages, in this order:
+
+| File | Role |
+|---|---|
+| `stages/sources.mjs` | uni.glb scene, heightfield, VWorld buildings, GeoJSON layers, land cover |
+| `stages/buildings.mjs` | building selection, facade/roof materials, building meshes and nodes |
+| `stages/ground.mjs` | ground texture, ground material, Topography chunks, crosswalk stripes |
+| `stages/trees.mjs` | species geometry, placement masks, instanced tree nodes |
+| `lib/geometry.mjs` | plan-view ring helpers (area, centroid, point-in-ring, cleaning) |
+
 ## Inputs
 
 | Input | Used for |
