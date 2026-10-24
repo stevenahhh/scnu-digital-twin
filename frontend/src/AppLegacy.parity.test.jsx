@@ -13,6 +13,8 @@ vi.mock("@react-three/drei", () => ({
   OrbitControls: () => null,
   Sky: () => null,
 }));
+vi.mock("./lighting/CampusLighting", () => ({ CAMPUS_CANVAS_GL: {}, CampusLighting: () => null }));
+vi.mock("./lighting/ShadowBaker", () => ({ ShadowBaker: () => null }));
 const sceneMock = vi.hoisted(() => ({ suspend: false, fail: false }));
 vi.mock("./CityModel", () => ({
   // suspend가 켜지면 끝나지 않는 Promise를 던져 Suspense fallback이 계속 떠 있게 한다. fail이 켜지면 오류를 던져 3D 실패 안내를 띄운다.

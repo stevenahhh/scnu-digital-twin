@@ -1,6 +1,6 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Sky } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import {
   AlertTriangle,
   CalendarDays,
@@ -22,6 +22,8 @@ import {
   X,
 } from "lucide-react";
 import { CityModel } from "./CityModel";
+import { CAMPUS_CANVAS_GL, CampusLighting } from "./lighting/CampusLighting";
+import { ShadowBaker } from "./lighting/ShadowBaker";
 import { AccessibleDialog } from "./components/AccessibleDialog";
 import { MicroclimatePanel } from "./components/MicroclimatePanel";
 import { PanelErrorBoundary } from "./components/PanelErrorBoundary";
@@ -636,31 +638,15 @@ export default function App() {
         >
           {/* R3F 래퍼의 기본 overflow: hidden은 스크롤 컨테이너라서, Tab으로 캔버스 밖 라벨에 포커스가 가면
               브라우저가 래퍼를 스크롤해 3D 화면이 밀린 채 남는다. clip은 똑같이 잘라 내되 스크롤되지 않는다. */}
-          <Canvas camera={{ position: [0, 260, 260], fov: 50 }} shadows style={{ overflow: "clip" }}>
+          <Canvas camera={{ position: [0, 260, 260], fov: 50 }} shadows="percentage" gl={CAMPUS_CANVAS_GL} style={{ overflow: "clip" }}>
             <color attach="background" args={[sceneBackground]} />
-            <fog attach="fog" args={[sceneBackground, 450, 800]} />
-            <ambientLight intensity={sunState.visible ? 1.55 : 0.5} />
-            <directionalLight
-              castShadow
-              intensity={sunState.visible ? 2.2 : 0.35}
-              position={sunVector}
-              shadow-mapSize-width={2048}
-              shadow-mapSize-height={2048}
-            />
+            <CampusLighting sunVector={sunVector} sunVisible={sunState.visible} sunAltitude={sunState.altitude} />
             {sunState.visible && (
               <mesh position={sunVector.map(v => v * 100)}>
                 <sphereGeometry args={[10, 32, 32]} />
                 <meshBasicMaterial color="#ffe87c" />
               </mesh>
             )}
-            <Sky
-              distance={450000}
-              sunPosition={sunVector}
-              inclination={sunState.visible ? 0.52 : 0.08}
-              azimuth={0.25}
-              turbidity={8}
-              rayleigh={0.7}
-            />
             <Suspense fallback={<SceneLoadingSignal onChange={setIsSceneLoading} />}>
               <CityModel
                 position={[0, 0, 0]}
@@ -675,6 +661,7 @@ export default function App() {
                 occluderRef={panelRef}
               />
               <CampusTrafficSimulation />
+              <ShadowBaker sunKey={sunVector.join(",")} />
             </Suspense>
             <OrbitControls
               ref={orbitControlsRef}
