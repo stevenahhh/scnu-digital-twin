@@ -1,5 +1,6 @@
-// Land-cover classes stored in data/landcover.png (one byte per scene unit), classified from
-// VWorld summer satellite imagery.
+// Land-cover classes stored in data/landcover.png (one byte per scene unit). Classes come from the
+// MCEE level-3 land-cover map (fetch/landcover.mjs), with CHMv2 canopy height marking extra TREE
+// cells (fetch/canopy.mjs).
 export const LANDCOVER = Object.freeze({
   PAVED: 0,
   GRASS: 1,
@@ -7,37 +8,34 @@ export const LANDCOVER = Object.freeze({
   SOIL: 3,
   TRACK: 4,
   COURT: 5,
+  WATER: 6,
 });
 
-// pixels: array of [r, g, b] samples inside one cell.
-export function classifyCell(pixels) {
-  if (pixels.length === 0) return LANDCOVER.PAVED;
-  let r = 0;
-  let g = 0;
-  let b = 0;
-  let lumSum = 0;
-  let lumSq = 0;
-  for (const [pr, pg, pb] of pixels) {
-    r += pr;
-    g += pg;
-    b += pb;
-    const lum = 0.299 * pr + 0.587 * pg + 0.114 * pb;
-    lumSum += lum;
-    lumSq += lum * lum;
-  }
-  const n = pixels.length;
-  r /= n;
-  g /= n;
-  b /= n;
-  const lum = lumSum / n;
-  const texture = Math.sqrt(Math.max(0, lumSq / n - lum * lum));
-  const exg = 2 * g - r - b;
+// Canopy at or above this height (metres, CHMv2) counts as TREE whatever the MCEE class says.
+export const CANOPY_TREE_METRES = 3;
 
-  if (r > 120 && r - g > 35 && r - b > 30) return LANDCOVER.TRACK;
-  if (b - r > 70 && b > 140) return LANDCOVER.COURT;
-  if (exg > 18 && g > r * 1.15 && lum < 66) return LANDCOVER.TREE;
-  if (exg > 32 && g > r * 1.2 && texture < 16) return LANDCOVER.GRASS;
-  if (exg > 30 && g > r * 1.2) return LANDCOVER.TREE;
-  if (r - b > 25 && r >= g && lum > 80 && lum < 200) return LANDCOVER.SOIL;
-  return LANDCOVER.PAVED;
+// MCEE sports grounds (l3 622) at least this large are running tracks/fields; smaller ones are courts.
+export const TRACK_MIN_AREA_M2 = 3000;
+
+// MCEE level-3 code (l3_code) -> landcover class. areaM2 splits 622 into TRACK or COURT.
+export function classFromMcee(l3Code, areaM2) {
+  switch (String(l3Code)) {
+    case "311":
+    case "321":
+    case "331":
+      return LANDCOVER.TREE;
+    case "423":
+      return LANDCOVER.GRASS;
+    case "622":
+      return areaM2 >= TRACK_MIN_AREA_M2 ? LANDCOVER.TRACK : LANDCOVER.COURT;
+    case "154":
+      return LANDCOVER.PAVED;
+    case "711":
+    case "712":
+      return LANDCOVER.WATER;
+    case "623":
+      return LANDCOVER.SOIL;
+    default:
+      return LANDCOVER.GRASS;
+  }
 }

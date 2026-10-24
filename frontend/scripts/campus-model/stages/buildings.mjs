@@ -1,5 +1,5 @@
-// Building stage: match uni.glb's BLD_* nodes to VWorld footprints, pick campus/off-campus
-// buildings, build their facade/roof materials and meshes, and emit the nodes.
+// Building stage: match uni.glb's BLD_* nodes to the footprints in data/gis-buildings.json, pick
+// campus/off-campus buildings, build their facade/roof materials and meshes, and emit the nodes.
 import { metres } from "../lib/frame.mjs";
 import { MeshData } from "../lib/meshData.mjs";
 import { mulberry32 } from "../lib/raster.mjs";
@@ -14,10 +14,36 @@ const PARAPET = metres(0.9);
 
 const jpeg = async (png, quality = 86) => new Bun.Image(png).jpeg({ quality }).toBuffer();
 
-export const heightOf = (part) => {
-  const fromFloors = part.floors > 0 ? part.floors * 3.5 + 0.8 : 0;
-  return Math.max(part.heightMetres || 0, fromFloors, 3.5);
-};
+// Storey heights: medians of height/floors over the building register records in the campus bbox,
+// 4.39 m for SCNU buildings (n = 26) and 3.76 m for all buildings (n = 153).
+const SCNU_STOREY = 4.4;
+const STOREY = 3.8;
+const MIN_HEIGHT = 3.5;
+const SCNU_NAME = /^순천대학교/;
+
+// Roof-slab height in metres (the 0.9 m parapet is added on top as geometry, see PARAPET) and where it
+// came from, or null when the record has neither a height nor a floor count. A source height is used
+// when it gives 2.5-6.5 m per storey (or when floors are unknown); otherwise floors x storey height.
+export function heightOf(part, isSCNU) {
+  const floors = part.floors || 0;
+  const height = part.heightMetres || 0;
+  if (height > 0 && (!floors || (height / floors >= 2.5 && height / floors <= 6.5))) {
+    return { heightMetres: Math.max(height, MIN_HEIGHT), heightSource: "source height" };
+  }
+  if (floors > 0) {
+    const storey = isSCNU ? SCNU_STOREY : STOREY;
+    return { heightMetres: Math.max(floors * storey, MIN_HEIGHT), heightSource: `estimated: ${floors} floors x ${storey} m` };
+  }
+  return null;
+}
+
+// Campus buildings with neither a height nor a floor count anywhere: an assumed storey count by type
+// (dormitories are mid-rise, other SCNU buildings low-rise) instead of a one-storey shed.
+function assumedHeight(name, isSCNU) {
+  const floors = /생활관|기숙사|관사/.test(name) ? 6 : isSCNU ? 3 : 1;
+  const storey = isSCNU ? SCNU_STOREY : STOREY;
+  return { heightMetres: Math.max(floors * storey, MIN_HEIGHT), heightSource: `assumed: ${floors} floors x ${storey} m (no floor data)` };
+}
 
 export function styleFor(name, fallback, seed) {
   if (/온실/.test(name)) return STYLE.GREENHOUSE;
@@ -134,60 +160,108 @@ function buildingPrimitives(building, seed, { heightAt, facadeMaterials, roofMat
 
 // ---------------------------------------------------------------- stage
 export async function buildBuildings({ glb, inputs }) {
-  const { source, vworld, roadZones, heightAt } = inputs;
+  const { source, footprints, roadZones, heightAt } = inputs;
 
   // ---- building selection
-  const vworldParts = vworld.map((b, index) => {
-    const [outer, ...holes] = b.polygons[0].map(toModelRing);
+  const footprintParts = footprints.flatMap((b, index) => b.polygons.map((polygon) => {
+    const [outer, ...holes] = polygon.map(toModelRing);
     return {
       index,
       name: b.name,
       floors: b.floors,
       heightMetres: b.heightMetres,
+      footprintSource: b.footprintSource,
+      floorsSource: b.floorsSource,
       outer,
       holes,
       centroid: ringCentroid(outer),
       areaMetres: Math.abs(ringArea(outer)) / UNIT_AREA,
     };
+  }));
+
+  const bldNodes = source.scene.children.flatMap((object, index) => {
+    const rawName = source.rawNames[index];
+    return object.isMesh && rawName.startsWith("BLD_") ? [{ object, index, rawName, footprint: meshFootprint(object) }] : [];
   });
+  // A footprint belongs to an outline when its centroid lies inside it, or (for U- and L-shaped
+  // buildings whose centroid falls outside the outline itself) within 5 m of the outline's centroid.
+  const matchesIn = (outline) => {
+    const [cx, cz] = ringCentroid(outline);
+    return footprintParts.filter((part) => !isGroundFeature(part) &&
+      (pointInRing(part.centroid, outline) || Math.hypot(part.centroid[0] - cx, part.centroid[1] - cz) < metres(5)));
+  };
+  const areaOf = (ring) => Math.abs(ringArea(ring)) / UNIT_AREA;
+  // An outline is replaced only when the source footprints cover the uni.glb outline to within 15 %.
+  const areaAgrees = (matches, outline) => {
+    const ratio = matches.reduce((sum, part) => sum + part.areaMetres, 0) / areaOf(outline);
+    return ratio >= 0.85 && ratio <= 1.15;
+  };
+
+  // Footprints traced from imagery (OSM) sit a few metres off the cadastral frame uni.glb uses. The
+  // median centroid offset over one-to-one matches of similar area moves them onto uni.glb (and onto
+  // the roads); for cadastral footprints it comes out close to zero.
+  {
+    const deltas = bldNodes.flatMap(({ footprint }) => {
+      const matches = matchesIn(footprint.outer);
+      if (matches.length !== 1 || !areaAgrees(matches, footprint.outer)) return [];
+      const [cx, cz] = ringCentroid(footprint.outer);
+      return [[cx - matches[0].centroid[0], cz - matches[0].centroid[1]]];
+    });
+    const median = (values) => values.sort((a, b) => a - b)[values.length >> 1];
+    const [dx, dz] = deltas.length >= 5 ? [median(deltas.map((d) => d[0])), median(deltas.map((d) => d[1]))] : [0, 0];
+    const move = (ring) => ring.map(([x, z]) => [x + dx, z + dz]);
+    for (const part of footprintParts) {
+      part.outer = move(part.outer);
+      part.holes = part.holes.map(move);
+      part.centroid = ringCentroid(part.outer);
+    }
+    console.log(`footprint shift onto uni.glb: ${(dx / metres(1)).toFixed(2)} m east, ${(-dz / metres(1)).toFixed(2)} m north (median of ${deltas.length} matches)`);
+  }
 
   const used = new Set();
   const selectableBuildings = [];
+  const heightLog = [];
 
-  source.scene.children.forEach((object, index) => {
-    const rawName = source.rawNames[index];
-    if (!object.isMesh || !rawName.startsWith("BLD_")) return;
-    const footprint = meshFootprint(object);
+  for (const { object, index, rawName, footprint } of bldNodes) {
     const materialName = [].concat(object.material)[0]?.name ?? "";
     const fallbackStyle = /Brick/.test(materialName) ? STYLE.BRICK : /Glass/.test(materialName) ? STYLE.GREENHOUSE : null;
-    const matches = vworldParts.filter((part) => !isGroundFeature(part) && pointInRing(part.centroid, footprint.outer));
+    const inside = matchesIn(footprint.outer);
+    // No footprint centred inside the outline: take floors from one whose outline contains its centre.
+    const outlineCentre = ringCentroid(footprint.outer);
+    const matches = inside.length ? inside : footprintParts.filter((part) => !isGroundFeature(part) && pointInRing(outlineCentre, part.outer));
     matches.forEach((part) => used.add(part.index));
-    const oldArea = Math.abs(ringArea(footprint.outer)) / UNIT_AREA;
-    const matchedArea = matches.reduce((sum, part) => sum + part.areaMetres, 0);
     const sourceHeight = (footprint.topY - footprint.minY) / metres(1);
+    const kept = { heightMetres: Math.max(sourceHeight, MIN_HEIGHT), heightSource: "uni.glb outline height" };
     const name = matches.map((part) => part.name).find(Boolean) ?? "";
     // BLD_D4 anchors the traffic frame through its bounding box, so it keeps the original outline.
-    const keepOutline = rawName === "BLD_D4" || matches.length === 0 || matchedArea < oldArea * 0.8;
+    const keepOutline = rawName === "BLD_D4" || !inside.length || !areaAgrees(inside, footprint.outer);
+    const heights = matches.map((part) => heightOf(part, true)).filter(Boolean);
     const parts = keepOutline
       ? [{
         outer: footprint.outer,
         holes: footprint.holes,
-        heightMetres: matches.length ? Math.max(...matches.map(heightOf)) : Math.max(sourceHeight, 3.5),
-        floors: matches.length ? Math.max(...matches.map((m) => m.floors)) : Math.round(sourceHeight / 3.6),
+        ...(heights.length ? heights.reduce((a, b) => (b.heightMetres > a.heightMetres ? b : a)) : kept),
+        floors: Math.max(0, ...matches.map((m) => m.floors || 0)) || Math.round(sourceHeight / 3.6),
       }]
-      : matches.map((part) => ({ outer: part.outer, holes: part.holes, heightMetres: heightOf(part), floors: part.floors }));
+      : matches.map((part) => ({ outer: part.outer, holes: part.holes, ...(heightOf(part, true) ?? kept), floors: part.floors }));
+    const footprintSource = keepOutline ? "uni.glb outline" : [...new Set(matches.map((m) => m.footprintSource))].join(", ");
+    const floorsSource = [...new Set(matches.map((m) => m.floorsSource).filter((s) => s && s !== "none"))].join(", ") || "none";
+    heightLog.push({ label: rawName, footprintSource, floorsSource, heightSource: parts[0].heightSource, heightMetres: parts[0].heightMetres });
     selectableBuildings.push({
       nodeName: rawName,
       displayName: name,
       style: styleFor(name, fallbackStyle, index),
+      footprintSource,
+      floorsSource,
+      heightSource: parts[0].heightSource,
       parts,
     });
-  });
+  }
 
   // Campus area: inside the hull of known campus buildings and close to a campus road zone.
   const campusPoints = [
     ...selectableBuildings.flatMap((b) => b.parts.map((p) => ringCentroid(p.outer))),
-    ...vworldParts.filter((p) => /순천대/.test(p.name)).map((p) => p.centroid),
+    ...footprintParts.filter((p) => /순천대/.test(p.name)).map((p) => p.centroid),
   ];
   const campusHull = (() => {
     const pts = [...campusPoints].sort((p, q) => p[0] - q[0] || p[1] - q[1]);
@@ -217,19 +291,29 @@ export async function buildBuildings({ glb, inputs }) {
   const campusBuildings = [];
   // Off-campus buildings are not modelled; their lots are painted as plain ground and kept free of trees.
   const offCampusLots = [];
-  for (const part of vworldParts) {
+  for (const part of footprintParts) {
     if (used.has(part.index) || isGroundFeature(part)) continue;
     const named = /순천대/.test(part.name);
     if (part.areaMetres < 12 || (!named && !(pointInRing(part.centroid, campusHull) && distanceToRoads(part.centroid) < metres(14)))) {
       offCampusLots.push(part.outer);
       continue;
     }
+    const isSCNU = SCNU_NAME.test(part.name) || bldNodes.some(({ footprint }) => part.outer.some((p) => pointInRing(p, footprint.outer)));
+    const height = heightOf(part, isSCNU) ?? assumedHeight(part.name, isSCNU);
+    heightLog.push({ label: part.name || "(unnamed)", footprintSource: part.footprintSource, floorsSource: part.floorsSource, ...height });
     campusBuildings.push({
       displayName: part.name,
       style: styleFor(part.name, null, part.index),
-      parts: [{ outer: part.outer, holes: part.holes, heightMetres: heightOf(part), floors: part.floors }],
+      parts: [{ outer: part.outer, holes: part.holes, ...height, floors: part.floors }],
     });
   }
+
+  for (const entry of heightLog) {
+    console.log(`building ${entry.label}: footprint ${entry.footprintSource}; floors ${entry.floorsSource}; height ${entry.heightMetres.toFixed(1)} m (${entry.heightSource})`);
+  }
+  const bySource = Object.groupBy(heightLog, (entry) => entry.heightSource.replace(/: .*/, ""));
+  console.log(`height sources: ${Object.entries(bySource).map(([key, list]) => `${key} ${list.length}`).join(", ")}; ` +
+    `floor rule used for ${(bySource.estimated ?? []).length} buildings: ${(bySource.estimated ?? []).map((e) => e.label).join(", ")}`);
 
   // ---- materials
   const facadeSources = {
@@ -276,7 +360,16 @@ export async function buildBuildings({ glb, inputs }) {
   const primitivesContext = { heightAt, facadeMaterials, roofMaterial, parapetMaterial, equipmentMaterial };
   selectableBuildings.forEach((building, index) => {
     const mesh = glb.addMesh(building.nodeName, buildingPrimitives(building, 1000 + index, primitivesContext));
-    glb.addNode({ name: building.nodeName, mesh, extras: { displayName: building.displayName, source: "VWorld LT_C_BLDGINFO" } }, { root: true });
+    glb.addNode({
+      name: building.nodeName,
+      mesh,
+      extras: {
+        displayName: building.displayName,
+        source: building.footprintSource,
+        floorsSource: building.floorsSource,
+        heightSource: building.heightSource,
+      },
+    }, { root: true });
   });
 
   {

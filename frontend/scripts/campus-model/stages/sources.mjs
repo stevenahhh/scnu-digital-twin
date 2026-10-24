@@ -1,5 +1,5 @@
-// Source inputs for the campus model: uni.glb (scene, building ids, terrain), VWorld building
-// footprints, land cover raster and the GeoJSON road/walkway/crosswalk layers.
+// Source inputs for the campus model: uni.glb (scene, building ids, terrain), building footprints
+// (data/gis-buildings.json), land cover raster and the GeoJSON road/walkway/crosswalk layers.
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import * as THREE from "three";
@@ -239,11 +239,22 @@ async function readGeoJson(name) {
 const polygonsOf = (geometry) => (geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates);
 export const toModelRing = (ring) => cleanRing(ring.map(([lon, lat]) => geoToModel(lon, lat)));
 
+// data/gis-buildings.json is the shipped footprint file. A local checkout that still has the old
+// data/vworld-buildings.json (never committed again) may build from it until the new file is fetched.
+async function loadBuildingFootprints() {
+  const gis = Bun.file(path.join(SCRIPT, "data", "gis-buildings.json"));
+  if (await gis.exists()) return JSON.parse(await gis.text()).buildings;
+  const legacy = Bun.file(path.join(SCRIPT, "data", "vworld-buildings.json"));
+  if (!(await legacy.exists())) throw new Error("data/gis-buildings.json is missing; run bun run model:fetch");
+  console.warn("data/gis-buildings.json is missing; using the local-only data/vworld-buildings.json (do not commit it)");
+  return JSON.parse(await legacy.text()).buildings.map((b) => ({ ...b, undergroundFloors: b.basementFloors ?? 0, footprintSource: "VWorld LT_C_BLDGINFO (local dev only)", floorsSource: "VWorld LT_C_BLDGINFO" }));
+}
+
 export async function loadInputs() {
   const source = await loadSourceModel();
   const topography = source.scene.getObjectByName("Topography");
   const heightAt = buildHeightfield(topography);
-  const vworld = JSON.parse(await Bun.file(path.join(SCRIPT, "data", "vworld-buildings.json")).text()).buildings;
+  const footprints = await loadBuildingFootprints();
   const roadZones = (await readGeoJson("road_zones_wgs84.geojson")).features.flatMap((f) =>
     polygonsOf(f.geometry).map((polygon) => polygon.map(toModelRing)),
   );
@@ -259,5 +270,5 @@ export async function loadInputs() {
     const row = Math.max(0, Math.min(landcoverPng.height - 1, Math.floor(z - EXTENT.minZ)));
     return landcoverPng.pixels[row * landcoverPng.width + col];
   };
-  return { source, heightAt, vworld, roadZones, walkways, crosswalks, landcoverPng, landcoverAt };
+  return { source, heightAt, footprints, roadZones, walkways, crosswalks, landcoverPng, landcoverAt };
 }
