@@ -6,6 +6,8 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { EXTENT, geoToModel, metres } from "../lib/frame.mjs";
 import { cleanRing, pointInRing, ringArea } from "../lib/geometry.mjs";
+import { loadOrtho } from "../lib/ortho.mjs";
+import { photoCalibration } from "../lib/orthoGround.mjs";
 import { decodePng } from "../lib/png.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -270,5 +272,8 @@ export async function loadInputs() {
     const row = Math.max(0, Math.min(landcoverPng.height - 1, Math.floor(z - EXTENT.minZ)));
     return landcoverPng.pixels[row * landcoverPng.width + col];
   };
-  return { source, heightAt, footprints, roadZones, walkways, crosswalks, landcoverPng, landcoverAt };
+  // VWorld z19 orthophoto (data/ortho/, stored under consent D1) for the ground albedo and the roof colours.
+  const ortho = await loadOrtho();
+  const orthoCalibration = photoCalibration(ortho);
+  return { source, heightAt, footprints, roadZones, walkways, crosswalks, landcoverPng, landcoverAt, ortho, orthoCalibration };
 }

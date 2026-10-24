@@ -2,14 +2,16 @@
 // campus/off-campus buildings, build their facade/roof materials and meshes, and emit the nodes.
 // Every facade/roof primitive also gets TEXCOORD_1 into one ambient-occlusion atlas (see aoLayout
 // below); data/ao-buildings.png, baked from the raw GLB by bake/bake-ao.mjs, becomes their
-// occlusionTexture when its layout hash matches this build's.
+// occlusionTexture when its layout hash matches this build's. Roof colours and rooftop solar panels come from
+// the VWorld z19 orthophoto (lib/roofPhoto.mjs; estimates, not measurements).
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { geoToModel, metres } from "../lib/frame.mjs";
 import { MeshData } from "../lib/meshData.mjs";
 import { mulberry32 } from "../lib/raster.mjs";
-import { FACADE_BAYS, FACADE_FLOORS, ROOF_METRES, beigePunchedFacade, brickPunchedFacade, concreteRibbonFacade, glassCurtainFacade, greenhouseFacade, roofTexture } from "../lib/textures.mjs";
+import { EQUIPMENT_MODULE_UV, EQUIPMENT_PLAIN_UV, FACADE_BAYS, FACADE_FLOORS, ROOF_METRES, beigePunchedFacade, brickPunchedFacade, concreteRibbonFacade, equipmentAtlas, glassCurtainFacade, greenhouseFacade, roofTexture } from "../lib/textures.mjs";
+import { MODULE_DEPTH_M, MODULE_TILT_DEGREES, panelModules, sampleRoofPhoto } from "../lib/roofPhoto.mjs";
 import { pointInRing, ringArea, ringCentroid, segmentDistance } from "../lib/geometry.mjs";
 import { meshFootprint, toModelRing } from "./sources.mjs";
 
@@ -60,11 +62,14 @@ export function styleFor(name, fallback, seed) {
 
 const isGroundFeature = (part) => part.areaMetres > 8000 && part.floors <= 1;
 
-// ---------------------------------------------------------------- roof colours (open data only)
-// data/osm-roof-tags.json (fetch/roofTags.mjs) lists the OSM buildings with roof/building colour tags.
-// A roof takes a colour only from a tag on a footprint it matches: roof:colour, else a green-roof tag
-// (roof:garden=yes or a vegetated roof:material), else building:colour. Everything else keeps the
-// light membrane. Colours are never sampled from imagery.
+// ---------------------------------------------------------------- roof colours
+// A roof takes the median colour of its footprint in the VWorld z19 orthophoto (lib/roofPhoto.mjs: shadow,
+// tree-crown and solar-panel samples left out, calibrated to an albedo estimate like the ground). Where the photo
+// gives none (outside the mosaic, hidden by crowns or shadow), data/osm-roof-tags.json (fetch/roofTags.mjs)
+// can still colour it from a tag on a footprint it matches: roof:colour, else a green-roof tag (roof:garden=yes
+// or a vegetated roof:material), else building:colour. Everything else keeps the light membrane. BLD_* roofs get
+// a Roof_Membrane variant per colour (each node has its own roof primitive anyway); the merged CampusBuildings
+// roof keeps one material and carries the colours as COLOR_0, so no roof adds a draw call.
 const ROOF_TAGS = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "osm-roof-tags.json");
 const NAMED_COLOURS = {
   white: [255, 255, 255], whitesmoke: [245, 245, 245], silver: [192, 192, 192], lightgrey: [211, 211, 211],
@@ -296,14 +301,19 @@ function minEdgeDistance(point, rings) {
   return best;
 }
 
+// Photovoltaic modules (lib/roofPhoto.mjs): MODULE_LIFT (0.35 m, ASSUMED rack height) above the roof slab, tilted
+// towards the south; a top face on the module region of the Roof_Equipment atlas and a plain back face.
+const MODULE_LIFT = metres(0.35);
+const MODULE_RISE = metres(MODULE_DEPTH_M * Math.sin((MODULE_TILT_DEGREES * Math.PI) / 180));
+
 function buildingPrimitives(building, seed, { heightAt, facadeMaterials, roofMaterial, parapetMaterial, equipmentMaterial, charts }) {
   const walls = aoMesh();
-  const roof = aoMesh();
+  const roof = aoMesh(building.roofColour ? { colors: true } : undefined);
   // Parapet and equipment carry an (unused) TEXCOORD_0 so that their TEXCOORD_1 is a valid set index.
   const parapet = aoMesh();
   const equipment = aoMesh();
   const rng = mulberry32(seed);
-  for (const part of building.parts) {
+  for (const [partIndex, part] of building.parts.entries()) {
     if (!part.outer || part.outer.length < 3) continue;
     const samples = [...part.outer, ringCentroid(part.outer)].map(([x, z]) => heightAt(x, z));
     const ground = Math.min(...samples);
@@ -315,7 +325,7 @@ function buildingPrimitives(building, seed, { heightAt, facadeMaterials, roofMat
     addWalls(walls, part.outer, true, base, ground, top, floorHeight, charts);
     part.holes.forEach((hole) => addWalls(walls, hole, false, base, ground, top, floorHeight, charts));
     const roofFrom = roof.vertexCount;
-    roof.horizontalPolygon(part.outer, part.holes, top, { uvScale: 1 / metres(ROOF_METRES) });
+    roof.horizontalPolygon(part.outer, part.holes, top, { uvScale: 1 / metres(ROOF_METRES), color: building.roofColour });
     // Per-part quarter-turn and offset of the roof texture, so neighbouring roofs do not share one
     // grid. Its own generator keeps rng (equipment layout, hence the AO layout hash) unchanged.
     const uvRng = mulberry32(seed * 7919 + roofFrom);
@@ -328,6 +338,8 @@ function buildingPrimitives(building, seed, { heightAt, facadeMaterials, roofMat
       roof.uvs[k + 1] = rv + ov;
     }
     charts.addPlanar(roof, roofFrom);
+    const roofChart = charts.charts.length - 1;
+    const roofMin = [Math.min(...part.outer.map((p) => p[0])), Math.min(...part.outer.map((p) => p[1]))];
     if (building.style !== STYLE.GREENHOUSE) {
       for (const ring of [part.outer, ...part.holes]) {
         addWalls(parapet, ring, true, top, top, top + PARAPET, 1, charts);
@@ -338,6 +350,7 @@ function buildingPrimitives(building, seed, { heightAt, facadeMaterials, roofMat
       const angle = dominantAngle(part.outer);
       const xs = part.outer.map((p) => p[0]);
       const zs = part.outer.map((p) => p[1]);
+      const boxesFrom = equipment.vertexCount;
       for (let placed = 0, tries = 0; placed < units && tries < 80; tries += 1) {
         const sx = metres(2.5 + rng() * 4);
         const sz = metres(2 + rng() * 3);
@@ -347,6 +360,18 @@ function buildingPrimitives(building, seed, { heightAt, facadeMaterials, roofMat
         if (minEdgeDistance([cx, cz], [part.outer, ...part.holes]) < Math.hypot(sx, sz) / 2 + metres(1.2)) continue;
         addBox(equipment, cx, cz, sx, sz, top, top + metres(1.4 + rng() * 1.6), angle, charts);
         placed += 1;
+      }
+      // Plant samples the plain half of the Roof_Equipment atlas.
+      for (let k = boxesFrom * 2; k < equipment.uvs.length; k += 2) [equipment.uvs[k], equipment.uvs[k + 1]] = EQUIPMENT_PLAIN_UV;
+      // Modules reuse the roof's AO chart (they sit just above it), so the AO layout does not change.
+      for (const corners of building.panelModules?.[partIndex] ?? []) {
+        const low = top + MODULE_LIFT;
+        const [lowA, lowB, highB, highA] = corners.map(([x, z], k) => [x, k < 2 ? low : low + MODULE_RISE, z]);
+        const up = (lowB[0] - lowA[0]) * (highA[2] - lowA[2]) - (lowB[2] - lowA[2]) * (highA[0] - lowA[0]) < 0;
+        const face = up ? [lowA, lowB, highB, highA] : [lowB, lowA, highA, highB];
+        equipment.quad(...face, EQUIPMENT_MODULE_UV);
+        equipment.quad(...[...face].reverse(), [EQUIPMENT_PLAIN_UV, EQUIPMENT_PLAIN_UV, EQUIPMENT_PLAIN_UV, EQUIPMENT_PLAIN_UV]);
+        for (const p of [...face, ...[...face].reverse()]) equipment.ao.push(p[0] - roofMin[0], p[2] - roofMin[1], roofChart);
       }
     }
   }
@@ -579,44 +604,88 @@ export async function buildBuildings({ glb, inputs }) {
     // Single-sided: the parapet already has an inward and an outward quad per edge. Double-sided, the two
     // coincident quads z-fight, which shows once their baked AO differs (open sky outside, roof inside).
   });
+  // Rooftop plant and photovoltaic modules: one material, both looks in its atlas (lib/textures.mjs).
+  const atlas = equipmentAtlas();
   const equipmentMaterial = glb.addMaterial({
     name: "Roof_Equipment",
-    pbrMetallicRoughness: { baseColorFactor: [0.6, 0.63, 0.66, 1], metallicFactor: 0.4, roughnessFactor: 0.6 },
+    pbrMetallicRoughness: {
+      baseColorTexture: { index: glb.addTexture(atlas.color, "image/png") },
+      metallicRoughnessTexture: { index: glb.addTexture(atlas.metalRough, "image/png"), texCoord: 0 },
+      metallicFactor: 1,
+      roughnessFactor: 1,
+    },
   });
-  // Tagged roof colours: one Roof_Membrane variant per distinct colour, created only when used.
+  // Roof colours: orthophoto first, then OSM tags (see roof colours above); solar panels from the photo.
+  // PANEL_REVIEW lists roofs whose photo modules were checked by eye on the z19 mosaic and rejected.
+  const PANEL_REVIEW = new Map([
+    ["BLD_D4", "glazed skylights read as modules on z19; no PV modelled"],
+    ["BLD_D2", "blue skylights and glazed wing ends read as modules on z19; no PV modelled"],
+    ["BLD_B3", "the strip along the north parapet is facade and gutter shade on z19, not PV"],
+  ]);
+  const variants = new Map();
   {
+    const photoLog = [];
+    const panelLog = [];
+    const surfaces = {};
+    for (const building of [...selectableBuildings, ...campusBuildings]) {
+      const label = building.nodeName ?? (building.displayName || "(unnamed)");
+      const photo = sampleRoofPhoto(inputs.ortho, inputs.orthoCalibration, building.parts);
+      const review = PANEL_REVIEW.get(building.nodeName);
+      building.panelModules = building.parts.map((part) =>
+        (photo.status === "photo" && !review && building.style !== STYLE.GREENHOUSE ? panelModules(inputs.ortho, part, part.heightMetres).modules : []));
+      const modules = building.panelModules.reduce((n, list) => n + list.length, 0);
+      if (modules) panelLog.push(`${label} ${modules}`);
+      if (review) panelLog.push(`${label} none (${review})`);
+      if (photo.status === "photo") {
+        building.roofColourRgb = photo.rgb;
+        building.roofSurface = photo.surface;
+        building.roofColourSource = `VWorld z19 orthophoto, median of ${photo.counts.roof} roof samples (estimated)`;
+        surfaces[photo.surface] = (surfaces[photo.surface] ?? 0) + 1;
+      } else {
+        photoLog.push(`${label}: ${photo.status}`);
+      }
+      building.solarPanelModules = modules;
+    }
+    // OSM tags for roofs the photo could not colour
     const file = existsSync(ROOF_TAGS) ? JSON.parse(readFileSync(ROOF_TAGS, "utf8")) : null;
-    if (!file) console.warn(`roof colours: ${path.basename(ROOF_TAGS)} missing (bun scripts/campus-model/fetch/roofTags.mjs); all roofs membrane`);
+    if (!file) console.warn(`roof colours: ${path.basename(ROOF_TAGS)} missing (bun scripts/campus-model/fetch/roofTags.mjs)`);
     const tagged = (file?.buildings ?? []).map((entry) => {
       const [x, z] = geoToModel(...entry.centre);
       return { ...entry, point: [x + footprintShift[0], z + footprintShift[1]], colour: roofColourFromTags(entry.tags) };
     });
-    const variants = new Map();
     const applied = [];
     for (const building of [...selectableBuildings, ...campusBuildings]) {
+      if (building.roofColourRgb) continue;
       const match = tagged.find((entry) => building.parts.some((part) => pointInRing(entry.point, part.outer) &&
         !part.holes.some((hole) => pointInRing(entry.point, hole))));
-      if (!match) continue;
-      const label = building.nodeName ?? (building.displayName || "(unnamed)");
-      if (!match.colour) {
-        console.log(`roof colour ${label}: OSM ${match.osm} tags ${JSON.stringify(match.tags)} give no colour; membrane kept`);
-        continue;
-      }
-      const key = match.colour.rgb.join(",");
+      if (!match?.colour) continue;
+      building.roofColourRgb = match.colour.rgb;
+      building.roofColourSource = `OSM ${match.osm} ${match.colour.tag}`;
+      applied.push(`${building.nodeName ?? (building.displayName || "(unnamed)")} <- ${building.roofColourSource}`);
+    }
+    const hex = (rgb) => rgb.map((c) => c.toString(16).padStart(2, "0")).join("");
+    for (const building of selectableBuildings) {
+      if (!building.roofColourRgb) continue;
+      const key = hex(building.roofColourRgb);
       if (!variants.has(key)) {
         const base = glb.json.materials[roofMaterial];
         variants.set(key, glb.addMaterial({
           ...base,
-          name: `Roof_Tagged_${match.colour.rgb.map((c) => c.toString(16).padStart(2, "0")).join("")}`,
-          pbrMetallicRoughness: { ...base.pbrMetallicRoughness, baseColorFactor: roofFactor(match.colour.rgb) },
+          name: `Roof_${building.roofColourSource.startsWith("OSM") ? "Tagged" : "Photo"}_${key}`,
+          pbrMetallicRoughness: { ...base.pbrMetallicRoughness, baseColorFactor: roofFactor(building.roofColourRgb) },
         }));
       }
       building.roofMaterial = variants.get(key);
-      building.roofColourSource = `OSM ${match.osm} ${match.colour.tag}`;
-      applied.push(`${label} <- ${building.roofColourSource}`);
     }
-    console.log(`roof colours: ${applied.length} buildings tagged (${tagged.length} tagged of ${file?.scanned ?? 0} OSM buildings scanned)` +
-      `${applied.length ? `: ${applied.join("; ")}` : "; all roofs keep the light membrane"}`);
+    for (const building of campusBuildings) {
+      const factor = building.roofColourRgb ? roofFactor(building.roofColourRgb) : [1, 1, 1, 1];
+      building.roofColour = factor.map((v) => Math.round(v * 255));
+    }
+    console.log(
+      `roof colours: ${Object.values(surfaces).reduce((a, b) => a + b, 0)} from the orthophoto (${Object.entries(surfaces).map(([k, n]) => `${k} ${n}`).join(", ")}), ` +
+      `${applied.length} from OSM tags${applied.length ? ` (${applied.join("; ")})` : ""}, ${variants.size} BLD roof variants; no photo colour: ${photoLog.join("; ") || "none"}`,
+    );
+    console.log(`solar panels (estimated from the orthophoto): ${panelLog.join("; ") || "none"}`);
   }
   const markingMaterial = glb.addMaterial({
     name: "Road_Marking",
@@ -631,9 +700,9 @@ export async function buildBuildings({ glb, inputs }) {
   const merged = new Map();
   campusBuildings.forEach((building, index) => {
     buildingPrimitives(building, 5000 + index, primitivesContext).forEach((primitive) => {
-      if (!merged.has(primitive.material)) merged.set(primitive.material, aoMesh());
+      if (!merged.has(primitive.material)) merged.set(primitive.material, aoMesh(primitive.colors ? { colors: true } : undefined));
       const target = merged.get(primitive.material);
-      target.append({ positions: primitive.positions, normals: primitive.normals, uvs: primitive.uvs, indices: primitive.indices });
+      target.append({ positions: primitive.positions, normals: primitive.normals, uvs: primitive.uvs, colors: primitive.colors, indices: primitive.indices });
       for (const value of primitive.ao) target.ao.push(value);
     });
   });
@@ -668,7 +737,7 @@ export async function buildBuildings({ glb, inputs }) {
     const bakedFor = atlasLayoutHash(atlas);
     if (bakedFor === aoLayout.hash) {
       const texture = glb.addTexture(atlas, "image/png", { repeat: false });
-      for (const material of [...Object.values(facadeMaterials), roofMaterial, parapetMaterial, equipmentMaterial]) {
+      for (const material of [...Object.values(facadeMaterials), roofMaterial, ...variants.values(), parapetMaterial, equipmentMaterial]) {
         glb.json.materials[material].occlusionTexture = { index: texture, texCoord: 1 };
       }
       console.log(`building AO atlas: ${path.basename(AO_ATLAS)} (${atlas.length} B) attached as occlusionTexture`);
@@ -693,6 +762,9 @@ export async function buildBuildings({ glb, inputs }) {
         floorsSource: building.floorsSource,
         heightSource: building.heightSource,
         ...(building.roofColourSource ? { roofColourSource: building.roofColourSource } : {}),
+        ...(building.roofColourRgb ? { roofColour: `#${building.roofColourRgb.map((c) => c.toString(16).padStart(2, "0")).join("")}` } : {}),
+        ...(building.roofSurface ? { roofSurface: building.roofSurface } : {}),
+        ...(building.solarPanelModules ? { solarPanelModules: building.solarPanelModules, solarPanelSource: "estimated from the VWorld z19 orthophoto" } : {}),
       },
     }, { root: true });
   });

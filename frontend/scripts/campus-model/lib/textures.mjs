@@ -344,6 +344,47 @@ function periodicNoise(x, y, scale, size, seed) {
   return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy;
 }
 
+// Rooftop plant and photovoltaic modules share the Roof_Equipment material (stages/buildings.mjs), so a roof with
+// panels keeps its draw count. The left half of this atlas is the plant's plain grey-blue metal (the former
+// Roof_Equipment factors: linear 0.60 / 0.63 / 0.66, roughness 0.6, metal 0.4), the right half one 60-cell module
+// (6 x 10 dark blue cells, light cell gaps, an aluminium frame; ASSUMED look). The packed metallic-roughness map
+// (G = roughness, B = metal) gives the cells a glass-like 0.2 / 0 and the frame 0.35 / 0.9. UVs:
+// EQUIPMENT_PLAIN_UV for plant, EQUIPMENT_MODULE_UV for a module's top face.
+export const EQUIPMENT_PLAIN_UV = [0.25, 0.5];
+export const EQUIPMENT_MODULE_UV = [[0.505, 0.99], [0.995, 0.99], [0.995, 0.01], [0.505, 0.01]];
+export function equipmentAtlas() {
+  const width = 256;
+  const height = 128;
+  const color = new Raster(width, height);
+  const metalRough = new Raster(width, height);
+  const frac = (v) => v - Math.floor(v);
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      if (x < width / 2) {
+        color.set(x, y, [203, 207, 211]);
+        metalRough.set(x, y, [0, 153, 102]);
+        continue;
+      }
+      const u = x - width / 2;
+      const frame = u < 4 || u > 123 || y < 4 || y > 123;
+      const cu = ((u - 4) / 120) * 6;
+      const cv = ((y - 4) / 120) * 10;
+      const gap = frac(cu) < 0.06 || frac(cu) > 0.94 || frac(cv) < 0.05 || frac(cv) > 0.95;
+      if (frame) {
+        color.set(x, y, [176, 180, 186]);
+        metalRough.set(x, y, [0, 89, 230]);
+      } else if (gap) {
+        color.set(x, y, [118, 126, 138]);
+        metalRough.set(x, y, [0, 90, 60]);
+      } else {
+        color.set(x, y, tint([26, 36, 64], 0.94 + hashNoise(Math.floor(cu), Math.floor(cv), 41) * 0.12));
+        metalRough.set(x, y, [0, 51, 0]);
+      }
+    }
+  }
+  return { color: encodePng(width, height, 3, color.data), metalRough: encodePng(width, height, 3, metalRough.data) };
+}
+
 // Light grey single-ply membrane with raised lap seams every 2.5 m. The satellite comparison
 // (qa/compare-G1) shows SCNU roofs light grey to white, so the base is near white; the baked AO
 // atlas and the lighting darken it on screen. Against visible tiling from above: the texture spans

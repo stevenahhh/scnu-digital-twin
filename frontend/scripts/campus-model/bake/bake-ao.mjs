@@ -71,7 +71,9 @@ function collect(glb, { occluders, materials, targetNodes }) {
     const { index, parent, inherited } = visit.pop();
     const node = json.nodes[index];
     const { s, t } = composeTransform(parent, node);
-    const isOccluder = inherited || occluders(node.name);
+    // Pick proxies (BLD_SCNU_*, extras.pickProxy) are invisible selection prisms that enclose a campus roof up to
+    // its parapet top; as occluders they would black out the very roofs they stand on.
+    const isOccluder = (inherited || occluders(node.name)) && !node.extras?.pickProxy;
     for (const child of [...(node.children ?? [])].reverse()) visit.push({ index: child, parent: { s, t }, inherited: isOccluder });
     if (node.mesh === undefined) continue;
     const transform = (x, y, z) => [x * s[0] + t[0], y * s[1] + t[1], z * s[2] + t[2]];

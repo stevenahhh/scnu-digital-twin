@@ -18,7 +18,8 @@ fragment and nothing per frame. The values come from a geometric simulation of t
 2. `bake-ao.mjs` reads the raw GLB, rasterises the target primitives in UV1 space and, for each
    covered texel, casts 64 stratified cosine-weighted hemisphere rays of 3 m. The occluders are the
    buildings and the terrain (`BLD_*`, `CampusBuildings`, `Topography_*`, `OuterTerrain`); the trees are
-   left out. The rays are cast with three-mesh-bvh on all cores but one. The texel value is the
+   left out, and so are pick proxies (nodes with `extras.pickProxy`, the invisible `BLD_SCNU_*` prisms):
+   they enclose the campus roofs up to the parapet top, and as occluders they baked those roofs black. The rays are cast with three-mesh-bvh on all cores but one. The texel value is the
    unoccluded fraction. After one 3 x 3 smoothing pass inside the charts and a 4 px dilation into the
    gutters, the script writes a grey PNG whose `tEXt` chunk carries the layout hash.
 3. On the next build, `stages/buildings.mjs` attaches the PNG as `occlusionTexture { texCoord: 1 }`

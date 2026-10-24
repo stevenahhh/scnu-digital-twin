@@ -9,6 +9,7 @@ cd frontend
 bun run model:build   # regenerate public/campus-v2.glb from committed inputs (no network)
 bun run model:fetch   # refresh data/ (network; the land cover step needs VITE_VWORLD_API_KEY in the env or frontend/.env)
 bun scripts/campus-model/fetch/osm.mjs   # refresh data/osm-ground.json (network, no key)
+bun scripts/campus-model/fetch/ortho.mjs # refresh data/ortho/ (VWorld z19 mosaic; the key is needed only for tiles missing from .cache/)
 node --test src/campusModelAsset.test.mjs
 ```
 
@@ -19,10 +20,13 @@ node --test src/campusModelAsset.test.mjs
 | File | Role |
 |---|---|
 | `stages/sources.mjs` | uni.glb scene, heightfield, building footprints, GeoJSON layers, land cover |
-| `stages/buildings.mjs` | building selection, facade/roof materials, building meshes and nodes |
-| `stages/ground.mjs` | ground texture (land cover, ground features from `osm-ground.json`), ground material, Topography chunks, crosswalk stripes |
-| `stages/trees.mjs` | species geometry, placement masks, CHMv2-driven placement, instanced tree nodes |
+| `stages/buildings.mjs` | building selection, facade/roof materials, roof colours and solar panels from the orthophoto, building meshes and nodes |
+| `stages/ground.mjs` | procedural ground layer (land cover, ground features from `osm-ground.json`), the orthophoto laid over it, ground material, Topography chunks, crosswalk stripes |
+| `stages/trees.mjs` | `placeTrees` (placement masks, CHMv2-driven placement; runs before the ground) and `buildTrees` (species geometry, instanced tree nodes) |
 | `lib/geometry.mjs` | plan-view ring helpers (area, centroid, point-in-ring, cleaning) |
+| `lib/ortho.mjs` | the VWorld z19 mosaic in `data/ortho/` and its Web Mercator frame |
+| `lib/orthoGround.mjs` | orthophoto ground composition and the photo colour calibration (see Orthophoto ground) |
+| `lib/roofPhoto.mjs` | roof colour sampling and solar-panel detection (see Roof colours and solar panels) |
 
 ## Inputs
 
@@ -30,15 +34,19 @@ node --test src/campusModelAsset.test.mjs
 |---|---|
 | `public/uni.glb` | terrain heights, original `BLD_*` node names and outlines |
 | `data/gis-buildings.json` | building footprints (lon/lat) with `name`, `floors`, `undergroundFloors`, `heightMetres`, `areaMetres`, `usability`, `structure`, `approvalDate`, `pnu`, and per record `footprintSource` / `floorsSource` |
-| `data/landcover.png` | ground classes (paved, grass, tree, soil, track, court) per scene unit, classified from VWorld satellite tiles |
+| `data/landcover.png` | ground classes (paved, grass, tree, soil, track, court) per scene unit, from MCEE land cover and CHMv2 canopy |
+| `data/ortho/vworld-satellite-z19.jpg` + `.json` | VWorld Satellite z19 tile mosaic (Web Mercator, 3584 x 2816 px, about 0.245 m/px) and its tile range: ground albedo, roof colours, solar panels |
 | `data/chm.png` | CHMv2 canopy height (8-bit metres); tree placement and crown sizes |
 | `data/osm-ground.json` | ground features painted into the texture (see below) |
 | `docs/assets/data/road_zones_wgs84.geojson` | asphalt road surfaces |
 | `docs/assets/data/walkways_wgs84.geojson` | paved walkways |
 | `docs/assets/data/crosswalks_wgs84.geojson` | crosswalk stripes |
 
-`fetch-sources.mjs` caches satellite tiles in `.cache/` (ignored by git); only the derived
-`landcover.png` is committed. The API key is read at run time and never written to any output.
+`fetch/ortho.mjs` (also run by `fetch-sources.mjs`) caches the z19 WMTS tiles over EXTENT in `.cache/`
+(ignored by git) and writes them, unresampled, into the committed mosaic `data/ortho/`. VWorld data is
+stored and baked by the project owner's consent of 2026-10-24 (D1 in `docs/data-licences.md`; attribution
+`출처: 브이월드`, also written to the GLB's `asset.extras.orthophoto`). The API key is read at run time and
+never written to any output.
 
 ### Ground features (`data/osm-ground.json`)
 
@@ -58,6 +66,59 @@ share a node with an arterial, and marked `crossing` ways. The ground stage pain
 between the nearest measured A003 walkways on each side, with an estimated marking layout (yellow centre line,
 dashed lanes every 3.25 m); junction mouths are traced until they meet a road zone; marked crossings on that
 asphalt become 4 m zebra crossings in the `Crosswalks` mesh (width estimated).
+
+### Orthophoto ground (`lib/orthoGround.mjs`)
+
+The `Topography` texture is the VWorld z19 orthophoto resampled into the scene frame: 3276 x 2457 px over
+EXTENT, 0.2465 m per texel (`PX` 6.5 in `stages/ground.mjs`; `pack.mjs` caps textures at 4096 px so it
+keeps that size, about 0.76 MB as WebP). The procedural ground above (land cover, walkways, roads, ground
+features) is still painted, at the same resolution, and every pixel records the surface class it was painted
+as (natural ground, light paving, asphalt, painted sports surfaces, off-campus lots). The photo replaces it
+everywhere except where the photo would double what the model draws itself:
+
+- under every modelled footprint plus a margin of 0.6 m + 3 % of the building's height (roof edges and
+  facades lean outward in the photo);
+- under a modelled tree crown (+0.4 m) in the open, and wherever the photo shows vegetation on a surface
+  painted as paving or asphalt (street trees over roads, walkways and plazas, where the model has no tree).
+  Inside groves (crowns cover at least 60 % of the ground within 8 m) the photo canopy stays, so the gaps
+  between modelled crowns look like canopy;
+- the photo's cast shadows on open ground (taken in the morning, shadows fall west-north-west; the
+  dashboard casts its own for its clock) are relit, grown by 2 px over the penumbra.
+
+A filled pixel takes the local mean photo colour of its surface class around it (5 m, then 20 m, then the
+whole raster) times the procedural layer's luminance detail; a relit shadow pixel takes the same lit colour
+times the photo's own high-pass luminance, so markings inside a shadow survive. Edges are feathered over
+2 px. Off-campus lots keep the photo. Colour: a white balance from bright, nearly grey pixels (membranes
+read cyan in the mosaic) and a lift of the linear value by the power 1/1.5 towards albedo (the mosaic
+crushes mid-tones; lawn 0.17, asphalt 0.20, paving 0.27, white membranes 0.77 after the lift). The mean
+albedo of the photo ground (linear 0.25) matches the procedural ground it replaces (0.24). The build logs
+the share of each fill. All of it is an estimate derived from imagery, not a measured albedo.
+
+### Roof colours and solar panels (`lib/roofPhoto.mjs`)
+
+Every modelled roof is sampled in the orthophoto every 0.25 m inside its footprint, 1 m clear of the
+outline. Samples in cast shadow, on photovoltaic modules (dark slate blue in this mosaic) or under tree
+crowns (green and rough, unlike a smooth painted green roof) are left out; the roof colour is the
+per-channel median of the rest, calibrated like the ground. A roof with fewer than 30 % usable samples
+(hidden by crowns, in shadow, outside the mosaic) keeps the light membrane unless an OSM roof tag
+(`data/osm-roof-tags.json`) colours it. `BLD_*` roofs get one `Roof_Photo_<rgb>` variant of `Roof_Membrane`
+each (every node has its own roof primitive anyway); the merged `CampusBuildings` roof keeps one material
+and carries the colours as `COLOR_0`, so no roof adds a draw call. Node extras carry `roofColour`,
+`roofSurface` (light, grey, dark, green) and `roofColourSource`.
+
+Solar panels: the panel samples of each footprint part are gridded along its longest edge (1.5 m + 3 % of
+the height clear of the outline, which drops glazed facades leaning in), closed and opened by one cell and
+split into components; a component counts as an array when it is at least 12 m2, 1.2 m thick, fills 45 %
+of its box, borders shadow on at most 30 % of its rim (deep-shadow fringes read slate blue too), and is
+clearly blue, or textured by a module grid, or one of at least three rows. Arrays are tiled with 1.0 x
+1.65 m modules (ASSUMED 60-cell size) tilted 15 degrees towards the roof axis closest to south, 0.35 m above
+the slab. Modules live in the `Roof_Equipment` primitive: its material is an atlas (`equipmentAtlas` in
+`lib/textures.mjs`) whose left half is the old plain plant metal and whose right half is a module (dark
+blue cells, roughness 0.2; aluminium frame), so panels add no draw call; they reuse the roof's AO chart.
+`PANEL_REVIEW` in `stages/buildings.mjs` lists roofs whose detected modules were rejected by eye on the
+mosaic (BLD_D4 and BLD_D2: glazed skylights and wing ends; BLD_B3: facade and gutter shade along the north
+parapet). Node extras carry `solarPanelModules`. Module positions, counts, tilt
+and size are estimates.
 
 ### Trees
 
@@ -160,14 +221,16 @@ covers gets no proxy. That node keeps its own label. Records under 12 m² are no
 
 - `BLD_*` nodes: every building id from `uni.glb`, rebuilt with estimated heights from floor
   counts (see above), procedural facades (concrete ribbon windows, brick, beige render, glass curtain wall,
-  greenhouse), flat roofs with parapets and rooftop equipment, and window glow used at night.
+  greenhouse), flat roofs with parapets, rooftop equipment, roof colours from the orthophoto and the solar
+  panels it shows (estimates), and window glow used at night.
   `BLD_D4` keeps its original outline because its bounding-box centre anchors the traffic frame.
 - `CampusBuildings`: other university buildings from the footprint file (named `순천대학교`, or
   unnamed ones inside the campus next to a campus road). Off-campus buildings are left out; their lots are
   painted as plain ground.
 - `Topography`: chunked terrain using `uni.glb`'s ground heights (structures in the old terrain
-  mesh are filtered out), textured with land cover, roads, walkways, curbs and the ground features above (track,
-  courts, plazas, parking, ponds, roundabout).
+  mesh are filtered out), textured with the VWorld z19 orthophoto at 0.2465 m per texel, with the procedural
+  layer (land cover, roads, walkways, curbs and the ground features above) filling in under buildings and
+  tree crowns (see Orthophoto ground).
 - `Crosswalks`: zebra stripes from the crosswalk polygons.
 - `Trees_*`: instanced broadleaf, round and pine trees placed over CHMv2 canopy (see Trees above),
   kept off buildings, roads and walkways.

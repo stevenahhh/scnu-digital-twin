@@ -122,59 +122,15 @@ function lumpyCrown(radius, height, seed) {
   return g;
 }
 
-export function buildTrees({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots }) {
+// Placement runs before the ground stage, which needs the crown footprints (stages/ground.mjs keeps the
+// orthophoto's own crowns out from under them); buildTrees emits the instanced nodes from it later.
+export function placeTrees({ inputs, selectableBuildings, campusBuildings, offCampusLots }) {
   const { heightAt, roadZones } = inputs;
   const walkways = JSON.parse(readFileSync(WALKWAYS, "utf8")).features.flatMap(({ geometry, properties }) => {
     const width = Number(properties?.widt) > 0 ? Number(properties.widt) : WALKWAY_FALLBACK_WIDTH_M;
     const lines = geometry.type === "LineString" ? [geometry.coordinates] : geometry.coordinates;
     return lines.map((line) => ({ width, line: line.map(([lon, lat]) => geoToModel(lon, lat)) }));
   });
-
-  // ---- materials
-  const crownMaterial = glb.addMaterial({ name: "Tree_Crown", pbrMetallicRoughness: { baseColorFactor: [0.3, 0.5, 0.22, 1], metallicFactor: 0, roughnessFactor: 0.9 } });
-  const pineMaterial = glb.addMaterial({ name: "Tree_Pine", pbrMetallicRoughness: { baseColorFactor: [0.16, 0.34, 0.2, 1], metallicFactor: 0, roughnessFactor: 0.9 } });
-  const trunkMaterial = glb.addMaterial({ name: "Tree_Trunk", pbrMetallicRoughness: { baseColorFactor: [0.36, 0.26, 0.18, 1], metallicFactor: 0, roughnessFactor: 0.95 } });
-
-  // Species geometry in metres; instances scale by metres(1) * size.
-  const species = {
-    broadleaf: [
-      geometryPrimitive(new THREE.CylinderGeometry(0.16, 0.24, 3.2, 6).translate(0, 1.6, 0), trunkMaterial),
-      geometryPrimitive(lumpyCrown(2.6, 4.6, 7).translate(0, 4.8, 0), crownMaterial),
-    ],
-    roundleaf: [
-      geometryPrimitive(new THREE.CylinderGeometry(0.14, 0.2, 2.2, 6).translate(0, 1.1, 0), trunkMaterial),
-      geometryPrimitive(lumpyCrown(2.2, 3.4, 19).translate(0, 3.5, 0), crownMaterial),
-    ],
-    pine: [
-      geometryPrimitive(new THREE.CylinderGeometry(0.14, 0.22, 3, 6).translate(0, 1.5, 0), trunkMaterial),
-      geometryPrimitive(
-        (() => {
-          const lower = new THREE.ConeGeometry(2.1, 4.2, 7).translate(0, 4.2, 0).toNonIndexed();
-          const upper = new THREE.ConeGeometry(1.5, 3.6, 7).translate(0, 6.6, 0).toNonIndexed();
-          const merged = new THREE.BufferGeometry();
-          merged.setAttribute("position", new THREE.Float32BufferAttribute([...lower.attributes.position.array, ...upper.attributes.position.array], 3));
-          return merged;
-        })(),
-        pineMaterial,
-      ),
-    ],
-  };
-
-  for (const parts of Object.values(species)) bakeVertexAo(parts);
-  {
-    const mean = (c) => c.reduce((sum, value, i) => (i % 4 === 0 ? sum + value : sum), 0) / (c.length / 4) / 255;
-    console.log(`trees: vertex AO (${AO_RAYS} rays, ${AO_RAY_METRES} m, floor ${AO_FLOOR}) mean shade ${Object.entries(species).map(([k, [trunk, crown]]) => `${k} trunk ${mean(trunk.colors).toFixed(2)} crown ${mean(crown.colors).toFixed(2)}`).join(", ")}`);
-  }
-
-  // Archetype top (m at scale 1): highest crown vertex of each species geometry (DERIVED).
-  const archetypeTopMetres = Object.fromEntries(
-    Object.entries(species).map(([kind, parts]) => {
-      const p = parts[1].positions;
-      let top = 0;
-      for (let i = 1; i < p.length; i += 3) top = Math.max(top, p[i]);
-      return [kind, top];
-    }),
-  );
 
   // ---- blocked / near-campus masks
   const blocked = new Uint8Array(WIDTH * DEPTH);
@@ -336,11 +292,64 @@ export function buildTrees({ glb, inputs, selectableBuildings, campusBuildings, 
       const size = metres(radius / SCENE_UNITS_PER_METRE / ARCHETYPE_CROWN_METRES[kind]);
       const chmTop = crownTopMetres(x, z, radius / SCENE_UNITS_PER_METRE);
       const heightMetres = chmTop <= 2 ? LOW_CHM_FALLBACK_M : Math.min(TREE_HEIGHT_RANGE_M[1], Math.max(TREE_HEIGHT_RANGE_M[0], chmTop));
-      const sizeY = metres(heightMetres / archetypeTopMetres[kind]);
       const angle = rng() * Math.PI * 2;
       const green = 0.82 + rng() * 0.36;
-      treeInstances[kind].push({ x, y: heightAt(x, z) - metres(0.2), z, size, sizeY, heightMetres, zone, radius, angle, tint: [green * (0.92 + rng() * 0.16), green, green * (0.9 + rng() * 0.2)] });
+      treeInstances[kind].push({ x, y: heightAt(x, z) - metres(0.2), z, size, heightMetres, zone, radius, angle, tint: [green * (0.92 + rng() * 0.16), green, green * (0.9 + rng() * 0.2)] });
     }
+  }
+  return { treeInstances, canopyCells, coveredCanopy };
+}
+
+export function buildTrees({ glb, placement }) {
+  const { treeInstances, canopyCells, coveredCanopy } = placement;
+
+  // ---- materials
+  const crownMaterial = glb.addMaterial({ name: "Tree_Crown", pbrMetallicRoughness: { baseColorFactor: [0.3, 0.5, 0.22, 1], metallicFactor: 0, roughnessFactor: 0.9 } });
+  const pineMaterial = glb.addMaterial({ name: "Tree_Pine", pbrMetallicRoughness: { baseColorFactor: [0.16, 0.34, 0.2, 1], metallicFactor: 0, roughnessFactor: 0.9 } });
+  const trunkMaterial = glb.addMaterial({ name: "Tree_Trunk", pbrMetallicRoughness: { baseColorFactor: [0.36, 0.26, 0.18, 1], metallicFactor: 0, roughnessFactor: 0.95 } });
+
+  // Species geometry in metres; instances scale by metres(1) * size.
+  const species = {
+    broadleaf: [
+      geometryPrimitive(new THREE.CylinderGeometry(0.16, 0.24, 3.2, 6).translate(0, 1.6, 0), trunkMaterial),
+      geometryPrimitive(lumpyCrown(2.6, 4.6, 7).translate(0, 4.8, 0), crownMaterial),
+    ],
+    roundleaf: [
+      geometryPrimitive(new THREE.CylinderGeometry(0.14, 0.2, 2.2, 6).translate(0, 1.1, 0), trunkMaterial),
+      geometryPrimitive(lumpyCrown(2.2, 3.4, 19).translate(0, 3.5, 0), crownMaterial),
+    ],
+    pine: [
+      geometryPrimitive(new THREE.CylinderGeometry(0.14, 0.22, 3, 6).translate(0, 1.5, 0), trunkMaterial),
+      geometryPrimitive(
+        (() => {
+          const lower = new THREE.ConeGeometry(2.1, 4.2, 7).translate(0, 4.2, 0).toNonIndexed();
+          const upper = new THREE.ConeGeometry(1.5, 3.6, 7).translate(0, 6.6, 0).toNonIndexed();
+          const merged = new THREE.BufferGeometry();
+          merged.setAttribute("position", new THREE.Float32BufferAttribute([...lower.attributes.position.array, ...upper.attributes.position.array], 3));
+          return merged;
+        })(),
+        pineMaterial,
+      ),
+    ],
+  };
+
+  for (const parts of Object.values(species)) bakeVertexAo(parts);
+  {
+    const mean = (c) => c.reduce((sum, value, i) => (i % 4 === 0 ? sum + value : sum), 0) / (c.length / 4) / 255;
+    console.log(`trees: vertex AO (${AO_RAYS} rays, ${AO_RAY_METRES} m, floor ${AO_FLOOR}) mean shade ${Object.entries(species).map(([k, [trunk, crown]]) => `${k} trunk ${mean(trunk.colors).toFixed(2)} crown ${mean(crown.colors).toFixed(2)}`).join(", ")}`);
+  }
+
+  // Archetype top (m at scale 1): highest crown vertex of each species geometry (DERIVED).
+  const archetypeTopMetres = Object.fromEntries(
+    Object.entries(species).map(([kind, parts]) => {
+      const p = parts[1].positions;
+      let top = 0;
+      for (let i = 1; i < p.length; i += 3) top = Math.max(top, p[i]);
+      return [kind, top];
+    }),
+  );
+  for (const [kind, instances] of Object.entries(treeInstances)) {
+    for (const t of instances) t.sizeY = metres(t.heightMetres / archetypeTopMetres[kind]);
   }
   console.log(`trees: CHMv2 canopy (>= ${CANOPY_TREE_METRES} m) covers ${canopyCells} unblocked cells; crowns cover ${((coveredCanopy / Math.max(1, canopyCells)) * 100).toFixed(1)} % of them`);
   {

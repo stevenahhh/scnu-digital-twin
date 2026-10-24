@@ -2,7 +2,8 @@
 // Builds the Legacy dashboard campus model from:
 //   - public/uni.glb               terrain heights, the original BLD_* ids and their footprints
 //   - data/gis-buildings.json      building footprints, floor counts and heights (fetch-sources.mjs)
-//   - data/landcover.png           satellite-derived ground classes (fetch-sources.mjs)
+//   - data/landcover.png           MCEE land-cover classes and CHMv2 canopy (fetch-sources.mjs)
+//   - data/ortho/                  VWorld z19 orthophoto mosaic for the ground and roof colours (fetch/ortho.mjs)
 //   - data/cop30.png               Copernicus GLO-30 heights for the outer terrain ring (fetch/terrain.mjs)
 //   - docs/assets/data/*.geojson   road zones, walkways and crosswalks
 //   - data/streetlights.json       real street-lamp positions (fetch/streetlights.mjs)
@@ -12,9 +13,10 @@
 // This file only sequences the stages (scripts/campus-model/stages/):
 //   sources.mjs   loads the inputs and builds the terrain heightfield
 //   buildings.mjs selects BLD_*/CampusBuildings, their materials, meshes and nodes
-//   ground.mjs    paints the ground texture, Topography chunks and crosswalk stripes
+//   ground.mjs    paints the ground texture (orthophoto over the procedural layer), Topography chunks and crosswalk stripes
 //   outerTerrain.mjs  the OuterTerrain hill ring around EXTENT, feathered onto Topography's edge
-//   trees.mjs     species geometry, placement masks and instanced Trees_* nodes
+//   trees.mjs     placement masks and positions (placeTrees, before the ground, which keeps the photo's crowns
+//                 out from under them), species geometry and instanced Trees_* nodes (buildTrees)
 //   lights.mjs    instanced Lamps_heads / Lamps_pools (real and estimated lamp positions)
 // Plan-view ring helpers live in lib/geometry.mjs.
 //
@@ -32,7 +34,7 @@ import { buildGround } from "./stages/ground.mjs";
 import { buildLights } from "./stages/lights.mjs";
 import { buildOuterTerrain } from "./stages/outerTerrain.mjs";
 import { loadInputs } from "./stages/sources.mjs";
-import { buildTrees } from "./stages/trees.mjs";
+import { buildTrees, placeTrees } from "./stages/trees.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FRONTEND = path.resolve(HERE, "../..");
@@ -45,9 +47,10 @@ const inputs = await loadInputs();
 
 const glb = new GlbBuilder();
 const { selectableBuildings, campusBuildings, offCampusLots, markingMaterial } = await buildBuildings({ glb, inputs });
-await buildGround({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots, markingMaterial });
+const treePlacement = placeTrees({ inputs, selectableBuildings, campusBuildings, offCampusLots });
+await buildGround({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots, markingMaterial, treeInstances: treePlacement.treeInstances });
 const outerTerrain = await buildOuterTerrain({ glb, inputs });
-const treeInstances = buildTrees({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots });
+const treeInstances = buildTrees({ glb, placement: treePlacement });
 buildLights({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots });
 
 // ---------------------------------------------------------------- height sidecar

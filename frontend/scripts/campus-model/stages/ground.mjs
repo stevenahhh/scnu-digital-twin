@@ -1,5 +1,7 @@
-// Ground stage: paint the land-cover texture (walkways, ground features from data/osm-ground.json,
-// roads, off-campus lots, building curbs), emit the chunked Topography terrain and the crosswalk stripes.
+// Ground stage: paint the procedural ground (walkways, ground features from data/osm-ground.json, roads,
+// off-campus lots, building curbs), lay the VWorld z19 orthophoto over it (lib/orthoGround.mjs: the procedural
+// layer only fills what the model draws itself - building footprints, tree crowns, street trees over paving -
+// and relights the photo's cast shadows), emit the chunked Topography terrain and the crosswalk stripes.
 // Topography primitives carry a planar TEXCOORD_1 over EXTENT; data/ao-ground.png (baked from the raw
 // GLB by `bake/bake-ao.mjs --planar`, an estimated simulation and not a measurement) becomes the Ground
 // material's occlusionTexture when its layout tag matches this build's.
@@ -12,11 +14,12 @@ import { MeshData } from "../lib/meshData.mjs";
 import { encodePng } from "../lib/png.mjs";
 import { Raster, hashNoise, smoothNoise } from "../lib/raster.mjs";
 import { pointInRing, ringArea } from "../lib/geometry.mjs";
+import { SURFACE_CLASS, composeOrthoGround } from "../lib/orthoGround.mjs";
 
 const WIDTH = EXTENT.maxX - EXTENT.minX;
 const DEPTH = EXTENT.maxZ - EXTENT.minZ;
 
-const PX = 4; // texture pixels per scene unit
+const PX = 6.5; // texture pixels per scene unit: 0.2465 m per texel, the z19 orthophoto's 0.245 m
 const STEP = 2;
 const CHUNK = 42;
 
@@ -59,6 +62,23 @@ async function loadWalkways() {
     const lines = geometry.type === "LineString" ? [geometry.coordinates] : geometry.coordinates;
     return lines.map((line) => ({ width, surface, line: line.map(([lon, lat]) => geoToModel(lon, lat)) }));
   });
+}
+
+// The ground raster also records the surface class each pixel was painted as (SURFACE_CLASS in `labels`,
+// written while `label` is not null; land cover stays NATURAL), so the orthophoto pass fills a walkway under a
+// tree with walkway colour and can tell a street tree over paving from a tree over a lawn.
+const { NATURAL, PAVING, ASPHALT, PAINTED, LOT } = SURFACE_CLASS;
+class LabelledRaster extends Raster {
+  constructor(width, height) {
+    super(width, height);
+    this.labels = new Uint8Array(width * height).fill(NATURAL);
+    this.label = null;
+  }
+
+  set(x, y, rgb, alpha = 1) {
+    super.set(x, y, rgb, alpha);
+    if (this.label !== null && x >= 0 && y >= 0 && x < this.width && y < this.height) this.labels[y * this.width + x] = this.label;
+  }
 }
 
 // Pixel mask of whatever `draw(raster)` paints (any non-zero red channel counts).
@@ -287,19 +307,27 @@ async function paintGroundFeatures(ground, toPixel) {
     const area = features.osm.find((f) => f.id === id);
     if (!area) throw new Error(`osm-ground.json: reclass target ${id} is not an OSM area`);
     if (surface !== "lawn") throw new Error(`osm-ground.json: unknown reclass surface ${surface}`);
+    ground.label = NATURAL;
     ground.fillPolygon(pixelRings(area.rings), (x, y) => grain(SURFACE.lawn, x, y, 28, 0.1));
   }
   for (const water of ofKind("water")) {
     if (reclassed.has(water.id)) continue;
+    ground.label = PAINTED;
     ground.fillPolygon(pixelRings(water.rings), (x, y) => grain(SURFACE.water, x, y, 31, 0.06));
+    ground.label = PAVING;
     for (const ring of water.rings) ground.strokePolyline([...ring, ring[0]].map(toPixel), metres(0.8) * PX, () => SURFACE.rim);
   }
+  ground.label = null;
   return {
     lines: features.lines,
     surfaces(afterPlazas) {
+      ground.label = PAVING;
       for (const plaza of ofKind("plaza")) ground.fillPolygon(pixelRings(plaza.rings), paverShader(orientedFrame(plaza.rings[0])));
+      ground.label = null;
       afterPlazas();
+      ground.label = ASPHALT;
       for (const lot of ofKind("parking")) ground.fillPolygon(pixelRings(lot.rings), parkingShader(orientedFrame(lot.rings[0])));
+      ground.label = PAINTED;
       // OSM pitches only where no facility outline covers them (MCEE outlines are closer to the ground).
       for (const pitch of ofKind("pitch")) {
         const centroid = pitch.rings[0].reduce((acc, [x, z]) => [acc[0] + x / pitch.rings[0].length, acc[1] + z / pitch.rings[0].length], [0, 0]);
@@ -313,10 +341,12 @@ async function paintGroundFeatures(ground, toPixel) {
       }
       for (const facility of features.facilities) {
         const frame = orientedFrame(facility.rings[0]);
+        ground.label = PAINTED;
         if (facility.track) {
           ground.fillPolygon(pixelRings(facility.rings), trackShader(frame));
           continue;
         }
+        if (facility.labels.every((l) => l.surface === "lawn")) ground.label = NATURAL;
         const shaders = facility.labels.map((label) => [label, surfaceShader(label, { ...frame, cx: label.point[0], cz: label.point[1] })]);
         ground.fillPolygon(pixelRings(facility.rings), (x, y) => {
           const [mx, mz] = pixelToModel(x, y);
@@ -327,18 +357,23 @@ async function paintGroundFeatures(ground, toPixel) {
           return nearest[1](x, y);
         });
         if (facility.labels.every((l) => l.surface === "lawn")) {
+          ground.label = PAVING;
           for (const ring of facility.rings) ground.strokePolyline([...ring, ring[0]].map(toPixel), metres(0.6) * PX, () => SURFACE.rim);
         }
       }
       for (const fountain of features.supplements.filter((f) => f.kind === "fountain")) {
         const [cx, cy] = toPixel(fountain.point);
         const r = metres(fountain.radiusMetres) * PX;
+        ground.label = PAVING;
         ground.fillDisc(cx, cy, r, () => SURFACE.rim);
+        ground.label = PAINTED;
         ground.fillDisc(cx, cy, r - metres(0.7) * PX, (x, y) => grain([92, 132, 150], x, y, 33, 0.06));
       }
+      ground.label = null;
     },
     overRoads() {
       // Estimated bays (supplements): painted over the road zones, which already cover parts of them.
+      ground.label = ASPHALT;
       for (const lot of features.supplements.filter((f) => f.kind === "parking")) {
         const ring = parkingRing(lot.axis, lot.depthMetres);
         ground.fillPolygon([ring.map(toPixel)], parkingShader(orientedFrame(ring), lot.bayMetres, lot.depthMetres));
@@ -346,11 +381,16 @@ async function paintGroundFeatures(ground, toPixel) {
       for (const roundabout of features.supplements.filter((f) => f.kind === "roundabout")) {
         const [cx, cy] = toPixel(roundabout.point);
         const r = metres(roundabout.radiusMetres) * PX;
+        ground.label = PAINTED;
         ground.fillDisc(cx, cy, r, (x, y) => grain(SURFACE.roundabout, x, y, 34, 0.08));
+        ground.label = PAVING;
         ground.fillDisc(cx, cy, r * 0.44, () => SURFACE.rim);
+        ground.label = NATURAL;
         ground.fillDisc(cx, cy, r * 0.38, (x, y) => grain(SURFACE.island, x, y, 35, 0.12));
+        ground.label = PAVING;
         ground.fillDisc(cx, cy, r * 0.12, () => [176, 174, 168]);
       }
+      ground.label = null;
     },
   };
 }
@@ -542,12 +582,12 @@ function paintArterials({ ground, toPixel, lines, block, roadZoneMask, asphalt, 
 
 const jpeg = async (png, quality = 86) => new Bun.Image(png).jpeg({ quality }).toBuffer();
 
-export async function buildGround({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots, markingMaterial }) {
+export async function buildGround({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots, markingMaterial, treeInstances }) {
   const { heightAt, roadZones, crosswalks, landcoverAt } = inputs;
   const walkways = await loadWalkways();
 
   // ---- ground texture
-  const ground = new Raster(WIDTH * PX, DEPTH * PX);
+  const ground = new LabelledRaster(WIDTH * PX, DEPTH * PX);
   const toPixel = ([x, z]) => [(x - EXTENT.minX) * PX, (z - EXTENT.minZ) * PX];
   const PALETTE = {
     [LANDCOVER.PAVED]: [158, 156, 148],
@@ -604,16 +644,21 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
   const pavedWidth = (w, extra = 0) => metres(w.width + extra) * PX;
   // Edge stones, then the paved fill; bicycle lanes last so the red lane stays continuous where it runs
   // beside a paver walk. `clip(x, y)` limits a repaint to some pixels (others keep their colour).
-  const paintWalkways = (clip = () => true) => {
+  // A clipped repaint leaves the surface classes alone (most of its pixels keep their colour).
+  const WALKWAY_CLASS = { blockPaver: PAVING, asphalt: ASPHALT, bicycle: PAINTED, existing: PAVING };
+  const paintWalkways = (clip = null) => {
     const keep = (shade) => (x, y) => {
-      if (clip(x, y)) return shade(x, y);
+      if (!clip || clip(x, y)) return shade(x, y);
       const i = (y * ground.width + x) * 3;
       return [ground.data[i], ground.data[i + 1], ground.data[i + 2]];
     };
+    ground.label = clip ? null : PAVING;
     for (const w of walkwayPixels) ground.strokePolyline(w.points, pavedWidth(w, WALKWAY_EDGE_M), keep(() => [164, 160, 150]));
     for (const w of [...walkwayPixels].sort((a, b) => (a.surface === "bicycle") - (b.surface === "bicycle"))) {
+      if (!clip) ground.label = WALKWAY_CLASS[w.surface];
       ground.strokePolyline(w.points, pavedWidth(w), keep(WALKWAY_SHADERS[w.surface]));
     }
+    ground.label = null;
   };
   const groundFeatures = await paintGroundFeatures(ground, toPixel);
   const paintWalkwaysAndLawnEdges = () => {
@@ -632,7 +677,9 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
   // Walkways go over plazas (the A003 lines are surveyed paths, the plaza outlines coarse areas) but
   // under facility surfaces, roads and building curbs.
   groundFeatures.surfaces(paintWalkwaysAndLawnEdges);
+  ground.label = ASPHALT;
   for (const polygon of roadZones) ground.fillPolygon(polygon.map((ring) => ring.map(toPixel)), asphalt);
+  ground.label = null;
   {
     // Kerb (0.15 m step, ASSUMED) drawn as a thin strip: a 0.3 m light kerb stone on the road edge and
     // the step's shadow as a 0.25 m darker gutter on the asphalt side (pixels inside a road polygon).
@@ -650,18 +697,21 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
       if (kerb[p]) {
         const k = 0.96 + hashNoise(p % ground.width, Math.floor(p / ground.width), 11) * 0.06;
         d[i] = 184 * k; d[i + 1] = 182 * k; d[i + 2] = 174 * k;
+        ground.labels[p] = PAVING;
       } else if (gutter[p] && road[p]) {
         for (let ch = 0; ch < 3; ch += 1) d[i + ch] *= 0.72;
       }
     }
   }
   groundFeatures.overRoads();
+  ground.label = LOT;
   for (const lot of offCampusLots) {
     ground.fillPolygon([lot.map(toPixel)], (x, y) => {
       const k = 0.94 + hashNoise(x, y, 6) * 0.08;
       return [150 * k, 148 * k, 141 * k];
     });
   }
+  ground.label = null;
   {
     // Off-campus lots cover the street-side walkways; repaint those inside the lots only.
     const lots = maskOf(ground.width, ground.height, (r) => {
@@ -670,6 +720,7 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
     paintWalkways((x, y) => lots[y * ground.width + x] === 1);
   }
   const white = () => [255, 255, 255];
+  ground.label = ASPHALT;
   const arterial = paintArterials({
     ground,
     toPixel,
@@ -687,18 +738,53 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
     asphalt,
     crosswalks,
   });
+  ground.label = PAVING;
   console.log(`arterial: ${arterial.strips} traced strips (${arterial.quads} quads), ${arterial.crosswalks.length} OSM crossings added to Crosswalks`);
   for (const building of [...selectableBuildings, ...campusBuildings]) {
     for (const part of building.parts) {
       ground.strokePolyline([...part.outer, part.outer[0]].map(toPixel), metres(2.2) * PX, () => [182, 178, 170]);
     }
   }
-  const groundTexture = glb.addTexture(await jpeg(encodePng(ground.width, ground.height, 3, ground.data), 84), "image/jpeg", { repeat: false });
+  ground.label = null;
+  const photo = composeOrthoGround({
+    ground,
+    classes: ground.labels,
+    ortho: inputs.ortho,
+    calibration: inputs.orthoCalibration,
+    toPixel,
+    pixelCentre: pixelToModel,
+    metresPerPixel: M_PER_PX,
+    unitsPerPixel: 1 / PX,
+    buildings: [...selectableBuildings, ...campusBuildings],
+    crowns: Object.values(treeInstances).flat(),
+  });
+  const share = (key) => `${(photo.shares[key] * 100).toFixed(1)} %`;
+  console.log(
+    `ground: VWorld z19 orthophoto ${photo.width}x${photo.height} at ${photo.metresPerPixel.toFixed(4)} m/px; procedural fill under buildings ${share("building")}, ` +
+    `open-ground tree crowns ${share("crown")}, street trees over paving ${share("street")}; photo canopy kept in groves ${share("grove")}; ` +
+    `relit shadows ${share("shadow")}; ` +
+    `white balance ${inputs.orthoCalibration.gains.map((g) => g.toFixed(3)).join("/")} from ${inputs.orthoCalibration.samples} neutral pixels, ` +
+    `albedo lift 1/${inputs.orthoCalibration.gamma} (estimated)`,
+  );
+  // The pack step re-encodes it as WebP (EXT_texture_webp); q92 keeps that second lossy step the dominant one.
+  const groundTexture = glb.addTexture(await jpeg(encodePng(ground.width, ground.height, 3, ground.data), 92), "image/jpeg", { repeat: false });
   const groundMaterial = glb.addMaterial({
     name: "Ground",
     pbrMetallicRoughness: { baseColorTexture: { index: groundTexture }, metallicFactor: 0, roughnessFactor: 1 },
   });
-  glb.json.asset.extras = { ...glb.json.asset.extras, aoGroundLayout: AO_GROUND_LAYOUT, aoGroundSize: AO_GROUND_SIZE };
+  glb.json.asset.extras = {
+    ...glb.json.asset.extras,
+    aoGroundLayout: AO_GROUND_LAYOUT,
+    aoGroundSize: AO_GROUND_SIZE,
+    orthophoto: {
+      source: inputs.ortho.meta.source,
+      attribution: inputs.ortho.meta.attribution,
+      licence: inputs.ortho.meta.licence,
+      tiles: `z${inputs.ortho.meta.zoom} x ${inputs.ortho.meta.x0}-${inputs.ortho.meta.x1}, y ${inputs.ortho.meta.y0}-${inputs.ortho.meta.y1}, fetched ${inputs.ortho.meta.tilesFetched}`,
+      groundMetresPerPixel: Number(M_PER_PX.toFixed(4)),
+      note: "ground albedo, roof colours and solar panels are estimates derived from imagery, not measurements",
+    },
+  };
   if (existsSync(AO_GROUND)) {
     const png = readFileSync(AO_GROUND);
     const bakedFor = pngLayoutTag(png);

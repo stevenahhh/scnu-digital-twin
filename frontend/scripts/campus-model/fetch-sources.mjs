@@ -8,10 +8,12 @@
 //   fetch/buildings.mjs  -> data/gis-buildings.json     OSM footprints (ODbL) + SCNU registry floor counts (GIS건물통합정보 when downloaded)
 //   fetch/landcover.mjs  -> data/landcover.png          landcover classes classified from VWorld Satellite z18 tiles
 //   fetch/roofTags.mjs   -> data/osm-roof-tags.json     OSM roof:colour / roof:material / building:colour tags (ODbL)
+//   fetch/ortho.mjs      -> data/ortho/                 VWorld Satellite z19 tile mosaic (stored under consent D1)
 import { mkdir } from "node:fs/promises";
 import { CACHE, DATA } from "./fetch/common.mjs";
 import { writeBuildings } from "./fetch/buildings.mjs";
 import { writeLandcover } from "./fetch/landcover.mjs";
+import { writeOrtho } from "./fetch/ortho.mjs";
 import { writeRoofTags } from "./fetch/roofTags.mjs";
 
 await mkdir(DATA, { recursive: true });
@@ -19,3 +21,4 @@ await mkdir(CACHE, { recursive: true });
 await writeBuildings();
 await writeLandcover();
 await writeRoofTags();
+await writeOrtho();

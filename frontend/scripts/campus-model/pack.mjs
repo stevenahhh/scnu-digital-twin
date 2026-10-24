@@ -7,7 +7,8 @@
 //      and OuterTerrain (a different Ground material with COLOR_0 and no UVs) keep their structure.
 //      The dashboard finds terrain by the parent name (traffic) and the /^Topography/ mesh name (camera).
 //   2. gltf-transform optimize: meshopt geometry compression with mesh quantization, WebP textures capped
-//      at 2048 px, with no flatten, join, palette or simplify, so every BLD_* root node and mesh name the
+//      at 4096 px (only the 3276 x 2457 orthophoto ground exceeds 2048; it keeps its 0.25 m texels), with no
+//      flatten, join, palette or simplify, so every BLD_* root node and mesh name the
 //      dashboard selects by survives packing. Quantization moves each mesh's offset/scale onto its node's
 //      translation/scale; the meshes stay in scene space.
 // gltfpack is not used: its default quantization inserts dequantization parent nodes.
@@ -41,7 +42,7 @@ const OPTIMIZE_ARGS = [
   "--simplify", "false",
   "--compress", "meshopt",
   "--texture-compress", "webp",
-  "--texture-size", "2048",
+  "--texture-size", "4096",
 ];
 
 async function createIO() {
