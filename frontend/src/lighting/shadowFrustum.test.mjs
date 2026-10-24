@@ -16,21 +16,33 @@ import {
 
 const DEG = Math.PI / 180;
 
+// glTF normalized integer -> float, per component type (5120 byte, 5121 ubyte, 5122 short, 5123 ushort).
+const NORMALIZE = { 5120: (v) => Math.max(v / 127, -1), 5121: (v) => v / 255, 5122: (v) => Math.max(v / 32767, -1), 5123: (v) => v / 65535 };
+
 // Every primitive of campus-v2.glb becomes one THREE.Mesh, so its POSITION box centre is a mesh
-// centre. CityModel moves the model by -campusModelCenter, so the light's target is that origin.
+// centre. The packed file stores KHR_mesh_quantization POSITIONs whose dequantization lives in the
+// node's translation/scale (as in campusModelAsset.test.mjs), so boxes are dequantized and mapped
+// through them. CityModel moves the model by -campusModelCenter, so the light's target is that origin.
 async function readCampusMeshCentres() {
   const file = await readFile(new URL("../../public/campus-v2.glb", import.meta.url));
   const json = JSON.parse(file.subarray(20, 20 + file.readUInt32LE(12)).toString("utf8"));
-  const boxOf = (primitive) => {
+  const boxOf = (node, primitive) => {
     const accessor = json.accessors[primitive.attributes.POSITION];
-    return new THREE.Box3(new THREE.Vector3(...accessor.min), new THREE.Vector3(...accessor.max));
+    const decode = accessor.normalized ? NORMALIZE[accessor.componentType] : (v) => v;
+    const translation = new THREE.Vector3(...(node.translation ?? [0, 0, 0]));
+    const scale = new THREE.Vector3(...(node.scale ?? [1, 1, 1]));
+    const box = new THREE.Box3();
+    for (const corner of [accessor.min, accessor.max]) {
+      box.expandByPoint(new THREE.Vector3(...corner.map(decode)).multiply(scale).add(translation));
+    }
+    return box;
   };
-  const nodeBox = (node) => json.meshes[node.mesh].primitives.reduce((box, primitive) => box.union(boxOf(primitive)), new THREE.Box3());
+  const nodeBox = (node) => json.meshes[node.mesh].primitives.reduce((box, primitive) => box.union(boxOf(node, primitive)), new THREE.Box3());
   const d4 = nodeBox(json.nodes.find((node) => node.name === "BLD_D4")).getCenter(new THREE.Vector3());
   const center = campusModelCenter([d4.x, d4.y, d4.z]);
   return json.nodes
     .filter((node) => node.mesh !== undefined)
-    .flatMap((node) => json.meshes[node.mesh].primitives.map(boxOf))
+    .flatMap((node) => json.meshes[node.mesh].primitives.map((primitive) => boxOf(node, primitive)))
     .map((box) => {
       const c = box.getCenter(new THREE.Vector3());
       return [c.x - center.x, c.y, c.z - center.z];

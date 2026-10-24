@@ -8,20 +8,31 @@ import { campusModelCenter } from "./simulation/utils/campusTrafficCoordinates.m
 
 const publicFile = (name) => new URL(`../public/${name}`, import.meta.url);
 
-// campus-v2.glb nodes carry no transforms (geometry is written in scene space), so a node's bounding
-// box is the union of its primitives' POSITION min/max. Reading the JSON chunk avoids decoding the
-// embedded JPEG textures, which node cannot do.
+// campus-v2.glb is meshopt-packed with KHR_mesh_quantization: POSITION accessors may be normalized
+// integers whose dequantization lives in the node's translation/scale (no rotations, no parents for
+// BLD_* roots). A node's bounding box is therefore its primitives' POSITION min/max, dequantized and
+// mapped through that translation/scale. Reading the JSON chunk avoids decoding the meshopt buffers
+// and embedded textures, which node cannot do.
 async function readGlbJson(name) {
   const file = await readFile(publicFile(name));
   return JSON.parse(file.subarray(20, 20 + file.readUInt32LE(12)).toString("utf8"));
 }
 
+// glTF normalized integer -> float, per component type (5120 byte, 5121 ubyte, 5122 short, 5123 ushort).
+const NORMALIZE = { 5120: (v) => Math.max(v / 127, -1), 5121: (v) => v / 255, 5122: (v) => Math.max(v / 32767, -1), 5123: (v) => v / 65535 };
+
 function nodeBox(json, node) {
+  assert.equal(node.rotation, undefined, `${node.name} has a rotation nodeBox does not apply`);
+  assert.equal(node.matrix, undefined, `${node.name} has a matrix nodeBox does not apply`);
+  const translation = new THREE.Vector3(...(node.translation ?? [0, 0, 0]));
+  const scale = new THREE.Vector3(...(node.scale ?? [1, 1, 1]));
   const box = new THREE.Box3();
   for (const primitive of json.meshes[node.mesh].primitives) {
     const accessor = json.accessors[primitive.attributes.POSITION];
-    box.expandByPoint(new THREE.Vector3(...accessor.min));
-    box.expandByPoint(new THREE.Vector3(...accessor.max));
+    const decode = accessor.normalized ? NORMALIZE[accessor.componentType] : (v) => v;
+    for (const corner of [accessor.min, accessor.max]) {
+      box.expandByPoint(new THREE.Vector3(...corner.map(decode)).multiply(scale).add(translation));
+    }
   }
   return box;
 }
