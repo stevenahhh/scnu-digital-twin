@@ -231,6 +231,7 @@ export function CityModel({
   const labelPassFramesRef = useRef(2);
   const labelFrameKeyRef = useRef("");
   const labelHeightfieldRef = useRef(null);
+  const labelForwardRef = useRef(new THREE.Vector3());
 
   // 높이 사이드카가 오면 라벨 패스를 한 번 더 돌려 언덕 뒤 라벨을 숨긴다(요청 루프라 invalidate로 프레임을 연다).
   useEffect(() => {
@@ -606,13 +607,17 @@ export function CityModel({
       // 앵커와 사이드카는 재중심화 전 모델 좌표다. 카메라를 같은 좌표로 옮긴다.
       const eye = [camera.position.x + center.x, camera.position.y, camera.position.z + center.z];
       const candidates = [];
+      // drei Html projects anchors behind the camera mirrored into the view, so labels of buildings behind
+      // the viewer would float over the hill or sky. Drop anchors that are not in front of the camera.
+      const forward = camera.getWorldDirection(labelForwardRef.current);
       for (const anchor of labelAnchors) {
         const element = labels.get(anchor.elementId);
         if (!element) continue;
-        if (isAnchorOccludedByTerrain(heightfield, eye, anchor.position)) continue;
         const dx = camera.position.x - (anchor.position[0] - center.x);
         const dy = camera.position.y - anchor.position[1];
         const dz = camera.position.z - (anchor.position[2] - center.z);
+        if (-(dx * forward.x + dy * forward.y + dz * forward.z) <= camera.near) continue;
+        if (isAnchorOccludedByTerrain(heightfield, eye, anchor.position)) continue;
         candidates.push({
           id: anchor.elementId,
           rect: element.getBoundingClientRect(),
