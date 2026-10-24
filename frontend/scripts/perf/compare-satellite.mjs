@@ -10,7 +10,9 @@
 //
 // Usage (dev server already running, e.g. `vite --host 127.0.0.1 --port 5182` in frontend/):
 //   bun frontend/scripts/perf/compare-satellite.mjs [--url http://127.0.0.1:5182/] [--port 9352]
-//       [--out <dir>] [--prefix <label->] [--list]
+//       [--out <dir>] [--prefix <label->] [--clock 2026-10-24T12:00:00+09:00] [--list]
+//   --clock pins the page clock (default noon KST) so the sun and lighting match the reference midday mosaic
+//   regardless of when the script runs.
 //   --list prints the scene-frame centre of every BLD_* node (handy for choosing windows) and exits.
 //
 // Camera method: the page exposes no hook, so an init script captures the react-three-fiber store from
@@ -58,6 +60,18 @@ const port = option("port", "9352");
 const outDir = resolve(option("out", join(RESEARCH, "qa/compare")));
 const prefix = option("prefix", "");
 const listOnly = args.includes("--list");
+const clock = option("clock", "2026-10-24T12:00:00+09:00");
+if (Number.isNaN(Date.parse(clock))) throw new Error(`--clock is not a date: ${clock}`);
+// Runs before any page script: shifts Date so the dashboard's live clock starts at `clock`.
+const PIN_CLOCK = `(() => {
+  const RealDate = Date;
+  const offset = RealDate.parse(${JSON.stringify(clock)}) - RealDate.now();
+  class PinnedDate extends RealDate {
+    constructor(...a) { if (a.length === 0) super(RealDate.now() + offset); else super(...a); }
+    static now() { return RealDate.now() + offset; }
+  }
+  window.Date = PinnedDate;
+})();`;
 
 const bounds = JSON.parse(await Bun.file(join(RESEARCH, "qa/ref/sat-z19.json")).text());
 const mercatorY = (latitude) => Math.log(Math.tan(Math.PI / 4 + (latitude * Math.PI) / 360));
@@ -270,7 +284,7 @@ try {
 
   await cdp("Page.enable");
   await cdp("Runtime.enable");
-  await cdp("Page.addScriptToEvaluateOnNewDocument", { source: CAPTURE_STORE });
+  await cdp("Page.addScriptToEvaluateOnNewDocument", { source: PIN_CLOCK + CAPTURE_STORE });
   await cdp("Emulation.setDeviceMetricsOverride", { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
   await cdp("Page.navigate", { url });
 
