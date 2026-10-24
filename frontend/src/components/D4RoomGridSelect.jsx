@@ -174,7 +174,7 @@ export function D4RoomGridSelect({
             <ChevronLeft size={16} />
             D4 건물 내부 보기
           </button>
-          <div className="text-center text-lg font-[900] text-[var(--colors-ink)]">{building.displayName}</div>
+          <div className="justify-self-center whitespace-nowrap rounded-md border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] px-3 py-1.5 text-center text-lg font-[900] text-[var(--colors-ink)]">{building.displayName}</div>
         </div>
 
         <div className="flex items-center gap-3">

@@ -5,6 +5,12 @@ import * as THREE from "three";
 import commonElements from "../../common/data/common_elemetns.json";
 import { resolveBuildingMeta, resolveProxyDataElementId } from "./utils/buildingLabels.mjs";
 import { createPointerGuard, hasCameraMoved } from "./camera/pointerGuard.mjs";
+import {
+  GROUND_MESH_NAME,
+  buildGroundGrid,
+  clampOrbitAboveGround,
+  sampleGroundGrid,
+} from "./camera/terrainClearance.mjs";
 import { isAnchorOccludedByTerrain, selectVisibleCampusLabels } from "./utils/campusLabelVisibility.mjs";
 import { campusModelCenter } from "./simulation/utils/campusTrafficCoordinates.mjs";
 import { CAMPUS_MODEL_URL, CAMPUS_MODEL_URLS } from "./campusModelAsset.mjs";
@@ -265,6 +271,8 @@ export function CityModel({
   // 클릭/드래그 판별(메시와 라벨이 공유). 직전 프레임 카메라 자세로 카메라가 움직이는 중인지 알려 준다.
   const [pointerGuard] = useState(() => createPointerGuard());
   const cameraPoseRef = useRef(null);
+  // 카메라 지면 충돌용 지면 격자(월드 좌표). 캠퍼스 지형과 바깥 산을 모두 덮는다.
+  const groundGridRef = useRef(null);
 
   // 누르기·놓기는 window 캡처 단계에서 먼저 기록한다. R3F의 pointerup과 라벨 click보다 앞서고, OrbitControls가
   // 포인터를 캡처해도 빠지지 않는다. 누른 곳이 캔버스인지, 라벨인지, 그 밖(패널 등)인지도 함께 남긴다.
@@ -532,6 +540,29 @@ export function CityModel({
     return new THREE.Vector3(x, 0, z);
   }, [labelAnchors]);
 
+  // 모델이 재중심화 그룹에 붙은 뒤 지형 메시 삼각형을 월드 좌표로 옮겨 지면 격자를 한 번 만든다.
+  useEffect(() => {
+    if (!scene) return;
+    scene.updateWorldMatrix(true, true);
+    const sources = [];
+    const point = new THREE.Vector3();
+    scene.traverse((object) => {
+      if (!object.isMesh || !GROUND_MESH_NAME.test(object.name)) return;
+      const attribute = object.geometry?.attributes?.position;
+      if (!attribute) return;
+      const positions = new Float32Array(attribute.count * 3);
+      for (let k = 0; k < attribute.count; k += 1) {
+        point.fromBufferAttribute(attribute, k).applyMatrix4(object.matrixWorld);
+        positions[k * 3] = point.x;
+        positions[k * 3 + 1] = point.y;
+        positions[k * 3 + 2] = point.z;
+      }
+      sources.push({ positions, index: object.geometry.index?.array ?? null });
+    });
+    groundGridRef.current = sources.length > 0 ? buildGroundGrid(sources) : null;
+    invalidate();
+  }, [scene, center, invalidate]);
+
   useFrame((_, delta) => {
     const controls = controlsRef?.current;
 
@@ -720,6 +751,27 @@ export function CityModel({
         }
       }
     }
+  });
+
+  // 카메라(와 near 평면)를 지면 위에 둔다. OrbitControls(우선순위 -1)·시점 비행·클릭 포커스가 이번 프레임의
+  // 자리를 정한 뒤, 그 자리가 지면 + 여유보다 낮으면 같은 거리에서 위로 돌려 올린다. 렌더 전에 고치므로
+  // 땅속 프레임이 보이지 않고, 지면 격자가 연속이라 올라가는 움직임도 매끄럽다. 라벨 패스보다 앞에 둔다.
+  useFrame(() => {
+    const grid = groundGridRef.current;
+    if (!grid) return;
+    const controls = controlsRef?.current;
+    const target = controls?.target ?? null;
+    const position = [camera.position.x, camera.position.y, camera.position.z];
+    const groundAt = (x, z) => sampleGroundGrid(grid, x, z);
+    const next = target
+      ? clampOrbitAboveGround(position, [target.x, target.y, target.z], groundAt, {
+          minPolarAngle: controls.minPolarAngle ?? 0,
+        })
+      : clampOrbitAboveGround(position, position, groundAt);
+    if (!next) return;
+    camera.position.set(next[0], next[1], next[2]);
+    if (target) camera.lookAt(target);
+    camera.updateMatrixWorld();
   });
 
   // 라벨은 가운데 점이 캔버스 안에 있고 열린 대시보드 패널 밑에 있지 않을 때만 보인다.

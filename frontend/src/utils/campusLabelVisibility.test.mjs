@@ -224,10 +224,18 @@ test("no heightfield, or a sight line outside the grid, never occludes", () => {
 
 test("a label hidden by the panel does not push an overlapping label off screen", () => {
   const labels = [
-    { id: "under-panel", rect: rect(990, 300, 80, 20), selected: true, hasPopup: true, distance: 1 },
-    { id: "beside", rect: rect(940, 305, 80, 20), selected: false, hasPopup: true, distance: 50 },
+    { id: "under-panel", rect: rect(960, 300, 80, 20), selected: true, hasPopup: true, distance: 1 },
+    { id: "beside", rect: rect(900, 305, 80, 20), selected: false, hasPopup: true, distance: 50 },
   ];
   assert.deepEqual([...selectVisibleCampusLabels(labels, canvas, openPanel)], ["beside"]);
+});
+
+test("a label whose centre is left of the open panel but whose right end runs under it is hidden", () => {
+  const labels = [
+    { id: "cut-by-panel", rect: rect(950, 300, 80, 20), selected: true, hasPopup: true, distance: 1 },
+    { id: "touching-edge", rect: rect(920, 400, 80, 20), selected: false, hasPopup: true, distance: 2 },
+  ];
+  assert.deepEqual([...selectVisibleCampusLabels(labels, canvas, openPanel)], ["touching-edge"]);
 });
 
 test("a label touching map chrome such as the preset bar is hidden, one clear of it stays", () => {
