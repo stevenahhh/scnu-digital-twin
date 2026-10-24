@@ -83,7 +83,7 @@ function BridgeConnector({ floor }) {
 // 콘텐츠 크기(층 수 · 타워 폭)와 캔버스 비율에 맞춰 카메라 거리를 매번 다시 계산해서
 // 층이 많은 동도 화면 밖으로 잘리지 않도록 한다.
 function FitCamera({ contentWidth, contentHeight, centerY }) {
-  const { camera, size } = useThree();
+  const { camera, size, invalidate } = useThree();
 
   useEffect(() => {
     const aspect = size.width / Math.max(1, size.height);
@@ -97,7 +97,8 @@ function FitCamera({ contentWidth, contentHeight, centerY }) {
     camera.position.set(0, centerY + distance * 0.56, distance * 0.86);
     camera.lookAt(0, centerY, 0);
     camera.updateProjectionMatrix();
-  }, [camera, size, contentWidth, contentHeight, centerY]);
+    invalidate();
+  }, [camera, size, contentWidth, contentHeight, centerY, invalidate]);
 
   return null;
 }
@@ -113,7 +114,7 @@ export function D4WingFloorScene({ building, activeWingId, onSelectFloor }) {
   const centerY = GROUP_Y_OFFSET + ((maxFloors - 1) * FLOOR_STEP) / 2;
 
   return (
-    <Canvas camera={{ fov: 24 }} shadows="percentage" gl={{ alpha: true }}>
+    <Canvas camera={{ fov: 24 }} shadows="percentage" gl={{ alpha: true }} frameloop="demand">
       <FitCamera contentWidth={contentWidth} contentHeight={contentHeight} centerY={centerY} />
       <ambientLight intensity={1.15} />
       <directionalLight position={[6, 9, 6]} intensity={1.35} castShadow />

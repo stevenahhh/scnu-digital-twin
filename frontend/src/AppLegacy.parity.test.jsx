@@ -9,12 +9,64 @@ const installationClient = {
 };
 
 vi.mock("@react-three/fiber", () => ({ Canvas: ({ children }) => <div>{children}</div> }));
-vi.mock("@react-three/drei", () => ({
-  OrbitControls: () => null,
-  Sky: () => null,
-}));
+// OrbitControls는 실제 three EventDispatcher 위에 얼임 잡은 가짜 컨트롤을 ref로 내준다. 시점 비행이 진짜 start/end 이벤트와
+// camera.position/target 갱신을 거치는지 보기 위해서다. useProgress는 테스트마다 바꿀 수 있는 상태를 돌려준다.
+const controlsMock = vi.hoisted(() => ({ current: null, create: null }));
+const progressMock = vi.hoisted(() => ({ state: { active: false, loaded: 0, total: 0, progress: 0, item: "", errors: [] } }));
+const fileLoaderMock = vi.hoisted(() => ({ loads: [] }));
+vi.mock("@react-three/drei", async () => {
+  const React = await import("react");
+  const { EventDispatcher, Vector3 } = await import("three");
+  class FakeControls extends EventDispatcher {
+    constructor() {
+      super();
+      this.object = { position: new Vector3(0, 260, 260) };
+      this.target = new Vector3(0, 0, 0);
+      this.updates = 0;
+      this.events = [];
+      this.addEventListener("start", (event) => this.events.push(event.flyTo ? "start:flyTo" : "start"));
+      this.addEventListener("end", () => this.events.push("end"));
+    }
+    update() {
+      this.updates += 1;
+    }
+  }
+  controlsMock.create = () => new FakeControls();
+  return {
+    OrbitControls: React.forwardRef(function OrbitControlsMock({ onStart, onEnd }, ref) {
+      React.useImperativeHandle(ref, () => controlsMock.current, []);
+      React.useEffect(() => {
+        const controls = controlsMock.current;
+        const handleStart = (event) => onStart?.(event);
+        const handleEnd = (event) => onEnd?.(event);
+        controls.addEventListener("start", handleStart);
+        controls.addEventListener("end", handleEnd);
+        return () => {
+          controls.removeEventListener("start", handleStart);
+          controls.removeEventListener("end", handleEnd);
+        };
+      }, [onStart, onEnd]);
+      return null;
+    }),
+    Sky: () => null,
+    useProgress: () => progressMock.state,
+  };
+});
+vi.mock("three", async (importOriginal) => {
+  const actual = await importOriginal();
+  class FileLoaderMock {
+    setResponseType() {
+      return this;
+    }
+    load(url, onLoad, onProgress) {
+      fileLoaderMock.loads.push({ url, onLoad, onProgress });
+    }
+  }
+  return { ...actual, FileLoader: FileLoaderMock };
+});
 vi.mock("./lighting/CampusLighting", () => ({ CAMPUS_CANVAS_GL: {}, CampusLighting: () => null }));
 vi.mock("./lighting/ShadowBaker", () => ({ ShadowBaker: () => null }));
+vi.mock("./weather/SceneWeatherBinding", () => ({ SceneWeatherBinding: () => null }));
 const sceneMock = vi.hoisted(() => ({ suspend: false, fail: false }));
 vi.mock("./CityModel", () => ({
   // suspend가 켜지면 끝나지 않는 Promise를 던져 Suspense fallback이 계속 떠 있게 한다. fail이 켜지면 오류를 던져 3D 실패 안내를 띄운다.
@@ -49,6 +101,7 @@ vi.mock("./features/energy/installations/installationPlanApi.mjs", async (import
 });
 
 import App from "./AppLegacy.jsx";
+import { CAMERA_PRESETS } from "./camera/cameraPresets.mjs";
 
 const C5_TABS = ["기본 현황", "주차·안전", "에너지", "환경 시뮬"];
 const TRAFFIC_OFFLINE = "영상 분석 서버 연결 없음";
@@ -86,7 +139,12 @@ const countCalls = (fetchMock, fragment) =>
 beforeEach(() => {
   stubFetch();
   window.matchMedia = vi.fn(() => ({ matches: false }));
+  controlsMock.current = controlsMock.create();
+  progressMock.state = { active: false, loaded: 0, total: 0, progress: 0, item: "", errors: [] };
+  fileLoaderMock.loads.length = 0;
 });
+
+const presetButtons = (container) => CAMERA_PRESETS.map((preset) => container.querySelector(`[data-qa="camera-preset-${preset.id}"]`));
 
 afterEach(() => {
   cleanup();
@@ -241,6 +299,172 @@ describe("Legacy and VWorld feature parity", () => {
 
       fireEvent.click(screen.getByRole("button", { name: "패널 열기" }));
       expect(notice.style.right).toBe("var(--dashboard-panel-width)");
+    } finally {
+      sceneMock.suspend = false;
+    }
+  });
+
+  it("puts every camera preset, the tour toggle and the KST time slider in tab order before the panel", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<App />);
+
+    const presets = presetButtons(container);
+    expect(presets.every(Boolean)).toBe(true);
+    const tour = container.querySelector('[data-qa="camera-tour-toggle"]');
+    const play = screen.getByRole("button", { name: "시간 재생" });
+    const slider = screen.getByRole("slider", { name: "시각 (KST)" });
+    const expected = [...presets, tour, play, slider];
+
+    const reached = [];
+    for (let i = 0; i < expected.length; i += 1) {
+      await user.tab();
+      reached.push(document.activeElement);
+    }
+    expect(reached).toEqual(expected);
+    for (const button of [...presets, tour, play]) {
+      expect(button.getAttribute("type")).toBe("button");
+    }
+  });
+
+  it("flies the camera to a clicked preset and marks it pressed; user orbit input clears the pressed state", () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval", "requestAnimationFrame", "cancelAnimationFrame", "performance"] });
+    try {
+      const { container } = render(<App />);
+      const controls = controlsMock.current;
+      const [overview, gate] = presetButtons(container);
+      expect(overview.getAttribute("aria-pressed")).toBe("true");
+      expect(gate.getAttribute("aria-pressed")).toBe("false");
+
+      fireEvent.click(gate);
+      expect(gate.getAttribute("aria-pressed")).toBe("true");
+      expect(overview.getAttribute("aria-pressed")).toBe("false");
+      expect(controls.events).toEqual(["start:flyTo"]);
+
+      act(() => {
+        vi.advanceTimersByTime(400);
+      });
+      const midway = controls.object.position.clone();
+      expect(midway.x).toBeGreaterThan(0);
+      expect(midway.x).toBeLessThan(CAMERA_PRESETS[1].position[0]);
+
+      act(() => {
+        vi.advanceTimersByTime(600);
+      });
+      expect(controls.object.position.toArray()).toEqual(CAMERA_PRESETS[1].position);
+      expect(controls.target.toArray()).toEqual(CAMERA_PRESETS[1].target);
+      expect(controls.events).toEqual(["start:flyTo", "end"]);
+      expect(controls.updates).toBeGreaterThan(1);
+
+      act(() => {
+        controls.dispatchEvent({ type: "start" });
+      });
+      expect(gate.getAttribute("aria-pressed")).toBe("false");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("jumps instead of animating when the user prefers reduced motion", () => {
+    window.matchMedia = vi.fn((query) => ({ matches: query.includes("prefers-reduced-motion") }));
+    const { container } = render(<App />);
+    const controls = controlsMock.current;
+    const d4 = container.querySelector('[data-qa="camera-preset-d4"]');
+
+    fireEvent.click(d4);
+    const preset = CAMERA_PRESETS.find((entry) => entry.id === "d4");
+    expect(controls.object.position.toArray()).toEqual(preset.position);
+    expect(controls.target.toArray()).toEqual(preset.target);
+    expect(controls.events).toEqual(["start:flyTo", "end"]);
+    expect(d4.getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("drives the shared sun clock from the KST time slider and switches live mode to simulation", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const slider = screen.getByRole("slider", { name: "시각 (KST)" });
+    expect(slider.getAttribute("min")).toBe("0");
+    expect(slider.getAttribute("max")).toBe("1439");
+
+    fireEvent.change(slider, { target: { value: "930" } });
+    expect(slider.getAttribute("aria-valuetext")).toBe("15:30");
+    expect(screen.getByText("15:30")).toBeTruthy();
+
+    slider.focus();
+    await user.keyboard("{ArrowRight}");
+    expect(slider.getAttribute("aria-valuetext")).toBe("15:40");
+    await user.keyboard("{PageDown}");
+    expect(slider.getAttribute("aria-valuetext")).toBe("14:40");
+
+    fireEvent.click(screen.getByRole("button", { name: "환경 시뮬" }));
+    expect(screen.getByRole("slider", { name: "시" }).value).toBe("14");
+    expect(screen.getByRole("slider", { name: "분" }).value).toBe("40");
+
+    fireEvent.click(screen.getByRole("button", { name: "Live" }));
+    expect(screen.getByText("실시간")).toBeTruthy();
+    fireEvent.change(slider, { target: { value: "600" } });
+    expect(screen.queryByText("실시간")).toBeNull();
+    expect(screen.getByRole("slider", { name: "시" }).value).toBe("10");
+  });
+
+  it("labels the sky estimate as 추정 for both the project feed and the Open-Meteo fallback", async () => {
+    stubFetch({ weather: async () => okJson({ base_weather: { temperature: 21, humidity: 50, wind_speed: 1, cloud_cover: 0.9, precipitation_type: 0 } }) });
+    const { container, unmount } = render(<App />);
+    const caption = container.querySelector('[data-qa="scene-weather"]');
+    await waitFor(() => expect(caption.textContent).toMatch(/기상청 PTY/));
+    expect(caption.textContent).toMatch(/하늘 연출 흐림/);
+    expect(caption.textContent).toMatch(/추정/);
+    expect(caption.textContent).not.toMatch(/관측/);
+    expect(caption.getAttribute("data-estimated")).toBe("true");
+    unmount();
+
+    const fetchMock = vi.fn(async (url) => {
+      const target = String(url);
+      if (target.includes("api.open-meteo.com")) {
+        return okJson({ current: { cloud_cover: 20, precipitation: 0, weather_code: 1, visibility: 24140, is_day: 1 } });
+      }
+      if (target.includes("/api/traffic")) return okJson({ is_running: true });
+      throw new TypeError("Failed to fetch");
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const second = render(<App />);
+    const fallbackCaption = second.container.querySelector('[data-qa="scene-weather"]');
+    await waitFor(() => expect(fallbackCaption.textContent).toMatch(/Open-Meteo/));
+    expect(fallbackCaption.textContent).toMatch(/하늘 연출 맑음/);
+    expect(fallbackCaption.textContent).toMatch(/추정/);
+    expect(fallbackCaption.textContent).toMatch(/2\.5 km/);
+    expect(fallbackCaption.textContent).not.toMatch(/관측/);
+  });
+
+  it("shows the byte percentage of campus-v2.glb while the model downloads, then a processing note", () => {
+    sceneMock.suspend = true;
+    progressMock.state = { active: true, loaded: 0, total: 2, progress: 0, item: "/campus-v2.glb", errors: [] };
+    try {
+      render(<App />);
+      expect(fileLoaderMock.loads).toHaveLength(1);
+      expect(fileLoaderMock.loads[0].url).toBe("/campus-v2.glb");
+
+      act(() => {
+        fileLoaderMock.loads[0].onProgress({ lengthComputable: true, loaded: 1.1 * 1024 * 1024, total: 2.2 * 1024 * 1024 });
+      });
+      expect(screen.getByText("campus-v2.glb 50% (1.1/2.2 MB)")).toBeTruthy();
+      expect(screen.getByText(SCENE_LOADING).closest('[role="status"]')).toBeTruthy();
+
+      act(() => {
+        fileLoaderMock.loads[0].onLoad(new ArrayBuffer(0));
+      });
+      expect(screen.getByText("campus-v2.glb 100% · 모델 처리 중")).toBeTruthy();
+    } finally {
+      sceneMock.suspend = false;
+    }
+  });
+
+  it("does not re-request the model for progress once the download has already finished", () => {
+    sceneMock.suspend = true;
+    progressMock.state = { active: true, loaded: 1, total: 2, progress: 50, item: "/campus-v2.glb", errors: [] };
+    try {
+      render(<App />);
+      expect(fileLoaderMock.loads).toHaveLength(0);
+      expect(screen.getByText(SCENE_LOADING)).toBeTruthy();
     } finally {
       sceneMock.suspend = false;
     }

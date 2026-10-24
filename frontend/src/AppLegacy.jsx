@@ -1,6 +1,7 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, useProgress } from "@react-three/drei";
+import { FileLoader } from "three";
 import {
   AlertTriangle,
   CalendarDays,
@@ -9,6 +10,7 @@ import {
   ChevronRight,
   Clock3,
   Cloud,
+  CloudSun,
   Gauge,
   RefreshCw,
   Settings,
@@ -24,7 +26,20 @@ import {
 import { CityModel } from "./CityModel";
 import { CAMPUS_CANVAS_GL, CampusLighting } from "./lighting/CampusLighting";
 import { ShadowBaker } from "./lighting/ShadowBaker";
+import { useDemandLoop } from "./render/useDemandLoop.mjs";
+import { useInteractionDpr } from "./render/interactionDpr.mjs";
+import { attachCanvasLifecycle } from "./render/canvasLifecycle.mjs";
+import { useLiveTraffic } from "./render/useLiveTraffic";
+import { CAMERA_PRESETS, OVERVIEW_PRESET_ID } from "./camera/cameraPresets.mjs";
+import { isFlyToEvent, useFlyTo } from "./camera/useFlyTo.mjs";
+import { useCameraTour } from "./camera/useCameraTour.mjs";
+import { useSceneWeather } from "./weather/useSceneWeather.mjs";
+import { SceneWeatherBinding } from "./weather/SceneWeatherBinding";
+import { kstMinuteOfDay, minuteOfDayFromParts, splitMinuteOfDay } from "./weather/sceneClock.mjs";
+import { CAMPUS_MODEL_URL } from "./campusModelAsset.mjs";
 import { AccessibleDialog } from "./components/AccessibleDialog";
+import { CameraPresetBar } from "./components/CameraPresetBar";
+import { TimeSlider } from "./components/TimeSlider";
 import { MicroclimatePanel } from "./components/MicroclimatePanel";
 import { PanelErrorBoundary } from "./components/PanelErrorBoundary";
 import {
@@ -56,6 +71,13 @@ import {
   getSunState,
   getSunVector,
 } from "./utils/sunPosition.mjs";
+
+// CityModel의 선택 색 전환(감쇠율 8/s, 약 0.9초)과 포커스 카메라 비행(프레임당 4 % 보간)은 스스로 invalidate하지 않으므로
+// 그동안 메인 루프를 always로 돌린다. 교통 시뮬레이션이 멈춘 뒤에는 에이전트 보간이 목표에 닿을 때까지,
+// 패널을 여닫은 뒤에는 300ms 전환이 끝난 화면으로 라벨 가림 판정을 다시 할 때까지 돌린다.
+const SELECTION_ANIMATION_MS = 3000;
+const TRAFFIC_SETTLE_MS = 1500;
+const PANEL_TRANSITION_MS = 450;
 
 const ALERT_RULES = [
   {
@@ -130,6 +152,52 @@ function SceneLoadingSignal({ onChange }) {
     return () => onChange(false);
   }, [onChange]);
   return null;
+}
+
+// 3D 모델의 바이트 진행률. drei의 useProgress는 항목 수만 세므로, 같은 URL을 FileLoader로 한 번 더 요청해 three가
+// 진행 중인 요청에 콜백을 합치게 한다(중복 요청 없음). 항목이 하나라도 끝났거나(loaded > 0) 로딩 관리자가 쉬고 있으면
+// 바이트 수신은 이미 끝난 뒤라 붙지 않는다.
+function useCampusModelProgress(active) {
+  const { active: managerActive, loaded: itemsLoaded } = useProgress();
+  const [bytes, setBytes] = useState(null);
+  const tappedRef = useRef(false);
+
+  useEffect(() => {
+    if (!active) {
+      tappedRef.current = false;
+      setBytes(null);
+      return undefined;
+    }
+    if (tappedRef.current || !managerActive || itemsLoaded > 0) return undefined;
+    tappedRef.current = true;
+    let disposed = false;
+    const loader = new FileLoader();
+    loader.setResponseType("arraybuffer");
+    loader.load(
+      CAMPUS_MODEL_URL,
+      () => {
+        if (!disposed) setBytes((previous) => ({ loaded: previous?.total ?? 0, total: previous?.total ?? 0, done: true }));
+      },
+      (event) => {
+        if (!disposed && event.lengthComputable) setBytes({ loaded: event.loaded, total: event.total, done: false });
+      },
+      () => {},
+    );
+    return () => {
+      disposed = true;
+    };
+  }, [active, itemsLoaded, managerActive]);
+
+  return bytes;
+}
+
+const MEGABYTE = 1024 * 1024;
+function formatModelProgress(bytes, fileName) {
+  if (!bytes) return null;
+  if (bytes.done) return `${fileName} 100% · 모델 처리 중`;
+  if (!(bytes.total > 0)) return null;
+  const percent = Math.min(99, Math.floor((bytes.loaded / bytes.total) * 100));
+  return `${fileName} ${percent}% (${(bytes.loaded / MEGABYTE).toFixed(1)}/${(bytes.total / MEGABYTE).toFixed(1)} MB)`;
 }
 
 function FloatingPanel({ className = "", children }) {
@@ -232,6 +300,9 @@ export default function App() {
   const panelRef = useRef(null);
   const mapLayerRef = useRef(null);
   const sceneStatusRef = useRef(null);
+  const hudRef = useRef(null);
+  const canvasStateRef = useRef(null);
+  const activePresetRef = useRef(null);
   const [selectedId, setSelectedId] = useState("");
   const [selectedBuildingId, setSelectedBuildingId] = useState("D4");
   const [editorRequest, setEditorRequest] = useState(null);
@@ -249,6 +320,8 @@ export default function App() {
   const [sunDay, setSunDay] = useState(() => new Date().getDate());
   const [sunHour, setSunHour] = useState(() => new Date().getHours());
   const [sunMinute, setSunMinute] = useState(() => new Date().getMinutes());
+  const [isTimePlaying, setIsTimePlaying] = useState(false);
+  const [activePresetId, setActivePresetId] = useState(OVERVIEW_PRESET_ID);
   const [simTemp, setSimTemp] = useState(20);
   const [activeTab, setActiveTab] = useState("dashboard"); // dashboard, parking_safety, energy, environment, microclimate
   const [isPanelOpen, setIsPanelOpen] = useState(true);
@@ -311,12 +384,12 @@ export default function App() {
   // 좁은 화면에서 열린 패널은 지도 전체를 덮는다. 그 밑의 3D 지도(캠퍼스 라벨 포함)와 3D 로딩 안내는
   // 보이지 않으므로 포커스·클릭·보조 기술 대상에서 뺀다. 패널이 지도를 다 덮지 않는 넓은 화면은 그대로 둔다.
   useEffect(() => {
-    for (const element of [mapLayerRef.current, sceneStatusRef.current]) {
+    for (const element of [mapLayerRef.current, sceneStatusRef.current, hudRef.current]) {
       if (!element) continue;
       if (isMapCoveredByPanel) element.setAttribute("inert", "");
       else element.removeAttribute("inert");
     }
-  }, [isMapCoveredByPanel, isSceneLoading]);
+  }, [isMapCoveredByPanel, isSceneLoading, buildingViewMode]);
 
   const activeWeather = useMemo(() => {
     if (!weatherData?.base_weather) return null;
@@ -370,6 +443,22 @@ export default function App() {
     () => getSunVector({ altitude: sunState.altitude, azimuth: sunState.azimuth }),
     [sunState.altitude, sunState.azimuth],
   );
+
+  // 시간 슬라이더는 하루 0..1439분(KST) 하나로 sunHour/sunMinute를 움직인다. Live 모드에서는 현재 KST 시각을 보여 주고,
+  // 슬라이더를 움직이면 그 시각부터 시뮬레이션 모드로 바뀐다(환경 시뮬 탭의 시/분 슬라이더와 같은 상태).
+  const isLiveMode = mode === "live";
+  const sceneMinuteOfDay = isLiveMode
+    ? kstMinuteOfDay(currentTime)
+    : minuteOfDayFromParts({ hour: sunHour, minute: sunMinute });
+  const setSceneMinuteOfDay = useCallback((minute) => {
+    const parts = splitMinuteOfDay(minute);
+    setSunHour(parts.hour);
+    setSunMinute(parts.minute);
+    setMode("simulation");
+  }, []);
+
+  const sceneWeather = useSceneWeather({ weatherData, weatherState });
+  const sceneWeatherScene = sceneWeather.scene;
 
   const sceneBackground = sunState.visible ? "#d6e0e6" : "#09111d";
   const sunAltitudeDegrees = (sunState.altitude * 180) / Math.PI;
@@ -578,6 +667,9 @@ export default function App() {
   // 때만 자동으로 갱신한다. 반대로 모든 건물에서 일정 범위 밖으로 줌아웃하면
   // (anchor === null) 미기후 보기를 접고 기본 현황 패널로 되돌아간다.
   const handleBuildingProximity = useCallback((anchor) => {
+    // 카메라가 시점 버튼으로 간 자리에 있는 동안(사용자가 직접 조작하기 전)에는 근처 건물의 미기후를 자동으로 열지 않는다.
+    // D4 시점은 정해진 오프셋 때문에 이웃 건물이 더 가까워진다. 멀어져서 닫는 것은 그대로 둔다.
+    if (anchor && activePresetRef.current) return;
     if (!anchor) {
       if (activeTab === "microclimate") {
         setActiveTab("dashboard");
@@ -623,11 +715,157 @@ export default function App() {
   }, [fetchMicroclimate, popupData, popupError, popupLoading, selectedBuildingId]);
   const showMicroclimateTab = Boolean(selectedId) || activeTab === "microclimate";
 
+  const liveTraffic = useLiveTraffic();
+  const { frameloop, animateFor } = useDemandLoop({ modalOpen: buildingViewMode === "section", liveTraffic });
+  const interactionDpr = useInteractionDpr();
+  useEffect(() => {
+    animateFor(SELECTION_ANIMATION_MS);
+  }, [animateFor, selectedId, sunState.visible, isSceneLoading]);
+  useEffect(() => {
+    if (!liveTraffic) animateFor(TRAFFIC_SETTLE_MS);
+  }, [animateFor, liveTraffic]);
+  useEffect(() => {
+    animateFor(PANEL_TRANSITION_MS);
+  }, [animateFor, isPanelOpen, activeTab, buildingViewMode]);
+  const handleCanvasCreated = useCallback((state) => {
+    canvasStateRef.current = state;
+    attachCanvasLifecycle(state);
+  }, []);
+  const getCanvasScene = useCallback(() => canvasStateRef.current?.scene ?? null, []);
+  const { flyTo } = useFlyTo({ controlsRef: orbitControlsRef, getScene: getCanvasScene });
+  useEffect(() => {
+    activePresetRef.current = activePresetId;
+  }, [activePresetId]);
+  const goToPreset = useCallback((preset) => {
+    if (!flyTo(preset)) return;
+    setActivePresetId(preset.id);
+  }, [flyTo]);
+  const { touring, toggleTour, stopTour } = useCameraTour({
+    presets: CAMERA_PRESETS,
+    activeId: activePresetId,
+    goToPreset,
+  });
+  const selectPreset = useCallback((preset) => {
+    stopTour();
+    goToPreset(preset);
+  }, [goToPreset, stopTour]);
+  // D4 상세가 열리면 캠퍼스 카메라와 시간 재생을 멈춘다. 뒤에 가려진 장면을 계속 움직일 이유가 없다.
+  useEffect(() => {
+    if (buildingViewMode === "campus") return;
+    stopTour();
+    setIsTimePlaying(false);
+  }, [buildingViewMode, stopTour]);
+  const modelProgress = useCampusModelProgress(isSceneLoading);
+  const modelProgressLabel = formatModelProgress(modelProgress, CAMPUS_MODEL_URL.split("/").pop());
+
+  // 대시보드는 1초 시계로 매초 다시 렌더된다. 씬 트리까지 다시 렌더되면 인라인 이벤트 핸들러가 바뀐 것으로
+  // 보고 R3F가 invalidate해서 demand 루프가 매초 그리므로, 씬에 실제로 들어가는 값이 바뀔 때만 다시 만든다.
+  const sunVisible = sunState.visible;
+  const sunAltitude = sunState.altitude;
+  const labelsHidden = buildingViewMode !== "campus";
+  const { onStart: lowerDprOnOrbitStart, onEnd: handleOrbitEnd } = interactionDpr;
+  // 사용자가 직접 궤도 조작을 시작하면(시점 비행이 보낸 start는 제외) 투어를 멈추고 눌린 시점 표시를 지운다.
+  const handleOrbitStart = useCallback((event) => {
+    lowerDprOnOrbitStart();
+    if (isFlyToEvent(event)) return;
+    stopTour();
+    setActivePresetId(null);
+  }, [lowerDprOnOrbitStart, stopTour]);
+  const campusScene = useMemo(() => (
+    <>
+      <color attach="background" args={[sceneBackground]} />
+      <CampusLighting sunVector={sunVector} sunVisible={sunVisible} sunAltitude={sunAltitude} />
+      <SceneWeatherBinding
+        sunIntensityScale={sceneWeatherScene.sunIntensityScale}
+        fogDensityScale={sceneWeatherScene.fogDensityScale}
+        turbidityDelta={sceneWeatherScene.turbidityDelta}
+        ambientScale={sceneWeatherScene.ambientScale}
+      />
+      {sunVisible && (
+        <mesh position={sunVector.map(v => v * 100)}>
+          <sphereGeometry args={[10, 32, 32]} />
+          <meshBasicMaterial color="#ffe87c" />
+        </mesh>
+      )}
+      <Suspense fallback={<SceneLoadingSignal onChange={setIsSceneLoading} />}>
+        <CityModel
+          position={[0, 0, 0]}
+          controlsRef={orbitControlsRef}
+          isNight={!sunVisible}
+          selectedId={selectedId}
+          onSelect={handleSelect}
+          onBuildingClick={handleBuildingClick}
+          onBuildingProximity={handleBuildingProximity}
+          onD4Enter={handleD4Enter}
+          labelsHidden={labelsHidden}
+          occluderRef={panelRef}
+        />
+        <CampusTrafficSimulation />
+        <ShadowBaker sunKey={sunVector.join(",")} />
+      </Suspense>
+      <OrbitControls
+        ref={orbitControlsRef}
+        onStart={handleOrbitStart}
+        onEnd={handleOrbitEnd}
+        enableDamping
+        dampingFactor={0.05}
+        enableZoom
+        zoomSpeed={1}
+        minDistance={30}
+        maxDistance={520}
+        minPolarAngle={Math.PI / 6}
+        maxPolarAngle={Math.PI / 2.2}
+        target={[0, 0, 0]}
+      />
+    </>
+  ), [
+    sceneBackground, sunVector, sunVisible, sunAltitude, selectedId, labelsHidden, sceneWeatherScene,
+    handleSelect, handleBuildingClick, handleBuildingProximity, handleD4Enter, handleOrbitStart, handleOrbitEnd,
+  ]);
+
   // 루트는 overflow: clip으로 자른다. hidden은 스크롤 컨테이너라서, 닫힌 패널이 화면 밖에 만드는 공간 때문에
   // Tab 포커스가 화면 밖 요소로 가면 브라우저가 대시보드 전체를 옆으로 밀어 둔 채 남긴다.
   return (
     <div className="dashboard-root relative h-dvh w-screen overflow-clip bg-[var(--colors-canvas)] text-[var(--colors-ink)]">
       <div className="absolute inset-0" style={{ background: sceneBackground }} />
+
+      {/* 지도 위 조작: 카메라 시점(왼쪽 위)과 시간 슬라이더(왼쪽 아래). 지도보다 앞에 두어 Tab이 라벨보다 먼저 닿는다. 오른쪽 끝은 패널 토글(w-7)과 그 여백만큼 비운다.
+          좁은 화면에서 열린 패널이 지도를 다 덮으면 보이지 않게 하고 inert로 뺀다. */}
+      {buildingViewMode === "campus" && (
+        <div
+          ref={hudRef}
+          data-qa="campus-hud"
+          className={`pointer-events-none absolute inset-y-0 left-0 z-[6] transition-[right] duration-300 ${isMapCoveredByPanel ? "invisible" : ""}`}
+          style={{ right: `calc(${mapInsetRight} + 2.75rem)` }}
+        >
+          <CameraPresetBar
+            presets={CAMERA_PRESETS}
+            activeId={activePresetId}
+            onSelect={selectPreset}
+            touring={touring}
+            onToggleTour={toggleTour}
+            className="absolute left-4 top-4 max-w-[calc(100%-2rem)]"
+          />
+          <TimeSlider
+            minuteOfDay={sceneMinuteOfDay}
+            onMinuteChange={setSceneMinuteOfDay}
+            playing={isTimePlaying}
+            onPlayingChange={setIsTimePlaying}
+            live={isLiveMode}
+            className="absolute bottom-4 left-4 w-[min(24rem,calc(100%-2rem))]"
+            caption={(
+              <p
+                data-qa="scene-weather"
+                data-estimated={sceneWeather.label.estimated ? "true" : "false"}
+                className="flex items-start gap-1.5 text-[11px] font-[500] leading-[1.4] text-[var(--colors-ink-subtle)]"
+              >
+                <CloudSun size={12} aria-hidden="true" className="mt-0.5 shrink-0" />
+                <span className="min-w-0 break-keep">{sceneWeather.label.text}</span>
+              </p>
+            )}
+          />
+        </div>
+      )}
 
       <div ref={mapLayerRef} data-qa="campus-map-layer" className={`absolute inset-0 z-0 flex items-center justify-center ${CANVAS_FALLBACK_SURFACE_CLASS}`}>
         <PanelErrorBoundary
@@ -638,43 +876,16 @@ export default function App() {
         >
           {/* R3F 래퍼의 기본 overflow: hidden은 스크롤 컨테이너라서, Tab으로 캔버스 밖 라벨에 포커스가 가면
               브라우저가 래퍼를 스크롤해 3D 화면이 밀린 채 남는다. clip은 똑같이 잘라 내되 스크롤되지 않는다. */}
-          <Canvas camera={{ position: [0, 260, 260], fov: 50 }} shadows="percentage" gl={CAMPUS_CANVAS_GL} style={{ overflow: "clip" }}>
-            <color attach="background" args={[sceneBackground]} />
-            <CampusLighting sunVector={sunVector} sunVisible={sunState.visible} sunAltitude={sunState.altitude} />
-            {sunState.visible && (
-              <mesh position={sunVector.map(v => v * 100)}>
-                <sphereGeometry args={[10, 32, 32]} />
-                <meshBasicMaterial color="#ffe87c" />
-              </mesh>
-            )}
-            <Suspense fallback={<SceneLoadingSignal onChange={setIsSceneLoading} />}>
-              <CityModel
-                position={[0, 0, 0]}
-                controlsRef={orbitControlsRef}
-                isNight={!sunState.visible}
-                selectedId={selectedId}
-                onSelect={handleSelect}
-                onBuildingClick={handleBuildingClick}
-                onBuildingProximity={handleBuildingProximity}
-                onD4Enter={handleD4Enter}
-                labelsHidden={buildingViewMode !== "campus"}
-                occluderRef={panelRef}
-              />
-              <CampusTrafficSimulation />
-              <ShadowBaker sunKey={sunVector.join(",")} />
-            </Suspense>
-            <OrbitControls
-              ref={orbitControlsRef}
-              enableDamping
-              dampingFactor={0.05}
-              enableZoom
-              zoomSpeed={1}
-              minDistance={30}
-              maxDistance={520}
-              minPolarAngle={Math.PI / 6}
-              maxPolarAngle={Math.PI / 2.2}
-              target={[0, 0, 0]}
-            />
+          <Canvas
+            camera={{ position: [0, 260, 260], fov: 50 }}
+            shadows="percentage"
+            gl={CAMPUS_CANVAS_GL}
+            frameloop={frameloop}
+            dpr={interactionDpr.dpr}
+            onCreated={handleCanvasCreated}
+            style={{ overflow: "clip" }}
+          >
+            {campusScene}
           </Canvas>
         </PanelErrorBoundary>
       </div>
@@ -702,7 +913,14 @@ export default function App() {
                 </button>
               </>
             ) : (
-              "3D 캠퍼스 모델을 불러오는 중입니다"
+              <span className="min-w-0 break-keep">
+                3D 캠퍼스 모델을 불러오는 중입니다
+                {modelProgressLabel && (
+                  <span data-qa="scene-loading-progress" className="ml-2 tabular-nums text-[var(--colors-ink-subtle)]">
+                    {modelProgressLabel}
+                  </span>
+                )}
+              </span>
             )}
           </div>
         </div>

@@ -65,7 +65,7 @@ function RoomBox({ room, x, z, width, isSelected, isInUse, onSelect }) {
 // 콘텐츠 크기(줄 수 · 최대 폭)와 캔버스 비율에 맞춰 카메라 거리를 매번 다시 계산해서
 // 방이 많은 줄도 화면 밖으로 잘리지 않도록 한다.
 function FitCamera({ contentWidth, contentDepth }) {
-  const { camera, size } = useThree();
+  const { camera, size, invalidate } = useThree();
 
   useEffect(() => {
     const aspect = size.width / Math.max(1, size.height);
@@ -79,7 +79,8 @@ function FitCamera({ contentWidth, contentDepth }) {
     camera.position.set(0, distance * 0.62, distance * 0.82);
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
-  }, [camera, size, contentWidth, contentDepth]);
+    invalidate();
+  }, [camera, size, contentWidth, contentDepth, invalidate]);
 
   return null;
 }
@@ -98,7 +99,7 @@ export function D4RoomGridScene({ rooms, roomUsageById, selectedRoomId, onSelect
   const contentDepth = rowCount * ROW_DEPTH + 1.6;
 
   return (
-    <Canvas camera={{ fov: 26 }} shadows="percentage" gl={{ alpha: true }}>
+    <Canvas camera={{ fov: 26 }} shadows="percentage" gl={{ alpha: true }} frameloop="demand">
       <FitCamera contentWidth={contentWidth} contentDepth={contentDepth} />
       <ambientLight intensity={1.2} />
       <directionalLight position={[5, 8, 6]} intensity={1.3} castShadow />
