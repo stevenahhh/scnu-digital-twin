@@ -584,7 +584,6 @@ export function CityModel({
 
     const box = new THREE.Box3().setFromObject(root);
     const center = box.getCenter(new THREE.Vector3());
-    setIsAutoFocusing(true);
     setTargetPos(center);
 
     const size = new THREE.Vector3();
