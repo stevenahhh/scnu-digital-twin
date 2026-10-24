@@ -318,6 +318,134 @@ The scripts that produced the data are in `.../scratch/DET/`: `detcommon.py`, `p
 `components.py`, `classify.py`, `export_markings.py`, `sun.py`, `objects.py`, `final_overlays.py`,
 `handcheck.py` and `roundtrip.py`.
 
+## markings-extra.geojson (M2 completion pass)
+
+`markings-extra.geojson` adds the painted markings that `markings.geojson` misses, and lists the ones it gets
+wrong. It does not repeat features that are already right in `markings.geojson`: use both files together, after
+applying the corrections. The schema is the same (WGS84, 8 decimals, `kind`, `colour`, `width_m`, `length_m`,
+`source: "ngii-2025-ortho"`, `estimated`), with three more fields:
+
+- `method`: `detect` (a paint component from the detector, kept after review) or `trace` (picked or outlined
+  on the tile sheet by eye, then snapped to the paint where the paint is resolvable).
+- `confidence`: 0.3-0.7.
+- `tile`: the survey tile it was reviewed in.
+
+Generated 2026-10-25.
+
+### Counts (915 features)
+
+| kind | n | geometry |
+|---|---:|---|
+| lane_line_dashed | 195 | one polygon per dash. `dotted: true` marks guide dots |
+| parking_line | 162 | painted stall outline polygon, with holes |
+| kerb_no_parking | 125 | yellow line along the kerb (LineString with `width_m`) |
+| text | 91 | outlined glyph polygons (one per glyph or glyph cluster) |
+| zebra_bar | 90 | bars of crossings that `markings.geojson` misses |
+| centre_line_yellow | 56 | LineString. `dashed: true` marks short pieces |
+| disabled_parking | 37 | blue bay outline (traced by eye, about 0.3 m) |
+| speed_bump | 28 | yellow-striped raised crossings and hump bars |
+| chevron | 24 | yellow channelising island outlines |
+| stop_line | 24 | |
+| hatch | 21 | yellow hatched medians and boxes |
+| arrows | 28 | `arrow_straight` 17, `arrow_straight_left` 4, `arrow_left` 3, `arrow_right` 3, `arrow_uturn` 1 |
+| edge_line, diamond, lane_line_solid, give_way_line, bike_lane_blue, give_way | 34 | 10, 8, 6, 5, 4, 1 |
+
+By method: 591 `detect` and 324 `trace`.
+
+### Corrections to markings.geojson
+
+These are in `properties.corrections` (479 entries): `{id, was, action, kind?, reason}`.
+
+- `delete` (278): the feature is not paint. They are roof edges, kerb stones, cars, shadows, crossing-frame
+  artefacts or field rows. This includes most of the `other` features.
+- `kind` (201): the feature is paint with the wrong kind. Mostly yellow `centre_line_yellow` / `edge_line`
+  features that are kerb no-parking lines, `other` features that are lane dashes, stop lines, text, diamonds or
+  parking lines, and the 27 `arrow` features (with the arrow type).
+
+The ids were checked on chip sheets: every `arrow`, `hatch` and unverified stop line, every `other`, every
+off-road or vegetated feature, and the yellow lines that the kerb test flagged.
+
+### Method
+
+1. **Detection.** Each survey tile was upsampled 4x (cubic). The detector takes a white top-hat (1.5 m opening,
+   with the background floored by a 2.25 m median) plus a yellowness and a blueness top-hat, normalised inside
+   cast shadows. A hysteresis threshold of 21/32 grey levels is applied.
+   - The support is all of EXTENT except vegetation and GIS footprints, minus A003 walkways. Lots on
+     asphalt-coloured footprints got a separate pass.
+   - White and yellow paint are labelled separately.
+   - Thin faint lines come from a Hessian ridge detector on the top-hat images.
+2. **Candidate review.** Components that did not overlap `markings.geojson` were gated by ring colour, contrast
+   and colour. The roughly 1,700 survivors were looked at on chip sheets and given a kind.
+3. **Tile review.** All 154 tiles were looked at on 3x sheets, with both files drawn on the photo.
+   - Missing marks were added by picking the nearest paint component, or by thresholding the top-hat inside a
+     drawn polygon. That is how stall grids, crossings, text, arrows and stop lines were added.
+   - Blue bays and some raised crossings were outlined by eye.
+   - `properties.tiles_checked` records the kinds checked and a note per tile. `properties.misses_logged` lists
+     the paint that was seen but not captured.
+4. **Final pass.** Every exported feature was looked at once more on chip sheets (28 sheets), and wrong ones
+   were dropped or re-kinded. Zebra bars were kept only when at least 80 % of their axis lies on paint.
+
+### Verification
+
+**Precision.** 30 random features per kind (all of them for kinds with fewer than 10) were sampled after the
+final pass and looked at one by one. "Paint" means the feature lies on real paint; "kind" means the kind label is
+also right.
+
+| kind | sampled | paint | kind |
+|---|---:|---:|---:|
+| lane_line_dashed | 30 | 28 | 27 |
+| text | 30 | 28 | 28 |
+| parking_line | 30 | 26 | 26 |
+| speed_bump | 28 | 26 | 26 |
+| zebra_bar | 30 | 25 | 25 |
+| kerb_no_parking | 30 | 23 | 23 |
+| stop_line | 24 | 22 | 19 |
+| centre_line_yellow | 30 | 22 | 18 |
+| small kinds (arrows, diamonds, blue, give-way, solid lane) | 35 | 32 | 27 |
+
+Overall that is 252 of 267 on paint (0.94) and 229 of 267 with the right kind (0.86). The 95 % target is met
+only by `lane_line_dashed` and `text`. The weak kinds are:
+
+- `centre_line_yellow`: ridge lines on kerbs, crossing frames and shadows.
+- `kerb_no_parking`: kerb stones and median edges that read as yellow.
+- `stop_line`: lane-end lines and parking lines labelled as stop lines.
+
+**Recall.** In 8 tiles (the 4 survey windows and the 4 random windows), every visible painted mark was counted
+by eye on the read-back overlay, with both files drawn.
+
+| tile | visible | covered | share |
+|---|---:|---:|---:|
+| T0512 main gate | about 65 | about 50 | 0.77; most lane arrows are missed |
+| T0407 roundabout | about 45 | about 40 | 0.89 |
+| T0306 plaza | about 2 | 0 | |
+| T0609 stands | about 6 | about 4 | |
+| T0310 random 1 | about 12 | about 10 | |
+| T0112 random 2 | about 45 | about 41 | 0.91 |
+| T0005 random 3 | about 14 | about 11 | |
+| T0903 random 4 | 0 | 0 | forest |
+| **total** | **about 189** | **about 156** | **about 0.83** |
+
+The 90 % recall target is **not** met. The known shortfalls are:
+
+- Lane arrows at the gate approaches, shaded stall grids, and faint dotted edge lines.
+- Zebra crossings on light paving or fused into frames: a few dozen bars.
+- Speed-limit digits under canopy.
+
+### Use guidance
+
+- Apply `corrections` to `markings.geojson` first, then add these features.
+- Trust `lane_line_dashed`, `text`, `parking_line`, `speed_bump` and `disabled_parking` as drawn.
+- Check `centre_line_yellow`, `kerb_no_parking` and `stop_line` against the road geometry, as with the line
+  kinds of `markings.geojson`.
+
+The overlay sheets are scratch files and are not committed:
+`/var/folders/rq/qv2klg3545dd43p09b965vkm0000gn/T/ulw-campus5.LEUM5bhB6O/scratch/M2/`
+
+- `final/`: every tile, in pairs, plus the 8 recall tiles.
+- `precision/`: the sampled chips.
+- `full/`: the final per-feature review.
+- `review_state.json`, `chip_decisions.json`, `full_decisions.json` and `misses.json`: the review state.
+
 ## Licence
 
 Source: **국토지리정보원 (NGII), 정사영상 2025, sheet 34702020 (순천020)**, metadata 202504000734702020, made by
