@@ -40,6 +40,21 @@ const BUILDING_MAP = {
 };
 
 const FOCUS_CAMERA_OFFSET = new THREE.Vector3(60, 50, 60);
+
+// 인스턴싱된 줄기는 노드 자체가 메시가 되기도 하므로 자신과 부모 이름을 모두 본다.
+// 지형(Ground)과 나무 줄기는 그림자를 드리울 필요가 없다: 지면은 스스로를 가리지 않고,
+// 줄기는 수관 그림자에 묻힌다. 둘 다 그림자를 받는 것(receiveShadow)은 유지한다.
+const NON_CASTER_MATERIAL_NAME = "Ground";
+const NON_CASTER_PARENT_PATTERN = /^Trees_.*_trunk/;
+
+// 색 전환은 선택/주야가 바뀐 뒤에만, 남은 차이가 이 값보다 작아질 때까지 돈다.
+const MATERIAL_SETTLE_EPSILON = 1e-3;
+const MATERIAL_EASE_RATE = 8;
+const SELECTED_COLOR = new THREE.Color("#ffb8c6");
+const NIGHT_TINT_COLOR = new THREE.Color("#c8d6e5");
+// 프레임마다 새 객체를 만들지 않도록 재사용하는 스크래치 값.
+const scratchColor = new THREE.Color();
+const scratchCamPos = new THREE.Vector3();
 const ELEMENT_NAME_MAP = new Map(
   commonElements.elements.map((element) => [element.element_id, element.name]),
 );
@@ -133,8 +148,10 @@ export function CityModel({
   const { scene } = useGLTF(CAMPUS_MODEL_URL);
   const { camera, gl } = useThree();
   const [targetPos, setTargetPos] = useState(null);
-  const [isAutoFocusing, setIsAutoFocusing] = useState(false);
   const [labelScale, setLabelScale] = useState(1);
+  const tintedMeshesRef = useRef([]);
+  const materialTransitionRef = useRef(true);
+  const traverseStatsRef = useRef(null);
   const closeElementIdRef = useRef(null);
   const isInsideD4Ref = useRef(false);
   const labelElementsRef = useRef(new Map());
@@ -148,15 +165,35 @@ export function CityModel({
     const controls = controlsRef?.current;
     if (!controls) return;
 
+    // 사용자가 직접 조작을 시작하면 자동 포커스 비행을 즉시 취소한다.
     const handleInteraction = () => {
-      if (!isAutoFocusing) {
-        setTargetPos(null);
-      }
+      setTargetPos(null);
     };
 
     controls.addEventListener("start", handleInteraction);
     return () => controls.removeEventListener("start", handleInteraction);
-  }, [controlsRef, isAutoFocusing]);
+  }, [controlsRef]);
+
+  useEffect(() => {
+    materialTransitionRef.current = true;
+  }, [selectedId, isNight]);
+
+  // 개발 모드 전용: 유휴 프레임에서 scene.traverse가 몇 번 불리는지 센다(한 번만 로그).
+  useEffect(() => {
+    if (!import.meta.env.DEV || !scene) return undefined;
+    const stats = { calls: 0, lastCalls: 0, idleFrames: 0, idleMax: 0, logged: false };
+    traverseStatsRef.current = stats;
+    const originalTraverse = scene.traverse;
+    scene.traverse = function countedTraverse(...args) {
+      stats.calls += 1;
+      return originalTraverse.apply(this, args);
+    };
+    if (typeof window !== "undefined") window.__cityModelTraverseStats = stats;
+    return () => {
+      scene.traverse = originalTraverse;
+      traverseStatsRef.current = null;
+    };
+  }, [scene]);
 
   useEffect(() => {
     const controls = controlsRef?.current;
@@ -184,15 +221,29 @@ export function CityModel({
     if (!scene) return;
 
     const anisotropy = gl.capabilities.getMaxAnisotropy();
+    const tintedMeshes = [];
+    const nonCasterNames = [];
     scene.traverse((child) => {
       if (!child.isMesh) return;
 
-      child.castShadow = true;
+      const isNonCaster =
+        child.material?.name === NON_CASTER_MATERIAL_NAME ||
+        NON_CASTER_PARENT_PATTERN.test(child.parent?.name ?? "") ||
+        NON_CASTER_PARENT_PATTERN.test(child.name);
+      child.castShadow = !isNonCaster;
+      if (isNonCaster) nonCasterNames.push(child.name);
       child.receiveShadow = true;
       child.material = child.material.clone();
+      child.userData.selectableName = getSelectableMeta(child)?.name ?? null;
 
       if (!child.userData.originalColor && child.material.color) {
         child.userData.originalColor = child.material.color.clone();
+      }
+      if (child.userData.originalColor) {
+        child.userData.nightColor = child.userData.originalColor
+          .clone()
+          .lerp(NIGHT_TINT_COLOR, 0.16);
+        tintedMeshes.push(child);
       }
       // campus-v2.glb: sharper ground/facade textures at grazing angles, and window glow only at night.
       if (child.material.map) child.material.map.anisotropy = anisotropy;
@@ -201,6 +252,9 @@ export function CityModel({
         child.material.emissiveIntensity = 0;
       }
     });
+    tintedMeshesRef.current = tintedMeshes;
+    if (traverseStatsRef.current) traverseStatsRef.current.nonCasterNames = nonCasterNames;
+    materialTransitionRef.current = true;
   }, [gl, scene]);
 
   const labelAnchors = useMemo(() => {
@@ -217,41 +271,75 @@ export function CityModel({
     return new THREE.Vector3(x, 0, z);
   }, [labelAnchors]);
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     const controls = controlsRef?.current;
+    const transitioning = materialTransitionRef.current;
 
-    if (scene) {
-      scene.traverse((child) => {
-        if (!child.isMesh || !child.userData.originalColor) return;
+    if (transitioning) {
+      // 프레임 속도와 무관한 지수 감쇠. 탭 복귀 등 긴 프레임은 한 번에 끝까지 가도록 1로 수렴한다.
+      const ease = 1 - Math.exp(-MATERIAL_EASE_RATE * Math.min(delta, 1));
+      const glow = isNight ? 1 : 0;
+      let maxDelta = 0;
 
-        const meta = getSelectableMeta(child);
-        const isSelected = meta?.name === selectedId || child.name === selectedId;
-        const baseColor = child.userData.originalColor.clone();
+      for (const child of tintedMeshesRef.current) {
+        const { userData, material } = child;
+        const isSelected =
+          userData.selectableName === selectedId || child.name === selectedId;
         const targetColor = isSelected
-          ? new THREE.Color("#ffb8c6")
+          ? SELECTED_COLOR
           : isNight
-            ? baseColor.clone().lerp(new THREE.Color("#c8d6e5"), 0.16)
-            : baseColor;
+            ? userData.nightColor
+            : userData.originalColor;
 
-        child.material.color.lerp(targetColor, 0.05);
-        if (child.userData.hasWindowGlow) {
-          const glow = isNight ? 1 : 0;
-          child.material.emissiveIntensity += (glow - child.material.emissiveIntensity) * 0.05;
+        const color = material.color;
+        const remaining = Math.max(
+          Math.abs(targetColor.r - color.r),
+          Math.abs(targetColor.g - color.g),
+          Math.abs(targetColor.b - color.b),
+        );
+        if (remaining < MATERIAL_SETTLE_EPSILON) {
+          color.copy(targetColor);
+        } else {
+          color.lerp(scratchColor.copy(targetColor), ease);
+          maxDelta = Math.max(maxDelta, remaining * (1 - ease));
         }
-      });
+
+        if (userData.hasWindowGlow) {
+          const glowRemaining = glow - material.emissiveIntensity;
+          if (Math.abs(glowRemaining) < MATERIAL_SETTLE_EPSILON) {
+            material.emissiveIntensity = glow;
+          } else {
+            material.emissiveIntensity += glowRemaining * ease;
+            maxDelta = Math.max(maxDelta, Math.abs(glowRemaining) * (1 - ease));
+          }
+        }
+      }
+
+      if (maxDelta < MATERIAL_SETTLE_EPSILON) {
+        materialTransitionRef.current = false;
+      }
     }
 
     if (targetPos && controls) {
       controls.target.lerp(targetPos, 0.08);
-      const desiredCamPos = targetPos.clone().add(FOCUS_CAMERA_OFFSET);
+      const desiredCamPos = scratchCamPos.copy(targetPos).add(FOCUS_CAMERA_OFFSET);
       camera.position.lerp(desiredCamPos, 0.04);
       controls.update();
+    }
 
-      if (
-        controls.target.distanceTo(targetPos) < 0.8 &&
-        camera.position.distanceTo(desiredCamPos) < 1.2
-      ) {
-        setIsAutoFocusing(false);
+    const stats = traverseStatsRef.current;
+    if (stats) {
+      const callsThisFrame = stats.calls - stats.lastCalls;
+      stats.lastCalls = stats.calls;
+      if (!transitioning && !targetPos) {
+        stats.idleFrames += 1;
+        stats.idleMax = Math.max(stats.idleMax, callsThisFrame);
+        if (!stats.logged && stats.idleFrames >= 120) {
+          stats.logged = true;
+          console.info(
+            `[CityModel] scene.traverse calls per idle frame: ${stats.idleMax} (over ${stats.idleFrames} frames)`,
+          );
+        }
       }
     }
 
