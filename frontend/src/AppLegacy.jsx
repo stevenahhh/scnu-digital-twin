@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, useProgress } from "@react-three/drei";
 import { FileLoader } from "three";
@@ -29,6 +29,7 @@ import { ShadowBaker } from "./lighting/ShadowBaker";
 import { useDemandLoop } from "./render/useDemandLoop.mjs";
 import { useInteractionDpr } from "./render/interactionDpr.mjs";
 import { attachCanvasLifecycle } from "./render/canvasLifecycle.mjs";
+import { QUALITY_LABELS, QUALITY_TIERS, useQualityPreset } from "./settings/qualityPreset.mjs";
 import { useLiveTraffic } from "./render/useLiveTraffic";
 import { CAMERA_PRESETS, OVERVIEW_PRESET_ID } from "./camera/cameraPresets.mjs";
 import { isFlyToEvent, useFlyTo } from "./camera/useFlyTo.mjs";
@@ -76,6 +77,8 @@ import {
 // 그동안 메인 루프를 always로 돌린다. 교통 시뮬레이션이 멈춘 뒤에는 에이전트 보간이 목표에 닿을 때까지,
 // 패널을 여닫은 뒤에는 300ms 전환이 끝난 화면으로 라벨 가림 판정을 다시 할 때까지 돌린다.
 const SELECTION_ANIMATION_MS = 3000;
+// 보통/높음 품질의 후처리 청크. 낮음에서는 마운트하지 않으므로 내려받지도 않는다.
+const HighTierEffects = lazy(() => import("./postfx/HighTierEffects"));
 const TRAFFIC_SETTLE_MS = 1500;
 const PANEL_TRANSITION_MS = 450;
 
@@ -718,6 +721,7 @@ export default function App() {
   const liveTraffic = useLiveTraffic();
   const { frameloop, animateFor } = useDemandLoop({ modalOpen: buildingViewMode === "section", liveTraffic });
   const interactionDpr = useInteractionDpr();
+  const { quality, qualitySource, setQuality, applyDetectedDefault } = useQualityPreset();
   useEffect(() => {
     animateFor(SELECTION_ANIMATION_MS);
   }, [animateFor, selectedId, sunState.visible, isSceneLoading]);
@@ -730,7 +734,8 @@ export default function App() {
   const handleCanvasCreated = useCallback((state) => {
     canvasStateRef.current = state;
     attachCanvasLifecycle(state);
-  }, []);
+    applyDetectedDefault(state.gl);
+  }, [applyDetectedDefault]);
   const getCanvasScene = useCallback(() => canvasStateRef.current?.scene ?? null, []);
   const { flyTo } = useFlyTo({ controlsRef: orbitControlsRef, getScene: getCanvasScene });
   useEffect(() => {
@@ -817,9 +822,14 @@ export default function App() {
         maxPolarAngle={Math.PI / 2.2}
         target={[0, 0, 0]}
       />
+      {quality !== "low" && (
+        <Suspense fallback={null}>
+          <HighTierEffects tier={quality} sunAltitude={sunAltitude} />
+        </Suspense>
+      )}
     </>
   ), [
-    sceneBackground, sunVector, sunVisible, sunAltitude, selectedId, labelsHidden, sceneWeatherScene,
+    sceneBackground, sunVector, sunVisible, sunAltitude, selectedId, labelsHidden, sceneWeatherScene, quality,
     handleSelect, handleBuildingClick, handleBuildingProximity, handleD4Enter, handleOrbitStart, handleOrbitEnd,
   ]);
 
@@ -1424,6 +1434,27 @@ export default function App() {
                       </button>
                     ))}
                   </div>
+                </div>
+                <div role="group" aria-labelledby="render-quality-label" data-qa="render-quality">
+                  <div id="render-quality-label" className="mb-3 text-[13px] font-medium text-[var(--colors-ink-subtle)]">3D 렌더링 품질</div>
+                  <div className="flex rounded-full border border-[var(--colors-hairline)] bg-[var(--colors-canvas)] p-1">
+                    {QUALITY_TIERS.map((tier) => (
+                      <button
+                        key={tier}
+                        type="button"
+                        aria-pressed={quality === tier}
+                        data-qa={`render-quality-${tier}`}
+                        onClick={() => setQuality(tier)}
+                        className={`flex flex-1 items-center justify-center rounded-full px-3 py-2 text-sm transition ${quality === tier ? "bg-[var(--colors-surface-2)] text-[var(--colors-ink)]" : "text-[var(--colors-ink-subtle)] hover:text-[var(--colors-ink)]"}`}
+                      >
+                        {QUALITY_LABELS[tier]}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-[12px] leading-[1.5] text-[var(--colors-ink-subtle)] break-keep">
+                    낮음은 기본 렌더러, 보통은 계단 현상 보정과 가벼운 접촉 그림자, 높음은 정밀한 접촉 그림자와 밤 조명 번짐을 더합니다.
+                    {qualitySource === "auto" ? " 지금은 이 기기의 그래픽 성능을 보고 자동으로 고른 값입니다." : ""}
+                  </p>
                 </div>
               </div>
             </FloatingPanel>

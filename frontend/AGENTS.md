@@ -84,6 +84,7 @@ Every dashboard fix lands in both entries unless it's listed as intentional belo
 | `MicroclimatePanel` | shared component | shared component |
 | Dialogs and error boundary | shared | shared |
 | Renderer (intentional) | Three.js GLB (`CityModel.jsx`) | VWorld WebGL SDK |
+| Render quality (intentional) | `설정` dialog 낮음/보통/높음 (`settings/qualityPreset.mjs`, lazy `postfx/HighTierEffects.jsx`) | none; the SDK owns rendering |
 | D4 entry (intentional) | GLB mesh click | `MODEL_NAME` or D4 coordinate marker |
 | Building selection (intentional) | opens the `미기후` selection tab | switches to the `에너지` tab |
 | Building detail (intentional) | rendered in a tab | popup modal |

@@ -17,11 +17,16 @@
   "dependencies": {
     "@react-three/drei": "^9.122.0",
     "@react-three/fiber": "^8.16.2",
+    "@react-three/postprocessing": "2.19.1",
     "lucide-react": "^1.7.0",
+    "postprocessing": "6.38.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "suncalc": "^1.9.0",
     "three": "^0.163.0"
+  },
+  "overrides": {
+    "postprocessing": "6.38.3"
   },
   "devDependencies": {
     "@gltf-transform/cli": "4.5.1",
