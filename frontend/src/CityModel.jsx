@@ -8,10 +8,10 @@ import { selectVisibleCampusLabels } from "./utils/campusLabelVisibility.mjs";
 import { campusModelCenter } from "./simulation/utils/campusTrafficCoordinates.mjs";
 import { CAMPUS_MODEL_URL } from "./campusModelAsset.mjs";
 import {
-  AUTUMN_CROWN_COLOR,
   AUTUMN_MATERIAL_NAMES,
-  AUTUMN_MAX_MIX,
   SUN_ALTITUDE_KEY,
+  getAutumnInstanceColor,
+  getAutumnProfile,
   getAutumnWeight,
   getNightWeight,
 } from "./lighting/season.mjs";
@@ -54,6 +54,11 @@ const FOCUS_CAMERA_OFFSET = new THREE.Vector3(60, 50, 60);
 // 줄기는 수관 그림자에 묻힌다. 둘 다 그림자를 받는 것(receiveShadow)은 유지한다.
 const NON_CASTER_MATERIAL_NAME = "Ground";
 const NON_CASTER_PARENT_PATTERN = /^Trees_.*_trunk/;
+// 가로등(Lamp_*): 실제 조명 없이 밤에만 머리(Lamp_Head)가 빛나고 바닥 빛 웅덩이(Lamp_Pool)를 가산 합성으로 그린다.
+// 그림자·클릭 대상에서 빼고, 웅덩이는 낮에는 숨겨 드로우콜을 쓰지 않는다. 캠퍼스 안쪽 가로등 위치는 추정값이다.
+const LAMP_MATERIAL_PATTERN = /^Lamp_/;
+const LAMP_POOL_MATERIAL_NAME = "Lamp_Pool";
+const LAMP_POOL_STRENGTH = 0.55;
 
 // 색 전환은 선택/주야가 바뀐 뒤에만, 남은 차이가 이 값보다 작아질 때까지 돈다.
 const MATERIAL_SETTLE_EPSILON = 1e-3;
@@ -61,9 +66,9 @@ const MATERIAL_EASE_RATE = 8;
 const SELECTED_COLOR = new THREE.Color("#ffb8c6");
 const NIGHT_TINT_COLOR = new THREE.Color("#c8d6e5");
 const NIGHT_TINT_MIX = 0.16;
-// 가을 단풍(추정): 날짜 가중치만큼 활엽수 수관(Tree_Crown) 재질 색을 단풍색 쪽으로 옮긴다. 소나무(Tree_Pine)는 그대로.
-// 재질 색은 인스턴스별 _COLOR_0과 곱해지므로 나무마다의 색 차이는 남는다.
-const AUTUMN_COLOR = new THREE.Color().setRGB(...AUTUMN_CROWN_COLOR);
+// 가을 단풍(추정): 활엽수 수관(Tree_Crown) 인스턴스마다 수종 비슷한 색(은행 노랑, 느티 적갈, 벚 빨강, 늦게 물드는 초록)과
+// 물드는 시점을 해시로 정해, 날짜 가중치가 바뀔 때만 인스턴스 색(instanceColor)을 다시 쓴다. 소나무(Tree_Pine)는 그대로.
+// 수종 배정은 추정값이며 실제 수목 조사 결과가 아니다.
 // 주야·계절 가중치가 이만큼 바뀌어야 재질을 다시 쓴다.
 const RAMP_EPSILON = 1e-4;
 // 마우스를 올린 건물은 평소 색을 선택 색 쪽으로 조금만 옮긴다. 선택(색 전체 교체)보다 약하다.
@@ -175,6 +180,8 @@ export function CityModel({
   const [targetPos, setTargetPos] = useState(null);
   const [labelScale, setLabelScale] = useState(1);
   const tintedMeshesRef = useRef([]);
+  const lampPoolsRef = useRef([]);
+  const autumnCrownsRef = useRef([]);
   const materialTransitionRef = useRef(true);
   // 현재 재질에 반영된 단풍 혼합 비율과 야간 가중치. -1은 아직 한 번도 쓰지 않았다는 뜻.
   const rampRef = useRef({ autumn: -1, night: -1 });
@@ -262,9 +269,30 @@ export function CityModel({
 
     const anisotropy = gl.capabilities.getMaxAnisotropy();
     const tintedMeshes = [];
+    const lampPools = [];
+    const autumnCrowns = [];
+    let autumnIndex = 0;
     const nonCasterNames = [];
     scene.traverse((child) => {
       if (!child.isMesh) return;
+
+      if (LAMP_MATERIAL_PATTERN.test(child.material?.name ?? "")) {
+        child.castShadow = false;
+        child.raycast = () => {};
+        if (child.material.name === LAMP_POOL_MATERIAL_NAME) {
+          child.receiveShadow = false;
+          child.material = child.material.clone();
+          child.material.blending = THREE.AdditiveBlending;
+          child.material.transparent = true;
+          child.material.depthWrite = false;
+          child.material.polygonOffset = true;
+          child.material.polygonOffsetFactor = -2;
+          child.material.opacity = 0;
+          child.visible = false;
+          lampPools.push(child);
+          return;
+        }
+      }
 
       const isNonCaster =
         child.material?.name === NON_CASTER_MATERIAL_NAME ||
@@ -280,17 +308,46 @@ export function CityModel({
         child.userData.originalColor = child.material.color.clone();
       }
       if (child.userData.originalColor) {
-        child.userData.isAutumnCrown = AUTUMN_MATERIAL_NAMES.has(child.material.name);
         tintedMeshes.push(child);
+      }
+      if (child.isInstancedMesh && AUTUMN_MATERIAL_NAMES.has(child.material.name)) {
+        if (!child.instanceColor) {
+          for (let i = 0; i < child.count; i += 1) child.setColorAt(i, new THREE.Color(1, 1, 1));
+        }
+        const material = child.userData.originalColor;
+        const instance = child.instanceColor.array;
+        // 여름 수관 색 = 재질 색 x 인스턴스 색. 단풍 색을 만든 뒤 다시 재질 색으로 나눠 인스턴스 색에 쓴다.
+        const summer = new Float32Array(child.count * 3);
+        const profiles = [];
+        let luminanceSum = 0;
+        for (let i = 0; i < child.count; i += 1) {
+          summer[i * 3] = instance[i * 3] * material.r;
+          summer[i * 3 + 1] = instance[i * 3 + 1] * material.g;
+          summer[i * 3 + 2] = instance[i * 3 + 2] * material.b;
+          luminanceSum +=
+            0.2126 * summer[i * 3] + 0.7152 * summer[i * 3 + 1] + 0.0722 * summer[i * 3 + 2];
+          profiles.push(getAutumnProfile(autumnIndex));
+          autumnIndex += 1;
+        }
+        autumnCrowns.push({
+          mesh: child,
+          summer,
+          profiles,
+          meanLuminance: luminanceSum / Math.max(child.count, 1),
+        });
       }
       // campus-v2.glb: sharper ground/facade textures at grazing angles, and window glow only at night.
       if (child.material.map) child.material.map.anisotropy = anisotropy;
       if (child.material.emissiveMap) {
         child.userData.hasWindowGlow = true;
+        // 재질에 정해 둔 발광 세기(가로등 머리는 KHR_materials_emissive_strength)를 밤 가중치의 최댓값으로 쓴다.
+        child.userData.glowScale = child.material.emissiveIntensity;
         child.material.emissiveIntensity = 0;
       }
     });
     tintedMeshesRef.current = tintedMeshes;
+    lampPoolsRef.current = lampPools;
+    autumnCrownsRef.current = autumnCrowns;
     if (traverseStatsRef.current) traverseStatsRef.current.nonCasterNames = nonCasterNames;
     materialTransitionRef.current = true;
     rampRef.current = { autumn: -1, night: -1 };
@@ -316,13 +373,35 @@ export function CityModel({
     // 주야(태양 고도)와 계절(날짜) 가중치는 그 자체가 연속이라 바뀌면 곧바로 반영한다(감쇠 없음).
     const altitude = sunAltitude ?? rootScene.userData[SUN_ALTITUDE_KEY];
     const night = Number.isFinite(altitude) ? getNightWeight(altitude) : isNight ? 1 : 0;
-    const autumn = AUTUMN_MAX_MIX * getAutumnWeight(date ?? new Date());
+    const autumn = getAutumnWeight(date ?? new Date());
     const ramp = rampRef.current;
     const rampChanged =
       Math.abs(night - ramp.night) > RAMP_EPSILON || Math.abs(autumn - ramp.autumn) > RAMP_EPSILON;
     if (rampChanged) {
+      if (Math.abs(autumn - ramp.autumn) > RAMP_EPSILON) {
+        const summerColor = [0, 0, 0];
+        const autumnColor = [0, 0, 0];
+        for (const { mesh, summer, profiles, meanLuminance } of autumnCrownsRef.current) {
+          const material = mesh.userData.originalColor;
+          const instance = mesh.instanceColor.array;
+          for (let i = 0; i < profiles.length; i += 1) {
+            summerColor[0] = summer[i * 3];
+            summerColor[1] = summer[i * 3 + 1];
+            summerColor[2] = summer[i * 3 + 2];
+            getAutumnInstanceColor(summerColor, meanLuminance, profiles[i], autumn, autumnColor);
+            instance[i * 3] = autumnColor[0] / material.r;
+            instance[i * 3 + 1] = autumnColor[1] / material.g;
+            instance[i * 3 + 2] = autumnColor[2] / material.b;
+          }
+          mesh.instanceColor.needsUpdate = true;
+        }
+      }
       ramp.night = night;
       ramp.autumn = autumn;
+      for (const pool of lampPoolsRef.current) {
+        pool.material.opacity = night * LAMP_POOL_STRENGTH;
+        pool.visible = night > 0;
+      }
     }
     const transitioning = materialTransitionRef.current || rampChanged;
 
@@ -341,7 +420,6 @@ export function CityModel({
         const isHovered =
           userData.selectableName !== null && userData.selectableName === hoveredNameRef.current;
         const baseColor = scratchBaseColor.copy(userData.originalColor);
-        if (userData.isAutumnCrown) baseColor.lerp(AUTUMN_COLOR, ramp.autumn);
         baseColor.lerp(NIGHT_TINT_COLOR, NIGHT_TINT_MIX * ramp.night);
         const targetColor = isSelected
           ? SELECTED_COLOR
@@ -363,9 +441,10 @@ export function CityModel({
         }
 
         if (userData.hasWindowGlow) {
-          const glowRemaining = glow - material.emissiveIntensity;
+          const glowTarget = glow * userData.glowScale;
+          const glowRemaining = glowTarget - material.emissiveIntensity;
           if (Math.abs(glowRemaining) < MATERIAL_SETTLE_EPSILON) {
-            material.emissiveIntensity = glow;
+            material.emissiveIntensity = glowTarget;
           } else {
             material.emissiveIntensity += glowRemaining * ease;
             maxDelta = Math.max(maxDelta, Math.abs(glowRemaining) * (1 - ease));

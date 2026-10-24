@@ -3,6 +3,10 @@ import test from "node:test";
 import SunCalc from "suncalc";
 import { CAMPUS_LOCATION } from "../utils/sunPosition.mjs";
 import {
+  AUTUMN_PALETTE,
+  getAutumnInstanceColor,
+  getAutumnInstanceMix,
+  getAutumnProfile,
   getAutumnWeight,
   getDaylightWeight,
   getNightWeight,
@@ -38,6 +42,66 @@ test("autumn weight reads the KST calendar, not the UTC one", () => {
   assert.equal(getAutumnWeight(kst("2026-10-20T00:00:00")), 0);
   // 2026-11-01 00:30 KST is Oct 31 in UTC (weight < 1) but Nov 1 in KST (full colour).
   assert.equal(getAutumnWeight(kst("2026-11-01T00:30:00")), 1);
+});
+
+const profiles = Array.from({ length: 8000 }, (_, i) => getAutumnProfile(i));
+const SUMMER = [0.3, 0.5, 0.22];
+const toSrgb = (v) => (v <= 0.0031308 ? 12.92 * v : 1.055 * v ** (1 / 2.4) - 0.055);
+const saturation = (linear) => {
+  const s = linear.map(toSrgb);
+  return (Math.max(...s) - Math.min(...s)) / Math.max(...s);
+};
+// The old uniform tint: summer crown lerped 0.72 toward (0.62, 0.24, 0.05); sRGB saturation 0.543.
+const OLD_ORANGE = SUMMER.map((v, i) => v + ([0.62, 0.24, 0.05][i] - v) * 0.72);
+
+test("autumn profiles are deterministic and split into the species shares", () => {
+  assert.deepEqual(getAutumnProfile(42), getAutumnProfile(42));
+  const shares = Object.fromEntries(AUTUMN_PALETTE.map(({ species }) => [species, 0]));
+  for (const profile of profiles) shares[profile.species] += 1 / profiles.length;
+  for (const { species, share } of AUTUMN_PALETTE) {
+    assert.ok(Math.abs(shares[species] - share) < 0.03, `${species}: ${shares[species]}`);
+  }
+  assert.ok(shares.green >= 0.3 && shares.green <= 0.4);
+});
+
+test("trees turn at different dates but are all summer-green out of season", () => {
+  const oct24 = getAutumnWeight(kst("2026-10-24T12:00:00"));
+  const mixes = profiles.map((profile) => getAutumnInstanceMix(oct24, profile));
+  const turning = mixes.filter((mix) => mix > 0).length / mixes.length;
+  assert.ok(turning > 0.2 && turning < 0.8, `turning on Oct 24: ${turning}`);
+  for (const profile of profiles.slice(0, 200)) {
+    assert.equal(getAutumnInstanceMix(0, profile), 0);
+    assert.ok(Math.abs(getAutumnInstanceMix(1, profile) - profile.maxMix) < 1e-12);
+    let previous = 0;
+    for (let w = 0.05; w <= 1; w += 0.05) {
+      const mix = getAutumnInstanceMix(w, profile);
+      assert.ok(mix >= previous);
+      previous = mix;
+    }
+  }
+  const out = [0, 0, 0];
+  assert.deepEqual(getAutumnInstanceColor(SUMMER, 0.4469, profiles[0], 0, out), SUMMER);
+});
+
+test("Nov 8 crowns mix ginkgo, zelkova and cherry colours, keep about a third green, and stay muted", () => {
+  const oldSaturation = saturation(OLD_ORANGE);
+  const out = [0, 0, 0];
+  const ratios = { ginkgo: [], zelkova: [], cherry: [] };
+  let green = 0;
+  for (const profile of profiles) {
+    const [r, g] = getAutumnInstanceColor(SUMMER, 0.4469, profile, 1, out);
+    if (g >= r) green += 1;
+    if (profile.species !== "green") ratios[profile.species].push(r / g);
+    assert.ok(saturation(out) < oldSaturation, `${profile.species} ${out}`);
+  }
+  const median = (values) => values.sort((a, b) => a - b)[values.length >> 1];
+  // Red/green ratio orders the hues: ginkgo yellow < zelkova russet < cherry red.
+  assert.ok(median(ratios.ginkgo) > 1 && median(ratios.ginkgo) < median(ratios.zelkova));
+  assert.ok(median(ratios.zelkova) < median(ratios.cherry));
+  assert.ok(green / profiles.length > 0.3 && green / profiles.length < 0.45, `green ${green / profiles.length}`);
+  for (const { colors } of AUTUMN_PALETTE) {
+    for (const color of colors) assert.ok(saturation(color) < oldSaturation, `${color}`);
+  }
 });
 
 test("twilight bands follow the 0 / -6 / -12 / -18 degree limits", () => {
