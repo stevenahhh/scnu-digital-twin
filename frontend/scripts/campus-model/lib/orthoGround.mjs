@@ -3,8 +3,8 @@
 // composeOrthoGround() turns the procedural ground raster that stages/ground.mjs paints into the photo ground:
 //   1. The mosaic is resampled bilinearly into the raster's model frame.
 //   2. What the model draws itself must not stay in the photo, or it doubles up:
-//      - road markings: the photo's own paint under every vector marking (stages/markings.mjs) plus `paintMargin`
-//        metres is refilled from the unmasked pixels around it before anything else reads the photo (normalised box
+//      - road markings: the photo's own paint under every vector marking (stages/markings.mjs; a marking's holes, e.g.
+//        the stalls inside a stall outline, stay photo) plus `paintMargin` metres is refilled from the unmasked pixels around it before anything else reads the photo (normalised box
 //        means at growing radii, INPAINT_RADII_PX), so the marking mesh is the only paint there; the heads and thin
 //        cast shadows of the poles the furniture stage now draws (`objectHoles`) are refilled the same way;
 //      - street furniture: roofs that are now 3D (stages/furniture.mjs `structures`: the roof outline traced on the
@@ -311,8 +311,9 @@ function localMeans(sums, count, bw, bh, local, wide, fallback) {
 // ground: the procedural Raster (sRGB), overwritten with the composite. classes[p]: SURFACE_CLASS per pixel.
 // toPixel([x, z]) maps model units to raster pixels and pixelCentre(px, py) back; metresPerPixel and
 // unitsPerPixel give the raster scale. buildings: [{ parts: [{ outer, holes, heightMetres, tower? }] }]; crowns:
-// [{ x, z, radius }] in model units; paint: rings (model units) of the vector road markings, suppressed in the photo
-// with `paintMargin` metres around them; structures and objectHoles: rings (model units) of the street furniture (see
+// [{ x, z, radius }] in model units; paint: the vector road markings, each a list of rings (outer, then holes; model
+// units), suppressed in the photo inside the outer ring but outside the holes, with `paintMargin` metres around every
+// ring; structures and objectHoles: rings (model units) of the street furniture (see
 // above). Returns build-log stats.
 export function composeOrthoGround({ ground, classes, ortho, calibration, toPixel, pixelCentre, metresPerPixel, unitsPerPixel, buildings, crowns, paint = [], paintMargin = 0, structures = [], objectHoles = [] }) {
   const { width, height } = ground;
@@ -349,10 +350,10 @@ export function composeOrthoGround({ ground, classes, ortho, calibration, toPixe
   if (paint.length || objectHoles.length) {
     const hole = maskRaster(width, height);
     const marginPx = paintMargin * pxPerMetre;
-    for (const ring of paint) {
-      const pixels = ring.map(toPixel);
-      hole.fill([pixels]);
-      hole.stroke([...pixels, pixels[0]], 2 * marginPx);
+    for (const rings of paint) {
+      const pixels = rings.map((ring) => ring.map(toPixel));
+      hole.fill(pixels);
+      for (const ring of pixels) hole.stroke([...ring, ring[0]], 2 * marginPx);
     }
     const paintOnly = hole.data.reduce((sum, v) => sum + v, 0);
     for (const ring of objectHoles) hole.fill([ring.map(toPixel)]);

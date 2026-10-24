@@ -1,39 +1,64 @@
 // Road markings stage: the paint the orthophoto shows, as one decal mesh on the Topography surface.
 //
-// Input: data/photo/markings.geojson (WGS84), the photo detection of NGII 2025 orthophoto sheet 34702020 (0.25 m; the
-// same photograph as the VWorld z19 ground texture, registered to it within 5 mm): zebra bars grouped per crossing,
-// stop lines, lane, centre and edge lines, arrows, text, hatching and parking lines, each with its colour and
-// `estimated` (pieces the detection inferred between two visible ones, e.g. a bar hidden by a car).
+// Inputs (WGS84), both read from NGII 2025 orthophoto sheet 34702020 (0.25 m; the same photograph as the VWorld z19
+// ground texture, registered to it within 5 mm; methods and hand checks in data/photo/README.md):
+//   - data/photo/markings.geojson, the detection pass: zebra bars grouped per crossing, stop lines, lane, centre and
+//     edge lines, arrows, text, hatching and parking lines, each with its colour and `estimated` (pieces the detection
+//     inferred between two visible ones, e.g. a bar hidden by a car);
+//   - data/photo/markings-extra.geojson, the completion pass: paint the first pass missed (`method` detect: a reviewed
+//     paint component; trace: picked or outlined by eye and snapped to the paint) and `properties.corrections`, the
+//     markings.geojson ids that are not paint (`delete`) or carry the wrong kind (`kind`). The corrections are
+//     applied first; then both files form one candidate list.
+//
+// A candidate is drawn only when the photo backs it:
+//   1. context: it is left out when its centroid lies inside a modelled building or an A003 sidewalk, a polygon's
+//      surroundings are mostly vegetation, the photo shows a cast shadow beside it on the side away from the photo's
+//      sun (azimuth 92.5 deg, elevation 62 deg; cars and walls cast one, paint does not), or, for the line kinds the
+//      first pass found least reliable (ROAD_CHECKED), its centroid lies off the road (road zones, OSM parking, or
+//      within ARTERIAL_REACH_M of an OSM arterial or connector);
+//   2. paint gate (paintEvidence): the share of its drawn area that the photo shows as paint of its own colour must
+//      reach GATE_SUPPORT. Paint is a top-hat over PAINT_OPEN_M (the grey opening is the road surface around a mark):
+//      white is brighter than the surface and nearly grey, yellow is more yellow than the surface ((R + G) / 2 - B)
+//      and not darker, blue is bluer (or a wide blue area). This is what rejects lines traced on kerb stones, medians,
+//      crossing frames and shadows, stop lines drawn wider than their paint, and outlines drawn around paint;
+//   2a. the chip review in markings-gate.json overrides both: "not paint" rejects a candidate, "paint" accepts a hand
+//      trace of paint too faint or shaded for the masks (each looked at on the 4x photo);
+//   2b. zebra bars of a crossing whose bars mostly pass need only ZEBRA_GROUP_SUPPORT (shadow halves a bar's
+//      contrast), and the pieces of one traced model (`group`: the bands of a striped hump, the fill, frame and
+//      symbol of a blue bay, a ladder's rails and rungs) are drawn or left out together on their mean support (each
+//      member still needs GROUP_MEMBER_FLOOR);
+//   3. duplicates: where accepted candidates of one colour cover the same paint (DEDUP_SHARE of the smaller one's
+//      area), the smaller one inside a much larger one (DEDUP_CONTAIN) or else the one with less support is dropped.
+// A rejected candidate is not drawn and its paint stays in the photo. Pieces the photo cannot show (`estimated`)
+// skip the gate.
 //
 // Geometry, in the model frame, lifted LIFT_M over the terrain triangles it lies on (CityModel adds a polygon offset):
-//   - zebra bars: every detected bar at its own centre and length, along its crossing's mean axis, ZEBRA_BAR_M wide.
-//     The bar width is below the photo's resolution, so it comes from the bar profiles of 25 crossings folded over
-//     the 0.903 m period: the second harmonic is negative in 73-92 % of them (bars wider than the gaps), giving a
-//     duty of 0.52-0.58, i.e. 0.47-0.52 m bars (ESTIMATED 0.50 m; 0.40 m gaps). Crossings whose bars are fused to a
-//     painted frame come as one outline polygon (`fused_frame`) and are drawn as that polygon;
-//   - lines at LINE_WIDTH_M (stop lines at their detected width within STOP_LINE_M); `double` yellow centre lines as
-//     two lines DOUBLE_OFFSET_M either side of the detected centreline (ASSUMED layout: the photo blurs the gap);
-//     `dotted` guide lines as `dots` squares evenly spaced between the first and the last dot;
-//   - arrows, text, hatching and parking outlines as the detected polygons ("painted symbol here": the detection's
-//     kind labels are often wrong, the painted shape is what is drawn);
-//   - kind `other` is left out: on a sample of 54 of them about half were car roofs, kerbs, fences and roof edges.
-// Candidates the photo or the surveyed ground contradicts are left out as well: a centroid inside a modelled building
-// or an A003 sidewalk, polygon surroundings that are mostly vegetation, a cast shadow on the side away from the
-// photo's sun (azimuth 92.5 deg, elevation 62 deg; cars and walls cast one, paint does not), and, for the line kinds
-// the detection's hand check found least reliable (ROAD_CHECKED: 57-80 % on paint), a centroid off the road (road
-// zones, OSM parking, or within ARTERIAL_REACH_M of an OSM arterial or connector).
+//   - zebra bars: every bar at its own centre and length, along its crossing's mean axis, ZEBRA_BAR_M wide. The bar
+//     width is below the photo's resolution, so it comes from the bar profiles of 25 crossings folded over the
+//     0.903 m period: the second harmonic is negative in 73-92 % of them (bars wider than the gaps), giving a duty of
+//     0.52-0.58, i.e. 0.47-0.52 m bars (ESTIMATED 0.50 m; 0.40 m gaps). markings.geojson groups its bars by
+//     `crossing_id`; the completion pass's bars are grouped here (ZEBRA_LINK_M, ZEBRA_LINK_DEG). Crossings whose bars
+//     are fused to a painted frame come as one outline polygon (`fused_frame`) and are drawn as that polygon;
+//   - LineStrings: the line kinds (STROKED_KINDS) at LINE_WIDTH_M, stop lines at their detected width within
+//     STOP_LINE_M, other strokes (glyph strokes, arrow shafts) at their detected width within STROKE_WIDTH_M;
+//     `double` yellow lines as two lines DOUBLE_OFFSET_M either side of the detected centreline (ASSUMED layout: the
+//     photo blurs the gap), or as one line on the centreline when only that reading is on paint; `dotted` guide lines
+//     as `dots` squares evenly spaced between the first and the last dot;
+//   - Polygons (arrows, text, hatching, chevrons, stall outlines, dashes, blue bays, the striped raised crossings): the
+//     painted outline, with its holes.
 //
 // Crossings: OSM crossing ways (data/osm-ground.json) and the digitised crosswalk polygons
-// (docs/assets/data/crosswalks_wgs84.geojson) never draw stripes of their own. One that matches a detected zebra is
-// drawn from the photo alone (its offset is logged). One without a detected zebra whose area the photo shows under
+// (docs/assets/data/crosswalks_wgs84.geojson) never draw stripes of their own. One that matches a drawn zebra is
+// drawn from the photo alone (its offset is logged). One without a drawn zebra whose area the photo shows under
 // canopy (the ground stage's street-tree test) gets estimated bars (ZEBRA_PERIOD_M, ZEBRA_BAR_M); under a cast
 // shadow alone the relit photo keeps its own faint paint, and on open asphalt there is none, so those stay undrawn.
 //
-// Material: one Road_Marking material whose two-colour palette texture (white, yellow) is both the base colour and the
-// emissive map, so the dashboard's night ramp (CityModel lights every emissiveMap at night) makes the paint glow
-// faintly in its own colour; KHR_materials_emissive_strength (NIGHT_GLOW) caps it. One mesh, one draw call.
-// The ground stage suppresses the photo's own paint under every marking drawn here, estimated ones included (`paint`,
-// lib/orthoGround.mjs), so wherever the model draws paint the photo shows none.
+// Material: one Road_Marking material whose three-colour palette texture (white, yellow, blue) is both the base colour
+// and the emissive map, so the dashboard's night ramp (CityModel lights every emissiveMap at night) makes the paint
+// glow faintly in its own colour; KHR_materials_emissive_strength (NIGHT_GLOW) caps it. One mesh, one draw call.
+// The ground stage suppresses the photo's own paint under every piece drawn here (`paint`, lib/orthoGround.mjs; holes
+// stay photo), and only there, so wherever the model draws paint the photo shows none and a rejected candidate keeps
+// its photo paint.
 // Everything here is derived from imagery; widths and estimated crossings are estimates, not survey data.
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -46,16 +71,23 @@ import { encodePng } from "../lib/png.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const MARKINGS = path.join(HERE, "..", "data", "photo", "markings.geojson");
+const MARKINGS_EXTRA = path.join(HERE, "..", "data", "photo", "markings-extra.geojson");
+const MARKINGS_GATE = path.join(HERE, "..", "data", "photo", "markings-gate.json");
 const GROUND_FEATURES = path.join(HERE, "..", "data", "osm-ground.json");
 const CROSSWALKS = path.resolve(HERE, "../../../..", "docs", "assets", "data", "crosswalks_wgs84.geojson");
 
 const ZEBRA_PERIOD_M = 0.903;
 const ZEBRA_BAR_M = 0.5;
+const ZEBRA_LINK_M = 2;
+const ZEBRA_LINK_DEG = 15;
 const LINE_WIDTH_M = 0.15;
 const STOP_LINE_M = [0.3, 0.6];
+const STROKE_WIDTH_M = [0.1, 0.5];
 const DOUBLE_OFFSET_M = 0.15;
-const LINE_KINDS = new Set(["lane_line_dashed", "lane_line_solid", "edge_line", "centre_line_yellow", "stop_line", "parking_line"]);
-const POLYGON_KINDS = new Set(["arrow", "text", "hatch", "parking_line"]);
+// Kinds whose colour is fixed by what they are (yellow kerb and centre lines, white zebra bars, blue bays): never
+// recoloured from the photo.
+const FIXED_COLOUR_KINDS = new Set(["kerb_no_parking", "centre_line_yellow", "zebra_bar", "disabled_parking", "bike_lane_blue"]);
+const STROKED_KINDS = new Set(["lane_line_dashed", "lane_line_solid", "edge_line", "centre_line_yellow", "parking_line", "kerb_no_parking", "give_way_line"]);
 // Packed positions are 14-bit over the campus (about 4.9 cm steps), terrain and markings each rounded on their own.
 const LIFT_M = 0.04;
 // Photo paint blurs about one pixel past the detected edge; the suppression mask reaches this far beyond each marking.
@@ -72,6 +104,17 @@ const ARTERIAL_REACH_M = 12;
 const BICYCLE_LANE = "A0033327";
 const WALKWAYS = path.resolve(HERE, "../../../..", "docs", "assets", "data", "walkways_wgs84.geojson");
 
+// The paint gate: share of a candidate's drawn area on paint of its colour (bake/markings-gate.mjs), sampled every
+// SUPPORT_STEP_M; duplicates are found on a DEDUP_CELL_M grid.
+export const SUPPORT_STEP_M = 0.05;
+export const GATE_SUPPORT = 0.6;
+const ZEBRA_GROUP_SHARE = 2 / 3;
+const ZEBRA_GROUP_SUPPORT = 0.3;
+const GROUP_MEMBER_FLOOR = 0.3;
+const DEDUP_CELL_M = 0.1;
+const DEDUP_SHARE = 0.5;
+const DEDUP_CONTAIN = 3;
+
 // Estimated crossings: painted width of the detected arterial zebras (median 4.57 m, REG), overrun of the digitised
 // polygons past their painted bars (median 1.45 m, REG), and REG's OSM crossing translation (photo minus OSM).
 const CROSSING_WIDTH_M = 4.57;
@@ -82,8 +125,9 @@ const MATCH_ANGLE_DEG = 25;
 const MATCH_REACH_M = 3;
 
 const CONFORM_TOLERANCE_M = 0.005;
-const PALETTE_SRGB = { white: [226, 226, 220], yellow: [228, 172, 52] };
-const PALETTE_U = { white: 0.25, yellow: 0.75 };
+const PALETTE_SRGB = { white: [226, 226, 220], yellow: [228, 172, 52], blue: [40, 120, 196] };
+const PALETTE_COLOURS = ["white", "yellow", "blue"];
+const PALETTE_U = Object.fromEntries(PALETTE_COLOURS.map((colour, i) => [colour, (i + 0.5) / PALETTE_COLOURS.length]));
 const NIGHT_GLOW = 0.18;
 
 const UNIT = SCENE_UNITS_PER_METRE;
@@ -237,104 +281,341 @@ async function groundTruth(inputs) {
   };
 }
 
-// ---------------------------------------------------------------- loading
-export async function loadMarkings({ inputs, buildings }) {
-  const data = JSON.parse(await Bun.file(MARKINGS).text());
-  const buildingRings = buildings.flatMap((b) => b.parts.map((part) => part.outer));
-  const checks = photoChecks(inputs.ortho, buildingRings);
-  const truth = await groundTruth(inputs);
-  const pieces = [];
-  const log = { drawn: {}, estimated: {}, dropped: { other: 0, building: 0, sidewalk: 0, offRoad: 0, vegetation: 0, shadow: 0 } };
-  const count = (table, kind) => { table[kind] = (table[kind] ?? 0) + 1; };
+// ---------------------------------------------------------------- sampling
+// Points on a `step` grid (model units) inside `rings` (even-odd); a piece thinner than the grid gives its centroid.
+export function gridPoints(rings, step) {
+  const zs = rings.flatMap((ring) => ring.map((p) => p[1]));
+  const top = Math.max(...zs);
+  const points = [];
+  const xs = [];
+  for (let z = (Math.floor(Math.min(...zs) / step) + 0.5) * step; z < top; z += step) {
+    xs.length = 0;
+    for (const ring of rings) {
+      for (let i = 0, j = ring.length - 1; i < ring.length; j = i, i += 1) {
+        const [xi, zi] = ring[i];
+        const [xj, zj] = ring[j];
+        if ((zi > z) !== (zj > z)) xs.push(xi + ((z - zi) / (zj - zi)) * (xj - xi));
+      }
+    }
+    xs.sort((a, b) => a - b);
+    for (let k = 0; k + 1 < xs.length; k += 2) {
+      for (let x = (Math.ceil(xs[k] / step - 0.5) + 0.5) * step; x < xs[k + 1]; x += step) points.push([x, z]);
+    }
+  }
+  return points.length ? points : [centroidOf(rings[0])];
+}
 
-  // ---- zebra bars, per crossing (a fused frame is drawn as its outline polygon)
-  const groups = new Map();
-  const zebras = [];
+// Short hash of a candidate's colour and drawn rings: the gate file stores it with the support it measured, so an
+// entry that no longer matches the geometry the stage draws is caught.
+function fingerprint({ colour, shapes }) {
+  const text = colour + JSON.stringify(shapes.map((rings) => rings.map((ring) => ring.map(([x, z]) => [x.toFixed(3), z.toFixed(3)]))));
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < text.length; i += 1) hash = Math.imul(hash ^ text.charCodeAt(i), 0x01000193);
+  return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
+// ---------------------------------------------------------------- candidates
+// Both files as one list: markings.geojson with the completion pass's corrections applied, then the completion pass.
+function mergeSources(data, extra) {
+  const corrections = new Map((extra.properties?.corrections ?? []).map((c) => [c.id, c]));
+  const ids = new Set(data.features.map((f) => f.properties.id));
+  const unknown = [...corrections.values()].filter((c) => !ids.has(c.id) || !["delete", "kind"].includes(c.action));
+  if (unknown.length) throw new Error(`markings-extra.geojson: ${unknown.length} corrections name no markings.geojson id or no known action, e.g. ${JSON.stringify(unknown[0])}`);
+  const applied = { deleted: 0, rekinded: 0 };
+  const features = [];
   for (const feature of data.features) {
-    const p = feature.properties;
-    if (p.kind !== "zebra_bar") continue;
-    if (p.fused_frame) {
-      const rings = feature.geometry.coordinates.map((ring) => openRing(toModel(ring)));
-      pieces.push({ rings, colour: "white", kind: "zebra_bar", estimated: false });
-      count(log.drawn, "zebra frame outline");
-      const box = orientedBox(rings[0]);
-      zebras.push({ id: `${p.crossing_id} frame`, centre: box.centre, axis: box.short, bars: 1, halfLength: box.halfShort, barCentres: [box.centre, ...rings[0]] });
+    const correction = corrections.get(feature.properties.id);
+    if (correction?.action === "delete") {
+      applied.deleted += 1;
       continue;
     }
-    const corners = openRing(toModel(feature.geometry.coordinates[0]));
-    const box = orientedBox(corners);
-    if (!groups.has(p.crossing_id)) groups.set(p.crossing_id, []);
-    groups.get(p.crossing_id).push({ centre: box.centre, axis: box.long, halfLength: box.halfLong, estimated: p.estimated, id: p.id });
+    if (correction?.action === "kind") applied.rekinded += 1;
+    features.push({ ...feature, properties: { ...feature.properties, kind: correction?.kind ?? feature.properties.kind }, file: "markings" });
   }
-  for (const [id, bars] of groups) {
+  for (const feature of extra.features) features.push({ ...feature, file: "markings-extra" });
+  return { features, applied };
+}
+
+const clamp = (value, [lo, hi]) => Math.min(hi, Math.max(lo, value));
+
+// Plan-view pieces (each a list of rings, model units) of a line or polygon feature.
+function featureShapes(p, { type, coordinates }) {
+  if (type === "LineString" && p.dotted && p.dots) {
+    const line = toModel(coordinates);
+    const [a, b] = [line[0], line.at(-1)];
+    const along = unit(sub(b, a));
+    const across = [-along[1], along[0]];
+    const half = metres(p.width_m) / 2;
+    return Array.from({ length: p.dots }, (_, k) => {
+      const t = p.dots > 1 ? k / (p.dots - 1) : 0.5;
+      return [rect([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t], along, across, half, half)];
+    });
+  }
+  if (type === "LineString") {
+    const line = toModel(coordinates);
+    const width = p.kind === "stop_line" ? clamp(p.width_m, STOP_LINE_M) : STROKED_KINDS.has(p.kind) || p.double ? LINE_WIDTH_M : clamp(p.width_m, STROKE_WIDTH_M);
+    const lines = p.double ? [offsetLine(line, metres(DOUBLE_OFFSET_M)), offsetLine(line, -metres(DOUBLE_OFFSET_M))] : [line];
+    return lines.map((l) => strokeRing(l, metres(width) / 2)).filter(Boolean).map((ring) => [ring]);
+  }
+  if (type === "Polygon") {
+    const rings = coordinates.map((ring) => openRing(toModel(ring))).filter((ring) => ring.length >= 3);
+    return rings.length ? [rings] : [];
+  }
+  throw new Error(`${p.id}: kind ${p.kind} with geometry ${type}, which this stage does not draw`);
+}
+
+// Zebra bars, each a ZEBRA_BAR_M wide rectangle at its own centre and length along its crossing's mean axis.
+// markings.geojson groups its bars by crossing_id; the completion pass's bars are linked here when their centres lie
+// within ZEBRA_LINK_M of each other and their axes agree within ZEBRA_LINK_DEG.
+function zebraCandidates(features) {
+  const groups = new Map();
+  const loose = [];
+  for (const feature of features) {
+    const p = feature.properties;
+    if (p.kind !== "zebra_bar" || p.fused_frame) continue;
+    const box = orientedBox(openRing(toModel(feature.geometry.coordinates[0])));
+    const bar = { feature, centre: box.centre, axis: box.long, halfLength: box.halfLong };
+    if (!p.crossing_id) loose.push(bar);
+    else if (groups.has(p.crossing_id)) groups.get(p.crossing_id).push(bar);
+    else groups.set(p.crossing_id, [bar]);
+  }
+  const parent = loose.map((_, i) => i);
+  const root = (i) => (parent[i] === i ? i : (parent[i] = root(parent[i])));
+  const linked = Math.cos((ZEBRA_LINK_DEG * Math.PI) / 180);
+  for (let i = 0; i < loose.length; i += 1) {
+    for (let j = i + 1; j < loose.length; j += 1) {
+      const [a, b] = [loose[i], loose[j]];
+      if (Math.hypot(...sub(a.centre, b.centre)) <= metres(ZEBRA_LINK_M) && Math.abs(dot(a.axis, b.axis)) >= linked) parent[root(i)] = root(j);
+    }
+  }
+  loose.forEach((bar, i) => {
+    const id = `${loose[root(i)].feature.properties.id} group`;
+    if (groups.has(id)) groups.get(id).push(bar);
+    else groups.set(id, [bar]);
+  });
+  const candidates = [];
+  for (const [group, bars] of groups) {
     const reference = bars[0].axis;
     const axis = unit(bars.reduce((acc, bar) => {
       const sign = dot(bar.axis, reference) >= 0 ? 1 : -1;
       return [acc[0] + bar.axis[0] * sign, acc[1] + bar.axis[1] * sign];
     }, [0, 0]));
     const across = [-axis[1], axis[0]];
-    const centre = centroidOf(bars.map((b) => b.centre));
-    const halfBar = metres(ZEBRA_BAR_M) / 2;
     for (const bar of bars) {
-      pieces.push({ rings: [rect(bar.centre, axis, across, bar.halfLength, halfBar)], colour: "white", kind: "zebra_bar", estimated: false });
-      count(log.drawn, bar.estimated ? "zebra_bar (inferred inside a detected crossing)" : "zebra_bar");
+      candidates.push({ feature: bar.feature, shapes: [[rect(bar.centre, axis, across, bar.halfLength, metres(ZEBRA_BAR_M) / 2)]], zebra: { group, axis, centre: bar.centre, halfLength: bar.halfLength } });
     }
+  }
+  return candidates;
+}
+
+// Every candidate of both files with its drawn pieces (model units), `fingerprint` and where it came from. Shared with
+// bake/markings-gate.mjs, which measures the paint support of exactly these pieces.
+export async function markingCandidates() {
+  const data = JSON.parse(await Bun.file(MARKINGS).text());
+  const extra = JSON.parse(await Bun.file(MARKINGS_EXTRA).text());
+  const { features, applied } = mergeSources(data, extra);
+  const candidates = zebraCandidates(features);
+  let other = 0;
+  for (const feature of features) {
+    const p = feature.properties;
+    if (p.kind === "zebra_bar" && !p.fused_frame) continue;
+    if (p.kind === "other") {
+      other += 1;
+      continue;
+    }
+    const shapes = featureShapes(p, feature.geometry);
+    // A `double` line also gets its single-line reading (the detected centreline at LINE_WIDTH_M): the photo blurs the
+    // gap of a double line, and a single line read as double would leave both strokes half off its paint.
+    const single = p.double && feature.geometry.type === "LineString" ? featureShapes({ ...p, double: false }, feature.geometry) : null;
+    if (shapes.length) candidates.push({ feature, shapes, single, frame: Boolean(p.fused_frame) });
+  }
+  const ids = new Set();
+  for (const c of candidates) {
+    const p = c.feature.properties;
+    Object.assign(c, { id: p.id, file: c.feature.file, kind: p.kind, colour: p.colour, estimated: Boolean(p.estimated) });
+    if (ids.has(c.id)) throw new Error(`${c.file}: marking id ${c.id} is used twice`);
+    if (!PALETTE_SRGB[c.colour]) throw new Error(`${c.file}: ${c.id} has colour ${c.colour}, which the palette does not have`);
+    ids.add(c.id);
+    c.fingerprint = fingerprint(c);
+  }
+  return { candidates, applied, other };
+}
+
+// ---------------------------------------------------------------- loading
+export async function loadMarkings({ inputs, buildings }) {
+  const { candidates, applied, other } = await markingCandidates();
+  const gate = JSON.parse(await Bun.file(MARKINGS_GATE).text());
+  const stale = candidates.filter((c) => gate.supports[c.id]?.[3] !== c.fingerprint);
+  if (stale.length) {
+    throw new Error(`data/photo/markings-gate.json has no current paint support for ${stale.length} candidates (e.g. ${stale.slice(0, 3).map((c) => c.id).join(", ")}): ` +
+      "run bun scripts/campus-model/bake/markings-gate.mjs (needs the NGII sheet in .cache/ngii-ortho)");
+  }
+  const fingerprints = new Map(candidates.map((c) => [c.id, c.fingerprint]));
+  const staleReview = Object.entries(gate.review ?? {}).filter(([id, entry]) => fingerprints.get(id) !== entry.fingerprint);
+  if (staleReview.length) {
+    throw new Error(`data/photo/markings-gate.json reviews ${staleReview.length} candidates whose geometry has changed or gone (e.g. ${staleReview[0][0]}): review them again`);
+  }
+  const buildingRings = buildings.flatMap((b) => b.parts.map((part) => part.outer));
+  const checks = photoChecks(inputs.ortho, buildingRings);
+  const truth = await groundTruth(inputs);
+  const pieces = [];
+  const log = {
+    corrections: applied, kinds: {}, files: {}, estimated: {},
+    dropped: { other, building: 0, sidewalk: 0, offRoad: 0, vegetation: 0, shadow: 0 },
+  };
+  const count = (table, kind) => { table[kind] = (table[kind] ?? 0) + 1; };
+  const step = metres(SUPPORT_STEP_M);
+  const cell = metres(DEDUP_CELL_M);
+
+  // ---- 1. context and 2. the paint gate (support measured on the NGII photo by bake/markings-gate.mjs)
+  for (const c of candidates) {
+    const p = c.feature.properties;
+    // Chip review (gate.review): "not paint" rejects a candidate whatever its support; "paint" accepts a hand trace
+    // whose paint is too faint or shaded for the masks (looked at on the 4x photo).
+    const verdict = gate.review?.[c.id]?.verdict;
+    c.review = verdict === "not paint" ? gate.review[c.id].reason : null;
+    c.byEye = verdict === "paint";
+    if (p.kind !== "zebra_bar" && !c.byEye) {
+      const { type, coordinates } = c.feature.geometry;
+      const first = c.shapes[0];
+      const centre = type === "LineString" ? centroidOf(toModel(coordinates)) : centroidOf(first[0]);
+      c.dropped = checks.inBuilding(centre) ? "building"
+        : truth.onSidewalk(centre) ? "sidewalk"
+          : ROAD_CHECKED.has(p.kind) && !truth.onRoad(centre) ? "offRoad"
+            : type === "Polygon" && checks.vegetated(first) ? "vegetation"
+              : c.shapes.some((rings) => checks.raised(rings)) ? "shadow"
+                : null;
+      if (c.dropped) continue;
+    }
+    // Support per palette colour. A polygon whose own colour fails but whose paint the photo shows white or yellow
+    // is drawn in that colour (the detection's colour label is wrong for some text and stall outlines); a line, or a
+    // kind with a fixed colour, is not: a yellow kerb line the photo shows white is a light kerb stone, not white paint.
+    const share = Object.fromEntries(PALETTE_COLOURS.map((colour, k) => [colour, gate.supports[c.id][k]]));
+    c.support = share[c.colour];
+    const singleSupport = c.single ? gate.supports[c.id][4 + PALETTE_COLOURS.indexOf(c.colour)] : undefined;
+    if (c.single && c.support < GATE_SUPPORT && singleSupport >= GATE_SUPPORT) Object.assign(c, { shapes: c.single, support: singleSupport, singled: true });
+    if (!c.estimated && c.support < GATE_SUPPORT && c.feature.geometry.type === "Polygon" && !FIXED_COLOUR_KINDS.has(c.kind) && !c.feature.properties.group) {
+      // white and yellow only: paint in a cast shadow reads blue-grey, and blue paint is its own kinds
+      const best = ["white", "yellow"].reduce((a, b) => (share[b] > share[a] ? b : a));
+      if (share[best] >= GATE_SUPPORT) Object.assign(c, { recoloured: c.colour, colour: best, support: share[best] });
+    }
+    c.cells = new Set(c.shapes.flatMap((rings) => gridPoints(rings, step)).map(([x, z]) => `${Math.floor(x / cell)},${Math.floor(z / cell)}`));
+    c.accepted = c.byEye || (!c.review && (c.estimated || c.support >= GATE_SUPPORT));
+  }
+
+  // ---- 2b. zebra bars in a crossing the photo backs: a bar under a tree's or a building's shadow keeps less than half
+  // its contrast, so within a crossing whose bars mostly pass (ZEBRA_GROUP_SHARE) a bar needs ZEBRA_GROUP_SUPPORT
+  const groups = new Map();
+  for (const c of candidates) {
+    if (!c.zebra || c.dropped || c.estimated) continue;
+    if (groups.has(c.zebra.group)) groups.get(c.zebra.group).push(c);
+    else groups.set(c.zebra.group, [c]);
+  }
+  for (const bars of groups.values()) {
+    if (bars.filter((c) => c.support >= GATE_SUPPORT).length < ZEBRA_GROUP_SHARE * bars.length) continue;
+    for (const c of bars) {
+      if (!c.accepted && !c.review && c.support >= ZEBRA_GROUP_SUPPORT) Object.assign(c, { accepted: true, byGroup: true });
+    }
+  }
+
+  // ---- 2c. traced groups (the bands of one striped hump, the fill, frame and symbol of one blue bay, a ladder's
+  // rails and rungs): one fitted model, so drawn or left out as a whole on the members' mean support. Drawing only
+  // some would also erase the photo paint of the others under the suppression margin.
+  const traced = new Map();
+  for (const c of candidates) {
+    const group = c.feature.properties.group;
+    if (!group) continue;
+    if (traced.has(group)) traced.get(group).push(c);
+    else traced.set(group, [c]);
+  }
+  for (const members of traced.values()) {
+    const measured = members.filter((c) => c.support !== undefined);
+    const mean = measured.reduce((sum, c) => sum + c.support, 0) / Math.max(1, measured.length);
+    for (const c of members) {
+      if (c.review || c.byEye) continue;
+      if (mean >= GATE_SUPPORT && c.support === undefined) {
+        // left out by the context tests: a member of a traced model stands with its group
+        c.support = gate.supports[c.id][PALETTE_COLOURS.indexOf(c.colour)];
+        c.cells = new Set(c.shapes.flatMap((rings) => gridPoints(rings, step)).map(([x, z]) => `${Math.floor(x / cell)},${Math.floor(z / cell)}`));
+        c.dropped = null;
+      }
+      // a member must still lie mostly on its colour (GROUP_MEMBER_FLOOR): the fitted stripes at a hump's clipped
+      // corners or over its unpainted edge are left out
+      const accepted = mean >= GATE_SUPPORT && c.support >= GROUP_MEMBER_FLOOR;
+      Object.assign(c, { accepted, byGroup: accepted && c.support < GATE_SUPPORT });
+    }
+  }
+
+  // ---- 3. duplicates: candidates of one colour sharing DEDUP_SHARE of the smaller one's cells
+  const accepted = candidates.filter((c) => c.accepted);
+  const owners = new Map();
+  accepted.forEach((c, i) => {
+    for (const cell of c.cells) {
+      const key = `${c.colour} ${cell}`;
+      if (owners.has(key)) owners.get(key).push(i);
+      else owners.set(key, [i]);
+    }
+  });
+  const shared = new Map();
+  for (const list of owners.values()) {
+    for (let a = 0; a < list.length; a += 1) {
+      for (let b = a + 1; b < list.length; b += 1) {
+        const key = list[a] * accepted.length + list[b];
+        shared.set(key, (shared.get(key) ?? 0) + 1);
+      }
+    }
+  }
+  const pairs = [...shared]
+    .map(([key, n]) => {
+      const a = accepted[Math.floor(key / accepted.length)];
+      const b = accepted[key % accepted.length];
+      return { a, b, share: n / Math.min(a.cells.size, b.cells.size) };
+    })
+    .filter((pair) => pair.share >= DEDUP_SHARE)
+    .sort((p, q) => q.share - p.share);
+  for (const { a, b } of pairs) {
+    if (a.duplicateOf || b.duplicateOf) continue;
+    const [small, large] = a.cells.size <= b.cells.size ? [a, b] : [b, a];
+    const loser = a.estimated !== b.estimated ? (a.estimated ? a : b)
+      : large.cells.size >= DEDUP_CONTAIN * small.cells.size ? small
+        : a.support !== b.support ? (a.support < b.support ? a : b)
+          : small;
+    loser.duplicateOf = (loser === a ? b : a).id;
+  }
+
+  // ---- what is drawn
+  const zebraGroups = new Map();
+  const zebras = [];
+  for (const c of candidates) {
+    c.verdict = c.dropped ? "dropped" : c.review ? "reviewed" : !c.accepted ? "rejected" : c.duplicateOf ? "duplicate" : c.estimated ? "estimated" : "drawn";
+    for (const table of [log.kinds, log.files]) {
+      const key = table === log.kinds ? c.kind : c.file;
+      table[key] ??= { drawn: 0, estimated: 0, rejected: 0, reviewed: 0, duplicate: 0, dropped: 0, recoloured: 0 };
+      table[key][c.verdict] += 1;
+      if (c.recoloured && c.verdict === "drawn") table[key].recoloured += 1;
+      if (c.byGroup && c.verdict === "drawn") table[key].byGroup = (table[key].byGroup ?? 0) + 1;
+      if (c.singled && c.verdict === "drawn") table[key].singled = (table[key].singled ?? 0) + 1;
+      if (c.byEye && c.verdict === "drawn") table[key].byEye = (table[key].byEye ?? 0) + 1;
+    }
+    if (c.dropped) log.dropped[c.dropped] += 1;
+    if (c.verdict !== "drawn" && c.verdict !== "estimated") continue;
+    for (const rings of c.shapes) pieces.push({ rings, colour: c.colour, kind: c.kind, estimated: c.estimated });
+    if (c.zebra) {
+      if (zebraGroups.has(c.zebra.group)) zebraGroups.get(c.zebra.group).push(c.zebra);
+      else zebraGroups.set(c.zebra.group, [c.zebra]);
+    } else if (c.frame) {
+      const box = orientedBox(c.shapes[0][0]);
+      zebras.push({ id: `${c.feature.properties.crossing_id} frame`, centre: box.centre, axis: box.short, bars: 1, halfLength: box.halfShort, barCentres: [box.centre, ...c.shapes[0][0]] });
+    }
+  }
+  for (const [id, bars] of zebraGroups) {
+    const { axis } = bars[0];
+    const centre = centroidOf(bars.map((b) => b.centre));
     zebras.push({
       id, centre, axis, bars: bars.length,
       halfLength: Math.max(...bars.map((b) => Math.abs(dot(sub(b.centre, centre), axis)) + b.halfLength)),
       barCentres: bars.map((b) => b.centre),
     });
-  }
-
-  // ---- lines and polygons
-  for (const feature of data.features) {
-    const p = feature.properties;
-    if (p.kind === "zebra_bar") continue;
-    if (p.kind === "other") {
-      log.dropped.other += 1;
-      continue;
-    }
-    const { type, coordinates } = feature.geometry;
-    let shapes;
-    if (type === "LineString" && p.dotted) {
-      const line = toModel(coordinates);
-      const [a, b] = [line[0], line.at(-1)];
-      const along = unit(sub(b, a));
-      const across = [-along[1], along[0]];
-      const half = metres(p.width_m) / 2;
-      shapes = Array.from({ length: p.dots }, (_, k) => {
-        const t = p.dots > 1 ? k / (p.dots - 1) : 0.5;
-        return [rect([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t], along, across, half, half)];
-      });
-    } else if (type === "LineString" && LINE_KINDS.has(p.kind)) {
-      const line = toModel(coordinates);
-      if (p.double) {
-        const half = metres(LINE_WIDTH_M) / 2;
-        shapes = [offsetLine(line, metres(DOUBLE_OFFSET_M)), offsetLine(line, -metres(DOUBLE_OFFSET_M))].map((l) => strokeRing(l, half));
-      } else {
-        const width = p.kind === "stop_line" ? Math.min(STOP_LINE_M[1], Math.max(STOP_LINE_M[0], p.width_m)) : LINE_WIDTH_M;
-        shapes = [strokeRing(line, metres(width) / 2)];
-      }
-      shapes = shapes.filter(Boolean).map((ring) => [ring]);
-    } else if (type === "Polygon" && POLYGON_KINDS.has(p.kind)) {
-      shapes = [coordinates.map((ring) => openRing(toModel(ring))).filter((ring) => ring.length >= 3)];
-    } else {
-      throw new Error(`markings.geojson: ${p.id} has kind ${p.kind} with geometry ${type}, which this stage does not draw`);
-    }
-    const first = shapes[0];
-    const centre = type === "LineString" ? centroidOf(toModel(coordinates)) : centroidOf(first[0]);
-    const drop = checks.inBuilding(centre) ? "building"
-      : truth.onSidewalk(centre) ? "sidewalk"
-        : ROAD_CHECKED.has(p.kind) && !truth.onRoad(centre) ? "offRoad"
-          : type === "Polygon" && checks.vegetated(first) ? "vegetation"
-            : shapes.some((rings) => checks.raised(rings)) ? "shadow"
-              : null;
-    if (drop) {
-      log.dropped[drop] += 1;
-      continue;
-    }
-    for (const rings of shapes) pieces.push({ rings, colour: p.colour, kind: p.kind, estimated: Boolean(p.estimated) });
-    count(p.estimated ? log.estimated : log.drawn, p.kind);
   }
 
   // ---- crossings the photo cannot show
@@ -424,9 +705,13 @@ export async function loadMarkings({ inputs, buildings }) {
     crossings.push(`${id}: no zebra visible, ${(occluded * 100).toFixed(0)} % under canopy, ${bars} estimated bars`);
   }
 
-  // Paint to suppress in the photo: under every piece drawn.
-  const paint = pieces.map((piece) => piece.rings[0]);
-  return { pieces, paint, zebras, crossings, log, source: data.properties?.source ?? "data/photo/markings.geojson" };
+  // Paint to suppress in the photo: under every piece drawn (its holes stay photo), and nowhere else.
+  const paint = pieces.map((piece) => piece.rings);
+  const report = candidates.map((c) => ({
+    id: c.id, file: c.file, kind: c.kind, colour: c.colour, method: c.feature.properties.method ?? "detect", estimated: c.estimated, fingerprint: c.fingerprint,
+    support: c.support ?? null, recoloured: c.recoloured ?? null, verdict: c.verdict, reason: c.dropped ?? c.review ?? c.duplicateOf ?? null, shapes: c.shapes,
+  }));
+  return { pieces, paint, zebras, crossings, log, report, source: "data/photo/markings.geojson + data/photo/markings-extra.geojson" };
 }
 
 // ---------------------------------------------------------------- mesh
@@ -536,11 +821,12 @@ export function buildMarkings({ glb, markings, surface }) {
     }
   }
 
-  const palette = new Uint8Array(32 * 16 * 3);
+  const bands = PALETTE_COLOURS.length;
+  const palette = new Uint8Array(16 * bands * 16 * 3);
   for (let y = 0; y < 16; y += 1) {
-    for (let x = 0; x < 32; x += 1) palette.set(x < 16 ? PALETTE_SRGB.white : PALETTE_SRGB.yellow, (y * 32 + x) * 3);
+    for (let x = 0; x < 16 * bands; x += 1) palette.set(PALETTE_SRGB[PALETTE_COLOURS[Math.floor(x / 16)]], (y * 16 * bands + x) * 3);
   }
-  const texture = glb.addTexture(encodePng(32, 16, 3, palette), "image/png", { repeat: false });
+  const texture = glb.addTexture(encodePng(16 * bands, 16, 3, palette), "image/png", { repeat: false });
   glb.extensionsUsed.add("KHR_materials_emissive_strength");
   const material = glb.addMaterial({
     name: "Road_Marking",
@@ -571,13 +857,23 @@ export function buildMarkings({ glb, markings, surface }) {
   return { vertices: positions.length / 3, triangles: indices.length / 3, sourceTriangles: source };
 }
 
-// One-line build summary of what loadMarkings kept, dropped and estimated.
+// Build summary of the corrections, the gate and the crossings.
 export function describeMarkings({ log, crossings, zebras }) {
-  const list = (table) => Object.entries(table).map(([k, n]) => `${k} ${n}`).join(", ") || "none";
+  const row = (name, t) => `${name} ${t.drawn + t.estimated}${t.estimated ? ` (${t.estimated} est.)` : ""}/${t.rejected + t.reviewed}` +
+    `${t.reviewed ? ` (${t.reviewed} by eye)` : ""}${t.recoloured ? `, ${t.recoloured} recoloured` : ""}${t.byGroup ? `, ${t.byGroup} by group` : ""}${t.singled ? `, ${t.singled} single` : ""}${t.byEye ? `, ${t.byEye} accepted by eye` : ""}${t.duplicate ? `, ${t.duplicate} dup` : ""}${t.dropped ? `, ${t.dropped} out` : ""}`;
+  const total = Object.values(log.kinds).reduce((acc, t) => {
+    for (const key of Object.keys(acc)) acc[key] += t[key];
+    return acc;
+  }, { drawn: 0, estimated: 0, rejected: 0, reviewed: 0, duplicate: 0, dropped: 0, recoloured: 0 });
+  const estimated = Object.entries(log.estimated).map(([k, n]) => `${k} ${n}`).join(", ") || "none";
   return [
-    `markings: ${zebras.length} photo zebras; drawn ${list(log.drawn)}; estimated ${list(log.estimated)}; ` +
-      `left out: ${log.dropped.other} 'other', ${log.dropped.building} inside buildings, ${log.dropped.sidewalk} on A003 sidewalks, ` +
-      `${log.dropped.offRoad} lines off the road, ${log.dropped.vegetation} in vegetation, ${log.dropped.shadow} casting a shadow (raised objects)`,
+    `markings: corrections from markings-extra.geojson: ${log.corrections.deleted} deleted, ${log.corrections.rekinded} re-kinded; ` +
+      `candidates drawn/rejected (paint gate: support >= ${GATE_SUPPORT}; by eye: chip review): ${row("all", total)}`,
+    `  per kind: ${Object.entries(log.kinds).sort(([a], [b]) => a.localeCompare(b)).map(([kind, t]) => row(kind, t)).join("; ")}`,
+    `  per file: ${Object.entries(log.files).map(([file, t]) => row(file, t)).join("; ")}`,
+    `  left out by context: ${log.dropped.other} 'other', ${log.dropped.building} inside buildings, ${log.dropped.sidewalk} on A003 sidewalks, ` +
+      `${log.dropped.offRoad} lines off the road, ${log.dropped.vegetation} in vegetation, ${log.dropped.shadow} casting a shadow (raised objects); ` +
+      `${zebras.length} drawn zebras; estimated crossing bars: ${estimated}`,
     ...crossings.map((line) => `  crossing ${line}`),
   ].join("\n");
 }

@@ -49,7 +49,10 @@ const SKIRT_DROP = 0.5;
 const EDGE_DEPTH = 3;
 const EDGE_HALF_WIDTH = EDGE_STEP;
 const EDGE_WIDEN = 0.6;
-const COLOUR_FEATHER_M = 160; // ASSUMED: edge colour to backdrop tone
+// ASSUMED: edge colour to backdrop tone. Short on purpose: the edge colour is one ground strip, and a bare-soil
+// clearing on the north-west edge carried 160 m (or even 40 m) out read as a brown band across the forested hill
+// behind BLD_D4 in the 공대 3호관 preset; over 12 m it only closes the seam.
+const COLOUR_FEATHER_M = 12;
 // Share of the daylight ground lighting that is indirect (sky + ambient), the part three.js scales by
 // the AO map (ASSUMED from CampusLighting's sun 4.0 / sky 0.45 / ambient 0.15 at 15:00).
 const INDIRECT_SHARE = 0.35;

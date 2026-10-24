@@ -446,6 +446,25 @@ The overlay sheets are scratch files and are not committed:
 - `full/`: the final per-feature review.
 - `review_state.json`, `chip_decisions.json`, `full_decisions.json` and `misses.json`: the review state.
 
+### M3 additions (2026-10-25)
+
+M3 brought both files into the model (`stages/markings.mjs`) and appended 651 hand traces to
+`markings-extra.geojson` (`method: "trace"`, `note` starting "M3 trace", ids MX00915 and up; same schema). They were
+placed on the 4x photo and fitted to its paint:
+
+- main gate (T0512): the striped raised crossing (white bars on the yellow table, 0.91 m period), the island stop and
+  lane lines, junction guide dashes (dashed-line fit), lane arrows and the yellow median hatching;
+- roundabout (T0407): the white rim dashes, the yellow ladder strip (two rails and 1.17 m rungs), a yellow kerb line
+  and a zebra in deep building shadow (grey top-hat fit, 10 bars);
+- the 16 striped humps and raised crossings that M2 outlined as one polygon, re-traced as their white and yellow
+  bands, clipped to the painted table; three hatched medians as rails and rungs; blue bays as their blue fill (with
+  holes) and white symbol; stall rows in shade or with parked cars cut out; faint yellow centre dashes and dots.
+
+Pieces of one fitted model share `properties.group` (`hump ...`, `median ...`, `bay ...`, `ladder ...`, `trim ...`,
+`guide ...`, `zebra ...`). `markings-gate.json` (written by `bake/markings-gate.mjs`) holds every candidate's
+measured paint support and the chip-review verdicts (`review`: 186 "not paint", 28 "paint"); see the Road markings
+section of the generator README for how the stage uses them and for the drawn/rejected counts.
+
 ## Licence
 
 Source: **국토지리정보원 (NGII), 정사영상 2025, sheet 34702020 (순천020)**, metadata 202504000734702020, made by

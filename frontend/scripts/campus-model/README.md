@@ -22,7 +22,7 @@ node --test src/campusModelAsset.test.mjs
 |---|---|
 | `stages/sources.mjs` | uni.glb scene, heightfield, building footprints, GeoJSON layers, land cover |
 | `stages/buildings.mjs` | building selection, floor/height corrections, facade looks and cells, tower masses, roof colours and solar panels from the orthophoto, building meshes and nodes |
-| `stages/markings.mjs` | road markings: the photo detections of `data/photo/markings.geojson` checked against the photo and the surveyed ground, estimated crossings where canopy hides the paint, and the `Road_Markings` decal mesh on the Topography triangles (see Road markings) |
+| `stages/markings.mjs` | road markings: both photo marking files merged (corrections applied), each candidate checked against the surveyed ground and the paint gate (`data/photo/markings-gate.json`), duplicates removed, estimated crossings where canopy hides the paint, and the `Road_Markings` decal mesh on the Topography triangles (see Road markings) |
 | `stages/ground.mjs` | procedural ground layer (land cover, ground features from `osm-ground.json`), the orthophoto laid over it (photo paint under the markings suppressed), ground material, Topography chunks and the surface the markings lie on (`topographySurface`) |
 | `stages/trees.mjs` | `placeTrees` (placement masks, CHMv2-driven placement; runs before the ground) and `buildTrees` (species geometry, instanced tree nodes) |
 | `stages/furniture.mjs` | `loadFurniture` (the surveyed outdoor objects, the footprints trees keep out of and the photo areas the ground suppresses; runs before the trees) and `buildFurniture` (the merged `Furniture` / `Furniture_Glass` nodes and the estimated benches; runs after the ground) (see Street furniture) |
@@ -50,7 +50,8 @@ node --test src/campusModelAsset.test.mjs
 | `docs/assets/data/road_zones_wgs84.geojson` | asphalt road surfaces |
 | `docs/assets/data/walkways_wgs84.geojson` | A003 sidewalk outlines (closed rings along kerb and back edge, some open lines): paved areas and kerbs |
 | `docs/assets/data/crosswalks_wgs84.geojson` | digitised crosswalk polygons: only where a crossing the photo shows no zebra for gets estimated bars |
-| `data/photo/markings.geojson` | painted road markings traced from the NGII 2025 orthophoto (see `data/photo/README.md`): the `Road_Markings` mesh |
+| `data/photo/markings.geojson`, `markings-extra.geojson` | painted road markings traced from the NGII 2025 orthophoto, detection and completion pass (see `data/photo/README.md`): the `Road_Markings` mesh |
+| `data/photo/markings-gate.json` | paint support of every marking candidate on the NGII sheet and the chip-review verdicts (`bake/markings-gate.mjs`; see Road markings) |
 | `data/photo/objects-campus.geojson` | outdoor objects surveyed on the NGII 2025 orthophoto over every tile of EXTENT (see `data/photo/README.md`): street lamps, signals, signs, walls, fences, planters, benches, shelters, pergolas, gazebos, the stands and the 구령대, sports equipment, the footbridge and the plaza structures (see Street furniture) |
 
 `fetch/ortho.mjs` (also run by `fetch-sources.mjs`) caches the z19 WMTS tiles over EXTENT in `.cache/`
@@ -304,44 +305,88 @@ covers gets no proxy. That node keeps its own label. Records under 12 m² are no
 
 ## Road markings (`stages/markings.mjs`)
 
-`data/photo/markings.geojson` lists the painted markings detected in the NGII 2025 orthophoto, the same photograph
-as the ground texture (registered to it within 5 mm; method, hand checks and recall in `data/photo/README.md`).
-`loadMarkings` turns them into plan-view pieces before the ground is painted, so the ground stage can suppress the
-photo's own paint under them, and `buildMarkings` lays the pieces on the terrain after it:
+Two files list the painted markings of the NGII 2025 orthophoto, the same photograph as the ground texture (registered
+to it within 5 mm; methods, hand checks and recall in `data/photo/README.md`):
 
-| Detection | Drawn as |
+- `data/photo/markings.geojson`, the detection pass;
+- `data/photo/markings-extra.geojson`, the completion pass: paint the first pass missed (`method` detect or trace)
+  and `properties.corrections`, the first-pass ids that are not paint (`delete`, 278) or carry the wrong kind
+  (`kind`, 201). M3 (2026-10-25) appended 651 hand traces (`note` "M3 trace: ..."): the gate's raised crossing,
+  island lines, guide dashes and arrows, the roundabout rim dashes and ladder strip, striped humps and hatched medians
+  re-traced as their bands, blue bays as fill and symbol, shaded stall rows and a zebra in deep shadow. Pieces of one
+  fitted model share a `group`.
+
+`markingCandidates()` applies the corrections, then turns both files into candidates with their drawn pieces. A
+candidate is drawn only when the photo backs it:
+
+1. context: left out when its centroid lies inside a modelled building or an A003 sidewalk, a polygon is mostly
+   surrounded by vegetation, the photo shows a cast shadow beside it on the side away from the morning sun, or a solid
+   lane, edge or centre line lies off the road;
+2. paint gate: `bake/markings-gate.mjs` measures, on the NGII sheet itself (`.cache/ngii-ortho`; the VWorld rendition
+   washes yellow out to grey), the share of each candidate's drawn area that is white, yellow and blue paint (top-hats
+   over a 1.5 m grey opening, kept at half maximum of the local peak, read over the core of each piece) and writes
+   `data/photo/markings-gate.json` (`[white, yellow, blue, fingerprint]` per id). The stage draws a candidate when the
+   share of its own colour reaches `GATE_SUPPORT` (0.6). A polygon whose label colour fails but whose paint the photo
+   shows white or yellow is drawn in that colour; zebra bars of a crossing whose bars mostly pass need 0.3 (shade halves
+   their contrast); the pieces of one `group` are drawn together on their mean support (each at least 0.3). The
+   file's `review` section overrides the masks for ids judged by eye on 4x chip sheets: `not paint` (kerb stones,
+   car roofs, outlines filled across their gaps, pieces superseded by a re-trace) or `paint` (hand traces of faint or
+   shaded paint). The stage refuses to build when an entry's fingerprint no longer matches the geometry it draws, so
+   editing either markings file means `bun scripts/campus-model/bake/markings-gate.mjs` (and a new look at any
+   reviewed id whose geometry changed);
+3. duplicates: accepted candidates of one colour covering the same 0.1 m cells (half the smaller one's area) keep one:
+   the larger when it contains the smaller three times over, else the better supported.
+
+A rejected candidate is not drawn and its paint stays in the photo: the ground stage refills the photo under drawn
+pieces only (their holes stay photo). The 2026-10-25 build: 2,730 candidates, 2,054 drawn (24 estimated crossing
+bars), 214 rejected by the paint gate, 177 by eye, 188 duplicates, 97 left out by context:
+
+| kind | drawn | gate | by eye | duplicate | context |
+|---|---:|---:|---:|---:|---:|
+| zebra_bar | 739 (22 est.) | 11 | 11 | 6 | 0 |
+| lane_line_dashed | 285 | 11 | 3 | 52 | 1 |
+| speed_bump (bands of striped humps and raised crossings) | 213 | 48 | 5 | 0 | 2 |
+| parking_line | 152 | 23 | 89 | 57 | 16 |
+| text | 124 | 0 | 2 | 17 | 1 |
+| kerb_no_parking | 122 (2 est.) | 38 | 7 | 2 | 17 |
+| hatch | 109 | 9 | 8 | 7 | 1 |
+| centre_line_yellow | 93 | 24 | 2 | 2 | 19 |
+| disabled_parking | 68 | 35 | 27 | 8 | 7 |
+| stop_line | 35 | 3 | 1 | 4 | 1 |
+| chevron | 28 | 1 | 0 | 1 | 0 |
+| lane_line_solid | 22 | 3 | 11 | 14 | 15 |
+| edge_line | 14 | 5 | 11 | 1 | 16 |
+| arrows, diamonds, give-way, bike box | 50 | 3 | 0 | 13 | 1 |
+
+Geometry:
+
+| Candidate | Drawn as |
 |---|---|
-| `zebra_bar` | each bar at its detected centre and length, along its crossing's mean axis, 0.50 m wide (estimated; see below). A crossing whose bars are fused to a painted frame (`fused_frame`) is its outline polygon |
-| lines (`lane_line_*`, `edge_line`, `centre_line_yellow`, `parking_line`) | stroked 0.15 m wide; `double` yellow centre lines as two 0.15 m lines 0.15 m either side of the detected centreline; `dotted` guide lines as their dots |
-| `arrow`, `text`, `hatch`, `parking_line` polygons | the detected polygon (the painted shape; the kind labels are often wrong) |
-| `other` | left out: about half are car roofs, kerbs, fences and roof edges |
+| `zebra_bar` | each bar at its detected centre and length, along its crossing's mean axis, 0.50 m wide (estimated; see below). markings.geojson groups bars by `crossing_id`; completion-pass bars are linked within 2 m and 15°. A crossing fused to a painted frame (`fused_frame`) is its outline polygon |
+| LineStrings | line kinds stroked 0.15 m wide (stop lines at their detected width within 0.3-0.6 m); `double` yellow lines as two 0.15 m lines 0.15 m either side of the centreline, or as one line on it when only that reading is on paint; `dotted` guide lines as their dots |
+| Polygons (arrows, text, hatching, chevrons, stall outlines, dashes, humps, blue bays) | the painted outline with its holes |
+| `other` | left out |
 
 The bar width is below the photo's resolution. Folding the bar profiles of 25 crossings over the 0.903 m period,
 the second harmonic shows the bars wider than the gaps in 73-92 % of them; the duty of 0.52-0.58 gives 0.47-0.52 m
 bars, drawn at 0.50 m with 0.40 m gaps.
 
-A detection is left out when its centroid lies inside a modelled building or an A003 sidewalk, when a polygon is
-mostly surrounded by vegetation, when the photo shows a cast shadow beside it on the side away from the morning sun
-(azimuth 92.5°, elevation 62°: cars and walls cast one, paint does not), and, for the line kinds the detection's
-hand check found least reliable (solid lane, edge and centre lines), when it lies off the road (road zones, OSM
-parking, or within 12 m of an OSM arterial or connector). The build logs every count.
-
-Crossings: the OSM crossing ways and the digitised crosswalk polygons never draw stripes. One that matches a
-detected zebra is drawn from the photo alone; the build logs how far the OSM way lies off it. One without a
-detected zebra whose area the photo shows mostly under canopy gets estimated bars (0.903 m period, 0.50 m bars;
-OSM ways 4.57 m wide after REG's translation, polygons trimmed by their median 1.45 m overrun). Under a cast
-shadow alone, or on open asphalt, it stays undrawn: the relit photo keeps whatever paint it has. Estimated pieces
-are counted separately in the build log and in the node extras (`markingsEstimated`).
+Crossings: the OSM crossing ways and the digitised crosswalk polygons never draw stripes. One that matches a drawn
+zebra is drawn from the photo alone; the build logs how far the OSM way lies off it. One without a drawn zebra whose
+area the photo shows mostly under canopy gets estimated bars (0.903 m period, 0.50 m bars; OSM ways 4.57 m wide after
+REG's translation, polygons trimmed by their median 1.45 m overrun). Under a cast shadow alone, or on open asphalt, it
+stays undrawn: the relit photo keeps whatever paint it has.
 
 The mesh: every piece is triangulated and split along the Topography grid lines and diagonals wherever a flat
 triangle would leave the terrain by more than 5 mm, so each triangle lies on one terrain triangle
 (`topographySurface` in `stages/ground.mjs` reproduces the chunk triangulation), 4 cm above it, with the
 terrain's interpolated normals. Packed positions are 14-bit over the campus (about 5 cm steps), so CityModel draws
 the material with a polygon offset; it casts no shadow and takes no pointer raycasts. One `Road_Marking` material
-with a white/yellow palette texture as base colour and emissive map (no vertex colours): the dashboard lights every
-emissive map at night, so the paint stays faintly visible after dark (`KHR_materials_emissive_strength` 0.18).
-One mesh, one draw call; about 16,000 triangles and 38 KB in the packed GLB. Positions, widths and estimated
-crossings are estimates traced from imagery, not survey data.
+with a white/yellow/blue palette texture as base colour and emissive map (no vertex colours): the dashboard lights
+every emissive map at night, so the paint stays faintly visible after dark (`KHR_materials_emissive_strength` 0.18).
+One mesh, one draw call: 2,137 pieces, 45,391 triangles; `campus-v2.glb` is 4,168,048 B (4,051,068 B before M3) and
+`bench.mjs --quality low` still counts 131 / 28 / 127 draw calls. Positions, widths and estimated crossings are
+estimates traced from imagery, not survey data.
 
 ## Street furniture (`stages/furniture.mjs`, `stages/lights.mjs`)
 
