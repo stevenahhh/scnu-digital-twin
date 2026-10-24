@@ -22,6 +22,9 @@ function parseArgs(argv) {
     clock: "2026-10-24T15:00:00+09:00",
     chrome: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
     compare: null, liveBackends: false,
+    // Render quality tier seeded into localStorage before load (low|medium|high); empty keeps the app default.
+    // Post-processing passes reset renderer.info, so draw-call counts are comparable only at "low".
+    quality: "",
   };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -242,7 +245,8 @@ async function runOnce(config, runIndex, outDir, opts) {
     await cdp("Network.setCacheDisabled", { cacheDisabled: true });
     await cdp("Emulation.setTimezoneOverride", { timezoneId: "Asia/Seoul" });
     await cdp("Emulation.setDeviceMetricsOverride", { width: opts.width, height: opts.height, deviceScaleFactor: 1, mobile: opts.width < 600 });
-    await cdp("Page.addScriptToEvaluateOnNewDocument", { source: initScript(opts.clock) });
+    const qualitySeed = opts.quality ? `try{localStorage.setItem("scnu.renderQuality",${JSON.stringify(opts.quality)})}catch{}\n` : "";
+    await cdp("Page.addScriptToEvaluateOnNewDocument", { source: qualitySeed + initScript(opts.clock) });
     if (!opts.liveBackends) await cdp("Fetch.enable", { patterns: BACKEND_PATTERNS.map((urlPattern) => ({ urlPattern })) });
 
     const t0 = Date.now();
