@@ -304,9 +304,14 @@ export default function App() {
   const mapLayerRef = useRef(null);
   const sceneStatusRef = useRef(null);
   const hudRef = useRef(null);
+  const panelToggleRef = useRef(null);
+  // 캠퍼스 라벨은 이 조작 UI 밑에 그려지므로, 겹치는 라벨은 CityModel이 숨긴다.
+  const labelChromeRefs = useMemo(() => [hudRef, panelToggleRef], []);
   const canvasStateRef = useRef(null);
   const activePresetRef = useRef(null);
   const [selectedId, setSelectedId] = useState("");
+  // 패널 제목에 쓸 건물 이름(라벨과 같은 이름). selectedId는 라벨 강조에도 쓰여 BLD_* id일 수 있다.
+  const [selectedTitle, setSelectedTitle] = useState("");
   const [selectedBuildingId, setSelectedBuildingId] = useState("D4");
   const [editorRequest, setEditorRequest] = useState(null);
   const [installationPlans, setInstallationPlans] = useState([]);
@@ -509,6 +514,7 @@ export default function App() {
 
   const handleSelect = useCallback((name) => {
     setSelectedId(name);
+    setSelectedTitle("");
     setPopupData(null);
     setPopupError(null);
   }, []);
@@ -546,6 +552,7 @@ export default function App() {
     elementId,
     buildingId,
     displayName,
+    title = displayName,
   }) => {
     if (buildingId !== selectedBuildingId) {
       installationLoadGenerationRef.current += 1;
@@ -554,6 +561,7 @@ export default function App() {
       setInstallationPlansStatus("loading");
     }
     setSelectedId(displayName);
+    setSelectedTitle(title);
     setSelectedBuildingId(buildingId);
     setActiveTab("energy");
     setPopupData(null);
@@ -647,6 +655,7 @@ export default function App() {
       elementId,
       buildingId,
       displayName: obj?.userData?.buildingName ?? obj?.name ?? buildingId,
+      title: obj?.userData?.buildingLabel ?? obj?.userData?.buildingName ?? obj?.name ?? buildingId,
       area: obj?.userData?.area ?? 0,
     });
 
@@ -814,6 +823,7 @@ export default function App() {
           onD4Enter={handleD4Enter}
           labelsHidden={labelsHidden}
           occluderRef={panelRef}
+          chromeRefs={labelChromeRefs}
         />
         <CampusTrafficSimulation />
         <ShadowBaker sunKey={sunVector.join(",")} />
@@ -840,7 +850,7 @@ export default function App() {
     </>
   ), [
     sceneBackground, sunVector, sunVisible, sunAltitude, selectedId, labelsHidden, sceneWeatherScene, quality, qualityRenderer,
-    handleSelect, handleBuildingClick, handleBuildingProximity, handleD4Enter, handleOrbitStart, handleOrbitEnd,
+    handleSelect, handleBuildingClick, handleBuildingProximity, handleD4Enter, handleOrbitStart, handleOrbitEnd, labelChromeRefs,
   ]);
 
   // 루트는 overflow: clip으로 자른다. hidden은 스크롤 컨테이너라서, 닫힌 패널이 화면 밖에 만드는 공간 때문에
@@ -855,6 +865,7 @@ export default function App() {
         <div
           ref={hudRef}
           data-qa="campus-hud"
+          data-label-chrome-layer=""
           className={`pointer-events-none absolute inset-y-0 left-0 z-[6] transition-[right] duration-300 ${isMapCoveredByPanel ? "invisible" : ""}`}
           style={{ right: `calc(${mapInsetRight} + 2.75rem)` }}
         >
@@ -968,6 +979,7 @@ export default function App() {
       {/* 패널 토글 버튼 */}
       {buildingViewMode === "campus" && (
       <button
+        ref={panelToggleRef}
         onClick={() => setIsPanelOpen(v => !v)}
         aria-label={isPanelOpen ? "패널 닫기" : "패널 열기"}
         title={isPanelOpen ? "패널 닫기" : "패널 열기"}
@@ -1003,7 +1015,7 @@ export default function App() {
           }}
         >
           {/* Header & Tabs */}
-          <div className="px-6 pt-8 pb-4">
+          <div className="dashboard-panel-content px-6 pt-8 pb-4">
             <h2 className="text-xl font-[800] tracking-tight mb-5">스마트 시티 대시보드</h2>
             <div className="flex rounded-lg p-1 border border-[var(--colors-hairline)] gap-0.5" style={{ backgroundColor: 'color-mix(in srgb, var(--colors-surface-2) 50%, transparent)' }}>
               {[
@@ -1035,7 +1047,7 @@ export default function App() {
           </div>
 
           {/* Content Area */}
-          <div className="flex-1 overflow-y-auto px-6 pb-8 space-y-6">
+          <div className="dashboard-panel-content flex-1 overflow-y-auto px-6 pb-8 space-y-6">
             {activeTab === "dashboard" && (
               <PanelErrorBoundary label="기본 현황">
                 <>
@@ -1163,7 +1175,7 @@ export default function App() {
                   data={popupData}
                   loading={popupLoading}
                   error={popupError}
-                  title={selectedId}
+                  title={selectedId ? selectedTitle || selectedId : selectedId}
                   onClose={closeMicroclimatePanel}
                 />
               </PanelErrorBoundary>

@@ -58,6 +58,7 @@ const BUILDING_MAP = {
 };
 
 const FOCUS_CAMERA_OFFSET = new THREE.Vector3(60, 50, 60);
+const LABEL_WRAPPER_STYLE = Object.freeze({ pointerEvents: "none" });
 
 // 인스턴싱된 줄기는 노드 자체가 메시가 되기도 하므로 자신과 부모 이름을 모두 본다.
 // 지형(Ground)과 나무 줄기는 그림자를 드리울 필요가 없다: 지면은 스스로를 가리지 않고,
@@ -232,6 +233,9 @@ export function CityModel({
   labelsHidden = false,
   // 열린 대시보드 패널 요소. 패널 밑으로 들어간 라벨은 숨겨 키보드 포커스가 보이지 않는 곳으로 가지 않게 한다.
   occluderRef,
+  // 지도 위 조작 UI(시점 버튼 줄·시간 슬라이더·패널 토글) ref 목록. 이 UI와 겹치는 라벨은 숨긴다.
+  // data-label-chrome-layer가 붙은 요소는 통과용 레이어로 보고 자식 요소들의 사각형을 쓴다.
+  chromeRefs,
   ...props
 }) {
   const { scene } = useGLTF(CAMPUS_MODEL_URL);
@@ -303,7 +307,16 @@ export function CityModel({
     labelsHiddenRef.current = labelsHidden;
     selectedIdRef.current = selectedId;
     labelPassFramesRef.current = 2;
-  }, [labelsHidden, selectedId, labelScale]);
+    // D4 상세가 열리면 캠퍼스 루프가 멈춘다(frameloop "never", useDemandLoop). 라벨 패스가 돌지 않으므로
+    // 여기서 바로 숨긴다. 다시 보이는 것은 루프가 돌아온 뒤 라벨 패스가 정한다.
+    if (labelsHidden) {
+      for (const element of labelElementsRef.current.values()) {
+        element.style.visibility = "hidden";
+        element.style.pointerEvents = "none";
+      }
+    }
+    invalidate();
+  }, [labelsHidden, selectedId, labelScale, invalidate]);
 
   useEffect(() => {
     const controls = controlsRef?.current;
@@ -720,9 +733,18 @@ export function CityModel({
     if (labels.size === 0) return;
     const area = gl.domElement.getBoundingClientRect();
     const occluder = occluderRef?.current?.getBoundingClientRect() ?? null;
-    const frameKey = `${area.left},${area.top},${area.right},${area.bottom}|${
-      occluder ? `${occluder.left},${occluder.top},${occluder.right},${occluder.bottom}` : ""
-    }`;
+    const chrome = [];
+    for (const ref of chromeRefs ?? []) {
+      const element = ref?.current;
+      if (!element) continue;
+      const parts = element.hasAttribute("data-label-chrome-layer") ? element.children : [element];
+      for (const part of parts) {
+        const rect = part.getBoundingClientRect();
+        if (rect.right > rect.left && rect.bottom > rect.top) chrome.push(rect);
+      }
+    }
+    const rectKey = (rect) => `${rect.left},${rect.top},${rect.right},${rect.bottom}`;
+    const frameKey = `${rectKey(area)}|${occluder ? rectKey(occluder) : ""}|${chrome.map(rectKey).join(";")}`;
     if (frameKey !== labelFrameKeyRef.current) {
       labelFrameKeyRef.current = frameKey;
       labelPassFramesRef.current = 2;
@@ -757,11 +779,15 @@ export function CityModel({
           distance: dx * dx + dy * dy + dz * dz,
         });
       }
-      visibleIds = selectVisibleCampusLabels(candidates, area, occluder);
+      visibleIds = selectVisibleCampusLabels(candidates, area, occluder, chrome);
     }
+    // 숨긴 라벨은 클릭·호버도 받지 않게 pointer-events를 끈다(밑의 건물이 클릭을 받는다).
     for (const [elementId, element] of labels) {
-      const next = visibleIds?.has(elementId) ? "" : "hidden";
+      const visible = visibleIds?.has(elementId);
+      const next = visible ? "" : "hidden";
       if (element.style.visibility !== next) element.style.visibility = next;
+      const pointer = visible ? "" : "none";
+      if (element.style.pointerEvents !== pointer) element.style.pointerEvents = pointer;
     }
   });
 
@@ -791,8 +817,12 @@ export function CityModel({
       onBuildingClick({
         name: meta.dataElementId,
         parent: { name: meta.dataElementId },
-        // 대리 노드는 패널 제목에 요소 id 대신 실제 건물 이름을 쓴다.
-        ...(meta.proxy && meta.label ? { userData: { buildingName: meta.label } } : {}),
+        // 대리 노드는 선택 표시에 요소 id 대신 실제 건물 이름을 쓴다. buildingLabel은 라벨과 같은 이름으로,
+        // 팝업 API가 없을 때 패널 제목이 BLD_* id로 나오지 않게 한다.
+        userData: {
+          ...(meta.proxy && meta.label ? { buildingName: meta.label } : {}),
+          ...(meta.label ? { buildingLabel: meta.label } : {}),
+        },
       });
     }
   };
@@ -831,7 +861,10 @@ export function CityModel({
       onBuildingClick({
         name: anchor.dataElementId,
         parent: { name: anchor.dataElementId },
-        ...(anchor.proxy && anchor.displayName ? { userData: { buildingName: anchor.displayName } } : {}),
+        userData: {
+          ...(anchor.proxy && anchor.displayName ? { buildingName: anchor.displayName } : {}),
+          ...(anchor.displayName ? { buildingLabel: anchor.displayName } : {}),
+        },
       });
     }
   };
@@ -854,6 +887,9 @@ export function CityModel({
             key={anchor.elementId}
             position={anchor.position}
             zIndexRange={[120, 0]}
+            // drei가 만드는 감싼 div는 라벨의 변환 전 자리(앵커 오른쪽 아래)를 차지한다. 클릭을 받지 않게 해서
+            // 보이는 라벨 버튼만 클릭을 받고, 그 밖의 자리는 밑의 캔버스(건물)로 간다.
+            style={LABEL_WRAPPER_STYLE}
           >
             <div
               ref={(element) => {

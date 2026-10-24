@@ -542,7 +542,7 @@ export default function App() {
           }}
         >
           {/* Header & Tabs */}
-          <div className="px-6 pt-8 pb-4">
+          <div className="dashboard-panel-content px-6 pt-8 pb-4">
             <h2 className="text-xl font-[800] tracking-tight mb-5">스마트 시티 대시보드</h2>
             <div className="flex rounded-lg p-1 border border-[var(--colors-hairline)] gap-0.5" style={{ backgroundColor: 'color-mix(in srgb, var(--colors-surface-2) 50%, transparent)' }}>
               {[
@@ -564,7 +564,7 @@ export default function App() {
           </div>
 
           {/* Content Area */}
-          <div className="flex-1 overflow-y-auto px-6 pb-8 space-y-6">
+          <div className="dashboard-panel-content flex-1 overflow-y-auto px-6 pb-8 space-y-6">
             {activeTab === "dashboard" && (
               <PanelErrorBoundary label="기본 현황">
                 <>

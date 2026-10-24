@@ -86,3 +86,28 @@ test("the shipped campus-v2 sidecar parses and samples its own grid values", asy
     close(sampleHeight(field, meta.originX + i * meta.step, meta.originZ + j * meta.step), expected, 0.01, `grid (${i}, ${j})`);
   }
 });
+
+test("loadHeightfield shares one request between callers asking for the same sidecar", async () => {
+  const meta = { width: 2, height: 2, originX: 0, originZ: 0, step: 1, minY: 0, scale: 1 };
+  const requested = [];
+  const fakeFetch = async (url) => {
+    requested.push(url);
+    return url.endsWith(".json")
+      ? { ok: true, json: async () => meta }
+      : { ok: true, arrayBuffer: async () => new Uint16Array([0, 1, 2, 3]).buffer };
+  };
+  const urls = { meta: "/dedupe.json", data: "/dedupe.bin" };
+  const [a, b] = await Promise.all([loadHeightfield(urls, fakeFetch), loadHeightfield(urls, fakeFetch)]);
+  assert.equal(a, b);
+  assert.equal(await loadHeightfield(urls, fakeFetch), a);
+  assert.deepEqual(requested.sort(), ["/dedupe.bin", "/dedupe.json"]);
+});
+
+test("loadHeightfield retries after a missing sidecar instead of caching the failure", async () => {
+  let calls = 0;
+  const missing = async () => { calls += 1; return { ok: false, status: 404 }; };
+  const urls = { meta: "/retry.json", data: "/retry.bin" };
+  assert.equal(await loadHeightfield(urls, missing), null);
+  assert.equal(await loadHeightfield(urls, missing), null);
+  assert.equal(calls, 4);
+});

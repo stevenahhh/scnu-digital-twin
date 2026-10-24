@@ -285,6 +285,42 @@ describe("Legacy and VWorld feature parity", () => {
     expect(mapLayer.hasAttribute("inert")).toBe(false);
   });
 
+  it("hands CityModel the map chrome (HUD layer and panel toggle) that campus labels must stay beneath", () => {
+    const { container } = render(<App />);
+    const chrome = sceneMock.cityModelProps.chromeRefs.map((ref) => ref.current);
+    const hud = container.querySelector('[data-qa="campus-hud"]');
+    expect(chrome).toContain(hud);
+    expect(hud.hasAttribute("data-label-chrome-layer")).toBe(true);
+    expect(chrome).toContain(screen.getByRole("button", { name: "패널 닫기" }));
+  });
+
+  it("titles the selection panel with the building's label name, not its BLD_* id, when the popup API is down", async () => {
+    stubFetch();
+    const fetchMock = vi.fn(async (url) => {
+      if (String(url).includes("/popup")) throw new TypeError("Failed to fetch");
+      return okJson({ base_weather: null });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      render(<App />);
+      await act(async () => {
+        sceneMock.cityModelProps.onSelect("BLD_E1");
+        await sceneMock.cityModelProps.onBuildingClick({
+          name: "BLD_E1",
+          parent: { name: "BLD_E1" },
+          userData: { buildingLabel: "학생회관" },
+        });
+      });
+      expect(screen.getByRole("heading", { level: 3, name: "학생회관" })).toBeTruthy();
+      expect(screen.queryByRole("heading", { level: 3, name: "BLD_E1" })).toBeNull();
+      // 라벨 강조는 그대로 요소 id로 맞춘다.
+      expect(sceneMock.cityModelProps.selectedId).toBe("BLD_E1");
+    } finally {
+      errorSpy.mockRestore();
+    }
+  });
+
   it("centres the 3D loading notice in the map area left of the open panel, clear of the panel toggle", () => {
     sceneMock.suspend = true;
     try {

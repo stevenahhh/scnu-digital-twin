@@ -1,12 +1,16 @@
 import { ChevronLeft } from "lucide-react";
 import { D4WingFloorScene } from "./D4WingFloorScene";
 import { formatRoomNumber, getWingById } from "../utils/d4BuildingData.mjs";
+import { D4SampleBadge } from "./D4SampleBadge";
 
 function InUseRoomList({ rooms, onSelectRoom }) {
   return (
     <div className="flex max-h-[64vh] w-full max-w-[560px] shrink-0 flex-col rounded-[16px] border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] p-4 shadow-lg lg:h-[64vh] lg:w-[340px]">
       <div className="flex items-center justify-between">
-        <div className="text-[13px] font-[900] text-[var(--colors-ink)]">사용 중인 강의실</div>
+        <div className="flex items-center gap-2 text-[13px] font-[900] text-[var(--colors-ink)]">
+          사용 중인 강의실
+          <D4SampleBadge />
+        </div>
         <span className="rounded-full bg-[var(--colors-primary)] px-2 py-0.5 text-[11px] font-[800] text-white">{rooms.length}</span>
       </div>
       <div className="mt-3 flex-1 overflow-y-auto">

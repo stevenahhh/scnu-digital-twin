@@ -229,3 +229,19 @@ test("a label hidden by the panel does not push an overlapping label off screen"
   ];
   assert.deepEqual([...selectVisibleCampusLabels(labels, canvas, openPanel)], ["beside"]);
 });
+
+test("a label touching map chrome such as the preset bar is hidden, one clear of it stays", () => {
+  const presetBar = rect(16, 16, 700, 40);
+  const labels = [
+    { id: "under-bar", rect: rect(200, 30, 80, 20), selected: false, hasPopup: true, distance: 1 },
+    { id: "peeking-above-bar", rect: rect(400, 2, 80, 20), selected: false, hasPopup: true, distance: 2 },
+    { id: "clear", rect: rect(400, 120, 80, 20), selected: false, hasPopup: true, distance: 3 },
+  ];
+  assert.deepEqual([...selectVisibleCampusLabels(labels, canvas, null, [presetBar])], ["clear"]);
+});
+
+test("a selected label under map chrome is still hidden", () => {
+  const slider = rect(16, 760, 384, 124);
+  const labels = [{ id: "selected", rect: rect(100, 800, 80, 20), selected: true, hasPopup: true, distance: 1 }];
+  assert.equal(selectVisibleCampusLabels(labels, canvas, null, [slider]).size, 0);
+});

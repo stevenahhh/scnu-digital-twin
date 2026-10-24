@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ArrowLeft, ChevronLeft, ChevronDown } from "lucide-react";
 import { D4RoomGridScene } from "./D4RoomGridScene";
 import { getFloorMajor, formatRoomNumber } from "../utils/d4BuildingData.mjs";
+import { D4SampleBadge } from "./D4SampleBadge";
 
 function ScheduleList({ timetable }) {
   if (timetable.length === 0) {
@@ -61,6 +62,7 @@ function RoomDetailCard({ room, status, onBack }) {
             >
               {status.isInUse ? "사용 중" : "미사용"}
             </span>
+            <D4SampleBadge />
           </div>
         </div>
         {view === "schedule" ? (
@@ -121,7 +123,7 @@ function RoomDetailCard({ room, status, onBack }) {
           </div>
           <div className="rounded-lg bg-[var(--colors-surface-2)] p-3">
             <div className="flex items-center justify-between text-[13px] font-[900] text-[var(--colors-ink)]">
-              <span>주간 에너지 절감</span>
+              <span>주간 에너지 절감 (추정)</span>
               <span className="text-[var(--colors-primary)]">
                 {room.savingRate.toFixed(1)}% ({room.weeklySavingsKwh.toFixed(1)} kWh)
               </span>

@@ -109,6 +109,9 @@ body {
 
 @media (max-width: 439px) {
   :root { --dashboard-panel-width: 100vw; }
+  /* 패널이 화면 전체를 덮으면 패널 토글(w-7, 28px)이 패널 왼쪽 가장자리 위에 놓인다. 내용을 토글 너비보다 더 들여
+     카드 왼쪽 끝이 토글에 가려지지 않게 한다. */
+  .dashboard-root .dashboard-panel-content { padding-left: 2.25rem; }
   .dashboard-root select,
   .dashboard-root input,
   .dashboard-root button { min-width: 0; }

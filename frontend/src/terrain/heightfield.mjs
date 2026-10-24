@@ -47,7 +47,28 @@ export function sampleHeight(field, x, z, mode = "triangle") {
 }
 
 // Fetches and parses the sidecar; resolves null when it is missing or unreadable so callers keep their fallback.
-export async function loadHeightfield(urls = CAMPUS_HEIGHTFIELD_URLS, fetchImpl = globalThis.fetch) {
+// Callers that ask for the same URLs with the same fetch share one request (the campus labels and the traffic
+// simulation both load it on start). A null result is not kept, so a later caller can try again.
+const pendingLoads = new WeakMap();
+
+export function loadHeightfield(urls = CAMPUS_HEIGHTFIELD_URLS, fetchImpl = globalThis.fetch) {
+  let byUrl = pendingLoads.get(fetchImpl);
+  if (!byUrl) {
+    byUrl = new Map();
+    pendingLoads.set(fetchImpl, byUrl);
+  }
+  const key = `${urls.meta}\n${urls.data}`;
+  const cached = byUrl.get(key);
+  if (cached) return cached;
+  const load = fetchHeightfield(urls, fetchImpl).then((field) => {
+    if (!field) byUrl.delete(key);
+    return field;
+  });
+  byUrl.set(key, load);
+  return load;
+}
+
+async function fetchHeightfield(urls, fetchImpl) {
   try {
     const [metaResponse, dataResponse] = await Promise.all([fetchImpl(urls.meta), fetchImpl(urls.data)]);
     if (!metaResponse.ok || !dataResponse.ok) return null;

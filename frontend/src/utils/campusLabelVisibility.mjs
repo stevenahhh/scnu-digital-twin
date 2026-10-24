@@ -48,11 +48,14 @@ function compareLabelPriority(a, b) {
 
 // labels: [{ id, rect, selected, hasPopup, distance }]. 보일 라벨의 id 집합을 돌려준다.
 // 화면 안(isCampusLabelVisible)인 라벨을 우선순위대로 훑으며, 이미 남긴 라벨과 겹치는 라벨은 숨긴다.
-export function selectVisibleCampusLabels(labels, area, occluder = null) {
+// chrome은 지도 위 조작 UI(시점 버튼 줄, 시간 슬라이더, 패널 토글)의 사각형이다. 라벨은 이 UI 밑에 그려지므로
+// 조금이라도 겹치는 라벨은 숨겨 UI 가장자리 밖으로 삐져나와 보이거나 그 밑에 숨은 채 포커스를 받지 않게 한다.
+export function selectVisibleCampusLabels(labels, area, occluder = null, chrome = []) {
   const kept = [];
   const visible = new Set();
   for (const label of [...labels].sort(compareLabelPriority)) {
     if (!isCampusLabelVisible(label.rect, area, occluder)) continue;
+    if (chrome.some((rect) => campusLabelRectsOverlap(rect, label.rect))) continue;
     if (kept.some((rect) => campusLabelRectsOverlap(rect, label.rect))) continue;
     kept.push(label.rect);
     visible.add(label.id);
