@@ -1,5 +1,11 @@
 // Building stage: match uni.glb's BLD_* nodes to the footprints in data/gis-buildings.json, pick
 // campus/off-campus buildings, build their facade/roof materials and meshes, and emit the nodes.
+// Every facade/roof primitive also gets TEXCOORD_1 into one ambient-occlusion atlas (see aoLayout
+// below); data/ao-buildings.png, baked from the raw GLB by bake/bake-ao.mjs, becomes their
+// occlusionTexture when its layout hash matches this build's.
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { metres } from "../lib/frame.mjs";
 import { MeshData } from "../lib/meshData.mjs";
 import { mulberry32 } from "../lib/raster.mjs";
@@ -54,20 +60,138 @@ export function styleFor(name, fallback, seed) {
 
 const isGroundFeature = (part) => part.areaMetres > 8000 && part.floors <= 1;
 
+// ---------------------------------------------------------------- AO atlas layout (TEXCOORD_1)
+// Each wall ring is unrolled into charts of (distance along the ring, depth below the wall top), cut
+// at a corner once a chart passes AO_MAX_CHART; each roof/box top is a chart of its XZ bounding box.
+// Charts are shelf-packed into one AO_SIZE^2 atlas with AO_GUTTER px between them at the finest
+// texel size that fits. UV0 cannot be reused: it is tiled and overlaps across buildings.
+const AO_ATLAS = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "ao-buildings.png");
+const AO_SIZE = 2048;
+const AO_GUTTER = 4;
+const AO_MAX_CHART = metres(80);
+
+class AoCharts {
+  constructor() {
+    this.charts = [];
+  }
+
+  open() {
+    this.charts.push({ w: 0, h: 0 });
+    return this.charts.length - 1;
+  }
+
+  close(chart, w, h) {
+    this.charts[chart].w = w;
+    this.charts[chart].h = h;
+  }
+
+  // Planar chart over the XZ bounding box of mesh vertices [from, vertexCount), e.g. a roof polygon.
+  addPlanar(mesh, from) {
+    let minX = Infinity;
+    let minZ = Infinity;
+    let maxX = -Infinity;
+    let maxZ = -Infinity;
+    for (let k = from; k < mesh.vertexCount; k += 1) {
+      const x = mesh.positions[k * 3];
+      const z = mesh.positions[k * 3 + 2];
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+      minZ = Math.min(minZ, z);
+      maxZ = Math.max(maxZ, z);
+    }
+    const chart = this.open();
+    this.close(chart, maxX - minX, maxZ - minZ);
+    for (let k = from; k < mesh.vertexCount; k += 1) mesh.ao.push(mesh.positions[k * 3] - minX, mesh.positions[k * 3 + 2] - minZ, chart);
+  }
+
+  // Shelf packing at texel size `texel` (scene units per texel); null when the charts do not fit.
+  pack(texel) {
+    const rects = new Array(this.charts.length);
+    const order = this.charts.map((_, i) => i).sort((a, b) => this.charts[b].h - this.charts[a].h || this.charts[b].w - this.charts[a].w || a - b);
+    let x = AO_GUTTER / 2;
+    let y = AO_GUTTER / 2;
+    let rowHeight = 0;
+    for (const i of order) {
+      const w = Math.ceil(this.charts[i].w / texel) + 1;
+      const h = Math.ceil(this.charts[i].h / texel) + 1;
+      if (w + AO_GUTTER > AO_SIZE) return null;
+      if (x + w + AO_GUTTER / 2 > AO_SIZE) {
+        x = AO_GUTTER / 2;
+        y += rowHeight + AO_GUTTER;
+        rowHeight = 0;
+      }
+      if (y + h + AO_GUTTER / 2 > AO_SIZE) return null;
+      rects[i] = { x, y, w, h };
+      x += w + AO_GUTTER;
+      rowHeight = Math.max(rowHeight, h);
+    }
+    return rects;
+  }
+
+  // Finest texel size (bisection to 0.1 %) whose packing fits, the chart rectangles and a layout hash.
+  layout() {
+    let lo = metres(0.05);
+    let hi = metres(0.05);
+    while (!this.pack(hi)) hi *= 2;
+    while (hi - lo > hi * 0.001) {
+      const mid = (lo + hi) / 2;
+      if (this.pack(mid)) hi = mid;
+      else lo = mid;
+    }
+    const rects = this.pack(hi);
+    let hash = 0x811c9dc5;
+    const mix = (value) => {
+      hash ^= value & 0xffff;
+      hash = Math.imul(hash, 0x01000193) >>> 0;
+      hash ^= value >>> 16;
+      hash = Math.imul(hash, 0x01000193) >>> 0;
+    };
+    mix(AO_SIZE);
+    mix(Math.round(hi * 1e6));
+    rects.forEach((r) => [r.x, r.y, r.w, r.h].forEach(mix));
+    let covered = 0;
+    rects.forEach((r) => {
+      covered += r.w * r.h;
+    });
+    return { texel: hi, rects, hash: hash.toString(16).padStart(8, "0"), fill: covered / AO_SIZE ** 2 };
+  }
+}
+
+// The aoLayout hash a baked atlas was made for (its PNG tEXt chunk), or null.
+function atlasLayoutHash(bytes) {
+  for (let offset = 8; offset + 8 <= bytes.length;) {
+    const length = bytes.readUInt32BE(offset);
+    const type = bytes.toString("ascii", offset + 4, offset + 8);
+    if (type === "tEXt") {
+      const [key, value] = bytes.toString("latin1", offset + 8, offset + 8 + length).split("\0");
+      if (key === "aoLayout") return value;
+    }
+    offset += 12 + length;
+  }
+  return null;
+}
+
 // ---------------------------------------------------------------- geometry
-function addWalls(mesh, ring, outward, base, ground, top, floorHeight) {
+function addWalls(mesh, ring, outward, base, ground, top, floorHeight, charts) {
   const area = ringArea(ring);
   // A ring that is counter-clockwise in (x, z) has its interior on the left; walls face right.
   const ordered = (area > 0) === outward ? [...ring].reverse() : ring;
   let distance = 0;
+  let chart = -1;
+  let chartStart = 0;
+  const depth = top - base;
   const v = (y) => -(y - ground) / (floorHeight * FACADE_FLOORS);
   for (let i = 0; i < ordered.length; i += 1) {
     const a = ordered[i];
     const b = ordered[(i + 1) % ordered.length];
     const length = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    if (charts && (chart < 0 || (distance > chartStart && distance - chartStart + length > AO_MAX_CHART))) {
+      if (chart >= 0) charts.close(chart, distance - chartStart, depth);
+      chart = charts.open();
+      chartStart = distance;
+    }
     const u0 = distance / (BAY * FACADE_BAYS);
     const u1 = (distance + length) / (BAY * FACADE_BAYS);
-    distance += length;
     mesh.quad(
       [a[0], base, a[1]],
       [b[0], base, b[1]],
@@ -75,17 +199,35 @@ function addWalls(mesh, ring, outward, base, ground, top, floorHeight) {
       [a[0], top, a[1]],
       [[u0, v(base)], [u1, v(base)], [u1, v(top)], [u0, v(top)]],
     );
+    if (charts) {
+      const s0 = distance - chartStart;
+      const s1 = s0 + length;
+      mesh.ao.push(s0, depth, chart, s1, depth, chart, s1, 0, chart, s0, 0, chart);
+    }
+    distance += length;
   }
+  if (charts) charts.close(chart, distance - chartStart, depth);
 }
 
-function addBox(mesh, cx, cz, sx, sz, y0, y1, angle) {
+function addBox(mesh, cx, cz, sx, sz, y0, y1, angle, charts) {
   const cos = Math.cos(angle);
   const sin = Math.sin(angle);
   const corner = (dx, dz) => [cx + dx * cos - dz * sin, cz + dx * sin + dz * cos];
   const ring = [corner(-sx / 2, -sz / 2), corner(sx / 2, -sz / 2), corner(sx / 2, sz / 2), corner(-sx / 2, sz / 2)];
-  addWalls(mesh, ring, true, y0, y0, y1, 1);
+  addWalls(mesh, ring, true, y0, y0, y1, 1, charts);
+  const from = mesh.vertexCount;
   mesh.horizontalPolygon(ring, [], y1);
+  charts.addPlanar(mesh, from);
 }
+
+// A MeshData whose vertices also carry AO chart coordinates: mesh.ao holds (s, t, chart) per vertex.
+function aoMesh(options) {
+  const mesh = new MeshData(options);
+  mesh.ao = [];
+  return mesh;
+}
+
+const aoPrimitive = (mesh, material) => ({ ...mesh.toPrimitive(material), ao: mesh.ao });
 
 function dominantAngle(ring) {
   let best = 0;
@@ -110,11 +252,12 @@ function minEdgeDistance(point, rings) {
   return best;
 }
 
-function buildingPrimitives(building, seed, { heightAt, facadeMaterials, roofMaterial, parapetMaterial, equipmentMaterial }) {
-  const walls = new MeshData();
-  const roof = new MeshData();
-  const parapet = new MeshData({ uvs: false });
-  const equipment = new MeshData({ uvs: false });
+function buildingPrimitives(building, seed, { heightAt, facadeMaterials, roofMaterial, parapetMaterial, equipmentMaterial, charts }) {
+  const walls = aoMesh();
+  const roof = aoMesh();
+  // Parapet and equipment carry an (unused) TEXCOORD_0 so that their TEXCOORD_1 is a valid set index.
+  const parapet = aoMesh();
+  const equipment = aoMesh();
   const rng = mulberry32(seed);
   for (const part of building.parts) {
     if (!part.outer || part.outer.length < 3) continue;
@@ -125,13 +268,15 @@ function buildingPrimitives(building, seed, { heightAt, facadeMaterials, roofMat
     const top = ground + height;
     const floors = Math.max(1, part.floors || Math.round(part.heightMetres / 3.6));
     const floorHeight = Math.min(metres(5), Math.max(metres(3), height / floors));
-    addWalls(walls, part.outer, true, base, ground, top, floorHeight);
-    part.holes.forEach((hole) => addWalls(walls, hole, false, base, ground, top, floorHeight));
+    addWalls(walls, part.outer, true, base, ground, top, floorHeight, charts);
+    part.holes.forEach((hole) => addWalls(walls, hole, false, base, ground, top, floorHeight, charts));
+    const roofFrom = roof.vertexCount;
     roof.horizontalPolygon(part.outer, part.holes, top, { uvScale: 1 / metres(10) });
+    charts.addPlanar(roof, roofFrom);
     if (building.style !== STYLE.GREENHOUSE) {
       for (const ring of [part.outer, ...part.holes]) {
-        addWalls(parapet, ring, true, top, top, top + PARAPET, 1);
-        addWalls(parapet, ring, false, top, top, top + PARAPET, 1);
+        addWalls(parapet, ring, true, top, top, top + PARAPET, 1, charts);
+        addWalls(parapet, ring, false, top, top, top + PARAPET, 1, charts);
       }
       const areaMetres = Math.abs(ringArea(part.outer)) / UNIT_AREA;
       const units = areaMetres > 300 ? Math.min(6, 1 + Math.floor(areaMetres / 700)) : 0;
@@ -145,16 +290,16 @@ function buildingPrimitives(building, seed, { heightAt, facadeMaterials, roofMat
         const cz = Math.min(...zs) + rng() * (Math.max(...zs) - Math.min(...zs));
         if (!pointInRing([cx, cz], part.outer) || part.holes.some((h) => pointInRing([cx, cz], h))) continue;
         if (minEdgeDistance([cx, cz], [part.outer, ...part.holes]) < Math.hypot(sx, sz) / 2 + metres(1.2)) continue;
-        addBox(equipment, cx, cz, sx, sz, top, top + metres(1.4 + rng() * 1.6), angle);
+        addBox(equipment, cx, cz, sx, sz, top, top + metres(1.4 + rng() * 1.6), angle, charts);
         placed += 1;
       }
     }
   }
   return [
-    walls.toPrimitive(facadeMaterials[building.style]),
-    roof.toPrimitive(roofMaterial),
-    parapet.toPrimitive(parapetMaterial),
-    equipment.toPrimitive(equipmentMaterial),
+    aoPrimitive(walls, facadeMaterials[building.style]),
+    aoPrimitive(roof, roofMaterial),
+    aoPrimitive(parapet, parapetMaterial),
+    aoPrimitive(equipment, equipmentMaterial),
   ];
 }
 
@@ -345,7 +490,8 @@ export async function buildBuildings({ glb, inputs }) {
   const parapetMaterial = glb.addMaterial({
     name: "Roof_Parapet",
     pbrMetallicRoughness: { baseColorFactor: [0.78, 0.77, 0.74, 1], metallicFactor: 0, roughnessFactor: 0.9 },
-    doubleSided: true,
+    // Single-sided: the parapet already has an inward and an outward quad per edge. Double-sided, the two
+    // coincident quads z-fight, which shows once their baked AO differs (open sky outside, roof inside).
   });
   const equipmentMaterial = glb.addMaterial({
     name: "Roof_Equipment",
@@ -357,9 +503,66 @@ export async function buildBuildings({ glb, inputs }) {
   });
 
   // ---- meshes and nodes
-  const primitivesContext = { heightAt, facadeMaterials, roofMaterial, parapetMaterial, equipmentMaterial };
+  // All primitives are built first so the AO charts can be packed before any TEXCOORD_1 is written.
+  const charts = new AoCharts();
+  const primitivesContext = { heightAt, facadeMaterials, roofMaterial, parapetMaterial, equipmentMaterial, charts };
+  const selectablePrimitives = selectableBuildings.map((building, index) => buildingPrimitives(building, 1000 + index, primitivesContext));
+  const merged = new Map();
+  campusBuildings.forEach((building, index) => {
+    buildingPrimitives(building, 5000 + index, primitivesContext).forEach((primitive) => {
+      if (!merged.has(primitive.material)) merged.set(primitive.material, aoMesh());
+      const target = merged.get(primitive.material);
+      target.append({ positions: primitive.positions, normals: primitive.normals, uvs: primitive.uvs, indices: primitive.indices });
+      for (const value of primitive.ao) target.ao.push(value);
+    });
+  });
+  const campusPrimitives = [...merged].map(([material, data]) => aoPrimitive(data, material));
+
+  const aoLayout = charts.layout();
+  const toAtlas = (primitive) => {
+    const uv1 = new Float32Array((primitive.ao.length / 3) * 2);
+    for (let k = 0, o = 0; k < primitive.ao.length; k += 3, o += 2) {
+      const rect = aoLayout.rects[primitive.ao[k + 2]];
+      uv1[o] = (rect.x + primitive.ao[k] / aoLayout.texel) / AO_SIZE;
+      uv1[o + 1] = (rect.y + primitive.ao[k + 1] / aoLayout.texel) / AO_SIZE;
+    }
+    return uv1;
+  };
+  // GlbBuilder.addMesh writes TEXCOORD_0 only; TEXCOORD_1 is added to the primitives it kept.
+  const addAoMesh = (name, primitives) => {
+    const mesh = glb.addMesh(name, primitives);
+    const kept = primitives.filter((primitive) => primitive.indices.length > 0);
+    glb.json.meshes[mesh].primitives.forEach((target, k) => {
+      target.attributes.TEXCOORD_1 = glb.addAccessor(toAtlas(kept[k]), "VEC2");
+    });
+    return mesh;
+  };
+  glb.json.asset.extras = { ...glb.json.asset.extras, aoLayout: aoLayout.hash, aoAtlasSize: AO_SIZE };
+  console.log(
+    `building AO atlas layout ${aoLayout.hash}: ${charts.charts.length} charts, ` +
+    `${(aoLayout.texel / metres(1)).toFixed(3)} m/texel, ${(aoLayout.fill * 100).toFixed(1)} % of ${AO_SIZE}^2`,
+  );
+  if (existsSync(AO_ATLAS)) {
+    const atlas = readFileSync(AO_ATLAS);
+    const bakedFor = atlasLayoutHash(atlas);
+    if (bakedFor === aoLayout.hash) {
+      const texture = glb.addTexture(atlas, "image/png", { repeat: false });
+      for (const material of [...Object.values(facadeMaterials), roofMaterial, parapetMaterial, equipmentMaterial]) {
+        glb.json.materials[material].occlusionTexture = { index: texture, texCoord: 1 };
+      }
+      console.log(`building AO atlas: ${path.basename(AO_ATLAS)} (${atlas.length} B) attached as occlusionTexture`);
+    } else {
+      console.warn(
+        `building AO atlas: ${path.basename(AO_ATLAS)} was baked for layout ${bakedFor ?? "(none)"}, this build is ${aoLayout.hash}; ` +
+        "left out. Re-bake: bun scripts/campus-model/bake/bake-ao.mjs, then bun run model:build",
+      );
+    }
+  } else {
+    console.warn(`building AO atlas: ${path.basename(AO_ATLAS)} missing; see scripts/campus-model/bake/README.md`);
+  }
+
   selectableBuildings.forEach((building, index) => {
-    const mesh = glb.addMesh(building.nodeName, buildingPrimitives(building, 1000 + index, primitivesContext));
+    const mesh = addAoMesh(building.nodeName, selectablePrimitives[index]);
     glb.addNode({
       name: building.nodeName,
       mesh,
@@ -373,15 +576,7 @@ export async function buildBuildings({ glb, inputs }) {
   });
 
   {
-    const merged = new Map();
-    campusBuildings.forEach((building, index) => {
-      buildingPrimitives(building, 5000 + index, primitivesContext).forEach((primitive) => {
-        if (!merged.has(primitive.material)) merged.set(primitive.material, new MeshData({ uvs: Boolean(primitive.uvs) }));
-        const target = merged.get(primitive.material);
-        target.append({ positions: primitive.positions, normals: primitive.normals, uvs: primitive.uvs, indices: primitive.indices });
-      });
-    });
-    const mesh = glb.addMesh("CampusBuildings", [...merged].map(([material, data]) => data.toPrimitive(material)));
+    const mesh = addAoMesh("CampusBuildings", campusPrimitives);
     glb.addNode({ name: "CampusBuildings", mesh, extras: { buildings: campusBuildings.map((b) => b.displayName).filter(Boolean) } }, { root: true });
   }
 
