@@ -7,6 +7,14 @@ import { resolveBuildingMeta } from "./utils/buildingLabels.mjs";
 import { selectVisibleCampusLabels } from "./utils/campusLabelVisibility.mjs";
 import { campusModelCenter } from "./simulation/utils/campusTrafficCoordinates.mjs";
 import { CAMPUS_MODEL_URL } from "./campusModelAsset.mjs";
+import {
+  AUTUMN_CROWN_COLOR,
+  AUTUMN_MATERIAL_NAMES,
+  AUTUMN_MAX_MIX,
+  SUN_ALTITUDE_KEY,
+  getAutumnWeight,
+  getNightWeight,
+} from "./lighting/season.mjs";
 
 // 클릭하지 않아도 카메라가 이 거리 안으로 들어오면 "가까이 간" 것으로 본다.
 // 클릭 시 자동으로 붙는 카메라 거리(FOCUS_CAMERA_OFFSET 기준 약 94유닛)보다 살짝
@@ -52,6 +60,12 @@ const MATERIAL_SETTLE_EPSILON = 1e-3;
 const MATERIAL_EASE_RATE = 8;
 const SELECTED_COLOR = new THREE.Color("#ffb8c6");
 const NIGHT_TINT_COLOR = new THREE.Color("#c8d6e5");
+const NIGHT_TINT_MIX = 0.16;
+// 가을 단풍(추정): 날짜 가중치만큼 활엽수 수관(Tree_Crown) 재질 색을 단풍색 쪽으로 옮긴다. 소나무(Tree_Pine)는 그대로.
+// 재질 색은 인스턴스별 _COLOR_0과 곱해지므로 나무마다의 색 차이는 남는다.
+const AUTUMN_COLOR = new THREE.Color().setRGB(...AUTUMN_CROWN_COLOR);
+// 주야·계절 가중치가 이만큼 바뀌어야 재질을 다시 쓴다.
+const RAMP_EPSILON = 1e-4;
 // 마우스를 올린 건물은 평소 색을 선택 색 쪽으로 조금만 옮긴다. 선택(색 전체 교체)보다 약하다.
 // 재질은 메시마다 복제돼 있어 다른 건물로 번지지 않는다.
 const HOVER_TINT_COLOR = new THREE.Color("#ffe0e8");
@@ -59,6 +73,7 @@ const HOVER_TINT_MIX = 0.3;
 // 프레임마다 새 객체를 만들지 않도록 재사용하는 스크래치 값.
 const scratchColor = new THREE.Color();
 const scratchHoverColor = new THREE.Color();
+const scratchBaseColor = new THREE.Color();
 const scratchCamPos = new THREE.Vector3();
 const ELEMENT_NAME_MAP = new Map(
   commonElements.elements.map((element) => [element.element_id, element.name]),
@@ -142,7 +157,12 @@ export function CityModel({
   onBuildingProximity,
   onD4Enter,
   controlsRef,
+  // 태양 고도(라디안)를 주면 그 값으로, 아니면 CampusLighting이 루트 씬에 남긴 고도로 창문 불빛과 야간 색을
+  // 연속으로 바꾼다. 둘 다 없을 때만 isNight로 켜고 끈다.
   isNight = false,
+  sunAltitude,
+  // 단풍 기준 날짜. 주지 않으면 현재 시계를 쓴다.
+  date,
   // D4 상세가 열려 있는 동안 켜진다. 투명한 상세 화면 뒤로 라벨이 비치지 않게 숨기되,
   // 상세를 연 라벨이 닫힌 뒤 포커스를 돌려받을 수 있도록 마운트는 유지한다.
   labelsHidden = false,
@@ -151,11 +171,13 @@ export function CityModel({
   ...props
 }) {
   const { scene } = useGLTF(CAMPUS_MODEL_URL);
-  const { camera, gl } = useThree();
+  const { camera, gl, scene: rootScene } = useThree();
   const [targetPos, setTargetPos] = useState(null);
   const [labelScale, setLabelScale] = useState(1);
   const tintedMeshesRef = useRef([]);
   const materialTransitionRef = useRef(true);
+  // 현재 재질에 반영된 단풍 혼합 비율과 야간 가중치. -1은 아직 한 번도 쓰지 않았다는 뜻.
+  const rampRef = useRef({ autumn: -1, night: -1 });
   const traverseStatsRef = useRef(null);
   const closeElementIdRef = useRef(null);
   const isInsideD4Ref = useRef(false);
@@ -258,9 +280,7 @@ export function CityModel({
         child.userData.originalColor = child.material.color.clone();
       }
       if (child.userData.originalColor) {
-        child.userData.nightColor = child.userData.originalColor
-          .clone()
-          .lerp(NIGHT_TINT_COLOR, 0.16);
+        child.userData.isAutumnCrown = AUTUMN_MATERIAL_NAMES.has(child.material.name);
         tintedMeshes.push(child);
       }
       // campus-v2.glb: sharper ground/facade textures at grazing angles, and window glow only at night.
@@ -273,6 +293,7 @@ export function CityModel({
     tintedMeshesRef.current = tintedMeshes;
     if (traverseStatsRef.current) traverseStatsRef.current.nonCasterNames = nonCasterNames;
     materialTransitionRef.current = true;
+    rampRef.current = { autumn: -1, night: -1 };
   }, [gl, scene]);
 
   const labelAnchors = useMemo(() => {
@@ -291,12 +312,26 @@ export function CityModel({
 
   useFrame((_, delta) => {
     const controls = controlsRef?.current;
-    const transitioning = materialTransitionRef.current;
+
+    // 주야(태양 고도)와 계절(날짜) 가중치는 그 자체가 연속이라 바뀌면 곧바로 반영한다(감쇠 없음).
+    const altitude = sunAltitude ?? rootScene.userData[SUN_ALTITUDE_KEY];
+    const night = Number.isFinite(altitude) ? getNightWeight(altitude) : isNight ? 1 : 0;
+    const autumn = AUTUMN_MAX_MIX * getAutumnWeight(date ?? new Date());
+    const ramp = rampRef.current;
+    const rampChanged =
+      Math.abs(night - ramp.night) > RAMP_EPSILON || Math.abs(autumn - ramp.autumn) > RAMP_EPSILON;
+    if (rampChanged) {
+      ramp.night = night;
+      ramp.autumn = autumn;
+    }
+    const transitioning = materialTransitionRef.current || rampChanged;
 
     if (transitioning) {
-      // 프레임 속도와 무관한 지수 감쇠. 탭 복귀 등 긴 프레임은 한 번에 끝까지 가도록 1로 수렴한다.
-      const ease = 1 - Math.exp(-MATERIAL_EASE_RATE * Math.min(delta, 1));
-      const glow = isNight ? 1 : 0;
+      // 선택·마우스오버 전환은 프레임 속도와 무관한 지수 감쇠. 탭 복귀 등 긴 프레임은 한 번에 끝까지 가도록 1로 수렴한다.
+      const ease = materialTransitionRef.current
+        ? 1 - Math.exp(-MATERIAL_EASE_RATE * Math.min(delta, 1))
+        : 1;
+      const glow = ramp.night;
       let maxDelta = 0;
 
       for (const child of tintedMeshesRef.current) {
@@ -305,7 +340,9 @@ export function CityModel({
           userData.selectableName === selectedId || child.name === selectedId;
         const isHovered =
           userData.selectableName !== null && userData.selectableName === hoveredNameRef.current;
-        const baseColor = isNight ? userData.nightColor : userData.originalColor;
+        const baseColor = scratchBaseColor.copy(userData.originalColor);
+        if (userData.isAutumnCrown) baseColor.lerp(AUTUMN_COLOR, ramp.autumn);
+        baseColor.lerp(NIGHT_TINT_COLOR, NIGHT_TINT_MIX * ramp.night);
         const targetColor = isSelected
           ? SELECTED_COLOR
           : isHovered
