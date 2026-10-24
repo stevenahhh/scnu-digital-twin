@@ -119,10 +119,8 @@ const ELEMENT_NAME_MAP = new Map(
 );
 
 function getSelectableMeta(object) {
-  const rawName =
-    object?.parent && object.parent.name !== "Scene"
-      ? object.parent.name
-      : object?.name;
+  const node = object?.parent && object.parent.name !== "Scene" ? object.parent : object;
+  const rawName = node?.name;
 
   if (!rawName) return null;
 
@@ -143,10 +141,13 @@ function getSelectableMeta(object) {
     return null;
   }
 
+  // 생성기의 BLD_SCNU_* 선택 대리 노드(pickProxy)는 공통 요소 목록에 없으므로 이름을 GLB extras.label에서 가져온다.
+  const proxy = Boolean(node.userData?.pickProxy);
   return {
     name: rawName,
     elementId: buildingMeta.elementId,
-    label: buildingMeta.label,
+    label: buildingMeta.label ?? (proxy ? node.userData.label ?? null : null),
+    proxy,
   };
 }
 
@@ -182,6 +183,7 @@ function buildLabelAnchors(scene) {
       name: meta.name,
       displayName: meta.label,
       elementId: meta.elementId,
+      proxy: meta.proxy,
       position: [center.x, box.max.y + 6, center.z],
     });
   });
@@ -215,6 +217,7 @@ export function CityModel({
   const [labelScale, setLabelScale] = useState(1);
   const tintedMeshesRef = useRef([]);
   const lampPoolsRef = useRef([]);
+  const pickProxiesRef = useRef([]);
   const autumnCrownsRef = useRef([]);
   const materialTransitionRef = useRef(true);
   // 현재 재질에 반영된 단풍 혼합 비율과 야간 가중치. -1은 아직 한 번도 쓰지 않았다는 뜻.
@@ -321,6 +324,7 @@ export function CityModel({
     const anisotropy = gl.capabilities.getMaxAnisotropy();
     const tintedMeshes = [];
     const lampPools = [];
+    const pickProxies = [];
     const autumnCrowns = [];
     let autumnIndex = 0;
     const nonCasterNames = [];
@@ -344,6 +348,23 @@ export function CityModel({
           lampPools.push(child);
           return;
         }
+      }
+
+      // 캠퍼스 건물 선택 대리 프리즘(BLD_SCNU_*): 평소에는 그리지 않고(레이캐스트는 visible과 무관하게 맞는다)
+      // 선택·마우스오버 때만 반투명 강조로 보인다. 실제 외관은 병합된 CampusBuildings가 그린다.
+      if (child.userData.pickProxy) {
+        child.castShadow = false;
+        child.receiveShadow = false;
+        child.visible = false;
+        child.material = child.material.clone();
+        child.material.transparent = true;
+        child.material.depthWrite = false;
+        child.material.polygonOffset = true;
+        child.material.polygonOffsetFactor = -1;
+        child.material.polygonOffsetUnits = -1;
+        child.userData.selectableName = child.name;
+        pickProxies.push(child);
+        return;
       }
 
       const isNonCaster =
@@ -399,6 +420,7 @@ export function CityModel({
     });
     tintedMeshesRef.current = tintedMeshes;
     lampPoolsRef.current = lampPools;
+    pickProxiesRef.current = pickProxies;
     autumnCrownsRef.current = autumnCrowns;
     if (traverseStatsRef.current) traverseStatsRef.current.nonCasterNames = nonCasterNames;
     materialTransitionRef.current = true;
@@ -504,6 +526,14 @@ export function CityModel({
         }
       }
 
+      // 대리 프리즘은 선택(요소 id 또는 패널 제목으로 쓰인 라벨)·마우스오버된 것만 보인다.
+      for (const proxy of pickProxiesRef.current) {
+        proxy.visible =
+          proxy.name === selectedId ||
+          proxy.userData.label === selectedId ||
+          proxy.name === hoveredNameRef.current;
+      }
+
       if (maxDelta < MATERIAL_SETTLE_EPSILON) {
         materialTransitionRef.current = false;
       }
@@ -537,6 +567,8 @@ export function CityModel({
       let nearestDistance = Infinity;
       let d4Distance = Infinity;
       for (const anchor of labelAnchors) {
+        // 대리 노드(부속 시설 등)는 미기후 데이터가 없으므로 근접만으로 패널을 열지 않는다. 클릭하면 열린다.
+        if (anchor.proxy) continue;
         // labelAnchors의 position은 재중심화 그룹(-center) 적용 전 좌표라서,
         // 카메라와 같은 월드 좌표계로 맞추려면 center를 빼줘야 한다.
         const worldX = anchor.position[0] - center.x;
@@ -621,7 +653,7 @@ export function CityModel({
         candidates.push({
           id: anchor.elementId,
           rect: element.getBoundingClientRect(),
-          selected: anchor.name === selected,
+          selected: anchor.name === selected || (anchor.proxy && anchor.displayName === selected),
           hasPopup: anchor.elementId.startsWith("BLD_") && ELEMENT_NAME_MAP.has(anchor.elementId),
           distance: dx * dx + dy * dy + dz * dz,
         });
@@ -659,6 +691,8 @@ export function CityModel({
       onBuildingClick({
         name: meta.elementId,
         parent: { name: meta.elementId },
+        // 대리 노드는 패널 제목에 요소 id 대신 실제 건물 이름을 쓴다.
+        ...(meta.proxy && meta.label ? { userData: { buildingName: meta.label } } : {}),
       });
     }
   };
@@ -693,6 +727,7 @@ export function CityModel({
       onBuildingClick({
         name: anchor.elementId,
         parent: { name: anchor.elementId },
+        ...(anchor.proxy && anchor.displayName ? { userData: { buildingName: anchor.displayName } } : {}),
       });
     }
   };
@@ -708,7 +743,7 @@ export function CityModel({
       />
 
       {labelAnchors.map((anchor) => {
-        const isSelected = anchor.name === selectedId;
+        const isSelected = anchor.name === selectedId || (anchor.proxy && anchor.displayName === selectedId);
 
         return (
           <Html

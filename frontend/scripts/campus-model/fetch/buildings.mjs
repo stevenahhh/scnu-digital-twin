@@ -8,13 +8,15 @@
 //   - footprints of buildings GIS lacks: OpenStreetMap (ODbL), marked per record.
 // Without the zip, every footprint comes from OpenStreetMap and floors from the SCNU registry
 // (accepted only when it lists floors 1..N), else OSM building:levels, else none.
-// No VWorld data is read or written. Every record says which source its footprint and floors used.
+// Every record says which source its footprint, floors and name used. SCNU building names, status and
+// selectable node ids come from the curated data/scnu-building-names.json (see fetch/scnuNames.mjs).
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { EXTENT, METRES_PER_DEGREE_LAT, METRES_PER_DEGREE_LON, geoToModel } from "../lib/frame.mjs";
 import { pointInRing } from "../lib/geometry.mjs";
 import { BBOX, CACHE, DATA, TIMEOUT_MS, USER_AGENT } from "./common.mjs";
+import { applyScnuNames, readScnuNames } from "./scnuNames.mjs";
 
 const GIS_HELPER = path.join(path.dirname(fileURLToPath(import.meta.url)), "gis_buildings.py");
 const GIS_DIR = path.join(CACHE, "gis");
@@ -236,7 +238,7 @@ async function gisBuildings(zip) {
 
 export async function writeBuildings() {
   const zip = await gisZip();
-  const buildings = zip ? await gisBuildings(zip) : (await fetchBuildings()).buildings;
+  const buildings = applyScnuNames(zip ? await gisBuildings(zip) : (await fetchBuildings()).buildings, await readScnuNames());
   const source = zip
     ? `Footprints, heights, floors, use, structure, approval date, PNU: ${GIS_NAME} (국토교통부, KOGL Type 1), ${path.basename(zip)}, ` +
       "data.go.kr 15083092. Floors where GIS has none: SCNU campus registry floor directory (w1.scnu.ac.kr/SCNU/campus/list.do). " +

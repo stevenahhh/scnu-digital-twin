@@ -122,6 +122,40 @@ GIS건물통합정보 outlines follow the cadastral frame. The build shifts all 
 logs the shift. A `BLD_*` node takes the OSM outline only when the matched area is within 15 %
 of its `uni.glb` outline; otherwise it keeps the `uni.glb` outline, and `BLD_D4` always keeps it.
 
+### SCNU building names (`data/scnu-building-names.json`)
+
+The register names in GIS건물통합정보 (`A24`/`A25`) are often missing on campus or attached to the wrong
+footprint (for example "41동 학생생활관(진리관)" on the C2 친환경농업센터 footprint). A curated table,
+keyed by `footprintSource`, sets the name of every SCNU record. `fetch/scnuNames.mjs` applies it
+(`model:fetch` does so automatically; `bun scripts/campus-model/fetch/scnuNames.mjs` re-applies an
+edited table to the committed `gis-buildings.json`). Every record in `gis-buildings.json` then has a
+`nameSource`, and the SCNU records also have `status`, `label`, `nodeId` and the original `registerName`.
+
+Name order: an SCNU registry point (`w1.scnu.ac.kr/SCNU/campus/list.do`) inside the footprint, or
+within 2 m of it; then an OSM building name; then VWorld `LT_C_SPBD` `buld_nm_dc` or `LT_C_BLDGINFO`
+`dong_nm`; then the register name. Registry matches cite the SCNU 360 VR tour scene that has the
+same code (`vr.scnu.ac.kr/360vr/tour.xml`, `scene_<code>`; visual reference only, nothing links to
+it). A small structure with none of these names is named after the building it serves, from the
+VWorld z19 imagery (for example "B6 제1중앙공급실 부속 시설"); such names have a `nameSource` starting
+with `estimated:`, and their labels end in `(추정)`.
+
+`status`:
+
+| Status | Meaning | Build |
+|---|---|---|
+| `standing` | named, visible on current imagery | modelled; the name labels a selectable node |
+| `unresolved` | visible, no name from any source | modelled, no label (listed in the table with its centroid) |
+| `demolished` | absent from the VWorld z19 imagery and the VR tour (car park west of B7, the B7 site, the old 학군단 lot, lawns) | not modelled |
+
+Named campus buildings stay merged in `CampusBuildings` for drawing. Each one also gets a pick
+proxy: a root node `BLD_SCNU_<registry code>`, or `BLD_SCNU_R<GIS record>` / `BLD_SCNU_W<OSM way>`
+when there is no code or the name is an estimate. The proxy holds a plain prism of the footprint in
+the `Pick_Proxy` material, with extras `pickProxy`, `label` and `nameSource`. The dashboard keeps
+proxies invisible, so they add no draw calls. Raycasts still hit them, so clicking one or its label
+selects it, and a selected or hovered proxy shows as a translucent highlight. The ids never reuse a
+`uni.glb` or `common_elemetns.json` `BLD_*` id. A footprint that a `uni.glb` `BLD_*` node already
+covers gets no proxy. That node keeps its own label. Records under 12 m² are not modelled.
+
 ## What the model contains
 
 - `BLD_*` nodes: every building id from `uni.glb`, rebuilt with estimated heights from floor

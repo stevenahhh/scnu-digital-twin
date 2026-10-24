@@ -60,6 +60,30 @@ test("campus-v2.glb keeps every uni.glb building id and the Topography the traff
   assert.ok(topography?.children?.length > 0, "Topography has no terrain chunks");
 });
 
+test("campus-v2.glb gives every named SCNU campus building a labelled pick proxy with its own id", async () => {
+  const [uni, campus, elements] = await Promise.all([
+    readGlbJson("uni.glb"),
+    readGlbJson("campus-v2.glb"),
+    readFile(new URL("../../common/data/common_elemetns.json", import.meta.url), "utf8").then(JSON.parse),
+  ]);
+  const taken = new Set([
+    ...uni.nodes.map((node) => node.name).filter((name) => name?.startsWith("BLD_")),
+    ...elements.elements.map((element) => element.element_id),
+  ]);
+  const rootNames = campus.scenes[0].nodes.map((index) => campus.nodes[index].name);
+  const proxies = campus.nodes.filter((node) => node.name.startsWith("BLD_SCNU_"));
+  assert.ok(proxies.length > 20, `only ${proxies.length} BLD_SCNU_* nodes`);
+  assert.equal(new Set(proxies.map((node) => node.name)).size, proxies.length, "duplicate BLD_SCNU_* ids");
+  for (const node of proxies) {
+    assert.ok(!taken.has(node.name), `${node.name} collides with an existing BLD_* id`);
+    assert.ok(rootNames.includes(node.name), `${node.name} is not a scene root`);
+    assert.equal(node.extras?.pickProxy, true, `${node.name} is not marked pickProxy`);
+    assert.ok(node.extras?.label && !node.extras.label.startsWith("순천대학교"), `${node.name} has no display label`);
+    assert.ok(node.extras?.nameSource, `${node.name} has no nameSource`);
+    if (node.extras.nameSource.startsWith("estimated")) assert.match(node.extras.label, /\(추정\)$/, `${node.name} estimate is not labelled`);
+  }
+});
+
 test("campus-v2.glb sits on the traffic simulation frame like uni.glb", async () => {
   const [uniScene, campus] = await Promise.all([loadUniScene(), readGlbJson("campus-v2.glb")]);
   const campusCenterOf = (name) => nodeBox(campus, campus.nodes.find((node) => node.name === name)).getCenter(new THREE.Vector3());

@@ -363,11 +363,17 @@ export async function buildBuildings({ glb, inputs }) {
   const { source, footprints, roadZones, heightAt } = inputs;
 
   // ---- building selection
-  const footprintParts = footprints.flatMap((b, index) => b.polygons.map((polygon) => {
+  // Records data/scnu-building-names.json marks as demolished (absent from current imagery) are not modelled.
+  const demolished = footprints.filter((b) => b.status === "demolished");
+  console.log(`demolished SCNU records skipped: ${demolished.length} (${demolished.map((b) => b.footprintSource.replace(/^.* record /, "record ")).join(", ")})`);
+  const footprintParts = footprints.flatMap((b, index) => (b.status === "demolished" ? [] : b.polygons.map((polygon) => {
     const [outer, ...holes] = polygon.map(toModelRing);
     return {
       index,
       name: b.name,
+      nameSource: b.nameSource,
+      label: b.label,
+      nodeId: b.nodeId,
       floors: b.floors,
       heightMetres: b.heightMetres,
       footprintSource: b.footprintSource,
@@ -377,7 +383,7 @@ export async function buildBuildings({ glb, inputs }) {
       centroid: ringCentroid(outer),
       areaMetres: Math.abs(ringArea(outer)) / UNIT_AREA,
     };
-  }));
+  })));
 
   const bldNodes = source.scene.children.flatMap((object, index) => {
     const rawName = source.rawNames[index];
@@ -504,7 +510,13 @@ export async function buildBuildings({ glb, inputs }) {
     const height = heightOf(part, isSCNU) ?? assumedHeight(part.name, isSCNU);
     heightLog.push({ label: part.name || "(unnamed)", footprintSource: part.footprintSource, floorsSource: part.floorsSource, ...height });
     campusBuildings.push({
+      index: part.index,
       displayName: part.name,
+      label: part.label,
+      nodeId: part.nodeId,
+      nameSource: part.nameSource,
+      footprintSource: part.footprintSource,
+      floorsSource: part.floorsSource,
       style: styleFor(part.name, null, part.index),
       parts: [{ outer: part.outer, holes: part.holes, ...height, floors: part.floors }],
     });
@@ -689,6 +701,44 @@ export async function buildBuildings({ glb, inputs }) {
     const mesh = addAoMesh("CampusBuildings", campusPrimitives);
     glb.addNode({ name: "CampusBuildings", mesh, extras: { buildings: campusBuildings.map((b) => b.displayName).filter(Boolean) } }, { root: true });
   }
+
+  // Named SCNU campus buildings stay merged in CampusBuildings for drawing (no extra draw calls) and get one
+  // selectable pick proxy each: a BLD_SCNU_* node with a plain prism of the footprint up to the parapet top in
+  // the Pick_Proxy material. The dashboard keeps proxies invisible (raycasts still hit them) and shows one only
+  // as the selection/hover highlight; its label and panel title come from extras.label.
+  const proxyMaterial = glb.addMaterial({
+    name: "Pick_Proxy",
+    pbrMetallicRoughness: { baseColorFactor: [1, 0.72, 0.78, 0.45], metallicFactor: 0, roughnessFactor: 1 },
+    alphaMode: "BLEND",
+  });
+  const reservedIds = new Set(bldNodes.map(({ rawName }) => rawName));
+  const proxies = Map.groupBy(campusBuildings.filter((b) => b.nodeId && b.label), (b) => b.nodeId);
+  for (const [nodeId, group] of proxies) {
+    if (reservedIds.has(nodeId)) throw new Error(`pick proxy ${nodeId} collides with an existing BLD_* node`);
+    reservedIds.add(nodeId);
+    const prism = new MeshData({ uvs: false });
+    for (const part of group.flatMap((b) => b.parts)) {
+      const ground = Math.min(...[...part.outer, ringCentroid(part.outer)].map(([x, z]) => heightAt(x, z)));
+      const top = ground + metres(part.heightMetres) + PARAPET;
+      addWalls(prism, part.outer, true, ground - metres(1.5), ground, top, 1, null);
+      prism.horizontalPolygon(part.outer, part.holes, top);
+    }
+    const [first] = group;
+    glb.addNode({
+      name: nodeId,
+      mesh: glb.addMesh(nodeId, [prism.toPrimitive(proxyMaterial)]),
+      extras: {
+        pickProxy: true,
+        label: first.label,
+        displayName: first.displayName,
+        nameSource: first.nameSource,
+        source: first.footprintSource,
+        floorsSource: first.floorsSource,
+        heightSource: first.parts[0].heightSource,
+      },
+    }, { root: true });
+  }
+  console.log(`SCNU pick proxies: ${proxies.size} (${[...proxies].map(([id, [b]]) => `${id} ${b.label}`).join("; ")})`);
 
   return { selectableBuildings, campusBuildings, offCampusLots, markingMaterial };
 }

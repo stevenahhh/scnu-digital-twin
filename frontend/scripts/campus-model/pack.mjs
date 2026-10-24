@@ -150,12 +150,14 @@ async function verify(rawFile, packedFile, terrain) {
   const root = packed.getRoot();
   const nodes = root.listNodes();
   const buildings = nodes.filter((node) => node.getName().startsWith("BLD_"));
+  // BLD_SCNU_* are the generator's pick proxies for named campus buildings; the rest are uni.glb's ids.
+  const uniBuildings = buildings.filter((node) => !node.getName().startsWith("BLD_SCNU_"));
   const textures = root.listTextures();
   const failures = [];
   if (nodes.length !== rawRoot.listNodes().length) failures.push(`${nodes.length} nodes, raw has ${rawRoot.listNodes().length}`);
   if (sortedNames(nodes).join("\n") !== sortedNames(rawRoot.listNodes()).join("\n")) failures.push("node names differ from the raw GLB");
   if (sortedNames(root.listMeshes()).join("\n") !== sortedNames(rawRoot.listMeshes()).join("\n")) failures.push("mesh names differ from the raw GLB");
-  if (buildings.length !== EXPECTED_BUILDINGS) failures.push(`${buildings.length} BLD_* nodes, expected ${EXPECTED_BUILDINGS}`);
+  if (uniBuildings.length !== EXPECTED_BUILDINGS) failures.push(`${uniBuildings.length} uni.glb BLD_* nodes, expected ${EXPECTED_BUILDINGS}`);
   const rootBuildings = root.listScenes()[0].listChildren().filter((node) => node.getName().startsWith("BLD_"));
   if (rootBuildings.length !== buildings.length) failures.push(`${buildings.length - rootBuildings.length} BLD_* nodes are no longer scene roots`);
   for (const node of buildings) {
@@ -173,7 +175,7 @@ async function verify(rawFile, packedFile, terrain) {
   const nonWebp = textures.filter((texture) => texture.getMimeType() !== "image/webp");
   if (nonWebp.length) failures.push(`${nonWebp.length} textures are not image/webp`);
   if (failures.length) throw new Error(`campus-v2.glb pack check failed:\n  ${failures.join("\n  ")}`);
-  return { nodes: nodes.length, buildings: buildings.length, meshes: root.listMeshes().length, textures: textures.length };
+  return { nodes: nodes.length, buildings: uniBuildings.length, proxies: buildings.length - uniBuildings.length, meshes: root.listMeshes().length, textures: textures.length };
 }
 
 function optimize(rawFile, packedFile) {
@@ -206,7 +208,7 @@ optimize(JOINED_OUTPUT, PACKED_OUTPUT);
 const counts = await verify(JOINED_OUTPUT, PACKED_OUTPUT, terrain);
 const packedBytes = statSync(PACKED_OUTPUT).size;
 console.log(
-  `campus-v2.glb packed: ${rawBytes} B raw -> ${packedBytes} B, ${counts.nodes} nodes, ${counts.buildings} BLD nodes, ` +
+  `campus-v2.glb packed: ${rawBytes} B raw -> ${packedBytes} B, ${counts.nodes} nodes, ${counts.buildings} BLD nodes, ${counts.proxies} BLD_SCNU pick proxies, ` +
   `${counts.meshes} meshes, ${counts.textures} webp textures`,
 );
 if (process.argv.includes("--precompress")) {
