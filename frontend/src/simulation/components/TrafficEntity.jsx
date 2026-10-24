@@ -6,6 +6,8 @@ import { PedestrianEntity } from "./PedestrianEntity";
 import { ScooterEntity } from "./ScooterEntity";
 import { VehicleEntity } from "./VehicleEntity";
 
+const SCRATCH_TARGET = new THREE.Vector3();
+
 function dampAngle(current, target, factor) {
   let difference = (target - current + Math.PI) % (Math.PI * 2) - Math.PI;
   if (difference < -Math.PI) difference += Math.PI * 2;
@@ -30,7 +32,7 @@ export const TrafficEntity = React.memo(function TrafficEntity({ entity, coordin
     const resolvedY = resolveHeight?.(target, entity);
     if (Number.isFinite(resolvedY)) target.y = resolvedY;
     if (![target.x, target.y, target.z].every(Number.isFinite)) return;
-    currentPosition.current.lerp(new THREE.Vector3(target.x, target.y, target.z), smoothing);
+    currentPosition.current.lerp(SCRATCH_TARGET.set(target.x, target.y, target.z), smoothing);
     group.current.position.copy(currentPosition.current);
     const targetHeading = simulationHeadingToThree(entity.heading, coordinateConfig);
     group.current.rotation.y = dampAngle(group.current.rotation.y, targetHeading, smoothing);
