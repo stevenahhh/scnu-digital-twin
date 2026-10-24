@@ -1,17 +1,24 @@
 // Building footprints (lon/lat) with floor counts -> data/gis-buildings.json
 //
-// The intended source is 국토교통부 GIS건물통합정보 (data.go.kr 15083092, KOGL Type 1), but its file
-// download (VWorld catalog ds_id=20171128DS00010, AL_D010_46_*.zip) requires a VWorld login and
-// cannot be fetched by a script. Until that file is provisioned this module uses:
-//   - footprints: OpenStreetMap buildings in BBOX (api.openstreetmap.org/api/0.6/map, ODbL);
-//   - floors:     the SCNU campus registry (w1.scnu.ac.kr/SCNU/campus/list.do floor directory, accepted
-//                 only when it lists floors 1..N), else OSM building:levels, else none (the stage then
-//                 keeps uni.glb's outline height or the minimum height).
+// Primary source: 국토교통부 GIS건물통합정보 (data.go.kr 15083092, KOGL Type 1). Its download needs a
+// VWorld login, so the zip (AL_D010_*.zip) is placed in .cache/gis/ by hand; gis_buildings.py clips
+// it to BBOX. When that zip is present:
+//   - footprints, height, floors, use, structure, approval date, PNU: GIS건물통합정보;
+//   - floors where GIS has none: the SCNU campus registry floor directory;
+//   - footprints of buildings GIS lacks: OpenStreetMap (ODbL), marked per record.
+// Without the zip, every footprint comes from OpenStreetMap and floors from the SCNU registry
+// (accepted only when it lists floors 1..N), else OSM building:levels, else none.
 // No VWorld data is read or written. Every record says which source its footprint and floors used.
+import { readdir } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { EXTENT, METRES_PER_DEGREE_LAT, METRES_PER_DEGREE_LON, geoToModel } from "../lib/frame.mjs";
 import { pointInRing } from "../lib/geometry.mjs";
-import { BBOX, DATA, TIMEOUT_MS, USER_AGENT } from "./common.mjs";
+import { BBOX, CACHE, DATA, TIMEOUT_MS, USER_AGENT } from "./common.mjs";
+
+const GIS_HELPER = path.join(path.dirname(fileURLToPath(import.meta.url)), "gis_buildings.py");
+const GIS_DIR = path.join(CACHE, "gis");
+const GIS_NAME = "GIS건물통합정보";
 
 const OSM_URL = `https://api.openstreetmap.org/api/0.6/map.json?bbox=${BBOX.west},${BBOX.south},${BBOX.east},${BBOX.north}`;
 const REGISTRY_URL = "https://w1.scnu.ac.kr/SCNU/campus/list.do";
@@ -68,6 +75,7 @@ const areaMetres = (ring) => Math.abs(ring.map(toMetres).reduce((sum, p, i, all)
 const number = (value) => (Number.isFinite(Number.parseFloat(value)) ? Number.parseFloat(value) : 0);
 const round7 = ([lon, lat]) => [Number(lon.toFixed(7)), Number(lat.toFixed(7))];
 
+// OSM buildings in BBOX with registry-or-OSM floors, plus the registry and OSM campus outline.
 export async function fetchBuildings() {
   const [osm, registry] = await Promise.all([fetchOk(OSM_URL), fetchRegistry()]);
   const nodes = new Map();
@@ -145,20 +153,103 @@ export async function fetchBuildings() {
     }
   }
   const unique = kept.filter((b) => !duplicates.has(b));
-  unique.sort((a, b) => a.polygons[0][0][0][0] - b.polygons[0][0][0][0] || a.polygons[0][0][0][1] - b.polygons[0][0][0][1]);
-  return unique;
+  sortBuildings(unique);
+  return { buildings: unique, registry, campusRing };
+}
+
+const sortBuildings = (list) => list.sort((a, b) => a.polygons[0][0][0][0] - b.polygons[0][0][0][0] || a.polygons[0][0][0][1] - b.polygons[0][0][0][1]);
+const ringCentre = (ring) => ring.slice(0, -1).reduce(([x, y], [lon, lat], _, all) => [x + lon / all.length, y + lat / all.length], [0, 0]);
+const insideBbox = (polygons) => polygons.flat(2).every(([lon, lat]) => lon >= BBOX.west && lon <= BBOX.east && lat >= BBOX.south && lat <= BBOX.north);
+
+const ringBounds = (ring) => ring.reduce(([w, s, e, n], [lon, lat]) => [Math.min(w, lon), Math.min(s, lat), Math.max(e, lon), Math.max(n, lat)], [Infinity, Infinity, -Infinity, -Infinity]);
+
+// Share of `ring` (sampled on a 1 m grid) that lies under any of `rings`. Centroid tests miss L- and
+// U-shaped buildings, whose centroid can fall outside both outlines.
+function coveredShare(ring, rings) {
+  const [w, s, e, n] = ringBounds(ring);
+  const nearby = rings.filter((other) => {
+    const [ow, os, oe, on] = ringBounds(other);
+    return ow <= e && oe >= w && os <= n && on >= s;
+  });
+  let inside = 0;
+  let covered = 0;
+  for (let lat = s + 0.5 / METRES_PER_DEGREE_LAT; lat < n; lat += 1 / METRES_PER_DEGREE_LAT) {
+    for (let lon = w + 0.5 / METRES_PER_DEGREE_LON; lon < e; lon += 1 / METRES_PER_DEGREE_LON) {
+      if (!pointInRing([lon, lat], ring)) continue;
+      inside += 1;
+      if (nearby.some((other) => pointInRing([lon, lat], other))) covered += 1;
+    }
+  }
+  return inside ? covered / inside : 0;
+}
+
+// Newest AL_D010_*.zip in .cache/gis, or null.
+async function gisZip() {
+  const names = await readdir(GIS_DIR).catch(() => []);
+  const zips = names.filter((name) => /^AL_D010_.*\.zip$/i.test(name)).sort();
+  return zips.length ? path.join(GIS_DIR, zips.at(-1)) : null;
+}
+
+async function readGis(zip) {
+  const child = Bun.spawn(
+    ["uv", "run", "--no-project", "--quiet", "--with", "pyproj==3.8.0", "python", "-I", GIS_HELPER, zip, BBOX.west, BBOX.south, BBOX.east, BBOX.north].map(String),
+    { stdout: "pipe", stderr: "pipe" },
+  );
+  const [stdout, stderr, code] = await Promise.all([new Response(child.stdout).text(), new Response(child.stderr).text(), child.exited]);
+  if (code !== 0) throw new Error(`gis_buildings.py exited with ${code}: ${stderr.trim()}`);
+  return JSON.parse(stdout);
+}
+
+// GIS건물통합정보 records, with registry floors where GIS has none and OSM footprints where GIS has no building.
+async function gisBuildings(zip) {
+  const [records, osm] = await Promise.all([readGis(zip), fetchBuildings()]);
+  const scnuPnus = new Set(records.filter((r) => /순천대/.test(r.buildingName + r.dongName)).map((r) => r.pnu).filter(Boolean));
+  const gis = records.map((r) => {
+    const outer = r.polygons[0][0];
+    const isScnu = /순천대/.test(r.buildingName + r.dongName) || scnuPnus.has(r.pnu) || pointInRing(ringCentre(outer), osm.campusRing);
+    const entry = isScnu ? osm.registry.find((e) => r.polygons.some((polygon) => pointInRing(e.point, polygon[0]))) : undefined;
+    const own = [...new Set([r.buildingName, r.dongName].map((s) => s.replace(/^(국립)?순천대학교\s*/, "").trim()).filter(Boolean))].join(" ");
+    const name = isScnu ? [CAMPUS_NAME, entry?.code, own || entry?.name].filter(Boolean).join(" ") : own;
+    const floorsSource = r.floors > 0 ? `${GIS_NAME} A26` : entry?.floors ? `SCNU registry ${entry.code}` : "none";
+    return {
+      name,
+      floors: r.floors || entry?.floors || 0,
+      undergroundFloors: r.undergroundFloors,
+      heightMetres: r.heightMetres,
+      areaMetres: Math.round(r.polygons.reduce((sum, [o, ...holes]) => sum + areaMetres(o) - holes.reduce((s, h) => s + areaMetres(h), 0), 0)),
+      usability: r.usability,
+      structure: r.structure,
+      approvalDate: r.approvalDate,
+      pnu: r.pnu || null,
+      footprintSource: `${GIS_NAME} ${r.file} record ${r.record}`,
+      floorsSource,
+      polygons: r.polygons,
+    };
+  });
+  const outers = gis.flatMap((b) => b.polygons.map((polygon) => polygon[0]));
+  const osmOnly = osm.buildings
+    .filter((b) => insideBbox(b.polygons))
+    .filter((b) => b.polygons.every(([outer]) => coveredShare(outer, outers) < 0.3))
+    .map((b) => ({ ...b, footprintSource: `${b.footprintSource} (not in ${GIS_NAME})` }));
+  return sortBuildings([...gis, ...osmOnly]);
 }
 
 export async function writeBuildings() {
-  const buildings = await fetchBuildings();
-  await Bun.write(path.join(DATA, "gis-buildings.json"), `${JSON.stringify({
-    source: "Footprints: © OpenStreetMap contributors (ODbL 1.0), api.openstreetmap.org/api/0.6/map. " +
+  const zip = await gisZip();
+  const buildings = zip ? await gisBuildings(zip) : (await fetchBuildings()).buildings;
+  const source = zip
+    ? `Footprints, heights, floors, use, structure, approval date, PNU: ${GIS_NAME} (국토교통부, KOGL Type 1), ${path.basename(zip)}, ` +
+      "data.go.kr 15083092. Floors where GIS has none: SCNU campus registry floor directory (w1.scnu.ac.kr/SCNU/campus/list.do). " +
+      "Footprints of buildings missing from GIS: © OpenStreetMap contributors (ODbL 1.0), api.openstreetmap.org/api/0.6/map. EPSG:4326"
+    : "Footprints: © OpenStreetMap contributors (ODbL 1.0), api.openstreetmap.org/api/0.6/map. " +
       "Floors: SCNU campus registry floor directory (w1.scnu.ac.kr/SCNU/campus/list.do), else OSM building:levels. " +
-      "GIS건물통합정보 (data.go.kr 15083092) not used: its download requires a VWorld login. EPSG:4326",
-    bbox: BBOX,
-    buildings,
-  })}\n`);
+      `${GIS_NAME} (data.go.kr 15083092) not used: no AL_D010_*.zip in .cache/gis (its download requires a VWorld login). EPSG:4326`;
+  await Bun.write(path.join(DATA, "gis-buildings.json"), `${JSON.stringify({ source, bbox: BBOX, buildings })}\n`);
   for (const b of buildings) console.log(`building ${b.footprintSource} floors=${b.floors} (${b.floorsSource}) ${b.name || "(unnamed)"}`);
-  const count = (source) => buildings.filter((b) => b.floorsSource.startsWith(source)).length;
-  console.log(`gis-buildings.json: ${buildings.length} OSM footprints; floors from SCNU registry ${count("SCNU")}, OSM building:levels ${count("OSM")}, none ${count("none")}`);
+  const footprints = (prefix) => buildings.filter((b) => b.footprintSource.startsWith(prefix)).length;
+  const floors = (prefix) => buildings.filter((b) => b.floorsSource.startsWith(prefix)).length;
+  console.log(
+    `gis-buildings.json: ${buildings.length} footprints (${GIS_NAME} ${footprints(GIS_NAME)}, OSM ${footprints("OSM")}); ` +
+    `floors from ${GIS_NAME} ${floors(GIS_NAME)}, SCNU registry ${floors("SCNU")}, OSM building:levels ${floors("OSM")}, none ${floors("none")}`,
+  );
 }
