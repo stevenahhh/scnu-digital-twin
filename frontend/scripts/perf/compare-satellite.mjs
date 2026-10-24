@@ -71,6 +71,9 @@ const PIN_CLOCK = `(() => {
     static now() { return RealDate.now() + offset; }
   }
   window.Date = PinnedDate;
+  // Medium/High post-processing switches gl.outputColorSpace to linear, so a direct gl.render capture would
+  // save unencoded linear values (too dark). Compare on the Low tier, which renders straight to sRGB.
+  try { localStorage.setItem("scnu.renderQuality", "low"); } catch {}
 })();`;
 
 const bounds = JSON.parse(await Bun.file(join(RESEARCH, "qa/ref/sat-z19.json")).text());
