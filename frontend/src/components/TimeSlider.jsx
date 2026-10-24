@@ -5,18 +5,17 @@ import {
   PLAY_INTERVAL_MS,
   PLAY_STEP_MINUTES,
   formatMinuteOfDay,
+  minuteForKey,
   stepMinuteOfDay,
   wrapMinuteOfDay,
 } from "../weather/sceneClock.mjs";
 
 export const TIME_SLIDER_LABEL = "시각 (KST)";
-const KEY_STEP_MINUTES = 10;
-const PAGE_STEP_MINUTES = 60;
 
 const ICON_BUTTON =
   "flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] text-[var(--colors-ink-muted)] transition hover:bg-[var(--colors-surface-2)] hover:text-[var(--colors-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--colors-primary)] [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11";
 
-// 키보드 간격은 기본 range(1분)와 다르다: 화살표 ±10분, PageUp/PageDown ±60분, Home/End 0시/23:59.
+// 1분 해상도: range step 1, 화살표 ±1분, Shift+화살표 ±10분, PageUp/PageDown ±60분, Home/End 0시/23:59(sceneClock.minuteForKey).
 export function TimeSlider({
   minuteOfDay,
   onMinuteChange,
@@ -40,19 +39,8 @@ export function TimeSlider({
   }, [onMinuteChange, playing]);
 
   const handleKeyDown = (event) => {
-    const deltas = {
-      ArrowLeft: -KEY_STEP_MINUTES,
-      ArrowDown: -KEY_STEP_MINUTES,
-      ArrowRight: KEY_STEP_MINUTES,
-      ArrowUp: KEY_STEP_MINUTES,
-      PageDown: -PAGE_STEP_MINUTES,
-      PageUp: PAGE_STEP_MINUTES,
-    };
-    let next;
-    if (event.key === "Home") next = 0;
-    else if (event.key === "End") next = MINUTES_PER_DAY - 1;
-    else if (event.key in deltas) next = Math.min(MINUTES_PER_DAY - 1, Math.max(0, minuteOfDay + deltas[event.key]));
-    else return;
+    const next = minuteForKey(wrapMinuteOfDay(minuteOfDay), event);
+    if (next === null) return;
     event.preventDefault();
     onMinuteChange(next);
   };

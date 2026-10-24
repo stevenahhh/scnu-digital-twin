@@ -3,7 +3,8 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import commonElements from "../../common/data/common_elemetns.json";
-import { resolveBuildingMeta } from "./utils/buildingLabels.mjs";
+import { resolveBuildingMeta, resolveProxyDataElementId } from "./utils/buildingLabels.mjs";
+import { createPointerGuard, hasCameraMoved } from "./camera/pointerGuard.mjs";
 import { isAnchorOccludedByTerrain, selectVisibleCampusLabels } from "./utils/campusLabelVisibility.mjs";
 import { campusModelCenter } from "./simulation/utils/campusTrafficCoordinates.mjs";
 import { CAMPUS_MODEL_URL, CAMPUS_MODEL_URLS } from "./campusModelAsset.mjs";
@@ -146,6 +147,9 @@ function getSelectableMeta(object) {
   return {
     name: rawName,
     elementId: buildingMeta.elementId,
+    // 팝업·미기후 요청에 쓰는 요소 id. 대장 코드가 기존 요소와 같은 대리 노드는 그 요소(BLD_A6 등)를 쓴다.
+    dataElementId:
+      (proxy ? resolveProxyDataElementId(rawName, node.userData, ELEMENT_NAME_MAP) : null) ?? buildingMeta.elementId,
     label: buildingMeta.label ?? (proxy ? node.userData.label ?? null : null),
     proxy,
   };
@@ -183,6 +187,7 @@ function buildLabelAnchors(scene) {
       name: meta.name,
       displayName: meta.label,
       elementId: meta.elementId,
+      dataElementId: meta.dataElementId,
       proxy: meta.proxy,
       position: [center.x, box.max.y + 6, center.z],
     });
@@ -235,6 +240,31 @@ export function CityModel({
   const labelFrameKeyRef = useRef("");
   const labelHeightfieldRef = useRef(null);
   const labelForwardRef = useRef(new THREE.Vector3());
+  // 클릭/드래그 판별(메시와 라벨이 공유). 직전 프레임 카메라 자세로 카메라가 움직이는 중인지 알려 준다.
+  const [pointerGuard] = useState(() => createPointerGuard());
+  const cameraPoseRef = useRef(null);
+
+  // 누르기·놓기는 window 캡처 단계에서 먼저 기록한다. R3F의 pointerup과 라벨 click보다 앞서고, OrbitControls가
+  // 포인터를 캡처해도 빠지지 않는다. 누른 곳이 캔버스인지, 라벨인지, 그 밖(패널 등)인지도 함께 남긴다.
+  useEffect(() => {
+    const canvas = gl.domElement;
+    const originOf = (target) => {
+      if (target === canvas) return "canvas";
+      if (target instanceof Element && target.closest('[data-qa="campus-label"]')) return "label";
+      return "other";
+    };
+    const listeners = {
+      pointerdown: (event) => pointerGuard.pointerDown(event, originOf(event.target)),
+      pointermove: (event) => pointerGuard.pointerMove(event),
+      pointerup: (event) => pointerGuard.pointerUp(event),
+      pointercancel: () => pointerGuard.pointerCancel(),
+    };
+    const options = { capture: true, passive: true };
+    for (const [type, listener] of Object.entries(listeners)) window.addEventListener(type, listener, options);
+    return () => {
+      for (const [type, listener] of Object.entries(listeners)) window.removeEventListener(type, listener, options);
+    };
+  }, [gl, pointerGuard]);
 
   // 높이 사이드카가 오면 라벨 패스를 한 번 더 돌려 언덕 뒤 라벨을 숨긴다(요청 루프라 invalidate로 프레임을 연다).
   useEffect(() => {
@@ -444,6 +474,23 @@ export function CityModel({
   useFrame((_, delta) => {
     const controls = controlsRef?.current;
 
+    // 카메라가 이번 프레임에 움직였는지(시점 비행, OrbitControls 감쇠, 클릭 포커스) 기록해 그동안의 클릭을 무시한다.
+    const pose = cameraPoseRef.current;
+    pointerGuard.noteCameraFrame(hasCameraMoved(pose, camera));
+    if (pose) {
+      pose.position.copy(camera.position);
+      pose.quaternion.copy(camera.quaternion);
+    } else {
+      cameraPoseRef.current = { position: camera.position.clone(), quaternion: camera.quaternion.clone() };
+    }
+    // 드래그가 시작되면 마우스오버 강조를 끈다. 드래그는 건물을 가리키는 동작이 아니다.
+    const dragDriven = pointerGuard.isDragDriven();
+    if (dragDriven && hoveredNameRef.current !== null) {
+      hoveredNameRef.current = null;
+      materialTransitionRef.current = true;
+      document.body.style.cursor = "auto";
+    }
+
     // 주야(태양 고도)와 계절(날짜) 가중치는 그 자체가 연속이라 바뀌면 곧바로 반영한다(감쇠 없음).
     const altitude = sunAltitude ?? rootScene.userData[SUN_ALTITUDE_KEY];
     const night = Number.isFinite(altitude) ? getNightWeight(altitude) : isNight ? 1 : 0;
@@ -562,6 +609,9 @@ export function CityModel({
       }
     }
 
+    // 드래그가 움직인 카메라와 클릭 포커스 비행(targetPos) 중에는 근접만으로 건물·D4를 열지 않는다. 비행이 지나가는
+    // 이웃 건물이 방금 클릭한 건물의 패널을 빼앗거나 D4 상세를 여는 일을 막는다. 상태는 계속 따라가서 이후 휠 줌은 그대로 동작한다.
+    const autoOpenBlocked = dragDriven || targetPos !== null;
     if ((onBuildingProximity || onD4Enter) && labelAnchors.length > 0) {
       let nearest = null;
       let nearestDistance = Infinity;
@@ -592,7 +642,8 @@ export function CityModel({
         const nextCloseElementId = nearest && nearestDistance < threshold ? nearest.elementId : null;
         if (nextCloseElementId !== closeElementIdRef.current) {
           closeElementIdRef.current = nextCloseElementId;
-          onBuildingProximity(nextCloseElementId ? nearest : null);
+          // 드래그(놓은 뒤 감쇠 포함)로 다가간 건물은 자동으로 열지 않는다. 멀어져서 닫는 것은 그대로 한다.
+          if (!(autoOpenBlocked && nextCloseElementId)) onBuildingProximity(nextCloseElementId ? nearest : null);
         }
       }
 
@@ -601,7 +652,7 @@ export function CityModel({
         const nextIsInside = d4Distance < D4_ENTER_DISTANCE;
         if (nextIsInside && !isInside) {
           isInsideD4Ref.current = true;
-          onD4Enter();
+          if (!autoOpenBlocked) onD4Enter();
         } else if (!nextIsInside && isInside && d4Distance > D4_ENTER_DISTANCE * 1.3) {
           // 다시 트리거될 수 있도록, 확실히 멀어졌을 때만 "안에 있음" 상태를 푼다.
           isInsideD4Ref.current = false;
@@ -666,14 +717,15 @@ export function CityModel({
     }
   });
 
+  // R3F는 pointerup에 delta를 계산하지 않는다(항상 0). 클릭 여부는 pointerGuard가 누른 위치·시간으로 판단한다.
+  // 캔버스에서 시작한 누르기만 받는다. 라벨을 누른 pointerup도 R3F 래퍼로 올라와 뒤 건물을 한 번 더 선택하기 때문이다.
   const handleClick = (e) => {
-    if (e.delta > 2) return;
-
     const root = getSelectableRoot(e.object);
     const meta = getSelectableMeta(root);
     if (!meta) return;
 
     e.stopPropagation();
+    if (!pointerGuard.acceptClick({ pointerId: e.pointerId, origin: "canvas" })) return;
 
     const box = new THREE.Box3().setFromObject(root);
     const center = box.getCenter(new THREE.Vector3());
@@ -689,8 +741,8 @@ export function CityModel({
 
     if (onBuildingClick) {
       onBuildingClick({
-        name: meta.elementId,
-        parent: { name: meta.elementId },
+        name: meta.dataElementId,
+        parent: { name: meta.dataElementId },
         // 대리 노드는 패널 제목에 요소 id 대신 실제 건물 이름을 쓴다.
         ...(meta.proxy && meta.label ? { userData: { buildingName: meta.label } } : {}),
       });
@@ -702,6 +754,7 @@ export function CityModel({
     if (!meta) return;
 
     e.stopPropagation();
+    if (pointerGuard.isDragDriven()) return;
     document.body.style.cursor = "pointer";
     if (hoveredNameRef.current !== meta.name) {
       hoveredNameRef.current = meta.name;
@@ -718,15 +771,18 @@ export function CityModel({
     }
   };
 
-  const handleLabelClick = (anchor) => {
+  // 드래그로 끝난 누르기, 캔버스에서 시작해 라벨 위에서 놓은 드래그, 카메라가 움직이는 동안의 클릭은 무시한다.
+  // 키보드(Enter/Space)로 누른 라벨은 detail이 0이다.
+  const handleLabelClick = (anchor, event) => {
+    if (!pointerGuard.acceptClick({ origin: "label", keyboard: event.detail === 0 })) return;
     if (onSelect) {
       onSelect(anchor.name, 1200, anchor.position);
     }
 
     if (onBuildingClick) {
       onBuildingClick({
-        name: anchor.elementId,
-        parent: { name: anchor.elementId },
+        name: anchor.dataElementId,
+        parent: { name: anchor.dataElementId },
         ...(anchor.proxy && anchor.displayName ? { userData: { buildingName: anchor.displayName } } : {}),
       });
     }
@@ -767,7 +823,7 @@ export function CityModel({
             >
               <button
                 type="button"
-                onClick={() => handleLabelClick(anchor)}
+                onClick={(event) => handleLabelClick(anchor, event)}
                 className={`rounded-[10px] border px-3 py-1 text-[11px] font-black whitespace-nowrap shadow-[0_10px_24px_rgba(15,23,42,0.35)] ${
                   isSelected
                     ? "border-[var(--colors-primary)] bg-[var(--colors-surface-1)] text-[var(--colors-primary)]"

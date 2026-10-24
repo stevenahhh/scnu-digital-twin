@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import commonElements from "../../../common/data/common_elemetns.json" with { type: "json" };
-import { resolveBuildingMeta } from "./buildingLabels.mjs";
+import { resolveBuildingMeta, resolveProxyDataElementId } from "./buildingLabels.mjs";
 
 const elementNames = new Map(
   commonElements.elements.map(({ element_id, name }) => [element_id, name]),
@@ -94,4 +94,26 @@ test("keeps unknown labels null and rejects non-building names", () => {
     label: null,
   });
   assert.equal(resolveBuildingMeta("terrain", options), null);
+});
+
+test("maps registry-coded pick proxies to the existing element and leaves estimated annexes unmapped", () => {
+  const registry = (code) => ({ pickProxy: true, nameSource: `SCNU registry ${code} (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint)` });
+  for (const code of ["A2", "A6", "A7", "A12", "B6", "C2", "C4", "E2", "E4", "F1", "F2", "F4"]) {
+    assert.equal(resolveProxyDataElementId(`BLD_SCNU_${code}`, registry(code), elementNames), `BLD_${code}`);
+  }
+  // The node name alone carries the code when extras have no registry source.
+  assert.equal(resolveProxyDataElementId("BLD_SCNU_A6", { pickProxy: true }, elementNames), "BLD_A6");
+  // The registry source wins over the node name.
+  assert.equal(resolveProxyDataElementId("BLD_SCNU_R1", registry("A7"), elementNames), "BLD_A7");
+  assert.equal(
+    resolveProxyDataElementId(
+      "BLD_SCNU_R690076",
+      { pickProxy: true, nameSource: "estimated: 부속 시설 of C3 공동실험실습관 (footprint 2.6 m from it)" },
+      elementNames,
+    ),
+    null,
+  );
+  assert.equal(resolveProxyDataElementId("BLD_SCNU_Z9", { pickProxy: true }, elementNames), null);
+  assert.equal(resolveProxyDataElementId("BLD_A6", registry("A6"), elementNames), null);
+  assert.equal(resolveProxyDataElementId(undefined, null, elementNames), null);
 });

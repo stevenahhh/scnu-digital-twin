@@ -887,7 +887,8 @@ export default function App() {
         </div>
       )}
 
-      <div ref={mapLayerRef} data-qa="campus-map-layer" className={`absolute inset-0 z-0 flex items-center justify-center ${CANVAS_FALLBACK_SURFACE_CLASS}`}>
+      {/* select-none: 캔버스나 라벨에서 시작한 드래그가 라벨·패널 글자를 파랑게 선택하지 않게 한다. */}
+      <div ref={mapLayerRef} data-qa="campus-map-layer" className={`absolute inset-0 z-0 flex select-none items-center justify-center ${CANVAS_FALLBACK_SURFACE_CLASS}`}>
         <PanelErrorBoundary
           label="3D 캠퍼스"
           message="3D 캠퍼스 모델을 불러오지 못했습니다"

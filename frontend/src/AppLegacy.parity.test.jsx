@@ -391,13 +391,19 @@ describe("Legacy and VWorld feature parity", () => {
 
     slider.focus();
     await user.keyboard("{ArrowRight}");
-    expect(slider.getAttribute("aria-valuetext")).toBe("15:40");
+    expect(slider.getAttribute("aria-valuetext")).toBe("15:31");
+    await user.keyboard("{Shift>}{ArrowRight}{/Shift}");
+    expect(slider.getAttribute("aria-valuetext")).toBe("15:41");
     await user.keyboard("{PageDown}");
-    expect(slider.getAttribute("aria-valuetext")).toBe("14:40");
+    expect(slider.getAttribute("aria-valuetext")).toBe("14:41");
+
+    fireEvent.change(slider, { target: { value: String(13 * 60 + 37) } });
+    expect(slider.getAttribute("aria-valuetext")).toBe("13:37");
+    expect(screen.getByText("13:37")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "환경 시뮬" }));
-    expect(screen.getByRole("slider", { name: "시" }).value).toBe("14");
-    expect(screen.getByRole("slider", { name: "분" }).value).toBe("40");
+    expect(screen.getByRole("slider", { name: "시" }).value).toBe("13");
+    expect(screen.getByRole("slider", { name: "분" }).value).toBe("37");
 
     fireEvent.click(screen.getByRole("button", { name: "Live" }));
     expect(screen.getByText("실시간")).toBeTruthy();
