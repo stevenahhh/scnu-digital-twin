@@ -29,7 +29,7 @@ import { ShadowBaker } from "./lighting/ShadowBaker";
 import { useDemandLoop } from "./render/useDemandLoop.mjs";
 import { useInteractionDpr } from "./render/interactionDpr.mjs";
 import { attachCanvasLifecycle } from "./render/canvasLifecycle.mjs";
-import { QUALITY_LABELS, QUALITY_TIERS, useQualityPreset } from "./settings/qualityPreset.mjs";
+import { QUALITY_LABELS, QUALITY_RENDERER, QUALITY_TIERS, capCanvasDpr, useQualityPreset } from "./settings/qualityPreset.mjs";
 import { useLiveTraffic } from "./render/useLiveTraffic";
 import { CAMERA_PRESETS, OVERVIEW_PRESET_ID } from "./camera/cameraPresets.mjs";
 import { isFlyToEvent, useFlyTo } from "./camera/useFlyTo.mjs";
@@ -722,6 +722,11 @@ export default function App() {
   const { frameloop, animateFor } = useDemandLoop({ modalOpen: buildingViewMode === "section", liveTraffic });
   const interactionDpr = useInteractionDpr();
   const { quality, qualitySource, setQuality, applyDetectedDefault } = useQualityPreset();
+  const qualityRenderer = QUALITY_RENDERER[quality];
+  const canvasDpr = useMemo(
+    () => capCanvasDpr(interactionDpr.dpr, qualityRenderer.maxDpr),
+    [interactionDpr.dpr, qualityRenderer.maxDpr],
+  );
   useEffect(() => {
     animateFor(SELECTION_ANIMATION_MS);
   }, [animateFor, selectedId, sunState.visible, isSceneLoading]);
@@ -779,7 +784,12 @@ export default function App() {
   const campusScene = useMemo(() => (
     <>
       <color attach="background" args={[sceneBackground]} />
-      <CampusLighting sunVector={sunVector} sunVisible={sunVisible} sunAltitude={sunAltitude} />
+      <CampusLighting
+        sunVector={sunVector}
+        sunVisible={sunVisible}
+        sunAltitude={sunAltitude}
+        shadowMapSize={qualityRenderer.shadowMapSize}
+      />
       <SceneWeatherBinding
         sunIntensityScale={sceneWeatherScene.sunIntensityScale}
         fogDensityScale={sceneWeatherScene.fogDensityScale}
@@ -829,7 +839,7 @@ export default function App() {
       )}
     </>
   ), [
-    sceneBackground, sunVector, sunVisible, sunAltitude, selectedId, labelsHidden, sceneWeatherScene, quality,
+    sceneBackground, sunVector, sunVisible, sunAltitude, selectedId, labelsHidden, sceneWeatherScene, quality, qualityRenderer,
     handleSelect, handleBuildingClick, handleBuildingProximity, handleD4Enter, handleOrbitStart, handleOrbitEnd,
   ]);
 
@@ -891,7 +901,7 @@ export default function App() {
             shadows="percentage"
             gl={CAMPUS_CANVAS_GL}
             frameloop={frameloop}
-            dpr={interactionDpr.dpr}
+            dpr={canvasDpr}
             onCreated={handleCanvasCreated}
             style={{ overflow: "clip" }}
           >

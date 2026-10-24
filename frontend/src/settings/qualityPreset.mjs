@@ -1,10 +1,12 @@
 import { useCallback, useState } from "react";
+import { INTERACTION_DPR_FACTOR } from "../render/interactionDpr.mjs";
 
 // 3D 캠퍼스 렌더링 품질 단계.
 // - low: 지금까지의 렌더러 그대로(후처리 없음). 후처리 청크도 받지 않는다.
 // - medium: SMAA + 절반 해상도 N8AO(가벼운 접촉 그림자).
 // - high: 전체 해상도 N8AO + SMAA + 밤의 창문·가로등에만 은은한 bloom.
 // 톤 매핑은 모든 단계에서 Neutral이다(후처리 단계에서는 컴포저의 ToneMapping 효과가 맡는다).
+// 단계마다 렌더러 비용도 정한다(QUALITY_RENDERER): 캔버스 픽셀 비율 상한과 태양 그림자 맵 크기.
 export const QUALITY_TIERS = Object.freeze(["low", "medium", "high"]);
 export const QUALITY_LABELS = Object.freeze({ low: "낮음", medium: "보통", high: "높음" });
 export const QUALITY_STORAGE_KEY = "scnu.renderQuality";
@@ -19,6 +21,22 @@ export const QUALITY_EFFECTS = Object.freeze({
   medium: Object.freeze({ ao: Object.freeze({ halfRes: true, quality: "performance", intensity: 1.5 }), bloom: false }),
   high: Object.freeze({ ao: Object.freeze({ halfRes: false, quality: "medium", intensity: 2 }), bloom: true }),
 });
+
+// 단계별 렌더러 비용. maxDpr은 캔버스 픽셀 비율 상한(조작 중 DPR 낮추기는 이 상한 위에서 다시 0.75배),
+// shadowMapSize는 태양 그림자 맵 한 변의 텍셀 수다(기기 한도·모바일 2048 제한을 넘지 않게 CampusLighting이 줄인다).
+// 그림자는 ShadowBaker로 굳혀 두므로 맵 크기는 주로 메모리와 굽는 순간의 비용이고, 프레임마다 드는 것은 샘플링뿐이다.
+export const QUALITY_RENDERER = Object.freeze({
+  low: Object.freeze({ maxDpr: 1, shadowMapSize: 1024 }),
+  medium: Object.freeze({ maxDpr: 1.5, shadowMapSize: 2048 }),
+  high: Object.freeze({ maxDpr: 2, shadowMapSize: 4096 }),
+});
+
+// useInteractionDpr의 dpr(평소 [min, max], 조작 중에는 기준 비율 x factor인 숫자)에 단계 상한을 씌운다.
+// 조작 중 값은 기준 비율을 되살려 상한으로 자른 뒤 다시 factor를 곱하므로, 상한 1에서도 드래그하면 0.75로 내려간다.
+export function capCanvasDpr(dpr, maxDpr) {
+  if (Array.isArray(dpr)) return [Math.min(dpr[0], maxDpr), Math.min(dpr[1], maxDpr)];
+  return Math.min(dpr / INTERACTION_DPR_FACTOR, maxDpr) * INTERACTION_DPR_FACTOR;
+}
 
 const SOFTWARE_GPU = /swiftshader|llvmpipe|softpipe|software|basic render/i;
 const MOBILE_UA = /Android|iPhone|iPad|iPod|Mobi/i;

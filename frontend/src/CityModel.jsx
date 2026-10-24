@@ -4,9 +4,10 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import commonElements from "../../common/data/common_elemetns.json";
 import { resolveBuildingMeta } from "./utils/buildingLabels.mjs";
-import { selectVisibleCampusLabels } from "./utils/campusLabelVisibility.mjs";
+import { isAnchorOccludedByTerrain, selectVisibleCampusLabels } from "./utils/campusLabelVisibility.mjs";
 import { campusModelCenter } from "./simulation/utils/campusTrafficCoordinates.mjs";
-import { CAMPUS_MODEL_URL } from "./campusModelAsset.mjs";
+import { CAMPUS_MODEL_URL, CAMPUS_MODEL_URLS } from "./campusModelAsset.mjs";
+import { CAMPUS_HEIGHTFIELD_URLS, loadHeightfield } from "./terrain/heightfield.mjs";
 import {
   AUTUMN_MATERIAL_NAMES,
   SUN_ALTITUDE_KEY,
@@ -28,6 +29,8 @@ const PROXIMITY_EXIT_DISTANCE = 170;
 // 일반 미기후 근접(120)보다 확실히 더 가까이(줌인) 다가갔을 때만 반응하게 한다.
 const D4_ENTER_DISTANCE = 55;
 const D4_ELEMENT_ID = "BLD_D4";
+// 라벨 지형 가림 판정에 쓰는 높이 사이드카는 campus-v2.glb와 함께 만들어진다. ?model=uni에는 없으므로 판정을 건너뛴다.
+const LABEL_HEIGHTFIELD_URLS = CAMPUS_MODEL_URL === CAMPUS_MODEL_URLS.detailed ? CAMPUS_HEIGHTFIELD_URLS : null;
 
 const BLOCKED_ELEMENT_IDS = new Set(["BLD_C1001"]);
 const BUILDING_MAP = {
@@ -58,7 +61,38 @@ const NON_CASTER_PARENT_PATTERN = /^Trees_.*_trunk/;
 // 그림자·클릭 대상에서 빼고, 웅덩이는 낮에는 숨겨 드로우콜을 쓰지 않는다. 캠퍼스 안쪽 가로등 위치는 추정값이다.
 const LAMP_MATERIAL_PATTERN = /^Lamp_/;
 const LAMP_POOL_MATERIAL_NAME = "Lamp_Pool";
-const LAMP_POOL_STRENGTH = 0.55;
+const LAMP_POOL_STRENGTH = 1;
+// 웅덩이는 반지름 1인 단위 원판 인스턴스다. GLB의 COLOR_0은 고리 4개짜리 선형 경사라 sRGB 화면에서는
+// 평평한 원판처럼 보인다. 정점 색 대신 프래그먼트마다 원판 중심에서의 거리로 가우스 모양 감쇠를 계산하고,
+// 가장자리는 0으로 부드럽게 닫는다(실측 조도 분포가 아니라 보기 위한 연출이다).
+const LAMP_POOL_FALLOFF = 4.5;
+// 평평한 원판이 경사진 지형·도로면 아래로 들어가 직선으로 잘려 보이지 않게, 시점 공간에서 카메라 쪽으로 조금(장면 단위, 약 0.8 m)
+// 당겨 깊이 검사만 통과시킨다. 가산 합성이고 깊이를 쓰지 않으므로 다른 물체의 깊이에는 영향이 없다.
+const LAMP_POOL_DEPTH_BIAS = 0.5;
+function applyLampPoolFalloff(material) {
+  material.vertexColors = false;
+  material.onBeforeCompile = (shader) => {
+    shader.vertexShader = shader.vertexShader
+      .replace("#include <common>", "#include <common>\nvarying vec2 vPoolOffset;")
+      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvPoolOffset = position.xz;")
+      .replace(
+        "#include <project_vertex>",
+        `#include <project_vertex>
+        mvPosition.z += ${LAMP_POOL_DEPTH_BIAS.toFixed(2)};
+        gl_Position = projectionMatrix * mvPosition;`,
+      );
+    shader.fragmentShader = shader.fragmentShader
+      .replace("#include <common>", "#include <common>\nvarying vec2 vPoolOffset;")
+      .replace(
+        "#include <color_fragment>",
+        `#include <color_fragment>
+        float poolR2 = min(dot(vPoolOffset, vPoolOffset), 1.0);
+        diffuseColor.rgb *= exp(-${LAMP_POOL_FALLOFF.toFixed(2)} * poolR2) * (1.0 - smoothstep(0.2, 1.0, poolR2));`,
+      );
+  };
+  material.customProgramCacheKey = () => "campus-lamp-pool-falloff";
+  material.needsUpdate = true;
+}
 
 // 색 전환은 선택/주야가 바뀐 뒤에만, 남은 차이가 이 값보다 작아질 때까지 돈다.
 const MATERIAL_SETTLE_EPSILON = 1e-3;
@@ -176,7 +210,7 @@ export function CityModel({
   ...props
 }) {
   const { scene } = useGLTF(CAMPUS_MODEL_URL);
-  const { camera, gl, scene: rootScene } = useThree();
+  const { camera, gl, scene: rootScene, invalidate } = useThree();
   const [targetPos, setTargetPos] = useState(null);
   const [labelScale, setLabelScale] = useState(1);
   const tintedMeshesRef = useRef([]);
@@ -196,6 +230,22 @@ export function CityModel({
   // 한 번 더 읽도록 2로 둔다. 캔버스·패널 사각형이 바뀌었는지는 매 프레임 비교한다.
   const labelPassFramesRef = useRef(2);
   const labelFrameKeyRef = useRef("");
+  const labelHeightfieldRef = useRef(null);
+
+  // 높이 사이드카가 오면 라벨 패스를 한 번 더 돌려 언덕 뒤 라벨을 숨긴다(요청 루프라 invalidate로 프레임을 연다).
+  useEffect(() => {
+    if (!LABEL_HEIGHTFIELD_URLS) return undefined;
+    let disposed = false;
+    loadHeightfield(LABEL_HEIGHTFIELD_URLS).then((field) => {
+      if (disposed || !field) return;
+      labelHeightfieldRef.current = field;
+      labelPassFramesRef.current = 2;
+      invalidate();
+    });
+    return () => {
+      disposed = true;
+    };
+  }, [invalidate]);
 
   useLayoutEffect(() => {
     labelsHiddenRef.current = labelsHidden;
@@ -288,6 +338,7 @@ export function CityModel({
           child.material.polygonOffset = true;
           child.material.polygonOffsetFactor = -2;
           child.material.opacity = 0;
+          applyLampPoolFalloff(child.material);
           child.visible = false;
           lampPools.push(child);
           return;
@@ -529,6 +580,7 @@ export function CityModel({
   // 라벨은 가운데 점이 캔버스 안에 있고 열린 대시보드 패널 밑에 있지 않을 때만 보인다.
   // 서로 겹치면 선택된 라벨, 팝업 데이터가 있는 BLD_* 라벨, 카메라에 가까운 라벨 순으로 남기고 나머지는 숨긴다.
   // visibility: hidden은 Tab 순서와 접근성 트리에서도 빠지므로 키보드 포커스가 보이지 않는 라벨로 가지 않는다.
+  // 카메라에서 앵커로 가는 시선이 언덕(높이 사이드카)에 막히는 라벨도 하늘에 떠 보이지 않게 숨긴다.
   // D4 상세가 열린 동안(labelsHidden)은 모두 숨긴다. 라벨 사각형은 카메라·선택·패널이 바뀐 뒤에만 읽고,
   // 위치를 모두 읽은 뒤에 쓰기를 해 레이아웃 계산을 한 번으로 줄인다.
   useFrame(() => {
@@ -550,10 +602,14 @@ export function CityModel({
     let visibleIds = null;
     if (!hideAll) {
       const selected = selectedIdRef.current;
+      const heightfield = labelHeightfieldRef.current;
+      // 앵커와 사이드카는 재중심화 전 모델 좌표다. 카메라를 같은 좌표로 옮긴다.
+      const eye = [camera.position.x + center.x, camera.position.y, camera.position.z + center.z];
       const candidates = [];
       for (const anchor of labelAnchors) {
         const element = labels.get(anchor.elementId);
         if (!element) continue;
+        if (isAnchorOccludedByTerrain(heightfield, eye, anchor.position)) continue;
         const dx = camera.position.x - (anchor.position[0] - center.x);
         const dy = camera.position.y - anchor.position[1];
         const dz = camera.position.z - (anchor.position[2] - center.z);
