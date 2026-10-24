@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import commonElements from "../../common/data/common_elemetns.json";
 import { resolveBuildingMeta } from "./utils/buildingLabels.mjs";
-import { isCampusLabelVisible } from "./utils/campusLabelVisibility.mjs";
+import { selectVisibleCampusLabels } from "./utils/campusLabelVisibility.mjs";
 import { campusModelCenter } from "./simulation/utils/campusTrafficCoordinates.mjs";
 import { CAMPUS_MODEL_URL } from "./campusModelAsset.mjs";
 
@@ -52,8 +52,13 @@ const MATERIAL_SETTLE_EPSILON = 1e-3;
 const MATERIAL_EASE_RATE = 8;
 const SELECTED_COLOR = new THREE.Color("#ffb8c6");
 const NIGHT_TINT_COLOR = new THREE.Color("#c8d6e5");
+// 마우스를 올린 건물은 평소 색을 선택 색 쪽으로 조금만 옮긴다. 선택(색 전체 교체)보다 약하다.
+// 재질은 메시마다 복제돼 있어 다른 건물로 번지지 않는다.
+const HOVER_TINT_COLOR = new THREE.Color("#ffe0e8");
+const HOVER_TINT_MIX = 0.3;
 // 프레임마다 새 객체를 만들지 않도록 재사용하는 스크래치 값.
 const scratchColor = new THREE.Color();
+const scratchHoverColor = new THREE.Color();
 const scratchCamPos = new THREE.Vector3();
 const ELEMENT_NAME_MAP = new Map(
   commonElements.elements.map((element) => [element.element_id, element.name]),
@@ -156,10 +161,18 @@ export function CityModel({
   const isInsideD4Ref = useRef(false);
   const labelElementsRef = useRef(new Map());
   const labelsHiddenRef = useRef(labelsHidden);
+  const selectedIdRef = useRef(selectedId);
+  const hoveredNameRef = useRef(null);
+  // 라벨 위치를 다시 읽어야 하는 남은 프레임 수. drei Html이 같은 프레임의 뒤쪽에서 위치를 옮길 수 있어
+  // 한 번 더 읽도록 2로 둔다. 캔버스·패널 사각형이 바뀌었는지는 매 프레임 비교한다.
+  const labelPassFramesRef = useRef(2);
+  const labelFrameKeyRef = useRef("");
 
   useLayoutEffect(() => {
     labelsHiddenRef.current = labelsHidden;
-  }, [labelsHidden]);
+    selectedIdRef.current = selectedId;
+    labelPassFramesRef.current = 2;
+  }, [labelsHidden, selectedId, labelScale]);
 
   useEffect(() => {
     const controls = controlsRef?.current;
@@ -209,12 +222,17 @@ export function CityModel({
       );
     };
 
+    const handleChange = () => {
+      labelPassFramesRef.current = 2;
+      updateLabelScale();
+    };
+
     updateLabelScale();
 
     if (!controls) return;
 
-    controls.addEventListener("change", updateLabelScale);
-    return () => controls.removeEventListener("change", updateLabelScale);
+    controls.addEventListener("change", handleChange);
+    return () => controls.removeEventListener("change", handleChange);
   }, [camera, controlsRef]);
 
   useEffect(() => {
@@ -285,11 +303,14 @@ export function CityModel({
         const { userData, material } = child;
         const isSelected =
           userData.selectableName === selectedId || child.name === selectedId;
+        const isHovered =
+          userData.selectableName !== null && userData.selectableName === hoveredNameRef.current;
+        const baseColor = isNight ? userData.nightColor : userData.originalColor;
         const targetColor = isSelected
           ? SELECTED_COLOR
-          : isNight
-            ? userData.nightColor
-            : userData.originalColor;
+          : isHovered
+            ? scratchHoverColor.copy(baseColor).lerp(HOVER_TINT_COLOR, HOVER_TINT_MIX)
+            : baseColor;
 
         const color = material.color;
         const remaining = Math.max(
@@ -390,20 +411,48 @@ export function CityModel({
   });
 
   // 라벨은 가운데 점이 캔버스 안에 있고 열린 대시보드 패널 밑에 있지 않을 때만 보인다.
+  // 서로 겹치면 선택된 라벨, 팝업 데이터가 있는 BLD_* 라벨, 카메라에 가까운 라벨 순으로 남기고 나머지는 숨긴다.
   // visibility: hidden은 Tab 순서와 접근성 트리에서도 빠지므로 키보드 포커스가 보이지 않는 라벨로 가지 않는다.
-  // D4 상세가 열린 동안(labelsHidden)은 모두 숨긴다. 위치를 모두 읽은 뒤에 쓰기를 해 레이아웃 계산을 한 번으로 줄인다.
+  // D4 상세가 열린 동안(labelsHidden)은 모두 숨긴다. 라벨 사각형은 카메라·선택·패널이 바뀐 뒤에만 읽고,
+  // 위치를 모두 읽은 뒤에 쓰기를 해 레이아웃 계산을 한 번으로 줄인다.
   useFrame(() => {
     const labels = labelElementsRef.current;
     if (labels.size === 0) return;
     const area = gl.domElement.getBoundingClientRect();
     const occluder = occluderRef?.current?.getBoundingClientRect() ?? null;
+    const frameKey = `${area.left},${area.top},${area.right},${area.bottom}|${
+      occluder ? `${occluder.left},${occluder.top},${occluder.right},${occluder.bottom}` : ""
+    }`;
+    if (frameKey !== labelFrameKeyRef.current) {
+      labelFrameKeyRef.current = frameKey;
+      labelPassFramesRef.current = 2;
+    }
+    if (labelPassFramesRef.current <= 0) return;
+    labelPassFramesRef.current -= 1;
+
     const hideAll = labelsHiddenRef.current;
-    const decisions = [...labels.values()].map((element) => [
-      element,
-      !hideAll && isCampusLabelVisible(element.getBoundingClientRect(), area, occluder),
-    ]);
-    for (const [element, visible] of decisions) {
-      const next = visible ? "" : "hidden";
+    let visibleIds = null;
+    if (!hideAll) {
+      const selected = selectedIdRef.current;
+      const candidates = [];
+      for (const anchor of labelAnchors) {
+        const element = labels.get(anchor.elementId);
+        if (!element) continue;
+        const dx = camera.position.x - (anchor.position[0] - center.x);
+        const dy = camera.position.y - anchor.position[1];
+        const dz = camera.position.z - (anchor.position[2] - center.z);
+        candidates.push({
+          id: anchor.elementId,
+          rect: element.getBoundingClientRect(),
+          selected: anchor.name === selected,
+          hasPopup: anchor.elementId.startsWith("BLD_") && ELEMENT_NAME_MAP.has(anchor.elementId),
+          distance: dx * dx + dy * dy + dz * dz,
+        });
+      }
+      visibleIds = selectVisibleCampusLabels(candidates, area, occluder);
+    }
+    for (const [elementId, element] of labels) {
+      const next = visibleIds?.has(elementId) ? "" : "hidden";
       if (element.style.visibility !== next) element.style.visibility = next;
     }
   });
@@ -444,6 +493,19 @@ export function CityModel({
 
     e.stopPropagation();
     document.body.style.cursor = "pointer";
+    if (hoveredNameRef.current !== meta.name) {
+      hoveredNameRef.current = meta.name;
+      materialTransitionRef.current = true;
+    }
+  };
+
+  const handlePointerOut = (e) => {
+    document.body.style.cursor = "auto";
+    const meta = getSelectableMeta(e.object);
+    if (meta && hoveredNameRef.current === meta.name) {
+      hoveredNameRef.current = null;
+      materialTransitionRef.current = true;
+    }
   };
 
   const handleLabelClick = (anchor) => {
@@ -466,9 +528,7 @@ export function CityModel({
         {...props}
         onPointerUp={handleClick}
         onPointerOver={handlePointerOver}
-        onPointerOut={() => {
-          document.body.style.cursor = "auto";
-        }}
+        onPointerOut={handlePointerOut}
       />
 
       {labelAnchors.map((anchor) => {
@@ -484,8 +544,10 @@ export function CityModel({
               ref={(element) => {
                 if (element) labelElementsRef.current.set(anchor.elementId, element);
                 else labelElementsRef.current.delete(anchor.elementId);
+                labelPassFramesRef.current = 2;
               }}
               data-qa="campus-label"
+              data-element-id={anchor.elementId}
               className="pointer-events-auto flex flex-col items-center whitespace-nowrap"
               style={{
                 transform: `translate(-50%, calc(-100% - 4px)) scale(${labelScale})`,
