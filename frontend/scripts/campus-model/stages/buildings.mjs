@@ -462,30 +462,47 @@ export async function buildBuildings({ glb, inputs }) {
 
   // ---- materials
   const facadeSources = {
-    [STYLE.CONCRETE]: concreteRibbonFacade(),
-    [STYLE.BRICK]: brickPunchedFacade(),
-    [STYLE.BEIGE]: beigePunchedFacade(),
-    [STYLE.GLASS]: glassCurtainFacade(),
-    [STYLE.GREENHOUSE]: greenhouseFacade(),
+    [STYLE.CONCRETE]: await concreteRibbonFacade(),
+    [STYLE.BRICK]: await brickPunchedFacade(),
+    [STYLE.BEIGE]: await beigePunchedFacade(),
+    [STYLE.GLASS]: await glassCurtainFacade(),
+    [STYLE.GREENHOUSE]: await greenhouseFacade(),
   };
+  // Detail maps (U42) ship as PNG in the raw GLB; the pack step re-encodes every texture as WebP.
+  // Roughness and metal come from the packed map (G, B), so both factors are 1.
+  const detailTextures = (textures) => ({
+    normalTexture: { index: glb.addTexture(textures.normal, "image/png"), texCoord: 0 },
+    metallicRoughnessTexture: { index: glb.addTexture(textures.arm, "image/png"), texCoord: 0 },
+  });
   const facadeMaterials = {};
   for (const [style, textures] of Object.entries(facadeSources)) {
     const color = glb.addTexture(await jpeg(textures.color), "image/jpeg");
     const emissive = glb.addTexture(await jpeg(textures.emissive, 80), "image/jpeg");
+    const { normalTexture, metallicRoughnessTexture } = detailTextures(textures);
     facadeMaterials[style] = glb.addMaterial({
       name: `Facade_${style}`,
       pbrMetallicRoughness: {
         baseColorTexture: { index: color },
-        metallicFactor: style === STYLE.GLASS ? 0.25 : 0,
-        roughnessFactor: style === STYLE.GLASS ? 0.45 : 0.85,
+        metallicRoughnessTexture,
+        metallicFactor: 1,
+        roughnessFactor: 1,
       },
+      normalTexture,
       emissiveTexture: { index: emissive },
       emissiveFactor: [1, 1, 1],
     });
   }
+  const roof = await roofTexture();
+  const roofDetail = detailTextures(roof);
   const roofMaterial = glb.addMaterial({
     name: "Roof_Membrane",
-    pbrMetallicRoughness: { baseColorTexture: { index: glb.addTexture(await jpeg(roofTexture()), "image/jpeg") }, metallicFactor: 0, roughnessFactor: 0.95 },
+    pbrMetallicRoughness: {
+      baseColorTexture: { index: glb.addTexture(await jpeg(roof.color), "image/jpeg") },
+      metallicRoughnessTexture: roofDetail.metallicRoughnessTexture,
+      metallicFactor: 1,
+      roughnessFactor: 1,
+    },
+    normalTexture: roofDetail.normalTexture,
   });
   const parapetMaterial = glb.addMaterial({
     name: "Roof_Parapet",
