@@ -142,7 +142,8 @@ export function placeTrees({ inputs, selectableBuildings, campusBuildings, offCa
     const mask = new Raster(WIDTH, DEPTH);
     const unit = (ring) => ring.map(([x, z]) => [x - EXTENT.minX, z - EXTENT.minZ]);
     for (const building of [...selectableBuildings, ...campusBuildings]) {
-      for (const part of building.parts) mask.fillPolygon([unit(part.outer)], () => [255, 0, 0]);
+      // Courtyards (rings of a mass form) stay open to trees.
+      for (const part of building.parts) mask.fillPolygon([unit(part.outer), ...part.holes.map(unit)], () => [255, 0, 0]);
     }
     for (const polygon of roadZones) mask.fillPolygon(polygon.map(unit), () => [255, 0, 0]);
     for (const lot of offCampusLots) mask.fillPolygon([unit(lot)], () => [128, 0, 0]);

@@ -5,7 +5,9 @@
 // counts. Every facade/roof primitive also gets TEXCOORD_1 into one ambient-occlusion atlas (see aoLayout below);
 // data/ao-buildings.png, baked from the raw GLB by bake/bake-ao.mjs, becomes their occlusionTexture when its layout
 // hash matches this build's. Roof colours and rooftop solar panels come from the VWorld z19 orthophoto
-// (lib/roofPhoto.mjs; estimates, not measurements).
+// (lib/roofPhoto.mjs; estimates, not measurements). Buildings listed in data/building-forms.json with VWorld LOD4 or
+// photo-traced masses are built from those masses (see mass forms below): wings, stepped levels, courtyards, rooftop
+// cores, raised parts and pitched or curved roofs.
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -15,7 +17,8 @@ import { MeshData } from "../lib/meshData.mjs";
 import { mulberry32 } from "../lib/raster.mjs";
 import { EQUIPMENT_MODULE_UV, EQUIPMENT_PLAIN_UV, ROOF_METRES, equipmentAtlas, roofTexture } from "../lib/textures.mjs";
 import { MODULE_DEPTH_M, MODULE_TILT_DEGREES, panelModules, sampleRoofPhoto } from "../lib/roofPhoto.mjs";
-import { pointInRing, ringArea, ringCentroid, segmentDistance } from "../lib/geometry.mjs";
+import { cleanRing, pointInRing, ringArea, ringCentroid, segmentDistance } from "../lib/geometry.mjs";
+import { Box3 } from "three";
 import { meshFootprint, toModelRing } from "./sources.mjs";
 
 const UNIT_AREA = metres(1) ** 2;
@@ -506,6 +509,33 @@ function aoMesh(options) {
 
 const aoPrimitive = (mesh, material) => ({ ...mesh.toPrimitive(material), ao: mesh.ao });
 
+// Node extras of a building's form (data/building-forms.json): where it comes from, its masses and voids, the photo IoU.
+function formExtras(building) {
+  const form = building.form;
+  if (!form) return {};
+  const kinds = Object.entries(Object.groupBy(form.masses, (m) => m.kind)).map(([kind, list]) => `${kind} ${list.length}`).join(", ");
+  const assumedParapets = form.masses.filter((m) => m.parapetEstimated).length;
+  // What in this form is estimated, part by part (all of it is: nothing here is surveyed).
+  const origin = form.source.startsWith("VWorld LOD4") ? "masses, roof heights, pitched roofs, raised parts and voids derived from the VWorld LOD4 model"
+    : form.source.startsWith("Curated") ? "masses and voids traced on the NGII 2025 photo, storeys and pilotis from the SCNU VR tour, 4.4 m per storey"
+      : form.source.startsWith("NGII") ? "outline traced on the NGII 2025 photo, height from the register or floor count"
+        : "footprint and height from the register or floor count";
+  const estimated = [origin, ...(assumedParapets ? [`parapet height assumed (0.9 m) on ${assumedParapets} of ${form.masses.length} roofs`] : []),
+    ...(form.masses.some((m) => m.columns?.length) ? ["columns under raised parts"] : []), "roof colours from the VWorld z19 photo where it shows the roof"];
+  return {
+    formSource: `${form.source}${building.massForm ? "" : " (footprint kept)"}`,
+    formMasses: form.masses.length,
+    formMassKinds: kinds,
+    formVoids: form.voids.map((v) => `${v.kind} ${Math.round(v.area)} m2`),
+    formRoofs: [...new Set(form.masses.map((m) => m.roof))],
+    formPhotoIoU: form.iou.final,
+    formLean: form.lean,
+    ...(form.lod4Models.length ? { lod4Models: form.lod4Models } : {}),
+    formEstimated: estimated,
+    formNote: "masses, heights and voids estimated from the VWorld LOD4 model and the NGII 2025 orthophoto, not surveyed",
+  };
+}
+
 function dominantAngle(ring) {
   let best = 0;
   let angle = 0;
@@ -532,7 +562,8 @@ function minEdgeDistance(point, rings) {
 // The entrance wall of a building: on its largest ground mass, the edge whose outward normal is closest to the
 // entry's entranceBearing among edges at least half as long as the longest, else the longest edge.
 function entranceOf(building, entry) {
-  const part = building.parts.filter((p) => p.outer?.length >= 3).sort((p, q) => Math.abs(ringArea(q.outer)) - Math.abs(ringArea(p.outer)))[0];
+  const standing = building.parts.filter((p) => p.outer?.length >= 3 && !(p.baseMetres > 0) && !PLAIN_KINDS.has(p.kind));
+  const part = (standing.length ? standing : building.parts.filter((p) => p.outer?.length >= 3)).sort((p, q) => Math.abs(ringArea(q.outer)) - Math.abs(ringArea(p.outer)))[0];
   if (!part) return null;
   const ordered = orderedRing(part.outer, true);
   const edges = ordered.map((a, i) => {
@@ -644,10 +675,482 @@ function buildingPrimitives(building, seed, { heightAt, facadeMaterial, tiles, l
   ];
 }
 
+// ---------------------------------------------------------------- mass forms
+// data/building-forms.json (fetch/buildingForms.mjs) gives a building disjoint masses: plan rings (outer and courtyard
+// rings) with a base and a roof-slab height over the building's lowest ground, a kind (main, wing, podium, tower, core,
+// raised, canopy, annex), floors, a parapet and a roof (flat, or the LOD4 roof triangles of a gable, hipped, mono-pitch
+// or curved roof). Neighbouring masses share walls, so a wall is drawn only where it is exposed: along each edge, the
+// stretches whose outside lies in no other solid (the masses and parts of every building), and up each stretch the
+// heights no such solid covers. Storeyed masses get facade cells there on the building's storey grid (courtyard walls
+// too); rooftop cores, canopy fascias, gables, soffits under raised masses and columns are plain walls in the eave
+// colour on the parapet primitive, so no mass adds a material or a draw call.
+const FORMS = path.join(DATA, "building-forms.json");
+// Low masses of a uni.glb node that lie mostly outside the node's own outline are drawn with CampusBuildings (see the
+// stage below): under 6 m, or under a third of the node's tallest mass up to 10 m (B7's two-storey east wing beside its
+// 31 m block, which uni.glb's outline leaves out).
+const lowMassLimit = (parts) => Math.max(6, Math.min(10, Math.max(...parts.map((p) => p.heightMetres)) / 3));
+const EXPOSURE_EPS = metres(0.1);
+const PLAIN_KINDS = new Set(["core", "canopy"]);
+
+function loadForms() {
+  if (!existsSync(FORMS)) return new Map();
+  return new Map(JSON.parse(readFileSync(FORMS, "utf8")).buildings.map((b) => [b.key, b]));
+}
+
+const formKey = (b) => b.nodeName ?? (b.nodeId && b.label ? b.nodeId : b.footprintSource);
+
+function ringBox(rings) {
+  let minX = Infinity;
+  let minZ = Infinity;
+  let maxX = -Infinity;
+  let maxZ = -Infinity;
+  for (const ring of rings) {
+    for (const [x, z] of ring) {
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+      minZ = Math.min(minZ, z);
+      maxZ = Math.max(maxZ, z);
+    }
+  }
+  return [minX, minZ, maxX, maxZ];
+}
+
+// Lowest terrain under a building's ground-standing masses (the LOD4 heights are measured from its lowest wall foot).
+function formGround(building, heightAt) {
+  if (building.groundScene !== undefined) return building.groundScene;
+  const standing = building.parts.filter((p) => !(p.baseMetres > 0));
+  return Math.min(...(standing.length ? standing : building.parts).flatMap((p) => [...p.outer, ringCentroid(p.outer)]).map(([x, z]) => heightAt(x, z)));
+}
+
+// Solids every wall checks its exposure against: plan rings with absolute bottom and top (scene units). A pitched roof
+// covers its neighbours only up to its eave.
+function solidsOf(building, heightAt) {
+  if (building.massForm) {
+    const ground = formGround(building, heightAt);
+    return building.parts.map((part) => ({
+      part,
+      outer: part.outer,
+      holes: part.holes,
+      bottom: ground + metres(part.baseMetres ?? 0),
+      top: ground + metres(part.triangles ? part.eaveMetres ?? part.heightMetres : part.heightMetres),
+      box: ringBox([part.outer]),
+    }));
+  }
+  return building.parts.flatMap((part) => {
+    if (!part.outer || part.outer.length < 3) return [];
+    const ground = Math.min(...[...part.outer, ringCentroid(part.outer)].map(([x, z]) => heightAt(x, z)));
+    return partMasses(part).map((mass) => ({
+      part: mass,
+      outer: mass.outer,
+      holes: mass.holes,
+      bottom: ground + metres(mass.fromMetres),
+      top: ground + metres(mass.heightMetres),
+      box: ringBox([mass.outer]),
+    }));
+  });
+}
+
+function crossingT(p, q, a, b) {
+  const rx = q[0] - p[0];
+  const rz = q[1] - p[1];
+  const sx = b[0] - a[0];
+  const sz = b[1] - a[1];
+  const den = rx * sz - rz * sx;
+  if (Math.abs(den) < 1e-12) return null;
+  const t = ((a[0] - p[0]) * sz - (a[1] - p[1]) * sx) / den;
+  const u = ((a[0] - p[0]) * rz - (a[1] - p[1]) * rx) / den;
+  return u >= 0 && u <= 1 && t > 1e-6 && t < 1 - 1e-6 ? t : null;
+}
+
+const insideSolid = (p, s) => pointInRing(p, s.outer) && !s.holes.some((h) => pointInRing(p, h));
+
+function subtractRanges([lo, hi], covers) {
+  let pieces = [[lo, hi]];
+  for (const [b, t] of covers) {
+    pieces = pieces.flatMap(([p0, p1]) => {
+      if (t <= p0 || b >= p1) return [[p0, p1]];
+      return [[p0, Math.min(p1, b)], [Math.max(p0, t), p1]].filter(([x, y]) => y - x > 0.005);
+    });
+  }
+  return pieces;
+}
+
+// Exposed stretches of edge a -> b of an ordered ring (outside on its right, the side its quads face): the edge offset
+// EXPOSURE_EPS outwards is cut where it crosses another solid's ring, and each stretch keeps the part of [lo, hi] that
+// no solid around its midpoint covers. Stretches with the same exposure are merged.
+function exposureRuns(a, b, self, solids, lo, hi) {
+  const length = Math.hypot(b[0] - a[0], b[1] - a[1]);
+  const nx = -(b[1] - a[1]) / length;
+  const nz = (b[0] - a[0]) / length;
+  const p = [a[0] + nx * EXPOSURE_EPS, a[1] + nz * EXPOSURE_EPS];
+  const q = [b[0] + nx * EXPOSURE_EPS, b[1] + nz * EXPOSURE_EPS];
+  const box = [Math.min(p[0], q[0]) - EXPOSURE_EPS, Math.min(p[1], q[1]) - EXPOSURE_EPS, Math.max(p[0], q[0]) + EXPOSURE_EPS, Math.max(p[1], q[1]) + EXPOSURE_EPS];
+  const near = solids.filter((s) => s.part !== self.part && s.box[0] <= box[2] && s.box[2] >= box[0] && s.box[1] <= box[3] && s.box[3] >= box[1] && s.top > lo && s.bottom < hi);
+  const ts = [0, 1];
+  for (const s of near) {
+    for (const ring of [s.outer, ...s.holes]) {
+      for (let i = 0; i < ring.length; i += 1) {
+        const t = crossingT(p, q, ring[i], ring[(i + 1) % ring.length]);
+        if (t !== null) ts.push(t);
+      }
+    }
+  }
+  ts.sort((x, y) => x - y);
+  const runs = [];
+  for (let k = 0; k + 1 < ts.length; k += 1) {
+    const [t0, t1] = [ts[k], ts[k + 1]];
+    if ((t1 - t0) * length < 1e-4) continue;
+    const m = (t0 + t1) / 2;
+    const point = [p[0] + (q[0] - p[0]) * m, p[1] + (q[1] - p[1]) * m];
+    const ranges = subtractRanges([lo, hi], near.filter((s) => insideSolid(point, s)).map((s) => [s.bottom, s.top]));
+    const last = runs.at(-1);
+    if (last && JSON.stringify(last.ranges) === JSON.stringify(ranges)) last.t1 = t1;
+    else runs.push({ t0, t1, ranges });
+  }
+  return runs.filter((run) => run.ranges.length);
+}
+
+// Roof surface of a pitched or curved mass from its triangles ([x, z, absolute y] corners): the height at a plan point
+// and the parameters where an edge crosses the triangles' plan edges (the kinks of the wall-top profile there).
+function roofSurface(triangles) {
+  const height = ([x, z]) => {
+    let best = null;
+    for (const [a, b, c] of triangles) {
+      const det = (b[2] - c[2]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[2] - c[2]);
+      if (Math.abs(det) < 1e-12) continue;
+      const l1 = ((b[2] - c[2]) * (x - c[0]) + (c[0] - b[0]) * (z - c[2])) / det;
+      const l2 = ((c[2] - a[2]) * (x - c[0]) + (a[0] - c[0]) * (z - c[2])) / det;
+      const l3 = 1 - l1 - l2;
+      if (l1 < -1e-4 || l2 < -1e-4 || l3 < -1e-4) continue;
+      const y = l1 * a[1] + l2 * b[1] + l3 * c[1];
+      if (best === null || y > best) best = y;
+    }
+    return best;
+  };
+  const kinks = (a, b) => {
+    const ts = [0, 1];
+    for (const tri of triangles) {
+      for (let i = 0; i < 3; i += 1) {
+        const t = crossingT(a, b, [tri[i][0], tri[i][2]], [tri[(i + 1) % 3][0], tri[(i + 1) % 3][2]]);
+        if (t !== null) ts.push(t);
+      }
+    }
+    return [...new Set(ts.map((t) => Math.round(t * 1e6) / 1e6))].sort((x, y) => x - y);
+  };
+  return { height, kinks };
+}
+
+// Walls of one ring of a mass over its exposed stretches. Facade masses get atlas cells (window rows on `storey` from
+// `ground`, the ground row for the first storey, the entrance row and canopy on the entrance edge) and the plinth band
+// below the ground line; plain masses get eave-coloured quads. Under a pitched roof the cells stop at the edge's eave
+// line and a plain gable fills the wall up to the roof profile.
+function addMassRing(ctx, solid, ordered, { facade, cellsOnGround = false, entranceEdge = -1, canopy = false, seed }) {
+  const { walls, plain, charts, solids, look, tile, ground, plinthBase, storey, plainColour, surface } = ctx;
+  const rng = mulberry32(seed);
+  const bay = metres(look.bay ?? 3.6);
+  const peak = solid.peak;
+  const depth = peak - plinthBase;
+  let distance = 0;
+  let chart = -1;
+  let chartStart = 0;
+  for (let i = 0; i < ordered.length; i += 1) {
+    const a = ordered[i];
+    const b = ordered[(i + 1) % ordered.length];
+    const length = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    if (charts && (chart < 0 || (distance > chartStart && distance - chartStart + length > AO_MAX_CHART))) {
+      if (chart >= 0) charts.close(chart, distance - chartStart, depth);
+      chart = charts.open();
+      chartStart = distance;
+    }
+    const s0 = distance - chartStart;
+    distance += length;
+    if (length < 1e-6) continue;
+    const point = (t, y, out = 0) => [a[0] + (b[0] - a[0]) * t + ((a[1] - b[1]) / length) * out, y, a[1] + (b[1] - a[1]) * t + ((b[0] - a[0]) / length) * out];
+    const ao = (t, y) => [s0 + t * length, peak - y, chart];
+    const quad = (mesh, t0, t1, y00, y10, y11, y01, uv, colour) => {
+      mesh.quad(point(t0, y00), point(t1, y10), point(t1, y11), point(t0, y01), uv, colour);
+      if (charts) mesh.ao.push(...ao(t0, y00), ...ao(t1, y10), ...ao(t1, y11), ...ao(t0, y01));
+    };
+    // Wall-top profile: the slab height, or the roof surface along the edge (sampled just inside the mass).
+    let profile = [[0, solid.top], [1, solid.top]];
+    if (surface) {
+      const nx = -(b[1] - a[1]) / length;
+      const nz = (b[0] - a[0]) / length;
+      const inset = -metres(0.05);
+      profile = surface.kinks(a, b).map((t) => {
+        const y = surface.height([a[0] + (b[0] - a[0]) * t + nx * inset, a[1] + (b[1] - a[1]) * t + nz * inset]);
+        return [t, y ?? solid.eave];
+      });
+    }
+    const eave = Math.min(...profile.map((p) => p[1]));
+    const top = Math.max(...profile.map((p) => p[1]));
+    const bays = Math.max(1, Math.round(length / bay));
+    const sliver = length < bay * 0.45;
+    let canopyDone = !canopy;
+    for (const run of exposureRuns(a, b, solid, solids, solid.bottom, top)) {
+      for (const [lo, hi] of run.ranges) {
+        const cellsTop = Math.min(hi, eave);
+        // A core's wall that stands on the ground is part of the facade (a stair or lift core flush with it): cells.
+        const cells = facade || (cellsOnGround && lo <= ground + 1e-3 && solid.bottom <= ground + 1e-3);
+        if (cellsTop > lo + 1e-3) {
+          if (lo <= ground + 1e-3 && solid.bottom <= ground + 1e-3) {
+            if (cells) {
+              const [p0, p1] = [plinthUv(tile, 0), plinthUv(tile, TILE_BAYS)];
+              quad(walls, run.t0, run.t1, plinthBase, plinthBase, ground, ground, [p0, p1, p1, p0]);
+            } else {
+              quad(plain, run.t0, run.t1, plinthBase, plinthBase, ground, ground, PLAIN_UV, plainColour);
+            }
+          }
+          if (!cells) {
+            quad(plain, run.t0, run.t1, lo, lo, cellsTop, cellsTop, PLAIN_UV, plainColour);
+          } else {
+            const k0 = Math.max(0, Math.floor((lo - ground) / storey + 1e-6));
+            const k1 = Math.ceil((cellsTop - ground) / storey - 1e-6);
+            for (let k = k0; k < k1; k += 1) {
+              const y0 = ground + k * storey;
+              const from = Math.max(y0, lo);
+              const to = Math.min(y0 + storey, cellsTop);
+              if (to - from < 1e-3) continue;
+              const [f0, f1] = [(from - y0) / storey, (to - y0) / storey];
+              const row = k === 0 ? ROWS.GROUND : rng() < 0.5 ? ROWS.UPPER_A : ROWS.UPPER_B;
+              const cell = (g0, g1, tileRow, u) => {
+                const c0 = Math.max(g0, run.t0 * bays);
+                const c1 = Math.min(g1, run.t1 * bays);
+                if (c1 - c0 < 1e-6) return;
+                quad(walls, c0 / bays, c1 / bays, from, from, to, to,
+                  [tileUv(tile, tileRow, u(c0), f0), tileUv(tile, tileRow, u(c1), f0), tileUv(tile, tileRow, u(c1), f1), tileUv(tile, tileRow, u(c0), f1)]);
+              };
+              if (sliver) {
+                cell(0, bays, row, (c) => (c / bays) * Math.min(0.3, length / bay));
+                continue;
+              }
+              const groups = [];
+              const push = (g0, g1) => {
+                for (let g = g0; g < g1; g += TILE_BAYS) groups.push([g, Math.min(g1, g + TILE_BAYS), row]);
+              };
+              if (k === 0 && i === entranceEdge) {
+                const n = Math.min(TILE_BAYS, bays);
+                const e0 = Math.floor((bays - n) / 2);
+                push(0, e0);
+                groups.push([e0, e0 + n, ROWS.ENTRANCE]);
+                push(e0 + n, bays);
+                const middle = (e0 + n / 2) / bays;
+                if (!canopyDone && middle > run.t0 && middle < run.t1 && from <= ground + 1e-3) {
+                  const half = Math.min(n / 2, 1) / bays;
+                  const y = ground + Math.min(0.72 * storey, metres(3.6));
+                  addCanopy(walls, point, middle - half, middle + half, y, canopyUv(tile), charts ? ao(middle, y) : null);
+                  canopyDone = true;
+                }
+              } else {
+                push(0, bays);
+              }
+              for (const [g0, g1, tileRow] of groups) {
+                if (tileRow === ROWS.ENTRANCE) cell(g0, g1, tileRow, (c) => TILE_BAYS / 2 - (g1 - g0) / 2 + (c - g0));
+                else if (tileRow !== ROWS.GROUND && rng() < 0.5) cell(g0, g1, tileRow, (c) => TILE_BAYS - (c - g0));
+                else cell(g0, g1, tileRow, (c) => c - g0);
+              }
+            }
+          }
+        }
+        // Gable above the eave line, up to the roof profile.
+        if (surface && hi > eave + 1e-3) {
+          for (let k = 0; k + 1 < profile.length; k += 1) {
+            const [ta, ya] = profile[k];
+            const [tb, yb] = profile[k + 1];
+            const t0 = Math.max(ta, run.t0);
+            const t1 = Math.min(tb, run.t1);
+            if (t1 - t0 < 1e-6) continue;
+            const at = (t) => Math.min(hi, ya + ((yb - ya) * (t - ta)) / (tb - ta || 1));
+            const base = Math.max(eave, lo);
+            if (Math.max(at(t0), at(t1)) - base < 1e-3) continue;
+            quad(plain, t0, t1, base, base, Math.max(base, at(t1)), Math.max(base, at(t0)), PLAIN_UV, plainColour);
+          }
+        }
+      }
+    }
+  }
+  if (charts) charts.close(chart, distance - chartStart, depth);
+}
+
+// Parapet of one ring of a flat mass: both faces of the exposed stretches between the slab and the parapet top.
+function addMassParapet(ctx, solid, ring, height) {
+  const { plain, charts, solids, plainColour } = ctx;
+  const ordered = orderedRing(ring, true);
+  const lo = solid.top;
+  const hi = solid.top + height;
+  let distance = 0;
+  let chart = -1;
+  let chartStart = 0;
+  for (let i = 0; i < ordered.length; i += 1) {
+    const a = ordered[i];
+    const b = ordered[(i + 1) % ordered.length];
+    const length = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    if (charts && (chart < 0 || (distance > chartStart && distance - chartStart + length > AO_MAX_CHART))) {
+      if (chart >= 0) charts.close(chart, distance - chartStart, hi - lo);
+      chart = charts.open();
+      chartStart = distance;
+    }
+    const s0 = distance - chartStart;
+    distance += length;
+    if (length < 1e-6) continue;
+    const p = (t, y) => [a[0] + (b[0] - a[0]) * t, y, a[1] + (b[1] - a[1]) * t];
+    for (const run of exposureRuns(a, b, solid, solids, lo, hi)) {
+      for (const [y0, y1] of run.ranges) {
+        const [t0, t1] = [run.t0, run.t1];
+        const aoOf = (t, y) => [s0 + t * length, hi - y, chart];
+        plain.quad(p(t0, y0), p(t1, y0), p(t1, y1), p(t0, y1), PLAIN_UV, plainColour);
+        plain.quad(p(t1, y0), p(t0, y0), p(t0, y1), p(t1, y1), PLAIN_UV, plainColour);
+        if (charts) {
+          plain.ao.push(...aoOf(t0, y0), ...aoOf(t1, y0), ...aoOf(t1, y1), ...aoOf(t0, y1));
+          plain.ao.push(...aoOf(t1, y0), ...aoOf(t0, y0), ...aoOf(t0, y1), ...aoOf(t1, y1));
+        }
+      }
+    }
+  }
+  if (charts) charts.close(chart, distance - chartStart, hi - lo);
+}
+
+const PLAIN_UV = Object.freeze([[0, 0], [0, 0], [0, 0], [0, 0]]);
+
+// The roof of a pitched or curved mass: its LOD4 triangles, facing up, on the Roof_Membrane texture and colour.
+function addRoofTriangles(roof, triangles, colour, uvScale) {
+  for (const [a, b, c] of triangles) {
+    const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+    const v = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+    let n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+    const length = Math.hypot(...n) || 1;
+    n = n.map((x) => x / length);
+    const corners = n[1] < 0 ? [a, c, b] : [a, b, c];
+    if (n[1] < 0) n = n.map((x) => -x);
+    const base = roof.vertexCount;
+    for (const p of corners) roof.vertex(p, n, [p[0] * uvScale, p[2] * uvScale], colour);
+    roof.triangle(base, base + 1, base + 2);
+  }
+}
+
+// One building with a mass form: walls, roofs, parapets, soffits, columns, rooftop plant and solar modules, in the
+// same four primitives as buildingPrimitives (facade atlas, roof membrane, parapet, equipment).
+function massPrimitives(building, seed, { heightAt, facadeMaterial, tiles, looks, roofMaterial, parapetMaterial, equipmentMaterial, charts, solids }) {
+  const look = looks.get(building.look);
+  const tile = tiles.get(building.look);
+  const greenhouse = look.pattern === "greenhouse";
+  const walls = aoMesh();
+  const roof = aoMesh({ colors: true });
+  const plain = aoMesh({ colors: true });
+  const equipment = aoMesh();
+  const wallColour = linearByte(hex(look.parapet ?? look.wall));
+  const trimColour = linearByte(hex(look.trim ?? look.parapet ?? look.wall));
+  const rng = mulberry32(seed);
+  const ground = formGround(building, heightAt);
+  const plinthBase = ground - metres(1.5);
+  const storeyMetres = building.form?.storeyMetres ?? 4.0;
+  const entrance = entranceOf(building, building.entry);
+  const lod4Canopy = building.parts.some((p) => p.kind === "canopy");
+  const roofFallback = building.roofColour ?? [255, 255, 255, 255];
+  for (const [index, part] of building.parts.entries()) {
+    const solid = solids.find((s) => s.part === part);
+    const top = ground + metres(part.heightMetres);
+    const bottom = ground + metres(part.baseMetres ?? 0);
+    const floors = Math.max(1, Math.round(part.heightMetres / storeyMetres));
+    const storey = (top - ground) / floors;
+    const surface = part.triangles ? roofSurface(part.triangles.map((t) => t.map(([x, z, h]) => [x, ground + metres(h), z]))) : null;
+    const shape = { ...solid, top: surface ? ground + metres(part.eaveMetres ?? part.heightMetres) : top, eave: ground + metres(part.eaveMetres ?? part.heightMetres), peak: top, bottom };
+    const ctx = { walls, plain, charts, solids, look, tile, ground, plinthBase, storey, plainColour: part.kind === "canopy" ? trimColour : wallColour, surface };
+    const facade = !PLAIN_KINDS.has(part.kind);
+    const onEntrance = entrance?.part === part;
+    // Cores take the building's storey grid, so the cells of a facade-flush core line up with the walls beside it.
+    const coreCtx = part.kind === "core" ? { ...ctx, storey: metres(storeyMetres) } : ctx;
+    addMassRing(coreCtx, shape, orderedRing(part.outer, true), { facade, cellsOnGround: part.kind === "core", entranceEdge: onEntrance ? entrance.edge : -1, canopy: onEntrance && Boolean(building.entry) && !greenhouse && !lod4Canopy, seed: seed * 31 + index * 7 });
+    part.holes.forEach((hole, k) => addMassRing(ctx, shape, orderedRing(hole, false), { facade, seed: seed * 31 + index * 7 + k + 1 }));
+    const colour = part.roofColour ?? roofFallback;
+    const roofFrom = roof.vertexCount;
+    if (surface) {
+      addRoofTriangles(roof, part.triangles.map((t) => t.map(([x, z, h]) => [x, ground + metres(h), z])), colour, 1 / metres(ROOF_METRES));
+    } else {
+      roof.horizontalPolygon(part.outer, part.holes, top, { uvScale: 1 / metres(ROOF_METRES), color: colour });
+    }
+    const uvRng = mulberry32(seed * 7919 + roofFrom);
+    const turn = Math.floor(uvRng() * 4);
+    const [ou, ov] = [uvRng(), uvRng()];
+    for (let k = roofFrom * 2; k < roof.uvs.length; k += 2) {
+      const [u, v] = [roof.uvs[k], roof.uvs[k + 1]];
+      const [ru, rv] = [[u, v], [-v, u], [-u, -v], [v, -u]][turn];
+      roof.uvs[k] = ru + ou;
+      roof.uvs[k + 1] = rv + ov;
+    }
+    charts.addPlanar(roof, roofFrom);
+    const roofChart = charts.charts.length - 1;
+    const roofMin = [Math.min(...part.outer.map((p) => p[0])), Math.min(...part.outer.map((p) => p[1]))];
+    if (bottom > ground + 1e-3) {
+      const from = plain.vertexCount;
+      plain.horizontalPolygon(part.outer, part.holes, bottom, { down: true, color: trimColour });
+      charts.addPlanar(plain, from);
+      for (const column of part.columns ?? []) addWalls(plain, column, true, ground - metres(0.3), bottom, charts, { colour: trimColour });
+    }
+    if (greenhouse || surface) continue;
+    const parapet = metres(part.kind === "canopy" ? 0 : part.parapetMetres ?? 0.9);
+    if (parapet > 0) for (const ring of [part.outer, ...part.holes]) addMassParapet(ctx, shape, ring, parapet);
+    if (PLAIN_KINDS.has(part.kind) || part.kind === "annex") continue;
+    const areaMetres = Math.abs(ringArea(part.outer)) / UNIT_AREA;
+    const units = areaMetres > 300 ? Math.min(6, 1 + Math.floor(areaMetres / 700)) : 0;
+    const angle = dominantAngle(part.outer);
+    const xs = part.outer.map((p) => p[0]);
+    const zs = part.outer.map((p) => p[1]);
+    const boxesFrom = equipment.vertexCount;
+    for (let placed = 0, tries = 0; placed < units && tries < 80; tries += 1) {
+      const sx = metres(2.5 + rng() * 4);
+      const sz = metres(2 + rng() * 3);
+      const cx = Math.min(...xs) + rng() * (Math.max(...xs) - Math.min(...xs));
+      const cz = Math.min(...zs) + rng() * (Math.max(...zs) - Math.min(...zs));
+      if (!pointInRing([cx, cz], part.outer) || part.holes.some((h) => pointInRing([cx, cz], h))) continue;
+      if (minEdgeDistance([cx, cz], [part.outer, ...part.holes]) < Math.hypot(sx, sz) / 2 + metres(1.2)) continue;
+      addBox(equipment, cx, cz, sx, sz, top, top + metres(1.4 + rng() * 1.6), angle, charts);
+      placed += 1;
+    }
+    for (let k = boxesFrom * 2; k < equipment.uvs.length; k += 2) [equipment.uvs[k], equipment.uvs[k + 1]] = EQUIPMENT_PLAIN_UV;
+    for (const corners of building.panelModules?.[index] ?? []) {
+      const low = top + MODULE_LIFT;
+      const [lowA, lowB, highB, highA] = corners.map(([x, z], k) => [x, k < 2 ? low : low + MODULE_RISE, z]);
+      const up = (lowB[0] - lowA[0]) * (highA[2] - lowA[2]) - (lowB[2] - lowA[2]) * (highA[0] - lowA[0]) < 0;
+      const face = up ? [lowA, lowB, highB, highA] : [lowB, lowA, highA, highB];
+      equipment.quad(...face, EQUIPMENT_MODULE_UV);
+      equipment.quad(...[...face].reverse(), [EQUIPMENT_PLAIN_UV, EQUIPMENT_PLAIN_UV, EQUIPMENT_PLAIN_UV, EQUIPMENT_PLAIN_UV]);
+      for (const p of [...face, ...[...face].reverse()]) equipment.ao.push(p[0] - roofMin[0], p[2] - roofMin[1], roofChart);
+    }
+  }
+  // BLD_D4 anchors the traffic frame with its bounding-box centre (CityModel, campusModelAsset.test.mjs): two 1 cm
+  // triangles 2 m under the terrain make the new form's box symmetric about the uni.glb centre.
+  if (building.anchorCentre) {
+    const [cx, cz] = building.anchorCentre;
+    let hx = 0;
+    let hz = 0;
+    for (const mesh of [walls, roof, plain, equipment]) {
+      for (let k = 0; k < mesh.positions.length; k += 3) {
+        hx = Math.max(hx, Math.abs(mesh.positions[k] - cx));
+        hz = Math.max(hz, Math.abs(mesh.positions[k + 2] - cz));
+      }
+    }
+    const y = plinthBase - metres(0.5);
+    const d = metres(0.01);
+    for (const [x, z] of [[cx - hx, cz - hz], [cx + hx, cz + hz]]) {
+      const base = walls.vertexCount;
+      for (const p of [[x, y, z], [x + Math.sign(cx - x) * d, y, z], [x, y, z + Math.sign(cz - z) * d]]) walls.vertex(p, [0, 1, 0], [0, 0]);
+      walls.triangle(base, base + 1, base + 2);
+      walls.ao.push(0, 0, 0, 0, 0, 0, 0, 0, 0);
+    }
+  }
+  return [
+    aoPrimitive(walls, facadeMaterial),
+    aoPrimitive(roof, roofMaterial),
+    aoPrimitive(plain, parapetMaterial),
+    aoPrimitive(equipment, equipmentMaterial),
+  ];
+}
+
 // ---------------------------------------------------------------- stage
 // detailedStructures: plan rings of the structures stages/furniture.mjs models in detail (the 구령대). A campus
 // footprint holding one keeps its label, pick proxy, photo mask and tree mask, but its generic mass is not drawn.
-export async function buildBuildings({ glb, inputs, detailedStructures = [] }) {
+export async function buildBuildings({ glb, inputs, detailedStructures = [], selectOnly = false }) {
   const { source, footprints, roadZones, heightAt } = inputs;
 
   // ---- building selection
@@ -874,6 +1377,85 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [] }) {
   for (const line of corrections) console.log(`  ${line}`);
   console.log(`storey-height rule (2.5-5 m per storey, was 2.5-6.5 m) changed ${ratioChanges.length}: ${ratioChanges.join("; ") || "none"}`);
   console.log(`tower masses over VWorld LOD4 roof levels: ${towers.join("; ") || "none"}`);
+  // fetch/buildingForms.mjs derives data/building-forms.json from this selection (the footprints before any form).
+  if (selectOnly) return { selectableBuildings, campusBuildings, offCampusLots, footprintShift };
+
+  // ---- building forms (data/building-forms.json): masses replace the footprint parts of the buildings whose form
+  // comes from the VWorld LOD4 mesh or a photo-traced outline; the rest keep their footprint (and the form record).
+  {
+    const forms = loadForms();
+    const toModel = ([lon, lat]) => {
+      const [x, z] = geoToModel(lon, lat);
+      return [x + footprintShift[0], z + footprintShift[1]];
+    };
+    const used = [];
+    const detachedLog = [];
+    let formOriginals = [];
+    for (const building of [...selectableBuildings, ...campusBuildings]) {
+      const form = forms.get(formKey(building));
+      if (!form) continue;
+      building.form = form;
+      if (form.masses.every((m) => m.fromFootprint)) continue;
+      formOriginals = building.parts;
+      const heightSource = building.parts[0]?.heightSource ?? building.heightSource;
+      const fromLod4 = form.source.startsWith("VWorld LOD4");
+      building.parts = form.masses.map((m) => ({
+        outer: cleanRing(m.outer.map(toModel)),
+        holes: m.holes.map((h) => cleanRing(h.map(toModel))).filter((h) => h.length >= 3),
+        heightMetres: m.topMetres,
+        baseMetres: m.baseMetres,
+        parapetMetres: m.parapetMetres ?? null,
+        eaveMetres: m.eaveMetres ?? null,
+        kind: m.kind,
+        floors: m.floors,
+        roof: m.roof,
+        triangles: m.triangles?.map((t) => t.map(([lon, lat, h]) => [...toModel([lon, lat]), h])) ?? null,
+        columns: m.columns?.map((r) => cleanRing(r.map(toModel))) ?? [],
+        heightSource: m.heightSource ?? (fromLod4 ? `VWorld LOD4 ${m.roof} roof at ${m.topMetres} m (estimated)` : heightSource),
+      })).filter((p) => p.outer.length >= 3);
+      building.massForm = true;
+      building.groundScene = formGround(building, heightAt);
+      used.push(`${formKey(building)} ${building.parts.length}`);
+      // A uni.glb node keeps its place in the traffic frame (campusModelAsset.test.mjs compares bounding-box centres):
+      // low masses (under 6 m) that lie mostly more than 2 m outside the node's own outline are drawn with
+      // CampusBuildings instead (same ground, look and lean), so the node's box stays where uni.glb has it.
+      if (building.nodeName && building.nodeName !== "BLD_D4") {
+        const near = (p) => originals.some((o) => pointInRing(p, o.outer) || minEdgeDistance(p, [o.outer]) < metres(2));
+        const outside = (part) => {
+          const [x0, z0, x1, z1] = ringBox([part.outer]);
+          const step = Math.max(metres(0.5), Math.min(x1 - x0, z1 - z0) / 8);
+          let total = 0;
+          let out = 0;
+          for (let x = x0 + step / 2; x < x1; x += step) {
+            for (let z = z0 + step / 2; z < z1; z += step) {
+              if (!pointInRing([x, z], part.outer)) continue;
+              total += 1;
+              if (!near([x, z])) out += 1;
+            }
+          }
+          return total ? out / total : 0;
+        };
+        const originals = formOriginals;
+        const limit = lowMassLimit(building.parts);
+        const detached = building.parts.filter((part) => part.heightMetres < limit && outside(part) > 0.5);
+        if (detached.length && detached.length < building.parts.length) {
+          building.parts = building.parts.filter((part) => !detached.includes(part));
+          campusBuildings.push({
+            index: -1, drawnByFurniture: false, displayName: building.displayName, footprintSource: building.footprintSource, floorsSource: building.floorsSource,
+            entry: null, look: building.look, parts: detached, massForm: true, form: building.form, groundScene: building.groundScene, detachedFrom: building.nodeName,
+          });
+          detachedLog.push(`${building.nodeName} ${detached.map((p) => `${p.kind} ${p.heightMetres.toFixed(1)} m`).join(", ")}`);
+        }
+      }
+    }
+    console.log(`building forms (data/building-forms.json): ${used.length} buildings built from masses (${used.join(", ")}); ` +
+      `low masses outside a uni.glb node's outline drawn with CampusBuildings: ${detachedLog.join("; ") || "none"}`);
+  }
+  const d4 = selectableBuildings.find((b) => b.nodeName === "BLD_D4");
+  if (d4?.massForm) {
+    const box = new Box3().setFromObject(bldNodes.find((n) => n.rawName === "BLD_D4").object);
+    d4.anchorCentre = [(box.min.x + box.max.x) / 2, (box.min.z + box.max.z) / 2];
+  }
 
   // ---- materials
   // Detail maps (U42) ship as PNG in the raw GLB; the pack step re-encodes every texture as WebP.
@@ -946,10 +1528,31 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [] }) {
     const surfaces = {};
     for (const building of [...selectableBuildings, ...campusBuildings]) {
       const label = building.nodeName ?? (building.displayName || "(unnamed)");
-      const photo = sampleRoofPhoto(inputs.ortho, inputs.orthoCalibration, building.parts);
+      // A mass form knows its roof's relief lean in the photo (building-forms.json `lean`, metres per metre of height):
+      // its roofs are sampled where the photo shows them, and the modules found there are moved back onto the roof.
+      const lean = building.massForm ? building.form?.lean : null;
+      const shiftOf = (part) => (lean ? [metres(lean[0] * (part.heightMetres + (part.parapetMetres ?? 0))), -metres(lean[1] * (part.heightMetres + (part.parapetMetres ?? 0)))] : [0, 0]);
+      const shifted = (part) => {
+        const [dx, dz] = shiftOf(part);
+        const move = (ring) => ring.map(([x, z]) => [x + dx, z + dz]);
+        return { ...part, outer: move(part.outer), holes: part.holes.map(move) };
+      };
+      const roofParts = building.massForm ? building.parts.filter((p) => p.kind !== "canopy").map(shifted) : building.parts;
+      const photo = sampleRoofPhoto(inputs.ortho, inputs.orthoCalibration, roofParts.length ? roofParts : building.parts);
       const review = PANEL_REVIEW.get(building.nodeName);
-      building.panelModules = building.parts.map((part) =>
-        (photo.status === "photo" && !review && catalogue.looks.get(building.look).pattern !== "greenhouse" ? panelModules(inputs.ortho, part, part.heightMetres).modules : []));
+      const panelsOn = (part) => !building.massForm || (!part.triangles && !PLAIN_KINDS.has(part.kind) && part.kind !== "annex" && Math.abs(ringArea(part.outer)) / UNIT_AREA >= 40);
+      building.panelModules = building.parts.map((part) => {
+        if (photo.status !== "photo" || review || catalogue.looks.get(building.look).pattern === "greenhouse" || !panelsOn(part)) return [];
+        if (!lean) return panelModules(inputs.ortho, part, part.heightMetres).modules;
+        const [dx, dz] = shiftOf(part);
+        return panelModules(inputs.ortho, shifted(part), part.heightMetres).modules.map((corners) => corners.map(([x, z]) => [x - dx, z - dz]));
+      });
+      if (building.massForm) {
+        for (const part of building.parts) {
+          const own = sampleRoofPhoto(inputs.ortho, inputs.orthoCalibration, [shifted(part)]);
+          if (own.status === "photo") part.roofColourRgb = own.rgb;
+        }
+      }
       const modules = building.panelModules.reduce((n, list) => n + list.length, 0);
       if (modules) panelLog.push(`${label} ${modules}`);
       if (review) panelLog.push(`${label} none (${review})`);
@@ -985,6 +1588,9 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [] }) {
     // material colours (night, hover), which mixes a variant's colour towards the tint but multiplies a vertex
     // colour by it, so the vertex-coloured campus roofs rendered darker than BLD_* roofs of the same colour.
     for (const building of [...selectableBuildings, ...campusBuildings]) {
+      for (const part of building.massForm ? building.parts : []) {
+        if (part.roofColourRgb) part.roofColour = roofFactor(part.roofColourRgb).map((v) => Math.round(v * 255));
+      }
       if (!building.roofColourRgb && building.nodeName) continue;
       const factor = building.roofColourRgb ? roofFactor(building.roofColourRgb) : [1, 1, 1, 1];
       building.roofColour = factor.map((v) => Math.round(v * 255));
@@ -998,12 +1604,14 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [] }) {
   // ---- meshes and nodes
   // All primitives are built first so the AO charts can be packed before any TEXCOORD_1 is written.
   const charts = new AoCharts();
-  const primitivesContext = { heightAt, facadeMaterial, tiles: facadeAtlas.tiles, looks: catalogue.looks, roofMaterial, parapetMaterial, equipmentMaterial, charts };
-  const selectablePrimitives = selectableBuildings.map((building, index) => buildingPrimitives(building, 1000 + index, primitivesContext));
+  const solids = [...selectableBuildings, ...campusBuildings].flatMap((building) => solidsOf(building, heightAt));
+  const primitivesContext = { heightAt, facadeMaterial, tiles: facadeAtlas.tiles, looks: catalogue.looks, roofMaterial, parapetMaterial, equipmentMaterial, charts, solids };
+  const primitivesOf = (building, seed) => (building.massForm ? massPrimitives(building, seed, primitivesContext) : buildingPrimitives(building, seed, primitivesContext));
+  const selectablePrimitives = selectableBuildings.map((building, index) => primitivesOf(building, 1000 + index));
   const merged = new Map();
   campusBuildings.forEach((building, index) => {
     // A structure the furniture stage draws still allocates its AO charts, so the baked AO atlas layout stays valid.
-    const primitives = buildingPrimitives(building, 5000 + index, primitivesContext);
+    const primitives = primitivesOf(building, 5000 + index);
     if (building.drawnByFurniture) {
       console.log(`buildings: ${building.label ?? building.displayName} is drawn by stages/furniture.mjs; its generic mass is left out (label and pick proxy kept)`);
       return;
@@ -1082,6 +1690,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [] }) {
         ...(building.roofColourRgb ? { roofColour: `#${building.roofColourRgb.map((c) => c.toString(16).padStart(2, "0")).join("")}` } : {}),
         ...(building.roofSurface ? { roofSurface: building.roofSurface } : {}),
         ...(building.solarPanelModules ? { solarPanelModules: building.solarPanelModules, solarPanelSource: "estimated from the VWorld z19 orthophoto" } : {}),
+        ...formExtras(building),
       },
     }, { root: true });
   });
@@ -1106,12 +1715,24 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [] }) {
     if (reservedIds.has(nodeId)) throw new Error(`pick proxy ${nodeId} collides with an existing BLD_* node`);
     reservedIds.add(nodeId);
     const prism = new MeshData({ uvs: false });
-    for (const part of group.flatMap((b) => b.parts)) {
-      const ground = Math.min(...[...part.outer, ringCentroid(part.outer)].map(([x, z]) => heightAt(x, z)));
-      for (const mass of partMasses(part)) {
-        const top = ground + metres(mass.heightMetres) + PARAPET;
-        addWalls(prism, mass.outer, true, mass.fromMetres ? ground + metres(mass.fromMetres) : ground - metres(1.5), top, null);
-        prism.horizontalPolygon(mass.outer, mass.holes, top);
+    for (const building of group) {
+      if (building.massForm) {
+        // One prism per mass, from its base (or below the ground line) to its parapet or ridge.
+        const ground = formGround(building, heightAt);
+        for (const part of building.parts) {
+          const top = ground + metres(part.heightMetres + (part.triangles ? 0 : part.parapetMetres ?? 0.9));
+          addWalls(prism, part.outer, true, part.baseMetres > 0 ? ground + metres(part.baseMetres) : ground - metres(1.5), top, null);
+          prism.horizontalPolygon(part.outer, part.holes, top);
+        }
+        continue;
+      }
+      for (const part of building.parts) {
+        const ground = Math.min(...[...part.outer, ringCentroid(part.outer)].map(([x, z]) => heightAt(x, z)));
+        for (const mass of partMasses(part)) {
+          const top = ground + metres(mass.heightMetres) + PARAPET;
+          addWalls(prism, mass.outer, true, mass.fromMetres ? ground + metres(mass.fromMetres) : ground - metres(1.5), top, null);
+          prism.horizontalPolygon(mass.outer, mass.holes, top);
+        }
       }
     }
     const [first] = group;
@@ -1126,6 +1747,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [] }) {
         source: first.footprintSource,
         floorsSource: first.floorsSource,
         heightSource: first.parts[0].heightSource,
+        ...formExtras(first),
       },
     }, { root: true });
   }

@@ -35,6 +35,7 @@
 //   4. Colour: white balance from bright, nearly grey photo pixels (roof membranes and concrete read cyan in the
 //      mosaic) and a tone lift to albedo, in linear light (photoCalibration, also used for the roof colours).
 // Everything here is an estimate derived from imagery, not a measurement of surface albedo.
+import { metres } from "./frame.mjs";
 import { Raster } from "./raster.mjs";
 
 const SRGB_TO_LINEAR = Float32Array.from({ length: 256 }, (_, c) => {
@@ -367,35 +368,48 @@ export function composeOrthoGround({ ground, classes, ortho, calibration, toPixe
   const brightness = new Float32Array(size);
   for (let p = 0; p < size; p += 1) brightness[p] = luma(photo[p * 3], photo[p * 3 + 1], photo[p * 3 + 2]);
   const leans = [];
-  // The footprint swept to `offset` (pixels): the displaced outline and the quads its edges sweep.
-  const sweep = (pixels, [ox, oy], marginPx) => {
-    const moved = pixels.map(([x, y]) => [x + ox, y + oy]);
-    building.fill([moved]);
-    pixels.forEach((a, i) => {
-      const b = pixels[(i + 1) % pixels.length];
-      building.fill([[a, b, moved[(i + 1) % pixels.length], moved[i]]]);
-    });
-    building.stroke([...moved, moved[0]], 2 * marginPx);
+  // The footprint swept to `offset` (pixels): the displaced rings (courtyards stay open, even-odd) and the quads every
+  // edge sweeps, the courtyard edges included (their facade band shows inside the courtyard).
+  const sweep = (rings, [ox, oy], marginPx) => {
+    const moved = rings.map((ring) => ring.map(([x, y]) => [x + ox, y + oy]));
+    building.fill(moved);
+    rings.forEach((ring, k) => ring.forEach((a, i) => {
+      const b = ring[(i + 1) % ring.length];
+      building.fill([[a, b, moved[k][(i + 1) % ring.length], moved[k][i]]]);
+    }));
+    for (const ring of moved) building.stroke([...ring, ring[0]], 2 * marginPx);
   };
-  for (const { parts, nodeName, displayName } of buildings) {
+  for (const { parts, nodeName, displayName, form, massForm } of buildings) {
+    // A mass form (stages/buildings.mjs) carries the lean fitted on the NGII sheet in data/building-forms.json (metres
+    // per metre of height, east and north): every mass sweeps to its own roof height. Other parts search it here.
+    const lean = massForm ? form?.lean : null;
     for (const part of parts) {
       const marginPx = (BUILDING_MARGIN_M + BUILDING_LEAN * part.heightMetres) * pxPerMetre;
       const pixels = part.outer.map(toPixel);
-      building.fill([pixels]);
-      for (const ring of [part.outer, ...part.holes]) building.stroke([...ring, ring[0]].map(toPixel), 2 * marginPx);
+      const rings = [pixels, ...part.holes.map((hole) => hole.map(toPixel))];
+      building.fill(rings);
+      for (const ring of rings) building.stroke([...ring, ring[0]], 2 * marginPx);
+      if (lean) {
+        const h = part.heightMetres + (part.parapetMetres ?? 0);
+        const [x0, z0] = part.outer[0];
+        const shifted = toPixel([x0 + metres(lean[0] * h), z0 - metres(lean[1] * h)]);
+        sweep(rings, [shifted[0] - pixels[0][0], shifted[1] - pixels[0][1]], marginPx);
+        if (h >= LEAN_MIN_HEIGHT_M) leans.push({ name: nodeName ?? displayName, height: h, metres: Math.hypot(lean[0], lean[1]) * h, fitted: true });
+        continue;
+      }
       if (part.heightMetres < LEAN_MIN_HEIGHT_M) continue;
       const offset = roofOffset(pixels, Math.ceil(LEAN_MAX_RATE * part.heightMetres * pxPerMetre), brightness, width, height);
       if (!offset) {
         leans.push({ name: nodeName ?? displayName, height: part.heightMetres, metres: null });
         continue;
       }
-      sweep(pixels, [offset.dx, offset.dy], marginPx);
+      sweep(rings, [offset.dx, offset.dy], marginPx);
       leans.push({ name: nodeName ?? displayName, height: part.heightMetres, metres: Math.hypot(offset.dx, offset.dy) * metresPerPixel, offset });
       const tower = part.tower;
       if (tower?.hull?.length >= 3 && tower.heightMetres > part.heightMetres) {
         const scale = tower.heightMetres / part.heightMetres;
         const towerMargin = (BUILDING_MARGIN_M + BUILDING_LEAN * tower.heightMetres) * pxPerMetre;
-        sweep(tower.hull.map(toPixel), [offset.dx * scale, offset.dy * scale], towerMargin);
+        sweep([tower.hull.map(toPixel)], [offset.dx * scale, offset.dy * scale], towerMargin);
       }
     }
   }

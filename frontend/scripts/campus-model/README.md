@@ -11,6 +11,7 @@ bun run model:fetch   # refresh data/ (network; the land cover step needs VITE_V
 bun scripts/campus-model/fetch/osm.mjs   # refresh data/osm-ground.json (network, no key)
 bun scripts/campus-model/fetch/ortho.mjs # refresh data/ortho/ (VWorld z19 mosaic; the key is needed only for tiles missing from .cache/)
 bun scripts/campus-model/fetch/lod4Facades.mjs [--debug <dir>] # refresh data/lod4-facades.json (keyless VWorld LOD4 tiles, cached in .cache/lod4/)
+bun scripts/campus-model/fetch/buildingForms.mjs [--keep <dir>] # refresh data/building-forms.json (LOD4 tiles + the NGII sheet in .cache/ngii-ortho/; needs uv)
 node --test src/campusModelAsset.test.mjs
 ```
 
@@ -21,7 +22,7 @@ node --test src/campusModelAsset.test.mjs
 | File | Role |
 |---|---|
 | `stages/sources.mjs` | uni.glb scene, heightfield, building footprints, GeoJSON layers, land cover |
-| `stages/buildings.mjs` | building selection, floor/height corrections, facade looks and cells, tower masses, roof colours and solar panels from the orthophoto, building meshes and nodes |
+| `stages/buildings.mjs` | building selection, floor/height corrections, building forms (masses, courtyards, raised parts, pitched roofs; see Building forms), facade looks and cells, tower masses, roof colours and solar panels from the orthophoto, building meshes and nodes |
 | `stages/markings.mjs` | road markings: both photo marking files merged (corrections applied), each candidate checked against the surveyed ground and the paint gate (`data/photo/markings-gate.json`), duplicates removed, estimated crossings where canopy hides the paint, and the `Road_Markings` decal mesh on the Topography triangles (see Road markings) |
 | `stages/ground.mjs` | procedural ground layer (land cover, ground features from `osm-ground.json`), the orthophoto laid over it (photo paint under the markings suppressed), ground material, Topography chunks and the surface the markings lie on (`topographySurface`) |
 | `stages/trees.mjs` | `placeTrees` (placement masks, CHMv2-driven placement; runs before the ground) and `buildTrees` (species geometry, instanced tree nodes) |
@@ -46,6 +47,7 @@ node --test src/campusModelAsset.test.mjs
 | `data/chm.png` | CHMv2 canopy height (8-bit metres); tree placement and crown sizes |
 | `data/scnu-facades.json` | curated facade looks (class, colours, window layout, piers, bands, entrance, eave colour) and per-building entries: look, floor/height corrections, tower masses, entrance side (see Facades) |
 | `data/lod4-facades.json` | per SCNU footprint: the VWorld LOD4 models over it, their facade palette, wall height and roof levels with outlines (fetch/lod4Facades.mjs) |
+| `data/building-forms.json` | per modelled campus building: its masses (outer and courtyard rings, base and top heights, parapet, roof type and pitched-roof triangles, columns), voids, relief lean and photo IoU, from the VWorld LOD4 meshes and the NGII 2025 orthophoto (fetch/buildingForms.mjs; see Building forms) |
 | `data/osm-ground.json` | ground features painted into the texture (see below) |
 | `docs/assets/data/road_zones_wgs84.geojson` | asphalt road surfaces |
 | `docs/assets/data/walkways_wgs84.geojson` | A003 sidewalk outlines (closed rings along kerb and back edge, some open lines): paved areas and kerbs |
@@ -283,13 +285,95 @@ selects it, and a selected or hovered proxy shows as a translucent highlight. Th
 `uni.glb` or `common_elemetns.json` `BLD_*` id. A footprint that a `uni.glb` `BLD_*` node already
 covers gets no proxy. That node keeps its own label. Records under 12 m² are not modelled.
 
+### Building forms (`data/building-forms.json`)
+
+A campus building is not one prism. `fetch/buildingForms.mjs` gives every modelled building (the selection of
+`stages/buildings.mjs`, read with `selectOnly`) a list of masses from the VWorld LOD4 building models, checked
+against the NGII 2025 orthophoto, and `stages/buildings.mjs` builds them. The polygon work runs in
+`fetch/building_forms.py` (shapely, numpy and OpenCV through `uv run`, pinned in the script, like `fetch/gis_buildings.py`);
+its header describes the method. A run takes about 35 s; it reads the LOD4 tiles from `.cache/lod4/` (keyless, fetched
+when missing) and the NGII sheet from `.cache/ngii-ortho/` (not committed, D2).
+
+- Ownership: a LOD4 model belongs to the footprints it covers; one shared by several buildings (E3/E4/E5, C1/C1.001,
+  A1/A2, C2/B6, the three 향림관 nodes) is split between them by nearest footprint.
+- Masses: the up-facing LOD4 triangles grouped into flat roof pieces by height (0.25 m) and into sloped roof
+  surfaces (triangles sharing an edge; touching surfaces merge only where their heights meet, so a stair-tower cap
+  is not merged into the gable beside it); thin strips (under 0.65 m wide) are parapet tops and set the parapet
+  height of the roof beside them; pieces under 6 m2 (plant) or 1 m high (steps) are dropped. From the highest down,
+  each piece minus everything higher is a mass, so the masses are disjoint in plan and each has one roof; gaps under
+  1.2 m left between neighbouring masses go to the flat mass beside them, so no crack opens between wings.
+  Down-facing triangles at least 2 m above the local terrain, with neither a roof nor an enclosed section of the mesh
+  (a horizontal slice through the wall triangles, welded within 6 cm) below them, are soffits: the mass over one
+  starts there (pilotis, through-passages, bridges, canopies, eave overhangs, which keep their own roof triangles),
+  and small closed sections under it are its columns.
+- Kinds and floors: main, wing, podium and tower masses, rooftop cores (small masses rising at most 8 m over the lower
+  roof beside them), raised masses and canopies (over soffits), annexes; floors from each mass's height over the
+  building's storey (its main roof over the curated floor count, or over the curated tower's storeys when the main
+  mass is that tower, as for A4/A5 and A6). Roofs: flat with the LOD4 parapet, or gable, hipped, mono-pitch or
+  curved from the azimuths of the LOD4 roof triangles, which the file keeps (clipped to the mass).
+- Voids: courtyards (the open part, at least 1.5 m wide, of holes in the union of the masses: open to the sky),
+  light wells (masses at least 4 m below all their neighbours) and passages (raised masses at least 2.5 m above the
+  ground).
+- Photo check: roofs in the orthophoto are displaced by relief lean (0.1-0.3 m per metre of height on campus). The
+  lean is fitted per candidate (LOD4 masses, curated form, traced outline, current footprint) around the
+  registration field of the study (maximum IoU, at most 0.12 m/m off it). The photo roof outline is a
+  marker-controlled watershed on the NGII sheet, seeded 2 m inside where the candidates agree and 5 m outside them,
+  on textured vegetation as background; IoU is counted outside cast shadows. Small LOD4 masses the photo does not
+  show are dropped.
+- Source: the LOD4 masses when their IoU is at least 0.70 or within 0.05 of the current footprint's; for a building
+  LOD4 predates, the curated `form` of its `data/scnu-facades.json` entry (B7: masses traced on the NGII sheet and
+  moved back by the lean, storeys, pilotis, podium and east wing from VR scene_b7); otherwise, for a footprint with
+  IoU under 0.8, an outline traced on the photo (the watershed roof, moved back by the lean, as a rotated rectangle or
+  a 0.4 m polygon) when it beats the footprint (and marginal one-prism LOD4 masses) by 0.05 in a second, symmetric
+  measurement; otherwise the current footprint (flagged).
+
+The 2026-10-25 run: 63 modelled buildings, 41 from LOD4, 1 curated (B7), 11 from photo-traced outlines (small annexes whose
+GIS rings sit 1-3 m off the roofs), 10 keep their footprint (A12.001 and the stand-side Dormitory_Building.004 are newer
+than the LOD4 survey; the rest are small annexes); 23 voids (1 courtyard, 7 light wells, 15 passages). The median IoU of
+the 56 named buildings is 0.8615 (0.878 over the 41 from LOD4, 0.8815 over the 40 that are not annexes (`부속 시설`,
+`(추정)`) or greenhouses; per building in `.omo/ulw-research/20261023-181400/qa/results/building-forms.md`).
+`campus-v2.glb` is 4,837,336 B with both AO atlases re-baked. `bench.mjs --quality low` counts 817 / 45 / 795 draw calls
+against 821 / 46 / 799 for the c224c39 model in the same harness; the traffic-simulation layer draws 690 / 18 / 672 of
+them there (backends stubbed), so the rest of the scene is 127 / 27 / 123 against the 131 / 28 / 127 of the sections below.
+
+In `stages/buildings.mjs` the masses of a building with a LOD4 or traced form replace its footprint parts; the
+other stages read them as parts too (`outer`, `holes`, `heightMetres`). Heights are measured from the building's
+lowest ground, so all its masses stand on one level. Neighbouring masses share walls, so a wall is drawn only where it
+is exposed: per edge, the stretches outside every other solid (masses and parts of all buildings), and up each
+stretch the heights none of them covers. Storeyed masses get facade cells there on the building's storey grid, so
+window rows run on, above lower wings and on courtyard and light-well walls; a core's walls that stand on the ground
+(a stair or lift core flush with the facade) get cells on the same grid, and its walls above a lower roof, canopy
+fascias, gables above the eave line of pitched roofs, soffits under raised masses and columns are plain walls in the
+eave colour on the `Roof_Parapet` primitive. Flat roofs carry the LOD4 parapet (0.9 m where LOD4 has none) where no taller mass abuts;
+pitched and curved roofs are the LOD4 triangles on `Roof_Membrane`. Each roof takes its own photo colour, sampled
+where the lean puts it in the photo, and solar modules are searched there and moved back. No form adds a material or a
+primitive, so the draw calls stay those of the footprint model. Node extras carry `formSource`, `formMasses`,
+`formMassKinds`, `formVoids`, `formRoofs`, `formPhotoIoU`, `formLean`, `lod4Models` and `formEstimated` (what in the form is
+estimated, part by part).
+
+Contracts kept: every `BLD_*` id and the pick proxies stay (a proxy is one prism per mass). `BLD_D4` anchors the traffic
+frame with its bounding-box centre, so its walls carry two 1 cm triangles 2 m under the terrain that make the new
+form's box symmetric about the `uni.glb` centre. Low masses of another `uni.glb` node (under 6 m, or under a third of
+its tallest mass up to 10 m) that lie mostly more than 2 m outside its own outline (the entrance wings of A1, B3 and
+C3, annexes of B4, B7's two-storey east wing) are drawn with `CampusBuildings`, so the node's box stays within the
+3-unit check of `campusModelAsset.test.mjs`. The photo mask of
+the ground stage sweeps every mass along the building's fitted lean to its own roof height and keeps courtyards open,
+and trees may stand in courtyards.
+
+Limits: LOD4 shows the campus before B7, A12.001 and Dormitory_Building.004 were built; B7 has the curated form above,
+the other two keep their outlines and heights. Glass atrium and skylight roofs that LOD4 models as thin frames (D4,
+E5) are read as parapets, so the atrium is drawn open down to its floor. Storey heights come from the curated floor
+counts over the LOD4 roofs; seven buildings come out at 4.7-5.4 m per storey (halls, labs, B2, D3, C2, A7, the
+stand). Masses, heights and voids are estimates derived from VWorld's models and the photo, not survey data.
+
 ## What the model contains
 
-- `BLD_*` nodes: every building id from `uni.glb`, rebuilt with estimated heights from floor
-  counts (see above), per-building facade looks on the facade atlas (see Facades), tower masses where VWorld
-  LOD4 shows one, flat roofs with parapets in the eave colour, rooftop equipment, roof colours from the
-  orthophoto and the solar panels it shows (estimates), and window glow used at night.
-  `BLD_D4` keeps its original outline because its bounding-box centre anchors the traffic frame.
+- `BLD_*` nodes: every building id from `uni.glb`, rebuilt from their building forms where LOD4 or the photo gives
+  one (wings, stepped levels, courtyards, rooftop cores, raised parts and pitched or curved roofs; see Building forms),
+  else from estimated heights from floor counts (see above), per-building facade looks on the facade atlas (see
+  Facades), tower masses where VWorld LOD4 shows one, flat roofs with parapets in the eave colour, rooftop equipment,
+  roof colours from the orthophoto and the solar panels it shows (estimates), and window glow used at night.
+  `BLD_D4` keeps its bounding-box centre (anchor triangles, see Building forms) because it anchors the traffic frame.
 - `CampusBuildings`: other university buildings from the footprint file (named `순천대학교`, or
   unnamed ones inside the campus next to a campus road). Off-campus buildings are left out; their lots are
   painted as plain ground.

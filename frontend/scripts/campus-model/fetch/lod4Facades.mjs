@@ -18,14 +18,14 @@ import { decodePng, encodePng } from "../lib/png.mjs";
 import { CACHE, DATA, TIMEOUT_MS, USER_AGENT } from "./common.mjs";
 
 const TILESET = "https://xdworld.vworld.kr/TDServer/services/facility_LOD4/Jeollanam-do/Suncheon-si/";
-const LOD4_CACHE = path.join(CACHE, "lod4");
+export const LOD4_CACHE = path.join(CACHE, "lod4");
 const OUTPUT = path.join(DATA, "lod4-facades.json");
 const WALL_SLOPE = Math.sin((15 * Math.PI) / 180);
 const ROOF_SLOPE = Math.cos((15 * Math.PI) / 180);
 const MATCH_METRES = 3;
 const DEBUG_METRES_PER_PIXEL = 0.25;
 
-async function cached(relative, binary) {
+export async function cached(relative, binary) {
   const file = Bun.file(path.join(LOD4_CACHE, relative.replace(/[^A-Za-z0-9_.-]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`)));
   if (!(await file.exists())) {
     const response = await fetch(TILESET + relative, { headers: { "User-Agent": USER_AGENT }, signal: AbortSignal.timeout(TIMEOUT_MS * 4) });
@@ -52,10 +52,10 @@ function ecefToGeo(x, y, z) {
 }
 
 // Local metres around the campus (equirectangular; < 1 cm error over the bbox).
-const LON0 = 127.48;
-const LAT0 = 34.969;
-const MX = 111320 * Math.cos((LAT0 * Math.PI) / 180);
-const MY = 110574;
+export const LON0 = 127.48;
+export const LAT0 = 34.969;
+export const MX = 111320 * Math.cos((LAT0 * Math.PI) / 180);
+export const MY = 110574;
 const toLocal = (lon, lat) => [(lon - LON0) * MX, (lat - LAT0) * MY];
 
 function segmentDistance([px, py], [ax, ay], [bx, by]) {
@@ -84,7 +84,7 @@ function ringProjection(point, ring) {
 }
 
 // ---------------------------------------------------------------- b3dm decoding
-function parseB3dm(bytes) {
+export function parseB3dm(bytes) {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const json = (from, length) => {
     const text = new TextDecoder().decode(bytes.subarray(from, from + length)).replace(/^\uFEFF/, "").trim();
@@ -198,7 +198,7 @@ async function textureImage(tile, textureIndex) {
 }
 
 // Every model of a tile as { name, positions (local metres x, y and ellipsoid height), uvs, indices, texture }.
-async function tileModels(tile) {
+export async function tileModels(tile) {
   const centre = tile.gltf.extensions?.CESIUM_RTC?.center ?? [0, 0, 0];
   const models = [];
   for (const node of tile.gltf.nodes) {
@@ -238,7 +238,7 @@ function regionOverlaps(region, bbox) {
   return !(e < bbox.west || w > bbox.east || n < bbox.south || s > bbox.north);
 }
 
-async function leafTiles(bbox) {
+export async function leafTiles(bbox) {
   const leaves = [];
   const walk = async (tile, base) => {
     const region = tile.boundingVolume?.region;
