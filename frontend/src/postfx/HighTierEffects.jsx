@@ -61,6 +61,21 @@ function useScreenReferredBuffers(composerRef) {
   });
 }
 
+// @react-three/postprocessing는 CSS 크기(size)가 바뀔 때만 composer.setSize를 부르고, 픽셀 비율(dpr)만 바뀔 때는 부르지 않는다.
+// 그런데 자식이 바뀌어 패스를 다시 붙이면(시간 재생·선택으로 이 컴포넌트가 다시 렌더될 때) addPass가 그 순간의 드로잉 버퍼
+// 크기로 패스를 맞춘다. 줌·회전 중(interactionDpr가 dpr을 0.75배로 낮춘 동안) 다시 붙은 N8AO는 dpr이 돌아온 뒤에도
+// 작은 버퍼에 남아 깊이 버퍼와 해상도가 어긋나고, 화면에 회색 얼룩·띠가 정지 화면까지 남는다.
+// dpr이 바뀔 때마다 컴포저 전체(입력 버퍼와 모든 패스)를 현재 드로잉 버퍼 크기로 다시 맞춘다.
+function useComposerFollowsPixelRatio(composerRef) {
+  const dpr = useThree((state) => state.viewport.dpr);
+  const size = useThree((state) => state.size);
+  const invalidate = useThree((state) => state.invalidate);
+  useEffect(() => {
+    composerRef.current?.setSize(size.width, size.height);
+    invalidate();
+  }, [composerRef, dpr, size, invalidate]);
+}
+
 export default function HighTierEffects({ tier, sunAltitude }) {
   const invalidate = useThree((state) => state.invalidate);
   const composerRef = useRef(null);
@@ -69,6 +84,7 @@ export default function HighTierEffects({ tier, sunAltitude }) {
   const bloomIntensity = preset?.bloom ? BLOOM_MAX_INTENSITY * night : 0;
 
   useScreenReferredBuffers(composerRef);
+  useComposerFollowsPixelRatio(composerRef);
   useEffect(() => {
     invalidate();
   }, [invalidate, tier, bloomIntensity]);
