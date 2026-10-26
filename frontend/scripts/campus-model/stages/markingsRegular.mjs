@@ -19,7 +19,7 @@
 //     paint are drawn once.
 // Coordinates: candidates come in scene units; everything here works in metres and converts back at the end.
 import {
-  add, chainFragments, dot, fitCrossing, layDashes, measuredPeriod, mergeCrossings, norm, offsetPath, orientedBox,
+  add, chainFragments, dashPhase, dot, fitCrossing, layDashes, measuredPeriod, mergeCrossings, norm, offsetPath, orientedBox,
   polylineLength, projectArc, rect, resample, scale, slicePath, straightness, sub, unit, fitPath, distanceToPolyline, median,
 } from "../lib/markingFit.mjs";
 import {
@@ -59,6 +59,7 @@ const TEXT_STALL_REACH_M = 3;
 const TEXT_ROAD_MIN_M = 10;
 const TEXT_AXIS_REACH_M = 15;
 const ZEBRA_ROAD_SNAP_DEG = 5;
+const ZEBRA_ROW_GAP_M = 1.0;
 
 const perpOf = (d) => [-d[1], d[0]];
 // Right of travel `f` in the model plane (x east, z south): (-f.z, f.x).
@@ -327,7 +328,7 @@ export function regularise(drawn, ctx) {
   const pieces = [];
   const stats = {
     chains: 0, fragments: 0, straightRuns: 0, arcs: 0, straightness: [], residual: [], dashPeriods: [], duplicateLines: 0,
-    crossings: 0, crossingGroups: 0, crossingList: [], blockedIds: [], frameStrokes: 0, barsDrawn: 0, barsDetected: 0, zebraPhaseResidual: [], glyphs: {}, textReadings: [], textMissing: [], arrowAxes: { road: 0, own: 0 }, dropped: { blocked: 0, textTooSmall: 0 },
+    crossings: 0, crossingGroups: 0, crossingRowsAligned: 0, stopInCrossing: [], crossingList: [], blockedIds: [], frameStrokes: 0, barsDrawn: 0, barsDetected: 0, zebraPhaseResidual: [], glyphs: {}, textReadings: [], textMissing: [], arrowAxes: { road: 0, own: 0 }, dropped: { blocked: 0, textTooSmall: 0 },
     stopSquared: 0, parallelSnapped: 0, outlines: 0, rectangles: 0,
   };
   const emit = (rings, colour, kind, extra = {}) => pieces.push({ rings: rings.map((r) => r.map(toScene)), colour, kind, estimated: false, ...extra });
@@ -585,6 +586,7 @@ export function regularise(drawn, ctx) {
     const a = Math.atan2(s2, c2) / 2;
     return [Math.cos(a), Math.sin(a)];
   };
+  const stopPieces = [];
   for (const c of stops) {
     const box = orientedBox(shapesM(c).flatMap((rings) => rings[0]));
     const width = ctx.statute.stopLineWidth(c.feature.properties.width_m ?? 2 * box.halfShort).width;
@@ -594,18 +596,56 @@ export function regularise(drawn, ctx) {
       along = perpOf(lane.dir);
       stats.stopSquared += 1;
     }
-    emitPoly([[rect(box.centre, unit(along), perpOf(unit(along)), box.halfLong, width / 2)]], c.colour, "stop_line");
+    stopPieces.push({ at: pieces.length, centre: box.centre, id: c.id });
+    emitPoly([[rect(box.centre, unit(along), perpOf(unit(along)), box.halfLong, width / 2)]], c.colour, "stop_line", { id: c.id });
   }
 
   // ---- zebras: one crossing, one rectangle, equal bars
   const zebras = [];
   const crossingGroups = [...zebraGroups].map(([id, bars]) => ({ id, bars }));
   stats.crossingGroups = crossingGroups.length;
-  for (const crossing of mergeCrossings(crossingGroups)) {
+  const zebraFit = { period: ctx.statute.zebraPeriodM, bar: ctx.statute.zebraBarM };
+  const merged = mergeCrossings(crossingGroups).map((crossing) => {
     const centre = scale(crossing.bars.reduce((acc, b) => add(acc, b.centre), [0, 0]), 1 / crossing.bars.length);
     const barAxis = crossing.bars[0].axis;
     const road = directionNear(centre, 15, (d) => angleBetween(d, barAxis) <= ZEBRA_ROAD_SNAP_DEG);
-    const fit = fitCrossing(crossing.bars, { period: ctx.statute.zebraPeriodM, bar: ctx.statute.zebraBarM, roadDir: road?.dir ?? null });
+    return { ...crossing, fit: fitCrossing(crossing.bars, { ...zebraFit, roadDir: road?.dir ?? null }) };
+  });
+  // Adjacent rows (a crossing painted as two bar rows side by side along the carriageway): parallel, touching along
+  // the bar axis (within ZEBRA_ROW_GAP_M) and overlapping along the walk by half the shorter row. Each row keeps its
+  // own rectangle, but all rows of one crossing share one axis and one bar grid, so their bars line up.
+  const rowParent = merged.map((_, i) => i);
+  const rowRoot = (i) => (rowParent[i] === i ? i : (rowParent[i] = rowRoot(rowParent[i])));
+  for (let i = 0; i < merged.length; i += 1) {
+    for (let j = i + 1; j < merged.length; j += 1) {
+      const [a, b] = [merged[i].fit.rectangle, merged[j].fit.rectangle];
+      if (angleBetween(a.axis, b.axis) > ZEBRA_ROAD_SNAP_DEG) continue;
+      const d = sub(b.centre, a.centre);
+      const alongBar = Math.abs(dot(d, a.axis));
+      const alongWalk = Math.abs(dot(d, a.walk));
+      const overlap = Math.min(a.halfWalk, b.halfWalk) * 2 - Math.max(0, alongWalk - Math.abs(a.halfWalk - b.halfWalk));
+      if (alongBar <= a.halfBar + b.halfBar + ZEBRA_ROW_GAP_M && overlap >= Math.min(a.halfWalk, b.halfWalk)) rowParent[rowRoot(i)] = rowRoot(j);
+    }
+  }
+  const families = new Map();
+  merged.forEach((m, i) => {
+    if (!families.has(rowRoot(i))) families.set(rowRoot(i), []);
+    families.get(rowRoot(i)).push(m);
+  });
+  for (const rows of families.values()) {
+    if (rows.length < 2) continue;
+    const main = rows.reduce((x, y) => (y.bars.length > x.bars.length ? y : x));
+    const { axis, walk } = main.fit.rectangle;
+    const origin = main.bars[0].centre;
+    const phase = dashPhase(rows.flatMap((r) => r.bars.map((b) => dot(sub(b.centre, origin), walk))), zebraFit.period);
+    for (const r of rows) {
+      r.fit = fitCrossing(r.bars, { ...zebraFit, frame: { axis, origin, phase } });
+      r.rows = rows.length;
+    }
+    stats.crossingRowsAligned += rows.length;
+  }
+  for (const crossing of merged) {
+    const { fit } = crossing;
     stats.crossings += 1;
     stats.barsDetected += crossing.bars.length;
     stats.zebraPhaseResidual.push(fit.phaseResidual.max);
@@ -625,6 +665,15 @@ export function regularise(drawn, ctx) {
       id: crossing.ids.join("+"), centre: toScene(fit.rectangle.centre), axis: fit.rectangle.axis, bars: kept.length,
       halfLength: fit.rectangle.halfBar * U, barCentres: kept.map(toScene), merged: crossing.ids.length,
     });
+  }
+
+  // A "stop line" lying inside a drawn crossing rectangle is a zebra bar read twice (the M3 traces west of the gate's
+  // raised crossing): one bar set per crossing, so it is left out.
+  const inCrossing = (p) => merged.some(({ fit: { rectangle: r } }) => Math.abs(dot(sub(p, r.centre), r.axis)) <= r.halfBar + 0.2 && Math.abs(dot(sub(p, r.centre), r.walk)) <= r.halfWalk + 0.2);
+  for (const sp of [...stopPieces].reverse()) {
+    if (!inCrossing(sp.centre) || pieces[sp.at]?.id !== sp.id) continue;
+    pieces.splice(sp.at, 1);
+    stats.stopInCrossing.push(sp.id);
   }
 
   // ---- groups (hump bands, blue bays with frame and symbol, ladders): one set of directions per group

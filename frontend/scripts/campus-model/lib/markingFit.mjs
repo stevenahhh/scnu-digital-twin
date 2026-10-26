@@ -430,18 +430,22 @@ export function measuredPeriod(detected, nominal) {
 // bar axis is the length-weighted mean axis (or `roadDir` when given and within `roadSnapDeg`: bars run along the
 // carriageway), the walk axis its normal; the rectangle spans the detected bars along the walk axis and the median
 // bar along the bar axis; bars are laid at `period` with the phase of the detected bar centres.
-export function fitCrossing(bars, { period, bar, roadDir = null, roadSnapDeg = 5 }) {
+// `frame` ({ axis, origin, phase }) fixes the axis and the bar grid, so adjacent rows of one crossing share their bars.
+export function crossingAxis(bars) {
   const reference = bars[0].axis;
-  let axis = unit(bars.reduce((acc, b) => {
+  return unit(bars.reduce((acc, b) => {
     const sign = dot(b.axis, reference) >= 0 ? 1 : -1;
     return add(acc, scale(b.axis, sign * b.length));
   }, [0, 0]));
-  if (roadDir && Math.abs(dot(unit(roadDir), axis)) >= Math.cos((roadSnapDeg * Math.PI) / 180)) axis = scale(unit(roadDir), Math.sign(dot(unit(roadDir), axis)) || 1);
+}
+export function fitCrossing(bars, { period, bar, roadDir = null, roadSnapDeg = 5, frame = null }) {
+  let axis = frame?.axis ?? crossingAxis(bars);
+  if (!frame && roadDir && Math.abs(dot(unit(roadDir), axis)) >= Math.cos((roadSnapDeg * Math.PI) / 180)) axis = scale(unit(roadDir), Math.sign(dot(unit(roadDir), axis)) || 1);
   const walk = perp(axis);
-  const origin = bars[0].centre;
+  const origin = frame?.origin ?? bars[0].centre;
   const t = bars.map((b) => dot(sub(b.centre, origin), walk));
   const u = bars.map((b) => dot(sub(b.centre, origin), axis));
-  const phase = dashPhase(t, period);
+  const phase = frame?.phase ?? dashPhase(t, period);
   const tMin = Math.min(...t);
   const tMax = Math.max(...t);
   // bar slots of the period grid covering the detected bars
@@ -477,8 +481,10 @@ export function rect(centre, along, across, halfAlong, halfAcross) {
 }
 
 // Bar groups [{ id, bars }] whose axes agree within `maxAngleDeg` and whose bar rectangles overlap (any bar centre
-// of one within the other's rectangle grown by `reach` metres) are one crossing.
-export function mergeCrossings(groups, { maxAngleDeg = 20, reach = 0.6 } = {}) {
+// of one within the other's rectangle grown by `reach` metres) are one crossing; so are groups of one row (their
+// spans along the bar axis overlap by half the shorter) separated along the walk by at most `rowGap` metres (a
+// median or a car splits the detected bars of one crossing).
+export function mergeCrossings(groups, { maxAngleDeg = 20, reach = 0.6, rowGap = 3 } = {}) {
   const boxes = groups.map((g) => {
     const axis = unit(g.bars.reduce((acc, b) => add(acc, scale(b.axis, dot(b.axis, g.bars[0].axis) >= 0 ? 1 : -1)), [0, 0]));
     const walk = perp(axis);
@@ -492,6 +498,14 @@ export function mergeCrossings(groups, { maxAngleDeg = 20, reach = 0.6 } = {}) {
     const u = dot(sub(p, box.o), box.axis);
     return t >= box.t0 - reach && t <= box.t1 + reach && u >= box.u0 - reach && u <= box.u1 + reach;
   };
+  const sameRow = (box, bars, gap) => {
+    const t = bars.map((b) => dot(sub(b.centre, box.o), box.walk));
+    const u = bars.flatMap((b) => [dot(sub(b.centre, box.o), box.axis) - b.length / 2, dot(sub(b.centre, box.o), box.axis) + b.length / 2]);
+    const overlap = Math.min(box.u1, Math.max(...u)) - Math.max(box.u0, Math.min(...u));
+    const shorter = Math.min(box.u1 - box.u0, Math.max(...u) - Math.min(...u));
+    const walkGap = Math.max(Math.min(...t) - (box.t1 - 0.5), (box.t0 + 0.5) - Math.max(...t));
+    return overlap >= 0.5 * shorter && walkGap <= gap;
+  };
   const parent = groups.map((_, i) => i);
   const root = (i) => (parent[i] === i ? i : (parent[i] = root(parent[i])));
   const cosMax = Math.cos((maxAngleDeg * Math.PI) / 180);
@@ -499,6 +513,7 @@ export function mergeCrossings(groups, { maxAngleDeg = 20, reach = 0.6 } = {}) {
     for (let j = i + 1; j < groups.length; j += 1) {
       if (Math.abs(dot(boxes[i].axis, boxes[j].axis)) < cosMax) continue;
       if (groups[j].bars.some((b) => inside(boxes[i], b.centre)) || groups[i].bars.some((b) => inside(boxes[j], b.centre))) parent[root(i)] = root(j);
+      else if (sameRow(boxes[i], groups[j].bars, rowGap)) parent[root(i)] = root(j);
     }
   }
   const merged = new Map();

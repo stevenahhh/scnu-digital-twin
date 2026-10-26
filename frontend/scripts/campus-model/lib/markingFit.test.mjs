@@ -105,3 +105,25 @@ test("two overlapping bar groups at one crossing merge into one bar set (no dupl
   for (let k = 1; k < xs.length; k += 1) assert.ok(xs[k] - xs[k - 1] > period - 1e-9);
   assert.equal(new Set(xs.map((x) => x.toFixed(3))).size, xs.length);
 });
+
+test("a crossing split by a median is one bar set; two adjacent rows share one bar grid", () => {
+  const period = 0.903;
+  const row = (id, u, t0, n, offset = 0) => ({ id, bars: Array.from({ length: n }, (_, k) => ({ id: `${id}${k}`, centre: [t0 + k * period + offset, u], axis: [0, 1], length: 2 })) });
+  // north half 6 bars, a 2.4 m median gap, south half 5 bars of the same row (bar axis z, walk x)
+  const split = mergeCrossings([row("N", 0, 0, 6), row("S", 0, 5 * period + 2.4 + 0.3, 5)]);
+  assert.equal(split.length, 1, "one crossing across the median");
+  // a second row beside it (2.1 m along the bar axis), its bars half a period off: still its own crossing
+  const rows = mergeCrossings([row("A", 0, 0, 8), row("B", 2.1, 0.45, 8)]);
+  assert.equal(rows.length, 2);
+  const a = fitCrossing(rows[0].bars, { period, bar: 0.5 });
+  const origin = rows[0].bars[0].centre;
+  const phase = dashPhase([...rows[0].bars, ...rows[1].bars].map((b) => b.centre[0] - origin[0]), period);
+  const frame = { axis: a.rectangle.axis, origin, phase };
+  const fa = fitCrossing(rows[0].bars, { period, bar: 0.5, frame });
+  const fb = fitCrossing(rows[1].bars, { period, bar: 0.5, frame });
+  // every bar of row B lines up with a bar of row A (same walk coordinate modulo the period)
+  for (const c of fb.barCentres) {
+    const d = Math.min(...fa.barCentres.map((q) => Math.abs((((c[0] - q[0]) % period) + period) % period)));
+    assert.ok(d < 1e-9 || Math.abs(d - period) < 1e-9, `bar off the shared grid by ${d}`);
+  }
+});
