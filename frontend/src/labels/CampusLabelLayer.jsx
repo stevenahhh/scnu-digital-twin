@@ -154,6 +154,10 @@ export function CampusLabelLayer({
       segment.setAttribute("y1", String(Math.round(leader.from.y - area.top)));
       segment.setAttribute("x2", String(Math.round(leader.to.x - area.left)));
       segment.setAttribute("y2", String(Math.round(leader.to.y - area.top)));
+      // 앵커 점: 가장자리로 밀려난 칩도 어느 건물을 가리키는지 보이게 한다.
+      const dot = segment.nextElementSibling;
+      dot.setAttribute("cx", String(Math.round(leader.to.x - area.left)));
+      dot.setAttribute("cy", String(Math.round(leader.to.y - area.top)));
     };
 
     const update = (frame) => {
@@ -351,6 +355,7 @@ export function CampusLabelLayer({
           <Fragment key={slot.id}>
           <svg ref={registerLeader(slot.id)} aria-hidden="true" data-qa="label-leader" width="1" height="1" style={LEADER_STYLE} className="text-hairline-strong">
             <line x1="0" y1="0" x2="0" y2="0" stroke="currentColor" strokeWidth="1" />
+            <circle data-qa="label-anchor-dot" cx="0" cy="0" r="2.5" fill="currentColor" />
           </svg>
           <div
             ref={registerNode(slot.id)}

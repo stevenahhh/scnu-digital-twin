@@ -2,13 +2,18 @@ import { applyHysteresis } from "./labelBands.mjs";
 
 // 화면 좌표(px)에서 캠퍼스 라벨 칩과 점을 겹치지 않게 놓는 순수 함수. DOM·three.js를 쓰지 않고 입력을 바꾸지 않는다.
 // 칩은 앵커 점 위에 가운데 맞춤으로 6 px 띄워 놓고(translate(-50%, -100% - 6px)), 다른 칩과 겹치면 화면 위로 4 px씩
-// maxDisplacement까지 올려 보며, 올린 칩은 앵커까지 연결선(leader)을 긋는다. 화면 가장자리(edgeMargin), 패널(occluder)·
-// HUD(chrome)와의 여백(chromeMargin)을 침범하는 칩은 자르지 않고 숨긴다. HUD에 걸린 칩은 숨기기 전에 아래쪽으로 비켜 본다.
+// maxDisplacement까지 올려 보며, 올린 칩은 앵커까지 연결선(leader)을 긋는다. 패널(occluder)·HUD(chrome)와의 여백(chromeMargin)을
+// 침범하는 칩은 자르지 않고 숨긴다. HUD에 걸린 칩은 숨기기 전에 아래쪽으로 비켜 본다. 화면 가장자리 여백(edgeMargin)을 넘는 칩은
+// 숨기지 않고 가장자리를 따라 안쪽으로 밀어 넣는다(EDGE_LEADER_PX 이상 밀리면 연결선). 밀어 넣은 뒤에도 더 높은 순위의 칩과 겹치거나,
+// 앵커가 화면 밖·패널/HUD 밑이면 숨긴다.
 // 사각형은 { left, top, right, bottom } 모양이다.
 
 export const CHIP_GAP_PX = 6;
 export const DISPLACEMENT_STEP_PX = 4;
 export const DOT_SIZE_PX = 8;
+// 가장자리 안쪽으로 밀어 넣은 칩은 가로로 이만큼 이상 밀렸을 때만 연결선을 긋는다(조금 밀린 칩은 여전히 앵커 바로 위에 있다).
+// 세로로 옮긴 칩(위로 비키기, 위 가장자리에서 아래로 밀기)은 늘 연결선을 긋는다.
+export const EDGE_LEADER_PX = 12;
 
 const LAYOUT_DEFAULTS = Object.freeze({ edgeMargin: 8, chromeMargin: 12, spacing: 6, maxDisplacement: 24 });
 
@@ -34,6 +39,8 @@ export function isAnchorBehindSelectedBox(anchorScreen, selectedBox) {
   if (!anchorScreen || !selectedBox) return false;
   return contains(selectedBox, anchorScreen.x, anchorScreen.y) && anchorScreen.depth > selectedBox.depth;
 }
+
+const needsLeader = (rect, natural) => rect.top !== natural.top || Math.abs(rect.left - natural.left) >= EDGE_LEADER_PX;
 
 function leaderFor(rect, anchor) {
   const x = (rect.left + rect.right) / 2;
@@ -76,6 +83,15 @@ export function layoutLabels(candidates, opts) {
     allowed = new Set(result.visible);
   }
 
+  // 가장자리 여백 안으로 가로·세로를 밀어 넣은 사각형(크기가 안전 영역보다 크면 왼쪽·위에 맞춘다).
+  const clampIntoSafe = (r) => {
+    const dx = Math.max(safeArea.left - r.left, Math.min(0, safeArea.right - r.right));
+    const dy = Math.max(safeArea.top - r.top, Math.min(0, safeArea.bottom - r.bottom));
+    return { left: r.left + dx, top: r.top + dy, right: r.right + dx, bottom: r.bottom + dy };
+  };
+  const anchorShown = (a) =>
+    a.x >= area.left && a.x <= area.right && a.y >= area.top && a.y <= area.bottom &&
+    ![...(occluder ? [occluder] : []), ...chrome].some((r) => contains(r, a.x, a.y));
   const inSafeArea = (r) => r.left >= safeArea.left && r.top >= safeArea.top && r.right <= safeArea.right && r.bottom <= safeArea.bottom;
   const kept = [];
   const reasonAt = (r) => {
@@ -100,26 +116,34 @@ export function layoutLabels(candidates, opts) {
       for (let d = DISPLACEMENT_STEP_PX; d <= maxDisplacement; d += DISPLACEMENT_STEP_PX) offsets.push(d);
     }
     let rect = null;
-    let displaced = false;
     for (const dy of offsets) {
       const r = shift(natural, dy);
       if (reasonAt(r) === null) {
         rect = r;
-        displaced = dy !== 0;
         break;
+      }
+    }
+    // 가장자리에 걸려 둘 자리가 없으면 같은 후보 자리들을 가장자리 안으로 밀어 넣어 본다. 앵커가 보이는 곳에 있을 때만.
+    const clampTried = !rect && anchorShown(candidate.anchor) && offsets.some((dy) => !inSafeArea(shift(natural, dy)));
+    if (clampTried) {
+      for (const dy of offsets) {
+        const r = clampIntoSafe(shift(natural, dy));
+        if (reasonAt(r) === null) {
+          rect = r;
+          break;
+        }
       }
     }
     if (!rect && candidate.selected) {
       // 선택된 칩은 늘 남긴다. 둘 자리가 없으면 가장자리 안쪽으로 끌어들인다.
-      const dx = Math.max(safeArea.left - natural.left, Math.min(0, safeArea.right - natural.right));
-      const dy = Math.max(safeArea.top - natural.top, Math.min(0, safeArea.bottom - natural.bottom));
-      rect = { left: natural.left + dx, top: natural.top + dy, right: natural.right + dx, bottom: natural.bottom + dy };
-      displaced = dx !== 0 || dy !== 0;
+      rect = clampIntoSafe(natural);
     }
     if (!rect) {
-      hide(candidate.id, reasonAt(natural));
+      // 밀어 넣어 봤다면 숨기는 이유는 밀어 넣은 자리에서 막은 것(겹침·HUD)이다.
+      hide(candidate.id, reasonAt(clampTried ? clampIntoSafe(natural) : natural));
       continue;
     }
+    const displaced = needsLeader(rect, natural);
     kept.push(rect);
     const occluded = !candidate.selected && focusBoxes.some((box) => box.id !== candidate.id && isAnchorBehindSelectedBox(candidate.anchor, box));
     placed.push({

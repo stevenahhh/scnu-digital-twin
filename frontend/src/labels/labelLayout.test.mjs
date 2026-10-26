@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { rankLabelCandidates, resolveLabelBand } from "./labelBands.mjs";
-import { isAnchorBehindSelectedBox, layoutLabels } from "./labelLayout.mjs";
+import { EDGE_LEADER_PX, isAnchorBehindSelectedBox, layoutLabels } from "./labelLayout.mjs";
 
 const area = { left: 0, top: 0, right: 1000, bottom: 800 };
 const W = 60;
@@ -18,22 +18,56 @@ test("a chip sits centred 6 px above its anchor (translate(-50%, -100% - 6px))",
   assert.equal(placed[0].state, "default");
 });
 
-for (const [gap, visible] of [[7, false], [8, true], [9, true]]) {
-  test(`left edge: a chip ${gap} px from the viewport edge is ${visible ? "placed" : "hidden"}`, () => {
-    const result = run([chip("a", gap + W / 2, 400)]);
-    assert.equal(result.placed.length === 1, visible);
-    if (!visible) assert.equal(result.hiddenReasons.get("a"), "edge");
+for (const [gap, left] of [[7, 8], [8, 8], [9, 9]]) {
+  test(`left edge: a chip ${gap} px from the viewport edge is placed with its left side at ${left} px`, () => {
+    const a = byId(run([chip("a", gap + W / 2, 400)]), "a");
+    assert.equal(a.rect.left, left);
+    // 1 px 밀린 칩은 여전히 앵커 위에 있어 연결선이 없다.
+    assert.equal(a.leader, null);
   });
 }
 
 test("right, top and bottom edges also keep 8 px", () => {
-  assert.equal(run([chip("r", 1000 - 8 - W / 2, 400)]).placed.length, 1);
-  assert.equal(run([chip("r", 1000 - 7 - W / 2, 400)]).placed.length, 0);
-  assert.equal(run([chip("t", 300, 7 + H + 6)]).hiddenReasons.get("t"), "edge");
-  assert.equal(run([chip("t", 300, 8 + H + 6)]).placed.length, 1);
+  assert.equal(byId(run([chip("r", 1000 - 8 - W / 2, 400)]), "r").rect.right, 992);
+  assert.equal(byId(run([chip("r", 1000 - 7 - W / 2, 400)]), "r").rect.right, 992);
+  // 위 가장자리에 걸린 칩은 아래로 밀어 넣고(세로 이동이라 연결선), 여백을 지킨 칩은 제자리다.
+  const top = byId(run([chip("t", 300, 7 + H + 6)]), "t");
+  assert.equal(top.rect.top, 8);
+  assert.ok(top.leader);
+  assert.equal(byId(run([chip("t", 300, 8 + H + 6)]), "t").leader, null);
   // 아래 가장자리는 위로 올려 비킬 수 있다. 24 px로도 모자라면 숨긴다.
   assert.ok(byId(run([chip("b", 300, 800 - 7 + 6)]), "b").leader);
   assert.equal(run([chip("b", 300, 800 - 7 + 6 + 25)]).hiddenReasons.get("b"), "edge");
+});
+
+test("edge clamp: a chip whose anchor is 2 px from the left edge slides inward along the edge with a leader to its anchor", () => {
+  const a = byId(run([chip("a", 2, 400)]), "a");
+  assert.deepEqual(a.rect, { left: 8, top: 374, right: 8 + W, bottom: 394 });
+  assert.ok(8 + W / 2 - 2 >= EDGE_LEADER_PX);
+  assert.deepEqual(a.leader, { from: { x: 8 + W / 2, y: 394 }, to: { x: 2, y: 400 } });
+  // 2 px 앵커 근처라도 자리는 남은 영역 안이고, 가장자리 여백 안이다.
+  assert.equal(a.state, "default");
+});
+
+test("edge clamp: a chip whose anchor is off-screen is hidden, not pulled in", () => {
+  const result = run([chip("a", -3, 400)]);
+  assert.equal(result.placed.length, 0);
+  assert.equal(result.hiddenReasons.get("a"), "edge");
+});
+
+test("edge clamp: a chip whose anchor is under the panel or a HUD rect is hidden, not pulled out", () => {
+  const panel = { left: 0, top: 0, right: 40, bottom: 800 };
+  assert.equal(run([chip("a", 20, 400)], { occluder: panel }).placed.length, 0);
+  const hud = { left: 0, top: 300, right: 30, bottom: 500 };
+  assert.equal(run([chip("b", 10, 400)], { chrome: [hud] }).placed.length, 0);
+});
+
+test("edge clamp: a clamped chip that would land on a higher-priority chip is hidden with reason collision", () => {
+  // 'first' occupies the clamped spot (left 8..68) and every displacement up to 24 px.
+  const first = chip("first", 8 + W / 2 + 10, 400);
+  const result = run([first, chip("edge", 4, 400)]);
+  assert.ok(byId(result, "first"));
+  assert.equal(result.hiddenReasons.get("edge"), "collision");
 });
 
 // 화면 세로 전체를 덮는 HUD 기둥이라 위·아래로 비켜도 피할 수 없다.
@@ -246,7 +280,8 @@ test("property: 200 random sets never overlap, keep margins, draw leaders and ke
     for (const p of chips) {
       const c = candidates.find((x) => x.id === p.id);
       const natural = { left: c.anchor.x - c.width / 2, top: c.anchor.y - 6 - c.height, right: c.anchor.x + c.width / 2, bottom: c.anchor.y - 6 };
-      const moved = ["left", "top", "right", "bottom"].some((k) => Math.abs(natural[k] - p.rect[k]) > 1e-9);
+      // 세로로 옮겼거나 가로로 EDGE_LEADER_PX 이상 밀렸으면 연결선이 있다.
+      const moved = Math.abs(natural.top - p.rect.top) > 1e-9 || Math.abs(natural.left - p.rect.left) >= EDGE_LEADER_PX;
       assert.equal(Boolean(p.leader), moved, `seed ${seed}: ${p.id} leader`);
     }
     assert.ok(chips.some((p) => p.id === "selected" && p.state === "selected"), `seed ${seed}: selected missing`);

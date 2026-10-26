@@ -955,7 +955,14 @@ export function CityModel({
     const controller = labelControllerRef.current;
     if (!controller) return;
     const area = gl.domElement.getBoundingClientRect();
-    const occluder = occluderRef?.current?.getBoundingClientRect() ?? null;
+    // 닫힌 패널은 화면 밖으로 밀려나 있을 뿐 DOM에 남는다. 캔버스와 겹치지 않는 패널은 가리개가 아니다(그 여백 12 px이
+    // 화면 오른쪽 가장자리를 막아 가장자리로 밀어 넣은 칩까지 숨긴다).
+    const panelRect = occluderRef?.current?.getBoundingClientRect() ?? null;
+    const occluder =
+      panelRect &&
+      panelRect.left < area.right && panelRect.right > area.left && panelRect.top < area.bottom && panelRect.bottom > area.top
+        ? panelRect
+        : null;
     const chrome = [];
     for (const ref of chromeRefs ?? []) {
       const element = ref?.current;

@@ -121,6 +121,19 @@ describe("CampusLabelLayer", () => {
     }
   });
 
+  it("keeps a chip whose anchor is at the screen edge, slid inward with a leader ending in an anchor dot", () => {
+    const entries = [entry("BLD_EDGE")];
+    const { container, update, visibleSlots } = mount(entries);
+    update({ points: new Map([["BLD_EDGE", { x: 3, y: 400, depth: 100, distance: 100 }]]) });
+    expect(visibleSlots().map((slot) => slot.dataset.labelSlot)).toEqual(["BLD_EDGE"]);
+    // 80 px chip clamped to the 8 px edge margin: its button starts at x = 8.
+    expect(visibleSlots()[0].style.transform).toMatch(/^translate3d\(8px,/);
+    const leader = container.querySelector('[data-qa="label-leader"]');
+    expect(leader.style.visibility).toBe("visible");
+    const dot = leader.querySelector('[data-qa="label-anchor-dot"]');
+    expect([dot.getAttribute("cx"), dot.getAttribute("cy")]).toEqual(["3", "400"]);
+  });
+
   it("marks an estimated name with the glyph, a dashed chip and 명칭 추정 in the accessible name", () => {
     const entries = [entry("BLD_SCNU_R1", { displayName: "부속 시설", estimatedName: true, tier: 3, code: null })];
     const { container, update } = mount(entries);
