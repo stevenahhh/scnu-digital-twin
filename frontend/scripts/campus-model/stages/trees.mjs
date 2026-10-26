@@ -4,13 +4,14 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import * as THREE from "three";
+import { mergeVertices } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { EXTENT, metres } from "../lib/frame.mjs";
 import { Raster, mulberry32 } from "../lib/raster.mjs";
 
 const TREES = process.env.TREES_FILE ?? path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "trees.json");
 // Species types of data/trees.json, in its order, and the archetype each one is drawn with (see buildTrees).
-const SPECIES = ["ginkgo", "broadleaf", "pine", "metasequoia", "conifer"];
+const SPECIES = ["ginkgo", "broadleaf", "pine", "metasequoia", "conifer", "shrub"];
 // Crowns are drawn with their surveyed diameter, clamped to this range (m); heights to TREE_HEIGHT_RANGE_M. A crown
 // whose height is under CROWN_MIN_RATIO x its diameter is drawn that tall (a flat CHMv2 reading on a wide crown).
 const CROWN_DIAMETER_RANGE_M = [1.6, 15];
@@ -44,9 +45,20 @@ const HEDGE_MIN_SEGMENT_M = 0.6;
 const WIDTH = EXTENT.maxX - EXTENT.minX;
 const DEPTH = EXTENT.maxZ - EXTENT.minZ;
 
-function geometryPrimitive(geometry, material) {
-  const g = geometry.index ? geometry.toNonIndexed() : geometry;
-  g.computeVertexNormals();
+// smooth: normals averaged over coincident vertices (rounded crowns read as foliage masses, not facets).
+function geometryPrimitive(geometry, material, { smooth = false } = {}) {
+  let g;
+  if (smooth) {
+    const bare = new THREE.BufferGeometry();
+    bare.setAttribute("position", geometry.attributes.position.clone());
+    if (geometry.index) bare.setIndex(geometry.index.clone());
+    const merged = mergeVertices(bare, 1e-4);
+    merged.computeVertexNormals();
+    g = merged.toNonIndexed();
+  } else {
+    g = geometry.index ? geometry.toNonIndexed() : geometry;
+    g.computeVertexNormals();
+  }
   return {
     positions: Float32Array.from(g.attributes.position.array),
     normals: Float32Array.from(g.attributes.normal.array),
@@ -181,6 +193,21 @@ function shadeTiers(part) {
   }
 }
 
+// A small irregular lobe (icosahedron, detail 0) with per-vertex radial jitter.
+function lobe(r, h, x, y, z, seed) {
+  const g = new THREE.IcosahedronGeometry(1, 0);
+  const p = g.attributes.position;
+  const jitter = mulberry32(seed);
+  const offsets = new Map();
+  for (let i = 0; i < p.count; i += 1) {
+    const key = `${p.getX(i).toFixed(3)},${p.getY(i).toFixed(3)},${p.getZ(i).toFixed(3)}`;
+    if (!offsets.has(key)) offsets.set(key, 0.85 + jitter() * 0.3);
+    const k = offsets.get(key);
+    p.setXYZ(i, x + p.getX(i) * r * k, y + p.getY(i) * h * k, z + p.getZ(i) * r * k);
+  }
+  return g;
+}
+
 function mergeGeometries(parts) {
   const positions = [];
   for (const part of parts) positions.push(...(part.index ? part.toNonIndexed() : part).attributes.position.array);
@@ -270,7 +297,7 @@ export function placeTrees({ inputs, selectableBuildings, campusBuildings, offCa
   const skipped = { blocked: 0, outside: 0, nudged: 0, station: 0, stationMoved: 0 };
   const stands = { ground: 0, pit: 0, "street-pit": 0, "paved-pit": 0 };
   const rng = mulberry32(20261027);
-  for (const [east, north, diameterM, heightM0, speciesIndex, heightFromChm, source] of inventory.trees) {
+  for (const [east, north, diameterM, heightM0, speciesIndex, heightFromChm, source, , , , , fitViews, autumn] of inventory.trees) {
     let [x, z] = tmToScene(east, north);
     if (x < EXTENT.minX || x > EXTENT.maxX || z < EXTENT.minZ || z > EXTENT.maxZ) {
       skipped.outside += 1;
@@ -316,13 +343,16 @@ export function placeTrees({ inputs, selectableBuildings, campusBuildings, offCa
     }
     stands[stand] += 1;
     const heightPhoto = Math.min(TREE_HEIGHT_RANGE_M[1], Math.max(TREE_HEIGHT_RANGE_M[0], heightM0));
-    const heightM = Math.min(TREE_HEIGHT_RANGE_M[1], Math.max(heightPhoto, CROWN_MIN_RATIO * crownM, (TALL_RATIO[kind] ?? 0) * crownM));
+    // a height read on the VR (data/photo/tree-vr-fit.json) stands as measured; shrubs keep their low mound height
+    const heightM = kind === "shrub" ? heightM0
+      : fitViews > 0 ? Math.min(TREE_HEIGHT_RANGE_M[1], Math.max(heightPhoto, 0.5 * crownM))
+        : Math.min(TREE_HEIGHT_RANGE_M[1], Math.max(heightPhoto, CROWN_MIN_RATIO * crownM, (TALL_RATIO[kind] ?? 0) * crownM));
     // per-instance tint: brightness for every species; the feathery conifers also drift in hue (yellow-green to ochre
     // in the VR tour), the rest a little
     const green = 0.86 + rng() * 0.28;
     const hue = kind === "metasequoia" || kind === "conifer" ? 0.3 : 0.12;
     treeInstances[kind].push({
-      x, y: heightAt(x, z) - metres(0.2), z, crownM, heightMetres: heightM, heightFromChm: heightFromChm === 1, source, stand,
+      x, y: heightAt(x, z) - metres(0.2), z, crownM, heightMetres: heightM, heightFromChm: heightFromChm === 1, source, stand, autumn: autumn ?? null, fitted: fitViews > 0,
       angle: rng() * Math.PI * 2,
       tint: [green * (1 - hue / 2 + rng() * hue), green, green * (1 - hue / 2 + rng() * hue)],
     });
@@ -383,9 +413,10 @@ export function buildTrees({ glb, placement }) {
     pine: mat("Tree_Pine", [0.15, 0.32, 0.17]),
     metasequoia: mat("Tree_Metasequoia", [0.3, 0.47, 0.18]),
     conifer: mat("Tree_Conifer", [0.11, 0.28, 0.15]),
+    shrub: mat("Tree_Shrub", [0.2, 0.36, 0.16], 0.9),
     hedge: mat("Tree_Hedge", [0.17, 0.38, 0.15], 0.85),
     trunk: mat("Tree_Trunk", [0.34, 0.27, 0.2], 0.95),
-    pineTrunk: mat("Tree_Trunk_Pine", [0.45, 0.24, 0.15], 0.95),
+    pineTrunk: mat("Tree_Trunk_Pine", [0.5, 0.22, 0.13], 0.95),
   };
 
   // ---- species geometry in metres (instances scale it; see archetype sizes below). Shapes read on the VR tour:
@@ -409,19 +440,26 @@ export function buildTrees({ glb, placement }) {
       }
       return g;
     };
-    return mergeGeometries([pad(2.2, 0.75, 0.3, 5.4, -0.2, 3), pad(1.8, 0.7, -0.5, 6.5, 0.4, 5), pad(1.2, 0.65, 0.2, 7.5, 0.1, 7)]);
+    // five flat pads stepping up and out along the lean of the bole (Korean red pine, VR scene_c1 f, scene_d3 f)
+    return mergeGeometries([pad(2.3, 0.7, -0.3, 5.3, 0.4, 3), pad(1.9, 0.62, 1.0, 6.0, -0.7, 5), pad(1.7, 0.6, -1.5, 6.7, 0.6, 7), pad(1.3, 0.55, -0.6, 7.5, -0.4, 9), pad(0.9, 0.5, -1.0, 8.1, 0.2, 11)]);
   })();
   const species = {
     ginkgo: [
       geometryPrimitive(trunk(0.17, 0.25, 3.4), materials.trunk),
-      geometryPrimitive(latheCrown([[0, 2.4], [1.5, 3.0], [2.0, 4.3], [2.0, 5.8], [1.6, 7.3], [0.9, 8.5], [0, 9.2]], 6, 0.18, 11), materials.ginkgo),
+      geometryPrimitive(latheCrown([[0, 2.4], [1.5, 3.0], [2.0, 4.3], [2.05, 5.8], [1.65, 7.3], [0.9, 8.5], [0, 9.2]], 8, 0.22, 11), materials.ginkgo, { smooth: true }),
     ],
     broadleaf: [
       geometryPrimitive(trunk(0.18, 0.27, 3.0), materials.trunk),
-      geometryPrimitive(lumpyCrown(2.7, 4.2, 7).translate(0, 4.7, 0), materials.broadleaf),
+      // a rounded main mass and two smaller lobes, smooth-shaded (zelkova, cherry: VR scene_a9 f, scene_b2 f)
+      geometryPrimitive(mergeGeometries([
+        lumpyCrown(2.45, 3.9, 7).translate(0, 4.6, 0),
+        lobe(1.6, 1.5, 1.7, 5.3, 0.7, 21),
+        lobe(1.45, 1.35, -1.4, 5.7, -1.1, 23),
+      ]), materials.broadleaf, { smooth: true }),
     ],
     pine: [
-      geometryPrimitive(trunk(0.14, 0.24, 6.6), materials.pineTrunk),
+      // a red-brown bole leaning about 7 degrees, as the campus red pines do
+      geometryPrimitive(trunk(0.14, 0.26, 6.9).rotateZ(0.12), materials.pineTrunk),
       geometryPrimitive(pinePads, materials.pine),
     ],
     metasequoia: [
@@ -430,6 +468,10 @@ export function buildTrees({ glb, placement }) {
     ],
     conifer: [
       geometryPrimitive(tieredCrown([[0.2, 1.9, 1.1], [1.3, 3.1, 1.0], [2.5, 4.3, 0.8], [3.7, 5.6, 0.5]], 5, 0.85, 17), materials.conifer),
+    ],
+    shrub: [
+      // low scrub mound (D4 west slope, data/photo/tree-species.json SG01): its height comes from the instance
+      geometryPrimitive(lumpyCrown(1, 0.9, 31).translate(0, 0.3, 0), materials.shrub, { smooth: true }),
     ],
     hedge: [
       // unit box on y = 0..1 without its bottom face (x along the hedge, z across)
@@ -497,7 +539,10 @@ export function buildTrees({ glb, placement }) {
       const name = `Trees_${kind}_${partIndex === parts.length - 1 ? "crown" : "trunk"}`;
       const mesh = glb.addMesh(name, [primitive]);
       const extensions = glb.instancingExtension({ translations, rotations, scales, colors: partIndex === parts.length - 1 ? colors : undefined });
-      return glb.addNode({ name, mesh, extensions });
+      // autumn colour read on the VR per instance ([palette group, shade, mix], data/photo/tree-vr-fit.json; 0 = none)
+      const isCrown = partIndex === parts.length - 1;
+      const autumn = isCrown && instances.some((t) => t.autumn) ? instances.map((t) => (t.autumn ? t.autumn.map((v) => Math.round(v * 100) / 100) : 0)) : null;
+      return glb.addNode({ name, mesh, extensions, ...(autumn ? { extras: { autumn } } : {}) });
     });
     glb.addNode({
       name: `Trees_${kind}`,
