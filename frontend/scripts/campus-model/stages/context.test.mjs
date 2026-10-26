@@ -40,7 +40,7 @@ test("masses merge per tile under one material, extruded to ground + height, nev
   assert.equal(stats.tiles, glb.nodes.length);
   assert.equal(stats.tiles, 2, "two tiles: the first two masses share one");
   for (const n of glb.nodes) {
-    assert.match(n.name, /^Context_Buildings_m?\d+_m?\d+$/);
+    assert.match(n.name, /^Context_(Buildings|Far)_m?\d+_m?\d+$/);
     assert.equal(n.extras.selectable, false);
   }
   for (const { primitives } of glb.meshes) assert.equal(primitives.length, 1);

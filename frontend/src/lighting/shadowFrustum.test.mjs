@@ -60,7 +60,8 @@ async function readCampusMeshCentres() {
   // The Ground_* decal layers (stages/surfaces.mjs) never cast shadows (CityModel GROUND_LAYER_PATTERN), so the shadow
   // camera need not contain them; some painted surfaces lie at the far edge of the terrain extent.
   return json.nodes
-    .filter((node) => node.mesh !== undefined && !/^Ground_/.test(node.name))
+    // Context_Far_* tiles cast no shadow either (CityModel NON_CASTER_PARENT_PATTERN).
+    .filter((node) => node.mesh !== undefined && !/^(Ground_|Context_Far_)/.test(node.name))
     .flatMap((node) => json.meshes[node.mesh].primitives.map((primitive) => boxOf(node, primitive)))
     .map((box) => {
       const c = box.getCenter(new THREE.Vector3());

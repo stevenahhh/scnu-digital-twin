@@ -669,7 +669,8 @@ Decisions taken against the survey, logged by the build and listed in the `Furni
 
 Every off-campus GIS건물통합정보 footprint of 12 m2 or more is drawn as a cheap context mass instead of a flat lot:
 inside `EXTENT` on the drawn ground, outside it on the OuterTerrain mesh (`meshHeightAt`), up to `CONTEXT_REACH`
-(290 units, about 465 m) from the EXTENT centre. Farther masses stay flat: the shadow camera is fitted to the campus. Height: the GIS source height when it gives 2.5-5 m per storey, else floors x the
+(290 units, about 465 m) from the EXTENT centre as shadow casters; farther masses go into `Context_Far_*` tiles that
+CityModel keeps from casting shadows (the shadow camera is fitted to the campus). Height: the GIS source height when it gives 2.5-5 m per storey, else floors x the
 storey median, else one storey (all 추정). The footprint is extruded from 0.3 m below its lowest ground point to its
 highest ground point + height, with a flat roof and no attachments. One 96 x 32 texture (residential windows,
 commercial glass band, plain roof) maps one section per wall bay of about 3.2 m with v counting storeys; the GIS use
