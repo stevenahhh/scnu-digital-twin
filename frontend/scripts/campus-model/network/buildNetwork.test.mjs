@@ -4,7 +4,7 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { addAnchor, assembleNetwork, checkCollection, propertyNames } from "./buildNetwork.mjs";
+import { addAnchor, assembleNetwork, checkCollection, entrancePois, propertyNames } from "./buildNetwork.mjs";
 import { NetGraph } from "./graph.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -20,9 +20,13 @@ test("the generated network keeps every property name and key of the derived-v1 
   const after = propertyNames(now);
   for (const [type, names] of Object.entries(before)) for (const name of names) assert.ok(after[type].has(name), `${type}.${name}`);
   for (const added of ["width_m", "lanes", "kerb_height_m", "estimated", "source_ref", "crosswalk_id", "sidewalk_id", "authoritative", "external_ids", "surface"]) assert.ok(after.edge.has(added), added);
-  // every POI id survives
-  const ids = (fc) => fc.features.filter((f) => f.properties.feature_type === "poi").map((f) => f.id).sort();
-  assert.deepEqual(ids(now), ids(old));
+  // every POI id survives; a POI added since the baseline is a building POI of a building_entrances.json entrance
+  const pois = (fc) => fc.features.filter((f) => f.properties.feature_type === "poi");
+  const nowIds = new Set(pois(now).map((f) => f.id));
+  for (const f of pois(old)) assert.ok(nowIds.has(f.id), `POI ${f.id} lost`);
+  const entrances = JSON.parse(readFileSync(path.join(DATA, "building_entrances.json"), "utf8")).buildings.map((b) => b.building_id);
+  const oldIds = new Set(pois(old).map((f) => f.id));
+  for (const f of pois(now).filter((x) => !oldIds.has(x.id))) assert.ok(f.properties.kind === "building" && entrances.includes(f.id), `unexpected POI ${f.id}`);
 });
 
 // a minimal composition: one road edge, one sidewalk with a gate POI beside it
@@ -73,4 +77,16 @@ test("the anchor is added once to coordinate_transform.json", () => {
   const [m00, , m10] = JSON.parse(once).epsg5186_local_to_grid;
   assert.ok(Math.abs((Math.atan2(m10, m00) * 180) / Math.PI - 0.273) < 0.01);
   assert.equal(addAnchor(once), once);
+});
+
+test("a building of building_entrances.json without a POI gets a derived building POI on its entrance; known ones are left", () => {
+  const old = { features: [{ type: "Feature", id: "BLD_D4", properties: { feature_type: "poi", poi_id: "BLD_D4" } }] };
+  const json = { buildings: [
+    { building_id: "BLD_D4", building_name: "D4", entrances: [{ entrance_id: "ENT_D4_MAIN", position: [1, 0, 2], node_id: "POI_ENT_D4_MAIN", allowed_types: ["person", "scooter"] }] },
+    { building_id: "BLD_E8", building_name: "E8", category: "academic", entrances: [{ entrance_id: "ENT_E8_MAIN", position: [75.8, 0, -165.8], node_id: "POI_ENT_E8_MAIN", allowed_types: ["person"] }] },
+  ] };
+  const out = entrancePois(json, old);
+  assert.equal(out.length, 1);
+  assert.deepEqual([out[0].id, out[0].properties.kind, out[0].properties.node_id, out[0].properties.derived], ["BLD_E8", "building", "POI_ENT_E8_MAIN", true]);
+  assert.deepEqual(out[0].geometry.coordinates, [75.8, -165.8]);
 });

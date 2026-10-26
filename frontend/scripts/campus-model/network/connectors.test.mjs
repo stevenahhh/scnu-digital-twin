@@ -60,3 +60,13 @@ test("an entrance 80 m from any sidewalk gets an estimated connector and the war
   assert.equal(r.edges[0].confidence, 0.2);
   assert.ok(warnings.includes("BLD_T entrance unreachable within 50 m"));
 });
+
+test("a paving supplement marked walkable joins the walkable polygons as an estimated plaza; an unmarked one does not", () => {
+  const ring = [[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]];
+  const out = walkablePolygons({ layers: [
+    { cls: "PAVING", precedence: 5.8, walkablePlaza: true, source_ref: "paving: E8 front courtyard", rings: [ring] },
+    { cls: "PAVING", precedence: 5.8, source_ref: "paving: B4 path", rings: [ring] },
+  ] });
+  assert.equal(out.length, 1);
+  assert.deepEqual([out[0].class, out[0].estimated, out[0].id], ["plaza", true, "PAVEDCOURT_0001"]);
+});

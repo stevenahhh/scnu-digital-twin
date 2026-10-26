@@ -231,14 +231,18 @@ export function orientedRect(ring) {
   return rect;
 }
 
-// Polyline offset by d scene units to its left (mitred joints, mitre length capped at 3 d).
+// Polyline offset by d scene units to its left (mitred joints, mitre length capped at 3 d). A closed ring (last point
+// equal to the first) is offset as a ring: the seam vertex is mitred between its two edges like every other corner, so
+// the first and last offset points coincide (no gap or overlap at the seam).
 export function offsetLine(line, d) {
   const out = [];
-  for (let i = 0; i < line.length; i += 1) {
-    const prev = line[Math.max(0, i - 1)];
-    const next = line[Math.min(line.length - 1, i + 1)];
-    const a = i > 0 ? unit([line[i][0] - prev[0], 0, line[i][1] - prev[1]]) : null;
-    const b = i + 1 < line.length ? unit([next[0] - line[i][0], 0, next[1] - line[i][1]]) : null;
+  const n0 = line.length;
+  const closed = n0 >= 4 && Math.hypot(line[0][0] - line[n0 - 1][0], line[0][1] - line[n0 - 1][1]) < 1e-9;
+  for (let i = 0; i < n0; i += 1) {
+    const prev = closed && i === 0 ? line[n0 - 2] : line[Math.max(0, i - 1)];
+    const next = closed && i === n0 - 1 ? line[1] : line[Math.min(n0 - 1, i + 1)];
+    const a = i > 0 || closed ? unit([line[i][0] - prev[0], 0, line[i][1] - prev[1]]) : null;
+    const b = i + 1 < n0 || closed ? unit([next[0] - line[i][0], 0, next[1] - line[i][1]]) : null;
     const na = a ? [-a[2], a[0]] : null;
     const nb = b ? [-b[2], b[0]] : null;
     let n = na && nb ? [na[0] + nb[0], na[1] + nb[1]] : (na ?? nb);
