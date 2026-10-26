@@ -64,6 +64,24 @@ export function parseSimulationMessage(raw) {
   };
 }
 
+// 같은 에이전트(아이디와 모든 필드가 같음)면 true. 일시 정지·정지한 서버도 매 틱 같은 스냅숏을 보내므로,
+// 이때 이전 Map을 그대로 두어 캔버스가 다시 그리지 않게 한다(TrafficSimulationLayer는 Map이 바뀔 때만 invalidate한다).
+export function sameEntities(previous, next) {
+  if (previous.size !== next.size) return false;
+  for (const [id, entity] of next) {
+    const before = previous.get(id);
+    if (!before) return false;
+    const keys = Object.keys(entity);
+    if (keys.length !== Object.keys(before).length) return false;
+    for (const key of keys) {
+      const a = entity[key];
+      const b = before[key];
+      if (a !== b && JSON.stringify(a) !== JSON.stringify(b)) return false;
+    }
+  }
+  return true;
+}
+
 export function createSimulationStore() {
   let state = {
     connectionStatus: "연결 끊김",
@@ -105,6 +123,7 @@ export function createSimulationStore() {
         (timelineRestarted ? [] : state.riskEvents).map((event) => [event.event_id, event]),
       );
       parsed.riskEvents.forEach((event) => byId.set(event.event_id, event));
+      if (sameEntities(state.entities, parsed.entities)) parsed.entities = state.entities;
       state = { ...state, ...parsed, riskEvents: Array.from(byId.values()).slice(-100).reverse() };
       emit();
       return true;

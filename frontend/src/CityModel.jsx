@@ -1,4 +1,5 @@
 import { useGLTF } from "@react-three/drei";
+import { extendCampusLoader } from "./render/campusGltfLoader";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
@@ -307,7 +308,7 @@ export function CityModel({
   onDragStart,
   ...props
 }) {
-  const { scene } = useGLTF(CAMPUS_MODEL_URL);
+  const { scene } = useGLTF(CAMPUS_MODEL_URL, true, true, extendCampusLoader);
   const { camera, gl, scene: rootScene, invalidate } = useThree();
   const [targetPos, setTargetPos] = useState(null);
   const tintedMeshesRef = useRef([]);
@@ -1242,4 +1243,4 @@ export function CityModel({
   );
 }
 
-useGLTF.preload(CAMPUS_MODEL_URL);
+useGLTF.preload(CAMPUS_MODEL_URL, true, true, extendCampusLoader);

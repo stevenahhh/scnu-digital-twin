@@ -64,3 +64,15 @@ test("normalises statistics.network_provenance: finite numbers or null, optional
   assert.equal(normalizeNetworkProvenance({ crossing_count: 3 }).separation, null);
   assert.equal(parseSimulationMessage(update({ time: 1 })).statistics.network_provenance, null);
 });
+
+test("keeps the same entities Map when a paused or stopped server repeats its snapshot", () => {
+  const store = createSimulationStore();
+  const car = { id: "car_1", type: "car", x: 1, y: 0, z: 2, speed: 0, heading: 90, risk_level: "normal", state: "stopped" };
+  store.applyMessage({ ...update({ time: 5, status: "paused" }), entities: [car] });
+  const first = store.getState().entities;
+  store.applyMessage({ ...update({ time: 5, status: "paused" }), entities: [{ ...car }] });
+  assert.equal(store.getState().entities, first, "an identical snapshot must not create a new Map");
+  store.applyMessage({ ...update({ time: 5.1, status: "running" }), entities: [{ ...car, x: 1.5 }] });
+  assert.notEqual(store.getState().entities, first);
+  assert.equal(store.getState().entities.get("car_1").x, 1.5);
+});

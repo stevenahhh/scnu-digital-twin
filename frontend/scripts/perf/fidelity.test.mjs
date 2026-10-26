@@ -46,3 +46,11 @@ test("score: literal clamps reductions to 0, signed credits them", () => {
   assert.equal(score(base, smaller, { signed: true }), 0.5 + 0.15 * 0.5);
   assert.equal(score(base, { ...base, F: 30 }), 0.5 - 0.3 * 0.5);
 });
+
+test("score: X (GPU texture memory) weighs like B and is skipped when a side has no X", () => {
+  const base = { B: 100, D: 100, T: 100, L: 100, F: 60, Q: 0.5, X: 200 };
+  assert.equal(score(base, { ...base, X: 50 }, { signed: true }), 0.5 + 0.15 * 0.75);
+  assert.equal(score(base, { ...base, X: 400 }), 0.5 - 0.15 * 1);
+  const { X, ...noX } = base;
+  assert.equal(score(noX, { ...noX, B: 50 }, { signed: true }), 0.5 + 0.15 * 0.5);
+});

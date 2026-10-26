@@ -14,7 +14,7 @@ const BLOB_Y = -0.1;
 const BLOB_OPACITY = 0.45;
 
 let shared = null;
-function sharedResources() {
+export function contactShadowResources() {
   if (shared) return shared;
   const size = 64;
   const canvas = document.createElement("canvas");
@@ -52,7 +52,7 @@ export function contactShadowSize(type) {
 export const ContactShadow = React.memo(function ContactShadow({ type }) {
   const size = contactShadowSize(type);
   if (!size) return null;
-  const { material, geometry } = sharedResources();
+  const { material, geometry } = contactShadowResources();
   return (
     <mesh
       geometry={geometry}

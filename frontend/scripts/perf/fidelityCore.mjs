@@ -57,16 +57,18 @@ export function pickTiles(tiles, count = 12) {
   return [...tiles].sort((p, q) => q.photoEdgeShare - p.photoEdgeShare || p.name.localeCompare(q.name)).slice(0, count);
 }
 
-// Score of docs/OPTIMIZATION-FORMULA.md. `base` and `cand` hold B, D, T, L, F and Q; λ are the formula's (ASSUMED) weights.
-// `literal` is the formula as written: max(0, ...) only penalises growth, so a smaller B, D, T or L never raises it.
-// `signed` drops the max(0, ...) clamp so a reduction earns the same weight a growth costs; the pass ranks by it
-// (docs/OPTIMIZATION-FORMULA.md, 2026-10-26 status).
-export const LAMBDA = Object.freeze({ B: 0.15, D: 0.2, T: 0.1, L: 0.25, F: 0.3 });
+// Score of docs/OPTIMIZATION-FORMULA.md. `base` and `cand` hold B, D, T, L, F, Q and (from round 2) X; λ are the
+// formula's (ASSUMED) weights. X (GPU texture memory, 추정) costs like B: both are the browser resources the user asked
+// to minimise (download vs video memory); it is left out when either side has no X.
+// `literal` is the formula as written: max(0, ...) only penalises growth, so a smaller B, D, T, X or L never raises it.
+// `signed` drops the max(0, ...) clamp so a reduction earns the same weight a growth costs; the pass ranks by it.
+export const LAMBDA = Object.freeze({ B: 0.15, D: 0.2, T: 0.1, X: 0.15, L: 0.25, F: 0.3 });
 export function score(base, cand, { signed = false } = {}) {
   const term = (key) => {
+    if (!Number.isFinite(base[key]) || !Number.isFinite(cand[key])) return 0;
     const change = (cand[key] - base[key]) / base[key];
     return signed ? change : Math.max(0, change);
   };
-  return cand.Q - LAMBDA.B * term("B") - LAMBDA.D * term("D") - LAMBDA.T * term("T") - LAMBDA.L * term("L")
-    + LAMBDA.F * Math.min(0, (cand.F - 60) / 60);
+  return cand.Q - LAMBDA.B * term("B") - LAMBDA.D * term("D") - LAMBDA.T * term("T") - LAMBDA.X * term("X")
+    - LAMBDA.L * term("L") + LAMBDA.F * Math.min(0, (cand.F - 60) / 60);
 }

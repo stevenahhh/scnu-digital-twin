@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 // Packs the generator's raw GLB (scripts/campus-model/.build/campus-v2.raw.glb) into the shipped
-// public/campus-v2.glb in three steps:
+// public/campus-v2.glb in four steps:
 //   1. Terrain join: the Topography_* chunk primitives (one shared Ground material, identity transforms,
 //      one attribute layout) are merged into a single Topography_joined primitive under the Topography
 //      parent, which takes ~107 draw calls back. Nothing else is joined: BLD_* nodes, trees, crosswalks
@@ -14,6 +14,9 @@
 //      stages/kerbs.mjs); the layers would z-fight (plan uhf-ground-roads-routing: no size limit applies).
 //   3. compress.mjs: EXT_meshopt_compression without position quantization (positions, UVs and colours bit for bit),
 //      normals as 8-bit octahedral (docs/OPTIMIZATION-FORMULA.md, 2026-10-26 pass). drei's useGLTF decodes it.
+//   4. ktx2.mjs: every WebP texture re-encoded as KTX2 / Basis Universal (KHR_texture_basisu: ETC1S for colour, data and
+//      normal maps; ktx2.mjs --normals uastc is the measured alternative), so the GPU keeps textures block-compressed (docs/OPTIMIZATION-FORMULA.md, round 2).
+//      The dashboard decodes them with three's KTX2Loader and the transcoder in public/basis/.
 // gltfpack is not used: its default quantization inserts dequantization parent nodes.
 //
 //   bun run model:pack                  raw -> public/campus-v2.glb, then verify names and counts
@@ -27,6 +30,7 @@ import { NodeIO } from "@gltf-transform/core";
 import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
 import { MeshoptDecoder } from "meshoptimizer";
 import { compressFile } from "./compress.mjs";
+import { compressTexturesFile } from "./ktx2.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FRONTEND = path.resolve(HERE, "../..");
@@ -180,8 +184,8 @@ async function verify(rawFile, packedFile, terrain) {
   if (!root.listExtensionsUsed().some((extension) => extension.extensionName === "EXT_meshopt_compression")) {
     failures.push("EXT_meshopt_compression is not used");
   }
-  const nonWebp = textures.filter((texture) => texture.getMimeType() !== "image/webp");
-  if (nonWebp.length) failures.push(`${nonWebp.length} textures are not image/webp`);
+  const nonKtx2 = textures.filter((texture) => texture.getMimeType() !== "image/ktx2");
+  if (nonKtx2.length) failures.push(`${nonKtx2.length} textures are not image/ktx2`);
   if (failures.length) throw new Error(`campus-v2.glb pack check failed:\n  ${failures.join("\n  ")}`);
   return { nodes: nodes.length, buildings: uniBuildings.length, proxies: buildings.length - uniBuildings.length, meshes: root.listMeshes().length, textures: textures.length };
 }
@@ -214,11 +218,13 @@ console.log(
 optimize(JOINED_OUTPUT, PACKED_OUTPUT);
 const optimizedBytes = statSync(PACKED_OUTPUT).size;
 await compressFile(PACKED_OUTPUT, PACKED_OUTPUT);
+const meshoptBytes = statSync(PACKED_OUTPUT).size;
+const ktx2 = await compressTexturesFile(PACKED_OUTPUT, PACKED_OUTPUT);
 const counts = await verify(JOINED_OUTPUT, PACKED_OUTPUT, terrain);
 const packedBytes = statSync(PACKED_OUTPUT).size;
 console.log(
-  `campus-v2.glb packed: ${rawBytes} B raw -> ${optimizedBytes} B optimized -> ${packedBytes} B meshopt, ${counts.nodes} nodes, ${counts.buildings} BLD nodes, ${counts.proxies} BLD_SCNU pick proxies, ` +
-  `${counts.meshes} meshes, ${counts.textures} webp textures`,
+  `campus-v2.glb packed: ${rawBytes} B raw -> ${optimizedBytes} B optimized -> ${meshoptBytes} B meshopt -> ${packedBytes} B KTX2 (${ktx2.length} textures, ${ktx2.filter((row) => row.mode === "UASTC").length} UASTC), ${counts.nodes} nodes, ${counts.buildings} BLD nodes, ${counts.proxies} BLD_SCNU pick proxies, ` +
+  `${counts.meshes} meshes, ${counts.textures} ktx2 textures`,
 );
 if (process.argv.includes("--precompress")) {
   const sizes = precompress(PACKED_OUTPUT);

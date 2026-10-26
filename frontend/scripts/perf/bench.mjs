@@ -22,6 +22,12 @@ function parseArgs(argv) {
     clock: "2026-10-24T15:00:00+09:00",
     chrome: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
     compare: null, liveBackends: false,
+    // Synthetic traffic agents fed through a fake simulation WebSocket (see fakeSocketScript); 0 sends none.
+    agents: 0,
+    // Simulation status the fake socket reports with --agents (running|paused). Paused keeps sending the same positions.
+    "agent-status": "running",
+    // Press the dashboard's "패널 닫기" button after load (on a phone-width screen the panel covers the whole map).
+    "close-panel": false,
     // Render quality tier seeded into localStorage before load (low|medium|high); empty keeps the app default.
     // Post-processing passes reset renderer.info, so draw-call counts are comparable only at "low".
     quality: "",
@@ -36,6 +42,7 @@ function parseArgs(argv) {
     const key = arg.slice(2);
     if (key === "compare") { opts.compare = { url: argv[++i], label: argv[++i] }; continue; }
     if (key === "live-backends") { opts.liveBackends = true; continue; }
+    if (key === "close-panel") { opts["close-panel"] = true; continue; }
     if (!(key in opts)) throw new Error(`unknown option ${arg}`);
     const value = argv[++i];
     opts[key] = typeof opts[key] === "number" ? Number(value) : value;
@@ -57,6 +64,45 @@ const VIEWS = [
   { name: "d4", anchor: "BLD_D4", offset: [60, 50, 60] },
   { name: "oblique15", position: [-220, 110, 180], target: [0, 0, 0] },
 ];
+
+// Local backends also open WebSockets (simulation 8002), which Fetch interception does not see. Unless --live-backends
+// is given, sockets to 127.0.0.1:80* / localhost:80* get a fake that never reaches the port. With --agents N it opens
+// and sends a "running" simulation_update with N deterministic agents every 100 ms (60 % cars, 30 % people, 10 %
+// scooters, every 15th at warning risk, each on a slow 6 m circle), so traffic draw calls are measured without a server.
+const fakeSocketScript = (agents, status = "running") => `(() => {
+  const RealSocket = window.WebSocket;
+  const LOCAL = /^wss?:\\/\\/(127\\.0\\.0\\.1|localhost):80\\d\\d\\b/;
+  const N = ${Number(agents) || 0};
+  const STATUS = ${JSON.stringify(status)};
+  class FakeSocket extends EventTarget {
+    constructor(url) {
+      super();
+      this.url = url; this.readyState = 0; this.onopen = null; this.onmessage = null; this.onerror = null; this.onclose = null;
+      if (N === 0) return;
+      // A socket closed while connecting never opens (React StrictMode mounts the socket hook twice in dev).
+      setTimeout(() => { if (this.readyState !== 0) return; this.readyState = 1; this.onopen?.({ type: "open" }); this.timer = setInterval(() => this.tick(), 100); this.tick(); }, 50);
+    }
+    tick() {
+      // Paused: the server keeps sending updates, but the time and every position stay the same.
+      if (STATUS !== "running" && this.t0 === undefined) this.t0 = performance.now() / 1000;
+      const t = STATUS === "running" ? performance.now() / 1000 : this.t0;
+      const entities = [];
+      for (let i = 0; i < N; i++) {
+        const type = i % 10 < 6 ? "car" : i % 10 < 9 ? "person" : "scooter";
+        const cx = 60 + (i % 20) * 30, cz = -150 + Math.floor(i / 20) * 40, a = t * 0.3 + i;
+        entities.push({ id: "bench-" + i, type, x: cx + 6 * Math.cos(a), y: 0, z: cz + 6 * Math.sin(a),
+          speed: type === "person" ? 1.2 : 5, heading: (a * 180) / Math.PI + 90,
+          risk_level: i % 15 === 0 ? "warning" : "normal", state: "moving" });
+      }
+      this.onmessage?.({ data: JSON.stringify({ type: "simulation_update", status: STATUS, simulation_time: t, entities }) });
+    }
+    send() {}
+    close() { clearInterval(this.timer); this.readyState = 3; }
+  }
+  for (const k of ["CONNECTING", "OPEN", "CLOSING", "CLOSED"]) FakeSocket[k] = RealSocket[k];
+  window.WebSocket = new Proxy(RealSocket, { construct(target, args) { return LOCAL.test(String(args[0])) ? new FakeSocket(args[0]) : new target(...args); } });
+})();
+`;
 
 // Runs before any page script: draw-call hooks, the pinned clock and the bench state object.
 const initScript = (clock) => `(() => {
@@ -195,9 +241,33 @@ const measureScript = (view, warmup, frames) => `(async () => {
   B.measuring = false;
   const elapsed = last - start;
   for (let i = 0; i < 120 && (B.pending.length || B.activeQuery); i++) { await frame(); B.poll(); }
+  // Idle: 2 s with no input. idleFrames2s counts the rAF frames in which anything was drawn.
+  // Release the camera pin first: pinning in onBeforeRender fights OrbitControls, and once any frame starts the two keep
+  // each other drawing. The app gets 1.5 s to settle on its own camera, then 2 s without input are counted.
+  B.view = null;
+  await new Promise((r) => setTimeout(r, 1500));
   const idleStart = B.gl.calls;
-  await new Promise((r) => setTimeout(r, 2000));
+  // Who asks for the idle frames: stacks of requestAnimationFrame calls made by the page (not by this script).
+  const realRaf = window.requestAnimationFrame;
+  const idleRafCallers = {};
+  window.requestAnimationFrame = function (cb) {
+    const stack = (new Error().stack || "").split("\\n").slice(2, 8).map((l) => l.trim().replace(/https?:\\/\\/[^/]+/, "")).join(" <- ");
+    if (!/measureScript|<anonymous>/.test(stack.split(" <- ")[0])) idleRafCallers[stack] = (idleRafCallers[stack] || 0) + 1;
+    return realRaf.call(window, cb);
+  };
+  let idleFrames2s = 0;
+  const idleEnd = performance.now() + 2000;
+  for (let c = B.gl.calls; performance.now() < idleEnd;) {
+    await frame();
+    if (B.gl.calls !== c) idleFrames2s += 1;
+    c = B.gl.calls;
+  }
+  window.requestAnimationFrame = realRaf;
   const idleDrawCalls2s = B.gl.calls - idleStart;
+  // Pin the view again and draw it once for the screenshot that follows.
+  B.view = view;
+  B.store?.getState().invalidate();
+  await frame(); await frame();
   const pct = (values, p) => { if (!values.length) return null; const s = [...values].sort((a, b) => a - b);
     return s[Math.min(s.length - 1, Math.floor(s.length * p))]; };
   const col = (k) => B.frames.map((f) => f[k]);
@@ -209,7 +279,8 @@ const measureScript = (view, warmup, frames) => `(async () => {
     drawCallsFrame: pct(frameCalls.filter((c) => c > 0), 0.5),
     triangles: pct(col("infoTris"), 0.5), trianglesGl: Math.round(pct(col("glTris"), 0.5)),
     gpuMs: B.ext ? { median: pct(B.gpu, 0.5), p95: pct(B.gpu, 0.95), samples: B.gpu.length, disjointDropped: B.disjointDrops } : null,
-    idleDrawCalls2s,
+    idleDrawCalls2s, idleFrames2s,
+    idleRafCallers: Object.entries(idleRafCallers).sort((a, b) => b[1] - a[1]).slice(0, 5),
     heapMB: performance.memory ? +(performance.memory.usedJSHeapSize / 1048576).toFixed(1) : null };
 })()`;
 
@@ -346,7 +417,8 @@ async function runOnce(config, runIndex, outDir, opts) {
     await cdp("Emulation.setTimezoneOverride", { timezoneId: "Asia/Seoul" });
     await cdp("Emulation.setDeviceMetricsOverride", { width: opts.width, height: opts.height, deviceScaleFactor: opts.dpr, mobile: opts.width < 600 });
     const qualitySeed = opts.quality ? `try{localStorage.setItem("scnu.renderQuality",${JSON.stringify(opts.quality)})}catch{}\n` : "";
-    await cdp("Page.addScriptToEvaluateOnNewDocument", { source: qualitySeed + initScript(opts.clock) });
+    const socketStub = opts.liveBackends ? "" : fakeSocketScript(opts.agents, opts["agent-status"]);
+    await cdp("Page.addScriptToEvaluateOnNewDocument", { source: qualitySeed + socketStub + initScript(opts.clock) });
     if (!opts.liveBackends) await cdp("Fetch.enable", { patterns: BACKEND_PATTERNS.map((urlPattern) => ({ urlPattern })) });
 
     const t0 = Date.now();
@@ -359,6 +431,11 @@ async function runOnce(config, runIndex, outDir, opts) {
     const loadMs = Date.now() - t0;
     if (labels <= 5) throw new Error(`campus labels never appeared (${labels}) at ${config.url}`);
 
+    if (opts["close-panel"]) {
+      const closed = await evaluate(`(() => { const b = document.querySelector('button[aria-label="패널 닫기"]'); if (!b) return false; b.click(); return true; })()`);
+      if (!closed) throw new Error("--close-panel: no 패널 닫기 button");
+      await Bun.sleep(1000);
+    }
     const gpu = await evaluate(attachScript);
     if (/swiftshader/i.test(gpu.renderer)) throw new Error(`software renderer detected (${gpu.renderer}); aborting`);
 
@@ -412,6 +489,7 @@ function summarizeView(runs, name) {
         disjointDropped: gpuRuns.reduce((s, v) => s + v.gpuMs.disjointDropped, 0) }
       : null,
     idleDrawCalls2s: median(per.map((v) => v.idleDrawCalls2s)),
+    idleFrames2s: median(per.map((v) => v.idleFrames2s)),
     heapMB: median(per.map((v) => v.heapMB)),
     screenshot: per.find((v) => v.screenshot)?.screenshot ?? null,
   };

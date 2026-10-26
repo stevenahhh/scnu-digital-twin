@@ -8,6 +8,8 @@
 //   bench.mjs --quality medium / high (1 run each): D at those tiers (drawCallsFrame, the WebGL draws between two
 //   rAFs: post-processing renders several scenes a frame and resets renderer.info)
 //   bench.mjs --orbit S (1 run each): F at 1440 x 900 low and high, 390 x 844 low (mean fps, 1 % low)
+//   bench.mjs --agents N (1 run per tier): D with N synthetic traffic agents (fake simulation socket, no server)
+//   Idle: idleFrames2s of the low runs (rAF frames that drew anything in 2 s without input, no agents)
 //   overhead-blend.mjs --campus-only + fidelity.mjs: Q (mean SSIM against the NGII photo on 12 tiles) and, with --ref,
 //   Qself against the reference run's renders.
 // Writes <out>/<label>-formula.json. B is the bytes of the campus model files and decoders the page fetched
@@ -33,6 +35,7 @@ const orbit = option("orbit", "60");
 const ref = option("ref", null);
 const refLabel = option("ref-label", "baseline");
 const qFrom = option("q-from", null);
+const agents = option("agents", "120");
 const skipQ = args.includes("--skip-q") || Boolean(qFrom);
 const MODEL_ASSET = /\/campus-v2(?!-height)[^/]*\.(glb|ktx2)(\?|$)|\.wasm(\?|$)|\/basis_transcoder\.js(\?|$)/;
 mkdirSync(out, { recursive: true });
@@ -56,6 +59,12 @@ const fLow = bench(`${label}-orbit-1440-low`, [...orbitArgs, "--quality", "low",
 const fHigh = bench(`${label}-orbit-1440-high`, [...orbitArgs, "--quality", "high", "--width", "1440", "--height", "900"]);
 const fMobile = bench(`${label}-orbit-390-low`, [...orbitArgs, "--quality", "low", "--width", "390", "--height", "844"]);
 
+const agentArgs = ["--runs", "1", "--agents", agents, "--width", "1440", "--height", "900"];
+// Paused simulation (same positions every 100 ms): the idle case of a connected but stopped server.
+const pausedAgents = bench(`${label}-agents-paused-low`, [...agentArgs, "--quality", "low", "--agent-status", "paused"]);
+const withAgents = Object.fromEntries(["low", "medium", "high"].map((tier) =>
+  [tier, bench(`${label}-agents-${tier}`, [...agentArgs, "--quality", tier])]));
+
 let fidelity = null;
 if (!skipQ) {
   const blendDir = join(out, `${label}-blend`);
@@ -75,7 +84,10 @@ const result = {
   B: modelAssets.reduce((s, a) => s + a.encodedBodySize, 0),
   modelAssets: modelAssets.map((a) => ({ name: a.name, bytes: a.encodedBodySize })),
   D: { low: views(low, "drawCalls"), lowFrame: views(low, "drawCallsFrame"), medium: views(medium, "drawCallsFrame"),
-    high: views(high, "drawCallsFrame") },
+    high: views(high, "drawCallsFrame"),
+    agents: { count: Number(agents), ...Object.fromEntries(Object.entries(withAgents).map(([tier, s]) => [tier, views(s, "drawCallsFrame")])) } },
+  idle: { framesIn2s: views(low, "idleFrames2s"), drawCallsIn2s: views(low, "idleDrawCalls2s"),
+    agentsFramesIn2s: views(withAgents.low, "idleFrames2s"), pausedAgentsFramesIn2s: views(pausedAgents, "idleFrames2s") },
   T: low.triangles,
   X: low.textureMemory,
   L: { medianMs: low.loadMs, runs: low.runs.map((r) => r.loadMs),
@@ -87,8 +99,10 @@ const result = {
   sceneCensus: low.textureMemory.sceneCensus,
   gpuMs: views(low, "gpuMs"),
   consoleErrors: { low: low.consoleErrors, medium: medium.consoleErrors, high: high.consoleErrors,
-    orbit: fLow.consoleErrors + fHigh.consoleErrors + fMobile.consoleErrors },
-  consoleErrorMessages: [...new Set([low, medium, high, fLow, fHigh, fMobile].flatMap((s) => s.consoleErrorMessages))],
+    orbit: fLow.consoleErrors + fHigh.consoleErrors + fMobile.consoleErrors,
+    agents: Object.values(withAgents).reduce((n, s) => n + s.consoleErrors, 0) },
+  consoleErrorMessages: [...new Set([low, medium, high, fLow, fHigh, fMobile, ...Object.values(withAgents), pausedAgents]
+    .flatMap((s) => s.consoleErrorMessages))],
 };
 writeFileSync(join(out, `${label}-formula.json`), `${JSON.stringify(result, null, 2)}\n`);
 console.log(`FORMULA ${label} B=${result.B} D(low overview)=${result.D.low.overview} T=${result.T} X=${result.X.gpuTextureMB}MB ` +
