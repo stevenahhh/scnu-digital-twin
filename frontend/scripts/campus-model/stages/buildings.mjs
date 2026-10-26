@@ -18,6 +18,7 @@ import { mulberry32 } from "../lib/raster.mjs";
 import { EQUIPMENT_MODULE_UV, EQUIPMENT_PLAIN_UV, ROOF_METRES, equipmentAtlas, roofTexture } from "../lib/textures.mjs";
 import { MODULE_DEPTH_M, MODULE_TILT_DEGREES, panelModules, sampleRoofPhoto } from "../lib/roofPhoto.mjs";
 import { cleanRing, pointInRing, ringArea, ringCentroid, segmentDistance } from "../lib/geometry.mjs";
+import { addBalconies, addFins, addMast, attachmentsByNode } from "../lib/attachments.mjs";
 import { Box3 } from "three";
 import { meshFootprint, toModelRing } from "./sources.mjs";
 
@@ -582,6 +583,51 @@ function aoMesh(options) {
 
 const aoPrimitive = (mesh, material) => ({ ...mesh.toPrimitive(material), ao: mesh.ao });
 
+// ---------------------------------------------------------------- facade attachments
+// data/facade-attachments.json (lib/attachments.mjs): balcony stacks, fins and masts as plain vertex-coloured solids on
+// the parapet primitive; blocks as prisms with the facade cells of their own look (walls), a roof cap one band above
+// the building's roof (roof), and the band and parapet (parapet). Rooftop modules under a block's cap are lifted onto it.
+const ATTACHMENTS = path.join(DATA, "facade-attachments.json");
+
+function attachmentGround(building, heightAt) {
+  if (building.massForm) return formGround(building, heightAt);
+  return Math.min(...building.parts.filter((p) => p.outer?.length >= 3).flatMap((p) => [...p.outer, ringCentroid(p.outer)]).map(([x, z]) => heightAt(x, z)));
+}
+
+// Height a rooftop module at plan corners `corners` is lifted by: the band of the block whose plan holds its centre.
+function moduleLift(building, corners) {
+  const centre = ringCentroid(corners);
+  const block = (building.attachments ?? []).find((a) => a.kind === "block" && pointInRing(centre, a.plan));
+  return block ? metres(block.bandMetres ?? 0) : 0;
+}
+
+function addAttachments(building, { walls, roof, plain }, { heightAt, tiles, looks, charts, seed }) {
+  if (!building.attachments?.length) return;
+  const ground = attachmentGround(building, heightAt);
+  const tallest = building.parts.reduce((best, p) => (p.heightMetres > best.heightMetres ? p : best), building.parts[0]);
+  const outside = (p) => !building.parts.some((part) => part.outer?.length >= 3 && pointInRing(p, part.outer));
+  for (const [k, a] of building.attachments.entries()) {
+    if (a.kind === "balconies") addBalconies(plain, a, ground, charts, { colour: linearByte(hex(a.colour)), slabColour: linearByte(hex(a.slabColour ?? a.colour)) });
+    else if (a.kind === "fins") addFins(plain, a, ground, charts, { colour: linearByte(hex(a.colour)), outside });
+    else if (a.kind === "mast") addMast(plain, a, ground, charts, { colour: linearByte(hex(a.colour)) });
+    else {
+      const look = looks.get(a.look);
+      const topMetres = a.topMetres ?? tallest.heightMetres;
+      const top = ground + metres(topMetres);
+      const floors = a.floors ?? Math.max(1, tallest.floors || Math.round(topMetres / 3.6));
+      addFacade(walls, orderedRing(a.plan, true), { base: ground - metres(1.5), ground, bottom: ground + metres(a.bottomMetres ?? 0), top, floors, look, tile: tiles.get(a.look), seed: seed * 53 + k, charts });
+      const cap = top + metres(a.bandMetres ?? 0);
+      if (cap > top) addWalls(plain, a.plan, true, top, cap, charts, { colour: linearByte(hex(look.wall)) });
+      const from = roof.vertexCount;
+      roof.horizontalPolygon(a.plan, [], cap, { uvScale: 1 / metres(ROOF_METRES), color: building.roofColour ?? [255, 255, 255, 255] });
+      charts.addPlanar(roof, from);
+      const coping = linearByte(hex(look.parapet ?? look.wall));
+      addWalls(plain, a.plan, true, cap, cap + PARAPET, charts, { colour: coping });
+      addWalls(plain, a.plan, false, cap, cap + PARAPET, charts, { colour: coping });
+    }
+  }
+}
+
 // Node extras of a building's form (data/building-forms.json): where it comes from, its masses and voids, the photo IoU.
 function formExtras(building) {
   const form = building.form;
@@ -730,7 +776,7 @@ function buildingPrimitives(building, seed, { heightAt, facadeMaterial, tiles, l
       // the part's own roof; under a tower they are hidden inside it.
       if (massIndex > 0) continue;
       for (const corners of building.panelModules?.[partIndex] ?? []) {
-        const low = top + MODULE_LIFT;
+        const low = top + MODULE_LIFT + moduleLift(building, corners);
         const [lowA, lowB, highB, highA] = corners.map(([x, z], k) => [x, k < 2 ? low : low + MODULE_RISE, z]);
         const up = (lowB[0] - lowA[0]) * (highA[2] - lowA[2]) - (lowB[2] - lowA[2]) * (highA[0] - lowA[0]) < 0;
         const face = up ? [lowA, lowB, highB, highA] : [lowB, lowA, highA, highB];
@@ -740,6 +786,7 @@ function buildingPrimitives(building, seed, { heightAt, facadeMaterial, tiles, l
       }
     }
   }
+  addAttachments(building, { walls, roof, plain: parapet }, { heightAt, tiles, looks, charts, seed });
   return [
     aoPrimitive(walls, facadeMaterial),
     aoPrimitive(roof, roofMaterial),
@@ -1184,7 +1231,7 @@ function massPrimitives(building, seed, { heightAt, facadeMaterial, tiles, looks
     }
     for (let k = boxesFrom * 2; k < equipment.uvs.length; k += 2) [equipment.uvs[k], equipment.uvs[k + 1]] = EQUIPMENT_PLAIN_UV;
     for (const corners of building.panelModules?.[index] ?? []) {
-      const low = top + MODULE_LIFT;
+      const low = top + MODULE_LIFT + moduleLift(building, corners);
       const [lowA, lowB, highB, highA] = corners.map(([x, z], k) => [x, k < 2 ? low : low + MODULE_RISE, z]);
       const up = (lowB[0] - lowA[0]) * (highA[2] - lowA[2]) - (lowB[2] - lowA[2]) * (highA[0] - lowA[0]) < 0;
       const face = up ? [lowA, lowB, highB, highA] : [lowB, lowA, highA, highB];
@@ -1214,6 +1261,7 @@ function massPrimitives(building, seed, { heightAt, facadeMaterial, tiles, looks
       walls.ao.push(0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
   }
+  addAttachments(building, { walls, roof, plain }, { heightAt, tiles, looks, charts, seed });
   return [
     aoPrimitive(walls, facadeMaterial),
     aoPrimitive(roof, roofMaterial),
@@ -1543,6 +1591,27 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
     console.log(`building forms (data/building-forms.json): ${used.length} buildings built from masses (${used.join(", ")}); ` +
       `low masses outside a uni.glb node's outline drawn with CampusBuildings: ${detachedLog.join("; ") || "none"}`);
   }
+  // ---- facade attachments (data/facade-attachments.json): lon/lat to model, shifted like the footprints
+  {
+    const byNode = existsSync(ATTACHMENTS) ? attachmentsByNode(JSON.parse(readFileSync(ATTACHMENTS, "utf8")), catalogue.looks) : new Map();
+    const toModel = ([lon, lat]) => {
+      const [x, z] = geoToModel(lon, lat);
+      return [x + footprintShift[0], z + footprintShift[1]];
+    };
+    const log = [];
+    for (const [node, list] of byNode) {
+      const building = selectableBuildings.find((b) => b.nodeName === node);
+      if (!building) throw new Error(`facade-attachments.json: no building node ${node}`);
+      building.attachments = list.map((a) => ({
+        ...a,
+        ...(a.plan ? { plan: a.plan.map(toModel) } : {}),
+        ...(a.wall ? { wall: a.wall.map(toModel) } : {}),
+        ...(a.at ? { at: toModel(a.at) } : {}),
+      }));
+      log.push(`${node} ${list.map((a) => `${a.kind} (${a.id})`).join(", ")}`);
+    }
+    console.log(`facade attachments (data/facade-attachments.json): ${log.join("; ") || "none"}`);
+  }
   const d4 = selectableBuildings.find((b) => b.nodeName === "BLD_D4");
   if (d4?.massForm) {
     const box = new Box3().setFromObject(bldNodes.find((n) => n.rawName === "BLD_D4").object);
@@ -1559,7 +1628,8 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
   // Facade atlas: one tile per look in use (lib/facadeAtlas.mjs); every wall of every building on one material.
   const usedLooks = [...new Set([...selectableBuildings, ...campusBuildings].flatMap((b) => {
     const base = catalogue.looks.get(b.look).zones?.base;
-    return base ? [b.look, base.look] : [b.look];
+    const blocks = (b.attachments ?? []).filter((a) => a.kind === "block").map((a) => a.look);
+    return [...(base ? [b.look, base.look] : [b.look]), ...blocks];
   }))];
   const facadeAtlas = await buildFacadeAtlas(usedLooks.map((id) => ({ ...catalogue.looks.get(id), id })));
   const clamped = { repeat: false };
@@ -1800,6 +1870,10 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
         ...(building.roofSurface ? { roofSurface: building.roofSurface } : {}),
         ...(building.solarPanelModules ? { solarPanelModules: building.solarPanelModules, solarPanelSource: "estimated from the VWorld z19 orthophoto" } : {}),
         ...formExtras(building),
+        ...(building.attachments?.length ? {
+          facadeAttachments: building.attachments.map((a) => `${a.kind}: ${a.id}`),
+          facadeAttachmentSource: `data/facade-attachments.json; ${building.attachments.map((a) => a.source).join(" | ")}`,
+        } : {}),
       },
     }, { root: true });
   });

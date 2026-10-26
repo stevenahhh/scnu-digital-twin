@@ -38,6 +38,7 @@ node --test src/campusModelAsset.test.mjs
 | `lib/facadeAtlas.mjs` | the facade atlas: one painted tile per facade look, its emissive, normal and metallic-roughness maps (see Facades) |
 | `lib/textures.mjs` | roof membrane and rooftop-equipment textures, and the detail-map builder the facade atlas shares |
 | `lib/roofPhoto.mjs` | roof colour sampling and solar-panel detection (see Roof colours and solar panels) |
+| `lib/attachments.mjs` | facade attachments: schema checks and the balcony-stack, fin/ledge and rooftop-mast solids (blocks are drawn by `stages/buildings.mjs` with the facade atlas) |
 
 ## Inputs
 
