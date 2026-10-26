@@ -62,7 +62,7 @@ export const AUTUMN_PALETTE = [
 // the SCNU 360 VR tour; ASSUMED colours, the same muted range as above). The broadleaf crowns (Tree_Crown) are the
 // zelkova, cherry and late-green trees without the ginkgo, which has its own crowns. weightScale > 1 makes a species
 // turn ahead of the date ramp: in the VR tour (late October) the ginkgo and metasequoia are already half turned while
-// the zelkova and cherry are mostly green.
+// the zelkova and cherry are mostly green; maxPhase narrows their spread of turning dates (AUTUMN_MAX_PHASE otherwise).
 export const SPECIES_AUTUMN_PALETTES = {
   Tree_Crown: [
     { species: "zelkova", share: 0.36, colors: AUTUMN_PALETTE[1].colors, maxMix: AUTUMN_PALETTE[1].maxMix },
@@ -70,9 +70,9 @@ export const SPECIES_AUTUMN_PALETTES = {
     { species: "green", share: 0.36, colors: AUTUMN_PALETTE[3].colors, maxMix: AUTUMN_PALETTE[3].maxMix },
   ],
   // ginkgo yellow, sRGB about #b8a03c..#ad9c48
-  Tree_Ginkgo: [{ species: "ginkgo", share: 1, colors: [[0.48, 0.36, 0.045], [0.42, 0.34, 0.065]], maxMix: [0.85, 1], weightScale: 2 }],
+  Tree_Ginkgo: [{ species: "ginkgo", share: 1, colors: [[0.48, 0.36, 0.045], [0.42, 0.34, 0.065]], maxMix: [0.85, 1], weightScale: 3.5, maxPhase: 0.3 }],
   // metasequoia rust-ochre, sRGB about #a06c3a..#a8803e
-  Tree_Metasequoia: [{ species: "metasequoia", share: 1, colors: [[0.35, 0.155, 0.042], [0.39, 0.216, 0.048]], maxMix: [0.75, 0.95], weightScale: 1.6 }],
+  Tree_Metasequoia: [{ species: "metasequoia", share: 1, colors: [[0.35, 0.155, 0.042], [0.39, 0.216, 0.048]], maxMix: [0.75, 0.95], weightScale: 3, maxPhase: 0.3 }],
 };
 
 // Largest per-tree lag on the season weight: a tree with phase p starts turning once the date weight
@@ -108,7 +108,7 @@ export function getAutumnProfile(index, palette = AUTUMN_PALETTE) {
   const [mixLow, mixHigh] = entry.maxMix;
   return {
     species: entry.species,
-    phase: hashUnit(index, 3) * AUTUMN_MAX_PHASE,
+    phase: hashUnit(index, 3) * (entry.maxPhase ?? AUTUMN_MAX_PHASE),
     color: [0, 1, 2].map((c) => a[c] + (b[c] - a[c]) * shade),
     maxMix: mixLow + (mixHigh - mixLow) * hashUnit(index, 4),
     weightScale: entry.weightScale ?? 1,
