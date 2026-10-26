@@ -1,0 +1,38 @@
+{
+  "source": "Road text read in the SCNU 360 VR tour (.cache/vr cube faces; stations in scripts/perf/vr-stations.json) and on the NGII 2025 orthophoto sheet 34702020 (0.25 m chips, 6x upscale, north up)",
+  "generated": "2026-10-26",
+  "note": "One entry per painted text marking (one lane block). `ids`: the text candidates of markings.geojson / markings-extra.geojson that belong to it. `lines`: the block's lines as the approaching driver sees them, top line (farthest) first. `travelBearingDeg`: the direction of travel the text is written for (degrees from north, clockwise), where the VR view shows it. `lineHeightM` (a syllable's length along the road: the main-gate lines are 2.7 m on the photo), `widthM` (the gate-out-far blobs miss part of the paint: the width of its inbound twin, 5.5 m on the photo) `colour` (yellow in the VR view) and `axis: \"blob\"` (the four syllables stand side by side on the photo, each blob long along travel) fix what the blobs cannot. Every text marking not listed here is drawn as the most likely statute text for its size and logged as 추정 by stages/markingsRegular.mjs.",
+  "markings": [
+    {
+      "id": "gate-in-far", "lines": ["국립", "순천대학교"], "travelBearingDeg": 285.5, "lineHeightM": 2.7,
+      "ids": ["MK01307", "MK01308", "MK01310", "MK01312", "MX00612", "MX00617", "MX00618", "MX00619", "MX00620", "MX00622", "MX00625", "MX00626", "MX00628"],
+      "source": "VR scene_b1 face r and scene_a19 face f: main gate, inbound (westbound) carriageway, the block farther from the city"
+    },
+    {
+      "id": "gate-in-near", "lines": ["환영", "합니다"], "travelBearingDeg": 285.5, "lineHeightM": 2.7,
+      "ids": ["MK01309", "MK01313", "MK01314", "MX00613", "MX00621", "MX00623", "MX00624", "MX00627", "MX00629", "MX00630"],
+      "source": "VR scene_b1 face r and scene_a19 face f: main gate, inbound (westbound) carriageway, the block nearer the city"
+    },
+    {
+      "id": "gate-out-near", "lines": ["안녕히", "가세요"], "travelBearingDeg": 105.5, "lineHeightM": 2.7,
+      "ids": ["MX00614", "MX00631", "MX00632", "MX00634", "MX00636", "MX00638", "MX00640"],
+      "source": "VR scene_b1 face r and scene_a19 face f: main gate, outbound (eastbound) carriageway, the block nearer the campus"
+    },
+    {
+      "id": "gate-out-far", "lines": ["국립", "순천대학교"], "travelBearingDeg": 105.5, "lineHeightM": 2.7, "widthM": 5.5,
+      "ids": ["MX00615", "MX00616", "MX00633", "MX00635", "MX00637", "MX00639"],
+      "source": "VR scene_b1 face r and scene_a19 face f: main gate, outbound (eastbound) carriageway, the block nearer the city"
+    },
+    {
+      "id": "a10-no-parking", "lines": ["주차금지"], "colour": "yellow", "travelBearingDeg": 330, "axis": "blob",
+      "ids": ["MX00819", "MX00820", "MX00821", "MX00822", "MX00823"],
+      "source": "VR scene_a10 faces d and b: yellow text by A10 인재관, 주·차 legible, 금·지 partly (four characters on the photo)"
+    },
+    { "id": "speed-30-a", "lines": ["30 30"], "ids": ["MK00697", "MX00073", "MX00074"], "source": "photo: two '30' side by side, one per lane" },
+    { "id": "speed-30-b", "lines": ["30"], "ids": ["MK01260", "MX00072"], "source": "photo: '30'" },
+    { "id": "speed-30-c", "lines": ["30"], "ids": ["MX00082", "MX00083"], "source": "photo: '30'" },
+    { "id": "speed-50-a", "lines": ["50"], "ids": ["MX00789", "MX00790"], "source": "photo: '50'" },
+    { "id": "speed-50-b", "lines": ["50 50"], "ids": ["MX00791", "MX00792", "MX00793"], "source": "photo: two '50' side by side" },
+    { "id": "speed-50-c", "lines": ["50"], "ids": ["MX00795", "MX00796", "MX00797"], "source": "photo: '50'" }
+  ]
+}

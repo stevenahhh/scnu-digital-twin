@@ -32,23 +32,29 @@
 // A rejected candidate is not drawn (the modelled ground has no photo paint). Pieces the photo cannot show (`estimated`)
 // skip the gate.
 //
-// Geometry, in the model frame, lifted LIFT_M over the terrain triangles it lies on (CityModel adds a polygon offset):
-//   - zebra bars: every bar at its own centre and length, along its crossing's mean axis, ZEBRA_BAR_M wide. The
-//     period ZEBRA_PERIOD_M 0.903 m is MEASURED on the photo (n = 64 crossings, p10-p90 0.896-0.910 m). The bar width
-//     is below the photo's resolution (2 px), so ZEBRA_BAR_M 0.50 m with 0.40 m gaps is ASSUMED (statute 0.45-0.50 m;
-//     the folded bar profiles of 25 crossings only bound the duty to 0.52-0.58). markings.geojson groups its bars by
-//     `crossing_id`; the completion pass's bars are grouped here (ZEBRA_LINK_M, ZEBRA_LINK_DEG). Crossings whose bars
-//     are fused to a painted frame come as one outline polygon (`fused_frame`) and are drawn as that polygon;
-//   - LineStrings: the line kinds (STROKED_KINDS) at their statute width LINE_WIDTH_M_BY_KIND (estimated: the photo
-//     cannot measure a 0.10-0.20 m width), stop lines at their detected width clamped into the urban range STOP_LINE_M
-//     (STOP_LINE_DEFAULT_M without one), other strokes (glyph strokes, arrow shafts) at their detected width within
-//     STROKE_WIDTH_M; estimated pieces of a dashed kind (DASH_BY_KIND) as statute dashes, detected dashes where the
-//     photo has them;
-//     `double` yellow lines as two lines DOUBLE_OFFSET_M either side of the detected centreline (ASSUMED layout: the
-//     photo blurs the gap), or as one line on the centreline when only that reading is on paint; `dotted` guide lines
-//     as `dots` squares evenly spaced between the first and the last dot;
-//   - Polygons (arrows, text, hatching, chevrons, stall outlines, dashes, blue bays, the striped raised crossings): the
-//     painted outline, with its holes.
+// Geometry. The candidates above are the photo's pieces as detected (traced fragments, bars at their own centres,
+// paint blobs); the gate measures exactly those (fingerprints), so it stays the existence check. What is DRAWN is
+// regular geometry fitted to the accepted pieces (4., stages/markingsRegular.mjs, fitters in lib/markingFit.mjs):
+//   - zebra bars: one rectangle per crossing (bar groups that overlap are merged), equal bars ZEBRA_BAR_M wide at the
+//     period ZEBRA_PERIOD_M with the phase of the detected bars. The period 0.903 m is MEASURED on the photo (n = 64
+//     crossings, p10-p90 0.896-0.910 m). The bar width is below the photo's resolution (2 px), so ZEBRA_BAR_M 0.50 m
+//     with 0.40 m gaps is ASSUMED (statute 0.45-0.50 m; the folded bar profiles of 25 crossings only bound the duty to
+//     0.52-0.58). markings.geojson groups its bars by `crossing_id`; the completion pass's bars are grouped here
+//     (ZEBRA_LINK_M, ZEBRA_LINK_DEG). Crossings whose bars are fused to a painted frame (`fused_frame`) are their
+//     outline with its edges snapped straight;
+//   - lines: fragments of one line chained and fitted as straight runs joined by tangent arcs, at the statute width
+//     LINE_WIDTH_M_BY_KIND (estimated: the photo cannot measure a 0.10-0.20 m width); dashed kinds as DASH_BY_KIND
+//     dashes phased on the detected ones (the photo's own period where it clearly differs); `double` yellow lines as
+//     two lines DOUBLE_OFFSET_M either side of the fitted centreline (ASSUMED layout: the photo blurs the gap), or one
+//     line when only that reading is on paint; stop lines straight, square to their lane, at their detected width
+//     clamped into STOP_LINE_M (STOP_LINE_DEFAULT_M without one); `dotted` guide lines as `dots` squares;
+//   - arrows, text, diamonds, give-way triangles, chevrons, wheelchair and bicycle symbols: statute templates
+//     (lib/markingGlyphs.mjs) at the detected centre and size, oriented to their lane's travel direction; road text is
+//     one block per lane read for the approaching driver, its words read in the SCNU VR tour or on the photo
+//     (data/photo/markings-text.json), else the most likely statute text, logged 추정;
+//   - other painted areas (hatch stripes, hump bands, blue bays, stall frames): rectangles, or outlines with their edges
+//     snapped to their dominant directions.
+// All of it lifted LIFT_M over the terrain triangles it lies on (CityModel adds a polygon offset).
 //
 // Crossings: OSM crossing ways (data/osm-ground.json) and the digitised crosswalk polygons
 // (docs/assets/data/crosswalks_wgs84.geojson) never draw stripes of their own. One that matches a drawn zebra is
@@ -68,11 +74,13 @@ import { conform } from "../lib/conform.mjs";
 import { pointInRing, ringArea, segmentDistance } from "../lib/geometry.mjs";
 import { VEG_EXG, excessGreen, sampleOrtho, shadowWeight } from "../lib/ortho.mjs";
 import { encodePng } from "../lib/png.mjs";
+import { regularise } from "./markingsRegular.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const MARKINGS = path.join(HERE, "..", "data", "photo", "markings.geojson");
 const MARKINGS_EXTRA = path.join(HERE, "..", "data", "photo", "markings-extra.geojson");
 const MARKINGS_GATE = path.join(HERE, "..", "data", "photo", "markings-gate.json");
+const MARKINGS_TEXT = path.join(HERE, "..", "data", "photo", "markings-text.json");
 const GROUND_FEATURES = path.join(HERE, "..", "data", "osm-ground.json");
 const CROSSWALKS = path.resolve(HERE, "../../../..", "docs", "assets", "data", "crosswalks_wgs84.geojson");
 
@@ -89,7 +97,8 @@ export const LINE_WIDTH_M_BY_KIND = Object.freeze({
 });
 export const STOP_LINE_M = [0.3, 0.45];
 const STOP_LINE_DEFAULT_M = 0.4;
-// [dash, gap] in metres, applied only to estimated pieces of these kinds (a detected dash keeps its own position).
+// [dash, gap] in metres of the dashed kinds, laid along every fitted dashed line with the phase of its detected dashes
+// (stages/markingsRegular.mjs; the photo's own period where it clearly differs). guide_dotted: dotted guide lines.
 export const DASH_BY_KIND = Object.freeze({ centre_line_yellow: [3, 3], lane_line_dashed: [3, 5], guide_dotted: [0.5, 1.0] });
 const CROSSING_MIN_M = 4.0;
 const CROSSING_SPLIT_M = 6.0;
@@ -102,6 +111,10 @@ const FIXED_COLOUR_KINDS = new Set(["kerb_no_parking", "centre_line_yellow", "ze
 const STROKED_KINDS = new Set(["lane_line_dashed", "lane_line_solid", "edge_line", "centre_line_yellow", "parking_line", "kerb_no_parking", "give_way_line"]);
 // Above the Ground_* layers (at most 0.036 m, stages/surfaces.mjs); pack.mjs keeps positions as float.
 const LIFT_M = 0.04;
+// A point is on a building or a sidewalk for the regular geometry only when it and four points BLOCK_PROBE_M around it
+// are: the A003 outlines and the building footprints are not exact to the kerb, so an edge line beside one stays.
+const BLOCK_PROBE_M = 0.3;
+const BLOCK_PROBES = [[0, 0], [BLOCK_PROBE_M, 0], [-BLOCK_PROBE_M, 0], [0, BLOCK_PROBE_M], [0, -BLOCK_PROBE_M]];
 
 const SHADOW_AZIMUTH_DEG = 272.5;
 const SHADOW_REACH_M = [0.3, 0.6, 0.9];
@@ -246,8 +259,16 @@ function photoChecks(ortho, buildingRings) {
     return points;
   };
   const share = (points, test) => (points.length ? points.filter((p) => test(at(p))).length / points.length : 0);
+  const buildingBoxes = buildingRings.map((r) => {
+    const xs = r.map((q) => q[0]);
+    const zs = r.map((q) => q[1]);
+    return [Math.min(...xs), Math.min(...zs), Math.max(...xs), Math.max(...zs)];
+  });
   return {
-    inBuilding: (p) => buildingRings.some((r) => pointInRing(p, r)),
+    inBuilding: (p) => buildingRings.some((r, i) => {
+      const b = buildingBoxes[i];
+      return p[0] >= b[0] && p[0] <= b[2] && p[1] >= b[1] && p[1] <= b[3] && pointInRing(p, r);
+    }),
     vegetated: (rings) => share(ring(rings[0]), ([r, g, b]) => excessGreen(r, g, b) > VEG_EXG) >= VEG_RING_SHARE,
     // Cast-shadow share just beside the piece on its shadow side, and on its sun side.
     raised(rings) {
@@ -283,8 +304,16 @@ async function groundTruth(inputs) {
   const parking = ground.osm.features.filter((f) => f.kind === "parking").map((f) => f.rings.map(toModel));
   const inPolygon = (p, rings) => pointInRing(p, rings[0]) && !rings.slice(1).some((hole) => pointInRing(p, hole));
   const evenOdd = (p, rings) => rings.filter((ring) => pointInRing(p, ring)).length % 2 === 1;
+  const boxOf = (rings) => {
+    const xs = rings[0].map((q) => q[0]);
+    const zs = rings[0].map((q) => q[1]);
+    return [Math.min(...xs), Math.min(...zs), Math.max(...xs), Math.max(...zs)];
+  };
+  const walkwayBoxes = walkways.map(boxOf);
+  const inBox = (p, b) => p[0] >= b[0] && p[0] <= b[2] && p[1] >= b[1] && p[1] <= b[3];
   return {
-    onSidewalk: (p) => walkways.some((rings) => evenOdd(p, rings)),
+    onSidewalk: (p) => walkways.some((rings, i) => inBox(p, walkwayBoxes[i]) && evenOdd(p, rings)),
+    roadLines,
     onRoad: (p) => inputs.roadZones.some((rings) => inPolygon(p, rings)) || parking.some((rings) => inPolygon(p, rings)) ||
       roadLines.some((line) => line.some((q, i) => i > 0 && segmentDistance(p, line[i - 1], q) <= metres(ARTERIAL_REACH_M))),
   };
@@ -521,7 +550,7 @@ export async function loadMarkings({ inputs, buildings }) {
   const pieces = [];
   const log = {
     corrections: applied, kinds: {}, files: {}, estimated: {},
-    dropped: { other, building: 0, sidewalk: 0, offRoad: 0, vegetation: 0, shadow: 0 },
+    dropped: { other, building: 0, sidewalk: 0, offRoad: 0, vegetation: 0, shadow: 0, islandKerb: 0 },
   };
   const count = (table, kind) => { table[kind] = (table[kind] ?? 0) + 1; };
   const step = metres(SUPPORT_STEP_M);
@@ -535,6 +564,12 @@ export async function loadMarkings({ inputs, buildings }) {
     const verdict = gate.review?.[c.id]?.verdict;
     c.review = verdict === "not paint" ? gate.review[c.id].reason : null;
     c.byEye = verdict === "paint";
+    // the yellow kerb of a raised island (data/photo/markings-extra.geojson kind island_kerb) is a structure, not
+    // carriageway paint: logged, never drawn
+    if (p.kind === "island_kerb") {
+      c.dropped = "islandKerb";
+      continue;
+    }
     if (p.kind !== "zebra_bar" && !c.byEye) {
       const { type, coordinates } = c.feature.geometry;
       const first = c.shapes[0];
@@ -644,8 +679,8 @@ export async function loadMarkings({ inputs, buildings }) {
   }
 
   // ---- what is drawn
-  const zebraGroups = new Map();
   const zebras = [];
+  const drawn = [];
   for (const c of candidates) {
     c.verdict = c.dropped ? "dropped" : c.review ? "reviewed" : !c.accepted ? "rejected" : c.duplicateOf ? "duplicate" : c.estimated ? "estimated" : "drawn";
     for (const table of [log.kinds, log.files]) {
@@ -659,24 +694,32 @@ export async function loadMarkings({ inputs, buildings }) {
     }
     if (c.dropped) log.dropped[c.dropped] += 1;
     if (c.verdict !== "drawn" && c.verdict !== "estimated") continue;
-    for (const rings of c.shapes) pieces.push({ rings, colour: c.colour, kind: c.kind, estimated: c.estimated });
-    if (c.zebra) {
-      if (zebraGroups.has(c.zebra.group)) zebraGroups.get(c.zebra.group).push(c.zebra);
-      else zebraGroups.set(c.zebra.group, [c.zebra]);
-    } else if (c.frame) {
+    if (c.feature.geometry.type === "LineString") c.lineModel = toModel(c.feature.geometry.coordinates);
+    drawn.push(c);
+    if (c.frame) {
       const box = orientedBox(c.shapes[0][0]);
       zebras.push({ id: `${c.feature.properties.crossing_id} frame`, centre: box.centre, axis: box.short, bars: 1, halfLength: box.halfShort, barCentres: [box.centre, ...c.shapes[0][0]] });
     }
   }
-  for (const [id, bars] of zebraGroups) {
-    const { axis } = bars[0];
-    const centre = centroidOf(bars.map((b) => b.centre));
-    zebras.push({
-      id, centre, axis, bars: bars.length,
-      halfLength: Math.max(...bars.map((b) => Math.abs(dot(sub(b.centre, centre), axis)) + b.halfLength)),
-      barCentres: bars.map((b) => b.centre),
-    });
-  }
+
+  // ---- 4. regular geometry: the gate decided where paint is; what is drawn there is fitted lines, statute dashes,
+  // one bar set per crossing and templates (stages/markingsRegular.mjs)
+  const textMarkings = JSON.parse(await Bun.file(MARKINGS_TEXT).text()).markings;
+  const regular = regularise(drawn, {
+    unit: UNIT,
+    blocked: (p) => BLOCK_PROBES.every(([dx, dz]) => {
+      const q = [p[0] + metres(dx), p[1] + metres(dz)];
+      return checks.inBuilding(q) || truth.onSidewalk(q);
+    }),
+    roadAxes: truth.roadLines,
+    textMarkings,
+    statute: {
+      widthFor: lineWidthFor, stopLineWidth, dash: DASH_BY_KIND, doubleOffsetM: DOUBLE_OFFSET_M, zebraPeriodM: ZEBRA_PERIOD_M, zebraBarM: ZEBRA_BAR_M,
+    },
+  });
+  pieces.push(...regular.pieces);
+  zebras.push(...regular.zebras);
+  log.regular = regular.stats;
 
   // Crossing width check on the drawn zebras (bar length; warnings only, the photo's crossings are never rejected).
   const warnings = zebras.map((z) => crossingWidthWarning(z.id, (2 * z.halfLength) / UNIT)).filter(Boolean);
@@ -860,7 +903,11 @@ export function buildMarkings({ glb, markings, surface, extraHeight = () => 0 })
       markingsDetected: detected,
       markingsEstimated: markings.pieces.length - detected,
       source: markings.source,
-      note: "road markings traced from the orthophoto; bar and line widths, estimated crossings and estimated stall dividers are estimates",
+      note: "road markings traced from the orthophoto and drawn as regular geometry (fitted lines, statute dashes, one bar set per crossing, symbol templates); bar and line widths, templates, unread text (추정), estimated crossings and estimated stall dividers are estimates",
+      regular: markings.log?.regular ? {
+        fittedLines: markings.log.regular.chains, straightRuns: markings.log.regular.straightRuns, arcs: markings.log.regular.arcs,
+        crossings: markings.log.regular.crossings, templates: markings.log.regular.glyphs,
+      } : null,
       estimatedStallDividers: markings.pieces.filter((p) => p.estimated && p.kind === "parking_line").length,
       zebra: { periodM: ZEBRA_PERIOD_M, periodSource: "measured", barM: ZEBRA_BAR_M, gapM: Number((ZEBRA_PERIOD_M - ZEBRA_BAR_M).toFixed(3)), barSource: "assumed" },
       statute: {
@@ -870,7 +917,7 @@ export function buildMarkings({ glb, markings, surface, extraHeight = () => 0 })
         stopLineM: STOP_LINE_M,
         stopLineDefaultM: STOP_LINE_DEFAULT_M,
         dashes: DASH_BY_KIND,
-        dashesApplyTo: "estimated pieces only",
+        dashesApplyTo: "every dashed line, phased on its detected dashes; the photo's own period where it differs from the statute one by more than 15 %",
         crossingWidthM: { warnBelow: CROSSING_MIN_M, warnAtOrAboveWithoutSplit: CROSSING_SPLIT_M },
       },
       warnings: markings.warnings,
@@ -894,10 +941,31 @@ export function describeMarkings({ log, crossings, zebras, warnings = [] }) {
     `  per kind: ${Object.entries(log.kinds).sort(([a], [b]) => a.localeCompare(b)).map(([kind, t]) => row(kind, t)).join("; ")}`,
     `  per file: ${Object.entries(log.files).map(([file, t]) => row(file, t)).join("; ")}`,
     `  left out by context: ${log.dropped.other} 'other', ${log.dropped.building} inside buildings, ${log.dropped.sidewalk} on A003 sidewalks, ` +
-      `${log.dropped.offRoad} lines off the road, ${log.dropped.vegetation} in vegetation, ${log.dropped.shadow} casting a shadow (raised objects); ` +
+      `${log.dropped.offRoad} lines off the road, ${log.dropped.vegetation} in vegetation, ${log.dropped.shadow} casting a shadow (raised objects), ` +
+      `${log.dropped.islandKerb} island_kerb (yellow kerbs of raised islands, not drawn); ` +
       `${zebras.length} drawn zebras; estimated crossing bars: ${estimated}`,
     `  zebra period ${ZEBRA_PERIOD_M} m (measured), bar ${ZEBRA_BAR_M.toFixed(2)} m (assumed); statute widths ${Object.entries(LINE_WIDTH_M_BY_KIND).map(([k, w]) => `${k} ${w}`).join(", ")} m (estimated); ` +
       `stop lines ${STOP_LINE_M.join("-")} m; crossing width warnings: ${warnings.length}`,
+    ...(log.regular ? [describeRegular(log.regular)] : []),
     ...crossings.map((line) => `  crossing ${line}`),
   ].join("\n");
+}
+
+// One line on the regular geometry (stages/markingsRegular.mjs): chains, straightness, dashes, crossings, templates.
+function describeRegular(r) {
+  const sorted = [...r.residual].sort((a, b) => a - b);
+  const p95 = sorted.length ? sorted[Math.round(0.95 * (sorted.length - 1))] : 0;
+  const dashes = r.dashPeriods.reduce((acc, d) => {
+    acc[d.source] = (acc[d.source] ?? 0) + 1;
+    return acc;
+  }, {});
+  const glyphs = Object.entries(r.glyphs).sort(([a], [b]) => a.localeCompare(b)).map(([k, n]) => `${k} ${n}`).join(", ");
+  return `  regular geometry: ${r.fragments} line pieces in ${r.chains} fitted lines (${r.straightRuns} straight runs, ${r.arcs} arcs, ` +
+    `${r.parallelSnapped} set parallel, ${r.duplicateLines} duplicate lines dropped; straight runs deviate at most ` +
+    `${(Math.max(0, ...r.straightness) * 100).toFixed(1)} cm from straight; detected points within ${p95.toFixed(2)} m (p95 of the per-line p95) of the fitted path); ` +
+    `dashed lines by statute ${dashes.statute ?? 0}, by the photo's period ${dashes.photo ?? 0}, as detected ${dashes["detected dashes"] ?? 0}; ` +
+    `${r.crossingGroups} bar groups -> ${r.crossings} crossings (${r.crossingRowsAligned} rows on a shared bar grid), ${r.barsDetected} detected bars -> ${r.barsDrawn} equal bars, ` +
+    `${r.stopInCrossing.length} stop lines inside a crossing left out (${r.stopInCrossing.join(", ") || "none"}); ` +
+    `${r.stopSquared} stop lines squared to their lane; ${r.rectangles} rectangles, ${r.outlines} snapped outlines; templates: ${glyphs}; ` +
+    `left out: ${r.dropped.blocked} on buildings or sidewalks, ${r.dropped.textTooSmall} text blobs too small for a character`;
 }

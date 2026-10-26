@@ -502,12 +502,15 @@ to it within 5 mm; methods, hand checks and recall in `data/photo/README.md`):
   (`kind`, 201). M3 (2026-10-25) appended 651 hand traces (`note` "M3 trace: ..."): the gate's raised crossing,
   island lines, guide dashes and arrows, the roundabout rim dashes and ladder strip, striped humps and hatched medians
   re-traced as their bands, blue bays as fill and symbol, shaded stall rows and a zebra in deep shadow. Pieces of one
-  fitted model share a `group`.
+  fitted model share a `group`. The west main-gate raised crossing (MX01747 and its bands, 2026-10-26) is the east
+  one (MX00611) moved onto the photo by template matching on the NGII sheet (shift -22.75 m E, -1.92 m N, NCC 0.95;
+  band layout 추정). The yellow kerbs of the main-gate islands (MX00593-MX00601) carry kind `island_kerb`: the islands
+  are structures, not carriageway paint, so they are logged and never drawn.
 
 `markingCandidates()` applies the corrections, then turns both files into candidates with their drawn pieces. A
 candidate is drawn only when the photo backs it:
 
-1. context: left out when its centroid lies inside a modelled building or an A003 sidewalk, a polygon is mostly
+1. context: left out when it is an `island_kerb`, its centroid lies inside a modelled building or an A003 sidewalk, a polygon is mostly
    surrounded by vegetation, the photo shows a cast shadow beside it on the side away from the morning sun, or a solid
    lane, edge or centre line lies off the road;
 2. paint gate: `bake/markings-gate.mjs` measures, on the NGII sheet itself (`.cache/ngii-ortho`; the VWorld rendition
@@ -545,14 +548,27 @@ bars), 213 rejected by the paint gate, 177 by eye, 188 duplicates, 97 left out b
 | edge_line | 14 | 5 | 11 | 1 | 16 |
 | arrows, diamonds, give-way, bike box | 50 | 3 | 0 | 13 | 1 |
 
-Geometry:
+Geometry. The gate measures the detected pieces themselves (their fingerprints), so it stays the existence check;
+what is drawn is regular geometry fitted to the accepted pieces (`stages/markingsRegular.mjs`, fitters in
+`lib/markingFit.mjs`, templates in `lib/markingGlyphs.mjs`; unit tests beside them):
 
 | Candidate | Drawn as |
 |---|---|
-| `zebra_bar` | each bar at its detected centre and length, along its crossing's mean axis, 0.50 m wide (estimated; see below). markings.geojson groups bars by `crossing_id`; completion-pass bars are linked within 2 m and 15°. A crossing fused to a painted frame (`fused_frame`) is its outline polygon |
-| LineStrings | line kinds stroked 0.15 m wide (stop lines at their detected width within 0.3-0.6 m); `double` yellow lines as two 0.15 m lines 0.15 m either side of the centreline, or as one line on it when only that reading is on paint; `dotted` guide lines as their dots |
-| Polygons (arrows, text, hatching, chevrons, stall outlines, dashes, humps, blue bays) | the painted outline with its holes |
+| lines (lane, centre, edge, kerb, stall and give-way lines) | the fragments of one line (same kind and colour, ends facing each other, a gap of at most 3 m, or 13.5 m for dashed lines, i.e. one hidden dash) chained in order and fitted as straight runs (robust Huber line, 90 % of the points within 0.10 m, none beyond 0.30 m) joined by tangent circular arcs sized to the paint at the bend; straight runs of parallel lines within 8 m and 3° share one direction. A straight run is exactly straight; the detected points lie within 0.12 m (p95; at most 0.24 m) of the fitted path. Widths are the statute ones (`LINE_WIDTH_M_BY_KIND`, 추정) |
+| dashed lines | statute dashes along the fitted line (white lane line 3 m paint / 5 m gap, yellow 3 m / 3 m: 경찰청 교통노면표시 설치·관리 업무편람 표 2-1, 도로교통법 시행규칙 별표 6), phased on the detected dashes (circular mean of their centres); where at least four detected dashes give a period more than 15 % off the statute one, the photo's period and median dash; dashes are laid only over the detected extent |
+| `double` yellow lines | two lines 0.15 m either side of the fitted centreline (0.30 m between centres, 추정), or one line where only that reading is on paint |
+| stop lines | the detected rectangle, straight, squared to the lane line it closes (within 25°), width clamped into 0.30-0.45 m |
+| `zebra_bar` | per crossing ONE oriented rectangle: bar groups whose rectangles overlap at the same axis, or that lie in one row less than 3 m apart along the walk (a median or a car splits the detected bars), are one crossing; a crossing painted as two adjacent rows keeps a rectangle per row on one shared bar grid (bars aligned); a "stop line" inside a crossing rectangle is a bar read twice and is left out; equal 0.50 m bars at the measured 0.903 m period along the walk axis, phase from the detected bars, length the median detected bar, axis set to the road line's when within 5°. A crossing fused to a painted frame (`fused_frame`) is its outline with straightened edges |
+| arrows, diamond, give-way triangle, chevrons, wheelchair and bicycle symbols | templates at the detected centre and size. An arrow lies along its lane (the road direction where the blob's axis is within 25° of it) and points the way that lane's traffic goes (the centre line, else the OSM road axis, on the driver's left); a generic `arrow` takes the best of straight / left / right (추정). A wheelchair symbol stands upright along one of its bay's directions, the one that covers the painted symbol best |
+| `text` | one marking per lane block, read for the approaching driver: lines across the lane, the first line farthest, syllables upright to the driver and 2.5 times as long as wide (statute road-marking font proportions, 추정), composed from their jamo (`lib/markingGlyphs.mjs`). `data/photo/markings-text.json` lists the read markings with their blobs and source: at the main gate the SCNU VR tour (scene_b1 face r, scene_a19 face f) shows 국립/순천대학교 and 환영/합니다 on the inbound carriageway and 안녕히/가세요 and 국립/순천대학교 on the outbound one; by A10 인재관 (scene_a10 faces d and b) the yellow 주차금지; on the photo the speed numbers 30 and 50. Every other block (blobs of one lane within 1.5 m) is the most likely statute text for its size, 서행 or 천천히 (경차 in a parking stall), logged 추정 |
+| stall frames and other line-kind outlines (a rail with its dividers, an L) | straight strokes at the statute width: along each dominant direction of the outline, every band of at least 1 m of paint becomes one stroke over its longest run |
+| hatch stripes, hump bands, blue bays, other painted areas | their rectangle when they fill it (72 %), else their outline with the edges snapped to its dominant directions and to its group's (bands of one hump, fill and frame of one bay) |
+| `dotted` guide lines | their `dots` squares |
 | `other` | left out |
+
+Nothing regular is kept on a modelled building or an A003 sidewalk (a point counts as on one only when it and four
+points 0.3 m around it are), and fitted lines of one colour covering the same paint (half the shorter within 0.25 m)
+are drawn once.
 
 The bar width is below the photo's resolution. Folding the bar profiles of 25 crossings over the 0.903 m period,
 the second harmonic shows the bars wider than the gaps in 73-92 % of them; the duty of 0.52-0.58 gives 0.47-0.52 m
