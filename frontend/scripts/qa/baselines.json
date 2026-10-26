@@ -1,0 +1,3006 @@
+{
+  "version": 1,
+  "hash": "dhash-64",
+  "scenarios": {
+    "legacy/S01-D-dark": {
+      "dhash": "537b560b4f26b6d1",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S01-D-light": {
+      "dhash": "1918311151297071",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S01-P-dark": {
+      "dhash": "5d7f336726209c1f",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S01-P-light": {
+      "dhash": "6361551151519c63",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S02-D-dark": {
+      "dhash": "7b03161b2d45a9e1",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S02-D-light": {
+      "dhash": "1918111901416961",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S02-P-dark": {
+      "dhash": "2b13b31293bb3737",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S02-P-light": {
+      "dhash": "5773735296b91f4b",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S03-D-dark": {
+      "dhash": "fb91564f47d78f91",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S03-D-light": {
+      "dhash": "59b0512141916971",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S03-P-dark": {
+      "dhash": "0b73fb513151c7bf",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S03-P-light": {
+      "dhash": "1bf373503051470b",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S04-D-dark": {
+      "dhash": "5bd23779ac8d27c5",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S04-D-light": {
+      "dhash": "18d12069a8a96161",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S04-P-dark": {
+      "dhash": "5975aea627cf870d",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S04-P-light": {
+      "dhash": "2109a6a6a7cf8761",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S05-D-dark": {
+      "dhash": "0d0b17171717158f",
+      "rects": {
+        "panel": {
+          "x": 1440,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "legacy/S05-D-light": {
+      "dhash": "0d0911011111118f",
+      "rects": {
+        "panel": {
+          "x": 1440,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "legacy/S05-P-dark": {
+      "dhash": "651f616961333d7d",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "legacy/S05-P-light": {
+      "dhash": "6b07696969330703",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "legacy/S06-D-dark": {
+      "dhash": "5379570d4b25b391",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S06-D-light": {
+      "dhash": "1919311151287071",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S06-P-dark": {
+      "dhash": "5d1d3e8c3c7f1b1d",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S06-P-light": {
+      "dhash": "276341316dfdf361",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S07-D-dark": {
+      "dhash": "07365e0f0f169797",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S07-D-light": {
+      "dhash": "183811094910f271",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S07-P-dark": {
+      "dhash": "589cb68cb879329c",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S07-P-light": {
+      "dhash": "a363413959c9f221",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S08-D-dark": {
+      "dhash": "07375f0f0e169797",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S08-D-light": {
+      "dhash": "183813094910f371",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S08-P-dark": {
+      "dhash": "5c3462185879f29c",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S08-P-light": {
+      "dhash": "a14303b95979f221",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S09-D-dark": {
+      "dhash": "c7271e77a7e6a78f",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S09-D-light": {
+      "dhash": "0180d171a1e16169",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S09-P-dark": {
+      "dhash": "88d43565c5c6c4cc",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S09-P-light": {
+      "dhash": "40333564c4c60743",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S10-D-dark": {
+      "dhash": "c7273e73b3f2a78f",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S10-D-light": {
+      "dhash": "0180cd4d8dcd6169",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S10-P-dark": {
+      "dhash": "185ee0ee2aa6858c",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S10-P-light": {
+      "dhash": "22a127555549850b",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S11-D-dark": {
+      "dhash": "67954e66568e8497",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S11-D-light": {
+      "dhash": "58c5496151896071",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S11-P-dark": {
+      "dhash": "c8210e826907a4b8",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S11-P-light": {
+      "dhash": "17110f8268072f63",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S12-D-dark": {
+      "dhash": "07963f77ad8f278f",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S12-D-light": {
+      "dhash": "1891317ba9892369",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S12-P-dark": {
+      "dhash": "58fe64c667474786",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S12-P-light": {
+      "dhash": "a109c4c6e7c78767",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S13-D-dark": {
+      "dhash": "26963e762d8f278f",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S13-D-light": {
+      "dhash": "38903179a9892161",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S13-P-dark": {
+      "dhash": "58bc96d647475396",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S13-P-light": {
+      "dhash": "b1cd2965a7e78223",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S14-D-dark": {
+      "dhash": "3149190193343d13",
+      "rects": {
+        "panel": {
+          "x": 1440,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "legacy/S14-D-light": {
+      "dhash": "0d3b0b0173343d93",
+      "rects": {
+        "panel": {
+          "x": 1440,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "legacy/S14-P-dark": {
+      "dhash": "94cce9caa7beb75b",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "legacy/S14-P-light": {
+      "dhash": "5b65e9caa743b75b",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "legacy/S15-D-dark": {
+      "dhash": "37c7df97576eafcf",
+      "rects": {
+        "panel": {
+          "x": 1440,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "legacy/S15-D-light": {
+      "dhash": "10c0d8905068a9c9",
+      "rects": {
+        "panel": {
+          "x": 1440,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "legacy/S15-P-dark": {
+      "dhash": "90c459d7716945e6",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "legacy/S15-P-light": {
+      "dhash": "c6c459d7e696ba1a",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "legacy/S16-D-light": {
+      "dhash": "1918311151297071",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S16-P-light": {
+      "dhash": "6361551151519c63",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S01-D-dark": {
+      "dhash": "537b560b4f26b6d5",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S01-D-light": {
+      "dhash": "1918311151297171",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S01-P-dark": {
+      "dhash": "5d7f332366607579",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S01-P-light": {
+      "dhash": "636155551111173b",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S04-D-dark": {
+      "dhash": "5bd13479ab8927c5",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S04-D-light": {
+      "dhash": "18d12069a8a96161",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S04-P-dark": {
+      "dhash": "595d5555674f870d",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S04-P-light": {
+      "dhash": "2179ab55c7cf870d",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S06-D-dark": {
+      "dhash": "537d570d4b26b393",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S06-D-light": {
+      "dhash": "1919311151297171",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S06-P-dark": {
+      "dhash": "5d2f16acbcf9392d",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S06-P-light": {
+      "dhash": "2757615353074349",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S08-D-dark": {
+      "dhash": "07375f0f0e169797",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S08-D-light": {
+      "dhash": "183813094910f371",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S08-P-dark": {
+      "dhash": "5c3462185879f28c",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S08-P-light": {
+      "dhash": "a14303b95979f28c",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S13-D-dark": {
+      "dhash": "06365e0f0f169697",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S13-D-light": {
+      "dhash": "183811094910f171",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 956,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 752,
+          "w": 384,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 702,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S13-P-dark": {
+      "dhash": "5830c8de595b52da",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S13-P-light": {
+      "dhash": "89493729b9a9b22d",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 346,
+          "h": 844
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 696,
+          "w": 314,
+          "h": 132
+        },
+        "presetBar": {
+          "x": 16,
+          "y": 16,
+          "w": 314,
+          "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "vworld/S01-D-dark": {
+      "dhash": "6a612213160a8ac8",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S01-D-light": {
+      "dhash": "e8e02111114948c8",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S01-P-dark": {
+      "dhash": "514ee3eeaeac091c",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S01-P-light": {
+      "dhash": "2f0d4d1151550931",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S02-D-dark": {
+      "dhash": "a1a3b2b39a9a9999",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S02-D-light": {
+      "dhash": "e1e0b1b199d959d9",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S02-P-dark": {
+      "dhash": "1615cd9b5ffb8f36",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S02-P-light": {
+      "dhash": "7e4dcd9a5efb8f5e",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S03-D-dark": {
+      "dhash": "e1cbcacbd318f9b1",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S03-D-light": {
+      "dhash": "e1c8c9c1d15979f1",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S03-P-dark": {
+      "dhash": "173ded5456797a3b",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S03-P-light": {
+      "dhash": "7f6ded5456797a5b",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S04-D-dark": {
+      "dhash": "e1cbcacbd318f9b1",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S04-D-light": {
+      "dhash": "e1c8c9c1d15979f1",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S04-P-dark": {
+      "dhash": "173ded5456797a3b",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S04-P-light": {
+      "dhash": "7f6ded5456797a5b",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S05-D-dark": {
+      "dhash": "e1cbcacbd318f9b1",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S05-D-light": {
+      "dhash": "e1c8c9c1d15979f1",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S05-P-dark": {
+      "dhash": "173ded5456797a3b",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S05-P-light": {
+      "dhash": "7f6ded5456797a5b",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S06-D-dark": {
+      "dhash": "e1cbcacbd318f9b1",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S06-D-light": {
+      "dhash": "e1c8c9c1d15979f1",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S06-P-dark": {
+      "dhash": "173ded5456797a3b",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S06-P-light": {
+      "dhash": "7f6ded5456797a5b",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S07-D-dark": {
+      "dhash": "e1cbcacbd318f9b1",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S07-D-light": {
+      "dhash": "e1c8c9c1d15979f1",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S07-P-dark": {
+      "dhash": "173ded5456797a3b",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S07-P-light": {
+      "dhash": "7f6ded5456797a5b",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S08-D-dark": {
+      "dhash": "e1cacac8d018f9b1",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S08-D-light": {
+      "dhash": "e0c8c8c0d15879f1",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S08-P-dark": {
+      "dhash": "5d35644c53397a1d",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S08-P-light": {
+      "dhash": "3f6b65d51f39fa7b",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S09-D-dark": {
+      "dhash": "e1cbcacbd318f9b1",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S09-D-light": {
+      "dhash": "e1c8c9c1d15979f1",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S09-P-dark": {
+      "dhash": "173ded5456797a3b",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S09-P-light": {
+      "dhash": "7f6ded5456797a5b",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S10-D-dark": {
+      "dhash": "e1cbcadbcb18f9b1",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S10-D-light": {
+      "dhash": "e1c8c9cdcd5979f1",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S10-P-dark": {
+      "dhash": "5f7de3612fbb781d",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S10-P-light": {
+      "dhash": "3f295d175551787b",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S11-D-dark": {
+      "dhash": "d3c34261eb68c8d9",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S11-D-light": {
+      "dhash": "d1c04161e96948d9",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S11-P-dark": {
+      "dhash": "1b3d95cca653933b",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S11-P-light": {
+      "dhash": "7f6d95cca653935b",
+      "rects": {
+        "panel": {
+          "x": 390,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S12-D-dark": {
+      "dhash": "d3c34261eb68c8d9",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S12-D-light": {
+      "dhash": "d1c04161e96948d9",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S12-P-dark": {
+      "dhash": "597c2366a6a2931d",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "vworld/S12-P-light": {
+      "dhash": "3f2955115153937b",
+      "rects": {
+        "panel": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "hud": null,
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    }
+  }
+}

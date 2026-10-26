@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { globSync } from 'node:fs';
+import { existsSync, globSync } from 'node:fs';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
@@ -19,7 +19,19 @@ const vitestResult = spawnSync(process.execPath, [vitestPath, 'run', ...vitestFi
 });
 const vitestPassed = vitestResult.status === 0;
 
-console.log(`TEST SUMMARY node=${nodePassed ? 'pass' : 'fail'} vitest=${vitestPassed ? 'pass' : 'fail'}`);
-if (!nodePassed || !vitestPassed) {
+// Static audit rows + token lint (scripts/qa/static-checks.mjs). Advisory until todo 21 creates
+// scripts/qa/.static-enforced: every FAIL line is printed, but only an enforced run fails the suite.
+let staticStatus = 'skipped';
+let staticBlocks = false;
+if (!process.argv.includes('--skip-static')) {
+  const staticResult = spawnSync(process.execPath, ['scripts/qa/static-checks.mjs'], { stdio: 'inherit' });
+  const staticPassed = staticResult.status === 0;
+  const enforced = existsSync('scripts/qa/.static-enforced');
+  staticStatus = staticPassed ? 'pass' : enforced ? 'fail' : 'advisory-fail';
+  staticBlocks = enforced && !staticPassed;
+}
+
+console.log(`TEST SUMMARY node=${nodePassed ? 'pass' : 'fail'} vitest=${vitestPassed ? 'pass' : 'fail'} static=${staticStatus}`);
+if (!nodePassed || !vitestPassed || staticBlocks) {
   process.exitCode = 1;
 }
