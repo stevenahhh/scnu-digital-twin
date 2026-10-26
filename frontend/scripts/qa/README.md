@@ -7,7 +7,7 @@ SwiftShader GL), evaluates the audit checks, compares every captured scenario wi
 ```bash
 bun frontend/scripts/qa/visual-qa.mjs --entry legacy|vworld|both --viewport D|P|both \
   --theme dark|light|both --states S01..S17 --only <ids> --out <dir> [--update-baseline]
-node --test frontend/scripts/qa/lib/*.test.mjs
+node --test frontend/scripts/qa/lib/*.test.mjs frontend/scripts/qa/checks/*.test.mjs
 ```
 
 ## Viewports, states, themes
@@ -15,7 +15,8 @@ node --test frontend/scripts/qa/lib/*.test.mjs
 - `D` = 1440x900 @1x; `P` = 390x844 @2x with mobile emulation (PNGs are 780x1688).
 - S01..S12 follow `waves/uhf-ux/screens.md` "How to reproduce" (same selectors, waits and the
   12 s tap retry). S13 = 주차·안전 tab, S14 = S05 then floor 6 (waits for
-  `[data-qa=d4-room-grid]`), S15 = S05 then 태양광 설치 then the first 편집 button, S16 = a fresh
+  `[data-qa=d4-room-grid]`), S15 = S05 then 태양광 설치 then the first 편집 button (fixtures up for this state only: with
+  backends down the plan list is empty and has no 편집), S16 = a fresh
   load with 설정 > 테마 > 라이트 applied, S17 = S01/S04/S06/S08/S13 with the fixture backends up.
   VWorld runs S01..S12.
 - `--theme light` applies 설정 > 테마 > 라이트 through the dialog after load; `dark` keeps the
@@ -79,3 +80,13 @@ rewrites the captured scenarios in `baselines.json` (others are kept); check FAI
 Baseline fingerprint: a 64-bit difference hash (9x8 area-averaged grayscale grid, 16 hex chars)
 of each PNG, plus the rects of `[data-qa=dashboard-panel]`, `[data-qa=campus-hud]`,
 `[data-qa=time-slider]`, `[data-qa=camera-preset-bar]` and the selected chip.
+
+## Required product hooks
+
+Checks are written against these hooks now and FAIL until the owning todo adds them
+(`REQUIRED_HOOKS` in `checks/index.mjs`):
+
+`[data-qa=selection-inspector]`, `[data-qa=estimate-value]`, `[data-qa=freshness-stamp]`,
+`[data-qa=sample-badge]`, `[data-qa=campus-label-layer]`, `[data-qa=search-field]`,
+`[data-qa=legend]`, `[data-qa=breadcrumb]`, `[data-qa=camera-controls]`,
+`[data-qa=presentation-toggle]`, `[data-qa=sheet-handle]`, `[data-qa=d4-room-grid]`.

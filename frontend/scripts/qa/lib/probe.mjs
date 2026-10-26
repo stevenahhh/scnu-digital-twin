@@ -34,8 +34,26 @@ export function pageProbeSource() {
   const textNodesShown = (root = document.body) => { const out = []; const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     while (walker.nextNode()) { const node = walker.currentNode; const value = node.textContent.trim(); if (!value) continue;
       const el = node.parentElement; if (el && visible(el)) out.push({ el, value }); } return out; };
+  // Active dashboard tab: aria-selected/pressed, else the one tab whose filled background differs.
+  const activeTab = () => {
+    const tabs = all("[data-qa^=dashboard-tab-]");
+    const aria = tabs.find((el) => el.getAttribute("aria-selected") === "true" || el.getAttribute("aria-pressed") === "true");
+    if (aria) return txt(aria);
+    const filled = tabs.filter((el) => !/rgba\\(0, 0, 0, 0\\)|transparent/.test(getComputedStyle(el).backgroundColor));
+    return filled.length === 1 ? txt(filled[0]) : null;
+  };
+  const alphaOf = (value) => { const m = String(value).match(/\\/\\s*([\\d.]+)\\)|rgba\\([^)]*,\\s*([\\d.]+)\\)/); if (m) return Number(m[1] ?? m[2]); return /^(rgb|color)\\(/.test(String(value)) ? 1 : 0; };
+  // Alpha of the panel's visible surface: the largest non-transparent box among it and its first descendants.
+  const surfaceAlpha = (sel) => {
+    const root = one(sel);
+    if (!root) return null;
+    const candidates = [root, ...root.querySelectorAll(":scope > *, :scope > * > *")].filter((el) => alphaOf(getComputedStyle(el).backgroundColor) > 0);
+    const area = (el) => { const b = el.getBoundingClientRect(); return b.width * b.height; };
+    const best = candidates.sort((a, b) => area(b) - area(a))[0];
+    return best ? Math.round(alphaOf(getComputedStyle(best).backgroundColor) * 100) / 100 : 0;
+  };
   const button = (label) => all('button,[role=button],a').find((el) => visible(el) && (el.getAttribute('aria-label') === label || txt(el) === label));
-  window.__qa = { all, one, r, shown, inView, visible, txt, eff, scaleOf, inter, gap, chips, color, textNodesShown, button };
+  window.__qa = { all, one, r, shown, inView, visible, txt, eff, scaleOf, inter, gap, chips, color, textNodesShown, button, activeTab, alphaOf, surfaceAlpha };
   return true;
 })()`;
 }

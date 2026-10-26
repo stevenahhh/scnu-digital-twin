@@ -23,6 +23,8 @@ test("fixture routes cover the weather, popup, traffic and energy reads", () => 
   assert.equal(resolveFixture("api", "/energy/buildings/D4/installation-plans")[1][0].is_representative, true);
   assert.equal(resolveFixture("api", "/energy/buildings/D4/representative-plan")[1].installation_plan_id, "D4-plan-1");
   assert.equal(resolveFixture("api", "/energy/installation-plans/D4-plan-1")[1].arrays[0].installation_plan_id, "D4-plan-1");
+  const building = resolveFixture("api", "/energy/buildings/D4")[1];
+  assert.equal(building.roofs[0].id, resolveFixture("api", "/energy/installation-plans/D4-plan-1")[1].arrays[0].roof_id);
   assert.equal(resolveFixture("api", "/nope"), null);
 });
 

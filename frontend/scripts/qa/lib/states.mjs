@@ -2,7 +2,7 @@
 // plan's additions. Each state's `steps` run from the previous state and end at the capture point;
 // `after` runs once the screenshot and checks are done (e.g. releasing the S11 drag).
 import { sleep } from "./browser.mjs";
-import { decode, pixelDiff } from "./probe.mjs";
+import { decode, inPage, pixelDiff } from "./probe.mjs";
 
 export const STATE_IDS = Object.freeze(["S01", "S02", "S03", "S04", "S05", "S06", "S07", "S08", "S09", "S10", "S11", "S12", "S13", "S14", "S15", "S16", "S17"]);
 export const CHAIN_IDS = Object.freeze(STATE_IDS.slice(0, 15));
@@ -132,11 +132,12 @@ export async function loadAndSettle(ctx, url) {
   ctx.actions.push(`settled after ${seconds} s`);
 }
 
-async function enterD4(ctx) {
+async function enterD4(ctx, beforeLabelTap) {
   await tapIfVisible(ctx, '[aria-label="닫기"]');
   await closePanelOnMobile(ctx);
   await act(ctx, "[data-qa=camera-preset-d4]");
   await wait(ctx, 3500);
+  if (beforeLabelTap) await beforeLabelTap();
   await act(ctx, CHIP, "공과대학 3호관");
   await wait(ctx, 4000);
 }
@@ -182,11 +183,11 @@ export const STATES = Object.freeze([
   {
     id: "S05", name: "D4-section-drilldown",
     steps: async (ctx) => {
-      ctx.memo.set("S05:before", await ctx.b.run(() => ({
-        tab: [...document.querySelectorAll("[data-qa^=dashboard-tab-]")].find((el) => el.getAttribute("aria-selected") === "true")?.textContent?.trim() ?? null,
-        scrollTop: document.querySelector("[data-qa=dashboard-panel] .overflow-y-auto")?.scrollTop ?? null,
-      })));
-      await enterD4(ctx);
+      // GAP-07 / V-S-82: the tab and panel scroll position right before the D4 label is tapped.
+      await enterD4(ctx, async () => ctx.memo.set("S05:before", await inPage(ctx.b, (qa) => ({
+        tab: qa.activeTab(),
+        scrollTop: qa.one("[data-qa=dashboard-panel] .overflow-y-auto")?.scrollTop ?? null,
+      }))));
     },
   },
   {
@@ -194,9 +195,9 @@ export const STATES = Object.freeze([
     steps: async (ctx) => {
       await act(ctx, '[aria-label="캠퍼스 지도로 돌아가기"]');
       await wait(ctx, 3000);
-      ctx.memo.set("S06:after-return", await ctx.b.run(() => ({
-        tab: [...document.querySelectorAll("[data-qa^=dashboard-tab-]")].find((el) => el.getAttribute("aria-selected") === "true")?.textContent?.trim() ?? null,
-        scrollTop: document.querySelector("[data-qa=dashboard-panel] .overflow-y-auto")?.scrollTop ?? null,
+      ctx.memo.set("S06:after-return", await inPage(ctx.b, (qa) => ({
+        tab: qa.activeTab(),
+        scrollTop: qa.one("[data-qa=dashboard-panel] .overflow-y-auto")?.scrollTop ?? null,
       })));
       await act(ctx, "[data-qa=camera-preset-overview]");
       await wait(ctx, 3500);
@@ -310,6 +311,11 @@ export const STATES = Object.freeze([
     steps: async (ctx) => {
       const inD4 = await ctx.b.run(() => Boolean(document.querySelector("#d4-installation-tab")));
       if (!inD4) await enterD4(ctx);
+      // 편집 only exists when the plan list loads, so the energy fixtures are up for this state only.
+      if (ctx.fixtureControl) {
+        await ctx.fixtureControl.up();
+        ctx.actions.push("fixtures up for S15 (the plan list needs a plan for 편집)");
+      }
       await act(ctx, "#d4-installation-tab");
       await wait(ctx, 3000);
       await act(ctx, "button", "편집");
@@ -318,6 +324,7 @@ export const STATES = Object.freeze([
     after: async (ctx) => {
       await tapIfVisible(ctx, '[aria-label="캠퍼스 지도로 돌아가기"]');
       await sleep(2000);
+      if (ctx.fixtureControl) await ctx.fixtureControl.restore();
     },
   },
   {

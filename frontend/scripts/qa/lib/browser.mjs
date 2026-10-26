@@ -23,6 +23,17 @@ export const DEFAULT_CLOCK = "2026-10-25T19:00:00+09:00";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+export class BrowserTimeoutError extends Error {}
+
+// Every browser round trip is bounded: a page that stops rendering must fail the run, never hang it.
+export function withTimeout(promise, ms, label) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new BrowserTimeoutError(`${label} timed out after ${ms} ms`)), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
 // Pins Date to a fixed start (advancing with real elapsed time) so "now" scenes are reproducible.
 function clockScript(iso) {
   return `(() => {
@@ -100,20 +111,20 @@ export class Browser {
   }
 
   async navigate(url) {
-    await this.view.navigate(url);
+    await withTimeout(this.view.navigate(url), 90000, `navigate ${url}`);
   }
 
   // Evaluates fn(...args) in the page. fn must be self-contained (it is serialised).
   async run(fn, ...args) {
-    return this.view.evaluate(`(${fn.toString()})(...${JSON.stringify(args)})`);
+    return withTimeout(this.view.evaluate(`(${fn.toString()})(...${JSON.stringify(args)})`), 60000, "evaluate");
   }
 
   async evaluate(expression) {
-    return this.view.evaluate(expression);
+    return withTimeout(this.view.evaluate(expression), 60000, "evaluate");
   }
 
   async screenshot() {
-    const shot = await this.view.screenshot({ encoding: "buffer" });
+    const shot = await withTimeout(this.view.screenshot({ encoding: "buffer" }), 60000, "screenshot");
     return new Uint8Array(shot);
   }
 
@@ -155,23 +166,23 @@ export class Browser {
       point = await this.center(selector, text);
     }
     if (!point) return { ok: false, action: `NOT FOUND ${selector}${text ? ` "${text}"` : ""}` };
-    await this.view.click(point[0], point[1]);
+    await withTimeout(this.view.click(point[0], point[1]), 30000, "click");
     return { ok: true, action: `click ${selector}${text ? ` "${text}"` : ""} @${Math.round(point[0])},${Math.round(point[1])}` };
   }
 
   async wheel(x, y, deltaY, times) {
     for (let index = 0; index < times; index += 1) {
-      await this.view.cdp("Input.dispatchMouseEvent", { type: "mouseWheel", x, y, deltaX: 0, deltaY });
+      await withTimeout(this.view.cdp("Input.dispatchMouseEvent", { type: "mouseWheel", x, y, deltaX: 0, deltaY }), 30000, "mouseWheel");
       await sleep(60);
     }
   }
 
   async mouse(type, x, y, buttons = 0, modifiers = 0) {
-    await this.view.cdp("Input.dispatchMouseEvent", { type, x, y, button: "left", buttons, clickCount: 1, modifiers });
+    await withTimeout(this.view.cdp("Input.dispatchMouseEvent", { type, x, y, button: "left", buttons, clickCount: 1, modifiers }), 30000, type);
   }
 
   async key(key) {
-    await this.view.press(key);
+    await withTimeout(this.view.press(key), 30000, `press ${key}`);
   }
 
   async setTimeMinutes(minutes) {

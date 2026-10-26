@@ -5,7 +5,7 @@
 import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { Browser, VIEWPORTS, DEFAULT_CLOCK, closeAllBrowsers, sleep } from "./lib/browser.mjs";
+import { Browser, BrowserTimeoutError, VIEWPORTS, DEFAULT_CLOCK, closeAllBrowsers, sleep, withTimeout } from "./lib/browser.mjs";
 import { startVite, killAll } from "./lib/processes.mjs";
 import { setFixtures, readFixtureRequests } from "./lib/fixtures.mjs";
 import { inPage, decode } from "./lib/probe.mjs";
@@ -207,10 +207,11 @@ async function main() {
 async function evaluate(check, scenario, ctx) {
   const base = { id: check.id, entry: scenario.entry, state: scenario.state, viewport: scenario.viewport, theme: scenario.theme, scenarioKey: scenario.scenarioKey };
   try {
-    const result = await check.run(ctx);
+    const result = await withTimeout(check.run(ctx), 180000, `check ${check.id}`);
     if (!result || result.measured === undefined) return { ...base, pass: false, measured: "undefined measurement", expected: result?.expected ?? null };
     return { ...base, pass: result.pass === true, measured: result.measured, expected: result.expected ?? null };
   } catch (error) {
+    if (error instanceof BrowserTimeoutError && ctx.markUnresponsive) ctx.markUnresponsive(error.message);
     return { ...base, pass: false, measured: `error: ${String(error?.message ?? error).slice(0, 200)}`, expected: check.doc ?? null };
   }
 }
@@ -229,6 +230,10 @@ async function runPass({ args, entry, viewport, theme, baseUrl, selected, baseli
     actions: [],
     stateLabel: null,
     quality: args.quality,
+    fixtureControl: {
+      up: () => setFixtures(baseUrl, { mode: "up" }),
+      restore: () => setFixtures(baseUrl, { mode: fixtureMode, fail: args.fail, delayMs: args.delayMs }),
+    },
   };
   const prefix = entry === "vworld" ? "vworld-" : "";
   ctx.saveSample = async (label, offset) => {
@@ -285,7 +290,8 @@ async function runPass({ args, entry, viewport, theme, baseUrl, selected, baseli
       scenarios.push(scenario);
       log(`  ${key}: ${file}${scenario.baseline ? (scenario.baseline.pass ? " baseline ok" : ` REGRESSION ${scenario.baseline.problems.map((p) => p.detail).join("; ")}`) : ""}`);
     }
-    const scenarioInfo = { entry, state: state.id === "S17" ? label.split(".")[1] : label, viewport: viewport.id, theme: themeLabel, fixtures, scenarioKey: key };
+    // S17 frames are labelled "S17.S04" etc.; checks address them by the underlying state id.
+    const scenarioInfo = { entry, state: label.includes(".") ? label.split(".")[1] : label, viewport: viewport.id, theme: themeLabel, fixtures, scenarioKey: key };
     const checkCtx = {
       args, b, entry, viewport: viewport.id, theme: themeLabel, state: scenarioInfo.state, stateLabel: label, fixtures, memo, runMemo,
       scale: viewport.scale, width: viewport.width, height: viewport.height, mobile: viewport.mobile, map: ctx.map,
@@ -296,13 +302,19 @@ async function runPass({ args, entry, viewport, theme, baseUrl, selected, baseli
       restoreFixtures: () => setFixtures(baseUrl, { mode: fixtureMode, fail: args.fail, delayMs: args.delayMs }),
       readRequests: () => readFixtureRequests(baseUrl),
       sleep,
+      markUnresponsive: (reason) => { ctx.unresponsive = reason; },
     };
     const applicable = selected.filter((check) => Boolean(check.mutates) === (mode === "probe") && appliesTo(check, { ...scenarioInfo, fixtures }));
     for (const check of applicable) {
+      if (ctx.unresponsive) {
+        entries.push({ id: check.id, entry, state: scenarioInfo.state, viewport: viewport.id, theme: themeLabel, scenarioKey: key, pass: false, measured: `not evaluated: page unresponsive (${ctx.unresponsive})`, expected: check.doc ?? null });
+        continue;
+      }
       const result = await evaluate(check, scenarioInfo, checkCtx);
       entries.push(result);
       if (result.pass !== true) log(`    FAIL ${check.id}: ${JSON.stringify(result.measured).slice(0, 160)}`);
     }
+    if (ctx.unresponsive) throw new BrowserTimeoutError(ctx.unresponsive);
     ctx.actions = [];
   };
 
@@ -319,16 +331,20 @@ async function runPass({ args, entry, viewport, theme, baseUrl, selected, baseli
     ctx.theme = theme;
   };
 
+  // The probe replay only needs the states where a page-mutating check applies.
+  const probeNeeds = (state, fixtures) => selected.some((check) => check.mutates && appliesTo(check, { entry, state, viewport: viewport.id, theme, fixtures }));
+  const wanted = (id, fixtures = fixtureLabel) => mode === "capture" || probeNeeds(id, fixtures);
+
   try {
     const available = entry === "vworld" ? VWORLD_STATE_IDS : CHAIN_IDS;
-    const chainWanted = args.stateIds.filter((id) => available.includes(id));
+    const chainWanted = args.stateIds.filter((id) => available.includes(id) && wanted(id));
     if (chainWanted.length) {
       const last = Math.max(...chainWanted.map((id) => available.indexOf(id)));
       for (const id of available.slice(0, last + 1)) await runState(stateById(id), id, fixtureLabel, chainWanted.includes(id));
     }
     const s16Pass = args.themes.includes("light") ? theme === "light" : theme === args.themes[0];
-    if (entry === "legacy" && args.stateIds.includes("S16") && s16Pass) await runState(stateById("S16"), "S16", fixtureLabel, true);
-    if (entry === "legacy" && args.stateIds.includes("S17")) {
+    if (entry === "legacy" && args.stateIds.includes("S16") && s16Pass && (mode === "capture" || probeNeeds("S16", fixtureLabel))) await runState(stateById("S16"), "S16", fixtureLabel, true);
+    if (entry === "legacy" && args.stateIds.includes("S17") && (mode === "capture" || S17_SUBSTATES.some((id) => probeNeeds(id, "up")))) {
       await setFixtures(baseUrl, { mode: "up" });
       const lastSub = CHAIN_IDS.indexOf("S13");
       for (const id of CHAIN_IDS.slice(0, lastSub + 1)) {
@@ -337,10 +353,13 @@ async function runPass({ args, entry, viewport, theme, baseUrl, selected, baseli
       }
       await setFixtures(baseUrl, { mode: fixtureMode, fail: args.fail, delayMs: args.delayMs });
     }
-    if (args.stateIds.includes("GALLERY")) {
+    if (args.stateIds.includes("GALLERY") && mode === "capture") {
       ctx.url = `${baseUrl}${page}?ui=gallery`;
       await runState({ id: "GALLERY", steps: async (c) => loadAndSettle(c, c.url) }, "GALLERY", fixtureLabel, true);
     }
+  } catch (error) {
+    if (!(error instanceof BrowserTimeoutError)) throw error;
+    log(`  ABORTED pass ${entry} ${viewport.id} ${theme} (${mode}): ${error.message}; remaining requested checks roll up as not evaluated (FAIL)`);
   } finally {
     await b.close();
   }

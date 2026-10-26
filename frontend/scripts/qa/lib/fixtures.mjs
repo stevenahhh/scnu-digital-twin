@@ -119,6 +119,21 @@ function installationPlan(buildingId) {
   };
 }
 
+// Roof geometry for the editor; ids match installationPlan() so the plan opens in the roof editor.
+function buildingRoofs(buildingId) {
+  return {
+    id: buildingId,
+    roofs: [{
+      id: `${buildingId}-roof-west`,
+      zones: [{
+        id: `${buildingId}-roof-west-main`,
+        polygon_meters: [{ x_meters: 0, y_meters: 0 }, { x_meters: 40, y_meters: 0 }, { x_meters: 40, y_meters: 30 }, { x_meters: 0, y_meters: 30 }],
+      }],
+      obstacles: [],
+    }],
+  };
+}
+
 // Returns [status, body] for a service path (prefix already stripped), or null for "no fixture".
 export function resolveFixture(service, path) {
   const [pathname] = path.split("?");
@@ -139,6 +154,8 @@ export function resolveFixture(service, path) {
   }
   match = pathname.match(/^\/energy\/installation-plans\/([^/]+)-plan-1$/);
   if (match) return [200, installationPlan(decodeURIComponent(match[1]))];
+  match = pathname.match(/^\/energy\/buildings\/([^/]+)$/);
+  if (match) return [200, buildingRoofs(decodeURIComponent(match[1]))];
   return null;
 }
 

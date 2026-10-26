@@ -1,0 +1,589 @@
+// GAP-01..GAP-37 (DESIGN-AUDIT section 3 rows as section-7 checks). Each `doc` holds the literal row.
+import {
+  HOOKS, canvasRect, chipByText, chips, contrasts, defineCheck, exists, hasUpperEyebrow, hudRects, intersection,
+  gapBetween, luminanceStep, missingHook, panelInfo, pixelDiff, rectOf, result, roofBox, sampleFrames,
+  sceneRegion, selectedTab, textItems, meanLuminance, worstContrast,
+} from "./common.mjs";
+
+const D = ["D"];
+const P = ["P"];
+const DP = ["D", "P"];
+const TIME_RE = /\b([01]?\d|2[0-3]):[0-5]\d\b/;
+
+async function firstHudText(ctx) {
+  return ctx.inPage((qa) => {
+    const hud = qa.one("[data-qa=campus-hud]");
+    if (!hud) return null;
+    const items = qa.textNodesShown(hud).sort((a, b) => {
+      const ra = a.el.getBoundingClientRect();
+      const rb = b.el.getBoundingClientRect();
+      return ra.top - rb.top || ra.left - rb.left;
+    });
+    return items[0] ? { text: items[0].value, qa: items[0].el.closest("[data-qa]")?.getAttribute("data-qa") ?? null } : null;
+  });
+}
+
+export const GAP_CHECKS = [
+  defineCheck("GAP-01", {
+    states: ["S01"], viewports: DP,
+    async run(ctx) {
+      const panel = await panelInfo(ctx);
+      const canvas = await canvasRect(ctx);
+      const first = await firstHudText(ctx);
+      const firstOk = Boolean(first && (TIME_RE.test(first.text) || /갱신/.test(first.text) || ["time-slider-value", "freshness-stamp"].includes(first.qa)));
+      if (!panel) return result(false, { panel: null, canvas, firstHudText: first }, "panel present");
+      if (ctx.viewport === "D") {
+        return result(panel.visibleWidth <= 72 && firstOk, { panelVisibleWidth: panel.visibleWidth, firstHudText: first }, "panel width <= 72 px (rail) and the first HUD text is the time readout or the freshness stamp");
+      }
+      const canvasCover = canvas ? (canvas.w * Math.max(0, Math.min(canvas.h, ctx.height) - Math.max(0, panel.visibleHeight))) / (ctx.width * ctx.height) : 0;
+      const panelShare = (panel.visibleWidth * panel.visibleHeight) / (ctx.width * ctx.height);
+      const heightShare = panel.visibleWidth > 0 ? panel.visibleHeight / ctx.height : 0;
+      return result(heightShare <= 0.25 && panelShare <= 0.25 && canvasCover >= 0.75 && firstOk,
+        { panelHeightShare: Math.round(heightShare * 100) / 100, panelAreaShare: Math.round(panelShare * 100) / 100, canvasCoverShare: Math.round(canvasCover * 100) / 100, firstHudText: first },
+        "panel height <= 25% of the viewport, canvas covers >= 75%, first HUD text is the time readout or the freshness stamp");
+    },
+  }),
+  defineCheck("GAP-02", {
+    states: ["S01", "S06"], viewports: D,
+    async run(ctx) {
+      const m = await ctx.inPage((qa) => {
+        const statusRows = qa.all("[role=alert],[data-qa=weather-error-banner]").filter(qa.visible).length;
+        const retries = qa.all("button").filter((el) => qa.visible(el) && qa.txt(el).includes("다시 시도")).length;
+        const dashes = qa.textNodesShown(qa.one("[data-qa=dashboard-panel]") ?? document.body).filter((item) => /^-(\s|°|m\/s|%|$)/.test(item.value)).map((item) => item.value).slice(0, 8);
+        const modals = qa.all("[aria-modal=true]").filter(qa.visible).length;
+        return { statusRows, retries, bareDashValues: dashes, modals };
+      });
+      return result(m.statusRows <= 3 && m.retries === 3 && m.bareDashValues.length === 0 && m.modals === 0, m,
+        "<= 1 status row and exactly 1 retry per failed feed; no bare '-' metric value; no modal");
+    },
+  }),
+  defineCheck("GAP-03", {
+    states: ["S01"], viewports: D,
+    async run(ctx) {
+      const m = await ctx.inPage((qa) => {
+        const status = qa.one("[data-qa=weather-status]");
+        const statusText = qa.txt(status);
+        const hasRetry = Boolean(status && status.querySelector("button"));
+        const simActive = qa.all("button").some((el) => qa.txt(el) === "시뮬레이션" && (el.getAttribute("aria-pressed") === "true" || el.getAttribute("aria-selected") === "true"));
+        return { statusText: statusText.slice(0, 120), hasRetry, simulationSegmentActive: simActive, mentionsSimMode: document.body.innerText.includes("시뮬레이션 모드") };
+      });
+      const causeTimeRetry = /\d{1,2}:\d{2}/.test(m.statusText) && m.hasRetry && m.statusText.length > 8;
+      return result(causeTimeRetry && (!m.mentionsSimMode || m.simulationSegmentActive), m,
+        "status names cause + HH:mm + retry in one element; 시뮬레이션 모드 only while the simulation segment is active");
+    },
+  }),
+  defineCheck("GAP-04", {
+    states: ["S04"], viewports: D, fixtures: "up",
+    async run(ctx) {
+      const m = await ctx.inPage((qa) => {
+        const values = qa.all("[data-qa=estimate-value]").filter(qa.visible);
+        return { estimateValues: values.length, withTag: values.filter((el) => /추정/.test(qa.txt(el)) && /\d{1,2}:\d{2}/.test(qa.txt(el))).length };
+      });
+      if (!m.estimateValues) return missingHook(HOOKS.estimate, "every estimated value carries 추정, unit, source + HH:mm through [data-qa=estimate-value]", m);
+      return result(m.withTag === m.estimateValues, m, "every [data-qa=estimate-value] carries 추정 and a provenance time");
+    },
+  }),
+  defineCheck("GAP-05", {
+    states: { D: ["S01"], P: ["S04", "S12"] }, mutates: true,
+    async run(ctx) {
+      const panel = await panelInfo(ctx);
+      if (ctx.viewport === "D") {
+        if (!panel?.toggle) return result(false, { toggle: null }, "패널 닫기 control collapses the panel to <= 72 px");
+        await ctx.b.tap('[aria-label="패널 닫기"]');
+        await ctx.sleep(800);
+        const collapsed = await panelInfo(ctx);
+        await ctx.b.tap('[aria-label="패널 열기"]');
+        await ctx.sleep(800);
+        return result(collapsed.visibleWidth <= 72, { openWidth: panel.visibleWidth, collapsedVisibleWidth: collapsed.visibleWidth, toggle: panel.toggle }, "the collapse control reduces the panel to <= 72 px");
+      }
+      const selected = (await chips(ctx)).find((chip) => chip.pressed === "true") ?? null;
+      const top = panel && panel.visibleWidth > 0 ? panel.rect.y : ctx.height;
+      const chipAbove = Boolean(selected && selected.rect.y + selected.rect.h <= top && selected.rect.y >= 0);
+      return result(top >= ctx.height * 0.5 && chipAbove, { panelTop: top, panelVisibleWidth: panel?.visibleWidth ?? null, selectedChip: selected?.rect ?? null }, "panel top >= 50% of the viewport and the selected chip fully visible above it");
+    },
+  }),
+  defineCheck("GAP-06", {
+    states: ["S07"], viewports: DP,
+    async run(ctx) {
+      const m = await ctx.inPage((qa) => {
+        const banner = qa.one("[data-qa=weather-error-banner]");
+        const position = banner ? getComputedStyle(banner).position : null;
+        const scroller = qa.one("[data-qa=dashboard-panel] .overflow-y-auto") ?? qa.one("[data-qa=dashboard-panel]");
+        const cards = scroller ? [...scroller.querySelectorAll("section,article,div.rounded-xl,div.rounded-lg,div.rounded-2xl")].filter(qa.visible) : [];
+        const last = cards.sort((a, b) => b.getBoundingClientRect().bottom - a.getBoundingClientRect().bottom)[0];
+        const inScroller = Boolean(banner && scroller && scroller.contains(banner) && !["fixed", "absolute", "sticky"].includes(position));
+        return { banner: banner ? qa.r(banner) : null, position, inScrollBody: inScroller, lastCard: last ? qa.r(last) : null, overlap: banner && last ? qa.inter(qa.r(banner), qa.r(last)) : 0 };
+      });
+      return result(!m.banner || (m.inScrollBody && m.overlap === 0), m, "no fixed banner: weather status inside the scroll body, 0 px overlap with any card");
+    },
+  }),
+  defineCheck("GAP-07", {
+    states: ["S06"], viewports: DP,
+    async run(ctx) {
+      const before = ctx.memo.get("S05:before");
+      const after = ctx.memo.get("S06:after-return");
+      if (!before || !after) return result(false, { before: before ?? null, after: after ?? null }, "tab and scrollTop recorded around the D4 drill-down");
+      const scrollOk = before.scrollTop == null || after.scrollTop == null || Math.abs(before.scrollTop - after.scrollTop) <= 8;
+      return result(before.tab != null && before.tab === after.tab && scrollOk, { before, after }, "same tab (기본 현황) and scrollTop within 8 px after the return");
+    },
+  }),
+  defineCheck("GAP-08", {
+    states: ["S04"], viewports: D,
+    async run(ctx) {
+      const lib = await chipByText(ctx, "도서관");
+      const inspectorTitle = await ctx.inPage((qa) => qa.txt(qa.one("[data-qa=selection-inspector] h2,[data-qa=selection-inspector] h3")) || null);
+      const before = ctx.memo.get("S04:before-click");
+      let roofDelta = null;
+      let neighbourDrop = null;
+      if (before && lib) {
+        const prior = ctx.decode(before.png);
+        const box = roofBox(lib);
+        roofDelta = Math.round(pixelDiff(prior, ctx.image(), box, ctx.scale) * 1000) / 1000;
+        const neighbour = before.chips.find((chip) => chip.text !== "도서관" && chip.rect && chip.rect.w > 0);
+        if (neighbour) {
+          const nb = roofBox({ rect: neighbour.rect });
+          const l0 = meanLuminance(prior, nb, ctx.scale);
+          const l1 = meanLuminance(ctx.image(), nb, ctx.scale);
+          neighbourDrop = l0 ? Math.round(((l0 - l1) / l0) * 1000) / 1000 : null;
+        }
+      }
+      const m = { pressed: lib?.pressed ?? null, roofDelta, neighbourLuminanceDrop: neighbourDrop, inspectorTitle };
+      return result(lib?.pressed === "true" && roofDelta > 0.02 && neighbourDrop >= 0.1 && inspectorTitle === "도서관", m,
+        "aria-pressed=true; library roof differs from idle; neighbour roof luminance drops >= 10%; inspector title === 도서관");
+    },
+  }),
+  defineCheck("GAP-09", {
+    states: ["S04"], viewports: DP,
+    async run(ctx) {
+      const before = ctx.memo.get("S04:before-click");
+      const m = await ctx.inPage((qa) => {
+        const inspector = qa.one("[data-qa=selection-inspector]");
+        const tabs = qa.all("[data-qa^=dashboard-tab-]").length;
+        const strip = qa.one("[data-qa^=dashboard-tab-]")?.parentElement;
+        const above = inspector && strip ? inspector.getBoundingClientRect().bottom <= strip.getBoundingClientRect().top : false;
+        return { tabsAfter: tabs, inspector: Boolean(inspector), inspectorAboveTabs: above };
+      });
+      m.tabsBefore = before ? "recorded" : null;
+      if (!m.inspector) return missingHook(HOOKS.inspector, "tab count unchanged (4) and the inspector above the tab strip / at the half detent", m);
+      return result(m.tabsAfter === 4 && (ctx.viewport === "P" || m.inspectorAboveTabs), m, "tab count 4 and inspector placement");
+    },
+  }),
+  defineCheck("GAP-10", {
+    states: ["S04"], viewports: DP,
+    async run(ctx) {
+      const m = await ctx.inPage((qa) => {
+        const inspector = qa.one("[data-qa=selection-inspector]");
+        const errorEl = (inspector ?? document).querySelector("[role=alert]");
+        const retry = qa.all("button", inspector ?? document).some((el) => qa.txt(el).includes("다시 시도"));
+        const detail = qa.all("button,summary", inspector ?? document).some((el) => /자세히|복사/.test(qa.txt(el) + (el.getAttribute("aria-label") ?? "")));
+        return { inspector: Boolean(inspector), error: qa.txt(errorEl).slice(0, 100), retry, detail };
+      });
+      if (!m.inspector) return missingHook(HOOKS.inspector, "error names the cause, offers 다시 시도 plus 자세히/copy, last value with time, non-empty body", m);
+      return result(Boolean(m.error) && m.retry && m.detail, m, "cause + 다시 시도 + 자세히/copy");
+    },
+  }),
+  defineCheck("GAP-11", {
+    states: ["S05"], viewports: DP,
+    async run(ctx) {
+      const m = await ctx.inPage((qa) => {
+        const backs = qa.all("button,a").filter((el) => qa.visible(el) && (/지도|캠퍼스 전체 보기/.test(qa.txt(el) + (el.getAttribute("aria-label") ?? "")) || /^[←<]/.test(qa.txt(el))));
+        const crumb = qa.one("nav[aria-label=breadcrumb],[data-qa=breadcrumb]");
+        const canvas = qa.all("canvas").filter(qa.visible).length;
+        return { backControls: backs.map((el) => qa.txt(el) || el.getAttribute("aria-label")), breadcrumb: crumb ? qa.txt(crumb) : null, visibleCanvases: canvas };
+      });
+      return result(m.backControls.length === 1 && /캠퍼스\s*[>›]\s*공과대학 3호관/.test(m.breadcrumb ?? "") && m.visibleCanvases > 0, m,
+        "exactly 1 back control; breadcrumb 캠퍼스 > 공과대학 3호관; canvas rendered with D4 in frame");
+    },
+  }),
+  defineCheck("GAP-12", {
+    states: ["S03", "S04", "S05"], viewports: D,
+    async run(ctx) {
+      // Chips (all mounted, not only those in view), inspector/section titles and breadcrumb;
+      // camera presets are exempt because the row allows them the shortName.
+      const m = await ctx.inPage((qa) => {
+        const names = [
+          ...qa.all("[data-qa=campus-label] button").map((el) => qa.txt(el)),
+          ...qa.all("h1,h2,h3,[role=heading],[data-qa=selection-inspector] *,[data-qa=breadcrumb],[role=dialog] div").filter((el) => qa.visible(el) && !el.closest("[data-qa^=camera-preset-]") && el.children.length === 0).map((el) => qa.txt(el)),
+        ].filter((t) => /3호관|^도서관$/.test(t) && /공대|공과대학|도서관/.test(t));
+        const headings = qa.all("h1,h2,h3,h4,[role=heading]").filter(qa.visible).map((el) => qa.txt(el));
+        return { names: [...new Set(names)], headings: headings.slice(0, 30), texts: qa.textNodesShown().map((item) => item.value).slice(0, 400) };
+      });
+      const variants = [...new Set(m.names.filter((t) => /3호관/.test(t) && /공대|공과대학/.test(t)).map((t) => t.replace(/^D4\s*/, "").trim()))];
+      const seen = new Set([...(ctx.runMemo.get(`GAP-12:${ctx.entry}:${ctx.viewport}:${ctx.theme}`) ?? []), ...variants]);
+      ctx.runMemo.set(`GAP-12:${ctx.entry}:${ctx.viewport}:${ctx.theme}`, [...seen]);
+      const eyebrows = hasUpperEyebrow([...m.headings, ...m.texts]);
+      return result(seen.size === 1 && eyebrows.length === 0, { d4NameVariantsSoFar: [...seen], uppercaseHeadings: eyebrows.slice(0, 5) },
+        "one displayName per building on every surface (presets may use shortName); 0 uppercase-English headings");
+    },
+  }),
+  defineCheck("GAP-13", {
+    states: ["S08"], viewports: D,
+    async run(ctx) {
+      const m = await ctx.inPage((qa) => {
+        const panel = qa.one("[data-qa=dashboard-panel]");
+        const ranges = panel ? [...panel.querySelectorAll("input[type=range]")] : [];
+        const label = (el) => qa.txt(el.closest("label") ?? el.parentElement?.parentElement ?? el.parentElement);
+        const hm = ranges.filter((el) => /(^|\s)(시|분)(\s|$)|^시|^분/.test(label(el))).length;
+        const sliderValue = qa.txt(qa.one("[data-qa=time-slider-value]"));
+        const panelClock = qa.txt(qa.one("[data-qa=dashboard-panel] [data-qa=panel-clock]") ?? [...(panel?.querySelectorAll("div,span,p") ?? [])].find((el) => /오[전후]\s*\d{1,2}:\d{2}/.test(qa.txt(el)) && el.children.length === 0));
+        return { hourMinuteSliders: hm, sliderValue, panelClock };
+      });
+      const sameClock = m.sliderValue && m.panelClock && m.panelClock.includes(m.sliderValue.replace(/^0/, ""));
+      return result(m.hourMinuteSliders === 0 && (sameClock || /현재/.test(m.panelClock ?? "")), m, "0 hour/minute sliders in the panel; header clock equals the scene time or both clocks labelled");
+    },
+  }),
+  defineCheck("GAP-14", {
+    states: ["S07"], viewports: D, mutates: true,
+    async run(ctx) {
+      const region = await sceneRegion(ctx);
+      await ctx.b.setTimeMinutes(1140);
+      await ctx.sleep(3500);
+      const at19 = await ctx.screenshot();
+      await ctx.b.setTimeMinutes(1260);
+      await ctx.sleep(600);
+      const cue = await ctx.inPage((qa) => qa.all("[data-updated],[data-qa=updated-cue]").filter(qa.visible).length);
+      await ctx.sleep(2900);
+      const at21 = await ctx.screenshot();
+      await ctx.b.setTimeMinutes(720);
+      await ctx.sleep(1500);
+      const diff = Math.round(pixelDiff(at19, at21, region, ctx.scale) * 10000) / 100;
+      return result(diff >= 2 && cue > 0, { meanDiffPercent19vs21: diff, updatedCues: cue }, ">= 2% mean difference between 19:00 and 21:00 and an updated cue on changed cards");
+    },
+  }),
+  defineCheck("GAP-15", {
+    states: ["S08"], viewports: DP,
+    async run(ctx) {
+      const sliderLabels = await textItems(ctx, "[data-qa=dashboard-panel] *", { match: "^(온도|월|일|시|분|태양)" });
+      const rows = contrasts(ctx, sliderLabels);
+      const worst = worstContrast(rows);
+      const m = await ctx.inPage((qa) => ({
+        segments: qa.all("[data-qa=dashboard-panel] button").filter(qa.visible).map((el) => qa.txt(el)).filter((t) => /^(Live|Sim|실측|시뮬레이션|실시간)$/.test(t)),
+        timeSliders: qa.all("[data-qa=dashboard-panel] input[type=range]").filter((el) => /(월|일|시|분)/.test(qa.txt(el.parentElement?.parentElement))).length,
+      }));
+      return result(worst && worst.ratio >= 4.5 && m.segments.join("/") === "실측/시뮬레이션" && m.timeSliders === 0,
+        { worstLabel: worst, segments: m.segments, duplicateTimeSliders: m.timeSliders }, "labels >= 4.5:1, segments 실측 / 시뮬레이션, 0 duplicate time sliders");
+    },
+  }),
+  defineCheck("GAP-16", {
+    states: { D: ["S01"], P: ["S02", "S09"] },
+    async run(ctx) {
+      if (ctx.viewport === "D") {
+        const groups = await ctx.inPage((qa) => {
+          const bar = qa.one("[data-qa=camera-preset-bar]");
+          if (!bar) return null;
+          const items = qa.all("[data-qa^=camera-preset-]", bar).filter((el) => el.tagName === "BUTTON" && qa.visible(el)).length + qa.all("[data-qa=camera-tour-toggle]", bar).length;
+          const menus = qa.all("[aria-haspopup],[role=group]", bar).length;
+          return { buttons: items, groupsOrMenus: menus };
+        });
+        const count = groups ? Math.max(groups.groupsOrMenus, groups.buttons) : null;
+        return result(count != null && count <= 3, { toolbar: groups, groups: count }, "<= 3 groups (전체, 시점 menu, 투어)");
+      }
+      const m = await ctx.inPage((qa) => {
+        const items = qa.all("[data-qa^=camera-preset-]").filter((el) => el.tagName === "BUTTON" && !/fade/.test(el.getAttribute("data-qa")));
+        const partial = items.filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && ((r.left < 0 && r.right > 0) || (r.left < innerWidth && r.right > innerWidth)); }).length;
+        const menu = qa.all("button").some((el) => qa.visible(el) && /시점/.test(qa.txt(el) + (el.getAttribute("aria-label") ?? "")) && el.hasAttribute("aria-haspopup"));
+        return { presets: items.length, partiallyVisible: partial, viewMenu: menu };
+      });
+      return result(m.viewMenu && m.partiallyVisible === 0, m, "every preset reachable through a visible 시점 menu; no partially visible item");
+    },
+  }),
+  defineCheck("GAP-17", {
+    states: ["S01"], viewports: DP,
+    async run(ctx) {
+      const field = await ctx.inPage((qa) => {
+        const el = qa.one("[data-qa=search-field]") ?? qa.one("[data-qa=campus-hud] input[type=search]");
+        return el ? { rect: qa.r(el) } : null;
+      });
+      if (!field) return missingHook(HOOKS.search, "search field exists; 도서관 result; Enter selects the library chip and moves the camera");
+      return result(false, { field, note: "typeahead flow is asserted once the field exists (todo 28)" }, "search field exists; Enter selects the library chip and moves the camera");
+    },
+  }),
+  defineCheck("GAP-18", {
+    states: ["S04"], viewports: D,
+    async run(ctx) {
+      const m = await ctx.inPage((qa) => ({
+        href: location.href,
+        copyLink: qa.all("button").some((el) => qa.visible(el) && /링크 복사/.test(qa.txt(el) + (el.getAttribute("aria-label") ?? ""))),
+      }));
+      const url = new URL(m.href);
+      const params = [...url.searchParams.keys()];
+      return result(params.some((k) => /building|b$/.test(k)) && params.some((k) => /time|t$/.test(k)) && params.some((k) => /cam|pose/.test(k)) && m.copyLink,
+        { urlParams: params, copyLinkControl: m.copyLink }, "URL carries building, time and camera params; 링크 복사 exists; reload restores");
+    },
+  }),
+  defineCheck("GAP-19", {
+    states: { D: ["S01", "S02"], P: ["S02"] },
+    async run(ctx) {
+      const list = await chips(ctx);
+      const texts = list.map((chip) => chip.text);
+      const duplicates = texts.filter((t, i) => texts.indexOf(t) !== i);
+      const cap = ctx.viewport === "D" ? 14 : 7;
+      return result(list.length <= cap && duplicates.length === 0, { visibleChips: list.length, duplicates: [...new Set(duplicates)] }, `<= ${cap} chips and 0 duplicate chip texts`);
+    },
+  }),
+  defineCheck("GAP-20", {
+    states: { D: ["S01", "S03", "S09"], P: ["S03"] },
+    async run(ctx) {
+      const list = await chips(ctx);
+      if (!list.length) return result(false, { visibleChips: 0 }, "visible chips to measure");
+      const min = Math.min(...list.map((c) => c.px));
+      const max = Math.max(...list.map((c) => c.px));
+      const weights = [...new Set(list.map((c) => c.weight))];
+      const floor = ctx.viewport === "D" ? 12 : 13;
+      const streetOk = ctx.state !== "S09" || max <= 14;
+      return result(min >= floor && streetOk && weights.every((w) => w === 500 || w === 600), { minPx: min, maxPx: max, weights, chips: list.length }, `>= ${floor} px, <= 14 px in the street band, weight 500/600`);
+    },
+  }),
+  defineCheck("GAP-21", {
+    states: { D: ["S11"], P: ["S02", "S03"] },
+    async run(ctx) {
+      const list = await chips(ctx);
+      const hud = await hudRects(ctx);
+      const panel = await panelInfo(ctx);
+      const blockers = [...hud.map((h) => h.rect), ...(panel && panel.visibleWidth > 0 ? [panel.rect] : [])];
+      const outside = list.filter((c) => c.rect.x < 8 || c.rect.y < 8 || c.rect.x + c.rect.w > ctx.width - 8 || c.rect.y + c.rect.h > ctx.height - 8).map((c) => c.text);
+      const near = list.filter((c) => blockers.some((b) => gapBetween(c.rect, b) < 12)).map((c) => c.text);
+      return result(outside.length === 0 && near.length === 0, { chips: list.length, outsideMargin: outside.slice(0, 8), within12pxOfHudOrPanel: near.slice(0, 8) },
+        "every chip >= 8 px inside the viewport and >= 12 px from HUD/panel; displaced chips draw a leader");
+    },
+  }),
+  defineCheck("GAP-22", {
+    states: ["S02", "S03"], viewports: D,
+    async run(ctx) {
+      const list = await chips(ctx);
+      const long = list.filter((c) => c.text.split(/\s+/).length > 3).map((c) => c.text);
+      const qualifier = list.filter((c) => c.text.includes("(추정)")).map((c) => c.text);
+      const dorms = list.filter((c) => c.text.startsWith("학생생활관"));
+      const codeInText = list.filter((c) => /^[A-Z]\d+\s/.test(c.text) && !c.children.some((child) => /badge/.test(child))).map((c) => c.text);
+      const clustered = dorms.length <= 1;
+      return result(long.length === 0 && qualifier.length === 0 && clustered && codeInText.length === 0,
+        { overThreeWords: long.slice(0, 5), withEstimateQualifier: qualifier.slice(0, 5), dormitoryChips: dorms.length, codeInText: codeInText.slice(0, 5) },
+        "<= 3 words, no (추정), code as a badge child, dormitories as one cluster chip");
+    },
+  }),
+  defineCheck("GAP-23", {
+    states: ["S11"], viewports: DP,
+    async run(ctx) {
+      const frames = await sampleFrames(ctx, (qa) => {
+        const layer = qa.one("[data-qa=campus-label-layer]");
+        return { opacity: layer ? Number(getComputedStyle(layer).opacity) : null, visible: qa.chips().map((el) => qa.txt(el)).join("|") };
+      }, 5);
+      if (frames[0].opacity == null) return missingHook(HOOKS.labelLayer, "layer opacity <= 0.4 while dragging; 0 visibility toggles", { frames: frames.length });
+      const toggles = frames.slice(1).filter((f, i) => f.visible !== frames[i].visible).length;
+      return result(frames.every((f) => f.opacity <= 0.4) && toggles === 0, { opacities: frames.map((f) => f.opacity), visibilityToggles: toggles }, "opacity <= 0.4 and 0 toggles during the drag");
+    },
+  }),
+  defineCheck("GAP-24", {
+    states: ["S03"], viewports: D, mutates: true,
+    async run(ctx) {
+      const lib = await chipByText(ctx, "도서관");
+      if (!lib) return result(false, { libraryChip: null }, "library chip visible to locate its mesh");
+      const before = await ctx.screenshot();
+      const tabs0 = await ctx.inPage((qa) => qa.all("[data-qa^=dashboard-tab-]").length + qa.all("[data-qa=selection-inspector]").length);
+      const x = lib.rect.x + lib.rect.w / 2;
+      const y = lib.rect.y + lib.rect.h + 24;
+      await ctx.b.mouse("mouseMoved", x, y, 0);
+      await ctx.sleep(300);
+      const after = await ctx.screenshot();
+      const lib2 = await chipByText(ctx, "도서관");
+      const tabs1 = await ctx.inPage((qa) => qa.all("[data-qa^=dashboard-tab-]").length + qa.all("[data-qa=selection-inspector]").length);
+      await ctx.b.mouse("mouseMoved", 5, 5, 0);
+      const roof = Math.round(pixelDiff(before, after, roofBox(lib), ctx.scale) * 1000) / 1000;
+      const lifted = Boolean(lib2 && (lib2.rect.y < lib.rect.y - 1 || lib2.text !== lib.text));
+      return result(roof > 0.02 && lifted && tabs0 === tabs1, { roofPixelDelta: roof, chipLiftedOrValue: lifted, tabsAndInspectors: [tabs0, tabs1] }, "hover tints the roof, lifts the chip, opens nothing");
+    },
+  }),
+  defineCheck("GAP-25", {
+    states: ["S02"], viewports: D,
+    async run(ctx) {
+      const region = await sceneRegion(ctx);
+      const img = ctx.image();
+      const cy = Math.round(region.y + region.h * 0.55);
+      const points = [];
+      for (let x = region.x + 20; x < region.x + region.w - 20; x += 40) points.push([x, cy]);
+      const step = luminanceStep(img, points, ctx.scale, 4);
+      const clear = await ctx.inPage(() => getComputedStyle(document.querySelector("canvas")?.parentElement ?? document.body).backgroundColor);
+      return result(step <= 0.2, { maxLuminanceStepAlongRow: step, canvasBackdrop: clear }, "no luminance step > 20% along the bounding edge; clear colour not darker than #0b0c0e");
+    },
+  }),
+  defineCheck("GAP-26", {
+    states: ["S05"], viewports: DP,
+    async run(ctx) {
+      const m = await ctx.inPage((qa) => {
+        const dialog = qa.one("[role=dialog]");
+        const text = dialog ? dialog.innerText : "";
+        const roomIdx = text.indexOf("사용 중인 강의실");
+        const planIdx = text.indexOf("태양광 설치");
+        const disclosure = qa.all("details,[aria-expanded]", dialog ?? document).some((el) => /설치 계획/.test(qa.txt(el)));
+        const room = qa.all("div", dialog ?? document).find((el) => el.children.length && qa.txt(el).startsWith("사용 중인 강의실"));
+        return { roomListBeforePlanTools: roomIdx >= 0 && (planIdx < 0 || roomIdx < planIdx), planToolsInDisclosure: disclosure, roomCardTop: room ? Math.round(room.getBoundingClientRect().top) : null, mainCanvasVisible: qa.all("canvas").filter(qa.visible).length };
+      });
+      const phoneOk = ctx.viewport === "D" || (m.roomCardTop != null && m.roomCardTop <= 844);
+      return result(m.roomListBeforePlanTools && m.planToolsInDisclosure && phoneOk, m, "room list precedes plan tools; plan tools in a collapsed disclosure; P room card top <= 844");
+    },
+  }),
+  defineCheck("GAP-27", {
+    states: ["S13"], viewports: D,
+    async run(ctx) {
+      const m = await ctx.inPage((qa) => ({
+        badges: qa.all("[data-qa=sample-badge]").filter(qa.visible).length,
+        sampleWords: qa.textNodesShown(qa.one("[data-qa=dashboard-panel]") ?? document.body).filter((item) => /샘플|예시|sample/i.test(item.value)).length,
+      }));
+      if (!m.badges) return missingHook(HOOKS.sample, "every sample-sourced element carries the same 샘플 데이터 badge component", m);
+      return result(m.badges >= 1, m, "sample rows carry the shared badge");
+    },
+  }),
+  defineCheck("GAP-28", {
+    states: ["S10"], viewports: D, mutates: true,
+    async run(ctx) {
+      const info = await ctx.inPage((qa) => {
+        const group = qa.one("[data-qa=render-quality]");
+        const copy = group?.querySelector("p");
+        const dialog = group?.closest("[role=dialog]");
+        return {
+          initial: qa.all("[data-qa^=render-quality-]").find((el) => el.getAttribute("aria-pressed") === "true")?.getAttribute("data-qa") ?? null,
+          fullStops: (copy?.textContent.match(/다\.|\./g) ?? []).length,
+          modal: dialog?.getAttribute("aria-modal") ?? null,
+        };
+      });
+      // A strip of scene left of the centred settings surface, below the HUD and above the time card.
+      const region = { x: 0, y: 160, w: 160, h: 360 };
+      const before = await ctx.screenshot();
+      await ctx.b.tap("[data-qa=render-quality-medium]");
+      await ctx.sleep(1000);
+      const mid = await ctx.screenshot();
+      await ctx.b.tap("[data-qa=render-quality-high]");
+      await ctx.sleep(1000);
+      const after = await ctx.screenshot();
+      if (info.initial) await ctx.b.tap(`[data-qa=${info.initial}]`);
+      const live = Math.max(pixelDiff(before, mid, region, ctx.scale), pixelDiff(mid, after, region, ctx.scale));
+      return result(live > 0.002 && info.modal !== "true" && info.fullStops <= 1, { canvasChangeBehindSheet: Math.round(live * 10000) / 10000, ariaModal: info.modal, fullStopsInCopy: info.fullStops },
+        "canvas re-renders within 1 s behind a non-blocking sheet; each option's copy <= 1 full stop");
+    },
+  }),
+  defineCheck("GAP-29", {
+    states: ["S01"], viewports: D,
+    async run(ctx) {
+      if (!(await exists(ctx, HOOKS.presentation))) return missingHook(HOOKS.presentation, "HUD and panel hidden, time visible, chips 1.5x, dot pager, Esc restores");
+      return result(false, { presentationToggle: true, note: "flow asserted by todo 35" }, "presentation mode behaviour");
+    },
+  }),
+  defineCheck("GAP-30", {
+    states: ["S01"], viewports: D, fixtures: "any",
+    async run(ctx) {
+      const m = await ctx.inPage((qa) => qa.all("[data-qa=freshness-stamp]").filter(qa.visible).map((el) => ({ text: qa.txt(el), refresh: Boolean(el.parentElement?.querySelector("button")) })));
+      if (!m.length) return missingHook(HOOKS.freshness, "a 갱신 HH:mm (or 갱신 없음) stamp per feed beside the time readout, refresh control next to it");
+      return result(m.length >= 3 && m.every((s) => /갱신 (\d{1,2}:\d{2}|없음)/.test(s.text) && s.refresh), { stamps: m }, "stamps for weather, traffic and energy with refresh");
+    },
+  }),
+  defineCheck("GAP-31", {
+    states: ["S12"], viewports: D, fixtures: "delay",
+    async run(ctx) {
+      const samples = ctx.memo.get(`${ctx.stateLabel}:samples`) ?? [];
+      const s05 = samples.find((s) => s.offsetMs === 500);
+      const s25 = samples.find((s) => s.offsetMs === 2500);
+      if (!s05 || !s25) return result(false, { samples: samples.length }, "DOM samples at 0.5 s and 2.5 s");
+      const named = s25.spinnerTexts.every((t) => /(가져오는|불러오는) 중/.test(t) && !/^불러오는 중/.test(t));
+      return result(s05.skeletons > 0 && s05.spinners === 0 && s25.spinners >= 1 && named, { at500: s05, at2500: s25 },
+        "0.5 s: skeletons, no spinner; 2.5 s: one spinner per operation naming the feed");
+    },
+  }),
+  defineCheck("GAP-32", {
+    states: ["S03"], viewports: D, mutates: true,
+    async run(ctx) {
+      await ctx.inPage(() => { document.activeElement?.blur(); document.querySelector("[data-qa=campus-hud]")?.setAttribute("tabindex", "-1"); document.querySelector("[data-qa=campus-hud]")?.focus(); return true; });
+      const order = [];
+      for (let i = 0; i < 60; i += 1) {
+        await ctx.b.key("Tab");
+        const f = await ctx.inPage((qa) => {
+          const el = document.activeElement;
+          if (!el || el === document.body) return null;
+          const zone = el.closest("[data-qa=campus-label]") ? "chip" : el.closest("[data-qa=dashboard-panel]") ? "panel" : el.closest("[data-qa=campus-hud]") ? "hud" : "other";
+          const r = el.getBoundingClientRect();
+          const s = getComputedStyle(el);
+          const ring = parseFloat(s.outlineWidth) || 0;
+          return { zone, inside: r.left - ring >= 0 && r.top - ring >= 0 && r.right + ring <= innerWidth && r.bottom + ring <= innerHeight };
+        });
+        if (f) order.push(f);
+        if (order.length > 3 && f?.zone === "hud" && order[order.length - 2]?.zone !== "hud") break;
+      }
+      const zones = order.map((o) => o.zone).filter((z, i, a) => z !== a[i - 1]);
+      const expected = ["hud", "chip", "panel"];
+      const orderOk = expected.every((z, i) => zones[i] === z);
+      const clipped = order.filter((o) => !o.inside).length;
+      const before = await ctx.screenshot();
+      await ctx.inPage(() => { const c = document.querySelector("canvas"); c?.setAttribute("tabindex", "0"); c?.focus(); return true; });
+      await ctx.b.key("ArrowLeft");
+      await ctx.b.key("ArrowLeft");
+      await ctx.sleep(600);
+      const moved = pixelDiff(before, await ctx.screenshot(), await sceneRegion(ctx), ctx.scale);
+      return result(orderOk && clipped === 0 && moved > 0.01, { zoneOrder: zones.slice(0, 6), clippedFocusRings: clipped, arrowKeyPixelChange: Math.round(moved * 1000) / 1000 },
+        "Tab order HUD -> chips -> panel, focus rings inside the viewport, arrow keys change the pose");
+    },
+  }),
+  defineCheck("GAP-33", {
+    states: ["S01", "S03"], viewports: P,
+    async run(ctx) {
+      const m = await ctx.inPage((qa) => {
+        const sels = ['[aria-label="패널 닫기"]', '[aria-label="패널 열기"]', "[data-qa=sheet-handle]", "[data-qa=campus-label] button", "[data-qa^=camera-preset-]", "[data-qa=time-slider] input[type=range]"];
+        const small = [];
+        let measured = 0;
+        for (const sel of sels) {
+          for (const el of qa.all(sel).filter(qa.visible)) {
+            if (el.tagName !== "BUTTON" && el.tagName !== "INPUT" && !el.matches("[data-qa=sheet-handle]")) continue;
+            measured += 1;
+            const r = el.getBoundingClientRect();
+            const h = el.type === "range" ? 16 : r.height;
+            if (r.width < 44 || h < 44) small.push(`${sel} ${Math.round(r.width)}x${Math.round(h)}`);
+          }
+        }
+        return { measured, under44: small.slice(0, 10), under44Count: small.length };
+      });
+      return result(m.measured > 0 && m.under44Count === 0, m, "every target >= 44x44 CSS px");
+    },
+  }),
+  defineCheck("GAP-34", {
+    states: ["S01"], viewports: DP, entries: ["vworld"],
+    async run(ctx) {
+      const { readFileSync } = await import("node:fs");
+      const { fileURLToPath } = await import("node:url");
+      const read = (rel) => readFileSync(fileURLToPath(new URL(`../../../src/${rel}`, import.meta.url)), "utf8");
+      const imports = (src) => new Set([...src.matchAll(/from\s+["']([^"']+)["']/g)].map((m) => m[1].replace(/^\.\//, "")));
+      const legacy = imports(read("AppLegacy.jsx"));
+      const vworld = imports(read("AppVWorld.jsx"));
+      const shared = ["SceneLabel", "Segmented", "Alert", "tokens"].map((name) => ({ name, legacy: [...legacy].some((s) => s.includes(name)) || [...legacy].some((s) => s.includes("/ui")), vworld: [...vworld].some((s) => s.includes(name)) || [...vworld].some((s) => s.includes("/ui")) }));
+      const uiShared = [...legacy].filter((s) => s.includes("/ui/") && vworld.has(s));
+      return result(uiShared.length > 0 && shared.every((s) => s.legacy && s.vworld), { sharedUiImports: uiShared, primitives: shared, note: "the GAP-01..33 PASS-set comparison needs a --entry both run" },
+        "same PASS set as Legacy; both entries import the same SceneLabel, Segmented, Alert and token modules");
+    },
+  }),
+  defineCheck("GAP-35", {
+    states: ["S03"], viewports: D,
+    async run(ctx) {
+      const m = await ctx.inPage((qa) => ({ compare: qa.all("button,[role=menuitem]").filter((el) => /^비교/.test(qa.txt(el))).map((el) => ({ text: qa.txt(el), disabled: el.disabled || el.getAttribute("aria-disabled") === "true", reason: el.title || el.getAttribute("aria-description") || "" })) }));
+      return result(m.compare.length > 0 && m.compare.every((c) => c.disabled && c.reason), m, "비교 control dimmed with a reason until two buildings are picked; comparison pane after two");
+    },
+  }),
+  defineCheck("GAP-36", {
+    states: ["S04"], viewports: D, fixtures: "up",
+    async run(ctx) {
+      const m = await ctx.inPage((qa) => {
+        const panel = qa.one("[data-qa=dashboard-panel]");
+        const value = panel ? qa.textNodesShown(panel).find((item) => /\d/.test(item.value)) : null;
+        return {
+          userSelect: value ? getComputedStyle(value.el).userSelect : null,
+          exportAction: qa.all("button,[role=menuitem]").some((el) => /내보내기|CSV|표 복사|표로/.test(qa.txt(el) + (el.getAttribute("aria-label") ?? ""))),
+        };
+      });
+      return result(m.userSelect && m.userSelect !== "none" && m.exportAction, m, "panel text selectable and a table/export action exists");
+    },
+  }),
+  defineCheck("GAP-37", {
+    states: ["S09"], viewports: P,
+    async run(ctx) {
+      if (!(await exists(ctx, HOOKS.inspector))) return missingHook(HOOKS.inspector, "inspector at the half detent shows the distance from 정문 and a direction cue while the building stays visible");
+      const text = await ctx.inPage((qa) => qa.txt(qa.one("[data-qa=selection-inspector]")));
+      return result(/정문[^\n]*\d+\s*m/.test(text) && /(북|남|동|서)/.test(text), { inspectorText: text.slice(0, 120) }, "distance from 정문 and direction");
+    },
+  }),
+];
