@@ -202,6 +202,11 @@ minimum-area rectangle (ridge along the long side, eaves overhanging by `overhan
 form. Only use: the F3 학생테니스장 hut (`BLD_SCNU_R138317`, look `F3-hut`: yellow timber walls, red gable roof, eave
 2.5 m, ridge at its GIS height 3.3 m, from VR scene_f3 r; estimated).
 
+A building entry may also lower the 12 m² drawing minimum for that one footprint: `minAreaMetres` (the smallest area
+it is drawn at) with `minAreaSource` (why it stands). The build logs `small footprints included`; the global minimum
+is unchanged. Only use: the 10 m² annex beside the B5 greenhouse (`BLD_SCNU_R687709`, GIS record and VWorld photo;
+hidden by nearer buildings or trees in every VR scene that predicts it, so it keeps the generic annex look, estimated).
+
 Roof types are checked. A curated `form` mass may only be `flat` (`fetch/building_forms.py` draws curated masses
 flat), and a `data/building-forms.json` mass must be one of flat, gable, hipped, mono-pitch and curved. Any other value
 stops the build with an error instead of quietly becoming a flat roof.

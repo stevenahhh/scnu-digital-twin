@@ -1507,10 +1507,15 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
   const campusBuildings = [];
   // Off-campus buildings are not modelled; their lots are painted as plain ground and kept free of trees.
   const offCampusLots = [];
+  // Footprints under 12 m2 are not drawn, unless their data/scnu-facades.json entry lowers the minimum for that one
+  // building (`minAreaMetres` with `minAreaSource`): an explicit include, never a lower global threshold.
+  const smallIncluded = [];
   for (const part of footprintParts) {
     if (used.has(part.index) || isGroundFeature(part)) continue;
     const named = /순천대/.test(part.name);
-    if (part.areaMetres < 12 || (!named && !(pointInRing(part.centroid, campusHull) && distanceToRoads(part.centroid) < metres(14)))) {
+    const included = part.areaMetres < 12 && part.entry?.minAreaMetres !== undefined && part.areaMetres >= part.entry.minAreaMetres;
+    if (included) smallIncluded.push(`${part.nodeId ?? part.label} ${part.areaMetres.toFixed(1)} m2 (${part.entry.minAreaSource})`);
+    if ((part.areaMetres < 12 && !included) || (!named && !(pointInRing(part.centroid, campusHull) && distanceToRoads(part.centroid) < metres(14)))) {
       offCampusLots.push(part.outer);
       continue;
     }
@@ -1549,6 +1554,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
   console.log(`storey-height rule (2.5-5 m per storey, was 2.5-6.5 m) changed ${ratioChanges.length}: ${ratioChanges.join("; ") || "none"}`);
   console.log(`tower masses over VWorld LOD4 roof levels: ${towers.join("; ") || "none"}`);
   // fetch/buildingForms.mjs derives data/building-forms.json from this selection (the footprints before any form).
+  console.log(`small footprints included by their scnu-facades.json entry (minAreaMetres): ${smallIncluded.join("; ") || "none"}`);
   if (selectOnly) return { selectableBuildings, campusBuildings, offCampusLots, footprintShift };
 
   // ---- building forms (data/building-forms.json): masses replace the footprint parts of the buildings whose form
