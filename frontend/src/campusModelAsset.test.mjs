@@ -104,3 +104,28 @@ test("campus-v2.glb sits on the traffic simulation frame like uni.glb", async ()
     assert.ok(error < 3, `${id} is ${error.toFixed(2)} scene units from its uni.glb position`);
   }
 });
+
+test("campus-v2.glb stands every VR-only building of vr-buildings.json, with estimated footprint and height lineage", async () => {
+  const [campus, vr] = await Promise.all([
+    readGlbJson("campus-v2.glb"),
+    readFile(new URL("../scripts/campus-model/data/vr-buildings.json", import.meta.url), "utf8").then(JSON.parse),
+  ]);
+  const roots = campus.scenes[0].nodes.map((index) => campus.nodes[index]);
+  assert.ok(vr.buildings.length > 0, "vr-buildings.json has no record");
+  for (const record of vr.buildings) {
+    const proxy = roots.find((node) => node.name === record.nodeId);
+    if (proxy) {
+      assert.equal(proxy.extras?.pickProxy, true, `${record.nodeId} is not marked pickProxy`);
+      assert.equal(proxy.extras?.footprintEstimated, true, `${record.nodeId} footprint is not marked estimated`);
+      assert.equal(proxy.extras?.label, record.label, `${record.nodeId} label`);
+      assert.ok(proxy.extras?.heightLineage, `${record.nodeId} has no heightLineage`);
+      continue;
+    }
+    // A record whose outline holds a uni.glb building is matched into that node (README "VR-only buildings").
+    const host = roots.find((node) => node.name.startsWith("BLD_") && node.extras?.displayName === record.name);
+    assert.ok(host, `${record.nodeId} (${record.name}) is neither a proxy nor matched into a uni.glb node`);
+    assert.ok(host.extras.heightLineage, `${host.name} has no heightLineage`);
+  }
+  const furniture = roots.find((node) => node.name === "Furniture");
+  assert.deepEqual(furniture?.extras?.counts?.gate_sign, { surveyed: 0, estimated: 1 }, "the A19 gate sign is not built exactly once");
+});

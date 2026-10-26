@@ -27,6 +27,7 @@ const isPoint = (p) => Array.isArray(p) && p.length === 2 && p.every(Number.isFi
 function validateRecords(records) {
   const errors = [];
   const seen = new Set();
+  const codes = new Set();
   records.forEach((r, i) => {
     const at = `record ${i} (${r.nodeId ?? "no nodeId"})`;
     const fail = (message) => errors.push(`${at}: ${message}`);
@@ -36,7 +37,7 @@ function validateRecords(records) {
     if (typeof r.nodeId !== "string" || !/^BLD_SCNU_([A-Z]\d+|V\d+)$/.test(r.nodeId)) fail("nodeId must be BLD_SCNU_<code> or BLD_SCNU_V<n>");
     if (r.code && r.nodeId !== `BLD_SCNU_${r.code}`) fail("nodeId must be BLD_SCNU_<code> when the record has a code");
     if (r.status !== "standing") fail("status must be standing");
-    if (!Number.isInteger(r.floors) || r.floors < 1) fail("floors must be a positive integer");
+    if (!Number.isInteger(r.floors) || r.floors < 1) fail("floors must be >= 1 (a whole storey count)");
     const scene = /^VR (scene_[a-z0-9]+) storey count \(estimated\)$/.exec(r.floorsSource ?? "")?.[1];
     if (!scene) fail("floorsSource must read 'VR scene_<id> storey count (estimated)'");
     if (r.heightMetres !== 0) fail("heightMetres must be 0 (height comes from floors x median)");
@@ -51,6 +52,7 @@ function validateRecords(records) {
     }));
     if (typeof r.footprintSource !== "string" || !r.footprintSource.includes("(estimated)")) fail("footprintSource must say (estimated)");
     if (typeof r.nameSource !== "string" || r.nameSource.length === 0) fail("nameSource missing");
+    if (/^estimated/.test(r.nameSource ?? "") && !String(r.label ?? "").endsWith("(추정)")) fail("an estimated name needs a label ending in (추정)");
     if (r.estimated !== true) fail("estimated must be true");
     if (!(typeof r.confidence === "number" && r.confidence >= 0 && r.confidence <= 1)) fail("confidence must be 0-1");
     if (!Array.isArray(r.vrScenes) || r.vrScenes.length === 0 || !r.vrScenes.every((s) => /^scene_[a-z0-9]+$/.test(s))) fail("vrScenes must list scene ids");
@@ -64,6 +66,8 @@ function validateRecords(records) {
     if (NAMED.has(r.nodeId)) fail(`collides with scnu-building-names.json ${r.nodeId}`);
     if (seen.has(r.nodeId)) fail(`duplicate nodeId ${r.nodeId}`);
     seen.add(r.nodeId);
+    if (r.code && codes.has(r.code)) fail(`duplicate code ${r.code}`);
+    codes.add(r.code);
   });
   return errors;
 }

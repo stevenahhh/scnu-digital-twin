@@ -1,0 +1,49 @@
+{
+ "type": "FeatureCollection",
+ "source": "vr-scnu-360 + ngii-2025-ortho",
+ "description": "Rest spaces and gate structures placed from the SCNU 360 VR tour (visual reference only, nothing copied) and checked against the NGII 2025 orthophoto; read by stages/furniture.mjs after objects-campus.geojson. Every position and dimension is an estimate (estimated: true).",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "RS-GATE-A19",
+    "kind": "gate_sign",
+    "subtype": "letter_sign",
+    "confidence": 0.4,
+    "method": "vr-resection",
+    "length_m": 7,
+    "depth_m": 0.45,
+    "height_m": 3.7,
+    "plinth_m": 0.6,
+    "colour": "#f4f3ee",
+    "bandColour": "#f4f3ee",
+    "height_source": "VR scene_a19 + scene_001 (estimated)",
+    "estimated": true,
+    "vr_scene": "scene_a19",
+    "vr_face": "l",
+    "vr_cols": [
+     693,
+     981
+    ],
+    "note": "국립순천대학교 / SCNU letter sign on a planted stone bed at the road edge of the A19 gate plaza. From the scene_a19 camera over the gate crossing (about 244182, 263716, 11.7 m from the car scale on the d face) the letters span l cols 693-981 (bearings 176-192 deg) and their base sits about 21 deg below the horizon, and the slab subtends about 16 deg: about 25 m south of the camera, just inside the plaza edge wall OC0128. Lettering not modelled (plain white slab and name band). Supersedes the survey point OC0111 (left out).",
+    "style": {
+     "colour": "white letters, white name band",
+     "form": "free-standing letter slab on a planted stone bed"
+    }
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      127.4837136,
+      34.96836267
+     ],
+     [
+      127.48379023,
+      34.96835876
+     ]
+    ]
+   }
+  }
+ ]
+}

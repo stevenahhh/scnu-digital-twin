@@ -5,5 +5,158 @@
     "NGII 2025 orthophoto sheet 34702020 (footprints traced by eye, 0.25 m GSD)",
     "SCNU campus registry list.do codes"
   ],
-  "buildings": []
+  "buildings": [
+    {
+      "code": "D5",
+      "name": "순천대학교 D5 학군단",
+      "label": "학군단",
+      "nodeId": "BLD_SCNU_D5",
+      "status": "standing",
+      "floors": 4,
+      "floorsSource": "VR scene_d5 storey count (estimated)",
+      "heightMetres": 0,
+      "undergroundFloors": 0,
+      "usability": "교육연구시설 (추정)",
+      "polygons": [
+        [
+          [
+            [127.47718791, 34.97069914],
+            [127.47732287, 34.97067036],
+            [127.47724804, 34.97043468],
+            [127.47711999, 34.97047028],
+            [127.47713854, 34.9705329],
+            [127.47710189, 34.97054039],
+            [127.47712955, 34.97063432],
+            [127.47716621, 34.97062684],
+            [127.47718791, 34.97069914]
+          ]
+        ]
+      ],
+      "footprintSource": "NGII 2025 orthophoto trace (estimated) + VR scene_d5",
+      "nameSource": "SCNU registry D5 학군단 (campus list.do point 243578.6, 263932.9 EPSG:5186, 2.3 m from the traced centroid); VR scene_d5 sign D5 학군단 / 159 ROTC. A different building from the demolished 학군단 (B9) lot at (244098, 263974), GIS record 768588, which stays skipped",
+      "estimated": true,
+      "confidence": 0.6,
+      "vrScenes": [
+        "scene_d5"
+      ],
+      "registerName": null
+    },
+    {
+      "code": "A13",
+      "name": "순천대학교 A13 웅지관",
+      "label": "웅지관",
+      "nodeId": "BLD_SCNU_A13",
+      "status": "standing",
+      "floors": 8,
+      "floorsSource": "VR scene_a13 storey count (estimated)",
+      "heightMetres": 0,
+      "undergroundFloors": 0,
+      "usability": "공동주택(기숙사) (추정)",
+      "polygons": [
+        [
+          [
+            [127.48165419, 34.96719375],
+            [127.48184897, 34.96705039],
+            [127.48187951, 34.96699311],
+            [127.48196869, 34.96698153],
+            [127.48211954, 34.96694983],
+            [127.48219838, 34.96693255],
+            [127.48218065, 34.96684101],
+            [127.48209491, 34.9668543],
+            [127.48208441, 34.96682112],
+            [127.4820157, 34.96681264],
+            [127.48183735, 34.96683866],
+            [127.48163988, 34.96687902],
+            [127.48164053, 34.96698489],
+            [127.48179011, 34.96697036],
+            [127.48158582, 34.96712918],
+            [127.48165419, 34.96719375]
+          ]
+        ]
+      ],
+      "footprintSource": "NGII 2025 orthophoto trace (estimated) + VR scene_a13",
+      "nameSource": "SCNU registry A13 웅지관 (campus list.do point 244016.5, 263531.7 EPSG:5186, inside the traced outline); VR scene_a13 sign A13 웅지관; scene_001 hotspots spot1/spot18 point at the same building. The un-outlined solar-roofed building at the stadium south-west corner (the other candidate, 243898 263562, is the 26동 lawn). uni.glb already draws this building as BLD_Dormitory_Building.004 with no name: the generator matches this record into that node (name, floors, look; the uni.glb outline and id stay), so no BLD_SCNU_A13 node is added",
+      "estimated": true,
+      "confidence": 0.5,
+      "vrScenes": [
+        "scene_a13",
+        "scene_001"
+      ],
+      "registerName": null
+    },
+    {
+      "code": "A3",
+      "name": "순천대학교 A3 천연물신약연구소",
+      "label": "천연물신약연구소",
+      "nodeId": "BLD_SCNU_A3",
+      "status": "standing",
+      "floors": 5,
+      "floorsSource": "VR scene_a3 storey count (estimated)",
+      "heightMetres": 0,
+      "undergroundFloors": 0,
+      "usability": "교육연구시설 (추정)",
+      "polygons": [
+        [
+          [
+            [127.48055111, 34.96907811],
+            [127.48075673, 34.96903738],
+            [127.48063684, 34.96858626],
+            [127.48060762, 34.96859544],
+            [127.48059368, 34.96856046],
+            [127.4805005, 34.96858499],
+            [127.48050717, 34.96862836],
+            [127.48044143, 34.9686498],
+            [127.48055111, 34.96907811]
+          ]
+        ]
+      ],
+      "footprintSource": "NGII 2025 orthophoto trace (estimated) + VR scene_a3",
+      "nameSource": "SCNU registry A3 천연물신약연구소 (campus list.do point 243887.5, 263738.9 EPSG:5186, inside the traced outline); VR scene_a3 title 천연물신약 연구소. The solar-roofed block west of A2 약학대학, across the road from the central roundabout; the sky bridge to A2 is not part of the footprint",
+      "estimated": true,
+      "confidence": 0.6,
+      "vrScenes": [
+        "scene_a3",
+        "scene_001"
+      ],
+      "registerName": null
+    },
+    {
+      "code": "C5",
+      "name": "순천대학교 C5 어린이집",
+      "label": "어린이집",
+      "nodeId": "BLD_SCNU_C5",
+      "status": "standing",
+      "floors": 2,
+      "floorsSource": "VR scene_c5 storey count (estimated)",
+      "heightMetres": 0,
+      "undergroundFloors": 0,
+      "usability": "노유자시설 (추정)",
+      "polygons": [
+        [
+          [
+            [127.47938886, 34.97112225],
+            [127.47948006, 34.97110385],
+            [127.47971719, 34.97105556],
+            [127.47969997, 34.97092375],
+            [127.47958858, 34.97092414],
+            [127.47958907, 34.97100853],
+            [127.47944299, 34.97101129],
+            [127.47943348, 34.97094728],
+            [127.47921887, 34.97094199],
+            [127.47921936, 34.97102488],
+            [127.47938841, 34.97104539],
+            [127.47938886, 34.97112225]
+          ]
+        ]
+      ],
+      "footprintSource": "NGII 2025 orthophoto trace (estimated) + VR scene_c5",
+      "nameSource": "SCNU registry C5 순천대학교 어린이집 (campus list.do point 243780.4, 263983.8 EPSG:5186, inside the traced outline); VR scene_c5 sign C5 어린이집. The green-roofed courtyard building north of C3/C4, by the north gate (C6 북문)",
+      "estimated": true,
+      "confidence": 0.6,
+      "vrScenes": [
+        "scene_c5"
+      ],
+      "registerName": null
+    }
+  ]
 }

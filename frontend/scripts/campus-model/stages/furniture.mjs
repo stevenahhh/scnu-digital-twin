@@ -12,7 +12,7 @@
 // the ground, on the drawn terrain surface.
 // Every height is an ESTIMATE (height_source per object in the GeoJSON, or the defaults below); the node extras list
 // each object with its height and source.
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { METRES_PER_DEGREE_LAT, METRES_PER_DEGREE_LON, geoToModel, metres, modelToGeo } from "../lib/frame.mjs";
@@ -23,13 +23,15 @@ import { GLOW_UV, LAMP_SPACING_M, appendLampSolids, distanceToLines, objectDista
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const OBJECTS = path.join(HERE, "..", "data", "photo", "objects-campus.geojson");
+// VR-located rest spaces and the A19 gate sign (estimated; README "Street furniture"), read after the survey.
+const REST_SPACES = path.join(HERE, "..", "data", "photo", "rest-spaces.geojson");
 const GROUND_FEATURES = path.join(HERE, "..", "data", "osm-ground.json");
 const M = metres;
 
 // ---------------------------------------------------------------- decisions taken against the survey
 // Each is documented in README "Street furniture"; the build log repeats them.
 const EXCLUDED = {
-  OC0111: "SCNU letter monument: VR scene_a19 only (confidence 0.2); the 2025 photo shows that corner of the gate plaza under construction, so the monument is not consistent with the photo and is left out",
+  OC0111: "SCNU letter monument: superseded by RS-GATE-A19 (data/photo/rest-spaces.geojson, gate_sign), placed from VR scene_a19 (and scene_001) about 13 m further south at the plaza's road edge; the 2025 photo shows that corner of the gate plaza under construction, so this survey position (VR only, confidence 0.2) is left out",
 };
 const RETYPED = {
   OB0010: {
@@ -91,15 +93,20 @@ function heightOf(p) {
 // ---------------------------------------------------------------- load (before the trees and the ground)
 export function loadFurniture() {
   const data = JSON.parse(readFileSync(OBJECTS, "utf8"));
+  const rest = existsSync(REST_SPACES) ? JSON.parse(readFileSync(REST_SPACES, "utf8")) : { features: [] };
   const objects = [];
   const excluded = [];
-  for (const { properties: p, geometry: g } of data.features) {
+  const features = [
+    ...data.features.map((f) => ({ ...f, source: "objects-campus.geojson" })),
+    ...rest.features.map((f) => ({ ...f, source: "rest-spaces.geojson" })),
+  ];
+  for (const { properties: p, geometry: g, source } of features) {
     if (EXCLUDED[p.id]) {
       excluded.push({ id: p.id, kind: p.kind, reason: EXCLUDED[p.id] });
       continue;
     }
     const toModel = ([lon, lat]) => geoToModel(lon, lat);
-    const object = { id: p.id, kind: RETYPED[p.id]?.kind ?? p.kind, surveyKind: p.kind, subtype: p.subtype ?? null, p, ...heightOf(p) };
+    const object = { id: p.id, kind: RETYPED[p.id]?.kind ?? p.kind, surveyKind: p.kind, subtype: p.subtype ?? null, p, source, ...heightOf(p) };
     if (g.type === "Point") object.point = toModel(g.coordinates);
     else if (g.type === "LineString") object.line = g.coordinates.map(toModel);
     else object.ring = openRing(g.coordinates[0].map(toModel));
@@ -676,6 +683,26 @@ B.sign_pole = (ctx, o) => {
   ctx.solid.box(f, [-0.3, 0.3], [0.05, 0.09], [o.heightM - 0.75, o.heightM - 0.15], { top: C.white, side: C.signBlue });
 };
 
+// A19 gate sign (VR scene_a19 l face, scene_001): free-standing letter slab on a planted stone bed, the line being the
+// sign's axis; the lettering is a plain band (no text texture). length_m / depth_m: letter slab, height_m: top of the
+// upper name band above the ground, plinth_m: stone bed, colour / bandColour: slab and band. All estimated.
+B.gate_sign = (ctx, o) => {
+  const p = o.p;
+  const [a, b] = [o.line[0], o.line.at(-1)];
+  const c = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  const length = p.length_m ?? Math.hypot(b[0] - a[0], b[1] - a[1]) / M(1);
+  const depth = p.depth_m ?? 0.45;
+  const plinth = p.plinth_m ?? 0.6;
+  const letters = (o.heightM - plinth) * 0.75;
+  const toRoad = towardRoad(c, ctx.roads) ?? [0, 1];
+  const f = facingFrame(ctx, c, [b[0] - a[0], b[1] - a[1]], [c[0] + toRoad[0] * M(5), c[1] + toRoad[1] * M(5)]);
+  const slab = rgb(p.colour ?? "#f4f3ee");
+  ctx.solid.box(f, [-length / 2 - 1, length / 2 + 1], [-depth / 2 - 1.6, depth / 2 + 0.4], [-0.1, plinth], { top: C.shrub, side: C.stone });
+  ctx.solid.box(f, [-length / 2, length / 2], [-depth / 2, depth / 2], [plinth, plinth + letters], { top: slab, side: slab });
+  const band = rgb(p.bandColour ?? p.colour ?? "#f4f3ee");
+  ctx.solid.box(f, [-length * 0.42, length * 0.42], [-depth * 0.3, depth * 0.3], [plinth + letters + 0.1, o.heightM], { top: band, side: band });
+};
+
 B.floodlight_pole = (ctx, o) => {
   const at = o.point;
   const g = ctx.groundAt(...at);
@@ -967,7 +994,8 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     const before = ctx.solid.triangleCount + ctx.glass.triangleCount;
     if (builder(ctx, o) === false) continue;
     const kind = o.kind === "plaza_structure" ? `plaza_structure/${o.subtype}` : o.kind;
-    tally(kind, false);
+    // Objects of rest-spaces.geojson are placed from the VR, not surveyed on the photo: counted as estimated.
+    tally(kind, o.source === "rest-spaces.geojson");
     built.push([o.id, kind, Number(o.heightM.toFixed(2)), o.heightSource, 1, ctx.solid.triangleCount + ctx.glass.triangleCount - before]);
   }
   appendLampSolids(ctx.solid, lamps, groundAt);
@@ -983,7 +1011,7 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
   const furnitureMaterial = glb.addMaterial({ name: "Furniture", pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1], metallicFactor: 0, roughnessFactor: 0.82 } });
   const glassMaterial = glb.addMaterial({ name: "Furniture_Glass", pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1], metallicFactor: 0, roughnessFactor: 0.35 }, alphaMode: "BLEND", doubleSided: true });
   const extras = {
-    source: "data/photo/objects-campus.geojson (NGII 2025 orthophoto survey, 175 objects; positions from the photo); shapes, colours and heights estimated from the SCNU 360 VR tour (visual reference only)",
+    source: "data/photo/objects-campus.geojson (NGII 2025 orthophoto survey, 175 objects; positions from the photo) and data/photo/rest-spaces.geojson (VR-located rest spaces and the A19 gate sign; positions estimated); shapes, colours and heights estimated from the SCNU 360 VR tour (visual reference only)",
     heightsNote: "every height is an estimate, not a measurement; objects lists [id, kind, height m, height source, estimated]",
     counts,
     excluded: furniture.excluded,

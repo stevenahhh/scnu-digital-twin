@@ -799,14 +799,17 @@
       "station": true,
       "yaw_deg": true
     },
-    "yaw_refined_deg": 157.5,
-    "refined_residual_deg": 3,
+    "yaw_refined_deg": 135.4,
+    "refined_residual_deg": 2.8,
     "refined_buildings": [
-      "BLD_E1"
+      "BLD_SCNU_A3",
+      "central roundabout"
     ],
-    "refined_by": "compare-vr todo 2",
+    "refined_by": "compare-vr todo 11",
     "refined_confidence": 0.6,
-    "refined_note": "title building (A3) has no footprint; yaw set by E1 (blue/white block in r) and the roundabout in l"
+    "refined_note": "re-resected in todo 11 from three corners of the traced A3 (VR f -19.9, -10.5, +36.9 deg) and the roundabout centre (l +17.7 deg), max residual 2.8 deg; the todo 2 yaw 157.5 came from E1 alone (large facade, weak) and put A3 15 deg off",
+    "station_refined_x": 270.95,
+    "station_refined_z": -204.72
   },
   {
     "scene": "scene_a4",
@@ -2141,9 +2144,17 @@
       "station": true,
       "yaw_deg": true
     },
-    "refined": false,
-    "refined_by": "compare-vr todo 2",
-    "refined_note": "title building 웅지관 has no footprint (todo 10); skyline candidates +44/+74 deg not supported by buildings"
+    "refined_by": "compare-vr todo 10",
+    "refined_note": "resected from the outer corners of the A13 V plan (VR f cols 512 and 1372) and its glazed inner corner; drone above the east end of A8 at about 31 m (height_refined_m); the placeholder position put the camera inside the A8 cluster",
+    "yaw_refined_deg": 96.3,
+    "station_refined_x": 321.74,
+    "station_refined_z": -58.1,
+    "refined_confidence": 0.5,
+    "height_refined_m": 31,
+    "refined_residual_deg": 2,
+    "refined_buildings": [
+      "BLD_Dormitory_Building.004 (A13 웅지관)"
+    ]
   },
   {
     "scene": "scene_a15",
@@ -2983,9 +2994,18 @@
       "station": true,
       "yaw_deg": true
     },
-    "refined": false,
-    "refined_by": "compare-vr todo 2",
-    "refined_note": "title (gate) has no footprint; road axes and the gate plaza line up at the original yaw by eye; no building pair to measure"
+    "refined_by": "compare-vr todo 14",
+    "refined_note": "camera placed over the gate crossing between the two red traffic islands as the d face shows them (NE island upper right, SW island lower left), height 11.7 m from the car length on the d face; yaw kept (road axes)",
+    "yaw_refined_deg": 284,
+    "station_refined_x": 465.19,
+    "station_refined_z": -164.16,
+    "refined_confidence": 0.5,
+    "height_refined_m": 11.7,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "gate crossing islands",
+      "RS-GATE-A19"
+    ]
   },
   {
     "scene": "scene_b1",
@@ -4451,9 +4471,17 @@
       "station": true,
       "yaw_deg": true
     },
-    "refined": false,
-    "refined_by": "compare-vr todo 2",
-    "refined_note": "daycare (title) has no footprint; skyline candidates -45..-72 deg rejected by eye; original kept"
+    "refined_by": "compare-vr todo 12",
+    "refined_note": "station moved 7 m south inside the forecourt so the two-storey block's north-west corner sits at its VR column (f -31 deg) with the C3 north-east corner at f +29 deg; yaw kept (C3 antenna tower)",
+    "yaw_refined_deg": 100.5,
+    "station_refined_x": 203.22,
+    "station_refined_z": -336.44,
+    "refined_confidence": 0.6,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "BLD_SCNU_C5",
+      "BLD_SCNU_C3"
+    ]
   },
   {
     "scene": "scene_d1",
@@ -5311,9 +5339,16 @@
       "station": true,
       "yaw_deg": true
     },
-    "refined": false,
-    "refined_by": "compare-vr todo 2",
-    "refined_note": "D5 학군단 (title) has no footprint (todo 9); station outside the campus terrain, no building to measure"
+    "refined_by": "compare-vr todo 9",
+    "refined_note": "station and yaw resected from the two east-facade corners of the traced D5 (VR f +44 and -13.6 deg) with the camera about 9 m from the north-east corner; the scene is not the placeholder position",
+    "yaw_refined_deg": 224.7,
+    "station_refined_x": 101.84,
+    "station_refined_z": -309.02,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "BLD_SCNU_D5"
+    ],
+    "refined_confidence": 0.6
   },
   {
     "scene": "scene_e1",

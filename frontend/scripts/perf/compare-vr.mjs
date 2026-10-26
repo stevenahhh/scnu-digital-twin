@@ -21,7 +21,8 @@
 // moved to the station, a 90-degree square perspective projection (near 0.5, far 3000), fog off and the
 // renderer resized to 1024 x 1024, then everything is restored. The camera height is the terrain under
 // the station (ray straight down against the Topography meshes and, outside the campus extent, OuterTerrain,
-// like src/camera/terrainClearance.mjs; y = 0 with a NO_TERRAIN log when it misses) plus height_m_est in scene units. Face bearings follow lib/vrCamera.mjs.
+// like src/camera/terrainClearance.mjs; y = 0 with a NO_TERRAIN log when it misses) plus height_refined_m (when a record has it) or
+// height_m_est in scene units. Face bearings follow lib/vrCamera.mjs.
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
@@ -362,7 +363,7 @@ try {
       console.log(`NO_TERRAIN ${record.scene} x=${world.x.toFixed(2)} z=${world.z.toFixed(2)}: camera height from y = 0`);
       terrain = 0;
     }
-    return { world, terrain, y: terrain + record.height_m_est * SCENE_UNITS_PER_METRE };
+    return { world, terrain, y: terrain + (record.height_refined_m ?? record.height_m_est) * SCENE_UNITS_PER_METRE };
   };
 
   if (listOnly) {

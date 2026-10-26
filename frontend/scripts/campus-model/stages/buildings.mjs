@@ -73,7 +73,7 @@ export function storeyMedians(footprints) {
 // other buildings the other median.
 function storeyFor(part, isSCNU, medians) {
   if (!isSCNU) return { cls: "other", metres: medians.other.metres };
-  const cls = DORMITORY.test(`${part.name ?? ""} ${part.label ?? ""}`) ? "dormitory" : "education";
+  const cls = DORMITORY.test(`${part.name ?? ""} ${part.label ?? ""} ${part.usability ?? ""}`) ? "dormitory" : "education";
   return { cls: medians[cls].fallback ? `${cls} -> ${medians[cls].fallback}` : cls, metres: medians[cls].metres };
 }
 
@@ -1217,7 +1217,8 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
   const corrections = [];
   const footprintParts = footprints.flatMap((b, index) => (b.status === "demolished" ? [] : b.polygons.map((polygon) => {
     const [outer, ...holes] = polygon.map(toModelRing);
-    const entry = recordEntry(catalogue, b.label ?? b.name);
+    // A data/vr-buildings.json record's label drops the registry code (학군단), so its entry is also looked up by name.
+    const entry = recordEntry(catalogue, b.label ?? b.name) ?? (b.estimated === true ? recordEntry(catalogue, b.name) : null);
     const part = {
       index,
       name: b.name,
@@ -1230,6 +1231,8 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
       floorsSource: b.floorsSource,
       // data/vr-buildings.json records: footprint traced from imagery (estimated).
       footprintEstimated: b.estimated === true,
+      // ... and its use class (추정), which picks the storey median (웅지관 is a dormitory).
+      ...(b.estimated === true ? { usability: b.usability } : {}),
       outer,
       holes,
       centroid: ringCentroid(outer),

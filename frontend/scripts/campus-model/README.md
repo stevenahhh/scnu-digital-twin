@@ -337,6 +337,15 @@ The file has `description`, `sources` and `buildings`. Each record follows the `
 `footprintEstimated: true` and `footprintSource` in its extras. No VR image, thumbnail or NGII raster pixel is
 committed; only the traced vectors are.
 
+Records (2026-10-26): D5 학군단, A13 웅지관, A3 천연물신약연구소 and C5 어린이집, each placed where the SCNU campus
+registry (`w1.scnu.ac.kr/SCNU/campus/list.do`, its `cpLat`/`cpLng` point) and the photo agree. A record whose outline
+holds a `uni.glb` node is matched into that node like a GIS record (A13: `BLD_Dormitory_Building.004` takes its name,
+floors and look; the node keeps its outline and id, and no `BLD_SCNU_A13` proxy is made). The sweep over the 42 exterior
+VR scenes found no uncoded VR-only building: the a4 round blue-band wing belongs to the A4 GIS footprint, and the small
+green-roofed building in scene_d5 is a private house off campus (GIS record 453102), so there is no `BLD_SCNU_V<n>` record.
+A record looks up its `data/scnu-facades.json` entry by label, then by name (the label drops the code), and its
+`usability` picks the storey median (dormitory for 웅지관).
+
 ### Building forms (`data/building-forms.json`)
 
 A campus building is not one prism. `fetch/buildingForms.mjs` gives every modelled building (the selection of
@@ -559,8 +568,12 @@ base from the drawn terrain surface (`topographySurface`).
 
 Decisions taken against the survey, logged by the build and listed in the `Furniture` node extras:
 
-- OC0111, the SCNU letter monument, is left out. Only VR scene_a19 shows it (confidence 0.2); the 2025 photo shows
-  that corner of the gate plaza under construction, so it is not consistent with the photo.
+- OC0111, the survey point of the SCNU letter monument, is left out: the monument is built once, as `RS-GATE-A19`
+  (`gate_sign`) in `data/photo/rest-spaces.geojson`, placed by the bearings and depression of VR scene_a19 (l face)
+  about 13 m further south at the plaza's road edge. The 2025 photo shows that corner of the plaza under construction,
+  so the position is VR-only and estimated (confidence 0.4). `B.gate_sign` builds a white letter slab and name band
+  on a planted stone bed from the feature's `length_m`, `depth_m`, `height_m`, `plinth_m`, `colour` and `bandColour`;
+  the lettering itself is not modelled. Objects of `rest-spaces.geojson` are counted as estimated in the node extras.
 - OB0010 was surveyed as a white roofed pergola. VR scene_a19 shows no roof there, only the stepped arc of the
   finished plaza, and the photo shows a curved edge with a thin shadow, so it is built as a two-tier curved step.
 - Parasols and the kiosk get 2.4 m instead of the generic 0.5 m `plaza_structure` default.
