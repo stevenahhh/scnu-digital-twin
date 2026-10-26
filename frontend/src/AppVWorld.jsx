@@ -1,13 +1,10 @@
 import { useCallback, useRef, useState } from "react";
 import VWorldRenderer from "./vworld/VWorldRenderer";
 import { sceneBackgroundFor } from "./lighting/sceneBackground.mjs";
-import { AccessibleDialog } from "./components/AccessibleDialog";
-import { MicroclimatePanel } from "./components/MicroclimatePanel";
-import { PanelErrorBoundary } from "./components/PanelErrorBoundary";
+import { SelectionInspector } from "./panel/SelectionInspector";
 import { useSimulationSocket } from "./simulation";
 import { createPlanDraftFromExisting } from "./features/energy/installations/installationPlanApi.mjs";
-import { usePanelCoversViewport } from "./hooks/usePanelCoversViewport";
-import { useInert } from "./hooks/useInert.mjs";
+import { useViewportMode } from "./hooks/useViewportMode.mjs";
 import { useWeatherFeed } from "./hooks/useWeatherFeed";
 import { useTrafficFeed } from "./simulation/hooks/useTrafficFeed";
 import { usePopupData } from "./hooks/usePopupData.mjs";
@@ -15,14 +12,18 @@ import { useInstallationPlans } from "./hooks/useInstallationPlans.mjs";
 import { useSelectionState } from "./hooks/useSelectionState.mjs";
 import { useSunClock } from "./hooks/useSunClock.mjs";
 import { useThemeMode } from "./hooks/useThemeMode.mjs";
-import { DashboardPanel } from "./panel/DashboardPanel";
-import { PanelToggle } from "./panel/PanelToggle";
-import { BasicStatusTab } from "./panel/BasicStatusTab";
-import { ParkingSafetyTab } from "./panel/ParkingSafetyTab";
-import { EnergyTab } from "./panel/EnergyTab";
-import { EnvironmentTab } from "./panel/EnvironmentTab";
-import { SettingsDialog } from "./panel/SettingsDialog";
-import { WeatherErrorBanner } from "./panel/WeatherErrorBanner";
+import { DashboardShell, SHELL_PEEK_HEIGHT, shellInsetRight } from "./panel/DashboardShell";
+import { TimeSlider } from "./components/TimeSlider";
+import { usePanelState } from "./panel/usePanelState.mjs";
+import { usePanelViewMemory } from "./panel/usePanelViewMemory.mjs";
+import { Wordmark } from "./panel/Wordmark";
+import { HudTimeReadout, sceneTimeReadout } from "./components/HudTimeReadout";
+import { SettingsSheet } from "./panel/SettingsSheet";
+import { usePresentationMode } from "./panel/usePresentationMode.mjs";
+import { PresentationToggle } from "./components/CampusHud";
+import { DashboardTabContent } from "./panel/DashboardTabContent";
+import { FeedStamps } from "./panel/FeedStatus";
+import { useFeedStatus } from "./hooks/useFeedStatus.mjs";
 import { summarizeWeather } from "./panel/weatherSummary.mjs";
 
 // 지도 영상 위에 까는 야간 음영과 해 쪽 햇빛. 해 고도·방위(도)에서 투명도와 위치를 정한다.
@@ -41,54 +42,71 @@ export default function App() {
   const panelRef = useRef(null);
   const [editorRequest, setEditorRequest] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [isPanelOpen, setIsPanelOpen] = useState(true);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const closeSettings = useCallback(() => setIsSettingsOpen(false), []);
+  const viewportMode = useViewportMode();
+  const panelState = usePanelState(viewportMode);
   // D4 상세 화면(자체 대화상자)이 열린 동안에는 건물 팝업을 띄우지 않는다. 화면 뒤에 가린 팝업이 키보드 포커스를 가두지 않게 한다.
   const [isD4SectionOpen, setIsD4SectionOpen] = useState(false);
+  // D4 상세가 그려질 셸의 패인 자리와, 레일에서 다른 탭을 골라 D4를 닫을 때 바꾸는 값.
+  const [d4PaneHost, setD4PaneHost] = useState(null);
+  const [d4CloseKey, setD4CloseKey] = useState(0);
   const [themeMode, setThemeMode] = useThemeMode();
   const weatherFeed = useWeatherFeed();
   const trafficFeed = useTrafficFeed();
   const clock = useSunClock();
   const selection = useSelectionState();
   const plans = useInstallationPlans(selection.selectedBuildingId);
+  const feeds = useFeedStatus({ weather: weatherFeed, traffic: trafficFeed, plans });
+  const panelScrollRef = useRef(null);
   const popup = usePopupData();
 
   const summary = summarizeWeather({ feed: weatherFeed, mode: clock.mode, simTemp: clock.simTemp });
   const lighting = mapLighting(clock.sunAltitudeDegrees, clock.sunBearingDegrees, clock.sunState.visible);
 
-  // VWorld에서 건물을 고르면 에너지 탭으로 옮기고 미기후 팝업을 띄운다(frontend/AGENTS.md 의도된 차이).
+  // VWorld에서 건물을 고르면 Legacy와 같은 선택 인스펙터가 열린다. 탭은 바꾸지 않는다(폰에서는 시트를 half로).
   const { selectBuilding, clearSelection } = selection;
   const { load: loadPopup, clear: clearPopup } = popup;
+  const { revealOnPhone } = panelState;
   const handleVWorldSelection = useCallback((target) => {
     selectBuilding(target);
-    setActiveTab("energy");
-    if (target.elementId?.startsWith("BLD_")) loadPopup(target.elementId);
-    else clearPopup();
-  }, [clearPopup, loadPopup, selectBuilding]);
+    if (target.elementId?.startsWith("BLD_")) {
+      revealOnPhone();
+      loadPopup(target.elementId);
+    } else clearPopup();
+  }, [clearPopup, loadPopup, revealOnPhone, selectBuilding]);
   const closeMicroclimatePopup = useCallback(() => {
     clearSelection();
     clearPopup();
   }, [clearPopup, clearSelection]);
+  // D4 상세에 들어갈 때의 탭·스크롤을 기억했다가 나올 때 되돌린다(Legacy와 같은 규칙).
+  const viewMemory = usePanelViewMemory({ activeTab, setActiveTab, scrollRef: panelScrollRef });
+  const handleD4SectionChange = useCallback((open) => {
+    if (open) viewMemory.save();
+    else viewMemory.restore();
+    setIsD4SectionOpen(open);
+  }, [viewMemory]);
   const closeEditor = () => {
     setEditorRequest(null);
     plans.refreshAll();
   };
 
-  const isPanelVisible = isPanelOpen && !isD4SectionOpen;
-  const panelCoversViewport = usePanelCoversViewport();
-  const mapInsetRight = isPanelVisible && !panelCoversViewport ? "var(--dashboard-panel-width)" : "0px";
-  useInert([panelRef], !isPanelVisible);
+  // 지도 위 문구·버튼과 야간 음영은 패널(또는 레일)이 차지한 오른쪽 폭만큼 비켜 선다.
+  const presentation = usePresentationMode({ panelState, activeTab, setActiveTab });
+  const mapInsetRight = presentation.presenting ? "0px" : shellInsetRight(viewportMode, panelState.open, isD4SectionOpen, Boolean(selection.selectedId));
+  // 폰에서는 바텀 시트의 peek 높이만큼 아래를 비운다.
+  const mapInsetBottom = viewportMode === "phone" ? `${SHELL_PEEK_HEIGHT}px` : "0px";
+  const [isTimePlaying, setIsTimePlaying] = useState(false);
 
   // 루트는 overflow: clip으로 자른다. hidden은 스크롤 컨테이너라서 Tab 포커스가 화면 밖 요소로 가면 대시보드가 밀려 남는다.
   return (
-    <div className="dashboard-root relative h-dvh w-screen overflow-clip bg-canvas text-ink">
+    <div className={`dashboard-root relative h-dvh w-screen overflow-clip bg-canvas text-ink ${presentation.cursorHidden ? "cursor-none" : ""}`}>
       <div className="absolute inset-0" style={{ background: sceneBackgroundFor(clock.sunState.visible) }} />
 
       <div className="absolute inset-0 z-0">
         <VWorldRenderer
           onSelection={handleVWorldSelection}
-          onD4SectionChange={setIsD4SectionOpen}
+          onD4SectionChange={handleD4SectionChange}
+          d4PaneHost={d4PaneHost}
+          d4CloseKey={d4CloseKey}
           simulationDate={clock.sunDate}
           editorRequest={editorRequest}
           onEditorClose={closeEditor}
@@ -98,8 +116,9 @@ export default function App() {
           onInstallationPlansChange={plans.onPlansChange}
           onRepresentativeInstallationPlanChange={plans.onRepresentativeChange}
           representativeRefreshKey={plans.overlayRefreshKey}
-          overlaysCovered={isPanelVisible && panelCoversViewport}
           overlayInsetRight={mapInsetRight}
+          overlayInsetBottom={mapInsetBottom}
+          overlaysHidden={presentation.presenting}
           // 야간 음영·햇빛·그라데이션은 지도 영상만 어둡게 해야 하므로 렌더러가 지도 바로 위·지도 위 문구와 버튼 아래에 그린다.
           mapBackdrop={(
             <>
@@ -107,14 +126,14 @@ export default function App() {
                 id="vworld-available-area"
                 className="pointer-events-none absolute bottom-0 left-0 top-0 z-[1] transition-[right,background-color] duration-300"
                 style={{
-                  right: isPanelVisible ? "var(--dashboard-panel-width)" : "0px",
+                  right: mapInsetRight,
                   backgroundColor: `rgba(3, 10, 24, ${lighting.nightOpacity})`,
                 }}
               />
               <div
                 className="pointer-events-none absolute bottom-0 left-0 top-0 z-[2] transition-[right,opacity] duration-300"
                 style={{
-                  right: isPanelVisible ? "var(--dashboard-panel-width)" : "0px",
+                  right: mapInsetRight,
                   background: `radial-gradient(circle at ${lighting.glowX}% ${lighting.glowY}%, `
                     + `rgba(255, 218, 138, ${lighting.glowOpacity}) 0%, transparent 42%)`,
                 }}
@@ -124,66 +143,81 @@ export default function App() {
         />
       </div>
 
-      {!isD4SectionOpen && <PanelToggle open={isPanelOpen} onToggle={() => setIsPanelOpen((open) => !open)} />}
+      <div
+        data-qa="campus-hud"
+        className="pointer-events-none absolute left-0 top-0 z-[6] transition-[right] duration-300"
+        style={{ right: mapInsetRight, bottom: mapInsetBottom }}
+      >
+        <div className="flex items-start gap-2 p-4">
+        <HudTimeReadout
+          minuteOfDay={clock.sceneMinuteOfDay}
+          statusSlot={viewportMode !== "phone" && !presentation.presenting && (
+            <FeedStamps feeds={feeds} retry={feeds.retry} placement={{ expanded: panelState.open, activeTab }} />
+          )}
+        />
+        <PresentationToggle presenting={presentation.presenting} onToggle={presentation.toggle} className="mt-1" />
+        {viewportMode !== "phone" && !presentation.presenting && <Wordmark className="ml-auto mt-2.5 text-ink-muted" />}
+        </div>
+        {/* 시간 조작은 Legacy와 같은 하나뿐인 조작이다. 지도 조작 열(왼쪽 아래)과 겹치지 않게 오른쪽 아래에 둔다. */}
+        {!presentation.presenting && <TimeSlider
+          minuteOfDay={clock.sceneMinuteOfDay}
+          onMinuteChange={clock.setSceneMinuteOfDay}
+          dateValue={clock.sceneDate}
+          onDateChange={clock.setSceneDate}
+          onNow={clock.snapToNow}
+          playing={isTimePlaying}
+          onPlayingChange={setIsTimePlaying}
+          live={clock.isLiveMode}
+          className="absolute bottom-4 right-4 w-[min(24rem,calc(100%-2rem))]"
+        />}
+      </div>
 
-      <DashboardPanel
+      <DashboardShell
         ref={panelRef}
-        visible={isPanelVisible}
+        mode={viewportMode}
+        open={panelState.open}
+        onOpenChange={panelState.setUserOpen}
+        detent={panelState.detent}
+        onDetentChange={panelState.setDetent}
+        hidden={presentation.presenting}
+        pane={isD4SectionOpen && <div ref={setD4PaneHost} className="h-full" />}
+        onPaneExit={() => setD4CloseKey((value) => value + 1)}
+        timeReadout={sceneTimeReadout(clock.sceneMinuteOfDay)}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        footer={weatherFeed.state === "error" && (
-          <WeatherErrorBanner message={weatherFeed.message} onRetry={weatherFeed.refresh} busy={summary.isBusy} />
-        )}
-      >
-        {activeTab === "dashboard" && (
-          <PanelErrorBoundary label="기본 현황">
-            <BasicStatusTab
-              summary={summary}
-              sunAltitudeDegrees={clock.sunAltitudeDegrees}
-              onOpenSettings={() => setIsSettingsOpen(true)}
-              onRefreshWeather={weatherFeed.refresh}
-            />
-          </PanelErrorBoundary>
-        )}
-        {activeTab === "parking_safety" && (
-          <PanelErrorBoundary label="주차·안전">
-            <ParkingSafetyTab trafficFeed={trafficFeed} />
-          </PanelErrorBoundary>
-        )}
-        {activeTab === "energy" && (
-          <PanelErrorBoundary label="에너지">
-            <EnergyTab buildingId={selection.selectedBuildingId} plans={plans} onOpenRecommendation={setEditorRequest} />
-          </PanelErrorBoundary>
-        )}
-        {activeTab === "environment" && (
-          <PanelErrorBoundary label="환경 시뮬">
-            <EnvironmentTab clock={clock} />
-          </PanelErrorBoundary>
-        )}
-      </DashboardPanel>
-
-      {/* 건물 미기후 팝업: VWorld는 탭이 아니라 지도 위 대화상자로 보여 준다(의도된 차이). */}
-      <AccessibleDialog
-        open={Boolean(selection.selectedId) && !isD4SectionOpen}
-        onClose={closeMicroclimatePopup}
-        title={popup.data?.name ?? selection.selectedId}
-        className="pointer-events-auto absolute left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 [&>h2]:sr-only"
-      >
-        <section className="max-h-[80vh] w-[340px] overflow-y-auto rounded-card border border-hairline bg-surface-1 p-4 text-ink shadow-dialog">
-          <MicroclimatePanel
-            data={popup.data}
-            loading={popup.loading}
-            error={popup.error}
-            errorDetail={popup.errorDetail}
-            onRetry={popup.retry}
-            lastData={popup.lastData}
-            title={selection.selectedId}
+        inspector={selection.selectedId && !isD4SectionOpen ? (
+          <SelectionInspector
+            title={selection.selectedTitle || popup.data?.name || selection.selectedId}
+            popup={popup}
             onClose={closeMicroclimatePopup}
+            onShowAll={closeMicroclimatePopup}
           />
-        </section>
-      </AccessibleDialog>
+        ) : null}
+        scrollRef={panelScrollRef}
+        freshnessSlot={<FeedStamps feeds={feeds} retry={feeds.retry} compact />}
+      >
+        <DashboardTabContent
+          activeTab={activeTab}
+          summary={summary}
+          feeds={feeds}
+          clock={clock}
+          trafficFeed={trafficFeed}
+          plans={plans}
+          buildingId={selection.selectedBuildingId}
+          settings={(
+            <SettingsSheet
+              mode={viewportMode}
+              themeMode={themeMode}
+              onThemeChange={setThemeMode}
+              onOpenChange={(open) => open && panelState.setDetent("peek")}
+            />
+          )}
+          onRefreshWeather={weatherFeed.refresh}
+          onOpenRecommendation={setEditorRequest}
+        />
+      </DashboardShell>
 
-      {isSettingsOpen && <SettingsDialog onClose={closeSettings} themeMode={themeMode} onThemeChange={setThemeMode} />}
+
     </div>
   );
 }

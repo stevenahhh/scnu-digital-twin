@@ -29,7 +29,7 @@ describe("D4 room detail", () => {
         wing={wing}
         floor={3}
         rooms={[room]}
-        roomUsageById={{}}
+        roomUsageById={new Map()}
         selectedRoom={room}
         selectedRoomStatus={status}
         onSelectRoom={() => {}}

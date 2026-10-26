@@ -85,13 +85,13 @@ Every dashboard fix lands in both entries unless it's listed as intentional belo
 |---|---|---|
 | Tabs | 기본 현황, `parking_safety` 주차·안전, 에너지, 환경 시뮬 | same tab set |
 | Feeds | weather, traffic, simulation hooks | same hooks |
-| `MicroclimatePanel` | shared component | shared component |
+| `SelectionInspector` (`src/panel/`) | shared component | shared component |
 | Dialogs and error boundary | shared | shared |
 | Renderer (intentional) | Three.js GLB (`CityModel.jsx`) | VWorld WebGL SDK |
 | Render quality (intentional) | `설정` dialog 낮음/보통/높음 (`settings/qualityPreset.mjs`, lazy `postfx/HighTierEffects.jsx`) | none; the SDK owns rendering |
 | D4 entry (intentional) | GLB mesh click | `MODEL_NAME` or D4 coordinate marker |
-| Building selection (intentional) | opens the `미기후` selection tab | switches to the `에너지` tab |
-| Building detail (intentional) | rendered in a tab | popup modal |
+| Building selection | opens the selection inspector (tab unchanged) | opens the selection inspector (tab unchanged) |
+| Building detail | selection inspector above the tabs (rail: card beside it; phone: sheet `half`) | same |
 
 ## ANTI-PATTERNS
 

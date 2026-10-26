@@ -104,6 +104,24 @@ test("a chip deeper than 24 px under a HUD rect is hidden, not clipped", () => {
   assert.equal(result.hiddenReasons.get("a"), "chrome");
 });
 
+test("a chip more than 24 px under a HUD rect is nudged just below the HUD with a leader when its anchor is visible", () => {
+  const hud = { left: 0, top: 0, right: 1000, bottom: 70 };
+  const result = run([chip("a", 300, 80)], { chrome: [hud] });
+  const placed = byId(result, "a");
+  assert.ok(placed, "nudged below the HUD, not hidden");
+  assert.equal(placed.rect.top, 70 + 12);
+  assert.ok(placed.leader, "a nudged chip points back to its anchor");
+});
+
+test("a chip nudged below a HUD never lands on a kept chip", () => {
+  const hud = { left: 0, top: 0, right: 1000, bottom: 70 };
+  // 'kept' already sits exactly where 'a' would be nudged (top 82); 'a' is hidden instead of overlapping it.
+  const kept = { ...chip("kept", 300, 82 + 20 + 6), selected: true };
+  const result = run([kept, chip("a", 300, 80)], { chrome: [hud] });
+  assert.ok(byId(result, "kept"));
+  assert.equal(byId(result, "a"), undefined);
+});
+
 test("a colliding chip is displaced up in 4 px steps and gets a leader to its anchor", () => {
   const result = run([chip("a", 300, 400), chip("b", 300, 392)]);
   const b = byId(result, "b");

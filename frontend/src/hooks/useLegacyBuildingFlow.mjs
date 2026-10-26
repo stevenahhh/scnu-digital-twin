@@ -2,21 +2,24 @@ import { useCallback, useMemo, useState } from "react";
 import commonElements from "../../../common/data/common_elemetns.json";
 import { isProximitySuspended, resolveSelectionTitle, useSelectionState as useLabelSelection } from "../labels/useSelectionState.mjs";
 import { isD4ElementId } from "../utils/d4BuildingData.mjs";
+import { usePanelViewMemory } from "../panel/usePanelViewMemory.mjs";
 
 const buildingCodeOf = (elementId) => elementId.slice("BLD_".length);
 const ELEMENT_NAMES = new Map(commonElements.elements.map((element) => [element.element_id, element.name]));
 
 // Legacy 3D 캠퍼스에서 건물을 고르는 흐름: 메시·라벨 클릭, 근접(줌인), D4 상세 진입·복귀, 미기후 탭.
-// selection은 useSelectionState, popup은 usePopupData, panel은 { activeTab, setActiveTab, setIsPanelOpen }이다.
+// selection은 useSelectionState, popup은 usePopupData, panel은 { activeTab, setActiveTab, scrollRef, onSelectionShown }이다.
 // 탭은 사용자가 고른 것을 지킨다. 미기후 탭만 이 흐름이 열고 닫는다.
 // 라벨 층의 선택(labels/useSelectionState)은 무엇을 어떤 경로로 골랐는지를 따로 들고 있다: 클릭·시점·검색으로 고른 건물은
 // 근접 자동 선택에 밀리지 않고, 드래그를 시작하거나 선택을 풀면 다시 근접을 따른다. 패널 제목은 그 건물의 레지스트리 이름이다.
-export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef, onSectionExit }) {
+// onSectionEnter: D4 패인이 열릴 때(카메라를 D4로 옮긴다), onSectionExit: 닫힐 때.
+export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef, onSectionEnter, onSectionExit }) {
   const [buildingViewMode, setBuildingViewMode] = useState("campus");
   const [editorRequest, setEditorRequest] = useState(null);
   const [labelRegistry, setLabelRegistry] = useState(null);
   const label = useLabelSelection();
-  const { activeTab, setActiveTab, setIsPanelOpen } = panel;
+  const { activeTab, setActiveTab, scrollRef, onSelectionShown } = panel;
+  const viewMemory = usePanelViewMemory({ activeTab, setActiveTab, scrollRef });
   const { highlight, clearSelection, selectedBuildingId } = selection;
   const { select: selectLabel, confirm: confirmLabel, clear: clearLabel, selectionRef } = label;
 
@@ -40,26 +43,28 @@ export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef
     else clearLabel();
   }, [clearLabel, highlight, popup.clear, selectLabel]);
 
+  // D4 상세가 열린 동안 셸은 숨고(hidden), 나오면 들어가기 전의 탭·스크롤·패널 열림 상태 그대로 돌아온다.
   const openD4Section = useCallback((request = null) => {
+    viewMemory.save();
     setEditorRequest(request);
     clearAll();
     popup.clear();
     setBuildingViewMode("section");
-    setIsPanelOpen(false);
-  }, [clearAll, popup.clear, setIsPanelOpen]);
+    onSectionEnter?.();
+  }, [clearAll, onSectionEnter, popup.clear, viewMemory.save]);
 
   const exitD4Section = useCallback(() => {
     setBuildingViewMode("campus");
-    setIsPanelOpen(true);
     setEditorRequest(null);
+    viewMemory.restore();
     onSectionExit();
-  }, [onSectionExit, setIsPanelOpen]);
+  }, [onSectionExit, viewMemory.restore]);
 
+  // 고른 건물은 선택 인스펙터가 보여 준다. 탭은 바꾸지 않는다(폰에서는 시트를 half로 올린다).
   const showMicroclimate = useCallback((elementId) => {
-    setActiveTab("microclimate");
-    setIsPanelOpen(true);
+    onSelectionShown?.();
     return popup.load(elementId);
-  }, [popup.load, setActiveTab, setIsPanelOpen]);
+  }, [onSelectionShown, popup.load]);
 
   const handleBuildingClick = useCallback((obj) => {
     const elementId = obj?.parent?.name && obj.parent.name !== "Scene" ? obj.parent.name : obj?.name;
@@ -87,14 +92,14 @@ export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef
     if (buildingViewMode === "campus") openD4Section();
   }, [buildingViewMode, openD4Section]);
 
-  // 카메라가 건물에 가까이 가면(자유 줌·궤도) 그 건물의 미기후를 연다. 기본 현황·미기후 탭에서만 그렇게 하고,
-  // 시점 버튼으로 간 자리나 사용자가 직접 고른 건물이 있는 동안에는 열거나 닫지 않는다. 모든 건물에서 멀어지면 접는다.
+  // 카메라가 건물에 가까이 가면(자유 줌·궤도) 그 건물을 인스펙터로 연다. 기본 현황 탭에서만 그렇게 하고,
+  // 시점 버튼으로 간 자리나 사용자가 직접 고른 건물이 있는 동안에는 열거나 닫지 않는다. 모든 건물에서 멀어지면 닫는다.
   const handleBuildingProximity = useCallback((anchor) => {
     if (anchor && activePresetRef.current) return;
     if (isProximitySuspended(selectionRef.current)) return;
     if (!anchor) {
-      if (activeTab === "microclimate") {
-        setActiveTab("dashboard");
+      // 탭은 사용자만 바꾼다. 멀어지면 선택만 푼다.
+      if (selection.selectedId) {
         clearAll();
         popup.clear();
       }
@@ -102,9 +107,9 @@ export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef
     }
     const { elementId } = anchor;
     if (!elementId?.startsWith("BLD_") || isD4ElementId(elementId) || buildingViewMode !== "campus") return;
-    if (activeTab !== "dashboard" && activeTab !== "microclimate") return;
+    if (activeTab !== "dashboard") return;
     const buildingId = buildingCodeOf(elementId);
-    if (activeTab === "microclimate" && selectedBuildingId === buildingId) return;
+    if (selection.selectedId && selectedBuildingId === buildingId) return;
     selectBuilding({
       elementId,
       buildingId,
@@ -114,22 +119,13 @@ export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef
     });
     showMicroclimate(elementId);
   }, [activePresetRef, activeTab, buildingViewMode, clearAll, popup.clear, selectBuilding,
-    selectedBuildingId, selectionRef, setActiveTab, showMicroclimate]);
+    selectedBuildingId, selection.selectedId, selectionRef, showMicroclimate]);
 
+  // 인스펙터 닫기(닫기 버튼, Esc): 선택만 푼다. 탭은 그대로다.
   const closeMicroclimate = useCallback(() => {
-    setActiveTab("dashboard");
     clearAll();
     popup.clear();
-  }, [clearAll, popup.clear, setActiveTab]);
-
-  // 다른 탭에 갔다가 돌아와도 고른 건물의 미기후를 다시 연다. 받아 둔 값이 없으면 지금 건물로 조회한다.
-  const openMicroclimateTab = useCallback(() => {
-    if (!popup.data && !popup.loading && !popup.error && selectedBuildingId) {
-      showMicroclimate(`BLD_${selectedBuildingId}`);
-      return;
-    }
-    setActiveTab("microclimate");
-  }, [popup.data, popup.error, popup.loading, selectedBuildingId, setActiveTab, showMicroclimate]);
+  }, [clearAll, popup.clear]);
 
   const selectedElementId = label.selection.elementId;
   // 마우스를 올린 칩에 붙일 대표 추정값: 이미 받아 둔 선택 건물의 팝업 값만 쓴다(요청을 더 하지 않는다).
@@ -141,8 +137,9 @@ export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef
 
   return {
     buildingViewMode, editorRequest, selectBuilding, handleSelect, openD4Section, exitD4Section,
-    handleBuildingClick, handleD4Enter, handleBuildingProximity, closeMicroclimate, openMicroclimateTab,
+    handleBuildingClick, handleD4Enter, handleBuildingProximity, closeMicroclimate,
     selectedElementId, headlineById, setLabelRegistry, releaseOnDrag: label.releaseOnDrag,
+    selectionPosition: labelRegistry?.get(selectedElementId)?.position ?? null,
     selectionTitle: resolveSelectionTitle(labelRegistry, selectedElementId, ELEMENT_NAMES),
   };
 }

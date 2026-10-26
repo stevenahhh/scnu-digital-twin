@@ -65,22 +65,25 @@ export function readGpuRenderer(gl) {
   return String(context.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : context.RENDERER) ?? "");
 }
 
-// localStorage는 사생활 보호 모드 등에서 예외를 던질 수 있다. 저장을 못 해도 이번 세션의 선택은 유지된다.
-export function readStoredQuality(storage) {
+// localStorage는 사생활 보호 모드 등에서 예외를 던질 수 있다(가져오기·읽기·쓰기 모두). 보호는 이 한 곳뿐이다.
+// 저장을 못 해도 이번 세션의 선택은 유지된다. storage를 주지 않으면 브라우저의 localStorage를 이 보호 안에서 연다.
+function withStorage(storage, action, fallback) {
   try {
-    return parseQuality(storage?.getItem(QUALITY_STORAGE_KEY));
+    return action(storage ?? globalThis.localStorage);
   } catch {
-    return null;
+    return fallback;
   }
 }
 
+export function readStoredQuality(storage) {
+  return withStorage(storage, (store) => parseQuality(store?.getItem(QUALITY_STORAGE_KEY)), null);
+}
+
 export function writeStoredQuality(storage, tier) {
-  try {
-    storage?.setItem(QUALITY_STORAGE_KEY, tier);
-    return true;
-  } catch {
-    return false;
-  }
+  return withStorage(storage, (store) => {
+    store?.setItem(QUALITY_STORAGE_KEY, tier);
+    return Boolean(store);
+  }, false);
 }
 
 // ?quality=low|medium|high가 가장 우선이고(저장하지 않는 일회성 지정), 다음이 저장된 선택이다.
@@ -93,24 +96,15 @@ export function resolveInitialQuality({ search = "", storage } = {}) {
   return { tier: null, source: "auto" };
 }
 
-function browserStorage() {
-  try {
-    return globalThis.localStorage;
-  } catch {
-    return undefined;
-  }
-}
-
 export function useQualityPreset() {
   const [state, setState] = useState(() => resolveInitialQuality({
     search: globalThis.location?.search ?? "",
-    storage: browserStorage(),
   }));
 
   const setQuality = useCallback((tier) => {
     const next = parseQuality(tier);
     if (!next) return;
-    writeStoredQuality(browserStorage(), next);
+    writeStoredQuality(undefined, next);
     setState({ tier: next, source: "stored" });
   }, []);
 

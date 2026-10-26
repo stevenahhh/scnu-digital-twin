@@ -16,6 +16,9 @@ export const DOT_SIZE_PX = 8;
 export const EDGE_LEADER_PX = 12;
 
 const LAYOUT_DEFAULTS = Object.freeze({ edgeMargin: 8, chromeMargin: 12, spacing: 6, maxDisplacement: 24 });
+// HUD 비켜 가기: 칩이 HUD 사각형(여백 포함)에 걸리면, 겹침 회피용 24 px 안에서 못 피할 때 그 HUD 바로 아래·위 자리까지
+// 옮겨 본다(연결선으로 앵커를 가리킨다). 앵커 자체가 HUD 밑에 있으면 옮기지 않고 숨긴다. 연결선이 길어지지 않게 96 px까지.
+const MAX_HUD_ESCAPE_PX = 96;
 
 const overlaps = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
 const inflate = (r, by) => ({ left: r.left - by, top: r.top - by, right: r.right + by, bottom: r.bottom + by });
@@ -111,9 +114,16 @@ export function layoutLabels(candidates, opts) {
     const natural = chipRect(candidate);
     const offsets = [];
     for (let d = 0; d <= maxDisplacement; d += DISPLACEMENT_STEP_PX) offsets.push(-d);
-    // HUD에 걸리면 숨기기 전에 아래쪽 자리(HUD 밑으로 비켜 가기)도 본다.
-    if (blockers.some((b) => b.hud && overlaps(b.rect, natural))) {
+    // HUD에 걸리면 숨기기 전에 아래쪽 자리(HUD 밑으로 비켜 가기)도 보고, 그래도 걸리면 그 HUD 바로 아래·위 자리를 본다.
+    const hudHits = blockers.filter((b) => b.hud && overlaps(b.rect, natural));
+    if (hudHits.length) {
       for (let d = DISPLACEMENT_STEP_PX; d <= maxDisplacement; d += DISPLACEMENT_STEP_PX) offsets.push(d);
+      if (anchorShown(candidate.anchor)) {
+        const escapes = hudHits.flatMap((b) => [b.rect.bottom - natural.top, b.rect.top - natural.bottom]);
+        for (const dy of escapes.filter((d) => Math.abs(d) <= MAX_HUD_ESCAPE_PX).sort((a, b) => Math.abs(a) - Math.abs(b))) {
+          if (!offsets.includes(dy)) offsets.push(dy);
+        }
+      }
     }
     let rect = null;
     for (const dy of offsets) {

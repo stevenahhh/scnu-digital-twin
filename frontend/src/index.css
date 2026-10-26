@@ -97,3 +97,14 @@ input[type="range"]::-webkit-slider-thumb {
     animation-duration: 0.01ms !important;
   }
 }
+
+/* 시간 슬라이더: 굵은 포인터(터치)에서 손잡이 24px, 누를 수 있는 높이 44px. */
+@media (pointer: coarse) {
+  .time-range { height: 44px; -webkit-appearance: none; appearance: none; background: transparent; }
+  .time-range::-webkit-slider-runnable-track { height: 4px; border-radius: 9999px; background: var(--colors-hairline-strong); }
+  .time-range::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 24px; height: 24px; margin-top: -10px;
+    border: 2px solid var(--colors-surface-1); border-radius: 9999px; background: var(--colors-primary);
+  }
+  .time-range::-moz-range-thumb { width: 24px; height: 24px; border: 2px solid var(--colors-surface-1); border-radius: 9999px; background: var(--colors-primary); }
+}

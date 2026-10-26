@@ -11,7 +11,7 @@ vi.mock("@react-three/fiber", () => ({ Canvas: () => null }));
 vi.mock("@react-three/drei", () => ({ OrbitControls: () => null, useProgress: () => ({ active: false, loaded: 0 }) }));
 vi.mock("./lighting/CampusLighting", () => ({ CAMPUS_CANVAS_GL: {}, CampusLighting: () => null }));
 vi.mock("./CityModel", () => ({ CityModel: () => null }));
-vi.mock("./simulation", () => ({ CampusTrafficSimulation: () => null, TrafficSafetyPanel: () => null, useSimulationSocket: vi.fn() }));
+vi.mock("./simulation", () => ({ CampusTrafficSimulation: () => null, TrafficSafetyPanel: () => null, useSimulationSocket: vi.fn(), useSimulationStore: (select) => select({ connectionStatus: "연결 중" }) }));
 vi.mock("./vworld/D4SectionExperience", () => ({ D4SectionExperience: () => null }));
 vi.mock("./features/energy/installations/installationPlanApi.mjs", async (importOriginal) => ({
   ...(await importOriginal()),
@@ -41,21 +41,22 @@ afterEach(() => {
 describe("Legacy dashboard clock", () => {
   it("ticks the panel clock every second without committing the dashboard", async () => {
     vi.useFakeTimers({ now: new Date("2026-10-26T03:00:00.000Z") });
-    window.matchMedia = vi.fn(() => ({ matches: false }));
+    window.matchMedia = vi.fn(() => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+    vi.stubGlobal("localStorage", { getItem: (key) => (key === "scnu.panelOpen" ? "true" : null), setItem() {} });
     vi.stubGlobal("fetch", vi.fn(() => new Promise(() => {})));
     render(<App />);
     // 첫 화면의 전환 애니메이션(그리기 루프를 잠시 always로 돌리는 3초)이 끝날 때까지 먼저 보낸다.
     await act(async () => {
       await vi.advanceTimersByTimeAsync(4000);
     });
-    const clock = screen.getByText("12:00:04");
+    const clock = screen.getByText("현재 12:00:04");
     const before = renders.dashboard;
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(5000);
     });
 
-    expect(clock.textContent).toBe("12:00:09");
+    expect(clock.textContent).toBe("현재 12:00:09");
     expect(renders.dashboard - before).toBe(0);
   });
 });

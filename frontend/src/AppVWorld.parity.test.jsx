@@ -12,6 +12,7 @@ vi.mock("./vworld/VWorldRenderer", () => ({ default: () => null }));
 vi.mock("./simulation", () => ({
   TrafficSafetyPanel: () => null,
   useSimulationSocket: vi.fn(),
+  useSimulationStore: (select) => select({ connectionStatus: "연결 중" }),
 }));
 vi.mock("./features/energy/analysis", () => ({
   BuildingAnalysis: ({ plansStatus }) => <div data-plans-status={plansStatus}>건물 에너지 분석</div>,
@@ -60,8 +61,10 @@ const countCalls = (fetchMock, fragment) =>
   fetchMock.mock.calls.filter(([url]) => String(url).includes(fragment)).length;
 
 beforeEach(() => {
+  // 패널을 열어 둔 채 떠난 재방문 사용자. 첫 방문(레일로 시작)은 panel/DashboardShell.test.jsx가 다룬다.
+  vi.stubGlobal("localStorage", { getItem: (key) => (key === "scnu.panelOpen" ? "true" : null), setItem() {} });
   stubFetch();
-  window.matchMedia = vi.fn(() => ({ matches: false }));
+  window.matchMedia = vi.fn(() => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
 });
 
 afterEach(() => {
@@ -130,18 +133,20 @@ describe("VWorld and Legacy feature parity", () => {
     expect(screen.queryByText(TRAFFIC_LIVE)).toBeNull();
   });
 
-  it("opens the 설정 dialog from its labelled button and closes it on Escape", async () => {
+  it("opens 설정 as a non-blocking surface from its labelled button and closes it on Escape with focus back on 설정", async () => {
     const user = userEvent.setup();
-    render(<App />);
+    const { container } = render(<App />);
 
     expect(screen.queryByRole("dialog")).toBeNull();
-    await user.click(screen.getByRole("button", { name: "설정" }));
+    const trigger = screen.getByRole("button", { name: "설정" });
+    await user.click(trigger);
     const dialog = screen.getByRole("dialog", { name: "설정" });
-    expect(dialog.getAttribute("aria-modal")).toBe("true");
-    expect(within(dialog).getByRole("button", { name: "닫기" })).toBeTruthy();
+    expect(dialog.getAttribute("aria-modal")).not.toBe("true");
+    expect(container.querySelector(".bg-\\[var\\(--colors-dim\\)\\], .backdrop-blur")).toBeNull();
 
     await user.keyboard("{Escape}");
     expect(screen.queryByRole("dialog")).toBeNull();
+    expect(document.activeElement).toBe(trigger);
   });
 
   it("shows the weather network message with a working 다시 시도 button when the weather fetch rejects", async () => {
@@ -157,5 +162,20 @@ describe("VWorld and Legacy feature parity", () => {
     await user.click(retry);
     await waitFor(() => expect(countCalls(fetchMock, "/environment/full")).toBe(weatherCallsBefore + 1));
     expect(await screen.findByText(WEATHER_NETWORK)).toBeTruthy();
+  });
+  it("shows exactly 3 alerts and 3 다시 시도 buttons when weather, traffic and energy are down", async () => {
+    const offline = async () => {
+      throw new TypeError("Failed to fetch");
+    };
+    stubFetch({ weather: offline, traffic: offline });
+    installationClient.listDetails.mockRejectedValueOnce(new TypeError("Failed to fetch"));
+    const { container } = render(<App />);
+    const panel = container.querySelector('[data-qa="dashboard-panel"]');
+    await waitFor(() => expect(within(panel).getAllByRole("alert")).toHaveLength(3));
+    expect(within(panel).getAllByRole("alert").map((alert) => alert.dataset.source)).toEqual(["weather", "traffic", "energy"]);
+    expect(within(panel).getAllByRole("button", { name: "다시 시도" })).toHaveLength(3);
+    // 패널이 그 피드를 보여 주는 동안 HUD 갱신 표시는 다시 시도를 되풀이하지 않는다(새로 고침 아이콘만).
+    expect(screen.getAllByRole("button", { name: /다시 시도/ })).toHaveLength(3);
+    expect(container.querySelector('[data-qa="weather-error-banner"]')).toBeNull();
   });
 });

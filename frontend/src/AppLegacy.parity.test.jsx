@@ -33,6 +33,7 @@ vi.mock("@react-three/drei", async () => {
   }
   controlsMock.create = () => new FakeControls();
   return {
+    useGLTF: Object.assign(() => ({ scene: null }), { clear: (url) => sceneMock.clearedModels.push(url) }),
     OrbitControls: React.forwardRef(function OrbitControlsMock({ onStart, onEnd }, ref) {
       React.useImperativeHandle(ref, () => controlsMock.current, []);
       React.useEffect(() => {
@@ -67,7 +68,7 @@ vi.mock("three", async (importOriginal) => {
 vi.mock("./lighting/CampusLighting", () => ({ CAMPUS_CANVAS_GL: {}, CampusLighting: () => null }));
 vi.mock("./lighting/ShadowBaker", () => ({ ShadowBaker: () => null }));
 vi.mock("./weather/SceneWeatherBinding", () => ({ SceneWeatherBinding: () => null }));
-const sceneMock = vi.hoisted(() => ({ suspend: false, fail: false }));
+const sceneMock = vi.hoisted(() => ({ suspend: false, fail: false, clearedModels: [] }));
 vi.mock("./CityModel", () => ({
   // suspend가 켜지면 끝나지 않는 Promise를 던져 Suspense fallback이 계속 떠 있게 한다. fail이 켜지면 오류를 던져 3D 실패 안내를 띄운다.
   CityModel: (props) => {
@@ -81,8 +82,11 @@ vi.mock("./simulation", () => ({
   CampusTrafficSimulation: () => null,
   TrafficSafetyPanel: () => null,
   useSimulationSocket: vi.fn(),
+  useSimulationStore: (select) => select({ connectionStatus: "연결 중" }),
 }));
-vi.mock("./vworld/D4SectionExperience", () => ({ D4SectionExperience: () => null }));
+vi.mock("./vworld/D4SectionExperience", () => ({
+  D4SectionExperience: ({ onClose }) => <button type="button" onClick={onClose}>D4 상세 닫기</button>,
+}));
 vi.mock("./features/energy/analysis", () => ({
   BuildingAnalysis: ({ plansStatus }) => <div data-plans-status={plansStatus}>건물 에너지 분석</div>,
 }));
@@ -137,8 +141,10 @@ const countCalls = (fetchMock, fragment) =>
   fetchMock.mock.calls.filter(([url]) => String(url).includes(fragment)).length;
 
 beforeEach(() => {
+  // 패널을 열어 둔 채 떠난 재방문 사용자. 첫 방문(레일로 시작)은 panel/DashboardShell.test.jsx가 다룬다.
+  vi.stubGlobal("localStorage", { getItem: (key) => (key === "scnu.panelOpen" ? "true" : null), setItem() {} });
   stubFetch();
-  window.matchMedia = vi.fn(() => ({ matches: false }));
+  window.matchMedia = vi.fn(() => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
   controlsMock.current = controlsMock.create();
   progressMock.state = { active: false, loaded: 0, total: 0, progress: 0, item: "", errors: [] };
   fileLoaderMock.loads.length = 0;
@@ -156,6 +162,8 @@ afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
 });
+
+const phoneMatchMedia = vi.fn((query) => ({ matches: query === "(max-width: 639px)" || query === "(max-width: 1023px)", addEventListener() {}, removeEventListener() {} }));
 
 describe("Legacy and VWorld feature parity", () => {
   it("renders the VWorld campus status and full energy surfaces inside the energy tab", () => {
@@ -209,18 +217,20 @@ describe("Legacy and VWorld feature parity", () => {
     expect(screen.queryByText(TRAFFIC_LIVE)).toBeNull();
   });
 
-  it("opens the 설정 dialog from its labelled button and closes it on Escape", async () => {
+  it("opens 설정 as a non-blocking surface from its labelled button and closes it on Escape with focus back on 설정", async () => {
     const user = userEvent.setup();
-    render(<App />);
+    const { container } = render(<App />);
 
     expect(screen.queryByRole("dialog")).toBeNull();
-    await user.click(screen.getByRole("button", { name: "설정" }));
+    const trigger = screen.getByRole("button", { name: "설정" });
+    await user.click(trigger);
     const dialog = screen.getByRole("dialog", { name: "설정" });
-    expect(dialog.getAttribute("aria-modal")).toBe("true");
-    expect(within(dialog).getByRole("button", { name: "닫기" })).toBeTruthy();
+    expect(dialog.getAttribute("aria-modal")).not.toBe("true");
+    expect(container.querySelector(".bg-\\[var\\(--colors-dim\\)\\], .backdrop-blur")).toBeNull();
 
     await user.keyboard("{Escape}");
     expect(screen.queryByRole("dialog")).toBeNull();
+    expect(document.activeElement).toBe(trigger);
   });
 
   it("shows the weather network message with a working 다시 시도 button when the weather fetch rejects", async () => {
@@ -238,7 +248,7 @@ describe("Legacy and VWorld feature parity", () => {
     expect(await screen.findByText(WEATHER_NETWORK)).toBeTruthy();
   });
 
-  it("shows the delay message with a reloading 다시 시도 button once the 3D model has been loading for 15 s", async () => {
+  it("shows the delay message with a 다시 시도 button that re-requests the 3D model in place (no page reload) after 15 s", async () => {
     sceneMock.suspend = true;
     vi.useFakeTimers();
     try {
@@ -264,8 +274,15 @@ describe("Legacy and VWorld feature parity", () => {
 
       const reload = vi.fn();
       vi.stubGlobal("location", { ...window.location, reload });
-      fireEvent.click(retry);
-      expect(reload).toHaveBeenCalledTimes(1);
+      sceneMock.clearedModels.length = 0;
+      await act(async () => {
+        fireEvent.click(retry);
+      });
+      expect(reload).not.toHaveBeenCalled();
+      expect(sceneMock.clearedModels).toHaveLength(1);
+      // 다시 받는 동안 안내는 처음 상태로 돌아가 15초를 다시 센다.
+      expect(screen.getByText(SCENE_LOADING)).toBeTruthy();
+      expect(screen.queryByText(SCENE_SLOW)).toBeNull();
     } finally {
       sceneMock.suspend = false;
       vi.unstubAllGlobals();
@@ -273,31 +290,27 @@ describe("Legacy and VWorld feature parity", () => {
     }
   });
 
-  it("takes the 3D map out of focus while the open panel covers a narrow viewport, and hands CityModel the panel that hides labels", () => {
-    vi.stubGlobal("innerWidth", 390);
+  it("keeps the 3D map interactive above the phone bottom sheet, and hands CityModel the sheet that hides labels", () => {
+    window.matchMedia = phoneMatchMedia;
     const { container } = render(<App />);
     const mapLayer = container.querySelector('[data-qa="campus-map-layer"]');
-    expect(sceneMock.cityModelProps.occluderRef.current).toBe(container.querySelector('[data-qa="dashboard-panel"]'));
-    expect(mapLayer.hasAttribute("inert")).toBe(true);
-
-    fireEvent.click(screen.getByRole("button", { name: "패널 닫기" }));
+    const sheet = container.querySelector('[data-qa="dashboard-panel"]');
+    expect(sheet.dataset.detent).toBe("peek");
+    expect(sceneMock.cityModelProps.occluderRef.current).toBe(sheet);
     expect(mapLayer.hasAttribute("inert")).toBe(false);
 
     fireEvent.click(screen.getByRole("button", { name: "패널 열기" }));
-    expect(mapLayer.hasAttribute("inert")).toBe(true);
-
-    vi.stubGlobal("innerWidth", 1024);
-    fireEvent(window, new Event("resize"));
+    expect(sheet.dataset.detent).toBe("half");
     expect(mapLayer.hasAttribute("inert")).toBe(false);
   });
 
-  it("hands CityModel the map chrome (HUD layer and panel toggle) that campus labels must stay beneath", () => {
+  it("hands CityModel the map chrome (HUD layer) that campus labels must stay beneath; the panel and its rail are the occluder", () => {
     const { container } = render(<App />);
     const chrome = sceneMock.cityModelProps.chromeRefs.map((ref) => ref.current);
     const hud = container.querySelector('[data-qa="campus-hud"]');
     expect(chrome).toContain(hud);
     expect(hud.hasAttribute("data-label-chrome-layer")).toBe(true);
-    expect(chrome).toContain(screen.getByRole("button", { name: "패널 닫기" }));
+    expect(sceneMock.cityModelProps.occluderRef.current).toBe(container.querySelector('[data-qa="dashboard-panel"]'));
     // 라벨 층은 지면 시점(정문)에서 거리 단계로 바뀌므로 눌린 시점을 함께 받는다.
     expect(sceneMock.cityModelProps.activePresetId).toBe("overview");
     fireEvent.click(presetButton(container, "gate"));
@@ -393,7 +406,7 @@ describe("Legacy and VWorld feature parity", () => {
       expect(notice.className).toMatch(/\bpx-10\b/);
 
       fireEvent.click(screen.getByRole("button", { name: "패널 닫기" }));
-      expect(notice.style.right).toBe("0px");
+      expect(notice.style.right).toBe("var(--dashboard-rail-width)");
 
       fireEvent.click(screen.getByRole("button", { name: "패널 열기" }));
       expect(notice.style.right).toBe("var(--dashboard-panel-width)");
@@ -402,18 +415,25 @@ describe("Legacy and VWorld feature parity", () => {
     }
   });
 
-  it("puts the three camera groups, the time controls and the camera buttons in tab order before the map and the panel", async () => {
+  it("puts the freshness stamps, the three camera groups, the time controls and the camera buttons in tab order before the map and the panel", async () => {
     const user = userEvent.setup();
     const { container } = render(<App />);
 
     const overview = container.querySelector('[data-qa="camera-preset-overview"]');
     const menu = container.querySelector('[data-qa="camera-view-menu"]');
     const tour = container.querySelector('[data-qa="camera-tour-toggle"]');
+    const presentationToggle = container.querySelector('[data-qa="presentation-toggle"]');
+    const now = screen.getByRole("button", { name: "지금" });
     const play = screen.getByRole("button", { name: "시간 재생" });
+    const date = screen.getByLabelText("장면 날짜");
+    const typedTime = screen.getByLabelText("장면 시각 입력");
     const slider = screen.getByRole("slider", { name: "시각 (KST)" });
     const cameraButtons = ["확대", "축소", "왼쪽으로 회전", "오른쪽으로 회전", "처음 시점"].map((name) => screen.getByRole("button", { name }));
     const mapLayer = container.querySelector('[data-qa="campus-map-layer"]');
-    const expected = [overview, menu, tour, play, slider, ...cameraButtons, mapLayer];
+    // HUD는 장면 시각과 그 옆 갱신 표시 셋(기상·교통·에너지, 새로 고침 단추)으로 시작한다.
+    const stamps = [...container.querySelectorAll('[data-qa="campus-hud"] [data-qa="freshness-stamp"] button')];
+    expect(stamps.map((button) => button.getAttribute("aria-label"))).toEqual(["기상 새로고침", "교통 새로고침", "에너지 새로고침"]);
+    const expected = [...stamps, overview, menu, tour, presentationToggle, now, play, date, typedTime, slider, ...cameraButtons, mapLayer];
 
     const reached = [];
     for (let i = 0; i < expected.length; i += 1) {
@@ -501,7 +521,7 @@ describe("Legacy and VWorld feature parity", () => {
   });
 
   it("jumps instead of animating when the user prefers reduced motion", () => {
-    window.matchMedia = vi.fn((query) => ({ matches: query.includes("prefers-reduced-motion") }));
+    window.matchMedia = vi.fn((query) => ({ matches: query.includes("prefers-reduced-motion"), addEventListener() {}, removeEventListener() {} }));
     const { container } = render(<App />);
     const controls = controlsMock.current;
     const d4 = presetButton(container, "d4");
@@ -523,7 +543,8 @@ describe("Legacy and VWorld feature parity", () => {
 
     fireEvent.change(slider, { target: { value: "930" } });
     expect(slider.getAttribute("aria-valuetext")).toBe("15:30");
-    expect(screen.getByText("15:30")).toBeTruthy();
+    const timeCard = screen.getByRole("region", { name: "시간 조절" });
+    expect(within(timeCard).getByText("15:30")).toBeTruthy();
 
     slider.focus();
     await user.keyboard("{ArrowRight}");
@@ -535,17 +556,19 @@ describe("Legacy and VWorld feature parity", () => {
 
     fireEvent.change(slider, { target: { value: String(13 * 60 + 37) } });
     expect(slider.getAttribute("aria-valuetext")).toBe("13:37");
-    expect(screen.getByText("13:37")).toBeTruthy();
+    expect(within(timeCard).getByText("13:37")).toBeTruthy();
+    // 패널 시계는 같은 장면 시각을 `장면`으로, 현재 시각은 `현재`로 붙여 보인다.
+    expect(document.querySelector('[data-qa="panel-clock"]').textContent).toMatch(/장면\s*13:37/);
 
+    // 환경 시뮬 탭에는 두 번째 시간 슬라이더(월·일·시·분)가 없다.
     fireEvent.click(screen.getByRole("tab", { name: "환경 시뮬" }));
-    expect(screen.getByRole("slider", { name: "시" }).value).toBe("13");
-    expect(screen.getByRole("slider", { name: "분" }).value).toBe("37");
+    for (const name of ["월", "일", "시", "분"]) expect(screen.queryByRole("slider", { name })).toBeNull();
 
     fireEvent.click(screen.getByRole("radio", { name: "실측" }));
-    expect(screen.getByText("실시간")).toBeTruthy();
+    expect(within(timeCard).getByText("실측")).toBeTruthy();
     fireEvent.change(slider, { target: { value: "600" } });
-    expect(screen.queryByText("실시간")).toBeNull();
-    expect(screen.getByRole("slider", { name: "시" }).value).toBe("10");
+    expect(within(timeCard).queryByText("실측")).toBeNull();
+    expect(slider.getAttribute("aria-valuetext")).toBe("10:00");
   });
 
   it("labels the sky estimate as 추정 for both the project feed and the Open-Meteo fallback", async () => {
@@ -623,10 +646,70 @@ describe("Legacy and VWorld feature parity", () => {
       expect(frame.className).toMatch(/\bpx-10\b/);
 
       fireEvent.click(screen.getByRole("button", { name: "패널 닫기" }));
-      expect(frame.style.right).toBe("0px");
+      expect(frame.style.right).toBe("var(--dashboard-rail-width)");
     } finally {
       sceneMock.fail = false;
       errorSpy.mockRestore();
     }
+  });
+  it("shows exactly 3 alerts and 3 다시 시도 buttons when weather, traffic and energy are down", async () => {
+    const offline = async () => {
+      throw new TypeError("Failed to fetch");
+    };
+    stubFetch({ weather: offline, traffic: offline });
+    installationClient.listDetails.mockRejectedValueOnce(new TypeError("Failed to fetch"));
+    const { container } = render(<App />);
+    const panel = container.querySelector('[data-qa="dashboard-panel"]');
+    await waitFor(() => expect(within(panel).getAllByRole("alert")).toHaveLength(3));
+    expect(within(panel).getAllByRole("alert").map((alert) => alert.dataset.source)).toEqual(["weather", "traffic", "energy"]);
+    expect(within(panel).getAllByRole("button", { name: "다시 시도" })).toHaveLength(3);
+    // 패널이 그 피드를 보여 주는 동안 HUD 갱신 표시는 다시 시도를 되풀이하지 않는다(새로 고침 아이콘만).
+    expect(screen.getAllByRole("button", { name: /다시 시도/ })).toHaveLength(3);
+    expect(container.querySelector('[data-qa="weather-error-banner"]')).toBeNull();
+  });
+  it("keeps the 기본 현황 tab and its scrollTop when returning from the D4 section", async () => {
+    const { container } = render(<App />);
+    const scroller = () => container.querySelector('[data-qa="panel-scroll"]');
+    scroller().scrollTop = 300;
+    await act(async () => {
+      await sceneMock.cityModelProps.onBuildingClick({ name: "BLD_D4", parent: { name: "BLD_D4" }, userData: {} });
+    });
+    expect(container.querySelector('[data-qa="dashboard-panel"]').dataset.pane).toBe("d4");
+    fireEvent.click(screen.getByRole("button", { name: "D4 상세 닫기" }));
+    expect(screen.getByRole("tab", { name: "기본 현황" }).getAttribute("aria-selected")).toBe("true");
+    await waitFor(() => expect(Math.abs(scroller().scrollTop - 300)).toBeLessThanOrEqual(8));
+    expect(container.querySelector('[data-qa="dashboard-panel"]').dataset.open).toBe("true");
+  });
+  it("opens the selection inspector above the four tabs without changing the tab or adding a 미기후 tab", async () => {
+    stubFetch();
+    const { container } = render(<App />);
+    await act(async () => {
+      sceneMock.cityModelProps.onSelect("BLD_C1", 1200, [0, 0, 0], "BLD_C1");
+      await sceneMock.cityModelProps.onBuildingClick({ name: "BLD_C1", parent: { name: "BLD_C1" }, userData: { buildingLabel: "도서관" } });
+    });
+    const inspector = container.querySelector('[data-qa="selection-inspector"]');
+    expect(inspector).not.toBeNull();
+    expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual(["기본 현황", "주차·안전", "에너지", "환경 시뮬"]);
+    expect(screen.getByRole("tab", { name: "기본 현황" }).getAttribute("aria-selected")).toBe("true");
+    expect(inspector.compareDocumentPosition(screen.getByRole("tablist")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    fireEvent.click(within(inspector).getByRole("button", { name: "닫기" }));
+    expect(container.querySelector('[data-qa="selection-inspector"]')).toBeNull();
+  });
+  it("enters 발표 모드 with P (panel and HUD tools hidden, time kept) and Escape restores the layout", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<App />);
+    const panel = () => container.querySelector('[data-qa="dashboard-panel"]');
+    const hud = () => container.querySelector('[data-qa="campus-hud"]');
+    expect(panel().dataset.open).toBe("true");
+    await user.keyboard("p");
+    expect(hud().dataset.presenting).toBe("true");
+    expect(panel().getAttribute("aria-hidden")).toBe("true");
+    expect(hud().querySelector('[data-qa="camera-view-menu"]')).toBeNull();
+    expect(hud().querySelector('[data-qa="hud-time-readout"]')).not.toBeNull();
+    expect(screen.getByRole("button", { name: "발표 모드 끝내기" }).getAttribute("aria-pressed")).toBe("true");
+    await user.keyboard("{Escape}");
+    expect(hud().dataset.presenting).toBeUndefined();
+    expect(panel().getAttribute("aria-hidden")).toBeNull();
+    expect(panel().dataset.open).toBe("true");
   });
 });

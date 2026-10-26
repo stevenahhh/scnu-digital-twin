@@ -120,6 +120,9 @@
   /* 패널 너비 */
   --dashboard-panel-width: 440px;
   --dashboard-rail-width: 56px;
+  --dashboard-drawer-width: min(440px, 85vw);
+  --dashboard-pane-width: min(720px, 50vw);
+  --dashboard-inspector-width: 360px;
 }
 
 [data-theme="light"] {
@@ -152,11 +155,5 @@
     --text-caption-leading: 20px;
     --text-micro: 13px;
     --text-micro-leading: 16px;
-  }
-}
-
-@media (max-width: 439px) {
-  :root {
-    --dashboard-panel-width: 100vw;
   }
 }

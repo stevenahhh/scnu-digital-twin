@@ -7,7 +7,7 @@ afterEach(cleanup);
 
 const renderPanel = (props = {}) =>
   render(
-    <DashboardPanel visible activeTab="dashboard" onTabChange={() => {}} {...props}>
+    <DashboardPanel activeTab="dashboard" onTabChange={() => {}} {...props}>
       <p>본문</p>
     </DashboardPanel>,
   );
@@ -29,29 +29,24 @@ describe("DashboardPanel", () => {
 
   it("reports tab changes and appends extra tabs after the fixed four", () => {
     const onTabChange = vi.fn();
-    renderPanel({ onTabChange, extraTabs: [{ value: "microclimate", label: "미기후" }] });
-    fireEvent.click(screen.getByRole("tab", { name: "미기후" }));
-    expect(onTabChange).toHaveBeenCalledWith("microclimate");
+    renderPanel({ onTabChange, extraTabs: [{ value: "compare", label: "비교" }] });
+    fireEvent.click(screen.getByRole("tab", { name: "비교" }));
+    expect(onTabChange).toHaveBeenCalledWith("compare");
     fireEvent.keyDown(screen.getByRole("tab", { name: "기본 현황" }), { key: "ArrowRight" });
     expect(onTabChange).toHaveBeenLastCalledWith("parking_safety");
   });
 
-  it("is an opaque surface with no blur or heavy shadow, and slides out with a transform when hidden", () => {
+  it("is an opaque surface with no blur or heavy shadow, titled with the view it shows", () => {
     const { container, rerender } = renderPanel();
-    const panel = container.querySelector('[data-qa="dashboard-panel"]');
-    const surface = panel.querySelector("section");
+    const surface = container.querySelector("section");
     expect(surface.className).toMatch(/\bbg-surface-1\b/);
     expect(surface.className).not.toMatch(/backdrop|shadow-2xl|color-mix/);
-    expect(surface.getAttribute("style")).toBeNull();
-    expect(panel.className).toMatch(/\btranslate-x-0\b/);
-    expect(panel.className).toMatch(/\btransition-transform\b/);
-
+    expect(screen.getByRole("heading", { level: 2 }).textContent).toBe("순천대 캠퍼스 · 기본 현황");
     rerender(
-      <DashboardPanel visible={false} activeTab="dashboard" onTabChange={() => {}}>
+      <DashboardPanel activeTab="energy" onTabChange={() => {}}>
         <p>본문</p>
       </DashboardPanel>,
     );
-    expect(panel.className).toMatch(/\btranslate-x-full\b/);
-    expect(panel.getAttribute("aria-hidden")).toBe("true");
+    expect(screen.getByRole("heading", { level: 2 }).textContent).toBe("순천대 캠퍼스 · 에너지");
   });
 });

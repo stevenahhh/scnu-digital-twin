@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { WEATHER_API_URL } from "../simulation/utils/apiConfig";
 
 export const POPUP_ERRORS = Object.freeze({
-  network: "기상 서버에 연결할 수 없습니다",
+  // 기상 피드 알림과 같은 문구를 되풀이하지 않는다: 인스펙터의 원인은 미기후 추정 요청이다.
+  network: "미기후 추정 서버에 연결할 수 없습니다",
   notFound: "이 건물의 미기후 데이터가 없습니다",
   http: "미기후 추정을 불러오지 못했습니다",
 });
@@ -18,7 +19,7 @@ class PopupHttpError extends Error {
 // 건물 하나의 미기후 팝업(`/microclimate/elements/{id}/popup`, 완전한 응답 하나)을 받는다.
 // 새 요청이나 언마운트는 이전 요청을 끊는다. 알려진 실패만 문구로 바꾸고, 그 밖의 오류는 다시 던진다.
 // lastData는 같은 건물의 마지막 정상 응답이다. 다시 시도가 실패해도 그 값을 알림 아래에 그대로 보여 줄 수 있다.
-const EMPTY = Object.freeze({ data: null, loading: false, error: null, errorDetail: null, lastData: null });
+const EMPTY = Object.freeze({ data: null, loading: false, error: null, errorStatus: null, errorDetail: null, lastData: null });
 
 export function usePopupData({ apiUrl = WEATHER_API_URL, fetchImpl } = {}) {
   const [state, setState] = useState(EMPTY);
@@ -54,7 +55,8 @@ export function usePopupData({ apiUrl = WEATHER_API_URL, fetchImpl } = {}) {
         setState((previous) => ({ ...previous, loading: false }));
         throw error;
       }
-      setState((previous) => ({ ...previous, loading: false, error: message, errorDetail: `${elementId}: ${error.message}` }));
+      const errorStatus = error instanceof PopupHttpError ? error.status : null;
+      setState((previous) => ({ ...previous, loading: false, error: message, errorStatus, errorDetail: `${elementId}: ${error.message}` }));
     }
   }, [apiUrl, fetchImpl]);
 
