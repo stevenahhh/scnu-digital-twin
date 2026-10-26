@@ -13,6 +13,7 @@ import { sceneToTm, simulationToTm, tmToScene, tmToSimulation, wgs84ToSimulation
 import { EXTENT } from "../lib/frame.mjs";
 import { SURFACE_CLASS } from "../lib/surfaceClass.mjs";
 import { PX, buildSurfaces, loadGroundFeatures, loadWalkways } from "./surfaces.mjs";
+import { readA003 } from "../lib/a003.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const REPO = path.resolve(HERE, "../../../..");
@@ -133,7 +134,7 @@ export async function loadSurfaceContext({ log = console.log } = {}) {
 
   const layers = surfaces.layers.map((l) => ({ ...l, rings: l.rings.map((r) => r.map(tmToSim)) }));
   const buildings = allBuildings.flatMap((b) => b.parts.filter((p) => p.outer?.length >= 3).map((p) => ({ id: b.nodeName ?? b.nodeId ?? b.label ?? null, name: b.displayName ?? null, rings: [p.outer.map(sceneToSimPt)] })));
-  const walkways = walkwayFeatures(await readJson(PATHS.walkways));
+  const walkways = walkwayFeatures(readA003());
   const crossings = await loadCrosswalks();
   const elementsText = await Bun.file(PATHS.elements).text();
   const { elements } = JSON.parse(elementsText);

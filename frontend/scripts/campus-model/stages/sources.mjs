@@ -8,6 +8,7 @@ import { EXTENT, geoToModel, metres } from "../lib/frame.mjs";
 import { cleanRing, pointInRing, ringArea } from "../lib/geometry.mjs";
 import { loadOrtho, photoCalibration } from "../lib/ortho.mjs";
 import { decodePng } from "../lib/png.mjs";
+import { readA003 } from "../lib/a003.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SCRIPT = path.resolve(HERE, "..");
@@ -274,7 +275,7 @@ export async function loadInputs() {
   const roadZones = (await readGeoJson("road_zones_wgs84.geojson")).features.flatMap((f) =>
     polygonsOf(f.geometry).map((polygon) => polygon.map(toModelRing)),
   );
-  const walkways = (await readGeoJson("walkways_wgs84.geojson")).features.flatMap((f) =>
+  const walkways = readA003().features.flatMap((f) =>
     (f.geometry.type === "LineString" ? [f.geometry.coordinates] : f.geometry.coordinates).map((line) =>
       line.map(([lon, lat]) => geoToModel(lon, lat)),
     ),

@@ -35,11 +35,11 @@ import { cleanRing, pointInRing, ringArea } from "../lib/geometry.mjs";
 import { encodePng } from "../lib/png.mjs";
 import { Raster } from "../lib/raster.mjs";
 import { SURFACE_CLASS } from "../lib/surfaceClass.mjs";
+import { readA003 } from "../lib/a003.mjs";
 import { pavingPattern } from "../lib/pavingPatterns.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const GROUND_FEATURES = path.join(HERE, "..", "data", "osm-ground.json");
-const WALKWAYS = path.resolve(HERE, "../../../..", "docs", "assets", "data", "walkways_wgs84.geojson");
 
 // Label raster resolution of the old ground texture: 6.5 px per scene unit (0.2465 m).
 export const PX = 6.5;
@@ -59,7 +59,7 @@ export const PRECEDENCE = Object.freeze({ SPORTS: 1, PAVING: 2, ASPHALT: 3, LOT:
 // of each paved area, open lines where an outline is cut (orthophoto registration, 2026-10-24). `qual` is the paving:
 // SWQ003 block paver, SWQ001 asphalt, SWQ999/null existing paving; `scls` A0033327 marks the red bicycle lanes.
 export async function loadWalkways() {
-  const data = JSON.parse(await Bun.file(WALKWAYS).text());
+  const data = readA003();
   return data.features.map(({ properties, geometry }) => ({
     ufid: properties.ufid,
     surface: walkwaySurface(properties),

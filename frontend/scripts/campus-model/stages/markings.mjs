@@ -76,6 +76,7 @@ import { pointInRing, ringArea, segmentDistance } from "../lib/geometry.mjs";
 import { VEG_EXG, excessGreen, sampleOrtho, shadowWeight } from "../lib/ortho.mjs";
 import { encodePng } from "../lib/png.mjs";
 import { regularise } from "./markingsRegular.mjs";
+import { readA003 } from "../lib/a003.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const MARKINGS = path.join(HERE, "..", "data", "photo", "markings.geojson");
@@ -126,7 +127,6 @@ const VEG_RING_SHARE = 0.5;
 const ROAD_CHECKED = new Set(["lane_line_solid", "edge_line", "centre_line_yellow"]);
 const ARTERIAL_REACH_M = 12;
 const BICYCLE_LANE = "A0033327";
-const WALKWAYS = path.resolve(HERE, "../../../..", "docs", "assets", "data", "walkways_wgs84.geojson");
 
 // The paint gate: share of a candidate's drawn area on paint of its colour (bake/markings-gate.mjs), sampled every
 // SUPPORT_STEP_M; duplicates are found on a DEDUP_CELL_M grid.
@@ -294,7 +294,7 @@ function photoChecks(ortho, buildingRings) {
 
 // Surveyed ground the markings must agree with: A003 sidewalks (not bicycle lanes) and the road surfaces.
 async function groundTruth(inputs) {
-  const walkways = JSON.parse(await Bun.file(WALKWAYS).text()).features
+  const walkways = readA003().features
     .filter((f) => f.properties.scls !== BICYCLE_LANE)
     .map((f) => (f.geometry.type === "LineString" ? [f.geometry.coordinates] : f.geometry.coordinates)
       .filter((line) => line.length >= 4 && line[0][0] === line.at(-1)[0] && line[0][1] === line.at(-1)[1])
