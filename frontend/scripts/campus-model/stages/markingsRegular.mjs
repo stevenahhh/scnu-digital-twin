@@ -23,7 +23,7 @@ import {
   polylineLength, projectArc, rect, resample, scale, slicePath, straightness, sub, unit, fitPath, distanceToPolyline, median,
 } from "../lib/markingFit.mjs";
 import {
-  ARROW_KINDS, arrowTemplate, bicycleTemplate, chevronTemplate, diamondTemplate, textTemplate, triangleTemplate, wheelchairTemplate,
+  ARROW_KINDS, arrowTemplate, bicycleTemplate, chevronTemplate, diamondTemplate, textBlock, triangleTemplate, wheelchairTemplate,
 } from "../lib/markingGlyphs.mjs";
 
 const LINE_KINDS = new Set(["lane_line_dashed", "lane_line_solid", "edge_line", "centre_line_yellow", "parking_line", "kerb_no_parking", "give_way_line"]);
@@ -48,13 +48,12 @@ const RECT_FILL = 0.72;
 const SNAP_DEG = 12;
 // A snapped outline whose corners move further than OUTLINE_MOVE_M from the traced ones keeps its simplified trace.
 const OUTLINE_MOVE_M = 0.35;
-const TEXT_LINK_M = 1.0;
 const TEXT_MIN_AREA_M2 = 0.3;
-const TEXT_LINE_GAP_M = 0.5;
-// One row of road text along the lane: the single-row words at the main gate are 2.5-2.7 m long (photo); rows of a
-// taller block are cut at TEXT_ROW_M with TEXT_ROW_GAP_M between them (추정).
-const TEXT_ROW_M = 2.6;
-const TEXT_ROW_GAP_M = 0.4;
+const ARROW_SNAP_DEG = 25;
+const TEXT_BLOCK_M = 1.5;
+const TEXT_SEED_REACH_M = 5;
+const TEXT_LONG_WORD_M = 2.6;
+const TEXT_STALL_REACH_M = 3;
 // Text and crossings take the road's direction from a road line at least TEXT_ROAD_MIN_M long; a crossing's bars are
 // set parallel to it only when they already lie within ZEBRA_ROAD_SNAP_DEG (crossings may be skewed to the road).
 const TEXT_ROAD_MIN_M = 10;
@@ -318,7 +317,7 @@ function place(polys, centre, f) {
 // ---------------------------------------------------------------- main
 // drawn: candidates the stage draws ({ feature, kind, colour, shapes (scene units), zebra?, frame?, singled? });
 // ctx: { unit (scene units per metre), statute: { widthFor(kind), stopLineWidth(m), dash: { kind: [dash, gap] },
-// doubleOffsetM, zebraPeriodM, zebraBarM }, blocked(p scene units) -> bool, readings: { id: { text, up? } } }.
+// doubleOffsetM, zebraPeriodM, zebraBarM }, blocked(p scene units) -> bool, textMarkings: [{ id, ids, lines, travelBearingDeg?, source }] }.
 export function regularise(drawn, ctx) {
   const U = ctx.unit;
   const toM = (p) => [p[0] / U, p[1] / U];
@@ -328,7 +327,7 @@ export function regularise(drawn, ctx) {
   const pieces = [];
   const stats = {
     chains: 0, fragments: 0, straightRuns: 0, arcs: 0, straightness: [], residual: [], dashPeriods: [], duplicateLines: 0,
-    crossings: 0, crossingGroups: 0, crossingList: [], blockedIds: [], frameStrokes: 0, barsDrawn: 0, barsDetected: 0, zebraPhaseResidual: [], glyphs: {}, textReadings: [], dropped: { blocked: 0, textTooSmall: 0 },
+    crossings: 0, crossingGroups: 0, crossingList: [], blockedIds: [], frameStrokes: 0, barsDrawn: 0, barsDetected: 0, zebraPhaseResidual: [], glyphs: {}, textReadings: [], textMissing: [], arrowAxes: { road: 0, own: 0 }, dropped: { blocked: 0, textTooSmall: 0 },
     stopSquared: 0, parallelSnapped: 0, outlines: 0, rectangles: 0,
   };
   const emit = (rings, colour, kind, extra = {}) => pieces.push({ rings: rings.map((r) => r.map(toScene)), colour, kind, estimated: false, ...extra });
@@ -656,7 +655,12 @@ export function regularise(drawn, ctx) {
       const box = orientedBox(rings[0]);
       const fill = polygonArea(rings) / Math.max(1e-6, 4 * box.halfLong * box.halfShort);
       if (c.kind === "disabled_parking" && c.colour === "white" && fill < 0.5) {
-        emitPoly(place(wheelchairTemplate(2 * box.halfLong), box.centre, box.long), c.colour, c.kind);
+        // upright along one of the bay's own directions, the one whose template covers the painted symbol best
+        const axes = (directions ?? [box.long, box.short]).flatMap((d) => [unit(d), scale(unit(d), -1)]);
+        const size = 2 * box.halfLong;
+        const pick = axes.map((f) => ({ t: place(wheelchairTemplate(size), box.centre, f), f }))
+          .map((x) => ({ ...x, score: overlapScore(rings ? [rings] : [], x.t) })).sort((x, y) => y.score - x.score)[0];
+        emitPoly(pick.t, c.colour, c.kind);
         glyphCount("wheelchair");
         continue;
       }
@@ -689,9 +693,17 @@ export function regularise(drawn, ctx) {
     const length = 2 * box.halfLong;
     const width = 2 * box.halfShort;
     const kinds = c.kind === "arrow" ? ["arrow_straight", "arrow_left", "arrow_right"] : [c.kind];
+    // an arrow lies along its lane and points the way the lane's traffic goes: the road direction within ARROW_SNAP_DEG
+    // of the blob's axis, signed by the travel direction where a centre line or road axis tells it, else by the blob
+    const road = roadDirectionAt(box.centre, 12);
+    const snapped = road && angleBetween(road, box.long) <= ARROW_SNAP_DEG;
+    const axis = snapped ? road : box.long;
+    const travel = snapped ? travelDirection(box.centre, road) : null;
+    const directions = travel && travel.from !== "none" ? [travel.f] : [axis, scale(axis, -1)];
+    stats.arrowAxes[snapped ? "road" : "own"] += 1;
     let best = null;
     for (const kind of kinds) {
-      for (const f of [box.long, scale(box.long, -1)]) {
+      for (const f of directions) {
         const template = place(arrowTemplate(kind, length, width), box.centre, f);
         const score = overlapScore(blob, template);
         if (!best || score > best.score) best = { kind, template, score };
@@ -740,99 +752,119 @@ export function regularise(drawn, ctx) {
     glyphCount("chevron");
   }
 
-  // Text: blobs within TEXT_LINK_M of each other are one word; the word is written across the lane, characters along
-  // the road, their tops towards the driver's travel direction (Korea drives on the right: the centre line on the
-  // driver's left). The string is the photo reading when one exists (ctx.readings), else the most likely statute
-  // text for its length (추정).
+  // Text: one marking per lane block. Korean road text reads for the approaching driver: syllables upright to him,
+  // lines across the lane, the first line farthest (the block is read like a page), each syllable TEXT_STRETCH times
+  // as long as wide along the travel direction (lib/markingGlyphs.mjs textBlock). Travel direction: Korea drives on
+  // the right, so the drawn centre line (or, without one, the OSM centreline of the two-way road) is on the driver's
+  // left. The words: ctx.textMarkings (data/photo/markings-text.json), read in the SCNU VR tour or on the photo, claim
+  // the blobs listed by id or lying within TEXT_SEED_REACH_M of their seed; the other blobs of one lane within
+  // TEXT_BLOCK_M of each other are one marking with the most likely statute text for its size (추정): 서행 in a lane
+  // narrower than TEXT_LONG_WORD_M, else 천천히; 경차 in a parking stall.
+  function travelDirection(p, axis) {
+    let f = axis;
+    const centre = laneChains.filter((ch) => ch.kind === "centre_line_yellow")
+      .map((ch) => ({ path: ch.path, d: distanceToPolyline(p, ch.path), from: `centre line ${ch.ids[0]}` })).filter((x) => x.d <= 15).sort((x, y) => x.d - y.d)[0];
+    const side = centre ?? roadAxes.map((line) => ({ path: line, d: distanceToPolyline(p, line), from: "OSM road axis" }))
+      .filter((x) => x.d <= TEXT_AXIS_REACH_M && x.d > 0.5).sort((x, y) => x.d - y.d)[0];
+    if (!side) return { f, from: "none", sideOf: null };
+    const at = projectArc(side.path, p);
+    const q = slicePath(side.path, at, at + 1e-3)[0] ?? side.path[0];
+    if (dot(sub(q, p), rightOf(f)) > 0) f = scale(f, -1);
+    return { f, from: `${side.from} at ${side.d.toFixed(1)} m`, sideOf: (x) => Math.sign(dot(sub(x, q), perpOf(axis))) };
+  }
   function emitTexts(list) {
     const polys = list.map((c) => shapesM(c));
-    const parent = list.map((_, i) => i);
-    const root = (i) => (parent[i] === i ? i : (parent[i] = root(parent[i])));
-    const gap = (a, b) => Math.min(...a.flatMap((ra) => ra[0]).map((p) => Math.min(...b.flatMap((rb) => rb[0]).map((q) => norm(sub(p, q))))));
-    for (let i = 0; i < list.length; i += 1) for (let j = i + 1; j < list.length; j += 1) if (gap(polys[i], polys[j]) <= TEXT_LINK_M) parent[root(i)] = root(j);
-    const words = new Map();
+    const centroid = (i) => {
+      const pts = polys[i].flatMap((rings) => rings[0]);
+      return scale(pts.reduce((acc, q) => add(acc, q), [0, 0]), 1 / pts.length);
+    };
+    const markings = (ctx.textMarkings ?? []).map((m) => ({ ...m, seedM: m.seed ? toM(m.seed) : null, members: [] }));
+    const free = [];
     list.forEach((c, i) => {
-      if (!words.has(root(i))) words.set(root(i), []);
-      words.get(root(i)).push(i);
+      const by = markings.find((m) => m.ids?.includes(c.id));
+      const seeds = markings.filter((m) => m.seedM).map((m) => ({ m, d: norm(sub(centroid(i), m.seedM)) })).filter((x) => x.d <= TEXT_SEED_REACH_M).sort((x, y) => x.d - y.d);
+      const owner = by ?? seeds[0]?.m;
+      if (owner) owner.members.push(i);
+      else free.push(i);
     });
-    for (const members of words.values()) {
-      const blob = members.flatMap((i) => polys[i]);
-      const area = blob.reduce((s, rings) => s + polygonArea(rings), 0);
-      const ids = members.map((i) => list[i].id);
-      if (area < TEXT_MIN_AREA_M2) {
+    // the remaining blobs: one marking per lane block
+    const gap = (a, b) => Math.min(...a.flatMap((ra) => ra[0]).map((p) => Math.min(...b.flatMap((rb) => rb[0]).map((q) => norm(sub(p, q))))));
+    const parent = new Map(free.map((i) => [i, i]));
+    const root = (i) => (parent.get(i) === i ? i : root(parent.get(i)));
+    for (let x = 0; x < free.length; x += 1) {
+      for (let y = x + 1; y < free.length; y += 1) {
+        const [i, j] = [free[x], free[y]];
+        if (gap(polys[i], polys[j]) > TEXT_BLOCK_M) continue;
+        // never across a centre line
+        const road = roadDirectionAt(centroid(i), 15);
+        if (road) {
+          const { sideOf } = travelDirection(centroid(i), road);
+          if (sideOf && sideOf(centroid(i)) !== sideOf(centroid(j))) continue;
+        }
+        parent.set(root(i), root(j));
+      }
+    }
+    const groups = new Map();
+    for (const i of free) {
+      if (!groups.has(root(i))) groups.set(root(i), []);
+      groups.get(root(i)).push(i);
+    }
+    for (const members of groups.values()) markings.push({ id: null, members, guessed: true });
+
+    for (const m of markings) {
+      if (!m.members.length) {
+        if (m.id) stats.textMissing.push(m.id);
+        continue;
+      }
+      const blob = m.members.flatMap((i) => polys[i]);
+      const ids = m.members.map((i) => list[i].id);
+      const area = blob.reduce((s_, rings) => s_ + polygonArea(rings), 0);
+      if (m.guessed && area < TEXT_MIN_AREA_M2) {
         stats.dropped.textTooSmall += 1;
         continue;
       }
       const points = blob.flatMap((rings) => rings[0]);
       const box = orientedBox(points);
-      const reading = ids.map((id) => ctx.readings[id]).find(Boolean);
-      // road direction: the nearest road line, else the word's own long axis
-      const road = roadDirectionAt(box.centre, 15);
-      let f = road ?? box.long;
-      // travel direction: the centre line on the driver's left
-      const centre = laneChains.filter((ch) => ch.kind === "centre_line_yellow")
-        .map((ch) => ({ ch, d: distanceToPolyline(box.centre, ch.path) })).filter((x) => x.d <= 15).sort((a, b) => a.d - b.d)[0];
-      // without a drawn centre line, the OSM centreline of the (two-way) road within TEXT_AXIS_REACH_M stands in
-      const axis = centre ? null : roadAxes.map((line) => ({ line, d: distanceToPolyline(box.centre, line) }))
-        .filter((x) => x.d <= TEXT_AXIS_REACH_M && x.d > 0.5).sort((a, b) => a.d - b.d)[0];
-      const side = centre ?? (axis ? { ch: { path: axis.line } } : null);
-      if (side) {
-        const at = projectArc(side.ch.path, box.centre);
-        const q = slicePath(side.ch.path, at, at + 1e-3)[0] ?? side.ch.path[0];
-        if (dot(sub(q, box.centre), rightOf(f)) > 0) f = scale(f, -1);
-      } else if (reading?.up) {
-        const up = { north: [0, -1], south: [0, 1], east: [1, 0], west: [-1, 0] }[reading.up];
-        if (up && dot(up, f) < 0) f = scale(f, -1);
+      const stall = m.guessed && chains.some((ch) => !ch.duplicate && ch.kind === "parking_line" && distanceToPolyline(box.centre, ch.path) <= TEXT_STALL_REACH_M);
+      let f;
+      let from;
+      if (stall) {
+        // in a stall the word runs along the stall's long side, read from the aisle (추정)
+        f = perpOf(box.long);
+        from = "parking stall";
+      } else if (Number.isFinite(m.travelBearingDeg)) {
+        // the travel direction the VR view shows the text written for
+        const road = roadDirectionAt(box.centre, 15) ?? box.long;
+        const b = (m.travelBearingDeg * Math.PI) / 180;
+        const read = [Math.sin(b), -Math.cos(b)];
+        // along the road when the reading agrees with it within 30 deg, else along the axis of the painted block nearest
+        // the read bearing
+        // (`axis: "blob"`: the syllables are the blob's short axis long, side by side along its long axis)
+        const axis = m.axis === "blob" ? box.short
+          : angleBetween(road, read) <= 30 ? road : [box.long, box.short].sort((x, y) => angleBetween(x, read) - angleBetween(y, read))[0];
+        f = dot(axis, read) >= 0 ? axis : scale(axis, -1);
+        from = `reading (${m.travelBearingDeg} deg)`;
+      } else {
+        const road = roadDirectionAt(box.centre, 15) ?? box.long;
+        ({ f, from } = travelDirection(box.centre, road));
       }
       const r = rightOf(f);
-      // lines of a multi-line block: blobs whose extents along the road overlap (or nearly) are one line
-      const spans = members.map((i) => {
-        const s = polys[i].flatMap((rings) => rings[0]).map((p) => dot(sub(p, box.centre), f));
-        return { i, lo: Math.min(...s), hi: Math.max(...s) };
-      }).sort((a, b) => a.lo - b.lo);
-      const lines = [];
-      for (const span of spans) {
-        const last = lines.at(-1);
-        if (last && span.lo <= last.hi + TEXT_LINE_GAP_M) {
-          last.hi = Math.max(last.hi, span.hi);
-          last.members.push(span.i);
-        } else lines.push({ lo: span.lo, hi: span.hi, members: [span.i] });
-      }
-      // a block much longer along the road than one character is several rows stacked along the lane (the photo
-      // cannot separate them): cut it into rows of about TEXT_ROW_M
-      const rows = [];
-      for (const line of lines) {
-        const k = Math.max(1, Math.round((line.hi - line.lo + TEXT_ROW_GAP_M) / (TEXT_ROW_M + TEXT_ROW_GAP_M)));
-        if (k === 1) {
-          rows.push(line);
-          continue;
-        }
-        const step = (line.hi - line.lo + TEXT_ROW_GAP_M) / k;
-        for (let j = 0; j < k; j += 1) rows.push({ ...line, lo: line.lo + j * step, hi: line.lo + (j + 1) * step - TEXT_ROW_GAP_M, clip: true });
-      }
-      for (const line of rows) {
-        let pts = line.members.flatMap((i) => polys[i].flatMap((rings) => rings[0]));
-        if (line.clip) {
-          // the row's own extent along the road, the block's extent across it
-          const across0 = pts.map((p) => dot(sub(p, box.centre), r));
-          const a0 = Math.min(...across0);
-          const a1 = Math.max(...across0);
-          pts = [line.lo, line.hi].flatMap((t) => [a0, a1].map((u) => add(box.centre, add(scale(f, t), scale(r, u)))));
-        }
-        const along = pts.map((p) => dot(sub(p, box.centre), f));
-        const across = pts.map((p) => dot(sub(p, box.centre), r));
-        const height = Math.max(...along) - Math.min(...along);
-        const width = Math.max(...across) - Math.min(...across);
-        if (height < 0.4) continue;
-        const n = reading ? [...reading.text].length : Math.max(1, Math.round(width / (0.5 * height)));
-        const text = reading?.text ?? (n <= 2 ? "서행" : "천천히");
-        const count = [...text].length;
-        const charWidth = Math.min(width / (count + 0.25 * (count - 1)), 0.6 * height);
-        const middle = add(box.centre, add(scale(f, (Math.max(...along) + Math.min(...along)) / 2), scale(r, (Math.max(...across) + Math.min(...across)) / 2)));
-        emitPoly(place(textTemplate(text, charWidth, height), middle, f), list[members[0]].colour, "text", { glyph: text, guessed: !reading });
-        glyphCount(reading ? `text ${text} (판독)` : `text ${text} (추정)`);
-        stats.textReadings.push({ ids: line.members.map((i) => list[i].id), text, read: Boolean(reading), centre: toScene(middle), heightM: +height.toFixed(2), widthM: +width.toFixed(2), up: f.map((v) => +v.toFixed(3)), travelFrom: centre ? `centre line ${centre.ch.ids[0]} at ${centre.d.toFixed(1)} m` : axis ? `OSM road axis at ${axis.d.toFixed(1)} m` : reading?.up ? "reading" : "none" });
-      }
+      const along = points.map((p) => dot(sub(p, box.centre), f));
+      const across = points.map((p) => dot(sub(p, box.centre), r));
+      // a reading may fix the block width and the syllable length where the photo blobs miss part of the paint
+      const width = m.widthM ?? Math.max(...across) - Math.min(...across);
+      const height = m.lineHeightM ? m.lineHeightM * (m.lines.length + 0.25 * (m.lines.length - 1)) : Math.max(...along) - Math.min(...along);
+      const lines = m.lines ?? [stall ? "경차" : width < TEXT_LONG_WORD_M ? "서행" : "천천히"];
+      const middle = add(box.centre, add(scale(f, (Math.max(...along) + Math.min(...along)) / 2), scale(r, (Math.max(...across) + Math.min(...across)) / 2)));
+      const block = textBlock(lines, width, height, { charHeight: m.lineHeightM ?? null });
+      emitPoly(place(block.polys, middle, f), m.colour ?? list[m.members[0]].colour, "text", { glyph: lines.join("/"), guessed: Boolean(m.guessed) });
+      const label = `${lines.join("/")} (${m.guessed ? "추정" : m.source?.startsWith("VR") ? "VR 판독" : "사진 판독"})`;
+      glyphCount(`text ${label}`);
+      stats.textReadings.push({
+        id: m.id, ids, lines, read: !m.guessed, source: m.source ?? "추정 (statute text for its size)", centre: toScene(middle),
+        widthM: +width.toFixed(2), heightM: +height.toFixed(2), syllable: [+block.charWidth.toFixed(2), +block.charHeight.toFixed(2)],
+        up: f.map((v) => +v.toFixed(3)), travelFrom: from,
+      });
     }
   }
 

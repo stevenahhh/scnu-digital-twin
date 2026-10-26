@@ -49,8 +49,9 @@
 //     line when only that reading is on paint; stop lines straight, square to their lane, at their detected width
 //     clamped into STOP_LINE_M (STOP_LINE_DEFAULT_M without one); `dotted` guide lines as `dots` squares;
 //   - arrows, text, diamonds, give-way triangles, chevrons, wheelchair and bicycle symbols: statute templates
-//     (lib/markingGlyphs.mjs) at the detected centre, orientation and size; road text the photo cannot be read on is
-//     the most likely statute text, logged 추정 (readings: data/photo/markings-text.json);
+//     (lib/markingGlyphs.mjs) at the detected centre and size, oriented to their lane's travel direction; road text is
+//     one block per lane read for the approaching driver, its words read in the SCNU VR tour or on the photo
+//     (data/photo/markings-text.json), else the most likely statute text, logged 추정;
 //   - other painted areas (hatch stripes, hump bands, blue bays, stall frames): rectangles, or outlines with their edges
 //     snapped to their dominant directions.
 // All of it lifted LIFT_M over the terrain triangles it lies on (CityModel adds a polygon offset).
@@ -697,7 +698,7 @@ export async function loadMarkings({ inputs, buildings }) {
 
   // ---- 4. regular geometry: the gate decided where paint is; what is drawn there is fitted lines, statute dashes,
   // one bar set per crossing and templates (stages/markingsRegular.mjs)
-  const readings = JSON.parse(await Bun.file(MARKINGS_TEXT).text()).readings;
+  const textMarkings = JSON.parse(await Bun.file(MARKINGS_TEXT).text()).markings;
   const regular = regularise(drawn, {
     unit: UNIT,
     blocked: (p) => BLOCK_PROBES.every(([dx, dz]) => {
@@ -705,7 +706,7 @@ export async function loadMarkings({ inputs, buildings }) {
       return checks.inBuilding(q) || truth.onSidewalk(q);
     }),
     roadAxes: truth.roadLines,
-    readings: Object.fromEntries(Object.entries(readings).flatMap(([, r]) => r.ids.map((id) => [id, r]))),
+    textMarkings,
     statute: {
       widthFor: lineWidthFor, stopLineWidth, dash: DASH_BY_KIND, doubleOffsetM: DOUBLE_OFFSET_M, zebraPeriodM: ZEBRA_PERIOD_M, zebraBarM: ZEBRA_BAR_M,
     },
