@@ -282,6 +282,13 @@ function paintTile(canvas, look) {
   paintEntrance(canvas, look, ROWS.ENTRANCE * ROW_PX, rng);
 }
 
+// The colour pixels of one look's tile, painted only (no encoding; the window-module tests use it).
+export function paintedTile(look) {
+  const color = new Raster(TILE_W, TILE_H);
+  paintTile(new TileCanvas(color, new Raster(TILE_W, TILE_H), new Uint8Array(TILE_W * TILE_H), 0, 0), normalise(look));
+  return color.data;
+}
+
 // Gutters: rows wrap horizontally; above the tile is upper-storey content (the bottom of row 1), below it the plinth.
 function fillGutters(rasters, ox, oy) {
   for (const { data, channels, width } of rasters) {
