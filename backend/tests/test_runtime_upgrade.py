@@ -35,16 +35,18 @@ def test_research_runtime_rejects_derived_only_network(tmp_path):
 
 
 def test_derived_shared_path_has_agent_specific_lateral_offset():
+    # the generator draws every estimated person edge where people walk (placed): no centreline offset on the real
+    # data; the 2.8 m policy offset for an unplaced centreline copy is covered in test_walkway_routing.py
     payload, _ = load_runtime_graph(DATA, mode="transport-derived")
     graph = MobilityGraph(payload)
     path = graph.shortest_path("BLD_D4", "BLD_C1", "person")
-    # a segment inside a derived shared path (its neighbours too), where the offset is not ramped down to a neighbour
     kinds = path.edge_kinds
-    segment = next(index for index in range(1, len(kinds) - 1) if kinds[index - 1] == kinds[index] == kinds[index + 1] == "shared_path" and path.edge_derived[index])
+    segment = next(index for index in range(len(kinds)) if kinds[index] == "shared_path")
+    assert not path.edge_derived[segment]
     distance = (path.cumulative_lengths[segment] + path.cumulative_lengths[segment + 1]) / 2
     raw_x, raw_z, _, _ = graph.interpolate(path, distance)
     person_x, person_z, _, _ = graph.interpolate(path, distance, "person")
-    assert ((raw_x - person_x) ** 2 + (raw_z - person_z) ** 2) ** 0.5 == pytest.approx(2.8)
+    assert ((raw_x - person_x) ** 2 + (raw_z - person_z) ** 2) ** 0.5 == pytest.approx(0.0)
 
 
 def test_spatial_grid_reduces_pair_candidates():

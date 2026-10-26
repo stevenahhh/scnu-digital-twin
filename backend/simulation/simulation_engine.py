@@ -52,7 +52,7 @@ class SimulationEngine:
         self.graph = MobilityGraph(graph_payload)
         walkable, roads = load_polygon_indexes(self.data_dir)
         # surface under each agent (crossing over road over the rest where they overlap); None without polygon files
-        self.surface_index = PolygonIndex.merge(*(index for index in (walkable, roads) if index is not None), priority=("crossing", "sidewalk", "plaza", "road", "lot")) if (walkable or roads) else None
+        self.surface_index = PolygonIndex.merge(*(index for index in (walkable, roads) if index is not None), priority=("crossing", "sidewalk", "walkway_estimated", "plaza", "road", "lot")) if (walkable or roads) else None
         self.routes = self.graph  # compatibility for callers that inspect route_id
         self.scenarios = ScenarioManager(self.data_dir / "sample_scenario.json")
         self.risk_engine = RiskEngine(self.data_dir / "risk_config.json")

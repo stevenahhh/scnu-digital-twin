@@ -6,7 +6,7 @@ import pytest
 from simulation.mobility_graph import MobilityGraph
 
 
-def make_graph(edges):
+def make_graph(edges, lanes_source=None, cap=None):
     nodes, pois, raw = {}, [], []
     for index, (coords, width, lanes) in enumerate(edges):
         start, end = f"N{index}A", f"N{index}B"
@@ -16,6 +16,8 @@ def make_graph(edges):
         raw.append({
             "id": f"E{index}", "from": start, "to": end, "kind": "allowed_road", "allowed_types": ["car", "scooter"],
             "coordinates": coords, "bidirectional": True, "derived": False, "width_m": width, "lanes": lanes,
+            **({"lanes_source": lanes_source} if lanes_source else {}),
+            **({"lane_offset_cap_m": cap} if cap is not None else {}),
         })
     return MobilityGraph({"metadata": {}, "nodes": list(nodes.values()), "pois": pois, "edges": raw})
 
@@ -80,3 +82,16 @@ def test_ninety_degree_corner_has_no_position_jump():
         worst = max(worst, math.dist(previous, point))
         previous, distance = point, distance + 0.1
     assert worst < 0.5
+
+
+def test_assumed_single_lane_on_a_wide_zone_keeps_a_default_half_lane():
+    # a 16 m paved zone with an assumed lane count: keep right by half the estimated 3.00 m lane, not 7.3 m
+    graph = make_graph([([[0, 0], [100, 0]], 16.0, 1)], lanes_source="assumed")
+    path = graph.shortest_path("P_N0A", "P_N0B", "car")
+    assert graph.interpolate(path, 50, "car")[1] == pytest.approx(-1.5, abs=0.01)
+
+
+def test_generator_clearance_caps_the_offset():
+    graph = make_graph([([[0, 0], [100, 0]], 7.0, 2)], cap=0.6)
+    path = graph.shortest_path("P_N0A", "P_N0B", "car")
+    assert graph.interpolate(path, 50, "car")[1] == pytest.approx(-0.6, abs=0.01)
