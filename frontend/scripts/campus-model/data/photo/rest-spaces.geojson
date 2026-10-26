@@ -1136,6 +1136,77 @@
           ]
         ]
       }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS-LS-F1ISLAND",
+        "kind": "planter",
+        "estimated": true,
+        "fill": "lawn",
+        "colour": "#b9b6ad",
+        "dims": {
+          "kerbHeightM": 0.15
+        },
+        "vr_scene": "scene_f1",
+        "vr_face": "f",
+        "vr_cols": [
+          700,
+          1300
+        ],
+        "photo_support": "outline",
+        "confidence": 0.55,
+        "position_method": "photo: the leaf-shaped lawn island with shrubs in the F1 forecourt traced on the NGII 2025 sheet",
+        "height_source": "catalogue planter + VR scene_f1 f: a low stone kerb (estimated)",
+        "note": "crescent-shaped lawn island with shrubs and a low kerb in the F1 slab forecourt (VR scene_f1 f cols 700-1300 of 2048)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.48429185,
+              34.96633137
+            ],
+            [
+              127.48429137,
+              34.96624934
+            ],
+            [
+              127.48433258,
+              34.96618158
+            ],
+            [
+              127.48441547,
+              34.96612716
+            ],
+            [
+              127.48453032,
+              34.96610597
+            ],
+            [
+              127.48446491,
+              34.96615401
+            ],
+            [
+              127.48438201,
+              34.96620842
+            ],
+            [
+              127.48434956,
+              34.96627706
+            ],
+            [
+              127.48432474,
+              34.96633845
+            ],
+            [
+              127.48429185,
+              34.96633137
+            ]
+          ]
+        ]
+      }
     }
   ]
 }
