@@ -610,6 +610,7 @@ function addAttachments(building, { walls, roof, plain }, { heightAt, tiles, loo
     if (a.kind === "balconies") addBalconies(plain, a, ground, charts, { colour: linearByte(hex(a.colour)), slabColour: linearByte(hex(a.slabColour ?? a.colour)) });
     else if (a.kind === "fins") addFins(plain, a, ground, charts, { colour: linearByte(hex(a.colour)), outside });
     else if (a.kind === "mast") addMast(plain, a, ground, charts, { colour: linearByte(hex(a.colour)) });
+    else if (a.kind === "roof") continue; // a roof colour, applied with the roof colours (buildBuildings)
     else {
       const look = looks.get(a.look);
       const topMetres = a.topMetres ?? tallest.heightMetres;
@@ -1822,6 +1823,17 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
       vrRoofs.push(`${building.nodeName ?? (building.displayName || "(unnamed)")} ${colour}`);
     }
     if (vrRoofs.length) console.log(`roof colours from the VR tour (look roofColour): ${vrRoofs.join("; ")}`);
+    // A roof attachment (data/facade-attachments.json) recolours the one part whose outline holds its point.
+    const partRoofs = [];
+    for (const building of selectableBuildings) {
+      for (const a of (building.attachments ?? []).filter((x) => x.kind === "roof")) {
+        const part = building.massForm ? building.parts.find((p) => p.outer?.length >= 3 && pointInRing(a.at, p.outer)) : null;
+        if (!part) throw new Error(`facade-attachments.json: roof ${a.id} of ${building.nodeName} is not inside a mass of its form`);
+        part.roofColourRgb = hex(a.colour);
+        partRoofs.push(`${building.nodeName} ${a.id} ${a.colour}`);
+      }
+    }
+    if (partRoofs.length) console.log(`roof colours from the VR tour (roof attachments): ${partRoofs.join("; ")}`);
     for (const building of [...selectableBuildings, ...campusBuildings]) {
       for (const part of building.massForm ? building.parts : []) {
         if (part.roofColourRgb) part.roofColour = roofFactor(part.roofColourRgb).map((v) => Math.round(v * 255));

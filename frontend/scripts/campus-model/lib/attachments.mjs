@@ -4,10 +4,12 @@
 // facade cells of another look, e.g. brick end towers proud of a panel facade). Plans and walls are lon/lat, heights
 // metres above the building's ground; every value is an estimate read from the SCNU 360 VR tour and the NGII 2025
 // orthophoto. Blocks are drawn by stages/buildings.mjs (they need the facade atlas); the rest is built here as plain
-// vertex-coloured solids on the parapet primitive, each solid on one AO chart (its faces side by side).
+// vertex-coloured solids on the parapet primitive, each solid on one AO chart (its faces side by side). A roof record
+// draws nothing: it recolours the roof of the building part whose outline holds its point (a green-tiled canopy roof
+// the photo samples as grey), applied by stages/buildings.mjs with the other roof colours.
 import { metres } from "./frame.mjs";
 
-export const ATTACHMENT_KINDS = Object.freeze(["balconies", "fins", "mast", "block"]);
+export const ATTACHMENT_KINDS = Object.freeze(["balconies", "fins", "mast", "block", "roof"]);
 const PLAIN_UV = Object.freeze([[0, 0], [0, 0], [0, 0], [0, 0]]);
 
 const isPoint = (p) => Array.isArray(p) && p.length === 2 && p.every(Number.isFinite);
@@ -32,6 +34,8 @@ export function attachmentErrors(a, looks) {
     if (a.levels !== undefined) {
       if (!Array.isArray(a.levels) || !a.levels.length || !a.levels.every((v) => v >= 0) || !positive(a.thickness)) errors.push("levels needs metres >= 0 and thickness > 0");
     } else if (!(a.topMetres > a.bottomMetres) || !(a.bottomMetres >= 0)) errors.push("0 <= bottomMetres < topMetres (or levels and thickness)");
+  } else if (a.kind === "roof") {
+    if (!isPoint(a.at)) errors.push("at needs a lon/lat point");
   } else if (a.kind === "mast") {
     if (!isPoint(a.at)) errors.push("at needs a lon/lat point");
     if (!(a.baseMetres >= 0) || !positive(a.heightMetres)) errors.push("baseMetres >= 0 and heightMetres > 0");
