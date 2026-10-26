@@ -83,6 +83,42 @@
         "scene_001"
       ],
       "registerName": null
+    },
+    {
+      "code": "A3",
+      "name": "순천대학교 A3 천연물신약연구소",
+      "label": "천연물신약연구소",
+      "nodeId": "BLD_SCNU_A3",
+      "status": "standing",
+      "floors": 5,
+      "floorsSource": "VR scene_a3 storey count (estimated)",
+      "heightMetres": 0,
+      "undergroundFloors": 0,
+      "usability": "교육연구시설 (추정)",
+      "polygons": [
+        [
+          [
+            [127.48055111, 34.96907811],
+            [127.48075673, 34.96903738],
+            [127.48063684, 34.96858626],
+            [127.48060762, 34.96859544],
+            [127.48059368, 34.96856046],
+            [127.4805005, 34.96858499],
+            [127.48050717, 34.96862836],
+            [127.48044143, 34.9686498],
+            [127.48055111, 34.96907811]
+          ]
+        ]
+      ],
+      "footprintSource": "NGII 2025 orthophoto trace (estimated) + VR scene_a3",
+      "nameSource": "SCNU registry A3 천연물신약연구소 (campus list.do point 243887.5, 263738.9 EPSG:5186, inside the traced outline); VR scene_a3 title 천연물신약 연구소. The solar-roofed block west of A2 약학대학, across the road from the central roundabout; the sky bridge to A2 is not part of the footprint",
+      "estimated": true,
+      "confidence": 0.6,
+      "vrScenes": [
+        "scene_a3",
+        "scene_001"
+      ],
+      "registerName": null
     }
   ]
 }

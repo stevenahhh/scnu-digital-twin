@@ -799,14 +799,17 @@
       "station": true,
       "yaw_deg": true
     },
-    "yaw_refined_deg": 157.5,
-    "refined_residual_deg": 3,
+    "yaw_refined_deg": 135.4,
+    "refined_residual_deg": 2.8,
     "refined_buildings": [
-      "BLD_E1"
+      "BLD_SCNU_A3",
+      "central roundabout"
     ],
-    "refined_by": "compare-vr todo 2",
+    "refined_by": "compare-vr todo 11",
     "refined_confidence": 0.6,
-    "refined_note": "title building (A3) has no footprint; yaw set by E1 (blue/white block in r) and the roundabout in l"
+    "refined_note": "re-resected in todo 11 from three corners of the traced A3 (VR f -19.9, -10.5, +36.9 deg) and the roundabout centre (l +17.7 deg), max residual 2.8 deg; the todo 2 yaw 157.5 came from E1 alone (large facade, weak) and put A3 15 deg off",
+    "station_refined_x": 270.95,
+    "station_refined_z": -204.72
   },
   {
     "scene": "scene_a4",
