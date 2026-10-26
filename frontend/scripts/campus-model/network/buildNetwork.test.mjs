@@ -20,9 +20,13 @@ test("the generated network keeps every property name and key of the derived-v1 
   const after = propertyNames(now);
   for (const [type, names] of Object.entries(before)) for (const name of names) assert.ok(after[type].has(name), `${type}.${name}`);
   for (const added of ["width_m", "lanes", "kerb_height_m", "estimated", "source_ref", "crosswalk_id", "sidewalk_id", "authoritative", "external_ids", "surface"]) assert.ok(after.edge.has(added), added);
-  // every POI id survives
-  const ids = (fc) => fc.features.filter((f) => f.properties.feature_type === "poi").map((f) => f.id).sort();
-  assert.deepEqual(ids(now), ids(old));
+  // every POI id survives; a POI added since the baseline is a building POI of a building_entrances.json entrance
+  const pois = (fc) => fc.features.filter((f) => f.properties.feature_type === "poi");
+  const nowIds = new Set(pois(now).map((f) => f.id));
+  for (const f of pois(old)) assert.ok(nowIds.has(f.id), `POI ${f.id} lost`);
+  const entrances = JSON.parse(readFileSync(path.join(DATA, "building_entrances.json"), "utf8")).buildings.map((b) => b.building_id);
+  const oldIds = new Set(pois(old).map((f) => f.id));
+  for (const f of pois(now).filter((x) => !oldIds.has(x.id))) assert.ok(f.properties.kind === "building" && entrances.includes(f.id), `unexpected POI ${f.id}`);
 });
 
 // a minimal composition: one road edge, one sidewalk with a gate POI beside it
