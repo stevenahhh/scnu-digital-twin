@@ -13,12 +13,12 @@ import { fileURLToPath } from "node:url";
 import { EXTENT, SCENE_UNITS_PER_METRE, geoToModel, metres } from "../lib/frame.mjs";
 import { LANDCOVER } from "../lib/landcover.mjs";
 import { MeshData } from "../lib/meshData.mjs";
-import { encodePng } from "../lib/png.mjs";
 import { Raster, hashNoise, smoothNoise } from "../lib/raster.mjs";
 import { pointInRing } from "../lib/geometry.mjs";
 import { SURFACE_CLASS } from "../lib/surfaceClass.mjs";
 import { composeOrthoGround } from "../lib/orthoGround.mjs";
-import { loadGroundFeatures, orientedFrame, parkingRing, traceArterials } from "../network/surfaces.mjs";
+import { buildSurfaces, loadGroundFeatures, loadWalkways as loadSurfaceWalkways, orientedFrame, parkingRing, traceArterials } from "../network/surfaces.mjs";
+import { GRASS_TILE, naturalGroundMaterial, planarTileUv } from "./surfaces.mjs";
 
 const WIDTH = EXTENT.maxX - EXTENT.minX;
 const DEPTH = EXTENT.maxZ - EXTENT.minZ;
@@ -411,8 +411,6 @@ export function topographySurface(heightAt) {
   };
 }
 
-const jpeg = async (png, quality = 86) => new Bun.Image(png).jpeg({ quality }).toBuffer();
-
 // paint: rings (model units) of the vector road markings whose paint the photo must not show twice (stages/markings.mjs);
 // structures / objectHoles: rings of the street furniture the photo must not show twice (stages/furniture.mjs).
 // Returns the Topography surface the markings are laid on, and the surface-class raster (groundInfo) the lamp and
@@ -605,12 +603,23 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
     `white balance ${inputs.orthoCalibration.gains.map((g) => g.toFixed(3)).join("/")} from ${inputs.orthoCalibration.samples} neutral pixels, ` +
     `albedo lift 1/${inputs.orthoCalibration.gamma} (estimated)`,
   );
-  // The pack step re-encodes it as WebP (EXT_texture_webp); q92 keeps that second lossy step the dominant one.
-  const groundTexture = glb.addTexture(await jpeg(encodePng(ground.width, ground.height, 3, ground.data), 92), "image/jpeg", { repeat: false });
-  const groundMaterial = glb.addMaterial({
-    name: "Ground",
-    pbrMetallicRoughness: { baseColorTexture: { index: groundTexture }, metallicFactor: 0, roughnessFactor: 1 },
-  });
+  // Ground AO first: the natural Ground material and the Ground_* decals (stages/surfaces.mjs) share it.
+  let aoTexture = null;
+  if (existsSync(AO_GROUND)) {
+    const png = readFileSync(AO_GROUND);
+    const bakedFor = pngLayoutTag(png);
+    if (bakedFor === AO_GROUND_LAYOUT) {
+      aoTexture = glb.addTexture(png, "image/png", { repeat: false });
+      console.log(`ground AO: ${path.basename(AO_GROUND)} (${png.length} B) attached as occlusionTexture`);
+    } else {
+      console.warn(`ground AO: ${path.basename(AO_GROUND)} was baked for ${bakedFor ?? "(none)"}, this build is ${AO_GROUND_LAYOUT}; left out. Re-bake: bun scripts/campus-model/bake/bake-ao.mjs --planar`);
+    }
+  } else {
+    console.warn(`ground AO: ${path.basename(AO_GROUND)} missing; see scripts/campus-model/bake/README.md`);
+  }
+  const natural = await naturalGroundMaterial(glb, landcoverAt, aoTexture);
+  const groundMaterial = natural.material;
+  console.log(`ground: natural Topography ground, ${natural.width}x${natural.height} land-cover colour map (0.5 m/texel) under the ${GRASS_TILE} CC0 relief tile (${natural.tileSize} m); no photo pixels in the ground material`);
   glb.json.asset.extras = {
     ...glb.json.asset.extras,
     aoGroundLayout: AO_GROUND_LAYOUT,
@@ -624,18 +633,6 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
       note: "ground albedo, roof colours and solar panels are estimates derived from imagery, not measurements",
     },
   };
-  if (existsSync(AO_GROUND)) {
-    const png = readFileSync(AO_GROUND);
-    const bakedFor = pngLayoutTag(png);
-    if (bakedFor === AO_GROUND_LAYOUT) {
-      glb.json.materials[groundMaterial].occlusionTexture = { index: glb.addTexture(png, "image/png", { repeat: false }), texCoord: 1 };
-      console.log(`ground AO: ${path.basename(AO_GROUND)} (${png.length} B) attached as occlusionTexture`);
-    } else {
-      console.warn(`ground AO: ${path.basename(AO_GROUND)} was baked for ${bakedFor ?? "(none)"}, this build is ${AO_GROUND_LAYOUT}; left out. Re-bake: bun scripts/campus-model/bake/bake-ao.mjs --planar`);
-    }
-  } else {
-    console.warn(`ground AO: ${path.basename(AO_GROUND)} missing; see scripts/campus-model/bake/README.md`);
-  }
 
   // ---- terrain (chunked so raycasts stay cheap)
   const topographyChildren = [];
@@ -653,7 +650,7 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
           const nx = heightAt(x - 1, z) - heightAt(x + 1, z);
           const nz = heightAt(x, z - 1) - heightAt(x, z + 1);
           const length = Math.hypot(nx, 2, nz);
-          data.vertex([x, heightAt(x, z), z], [nx / length, 2 / length, nz / length], [(x - EXTENT.minX) / WIDTH, (z - EXTENT.minZ) / DEPTH]);
+          data.vertex([x, heightAt(x, z), z], [nx / length, 2 / length, nz / length], planarTileUv(x, z, natural.tileSize));
         }
       }
       for (let j = 0; j + 1 < zs.length; j += 1) {
@@ -679,7 +676,19 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
     }
   }
   glb.addNode({ name: "Topography", children: topographyChildren }, { root: true });
+  // Class polygons for the Ground_* decal meshes (stages/surfaces.mjs buildSurfaceMeshes).
+  const surfaces = buildSurfaces({
+    inputs,
+    walkways: await loadSurfaceWalkways(),
+    groundFeatures: await loadGroundFeatures(),
+    offCampusLots,
+    buildings: [...selectableBuildings, ...campusBuildings],
+    crosswalks: inputs.crosswalks,
+  });
   return {
+    surfaces,
+    layers: surfaces.layers,
+    aoTexture,
     surface: topographySurface(heightAt),
     groundInfo: { width: ground.width, height: ground.height, px: PX, labels: ground.labels, classes: SURFACE_CLASS },
   };

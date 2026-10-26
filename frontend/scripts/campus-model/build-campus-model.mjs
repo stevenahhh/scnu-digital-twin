@@ -43,6 +43,7 @@ import { buildLights, placeLamps } from "./stages/lights.mjs";
 import { SUPPRESS_MARGIN_M, buildMarkings, describeMarkings, loadMarkings } from "./stages/markings.mjs";
 import { buildOuterTerrain } from "./stages/outerTerrain.mjs";
 import { loadInputs } from "./stages/sources.mjs";
+import { buildSurfaceMeshes, describeSurfaces } from "./stages/surfaces.mjs";
 import { buildTrees, placeTrees } from "./stages/trees.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -60,11 +61,12 @@ const { selectableBuildings, campusBuildings, offCampusLots } = await buildBuild
 const treePlacement = placeTrees({ inputs, selectableBuildings, campusBuildings, offCampusLots, blockedRings: furniture.treeBlock });
 const markings = await loadMarkings({ inputs, buildings: [...selectableBuildings, ...campusBuildings] });
 console.log(describeMarkings(markings));
-const { surface, groundInfo } = await buildGround({
+const { surface, groundInfo, layers, aoTexture } = await buildGround({
   glb, inputs, selectableBuildings, campusBuildings, offCampusLots,
   paint: markings.paint, paintMargin: SUPPRESS_MARGIN_M, treeInstances: treePlacement.treeInstances,
   structures: furniture.photoMask.structures, objectHoles: furniture.photoMask.holes,
 });
+console.log(describeSurfaces(await buildSurfaceMeshes({ glb, layers, surface, ao: aoTexture })));
 const markingMesh = buildMarkings({ glb, markings, surface });
 const outerTerrain = await buildOuterTerrain({ glb, inputs });
 const treeInstances = buildTrees({ glb, placement: treePlacement });
