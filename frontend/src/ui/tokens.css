@@ -1,0 +1,147 @@
+/* 디자인 토큰의 유일한 출처. Tailwind 테마(tailwind.config.js)와 DESIGN.md가 이 파일을 따른다.
+   :root는 어두운 테마, [data-theme="light"]는 밝은 테마에서 값이 다른 토큰만 덮어쓴다. */
+
+:root {
+  color-scheme: dark;
+
+  /* 색: 강조 */
+  --colors-primary: #5e6ad2;
+  --colors-primary-hover: #828fff;
+  --colors-on-primary: #ffffff;
+
+  /* 색: 바탕과 면 */
+  --colors-canvas: #0b0c0e;
+  --colors-surface-1: #0f1011;
+  --colors-surface-2: #141516;
+  --colors-surface-3: #18191a;
+  --colors-hairline: #23252a;
+  --colors-hairline-strong: #34343a;
+
+  /* 색: 글자 */
+  --colors-ink: #f7f8f8;
+  --colors-ink-muted: #d0d6e0;
+  --colors-ink-subtle: #8a8f98;
+
+  /* 색: 상태. 글자로 써도 surface-1 위에서 4.5:1을 넘는다. 바탕은 같은 색조의 wash를 쓴다. */
+  --colors-semantic-success: #4ade80;
+  --colors-semantic-warning: #fbbf24;
+  --colors-semantic-danger: #f87171;
+  --colors-semantic-success-wash: color-mix(in srgb, var(--colors-semantic-success) 16%, var(--colors-surface-1));
+  --colors-semantic-warning-wash: color-mix(in srgb, var(--colors-semantic-warning) 16%, var(--colors-surface-1));
+  --colors-semantic-danger-wash: color-mix(in srgb, var(--colors-semantic-danger) 16%, var(--colors-surface-1));
+
+  /* 색: 장면 역할(선택 밖 건물 흐림, 라벨 칩 = surface-1의 85 %, 추정값 글자) */
+  --colors-dim: rgba(0, 0, 0, 0.2);
+  --colors-label-bg: rgba(15, 16, 17, 0.85);
+  --colors-label-halo: rgba(0, 0, 0, 0.55);
+  --colors-estimate-ink: var(--colors-ink-subtle);
+
+  /* 데이터 색 단계(낮음 0 -> 높음 6). 열·복사 지도처럼 값의 크기를 나타낼 때만 쓴다. */
+  --data-heat-0: #2c7bb6;
+  --data-heat-1: #00a6ca;
+  --data-heat-2: #00ccbc;
+  --data-heat-3: #90eb9d;
+  --data-heat-4: #ffff8c;
+  --data-heat-5: #f9d057;
+  --data-heat-6: #d7191c;
+
+  /* 글자 크기 단계: 크기 / 줄 높이 / 굵기 */
+  --text-display: 28px;
+  --text-display-leading: 32px;
+  --text-display-weight: 600;
+  --text-title: 20px;
+  --text-title-leading: 26px;
+  --text-title-weight: 600;
+  --text-body: 14px;
+  --text-body-leading: 20px;
+  --text-body-weight: 400;
+  --text-caption: 12px;
+  --text-caption-leading: 16px;
+  --text-caption-weight: 500;
+  --text-micro: 11px;
+  --text-micro-leading: 14px;
+  --text-micro-weight: 600;
+  --tracking-display: -0.01em;
+
+  /* 간격(4px 단위) */
+  --spacing-xxs: 4px;
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+
+  /* 모서리: control(칩·버튼·입력), card(카드·HUD·인스펙터), pill */
+  --rounded-control: 6px;
+  --rounded-card: 12px;
+  --rounded-pill: 9999px;
+  /* 별칭: legacy-classes.css가 아직 쓴다. 정리 단계(todo 21)에서 지운다. */
+  --rounded-xs: 4px;
+  --rounded-md: 8px;
+  --rounded-lg: var(--rounded-card);
+
+  /* 그림자: 떠 있는 면 두 가지뿐 */
+  --shadow-popover: 0 20px 48px rgba(0, 0, 0, 0.28);
+  --shadow-dialog: 0 24px 64px rgba(0, 0, 0, 0.4);
+
+  /* 움직임 */
+  --motion-micro: 120ms;
+  --motion-state: 200ms;
+  --motion-surface: 300ms;
+  --motion-camera: 800ms;
+  --motion-settle: 150ms;
+  --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-ease-enter: cubic-bezier(0, 0, 0, 1);
+  --motion-ease-exit: cubic-bezier(0.3, 0, 1, 1);
+
+  /* 겹침 순서: 장면 < 라벨 < HUD < 패널 레일 < 모달 */
+  --layer-canvas: 0;
+  --layer-labels: 10;
+  --layer-hud: 20;
+  --layer-rail: 30;
+  --layer-modal: 50;
+
+  /* 패널 너비 */
+  --dashboard-panel-width: 440px;
+  --dashboard-rail-width: 56px;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --colors-canvas: #ffffff;
+  --colors-surface-1: #f7f8f8;
+  --colors-surface-2: #f0f2f4;
+  --colors-surface-3: #e5e8eb;
+  --colors-hairline: #e0e2e5;
+  --colors-hairline-strong: #c8ccd2;
+  --colors-ink: #111213;
+  --colors-ink-muted: #4f5358;
+  --colors-ink-subtle: #6b7079;
+  --colors-semantic-success: #15803d;
+  --colors-semantic-warning: #b45309;
+  --colors-semantic-danger: #dc2626;
+  --colors-label-bg: rgba(247, 248, 248, 0.85);
+  --colors-label-halo: rgba(255, 255, 255, 0.85);
+}
+
+@media (max-width: 639px) {
+  :root {
+    --text-display: 30px;
+    --text-display-leading: 34px;
+    --text-title: 22px;
+    --text-title-leading: 28px;
+    --text-body: 17px;
+    --text-body-leading: 24px;
+    --text-caption: 15px;
+    --text-caption-leading: 20px;
+    --text-micro: 13px;
+    --text-micro-leading: 16px;
+  }
+}
+
+@media (max-width: 439px) {
+  :root {
+    --dashboard-panel-width: 100vw;
+  }
+}

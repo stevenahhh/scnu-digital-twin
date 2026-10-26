@@ -15,6 +15,7 @@ import { isAnchorOccludedByTerrain, selectVisibleCampusLabels } from "./utils/ca
 import { campusModelCenter } from "./simulation/utils/campusTrafficCoordinates.mjs";
 import { CAMPUS_MODEL_URL, CAMPUS_MODEL_URLS } from "./campusModelAsset.mjs";
 import { CAMPUS_HEIGHTFIELD_URLS, loadHeightfield } from "./terrain/heightfield.mjs";
+import { HOVER_HEX, SELECTION_HEX } from "./ui/sceneTokens.mjs";
 import {
   AUTUMN_MATERIAL_NAMES,
   SUN_ALTITUDE_KEY,
@@ -129,7 +130,7 @@ function applyLampPoolFalloff(material) {
 // 색 전환은 선택/주야가 바뀐 뒤에만, 남은 차이가 이 값보다 작아질 때까지 돈다.
 const MATERIAL_SETTLE_EPSILON = 1e-3;
 const MATERIAL_EASE_RATE = 8;
-const SELECTED_COLOR = new THREE.Color("#ffb8c6");
+const SELECTED_COLOR = new THREE.Color(SELECTION_HEX);
 const NIGHT_TINT_COLOR = new THREE.Color("#c8d6e5");
 const NIGHT_TINT_MIX = 0.16;
 // 가을 단풍(추정): 활엽수 수관(Tree_Crown) 인스턴스마다 수종 비슷한 색(은행 노랑, 느티 적갈, 벚 빨강, 늦게 물드는 초록)과
@@ -139,7 +140,7 @@ const NIGHT_TINT_MIX = 0.16;
 const RAMP_EPSILON = 1e-4;
 // 마우스를 올린 건물은 평소 색을 선택 색 쪽으로 조금만 옮긴다. 선택(색 전체 교체)보다 약하다.
 // 재질은 메시마다 복제돼 있어 다른 건물로 번지지 않는다.
-const HOVER_TINT_COLOR = new THREE.Color("#ffe0e8");
+const HOVER_TINT_COLOR = new THREE.Color(HOVER_HEX);
 const HOVER_TINT_MIX = 0.3;
 // 프레임마다 새 객체를 만들지 않도록 재사용하는 스크래치 값.
 const scratchColor = new THREE.Color();

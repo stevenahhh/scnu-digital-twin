@@ -100,7 +100,7 @@ function RoomDetailCard({ room, status, onBack }) {
             <div className="rounded-lg bg-[var(--colors-surface-2)] p-3">
               <div className="text-[12px] font-[700] text-[var(--colors-ink-muted)]">현재 상태</div>
               <div className="mt-1 flex items-center gap-1.5 text-[13px] font-[900] text-[var(--colors-ink)]">
-                <span className={`h-2 w-2 rounded-full ${status.isInUse ? "bg-[var(--colors-primary)]" : "bg-[var(--colors-ink-tertiary)]"}`} />
+                <span className={`h-2 w-2 rounded-full ${status.isInUse ? "bg-[var(--colors-primary)]" : "bg-[var(--colors-ink-subtle)]"}`} />
                 {status.statusText}
               </div>
             </div>

@@ -1,8 +1,9 @@
 import { Canvas, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import { useEffect, useMemo } from "react";
+import { ACCENT_HEX } from "../ui/sceneTokens.mjs";
 
-const ACTIVE_COLOR = "#3b82f6";
+const ACTIVE_COLOR = ACCENT_HEX;
 const IDLE_COLOR = "#c7cdd6";
 const FLOOR_STEP = 1.0;
 const BOX_HEIGHT = 0.82;

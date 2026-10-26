@@ -1,0 +1,415 @@
+/* 이전 대시보드 클래스(.dashboard-*, .linear-*)와 Tailwind 색 이름 호환층.
+   공용 기본 요소로 옮기는 정리 단계(W2, todo 21)에서 이 파일을 통째로 지운다. 새 코드는 여기 클래스를 쓰지 않는다. */
+
+@media (max-width: 439px) {
+  /* 패널이 화면 전체를 덮으면 패널 토글(w-7, 28px)이 패널 왼쪽 가장자리 위에 놓인다. 내용을 토글 너비보다 더 들여
+     카드 왼쪽 끝이 토글에 가려지지 않게 한다. */
+  .dashboard-root .dashboard-panel-content { padding-left: 2.25rem; }
+  .dashboard-root select,
+  .dashboard-root input,
+  .dashboard-root button { min-width: 0; }
+}
+
+.dashboard-root {
+  background: var(--colors-canvas);
+  color: var(--colors-ink);
+}
+
+.dashboard-top-shell,
+.dashboard-side-panel,
+.dashboard-right-panel,
+.dashboard-notice-bar,
+.dashboard-popup,
+.dashboard-rail {
+  background: var(--colors-surface-1);
+  border: 1px solid var(--colors-hairline);
+  box-shadow: none;
+  border-radius: var(--rounded-lg);
+}
+
+.dashboard-rail {
+  border-radius: 0;
+  border-right: 1px solid var(--colors-hairline);
+  border-top: none;
+  border-left: none;
+  border-bottom: none;
+}
+
+.dashboard-top-shell {
+  border-radius: 0;
+  border-bottom: 1px solid var(--colors-hairline);
+}
+
+.dashboard-card {
+  background: var(--colors-surface-1);
+  border: 1px solid var(--colors-hairline);
+  border-radius: var(--rounded-lg);
+  padding: var(--spacing-lg);
+}
+
+.dashboard-card-muted {
+  background: var(--colors-surface-2);
+  border: 1px solid var(--colors-hairline-strong);
+  border-radius: var(--rounded-lg);
+  padding: var(--spacing-lg);
+}
+
+.dashboard-card-strong {
+  background: var(--colors-surface-3);
+  border: 1px solid var(--colors-hairline-strong);
+  border-radius: var(--rounded-lg);
+  color: var(--colors-ink);
+  padding: var(--spacing-lg);
+}
+
+.dashboard-soft-surface {
+  background: var(--colors-surface-2);
+  border-radius: var(--rounded-md);
+  padding: var(--spacing-sm);
+}
+
+
+.dashboard-pill,
+.dashboard-segment {
+  border: 1px solid var(--colors-hairline);
+  background: var(--colors-surface-1);
+  color: var(--colors-ink-subtle);
+  border-radius: var(--rounded-pill);
+}
+
+.dashboard-segment[data-active="true"] {
+  background: var(--colors-surface-2);
+  border-color: var(--colors-hairline-strong);
+  color: var(--colors-ink);
+}
+
+.dashboard-tab[data-active="true"] {
+  background: var(--colors-surface-2);
+  color: var(--colors-ink);
+  border-radius: var(--rounded-pill);
+  padding: 6px 14px;
+}
+
+.dashboard-tab[data-active="false"] {
+  background: var(--colors-canvas);
+  color: var(--colors-ink-subtle);
+  border-radius: var(--rounded-pill);
+  padding: 6px 14px;
+}
+
+
+.dashboard-rail-item {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--colors-ink-subtle);
+  border-radius: var(--rounded-xs);
+}
+
+.dashboard-rail-item[data-active="true"] {
+  background: var(--colors-surface-2);
+  border-color: var(--colors-hairline-strong);
+  color: var(--colors-ink);
+}
+
+
+.dashboard-label {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.30;
+  letter-spacing: 0.4px;
+  color: var(--colors-ink-muted);
+}
+
+.dashboard-tactical-title {
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1.40;
+  letter-spacing: -0.2px;
+  color: var(--colors-ink);
+}
+
+.dashboard-meta {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.40;
+  color: var(--colors-ink-subtle);
+}
+
+
+.dashboard-muted { color: var(--colors-ink-muted); }
+.dashboard-text-primary { color: var(--colors-ink); }
+.dashboard-subtle { color: var(--colors-ink-subtle); }
+.dashboard-accent-primary { color: var(--colors-primary); }
+.dashboard-accent-success { color: var(--colors-semantic-success); }
+
+
+.dashboard-ghost-button {
+  background: var(--colors-surface-1);
+  color: var(--colors-ink);
+  border: 1px solid var(--colors-hairline);
+  border-radius: var(--rounded-md);
+}
+
+.dashboard-ghost-button:hover {
+  background: var(--colors-surface-2);
+}
+
+.dashboard-outline-button {
+  background: var(--colors-surface-1);
+  color: var(--colors-ink);
+  border: 1px solid var(--colors-hairline);
+  border-radius: var(--rounded-md);
+}
+
+
+.dashboard-status-badge {
+  background: var(--colors-surface-2);
+  color: var(--colors-ink-muted);
+  border-radius: var(--rounded-pill);
+  padding: 2px 8px;
+  font-size: 12px;
+}
+
+.dashboard-status-badge[data-tone="success"] {
+  background: var(--colors-semantic-success);
+  color: var(--colors-on-primary);
+}
+
+.dashboard-status-badge[data-tone="danger"] {
+  background: var(--colors-semantic-danger);
+  color: var(--colors-on-primary);
+}
+
+.dashboard-status-badge[data-tone="warning"] {
+  background: var(--colors-semantic-warning);
+  color: var(--colors-on-primary);
+}
+
+
+.bg-white, .bg-slate-50, .bg-slate-100 { background-color: var(--colors-surface-1) !important; }
+.text-gray-800, .text-slate-900, .text-slate-800 { color: var(--colors-ink) !important; }
+.text-gray-500, .text-slate-500, .text-slate-400 { color: var(--colors-ink-subtle) !important; }
+.border-gray-100, .border-slate-100, .border-slate-200 { border-color: var(--colors-hairline) !important; }
+.shadow-sm, .shadow-md, .shadow-xl { box-shadow: none !important; }
+
+
+.linear-card {
+  background: var(--colors-surface-1);
+  color: var(--colors-ink);
+  border-radius: var(--rounded-lg);
+  padding: var(--spacing-lg);
+  border: 1px solid var(--colors-hairline);
+}
+
+.linear-card-featured {
+  background: var(--colors-surface-2);
+  border: 1px solid var(--colors-hairline-strong);
+}
+
+.linear-btn-primary {
+  background: var(--colors-primary);
+  color: var(--colors-on-primary);
+  font-weight: 500;
+  font-size: 14px;
+  border-radius: var(--rounded-md);
+  padding: 8px 14px;
+  border: none;
+}
+.linear-btn-primary:hover {
+  background: var(--colors-primary-hover);
+}
+.linear-btn-secondary {
+  background: var(--colors-surface-1);
+  color: var(--colors-ink);
+  font-weight: 500;
+  font-size: 14px;
+  border-radius: var(--rounded-md);
+  padding: 8px 14px;
+  border: 1px solid var(--colors-hairline);
+}
+
+
+/* Tailwind 테마 색을 토큰 이름으로 좁히기 전에 컴포넌트가 쓰던 팔레트 클래스. 바뀌기 전 설정으로 Tailwind가 만든 규칙을
+   그대로 옮겨, 컴포넌트를 토큰으로 옮기는 W2 전까지 화면이 바뀌지 않게 한다. */
+
+
+.border-amber-200 {
+  --tw-border-opacity: 1;
+  border-color: rgb(253 230 138 / var(--tw-border-opacity, 1))
+}
+
+.border-red-200 {
+  --tw-border-opacity: 1;
+  border-color: rgb(254 202 202 / var(--tw-border-opacity, 1))
+}
+
+.border-red-400\/50 {
+  border-color: rgb(248 113 113 / 0.5)
+}
+
+.border-red-400\/60 {
+  border-color: rgb(248 113 113 / 0.6)
+}
+
+.border-sky-100\/70 {
+  border-color: rgb(224 242 254 / 0.7)
+}
+
+.border-white\/15 {
+  border-color: rgb(255 255 255 / 0.15)
+}
+
+.border-white\/20 {
+  border-color: rgb(255 255 255 / 0.2)
+}
+
+.border-white\/25 {
+  border-color: rgb(255 255 255 / 0.25)
+}
+
+.bg-amber-300 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(252 211 77 / var(--tw-bg-opacity, 1))
+}
+
+.bg-black\/15 {
+  background-color: rgb(0 0 0 / 0.15)
+}
+
+.bg-black\/40 {
+  background-color: rgb(0 0 0 / 0.4)
+}
+
+.bg-black\/55 {
+  background-color: rgb(0 0 0 / 0.55)
+}
+
+.bg-black\/60 {
+  background-color: rgb(0 0 0 / 0.6)
+}
+
+.bg-black\/65 {
+  background-color: rgb(0 0 0 / 0.65)
+}
+
+.bg-red-950\/40 {
+  background-color: rgb(69 10 10 / 0.4)
+}
+
+.bg-red-950\/70 {
+  background-color: rgb(69 10 10 / 0.7)
+}
+
+.bg-sky-950\/80 {
+  background-color: rgb(8 47 73 / 0.8)
+}
+
+.bg-slate-300 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(203 213 225 / var(--tw-bg-opacity, 1))
+}
+
+.bg-slate-950\/70 {
+  background-color: rgb(2 6 23 / 0.7)
+}
+
+.bg-slate-950\/75 {
+  background-color: rgb(2 6 23 / 0.75)
+}
+
+.bg-slate-950\/90 {
+  background-color: rgb(2 6 23 / 0.9)
+}
+
+.bg-white {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1))
+}
+
+.bg-white\/60 {
+  background-color: rgb(255 255 255 / 0.6)
+}
+
+.text-amber-400 {
+  --tw-text-opacity: 1;
+  color: rgb(251 191 36 / var(--tw-text-opacity, 1))
+}
+
+.text-amber-700 {
+  --tw-text-opacity: 1;
+  color: rgb(180 83 9 / var(--tw-text-opacity, 1))
+}
+
+.text-emerald-300 {
+  --tw-text-opacity: 1;
+  color: rgb(110 231 183 / var(--tw-text-opacity, 1))
+}
+
+.text-emerald-700 {
+  --tw-text-opacity: 1;
+  color: rgb(4 120 87 / var(--tw-text-opacity, 1))
+}
+
+.text-red-100 {
+  --tw-text-opacity: 1;
+  color: rgb(254 226 226 / var(--tw-text-opacity, 1))
+}
+
+.text-red-200\/80 {
+  color: rgb(254 202 202 / 0.8)
+}
+
+.text-red-300 {
+  --tw-text-opacity: 1;
+  color: rgb(252 165 165 / var(--tw-text-opacity, 1))
+}
+
+.text-red-600 {
+  --tw-text-opacity: 1;
+  color: rgb(220 38 38 / var(--tw-text-opacity, 1))
+}
+
+.text-slate-100 {
+  --tw-text-opacity: 1;
+  color: rgb(241 245 249 / var(--tw-text-opacity, 1))
+}
+
+.text-slate-400 {
+  --tw-text-opacity: 1;
+  color: rgb(148 163 184 / var(--tw-text-opacity, 1))
+}
+
+.text-slate-600 {
+  --tw-text-opacity: 1;
+  color: rgb(71 85 105 / var(--tw-text-opacity, 1))
+}
+
+.text-slate-950 {
+  --tw-text-opacity: 1;
+  color: rgb(2 6 23 / var(--tw-text-opacity, 1))
+}
+
+.text-white {
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity, 1))
+}
+
+.text-white\/65 {
+  color: rgb(255 255 255 / 0.65)
+}
+
+.text-white\/70 {
+  color: rgb(255 255 255 / 0.7)
+}
+
+.text-white\/75 {
+  color: rgb(255 255 255 / 0.75)
+}
+
+.text-white\/90 {
+  color: rgb(255 255 255 / 0.9)
+}
+
+.focus-visible\:outline-blue-500:focus-visible {
+  outline-color: var(--colors-primary)
+}

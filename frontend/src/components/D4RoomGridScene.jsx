@@ -2,8 +2,9 @@ import { Canvas, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import { useEffect, useMemo } from "react";
 import { formatRoomNumber } from "../utils/d4BuildingData.mjs";
+import { SELECTION_HEX } from "../ui/sceneTokens.mjs";
 
-const SELECTED_COLOR = "#3b82f6";
+const SELECTED_COLOR = SELECTION_HEX;
 const IDLE_COLOR = "#e4e7ec";
 const UTILITY_COLOR = "#cbd0d8";
 const UNIT = 1.35;

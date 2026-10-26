@@ -2,9 +2,10 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Line } from "@react-three/drei";
 import { SIMULATION_API_URL } from "../utils/apiConfig";
 import { simulationToThree } from "../utils/coordinateTransform";
+import { ACCENT_HEX } from "../../ui/sceneTokens.mjs";
 
 const STYLE = {
-  vehicle_lane: ["#2563eb", false], allowed_road: ["#2563eb", false], vehicle_gate: ["#2563eb", false], parking_connection: ["#2563eb", false],
+  vehicle_lane: [ACCENT_HEX, false], allowed_road: [ACCENT_HEX, false], vehicle_gate: [ACCENT_HEX, false], parking_connection: [ACCENT_HEX, false],
   sidewalk: ["#16a34a", true], shared_path: ["#9333ea", false], pedestrian_gate: ["#16a34a", true], parking_walk: ["#16a34a", true], building_entrance: ["#22c55e", true],
   scooter_lane: ["#f97316", false], bike_lane: ["#f97316", false], scooter_parking_connection: ["#f97316", false],
   crosswalk: ["#ffffff", false],

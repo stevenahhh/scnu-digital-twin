@@ -2,6 +2,7 @@ import { OrbitControls } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
+import { ACCENT_HEX } from "../../../ui/sceneTokens.mjs";
 import { projectArrayFootprint } from "../domain/roofGeometry.mjs";
 import { D4_BUILDING_FOOTPRINT, D4_ROOF_EQUIPMENT } from "../domain/fixtures/d4RoofScenarioFixture.mjs";
 
@@ -120,7 +121,7 @@ function ArrayPlate({ array, module, rules, center, selected, invalid, onSelect,
   const surfaceHeight = arraySurfaceHeight(array.roofZoneId);
   return <group>
     <group onPointerDown={(event) => { event.stopPropagation(); onSelect(array.id); onDragStart(array.id); }}>
-      <FlatPolygon points={footprint} center={center} color={invalid ? "#ef4444" : selected ? "#f59e0b" : "#2563eb"} y={surfaceHeight} />
+      <FlatPolygon points={footprint} center={center} color={invalid ? "#ef4444" : selected ? "#f59e0b" : ACCENT_HEX} y={surfaceHeight} />
     </group>
     {selected && footprint.map((point, index) => {
       const [x, z] = localPoint(point, center);

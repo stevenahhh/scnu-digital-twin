@@ -91,7 +91,7 @@ export function TimeSlider({
         onKeyDown={handleKeyDown}
         className="mt-2 w-full accent-[var(--colors-primary)]"
       />
-      <div className="mt-1 flex justify-between text-[11px] font-[500] tabular-nums text-[var(--colors-ink-tertiary)]" aria-hidden="true">
+      <div className="mt-1 flex justify-between text-[11px] font-[500] tabular-nums text-[var(--colors-ink-subtle)]" aria-hidden="true">
         <span>00:00</span>
         <span>06:00</span>
         <span>12:00</span>
