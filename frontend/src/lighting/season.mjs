@@ -69,10 +69,10 @@ export const SPECIES_AUTUMN_PALETTES = {
     { species: "cherry", share: 0.28, colors: AUTUMN_PALETTE[2].colors, maxMix: AUTUMN_PALETTE[2].maxMix },
     { species: "green", share: 0.36, colors: AUTUMN_PALETTE[3].colors, maxMix: AUTUMN_PALETTE[3].maxMix },
   ],
-  // ginkgo yellow, sRGB about #b8a03c..#ad9c48
-  Tree_Ginkgo: [{ species: "ginkgo", share: 1, colors: [[0.48, 0.36, 0.045], [0.42, 0.34, 0.065]], maxMix: [0.85, 1], weightScale: 3.5, maxPhase: 0.3 }],
-  // metasequoia rust-ochre, sRGB about #a06c3a..#a8803e
-  Tree_Metasequoia: [{ species: "metasequoia", share: 1, colors: [[0.35, 0.155, 0.042], [0.39, 0.216, 0.048]], maxMix: [0.75, 0.95], weightScale: 3, maxPhase: 0.3 }],
+  // ginkgo yellow, sRGB about #c8ac40..#bcaa4c
+  Tree_Ginkgo: [{ species: "ginkgo", share: 1, colors: [[0.58, 0.42, 0.05], [0.5, 0.4, 0.07]], maxMix: [0.85, 1], weightScale: 3.5, maxPhase: 0.3 }],
+  // metasequoia orange-ochre, sRGB about #c08a3e..#c89c48
+  Tree_Metasequoia: [{ species: "metasequoia", share: 1, colors: [[0.53, 0.25, 0.048], [0.58, 0.33, 0.065]], maxMix: [0.75, 0.95], weightScale: 3, maxPhase: 0.3 }],
 };
 
 // Largest per-tree lag on the season weight: a tree with phase p starts turning once the date weight
