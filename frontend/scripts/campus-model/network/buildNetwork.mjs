@@ -434,11 +434,11 @@ export function walkwaySurfaces(strips, toTm, crossings = []) {
   return {
     metadata: {
       generator: "frontend/scripts/campus-model/network/walkways.mjs (via buildNetwork.mjs)", coordinate_system: "EPSG:5186 (Korea 2000 / Central Belt 2010)",
-      description: "estimated walkway strips (1.5 m paved shoulder/path, 추정) where an estimated pedestrian edge crosses open ground, and estimated crossings (3 m, 추정) where it must cross a road with no CW polygon or painted zebra; not NGII A003 sidewalks or measured crossings",
+      description: "estimated walkway strips (1.5 m paved shoulder/path, 추정) where an estimated pedestrian edge crosses open ground, and estimated crossings (3 m, 추정, routing/walkable only, not drawn in the model) where it must cross a road with no CW polygon or painted zebra; not NGII A003 sidewalks or measured crossings",
       estimated: true,
     },
     strips: strips.map((s) => ({ id: s.id, source_ref: s.source_ref, estimated: true, rings: s.rings.map((ring) => ring.map(([x, z]) => toTm({ x, z }).map((v) => round(v)))) })),
-    // estimated crossings (3 m, no CW polygon and no painted zebra; 추정): drawn as an unpainted kerb-drop strip
+    // estimated crossings (3 m, no CW polygon and no painted zebra; 추정): routing / walkable polygons only, not drawn
     crossings: crossings.map((s) => ({ id: s.id, source_ref: s.source_ref, estimated: true, rings: s.rings.map((ring) => ring.map(([x, z]) => toTm({ x, z }).map((v) => round(v)))) })),
   };
 }

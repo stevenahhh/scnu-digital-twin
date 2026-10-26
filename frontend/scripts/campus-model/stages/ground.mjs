@@ -102,7 +102,9 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
     offCampusLots,
     buildings: [...selectableBuildings, ...campusBuildings],
     crosswalks: inputs.crosswalks,
-    ...(await loadEstimatedWalkways().then(({ strips, crossings }) => ({ estimatedWalkways: strips, estimatedCrossings: crossings }))),
+    // estimated crossings (walkways.json `crossings`) are routing / walkable polygons only: nothing is drawn for them,
+    // the photo shows plain asphalt there
+    estimatedWalkways: (await loadEstimatedWalkways()).strips,
   });
   const width = Math.round(WIDTH * PX);
   const height = Math.round(DEPTH * PX);
