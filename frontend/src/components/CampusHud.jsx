@@ -61,6 +61,7 @@ export const CampusHud = forwardRef(function CampusHud(
         playing={playing}
         onPlayingChange={onPlayingChange}
         live={clock.isLiveMode}
+        collapsible={phone}
         className="absolute bottom-4 left-4 w-[min(24rem,calc(100%-2rem))]"
         caption={(
           <p

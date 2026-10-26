@@ -168,6 +168,7 @@ export default function App() {
           playing={isTimePlaying}
           onPlayingChange={setIsTimePlaying}
           live={clock.isLiveMode}
+          collapsible={viewportMode === "phone"}
           className="absolute bottom-4 right-4 w-[min(24rem,calc(100%-2rem))]"
         />}
       </div>
