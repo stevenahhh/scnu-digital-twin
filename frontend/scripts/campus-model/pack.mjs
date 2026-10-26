@@ -12,8 +12,8 @@
 //      14 bits of each mesh's extent (about 5 cm over the campus, vertically too), coarser than the 6 mm lift steps
 //      between the Ground_* layers and the 3 mm between a raised walkway decal and its kerb top (stages/surfaces.mjs,
 //      stages/kerbs.mjs); the layers would z-fight (plan uhf-ground-roads-routing: no size limit applies).
-//   3. compress.mjs: lossless EXT_meshopt_compression of those float buffers, without quantization
-//      (docs/OPTIMIZATION-FORMULA.md, 2026-10-26 pass). drei's useGLTF decodes it with three's meshopt decoder.
+//   3. compress.mjs: EXT_meshopt_compression without position quantization (positions, UVs and colours bit for bit),
+//      normals as 8-bit octahedral (docs/OPTIMIZATION-FORMULA.md, 2026-10-26 pass). drei's useGLTF decodes it.
 // gltfpack is not used: its default quantization inserts dequantization parent nodes.
 //
 //   bun run model:pack                  raw -> public/campus-v2.glb, then verify names and counts

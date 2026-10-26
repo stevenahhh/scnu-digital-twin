@@ -4,16 +4,18 @@
 //
 //   bun scripts/campus-model/compress.mjs <in.glb> <out.glb>
 //
-// EXT_meshopt_compression with the QUANTIZE encoder method and no quantize() pass: every accessor keeps its
-// component type (float positions, normals and UVs stay float), so the 6 mm lift steps between the Ground_* layers
-// and the 3 mm walkway-to-kerb gaps are kept bit for bit (see pack.mjs: 14-bit quantization made them z-fight).
-// The meshopt codec is lossless on what it is given; reorder() first sorts each primitive's vertices and triangles for
-// transmission size (gltf-transform's web default), which changes their order but not the triangles drawn.
+// EXT_meshopt_compression with no quantize() pass: positions, UVs and colours keep their component type (float
+// positions and UVs stay float), so the 6 mm lift steps between the Ground_* layers and the 3 mm walkway-to-kerb gaps
+// are kept bit for bit (see pack.mjs: 14-bit quantization made them z-fight). The FILTER encoder method stores normals
+// as 8-bit octahedral vectors (about 1 degree of error; KHR_mesh_quantization), which measured Q within its noise
+// (docs/OPTIMIZATION-FORMULA.md). The meshopt codec is lossless on what it is given; reorder() first sorts each
+// primitive's vertices and triangles for transmission size (gltf-transform's web default), which changes their order
+// but not the triangles drawn.
 // The dashboard decodes it with the meshopt decoder drei's useGLTF already sets on its GLTFLoader.
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { NodeIO } from "@gltf-transform/core";
-import { ALL_EXTENSIONS, EXTMeshoptCompression } from "@gltf-transform/extensions";
+import { ALL_EXTENSIONS, EXTMeshoptCompression, KHRMeshQuantization } from "@gltf-transform/extensions";
 import { reorder } from "@gltf-transform/functions";
 import { MeshoptDecoder, MeshoptEncoder } from "meshoptimizer";
 
@@ -27,8 +29,10 @@ export async function createMeshoptIO() {
 
 export async function compressGeometry(document) {
   await document.transform(reorder({ encoder: MeshoptEncoder, target: "size" }));
+  // FILTER: normals become 8-bit octahedral (normalized int8, KHR_mesh_quantization); every other attribute as above.
+  document.createExtension(KHRMeshQuantization).setRequired(true);
   document.createExtension(EXTMeshoptCompression).setRequired(true)
-    .setEncoderOptions({ method: EXTMeshoptCompression.EncoderMethod.QUANTIZE });
+    .setEncoderOptions({ method: EXTMeshoptCompression.EncoderMethod.FILTER });
   return document;
 }
 
