@@ -75,8 +75,16 @@ export const SLOP_UX_CHECKS = [
     },
   }),
   defineCheck("V-S-89", {
-    states: ["S04"], viewports: D,
+    states: ["S04"], viewports: D, mutates: true,
     async run(ctx) {
+      // The row is about the empty state: the popup endpoint answers a real 404 (no data for this element), then the
+      // inspector's own 다시 시도 refetches it. Roof pixels are read from the captured S04 frame before that.
+      const lib = await chipByText(ctx, "도서관");
+      const before = ctx.memo.get("S04:before-click");
+      const roof = before && lib ? Math.round(pixelDiff(ctx.decode(before.png), ctx.image(), roofBox(lib), ctx.scale) * 1000) / 1000 : null;
+      await ctx.setFixtures({ mode: ctx.fixtures === "up" ? "up" : "down", missing: ["/microclimate/elements"] });
+      const retried = (await ctx.b.tap("[data-qa=selection-inspector] button", "다시 시도", { timeoutMs: 4000 })).ok;
+      await ctx.sleep(2000);
       const m = await ctx.inPage((qa) => {
         const panel = qa.one("[data-qa=selection-inspector]") ?? qa.one("[data-qa=dashboard-panel]");
         const alert = panel?.querySelector("[role=alert]") ?? [...(panel?.querySelectorAll("p,div") ?? [])].find((el) => /불러오지 못했습니다/.test(qa.txt(el)) && el.children.length === 0);
@@ -85,10 +93,8 @@ export const SLOP_UX_CHECKS = [
         const action = next ? Boolean(next.querySelector("button,a")) : false;
         return { error: alert ? qa.txt(alert).slice(0, 60) : null, belowText: nextText.slice(0, 60), belowHasAction: action };
       });
-      const lib = await chipByText(ctx, "도서관");
-      const before = ctx.memo.get("S04:before-click");
-      const roof = before && lib ? Math.round(pixelDiff(ctx.decode(before.png), ctx.image(), roofBox(lib), ctx.scale) * 1000) / 1000 : null;
-      return result(Boolean(m.belowText) && m.belowHasAction && roof > 0.02, { ...m, libraryRoofDelta: roof }, "empty-state block with a next action below the error; library roof differs from idle");
+      await ctx.restoreFixtures();
+      return result(Boolean(m.belowText) && m.belowHasAction && roof > 0.02, { ...m, libraryRoofDelta: roof, popup404Retried: retried }, "empty-state block with a next action below the error; library roof differs from idle");
     },
   }),
   defineCheck("V-S-90", {

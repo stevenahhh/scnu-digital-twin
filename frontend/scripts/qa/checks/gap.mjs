@@ -581,8 +581,12 @@ export const GAP_CHECKS = [
     },
   }),
   defineCheck("GAP-37", {
-    states: ["S09"], viewports: P,
+    states: ["S09"], viewports: P, mutates: true,
     async run(ctx) {
+      // Row: "tap the 도서관 chip from the gate view" - S09 is the gate view, so the check makes that tap itself.
+      const tapped = (await ctx.b.tap("button[data-qa=campus-label]", "도서관", { timeoutMs: 6000 })).ok;
+      if (!tapped) return result(false, { tapped, note: "도서관 chip not reachable from the gate view" }, "inspector at the half detent shows the distance from 정문 and a direction cue while the building stays visible");
+      await ctx.sleep(2500);
       if (!(await exists(ctx, HOOKS.inspector))) return missingHook(HOOKS.inspector, "inspector at the half detent shows the distance from 정문 and a direction cue while the building stays visible");
       const text = await ctx.inPage((qa) => qa.txt(qa.one("[data-qa=selection-inspector]")));
       return result(/정문[^\n]*\d+\s*m/.test(text) && /(북|남|동|서)/.test(text), { inspectorText: text.slice(0, 120) }, "distance from 정문 and direction");

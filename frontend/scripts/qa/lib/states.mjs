@@ -159,6 +159,13 @@ export async function loadAndSettle(ctx, url) {
 async function enterD4(ctx, beforeLabelTap) {
   await tapIfVisible(ctx, '[aria-label="닫기"]');
   await closePanelOnMobile(ctx);
+  if (ctx.entry === "vworld") {
+    // VWorld has no campus chips: D4 opens from its MODEL_NAME pick or the D4 coordinate-marker button.
+    if (beforeLabelTap) await beforeLabelTap();
+    await act(ctx, "button", "D4 공과대학 3호관 상세 보기");
+    await wait(ctx, 4000);
+    return;
+  }
   await act(ctx, "[data-qa=camera-preset-d4]");
   await settleCamera(ctx);
   if (beforeLabelTap) await beforeLabelTap();

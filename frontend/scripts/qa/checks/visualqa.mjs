@@ -109,10 +109,21 @@ export const VISUALQA_CHECKS = [
         const ok = !bc.banner || (Math.abs(bc.banner.x - bc.cardsLeft) <= 1 && Math.abs(bc.banner.x + bc.banner.w - bc.cardsRight) <= 1);
         return result(ok, bc, "banner and card edges within 1 px");
       }
+      // D4 is a pane beside the map since todo 34 (no dialog; the pane replaces the panel): the 사용 중인 강의실 card must
+      // share the edges of the pane's content column - the floor scene above it and the 설치 계획 row below it.
       const m = await ctx.inPage((qa) => {
-        const room = qa.all("[role=dialog] div").find((el) => el.children.length && qa.txt(el).startsWith("사용 중인 강의실"));
-        const cards = qa.all("[data-qa=dashboard-panel] .rounded-xl").filter(qa.visible);
-        return { roomCard: room ? qa.r(room) : null, panelCardsLeft: cards.length ? Math.round(cards[0].getBoundingClientRect().left) : null, panelCardsRight: cards.length ? Math.round(cards[0].getBoundingClientRect().right) : null };
+        const pane = qa.one("[data-qa=d4-pane]");
+        const room = pane?.querySelector("section[aria-labelledby=d4-in-use-title]") ?? null;
+        const scene = pane?.querySelector("[aria-description]") ?? null;
+        const plan = pane?.querySelector("[data-qa=d4-plan-disclosure]") ?? null;
+        const cards = [scene, plan].filter((el) => el && qa.visible(el));
+        if (cards.length < 2) return { roomCard: room ? qa.r(room) : null, panelCardsLeft: null, panelCardsRight: null, references: cards.length };
+        // Content box (border box minus padding): the column a card in that block would occupy.
+        const box = (el) => { const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return { left: r.left + parseFloat(s.paddingLeft), right: r.right - parseFloat(s.paddingRight) }; };
+        const lefts = cards.map((el) => Math.round(box(el).left));
+        const rights = cards.map((el) => Math.round(box(el).right));
+        if (Math.max(...lefts) - Math.min(...lefts) > 1 || Math.max(...rights) - Math.min(...rights) > 1) return { roomCard: room ? qa.r(room) : null, panelCardsLeft: null, panelCardsRight: null, referenceLefts: lefts, referenceRights: rights };
+        return { roomCard: room ? qa.r(room) : null, panelCardsLeft: lefts[0], panelCardsRight: rights[0] };
       });
       return result(m.roomCard && m.panelCardsLeft != null && Math.abs(m.roomCard.x - m.panelCardsLeft) <= 1 && Math.abs(m.roomCard.x + m.roomCard.w - m.panelCardsRight) <= 1, m, "room card shares the panel cards' edges within 1 px");
     },
