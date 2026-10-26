@@ -6,10 +6,12 @@
 // orthophoto. Blocks are drawn by stages/buildings.mjs (they need the facade atlas); the rest is built here as plain
 // vertex-coloured solids on the parapet primitive, each solid on one AO chart (its faces side by side). A roof record
 // draws nothing: it recolours the roof of the building part whose outline holds its point (a green-tiled canopy roof
-// the photo samples as grey), applied by stages/buildings.mjs with the other roof colours.
+// the photo samples as grey), applied by stages/buildings.mjs with the other roof colours. Solar arrays are rooftop
+// photovoltaic racks over a 4-corner plan standing on baseMetres: a gable frame (two panel slopes from eaveMetres up to
+// a ridge at ridgeMetres along plan edge 0, on posts) or `rows` tilted panel rows (tiltDeg, rising across plan edge 0).
 import { metres } from "./frame.mjs";
 
-export const ATTACHMENT_KINDS = Object.freeze(["balconies", "fins", "mast", "block", "roof"]);
+export const ATTACHMENT_KINDS = Object.freeze(["balconies", "fins", "mast", "block", "roof", "solar"]);
 const PLAIN_UV = Object.freeze([[0, 0], [0, 0], [0, 0], [0, 0]]);
 
 const isPoint = (p) => Array.isArray(p) && p.length === 2 && p.every(Number.isFinite);
@@ -39,6 +41,15 @@ export function attachmentErrors(a, looks) {
   } else if (a.kind === "mast") {
     if (!isPoint(a.at)) errors.push("at needs a lon/lat point");
     if (!(a.baseMetres >= 0) || !positive(a.heightMetres)) errors.push("baseMetres >= 0 and heightMetres > 0");
+  } else if (a.kind === "solar") {
+    if (!plan4()) errors.push("plan needs 4 lon/lat corners");
+    if (!(a.baseMetres >= 0)) errors.push("baseMetres >= 0 (the roof the array stands on)");
+    if (a.form === "gable") {
+      if (!(a.eaveMetres >= 0) || !(a.ridgeMetres > a.eaveMetres)) errors.push("gable needs 0 <= eaveMetres < ridgeMetres");
+    } else if (a.form === "rows") {
+      if (!Number.isInteger(a.rows) || a.rows < 1 || !(a.tiltDeg > 0 && a.tiltDeg <= 40)) errors.push("rows needs rows >= 1 and 0 < tiltDeg <= 40");
+    } else errors.push("form is gable or rows");
+    if (a.frameColour !== undefined && !/^#[0-9a-f]{6}$/i.test(a.frameColour)) errors.push("frameColour is #rrggbb");
   } else if (a.kind === "block") {
     if (!plan4()) errors.push("plan needs 4 lon/lat corners");
     if (!looks.has(a.look)) errors.push(`unknown look ${a.look}`);
@@ -161,6 +172,39 @@ export function addFins(mesh, a, ground, charts, { colour, outside }) {
     const ring = [add2(s0, n, -metres(0.05)), add2(s1, n, -metres(0.05)), add2(s1, n, metres(a.depth)), add2(s0, n, metres(a.depth))];
     const spans = a.levels ? a.levels.map((level) => [level, level + a.thickness]) : [[a.bottomMetres, a.topMetres]];
     for (const [bottom, top] of spans) addPrism(mesh, ring, ground + metres(bottom), ground + metres(top), charts, colour);
+  }
+}
+
+// Solar array (see the header): panels PANEL_THICK thick in `colour`, posts and the ridge beam in `frameColour`.
+const PANEL_THICK = 0.08;
+const POST = 0.12;
+export function addSolar(mesh, a, ground, charts, { colour, frameColour }) {
+  const y = (m) => ground + metres(a.baseMetres + m);
+  const [p0, p1, p2, p3] = a.plan;
+  const lerp = (p, q, t) => [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t];
+  const at = ([x, z], m) => [x, y(m), z];
+  const panel = (corners) => addSolid(mesh, hexahedron(corners, corners.map(([x, yy, z]) => [x, yy + metres(PANEL_THICK), z])), charts, colour);
+  const post = (p, height) => {
+    const h = metres(POST / 2);
+    addPrism(mesh, [[p[0] - h, p[1] - h], [p[0] + h, p[1] - h], [p[0] + h, p[1] + h], [p[0] - h, p[1] + h]], y(0), y(height), charts, frameColour);
+  };
+  if (a.form === "gable") {
+    const m0 = lerp(p0, p3, 0.5);
+    const m1 = lerp(p1, p2, 0.5);
+    panel([at(p0, a.eaveMetres), at(p1, a.eaveMetres), at(m1, a.ridgeMetres), at(m0, a.ridgeMetres)]);
+    panel([at(m0, a.ridgeMetres), at(m1, a.ridgeMetres), at(p2, a.eaveMetres), at(p3, a.eaveMetres)]);
+    for (const p of [p0, p1, p2, p3]) post(p, a.eaveMetres);
+    for (const p of [m0, m1]) post(p, a.ridgeMetres);
+    return;
+  }
+  // rows: each row fills 80 % of its band across edge 0, its low edge 0.3 m up, rising by tiltDeg towards p3
+  const across = Math.hypot(p3[0] - p0[0], p3[1] - p0[1]) / metres(1);
+  const rise = ((across / a.rows) * 0.8) * Math.tan((a.tiltDeg * Math.PI) / 180);
+  for (let k = 0; k < a.rows; k += 1) {
+    const [t0, t1] = [k / a.rows, (k + 0.8) / a.rows];
+    const [lo0, lo1, hi1, hi0] = [lerp(p0, p3, t0), lerp(p1, p2, t0), lerp(p1, p2, t1), lerp(p0, p3, t1)];
+    panel([at(lo0, 0.3), at(lo1, 0.3), at(hi1, 0.3 + rise), at(hi0, 0.3 + rise)]);
+    for (const p of [hi0, hi1]) post(p, 0.3 + rise);
   }
 }
 

@@ -18,7 +18,7 @@ import { mulberry32 } from "../lib/raster.mjs";
 import { EQUIPMENT_MODULE_UV, EQUIPMENT_PLAIN_UV, ROOF_METRES, equipmentAtlas, roofTexture } from "../lib/textures.mjs";
 import { MODULE_DEPTH_M, MODULE_TILT_DEGREES, panelModules, sampleRoofPhoto } from "../lib/roofPhoto.mjs";
 import { cleanRing, pointInRing, ringArea, ringCentroid, segmentDistance } from "../lib/geometry.mjs";
-import { addBalconies, addFins, addMast, attachmentsByNode } from "../lib/attachments.mjs";
+import { addBalconies, addFins, addMast, addSolar, attachmentsByNode } from "../lib/attachments.mjs";
 import { Box3 } from "three";
 import { meshFootprint, toModelRing } from "./sources.mjs";
 
@@ -456,6 +456,56 @@ function addWalls(mesh, ring, outward, base, top, charts, { skip = null, colour 
 // half a bay take a sliver of plain wall. The entrance edge can carry a canopy slab over the doors.
 // Facade zones (look field `zones`, data/scnu-facades.json): the lowest `base.storeys` storeys take the tile of look
 // `base.look` (a brick base under a panel block). Absent zones leave the facade exactly as before.
+// Curated fields of a building-forms.json mass (the VR and the NGII photo against the LOD4 mesh): `look` draws the mass
+// in a look of its own (the F1 metal drum), `round` { centre: [lon, lat], radiusMetres, segments >= 8, slots: compass
+// bearings of glass slots } makes it a true cylinder: one fixed bay per segment and radial normals (smooth shading).
+export function lookOf(m, catalogue, key) {
+  if (m.look === undefined) return null;
+  if (!catalogue.looks.has(m.look)) throw new Error(`building-forms.json: ${key} mass look ${m.look} is not a look of scnu-facades.json`);
+  return m.look;
+}
+export function roundOf(m, toModel, key) {
+  if (!m.round) return { outer: cleanRing(m.outer.map(toModel)), round: null };
+  const r = m.round;
+  const ok = Array.isArray(r.centre) && r.centre.length === 2 && r.centre.every(Number.isFinite) && r.radiusMetres > 0 && Number.isInteger(r.segments) && r.segments >= 8 && (r.slots ?? []).every(Number.isFinite);
+  if (!ok) throw new Error(`building-forms.json: ${key} mass round needs centre [lon, lat], radiusMetres > 0, segments >= 8 and numeric slots`);
+  const centre = toModel(r.centre);
+  const radius = metres(r.radiusMetres);
+  const outer = Array.from({ length: r.segments }, (_, i) => {
+    const t = (2 * Math.PI * i) / r.segments;
+    return [centre[0] + radius * Math.cos(t), centre[1] + radius * Math.sin(t)];
+  });
+  return { outer, round: { centre, radius, segments: r.segments, slots: r.slots ?? [] } };
+}
+
+// Tile bay of each segment of a round mass: bay 0 (the look's window bay) where a segment faces a slot bearing, plain
+// bays 1 and 2 elsewhere (the look puts its window in every fourth bay).
+export function roundBaysOf(round, ordered) {
+  const bearings = ordered.map((a, i) => {
+    const b = ordered[(i + 1) % ordered.length];
+    const m = [(a[0] + b[0]) / 2 - round.centre[0], (a[1] + b[1]) / 2 - round.centre[1]];
+    return ((Math.atan2(m[0], -m[1]) * 180) / Math.PI + 360) % 360;
+  });
+  const off = (x, s) => Math.abs(((x - s + 540) % 360) - 180);
+  // each slot on the one segment whose middle faces nearest its bearing (the first of a tie)
+  const slotted = new Set(round.slots.map((s) => bearings.reduce((best, x, i) => (off(x, s) < off(bearings[best], s) - 1e-9 ? i : best), 0)));
+  return bearings.map((_, i) => (slotted.has(i) ? 0 : 1 + (i % 2)));
+}
+
+// Radial normals on the walls of a round mass (vertices from `from` on): the cylinder shades as a curve, not as facets.
+export function smoothRound(mesh, from, [cx, cz]) {
+  for (let v = from; v < mesh.vertexCount; v += 1) {
+    const k = v * 3;
+    if (Math.abs(mesh.normals[k + 1]) > 0.5) continue;
+    const dx = mesh.positions[k] - cx;
+    const dz = mesh.positions[k + 2] - cz;
+    const l = Math.hypot(dx, dz) || 1;
+    mesh.normals[k] = dx / l;
+    mesh.normals[k + 1] = 0;
+    mesh.normals[k + 2] = dz / l;
+  }
+}
+
 function zonesOf(look, tiles) {
   const base = look.zones?.base;
   return base ? { baseStoreys: base.storeys, baseTile: tiles.get(base.look) } : null;
@@ -610,6 +660,7 @@ function addAttachments(building, { walls, roof, plain }, { heightAt, tiles, loo
     if (a.kind === "balconies") addBalconies(plain, a, ground, charts, { colour: linearByte(hex(a.colour)), slabColour: linearByte(hex(a.slabColour ?? a.colour)) });
     else if (a.kind === "fins") addFins(plain, a, ground, charts, { colour: linearByte(hex(a.colour)), outside });
     else if (a.kind === "mast") addMast(plain, a, ground, charts, { colour: linearByte(hex(a.colour)) });
+    else if (a.kind === "solar") addSolar(plain, a, ground, charts, { colour: linearByte(hex(a.colour)), frameColour: linearByte(hex(a.frameColour ?? "#9aa1a6")) });
     else if (a.kind === "roof") continue; // a roof colour, applied with the roof colours (buildBuildings)
     else {
       const look = looks.get(a.look);
@@ -965,7 +1016,7 @@ function roofSurface(triangles) {
 // `ground`, the ground row for the first storey, the entrance row and canopy on the entrance edge) and the plinth band
 // below the ground line; plain masses get eave-coloured quads. Under a pitched roof the cells stop at the edge's eave
 // line and a plain gable fills the wall up to the roof profile.
-function addMassRing(ctx, solid, ordered, { facade, cellsOnGround = false, entranceEdge = -1, canopy = false, seed }) {
+function addMassRing(ctx, solid, ordered, { roundBays = null, facade, cellsOnGround = false, entranceEdge = -1, canopy = false, seed }) {
   const { walls, plain, charts, solids, look, tile, zones = null, ground, plinthBase, storey, plainColour, surface } = ctx;
   const rng = mulberry32(seed);
   const bay = metres(look.bay ?? 3.6);
@@ -1005,8 +1056,10 @@ function addMassRing(ctx, solid, ordered, { facade, cellsOnGround = false, entra
     }
     const eave = Math.min(...profile.map((p) => p[1]));
     const top = Math.max(...profile.map((p) => p[1]));
-    const bays = Math.max(1, Math.round(length / bay));
-    const sliver = length < bay * 0.45;
+    // a round mass: one fixed tile bay per segment (roundBays), never a sliver
+    const fixed = roundBays ? roundBays[i] : null;
+    const bays = fixed !== null ? 1 : Math.max(1, Math.round(length / bay));
+    const sliver = fixed === null && length < bay * 0.45;
     let canopyDone = !canopy;
     for (const run of exposureRuns(a, b, solid, solids, solid.bottom, top)) {
       for (const [lo, hi] of run.ranges) {
@@ -1043,6 +1096,10 @@ function addMassRing(ctx, solid, ordered, { facade, cellsOnGround = false, entra
                 quad(walls, c0 / bays, c1 / bays, from, from, to, to,
                   [tileUv(rowTile, tileRow, u(c0), f0), tileUv(rowTile, tileRow, u(c1), f0), tileUv(rowTile, tileRow, u(c1), f1), tileUv(rowTile, tileRow, u(c0), f1)]);
               };
+              if (fixed !== null) {
+                cell(0, 1, row, (c) => fixed + c);
+                continue;
+              }
               if (sliver) {
                 cell(0, bays, row, (c) => (c / bays) * Math.min(0.3, length / bay));
                 continue;
@@ -1209,12 +1266,20 @@ function massPrimitives(building, seed, { heightAt, facadeMaterial, tiles, looks
     const storey = (top - ground) / floors;
     const surface = part.triangles ? roofSurface(part.triangles.map((t) => t.map(([x, z, h]) => [x, ground + metres(h), z]))) : null;
     const shape = { ...solid, top: surface ? ground + metres(part.eaveMetres ?? part.heightMetres) : top, eave: ground + metres(part.eaveMetres ?? part.heightMetres), peak: top, bottom };
-    const ctx = { walls, plain, charts, solids, look, tile, zones: zonesOf(look, tiles), ground, plinthBase, storey, plainColour: part.kind === "canopy" ? trimColour : wallColour, surface };
+    // A mass may carry its own look (building-forms.json mass `look`, e.g. the F1 metal drum).
+    const partLook = part.look ? looks.get(part.look) : look;
+    const partTile = part.look ? tiles.get(part.look) : tile;
+    const partWall = part.look ? linearByte(hex(partLook.parapet ?? partLook.wall)) : wallColour;
+    const ctx = { walls, plain, charts, solids, look: partLook, tile: partTile, zones: zonesOf(partLook, tiles), ground, plinthBase, storey, plainColour: part.kind === "canopy" ? trimColour : partWall, surface };
     const facade = !PLAIN_KINDS.has(part.kind);
     const onEntrance = entrance?.part === part;
     // Cores take the building's storey grid, so the cells of a facade-flush core line up with the walls beside it.
     const coreCtx = part.kind === "core" ? { ...ctx, storey: metres(storeyMetres) } : ctx;
-    addMassRing(coreCtx, shape, orderedRing(part.outer, true), { facade, cellsOnGround: part.kind === "core", entranceEdge: onEntrance ? entrance.edge : -1, canopy: onEntrance && Boolean(building.entry) && !greenhouse && !lod4Canopy, seed: seed * 31 + index * 7 });
+    const orderedOuter = orderedRing(part.outer, true);
+    const roundBays = part.round ? roundBaysOf(part.round, orderedOuter) : null;
+    const wallsFrom = walls.vertexCount;
+    addMassRing(coreCtx, shape, orderedOuter, { roundBays, facade, cellsOnGround: part.kind === "core", entranceEdge: onEntrance ? entrance.edge : -1, canopy: onEntrance && Boolean(building.entry) && !greenhouse && !lod4Canopy, seed: seed * 31 + index * 7 });
+    if (part.round) smoothRound(walls, wallsFrom, part.round.centre);
     part.holes.forEach((hole, k) => addMassRing(ctx, shape, orderedRing(hole, false), { facade, seed: seed * 31 + index * 7 + k + 1 }));
     const colour = part.roofColour ?? roofFallback;
     const roofFrom = roof.vertexCount;
@@ -1588,7 +1653,9 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
       const heightSource = building.parts[0]?.heightSource ?? building.heightSource;
       const fromLod4 = form.source.startsWith("VWorld LOD4");
       building.parts = form.masses.map((m) => ({
-        outer: cleanRing(m.outer.map(toModel)),
+        // `round` (curated): a cylinder of `segments` sides round a lon/lat centre replaces the mesh outline (VR + photo)
+        ...roundOf(m, toModel, formKey(building)),
+        look: lookOf(m, catalogue, formKey(building)),
         holes: m.holes.map((h) => cleanRing(h.map(toModel))).filter((h) => h.length >= 3),
         heightMetres: m.topMetres,
         baseMetres: m.baseMetres,
@@ -1648,7 +1715,8 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
     };
     const log = [];
     for (const [node, list] of byNode) {
-      const building = selectableBuildings.find((b) => b.nodeName === node);
+      // a uni.glb BLD_* node, or a campus building drawn in CampusBuildings with its BLD_SCNU_* pick proxy
+      const building = selectableBuildings.find((b) => b.nodeName === node) ?? campusBuildings.find((b) => b.nodeId === node);
       if (!building) throw new Error(`facade-attachments.json: no building node ${node}`);
       building.attachments = list.map((a) => ({
         ...a,
@@ -1698,7 +1766,8 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
   const usedLooks = [...new Set([...selectableBuildings, ...campusBuildings].flatMap((b) => {
     const base = catalogue.looks.get(b.look).zones?.base;
     const blocks = (b.attachments ?? []).filter((a) => a.kind === "block").map((a) => a.look);
-    return [...(base ? [b.look, base.look] : [b.look]), ...blocks];
+    const partLooks = (b.parts ?? []).map((p) => p.look).filter(Boolean);
+    return [...(base ? [b.look, base.look] : [b.look]), ...blocks, ...partLooks];
   }))];
   const facadeAtlas = await buildFacadeAtlas(usedLooks.map((id) => ({ ...catalogue.looks.get(id), id })));
   const clamped = { repeat: false };
@@ -1835,12 +1904,12 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
     if (vrRoofs.length) console.log(`roof colours from the VR tour (look roofColour): ${vrRoofs.join("; ")}`);
     // A roof attachment (data/facade-attachments.json) recolours the one part whose outline holds its point.
     const partRoofs = [];
-    for (const building of selectableBuildings) {
+    for (const building of [...selectableBuildings, ...campusBuildings]) {
       for (const a of (building.attachments ?? []).filter((x) => x.kind === "roof")) {
         const part = building.massForm ? building.parts.find((p) => p.outer?.length >= 3 && pointInRing(a.at, p.outer)) : null;
-        if (!part) throw new Error(`facade-attachments.json: roof ${a.id} of ${building.nodeName} is not inside a mass of its form`);
+        if (!part) throw new Error(`facade-attachments.json: roof ${a.id} of ${building.nodeName ?? building.nodeId} is not inside a mass of its form`);
         part.roofColourRgb = hex(a.colour);
-        partRoofs.push(`${building.nodeName} ${a.id} ${a.colour}`);
+        partRoofs.push(`${building.nodeName ?? building.nodeId} ${a.id} ${a.colour}`);
       }
     }
     if (partRoofs.length) console.log(`roof colours from the VR tour (roof attachments): ${partRoofs.join("; ")}`);

@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { addBalconies, addFins, addMast, attachmentErrors, attachmentsByNode } from "./attachments.mjs";
+import { addBalconies, addFins, addMast, addSolar, attachmentErrors, attachmentsByNode } from "./attachments.mjs";
 import { SCENE_UNITS_PER_METRE } from "./frame.mjs";
 import { MeshData } from "./meshData.mjs";
 
@@ -14,7 +14,9 @@ const file = JSON.parse(readFileSync(path.join(DATA, "facade-attachments.json"),
 
 test("facade-attachments.json records are valid and name the W3 follow-up details", () => {
   const byNode = attachmentsByNode(file, looks);
-  assert.deepEqual([...byNode.keys()].sort(), ["BLD_B2", "BLD_Dormitory_Building.004", "BLD_E7", "BLD_E8", "BLD_Training Lab Building"]);
+  assert.deepEqual([...byNode.keys()].sort(), ["BLD_B2", "BLD_D2", "BLD_Dormitory_Building.004", "BLD_E6", "BLD_E7", "BLD_E8", "BLD_SCNU_A3", "BLD_SCNU_E4", "BLD_Training Lab Building"]);
+  assert.deepEqual(byNode.get("BLD_SCNU_A3").map((a) => [a.kind, a.look ?? a.form]), [["block", "A3-orange"], ["block", "A3-orange"], ["solar", "gable"], ["solar", "gable"], ["solar", "gable"]]);
+  assert.deepEqual(byNode.get("BLD_SCNU_E4").map((a) => [a.kind, a.look ?? a.form]), [["block", "E4-glass"], ["solar", "rows"], ["solar", "rows"], ["roof", undefined]]);
   assert.deepEqual(byNode.get("BLD_E8").map((a) => [a.kind, a.look ?? null]), [["balconies", null], ["balconies", null], ["block", "E8-glass"], ["roof", null]]);
   assert.deepEqual(byNode.get("BLD_B2").map((a) => [a.kind, a.look ?? null]), [["fins", null], ["fins", null], ["block", "B2-blank"], ["block", "B2-blank"]]);
   assert.deepEqual(byNode.get("BLD_Training Lab Building").map((a) => [a.kind, a.look ?? null]), [["mast", null], ["block", "C3-glass"]]);
@@ -58,6 +60,20 @@ test("attachment solids are closed boxes facing outwards with one AO chart each"
       assert.ok(n[0] * (face[0] - centre[0]) + n[1] * (face[1] - centre[1]) + n[2] * (face[2] - centre[2]) > 0, `solid ${q / 24} face ${f} faces inwards`);
     }
   }
+});
+
+test("solar arrays: a gable frame reaches its ridge, rows rise by their tilt, bad records are refused", () => {
+  const plan = [[0, 0], [10, 0], [10, 6], [0, 6]].map(([x, z]) => [x * SCENE_UNITS_PER_METRE, z * SCENE_UNITS_PER_METRE]);
+  const ysOf = (mesh) => Array.from({ length: mesh.vertexCount }, (_, k) => mesh.positions[k * 3 + 1] / SCENE_UNITS_PER_METRE);
+  const gable = meshOf();
+  addSolar(gable, { plan, baseMetres: 20, form: "gable", eaveMetres: 1.4, ridgeMetres: 3.6 }, 0, charts(), { colour: [1, 2, 3, 255], frameColour: [4, 5, 6, 255] });
+  assert.ok(Math.abs(Math.max(...ysOf(gable)) - (20 + 3.6 + 0.08)) < 1e-6 && Math.abs(Math.min(...ysOf(gable)) - 20) < 1e-6);
+  const rows = meshOf();
+  addSolar(rows, { plan, baseMetres: 16, form: "rows", rows: 3, tiltDeg: 12 }, 0, charts(), { colour: [1, 2, 3, 255], frameColour: [4, 5, 6, 255] });
+  const rise = (6 / 3) * 0.8 * Math.tan((12 * Math.PI) / 180);
+  assert.ok(Math.abs(Math.max(...ysOf(rows)) - (16 + 0.3 + rise + 0.08)) < 1e-6);
+  assert.ok(attachmentErrors({ kind: "solar", plan: [[0, 0], [1, 0], [1, 1], [0, 1]], baseMetres: 3, form: "gable", eaveMetres: 2, ridgeMetres: 1, colour: "#112233", source: "estimated" }, looks).some((e) => /eaveMetres < ridgeMetres/.test(e)));
+  assert.ok(attachmentErrors({ kind: "solar", plan: [[0, 0], [1, 0], [1, 1], [0, 1]], baseMetres: 3, form: "dome", colour: "#112233", source: "estimated" }, looks).some((e) => /gable or rows/.test(e)));
 });
 
 test("fins stand on the outside of the wall and the mast reaches its height", () => {
