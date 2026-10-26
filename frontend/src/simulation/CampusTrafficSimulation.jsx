@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGLTF } from "@react-three/drei";
+import { extendCampusLoader } from "../render/campusGltfLoader";
 import * as THREE from "three";
 import { TrafficSimulationLayer } from "./components/TrafficSimulationLayer";
 import { NetworkDebugLayer } from "./components/NetworkDebugLayer";
@@ -33,7 +34,7 @@ function modelCenterOf(scene) {
 
 // contactShadows: blob shadows under agents (high tier). Agents never cast into the on-demand sun shadow maps.
 export function CampusTrafficSimulation({ contactShadows = false } = {}) {
-  const { scene } = useGLTF(CAMPUS_MODEL_URL);
+  const { scene } = useGLTF(CAMPUS_MODEL_URL, true, true, extendCampusLoader);
   const raycaster = useMemo(() => new THREE.Raycaster(), []);
   const cache = useRef(new Map());
   const [heightfield, setHeightfield] = useState(null);

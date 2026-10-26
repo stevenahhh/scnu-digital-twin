@@ -39,8 +39,9 @@ node --test src/campusModelAsset.test.mjs
 | `lib/textures.mjs` | roof membrane and rooftop-equipment textures, and the detail-map builder the facade atlas shares |
 | `lib/roofPhoto.mjs` | roof colour sampling and solar-panel detection (see Roof colours and solar panels) |
 | `lib/attachments.mjs` | facade attachments: schema checks and the balcony-stack, fin/ledge and rooftop-mast solids (blocks are drawn by `stages/buildings.mjs` with the facade atlas) |
-| `pack.mjs` | after the stages: joins the Topography chunks, runs gltf-transform optimize (WebP textures, float geometry, no flatten/join), compresses with `compress.mjs` and checks names and counts against the raw GLB |
+| `pack.mjs` | after the stages: joins the Topography chunks, runs gltf-transform optimize (WebP textures, float geometry, no flatten/join), compresses with `compress.mjs`, re-encodes textures with `ktx2.mjs` and checks names and counts against the raw GLB |
 | `compress.mjs` | `EXT_meshopt_compression` of the packed buffers: positions, UVs, colours and indices bit for bit (no position quantization; `reorder()` for size), normals as 8-bit octahedral (meshopt filter, `KHR_mesh_quantization`). drei's `useGLTF` decodes it. 75,860,132 B -> 23,122,984 B on the 2026-10-26 build of dev-next d7adbd4 (docs/OPTIMIZATION-FORMULA.md) |
+| `ktx2.mjs` | pack step 4: every texture as KTX2 / Basis Universal ETC1S with mips (`KHR_texture_basisu`; `--normals uastc` for UASTC normal maps), so the GPU keeps them block-compressed. Needs the `basisu` CLI (`brew install basis_universal`); the dashboard transcodes with three's KTX2Loader and `public/basis/`. 2026-10-26: 23,122,984 B -> 23,793,152 B, scene texture memory 244.8 -> 30.7 MB (추정) (docs/OPTIMIZATION-FORMULA.md) |
 
 ## Inputs
 
