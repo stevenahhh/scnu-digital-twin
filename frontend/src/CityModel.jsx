@@ -16,6 +16,7 @@ import { isAnchorOccludedByTerrain } from "./utils/campusLabelVisibility.mjs";
 import { CAMERA_PRESETS } from "./camera/cameraPresets.mjs";
 import { CampusLabelLayer } from "./labels/CampusLabelLayer.jsx";
 import { resolveLabelBand } from "./labels/labelBands.mjs";
+import { createMotionSettle } from "./labels/motionSettle.mjs";
 import { ZONES, buildLabelRegistry } from "./labels/labelRegistry.mjs";
 import { campusModelCenter } from "./simulation/utils/campusTrafficCoordinates.mjs";
 import { CAMPUS_MODEL_URL, CAMPUS_MODEL_URLS } from "./campusModelAsset.mjs";
@@ -337,8 +338,18 @@ export function CityModel({
   // 라벨 층(캔버스 옆 DOM, 별도 React 루트)과 그 조작 손잡이.
   const labelRootRef = useRef(null);
   const labelControllerRef = useRef(null);
-  // 카메라 움직임(사용자 조작·시점 비행) 동안 라벨 층을 흐리게 하고 배치를 멈춘다. 멈춘 뒤 --motion-settle만큼 지나 한 번 다시 배치한다.
-  const motionRef = useRef({ active: false, endedAt: null, lastMoveAt: -Infinity, timer: null });
+  // 카메라 움직임(사용자 조작·시점 비행) 동안 라벨 층을 흐리게 하고 배치를 멈춘다. 멈춘 뒤 --motion-settle만큼 지나고
+  // 조용한 프레임이 3개 이어지면 한 번 다시 배치한다(labels/motionSettle.mjs). checkSettle은 시간이 됐는데 조용한 프레임이 모자랄 때
+  // 프레임 루프가 다시 부르는 확인 함수다.
+  const [motionSettle] = useState(() =>
+    createMotionSettle({
+      settleMs: () => {
+        const token = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--motion-settle"));
+        return Number.isFinite(token) ? token : MOTION_SETTLE_FALLBACK_MS;
+      },
+    }),
+  );
+  const motionRef = useRef({ timer: null, awaitingFrames: false, checkSettle: null });
   const touchRef = useRef(typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)")?.matches === true);
   // 클릭/드래그 판별(메시와 라벨이 공유). 직전 프레임 카메라 자세로 카메라가 움직이는 중인지 알려 준다.
   const [pointerGuard] = useState(() => createPointerGuard());
@@ -431,38 +442,43 @@ export function CityModel({
     const controls = controlsRef?.current;
     if (!controls) return undefined;
     const motion = motionRef.current;
-    const settleMs = () => {
-      const token = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--motion-settle"));
-      return Number.isFinite(token) ? token : MOTION_SETTLE_FALLBACK_MS;
-    };
-    // end 뒤에도 OrbitControls 감쇠로 카메라가 더 움직인다. 마지막 움직임에서 settle만큼 조용해야 끝난다.
+    // end 뒤에도 OrbitControls 감쇠로 카메라가 더 움직인다. 마지막 움직임에서 settle만큼 지나고 조용한 프레임이 이어져야 끝난다.
     const settle = () => {
       motion.timer = null;
-      if (!motion.active || motion.endedAt === null) return;
-      const remaining = settleMs() - (performance.now() - Math.max(motion.endedAt, motion.lastMoveAt));
-      if (remaining > 0) {
-        motion.timer = setTimeout(settle, remaining);
+      motion.awaitingFrames = false;
+      if (!motionSettle.isActive()) return;
+      const result = motionSettle.poll();
+      if (result.settled) {
+        labelControllerRef.current?.setMotion(false);
+        labelPassFramesRef.current = 2;
+        invalidate();
         return;
       }
-      motion.active = false;
-      labelControllerRef.current?.setMotion(false);
-      labelPassFramesRef.current = 2;
-      invalidate();
+      if (result.waitMs) {
+        motion.timer = setTimeout(settle, result.waitMs);
+        return;
+      }
+      if (result.framesNeeded) {
+        // 요청 렌더 루프는 카메라가 멈추면 프레임을 그리지 않는다. 프레임을 요청하고 프레임 루프에서 다시 본다.
+        motion.awaitingFrames = true;
+        invalidate();
+      }
     };
+    motion.checkSettle = settle;
     const handleChange = () => {
       labelPassFramesRef.current = 2;
     };
     const handleStart = () => {
-      motion.active = true;
-      motion.endedAt = null;
+      motionSettle.start();
       if (motion.timer) clearTimeout(motion.timer);
       motion.timer = null;
+      motion.awaitingFrames = false;
       labelControllerRef.current?.setMotion(true);
     };
     const handleEnd = () => {
-      if (!motion.active) return;
-      motion.endedAt = performance.now();
-      if (!motion.timer) motion.timer = setTimeout(settle, settleMs());
+      if (!motionSettle.isActive()) return;
+      motionSettle.end();
+      if (!motion.timer && !motion.awaitingFrames) settle();
     };
     controls.addEventListener("change", handleChange);
     controls.addEventListener("start", handleStart);
@@ -473,8 +489,10 @@ export function CityModel({
       controls.removeEventListener("end", handleEnd);
       if (motion.timer) clearTimeout(motion.timer);
       motion.timer = null;
+      motion.awaitingFrames = false;
+      motion.checkSettle = null;
     };
-  }, [controlsRef, invalidate]);
+  }, [controlsRef, invalidate, motionSettle]);
 
   useEffect(() => {
     if (!scene) return;
@@ -706,7 +724,9 @@ export function CityModel({
     const pose = cameraPoseRef.current;
     const cameraMoved = hasCameraMoved(pose, camera);
     pointerGuard.noteCameraFrame(cameraMoved);
-    if (cameraMoved) motionRef.current.lastMoveAt = performance.now();
+    motionSettle.noteFrame(cameraMoved);
+    // 움직임 끝을 기다리며 프레임을 요청해 둔 상태면 이 프레임으로 다시 본다(그 안에서 다음 프레임을 또 요청한다).
+    if (motionRef.current.awaitingFrames) motionRef.current.checkSettle?.();
     if (pose) {
       pose.position.copy(camera.position);
       pose.quaternion.copy(camera.quaternion);
@@ -986,7 +1006,7 @@ export function CityModel({
       controller.update({ hidden: true });
       return;
     }
-    const motion = motionRef.current.active;
+    const motion = motionSettle.isActive();
     const heightfield = labelHeightfieldRef.current;
     // 앵커와 사이드카는 재중심화 전 모델 좌표다. 카메라를 같은 좌표로 옮긴다.
     const eye = [camera.position.x + center.x, camera.position.y, camera.position.z + center.z];
