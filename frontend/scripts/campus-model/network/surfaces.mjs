@@ -500,11 +500,14 @@ export function buildSurfaces({ inputs, walkways, groundFeatures = null, offCamp
       add({ cls: "ASPHALT", mesh: "Ground_Bicycle", label: SURFACE_CLASS.ASPHALT, precedence: PRECEDENCE.TILES, source: "project-estimated", source_ref: `paving: ${paving.note}`, estimated: true }, [paving.ring]);
       continue;
     }
+    // `walkable` on a plain or tiles paving: a paved courtyard people cross that no walkable layer holds (E8 courtyard and
+    // forecourt): network/connectors.mjs walkablePolygons adds it to the pedestrian polygons as an estimated plaza
+    const walk = paving.walkable ? { walkablePlaza: true } : {};
     if (paving.pattern === "plain") {
-      add({ cls: "PAVING", mesh: "Ground_Pavers", label: SURFACE_CLASS.PAVING, precedence: PRECEDENCE.TILES, source: "project-estimated", source_ref: `paving: ${paving.note}`, estimated: true }, [paving.ring]);
+      add({ cls: "PAVING", mesh: "Ground_Pavers", label: SURFACE_CLASS.PAVING, precedence: PRECEDENCE.TILES, source: "project-estimated", source_ref: `paving: ${paving.note}`, estimated: true, ...walk }, [paving.ring]);
       continue;
     }
-    add({ cls: "PAVING", mesh: "Ground_Sports", label: SURFACE_CLASS.PAVING, precedence: PRECEDENCE.TILES, source: "project-estimated", source_ref: `paving: ${paving.note}`, paint: { kind: "tiles", axis: paving.axis.map(([x, z]) => sceneToTm(x, z)) }, estimated: true }, [paving.ring]);
+    add({ cls: "PAVING", mesh: "Ground_Sports", label: SURFACE_CLASS.PAVING, precedence: PRECEDENCE.TILES, source: "project-estimated", source_ref: `paving: ${paving.note}`, paint: { kind: "tiles", axis: paving.axis.map(([x, z]) => sceneToTm(x, z)) }, estimated: true, ...walk }, [paving.ring]);
   }
 
   // ---- 5.95 water supplements: a pool on a plaza (painted water above the paving) and its stone rim outside the outline

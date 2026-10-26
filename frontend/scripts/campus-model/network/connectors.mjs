@@ -26,12 +26,14 @@ const APRON_RING_M = 0.55;
 const KIND_FOR = { building: "building_entrance", gate: "pedestrian_gate", external: "pedestrian_gate", parking: "parking_walk", scooter_parking: "parking_walk" };
 
 // Walkable polygons for people (also the trace oracle classes written by buildNetwork): A003 strips (sidewalk), the
-// crossing polygons (crossing), OSM plazas, rims and building aprons (plaza).
+// crossing polygons (crossing), OSM plazas, rims and building aprons (plaza), and paving supplements marked walkable
+// (network/surfaces.mjs walkablePlaza: a paved courtyard no other walkable layer holds; estimated plaza).
 export function walkablePolygons({ strips = [], crossings = [], layers = [] }) {
   return [
     ...strips.map((s) => ({ class: "sidewalk", id: s.id, rings: s.rings })),
     ...crossings.map((c) => ({ class: "crossing", id: c.id, rings: [c.ring] })),
     ...layers.filter((l) => l.cls === "PAVING" && (l.precedence === 2 || l.precedence === 6)).map((l, i) => ({ class: "plaza", id: `${l.precedence === 6 ? "APRON" : "PLAZA"}_${String(i + 1).padStart(4, "0")}`, source_ref: l.source_ref, estimated: Boolean(l.estimated), rings: l.rings })),
+    ...layers.filter((l) => l.walkablePlaza).map((l, i) => ({ class: "plaza", id: `PAVEDCOURT_${String(i + 1).padStart(4, "0")}`, source_ref: l.source_ref, estimated: true, rings: l.rings })),
   ];
 }
 
