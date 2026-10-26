@@ -1,6 +1,7 @@
 // Furniture stage: every outdoor object of data/photo/objects-campus.geojson (the campus-wide NGII 2025 orthophoto
 // survey, data/photo/README.md) at its surveyed position, with shapes, colours and heights estimated from the SCNU
-// 360 VR tour (visual reference only), plus rule-based estimated benches. Two merged primitives:
+// 360 VR tour (visual reference only), plus the VR-placed plaza benches. Standing poles stand at their photo pole bases
+// (data/photo/pole-roots.json). Two merged primitives:
 //   Furniture        opaque, vertex colours: walls, planters, the stands and their seats, the 구령대, shelters,
 //                    pergolas, gazebos, poles and arms of lamps (stages/lights.mjs), signals, signs and floodlights,
 //                    goals, hoops, benches, the footbridge, bins, the pond and the fountain.
@@ -18,7 +19,7 @@ import { METRES_PER_DEGREE_LAT, METRES_PER_DEGREE_LON, geoToModel, metres, model
 import { pointInRing, ringArea, ringCentroid } from "../lib/geometry.mjs";
 import { mulberry32 } from "../lib/raster.mjs";
 import { Kit, along, bufferLine, frame, lineLength, local, localPlan, offsetLine, orientedRect, rgb, sub, toLocal } from "../lib/solids.mjs";
-import { GLOW_UV, LAMP_SPACING_M, appendLampSolids, distanceToLines, objectDistance, roadNetwork, towardRoad } from "./lights.mjs";
+import { GLOW_UV, POLE_KINDS, appendLampSolids, distanceToLines, objectDistance, roadNetwork, towardRoad } from "./lights.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const OBJECTS = path.join(HERE, "..", "data", "photo", "objects-campus.geojson");
@@ -26,6 +27,9 @@ const OBJECTS = path.join(HERE, "..", "data", "photo", "objects-campus.geojson")
 // furniture"), read after the survey; REST_SPACES_FILE swaps it (tests).
 export const REST_SPACES = process.env.REST_SPACES_FILE ?? path.join(HERE, "..", "data", "photo", "rest-spaces.geojson");
 const GROUND_FEATURES = path.join(HERE, "..", "data", "osm-ground.json");
+// Standing-pole bases read from the photo (fetch/poleRoots.mjs): every lamp, signal, sign and floodlight pole of the
+// survey stands at its root there; a pole the review rejects is left out. POLE_ROOTS_FILE swaps it (tests).
+export const POLE_ROOTS = process.env.POLE_ROOTS_FILE ?? path.join(HERE, "..", "data", "photo", "pole-roots.json");
 const M = metres;
 
 // ---------------------------------------------------------------- decisions taken against the survey
@@ -127,6 +131,7 @@ export function loadFurniture() {
   const objects = [];
   const excluded = [];
   const ids = new Set();
+  const poleRoots = existsSync(POLE_ROOTS) ? new Map(JSON.parse(readFileSync(POLE_ROOTS, "utf8")).poles.map((q) => [q.id, q])) : new Map();
   const features = [...data.features.map((f) => ({ ...f, source: "survey" })), ...rest.features.map((f) => ({ ...f, source: "rest-spaces" }))];
   for (const { properties: raw, geometry: g, source } of features) {
     if (ids.has(raw.id)) throw new Error(`furniture: duplicate object id ${raw.id} (${source})`);
@@ -141,6 +146,15 @@ export function loadFurniture() {
     if (g.type === "Point") object.point = toModel(g.coordinates);
     else if (g.type === "LineString") object.line = g.coordinates.map(toModel);
     else object.ring = openRing(g.coordinates[0].map(toModel));
+    const pole = POLE_KINDS.has(object.kind) && g.type === "Point" ? poleRoots.get(p.id) : undefined;
+    if (pole?.verdict === "rejected") {
+      excluded.push({ id: p.id, kind: p.kind, reason: `pole review: ${pole.note}` });
+      continue;
+    }
+    if (pole) {
+      if (pole.root) object.point = toModel(pole.root);
+      object.pole = { verdict: pole.verdict, shiftM: pole.shiftM ?? 0, residualM: pole.residualM ?? null, site: pole.site ?? null };
+    }
     // Roofs were outlined on the photo, so they include the relief lean; the footprint is the outline moved back. A rest
     // space placed from the VR alone (photo_support "none") has no photo outline: its outline is the footprint.
     if ((ROOFED.has(object.kind) || ROOFED_SUBTYPES.has(object.subtype)) && (object.ring || object.line) && p.photo_support === "none") {
@@ -1525,19 +1539,16 @@ function stepsOnTerrain(ctx, o) {
   return true;
 }
 
-// ---------------------------------------------------------------- estimated benches
+// ---------------------------------------------------------------- plaza benches (VR)
 // VR scene_c1 shows long dark-blue box benches beside the square tree pits on both long sides of the central pond;
 // the photo cannot resolve them (tree crowns), so they are placed from VR: PLAZA_BENCHES per side, PLAZA_BENCH_SPACING_M
-// apart, PLAZA_BENCH_OFFSET_M outside the pond's long sides. Elsewhere one bench every BENCH_SPACING_M along the A003
-// walkway outlines, on the lawn just outside the paved edge and facing it. Both are ESTIMATED positions.
+// apart, PLAZA_BENCH_OFFSET_M outside the pond's long sides (ESTIMATED positions). The benches the old walkway rule put
+// every 54 m along the A003 outlines are gone: neither the photo nor the VR shows a bench at those spots.
 const PLAZA_BENCHES = 4;
 const PLAZA_BENCH_SPACING_M = 7;
 const PLAZA_BENCH_OFFSET_M = 4.5;
-const BENCH_SPACING_M = 2 * LAMP_SPACING_M;
-const BENCH_CLEARANCE_M = 30;
-const BENCH_OUTSIDE_M = 0.9;
 
-function estimateBenches(ctx, lamps) {
+function estimateBenches(ctx) {
   const benches = [];
   const pond = ctx.objects.find((o) => o.subtype === "pond");
   if (pond) {
@@ -1548,29 +1559,6 @@ function estimateBenches(ctx, lamps) {
         const s = (k - (PLAZA_BENCHES - 1) / 2) * PLAZA_BENCH_SPACING_M;
         const at = localPlan(f, s, side * (r.halfWidth + PLAZA_BENCH_OFFSET_M));
         benches.push({ at, u: r.u, faces: localPlan(f, s, 0), lengthM: 4, plaza: true });
-      }
-    }
-  }
-  const { walkways, inArea, isRoad, onCampus, labelAt, classes } = ctx.sites;
-  const spacing = M(BENCH_SPACING_M);
-  const clear = (p) =>
-    !ctx.objects.some((o) => objectDistance(p, o) < M(1.5)) &&
-    !lamps.some((lamp) => Math.hypot(lamp.at[0] - p[0], lamp.at[1] - p[1]) < M(1.5)) &&
-    !benches.some((b) => Math.hypot(b.at[0] - p[0], b.at[1] - p[1]) < M(BENCH_CLEARANCE_M));
-  for (const w of walkways) {
-    for (const outline of w.lines) {
-      for (const { p, u } of along(outline, spacing).slice(1, -1)) {
-        const n = [-u[1], u[0]];
-        for (const side of [1, -1]) {
-          const out = [p[0] + n[0] * side * M(BENCH_OUTSIDE_M), p[1] + n[1] * side * M(BENCH_OUTSIDE_M)];
-          const beyond = [p[0] + n[0] * side * M(BENCH_OUTSIDE_M + 1.2), p[1] + n[1] * side * M(BENCH_OUTSIDE_M + 1.2)];
-          const inside = [p[0] - n[0] * side * M(0.6), p[1] - n[1] * side * M(0.6)];
-          if (inArea(out) || !inArea(inside)) continue;
-          if (labelAt(out) !== classes.NATURAL || labelAt(beyond) !== classes.NATURAL) continue;
-          if (!onCampus(out) || isRoad(out) || isRoad(beyond) || !clear(out)) continue;
-          benches.push({ at: out, u, faces: inside, lengthM: 1.8, plaza: false });
-          break;
-        }
       }
     }
   }
@@ -1603,8 +1591,8 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     if (REST_TYPES[o.kind] && (o.source === "rest-spaces" || o.p.dims !== undefined || o.surveyKind !== o.kind)) restSpaces.push([o.id, o.kind, REST_TYPES[o.kind].dimsSource, o.p.vr_scene ?? null, o.p.photo_support ?? null, true]);
   }
   appendLampSolids(ctx.solid, lamps, groundAt);
-  for (const lamp of lamps) tally(`street_lamp/${lamp.type}`, lamp.estimated);
-  const benches = estimateBenches(ctx, lamps);
+  for (const lamp of lamps) tally(`street_lamp/${lamp.type}`, false);
+  const benches = estimateBenches(ctx);
   for (const bench of benches) {
     const f = facingFrame(ctx, bench.at, bench.u, bench.faces);
     if (bench.plaza) benchAt(ctx, f, bench.lengthM, { back: false, seat: C.plazaBench, legs: C.plazaBench, depthM: 0.5 });
@@ -1634,7 +1622,9 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     excluded: furniture.excluded,
     retyped: Object.fromEntries(Object.entries(furniture.retyped).map(([id, r]) => [id, `${r.kind}: ${r.reason}`])),
     photoOnly: ctx.skipped,
-    estimatedBenchesNote: `estimated positions: ${benches.filter((b) => b.plaza).length} plaza benches from VR scene_c1 and one bench every ${BENCH_SPACING_M} m along the walkway outlines (not surveyed)`,
+    estimatedBenchesNote: `estimated positions: ${benches.length} plaza benches from VR scene_c1 (no rule-placed benches)`,
+    // standing poles: [id, kind, pole verdict, shift from the survey m, residual m, x, z (scene units)]
+    poles: furniture.objects.filter((o) => POLE_KINDS.has(o.kind) && o.point).map((o) => [o.id, o.kind, o.pole?.verdict ?? "unreviewed", o.pole?.shiftM ?? 0, o.pole?.residualM ?? null, Number(o.point[0].toFixed(2)), Number(o.point[1].toFixed(2))]),
     objects: built.map(([id, kind, h, source, estimated]) => [id, kind, h, source, estimated]),
     // [x, z (scene units), length m, 1 = plaza bench from VR]
     estimatedBenches: benches.map((b) => [Number(b.at[0].toFixed(2)), Number(b.at[1].toFixed(2)), b.lengthM, b.plaza ? 1 : 0]),
@@ -1650,7 +1640,7 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
 
   const summary = Object.entries(counts).sort(([a], [b]) => a.localeCompare(b)).map(([kind, c]) => `${kind} ${c.surveyed}${c.estimated ? `+${c.estimated}e` : ""}`).join(", ");
   console.log(
-    `furniture: ${built.filter(([id]) => !id.startsWith("RS")).length} surveyed objects + ${built.filter(([id]) => id.startsWith("RS")).length} VR-placed (rest-spaces.geojson) + ${lamps.length} lamps (${lampStats.surveyed} surveyed) + ${benches.length} estimated benches; ` +
+    `furniture: ${built.filter(([id]) => !id.startsWith("RS")).length} surveyed objects + ${built.filter(([id]) => id.startsWith("RS")).length} VR-placed (rest-spaces.geojson) + ${lamps.length} lamps at photo pole bases + ${benches.length} VR plaza benches (추정); ` +
     `Furniture ${ctx.solid.triangleCount} triangles / ${ctx.solid.vertexCount} vertices, Furniture_Glass ${ctx.glass.triangleCount} triangles; ${summary}`,
   );
   for (const { id, reason } of furniture.excluded) console.log(`furniture: left out ${id}: ${reason}`);

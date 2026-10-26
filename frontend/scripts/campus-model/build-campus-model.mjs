@@ -27,7 +27,7 @@
 //   furniture.mjs the surveyed outdoor objects (loadFurniture, before the trees: footprints trees keep out of) and the
 //                 merged Furniture / Furniture_Glass nodes
 //                 (buildFurniture, after the ground, on the drawn terrain)
-//   lights.mjs    lamp positions (placeLamps: surveyed lamps plus estimated ones along the walkway outlines), the
+//   lights.mjs    lamp positions (placeLamps: surveyed lamps at their photo pole bases, pole placement contract), the
 //                 merged Lamps_heads and the instanced Lamps_pools
 // Plan-view ring helpers live in lib/geometry.mjs.
 //

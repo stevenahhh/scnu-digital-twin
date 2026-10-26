@@ -5,22 +5,18 @@
 //   Lamps_pools  a ground-aligned disc under each lit head (Lamp_Pool, unlit, vertex-colour falloff) that CityModel
 //                draws additively at night and hides by day.
 // Poles, arms and footings are solid furniture: appendLampSolids() draws them into the Furniture primitive.
-// Positions:
-//   - surveyed: every street_lamp of data/photo/objects-campus.geojson (NGII 2025 photo survey, data/photo/README.md):
-//     pole roots placed by eye on the photo, and the data.go.kr 순천시_가로등 points the survey kept because the photo
-//     shows them on a footway, verge or median (metre-level positions). The survey rejected the data.go.kr points on
-//     roofs and on the gate carriageway, so those lamps are gone; data/streetlights.json is no longer read here.
-//   - estimated: campus paths and campus roads, placed by rule along the A003 walkway outlines (closed rings are the
-//     kerb plus back edge of a sidewalk, not centrelines): every LAMP_SPACING_M along an outline, LAMP_INSET_M inside
-//     the paved area, and only where the photo survey has no lamp within SURVEYED_CLEARANCE_M. Never on roads, in
-//     buildings, on bicycle lanes or on a surveyed object. These are ESTIMATED positions; the node extras say so.
+// Positions: every street_lamp of data/photo/objects-campus.geojson (the by-eye photo survey and the data.go.kr
+// 순천시_가로등 points it kept), moved to its pole base on the NGII 2025 photo (data/photo/pole-roots.json, written by
+// fetch/poleRoots.mjs from the by-eye review and the shadow detector). Lamps the review rejects are left out, and so are
+// the lamps the old walkway rule placed every 27 m: no photo shows a pole there. Unresolved lamps (no base visible) stay
+// at their survey position (metre-level). checkPoles() keeps every standing pole off carriageways and out of buildings.
 // Lamp heights, arm reach, head size and pool radii are ESTIMATED from the SCNU 360 VR tour (scene_a19: grey pole,
 // single curved arm, LED cobra head on the arterial; slim dark post-top lanterns on campus paths).
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { EXTENT, geoToModel, metres } from "../lib/frame.mjs";
-import { pointInRing, segmentDistance } from "../lib/geometry.mjs";
+import { pointInRing } from "../lib/geometry.mjs";
 import { MeshData } from "../lib/meshData.mjs";
 import { encodePng } from "../lib/png.mjs";
 import { Raster } from "../lib/raster.mjs";
@@ -30,18 +26,8 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const WALKWAYS = path.resolve(HERE, "../../../..", "docs", "assets", "data", "walkways_wgs84.geojson");
 const GROUND_FEATURES = path.join(HERE, "..", "data", "osm-ground.json");
 const BICYCLE_LANE = "A0033327"; // as ground.mjs
+export const POLE_KINDS = new Set(["street_lamp", "traffic_signal_pole", "sign_pole", "floodlight_pole"]);
 
-// Median nearest-neighbour spacing of the data.go.kr lamps near campus is ~27 m (MEASURED from the CSV); estimated
-// lamps reuse it (ASSUMED placement).
-export const LAMP_SPACING_M = 27;
-const LAMP_INSET_M = 0.45; // pole centre inside the paved edge (ASSUMED)
-const SURVEYED_CLEARANCE_M = LAMP_SPACING_M / 2;
-const ESTIMATED_CLEARANCE_M = 20;
-const CAMPUS_REACH_M = 60; // estimated lamps only within this distance of a campus building (keeps them on campus)
-const ARTERIAL_CLEARANCE_M = 20; // the public arterial east of the gate has its own surveyed lamps
-const OBJECT_CLEARANCE_M = 1.5;
-const SURVEYED_OUTSIDE_M = 0.6;
-const BUILDING_CLEARANCE_M = 1.0;
 const POOL_LIFT_M = 0.12;
 
 // ESTIMATED luminaire types (VR scene_a19 and the campus panoramas). reach: arm reach of the head centre from the pole.
@@ -108,36 +94,68 @@ export function objectDistance(p, object) {
   return nearestOnPolyline(p, object.line).distance;
 }
 
-// Lamp list: surveyed lamps, then estimated ones. groundInfo: the ground stage's surface-class raster.
+// Nearest point within maxM of p that passes ok(), searched on rings every 0.25 m in 32 directions, then moved insetM
+// further the same way; null when none.
+export function nearestSite(p, ok, maxM = 4, insetM = 0.3) {
+  for (let r = 0.25; r <= maxM; r += 0.25) {
+    let best = null;
+    for (let k = 0; k < 32; k += 1) {
+      const a = (k / 32) * Math.PI * 2;
+      const u = [Math.cos(a), Math.sin(a)];
+      const q = [p[0] + u[0] * metres(r), p[1] + u[1] * metres(r)];
+      const inset = [q[0] + u[0] * metres(insetM), q[1] + u[1] * metres(insetM)];
+      if (ok(q) && ok(inset)) {
+        best = inset;
+        break;
+      }
+    }
+    if (best) return best;
+  }
+  return null;
+}
+
+// Placement contract of every standing pole (lamps, signal, sign and floodlight poles):
+//   - a pole whose base the photo shows (verdict shadow-root, by-eye-root or head-lean) or whose seed the photo shows on
+//     a median or island (site "median") stays off buildings only: the carriageway raster paints medians, islands and
+//     narrow footways as asphalt, and the photo outranks it;
+//   - any other pole (base not resolvable, metre-level seed) stays off carriageways (asphalt outside the A003 paved area)
+//     and buildings, moved up to UNRESOLVED_MOVE_M (the seeds' own uncertainty);
+//   - a pole that must move goes to the nearest allowed point (kerb or footprint edge plus 0.3 m) and is listed;
+//   - one that cannot move, or two poles closer than POLE_MIN_SPACING_M, is an offender (the build fails).
+export const POLE_MIN_SPACING_M = 1;
+const EVIDENCE_MOVE_M = 4;
+const UNRESOLVED_MOVE_M = 8;
+export const PHOTO_BASE_VERDICTS = new Set(["shadow-root", "by-eye-root", "head-lean"]);
+export function checkPoles(poles, { onCarriageway, inBuilding }) {
+  const moved = [];
+  const offenders = [];
+  for (const pole of poles) {
+    const photoSite = PHOTO_BASE_VERDICTS.has(pole.pole?.verdict) || Boolean(pole.pole?.site);
+    const allowed = photoSite ? (q) => !inBuilding(q) : (q) => !onCarriageway(q) && !inBuilding(q);
+    if (allowed(pole.point)) continue;
+    const why = inBuilding(pole.point) ? "building" : "carriageway";
+    const to = nearestSite(pole.point, allowed, photoSite ? EVIDENCE_MOVE_M : UNRESOLVED_MOVE_M);
+    if (!to) {
+      offenders.push(`${pole.id} on a ${why}`);
+      continue;
+    }
+    moved.push({ id: pole.id, kind: pole.kind, from: why, m: Number((Math.hypot(to[0] - pole.point[0], to[1] - pole.point[1]) / metres(1)).toFixed(2)) });
+    pole.point = to;
+  }
+  for (let i = 0; i < poles.length; i += 1) {
+    for (let j = i + 1; j < poles.length; j += 1) {
+      const d = Math.hypot(poles[i].point[0] - poles[j].point[0], poles[i].point[1] - poles[j].point[1]) / metres(1);
+      if (d < POLE_MIN_SPACING_M) offenders.push(`${poles[i].id} and ${poles[j].id} ${d.toFixed(2)} m apart`);
+    }
+  }
+  return { moved, offenders };
+}
+
+// Lamp list: the survey's street lamps at their photo pole roots (stages/furniture.mjs applies data/photo/pole-roots.json).
+// groundInfo: the ground stage's surface-class raster. Also returns the site tests the furniture stage uses.
 export function placeLamps({ inputs, furniture, selectableBuildings, campusBuildings, offCampusLots, groundInfo }) {
   const roads = roadNetwork(inputs);
-  const lamps = [];
-
-  // ---- surveyed. A pole the photo shows next to a building can fall just inside the modelled footprint (footprints and
-  // the photo disagree by up to a metre at a roof edge): it is moved to SURVEYED_OUTSIDE_M outside the nearest footprint
-  // edge and listed in the stats.
   const buildingRings = [...selectableBuildings, ...campusBuildings].flatMap((b) => b.parts.map((part) => part.outer));
-  const moved = [];
-  for (const object of furniture.objects.filter((o) => o.kind === "street_lamp")) {
-    let at = object.point;
-    const host = buildingRings.find((ring) => pointInRing(at, ring));
-    if (host) {
-      const edge = nearestOnPolyline(at, host, true);
-      const away = [(edge.point[0] - at[0]) / edge.distance, (edge.point[1] - at[1]) / edge.distance];
-      const to = [edge.point[0] + away[0] * metres(SURVEYED_OUTSIDE_M), edge.point[1] + away[1] * metres(SURVEYED_OUTSIDE_M)];
-      moved.push(`${object.id} ${(Math.hypot(to[0] - at[0], to[1] - at[1]) / metres(1)).toFixed(2)} m`);
-      at = to;
-    }
-    const p = object.p;
-    const nearArterial = distanceToLines(at, roads.arterials) < metres(30);
-    const nearRoad = towardRoad(at, roads, 6) !== null;
-    const type = p.method === "data.go.kr" || /arterial/.test(p.style?.form ?? "") || nearArterial ? "arterial" : nearRoad ? "campusRoad" : "path";
-    const dir = towardRoad(at, roads) ?? [1, 0];
-    lamps.push({ id: object.id, type, at, dir, heightM: LAMP_TYPES[type].heightM, estimated: false, source: p.method, confidence: p.confidence });
-  }
-  const surveyedCount = lamps.length;
-
-  // ---- estimated, along the A003 walkway outlines
   const { width, height, px, labels, classes } = groundInfo;
   const toPixel = ([x, z]) => [(x - EXTENT.minX) * px, (z - EXTENT.minZ) * px];
   const indexOf = ([x, z]) => {
@@ -155,93 +173,42 @@ export function placeLamps({ inputs, furniture, selectableBuildings, campusBuild
   // paved walkway area: closed rings filled even-odd per feature (a ring inside another is a hole)
   const area = new Raster(width, height);
   for (const w of walkways) if (w.rings.length) area.fillPolygon(w.rings.map((ring) => ring.map(toPixel)), () => [255, 0, 0]);
-  const blocked = new Raster(width, height);
-  const white = () => [255, 0, 0];
-  for (const building of [...selectableBuildings, ...campusBuildings]) {
-    for (const part of building.parts) {
-      const ring = part.outer.map(toPixel);
-      blocked.fillPolygon([ring], white);
-      blocked.strokePolyline([...ring, ring[0]], 2 * metres(BUILDING_CLEARANCE_M) * px, white);
-    }
-  }
-  for (const polygon of inputs.roadZones) blocked.fillPolygon(polygon.map((ring) => ring.map(toPixel)), white);
-  for (const ring of inputs.crosswalks) blocked.fillPolygon([ring.map(toPixel)], white);
-  for (const lot of offCampusLots) blocked.fillPolygon([lot.map(toPixel)], white);
   const inArea = (p) => {
     const k = indexOf(p);
     return k >= 0 && area.data[k * 3] > 0;
   };
-  // road: asphalt outside the paved walkway area (carriageways, the traced arterial) or a road zone / crosswalk
-  const isRoad = (p) => {
-    const k = indexOf(p);
-    if (k < 0) return false;
-    return (labels[k] === classes.ASPHALT && area.data[k * 3] === 0) || blocked.data[k * 3] > 0;
-  };
-  const onCampus = (p) =>
-    !offCampusLots.some((lot) => pointInRing(p, lot)) &&
-    buildingRings.some((ring) => ring.some(([x, z], i) => segmentDistance(p, [x, z], ring[(i + 1) % ring.length]) < metres(CAMPUS_REACH_M))) &&
-    distanceToLines(p, roads.arterials) > metres(ARTERIAL_CLEARANCE_M);
-  const objects = furniture.objects;
-  const near = (p, list, clearanceM) => list.some((lamp) => Math.hypot(lamp.at[0] - p[0], lamp.at[1] - p[1]) < metres(clearanceM));
-  const spacing = metres(LAMP_SPACING_M);
-  const inset = metres(LAMP_INSET_M);
-  const reasons = { offCampus: 0, notPaved: 0, road: 0, object: 0, surveyed: 0, estimated: 0 };
-  for (const w of walkways) {
-    for (const outline of w.lines) {
-      let carry = spacing / 2;
-      for (let s = 0; s + 1 < outline.length; s += 1) {
-        const [ax, az] = outline[s];
-        const [bx, bz] = outline[s + 1];
-        const length = Math.hypot(bx - ax, bz - az);
-        if (length < 1e-6) continue;
-        const ux = (bx - ax) / length;
-        const uz = (bz - az) / length;
-        for (let t = carry; t <= length; t += spacing) {
-          const edge = [ax + ux * t, az + uz * t];
-          const left = [edge[0] - uz * inset, edge[1] + ux * inset];
-          const right = [edge[0] + uz * inset, edge[1] - ux * inset];
-          const paved = inArea(left) && !inArea(right) ? left : inArea(right) && !inArea(left) ? right : null;
-          if (!paved) {
-            reasons.notPaved += 1;
-            continue;
-          }
-          const inward = [(paved[0] - edge[0]) / inset, (paved[1] - edge[1]) / inset];
-          const outside = [edge[0] - inward[0] * metres(1.2), edge[1] - inward[1] * metres(1.2)];
-          if (!onCampus(paved)) reasons.offCampus += 1;
-          else if (isRoad(paved)) reasons.road += 1;
-          else if (objects.some((o) => objectDistance(paved, o) < metres(OBJECT_CLEARANCE_M))) reasons.object += 1;
-          else if (near(paved, lamps.slice(0, surveyedCount), SURVEYED_CLEARANCE_M)) reasons.surveyed += 1;
-          else if (near(paved, lamps.slice(surveyedCount), ESTIMATED_CLEARANCE_M)) reasons.estimated += 1;
-          else {
-            const kerb = isRoad(outside);
-            const type = kerb ? "campusRoad" : "path";
-            lamps.push({ id: `EL${String(lamps.length - surveyedCount).padStart(3, "0")}`, type, at: paved, dir: kerb ? [-inward[0], -inward[1]] : [ux, uz], heightM: LAMP_TYPES[type].heightM, estimated: true, source: "rule", confidence: null });
-          }
-        }
-        carry = (((carry - length) % spacing) + spacing) % spacing;
-      }
-    }
-  }
-  // Placement contract: no estimated lamp on a road zone, crosswalk or in a building footprint, and no surveyed lamp
-  // in a building (surveyed footway lamps may sit inside the coarse road zones, whose edges run into the sidewalks).
-  const inBuilding = (lamp) => buildingRings.some((ring) => pointInRing(lamp.at, ring));
-  const offenders = lamps.filter((lamp) => inBuilding(lamp) || (lamp.estimated && (
-    inputs.roadZones.some((polygon) => pointInRing(lamp.at, polygon[0])) ||
-    inputs.crosswalks.some((ring) => pointInRing(lamp.at, ring)))));
-  const stats = {
-    surveyed: surveyedCount,
-    estimated: lamps.length - surveyedCount,
-    byType: Object.fromEntries(Object.keys(LAMP_TYPES).map((type) => [type, { surveyed: lamps.filter((l) => !l.estimated && l.type === type).length, estimated: lamps.filter((l) => l.estimated && l.type === type).length }])),
-    skipped: reasons,
-    movedOutOfFootprints: moved,
-    offenders: offenders.map((lamp) => lamp.id),
-  };
-  // The same site tests place the estimated benches (stages/furniture.mjs).
   const labelAt = (p) => {
     const k = indexOf(p);
     return k < 0 ? -1 : labels[k];
   };
-  return { lamps, stats, sites: { walkways, inArea, isRoad, onCampus, labelAt, classes } };
+  const onCarriageway = (p) => labelAt(p) === classes.ASPHALT && !inArea(p);
+  const inBuilding = (p) => buildingRings.some((ring) => pointInRing(p, ring));
+
+  const poles = furniture.objects.filter((o) => POLE_KINDS.has(o.kind) && o.point);
+  const { moved, offenders } = checkPoles(poles, { onCarriageway, inBuilding });
+
+  const lamps = [];
+  for (const object of furniture.objects.filter((o) => o.kind === "street_lamp")) {
+    const at = object.point;
+    const p = object.p;
+    const nearArterial = distanceToLines(at, roads.arterials) < metres(30);
+    const nearRoad = towardRoad(at, roads, 6) !== null;
+    const type = p.method === "data.go.kr" || /arterial/.test(p.style?.form ?? "") || nearArterial ? "arterial" : nearRoad ? "campusRoad" : "path";
+    // the arm reaches over the nearest carriageway (OSM centreline or road-zone edge)
+    const dir = towardRoad(at, roads) ?? [1, 0];
+    lamps.push({ id: object.id, type, at, dir, heightM: LAMP_TYPES[type].heightM, source: p.method, pole: object.pole ?? { verdict: "unreviewed" } });
+  }
+  const verdicts = {};
+  for (const lamp of lamps) verdicts[lamp.pole.verdict] = (verdicts[lamp.pole.verdict] ?? 0) + 1;
+  const stats = {
+    lamps: lamps.length,
+    byType: Object.fromEntries(Object.keys(LAMP_TYPES).map((type) => [type, lamps.filter((l) => l.type === type).length])),
+    verdicts,
+    rejected: furniture.excluded.filter((e) => e.kind === "street_lamp").map((e) => e.id),
+    movedOffSites: moved,
+    offenders,
+  };
+  return { lamps, stats, sites: { walkways, inArea, onCarriageway, labelAt, classes } };
 }
 
 // The head centre of a lamp (scene units) and the frame its arm and head are built in.
@@ -361,29 +328,28 @@ export function buildLights({ glb, lamps, stats, groundAt, glow }) {
   });
 
   const extras = {
-    lampsSurveyed: stats.surveyed,
-    lampsEstimated: stats.estimated,
-    lampTypes: Object.fromEntries(Object.entries(LAMP_TYPES).map(([type, t]) => [type, { ...t, ...stats.byType[type] }])),
-    surveyedSource: "data/photo/objects-campus.geojson street_lamp (NGII 2025 orthophoto survey; data.go.kr 순천시_가로등 points kept only where the photo shows a footway, verge or median)",
-    estimatedNote: `estimated positions: campus lamps every ${LAMP_SPACING_M} m along the A003 walkway outlines where the photo resolves none (not surveyed)`,
-    heightsNote: "lamp heights, arm reach and head sizes are estimates from the SCNU 360 VR tour, not measurements",
-    movedOutOfFootprints: stats.movedOutOfFootprints,
-    // pool instance order: surveyed lamps first, then estimated ones
-    estimatedFromInstance: stats.surveyed,
-    // [id, type, height m (estimated), estimated position 0/1, x, z (scene units)]
-    lamps: lamps.map((lamp) => [lamp.id, lamp.type, lamp.heightM, lamp.estimated ? 1 : 0, Number(lamp.at[0].toFixed(2)), Number(lamp.at[1].toFixed(2))]),
+    lampsSurveyed: stats.lamps,
+    lampsEstimated: 0,
+    lampTypes: Object.fromEntries(Object.entries(LAMP_TYPES).map(([type, t]) => [type, { ...t, count: stats.byType[type] }])),
+    surveyedSource: "data/photo/objects-campus.geojson street_lamp (NGII 2025 photo survey and the data.go.kr 순천시_가로등 points it kept), each at its pole base in data/photo/pole-roots.json",
+    positionNote: "pole bases from the NGII 2025 photo (shadow root or by-eye base, residual per pole in pole-roots.json); unresolved lamps stay at the survey position (metre-level); no rule-placed lamps",
+    heightsNote: "lamp heights, arm reach and head sizes are estimates (추정) from the SCNU 360 VR tour, not measurements",
+    poleVerdicts: stats.verdicts,
+    rejected: stats.rejected,
+    movedOffSites: stats.movedOffSites,
+    // [id, type, height m (estimated), pole verdict, x, z (scene units)]
+    lamps: lamps.map((lamp) => [lamp.id, lamp.type, lamp.heightM, lamp.pole.verdict, Number(lamp.at[0].toFixed(2)), Number(lamp.at[1].toFixed(2))]),
   };
   const headMesh = glb.addMesh("Lamps_heads", [glow.toPrimitive(headMaterial)]);
   glb.addNode({ name: "Lamps_heads", mesh: headMesh, extras }, { root: true });
   const poolMesh = glb.addMesh("Lamps_pools", [poolArchetype().toPrimitive(poolMaterial)]);
   glb.addNode({ name: "Lamps_pools", mesh: poolMesh, extensions: glb.instancingExtension(pools), extras: { lamps: n } }, { root: true });
 
-  const types = Object.entries(stats.byType).map(([type, c]) => `${type} ${c.surveyed}+${c.estimated}`).join(", ");
   console.log(
-    `lights: ${n} lamps = ${stats.surveyed} surveyed (photo survey) + ${stats.estimated} estimated along walkway outlines every ${LAMP_SPACING_M} m ` +
-    `(${types}; skipped ${Object.entries(stats.skipped).map(([k, v]) => `${k} ${v}`).join(", ")}); ` +
+    `lights: ${n} lamps at photo pole bases (${Object.entries(stats.byType).map(([type, c]) => `${type} ${c}`).join(", ")}; ` +
+    `${Object.entries(stats.verdicts).map(([k, v]) => `${k} ${v}`).join(", ")}; rejected ${stats.rejected.length}); ` +
     `Lamps_heads ${glow.triangleCount} triangles, 1 merged + 1 instanced node, 0 lights` +
-    (stats.movedOutOfFootprints.length ? `; surveyed lamps moved out of a building footprint: ${stats.movedOutOfFootprints.join(", ")}` : ""),
+    (stats.movedOffSites.length ? `; poles moved off a carriageway or building: ${stats.movedOffSites.map((m) => `${m.id} ${m.from} ${m.m} m`).join(", ")}` : ""),
   );
-  if (stats.offenders.length) throw new Error(`lights: lamps on a road, crosswalk or building: ${stats.offenders.join(", ")}`);
+  if (stats.offenders.length) throw new Error(`lights: pole placement contract broken: ${stats.offenders.join(", ")}`);
 }
