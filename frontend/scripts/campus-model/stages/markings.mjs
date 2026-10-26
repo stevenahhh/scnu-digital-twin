@@ -28,7 +28,8 @@
 //      symbol of a blue bay, a ladder's rails and rungs) are drawn or left out together on their mean support (each
 //      member still needs GROUP_MEMBER_FLOOR);
 //   3. duplicates: where accepted candidates of one colour cover the same paint (DEDUP_SHARE of the smaller one's
-//      area), the smaller one inside a much larger one (DEDUP_CONTAIN) or else the one with less support is dropped.
+//      area), a piece reviewed as paint by eye keeps over one that is not; else the smaller one inside a much larger
+//      one (DEDUP_CONTAIN) or else the one with less support is dropped.
 // A rejected candidate is not drawn (the modelled ground has no photo paint). Pieces the photo cannot show (`estimated`)
 // skip the gate.
 //
@@ -671,7 +672,9 @@ export async function loadMarkings({ inputs, buildings }) {
   for (const { a, b } of pairs) {
     if (a.duplicateOf || b.duplicateOf) continue;
     const [small, large] = a.cells.size <= b.cells.size ? [a, b] : [b, a];
+    // a piece judged paint by eye on the VR tour and the 4x chip (gate review) outranks a detector piece of the same paint
     const loser = a.estimated !== b.estimated ? (a.estimated ? a : b)
+      : a.byEye !== b.byEye ? (a.byEye ? b : a)
       : large.cells.size >= DEDUP_CONTAIN * small.cells.size ? small
         : a.support !== b.support ? (a.support < b.support ? a : b)
           : small;
