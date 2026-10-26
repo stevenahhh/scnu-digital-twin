@@ -1269,7 +1269,8 @@ function massPrimitives(building, seed, { heightAt, facadeMaterial, tiles, looks
     // A mass may carry its own look (building-forms.json mass `look`, e.g. the F1 metal drum).
     const partLook = part.look ? looks.get(part.look) : look;
     const partTile = part.look ? tiles.get(part.look) : tile;
-    const ctx = { walls, plain, charts, solids, look: partLook, tile: partTile, zones: zonesOf(partLook, tiles), ground, plinthBase, storey, plainColour: part.kind === "canopy" ? trimColour : wallColour, surface };
+    const partWall = part.look ? linearByte(hex(partLook.parapet ?? partLook.wall)) : wallColour;
+    const ctx = { walls, plain, charts, solids, look: partLook, tile: partTile, zones: zonesOf(partLook, tiles), ground, plinthBase, storey, plainColour: part.kind === "canopy" ? trimColour : partWall, surface };
     const facade = !PLAIN_KINDS.has(part.kind);
     const onEntrance = entrance?.part === part;
     // Cores take the building's storey grid, so the cells of a facade-flush core line up with the walls beside it.
@@ -1903,12 +1904,12 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
     if (vrRoofs.length) console.log(`roof colours from the VR tour (look roofColour): ${vrRoofs.join("; ")}`);
     // A roof attachment (data/facade-attachments.json) recolours the one part whose outline holds its point.
     const partRoofs = [];
-    for (const building of selectableBuildings) {
+    for (const building of [...selectableBuildings, ...campusBuildings]) {
       for (const a of (building.attachments ?? []).filter((x) => x.kind === "roof")) {
         const part = building.massForm ? building.parts.find((p) => p.outer?.length >= 3 && pointInRing(a.at, p.outer)) : null;
-        if (!part) throw new Error(`facade-attachments.json: roof ${a.id} of ${building.nodeName} is not inside a mass of its form`);
+        if (!part) throw new Error(`facade-attachments.json: roof ${a.id} of ${building.nodeName ?? building.nodeId} is not inside a mass of its form`);
         part.roofColourRgb = hex(a.colour);
-        partRoofs.push(`${building.nodeName} ${a.id} ${a.colour}`);
+        partRoofs.push(`${building.nodeName ?? building.nodeId} ${a.id} ${a.colour}`);
       }
     }
     if (partRoofs.length) console.log(`roof colours from the VR tour (roof attachments): ${partRoofs.join("; ")}`);
