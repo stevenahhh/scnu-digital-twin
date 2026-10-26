@@ -231,20 +231,39 @@ Height rule (`heightOf` in `stages/buildings.mjs`), giving the roof-slab height 
   (`data/lod4-facades.json`) and the VR views. `model:build` lists every correction.
 - A source height is used when it gives 2.5-5 m per floor (2.5-6.5 m until 2026-10-24; the build logs what the
   old limit would have given), or when floors are unknown.
-- Otherwise height = floors x 4.4 m for SCNU buildings, or floors x 3.8 m for others. These are
-  the medians of building-register height/floors in the bbox: 4.39 m over 26 SCNU buildings and
-  3.76 m over 153 buildings. A building is SCNU when its name starts with `순천대학교` or its
-  footprint touches a `BLD_*` outline.
+- Otherwise height = floors x a storey median. There is no storey constant: `storeyMedians` derives the
+  medians at build time from the GIS건물통합정보 records (`gis-buildings.json`) that have both a height and a
+  floor count and 2.5-5 m per floor, grouped by use: `dormitory` (use or name matches 공동주택, 기숙사, 생활관 or
+  관사), `education` (use 교육연구시설) and `other`. A class with fewer than 5 records takes the `other`
+  median. With the committed data: education 4.08 m (n = 27), dormitory 3.3 m (n = 29), other 3.95 m
+  (n = 487); `model:build` logs them as `storey medians: ...`. SCNU buildings use the education median, or
+  the dormitory median when their name says dormitory; other buildings use the other median. A building is
+  SCNU when its name starts with `순천대학교` or its footprint touches a `BLD_*` outline.
 - The minimum is 3.5 m. The 0.9 m parapet is added as geometry on top of flat roofs.
 - A `BLD_*` node without floors keeps its `uni.glb` outline height. Other campus buildings
-  without floors get the 3.5 m minimum.
+  with neither a height nor floors get an assumed storey count (6 for dormitories, 3 for SCNU buildings, 1
+  otherwise) x their class median.
 - An entry's `tower` adds a taller mass on the part: the convex hull of the named VWorld LOD4 roof levels,
   clipped to the footprint, standing on the part's roof (A1 대학본부, 8 floors on a 3-floor podium; A5 진리관, 12
   floors on the 2-floor A4 annex; A6 창조관, 11 floors on 6). The podium's parapet leaves out the stretches under
   the tower. `useRecordFootprint` lets a `uni.glb` node take the register footprint around it when its own outline
   leaves most of the building out (BLD_A4, whose outline missed the 진리관 tower).
 
-All of these heights are estimates, not measurements. Node extras carry `heightSource`.
+All of these heights are estimates, not measurements. Node extras carry `heightSource` (the human-readable
+reason) and, on every `BLD_*` node and `BLD_SCNU_*` proxy, `heightLineage` with `storeyMetresUsed` (the
+storey median used, or null):
+
+| `heightLineage` | Meaning |
+|---|---|
+| `gis-height` | the GIS건물통합정보 height, which passed the 2.5-5 m per floor window |
+| `curated:scnu-facades` | a `heightMetres` override in `data/scnu-facades.json` |
+| `uni.glb-outline` | a `BLD_*` node with no floor data kept its `uni.glb` outline height |
+| `floors x median` | floors x the class storey median |
+| `vr-floors x median` | reserved: storey count read in the SCNU 360 VR tour x the class median |
+| `assumed` | no height and no floors: assumed storey count x the class median |
+
+The lineage describes the height rule; a building whose form comes from `data/building-forms.json` (VWorld LOD4
+or a photo trace) keeps the lineage of its footprint while its masses carry their own `heightSource`.
 
 OSM outlines are traced from imagery and sit about 3 m off the cadastral frame of `uni.glb`;
 GIS건물통합정보 outlines follow the cadastral frame. The build shifts all footprints by the median centroid offset of one-to-one `BLD_*` matches and

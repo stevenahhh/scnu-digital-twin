@@ -27,10 +27,8 @@ const DATA = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data
 
 const jpeg = async (png, quality = 86) => new Bun.Image(png).jpeg({ quality }).toBuffer();
 
-// Storey heights: medians of height/floors over the building register records in the campus bbox,
-// 4.39 m for SCNU buildings (n = 26) and 3.76 m for all buildings (n = 153).
-const SCNU_STOREY = 4.4;
-const STOREY = 3.8;
+// Storey heights are not constants: storeyMedians() derives them at build time from the GIS건물통합정보 records
+// (inputs.footprints) per use class, as the median of height / floors (see heightOf and GEN/README.md).
 const MIN_HEIGHT = 3.5;
 const SCNU_NAME = /^순천대학교/;
 // A source height is used when it gives 2.5-5 m per storey. Outside that window it belongs to another register
@@ -39,31 +37,84 @@ const SCNU_NAME = /^순천대학교/;
 const MIN_STOREY_METRES = 2.5;
 const MAX_STOREY_METRES = 5;
 
-// Roof-slab height in metres (the 0.9 m parapet is added on top as geometry, see PARAPET) and where it
-// came from, or null when the record has neither a height nor a floor count. A curated height
-// (data/scnu-facades.json) wins; a source height is used when it gives MIN-MAX_STOREY_METRES per storey (or when
-// floors are unknown); otherwise floors x storey height. maxStorey exists so the build can log what the former
-// 6.5 m limit would have given.
-export function heightOf(part, isSCNU, maxStorey = MAX_STOREY_METRES) {
-  if (part.heightOverride) return { heightMetres: Math.max(part.heightMetres, MIN_HEIGHT), heightSource: part.heightOverride };
+// Use classes for the storey medians: dormitories by use or name, education by use (교육연구시설), the rest other.
+const DORMITORY = /공동주택|기숙사|생활관|관사/;
+const EDUCATION = /교육연구/;
+const MIN_CLASS_RECORDS = 5;
+const median = (values) => {
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = sorted.length >> 1;
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+};
+
+// Storey height per use class: the median of heightMetres / floors over the records with both and 2.5-5 m per
+// storey. A class with fewer than 5 such records uses the other-class median (fallback names the class used).
+export function storeyMedians(footprints) {
+  const groups = { education: [], dormitory: [], other: [] };
+  for (const record of footprints) {
+    const floors = record.floors || 0;
+    const height = record.heightMetres || 0;
+    if (!(floors > 0 && height > 0)) continue;
+    const ratio = height / floors;
+    if (ratio < MIN_STOREY_METRES || ratio > MAX_STOREY_METRES) continue;
+    const use = record.usability ?? "";
+    const cls = DORMITORY.test(use) || DORMITORY.test(record.name ?? "") ? "dormitory" : EDUCATION.test(use) ? "education" : "other";
+    groups[cls].push(ratio);
+  }
+  if (groups.other.length === 0) throw new Error("storey medians: no GIS record with a height and a floor count");
+  const other = { metres: +median(groups.other).toFixed(2), n: groups.other.length, fallback: null };
+  const classMedian = (list) => (list.length >= MIN_CLASS_RECORDS
+    ? { metres: +median(list).toFixed(2), n: list.length, fallback: null }
+    : { metres: other.metres, n: list.length, fallback: "other" });
+  return { education: classMedian(groups.education), dormitory: classMedian(groups.dormitory), other };
+}
+
+// The storey median a building uses: SCNU buildings the education median (dormitory when the name says so),
+// other buildings the other median.
+function storeyFor(part, isSCNU, medians) {
+  if (!isSCNU) return { cls: "other", metres: medians.other.metres };
+  const cls = DORMITORY.test(`${part.name ?? ""} ${part.label ?? ""}`) ? "dormitory" : "education";
+  return { cls: medians[cls].fallback ? `${cls} -> ${medians[cls].fallback}` : cls, metres: medians[cls].metres };
+}
+
+// Roof-slab height in metres (the 0.9 m parapet is added on top as geometry, see PARAPET), where it came from and
+// its lineage (heightLineage: gis-height, curated:scnu-facades, floors x median; uni.glb-outline and assumed are set
+// by the callers, vr-floors x median is reserved for VR storey counts), or null when the record has neither a
+// height nor a floor count. A curated height (data/scnu-facades.json) wins; a source height is used when it gives
+// MIN-MAX_STOREY_METRES per storey (or when floors are unknown); otherwise floors x the class storey median.
+// maxStorey exists so the build can log what the former 6.5 m limit would have given.
+export function heightOf(part, isSCNU, medians, maxStorey = MAX_STOREY_METRES) {
+  if (part.heightOverride) {
+    return { heightMetres: Math.max(part.heightMetres, MIN_HEIGHT), heightSource: part.heightOverride, heightLineage: "curated:scnu-facades", storeyMetresUsed: null };
+  }
   const floors = part.floors || 0;
   const height = part.heightMetres || 0;
   if (height > 0 && (!floors || (height / floors >= MIN_STOREY_METRES && height / floors <= maxStorey))) {
-    return { heightMetres: Math.max(height, MIN_HEIGHT), heightSource: "source height" };
+    return { heightMetres: Math.max(height, MIN_HEIGHT), heightSource: "source height", heightLineage: "gis-height", storeyMetresUsed: null };
   }
   if (floors > 0) {
-    const storey = isSCNU ? SCNU_STOREY : STOREY;
-    return { heightMetres: Math.max(floors * storey, MIN_HEIGHT), heightSource: `estimated: ${floors} floors x ${storey} m` };
+    const storey = storeyFor(part, isSCNU, medians);
+    return {
+      heightMetres: Math.max(floors * storey.metres, MIN_HEIGHT),
+      heightSource: `estimated: ${floors} floors x ${storey.metres} m (${storey.cls} storey median)`,
+      heightLineage: "floors x median",
+      storeyMetresUsed: storey.metres,
+    };
   }
   return null;
 }
 
 // Campus buildings with neither a height nor a floor count anywhere: an assumed storey count by type
 // (dormitories are mid-rise, other SCNU buildings low-rise) instead of a one-storey shed.
-function assumedHeight(name, isSCNU) {
-  const floors = /생활관|기숙사|관사/.test(name) ? 6 : isSCNU ? 3 : 1;
-  const storey = isSCNU ? SCNU_STOREY : STOREY;
-  return { heightMetres: Math.max(floors * storey, MIN_HEIGHT), heightSource: `assumed: ${floors} floors x ${storey} m (no floor data)` };
+function assumedHeight(part, isSCNU, medians) {
+  const floors = DORMITORY.test(part.name ?? "") ? 6 : isSCNU ? 3 : 1;
+  const storey = storeyFor(part, isSCNU, medians);
+  return {
+    heightMetres: Math.max(floors * storey.metres, MIN_HEIGHT),
+    heightSource: `assumed: ${floors} floors x ${storey.metres} m (no floor data)`,
+    heightLineage: "assumed",
+    storeyMetresUsed: storey.metres,
+  };
 }
 
 const isGroundFeature = (part) => part.areaMetres > 8000 && part.floors <= 1;
@@ -1152,6 +1203,9 @@ function massPrimitives(building, seed, { heightAt, facadeMaterial, tiles, looks
 // footprint holding one keeps its label, pick proxy, photo mask and tree mask, but its generic mass is not drawn.
 export async function buildBuildings({ glb, inputs, detailedStructures = [], selectOnly = false }) {
   const { source, footprints, roadZones, heightAt } = inputs;
+  const medians = storeyMedians(footprints);
+  const medianText = (cls) => `${medians[cls].metres} m (n=${medians[cls].n}${medians[cls].fallback ? `, fallback ${medians[cls].fallback}` : ""})`;
+  console.log(`storey medians: education ${medianText("education")}, dormitory ${medianText("dormitory")}, other ${medianText("other")}`);
 
   // ---- building selection
   // Records data/scnu-building-names.json marks as demolished (absent from current imagery) are not modelled.
@@ -1256,8 +1310,8 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
   // Heights the former 6.5 m storey limit would have given differently (logged).
   const ratioChanges = [];
   const heightWithLog = (part, isSCNU, label) => {
-    const now = heightOf(part, isSCNU);
-    const before = heightOf(part, isSCNU, 6.5);
+    const now = heightOf(part, isSCNU, medians);
+    const before = heightOf(part, isSCNU, medians, 6.5);
     if (now && before && Math.abs(now.heightMetres - before.heightMetres) > 0.05) {
       ratioChanges.push(`${label}: ${before.heightMetres.toFixed(1)} m (${before.heightSource}) -> ${now.heightMetres.toFixed(1)} m (${now.heightSource})`);
     }
@@ -1272,7 +1326,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
     const matches = inside.length ? inside : footprintParts.filter((part) => !isGroundFeature(part) && pointInRing(outlineCentre, part.outer));
     matches.forEach((part) => used.add(part.index));
     const sourceHeight = (footprint.topY - footprint.minY) / metres(1);
-    const kept = { heightMetres: Math.max(sourceHeight, MIN_HEIGHT), heightSource: "uni.glb outline height" };
+    const kept = { heightMetres: Math.max(sourceHeight, MIN_HEIGHT), heightSource: "uni.glb outline height", heightLineage: "uni.glb-outline", storeyMetresUsed: null };
     const name = matches.map((part) => part.name).find(Boolean) ?? "";
     // BLD_D4 anchors the traffic frame through its bounding box, so it keeps the original outline. A node whose
     // outline is only a corner of the record around it keeps that outline too, unless the record's entry asks for
@@ -1288,7 +1342,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
         floors: Math.max(0, ...matches.map((m) => m.floors || 0)) || Math.round(sourceHeight / 3.6),
         tower: matches.find((m) => m.tower)?.tower,
       }]
-      : matches.map((part) => ({ outer: part.outer, holes: part.holes, ...(heightOf(part, true) ?? kept), floors: part.floors, tower: part.tower }));
+      : matches.map((part) => ({ outer: part.outer, holes: part.holes, ...(heightOf(part, true, medians) ?? kept), floors: part.floors, tower: part.tower }));
     let floorsSource = [...new Set(matches.map((m) => m.floorsSource).filter((s) => s && s !== "none"))].join(", ") || "none";
     // A node entry sets the look, and floors/height where several nodes share one record (BLD_C1, BLD_C1.001).
     const nodeEntry = catalogue.byNode.get(rawName);
@@ -1297,7 +1351,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
         `(${parts[0].heightSource}) -> ${nodeEntry.heightMetres ?? parts[0].heightMetres} m (${nodeEntry.floorsSource ?? "floors unchanged"}; ${nodeEntry.heightSource ?? "height unchanged"})`);
       for (const part of parts) {
         if (nodeEntry.floors) part.floors = nodeEntry.floors;
-        if (nodeEntry.heightMetres) Object.assign(part, { heightMetres: nodeEntry.heightMetres, heightSource: nodeEntry.heightSource });
+        if (nodeEntry.heightMetres) Object.assign(part, { heightMetres: nodeEntry.heightMetres, heightSource: nodeEntry.heightSource, heightLineage: "curated:scnu-facades", storeyMetresUsed: null });
       }
       if (nodeEntry.floorsSource) floorsSource = nodeEntry.floorsSource;
     }
@@ -1306,7 +1360,10 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
     const footprintSource = keepOutline ? "uni.glb outline" : [...new Set(matches.map((m) => m.footprintSource))].join(", ");
     if (useRecord) corrections.push(`${rawName}: footprint uni.glb outline -> ${footprintSource} (useRecordFootprint)`);
     heightLog.push({ label: rawName, footprintSource, floorsSource, heightSource: parts[0].heightSource, heightMetres: parts[0].heightMetres });
-    selectableBuildings.push({ nodeName: rawName, displayName: name, look, entry, footprintSource, floorsSource, heightSource: parts[0].heightSource, parts });
+    selectableBuildings.push({
+      nodeName: rawName, displayName: name, look, entry, footprintSource, floorsSource, heightSource: parts[0].heightSource,
+      heightLineage: parts[0].heightLineage, storeyMetresUsed: parts[0].storeyMetresUsed, parts,
+    });
   }
 
   // Campus area: inside the hull of known campus buildings and close to a campus road zone.
@@ -1350,7 +1407,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
       continue;
     }
     const isSCNU = SCNU_NAME.test(part.name) || bldNodes.some(({ footprint }) => part.outer.some((p) => pointInRing(p, footprint.outer)));
-    const height = heightWithLog(part, isSCNU, part.label ?? (part.name || "(unnamed)")) ?? assumedHeight(part.name, isSCNU);
+    const height = heightWithLog(part, isSCNU, part.label ?? (part.name || "(unnamed)")) ?? assumedHeight(part, isSCNU, medians);
     heightLog.push({ label: part.name || "(unnamed)", footprintSource: part.footprintSource, floorsSource: part.floorsSource, ...height });
     campusBuildings.push({
       index: part.index,
@@ -1361,6 +1418,8 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
       nameSource: part.nameSource,
       footprintSource: part.footprintSource,
       floorsSource: part.floorsSource,
+      heightLineage: height.heightLineage,
+      storeyMetresUsed: height.storeyMetresUsed,
       entry: part.entry,
       look: part.entry?.look ?? genericLook(part.label ?? part.name, part.areaMetres, isSCNU),
       parts: [{ outer: part.outer, holes: part.holes, ...height, floors: part.floors, tower: part.tower }],
@@ -1678,6 +1737,8 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
         source: building.footprintSource,
         floorsSource: building.floorsSource,
         heightSource: building.parts[0].heightSource ?? building.heightSource,
+        heightLineage: building.heightLineage,
+        storeyMetresUsed: building.storeyMetresUsed,
         facadeLook: building.look,
         facadeClass: catalogue.looks.get(building.look).class,
         facadeSource: `${catalogue.looks.get(building.look).sources} (colours and window layout estimated)`,
@@ -1747,6 +1808,8 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
         source: first.footprintSource,
         floorsSource: first.floorsSource,
         heightSource: first.parts[0].heightSource,
+        heightLineage: first.heightLineage,
+        storeyMetresUsed: first.storeyMetresUsed,
         ...formExtras(first),
       },
     }, { root: true });
