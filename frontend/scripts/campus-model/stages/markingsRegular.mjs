@@ -66,6 +66,7 @@ const BAY_WIDTH_M = 3.4;
 const BAY_SYMBOL_BLOB_M = 2.2;
 const BAY_SYMBOL_M = 1.5;
 const BAY_P_M = 2.0;
+const BAY_SYMBOL_MARGIN_M = 0.25;
 const ZEBRA_ROW_GAP_M = 1.0;
 const ZEBRA_PERIOD_RANGE_M = [0.88, 0.93];
 const ZEBRA_ALIGN_PERIOD_M = 0.005;
@@ -732,10 +733,10 @@ export function regularise(drawn, ctx) {
       if (c.kind === "disabled_parking" && c.colour === "white" && fill < 0.5) {
         // upright along one of the bay's own directions, the one whose template covers the painted symbol best
         const axes = (directions ?? [box.long, box.short]).flatMap((d) => [unit(d), scale(unit(d), -1)]);
-        const size = 2 * box.halfLong;
+        const size = Math.min(2 * box.halfLong, BAY_SYMBOL_M);
         const pick = axes.map((f) => ({ t: place(wheelchairTemplate(size), box.centre, f), f }))
           .map((x) => ({ ...x, score: overlapScore(rings ? [rings] : [], x.t) })).sort((x, y) => y.score - x.score)[0];
-        emitPoly(pick.t, c.colour, c.kind, { glyph: "wheelchair", tid: `tpl ${c.id}` });
+        emitPoly(pick.t, c.colour, c.kind, { glyph: "wheelchair", tid: `tpl ${c.id}`, up: pick.f });
         glyphCount("wheelchair");
         continue;
       }
@@ -1001,14 +1002,14 @@ export function regularise(drawn, ctx) {
       for (let k = 0; k < n; k += 1) {
         const centre = add(box.centre, scale(across, (k - (n - 1) / 2) * width));
         // a white symbol drawn inside this bay already
-        const inCell = (w) => Math.abs(dot(sub(w, centre), across)) <= width / 2 && Math.abs(dot(sub(w, centre), depth)) <= deep / 2;
-        // a P bay's painted figure read as a wheelchair gives way to its P
-        if (rule?.symbol === "P") {
-          for (const t of whiteTemplates) if (inCell(t.c)) for (const pc of t.parts) replaced.add(pc);
-        } else if (whites.some(inCell)) {
-          stats.baySymbols.existing += 1;
-          continue;
-        }
+        // inside a blue bay the bay owns its symbol: a template drawn earlier from the traced white figure (or several,
+        // or one read as a wheelchair in a P bay) gives way to one clean symbol per cell, keeping the traced figure's
+        // photo-fitted direction where the bay has no reading
+        const inCell = (w, m = 0) => Math.abs(dot(sub(w, centre), across)) <= width / 2 + m && Math.abs(dot(sub(w, centre), depth)) <= deep / 2 + m;
+        const traced = whiteTemplates.filter((t) => inCell(t.c, 0.5));
+        for (const t of traced) for (const pc of t.parts) replaced.add(pc);
+        if (traced.length) stats.baySymbols.existing += 1;
+        const tracedUp = traced.map((t) => t.parts[0].up).find(Boolean);
         // the painted symbol's own blobs (photo) place the template; without them it sits at the bay's centre
         const painted = blobs.filter((b) => Math.abs(dot(sub(b.c, centre), across)) <= width / 2 && Math.abs(dot(sub(b.c, centre), depth)) <= deep / 2);
         for (const b of painted) replaced.add(b.pc);
@@ -1020,6 +1021,9 @@ export function regularise(drawn, ctx) {
           const read = [Math.sin(b), -Math.cos(b)];
           up = dot(depth, read) >= 0 ? depth : scale(depth, -1);
           from = "reading";
+        } else if (tracedUp && rule?.symbol !== "P") {
+          up = Math.abs(dot(tracedUp, depth)) >= Math.abs(dot(tracedUp, across)) ? scale(depth, Math.sign(dot(tracedUp, depth)) || 1) : scale(across, Math.sign(dot(tracedUp, across)) || 1);
+          from = "traced";
         } else {
           const end = (sign) => [0.6, 1.2, 1.8].filter((d) => blocked(add(centre, scale(depth, sign * (deep / 2 + d))))).length;
           const [fwd, back] = [end(1), end(-1)];
@@ -1033,7 +1037,16 @@ export function regularise(drawn, ctx) {
         const polys = symbol === "P"
           ? parkingPTemplate(Math.min(BAY_P_M, 0.6 * deep, (0.6 * width) / 0.62))
           : wheelchairTemplate(Math.min(BAY_SYMBOL_M, 0.55 * width, 0.45 * deep));
-        emitPoly(place(polys, at, up), "white", "disabled_parking", { glyph: symbol });
+        // the template stays inside its bay: its centre clamped so its extent (local x across, y along `up`) fits the cell
+        const pts = polys.flatMap((rings) => rings[0]);
+        const ext = (k) => (Math.max(...pts.map((q) => q[k])) - Math.min(...pts.map((q) => q[k]))) / 2;
+        const r = rightOf(up);
+        const halfAcross = Math.abs(dot(r, across)) > 0.7 ? width / 2 : deep / 2;
+        const halfAlong = Math.abs(dot(up, depth)) > 0.7 ? deep / 2 : width / 2;
+        const clamp = (v, h) => Math.max(-Math.max(0, h), Math.min(Math.max(0, h), v));
+        const off = sub(at, centre);
+        const inside = add(centre, add(scale(r, clamp(dot(off, r), halfAcross - ext(0) - BAY_SYMBOL_MARGIN_M)), scale(up, clamp(dot(off, up), halfAlong - ext(1) - BAY_SYMBOL_MARGIN_M))));
+        emitPoly(place(polys, inside, up), "white", "disabled_parking", { glyph: symbol });
         stats.baySymbols[symbol === "P" ? "p" : "wheelchair"] += 1;
         if (from === "추정") stats.baySymbols.orientationGuessed += 1;
         stats.baySymbols.list.push({ ids: members.map((pc) => pc.id).filter(Boolean), cell: k, centre: toScene(centre), upBearingDeg: +(((Math.atan2(up[0], -up[1]) * 180) / Math.PI + 360) % 360).toFixed(1), from, symbol });

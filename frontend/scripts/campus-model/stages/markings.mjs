@@ -979,7 +979,7 @@ function describeRegular(r) {
     `dashed lines by statute ${dashes.statute ?? 0}, by the photo's period ${dashes.photo ?? 0}, as detected ${dashes["detected dashes"] ?? 0}; ` +
     `${r.crossingGroups} bar groups -> ${r.crossings} crossings (${r.crossingRowsAligned} rows on a shared bar grid, ${r.crossingRowsOwnGrid} rows on their own period and phase), ${r.barsDetected} detected bars -> ${r.barsDrawn} equal bars, ` +
     `${r.stopInCrossing.length} stop lines inside a crossing left out (${r.stopInCrossing.join(", ") || "none"}); ` +
-    `bay symbols: ${r.baySymbols.wheelchair} wheelchairs, ${r.baySymbols.p} P (${r.baySymbols.existing} bays with a drawn symbol, ${r.baySymbols.orientationGuessed} upright direction 추정); ` +
+    `bay symbols: ${r.baySymbols.wheelchair} wheelchairs, ${r.baySymbols.p} P (${r.baySymbols.existing} replacing a traced figure, ${r.baySymbols.orientationGuessed} upright direction 추정); ` +
     `${r.stopSquared} stop lines squared to their lane; ${r.rectangles} rectangles, ${r.outlines} snapped outlines; templates: ${glyphs}; ` +
     `left out: ${r.dropped.blocked} on buildings or sidewalks, ${r.dropped.textTooSmall} text blobs too small for a character`;
 }
