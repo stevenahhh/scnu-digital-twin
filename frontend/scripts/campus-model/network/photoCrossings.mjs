@@ -2,7 +2,7 @@
 // grouped by `crossing_id`) that no digitised CW polygon covers (plan uhf-ground-roads-routing W4 (c): people cross
 // only at crossing polygons, so every crossing the paint shows is one). Each group on a road polygon becomes a
 // crossing polygon: the bar-aligned rectangle around its bars (ortho-traced paint, estimated: false) plus a kerb
-// approach at both ends of the walking direction, out to the road edge (>= 1 m, <= 15 m; estimated: true, 추정).
+// approach at both ends of the walking direction, out to the kerb when one is within 15 m, else 1 m (estimated: true, 추정).
 // Simulation frame.
 import { PolygonGrid, dist } from "./geom.mjs";
 
@@ -44,10 +44,12 @@ export function photoCrossings({ groups, crossings = [], roadPolygons = [] }) {
     const a = [Math.min(...along), Math.max(...along)];
     const b = [Math.min(...across), Math.max(...across)];
     const onRoad = (t) => roads.contains([c[0] + u[0] * t + v[0] * (b[0] + b[1]) / 2, c[1] + u[1] * t + v[1] * (b[0] + b[1]) / 2]);
+    // extended only when a kerb is reached within EXTENSION_MAX_M; still on the road after that (a junction
+    // interior) keeps the 1 m approach, so a painted crossing never covers a junction
     const reach = (from, sign) => {
       let t = 0;
       while (t < EXTENSION_MAX_M && onRoad(from + sign * (t + 0.2))) t += 0.2;
-      return Math.max(APPROACH_M, t + 0.5);
+      return t >= EXTENSION_MAX_M ? APPROACH_M : Math.max(APPROACH_M, t + 0.5);
     };
     const r0 = reach(a[0], -1);
     const r1 = reach(a[1], 1);

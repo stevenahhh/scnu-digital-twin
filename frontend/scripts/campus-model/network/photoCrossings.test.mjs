@@ -42,3 +42,12 @@ test("a painted run that stops short of the kerb is extended along its walking d
   assert.ok(approaches.some((a) => inRings([2, 3.9], a.rings)) && approaches.some((a) => inRings([2, -3.9], a.rings)));
   assert.ok(!approaches.some((a) => inRings([2, 6], a.rings)), "never beyond the road edge plus 0.5 m");
 });
+
+test("a painted run inside a junction keeps the 1 m approach instead of covering the junction", () => {
+  // road 60 m deep along the walking direction: no kerb within 15 m of the bars
+  const wide = [{ class: "road", rings: [rect(-100, -30, 100, 30)] }];
+  const { polygons } = photoCrossings({ groups: new Map([["ZC3", bars(0, 5, 1)]]), roadPolygons: wide });
+  const approaches = polygons.filter((p) => p.estimated);
+  assert.ok(approaches.some((a) => inRings([2, 1.9], a.rings)));
+  assert.ok(!approaches.some((a) => inRings([2, 2.2], a.rings)), "only 1 m beyond the painted bars");
+});
