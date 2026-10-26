@@ -184,6 +184,23 @@ function getSelectableMeta(object) {
       (proxy ? resolveProxyDataElementId(rawName, node.userData, ELEMENT_NAME_MAP) : null) ?? buildingMeta.elementId,
     label: buildingMeta.label ?? (proxy ? node.userData.label ?? null : null),
     proxy,
+    // 생성기가 GLB extras에 남긴 추정 계보(새 필드). 패널의 추정 표기만 읽는다.
+    heightLineage: node.userData?.heightLineage ?? null,
+    footprintEstimated: node.userData?.footprintEstimated === true,
+    formEstimated: isFormEstimated(node.userData?.formEstimated),
+  };
+}
+
+// extras.formEstimated는 추정한 항목 목록(문자열 배열)이거나 true다.
+function isFormEstimated(value) {
+  return value === true || (Array.isArray(value) && value.length > 0);
+}
+
+function estimateOf(meta) {
+  return {
+    heightLineage: meta.heightLineage,
+    footprintEstimated: meta.footprintEstimated,
+    formEstimated: meta.formEstimated,
   };
 }
 
@@ -227,6 +244,7 @@ function buildLabelAnchors(scene) {
       elementId: meta.elementId,
       dataElementId: meta.dataElementId,
       proxy: meta.proxy,
+      estimate: estimateOf(meta),
       position: [center.x, box.max.y + 6, center.z],
     });
   });
@@ -896,6 +914,7 @@ export function CityModel({
         userData: {
           ...(meta.proxy && meta.label ? { buildingName: meta.label } : {}),
           ...(meta.label ? { buildingLabel: meta.label } : {}),
+          estimate: estimateOf(meta),
         },
       });
     }
@@ -938,6 +957,7 @@ export function CityModel({
         userData: {
           ...(anchor.proxy && anchor.displayName ? { buildingName: anchor.displayName } : {}),
           ...(anchor.displayName ? { buildingLabel: anchor.displayName } : {}),
+          estimate: anchor.estimate,
         },
       });
     }
