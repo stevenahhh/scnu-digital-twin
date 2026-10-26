@@ -1,12 +1,13 @@
 {
-  "description": "Tree species groups read on the SCNU 360 VR tour (vr.scnu.ac.kr/360vr, visual reference only; nothing copied or linked) where one species fills a row or stand. A crown inside a polygon takes its species unless its own VR colour class is listed in exceptVr. Polygons traced on the NGII 2025 orthophoto around the trees the VR scenes show (estimated, 추정). Read by scripts/campus-model/fetch/treeInventory.mjs.",
+  "description": "Tree species groups read on the SCNU 360 VR tour (vr.scnu.ac.kr/360vr, visual reference only; nothing copied or linked) where one species fills a row or stand. A crown inside a polygon takes its species unless its own VR colour class is listed in exceptVr (VG01: the plaza also holds green broadleaf trees and dark pines, VR scene_e1 r). Polygons traced on the NGII 2025 orthophoto around the trees the VR scenes show (estimated, 추정). Read by scripts/campus-model/fetch/treeInventory.mjs.",
   "frame": "WGS84 [lon, lat]",
   "groups": [
     {
       "id": "VG01",
       "species": "metasequoia",
       "exceptVr": [
-        "dark"
+        "dark",
+        "green"
       ],
       "source": "VR scene_c1 r, b, l and scene_e1 r: two rows of metasequoia (narrow yellow-orange conical crowns) along the central plaza and its pond, from C1 to the roundabout; pines on the slopes beside them stay pines",
       "polygon": [
