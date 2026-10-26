@@ -44,3 +44,14 @@ test("heightOf names its lineage: gis-height for a plausible source height, floo
   assert.equal(fromFloors.heightMetres, 4 * medians.education.metres);
   assert.equal(heightOf({ floors: 4, heightMetres: 0, heightOverride: "curated" }, true, medians).heightLineage, "curated:scnu-facades");
 });
+
+test("heightOf marks VR storey counts as vr-floors x median, but a valid GIS height still wins", () => {
+  const medians = storeyMedians(gis.buildings);
+  const fromVr = heightOf({ floors: 8, heightMetres: 0, floorsSource: "VR scene_x storey count (estimated)", name: "기숙사" }, true, medians);
+  assert.equal(fromVr.heightLineage, "vr-floors x median");
+  assert.equal(fromVr.storeyMetresUsed, medians.dormitory.metres);
+  assert.equal(fromVr.heightMetres, 8 * medians.dormitory.metres);
+  const gisWins = heightOf({ floors: 4, heightMetres: 16, floorsSource: "VR scene_x storey count 5 (estimated)" }, true, medians);
+  assert.equal(gisWins.heightLineage, "gis-height");
+  assert.equal(gisWins.heightMetres, 16);
+});

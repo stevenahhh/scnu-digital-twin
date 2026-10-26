@@ -182,6 +182,20 @@ colours, and the eave colour. Buildings without an entry take the greenhouse loo
 (부속 시설, `(추정)` or under 150 m²) or a plain render look. Colours, window layouts and canopies are estimates, not
 measurements. Node extras carry `facadeLook`, `facadeClass` and `facadeSource`.
 
+Two optional look fields, re-checked against the VR tour scene by scene in October 2026, cover what one tile per
+building cannot. Both are absent by default, and a build without them is byte-identical to one before they existed.
+
+- `zones`: `{ "base": { "storeys": n, "look": id } }`. The lowest `base.storeys` storeys take the tile of the `base`
+  look, which is an ordinary look in the atlas. Examples: A13 웅지관 (white panel over a two-storey orange brick base),
+  A6 창조관 (brick base), B7 산학협력관 (white panel base on pilotis).
+- `roofColour`: `#rrggbb`, read in the VR tour. It replaces the orthophoto or OSM-tag roof colour on every roof of the
+  look's buildings, for tiled roofs that the photo samples as grey (A9 청운관's orange clay tiles). Extras record it as
+  `roofColourSource`.
+
+Roof types are checked. A curated `form` mass may only be `flat` (`fetch/building_forms.py` draws curated masses
+flat), and a `data/building-forms.json` mass must be one of flat, gable, hipped, mono-pitch and curved. Any other value
+stops the build with an error instead of quietly becoming a flat roof.
+
 `fetch/lod4Facades.mjs` walks the keyless VWorld 3D Tiles tileset `facility_LOD4/Jeollanam-do/Suncheon-si` to its
 finest b3dm tiles over the SCNU footprints (cached in `.cache/lod4/`, gitignored) and decodes each model
 (CESIUM_RTC centre, WEB3D_quantized_attributes positions). Most textures are Crunch-compressed; crnlib as built
@@ -265,7 +279,7 @@ storey median used, or null):
 | `curated:scnu-facades` | a `heightMetres` override in `data/scnu-facades.json` |
 | `uni.glb-outline` | a `BLD_*` node with no floor data kept its `uni.glb` outline height |
 | `floors x median` | floors x the class storey median |
-| `vr-floors x median` | reserved: storey count read in the SCNU 360 VR tour x the class median |
+| `vr-floors x median` | floors x the class storey median, the floor count read in the SCNU 360 VR tour (`floorsSource` starting `VR scene_`; a valid GIS height still wins) |
 | `assumed` | no height and no floors: assumed storey count x the class median |
 
 The lineage describes the height rule; a building whose form comes from `data/building-forms.json` (VWorld LOD4
