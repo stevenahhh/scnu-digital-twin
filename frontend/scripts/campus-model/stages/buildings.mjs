@@ -1228,6 +1228,8 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
       heightMetres: b.heightMetres,
       footprintSource: b.footprintSource,
       floorsSource: b.floorsSource,
+      // data/vr-buildings.json records: footprint traced from imagery (estimated).
+      footprintEstimated: b.estimated === true,
       outer,
       holes,
       centroid: ringCentroid(outer),
@@ -1420,6 +1422,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
       floorsSource: part.floorsSource,
       heightLineage: height.heightLineage,
       storeyMetresUsed: height.storeyMetresUsed,
+      footprintEstimated: part.footprintEstimated,
       entry: part.entry,
       look: part.entry?.look ?? genericLook(part.label ?? part.name, part.areaMetres, isSCNU),
       parts: [{ outer: part.outer, holes: part.holes, ...height, floors: part.floors, tower: part.tower }],
@@ -1810,6 +1813,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
         heightSource: first.parts[0].heightSource,
         heightLineage: first.heightLineage,
         storeyMetresUsed: first.storeyMetresUsed,
+        ...(first.footprintEstimated ? { footprintEstimated: true, footprintSource: first.footprintSource } : {}),
         ...formExtras(first),
       },
     }, { root: true });

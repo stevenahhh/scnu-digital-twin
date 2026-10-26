@@ -241,11 +241,26 @@ async function readGeoJson(name) {
 const polygonsOf = (geometry) => (geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates);
 export const toModelRing = (ring) => cleanRing(ring.map(([lon, lat]) => geoToModel(lon, lat)));
 
-// data/gis-buildings.json is the shipped footprint file. A local checkout that still has the old
-// data/vworld-buildings.json (never committed again) may build from it until the new file is fetched.
+// data/vr-buildings.json: buildings standing in the SCNU 360 VR tour that no GIS record covers, with footprints
+// traced on the NGII 2025 orthophoto (every record estimated: true; see README "VR-only buildings"). The records
+// follow the gis-buildings.json shape (polygons -> rings -> [lon, lat]); areaMetres is computed here from the
+// first ring. VR_BUILDINGS_FILE points the loader (and its test) at another file.
+export const VR_BUILDINGS_FILE = process.env.VR_BUILDINGS_FILE ?? path.join(SCRIPT, "data", "vr-buildings.json");
+export async function loadVrBuildings(file = VR_BUILDINGS_FILE) {
+  const vr = Bun.file(file);
+  if (!(await vr.exists())) return [];
+  return JSON.parse(await vr.text()).buildings.map((b) => ({
+    ...b,
+    areaMetres: Math.round(Math.abs(ringArea(toModelRing(b.polygons[0][0]))) / metres(1) ** 2),
+  }));
+}
+
+// data/gis-buildings.json is the shipped footprint file, followed by the VR-only records. A local checkout that
+// still has the old data/vworld-buildings.json (never committed again) may build from it until the new file is
+// fetched.
 async function loadBuildingFootprints() {
   const gis = Bun.file(path.join(SCRIPT, "data", "gis-buildings.json"));
-  if (await gis.exists()) return JSON.parse(await gis.text()).buildings;
+  if (await gis.exists()) return [...JSON.parse(await gis.text()).buildings, ...(await loadVrBuildings())];
   const legacy = Bun.file(path.join(SCRIPT, "data", "vworld-buildings.json"));
   if (!(await legacy.exists())) throw new Error("data/gis-buildings.json is missing; run bun run model:fetch");
   console.warn("data/gis-buildings.json is missing; using the local-only data/vworld-buildings.json (do not commit it)");

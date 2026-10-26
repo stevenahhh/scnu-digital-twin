@@ -304,6 +304,39 @@ selects it, and a selected or hovered proxy shows as a translucent highlight. Th
 `uni.glb` or `common_elemetns.json` `BLD_*` id. A footprint that a `uni.glb` `BLD_*` node already
 covers gets no proxy. That node keeps its own label. Records under 12 m² are not modelled.
 
+### VR-only buildings (`data/vr-buildings.json`)
+
+Some buildings stand in the SCNU 360 VR tour (`vr.scnu.ac.kr/360vr/tour.xml`, visual reference only) but have no
+GIS건물통합정보 footprint, or only a demolished one. `data/vr-buildings.json` holds them: `stages/sources.mjs`
+(`loadVrBuildings`) appends its records after the GIS records, so they go through the same selection, height rule
+and pick-proxy path. An empty `buildings` list builds a byte-identical model. `VR_BUILDINGS_FILE` points the
+loader and `stages/vrBuildings.test.mjs` at another file.
+
+The file has `description`, `sources` and `buildings`. Each record follows the `gis-buildings.json` shape:
+
+| Field | Value |
+|---|---|
+| `code` | SCNU registry code (`D5`), or null for an uncoded building |
+| `name` | `순천대학교 <code> <name>` |
+| `label` | dashboard label; an estimated name ends in `(추정)` |
+| `nodeId` | `BLD_SCNU_<code>`, or `BLD_SCNU_V<n>` without a code; never a `uni.glb` or `scnu-building-names.json` id |
+| `status` | `standing` |
+| `floors`, `floorsSource` | storeys counted on the VR facade; `VR scene_<id> storey count (estimated)` |
+| `heightMetres` | 0: the height comes from floors x the class storey median |
+| `undergroundFloors` | 0 unless the VR shows a basement storey |
+| `usability` | use class ending in `(추정)`, e.g. `교육연구시설 (추정)` (picks the storey median) |
+| `polygons` | polygons -> rings -> `[lon, lat]` (WGS84), each ring closed with at least 4 points |
+| `footprintSource` | `NGII 2025 orthophoto trace (estimated) + VR scene_<id>` |
+| `nameSource` | registry match text, or `estimated: ...` for an uncoded building |
+| `estimated` | always `true` |
+| `confidence` | 0-1 |
+| `vrScenes` | the VR scenes that show the building |
+| `registerName` | null |
+
+`areaMetres` is not stored: the loader computes it from the first ring. A pick proxy from this file carries
+`footprintEstimated: true` and `footprintSource` in its extras. No VR image, thumbnail or NGII raster pixel is
+committed; only the traced vectors are.
+
 ### Building forms (`data/building-forms.json`)
 
 A campus building is not one prism. `fetch/buildingForms.mjs` gives every modelled building (the selection of
