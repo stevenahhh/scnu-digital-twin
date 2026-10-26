@@ -57,22 +57,23 @@ export function Segmented({ kind = "tabs", label, options, value, onChange, size
             title={option.disabled ? option.disabledReason : undefined}
             tabIndex={option.value === tabStop ? 0 : -1}
             data-active={active ? "true" : undefined}
+            data-qa={option.qa}
             onClick={() => !option.disabled && !active && onChange?.(option.value)}
             onKeyDown={(event) => handleKeyDown(event, option.value)}
             className={cx(
-              "inline-flex flex-1 basis-0 items-center justify-center gap-1.5 rounded-pill border px-3 font-medium",
+              "inline-flex flex-1 basis-0 items-center justify-center gap-1.5 rounded-pill border font-medium",
               "transition-colors duration-micro",
-              size === "sm" ? "min-h-8 text-caption" : "min-h-10 text-body",
+              size === "sm" ? "min-h-8 px-2 text-caption" : "min-h-10 px-3 text-body",
               COARSE_TARGET,
               FOCUS_RING,
               active
                 ? "border-hairline-strong bg-surface-2 font-semibold text-ink"
-                : "border-transparent text-ink-subtle hover:text-ink-muted",
+                : "border-transparent text-ink-muted hover:text-ink",
               option.disabled && "cursor-not-allowed opacity-50",
             )}
           >
             {active && <span aria-hidden="true" className="h-1 w-1 shrink-0 rounded-pill bg-current" data-qa="segment-dot" />}
-            <span className="break-keep">{option.label}</span>
+            <span className="break-keep sm:whitespace-nowrap">{option.label}</span>
           </button>
         );
       })}

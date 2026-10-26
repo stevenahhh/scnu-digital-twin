@@ -66,6 +66,8 @@ export function createSimulationStore() {
     selectedAgentId: null,
     selectedAgentDetails: null,
     selectionError: null,
+    // 교통망 디버그 층이 망·검증 자료를 받지 못했을 때의 한국어 문구(없으면 null).
+    networkError: null,
   };
   const listeners = new Set();
   const emit = () => listeners.forEach((listener) => listener());
@@ -104,6 +106,11 @@ export function createSimulationStore() {
     },
     setSelectedAgentDetails(selectedAgentDetails, selectionError = null) {
       state = { ...state, selectedAgentDetails, selectionError };
+      emit();
+    },
+    setNetworkError(networkError) {
+      if (state.networkError === networkError) return;
+      state = { ...state, networkError };
       emit();
     },
     reset() {

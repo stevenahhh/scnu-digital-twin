@@ -6,6 +6,7 @@ import { ContactShadow } from "./ContactShadow";
 import { PedestrianEntity } from "./PedestrianEntity";
 import { ScooterEntity } from "./ScooterEntity";
 import { VehicleEntity } from "./VehicleEntity";
+import { RISK_COLORS } from "../utils/riskColors.mjs";
 
 const SCRATCH_TARGET = new THREE.Vector3();
 
@@ -64,7 +65,7 @@ export const TrafficEntity = React.memo(function TrafficEntity({ entity, coordin
         <mesh position={[0, 0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <ringGeometry args={[1.1, 1.35, 24]} />
           <meshBasicMaterial
-            color={entity.risk_level === "danger" ? "#ef233c" : entity.risk_level === "warning" ? "#f59e0b" : "#eab308"}
+            color={RISK_COLORS[entity.risk_level] ?? "#eab308"}
             transparent
             opacity={0.75}
             depthWrite={false}

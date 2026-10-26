@@ -37,3 +37,15 @@ test("keeps selected agent details separate from the websocket entity snapshot",
   store.selectAgent(null);
   assert.equal(store.getState().selectedAgentId, null);
 });
+
+test("network debug errors are kept in the store and cleared with null", () => {
+  const store = createSimulationStore();
+  let emits = 0;
+  store.subscribe(() => { emits += 1; });
+  store.setNetworkError("시뮬레이션 서버에 연결할 수 없습니다");
+  assert.equal(store.getState().networkError, "시뮬레이션 서버에 연결할 수 없습니다");
+  store.setNetworkError("시뮬레이션 서버에 연결할 수 없습니다");
+  assert.equal(emits, 1);
+  store.setNetworkError(null);
+  assert.equal(store.getState().networkError, null);
+});

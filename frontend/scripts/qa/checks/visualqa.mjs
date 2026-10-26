@@ -409,7 +409,7 @@ export const VISUALQA_CHECKS = [
         const active = qa.all("[aria-pressed=true],[aria-selected=true]").filter((el) => qa.visible(el) && (el.closest("[data-qa=campus-label]") || /camera-preset/.test(el.getAttribute("data-qa") ?? "")));
         const outlined = active.filter((el) => getComputedStyle(el).borderTopColor === primary || getComputedStyle(el).outlineColor === primary).length;
         const glyphless = active.filter((el) => !el.querySelector("svg")).length;
-        const chip = qa.all("[data-qa=campus-label] button").find((el) => el.getAttribute("aria-pressed") === "true");
+        const chip = qa.all("button[data-qa=campus-label]").find((el) => el.getAttribute("aria-pressed") === "true");
         const title = qa.txt(qa.one("[data-qa=selection-inspector] h2,[data-qa=selection-inspector] h3")) || null;
         return { activeElements: active.length, accentOutlined: outlined, withoutGlyph: glyphless, chip: chip ? qa.txt(chip) : null, title };
       });
@@ -454,7 +454,7 @@ export const VISUALQA_CHECKS = [
     async run(ctx) {
       if (ctx.state === "S12") {
         const m = await ctx.inPage((qa) => ({
-          chip: qa.txt(qa.all("[data-qa=campus-label] button").find((el) => el.getAttribute("aria-pressed") === "true")) || null,
+          chip: qa.txt(qa.all("button[data-qa=campus-label]").find((el) => el.getAttribute("aria-pressed") === "true")) || null,
           title: qa.txt(qa.one("[data-qa=selection-inspector] h2,[data-qa=selection-inspector] h3") ?? qa.all("[data-qa=dashboard-panel] h3").find(qa.visible)) || null,
         }));
         return result(m.chip && m.chip === m.title, m, "title equals the highlighted chip");

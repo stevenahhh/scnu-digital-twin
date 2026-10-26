@@ -1,10 +1,12 @@
 import { Canvas, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import { useEffect, useMemo } from "react";
-import { ACCENT_HEX } from "../ui/sceneTokens.mjs";
+import { ACCENT_HEX, D4_SCENE } from "../ui/sceneTokens.mjs";
+import { D4_SCENE_LABEL } from "./d4Shared.mjs";
+import { cx } from "../ui/cx.mjs";
 
 const ACTIVE_COLOR = ACCENT_HEX;
-const IDLE_COLOR = "#c7cdd6";
+const IDLE_COLOR = D4_SCENE.floorIdle;
 const FLOOR_STEP = 1.0;
 const BOX_HEIGHT = 0.82;
 const BOX_WIDTH = 2.1;
@@ -20,9 +22,7 @@ function Tower({ wing, x, isActive, onSelectFloor }) {
     <group position={[x, 0, 0]}>
       <Html position={[0, (levels[levels.length - 1] + 1) * FLOOR_STEP + 0.15, 0]} center distanceFactor={11} style={{ pointerEvents: "none" }}>
         <div
-          className={`pointer-events-none whitespace-nowrap rounded-md px-2 py-1 text-[15px] font-[800] ${
-            isActive ? "text-[var(--colors-primary)]" : "text-[var(--colors-ink-subtle)]"
-          }`}
+          className={cx("pointer-events-none whitespace-nowrap", D4_SCENE_LABEL, "text-body", isActive && "ring-2 ring-primary")}
         >
           {wing.label}
         </div>
@@ -45,14 +45,12 @@ function Tower({ wing, x, isActive, onSelectFloor }) {
             <Html position={[0, 0, BOX_DEPTH / 2 + 0.02]} center distanceFactor={11}>
               <button
                 type="button"
-                aria-label={`${floor}층 선택`}
+                aria-label={`${floor === 0 ? "지하 1" : floor}층 선택`}
                 onClick={(event) => {
                   event.stopPropagation();
                   onSelectFloor(wing.id, floor);
                 }}
-                className={`pointer-events-auto min-w-[40px] rounded-[4px] px-2 py-1 text-center text-[13px] font-[800] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 ${
-                  isActive ? "bg-black/15 text-white" : "bg-white/60 text-slate-600"
-                }`}
+                className={cx("pointer-events-auto min-w-10", D4_SCENE_LABEL)}
               >
                 {floor === 0 ? "B1" : `${floor}F`}
               </button>
@@ -73,7 +71,7 @@ function BridgeConnector({ floor }) {
         <meshStandardMaterial color={ACTIVE_COLOR} transparent opacity={0.75} />
       </mesh>
       <Html position={[0, 0.42, 0]} center distanceFactor={11} style={{ pointerEvents: "none" }}>
-        <div className="pointer-events-none whitespace-nowrap rounded-md border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] px-2 py-1 text-[12px] font-[800] text-[var(--colors-ink)] shadow">
+        <div className={cx("pointer-events-none whitespace-nowrap border border-hairline", D4_SCENE_LABEL)}>
           구름다리 ({floor}F)
         </div>
       </Html>

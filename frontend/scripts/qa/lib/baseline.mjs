@@ -12,7 +12,7 @@ export const KEY_RECTS = Object.freeze({
   hud: "[data-qa=campus-hud]",
   timeSlider: "[data-qa=time-slider]",
   presetBar: "[data-qa=camera-preset-bar]",
-  selectedChip: "[data-qa=campus-label] button[aria-pressed=true]",
+  selectedChip: "button[data-qa=campus-label][aria-pressed=true]",
 });
 
 function gray(image, x, y) {

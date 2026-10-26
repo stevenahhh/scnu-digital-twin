@@ -55,8 +55,8 @@ export const SMOKE_CHECKS = Object.freeze([
         const present = await ctx.inPage((qa) => Boolean(qa.one("[data-qa=vworld-map-overlays]")));
         return { pass: present, measured: { vworldMapOverlays: present }, expected: "[data-qa=vworld-map-overlays] mounted" };
       }
-      const labels = await ctx.inPage((qa) => qa.all("[data-qa=campus-label] button").length);
-      return { pass: labels > 5, measured: { labelButtons: labels }, expected: "> 5 [data-qa=campus-label] buttons" };
+      const labels = await ctx.inPage((qa) => qa.all("button[data-qa=campus-label]").length);
+      return { pass: labels > 5, measured: { labelButtons: labels }, expected: "> 5 button[data-qa=campus-label]s" };
     },
   },
   {

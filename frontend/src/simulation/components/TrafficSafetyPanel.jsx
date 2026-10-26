@@ -1,7 +1,13 @@
 import React, { useState } from "react";
-import { AlertTriangle, Pause, Play, RotateCcw, SkipForward } from "lucide-react";
+import { ArrowLeftRight, Circle, Pause, Play, RotateCcw, SkipForward, TriangleAlert } from "lucide-react";
 import { simulationStore, useSimulationStore } from "../stores/simulationStore";
-import { SIMULATION_API_URL } from "../utils/apiConfig";
+import { describeSimulationError, postJson, SimulationHttpError } from "../api/simulationHttp.mjs";
+import { Alert } from "../../ui/Alert.jsx";
+import { Button } from "../../ui/Button.jsx";
+import { Disclosure } from "../../ui/Disclosure.jsx";
+import { MetricList } from "../../ui/MetricList.jsx";
+import { SectionHeader } from "../../ui/SectionHeader.jsx";
+import { StatusBadge } from "../../ui/StatusBadge.jsx";
 import { RouteEditorPanel } from "./RouteEditorPanel";
 
 const SCENARIOS = [
@@ -21,6 +27,12 @@ const INTERACTION_STATE_LABEL = { NONE: "없음", CONFLICT: "상충", NEAR_MISS:
 const AGENT_TYPE_LABEL = { car: "자동차", person: "보행자", scooter: "킥보드" };
 const ROUTE_DEBUG_ENABLED = import.meta.env.DEV || String(import.meta.env.VITE_SIMULATION_DEBUG).toLowerCase() === "true";
 
+const RISK_TONES = { danger: "danger", warning: "warning", caution: "warning", normal: "success" };
+const SHOWN_TIMELINE = 5;
+const SHOWN_RISKS = 3;
+const FIELD = "mt-1 min-h-8 w-full rounded-control border border-hairline-strong bg-surface-1 px-2 text-body text-ink";
+const LABEL = "flex flex-col text-caption text-ink-muted";
+
 function formatDuration(seconds = 0) {
   const value = Math.max(0, Number(seconds) || 0);
   const minutes = Math.floor(value / 60);
@@ -28,13 +40,133 @@ function formatDuration(seconds = 0) {
   return minutes ? `${minutes}분 ${remainder}초` : `${remainder}초`;
 }
 
-function MiniMetric({ label, value, tone = "normal" }) {
-  const toneClass = tone === "danger" ? "text-[var(--colors-danger)]" : tone === "warning" ? "text-[var(--colors-warning)]" : "text-[var(--colors-ink)]";
+const seconds = (value) => (value == null ? "없음" : `${value}초`);
+const text = (value, title) => <span title={title} className="text-body tabular-nums text-ink">{value}</span>;
+const toned = (value, tone) => <StatusBadge tone={tone} className="text-caption tabular-nums">{String(value)}</StatusBadge>;
+// 영어 약어는 이름표의 title로만 남긴다.
+const term = (korean, english) => <span title={english}>{korean}</span>;
+
+// 객체 id 묶음: 글자 기호 대신 화살표 아이콘으로 잇는다.
+function ObjectPair({ ids = [] }) {
   return (
-    <div className="border-b border-[var(--colors-hairline)] py-2">
-      <div className="text-[11px] font-[700] text-[var(--colors-ink-subtle)]">{label}</div>
-      <div className={`mt-0.5 text-lg font-[800] ${toneClass}`}>{value}</div>
+    <span className="inline-flex flex-wrap items-center gap-1">
+      {ids.map((id, index) => (
+        <React.Fragment key={id}>
+          {index > 0 && <><ArrowLeftRight aria-hidden="true" className="h-3 w-3 shrink-0" /><span className="sr-only">와</span></>}
+          <span>{id}</span>
+        </React.Fragment>
+      ))}
+    </span>
+  );
+}
+
+// 연결 상태 배지. 훅의 어휘(연결됨, 재연결 중, 오류, 연결 끊김)를 그대로 쓰고 아이콘을 곁들인다.
+function ConnectionBadge({ status }) {
+  const connected = status === "연결됨";
+  return (
+    <StatusBadge tone={connected ? "success" : "warning"} icon={connected ? Circle : TriangleAlert} className="text-caption">
+      {status}
+    </StatusBadge>
+  );
+}
+
+// 앞의 shown개는 바로 보이고 나머지는 `더 보기`로 펼친다. 목록 안에 따로 스크롤 상자를 두지 않는다.
+function ShortList({ items, shown, empty, render }) {
+  if (items.length === 0) return <p className="py-2 text-center text-caption text-ink-muted">{empty}</p>;
+  const rest = items.slice(shown);
+  return (
+    <div className="flex flex-col gap-1">
+      <ul className="flex flex-col gap-1">{items.slice(0, shown).map(render)}</ul>
+      {rest.length > 0 && (
+        <Disclosure summary={`더 보기 (${rest.length}건)`}>
+          <ul className="flex flex-col gap-1">{rest.map(render)}</ul>
+        </Disclosure>
+      )}
     </div>
+  );
+}
+
+function AgentDetails({ agent }) {
+  const metrics = agent.metrics || {};
+  const route = [
+    { id: "origin", label: "출발", value: text(agent.origin_name) },
+    { id: "destination", label: "도착", value: text(agent.destination_name) },
+    { id: "speed", label: "속도", value: text(`${(Number(agent.speed || 0) * 3.6).toFixed(1)} km/h`) },
+    {
+      id: "state",
+      label: "상태",
+      value: text(`${TRIP_STATUS_LABEL[agent.trip_status] || "알 수 없음"} · `
+        + `${INTERACTION_STATE_LABEL[agent.interaction_state || "NONE"] || "알 수 없음"}`),
+    },
+    { id: "route", label: "경로", value: text(agent.current_route, agent.current_route) },
+    { id: "behavior", label: "행동 유형", value: text(agent.behavior_profile?.name || "알 수 없음") },
+  ];
+  const safety = [
+    {
+      id: "risk",
+      label: term("위험도", "Risk"),
+      value: toned(RISK_LABEL[agent.risk_level] || agent.risk_level, RISK_TONES[agent.risk_level] ?? "neutral"),
+    },
+    { id: "ttc", label: term("충돌 예상 시간", "TTC"), value: text(seconds(agent.current_ttc)) },
+    { id: "pet", label: term("통과 시간차", "PET"), value: text(seconds(metrics.minimum_pet)) },
+    { id: "conflicts", label: term("상충 건수", "Conflicts"), value: text(`${metrics.conflict_count || 0}건`) },
+    { id: "near-miss", label: "아차사고", value: text(`${metrics.near_miss_count || 0}건`) },
+    { id: "hard-brake", label: "급제동", value: text(`${metrics.hard_brake_count || 0}건`) },
+  ];
+  const trip = [
+    { id: "distance", label: "거리", value: text(`${Math.round(metrics.trip_distance || 0)}m`) },
+    { id: "time", label: "시간", value: text(formatDuration(metrics.travel_time)) },
+    { id: "average", label: "평균 속도", value: text(`${((metrics.average_speed || 0) * 3.6).toFixed(1)} km/h`) },
+    { id: "waiting", label: "대기", value: text(formatDuration(metrics.waiting_time)) },
+  ];
+  return (
+    <div className="flex flex-col gap-3 rounded-card bg-surface-2 p-3">
+      <SectionHeader level={4} title={agent.id} badge={<StatusBadge tone="neutral">{AGENT_TYPE_LABEL[agent.type] || agent.type}</StatusBadge>} />
+      <MetricList items={route} />
+      <SectionHeader level={4} title="안전" />
+      <MetricList items={safety} columns={2} />
+      <SectionHeader level={4} title="이동" />
+      <MetricList items={trip} columns={2} />
+    </div>
+  );
+}
+
+function RiskEventRow(event) {
+  const tone = event.risk_level === "danger" ? "danger" : "warning";
+  return (
+    <li key={event.event_id} className="flex flex-col gap-1 rounded-control bg-surface-2 px-3 py-2 text-caption text-ink-muted">
+      <div className="flex items-center justify-between gap-2 text-ink">
+        <span className="inline-flex items-center gap-2">
+          <StatusBadge tone={tone}>{RISK_LABEL[event.risk_level] || event.risk_level}</StatusBadge>
+          {event.location_id || "위치 미상"}
+        </span>
+        <strong className="font-semibold tabular-nums">{`${event.risk_score}점`}</strong>
+      </div>
+      <ObjectPair ids={event.object_ids} />
+      <span>
+        {term("충돌 예상 시간", "TTC")} {seconds(event.ttc)} · {term("통과 시간차", "PET")} {seconds(event.pet)}
+        {` · 최소 거리 ${event.minimum_distance ?? event.distance}m`}
+      </span>
+      <span>
+        {`외곽 간격 ${event.minimum_clearance == null ? "없음" : `${event.minimum_clearance}m`} · ${event.prediction_model || "linear"}`}
+      </span>
+      <span>{`${event.interaction_state || "CONFLICT"} · ${event.safety_event || "TRAFFIC_CONFLICT"}`}</span>
+    </li>
+  );
+}
+
+function TimelineRow(item, index) {
+  return (
+    <li
+      key={`${item.type}-${item.event_id || item.trip_id || item.agent_id}-${index}`}
+      className="flex items-center justify-between gap-2 border-b border-hairline py-1 text-caption text-ink-muted"
+    >
+      <span className="inline-flex flex-wrap items-center gap-1">
+        {item.type}
+        {item.agent_id ? ` · ${item.agent_id}` : <ObjectPair ids={item.object_ids} />}
+      </span>
+      <span className="tabular-nums">{`${Number(item.simulation_time || 0).toFixed(1)}초`}</span>
+    </li>
   );
 }
 
@@ -49,15 +181,11 @@ export function TrafficSafetyPanel() {
   const call = async (path, body) => {
     setRequestError(null);
     try {
-      const response = await fetch(`${SIMULATION_API_URL}${path}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        ...(body ? { body: JSON.stringify(body) } : {}),
-      });
-      if (!response.ok) throw new Error((await response.json()).detail || `HTTP ${response.status}`);
-      return response.json();
+      return await postJson(path, body);
     } catch (error) {
-      setRequestError(error.message);
+      const message = describeSimulationError(error);
+      if (message === null) throw error;
+      setRequestError({ message, detail: error instanceof SimulationHttpError ? error.detail : null });
       return null;
     }
   };
@@ -74,146 +202,112 @@ export function TrafficSafetyPanel() {
     call("/api/simulation/speed", { multiplier });
   };
 
-  return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between border-b border-[var(--colors-hairline)] pb-3">
-        <div>
-          <div className="text-sm font-[800]">캠퍼스 교통 시뮬레이션</div>
-          <div className="mt-1 text-[12px] text-[var(--colors-ink-subtle)]">{STATUS_LABEL[snapshot.status]} · {snapshot.connectionStatus}</div>
-        </div>
-        <span className={`px-2 py-1 text-[11px] font-[800] ${snapshot.connectionStatus === "연결됨" ? "text-emerald-700" : "text-amber-700"}`}>
-          {snapshot.connectionStatus === "연결됨" ? "● 연결됨" : `△ ${snapshot.connectionStatus}`}
-        </span>
-      </div>
+  const stats = snapshot.statistics;
+  const completed = Object.values(stats.completed_trips || {}).reduce((sum, value) => sum + Number(value || 0), 0);
+  const metrics = [
+    { id: "car", label: "자동차", value: text(`${stats.car_count}대`) },
+    { id: "person", label: "보행자", value: text(`${stats.person_count}명`) },
+    { id: "scooter", label: "킥보드", value: text(`${stats.scooter_count}대`) },
+    { id: "normal", label: "정상 / 주의", value: text(`${stats.normal_count} / ${stats.caution_count}`) },
+    { id: "warning", label: "경고", value: toned(stats.warning_count, "warning") },
+    { id: "danger", label: "위험", value: toned(stats.danger_count, "danger") },
+    { id: "completed", label: "완료된 이동", value: text(completed) },
+    { id: "current", label: "현재 위험", value: toned(stats.current_risks || 0, "warning") },
+    { id: "near-miss", label: "아차사고", value: toned(stats.near_miss_count || 0, "danger") },
+    { id: "clock", label: "시뮬레이션 시각", value: text(`${snapshot.simulationTime.toFixed(1)}초 · ${snapshot.demandProfile}`) },
+    { id: "speed", label: "속도", value: text(`×${speed}`) },
+  ];
+  const coverage = stats.network_coverage;
 
-      <div className="grid grid-cols-3 gap-x-3">
-        <MiniMetric label="자동차" value={`${snapshot.statistics.car_count}대`} />
-        <MiniMetric label="보행자" value={`${snapshot.statistics.person_count}명`} />
-        <MiniMetric label="킥보드" value={`${snapshot.statistics.scooter_count}대`} />
-        <MiniMetric label="정상 / 주의" value={`${snapshot.statistics.normal_count} / ${snapshot.statistics.caution_count}`} />
-        <MiniMetric label="경고" value={`${snapshot.statistics.warning_count}`} tone="warning" />
-        <MiniMetric label="위험" value={`${snapshot.statistics.danger_count}`} tone="danger" />
-        <MiniMetric label="완료된 이동" value={Object.values(snapshot.statistics.completed_trips || {}).reduce((sum, value) => sum + Number(value || 0), 0)} />
-        <MiniMetric label="현재 위험" value={snapshot.statistics.current_risks || 0} tone="warning" />
-        <MiniMetric label="아차사고" value={snapshot.statistics.near_miss_count || 0} tone="danger" />
-      </div>
-      <div className="flex items-center justify-between text-[12px] font-[700] text-[var(--colors-ink-muted)]">
-        <span>시뮬레이션 {snapshot.simulationTime.toFixed(1)}초 · {snapshot.demandProfile}</span><span>속도 ×{speed}</span>
-      </div>
-      {snapshot.statistics.network_coverage && (
-        <div className="rounded-md bg-[var(--colors-surface-2)] p-3 text-[11px]">
-          <div className="mb-2 flex items-center justify-between font-[800]">
-            <span>캠퍼스 네트워크 범위</span>
-            <span>{snapshot.statistics.network_runtime?.mode || "-"}</span>
-          </div>
-          <div className="grid grid-cols-3 gap-2 text-[var(--colors-ink-subtle)]">
-            {["car", "person", "scooter"].map((type) => {
-              const coverage = snapshot.statistics.network_coverage[type] || {};
-              return <div key={type}><div className="font-[800] text-[var(--colors-ink)]">{AGENT_TYPE_LABEL[type]}</div><div>실주행 {coverage.visited_percent || 0}%</div><div>계획 {coverage.planned_percent || 0}%</div></div>;
-            })}
-          </div>
-          {snapshot.statistics.network_runtime?.derived_allowed && <div className="mt-2 text-amber-700">파생 경로 개발 모드 · 실측 승인 데이터 아님</div>}
-        </div>
+  return (
+    <section className="flex flex-col gap-5" aria-label="캠퍼스 교통 시뮬레이션">
+      <SectionHeader
+        title="캠퍼스 교통 시뮬레이션"
+        subtitle={STATUS_LABEL[snapshot.status]}
+        actions={<ConnectionBadge status={snapshot.connectionStatus} />}
+      />
+      <MetricList items={metrics} columns={2} />
+      {coverage && (
+        <section className="flex flex-col gap-2 rounded-card bg-surface-2 p-3">
+          <SectionHeader level={4} title="캠퍼스 네트워크 범위" badge={<StatusBadge tone="neutral">{stats.network_runtime?.mode || "모드 없음"}</StatusBadge>} />
+          <MetricList
+            items={["car", "person", "scooter"].map((type) => ({
+              id: type,
+              label: AGENT_TYPE_LABEL[type],
+              value: text(`실주행 ${coverage[type]?.visited_percent || 0}% · 계획 ${coverage[type]?.planned_percent || 0}%`),
+            }))}
+          />
+          {stats.network_runtime?.derived_allowed && (
+            <StatusBadge tone="warning" className="self-start text-caption">파생 경로 개발 모드 · 실측 승인 데이터 아님</StatusBadge>
+          )}
+        </section>
       )}
 
-      <div className="space-y-3 border-t border-[var(--colors-hairline)] pt-4">
-        <label className="block text-[12px] font-[800] text-[var(--colors-ink-subtle)]">
+      <section className="flex flex-col gap-3 border-t border-hairline pt-4">
+        <label className={LABEL}>
           시나리오
-          <select value={scenario} onChange={(event) => setScenario(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] px-2 text-sm text-[var(--colors-ink)]">
+          <select value={scenario} onChange={(event) => setScenario(event.target.value)} className={FIELD}>
             {SCENARIOS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
         </label>
         <div className="grid grid-cols-3 gap-2">
           {[["car", "자동차"], ["person", "보행자"], ["scooter", "킥보드"]].map(([type, label]) => (
-            <label key={type} className="text-[11px] font-[700] text-[var(--colors-ink-subtle)]">{label}
-              <input type="number" min="0" max="500" value={counts[type]} onChange={(event) => updateCount(type, event.target.value)} className="mt-1 h-8 w-full rounded-md border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] px-2 text-sm text-[var(--colors-ink)]" />
+            <label key={type} className={LABEL}>{label}
+              <input type="number" min="0" max="500" value={counts[type]} onChange={(event) => updateCount(type, event.target.value)} className={FIELD} />
             </label>
           ))}
         </div>
         <div className="flex items-center gap-3">
-          <label className="flex flex-1 items-center gap-2 text-[12px] font-[700] text-[var(--colors-ink-subtle)]">
+          <label className="flex flex-1 items-center gap-2 text-caption text-ink-muted">
             <input type="checkbox" checked={eventsEnabled} onChange={(event) => setEventsEnabled(event.target.checked)} /> 위험 이벤트
           </label>
-          <select aria-label="시뮬레이션 속도" value={speed} onChange={(event) => setSimulationSpeed(event.target.value)} className="h-8 rounded-md border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] px-2 text-xs">
+          <select aria-label="시뮬레이션 속도" value={speed} onChange={(event) => setSimulationSpeed(event.target.value)} className={`${FIELD} mt-0 w-auto`}>
             {[0.5, 1, 2, 4].map((value) => <option key={value} value={value}>×{value}</option>)}
           </select>
         </div>
-        <div className="grid grid-cols-4 overflow-hidden rounded-md border border-[var(--colors-hairline)]">
-          <button type="button" onClick={start} className="flex h-9 items-center justify-center gap-1 border-r border-[var(--colors-hairline)] text-xs font-[800]"><Play size={13} />시작</button>
-          <button type="button" onClick={() => call("/api/simulation/pause")} className="flex h-9 items-center justify-center gap-1 border-r border-[var(--colors-hairline)] text-xs font-[800]"><Pause size={13} />정지</button>
-          <button type="button" onClick={() => call("/api/simulation/resume")} className="flex h-9 items-center justify-center gap-1 border-r border-[var(--colors-hairline)] text-xs font-[800]"><SkipForward size={13} />재개</button>
-          <button type="button" onClick={async () => { await call("/api/simulation/reset"); simulationStore.reset(); }} className="flex h-9 items-center justify-center gap-1 text-xs font-[800]"><RotateCcw size={13} />초기화</button>
+        <div className="grid grid-cols-4 gap-1">
+          <Button size="sm" variant="primary" onClick={start} icon={<Play aria-hidden="true" className="h-4 w-4" />}>시작</Button>
+          <Button size="sm" onClick={() => call("/api/simulation/pause")} icon={<Pause aria-hidden="true" className="h-4 w-4" />}>정지</Button>
+          <Button size="sm" onClick={() => call("/api/simulation/resume")} icon={<SkipForward aria-hidden="true" className="h-4 w-4" />}>재개</Button>
+          <Button
+            size="sm"
+            onClick={async () => { await call("/api/simulation/reset"); simulationStore.reset(); }}
+            icon={<RotateCcw aria-hidden="true" className="h-4 w-4" />}
+          >
+            초기화
+          </Button>
         </div>
-        {requestError && <div className="text-[12px] font-[700] text-red-600">오류: {requestError}</div>}
-      </div>
+        {requestError && (
+          <Alert tone="danger" source="simulation" title={`오류: ${requestError.message}`} detail={requestError.detail ?? undefined} />
+        )}
+      </section>
 
-      <div className="border-t border-[var(--colors-hairline)] pt-4">
-        <div className="mb-2 flex items-center justify-between">
-          <div className="text-sm font-[800]">선택 Agent</div>
-          {snapshot.selectedAgentId && <button type="button" onClick={() => simulationStore.selectAgent(null)} className="text-[11px] font-[700] text-[var(--colors-ink-subtle)]">선택 해제</button>}
-        </div>
-        {!snapshot.selectedAgentId && <div className="py-4 text-center text-[12px] text-[var(--colors-ink-subtle)]">3D 화면의 자동차·보행자·킥보드를 클릭하세요.</div>}
-        {snapshot.selectedAgentId && !snapshot.selectedAgentDetails && !snapshot.selectionError && <div className="py-4 text-center text-[12px] text-[var(--colors-ink-subtle)]">Agent 정보를 불러오는 중입니다.</div>}
-        {snapshot.selectionError && <div className="text-[12px] font-[700] text-red-600">{snapshot.selectionError}</div>}
-        {snapshot.selectedAgentDetails && (() => {
-          const agent = snapshot.selectedAgentDetails;
-          const metrics = agent.metrics || {};
-          return (
-            <div className="space-y-3 rounded-md bg-[var(--colors-surface-2)] p-3 text-[12px]">
-              <div className="flex items-center justify-between"><span className="text-sm font-[900]">{agent.id}</span><span className="font-[800]">{AGENT_TYPE_LABEL[agent.type] || agent.type}</span></div>
-              <div className="grid grid-cols-[80px_1fr] gap-x-2 gap-y-1">
-                <span className="text-[var(--colors-ink-subtle)]">출발</span><span className="font-[700]">{agent.origin_name}</span>
-                <span className="text-[var(--colors-ink-subtle)]">도착</span><span className="font-[700]">{agent.destination_name}</span>
-                <span className="text-[var(--colors-ink-subtle)]">속도</span><span>{(Number(agent.speed || 0) * 3.6).toFixed(1)} km/h</span>
-                <span className="text-[var(--colors-ink-subtle)]">상태</span><span>{TRIP_STATUS_LABEL[agent.trip_status] || "알 수 없음"} · {INTERACTION_STATE_LABEL[agent.interaction_state || "NONE"] || "알 수 없음"}</span>
-                <span className="text-[var(--colors-ink-subtle)]">경로</span><span className="truncate" title={agent.current_route}>{agent.current_route}</span>
-                <span className="text-[var(--colors-ink-subtle)]">행동 유형</span><span>{agent.behavior_profile?.name || "-"}</span>
-              </div>
-              <div className="border-t border-[var(--colors-hairline)] pt-2">
-                <div className="mb-1 font-[800]">안전</div>
-                <div className="grid grid-cols-2 gap-1">
-                  <span>Risk {RISK_LABEL[agent.risk_level] || agent.risk_level}</span><span>TTC {agent.current_ttc == null ? "-" : `${agent.current_ttc}s`}</span>
-                  <span>PET {metrics.minimum_pet == null ? "-" : `${metrics.minimum_pet}s`}</span><span>Conflicts {metrics.conflict_count || 0}</span>
-                  <span>아차사고 {metrics.near_miss_count || 0}</span><span>급제동 {metrics.hard_brake_count || 0}</span>
-                </div>
-              </div>
-              <div className="border-t border-[var(--colors-hairline)] pt-2">
-                <div className="mb-1 font-[800]">이동</div>
-                <div className="grid grid-cols-2 gap-1">
-                  <span>거리 {Math.round(metrics.trip_distance || 0)}m</span><span>시간 {formatDuration(metrics.travel_time)}</span>
-                  <span>평균 {((metrics.average_speed || 0) * 3.6).toFixed(1)} km/h</span><span>대기 {formatDuration(metrics.waiting_time)}</span>
-                </div>
-              </div>
-            </div>
-          );
-        })()}
-      </div>
+      <section className="flex flex-col gap-2 border-t border-hairline pt-4">
+        <SectionHeader
+          title="선택 객체"
+          actions={snapshot.selectedAgentId && (
+            <Button size="sm" variant="ghost" onClick={() => simulationStore.selectAgent(null)}>선택 해제</Button>
+          )}
+        />
+        {!snapshot.selectedAgentId && <p className="py-2 text-center text-caption text-ink-muted">3D 화면의 자동차·보행자·킥보드를 선택하세요.</p>}
+        {snapshot.selectedAgentId && !snapshot.selectedAgentDetails && !snapshot.selectionError && (
+          <p role="status" className="py-2 text-center text-caption text-ink-muted">선택한 객체 정보를 불러오는 중입니다.</p>
+        )}
+        {snapshot.selectionError && <Alert tone="warning" source="simulation-agent" title={snapshot.selectionError} />}
+        {snapshot.selectedAgentDetails && <AgentDetails agent={snapshot.selectedAgentDetails} />}
+      </section>
 
-      <div className="border-t border-[var(--colors-hairline)] pt-4">
-        <div className="mb-2 text-sm font-[800]">시뮬레이션 타임라인</div>
-        <div className="max-h-36 space-y-1 overflow-y-auto text-[11px]">
-          {(snapshot.timeline || []).length === 0 && <div className="text-[var(--colors-ink-subtle)]">기록된 이벤트가 없습니다.</div>}
-          {(snapshot.timeline || []).slice(0, 30).map((item, index) => <div key={`${item.type}-${item.event_id || item.trip_id || item.agent_id}-${index}`} className="flex justify-between border-b border-[var(--colors-hairline)] py-1"><span>{item.type} · {item.agent_id || (item.object_ids || []).join(" ↔ ")}</span><span>{Number(item.simulation_time || 0).toFixed(1)}s</span></div>)}
-        </div>
-      </div>
+      <section className="flex flex-col gap-2 border-t border-hairline pt-4">
+        <SectionHeader title="시뮬레이션 타임라인" />
+        <ShortList items={(snapshot.timeline || []).slice(0, 30)} shown={SHOWN_TIMELINE} empty="기록된 이벤트가 없습니다." render={TimelineRow} />
+      </section>
 
       {ROUTE_DEBUG_ENABLED && <RouteEditorPanel />}
 
-      <div className="border-t border-[var(--colors-hairline)] pt-4">
-        <div className="mb-2 flex items-center gap-2 text-sm font-[800]"><AlertTriangle size={14} /> 실시간 위험 이벤트</div>
-        <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
-          {snapshot.riskEvents.length === 0 && <div className="py-4 text-center text-[12px] text-[var(--colors-ink-subtle)]">감지된 이벤트가 없습니다.</div>}
-          {snapshot.riskEvents.slice(0, 20).map((event) => (
-            <div key={event.event_id} className="border-l-2 border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] px-3 py-2 text-[12px]" style={{ borderLeftColor: `var(--colors-${event.risk_level === "danger" ? "danger" : "warning"})` }}>
-              <div className="flex items-center justify-between gap-2"><span className="font-[800]">{RISK_LABEL[event.risk_level] || event.risk_level} · {event.location_id || "위치 미상"}</span><span className="font-[800]">{event.risk_score}점</span></div>
-              <div className="mt-1 text-[var(--colors-ink-subtle)]">{(event.object_ids || []).join(" ↔ ")}</div>
-              <div className="mt-1 text-[var(--colors-ink-muted)]">TTC {event.ttc == null ? "-" : `${event.ttc}s`} · PET {event.pet == null ? "-" : `${event.pet}s`} · 최소거리 {event.minimum_distance ?? event.distance}m</div>
-              <div className="mt-1 text-[var(--colors-ink-muted)]">외곽간격 {event.minimum_clearance == null ? "-" : `${event.minimum_clearance}m`} · {event.prediction_model || "linear"}</div>
-              <div className="mt-1 font-[700] text-[var(--colors-ink-subtle)]">{event.interaction_state || "CONFLICT"} · {event.safety_event || "TRAFFIC_CONFLICT"}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
+      <section className="flex flex-col gap-2 border-t border-hairline pt-4">
+        <SectionHeader title="실시간 위험 이벤트" />
+        <ShortList items={snapshot.riskEvents.slice(0, 20)} shown={SHOWN_RISKS} empty="감지된 이벤트가 없습니다." render={RiskEventRow} />
+      </section>
+    </section>
   );
 }

@@ -143,7 +143,8 @@ export class Browser {
   // Centre of the first matching element (exact trimmed text when given) inside the viewport.
   async center(selector, text) {
     return this.run((sel, txt) => {
-      const nodes = [...document.querySelectorAll(sel)].filter((node) => txt == null || (node.textContent || "").trim() === txt);
+      const nodes = [...document.querySelectorAll(sel)].filter((node) => txt == null || (node.textContent || "").trim() === txt
+        || (node.querySelector(".line-clamp-2")?.textContent || "").trim() === txt);
       for (const node of nodes) {
         const r = node.getBoundingClientRect();
         const x = r.x + r.width / 2;
@@ -157,6 +158,11 @@ export class Browser {
   // SCREENS "tap": retry up to 12 s, scrollIntoView for camera presets, native click at the centre.
   async tap(selector, text, { timeoutMs = 12000 } = {}) {
     if (selector.includes("camera-preset")) {
+      // Named presets live in the 시점 menu (HudToolbar); open it first when the item is not in the DOM.
+      await this.run((sel) => {
+        if (!document.querySelector(sel)) document.querySelector("[data-qa=camera-view-menu]")?.click();
+      }, selector);
+      await sleep(300);
       await this.run((sel) => document.querySelector(sel)?.scrollIntoView({ inline: "center", block: "nearest" }), selector);
     }
     const deadline = Date.now() + timeoutMs;

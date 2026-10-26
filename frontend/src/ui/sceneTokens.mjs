@@ -9,7 +9,38 @@ export const SELECTION_HEX = ACCENT_HEX;
 export const HOVER_HEX = "#c7cbef";
 // 긴급차량 차체: --colors-emergency와 같은 값. 강조색이 아니라 상태를 뜻하는 의미색이다.
 export const EMERGENCY_HEX = "#ff3b30";
+// 위험(danger) 단계의 교통 객체 차체·고리: --colors-risk-danger와 같은 값. 긴급차량(EMERGENCY_HEX)과 색조가 다르다.
+export const RISK_DANGER_HEX = "#b5179e";
+// 경고(warning) 단계의 교통 객체 차체·고리. 장면에서만 쓰는 상태색이다.
+export const RISK_WARNING_HEX = "#f59e0b";
 // 교통망 디버그 층의 차량 차로: --colors-vehicle-lane과 같은 값. 조작 대상이 아니므로 강조색을 쓰지 않는다.
 export const VEHICLE_LANE_HEX = "#1e88e5";
 // 선택 밖 건물을 흐리게 할 때의 검은 막 투명도(--colors-dim의 알파와 같다).
 export const DIM_ALPHA = 0.2;
+
+// 옥상 태양광 편집 장면(RoofEditorScene)의 색. 의미가 같은 DOM 토큰이 있으면 그 값을 따른다.
+export const ROOF_SCENE = Object.freeze({
+  massFill: "#415675",
+  massEdge: "#4b6182",
+  ground: "#0b1220",
+  footprint: "#526277",
+  obstacle: "#94a3b8",
+  // 설치 가능 구역: 편집기 범례와 같은 색.
+  installZone: "#ef4444",
+  // 배열 판: 기본은 강조색, 선택은 경고색, 배치 오류는 위험색. 꼭짓점 손잡이는 그 옅은 색.
+  arraySelected: "#f59e0b",
+  arrayInvalid: "#ef4444",
+  handle: "#fde68a",
+  handleInvalid: "#fecaca",
+  skyLight: "#e0f2fe",
+  groundLight: "#1e293b",
+  gridMajor: "#475569",
+  gridMinor: "#1e293b",
+});
+
+// D4 층·강의실 장면의 상자 색. 선택은 강조색(SELECTION_HEX), 나머지는 장면 전용 재질색이다.
+export const D4_SCENE = Object.freeze({
+  roomIdle: "#e4e7ec",
+  roomUtility: "#cbd0d8",
+  floorIdle: "#c7cdd6",
+});

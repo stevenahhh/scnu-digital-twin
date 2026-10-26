@@ -17,6 +17,15 @@ import { CAMPUS_REPRESENTATIVE_BUILDING_IDS } from "./representativePlanOverlay.
 import { replaceRepresentativePlanObjects } from "./representativePlanVWorld.mjs";
 import { createCampusGltfOverlay, removeCampusGltfOverlay } from "./campusGltfOverlay.mjs";
 import { createVWorldTrafficSimulation } from "./trafficSimulationOverlay.mjs";
+import { Alert } from "../ui/Alert.jsx";
+import { Spinner } from "../ui/Spinner.jsx";
+import { StatusBadge } from "../ui/StatusBadge.jsx";
+
+// 교통 시뮬레이션 연결 상태 문구(frontend/AGENTS.md 공용 어휘). 모르는 상태는 끊김으로 본다.
+const TRAFFIC_STATUS = {
+  live: { label: "교통 시뮬레이션 연결됨", tone: "success" },
+  connecting: { label: "교통 시뮬레이션 연결 중", tone: "neutral" },
+};
 
 const D4SectionExperience = lazy(() =>
   import("./D4SectionExperience").then((module) => ({
@@ -103,6 +112,13 @@ export default function VWorldRenderer({
   const [isLoading, setIsLoading] = useState(true);
   const [hasLoadError, setHasLoadError] = useState(false);
   const [loadErrorMessage, setLoadErrorMessage] = useState("");
+  // 다시 시도는 페이지를 새로 고치지 않고 SDK 로더부터 지도 초기화를 한 번 더 돌린다.
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const retryLoad = () => {
+    setHasLoadError(false);
+    setIsLoading(true);
+    setLoadAttempt((value) => value + 1);
+  };
   const [campusStatus, setCampusStatus] = useState(null);
   const [trafficStatus, setTrafficStatus] = useState(null);
   const [isD4SectionOpen, setIsD4SectionOpen] = useState(false);
@@ -336,7 +352,7 @@ export default function VWorldRenderer({
       cameraControllerRef.current?.dispose();
       cameraControllerRef.current = null;
     };
-  }, [handleOverlayDataChange]);
+  }, [handleOverlayDataChange, loadAttempt]);
 
   // 좁은 화면에서 열린 대시보드 패널은 지도 전체를 덮는다. 그 밑의 지도 오버레이는 보이지 않으므로
   // 포커스·클릭·보조 기술 대상에서 뺀다. D4 상세는 이 묶음 밖에 두어 영향을 받지 않는다.
@@ -365,32 +381,30 @@ export default function VWorldRenderer({
             className="pointer-events-none absolute left-6 top-6 z-20 flex max-w-[calc(100%-3rem)] flex-col items-start gap-3"
           >
             {isLoading && !hasLoadError && (
-              <div aria-live="polite" role="status" className="dashboard-status-badge flex items-center gap-2 px-3 py-2 text-xs">
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--colors-hairline)] border-t-[var(--colors-primary)]" />
-                VWorld 지도를 불러오는 중입니다.
-              </div>
+              <Spinner
+                delayMs={0}
+                label="VWorld 지도를 불러오는 중입니다."
+                className="rounded-control border border-hairline bg-surface-1 px-3 py-2"
+              />
             )}
             {hasLoadError && (
-              <div role="alert" className="dashboard-status-badge pointer-events-auto flex items-center gap-3 px-3 py-2 text-xs">
-                <span>{loadErrorMessage}</span>
-                <button type="button" className="underline" onClick={() => window.location.reload()}>
-                  다시 시도
-                </button>
-              </div>
+              <Alert
+                tone="danger"
+                source="vworld-map"
+                title={loadErrorMessage}
+                actions={[{ label: "다시 시도", onClick: retryLoad }]}
+                className="pointer-events-auto max-w-80"
+              />
             )}
             {(campusStatus?.state === "terrain-timeout" || campusStatus?.state === "error") && (
-              <div className="dashboard-status-badge pointer-events-auto px-3 py-2 text-xs" role="status">
+              <StatusBadge tone="warning" role="status" className="pointer-events-auto text-caption">
                 {campusStatus.message}
-              </div>
+              </StatusBadge>
             )}
             {trafficStatus && (
-              <div className="dashboard-status-badge px-3 py-2 text-xs" role="status">
-                {trafficStatus.state === "live"
-                  ? "교통 시뮬레이션 연결됨"
-                  : trafficStatus.state === "connecting"
-                    ? "교통 시뮬레이션 연결 중"
-                    : "교통 시뮬레이션 연결 끊김"}
-              </div>
+              <StatusBadge tone={TRAFFIC_STATUS[trafficStatus.state]?.tone ?? "warning"} role="status" className="text-caption">
+                {TRAFFIC_STATUS[trafficStatus.state]?.label ?? "교통 시뮬레이션 연결 끊김"}
+              </StatusBadge>
             )}
             <RepresentativePlanOverlayController
               buildingIds={CAMPUS_REPRESENTATIVE_BUILDING_IDS}
@@ -402,6 +416,7 @@ export default function VWorldRenderer({
                 displayName: buildingId,
               })}
               className="pointer-events-auto"
+              widthClassName="max-w-[18rem]"
             />
           </div>
         )}
@@ -417,7 +432,7 @@ export default function VWorldRenderer({
             {selectedRoadZoneName && (
               <div
                 role="status"
-                className="dashboard-status-badge pointer-events-auto flex items-center gap-2 px-3 py-2 text-xs font-extrabold shadow-lg"
+                className="pointer-events-auto flex items-center gap-2 rounded-control border border-hairline bg-surface-1 px-3 py-2 text-caption font-semibold text-ink"
               >
                 <MapPin size={14} className="text-[var(--colors-primary)]" />
                 도로 구역 · {selectedRoadZoneName}

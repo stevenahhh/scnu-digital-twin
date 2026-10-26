@@ -144,7 +144,13 @@ beforeEach(() => {
   fileLoaderMock.loads.length = 0;
 });
 
-const presetButtons = (container) => CAMERA_PRESETS.map((preset) => container.querySelector(`[data-qa="camera-preset-${preset.id}"]`));
+// 전체 시점은 도구 모음에 있고, 나머지 시점은 `시점` 메뉴 안에 있다. 메뉴 항목은 메뉴를 연 뒤에만 DOM에 있다.
+const presetButton = (container, id) => {
+  if (id !== "overview" && !container.querySelector(`[data-qa="camera-preset-${id}"]`)) {
+    fireEvent.click(container.querySelector('[data-qa="camera-view-menu"]'));
+  }
+  return container.querySelector(`[data-qa="camera-preset-${id}"]`);
+};
 
 afterEach(() => {
   cleanup();
@@ -155,7 +161,7 @@ describe("Legacy and VWorld feature parity", () => {
   it("renders the VWorld campus status and full energy surfaces inside the energy tab", () => {
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: "에너지" }));
+    fireEvent.click(screen.getByRole("tab", { name: "에너지" }));
     expect(screen.getByText("캠퍼스 설치 현황")).toBeTruthy();
     expect(screen.getByText("건물 에너지 분석")).toBeTruthy();
     expect(screen.getByText("캠퍼스 태양광 비교")).toBeTruthy();
@@ -168,7 +174,7 @@ describe("Legacy and VWorld feature parity", () => {
     const labels = [...container.querySelectorAll('[data-qa^="dashboard-tab-"]')].map((tab) => tab.textContent.trim());
     expect(labels).toEqual(C5_TABS);
     for (const label of C5_TABS) {
-      expect(screen.getByRole("button", { name: label })).toBeTruthy();
+      expect(screen.getByRole("tab", { name: label })).toBeTruthy();
     }
   });
 
@@ -177,7 +183,7 @@ describe("Legacy and VWorld feature parity", () => {
     installationClient.listDetails.mockImplementationOnce(() => new Promise((resolve) => { finishLoading = resolve; }));
     const view = render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: "에너지" }));
+    fireEvent.click(screen.getByRole("tab", { name: "에너지" }));
     expect(screen.getByText("건물 에너지 분석").getAttribute("data-plans-status")).toBe("loading");
     await act(async () => finishLoading([]));
     expect(screen.getByText("건물 에너지 분석").getAttribute("data-plans-status")).toBe("ready");
@@ -185,7 +191,7 @@ describe("Legacy and VWorld feature parity", () => {
 
     installationClient.listDetails.mockRejectedValueOnce(new TypeError("Failed to fetch"));
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: "에너지" }));
+    fireEvent.click(screen.getByRole("tab", { name: "에너지" }));
     expect(await screen.findByText("설치 계획을 불러오지 못했습니다")).toBeTruthy();
     expect(screen.getByText("건물 에너지 분석").getAttribute("data-plans-status")).toBe("error");
   });
@@ -194,7 +200,7 @@ describe("Legacy and VWorld feature parity", () => {
     const fetchMock = stubFetch({ traffic: rejectNetwork });
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: "주차·안전" }));
+    fireEvent.click(screen.getByRole("tab", { name: "주차·안전" }));
     await waitFor(() => expect(countCalls(fetchMock, "/api/traffic")).toBeGreaterThan(0));
     await settlePendingFetches();
 
@@ -294,7 +300,7 @@ describe("Legacy and VWorld feature parity", () => {
     expect(chrome).toContain(screen.getByRole("button", { name: "패널 닫기" }));
     // 라벨 층은 지면 시점(정문)에서 거리 단계로 바뀌므로 눌린 시점을 함께 받는다.
     expect(sceneMock.cityModelProps.activePresetId).toBe("overview");
-    fireEvent.click(container.querySelector('[data-qa="camera-preset-gate"]'));
+    fireEvent.click(presetButton(container, "gate"));
     expect(sceneMock.cityModelProps.activePresetId).toBe("gate");
   });
 
@@ -396,16 +402,18 @@ describe("Legacy and VWorld feature parity", () => {
     }
   });
 
-  it("puts every camera preset, the tour toggle and the KST time slider in tab order before the panel", async () => {
+  it("puts the three camera groups, the time controls and the camera buttons in tab order before the map and the panel", async () => {
     const user = userEvent.setup();
     const { container } = render(<App />);
 
-    const presets = presetButtons(container);
-    expect(presets.every(Boolean)).toBe(true);
+    const overview = container.querySelector('[data-qa="camera-preset-overview"]');
+    const menu = container.querySelector('[data-qa="camera-view-menu"]');
     const tour = container.querySelector('[data-qa="camera-tour-toggle"]');
     const play = screen.getByRole("button", { name: "시간 재생" });
     const slider = screen.getByRole("slider", { name: "시각 (KST)" });
-    const expected = [...presets, tour, play, slider];
+    const cameraButtons = ["확대", "축소", "왼쪽으로 회전", "오른쪽으로 회전", "처음 시점"].map((name) => screen.getByRole("button", { name }));
+    const mapLayer = container.querySelector('[data-qa="campus-map-layer"]');
+    const expected = [overview, menu, tour, play, slider, ...cameraButtons, mapLayer];
 
     const reached = [];
     for (let i = 0; i < expected.length; i += 1) {
@@ -413,9 +421,22 @@ describe("Legacy and VWorld feature parity", () => {
       reached.push(document.activeElement);
     }
     expect(reached).toEqual(expected);
-    for (const button of [...presets, tour, play]) {
+    for (const button of [overview, menu, tour, play, ...cameraButtons]) {
       expect(button.getAttribute("type")).toBe("button");
     }
+  });
+
+  it("reaches every named preset through the 시점 menu and closes it on Escape with focus back on the trigger", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<App />);
+    const trigger = container.querySelector('[data-qa="camera-view-menu"]');
+    await user.click(trigger);
+    const menu = screen.getByRole("menu", { name: "시점" });
+    const items = within(menu).getAllByRole("menuitemradio");
+    expect(items.map((item) => item.dataset.qa)).toEqual(CAMERA_PRESETS.slice(1).map((preset) => `camera-preset-${preset.id}`));
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("menu")).toBeNull();
+    expect(document.activeElement).toBe(trigger);
   });
 
   it("flies the camera to a clicked preset and marks it pressed; user orbit input clears the pressed state", () => {
@@ -423,13 +444,14 @@ describe("Legacy and VWorld feature parity", () => {
     try {
       const { container } = render(<App />);
       const controls = controlsMock.current;
-      const [overview, gate] = presetButtons(container);
+      const overview = presetButton(container, "overview");
       expect(overview.getAttribute("aria-pressed")).toBe("true");
-      expect(gate.getAttribute("aria-pressed")).toBe("false");
+      const gate = presetButton(container, "gate");
+      expect(gate.getAttribute("aria-checked")).toBe("false");
 
       fireEvent.click(gate);
-      expect(gate.getAttribute("aria-pressed")).toBe("true");
       expect(overview.getAttribute("aria-pressed")).toBe("false");
+      expect(presetButton(container, "gate").getAttribute("aria-checked")).toBe("true");
       expect(controls.events).toEqual(["start:flyTo"]);
 
       act(() => {
@@ -450,24 +472,46 @@ describe("Legacy and VWorld feature parity", () => {
       act(() => {
         controls.dispatchEvent({ type: "start" });
       });
-      expect(gate.getAttribute("aria-pressed")).toBe("false");
+      expect(presetButton(container, "gate").getAttribute("aria-checked")).toBe("false");
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it("moves the camera from the on-screen buttons and the keyboard, and clears the pressed preset like a user orbit", () => {
+    const { container } = render(<App />);
+    const controls = controlsMock.current;
+    const overview = presetButton(container, "overview");
+    const distance = () => controls.object.position.distanceTo(controls.target);
+    const before = distance();
+
+    fireEvent.click(screen.getByRole("button", { name: "확대" }));
+    expect(distance()).toBeLessThan(before);
+    expect(overview.getAttribute("aria-pressed")).toBe("false");
+
+    const zoomed = distance();
+    const mapLayer = container.querySelector('[data-qa="campus-map-layer"]');
+    fireEvent.keyDown(mapLayer, { key: "-" });
+    expect(distance()).toBeGreaterThan(zoomed);
+    const x = controls.object.position.x;
+    fireEvent.keyDown(mapLayer, { key: "ArrowLeft" });
+    expect(controls.object.position.x).not.toBe(x);
+    fireEvent.keyDown(mapLayer, { key: " " });
+    expect(controls.events.filter((event) => event === "start")).toHaveLength(3);
   });
 
   it("jumps instead of animating when the user prefers reduced motion", () => {
     window.matchMedia = vi.fn((query) => ({ matches: query.includes("prefers-reduced-motion") }));
     const { container } = render(<App />);
     const controls = controlsMock.current;
-    const d4 = container.querySelector('[data-qa="camera-preset-d4"]');
+    const d4 = presetButton(container, "d4");
 
     fireEvent.click(d4);
     const preset = CAMERA_PRESETS.find((entry) => entry.id === "d4");
     expect(controls.object.position.toArray()).toEqual(preset.position);
     expect(controls.target.toArray()).toEqual(preset.target);
     expect(controls.events).toEqual(["start:flyTo", "end"]);
-    expect(d4.getAttribute("aria-pressed")).toBe("true");
+    expect(presetButton(container, "d4").getAttribute("aria-checked")).toBe("true");
   });
 
   it("drives the shared sun clock from the KST time slider and switches live mode to simulation", async () => {
@@ -493,11 +537,11 @@ describe("Legacy and VWorld feature parity", () => {
     expect(slider.getAttribute("aria-valuetext")).toBe("13:37");
     expect(screen.getByText("13:37")).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("button", { name: "환경 시뮬" }));
+    fireEvent.click(screen.getByRole("tab", { name: "환경 시뮬" }));
     expect(screen.getByRole("slider", { name: "시" }).value).toBe("13");
     expect(screen.getByRole("slider", { name: "분" }).value).toBe("37");
 
-    fireEvent.click(screen.getByRole("button", { name: "Live" }));
+    fireEvent.click(screen.getByRole("radio", { name: "실측" }));
     expect(screen.getByText("실시간")).toBeTruthy();
     fireEvent.change(slider, { target: { value: "600" } });
     expect(screen.queryByText("실시간")).toBeNull();

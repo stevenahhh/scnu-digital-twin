@@ -17,6 +17,7 @@ frontend/
 ├── src/CityModel.jsx          # GLB selection and camera focus
 ├── src/components/            # Building and room drill-down UI
 ├── src/ui/                    # Design tokens (tokens.css) and shared UI primitives
+├── src/panel/                 # Dashboard panel, tabs and settings shared by both entries
 ├── src/vworld/                # VWorld adapters and focused unit tests
 └── src/utils/                 # D4 data, solar math, mock data
 ```
@@ -26,8 +27,9 @@ frontend/
 | Task | Location | Notes |
 |---|---|---|
 | Shared/default entry | `src/App.jsx` | Re-exports `AppLegacy` |
-| Legacy layout/data flow | `src/AppLegacy.jsx` | Large integration component |
-| VWorld layout/data flow | `src/AppVWorld.jsx` | Large integration component |
+| Legacy layout/data flow | `src/AppLegacy.jsx` | Composes `src/panel/` and `src/hooks/` |
+| VWorld layout/data flow | `src/AppVWorld.jsx` | Same panel and hooks, VWorld renderer |
+| Dashboard panel and tabs | `src/panel/` | One implementation for both entries |
 | 3D building mapping | `src/CityModel.jsx` | GLB names to `BLD_*` |
 | VWorld building mapping | `src/vworld/buildingResolver.mjs` | `MODEL_NAME` contract |
 | VWorld map lifecycle | `src/vworld/VWorldRenderer.jsx` | SDK, boundary, D4 marker |
@@ -69,7 +71,8 @@ Both dashboards show the same Korean strings. Change them in both or neither.
 - Traffic: `실시간 영상 분석 중`, `영상 분석 서버 연결 없음`, `카메라·모델 미작동`.
 - Simulation overlay: `교통 시뮬레이션 연결 중`, `교통 시뮬레이션 연결됨`,
   `교통 시뮬레이션 연결 끊김`. TrafficSafetyPanel keeps the hook vocabulary
-  (`△ 재연결 중`, `△ 오류`, `△ 연결 끊김`, `● 연결됨`).
+  (`재연결 중`, `오류`, `연결 끊김`, `연결됨`) in a status badge with a lucide
+  `TriangleAlert` (not connected) or `Circle` (연결됨) icon, never a glyph.
 - Labels: `추정`, `샘플 데이터`, `시뮬레이션 기준일`, `기상 데이터 없음`.
 - Button names: `패널 열기`, `패널 닫기`, `설정`, `기상 데이터 새로고침`, `닫기`.
 - Errors: `이 영역을 표시하는 중 문제가 발생했습니다`, `설치 계획을 불러오지 못했습니다`.

@@ -115,7 +115,7 @@ export const FRONTEND_CHECKS = [
     async run(ctx) {
       const lib = await chipByText(ctx, "도서관");
       const border = await ctx.inPage((qa) => {
-        const el = qa.all("[data-qa=campus-label] button").find((b) => b.getAttribute("aria-pressed") === "true");
+        const el = qa.all("button[data-qa=campus-label]").find((b) => b.getAttribute("aria-pressed") === "true");
         return el ? getComputedStyle(el).borderTopColor : null;
       });
       const design = existsSync(`${ROOT}DESIGN.md`) ? readFileSync(`${ROOT}DESIGN.md`, "utf8") : "";
@@ -412,7 +412,7 @@ export const FRONTEND_CHECKS = [
     states: ["S01", "S04"], viewports: D, mutates: true,
     async run(ctx) {
       const measure = () => ctx.inPage((qa) => {
-        const targets = [...qa.all('[aria-label="패널 닫기"],[aria-label="패널 열기"],[aria-label="설정"],[aria-label="닫기"],[aria-label="기상 데이터 새로고침"]'), ...qa.all("[data-qa=campus-label] button")].filter(qa.visible);
+        const targets = [...qa.all('[aria-label="패널 닫기"],[aria-label="패널 열기"],[aria-label="설정"],[aria-label="닫기"],[aria-label="기상 데이터 새로고침"]'), ...qa.all("button[data-qa=campus-label]")].filter(qa.visible);
         const small = targets.map((el) => el.getBoundingClientRect()).filter((r) => r.width < 40 || r.height < 40).length;
         const coarseSmall = targets.map((el) => el.getBoundingClientRect()).filter((r) => r.width < 44 || r.height < 44).length;
         return { targets: targets.length, under40: small, under44: coarseSmall, coarse: matchMedia("(pointer: coarse)").matches };
@@ -460,7 +460,7 @@ export const FRONTEND_CHECKS = [
   defineCheck("V-F-43", {
     states: ["S01"], viewports: D,
     async run(ctx) {
-      const shadows = await ctx.inPage((qa) => ["[data-qa=dashboard-panel]", "[data-qa=camera-preset-bar]", "[data-qa=time-slider]", "[data-qa=campus-label] button", "[data-qa=dashboard-panel] .rounded-xl"].flatMap((sel) => qa.all(sel).filter(qa.visible).filter((el) => getComputedStyle(el).boxShadow !== "none").map(() => sel)));
+      const shadows = await ctx.inPage((qa) => ["[data-qa=dashboard-panel]", "[data-qa=camera-preset-bar]", "[data-qa=time-slider]", "button[data-qa=campus-label]", "[data-qa=dashboard-panel] .rounded-xl"].flatMap((sel) => qa.all(sel).filter(qa.visible).filter((el) => getComputedStyle(el).boxShadow !== "none").map(() => sel)));
       const code = ["AppLegacy.jsx", "AppVWorld.jsx", "CityModel.jsx", "components/CameraPresetBar.jsx", "components/TimeSlider.jsx"].map(readSrc).join("\n");
       const arbitrary = (code.match(/shadow-\[|shadow-2xl|shadow-lg/g) ?? []).length;
       return result(shadows.length === 0 && arbitrary === 0, { surfacesWithShadow: [...new Set(shadows)], shadowClassesInCode: arbitrary }, "no shadow on rail/cards/chips/HUD; only --shadow-popover on modals");
@@ -664,7 +664,7 @@ export const FRONTEND_CHECKS = [
       const m = await ctx.inPage((qa) => {
         const bar = qa.one("[data-qa=camera-preset-bar]");
         const map = qa.one("[data-qa=campus-map-layer]") ?? qa.one("canvas");
-        const hidden = qa.all("[data-qa=campus-label] button").filter((el) => !qa.visible(el) || Number(getComputedStyle(el.closest("[data-qa=campus-label]")).opacity) === 0).map((el) => qa.r(el));
+        const hidden = qa.all("button[data-qa=campus-label]").filter((el) => !qa.visible(el) || Number(getComputedStyle(el.closest("[data-qa=campus-label]")).opacity) === 0).map((el) => qa.r(el));
         return { barShare: bar && map ? Math.round((bar.getBoundingClientRect().width / map.getBoundingClientRect().width) * 100) / 100 : null, hiddenRects: hidden };
       });
       const covered = (await chips(ctx)).filter((c) => hud.some((h) => intersection(c.rect, h.rect) > 0)).map((c) => c.text);
@@ -815,7 +815,7 @@ export const FRONTEND_CHECKS = [
     states: ["S01"], viewports: P,
     async run(ctx) {
       const m = await ctx.inPage((qa) => {
-        const targets = qa.all("[data-qa^=dashboard-tab-], [data-qa=dashboard-panel] button, [data-qa=campus-label] button, [data-qa^=camera-preset-]").filter((el) => qa.visible(el) && (el.tagName === "BUTTON" || el.getAttribute("role") === "tab"));
+        const targets = qa.all("[data-qa^=dashboard-tab-], [data-qa=dashboard-panel] button, button[data-qa=campus-label], [data-qa^=camera-preset-]").filter((el) => qa.visible(el) && (el.tagName === "BUTTON" || el.getAttribute("role") === "tab"));
         const small = targets.filter((el) => { const r = el.getBoundingClientRect(); return r.width < 44 || r.height < 44; });
         return { targets: targets.length, under44: small.length, examples: small.slice(0, 6).map((el) => `${qa.txt(el).slice(0, 10) || el.getAttribute("aria-label")} ${Math.round(el.getBoundingClientRect().width)}x${Math.round(el.getBoundingClientRect().height)}`) };
       });
@@ -840,7 +840,7 @@ export const FRONTEND_CHECKS = [
       const readings = [];
       for (let i = 0; i < 10; i += 1) {
         readings.push(await ctx.inPage((qa) => ({
-          chip: qa.txt(qa.all("[data-qa=campus-label] button").find((el) => el.getAttribute("aria-pressed") === "true")) || null,
+          chip: qa.txt(qa.all("button[data-qa=campus-label]").find((el) => el.getAttribute("aria-pressed") === "true")) || null,
           mesh: qa.one("[data-qa=campus-map-layer]")?.getAttribute("data-selected-id") ?? null,
           title: qa.txt(qa.one("[data-qa=selection-inspector] h2,[data-qa=selection-inspector] h3")) || null,
         })));

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import test from "node:test";
-import { EMERGENCY_HEX, SELECTION_HEX, VEHICLE_LANE_HEX } from "./sceneTokens.mjs";
+import { EMERGENCY_HEX, RISK_DANGER_HEX, SELECTION_HEX, VEHICLE_LANE_HEX } from "./sceneTokens.mjs";
 
 const require = createRequire(import.meta.url);
 const tokensCss = readFileSync(new URL("./tokens.css", import.meta.url), "utf8");
@@ -66,6 +66,28 @@ test("scene colours repeat their tokens", () => {
   assert.equal(SELECTION_HEX, dark.get("--colors-primary"));
   assert.equal(EMERGENCY_HEX, dark.get("--colors-emergency"));
   assert.equal(VEHICLE_LANE_HEX, dark.get("--colors-vehicle-lane"));
+  assert.equal(RISK_DANGER_HEX, dark.get("--colors-risk-danger"));
+});
+
+function hue(hex) {
+  const [r, g, b] = hexToRgb(hex).map((channel) => channel / 255);
+  const max = Math.max(r, g, b);
+  const delta = max - Math.min(r, g, b);
+  if (delta === 0) return 0;
+  let h;
+  if (max === r) h = ((g - b) / delta) % 6;
+  else if (max === g) h = (b - r) / delta + 2;
+  else h = (r - g) / delta + 4;
+  return (h * 60 + 360) % 360;
+}
+
+test("the danger-risk body is told apart from the emergency vehicle by hue and lightness", () => {
+  const danger = dark.get("--colors-risk-danger");
+  const emergency = dark.get("--colors-emergency");
+  const ratio = contrast(danger, emergency);
+  assert.ok(ratio >= 1.6, `--colors-risk-danger vs --colors-emergency is ${ratio.toFixed(2)} < 1.6`);
+  const distance = Math.abs(hue(danger) - hue(emergency));
+  assert.ok(Math.min(distance, 360 - distance) >= 45, `hue distance ${distance.toFixed(0)} < 45 degrees`);
 });
 
 test("the emergency colour is a status colour, not the accent", () => {
@@ -74,7 +96,7 @@ test("the emergency colour is a status colour, not the accent", () => {
 });
 
 for (const [theme, values] of [["dark", dark], ["light", light]]) {
-  for (const token of ["emergency", "vehicle-lane"]) {
+  for (const token of ["emergency", "risk-danger", "vehicle-lane"]) {
     test(`${theme}: scene colour --colors-${token} clears 3:1 against --colors-canvas`, () => {
       const ratio = contrast(values.get(`--colors-${token}`), values.get("--colors-canvas"));
       assert.ok(ratio >= 3, `${theme} --colors-${token} on --colors-canvas is ${ratio.toFixed(2)} < 3`);

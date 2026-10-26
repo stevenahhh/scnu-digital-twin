@@ -2,13 +2,13 @@ import { OrbitControls } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
-import { ACCENT_HEX } from "../../../ui/sceneTokens.mjs";
+import { ACCENT_HEX, ROOF_SCENE } from "../../../ui/sceneTokens.mjs";
 import { projectArrayFootprint } from "../domain/roofGeometry.mjs";
 import { D4_BUILDING_FOOTPRINT, D4_ROOF_EQUIPMENT } from "../domain/fixtures/d4RoofScenarioFixture.mjs";
 
 const localPoint = (point, center) => [point.xMeters - center.x, point.yMeters - center.y];
-const zoneSurfaceHeight = (zoneId) => zoneId === "D4-roof-north-bottom-cement" ? 0.9 : 0.36;
-const arraySurfaceHeight = (zoneId) => zoneId === "D4-roof-north-bottom-cement" ? 1.02 : 0.48;
+const zoneSurfaceHeight = (zoneId) => (zoneId === "D4-roof-north-bottom-cement" ? 0.9 : 0.36);
+const arraySurfaceHeight = (zoneId) => (zoneId === "D4-roof-north-bottom-cement" ? 1.02 : 0.48);
 
 // 옥상 아래 실제 건물 매스를 보여주기 위한 층수/높이. representativePlanVWorld.mjs의
 // D4_WEST_ROOF.distanceFromTerrain(20.4m, 실험동 5개 층 기준)과 동일한 실측값을 사용해
@@ -74,24 +74,40 @@ function BuildingMass({ zones, center, profile, footprint = null, showGround = t
     [massZones, center, profile.heightMeters],
   );
   const floorLinesByZone = useMemo(
-    () => massZones.map((zone) => buildFloorLinesGeometry(zone.polygonMeters, center, profile.heightMeters, profile.floors)),
+    () =>
+      massZones.map((zone) =>
+        buildFloorLinesGeometry(zone.polygonMeters, center, profile.heightMeters, profile.floors),
+      ),
     [massZones, center, profile.heightMeters, profile.floors],
   );
-  return <group>
-    {wallsByZone.map((geometry, index) => <mesh key={massZones[index].id} geometry={geometry}>
-      <meshStandardMaterial color="#415675" roughness={0.72} side={THREE.DoubleSide} />
-    </mesh>)}
-    {floorLinesByZone.map((geometry, index) => <lineSegments key={massZones[index].id} geometry={geometry}>
-      <lineBasicMaterial color="#4b6182" transparent opacity={0.7} />
-    </lineSegments>)}
-    {showGround && massZones.map((zone) => <FlatPolygon key={`${zone.id}-ground`} points={zone.polygonMeters} center={center} color="#0b1220" y={-profile.heightMeters - 0.02} />)}
-  </group>;
+  return (
+    <group>
+      {wallsByZone.map((geometry, index) => (
+        <mesh key={massZones[index].id} geometry={geometry}>
+          <meshStandardMaterial color={ROOF_SCENE.massFill} roughness={0.72} side={THREE.DoubleSide} />
+        </mesh>
+      ))}
+      {floorLinesByZone.map((geometry, index) => (
+        <lineSegments key={massZones[index].id} geometry={geometry}>
+          <lineBasicMaterial color={ROOF_SCENE.massEdge} transparent opacity={0.7} />
+        </lineSegments>
+      ))}
+      {showGround &&
+        massZones.map((zone) => (
+          <FlatPolygon
+            key={`${zone.id}-ground`}
+            points={zone.polygonMeters}
+            center={center}
+            color={ROOF_SCENE.ground}
+            y={-profile.heightMeters - 0.02}
+          />
+        ))}
+    </group>
+  );
 }
 
 function roofCenter(roof) {
-  const points = roof.id === "D4-roof-west"
-    ? D4_BUILDING_FOOTPRINT
-    : roof.zones.flatMap((zone) => zone.polygonMeters);
+  const points = roof.id === "D4-roof-west" ? D4_BUILDING_FOOTPRINT : roof.zones.flatMap((zone) => zone.polygonMeters);
   return {
     x: (Math.min(...points.map((point) => point.xMeters)) + Math.max(...points.map((point) => point.xMeters))) / 2,
     y: (Math.min(...points.map((point) => point.yMeters)) + Math.max(...points.map((point) => point.yMeters))) / 2,
@@ -102,7 +118,8 @@ function shapeFor(points, center) {
   const shape = new THREE.Shape();
   points.forEach((point, index) => {
     const [x, y] = localPoint(point, center);
-    if (index === 0) shape.moveTo(x, y); else shape.lineTo(x, y);
+    if (index === 0) shape.moveTo(x, y);
+    else shape.lineTo(x, y);
   });
   shape.closePath();
   return shape;
@@ -110,24 +127,59 @@ function shapeFor(points, center) {
 
 function FlatPolygon({ points, center, color, opacity = 1, y = 0 }) {
   const shape = useMemo(() => shapeFor(points, center), [points, center]);
-  return <mesh position={[0, y, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-    <shapeGeometry args={[shape]} />
-    <meshStandardMaterial color={color} opacity={opacity} transparent={opacity < 1} polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} side={THREE.DoubleSide} />
-  </mesh>;
+  return (
+    <mesh position={[0, y, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <shapeGeometry args={[shape]} />
+      <meshStandardMaterial
+        color={color}
+        opacity={opacity}
+        transparent={opacity < 1}
+        polygonOffset
+        polygonOffsetFactor={-2}
+        polygonOffsetUnits={-2}
+        side={THREE.DoubleSide}
+      />
+    </mesh>
+  );
+}
+
+// 배열 판 색: 배치 오류가 선택보다 먼저 보인다.
+function arrayPlateColor({ invalid, selected }) {
+  if (invalid) return ROOF_SCENE.arrayInvalid;
+  return selected ? ROOF_SCENE.arraySelected : ACCENT_HEX;
 }
 
 function ArrayPlate({ array, module, rules, center, selected, invalid, onSelect, onDragStart }) {
   const footprint = useMemo(() => projectArrayFootprint(array, module, rules), [array, module, rules]);
   const surfaceHeight = arraySurfaceHeight(array.roofZoneId);
-  return <group>
-    <group onPointerDown={(event) => { event.stopPropagation(); onSelect(array.id); onDragStart(array.id); }}>
-      <FlatPolygon points={footprint} center={center} color={invalid ? "#ef4444" : selected ? "#f59e0b" : ACCENT_HEX} y={surfaceHeight} />
+  return (
+    <group>
+      <group
+        onPointerDown={(event) => {
+          event.stopPropagation();
+          onSelect(array.id);
+          onDragStart(array.id);
+        }}
+      >
+        <FlatPolygon
+          points={footprint}
+          center={center}
+          color={arrayPlateColor({ invalid, selected })}
+          y={surfaceHeight}
+        />
+      </group>
+      {selected &&
+        footprint.map((point, index) => {
+          const [x, z] = localPoint(point, center);
+          return (
+            <mesh key={index} position={[x, surfaceHeight + 0.1, -z]}>
+              <sphereGeometry args={[0.22, 12, 12]} />
+              <meshStandardMaterial color={invalid ? ROOF_SCENE.handleInvalid : ROOF_SCENE.handle} />
+            </mesh>
+          );
+        })}
     </group>
-    {selected && footprint.map((point, index) => {
-      const [x, z] = localPoint(point, center);
-      return <mesh key={index} position={[x, surfaceHeight + 0.1, -z]}><sphereGeometry args={[0.22, 12, 12]} /><meshStandardMaterial color={invalid ? "#fecaca" : "#fde68a"} /></mesh>;
-    })}
-  </group>;
+  );
 }
 
 function RoofPlane({ state, center, onSelect, onMove }) {
@@ -136,33 +188,108 @@ function RoofPlane({ state, center, onSelect, onMove }) {
   const move = (event) => {
     if (!draggingId) return;
     event.stopPropagation();
-    onMove({ xMeters: Number((event.point.x + center.x).toFixed(2)), yMeters: Number((-event.point.z + center.y).toFixed(2)) });
+    onMove({
+      xMeters: Number((event.point.x + center.x).toFixed(2)),
+      yMeters: Number((-event.point.z + center.y).toFixed(2)),
+    });
   };
-  return <>
-    <ResponsiveCamera />
-    <ambientLight intensity={2.7} />
-    <hemisphereLight args={["#e0f2fe", "#1e293b", 2.2]} />
-    <directionalLight intensity={2.8} position={[24, 42, 28]} />
-    <gridHelper args={[110, 110, "#475569", "#1e293b"]} position={[0, -0.08, 0]} />
-    <BuildingMass zones={state.roof.zones} center={center} footprint={state.roof.id === "D4-roof-west" ? D4_BUILDING_FOOTPRINT : null} profile={BUILDING_PROFILE_BY_ROOF_ID[state.roof.id] ?? DEFAULT_BUILDING_PROFILE} />
-    {state.roof.id === "D4-roof-west" && <FlatPolygon points={D4_BUILDING_FOOTPRINT} center={center} color="#526277" y={-0.02} />}
-    {state.roof.id === "D4-roof-west" && D4_ROOF_EQUIPMENT.map((equipment) => <group key={equipment.id}>
-      <FlatPolygon points={equipment.polygonMeters} center={center} color={equipment.color ?? "#94a3b8"} y={equipment.heightMeters} />
-      <BuildingMass zones={[{ id: equipment.id, polygonMeters: equipment.polygonMeters }]} center={center} profile={{ heightMeters: -equipment.heightMeters, floors: 1 }} showGround={false} />
-    </group>)}
-    {state.roof.zones.map((zone) => <FlatPolygon key={zone.id} points={zone.polygonMeters} center={center} color="#ef4444" opacity={0.88} y={zoneSurfaceHeight(zone.id)} />)}
-    {state.roof.obstacles.map((obstacle) => <FlatPolygon key={obstacle.id} points={obstacle.polygonMeters} center={center} color="#94a3b8" y={0.4} />)}
-    {state.previewArrays.map((array) => <ArrayPlate key={array.id} array={array} module={state.modules.find((item) => item.id === array.moduleId)} rules={state.layoutRules} center={center} selected={array.id === state.selectedArrayId} invalid={invalidIds.has(array.id)} onSelect={onSelect} onDragStart={setDraggingId} />)}
-    <mesh position={[0, -0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} onPointerMove={move} onPointerUp={() => setDraggingId(null)} onPointerLeave={() => setDraggingId(null)}>
-      <planeGeometry args={[130, 130]} /><meshBasicMaterial transparent opacity={0} side={THREE.DoubleSide} />
-    </mesh>
-    <OrbitControls makeDefault enabled={!draggingId} enableDamping minDistance={35} maxDistance={220} maxPolarAngle={Math.PI / 2.2} />
-  </>;
+  return (
+    <>
+      <ResponsiveCamera />
+      <ambientLight intensity={2.7} />
+      <hemisphereLight args={[ROOF_SCENE.skyLight, ROOF_SCENE.groundLight, 2.2]} />
+      <directionalLight intensity={2.8} position={[24, 42, 28]} />
+      <gridHelper args={[110, 110, ROOF_SCENE.gridMajor, ROOF_SCENE.gridMinor]} position={[0, -0.08, 0]} />
+      <BuildingMass
+        zones={state.roof.zones}
+        center={center}
+        footprint={state.roof.id === "D4-roof-west" ? D4_BUILDING_FOOTPRINT : null}
+        profile={BUILDING_PROFILE_BY_ROOF_ID[state.roof.id] ?? DEFAULT_BUILDING_PROFILE}
+      />
+      {state.roof.id === "D4-roof-west" && (
+        <FlatPolygon points={D4_BUILDING_FOOTPRINT} center={center} color={ROOF_SCENE.footprint} y={-0.02} />
+      )}
+      {state.roof.id === "D4-roof-west" &&
+        D4_ROOF_EQUIPMENT.map((equipment) => (
+          <group key={equipment.id}>
+            <FlatPolygon
+              points={equipment.polygonMeters}
+              center={center}
+              color={equipment.color ?? ROOF_SCENE.obstacle}
+              y={equipment.heightMeters}
+            />
+            <BuildingMass
+              zones={[{ id: equipment.id, polygonMeters: equipment.polygonMeters }]}
+              center={center}
+              profile={{ heightMeters: -equipment.heightMeters, floors: 1 }}
+              showGround={false}
+            />
+          </group>
+        ))}
+      {state.roof.zones.map((zone) => (
+        <FlatPolygon
+          key={zone.id}
+          points={zone.polygonMeters}
+          center={center}
+          color={ROOF_SCENE.installZone}
+          opacity={0.88}
+          y={zoneSurfaceHeight(zone.id)}
+        />
+      ))}
+      {state.roof.obstacles.map((obstacle) => (
+        <FlatPolygon
+          key={obstacle.id}
+          points={obstacle.polygonMeters}
+          center={center}
+          color={ROOF_SCENE.obstacle}
+          y={0.4}
+        />
+      ))}
+      {state.previewArrays.map((array) => (
+        <ArrayPlate
+          key={array.id}
+          array={array}
+          module={state.modules.find((item) => item.id === array.moduleId)}
+          rules={state.layoutRules}
+          center={center}
+          selected={array.id === state.selectedArrayId}
+          invalid={invalidIds.has(array.id)}
+          onSelect={onSelect}
+          onDragStart={setDraggingId}
+        />
+      ))}
+      <mesh
+        position={[0, -0.02, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        onPointerMove={move}
+        onPointerUp={() => setDraggingId(null)}
+        onPointerLeave={() => setDraggingId(null)}
+      >
+        <planeGeometry args={[130, 130]} />
+        <meshBasicMaterial transparent opacity={0} side={THREE.DoubleSide} />
+      </mesh>
+      <OrbitControls
+        makeDefault
+        enabled={!draggingId}
+        enableDamping
+        minDistance={35}
+        maxDistance={220}
+        maxPolarAngle={Math.PI / 2.2}
+      />
+    </>
+  );
 }
 
 export function RoofEditorScene({ state, onSelect, onMove }) {
   const center = useMemo(() => roofCenter(state.roof), [state.roof]);
-  return <Canvas frameloop="demand" camera={{ position: [42, 82, 78], fov: 38, near: 2, far: 350 }} gl={{ toneMappingExposure: 1.12, antialias: true, alpha: true }} aria-label={`${state.roof.buildingId} 옥상 배열 배치 캔버스`}>
-    <RoofPlane state={state} center={center} onSelect={onSelect} onMove={onMove} />
-  </Canvas>;
+  return (
+    <Canvas
+      frameloop="demand"
+      camera={{ position: [42, 82, 78], fov: 38, near: 2, far: 350 }}
+      gl={{ toneMappingExposure: 1.12, antialias: true, alpha: true }}
+      aria-label={`${state.roof.buildingId} 옥상 배열 배치 캔버스`}
+    >
+      <RoofPlane state={state} center={center} onSelect={onSelect} onMove={onMove} />
+    </Canvas>
+  );
 }

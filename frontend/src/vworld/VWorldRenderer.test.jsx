@@ -250,28 +250,20 @@ describe("VWorldRenderer retained map integration", () => {
     expect(detail.closest('[data-qa="vworld-map-overlays"]')).toBeNull();
   });
 
-  it("renders the SDK loader error message and retry action", async () => {
+  it("renders the SDK loader error message and a retry that runs the loader again without reloading the page", async () => {
     mocks.loaderError = Object.assign(new Error("VWorld API 키가 없습니다. frontend/.env 에 VITE_VWORLD_API_KEY 를 설정하세요."), { code: "VWORLD_KEY_MISSING" });
-    const reload = vi.fn();
-    const originalLocation = window.location;
-    Object.defineProperty(window, "location", {
-      configurable: true,
-      value: { ...originalLocation, reload },
-    });
+    const { loadVWorldWebGlSdk } = await import("./webglSdkLoader.mjs");
     render(<VWorldRenderer onSelection={vi.fn()} />);
 
     await waitFor(() => expect(document.querySelector('[role="alert"]')).not.toBeNull());
     expect(document.querySelector('[role="alert"]').textContent).toContain(
       "VWorld API 키가 없습니다. frontend/.env 에 VITE_VWORLD_API_KEY 를 설정하세요.",
     );
-    const retryButton = document.querySelector('[role="alert"] button');
-    expect(retryButton.textContent).toContain("다시 시도");
-    retryButton.click();
-    expect(reload).toHaveBeenCalledOnce();
-    Object.defineProperty(window, "location", {
-      configurable: true,
-      value: originalLocation,
-    });
+    const callsBefore = loadVWorldWebGlSdk.mock.calls.length;
+    const retryButton = within(document.querySelector('[role="alert"]')).getByRole("button", { name: "다시 시도" });
+    fireEvent.click(retryButton);
+    await waitFor(() => expect(loadVWorldWebGlSdk.mock.calls.length).toBe(callsBefore + 1));
+    expect(await screen.findByRole("alert")).toBeTruthy();
   });
 });
 

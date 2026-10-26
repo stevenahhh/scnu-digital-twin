@@ -27,7 +27,7 @@ http://127.0.0.1:<port>/?ui=gallery&theme=light  밝은 테마
 | `SectionHeader` | `SectionHeader.jsx` | 한국어 문장형 제목, 실제 heading 수준, 머리말·자간 없음 |
 | `Breadcrumb` | `Breadcrumb.jsx` | `nav[aria-label="breadcrumb"]`, 마지막을 뺀 단계는 버튼 |
 | `Disclosure` | `Disclosure.jsx` | `aria-expanded` 요약 버튼, 내용이 아래로 자란다 |
-| `Popover` | `Popover.jsx` | 트리거에 붙는 면, Esc·바깥 클릭으로 닫힘, 포커스는 트리거로 |
+| `Popover` | `Popover.jsx` | 트리거에 붙는 면, Esc·바깥 클릭으로 닫힘, 포커스는 트리거로. children이 함수면 `close()`를 받는다(메뉴 항목 선택 뒤 닫기) |
 | `MetricList` | `MetricList.jsx` | 이름·값 두 열 `dl`, 빈 값은 이유와 다음 동작, 묶음마다 출처 설명 하나 |
 | `EstimateValue` | `EstimateValue.jsx` | 값·단위·`추정` 배지·`출처 · HH:mm`, 실측은 `data-qa="measured-value"`, 값이 바뀌면 200ms 강조와 `갱신됨` 알림 |
 | `FreshnessStamp` | `FreshnessStamp.jsx` | `갱신 HH:mm` 또는 `갱신 없음`, 안에 새로 고침 버튼 |

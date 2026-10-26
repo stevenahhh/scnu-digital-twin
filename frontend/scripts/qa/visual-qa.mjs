@@ -277,7 +277,7 @@ async function runPass({ args, entry, viewport, theme, baseUrl, selected, baseli
             panel: pr ? (pr.right > 0 && pr.left < innerWidth && pr.width > 0 ? `open ${Math.round(Math.min(pr.right, innerWidth) - Math.max(pr.left, 0))}px` : "closed") : "absent",
             tab: qa.all("[data-qa^=dashboard-tab-]").find((el) => el.getAttribute("aria-selected") === "true")?.textContent?.trim() ?? null,
             chips: qa.chips().length,
-            selectedChip: qa.txt(qa.all("[data-qa=campus-label] button").find((el) => el.getAttribute("aria-pressed") === "true")) || null,
+            selectedChip: qa.txt(qa.all("button[data-qa=campus-label]").find((el) => el.getAttribute("aria-pressed") === "true")) || null,
             dialog: dialog ? (dialog.getAttribute("aria-label") || qa.txt(dialog.querySelector("h1,h2,h3")) || "dialog").slice(0, 40) : null,
             banner: qa.txt(qa.one("[data-qa=weather-error-banner]")).slice(0, 40) || null,
             time: qa.txt(qa.one("[data-qa=time-slider-value]")) || null,

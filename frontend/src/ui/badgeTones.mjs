@@ -8,8 +8,8 @@ export const BADGE_TONES = {
   success: { semantic: "--colors-semantic-success" },
   warning: { semantic: "--colors-semantic-warning" },
   danger: { semantic: "--colors-semantic-danger" },
-  // 추정값은 상태색으로 칠하지 않는다. 점선 테두리와 추정 글자색으로만 구분한다.
-  estimate: { background: "--colors-surface-1", text: "--colors-estimate-ink", border: "--colors-hairline-strong", dashed: true },
+  // 추정값은 상태색으로 칠하지 않는다. 점선 테두리로 구분하고, 11px 배지 글자는 ink-muted로 밝은 테마에서도 4.5:1을 넘긴다.
+  estimate: { background: "--colors-surface-1", text: "--colors-ink-muted", border: "--colors-hairline-strong", dashed: true },
   sample: { semantic: "--colors-semantic-warning" },
 };
 
