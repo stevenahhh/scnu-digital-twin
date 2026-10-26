@@ -1,0 +1,13 @@
+{
+  "source": "NGII 2025 orthophoto sheet 34702020 (0.25 m), photo chips of the accepted text candidates read by eye (6x nearest upscale, north up)",
+  "generated": "2026-10-26",
+  "note": "Only the speed numbers are legible at 0.25 m. Every other road text is drawn as the most likely statute text for its length (서행 for one or two characters, 천천히 for three or more) and logged as 추정 by stages/markingsRegular.mjs. `ids`: the markings.geojson / markings-extra.geojson text candidates of one word.",
+  "readings": {
+    "speed-30-a": { "text": "30", "ids": ["MK00697", "MX00073", "MX00074"], "chip": "two '30' side by side, one per lane" },
+    "speed-30-b": { "text": "30", "ids": ["MK01260", "MX00072"], "chip": "'30'" },
+    "speed-30-c": { "text": "30", "ids": ["MX00082", "MX00083"], "chip": "'30'" },
+    "speed-50-a": { "text": "50", "ids": ["MX00789", "MX00790"], "chip": "'50', upside down in the north-up chip" },
+    "speed-50-b": { "text": "50", "ids": ["MX00791", "MX00792", "MX00793"], "chip": "two '50' side by side", "up": "north" },
+    "speed-50-c": { "text": "50", "ids": ["MX00795", "MX00796", "MX00797"], "chip": "'50', upside down in the north-up chip" }
+  }
+}

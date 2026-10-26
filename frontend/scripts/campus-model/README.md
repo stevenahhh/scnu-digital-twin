@@ -545,14 +545,26 @@ bars), 213 rejected by the paint gate, 177 by eye, 188 duplicates, 97 left out b
 | edge_line | 14 | 5 | 11 | 1 | 16 |
 | arrows, diamonds, give-way, bike box | 50 | 3 | 0 | 13 | 1 |
 
-Geometry:
+Geometry. The gate measures the detected pieces themselves (their fingerprints), so it stays the existence check;
+what is drawn is regular geometry fitted to the accepted pieces (`stages/markingsRegular.mjs`, fitters in
+`lib/markingFit.mjs`, templates in `lib/markingGlyphs.mjs`; unit tests beside them):
 
 | Candidate | Drawn as |
 |---|---|
-| `zebra_bar` | each bar at its detected centre and length, along its crossing's mean axis, 0.50 m wide (estimated; see below). markings.geojson groups bars by `crossing_id`; completion-pass bars are linked within 2 m and 15°. A crossing fused to a painted frame (`fused_frame`) is its outline polygon |
-| LineStrings | line kinds stroked 0.15 m wide (stop lines at their detected width within 0.3-0.6 m); `double` yellow lines as two 0.15 m lines 0.15 m either side of the centreline, or as one line on it when only that reading is on paint; `dotted` guide lines as their dots |
-| Polygons (arrows, text, hatching, chevrons, stall outlines, dashes, humps, blue bays) | the painted outline with its holes |
+| lines (lane, centre, edge, kerb, stall and give-way lines) | the fragments of one line (same kind and colour, ends facing each other, a gap of at most 3 m, or 13.5 m for dashed lines, i.e. one hidden dash) chained in order and fitted as straight runs (robust Huber line, 90 % of the points within 0.10 m, none beyond 0.30 m) joined by tangent circular arcs sized to the paint at the bend; straight runs of parallel lines within 8 m and 3° share one direction. A straight run is exactly straight; the detected points lie within 0.12 m (p95; at most 0.24 m) of the fitted path. Widths are the statute ones (`LINE_WIDTH_M_BY_KIND`, 추정) |
+| dashed lines | statute dashes along the fitted line (white lane line 3 m paint / 5 m gap, yellow 3 m / 3 m: 경찰청 교통노면표시 설치·관리 업무편람 표 2-1, 도로교통법 시행규칙 별표 6), phased on the detected dashes (circular mean of their centres); where at least four detected dashes give a period more than 15 % off the statute one, the photo's period and median dash; dashes are laid only over the detected extent |
+| `double` yellow lines | two lines 0.15 m either side of the fitted centreline (0.30 m between centres, 추정), or one line where only that reading is on paint |
+| stop lines | the detected rectangle, straight, squared to the lane line it closes (within 25°), width clamped into 0.30-0.45 m |
+| `zebra_bar` | per crossing ONE oriented rectangle: bar groups whose rectangles overlap at the same axis are one crossing; equal 0.50 m bars at the measured 0.903 m period along the walk axis, phase from the detected bars, length the median detected bar, axis set to the road line's when within 5°. A crossing fused to a painted frame (`fused_frame`) is its outline with straightened edges |
+| arrows, diamond, give-way triangle, chevrons, wheelchair and bicycle symbols | templates at the detected centre, orientation and size (the orientation that overlaps the detected paint best); a generic `arrow` takes the best of straight / left / right (추정) |
+| `text` | blobs within 1 m are one block; a block is cut into rows of about 2.6 m along the lane; each row is written across the lane in a narrow road-marking gothic (strokes 0.2 of the character width), tops towards the travel direction (the centre line, else the OSM road axis, on the driver's left). Legible readings (`data/photo/markings-text.json`: the speed numbers 30 and 50) are drawn as read; every other row is the most likely statute text for its length, 서행 or 천천히, logged 추정 |
+| hatch stripes, hump bands, blue bays, stall frames, other painted areas | their rectangle when they fill it (72 %), else their outline with the edges snapped to its dominant directions and to its group's (bands of one hump, fill and frame of one bay) |
+| `dotted` guide lines | their `dots` squares |
 | `other` | left out |
+
+Nothing regular is kept on a modelled building or an A003 sidewalk (a point counts as on one only when it and four
+points 0.3 m around it are), and fitted lines of one colour covering the same paint (half the shorter within 0.25 m)
+are drawn once.
 
 The bar width is below the photo's resolution. Folding the bar profiles of 25 crossings over the 0.903 m period,
 the second harmonic shows the bars wider than the gaps in 73-92 % of them; the duty of 0.52-0.58 gives 0.47-0.52 m
