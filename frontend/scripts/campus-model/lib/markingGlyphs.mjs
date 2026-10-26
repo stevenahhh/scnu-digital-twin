@@ -356,6 +356,59 @@ export function parkingPTemplate(height) {
   const shift = ([x, y]) => [x - W / 2, y - H / 2];
   return [[outer.map(shift), hole.map(shift)]];
 }
+// Kick scooter (PM, 개인형 이동장치) in side view, as painted in a PM bay: `length` long, front +x, top +y; two wheels
+// (rings), deck, stem and handlebar, each one solid ring; proportions approximated (추정).
+export function scooterTemplate(length) {
+  const s = length;
+  const P = (x, y) => [x * s, y * s];
+  const wheel = (x) => [ring(P(x, 0.12), 0.12 * s, 0.12 * s, 28), ring(P(x, 0.12), 0.055 * s, 0.055 * s, 28).reverse()];
+  return [
+    wheel(-0.38),
+    wheel(0.38),
+    [band([P(-0.27, 0.25), P(0.3, 0.25)], 0.09 * s)],
+    [band([P(0.36, 0.22), P(0.28, 0.74)], 0.085 * s)],
+    [band([P(0.14, 0.74), P(0.42, 0.74)], 0.085 * s)],
+  ];
+}
+
+// A convex ring clipped to the box [x0, x1] x [y0, y1] (Sutherland-Hodgman).
+function clipToBox(poly, x0, y0, x1, y1) {
+  const edges = [[(p) => p[0] >= x0, (a, b) => [x0, a[1] + ((b[1] - a[1]) * (x0 - a[0])) / (b[0] - a[0])]],
+    [(p) => p[0] <= x1, (a, b) => [x1, a[1] + ((b[1] - a[1]) * (x1 - a[0])) / (b[0] - a[0])]],
+    [(p) => p[1] >= y0, (a, b) => [a[0] + ((b[0] - a[0]) * (y0 - a[1])) / (b[1] - a[1]), y0]],
+    [(p) => p[1] <= y1, (a, b) => [a[0] + ((b[0] - a[0]) * (y1 - a[1])) / (b[1] - a[1]), y1]]];
+  let out = poly;
+  for (const [inside, cut] of edges) {
+    const src = out;
+    out = [];
+    for (let i = 0; i < src.length; i += 1) {
+      const a = src[(i + src.length - 1) % src.length];
+      const b = src[i];
+      if (inside(b)) {
+        if (!inside(a)) out.push(cut(a, b));
+        out.push(b);
+      } else if (inside(a)) out.push(cut(a, b));
+    }
+    if (!out.length) return out;
+  }
+  return out;
+}
+
+// Hatched access aisle (보행안전통로) beside or behind a disabled bay: a `length` x `width` strip centred on the origin,
+// x along the strip, y across it with -y the edge it shares with the bay (a `line`-wide divider there) and +y its
+// outer edge; 45-degree stripes `stripe` wide every `pitch` along x, clipped to the strip. Sizes 추정.
+export function hatchTemplate(length, width, { stripe = 0.25, pitch = 0.8, line = 0.12 } = {}) {
+  const [x0, x1, y0, y1] = [-length / 2, length / 2, -width / 2, width / 2];
+  const polys = [[[[x0, y0], [x1, y0], [x1, y0 + line], [x0, y0 + line]]]];
+  const d = stripe * Math.SQRT2;
+  const span = x1 - (x0 - width - d);
+  for (let t = x0 - width - d + (span % pitch) / 2; t < x1; t += pitch) {
+    const c = clipToBox([[t, y0], [t + d, y0], [t + d + width, y1], [t + width, y1]], x0, y0 + line, x1, y1);
+    if (c.length >= 3 && Math.abs(c.reduce((a, q, i) => a + q[0] * c[(i + 1) % c.length][1] - c[(i + 1) % c.length][0] * q[1], 0)) / 2 > 0.005) polys.push([c]);
+  }
+  return polys;
+}
+
 // Bicycle symbol in a length (along) x width (across) box: two wheels and the frame.
 export function bicycleTemplate(length, width) {
   // painted in side view, flat on the lane: wheels behind and ahead, the frame between them

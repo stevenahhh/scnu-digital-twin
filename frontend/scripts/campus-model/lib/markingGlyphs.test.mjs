@@ -59,3 +59,20 @@ test("bay symbols are solid polygons: the P one polygon with its counter as a ho
   // facing +x: the foot reaches further right than the head
   assert.ok(bounds([w[1]]).x1 > bounds([w[0]]).x1);
 });
+
+test("scooter and hatched-aisle templates: solid parts inside their boxes, the aisle's divider along its whole length", async () => {
+  const { hatchTemplate, scooterTemplate } = await import("./markingGlyphs.mjs");
+  const sc = scooterTemplate(1.4);
+  assert.equal(sc.length, 5, "two wheels, deck, stem, handlebar");
+  for (const rings of sc) assert.ok(rings.length <= 2, "a wheel is one ring with its hole, the rest one ring");
+  const sb = bounds(sc);
+  assert.ok(Math.abs(sb.x1 - sb.x0 - 1.4) < 0.05 && sb.y1 - sb.y0 < 1.2, `scooter box ${sb.x1 - sb.x0} x ${sb.y1 - sb.y0}`);
+  // the stem and handlebar (top) at the front (+x)
+  assert.ok(bounds([sc[4]]).x0 > 0);
+  const h = hatchTemplate(5, 1.2);
+  const hb = bounds(h);
+  for (const [v, want] of [[hb.x0, -2.5], [hb.x1, 2.5], [hb.y0, -0.6], [hb.y1, 0.6]]) assert.ok(Math.abs(v - want) < 1e-9, `${v} vs ${want}`);
+  const divider = bounds([h[0]]);
+  assert.ok(divider.x1 - divider.x0 === 5 && divider.y0 === -0.6, "divider on the bay side, full length");
+  assert.ok(h.length >= 7, `stripes ${h.length - 1}`);
+});
