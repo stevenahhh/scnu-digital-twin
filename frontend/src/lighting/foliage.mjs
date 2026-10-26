@@ -13,8 +13,8 @@
 //   lightness but only a little in hue.
 // Both values are fitted to that photo and are not measured leaf albedos.
 // The species crowns of the campus model (stages/trees.mjs): broadleaf (Tree_Crown), ginkgo, pine, metasequoia, the
-// clipped columnar conifers and the hedges all take the same calibration.
-export const CROWN_MATERIAL_NAMES = new Set(["Tree_Crown", "Tree_Pine", "Tree_Ginkgo", "Tree_Metasequoia", "Tree_Conifer", "Tree_Hedge"]);
+// clipped columnar conifers, the hedges and the scrub mounds all take the same calibration.
+export const CROWN_MATERIAL_NAMES = new Set(["Tree_Crown", "Tree_Pine", "Tree_Ginkgo", "Tree_Metasequoia", "Tree_Conifer", "Tree_Hedge", "Tree_Shrub"]);
 export const CROWN_ALBEDO_SCALE = 0.6;
 export const CROWN_INSTANCE_HUE_SPREAD = 0.4;
 

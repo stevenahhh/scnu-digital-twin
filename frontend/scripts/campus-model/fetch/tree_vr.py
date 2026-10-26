@@ -160,5 +160,174 @@ def main():
     json.dump(out, open(sys.argv[2], "w"))
 
 
+# ---------------------------------------------------------------- near-station fit (mode "fit")
+# For each station and each tree within FIT_RANGE_M (at least FIT_MIN_M away): the crown is projected into every face
+# that sees it; where the tree owns at least FIT_VISIBLE of its crown ellipse in the depth buffer of all trees (and no
+# building prism stands in front) the VR face is read at 1024 px: foliage pixels (hue 15-175 deg, saturation >= 0.15,
+# value >= 0.08), their median colour inside the inner half of the ellipse, the width of the foliage run through the
+# crown centre at mid-crown height (searched within 2.2 x the model crown; a run that reaches the search edge is a
+# merged row, width unknown) and the top of the foliage contiguous above the centre (within 0.35 x the crown width
+# of the centre column; a top at the image edge, or one without sky directly above it, is unknown). Widths and tops are turned into metres at the tree's depth.
+FIT_RANGE_M = 40.0
+FIT_MIN_M = 3.0
+FIT_RES = 1024
+FIT_VISIBLE = 0.45
+
+
+def sky_mask(img):
+    r, g, b = img[..., 0] / 255.0, img[..., 1] / 255.0, img[..., 2] / 255.0
+    mx = np.maximum(np.maximum(r, g), b)
+    mn = np.minimum(np.minimum(r, g), b)
+    sat = np.where(mx > 0, (mx - mn) / (mx + 1e-9), 0)
+    return ((b >= g) & (b > r) & (mx >= 0.45)) | ((sat < 0.12) & (mx >= 0.75))
+
+
+def close_runs(row, gap):
+    # fill gaps of at most `gap` pixels between foliage pixels of one row
+    out = row.copy()
+    idx = np.nonzero(row)[0]
+    for a, b in zip(idx[:-1], idx[1:]):
+        if 1 < b - a <= gap + 1:
+            out[a:b] = True
+    return out
+
+
+def foliage_mask(img):
+    r, g, b = img[..., 0] / 255.0, img[..., 1] / 255.0, img[..., 2] / 255.0
+    mx = np.maximum(np.maximum(r, g), b)
+    mn = np.minimum(np.minimum(r, g), b)
+    d = mx - mn + 1e-9
+    hue = np.where(mx == r, (60 * ((g - b) / d)) % 360, np.where(mx == g, 60 * ((b - r) / d) + 120, 60 * ((r - g) / d) + 240))
+    sat = np.where(mx > 0, d / (mx + 1e-9), 0)
+    return (hue >= 15) & (hue <= 175) & (sat >= 0.15) & (mx >= 0.08)
+
+
+def fit_main():
+    inp = json.load(open(sys.argv[1]))
+    trees = np.array(inp["trees"], dtype=np.float64)
+    buildings = inp["buildings"]
+    for b in buildings:
+        xs = [p[0] for p in b["ring"]]
+        zs = [p[1] for p in b["ring"]]
+        b["box"] = (min(xs), min(zs), max(xs), max(zs))
+    n = len(trees)
+    obs = [[] for _ in range(n)]
+    R = FIT_RES
+    yy, xx = np.mgrid[0:R, 0:R]
+    for st in inp["stations"]:
+        cx, cz, cy = st["x"], st["z"], st["y"]
+        dist = np.hypot(trees[:, 0] - cx, trees[:, 1] - cz) / U
+        occ = np.where(dist < FIT_RANGE_M + 25)[0]
+        target = set(np.where((dist <= FIT_RANGE_M) & (dist >= FIT_MIN_M))[0].tolist())
+        if not target:
+            continue
+        bidx = [i for i, b in enumerate(buildings) if b["box"][0] < cx + 80 * U and b["box"][2] > cx - 80 * U and b["box"][1] < cz + 80 * U and b["box"][3] > cz - 80 * U]
+        for face, off in FACES.items():
+            th = math.radians(st["yaw"] + off)
+            fwd = (math.sin(th), -math.cos(th))
+            right = (math.cos(th), math.sin(th))
+            depth = np.full((R, R), np.inf)
+            owner = np.full((R, R), -1, dtype=np.int64)
+            boxes = {}
+            for k in occ:
+                x, z, gy, by, ty, r = trees[k]
+                rx, rz = x - cx, z - cz
+                zf = rx * fwd[0] + rz * fwd[1]
+                if zf < r + 0.5:
+                    continue
+                u = (rx * right[0] + rz * right[1]) / zf
+                c0 = (0.5 + 0.5 * (u - r / zf)) * R
+                c1 = (0.5 + 0.5 * (u + r / zf)) * R
+                r0 = (0.5 - 0.5 * (ty - cy) / zf) * R
+                r1 = (0.5 - 0.5 * (by - cy) / zf) * R
+                if c1 < 0 or c0 >= R or r1 < 0 or r0 >= R:
+                    continue
+                i0, i1 = max(0, int(c0)), min(R, int(math.ceil(c1)))
+                j0, j1 = max(0, int(r0)), min(R, int(math.ceil(r1)))
+                if i1 <= i0 or j1 <= j0:
+                    continue
+                ex = (xx[j0:j1, i0:i1] + 0.5 - (c0 + c1) / 2) / max(0.5, (c1 - c0) / 2)
+                ey = (yy[j0:j1, i0:i1] + 0.5 - (r0 + r1) / 2) / max(0.5, (r1 - r0) / 2)
+                inside = ex * ex + ey * ey <= 1
+                dz_ = zf - r
+                sub = depth[j0:j1, i0:i1]
+                win = inside & (dz_ < sub)
+                sub[win] = dz_
+                owner[j0:j1, i0:i1][win] = k
+                if k in target:
+                    boxes[k] = (c0, c1, r0, r1, zf, u, int(inside.sum()))
+            if not boxes:
+                continue
+            img = None
+            mask = None
+            for k, (c0, c1, r0, r1, zf, u, area) in boxes.items():
+                if c0 < 0 or c1 > R or r0 < 0 or r1 > R or area < 30:
+                    continue
+                i0, i1 = int(c0), int(math.ceil(c1))
+                j0, j1 = int(r0), int(math.ceil(r1))
+                own = int((owner[j0:j1, i0:i1] == k).sum())
+                if own < FIT_VISIBLE * area:
+                    continue
+                x, z, gy, by, ty, r = trees[k]
+                if segment_hits_building(cx, cz, cy, x, z, (by + ty) / 2, buildings, bidx):
+                    continue
+                if img is None:
+                    img = np.asarray(Image.open(f"{inp['vr']}/{st['scene']}/pano_{face}.jpg").convert("RGB").resize((R, R), Image.BILINEAR), dtype=np.float64)
+                    mask = foliage_mask(img)
+                    sky = sky_mask(img)
+                cc = (c0 + c1) / 2
+                rc = (r0 + r1) / 2
+                ex = (xx[j0:j1, i0:i1] + 0.5 - cc) / max(0.5, (c1 - c0) / 2)
+                ey = (yy[j0:j1, i0:i1] + 0.5 - rc) / max(0.5, (r1 - r0) / 2)
+                inner = (ex * ex + ey * ey <= 0.25) & mask[j0:j1, i0:i1]
+                if inner.sum() < 8:
+                    obs[k].append([st["scene"], face, round(float(dist[k]), 1), -1, -1, -1, -1.0, -1.0, round(own / area, 2)])
+                    continue
+                med = np.median(img[j0:j1, i0:i1][inner], axis=0)
+                # width: foliage run through the centre at mid-crown height (5 rows)
+                half = (c1 - c0) / 2
+                lo = max(0, int(cc - 2.2 * half))
+                hi = min(R - 1, int(cc + 2.2 * half))
+                rows = slice(max(0, int(rc) - 2), min(R, int(rc) + 3))
+                band = close_runs(mask[rows, :].any(axis=0), 4)
+                ci = int(cc)
+                width_m = -1.0
+                if band[ci]:
+                    a = ci
+                    while a > lo and band[a - 1]:
+                        a -= 1
+                    b = ci
+                    while b < hi and band[b + 1]:
+                        b += 1
+                    if a > lo and b < hi:
+                        ua = (a / R - 0.5) * 2
+                        ub = ((b + 1) / R - 0.5) * 2
+                        width_m = (ub - ua) * zf / U
+                # top: foliage contiguous above the centre within 0.35 x crown width of the centre column
+                cl = max(0, int(cc - 0.35 * half * 2))
+                cr = min(R, int(cc + 0.35 * half * 2) + 1)
+                top_y = -1.0
+                j = int(rc)
+                gap = 0
+                last = j
+                while j > 0 and gap <= 3:
+                    j -= 1
+                    if mask[j, cl:cr].any():
+                        last = j
+                        gap = 0
+                    else:
+                        gap += 1
+                # a top counts only where sky lies directly above it (else the foliage runs on into trees or a hill behind)
+                above = sky[max(0, last - 7):max(0, last - 1), cl:cr]
+                if j > 0 and above.size and above.mean() >= 0.6:
+                    v = (0.5 - last / R) * 2
+                    top_y = (cy + v * zf - gy) / U
+                obs[k].append([st["scene"], face, round(float(dist[k]), 1), int(med[0]), int(med[1]), int(med[2]), round(width_m, 2), round(top_y, 2), round(own / area, 2)])
+    json.dump(obs, open(sys.argv[2], "w"))
+
+
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) > 3 and sys.argv[3] == "fit":
+        fit_main()
+    else:
+        main()

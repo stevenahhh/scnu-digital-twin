@@ -71,8 +71,8 @@ export const SPECIES_AUTUMN_PALETTES = {
   ],
   // ginkgo yellow, sRGB about #c8ac40..#bcaa4c
   Tree_Ginkgo: [{ species: "ginkgo", share: 1, colors: [[0.58, 0.42, 0.05], [0.5, 0.4, 0.07]], maxMix: [0.85, 1], weightScale: 3.5, maxPhase: 0.3 }],
-  // metasequoia from yellow-green to orange-ochre crown by crown (VR scene_c1, scene_c2), sRGB about #a8a040..#c88c3c
-  Tree_Metasequoia: [{ species: "metasequoia", share: 1, colors: [[0.39, 0.36, 0.05], [0.58, 0.26, 0.045]], maxMix: [0.55, 0.95], weightScale: 3, maxPhase: 0.3 }],
+  // metasequoia from yellow to orange-ochre crown by crown (VR scene_c1, scene_c2, scene_e1), sRGB about #c4bc4a..#dca246
+  Tree_Metasequoia: [{ species: "metasequoia", share: 1, colors: [[0.55, 0.5, 0.07], [0.7, 0.36, 0.06]], maxMix: [0.55, 0.95], weightScale: 3, maxPhase: 0.3 }],
 };
 
 // Largest per-tree lag on the season weight: a tree with phase p starts turning once the date weight
@@ -90,9 +90,27 @@ function hashUnit(index, salt) {
   return (x >>> 0) / 4294967296;
 }
 
+// The date of the SCNU 360 VR tour capture the per-tree colours were read on (ASSUMED: late October; the compare-vr
+// harness renders at this clock). A crown with a VR reading reaches its read colour by this date.
+export const VR_CAPTURE_DATE = new Date("2026-10-24T12:00:00+09:00");
+export const VR_COLOUR_LIFT = 1.25;
+
 // Species group, phase and colour choice of one crown instance; deterministic in its index. palette: AUTUMN_PALETTE
-// (crowns of unknown species) or one of SPECIES_AUTUMN_PALETTES.
-export function getAutumnProfile(index, palette = AUTUMN_PALETTE) {
+// (crowns of unknown species) or one of SPECIES_AUTUMN_PALETTES. vr: [palette group, shade 0..1, mix 0..1] read on the
+// VR for this tree (data/photo/tree-vr-fit.json via the crown node's extras.autumn); it replaces the hashed choice.
+export function getAutumnProfile(index, palette = AUTUMN_PALETTE, vr = null) {
+  if (vr) {
+    const entry = palette[Math.min(palette.length - 1, Math.max(0, vr[0]))];
+    const [a, b] = entry.colors;
+    return {
+      species: entry.species,
+      phase: 0,
+      // the VR was shot in bright autumn sun: read colours sit VR_COLOUR_LIFT above the palette's muted range
+      color: [0, 1, 2].map((c) => Math.min(1, (a[c] + (b[c] - a[c]) * vr[1]) * VR_COLOUR_LIFT)),
+      maxMix: vr[2],
+      weightScale: 1 / Math.max(0.05, getAutumnWeight(VR_CAPTURE_DATE)),
+    };
+  }
   const pick = hashUnit(index, 1);
   let group = palette.length - 1;
   for (let i = 0, edge = 0; i < palette.length; i += 1) {

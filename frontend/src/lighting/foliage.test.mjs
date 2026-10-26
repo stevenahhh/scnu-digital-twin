@@ -12,7 +12,7 @@ const luminance = ([r, g, b]) => 0.2126 * r + 0.7152 * g + 0.0722 * b;
 const near = (a, b) => Math.abs(a - b) < 1e-12;
 
 test("crown calibration covers every species crown and the hedges", () => {
-  assert.deepEqual([...CROWN_MATERIAL_NAMES].sort(), ["Tree_Conifer", "Tree_Crown", "Tree_Ginkgo", "Tree_Hedge", "Tree_Metasequoia", "Tree_Pine"]);
+  assert.deepEqual([...CROWN_MATERIAL_NAMES].sort(), ["Tree_Conifer", "Tree_Crown", "Tree_Ginkgo", "Tree_Hedge", "Tree_Metasequoia", "Tree_Pine", "Tree_Shrub"]);
 });
 
 test("calibrated crown materials keep their hue and are darkened by the albedo scale", () => {

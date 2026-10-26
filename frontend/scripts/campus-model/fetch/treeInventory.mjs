@@ -52,6 +52,7 @@ const SPECIES_FORM = {
   pine: { spacingM: 6.5, crownM: [3, 9] },
   metasequoia: { spacingM: 5.5, crownM: [2.5, 5] },
   conifer: { spacingM: 3, crownM: [1.5, 3.5] },
+  shrub: { spacingM: 4, crownM: [2, 6] },
 };
 const GROUP_MAX = 24;
 const COLUMNAR_RATIO = 1.8;
@@ -69,7 +70,7 @@ const STREET_EDGE_M = 6;
 const ROAD_ZONES = path.resolve(HERE, "../../../../docs/assets/data/road_zones_wgs84.geojson");
 const PINE_LUMA = 85;
 const PINE_BLUE_RED = 0.05;
-const SPECIES = ["ginkgo", "broadleaf", "pine", "metasequoia", "conifer"];
+const SPECIES = ["ginkgo", "broadleaf", "pine", "metasequoia", "conifer", "shrub"];
 // Relief lean of the NGII mosaic (registration study, lean_field_m_per_m_height; as fetch/buildingForms.mjs).
 const LEAN_FIELD = { E: [-0.02, -0.01285, -0.00121], N: [-0.0549, -0.01201, -0.06335], E0N0: [243835.0182316025, 263760.97123001737] };
 
@@ -77,6 +78,7 @@ const args = process.argv.slice(2);
 const debugDir = args.includes("--debug") ? args[args.indexOf("--debug") + 1] : null;
 // --out <file>: write the inventory elsewhere (scripts/perf/canopy-cover.mjs reads the canopy mask without touching data/).
 const OUT = args.includes("--out") ? path.resolve(args[args.indexOf("--out") + 1]) : path.join(DATA, "trees.json");
+const FIT_OUT = args.includes("--out") ? `${OUT.replace(/\.json$/, "")}-vr-fit.json` : path.join(DATA, "photo", "tree-vr-fit.json");
 
 // ---- grid over EXTENT in EPSG:5186 (north-up)
 const corners = [[EXTENT.minX, EXTENT.minZ], [EXTENT.maxX, EXTENT.minZ], [EXTENT.minX, EXTENT.maxZ], [EXTENT.maxX, EXTENT.maxZ]].map(([x, z]) => sceneToTm(x, z));
@@ -412,13 +414,13 @@ const groundY = (x, z) => {
   const j = Math.min(sidecar.height - 1, Math.max(0, Math.round((z - sidecar.originZ) / sidecar.step)));
   return sidecar.minY + heights[j * sidecar.width + i] * sidecar.scale;
 };
-const vrColours = (() => {
-  const stations = JSON.parse(readFileSync(STATIONS, "utf8")).map((s) => {
-    const x = s.station_refined_x ?? s.station_x;
-    const z = s.station_refined_z ?? s.station_z;
-    return { scene: s.scene, x, z, y: groundY(x, z) + (s.height_refined_m ?? s.height_m_est) * U, yaw: s.yaw_refined_deg ?? s.yaw_deg };
-  });
-  const buildings = JSON.parse(readFileSync(path.join(DATA, "gis-buildings.json"), "utf8")).buildings.flatMap((bld) => {
+const stationRecords = JSON.parse(readFileSync(STATIONS, "utf8"));
+const stations = stationRecords.map((s) => {
+  const x = s.station_refined_x ?? s.station_x;
+  const z = s.station_refined_z ?? s.station_z;
+  return { scene: s.scene, x, z, y: groundY(x, z) + (s.height_refined_m ?? s.height_m_est) * U, yaw: s.yaw_refined_deg ?? s.yaw_deg };
+});
+const buildings = JSON.parse(readFileSync(path.join(DATA, "gis-buildings.json"), "utf8")).buildings.flatMap((bld) => {
     const heightM = bld.heightMetres > 0 ? bld.heightMetres : (bld.floors || 2) * 3.8;
     return (bld.polygons ?? []).map((poly) => {
       const ring = poly[0].map(([lon, lat]) => geoToModel(lon, lat));
@@ -426,6 +428,7 @@ const vrColours = (() => {
       return { ring, topY: groundY(cx, cz) + heightM * U };
     });
   });
+const vrColours = (() => {
   const crownsIn = records.map((c) => {
     const [x, z] = tmToScene(c.e, c.n);
     const gy = groundY(x, z);
@@ -517,7 +520,7 @@ records.forEach((c, k) => {
   for (const n of neighbours(c, NEIGHBOUR_M)) if (own[n]) votes[own[n]] += vrWeight(n) * (n === k ? 2 : 1);
   const voted = Object.entries(votes).sort((p, q) => q[1] - p[1]).find(([, v]) => v >= 2)?.[0] ?? null;
   const street = c.forest === null && roadEdges.some((s) => segDist([c.e, c.n], s) <= STREET_EDGE_M);
-  const group = groups.find((gr) => inRing([c.e, c.n], gr.ring));
+  const group = groups.find((gr) => inRing([c.e, c.n], gr.ring) && !(gr.maxHeightM && c.chmSupported && c.height > gr.maxHeightM));
   let species;
   let source;
   if (group && !(group.exceptVr ?? []).includes(vr)) {
@@ -625,21 +628,158 @@ crowns.forEach((row, index) => {
     const radius = Math.min(form.crownM[1] / 2, Math.max(form.crownM[0] / 2, reach));
     const chmTop = Math.max(...mine.map((p) => p[2]));
     const fromChm = chmTop >= 3;
-    const height = fromChm ? Math.min(30, chmTop) : c.height;
+    const height = species === "shrub" ? Math.min(2.2, Math.max(0.8, 0.9 + 0.12 * radius)) : fromChm ? Math.min(30, chmTop) : c.height;
     const [le, ln] = lean(x, y, 0.6 * height);
     treeCounts[species] += 1;
     trees.push([
       Math.round((x - le) * 100) / 100, Math.round((y - ln) * 100) / 100, Math.round(2 * radius * 10) / 10, Math.round(height * 10) / 10,
-      row[4], fromChm ? 1 : 0, row[6], row[7], row[8], row[9], index,
+      row[4], fromChm && species !== "shrub" ? 1 : 0, row[6], row[7], row[8], row[9], index, 0, null,
     ]);
   });
 });
+
+// ---- near-station VR fit: every tree within FIT_RANGE_M of a station whose compare-vr strip passed (all four faces show
+// the buildings of the VR) is projected into the cube faces that see it unoccluded (tree_vr.py fit mode). From the VR
+// at that spot: the colour class (as above), the crown width (foliage run through the crown at mid-height) and the
+// crown top. Up to the 3 nearest readings per tree are combined (medians). Width and height are corrected within
+// FIT_WIDTH x and FIT_HEIGHT x of the photo/CHM values; species change only where the reading is clear (rules below);
+// the autumn colour of deciduous crowns is set from the VR colour (palette group, shade, mix: src/lighting/season.mjs).
+// Every correction is recorded with its VR scene and face in data/photo/tree-vr-fit.json. All values estimated (추정).
+const FIT_RANGE_M = 40;
+const FIT_SKIP = new Set(["scene_a12", "scene_b2", "scene_c5", "scene_d1"]);
+const FIT_WIDTH = [0.65, 1.6];
+const FIT_HEIGHT = [0.7, 1.6];
+const CROWN_BASE = { ginkgo: 0.25, broadleaf: 0.3, pine: 0.45, metasequoia: 0.15, conifer: 0.05, shrub: 0 };
+const fitStations = stationRecords
+  .map((s, i) => ({ ...stations[i], check: s.strip_check ?? "" }))
+  .filter((s) => /all four faces/.test(s.check) && !FIT_SKIP.has(s.scene));
+const fitObs = (() => {
+  const treesIn = trees.map(([e, n, d, h, sp]) => {
+    const [x, z] = tmToScene(e, n);
+    const gy = groundY(x, z);
+    return [x, z, gy, gy + CROWN_BASE[SPECIES[sp]] * h * U, gy + h * U, (d / 2) * U];
+  });
+  const dir = mkdtempSync(path.join(tmpdir(), "tree-fit-"));
+  try {
+    writeFileSync(path.join(dir, "in.json"), JSON.stringify({ trees: treesIn, stations: fitStations, buildings, vr: path.join(CACHE, "vr") }));
+    execFileSync(PYTHON[0], [...PYTHON.slice(1), path.join(HERE, "tree_vr.py"), path.join(dir, "in.json"), path.join(dir, "out.json"), "fit"], { stdio: ["ignore", "inherit", "inherit"] });
+    return JSON.parse(readFileSync(path.join(dir, "out.json"), "utf8"));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+})();
+const hsv = ([r, g, b]) => {
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0;
+  if (max !== min) {
+    if (max === r) h = (60 * ((g - b) / (max - min)) + 360) % 360;
+    else if (max === g) h = 60 * ((b - r) / (max - min)) + 120;
+    else h = 60 * ((r - g) / (max - min)) + 240;
+  }
+  return [h, max ? (max - min) / max : 0, max / 255];
+};
+// VR foliage colour class of a near view: yellow (ginkgo, metasequoia turning), ochre (metasequoia, zelkova turning),
+// red (cherry), dark (pines and other evergreens), green (not turned).
+function fitClass(rgb) {
+  const [h, s, v] = hsv(rgb);
+  if (v < 0.42 && h >= 60) return "dark";
+  if (s >= 0.3 && (h < 20 || h >= 330)) return "red";
+  if (s >= 0.33 && h >= 20 && h < 42) return "ochre";
+  if (s >= 0.3 && h >= 42 && h < 70 && v >= 0.35) return "yellow";
+  return "green";
+}
+const median = (list) => (list.length ? [...list].sort((a, b) => a - b)[Math.floor(list.length / 2)] : null);
+const clampTo = (v, [lo, hi]) => Math.min(hi, Math.max(lo, v));
+const corrections = [];
+const fitCounts = { trees: 0, species: 0, width: 0, height: 0, autumn: 0 };
+trees.forEach((row, k) => {
+  const views = (fitObs[k] ?? []).filter((o) => o[3] >= 0).sort((a, b) => a[2] - b[2]).slice(0, 3);
+  if (!views.length) return;
+  const species0 = SPECIES[row[4]];
+  if (species0 === "shrub") return;
+  fitCounts.trees += 1;
+  const rgb = [3, 4, 5].map((c) => median(views.map((o) => o[c])));
+  const cls = fitClass(rgb);
+  const [hue] = hsv(rgb);
+  const widths = views.map((o) => o[6]).filter((w) => w > 0);
+  const tops = views.map((o) => o[7]).filter((t) => t > 0);
+  const d0 = row[2];
+  const h0 = row[3];
+  let d = widths.length ? clampTo(median(widths), [FIT_WIDTH[0] * d0, FIT_WIDTH[1] * d0]) : d0;
+  let h = tops.length ? clampTo(median(tops), [FIT_HEIGHT[0] * h0, FIT_HEIGHT[1] * h0]) : h0;
+  const aspect = h / Math.max(0.5, d);
+  // a species change needs every view to agree (or one view within 30 m); pines read darker than shaded broadleaf crowns
+  const clsAll = views.map((o) => fitClass([o[3], o[4], o[5]]));
+  const agreed = clsAll.every((c) => c === cls) && (views.length > 1 || views[0][2] <= 30);
+  const veryDark = hsv(rgb)[2] < 0.36;
+  let species = species0;
+  if (!agreed) species = species0;
+  else if ((cls === "yellow" || cls === "ochre") && aspect >= 1.9 && d <= 7) species = "metasequoia";
+  else if (cls === "yellow" && species0 === "broadleaf" && aspect >= 1.25 && d <= 7) species = "ginkgo";
+  else if (cls === "dark" && aspect >= 2.2 && d <= 4.5) species = "conifer";
+  else if (cls === "dark" && veryDark && (species0 === "broadleaf" || species0 === "ginkgo")) species = "pine";
+  else if ((cls === "red" || cls === "ochre") && (species0 === "pine" || species0 === "conifer")) species = "broadleaf";
+  else if (cls === "green" && species0 === "metasequoia" && aspect < 1.3) species = "broadleaf";
+  const form = SPECIES_FORM[species];
+  d = clampTo(d, form.crownM);
+  // autumn colour: [palette group, shade 0..1, mix 0..1] of the species palette (src/lighting/season.mjs)
+  let autumn = null;
+  const turn = Math.min(1, Math.max(0.05, (95 - hue) / 55));
+  if (species === "broadleaf") autumn = cls === "red" ? [1, 0.5, 0.9] : cls === "ochre" || cls === "yellow" ? [0, cls === "yellow" ? 0.9 : 0.4, Math.max(0.5, turn)] : [2, 0.5, 0.15];
+  else if (species === "ginkgo") autumn = [0, 0.5, cls === "yellow" || cls === "ochre" ? 0.95 : Math.min(0.5, turn)];
+  else if (species === "metasequoia") autumn = [0, cls === "yellow" ? 0.15 : cls === "ochre" ? 0.85 : 0.5, cls === "green" || cls === "dark" ? Math.min(0.45, turn) : 0.95];
+  const change = {};
+  if (species !== species0) { change.species = [species0, species]; fitCounts.species += 1; }
+  if (Math.abs(d - d0) >= 0.3) { change.crownDiameterM = [d0, Math.round(d * 10) / 10]; fitCounts.width += 1; }
+  if (Math.abs(h - h0) >= 0.5) { change.heightM = [h0, Math.round(h * 10) / 10]; fitCounts.height += 1; }
+  if (autumn) fitCounts.autumn += 1;
+  row[2] = Math.round(d * 10) / 10;
+  row[3] = Math.round(h * 10) / 10;
+  row[4] = SPECIES.indexOf(species);
+  row[11] = views.length;
+  row[12] = autumn;
+  corrections.push({ tree: k, east: row[0], north: row[1], views: views.map((o) => `${o[0]}:${o[1]} ${o[2]} m`), colour: cls, ...change, ...(autumn ? { autumn } : {}) });
+});
+// ---- manual VR corrections (data/photo/tree-vr-manual.json): set fields of the tree nearest each entry (within 3 m)
+const manual = JSON.parse(readFileSync(path.join(DATA, "photo", "tree-vr-manual.json"), "utf8")).entries;
+let manualApplied = 0;
+for (const m of manual) {
+  let best = -1;
+  let bestD = 3;
+  trees.forEach((row, k) => {
+    const d = Math.hypot(row[0] - m.at[0], row[1] - m.at[1]);
+    if (d < bestD) { bestD = d; best = k; }
+  });
+  if (best < 0) throw new Error(`tree-vr-manual: no tree within 3 m of ${m.at} (${m.view})`);
+  const row = trees[best];
+  const change = { tree: best, east: row[0], north: row[1], views: [`${m.view} (by eye)`], colour: "manual" };
+  if (m.set.species) { change.species = [SPECIES[row[4]], m.set.species]; row[4] = SPECIES.indexOf(m.set.species); }
+  if (m.set.crownDiameterM) { change.crownDiameterM = [row[2], m.set.crownDiameterM]; row[2] = m.set.crownDiameterM; }
+  if (m.set.heightM) { change.heightM = [row[3], m.set.heightM]; row[3] = m.set.heightM; }
+  if (m.set.autumn) { change.autumn = m.set.autumn; row[12] = m.set.autumn; }
+  row[11] = Math.max(1, row[11]);
+  corrections.push(change);
+  manualApplied += 1;
+}
+fitCounts.manual = manualApplied;
+for (const sp of SPECIES) treeCounts[sp] = 0;
+for (const row of trees) treeCounts[SPECIES[row[4]]] += 1;
+console.log(`trees: VR fit within ${FIT_RANGE_M} m of ${fitStations.length} stations: ${JSON.stringify(fitCounts)}`);
+writeFileSync(FIT_OUT, `${JSON.stringify({
+  description: "Per-tree corrections read on the SCNU 360 VR tour (visual reference only; no pixel is stored) for the trees within 40 m of the stations whose compare-vr strip passed. Each entry lists the VR views it was read in (scene:face distance), the colour class and the changed fields [before, after]; autumn = [palette group, shade, mix] of src/lighting/season.mjs. Written by scripts/campus-model/fetch/treeInventory.mjs; estimated (추정).",
+  rangeM: FIT_RANGE_M,
+  stations: fitStations.map((s) => s.scene),
+  skipped: [...FIT_SKIP],
+  counts: fitCounts,
+  corrections,
+}).replace(/\},\{"tree"/g, '},\n{"tree"')}\n`);
 
 const out = {
   description: "Tree crowns over the campus model EXTENT, traced on the NGII 2025 orthophoto (sheet 34702020) with CHMv2 heights and species types read on the SCNU 360 VR tour; every value is an estimate (추정). Written by scripts/campus-model/fetch/treeInventory.mjs.",
   frame: "EPSG:5186 metres (east, north): trunk position after removing the photo's relief lean",
   species: SPECIES,
-  columns: ["east", "north", "crownDiameterM", "heightM", "species", "heightFromChm", "speciesSource", "vrViews", "photoLuma", "photoBlueMinusRed", "photoCrown"],
+  columns: ["east", "north", "crownDiameterM", "heightM", "species", "heightFromChm", "speciesSource", "vrViews", "photoLuma", "photoBlueMinusRed", "photoCrown", "vrFitViews", "autumn"],
   method: {
     grid: `${CELL} m cells, 2 x 2 sheet pixels each`,
     canopy: `smoothed excess green >= ${CANOPY_EXG} (and 2g - r - b >= ${CANOPY_EXG_ABS}), g >= r, luma std over 2.5 m >= ${CANOPY_TEXTURE} (${CANOPY_TEXTURE_CHM} on CHMv2 canopy); crown shade (luma < ${SHADE_LUMA}) within 1.5 m on CHMv2 canopy; no crowns on GIS building footprints, MCEE sports grounds or water`,
@@ -667,7 +807,7 @@ console.log(`trees: ${tops.length} tops, ${rejected} bright or elongated regions
 if (debugDir) {
   mkdirSync(debugDir, { recursive: true });
   // photo with canopy tint, crown borders and species-coloured tops
-  const COLOURS = [[255, 220, 0], [255, 120, 40], [0, 90, 255], [255, 0, 200], [0, 255, 255]];
+  const COLOURS = [[255, 220, 0], [255, 120, 40], [0, 90, 255], [255, 0, 200], [0, 255, 255], [140, 90, 40]];
   const img = new Uint8Array(N * 3);
   for (let k = 0; k < N; k += 1) { img[k * 3] = R[k]; img[k * 3 + 1] = G[k]; img[k * 3 + 2] = B[k]; }
   writeFileSync(path.join(debugDir, "photo.png"), encodePng(W, H, 3, img));

@@ -6,6 +6,8 @@ import {
   AUTUMN_MATERIAL_NAMES,
   AUTUMN_PALETTE,
   SPECIES_AUTUMN_PALETTES,
+  VR_CAPTURE_DATE,
+  VR_COLOUR_LIFT,
   getAutumnInstanceColor,
   getAutumnInstanceMix,
   getAutumnProfile,
@@ -184,4 +186,17 @@ test("species palettes: every autumn crown material has one, shares add up, gink
     assert.equal(getAutumnInstanceMix(0, profile), 0);
     assert.ok(Math.abs(getAutumnInstanceMix(1, profile) - profile.maxMix) < 1e-12);
   }
+});
+
+test("a VR reading sets a tree's palette group, shade and mix and is reached by the VR capture date", () => {
+  const palette = SPECIES_AUTUMN_PALETTES.Tree_Metasequoia;
+  const yellow = getAutumnProfile(3, palette, [0, 0, 0.9]);
+  const ochre = getAutumnProfile(3, palette, [0, 1, 0.9]);
+  assert.deepEqual(yellow.color, palette[0].colors[0].map((v) => Math.min(1, v * VR_COLOUR_LIFT)));
+  assert.deepEqual(ochre.color, palette[0].colors[1].map((v) => Math.min(1, v * VR_COLOUR_LIFT)));
+  const w = getAutumnWeight(VR_CAPTURE_DATE);
+  assert.ok(Math.abs(getAutumnInstanceMix(w, yellow) - 0.9) < 1e-9);
+  assert.equal(getAutumnInstanceMix(0, yellow), 0);
+  const cherry = getAutumnProfile(5, SPECIES_AUTUMN_PALETTES.Tree_Crown, [1, 0.5, 0.8]);
+  assert.equal(cherry.species, "cherry");
 });
