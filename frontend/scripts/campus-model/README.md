@@ -40,7 +40,7 @@ node --test src/campusModelAsset.test.mjs
 | `lib/roofPhoto.mjs` | roof colour sampling and solar-panel detection (see Roof colours and solar panels) |
 | `lib/attachments.mjs` | facade attachments: schema checks and the balcony-stack, fin/ledge and rooftop-mast solids (blocks are drawn by `stages/buildings.mjs` with the facade atlas) |
 | `pack.mjs` | after the stages: joins the Topography chunks, runs gltf-transform optimize (WebP textures, float geometry, no flatten/join), compresses with `compress.mjs` and checks names and counts against the raw GLB |
-| `compress.mjs` | `EXT_meshopt_compression` of the packed buffers: positions, UVs, colours and indices bit for bit (no position quantization; `reorder()` for size), normals as 8-bit octahedral (meshopt filter, `KHR_mesh_quantization`). drei's `useGLTF` decodes it. 67,157,312 B -> 20,838,680 B on the 2026-10-26 build (docs/OPTIMIZATION-FORMULA.md) |
+| `compress.mjs` | `EXT_meshopt_compression` of the packed buffers: positions, UVs, colours and indices bit for bit (no position quantization; `reorder()` for size), normals as 8-bit octahedral (meshopt filter, `KHR_mesh_quantization`). drei's `useGLTF` decodes it. 75,860,132 B -> 23,122,984 B on the 2026-10-26 build of dev-next d7adbd4 (docs/OPTIMIZATION-FORMULA.md) |
 
 ## Inputs
 
