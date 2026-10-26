@@ -201,6 +201,8 @@ const DIGITS = {
   7: [[[0.1, 0.06], [0.9, 0.06], [0.42, 0.96]]],
   8: [E(0.5, 0.27, 0.3, 0.21), E(0.5, 0.72, 0.36, 0.24)],
   9: [E(0.5, 0.3, 0.34, 0.24), [[0.84, 0.3], [0.6, 0.96]]],
+  // the P of a parking (PM) bay
+  P: [[[0.18, 0.97], [0.18, 0.04], [0.58, 0.04], [0.8, 0.12], [0.88, 0.28], [0.8, 0.44], [0.58, 0.52], [0.18, 0.52]]],
 };
 export const GLYPH_CHARACTERS = Object.freeze(Object.keys(DIGITS));
 export const hasGlyph = (char) => char === " " || Boolean(DIGITS[char] || hangulElements(char));

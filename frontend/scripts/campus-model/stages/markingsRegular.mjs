@@ -59,6 +59,11 @@ const TEXT_STALL_REACH_M = 3;
 const TEXT_ROAD_MIN_M = 10;
 const TEXT_AXIS_REACH_M = 15;
 const ZEBRA_ROAD_SNAP_DEG = 5;
+// A blue bay piece at least BAY_ROW_M long (and 1.6 times its depth) is a row of bays BAY_WIDTH_M wide (statute
+// disabled bay 3.3-3.5 m, 추정).
+const BAY_ROW_M = 6.5;
+const BAY_WIDTH_M = 3.4;
+const BAY_SYMBOL_BLOB_M = 2.2;
 const ZEBRA_ROW_GAP_M = 1.0;
 
 const perpOf = (d) => [-d[1], d[0]];
@@ -328,7 +333,7 @@ export function regularise(drawn, ctx) {
   const pieces = [];
   const stats = {
     chains: 0, fragments: 0, straightRuns: 0, arcs: 0, straightness: [], residual: [], dashPeriods: [], duplicateLines: 0,
-    crossings: 0, crossingGroups: 0, crossingRowsAligned: 0, stopInCrossing: [], crossingList: [], blockedIds: [], frameStrokes: 0, barsDrawn: 0, barsDetected: 0, zebraPhaseResidual: [], glyphs: {}, textReadings: [], textMissing: [], arrowAxes: { road: 0, own: 0 }, dropped: { blocked: 0, textTooSmall: 0 },
+    baySymbols: { wheelchair: 0, p: 0, existing: 0, skipped: 0, orientationGuessed: 0, blobsReplaced: 0, list: [] }, crossings: 0, crossingGroups: 0, crossingRowsAligned: 0, stopInCrossing: [], crossingList: [], blockedIds: [], frameStrokes: 0, barsDrawn: 0, barsDetected: 0, zebraPhaseResidual: [], glyphs: {}, textReadings: [], textMissing: [], arrowAxes: { road: 0, own: 0 }, dropped: { blocked: 0, textTooSmall: 0 },
     stopSquared: 0, parallelSnapped: 0, outlines: 0, rectangles: 0,
   };
   const emit = (rings, colour, kind, extra = {}) => pieces.push({ rings: rings.map((r) => r.map(toScene)), colour, kind, estimated: false, ...extra });
@@ -709,7 +714,7 @@ export function regularise(drawn, ctx) {
         const size = 2 * box.halfLong;
         const pick = axes.map((f) => ({ t: place(wheelchairTemplate(size), box.centre, f), f }))
           .map((x) => ({ ...x, score: overlapScore(rings ? [rings] : [], x.t) })).sort((x, y) => y.score - x.score)[0];
-        emitPoly(pick.t, c.colour, c.kind);
+        emitPoly(pick.t, c.colour, c.kind, { glyph: "wheelchair" });
         glyphCount("wheelchair");
         continue;
       }
@@ -915,6 +920,95 @@ export function regularise(drawn, ctx) {
         up: f.map((v) => +v.toFixed(3)), travelFrom: from,
       });
     }
+  }
+
+  // ---- bay symbols: every blue bay gets its white symbol (도로교통법 시행규칙 별표 6: the wheelchair of a disabled bay;
+  // the P of a parking or PM bay where ctx.baySymbols names it), upright for the driver entering from the aisle, at
+  // the bay's centre, unless a white symbol is already drawn there. A blue piece longer than BAY_ROW_M is a row of
+  // bays BAY_WIDTH_M wide. The aisle is the end of the bay that is open: the other end meets a kerb, a sidewalk or a
+  // building (ctx.blocked); where neither or both do, ctx.baySymbols may give the bearing, else it is 추정.
+  emitBaySymbols();
+  function emitBaySymbols() {
+    const blues = pieces.filter((pc) => pc.kind === "disabled_parking" && pc.colour === "blue" && !pc.estimated);
+    // a wheelchair template already drawn from a traced white symbol keeps its bay; other small white pieces inside a
+    // bay (blobs of the painted symbol, at most BAY_SYMBOL_BLOB_M across) give way to the template
+    const centreOf = (pc) => { const r = pc.rings[0].map(toM); return scale(r.reduce((a, q) => add(a, q), [0, 0]), 1 / r.length); };
+    const whitePieces = pieces.filter((pc) => pc.kind === "disabled_parking" && pc.colour === "white" && !pc.estimated);
+    const whiteTemplates = whitePieces.filter((pc) => pc.glyph === "wheelchair").map((pc) => ({ pc, c: centreOf(pc) }));
+    const whites = whiteTemplates.map((t) => t.c);
+    const blobs = whitePieces.filter((pc) => !pc.glyph && orientedBox(pc.rings[0].map(toM)).halfLong * 2 <= BAY_SYMBOL_BLOB_M).map((pc) => ({ pc, c: centreOf(pc) }));
+    const replaced = new Set();
+    const boxes = blues.map((pc) => { const r = pc.rings[0].map(toM); const xs = r.map((q) => q[0]); const zs = r.map((q) => q[1]); return [Math.min(...xs), Math.min(...zs), Math.max(...xs), Math.max(...zs)]; });
+    const parent = blues.map((_, i) => i);
+    const root = (i) => (parent[i] === i ? i : (parent[i] = root(parent[i])));
+    for (let i = 0; i < blues.length; i += 1) for (let j = i + 1; j < blues.length; j += 1) {
+      const [a, b] = [boxes[i], boxes[j]];
+      if (a[0] <= b[2] + 0.3 && b[0] <= a[2] + 0.3 && a[1] <= b[3] + 0.3 && b[1] <= a[3] + 0.3) parent[root(i)] = root(j);
+    }
+    const bays = new Map();
+    blues.forEach((pc, i) => { if (!bays.has(root(i))) bays.set(root(i), []); bays.get(root(i)).push(pc); });
+    const rules = ctx.baySymbols ?? {};
+    for (const members of bays.values()) {
+      const points = members.flatMap((pc) => pc.rings[0].map(toM));
+      const box = orientedBox(points);
+      const long = 2 * box.halfLong;
+      const short = 2 * box.halfShort;
+      const rule = members.map((pc) => rules[pc.id]).find(Boolean) ?? null;
+      if (rule?.symbol === "none") continue;
+      // a read bearing names the bay's depth axis: the box axis nearest it
+      let row = long >= BAY_ROW_M && long >= 1.6 * short;
+      if (Number.isFinite(rule?.upBearingDeg)) {
+        const b = (rule.upBearingDeg * Math.PI) / 180;
+        row = Math.abs(dot(box.short, [Math.sin(b), -Math.cos(b)])) > Math.abs(dot(box.long, [Math.sin(b), -Math.cos(b)]));
+      }
+      const n = Number.isFinite(rule?.cells) ? rule.cells : row ? Math.max(1, Math.round(long / BAY_WIDTH_M)) : 1;
+      const across = row ? box.long : box.short; // along the row (bay width)
+      const depth = row ? box.short : box.long; // into the bay
+      const width = row ? long / n : short;
+      const deep = row ? short : long;
+      if (width < 1.5 || deep < 2.5) {
+        stats.baySymbols.skipped += 1;
+        continue;
+      }
+      for (let k = 0; k < n; k += 1) {
+        const centre = add(box.centre, scale(across, (k - (n - 1) / 2) * width));
+        // a white symbol drawn inside this bay already
+        const inCell = (w) => Math.abs(dot(sub(w, centre), across)) <= width / 2 && Math.abs(dot(sub(w, centre), depth)) <= deep / 2;
+        // a P bay's painted figure read as a wheelchair gives way to its P
+        if (rule?.symbol === "P") {
+          for (const t of whiteTemplates) if (inCell(t.c)) replaced.add(t.pc);
+        } else if (whites.some(inCell)) {
+          stats.baySymbols.existing += 1;
+          continue;
+        }
+        for (const b of blobs) if (Math.abs(dot(sub(b.c, centre), across)) <= width / 2 && Math.abs(dot(sub(b.c, centre), depth)) <= deep / 2) replaced.add(b.pc);
+        let up = null;
+        let from = "추정";
+        if (Number.isFinite(rule?.upBearingDeg)) {
+          const b = (rule.upBearingDeg * Math.PI) / 180;
+          const read = [Math.sin(b), -Math.cos(b)];
+          up = dot(depth, read) >= 0 ? depth : scale(depth, -1);
+          from = "reading";
+        } else {
+          const end = (sign) => [0.6, 1.2, 1.8].filter((d) => blocked(add(centre, scale(depth, sign * (deep / 2 + d))))).length;
+          const [fwd, back] = [end(1), end(-1)];
+          if (fwd !== back) {
+            up = fwd > back ? depth : scale(depth, -1);
+            from = "kerb";
+          } else up = depth;
+        }
+        const symbol = rule?.symbol ?? "wheelchair";
+        const polys = symbol === "P"
+          ? textBlock(["P"], Math.min(0.42 * width, 1.4), deep, { charHeight: Math.min(1.45 * Math.min(0.42 * width, 1.4), 0.42 * deep) }).polys
+          : wheelchairTemplate(Math.min(0.5 * width, 0.4 * deep, 1.6));
+        emitPoly(place(polys, centre, up), "white", "disabled_parking", { glyph: symbol });
+        stats.baySymbols[symbol === "P" ? "p" : "wheelchair"] += 1;
+        if (from === "추정") stats.baySymbols.orientationGuessed += 1;
+        stats.baySymbols.list.push({ ids: members.map((pc) => pc.id).filter(Boolean), cell: k, centre: toScene(centre), upBearingDeg: +(((Math.atan2(up[0], -up[1]) * 180) / Math.PI + 360) % 360).toFixed(1), from, symbol });
+      }
+    }
+    for (let i = pieces.length - 1; i >= 0; i -= 1) if (replaced.has(pieces[i])) pieces.splice(i, 1);
+    stats.baySymbols.blobsReplaced = replaced.size;
   }
 
   return { pieces, zebras, stats };
