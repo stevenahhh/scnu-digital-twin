@@ -334,20 +334,23 @@ function restHeightM(kind, given, id) {
 }
 
 // Centre and long axis of an instance: from its outline (survey footprint or traced roof), else its point and
-// bearing_deg (clockwise from north, default 0). lengthM/widthM are the outline's sizes (null for a point).
+// bearing_deg (clockwise from north, default 0). lengthM/widthM are the outline's sizes (null for a point). ground is
+// the median ground under the outline; dropM (metres) how far the lowest ground lies below it, so bases sunk by it
+// reach the ground on a slope or across the raised walkway slab (stages/kerbs.mjs) instead of floating on its low side.
 function restPlacement(ctx, o) {
   const ring = o.footprint ?? o.ring;
   if (ring) {
     const r = orientedRect(ring);
-    if (o.p.bearing_deg === undefined) return { centre: r.centre, u: r.u, lengthM: 2 * r.halfLength, widthM: 2 * r.halfWidth, ground: ctx.medianGround(ring) };
+    const dropM = (ctx.medianGround(ring) - ctx.minGround(ring)) / M(1);
+    if (o.p.bearing_deg === undefined) return { centre: r.centre, u: r.u, lengthM: 2 * r.halfLength, widthM: 2 * r.halfWidth, ground: ctx.medianGround(ring), dropM };
     const b = (o.p.bearing_deg * Math.PI) / 180;
     const u = [Math.sin(b), -Math.cos(b)];
     const along = Math.abs(u[0] * r.u[0] + u[1] * r.u[1]) >= Math.SQRT1_2;
-    return { centre: r.centre, u, lengthM: 2 * (along ? r.halfLength : r.halfWidth), widthM: 2 * (along ? r.halfWidth : r.halfLength), ground: ctx.medianGround(ring) };
+    return { centre: r.centre, u, lengthM: 2 * (along ? r.halfLength : r.halfWidth), widthM: 2 * (along ? r.halfWidth : r.halfLength), ground: ctx.medianGround(ring), dropM };
   }
   if (!o.point) throw new Error(`furniture: ${o.kind} ${o.id} needs a Point or a Polygon`);
   const bearing = ((o.p.bearing_deg ?? 0) * Math.PI) / 180;
-  return { centre: o.point, u: [Math.sin(bearing), -Math.cos(bearing)], lengthM: null, widthM: null, ground: ctx.groundAt(...o.point) };
+  return { centre: o.point, u: [Math.sin(bearing), -Math.cos(bearing)], lengthM: null, widthM: null, ground: ctx.groundAt(...o.point), dropM: 0 };
 }
 
 // Instance colours: "#rrggbb" or a palette name (C); absent -> fallback.
@@ -748,7 +751,7 @@ B.hut = (ctx, o) => {
   } else {
     throw new Error(`furniture: hut ${o.id} roof ${form} is not gable, hip, mono or flat`);
   }
-  S.box(f, [-hs, hs], [-ht, ht], [-0.1, wallTop], { top: wall, side: wall });
+  S.box(f, [-hs, hs], [-ht, ht], [-0.1 - at.dropM, wallTop], { top: wall, side: wall });
   const doorS = -hs + 0.75;
   S.box(f, [doorS - 0.45, doorS + 0.45], [-ht - 0.04, -ht], [0, Math.min(2.05, wallTop - 0.1)], paintOf(o.p.doorColour, C.white, o.id));
   if (hs - doorS > 1.6) S.box(f, [doorS + 0.8, hs - 0.5], [-ht - 0.04, -ht], [0.9, Math.min(2.0, wallTop - 0.15)], C.window);
@@ -849,9 +852,9 @@ B.pavilion_hip = (ctx, o) => {
   const posts = paintOf(o.p.postColour, C.wood, o.id);
   const { floorHeightM: F, eaveHeightM: E, ridgeHeightM: R, columnSizeM: cs, roofOverhangM: ov, railingHeightM: rh } = d;
   if (F > 0) {
-    S.box(f, [-hs, hs], [-ht, ht], [-0.1, F - 0.06], C.stone);
+    S.box(f, [-hs, hs], [-ht, ht], [-0.1 - at.dropM, F - 0.06], C.stone);
     S.box(f, [-hs + 0.02, hs - 0.02], [-ht + 0.02, ht - 0.02], [F - 0.06, F], { top: C.timber, side: C.wood });
-    if (F > 0.25) S.box(f, [-0.7, 0.7], [-ht - Math.min(0.4, ov), -ht], [-0.1, F / 2], C.stone);
+    if (F > 0.25) S.box(f, [-0.7, 0.7], [-ht - Math.min(0.4, ov), -ht], [-0.1 - at.dropM, F / 2], C.stone);
   }
   const cx = hs - cs / 2;
   const cz = ht - cs / 2;
@@ -918,7 +921,7 @@ B.pavilion_octagon = (ctx, o) => {
   const planRing = (radius) => Array.from({ length: n }, (_, i) => localPlan(f, Math.cos(angle(i)) * radius, Math.sin(angle(i)) * radius));
   const ring = (radius, h) => Array.from({ length: n }, (_, i) => local(f, Math.cos(angle(i)) * radius, Math.sin(angle(i)) * radius, h));
   if (F > 0) {
-    S.prism(planRing(R - 0.35), at.ground - M(0.1), at.ground + M(F - 0.06), C.stone);
+    S.prism(planRing(R - 0.35), at.ground - M(0.1 + at.dropM), at.ground + M(F - 0.06), C.stone);
     S.prism(planRing(R - 0.37), at.ground + M(F - 0.06), at.ground + M(F), { side: C.wood, top: C.timber });
   }
   const cantilever = (o.p.support ?? "posts") === "cantilever";
@@ -931,7 +934,7 @@ B.pavilion_octagon = (ctx, o) => {
     const hook = 0.35;
     S.box(f, [mast - 0.8, mast + 0.8], [-0.8, 0.8], [-0.05, 0.12], C.offWhite);
     S.box(f, [mast - 0.22, mast + 0.22], [-0.22, 0.22], [0.12, 0.3], posts);
-    S.pole(localPlan(f, mast, 0), at.ground - M(0.1), at.ground + M(crest - bend), 0.07, 0.065, posts, { cap: false });
+    S.pole(localPlan(f, mast, 0), ctx.groundAt(...localPlan(f, mast, 0)) - M(0.1), at.ground + M(crest - bend), 0.07, 0.065, posts, { cap: false });
     const arc = (cs, ch, r, a0, a1) => Array.from({ length: 7 }, (_, k) => {
       const t = a0 + ((a1 - a0) * k) / 6;
       return [cs + r * Math.cos(t), ch + r * Math.sin(t)];
@@ -941,7 +944,7 @@ B.pavilion_octagon = (ctx, o) => {
     S.pole(localPlan(f, 0, 0), at.ground + M(top - 0.25), at.ground + M(top + 0.06), 0.12, 0.08, trim);
   } else {
     const columns = planRing(R - 0.55);
-    for (const p of columns) S.pole(p, at.ground + M(F > 0 ? F : -0.1), at.ground + M(E), d.columnSizeM / 2, d.columnSizeM / 2, posts, { sides: 4 });
+    for (const p of columns) S.pole(p, F > 0 ? at.ground + M(F) : ctx.groundAt(...p) - M(0.1), at.ground + M(E), d.columnSizeM / 2, d.columnSizeM / 2, posts, { sides: 4 });
     const tops = ring(R - 0.55, E - 0.12);
     for (let i = 0; i < n; i += 1) S.beam(tops[i], tops[(i + 1) % n], 0.14, 0.24, posts, { ends: false });
   }
