@@ -3,13 +3,13 @@
 //
 //   bun scripts/perf/bench.mjs <url> <label> <outDir> [--compare <urlB> <labelB>] [--runs 5]
 //       [--cdp 9351] [--width 1920] [--height 1080] [--warmup 60] [--frames 300]
-//       [--clock 2026-10-24T15:00:00+09:00] [--chrome <path>]
+//       [--clock 2026-10-24T15:00:00+09:00] [--chrome <path>] [--orbit <seconds>]
 import { mkdtempSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
 const NOISE_FLOOR_MS = 1.5; // M5 Pro run-to-run spread of gpuMs.median (BUILD-PLAN U00, MEASURED)
-const ASSET_RE = /\.(glb|gltf|bin|ktx2|drc|wasm|hdr|exr)(\?|$)/;
+const ASSET_RE = /\.(glb|gltf|bin|ktx2|drc|wasm|hdr|exr)(\?|$)|\/basis_transcoder\.js(\?|$)/;
 // Local backends (weather 8000, vision 8001, simulation 8002). Unless --live-backends is given they answer
 // 404, so a missing service cannot add console errors or change the frame (the d4 camera is within the
 // app's 120-unit proximity radius and opens building popups).
@@ -25,6 +25,10 @@ function parseArgs(argv) {
     // Render quality tier seeded into localStorage before load (low|medium|high); empty keeps the app default.
     // Post-processing passes reset renderer.info, so draw-call counts are comparable only at "low".
     quality: "",
+    // Seconds of a camera orbit after the fixed views (docs/OPTIMIZATION-FORMULA.md F: mean fps and 1 % low); 0 skips it.
+    orbit: 0,
+    // Device scale factor of the emulated screen (the app caps the canvas pixel ratio per quality tier).
+    dpr: 1,
   };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -65,7 +69,17 @@ const initScript = (clock) => `(() => {
   window.Date = PinnedDate;
 
   const B = window.__bench = { gl: { calls: 0, tris: 0 }, view: null, measuring: false, frames: [], gpu: [],
-    pending: [], activeQuery: null, disjointDrops: 0, renderer: null, renderCalls: 0 };
+    pending: [], activeQuery: null, disjointDrops: 0, renderer: null, renderCalls: 0, store: null, orbit: null, orbitTimes: [] };
+  // The R3F store (same capture as overhead-blend.mjs): the orbit invalidates it every frame, because the
+  // dashboard renders on demand and would otherwise draw nothing while the camera is driven from here.
+  Object.defineProperty(Object.prototype, "__r3f", {
+    configurable: true,
+    get() { return undefined; },
+    set(value) {
+      Object.defineProperty(this, "__r3f", { value, writable: true, configurable: true, enumerable: true });
+      if (!B.store && value && value.root && typeof value.root.getState === "function") B.store = value.root;
+    },
+  });
   const P = WebGL2RenderingContext.prototype;
   for (const name of ["drawElements", "drawArrays", "drawElementsInstanced", "drawArraysInstanced", "drawRangeElements"]) {
     const original = P[name];
@@ -105,7 +119,13 @@ const initScript = (clock) => `(() => {
       B.ext = B.ctx.getExtension("EXT_disjoint_timer_query_webgl2");
     }
     if (renderer !== B.renderer) return;
-    if (B.view) {
+    if (B.orbit) {
+      const o = B.orbit;
+      const a = ((performance.now() - o.t0) / (o.seconds * 1000)) * 2 * Math.PI;
+      camera.position.set(o.radius * Math.sin(a), o.height, o.radius * Math.cos(a));
+      camera.lookAt(0, 0, 0);
+      camera.updateMatrixWorld();
+    } else if (B.view) {
       camera.position.fromArray(B.view.position);
       camera.lookAt(B.view.target[0], B.view.target[1], B.view.target[2]);
       camera.updateMatrixWorld();
@@ -163,10 +183,15 @@ const measureScript = (view, warmup, frames) => `(async () => {
   for (let i = 0; i < ${warmup}; i++) await frame();
   B.frames = []; B.gpu = []; B.disjointDrops = 0;
   const dts = [];
+  const frameCalls = [];
   let last = await frame();
   const start = last;
   B.measuring = true;
-  for (let i = 0; i < ${frames}; i++) { const t = await frame(); dts.push(t - last); last = t; }
+  let calls0 = B.gl.calls;
+  for (let i = 0; i < ${frames}; i++) {
+    const t = await frame(); dts.push(t - last); last = t;
+    frameCalls.push(B.gl.calls - calls0); calls0 = B.gl.calls;
+  }
   B.measuring = false;
   const elapsed = last - start;
   for (let i = 0; i < 120 && (B.pending.length || B.activeQuery); i++) { await frame(); B.poll(); }
@@ -180,14 +205,89 @@ const measureScript = (view, warmup, frames) => `(async () => {
     frames: dts.length, renderedFrames: B.frames.length, fps: +(dts.length / (elapsed / 1000)).toFixed(2),
     frameMs: { median: pct(dts, 0.5), p95: pct(dts, 0.95) },
     drawCalls: pct(col("infoCalls"), 0.5), drawCallsGl: pct(col("glCalls"), 0.5),
+    // WebGL draw calls between two rAFs: every render() of the frame, post-processing passes included.
+    drawCallsFrame: pct(frameCalls.filter((c) => c > 0), 0.5),
     triangles: pct(col("infoTris"), 0.5), trianglesGl: Math.round(pct(col("glTris"), 0.5)),
     gpuMs: B.ext ? { median: pct(B.gpu, 0.5), p95: pct(B.gpu, 0.95), samples: B.gpu.length, disjointDropped: B.disjointDrops } : null,
     idleDrawCalls2s,
     heapMB: performance.memory ? +(performance.memory.usedJSHeapSize / 1048576).toFixed(1) : null };
 })()`;
 
+// One camera turn around the origin at medium zoom (260 units out, 180 up) over `seconds`, one render per frame
+// (the store is invalidated every rAF). fps is frames that rendered per second (rAF timestamps); low1 is 1000 / the
+// mean of the slowest 1 % of their intervals.
+const orbitScript = (seconds) => `(async () => {
+  const B = window.__bench;
+  if (!B.store) throw new Error("orbit: R3F store not captured");
+  const frame = () => new Promise((r) => requestAnimationFrame(r));
+  B.orbitTimes = [];
+  B.orbit = { seconds: ${seconds}, radius: 260, height: 180, t0: performance.now() };
+  const end = B.orbit.t0 + ${seconds} * 1000;
+  let renders = B.renderCalls;
+  while (performance.now() < end) {
+    B.store.getState().invalidate();
+    const t = await frame();
+    // A frame counts once however many render() calls it made (post-processing renders several scenes).
+    if (B.renderCalls !== renders) { B.orbitTimes.push(t); renders = B.renderCalls; }
+  }
+  B.orbit = null;
+  B.store.getState().invalidate();
+  const t = B.orbitTimes.slice(1);
+  const dts = t.slice(1).map((v, i) => v - t[i]);
+  const sorted = [...dts].sort((a, b) => b - a);
+  const worst = sorted.slice(0, Math.max(1, Math.floor(sorted.length / 100)));
+  return { seconds: ${seconds}, renderedFrames: t.length,
+    fps: +((dts.length / (t[t.length - 1] - t[0])) * 1000).toFixed(2),
+    low1: +(1000 / (worst.reduce((s, v) => s + v, 0) / worst.length)).toFixed(2),
+    frameMsMax: +sorted[0].toFixed(2) };
+})()`;
+
+// X of docs/OPTIMIZATION-FORMULA.md, an estimate (추정) from the scene, not a driver reading: every distinct texture
+// source of the main scene's materials, compressed ones by their mip data bytes, others as RGBA8 with a full mip chain
+// (x 4/3) when mipmaps are generated.
+const textureMemoryScript = `(() => {
+  const B = window.__bench;
+  const KEYS = ["map", "emissiveMap", "normalMap", "aoMap", "roughnessMap", "metalnessMap", "alphaMap", "bumpMap",
+    "lightMap", "specularMap", "clearcoatNormalMap", "transmissionMap"];
+  const seen = new Set();
+  let bytes = 0, compressed = 0;
+  B.scene.traverse((o) => {
+    for (const m of [o.material].flat()) {
+      if (!m) continue;
+      for (const k of KEYS) {
+        const t = m[k];
+        if (!t) continue;
+        const key = t.source?.uuid ?? t.uuid;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        if (t.isCompressedTexture) {
+          compressed += 1;
+          bytes += t.mipmaps.reduce((s, mip) => s + mip.data.byteLength, 0);
+        } else {
+          const img = t.image ?? {};
+          const mips = t.generateMipmaps && t.minFilter !== 1006 && t.minFilter !== 1003 ? 4 / 3 : 1;
+          bytes += (img.width ?? 0) * (img.height ?? 0) * 4 * mips;
+        }
+      }
+    }
+  });
+  // Visible meshes by scene-root ancestor name (digits folded to #), to see where draw calls come from.
+  const census = {};
+  B.scene.traverseVisible((o) => {
+    if (!o.isMesh) return;
+    let top = o;
+    while (top.parent && top.parent !== B.scene && top.parent.parent) top = top.parent;
+    const key = (top.name || top.type).replace(/[0-9]+/g, "#");
+    census[key] = (census[key] ?? 0) + 1;
+  });
+  const sceneCensus = Object.entries(census).sort((a, b) => b[1] - a[1]).slice(0, 20);
+  return { gpuTextureMB: +(bytes / 1048576).toFixed(1), textures: seen.size, compressedTextures: compressed,
+    rendererTextures: B.renderer.info.memory.textures, sceneCensus };
+})()`;
+
 const resourcesScript = `performance.getEntriesByType("resource").map((e) => ({ name: e.name.replace(location.origin, ""),
-  encodedBodySize: e.encodedBodySize, decodedBodySize: e.decodedBodySize, transferSize: e.transferSize }))`;
+  encodedBodySize: e.encodedBodySize, decodedBodySize: e.decodedBodySize, transferSize: e.transferSize,
+  responseEndMs: Math.round(e.responseEnd) }))`;
 
 async function runOnce(config, runIndex, outDir, opts) {
   const profile = mkdtempSync(join(tmpdir(), "scnu-bench-"));
@@ -244,7 +344,7 @@ async function runOnce(config, runIndex, outDir, opts) {
     await cdp("Network.enable");
     await cdp("Network.setCacheDisabled", { cacheDisabled: true });
     await cdp("Emulation.setTimezoneOverride", { timezoneId: "Asia/Seoul" });
-    await cdp("Emulation.setDeviceMetricsOverride", { width: opts.width, height: opts.height, deviceScaleFactor: 1, mobile: opts.width < 600 });
+    await cdp("Emulation.setDeviceMetricsOverride", { width: opts.width, height: opts.height, deviceScaleFactor: opts.dpr, mobile: opts.width < 600 });
     const qualitySeed = opts.quality ? `try{localStorage.setItem("scnu.renderQuality",${JSON.stringify(opts.quality)})}catch{}\n` : "";
     await cdp("Page.addScriptToEvaluateOnNewDocument", { source: qualitySeed + initScript(opts.clock) });
     if (!opts.liveBackends) await cdp("Fetch.enable", { patterns: BACKEND_PATTERNS.map((urlPattern) => ({ urlPattern })) });
@@ -272,9 +372,11 @@ async function runOnce(config, runIndex, outDir, opts) {
         views[view.name].screenshot = file;
       }
     }
+    const textureMemory = await evaluate(textureMemoryScript);
+    const orbit = opts.orbit > 0 ? await evaluate(orbitScript(opts.orbit)) : null;
     const resources = await evaluate(resourcesScript);
     const assets = resources.filter((r) => ASSET_RE.test(r.name));
-    return { run: runIndex, label: config.label, chrome: version.Browser, gpu, loadMs, labels, views,
+    return { run: runIndex, label: config.label, chrome: version.Browser, gpu, loadMs, labels, views, textureMemory, orbit,
       transferBytes: assets.reduce((sum, a) => sum + a.encodedBodySize, 0), assets,
       consoleErrors, logErrors, stubbedRequests: stubbed.length };
   } finally {
@@ -300,6 +402,7 @@ function summarizeView(runs, name) {
   return {
     position: per[0].position, target: per[0].target,
     drawCalls: median(per.map((v) => v.drawCalls)), drawCallsGl: median(per.map((v) => v.drawCallsGl)),
+    drawCallsFrame: median(per.map((v) => v.drawCallsFrame)),
     triangles: median(per.map((v) => v.triangles)), trianglesGl: median(per.map((v) => v.trianglesGl)),
     fps: round(median(per.map((v) => v.fps)), 2),
     frameMs: { median: round(median(per.map((v) => v.frameMs.median))), p95: round(median(per.map((v) => v.frameMs.p95))) },
@@ -326,8 +429,11 @@ function summarize(config, runs, opts, head) {
     transferBytes: median(runs.map((r) => r.transferBytes)),
     consoleErrors: consoleErrors.length,
     loadMs: median(runs.map((r) => r.loadMs)),
+    textureMemory: runs[0].textureMemory,
+    orbit: runs[0].orbit ? { seconds: runs[0].orbit.seconds, fps: round(median(runs.map((r) => r.orbit.fps)), 2),
+      low1: round(median(runs.map((r) => r.orbit.low1)), 2), runs: runs.map((r) => r.orbit) } : null,
     noiseFloorMs: NOISE_FLOOR_MS,
-    setup: { chrome: runs[0].chrome, gpu: runs[0].gpu, width: opts.width, height: opts.height, deviceScaleFactor: 1,
+    setup: { chrome: runs[0].chrome, gpu: runs[0].gpu, width: opts.width, height: opts.height, deviceScaleFactor: opts.dpr,
       runs: runs.length, warmupFrames: opts.warmup, timedFrames: opts.frames, clock: opts.clock, timezone: "Asia/Seoul",
       backends: opts.liveBackends ? "live" : `stubbed 404 (${BACKEND_PATTERNS.join(", ")})`,
       stubbedRequests: median(runs.map((r) => r.stubbedRequests)) },
@@ -335,7 +441,7 @@ function summarize(config, runs, opts, head) {
     assets: runs[0].assets,
     consoleErrorMessages: [...new Set(consoleErrors)].slice(0, 20),
     logErrorMessages: [...new Set(runs.flatMap((r) => r.logErrors))].slice(0, 20),
-    runs: runs.map((r) => ({ run: r.run, loadMs: r.loadMs, transferBytes: r.transferBytes,
+    runs: runs.map((r) => ({ run: r.run, loadMs: r.loadMs, orbit: r.orbit, transferBytes: r.transferBytes,
       consoleErrors: r.consoleErrors.length, views: r.views })),
   };
 }
@@ -372,7 +478,8 @@ for (const s of summaries) {
   const file = join(outDir, `${s.label}.json`);
   await Bun.write(file, `${JSON.stringify(s, null, 2)}\n`);
   console.log(`BENCH_RESULT ${file} ${JSON.stringify({ drawCalls: s.drawCalls, triangles: s.triangles, fps: s.fps,
-    idleDrawCalls2s: s.idleDrawCalls2s, gpuMs: s.gpuMs, transferBytes: s.transferBytes, consoleErrors: s.consoleErrors })}`);
+    idleDrawCalls2s: s.idleDrawCalls2s, gpuMs: s.gpuMs, transferBytes: s.transferBytes, consoleErrors: s.consoleErrors,
+    loadMs: s.loadMs, gpuTextureMB: s.textureMemory?.gpuTextureMB, orbit: s.orbit && { fps: s.orbit.fps, low1: s.orbit.low1 } })}`);
 }
 if (summaries.length === 2) {
   const file = join(outDir, `${summaries[0].label}-vs-${summaries[1].label}.json`);
