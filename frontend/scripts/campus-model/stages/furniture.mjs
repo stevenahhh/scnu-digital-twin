@@ -22,8 +22,9 @@ import { GLOW_UV, LAMP_SPACING_M, appendLampSolids, distanceToLines, objectDista
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const OBJECTS = path.join(HERE, "..", "data", "photo", "objects-campus.geojson");
-// VR-located rest spaces and the A19 gate sign (estimated; README "Street furniture"), read after the survey.
-const REST_SPACES = path.join(HERE, "..", "data", "photo", "rest-spaces.geojson");
+// VR-located rest spaces and the A19 gate sign (estimated; data/photo/README.md "VR rest spaces", README "Street
+// furniture"), read after the survey; REST_SPACES_FILE swaps it (tests).
+export const REST_SPACES = process.env.REST_SPACES_FILE ?? path.join(HERE, "..", "data", "photo", "rest-spaces.geojson");
 const GROUND_FEATURES = path.join(HERE, "..", "data", "osm-ground.json");
 const M = metres;
 
@@ -32,10 +33,36 @@ const M = metres;
 const EXCLUDED = {
   OC0111: "SCNU letter monument: superseded by RS-GATE-A19 (data/photo/rest-spaces.geojson, gate_sign), placed from VR scene_a19 (and scene_001) about 13 m further south at the plaza's road edge; the 2025 photo shows that corner of the gate plaza under construction, so this survey position (VR only, confidence 0.2) is left out",
 };
+// A retype may carry props (merged over the survey's properties) for the catalogue builder that now draws the object.
 const RETYPED = {
   OB0010: {
     kind: "stepped_arc",
     reason: "surveyed as a white roofed pergola, but VR scene_a19 shows no roof there, only the stepped arc of the finished gate plaza, and the photo shows a curved edge with a thin shadow; built as a two-tier curved step (0.45 m)",
+  },
+  OC0078: {
+    kind: "pavilion_hip",
+    reason: "VR scene_d4 l (cols 1250-1450): the garden 정자 has a brown square hip roof on four timber columns; drawn by the catalogue pavilion_hip builder (estimated)",
+    props: { roofColour: "#6c4b37", trimColour: "#4f3627" },
+  },
+  OC0119: {
+    kind: "terminal_shelter",
+    reason: "VR scene_a4 r (cols 1100-2048): the school-bus terminal roof on two rows of white posts with inverted-U ribs, solar panels over its far part and a lattice screen at the back; drawn by the catalogue terminal_shelter builder (estimated)",
+    props: { solar_from: 0.7, back_wall: true, dims: { widthM: 7.6, heightM: 3.0, postSpacingM: 4.0 } },
+  },
+  OC0120: {
+    kind: "pavilion_hip",
+    reason: "VR scene_a5 d (cols 1300-1900): the walled-garden 정자, silver-grey metal roof panels with blue fascia and hip caps; drawn by the catalogue pavilion_hip builder (estimated)",
+    props: { roofColour: "#a3abb0", trimColour: "#1d6fe3" },
+  },
+  OC0121: {
+    kind: "pavilion_octagon",
+    reason: "VR scene_a5 r (cols 1450-1650): a teal octagonal cantilever parasol in three stepped tiers on a curved hook mast, a timber deck with a bench beside it; drawn by the catalogue pavilion_octagon builder (estimated)",
+    props: { support: "cantilever", tiers: 3, roofColour: "#1c8f86", trimColour: "#57b3a8", postColour: "#7a5a3c", bearing_deg: 90, deck: { lengthM: 3.2, widthM: 2.2, offsetM: [-2.6, 0.6], benchLengthM: 1.8, colour: "#8a4f36" }, dims: { eaveHeightM: 2.4, apexHeightM: 4.0, floorHeightM: 0 } },
+  },
+  OC0153: {
+    kind: "canopy_shelter_row",
+    reason: "VR scene_a6 l (cols 500-1550) and scene_a10 d/f (the 'striped awning' seen from above is this row): two bike shelters under striped blue and light-blue fabric hoods; drawn by the catalogue canopy_shelter_row builder (estimated)",
+    props: { colours: ["#1f8be0", "#9fdcf5"], stripe_m: 1.0, dims: { moduleWidthM: 2.2, moduleLengthM: 5.0, heightM: 2.4 } },
   },
 };
 // The survey gives parasols and the kiosk its generic plaza_structure default of 0.5 m (height_source "kind default").
@@ -98,22 +125,28 @@ export function loadFurniture() {
   const rest = existsSync(REST_SPACES) ? JSON.parse(readFileSync(REST_SPACES, "utf8")) : { features: [] };
   const objects = [];
   const excluded = [];
-  const features = [
-    ...data.features.map((f) => ({ ...f, source: "objects-campus.geojson" })),
-    ...rest.features.map((f) => ({ ...f, source: "rest-spaces.geojson" })),
-  ];
-  for (const { properties: p, geometry: g, source } of features) {
-    if (EXCLUDED[p.id]) {
-      excluded.push({ id: p.id, kind: p.kind, reason: EXCLUDED[p.id] });
+  const ids = new Set();
+  const features = [...data.features.map((f) => ({ ...f, source: "survey" })), ...rest.features.map((f) => ({ ...f, source: "rest-spaces" }))];
+  for (const { properties: raw, geometry: g, source } of features) {
+    if (ids.has(raw.id)) throw new Error(`furniture: duplicate object id ${raw.id} (${source})`);
+    ids.add(raw.id);
+    if (EXCLUDED[raw.id]) {
+      excluded.push({ id: raw.id, kind: raw.kind, reason: EXCLUDED[raw.id] });
       continue;
     }
+    const p = RETYPED[raw.id]?.props ? { ...raw, ...RETYPED[raw.id].props } : raw;
     const toModel = ([lon, lat]) => geoToModel(lon, lat);
-    const object = { id: p.id, kind: RETYPED[p.id]?.kind ?? p.kind, surveyKind: p.kind, subtype: p.subtype ?? null, p, source, ...heightOf(p) };
+    const object = { id: p.id, kind: RETYPED[p.id]?.kind ?? p.kind, surveyKind: p.kind, subtype: p.subtype ?? null, source, p, ...heightOf(p) };
     if (g.type === "Point") object.point = toModel(g.coordinates);
     else if (g.type === "LineString") object.line = g.coordinates.map(toModel);
     else object.ring = openRing(g.coordinates[0].map(toModel));
-    // Roofs were outlined on the photo, so they include the relief lean; the footprint is the outline moved back.
-    if ((ROOFED.has(object.kind) || ROOFED_SUBTYPES.has(object.subtype)) && (object.ring || object.line)) {
+    // Roofs were outlined on the photo, so they include the relief lean; the footprint is the outline moved back. A rest
+    // space placed from the VR alone (photo_support "none") has no photo outline: its outline is the footprint.
+    if ((ROOFED.has(object.kind) || ROOFED_SUBTYPES.has(object.subtype)) && (object.ring || object.line) && p.photo_support === "none") {
+      object.footprint = object.ring ?? bufferLine(object.line, M((p.width_m ?? 2) / 2));
+      if (object.line) object.axis = object.line;
+      object.leanM = 0;
+    } else if ((ROOFED.has(object.kind) || ROOFED_SUBTYPES.has(object.subtype)) && (object.ring || object.line)) {
       object.photoRing = object.ring ?? bufferLine(object.line, M((p.width_m ?? 2) / 2));
       const [dx, dz] = leanOffset(ringCentroid(object.photoRing), object.heightM);
       object.footprint = object.photoRing.map(([x, z]) => [x - dx, z - dz]);
@@ -306,7 +339,11 @@ function restPlacement(ctx, o) {
   const ring = o.footprint ?? o.ring;
   if (ring) {
     const r = orientedRect(ring);
-    return { centre: r.centre, u: r.u, lengthM: 2 * r.halfLength, widthM: 2 * r.halfWidth, ground: ctx.medianGround(ring) };
+    if (o.p.bearing_deg === undefined) return { centre: r.centre, u: r.u, lengthM: 2 * r.halfLength, widthM: 2 * r.halfWidth, ground: ctx.medianGround(ring) };
+    const b = (o.p.bearing_deg * Math.PI) / 180;
+    const u = [Math.sin(b), -Math.cos(b)];
+    const along = Math.abs(u[0] * r.u[0] + u[1] * r.u[1]) >= Math.SQRT1_2;
+    return { centre: r.centre, u, lengthM: 2 * (along ? r.halfLength : r.halfWidth), widthM: 2 * (along ? r.halfWidth : r.halfLength), ground: ctx.medianGround(ring) };
   }
   if (!o.point) throw new Error(`furniture: ${o.kind} ${o.id} needs a Point or a Polygon`);
   const bearing = ((o.p.bearing_deg ?? 0) * Math.PI) / 180;
@@ -349,10 +386,16 @@ function hipRoof(ctx, f, hs, ht, h0, top, paint, band = null) {
 }
 
 // Axis of a rest space drawn along a line (rows, long roofs, awnings).
+// Axis of a row kind: its LineString (lean-corrected for roofs), else the long centreline of its outline (a survey roof
+// retyped to a row kind).
 function axisOf(o) {
   const line = o.axis ?? o.line;
-  if (!line) throw new Error(`furniture: ${o.kind} ${o.id} needs a LineString axis, not a ${o.point ? "Point" : "Polygon"}`);
-  return line;
+  if (line) return line;
+  const ring = o.footprint ?? o.ring;
+  if (!ring) throw new Error(`furniture: ${o.kind} ${o.id} needs a LineString axis, not a Point`);
+  const r = orientedRect(ring);
+  const [dx, dz] = [r.u[0] * M(r.halfLength), r.u[1] * M(r.halfLength)];
+  return [[r.centre[0] - dx, r.centre[1] - dz], [r.centre[0] + dx, r.centre[1] + dz]];
 }
 
 // Rest-space candidates that would draw an existing object twice: within radiusM of an object of the same class (all
@@ -1534,7 +1577,7 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     if (builder(ctx, o) === false) continue;
     const kind = o.kind === "plaza_structure" ? `plaza_structure/${o.subtype}` : o.kind;
     // Objects of rest-spaces.geojson are placed from the VR, not surveyed on the photo: counted as estimated.
-    tally(kind, o.source === "rest-spaces.geojson");
+    tally(kind, o.source === "rest-spaces");
     built.push([o.id, kind, Number(o.heightM.toFixed(2)), o.heightSource, 1, ctx.solid.triangleCount + ctx.glass.triangleCount - before]);
     // rest-space instances: catalogue kinds given dims, or survey objects retyped to a catalogue kind
     if (REST_TYPES[o.kind] && (o.p.dims !== undefined || o.surveyKind !== o.kind)) restSpaces.push([o.id, o.kind, REST_TYPES[o.kind].dimsSource, o.p.vr_scene ?? null, o.p.photo_support ?? null, true]);

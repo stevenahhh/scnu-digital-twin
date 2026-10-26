@@ -506,6 +506,38 @@ Method: each sighting is a ray from its VR station (`scripts/perf/vr-stations.js
 | 16 | scene_f1 / d / 500-1400 | bench: two benches on sidewalk | nadir | none | missing | no surveyed object within 8 m of the ray | bench | no | RS0016 |
 | 17 | scene_f2 / d / 1400-1900 | not a rest space: two green-painted EV charging bays (re-read; first noted as a green-roof hut/booth) | nadir | none | not_rest_space | the green patch is the 전기차 충전 구역 marking with wheel stops and a charger cabinet, not a roof | - | no | - |
 
+#### Applied (todo 25, 2026-10-26)
+
+The table above is the first pass. Applying it against the photo changed nine rows (the JSON keeps the first-pass
+reason and adds `applied`, `reason_applied`, `vr_confirmed`): 7 placed as new features in `rest-spaces.geojson`
+(9 features), 5 retypes of survey objects the VR shows as a catalogue kind, 8 matches, 3 not rest spaces, 1 deferred.
+The first pass tested candidates by their vertices and left out `bike_rack`, which hid OC0119 and OC0153.
+
+| # | scene | outcome |
+|---|---|---|
+| 1 | scene_a2 d | deferred: the ortho-match pin does not register on the photo (face d shows lawn, topiary and three benches on a diamond-tiled plaza corner that no place within 60 m of the pin matches) |
+| 2 | scene_a4 r | retype OC0119 bus_stop_shelter -> terminal_shelter (the long school-bus canopy) |
+| 3 | scene_a5 r | retype OC0121 gazebo -> pavilion_octagon (cantilever parasol, three tiers, deck and bench) |
+| 4 | scene_a5 d | retype OC0120 gazebo -> pavilion_hip (grey panels, blue trim) |
+| - | scene_a5 r | RS0003 garden_wall, white coping line traced on the photo |
+| 5 | scene_a6 l | retype OC0153 bike_rack -> canopy_shelter_row (striped hoods) |
+| - | scene_a6 l | match RS0007: the 'tree plaza' is the scene_a9 plaza |
+| 6 | scene_a9 f | RS0006 bench, RS0007 gravel tree pit, RS0007W brick planter wall on the plaza's south edge |
+| 7 | scene_a10 f | match RS0006: same plaza (the scene_a10 station stands 8 m from its corner) |
+| 8 | scene_a10 f/d | match OC0153: the 'striped awning' is the bike-shelter row seen from above; no awning instance |
+| - | scene_a16 f | not a rest space: the hedge lettering is a planting |
+| 9 | scene_f3 r | RS0011 hut, red roof traced at the south clay courts (the pin is 60 m off) |
+| 10 | scene_a19 b | match OB0009 |
+| 11 | scene_c1 l | match estimateBenches: the box benches beside the tree pits are the 8 plaza benches already drawn (VR reading 5.8 m from one) |
+| 12 | scene_c1 b | match estimateBenches |
+| 13 | scene_d2 r | RS0013 open shelter (flat grey roof, bench), VR-only position (+-5 m, confidence 0.3) |
+| 14 | scene_d4 l | retype OC0078 gazebo -> pavilion_hip (brown roof) |
+| - | scene_e5 b | not a rest space: a lawn garden with topiary is a planting |
+| - | scene_e7 f, scene_e8 f | match OC0137, OC0102 |
+| 15 | scene_f1 l | RS0015 bus stop shelter, roof traced at the east bus bay |
+| 16 | scene_f1 d | RS0016, RS0016B long benches, face d registered on the lane diamonds and the footway kerb |
+| 17 | scene_f2 d | not a rest space (EV charging bays) |
+
 ## Licence
 
 Source: **국토지리정보원 (NGII), 정사영상 2025, sheet 34702020 (순천020)**, metadata 202504000734702020, made by

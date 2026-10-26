@@ -91,7 +91,7 @@
       "label": "버스 터미널 쉼터",
       "dims": {
         "heightM": { "default": 3.0, "range": [2.6, 3.2] },
-        "widthM": { "default": 3.5, "range": [3.0, 4.0] },
+        "widthM": { "default": 3.5, "range": [3.0, 8.0], "rangeSource": "upper bound 8.0 m from the school-bus terminal roof (VR scene_a4 r; survey outline OC0119 on the NGII 2025 sheet 8.1 m across) (estimated, 추정)" },
         "postSpacingM": { "default": 4.0, "range": [3.0, 5.0] }
       },
       "dimsSource": "vendor example (Q22 Q-GP 2.5-3.5 m shelter heights) and KDS 34 50 15 그늘막 2.5-3.0 m; width and post spacing from VR reading of scene_a4 (estimated)",
@@ -116,7 +116,7 @@
       "builder": "hut",
       "label": "소형 부스",
       "dims": {
-        "planWidthM": { "default": 2.4, "range": [2.0, 9.5], "rangeSource": "upper bound 9.5 m from VR scene_f3 face r: the tennis-court hut reads about 9 m long (estimated, 추정)" },
+        "planWidthM": { "default": 2.4, "range": [2.0, 10.5], "rangeSource": "upper bound 10.5 m from the tennis-court hut (VR scene_f3 face r reads about 9 m; its roof traced on the NGII 2025 sheet is 11.0 x 4.3 m, 10.4 m without the eaves) (estimated, 추정)" },
         "planDepthM": { "default": 2.4, "range": [2.0, 4.0] },
         "heightM": { "default": 2.6, "range": [2.3, 3.2] },
         "roofRiseM": { "default": 0.6, "range": [0.3, 1.0] }

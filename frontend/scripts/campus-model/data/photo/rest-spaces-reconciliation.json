@@ -1,5 +1,5 @@
 {
-  "description": "VR rest-space reconciliation (2026-10-25): every outdoor rest-space sighting (#1-17 of the VR station survey) and every garden/plaza landscape item seen in the SCNU 360 VR exterior scenes, cast as a ray from the VR station (face bearing + column angle, 10-120 m; nadir sightings as a strip under the station) against the photo survey objects-campus.geojson (8 m rule). decision: match (an object of a kind that stands for it exists), retype (an object exists under a kind the VR corrects), missing (none within 8 m; instanceId is the id stages will create), not_rest_space (a re-read of the VR shows the sighting is not a rest space; nothing is placed). typeId names data/rest-space-catalogue.json. photo_blob: whether the NGII 2025 photo shows a roof, wall or planter at the ray. landscape lists steps, sculptures and other items that no catalogue type models (kept for reference, same rule). Stations from scripts/perf/vr-stations.json (refined yaw where present). Applied by a later stage; this file changes no geometry.",
+  "description": "VR rest-space reconciliation (2026-10-25): every outdoor rest-space sighting (#1-17 of the VR station survey) and every garden/plaza landscape item seen in the SCNU 360 VR exterior scenes, cast as a ray from the VR station (face bearing + column angle, 10-120 m; nadir sightings as a strip under the station) against the photo survey objects-campus.geojson (8 m rule). decision: match (an object of a kind that stands for it exists), retype (an object exists under a kind the VR corrects), missing (none within 8 m; instanceId is the id stages will create), not_rest_space (a re-read of the VR shows the sighting is not a rest space or only a planting; nothing is placed), deferred (the VR station could not be registered on the photo; nothing is placed yet). applied records what todo 25 did; vr_confirmed names the existing object the VR confirms. typeId names data/rest-space-catalogue.json. photo_blob: whether the NGII 2025 photo shows a roof, wall or planter at the ray. landscape lists steps, sculptures and other items that no catalogue type models (kept for reference, same rule). Stations from scripts/perf/vr-stations.json (refined yaw where present). Applied by a later stage; this file changes no geometry.",
   "sources": [
     "SCNU 360 VR tour exterior scenes (visual reference only, nothing copied)",
     "data/photo/objects-campus.geojson (NGII 2025 photo survey, 175 objects)",
@@ -8,12 +8,14 @@
   "summary": {
     "sightings": 24,
     "restSightings": 17,
-    "match": 7,
-    "retype": 0,
-    "missing": 16,
+    "match": 8,
+    "retype": 5,
+    "missing": 7,
     "ambiguous": 1,
     "landscape": 28,
-    "notRestSpace": 1
+    "notRestSpace": 3,
+    "deferred": 1,
+    "appliedBy": "todo 25 (data/photo/rest-spaces.geojson, stages/furniture.mjs RETYPED), 2026-10-26"
   },
   "sightings": [
     {
@@ -30,13 +32,15 @@
       "geometry": "nadir strip 28 m along f at -9.2 m right of the station",
       "yawUsed": 20.2,
       "candidates": [],
-      "decision": "missing",
+      "decision": "deferred",
       "ref": null,
       "reason": "no surveyed object within 8 m of the ray",
       "typeId": "bench",
       "photo_blob": "no",
       "photo_note": "paved bus bays; benches cannot be resolved on the photo",
-      "instanceId": "RS0001"
+      "instanceId": null,
+      "applied": "not placed",
+      "reason_applied": "the scene_a2 station is an ortho-match pin (nominal 40 m); its face d (lawn, topiary, three timber benches on a diamond-tiled plaza corner, a curved road) does not register on the NGII 2025 sheet within 60 m of the pin, so the benches are left out until the station is placed"
     },
     {
       "restSighting": 2,
@@ -54,13 +58,15 @@
       "candidates": [
         "OC0139 fence 0.1 m"
       ],
-      "decision": "missing",
-      "ref": null,
+      "decision": "retype",
+      "ref": "OC0119",
       "reason": "only fence within 8 m, none of a kind that stands for a terminal_shelter",
       "typeId": "terminal_shelter",
       "photo_blob": "yes",
       "photo_note": "a long white striped canopy roof stands 15-20 m north of the ray start (ortho-match station, nominal 40 m error)",
-      "instanceId": "RS0002"
+      "instanceId": null,
+      "applied": "RETYPED OC0119 bus_stop_shelter -> terminal_shelter",
+      "reason_applied": "the first pass tested ray distance to polygon vertices only; OC0119 (the long school-bus canopy polygon the ray crosses) is the terminal roof the VR shows; drawn by the terminal_shelter builder"
     },
     {
       "restSighting": 3,
@@ -78,13 +84,15 @@
       "candidates": [
         "OC0120 gazebo 1.1 m"
       ],
-      "decision": "match",
+      "decision": "retype",
       "ref": "OC0121",
       "reason": "the survey's round dark-green roofed gazebo OC0121 (style matches the green octagonal roof) lies in the same walled garden; the ray passes 1.1 m from OC0120 (blue pyramid roof, claimed by sighting 4) and OC0121 sits 2.4 m from the garden ray at 329 deg: the ortho-match station (nominal 40 m error) cannot separate the two, the roof styles do",
       "ambiguous": true,
       "typeId": "pavilion_octagon",
       "photo_blob": "yes",
-      "photo_note": "the matched object was traced on the 2025 photo by the survey"
+      "photo_note": "the matched object was traced on the 2025 photo by the survey",
+      "applied": "RETYPED OC0121 gazebo -> pavilion_octagon (cantilever, 3 tiers, deck and bench)",
+      "vr_confirmed": "OC0121"
     },
     {
       "restSighting": 4,
@@ -102,12 +110,14 @@
       "candidates": [
         "OC0120 gazebo 0.8 m"
       ],
-      "decision": "match",
+      "decision": "retype",
       "ref": "OC0120",
       "reason": "blue pyramid-roof gazebo OC0120 ('blue pyramid-roof gazebo in the walled garden') lies 0.8 m from the nadir strip; same object and roof colour",
       "typeId": "pavilion_hip",
       "photo_blob": "yes",
-      "photo_note": "the matched object was traced on the 2025 photo by the survey"
+      "photo_note": "the matched object was traced on the 2025 photo by the survey",
+      "applied": "RETYPED OC0120 gazebo -> pavilion_hip (grey panels, blue trim)",
+      "vr_confirmed": "OC0120"
     },
     {
       "restSighting": null,
@@ -132,7 +142,8 @@
       "typeId": "garden_wall",
       "photo_blob": "yes",
       "photo_note": "walled garden with lawn and the gazebo roofs at the ray end",
-      "instanceId": "RS0003"
+      "instanceId": "RS0003",
+      "applied": "RS0003 garden_wall traced on the photo (white coping line)"
     },
     {
       "restSighting": 5,
@@ -148,13 +159,15 @@
       "geometry": "ray 10-120 m at 177.2 deg",
       "yawUsed": 267.1,
       "candidates": [],
-      "decision": "missing",
-      "ref": null,
+      "decision": "retype",
+      "ref": "OC0153",
       "reason": "no surveyed object within 8 m of the ray",
       "typeId": "canopy_shelter_row",
       "photo_blob": "yes",
       "photo_note": "light-blue canopy roofs along the plaza edge 5-10 m beside the ray",
-      "instanceId": "RS0004"
+      "instanceId": null,
+      "applied": "RETYPED OC0153 bike_rack -> canopy_shelter_row",
+      "reason_applied": "the first pass did not test kind bike_rack: OC0153 'row of blue canopies along the plaza edge (bicycle shelter)' is the row the VR shows"
     },
     {
       "restSighting": null,
@@ -170,13 +183,15 @@
       "geometry": "ray 10-120 m at 178.6 deg",
       "yawUsed": 267.1,
       "candidates": [],
-      "decision": "missing",
-      "ref": null,
+      "decision": "match",
+      "ref": "RS0007",
       "reason": "no surveyed object within 8 m of the ray",
       "typeId": "planter",
       "photo_blob": "yes",
       "photo_note": "tree-planter plaza grid beside the ray",
-      "instanceId": "RS0005"
+      "instanceId": null,
+      "applied": "the scene_a6 'tree plaza' is the scene_a9 plaza; covered by RS0007",
+      "vr_confirmed": "RS0007"
     },
     {
       "restSighting": 6,
@@ -198,7 +213,8 @@
       "typeId": "bench",
       "photo_blob": "no",
       "photo_note": "the plaza is visible but benches are not resolvable under the tree crowns",
-      "instanceId": "RS0006"
+      "instanceId": "RS0006",
+      "applied": "RS0006 bench + RS0007 tree pit + RS0007W planter wall in data/photo/rest-spaces.geojson"
     },
     {
       "restSighting": null,
@@ -220,7 +236,8 @@
       "typeId": "planter",
       "photo_blob": "yes",
       "photo_note": "tree-planter plaza near the ray start",
-      "instanceId": "RS0007"
+      "instanceId": "RS0007",
+      "applied": "RS0007 gravel tree pit and RS0007W brick planter wall"
     },
     {
       "restSighting": 7,
@@ -238,13 +255,15 @@
       "candidates": [
         "OC0169 plaza_structure 0.1 m"
       ],
-      "decision": "missing",
-      "ref": null,
+      "decision": "match",
+      "ref": "RS0006",
       "reason": "only plaza_structure within 8 m, none of a kind that stands for a bench",
       "typeId": "bench",
       "photo_blob": "no",
       "photo_note": "plaza visible; benches not resolvable",
-      "instanceId": "RS0008"
+      "instanceId": null,
+      "applied": "same plaza as scene_a9 (the scene_a10 station stands 8 m from its north-east corner); covered by RS0006/RS0007",
+      "vr_confirmed": "RS0006"
     },
     {
       "restSighting": 8,
@@ -260,13 +279,15 @@
       "geometry": "ray 10-120 m at 276.7 deg",
       "yawUsed": 237,
       "candidates": [],
-      "decision": "missing",
-      "ref": null,
+      "decision": "match",
+      "ref": "OC0153",
       "reason": "no surveyed object within 8 m of the ray",
-      "typeId": "awning",
+      "typeId": "canopy_shelter_row",
       "photo_blob": "yes",
       "photo_note": "light-blue roof strip against a facade on the ray at about one third",
-      "instanceId": "RS0009"
+      "instanceId": null,
+      "applied": "the 'striped awning' of scene_a10 d/f is the bike-shelter row OC0153 seen from above (the station stands 8 m from it); no awning instance",
+      "vr_confirmed": "OC0153"
     },
     {
       "restSighting": null,
@@ -286,13 +307,15 @@
         "OC0173 fence 6.9 m",
         "OC0161 fence 7.7 m"
       ],
-      "decision": "missing",
+      "decision": "not_rest_space",
       "ref": null,
       "reason": "only fence within 8 m, none of a kind that stands for a planter",
-      "typeId": "planter",
+      "typeId": null,
       "photo_blob": "yes",
       "photo_note": "the yellow hedge lettering on the slope at the ray start",
-      "instanceId": "RS0010"
+      "instanceId": null,
+      "applied": "not placed",
+      "reason_applied": "the hedge lettering is a planting (yellow shrubs on the slope), no constructed planter: left to the trees and ground stages"
     },
     {
       "restSighting": 9,
@@ -312,9 +335,10 @@
       "ref": null,
       "reason": "no surveyed object within 8 m of the ray",
       "typeId": "hut",
-      "photo_blob": "no",
+      "photo_blob": "yes",
       "photo_note": "no hut roof distinguishable on the ray; a small red patch 20 m off it",
-      "instanceId": "RS0011"
+      "instanceId": "RS0011",
+      "applied": "RS0011 hut traced on the photo at the south clay courts (the scene_f3 pin is 60 m off)"
     },
     {
       "restSighting": 10,
@@ -337,7 +361,9 @@
       "reason": "bus_stop_shelter OB0009 lies 1.6 m from the ray (17 m out)",
       "typeId": "bus_stop_shelter",
       "photo_blob": "yes",
-      "photo_note": "the matched object was traced on the 2025 photo by the survey"
+      "photo_note": "the matched object was traced on the 2025 photo by the survey",
+      "vr_confirmed": "OB0009",
+      "applied": "no new feature"
     },
     {
       "restSighting": 11,
@@ -355,13 +381,15 @@
       "candidates": [
         "OC0081 plaza_structure 0.6 m"
       ],
-      "decision": "missing",
-      "ref": null,
+      "decision": "match",
+      "ref": "estimateBenches",
       "reason": "only plaza_structure within 8 m, none of a kind that stands for a bench",
       "typeId": "bench",
       "photo_blob": "no",
       "photo_note": "the ray crosses the library roof; the plaza benches are under trees",
-      "instanceId": "RS0012"
+      "instanceId": null,
+      "applied": "the long dark box benches beside the square tree pits are the 8 plaza benches estimateBenches draws from VR scene_c1; the face l reading lands 5.8 m from one of them, inside the station and depression-angle error, so nothing is added",
+      "vr_confirmed": "estimateBenches"
     },
     {
       "restSighting": 12,
@@ -388,7 +416,9 @@
       "reason": "the build already places estimated box benches (4 per long side) beside the oval pond OC0081 from VR scene_c1; the ray at 131 deg crosses the pond's south-east side where they stand. No surveyed bench is needed",
       "typeId": "bench",
       "photo_blob": "yes",
-      "photo_note": "the matched object was traced on the 2025 photo by the survey"
+      "photo_note": "the matched object was traced on the 2025 photo by the survey",
+      "vr_confirmed": "estimateBenches",
+      "applied": "no new feature"
     },
     {
       "restSighting": 13,
@@ -407,10 +437,11 @@
       "decision": "missing",
       "ref": null,
       "reason": "no surveyed object within 8 m of the ray",
-      "typeId": "pergola",
+      "typeId": "bus_stop_shelter",
       "photo_blob": "no",
       "photo_note": "no roof on the planted island along the ray",
-      "instanceId": "RS0013"
+      "instanceId": "RS0013",
+      "applied": "RS0013 open shelter (court_shelter subtype: flat grey roof, no glass, bench), VR-only position (+-5 m)"
     },
     {
       "restSighting": 14,
@@ -428,12 +459,14 @@
       "candidates": [
         "OC0078 gazebo 0.1 m"
       ],
-      "decision": "match",
+      "decision": "retype",
       "ref": "OC0078",
       "reason": "gazebo OC0078 lies 0.1 m from the ray (29 m out)",
       "typeId": "pavilion_hip",
       "photo_blob": "yes",
-      "photo_note": "the matched object was traced on the 2025 photo by the survey"
+      "photo_note": "the matched object was traced on the 2025 photo by the survey",
+      "applied": "RETYPED OC0078 gazebo -> pavilion_hip (brown roof)",
+      "vr_confirmed": "OC0078"
     },
     {
       "restSighting": null,
@@ -449,13 +482,15 @@
       "geometry": "ray 10-120 m at 78.1 deg",
       "yawUsed": 235.5,
       "candidates": [],
-      "decision": "missing",
+      "decision": "not_rest_space",
       "ref": null,
       "reason": "no surveyed object within 8 m of the ray",
-      "typeId": "planter",
+      "typeId": null,
       "photo_blob": "yes",
       "photo_note": "lawn garden with shrubs on the ray",
-      "instanceId": "RS0014"
+      "instanceId": null,
+      "applied": "not placed",
+      "reason_applied": "a lawn garden with topiary shrubs is a planting, no constructed planter: left to the trees and ground stages"
     },
     {
       "restSighting": null,
@@ -522,9 +557,11 @@
       "ref": null,
       "reason": "no surveyed object within 8 m of the ray",
       "typeId": "bus_stop_shelter",
-      "photo_blob": "no",
+      "photo_blob": "yes",
       "photo_note": "no shelter roof on the footway along the ray",
-      "instanceId": "RS0015"
+      "instanceId": "RS0015",
+      "applied": "RS0015 shelter roof traced on the photo at the east bus bay",
+      "reason_applied": "the first pass looked along the ray only; the roof stands at the bus bay 30 m south of the pin"
     },
     {
       "restSighting": 16,
@@ -546,7 +583,8 @@
       "typeId": "bench",
       "photo_blob": "no",
       "photo_note": "sidewalk visible; benches not resolvable",
-      "instanceId": "RS0016"
+      "instanceId": "RS0016",
+      "applied": "RS0016 and RS0016B, face d registered on the lane diamonds and the footway kerb"
     },
     {
       "restSighting": 17,
