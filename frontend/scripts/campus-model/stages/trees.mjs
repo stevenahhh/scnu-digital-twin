@@ -440,8 +440,8 @@ export function buildTrees({ glb, placement }) {
       }
       return g;
     };
-    // five flat pads stepping up and out along the lean of the bole (Korean red pine, VR scene_c1 f, scene_d3 f)
-    return mergeGeometries([pad(2.3, 0.7, -0.3, 5.3, 0.4, 3), pad(1.9, 0.62, 1.0, 6.0, -0.7, 5), pad(1.7, 0.6, -1.5, 6.7, 0.6, 7), pad(1.3, 0.55, -0.6, 7.5, -0.4, 9), pad(0.9, 0.5, -1.0, 8.1, 0.2, 11)]);
+    // six thick irregular pads stepping up and out along the lean of the bole (Korean red pine, VR scene_c1 f, scene_d3 f)
+    return mergeGeometries([pad(2.6, 1.05, -0.3, 5.3, 0.4, 3), pad(2.2, 0.95, 1.1, 6.1, -0.8, 5), pad(2.0, 0.9, -1.6, 6.6, 0.7, 7), pad(1.6, 0.85, 0.4, 7.2, 1.0, 13), pad(1.5, 0.8, -0.7, 7.7, -0.5, 9), pad(1.0, 0.7, -1.0, 8.4, 0.2, 11)]);
   })();
   const species = {
     ginkgo: [
