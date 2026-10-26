@@ -43,3 +43,19 @@ test("arrows point along +y (travel) and turn arrows branch to their side", () =
   assert.ok(left.x0 < -1 && left.x1 < 0.5, "a left arrow reaches to the left of travel");
   assert.ok(right.x1 > 1 && right.x0 > -0.5, "a right arrow reaches to the right of travel");
 });
+
+test("bay symbols are solid polygons: the P one polygon with its counter as a hole, the wheelchair four solid parts", async () => {
+  const { parkingPTemplate, wheelchairTemplate } = await import("./markingGlyphs.mjs");
+  const p = parkingPTemplate(2);
+  assert.equal(p.length, 1, "one polygon");
+  assert.equal(p[0].length, 2, "outer ring and the counter");
+  const pb = bounds(p);
+  assert.ok(Math.abs(pb.y1 - pb.y0 - 2) < 1e-9 && Math.abs(pb.x1 - pb.x0 - 1.24) < 1e-9);
+  const w = wheelchairTemplate(1.5);
+  assert.equal(w.length, 4);
+  for (const rings of w) assert.equal(rings.length, 1, "each part one ring, no joint pieces");
+  const wb = bounds(w);
+  assert.ok(wb.y1 - wb.y0 > 1.2 && wb.y1 - wb.y0 < 1.6, `height ${wb.y1 - wb.y0}`);
+  // facing +x: the foot reaches further right than the head
+  assert.ok(bounds([w[1]]).x1 > bounds([w[0]]).x1);
+});

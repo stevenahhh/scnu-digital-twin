@@ -292,15 +292,69 @@ export const triangleTemplate = (length, width, w) => outline([[-width / 2, leng
 export const chevronTemplate = (depth, span, w) => [[bar([0, -depth / 2], [-span / 2, depth / 2], w)], [bar([0, -depth / 2], [span / 2, depth / 2], w)]];
 
 // Wheelchair symbol (장애인 전용) in a size x size box: head, back and seat, leg, wheel ring.
+// A polyline stroked `w` wide as ONE ring, mitred at every joint (limit 3): one solid band with crisp edges, no
+// joint pieces or overlaps.
+export function band(points, w) {
+  const h = w / 2;
+  const left = [];
+  const right = [];
+  for (let i = 0; i < points.length; i += 1) {
+    const p = points[i];
+    const dir = (a, b) => { const l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1; return [(b[0] - a[0]) / l, (b[1] - a[1]) / l]; };
+    const before = i > 0 ? dir(points[i - 1], p) : null;
+    const after = i + 1 < points.length ? dir(p, points[i + 1]) : null;
+    let t = before && after ? [before[0] + after[0], before[1] + after[1]] : before ?? after;
+    const tl = Math.hypot(t[0], t[1]) || 1;
+    t = [t[0] / tl, t[1] / tl];
+    const n = [-t[1], t[0]];
+    const ref = after ?? before;
+    const k = h / Math.max(1 / 3, n[0] * -ref[1] + n[1] * ref[0]);
+    left.push([p[0] + n[0] * k, p[1] + n[1] * k]);
+    right.push([p[0] - n[0] * k, p[1] - n[1] * k]);
+  }
+  return [...left, ...right.reverse()];
+}
+// An arc band (centre c, radius r, from a0 to a1 degrees counter-clockwise, `w` wide) as one ring.
+export function arcBand(c, r, a0, a1, w, step = 6) {
+  const n = Math.max(2, Math.ceil(Math.abs(a1 - a0) / step));
+  const at = (rad, k) => { const a = ((a0 + ((a1 - a0) * k) / n) * Math.PI) / 180; return [c[0] + rad * Math.cos(a), c[1] + rad * Math.sin(a)]; };
+  const outer = Array.from({ length: n + 1 }, (_, k) => at(r + w / 2, k));
+  const inner = Array.from({ length: n + 1 }, (_, k) => at(r - w / 2, n - k));
+  return [...outer, ...inner];
+}
+
+// Wheelchair: the international symbol of access (ISO 7001 PI PF 006, the figure KS and 도로교통공단 paint in 장애인
+// 전용주차구역), `size` tall, facing +x, top +y; proportions approximated (추정). A solid head disc, the back-seat-shin-
+// foot as one band, the arm as one band, the wheel as an open arc band; strokes 0.11 of the size, so a 1.5 m symbol
+// has 0.16 m strokes (crisp at 0.1 m/px).
 export function wheelchairTemplate(size) {
   const s = size;
-  const w = 0.09 * s;
+  const P = (x, y) => [x * s, y * s];
+  const w = 0.11 * s;
   return [
-    [ring([-0.08 * s, 0.38 * s], 0.08 * s, 0.08 * s, 16)],
-    ...strokes([[-0.12 * s, 0.24 * s], [-0.12 * s, -0.02 * s], [0.16 * s, -0.02 * s], [0.26 * s, -0.3 * s], [0.36 * s, -0.3 * s]], w),
-    [bar([-0.12 * s, 0.14 * s], [0.12 * s, 0.14 * s], w)],
-    ...ellipseRing([-0.06 * s, -0.16 * s], 0.24 * s, 0.24 * s, w),
+    [ring(P(-0.13, 0.4), 0.09 * s, 0.09 * s, 28)],
+    [band([P(-0.17, 0.27), P(-0.17, -0.04), P(0.18, -0.04), P(0.27, -0.37), P(0.42, -0.37)], w)],
+    [band([P(-0.17, 0.12), P(0.1, 0.12)], 0.09 * s)],
+    [arcBand(P(-0.1, -0.19), 0.26 * s, 75, 345, 0.1 * s)],
   ];
+}
+
+// P of a parking or PM bay: stem and bowl as ONE polygon with the counter as its hole, `height` tall (width 0.62 of
+// it, stroke 0.17), top +y, centred on its box.
+export function parkingPTemplate(height) {
+  const H = height;
+  const w = 0.17 * H;
+  const R = 0.29 * H;
+  const W = 0.62 * H;
+  const x1 = W - R;
+  const arc = (r, sign) => Array.from({ length: 13 }, (_, k) => {
+    const a = Math.PI / 2 - (Math.PI * k) / 12;
+    return [x1 + r * Math.cos(a), H - R + r * Math.sin(a)];
+  });
+  const outer = [[0, 0], [0, H], ...arc(R), [w, H - 2 * R], [w, 0]];
+  const hole = [[w, H - w], ...arc(R - w), [w, H - 2 * R + w]].reverse();
+  const shift = ([x, y]) => [x - W / 2, y - H / 2];
+  return [[outer.map(shift), hole.map(shift)]];
 }
 // Bicycle symbol in a length (along) x width (across) box: two wheels and the frame.
 export function bicycleTemplate(length, width) {

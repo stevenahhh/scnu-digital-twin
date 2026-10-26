@@ -23,7 +23,7 @@ import {
   polylineLength, projectArc, rect, resample, scale, slicePath, straightness, sub, unit, fitPath, distanceToPolyline, median,
 } from "../lib/markingFit.mjs";
 import {
-  ARROW_KINDS, arrowTemplate, bicycleTemplate, chevronTemplate, diamondTemplate, textBlock, triangleTemplate, wheelchairTemplate,
+  ARROW_KINDS, arrowTemplate, bicycleTemplate, chevronTemplate, diamondTemplate, parkingPTemplate, textBlock, triangleTemplate, wheelchairTemplate,
 } from "../lib/markingGlyphs.mjs";
 
 const LINE_KINDS = new Set(["lane_line_dashed", "lane_line_solid", "edge_line", "centre_line_yellow", "parking_line", "kerb_no_parking", "give_way_line"]);
@@ -64,6 +64,8 @@ const ZEBRA_ROAD_SNAP_DEG = 5;
 const BAY_ROW_M = 6.5;
 const BAY_WIDTH_M = 3.4;
 const BAY_SYMBOL_BLOB_M = 2.2;
+const BAY_SYMBOL_M = 1.5;
+const BAY_P_M = 2.0;
 const ZEBRA_ROW_GAP_M = 1.0;
 const ZEBRA_PERIOD_RANGE_M = [0.88, 0.93];
 const ZEBRA_ALIGN_PERIOD_M = 0.005;
@@ -1000,7 +1002,10 @@ export function regularise(drawn, ctx) {
           stats.baySymbols.existing += 1;
           continue;
         }
-        for (const b of blobs) if (Math.abs(dot(sub(b.c, centre), across)) <= width / 2 && Math.abs(dot(sub(b.c, centre), depth)) <= deep / 2) replaced.add(b.pc);
+        // the painted symbol's own blobs (photo) place the template; without them it sits at the bay's centre
+        const painted = blobs.filter((b) => Math.abs(dot(sub(b.c, centre), across)) <= width / 2 && Math.abs(dot(sub(b.c, centre), depth)) <= deep / 2);
+        for (const b of painted) replaced.add(b.pc);
+        const at = painted.length ? scale(painted.reduce((acc, b) => add(acc, b.c), [0, 0]), 1 / painted.length) : centre;
         let up = null;
         let from = "추정";
         if (Number.isFinite(rule?.upBearingDeg)) {
@@ -1017,10 +1022,11 @@ export function regularise(drawn, ctx) {
           } else up = depth;
         }
         const symbol = rule?.symbol ?? "wheelchair";
+        // sizes (추정): the access symbol BAY_SYMBOL_M tall, the P BAY_P_M tall, both within the bay
         const polys = symbol === "P"
-          ? textBlock(["P"], Math.min(0.42 * width, 1.4), deep, { charHeight: Math.min(1.45 * Math.min(0.42 * width, 1.4), 0.75 * deep) }).polys
-          : wheelchairTemplate(Math.min(0.5 * width, 0.4 * deep, 1.6));
-        emitPoly(place(polys, centre, up), "white", "disabled_parking", { glyph: symbol });
+          ? parkingPTemplate(Math.min(BAY_P_M, 0.6 * deep, (0.6 * width) / 0.62))
+          : wheelchairTemplate(Math.min(BAY_SYMBOL_M, 0.55 * width, 0.45 * deep));
+        emitPoly(place(polys, at, up), "white", "disabled_parking", { glyph: symbol });
         stats.baySymbols[symbol === "P" ? "p" : "wheelchair"] += 1;
         if (from === "추정") stats.baySymbols.orientationGuessed += 1;
         stats.baySymbols.list.push({ ids: members.map((pc) => pc.id).filter(Boolean), cell: k, centre: toScene(centre), upBearingDeg: +(((Math.atan2(up[0], -up[1]) * 180) / Math.PI + 360) % 360).toFixed(1), from, symbol });
