@@ -1,0 +1,126 @@
+{
+  "description": "Tree species groups read on the SCNU 360 VR tour (vr.scnu.ac.kr/360vr, visual reference only; nothing copied or linked) where one species fills a row or stand. A crown inside a polygon takes its species unless its own VR colour class is listed in exceptVr. Polygons traced on the NGII 2025 orthophoto around the trees the VR scenes show (estimated, 추정). Read by scripts/campus-model/fetch/treeInventory.mjs.",
+  "frame": "WGS84 [lon, lat]",
+  "groups": [
+    {
+      "id": "VG01",
+      "species": "metasequoia",
+      "exceptVr": [
+        "dark"
+      ],
+      "source": "VR scene_c1 r, b, l and scene_e1 r: two rows of metasequoia (narrow yellow-orange conical crowns) along the central plaza and its pond, from C1 to the roundabout; pines on the slopes beside them stay pines",
+      "polygon": [
+        [
+          127.4797888,
+          34.9694728
+        ],
+        [
+          127.4800449,
+          34.9698194
+        ],
+        [
+          127.4806413,
+          34.9695161
+        ],
+        [
+          127.4803852,
+          34.9691695
+        ],
+        [
+          127.4797888,
+          34.9694728
+        ]
+      ]
+    },
+    {
+      "id": "VG02",
+      "species": "metasequoia",
+      "exceptVr": [
+        "dark"
+      ],
+      "source": "VR scene_c2 l, r and scene_c3 f, r: metasequoia stand between C3 and C2 and along the C2 access road",
+      "polygon": [
+        [
+          127.4794081,
+          34.9705414
+        ],
+        [
+          127.4801274,
+          34.9705414
+        ],
+        [
+          127.4801274,
+          34.9699926
+        ],
+        [
+          127.4794081,
+          34.9699927
+        ],
+        [
+          127.4794081,
+          34.9705414
+        ]
+      ]
+    },
+    {
+      "id": "VG03",
+      "species": "metasequoia",
+      "exceptVr": [
+        "dark"
+      ],
+      "source": "VR scene_c3 l: metasequoia row west of C3",
+      "polygon": [
+        [
+          127.4788819,
+          34.9705125
+        ],
+        [
+          127.4792853,
+          34.9705125
+        ],
+        [
+          127.4792853,
+          34.9701948
+        ],
+        [
+          127.4788818,
+          34.9701948
+        ],
+        [
+          127.4788819,
+          34.9705125
+        ]
+      ]
+    },
+    {
+      "id": "VG04",
+      "species": "metasequoia",
+      "exceptVr": [
+        "dark"
+      ],
+      "source": "VR scene_d1 l: metasequoia row along the curved road south-west of D1",
+      "polygon": [
+        [
+          127.4793555,
+          34.9693284
+        ],
+        [
+          127.4798467,
+          34.9693284
+        ],
+        [
+          127.4798466,
+          34.9690396
+        ],
+        [
+          127.4793555,
+          34.9690396
+        ],
+        [
+          127.4793555,
+          34.9693284
+        ]
+      ]
+    }
+  ]
+}
