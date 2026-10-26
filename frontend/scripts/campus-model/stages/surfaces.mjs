@@ -148,7 +148,7 @@ export function surfaceGeometry({ layers, surface, tileSize, heightOffset = (lay
   return [...primitives.values()].sort((a, b) => MESH_ORDER.indexOf(a.mesh) - MESH_ORDER.indexOf(b.mesh) || a.rank - b.rank);
 }
 
-// ---------------------------------------------------------------- painted surfaces (sports, water, roundabout)
+// ---------------------------------------------------------------- painted surfaces (sports, water, roundabout, courtyard tiles)
 const SPORTS_TEXEL_M = 0.05;
 const PLAIN_TEXEL_M = 0.1;
 const MAX_TEXTURE = 4000;
@@ -170,7 +170,31 @@ const SURFACE = {
   fountain: [92, 132, 150],
   roundabout: [170, 76, 64],
   island: [90, 128, 70],
+  paver: [196, 198, 194],
+  paverJoint: [168, 170, 168],
+  tileBlue: [102, 121, 138],
+  tileTerracotta: [176, 98, 66],
 };
+// Courtyard tiles (VR scene_e8 f, NGII 2025 sheet): 0.5 m grey pavers, and in rows TILE_ROW_M apart a 0.6 m blue-grey
+// square every TILE_PITCH_M, the rows staggered by half a pitch, each square with a 0.2 m terracotta centre (estimated).
+const PAVER_M = 0.5;
+const TILE_PITCH_M = 2.8;
+const TILE_ROW_M = 2.6;
+const TILE_HALF_M = 0.3;
+const TILE_CENTRE_HALF_M = 0.1;
+function tilesShader(own) {
+  const wrap = (v, p) => v - p * Math.round(v / p);
+  return (x, z, i, j) => {
+    const [ls, lt] = localOf(own, x, z);
+    const row = Math.round(lt / TILE_ROW_M);
+    const ds = Math.abs(wrap(ls - (row % 2 ? TILE_PITCH_M / 2 : 0), TILE_PITCH_M));
+    const dt = Math.abs(lt - row * TILE_ROW_M);
+    if (ds <= TILE_CENTRE_HALF_M && dt <= TILE_CENTRE_HALF_M) return grain(SURFACE.tileTerracotta, i, j, 36, 0.06);
+    if (ds <= TILE_HALF_M && dt <= TILE_HALF_M) return grain(SURFACE.tileBlue, i, j, 37, 0.06);
+    const joint = Math.min(Math.abs(wrap(ls, PAVER_M)), Math.abs(wrap(lt, PAVER_M))) < 0.012;
+    return grain(joint ? SURFACE.paverJoint : SURFACE.paver, i, j, 38, 0.07);
+  };
+}
 const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
 const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 const shadeBy = (c, k) => [c[0] * k, c[1] * k, c[2] * k];
@@ -182,7 +206,7 @@ const rectOutline = (s, t, hs, ht) => {
   return dx <= 0 && dy <= 0 ? Math.min(-dx, -dy) : Math.hypot(Math.max(dx, 0), Math.max(dy, 0));
 };
 
-const texelOf = (layer) => (["track", "labels", "pitch"].includes(layer.paint?.kind) ? SPORTS_TEXEL_M : PLAIN_TEXEL_M);
+const texelOf = (layer) => (["track", "labels", "pitch", "tiles"].includes(layer.paint?.kind) ? SPORTS_TEXEL_M : PLAIN_TEXEL_M);
 function paintedUv(frame, layer) {
   const texel = Math.max(texelOf(layer), (2 * Math.max(frame.halfLength, frame.halfWidth) + 2) / MAX_TEXTURE);
   const s0 = -frame.halfLength - texel;
@@ -311,6 +335,12 @@ function paintShader(layer, frame, texel) {
       return (s, t, i, j) => grain(SURFACE.roundabout, i, j, 34, 0.08);
     case "island":
       return (s, t, i, j) => grain(SURFACE.island, i, j, 35, 0.12);
+    case "tiles": {
+      const [a, b] = paint.axis.map(([E, N]) => tmToScene(E, N));
+      const length = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      const shade = tilesShader({ cx: a[0], cz: a[1], ux: (b[0] - a[0]) / length, uz: (b[1] - a[1]) / length });
+      return (s, t, i, j) => shade(...toModel(s, t), i, j);
+    }
     default:
       throw new Error(`surfaces: unknown paint kind ${paint.kind}`);
   }

@@ -32,6 +32,7 @@ const M = metres;
 // Each is documented in README "Street furniture"; the build log repeats them.
 const EXCLUDED = {
   OC0111: "SCNU letter monument: superseded by RS-GATE-A19 (data/photo/rest-spaces.geojson, gate_sign), placed from VR scene_a19 (and scene_001) about 13 m further south at the plaza's road edge; the 2025 photo shows that corner of the gate plaza under construction, so this survey position (VR only, confidence 0.2) is left out",
+  OC0102: "E8 courtyard raised bed: superseded by RS0018 and RS0018A-C (data/photo/rest-spaces.geojson, planter); the survey drew one 7.7 x 8.8 m soil bed over the entrance walk and its steps, where VR scene_e8 f and the NGII 2025 photo show two L-shaped brick hedge beds beside the walk and hedge strips at the wing walls",
 };
 // A retype may carry props (merged over the survey's properties) for the catalogue builder that now draws the object.
 const RETYPED = {

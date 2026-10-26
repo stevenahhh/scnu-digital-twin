@@ -12,11 +12,11 @@ const DATA = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data
 const looks = new Set(JSON.parse(readFileSync(path.join(DATA, "scnu-facades.json"), "utf8")).looks.map((l) => l.id));
 const file = JSON.parse(readFileSync(path.join(DATA, "facade-attachments.json"), "utf8"));
 
-test("facade-attachments.json records are valid and name the four W3 follow-up details", () => {
+test("facade-attachments.json records are valid and name the W3 follow-up details", () => {
   const byNode = attachmentsByNode(file, looks);
   assert.deepEqual([...byNode.keys()].sort(), ["BLD_B2", "BLD_Dormitory_Building.004", "BLD_E8", "BLD_Training Lab Building"]);
-  assert.deepEqual(byNode.get("BLD_E8").map((a) => a.kind), ["balconies", "balconies"]);
-  assert.deepEqual(byNode.get("BLD_B2").map((a) => a.kind), ["fins", "fins"]);
+  assert.deepEqual(byNode.get("BLD_E8").map((a) => [a.kind, a.look ?? null]), [["balconies", null], ["balconies", null], ["block", "E8-glass"], ["roof", null]]);
+  assert.deepEqual(byNode.get("BLD_B2").map((a) => [a.kind, a.look ?? null]), [["fins", null], ["fins", null], ["block", "B2-blank"], ["block", "B2-blank"]]);
   assert.deepEqual(byNode.get("BLD_Training Lab Building").map((a) => a.kind), ["mast"]);
   assert.deepEqual(byNode.get("BLD_Dormitory_Building.004").map((a) => [a.kind, a.look]), [["block", "A13-brick"], ["block", "A13-brick"], ["block", "A13-brick"]]);
 });
@@ -25,6 +25,8 @@ test("a bad attachment record stops the build instead of being skipped", () => {
   assert.match(attachmentErrors({ kind: "dome" }, looks)[0], /unknown kind/);
   assert.ok(attachmentErrors({ kind: "block", plan: [[0, 0], [1, 0], [1, 1], [0, 1]], look: "nope", source: "estimated" }, looks).some((e) => /unknown look/.test(e)));
   assert.ok(attachmentErrors({ kind: "mast", at: [0, 0], baseMetres: 3, heightMetres: 9, colour: "#aabbcc", source: "by eye" }, looks).some((e) => /estimated/.test(e)));
+  assert.ok(attachmentErrors({ kind: "roof", at: [0], colour: "#3e7a60", source: "estimated" }, looks).some((e) => /lon\/lat point/.test(e)));
+  assert.ok(attachmentErrors({ kind: "roof", at: [0, 0], colour: "green", source: "estimated" }, looks).some((e) => /#rrggbb/.test(e)));
   assert.throws(() => attachmentsByNode({ buildings: [{ node: "BLD_X", attachments: [{ kind: "fins" }] }] }, looks), /BLD_X attachment 0 \(fins\)/);
 });
 

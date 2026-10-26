@@ -51,7 +51,7 @@ node --test src/campusModelAsset.test.mjs
 | `data/materials/ground-*.webp` + `ground-materials.json` | CC0 ground tiles (Poly Haven, ambientCG; colour, OpenGL normal, ARM) with their physical sizes: the `Ground_*` and Ground materials |
 | `data/chm.png` | CHMv2 canopy height (8-bit metres); tree placement and crown sizes |
 | `data/scnu-facades.json` | curated facade looks (class, colours, window layout, piers, bands, entrance, eave colour) and per-building entries: look, floor/height corrections, tower masses, entrance side (see Facades) |
-| `data/facade-attachments.json` | per BLD_* node, details the masses do not carry, as geometry: E8's red balcony stacks, B2's red fins and ledges, C3's rooftop mast, A13's orange brick end towers (plans from the building's outline vertices, sizes read on the SCNU VR tour and the NGII 2025 sheet; all estimated); drawn on the node's own primitives, so no material or draw call is added |
+| `data/facade-attachments.json` | per BLD_* node, details the masses do not carry, as geometry: E8's red balcony stacks, its teal glass entrance core and green porch roof (a `roof` record recolours a form mass), B2's red fins and ledges and the blank cladding of its west and rear wings, C3's rooftop mast, A13's orange brick end towers (plans from the building's outline vertices, sizes read on the SCNU VR tour and the NGII 2025 sheet; all estimated); drawn on the node's own primitives, so no material or draw call is added |
 | `data/lod4-facades.json` | per SCNU footprint: the VWorld LOD4 models over it, their facade palette, wall height and roof levels with outlines (fetch/lod4Facades.mjs) |
 | `data/building-forms.json` | per modelled campus building: its masses (outer and courtyard rings, base and top heights, parapet, roof type and pitched-roof triangles, columns), voids, relief lean and photo IoU, from the VWorld LOD4 meshes and the NGII 2025 orthophoto (fetch/buildingForms.mjs; see Building forms) |
 | `data/osm-ground.json` | ground features drawn as class polygons (see below) |
@@ -614,6 +614,12 @@ Decisions taken against the survey, logged by the build and listed in the `Furni
   so the position is VR-only and estimated (confidence 0.4). `B.gate_sign` builds a white letter slab and name band
   on a planted stone bed from the feature's `length_m`, `depth_m`, `height_m`, `plinth_m`, `colour` and `bandColour`;
   the lettering itself is not modelled. Objects of `rest-spaces.geojson` are counted as estimated in the node extras.
+- OC0102, the survey's single 7.7 x 8.8 m soil bed in the E8 courtyard, is left out: VR scene_e8 f and the NGII 2025
+  photo show two L-shaped brick hedge beds beside the entrance walk and two hedge strips at the wing walls, built as
+  `RS0018` and `RS0018A-C` (`planter`, shrub fill, 0.5 m brick kerb). The paving between them is a `paving`
+  supplement of `data/osm-ground.json` (pattern `tiles`: grey pavers with staggered blue-grey squares and terracotta
+  centres, precedence 5.8 on Ground_Sports, label PAVING; the entrance walk a `plain` one on Ground_Pavers; not a walkable plaza layer of the transport network). All
+  estimated.
 - OB0010 was surveyed as a white roofed pergola. VR scene_a19 shows no roof there, only the stepped arc of the
   finished plaza, and the photo shows a curved edge with a thin shadow, so it is built as a two-tier curved step.
 - Parasols and the kiosk get 2.4 m instead of the generic 0.5 m `plaza_structure` default.

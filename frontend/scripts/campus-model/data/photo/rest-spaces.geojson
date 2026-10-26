@@ -1,7 +1,7 @@
 {
   "type": "FeatureCollection",
   "source": "vr-scnu-360 + ngii-2025-ortho",
-  "description": "Rest spaces and gate structures placed from the SCNU 360 VR tour (visual reference only, nothing copied) and checked against the NGII 2025 orthophoto; read by stages/furniture.mjs after objects-campus.geojson. RS-GATE-A19: the A19 gate sign (todo 14). RS0001-RS0017: VR-located rest spaces (data/photo/README.md 'VR rest spaces'): one feature per rest-space sighting of rest-spaces-reconciliation.json decided missing and placed, kind = data/rest-space-catalogue.json type. photo_support roof/wall: outline traced on the NGII 2025 sheet (within 0.25 m of the photo); none: VR-only position (bearing and depression angle from the VR station, or a nadir face registered on road markings), confidence <= 0.4. Every value is an estimate (추정).",
+  "description": "Rest spaces and gate structures placed from the SCNU 360 VR tour (visual reference only, nothing copied) and checked against the NGII 2025 orthophoto; read by stages/furniture.mjs after objects-campus.geojson. RS-GATE-A19: the A19 gate sign (todo 14). RS0001-RS0018: VR-located rest spaces (data/photo/README.md 'VR rest spaces'): one feature per rest-space sighting of rest-spaces-reconciliation.json decided missing and placed, kind = data/rest-space-catalogue.json type. photo_support roof/wall: outline traced on the NGII 2025 sheet (within 0.25 m of the photo); none: VR-only position (bearing and depression angle from the VR station, or a nadir face registered on road markings), confidence <= 0.4. Every value is an estimate (추정).",
   "features": [
     {
       "type": "Feature",
@@ -423,6 +423,242 @@
           [
             127.4814728,
             34.9687238
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0018",
+        "kind": "planter",
+        "estimated": true,
+        "fill": "shrub",
+        "colour": "#a5533f",
+        "dims": {
+          "kerbHeightM": 0.5
+        },
+        "vr_scene": "scene_e8",
+        "vr_face": "f",
+        "vr_cols": [
+          300,
+          700
+        ],
+        "photo_support": "wall",
+        "confidence": 0.5,
+        "position_method": "photo: dark hedge outline traced on the NGII 2025 sheet 34702020 (0.25 m, crop of the E8 courtyard), matched to the beds the VR shows on face f",
+        "height_source": "catalogue planter + VR scene_e8 f: brick bed walls about knee high (estimated)",
+        "note": "L-shaped red-brick hedge bed north of the entrance walk and steps (VR scene_e8 f)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.47731129,
+              34.96860422
+            ],
+            [
+              127.47731137,
+              34.9686176
+            ],
+            [
+              127.47734388,
+              34.96861747
+            ],
+            [
+              127.47734362,
+              34.96857381
+            ],
+            [
+              127.47728203,
+              34.96857405
+            ],
+            [
+              127.47728213,
+              34.96859095
+            ],
+            [
+              127.47731122,
+              34.96859084
+            ],
+            [
+              127.47731129,
+              34.96860422
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0018A",
+        "kind": "planter",
+        "estimated": true,
+        "fill": "shrub",
+        "colour": "#a5533f",
+        "dims": {
+          "kerbHeightM": 0.5
+        },
+        "vr_scene": "scene_e8",
+        "vr_face": "f",
+        "vr_cols": [
+          1350,
+          1750
+        ],
+        "photo_support": "wall",
+        "confidence": 0.5,
+        "position_method": "photo: dark hedge outline traced on the NGII 2025 sheet 34702020 (0.25 m, crop of the E8 courtyard), matched to the beds the VR shows on face f",
+        "height_source": "catalogue planter + VR scene_e8 f: brick bed walls about knee high (estimated)",
+        "note": "L-shaped red-brick hedge bed south of the entrance walk and steps (VR scene_e8 f)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.47726798,
+              34.96851284
+            ],
+            [
+              127.47726803,
+              34.96852059
+            ],
+            [
+              127.47732107,
+              34.96852038
+            ],
+            [
+              127.47732082,
+              34.96847672
+            ],
+            [
+              127.47730029,
+              34.9684768
+            ],
+            [
+              127.47730045,
+              34.96850497
+            ],
+            [
+              127.47726794,
+              34.9685051
+            ],
+            [
+              127.47726798,
+              34.96851284
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0018B",
+        "kind": "planter",
+        "estimated": true,
+        "fill": "shrub",
+        "colour": "#a5533f",
+        "dims": {
+          "kerbHeightM": 0.5
+        },
+        "vr_scene": "scene_e8",
+        "vr_face": "f",
+        "vr_cols": [
+          150,
+          420
+        ],
+        "photo_support": "wall",
+        "confidence": 0.5,
+        "position_method": "photo: dark hedge outline traced on the NGII 2025 sheet 34702020 (0.25 m, crop of the E8 courtyard), matched to the beds the VR shows on face f",
+        "height_source": "catalogue planter + VR scene_e8 f: brick bed walls about knee high (estimated)",
+        "note": "narrow hedge strip along the north wing's courtyard wall (VR scene_e8 f)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.47734738,
+              34.96863056
+            ],
+            [
+              127.47734741,
+              34.96863577
+            ],
+            [
+              127.47739528,
+              34.96863079
+            ],
+            [
+              127.47739523,
+              34.96862234
+            ],
+            [
+              127.47734735,
+              34.96862534
+            ],
+            [
+              127.47734738,
+              34.96863056
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0018C",
+        "kind": "planter",
+        "estimated": true,
+        "fill": "shrub",
+        "colour": "#a5533f",
+        "dims": {
+          "kerbHeightM": 0.5
+        },
+        "vr_scene": "scene_e8",
+        "vr_face": "f",
+        "vr_cols": [
+          1700,
+          1900
+        ],
+        "photo_support": "wall",
+        "confidence": 0.5,
+        "position_method": "photo: dark hedge outline traced on the NGII 2025 sheet 34702020 (0.25 m, crop of the E8 courtyard), matched to the beds the VR shows on face f",
+        "height_source": "catalogue planter + VR scene_e8 f: brick bed walls about knee high (estimated)",
+        "note": "short hedge bed at the south wing's east corner (VR scene_e8 f)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.4773583,
+              34.96844911
+            ],
+            [
+              127.47735837,
+              34.96846108
+            ],
+            [
+              127.47737137,
+              34.96846103
+            ],
+            [
+              127.47737123,
+              34.96843709
+            ],
+            [
+              127.47735823,
+              34.96843714
+            ],
+            [
+              127.4773583,
+              34.96844911
+            ]
           ]
         ]
       }

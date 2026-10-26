@@ -13,6 +13,8 @@
 //   4           LOT       Ground_Lot       OSM parking, the estimated bays of data/osm-ground.json supplements,
 //                                          off-campus lots; the roundabout (painted ring, rim, island) over the road
 //   5 / 5.5     A003      Ground_Pavers / Ground_Asphalt / Ground_Bicycle   NGII A003 walkway rings by `qual` / `scls`
+//   5.8         TILES     Ground_Sports /  project paving supplements of data/osm-ground.json (patterned courtyard tiles
+//                         Ground_Pavers    or plain pavers, estimated; label PAVING): above the walkways, under the aprons
 //   6           APRON     Ground_Apron     the 2.2 m band centred on every building outline (1.1 m outside it, estimated)
 // A003 rings are the kerb lines: they stay exactly where the survey has them and the road zones stay under them.
 //
@@ -45,7 +47,7 @@ const FACILITY_RIM_M = 0.6;
 const FOUNTAIN_RIM_M = 0.7;
 const BICYCLE_LANE = "A0033327";
 
-export const PRECEDENCE = Object.freeze({ SPORTS: 1, PAVING: 2, ASPHALT: 3, LOT: 4, A003: 5, BICYCLE: 5.5, APRON: 6 });
+export const PRECEDENCE = Object.freeze({ SPORTS: 1, PAVING: 2, ASPHALT: 3, LOT: 4, A003: 5, BICYCLE: 5.5, TILES: 5.8, APRON: 6 });
 
 // ---------------------------------------------------------------- inputs
 // A003 walkways (walkways_wgs84.geojson): outlines, not centrelines. Closed rings run along the kerb and the back edge
@@ -73,6 +75,7 @@ export async function loadGroundFeatures() {
     ...f,
     ...(f.at || f.centre ? { point: geoToModel(...(f.at ?? f.centre)) } : {}),
     ...(f.axis ? { axis: toModel(f.axis) } : {}),
+    ...(f.ring ? { ring: toModel(f.ring) } : {}),
   }));
   const areaM2 = (ring) => Math.abs(ringArea(ring)) / SCENE_UNITS_PER_METRE ** 2;
   const stadiums = osm.filter((f) => f.kind === "stadium");
@@ -456,6 +459,16 @@ export function buildSurfaces({ inputs, walkways, groundFeatures = null, offCamp
     }
   }
   for (const o of outlines) strokes.push({ line: o.line, widthM: EDGE_STONE_M, label: SURFACE_CLASS.KERB, precedence: PRECEDENCE.A003 + 0.6 });
+
+  // ---- 5.8 paving supplements: a courtyard's patterned tiles (pattern "tiles", running along `axis`) or plain pavers
+  for (const paving of groundFeatures?.supplements.filter((f) => f.kind === "paving") ?? []) {
+    if (!(paving.ring?.length >= 3) || !(paving.pattern === "plain" || (paving.pattern === "tiles" && paving.axis))) throw new Error(`osm-ground.json: paving "${paving.note}" needs a ring and pattern "plain" or "tiles" with an axis`);
+    if (paving.pattern === "plain") {
+      add({ cls: "PAVING", mesh: "Ground_Pavers", label: SURFACE_CLASS.PAVING, precedence: PRECEDENCE.TILES, source: "project-estimated", source_ref: `paving: ${paving.note}`, estimated: true }, [paving.ring]);
+      continue;
+    }
+    add({ cls: "PAVING", mesh: "Ground_Sports", label: SURFACE_CLASS.PAVING, precedence: PRECEDENCE.TILES, source: "project-estimated", source_ref: `paving: ${paving.note}`, paint: { kind: "tiles", axis: paving.axis.map(([x, z]) => sceneToTm(x, z)) }, estimated: true }, [paving.ring]);
+  }
 
   // ---- 6 building aprons
   for (const building of buildings) {
