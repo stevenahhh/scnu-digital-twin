@@ -50,7 +50,7 @@ const SPECIES_FORM = {
   ginkgo: { spacingM: 6.5, crownM: [3, 7] },
   broadleaf: { spacingM: 7.5, crownM: [3, 10] },
   pine: { spacingM: 6.5, crownM: [3, 9] },
-  metasequoia: { spacingM: 5.5, crownM: [2.5, 5] },
+  metasequoia: { spacingM: 5.5, crownM: [3, 6.5] },
   conifer: { spacingM: 3, crownM: [1.5, 3.5] },
   shrub: { spacingM: 4, crownM: [2, 6] },
 };
@@ -645,7 +645,12 @@ crowns.forEach((row, index) => {
 // FIT_WIDTH x and FIT_HEIGHT x of the photo/CHM values; species change only where the reading is clear (rules below);
 // the autumn colour of deciduous crowns is set from the VR colour (palette group, shade, mix: src/lighting/season.mjs).
 // Every correction is recorded with its VR scene and face in data/photo/tree-vr-fit.json. All values estimated (추정).
-const FIT_RANGE_M = 40;
+const FIT_RANGE_M = 80;
+// Views beyond FIT_NEAR_M (up to FIT_RANGE_M, unobstructed only) count at FAR_WEIGHT: they are used only where a tree
+// has no near view, change a species only when two of them agree, and move width and height half way within FAR_CLAMP.
+const FIT_NEAR_M = 40;
+const FAR_WEIGHT = 0.5;
+const FAR_CLAMP = [0.8, 1.3];
 const FIT_SKIP = new Set(["scene_a12", "scene_b2", "scene_c5", "scene_d1"]);
 const FIT_WIDTH = [0.65, 1.6];
 const FIT_HEIGHT = [0.7, 1.6];
@@ -692,13 +697,18 @@ function fitClass(rgb) {
 const median = (list) => (list.length ? [...list].sort((a, b) => a - b)[Math.floor(list.length / 2)] : null);
 const clampTo = (v, [lo, hi]) => Math.min(hi, Math.max(lo, v));
 const corrections = [];
-const fitCounts = { trees: 0, species: 0, width: 0, height: 0, autumn: 0 };
+const fitCounts = { trees: 0, near: 0, far: 0, species: 0, width: 0, height: 0, autumn: 0 };
 trees.forEach((row, k) => {
-  const views = (fitObs[k] ?? []).filter((o) => o[3] >= 0).sort((a, b) => a[2] - b[2]).slice(0, 3);
+  const seen = (fitObs[k] ?? []).filter((o) => o[3] >= 0).sort((a, b) => a[2] - b[2]);
+  const nearViews = seen.filter((o) => o[2] <= FIT_NEAR_M);
+  const far = nearViews.length === 0;
+  const views = (far ? seen : nearViews).slice(0, 3);
   if (!views.length) return;
+  const weight = far ? FAR_WEIGHT : 1;
   const species0 = SPECIES[row[4]];
   if (species0 === "shrub") return;
   fitCounts.trees += 1;
+  fitCounts[far ? "far" : "near"] += 1;
   const rgb = [3, 4, 5].map((c) => median(views.map((o) => o[c])));
   const cls = fitClass(rgb);
   const [hue] = hsv(rgb);
@@ -706,12 +716,14 @@ trees.forEach((row, k) => {
   const tops = views.map((o) => o[7]).filter((t) => t > 0);
   const d0 = row[2];
   const h0 = row[3];
-  let d = widths.length ? clampTo(median(widths), [FIT_WIDTH[0] * d0, FIT_WIDTH[1] * d0]) : d0;
-  let h = tops.length ? clampTo(median(tops), [FIT_HEIGHT[0] * h0, FIT_HEIGHT[1] * h0]) : h0;
+  const wClamp = far ? FAR_CLAMP : FIT_WIDTH;
+  const hClamp = far ? FAR_CLAMP : FIT_HEIGHT;
+  let d = widths.length ? d0 + weight * (clampTo(median(widths), [wClamp[0] * d0, wClamp[1] * d0]) - d0) : d0;
+  let h = tops.length ? h0 + weight * (clampTo(median(tops), [hClamp[0] * h0, hClamp[1] * h0]) - h0) : h0;
   const aspect = h / Math.max(0.5, d);
   // a species change needs every view to agree (or one view within 30 m); pines read darker than shaded broadleaf crowns
   const clsAll = views.map((o) => fitClass([o[3], o[4], o[5]]));
-  const agreed = clsAll.every((c) => c === cls) && (views.length > 1 || views[0][2] <= 30);
+  const agreed = clsAll.every((c) => c === cls) && (far ? views.length >= 2 : views.length > 1 || views[0][2] <= 30);
   const veryDark = hsv(rgb)[2] < 0.36;
   let species = species0;
   if (!agreed) species = species0;
@@ -739,7 +751,7 @@ trees.forEach((row, k) => {
   row[4] = SPECIES.indexOf(species);
   row[11] = views.length;
   row[12] = autumn;
-  corrections.push({ tree: k, east: row[0], north: row[1], views: views.map((o) => `${o[0]}:${o[1]} ${o[2]} m`), colour: cls, ...change, ...(autumn ? { autumn } : {}) });
+  corrections.push({ tree: k, east: row[0], north: row[1], views: views.map((o) => `${o[0]}:${o[1]} ${o[2]} m`), weight, colour: cls, ...change, ...(autumn ? { autumn } : {}) });
 });
 // ---- manual VR corrections (data/photo/tree-vr-manual.json): set fields of the tree nearest each entry (within 3 m)
 const manual = JSON.parse(readFileSync(path.join(DATA, "photo", "tree-vr-manual.json"), "utf8")).entries;
@@ -767,7 +779,7 @@ for (const sp of SPECIES) treeCounts[sp] = 0;
 for (const row of trees) treeCounts[SPECIES[row[4]]] += 1;
 console.log(`trees: VR fit within ${FIT_RANGE_M} m of ${fitStations.length} stations: ${JSON.stringify(fitCounts)}`);
 writeFileSync(FIT_OUT, `${JSON.stringify({
-  description: "Per-tree corrections read on the SCNU 360 VR tour (visual reference only; no pixel is stored) for the trees within 40 m of the stations whose compare-vr strip passed. Each entry lists the VR views it was read in (scene:face distance), the colour class and the changed fields [before, after]; autumn = [palette group, shade, mix] of src/lighting/season.mjs. Written by scripts/campus-model/fetch/treeInventory.mjs; estimated (추정).",
+  description: "Per-tree corrections read on the SCNU 360 VR tour (visual reference only; no pixel is stored) for the trees within 40 m of the stations whose compare-vr strip passed, and for trees 40-80 m away that a station sees unobstructed (weight 0.5: only where no near view exists, species changed only when two far views agree, width and height moved half way within 0.8-1.3 x). Each entry lists the VR views it was read in (scene:face distance), the colour class and the changed fields [before, after]; autumn = [palette group, shade, mix] of src/lighting/season.mjs. Written by scripts/campus-model/fetch/treeInventory.mjs; estimated (추정).",
   rangeM: FIT_RANGE_M,
   stations: fitStations.map((s) => s.scene),
   skipped: [...FIT_SKIP],
