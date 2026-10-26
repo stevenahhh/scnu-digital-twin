@@ -18,6 +18,7 @@ SOURCES = {
     "surveyed", "CAD-derived", "GIS-derived", "OSM-derived",
     "GLB-digitized", "manually-digitized", "derived", "unknown",
     "derived_from_vehicle_network", "implementation_specific",
+    "NGII-A003", "ortho-traced", "road-zone-measured",
 }
 
 
@@ -114,4 +115,25 @@ def validate_edge(feature: NetworkFeature, policy: Dict) -> List[str]:
         errors.append("confidence는 null 또는 0~1이어야 함")
     if not isinstance(props.get("derived"), bool):
         errors.append("derived boolean 누락")
+    errors.extend(validate_optional_edge_fields(props))
+    return errors
+
+
+def _number(value) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+
+def validate_optional_edge_fields(props: Dict) -> List[str]:
+    """Optional measured/estimated attributes; absent is fine, a wrong type or range is an error."""
+    errors: List[str] = []
+    if "width_m" in props and props["width_m"] is not None and not (_number(props["width_m"]) and props["width_m"] > 0):
+        errors.append(f"width_m는 0보다 큰 숫자여야 함: {props['width_m']!r}")
+    if "kerb_height_m" in props and props["kerb_height_m"] is not None and not (_number(props["kerb_height_m"]) and 0 <= props["kerb_height_m"] <= 0.5):
+        errors.append(f"kerb_height_m는 0~0.5 숫자여야 함: {props['kerb_height_m']!r}")
+    if "lanes" in props and props["lanes"] is not None and not (isinstance(props["lanes"], int) and not isinstance(props["lanes"], bool) and 1 <= props["lanes"] <= 4):
+        errors.append(f"lanes는 1~4 정수여야 함: {props['lanes']!r}")
+    if "estimated" in props and props["estimated"] is not None and not isinstance(props["estimated"], bool):
+        errors.append(f"estimated는 boolean이어야 함: {props['estimated']!r}")
+    if "source_ref" in props and props["source_ref"] is not None and not isinstance(props["source_ref"], str):
+        errors.append(f"source_ref는 문자열이어야 함: {props['source_ref']!r}")
     return errors

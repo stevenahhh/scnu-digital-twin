@@ -20,12 +20,12 @@ import { geoToModel, modelToGeo, SCENE_UNITS_PER_METRE } from "../lib/frame.mjs"
 import { buildBuildings } from "../stages/buildings.mjs";
 import { loadFurniture } from "../stages/furniture.mjs";
 import { loadInputs } from "../stages/sources.mjs";
+import { openSheet } from "../lib/ngiiSheet.mjs";
 import { DATA } from "./common.mjs";
 import { cached, LAT0, LON0, leafTiles, MX, MY, parseB3dm, tileModels } from "./lod4Facades.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const OUTPUT = path.join(DATA, "building-forms.json");
-const SHEET = path.join(HERE, "..", ".cache", "ngii-ortho", "(B060)정사영상_2025_34702020");
 const U = SCENE_UNITS_PER_METRE;
 const PYTHON = ["uv", "run", "--no-project", "--with", "shapely==2.2.0", "--with", "numpy==2.5.4", "--with", "opencv-python-headless==5.0.0.93", "python", "-I"];
 // Relief lean of roofs in the NGII mosaic, fitted on 609 roof corners of 132 GIS footprints in the registration study
@@ -62,19 +62,10 @@ function toKorea2000(lon, lat) {
 // The sheet header (one strip of uncompressed RGB) and an affine map from model metres (east, north) to sheet pixels,
 // fitted on a 9 x 9 grid over the campus (residual under 0.06 px).
 async function sheetInfo() {
-  const [a, , , e, c, f] = (await Bun.file(`${SHEET}.tfw`).text()).trim().split(/\s+/).map(Number);
-  const file = Bun.file(`${SHEET}.tif`);
-  const head = new DataView(await file.slice(0, 8).arrayBuffer());
-  const little = head.getUint16(0) === 0x4949;
-  const ifdOffset = head.getUint32(4, little);
-  const ifd = new DataView(await file.slice(ifdOffset, ifdOffset + 2 + 12 * 64).arrayBuffer());
-  const tags = {};
-  for (let i = 0; i < ifd.getUint16(0, little); i += 1) {
-    const at = 2 + i * 12;
-    const type = ifd.getUint16(at + 2, little);
-    tags[ifd.getUint16(at, little)] = { count: ifd.getUint32(at + 4, little), value: type === 3 ? ifd.getUint16(at + 8, little) : ifd.getUint32(at + 8, little) };
-  }
-  if (tags[259].value !== 1 || tags[277].value !== 3 || tags[273].count !== 1) throw new Error(`${SHEET}.tif: expected one strip of uncompressed RGB`);
+  const sheet = openSheet();
+  sheet.close();
+  if (sheet.dataOffset === null) throw new Error(`${sheet.path}: expected the pixel data in one contiguous block`);
+  const { a, d: e, c, f } = sheet.tfw;
   const exact = (east, north) => {
     const [x, y] = toKorea2000(...modelToGeo(east * U, -north * U));
     return [(x - c) / a, (y - f) / e];
@@ -106,7 +97,7 @@ async function sheetInfo() {
   const row = solve(1);
   const residual = Math.max(...rows.map((r, n) => Math.hypot(col[0] * r[0] + col[1] * r[1] + col[2] - targets[n][0], row[0] * r[0] + row[1] * r[1] + row[2] - targets[n][1])));
   if (residual > 0.1) throw new Error(`sheet affine residual ${residual.toFixed(3)} px`);
-  return { tif: `${SHEET}.tif`, offset: tags[273].value, width: tags[256].value, height: tags[257].value, col, row, metresPerPixel: a, originTm: [c, f] };
+  return { tif: sheet.path, offset: sheet.dataOffset, width: sheet.width, height: sheet.height, col, row, metresPerPixel: a, originTm: [c, f] };
 }
 
 const keyOf = (b) => b.nodeName ?? (b.nodeId && b.label ? b.nodeId : b.footprintSource);

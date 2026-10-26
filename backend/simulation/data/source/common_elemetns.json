@@ -11,7 +11,14 @@
     "notes": [
       "ID부여.pdf에 RD_060, RD_072가 중복되어 있어 고유키 유지를 위해 공대1호관뒷길은 RD_064, 공학대로3길은 RD_075로 보정함.",
       "zone_id는 건물군 중심으로 이미지 기반 추정 배정했으며 추후 GIS 좌표/팀 협의로 수정 가능."
-    ]
+    ],
+    "id_scheme": {
+      "RD_": "road segment between ND_ intersections (interior) or OSM way (perimeter)",
+      "ND_": "intersection node",
+      "CW_": "crossing polygon CW_001-CW_031",
+      "SW_": "sidewalk strip from NGII A003 (SW_###, sides _L/_R when split)",
+      "external_ids": "osm_way (ODbL, perimeter only), juso_rn_cd (reserved; login-gated source)"
+    }
   },
   "zones": [
     {
@@ -1790,6 +1797,1271 @@
       "geometry": null,
       "source": "ID부여.pdf",
       "notes": "운동장 동측 교차점"
+    },
+    {
+      "element_id": "CW_025",
+      "name": "횡단보도 CW_025",
+      "element_type": "crosswalk",
+      "zone_id": "zone_A",
+      "geometry": null,
+      "source": "crosswalks_wgs84.geojson (satellite_image_digitized)",
+      "notes": "digitised polygon without a name; zone_id from the nearest named crossing CW_024 (2 m)"
+    },
+    {
+      "element_id": "CW_026",
+      "name": "횡단보도 CW_026",
+      "element_type": "crosswalk",
+      "zone_id": "zone_E",
+      "geometry": null,
+      "source": "crosswalks_wgs84.geojson (satellite_image_digitized)",
+      "notes": "digitised polygon without a name; zone_id from the nearest named crossing CW_017 (164 m)"
+    },
+    {
+      "element_id": "CW_027",
+      "name": "횡단보도 CW_027",
+      "element_type": "crosswalk",
+      "zone_id": "zone_D",
+      "geometry": null,
+      "source": "crosswalks_wgs84.geojson (satellite_image_digitized)",
+      "notes": "digitised polygon without a name; zone_id from the nearest named crossing CW_021 (177 m)"
+    },
+    {
+      "element_id": "CW_028",
+      "name": "횡단보도 CW_028",
+      "element_type": "crosswalk",
+      "zone_id": "zone_D",
+      "geometry": null,
+      "source": "crosswalks_wgs84.geojson (satellite_image_digitized)",
+      "notes": "digitised polygon without a name; zone_id from the nearest named crossing CW_021 (58 m)"
+    },
+    {
+      "element_id": "CW_029",
+      "name": "횡단보도 CW_029",
+      "element_type": "crosswalk",
+      "zone_id": "zone_D",
+      "geometry": null,
+      "source": "crosswalks_wgs84.geojson (satellite_image_digitized)",
+      "notes": "digitised polygon without a name; zone_id from the nearest named crossing CW_021 (58 m)"
+    },
+    {
+      "element_id": "CW_030",
+      "name": "횡단보도 CW_030",
+      "element_type": "crosswalk",
+      "zone_id": "zone_D",
+      "geometry": null,
+      "source": "crosswalks_wgs84.geojson (satellite_image_digitized)",
+      "notes": "digitised polygon without a name; zone_id from the nearest named crossing CW_021 (34 m)"
+    },
+    {
+      "element_id": "CW_031",
+      "name": "횡단보도 CW_031",
+      "element_type": "crosswalk",
+      "zone_id": "zone_D",
+      "geometry": null,
+      "source": "crosswalks_wgs84.geojson (satellite_image_digitized)",
+      "notes": "digitised polygon without a name; zone_id from the nearest named crossing CW_021 (14 m)"
+    },
+    {
+      "element_id": "RD_093",
+      "element_type": "road",
+      "geometry": null,
+      "name": "정문앞길",
+      "zone_id": null,
+      "source": "roadIds.mjs (road_zones_wgs84.geojson zone name)",
+      "notes": "road zone RZ-078 with no RD_ name in ID부여.pdf"
+    },
+    {
+      "element_id": "RD_094",
+      "element_type": "road",
+      "geometry": null,
+      "name": "중앙로",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter arterial way/93413714",
+      "external_ids": {
+        "osm_way": "way/93413714",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_095",
+      "element_type": "road",
+      "geometry": null,
+      "name": "primary way/93413718",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter arterial way/93413718",
+      "external_ids": {
+        "osm_way": "way/93413718",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_096",
+      "element_type": "road",
+      "geometry": null,
+      "name": "삼산초등길",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/102943227",
+      "external_ids": {
+        "osm_way": "way/102943227",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_097",
+      "element_type": "road",
+      "geometry": null,
+      "name": "북정3길",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/102943229",
+      "external_ids": {
+        "osm_way": "way/102943229",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_098",
+      "element_type": "road",
+      "geometry": null,
+      "name": "오리정2길",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/102943278",
+      "external_ids": {
+        "osm_way": "way/102943278",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_099",
+      "element_type": "road",
+      "geometry": null,
+      "name": "중앙로",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter arterial way/102943321",
+      "external_ids": {
+        "osm_way": "way/102943321",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_100",
+      "element_type": "road",
+      "geometry": null,
+      "name": "강변로",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter arterial way/102943357",
+      "external_ids": {
+        "osm_way": "way/102943357",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_101",
+      "element_type": "road",
+      "geometry": null,
+      "name": "순천대2길",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/102943404",
+      "external_ids": {
+        "osm_way": "way/102943404",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_102",
+      "element_type": "road",
+      "geometry": null,
+      "name": "북정4길",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/102943409",
+      "external_ids": {
+        "osm_way": "way/102943409",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_103",
+      "element_type": "road",
+      "geometry": null,
+      "name": "residential way/102943436",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/102943436",
+      "external_ids": {
+        "osm_way": "way/102943436",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_104",
+      "element_type": "road",
+      "geometry": null,
+      "name": "순천대1길",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/102943475",
+      "external_ids": {
+        "osm_way": "way/102943475",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_105",
+      "element_type": "road",
+      "geometry": null,
+      "name": "환선로",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/102943502",
+      "external_ids": {
+        "osm_way": "way/102943502",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_106",
+      "element_type": "road",
+      "geometry": null,
+      "name": "가곡길",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/102943529",
+      "external_ids": {
+        "osm_way": "way/102943529",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_107",
+      "element_type": "road",
+      "geometry": null,
+      "name": "삼산로",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter arterial way/359082183",
+      "external_ids": {
+        "osm_way": "way/359082183",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_108",
+      "element_type": "road",
+      "geometry": null,
+      "name": "service way/359087187",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/359087187",
+      "external_ids": {
+        "osm_way": "way/359087187",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_109",
+      "element_type": "road",
+      "geometry": null,
+      "name": "residential way/366373738",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/366373738",
+      "external_ids": {
+        "osm_way": "way/366373738",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_110",
+      "element_type": "road",
+      "geometry": null,
+      "name": "삼산3길",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/474090503",
+      "external_ids": {
+        "osm_way": "way/474090503",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_111",
+      "element_type": "road",
+      "geometry": null,
+      "name": "순천대3길",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/474090504",
+      "external_ids": {
+        "osm_way": "way/474090504",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_112",
+      "element_type": "road",
+      "geometry": null,
+      "name": "조비길",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/474098943",
+      "external_ids": {
+        "osm_way": "way/474098943",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_113",
+      "element_type": "road",
+      "geometry": null,
+      "name": "안신기3길",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/475753296",
+      "external_ids": {
+        "osm_way": "way/475753296",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_114",
+      "element_type": "road",
+      "geometry": null,
+      "name": "오리정2길",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/475753298",
+      "external_ids": {
+        "osm_way": "way/475753298",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_115",
+      "element_type": "road",
+      "geometry": null,
+      "name": "삼산1길",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/475753299",
+      "external_ids": {
+        "osm_way": "way/475753299",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_116",
+      "element_type": "road",
+      "geometry": null,
+      "name": "residential way/479021872",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/479021872",
+      "external_ids": {
+        "osm_way": "way/479021872",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_117",
+      "element_type": "road",
+      "geometry": null,
+      "name": "삼산4길",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/480205761",
+      "external_ids": {
+        "osm_way": "way/480205761",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_118",
+      "element_type": "road",
+      "geometry": null,
+      "name": "오리정3길",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/481311645",
+      "external_ids": {
+        "osm_way": "way/481311645",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_119",
+      "element_type": "road",
+      "geometry": null,
+      "name": "순천대2길",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/481311655",
+      "external_ids": {
+        "osm_way": "way/481311655",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_120",
+      "element_type": "road",
+      "geometry": null,
+      "name": "오리정1길",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/481311982",
+      "external_ids": {
+        "osm_way": "way/481311982",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_121",
+      "element_type": "road",
+      "geometry": null,
+      "name": "삼산로",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/481311983",
+      "external_ids": {
+        "osm_way": "way/481311983",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_122",
+      "element_type": "road",
+      "geometry": null,
+      "name": "삼산로",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/484304518",
+      "external_ids": {
+        "osm_way": "way/484304518",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_123",
+      "element_type": "road",
+      "geometry": null,
+      "name": "secondary way/484454990",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter arterial way/484454990",
+      "external_ids": {
+        "osm_way": "way/484454990",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_124",
+      "element_type": "road",
+      "geometry": null,
+      "name": "강변로",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter arterial way/484454991",
+      "external_ids": {
+        "osm_way": "way/484454991",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_125",
+      "element_type": "road",
+      "geometry": null,
+      "name": "service way/506612860",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/506612860",
+      "external_ids": {
+        "osm_way": "way/506612860",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_126",
+      "element_type": "road",
+      "geometry": null,
+      "name": "망산1길",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/836404347",
+      "external_ids": {
+        "osm_way": "way/836404347",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_127",
+      "element_type": "road",
+      "geometry": null,
+      "name": "residential way/922867021",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/922867021",
+      "external_ids": {
+        "osm_way": "way/922867021",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_128",
+      "element_type": "road",
+      "geometry": null,
+      "name": "환선로",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/925889902",
+      "external_ids": {
+        "osm_way": "way/925889902",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_129",
+      "element_type": "road",
+      "geometry": null,
+      "name": "service way/929202517",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/929202517",
+      "external_ids": {
+        "osm_way": "way/929202517",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_130",
+      "element_type": "road",
+      "geometry": null,
+      "name": "삼산2길",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/949853666",
+      "external_ids": {
+        "osm_way": "way/949853666",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_131",
+      "element_type": "road",
+      "geometry": null,
+      "name": "망산2길",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/949853671",
+      "external_ids": {
+        "osm_way": "way/949853671",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_132",
+      "element_type": "road",
+      "geometry": null,
+      "name": "안신기2길",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/949853676",
+      "external_ids": {
+        "osm_way": "way/949853676",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_133",
+      "element_type": "road",
+      "geometry": null,
+      "name": "순천대1길",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/951385072",
+      "external_ids": {
+        "osm_way": "way/951385072",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_134",
+      "element_type": "road",
+      "geometry": null,
+      "name": "중앙로",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter arterial way/975284042",
+      "external_ids": {
+        "osm_way": "way/975284042",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_135",
+      "element_type": "road",
+      "geometry": null,
+      "name": "중앙로",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter arterial way/975429296",
+      "external_ids": {
+        "osm_way": "way/975429296",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_136",
+      "element_type": "road",
+      "geometry": null,
+      "name": "중앙로",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter arterial way/975429313",
+      "external_ids": {
+        "osm_way": "way/975429313",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_137",
+      "element_type": "road",
+      "geometry": null,
+      "name": "중앙로",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter arterial way/975429314",
+      "external_ids": {
+        "osm_way": "way/975429314",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_138",
+      "element_type": "road",
+      "geometry": null,
+      "name": "삼산로",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter arterial way/981005807",
+      "external_ids": {
+        "osm_way": "way/981005807",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_139",
+      "element_type": "road",
+      "geometry": null,
+      "name": "service way/1151564969",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/1151564969",
+      "external_ids": {
+        "osm_way": "way/1151564969",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_140",
+      "element_type": "road",
+      "geometry": null,
+      "name": "service way/1151564975",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/1151564975",
+      "external_ids": {
+        "osm_way": "way/1151564975",
+        "juso_rn_cd": null
+      }
+    },
+    {
+      "element_id": "RD_141",
+      "element_type": "road",
+      "geometry": null,
+      "name": "service way/1527240477",
+      "zone_id": null,
+      "source": "roadIds.mjs (OpenStreetMap, ODbL 1.0)",
+      "notes": "perimeter connector way/1527240477",
+      "external_ids": {
+        "osm_way": "way/1527240477",
+        "juso_rn_cd": null
+      }
+    }
+  ],
+  "sidewalk_placeholders": [
+    {
+      "element_id": "SW_001",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047297",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_002",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047298",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_003",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047308",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_004",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047310",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_005",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047318",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_006",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047324",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_007",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047326",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_008",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047334",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_009",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047349",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_010",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047352",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_011",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047365",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_012",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047366",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_013",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047367",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_014",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047368",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_015",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047396",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_016",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047414",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_017",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047426",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_018",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047443",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_019",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047444",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_020",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047462",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_021",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047464",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_022",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047471",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_023",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047494",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_024",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047502",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_025",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047512",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_026",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047523",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_027",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047524",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_028",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047532",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_029",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047538",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_030",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047542",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_031",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047543",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_032",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047547",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_033",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047554",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_034",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047555",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_035",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047559",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_036",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047595",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_037",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047638",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_038",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047647",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_039",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047655",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_040",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047660",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_041",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047662",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_042",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047669",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_043",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047674",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_044",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047683",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_045",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047684",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_046",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047688",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_047",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047690",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_048",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047692",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_049",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047699",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_050",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047700",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_051",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047701",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_052",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047743",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_053",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047745",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_054",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047753",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_055",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047762",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_056",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047763",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_057",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047764",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_058",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047781",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_059",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047782",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_060",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047789",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_061",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047793",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_062",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047849",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_063",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047854",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_064",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047856",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_065",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047857",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_066",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047858",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_067",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047877",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_068",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047898",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_069",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000047927",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_070",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000048041",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_071",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000844805",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_072",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000844806",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_073",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000844807",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_074",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000844812",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_075",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000844815",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_076",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000844820",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_077",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000844823",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_078",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000844824",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_079",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000844834",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_080",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000844844",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
+    },
+    {
+      "element_id": "SW_081",
+      "element_type": "sidewalk",
+      "geometry": null,
+      "ufid": "100034702020A00310100000000844856",
+      "source": "NGII A003 (walkways_wgs84.geojson)"
     }
   ]
 }

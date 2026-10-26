@@ -268,4 +268,17 @@ export async function writeGroundFeatures() {
   );
 }
 
-if (import.meta.main) await writeGroundFeatures();
+// Campus boundary (OSM way 366373736, 국립순천대학교) -> data/osm-campus.json, read by scripts/perf/overhead-blend.mjs
+// --campus-only. Run with --campus; it leaves osm-ground.json untouched.
+export async function writeCampusBoundary(wayId = 366373736) {
+  const response = await fetch(`https://api.openstreetmap.org/api/0.6/way/${wayId}/full.json`, { headers: { "User-Agent": USER_AGENT }, signal: AbortSignal.timeout(TIMEOUT_MS) });
+  if (!response.ok) throw new Error(`OSM way ${wayId}: HTTP ${response.status}`);
+  const { elements } = await response.json();
+  const nodes = new Map(elements.filter((e) => e.type === "node").map((e) => [e.id, [e.lon, e.lat]]));
+  const way = elements.find((e) => e.type === "way" && e.id === wayId);
+  const ring = way.nodes.map((id) => nodes.get(id));
+  await Bun.write(path.join(DATA, "osm-campus.json"), `${JSON.stringify({ fetched: new Date().toISOString().slice(0, 10), source: `OpenStreetMap API 0.6 way/${wayId}/full`, licence: "ODbL 1.0", attribution: "© OpenStreetMap contributors", id: `way/${wayId}`, tags: { name: way.tags?.name, amenity: way.tags?.amenity }, ring })}\n`);
+  console.log(`osm-campus.json: way/${wayId} ${way.tags?.name ?? ""}, ${ring.length} ring points`);
+}
+
+if (import.meta.main) await (process.argv.includes("--campus") ? writeCampusBoundary() : writeGroundFeatures());

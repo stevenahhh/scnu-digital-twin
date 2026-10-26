@@ -80,6 +80,20 @@ def validate(network: dict, policy: dict) -> dict:
         else:
             warnings.append({"code": "UNKNOWN_FEATURE_TYPE", "feature_id": feature.feature_id, "value": feature.feature_type})
 
+    for edge in edges:
+        props = edge.properties
+        kind = normalize_kind(str(props.get("kind") or ""), policy)
+        width = props.get("width_m")
+        kerb = props.get("kerb_height_m")
+        numeric = lambda value: isinstance(value, (int, float)) and not isinstance(value, bool)
+        # Statute values are warnings, never errors (campus geometry is not held to them).
+        if kind == "sidewalk" and numeric(width) and width < 1.5:
+            warnings.append({"code": "SIDEWALK_NARROWER_THAN_1_5M", "feature_id": edge.feature_id, "width_m": width})
+        if numeric(kerb) and kerb > 0.25:
+            warnings.append({"code": "KERB_ABOVE_LEGAL_CAP", "feature_id": edge.feature_id, "kerb_height_m": kerb})
+        if kind == "crosswalk" and numeric(width) and width < 4.0:
+            warnings.append({"code": "CROSSING_NARROWER_THAN_4M", "feature_id": edge.feature_id, "width_m": width})
+
     for position, identifiers in duplicate_positions.items():
         if len(identifiers) > 1:
             warnings.append({"code": "DUPLICATE_NODE_POSITION", "position": position, "node_ids": identifiers})

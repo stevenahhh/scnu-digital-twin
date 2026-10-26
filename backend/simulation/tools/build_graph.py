@@ -8,6 +8,8 @@ from simulation.network_schema import iter_features, load_feature_collection, lo
 
 
 ROOT = Path(__file__).resolve().parents[1]
+# Optional edge attributes carried onto the runtime edge when present (validated by network_schema).
+OPTIONAL_EDGE_FIELDS = ("width_m", "kerb_height_m", "lanes", "estimated", "source_ref")
 DATA = ROOT / "data"
 
 
@@ -43,8 +45,10 @@ def build(network: dict, policy: dict, authoritative_only: bool = False) -> dict
             "road_ids": list(props.get("road_ids") or ([props["crosswalk_id"]] if props.get("crosswalk_id") else [])),
             "coordinates": feature.coordinates,
             "derived": bool(props.get("derived", False)),
+            "authoritative": bool(props.get("authoritative", False)),
             "source": props.get("source", "unknown"),
             "confidence": props.get("confidence"),
+            **{key: props[key] for key in OPTIONAL_EDGE_FIELDS if props.get(key) is not None},
         })
     for feature in iter_features(network, "poi"):
         props = feature.properties
