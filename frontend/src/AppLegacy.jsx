@@ -888,7 +888,7 @@ function Dashboard() {
           onDragStart={releaseOnDrag}
           headlineById={headlineById}
         />
-        <CampusTrafficSimulation />
+        <CampusTrafficSimulation contactShadows={quality === "high"} />
         <ShadowBaker sunKey={sunVector.join(",")} />
       </Suspense>
       <OrbitControls

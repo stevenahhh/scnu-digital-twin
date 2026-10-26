@@ -2,6 +2,7 @@ import React, { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { simulationHeadingToThree, simulationToThree } from "../utils/coordinateTransform";
+import { ContactShadow } from "./ContactShadow";
 import { PedestrianEntity } from "./PedestrianEntity";
 import { ScooterEntity } from "./ScooterEntity";
 import { VehicleEntity } from "./VehicleEntity";
@@ -14,7 +15,7 @@ function dampAngle(current, target, factor) {
   return current + difference * factor;
 }
 
-export const TrafficEntity = React.memo(function TrafficEntity({ entity, coordinateConfig, renderEntity, resolveHeight, selected, onSelect }) {
+export const TrafficEntity = React.memo(function TrafficEntity({ entity, coordinateConfig, renderEntity, resolveHeight, selected, onSelect, contactShadow = false }) {
   const group = useRef();
   const initial = useMemo(() => {
     const position = simulationToThree(entity, coordinateConfig);
@@ -51,6 +52,7 @@ export const TrafficEntity = React.memo(function TrafficEntity({ entity, coordin
         <sphereGeometry args={[2.1, 8, 8]} />
         <meshBasicMaterial transparent opacity={0.001} depthWrite={false} />
       </mesh>
+      {contactShadow && <ContactShadow type={entity.type} />}
       {renderEntity ? renderEntity(entity) : (
         <>
           {entity.type === "car" && <VehicleEntity riskLevel={entity.risk_level} emergency={String(entity.state).toLowerCase() === "emergency"} />}
