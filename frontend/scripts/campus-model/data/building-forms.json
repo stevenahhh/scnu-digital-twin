@@ -37342,6 +37342,266 @@
      "photoSupport": 0.16
     }
    ]
+  },
+  {
+   "key": "BLD_SCNU_D5",
+   "label": "학군단",
+   "footprintSource": "NGII 2025 orthophoto trace (estimated) + VR scene_d5",
+   "source": "NGII 2025 orthophoto trace (estimated) + VR scene_d5",
+   "lod4Models": [],
+   "lean": [
+    0.011,
+    -0.145
+   ],
+   "leanPrior": [
+    0.011,
+    -0.135
+   ],
+   "iou": {
+    "lod4": null,
+    "footprint": 0.902,
+    "final": 0.902
+   },
+   "flags": [
+    "no VWorld LOD4 model over this footprint"
+   ],
+   "masses": [
+    {
+     "outer": [
+      [
+       127.47718791,
+       34.97069914
+      ],
+      [
+       127.47732287,
+       34.97067036
+      ],
+      [
+       127.47724804,
+       34.97043468
+      ],
+      [
+       127.47711999,
+       34.97047028
+      ],
+      [
+       127.47713854,
+       34.9705329
+      ],
+      [
+       127.47710189,
+       34.97054039
+      ],
+      [
+       127.47712956,
+       34.97063432
+      ],
+      [
+       127.47716621,
+       34.97062684
+      ]
+     ],
+     "holes": [],
+     "baseMetres": 0,
+     "topMetres": 16.32,
+     "kind": "main",
+     "floors": 4,
+     "roof": "flat",
+     "parapetMetres": 0.9,
+     "parapetEstimated": true,
+     "areaSquareMetres": 369.9,
+     "fromFootprint": true
+    }
+   ],
+   "voids": []
+  },
+  {
+   "key": "BLD_SCNU_A3",
+   "label": "천연물신약연구소",
+   "footprintSource": "NGII 2025 orthophoto trace (estimated) + VR scene_a3",
+   "source": "NGII 2025 orthophoto trace (estimated) + VR scene_a3",
+   "lod4Models": [],
+   "lean": [
+    0.004,
+    -0.044
+   ],
+   "leanPrior": [
+    -0.026,
+    -0.044
+   ],
+   "iou": {
+    "lod4": null,
+    "footprint": 0.903,
+    "final": 0.903
+   },
+   "flags": [
+    "no VWorld LOD4 model over this footprint"
+   ],
+   "masses": [
+    {
+     "outer": [
+      [
+       127.48055111,
+       34.96907811
+      ],
+      [
+       127.48075673,
+       34.96903738
+      ],
+      [
+       127.48063684,
+       34.96858626
+      ],
+      [
+       127.48060762,
+       34.96859544
+      ],
+      [
+       127.48059368,
+       34.96856046
+      ],
+      [
+       127.4805005,
+       34.96858499
+      ],
+      [
+       127.48050717,
+       34.96862836
+      ],
+      [
+       127.48044143,
+       34.9686498
+      ]
+     ],
+     "holes": [],
+     "baseMetres": 0,
+     "topMetres": 20.4,
+     "kind": "main",
+     "floors": 5,
+     "roof": "flat",
+     "parapetMetres": 0.9,
+     "parapetEstimated": true,
+     "areaSquareMetres": 995.6,
+     "fromFootprint": true
+    }
+   ],
+   "voids": []
+  },
+  {
+   "key": "BLD_SCNU_C5",
+   "label": "어린이집",
+   "footprintSource": "NGII 2025 orthophoto trace (estimated) + VR scene_c5",
+   "source": "Curated form traced on the NGII 2025 orthophoto sheet 34702020 (roof edges moved back by the relief lean of the registration field) with storeys and roof form from SCNU 360 VR scene_c5 (visual reference only): a two-storey block with the sign at the north-west corner and a one-storey L wing around the play yard; both roofs are flat green roofs in the VR and on the photo, not pitched (estimated)",
+   "lod4Models": [],
+   "storeyMetres": 4.1,
+   "lean": [
+    -0.096,
+    -0.281
+   ],
+   "leanPrior": [
+    -0.016,
+    -0.191
+   ],
+   "iou": {
+    "lod4": null,
+    "footprint": 0.792,
+    "curated": 0.778,
+    "final": 0.778
+   },
+   "flags": [
+    "curated form (data/scnu-facades.json): photo IoU 0.778 against 0.792 for the current footprint"
+   ],
+   "masses": [
+    {
+     "outer": [
+      [
+       127.47948006,
+       34.97110385
+      ],
+      [
+       127.47971719,
+       34.97105556
+      ],
+      [
+       127.47969997,
+       34.97092375
+      ],
+      [
+       127.47958858,
+       34.97092414
+      ],
+      [
+       127.47958908,
+       34.97100853
+      ],
+      [
+       127.47944299,
+       34.97101129
+      ],
+      [
+       127.47943348,
+       34.97094728
+      ],
+      [
+       127.47921887,
+       34.97094199
+      ],
+      [
+       127.47921936,
+       34.97102488
+      ],
+      [
+       127.47938841,
+       34.97104539
+      ],
+      [
+       127.47947056,
+       34.97104134
+      ]
+     ],
+     "holes": [],
+     "baseMetres": 0,
+     "topMetres": 4.1,
+     "kind": "main",
+     "floors": 1,
+     "roof": "flat",
+     "areaSquareMetres": 489.8,
+     "parapetMetres": 0.6,
+     "parapetEstimated": true,
+     "heightSource": "estimated: 1 storey x 4.08 m (education storey median), green roof parapet from VR scene_c5"
+    },
+    {
+     "outer": [
+      [
+       127.47938886,
+       34.97112225
+      ],
+      [
+       127.47948006,
+       34.97110385
+      ],
+      [
+       127.47947056,
+       34.97104134
+      ],
+      [
+       127.47938841,
+       34.97104539
+      ]
+     ],
+     "holes": [],
+     "baseMetres": 0,
+     "topMetres": 8.2,
+     "kind": "wing",
+     "floors": 2,
+     "roof": "flat",
+     "areaSquareMetres": 61.8,
+     "parapetMetres": 0.6,
+     "parapetEstimated": true,
+     "heightSource": "estimated: 2 storeys x 4.08 m (education storey median), VR scene_c5"
+    }
+   ],
+   "voids": []
   }
  ]
 }
