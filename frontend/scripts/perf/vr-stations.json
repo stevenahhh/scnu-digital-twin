@@ -6245,9 +6245,16 @@
       "yaw_deg": true
     },
     "refined": false,
-    "refined_by": "compare-vr todo 2",
-    "refined_note": "close-range view under trees; skyline candidates -13/-20 deg unconfirmed",
-    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
+    "refined_by": "manual control-point resection (scripts/perf/vr_control_points.py)",
+    "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by seed); least squares: residual RMS 0.41 m, max 0.63 m; split-half agreement 0.13 m / 0.01 deg; formal sigma 0.05 m / 0.05 deg; height from the face scale (estimated); height re-measured: the record carried the 10 m estimate; guided matches at seed heights 6-20 m jump in support between 14 and 16 m (48 -> 109 inliers) and the solar-panel roof is seen from above at 17 m in the render, as in the VR; solved 16.9 m with the seed at 17 m (estimated)",
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR (re-measured height/position)",
+    "station_refined_x": 188.7,
+    "station_refined_z": -251.04,
+    "yaw_refined_deg": 236.1,
+    "height_refined_m": 16.91,
+    "refined_confidence": 0.85,
+    "refined_residual_deg": 0.05,
+    "refined_residual_m": 0.13
   },
   {
     "scene": "scene_e5",
@@ -6570,16 +6577,21 @@
       "station": true,
       "yaw_deg": true
     },
-    "yaw_refined_deg": 195,
-    "refined_residual_deg": 3,
+    "yaw_refined_deg": 194.93,
+    "refined_residual_deg": 0.06,
     "refined_buildings": [
       "BLD_E6",
       "BLD_E2",
       "BLD_A12"
     ],
-    "refined_by": "compare-vr todo 2",
-    "refined_confidence": 0.9,
-    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
+    "refined_by": "manual control-point resection (scripts/perf/vr_control_points.py)",
+    "refined_confidence": 0.85,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR (re-measured height/position)",
+    "station_refined_x": 197.18,
+    "station_refined_z": -96.45,
+    "height_refined_m": 13.43,
+    "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by seed); least squares: residual RMS 0.42 m, max 0.69 m; split-half agreement 0.22 m / 0.03 deg; formal sigma 0.06 m / 0.06 deg; height from the face scale (estimated); position re-measured: the record put the nadir on the car-park stall row while the VR nadir is pine canopy with the stall row 1.2 h south; guided match seeded 9-10 m north; height kept near the estimate (support plateau from 13.8 m; solved 13.4 m) (estimated)",
+    "refined_residual_m": 0.22
   },
   {
     "scene": "scene_e7",
