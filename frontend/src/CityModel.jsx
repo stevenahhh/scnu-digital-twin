@@ -20,7 +20,7 @@ import { ZONES, buildLabelRegistry } from "./labels/labelRegistry.mjs";
 import { campusModelCenter } from "./simulation/utils/campusTrafficCoordinates.mjs";
 import { CAMPUS_MODEL_URL, CAMPUS_MODEL_URLS } from "./campusModelAsset.mjs";
 import { CAMPUS_HEIGHTFIELD_URLS, loadHeightfield } from "./terrain/heightfield.mjs";
-import { HOVER_HEX, SELECTION_HEX } from "./ui/sceneTokens.mjs";
+import { DIM_ALPHA, HOVER_HEX, SELECTION_HEX } from "./ui/sceneTokens.mjs";
 import {
   AUTUMN_MATERIAL_NAMES,
   SUN_ALTITUDE_KEY,
@@ -139,7 +139,12 @@ function applyLampPoolFalloff(material) {
 // 색 전환은 선택/주야가 바뀐 뒤에만, 남은 차이가 이 값보다 작아질 때까지 돈다.
 const MATERIAL_SETTLE_EPSILON = 1e-3;
 const MATERIAL_EASE_RATE = 8;
-const SELECTED_COLOR = new THREE.Color(SELECTION_HEX);
+// 선택 강조: 보통·높음 단계는 후처리 외곽선(HighTierEffects의 Outline)이 맡고, 낮음 단계(후처리 없음)는 선택 건물 재질을
+// 강조색 쪽으로 35% 옮기고 강조색 발광 0.15를 더한다. 어느 단계든 선택이 있으면 나머지 메시는 20% 어둡게 한다(DIM_ALPHA).
+const SELECTION_COLOR = new THREE.Color(SELECTION_HEX);
+const SELECTION_TINT_MIX = 0.35;
+const SELECTION_EMISSIVE = new THREE.Color(SELECTION_HEX).multiplyScalar(0.15);
+const NO_EMISSIVE = new THREE.Color(0, 0, 0);
 const NIGHT_TINT_COLOR = new THREE.Color("#c8d6e5");
 const NIGHT_TINT_MIX = 0.16;
 // 가을 단풍(추정): 활엽수 수관(Tree_Crown) 인스턴스마다 수종 비슷한 색(은행 노랑, 느티 적갈, 벚 빨강, 늦게 물드는 초록)과
@@ -147,14 +152,15 @@ const NIGHT_TINT_MIX = 0.16;
 // 수종 배정은 추정값이며 실제 수목 조사 결과가 아니다.
 // 주야·계절 가중치가 이만큼 바뀌어야 재질을 다시 쓴다.
 const RAMP_EPSILON = 1e-4;
-// 마우스를 올린 건물은 평소 색을 선택 색 쪽으로 조금만 옮긴다. 선택(색 전체 교체)보다 약하다.
+// 마우스를 올린 건물은 평소 색을 호버 색 쪽으로 12%만 옮긴다. 선택 강조보다 약하다.
 // 재질은 메시마다 복제돼 있어 다른 건물로 번지지 않는다.
-const HOVER_TINT_COLOR = new THREE.Color(HOVER_HEX);
-const HOVER_TINT_MIX = 0.3;
+const HOVER_COLOR = new THREE.Color(HOVER_HEX);
+const HOVER_TINT_MIX = 0.12;
 // 프레임마다 새 객체를 만들지 않도록 재사용하는 스크래치 값.
 const scratchColor = new THREE.Color();
 const scratchHoverColor = new THREE.Color();
 const scratchBaseColor = new THREE.Color();
+const scratchEmissive = new THREE.Color();
 const scratchCamPos = new THREE.Vector3();
 const scratchProject = new THREE.Vector3();
 const ELEMENT_NAME_MAP = new Map(
@@ -290,6 +296,14 @@ export function CityModel({
   presentation = false,
   // 마우스를 올린 칩에 붙일 대표 추정값(요소 id -> 문자열). 이미 받아 둔 팝업 데이터에서만 만든다.
   headlineById = null,
+  // 패널이 고른 건물의 라벨 앵커 id(useSelectionState). 있으면 selectedId보다 먼저 쓴다.
+  selectedElementId = null,
+  // 보통·높음 단계: 선택 강조를 후처리 외곽선이 그린다. 낮음 단계(false)에서는 재질 색으로 강조한다.
+  selectionOutline = false,
+  // 라벨 레지스트리를 앱에 알린다(패널 제목이 같은 이름을 쓰도록).
+  onLabelRegistry,
+  // 사용자가 캔버스를 드래그해 카메라를 움직이기 시작했을 때(휠·시점 비행은 아님).
+  onDragStart,
   ...props
 }) {
   const { scene } = useGLTF(CAMPUS_MODEL_URL);
@@ -309,6 +323,7 @@ export function CityModel({
   const hoveredNameRef = useRef(null);
   // 마우스를 올린 건물의 앵커 id(라벨 층의 호버 칩·건물 가림 근사에 쓴다).
   const hoveredIdRef = useRef(null);
+  const wasDraggingRef = useRef(false);
   const activePresetIdRef = useRef(activePresetId);
   activePresetIdRef.current = activePresetId;
   const presentationRef = useRef(presentation);
@@ -392,7 +407,7 @@ export function CityModel({
 
   useEffect(() => {
     materialTransitionRef.current = true;
-  }, [selectedId, isNight]);
+  }, [selectedId, selectedElementId, selectionOutline, isNight]);
 
   // 개발 모드 전용: 유휴 프레임에서 scene.traverse가 몇 번 불리는지 센다(한 번만 로그).
   useEffect(() => {
@@ -538,7 +553,10 @@ export function CityModel({
         child.material.polygonOffsetFactor = -rank * GROUND_LAYER_OFFSET_STEP.factor;
         child.material.polygonOffsetUnits = -rank * GROUND_LAYER_OFFSET_STEP.units;
       }
-      child.userData.selectableName = getSelectableMeta(child)?.name ?? null;
+      const selectableMeta = getSelectableMeta(child);
+      child.userData.selectableName = selectableMeta?.name ?? null;
+      // 같은 건물의 여러 노드(BLD_C1, BLD_C1.001)가 한 앵커 id로 함께 강조되고, 외곽선(useSelectedMeshes)도 이 id로 메시를 찾는다.
+      child.userData.selectableElementId = selectableMeta?.elementId ?? null;
 
       // 수관 색 보정(lighting/foliage.mjs): 재질 색은 정사영상의 어두운 수관 쪽으로 낮추고, 나무마다 다른 인스턴스 색은
       // 밝기 차이만 남기고 색조 차이를 줄인다. 한 번만 옮긴다.
@@ -566,6 +584,9 @@ export function CityModel({
 
       if (!child.userData.originalColor && child.material.color) {
         child.userData.originalColor = child.material.color.clone();
+      }
+      if (!child.userData.originalEmissive && child.material.emissive) {
+        child.userData.originalEmissive = child.material.emissive.clone();
       }
       if (child.userData.originalColor) {
         tintedMeshes.push(child);
@@ -625,9 +646,15 @@ export function CityModel({
 
   // 라벨 이름·계층·구역은 레지스트리 한 곳에서 온다. 위치는 재중심화 전 모델 좌표다(정문 구역만 장면 좌표라 되돌린다).
   const anchorById = useMemo(() => new Map(labelAnchors.map((anchor) => [anchor.elementId, anchor])), [labelAnchors]);
+  const labelRegistry = useMemo(
+    () => buildLabelRegistry({ elements: commonElements.elements, anchors: labelAnchors, presets: CAMERA_PRESETS }),
+    [labelAnchors],
+  );
+  useEffect(() => {
+    onLabelRegistry?.(labelRegistry);
+  }, [labelRegistry, onLabelRegistry]);
   const labelEntries = useMemo(() => {
-    const registry = buildLabelRegistry({ elements: commonElements.elements, anchors: labelAnchors, presets: CAMERA_PRESETS });
-    return [...registry.values()]
+    return [...labelRegistry.values()]
       .filter((entry) => entry.displayName && entry.position)
       .map((entry) => ({
         ...entry,
@@ -636,15 +663,16 @@ export function CityModel({
           ? [entry.position[0] + center.x, entry.position[1], entry.position[2] + center.z]
           : entry.position,
       }));
-  }, [labelAnchors, center]);
+  }, [labelRegistry, center]);
   // 패널 제목·라벨 강조가 같은 건물을 가리키도록 selectedId(요소 id, GLB 노드 이름, 대리 노드 이름 중 하나)를 앵커 id로 바꾼다.
   const selectedAnchorId = useMemo(() => {
+    if (selectedElementId && anchorById.has(selectedElementId)) return selectedElementId;
     if (!selectedId) return null;
     const anchor =
       anchorById.get(selectedId) ??
       labelAnchors.find((item) => item.name === selectedId || (item.proxy && item.displayName === selectedId));
     return anchor?.elementId ?? null;
-  }, [anchorById, labelAnchors, selectedId]);
+  }, [anchorById, labelAnchors, selectedElementId, selectedId]);
   const selectedAnchorIdRef = useRef(selectedAnchorId);
   selectedAnchorIdRef.current = selectedAnchorId;
 
@@ -687,6 +715,10 @@ export function CityModel({
     }
     // 드래그가 시작되면 마우스오버 강조를 끈다. 드래그는 건물을 가리키는 동작이 아니다.
     const dragDriven = pointerGuard.isDragDriven();
+    // 드래그가 시작된 프레임에 한 번 알린다(클릭으로 고른 건물에 대한 근접 자동 선택 보류를 푼다).
+    const dragging = pointerGuard.isDragging();
+    if (dragging && !wasDraggingRef.current) onDragStart?.();
+    wasDraggingRef.current = dragging;
     if (dragDriven && hoveredNameRef.current !== null) {
       hoveredNameRef.current = null;
       hoveredIdRef.current = null;
@@ -737,20 +769,46 @@ export function CityModel({
         : 1;
       const glow = ramp.night;
       let maxDelta = 0;
+      const selectedAnchor = selectedAnchorIdRef.current;
+      const hasSelection = Boolean(selectedAnchor || selectedId);
 
       for (const child of tintedMeshesRef.current) {
         const { userData, material } = child;
-        const isSelected =
-          userData.selectableName === selectedId || child.name === selectedId;
+        const isSelected = selectedAnchor
+          ? userData.selectableElementId === selectedAnchor
+          : Boolean(selectedId) && (userData.selectableName === selectedId || child.name === selectedId);
         const isHovered =
           userData.selectableName !== null && userData.selectableName === hoveredNameRef.current;
         const baseColor = scratchBaseColor.copy(userData.originalColor);
         baseColor.lerp(NIGHT_TINT_COLOR, NIGHT_TINT_MIX * ramp.night);
         const targetColor = isSelected
-          ? SELECTED_COLOR
+          ? selectionOutline
+            ? baseColor
+            : scratchHoverColor.copy(baseColor).lerp(SELECTION_COLOR, SELECTION_TINT_MIX)
           : isHovered
-            ? scratchHoverColor.copy(baseColor).lerp(HOVER_TINT_COLOR, HOVER_TINT_MIX)
-            : baseColor;
+            ? scratchHoverColor.copy(baseColor).lerp(HOVER_COLOR, HOVER_TINT_MIX)
+            : hasSelection
+              ? baseColor.multiplyScalar(1 - DIM_ALPHA)
+              : baseColor;
+
+        // 낮음 단계의 선택 건물은 강조색으로 은은하게 빛난다(창문 발광 지도가 있는 재질은 밤 불빛이 발광을 쓰므로 건드리지 않는다).
+        if (userData.originalEmissive && !userData.hasWindowGlow) {
+          const emissiveTarget =
+            isSelected && !selectionOutline
+              ? scratchEmissive.copy(userData.originalEmissive).add(SELECTION_EMISSIVE)
+              : scratchEmissive.copy(userData.originalEmissive ?? NO_EMISSIVE);
+          const emissive = material.emissive;
+          const emissiveRemaining = Math.max(
+            Math.abs(emissiveTarget.r - emissive.r),
+            Math.abs(emissiveTarget.g - emissive.g),
+            Math.abs(emissiveTarget.b - emissive.b),
+          );
+          if (emissiveRemaining < MATERIAL_SETTLE_EPSILON) emissive.copy(emissiveTarget);
+          else {
+            emissive.lerp(emissiveTarget, ease);
+            maxDelta = Math.max(maxDelta, emissiveRemaining * (1 - ease));
+          }
+        }
 
         const color = material.color;
         const remaining = Math.max(
@@ -777,12 +835,15 @@ export function CityModel({
         }
       }
 
-      // 대리 프리즘은 선택(요소 id 또는 패널 제목으로 쓰인 라벨)·마우스오버된 것만 보인다.
+      // 대리 프리즘은 선택(앵커 id, 요소 id 또는 패널 제목으로 쓰인 라벨)·마우스오버된 것만 보인다.
+      // GLB의 Pick_Proxy 재질 색(분홍)은 쓰지 않고 선택은 강조색, 마우스오버는 호버 색으로 칠한다.
       for (const proxy of pickProxiesRef.current) {
-        proxy.visible =
-          proxy.name === selectedId ||
-          proxy.userData.label === selectedId ||
-          proxy.name === hoveredNameRef.current;
+        const proxySelected = selectedAnchor
+          ? proxy.name === selectedAnchor
+          : Boolean(selectedId) && (proxy.name === selectedId || proxy.userData.label === selectedId);
+        const proxyHovered = proxy.name === hoveredNameRef.current;
+        proxy.visible = proxySelected || proxyHovered;
+        if (proxy.visible) proxy.material.color.copy(proxySelected ? SELECTION_COLOR : HOVER_COLOR);
       }
 
       if (maxDelta < MATERIAL_SETTLE_EPSILON) {
@@ -1014,7 +1075,7 @@ export function CityModel({
     const area = Math.max(1, Math.round(size.x * size.z));
 
     if (onSelect) {
-      onSelect(meta.name, area, [center.x, box.max.y + 6, center.z]);
+      onSelect(meta.name, area, [center.x, box.max.y + 6, center.z], meta.elementId);
     }
 
     if (onBuildingClick) {
@@ -1063,7 +1124,7 @@ export function CityModel({
   const handleLabelClick = (anchor, event) => {
     if (!pointerGuard.acceptClick({ origin: "label", keyboard: event.detail === 0 })) return;
     if (onSelect) {
-      onSelect(anchor.name, 1200, anchor.position);
+      onSelect(anchor.name, 1200, anchor.position, anchor.elementId);
     }
 
     if (onBuildingClick) {

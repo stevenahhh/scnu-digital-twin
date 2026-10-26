@@ -325,6 +325,58 @@ describe("Legacy and VWorld feature parity", () => {
     }
   });
 
+  it("clicking 도서관 keeps title 도서관 for 5 s with proximity events firing, until the user drags", async () => {
+    const fetchMock = vi.fn(async (url) => {
+      if (String(url).includes("/popup")) return okJson({ thermal: { local_temp: 21.4 } });
+      return okJson({ base_weather: null });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval"] });
+    try {
+      render(<App />);
+      // 사용자가 시점에서 벗어난 상태(시점 버튼에 있는 동안은 근접 자동 선택이 원래 꺼져 있다).
+      act(() => controlsMock.current.dispatchEvent({ type: "start" }));
+      await act(async () => {
+        sceneMock.cityModelProps.onSelect("BLD_C1", 1200, [0, 0, 0], "BLD_C1");
+        await sceneMock.cityModelProps.onBuildingClick({ name: "BLD_C1", parent: { name: "BLD_C1" }, userData: { buildingLabel: "도서관" } });
+      });
+      expect(screen.getByRole("heading", { level: 3, name: "도서관" })).toBeTruthy();
+
+      const neighbour = { elementId: "BLD_E5", name: "BLD_E5", displayName: "사범대학 3호관", position: [0, 0, 0] };
+      for (let sample = 0; sample < 10; sample += 1) {
+        await act(async () => {
+          sceneMock.cityModelProps.onBuildingProximity(sample % 3 === 2 ? null : neighbour);
+          vi.advanceTimersByTime(500);
+        });
+        expect(screen.getByRole("heading", { level: 3, name: "도서관" })).toBeTruthy();
+        expect(sceneMock.cityModelProps.selectedElementId).toBe("BLD_C1");
+      }
+      // 칩의 호버 미리보기는 이미 받은 팝업 값에서 온다.
+      expect(sceneMock.cityModelProps.headlineById).toEqual({ BLD_C1: "추정 21.4°C" });
+
+      // 드래그를 시작하면 근접 자동 선택이 다시 따른다.
+      act(() => sceneMock.cityModelProps.onDragStart());
+      await act(async () => {
+        sceneMock.cityModelProps.onBuildingProximity(neighbour);
+      });
+      expect(screen.getByRole("heading", { level: 3, name: "사범대학 3호관" })).toBeTruthy();
+      expect(sceneMock.cityModelProps.selectedElementId).toBe("BLD_E5");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("clears the building selection when CityModel reports an empty selection (Esc)", async () => {
+    render(<App />);
+    await act(async () => {
+      sceneMock.cityModelProps.onSelect("BLD_C1", 1200, [0, 0, 0], "BLD_C1");
+    });
+    expect(sceneMock.cityModelProps.selectedElementId).toBe("BLD_C1");
+    act(() => sceneMock.cityModelProps.onSelect(""));
+    expect(sceneMock.cityModelProps.selectedElementId).toBe(null);
+    expect(sceneMock.cityModelProps.selectedId).toBe("");
+  });
+
   it("centres the 3D loading notice in the map area left of the open panel, clear of the panel toggle", () => {
     sceneMock.suspend = true;
     try {
