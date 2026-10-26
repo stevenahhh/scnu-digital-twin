@@ -89,6 +89,31 @@ test("pole-roots.json: residuals within their thresholds, rule seeds only with p
   }
 });
 
+test("pole-roots.json round 2: placed poles within 0.5 m with a confidence; unresolved poles estimated at their seed with every source tried", () => {
+  const methods = ["ngii-wide-search", "vworld-z19", "esri-z18", "vr-two-ray", "shadow-tip"];
+  const placed = [];
+  for (const pole of ROOTS.poles) {
+    if (pole.root) {
+      assert.ok(pole.residualM <= 0.5, `${pole.id} moved with residual ${pole.residualM} m`);
+      assert.ok(pole.confidence > 0 && pole.confidence <= 1, `${pole.id} confidence ${pole.confidence}`);
+      placed.push(pole.residualM);
+    }
+    if (pole.verdict !== "unresolved") continue;
+    assert.equal(pole.root, undefined, `${pole.id} is unresolved but placed`);
+    assert.equal(pole.estimated, true, `${pole.id} is not labelled estimated`);
+    assert.ok(pole.seedUncertaintyM > 0.5 && pole.confidence > 0 && pole.confidence < 0.5, `${pole.id} seed uncertainty / confidence`);
+    assert.deepEqual(pole.attempts.map((a) => a.method), methods, `${pole.id} sources tried`);
+    for (const a of pole.attempts) {
+      assert.ok(a.result && a.why, `${pole.id} ${a.method} without a result and reason`);
+      assert.ok(!(a.residualM <= 0.5), `${pole.id} ${a.method} resolved to ${a.residualM} m but the pole did not move`);
+    }
+  }
+  const stats = ROOTS.residualStats;
+  assert.equal(stats.resolved, placed.length);
+  assert.equal(stats.resolved + stats.unresolved, ROOTS.poles.filter((p) => p.verdict !== "rejected").length);
+  assert.equal(stats.maxM, Math.max(...placed));
+});
+
 test("signal heads face the traffic in the near lanes of the nearest approach (right-hand traffic)", async () => {
   const { signalApproach } = await import("./furniture.mjs");
   // east-west centreline at z = 0 (scene +z is south). Driving east, the right-hand kerb is the south one, so a pole

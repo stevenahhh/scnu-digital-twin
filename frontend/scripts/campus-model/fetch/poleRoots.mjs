@@ -31,6 +31,10 @@ export const POLE_ROOTS = path.join(PHOTO, "pole-roots.json");
 const OBJECTS = path.join(PHOTO, "objects-campus.geojson");
 const RULE_SEEDS = path.join(PHOTO, "pole-seeds-rule.json");
 const REVIEW = path.join(PHOTO, "pole-review.json");
+// round 2: every other source tried for the unresolved poles (attempts, seed uncertainty, confidence)
+const SOURCES = path.join(PHOTO, "pole-sources.json");
+// confidence of a placed base by method (estimate): detector-confirmed, by eye, floodlight head minus lean
+const CONFIDENCE = { "shadow-root": 0.9, "by-eye-root": 0.7, "head-lean": 0.6 };
 export const POLE_KINDS = ["street_lamp", "traffic_signal_pole", "sign_pole", "floodlight_pole"];
 const GSD = 0.25;
 const REFINE_RADIUS_M = 1;
@@ -85,13 +89,16 @@ function main() {
   }
   const sheet = openSheet();
   const review = JSON.parse(readFileSync(REVIEW, "utf8")).reviews;
+  const tried = JSON.parse(readFileSync(SOURCES, "utf8")).poles;
+  // an unresolved pole stays at its seed, estimated, with what was tried and why it did not resolve
+  const unresolved = (id) => ({ estimated: true, ...(tried[id] ?? {}) });
   const records = [];
   for (const s of seeds()) {
     const r = review[s.id];
     const record = { id: s.id, kind: s.kind, source: s.source, heightM: s.heightM, seed: s.seed.map((v) => round(v, 8)) };
     if (s.ruleType) record.ruleType = s.ruleType;
     if (!r) {
-      Object.assign(record, { verdict: "unresolved", note: "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)" });
+      Object.assign(record, { verdict: "unresolved", note: "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)", ...unresolved(s.id) });
       records.push(record);
       continue;
     }
@@ -101,7 +108,7 @@ function main() {
       continue;
     }
     if (r.verdict === "site") {
-      Object.assign(record, { verdict: "unresolved", site: r.site, note: r.note });
+      Object.assign(record, { verdict: "unresolved", site: r.site, note: r.note, ...unresolved(s.id) });
       records.push(record);
       continue;
     }
@@ -123,6 +130,7 @@ function main() {
       shiftM: round(Math.hypot(at[0] - col, at[1] - row) * GSD, 2),
       residualM: round(useDetected ? Math.max(agreeM, hit.residualPx * GSD) : r.verdict === "head" ? HEAD_RESIDUAL_M : BY_EYE_RESIDUAL_M, 2),
       residualKind: useDetected ? "agreement of the by-eye base and the detected shadow root (max with the line-fit sigma)" : "by-eye uncertainty (estimate)",
+      confidence: CONFIDENCE[useDetected ? "shadow-root" : r.verdict === "head" ? "head-lean" : "by-eye-root"],
       byEye: pxToGeo(base),
       ...(detected ? { detectedRoot: pxToGeo(detected), detectedAgreeM: round(agreeM, 2), detectedScore: round(hit.score, 2) } : {}),
       note: r.note,
@@ -136,11 +144,15 @@ function main() {
     counts[key] ??= {};
     counts[key][r.verdict] = (counts[key][r.verdict] ?? 0) + 1;
   }
+  const placed = records.filter((r) => r.root).map((r) => r.residualM).sort((a, b) => a - b);
+  const at = (q) => placed[Math.min(placed.length - 1, Math.round(q * (placed.length - 1)))];
+  const residualStats = { resolved: placed.length, unresolved: records.filter((r) => r.verdict === "unresolved").length, maxM: placed.at(-1), medianM: placed.length % 2 ? placed[(placed.length - 1) / 2] : round((placed[placed.length / 2 - 1] + placed[placed.length / 2]) / 2, 2), p95M: at(0.95) };
   const doc = {
-    note: "Standing-pole bases read from the NGII 2025 orthophoto (sheet 34702020, 0.25 m GSD). verdict shadow-root: by-eye base confirmed by the shadow detector (lib/poleShadow.mjs) within 0.5 m, placed at the detected root; by-eye-root: base by eye (data/photo/pole-review.json); head-lean: floodlight head minus the relief lean; unresolved: no base visible, survey and data.go.kr poles stay at their seed (metre-level; site 'median' when the photo shows the seed on a median or island); rejected: no pole there (not drawn). Positions WGS84; residualM per pole; heights stay estimates (추정).",
+    note: "Standing-pole bases read from the NGII 2025 orthophoto (sheet 34702020, 0.25 m GSD). verdict shadow-root: by-eye base confirmed by the shadow detector (lib/poleShadow.mjs) within 0.5 m, placed at the detected root; by-eye-root: base by eye (data/photo/pole-review.json); head-lean: floodlight head minus the relief lean; unresolved: no base visible, survey and data.go.kr poles stay at their seed (metre-level; site 'median' when the photo shows the seed on a median or island); rejected: no pole there (not drawn). Positions WGS84; residualM per pole; heights stay estimates (추정). Unresolved poles carry estimated: true, attempts (every other source tried in round 2: data/photo/pole-sources.json), seedUncertaintyM and confidence; placed poles carry confidence by method.",
     generator: "scripts/campus-model/fetch/poleRoots.mjs",
     sun: { ...SUN, note: "sun of the photo as estimated in data/photo/README.md (shadows fall west)" },
     counts,
+    residualStats,
     poles: records,
   };
   writeFileSync(POLE_ROOTS, `${JSON.stringify(doc, null, 1)}\n`);
