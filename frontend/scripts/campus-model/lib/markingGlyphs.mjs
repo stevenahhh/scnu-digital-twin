@@ -105,25 +105,92 @@ export function arrowTemplate(kind, length, width) {
 }
 
 // ---------------------------------------------------------------- road text
-// Glyphs on a unit box (x 0..1 left to right, y 0..1 top to bottom), as polylines and ellipses; stroked at STROKE
-// of the glyph width. The road-marking face is a narrow gothic stretched along the road (each character about 2.5
-// times as long as it is wide); the stage stretches the box to the photo's character size.
-const STROKE = 0.2;
+// Road text is a narrow gothic stretched along the road: each syllable about TEXT_STRETCH times as long (along
+// travel) as it is wide (도로교통법 시행규칙 별표 6 문자 표시, proportions approximated, 추정). A syllable is composed from its
+// jamo (initial, medial, optional final) in the usual block layouts: a vertical vowel beside the initial, a horizontal
+// vowel under it, a compound vowel around it, the final at the bottom. Jamo are polylines and ellipses on unit boxes
+// (x 0..1 left to right, y 0..1 top to bottom), stroked STROKE of the syllable width after the syllable is stretched,
+// so every stroke has one width in metres.
+export const TEXT_STRETCH = 2.5;
+const STROKE = 0.17;
 const E = (cx, cy, rx, ry) => ({ ellipse: [cx, cy, rx, ry] });
-const JAMO = {
-  // initials in the left part of a syllable with a vertical vowel (x 0..0.6, y 0..0.55 with a final, 0..1 without)
-  hieut: (h) => [[[0.3, 0.02], [0.3, 0.1 * h]], [[0.06, 0.13 * h], [0.54, 0.13 * h]], E(0.3, 0.6 * h, 0.2, 0.26 * h)],
-  chieut: (h) => [[[0.3, 0.02], [0.3, 0.1 * h]], [[0.06, 0.13 * h], [0.54, 0.13 * h]], [[0.3, 0.14 * h], [0.06, 0.95 * h]], [[0.3, 0.14 * h], [0.56, 0.95 * h]]],
-  sios: (h) => [[[0.3, 0.05], [0.06, 0.95 * h]], [[0.3, 0.05], [0.56, 0.95 * h]]],
-  giyeok: (h) => [[[0.06, 0.08], [0.52, 0.08], [0.44, 0.95 * h]]],
+const CONSONANT = {
+  ㄱ: [[[0, 0.08], [0.92, 0.08], [0.92, 1]]],
+  ㄴ: [[[0.08, 0], [0.08, 0.92], [1, 0.92]]],
+  ㄷ: [[[1, 0.08], [0.08, 0.08], [0.08, 0.92], [1, 0.92]]],
+  ㄹ: [[[0, 0.08], [0.92, 0.08], [0.92, 0.5], [0.08, 0.5], [0.08, 0.92], [1, 0.92]]],
+  ㅁ: [[[0.08, 0.08], [0.92, 0.08], [0.92, 0.92], [0.08, 0.92], [0.08, 0.08]]],
+  ㅂ: [[[0.08, 0], [0.08, 0.92], [0.92, 0.92], [0.92, 0]], [[0.08, 0.46], [0.92, 0.46]]],
+  ㅅ: [[[0.5, 0], [0.5, 0.25], [0.02, 1]], [[0.5, 0.25], [0.98, 1]]],
+  ㅇ: [E(0.5, 0.5, 0.42, 0.42)],
+  ㅈ: [[[0.02, 0.08], [0.98, 0.08]], [[0.5, 0.08], [0.5, 0.3], [0.02, 1]], [[0.5, 0.3], [0.98, 1]]],
+  ㅊ: [[[0.5, 0], [0.5, 0.12]], [[0.02, 0.2], [0.98, 0.2]], [[0.5, 0.2], [0.5, 0.4], [0.02, 1]], [[0.5, 0.4], [0.98, 1]]],
+  ㅋ: [[[0, 0.08], [0.92, 0.08], [0.92, 1]], [[0, 0.5], [0.92, 0.5]]],
+  ㅌ: [[[1, 0.08], [0.08, 0.08], [0.08, 0.92], [1, 0.92]], [[0.08, 0.5], [0.9, 0.5]]],
+  ㅍ: [[[0, 0.08], [1, 0.08]], [[0, 0.92], [1, 0.92]], [[0.3, 0.08], [0.3, 0.92]], [[0.7, 0.08], [0.7, 0.92]]],
+  ㅎ: [[[0.5, 0], [0.5, 0.1]], [[0.05, 0.2], [0.95, 0.2]], E(0.5, 0.66, 0.34, 0.26)],
 };
-const SYLLABLES = {
-  서: [...JAMO.sios(1), [[0.86, 0.02], [0.86, 0.98]], [[0.6, 0.5], [0.86, 0.5]]],
-  행: [...JAMO.hieut(0.58), [[0.72, 0.02], [0.72, 0.62]], [[0.92, 0.02], [0.92, 0.62]], [[0.6, 0.3], [0.72, 0.3]], E(0.5, 0.83, 0.3, 0.13)],
-  천: [...JAMO.chieut(0.55), [[0.86, 0.02], [0.86, 0.62]], [[0.6, 0.3], [0.86, 0.3]], [[0.14, 0.66], [0.14, 0.96], [0.92, 0.96]]],
-  히: [...JAMO.hieut(1), [[0.86, 0.02], [0.86, 0.98]]],
-  경: [...JAMO.giyeok(0.58), [[0.86, 0.02], [0.86, 0.62]], [[0.6, 0.2], [0.86, 0.2]], [[0.6, 0.42], [0.86, 0.42]], E(0.5, 0.83, 0.3, 0.13)],
-  차: [...JAMO.chieut(1), [[0.78, 0.02], [0.78, 0.98]], [[0.78, 0.5], [0.97, 0.5]]],
+// doubled and compound consonants: two consonants side by side
+const PAIRS = { ㄲ: "ㄱㄱ", ㄸ: "ㄷㄷ", ㅃ: "ㅂㅂ", ㅆ: "ㅅㅅ", ㅉ: "ㅈㅈ", ㄳ: "ㄱㅅ", ㄵ: "ㄴㅈ", ㄶ: "ㄴㅎ", ㄺ: "ㄹㄱ", ㄻ: "ㄹㅁ", ㄼ: "ㄹㅂ", ㄽ: "ㄹㅅ", ㄾ: "ㄹㅌ", ㄿ: "ㄹㅍ", ㅀ: "ㄹㅎ", ㅄ: "ㅂㅅ" };
+const VOWEL = {
+  ㅏ: [[[0.3, 0], [0.3, 1]], [[0.3, 0.5], [1, 0.5]]],
+  ㅑ: [[[0.3, 0], [0.3, 1]], [[0.3, 0.36], [1, 0.36]], [[0.3, 0.64], [1, 0.64]]],
+  ㅓ: [[[0.7, 0], [0.7, 1]], [[0, 0.5], [0.7, 0.5]]],
+  ㅕ: [[[0.7, 0], [0.7, 1]], [[0, 0.36], [0.7, 0.36]], [[0, 0.64], [0.7, 0.64]]],
+  ㅣ: [[[0.5, 0], [0.5, 1]]],
+  ㅐ: [[[0.15, 0], [0.15, 1]], [[0.15, 0.5], [0.5, 0.5]], [[0.85, 0], [0.85, 1]]],
+  ㅒ: [[[0.15, 0], [0.15, 1]], [[0.15, 0.38], [0.5, 0.38]], [[0.15, 0.62], [0.5, 0.62]], [[0.85, 0], [0.85, 1]]],
+  ㅔ: [[[0, 0.5], [0.42, 0.5]], [[0.42, 0], [0.42, 1]], [[0.85, 0], [0.85, 1]]],
+  ㅖ: [[[0, 0.38], [0.42, 0.38]], [[0, 0.62], [0.42, 0.62]], [[0.42, 0], [0.42, 1]], [[0.85, 0], [0.85, 1]]],
+  ㅗ: [[[0.5, 0.1], [0.5, 0.62]], [[0, 0.66], [1, 0.66]]],
+  ㅛ: [[[0.32, 0.1], [0.32, 0.62]], [[0.68, 0.1], [0.68, 0.62]], [[0, 0.66], [1, 0.66]]],
+  ㅜ: [[[0, 0.3], [1, 0.3]], [[0.5, 0.3], [0.5, 0.95]]],
+  ㅠ: [[[0, 0.3], [1, 0.3]], [[0.32, 0.3], [0.32, 0.95]], [[0.68, 0.3], [0.68, 0.95]]],
+  ㅡ: [[[0, 0.5], [1, 0.5]]],
+};
+const INITIALS = [..."ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ"];
+const MEDIALS = [..."ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ"];
+const FINALS = ["", ..."ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ"];
+const COMPOUND = { ㅘ: "ㅗㅏ", ㅙ: "ㅗㅐ", ㅚ: "ㅗㅣ", ㅝ: "ㅜㅓ", ㅞ: "ㅜㅔ", ㅟ: "ㅜㅣ", ㅢ: "ㅡㅣ" };
+const HORIZONTAL = new Set([..."ㅗㅛㅜㅠㅡ"]);
+// boxes [x0, y0, x1, y1] on the unit syllable
+const LAYOUT = {
+  V: { initial: [0.1, 0.04, 0.52, 0.96], vowel: [0.62, 0.04, 0.9, 0.96] },
+  VF: { initial: [0.1, 0.04, 0.52, 0.55], vowel: [0.62, 0.04, 0.9, 0.6], final: [0.1, 0.68, 0.9, 0.96] },
+  H: { initial: [0.18, 0.04, 0.82, 0.5], vowel: [0.1, 0.55, 0.9, 0.96] },
+  HF: { initial: [0.18, 0.04, 0.82, 0.33], vowel: [0.1, 0.37, 0.9, 0.62], final: [0.1, 0.7, 0.9, 0.96] },
+  C: { initial: [0.1, 0.04, 0.55, 0.45], vowel: [0.1, 0.5, 0.62, 0.9], side: [0.68, 0.04, 0.9, 0.96] },
+  CF: { initial: [0.1, 0.04, 0.55, 0.3], vowel: [0.1, 0.33, 0.62, 0.6], side: [0.68, 0.04, 0.9, 0.62], final: [0.1, 0.7, 0.9, 0.96] },
+};
+const inBox = ([x0, y0, x1, y1], element) => (element.ellipse
+  ? E(x0 + element.ellipse[0] * (x1 - x0), y0 + element.ellipse[1] * (y1 - y0), element.ellipse[2] * (x1 - x0), element.ellipse[3] * (y1 - y0))
+  : element.map(([x, y]) => [x0 + x * (x1 - x0), y0 + y * (y1 - y0)]));
+function consonant(char, box) {
+  if (PAIRS[char]) {
+    const [x0, y0, x1, y1] = box;
+    const mid = (x0 + x1) / 2;
+    const gap = 0.06 * (x1 - x0);
+    return [...consonant(PAIRS[char][0], [x0, y0, mid - gap, y1]), ...consonant(PAIRS[char][1], [mid + gap, y0, x1, y1])];
+  }
+  return CONSONANT[char].map((e) => inBox(box, e));
+}
+// Stroke elements of one Hangul syllable (or null for any other character).
+export function hangulElements(char) {
+  const code = char.codePointAt(0) - 0xac00;
+  if (code < 0 || code >= 11172) return null;
+  const initial = INITIALS[Math.floor(code / 588)];
+  const medial = MEDIALS[Math.floor((code % 588) / 28)];
+  const final = FINALS[code % 28];
+  const type = COMPOUND[medial] ? "C" : HORIZONTAL.has(medial) ? "H" : "V";
+  const layout = LAYOUT[type + (final ? "F" : "")];
+  const out = consonant(initial, layout.initial);
+  if (type === "C") {
+    out.push(...VOWEL[COMPOUND[medial][0]].map((e) => inBox(layout.vowel, e)), ...VOWEL[COMPOUND[medial][1]].map((e) => inBox(layout.side, e)));
+  } else out.push(...VOWEL[medial].map((e) => inBox(layout.vowel, e)));
+  if (final) out.push(...consonant(final, layout.final));
+  return out;
+}
+const DIGITS = {
   0: [E(0.5, 0.5, 0.36, 0.44)],
   1: [[[0.55, 0.04], [0.55, 0.96]], [[0.3, 0.2], [0.55, 0.04]]],
   2: [[[0.12, 0.2], [0.3, 0.05], [0.7, 0.05], [0.88, 0.22], [0.88, 0.38], [0.12, 0.95], [0.9, 0.95]]],
@@ -135,16 +202,17 @@ const SYLLABLES = {
   8: [E(0.5, 0.27, 0.3, 0.21), E(0.5, 0.72, 0.36, 0.24)],
   9: [E(0.5, 0.3, 0.34, 0.24), [[0.84, 0.3], [0.6, 0.96]]],
 };
-export const GLYPH_CHARACTERS = Object.freeze(Object.keys(SYLLABLES));
+export const GLYPH_CHARACTERS = Object.freeze(Object.keys(DIGITS));
+export const hasGlyph = (char) => char === " " || Boolean(DIGITS[char] || hangulElements(char));
 
 // One character `width` x `height` metres, centred at the local origin, its top towards +y.
 export function glyph(char, width, height) {
-  const strokes_ = SYLLABLES[char];
-  if (!strokes_) throw new Error(`no road-marking glyph for ${char}`);
+  const elements = DIGITS[char] ?? hangulElements(char);
+  if (!elements) throw new Error(`no road-marking glyph for ${char}`);
   const w = STROKE * width;
   const map = ([x, y]) => [(x - 0.5) * width, (0.5 - y) * height];
   const out = [];
-  for (const s of strokes_) {
+  for (const s of elements) {
     if (s.ellipse) {
       const [cx, cy, rx, ry] = s.ellipse;
       out.push(...ellipseRing(map([cx, cy]), rx * width, ry * height, w));
@@ -164,6 +232,32 @@ export function textTemplate(text, charWidth, charHeight, pitch = charWidth * 1.
     for (const poly of glyph(char, charWidth, charHeight)) out.push(poly.map((r) => r.map(([px, py]) => [px + x, py])));
   });
   return out;
+}
+
+// A block of lines (top line first = farthest from the approaching driver), `width` x `height` metres, centred at the
+// origin with its top towards +y. Every syllable has one width: the longest line fills the block width with
+// LETTER_GAP between syllables, shorter lines are spread over the same width (as painted: "국 립" over "순천대학교");
+// syllables are TEXT_STRETCH times as long as wide unless the block is shorter (or `charHeight` fixes their length),
+// LINE_GAP of a syllable between lines.
+const LETTER_GAP = 0.3;
+const LINE_GAP = 0.25;
+export function textBlock(lines, width, height, { charHeight: fixed = null } = {}) {
+  const longest = Math.max(...lines.map((l) => [...l].length));
+  const charWidth = width / (longest + LETTER_GAP * (longest - 1));
+  const charHeight = fixed ?? Math.min(TEXT_STRETCH * charWidth, height / (lines.length + LINE_GAP * (lines.length - 1)));
+  const total = charHeight * (lines.length + LINE_GAP * (lines.length - 1));
+  const out = [];
+  lines.forEach((line, k) => {
+    const chars = [...line];
+    const y = total / 2 - charHeight / 2 - k * charHeight * (1 + LINE_GAP);
+    const pitch = chars.length > 1 ? (width - charWidth) / (chars.length - 1) : 0;
+    chars.forEach((char, i) => {
+      if (char === " ") return;
+      const x = chars.length > 1 ? -width / 2 + charWidth / 2 + i * pitch : 0;
+      for (const poly of glyph(char, charWidth, charHeight)) out.push(poly.map((r) => r.map(([px, py]) => [px + x, py + y])));
+    });
+  });
+  return { polys: out, charWidth, charHeight };
 }
 
 // ---------------------------------------------------------------- outlines and symbols
