@@ -193,7 +193,7 @@ export function placeLamps({ inputs, furniture, selectableBuildings, campusBuild
     const p = object.p;
     const nearArterial = distanceToLines(at, roads.arterials) < metres(30);
     const nearRoad = towardRoad(at, roads, 6) !== null;
-    const type = p.method === "data.go.kr" || /arterial/.test(p.style?.form ?? "") || nearArterial ? "arterial" : nearRoad ? "campusRoad" : "path";
+    const type = LAMP_TYPES[p.lamp_type] ? p.lamp_type : p.method === "data.go.kr" || /arterial/.test(p.style?.form ?? "") || nearArterial ? "arterial" : nearRoad ? "campusRoad" : "path";
     // the arm reaches over the nearest carriageway (OSM centreline or road-zone edge)
     const dir = towardRoad(at, roads) ?? [1, 0];
     lamps.push({ id: object.id, type, at, dir, heightM: LAMP_TYPES[type].heightM, source: p.method, pole: object.pole ?? { verdict: "unreviewed" } });

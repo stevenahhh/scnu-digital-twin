@@ -791,6 +791,13 @@ arterial/connector lines, within 25 m): the mast arm reaches from the pole to th
 face the traffic in its near lanes (right-hand traffic: the heads look back along the lanes whose kerb is the pole's).
 The `Furniture` extras list each signal as `[id, centreline id, RD_ id, heads facing bearing, arm m]`.
 
+### VR-located lamps (`data/photo/vr-lamps.geojson`)
+
+Lamps the SCNU 360 VR tour shows and the photo survey missed. The VR gives existence (scene, face, column); the base is
+the sun-side root of the pole's shadow on the NGII 2025 photo (by eye, 0.25 m). Two-station bearings from the resected
+VR stations (`scripts/perf/vr_lamp_bearings.py`) are kept in `vrFix`; with only two rays they have no redundancy, so they
+are not used for the position. One lamp so far (VRL001, scene_b7). Height estimated (추정).
+
 ### Gate structures (`data/photo/gate-structures.geojson`)
 
 The NGII 2025 photo shows three yellow-kerbed islands across the main-gate approach and a blue panelled canopy over
