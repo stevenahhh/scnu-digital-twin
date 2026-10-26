@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import SunCalc from "suncalc";
 import { CAMPUS_LOCATION } from "../utils/sunPosition.mjs";
+import { CROWN_ALBEDO_SCALE } from "./foliage.mjs";
 import {
   AUTUMN_MATERIAL_NAMES,
   AUTUMN_PALETTE,
@@ -199,4 +200,14 @@ test("a VR reading sets a tree's palette group, shade and mix and is reached by 
   assert.equal(getAutumnInstanceMix(0, yellow), 0);
   const cherry = getAutumnProfile(5, SPECIES_AUTUMN_PALETTES.Tree_Crown, [1, 0.5, 0.8]);
   assert.equal(cherry.species, "cherry");
+});
+
+test("broadleaf russet reads russet after the crown albedo scale: redder than green, lighter than the shared palette", () => {
+  const zelkova = SPECIES_AUTUMN_PALETTES.Tree_Crown.find((entry) => entry.species === "zelkova");
+  for (const [i, c] of zelkova.colors.entries()) {
+    const [r, g, b] = c.map((v) => toSrgb(v * CROWN_ALBEDO_SCALE));
+    assert.ok(r > 1.35 * g && g > 1.3 * b, `russet ${i}: ${[r, g, b]}`);
+    const shared = AUTUMN_PALETTE[1].colors[i].map((v) => toSrgb(v * CROWN_ALBEDO_SCALE));
+    assert.ok(r > shared[0] + 0.08, `russet ${i} lighter than the shared ${shared[0]}`);
+  }
 });

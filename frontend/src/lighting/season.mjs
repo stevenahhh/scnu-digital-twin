@@ -64,9 +64,12 @@ export const AUTUMN_PALETTE = [
 // turn ahead of the date ramp: in the VR tour (late October) the ginkgo and metasequoia are already half turned while
 // the zelkova and cherry are mostly green; maxPhase narrows their spread of turning dates (AUTUMN_MAX_PHASE otherwise).
 export const SPECIES_AUTUMN_PALETTES = {
+  // zelkova russet and cherry red as the VR shows them in sun (scene_f2 r, scene_a15 b, scene_b1 b): the shared palette's
+  // dark end turned muddy brown after the crown albedo scale, so these are lighter and redder; sRGB about #b0703a..#bc8a46
+  // (russet) and #a85a40..#9c5c48 (cherry) before the albedo scale
   Tree_Crown: [
-    { species: "zelkova", share: 0.36, colors: AUTUMN_PALETTE[1].colors, maxMix: AUTUMN_PALETTE[1].maxMix },
-    { species: "cherry", share: 0.28, colors: AUTUMN_PALETTE[2].colors, maxMix: AUTUMN_PALETTE[2].maxMix },
+    { species: "zelkova", share: 0.36, colors: [[0.48, 0.17, 0.04], [0.55, 0.26, 0.06]], maxMix: AUTUMN_PALETTE[1].maxMix },
+    { species: "cherry", share: 0.28, colors: [[0.42, 0.1, 0.05], [0.36, 0.11, 0.065]], maxMix: AUTUMN_PALETTE[2].maxMix },
     { species: "green", share: 0.36, colors: AUTUMN_PALETTE[3].colors, maxMix: AUTUMN_PALETTE[3].maxMix },
   ],
   // ginkgo yellow, sRGB about #c8ac40..#bcaa4c
