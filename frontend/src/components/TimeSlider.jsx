@@ -51,7 +51,7 @@ export function TimeSlider({
     <section
       aria-label="시간 조절"
       data-qa="time-slider"
-      className={`pointer-events-auto rounded-[12px] border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] px-3 py-2.5 shadow-[0_20px_48px_rgba(0,0,0,0.28)] backdrop-blur-xl ${className}`}
+      className={`pointer-events-auto rounded-[12px] border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] px-3 py-2.5 shadow-[0_20px_48px_rgba(0,0,0,0.28)] ${className}`}
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-1.5 text-[12px] font-[500] text-[var(--colors-ink-subtle)]">

@@ -155,7 +155,7 @@ describe("Legacy and VWorld feature parity", () => {
   it("renders the VWorld campus status and full energy surfaces inside the energy tab", () => {
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: "에너지" }));
+    fireEvent.click(screen.getByRole("tab", { name: "에너지" }));
     expect(screen.getByText("캠퍼스 설치 현황")).toBeTruthy();
     expect(screen.getByText("건물 에너지 분석")).toBeTruthy();
     expect(screen.getByText("캠퍼스 태양광 비교")).toBeTruthy();
@@ -168,7 +168,7 @@ describe("Legacy and VWorld feature parity", () => {
     const labels = [...container.querySelectorAll('[data-qa^="dashboard-tab-"]')].map((tab) => tab.textContent.trim());
     expect(labels).toEqual(C5_TABS);
     for (const label of C5_TABS) {
-      expect(screen.getByRole("button", { name: label })).toBeTruthy();
+      expect(screen.getByRole("tab", { name: label })).toBeTruthy();
     }
   });
 
@@ -177,7 +177,7 @@ describe("Legacy and VWorld feature parity", () => {
     installationClient.listDetails.mockImplementationOnce(() => new Promise((resolve) => { finishLoading = resolve; }));
     const view = render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: "에너지" }));
+    fireEvent.click(screen.getByRole("tab", { name: "에너지" }));
     expect(screen.getByText("건물 에너지 분석").getAttribute("data-plans-status")).toBe("loading");
     await act(async () => finishLoading([]));
     expect(screen.getByText("건물 에너지 분석").getAttribute("data-plans-status")).toBe("ready");
@@ -185,7 +185,7 @@ describe("Legacy and VWorld feature parity", () => {
 
     installationClient.listDetails.mockRejectedValueOnce(new TypeError("Failed to fetch"));
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: "에너지" }));
+    fireEvent.click(screen.getByRole("tab", { name: "에너지" }));
     expect(await screen.findByText("설치 계획을 불러오지 못했습니다")).toBeTruthy();
     expect(screen.getByText("건물 에너지 분석").getAttribute("data-plans-status")).toBe("error");
   });
@@ -194,7 +194,7 @@ describe("Legacy and VWorld feature parity", () => {
     const fetchMock = stubFetch({ traffic: rejectNetwork });
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: "주차·안전" }));
+    fireEvent.click(screen.getByRole("tab", { name: "주차·안전" }));
     await waitFor(() => expect(countCalls(fetchMock, "/api/traffic")).toBeGreaterThan(0));
     await settlePendingFetches();
 
@@ -493,11 +493,11 @@ describe("Legacy and VWorld feature parity", () => {
     expect(slider.getAttribute("aria-valuetext")).toBe("13:37");
     expect(screen.getByText("13:37")).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("button", { name: "환경 시뮬" }));
+    fireEvent.click(screen.getByRole("tab", { name: "환경 시뮬" }));
     expect(screen.getByRole("slider", { name: "시" }).value).toBe("13");
     expect(screen.getByRole("slider", { name: "분" }).value).toBe("37");
 
-    fireEvent.click(screen.getByRole("button", { name: "Live" }));
+    fireEvent.click(screen.getByRole("radio", { name: "실측" }));
     expect(screen.getByText("실시간")).toBeTruthy();
     fireEvent.change(slider, { target: { value: "600" } });
     expect(screen.queryByText("실시간")).toBeNull();
