@@ -52,7 +52,7 @@ class SimulationEngine:
         self.graph = MobilityGraph(graph_payload)
         walkable, roads = load_polygon_indexes(self.data_dir)
         # surface under each agent (crossing over road over the rest where they overlap); None without polygon files
-        self.surface_index = PolygonIndex.merge(*(index for index in (walkable, roads) if index is not None), priority=("crossing", "sidewalk", "walkway_estimated", "plaza", "road", "lot")) if (walkable or roads) else None
+        self.surface_index = PolygonIndex.merge(*(index for index in (walkable, roads) if index is not None), priority=("crossing", "crossing_estimated", "sidewalk", "walkway_estimated", "plaza", "road", "lot")) if (walkable or roads) else None
         self.routes = self.graph  # compatibility for callers that inspect route_id
         self.scenarios = ScenarioManager(self.data_dir / "sample_scenario.json")
         self.risk_engine = RiskEngine(self.data_dir / "risk_config.json")
@@ -236,11 +236,15 @@ class SimulationEngine:
         entity["current_edge"] = path.segment_edge_ids[min(segment, len(path.segment_edge_ids) - 1)] if path.segment_edge_ids else None
         if entity.get("current_edge") and hasattr(self, "visited_edges"):
             self.visited_edges[entity["type"]].add(entity["current_edge"])
-        entity["in_crosswalk"] = entity["edge_kind"] == "crosswalk" or str(entity.get("road_id")).startswith("CW_")
-        entity["in_risk_zone"] = entity.get("road_id") in self.risk_zone_ids
-        entity["current_position"] = [round(entity["x"], 3), 0.0, round(entity["z"], 3)]
         index = getattr(self, "surface_index", None)
         entity["surface_class"] = index.classify(entity["x"], entity["z"]) if index is not None else None
+        # a person on an estimated crossing (no CW polygon, no paint) is crossing too: cars yield as at a crosswalk
+        entity["in_crosswalk"] = (
+            entity["edge_kind"] == "crosswalk" or str(entity.get("road_id")).startswith("CW_")
+            or (entity["type"] == "person" and entity["surface_class"] == "crossing_estimated")
+        )
+        entity["in_risk_zone"] = entity.get("road_id") in self.risk_zone_ids
+        entity["current_position"] = [round(entity["x"], 3), 0.0, round(entity["z"], 3)]
         entity["previous_position"] = [round(entity["previous_x"], 3), 0.0, round(entity["previous_z"], 3)]
         if entity["type"] == "person":
             if entity.get("trip_status") == "DWELLING":

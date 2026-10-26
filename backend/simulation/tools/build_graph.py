@@ -16,7 +16,7 @@ DATA = ROOT / "data"
 # Share of an edge's 1 m samples that must lie on its agents' surface (walkable polygons for people, road polygons for
 # cars); a crossing may also use the carriageway it spans. Estimated edges are declared off-polygon and only tagged.
 POLYGON_SHARE = 0.95
-WALKABLE_CLASSES = ("sidewalk", "crossing", "plaza", "walkway_estimated")
+WALKABLE_CLASSES = ("sidewalk", "crossing", "crossing_estimated", "plaza", "walkway_estimated")
 ROAD_CLASSES = ("road", "lot")
 
 

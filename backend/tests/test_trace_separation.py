@@ -96,6 +96,10 @@ def test_vehicle_surface_is_never_walkable_and_estimated_counts_only_in_the_wide
     assert person_compliance(estimated_walkway, True) is False
     walkway_in_lot = [{"class": "walkway_estimated", "estimated": True}, {"class": "lot", "estimated": False}]
     assert person_compliance(walkway_in_lot, False) is False
+    # an estimated crossing over the road counts only under the measured+estimated definition
+    estimated_crossing = [{"class": "crossing_estimated", "estimated": True}, {"class": "road", "estimated": False}]
+    assert person_compliance(estimated_crossing, False) is True
+    assert person_compliance(estimated_crossing, True) is False
 
 
 def test_car_on_a_sidewalk_is_off_the_road():

@@ -31,11 +31,12 @@ from simulation.simulation_engine import DATA_DIR, SimulationEngine
 
 
 NETWORK_FILE = "campus_transport_network.geojson"
-MEASURED_WALK = ("crossing", "sidewalk")
+# walkable over a road zone (the ground model draws them over it); crossing_estimated is always estimated: true
+MEASURED_WALK = ("crossing", "crossing_estimated", "sidewalk")
 PAVED_WALK = ("plaza", "walkway_estimated")
 VEHICLE_SURFACE = ("road", "lot")
 CAR_CLASSES = ("road", "lot")
-CLASS_PRIORITY = ("crossing", "sidewalk", "walkway_estimated", "plaza", "road", "lot")
+CLASS_PRIORITY = ("crossing", "crossing_estimated", "sidewalk", "walkway_estimated", "plaza", "road", "lot")
 GATED_TYPES = ("person", "car")
 
 
@@ -191,7 +192,7 @@ def trace(
             "pass": percent(ok_measured["person"], totals["person"]) >= min_person and percent(ok_measured["car"], totals["car"]) >= min_car,
         },
         "definitions": {
-            "person_on_walkable": "person samples inside crossing|sidewalk, or inside plaza|walkway_estimated and not inside road|lot, / all person samples x 100 (measured + estimated polygons)",
+            "person_on_walkable": "person samples inside crossing|crossing_estimated|sidewalk, or inside plaza|walkway_estimated and not inside road|lot, / all person samples x 100 (measured + estimated polygons)",
             "car_on_road": "car samples inside road|lot and not inside sidewalk / all car samples x 100 (measured + estimated polygons)",
             "measured_only": "same, counting only polygons with estimated=false as allowed surface (the vehicle-surface and sidewalk exclusions still use every polygon)",
         },

@@ -47,3 +47,21 @@ def test_cars_use_the_vehicle_anchor_of_a_shared_poi():
     edges = [edge("ROAD", "V", "R", [[0, -5], [30, -5]], kind="allowed_road", allowed=("car",), derived=False)]
     path = graph(edges, pois, nodes).shortest_path("LOT", "GATE", "car")
     assert path.node_ids == ("V", "R")
+
+
+def test_person_on_an_estimated_crossing_is_crossing_so_cars_yield():
+    from simulation.polygon_index import PolygonIndex
+    from simulation.simulation_engine import SimulationEngine
+
+    g = graph([edge("E", "A", "B", [[0, 0], [20, 0]], derived=True, placed="walkway_estimated")], [{"poi_id": "PA", "node_id": "A", "allowed_types": ["person"]}, {"poi_id": "PB", "node_id": "B", "allowed_types": ["person"]}], NODES)
+    path = g.shortest_path("PA", "PB", "person")
+    engine = SimulationEngine.__new__(SimulationEngine)
+    engine.graph, engine.risk_zone_ids = g, set()
+    engine.surface_index = PolygonIndex([{"rings": [[[8, -2], [12, -2], [12, 2], [8, 2], [8, -2]]], "class": "crossing_estimated"}])
+    person = {"type": "person", "x": 10.0, "z": 0.0, "previous_x": 10.0, "previous_z": 0.0, "speed": 1.2, "jaywalking": False, "origin": "PA", "destination": "PB", "route_progress": 0.5}
+    engine._update_spatial_state(person, path, 0)
+    assert person["surface_class"] == "crossing_estimated"
+    assert person["in_crosswalk"] is True and person["pedestrian_state"] == "CROSSING"
+    elsewhere = {**person, "x": 2.0}
+    engine._update_spatial_state(elsewhere, path, 0)
+    assert elsewhere["in_crosswalk"] is False
