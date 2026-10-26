@@ -509,13 +509,13 @@ Method: each sighting is a ray from its VR station (`scripts/perf/vr-stations.js
 #### Applied (todo 25, 2026-10-26)
 
 The table above is the first pass. Applying it against the photo changed nine rows (the JSON keeps the first-pass
-reason and adds `applied`, `reason_applied`, `vr_confirmed`): 7 placed as new features in `rest-spaces.geojson`
-(9 features), 5 retypes of survey objects the VR shows as a catalogue kind, 8 matches, 3 not rest spaces, 1 deferred.
+reason and adds `applied`, `reason_applied`, `vr_confirmed`): 8 placed as new features in `rest-spaces.geojson`
+(11 features with the gate sign of todo 14), 5 retypes of survey objects the VR shows as a catalogue kind, 8 matches, 3 not rest spaces.
 The first pass tested candidates by their vertices and left out `bike_rack`, which hid OC0119 and OC0153.
 
 | # | scene | outcome |
 |---|---|---|
-| 1 | scene_a2 d | deferred: the ortho-match pin does not register on the photo (face d shows lawn, topiary and three benches on a diamond-tiled plaza corner that no place within 60 m of the pin matches) |
+| 1 | scene_a2 d | RS0001 three timber benches, placed from face d once the station was resected on A2's entrance and disabled bays (the ortho-match pin stood 155 m west) |
 | 2 | scene_a4 r | retype OC0119 bus_stop_shelter -> terminal_shelter (the long school-bus canopy) |
 | 3 | scene_a5 r | retype OC0121 gazebo -> pavilion_octagon (cantilever parasol, three tiers, deck and bench) |
 | 4 | scene_a5 d | retype OC0120 gazebo -> pavilion_hip (grey panels, blue trim) |
@@ -530,7 +530,7 @@ The first pass tested candidates by their vertices and left out `bike_rack`, whi
 | 10 | scene_a19 b | match OB0009 |
 | 11 | scene_c1 l | match estimateBenches: the box benches beside the tree pits are the 8 plaza benches already drawn (VR reading 5.8 m from one) |
 | 12 | scene_c1 b | match estimateBenches |
-| 13 | scene_d2 r | RS0013 open shelter (flat grey roof, bench), VR-only position (+-5 m, confidence 0.3) |
+| 13 | scene_d2 r | RS0013 open shelter (flat grey roof, bench), roof traced on the photo in the planted courtyard (the station's earlier yaw 44.3 was 95 deg off) |
 | 14 | scene_d4 l | retype OC0078 gazebo -> pavilion_hip (brown roof) |
 | - | scene_e5 b | not a rest space: a lawn garden with topiary is a planting |
 | - | scene_e7 f, scene_e8 f | match OC0137, OC0102 |
@@ -540,8 +540,8 @@ The first pass tested candidates by their vertices and left out `bike_rack`, whi
 
 ### VR rest spaces (`rest-spaces.geojson`)
 
-The rest spaces the VR shows and this survey lacks (`rest-spaces-reconciliation.json`, decision `missing`) are 9 features
-for 7 sightings. Every dimension and position is an estimate (추정).
+The rest spaces the VR shows and this survey lacks (`rest-spaces-reconciliation.json`, decision `missing`) are 10 features
+for 8 sightings (plus the A19 gate sign of todo 14). Every dimension and position is an estimate (추정).
 
 | id | kind | VR scene / face | position | photo | confidence |
 |---|---|---|---|---|---|
@@ -550,7 +550,8 @@ for 7 sightings. Every dimension and position is an estimate (추정).
 | RS0007 | planter (3 x 3 m gravel tree pit) | scene_a9 / f | VR bearing and depression angle from the station | none | 0.4 |
 | RS0007W | low_wall (red brick, 0.7 m) | scene_a9 / f | south edge of the paved plaza on the photo | wall | 0.5 |
 | RS0011 | hut (yellow timber, red gable roof) | scene_f3 / r | roof traced at the south clay courts | roof | 0.7 |
-| RS0013 | bus_stop_shelter / court_shelter (flat grey roof) | scene_d2 / r | VR bearing, distance for an estimated camera height (+-5 m) | none | 0.3 |
+| RS0013 | bus_stop_shelter / court_shelter (flat grey roof) | scene_d2 / r | grey panel roof traced in the planted courtyard | roof | 0.6 |
+| RS0001 | bench x 3 (timber, 1.5 m) | scene_a2 / d | face d from the resected station (about 1 m); benches under tree shade on the photo | none | 0.4 |
 | RS0015 | bus_stop_shelter | scene_f1 / l | roof traced at the east bus bay | roof | 0.6 |
 | RS0016, RS0016B | bench (long, timber) | scene_f1 / d | face d registered on the lane diamonds and the footway kerb (about 1 m) | none | 0.4 |
 

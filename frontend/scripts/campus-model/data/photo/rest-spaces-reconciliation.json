@@ -10,11 +10,11 @@
     "restSightings": 17,
     "match": 8,
     "retype": 5,
-    "missing": 7,
+    "missing": 8,
     "ambiguous": 1,
     "landscape": 28,
     "notRestSpace": 3,
-    "deferred": 1,
+    "deferred": 0,
     "appliedBy": "todo 25 (data/photo/rest-spaces.geojson, stages/furniture.mjs RETYPED), 2026-10-26"
   },
   "sightings": [
@@ -32,15 +32,15 @@
       "geometry": "nadir strip 28 m along f at -9.2 m right of the station",
       "yawUsed": 20.2,
       "candidates": [],
-      "decision": "deferred",
+      "decision": "missing",
       "ref": null,
       "reason": "no surveyed object within 8 m of the ray",
       "typeId": "bench",
       "photo_blob": "no",
       "photo_note": "paved bus bays; benches cannot be resolved on the photo",
-      "instanceId": null,
-      "applied": "not placed",
-      "reason_applied": "the scene_a2 station is an ortho-match pin (nominal 40 m); its face d (lawn, topiary, three timber benches on a diamond-tiled plaza corner, a curved road) does not register on the NGII 2025 sheet within 60 m of the pin, so the benches are left out until the station is placed"
+      "instanceId": "RS0001",
+      "applied": "RS0001: three timber benches along the tiled plaza edge east of A2, placed from VR face d after the scene_a2 station was resected (A2 entrance and its two disabled bays; the ortho-match pin stood 155 m west)",
+      "reason_applied": "the station is now registered on the photo; the plaza edge is visible there, the benches themselves are under tree shade (photo_support none, confidence 0.4)"
     },
     {
       "restSighting": 2,
@@ -438,10 +438,10 @@
       "ref": null,
       "reason": "no surveyed object within 8 m of the ray",
       "typeId": "bus_stop_shelter",
-      "photo_blob": "no",
+      "photo_blob": "yes",
       "photo_note": "no roof on the planted island along the ray",
       "instanceId": "RS0013",
-      "applied": "RS0013 open shelter (court_shelter subtype: flat grey roof, no glass, bench), VR-only position (+-5 m)"
+      "applied": "RS0013 open shelter, grey panel roof traced on the photo in the planted courtyard after the scene_d2 station was resected (yaw 309, not 44.3)"
     },
     {
       "restSighting": 14,

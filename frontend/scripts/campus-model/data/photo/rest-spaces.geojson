@@ -408,36 +408,75 @@
           1050,
           1300
         ],
-        "photo_support": "none",
-        "confidence": 0.3,
-        "position_method": "vr: scene_d2 station + face r cols 1055-1365 (bearing 144.6), distance 10 m for an estimated camera height (+-5 m)",
+        "photo_support": "roof",
+        "confidence": 0.6,
+        "position_method": "photo: grey panel roof traced on the NGII 2025 sheet in the planted courtyard, confirmed by the resected scene_d2 station (bearing and depression of the roof on face r)",
         "height_source": "catalogue bus_stop_shelter + VR scene_d2 (estimated)",
-        "note": "flat dark-grey roof on blue-grey steel posts over a bench, no glass (VR scene_d2 r)"
+        "note": "flat grey panel roof on four grey steel posts over a timber bench, no glass (VR scene_d2 r)"
       },
       "geometry": {
         "type": "Polygon",
         "coordinates": [
           [
             [
-              127.4779426,
-              34.9702012
+              127.4779076,
+              34.9703777
             ],
             [
-              127.4779068,
-              34.9701804
+              127.4779448,
+              34.9703785
             ],
             [
-              127.4778878,
-              34.9702024
+              127.4779446,
+              34.9703469
             ],
             [
-              127.4779235,
-              34.9702233
+              127.4779063,
+              34.9703462
             ],
             [
-              127.4779426,
-              34.9702012
+              127.4779076,
+              34.9703777
             ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0001",
+        "kind": "bench",
+        "estimated": true,
+        "back": false,
+        "colour": "#a5533f",
+        "spacing_m": 3.25,
+        "dims": {
+          "lengthM": 1.5,
+          "depthM": 0.45
+        },
+        "vr_scene": "scene_a2",
+        "vr_face": "d",
+        "vr_cols": [
+          0,
+          700
+        ],
+        "photo_support": "none",
+        "confidence": 0.4,
+        "position_method": "nadir: VR face d from the resected scene_a2 station (15.4 m, yaw 257.2), about 1 m; the plaza edge is on the photo, the benches are not resolvable",
+        "height_source": "catalogue bench + VR scene_a2 (estimated)",
+        "note": "three red-brown timber benches along the edge of the diamond-tiled plaza east of A2 (VR scene_a2 d)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            127.4814483,
+            34.9686767
+          ],
+          [
+            127.4814728,
+            34.9687238
           ]
         ]
       }
