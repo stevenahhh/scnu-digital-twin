@@ -7,7 +7,7 @@ import { SectionHeader } from "../ui/SectionHeader.jsx";
 import { StatusBadge } from "../ui/StatusBadge.jsx";
 import { formatHHmm, formatNumber } from "../ui/format.mjs";
 import { PanelClock } from "./PanelClock.jsx";
-import { FeedStatusRows } from "./FeedStatus.jsx";
+import { FeedStatusRow, FeedStatusRows } from "./FeedStatus.jsx";
 
 const iconClass = "h-4 w-4";
 
@@ -33,7 +33,7 @@ function weatherCaption(summary) {
 }
 
 // 기본 현황 탭: 시계, 시스템 상태, 현재 기상(관측값), 태양 고도(계산 추정), 경보와 단기 예보.
-// feeds/retry는 useFeedStatus 결과다. 시스템 상태 줄이 끊긴 피드의 유일한 알림이다.
+// feeds/retry는 useFeedStatus 결과다. 피드 상태 줄(기상은 현재 기상 바로 위, 교통·에너지는 시스템 상태)이 끊긴 피드의 유일한 알림이다.
 // settings는 `설정` 단추와 그 시트(SettingsSheet)다.
 export function BasicStatusTab({ summary, feeds, retry, clock, sunAltitudeDegrees, settings, onRefreshWeather }) {
   const { weather } = summary;
@@ -65,17 +65,14 @@ export function BasicStatusTab({ summary, feeds, retry, clock, sunAltitudeDegree
         </div>
       </div>
 
-      <FeedStatusRows
-        feeds={feeds}
-        retry={retry}
-        liveText={{ weather: summary.status }}
-        liveTone={{ weather: summary.statusTone }}
-      />
-
+      {/* 기상 상태 줄(끊기면 알림)은 그 값들 바로 위에 둔다: 실패한 묶음과 그 원인이 붙어 있다. */}
       <section className="flex flex-col gap-3">
         <SectionHeader title="현재 기상" />
+        <FeedStatusRow feed="weather" status={feeds.weather} onRetry={retry.weather} liveText={summary.status} liveTone={summary.statusTone} />
         <MetricList items={weatherItems} caption={weatherCaption(summary)} />
       </section>
+
+      <FeedStatusRows feeds={feeds} retry={retry} only={["traffic", "energy"]} />
 
       <section className="flex flex-col gap-3">
         <SectionHeader title="태양" />

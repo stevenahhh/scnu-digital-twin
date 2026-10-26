@@ -35,7 +35,7 @@ import { DashboardTabContent } from "./panel/DashboardTabContent";
 import { SettingsSheet } from "./panel/SettingsSheet";
 import { usePresentationMode } from "./panel/usePresentationMode.mjs";
 import { tourPosition } from "./panel/presentationLayout.mjs";
-import { FeedStamps } from "./panel/FeedStatus";
+import { FeedStamps, sheetPlacement } from "./panel/FeedStatus";
 import { useFeedStatus } from "./hooks/useFeedStatus.mjs";
 import { summarizeWeather } from "./panel/weatherSummary.mjs";
 
@@ -232,7 +232,9 @@ function Dashboard() {
         inspector={inspector}
         inspectorRef={inspectorRef}
         scrollRef={panelScrollRef}
-        freshnessSlot={<FeedStamps feeds={feeds} retry={feeds.retry} compact />}
+        freshnessSlot={(
+          <FeedStamps feeds={feeds} retry={feeds.retry} placement={sheetPlacement(panelState, activeTab)} compact />
+        )}
       >
         <DashboardTabContent
           activeTab={activeTab}

@@ -22,7 +22,7 @@ import { SettingsSheet } from "./panel/SettingsSheet";
 import { usePresentationMode } from "./panel/usePresentationMode.mjs";
 import { PresentationToggle } from "./components/CampusHud";
 import { DashboardTabContent } from "./panel/DashboardTabContent";
-import { FeedStamps } from "./panel/FeedStatus";
+import { FeedStamps, sheetPlacement } from "./panel/FeedStatus";
 import { useFeedStatus } from "./hooks/useFeedStatus.mjs";
 import { summarizeWeather } from "./panel/weatherSummary.mjs";
 
@@ -194,7 +194,9 @@ export default function App() {
           />
         ) : null}
         scrollRef={panelScrollRef}
-        freshnessSlot={<FeedStamps feeds={feeds} retry={feeds.retry} compact />}
+        freshnessSlot={(
+          <FeedStamps feeds={feeds} retry={feeds.retry} placement={sheetPlacement(panelState, activeTab)} compact />
+        )}
       >
         <DashboardTabContent
           activeTab={activeTab}
