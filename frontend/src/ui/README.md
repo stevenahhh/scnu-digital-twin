@@ -33,3 +33,6 @@ http://127.0.0.1:<port>/?ui=gallery&theme=light  밝은 테마
 | `FreshnessStamp` | `FreshnessStamp.jsx` | `갱신 HH:mm` 또는 `갱신 없음`, 안에 새로 고침 버튼 |
 | `Skeleton` | `Skeleton.jsx` | line·block·circle 자리 표시, `aria-hidden`, 움직임 줄이기에서 정지 |
 | `Spinner` | `Spinner.jsx` | `delayMs`(기본 1000ms) 뒤에만 보이고 작업 이름을 붙인다 |
+| `Sheet` | `Sheet.jsx`, `sheetDetents.mjs` | 폰(<640px) 바텀 시트, peek 96px·half 50dvh·full, 44px 손잡이(화살표 키·Esc), 놓을 때 속도로 단계 고르기, 본문 스크롤은 full에서만 |
+
+`../hooks/useViewportMode.mjs`는 `phone`(<640px)·`tablet`(<1024px)·`desktop`을 돌려준다. 순수 계산은 `resolveViewportMode(width)`다.

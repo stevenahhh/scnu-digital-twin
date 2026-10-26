@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useViewportMode } from "../hooks/useViewportMode.mjs";
 import { Plus, Radio, RefreshCw } from "lucide-react";
 import { Alert } from "./Alert.jsx";
 import { Breadcrumb } from "./Breadcrumb.jsx";
@@ -9,6 +10,7 @@ import { FreshnessStamp } from "./FreshnessStamp.jsx";
 import { MetricList } from "./MetricList.jsx";
 import { Popover } from "./Popover.jsx";
 import { SectionHeader } from "./SectionHeader.jsx";
+import { Sheet } from "./Sheet.jsx";
 import { Segmented } from "./Segmented.jsx";
 import { Skeleton } from "./Skeleton.jsx";
 import { Spinner } from "./Spinner.jsx";
@@ -298,12 +300,78 @@ function LoadingGallery() {
   );
 }
 
+const SHEET_DETENTS = [
+  { value: "peek", label: "살짝" },
+  { value: "half", label: "절반" },
+  { value: "full", label: "전체" },
+];
+
+function SheetGallery() {
+  return (
+    <GallerySection id="sheet" title="바텀 시트">
+      <p className="break-keep text-body text-ink-muted">폭 640px 미만(폰)에서만 쓰는 시트입니다. 아래 단계로 열면 장면 자리 위에 시트가 뜹니다.</p>
+      <Row label="열기">
+        {SHEET_DETENTS.map((detent) => (
+          <a
+            key={detent.value}
+            href={`?ui=gallery&sheet=${detent.value}`}
+            className="inline-flex min-h-8 items-center rounded-control border border-hairline-strong px-3 text-caption text-ink hover:bg-surface-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary [@media(pointer:coarse)]:min-h-11"
+          >
+            {detent.label}
+          </a>
+        ))}
+      </Row>
+    </GallerySection>
+  );
+}
+
+// ?ui=gallery&sheet=peek|half|full: 장면 자리 위에 시트를 띄운다. 장면 버튼으로 시트 바깥이 계속 눌리는지 확인한다.
+function SheetDemo({ initial }) {
+  const mode = useViewportMode();
+  const [detent, setDetent] = useState(initial);
+  const [sceneTaps, setSceneTaps] = useState(0);
+  return (
+    <main data-qa="ui-gallery" data-viewport-mode={mode} className="relative h-full overflow-hidden bg-canvas text-ink">
+      <div data-qa="gallery-scene" className="absolute inset-0 flex flex-col items-center gap-3 bg-surface-3 p-6 pt-16">
+        <p className="text-title text-ink">장면 자리</p>
+        <Button data-qa="gallery-scene-button" onClick={() => setSceneTaps((count) => count + 1)}>
+          장면 단추 {sceneTaps}
+        </Button>
+      </div>
+      {mode === "phone" ? (
+        <Sheet label="대시보드" detent={detent} onDetentChange={setDetent} header={<SectionHeader title="공과대학 3호관" badge={<StatusBadge>D4</StatusBadge>} />}>
+          <div className="flex flex-col gap-4 pb-4">
+            <MetricList
+              caption="KMA 초단기실황과 건물 모델로 계산한 추정값입니다."
+              items={[
+                { label: "기온", value: <EstimateValue value={24.3} digits={1} unit="°C" /> },
+                { label: "풍속", value: <EstimateValue value={2.1} digits={1} unit="m/s" /> },
+                { label: "표면 온도", value: <EstimateValue value={31.8} digits={1} unit="°C" /> },
+              ]}
+            />
+            {Array.from({ length: 8 }, (_, index) => (
+              <p key={index} className="break-keep text-body text-ink-muted">
+                {index + 1}층 강의실 사용 현황은 샘플 시간표로 만든 값입니다.
+              </p>
+            ))}
+          </div>
+        </Sheet>
+      ) : (
+        <p className="absolute inset-x-0 bottom-6 text-center text-body text-ink-muted">바텀 시트는 폭 640px 미만에서만 나타납니다.</p>
+      )}
+    </main>
+  );
+}
+
 export default function Gallery() {
   const [theme, setTheme] = useState(() => (params().get("theme") === "light" ? "light" : "dark"));
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
+
+  const sheetDetent = params().get("sheet");
+  if (SHEET_DETENTS.some((detent) => detent.value === sheetDetent)) return <SheetDemo initial={sheetDetent} />;
 
   return (
     <main data-qa="ui-gallery" className="h-full overflow-y-auto bg-canvas text-ink">
@@ -335,6 +403,7 @@ export default function Gallery() {
         <EstimateGallery />
         <FreshnessGallery />
         <LoadingGallery />
+        <SheetGallery />
       </div>
     </main>
   );
