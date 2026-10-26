@@ -188,3 +188,11 @@ test("--zones with a missing file exits 2 and names the path", { skip: spawnSync
   assert.equal(run.status, 2);
   assert.match(run.stderr, /\/nonexistent\.geojson/);
 });
+
+test("an estimated ASPHALT / LOT layer stays estimated in the road polygons; a measured one does not gain the flag", () => {
+  const ring = [[500, 500], [510, 500], [510, 510], [500, 510], [500, 500]];
+  const layers = { ASPHALT: [{ id: "paving: red junction (estimate)", rings: [ring], estimated: true }], LOT: [{ id: "lot A", rings: [ring], estimated: false }] };
+  const { polygons } = buildRoads({ roadZones: tZones, roadSegments, elements, layers });
+  assert.equal(polygons.find((p) => p.id === "paving: red junction (estimate)").estimated, true);
+  assert.equal(polygons.find((p) => p.id === "lot A").estimated, undefined);
+});

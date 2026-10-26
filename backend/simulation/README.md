@@ -64,6 +64,38 @@ WEATHER_API_URL=http://127.0.0.1:8000
 - `width_m`(도로 영역 폴리곤 실측 중앙값), `lanes`(사진 황색 중앙선 기준, 없으면 1로 가정)는 모두 추정값입니다.
 - `common/data/common_elemetns.json`을 바꾸면 `data/source/common_elemetns.json` 사본도 같이 갱신합니다(roadIds.mjs가 둘 다 씀).
 
+## 보행/차량 분리 교통망
+
+`bun run --cwd frontend network:build`(`frontend/scripts/campus-model/network/buildNetwork.mjs`)가 사람은 인도·횡단보도로,
+차량은 차도로 다니는 분리 교통망을 만든다. 쓰는 파일(`backend/simulation/data/`):
+
+- `campus_transport_network.geojson`: 노드·엣지·POI(기존 필드 유지, 추가 전용). 첫 실행 때 이전 망을
+  `campus_transport_network.derived-v1.geojson`(기준선)으로 복사한다.
+- `walkable_polygons.geojson`: 보행 판정 폴리곤. `sidewalk`(NGII A003 인도), `crossing`(CW 폴리곤·정사영상의 칠해진 얼룩말,
+  연석 접근부는 추정), `crossing_estimated`(횡단보도가 없는 곳의 추정 횡단, 지면에는 그리지 않음), `walkway_estimated`(추정 보행로 띠),
+  `plaza`(광장·건물 앞 포장, 건물 앞은 추정).
+- `road_polygons.geojson`: `road`(도로 구역·간선 띠, 틈 메움은 추정), `lot`(주차장).
+- `sidewalk_gaps.geojson`: A003 인도가 없는 도로 구간 목록(추가 조사 대상).
+- `osm/perimeter_roads.geojson`: 캠퍼스 외곽 도로(OpenStreetMap, ODbL 1.0, 다른 데이터와 분리).
+- `separation_report.json`: 60초 분리 검증 결과(seed 42 기본 시나리오).
+
+엣지·폴리곤의 출처 필드는 `source`(`NGII-A003`, `ortho-traced`, `road-zone-measured`, `OSM-derived`,
+`derived_from_vehicle_network` 등), `source_ref`, `authoritative`, `estimated`, `confidence`다. `estimated: true`인 값은 모두
+추정이며 측량값이 아니다: A003이 없는 구간의 추정 보행로, 연결선, 추정 횡단, OSM 외곽 도로가 여기에 든다.
+
+분리 검증(`backend`에서):
+
+```bash
+../.venv/bin/python -m simulation.tools.trace_separation --seconds 60 --seed 42 --dt 0.1 --out <dir> [--report simulation/data/separation_report.json]
+```
+
+매 틱(0.1초) 모든 에이전트 위치를 폴리곤과 대조한다. 보행자는 횡단보도·추정 횡단·인도 안이거나, 광장·추정 보행로 안이면서
+차도·주차장 밖일 때만 보행 공간이다. 차량은 차도·주차장 안이면서 인도 밖일 때만 차도다. 두 지표가 모두 99 % 이상이고
+매 틱 보행자와 차량이 1명 이상 있으면 종료 코드 0, 미달이면 1, 입력 파일이 없으면 2다. 같은 지표를 실측 폴리곤만
+(`estimated: false`) 기준으로도 함께 보고한다(`measured_only`). 99 % 기준은 실측+추정 정의에 적용된다. 실측만 기준의
+보행자 값은 보행망 대부분이 추정이라 낮다. 임계값을 99 미만으로 낮추면 `gate: false`로 기록되어 검증으로 치지 않는다.
+대시보드 교통 패널은 이 결과와 보행망의 실측·추정 비율을 `statistics.network_provenance`로 받아 표시한다(추정 표기).
+
 ## 좌표 데이터 주의
 
 기본 `data/routes.geojson`은 팀의 WGS84 도로 폴리곤에서 D4 기준 로컬 미터로 변환한 파생 중심선입니다. 원본 데이터에는 작성된 중심선과 보행로 geometry가 없으므로, 실제 측량 중심선이 제공되면 같은 LineString 계약으로 교체하는 것이 더 정확합니다. 신호 위치는 선택형 `data/traffic_lights.json`에서 관리합니다.

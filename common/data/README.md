@@ -6,4 +6,5 @@ list (`sidewalk_placeholders`, NGII A003 `ufid`s, filled later). `metadata.id_sc
 `backend/simulation/README.md` ("ID 체계") documents the scheme and `backend/simulation/data/road_segments.geojson` resolves
 each `RD_` id to geometry. Changes are add-only: never delete, renumber or rename an id, and keep the backend copy
 `backend/simulation/data/source/common_elemetns.json` identical (`frontend/scripts/campus-model/network/roadIds.mjs`
-writes both).
+writes both). `SW_` ids are filled by `frontend/scripts/campus-model/network/sidewalks.mjs` (`fillPlaceholders`: width and
+strip ids per A003 `ufid`), and new `ND_` intersection ids are allocated by `network/roads.mjs`, both add-only.

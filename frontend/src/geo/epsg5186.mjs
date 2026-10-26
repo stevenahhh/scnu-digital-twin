@@ -163,6 +163,8 @@ const GRID_TO_LOCAL = [
   -LOCAL_TO_GRID[2] / DET,
   LOCAL_TO_GRID[0] / DET,
 ];
+// Exported for the SUMO export (coordinate_transform.json epsg5186_local_to_grid): [dE, dN] = M [east, north].
+export const LOCAL_TO_GRID_MATRIX = Object.freeze([...LOCAL_TO_GRID]);
 export const GRID_CONVERGENCE_DEG = Math.atan2(-LOCAL_TO_GRID[2], LOCAL_TO_GRID[3]) / DEG;
 
 function gridToLocal(E, N) {

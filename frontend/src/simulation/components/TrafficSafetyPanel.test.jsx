@@ -4,6 +4,8 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 
 // @vitest-environment jsdom
 
+const panelState = vi.hoisted(() => ({ current: null }));
+
 vi.mock("../stores/simulationStore", () => {
   const state = {
     status: "stopped",
@@ -29,6 +31,7 @@ vi.mock("../stores/simulationStore", () => {
     selectionError: null,
     timeline: [],
   };
+  panelState.current = state;
   return {
     simulationStore: { reset: vi.fn(), selectAgent: vi.fn() },
     useSimulationStore: (selector) => selector(state),
@@ -40,6 +43,33 @@ import { TrafficSafetyPanel } from "./TrafficSafetyPanel";
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  delete panelState.current.statistics.network_provenance;
+});
+
+describe("TrafficSafetyPanel network provenance", () => {
+  it("shows the measured and estimated share with 추정, the connected crossings and the 60 s separation", () => {
+    panelState.current.statistics.network_provenance = {
+      person_measured_share: 29.46, person_estimated_share: 66.06, crossing_connected: 27, crossing_count: 31,
+      separation: { person_on_walkable: 99.678, car_on_road: 99.837, seed: 42, seconds: 60 },
+    };
+    render(<TrafficSafetyPanel />);
+    expect(screen.getByText("보행망: NGII 인도 29.5% · 추정 공유통로 66.1% (추정)")).toBeTruthy();
+    expect(screen.getByText("횡단보도 27/31 연결")).toBeTruthy();
+    expect(screen.getByText("분리 검증(60초): 보행자 99.7% · 차량 99.8%")).toBeTruthy();
+    expect(document.body.textContent).not.toContain("NaN");
+  });
+
+  it("hides the block without provenance and the separation line without a report, never printing NaN", () => {
+    render(<TrafficSafetyPanel />);
+    expect(screen.queryByText(/보행망:/)).toBeNull();
+    cleanup();
+    panelState.current.statistics.network_provenance = { person_measured_share: null, person_estimated_share: 66.06, crossing_connected: null, crossing_count: 31, separation: null };
+    render(<TrafficSafetyPanel />);
+    expect(screen.getByText("보행망: NGII 인도 -% · 추정 공유통로 66.1% (추정)")).toBeTruthy();
+    expect(screen.getByText("횡단보도 -/31 연결")).toBeTruthy();
+    expect(screen.queryByText(/분리 검증/)).toBeNull();
+    expect(document.body.textContent).not.toContain("NaN");
+  });
 });
 
 describe("TrafficSafetyPanel", () => {

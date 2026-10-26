@@ -29,7 +29,8 @@ def polygon_shares(coordinates, kind: str, walkable: PolygonIndex | None, roads:
         inside = sum(1 for x, z in samples if walkable.contains(x, z, WALKABLE_CLASSES) or (kind == "crosswalk" and roads is not None and roads.contains(x, z, ROAD_CLASSES)))
         shares["person"] = inside / len(samples)
     if roads is not None:
-        shares["car"] = sum(1 for x, z in samples if roads.contains(x, z, ROAD_CLASSES)) / len(samples)
+        # a traffic island (class island) is subtracted from the carriageway
+        shares["car"] = sum(1 for x, z in samples if roads.contains(x, z, ROAD_CLASSES) and not roads.contains(x, z, ("island",))) / len(samples)
     return shares
 
 

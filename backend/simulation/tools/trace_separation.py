@@ -36,7 +36,7 @@ MEASURED_WALK = ("crossing", "crossing_estimated", "sidewalk")
 PAVED_WALK = ("plaza", "walkway_estimated")
 VEHICLE_SURFACE = ("road", "lot")
 CAR_CLASSES = ("road", "lot")
-CLASS_PRIORITY = ("crossing", "crossing_estimated", "sidewalk", "walkway_estimated", "plaza", "road", "lot")
+CLASS_PRIORITY = ("crossing", "crossing_estimated", "sidewalk", "island", "walkway_estimated", "plaza", "road", "lot")
 GATED_TYPES = ("person", "car")
 
 
@@ -58,8 +58,12 @@ def person_compliance(hits: List[Dict], measured_only: bool) -> bool:
     return not on_vehicle_surface and any(hit.get("class") in PAVED_WALK for hit in usable)
 
 
+# subtracted from the carriageway: a car over a sidewalk or a traffic island is off the road
+NOT_CARRIAGEWAY = ("sidewalk", "island")
+
+
 def car_compliance(hits: List[Dict], measured_only: bool) -> bool:
-    if any(hit.get("class") == "sidewalk" for hit in hits):
+    if any(hit.get("class") in NOT_CARRIAGEWAY for hit in hits):
         return False
     return any(hit.get("class") in CAR_CLASSES and not (measured_only and hit.get("estimated")) for hit in hits)
 
@@ -193,7 +197,7 @@ def trace(
         },
         "definitions": {
             "person_on_walkable": "person samples inside crossing|crossing_estimated|sidewalk, or inside plaza|walkway_estimated and not inside road|lot, / all person samples x 100 (measured + estimated polygons)",
-            "car_on_road": "car samples inside road|lot and not inside sidewalk / all car samples x 100 (measured + estimated polygons)",
+            "car_on_road": "car samples inside road|lot and not inside sidewalk|island / all car samples x 100 (measured + estimated polygons)",
             "measured_only": "same, counting only polygons with estimated=false as allowed surface (the vehicle-surface and sidewalk exclusions still use every polygon)",
         },
         "ticks_without_person_or_car": ticks_missing_type,

@@ -8,9 +8,9 @@ import { EXTENT, SCENE_UNITS_PER_METRE, geoToModel, metres, modelToGeo } from ".
 import { CANOPY_TREE_METRES, CHM_GEOREF } from "../lib/landcover.mjs";
 import { decodePng } from "../lib/png.mjs";
 import { Raster, mulberry32 } from "../lib/raster.mjs";
+import { readA003 } from "../lib/a003.mjs";
 
 const CHM_PNG = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "chm.png");
-const WALKWAYS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..", "docs", "assets", "data", "walkways_wgs84.geojson");
 // walkways_wgs84.geojson (A003 sidewalks) holds outlines, not centrelines (see stages/ground.mjs): closed rings along the
 // kerb and the back edge of each paved area, filled even-odd per feature, and open lines where an outline is cut. Trees
 // keep off the paved area and an EDGE_STONE_M band on every outline (as ground.mjs).
@@ -128,7 +128,7 @@ function lumpyCrown(radius, height, seed) {
 // blockedRings: plan rings (model units) of the street furniture trees must not grow through (stages/furniture.mjs).
 export function placeTrees({ inputs, selectableBuildings, campusBuildings, offCampusLots, blockedRings = [] }) {
   const { heightAt, roadZones } = inputs;
-  const walkways = JSON.parse(readFileSync(WALKWAYS, "utf8")).features.map(({ geometry }) => {
+  const walkways = readA003().features.map(({ geometry }) => {
     const lines = (geometry.type === "LineString" ? [geometry.coordinates] : geometry.coordinates).map((line) => line.map(([lon, lat]) => geoToModel(lon, lat)));
     return { lines, rings: lines.filter((line) => line.length >= 4 && line[0][0] === line.at(-1)[0] && line[0][1] === line.at(-1)[1]) };
   });

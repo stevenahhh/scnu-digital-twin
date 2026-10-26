@@ -21,9 +21,9 @@ import { MeshData } from "../lib/meshData.mjs";
 import { encodePng } from "../lib/png.mjs";
 import { Raster } from "../lib/raster.mjs";
 import { frame, local, rgb } from "../lib/solids.mjs";
+import { readA003 } from "../lib/a003.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const WALKWAYS = path.resolve(HERE, "../../../..", "docs", "assets", "data", "walkways_wgs84.geojson");
 const GROUND_FEATURES = path.join(HERE, "..", "data", "osm-ground.json");
 const BICYCLE_LANE = "A0033327"; // as ground.mjs
 export const POLE_KINDS = new Set(["street_lamp", "traffic_signal_pole", "sign_pole", "floodlight_pole"]);
@@ -163,7 +163,7 @@ export function placeLamps({ inputs, furniture, selectableBuildings, campusBuild
     const iy = Math.floor((z - EXTENT.minZ) * px);
     return ix < 0 || iy < 0 || ix >= width || iy >= height ? -1 : iy * width + ix;
   };
-  const walkways = JSON.parse(readFileSync(WALKWAYS, "utf8")).features
+  const walkways = readA003().features
     .filter(({ properties }) => properties.scls !== BICYCLE_LANE)
     .map(({ geometry }) => {
       const lines = (geometry.type === "LineString" ? [geometry.coordinates] : geometry.coordinates).map((line) => line.map(([lon, lat]) => geoToModel(lon, lat)));

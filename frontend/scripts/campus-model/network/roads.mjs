@@ -700,7 +700,7 @@ export function buildRoads({ roadZones, roadSegments = { features: [] }, element
     }
   }
   for (const layer of ["ASPHALT", "LOT"]) {
-    for (const poly of layers?.[layer] ?? []) polygons.push({ id: poly.id, name: null, zone: null, class: layer === "LOT" ? "lot" : "road", rings: poly.rings });
+    for (const poly of layers?.[layer] ?? []) polygons.push({ id: poly.id, name: null, zone: null, class: layer === "LOT" ? "lot" : "road", rings: poly.rings, ...(poly.estimated ? { estimated: true } : {}) });
   }
 
   // ---- 7. ND_ ids

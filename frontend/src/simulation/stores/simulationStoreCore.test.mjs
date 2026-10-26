@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createSimulationStore } from "./simulationStoreCore.mjs";
+import { createSimulationStore, normalizeNetworkProvenance, parseSimulationMessage } from "./simulationStoreCore.mjs";
 
 function update({ time, status = "running", events = [] }) {
   return {
@@ -48,4 +48,19 @@ test("network debug errors are kept in the store and cleared with null", () => {
   assert.equal(emits, 1);
   store.setNetworkError(null);
   assert.equal(store.getState().networkError, null);
+});
+
+test("normalises statistics.network_provenance: finite numbers or null, optional separation", () => {
+  const parsed = parseSimulationMessage({
+    ...update({ time: 1 }),
+    statistics: { network_provenance: { sidewalk_measured_m: "3515.2", crossing_count: 31, crossing_connected: 27, shared_estimated_m: "oops", person_measured_share: 29.5, separation: { person_on_walkable: 99.678, car_on_road: "99.837", seed: 42, seconds: 60, generatedAt: "2026-10-26T12:00:00+00:00" } } },
+  });
+  const provenance = parsed.statistics.network_provenance;
+  assert.equal(provenance.sidewalk_measured_m, 3515.2);
+  assert.equal(provenance.shared_estimated_m, null);
+  assert.equal(provenance.road_measured_m, null);
+  assert.equal(provenance.separation.car_on_road, 99.837);
+  assert.equal(normalizeNetworkProvenance(null), null);
+  assert.equal(normalizeNetworkProvenance({ crossing_count: 3 }).separation, null);
+  assert.equal(parseSimulationMessage(update({ time: 1 })).statistics.network_provenance, null);
 });

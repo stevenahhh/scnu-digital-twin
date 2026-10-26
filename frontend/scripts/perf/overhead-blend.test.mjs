@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { EXTENT, modelToGeo } from "../campus-model/lib/frame.mjs";
 import { wgs84ToTm } from "../../src/geo/epsg5186.mjs";
-import { aggregate, measureTile, tileGrid } from "./overheadBlendCore.mjs";
+import { SIDE_GAP, aggregate, measureTile, renderHalf, residualsMarkdown, sideBySide, tileGrid } from "./overheadBlendCore.mjs";
 
 const W = 120;
 const H = 100;
@@ -85,4 +85,32 @@ test("(d) the tile grid covers EXTENT and is snapped to 100 m", () => {
   const ns = new Set(tiles.map((t) => t.N0));
   assert.equal(tiles.length, es.size * ns.size);
   assert.ok(tiles.length >= 40, `${tiles.length} tiles`);
+});
+
+test("renderHalf keeps only the render (left) half of a side-by-side image, never photo pixels", () => {
+  const w = 3, h = 2, W = w * 2 + SIDE_GAP;
+  const rgba = new Uint8Array(W * h * 4);
+  for (let y = 0; y < h; y += 1) for (let x = 0; x < W; x += 1) rgba.set(x < w ? [10 + x, 20 + y, 30, 255] : [200, 200, 200, 255], (y * W + x) * 4);
+  const half = renderHalf(rgba, W, h, 4);
+  assert.deepEqual([half.width, half.height], [w, h]);
+  assert.deepEqual([...half.pixels.subarray(0, 3)], [10, 20, 30]);
+  assert.ok(![...half.pixels].includes(200), "no photo pixel survives the crop");
+  assert.throws(() => renderHalf(rgba, W + 1, h, 4), /not a side-by-side image/);
+});
+
+test("sideBySide puts before left and after right with the same gap", () => {
+  const img = (v) => ({ width: 2, height: 1, pixels: new Uint8Array(6).fill(v) });
+  const pair = sideBySide(img(1), img(9));
+  assert.equal(pair.width, 4 + SIDE_GAP);
+  assert.equal(pair.pixels[0], 1);
+  assert.equal(pair.pixels[(2 + SIDE_GAP) * 3], 9);
+  assert.throws(() => sideBySide(img(1), { ...img(1), width: 3 }), /differ in size/);
+});
+
+test("residualsMarkdown lists every tile before vs after with the PASS counts", () => {
+  const run = (dx, pass) => ({ signalTiles: 2, pass, thresholds: { passPx: 1 }, tiles: [{ E0: 1, N0: 2, dx: 0, dy: 0, signal: true, pass: true }, { E0: 3, N0: 4, dx, dy: 0, signal: true, pass }], windows: [{ name: "main-gate", dx, dy: 0, signal: true, pass }] });
+  const md = residualsMarkdown(run(0, true), run(-2, false));
+  assert.match(md, /before: 2\/2 .* after: 1\/2/);
+  assert.match(md, /\| 3,4 \| 0, 0 PASS \| -2, 0 FAIL \|/);
+  assert.match(md, /\| main-gate \| 0, 0 PASS \| -2, 0 FAIL \|/);
 });

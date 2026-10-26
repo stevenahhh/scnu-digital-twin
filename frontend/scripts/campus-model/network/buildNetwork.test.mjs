@@ -69,5 +69,8 @@ test("the anchor is added once to coordinate_transform.json", () => {
   const text = '{\n  "scale": 1,\n  "sumo_origin": {"x": 0.0, "z": 0.0}\n}\n';
   const once = addAnchor(text);
   assert.ok(JSON.parse(once).epsg5186_anchor.E > 200000);
+  // the grid matrix carries the meridian convergence (about -0.27 deg here) for the SUMO export
+  const [m00, , m10] = JSON.parse(once).epsg5186_local_to_grid;
+  assert.ok(Math.abs((Math.atan2(m10, m00) * 180) / Math.PI - 0.273) < 0.01);
   assert.equal(addAnchor(once), once);
 });

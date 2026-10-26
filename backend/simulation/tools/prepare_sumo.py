@@ -29,14 +29,24 @@ def _anchor(transform: dict) -> tuple[float, float]:
     return float(anchor["E"]), float(anchor["N"])
 
 
+def _local_to_grid(transform: dict) -> tuple[float, float, float, float]:
+    matrix = transform.get("epsg5186_local_to_grid")
+    if not matrix or len(matrix) != 4:
+        raise KeyError("coordinate_transform.json에 epsg5186_local_to_grid(자오선 수렴각·축척 행렬)가 없습니다. 회전 없이 SUMO 파일을 쓰지 않습니다.")
+    return tuple(float(v) for v in matrix)
+
+
 def _coord(value: float) -> str:
     return f"{round(value, 6):.6f}".rstrip("0").rstrip(".")
 
 
 def prepare(network: dict, output: Path, transform: dict | None = None) -> dict:
-    """Write SUMO PlainXML in absolute EPSG:5186 metres (simulation x/z + the D4 anchor) with netOffset 0,0."""
-    east, north = _anchor(transform if transform is not None else json.loads((DATA / "coordinate_transform.json").read_text(encoding="utf-8")))
-    absolute = lambda point: f"{_coord(float(point[0]) + east)},{_coord(float(point[1]) + north)}"
+    """Write SUMO PlainXML in absolute EPSG:5186 metres (the D4 anchor + M [x, z], M = epsg5186_local_to_grid: the
+    simulation frame is true east/north, the grid is turned by the meridian convergence) with netOffset 0,0."""
+    config = transform if transform is not None else json.loads((DATA / "coordinate_transform.json").read_text(encoding="utf-8"))
+    east, north = _anchor(config)
+    a, b, c, d = _local_to_grid(config)
+    absolute = lambda point: f"{_coord(a * float(point[0]) + b * float(point[1]) + east)},{_coord(c * float(point[0]) + d * float(point[1]) + north)}"
     node_features = {feature.feature_id: feature for feature in iter_features(network, "node")}
     nodes = Element("nodes")
     SubElement(nodes, "location", netOffset="0.00,0.00", projParameter=PROJ_EPSG5186)
@@ -109,7 +119,7 @@ def prepare(network: dict, output: Path, transform: dict | None = None) -> dict:
         "authoritative_edges_exported": len(included), "netconvert_available": bool(netconvert),
         "campus_net_built": built, "error": error,
         "ready": built and net_path.exists(),
-        "frame": "EPSG:5186", "net_offset": [0, 0], "epsg5186_anchor": {"E": east, "N": north},
+        "frame": "EPSG:5186", "net_offset": [0, 0], "epsg5186_anchor": {"E": east, "N": north}, "epsg5186_local_to_grid": [a, b, c, d],
         "note": "Derived/unapproved geometry is deliberately excluded from SUMO network generation.",
     }
     (output / "generation_status.json").write_text(json.dumps(status, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

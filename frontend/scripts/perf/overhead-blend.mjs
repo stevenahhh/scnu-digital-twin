@@ -13,6 +13,8 @@
 // Usage (Legacy dev server already running in frontend/, e.g. `vite --host 127.0.0.1 --port 5184`):
 //   bun scripts/perf/overhead-blend.mjs --url http://127.0.0.1:5184/ --out <dir> [--prefix before-] [--tile 100]
 //       [--campus-only] [--max-shift 4] [--edge-floor 0.02] [--json <path>] [--clock 2026-10-24T12:00:00+09:00]
+//   bun scripts/perf/overhead-blend.mjs --compare <before.json> <after.json> --out <dir>
+//       [--before-images <dir>:<prefix>] [--after-images <dir>:<prefix>]   (render-only window pairs, residuals.md)
 // Outputs: <prefix>tile-<E0>-<N0>-side.png (render | photo), <prefix>tile-<E0>-<N0>-blend.png (photo + render at 50 %
 // | edges: render red, photo cyan), the same pair for the four compare-satellite windows (<prefix><name>-*.png,
 // 800 x 600) and the JSON report. dx > 0: render content east of the photo; dy > 0: render content south.
@@ -25,9 +27,9 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { D4_SCENE, EXTENT } from "../campus-model/lib/frame.mjs";
 import { DEFAULT_SHEET, openSheet } from "../campus-model/lib/ngiiSheet.mjs";
-import { encodePng } from "../campus-model/lib/png.mjs";
+import { decodePng, encodePng } from "../campus-model/lib/png.mjs";
 import { GRID_CONVERGENCE_DEG, sceneToTm, tmToPixel, tmToScene, wgs84ToTm } from "../../src/geo/epsg5186.mjs";
-import { EDGE_THRESHOLD, aggregate, measureTile, pointInRing, tileGrid } from "./overheadBlendCore.mjs";
+import { EDGE_THRESHOLD, aggregate, measureTile, pointInRing, renderHalf, residualsMarkdown, sideBySide, tileGrid } from "./overheadBlendCore.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
@@ -58,6 +60,34 @@ const edgeFloor = Number(option("edge-floor", "0.02"));
 const jsonPath = resolve(option("json", join(outDir, `${prefix}overhead-blend.json`)));
 const clock = option("clock", "2026-10-24T12:00:00+09:00");
 if (Number.isNaN(Date.parse(clock))) throw new Error(`--clock is not a date: ${clock}`);
+
+// ---------------------------------------------------------------- --compare <before.json> <after.json> --out <dir>
+// Render-only before/after images of the four windows (the left half of each <window>-side.png) and residuals.md.
+// Each JSON names its image directory and prefix (`images`); --before-images / --after-images <dir>:<prefix> override.
+if (args.includes("--compare")) {
+  const at = args.indexOf("--compare");
+  const runs = [args[at + 1], args[at + 2]].map((file, i) => {
+    const json = JSON.parse(readFileSync(resolve(file), "utf8"));
+    const override = option(i === 0 ? "before-images" : "after-images", null);
+    const [dir, pre] = override ? [override.slice(0, override.lastIndexOf(":")), override.slice(override.lastIndexOf(":") + 1)] : [json.images?.dir, json.images?.prefix ?? ""];
+    if (!dir) throw new Error(`${file}: no images directory (pass --${i === 0 ? "before" : "after"}-images <dir>:<prefix>)`);
+    return { json, dir: resolve(dir), prefix: pre };
+  });
+  mkdirSync(outDir, { recursive: true });
+  for (const { name } of WINDOWS) {
+    const [before, after] = runs.map((run) => {
+      const png = decodePng(readFileSync(join(run.dir, `${run.prefix}${name}-side.png`)));
+      return renderHalf(png.pixels, png.width, png.height, png.channels);
+    });
+    writeFileSync(join(outDir, `${name}-render-before.png`), encodePng(before.width, before.height, 3, before.pixels));
+    writeFileSync(join(outDir, `${name}-render-after.png`), encodePng(after.width, after.height, 3, after.pixels));
+    const pair = sideBySide(before, after);
+    writeFileSync(join(outDir, `${name}-before-after.png`), encodePng(pair.width, pair.height, 3, pair.pixels));
+  }
+  writeFileSync(join(outDir, "residuals.md"), residualsMarkdown(runs[0].json, runs[1].json));
+  console.log(`compare: ${WINDOWS.length} windows -> ${outDir} (render-only before/after, residuals.md)`);
+  process.exit(0);
+}
 
 // ---------------------------------------------------------------- preconditions (exit 2)
 let sheet;
@@ -326,6 +356,7 @@ try {
     ...summary,
     tiles: tileResults,
     windows,
+    images: { dir: outDir, prefix },
     consoleErrors,
   };
   mkdirSync(dirname(jsonPath), { recursive: true });
