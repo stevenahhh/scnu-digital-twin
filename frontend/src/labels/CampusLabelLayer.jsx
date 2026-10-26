@@ -12,7 +12,8 @@ import { clusterLabelFor } from "./labelRegistry.mjs";
 const GROUP_PREFIX = "GROUP_";
 const ESTIMATED_SUFFIX = ", 명칭 추정";
 
-const SLOT_STYLE = Object.freeze({ position: "absolute", left: 0, top: 0, visibility: "hidden", pointerEvents: "none" });
+const PARKED_TRANSFORM = "translate3d(-10000px, -10000px, 0)";
+const SLOT_STYLE = Object.freeze({ position: "absolute", left: 0, top: 0, visibility: "hidden", pointerEvents: "none", transform: PARKED_TRANSFORM });
 const LEADER_STYLE = Object.freeze({ position: "absolute", left: 0, top: 0, overflow: "visible", pointerEvents: "none", visibility: "hidden" });
 
 function accessibleNameOf(slot) {
@@ -110,11 +111,17 @@ export function CampusLabelLayer({
   }, [view, selectedId, hoveredId, focusedId, slots, headlineById]);
 
   useLayoutEffect(() => {
-    const hideNode = (id) => {
+    // 숨긴 칩은 층 밖으로 옮겨 둔다. 마지막 자리(또는 한 번도 놓이지 않은 칩의 0,0 = HUD 밑)에 남아 있으면 HUD 아래에
+    // 숨은 칩처럼 보이고 재기도 그렇게 잰다. 숨긴 이유(cap·edge·chrome·collision·inactive)는 data-hidden-reason에 남긴다.
+    const hideNode = (id, reason = "inactive") => {
       const node = nodesRef.current.get(id);
-      if (node && node.style.visibility !== "hidden") {
-        node.style.visibility = "hidden";
-        node.style.pointerEvents = "none";
+      if (node) {
+        if (node.style.visibility !== "hidden") {
+          node.style.visibility = "hidden";
+          node.style.pointerEvents = "none";
+        }
+        if (node.style.transform !== PARKED_TRANSFORM) node.style.transform = PARKED_TRANSFORM;
+        if (node.dataset.hiddenReason !== reason) node.dataset.hiddenReason = reason;
       }
       const leader = leadersRef.current.get(id);
       if (leader && leader.style.visibility !== "hidden") leader.style.visibility = "hidden";
@@ -137,6 +144,7 @@ export function CampusLabelLayer({
       const transform = `translate3d(${Math.round(x - area.left)}px, ${Math.round(y - area.top)}px, 0)`;
       if (node.style.transform !== transform) node.style.transform = transform;
       if (node.style.visibility !== "visible") node.style.visibility = "visible";
+      if (node.dataset.hiddenReason) delete node.dataset.hiddenReason;
       const slot = slotById.get(id);
       const pointer = slot?.kind === "zone" ? "none" : "auto";
       if (node.style.pointerEvents !== pointer) node.style.pointerEvents = pointer;
@@ -250,7 +258,7 @@ export function CampusLabelLayer({
         if (result.fingerprint !== lastRef.current.fingerprint) writeSlot(item.id, x, y, area, item.leader, opacity);
       }
       if (result.fingerprint !== lastRef.current.fingerprint) {
-        for (const id of nodesRef.current.keys()) if (!placed.has(id)) hideNode(id);
+        for (const id of nodesRef.current.keys()) if (!placed.has(id)) hideNode(id, result.hiddenReasons.get(id) ?? "inactive");
       }
       lastRef.current = { layout: result, placed, fingerprint: result.fingerprint };
 
