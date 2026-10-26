@@ -103,3 +103,12 @@ def test_car_on_a_sidewalk_is_off_the_road():
     assert car_compliance([{"class": "road", "estimated": False}, {"class": "sidewalk", "estimated": False}], False) is False
     assert car_compliance([{"class": "road", "estimated": True}], True) is False
     assert car_compliance([{"class": "road", "estimated": True}], False) is True
+
+
+def test_unchecked_routing_still_judges_samples_against_the_polygons(data_dir, tmp_path):
+    # with a walkable polygon nowhere near the campus, routing ignores the polygons but every person sample fails
+    far = [[9000, 9000], [9001, 9000], [9001, 9001], [9000, 9001], [9000, 9000]]
+    (data_dir / "walkable_polygons.geojson").write_text(json.dumps(collection("crossing", [far])))
+    assert run(data_dir, tmp_path / "out", "--unchecked-routing") == 1
+    summary = json.loads((tmp_path / "out" / "summary.json").read_text())
+    assert summary["routing_polygon_check"] is False and summary["person_on_walkable"] == 0.0

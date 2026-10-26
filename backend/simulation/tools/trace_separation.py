@@ -72,12 +72,18 @@ def percent(part: int, whole: int) -> float:
     return round(100.0 * part / whole, 3) if whole else 0.0
 
 
-def prepare_data_dir(data_dir: Path, network: Optional[Path], workdir: Path) -> Path:
-    if network is None:
+def prepare_data_dir(data_dir: Path, network: Optional[Path], workdir: Path, unchecked_routing: bool = False) -> Path:
+    if network is None and not unchecked_routing:
         return data_dir
     target = workdir / "data"
     shutil.copytree(data_dir, target)
-    shutil.copyfile(network, target / NETWORK_FILE)
+    if network is not None:
+        shutil.copyfile(network, target / NETWORK_FILE)
+    if unchecked_routing:
+        # the engine routes as before the polygon check existed (a baseline network); samples are still judged
+        # against the polygons of data_dir
+        for name in POLYGON_FILES:
+            (target / name).unlink(missing_ok=True)
     # SimulationEngine reads the policy from data_dir.parent / "config"
     shutil.copytree(data_dir.parent / "config", workdir / "config")
     return target
@@ -86,7 +92,7 @@ def prepare_data_dir(data_dir: Path, network: Optional[Path], workdir: Path) -> 
 def trace(
     data_dir: Path, out: Path, seconds: float = 60.0, dt: float = 0.1, seed: int = 42, scenario: Optional[str] = None,
     counts: Optional[Dict[str, int]] = None, network: Optional[Path] = None, report: Optional[Path] = None,
-    min_person: float = 99.0, min_car: float = 99.0,
+    min_person: float = 99.0, min_car: float = 99.0, unchecked_routing: bool = False,
 ) -> int:
     missing = [str(path) for path in [*(data_dir / name for name in POLYGON_FILES), network or data_dir / NETWORK_FILE] if not Path(path).exists()]
     if missing:
@@ -100,7 +106,7 @@ def trace(
     surfaces = PolygonIndex.merge(walkable, roads)
 
     with tempfile.TemporaryDirectory() as workdir:
-        engine = SimulationEngine(prepare_data_dir(data_dir, network, Path(workdir)), seed=seed)
+        engine = SimulationEngine(prepare_data_dir(data_dir, network, Path(workdir), unchecked_routing), seed=seed)
         engine.configure(scenario or engine.scenarios.default, counts)
         engine.start()
         ticks = int(round(seconds / dt))
@@ -174,6 +180,7 @@ def trace(
         "seconds": seconds, "dt": dt, "seed": seed, "ticks": ticks, "scenario": engine.scenario_name,
         "counts": dict(engine.base_counts),
         "network": str(network) if network else NETWORK_FILE,
+        "routing_polygon_check": not unchecked_routing,
         "samples": {agent: totals[agent] for agent in ("person", "car", "scooter")},
         "agents_seen": {agent: len(ids) for agent, ids in agent_ids.items()},
         "person_on_walkable": person_pct,
@@ -239,10 +246,11 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
     parser.add_argument("--report", type=Path, help="also write the summary (without the trace) here")
     parser.add_argument("--min-person", type=float, default=99.0)
     parser.add_argument("--min-car", type=float, default=99.0)
+    parser.add_argument("--unchecked-routing", action="store_true", help="route without the polygon check (baseline networks built before it); samples are still judged against the polygons")
     args = parser.parse_args(list(argv) if argv is not None else None)
     return trace(
         args.data_dir, args.out, args.seconds, args.dt, args.seed, args.scenario, parse_counts(args.counts),
-        args.network, args.report, args.min_person, args.min_car,
+        args.network, args.report, args.min_person, args.min_car, args.unchecked_routing,
     )
 
 
