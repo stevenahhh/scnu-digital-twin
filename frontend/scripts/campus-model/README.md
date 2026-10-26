@@ -161,37 +161,48 @@ and size are estimates.
 
 ### Trees
 
-`Trees_*` are the trees of the tree inventory `data/trees.json`, one instance per crown, at the crown's position on the
-photo. `fetch/treeInventory.mjs` writes it offline from the NGII 2025 sheet (`.cache/ngii-ortho/`), CHMv2
-(`data/chm.png`), the MCEE land cover cache (`.cache/mcee/`), the VR tour cube faces (`.cache/vr/`, through
-`fetch/tree_vr.py`, `uv run` with numpy and Pillow) and `data/photo/tree-species.json`:
+`Trees_*` are the trees of the tree inventory `data/trees.json` at their positions on the photo. `fetch/treeInventory.mjs`
+writes it offline from the NGII 2025 sheet (`.cache/ngii-ortho/`), CHMv2 (`data/chm.png`), the GIS building footprints,
+the MCEE land cover cache (`.cache/mcee/`), the VR tour cube faces (`.cache/vr/`, through `fetch/tree_vr.py`, `uv run`
+with numpy and Pillow) and `data/photo/tree-species.json`:
 
 ```bash
-bun scripts/campus-model/fetch/treeInventory.mjs [--debug <dir>]   # crowns.png / photo.png / grid.json in <dir>
+bun scripts/campus-model/fetch/treeInventory.mjs [--debug <dir>] [--out <file>]   # canopy.png / crowns.png / photo.png / grid.json in <dir>
 ```
 
-- Crowns: on a 0.5 m grid, green and textured cells of the sheet (mown lawn is smooth; painted green roofs are dropped
-  as bright, elongated bands) plus crown shade on CHMv2 canopy; tree tops are local maxima of CHMv2 plus the distance
-  to the canopy edge; each canopy cell joins the top it reaches first inside the canopy (at most 7.5 m). Position: the
-  crown centroid moved back by the photo's relief lean at 0.6 x the height; diameter: the equal-area circle; height:
-  the CHMv2 maximum under the crown, or 1.5 + 2.2 x the radius where CHMv2 (2016 imagery) has no canopy.
+- Canopy mask: on a 0.5 m grid, cells whose chromaticity is foliage, (2g - r - b) / (r + g + b) >= 0.22 (crowns read
+  0.37-0.39 on the sheet, mown lawn 0.18, the slightly green asphalt 0.10, green roofs 0.09), off the building
+  footprints, sports grounds and water, plus crown shade on CHMv2 canopy. Painted green surfaces that pass are dropped
+  as bright, elongated bands.
+- Crowns: tree tops are local maxima of CHMv2 plus the distance to the canopy edge; each canopy cell joins the top it
+  reaches first inside the canopy (at most 12 m). Height: the CHMv2 maximum, or 1.5 + 2.2 x the radius where CHMv2
+  (2016 imagery) has no canopy.
+- Trees: a photo crown is a row or stand of round(area / spacing disc) trees of its species (spacing 5.5-7.5 m, 3 m for
+  clipped conifers): its canopy cells are split by k-means and each tree stands at its cluster's centroid, moved back by
+  the photo's relief lean at 0.6 x its height, with a crown reaching the 95th percentile of its cells (clamped to the
+  species' crown range), so the crowns cover the canopy as the photo shows it. `scripts/perf/canopy-cover.mjs` checks
+  the drawn cover against the canopy mask per area.
 - Species type (`ginkgo`, `broadleaf` for zelkova and cherry, `pine`, `metasequoia`, `conifer` for clipped columnar
   evergreens): a VR group polygon of `data/photo/tree-species.json` (metasequoia rows and stands at the C1 plaza, C2/C3
-  and D1), else the colour class of the crowns within 9 m on the VR cube faces (each crown projected into every face
-  that sees it, nearest crown per pixel, building prisms occluding; yellow is ginkgo on a street edge (zelkova elsewhere)
-  or, when columnar, metasequoia;
+  and D1; a crown whose own VR colour is listed in `exceptVr` keeps its own reading), else the colour class of the
+  crowns within 9 m on the VR cube faces (each crown projected into every face that sees it, nearest crown per pixel,
+  building prisms occluding; yellow is ginkgo on a street edge (zelkova elsewhere) or, when columnar, metasequoia;
   russet or red is broadleaf; dark green is pine or, when columnar, conifer), else the MCEE forest type, else the
-  photo tone. Every crown records its source (`speciesSource`) and the number of VR views it was read in.
-- The build draws every crown that does not stand on a building, a road zone, an off-campus lot or roofed furniture
-  (walkways do not block: street trees stand in tree pits). Hedges are clipped boxes on the shrub planters and the
-  planter walls along building fronts of the furniture survey.
+  photo tone. Every tree records its source (`speciesSource`), its photo crown and the number of VR views.
+- The build (`placeTrees`, after the ground stage) stands a trunk on open ground (surface class NATURAL), in a surveyed
+  planter or tree pit, or in a street-tree pit (a footway cell within 1.5 m of the carriageway); never on a plaza, a
+  car park, a court, a building, a road or roofed furniture. A trunk elsewhere moves to the nearest such point within
+  3 m, or is left out. No crown comes within 2 m of a VR tour camera position (`scripts/perf/vr-stations.json`). Hedges
+  are clipped boxes on the shrub planters and the planter walls along building fronts of the furniture survey.
 
 Shapes are read on the VR tour: ginkgo with a conical-oval crown, broadleaf with a broad rounded one, pine with a tall
-red-brown bole under irregular flat pads, metasequoia with a narrow cone, columnar conifers without a visible stem,
-hedges as boxes. Each species is one node with a trunk and a crown child (`EXT_mesh_gpu_instancing`), so the draw
-calls do not grow with the trees. Crown materials are per species (`Tree_Crown`, `Tree_Ginkgo`, `Tree_Pine`,
-`Tree_Metasequoia`, `Tree_Conifer`, `Tree_Hedge`); the dashboard tints the broadleaf, ginkgo and metasequoia crowns
-in autumn with their own palettes (`src/lighting/season.mjs`, ginkgo and metasequoia turning first, as in the VR tour).
+red-brown bole under irregular flat pads, metasequoia with seven drooping tiers with notched rims over a red-brown
+trunk, columnar conifers with four tight tiers and no visible stem (lower tiers and undersides darker), hedges as boxes.
+Each species is one node with a trunk and a crown child (`EXT_mesh_gpu_instancing`), so the draw calls do not grow
+with the trees; every instance carries its own tint (the tiered conifers also drift in hue). Crown materials are per
+species (`Tree_Crown`, `Tree_Ginkgo`, `Tree_Pine`, `Tree_Metasequoia`, `Tree_Conifer`, `Tree_Hedge`); the dashboard
+tints the broadleaf, ginkgo and metasequoia crowns in autumn with their own palettes (`src/lighting/season.mjs`, ginkgo
+and metasequoia turning first, metasequoia from yellow-green to orange-ochre crown by crown, as in the VR tour).
 Positions, heights, diameters and species are estimates, not a tree survey.
 
 ### Facades (`data/scnu-facades.json`, `lib/facadeAtlas.mjs`)
@@ -535,7 +546,7 @@ Build order after a ground or network change: `bun run network:build` (network a
 - `Kerbs`, `Ground_Gutter`: kerb ribbons, dropped kerbs and gutters on the A003 outlines (see Kerbs, slabs and dropped kerbs).
 - `Road_Markings`: the painted road markings the orthophoto shows, one decal mesh on the terrain (see Road markings).
 - `Trees_*`: instanced ginkgo, broadleaf, pine, metasequoia and columnar conifer trees at the crowns of the tree
-  inventory, and the hedges (see Trees above), kept off buildings, roads and the roofed street furniture.
+  inventory, and the hedges (see Trees above), on open ground, planters and street-tree pits (never on plazas, car parks or courts).
 - `Furniture`, `Furniture_Glass`, `Lamps_heads`, `Lamps_pools`: every surveyed outdoor object, the lamps and the
   estimated path lamps and benches (see Street furniture).
 
