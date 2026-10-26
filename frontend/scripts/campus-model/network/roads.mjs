@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 // Vehicle centreline graph from the road-zone polygons and the RD_ registry.
 //
-//   bun scripts/campus-model/network/roads.mjs [--stats] [--preview <png>] [--write] [--zones <geojson>]
+//   bun scripts/campus-model/network/roads.mjs [--stats] [--preview <png>] [--write] [--zones <geojson>] [--no-layers]
 //
 // Provenance: the zone parsing, the intersection-zone classification (names containing 교차로 / 사거리 / 삼거리) and the
 // CROSSWALK_BY_ZONE map are ported from backend/build_routes_from_road_zones.py, introduced in commit b0969e2
@@ -15,9 +15,11 @@
 // ODbL) that are written ONLY to backend/simulation/data/osm/perimeter_roads.geojson. OSM topology is never used inside
 // the campus (the parts of an OSM line that fall inside a road zone are dropped).
 //
-// Not available on this branch yet: network/surfaces.mjs (todo 8, ASPHALT / LOT layers). `buildRoads({ layers })` takes
-// them when given ({ ASPHALT: [{ id, rings }], LOT: [...] }); without them the arterial strips are quads around the
-// OSM line with the RD_ segment width (OSM width tag, else 3.5 m per lane) and no separate car-park polygons exist.
+// Road polygons for the trace oracle: the road zones, plus the todo 8 layers of network/surfaces.mjs (`buildRoads({ layers
+// })`, { ASPHALT: [{ id, rings }], LOT: [...] } in the simulation frame, see network/context.mjs roadLayers): the
+// arterial / connector strips traced out to the surveyed kerbs and the parking lots. The CLI loads them (about 25 s;
+// `--no-layers` skips them). Without layers the arterial strips are quads around the OSM line with the RD_ segment
+// width (OSM width tag, else 3.5 m per lane) and no separate car-park polygons exist.
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { simulationToTm, wgs84ToSimulation } from "../../../src/geo/epsg5186.mjs";
@@ -868,7 +870,7 @@ export function renderPreview(result, out, widthPx = 2000) {
   const raster = new Raster(widthPx, heightPx);
   raster.fillPolygon([[[0, 0], [widthPx, 0], [widthPx, heightPx], [0, heightPx]]], () => [245, 245, 242]);
   const px = ([x, y]) => [(x - minX) * scale, (maxY - y) * scale];
-  for (const poly of result.polygons.filter((q) => q.zone || q.estimated)) raster.fillPolygon(poly.rings.map((r) => r.map(px)), () => (poly.class === "lot" ? [170, 170, 180] : [190, 190, 190]));
+  for (const poly of result.polygons) raster.fillPolygon(poly.rings.map((r) => r.map(px)), () => (poly.class === "lot" ? [170, 170, 180] : [190, 190, 190]));
   const line = (a, b, color, thick = 1) => {
     const [x0, y0] = px(a);
     const [x1, y1] = px(b);
@@ -908,7 +910,15 @@ if (import.meta.main) {
   const [roadSegments, network, osmGround] = await Promise.all([PATHS.roadSegments, PATHS.network, PATHS.osmGround].map(read));
   const elementsText = await Bun.file(PATHS.elements).text();
   const { elements } = JSON.parse(elementsText);
-  const result = buildRoads({ roadZones, roadSegments, elements, network, osmLines: osmGround.osm.lines });
+  let layers = null;
+  if (!args.includes("--no-layers")) {
+    const { loadSurfaceContext, roadLayers } = await import("./context.mjs");
+    layers = roadLayers((await loadSurfaceContext({ log: () => {} })).layers);
+    console.log(`road layers: ${layers.ASPHALT.length} arterial/connector strip polygons, ${layers.LOT.length} lot polygons (network/surfaces.mjs)`);
+  }
+  const baseline = Bun.file(path.join(REPO, "backend/simulation/data/campus_transport_network.derived-v1.geojson"));
+  const ndNetwork = (await baseline.exists()) ? JSON.parse(await baseline.text()) : network;
+  const result = buildRoads({ roadZones, roadSegments, elements, network: ndNetwork, osmLines: osmGround.osm.lines, layers });
   for (const w of result.warnings) console.warn(`warning: ${w}`);
   console.log(statsLine(result.stats));
   if (result.stats.outsideSamples.length) console.log(`outside-road samples (first ${result.stats.outsideSamples.length}): ${JSON.stringify(result.stats.outsideSamples)}`);

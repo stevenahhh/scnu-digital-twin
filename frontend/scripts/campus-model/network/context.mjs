@@ -60,15 +60,16 @@ export async function loadCrosswalks() {
 }
 
 // Road-polygon layers for buildRoads (simulation frame): arterial/connector strips (ASPHALT not from the road zones and
-// not an A003 walkway) and the lots (LOT layers whose label is a driving surface; the roundabout ring included, its
-// island and rims not).
+// not an A003 walkway) and the car parks (LOT layers whose label is a driving surface, off-campus parcels excluded; the
+// roundabout ring included, its island and rims not).
 export function roadLayers(layers) {
   const ASPHALT = [];
   const LOT = [];
   layers.forEach((l, i) => {
     if (l.walkway) return;
     if (l.cls === "ASPHALT" && l.source !== "road-zone-measured") ASPHALT.push({ id: l.source_ref ?? `asphalt-${i}`, rings: l.rings, estimated: Boolean(l.estimated) });
-    if (l.cls === "LOT" && (l.label === SURFACE_CLASS.ASPHALT || l.label === SURFACE_CLASS.LOT || l.paint?.kind === "roundabout")) {
+    // off-campus lots are the parcels around off-campus buildings, not car parks
+    if (l.cls === "LOT" && !String(l.source_ref).startsWith("off-campus lot") && (l.label === SURFACE_CLASS.ASPHALT || l.label === SURFACE_CLASS.LOT || l.paint?.kind === "roundabout")) {
       LOT.push({ id: l.source_ref ?? `lot-${i}`, rings: l.rings, estimated: Boolean(l.estimated) });
     }
   });
@@ -76,14 +77,14 @@ export function roadLayers(layers) {
 }
 
 let cached = null;
-export async function loadNetworkContext({ log = console.log } = {}) {
+// Everything except the vehicle graph (roads.mjs imports this for its layers; loading roads here would be circular).
+export async function loadSurfaceContext({ log = console.log } = {}) {
   if (cached) return cached;
   const { loadInputs } = await import("../stages/sources.mjs");
   const { loadFurniture } = await import("../stages/furniture.mjs");
   const { buildBuildings } = await import("../stages/buildings.mjs");
   const { GlbBuilder } = await import("../lib/glb.mjs");
   const { loadCrossings, planKerbs } = await import("../stages/kerbs.mjs");
-  const { buildRoads } = await import("./roads.mjs");
   const inputs = await loadInputs();
   const furniture = loadFurniture();
   const quiet = console.log;
@@ -138,13 +139,22 @@ export async function loadNetworkContext({ log = console.log } = {}) {
   const roadSegments = await readJson(PATHS.roadSegments);
   const baselineFile = Bun.file(PATHS.baseline);
   const oldNetwork = await readJson((await baselineFile.exists()) ? PATHS.baseline : PATHS.network);
-  const osmGround = await readJson(PATHS.osmGround);
-  const roadZones = await readJson(PATHS.roadZones);
-  const roads = buildRoads({ roadZones, roadSegments, elements, network: oldNetwork, osmLines: osmGround.osm.lines, layers: roadLayers(layers) });
   cached = {
-    inputs, layers, buildings, walkways, crossings, roadSegments, elements, elementsText, oldNetwork, roads,
+    inputs, layers, buildings, walkways, crossings, roadSegments, elements, elementsText, oldNetwork,
     kerbs: { touched: kerbPlan.touched, dropped: kerbPlan.dropped.map((d) => ({ cwId: d.cwId, ufid: d.ufid })), pieces: kerbPieces, exposedM: kerbPlan.exposedM },
   };
-  log(`network context: ${layers.length} surface layers, ${buildings.length} building parts, ${walkways.length} A003 features, ${crossings.length} crossings, ${kerbPieces.length} kerb pieces (${kerbPlan.touched.length} crossings with dropped kerbs), roads: ${roads.edges.length} edges`);
+  log(`network context: ${layers.length} surface layers, ${buildings.length} building parts, ${walkways.length} A003 features, ${crossings.length} crossings, ${kerbPieces.length} kerb pieces (${kerbPlan.touched.length} crossings with dropped kerbs)`);
   return cached;
+}
+
+// Surface context plus the vehicle centreline graph of roads.mjs fed with the real ASPHALT / LOT layers.
+export async function loadNetworkContext({ log = console.log } = {}) {
+  const ctx = await loadSurfaceContext({ log });
+  if (ctx.roads) return ctx;
+  const { buildRoads } = await import("./roads.mjs");
+  const osmGround = await readJson(PATHS.osmGround);
+  const roadZones = await readJson(PATHS.roadZones);
+  ctx.roads = buildRoads({ roadZones, roadSegments: ctx.roadSegments, elements: ctx.elements, network: ctx.oldNetwork, osmLines: osmGround.osm.lines, layers: roadLayers(ctx.layers) });
+  log(`roads: ${ctx.roads.edges.length} edges, ${ctx.roads.polygons.length} road/lot polygons`);
+  return ctx;
 }
