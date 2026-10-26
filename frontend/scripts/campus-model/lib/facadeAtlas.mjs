@@ -194,8 +194,11 @@ function paintStorey(canvas, look, top, rng, { ground = false } = {}) {
     }
   } else if (look.pattern === "ribbon") {
     if (look.spandrel) {
-      canvas.rect(0, top, TILE_W, winTop - 1, solid(look.spandrel, look.seed + 10), KIND.WALL);
-      canvas.rect(0, winBottom + 1, TILE_W, bottom, solid(look.spandrel, look.seed + 10), KIND.WALL);
+      // brick ribbons (E7: red brick spandrel bands between white-framed window bands) keep the brick coursing
+      const brick = look.texture === "brick" ? wallShade({ ...look, wall: look.spandrel }) : null;
+      const spandrel = brick ? (x, y) => brick(x, y - top) : solid(look.spandrel, look.seed + 10);
+      canvas.rect(0, top, TILE_W, winTop - 1, spandrel, KIND.WALL);
+      canvas.rect(0, winBottom + 1, TILE_W, bottom, spandrel, KIND.WALL);
     }
     canvas.rect(0, winTop - 1, TILE_W, winBottom + 1, solid(look.frame, look.seed + 11), KIND.FRAME);
     canvas.rect(0, winTop, TILE_W, winBottom, glassShade(look, top), KIND.GLASS);
