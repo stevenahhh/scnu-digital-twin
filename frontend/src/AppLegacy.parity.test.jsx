@@ -292,6 +292,10 @@ describe("Legacy and VWorld feature parity", () => {
     expect(chrome).toContain(hud);
     expect(hud.hasAttribute("data-label-chrome-layer")).toBe(true);
     expect(chrome).toContain(screen.getByRole("button", { name: "패널 닫기" }));
+    // 라벨 층은 지면 시점(정문)에서 거리 단계로 바뀌므로 눌린 시점을 함께 받는다.
+    expect(sceneMock.cityModelProps.activePresetId).toBe("overview");
+    fireEvent.click(container.querySelector('[data-qa="camera-preset-gate"]'));
+    expect(sceneMock.cityModelProps.activePresetId).toBe("gate");
   });
 
   it("titles the selection panel with the building's label name, not its BLD_* id, when the popup API is down", async () => {

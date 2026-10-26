@@ -1,6 +1,7 @@
-import { Html, useGLTF } from "@react-three/drei";
+import { useGLTF } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createRoot } from "react-dom/client";
 import * as THREE from "three";
 import commonElements from "../../common/data/common_elemetns.json";
 import { resolveBuildingMeta, resolveProxyDataElementId } from "./utils/buildingLabels.mjs";
@@ -11,7 +12,11 @@ import {
   clampOrbitAboveGround,
   sampleGroundGrid,
 } from "./camera/terrainClearance.mjs";
-import { isAnchorOccludedByTerrain, selectVisibleCampusLabels } from "./utils/campusLabelVisibility.mjs";
+import { isAnchorOccludedByTerrain } from "./utils/campusLabelVisibility.mjs";
+import { CAMERA_PRESETS } from "./camera/cameraPresets.mjs";
+import { CampusLabelLayer } from "./labels/CampusLabelLayer.jsx";
+import { resolveLabelBand } from "./labels/labelBands.mjs";
+import { ZONES, buildLabelRegistry } from "./labels/labelRegistry.mjs";
 import { campusModelCenter } from "./simulation/utils/campusTrafficCoordinates.mjs";
 import { CAMPUS_MODEL_URL, CAMPUS_MODEL_URLS } from "./campusModelAsset.mjs";
 import { CAMPUS_HEIGHTFIELD_URLS, loadHeightfield } from "./terrain/heightfield.mjs";
@@ -65,7 +70,11 @@ const BUILDING_MAP = {
 };
 
 const FOCUS_CAMERA_OFFSET = new THREE.Vector3(60, 50, 60);
-const LABEL_WRAPPER_STYLE = Object.freeze({ pointerEvents: "none" });
+// 라벨 층: 카메라가 멈춘 뒤 이만큼 더 기다렸다가 한 번 다시 배치한다(tokens.css --motion-settle).
+const MOTION_SETTLE_FALLBACK_MS = 150;
+// 정문 구역은 건물이 아니라 정문 시점의 목표점(재중심화 뒤 장면 좌표)에 놓인다.
+const SYNTHETIC_ZONE_IDS = new Set(ZONES.filter((zone) => zone.synthetic).map((zone) => zone.id));
+const LABEL_HOST_STYLE = "position:absolute;inset:0;pointer-events:none;z-index:var(--layer-labels)";
 
 // 인스턴싱된 줄기는 노드 자체가 메시가 되기도 하므로 자신과 부모 이름을 모두 본다.
 // 지형(Ground)과 나무 줄기는 그림자를 드리울 필요가 없다: 지면은 스스로를 가리지 않고,
@@ -147,6 +156,7 @@ const scratchColor = new THREE.Color();
 const scratchHoverColor = new THREE.Color();
 const scratchBaseColor = new THREE.Color();
 const scratchCamPos = new THREE.Vector3();
+const scratchProject = new THREE.Vector3();
 const ELEMENT_NAME_MAP = new Map(
   commonElements.elements.map((element) => [element.element_id, element.name]),
 );
@@ -246,6 +256,7 @@ function buildLabelAnchors(scene) {
       proxy: meta.proxy,
       estimate: estimateOf(meta),
       position: [center.x, box.max.y + 6, center.z],
+      box: [box.min.toArray(), box.max.toArray()],
     });
   });
 
@@ -273,12 +284,17 @@ export function CityModel({
   // 지도 위 조작 UI(시점 버튼 줄·시간 슬라이더·패널 토글) ref 목록. 이 UI와 겹치는 라벨은 숨긴다.
   // data-label-chrome-layer가 붙은 요소는 통과용 레이어로 보고 자식 요소들의 사각형을 쓴다.
   chromeRefs,
+  // 지금 눌린 카메라 시점 id. 지면 시점(정문)에서는 라벨이 거리(street) 단계가 된다.
+  activePresetId = null,
+  // 발표 모드: 라벨 상한을 절반으로 줄이고 점 표시를 끈다.
+  presentation = false,
+  // 마우스를 올린 칩에 붙일 대표 추정값(요소 id -> 문자열). 이미 받아 둔 팝업 데이터에서만 만든다.
+  headlineById = null,
   ...props
 }) {
   const { scene } = useGLTF(CAMPUS_MODEL_URL);
   const { camera, gl, scene: rootScene, invalidate } = useThree();
   const [targetPos, setTargetPos] = useState(null);
-  const [labelScale, setLabelScale] = useState(1);
   const tintedMeshesRef = useRef([]);
   const lampPoolsRef = useRef([]);
   const pickProxiesRef = useRef([]);
@@ -289,16 +305,26 @@ export function CityModel({
   const traverseStatsRef = useRef(null);
   const closeElementIdRef = useRef(null);
   const isInsideD4Ref = useRef(false);
-  const labelElementsRef = useRef(new Map());
   const labelsHiddenRef = useRef(labelsHidden);
-  const selectedIdRef = useRef(selectedId);
   const hoveredNameRef = useRef(null);
-  // 라벨 위치를 다시 읽어야 하는 남은 프레임 수. drei Html이 같은 프레임의 뒤쪽에서 위치를 옮길 수 있어
-  // 한 번 더 읽도록 2로 둔다. 캔버스·패널 사각형이 바뀌었는지는 매 프레임 비교한다.
+  // 마우스를 올린 건물의 앵커 id(라벨 층의 호버 칩·건물 가림 근사에 쓴다).
+  const hoveredIdRef = useRef(null);
+  const activePresetIdRef = useRef(activePresetId);
+  activePresetIdRef.current = activePresetId;
+  const presentationRef = useRef(presentation);
+  presentationRef.current = presentation;
+  // 라벨 배치를 다시 해야 하는 남은 프레임 수. 칩 크기는 다시 그린 다음 프레임에야 바뀔 수 있어
+  // 한 번 더 돌도록 2로 둔다. 캔버스·패널 사각형이 바뀌었는지는 매 프레임 비교한다.
   const labelPassFramesRef = useRef(2);
   const labelFrameKeyRef = useRef("");
   const labelHeightfieldRef = useRef(null);
   const labelForwardRef = useRef(new THREE.Vector3());
+  // 라벨 층(캔버스 옆 DOM, 별도 React 루트)과 그 조작 손잡이.
+  const labelRootRef = useRef(null);
+  const labelControllerRef = useRef(null);
+  // 카메라 움직임(사용자 조작·시점 비행) 동안 라벨 층을 흐리게 하고 배치를 멈춘다. 멈춘 뒤 --motion-settle만큼 지나 한 번 다시 배치한다.
+  const motionRef = useRef({ active: false, endedAt: null, lastMoveAt: -Infinity, timer: null });
+  const touchRef = useRef(typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)")?.matches === true);
   // 클릭/드래그 판별(메시와 라벨이 공유). 직전 프레임 카메라 자세로 카메라가 움직이는 중인지 알려 준다.
   const [pointerGuard] = useState(() => createPointerGuard());
   const cameraPoseRef = useRef(null);
@@ -311,7 +337,7 @@ export function CityModel({
     const canvas = gl.domElement;
     const originOf = (target) => {
       if (target === canvas) return "canvas";
-      if (target instanceof Element && target.closest('[data-qa="campus-label"]')) return "label";
+      if (target instanceof Element && target.closest('[data-qa="campus-label"],[data-qa="campus-dot"]')) return "label";
       return "other";
     };
     const listeners = {
@@ -344,18 +370,12 @@ export function CityModel({
 
   useLayoutEffect(() => {
     labelsHiddenRef.current = labelsHidden;
-    selectedIdRef.current = selectedId;
     labelPassFramesRef.current = 2;
     // D4 상세가 열리면 캠퍼스 루프가 멈춘다(frameloop "never", useDemandLoop). 라벨 패스가 돌지 않으므로
     // 여기서 바로 숨긴다. 다시 보이는 것은 루프가 돌아온 뒤 라벨 패스가 정한다.
-    if (labelsHidden) {
-      for (const element of labelElementsRef.current.values()) {
-        element.style.visibility = "hidden";
-        element.style.pointerEvents = "none";
-      }
-    }
+    if (labelsHidden) labelControllerRef.current?.update({ hidden: true });
     invalidate();
-  }, [labelsHidden, selectedId, labelScale, invalidate]);
+  }, [labelsHidden, selectedId, invalidate]);
 
   useEffect(() => {
     const controls = controlsRef?.current;
@@ -391,32 +411,55 @@ export function CityModel({
     };
   }, [scene]);
 
+  // 카메라가 바뀌면 라벨 패스를 다시 연다. 조작·시점 비행의 start/end로 라벨 층의 움직임 상태(흐림, 배치 멈춤)를 켜고 끈다.
   useEffect(() => {
     const controls = controlsRef?.current;
-
-    const updateLabelScale = () => {
-      const distance = controls
-        ? camera.position.distanceTo(controls.target)
-        : camera.position.length();
-      const nextScale = THREE.MathUtils.clamp(165 / Math.max(distance, 1), 0.72, 1.45);
-
-      setLabelScale((current) =>
-        Math.abs(current - nextScale) < 0.02 ? current : nextScale,
-      );
+    if (!controls) return undefined;
+    const motion = motionRef.current;
+    const settleMs = () => {
+      const token = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--motion-settle"));
+      return Number.isFinite(token) ? token : MOTION_SETTLE_FALLBACK_MS;
     };
-
+    // end 뒤에도 OrbitControls 감쇠로 카메라가 더 움직인다. 마지막 움직임에서 settle만큼 조용해야 끝난다.
+    const settle = () => {
+      motion.timer = null;
+      if (!motion.active || motion.endedAt === null) return;
+      const remaining = settleMs() - (performance.now() - Math.max(motion.endedAt, motion.lastMoveAt));
+      if (remaining > 0) {
+        motion.timer = setTimeout(settle, remaining);
+        return;
+      }
+      motion.active = false;
+      labelControllerRef.current?.setMotion(false);
+      labelPassFramesRef.current = 2;
+      invalidate();
+    };
     const handleChange = () => {
       labelPassFramesRef.current = 2;
-      updateLabelScale();
     };
-
-    updateLabelScale();
-
-    if (!controls) return;
-
+    const handleStart = () => {
+      motion.active = true;
+      motion.endedAt = null;
+      if (motion.timer) clearTimeout(motion.timer);
+      motion.timer = null;
+      labelControllerRef.current?.setMotion(true);
+    };
+    const handleEnd = () => {
+      if (!motion.active) return;
+      motion.endedAt = performance.now();
+      if (!motion.timer) motion.timer = setTimeout(settle, settleMs());
+    };
     controls.addEventListener("change", handleChange);
-    return () => controls.removeEventListener("change", handleChange);
-  }, [camera, controlsRef]);
+    controls.addEventListener("start", handleStart);
+    controls.addEventListener("end", handleEnd);
+    return () => {
+      controls.removeEventListener("change", handleChange);
+      controls.removeEventListener("start", handleStart);
+      controls.removeEventListener("end", handleEnd);
+      if (motion.timer) clearTimeout(motion.timer);
+      motion.timer = null;
+    };
+  }, [controlsRef, invalidate]);
 
   useEffect(() => {
     if (!scene) return;
@@ -580,6 +623,31 @@ export function CityModel({
     return new THREE.Vector3(x, 0, z);
   }, [labelAnchors]);
 
+  // 라벨 이름·계층·구역은 레지스트리 한 곳에서 온다. 위치는 재중심화 전 모델 좌표다(정문 구역만 장면 좌표라 되돌린다).
+  const anchorById = useMemo(() => new Map(labelAnchors.map((anchor) => [anchor.elementId, anchor])), [labelAnchors]);
+  const labelEntries = useMemo(() => {
+    const registry = buildLabelRegistry({ elements: commonElements.elements, anchors: labelAnchors, presets: CAMERA_PRESETS });
+    return [...registry.values()]
+      .filter((entry) => entry.displayName && entry.position)
+      .map((entry) => ({
+        ...entry,
+        hasData: ELEMENT_NAME_MAP.has(entry.dataElementId),
+        position: SYNTHETIC_ZONE_IDS.has(entry.elementId)
+          ? [entry.position[0] + center.x, entry.position[1], entry.position[2] + center.z]
+          : entry.position,
+      }));
+  }, [labelAnchors, center]);
+  // 패널 제목·라벨 강조가 같은 건물을 가리키도록 selectedId(요소 id, GLB 노드 이름, 대리 노드 이름 중 하나)를 앵커 id로 바꾼다.
+  const selectedAnchorId = useMemo(() => {
+    if (!selectedId) return null;
+    const anchor =
+      anchorById.get(selectedId) ??
+      labelAnchors.find((item) => item.name === selectedId || (item.proxy && item.displayName === selectedId));
+    return anchor?.elementId ?? null;
+  }, [anchorById, labelAnchors, selectedId]);
+  const selectedAnchorIdRef = useRef(selectedAnchorId);
+  selectedAnchorIdRef.current = selectedAnchorId;
+
   // 모델이 재중심화 그룹에 붙은 뒤 지형 메시 삼각형을 월드 좌표로 옮겨 지면 격자를 한 번 만든다.
   useEffect(() => {
     if (!scene) return;
@@ -608,7 +676,9 @@ export function CityModel({
 
     // 카메라가 이번 프레임에 움직였는지(시점 비행, OrbitControls 감쇠, 클릭 포커스) 기록해 그동안의 클릭을 무시한다.
     const pose = cameraPoseRef.current;
-    pointerGuard.noteCameraFrame(hasCameraMoved(pose, camera));
+    const cameraMoved = hasCameraMoved(pose, camera);
+    pointerGuard.noteCameraFrame(cameraMoved);
+    if (cameraMoved) motionRef.current.lastMoveAt = performance.now();
     if (pose) {
       pose.position.copy(camera.position);
       pose.quaternion.copy(camera.quaternion);
@@ -619,6 +689,8 @@ export function CityModel({
     const dragDriven = pointerGuard.isDragDriven();
     if (dragDriven && hoveredNameRef.current !== null) {
       hoveredNameRef.current = null;
+      hoveredIdRef.current = null;
+      labelControllerRef.current?.setHovered(null);
       materialTransitionRef.current = true;
       document.body.style.cursor = "auto";
     }
@@ -814,15 +886,13 @@ export function CityModel({
     camera.updateMatrixWorld();
   });
 
-  // 라벨은 가운데 점이 캔버스 안에 있고 열린 대시보드 패널 밑에 있지 않을 때만 보인다.
-  // 서로 겹치면 선택된 라벨, 팝업 데이터가 있는 BLD_* 라벨, 카메라에 가까운 라벨 순으로 남기고 나머지는 숨긴다.
-  // visibility: hidden은 Tab 순서와 접근성 트리에서도 빠지므로 키보드 포커스가 보이지 않는 라벨로 가지 않는다.
-  // 카메라에서 앵커로 가는 시선이 언덕(높이 사이드카)에 막히는 라벨도 하늘에 떠 보이지 않게 숨긴다.
-  // D4 상세가 열린 동안(labelsHidden)은 모두 숨긴다. 라벨 사각형은 카메라·선택·패널이 바뀐 뒤에만 읽고,
-  // 위치를 모두 읽은 뒤에 쓰기를 해 레이아웃 계산을 한 번으로 줄인다.
+  // 라벨 패스: 앵커를 화면에 투영해 라벨 층에 넘기면, 층이 줌 단계(band)·우선순위·충돌 규칙으로 보일 칩을 정해 위치를 쓴다.
+  // 카메라 뒤 앵커와 언덕(높이 사이드카)에 가려진 앵커는 넘기지 않는다. 열린 패널·지도 조작 UI 밑으로 들어가는 칩은 층이 숨긴다.
+  // 숨긴 칩은 visibility: hidden이라 Tab 순서와 접근성 트리에서도 빠진다. D4 상세가 열린 동안(labelsHidden)은 모두 숨긴다.
+  // 카메라·선택·패널이 바뀐 뒤에만 돈다. 카메라가 움직이는 동안에는 보이던 칩 묶음을 그대로 두고 위치만 따라간다.
   useFrame(() => {
-    const labels = labelElementsRef.current;
-    if (labels.size === 0) return;
+    const controller = labelControllerRef.current;
+    if (!controller) return;
     const area = gl.domElement.getBoundingClientRect();
     const occluder = occluderRef?.current?.getBoundingClientRect() ?? null;
     const chrome = [];
@@ -844,43 +914,85 @@ export function CityModel({
     if (labelPassFramesRef.current <= 0) return;
     labelPassFramesRef.current -= 1;
 
-    const hideAll = labelsHiddenRef.current;
-    let visibleIds = null;
-    if (!hideAll) {
-      const selected = selectedIdRef.current;
-      const heightfield = labelHeightfieldRef.current;
-      // 앵커와 사이드카는 재중심화 전 모델 좌표다. 카메라를 같은 좌표로 옮긴다.
-      const eye = [camera.position.x + center.x, camera.position.y, camera.position.z + center.z];
-      const candidates = [];
-      // drei Html projects anchors behind the camera mirrored into the view, so labels of buildings behind
-      // the viewer would float over the hill or sky. Drop anchors that are not in front of the camera.
-      const forward = camera.getWorldDirection(labelForwardRef.current);
-      for (const anchor of labelAnchors) {
-        const element = labels.get(anchor.elementId);
-        if (!element) continue;
-        const dx = camera.position.x - (anchor.position[0] - center.x);
-        const dy = camera.position.y - anchor.position[1];
-        const dz = camera.position.z - (anchor.position[2] - center.z);
-        if (-(dx * forward.x + dy * forward.y + dz * forward.z) <= camera.near) continue;
-        if (isAnchorOccludedByTerrain(heightfield, eye, anchor.position)) continue;
-        candidates.push({
-          id: anchor.elementId,
-          rect: element.getBoundingClientRect(),
-          selected: anchor.name === selected || (anchor.proxy && anchor.displayName === selected),
-          hasPopup: anchor.elementId.startsWith("BLD_") && ELEMENT_NAME_MAP.has(anchor.elementId),
-          distance: dx * dx + dy * dy + dz * dz,
-        });
+    if (labelsHiddenRef.current || area.width === 0 || area.height === 0) {
+      controller.update({ hidden: true });
+      return;
+    }
+    const motion = motionRef.current.active;
+    const heightfield = labelHeightfieldRef.current;
+    // 앵커와 사이드카는 재중심화 전 모델 좌표다. 카메라를 같은 좌표로 옮긴다.
+    const eye = [camera.position.x + center.x, camera.position.y, camera.position.z + center.z];
+    const forward = camera.getWorldDirection(labelForwardRef.current);
+    const toScreen = (x, y, z) => {
+      scratchProject.set(x, y, z).project(camera);
+      return { x: area.left + ((scratchProject.x + 1) / 2) * area.width, y: area.top + ((1 - scratchProject.y) / 2) * area.height };
+    };
+    const target = controlsRef?.current?.target ?? null;
+    const distance = target ? camera.position.distanceTo(target) : camera.position.length();
+    const offset = target ? camera.position.clone().sub(target) : camera.position.clone();
+    const pitchDegrees = THREE.MathUtils.radToDeg(Math.atan2(offset.y, Math.hypot(offset.x, offset.z)));
+    const band = resolveLabelBand({
+      distance,
+      pitchDegrees,
+      presetFromGround: Boolean(CAMERA_PRESETS.find((preset) => preset.id === activePresetIdRef.current)?.fromGround),
+      presentation: presentationRef.current,
+      touch: touchRef.current,
+    });
+    // 거리(street) 단계는 지면 높이의 눈에서 캠퍼스 안쪽을 본다. 눈 바로 앞 120 단위에는 건물이 거의 없으므로(정문 시점), 가까움은
+    // 바라보는 곳(OrbitControls 목표점)에서 앵커까지의 수평 거리로 잰다. 다른 단계는 카메라에서 앵커까지의 거리다.
+    const streetOrigin = band.band === "street" && target ? target : null;
+    const points = new Map();
+    for (const entry of labelEntries) {
+      const [ax, ay, az] = entry.position;
+      const wx = ax - center.x;
+      const wz = az - center.z;
+      const dx = wx - camera.position.x;
+      const dy = ay - camera.position.y;
+      const dz = wz - camera.position.z;
+      // 카메라 뒤 앵커는 투영하면 화면 안으로 뒤집혀 들어온다. 앞쪽에 있는 앵커만 쓴다.
+      if (dx * forward.x + dy * forward.y + dz * forward.z <= camera.near) continue;
+      // 지형 가림은 멈춘 화면에서만 다시 본다(움직이는 동안은 보이던 칩을 바꾸지 않는다).
+      if (!motion && isAnchorOccludedByTerrain(heightfield, eye, entry.position)) continue;
+      const screen = toScreen(wx, ay, wz);
+      // 멈춘 화면에서는 화면 밖·열린 패널 밑으로 투영되는 앵커를 후보에서 뺀다. 그런 칩도 순위에 들면 보이지 않으면서 단계별
+      // 개수 상한을 차지해, 화면 안 건물의 칩이 상한에 밀려 숨는다. 선택된 건물은 늘 남는다(배치가 화면 안으로 끌어들인다).
+      // 움직이는 동안에는 보이던 칩이 화면 밖으로 미끄러져 나가게 둔다.
+      if (!motion && entry.elementId !== selectedAnchorIdRef.current) {
+        const outside = screen.x < area.left || screen.x > area.right || screen.y < area.top || screen.y > area.bottom;
+        const underPanel =
+          occluder && screen.x >= occluder.left && screen.x <= occluder.right && screen.y >= occluder.top && screen.y <= occluder.bottom;
+        if (outside || underPanel) continue;
       }
-      visibleIds = selectVisibleCampusLabels(candidates, area, occluder, chrome);
+      const depth = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      const distance = streetOrigin ? Math.hypot(wx - streetOrigin.x, wz - streetOrigin.z) : depth;
+      points.set(entry.elementId, { x: screen.x, y: screen.y, depth, distance });
     }
-    // 숨긴 라벨은 클릭·호버도 받지 않게 pointer-events를 끈다(밑의 건물이 클릭을 받는다).
-    for (const [elementId, element] of labels) {
-      const visible = visibleIds?.has(elementId);
-      const next = visible ? "" : "hidden";
-      if (element.style.visibility !== next) element.style.visibility = next;
-      const pointer = visible ? "" : "none";
-      if (element.style.pointerEvents !== pointer) element.style.pointerEvents = pointer;
+
+    // 선택·호버한 건물의 화면 경계 상자: 그 뒤(더 먼 쪽)로 들어간 칩은 흐리게 한다(건물 가림 근사).
+    const focusBoxes = [];
+    for (const id of new Set([selectedAnchorIdRef.current, hoveredIdRef.current])) {
+      const anchor = id ? anchorById.get(id) : null;
+      if (!anchor?.box || !points.has(id)) continue;
+      const [min, max] = anchor.box;
+      let left = Infinity;
+      let top = Infinity;
+      let right = -Infinity;
+      let bottom = -Infinity;
+      for (const x of [min[0], max[0]]) {
+        for (const y of [min[1], max[1]]) {
+          for (const z of [min[2], max[2]]) {
+            const corner = toScreen(x - center.x, y, z - center.z);
+            left = Math.min(left, corner.x);
+            right = Math.max(right, corner.x);
+            top = Math.min(top, corner.y);
+            bottom = Math.max(bottom, corner.y);
+          }
+        }
+      }
+      focusBoxes.push({ id, left, top, right, bottom, depth: points.get(id).depth });
     }
+
+    controller.update({ points, area, chrome, occluder, focusBoxes, band, now: performance.now(), motion });
   });
 
   // R3F는 pointerup에 delta를 계산하지 않는다(항상 0). 클릭 여부는 pointerGuard가 누른 위치·시간으로 판단한다.
@@ -929,6 +1041,8 @@ export function CityModel({
     document.body.style.cursor = "pointer";
     if (hoveredNameRef.current !== meta.name) {
       hoveredNameRef.current = meta.name;
+      hoveredIdRef.current = meta.elementId;
+      labelControllerRef.current?.setHovered(meta.elementId);
       materialTransitionRef.current = true;
     }
   };
@@ -938,6 +1052,8 @@ export function CityModel({
     const meta = getSelectableMeta(e.object);
     if (meta && hoveredNameRef.current === meta.name) {
       hoveredNameRef.current = null;
+      hoveredIdRef.current = null;
+      labelControllerRef.current?.setHovered(null);
       materialTransitionRef.current = true;
     }
   };
@@ -963,6 +1079,68 @@ export function CityModel({
     }
   };
 
+  // 묶음 칩(학생생활관 5동 등)을 누르면 그 묶음 쪽으로 다가간다. 가까워지면 묶음이 동별 칩으로 풀린다.
+  const handleClusterClick = (slot, event) => {
+    if (!pointerGuard.acceptClick({ origin: "label", keyboard: event.detail === 0 })) return;
+    const members = (slot.members ?? []).map((id) => anchorById.get(id)).filter(Boolean);
+    if (members.length === 0) return;
+    const sum = members.reduce((acc, anchor) => acc.add(new THREE.Vector3(...anchor.position)), new THREE.Vector3());
+    sum.divideScalar(members.length);
+    setTargetPos(new THREE.Vector3(sum.x - center.x, sum.y - 6, sum.z - center.z));
+  };
+
+  // 라벨 층 콜백은 한 번만 만들고 최신 핸들러를 ref로 부른다(층의 노드 풀이 콜백 때문에 다시 그려지지 않게).
+  const labelHandlersRef = useRef(null);
+  labelHandlersRef.current = {
+    onSelect: (slot, event) => {
+      const anchor = anchorById.get(slot.id);
+      if (anchor) handleLabelClick(anchor, event);
+    },
+    onSelectCluster: handleClusterClick,
+    onClear: () => onSelect?.(""),
+  };
+  const [labelCallbacks] = useState(() => ({
+    onSelect: (slot, event) => labelHandlersRef.current.onSelect(slot, event),
+    onSelectCluster: (slot, event) => labelHandlersRef.current.onSelectCluster(slot, event),
+    onClear: () => labelHandlersRef.current.onClear(),
+    onRequestPass: () => {
+      labelPassFramesRef.current = 2;
+      invalidate();
+    },
+  }));
+
+  // 라벨 층은 R3F DOM 밖, 캔버스 옆에 붙는 한 장의 DOM이다(별도 React 루트). 캔버스와 같은 크기로 겹친다.
+  useLayoutEffect(() => {
+    const parent = gl.domElement.parentElement;
+    if (!parent) return undefined;
+    const host = document.createElement("div");
+    host.style.cssText = LABEL_HOST_STYLE;
+    parent.appendChild(host);
+    const root = createRoot(host);
+    labelRootRef.current = root;
+    return () => {
+      labelRootRef.current = null;
+      labelControllerRef.current = null;
+      // 다른 루트가 커밋하는 도중에는 동기로 언마운트할 수 없다.
+      queueMicrotask(() => {
+        root.unmount();
+        host.remove();
+      });
+    };
+  }, [gl]);
+
+  useLayoutEffect(() => {
+    labelRootRef.current?.render(
+      <CampusLabelLayer
+        entries={labelEntries}
+        selectedId={selectedAnchorId}
+        headlineById={headlineById}
+        controllerRef={labelControllerRef}
+        {...labelCallbacks}
+      />,
+    );
+  });
+
   return (
     <group position={[-center.x, 0, -center.z]}>
       <primitive
@@ -972,48 +1150,6 @@ export function CityModel({
         onPointerOver={handlePointerOver}
         onPointerOut={handlePointerOut}
       />
-
-      {labelAnchors.map((anchor) => {
-        const isSelected = anchor.name === selectedId || (anchor.proxy && anchor.displayName === selectedId);
-
-        return (
-          <Html
-            key={anchor.elementId}
-            position={anchor.position}
-            zIndexRange={[120, 0]}
-            // drei가 만드는 감싼 div는 라벨의 변환 전 자리(앵커 오른쪽 아래)를 차지한다. 클릭을 받지 않게 해서
-            // 보이는 라벨 버튼만 클릭을 받고, 그 밖의 자리는 밑의 캔버스(건물)로 간다.
-            style={LABEL_WRAPPER_STYLE}
-          >
-            <div
-              ref={(element) => {
-                if (element) labelElementsRef.current.set(anchor.elementId, element);
-                else labelElementsRef.current.delete(anchor.elementId);
-                labelPassFramesRef.current = 2;
-              }}
-              data-qa="campus-label"
-              data-element-id={anchor.elementId}
-              className="pointer-events-auto flex flex-col items-center whitespace-nowrap"
-              style={{
-                transform: `translate(-50%, calc(-100% - 4px)) scale(${labelScale})`,
-                transformOrigin: "bottom center",
-              }}
-            >
-              <button
-                type="button"
-                onClick={(event) => handleLabelClick(anchor, event)}
-                className={`rounded-[10px] border px-3 py-1 text-[11px] font-black whitespace-nowrap shadow-[0_10px_24px_rgba(15,23,42,0.35)] ${
-                  isSelected
-                    ? "border-[var(--colors-primary)] bg-[var(--colors-surface-1)] text-[var(--colors-primary)]"
-                    : "border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] text-[var(--colors-ink)]"
-                }`}
-              >
-                {anchor.displayName}
-              </button>
-            </div>
-          </Html>
-        );
-      })}
     </group>
   );
 }

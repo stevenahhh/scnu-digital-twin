@@ -845,6 +845,7 @@ function Dashboard() {
           labelsHidden={labelsHidden}
           occluderRef={panelRef}
           chromeRefs={labelChromeRefs}
+          activePresetId={activePresetId}
         />
         <CampusTrafficSimulation />
         <ShadowBaker sunKey={sunVector.join(",")} />
@@ -872,6 +873,7 @@ function Dashboard() {
   ), [
     sceneBackground, sunVector, sunVisible, sunAltitude, selectedId, labelsHidden, sceneWeatherScene, quality, qualityRenderer,
     handleSelect, handleBuildingClick, handleBuildingProximity, handleD4Enter, handleOrbitStart, handleOrbitEnd, labelChromeRefs,
+    activePresetId,
   ]);
 
   // 루트는 overflow: clip으로 자른다. hidden은 스크롤 컨테이너라서, 닫힌 패널이 화면 밖에 만드는 공간 때문에
