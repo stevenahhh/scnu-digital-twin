@@ -5,6 +5,7 @@ import { formatRoomNumber } from "../utils/d4BuildingData.mjs";
 import { D4_SCENE, SELECTION_HEX } from "../ui/sceneTokens.mjs";
 import { D4_SCENE_LABEL } from "./d4Shared.mjs";
 import { cx } from "../ui/cx.mjs";
+import { SceneLabel } from "../ui/SceneLabel.jsx";
 
 // 상자 색: 설비실, 선택한 강의실, 나머지 순서로 정한다.
 function roomColor({ isUtility, isSelected }) {
@@ -42,25 +43,29 @@ function RoomBox({ room, x, z, width, isSelected, isInUse, onSelect }) {
             {room.roomNumber}
           </div>
         ) : (
-          <button
-            type="button"
-            aria-label={`${room.roomNumber} 강의실 상세`}
-            aria-pressed={isSelected}
-            onClick={(event) => {
-              event.stopPropagation();
-              onSelect(room.id);
-            }}
-            className={cx("pointer-events-auto flex flex-col items-center gap-1", D4_SCENE_LABEL, isSelected && "ring-2 ring-primary")}
-            style={{ maxWidth: `${Math.max(70, boxWidth * 34)}px`, whiteSpace: boxWidth > 1.6 ? "nowrap" : "normal" }}
-          >
-            {formatRoomNumber(room.roomNumber)}
+          // 캠퍼스 이름표와 같은 장면 라벨(SceneLabel, 작은 단계). 사용 중 표시는 칩 아래 한 줄.
+          <div className="flex flex-col items-center gap-1">
+            <SceneLabel
+              size="sm"
+              tier={3}
+              state={isSelected ? "selected" : "idle"}
+              name={formatRoomNumber(room.roomNumber)}
+              data-qa="d4-room-label"
+              aria-label={`${room.roomNumber} 강의실 상세`}
+              onClick={(event) => {
+                event.stopPropagation();
+                onSelect(room.id);
+              }}
+              className="pointer-events-auto"
+              style={{ maxWidth: `${Math.max(70, boxWidth * 34)}px`, whiteSpace: boxWidth > 1.6 ? "nowrap" : "normal" }}
+            />
             {isInUse && (
-              <span className="inline-flex items-center gap-1 text-micro text-ink-muted">
+              <span className="pointer-events-none inline-flex items-center gap-1 rounded-control bg-[var(--colors-label-bg)] px-1 text-micro text-ink-muted">
                 <span aria-hidden="true" className="h-1.5 w-1.5 rounded-pill bg-primary" />
                 사용 중
               </span>
             )}
-          </button>
+          </div>
         )}
       </Html>
     </group>

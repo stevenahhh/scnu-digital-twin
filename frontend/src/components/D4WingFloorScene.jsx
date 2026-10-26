@@ -4,6 +4,7 @@ import { useEffect, useMemo } from "react";
 import { ACCENT_HEX, D4_SCENE } from "../ui/sceneTokens.mjs";
 import { D4_SCENE_LABEL } from "./d4Shared.mjs";
 import { cx } from "../ui/cx.mjs";
+import { SceneLabel } from "../ui/SceneLabel.jsx";
 
 const ACTIVE_COLOR = ACCENT_HEX;
 const IDLE_COLOR = D4_SCENE.floorIdle;
@@ -43,17 +44,19 @@ function Tower({ wing, x, isActive, onSelectFloor }) {
               <meshStandardMaterial color={isActive ? ACTIVE_COLOR : IDLE_COLOR} transparent opacity={0.88} />
             </mesh>
             <Html position={[0, 0, BOX_DEPTH / 2 + 0.02]} center distanceFactor={11}>
-              <button
-                type="button"
+              {/* 캠퍼스 이름표와 같은 장면 라벨(SceneLabel, 작은 단계). */}
+              <SceneLabel
+                size="sm"
+                tier={3}
+                name={floor === 0 ? "B1" : `${floor}F`}
+                data-qa="d4-floor-label"
                 aria-label={`${floor === 0 ? "지하 1" : floor}층 선택`}
                 onClick={(event) => {
                   event.stopPropagation();
                   onSelectFloor(wing.id, floor);
                 }}
-                className={cx("pointer-events-auto min-w-10", D4_SCENE_LABEL)}
-              >
-                {floor === 0 ? "B1" : `${floor}F`}
-              </button>
+                className="pointer-events-auto min-w-10"
+              />
             </Html>
           </group>
         );
