@@ -61,6 +61,12 @@ export async function loadWalkways() {
     lines: (geometry.type === "LineString" ? [geometry.coordinates] : geometry.coordinates).map((line) => line.map(([lon, lat]) => geoToModel(lon, lat))),
   }));
 }
+// data/network/walkways.json (network/walkways.mjs via buildNetwork.mjs): estimated walkway strips, EPSG:5186 rings.
+const ESTIMATED_WALKWAYS = path.join(HERE, "..", "data", "network", "walkways.json");
+export async function loadEstimatedWalkways(file = ESTIMATED_WALKWAYS) {
+  const f = Bun.file(file);
+  return (await f.exists()) ? JSON.parse(await f.text()).strips : [];
+}
 export const walkwaySurface = ({ scls, qual }) => (scls === BICYCLE_LANE ? "bicycle" : qual === "SWQ003" ? "blockPaver" : qual === "SWQ001" ? "asphalt" : "existing");
 const isClosed = (line) => line.length >= 2 && line[0][0] === line.at(-1)[0] && line[0][1] === line.at(-1)[1];
 
@@ -306,7 +312,7 @@ function walkwayPolygons(rings) {
 // inputs: { roadZones } (model units, as stages/sources.mjs loadInputs); walkways: loadWalkways(); groundFeatures:
 // loadGroundFeatures() (optional); offCampusLots: rings; buildings: [{ parts: [{ outer }] }]; crosswalks: rings
 // (model units, passed through in EPSG:5186 for the kerb stage). warn: where skipped inputs are reported.
-export function buildSurfaces({ inputs, walkways, groundFeatures = null, offCampusLots = [], buildings = [], crosswalks = [], warn = console.warn }) {
+export function buildSurfaces({ inputs, walkways, groundFeatures = null, offCampusLots = [], buildings = [], crosswalks = [], estimatedWalkways = [], warn = console.warn }) {
   const layers = [];
   const strokes = [];
   const skipped = [];
@@ -475,6 +481,11 @@ export function buildSurfaces({ inputs, walkways, groundFeatures = null, offCamp
     for (const part of building.parts) {
       add({ cls: "PAVING", mesh: "Ground_Apron", label: SURFACE_CLASS.PAVING, precedence: PRECEDENCE.APRON, source: "project-estimated", source_ref: building.name ?? building.id ?? "building", estimated: true }, [offsetRing(part.outer, metres(APRON_OUT_M)), part.outer]);
     }
+  }
+
+  // ---- 2 estimated walkways (paving under the road and lot layers, like the plazas; already in EPSG:5186)
+  for (const strip of estimatedWalkways) {
+    layers.push({ cls: "PAVING", mesh: "Ground_Walkway", label: SURFACE_CLASS.PAVING, precedence: PRECEDENCE.PAVING, source: "project-estimated", source_ref: strip.source_ref ?? strip.id, estimated: true, walkwayEstimated: true, rings: strip.rings });
   }
 
   const crossings = crosswalks.map((ring) => toTmRing(ring)).filter(Boolean);

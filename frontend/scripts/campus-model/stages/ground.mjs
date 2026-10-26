@@ -15,7 +15,7 @@ import { tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { EXTENT } from "../lib/frame.mjs";
 import { MeshData } from "../lib/meshData.mjs";
 import { SURFACE_CLASS } from "../lib/surfaceClass.mjs";
-import { PX, buildSurfaces, loadGroundFeatures, loadWalkways } from "../network/surfaces.mjs";
+import { PX, buildSurfaces, loadEstimatedWalkways, loadGroundFeatures, loadWalkways } from "../network/surfaces.mjs";
 import { GRASS_TILE, naturalGroundMaterial, planarTileUv } from "./surfaces.mjs";
 
 const WIDTH = EXTENT.maxX - EXTENT.minX;
@@ -102,6 +102,7 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
     offCampusLots,
     buildings: [...selectableBuildings, ...campusBuildings],
     crosswalks: inputs.crosswalks,
+    estimatedWalkways: await loadEstimatedWalkways(),
   });
   const width = Math.round(WIDTH * PX);
   const height = Math.round(DEPTH * PX);
