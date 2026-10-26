@@ -1,5 +1,5 @@
 /* @vitest-environment jsdom */
-import { act, cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -79,7 +79,8 @@ describe("AppVWorld installation selection lifecycle", () => {
     await user.click(screen.getByRole("button", { name: "D4 상세 열기" }));
     await user.click(screen.getByRole("button", { name: "D4 상세 닫기" }));
     expect(screen.getByRole("tab", { name: "기본 현황" }).getAttribute("aria-selected")).toBe("true");
-    expect(Math.abs(scroller().scrollTop - 300)).toBeLessThanOrEqual(8);
+    // 패널 내용은 다시 그려지고, 스크롤은 다음 화면 갱신에서 되돌린다.
+    await waitFor(() => expect(Math.abs(scroller().scrollTop - 300)).toBeLessThanOrEqual(8));
   });
 
   it("keeps the map overlays full width and interactive above the phone bottom sheet", async () => {
@@ -129,7 +130,7 @@ describe("AppVWorld installation selection lifecycle", () => {
     expect(tint.style.right).toBe("var(--dashboard-rail-width)");
   });
 
-  it("hides the dashboard panel and its toggle while the D4 detail experience is open and restores them after it closes", async () => {
+  it("turns the panel into the D4 pane beside the rail while the D4 detail is open and restores the panel after it closes", async () => {
     const user = userEvent.setup();
     const { container } = render(<App />);
     const panel = () => container.querySelector('[data-qa="dashboard-panel"]');
@@ -140,8 +141,10 @@ describe("AppVWorld installation selection lifecycle", () => {
 
     await user.click(screen.getByRole("button", { name: "D4 상세 열기" }));
     expect(screen.queryByRole("button", { name: "패널 닫기" })).toBeNull();
-    expect(panel().getAttribute("aria-hidden")).toBe("true");
-    expect(panel().hasAttribute("inert")).toBe(true);
+    // 패널 자리는 D4 패인(레일 왼쪽)이 되고, 레일의 탭 넷은 그대로 보인다.
+    expect(panel().dataset.pane).toBe("d4");
+    expect(screen.getByRole("navigation", { name: "대시보드 레일" })).toBeTruthy();
+    expect(screen.getByTestId("vworld-renderer").dataset.overlayInsetRight).toBe("calc(min(720px, 50vw) + var(--dashboard-rail-width))");
 
     await user.click(screen.getByRole("button", { name: "D4 상세 닫기" }));
     expect(screen.getByRole("button", { name: "패널 닫기" })).toBeTruthy();

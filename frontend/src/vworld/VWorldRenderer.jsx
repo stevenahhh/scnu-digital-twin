@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { MapPin, X } from "lucide-react";
 import { createBuildingCameraController } from "./cameraFocus.mjs";
@@ -93,6 +94,8 @@ export default function VWorldRenderer({
   onRepresentativeInstallationPlanChange,
   representativeRefreshKey,
   onD4SectionChange,
+  d4PaneHost = null,
+  d4CloseKey = 0,
   overlayInsetRight = "0px",
   overlayInsetBottom = "0px",
   mapBackdrop = null,
@@ -121,6 +124,18 @@ export default function VWorldRenderer({
   const [campusStatus, setCampusStatus] = useState(null);
   const [trafficStatus, setTrafficStatus] = useState(null);
   const [isD4SectionOpen, setIsD4SectionOpen] = useState(false);
+  const closeD4Section = useCallback(() => {
+    setIsD4SectionOpen(false);
+    setDetailRequest(null);
+    onEditorClose?.();
+  }, [onEditorClose]);
+  // 대시보드 레일에서 다른 탭을 고르면(d4CloseKey가 바뀌면) D4 패인을 닫는다.
+  const closeKeyRef = useRef(d4CloseKey);
+  useEffect(() => {
+    if (closeKeyRef.current === d4CloseKey) return;
+    closeKeyRef.current = d4CloseKey;
+    closeD4Section();
+  }, [closeD4Section, d4CloseKey]);
   // D4 상세를 여는 버튼은 상세가 열린 동안 사라졌다가 닫히면 다시 그려지므로, 닫을 때 포커스를 돌려받을 새 버튼을 ref로 넘긴다.
   const d4OpenerRef = useRef(null);
   const [detailRequest, setDetailRequest] = useState(null);
@@ -457,7 +472,8 @@ export default function VWorldRenderer({
           </div>
         )}
       </div>
-      {isD4SectionOpen && (
+      {/* D4 상세는 대시보드 셸의 패인 자리(d4PaneHost)에 그린다. 진입 경로(MODEL_NAME, D4 좌표 표지)는 그대로다. */}
+      {isD4SectionOpen && d4PaneHost && createPortal(
         <Suspense
           fallback={
             <div
@@ -479,13 +495,10 @@ export default function VWorldRenderer({
             onRepresentativeChange={onRepresentativeInstallationPlanChange}
             planRefreshKey={installationPlanRefreshKey}
             returnFocusRef={d4OpenerRef}
-            onClose={() => {
-              setIsD4SectionOpen(false);
-              setDetailRequest(null);
-              onEditorClose?.();
-            }}
+            onClose={closeD4Section}
           />
-        </Suspense>
+        </Suspense>,
+        d4PaneHost,
       )}
     </div>
   );

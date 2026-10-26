@@ -671,10 +671,10 @@ describe("Legacy and VWorld feature parity", () => {
     await act(async () => {
       await sceneMock.cityModelProps.onBuildingClick({ name: "BLD_D4", parent: { name: "BLD_D4" }, userData: {} });
     });
-    expect(container.querySelector('[data-qa="dashboard-panel"]').getAttribute("aria-hidden")).toBe("true");
+    expect(container.querySelector('[data-qa="dashboard-panel"]').dataset.pane).toBe("d4");
     fireEvent.click(screen.getByRole("button", { name: "D4 상세 닫기" }));
     expect(screen.getByRole("tab", { name: "기본 현황" }).getAttribute("aria-selected")).toBe("true");
-    expect(Math.abs(scroller().scrollTop - 300)).toBeLessThanOrEqual(8);
+    await waitFor(() => expect(Math.abs(scroller().scrollTop - 300)).toBeLessThanOrEqual(8));
     expect(container.querySelector('[data-qa="dashboard-panel"]').dataset.open).toBe("true");
   });
   it("opens the selection inspector above the four tabs without changing the tab or adding a 미기후 tab", async () => {

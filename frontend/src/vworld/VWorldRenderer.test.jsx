@@ -128,6 +128,17 @@ class ResizeObserver {
 
 globalThis.ResizeObserver = ResizeObserver;
 
+// 앱에서는 대시보드 셸의 D4 패인 자리가 D4 상세를 받는다. 렌더러만 시험할 때는 문서에 같은 자리를 하나 만든다.
+const paneHosts = [];
+const paneHost = () => {
+  const host = document.createElement("div");
+  host.dataset.qa = "d4-pane-host";
+  document.body.appendChild(host);
+  paneHosts.push(host);
+  return host;
+};
+afterEach(() => paneHosts.splice(0).forEach((host) => host.remove()));
+
 describe("VWorldRenderer retained map integration", () => {
   it("rebinds a reused global map under StrictMode and renders the D4 representative polygon", async () => {
     mocks.vw = createVw();
@@ -144,7 +155,7 @@ describe("VWorldRenderer retained map integration", () => {
     createCampusGltfOverlay.mockClear();
     mocks.vw = createVw();
     window.__scnuVWorldMapInstance = retainedMap();
-    render(<VWorldRenderer onSelection={vi.fn()} simulationDate={new Date("2026-05-18T12:00:00+09:00")} />);
+    render(<VWorldRenderer d4PaneHost={paneHost()} onSelection={vi.fn()} simulationDate={new Date("2026-05-18T12:00:00+09:00")} />);
 
     await waitFor(() => expect(createCampusGltfOverlay).toHaveBeenCalled());
     const [, cesiumArg, options] = createCampusGltfOverlay.mock.calls.at(-1);
@@ -162,7 +173,7 @@ describe("VWorldRenderer retained map integration", () => {
     mocks.vw = createVw();
     const map = retainedMap();
     window.__scnuVWorldMapInstance = map;
-    render(<VWorldRenderer onSelection={vi.fn()} simulationDate={new Date("2026-05-18T12:00:00+09:00")} />);
+    render(<VWorldRenderer d4PaneHost={paneHost()} onSelection={vi.fn()} simulationDate={new Date("2026-05-18T12:00:00+09:00")} />);
 
     await waitFor(() => expect(mocks.createdIds).toContain("SCNU_REPRESENTATIVE_PANEL_strict-plan_array-1"));
     expect(map.removeObjectById).toHaveBeenCalledWith(D4_VWORLD_MODEL_IDS[0]);
@@ -184,7 +195,7 @@ describe("VWorldRenderer retained map integration", () => {
     mocks.vw = createVw();
     const map = retainedMap();
     window.__scnuVWorldMapInstance = map;
-    render(<VWorldRenderer onSelection={vi.fn()} simulationDate={new Date("2026-05-18T12:00:00+09:00")} />);
+    render(<VWorldRenderer d4PaneHost={paneHost()} onSelection={vi.fn()} simulationDate={new Date("2026-05-18T12:00:00+09:00")} />);
 
     await waitFor(() => expect(mocks.createdIds).toContain("SCNU_REPRESENTATIVE_PANEL_strict-plan_array-1"));
     expect(map.removeObjectById).not.toHaveBeenCalledWith(D4_VWORLD_MODEL_IDS[0]);
@@ -194,7 +205,7 @@ describe("VWorldRenderer retained map integration", () => {
   it("shows a Korean message instead of raw exception text for non-loader initialization errors", async () => {
     mocks.loaderError = new TypeError("map.getViewer is not a function");
     try {
-      render(<VWorldRenderer onSelection={vi.fn()} />);
+      render(<VWorldRenderer d4PaneHost={paneHost()} onSelection={vi.fn()} />);
 
       await waitFor(() => expect(document.querySelector('[role="alert"]')).not.toBeNull());
       const alertText = document.querySelector('[role="alert"]').textContent;
@@ -209,7 +220,7 @@ describe("VWorldRenderer retained map integration", () => {
     const onD4SectionChange = vi.fn();
     mocks.vw = createVw();
     window.__scnuVWorldMapInstance = retainedMap();
-    render(<VWorldRenderer onSelection={vi.fn()} onD4SectionChange={onD4SectionChange} simulationDate={new Date("2026-05-18T12:00:00+09:00")} />);
+    render(<VWorldRenderer d4PaneHost={paneHost()} onSelection={vi.fn()} onD4SectionChange={onD4SectionChange} simulationDate={new Date("2026-05-18T12:00:00+09:00")} />);
 
     await waitFor(() => expect(onD4SectionChange).toHaveBeenCalledWith(false));
     fireEvent.click(await screen.findByRole("button", { name: "D4 공과대학 3호관 상세 보기" }));
@@ -220,7 +231,7 @@ describe("VWorldRenderer retained map integration", () => {
   it("hands the re-rendered D4 opener to the detail experience as its focus return target", async () => {
     mocks.vw = createVw();
     window.__scnuVWorldMapInstance = retainedMap();
-    render(<VWorldRenderer onSelection={vi.fn()} simulationDate={new Date("2026-05-18T12:00:00+09:00")} />);
+    render(<VWorldRenderer d4PaneHost={paneHost()} onSelection={vi.fn()} simulationDate={new Date("2026-05-18T12:00:00+09:00")} />);
 
     fireEvent.click(await screen.findByRole("button", { name: "D4 공과대학 3호관 상세 보기" }));
     expect(await screen.findByText("D4 상세 화면")).toBeTruthy();
@@ -236,7 +247,7 @@ describe("VWorldRenderer retained map integration", () => {
     mocks.vw = createVw();
     window.__scnuVWorldMapInstance = retainedMap();
     const simulationDate = new Date("2026-05-18T12:00:00+09:00");
-    render(<VWorldRenderer onSelection={vi.fn()} simulationDate={simulationDate} overlayInsetRight="0px" />);
+    render(<VWorldRenderer d4PaneHost={paneHost()} onSelection={vi.fn()} simulationDate={simulationDate} overlayInsetRight="0px" />);
 
     const opener = await screen.findByRole("button", { name: "D4 공과대학 3호관 상세 보기" });
     const overlays = opener.closest('[data-qa="vworld-map-overlays"]');
@@ -250,7 +261,7 @@ describe("VWorldRenderer retained map integration", () => {
   it("renders the SDK loader error message and a retry that runs the loader again without reloading the page", async () => {
     mocks.loaderError = Object.assign(new Error("VWorld API 키가 없습니다. frontend/.env 에 VITE_VWORLD_API_KEY 를 설정하세요."), { code: "VWORLD_KEY_MISSING" });
     const { loadVWorldWebGlSdk } = await import("./webglSdkLoader.mjs");
-    render(<VWorldRenderer onSelection={vi.fn()} />);
+    render(<VWorldRenderer d4PaneHost={paneHost()} onSelection={vi.fn()} />);
 
     await waitFor(() => expect(document.querySelector('[role="alert"]')).not.toBeNull());
     expect(document.querySelector('[role="alert"]').textContent).toContain(
@@ -277,7 +288,7 @@ describe("VWorldRenderer left overlay stack", () => {
     });
     mocks.vw = createVw();
     window.__scnuVWorldMapInstance = retainedMap();
-    render(<VWorldRenderer onSelection={vi.fn()} simulationDate={new Date("2026-05-18T12:00:00+09:00")} />);
+    render(<VWorldRenderer d4PaneHost={paneHost()} onSelection={vi.fn()} simulationDate={new Date("2026-05-18T12:00:00+09:00")} />);
 
     await waitFor(() => expect(mocks.createdIds).toContain("SCNU_REPRESENTATIVE_PANEL_strict-plan_array-1"));
     expect(screen.queryByText(status.message)).toBeNull();
@@ -328,7 +339,7 @@ describe("VWorldRenderer map control layout", () => {
     });
     mocks.vw = createVw();
     window.__scnuVWorldMapInstance = retainedMap();
-    render(<VWorldRenderer onSelection={vi.fn()} simulationDate={simulationDate} />);
+    render(<VWorldRenderer d4PaneHost={paneHost()} onSelection={vi.fn()} simulationDate={simulationDate} />);
 
     await waitFor(() => expect(mocks.trafficOnStatus).toBeTypeOf("function"));
     act(() => {
@@ -350,7 +361,7 @@ describe("VWorldRenderer map control layout", () => {
 
   it("puts a map load failure and its retry first in the top-left column", async () => {
     mocks.loaderError = Object.assign(new Error("VWorld SDK를 불러오지 못했습니다. 네트워크를 확인하세요."), { code: "VWORLD_SDK_UNAVAILABLE" });
-    render(<VWorldRenderer onSelection={vi.fn()} simulationDate={simulationDate} />);
+    render(<VWorldRenderer d4PaneHost={paneHost()} onSelection={vi.fn()} simulationDate={simulationDate} />);
 
     const alert = (await screen.findByText("VWorld SDK를 불러오지 못했습니다. 네트워크를 확인하세요.")).closest('[role="alert"]');
     const column = document.querySelector('[data-qa="vworld-left-stack"]');
@@ -364,7 +375,7 @@ describe("VWorldRenderer map control layout", () => {
     createCampusGltfOverlay.mockImplementationOnce(() => new Promise(() => {}));
     mocks.vw = createVw();
     window.__scnuVWorldMapInstance = retainedMap();
-    render(<VWorldRenderer onSelection={vi.fn()} simulationDate={simulationDate} />);
+    render(<VWorldRenderer d4PaneHost={paneHost()} onSelection={vi.fn()} simulationDate={simulationDate} />);
 
     await waitFor(() => expect(mocks.createdIds).toContain("SCNU_CAMPUS_AREA"));
     const loading = screen.getByText("VWorld 지도를 불러오는 중입니다.").closest('[role="status"]');
@@ -376,7 +387,7 @@ describe("VWorldRenderer map control layout", () => {
     const map = retainedMap();
     mocks.vw = createVw();
     window.__scnuVWorldMapInstance = map;
-    render(<VWorldRenderer onSelection={vi.fn()} simulationDate={simulationDate} />);
+    render(<VWorldRenderer d4PaneHost={paneHost()} onSelection={vi.fn()} simulationDate={simulationDate} />);
 
     await waitFor(() => expect(map.onClick.addEventListener).toHaveBeenCalled());
     const handleMapClick = map.onClick.addEventListener.mock.calls.at(-1)[0];
@@ -400,20 +411,20 @@ describe("VWorldRenderer map control layout", () => {
   it("lays the map overlays out inside the visible map area", async () => {
     mocks.vw = createVw();
     window.__scnuVWorldMapInstance = retainedMap();
-    const { rerender } = render(<VWorldRenderer onSelection={vi.fn()} simulationDate={simulationDate} overlayInsetRight="var(--dashboard-panel-width)" />);
+    const { rerender } = render(<VWorldRenderer d4PaneHost={paneHost()} onSelection={vi.fn()} simulationDate={simulationDate} overlayInsetRight="var(--dashboard-panel-width)" />);
 
     const overlays = (await screen.findByRole("button", { name: "D4 공과대학 3호관 상세 보기" })).closest('[data-qa="vworld-map-overlays"]');
     expect(overlays.className).toMatch(/\babsolute\b/);
     expect(overlays.style.right).toBe("var(--dashboard-panel-width)");
 
-    rerender(<VWorldRenderer onSelection={vi.fn()} simulationDate={simulationDate} overlayInsetRight="0px" />);
+    rerender(<VWorldRenderer d4PaneHost={paneHost()} onSelection={vi.fn()} simulationDate={simulationDate} overlayInsetRight="0px" />);
     expect(overlays.style.right).toBe("0px");
   });
 
   it("draws the map backdrop right above the map and below the map controls", async () => {
     mocks.vw = createVw();
     window.__scnuVWorldMapInstance = retainedMap();
-    render(<VWorldRenderer onSelection={vi.fn()} simulationDate={simulationDate} mapBackdrop={<div data-testid="map-backdrop" />} />);
+    render(<VWorldRenderer d4PaneHost={paneHost()} onSelection={vi.fn()} simulationDate={simulationDate} mapBackdrop={<div data-testid="map-backdrop" />} />);
 
     const backdrop = screen.getByTestId("map-backdrop");
     const overlays = (await screen.findByRole("button", { name: "D4 공과대학 3호관 상세 보기" })).closest('[data-qa="vworld-map-overlays"]');

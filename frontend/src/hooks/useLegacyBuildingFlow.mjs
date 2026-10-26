@@ -12,7 +12,8 @@ const ELEMENT_NAMES = new Map(commonElements.elements.map((element) => [element.
 // 탭은 사용자가 고른 것을 지킨다. 미기후 탭만 이 흐름이 열고 닫는다.
 // 라벨 층의 선택(labels/useSelectionState)은 무엇을 어떤 경로로 골랐는지를 따로 들고 있다: 클릭·시점·검색으로 고른 건물은
 // 근접 자동 선택에 밀리지 않고, 드래그를 시작하거나 선택을 풀면 다시 근접을 따른다. 패널 제목은 그 건물의 레지스트리 이름이다.
-export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef, onSectionExit }) {
+// onSectionEnter: D4 패인이 열릴 때(카메라를 D4로 옮긴다), onSectionExit: 닫힐 때.
+export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef, onSectionEnter, onSectionExit }) {
   const [buildingViewMode, setBuildingViewMode] = useState("campus");
   const [editorRequest, setEditorRequest] = useState(null);
   const [labelRegistry, setLabelRegistry] = useState(null);
@@ -49,7 +50,8 @@ export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef
     clearAll();
     popup.clear();
     setBuildingViewMode("section");
-  }, [clearAll, popup.clear, viewMemory.save]);
+    onSectionEnter?.();
+  }, [clearAll, onSectionEnter, popup.clear, viewMemory.save]);
 
   const exitD4Section = useCallback(() => {
     setBuildingViewMode("campus");

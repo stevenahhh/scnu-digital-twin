@@ -6,6 +6,7 @@ import { useCampusRendering } from "./render/useCampusRendering.mjs";
 import { useInteractionDpr } from "./render/interactionDpr.mjs";
 import { QUALITY_LABELS, QUALITY_TIERS } from "./settings/qualityPreset.mjs";
 import { useCampusCamera } from "./camera/useCampusCamera.mjs";
+import { CAMERA_PRESETS, D4_PRESET_ID } from "./camera/cameraPresets.mjs";
 import { useSceneWeather } from "./weather/useSceneWeather.mjs";
 import { isD4ElementId } from "./utils/d4BuildingData.mjs";
 import { CampusHud } from "./components/CampusHud";
@@ -37,6 +38,7 @@ import { summarizeWeather } from "./panel/weatherSummary.mjs";
 
 // ?ui=gallery는 공용 기본 요소 확인 화면만 띄운다. 따로 나눠 불러와 대시보드 번들에는 들어가지 않는다.
 const UiGallery = lazy(() => import("./ui/Gallery.jsx"));
+const D4_PRESET = CAMERA_PRESETS.find((preset) => preset.id === D4_PRESET_ID);
 const SHOW_UI_GALLERY = new URLSearchParams(window.location.search).get("ui") === "gallery";
 
 export default function App() {
@@ -94,19 +96,21 @@ function Dashboard() {
     popup,
     panel: { activeTab, setActiveTab, scrollRef: panelScrollRef, onSelectionShown: panelState.revealOnPhone },
     activePresetRef: camera.activePresetRef,
+    onSectionEnter: useCallback(() => camera.selectPreset(D4_PRESET), [camera.selectPreset]),
     onSectionExit: plans.refreshAll,
   });
   const isCampus = flow.buildingViewMode === "campus";
   const rendering = useCampusRendering({
     canvasStateRef,
     interactionDpr,
-    modalOpen: !isCampus,
+    // D4 패인은 지도 옆에 열리고 장면은 계속 보이므로(카메라가 D4로 날아간다) 그리기를 멈추지 않는다.
+    modalOpen: false,
     selectionKey: `${selection.selectedId}|${clock.sunState.visible}|${isSceneLoading}`,
     panelKey: `${panelState.open}|${panelState.detent}|${activeTab}|${flow.buildingViewMode}`,
   });
 
   // 지도·HUD·안내는 패널(또는 레일)이 차지한 오른쪽 폭만큼 비켜 선다. 폰 시트 위 장면은 계속 조작할 수 있다.
-  const mapInsetRight = shellInsetRight(viewportMode, panelState.open);
+  const mapInsetRight = shellInsetRight(viewportMode, panelState.open, !isCampus);
 
   const summary = summarizeWeather({ feed: weatherFeed, mode: clock.mode, simTemp: clock.simTemp });
   const sceneWeather = useSceneWeather({ weatherData: weatherFeed.data, weatherState: weatherFeed.state });
@@ -148,21 +152,20 @@ function Dashboard() {
   return (
     <div className="dashboard-root relative h-dvh w-screen overflow-clip bg-canvas text-ink">
       <div className="absolute inset-0" style={{ background: sceneBackgroundFor(clock.sunState.visible) }} />
-      {isCampus && (
-        <CampusHud
-          ref={hudRef}
-          mode={viewportMode}
-          insetRight={mapInsetRight}
-          statusSlot={viewportMode !== "phone" && (
-            <FeedStamps feeds={feeds} retry={feeds.retry} placement={{ expanded: panelState.open, activeTab }} />
-          )}
-          camera={camera}
-          clock={clock}
-          playing={isTimePlaying}
-          onPlayingChange={setIsTimePlaying}
-          sceneWeather={sceneWeather}
-        />
-      )}
+      {/* HUD는 D4 패인이 열려도 남는다: 시각·시점 메뉴가 패인 왼쪽 장면 위에 그대로 있다. */}
+      <CampusHud
+        ref={hudRef}
+        mode={viewportMode}
+        insetRight={mapInsetRight}
+        statusSlot={viewportMode !== "phone" && (
+          <FeedStamps feeds={feeds} retry={feeds.retry} placement={{ expanded: panelState.open, activeTab }} />
+        )}
+        camera={camera}
+        clock={clock}
+        playing={isTimePlaying}
+        onPlayingChange={setIsTimePlaying}
+        sceneWeather={sceneWeather}
+      />
       <CampusCanvas
         ref={mapLayerRef}
         insetRight={mapInsetRight}
@@ -183,20 +186,6 @@ function Dashboard() {
       />
       {isSceneLoading && <SceneLoadingNotice key={sceneAttempt} insetRight={mapInsetRight} onRetry={retryScene} />}
 
-      {!isCampus && (
-        <D4SectionExperience
-          buildingId={editor?.buildingId ?? selection.selectedBuildingId}
-          scenarioId={editor?.scenarioId}
-          installationPlanId={editor?.installationPlanId}
-          startInstallation={Boolean(editor?.scenarioId || editor?.installationPlanId)}
-          onClose={flow.exitD4Section}
-          onPlanSaved={plans.refreshAll}
-          createInstallationPlanDraft={createPlanDraftFromExisting}
-          onPlansChange={plans.onPlansChange}
-          onRepresentativeChange={plans.onRepresentativeChange}
-          planRefreshKey={plans.refreshKey}
-        />
-      )}
 
       <DashboardShell
         ref={panelRef}
@@ -205,7 +194,26 @@ function Dashboard() {
         onOpenChange={panelState.setUserOpen}
         detent={panelState.detent}
         onDetentChange={panelState.setDetent}
-        hidden={!isCampus}
+        onPaneExit={flow.exitD4Section}
+        pane={!isCampus && (
+          <D4SectionExperience
+            buildingId={editor?.buildingId ?? selection.selectedBuildingId}
+            scenarioId={editor?.scenarioId}
+            installationPlanId={editor?.installationPlanId}
+            startInstallation={Boolean(editor?.scenarioId || editor?.installationPlanId)}
+            onClose={flow.exitD4Section}
+            onPlanSaved={plans.refreshAll}
+            createInstallationPlanDraft={createPlanDraftFromExisting}
+            onPlansChange={plans.onPlansChange}
+            onRepresentativeChange={plans.onRepresentativeChange}
+            planRefreshKey={plans.refreshKey}
+            presets={viewportMode === "phone" ? CAMERA_PRESETS : null}
+            onSelectPreset={(preset) => {
+              flow.exitD4Section();
+              camera.selectPreset(preset);
+            }}
+          />
+        )}
         timeReadout={sceneTimeReadout(clock.sceneMinuteOfDay)}
         activeTab={activeTab}
         onTabChange={setActiveTab}

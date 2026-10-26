@@ -29,7 +29,7 @@ function usePrefersReducedMotion() {
 // peek·half에서는 포커스를 가두지 않는다. 본문 스크롤은 full에서만 생긴다(같은 축 스크롤을 겹치지 않는다).
 // 나머지 속성(data-qa 등)과 ref는 시트 요소에 그대로 붙는다(대시보드 셸이 패널 훅과 라벨 가림 기준으로 쓴다).
 export const Sheet = forwardRef(function Sheet(
-  { label, detent: detentProp, defaultDetent = "peek", onDetentChange, peekHeight = PEEK_HEIGHT, header, children, className, ...rest },
+  { label, detent: detentProp, defaultDetent = "peek", onDetentChange, peekHeight = PEEK_HEIGHT, escapeCollapses = true, header, children, className, ...rest },
   forwardedRef,
 ) {
   const [detentState, setDetentState] = useState(defaultDetent);
@@ -113,7 +113,7 @@ export const Sheet = forwardRef(function Sheet(
   };
 
   const handleKeyDown = (event) => {
-    if (event.key !== "Escape" || detent === "peek") return;
+    if (!escapeCollapses || event.key !== "Escape" || detent === "peek") return;
     event.stopPropagation();
     setDetent("peek");
   };
