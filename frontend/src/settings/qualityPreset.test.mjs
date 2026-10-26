@@ -34,10 +34,10 @@ test("only the three tiers parse; low mounts no post-processing", () => {
   assert.equal(parseQuality("ultra"), null);
   assert.equal(parseQuality(null), null);
   assert.equal(QUALITY_EFFECTS.low, null);
-  assert.equal(QUALITY_EFFECTS.medium.ao.halfRes, true);
   assert.equal(QUALITY_EFFECTS.medium.bloom, false);
-  assert.equal(QUALITY_EFFECTS.high.ao.halfRes, false);
   assert.equal(QUALITY_EFFECTS.high.bloom, true);
+  // No screen-space AO (or any other ray-marched pass) on any tier: the baked AO atlases replace it.
+  for (const tier of QUALITY_TIERS) assert.equal(QUALITY_EFFECTS[tier]?.ao, undefined);
 });
 
 test("tiers set the renderer cost: DPR cap and shadow map size", () => {

@@ -3,8 +3,10 @@ import { INTERACTION_DPR_FACTOR } from "../render/interactionDpr.mjs";
 
 // 3D 캠퍼스 렌더링 품질 단계.
 // - low: 지금까지의 렌더러 그대로(후처리 없음). 후처리 청크도 받지 않는다.
-// - medium: SMAA + 절반 해상도 N8AO(가벼운 접촉 그림자).
-// - high: 전체 해상도 N8AO + SMAA + 밤의 창문·가로등에만 은은한 bloom.
+// - medium: SMAA(+ 선택 건물 외곽선).
+// - high: SMAA + 밤의 창문·가로등에만 은은한 bloom(+ 선택 건물 외곽선).
+// 화면 공간 AO(N8AO)처럼 깊이 버퍼를 따라 광선을 진행하는 패스는 어느 단계에도 없다. 접촉 그늘은 모든 단계에서
+// GLB에 구워 둔 AO 아틀라스(ao-buildings·ao-ground, 추정 시뮬레이션 값)가 맡는다.
 // 톤 매핑은 모든 단계에서 Neutral이다(후처리 단계에서는 컴포저의 ToneMapping 효과가 맡는다).
 // 단계마다 렌더러 비용도 정한다(QUALITY_RENDERER): 캔버스 픽셀 비율 상한과 태양 그림자 맵 크기.
 export const QUALITY_TIERS = Object.freeze(["low", "medium", "high"]);
@@ -18,8 +20,8 @@ export function parseQuality(value) {
 // 후처리 단계별 설정. low는 null이라 효과 청크를 아예 마운트하지 않는다.
 export const QUALITY_EFFECTS = Object.freeze({
   low: null,
-  medium: Object.freeze({ ao: Object.freeze({ halfRes: true, quality: "performance", intensity: 1.5 }), bloom: false }),
-  high: Object.freeze({ ao: Object.freeze({ halfRes: false, quality: "medium", intensity: 2 }), bloom: true }),
+  medium: Object.freeze({ bloom: false }),
+  high: Object.freeze({ bloom: true }),
 });
 
 // 단계별 렌더러 비용. maxDpr은 캔버스 픽셀 비율 상한(조작 중 DPR 낮추기는 이 상한 위에서 다시 0.75배),
