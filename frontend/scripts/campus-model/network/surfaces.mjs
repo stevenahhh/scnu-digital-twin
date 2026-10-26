@@ -14,7 +14,8 @@
 //                                          off-campus lots; the roundabout (painted ring, rim, island) over the road
 //   5 / 5.5     A003      Ground_Pavers / Ground_Asphalt / Ground_Bicycle   NGII A003 walkway rings by `qual` / `scls`
 //   5.8         TILES     Ground_Sports /  project paving supplements of data/osm-ground.json (patterned courtyard tiles
-//                         Ground_Pavers    or plain pavers, estimated; label PAVING): above the walkways, under the aprons
+//                         Ground_Pavers /  or plain pavers, label PAVING; red non-slip road surfacing, Ground_Bicycle tile,
+//                         Ground_Bicycle   label ASPHALT; all estimated): above the walkways, under the aprons
 //   6           APRON     Ground_Apron     the 2.2 m band centred on every building outline (1.1 m outside it, estimated)
 // A003 rings are the kerb lines: they stay exactly where the survey has them and the road zones stay under them.
 //
@@ -467,9 +468,14 @@ export function buildSurfaces({ inputs, walkways, groundFeatures = null, offCamp
   }
   for (const o of outlines) strokes.push({ line: o.line, widthM: EDGE_STONE_M, label: SURFACE_CLASS.KERB, precedence: PRECEDENCE.A003 + 0.6 });
 
-  // ---- 5.8 paving supplements: a courtyard's patterned tiles (pattern "tiles", running along `axis`) or plain pavers
+  // ---- 5.8 paving supplements: a courtyard's patterned tiles (pattern "tiles", running along `axis`), plain pavers, or
+  // the red non-slip surfacing of a carriageway (pattern "red": the red asphalt tile of the bicycle lanes, still road)
   for (const paving of groundFeatures?.supplements.filter((f) => f.kind === "paving") ?? []) {
-    if (!(paving.ring?.length >= 3) || !(paving.pattern === "plain" || (paving.pattern === "tiles" && paving.axis))) throw new Error(`osm-ground.json: paving "${paving.note}" needs a ring and pattern "plain" or "tiles" with an axis`);
+    if (!(paving.ring?.length >= 3) || !(paving.pattern === "plain" || paving.pattern === "red" || (paving.pattern === "tiles" && paving.axis))) throw new Error(`osm-ground.json: paving "${paving.note}" needs a ring and pattern "plain", "red" or "tiles" with an axis`);
+    if (paving.pattern === "red") {
+      add({ cls: "ASPHALT", mesh: "Ground_Bicycle", label: SURFACE_CLASS.ASPHALT, precedence: PRECEDENCE.TILES, source: "project-estimated", source_ref: `paving: ${paving.note}`, estimated: true }, [paving.ring]);
+      continue;
+    }
     if (paving.pattern === "plain") {
       add({ cls: "PAVING", mesh: "Ground_Pavers", label: SURFACE_CLASS.PAVING, precedence: PRECEDENCE.TILES, source: "project-estimated", source_ref: `paving: ${paving.note}`, estimated: true }, [paving.ring]);
       continue;

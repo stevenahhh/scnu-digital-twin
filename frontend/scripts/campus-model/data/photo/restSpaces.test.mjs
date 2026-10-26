@@ -14,14 +14,14 @@ const placed = furniture.objects.filter((o) => o.source === "rest-spaces");
 test("every rest space carries its provenance and an estimated flag", () => {
   assert.ok(rest.features.length > 0);
   for (const { properties: p, geometry: g } of rest.features) {
-    assert.match(p.id, /^RS(\d{4}[A-Z]?|-GATE-[A-Z0-9]+)$/, `${p.id}: id`);
+    assert.match(p.id, /^RS(\d{4}[A-Z]?|-GATE-[A-Z0-9]+|-LS-[A-Z0-9]+)$/, `${p.id}: id`);
     assert.equal(p.estimated, true, `${p.id}: estimated`);
     assert.ok(catalogue[p.kind] || B[p.kind], `${p.id}: kind ${p.kind} is neither a catalogue type nor a builder`);
     assert.match(p.vr_scene, /^scene_[a-z0-9_]+$/, `${p.id}: vr_scene`);
     assert.ok(["f", "r", "b", "l", "u", "d"].includes(p.vr_face), `${p.id}: vr_face`);
     assert.ok(Array.isArray(p.vr_cols) && p.vr_cols.length === 2, `${p.id}: vr_cols`);
     const support = p.photo_support ?? "none"; // the gate sign (todo 14) is VR-only and carries no photo_support
-    assert.ok(["roof", "wall", "none"].includes(support), `${p.id}: photo_support ${p.photo_support}`);
+    assert.ok(["roof", "wall", "outline", "none"].includes(support), `${p.id}: photo_support ${p.photo_support}`);
     assert.ok(p.confidence > 0 && p.confidence <= 1, `${p.id}: confidence`);
     if (support === "none") assert.ok(p.confidence <= 0.4, `${p.id}: a VR-only position keeps confidence <= 0.4`);
     assert.ok(p.height_source?.endsWith("(estimated)"), `${p.id}: height_source must end in (estimated)`);
@@ -49,6 +49,29 @@ test("one feature group per sighting decided missing, none for the others", () =
   for (const s of reconciliation.sightings) {
     assert.ok(["match", "retype", "missing", "not_rest_space", "deferred"].includes(s.decision), `${s.scene}: decision ${s.decision}`);
     if (s.decision !== "missing") assert.ok(!s.instanceId, `${s.scene} ${s.decision}: no instance id`);
+  }
+});
+
+// Landscape rows of the reconciliation decided missing (steps, ponds, paths, surfaces): each carries the verdict it was
+// applied with, and every feature or surface supplement it names exists.
+test("every landscape row decided missing is applied to a built feature, an existing node, the markings lane or an off-campus verdict", () => {
+  const ground = JSON.parse(readFileSync(new URL("../osm-ground.json", import.meta.url), "utf8"));
+  const ids = new Set(rest.features.map((f) => f.properties.id));
+  const built = new Set(placed.map((o) => o.id));
+  const missing = reconciliation.landscape.filter((l) => l.decision === "missing");
+  assert.ok(missing.length > 0);
+  for (const row of missing) {
+    const applied = row.applied;
+    assert.ok(applied, `${row.scene} ${row.note}: no applied verdict`);
+    assert.ok(["built", "mapped", "markings_lane", "not_on_campus"].includes(applied.verdict), `${row.scene}: verdict ${applied.verdict}`);
+    assert.ok(applied.evidence?.length > 20, `${row.scene}: evidence`);
+    for (const id of applied.features ?? []) {
+      assert.ok(ids.has(id), `${row.scene}: ${id} is not in rest-spaces.geojson`);
+      assert.ok(built.has(id), `${row.scene}: ${id} is not loaded by the furniture stage`);
+    }
+    for (const prefix of applied.supplements ?? []) assert.ok(ground.supplements.features.some((f) => f.note?.startsWith(prefix)), `${row.scene}: no osm-ground supplement "${prefix}"`);
+    if (applied.verdict === "built") assert.ok((applied.features ?? []).length + (applied.supplements ?? []).length > 0, `${row.scene}: built names nothing`);
+    if (["built", "mapped"].includes(applied.verdict)) assert.ok(applied.nodes?.length > 0, `${row.scene}: model nodes`);
   }
 });
 

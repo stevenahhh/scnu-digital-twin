@@ -15,7 +15,15 @@
     "landscape": 28,
     "notRestSpace": 3,
     "deferred": 0,
-    "appliedBy": "todo 25 (data/photo/rest-spaces.geojson, stages/furniture.mjs RETYPED), 2026-10-26"
+    "appliedBy": "todo 25 (data/photo/rest-spaces.geojson, stages/furniture.mjs RETYPED), 2026-10-26",
+    "landscapeApplied": {
+      "rows": 12,
+      "built": 9,
+      "mapped": 1,
+      "notOnCampus": 1,
+      "by": "landscape-vr (data/photo/rest-spaces.geojson RS-LS-*, data/osm-ground.json supplements), 2026-10-26",
+      "markingsLane": 1
+    }
   },
   "sightings": [
     {
@@ -632,7 +640,20 @@
       ],
       "decision": "missing",
       "ref": null,
-      "reason": "only bench within 8 m, none of a kind that stands for a sculpture"
+      "reason": "only bench within 8 m, none of a kind that stands for a sculpture",
+      "applied": {
+        "verdict": "built",
+        "features": [
+          "RS-LS-A1POND"
+        ],
+        "supplements": [],
+        "nodes": [
+          "Furniture#RS-LS-A1POND",
+          "Ground_Sports (OSM water way/367126960)"
+        ],
+        "evidence": "the OSM pond outline way/367126960 holds a dark water surface with two white spray spots on the NGII 2025 sheet; VR scene_a1 l shows the water, jets, rock and stone coping, so the supplement reclass of this pond to a sunken lawn is withdrawn and the coping, jets and rock are built",
+        "by": "landscape-vr (2026-10-26)"
+      }
     },
     {
       "restSighting": null,
@@ -815,7 +836,17 @@
       "candidates": [],
       "decision": "missing",
       "ref": null,
-      "reason": "no surveyed object within 8 m of the ray"
+      "reason": "no surveyed object within 8 m of the ray",
+      "applied": {
+        "verdict": "mapped",
+        "features": [],
+        "supplements": [],
+        "nodes": [
+          "Furniture#OC0096"
+        ],
+        "evidence": "the survey's tan/brown striped stepped_terrace OC0096 is this plaza (L-shaped, south and east of B1); the ortho-match station (nominal 40 m error) put the ray past it, and it is built on the terrain (compare-vr scene_b1 f shows the striped terraces)",
+        "by": "landscape-vr (2026-10-26)"
+      }
     },
     {
       "restSighting": null,
@@ -833,7 +864,21 @@
       "candidates": [],
       "decision": "missing",
       "ref": null,
-      "reason": "no surveyed object within 8 m of the ray"
+      "reason": "no surveyed object within 8 m of the ray",
+      "applied": {
+        "verdict": "built",
+        "features": [],
+        "supplements": [
+          "VR scene_b4 f cols 700-1100",
+          "VR scene_b4 f: the 8 x 8 m",
+          "VR scene_b4 f: the lawn path south"
+        ],
+        "nodes": [
+          "Ground_Pavers"
+        ],
+        "evidence": "the light 2.6 m paver path with an 8 x 8 m square across the B4 lawn is plain on the NGII 2025 sheet and absent from the model's ground (only land-cover lawn); traced as three plain paving supplements",
+        "by": "landscape-vr (2026-10-26)"
+      }
     },
     {
       "restSighting": null,
@@ -851,7 +896,19 @@
       "candidates": [],
       "decision": "missing",
       "ref": null,
-      "reason": "no surveyed object within 8 m of the ray"
+      "reason": "no surveyed object within 8 m of the ray",
+      "applied": {
+        "verdict": "built",
+        "features": [
+          "RS-LS-C1STEPS"
+        ],
+        "supplements": [],
+        "nodes": [
+          "Furniture#RS-LS-C1STEPS"
+        ],
+        "evidence": "VR scene_c1 f counts 14 + 5 risers between hedge strips and a tile landing; the bottom edge is the brick walk edge on the NGII 2025 sheet; the model terrain rises only 1 m there, so the flights carry their own rises",
+        "by": "landscape-vr (2026-10-26)"
+      }
     },
     {
       "restSighting": null,
@@ -894,7 +951,15 @@
       "candidates": [],
       "decision": "missing",
       "ref": null,
-      "reason": "no surveyed object within 8 m of the ray"
+      "reason": "no surveyed object within 8 m of the ray",
+      "applied": {
+        "verdict": "markings_lane",
+        "features": [],
+        "supplements": [],
+        "nodes": [],
+        "by": "landscape-vr (2026-10-26)",
+        "evidence": "road paint, not landscape: the crossing and the blue disabled bay right under the scene_c3 station (about 3-8 m) are traced in markings.geojson / markings-extra.geojson (MK00796, MK00797; MX00231, MX01310, MX01311) but the markings paint gate does not draw them (top-down qa/landscape-vr/topdown/c3-crosswalk-bay-topdown.png: only the zebra MK00135-MK00153 and the bay about 17 m north are drawn). Left to the markings lane (stages/markings.mjs is out of this lane's scope)"
+      }
     },
     {
       "restSighting": null,
@@ -912,7 +977,19 @@
       "candidates": [],
       "decision": "missing",
       "ref": null,
-      "reason": "no surveyed object within 8 m of the ray"
+      "reason": "no surveyed object within 8 m of the ray",
+      "applied": {
+        "verdict": "built",
+        "features": [
+          "RS-LS-D1STAIR"
+        ],
+        "supplements": [],
+        "nodes": [
+          "Furniture#RS-LS-D1STAIR"
+        ],
+        "evidence": "the stair is the 5 x 14 m strip south of D1 on the NGII 2025 sheet (the scene_d1 station of vr-stations.json is about 150 m off D1, so the first-pass ray missed it); two flights of about 9 risers in VR l/f",
+        "by": "landscape-vr (2026-10-26)"
+      }
     },
     {
       "restSighting": null,
@@ -970,7 +1047,19 @@
       "candidates": [],
       "decision": "missing",
       "ref": null,
-      "reason": "no surveyed object within 8 m of the ray"
+      "reason": "no surveyed object within 8 m of the ray",
+      "applied": {
+        "verdict": "built",
+        "features": [
+          "RS-LS-D3PMRACK"
+        ],
+        "supplements": [],
+        "nodes": [
+          "Furniture#RS-LS-D3PMRACK"
+        ],
+        "evidence": "the blue kick-scooter rack along the back of the bay in VR scene_d3 d was missing and is built (RS-LS-D3PMRACK); the bay paint MX00361 of markings-extra.geojson is rejected by the markings paint gate (blue support 0.579 < 0.6, markings-gate.json), so the blue fill is not drawn: a markings-lane follow-up",
+        "by": "landscape-vr (2026-10-26)"
+      }
     },
     {
       "restSighting": null,
@@ -988,7 +1077,19 @@
       "candidates": [],
       "decision": "missing",
       "ref": null,
-      "reason": "no surveyed object within 8 m of the ray"
+      "reason": "no surveyed object within 8 m of the ray",
+      "applied": {
+        "verdict": "built",
+        "features": [
+          "RS-LS-D4STEPS"
+        ],
+        "supplements": [],
+        "nodes": [
+          "Furniture#RS-LS-D4STEPS"
+        ],
+        "evidence": "VR scene_d4 f: the striped paver plaza ends in 4 steps across the passage between the D4 wings; the step edge is the light-to-shade line on the NGII 2025 sheet north of the PM bay MX00293; the model terrain is flat there",
+        "by": "landscape-vr (2026-10-26)"
+      }
     },
     {
       "restSighting": null,
@@ -1117,7 +1218,22 @@
       "candidates": [],
       "decision": "missing",
       "ref": null,
-      "reason": "no surveyed object within 8 m of the ray"
+      "reason": "no surveyed object within 8 m of the ray",
+      "applied": {
+        "verdict": "built",
+        "features": [
+          "RS-LS-E4STONE"
+        ],
+        "supplements": [
+          "VR scene_e4 r: red non-slip surfacing"
+        ],
+        "nodes": [
+          "Furniture#RS-LS-E4STONE",
+          "Ground_Bicycle (red surfacing)"
+        ],
+        "evidence": "VR scene_e4 r: the 공과대학 sign stone on the round lawn corner of a red-paved junction; the red surfacing is plain on the NGII 2025 sheet and was grey asphalt in the model; the lawn corner is the natural ground inside the A003 kerb",
+        "by": "landscape-vr (2026-10-26)"
+      }
     },
     {
       "restSighting": null,
@@ -1135,7 +1251,19 @@
       "candidates": [],
       "decision": "missing",
       "ref": null,
-      "reason": "no surveyed object within 8 m of the ray"
+      "reason": "no surveyed object within 8 m of the ray",
+      "applied": {
+        "verdict": "built",
+        "features": [
+          "RS-LS-E7STAIR"
+        ],
+        "supplements": [],
+        "nodes": [
+          "Furniture#RS-LS-E7STAIR"
+        ],
+        "evidence": "VR scene_e7 d (registered on the raised yellow crosswalk) shows three flights (6 + 7 + 6 risers) from the road walk to the E7 plaza; the grey stair area on the NGII 2025 sheet",
+        "by": "landscape-vr (2026-10-26)"
+      }
     },
     {
       "restSighting": null,
@@ -1153,7 +1281,20 @@
       "candidates": [],
       "decision": "missing",
       "ref": null,
-      "reason": "no surveyed object within 8 m of the ray"
+      "reason": "no surveyed object within 8 m of the ray",
+      "applied": {
+        "verdict": "built",
+        "features": [],
+        "supplements": [
+          "VR scene_e7 r/d: red surfacing"
+        ],
+        "nodes": [
+          "Ground_Bicycle (red surfacing)",
+          "Road_Markings (zebra MX00668-MX00671)"
+        ],
+        "evidence": "the red band is the red-surfaced carriageway past E7 (arrow and centre line on it, VR scene_e7 r/d), traced on the NGII 2025 sheet from the triangle island to the crosswalk south-east of the station; the crossings are markings of the other lane (the raised yellow crosswalk below the station is not in the markings data: a markings follow-up)",
+        "by": "landscape-vr (2026-10-26)"
+      }
     },
     {
       "restSighting": null,
@@ -1171,7 +1312,15 @@
       "candidates": [],
       "decision": "missing",
       "ref": null,
-      "reason": "no surveyed object within 8 m of the ray"
+      "reason": "no surveyed object within 8 m of the ray",
+      "applied": {
+        "verdict": "not_on_campus",
+        "features": [],
+        "supplements": [],
+        "nodes": [],
+        "evidence": "the statue stands at about E 244297, N 263468 on the NGII 2025 sheet, in the plaza of the 순천시문화건강센터 east of the arterial road: outside the OSM campus outline (data/osm-campus.json) and the model EXTENT (x > 502)",
+        "by": "landscape-vr (2026-10-26)"
+      }
     }
   ]
 }

@@ -110,6 +110,9 @@ test("a tiles paving supplement is a PAVING layer between the walkways and the a
   assert.equal(tiles.paint.axis.length, 2);
   const plain = buildSurfaces({ ...fixture(), groundFeatures: { ...groundFeatures, supplements: [{ kind: "paving", note: "walk", pattern: "plain", ring: rect(170, -200, 190, -180) }] } }).layers.find((l) => l.source_ref === "paving: walk");
   assert.deepEqual([plain.mesh, plain.label, plain.precedence], ["Ground_Pavers", SURFACE_CLASS.PAVING, tiles.precedence]);
+  // red non-slip road surfacing: the red asphalt tile, still road for the label raster (lamps, humps)
+  const red = buildSurfaces({ ...fixture(), groundFeatures: { ...groundFeatures, supplements: [{ kind: "paving", note: "red junction", pattern: "red", ring: rect(170, -200, 190, -180) }] } }).layers.find((l) => l.source_ref === "paving: red junction");
+  assert.deepEqual([red.mesh, red.cls, red.label, red.precedence, red.estimated], ["Ground_Bicycle", "ASPHALT", SURFACE_CLASS.ASPHALT, tiles.precedence, true]);
   assert.throws(() => buildSurfaces({ ...fixture(), groundFeatures: { ...groundFeatures, supplements: [{ kind: "paving", note: "bad", ring: rect(0, 0, 1, 1) }] } }), /needs a ring and pattern/);
 });
 

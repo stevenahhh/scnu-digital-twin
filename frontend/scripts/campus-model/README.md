@@ -702,6 +702,26 @@ kind. The build logs the pair count, which is 0. The two crossing bars of the X-
 listed as one compound. `data/photo/restSpaces.test.mjs` checks the provenance, the catalogue ranges, the 3 m rule
 against the survey and the coverage of the reconciliation table.
 
+### VR landscape (steps, the A1 pond, lawn paths, red surfacing)
+
+The 12 landscape rows of `data/photo/rest-spaces-reconciliation.json` decided `missing` carry an `applied` verdict
+(`built`, `mapped` to an existing node, `markings_lane` for road paint the markings stage owns, or `not_on_campus`; see
+`data/photo/README.md`). The built ones are real
+geometry, every value an estimate (추정):
+
+- `terraced_steps` (`RS-LS-C1STEPS`, `-D4STEPS`, `-E7STAIR`, `-D1STAIR`): a bottom edge traced on the NGII sheet and
+  flights read from the VR (risers counted, rise and tread estimated), with landings, hedge planters on kerbs and
+  handrails. The flights rise by their own risers from the lowest ground on the edge, because the terrain is smoothed
+  under most approaches; steps and landings are solids down to the ground. A landing may slope back to the ground
+  (`landing_to_ground`, the D4 forecourt). The survey's `outdoor_steps` and `stepped_terrace` keep the terrain rule.
+- `pond_basin` (`RS-LS-A1POND`): stone coping, translucent spray jets and a rock; the water is the OSM pond of the
+  ground stage, whose old reclass to a sunken lawn is withdrawn (VR scene_a1 shows water).
+- `plaza_structure/sculpture` (`RS-LS-E4STONE`, the 공과대학 sign stone) and `bike_rack` (`RS-LS-D3PMRACK`, the blue
+  kick-scooter rack at the bay MX00361).
+- `data/osm-ground.json` paving supplements: the B4 lawn path and square (`plain`, Ground_Pavers), and the red
+  non-slip surfacing of the E4 junction and of the carriageway past E7 (`red`: Ground_Bicycle's red asphalt tile at
+  precedence 5.8, label ASPHALT, under the markings).
+
 ### Outline check (shelters, fences, walls, planters)
 
 Every bus shelter, fence, low, retaining and garden wall and planter outline of the survey and of
