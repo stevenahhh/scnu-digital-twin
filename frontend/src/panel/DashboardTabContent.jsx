@@ -8,7 +8,7 @@ import { ParkingSafetyTab } from "./ParkingSafetyTab";
 // campusOverview는 Legacy만 넣는 캠퍼스 설치 현황, children은 그 밖의 탭(부르는 쪽이 activeTab을 보고 넣는다)이다.
 export function DashboardTabContent({
   activeTab, summary, feeds, clock, trafficFeed, plans, buildingId,
-  onOpenSettings, onRefreshWeather, onOpenRecommendation, campusOverview = null, children,
+  settings, onRefreshWeather, onOpenRecommendation, campusOverview = null, children,
 }) {
   return (
     <>
@@ -20,7 +20,7 @@ export function DashboardTabContent({
             retry={feeds.retry}
             clock={clock}
             sunAltitudeDegrees={clock.sunAltitudeDegrees}
-            onOpenSettings={onOpenSettings}
+            settings={settings}
             onRefreshWeather={onRefreshWeather}
           />
         </PanelErrorBoundary>

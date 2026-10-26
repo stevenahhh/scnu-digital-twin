@@ -32,7 +32,7 @@ export const CampusScene = memo(function CampusScene({
   background, sunVector, sunVisible, sunAltitude, weatherScene, quality, shadowMapSizes,
   controlsRef, selectedId, labelsHidden, occluderRef, chromeRefs,
   activePresetId, selectedElementId, selectionOutline, onLabelRegistry, onDragStart, headlineById,
-  onSelect, onBuildingClick, onBuildingProximity, onD4Enter, onOrbitStart, onOrbitEnd, onLoadingChange, attempt = 0,
+  onSelect, onBuildingClick, onBuildingProximity, onD4Enter, onOrbitStart, onOrbitEnd, onLoadingChange, attempt = 0, presentation = false,
 }) {
   return (
     <>
@@ -75,6 +75,7 @@ export const CampusScene = memo(function CampusScene({
           onLabelRegistry={onLabelRegistry}
           onDragStart={onDragStart}
           headlineById={headlineById}
+          presentation={presentation}
         />
         <CampusTrafficSimulation contactShadows={quality === "high"} />
         <ShadowBaker sunKey={sunVector.join(",")} />

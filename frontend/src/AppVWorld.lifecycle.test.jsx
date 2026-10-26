@@ -144,7 +144,7 @@ describe("AppVWorld installation selection lifecycle", () => {
     // 패널 자리는 D4 패인(레일 왼쪽)이 되고, 레일의 탭 넷은 그대로 보인다.
     expect(panel().dataset.pane).toBe("d4");
     expect(screen.getByRole("navigation", { name: "대시보드 레일" })).toBeTruthy();
-    expect(screen.getByTestId("vworld-renderer").dataset.overlayInsetRight).toBe("calc(min(720px, 50vw) + var(--dashboard-rail-width))");
+    expect(screen.getByTestId("vworld-renderer").dataset.overlayInsetRight).toBe("calc(var(--dashboard-pane-width) + var(--dashboard-rail-width))");
 
     await user.click(screen.getByRole("button", { name: "D4 상세 닫기" }));
     expect(screen.getByRole("button", { name: "패널 닫기" })).toBeTruthy();

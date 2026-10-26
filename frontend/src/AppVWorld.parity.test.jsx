@@ -133,18 +133,20 @@ describe("VWorld and Legacy feature parity", () => {
     expect(screen.queryByText(TRAFFIC_LIVE)).toBeNull();
   });
 
-  it("opens the 설정 dialog from its labelled button and closes it on Escape", async () => {
+  it("opens 설정 as a non-blocking surface from its labelled button and closes it on Escape with focus back on 설정", async () => {
     const user = userEvent.setup();
-    render(<App />);
+    const { container } = render(<App />);
 
     expect(screen.queryByRole("dialog")).toBeNull();
-    await user.click(screen.getByRole("button", { name: "설정" }));
+    const trigger = screen.getByRole("button", { name: "설정" });
+    await user.click(trigger);
     const dialog = screen.getByRole("dialog", { name: "설정" });
-    expect(dialog.getAttribute("aria-modal")).toBe("true");
-    expect(within(dialog).getByRole("button", { name: "닫기" })).toBeTruthy();
+    expect(dialog.getAttribute("aria-modal")).not.toBe("true");
+    expect(container.querySelector(".bg-\\[var\\(--colors-dim\\)\\], .backdrop-blur")).toBeNull();
 
     await user.keyboard("{Escape}");
     expect(screen.queryByRole("dialog")).toBeNull();
+    expect(document.activeElement).toBe(trigger);
   });
 
   it("shows the weather network message with a working 다시 시도 button when the weather fetch rejects", async () => {

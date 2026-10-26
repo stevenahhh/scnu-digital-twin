@@ -18,7 +18,9 @@ import { usePanelState } from "./panel/usePanelState.mjs";
 import { usePanelViewMemory } from "./panel/usePanelViewMemory.mjs";
 import { Wordmark } from "./panel/Wordmark";
 import { HudTimeReadout, sceneTimeReadout } from "./components/HudTimeReadout";
-import { SettingsDialog } from "./panel/SettingsDialog";
+import { SettingsSheet } from "./panel/SettingsSheet";
+import { usePresentationMode } from "./panel/usePresentationMode.mjs";
+import { PresentationToggle } from "./components/CampusHud";
 import { DashboardTabContent } from "./panel/DashboardTabContent";
 import { FeedStamps } from "./panel/FeedStatus";
 import { useFeedStatus } from "./hooks/useFeedStatus.mjs";
@@ -42,8 +44,6 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const viewportMode = useViewportMode();
   const panelState = usePanelState(viewportMode);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const closeSettings = useCallback(() => setIsSettingsOpen(false), []);
   // D4 상세 화면(자체 대화상자)이 열린 동안에는 건물 팝업을 띄우지 않는다. 화면 뒤에 가린 팝업이 키보드 포커스를 가두지 않게 한다.
   const [isD4SectionOpen, setIsD4SectionOpen] = useState(false);
   // D4 상세가 그려질 셸의 패인 자리와, 레일에서 다른 탭을 골라 D4를 닫을 때 바꾸는 값.
@@ -90,14 +90,15 @@ export default function App() {
   };
 
   // 지도 위 문구·버튼과 야간 음영은 패널(또는 레일)이 차지한 오른쪽 폭만큼 비켜 선다.
-  const mapInsetRight = shellInsetRight(viewportMode, panelState.open, isD4SectionOpen);
+  const presentation = usePresentationMode({ panelState, activeTab, setActiveTab });
+  const mapInsetRight = presentation.presenting ? "0px" : shellInsetRight(viewportMode, panelState.open, isD4SectionOpen, Boolean(selection.selectedId));
   // 폰에서는 바텀 시트의 peek 높이만큼 아래를 비운다.
   const mapInsetBottom = viewportMode === "phone" ? `${SHELL_PEEK_HEIGHT}px` : "0px";
   const [isTimePlaying, setIsTimePlaying] = useState(false);
 
   // 루트는 overflow: clip으로 자른다. hidden은 스크롤 컨테이너라서 Tab 포커스가 화면 밖 요소로 가면 대시보드가 밀려 남는다.
   return (
-    <div className="dashboard-root relative h-dvh w-screen overflow-clip bg-canvas text-ink">
+    <div className={`dashboard-root relative h-dvh w-screen overflow-clip bg-canvas text-ink ${presentation.cursorHidden ? "cursor-none" : ""}`}>
       <div className="absolute inset-0" style={{ background: sceneBackgroundFor(clock.sunState.visible) }} />
 
       <div className="absolute inset-0 z-0">
@@ -117,6 +118,7 @@ export default function App() {
           representativeRefreshKey={plans.overlayRefreshKey}
           overlayInsetRight={mapInsetRight}
           overlayInsetBottom={mapInsetBottom}
+          overlaysHidden={presentation.presenting}
           // 야간 음영·햇빛·그라데이션은 지도 영상만 어둡게 해야 하므로 렌더러가 지도 바로 위·지도 위 문구와 버튼 아래에 그린다.
           mapBackdrop={(
             <>
@@ -149,14 +151,15 @@ export default function App() {
         <div className="flex items-start gap-2 p-4">
         <HudTimeReadout
           minuteOfDay={clock.sceneMinuteOfDay}
-          statusSlot={viewportMode !== "phone" && (
+          statusSlot={viewportMode !== "phone" && !presentation.presenting && (
             <FeedStamps feeds={feeds} retry={feeds.retry} placement={{ expanded: panelState.open, activeTab }} />
           )}
         />
-        {viewportMode !== "phone" && <Wordmark className="ml-auto mt-2.5 text-ink-muted" />}
+        <PresentationToggle presenting={presentation.presenting} onToggle={presentation.toggle} className="mt-1" />
+        {viewportMode !== "phone" && !presentation.presenting && <Wordmark className="ml-auto mt-2.5 text-ink-muted" />}
         </div>
         {/* 시간 조작은 Legacy와 같은 하나뿐인 조작이다. 지도 조작 열(왼쪽 아래)과 겹치지 않게 오른쪽 아래에 둔다. */}
-        <TimeSlider
+        {!presentation.presenting && <TimeSlider
           minuteOfDay={clock.sceneMinuteOfDay}
           onMinuteChange={clock.setSceneMinuteOfDay}
           dateValue={clock.sceneDate}
@@ -166,7 +169,7 @@ export default function App() {
           onPlayingChange={setIsTimePlaying}
           live={clock.isLiveMode}
           className="absolute bottom-4 right-4 w-[min(24rem,calc(100%-2rem))]"
-        />
+        />}
       </div>
 
       <DashboardShell
@@ -176,6 +179,7 @@ export default function App() {
         onOpenChange={panelState.setUserOpen}
         detent={panelState.detent}
         onDetentChange={panelState.setDetent}
+        hidden={presentation.presenting}
         pane={isD4SectionOpen && <div ref={setD4PaneHost} className="h-full" />}
         onPaneExit={() => setD4CloseKey((value) => value + 1)}
         timeReadout={sceneTimeReadout(clock.sceneMinuteOfDay)}
@@ -200,14 +204,20 @@ export default function App() {
           trafficFeed={trafficFeed}
           plans={plans}
           buildingId={selection.selectedBuildingId}
-          onOpenSettings={() => setIsSettingsOpen(true)}
+          settings={(
+            <SettingsSheet
+              mode={viewportMode}
+              themeMode={themeMode}
+              onThemeChange={setThemeMode}
+              onOpenChange={(open) => open && panelState.setDetent("peek")}
+            />
+          )}
           onRefreshWeather={weatherFeed.refresh}
           onOpenRecommendation={setEditorRequest}
         />
       </DashboardShell>
 
 
-      {isSettingsOpen && <SettingsDialog onClose={closeSettings} themeMode={themeMode} onThemeChange={setThemeMode} />}
     </div>
   );
 }

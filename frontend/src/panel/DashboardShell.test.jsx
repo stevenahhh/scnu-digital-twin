@@ -95,7 +95,7 @@ describe("DashboardShell", () => {
     stored.set(PANEL_OPEN_KEY, "true");
     const { container } = render(<Harness />);
     expect(shell(container).dataset.mode).toBe("tablet");
-    expect(shell(container).style.width).toBe("min(440px, 85vw)");
+    expect(shell(container).style.width).toBe("var(--dashboard-drawer-width)");
     const tab = screen.getByRole("tab", { name: "기본 현황" });
     tab.focus();
     act(() => {

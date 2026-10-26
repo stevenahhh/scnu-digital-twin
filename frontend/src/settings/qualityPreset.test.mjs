@@ -105,3 +105,16 @@ test("stored values round-trip and storage failures fall back instead of throwin
   assert.equal(writeStoredQuality(throwingStorage, "low"), false);
   assert.deepEqual(resolveInitialQuality({ storage: throwingStorage }), { tier: null, source: "auto" });
 });
+
+test("the single storage guard also survives a localStorage getter that throws", () => {
+  const original = Object.getOwnPropertyDescriptor(globalThis, "localStorage");
+  Object.defineProperty(globalThis, "localStorage", { configurable: true, get() { throw new Error("SecurityError"); } });
+  try {
+    assert.equal(readStoredQuality(undefined), null);
+    assert.equal(writeStoredQuality(undefined, "high"), false);
+    assert.deepEqual(resolveInitialQuality({ search: "" }), { tier: null, source: "auto" });
+  } finally {
+    if (original) Object.defineProperty(globalThis, "localStorage", original);
+    else delete globalThis.localStorage;
+  }
+});

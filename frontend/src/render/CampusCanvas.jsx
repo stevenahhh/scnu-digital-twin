@@ -73,6 +73,7 @@ export const CampusCanvas = forwardRef(function CampusCanvas(
             onOrbitEnd={camera.handleOrbitEnd}
             onLoadingChange={scene.onLoadingChange}
             attempt={scene.attempt}
+            presentation={scene.presentation}
             activePresetId={camera.activePresetId}
             selectedElementId={flow.selectedElementId}
             selectionOutline={rendering.quality !== "low"}

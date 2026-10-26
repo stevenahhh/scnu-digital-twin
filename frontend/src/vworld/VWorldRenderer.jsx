@@ -96,6 +96,7 @@ export default function VWorldRenderer({
   onD4SectionChange,
   d4PaneHost = null,
   d4CloseKey = 0,
+  overlaysHidden = false,
   overlayInsetRight = "0px",
   overlayInsetBottom = "0px",
   mapBackdrop = null,
@@ -377,7 +378,8 @@ export default function VWorldRenderer({
           쌓는다. 절대 위치는 두 열에만 주어 화면이 좁아도 서로 겹치거나 패널 밑으로 들어가지 않는다. */}
       <div
         data-qa="vworld-map-overlays"
-        className="pointer-events-none absolute inset-y-0 left-0 transition-[right] duration-300"
+        aria-hidden={overlaysHidden ? "true" : undefined}
+        className={`pointer-events-none absolute inset-y-0 left-0 transition-[right] duration-300 ${overlaysHidden ? "invisible" : ""}`}
         style={{ right: overlayInsetRight, bottom: overlayInsetBottom }}
       >
         {!isD4SectionOpen && (

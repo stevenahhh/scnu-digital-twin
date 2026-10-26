@@ -1,4 +1,5 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { cx } from "./ui/cx.mjs";
 import { sceneBackgroundFor } from "./lighting/sceneBackground.mjs";
 import { CampusCanvas } from "./render/CampusCanvas";
 import { clearCampusModel } from "./render/CampusScene";
@@ -31,13 +32,16 @@ import { DashboardShell, shellInsetRight } from "./panel/DashboardShell";
 import { usePanelState } from "./panel/usePanelState.mjs";
 import { CampusEnergyOverview } from "./panel/CampusEnergyOverview";
 import { DashboardTabContent } from "./panel/DashboardTabContent";
-import { SettingsDialog } from "./panel/SettingsDialog";
+import { SettingsSheet } from "./panel/SettingsSheet";
+import { usePresentationMode } from "./panel/usePresentationMode.mjs";
+import { tourPosition } from "./panel/presentationLayout.mjs";
 import { FeedStamps } from "./panel/FeedStatus";
 import { useFeedStatus } from "./hooks/useFeedStatus.mjs";
 import { summarizeWeather } from "./panel/weatherSummary.mjs";
 
 // ?ui=gallery는 공용 기본 요소 확인 화면만 띄운다. 따로 나눠 불러와 대시보드 번들에는 들어가지 않는다.
 const UiGallery = lazy(() => import("./ui/Gallery.jsx"));
+const ROOT_CLASS = "dashboard-root relative h-dvh w-screen overflow-clip bg-canvas text-ink";
 const D4_PRESET = CAMERA_PRESETS.find((preset) => preset.id === D4_PRESET_ID);
 const SHOW_UI_GALLERY = new URLSearchParams(window.location.search).get("ui") === "gallery";
 
@@ -64,8 +68,6 @@ function Dashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const viewportMode = useViewportMode();
   const panelState = usePanelState(viewportMode);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const closeSettings = useCallback(() => setIsSettingsOpen(false), []);
   const [isTimePlaying, setIsTimePlaying] = useState(false);
   const [isSceneLoading, setIsSceneLoading] = useState(false);
   const [sceneAttempt, setSceneAttempt] = useState(0);
@@ -110,7 +112,12 @@ function Dashboard() {
   });
 
   // 지도·HUD·안내는 패널(또는 레일)이 차지한 오른쪽 폭만큼 비켜 선다. 폰 시트 위 장면은 계속 조작할 수 있다.
-  const mapInsetRight = shellInsetRight(viewportMode, panelState.open, !isCampus);
+  const presentation = usePresentationMode({ panelState, activeTab, setActiveTab });
+  const qualitySetting = { tiers: QUALITY_TIERS, labels: QUALITY_LABELS, value: rendering.quality };
+  qualitySetting.onChange = rendering.setQuality;
+  qualitySetting.source = rendering.qualitySource;
+  const mapInsetRight = presentation.presenting
+    ? "0px" : shellInsetRight(viewportMode, panelState.open, !isCampus, Boolean(selection.selectedId));
 
   const summary = summarizeWeather({ feed: weatherFeed, mode: clock.mode, simTemp: clock.simTemp });
   const sceneWeather = useSceneWeather({ weatherData: weatherFeed.data, weatherState: weatherFeed.state });
@@ -150,13 +157,16 @@ function Dashboard() {
 
   // 루트는 overflow: clip으로 자른다. hidden은 스크롤 컨테이너라서 Tab 포커스가 화면 밖 요소로 가면 대시보드가 밀려 남는다.
   return (
-    <div className="dashboard-root relative h-dvh w-screen overflow-clip bg-canvas text-ink">
+    <div className={cx(ROOT_CLASS, presentation.cursorHidden && "cursor-none")}>
       <div className="absolute inset-0" style={{ background: sceneBackgroundFor(clock.sunState.visible) }} />
       {/* HUD는 D4 패인이 열려도 남는다: 시각·시점 메뉴가 패인 왼쪽 장면 위에 그대로 있다. */}
       <CampusHud
         ref={hudRef}
         mode={viewportMode}
         insetRight={mapInsetRight}
+        presenting={presentation.presenting}
+        onTogglePresentation={presentation.toggle}
+        tour={camera.touring ? tourPosition(CAMERA_PRESETS, camera.activePresetId) : null}
         statusSlot={viewportMode !== "phone" && (
           <FeedStamps feeds={feeds} retry={feeds.retry} placement={{ expanded: panelState.open, activeTab }} />
         )}
@@ -182,6 +192,7 @@ function Dashboard() {
           chromeRefs: labelChromeRefs,
           onLoadingChange: setIsSceneLoading,
           attempt: sceneAttempt,
+          presentation: presentation.presenting,
         }}
       />
       {isSceneLoading && <SceneLoadingNotice key={sceneAttempt} insetRight={mapInsetRight} onRetry={retryScene} />}
@@ -194,6 +205,7 @@ function Dashboard() {
         onOpenChange={panelState.setUserOpen}
         detent={panelState.detent}
         onDetentChange={panelState.setDetent}
+        hidden={presentation.presenting}
         onPaneExit={flow.exitD4Section}
         pane={!isCampus && (
           <D4SectionExperience
@@ -230,7 +242,15 @@ function Dashboard() {
           trafficFeed={trafficFeed}
           plans={plans}
           buildingId={selection.selectedBuildingId}
-          onOpenSettings={() => setIsSettingsOpen(true)}
+          settings={(
+            <SettingsSheet
+              mode={viewportMode}
+              themeMode={themeMode}
+              onThemeChange={setThemeMode}
+              quality={qualitySetting}
+              onOpenChange={(open) => open && panelState.setDetent("peek")}
+            />
+          )}
           onRefreshWeather={weatherFeed.refresh}
           onOpenRecommendation={openRecommendation}
           campusOverview={(
@@ -244,20 +264,6 @@ function Dashboard() {
         />
       </DashboardShell>
 
-      {isSettingsOpen && (
-        <SettingsDialog
-          onClose={closeSettings}
-          themeMode={themeMode}
-          onThemeChange={setThemeMode}
-          quality={{
-            tiers: QUALITY_TIERS,
-            labels: QUALITY_LABELS,
-            value: rendering.quality,
-            onChange: rendering.setQuality,
-            source: rendering.qualitySource,
-          }}
-        />
-      )}
     </div>
   );
 }

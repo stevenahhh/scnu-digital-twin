@@ -51,5 +51,5 @@ export function usePanelState(mode) {
   // 기존 흐름(useLegacyBuildingFlow)은 setIsPanelOpen(boolean)으로 패널을 연다.
   const setProgrammaticOpen = useCallback((next) => (next ? reveal() : conceal()), [conceal, reveal]);
 
-  return { open, setUserOpen, detent, setDetent, reveal, revealOnPhone, conceal, setProgrammaticOpen };
+  return { open, setOpen, setUserOpen, detent, setDetent, reveal, revealOnPhone, conceal, setProgrammaticOpen };
 }

@@ -217,18 +217,20 @@ describe("Legacy and VWorld feature parity", () => {
     expect(screen.queryByText(TRAFFIC_LIVE)).toBeNull();
   });
 
-  it("opens the 설정 dialog from its labelled button and closes it on Escape", async () => {
+  it("opens 설정 as a non-blocking surface from its labelled button and closes it on Escape with focus back on 설정", async () => {
     const user = userEvent.setup();
-    render(<App />);
+    const { container } = render(<App />);
 
     expect(screen.queryByRole("dialog")).toBeNull();
-    await user.click(screen.getByRole("button", { name: "설정" }));
+    const trigger = screen.getByRole("button", { name: "설정" });
+    await user.click(trigger);
     const dialog = screen.getByRole("dialog", { name: "설정" });
-    expect(dialog.getAttribute("aria-modal")).toBe("true");
-    expect(within(dialog).getByRole("button", { name: "닫기" })).toBeTruthy();
+    expect(dialog.getAttribute("aria-modal")).not.toBe("true");
+    expect(container.querySelector(".bg-\\[var\\(--colors-dim\\)\\], .backdrop-blur")).toBeNull();
 
     await user.keyboard("{Escape}");
     expect(screen.queryByRole("dialog")).toBeNull();
+    expect(document.activeElement).toBe(trigger);
   });
 
   it("shows the weather network message with a working 다시 시도 button when the weather fetch rejects", async () => {
@@ -420,6 +422,7 @@ describe("Legacy and VWorld feature parity", () => {
     const overview = container.querySelector('[data-qa="camera-preset-overview"]');
     const menu = container.querySelector('[data-qa="camera-view-menu"]');
     const tour = container.querySelector('[data-qa="camera-tour-toggle"]');
+    const presentationToggle = container.querySelector('[data-qa="presentation-toggle"]');
     const now = screen.getByRole("button", { name: "지금" });
     const play = screen.getByRole("button", { name: "시간 재생" });
     const date = screen.getByLabelText("장면 날짜");
@@ -430,7 +433,7 @@ describe("Legacy and VWorld feature parity", () => {
     // HUD는 장면 시각과 그 옆 갱신 표시 셋(기상·교통·에너지, 새로 고침 단추)으로 시작한다.
     const stamps = [...container.querySelectorAll('[data-qa="campus-hud"] [data-qa="freshness-stamp"] button')];
     expect(stamps.map((button) => button.getAttribute("aria-label"))).toEqual(["기상 새로고침", "교통 새로고침", "에너지 새로고침"]);
-    const expected = [...stamps, overview, menu, tour, now, play, date, typedTime, slider, ...cameraButtons, mapLayer];
+    const expected = [...stamps, overview, menu, tour, presentationToggle, now, play, date, typedTime, slider, ...cameraButtons, mapLayer];
 
     const reached = [];
     for (let i = 0; i < expected.length; i += 1) {
@@ -691,5 +694,22 @@ describe("Legacy and VWorld feature parity", () => {
     expect(inspector.compareDocumentPosition(screen.getByRole("tablist")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     fireEvent.click(within(inspector).getByRole("button", { name: "닫기" }));
     expect(container.querySelector('[data-qa="selection-inspector"]')).toBeNull();
+  });
+  it("enters 발표 모드 with P (panel and HUD tools hidden, time kept) and Escape restores the layout", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<App />);
+    const panel = () => container.querySelector('[data-qa="dashboard-panel"]');
+    const hud = () => container.querySelector('[data-qa="campus-hud"]');
+    expect(panel().dataset.open).toBe("true");
+    await user.keyboard("p");
+    expect(hud().dataset.presenting).toBe("true");
+    expect(panel().getAttribute("aria-hidden")).toBe("true");
+    expect(hud().querySelector('[data-qa="camera-view-menu"]')).toBeNull();
+    expect(hud().querySelector('[data-qa="hud-time-readout"]')).not.toBeNull();
+    expect(screen.getByRole("button", { name: "발표 모드 끝내기" }).getAttribute("aria-pressed")).toBe("true");
+    await user.keyboard("{Escape}");
+    expect(hud().dataset.presenting).toBeUndefined();
+    expect(panel().getAttribute("aria-hidden")).toBeNull();
+    expect(panel().dataset.open).toBe("true");
   });
 });

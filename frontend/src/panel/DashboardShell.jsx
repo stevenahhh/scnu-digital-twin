@@ -14,12 +14,14 @@ export const SHELL_PEEK_HEIGHT = 148;
 const SURFACE_MOTION = "transition-transform duration-surface ease-[var(--motion-ease-standard)] motion-reduce:transition-none";
 
 // 패널이 차지하는 오른쪽 폭: 지도와 HUD는 이만큼 비켜 선다. 태블릿 서랍과 폰 시트는 장면 위에 겹친다.
-// D4 패인이 열리면(데스크톱·태블릿) 패널 자리가 레일 + min(720px, 50vw)로 넓어진다.
-export const PANE_SHELL_WIDTH = "calc(min(720px, 50vw) + var(--dashboard-rail-width))";
+// D4 패인이 열리면(데스크톱·태블릿) 패널 자리가 레일 + 패인 너비(--dashboard-pane-width)로 넓어진다.
+export const PANE_SHELL_WIDTH = "calc(var(--dashboard-pane-width) + var(--dashboard-rail-width))";
 
-export function shellInsetRight(mode, open, pane = false) {
+// card: 레일 옆에 인스펙터 카드(--dashboard-inspector-width + 사이 0.5rem)가 떠 있으면 HUD도 그만큼 비킨다.
+export function shellInsetRight(mode, open, pane = false, card = false) {
   if (mode === "phone") return "0px";
   if (pane) return PANE_SHELL_WIDTH;
+  if (!open && card) return "calc(var(--dashboard-rail-width) + var(--dashboard-inspector-width) + 0.5rem)";
   if (mode === "desktop" && open) return "var(--dashboard-panel-width)";
   return "var(--dashboard-rail-width)";
 }
@@ -66,7 +68,7 @@ const Rail = forwardRef(function Rail({ activeTab, onOpen, className }, toggleRe
 
 // 화면 폭에 따라 패널 그릇을 고른다(useViewportMode).
 // desktop: 오른쪽 붙박이 패널, 닫으면 56px 레일(탭 아이콘 넷 + 패널 열기). transform으로 밀려난다.
-// tablet: 오른쪽에서 겹쳐 나오는 서랍(min(440px, 85vw)), 가림막 없음, Esc로 닫고 포커스는 패널 열기로 돌아간다.
+// tablet: 오른쪽에서 겹쳐 나오는 서랍(--dashboard-drawer-width), 가림막 없음, Esc로 닫고 포커스는 패널 열기로 돌아간다.
 // phone: 바텀 시트. 처음에는 peek, 탭을 누르면 full. 시트 머리에 시각과 두 칸(freshnessSlot, searchSlot)이 있다.
 export const DashboardShell = forwardRef(function DashboardShell(
   {
@@ -197,7 +199,7 @@ export const DashboardShell = forwardRef(function DashboardShell(
       onKeyDown={handleKeyDown}
       className={cx("pointer-events-none absolute inset-y-0 right-0 z-10", SURFACE_MOTION, hidden && "invisible")}
       style={{
-        width: mode === "tablet" ? "min(440px, 85vw)" : "var(--dashboard-panel-width)",
+        width: mode === "tablet" ? "var(--dashboard-drawer-width)" : "var(--dashboard-panel-width)",
         transform: open ? "translateX(0)" : "translateX(calc(100% - var(--dashboard-rail-width)))",
       }}
     >
@@ -235,7 +237,7 @@ export const DashboardShell = forwardRef(function DashboardShell(
         <div
           ref={inspectorRef}
           data-qa="inspector-card"
-          className="pointer-events-auto absolute right-[calc(100%+0.5rem)] top-4 max-h-[calc(100%-2rem)] w-[360px] overflow-y-auto"
+          className="pointer-events-auto absolute right-[calc(100%+0.5rem)] top-4 max-h-[calc(100%-2rem)] w-[var(--dashboard-inspector-width)] overflow-y-auto"
         >
           {inspector}
         </div>
