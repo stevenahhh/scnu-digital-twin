@@ -15,8 +15,9 @@ import { MeshData } from "../lib/meshData.mjs";
 import { encodePng } from "../lib/png.mjs";
 
 export const TILE_M = 200;
-// Masses whose centre is farther than this (scene units) from the EXTENT centre are left flat: the shadow camera
-// (src/lighting/shadowFrustum.mjs, half-size 320) is fitted to the campus and would not contain their tiles.
+// Masses whose centre is farther than this (scene units) from the EXTENT centre go into Context_Far_* tiles that cast no
+// shadow: the shadow camera (src/lighting/shadowFrustum.mjs, half-size 320) is fitted to the campus and would not
+// contain them. They still receive shadows.
 export const CONTEXT_REACH = 290;
 const BAY_M = 3.2;
 const SINK_M = 0.3;
@@ -124,10 +125,8 @@ export function buildContext({ glb, parts, groundAt }) {
   const [mx, mz] = [(EXTENT.minX + EXTENT.maxX) / 2, (EXTENT.minZ + EXTENT.maxZ) / 2];
   for (const part of parts) {
     const [px, pz] = part.outer.reduce((s, p) => [s[0] + p[0] / part.outer.length, s[1] + p[1] / part.outer.length], [0, 0]);
-    if (Math.hypot(px - mx, pz - mz) > CONTEXT_REACH) {
-      beyondReach += 1;
-      continue;
-    }
+    const far = Math.hypot(px - mx, pz - mz) > CONTEXT_REACH;
+    if (far) beyondReach += 1;
     const ys = part.outer.map(([x, z]) => groundAt(x, z));
     const base = Math.min(...ys) - metres(SINK_M);
     const top = Math.max(...ys) + metres(part.heightMetres);
@@ -141,7 +140,7 @@ export function buildContext({ glb, parts, groundAt }) {
     const [cx, cz] = part.outer.reduce((s, p) => [s[0] + p[0] / part.outer.length, s[1] + p[1] / part.outer.length], [0, 0]);
     const ti = Math.floor((cx - EXTENT.minX) / tile);
     const tj = Math.floor((cz - EXTENT.minZ) / tile);
-    const key = `${ti < 0 ? `m${-ti}` : ti}_${tj < 0 ? `m${-tj}` : tj}`;
+    const key = `${far ? "Far_" : ""}${ti < 0 ? `m${-ti}` : ti}_${tj < 0 ? `m${-tj}` : tj}`;
     if (!tiles.has(key)) tiles.set(key, { mesh: new MeshData({ uvs: true, colors: true }), n: 0 });
     const t = tiles.get(key);
     const section = SECTION[cls === "commercial" ? "commercial" : "residential"];
@@ -159,13 +158,14 @@ export function buildContext({ glb, parts, groundAt }) {
   });
   let triangles = 0;
   for (const [key, t] of [...tiles].sort(([a], [b]) => a.localeCompare(b))) {
-    const name = `Context_Buildings_${key}`;
+    // far tiles: Context_Far_<i>_<j>, which CityModel keeps from casting shadows (NON_CASTER_PARENT_PATTERN)
+    const name = key.startsWith("Far_") ? `Context_${key}` : `Context_Buildings_${key}`;
     triangles += t.mesh.indices.length / 3;
     glb.addNode({ name, mesh: glb.addMesh(name, [t.mesh.toPrimitive(material)]),
       extras: { context: true, selectable: false, buildings: t.n, heightsNote: "GIS heights or floors x storey median, else one storey (추정)" } }, { root: true });
   }
-  const stats = { buildings: parts.length - beyondReach, beyondReach, tiles: tiles.size, triangles, counts, tallestM: Number(tallest.toFixed(1)) };
+  const stats = { buildings: parts.length, far: beyondReach, tiles: tiles.size, triangles, counts, tallestM: Number(tallest.toFixed(1)) };
   console.log(`context: ${stats.buildings} off-campus masses in ${stats.tiles} tile primitives (${TILE_M} m, 1 material), ${triangles} triangles; ` +
-    `residential ${counts.residential}, commercial ${counts.commercial}, other ${counts.other}; tallest ${stats.tallestM} m (estimated heights, 추정); ${beyondReach} farther than ${CONTEXT_REACH} units from the campus left flat (outside the shadow camera)`);
+    `residential ${counts.residential}, commercial ${counts.commercial}, other ${counts.other}; tallest ${stats.tallestM} m (estimated heights, 추정); ${beyondReach} of them farther than ${CONTEXT_REACH} units in Context_Far_* tiles (no shadow casting)`);
   return stats;
 }
