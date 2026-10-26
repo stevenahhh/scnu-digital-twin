@@ -15,7 +15,7 @@
 // Then: cd backend && ../.venv/bin/python -m simulation.tools.validate_network && ../.venv/bin/python -m
 // simulation.tools.build_conflict_areas.
 import path from "node:path";
-import { D4_ANCHOR_TM } from "../../../src/geo/epsg5186.mjs";
+import { D4_ANCHOR_TM, LOCAL_TO_GRID_MATRIX } from "../../../src/geo/epsg5186.mjs";
 import { LineGrid, PolygonGrid, UnionFind, dist, lineLength, round, sampleLine, segmentNearest } from "./geom.mjs";
 
 const PERSON_KINDS = new Set(["sidewalk", "crosswalk", "shared_path", "pedestrian_gate", "building_entrance", "parking_walk"]);
@@ -443,12 +443,19 @@ export function walkwaySurfaces(strips, toTm, crossings = []) {
   };
 }
 
-// Add-only `epsg5186_anchor` in coordinate_transform.json (text edit that keeps the hand formatting).
+// Add-only `epsg5186_anchor` and `epsg5186_local_to_grid` in coordinate_transform.json (text edits that keep the hand
+// formatting). The simulation frame is true east/north at the D4 anchor; EPSG:5186 grid north is turned by the meridian
+// convergence (about 0.27 deg) and scaled, so SUMO coordinates are anchor + M [x, z], not anchor + [x, z].
 export function addAnchor(text) {
-  if (JSON.parse(text).epsg5186_anchor) return text;
-  const at = text.indexOf('\n  "sumo_origin"');
-  if (at < 0) throw new Error("coordinate_transform.json: sumo_origin line not found");
-  const out = `${text.slice(0, at)}\n  "epsg5186_anchor": {"E": ${round(D4_ANCHOR_TM[0], 4)}, "N": ${round(D4_ANCHOR_TM[1], 4)}},${text.slice(at)}`;
+  let out = text;
+  const insert = (line) => {
+    const at = out.indexOf('\n  "sumo_origin"');
+    if (at < 0) throw new Error("coordinate_transform.json: sumo_origin line not found");
+    out = `${out.slice(0, at)}\n  ${line},${out.slice(at)}`;
+  };
+  const config = JSON.parse(text);
+  if (!config.epsg5186_anchor) insert(`"epsg5186_anchor": {"E": ${round(D4_ANCHOR_TM[0], 4)}, "N": ${round(D4_ANCHOR_TM[1], 4)}}`);
+  if (!config.epsg5186_local_to_grid) insert(`"epsg5186_local_to_grid": [${LOCAL_TO_GRID_MATRIX.map((v) => Number(v.toFixed(12))).join(", ")}]`);
   JSON.parse(out);
   return out;
 }
