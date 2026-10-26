@@ -1,0 +1,1731 @@
+{
+ "note": "Pole-roots round 2 (pole-roots-r2): every source tried for the poles the NGII 2025 sheet left unresolved; fetch/poleRoots.mjs merges these into data/photo/pole-roots.json. A pole moves only when a source resolves its base to <= 0.5 m; none did, so the 49 stay at their survey seeds, estimated (추정). seedUncertaintyM: the median shift from seed to resolved root of the poles of the same source (data.go.kr 2.43 / 4.99 / 7.45 m; by-eye survey 0-3.07 m, median 1.2 m), an estimate.",
+ "generated": "2026-10-27",
+ "sources": {
+  "ngii-wide-search": "lib/poleShadow.mjs detectPoleRoots on the NGII 2025 sheet over 3.5 m around each seed (the first round searched 1 m around by-eye bases only), top 3 candidates reviewed by eye on 8x and 16x chips; on the 15 resolved poles the same search returns the known shadow roots within 0.05 m (OB0001, OC0060, OC0061)",
+  "vworld-z19": "VWorld Satellite z19 (data/ortho/vworld-satellite-z19.*) registers to the sheet at 0.00-0.01 m with NCC 0.89-0.95 at all 15 resolved poles, with the same shadows, vehicles and roofs: it is the same 2025 photo, not a second epoch",
+  "ngii-other-epochs": "NGII publishes 2022-2024 orthophotos of sheet 34702020, but only behind login, cart and the INNORIX client (map.ngii.go.kr); none is available locally or without login. The keyless 순천시 GIS aerials (12 cm, 2022-2024) are All Rights Reserved, internal QA only, and were not used",
+  "esri-z18": "Esri World Imagery z18 (0.49 m/px, another epoch, strong relief lean) sits 4-6 m north of the sheet; local registration (gradient NCC, +-10 m) reaches NCC <= 0.40 with a 0.3-14 m spread between window quadrants at the 15 resolved poles, so no root can be carried to the sheet within 0.5 m",
+  "vr-two-ray": "scripts/perf/vr_lamp_bearings.py rays from the 33 resected stations (a8, c3, d4, d5 excluded), each ray required to show the pole ridge at its base rows, pairs crossing at >= 20 deg, sigma from the station yaw residual and 1 px <= 0.5 m: 32 of the 49 poles have no station within 45 m, 14 one, 3 two; no pair qualified",
+  "shadow-tip": "root = shadow tip moved back toward the sun by h / tan 62 deg; with heights estimated (+-1 m) the along-shadow error is about 0.5 m before the tip is located, so no tip-only pole reaches 0.5 m"
+ },
+ "poles": {
+  "OB0000": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 18.74,
+     "fromSeedM": 2.33,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: crossing bars"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OB0003": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 18.96,
+     "fromSeedM": 1.37,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: broad 2 m streak of the signal head or arm; no 1 px pole line, root not visible"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "tip visible, root hidden: tip + h / tan 62 deg back to the root with h 6.5 m 추정 (+-1 m) gives about 0.6 m along the shadow, over 0.5 m",
+     "residualM": 0.6
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OB0004": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 4.68,
+     "fromSeedM": 3.13,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: kerb and structure edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OB0007": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 14.09,
+     "fromSeedM": 0.85,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: V-shaped sign-plate shadows (the tip); root not visible"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "tip visible, root hidden: tip + h / tan 62 deg back to the root with h 3.0 m 추정 (+-1 m) gives about 0.6 m along the shadow, over 0.5 m",
+     "residualM": 0.6
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OB0008": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 14.12,
+     "fromSeedM": 3.64,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: crossing and kerb edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OB0014": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 8.88,
+     "fromSeedM": 2.67,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: square dark blob, no pole line"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OC0031": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 7.86,
+     "fromSeedM": 4.43,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: kerb edge under canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0032": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 21.88,
+     "fromSeedM": 1.14,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: structure edge"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0035": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 27.43,
+     "fromSeedM": 3.09,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: kerb shadow"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0036": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 26.4,
+     "fromSeedM": 1.09,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: kerb shadow"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0038": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 6.15,
+     "fromSeedM": 2.72,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0042": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 0.01,
+     "fromSeedM": 2.86,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: lane paint, no shadow line"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0043": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 4.67,
+     "fromSeedM": 1.87,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: crossing and kerb edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0045": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 18.85,
+     "fromSeedM": 1.7,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: broad shadow of a structure, no pole line"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OC0046": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 2.44,
+     "fromSeedM": 3.19,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy and kerb"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0047": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 1.96,
+     "fromSeedM": 2.44,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy and wire shadows"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0048": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 9.34,
+     "fromSeedM": 2.86,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: kerb and ground texture"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0049": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 12.98,
+     "fromSeedM": 3.55,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: building shadow"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OC0052": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 9.41,
+     "fromSeedM": 2.56,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OC0053": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 8.09,
+     "fromSeedM": 2.77,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy and kerb"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0054": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 20.84,
+     "fromSeedM": 2.6,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: vehicle edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0058": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 17.27,
+     "fromSeedM": 3.46,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: vehicle edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0066": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 2.1,
+     "fromSeedM": 2.4,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0067": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 8.17,
+     "fromSeedM": 2.11,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0068": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 12.98,
+     "fromSeedM": 2.46,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: building and kerb edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0069": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 7.86,
+     "fromSeedM": 2.44,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: building shade"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0077": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 14.87,
+     "fromSeedM": 1.43,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: building edge"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0086": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 5.89,
+     "fromSeedM": 2.36,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0097": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 12.49,
+     "fromSeedM": 3.24,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: building shade"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0098": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 4.24,
+     "fromSeedM": 3.29,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0099": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 6.68,
+     "fromSeedM": 3.66,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: building shade"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0100": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 3.66,
+     "fromSeedM": 3.16,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy and kerb"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0103": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 1.06,
+     "fromSeedM": 3.7,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OC0110": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 3.75,
+     "fromSeedM": 3.3,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: crossing and kerb edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0113": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 11.53,
+     "fromSeedM": 3.42,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: plaza structure edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 1,
+     "why": "1 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0114": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 6.66,
+     "fromSeedM": 3.71,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: kerb in shade"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0115": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 7.85,
+     "fromSeedM": 2.95,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: vehicle shade"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0116": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 9.07,
+     "fromSeedM": 1.68,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: vehicle edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0130": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 0.2,
+     "fromSeedM": 3.41,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: roof and kerb edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0131": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 2.03,
+     "fromSeedM": 1.47,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0132": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 3.41,
+     "fromSeedM": 3.61,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0133": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 11.16,
+     "fromSeedM": 2.49,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: crossing bars"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OC0151": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 4.71,
+     "fromSeedM": 2.13,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: median tree crowns"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 1,
+     "why": "1 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0152": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 2.75,
+     "fromSeedM": 1.06,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: median tree crowns"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0167": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 10.56,
+     "fromSeedM": 3.32,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: building edge"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 1,
+     "why": "1 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0168": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 1.89,
+     "fromSeedM": 2.61,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 1,
+     "why": "1 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0170": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 8.32,
+     "fromSeedM": 3.04,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy and wire shadows"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0171": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 8.31,
+     "fromSeedM": 2.5,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy and wall"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OC0174": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 5.02,
+     "fromSeedM": 2.44,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  }
+ }
+}

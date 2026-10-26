@@ -736,6 +736,12 @@ the survey kept on footways, verges and medians. `data/streetlights.json` is no 
   shadow. Within 0.5 m of the by-eye base the pole goes to the detected root (`shadow-root`) and `residualM` is the
   distance between the two; otherwise the by-eye base is kept (`by-eye-root`, `residualM` 0.25 m estimated; floodlight
   heads 0.5 m). Seeds with no visible base stay where the survey put them (`unresolved`, metre-level).
+- Round 2 (`data/photo/pole-sources.json`) tried every other source on the 49 unresolved poles and moves a pole only when
+  one resolves its base to 0.5 m or better: the detector over 3.5 m around the seed (reviewed by eye), the VWorld z19
+  mosaic (it is the same 2025 photo, so not independent), Esri z18 (another epoch, but it does not register to the sheet
+  within 0.5 m), two-ray VR fixes from the resected stations (rays crossing at 20 degrees or more, both showing the pole
+  base) and shadow tip plus estimated height. None qualified; each unresolved record carries `estimated`, `attempts`
+  (method, result, reason), `seedUncertaintyM` and `confidence`, and `pole-roots.json` has `residualStats`.
 - The 67 lamps the old rule placed every 27 m along the A003 walkway outlines were seeds too
   (`data/photo/pole-seeds-rule.json`); none shows a pole on the photo, so none is drawn.
 - `checkPoles` (stages/lights.mjs) is the placement contract. A pole whose base the photo shows, or whose seed the photo
