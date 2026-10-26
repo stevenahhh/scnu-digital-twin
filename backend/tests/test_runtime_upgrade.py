@@ -28,6 +28,8 @@ def test_research_runtime_rejects_derived_only_network(tmp_path):
     (tmp_path / "config").mkdir()
     shutil.copy(DATA / "campus_transport_network.derived-v1.geojson", data / "campus_transport_network.geojson")
     shutil.copy(DATA.parent / "config" / "mobility_policy.json", tmp_path / "config" / "mobility_policy.json")
+    for name in ("walkable_polygons.geojson", "road_polygons.geojson"):
+        shutil.copy(DATA / name, data / name)
     with pytest.raises(ValueError, match="승인된"):
         load_runtime_graph(data, mode="research")
 

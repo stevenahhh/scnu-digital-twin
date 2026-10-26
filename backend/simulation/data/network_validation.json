@@ -91,6 +91,24 @@
       "width_m": 0.39
     },
     {
+      "code": "EDGE_OUTSIDE_POLYGONS",
+      "feature_id": "EDGE_CW_004",
+      "agent_type": "person",
+      "share": 0.8
+    },
+    {
+      "code": "EDGE_OUTSIDE_POLYGONS",
+      "feature_id": "EDGE_SW_0026",
+      "agent_type": "person",
+      "share": 0.882
+    },
+    {
+      "code": "EDGE_OUTSIDE_POLYGONS",
+      "feature_id": "EDGE_SW_0090",
+      "agent_type": "person",
+      "share": 0.947
+    },
+    {
       "code": "NETWORK_NOT_FULLY_CONNECTED",
       "agent_type": "scooter",
       "components": 48
