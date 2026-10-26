@@ -1,11 +1,13 @@
 import { useEffect, useRef } from "react";
 import { useThree } from "@react-three/fiber";
-import { Bloom, EffectComposer, N8AO, SMAA } from "@react-three/postprocessing";
+import { Bloom, EffectComposer, N8AO, Outline, SMAA } from "@react-three/postprocessing";
 import { RenderPass } from "postprocessing";
 import { LinearSRGBColorSpace, SRGBColorSpace } from "three";
 import { CAMPUS_CANVAS_GL } from "../lighting/CampusLighting";
 import { getNightWeight } from "../lighting/season.mjs";
 import { QUALITY_EFFECTS } from "../settings/qualityPreset.mjs";
+import { useSelectedMeshes } from "../labels/useSelectedMeshes.mjs";
+import { SELECTION_HEX } from "../ui/sceneTokens.mjs";
 
 // Medium/High 품질 단계의 후처리. AppLegacy가 React.lazy로 불러오므로 low 단계는 이 청크를 받지 않는다.
 // EffectComposer는 우선순위 1 useFrame으로 R3F의 기본 렌더를 대신할 뿐 스스로 프레임을 요청하지 않는다.
@@ -18,6 +20,9 @@ const BLOOM_THRESHOLD = 0.8;
 const BLOOM_MAX_INTENSITY = 0.35;
 const BLOOM_RADIUS = 0.5;
 const BLOOM_LEVELS = 5;
+// 선택 건물 외곽선: 강조색, 흐림 없이 3배 세기. 가려진 부분도 같은 색으로 그려 건물 뒤쪽 윤곽이 끊기지 않는다.
+const SELECTION_EDGE_COLOR = parseInt(SELECTION_HEX.slice(1), 16);
+const SELECTION_EDGE_STRENGTH = 3;
 
 // three 재질은(r163·r186 모두) 톤 매핑 -> sRGB 인코딩 -> 안개 순서로 계산하므로 안개가 화면(sRGB) 공간에서 섞인다.
 // 컴포저의 선형 버퍼에 그리면 안개가 선형 공간에서 섞여 장면 전체가 뿌옇게 뜬다(Low 화면과 다른 그림).
@@ -76,8 +81,10 @@ function useComposerFollowsPixelRatio(composerRef) {
   }, [composerRef, dpr, size, invalidate]);
 }
 
-export default function HighTierEffects({ tier, sunAltitude }) {
+export default function HighTierEffects({ tier, sunAltitude, selectedElementId = null }) {
   const invalidate = useThree((state) => state.invalidate);
+  const scene = useThree((state) => state.scene);
+  const selectedMeshes = useSelectedMeshes(scene, selectedElementId);
   const composerRef = useRef(null);
   const preset = QUALITY_EFFECTS[tier];
   const night = Number.isFinite(sunAltitude) ? getNightWeight(sunAltitude) : 0;
@@ -87,7 +94,7 @@ export default function HighTierEffects({ tier, sunAltitude }) {
   useComposerFollowsPixelRatio(composerRef);
   useEffect(() => {
     invalidate();
-  }, [invalidate, tier, bloomIntensity]);
+  }, [invalidate, tier, bloomIntensity, selectedMeshes]);
 
   if (!preset) return null;
   return (
@@ -109,6 +116,14 @@ export default function HighTierEffects({ tier, sunAltitude }) {
           intensity={bloomIntensity}
         />
       ) : null}
+      <Outline
+        selection={selectedMeshes}
+        edgeStrength={SELECTION_EDGE_STRENGTH}
+        visibleEdgeColor={SELECTION_EDGE_COLOR}
+        hiddenEdgeColor={SELECTION_EDGE_COLOR}
+        blur={false}
+        xRay={false}
+      />
       <SMAA />
     </EffectComposer>
   );

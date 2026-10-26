@@ -24,6 +24,8 @@ import {
   X,
 } from "lucide-react";
 import { CityModel } from "./CityModel";
+import commonElements from "../../common/data/common_elemetns.json";
+import { isProximitySuspended, resolveSelectionTitle, useSelectionState } from "./labels/useSelectionState.mjs";
 import { CAMPUS_CANVAS_GL, CampusLighting } from "./lighting/CampusLighting";
 import { ShadowBaker } from "./lighting/ShadowBaker";
 import { useDemandLoop } from "./render/useDemandLoop.mjs";
@@ -79,6 +81,7 @@ import {
 const SELECTION_ANIMATION_MS = 3000;
 // 보통/높음 품질의 후처리 청크. 낮음에서는 마운트하지 않으므로 내려받지도 않는다.
 const HighTierEffects = lazy(() => import("./postfx/HighTierEffects"));
+const ELEMENT_NAMES = new Map(commonElements.elements.map((element) => [element.element_id, element.name]));
 const TRAFFIC_SETTLE_MS = 1500;
 const PANEL_TRANSITION_MS = 450;
 
@@ -325,6 +328,16 @@ function Dashboard() {
   const canvasStateRef = useRef(null);
   const activePresetRef = useRef(null);
   const [selectedId, setSelectedId] = useState("");
+  // 고른 건물(라벨 앵커 id)과 고른 경로. 패널 제목과 근접 자동 선택 보류가 이것을 따른다.
+  const {
+    selection,
+    selectionRef,
+    select: setSelection,
+    confirm: confirmSelection,
+    clear: clearSelection,
+    releaseOnDrag,
+  } = useSelectionState();
+  const [labelRegistry, setLabelRegistry] = useState(null);
   // 패널 제목에 쓸 건물 이름(라벨과 같은 이름). selectedId는 라벨 강조에도 쓰여 BLD_* id일 수 있다.
   const [selectedTitle, setSelectedTitle] = useState("");
   const [selectedEstimate, setSelectedEstimate] = useState(null);
@@ -528,13 +541,16 @@ function Dashboard() {
     weekday: "short",
   });
 
-  const handleSelect = useCallback((name) => {
+  // CityModel의 건물·라벨 클릭(name은 GLB 노드 이름, elementId는 라벨 앵커 id). 빈 이름은 선택 해제(Esc)다.
+  const handleSelect = useCallback((name, _area, _position, elementId) => {
     setSelectedId(name);
     setSelectedTitle("");
     setSelectedEstimate(null);
     setPopupData(null);
     setPopupError(null);
-  }, []);
+    if (name) setSelection(elementId ?? name, "click");
+    else clearSelection();
+  }, [clearSelection, setSelection]);
 
   const createInstallationPlanDraft = useCallback(
     (context) => createPlanDraftFromExisting(context),
@@ -544,11 +560,12 @@ function Dashboard() {
   const openD4Section = useCallback((request = null) => {
     setEditorRequest(request);
     setSelectedId("");
+    clearSelection();
     setPopupData(null);
     setPopupError(null);
     setBuildingViewMode("section");
     setIsPanelOpen(false);
-  }, []);
+  }, [clearSelection]);
 
   // 건물을 클릭하거나 카메라가 D4에 충분히 가까이(줌인) 다가갔을 때 쓰는 진입 경로.
   // 확대된 캠퍼스 화면은 그대로 배경으로 유지한 채, 그 위에 공간 탐색/태양광 설치
@@ -565,13 +582,17 @@ function Dashboard() {
     setOverlayRefreshKey((value) => value + 1);
   }, []);
 
+  // selectionSource: 'click'이면 같은 클릭이 이미 고른 앵커 id를 유지하고 경로만 확정한다. 그 밖에는 이 요소를 그 경로로 고른다.
   const selectBuilding = useCallback(({
     elementId,
     buildingId,
     displayName,
     title = displayName,
     estimate = null,
+    selectionSource = "list",
   }) => {
+    if (selectionSource === "click") confirmSelection(elementId, "click");
+    else setSelection(elementId, selectionSource);
     if (buildingId !== selectedBuildingId) {
       installationLoadGenerationRef.current += 1;
       setInstallationPlans([]);
@@ -586,7 +607,7 @@ function Dashboard() {
     setPopupData(null);
     setPopupError(null);
     return elementId;
-  }, [selectedBuildingId]);
+  }, [confirmSelection, selectedBuildingId, setSelection]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -677,6 +698,7 @@ function Dashboard() {
       title: obj?.userData?.buildingLabel ?? obj?.userData?.buildingName ?? obj?.name ?? buildingId,
       area: obj?.userData?.area ?? 0,
       estimate: obj?.userData?.estimate ?? null,
+      selectionSource: "click",
     });
 
     if (isD4ElementId(elementId)) {
@@ -702,10 +724,13 @@ function Dashboard() {
     // 카메라가 시점 버튼으로 간 자리에 있는 동안(사용자가 직접 조작하기 전)에는 근처 건물의 미기후를 자동으로 열지 않는다.
     // D4 시점은 정해진 오프셋 때문에 이웃 건물이 더 가까워진다. 멀어져서 닫는 것은 그대로 둔다.
     if (anchor && activePresetRef.current) return;
+    // 클릭·시점·검색으로 고른 건물은 근접 자동 선택이 열거나 닫지 않는다. 드래그를 시작하거나 선택을 풀면 다시 따른다.
+    if (isProximitySuspended(selectionRef.current)) return;
     if (!anchor) {
       if (activeTab === "microclimate") {
         setActiveTab("dashboard");
         setSelectedId("");
+        clearSelection();
         setPopupData(null);
         setPopupError(null);
       }
@@ -726,16 +751,18 @@ function Dashboard() {
       buildingId,
       displayName: anchor.displayName ?? anchor.name ?? buildingId,
       estimate: anchor.estimate ?? null,
+      selectionSource: "proximity",
     });
     fetchMicroclimate(elementId);
-  }, [activeTab, buildingViewMode, selectedBuildingId, selectBuilding, fetchMicroclimate]);
+  }, [activeTab, buildingViewMode, selectedBuildingId, selectBuilding, fetchMicroclimate, selectionRef, clearSelection]);
 
   const closeMicroclimatePanel = useCallback(() => {
     setActiveTab("dashboard");
     setSelectedId("");
+    clearSelection();
     setPopupData(null);
     setPopupError(null);
-  }, []);
+  }, [clearSelection]);
 
   // 다른 탭으로 옮겨 갔다가도 선택한 건물의 미기후 패널을 다시 열 수 있게 한다. 아직 받아 둔
   // 데이터가 없으면(에너지 탭의 건물 목록에서 고른 경우 등) 지금 선택된 건물 기준으로 조회한다.
@@ -747,6 +774,14 @@ function Dashboard() {
     setActiveTab("microclimate");
   }, [fetchMicroclimate, popupData, popupError, popupLoading, selectedBuildingId]);
   const showMicroclimateTab = Boolean(selectedId) || activeTab === "microclimate";
+  // 패널 제목은 고른 건물의 레지스트리 이름이다(마지막 selectBuilding 호출의 표시 이름이 아니다).
+  const selectionTitle = resolveSelectionTitle(labelRegistry, selection.elementId, ELEMENT_NAMES);
+  // 마우스를 올린 칩에 붙일 대표 추정값: 이미 받아 둔 선택 건물의 팝업 데이터만 쓴다(요청을 더 하지 않는다).
+  const localTemp = popupData?.thermal?.local_temp;
+  const headlineById = useMemo(
+    () => (selection.elementId && Number.isFinite(localTemp) ? { [selection.elementId]: `추정 ${localTemp.toFixed(1)}°C` } : null),
+    [localTemp, selection.elementId],
+  );
 
   const liveTraffic = useLiveTraffic();
   const { frameloop, animateFor } = useDemandLoop({ modalOpen: buildingViewMode === "section", liveTraffic });
@@ -845,6 +880,12 @@ function Dashboard() {
           labelsHidden={labelsHidden}
           occluderRef={panelRef}
           chromeRefs={labelChromeRefs}
+          activePresetId={activePresetId}
+          selectedElementId={selection.elementId}
+          selectionOutline={quality !== "low"}
+          onLabelRegistry={setLabelRegistry}
+          onDragStart={releaseOnDrag}
+          headlineById={headlineById}
         />
         <CampusTrafficSimulation />
         <ShadowBaker sunKey={sunVector.join(",")} />
@@ -865,13 +906,14 @@ function Dashboard() {
       />
       {quality !== "low" && (
         <Suspense fallback={null}>
-          <HighTierEffects tier={quality} sunAltitude={sunAltitude} />
+          <HighTierEffects tier={quality} sunAltitude={sunAltitude} selectedElementId={selection.elementId} />
         </Suspense>
       )}
     </>
   ), [
     sceneBackground, sunVector, sunVisible, sunAltitude, selectedId, labelsHidden, sceneWeatherScene, quality, qualityRenderer,
     handleSelect, handleBuildingClick, handleBuildingProximity, handleD4Enter, handleOrbitStart, handleOrbitEnd, labelChromeRefs,
+    activePresetId, selection.elementId, releaseOnDrag, headlineById,
   ]);
 
   // 루트는 overflow: clip으로 자른다. hidden은 스크롤 컨테이너라서, 닫힌 패널이 화면 밖에 만드는 공간 때문에
@@ -1196,7 +1238,7 @@ function Dashboard() {
                   data={popupData}
                   loading={popupLoading}
                   error={popupError}
-                  title={selectedId ? selectedTitle || selectedId : selectedId}
+                  title={selectedId ? selectionTitle || selectedTitle || selectedId : selectedId}
                   estimate={selectedId ? selectedEstimate : null}
                   onClose={closeMicroclimatePanel}
                 />

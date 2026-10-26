@@ -236,7 +236,8 @@ export function formatRoomNumber(roomNumber) {
 
 export const D4_BUILDING_DATA = {
   id: "D4",
-  displayName: "D4 공대 3호관",
+  code: "D4",
+  displayName: "공과대학 3호관",
   floors: [0, 1, 2, 3, 4, 5, 6].map((floor) => ({
     id: `floor-${floor}`,
     floor,

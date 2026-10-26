@@ -117,3 +117,14 @@ test("maps registry-coded pick proxies to the existing element and leaves estima
   assert.equal(resolveProxyDataElementId("BLD_A6", registry("A6"), elementNames), null);
   assert.equal(resolveProxyDataElementId(undefined, null, elementNames), null);
 });
+
+test("maps the uni.glb BLD_A12 nodes (the A17 gym footprint) to BLD_A17 and leaves 우정원 on BLD_A12", () => {
+  for (const name of ["BLD_A12", "BLD_A12.001", "BLD_A12001"]) {
+    assert.deepEqual(resolveBuildingMeta(name, options), { elementId: "BLD_A17", label: "체육관" }, name);
+  }
+  assert.equal(elementNames.get("BLD_A12"), "우정원");
+  assert.equal(
+    resolveProxyDataElementId("BLD_SCNU_A12", { pickProxy: true, nameSource: "SCNU registry A12 (w1.scnu.ac.kr)" }, elementNames),
+    "BLD_A12",
+  );
+});
