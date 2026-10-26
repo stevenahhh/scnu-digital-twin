@@ -2,11 +2,15 @@ import { Canvas, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import { useEffect, useMemo } from "react";
 import { formatRoomNumber } from "../utils/d4BuildingData.mjs";
-import { SELECTION_HEX } from "../ui/sceneTokens.mjs";
+import { D4_SCENE, SELECTION_HEX } from "../ui/sceneTokens.mjs";
+import { D4_SCENE_LABEL } from "./d4Shared.mjs";
+import { cx } from "../ui/cx.mjs";
 
-const SELECTED_COLOR = SELECTION_HEX;
-const IDLE_COLOR = "#e4e7ec";
-const UTILITY_COLOR = "#cbd0d8";
+// 상자 색: 설비실, 선택한 강의실, 나머지 순서로 정한다.
+function roomColor({ isUtility, isSelected }) {
+  if (isUtility) return D4_SCENE.roomUtility;
+  return isSelected ? SELECTION_HEX : D4_SCENE.roomIdle;
+}
 const UNIT = 1.35;
 const ROW_DEPTH = 1.7;
 const BOX_HEIGHT = 0.5;
@@ -30,32 +34,32 @@ function RoomBox({ room, x, z, width, isSelected, isInUse, onSelect }) {
     >
       <mesh castShadow={!isUtility} receiveShadow>
         <boxGeometry args={[boxWidth, isUtility ? BOX_HEIGHT * 0.6 : BOX_HEIGHT, ROW_DEPTH - GAP]} />
-        <meshStandardMaterial color={isUtility ? UTILITY_COLOR : isSelected ? SELECTED_COLOR : IDLE_COLOR} />
+        <meshStandardMaterial color={roomColor({ isUtility, isSelected })} />
       </mesh>
       <Html position={[0, (isUtility ? BOX_HEIGHT * 0.3 : BOX_HEIGHT / 2) + 0.06, 0]} center distanceFactor={11}>
         {isUtility ? (
-          <div className="pointer-events-none flex flex-col items-center gap-1 whitespace-nowrap rounded-md px-2 py-1 text-center text-[12px] font-[800] text-slate-400">
+          <div className={cx("pointer-events-none flex flex-col items-center gap-1 whitespace-nowrap", D4_SCENE_LABEL)}>
             {room.roomNumber}
           </div>
         ) : (
           <button
             type="button"
             aria-label={`${room.roomNumber} 강의실 상세`}
+            aria-pressed={isSelected}
             onClick={(event) => {
               event.stopPropagation();
               onSelect(room.id);
             }}
-            className={`pointer-events-auto flex flex-col items-center gap-1 whitespace-nowrap rounded-md px-2 py-1 text-center text-[12px] font-[800] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 ${
-            isUtility ? "text-slate-400" : isSelected ? "bg-black/15 text-white" : "text-slate-600"
-            }`}
+            className={cx("pointer-events-auto flex flex-col items-center gap-1", D4_SCENE_LABEL, isSelected && "ring-2 ring-primary")}
             style={{ maxWidth: `${Math.max(70, boxWidth * 34)}px`, whiteSpace: boxWidth > 1.6 ? "nowrap" : "normal" }}
           >
             {formatRoomNumber(room.roomNumber)}
-            <span
-              className={`h-1.5 w-1.5 rounded-full ${
-                isInUse ? (isSelected ? "bg-white" : "bg-[var(--colors-primary)]") : "bg-slate-300"
-              }`}
-            />
+            {isInUse && (
+              <span className="inline-flex items-center gap-1 text-micro text-ink-muted">
+                <span aria-hidden="true" className="h-1.5 w-1.5 rounded-pill bg-primary" />
+                사용 중
+              </span>
+            )}
           </button>
         )}
       </Html>

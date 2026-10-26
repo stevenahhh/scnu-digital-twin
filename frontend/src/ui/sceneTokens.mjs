@@ -37,3 +37,10 @@ export const ROOF_SCENE = Object.freeze({
   gridMajor: "#475569",
   gridMinor: "#1e293b",
 });
+
+// D4 층·강의실 장면의 상자 색. 선택은 강조색(SELECTION_HEX), 나머지는 장면 전용 재질색이다.
+export const D4_SCENE = Object.freeze({
+  roomIdle: "#e4e7ec",
+  roomUtility: "#cbd0d8",
+  floorIdle: "#c7cdd6",
+});

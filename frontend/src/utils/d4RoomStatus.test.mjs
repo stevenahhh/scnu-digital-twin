@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { D4_BUILDING_DATA, D4_ROOMS } from "./d4BuildingData.mjs";
-import { getCurrentRoomStatus } from "./d4RoomStatus.mjs";
+import { describeTodaySchedule, formatEquipmentLabel, getCurrentRoomStatus } from "./d4RoomStatus.mjs";
 
 test("reports a scheduled D4 classroom as occupied", () => {
   const room = D4_ROOMS.find((candidate) => candidate.timetable.length > 0);
@@ -39,4 +39,17 @@ test("provides section geometry and exposes the basement inventory", () => {
     && room.geometry.width > 0
     && room.geometry.depth > 0
   )));
+});
+
+test("formats the room equipment line with one rule per case", () => {
+  assert.equal(formatEquipmentLabel({ hasLargeScreen: true, computerCount: 30 }), "대형 스크린, 빔프로젝터");
+  assert.equal(formatEquipmentLabel({ hasLargeScreen: false, computerCount: 30 }), "PC 30대");
+  assert.equal(formatEquipmentLabel({ hasLargeScreen: false, computerCount: 0 }), "없음");
+});
+
+test("describes today's schedule from the current class, then the next one", () => {
+  const current = { startHour: 9, durationHours: 2, subject: "구조역학" };
+  assert.equal(describeTodaySchedule({ currentClass: current, nextClass: null }), "9:00 - 11:00 구조역학");
+  assert.equal(describeTodaySchedule({ currentClass: null, nextClass: { startHour: 13, subject: "설계" } }), "13:00 예정 · 설계");
+  assert.equal(describeTodaySchedule({ currentClass: null, nextClass: null }), "오늘 예정 없음");
 });
