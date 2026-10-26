@@ -1,0 +1,38 @@
+{
+ "description": "Facade attachments of SCNU buildings that their masses (building-forms.json, uni.glb outlines) do not carry, read by stages/buildings.mjs through lib/attachments.mjs. Matched by node (uni.glb BLD_* id). Kinds: balconies (a stack in a recess of the outline: plan of 4 lon/lat corners, open = plan edges that get parapet panels, column = corner index of the full-height column, a slab at every storey floor from fromStorey to toStorey on storeyMetres, a roof frame at roofMetres), fins (boxes width x depth standing out of the wall from wall[0] towards wall[1] at offsets metres, from bottomMetres to topMetres, or thickness thick at each of levels for horizontal ledges), mast (rooftop lattice mast at a lon/lat point standing on baseMetres, heightMetres tall), block (a prism over a 4-corner plan with the facade cells of look, up to topMetres or the building's height, then bandMetres of plain wall and a parapet; e.g. brick end towers 0.3 m proud of a panel facade). Heights are metres above the building's lowest ground. Positions are taken from the vertices of the building's own outline in building-forms.json (lon/lat), widths and heights read on the SCNU 360 VR tour cube faces (vr.scnu.ac.kr/360vr, scene_<code>; visual reference only, no image copied or linked) and the NGII 2025 orthophoto sheet 34702020. Every value is estimated (추정), not surveyed.",
+ "sources": [
+  "SCNU 360 VR tour, https://vr.scnu.ac.kr/360vr/tour.html, viewed 2026-10-26 as a visual reference only",
+  "NGII 2025 orthophoto sheet 34702020, 0.25 m (국토지리정보원; read locally, not committed; licence decision D2)",
+  "data/building-forms.json outlines (VWorld LOD4, 출처: 브이월드; uni.glb)"
+ ],
+ "buildings": [
+  {
+   "node": "BLD_E8",
+   "attachments": [
+    { "kind": "balconies", "id": "E8 north wing", "plan": [[127.47741371, 34.96866588], [127.47745024, 34.96865982], [127.4774447, 34.96862711], [127.47740644, 34.9686335]], "open": [1, 2], "column": 2, "storeyMetres": 3.78, "fromStorey": 2, "toStorey": 7, "roofMetres": 26.45, "colour": "#d42a44", "slabColour": "#dcd8d2", "source": "VR scene_e8 r (cols 60-440 of 1024): red balcony stack with a corner column and a roof frame at the courtyard end of the north wing's east wall, slabs at storeys 2-7; plan = the recess of the LOD4 outline between the stair core, the courtyard wall line and the east wall line (3.7 x 3.6 m; estimated)" },
+    { "kind": "balconies", "id": "E8 south wing", "plan": [[127.47735125, 34.9684205], [127.47739019, 34.96841396], [127.47737447, 34.96835055], [127.4773357, 34.96835713]], "open": [0, 1], "column": 1, "storeyMetres": 3.815, "fromStorey": 2, "toStorey": 6, "roofMetres": 22.89, "colour": "#d42a44", "slabColour": "#dcd8d2", "source": "VR scene_e8 l (cols 760-930 of 1024): red balcony stack with a corner column and a roof frame at the courtyard end of the south wing's east wall, slabs at storeys 2-6; plan = the 3.6 m recess of the LOD4 outline in front of the wall up to the courtyard wall line (3.6 x 7.2 m; estimated)" }
+   ]
+  },
+  {
+   "node": "BLD_B2",
+   "attachments": [
+    { "kind": "fins", "id": "B2 west wall fins", "wall": [[127.48171966, 34.96956806], [127.48166272, 34.96940599]], "offsets": [1.0, 3.3, 5.6, 7.9], "width": 1.4, "depth": 0.35, "bottomMetres": 2.3, "topMetres": 9.9, "colour": "#d6404a", "source": "VR scene_b4 r (cols 470-615 of 1024): four red vertical fins low on the blank west wall of the four-storey west wing, near its north corner; wall = that wing's west edge in building-forms.json (18.7 m), fin width, spacing and heights scaled from the wall height (estimated)" },
+    { "kind": "fins", "id": "B2 rear wing red ledges", "wall": [[127.48188359, 34.96958455], [127.48177639, 34.96960979]], "offsets": [3.5], "width": 6.0, "depth": 1.0, "levels": [3.1, 6.3, 9.5, 12.7, 15.9], "thickness": 0.3, "colour": "#d6404a", "source": "VR scene_b3 r/b (r cols 920-1024, b cols 0-310): five red horizontal ledges on the grey ribbed north wall of the rear wing, over its western 6 m, also seen at the west end in scene_b2 f; wall = that wing's north edge in building-forms.json (10.2 m), levels from the ledges' elevation angles at the scene_b3 station (13.8 m camera, 13 m to the wall; estimated)" }
+   ]
+  },
+  {
+   "node": "BLD_Training Lab Building",
+   "attachments": [
+    { "kind": "mast", "id": "C3 rooftop mast", "at": [127.4794925, 34.97064127], "baseMetres": 29.31, "heightMetres": 9.0, "colour": "#b4b9bd", "source": "VR scene_c3 f (cols 555-600 of 1024): grey lattice telecom mast with a two-tier antenna cluster on the seven-storey rear block above the glazed stair core; foot from its shadow on the NGII 2025 sheet moved back by the roof's relief lean (-0.046, -0.223 m per m at 29.3 m); height read against the storey grid (estimated)" }
+   ]
+  },
+  {
+   "node": "BLD_Dormitory_Building.004",
+   "attachments": [
+    { "kind": "block", "id": "A13 north-west wing end tower", "plan": [[127.4817041, 34.96717517], [127.48163357, 34.96711722], [127.48169007, 34.96707067], [127.4817606, 34.96712862]], "look": "A13-brick", "bandMetres": 0.9, "source": "VR scene_a13 f (cols 240-390 of 1024: the left brick tower with the A13 웅지관 sign) and scene_a15 l (cols 440-480): orange brick end tower over the last 7 m of the north-west wing, 0.3 m proud of the white panel walls, 0.9 m above the roof; outline = the wing end of the uni.glb outline (estimated)" },
+    { "kind": "block", "id": "A13 west bar end tower", "plan": [[127.48167373, 34.96698008], [127.48165298, 34.96690263], [127.48173027, 34.96688587], [127.48175103, 34.96696332]], "look": "A13-brick", "bandMetres": 0.9, "source": "VR scene_a13 f (cols 570-665 of 1024: the right brick tower over the pilotis entrance): orange brick end tower over the last 7 m of the bar's west end, 0.3 m proud of the white panel walls, 0.9 m above the roof (estimated)" },
+    { "kind": "block", "id": "A13 east bar end tower", "plan": [[127.48219791, 34.96693081], [127.4821719, 34.96685267], [127.4820946, 34.96686943], [127.48212062, 34.96694757]], "look": "A13-brick", "bandMetres": 0.9, "source": "VR scene_a15 l (cols 720-765 of 1024): orange brick end tower over the last 7 m of the bar's east end, 0.3 m proud of the white panel walls, 0.9 m above the roof (estimated)" }
+   ]
+  }
+ ]
+}
