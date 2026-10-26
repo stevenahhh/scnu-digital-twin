@@ -473,6 +473,39 @@ MX01744, 0.5 m wide), a lane line ending on the outbound one (MX01745) and two l
 shadow, and MX01746). MX01746 replaces MK00926, a white dash that `markings.geojson` read as a yellow centre line
 (white support 0.71, yellow 0), now deleted by a correction.
 
+### VR rest-space reconciliation (2026-10-25)
+
+24 VR sightings (the 17 rest-space sightings of the VR station survey plus 7 garden and plaza items) against this survey: 7 match, 0 retype, **17 missing**; 28 further landscape items (steps, sculptures, signs) are listed in the JSON only. Machine copy: `rest-spaces-reconciliation.json`.
+
+Method: each sighting is a ray from its VR station (`scripts/perf/vr-stations.json`, refined yaw where present) at the face bearing plus the column angle of the sighting's middle column, 10-120 m long; a sighting on the nadir face (d) is a strip under the station, offset by its column. Surveyed objects of kind pergola, gazebo, bus_stop_shelter, bench, planter, low_wall, plaza_structure or fence within 8 m of it are candidates. `match`: a candidate of a kind that already stands for what the VR shows (the nearest one; two of that kind within 8 m set `ambiguous`). `retype`: only a candidate whose survey kind the VR corrects. `missing`: none. The photo column says whether the NGII 2025 photo shows a roof, wall or planter at the ray. Stations placed by ortho-match carry a nominal 40 m error, so a `missing` there can also be a station error; the reason says so. Nothing here changes the model: a later stage applies the decisions and creates the `RS` instances.
+
+| # | scene / face / cols | kind seen | bearing | candidates within 8 m | decision | reason | typeId | photo | instance |
+|---|---|---|---:|---|---|---|---|---|---|
+| 1 | scene_a2 / d / 0-700 | bench: benches on paved path | nadir | none | missing | no surveyed object within 8 m of the ray | bench | no | RS0001 |
+| 2 | scene_a4 / r / 1100-2048 | shelter: long bus-terminal shelter (continues into b col 0-900) | 253.2 | OC0139 fence 0.1 m | missing | only fence within 8 m, none of a kind that stands for a terminal_shelter | terminal_shelter | yes | RS0002 |
+| 3 | scene_a5 / r / 1450-1650 | pavilion: green octagonal gazebo/umbrella in garden | 345.2 | OC0120 gazebo 1.1 m | match OC0121 (ambiguous) | the survey's round dark-green roofed gazebo OC0121 (style matches the green octagonal roof) lies in the same walled garden; the ray passes 1.1 m from OC0120 (blue pyramid roof, claimed by sighting 4) and OC0121 sits 2.4 m from the garden ray at 329 deg: the ortho-match station (nominal 40 m error) cannot separate the two, the roof styles do | pavilion_octagon | yes | - |
+| 4 | scene_a5 / d / 1300-1900 | pavilion: blue square hip-roof 정자 next to garden | nadir | OC0120 gazebo 0.8 m | match OC0120 | blue pyramid-roof gazebo OC0120 ('blue pyramid-roof gazebo in the walled garden') lies 0.8 m from the nadir strip; same object and roof colour | pavilion_hip | yes | - |
+| - | scene_a5 / r / 400-2048 | garden: walled garden with lawn | 329.1 | OC0120 gazebo 0.1 m; OC0121 gazebo 2.4 m | missing | only gazebo within 8 m, none of a kind that stands for a garden_wall | garden_wall | yes | RS0003 |
+| 5 | scene_a6 / l / 500-1550 | shelter: row of blue-canopy covered shelters (bike/walkway) | 177.2 | none | missing | no surveyed object within 8 m of the ray | canopy_shelter_row | yes | RS0004 |
+| - | scene_a6 / l / 600-1500 | garden: tree plaza | 178.6 | none | missing | no surveyed object within 8 m of the ray | planter | yes | RS0005 |
+| 6 | scene_a9 / f / 600-2048 | bench: paved plaza with tree planters and benches (also r, d) | 164.7 | none | missing | no surveyed object within 8 m of the ray | bench | no | RS0006 |
+| - | scene_a9 / r / 0-2048 | garden: tree-planter plaza | 238.4 | none | missing | no surveyed object within 8 m of the ray | planter | yes | RS0007 |
+| 7 | scene_a10 / f / 0-1500 | bench: tree-planter plaza with benches | 222 | OC0169 plaza_structure 0.1 m | missing | only plaza_structure within 8 m, none of a kind that stands for a bench | bench | no | RS0008 |
+| 8 | scene_a10 / f / 1700-2048 | shelter: blue-white striped awning (also d) | 276.7 | none | missing | no surveyed object within 8 m of the ray | awning | yes | RS0009 |
+| - | scene_a16 / f / 1280-2048 | garden: hedge lettering 진리 정의 창조 on slope (into r col 0-400) | 149 | OC0158 fence 5.1 m; OC0173 fence 6.9 m; OC0161 fence 7.7 m | missing | only fence within 8 m, none of a kind that stands for a planter | planter | yes | RS0010 |
+| 9 | scene_f3 / f / 1950-2048 | shelter: red-roof tennis-court hut (into r col 0-500) | 271.6 | none | missing | no surveyed object within 8 m of the ray | hut | no | RS0011 |
+| 10 | scene_a19 / b / 250-500 | shelter: bus stop shelter | 71.6 | OB0009 bus_stop_shelter 1.6 m | match OB0009 | bus_stop_shelter OB0009 lies 1.6 m from the ray (17 m out) | bus_stop_shelter | yes | - |
+| 11 | scene_c1 / l / 200-900 | bench: bench rows under trees on library plaza | 173.8 | OC0081 plaza_structure 0.6 m | missing | only plaza_structure within 8 m, none of a kind that stands for a bench | bench | no | RS0012 |
+| 12 | scene_c1 / b / 1000-1900 | bench: benches around pond plaza | 131.2 | OC0094 low_wall 0.6 m; OB0024 low_wall 0.7 m; OC0081 plaza_structure 1.7 m; OB0021 plaza_structure 3.3 m; OB0011 plaza_structure 5.2 m | match estimateBenches (stages/furniture.mjs, 8 plaza benches beside the pond, VR scene_c1) | the build already places estimated box benches (4 per long side) beside the oval pond OC0081 from VR scene_c1; the ray at 131 deg crosses the pond's south-east side where they stand. No surveyed bench is needed | bench | yes | - |
+| 13 | scene_d2 / r / 1050-1300 | shelter: small roofed shelter/pergola with bench on central planted island | 142.7 | none | missing | no surveyed object within 8 m of the ray | pergola | no | RS0013 |
+| 14 | scene_d4 / l / 1250-1450 | pavilion: 정자 (brown hip roof) beside path, left of D4 plaza | 218.6 | OC0078 gazebo 0.1 m | match OC0078 | gazebo OC0078 lies 0.1 m from the ray (29 m out) | pavilion_hip | yes | - |
+| - | scene_e5 / b / 1000-1900 | garden: lawn garden with topiary shrubs | 78.1 | none | missing | no surveyed object within 8 m of the ray | planter | yes | RS0014 |
+| - | scene_e7 / f / 400-1400 | garden: paved plaza with tree planter | 207.6 | OC0137 planter 0.1 m; OC0138 pergola 0.9 m | match OC0137 | planter OC0137 lies 0.1 m from the ray (25 m out) | planter | yes | - |
+| - | scene_e8 / f / 500-1600 | garden: courtyard plaza with planters | 273.8 | OC0102 planter 1.1 m | match OC0102 | planter OC0102 lies 1.1 m from the ray (30 m out) | planter | yes | - |
+| 15 | scene_f1 / l / 550-800 | shelter: bus stop shelter | 146.2 | none | missing | no surveyed object within 8 m of the ray | bus_stop_shelter | no | RS0015 |
+| 16 | scene_f1 / d / 500-1400 | bench: two benches on sidewalk | nadir | none | missing | no surveyed object within 8 m of the ray | bench | no | RS0016 |
+| 17 | scene_f2 / d / 1400-1900 | shelter: small green-roof hut/booth | nadir | none | missing | no surveyed object within 8 m of the ray | hut | no | RS0017 |
+
 ## Licence
 
 Source: **국토지리정보원 (NGII), 정사영상 2025, sheet 34702020 (순천020)**, metadata 202504000734702020, made by
