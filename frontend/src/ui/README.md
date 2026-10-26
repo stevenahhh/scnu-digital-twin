@@ -22,3 +22,9 @@ http://127.0.0.1:<port>/?ui=gallery&theme=light  밝은 테마
 | --- | --- | --- |
 | `Button` | `Button.jsx` | primary·secondary·ghost, sm·md(32/40px, 굵은 포인터 44px), 비활성 사유는 `title`, 처리 중에는 안쪽 스피너 하나 |
 | `Segmented` | `Segmented.jsx` | 탭(`tablist`) 또는 라디오(`radiogroup`), 화살표 키 이동, 활성 모양 하나(surface-2 + 점) |
+| `StatusBadge` | `StatusBadge.jsx` | neutral·success·warning·danger·estimate·sample, wash 바탕 + 대비 4.5:1 글자(`badgeTones.mjs`), 글자가 항상 있다 |
+| `Alert` | `Alert.jsx` | 원인·설명·마지막 정상 값·다음 동작, `자세히` 펼침과 복사, danger만 `role="alert"` |
+| `SectionHeader` | `SectionHeader.jsx` | 한국어 문장형 제목, 실제 heading 수준, 머리말·자간 없음 |
+| `Breadcrumb` | `Breadcrumb.jsx` | `nav[aria-label="breadcrumb"]`, 마지막을 뺀 단계는 버튼 |
+| `Disclosure` | `Disclosure.jsx` | `aria-expanded` 요약 버튼, 내용이 아래로 자란다 |
+| `Popover` | `Popover.jsx` | 트리거에 붙는 면, Esc·바깥 클릭으로 닫힘, 포커스는 트리거로 |

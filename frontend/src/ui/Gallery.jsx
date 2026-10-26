@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
-import { Plus, RefreshCw } from "lucide-react";
+import { Plus, Radio, RefreshCw } from "lucide-react";
+import { Alert } from "./Alert.jsx";
+import { Breadcrumb } from "./Breadcrumb.jsx";
 import { Button } from "./Button.jsx";
+import { Disclosure } from "./Disclosure.jsx";
+import { Popover } from "./Popover.jsx";
+import { SectionHeader } from "./SectionHeader.jsx";
 import { Segmented } from "./Segmented.jsx";
+import { StatusBadge } from "./StatusBadge.jsx";
 
 // 공용 기본 요소를 한 화면에 늘어놓는 확인용 화면(?ui=gallery). 시각 QA가 이 화면을 찍는다.
 // ?theme=light|dark로 테마를 고른다. 제품 화면에는 연결되지 않는다.
@@ -111,6 +117,101 @@ function SegmentedGallery() {
   );
 }
 
+function BadgeGallery() {
+  return (
+    <GallerySection id="badge" title="상태 배지">
+      <Row label="톤">
+        <StatusBadge tone="neutral">D4</StatusBadge>
+        <StatusBadge tone="success" icon={Radio}>실시간</StatusBadge>
+        <StatusBadge tone="warning">지연</StatusBadge>
+        <StatusBadge tone="danger">연결 끊김</StatusBadge>
+        <StatusBadge tone="estimate" />
+        <StatusBadge tone="sample" />
+      </Row>
+    </GallerySection>
+  );
+}
+
+function AlertGallery() {
+  return (
+    <GallerySection id="alert" title="인라인 알림">
+      <Alert
+        tone="danger"
+        source="weather"
+        title="기상 서버에 연결할 수 없습니다"
+        message="09:42에 마지막으로 받은 값을 보여 줍니다."
+        lastValue="23.4 °C · 09:40"
+        actions={[{ label: "다시 시도", onClick: () => {} }]}
+        detail="GET /environment/full -> TypeError: Failed to fetch"
+      />
+      <Alert tone="warning" source="traffic" title="영상 분석 서버 응답이 지연되고 있습니다" actions={[{ label: "다시 시도", onClick: () => {} }]} />
+      <Alert tone="neutral" source="simulation" title="교통 시뮬레이션 연결 중" message="연결되면 차량 흐름이 장면에 나타납니다." />
+      <Alert tone="success" source="energy" title="설치 계획을 저장했습니다" actions={[{ label: "계획 보기", onClick: () => {} }]} />
+    </GallerySection>
+  );
+}
+
+function HeaderGallery() {
+  return (
+    <GallerySection id="header" title="섹션 제목">
+      <SectionHeader level={2} title="태양광 현황" />
+      <SectionHeader title="미기후" badge={<StatusBadge tone="estimate" />} subtitle="건물 표면 온도와 복사량은 모델로 계산한 추정값입니다." />
+      <SectionHeader title="주차 현황" actions={<Button size="sm" variant="ghost">전체 보기</Button>} />
+    </GallerySection>
+  );
+}
+
+function BreadcrumbGallery() {
+  return (
+    <GallerySection id="breadcrumb" title="위치 경로">
+      <Breadcrumb
+        items={[
+          { label: "캠퍼스", onSelect: () => {} },
+          { label: "공과대학 3호관", onSelect: () => {} },
+          { label: "3층", onSelect: () => {} },
+          { label: "301호" },
+        ]}
+      />
+    </GallerySection>
+  );
+}
+
+function DisclosureGallery() {
+  return (
+    <GallerySection id="disclosure" title="펼침">
+      <Disclosure summary="설치 계획">
+        <p className="text-body text-ink-muted">지붕 면을 골라 태양광 패널 배치를 그립니다.</p>
+      </Disclosure>
+      <Disclosure summary="계산 방법" defaultOpen>
+        <p className="text-body text-ink-muted">기상청 예보와 건물 재질을 넣어 표면 온도를 추정합니다.</p>
+      </Disclosure>
+    </GallerySection>
+  );
+}
+
+function PopoverGallery() {
+  return (
+    <GallerySection id="popover" title="팝오버">
+      <div className="flex min-h-40 items-start">
+        <Popover
+          label="범례"
+          qa="legend"
+          renderTrigger={(props) => (
+            <Button size="sm" data-qa="gallery-popover-trigger" {...props}>
+              범례
+            </Button>
+          )}
+        >
+          <ul className="flex flex-col gap-2 text-caption text-ink-muted">
+            <li className="flex items-center gap-2"><StatusBadge tone="estimate" /> 모델로 계산한 값</li>
+            <li className="flex items-center gap-2"><StatusBadge tone="sample" /> 실측이 아닌 예시 값</li>
+          </ul>
+        </Popover>
+      </div>
+    </GallerySection>
+  );
+}
+
 export default function Gallery() {
   const [theme, setTheme] = useState(() => (params().get("theme") === "light" ? "light" : "dark"));
 
@@ -138,6 +239,12 @@ export default function Gallery() {
         </header>
         <ButtonGallery />
         <SegmentedGallery />
+        <BadgeGallery />
+        <AlertGallery />
+        <HeaderGallery />
+        <BreadcrumbGallery />
+        <DisclosureGallery />
+        <PopoverGallery />
       </div>
     </main>
   );
