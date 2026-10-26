@@ -73,6 +73,7 @@ const C = {
   roofBlue: rgb("#3063a7"), roofGrey: rgb("#8c9298"), roofYellow: rgb("#c9b274"), roofRed: rgb("#a9433b"), roofBrown: rgb("#6c4b37"),
   roofDark: rgb("#4a4f4c"), roofGreen: rgb("#3f6c50"), binBlue: rgb("#2e60a9"), goalWhite: rgb("#f3f3f3"), board: rgb("#70b6e1"),
   signBlue: rgb("#2b5dab"), hoopOrange: rgb("#d5571f"), tan: rgb("#c9aa7c"), brown: rgb("#8f6a4c"), red: rgb("#b4503f"), plazaBench: rgb("#2c4f74"),
+  gravel: rgb("#a3927a"),
 };
 const GLASS = { pane: rgb("#c6dce5", 80), canopy: rgb("#e8eff3", 150), net: rgb("#2f5b3b", 75), mesh: rgb("#207e77", 95), goalNet: rgb("#f5f5f5", 75) };
 
@@ -85,6 +86,7 @@ const disc = ([x, z], radius, n = 8) => Array.from({ length: n }, (_, i) => [x +
 function heightOf(p) {
   // Rest-space instances (data/rest-space-catalogue.json kinds) without a height of their own take their type's.
   if (p.height_m === undefined && REST_TYPES[p.kind]) return { heightM: restHeightM(p.kind, p.dims, p.id), heightSource: `catalogue ${p.kind} (estimated)` };
+  if (p.height_m === undefined && p.kind === "signboard") return { heightM: (p.clearance_m ?? SIGNBOARD.clearanceM) + (p.panel_m ?? SIGNBOARD.panelM), heightSource: "signboard defaults (estimated)" };
   if (SUBTYPE_HEIGHT_M[p.subtype] && /kind default/.test(p.height_source ?? "")) return { heightM: SUBTYPE_HEIGHT_M[p.subtype], heightSource: `subtype default for a ${p.subtype} (the survey's ${p.height_m} m is its plaza_structure default)` };
   if (p.kind === "plaza_structure" && p.subtype === "planter") return { heightM: PLAZA_PLANTER_KERB_M, heightSource: "VR scene_c1: lawn squares with a low kerb" };
   return { heightM: p.height_m, heightSource: p.height_source ?? "survey" };
@@ -353,6 +355,23 @@ function axisOf(o) {
   return line;
 }
 
+// Rest-space candidates that would draw an existing object twice: within radiusM of an object of the same class (all
+// roofed kinds are one class, the rest go by kind, street lamps included). Returns [{ id, other, kind, distanceM }].
+const dedupClass = (kind) => (ROOFED.has(kind) ? "roofed" : kind);
+export function duplicatesOf(candidates, existing, radiusM = 3) {
+  const found = [];
+  for (const o of candidates) {
+    const outline = o.footprint ?? o.ring;
+    const at = o.point ?? (outline ? ringCentroid(outline) : [(o.line[0][0] + o.line.at(-1)[0]) / 2, (o.line[0][1] + o.line.at(-1)[1]) / 2]);
+    for (const other of existing) {
+      if (other.id === o.id || dedupClass(other.kind) !== dedupClass(o.kind)) continue;
+      const distanceM = objectDistance(at, other) / M(1);
+      if (distanceM < radiusM) found.push({ id: o.id, other: other.id, kind: o.kind, distanceM: Number(distanceM.toFixed(2)) });
+    }
+  }
+  return found;
+}
+
 // Fabric stripes across a length: equal bands about widthM wide, colour index alternating 0, 1, 0, ...
 export function stripeBands(lengthM, widthM) {
   const n = Math.max(1, Math.round(lengthM / widthM));
@@ -369,6 +388,12 @@ function twoSided(ctx, points, outward, paint, underPaint = paint) {
 export const B = {};
 
 B.low_wall = (ctx, o) => {
+  if (o.p.dims !== undefined) {
+    // rest-space low wall (VR scene_a9: red-brick planter walls): catalogue thickness and height, colour per instance
+    const d = dimsOf(o);
+    wall(ctx, ctx.solid, o.line, d.thicknessM, d.heightM, paintOf(o.p.colour, C.concrete, o.id));
+    return;
+  }
   const curvedPlaza = o.id === "OB0024"; // VR scene_c1: blue-grey coping around the red terrace
   const colour = curvedPlaza ? C.slate : /white/.test(o.p.note ?? "") ? C.white : C.concrete;
   wall(ctx, ctx.solid, o.line, 0.3, o.heightM, colour);
@@ -388,6 +413,31 @@ B.fence = (ctx, o) => {
 };
 
 B.planter = (ctx, o) => {
+  if (o.p.dims !== undefined) {
+    // rest-space planter (VR scene_a9 / scene_c1: square tree pits with a stone kerb, gravel or soil inside): a kerb
+    // 0.2 m wide and kerbHeightM high round the ring, the fill 0.05 m below its top; along a line, a kerb wall.
+    const d = dimsOf(o);
+    const kerb = paintOf(o.p.colour, C.stone, o.id);
+    if (o.line) {
+      wall(ctx, ctx.solid, o.line, 0.3, d.kerbHeightM, kerb);
+      return;
+    }
+    const fill = { lawn: C.lawn, soil: C.soil, gravel: C.gravel, shrub: C.shrub }[o.p.fill ?? "soil"];
+    if (!fill) throw new Error(`furniture: planter ${o.id} fill ${o.p.fill} is not lawn, soil, gravel or shrub`);
+    const inner = offsetLine([...o.ring, o.ring[0]], insideSign(o.ring) * M(0.2)).slice(0, -1);
+    const kerbTop = (x, z) => ctx.groundAt(x, z) + M(d.kerbHeightM);
+    const fillTop = (x, z) => ctx.groundAt(x, z) + M(Math.max(0.02, d.kerbHeightM - 0.05));
+    ctx.solid.prism(o.ring, ctx.minGround(o.ring) - M(0.1), kerbTop, kerb, { topFace: false });
+    ctx.solid.flat(o.ring, [inner], kerbTop, kerb);
+    const middle = ringCentroid(inner);
+    for (let i = 0; i < inner.length; i += 1) {
+      const [p, q] = [inner[i], inner[(i + 1) % inner.length]];
+      const toMiddle = [middle[0] - (p[0] + q[0]) / 2, 0, middle[1] - (p[1] + q[1]) / 2];
+      ctx.solid.face([[p[0], fillTop(...p), p[1]], [q[0], fillTop(...q), q[1]], [q[0], kerbTop(...q), q[1]], [p[0], kerbTop(...p), p[1]]], toMiddle, kerb);
+    }
+    ctx.solid.flat(inner, [], fillTop, fill);
+    return;
+  }
   if (o.line) {
     wall(ctx, ctx.solid, o.line, 0.3, o.heightM, /red/.test(o.p.note ?? "") ? C.brick : C.stone);
     return;
@@ -401,15 +451,24 @@ B.bench = (ctx, o) => {
   const length = Math.hypot(b[0] - a[0], b[1] - a[1]) / M(1);
   const u = [(b[0] - a[0]) / (length * M(1)), (b[1] - a[1]) / (length * M(1))];
   const long = /long|stand/.test(o.p.note ?? "");
-  const count = long ? 1 : Math.max(1, Math.round(length / 2.4));
-  const each = long ? length : Math.min(1.8, length / count - 0.3);
+  // rest-space bench rows (VR scene_c1: long dark box benches beside the tree pits; scene_a9: timber benches): one
+  // bench of catalogue lengthM every spacing_m along the line, centred on it; style "box" draws the backless box bench
+  const rest = o.p.dims !== undefined ? dimsOf(o) : null;
+  const spacing = o.p.spacing_m;
+  const count = spacing ? Math.floor(length / spacing + 1e-9) + 1 : long ? 1 : Math.max(1, Math.round(length / 2.4));
+  const each = rest ? rest.lengthM : long ? length : Math.min(1.8, length / count - 0.3);
+  const style = !rest ? { back: !long, seat: long ? C.white : C.wood }
+    : o.p.style === "box" ? { back: false, seat: paintOf(o.p.colour, C.plazaBench, o.id), legs: paintOf(o.p.colour, C.plazaBench, o.id), depthM: rest.depthM }
+    : { back: o.p.back ?? true, seat: paintOf(o.p.colour, C.wood, o.id), depthM: rest.depthM };
   for (let k = 0; k < count; k += 1) {
-    const c = [a[0] + (b[0] - a[0]) * ((k + 0.5) / count), a[1] + (b[1] - a[1]) * ((k + 0.5) / count)];
+    const pos = spacing ? ((length - (count - 1) * spacing) / 2 + k * spacing) / length : (k + 0.5) / count;
+    const c = [a[0] + (b[0] - a[0]) * pos, a[1] + (b[1] - a[1]) * pos];
     const side = [c[0] - u[1] * M(1), c[1] + u[0] * M(1)];
     const paved = ctx.sites.inArea(side) || [ctx.sites.classes.PAVING, ctx.sites.classes.ASPHALT].includes(ctx.sites.labelAt(side));
     const f = facingFrame(ctx, c, u, paved ? side : [c[0] + u[1] * M(1), c[1] - u[0] * M(1)]);
-    benchAt(ctx, f, each, { back: !long, seat: long ? C.white : C.wood });
+    benchAt(ctx, f, each, style);
   }
+  return { benches: count };
 };
 
 // Bus shelters (posts, roof, glass back and side panes, bench), court shelters (no glass) and the long school-bus
@@ -1084,6 +1143,62 @@ B.gate_sign = (ctx, o) => {
   ctx.solid.box(f, [-length / 2, length / 2], [-depth / 2, depth / 2], [plinth, plinth + letters], { top: slab, side: slab });
   const band = rgb(p.bandColour ?? p.colour ?? "#f4f3ee");
   ctx.solid.box(f, [-length * 0.42, length * 0.42], [-depth * 0.3, depth * 0.3], [plinth + letters + 0.1, o.heightM], { top: band, side: band });
+};
+
+// Garden walls (VR scene_a5 r: a white-coped wall round the walled garden carrying a brown timber lattice screen):
+// along a LineString, catalogue thicknessM and heightM in `colour`, a 0.06 m coping in copingColour, piers every
+// pier_spacing_m when set, and a lattice screen lattice_m high on top when set.
+B.garden_wall = (ctx, o) => {
+  if (!o.line) throw new Error(`furniture: garden_wall ${o.id} needs a LineString`);
+  const d = dimsOf(o);
+  const body = paintOf(o.p.colour, C.brick, o.id);
+  wall(ctx, ctx.solid, o.line, d.thicknessM, d.heightM - 0.06, body);
+  wall(ctx, ctx.solid, o.line, d.thicknessM + 0.06, 0.06, paintOf(o.p.copingColour, C.offWhite, o.id), { baseM: d.heightM - 0.06 });
+  if (o.p.pier_spacing_m) {
+    for (const { p, u } of along(o.line, M(o.p.pier_spacing_m))) {
+      ctx.solid.box(frame([p[0], ctx.groundAt(...p), p[1]], u), [-0.2, 0.2], [-(d.thicknessM / 2 + 0.05), d.thicknessM / 2 + 0.05], [-0.08, d.heightM + 0.04], body);
+    }
+  }
+  if (o.p.lattice_m) {
+    const lattice = paintOf(o.p.latticeColour, C.wood, o.id);
+    railing(ctx, o.line, o.p.lattice_m, lattice, { baseM: d.heightM, stepM: 1.8, rails: [1, 0.03], postM: 0.08, panel: [...lattice.slice(0, 3), 170] });
+  }
+};
+
+// Free-standing boards (VR scene_a10 r: white notice panels in blue frames on two blue posts under a sloping rain hood;
+// scene_a4 r: the dark terminal board): a panel width_m wide and panel_m tall on two legs, its bottom clearance_m
+// above the ground, facing bearing_deg (a Point) or the left of a LineString; colour is the face, frameColour the
+// legs, the edges and the hood (hood true). Missing sizes take SIGNBOARD; every size is an estimate.
+const SIGNBOARD = { widthM: 1.8, panelM: 1.2, clearanceM: 0.6 };
+B.signboard = (ctx, o) => {
+  let centre;
+  let u;
+  if (o.line) {
+    const [a, b] = [o.line[0], o.line.at(-1)];
+    centre = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+    u = [b[0] - a[0], b[1] - a[1]];
+  } else if (o.point) {
+    const bearing = ((o.p.bearing_deg ?? 0) * Math.PI) / 180;
+    centre = o.point;
+    u = [-Math.cos(bearing), -Math.sin(bearing)];
+  } else throw new Error(`furniture: signboard ${o.id} needs a Point or a LineString`);
+  const w = o.p.width_m ?? SIGNBOARD.widthM;
+  const ph = o.p.panel_m ?? SIGNBOARD.panelM;
+  const c = o.p.clearance_m ?? SIGNBOARD.clearanceM;
+  const face = paintOf(o.p.colour, C.white, o.id);
+  const edge = paintOf(o.p.frameColour, C.signBlue, o.id);
+  const f = frame([centre[0], ctx.groundAt(...centre), centre[1]], u);
+  const S = ctx.solid;
+  for (const s of [-w / 2 + 0.06, w / 2 - 0.06]) S.box(f, [s - 0.05, s + 0.05], [-0.09, 0.01], [-0.1, c + ph + 0.05], edge);
+  S.box(f, [-w / 2, w / 2], [-0.03, 0.03], [c, c + ph], { side: face, top: edge });
+  S.box(f, [-w / 2 - 0.04, w / 2 + 0.04], [-0.05, 0.05], [c - 0.05, c], edge);
+  S.box(f, [-w / 2 - 0.04, w / 2 + 0.04], [-0.05, 0.05], [c + ph, c + ph + 0.05], edge);
+  if (o.p.hood) {
+    const [h0, h1] = [c + ph + 0.05, c + ph + 0.2];
+    const at = (s, t, h) => local(f, s, t, h);
+    S.hexa([at(-w / 2 - 0.1, -0.25, h1 - 0.04), at(w / 2 + 0.1, -0.25, h1 - 0.04), at(w / 2 + 0.1, 0.4, h0), at(-w / 2 - 0.1, 0.4, h0),
+      at(-w / 2 - 0.1, -0.25, h1), at(w / 2 + 0.1, -0.25, h1), at(w / 2 + 0.1, 0.4, h0 + 0.06), at(-w / 2 - 0.1, 0.4, h0 + 0.06)], edge, { bottom: true });
+  }
 };
 
 B.floodlight_pole = (ctx, o) => {
