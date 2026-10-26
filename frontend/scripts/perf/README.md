@@ -118,7 +118,9 @@ bun scripts/perf/formula.mjs --url http://127.0.0.1:5190/ --label after --out <d
 Share of the ground under tree crowns seen from straight above, per area (the four overhead-blend windows and the b1
 south slope), in a campus GLB (each `Trees_*_crown` instance a disc of its crown mesh's horizontal reach times its
 scale; hedges not counted) against the photo canopy mask of `fetch/treeInventory.mjs` (run with `--out`, so `data/`
-is untouched). No browser and no dev server.
+is untouched). Canopy masses (`Trees_canopy_crown`) count as rotated ellipses. It also prints the camera clearance: the
+smallest distance from any VR station to a crown edge (written to `station-clearance.txt` with `--out`). No browser and no
+dev server.
 
 ```bash
 bun scripts/perf/canopy-cover.mjs --glb before=<file> --glb after=public/campus-v2.glb [--inventory inv=<trees.json>] [--out <dir>]
