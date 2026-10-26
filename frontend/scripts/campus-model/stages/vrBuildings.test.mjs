@@ -52,6 +52,7 @@ function validateRecords(records) {
     }));
     if (typeof r.footprintSource !== "string" || !r.footprintSource.includes("(estimated)")) fail("footprintSource must say (estimated)");
     if (typeof r.nameSource !== "string" || r.nameSource.length === 0) fail("nameSource missing");
+    if (/^estimated/.test(r.nameSource ?? "") && !String(r.label ?? "").endsWith("(추정)")) fail("an estimated name needs a label ending in (추정)");
     if (r.estimated !== true) fail("estimated must be true");
     if (!(typeof r.confidence === "number" && r.confidence >= 0 && r.confidence <= 1)) fail("confidence must be 0-1");
     if (!Array.isArray(r.vrScenes) || r.vrScenes.length === 0 || !r.vrScenes.every((s) => /^scene_[a-z0-9]+$/.test(s))) fail("vrScenes must list scene ids");
