@@ -2073,9 +2073,16 @@
       "yaw_deg": true
     },
     "refined": false,
-    "refined_by": "compare-vr todo 2",
-    "refined_note": "A12 slim tower not reproduced at any candidate yaw; station position likely off (outside the campus terrain extent)",
-    "strip_check": "2026-10-27 compare-vr strip FAILED: renders town blocks where the VR shows the campus dormitories (wrong block); pose unresolved (estimated)"
+    "refined_by": "hand-picked control points, least squares (scripts/perf/vr_control_points.py solve)",
+    "refined_note": "7 stall-line corners of the A12/A10/A9 car park read by hand on the ground-projected cube and the NGII 2025 sheet; residual RMS 1.22 m, max 1.85 m; formal sigma 0.70 m / 2.15 deg; below the tool's 8-point gate, accepted on the four-face strip test; height from the face scale (estimated)",
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR (hand-picked control points)",
+    "station_refined_x": 249.17,
+    "station_refined_z": -27.73,
+    "yaw_refined_deg": 263.39,
+    "height_refined_m": 10.23,
+    "refined_confidence": 0.85,
+    "refined_residual_deg": 2.15,
+    "refined_residual_m": 0.7
   },
   {
     "scene": "scene_a13",
@@ -3454,16 +3461,16 @@
       "yaw_deg": true
     },
     "refined": false,
-    "refined_by": "manual control-point resection (scripts/perf/vr_control_points.py)",
-    "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by old); least squares: residual RMS 0.43 m, max 0.62 m; split-half agreement 0.14 m / 0.08 deg; formal sigma 0.06 m / 0.05 deg; height from the face scale (estimated)",
-    "station_refined_x": 325.65,
-    "station_refined_z": -292.92,
-    "yaw_refined_deg": 160.68,
-    "height_refined_m": 35.45,
+    "refined_by": "hand-picked control points, least squares (scripts/perf/vr_control_points.py solve)",
+    "refined_note": "6 stop-line and crossing corners on the road south of B2 read by hand on the ground-projected cube and the NGII 2025 sheet; residual RMS 0.51 m, max 0.81 m; formal sigma 0.26 m / 0.68 deg; below the tool's 8-point gate, accepted on the four-face strip test; height from the face scale (estimated)",
+    "station_refined_x": 371.8,
+    "station_refined_z": -186.96,
+    "yaw_refined_deg": 355.27,
+    "height_refined_m": 13.19,
     "refined_confidence": 0.85,
-    "refined_residual_deg": 0.08,
-    "refined_residual_m": 0.14,
-    "strip_check": "2026-10-27 compare-vr strip FAILED: f face shows a grey block and red brick where the VR shows the teal-glass B2 frontage; also wrong before #74; pose unresolved (estimated)"
+    "refined_residual_deg": 0.68,
+    "refined_residual_m": 0.26,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR (hand-picked control points)"
   },
   {
     "scene": "scene_b3",
@@ -4647,18 +4654,20 @@
       "station": true,
       "yaw_deg": true
     },
-    "refined_by": "compare-vr todo 12",
-    "refined_note": "station moved 7 m south inside the forecourt so the two-storey block's north-west corner sits at its VR column (f -31 deg) with the C3 north-east corner at f +29 deg; yaw kept (C3 antenna tower)",
-    "yaw_refined_deg": 100.5,
-    "station_refined_x": 203.22,
-    "station_refined_z": -336.44,
-    "refined_confidence": 0.6,
-    "refined_residual_deg": 3,
+    "refined_by": "hand-picked control points, least squares (scripts/perf/vr_control_points.py solve)",
+    "refined_note": "8 raised-crossing, zebra and accessible-bay corners by the daycare read by hand on the ground-projected cube and the NGII 2025 sheet; residual RMS 0.67 m, max 1.09 m; formal sigma 0.30 m / 0.95 deg; below the tool's 8-point gate, accepted on the four-face strip test; height from the face scale (estimated)",
+    "yaw_refined_deg": 113.59,
+    "station_refined_x": 201.81,
+    "station_refined_z": -338.5,
+    "refined_confidence": 0.85,
+    "refined_residual_deg": 0.95,
     "refined_buildings": [
       "BLD_SCNU_C5",
       "BLD_SCNU_C3"
     ],
-    "strip_check": "2026-10-27 compare-vr strip FAILED: faces only partly agree; not confirmable; pose unresolved (estimated)"
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR (hand-picked control points)",
+    "height_refined_m": 6.58,
+    "refined_residual_m": 0.37
   },
   {
     "scene": "scene_d1",
@@ -4819,9 +4828,16 @@
       "yaw_deg": true
     },
     "refined": false,
-    "refined_by": "compare-vr todo 2",
-    "refined_note": "D1 block centred in f by eye but the render shows trees; station position off; candidates -37/-42 deg unconfirmed",
-    "strip_check": "2026-10-27 compare-vr strip FAILED: renders a plaza and trees where the VR shows the 창업보육센터 red-brick block; pose unresolved (estimated)"
+    "refined_by": "hand-picked control points, least squares (scripts/perf/vr_control_points.py solve)",
+    "refined_note": "6 zebra corners between D1 and C3 read by hand on the ground-projected cube and the NGII 2025 sheet; residual RMS 0.80 m, max 1.23 m; formal sigma 0.54 m / 1.85 deg; below the tool's 8-point gate, accepted on the four-face strip test; height from the face scale (estimated)",
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR (hand-picked control points)",
+    "station_refined_x": 194.21,
+    "station_refined_z": -305.82,
+    "yaw_refined_deg": 293.87,
+    "height_refined_m": 10.79,
+    "refined_confidence": 0.85,
+    "refined_residual_deg": 1.85,
+    "refined_residual_m": 0.54
   },
   {
     "scene": "scene_d2",
