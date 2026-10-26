@@ -3029,14 +3029,14 @@
       "station": true,
       "yaw_deg": true
     },
-    "refined_by": "compare-vr todo 14",
-    "refined_note": "camera placed over the gate crossing between the two red traffic islands as the d face shows them (NE island upper right, SW island lower left), height 11.7 m from the car length on the d face; yaw kept (road axes)",
-    "yaw_refined_deg": 284,
-    "station_refined_x": 465.19,
-    "station_refined_z": -164.16,
-    "refined_confidence": 0.5,
-    "height_refined_m": 11.7,
-    "refined_residual_deg": 3,
+    "refined_by": "d-face resection (scripts/perf/vr_station_resection.py)",
+    "refined_note": "down cube face registered on the NGII 2025 sheet: score 0.551, quadrant nadir RMS 0.12 m, quadrant yaw SD 0.26 deg (1-sigma estimates); height from the face scale (estimated)",
+    "yaw_refined_deg": 284.4,
+    "station_refined_x": 471.94,
+    "station_refined_z": -161.81,
+    "refined_confidence": 0.8,
+    "height_refined_m": 14.84,
+    "refined_residual_deg": 0.26,
     "refined_buildings": [
       "gate crossing islands",
       "RS-GATE-A19"
