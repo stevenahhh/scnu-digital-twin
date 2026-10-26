@@ -1,0 +1,36 @@
+// Pure camera helpers for compare-vr.mjs (local QA only; nothing here ships).
+//
+// krpano cube faces of the SCNU 360 VR tour: f looks along the scene yaw, r = yaw + 90, b = yaw + 180,
+// l = yaw - 90 (bearings in degrees clockwise from north). Inside a 2048 px face a horizontal angle a
+// lands on column 1024 + 1024 tan(a). The scene frame is gen/lib/frame.mjs: +x east, +z south.
+
+const FACE_OFFSET = { f: 0, r: 90, b: 180, l: -90 };
+const clean = (value, digits = 9) => {
+  const rounded = Number(value.toFixed(digits));
+  return rounded === 0 ? 0 : rounded;
+};
+
+/** Bearing (0-360) a cube face looks along, given the scene yaw. u and d have no bearing. */
+export function faceYaw(yawDeg, face) {
+  if (!(face in FACE_OFFSET)) throw new Error(`face ${face} has no horizontal bearing (use f, r, b or l)`);
+  return clean((((yawDeg + FACE_OFFSET[face]) % 360) + 360) % 360);
+}
+
+/** Unit view direction for a compass bearing in the scene frame (+x east, +z south). */
+export function bearingToDirection(deg) {
+  const radians = (deg * Math.PI) / 180;
+  return [clean(Math.sin(radians), 12), 0, clean(-Math.cos(radians), 12)];
+}
+
+/** Horizontal angle (degrees, right of the face centre positive) of a column in a 2048 px face. */
+export function columnToAngle(col) {
+  return clean((Math.atan((col - 1024) / 1024) * 180) / Math.PI);
+}
+
+/** Station position in the runtime world frame: scene units plus the runtime recentring offset. */
+export function stationWorld(record, offset) {
+  return {
+    x: (record.station_refined_x ?? record.station_x) + offset.x,
+    z: (record.station_refined_z ?? record.station_z) + offset.z,
+  };
+}

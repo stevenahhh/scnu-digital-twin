@@ -1,0 +1,9 @@
+{
+  "description": "Buildings standing in the SCNU 360 VR tour that no GIS건물통합정보 record covers. Footprints are traced by eye on the NGII 2025 orthophoto with the VR view as the reference; floors are counted on the VR facade. Every record is estimated (estimated: true) and its label is shown as an estimate. Merged after gis-buildings.json by stages/sources.mjs (loadVrBuildings); schema in README \"VR-only buildings\".",
+  "sources": [
+    "SCNU 360 VR tour (visual reference only, nothing copied)",
+    "NGII 2025 orthophoto sheet 34702020 (footprints traced by eye, 0.25 m GSD)",
+    "SCNU campus registry list.do codes"
+  ],
+  "buildings": []
+}

@@ -1,0 +1,1134 @@
+{
+  "description": "VR rest-space reconciliation (2026-10-25): every outdoor rest-space sighting (#1-17 of the VR station survey) and every garden/plaza landscape item seen in the SCNU 360 VR exterior scenes, cast as a ray from the VR station (face bearing + column angle, 10-120 m; nadir sightings as a strip under the station) against the photo survey objects-campus.geojson (8 m rule). decision: match (an object of a kind that stands for it exists), retype (an object exists under a kind the VR corrects), missing (none within 8 m; instanceId is the id stages will create). typeId names data/rest-space-catalogue.json. photo_blob: whether the NGII 2025 photo shows a roof, wall or planter at the ray. landscape lists steps, sculptures and other items that no catalogue type models (kept for reference, same rule). Stations from scripts/perf/vr-stations.json (refined yaw where present). Applied by a later stage; this file changes no geometry.",
+  "sources": [
+    "SCNU 360 VR tour exterior scenes (visual reference only, nothing copied)",
+    "data/photo/objects-campus.geojson (NGII 2025 photo survey, 175 objects)",
+    "NGII 2025 orthophoto sheet 34702020 (read, not copied)"
+  ],
+  "summary": {
+    "sightings": 24,
+    "restSightings": 17,
+    "match": 7,
+    "retype": 0,
+    "missing": 17,
+    "ambiguous": 1,
+    "landscape": 28
+  },
+  "sightings": [
+    {
+      "restSighting": 1,
+      "scene": "scene_a2",
+      "face": "d",
+      "cols": [
+        0,
+        700
+      ],
+      "kindSeen": "bench",
+      "note": "benches on paved path",
+      "bearingDeg": null,
+      "geometry": "nadir strip 28 m along f at -9.2 m right of the station",
+      "yawUsed": 20.2,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "typeId": "bench",
+      "photo_blob": "no",
+      "photo_note": "paved bus bays; benches cannot be resolved on the photo",
+      "instanceId": "RS0001"
+    },
+    {
+      "restSighting": 2,
+      "scene": "scene_a4",
+      "face": "r",
+      "cols": [
+        1100,
+        2048
+      ],
+      "kindSeen": "shelter",
+      "note": "long bus-terminal shelter (continues into b col 0-900)",
+      "bearingDeg": 253.2,
+      "geometry": "ray 10-120 m at 253.2 deg",
+      "yawUsed": 135,
+      "candidates": [
+        "OC0139 fence 0.1 m"
+      ],
+      "decision": "missing",
+      "ref": null,
+      "reason": "only fence within 8 m, none of a kind that stands for a terminal_shelter",
+      "typeId": "terminal_shelter",
+      "photo_blob": "yes",
+      "photo_note": "a long white striped canopy roof stands 15-20 m north of the ray start (ortho-match station, nominal 40 m error)",
+      "instanceId": "RS0002"
+    },
+    {
+      "restSighting": 3,
+      "scene": "scene_a5",
+      "face": "r",
+      "cols": [
+        1450,
+        1650
+      ],
+      "kindSeen": "pavilion",
+      "note": "green octagonal gazebo/umbrella in garden",
+      "bearingDeg": 345.2,
+      "geometry": "ray 10-120 m at 345.2 deg",
+      "yawUsed": 228,
+      "candidates": [
+        "OC0120 gazebo 1.1 m"
+      ],
+      "decision": "match",
+      "ref": "OC0121",
+      "reason": "the survey's round dark-green roofed gazebo OC0121 (style matches the green octagonal roof) lies in the same walled garden; the ray passes 1.1 m from OC0120 (blue pyramid roof, claimed by sighting 4) and OC0121 sits 2.4 m from the garden ray at 329 deg: the ortho-match station (nominal 40 m error) cannot separate the two, the roof styles do",
+      "ambiguous": true,
+      "typeId": "pavilion_octagon",
+      "photo_blob": "yes",
+      "photo_note": "the matched object was traced on the 2025 photo by the survey"
+    },
+    {
+      "restSighting": 4,
+      "scene": "scene_a5",
+      "face": "d",
+      "cols": [
+        1300,
+        1900
+      ],
+      "kindSeen": "pavilion",
+      "note": "blue square hip-roof 정자 next to garden",
+      "bearingDeg": null,
+      "geometry": "nadir strip 48 m along f at 13.4 m right of the station",
+      "yawUsed": 228,
+      "candidates": [
+        "OC0120 gazebo 0.8 m"
+      ],
+      "decision": "match",
+      "ref": "OC0120",
+      "reason": "blue pyramid-roof gazebo OC0120 ('blue pyramid-roof gazebo in the walled garden') lies 0.8 m from the nadir strip; same object and roof colour",
+      "typeId": "pavilion_hip",
+      "photo_blob": "yes",
+      "photo_note": "the matched object was traced on the 2025 photo by the survey"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a5",
+      "face": "r",
+      "cols": [
+        400,
+        2048
+      ],
+      "kindSeen": "garden",
+      "note": "walled garden with lawn",
+      "bearingDeg": 329.1,
+      "geometry": "ray 10-120 m at 329.1 deg",
+      "yawUsed": 228,
+      "candidates": [
+        "OC0120 gazebo 0.1 m",
+        "OC0121 gazebo 2.4 m"
+      ],
+      "decision": "missing",
+      "ref": null,
+      "reason": "only gazebo within 8 m, none of a kind that stands for a garden_wall",
+      "typeId": "garden_wall",
+      "photo_blob": "yes",
+      "photo_note": "walled garden with lawn and the gazebo roofs at the ray end",
+      "instanceId": "RS0003"
+    },
+    {
+      "restSighting": 5,
+      "scene": "scene_a6",
+      "face": "l",
+      "cols": [
+        500,
+        1550
+      ],
+      "kindSeen": "shelter",
+      "note": "row of blue-canopy covered shelters (bike/walkway)",
+      "bearingDeg": 177.2,
+      "geometry": "ray 10-120 m at 177.2 deg",
+      "yawUsed": 267.1,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "typeId": "canopy_shelter_row",
+      "photo_blob": "yes",
+      "photo_note": "light-blue canopy roofs along the plaza edge 5-10 m beside the ray",
+      "instanceId": "RS0004"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a6",
+      "face": "l",
+      "cols": [
+        600,
+        1500
+      ],
+      "kindSeen": "garden",
+      "note": "tree plaza",
+      "bearingDeg": 178.6,
+      "geometry": "ray 10-120 m at 178.6 deg",
+      "yawUsed": 267.1,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "typeId": "planter",
+      "photo_blob": "yes",
+      "photo_note": "tree-planter plaza grid beside the ray",
+      "instanceId": "RS0005"
+    },
+    {
+      "restSighting": 6,
+      "scene": "scene_a9",
+      "face": "f",
+      "cols": [
+        600,
+        2048
+      ],
+      "kindSeen": "bench",
+      "note": "paved plaza with tree planters and benches (also r, d)",
+      "bearingDeg": 164.7,
+      "geometry": "ray 10-120 m at 164.7 deg",
+      "yawUsed": 148.4,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "typeId": "bench",
+      "photo_blob": "no",
+      "photo_note": "the plaza is visible but benches are not resolvable under the tree crowns",
+      "instanceId": "RS0006"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a9",
+      "face": "r",
+      "cols": [
+        0,
+        2048
+      ],
+      "kindSeen": "garden",
+      "note": "tree-planter plaza",
+      "bearingDeg": 238.4,
+      "geometry": "ray 10-120 m at 238.4 deg",
+      "yawUsed": 148.4,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "typeId": "planter",
+      "photo_blob": "yes",
+      "photo_note": "tree-planter plaza near the ray start",
+      "instanceId": "RS0007"
+    },
+    {
+      "restSighting": 7,
+      "scene": "scene_a10",
+      "face": "f",
+      "cols": [
+        0,
+        1500
+      ],
+      "kindSeen": "bench",
+      "note": "tree-planter plaza with benches",
+      "bearingDeg": 222,
+      "geometry": "ray 10-120 m at 222.0 deg",
+      "yawUsed": 237,
+      "candidates": [
+        "OC0169 plaza_structure 0.1 m"
+      ],
+      "decision": "missing",
+      "ref": null,
+      "reason": "only plaza_structure within 8 m, none of a kind that stands for a bench",
+      "typeId": "bench",
+      "photo_blob": "no",
+      "photo_note": "plaza visible; benches not resolvable",
+      "instanceId": "RS0008"
+    },
+    {
+      "restSighting": 8,
+      "scene": "scene_a10",
+      "face": "f",
+      "cols": [
+        1700,
+        2048
+      ],
+      "kindSeen": "shelter",
+      "note": "blue-white striped awning (also d)",
+      "bearingDeg": 276.7,
+      "geometry": "ray 10-120 m at 276.7 deg",
+      "yawUsed": 237,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "typeId": "awning",
+      "photo_blob": "yes",
+      "photo_note": "light-blue roof strip against a facade on the ray at about one third",
+      "instanceId": "RS0009"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a16",
+      "face": "f",
+      "cols": [
+        1280,
+        2048
+      ],
+      "kindSeen": "garden",
+      "note": "hedge lettering 진리 정의 창조 on slope (into r col 0-400)",
+      "bearingDeg": 149,
+      "geometry": "ray 10-120 m at 149.0 deg",
+      "yawUsed": 117,
+      "candidates": [
+        "OC0158 fence 5.1 m",
+        "OC0173 fence 6.9 m",
+        "OC0161 fence 7.7 m"
+      ],
+      "decision": "missing",
+      "ref": null,
+      "reason": "only fence within 8 m, none of a kind that stands for a planter",
+      "typeId": "planter",
+      "photo_blob": "yes",
+      "photo_note": "the yellow hedge lettering on the slope at the ray start",
+      "instanceId": "RS0010"
+    },
+    {
+      "restSighting": 9,
+      "scene": "scene_f3",
+      "face": "f",
+      "cols": [
+        1950,
+        2048
+      ],
+      "kindSeen": "shelter",
+      "note": "red-roof tennis-court hut (into r col 0-500)",
+      "bearingDeg": 271.6,
+      "geometry": "ray 10-120 m at 271.6 deg",
+      "yawUsed": 228,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "typeId": "hut",
+      "photo_blob": "no",
+      "photo_note": "no hut roof distinguishable on the ray; a small red patch 20 m off it",
+      "instanceId": "RS0011"
+    },
+    {
+      "restSighting": 10,
+      "scene": "scene_a19",
+      "face": "b",
+      "cols": [
+        250,
+        500
+      ],
+      "kindSeen": "shelter",
+      "note": "bus stop shelter",
+      "bearingDeg": 71.6,
+      "geometry": "ray 10-120 m at 71.6 deg",
+      "yawUsed": 284,
+      "candidates": [
+        "OB0009 bus_stop_shelter 1.6 m"
+      ],
+      "decision": "match",
+      "ref": "OB0009",
+      "reason": "bus_stop_shelter OB0009 lies 1.6 m from the ray (17 m out)",
+      "typeId": "bus_stop_shelter",
+      "photo_blob": "yes",
+      "photo_note": "the matched object was traced on the 2025 photo by the survey"
+    },
+    {
+      "restSighting": 11,
+      "scene": "scene_c1",
+      "face": "l",
+      "cols": [
+        200,
+        900
+      ],
+      "kindSeen": "bench",
+      "note": "bench rows under trees on library plaza",
+      "bearingDeg": 173.8,
+      "geometry": "ray 10-120 m at 173.8 deg",
+      "yawUsed": 288.6,
+      "candidates": [
+        "OC0081 plaza_structure 0.6 m"
+      ],
+      "decision": "missing",
+      "ref": null,
+      "reason": "only plaza_structure within 8 m, none of a kind that stands for a bench",
+      "typeId": "bench",
+      "photo_blob": "no",
+      "photo_note": "the ray crosses the library roof; the plaza benches are under trees",
+      "instanceId": "RS0012"
+    },
+    {
+      "restSighting": 12,
+      "scene": "scene_c1",
+      "face": "b",
+      "cols": [
+        1000,
+        1900
+      ],
+      "kindSeen": "bench",
+      "note": "benches around pond plaza",
+      "bearingDeg": 131.2,
+      "geometry": "ray 10-120 m at 131.2 deg",
+      "yawUsed": 288.6,
+      "candidates": [
+        "OC0094 low_wall 0.6 m",
+        "OB0024 low_wall 0.7 m",
+        "OC0081 plaza_structure 1.7 m",
+        "OB0021 plaza_structure 3.3 m",
+        "OB0011 plaza_structure 5.2 m"
+      ],
+      "decision": "match",
+      "ref": "estimateBenches (stages/furniture.mjs, 8 plaza benches beside the pond, VR scene_c1)",
+      "reason": "the build already places estimated box benches (4 per long side) beside the oval pond OC0081 from VR scene_c1; the ray at 131 deg crosses the pond's south-east side where they stand. No surveyed bench is needed",
+      "typeId": "bench",
+      "photo_blob": "yes",
+      "photo_note": "the matched object was traced on the 2025 photo by the survey"
+    },
+    {
+      "restSighting": 13,
+      "scene": "scene_d2",
+      "face": "r",
+      "cols": [
+        1050,
+        1300
+      ],
+      "kindSeen": "shelter",
+      "note": "small roofed shelter/pergola with bench on central planted island",
+      "bearingDeg": 142.7,
+      "geometry": "ray 10-120 m at 142.7 deg",
+      "yawUsed": 44.3,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "typeId": "pergola",
+      "photo_blob": "no",
+      "photo_note": "no roof on the planted island along the ray",
+      "instanceId": "RS0013"
+    },
+    {
+      "restSighting": 14,
+      "scene": "scene_d4",
+      "face": "l",
+      "cols": [
+        1250,
+        1450
+      ],
+      "kindSeen": "pavilion",
+      "note": "정자 (brown hip roof) beside path, left of D4 plaza",
+      "bearingDeg": 218.6,
+      "geometry": "ray 10-120 m at 218.6 deg",
+      "yawUsed": 290.9,
+      "candidates": [
+        "OC0078 gazebo 0.1 m"
+      ],
+      "decision": "match",
+      "ref": "OC0078",
+      "reason": "gazebo OC0078 lies 0.1 m from the ray (29 m out)",
+      "typeId": "pavilion_hip",
+      "photo_blob": "yes",
+      "photo_note": "the matched object was traced on the 2025 photo by the survey"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_e5",
+      "face": "b",
+      "cols": [
+        1000,
+        1900
+      ],
+      "kindSeen": "garden",
+      "note": "lawn garden with topiary shrubs",
+      "bearingDeg": 78.1,
+      "geometry": "ray 10-120 m at 78.1 deg",
+      "yawUsed": 235.5,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "typeId": "planter",
+      "photo_blob": "yes",
+      "photo_note": "lawn garden with shrubs on the ray",
+      "instanceId": "RS0014"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_e7",
+      "face": "f",
+      "cols": [
+        400,
+        1400
+      ],
+      "kindSeen": "garden",
+      "note": "paved plaza with tree planter",
+      "bearingDeg": 207.6,
+      "geometry": "ray 10-120 m at 207.6 deg",
+      "yawUsed": 214.5,
+      "candidates": [
+        "OC0137 planter 0.1 m",
+        "OC0138 pergola 0.9 m"
+      ],
+      "decision": "match",
+      "ref": "OC0137",
+      "reason": "planter OC0137 lies 0.1 m from the ray (25 m out)",
+      "typeId": "planter",
+      "photo_blob": "yes",
+      "photo_note": "the matched object was traced on the 2025 photo by the survey"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_e8",
+      "face": "f",
+      "cols": [
+        500,
+        1600
+      ],
+      "kindSeen": "garden",
+      "note": "courtyard plaza with planters",
+      "bearingDeg": 273.8,
+      "geometry": "ray 10-120 m at 273.8 deg",
+      "yawUsed": 272.3,
+      "candidates": [
+        "OC0102 planter 1.1 m"
+      ],
+      "decision": "match",
+      "ref": "OC0102",
+      "reason": "planter OC0102 lies 1.1 m from the ray (30 m out)",
+      "typeId": "planter",
+      "photo_blob": "yes",
+      "photo_note": "the matched object was traced on the 2025 photo by the survey"
+    },
+    {
+      "restSighting": 15,
+      "scene": "scene_f1",
+      "face": "l",
+      "cols": [
+        550,
+        800
+      ],
+      "kindSeen": "shelter",
+      "note": "bus stop shelter",
+      "bearingDeg": 146.2,
+      "geometry": "ray 10-120 m at 146.2 deg",
+      "yawUsed": 255,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "typeId": "bus_stop_shelter",
+      "photo_blob": "no",
+      "photo_note": "no shelter roof on the footway along the ray",
+      "instanceId": "RS0015"
+    },
+    {
+      "restSighting": 16,
+      "scene": "scene_f1",
+      "face": "d",
+      "cols": [
+        500,
+        1400
+      ],
+      "kindSeen": "bench",
+      "note": "two benches on sidewalk",
+      "bearingDeg": null,
+      "geometry": "nadir strip 42 m along f at -1.5 m right of the station",
+      "yawUsed": 255,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "typeId": "bench",
+      "photo_blob": "no",
+      "photo_note": "sidewalk visible; benches not resolvable",
+      "instanceId": "RS0016"
+    },
+    {
+      "restSighting": 17,
+      "scene": "scene_f2",
+      "face": "d",
+      "cols": [
+        1400,
+        1900
+      ],
+      "kindSeen": "shelter",
+      "note": "small green-roof hut/booth",
+      "bearingDeg": null,
+      "geometry": "nadir strip 28 m along f at 8.6 m right of the station",
+      "yawUsed": 129,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "typeId": "hut",
+      "photo_blob": "no",
+      "photo_note": "the station lands on the track (ortho-match position off); no hut under it",
+      "instanceId": "RS0017"
+    }
+  ],
+  "landscape": [
+    {
+      "restSighting": null,
+      "scene": "scene_a1",
+      "face": "l",
+      "cols": [
+        300,
+        1000
+      ],
+      "kindSeen": "sculpture",
+      "note": "fountain pond",
+      "bearingDeg": 90.8,
+      "geometry": "ray 10-120 m at 90.8 deg",
+      "yawUsed": 200.9,
+      "candidates": [
+        "OC0107 bench 5.4 m"
+      ],
+      "decision": "missing",
+      "ref": null,
+      "reason": "only bench within 8 m, none of a kind that stands for a sculpture"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a3",
+      "face": "l",
+      "cols": [
+        1200,
+        1500
+      ],
+      "kindSeen": "sculpture",
+      "note": "rock in central roundabout (red ring)",
+      "bearingDeg": 85.2,
+      "geometry": "ray 10-120 m at 85.2 deg",
+      "yawUsed": 157.5,
+      "candidates": [
+        "OB0011 plaza_structure 0.8 m"
+      ],
+      "decision": "match",
+      "ref": "OB0011",
+      "reason": "plaza_structure OB0011 lies 0.8 m from the ray (23 m out)"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a3",
+      "face": "r",
+      "cols": [
+        1200,
+        2048
+      ],
+      "kindSeen": "stairs",
+      "note": "terraced stone plaza",
+      "bearingDeg": 277.9,
+      "geometry": "ray 10-120 m at 277.9 deg",
+      "yawUsed": 157.5,
+      "candidates": [
+        "OC0094 low_wall 4.6 m"
+      ],
+      "decision": "match",
+      "ref": "OC0094",
+      "reason": "low_wall OC0094 lies 4.6 m from the ray (12 m out)"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a4",
+      "face": "f",
+      "cols": [
+        1300,
+        1700
+      ],
+      "kindSeen": "other",
+      "note": "round one-storey building with blue band (rotunda)",
+      "bearingDeg": 159.9,
+      "geometry": "ray 10-120 m at 159.9 deg",
+      "yawUsed": 135,
+      "candidates": [
+        "OC0140 pergola 0.6 m",
+        "OC0155 planter 4.3 m",
+        "OC0154 planter 5.8 m"
+      ],
+      "decision": "match",
+      "ref": "OC0155",
+      "reason": "planter OC0155 lies 4.3 m from the ray (98 m out)",
+      "ambiguous": true
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a15",
+      "face": "f",
+      "cols": [
+        700,
+        1500
+      ],
+      "kindSeen": "other",
+      "note": "grandstand with blue seats and roof",
+      "bearingDeg": 273.2,
+      "geometry": "ray 10-120 m at 273.2 deg",
+      "yawUsed": 269,
+      "candidates": [
+        "OB0029 fence 0.1 m"
+      ],
+      "decision": "match",
+      "ref": "OB0029",
+      "reason": "fence OB0029 lies 0.1 m from the ray (67 m out)"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a17",
+      "face": "f",
+      "cols": [
+        900,
+        1500
+      ],
+      "kindSeen": "stairs",
+      "note": "grand stairs to gym (also r col 300-700)",
+      "bearingDeg": 36.8,
+      "geometry": "ray 10-120 m at 36.8 deg",
+      "yawUsed": 27,
+      "candidates": [
+        "OC0161 fence 1.9 m"
+      ],
+      "decision": "match",
+      "ref": "OC0161",
+      "reason": "fence OC0161 lies 1.9 m from the ray (10 m out)"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a19",
+      "face": "l",
+      "cols": [
+        600,
+        900
+      ],
+      "kindSeen": "sign",
+      "note": "SCNU gate sign sculpture",
+      "bearingDeg": 179,
+      "geometry": "ray 10-120 m at 179.0 deg",
+      "yawUsed": 284,
+      "candidates": [
+        "OC0129 low_wall 1.6 m"
+      ],
+      "decision": "match",
+      "ref": "OC0129",
+      "reason": "low_wall OC0129 lies 1.6 m from the ray (52 m out)"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a19",
+      "face": "l",
+      "cols": [
+        1000,
+        2048
+      ],
+      "kindSeen": "stairs",
+      "note": "gate plaza with stepped lawn edge",
+      "bearingDeg": 220,
+      "geometry": "ray 10-120 m at 220.0 deg",
+      "yawUsed": 284,
+      "candidates": [
+        "OC0111 plaza_structure 2.7 m",
+        "OB0010 pergola 5.1 m",
+        "OC0150 fence 6 m"
+      ],
+      "decision": "match",
+      "ref": "OC0111",
+      "reason": "plaza_structure OC0111 lies 2.7 m from the ray (22 m out)"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a19",
+      "face": "f",
+      "cols": [
+        1450,
+        1650
+      ],
+      "kindSeen": "sign",
+      "note": "large billboard",
+      "bearingDeg": 311.2,
+      "geometry": "ray 10-120 m at 311.2 deg",
+      "yawUsed": 284,
+      "candidates": [
+        "OC0096 plaza_structure 0 m"
+      ],
+      "decision": "match",
+      "ref": "OC0096",
+      "reason": "plaza_structure OC0096 lies 0 m from the ray (58 m out)"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_b1",
+      "face": "f",
+      "cols": [
+        300,
+        1900
+      ],
+      "kindSeen": "stairs",
+      "note": "stepped plaza in front of museum",
+      "bearingDeg": 12.2,
+      "geometry": "ray 10-120 m at 12.2 deg",
+      "yawUsed": 8,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_b4",
+      "face": "f",
+      "cols": [
+        700,
+        1100
+      ],
+      "kindSeen": "other",
+      "note": "straight paved path across lawn",
+      "bearingDeg": 306.5,
+      "geometry": "ray 10-120 m at 306.5 deg",
+      "yawUsed": 313.4,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_c1",
+      "face": "f",
+      "cols": [
+        900,
+        1500
+      ],
+      "kindSeen": "stairs",
+      "note": "stepped approach to library",
+      "bearingDeg": 298.4,
+      "geometry": "ray 10-120 m at 298.4 deg",
+      "yawUsed": 288.6,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_c1",
+      "face": "b",
+      "cols": [
+        600,
+        1000
+      ],
+      "kindSeen": "sculpture",
+      "note": "fountain pond with sculpture",
+      "bearingDeg": 96.3,
+      "geometry": "ray 10-120 m at 96.3 deg",
+      "yawUsed": 288.6,
+      "candidates": [
+        "OC0081 plaza_structure 0.6 m",
+        "OB0015 plaza_structure 2.1 m",
+        "OB0024 low_wall 2.5 m",
+        "OB0016 plaza_structure 2.8 m",
+        "OB0017 plaza_structure 3.3 m"
+      ],
+      "decision": "match",
+      "ref": "OC0081",
+      "reason": "plaza_structure OC0081 lies 0.6 m from the ray (26 m out)",
+      "ambiguous": true
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_c3",
+      "face": "d",
+      "cols": [
+        0,
+        2048
+      ],
+      "kindSeen": "other",
+      "note": "crosswalk and disabled bay",
+      "bearingDeg": null,
+      "geometry": "nadir strip 38 m along f at 0.0 m right of the station",
+      "yawUsed": 12.6,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_d1",
+      "face": "l",
+      "cols": [
+        1500,
+        2048
+      ],
+      "kindSeen": "stairs",
+      "note": "outdoor stair",
+      "bearingDeg": 273.2,
+      "geometry": "ray 10-120 m at 273.2 deg",
+      "yawUsed": 327,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_d2",
+      "face": "f",
+      "cols": [
+        700,
+        1100
+      ],
+      "kindSeen": "stairs",
+      "note": "outdoor stair up to D2",
+      "bearingDeg": 37.4,
+      "geometry": "ray 10-120 m at 37.4 deg",
+      "yawUsed": 44.3,
+      "candidates": [
+        "OC0072 low_wall 2.6 m"
+      ],
+      "decision": "match",
+      "ref": "OC0072",
+      "reason": "low_wall OC0072 lies 2.6 m from the ray (10 m out)"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_d2",
+      "face": "l",
+      "cols": [
+        1300,
+        1700
+      ],
+      "kindSeen": "stairs",
+      "note": "hillside stair",
+      "bearingDeg": 339.2,
+      "geometry": "ray 10-120 m at 339.2 deg",
+      "yawUsed": 44.3,
+      "candidates": [
+        "OC0072 low_wall 7.1 m"
+      ],
+      "decision": "match",
+      "ref": "OC0072",
+      "reason": "low_wall OC0072 lies 7.1 m from the ray (10 m out)"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_d3",
+      "face": "d",
+      "cols": [
+        0,
+        900
+      ],
+      "kindSeen": "other",
+      "note": "personal-mobility parking bay (blue)",
+      "bearingDeg": null,
+      "geometry": "nadir strip 20 m along f at -5.6 m right of the station",
+      "yawUsed": 288,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_d4",
+      "face": "f",
+      "cols": [
+        700,
+        1400
+      ],
+      "kindSeen": "stairs",
+      "note": "long stepped entrance plaza to D4",
+      "bearingDeg": 292.4,
+      "geometry": "ray 10-120 m at 292.4 deg",
+      "yawUsed": 290.9,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_d4",
+      "face": "l",
+      "cols": [
+        0,
+        300
+      ],
+      "kindSeen": "sign",
+      "note": "road text 어린이보호 at road",
+      "bearingDeg": 160.4,
+      "geometry": "ray 10-120 m at 160.4 deg",
+      "yawUsed": 290.9,
+      "candidates": [
+        "OC0079 fence 0.4 m"
+      ],
+      "decision": "match",
+      "ref": "OC0079",
+      "reason": "fence OC0079 lies 0.4 m from the ray (19 m out)"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_d5",
+      "face": "r",
+      "cols": [
+        1150,
+        1400
+      ],
+      "kindSeen": "other",
+      "note": "small yellow-wall green tiled-roof building",
+      "bearingDeg": 223.8,
+      "geometry": "ray 10-120 m at 223.8 deg",
+      "yawUsed": 120,
+      "candidates": [
+        "OC0055 fence 5 m"
+      ],
+      "decision": "match",
+      "ref": "OC0055",
+      "reason": "fence OC0055 lies 5 m from the ray (120 m out)"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_e1",
+      "face": "d",
+      "cols": [
+        0,
+        2048
+      ],
+      "kindSeen": "stairs",
+      "note": "round stage with stepped seating, paved plaza with tree squares",
+      "bearingDeg": null,
+      "geometry": "nadir strip 32 m along f at 0.0 m right of the station",
+      "yawUsed": 207,
+      "candidates": [
+        "OB0020 plaza_structure 0.2 m",
+        "OB0023 plaza_structure 0.2 m",
+        "OC0094 low_wall 0.3 m",
+        "OB0024 low_wall 1 m",
+        "OB0017 plaza_structure 2.4 m"
+      ],
+      "decision": "match",
+      "ref": "OB0020",
+      "reason": "plaza_structure OB0020 lies 0.2 m from the nadir strip (-16 m out)",
+      "ambiguous": true
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_e1",
+      "face": "r",
+      "cols": [
+        1000,
+        1300
+      ],
+      "kindSeen": "sculpture",
+      "note": "sculpture in pond",
+      "bearingDeg": 304,
+      "geometry": "ray 10-120 m at 304.0 deg",
+      "yawUsed": 207,
+      "candidates": [
+        "OC0081 plaza_structure 0.9 m",
+        "OB0021 plaza_structure 4.1 m",
+        "OB0022 plaza_structure 6.6 m"
+      ],
+      "decision": "match",
+      "ref": "OC0081",
+      "reason": "plaza_structure OC0081 lies 0.9 m from the ray (37 m out)",
+      "ambiguous": true
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_e1",
+      "face": "l",
+      "cols": [
+        500,
+        900
+      ],
+      "kindSeen": "sculpture",
+      "note": "central roundabout",
+      "bearingDeg": 99.4,
+      "geometry": "ray 10-120 m at 99.4 deg",
+      "yawUsed": 207,
+      "candidates": [
+        "OB0024 low_wall 1.8 m",
+        "OB0011 plaza_structure 2.8 m",
+        "OC0094 low_wall 4.7 m"
+      ],
+      "decision": "match",
+      "ref": "OB0024",
+      "reason": "low_wall OB0024 lies 1.8 m from the ray (10 m out)",
+      "ambiguous": true
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_e4",
+      "face": "r",
+      "cols": [
+        700,
+        1000
+      ],
+      "kindSeen": "sculpture",
+      "note": "round planter/sculpture on red-paved plaza",
+      "bearingDeg": 316.7,
+      "geometry": "ray 10-120 m at 316.7 deg",
+      "yawUsed": 236.3,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_e7",
+      "face": "d",
+      "cols": [
+        800,
+        1400
+      ],
+      "kindSeen": "stairs",
+      "note": "outdoor stair",
+      "bearingDeg": null,
+      "geometry": "nadir strip 23 m along f at 0.9 m right of the station",
+      "yawUsed": 214.5,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_e7",
+      "face": "r",
+      "cols": [
+        100,
+        700
+      ],
+      "kindSeen": "other",
+      "note": "red cycle/footpath with crosswalk",
+      "bearingDeg": 273.1,
+      "geometry": "ray 10-120 m at 273.1 deg",
+      "yawUsed": 214.5,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_f1",
+      "face": "b",
+      "cols": [
+        900,
+        1200
+      ],
+      "kindSeen": "sculpture",
+      "note": "statue in plaza by glass building",
+      "bearingDeg": 76.5,
+      "geometry": "ray 10-120 m at 76.5 deg",
+      "yawUsed": 255,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray"
+    }
+  ]
+}

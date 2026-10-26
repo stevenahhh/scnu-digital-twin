@@ -231,20 +231,39 @@ Height rule (`heightOf` in `stages/buildings.mjs`), giving the roof-slab height 
   (`data/lod4-facades.json`) and the VR views. `model:build` lists every correction.
 - A source height is used when it gives 2.5-5 m per floor (2.5-6.5 m until 2026-10-24; the build logs what the
   old limit would have given), or when floors are unknown.
-- Otherwise height = floors x 4.4 m for SCNU buildings, or floors x 3.8 m for others. These are
-  the medians of building-register height/floors in the bbox: 4.39 m over 26 SCNU buildings and
-  3.76 m over 153 buildings. A building is SCNU when its name starts with `순천대학교` or its
-  footprint touches a `BLD_*` outline.
+- Otherwise height = floors x a storey median. There is no storey constant: `storeyMedians` derives the
+  medians at build time from the GIS건물통합정보 records (`gis-buildings.json`) that have both a height and a
+  floor count and 2.5-5 m per floor, grouped by use: `dormitory` (use or name matches 공동주택, 기숙사, 생활관 or
+  관사), `education` (use 교육연구시설) and `other`. A class with fewer than 5 records takes the `other`
+  median. With the committed data: education 4.08 m (n = 27), dormitory 3.3 m (n = 29), other 3.95 m
+  (n = 487); `model:build` logs them as `storey medians: ...`. SCNU buildings use the education median, or
+  the dormitory median when their name says dormitory; other buildings use the other median. A building is
+  SCNU when its name starts with `순천대학교` or its footprint touches a `BLD_*` outline.
 - The minimum is 3.5 m. The 0.9 m parapet is added as geometry on top of flat roofs.
 - A `BLD_*` node without floors keeps its `uni.glb` outline height. Other campus buildings
-  without floors get the 3.5 m minimum.
+  with neither a height nor floors get an assumed storey count (6 for dormitories, 3 for SCNU buildings, 1
+  otherwise) x their class median.
 - An entry's `tower` adds a taller mass on the part: the convex hull of the named VWorld LOD4 roof levels,
   clipped to the footprint, standing on the part's roof (A1 대학본부, 8 floors on a 3-floor podium; A5 진리관, 12
   floors on the 2-floor A4 annex; A6 창조관, 11 floors on 6). The podium's parapet leaves out the stretches under
   the tower. `useRecordFootprint` lets a `uni.glb` node take the register footprint around it when its own outline
   leaves most of the building out (BLD_A4, whose outline missed the 진리관 tower).
 
-All of these heights are estimates, not measurements. Node extras carry `heightSource`.
+All of these heights are estimates, not measurements. Node extras carry `heightSource` (the human-readable
+reason) and, on every `BLD_*` node and `BLD_SCNU_*` proxy, `heightLineage` with `storeyMetresUsed` (the
+storey median used, or null):
+
+| `heightLineage` | Meaning |
+|---|---|
+| `gis-height` | the GIS건물통합정보 height, which passed the 2.5-5 m per floor window |
+| `curated:scnu-facades` | a `heightMetres` override in `data/scnu-facades.json` |
+| `uni.glb-outline` | a `BLD_*` node with no floor data kept its `uni.glb` outline height |
+| `floors x median` | floors x the class storey median |
+| `vr-floors x median` | reserved: storey count read in the SCNU 360 VR tour x the class median |
+| `assumed` | no height and no floors: assumed storey count x the class median |
+
+The lineage describes the height rule; a building whose form comes from `data/building-forms.json` (VWorld LOD4
+or a photo trace) keeps the lineage of its footprint while its masses carry their own `heightSource`.
 
 OSM outlines are traced from imagery and sit about 3 m off the cadastral frame of `uni.glb`;
 GIS건물통합정보 outlines follow the cadastral frame. The build shifts all footprints by the median centroid offset of one-to-one `BLD_*` matches and
@@ -284,6 +303,39 @@ proxies invisible, so they add no draw calls. Raycasts still hit them, so clicki
 selects it, and a selected or hovered proxy shows as a translucent highlight. The ids never reuse a
 `uni.glb` or `common_elemetns.json` `BLD_*` id. A footprint that a `uni.glb` `BLD_*` node already
 covers gets no proxy. That node keeps its own label. Records under 12 m² are not modelled.
+
+### VR-only buildings (`data/vr-buildings.json`)
+
+Some buildings stand in the SCNU 360 VR tour (`vr.scnu.ac.kr/360vr/tour.xml`, visual reference only) but have no
+GIS건물통합정보 footprint, or only a demolished one. `data/vr-buildings.json` holds them: `stages/sources.mjs`
+(`loadVrBuildings`) appends its records after the GIS records, so they go through the same selection, height rule
+and pick-proxy path. An empty `buildings` list builds a byte-identical model. `VR_BUILDINGS_FILE` points the
+loader and `stages/vrBuildings.test.mjs` at another file.
+
+The file has `description`, `sources` and `buildings`. Each record follows the `gis-buildings.json` shape:
+
+| Field | Value |
+|---|---|
+| `code` | SCNU registry code (`D5`), or null for an uncoded building |
+| `name` | `순천대학교 <code> <name>` |
+| `label` | dashboard label; an estimated name ends in `(추정)` |
+| `nodeId` | `BLD_SCNU_<code>`, or `BLD_SCNU_V<n>` without a code; never a `uni.glb` or `scnu-building-names.json` id |
+| `status` | `standing` |
+| `floors`, `floorsSource` | storeys counted on the VR facade; `VR scene_<id> storey count (estimated)` |
+| `heightMetres` | 0: the height comes from floors x the class storey median |
+| `undergroundFloors` | 0 unless the VR shows a basement storey |
+| `usability` | use class ending in `(추정)`, e.g. `교육연구시설 (추정)` (picks the storey median) |
+| `polygons` | polygons -> rings -> `[lon, lat]` (WGS84), each ring closed with at least 4 points |
+| `footprintSource` | `NGII 2025 orthophoto trace (estimated) + VR scene_<id>` |
+| `nameSource` | registry match text, or `estimated: ...` for an uncoded building |
+| `estimated` | always `true` |
+| `confidence` | 0-1 |
+| `vrScenes` | the VR scenes that show the building |
+| `registerName` | null |
+
+`areaMetres` is not stored: the loader computes it from the first ring. A pick proxy from this file carries
+`footprintEstimated: true` and `footprintSource` in its extras. No VR image, thumbnail or NGII raster pixel is
+committed; only the traced vectors are.
 
 ### Building forms (`data/building-forms.json`)
 
