@@ -1,45 +1,40 @@
-// Trees stage: species geometry and materials, the blocked/near-campus masks, CHMv2-driven Poisson
-// placement and the instanced tree nodes.
+// Trees stage: the tree inventory (data/trees.json: crowns traced on the NGII 2025 orthophoto, species read on the
+// SCNU 360 VR tour), the hedges along the shrub planters, species geometry and materials, and the instanced nodes.
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import * as THREE from "three";
-import { EXTENT, SCENE_UNITS_PER_METRE, geoToModel, metres, modelToGeo } from "../lib/frame.mjs";
-import { CANOPY_TREE_METRES, CHM_GEOREF } from "../lib/landcover.mjs";
-import { decodePng } from "../lib/png.mjs";
+import { tmToScene } from "../../../src/geo/epsg5186.mjs";
+import { EXTENT, metres } from "../lib/frame.mjs";
 import { Raster, mulberry32 } from "../lib/raster.mjs";
-import { readA003 } from "../lib/a003.mjs";
 
-const CHM_PNG = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "chm.png");
-// walkways_wgs84.geojson (A003 sidewalks) holds outlines, not centrelines (see stages/ground.mjs): closed rings along the
-// kerb and the back edge of each paved area, filled even-odd per feature, and open lines where an outline is cut. Trees
-// keep off the paved area and an EDGE_STONE_M band on every outline (as ground.mjs).
-const EDGE_STONE_M = 0.3;
-// Per-instance tree height (ESTIMATED from CHMv2, an estimate and not a measurement): crown top = local
-// CHMv2 maximum under the instance's crown footprint, at least CROWN_TOP_SEARCH_M (ASSUMED) - crowns are
-// centred on random canopy cells, not on tree tops, so the footprint holds the tree's top; clamped to TREE_HEIGHT_RANGE_M (ASSUMED); 8 m where
-// the local CHM is <= 2 m (ASSUMED).
-const CROWN_TOP_SEARCH_M = 3;
-const TREE_HEIGHT_RANGE_M = [4, 22];
-const LOW_CHM_FALLBACK_M = 8;
-// Species weights (broadleaf / roundleaf / pine). Campus core: documented 벚나무 and 느티나무 sites ->
-// broadleaf. Street edges (within STREET_EDGE_M of a road zone or walkway): Suncheon street-tree counts
-// (counts only) 왕벚 1,509 + 느티 800 -> broadleaf, 은행 1,014 + 배롱 817 -> roundleaf. Woodland: pine share
-// 30 % ASSUMED until the 임상도 licence is settled.
-const STREET_EDGE_M = 6;
-const SPECIES_WEIGHTS = {
-  core: { broadleaf: 1, roundleaf: 0, pine: 0 },
-  street: { broadleaf: 1509 + 800, roundleaf: 1014 + 817, pine: 0 },
-  woodland: { broadleaf: 0.7, roundleaf: 0, pine: 0.3 },
+const TREES = process.env.TREES_FILE ?? path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "trees.json");
+// Species types of data/trees.json, in its order, and the archetype each one is drawn with (see buildTrees).
+const SPECIES = ["ginkgo", "broadleaf", "pine", "metasequoia", "conifer"];
+// Crowns are drawn with their surveyed diameter, clamped to this range (m); heights to TREE_HEIGHT_RANGE_M. A crown
+// whose height is under CROWN_MIN_RATIO x its diameter is drawn that tall (a flat CHMv2 reading on a wide crown).
+const CROWN_DIAMETER_RANGE_M = [1.6, 15];
+const TREE_HEIGHT_RANGE_M = [3, 26];
+const CROWN_MIN_RATIO = 0.6;
+// A photo crown wider than its species' single crown (MAX_CROWN: diameter as a share of the height, clamped) is a
+// group, as in the VR rows and stands: it is drawn as round(area ratio) trees (at most GROUP_MAX) of that diameter
+// spread over the photo crown. Narrow species are drawn at least TALL_RATIO x their diameter tall. ASSUMED forms.
+const MAX_CROWN = {
+  ginkgo: { share: 0.55, range: [3.5, 7] },
+  broadleaf: { share: 1.2, range: [4, 11] },
+  pine: { share: 1.1, range: [4, 10] },
+  metasequoia: { share: 0.4, range: [3, 5.5] },
+  conifer: { share: 0.45, range: [1.5, 3.5] },
 };
-// Crown radius (m) from local CHMv2 canopy height h (m): 1 + 0.25 h, clamped to 2-5.5 m. An estimate,
-// not a measurement; it only sizes instances so the crowns cover the canopy area.
-const crownRadiusMetres = (h) => Math.min(5.5, Math.max(2, 1 + 0.25 * h));
-// Two crowns stay at least CROWN_SPACING x their mean radius apart.
-const CROWN_SPACING = 1.0;
-const MAX_TREES = 12000;
-// Crown radius of each archetype's geometry in metres at scale 1 (see species below).
-const ARCHETYPE_CROWN_METRES = { broadleaf: 2.6, roundleaf: 2.2, pine: 2.1 };
+const TALL_RATIO = { ginkgo: 1.7, metasequoia: 3.2, conifer: 2 };
+const GROUP_MAX = 7;
+// Hedges: clipped volumes on the shrub planters of the furniture survey (planter fill "shrub", or a note naming
+// shrubs or a hedge) and on the planter walls along building fronts. Width, height above the planter top and the
+// inset from the planter outline are estimates read on VR scenes e8 f, c1 f and d1 f (ASSUMED).
+const HEDGE_WIDTH_M = 0.9;
+const HEDGE_HEIGHT_M = 0.7;
+const HEDGE_INSET_M = 0.25;
+const HEDGE_MIN_SEGMENT_M = 0.6;
 
 const WIDTH = EXTENT.maxX - EXTENT.minX;
 const DEPTH = EXTENT.maxZ - EXTENT.minZ;
@@ -124,284 +119,287 @@ function lumpyCrown(radius, height, seed) {
   return g;
 }
 
-// Placement runs before the ground stage; buildTrees emits the instanced nodes from it later.
-// blockedRings: plan rings (model units) of the street furniture trees must not grow through (stages/furniture.mjs).
-export function placeTrees({ inputs, selectableBuildings, campusBuildings, offCampusLots, blockedRings = [] }) {
-  const { heightAt, roadZones } = inputs;
-  const walkways = readA003().features.map(({ geometry }) => {
-    const lines = (geometry.type === "LineString" ? [geometry.coordinates] : geometry.coordinates).map((line) => line.map(([lon, lat]) => geoToModel(lon, lat)));
-    return { lines, rings: lines.filter((line) => line.length >= 4 && line[0][0] === line.at(-1)[0] && line[0][1] === line.at(-1)[1]) };
-  });
+// Closed lathe (crown of revolution) with per-vertex radial jitter shared by coincident vertices, so the crown stays
+// closed. profile: [[radius, y], ...] from the bottom pole to the top pole (metres).
+function latheCrown(profile, segments, jitter, seed) {
+  const g = new THREE.LatheGeometry(profile.map(([r, y]) => new THREE.Vector2(r, y)), segments);
+  const p = g.attributes.position;
+  const rng = mulberry32(seed);
+  const offsets = new Map();
+  for (let i = 0; i < p.count; i += 1) {
+    const key = `${p.getX(i).toFixed(3)},${p.getY(i).toFixed(3)},${p.getZ(i).toFixed(3)}`;
+    if (!offsets.has(key)) offsets.set(key, 1 - jitter / 2 + rng() * jitter);
+    const k = offsets.get(key);
+    p.setXYZ(i, p.getX(i) * k, p.getY(i), p.getZ(i) * k);
+  }
+  return g;
+}
 
-  // ---- blocked / near-campus masks
+function mergeGeometries(parts) {
+  const positions = [];
+  for (const part of parts) positions.push(...(part.index ? part.toNonIndexed() : part).attributes.position.array);
+  const merged = new THREE.BufferGeometry();
+  merged.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  return merged;
+}
+
+// Open-ended trunk (the ends are hidden in the ground and the crown).
+const trunk = (r0, r1, height, segments = 5) => new THREE.CylinderGeometry(r0, r1, height, segments, 1, true).translate(0, height / 2, 0);
+
+// Placement runs before the ground stage; buildTrees emits the instanced nodes from it later.
+// blockedRings: plan rings (model units) of the street furniture trees must not grow through (stages/furniture.mjs);
+// furnitureObjects: the furniture survey objects, whose shrub planters carry the hedges.
+export function placeTrees({ inputs, selectableBuildings, campusBuildings, offCampusLots, blockedRings = [], furnitureObjects = [] }) {
+  const { heightAt, roadZones } = inputs;
+  const inventory = JSON.parse(readFileSync(TREES, "utf8"));
+  if (JSON.stringify(inventory.species) !== JSON.stringify(SPECIES)) throw new Error(`trees: ${TREES} species ${inventory.species} are not ${SPECIES}`);
+
+  // ---- blocked mask: buildings (courtyards stay open), road zones, off-campus lots and the roofed furniture. Walkways
+  // do not block: the photo shows the street trees standing in their tree pits on the footways.
   const blocked = new Uint8Array(WIDTH * DEPTH);
-  const nearCampus = new Uint8Array(WIDTH * DEPTH);
-  const streetEdge = new Uint8Array(WIDTH * DEPTH);
   {
     const mask = new Raster(WIDTH, DEPTH);
     const unit = (ring) => ring.map(([x, z]) => [x - EXTENT.minX, z - EXTENT.minZ]);
     for (const building of [...selectableBuildings, ...campusBuildings]) {
-      // Courtyards (rings of a mass form) stay open to trees.
       for (const part of building.parts) mask.fillPolygon([unit(part.outer), ...part.holes.map(unit)], () => [255, 0, 0]);
     }
     for (const polygon of roadZones) mask.fillPolygon(polygon.map(unit), () => [255, 0, 0]);
-    for (const lot of offCampusLots) mask.fillPolygon([unit(lot)], () => [128, 0, 0]);
-    for (const { lines, rings } of walkways) {
-      if (rings.length) mask.fillPolygon(rings.map(unit), () => [255, 0, 0]);
-      for (const line of lines) mask.strokePolyline(unit(line), metres(EDGE_STONE_M), () => [255, 0, 0]);
-    }
+    for (const lot of offCampusLots) mask.fillPolygon([unit(lot)], () => [255, 0, 0]);
     for (const ring of blockedRings) mask.fillPolygon([unit(ring)], () => [255, 0, 0]);
-    for (let i = 0; i < blocked.length; i += 1) {
-      blocked[i] = mask.data[i * 3] > 0 ? 1 : 0;
-      nearCampus[i] = mask.data[i * 3] === 255 ? 1 : 0;
-    }
-    // street edge = within STREET_EDGE_M of a road zone or walkway
-    const street = new Raster(WIDTH, DEPTH);
-    for (const polygon of roadZones) street.fillPolygon(polygon.map(unit), () => [255, 0, 0]);
-    for (const { lines, rings } of walkways) {
-      if (rings.length) street.fillPolygon(rings.map(unit), () => [255, 0, 0]);
-      for (const line of lines) street.strokePolyline(unit(line), metres(2 * STREET_EDGE_M), () => [255, 0, 0]);
-    }
-    for (const polygon of roadZones) {
-      for (const ring of polygon) street.strokePolyline(unit([...ring, ring[0]]), metres(2 * STREET_EDGE_M), () => [255, 0, 0]);
-    }
-    for (let i = 0; i < streetEdge.length; i += 1) streetEdge[i] = street.data[i * 3] > 0 ? 1 : 0;
-    // campus = within ~30 m of a campus building or road
-    for (let step = 0; step < Math.round(metres(30)); step += 1) {
-      const next = nearCampus.slice();
-      for (let z = 0; z < DEPTH; z += 1) {
-        for (let x = 0; x < WIDTH; x += 1) {
-          const k = z * WIDTH + x;
-          if (nearCampus[k]) continue;
-          if ((x > 0 && nearCampus[k - 1]) || (x + 1 < WIDTH && nearCampus[k + 1]) || (z > 0 && nearCampus[k - WIDTH]) || (z + 1 < DEPTH && nearCampus[k + WIDTH])) next[k] = 1;
-        }
-      }
-      nearCampus.set(next);
-    }
+    for (let i = 0; i < blocked.length; i += 1) blocked[i] = mask.data[i * 3] > 0 ? 1 : 0;
   }
-
-  // ---- CHMv2 canopy per scene unit: 3x3 samples on the 1.19 m grid -> canopy height (mean of the
-  // samples at or above CANOPY_TREE_METRES) and whether any sample reaches it.
-  const chm = decodePng(readFileSync(CHM_PNG));
-  const EARTH_RADIUS = 6378137;
-  const chmAt = (x, z) => {
-    const [lon, lat] = modelToGeo(x, z);
-    const mx = (lon * Math.PI * EARTH_RADIUS) / 180;
-    const my = EARTH_RADIUS * Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360));
-    const px = Math.floor((mx - CHM_GEOREF.originX) / CHM_GEOREF.pixelSize);
-    const py = Math.floor((CHM_GEOREF.originY - my) / CHM_GEOREF.pixelSize);
-    return px >= 0 && py >= 0 && px < chm.width && py < chm.height ? chm.pixels[py * chm.width + px] : 0;
+  const isBlocked = (x, z) => {
+    const i = Math.floor(x - EXTENT.minX);
+    const k = Math.floor(z - EXTENT.minZ);
+    return i < 0 || k < 0 || i >= WIDTH || k >= DEPTH || blocked[k * WIDTH + i] === 1;
   };
-  const canopyHeight = new Float32Array(WIDTH * DEPTH);
-  for (let z = 0; z < DEPTH; z += 1) {
-    for (let x = 0; x < WIDTH; x += 1) {
-      let sum = 0;
-      let hits = 0;
-      for (let sz = 0; sz < 3; sz += 1) {
-        for (let sx = 0; sx < 3; sx += 1) {
-          const h = chmAt(EXTENT.minX + x + (sx + 0.5) / 3, EXTENT.minZ + z + (sz + 0.5) / 3);
-          if (h >= CANOPY_TREE_METRES) {
-            sum += h;
-            hits += 1;
-          }
-        }
-      }
-      canopyHeight[z * WIDTH + x] = hits ? sum / hits : 0;
+
+  // ---- trees from the inventory
+  const treeInstances = Object.fromEntries([...SPECIES, "hedge"].map((kind) => [kind, []]));
+  const skipped = { blocked: 0, outside: 0 };
+  let groups = 0;
+  const rng = mulberry32(20261027);
+  for (const [east, north, diameterM, heightM0, speciesIndex, heightFromChm, source] of inventory.crowns) {
+    const [x, z] = tmToScene(east, north);
+    if (x < EXTENT.minX || x > EXTENT.maxX || z < EXTENT.minZ || z > EXTENT.maxZ) {
+      skipped.outside += 1;
+      continue;
+    }
+    if (isBlocked(x, z)) {
+      skipped.blocked += 1;
+      continue;
+    }
+    const kind = SPECIES[speciesIndex];
+    const photoCrownM = Math.min(CROWN_DIAMETER_RANGE_M[1], Math.max(CROWN_DIAMETER_RANGE_M[0], diameterM));
+    const heightPhoto = Math.min(TREE_HEIGHT_RANGE_M[1], Math.max(TREE_HEIGHT_RANGE_M[0], heightM0));
+    const { share, range } = MAX_CROWN[kind];
+    const singleM = Math.min(range[1], Math.max(range[0], share * heightPhoto));
+    const count = photoCrownM > singleM ? Math.min(GROUP_MAX, Math.max(1, Math.round((photoCrownM / singleM) ** 2))) : 1;
+    const crownM = count > 1 ? singleM : photoCrownM;
+    const heightM = Math.min(TREE_HEIGHT_RANGE_M[1], Math.max(heightPhoto, CROWN_MIN_RATIO * crownM, (TALL_RATIO[kind] ?? 0) * crownM));
+    if (count > 1) groups += 1;
+    const spread = metres(Math.max(0, photoCrownM - crownM) / 2);
+    const turn = rng() * Math.PI * 2;
+    for (let k = 0; k < count; k += 1) {
+      // one tree in the middle, the rest on a ring (sunflower spacing keeps them apart)
+      const r = count === 1 ? 0 : spread * Math.sqrt((k + 0.5) / count);
+      const a = turn + k * 2.39996;
+      const tx = x + r * Math.cos(a);
+      const tz = z + r * Math.sin(a);
+      if (k > 0 && isBlocked(tx, tz)) continue;
+      const green = 0.86 + rng() * 0.28;
+      const variation = count > 1 ? 0.85 + rng() * 0.3 : 1;
+      treeInstances[kind].push({
+        x: tx, y: heightAt(tx, tz) - metres(0.2), z: tz, crownM: crownM * (count > 1 ? 0.9 + rng() * 0.2 : 1),
+        heightMetres: Math.min(TREE_HEIGHT_RANGE_M[1], heightM * variation), heightFromChm: heightFromChm === 1, source,
+        angle: rng() * Math.PI * 2,
+        tint: [green * (0.94 + rng() * 0.12), green, green * (0.92 + rng() * 0.16)],
+      });
     }
   }
 
-  // ---- Poisson placement with a crown radius per point: crowns are centred on unblocked canopy
-  // cells (random order), sized from the local canopy height and kept CROWN_SPACING x their mean
-  // radius apart, so their footprints cover the CHM canopy area.
-  const treeInstances = { broadleaf: [], roundleaf: [], pine: [] };
-  let coveredCanopy = 0;
-  let canopyCells = 0;
-  {
-    const rng = mulberry32(20261024);
-    const cell = 4;
-    const gridW = Math.ceil(WIDTH / cell);
-    const gridH = Math.ceil(DEPTH / cell);
-    const buckets = Array.from({ length: gridW * gridH }, () => []);
-    const reach = Math.ceil((metres(crownRadiusMetres(255)) * CROWN_SPACING) / cell);
-    const points = [];
-    const candidates = [];
-    for (let z = 0; z < DEPTH; z += 1) {
-      for (let x = 0; x < WIDTH; x += 1) {
-        if (canopyHeight[z * WIDTH + x] > 0 && !blocked[z * WIDTH + x]) candidates.push([x, z]);
-      }
+  // ---- hedges along the shrub planters
+  const hedgeSources = [];
+  for (const o of furnitureObjects) {
+    if (o.kind !== "planter") continue;
+    const note = o.p.note ?? "";
+    const shrubBed = o.ring && (o.p.fill === "shrub" || /shrub|hedge/.test(note));
+    const frontWall = o.line && /planter wall along the building front/.test(note);
+    if (!shrubBed && !frontWall) continue;
+    hedgeSources.push(o.id);
+    const topM = o.heightM ?? 0.5;
+    let path0;
+    if (shrubBed) {
+      // inset ring (the hedge stands inside the bed's kerb)
+      const ring = o.ring;
+      const cx = ring.reduce((s, p) => s + p[0], 0) / ring.length;
+      const cz = ring.reduce((s, p) => s + p[1], 0) / ring.length;
+      path0 = [...ring, ring[0]].map(([px, pz]) => {
+        const d = Math.hypot(px - cx, pz - cz) || 1;
+        const k = Math.max(0, d - metres(HEDGE_INSET_M + HEDGE_WIDTH_M / 2)) / d;
+        return [cx + (px - cx) * k, cz + (pz - cz) * k];
+      });
+    } else {
+      path0 = o.line;
     }
-    for (let i = candidates.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(rng() * (i + 1));
-      [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
-    }
-    for (const [cxCell, czCell] of candidates) {
-      const x = EXTENT.minX + cxCell + rng();
-      const z = EXTENT.minZ + czCell + rng();
-      if (chmAt(x, z) < CANOPY_TREE_METRES) continue;
-      const radius = metres(crownRadiusMetres(canopyHeight[czCell * WIDTH + cxCell]));
-      const gx = Math.floor((x - EXTENT.minX) / cell);
-      const gz = Math.floor((z - EXTENT.minZ) / cell);
-      let ok = true;
-      for (let dz = -reach; dz <= reach && ok; dz += 1) {
-        for (let dx = -reach; dx <= reach && ok; dx += 1) {
-          const nx = gx + dx;
-          const nz = gz + dz;
-          if (nx < 0 || nz < 0 || nx >= gridW || nz >= gridH) continue;
-          for (const other of buckets[nz * gridW + nx]) {
-            const p = points[other];
-            if (Math.hypot(p.x - x, p.z - z) < (CROWN_SPACING * (p.radius + radius)) / 2) {
-              ok = false;
-              break;
-            }
-          }
-        }
-      }
-      if (!ok) continue;
-      buckets[gz * gridW + gx].push(points.length);
-      const k = czCell * WIDTH + cxCell;
-      points.push({ x, z, radius, zone: nearCampus[k] !== 1 ? "woodland" : streetEdge[k] ? "street" : "core" });
-    }
-    if (points.length > MAX_TREES) throw new Error(`trees: ${points.length} instances exceed ${MAX_TREES}; raise CROWN_SPACING`);
-
-    // canopy coverage: unblocked canopy cells whose centre lies under a crown
-    const covered = new Uint8Array(WIDTH * DEPTH);
-    for (const p of points) {
-      const r = p.radius;
-      for (let z = Math.max(0, Math.floor(p.z - r - EXTENT.minZ)); z <= Math.min(DEPTH - 1, Math.ceil(p.z + r - EXTENT.minZ)); z += 1) {
-        for (let x = Math.max(0, Math.floor(p.x - r - EXTENT.minX)); x <= Math.min(WIDTH - 1, Math.ceil(p.x + r - EXTENT.minX)); x += 1) {
-          if (Math.hypot(EXTENT.minX + x + 0.5 - p.x, EXTENT.minZ + z + 0.5 - p.z) <= r) covered[z * WIDTH + x] = 1;
-        }
-      }
-    }
-    for (let k = 0; k < covered.length; k += 1) {
-      if (canopyHeight[k] > 0 && !blocked[k]) {
-        canopyCells += 1;
-        coveredCanopy += covered[k];
-      }
-    }
-
-    const searchStep = metres(1);
-    const crownTopMetres = (x, z, radiusMetres) => {
-      const searchMetres = Math.max(CROWN_TOP_SEARCH_M, radiusMetres);
-      const searchSteps = Math.ceil(searchMetres);
-      let top = 0;
-      for (let dz = -searchSteps; dz <= searchSteps; dz += 1) {
-        for (let dx = -searchSteps; dx <= searchSteps; dx += 1) {
-          if (dx * dx + dz * dz > searchMetres * searchMetres) continue;
-          top = Math.max(top, chmAt(x + dx * searchStep, z + dz * searchStep));
-        }
-      }
-      return top;
-    };
-    for (const { x, z, radius, zone } of points) {
-      const weights = SPECIES_WEIGHTS[zone];
-      const total = weights.broadleaf + weights.roundleaf + weights.pine;
-      const roll = rng() * total;
-      const kind = roll < weights.broadleaf ? "broadleaf" : roll < weights.broadleaf + weights.roundleaf ? "roundleaf" : "pine";
-      const size = metres(radius / SCENE_UNITS_PER_METRE / ARCHETYPE_CROWN_METRES[kind]);
-      const chmTop = crownTopMetres(x, z, radius / SCENE_UNITS_PER_METRE);
-      const heightMetres = chmTop <= 2 ? LOW_CHM_FALLBACK_M : Math.min(TREE_HEIGHT_RANGE_M[1], Math.max(TREE_HEIGHT_RANGE_M[0], chmTop));
-      const angle = rng() * Math.PI * 2;
-      const green = 0.82 + rng() * 0.36;
-      treeInstances[kind].push({ x, y: heightAt(x, z) - metres(0.2), z, size, heightMetres, zone, radius, angle, tint: [green * (0.92 + rng() * 0.16), green, green * (0.9 + rng() * 0.2)] });
+    for (let i = 0; i + 1 < path0.length; i += 1) {
+      const [ax, az] = path0[i];
+      const [bx, bz] = path0[i + 1];
+      const length = Math.hypot(bx - ax, bz - az);
+      if (length < metres(HEDGE_MIN_SEGMENT_M)) continue;
+      const mx = (ax + bx) / 2;
+      const mz = (az + bz) / 2;
+      const green = 0.9 + rng() * 0.2;
+      treeInstances.hedge.push({
+        x: mx, y: Math.min(heightAt(ax, az), heightAt(bx, bz)) + metres(topM - 0.05), z: mz,
+        lengthM: length / metres(1) + HEDGE_WIDTH_M * 0.5, widthM: HEDGE_WIDTH_M, heightMetres: HEDGE_HEIGHT_M,
+        angle: Math.atan2(-(bz - az), bx - ax), planter: o.id,
+        tint: [green * 0.97, green, green * 0.95],
+      });
     }
   }
-  return { treeInstances, canopyCells, coveredCanopy };
+  return { treeInstances, inventory, skipped, hedgeSources, groups };
 }
 
 export function buildTrees({ glb, placement }) {
-  const { treeInstances, canopyCells, coveredCanopy } = placement;
+  const { treeInstances, inventory, skipped, hedgeSources, groups } = placement;
 
-  // ---- materials
-  const crownMaterial = glb.addMaterial({ name: "Tree_Crown", pbrMetallicRoughness: { baseColorFactor: [0.3, 0.5, 0.22, 1], metallicFactor: 0, roughnessFactor: 0.9 } });
-  const pineMaterial = glb.addMaterial({ name: "Tree_Pine", pbrMetallicRoughness: { baseColorFactor: [0.16, 0.34, 0.2, 1], metallicFactor: 0, roughnessFactor: 0.9 } });
-  const trunkMaterial = glb.addMaterial({ name: "Tree_Trunk", pbrMetallicRoughness: { baseColorFactor: [0.36, 0.26, 0.18, 1], metallicFactor: 0, roughnessFactor: 0.95 } });
+  // ---- materials (base colours: summer foliage, estimated against the VR tour and the NGII photo; the dashboard
+  // calibrates crowns at load and tints the deciduous ones in autumn, src/lighting/foliage.mjs and season.mjs)
+  const mat = (name, rgb, roughness = 0.9) => glb.addMaterial({ name, pbrMetallicRoughness: { baseColorFactor: [...rgb, 1], metallicFactor: 0, roughnessFactor: roughness } });
+  const materials = {
+    broadleaf: mat("Tree_Crown", [0.3, 0.5, 0.22]),
+    ginkgo: mat("Tree_Ginkgo", [0.36, 0.52, 0.17]),
+    pine: mat("Tree_Pine", [0.15, 0.32, 0.17]),
+    metasequoia: mat("Tree_Metasequoia", [0.3, 0.47, 0.18]),
+    conifer: mat("Tree_Conifer", [0.11, 0.28, 0.15]),
+    hedge: mat("Tree_Hedge", [0.17, 0.38, 0.15], 0.85),
+    trunk: mat("Tree_Trunk", [0.34, 0.27, 0.2], 0.95),
+    pineTrunk: mat("Tree_Trunk_Pine", [0.45, 0.24, 0.15], 0.95),
+  };
 
-  // Species geometry in metres; instances scale by metres(1) * size.
+  // ---- species geometry in metres (instances scale it; see archetype sizes below). Shapes read on the VR tour:
+  // ginkgo: straight stem, conical-oval crown widest in its lower third (scene_e1 b, scene_a3 r, scene_c5 r);
+  // broadleaf (zelkova, cherry): short stem, broad rounded crown (scene_a9 f, scene_b2 f);
+  // pine (Korean red pine): tall red-brown bole, irregular flat layered pads (scene_a3 l, scene_d1 r, scene_d3 f);
+  // metasequoia: narrow conical crown down to a short visible stem (scene_c1 r, scene_c2 l, scene_d1 l);
+  // conifer: clipped columnar evergreens without a visible stem (scene_a1 r, scene_a2 f);
+  // hedge: a clipped box (scene_e8 f, scene_c1 f).
+  const pinePads = (() => {
+    const pad = (r, h, x, y, z, seed) => {
+      const g = new THREE.IcosahedronGeometry(1, 0);
+      const p = g.attributes.position;
+      const jitter = mulberry32(seed);
+      const offsets = new Map();
+      for (let i = 0; i < p.count; i += 1) {
+        const key = `${p.getX(i).toFixed(3)},${p.getY(i).toFixed(3)},${p.getZ(i).toFixed(3)}`;
+        if (!offsets.has(key)) offsets.set(key, 0.85 + jitter() * 0.3);
+        const k = offsets.get(key);
+        p.setXYZ(i, x + p.getX(i) * r * k, y + p.getY(i) * h * k, z + p.getZ(i) * r * k);
+      }
+      return g;
+    };
+    return mergeGeometries([pad(2.2, 0.75, 0.3, 5.4, -0.2, 3), pad(1.8, 0.7, -0.5, 6.5, 0.4, 5), pad(1.2, 0.65, 0.2, 7.5, 0.1, 7)]);
+  })();
   const species = {
-    broadleaf: [
-      geometryPrimitive(new THREE.CylinderGeometry(0.16, 0.24, 3.2, 6).translate(0, 1.6, 0), trunkMaterial),
-      geometryPrimitive(lumpyCrown(2.6, 4.6, 7).translate(0, 4.8, 0), crownMaterial),
+    ginkgo: [
+      geometryPrimitive(trunk(0.17, 0.25, 3.4), materials.trunk),
+      geometryPrimitive(latheCrown([[0, 2.6], [1.35, 3.2], [2.0, 4.6], [1.85, 6.3], [1.25, 7.9], [0.45, 8.9], [0, 9.2]], 6, 0.18, 11), materials.ginkgo),
     ],
-    roundleaf: [
-      geometryPrimitive(new THREE.CylinderGeometry(0.14, 0.2, 2.2, 6).translate(0, 1.1, 0), trunkMaterial),
-      geometryPrimitive(lumpyCrown(2.2, 3.4, 19).translate(0, 3.5, 0), crownMaterial),
+    broadleaf: [
+      geometryPrimitive(trunk(0.18, 0.27, 3.0), materials.trunk),
+      geometryPrimitive(lumpyCrown(2.7, 4.2, 7).translate(0, 4.7, 0), materials.broadleaf),
     ],
     pine: [
-      geometryPrimitive(new THREE.CylinderGeometry(0.14, 0.22, 3, 6).translate(0, 1.5, 0), trunkMaterial),
-      geometryPrimitive(
-        (() => {
-          const lower = new THREE.ConeGeometry(2.1, 4.2, 7).translate(0, 4.2, 0).toNonIndexed();
-          const upper = new THREE.ConeGeometry(1.5, 3.6, 7).translate(0, 6.6, 0).toNonIndexed();
-          const merged = new THREE.BufferGeometry();
-          merged.setAttribute("position", new THREE.Float32BufferAttribute([...lower.attributes.position.array, ...upper.attributes.position.array], 3));
-          return merged;
-        })(),
-        pineMaterial,
-      ),
+      geometryPrimitive(trunk(0.14, 0.24, 6.6), materials.pineTrunk),
+      geometryPrimitive(pinePads, materials.pine),
+    ],
+    metasequoia: [
+      geometryPrimitive(trunk(0.2, 0.32, 3.0), materials.trunk),
+      geometryPrimitive(latheCrown([[0, 1.4], [1.6, 2.1], [1.5, 4.6], [1.15, 7.4], [0.6, 10.2], [0, 12.4]], 6, 0.14, 13), materials.metasequoia),
+    ],
+    conifer: [
+      geometryPrimitive(latheCrown([[0, 0], [0.95, 0.35], [1.1, 1.5], [0.95, 3.0], [0.6, 4.5], [0, 5.6]], 6, 0.12, 17), materials.conifer),
+    ],
+    hedge: [
+      // unit box on y = 0..1 without its bottom face (x along the hedge, z across)
+      geometryPrimitive((() => {
+        const g = new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0).toNonIndexed();
+        const p = g.attributes.position.array;
+        const keep = [];
+        for (let t = 0; t < p.length; t += 9) if (!(p[t + 1] === 0 && p[t + 4] === 0 && p[t + 7] === 0)) keep.push(...p.slice(t, t + 9));
+        const out = new THREE.BufferGeometry();
+        out.setAttribute("position", new THREE.Float32BufferAttribute(keep, 3));
+        return out;
+      })(), materials.hedge),
     ],
   };
 
   for (const parts of Object.values(species)) bakeVertexAo(parts);
   {
     const mean = (c) => c.reduce((sum, value, i) => (i % 4 === 0 ? sum + value : sum), 0) / (c.length / 4) / 255;
-    console.log(`trees: vertex AO (${AO_RAYS} rays, ${AO_RAY_METRES} m, floor ${AO_FLOOR}) mean shade ${Object.entries(species).map(([k, [trunk, crown]]) => `${k} trunk ${mean(trunk.colors).toFixed(2)} crown ${mean(crown.colors).toFixed(2)}`).join(", ")}`);
+    console.log(`trees: vertex AO (${AO_RAYS} rays, ${AO_RAY_METRES} m, floor ${AO_FLOOR}) mean shade ${Object.entries(species).map(([k, parts]) => `${k} ${parts.map((p) => mean(p.colors).toFixed(2)).join("/")}`).join(", ")}`);
   }
 
-  // Archetype top (m at scale 1): highest crown vertex of each species geometry (DERIVED).
-  const archetypeTopMetres = Object.fromEntries(
+  // Archetype crown radius and top (m at scale 1), from each species geometry (DERIVED).
+  const archetype = Object.fromEntries(
     Object.entries(species).map(([kind, parts]) => {
-      const p = parts[1].positions;
+      const p = parts.at(-1).positions;
       let top = 0;
-      for (let i = 1; i < p.length; i += 3) top = Math.max(top, p[i]);
-      return [kind, top];
+      let radius = 0;
+      for (let i = 0; i < p.length; i += 3) {
+        top = Math.max(top, p[i + 1]);
+        radius = Math.max(radius, Math.hypot(p[i], p[i + 2]));
+      }
+      return [kind, { top, radius }];
     }),
   );
-  for (const [kind, instances] of Object.entries(treeInstances)) {
-    for (const t of instances) t.sizeY = metres(t.heightMetres / archetypeTopMetres[kind]);
-  }
-  console.log(`trees: CHMv2 canopy (>= ${CANOPY_TREE_METRES} m) covers ${canopyCells} unblocked cells; crowns cover ${((coveredCanopy / Math.max(1, canopyCells)) * 100).toFixed(1)} % of them`);
-  {
-    const all = Object.values(treeInstances).flat().map((t) => t.heightMetres).sort((a, b) => a - b);
-    const median = (values) => (values.length ? values[Math.floor(values.length / 2)] : 0);
-    const edges = [4, 6, 8, 10, 12, 14, 16, 18, 20, 22.01];
-    const bins = edges.slice(0, -1).map((lo, b) => `${lo}-${Math.round(edges[b + 1])} m: ${all.filter((h) => h >= lo && h < edges[b + 1]).length}`);
-    const perKind = Object.entries(treeInstances).map(([kind, list]) => `${kind} ${list.length} (median ${median(list.map((t) => t.heightMetres).sort((a, b) => a - b)).toFixed(1)} m)`);
-    console.log(`trees: estimated instance heights (CHMv2 crown top, ${TREE_HEIGHT_RANGE_M[0]}-${TREE_HEIGHT_RANGE_M[1]} m): ${all.length} trees, median ${median(all).toFixed(1)} m; ${bins.join(", ")}`);
-    const flat = Object.values(treeInstances).flat().sort((a, b) => a.heightMetres - b.heightMetres);
-    const totalArea = flat.reduce((sum, t) => sum + t.radius * t.radius, 0);
-    let acc = 0;
-    const areaMedian = flat.find((t) => (acc += t.radius * t.radius) >= totalArea / 2)?.heightMetres ?? 0;
-    const zones = Object.keys(SPECIES_WEIGHTS).map((zone) => `${zone} ${flat.filter((t) => t.zone === zone).length}`);
-    console.log(`trees: crown-area-weighted median height ${areaMedian.toFixed(1)} m; zones ${zones.join(", ")}`);
-    console.log(`trees: species ${perKind.join(", ")}; archetype tops ${Object.entries(archetypeTopMetres).map(([k, v]) => `${k} ${v.toFixed(2)} m`).join(", ")}`);
-  }
+  const triangles = Object.fromEntries(Object.entries(species).map(([kind, parts]) => [kind, parts.reduce((s, p) => s + p.positions.length / 9, 0)]));
 
-  // ---- instanced nodes
+  const all = SPECIES.flatMap((kind) => treeInstances[kind]);
+  const median = (values) => (values.length ? [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)] : 0);
+  console.log(`trees: ${inventory.crowns.length} inventory crowns (data/trees.json), ${skipped.blocked} on buildings, roads, off-campus lots or roofed furniture and ${skipped.outside} outside EXTENT left out; ${groups} crowns wider than one tree of their species drawn as groups; ${all.length} trees drawn`);
+  console.log(`trees: species ${SPECIES.map((kind) => `${kind} ${treeInstances[kind].length} (median ${median(treeInstances[kind].map((t) => t.heightMetres)).toFixed(1)} m tall, crown ${median(treeInstances[kind].map((t) => t.crownM)).toFixed(1)} m)`).join(", ")}; hedges ${treeInstances.hedge.length} segments on ${hedgeSources.length} planters (${hedgeSources.join(", ")})`);
+  console.log(`trees: heights from CHMv2 ${all.filter((t) => t.heightFromChm).length}, from crown size ${all.filter((t) => !t.heightFromChm).length}; species sources ${JSON.stringify(Object.fromEntries(Object.entries(all.reduce((m, t) => ({ ...m, [t.source.split(":")[0]]: (m[t.source.split(":")[0]] ?? 0) + 1 }), {}))))}`);
+  console.log(`trees: archetype triangles ${Object.entries(triangles).map(([k, v]) => `${k} ${v}`).join(", ")}; instanced triangles ${Object.entries(treeInstances).reduce((s, [k, list]) => s + list.length * triangles[k], 0)}`);
+
+  // ---- instanced nodes: one node per species (trunk and crown children), so the draw calls do not grow with the trees
   for (const [kind, instances] of Object.entries(treeInstances)) {
     if (instances.length === 0) continue;
     const translations = new Float32Array(instances.length * 3);
     const rotations = new Float32Array(instances.length * 4);
     const scales = new Float32Array(instances.length * 3);
     const colors = new Float32Array(instances.length * 3);
+    const { top, radius } = archetype[kind];
     instances.forEach((t, i) => {
       translations.set([t.x, t.y, t.z], i * 3);
       rotations.set([0, Math.sin(t.angle / 2), 0, Math.cos(t.angle / 2)], i * 4);
-      scales.set([t.size, t.sizeY, t.size], i * 3);
+      if (kind === "hedge") scales.set([metres(t.lengthM), metres(t.heightMetres), metres(t.widthM)], i * 3);
+      else {
+        const s = metres(t.crownM / 2 / radius);
+        scales.set([s, metres(t.heightMetres / top), s], i * 3);
+      }
       colors.set(t.tint, i * 3);
     });
-    const children = species[kind].map((primitive, partIndex) => {
-      const name = `Trees_${kind}_${partIndex === 0 ? "trunk" : "crown"}`;
+    const parts = species[kind];
+    const children = parts.map((primitive, partIndex) => {
+      const name = `Trees_${kind}_${partIndex === parts.length - 1 ? "crown" : "trunk"}`;
       const mesh = glb.addMesh(name, [primitive]);
-      const extensions = glb.instancingExtension({
-        translations,
-        rotations,
-        scales,
-        colors: partIndex === 0 ? undefined : colors,
-      });
+      const extensions = glb.instancingExtension({ translations, rotations, scales, colors: partIndex === parts.length - 1 ? colors : undefined });
       return glb.addNode({ name, mesh, extensions });
     });
-    glb.addNode({ name: `Trees_${kind}`, children }, { root: true });
+    glb.addNode({
+      name: `Trees_${kind}`,
+      children,
+      extras: {
+        treeSpecies: kind,
+        instances: instances.length,
+        estimated: true,
+        source: kind === "hedge"
+          ? `clipped hedges on the shrub planters of the furniture survey (${hedgeSources.join(", ")}); width ${HEDGE_WIDTH_M} m, ${HEDGE_HEIGHT_M} m above the planter (estimated)`
+          : "data/trees.json: crowns traced on the NGII 2025 orthophoto, heights from CHMv2, species from the SCNU 360 VR tour (estimated)",
+      },
+    }, { root: true });
   }
 
   return treeInstances;

@@ -23,7 +23,7 @@
 //   network/stalls.mjs  estimated stall dividers in the gaps of detected rows, and the circular-arc speed humps
 //   surfaces.mjs  the Ground_* decal meshes (asphalt, pavers, lots, aprons, painted surfaces) with CC0 tiles; no photo pixels
 //   outerTerrain.mjs  the OuterTerrain hill ring around EXTENT, feathered onto Topography's edge
-//   trees.mjs     placement masks and positions (placeTrees), species geometry and instanced Trees_* nodes (buildTrees)
+//   trees.mjs     tree inventory and hedges (placeTrees), species geometry and instanced Trees_* nodes (buildTrees)
 //   furniture.mjs the surveyed outdoor objects (loadFurniture, before the trees: footprints trees keep out of) and the
 //                 merged Furniture / Furniture_Glass nodes
 //                 (buildFurniture, after the ground, on the drawn terrain)
@@ -70,7 +70,7 @@ const inputs = await loadInputs();
 const glb = new GlbBuilder();
 const furniture = loadFurniture();
 const { selectableBuildings, campusBuildings, offCampusLots, contextParts } = await buildBuildings({ glb, inputs, detailedStructures: furniture.detailedStructures });
-const treePlacement = placeTrees({ inputs, selectableBuildings, campusBuildings, offCampusLots, blockedRings: furniture.treeBlock });
+const treePlacement = placeTrees({ inputs, selectableBuildings, campusBuildings, offCampusLots, blockedRings: furniture.treeBlock, furnitureObjects: furniture.objects });
 const markings = await loadMarkings({ inputs, buildings: [...selectableBuildings, ...campusBuildings] });
 console.log(describeMarkings(markings));
 const { surface, surfaces, groundInfo, layers, aoTexture } = await buildGround({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots });
