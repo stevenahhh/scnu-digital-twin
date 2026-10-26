@@ -55,7 +55,7 @@ describe("EnergyDashboard", () => {
     render(<EnergyDashboard client={client} initialDate="2026-05-18" />);
     expect((await screen.findByRole("alert")).textContent).toContain("요청을 처리하지 못했습니다");
     expect(screen.queryByText("0.0 kWh")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "에너지 데이터 다시 시도" }));
+    fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
     expect(await screen.findByRole("heading", { name: "D4 / 공대 3호관" })).toBeTruthy();
   });
 

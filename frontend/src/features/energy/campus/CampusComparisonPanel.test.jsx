@@ -55,10 +55,10 @@ describe("CampusComparison", () => {
     const open = vi.fn();
     render(<CampusComparison client={client} initialDate="2026-05-18" onOpenRecommendation={open} />);
     expect(await screen.findByText("D4 / 공대 3호관")).toBeTruthy();
-    expect(screen.getByText("시뮬레이션 기준일 2026-05-18")).toBeTruthy();
-    expect(screen.getAllByText(/연환산 발전량/)).toHaveLength(2);
-    expect(screen.getAllByText(/옥상 활용/)).toHaveLength(2);
-    expect(screen.getAllByText(/제약 위반/)).toHaveLength(2);
+    expect(screen.getByText("추정 · 시뮬레이션 기준일 5월 18일")).toBeTruthy();
+    expect(screen.getAllByText(/연환산 발전량/)).toHaveLength(1);
+    expect(screen.getAllByText(/옥상 활용/)).toHaveLength(1);
+    expect(screen.getAllByText(/제약 위반/)).toHaveLength(1);
     expect(screen.getByText(/옥상 메타데이터/)).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "D1 / 창업보육센터 배치 편집" }));
     expect(open).toHaveBeenCalledWith({ scenarioId: "D1-s", buildingId: "D1" });
@@ -71,6 +71,6 @@ describe("CampusComparison", () => {
     const client = { load: vi.fn().mockResolvedValue({ ...parsed, ranked: [] }) };
     render(<CampusComparison client={client} initialDate="2026-05-18" />);
     expect(await screen.findByText("비교할 대표 설치안이 없습니다")).toBeTruthy();
-    expect(screen.getByText("시뮬레이션 기준일 2026-05-18")).toBeTruthy();
+    expect(screen.getByText("추정 · 시뮬레이션 기준일 5월 18일")).toBeTruthy();
   });
 });

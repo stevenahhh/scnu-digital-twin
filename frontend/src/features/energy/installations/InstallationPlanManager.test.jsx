@@ -116,7 +116,7 @@ describe("InstallationPlanManager", () => {
     await user.click(await screen.findByRole("button", { name: "기준안 대표 해제" }));
     expect(api.unsetRepresentative).toHaveBeenCalledWith("D4", expect.objectContaining({ signal: expect.any(AbortSignal) }));
     expect(onRepresentativeChange).toHaveBeenCalledWith(null);
-    expect(screen.getByRole("button", { name: "기준안 삭제" }).disabled).toBe(false);
+    expect(screen.getByRole("button", { name: "기준안 삭제" }).getAttribute("aria-disabled")).toBeNull();
   });
 
   it("does not reload plans when integration callbacks change identity", async () => {
@@ -228,6 +228,6 @@ describe("InstallationPlanManager", () => {
   it("disables creation without an explicit draft provider", async () => {
     render(<InstallationPlanManager buildingId="D4" client={client()} />);
     await screen.findByLabelText("기준안 계획 이름");
-    expect(screen.getByRole("button", { name: "새 설치 계획" }).disabled).toBe(true);
+    expect(screen.getByRole("button", { name: "새 설치 계획" }).getAttribute("aria-disabled")).toBe("true");
   });
 });

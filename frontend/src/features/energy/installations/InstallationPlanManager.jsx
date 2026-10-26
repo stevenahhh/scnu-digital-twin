@@ -2,8 +2,12 @@ import { Copy, Edit3, Plus, Save, Star, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createInstallationPlanClient, InstallationPlanContractError } from "./installationPlanApi.mjs";
 import { toKoreanEnergyError } from "../shared/energyErrorMessages.mjs";
+import { FIELD_INPUT } from "../shared/fieldStyles.mjs";
+import { Alert } from "../../../ui/Alert.jsx";
+import { Button } from "../../../ui/Button.jsx";
+import { SectionHeader } from "../../../ui/SectionHeader.jsx";
+import { StatusBadge } from "../../../ui/StatusBadge.jsx";
 
-const buttonClass = "inline-flex min-h-10 items-center justify-center gap-1.5 rounded-md border border-[var(--colors-hairline-strong)] px-3 text-xs font-extrabold transition-colors hover:bg-[var(--colors-surface-3)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--colors-primary)] disabled:cursor-not-allowed disabled:opacity-40";
 const NOOP = () => {};
 
 function validateLoadedContext(buildingId, plans, representative) {
@@ -15,8 +19,28 @@ function validateLoadedContext(buildingId, plans, representative) {
     throw new InstallationPlanContractError("representativePlan.buildingId", "requested building must match");
   }
   if (representative && !plans.some((plan) => plan.id === representative.installationPlanId)) {
-    throw new InstallationPlanContractError("representativePlan.installationPlanId", "representative must be one of the loaded plans");
+    throw new InstallationPlanContractError(
+      "representativePlan.installationPlanId",
+      "representative must be one of the loaded plans",
+    );
   }
+}
+
+const icon = (Icon, props) => <Icon aria-hidden="true" className="h-4 w-4" {...props} />;
+
+// 대표 지정·해제 단추 하나. 대표 계획이면 해제, 아니면 지정한다.
+function RepresentativeToggle({ representative, displayName, disabled, onSet, onClear }) {
+  return (
+    <Button
+      size="sm"
+      onClick={representative ? onClear : onSet}
+      disabled={disabled}
+      aria-label={`${displayName} ${representative ? "대표 해제" : "대표로 지정"}`}
+      icon={icon(Star, { fill: representative ? "currentColor" : "none" })}
+    >
+      {representative ? "대표 해제" : "대표 지정"}
+    </Button>
+  );
 }
 
 /**
@@ -46,20 +70,26 @@ export function InstallationPlanManager({
     callbacksRef.current = { onEditPlan, onPlansChange, onRepresentativeChange };
   }, [onEditPlan, onPlansChange, onRepresentativeChange]);
 
-  useEffect(() => () => {
-    mutationRef.current.generation += 1;
-    mutationRef.current.controller?.abort();
-    mutationRef.current.controller = null;
-  }, []);
+  useEffect(
+    () => () => {
+      mutationRef.current.generation += 1;
+      mutationRef.current.controller?.abort();
+      mutationRef.current.controller = null;
+    },
+    [],
+  );
 
-  const publishPlans = useCallback((nextPlans) => {
-    if (nextPlans.some((plan) => plan.buildingId !== buildingId)) {
-      throw new InstallationPlanContractError("plans", "every published plan must match the requested building");
-    }
-    setPlans(nextPlans);
-    setNames(Object.fromEntries(nextPlans.map((plan) => [plan.id, plan.name])));
-    callbacksRef.current.onPlansChange(nextPlans);
-  }, [buildingId]);
+  const publishPlans = useCallback(
+    (nextPlans) => {
+      if (nextPlans.some((plan) => plan.buildingId !== buildingId)) {
+        throw new InstallationPlanContractError("plans", "every published plan must match the requested building");
+      }
+      setPlans(nextPlans);
+      setNames(Object.fromEntries(nextPlans.map((plan) => [plan.id, plan.name])));
+      callbacksRef.current.onPlansChange(nextPlans);
+    },
+    [buildingId],
+  );
 
   const load = useCallback(() => {
     mutationRef.current.generation += 1;
@@ -75,21 +105,23 @@ export function InstallationPlanManager({
     Promise.all([
       (api.listDetails ?? api.list).call(api, buildingId, { signal: controller.signal }),
       api.getRepresentative(buildingId, { signal: controller.signal }),
-    ]).then(([nextPlans, representative]) => {
-      if (!active) return;
-      validateLoadedContext(buildingId, nextPlans, representative);
-      publishPlans(nextPlans);
-      setRepresentativeId(representative?.installationPlanId ?? null);
-      callbacksRef.current.onRepresentativeChange(representative);
-      setState({ status: "ready", message: "" });
-    }).catch((error) => {
-      if (active && error?.name !== "AbortError") {
-        publishPlans([]);
-        setRepresentativeId(null);
-        callbacksRef.current.onRepresentativeChange(null);
-        setState({ status: "error", message: toKoreanEnergyError(error) });
-      }
-    });
+    ])
+      .then(([nextPlans, representative]) => {
+        if (!active) return;
+        validateLoadedContext(buildingId, nextPlans, representative);
+        publishPlans(nextPlans);
+        setRepresentativeId(representative?.installationPlanId ?? null);
+        callbacksRef.current.onRepresentativeChange(representative);
+        setState({ status: "ready", message: "" });
+      })
+      .catch((error) => {
+        if (active && error?.name !== "AbortError") {
+          publishPlans([]);
+          setRepresentativeId(null);
+          callbacksRef.current.onRepresentativeChange(null);
+          setState({ status: "error", message: toKoreanEnergyError(error) });
+        }
+      });
     return () => {
       active = false;
       controller.abort();
@@ -104,7 +136,10 @@ export function InstallationPlanManager({
     const controller = new AbortController();
     const generation = mutationRef.current.generation + 1;
     mutationRef.current = { generation, controller };
-    const isFresh = () => mutationRef.current.generation === generation && mutationRef.current.controller === controller && !controller.signal.aborted;
+    const isFresh = () =>
+      mutationRef.current.generation === generation &&
+      mutationRef.current.controller === controller &&
+      !controller.signal.aborted;
     setBusyAction(key);
     setState({ status: "ready", message: "" });
     try {
@@ -121,91 +156,188 @@ export function InstallationPlanManager({
     }
   };
 
-  const create = () => run("create", async ({ signal, isFresh }) => {
-    const draft = await createPlanDraft({ buildingId, plans, representativePlanId: representativeId });
-    if (!isFresh()) return;
-    const created = await api.create({ buildingId, name: draft.name, arrays: draft.arrays }, { signal });
-    if (!isFresh()) return;
-    if (created.buildingId !== buildingId) throw new InstallationPlanContractError("plan.buildingId", "created plan must match the requested building");
-    publishPlans([...plans, created]);
-    callbacksRef.current.onEditPlan(created);
-  });
+  const create = () =>
+    run("create", async ({ signal, isFresh }) => {
+      const draft = await createPlanDraft({ buildingId, plans, representativePlanId: representativeId });
+      if (!isFresh()) return;
+      const created = await api.create({ buildingId, name: draft.name, arrays: draft.arrays }, { signal });
+      if (!isFresh()) return;
+      if (created.buildingId !== buildingId)
+        throw new InstallationPlanContractError("plan.buildingId", "created plan must match the requested building");
+      publishPlans([...plans, created]);
+      callbacksRef.current.onEditPlan(created);
+    });
 
-  const rename = (plan) => run(`rename-${plan.id}`, async ({ signal, isFresh }) => {
-    const updated = await api.update(plan.id, { buildingId, name: names[plan.id], arrays: plan.arrays }, { signal });
-    if (!isFresh()) return;
-    if (updated.id !== plan.id || updated.buildingId !== buildingId) {
-      throw new InstallationPlanContractError("plan", "updated plan identity must match the request");
-    }
-    publishPlans(plans.map((item) => item.id === plan.id ? updated : item));
-  });
+  const rename = (plan) =>
+    run(`rename-${plan.id}`, async ({ signal, isFresh }) => {
+      const updated = await api.update(plan.id, { buildingId, name: names[plan.id], arrays: plan.arrays }, { signal });
+      if (!isFresh()) return;
+      if (updated.id !== plan.id || updated.buildingId !== buildingId) {
+        throw new InstallationPlanContractError("plan", "updated plan identity must match the request");
+      }
+      publishPlans(plans.map((item) => (item.id === plan.id ? updated : item)));
+    });
 
-  const copy = (plan) => run(`copy-${plan.id}`, async ({ signal, isFresh }) => {
-    const created = await api.copy(plan, `${names[plan.id] || plan.name} 복사본`, { signal });
-    if (!isFresh()) return;
-    if (created.buildingId !== buildingId) throw new InstallationPlanContractError("plan.buildingId", "copied plan must match the requested building");
-    publishPlans([...plans, created]);
-  });
+  const copy = (plan) =>
+    run(`copy-${plan.id}`, async ({ signal, isFresh }) => {
+      const created = await api.copy(plan, `${names[plan.id] || plan.name} 복사본`, { signal });
+      if (!isFresh()) return;
+      if (created.buildingId !== buildingId)
+        throw new InstallationPlanContractError("plan.buildingId", "copied plan must match the requested building");
+      publishPlans([...plans, created]);
+    });
 
-  const makeRepresentative = (plan) => run(`representative-${plan.id}`, async ({ signal, isFresh }) => {
-    const representative = await api.setRepresentative(buildingId, plan.id, { signal });
-    if (!isFresh()) return;
-    if (representative.buildingId !== buildingId || representative.installationPlanId !== plan.id) {
-      throw new InstallationPlanContractError("representativePlan", "updated representative identity must match the request");
-    }
-    setRepresentativeId(representative.installationPlanId);
-    callbacksRef.current.onRepresentativeChange(representative);
-  });
+  const makeRepresentative = (plan) =>
+    run(`representative-${plan.id}`, async ({ signal, isFresh }) => {
+      const representative = await api.setRepresentative(buildingId, plan.id, { signal });
+      if (!isFresh()) return;
+      if (representative.buildingId !== buildingId || representative.installationPlanId !== plan.id) {
+        throw new InstallationPlanContractError(
+          "representativePlan",
+          "updated representative identity must match the request",
+        );
+      }
+      setRepresentativeId(representative.installationPlanId);
+      callbacksRef.current.onRepresentativeChange(representative);
+    });
 
-  const clearRepresentative = (plan) => run(`representative-${plan.id}`, async ({ signal, isFresh }) => {
-    await api.unsetRepresentative(buildingId, { signal });
-    if (!isFresh()) return;
-    setRepresentativeId(null);
-    callbacksRef.current.onRepresentativeChange(null);
-  });
+  const clearRepresentative = (plan) =>
+    run(`representative-${plan.id}`, async ({ signal, isFresh }) => {
+      await api.unsetRepresentative(buildingId, { signal });
+      if (!isFresh()) return;
+      setRepresentativeId(null);
+      callbacksRef.current.onRepresentativeChange(null);
+    });
 
-  const remove = (plan) => run(`delete-${plan.id}`, async ({ signal, isFresh }) => {
-    await api.remove(plan.id, { signal });
-    if (!isFresh()) return;
-    publishPlans(plans.filter((item) => item.id !== plan.id));
-  });
+  const remove = (plan) =>
+    run(`delete-${plan.id}`, async ({ signal, isFresh }) => {
+      await api.remove(plan.id, { signal });
+      if (!isFresh()) return;
+      publishPlans(plans.filter((item) => item.id !== plan.id));
+    });
 
-  return <section className={`rounded-xl border border-[var(--colors-hairline-strong)] bg-[var(--colors-surface-1)] p-4 ${className}`} aria-labelledby="installation-plan-title">
-    <header className="flex items-start justify-between gap-3">
-      <div>
-        <p className="text-[11px] font-extrabold uppercase tracking-[.08em] text-[var(--colors-primary)]">Installation plans</p>
-        <h2 id="installation-plan-title" className="mt-1 text-lg font-bold">설치 계획</h2>
-        <p className="mt-1 text-xs text-[var(--colors-ink-subtle)]">옥상 로컬 좌표를 유지하며 건물별 대안을 관리합니다.</p>
-      </div>
-      <button type="button" className={`${buttonClass} bg-[var(--colors-primary)] text-white`} onClick={create} disabled={!createPlanDraft || Boolean(busyAction)} aria-label="새 설치 계획" title={!createPlanDraft ? "createPlanDraft 연결이 필요합니다." : undefined}><Plus size={15} /> 새 계획</button>
-    </header>
+  return (
+    <section
+      className={`flex flex-col gap-4 rounded-card border border-hairline-strong bg-surface-1 p-4 ${className}`}
+      aria-labelledby="installation-plan-title"
+    >
+      <SectionHeader
+        id="installation-plan-title"
+        title="설치 계획"
+        subtitle="옥상 로컬 좌표를 유지하며 건물별 대안을 관리합니다."
+        actions={
+          <Button
+            size="sm"
+            onClick={create}
+            disabled={!createPlanDraft || Boolean(busyAction)}
+            disabledReason={
+              !createPlanDraft ? "새 계획 초안을 만들 수 없습니다" : "다른 작업이 끝날 때까지 기다려 주세요"
+            }
+            aria-label="새 설치 계획"
+            icon={icon(Plus)}
+          >
+            새 계획
+          </Button>
+        }
+      />
 
-    {state.status === "loading" && <p role="status" className="mt-4 text-xs text-[var(--colors-ink-muted)]">{state.message}</p>}
-    {state.status === "error" && <div role="alert" className="mt-4 rounded-md border border-red-400/50 bg-red-950/40 p-3 text-xs text-red-100"><p>{state.message}</p><button type="button" onClick={load} className={`${buttonClass} mt-2`}>다시 시도</button></div>}
-    {state.status === "ready" && plans.length === 0 && <p className="mt-4 rounded-md border border-dashed border-[var(--colors-hairline-strong)] p-4 text-center text-xs text-[var(--colors-ink-muted)]">저장된 설치 계획이 없습니다.</p>}
+      {state.status === "loading" && (
+        <p role="status" className="text-caption text-ink-muted">
+          {state.message}
+        </p>
+      )}
+      {state.status === "error" && (
+        <Alert
+          tone="danger"
+          source="installation-plans"
+          title={state.message}
+          actions={[{ label: "다시 시도", onClick: load }]}
+        />
+      )}
+      {state.status === "ready" && plans.length === 0 && (
+        <p className="rounded-control border border-hairline p-4 text-center text-caption text-ink-muted">
+          저장된 설치 계획이 없습니다.
+        </p>
+      )}
 
-    <div className="mt-4 space-y-3">
-      {plans.map((plan) => {
-        const representative = representativeId === plan.id;
-        const displayName = names[plan.id] || plan.name;
-        return <article key={plan.id} className="rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] p-3">
-          <div className="flex items-center justify-between gap-2">
-            <label className="min-w-0 flex-1 text-[11px] font-bold text-[var(--colors-ink-subtle)]">
-              <span className="sr-only">{plan.name} 계획 이름</span>
-              <input aria-label={`${plan.name} 계획 이름`} value={names[plan.id] ?? plan.name} onChange={(event) => setNames((current) => ({ ...current, [plan.id]: event.target.value }))} className="h-10 w-full rounded-md border border-[var(--colors-hairline-strong)] bg-[var(--colors-surface-1)] px-3 text-sm font-bold text-[var(--colors-ink)]" />
-            </label>
-            {representative && <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[color-mix(in_srgb,var(--colors-primary)_18%,transparent)] px-2 py-1 text-[10px] font-extrabold text-[var(--colors-primary-hover)]"><Star size={12} fill="currentColor" /> 대표 계획</span>}
-          </div>
-          <p className="mt-2 text-[11px] text-[var(--colors-ink-subtle)]">배열 {plan.arrays.length}개 · {plan.id}</p>
-          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
-            <button type="button" className={buttonClass} onClick={() => onEditPlan(plan)} aria-label={`${displayName} 편집`}><Edit3 size={14} /> 편집</button>
-            <button type="button" className={buttonClass} onClick={() => rename(plan)} disabled={!displayName.trim() || displayName === plan.name || Boolean(busyAction)} aria-label={`${plan.name} 이름 저장`}><Save size={14} /> 이름 저장</button>
-            <button type="button" className={buttonClass} onClick={() => copy(plan)} disabled={Boolean(busyAction)} aria-label={`${displayName} 복사`}><Copy size={14} /> 복사</button>
-            <button type="button" className={buttonClass} onClick={() => representative ? clearRepresentative(plan) : makeRepresentative(plan)} disabled={Boolean(busyAction)} aria-label={`${displayName} ${representative ? "대표 해제" : "대표로 지정"}`}><Star size={14} fill={representative ? "currentColor" : "none"} /> {representative ? "대표 해제" : "대표 지정"}</button>
-            <button type="button" className={buttonClass} onClick={() => remove(plan)} disabled={representative || Boolean(busyAction)} aria-label={`${displayName} 삭제`} title={representative ? "대표 계획은 다른 계획을 대표로 지정한 뒤 삭제할 수 있습니다." : undefined}><Trash2 size={14} /> 삭제</button>
-          </div>
-        </article>;
-      })}
-    </div>
-  </section>;
+      <ul className="flex flex-col gap-3">
+        {plans.map((plan) => {
+          const representative = representativeId === plan.id;
+          const displayName = names[plan.id] || plan.name;
+          const busy = Boolean(busyAction);
+          return (
+            <li key={plan.id} className="flex flex-col gap-3 rounded-card border border-hairline bg-surface-2 p-3">
+              <div className="flex items-center justify-between gap-2">
+                <label className="min-w-0 flex-1">
+                  <span className="sr-only">{plan.name} 계획 이름</span>
+                  <input
+                    aria-label={`${plan.name} 계획 이름`}
+                    value={names[plan.id] ?? plan.name}
+                    onChange={(event) => setNames((current) => ({ ...current, [plan.id]: event.target.value }))}
+                    className={`${FIELD_INPUT} font-medium`}
+                  />
+                </label>
+                {representative && (
+                  <StatusBadge tone="neutral" icon={Star}>
+                    대표 계획
+                  </StatusBadge>
+                )}
+              </div>
+              <p className="text-caption text-ink-muted">
+                {`배열 ${plan.arrays.length}개`}
+                <span className="sr-only">{` ${plan.id}`}</span>
+              </p>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+                <Button
+                  size="sm"
+                  onClick={() => onEditPlan(plan)}
+                  aria-label={`${displayName} 편집`}
+                  icon={icon(Edit3)}
+                >
+                  편집
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => rename(plan)}
+                  disabled={!displayName.trim() || displayName === plan.name || busy}
+                  aria-label={`${plan.name} 이름 저장`}
+                  icon={icon(Save)}
+                >
+                  이름 저장
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => copy(plan)}
+                  disabled={busy}
+                  aria-label={`${displayName} 복사`}
+                  icon={icon(Copy)}
+                >
+                  복사
+                </Button>
+                <RepresentativeToggle
+                  representative={representative}
+                  displayName={displayName}
+                  disabled={busy}
+                  onSet={() => makeRepresentative(plan)}
+                  onClear={() => clearRepresentative(plan)}
+                />
+                <Button
+                  size="sm"
+                  onClick={() => remove(plan)}
+                  disabled={representative || busy}
+                  disabledReason={
+                    representative ? "대표 계획은 다른 계획을 대표로 지정한 뒤 삭제할 수 있습니다." : undefined
+                  }
+                  aria-label={`${displayName} 삭제`}
+                  icon={icon(Trash2)}
+                >
+                  삭제
+                </Button>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
 }

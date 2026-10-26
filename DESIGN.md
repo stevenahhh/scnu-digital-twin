@@ -33,7 +33,7 @@ An operational campus command center with restrained, high-contrast surfaces ove
 | Dim | `--colors-dim` | `rgba(0,0,0,0.2)` | `rgba(0,0,0,0.2)` | Veil over unselected buildings (20 %) |
 | Label background | `--colors-label-bg` | `rgba(15,16,17,0.85)` | `rgba(247,248,248,0.85)` | Scene label chip, surface-1 at 85 % |
 | Label halo | `--colors-label-halo` | `rgba(0,0,0,0.55)` | `rgba(255,255,255,0.85)` | 1 px text halo on scene labels |
-| Estimate text | `--colors-estimate-ink` | `var(--colors-ink-subtle)` | `var(--colors-ink-subtle)` | Provenance line under estimated values |
+| Estimate text | `--colors-estimate-ink` | `var(--colors-ink-muted)` | `var(--colors-ink-muted)` | Provenance line under estimated values; ink-muted so 12 px captions clear 4.5:1 in the light theme |
 | Emergency | `--colors-emergency` | `#ff3b30` | `#ff3b30` | Emergency-vehicle body in the traffic simulation; a status colour, never the accent |
 | Vehicle lane | `--colors-vehicle-lane` | `#1e88e5` | `#1e88e5` | Vehicle lanes, gates and parking links in the network debug layer (non-interactive) |
 

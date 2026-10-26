@@ -46,6 +46,6 @@ describe("RoofEditorControls", () => {
     render(<RoofEditorControls selectedArray={selectedArray} summary={summary} canSave={false} status="idle" violations={[{ messageKo: "옥상 가장자리에서 0.50m 이상 떨어져야 합니다." }]} onAdd={vi.fn()} onUpdate={vi.fn()} onDelete={vi.fn()} onUndo={vi.fn()} onSave={vi.fn()} canUndo />);
     expect(screen.getByRole("alert").textContent).toContain("옥상 가장자리");
     expect(screen.getByRole("alert").textContent).toContain("오류:");
-    expect(screen.getByRole("button", { name: "배치 저장" }).disabled).toBe(true);
+    expect(screen.getByRole("button", { name: "배치 저장" }).getAttribute("aria-disabled")).toBe("true");
   });
 });

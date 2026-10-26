@@ -45,3 +45,10 @@ export function formatNumber(value, digits = 1) {
   const number = Number(value);
   return Number.isFinite(number) ? number.toFixed(digits) : null;
 }
+
+// 시뮬레이션 기준일처럼 시각 없는 날짜(YYYY-MM-DD)를 `5월 18일`로. 형식이 다르면 받은 값을 그대로 돌려준다.
+export function formatDayLabel(isoDate) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(isoDate ?? ""));
+  if (!match) return isoDate ?? null;
+  return `${Number(match[2])}월 ${Number(match[3])}일`;
+}
