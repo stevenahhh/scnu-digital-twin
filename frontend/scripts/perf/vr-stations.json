@@ -147,14 +147,19 @@
       "station": false,
       "yaw_deg": true
     },
-    "yaw_refined_deg": 287.3,
-    "refined_residual_deg": 2,
+    "yaw_refined_deg": 284.93,
+    "refined_residual_deg": 0.14,
     "refined_buildings": [
       "BLD_SCNU_F1",
       "BLD_B1"
     ],
-    "refined_by": "compare-vr todo 2",
-    "refined_confidence": 0.9
+    "refined_by": "manual control-point resection (scripts/perf/vr_control_points.py)",
+    "refined_confidence": 0.85,
+    "station_refined_x": 531.71,
+    "station_refined_z": -143.19,
+    "height_refined_m": 100.42,
+    "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by siftD); least squares: residual RMS 0.41 m, max 0.65 m; split-half agreement 0.06 m / 0.14 deg; formal sigma 0.05 m / 0.05 deg; height from the face scale (estimated)",
+    "refined_residual_m": 0.06
   },
   {
     "scene": "scene_002",
@@ -305,8 +310,15 @@
       "yaw_deg": true
     },
     "refined": false,
-    "refined_by": "compare-vr todo 2",
-    "refined_note": "skyline correlation suggests -1 to -3.5 deg (low-cost match) but no building pair was read at the refined yaw; original kept"
+    "refined_by": "manual control-point resection (scripts/perf/vr_control_points.py)",
+    "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by siftD); least squares: residual RMS 0.42 m, max 0.65 m; split-half agreement 0.11 m / 0.24 deg; formal sigma 0.06 m / 0.05 deg; height from the face scale (estimated)",
+    "station_refined_x": 316.81,
+    "station_refined_z": -338.56,
+    "yaw_refined_deg": 195.95,
+    "height_refined_m": 100.85,
+    "refined_confidence": 0.85,
+    "refined_residual_deg": 0.24,
+    "refined_residual_m": 0.11
   },
   {
     "scene": "scene_a1",
@@ -467,8 +479,15 @@
       "yaw_deg": true
     },
     "refined": false,
-    "refined_by": "compare-vr todo 2",
-    "refined_note": "solver candidates -4 / +5 deg disagree; ortho-match station 20-40 m uncertain; original kept"
+    "refined_by": "manual control-point resection (scripts/perf/vr_control_points.py)",
+    "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by siftG); least squares: residual RMS 0.40 m, max 0.63 m; split-half agreement 0.03 m / 0.04 deg; formal sigma 0.05 m / 0.05 deg; height from the face scale (estimated)",
+    "station_refined_x": 321.08,
+    "station_refined_z": -159.57,
+    "yaw_refined_deg": 206.41,
+    "height_refined_m": 23.93,
+    "refined_confidence": 0.85,
+    "refined_residual_deg": 0.05,
+    "refined_residual_m": 0.05
   },
   {
     "scene": "scene_a2",
@@ -628,26 +647,27 @@
       "station": true,
       "yaw_deg": true
     },
-    "refined_by": "W4 station check (todo 30 follow-up): resected against the NGII 2025 sheet and the model (estimated)",
-    "refined_note": "the ortho-match pin stood 155 m west, over the bus terminal; the camera hovers over the lawn and tiled plaza east of A2's entrance, looking west at A2 (A1 left, A3 behind right)",
+    "refined_by": "manual control-point resection (scripts/perf/vr_control_points.py)",
+    "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by manual); least squares: residual RMS 0.42 m, max 0.64 m; split-half agreement 0.11 m / 0.26 deg; formal sigma 0.06 m / 0.06 deg; height from the face scale (estimated)",
     "refined_previous": {
       "refined_by": "compare-vr todo 2",
       "refined_note": "A2 signed block not matched at any yaw within +-45 deg (skyline cost 3.9+); station position likely off",
       "refined": false
     },
-    "station_refined_x": 327.94,
-    "station_refined_z": -178.33,
+    "station_refined_x": 325.04,
+    "station_refined_z": -180.03,
     "station_refined_lat": 34.96878439,
     "station_refined_lng": 127.48138935,
-    "height_refined_m": 15.4,
-    "yaw_refined_deg": 257.2,
+    "height_refined_m": 13.11,
+    "yaw_refined_deg": 249.04,
     "refined_method": "resection on the photo: A2's entrance canopy and the two disabled bays in front of it (VR f cols 998, 794, 1050 with rows)",
-    "refined_residual_deg": 1.69,
+    "refined_residual_deg": 0.26,
     "refined_buildings": [
       "BLD_SCNU_A2 entrance",
       "A2 disabled bays"
     ],
-    "refined_confidence": 0.7
+    "refined_confidence": 0.85,
+    "refined_residual_m": 0.11
   },
   {
     "scene": "scene_a3",
@@ -816,17 +836,19 @@
       "station": true,
       "yaw_deg": true
     },
-    "yaw_refined_deg": 135.4,
-    "refined_residual_deg": 2.8,
+    "yaw_refined_deg": 136.06,
+    "refined_residual_deg": 0.13,
     "refined_buildings": [
       "BLD_SCNU_A3",
       "central roundabout"
     ],
-    "refined_by": "compare-vr todo 11",
-    "refined_confidence": 0.6,
-    "refined_note": "re-resected in todo 11 from three corners of the traced A3 (VR f -19.9, -10.5, +36.9 deg) and the roundabout centre (l +17.7 deg), max residual 2.8 deg; the todo 2 yaw 157.5 came from E1 alone (large facade, weak) and put A3 15 deg off",
-    "station_refined_x": 270.95,
-    "station_refined_z": -204.72
+    "refined_by": "manual control-point resection (scripts/perf/vr_control_points.py)",
+    "refined_confidence": 0.85,
+    "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by siftG); least squares: residual RMS 0.37 m, max 0.62 m; split-half agreement 0.10 m / 0.13 deg; formal sigma 0.05 m / 0.05 deg; height from the face scale (estimated)",
+    "station_refined_x": 269.44,
+    "station_refined_z": -203.52,
+    "height_refined_m": 14.81,
+    "refined_residual_m": 0.1
   },
   {
     "scene": "scene_a4",
@@ -996,8 +1018,15 @@
       "yaw_deg": true
     },
     "refined": false,
-    "refined_by": "compare-vr todo 2",
-    "refined_note": "skyline suggests -2 to +4 deg, not confirmed on two buildings; original kept"
+    "refined_by": "manual control-point resection (scripts/perf/vr_control_points.py)",
+    "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by siftG); least squares: residual RMS 0.42 m, max 0.62 m; split-half agreement 0.16 m / 0.12 deg; formal sigma 0.05 m / 0.06 deg; height from the face scale (estimated)",
+    "station_refined_x": 259.21,
+    "station_refined_z": -129.2,
+    "yaw_refined_deg": 136.3,
+    "height_refined_m": 15.24,
+    "refined_confidence": 0.85,
+    "refined_residual_deg": 0.12,
+    "refined_residual_m": 0.16
   },
   {
     "scene": "scene_a5",
@@ -1175,13 +1204,18 @@
       "station": true,
       "yaw_deg": true
     },
-    "yaw_refined_deg": 228,
-    "refined_residual_deg": 3,
+    "yaw_refined_deg": 224.85,
+    "refined_residual_deg": 0.06,
     "refined_buildings": [
       "BLD_A4"
     ],
-    "refined_by": "compare-vr todo 2",
-    "refined_confidence": 0.6
+    "refined_by": "manual control-point resection (scripts/perf/vr_control_points.py)",
+    "refined_confidence": 0.85,
+    "station_refined_x": 332.15,
+    "station_refined_z": -120.26,
+    "height_refined_m": 24.42,
+    "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by siftD); least squares: residual RMS 0.43 m, max 0.63 m; split-half agreement 0.03 m / 0.03 deg; formal sigma 0.06 m / 0.06 deg; height from the face scale (estimated)",
+    "refined_residual_m": 0.06
   },
   {
     "scene": "scene_a6",
@@ -1350,14 +1384,19 @@
       "station": true,
       "yaw_deg": true
     },
-    "yaw_refined_deg": 267.1,
-    "refined_residual_deg": 3,
+    "yaw_refined_deg": 257.0,
+    "refined_residual_deg": 0.13,
     "refined_buildings": [
       "BLD_SCNU_A6",
       "BLD_A7"
     ],
-    "refined_by": "compare-vr todo 2",
-    "refined_confidence": 0.9
+    "refined_by": "manual control-point resection (scripts/perf/vr_control_points.py)",
+    "refined_confidence": 0.85,
+    "station_refined_x": 248.91,
+    "station_refined_z": -69.62,
+    "height_refined_m": 12.15,
+    "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by manual control points); least squares: residual RMS 0.36 m, max 0.64 m; split-half agreement 0.04 m / 0.13 deg; formal sigma 0.05 m / 0.06 deg; height from the face scale (estimated)",
+    "refined_residual_m": 0.05
   },
   {
     "scene": "scene_a8",
@@ -1507,13 +1546,18 @@
       "station": true,
       "yaw_deg": true
     },
-    "yaw_refined_deg": 63,
-    "refined_residual_deg": 3,
+    "yaw_refined_deg": 59.81,
+    "refined_residual_deg": 0.07,
     "refined_buildings": [
       "BLD_A7"
     ],
-    "refined_by": "compare-vr todo 2",
-    "refined_confidence": 0.6
+    "refined_by": "manual control-point resection (scripts/perf/vr_control_points.py)",
+    "refined_confidence": 0.85,
+    "station_refined_x": 242.91,
+    "station_refined_z": 12.89,
+    "height_refined_m": 13.79,
+    "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by siftG); least squares: residual RMS 0.44 m, max 0.65 m; split-half agreement 0.07 m / 0.07 deg; formal sigma 0.06 m / 0.06 deg; height from the face scale (estimated)",
+    "refined_residual_m": 0.07
   },
   {
     "scene": "scene_a9",
@@ -1683,8 +1727,15 @@
       "yaw_deg": true
     },
     "refined": false,
-    "refined_by": "compare-vr todo 2",
-    "refined_note": "close-range plaza view: the near A9/A8 blocks fill the faces and skyline matching is ambiguous (-36 deg candidate rejected by eye); original kept"
+    "refined_by": "manual control-point resection (scripts/perf/vr_control_points.py)",
+    "refined_note": "51 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by manual control points); least squares: residual RMS 0.39 m, max 0.61 m; split-half agreement 0.02 m / 0.21 deg; formal sigma 0.06 m / 0.10 deg; height from the face scale (estimated)",
+    "station_refined_x": 256.79,
+    "station_refined_z": -53.22,
+    "yaw_refined_deg": 107.35,
+    "height_refined_m": 9.57,
+    "refined_confidence": 0.85,
+    "refined_residual_deg": 0.21,
+    "refined_residual_m": 0.06
   },
   {
     "scene": "scene_a10",
