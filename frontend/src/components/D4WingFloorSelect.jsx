@@ -62,7 +62,7 @@ export function D4WingFloorSelect({ building, activeWingId, onSelectWing, onSele
             <ChevronLeft size={16} />
             캠퍼스 전체 보기
           </button>
-          <div className="justify-self-center whitespace-nowrap rounded-md border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] px-3 py-1.5 text-center text-lg font-[900] text-[var(--colors-ink)]">{building.displayName}</div>
+          <div className="justify-self-center whitespace-nowrap rounded-md border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] px-3 py-1.5 text-center text-lg font-[900] text-[var(--colors-ink)]"><span data-qa="building-code-badge" className="mr-2 rounded border border-[var(--colors-hairline-strong)] px-1.5 py-0.5 align-middle text-[12px] font-[700] text-[var(--colors-ink-muted)]">{building.code}</span>{building.displayName}</div>
         </div>
 
         <div className="flex rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] p-1">

@@ -26,9 +26,11 @@ function getMappedId(rawName, buildingMap) {
   return buildingMap?.[rawName];
 }
 
+// registry(labels/labelRegistry.mjs의 buildLabelRegistry 결과)를 넘기면 그 건물의 레지스트리 항목에
+// elementId·label을 얹어 돌려준다(label = 레지스트리의 displayName). 넘기지 않으면 { elementId, label }만 돌려준다.
 export function resolveBuildingMeta(
   rawName,
-  { elementNames, buildingMap, blockedIds } = {},
+  { elementNames, buildingMap, blockedIds, registry } = {},
 ) {
   if (typeof rawName !== "string" || !rawName.startsWith("BLD_")) return null;
 
@@ -66,5 +68,7 @@ export function resolveBuildingMeta(
 
   if (typeof label === "string" && label.startsWith("BLD_")) label = null;
 
+  const entry = registry?.get(elementId);
+  if (entry) return { ...entry, elementId, label: entry.displayName ?? label };
   return { elementId, label };
 }
