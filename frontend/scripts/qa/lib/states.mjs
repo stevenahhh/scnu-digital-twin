@@ -12,7 +12,7 @@ export const SAMPLE_OFFSETS_MS = Object.freeze([500, 2000, 2500]);
 
 const PANEL_CLOSE = '[aria-label="패널 닫기"]';
 const PANEL_OPEN = '[aria-label="패널 열기"]';
-const CHIP = "[data-qa=campus-label] button";
+const CHIP = "button[data-qa=campus-label]";
 
 async function act(ctx, selector, text, options) {
   const result = await ctx.b.tap(selector, text, options);
@@ -80,7 +80,7 @@ async function waitForReady(ctx) {
   const legacy = ctx.entry === "legacy";
   for (let index = 0; index < 120; index += 1) {
     const ready = await ctx.b.run((isLegacy) => Boolean(document.querySelector("canvas"))
-      && (isLegacy ? document.querySelectorAll("[data-qa=campus-label] button").length > 5 : Boolean(document.querySelector("[data-qa=dashboard-panel]"))), legacy);
+      && (isLegacy ? document.querySelectorAll("button[data-qa=campus-label]").length > 5 : Boolean(document.querySelector("[data-qa=dashboard-panel]"))), legacy);
     if (ready) return true;
     await sleep(500);
   }
@@ -155,7 +155,7 @@ async function enterD4(ctx, beforeLabelTap) {
   await act(ctx, "[data-qa=camera-preset-d4]");
   await wait(ctx, 3500);
   if (beforeLabelTap) await beforeLabelTap();
-  await act(ctx, CHIP, "공과대학 3호관");
+  await act(ctx, CHIP, "공대 3호관");
   await wait(ctx, 4000);
 }
 

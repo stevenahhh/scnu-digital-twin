@@ -202,7 +202,7 @@ export const GAP_CHECKS = [
       // camera presets are exempt because the row allows them the shortName.
       const m = await ctx.inPage((qa) => {
         const names = [
-          ...qa.all("[data-qa=campus-label] button").map((el) => qa.txt(el)),
+          ...qa.all("button[data-qa=campus-label]").map((el) => qa.txt(el)),
           ...qa.all("h1,h2,h3,[role=heading],[data-qa=selection-inspector] *,[data-qa=breadcrumb],[role=dialog] div").filter((el) => qa.visible(el) && !el.closest("[data-qa^=camera-preset-]") && el.children.length === 0).map((el) => qa.txt(el)),
         ].filter((t) => /3호관|^도서관$/.test(t) && /공대|공과대학|도서관/.test(t));
         const headings = qa.all("h1,h2,h3,h4,[role=heading]").filter(qa.visible).map((el) => qa.txt(el));
@@ -525,7 +525,7 @@ export const GAP_CHECKS = [
     states: ["S01", "S03"], viewports: P,
     async run(ctx) {
       const m = await ctx.inPage((qa) => {
-        const sels = ['[aria-label="패널 닫기"]', '[aria-label="패널 열기"]', "[data-qa=sheet-handle]", "[data-qa=campus-label] button", "[data-qa^=camera-preset-]", "[data-qa=time-slider] input[type=range]"];
+        const sels = ['[aria-label="패널 닫기"]', '[aria-label="패널 열기"]', "[data-qa=sheet-handle]", "button[data-qa=campus-label]", "[data-qa^=camera-preset-]", "[data-qa=time-slider] input[type=range]"];
         const small = [];
         let measured = 0;
         for (const sel of sels) {

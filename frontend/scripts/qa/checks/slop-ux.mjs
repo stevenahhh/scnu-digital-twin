@@ -16,7 +16,7 @@ function tabAcrossD4(ctx) {
 
 async function inspectorTitleVsChip(ctx) {
   const m = await ctx.inPage((qa) => {
-    const pressed = qa.all("[data-qa=campus-label] button").find((el) => el.getAttribute("aria-pressed") === "true");
+    const pressed = qa.all("button[data-qa=campus-label]").find((el) => el.getAttribute("aria-pressed") === "true");
     const inspector = qa.one("[data-qa=selection-inspector]");
     const titleEl = inspector?.querySelector("h1,h2,h3") ?? [...document.querySelectorAll("[data-qa=dashboard-panel] h2,[data-qa=dashboard-panel] h3")].find((el) => qa.visible(el));
     return { chip: pressed ? qa.txt(pressed) : null, title: titleEl ? qa.txt(titleEl) : null, inspectorHook: Boolean(inspector) };

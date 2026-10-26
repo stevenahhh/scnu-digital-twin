@@ -143,7 +143,8 @@ export class Browser {
   // Centre of the first matching element (exact trimmed text when given) inside the viewport.
   async center(selector, text) {
     return this.run((sel, txt) => {
-      const nodes = [...document.querySelectorAll(sel)].filter((node) => txt == null || (node.textContent || "").trim() === txt);
+      const nodes = [...document.querySelectorAll(sel)].filter((node) => txt == null || (node.textContent || "").trim() === txt
+        || (node.querySelector(".line-clamp-2")?.textContent || "").trim() === txt);
       for (const node of nodes) {
         const r = node.getBoundingClientRect();
         const x = r.x + r.width / 2;

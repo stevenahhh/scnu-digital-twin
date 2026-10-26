@@ -29,7 +29,7 @@ export function pageProbeSource() {
   const eff = (el) => Math.round(parseFloat(getComputedStyle(el).fontSize) * scaleOf(el) * 100) / 100;
   const inter = (a, b) => { if (!a || !b) return 0; const w = Math.min(a.r, b.r) - Math.max(a.l, b.l); const h = Math.min(a.b, b.b) - Math.max(a.t, b.t); return w > 0 && h > 0 ? Math.round(w * h) : 0; };
   const gap = (a, b) => { const dx = Math.max(0, Math.max(a.l, b.l) - Math.min(a.r, b.r)); const dy = Math.max(0, Math.max(a.t, b.t) - Math.min(a.b, b.b)); return Math.hypot(dx, dy); };
-  const chips = () => all('[data-qa=campus-label] button').filter(visible);
+  const chips = () => all('button[data-qa=campus-label]').filter(visible);
   const color = (el, prop = 'color') => getComputedStyle(el)[prop];
   const textNodesShown = (root = document.body) => { const out = []; const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     while (walker.nextNode()) { const node = walker.currentNode; const value = node.textContent.trim(); if (!value) continue;
