@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { D4_BUILDING_DATA, D4_ROOMS } from "./d4Campus.mjs";
-import { calculateBuildingDemand } from "./demand.mjs";
-import { calculateEnergyBalance } from "./energyBalance.mjs";
-import { calculateLayoutGeneration } from "./generation.mjs";
+import { D4_BUILDING_DATA, D4_ROOMS } from "../../src/features/energy/domain/d4Campus.mjs";
+import { calculateBuildingDemand } from "../../src/features/energy/domain/demand.mjs";
+import { calculateEnergyBalance } from "../../src/features/energy/domain/energyBalance.mjs";
+import { calculateLayoutGeneration } from "../../src/features/energy/domain/generation.mjs";
 
 const DATE = "2026-05-18";
 const QUALITY = "Fixed D4 clear-day scenario; not measured weather.";

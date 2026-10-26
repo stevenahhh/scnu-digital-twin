@@ -1053,7 +1053,7 @@ export default function App() {
                 <>
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <div className="font-[600] text-3xl leading-[1.2] tracking-[-0.8px] font-['Linear_Display']">{formattedTime}</div>
+                      <div className="font-[600] text-3xl leading-[1.2] tracking-[-0.8px]">{formattedTime}</div>
                       <div className="mt-1 flex items-center gap-1 text-sm font-medium text-[var(--colors-ink-muted)]">
                         <CalendarDays size={14} />
                         {formattedDate}

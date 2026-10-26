@@ -43,7 +43,7 @@ Scene colours: the 3D scene cannot read CSS variables, so `sceneTokens.mjs` repe
 
 ## 3. Typography
 
-- Family: `Wanted Sans Variable`, then `Wanted Sans` and the system Korean sans-serif fallbacks. Tabular figures are on for the whole body.
+- Family: `Wanted Sans Variable` (self-hosted at `frontend/public/fonts/WantedSansVariable.woff2` under the SIL OFL 1.1, `font-display: swap`, preloaded by both HTML entries; no CDN), then `Wanted Sans` and the system Korean sans-serif fallbacks. Tabular figures are on for the whole body.
 - Weights: 400 body, 500 captions and labels, 600 display, title and emphasis. Use 700 only when a block inside a `--text-title` section needs a second heading level. Do not use 800 or 900.
 - Tracking: only `--tracking-display` (`-0.01em`) on `--text-display`. Every other step uses zero tracking. Do not use uppercase eyebrows.
 - Korean text breaks on words (`word-break: keep-all` on `body`).

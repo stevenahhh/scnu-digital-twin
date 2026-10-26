@@ -16,6 +16,7 @@ frontend/
 ├── src/AppVWorld.jsx          # VWorld dashboard
 ├── src/CityModel.jsx          # GLB selection and camera focus
 ├── src/components/            # Building and room drill-down UI
+├── src/ui/                    # Design tokens (tokens.css) and shared UI primitives
 ├── src/vworld/                # VWorld adapters and focused unit tests
 └── src/utils/                 # D4 data, solar math, mock data
 ```
@@ -92,10 +93,17 @@ Every dashboard fix lands in both entries unless it's listed as intentional belo
 ## ANTI-PATTERNS
 
 - Do not collapse Legacy and VWorld entry points into one build accidentally.
-- `AlertBadge.jsx`, `BuildingSectionView.jsx`, `D4RoomPopup.jsx`,
-  `D4WingDetailCard.jsx`, `MiniStatusWidget.jsx` and `utils/feelsLike.mjs` are
-  unused on `dev` but kept for open teammate branches. Don't delete them, and
-  don't treat them as live runtime paths.
+- The live D4 path is `vworld/D4SectionExperience.jsx` with
+  `components/D4WingFloorSelect.jsx` and `components/D4RoomGridSelect.jsx`
+  (both entries). Dead components are deleted, not parked. The one exception is
+  `AlertBadge.jsx`, `BuildingSectionView.jsx`, `D4RoomPopup.jsx`,
+  `D4WingDetailCard.jsx`, `MiniStatusWidget.jsx` and `utils/feelsLike.mjs`.
+  They have no importers but stay until the open teammate branches that touch
+  them merge. Don't import them, and don't treat them as live runtime paths.
+- Don't keep `*.manual.mjs` drivers or `console.log` under `src/`. Manual
+  energy drivers live in `scripts/energy-manual/` (`node scripts/energy-manual/<name>.manual.mjs`).
+- Don't load fonts from a CDN. Wanted Sans Variable is served from
+  `public/fonts/` (OFL text beside it) and preloaded by both HTML entries.
 - Do not copy hardcoded weather keys from old test/demo files into active code.
 - Do not rename `common_elemetns.json` in isolation.
 - Do not replace the VWorld selection helpers with ad hoc component-local maps;

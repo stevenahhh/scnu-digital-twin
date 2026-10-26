@@ -1,6 +1,14 @@
 /* 디자인 토큰의 유일한 출처. Tailwind 테마(tailwind.config.js)와 DESIGN.md가 이 파일을 따른다.
    :root는 어두운 테마, [data-theme="light"]는 밝은 테마에서 값이 다른 토큰만 덮어쓴다. */
 
+/* Wanted Sans Variable(SIL OFL 1.1, public/fonts/OFL.txt)은 public/fonts에서 직접 제공한다. 외부 CDN에 기대지 않는다. */
+@font-face {
+  font-family: "Wanted Sans Variable";
+  src: url(/fonts/WantedSansVariable.woff2) format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
 :root {
   color-scheme: dark;
 

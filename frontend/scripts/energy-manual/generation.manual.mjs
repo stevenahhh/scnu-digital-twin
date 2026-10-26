@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { D4_ROOF_SCENARIO_FIXTURE } from "./fixtures/d4RoofScenarioFixture.mjs";
+import { D4_ROOF_SCENARIO_FIXTURE } from "../../src/features/energy/domain/fixtures/d4RoofScenarioFixture.mjs";
 import {
   GenerationInputError,
   calculateLayoutGeneration,
-} from "./generation.mjs";
-import { parseRoofLayoutDocument } from "./roofContracts.mjs";
+} from "../../src/features/energy/domain/generation.mjs";
+import { parseRoofLayoutDocument } from "../../src/features/energy/domain/roofContracts.mjs";
 
 const DATE = "2026-05-15";
 const QUALITY = "Reproducible clear-sky simulation assumption; not observed weather.";
