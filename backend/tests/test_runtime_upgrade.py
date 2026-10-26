@@ -107,3 +107,15 @@ def test_default_population_is_distributed_across_campus_extent():
     # Scooter has access to both derived road and shared-path duplicates, so
     # its denominator is 360 edges; 20% still represents broad campus routes.
     assert coverage["scooter"]["planned_percent"] > 18
+
+
+def test_trip_cost_factors_do_not_depend_on_unrelated_edges():
+    from simulation.trip_manager import edge_uniform
+
+    key = (12345).to_bytes(8, "little")
+    a = edge_uniform(key, "EDGE_A", 1.0, 1.4)
+    assert 1.0 <= a < 1.4
+    # the same trip key and edge always give the same factor, whatever else is in the graph
+    assert edge_uniform(key, "EDGE_A", 1.0, 1.4) == a
+    assert edge_uniform(key, "EDGE_B", 1.0, 1.4) != a
+    assert edge_uniform((12346).to_bytes(8, "little"), "EDGE_A", 1.0, 1.4) != a
