@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { kstMinuteOfDay, minuteOfDayFromParts, splitMinuteOfDay } from "../weather/sceneClock.mjs";
+import { formatSceneDate } from "../components/timeControl.mjs";
 import { CAMPUS_LOCATION, createSimulationDate, getSunState } from "../utils/sunPosition.mjs";
 
 const RAD_TO_DEG = 180 / Math.PI;
@@ -45,6 +46,23 @@ export function useSunClock() {
     setMode("simulation");
   }, []);
 
+  // 날짜 입력은 해 위치가 쓰는 같은 월·일 상태를 바꾼다(두 번째 시간 원천을 만들지 않는다).
+  const setSceneDate = useCallback(({ month, day }) => {
+    setSunMonth(month);
+    setSunDay(day);
+    setMode("simulation");
+  }, []);
+
+  // `지금`: 실측 모드로 돌아가고, 이후 조작이 지금 시각에서 시작하도록 입력값도 맞춘다.
+  const snapToNow = useCallback(() => {
+    const current = new Date();
+    setSunMonth(current.getMonth() + 1);
+    setSunDay(current.getDate());
+    setSunHour(current.getHours());
+    setSunMinute(current.getMinutes());
+    setMode("live");
+  }, []);
+
   return {
     mode, setMode, isLiveMode, simTemp, setSimTemp,
     sunMonth, setSunMonth, sunDay, setSunDay, sunHour, setSunHour, sunMinute, setSunMinute,
@@ -53,5 +71,8 @@ export function useSunClock() {
     sunBearingDegrees: (sunState.azimuth * RAD_TO_DEG + 540) % 360,
     sceneMinuteOfDay: isLiveMode ? kstMinuteOfDay(now) : minuteOfDayFromParts({ hour: sunHour, minute: sunMinute }),
     setSceneMinuteOfDay,
+    sceneDate: formatSceneDate({ year: sunDate.getFullYear(), month: sunDate.getMonth() + 1, day: sunDate.getDate() }),
+    setSceneDate,
+    snapToNow,
   };
 }

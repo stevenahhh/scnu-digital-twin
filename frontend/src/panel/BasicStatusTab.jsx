@@ -34,7 +34,7 @@ function weatherCaption(summary) {
 
 // 기본 현황 탭: 시계, 시스템 상태, 현재 기상(관측값), 태양 고도(계산 추정), 경보와 단기 예보.
 // feeds/retry는 useFeedStatus 결과다. 시스템 상태 줄이 끊긴 피드의 유일한 알림이다.
-export function BasicStatusTab({ summary, feeds, retry, sunAltitudeDegrees, onOpenSettings, onRefreshWeather }) {
+export function BasicStatusTab({ summary, feeds, retry, clock, sunAltitudeDegrees, onOpenSettings, onRefreshWeather }) {
   const { weather } = summary;
   const measured = (value, unit) => <EstimateValue value={value} unit={unit} estimated={false} />;
   const weatherItems = [
@@ -51,7 +51,7 @@ export function BasicStatusTab({ summary, feeds, retry, sunAltitudeDegrees, onOp
   return (
     <>
       <div className="flex items-start justify-between gap-4">
-        <PanelClock />
+        <PanelClock sceneMinuteOfDay={clock.sceneMinuteOfDay} sceneDate={clock.sceneDate} />
         <div className="flex shrink-0 gap-2">
           <Button iconOnly label="설정" icon={<Settings aria-hidden="true" className={iconClass} />} onClick={onOpenSettings} />
           <Button

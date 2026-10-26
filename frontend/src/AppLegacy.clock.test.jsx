@@ -49,14 +49,14 @@ describe("Legacy dashboard clock", () => {
     await act(async () => {
       await vi.advanceTimersByTimeAsync(4000);
     });
-    const clock = screen.getByText("12:00:04");
+    const clock = screen.getByText("현재 12:00:04");
     const before = renders.dashboard;
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(5000);
     });
 
-    expect(clock.textContent).toBe("12:00:09");
+    expect(clock.textContent).toBe("현재 12:00:09");
     expect(renders.dashboard - before).toBe(0);
   });
 });

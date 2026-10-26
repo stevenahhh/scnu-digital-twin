@@ -18,6 +18,7 @@ export function DashboardTabContent({
             summary={summary}
             feeds={feeds}
             retry={feeds.retry}
+            clock={clock}
             sunAltitudeDegrees={clock.sunAltitudeDegrees}
             onOpenSettings={onOpenSettings}
             onRefreshWeather={onRefreshWeather}

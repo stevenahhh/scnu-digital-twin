@@ -94,6 +94,7 @@ export default function VWorldRenderer({
   representativeRefreshKey,
   onD4SectionChange,
   overlayInsetRight = "0px",
+  overlayInsetBottom = "0px",
   mapBackdrop = null,
 }) {
   const onSelectionRef = useRef(onSelection);
@@ -362,7 +363,7 @@ export default function VWorldRenderer({
       <div
         data-qa="vworld-map-overlays"
         className="pointer-events-none absolute inset-y-0 left-0 transition-[right] duration-300"
-        style={{ right: overlayInsetRight }}
+        style={{ right: overlayInsetRight, bottom: overlayInsetBottom }}
       >
         {!isD4SectionOpen && (
           <div

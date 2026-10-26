@@ -38,6 +38,9 @@ export const CampusHud = forwardRef(function CampusHud(
       <TimeSlider
         minuteOfDay={clock.sceneMinuteOfDay}
         onMinuteChange={clock.setSceneMinuteOfDay}
+        dateValue={clock.sceneDate}
+        onDateChange={clock.setSceneDate}
+        onNow={clock.snapToNow}
         playing={playing}
         onPlayingChange={onPlayingChange}
         live={clock.isLiveMode}

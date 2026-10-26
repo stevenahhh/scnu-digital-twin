@@ -13,7 +13,8 @@ import { useInstallationPlans } from "./hooks/useInstallationPlans.mjs";
 import { useSelectionState } from "./hooks/useSelectionState.mjs";
 import { useSunClock } from "./hooks/useSunClock.mjs";
 import { useThemeMode } from "./hooks/useThemeMode.mjs";
-import { DashboardShell, shellInsetRight } from "./panel/DashboardShell";
+import { DashboardShell, SHELL_PEEK_HEIGHT, shellInsetRight } from "./panel/DashboardShell";
+import { TimeSlider } from "./components/TimeSlider";
 import { usePanelState } from "./panel/usePanelState.mjs";
 import { usePanelViewMemory } from "./panel/usePanelViewMemory.mjs";
 import { Wordmark } from "./panel/Wordmark";
@@ -86,6 +87,9 @@ export default function App() {
 
   // 지도 위 문구·버튼과 야간 음영은 패널(또는 레일)이 차지한 오른쪽 폭만큼 비켜 선다.
   const mapInsetRight = isD4SectionOpen ? "0px" : shellInsetRight(viewportMode, panelState.open);
+  // 폰에서는 바텀 시트의 peek 높이만큼 아래를 비운다.
+  const mapInsetBottom = viewportMode === "phone" && !isD4SectionOpen ? `${SHELL_PEEK_HEIGHT}px` : "0px";
+  const [isTimePlaying, setIsTimePlaying] = useState(false);
 
   // 루트는 overflow: clip으로 자른다. hidden은 스크롤 컨테이너라서 Tab 포커스가 화면 밖 요소로 가면 대시보드가 밀려 남는다.
   return (
@@ -106,6 +110,7 @@ export default function App() {
           onRepresentativeInstallationPlanChange={plans.onRepresentativeChange}
           representativeRefreshKey={plans.overlayRefreshKey}
           overlayInsetRight={mapInsetRight}
+          overlayInsetBottom={mapInsetBottom}
           // 야간 음영·햇빛·그라데이션은 지도 영상만 어둡게 해야 하므로 렌더러가 지도 바로 위·지도 위 문구와 버튼 아래에 그린다.
           mapBackdrop={(
             <>
@@ -133,9 +138,10 @@ export default function App() {
       {!isD4SectionOpen && (
         <div
           data-qa="campus-hud"
-          className="pointer-events-none absolute left-0 top-0 z-[6] flex items-start gap-2 p-4 transition-[right] duration-300"
-          style={{ right: mapInsetRight }}
+          className="pointer-events-none absolute left-0 top-0 z-[6] transition-[right] duration-300"
+          style={{ right: mapInsetRight, bottom: mapInsetBottom }}
         >
+          <div className="flex items-start gap-2 p-4">
           <HudTimeReadout
             minuteOfDay={clock.sceneMinuteOfDay}
             statusSlot={viewportMode !== "phone" && (
@@ -143,6 +149,19 @@ export default function App() {
             )}
           />
           {viewportMode !== "phone" && <Wordmark className="ml-auto mt-2.5 text-ink-muted" />}
+          </div>
+          {/* 시간 조작은 Legacy와 같은 하나뿐인 조작이다. 지도 조작 열(왼쪽 아래)과 겹치지 않게 오른쪽 아래에 둔다. */}
+          <TimeSlider
+            minuteOfDay={clock.sceneMinuteOfDay}
+            onMinuteChange={clock.setSceneMinuteOfDay}
+            dateValue={clock.sceneDate}
+            onDateChange={clock.setSceneDate}
+            onNow={clock.snapToNow}
+            playing={isTimePlaying}
+            onPlayingChange={setIsTimePlaying}
+            live={clock.isLiveMode}
+            className="absolute bottom-4 right-4 w-[min(24rem,calc(100%-2rem))]"
+          />
         </div>
       )}
 

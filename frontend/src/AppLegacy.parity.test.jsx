@@ -420,14 +420,17 @@ describe("Legacy and VWorld feature parity", () => {
     const overview = container.querySelector('[data-qa="camera-preset-overview"]');
     const menu = container.querySelector('[data-qa="camera-view-menu"]');
     const tour = container.querySelector('[data-qa="camera-tour-toggle"]');
+    const now = screen.getByRole("button", { name: "지금" });
     const play = screen.getByRole("button", { name: "시간 재생" });
+    const date = screen.getByLabelText("장면 날짜");
+    const typedTime = screen.getByLabelText("장면 시각 입력");
     const slider = screen.getByRole("slider", { name: "시각 (KST)" });
     const cameraButtons = ["확대", "축소", "왼쪽으로 회전", "오른쪽으로 회전", "처음 시점"].map((name) => screen.getByRole("button", { name }));
     const mapLayer = container.querySelector('[data-qa="campus-map-layer"]');
     // HUD는 장면 시각과 그 옆 갱신 표시 셋(기상·교통·에너지, 새로 고침 단추)으로 시작한다.
     const stamps = [...container.querySelectorAll('[data-qa="campus-hud"] [data-qa="freshness-stamp"] button')];
     expect(stamps.map((button) => button.getAttribute("aria-label"))).toEqual(["기상 새로고침", "교통 새로고침", "에너지 새로고침"]);
-    const expected = [...stamps, overview, menu, tour, play, slider, ...cameraButtons, mapLayer];
+    const expected = [...stamps, overview, menu, tour, now, play, date, typedTime, slider, ...cameraButtons, mapLayer];
 
     const reached = [];
     for (let i = 0; i < expected.length; i += 1) {
@@ -537,7 +540,8 @@ describe("Legacy and VWorld feature parity", () => {
 
     fireEvent.change(slider, { target: { value: "930" } });
     expect(slider.getAttribute("aria-valuetext")).toBe("15:30");
-    expect(screen.getByText("15:30")).toBeTruthy();
+    const timeCard = screen.getByRole("region", { name: "시간 조절" });
+    expect(within(timeCard).getByText("15:30")).toBeTruthy();
 
     slider.focus();
     await user.keyboard("{ArrowRight}");
@@ -549,17 +553,19 @@ describe("Legacy and VWorld feature parity", () => {
 
     fireEvent.change(slider, { target: { value: String(13 * 60 + 37) } });
     expect(slider.getAttribute("aria-valuetext")).toBe("13:37");
-    expect(screen.getByText("13:37")).toBeTruthy();
+    expect(within(timeCard).getByText("13:37")).toBeTruthy();
+    // 패널 시계는 같은 장면 시각을 `장면`으로, 현재 시각은 `현재`로 붙여 보인다.
+    expect(document.querySelector('[data-qa="panel-clock"]').textContent).toMatch(/장면\s*13:37/);
 
+    // 환경 시뮬 탭에는 두 번째 시간 슬라이더(월·일·시·분)가 없다.
     fireEvent.click(screen.getByRole("tab", { name: "환경 시뮬" }));
-    expect(screen.getByRole("slider", { name: "시" }).value).toBe("13");
-    expect(screen.getByRole("slider", { name: "분" }).value).toBe("37");
+    for (const name of ["월", "일", "시", "분"]) expect(screen.queryByRole("slider", { name })).toBeNull();
 
     fireEvent.click(screen.getByRole("radio", { name: "실측" }));
-    expect(screen.getByText("실시간")).toBeTruthy();
+    expect(within(timeCard).getByText("실측")).toBeTruthy();
     fireEvent.change(slider, { target: { value: "600" } });
-    expect(screen.queryByText("실시간")).toBeNull();
-    expect(screen.getByRole("slider", { name: "시" }).value).toBe("10");
+    expect(within(timeCard).queryByText("실측")).toBeNull();
+    expect(slider.getAttribute("aria-valuetext")).toBe("10:00");
   });
 
   it("labels the sky estimate as 추정 for both the project feed and the Open-Meteo fallback", async () => {

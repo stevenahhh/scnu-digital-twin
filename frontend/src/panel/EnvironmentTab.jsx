@@ -13,14 +13,8 @@ const MODE_OPTIONS = [
 const COMPASS = ["북", "북동", "동", "남동", "남", "남서", "서", "북서"];
 const compassDirection = (degrees) => COMPASS[Math.round(degrees / 45) % COMPASS.length];
 
-// 환경 시뮬 탭: 실측/시뮬레이션 전환, 가상 기온, 해 위치를 정하는 월·일·시·분(시간 슬라이더와 같은 상태).
+// 환경 시뮬 탭: 실측/시뮬레이션 전환과 가상 기온. 날짜·시각은 지도 위 시간 조작 하나가 정한다(이 탭에 두 번째 슬라이더는 없다).
 export function EnvironmentTab({ clock }) {
-  const sliders = [
-    { label: "월", unit: "월", min: 1, max: 12, value: clock.sunMonth, set: clock.setSunMonth },
-    { label: "일", unit: "일", min: 1, max: 31, value: clock.sunDay, set: clock.setSunDay },
-    { label: "시", unit: "시", min: 0, max: 23, value: clock.sunHour, set: clock.setSunHour },
-    { label: "분", unit: "분", min: 0, max: 59, value: clock.sunMinute, set: clock.setSunMinute },
-  ];
   const bearing = clock.sunBearingDegrees;
   const sunItems = [
     {
@@ -36,30 +30,20 @@ export function EnvironmentTab({ clock }) {
       <SectionHeader level={2} title="환경 시뮬레이션" />
       <Segmented kind="radio" label="기상 값 출처" options={MODE_OPTIONS} value={clock.mode} onChange={clock.setMode} />
       <section className="flex flex-col gap-4">
-        <SectionHeader title="가상 환경 입력" />
-        <SliderRow
-          label="온도 조절"
-          valueLabel={`${clock.simTemp}°C`}
-          min={-10}
-          max={40}
-          value={clock.simTemp}
-          onValueChange={clock.setSimTemp}
-        />
-        <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-          {sliders.map((slider) => (
-            <SliderRow
-              key={slider.label}
-              label={slider.label}
-              valueLabel={`${slider.value}${slider.unit}`}
-              min={slider.min}
-              max={slider.max}
-              value={slider.value}
-              onValueChange={slider.set}
-            />
-          ))}
+        <SectionHeader title="시뮬레이션" />
+        {/* 감싸는 칸: 위 제목(시뮬레이션)이 이 슬라이더의 라벨로 읽히지 않게 슬라이더와 라벨만 한 묶음으로 둔다. */}
+        <div>
+          <SliderRow
+            label="온도 조절"
+            valueLabel={`${clock.simTemp}°C`}
+            min={-10}
+            max={40}
+            value={clock.simTemp}
+            onValueChange={clock.setSimTemp}
+          />
         </div>
       </section>
-      <MetricList items={sunItems} caption="천문 계산 추정 · 위 입력 시각 기준" />
+      <MetricList items={sunItems} caption={`천문 계산 추정 · 장면 ${clock.sceneDate} 기준`} />
     </>
   );
 }
