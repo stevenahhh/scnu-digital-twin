@@ -236,6 +236,7 @@ function Dashboard() {
                   onSelection={flow.selectBuilding}
                   onBuildingSelect={selectFromEnergy}
                   refreshKey={plans.overlayRefreshKey}
+                  selectedBuildingId={selection.selectedBuildingId}
                 />
               )}
             />
