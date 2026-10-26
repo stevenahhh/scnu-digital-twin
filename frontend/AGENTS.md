@@ -17,6 +17,7 @@ frontend/
 ├── src/CityModel.jsx          # GLB selection and camera focus
 ├── src/components/            # Building and room drill-down UI
 ├── src/ui/                    # Design tokens (tokens.css) and shared UI primitives
+├── src/panel/                 # Dashboard panel, tabs and settings shared by both entries
 ├── src/vworld/                # VWorld adapters and focused unit tests
 └── src/utils/                 # D4 data, solar math, mock data
 ```
@@ -26,8 +27,9 @@ frontend/
 | Task | Location | Notes |
 |---|---|---|
 | Shared/default entry | `src/App.jsx` | Re-exports `AppLegacy` |
-| Legacy layout/data flow | `src/AppLegacy.jsx` | Large integration component |
-| VWorld layout/data flow | `src/AppVWorld.jsx` | Large integration component |
+| Legacy layout/data flow | `src/AppLegacy.jsx` | Composes `src/panel/` and `src/hooks/` |
+| VWorld layout/data flow | `src/AppVWorld.jsx` | Same panel and hooks, VWorld renderer |
+| Dashboard panel and tabs | `src/panel/` | One implementation for both entries |
 | 3D building mapping | `src/CityModel.jsx` | GLB names to `BLD_*` |
 | VWorld building mapping | `src/vworld/buildingResolver.mjs` | `MODEL_NAME` contract |
 | VWorld map lifecycle | `src/vworld/VWorldRenderer.jsx` | SDK, boundary, D4 marker |

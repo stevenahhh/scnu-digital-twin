@@ -402,6 +402,7 @@ export default function VWorldRenderer({
                 displayName: buildingId,
               })}
               className="pointer-events-auto"
+              widthClassName="max-w-72"
             />
           </div>
         )}
