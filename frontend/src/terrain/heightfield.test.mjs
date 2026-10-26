@@ -87,6 +87,33 @@ test("the shipped campus-v2 sidecar parses and samples its own grid values", asy
   }
 });
 
+// meta.probes are written by the generator (build-campus-model.mjs) with its own groundHeightAt (terrain + walkway slab,
+// stages/kerbs.mjs) and terrain at grid points; the generator runs under Bun only, so the values travel in the sidecar.
+async function shippedSidecar() {
+  const meta = JSON.parse(await readFile(new URL("../../public/campus-v2-height.json", import.meta.url), "utf8"));
+  const bytes = await readFile(new URL("../../public/campus-v2-height.bin", import.meta.url));
+  return { meta, field: parseHeightfield(meta, bytes) };
+}
+const SCENE_UNITS_PER_METRE = 0.6242171526;
+
+test("the shipped sidecar reproduces the generator's groundHeightAt at its probe points", async () => {
+  const { meta, field } = await shippedSidecar();
+  assert.equal(meta.includesKerbSlab, true);
+  assert.ok(meta.probes.length >= 20, `${meta.probes.length} probes`);
+  for (const p of meta.probes) close(sampleHeight(field, p.x, p.z) / SCENE_UNITS_PER_METRE, p.groundY / SCENE_UNITS_PER_METRE, 0.01, `${p.kind} (${p.x}, ${p.z})`);
+});
+
+test("a point inside an A003 walkway ring stands on the slab (>= terrain + 0.14 m); a road point reads the terrain", async () => {
+  const { meta, field } = await shippedSidecar();
+  const kinds = new Set(meta.probes.map((p) => p.kind));
+  assert.deepEqual([...kinds].sort(), ["road", "walkway"]);
+  for (const p of meta.probes) {
+    const above = (sampleHeight(field, p.x, p.z) - p.terrainY) / SCENE_UNITS_PER_METRE;
+    if (p.kind === "walkway") assert.ok(above >= 0.14, `walkway (${p.x}, ${p.z}) only ${above.toFixed(3)} m above the terrain`);
+    else close(above, 0, 0.01, `road (${p.x}, ${p.z})`);
+  }
+});
+
 test("loadHeightfield shares one request between callers asking for the same sidecar", async () => {
   const meta = { width: 2, height: 2, originX: 0, originZ: 0, step: 1, minY: 0, scale: 1 };
   const requested = [];

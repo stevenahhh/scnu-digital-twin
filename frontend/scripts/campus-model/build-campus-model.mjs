@@ -49,7 +49,7 @@ import { buildFurniture, loadFurniture } from "./stages/furniture.mjs";
 import { buildLights, placeLamps } from "./stages/lights.mjs";
 import { buildMarkings, describeMarkings, loadMarkings } from "./stages/markings.mjs";
 import { buildOuterTerrain } from "./stages/outerTerrain.mjs";
-import { buildKerbs, groundDecalOffset, slabRefine } from "./stages/kerbs.mjs";
+import { KERB_EXPOSED_M, buildKerbs, groundDecalOffset, slabRefine } from "./stages/kerbs.mjs";
 import { loadInputs } from "./stages/sources.mjs";
 import { planTactile, tactileOffset } from "./stages/tactile.mjs";
 import { buildHumpMeshes, buildSurfaceMeshes, describeSurfaces } from "./stages/surfaces.mjs";
@@ -60,7 +60,9 @@ const FRONTEND = path.resolve(HERE, "../..");
 const OUTPUT = path.join(HERE, ".build", "campus-v2.raw.glb");
 const HEIGHT_BIN = path.join(FRONTEND, "public", "campus-v2-height.bin");
 const HEIGHT_JSON = path.join(FRONTEND, "public", "campus-v2-height.json");
-const HEIGHT_STEP = 2;
+// 0.25 scene units (about 0.40 m): sub-metre sampling so the 0.15 m walkway slab (stages/kerbs.mjs) shows in the sidecar.
+const HEIGHT_STEP = 0.25;
+const PROBES_PER_KIND = 12;
 
 const inputs = await loadInputs();
 
@@ -107,16 +109,34 @@ const { glow } = buildFurniture({ glb, furniture, lamps, lampStats, sites, input
 buildLights({ glb, lamps, stats: lampStats, groundAt, glow });
 
 // ---------------------------------------------------------------- height sidecar
-// The terrain heightfield (scene units) sampled every HEIGHT_STEP units over EXTENT, row-major with
-// x fastest and rows running south from originZ: little-endian u16 centimetres above minY, so a
-// sample's scene-unit height is minY + value * scale.
-function writeHeightSidecar(heightAt) {
+// The ground the traffic agents stand on (scene units): the drawn Topography plus the raised walkway slab
+// (kerbs.groundHeightAt), sampled every HEIGHT_STEP units over EXTENT, row-major with x fastest and rows running south
+// from originZ: little-endian u16 centimetres above minY, so a sample's scene-unit height is minY + value * scale.
+// meta.probes lists grid points on full-height slab ("walkway") and on bare road ("road") with the generator's own
+// ground and terrain heights, so src/terrain/heightfield.test.mjs can check the shipped file against the generator.
+function writeHeightSidecar(heightAt, terrainAt, slabAt, labelAt) {
+  for (const span of [EXTENT.maxX - EXTENT.minX, EXTENT.maxZ - EXTENT.minZ]) {
+    if (!Number.isInteger(span / HEIGHT_STEP)) throw new Error(`EXTENT span ${span} is not a whole number of ${HEIGHT_STEP} steps`);
+  }
   const width = (EXTENT.maxX - EXTENT.minX) / HEIGHT_STEP + 1;
   const height = (EXTENT.maxZ - EXTENT.minZ) / HEIGHT_STEP + 1;
   const samples = new Float64Array(width * height);
+  const candidates = { walkway: [], road: [] };
   for (let j = 0; j < height; j += 1) {
-    for (let i = 0; i < width; i += 1) samples[j * width + i] = heightAt(EXTENT.minX + i * HEIGHT_STEP, EXTENT.minZ + j * HEIGHT_STEP);
+    for (let i = 0; i < width; i += 1) {
+      const x = EXTENT.minX + i * HEIGHT_STEP;
+      const z = EXTENT.minZ + j * HEIGHT_STEP;
+      samples[j * width + i] = heightAt(x, z);
+      if (i % 8 || j % 8) continue;
+      const slab = slabAt(x, z);
+      if (slab >= KERB_EXPOSED_M - 1e-9) candidates.walkway.push([x, z]);
+      else if (slab === 0 && labelAt([x, z]) === SURFACE_CLASS.ASPHALT) candidates.road.push([x, z]);
+    }
   }
+  const probes = Object.entries(candidates).flatMap(([kind, points]) => Array.from({ length: Math.min(PROBES_PER_KIND, points.length) }, (_, k) => {
+    const [x, z] = points[Math.floor(((k + 0.5) * points.length) / Math.min(PROBES_PER_KIND, points.length))];
+    return { kind, x, z, groundY: heightAt(x, z), terrainY: terrainAt(x, z) };
+  }));
   const minY = samples.reduce((min, y) => Math.min(min, y), Infinity);
   const scale = SCENE_UNITS_PER_METRE / 100;
   const view = new DataView(new ArrayBuffer(samples.length * 2));
@@ -125,14 +145,22 @@ function writeHeightSidecar(heightAt) {
     if (!(value >= 0 && value <= 0xffff)) throw new Error(`height ${y} at sample ${k} does not fit the u16 sidecar`);
     view.setUint16(k * 2, value, true);
   });
-  return { bytes: new Uint8Array(view.buffer), meta: { width, height, originX: EXTENT.minX, originZ: EXTENT.minZ, step: HEIGHT_STEP, minY, scale } };
+  return {
+    bytes: new Uint8Array(view.buffer),
+    meta: {
+      width, height, originX: EXTENT.minX, originZ: EXTENT.minZ, step: HEIGHT_STEP, minY, scale,
+      includesKerbSlab: true,
+      note: "생성기 지형 + 인도 단차(추정), 측량값 아님",
+      probes,
+    },
+  };
 }
 
 // ---------------------------------------------------------------- write
 const bytes = glb.toBuffer();
 await mkdir(path.dirname(OUTPUT), { recursive: true });
 await Bun.write(OUTPUT, bytes);
-const sidecar = writeHeightSidecar(inputs.heightAt);
+const sidecar = writeHeightSidecar(kerbs.groundHeightAt, (x, z) => surface.height(x, z), kerbs.plan.slabHeight, labelAt);
 await Bun.write(HEIGHT_BIN, sidecar.bytes);
 await Bun.write(HEIGHT_JSON, `${JSON.stringify(sidecar.meta, null, 2)}\n`);
 const treeCount = Object.values(treeInstances).reduce((sum, list) => sum + list.length, 0);
