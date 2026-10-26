@@ -438,13 +438,33 @@ export function crossingAxis(bars) {
     return add(acc, scale(b.axis, sign * b.length));
   }, [0, 0]));
 }
-export function fitCrossing(bars, { period, bar, roadDir = null, roadSnapDeg = 5, frame = null }) {
+// Period of a row of bars at walk positions t (metres): the period in [lo, hi] whose phases agree best (the length of
+// the mean phase vector, 1 = every bar on one grid), searched every 1 mm; null with fewer than `minBars` bars.
+export function fitPeriod(t, [lo, hi], minBars = 4) {
+  if (t.length < minBars) return null;
+  let best = null;
+  for (let p = lo; p <= hi + 1e-9; p += 0.001) {
+    let c = 0;
+    let s = 0;
+    for (const x of t) {
+      c += Math.cos((2 * Math.PI * x) / p);
+      s += Math.sin((2 * Math.PI * x) / p);
+    }
+    const r = Math.hypot(c, s) / t.length;
+    if (!best || r > best.r + 1e-12) best = { period: p, r };
+  }
+  return best;
+}
+export function fitCrossing(bars, { period: nominal, bar, roadDir = null, roadSnapDeg = 5, frame = null, periodRange = null }) {
   let axis = frame?.axis ?? crossingAxis(bars);
   if (!frame && roadDir && Math.abs(dot(unit(roadDir), axis)) >= Math.cos((roadSnapDeg * Math.PI) / 180)) axis = scale(unit(roadDir), Math.sign(dot(unit(roadDir), axis)) || 1);
   const walk = perp(axis);
   const origin = frame?.origin ?? bars[0].centre;
   const t = bars.map((b) => dot(sub(b.centre, origin), walk));
   const u = bars.map((b) => dot(sub(b.centre, origin), axis));
+  // the row's own period where it has enough bars and a range is given, else the nominal (or the frame's) one
+  const own = !frame?.period && periodRange ? fitPeriod(t, periodRange) : null;
+  const period = frame?.period ?? own?.period ?? nominal;
   const phase = frame?.phase ?? dashPhase(t, period);
   const tMin = Math.min(...t);
   const tMax = Math.max(...t);
@@ -468,7 +488,7 @@ export function fitCrossing(bars, { period, bar, roadDir = null, roadSnapDeg = 5
     const d = (((x - phase) % period) + period) % period;
     return Math.min(d, period - d);
   });
-  return { rectangle, bars: barRects, barCentres: slots, phase, count: slots.length, phaseResidual: { p50: median(residual), max: Math.max(...residual) } };
+  return { rectangle, bars: barRects, barCentres: slots, phase, period, origin, count: slots.length, phaseResidual: { p50: median(residual), max: Math.max(...residual) } };
 }
 
 export function rect(centre, along, across, halfAlong, halfAcross) {

@@ -65,6 +65,9 @@ const BAY_ROW_M = 6.5;
 const BAY_WIDTH_M = 3.4;
 const BAY_SYMBOL_BLOB_M = 2.2;
 const ZEBRA_ROW_GAP_M = 1.0;
+const ZEBRA_PERIOD_RANGE_M = [0.88, 0.93];
+const ZEBRA_ALIGN_PERIOD_M = 0.005;
+const ZEBRA_ALIGN_PHASE_M = 0.1;
 
 const perpOf = (d) => [-d[1], d[0]];
 // Right of travel `f` in the model plane (x east, z south): (-f.z, f.x).
@@ -333,7 +336,7 @@ export function regularise(drawn, ctx) {
   const pieces = [];
   const stats = {
     chains: 0, fragments: 0, straightRuns: 0, arcs: 0, straightness: [], residual: [], dashPeriods: [], duplicateLines: 0,
-    baySymbols: { wheelchair: 0, p: 0, existing: 0, skipped: 0, orientationGuessed: 0, blobsReplaced: 0, list: [] }, crossings: 0, crossingGroups: 0, crossingRowsAligned: 0, stopInCrossing: [], crossingList: [], blockedIds: [], frameStrokes: 0, barsDrawn: 0, barsDetected: 0, zebraPhaseResidual: [], glyphs: {}, textReadings: [], textMissing: [], arrowAxes: { road: 0, own: 0 }, dropped: { blocked: 0, textTooSmall: 0 },
+    baySymbols: { wheelchair: 0, p: 0, existing: 0, skipped: 0, orientationGuessed: 0, blobsReplaced: 0, list: [] }, crossings: 0, crossingGroups: 0, crossingRowsAligned: 0, crossingRowsOwnGrid: 0, crossingPeriods: [], stopInCrossing: [], crossingList: [], blockedIds: [], frameStrokes: 0, barsDrawn: 0, barsDetected: 0, zebraPhaseResidual: [], glyphs: {}, textReadings: [], textMissing: [], arrowAxes: { road: 0, own: 0 }, dropped: { blocked: 0, textTooSmall: 0 },
     stopSquared: 0, parallelSnapped: 0, outlines: 0, rectangles: 0,
   };
   const emit = (rings, colour, kind, extra = {}) => pieces.push({ rings: rings.map((r) => r.map(toScene)), colour, kind, estimated: false, ...extra });
@@ -609,7 +612,9 @@ export function regularise(drawn, ctx) {
   const zebras = [];
   const crossingGroups = [...zebraGroups].map(([id, bars]) => ({ id, bars }));
   stats.crossingGroups = crossingGroups.length;
-  const zebraFit = { period: ctx.statute.zebraPeriodM, bar: ctx.statute.zebraBarM };
+  // each crossing row on its own grid: period and phase fitted to its own detected bars, the period within
+  // ZEBRA_PERIOD_RANGE_M (the photo's measured spread, 추정 beyond p10-p90 0.896-0.910 m)
+  const zebraFit = { period: ctx.statute.zebraPeriodM, bar: ctx.statute.zebraBarM, periodRange: ZEBRA_PERIOD_RANGE_M };
   const merged = mergeCrossings(crossingGroups).map((crossing) => {
     const centre = scale(crossing.bars.reduce((acc, b) => add(acc, b.centre), [0, 0]), 1 / crossing.bars.length);
     const barAxis = crossing.bars[0].axis;
@@ -637,17 +642,31 @@ export function regularise(drawn, ctx) {
     if (!families.has(rowRoot(i))) families.set(rowRoot(i), []);
     families.get(rowRoot(i)).push(m);
   });
+  // Adjacent rows stay parallel (one axis); they share one bar grid only where the photo shows them aligned: their own
+  // periods agree within ZEBRA_ALIGN_PERIOD_M and their own grids line up within ZEBRA_ALIGN_PHASE_M. Else each row
+  // keeps its own period and phase.
   for (const rows of families.values()) {
     if (rows.length < 2) continue;
     const main = rows.reduce((x, y) => (y.bars.length > x.bars.length ? y : x));
     const { axis, walk } = main.fit.rectangle;
     const origin = main.bars[0].centre;
-    const phase = dashPhase(rows.flatMap((r) => r.bars.map((b) => dot(sub(b.centre, origin), walk))), zebraFit.period);
-    for (const r of rows) {
-      r.fit = fitCrossing(r.bars, { ...zebraFit, frame: { axis, origin, phase } });
-      r.rows = rows.length;
+    const own = rows.map((r) => fitCrossing(r.bars, { ...zebraFit, frame: { axis } }));
+    const gridAt = (f) => (((dot(sub(f.origin, origin), walk) + f.phase) % f.period) + f.period) % f.period;
+    const g0 = gridAt(own[0]);
+    const aligned = own.every((f) => {
+      const d = Math.abs(gridAt(f) - g0);
+      return Math.abs(f.period - own[0].period) <= ZEBRA_ALIGN_PERIOD_M && Math.min(d, own[0].period - d) <= ZEBRA_ALIGN_PHASE_M;
+    });
+    if (aligned) {
+      const period = own.reduce((acc, f, i) => acc + f.period * rows[i].bars.length, 0) / rows.reduce((acc, r) => acc + r.bars.length, 0);
+      const phase = dashPhase(rows.flatMap((r) => r.bars.map((b) => dot(sub(b.centre, origin), walk))), period);
+      for (const r of rows) r.fit = fitCrossing(r.bars, { ...zebraFit, frame: { axis, origin, phase, period } });
+      stats.crossingRowsAligned += rows.length;
+    } else {
+      rows.forEach((r, i) => { r.fit = own[i]; });
+      stats.crossingRowsOwnGrid += rows.length;
     }
-    stats.crossingRowsAligned += rows.length;
+    for (const r of rows) r.rows = rows.length;
   }
   for (const crossing of merged) {
     const { fit } = crossing;
@@ -664,7 +683,7 @@ export function regularise(drawn, ctx) {
       kept.push(fit.barCentres[k]);
     });
     stats.barsDrawn += kept.length;
-    stats.crossingList.push({ ids: crossing.ids, detected: crossing.bars.length, drawn: kept.length, centre: toScene(fit.rectangle.centre), phaseResidualMaxM: +fit.phaseResidual.max.toFixed(3) });
+    stats.crossingList.push({ ids: crossing.ids, detected: crossing.bars.length, drawn: kept.length, centre: toScene(fit.rectangle.centre), periodM: +fit.period.toFixed(3), rows: crossing.rows ?? 1, phaseResidualMaxM: +fit.phaseResidual.max.toFixed(3) });
     if (!kept.length) continue;
     zebras.push({
       id: crossing.ids.join("+"), centre: toScene(fit.rectangle.centre), axis: fit.rectangle.axis, bars: kept.length,

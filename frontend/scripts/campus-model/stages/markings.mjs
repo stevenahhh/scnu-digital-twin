@@ -973,7 +973,7 @@ function describeRegular(r) {
     `${r.parallelSnapped} set parallel, ${r.duplicateLines} duplicate lines dropped; straight runs deviate at most ` +
     `${(Math.max(0, ...r.straightness) * 100).toFixed(1)} cm from straight; detected points within ${p95.toFixed(2)} m (p95 of the per-line p95) of the fitted path); ` +
     `dashed lines by statute ${dashes.statute ?? 0}, by the photo's period ${dashes.photo ?? 0}, as detected ${dashes["detected dashes"] ?? 0}; ` +
-    `${r.crossingGroups} bar groups -> ${r.crossings} crossings (${r.crossingRowsAligned} rows on a shared bar grid), ${r.barsDetected} detected bars -> ${r.barsDrawn} equal bars, ` +
+    `${r.crossingGroups} bar groups -> ${r.crossings} crossings (${r.crossingRowsAligned} rows on a shared bar grid, ${r.crossingRowsOwnGrid} rows on their own period and phase), ${r.barsDetected} detected bars -> ${r.barsDrawn} equal bars, ` +
     `${r.stopInCrossing.length} stop lines inside a crossing left out (${r.stopInCrossing.join(", ") || "none"}); ` +
     `bay symbols: ${r.baySymbols.wheelchair} wheelchairs, ${r.baySymbols.p} P (${r.baySymbols.existing} bays with a drawn symbol, ${r.baySymbols.orientationGuessed} upright direction 추정); ` +
     `${r.stopSquared} stop lines squared to their lane; ${r.rectangles} rectangles, ${r.outlines} snapped outlines; templates: ${glyphs}; ` +
