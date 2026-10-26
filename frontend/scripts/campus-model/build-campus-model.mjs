@@ -20,6 +20,7 @@
 //   ground.mjs    the Topography chunks (natural ground) and the class polygons of the modelled ground (network/surfaces.mjs)
 //   kerbs.mjs     kerb ribbons on the A003 outlines, the raised walkway slab, dropped kerbs at crossings, gutter bands
 //   tactile.mjs   tactile paving bands and guidance strips at every dropped kerb
+//   network/stalls.mjs  estimated stall dividers in the gaps of detected rows, and the circular-arc speed humps
 //   surfaces.mjs  the Ground_* decal meshes (asphalt, pavers, lots, aprons, painted surfaces) with CC0 tiles; no photo pixels
 //   outerTerrain.mjs  the OuterTerrain hill ring around EXTENT, feathered onto Topography's edge
 //   trees.mjs     placement masks and positions (placeTrees), species geometry and instanced Trees_* nodes (buildTrees)
@@ -37,7 +38,10 @@
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { tmToScene } from "../../src/geo/epsg5186.mjs";
 import { EXTENT, SCENE_UNITS_PER_METRE } from "./lib/frame.mjs";
+import { SURFACE_CLASS } from "./lib/surfaceClass.mjs";
+import { HUMP_LENGTH_M, buildHumps, buildStalls, humpProfile, loadSpeedBumps } from "./network/stalls.mjs";
 import { GlbBuilder } from "./lib/glb.mjs";
 import { buildBuildings } from "./stages/buildings.mjs";
 import { buildGround } from "./stages/ground.mjs";
@@ -48,7 +52,7 @@ import { buildOuterTerrain } from "./stages/outerTerrain.mjs";
 import { buildKerbs, groundDecalOffset, slabRefine } from "./stages/kerbs.mjs";
 import { loadInputs } from "./stages/sources.mjs";
 import { planTactile, tactileOffset } from "./stages/tactile.mjs";
-import { buildSurfaceMeshes, describeSurfaces } from "./stages/surfaces.mjs";
+import { buildHumpMeshes, buildSurfaceMeshes, describeSurfaces } from "./stages/surfaces.mjs";
 import { buildTrees, placeTrees } from "./stages/trees.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -74,7 +78,26 @@ console.log(describeSurfaces(await buildSurfaceMeshes({
   glb, layers: [...layers, ...kerbs.gutters, ...tactile.layers], surface, ao: aoTexture,
   heightOffset: tactileOffset(kerbs.plan, groundDecalOffset(kerbs.plan)), refine: slabRefine(kerbs.plan),
 })));
-const markingMesh = buildMarkings({ glb, markings, surface });
+// Stall gaps (estimated dividers between detected ones) and the speed humps (network/stalls.mjs).
+const labelAt = ([x, z]) => {
+  const i = Math.floor((x - EXTENT.minX) * groundInfo.px);
+  const j = Math.floor((z - EXTENT.minZ) * groundInfo.px);
+  return i < 0 || j < 0 || i >= groundInfo.width || j >= groundInfo.height ? SURFACE_CLASS.NATURAL : groundInfo.labels[j * groundInfo.width + i];
+};
+const detectedStallPaint = markings.pieces.filter((piece) => piece.kind === "parking_line" && !piece.estimated);
+const parkingLots = layers.filter((l) => l.mesh === "Ground_Lot" && !l.source_ref.startsWith("off-campus"))
+  .map((l) => ({ id: l.source_ref, ring: l.rings[0].map(([E, N]) => tmToScene(E, N)) }));
+const stalls = buildStalls({ lots: parkingLots, markingsParkingLines: detectedStallPaint });
+markings.pieces.push(...stalls.pieces);
+const speedBumps = await loadSpeedBumps();
+const humps = buildHumps({ features: speedBumps, onRoad: (p) => [SURFACE_CLASS.ASPHALT, SURFACE_CLASS.LOT].includes(labelAt(p)) });
+const humpNodes = await buildHumpMeshes({ glb, humps: humps.humps, surface, ao: aoTexture, profile: humpProfile, lengthM: HUMP_LENGTH_M });
+console.log(
+  `stalls: ${detectedStallPaint.length} detected (markings), ${stalls.pieces.length} estimated gaps in ${stalls.rows.filter((r) => r.filled).length} of ${stalls.rows.length} rows ` +
+  `(${stalls.rows.map((r) => `${r.bay} ${r.pitchM} m`).join(", ")}); humps: ${humpNodes} (${speedBumps.length} speed_bump features: ` +
+  `${humps.candidates} hump outlines or band groups, ${humps.candidates - humpNodes} off road)`,
+);
+const markingMesh = buildMarkings({ glb, markings, surface, extraHeight: humps.heightAt });
 const outerTerrain = await buildOuterTerrain({ glb, inputs });
 const treeInstances = buildTrees({ glb, placement: treePlacement });
 // Furniture and lamps stand on the raised walkway slab where there is one (stages/kerbs.mjs).

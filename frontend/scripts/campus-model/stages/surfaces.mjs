@@ -47,6 +47,8 @@ export const GROUND_MESHES = Object.freeze({
   Ground_Apron: { tile: "concrete" },
   // stages/kerbs.mjs: the gutter band on the road side of the kerbs (asphalt darkened 0.72, estimated)
   Ground_Gutter: { tile: "asphalt", baseColorFactor: [0.72, 0.72, 0.72, 1] },
+  // network/stalls.mjs: the circular-arc speed humps (buildHumpMeshes), asphalt
+  Ground_Hump: { tile: "asphalt" },
   // stages/tactile.mjs: generated tactile tile (bake/tactile-tile.mjs), band-aligned UVs
   Ground_Tactile: { generated: "tactile" },
 });
@@ -550,3 +552,76 @@ export async function buildSurfaceMeshes({ glb, layers, surface, ao = null, heig
 
 export const describeSurfaces = (stats) => `surfaces: ${stats.map((s) => `${s.mesh} ${s.triangles} tri`).join(", ")} ` +
   `(${stats.map((s) => `${s.mesh} ${s.layers} polygons${s.primitives > 1 ? ` / ${s.primitives} primitives` : ""}`).join(", ")}); CC0 tiles, no photo pixels`;
+
+// ---------------------------------------------------------------- speed humps
+// One Ground_Hump node per hump of network/stalls.mjs: the arc h(s) over HUMP_LENGTH_M across the hump width, on the
+// asphalt (just above its lift), with closed ends; asphalt tile on world-planar UVs. Dimensions are estimates.
+export async function buildHumpMeshes({ glb, humps, surface, ao = null, profile, lengthM }) {
+  if (!humps.length) return 0;
+  const cls = GROUND_MESHES.Ground_Hump.tile;
+  const size = groundTile(cls).entry.physicalSizeM;
+  const material = await tileMaterial(glb, { name: "Ground_Hump", cls, rank: 3.6, ao, extras: { profile: `circular arc ${lengthM} m x ${profile(0)} m (estimated)` } });
+  const base = SURFACE_LIFT_M(3) + 0.001;
+  const STEP_S = 0.2;
+  const STEP_T = 0.5;
+  for (const hump of humps) {
+    const positions = [];
+    const normals = [];
+    const uvs = [];
+    const uv1 = [];
+    const indices = [];
+    const ns = Math.round(lengthM / STEP_S);
+    const nt = Math.max(1, Math.ceil(hump.widthM / STEP_T));
+    const point = (sM, tM) => [hump.centre[0] + hump.u[0] * sM * UNIT + hump.v[0] * tM * UNIT, hump.centre[1] + hump.u[1] * sM * UNIT + hump.v[1] * tM * UNIT];
+    const push = ([x, z], yM, normal) => {
+      positions.push(x, surface.height(x, z) + yM * UNIT, z);
+      normals.push(...normal);
+      uvs.push(...planarTileUv(x, z, size));
+      uv1.push(...extentUv(x, z));
+      return positions.length / 3 - 1;
+    };
+    const grid = [];
+    for (let i = 0; i <= ns; i += 1) {
+      const sM = -lengthM / 2 + (i * lengthM) / ns;
+      const slope = (profile(sM + 0.01) - profile(sM - 0.01)) / 0.02;
+      const n = [-slope * hump.u[0], 1, -slope * hump.u[1]];
+      const l = Math.hypot(...n);
+      const row = [];
+      for (let j = 0; j <= nt; j += 1) row.push(push(point(sM, -hump.widthM / 2 + (j * hump.widthM) / nt), base + profile(sM), n.map((c) => c / l)));
+      grid.push(row);
+    }
+    for (let i = 0; i < ns; i += 1) {
+      for (let j = 0; j < nt; j += 1) {
+        const [a, b, c, d] = [grid[i][j], grid[i + 1][j], grid[i][j + 1], grid[i + 1][j + 1]];
+        // upward faces: (x, z) cross product negative
+        const ax = positions[a * 3], az = positions[a * 3 + 2];
+        const cross = (positions[b * 3] - ax) * (positions[c * 3 + 2] - az) - (positions[b * 3 + 2] - az) * (positions[c * 3] - ax);
+        if (cross < 0) indices.push(a, b, c, c, b, d);
+        else indices.push(a, c, b, c, d, b);
+      }
+    }
+    // closed ends at t = +-width / 2
+    for (const [j, side] of [[0, -1], [nt, 1]]) {
+      const outward = [hump.v[0] * side, 0, hump.v[1] * side];
+      for (let i = 0; i < ns; i += 1) {
+        const p0 = point(-lengthM / 2 + (i * lengthM) / ns, side * hump.widthM / 2);
+        const p1 = point(-lengthM / 2 + ((i + 1) * lengthM) / ns, side * hump.widthM / 2);
+        const s0 = -lengthM / 2 + (i * lengthM) / ns;
+        const s1 = s0 + lengthM / ns;
+        const q = [push(p0, base, outward), push(p1, base, outward), push(p1, base + profile(s1), outward), push(p0, base + profile(s0), outward)];
+        // counter-clockwise seen from outside: the face normal (p1 - p0) x (p3 - p0) points outward
+        const P = (k) => [positions[k * 3], positions[k * 3 + 1], positions[k * 3 + 2]];
+        const [v0, v1, v3] = [P(q[0]), P(q[1]), P(q[3])];
+        const e1 = [v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2]];
+        const e2 = [v3[0] - v0[0], v3[1] - v0[1], v3[2] - v0[2]];
+        const nrm = [e1[1] * e2[2] - e1[2] * e2[1], e1[2] * e2[0] - e1[0] * e2[2], e1[0] * e2[1] - e1[1] * e2[0]];
+        if (nrm[0] * outward[0] + nrm[2] * outward[2] > 0) indices.push(q[0], q[1], q[2], q[0], q[2], q[3]);
+        else indices.push(q[0], q[2], q[1], q[0], q[3], q[2]);
+      }
+    }
+    const mesh = glb.addMesh(`Ground_Hump_${hump.id}`, [{ positions: Float32Array.from(positions), normals: Float32Array.from(normals), uvs: Float32Array.from(uvs), indices, material }]);
+    glb.json.meshes[mesh].primitives[0].attributes.TEXCOORD_1 = glb.addAccessor(Float32Array.from(uv1), "VEC2");
+    glb.addNode({ name: `Ground_Hump_${hump.id}`, mesh, extras: { estimated: true, lengthM, heightM: profile(0), widthM: Number(hump.widthM.toFixed(2)), source: `data/photo/markings-extra.geojson ${hump.id}` } }, { root: true });
+  }
+  return humps.length;
+}

@@ -777,7 +777,21 @@ export async function loadMarkings({ inputs, buildings }) {
 }
 
 // ---------------------------------------------------------------- mesh
-export function buildMarkings({ glb, markings, surface }) {
+// extraHeight(x, z): metres of raised road under the paint (the speed humps of network/stalls.mjs); triangles over it
+// (extraHeight.near(minX, minZ, maxX, maxZ)) are split to at most RAISED_EDGE_M so the paint follows the hump's arc.
+const RAISED_EDGE_M = 0.3;
+function splitFine(tri, maxEdge, near) {
+  const longest = Math.max(...tri.map((p, i) => Math.hypot(tri[(i + 1) % 3][0] - p[0], tri[(i + 1) % 3][1] - p[1])));
+  const xs = tri.map((p) => p[0]);
+  const zs = tri.map((p) => p[1]);
+  if (longest <= maxEdge || !near(Math.min(...xs), Math.min(...zs), Math.max(...xs), Math.max(...zs))) return [tri];
+  const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  const [a, b, c] = tri;
+  const [ab, bc, ca] = [mid(a, b), mid(b, c), mid(c, a)];
+  return [[a, ab, ca], [ab, b, bc], [ca, bc, c], [ab, bc, ca]].flatMap((t) => splitFine(t, maxEdge, near));
+}
+
+export function buildMarkings({ glb, markings, surface, extraHeight = () => 0 }) {
   const positions = [];
   const normals = [];
   const uvs = [];
@@ -790,7 +804,7 @@ export function buildMarkings({ glb, markings, surface }) {
     if (i === undefined) {
       i = positions.length / 3;
       index.set(key, i);
-      positions.push(x, surface.height(x, z) + lift, z);
+      positions.push(x, surface.height(x, z) + lift + metres(extraHeight(x, z)), z);
       normals.push(...surface.normal(x, z));
       uvs.push(PALETTE_U[colour], 0.5);
     }
@@ -804,7 +818,9 @@ export function buildMarkings({ glb, markings, surface }) {
     const all = [...outer, ...holes.flat()];
     for (const [a, b, c] of ShapeUtils.triangulateShape(contour, holeVectors)) {
       source += 1;
-      for (const tri of conform([all[a], all[b], all[c]], surface)) {
+      const flat = [all[a], all[b], all[c]];
+      const near = extraHeight.near ?? (() => false);
+      for (const tri of splitFine(flat, metres(RAISED_EDGE_M), near).flatMap((t) => conform(t, surface))) {
         // Upward face (+y): the (x, z) cross product of the edges must be negative.
         const cross = (tri[1][0] - tri[0][0]) * (tri[2][1] - tri[0][1]) - (tri[1][1] - tri[0][1]) * (tri[2][0] - tri[0][0]);
         if (Math.abs(cross) < 1e-10) continue;
@@ -844,7 +860,8 @@ export function buildMarkings({ glb, markings, surface }) {
       markingsDetected: detected,
       markingsEstimated: markings.pieces.length - detected,
       source: markings.source,
-      note: "road markings traced from the orthophoto; bar and line widths and estimated crossings are estimates",
+      note: "road markings traced from the orthophoto; bar and line widths, estimated crossings and estimated stall dividers are estimates",
+      estimatedStallDividers: markings.pieces.filter((p) => p.estimated && p.kind === "parking_line").length,
       zebra: { periodM: ZEBRA_PERIOD_M, periodSource: "measured", barM: ZEBRA_BAR_M, gapM: Number((ZEBRA_PERIOD_M - ZEBRA_BAR_M).toFixed(3)), barSource: "assumed" },
       statute: {
         source: STATUTE_SOURCE,
