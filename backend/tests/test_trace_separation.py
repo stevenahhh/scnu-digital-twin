@@ -107,6 +107,8 @@ def test_car_on_a_sidewalk_is_off_the_road():
     assert car_compliance([{"class": "road", "estimated": False}, {"class": "sidewalk", "estimated": False}], False) is False
     assert car_compliance([{"class": "road", "estimated": True}], True) is False
     assert car_compliance([{"class": "road", "estimated": True}], False) is True
+    # a traffic island is subtracted from the carriageway
+    assert car_compliance([{"class": "road", "estimated": False}, {"class": "island", "estimated": True}], False) is False
 
 
 def test_unchecked_routing_still_judges_samples_against_the_polygons(data_dir, tmp_path):
