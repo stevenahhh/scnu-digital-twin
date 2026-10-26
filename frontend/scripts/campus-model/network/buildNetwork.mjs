@@ -425,7 +425,7 @@ export function polygonCollections({ walkable, roadPolygons }) {
   });
   return {
     walkable: { type: "FeatureCollection", metadata: meta("walkable polygons for the separation trace: sidewalk (NGII A003 strips), crossing (CW polygons, painted zebras, estimated kerb approaches), crossing_estimated (estimated unmarked crossings, 추정), walkway_estimated (estimated walkway strips, 추정), plaza (OSM plazas, rims and building aprons; aprons estimated)"), features: unique(walkable.map((p, i) => poly(p, i, "WALK"))) },
-    road: { type: "FeatureCollection", metadata: meta("road polygons for the separation trace: road (road zones, arterial/connector strips traced to the A003 kerbs, estimated gap bridges), lot (car parks)"), features: unique(roadPolygons.map((p, i) => poly(p, i, "ROAD"))) },
+    road: { type: "FeatureCollection", metadata: meta("road polygons for the separation trace: road (road zones, arterial/connector strips traced to the A003 kerbs, estimated gap bridges), lot (car parks), island (main-gate traffic islands, estimated; subtracted from the carriageway: a point inside an island is not road)"), features: unique(roadPolygons.map((p, i) => poly(p, i, "ROAD"))) },
   };
 }
 
@@ -490,9 +490,16 @@ if (import.meta.main) {
   for (const u of walkways.stats.unresolved) console.log(`  unresolved ${JSON.stringify(u)}`);
   for (const u of walkways.stats.sidewalkOnVehicle) console.log(`  measured on carriageway ${JSON.stringify(u)}`);
   const poiFeatures = old.features.filter((f) => f.properties.feature_type === "poi");
+  // main-gate traffic islands (data/photo/gate-structures.geojson): subtracted from the carriageway for every car check
+  const { loadIslands, routeAroundIslands, islandPolygons } = await import("./gateIslands.mjs");
+  const islands = loadIslands(await readJson(path.join(REPO, "frontend/scripts/campus-model/data/photo/gate-structures.geojson")), lonLatToSim);
+  const islandPolys = islandPolygons(islands);
   const sidewalkPolygons = walkable.filter((w) => w.class === "sidewalk");
-  const { collection, stats } = assembleNetwork({ roads: ctx.roads, graph, pois: poiFeatures, kerbPieces: ctx.kerbs.pieces, policy, old, roadPolygons: ctx.roads.polygons, sidewalkPolygons });
-  console.log(`lane offset caps on ${addLaneClearance(collection.features, { roadPolygons: ctx.roads.polygons, sidewalkPolygons })} car edges`);
+  const notCarriageway = [...sidewalkPolygons, ...islandPolys];
+  const { collection, stats } = assembleNetwork({ roads: ctx.roads, graph, pois: poiFeatures, kerbPieces: ctx.kerbs.pieces, policy, old, roadPolygons: ctx.roads.polygons, sidewalkPolygons: notCarriageway });
+  const islandRoutes = routeAroundIslands(collection.features, islands);
+  console.log(`gate islands: ${islands.length}; car edges split round them: ${islandRoutes.split.map((r) => `${r.edge} ${r.from_m}-${r.to_m} m (gaps ${r.forwardGapM} / ${r.reverseGapM} m)`).join(", ") || "none"}${islandRoutes.unresolved.length ? `; UNRESOLVED ${JSON.stringify(islandRoutes.unresolved)}` : ""}`);
+  console.log(`lane offset caps on ${addLaneClearance(collection.features, { roadPolygons: ctx.roads.polygons, sidewalkPolygons: notCarriageway })} car edges`);
   if (arg("--extra-edges")) collection.features.push(...(await readJson(arg("--extra-edges"))).features);
   const errors = checkCollection(collection, old, policy);
   console.log(`sidewalks: ${sidewalks.stats.strips} strips, ${sidewalks.stats.edges} edges; crossings: ${crossings.stats.edges} edges (${crossings.stats.connectors} estimated end connectors); fallback: ${fallback.stats.retainedRuns} runs ${fallback.stats.retainedM} m; connectors: ${connectors.stats.entrances} entrances, ${connectors.stats.pois} POIs (${connectors.stats.estimated} estimated)`);
@@ -514,7 +521,7 @@ if (import.meta.main) {
     await Bun.write(PATHS.baseline, Bun.file(PATHS.network));
     console.log(`baseline copied: ${path.relative(REPO, PATHS.baseline)}`);
   }
-  const { walkable: walkFc, road: roadFc } = polygonCollections({ walkable: [...walkable, ...walkways.approaches, ...walkways.strips, ...walkways.crossings], roadPolygons: ctx.roads.polygons });
+  const { walkable: walkFc, road: roadFc } = polygonCollections({ walkable: [...walkable, ...walkways.approaches, ...walkways.strips, ...walkways.crossings], roadPolygons: [...ctx.roads.polygons, ...islandPolys] });
   await Bun.write(PATHS.network, `${JSON.stringify(collection)}\n`);
   await Bun.write(path.join(DATA, "walkable_polygons.geojson"), `${JSON.stringify(walkFc)}\n`);
   await Bun.write(path.join(DATA, "road_polygons.geojson"), `${JSON.stringify(roadFc)}\n`);
