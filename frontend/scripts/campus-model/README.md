@@ -190,14 +190,15 @@ bun scripts/campus-model/fetch/treeInventory.mjs [--debug <dir>] [--out <file>] 
   russet or red is broadleaf; dark green is pine or, when columnar, conifer), else the MCEE forest type, else the
   photo tone. Every tree records its source (`speciesSource`), its photo crown and the number of VR views.
 - The build (`placeTrees`, after the ground stage) stands a trunk on open ground (surface class NATURAL), in a surveyed
-  planter or tree pit, or in a street-tree pit (a footway cell within 1.5 m of the carriageway); never on a plaza, a
-  car park, a court, a building, a road or roofed furniture. A trunk elsewhere moves to the nearest such point within
-  3 m, or is left out. No crown comes within 2 m of a VR tour camera position (`scripts/perf/vr-stations.json`). Hedges
+  planter, in a street-tree pit (a footway cell within 1.5 m of the carriageway) or in a paved tree pit (a photo crown
+  centred over plaza or footway paving with no open ground within half its radius, like the plaza rows of VR scene_c1);
+  never on a car park, a court, a building, a road or roofed furniture. A crown that only overhangs paving from a lawn
+  has its trunk on the lawn; a trunk elsewhere moves to the nearest allowed point within 3 m, or is left out. No crown comes within 2 m of a VR tour camera position (`scripts/perf/vr-stations.json`). Hedges
   are clipped boxes on the shrub planters and the planter walls along building fronts of the furniture survey.
 
 Shapes are read on the VR tour: ginkgo with a conical-oval crown, broadleaf with a broad rounded one, pine with a tall
 red-brown bole under irregular flat pads, metasequoia with seven drooping tiers with notched rims over a red-brown
-trunk, columnar conifers with four tight tiers and no visible stem (lower tiers and undersides darker), hedges as boxes.
+trunk, columnar conifers with four tight tiers and no visible stem (lower tiers and undersides a little darker), hedges as boxes.
 Each species is one node with a trunk and a crown child (`EXT_mesh_gpu_instancing`), so the draw calls do not grow
 with the trees; every instance carries its own tint (the tiered conifers also drift in hue). Crown materials are per
 species (`Tree_Crown`, `Tree_Ginkgo`, `Tree_Pine`, `Tree_Metasequoia`, `Tree_Conifer`, `Tree_Hedge`); the dashboard
@@ -546,7 +547,7 @@ Build order after a ground or network change: `bun run network:build` (network a
 - `Kerbs`, `Ground_Gutter`: kerb ribbons, dropped kerbs and gutters on the A003 outlines (see Kerbs, slabs and dropped kerbs).
 - `Road_Markings`: the painted road markings the orthophoto shows, one decal mesh on the terrain (see Road markings).
 - `Trees_*`: instanced ginkgo, broadleaf, pine, metasequoia and columnar conifer trees at the crowns of the tree
-  inventory, and the hedges (see Trees above), on open ground, planters and street-tree pits (never on plazas, car parks or courts).
+  inventory, and the hedges (see Trees above), on open ground, planters and tree pits (never on car parks, courts or roads).
 - `Furniture`, `Furniture_Glass`, `Lamps_heads`, `Lamps_pools`: every surveyed outdoor object, the lamps and the
   estimated path lamps and benches (see Street furniture).
 
