@@ -18,7 +18,7 @@ const TREE_HEIGHT_RANGE_M = [3, 26];
 const CROWN_MIN_RATIO = 0.6;
 // A photo crown wider than its species' single crown (MAX_CROWN: diameter as a share of the height, clamped) is a
 // group, as in the VR rows and stands: it is drawn as round(area ratio) trees (at most GROUP_MAX) spread over the
-// photo crown, each with an equal share of its area (GROUP_OVERLAP, at most 1.25 x the single crown). Narrow species are drawn at least TALL_RATIO x their diameter tall. ASSUMED forms.
+// photo crown, each with an equal share of its area (GROUP_OVERLAP, at most 1.5 x the single crown). Narrow species are drawn at least TALL_RATIO x their diameter tall. ASSUMED forms.
 const MAX_CROWN = {
   ginkgo: { share: 0.55, range: [3.5, 7] },
   broadleaf: { share: 1.0, range: [4, 8] },
@@ -29,7 +29,9 @@ const MAX_CROWN = {
 const TALL_RATIO = { ginkgo: 1.7, metasequoia: 3.2, conifer: 2 };
 const GROUP_MAX = 12;
 // Crowns of a group overlap like a closed canopy: each takes GROUP_OVERLAP x its share of the photo crown's area.
-const GROUP_OVERLAP = 1.15;
+const GROUP_OVERLAP = 1.3;
+// Trunk search radius (m) for a crown centred on a blocked cell (ASSUMED: about one crown radius).
+const NUDGE_M = 3;
 // Hedges: clipped volumes on the shrub planters of the furniture survey (planter fill "shrub", or a note naming
 // shrubs or a hedge) and on the planter walls along building fronts. Width, height above the planter top and the
 // inset from the planter outline are estimates read on VR scenes e8 f, c1 f and d1 f (ASSUMED).
@@ -178,18 +180,32 @@ export function placeTrees({ inputs, selectableBuildings, campusBuildings, offCa
 
   // ---- trees from the inventory
   const treeInstances = Object.fromEntries([...SPECIES, "hedge"].map((kind) => [kind, []]));
-  const skipped = { blocked: 0, outside: 0 };
+  const skipped = { blocked: 0, outside: 0, nudged: 0 };
   let groups = 0;
   const rng = mulberry32(20261027);
   for (const [east, north, diameterM, heightM0, speciesIndex, heightFromChm, source] of inventory.crowns) {
-    const [x, z] = tmToScene(east, north);
+    let [x, z] = tmToScene(east, north);
     if (x < EXTENT.minX || x > EXTENT.maxX || z < EXTENT.minZ || z > EXTENT.maxZ) {
       skipped.outside += 1;
       continue;
     }
+    // A photo crown whose centroid lies on a kerb, a road edge or a wall overhangs it: its trunk stands on the nearest
+    // open ground within NUDGE_M (searched every 0.5 m); a crown with none is left out.
     if (isBlocked(x, z)) {
-      skipped.blocked += 1;
-      continue;
+      let open = null;
+      for (let r = 0.5; r <= NUDGE_M && !open; r += 0.5) {
+        for (let a = 0; a < 16 && !open; a += 1) {
+          const nx = x + metres(r) * Math.cos((a * Math.PI) / 8);
+          const nz = z + metres(r) * Math.sin((a * Math.PI) / 8);
+          if (!isBlocked(nx, nz)) open = [nx, nz];
+        }
+      }
+      if (!open) {
+        skipped.blocked += 1;
+        continue;
+      }
+      [x, z] = open;
+      skipped.nudged += 1;
     }
     const kind = SPECIES[speciesIndex];
     const photoCrownM = Math.min(CROWN_DIAMETER_RANGE_M[1], Math.max(CROWN_DIAMETER_RANGE_M[0], diameterM));
@@ -197,7 +213,7 @@ export function placeTrees({ inputs, selectableBuildings, campusBuildings, offCa
     const { share, range } = MAX_CROWN[kind];
     const singleM = Math.min(range[1], Math.max(range[0], share * heightPhoto));
     const count = photoCrownM > singleM ? Math.min(GROUP_MAX, Math.max(1, Math.round((photoCrownM / singleM) ** 2))) : 1;
-    const crownM = count > 1 ? Math.min(singleM * 1.25, (GROUP_OVERLAP * photoCrownM) / Math.sqrt(count)) : photoCrownM;
+    const crownM = count > 1 ? Math.min(singleM * 1.5, (GROUP_OVERLAP * photoCrownM) / Math.sqrt(count)) : photoCrownM;
     const heightM = Math.min(TREE_HEIGHT_RANGE_M[1], Math.max(heightPhoto, CROWN_MIN_RATIO * crownM, (TALL_RATIO[kind] ?? 0) * crownM));
     if (count > 1) groups += 1;
     const spread = metres(Math.max(0, photoCrownM - crownM) / 2);
@@ -360,7 +376,7 @@ export function buildTrees({ glb, placement }) {
 
   const all = SPECIES.flatMap((kind) => treeInstances[kind]);
   const median = (values) => (values.length ? [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)] : 0);
-  console.log(`trees: ${inventory.crowns.length} inventory crowns (data/trees.json), ${skipped.blocked} on buildings, roads, off-campus lots or roofed furniture and ${skipped.outside} outside EXTENT left out; ${groups} crowns wider than one tree of their species drawn as groups; ${all.length} trees drawn`);
+  console.log(`trees: ${inventory.crowns.length} inventory crowns (data/trees.json), ${skipped.nudged} moved off a kerb, road or wall (at most ${NUDGE_M} m), ${skipped.blocked} on buildings, roads, off-campus lots or roofed furniture and ${skipped.outside} outside EXTENT left out; ${groups} crowns wider than one tree of their species drawn as groups; ${all.length} trees drawn`);
   console.log(`trees: species ${SPECIES.map((kind) => `${kind} ${treeInstances[kind].length} (median ${median(treeInstances[kind].map((t) => t.heightMetres)).toFixed(1)} m tall, crown ${median(treeInstances[kind].map((t) => t.crownM)).toFixed(1)} m)`).join(", ")}; hedges ${treeInstances.hedge.length} segments on ${hedgeSources.length} planters (${hedgeSources.join(", ")})`);
   console.log(`trees: heights from CHMv2 ${all.filter((t) => t.heightFromChm).length}, from crown size ${all.filter((t) => !t.heightFromChm).length}; species sources ${JSON.stringify(Object.fromEntries(Object.entries(all.reduce((m, t) => ({ ...m, [t.source.split(":")[0]]: (m[t.source.split(":")[0]] ?? 0) + 1 }), {}))))}`);
   console.log(`trees: archetype triangles ${Object.entries(triangles).map(([k, v]) => `${k} ${v}`).join(", ")}; instanced triangles ${Object.entries(treeInstances).reduce((s, [k, list]) => s + list.length * triangles[k], 0)}`);
