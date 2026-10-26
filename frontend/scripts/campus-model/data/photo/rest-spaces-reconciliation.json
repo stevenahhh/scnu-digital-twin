@@ -8,9 +8,9 @@
   "summary": {
     "sightings": 24,
     "restSightings": 17,
-    "match": 9,
+    "match": 8,
     "retype": 5,
-    "missing": 7,
+    "missing": 8,
     "ambiguous": 1,
     "landscape": 28,
     "notRestSpace": 3,
@@ -534,12 +534,14 @@
       "candidates": [
         "OC0102 planter 1.1 m"
       ],
-      "decision": "match",
-      "ref": "OC0102",
-      "reason": "planter OC0102 lies 1.1 m from the ray (30 m out)",
+      "decision": "missing",
+      "ref": null,
+      "reason": "planter OC0102 lies 1.1 m from the ray, but the survey drew it as one 7.7 x 8.8 m soil bed over the entrance walk and its steps; the VR and a closer read of the photo show two L-shaped brick hedge beds beside the walk and two hedge strips at the wing walls, so OC0102 is left out and the beds are placed",
       "typeId": "planter",
       "photo_blob": "yes",
-      "photo_note": "the matched object was traced on the 2025 photo by the survey"
+      "photo_note": "the matched object was traced on the 2025 photo by the survey",
+      "instanceId": "RS0018",
+      "applied": "RS0018, RS0018A-C (four planters traced on the NGII 2025 sheet, VR scene_e8 f); OC0102 excluded in stages/furniture.mjs; the courtyard paving between them is a tiles supplement of data/osm-ground.json (W3c)"
     },
     {
       "restSighting": 15,

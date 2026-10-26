@@ -614,6 +614,12 @@ Decisions taken against the survey, logged by the build and listed in the `Furni
   so the position is VR-only and estimated (confidence 0.4). `B.gate_sign` builds a white letter slab and name band
   on a planted stone bed from the feature's `length_m`, `depth_m`, `height_m`, `plinth_m`, `colour` and `bandColour`;
   the lettering itself is not modelled. Objects of `rest-spaces.geojson` are counted as estimated in the node extras.
+- OC0102, the survey's single 7.7 x 8.8 m soil bed in the E8 courtyard, is left out: VR scene_e8 f and the NGII 2025
+  photo show two L-shaped brick hedge beds beside the entrance walk and two hedge strips at the wing walls, built as
+  `RS0018` and `RS0018A-C` (`planter`, shrub fill, 0.5 m brick kerb). The paving between them is a `paving`
+  supplement of `data/osm-ground.json` (pattern `tiles`: grey pavers with staggered blue-grey squares and terracotta
+  centres, precedence 5.8 on Ground_Sports, label PAVING; the entrance walk a `plain` one on Ground_Pavers; not a walkable plaza layer of the transport network). All
+  estimated.
 - OB0010 was surveyed as a white roofed pergola. VR scene_a19 shows no roof there, only the stepped arc of the
   finished plaza, and the photo shows a curved edge with a thin shadow, so it is built as a two-tier curved step.
 - Parasols and the kiosk get 2.4 m instead of the generic 0.5 m `plaza_structure` default.

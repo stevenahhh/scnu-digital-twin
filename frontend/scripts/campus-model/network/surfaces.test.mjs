@@ -98,3 +98,17 @@ test("a reclass to clay paints an OSM tennis pitch as a clay court; clay on a no
   const water = { id: "way/2", kind: "water", rings: [rect(300, -60, 330, -40)] };
   assert.throws(() => buildSurfaces({ ...fixture(), groundFeatures: ground([{ kind: "reclass", osm: "way/2", surface: "clay" }], [pitch, water]) }), /reclass clay applies to an OSM pitch/);
 });
+
+test("a tiles paving supplement is a PAVING layer between the walkways and the aprons, outside the network plaza set", () => {
+  const groundFeatures = { osm: [], lines: [], facilities: [], unlabelledLabels: [], supplements: [{ kind: "paving", note: "test courtyard", pattern: "tiles", ring: rect(170, -200, 190, -180), axis: [[170, -200], [190, -200]] }] };
+  const { layers } = buildSurfaces({ ...fixture(), groundFeatures });
+  const tiles = layers.find((l) => l.paint?.kind === "tiles");
+  assert.equal(tiles.cls, "PAVING");
+  assert.equal(tiles.mesh, "Ground_Sports");
+  assert.equal(tiles.label, SURFACE_CLASS.PAVING);
+  assert.ok(tiles.precedence > 5.5 && tiles.precedence < 6);
+  assert.equal(tiles.paint.axis.length, 2);
+  const plain = buildSurfaces({ ...fixture(), groundFeatures: { ...groundFeatures, supplements: [{ kind: "paving", note: "walk", pattern: "plain", ring: rect(170, -200, 190, -180) }] } }).layers.find((l) => l.source_ref === "paving: walk");
+  assert.deepEqual([plain.mesh, plain.label, plain.precedence], ["Ground_Pavers", SURFACE_CLASS.PAVING, tiles.precedence]);
+  assert.throws(() => buildSurfaces({ ...fixture(), groundFeatures: { ...groundFeatures, supplements: [{ kind: "paving", note: "bad", ring: rect(0, 0, 1, 1) }] } }), /needs a ring and pattern/);
+});
