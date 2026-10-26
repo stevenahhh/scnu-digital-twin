@@ -17,17 +17,19 @@ const CROWN_DIAMETER_RANGE_M = [1.6, 15];
 const TREE_HEIGHT_RANGE_M = [3, 26];
 const CROWN_MIN_RATIO = 0.6;
 // A photo crown wider than its species' single crown (MAX_CROWN: diameter as a share of the height, clamped) is a
-// group, as in the VR rows and stands: it is drawn as round(area ratio) trees (at most GROUP_MAX) of that diameter
-// spread over the photo crown. Narrow species are drawn at least TALL_RATIO x their diameter tall. ASSUMED forms.
+// group, as in the VR rows and stands: it is drawn as round(area ratio) trees (at most GROUP_MAX) spread over the
+// photo crown, each with an equal share of its area (GROUP_OVERLAP, at most 1.25 x the single crown). Narrow species are drawn at least TALL_RATIO x their diameter tall. ASSUMED forms.
 const MAX_CROWN = {
   ginkgo: { share: 0.55, range: [3.5, 7] },
-  broadleaf: { share: 1.2, range: [4, 11] },
-  pine: { share: 1.1, range: [4, 10] },
+  broadleaf: { share: 1.0, range: [4, 8] },
+  pine: { share: 1.0, range: [4, 8] },
   metasequoia: { share: 0.4, range: [3, 5.5] },
   conifer: { share: 0.45, range: [1.5, 3.5] },
 };
 const TALL_RATIO = { ginkgo: 1.7, metasequoia: 3.2, conifer: 2 };
-const GROUP_MAX = 7;
+const GROUP_MAX = 12;
+// Crowns of a group overlap like a closed canopy: each takes GROUP_OVERLAP x its share of the photo crown's area.
+const GROUP_OVERLAP = 1.15;
 // Hedges: clipped volumes on the shrub planters of the furniture survey (planter fill "shrub", or a note naming
 // shrubs or a hedge) and on the planter walls along building fronts. Width, height above the planter top and the
 // inset from the planter outline are estimates read on VR scenes e8 f, c1 f and d1 f (ASSUMED).
@@ -195,7 +197,7 @@ export function placeTrees({ inputs, selectableBuildings, campusBuildings, offCa
     const { share, range } = MAX_CROWN[kind];
     const singleM = Math.min(range[1], Math.max(range[0], share * heightPhoto));
     const count = photoCrownM > singleM ? Math.min(GROUP_MAX, Math.max(1, Math.round((photoCrownM / singleM) ** 2))) : 1;
-    const crownM = count > 1 ? singleM : photoCrownM;
+    const crownM = count > 1 ? Math.min(singleM * 1.25, (GROUP_OVERLAP * photoCrownM) / Math.sqrt(count)) : photoCrownM;
     const heightM = Math.min(TREE_HEIGHT_RANGE_M[1], Math.max(heightPhoto, CROWN_MIN_RATIO * crownM, (TALL_RATIO[kind] ?? 0) * crownM));
     if (count > 1) groups += 1;
     const spread = metres(Math.max(0, photoCrownM - crownM) / 2);
