@@ -1018,7 +1018,7 @@ export function regularise(drawn, ctx) {
         }
         const symbol = rule?.symbol ?? "wheelchair";
         const polys = symbol === "P"
-          ? textBlock(["P"], Math.min(0.42 * width, 1.4), deep, { charHeight: Math.min(1.45 * Math.min(0.42 * width, 1.4), 0.42 * deep) }).polys
+          ? textBlock(["P"], Math.min(0.42 * width, 1.4), deep, { charHeight: Math.min(1.45 * Math.min(0.42 * width, 1.4), 0.75 * deep) }).polys
           : wheelchairTemplate(Math.min(0.5 * width, 0.4 * deep, 1.6));
         emitPoly(place(polys, centre, up), "white", "disabled_parking", { glyph: symbol });
         stats.baySymbols[symbol === "P" ? "p" : "wheelchair"] += 1;
