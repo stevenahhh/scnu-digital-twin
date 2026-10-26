@@ -112,3 +112,14 @@ bun scripts/perf/formula.mjs --url http://127.0.0.1:5190/ --label after --out <d
   every candidate is scored on the same tiles) and averages the luma SSIM (8 x 8 windows every 4 px) of render
   against photo. With `--ref` it also reports `Qself`, the SSIM against the reference run's render (1 = identical).
 
+
+## Canopy cover (`canopy-cover.mjs`)
+
+Share of the ground under tree crowns seen from straight above, per area (the four overhead-blend windows and the b1
+south slope), in a campus GLB (each `Trees_*_crown` instance a disc of its crown mesh's horizontal reach times its
+scale; hedges not counted) against the photo canopy mask of `fetch/treeInventory.mjs` (run with `--out`, so `data/`
+is untouched). No browser and no dev server.
+
+```bash
+bun scripts/perf/canopy-cover.mjs --glb before=<file> --glb after=public/campus-v2.glb [--inventory inv=<trees.json>] [--out <dir>]
+```
