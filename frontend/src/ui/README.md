@@ -36,3 +36,4 @@ http://127.0.0.1:<port>/?ui=gallery&theme=light  밝은 테마
 | `Sheet` | `Sheet.jsx`, `sheetDetents.mjs` | 폰(<640px) 바텀 시트, peek 96px·half 50dvh·full, 44px 손잡이(화살표 키·Esc), 놓을 때 속도로 단계 고르기, 본문 스크롤은 full에서만 |
 
 `../hooks/useViewportMode.mjs`는 `phone`(<640px)·`tablet`(<1024px)·`desktop`을 돌려준다. 순수 계산은 `resolveViewportMode(width)`다.
+| `SceneLabel`, `DotMarker`, `ZoneLabel` | `SceneLabel.jsx` | 장면 라벨 칩(상태 9가지, 12px 하한, 최대 160px 두 줄, 코드 배지, 지시선), 8px 점 마커(처음 누르면 펼침), 구역 이름. D4 층·호실 라벨은 `size="sm"` |

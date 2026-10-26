@@ -9,6 +9,7 @@ import { EstimateValue } from "./EstimateValue.jsx";
 import { FreshnessStamp } from "./FreshnessStamp.jsx";
 import { MetricList } from "./MetricList.jsx";
 import { Popover } from "./Popover.jsx";
+import { DotMarker, SCENE_LABEL_STATES, SceneLabel, ZoneLabel } from "./SceneLabel.jsx";
 import { SectionHeader } from "./SectionHeader.jsx";
 import { Sheet } from "./Sheet.jsx";
 import { Segmented } from "./Segmented.jsx";
@@ -363,6 +364,73 @@ function SheetDemo({ initial }) {
   );
 }
 
+const STATE_NAMES = {
+  idle: "기본",
+  hover: "올림",
+  focus: "키보드 초점",
+  selected: "선택",
+  dimmed: "흐림",
+  "no-data": "데이터 없음",
+  stale: "지난 값",
+  estimated: "명칭 추정",
+  motion: "움직이는 중",
+};
+
+function SceneLabelGallery() {
+  return (
+    <GallerySection id="scene-label" title="장면 라벨">
+      <div className="flex flex-col gap-4 rounded-card bg-canvas p-4">
+        <div className="flex flex-wrap items-start gap-x-4 gap-y-3">
+          {SCENE_LABEL_STATES.map((state) => (
+            <div key={state} className="flex flex-col items-start gap-1">
+              <span className="text-caption text-ink-subtle">{STATE_NAMES[state]}</span>
+              <SceneLabel
+                name={state === "estimated" ? "운동장 본부석" : "중앙도서관"}
+                code={state === "estimated" ? "A15" : undefined}
+                elementId={`BLD_GALLERY_${state}`}
+                state={state}
+                value={state === "hover" ? "24.3 °C 추정" : undefined}
+              />
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-start gap-x-4 gap-y-3">
+          <div className="flex flex-col items-start gap-1">
+            <span className="text-caption text-ink-subtle">코드 배지</span>
+            <SceneLabel name="공과대학 3호관" code="D4" elementId="BLD_D4" tier={1} />
+          </div>
+          <div className="flex flex-col items-start gap-1">
+            <span className="text-caption text-ink-subtle">긴 이름(두 줄)</span>
+            <SceneLabel data-gallery-long-name="true" name="사범대학 3호관 부속 교육 연구 지원 센터 별관 실습동" elementId="BLD_LONG" />
+          </div>
+          <div className="flex flex-col items-start gap-1 pb-6">
+            <span className="text-caption text-ink-subtle">지시선</span>
+            <SceneLabel name="학생회관" elementId="BLD_LEADER" leader={{ dx: 18, dy: 22 }} />
+          </div>
+          <div className="flex flex-col items-start gap-1">
+            <span className="text-caption text-ink-subtle">D4 층·호실(작게)</span>
+            <div className="flex gap-2">
+              <SceneLabel size="sm" name="3층" elementId="D4_F3" tier={3} />
+              <SceneLabel size="sm" name="301호" elementId="D4_301" tier={3} state="selected" />
+            </div>
+          </div>
+          <div className="flex flex-col items-start gap-1">
+            <span className="text-caption text-ink-subtle">점 마커</span>
+            <div className="flex gap-2">
+              <DotMarker name="공과대학 3호관 별관" elementId="BLD_DOT" />
+              <DotMarker name="학생생활관 5동" elementId="BLD_DOT_SELECTED" selected />
+            </div>
+          </div>
+          <div className="flex flex-col items-start gap-1">
+            <span className="text-caption text-ink-subtle">구역 라벨</span>
+            <ZoneLabel name="공학 구역" />
+          </div>
+        </div>
+      </div>
+    </GallerySection>
+  );
+}
+
 export default function Gallery() {
   const [theme, setTheme] = useState(() => (params().get("theme") === "light" ? "light" : "dark"));
 
@@ -404,6 +472,7 @@ export default function Gallery() {
         <FreshnessGallery />
         <LoadingGallery />
         <SheetGallery />
+        <SceneLabelGallery />
       </div>
     </main>
   );

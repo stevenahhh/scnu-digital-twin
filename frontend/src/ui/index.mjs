@@ -14,3 +14,4 @@ export { Skeleton } from "./Skeleton.jsx";
 export { Spinner } from "./Spinner.jsx";
 export { formatHHmm } from "./format.mjs";
 export { Sheet } from "./Sheet.jsx";
+export { DotMarker, SceneLabel, ZoneLabel } from "./SceneLabel.jsx";
