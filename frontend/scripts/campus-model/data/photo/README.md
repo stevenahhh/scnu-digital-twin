@@ -559,6 +559,28 @@ Tolerance: traced outlines sit within 0.25 m of the photo; the planter wall RS00
 (survey, rest spaces, lamps, estimated benches) finds no pair. Retypes, matches, not-rest-space and deferred decisions are
 in the applied table above.
 
+### VR landscape rows (2026-10-26)
+
+The 12 landscape rows of `rest-spaces-reconciliation.json` decided `missing` were located on the NGII 2025 sheet and
+in the VR cube faces and carry `applied` (`verdict`, `features`, `supplements`, `nodes`, `evidence`). Features are
+`RS-LS-*` in `rest-spaces.geojson` with `photo_support` `outline` (footprint or bottom edge traced on the sheet);
+surfaces are paving supplements of `../osm-ground.json`. Every dimension is an estimate (추정).
+
+| scene / face | VR item | verdict | model |
+|---|---|---|---|
+| scene_a1 l | fountain pond | built | RS-LS-A1POND: coping, 2 jets, rock; water = OSM way/367126960 (the lawn reclass withdrawn) |
+| scene_b1 f | stepped plaza in front of the museum | mapped | OC0096 stepped_terrace (the ortho-match station put the ray past it) |
+| scene_b4 f | straight paved path across the lawn | built | three plain paving supplements: path, 8 x 8 m square, path to the road |
+| scene_c1 f | stepped approach to the library | built | RS-LS-C1STEPS: 14 + 5 risers, centre and side hedges, tile landing, terrace |
+| scene_c3 d | crosswalk and disabled bay | mapped | markings MK00135-MK00153 and MX00231 / MX01310 / MX01311 |
+| scene_d1 l | outdoor stair | built | RS-LS-D1STAIR: 2 x 9 risers south of D1 (the station record is about 150 m off D1) |
+| scene_d3 d | blue PM bay | built | bay paint MX00361 (markings); RS-LS-D3PMRACK rack |
+| scene_d4 f | stepped entrance plaza | built | RS-LS-D4STEPS: 4 risers across the passage, forecourt sloping back to the drive |
+| scene_e4 r | round planter / sculpture on the red plaza | built | RS-LS-E4STONE sign stone; red surfacing supplement of the junction |
+| scene_e7 d | outdoor stair | built | RS-LS-E7STAIR: 6 + 7 + 6 risers, two landings |
+| scene_e7 r | red path with crosswalk | built | red surfacing supplement of the carriageway; crossings are markings (the raised yellow crossing under the station is not in the markings data) |
+| scene_f1 b | statue by the glass building | not on campus | the 순천시문화건강센터 plaza east of the arterial, outside the campus outline and EXTENT |
+
 ## Licence
 
 Source: **국토지리정보원 (NGII), 정사영상 2025, sheet 34702020 (순천020)**, metadata 202504000734702020, made by
