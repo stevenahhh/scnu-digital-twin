@@ -66,6 +66,7 @@ vi.mock("three", async (importOriginal) => {
 });
 vi.mock("./lighting/CampusLighting", () => ({ CAMPUS_CANVAS_GL: {}, CampusLighting: () => null }));
 vi.mock("./lighting/ShadowBaker", () => ({ ShadowBaker: () => null }));
+vi.mock("./lighting/HorizonSkirt", () => ({ HorizonSkirt: () => null }));
 vi.mock("./weather/SceneWeatherBinding", () => ({ SceneWeatherBinding: () => null }));
 const sceneMock = vi.hoisted(() => ({ suspend: false, fail: false }));
 vi.mock("./CityModel", () => ({

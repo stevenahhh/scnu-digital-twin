@@ -30,6 +30,7 @@ import {
   calibrateCrownInstance,
   calibrateCrownMaterial,
 } from "./lighting/foliage.mjs";
+import { MINUTE_OF_DAY_KEY, windowGlowAt } from "./lighting/nightCurve.mjs";
 
 // 클릭하지 않아도 카메라가 이 거리 안으로 들어오면 "가까이 간" 것으로 본다.
 // 클릭 시 자동으로 붙는 카메라 거리(FOCUS_CAMERA_OFFSET 기준 약 94유닛)보다 살짝
@@ -267,7 +268,7 @@ export function CityModel({
   const autumnCrownsRef = useRef([]);
   const materialTransitionRef = useRef(true);
   // 현재 재질에 반영된 단풍 혼합 비율과 야간 가중치. -1은 아직 한 번도 쓰지 않았다는 뜻.
-  const rampRef = useRef({ autumn: -1, night: -1 });
+  const rampRef = useRef({ autumn: -1, night: -1, windows: -1 });
   const traverseStatsRef = useRef(null);
   const closeElementIdRef = useRef(null);
   const isInsideD4Ref = useRef(false);
@@ -536,6 +537,10 @@ export function CityModel({
         child.userData.hasWindowGlow = true;
         // 재질에 정해 둔 발광 세기(가로등 머리는 KHR_materials_emissive_strength)를 밤 가중치의 최댓값으로 쓴다.
         child.userData.glowScale = child.material.emissiveIntensity;
+        // 창문(파사드 아틀라스)은 시간대별 창문 불빛 곡선(lighting/nightCurve.mjs, 재실 데이터가 아닌 연출)을 따르고,
+        // 가로등 머리와 노면 표시는 밤 내내 최대 밝기를 유지한다.
+        const glowName = child.material.name ?? "";
+        child.userData.followsWindowCurve = !LAMP_MATERIAL_PATTERN.test(glowName) && glowName !== ROAD_MARKING_MATERIAL_NAME;
         child.material.emissiveIntensity = 0;
       }
     });
@@ -545,7 +550,7 @@ export function CityModel({
     autumnCrownsRef.current = autumnCrowns;
     if (traverseStatsRef.current) traverseStatsRef.current.nonCasterNames = nonCasterNames;
     materialTransitionRef.current = true;
-    rampRef.current = { autumn: -1, night: -1 };
+    rampRef.current = { autumn: -1, night: -1, windows: -1 };
   }, [gl, scene]);
 
   const labelAnchors = useMemo(() => {
@@ -608,10 +613,14 @@ export function CityModel({
     // 주야(태양 고도)와 계절(날짜) 가중치는 그 자체가 연속이라 바뀌면 곧바로 반영한다(감쇠 없음).
     const altitude = sunAltitude ?? rootScene.userData[SUN_ALTITUDE_KEY];
     const night = Number.isFinite(altitude) ? getNightWeight(altitude) : isNight ? 1 : 0;
+    const minuteOfDay = rootScene.userData[MINUTE_OF_DAY_KEY];
+    const windows = Number.isFinite(altitude) && Number.isFinite(minuteOfDay) ? windowGlowAt(minuteOfDay, altitude) : night;
     const autumn = getAutumnWeight(date ?? new Date());
     const ramp = rampRef.current;
     const rampChanged =
-      Math.abs(night - ramp.night) > RAMP_EPSILON || Math.abs(autumn - ramp.autumn) > RAMP_EPSILON;
+      Math.abs(night - ramp.night) > RAMP_EPSILON ||
+      Math.abs(windows - ramp.windows) > RAMP_EPSILON ||
+      Math.abs(autumn - ramp.autumn) > RAMP_EPSILON;
     if (rampChanged) {
       if (Math.abs(autumn - ramp.autumn) > RAMP_EPSILON) {
         const summerColor = [0, 0, 0];
@@ -632,6 +641,7 @@ export function CityModel({
         }
       }
       ramp.night = night;
+      ramp.windows = windows;
       ramp.autumn = autumn;
       for (const pool of lampPoolsRef.current) {
         pool.material.opacity = night * LAMP_POOL_STRENGTH;
@@ -645,7 +655,6 @@ export function CityModel({
       const ease = materialTransitionRef.current
         ? 1 - Math.exp(-MATERIAL_EASE_RATE * Math.min(delta, 1))
         : 1;
-      const glow = ramp.night;
       let maxDelta = 0;
 
       for (const child of tintedMeshesRef.current) {
@@ -676,7 +685,7 @@ export function CityModel({
         }
 
         if (userData.hasWindowGlow) {
-          const glowTarget = glow * userData.glowScale;
+          const glowTarget = (userData.followsWindowCurve ? ramp.windows : ramp.night) * userData.glowScale;
           const glowRemaining = glowTarget - material.emissiveIntensity;
           if (Math.abs(glowRemaining) < MATERIAL_SETTLE_EPSILON) {
             material.emissiveIntensity = glowTarget;

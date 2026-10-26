@@ -4,6 +4,7 @@ import { Sky } from "@react-three/drei";
 import * as THREE from "three";
 import { CAMPUS_FOG_DENSITY, NIGHT_SKY_SRGB, getFogColor, getSkyNightMix } from "./atmosphere.mjs";
 import { SHADOW_CAMERA_BOUNDS, getShadowLightPosition, getShadowMapSize } from "./shadowFrustum.mjs";
+import { MINUTE_OF_DAY_KEY, nightAmbientAt } from "./nightCurve.mjs";
 import { applySkyNightFade } from "./skyNightFade.mjs";
 import { SkyEnvironment } from "./SkyEnvironment";
 import { SUN_ALTITUDE_KEY, getDaylightWeight, getSkySunAltitude } from "./season.mjs";
@@ -40,7 +41,8 @@ const isMobileDevice = () =>
   typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent);
 
 // shadowMapSize is the render-quality tier's request (QUALITY_RENDERER); the device limit still caps it.
-export function CampusLighting({ sunVector, sunAltitude, shadowMapSize: requestedShadowMapSize }) {
+// minuteOfDay (KST, 0..1439) drives the night curves (nightCurve.mjs); without it the night levels hold.
+export function CampusLighting({ sunVector, sunAltitude, minuteOfDay, shadowMapSize: requestedShadowMapSize }) {
   const gl = useThree((state) => state.gl);
   const maxTextureSize = gl.capabilities.maxTextureSize;
   const scene = useThree((state) => state.scene);
@@ -57,10 +59,16 @@ export function CampusLighting({ sunVector, sunAltitude, shadowMapSize: requeste
   useLayoutEffect(() => {
     scene.userData[SUN_ALTITUDE_KEY] = sunAltitude;
   }, [scene, sunAltitude]);
+  useLayoutEffect(() => {
+    scene.userData[MINUTE_OF_DAY_KEY] = minuteOfDay;
+  }, [scene, minuteOfDay]);
   useLayoutEffect(() => () => {
     delete scene.userData[SUN_ALTITUDE_KEY];
+    delete scene.userData[MINUTE_OF_DAY_KEY];
   }, [scene]);
   const daylight = getDaylightWeight(sunAltitude);
+  // Past -12 deg the ambient and hemisphere fill keep darkening (1 above it), so 19:00 and 21:00 differ.
+  const nightAmbient = Number.isFinite(minuteOfDay) ? nightAmbientAt(minuteOfDay, sunAltitude) : 1;
   // Same azimuth, twilight-stretched altitude for the sky dome and the sky environment light.
   const skySunVector = useMemo(() => {
     const skyAltitude = getSkySunAltitude(sunAltitude);
@@ -90,8 +98,8 @@ export function CampusLighting({ sunVector, sunAltitude, shadowMapSize: requeste
   return (
     <>
       <fogExp2 attach="fog" args={[getFogColor(sunAltitude), CAMPUS_FOG_DENSITY]} />
-      <ambientLight intensity={NIGHT_AMBIENT + (DAY_AMBIENT - NIGHT_AMBIENT) * daylight} />
-      <hemisphereLight args={[NIGHT_FILL_SKY, NIGHT_FILL_GROUND, NIGHT_FILL_INTENSITY * (1 - daylight)]} />
+      <ambientLight intensity={(NIGHT_AMBIENT + (DAY_AMBIENT - NIGHT_AMBIENT) * daylight) * nightAmbient} />
+      <hemisphereLight args={[NIGHT_FILL_SKY, NIGHT_FILL_GROUND, NIGHT_FILL_INTENSITY * (1 - daylight) * nightAmbient]} />
       <directionalLight
         ref={sunLightRef}
         castShadow

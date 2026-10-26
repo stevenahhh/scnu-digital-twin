@@ -25,6 +25,8 @@ import {
 } from "lucide-react";
 import { CityModel } from "./CityModel";
 import { CAMPUS_CANVAS_GL, CampusLighting } from "./lighting/CampusLighting";
+import { getClearColor } from "./lighting/atmosphere.mjs";
+import { HorizonSkirt } from "./lighting/HorizonSkirt";
 import { ShadowBaker } from "./lighting/ShadowBaker";
 import { useDemandLoop } from "./render/useDemandLoop.mjs";
 import { useInteractionDpr } from "./render/interactionDpr.mjs";
@@ -468,7 +470,8 @@ export default function App() {
   const sceneWeather = useSceneWeather({ weatherData, weatherState });
   const sceneWeatherScene = sceneWeather.scene;
 
-  const sceneBackground = sunState.visible ? "#d6e0e6" : "#09111d";
+  // 캔버스 배경(지우기 색)은 안개 색을 따라가 하늘·안개·먼 지면이 지평선에서 이어진다(어두운 테마 캔버스 색보다 어두워지지 않음).
+  const sceneBackground = getClearColor(sunState.altitude);
   const sunAltitudeDegrees = (sunState.altitude * 180) / Math.PI;
   const sunBearingDegrees = ((sunState.azimuth * 180) / Math.PI + 540) % 360;
   const isSimulationMode = mode === "simulation";
@@ -797,6 +800,7 @@ export default function App() {
         sunVector={sunVector}
         sunVisible={sunVisible}
         sunAltitude={sunAltitude}
+        minuteOfDay={sceneMinuteOfDay}
         shadowMapSize={qualityRenderer.shadowMapSize}
       />
       <SceneWeatherBinding
@@ -825,6 +829,7 @@ export default function App() {
           occluderRef={panelRef}
           chromeRefs={labelChromeRefs}
         />
+        <HorizonSkirt />
         <CampusTrafficSimulation />
         <ShadowBaker sunKey={sunVector.join(",")} />
       </Suspense>
@@ -849,7 +854,7 @@ export default function App() {
       )}
     </>
   ), [
-    sceneBackground, sunVector, sunVisible, sunAltitude, selectedId, labelsHidden, sceneWeatherScene, quality, qualityRenderer,
+    sceneBackground, sunVector, sunVisible, sunAltitude, sceneMinuteOfDay, selectedId, labelsHidden, sceneWeatherScene, quality, qualityRenderer,
     handleSelect, handleBuildingClick, handleBuildingProximity, handleD4Enter, handleOrbitStart, handleOrbitEnd, labelChromeRefs,
   ]);
 
