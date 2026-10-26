@@ -31,6 +31,14 @@ const PIT_CLEAR = 0.5;
 // No crown comes within STATION_CLEAR_M of a SCNU 360 VR tour camera position (scripts/perf/vr-stations.json): the
 // camera stood there, so no tree did (a crown there would fill the comparison view).
 const STATION_CLEAR_M = 2;
+// Continuous canopy: a photo crown (data/trees.json photoCrown) split into at least MASS_MIN broadleaf trees is drawn as
+// clustered canopy masses (Trees_canopy: one irregular many-lobed mass, scaled per instance along and across the run of
+// trees) instead of separate round crowns, one mass per stretch of at most MASS_LENGTH_M. A mass covers its members'
+// spread plus MASS_EDGE x their mean crown radius; a mass that would come within STATION_CLEAR_M of a VR camera keeps
+// its trees separate. ASSUMED forms read on VR scene_d3 b, scene_b1 b and scene_e3 f.
+const MASS_MIN = 3;
+const MASS_LENGTH_M = 14;
+const MASS_EDGE = 0.85;
 const STATIONS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../perf/vr-stations.json");
 // Trunk search radius (m) for a crown centred on a blocked cell (ASSUMED: about one crown radius).
 const NUDGE_M = 3;
@@ -156,7 +164,7 @@ function latheCrown(profile, segments, jitter, seed) {
 // drooping rim (tips hang TIER_DROOP of the tier height below the notches, notches at `notch` x the radius) and a
 // shallow underside, so the silhouette reads as layered foliage, not a solid cone. tiers: [[bottom, top, radius], ...].
 const TIER_DROOP = 0.18;
-function tieredCrown(tiers, points, notch, seed) {
+function tieredCrown(tiers, points, notch, seed, droop = TIER_DROOP) {
   const rng = mulberry32(seed);
   const out = [];
   const twist = rng() * Math.PI;
@@ -166,7 +174,7 @@ function tieredCrown(tiers, points, notch, seed) {
       const a = twist + t * 0.7 + (i / n) * Math.PI * 2;
       const tip = i % 2 === 0;
       const r = radius * (tip ? 0.92 + rng() * 0.16 : notch * (0.9 + rng() * 0.2));
-      const y = y0 + (tip ? 0 : TIER_DROOP * (y1 - y0));
+      const y = y0 + (tip ? 0 : droop * (y1 - y0));
       return [Math.cos(a) * r, y, Math.sin(a) * r];
     });
     const apex = [0, y1, 0];
@@ -293,11 +301,11 @@ export function placeTrees({ inputs, selectableBuildings, campusBuildings, offCa
   const stations = JSON.parse(readFileSync(STATIONS, "utf8")).map((st) => [st.station_refined_x ?? st.station_x, st.station_refined_z ?? st.station_z]);
 
   // ---- trees from the inventory
-  const treeInstances = Object.fromEntries([...SPECIES, "hedge"].map((kind) => [kind, []]));
+  const treeInstances = Object.fromEntries([...SPECIES, "canopy", "hedge"].map((kind) => [kind, []]));
   const skipped = { blocked: 0, outside: 0, nudged: 0, station: 0, stationMoved: 0 };
   const stands = { ground: 0, pit: 0, "street-pit": 0, "paved-pit": 0 };
   const rng = mulberry32(20261027);
-  for (const [east, north, diameterM, heightM0, speciesIndex, heightFromChm, source, , , , , fitViews, autumn] of inventory.trees) {
+  for (const [east, north, diameterM, heightM0, speciesIndex, heightFromChm, source, , , , photoCrown, fitViews, autumn] of inventory.trees) {
     let [x, z] = tmToScene(east, north);
     if (x < EXTENT.minX || x > EXTENT.maxX || z < EXTENT.minZ || z > EXTENT.maxZ) {
       skipped.outside += 1;
@@ -352,10 +360,77 @@ export function placeTrees({ inputs, selectableBuildings, campusBuildings, offCa
     const green = 0.86 + rng() * 0.28;
     const hue = kind === "metasequoia" || kind === "conifer" ? 0.3 : 0.12;
     treeInstances[kind].push({
-      x, y: heightAt(x, z) - metres(0.2), z, crownM, heightMetres: heightM, heightFromChm: heightFromChm === 1, source, stand, autumn: autumn ?? null, fitted: fitViews > 0,
+      x, y: heightAt(x, z) - metres(0.2), z, crownM, heightMetres: heightM, heightFromChm: heightFromChm === 1, source, stand, autumn: autumn ?? null, fitted: fitViews > 0, photoCrown,
       angle: rng() * Math.PI * 2,
       tint: [green * (1 - hue / 2 + rng() * hue), green, green * (1 - hue / 2 + rng() * hue)],
     });
+  }
+
+
+  // ---- continuous canopy: broadleaf runs of one photo crown become canopy masses
+  const masses = { groups: 0, trees: 0, keptForCamera: 0 };
+  {
+    const byCrown = new Map();
+    for (const t of treeInstances.broadleaf) {
+      if (!byCrown.has(t.photoCrown)) byCrown.set(t.photoCrown, []);
+      byCrown.get(t.photoCrown).push(t);
+    }
+    const merged = new Set();
+    const ellipseClear = (cx, cz, a, hu, hv) => stations.every(([sx, sz]) => {
+      const dx = sx - cx;
+      const dz = sz - cz;
+      const u = dx * Math.cos(a) + dz * Math.sin(a);
+      const v = -dx * Math.sin(a) + dz * Math.cos(a);
+      const c = metres(STATION_CLEAR_M);
+      return (u / (hu + c)) ** 2 + (v / (hv + c)) ** 2 >= 1;
+    });
+    for (const members of byCrown.values()) {
+      if (members.length < MASS_MIN) continue;
+      // principal axis of the trunks
+      const mx = members.reduce((acc, t) => acc + t.x, 0) / members.length;
+      const mz = members.reduce((acc, t) => acc + t.z, 0) / members.length;
+      let sxx = 0, szz = 0, sxz = 0;
+      for (const t of members) { sxx += (t.x - mx) ** 2; szz += (t.z - mz) ** 2; sxz += (t.x - mx) * (t.z - mz); }
+      const theta = 0.5 * Math.atan2(2 * sxz, sxx - szz);
+      const along = (t) => (t.x - mx) * Math.cos(theta) + (t.z - mz) * Math.sin(theta);
+      const sorted = [...members].sort((p, q) => along(p) - along(q));
+      const span = along(sorted.at(-1)) - along(sorted[0]);
+      const chunks = Math.max(1, Math.ceil(span / metres(MASS_LENGTH_M)));
+      for (let c = 0; c < chunks; c += 1) {
+        const part = sorted.slice(Math.floor((c * sorted.length) / chunks), Math.floor(((c + 1) * sorted.length) / chunks));
+        if (part.length < 2) continue;
+        const cx = part.reduce((acc, t) => acc + t.x, 0) / part.length;
+        const cz = part.reduce((acc, t) => acc + t.z, 0) / part.length;
+        const r = metres(part.reduce((acc, t) => acc + t.crownM / 2, 0) / part.length);
+        let hu = 0;
+        let hv = 0;
+        for (const t of part) {
+          const dx = t.x - cx;
+          const dz = t.z - cz;
+          hu = Math.max(hu, Math.abs(dx * Math.cos(theta) + dz * Math.sin(theta)));
+          hv = Math.max(hv, Math.abs(-dx * Math.sin(theta) + dz * Math.cos(theta)));
+        }
+        hu += MASS_EDGE * r;
+        hv += MASS_EDGE * r;
+        if (!ellipseClear(cx, cz, theta, hu, hv)) {
+          masses.keptForCamera += 1;
+          continue;
+        }
+        const heights = part.map((t) => t.heightMetres).sort((p, q) => p - q);
+        const heightM = 0.6 * heights.at(-1) + 0.4 * heights[Math.floor(heights.length / 2)];
+        const autumned = part.find((t) => t.autumn);
+        const tint = [0, 1, 2].map((ch) => part.reduce((acc, t) => acc + t.tint[ch], 0) / part.length);
+        treeInstances.canopy.push({
+          x: cx, z: cz, y: Math.min(...part.map((t) => t.y)), angle: -theta, halfUM: hu / metres(1), halfVM: hv / metres(1),
+          crownM: (2 * Math.max(hu, hv)) / metres(1), heightMetres: heightM, heightFromChm: part.some((t) => t.heightFromChm),
+          source: part[0].source, stand: part[0].stand, autumn: autumned ? autumned.autumn : null, fitted: part.some((t) => t.fitted), tint, members: part.length,
+        });
+        for (const t of part) merged.add(t);
+        masses.groups += 1;
+        masses.trees += part.length;
+      }
+    }
+    treeInstances.broadleaf = treeInstances.broadleaf.filter((t) => !merged.has(t));
   }
 
   // ---- hedges along the shrub planters
@@ -398,11 +473,11 @@ export function placeTrees({ inputs, selectableBuildings, campusBuildings, offCa
       });
     }
   }
-  return { treeInstances, inventory, skipped, stands, hedgeSources };
+  return { treeInstances, inventory, skipped, stands, hedgeSources, masses };
 }
 
 export function buildTrees({ glb, placement }) {
-  const { treeInstances, inventory, skipped, stands, hedgeSources } = placement;
+  const { treeInstances, inventory, skipped, stands, hedgeSources, masses } = placement;
 
   // ---- materials (base colours: summer foliage, estimated against the VR tour and the NGII photo; the dashboard
   // calibrates crowns at load and tints the deciduous ones in autumn, src/lighting/foliage.mjs and season.mjs)
@@ -464,10 +539,25 @@ export function buildTrees({ glb, placement }) {
     ],
     metasequoia: [
       geometryPrimitive(trunk(0.18, 0.32, 5.0), materials.pineTrunk),
-      geometryPrimitive(tieredCrown(Array.from({ length: 7 }, (_, i) => [2.6 + i * 1.35, 2.6 + i * 1.35 + 2.6, 1.9 * (1 - i / 7.5) + 0.25]), 5, 0.6, 13), materials.metasequoia),
+      // eleven overlapping, drooping tiers on a full, broad-based cone (VR scene_c1 l and r, scene_e1 r, scene_c2 l): each tier
+      // 2.4 m deep stepped 0.95 m, radius 2.3 m at the base easing to the tip, smooth-shaded so the foliage reads soft
+      geometryPrimitive(tieredCrown(Array.from({ length: 11 }, (_, i) => [2.2 + i * 0.95, 2.2 + i * 0.95 + 2.4, 2.3 * (1 - i / 11) ** 0.8 + 0.3]), 7, 0.72, 13, 0.3), materials.metasequoia, { smooth: true }),
     ],
     conifer: [
       geometryPrimitive(tieredCrown([[0.2, 1.9, 1.1], [1.3, 3.1, 1.0], [2.5, 4.3, 0.8], [3.7, 5.6, 0.5]], 5, 0.85, 17), materials.conifer),
+    ],
+    canopy: [
+      // three thin stems and a broad, irregular canopy mass of overlapping lobes, about 12 x 8 m and 2.5-10 m high at scale 1
+      geometryPrimitive(mergeGeometries([trunk(0.16, 0.22, 4.2).translate(-3, 0, 0.4), trunk(0.17, 0.24, 4.6).translate(0.5, 0, -0.6), trunk(0.15, 0.21, 4.0).translate(3.4, 0, 0.5)]), materials.trunk),
+      geometryPrimitive(mergeGeometries([
+        lumpyCrown(3.1, 3.4, 41).translate(-3.2, 5.6, 0.6),
+        lumpyCrown(3.5, 3.9, 43).translate(0.2, 6.3, -0.7),
+        lumpyCrown(3.0, 3.3, 47).translate(3.4, 5.8, 0.8),
+        lumpyCrown(2.4, 2.6, 53).translate(-1.4, 7.8, 1.3),
+        lumpyCrown(2.2, 2.4, 59).translate(2.0, 8.1, -1.4),
+        lobe(2.6, 1.2, -4.6, 4.6, -1.6, 61),
+        lobe(2.5, 1.2, 4.7, 4.5, -1.2, 67),
+      ]), materials.broadleaf, { smooth: true }),
     ],
     shrub: [
       // low scrub mound (D4 west slope, data/photo/tree-species.json SG01): its height comes from the instance
@@ -500,17 +590,22 @@ export function buildTrees({ glb, placement }) {
       const p = parts.at(-1).positions;
       let top = 0;
       let radius = 0;
+      let reachX = 0;
+      let reachZ = 0;
       for (let i = 0; i < p.length; i += 3) {
         top = Math.max(top, p[i + 1]);
         radius = Math.max(radius, Math.hypot(p[i], p[i + 2]));
+        reachX = Math.max(reachX, Math.abs(p[i]));
+        reachZ = Math.max(reachZ, Math.abs(p[i + 2]));
       }
-      return [kind, { top, radius }];
+      return [kind, { top, radius, reachX, reachZ }];
     }),
   );
   const triangles = Object.fromEntries(Object.entries(species).map(([kind, parts]) => [kind, parts.reduce((s, p) => s + p.positions.length / 9, 0)]));
 
-  const all = SPECIES.flatMap((kind) => treeInstances[kind]);
+  const all = [...SPECIES, "canopy"].flatMap((kind) => treeInstances[kind]);
   const median = (values) => (values.length ? [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)] : 0);
+  console.log(`trees: continuous canopy: ${masses.trees} broadleaf trees of ${masses.groups} runs drawn as canopy masses (median ${median(treeInstances.canopy.map((t) => t.halfUM * 2)).toFixed(1)} x ${median(treeInstances.canopy.map((t) => t.halfVM * 2)).toFixed(1)} m); ${masses.keptForCamera} runs kept as separate trees for the VR camera clearance`);
   console.log(`trees: ${inventory.trees.length} inventory trees from ${inventory.crowns} photo crowns (data/trees.json); ${skipped.nudged} trunks moved off paving, kerbs, roads or walls (at most ${NUDGE_M} m), ${skipped.stationMoved} moved and ${skipped.station} left out to keep ${STATION_CLEAR_M} m from the VR cameras, ${skipped.blocked} with no ground within ${NUDGE_M} m and ${skipped.outside} outside EXTENT left out; ${all.length} trees drawn (on open ground ${stands.ground}, in planters or tree pits ${stands.pit}, in street-tree pits ${stands["street-pit"]}, in paved tree pits ${stands["paved-pit"]})`);
   console.log(`trees: species ${SPECIES.map((kind) => `${kind} ${treeInstances[kind].length} (median ${median(treeInstances[kind].map((t) => t.heightMetres)).toFixed(1)} m tall, crown ${median(treeInstances[kind].map((t) => t.crownM)).toFixed(1)} m)`).join(", ")}; hedges ${treeInstances.hedge.length} segments on ${hedgeSources.length} planters (${hedgeSources.join(", ")})`);
   console.log(`trees: heights from CHMv2 ${all.filter((t) => t.heightFromChm).length}, from crown size ${all.filter((t) => !t.heightFromChm).length}; species sources ${JSON.stringify(Object.fromEntries(Object.entries(all.reduce((m, t) => ({ ...m, [t.source.split(":")[0]]: (m[t.source.split(":")[0]] ?? 0) + 1 }), {}))))}`);
@@ -523,11 +618,12 @@ export function buildTrees({ glb, placement }) {
     const rotations = new Float32Array(instances.length * 4);
     const scales = new Float32Array(instances.length * 3);
     const colors = new Float32Array(instances.length * 3);
-    const { top, radius } = archetype[kind];
+    const { top, radius, reachX, reachZ } = archetype[kind];
     instances.forEach((t, i) => {
       translations.set([t.x, t.y, t.z], i * 3);
       rotations.set([0, Math.sin(t.angle / 2), 0, Math.cos(t.angle / 2)], i * 4);
       if (kind === "hedge") scales.set([metres(t.lengthM), metres(t.heightMetres), metres(t.widthM)], i * 3);
+      else if (kind === "canopy") scales.set([metres(t.halfUM / reachX), metres(t.heightMetres / top), metres(t.halfVM / reachZ)], i * 3);
       else {
         const s = metres(t.crownM / 2 / radius);
         scales.set([s, metres(t.heightMetres / top), s], i * 3);
