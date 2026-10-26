@@ -11,6 +11,7 @@ try:
     from .conflict_area import ConflictAreaManager
     from .behavior_manager import BehaviorManager
     from .mobility_graph import GraphPath, MobilityGraph
+    from .network_provenance import network_provenance
     from .od_manager import ODManager
     from .risk_engine import RiskEngine
     from .polygon_index import PolygonIndex
@@ -24,6 +25,7 @@ except ImportError:
     from conflict_area import ConflictAreaManager
     from behavior_manager import BehaviorManager
     from mobility_graph import GraphPath, MobilityGraph
+    from network_provenance import network_provenance
     from od_manager import ODManager
     from risk_engine import RiskEngine
     from polygon_index import PolygonIndex
@@ -49,6 +51,8 @@ class SimulationEngine:
         self.random = random.Random(seed)
         self.seed = seed
         graph_payload, self.network_runtime = load_runtime_graph(self.data_dir)
+        # measured vs estimated make-up of the network and the committed 60 s separation trace (dashboard, 추정 labels)
+        self.network_provenance = network_provenance(self.data_dir) if (self.data_dir / "campus_transport_network.geojson").exists() else None
         self.graph = MobilityGraph(graph_payload)
         walkable, roads = load_polygon_indexes(self.data_dir)
         # surface under each agent (crossing over road over the rest where they overlap); None without polygon files
@@ -431,6 +435,7 @@ class SimulationEngine:
             "current_risks": len(self.last_step_events),
             "network_runtime": dict(self.network_runtime),
             "network_coverage": coverage,
+            "network_provenance": self.network_provenance,
             "spatial_broad_phase": {
                 "interaction_candidates": self.interactions.spatial_index.last_candidate_count,
                 "interaction_pairs": self.interactions.spatial_index.last_pair_count,

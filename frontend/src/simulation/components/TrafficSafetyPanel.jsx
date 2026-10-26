@@ -40,6 +40,21 @@ function formatDuration(seconds = 0) {
   return minutes ? `${minutes}분 ${remainder}초` : `${remainder}초`;
 }
 
+// one decimal; a missing value shows "-" (never NaN)
+const pct = (value) => (Number.isFinite(value) ? value.toFixed(1) : "-");
+
+function NetworkProvenance({ provenance }) {
+  if (!provenance) return null;
+  const { person_measured_share: measured, person_estimated_share: estimated, crossing_connected: connected, crossing_count: crossings, separation } = provenance;
+  return (
+    <div className="mt-2 space-y-0.5 text-caption text-ink-muted">
+      <div>보행망: NGII 인도 {pct(measured)}% · 추정 공유통로 {pct(estimated)}% (추정)</div>
+      <div>횡단보도 {Number.isFinite(connected) ? connected : "-"}/{Number.isFinite(crossings) ? crossings : "-"} 연결</div>
+      {separation && <div>분리 검증(60초): 보행자 {pct(separation.person_on_walkable)}% · 차량 {pct(separation.car_on_road)}%</div>}
+    </div>
+  );
+}
+
 const seconds = (value) => (value == null ? "없음" : `${value}초`);
 const text = (value, title) => <span title={title} className="text-body tabular-nums text-ink">{value}</span>;
 const toned = (value, tone) => <StatusBadge tone={tone} className="text-caption tabular-nums">{String(value)}</StatusBadge>;
@@ -240,6 +255,7 @@ export function TrafficSafetyPanel() {
           {stats.network_runtime?.derived_allowed && (
             <StatusBadge tone="warning" className="self-start text-caption">파생 경로 개발 모드 · 실측 승인 데이터 아님</StatusBadge>
           )}
+          <NetworkProvenance provenance={stats.network_provenance} />
         </section>
       )}
 

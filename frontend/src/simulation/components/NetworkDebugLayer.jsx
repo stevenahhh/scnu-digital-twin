@@ -4,14 +4,7 @@ import { fetchNetwork, fetchNetworkQuality } from "../api/networkApi.mjs";
 import { describeSimulationError } from "../api/simulationHttp.mjs";
 import { simulationStore } from "../stores/simulationStore";
 import { simulationToThree } from "../utils/coordinateTransform";
-import { VEHICLE_LANE_HEX } from "../../ui/sceneTokens.mjs";
-
-const STYLE = {
-  vehicle_lane: [VEHICLE_LANE_HEX, false], allowed_road: [VEHICLE_LANE_HEX, false], vehicle_gate: [VEHICLE_LANE_HEX, false], parking_connection: [VEHICLE_LANE_HEX, false],
-  sidewalk: ["#16a34a", true], shared_path: ["#9333ea", false], pedestrian_gate: ["#16a34a", true], parking_walk: ["#16a34a", true], building_entrance: ["#22c55e", true],
-  scooter_lane: ["#f97316", false], bike_lane: ["#f97316", false], scooter_parking_connection: ["#f97316", false],
-  crosswalk: ["#ffffff", false],
-};
+import { styleForEdge } from "./networkDebugStyle.mjs";
 
 function positionsFor(feature, config, resolveHeight) {
   const coordinates = feature.geometry?.type === "Polygon" ? feature.geometry.coordinates?.[0] : feature.geometry?.coordinates;
@@ -58,9 +51,9 @@ export function NetworkDebugLayer({ coordinateConfig, resolveHeight, enabled }) 
   return (
     <group name="transport-network-debug">
       {network.features.filter((feature) => feature.properties?.feature_type === "edge").map((feature) => {
-        const [color, dashed] = STYLE[feature.properties.kind] || ["#64748b", true];
+        const { color, dashed, opacity } = styleForEdge(feature.properties);
         const points = positionsFor(feature, coordinateConfig, resolveHeight);
-        return points.length > 1 ? <Line key={feature.properties.id} points={points} color={color} lineWidth={dashed ? 1.5 : 2} dashed={dashed} dashSize={1.5} gapSize={1} transparent opacity={feature.properties.derived ? 0.42 : 0.95} /> : null;
+        return points.length > 1 ? <Line key={feature.properties.id} points={points} color={color} lineWidth={dashed ? 1.5 : 2} dashed={dashed} dashSize={1.5} gapSize={1} transparent opacity={opacity} /> : null;
       })}
       {[...invalidNodes].map((nodeId) => {
         const feature = nodes.get(nodeId);
