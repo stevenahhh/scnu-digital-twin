@@ -475,9 +475,9 @@ shadow, and MX01746). MX01746 replaces MK00926, a white dash that `markings.geoj
 
 ### VR rest-space reconciliation (2026-10-25)
 
-24 VR sightings (the 17 rest-space sightings of the VR station survey plus 7 garden and plaza items) against this survey: 7 match, 0 retype, **17 missing**; 28 further landscape items (steps, sculptures, signs) are listed in the JSON only. Machine copy: `rest-spaces-reconciliation.json`.
+24 VR sightings (the 17 rest-space sightings of the VR station survey plus 7 garden and plaza items) against this survey: 7 match, 0 retype, **16 missing**, 1 not a rest space (#17, scene_f2: EV charging bays); 28 further landscape items (steps, sculptures, signs) are listed in the JSON only. Machine copy: `rest-spaces-reconciliation.json`.
 
-Method: each sighting is a ray from its VR station (`scripts/perf/vr-stations.json`, refined yaw where present) at the face bearing plus the column angle of the sighting's middle column, 10-120 m long; a sighting on the nadir face (d) is a strip under the station, offset by its column. Surveyed objects of kind pergola, gazebo, bus_stop_shelter, bench, planter, low_wall, plaza_structure or fence within 8 m of it are candidates. `match`: a candidate of a kind that already stands for what the VR shows (the nearest one; two of that kind within 8 m set `ambiguous`). `retype`: only a candidate whose survey kind the VR corrects. `missing`: none. The photo column says whether the NGII 2025 photo shows a roof, wall or planter at the ray. Stations placed by ortho-match carry a nominal 40 m error, so a `missing` there can also be a station error; the reason says so. Nothing here changes the model: a later stage applies the decisions and creates the `RS` instances.
+Method: each sighting is a ray from its VR station (`scripts/perf/vr-stations.json`, refined yaw where present) at the face bearing plus the column angle of the sighting's middle column, 10-120 m long; a sighting on the nadir face (d) is a strip under the station, offset by its column. Surveyed objects of kind pergola, gazebo, bus_stop_shelter, bench, planter, low_wall, plaza_structure or fence within 8 m of it are candidates. `match`: a candidate of a kind that already stands for what the VR shows (the nearest one; two of that kind within 8 m set `ambiguous`). `retype`: only a candidate whose survey kind the VR corrects. `missing`: none. `not_rest_space`: a re-read of the VR face shows the sighting is no rest space at all (nothing is placed). The photo column says whether the NGII 2025 photo shows a roof, wall or planter at the ray. Stations placed by ortho-match carry a nominal 40 m error, so a `missing` there can also be a station error; the reason says so. Nothing here changes the model: a later stage applies the decisions and creates the `RS` instances.
 
 | # | scene / face / cols | kind seen | bearing | candidates within 8 m | decision | reason | typeId | photo | instance |
 |---|---|---|---:|---|---|---|---|---|---|
@@ -504,7 +504,60 @@ Method: each sighting is a ray from its VR station (`scripts/perf/vr-stations.js
 | - | scene_e8 / f / 500-1600 | garden: courtyard plaza with planters | 273.8 | OC0102 planter 1.1 m | match OC0102 | planter OC0102 lies 1.1 m from the ray (30 m out) | planter | yes | - |
 | 15 | scene_f1 / l / 550-800 | shelter: bus stop shelter | 146.2 | none | missing | no surveyed object within 8 m of the ray | bus_stop_shelter | no | RS0015 |
 | 16 | scene_f1 / d / 500-1400 | bench: two benches on sidewalk | nadir | none | missing | no surveyed object within 8 m of the ray | bench | no | RS0016 |
-| 17 | scene_f2 / d / 1400-1900 | shelter: small green-roof hut/booth | nadir | none | missing | no surveyed object within 8 m of the ray | hut | no | RS0017 |
+| 17 | scene_f2 / d / 1400-1900 | not a rest space: two green-painted EV charging bays (re-read; first noted as a green-roof hut/booth) | nadir | none | not_rest_space | the green patch is the 전기차 충전 구역 marking with wheel stops and a charger cabinet, not a roof | - | no | - |
+
+#### Applied (todo 25, 2026-10-26)
+
+The table above is the first pass. Applying it against the photo changed nine rows (the JSON keeps the first-pass
+reason and adds `applied`, `reason_applied`, `vr_confirmed`): 7 placed as new features in `rest-spaces.geojson`
+(10 features with the gate sign of todo 14), 5 retypes of survey objects the VR shows as a catalogue kind, 9 matches, 3 not rest spaces.
+The first pass tested candidates by their vertices and left out `bike_rack`, which hid OC0119 and OC0153.
+
+| # | scene | outcome |
+|---|---|---|
+| 1 | scene_a2 d | RS0001 three timber benches, placed from face d once the station was resected on A2's entrance and disabled bays (the ortho-match pin stood 155 m west) |
+| 2 | scene_a4 r | retype OC0119 bus_stop_shelter -> terminal_shelter (the long school-bus canopy) |
+| 3 | scene_a5 r | retype OC0121 gazebo -> pavilion_octagon (cantilever parasol, three tiers, deck and bench) |
+| 4 | scene_a5 d | retype OC0120 gazebo -> pavilion_hip (grey panels, blue trim) |
+| - | scene_a5 r | RS0003 garden_wall, white coping line traced on the photo |
+| 5 | scene_a6 l | retype OC0153 bike_rack -> canopy_shelter_row (striped hoods) |
+| - | scene_a6 l | match RS0007: the 'tree plaza' is the scene_a9 plaza |
+| 6 | scene_a9 f | RS0006 bench, RS0007 gravel tree pit, RS0007W brick planter wall on the plaza's south edge |
+| 7 | scene_a10 f | match RS0006: same plaza (the scene_a10 station stands 8 m from its corner) |
+| 8 | scene_a10 f/d | match OC0153: the 'striped awning' is the bike-shelter row seen from above; no awning instance |
+| - | scene_a16 f | not a rest space: the hedge lettering is a planting |
+| 9 | scene_f3 r | match BLD_SCNU_R138317: the hut is the registered building F3 학생테니스장 부속 시설(마동), so no rest-space feature (its VR look, yellow timber and a red gable roof, is a follow-up for the building looks) |
+| 10 | scene_a19 b | match OB0009 |
+| 11 | scene_c1 l | match estimateBenches: the box benches beside the tree pits are the 8 plaza benches already drawn (VR reading 5.8 m from one) |
+| 12 | scene_c1 b | match estimateBenches |
+| 13 | scene_d2 r | RS0013 open shelter (flat grey roof, bench), roof traced on the photo in the planted courtyard (the station's earlier yaw 44.3 was 95 deg off) |
+| 14 | scene_d4 l | retype OC0078 gazebo -> pavilion_hip (brown roof) |
+| - | scene_e5 b | not a rest space: a lawn garden with topiary is a planting |
+| - | scene_e7 f, scene_e8 f | match OC0137, OC0102 |
+| 15 | scene_f1 l | RS0015 bus stop shelter, roof traced at the east bus bay |
+| 16 | scene_f1 d | RS0016, RS0016B long benches, face d registered on the lane diamonds and the footway kerb |
+| 17 | scene_f2 d | not a rest space (EV charging bays) |
+
+### VR rest spaces (`rest-spaces.geojson`)
+
+The rest spaces the VR shows and this survey lacks (`rest-spaces-reconciliation.json`, decision `missing`) are 9 features
+for 7 sightings (plus the A19 gate sign of todo 14). Every dimension and position is an estimate (추정).
+
+| id | kind | VR scene / face | position | photo | confidence |
+|---|---|---|---|---|---|
+| RS0003 | garden_wall (white coping, timber lattice) | scene_a5 / r | white coping line traced on the photo | wall | 0.6 |
+| RS0006 | bench (orange timber) | scene_a9 / f | 1.1 m in front of RS0007W, where the VR bearing meets it | none | 0.4 |
+| RS0007 | planter (3 x 3 m gravel tree pit) | scene_a9 / f | VR bearing and depression angle from the station | none | 0.4 |
+| RS0007W | low_wall (red brick, 0.7 m) | scene_a9 / f | south edge of the paved plaza on the photo | wall | 0.5 |
+| RS0013 | bus_stop_shelter / court_shelter (flat grey roof) | scene_d2 / r | grey panel roof traced in the planted courtyard | roof | 0.6 |
+| RS0001 | bench x 3 (timber, 1.5 m) | scene_a2 / d | face d from the resected station (about 1 m); benches under tree shade on the photo | none | 0.4 |
+| RS0015 | bus_stop_shelter | scene_f1 / l | roof traced at the east bus bay | roof | 0.6 |
+| RS0016, RS0016B | bench (long, timber) | scene_f1 / d | face d registered on the lane diamonds and the footway kerb (about 1 m) | none | 0.4 |
+
+Tolerance: traced outlines sit within 0.25 m of the photo; the planter wall RS0007W is visible only at its west end
+(about 0.3 m). Duplicates: no feature lies within 3 m of a survey object of its class, no roofed rest space stands inside a building footprint (GIS or VR-only; the f3 tennis hut is the building BLD_SCNU_R138317), and the build's whole-set audit
+(survey, rest spaces, lamps, estimated benches) finds no pair. Retypes, matches, not-rest-space and deferred decisions are
+in the applied table above.
 
 ## Licence
 

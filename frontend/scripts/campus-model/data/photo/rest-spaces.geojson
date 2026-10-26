@@ -1,49 +1,431 @@
 {
- "type": "FeatureCollection",
- "source": "vr-scnu-360 + ngii-2025-ortho",
- "description": "Rest spaces and gate structures placed from the SCNU 360 VR tour (visual reference only, nothing copied) and checked against the NGII 2025 orthophoto; read by stages/furniture.mjs after objects-campus.geojson. Every position and dimension is an estimate (estimated: true).",
- "features": [
-  {
-   "type": "Feature",
-   "properties": {
-    "id": "RS-GATE-A19",
-    "kind": "gate_sign",
-    "subtype": "letter_sign",
-    "confidence": 0.4,
-    "method": "vr-resection",
-    "length_m": 7,
-    "depth_m": 0.45,
-    "height_m": 3.7,
-    "plinth_m": 0.6,
-    "colour": "#f4f3ee",
-    "bandColour": "#f4f3ee",
-    "height_source": "VR scene_a19 + scene_001 (estimated)",
-    "estimated": true,
-    "vr_scene": "scene_a19",
-    "vr_face": "l",
-    "vr_cols": [
-     693,
-     981
-    ],
-    "note": "국립순천대학교 / SCNU letter sign on a planted stone bed at the road edge of the A19 gate plaza. From the scene_a19 camera over the gate crossing (about 244182, 263716, 11.7 m from the car scale on the d face) the letters span l cols 693-981 (bearings 176-192 deg) and their base sits about 21 deg below the horizon, and the slab subtends about 16 deg: about 25 m south of the camera, just inside the plaza edge wall OC0128. Lettering not modelled (plain white slab and name band). Supersedes the survey point OC0111 (left out).",
-    "style": {
-     "colour": "white letters, white name band",
-     "form": "free-standing letter slab on a planted stone bed"
+  "type": "FeatureCollection",
+  "source": "vr-scnu-360 + ngii-2025-ortho",
+  "description": "Rest spaces and gate structures placed from the SCNU 360 VR tour (visual reference only, nothing copied) and checked against the NGII 2025 orthophoto; read by stages/furniture.mjs after objects-campus.geojson. RS-GATE-A19: the A19 gate sign (todo 14). RS0001-RS0017: VR-located rest spaces (data/photo/README.md 'VR rest spaces'): one feature per rest-space sighting of rest-spaces-reconciliation.json decided missing and placed, kind = data/rest-space-catalogue.json type. photo_support roof/wall: outline traced on the NGII 2025 sheet (within 0.25 m of the photo); none: VR-only position (bearing and depression angle from the VR station, or a nadir face registered on road markings), confidence <= 0.4. Every value is an estimate (추정).",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS-GATE-A19",
+        "kind": "gate_sign",
+        "subtype": "letter_sign",
+        "confidence": 0.4,
+        "method": "vr-resection",
+        "length_m": 7,
+        "depth_m": 0.45,
+        "height_m": 3.7,
+        "plinth_m": 0.6,
+        "colour": "#f4f3ee",
+        "bandColour": "#f4f3ee",
+        "height_source": "VR scene_a19 + scene_001 (estimated)",
+        "estimated": true,
+        "vr_scene": "scene_a19",
+        "vr_face": "l",
+        "vr_cols": [
+          693,
+          981
+        ],
+        "note": "국립순천대학교 / SCNU letter sign on a planted stone bed at the road edge of the A19 gate plaza. From the scene_a19 camera over the gate crossing (about 244182, 263716, 11.7 m from the car scale on the d face) the letters span l cols 693-981 (bearings 176-192 deg) and their base sits about 21 deg below the horizon, and the slab subtends about 16 deg: about 25 m south of the camera, just inside the plaza edge wall OC0128. Lettering not modelled (plain white slab and name band). Supersedes the survey point OC0111 (left out).",
+        "style": {
+          "colour": "white letters, white name band",
+          "form": "free-standing letter slab on a planted stone bed"
+        }
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            127.4837136,
+            34.96836267
+          ],
+          [
+            127.48379023,
+            34.96835876
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0003",
+        "kind": "garden_wall",
+        "estimated": true,
+        "colour": "#e4e1d8",
+        "copingColour": "#f4f3ef",
+        "lattice_m": 0.9,
+        "latticeColour": "#8a5a3c",
+        "dims": {
+          "heightM": 0.9,
+          "thicknessM": 0.3
+        },
+        "vr_scene": "scene_a5",
+        "vr_face": "r",
+        "vr_cols": [
+          400,
+          2048
+        ],
+        "photo_support": "wall",
+        "confidence": 0.6,
+        "position_method": "photo: white coping line traced on the NGII 2025 sheet (task-25/ortho/a5-wall-zoom.png)",
+        "height_source": "catalogue garden_wall + VR scene_a5 (estimated)",
+        "note": "white-coped wall with a brown timber lattice screen round the walled garden (VR scene_a5 r)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            127.4811204,
+            34.9682274
+          ],
+          [
+            127.4814923,
+            34.9681583
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0015",
+        "kind": "bus_stop_shelter",
+        "estimated": true,
+        "style": {
+          "colour": "grey roof"
+        },
+        "vr_scene": "scene_f1",
+        "vr_face": "l",
+        "vr_cols": [
+          550,
+          800
+        ],
+        "photo_support": "roof",
+        "confidence": 0.6,
+        "position_method": "photo: shelter roof traced on the NGII 2025 sheet beside the bus bay (task-25/ortho/f1-stop-zoom.png)",
+        "height_source": "catalogue bus_stop_shelter + VR scene_f1 (estimated)",
+        "note": "bus stop shelter on the east footway of the arterial (VR scene_f1 l)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.4849108,
+              34.9660769
+            ],
+            [
+              127.4849381,
+              34.9660787
+            ],
+            [
+              127.4849542,
+              34.9660218
+            ],
+            [
+              127.4849258,
+              34.9660177
+            ],
+            [
+              127.4849108,
+              34.9660769
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0016",
+        "kind": "bench",
+        "estimated": true,
+        "back": false,
+        "colour": "#9a5a3a",
+        "spacing_m": 10,
+        "dims": {
+          "lengthM": 4.8,
+          "depthM": 0.45
+        },
+        "vr_scene": "scene_f1",
+        "vr_face": "d",
+        "vr_cols": [
+          500,
+          1400
+        ],
+        "photo_support": "none",
+        "confidence": 0.4,
+        "position_method": "nadir: VR face d registered on the photo by the lane diamonds (along the road) and the footway kerb (across it), about 1 m",
+        "height_source": "catalogue bench + VR scene_f1 (estimated)",
+        "note": "long backless timber bench on the lawn edge beside the footway (VR scene_f1 d)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            127.4848871,
+            34.9662751
+          ],
+          [
+            127.4848963,
+            34.9662325
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0016B",
+        "kind": "bench",
+        "estimated": true,
+        "back": false,
+        "colour": "#9a5a3a",
+        "spacing_m": 10,
+        "dims": {
+          "lengthM": 4.8,
+          "depthM": 0.45
+        },
+        "vr_scene": "scene_f1",
+        "vr_face": "d",
+        "vr_cols": [
+          500,
+          1400
+        ],
+        "photo_support": "none",
+        "confidence": 0.4,
+        "position_method": "nadir: VR face d registered on the photo by the lane diamonds (along the road) and the footway kerb (across it), about 1 m",
+        "height_source": "catalogue bench + VR scene_f1 (estimated)",
+        "note": "long backless timber bench on the lawn edge beside the footway (VR scene_f1 d)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            127.484874,
+            34.9663578
+          ],
+          [
+            127.4848832,
+            34.9663152
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0007",
+        "kind": "planter",
+        "estimated": true,
+        "fill": "gravel",
+        "colour": "#6d7a86",
+        "dims": {
+          "kerbHeightM": 0.15
+        },
+        "vr_scene": "scene_a9",
+        "vr_face": "f",
+        "vr_cols": [
+          600,
+          2048
+        ],
+        "photo_support": "none",
+        "confidence": 0.4,
+        "position_method": "vr: scene_a9 station + face f col 1067 row 1822 (bearing 150.8, 37.9 deg down, 12.9 m); the photo shows the tree crown",
+        "height_source": "catalogue planter + VR scene_a9 (estimated)",
+        "note": "3 x 3 m gravel tree pit with a blue-grey kerb in the paved plaza (VR scene_a9 f)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.4802167,
+              34.9669134
+            ],
+            [
+              127.4802494,
+              34.9669152
+            ],
+            [
+              127.4802516,
+              34.9668882
+            ],
+            [
+              127.4802188,
+              34.9668864
+            ],
+            [
+              127.4802167,
+              34.9669134
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0006",
+        "kind": "bench",
+        "estimated": true,
+        "back": false,
+        "colour": "#d9822b",
+        "spacing_m": 10,
+        "dims": {
+          "lengthM": 1.8
+        },
+        "vr_scene": "scene_a9",
+        "vr_face": "f",
+        "vr_cols": [
+          600,
+          2048
+        ],
+        "photo_support": "none",
+        "confidence": 0.4,
+        "position_method": "vr + photo: 1.1 m in front of the planter wall, where the scene_a9 face f reading (bearing 162.3, 16 m) meets it; under tree crowns on the photo",
+        "height_source": "catalogue bench + VR scene_a9 (estimated)",
+        "note": "orange timber bench in front of the brick planter wall (VR scene_a9 f)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            127.4802036,
+            34.9668604
+          ],
+          [
+            127.4802233,
+            34.9668614
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0007W",
+        "kind": "low_wall",
+        "estimated": true,
+        "colour": "#a5533f",
+        "dims": {
+          "heightM": 0.7,
+          "thicknessM": 0.3
+        },
+        "vr_scene": "scene_a9",
+        "vr_face": "f",
+        "vr_cols": [
+          700,
+          1700
+        ],
+        "photo_support": "wall",
+        "confidence": 0.5,
+        "position_method": "photo: the south edge of the paved plaza (brick-red edge visible at its west end, task-25/ortho/a9-edge-zoom.png), 15.5 m as the VR wall across cols 700-1700",
+        "height_source": "catalogue low_wall + VR scene_a9 (estimated)",
+        "note": "red-brick planter wall with a hedge behind it on the plaza's south edge (VR scene_a9 f)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            127.4800611,
+            34.9668435
+          ],
+          [
+            127.4802309,
+            34.9668518
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0013",
+        "kind": "bus_stop_shelter",
+        "estimated": true,
+        "subtype": "court_shelter",
+        "style": {
+          "colour": "grey roof"
+        },
+        "vr_scene": "scene_d2",
+        "vr_face": "r",
+        "vr_cols": [
+          1050,
+          1300
+        ],
+        "photo_support": "roof",
+        "confidence": 0.6,
+        "position_method": "photo: grey panel roof traced on the NGII 2025 sheet in the planted courtyard, confirmed by the resected scene_d2 station (bearing and depression of the roof on face r)",
+        "height_source": "catalogue bus_stop_shelter + VR scene_d2 (estimated)",
+        "note": "flat grey panel roof on four grey steel posts over a timber bench, no glass (VR scene_d2 r)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.4779076,
+              34.9703777
+            ],
+            [
+              127.4779448,
+              34.9703785
+            ],
+            [
+              127.4779446,
+              34.9703469
+            ],
+            [
+              127.4779063,
+              34.9703462
+            ],
+            [
+              127.4779076,
+              34.9703777
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0001",
+        "kind": "bench",
+        "estimated": true,
+        "back": false,
+        "colour": "#a5533f",
+        "spacing_m": 3.25,
+        "dims": {
+          "lengthM": 1.5,
+          "depthM": 0.45
+        },
+        "vr_scene": "scene_a2",
+        "vr_face": "d",
+        "vr_cols": [
+          0,
+          700
+        ],
+        "photo_support": "none",
+        "confidence": 0.4,
+        "position_method": "nadir: VR face d from the resected scene_a2 station (15.4 m, yaw 257.2), about 1 m; the plaza edge is on the photo, the benches are not resolvable",
+        "height_source": "catalogue bench + VR scene_a2 (estimated)",
+        "note": "three red-brown timber benches along the edge of the diamond-tiled plaza east of A2 (VR scene_a2 d)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            127.4814483,
+            34.9686767
+          ],
+          [
+            127.4814728,
+            34.9687238
+          ]
+        ]
+      }
     }
-   },
-   "geometry": {
-    "type": "LineString",
-    "coordinates": [
-     [
-      127.4837136,
-      34.96836267
-     ],
-     [
-      127.48379023,
-      34.96835876
-     ]
-    ]
-   }
-  }
- ]
+  ]
 }

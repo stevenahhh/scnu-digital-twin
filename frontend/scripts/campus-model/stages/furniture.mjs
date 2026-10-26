@@ -17,13 +17,14 @@ import { fileURLToPath } from "node:url";
 import { METRES_PER_DEGREE_LAT, METRES_PER_DEGREE_LON, geoToModel, metres, modelToGeo } from "../lib/frame.mjs";
 import { pointInRing, ringArea, ringCentroid } from "../lib/geometry.mjs";
 import { mulberry32 } from "../lib/raster.mjs";
-import { Kit, along, bufferLine, frame, local, localPlan, offsetLine, orientedRect, rgb, toLocal } from "../lib/solids.mjs";
+import { Kit, along, bufferLine, frame, lineLength, local, localPlan, offsetLine, orientedRect, rgb, sub, toLocal } from "../lib/solids.mjs";
 import { GLOW_UV, LAMP_SPACING_M, appendLampSolids, distanceToLines, objectDistance, roadNetwork, towardRoad } from "./lights.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const OBJECTS = path.join(HERE, "..", "data", "photo", "objects-campus.geojson");
-// VR-located rest spaces and the A19 gate sign (estimated; README "Street furniture"), read after the survey.
-const REST_SPACES = path.join(HERE, "..", "data", "photo", "rest-spaces.geojson");
+// VR-located rest spaces and the A19 gate sign (estimated; data/photo/README.md "VR rest spaces", README "Street
+// furniture"), read after the survey; REST_SPACES_FILE swaps it (tests).
+export const REST_SPACES = process.env.REST_SPACES_FILE ?? path.join(HERE, "..", "data", "photo", "rest-spaces.geojson");
 const GROUND_FEATURES = path.join(HERE, "..", "data", "osm-ground.json");
 const M = metres;
 
@@ -32,10 +33,36 @@ const M = metres;
 const EXCLUDED = {
   OC0111: "SCNU letter monument: superseded by RS-GATE-A19 (data/photo/rest-spaces.geojson, gate_sign), placed from VR scene_a19 (and scene_001) about 13 m further south at the plaza's road edge; the 2025 photo shows that corner of the gate plaza under construction, so this survey position (VR only, confidence 0.2) is left out",
 };
+// A retype may carry props (merged over the survey's properties) for the catalogue builder that now draws the object.
 const RETYPED = {
   OB0010: {
     kind: "stepped_arc",
     reason: "surveyed as a white roofed pergola, but VR scene_a19 shows no roof there, only the stepped arc of the finished gate plaza, and the photo shows a curved edge with a thin shadow; built as a two-tier curved step (0.45 m)",
+  },
+  OC0078: {
+    kind: "pavilion_hip",
+    reason: "VR scene_d4 l (cols 1250-1450): the garden 정자 has a brown square hip roof on four timber columns; drawn by the catalogue pavilion_hip builder (estimated)",
+    props: { roofColour: "#6c4b37", trimColour: "#4f3627" },
+  },
+  OC0119: {
+    kind: "terminal_shelter",
+    reason: "VR scene_a4 r (cols 1100-2048): the school-bus terminal roof on two rows of white posts with inverted-U ribs, solar panels over its far part and a lattice screen at the back; drawn by the catalogue terminal_shelter builder (estimated)",
+    props: { solar_from: 0.7, back_wall: true, dims: { widthM: 7.6, heightM: 3.0, postSpacingM: 4.0 } },
+  },
+  OC0120: {
+    kind: "pavilion_hip",
+    reason: "VR scene_a5 d (cols 1300-1900): the walled-garden 정자, silver-grey metal roof panels with blue fascia and hip caps; drawn by the catalogue pavilion_hip builder (estimated)",
+    props: { roofColour: "#a3abb0", trimColour: "#1d6fe3" },
+  },
+  OC0121: {
+    kind: "pavilion_octagon",
+    reason: "VR scene_a5 r (cols 1450-1650): a teal octagonal cantilever parasol in three stepped tiers on a curved hook mast, a timber deck with a bench beside it; drawn by the catalogue pavilion_octagon builder (estimated)",
+    props: { support: "cantilever", tiers: 3, roofColour: "#1c8f86", trimColour: "#57b3a8", postColour: "#7a5a3c", bearing_deg: 90, deck: { lengthM: 3.2, widthM: 2.2, offsetM: [-2.6, 0.6], benchLengthM: 1.8, colour: "#8a4f36" }, dims: { eaveHeightM: 2.4, apexHeightM: 4.0, floorHeightM: 0 } },
+  },
+  OC0153: {
+    kind: "canopy_shelter_row",
+    reason: "VR scene_a6 l (cols 500-1550) and scene_a10 d/f (the 'striped awning' seen from above is this row): two bike shelters under striped blue and light-blue fabric hoods; drawn by the catalogue canopy_shelter_row builder (estimated)",
+    props: { colours: ["#1f8be0", "#9fdcf5"], stripe_m: 1.0, dims: { moduleWidthM: 2.2, moduleLengthM: 5.0, heightM: 2.4 } },
   },
 };
 // The survey gives parasols and the kiosk its generic plaza_structure default of 0.5 m (height_source "kind default").
@@ -60,7 +87,7 @@ export function leanOffset([x, z], heightM) {
   return [M(east * heightM), -M(north * heightM)];
 }
 
-const ROOFED = new Set(["bus_stop_shelter", "pergola", "gazebo", "bike_rack", "reviewing_stand", "stadium_seating", "trash_station"]);
+const ROOFED = new Set(["bus_stop_shelter", "pergola", "gazebo", "bike_rack", "reviewing_stand", "stadium_seating", "trash_station", "pavilion_hip", "pavilion_octagon", "canopy_shelter_row", "terminal_shelter", "awning", "hut"]);
 const ROOFED_SUBTYPES = new Set(["kiosk", "parasol"]);
 
 // ---------------------------------------------------------------- palette (sRGB, estimated from VR and the photo)
@@ -73,6 +100,7 @@ const C = {
   roofBlue: rgb("#3063a7"), roofGrey: rgb("#8c9298"), roofYellow: rgb("#c9b274"), roofRed: rgb("#a9433b"), roofBrown: rgb("#6c4b37"),
   roofDark: rgb("#4a4f4c"), roofGreen: rgb("#3f6c50"), binBlue: rgb("#2e60a9"), goalWhite: rgb("#f3f3f3"), board: rgb("#70b6e1"),
   signBlue: rgb("#2b5dab"), hoopOrange: rgb("#d5571f"), tan: rgb("#c9aa7c"), brown: rgb("#8f6a4c"), red: rgb("#b4503f"), plazaBench: rgb("#2c4f74"),
+  gravel: rgb("#a3927a"),
 };
 const GLASS = { pane: rgb("#c6dce5", 80), canopy: rgb("#e8eff3", 150), net: rgb("#2f5b3b", 75), mesh: rgb("#207e77", 95), goalNet: rgb("#f5f5f5", 75) };
 
@@ -83,6 +111,9 @@ const openRing = (ring) => {
 const disc = ([x, z], radius, n = 8) => Array.from({ length: n }, (_, i) => [x + Math.cos((i / n) * Math.PI * 2) * radius, z + Math.sin((i / n) * Math.PI * 2) * radius]);
 
 function heightOf(p) {
+  // Rest-space instances (data/rest-space-catalogue.json kinds) without a height of their own take their type's.
+  if (p.height_m === undefined && REST_TYPES[p.kind]) return { heightM: restHeightM(p.kind, p.dims, p.id), heightSource: `catalogue ${p.kind} (estimated)` };
+  if (p.height_m === undefined && p.kind === "signboard") return { heightM: (p.clearance_m ?? SIGNBOARD.clearanceM) + (p.panel_m ?? SIGNBOARD.panelM), heightSource: "signboard defaults (estimated)" };
   if (SUBTYPE_HEIGHT_M[p.subtype] && /kind default/.test(p.height_source ?? "")) return { heightM: SUBTYPE_HEIGHT_M[p.subtype], heightSource: `subtype default for a ${p.subtype} (the survey's ${p.height_m} m is its plaza_structure default)` };
   if (p.kind === "plaza_structure" && p.subtype === "planter") return { heightM: PLAZA_PLANTER_KERB_M, heightSource: "VR scene_c1: lawn squares with a low kerb" };
   return { heightM: p.height_m, heightSource: p.height_source ?? "survey" };
@@ -94,22 +125,28 @@ export function loadFurniture() {
   const rest = existsSync(REST_SPACES) ? JSON.parse(readFileSync(REST_SPACES, "utf8")) : { features: [] };
   const objects = [];
   const excluded = [];
-  const features = [
-    ...data.features.map((f) => ({ ...f, source: "objects-campus.geojson" })),
-    ...rest.features.map((f) => ({ ...f, source: "rest-spaces.geojson" })),
-  ];
-  for (const { properties: p, geometry: g, source } of features) {
-    if (EXCLUDED[p.id]) {
-      excluded.push({ id: p.id, kind: p.kind, reason: EXCLUDED[p.id] });
+  const ids = new Set();
+  const features = [...data.features.map((f) => ({ ...f, source: "survey" })), ...rest.features.map((f) => ({ ...f, source: "rest-spaces" }))];
+  for (const { properties: raw, geometry: g, source } of features) {
+    if (ids.has(raw.id)) throw new Error(`furniture: duplicate object id ${raw.id} (${source})`);
+    ids.add(raw.id);
+    if (EXCLUDED[raw.id]) {
+      excluded.push({ id: raw.id, kind: raw.kind, reason: EXCLUDED[raw.id] });
       continue;
     }
+    const p = RETYPED[raw.id]?.props ? { ...raw, ...RETYPED[raw.id].props } : raw;
     const toModel = ([lon, lat]) => geoToModel(lon, lat);
-    const object = { id: p.id, kind: RETYPED[p.id]?.kind ?? p.kind, surveyKind: p.kind, subtype: p.subtype ?? null, p, source, ...heightOf(p) };
+    const object = { id: p.id, kind: RETYPED[p.id]?.kind ?? p.kind, surveyKind: p.kind, subtype: p.subtype ?? null, source, p, ...heightOf(p) };
     if (g.type === "Point") object.point = toModel(g.coordinates);
     else if (g.type === "LineString") object.line = g.coordinates.map(toModel);
     else object.ring = openRing(g.coordinates[0].map(toModel));
-    // Roofs were outlined on the photo, so they include the relief lean; the footprint is the outline moved back.
-    if (ROOFED.has(object.kind) || ROOFED_SUBTYPES.has(object.subtype)) {
+    // Roofs were outlined on the photo, so they include the relief lean; the footprint is the outline moved back. A rest
+    // space placed from the VR alone (photo_support "none") has no photo outline: its outline is the footprint.
+    if ((ROOFED.has(object.kind) || ROOFED_SUBTYPES.has(object.subtype)) && (object.ring || object.line) && p.photo_support === "none") {
+      object.footprint = object.ring ?? bufferLine(object.line, M((p.width_m ?? 2) / 2));
+      if (object.line) object.axis = object.line;
+      object.leanM = 0;
+    } else if ((ROOFED.has(object.kind) || ROOFED_SUBTYPES.has(object.subtype)) && (object.ring || object.line)) {
       object.photoRing = object.ring ?? bufferLine(object.line, M((p.width_m ?? 2) / 2));
       const [dx, dz] = leanOffset(ringCentroid(object.photoRing), object.heightM);
       object.footprint = object.photoRing.map(([x, z]) => [x - dx, z - dz]);
@@ -132,14 +169,14 @@ export function loadFurniture() {
 }
 
 // ---------------------------------------------------------------- building helpers
-function makeContext({ groundAt, objects, roads, sites, fieldCentre }) {
+export function makeContext({ groundAt, objects, roads, sites, fieldCentre }) {
   const solid = new Kit();
   const glass = new Kit();
   const glow = new Kit({ uvs: true });
   const samples = (ring) => [...ring, ringCentroid(ring), ...ring.map((p, i) => [(p[0] + ring[(i + 1) % ring.length][0]) / 2, (p[1] + ring[(i + 1) % ring.length][1]) / 2])];
   const heights = (ring) => samples(ring).map(([x, z]) => groundAt(x, z)).sort((a, b) => a - b);
   return {
-    solid, glass, glow, groundAt, objects, roads, sites, fieldCentre,
+    solid, glass, glow, groundAt, objects, roads, sites, fieldCentre, colours: C,
     byId: new Map(objects.map((o) => [o.id, o])),
     minGround: (ring) => heights(ring)[0],
     maxGround: (ring) => heights(ring).at(-1),
@@ -272,10 +309,153 @@ const styleColour = (o, fallback) => {
   return fallback;
 };
 
+// ---------------------------------------------------------------- rest spaces (data/rest-space-catalogue.json)
+// Parametric pavilions, shelters and garden pieces. An instance (a rest-space feature, or a survey object retyped to a
+// catalogue kind) sets `dims` overrides by catalogue name; every other dimension is its type's default. Every value is
+// an estimate (추정): KDS 34 50 15 ranges, vendor envelopes and VR reading, named per type in its dimsSource.
+const REST_TYPES = JSON.parse(readFileSync(path.join(HERE, "..", "data", "rest-space-catalogue.json"), "utf8")).types;
+const clampTo = (value, [lo, hi]) => Math.min(hi, Math.max(lo, value));
+
+export function restDims(kind, given = {}, id = kind) {
+  const type = REST_TYPES[kind];
+  if (!type) throw new Error(`furniture: ${kind} is not a type of data/rest-space-catalogue.json (${id})`);
+  for (const name of Object.keys(given)) if (!type.dims[name]) throw new Error(`furniture: ${id} sets ${name}, not a ${kind} dimension`);
+  return Object.fromEntries(Object.entries(type.dims).map(([name, { default: value, range }]) => {
+    const v = given[name] ?? value;
+    if (!(v >= range[0] && v <= range[1])) throw new Error(`furniture: ${id} ${kind}.${name} ${v} lies outside the catalogue range ${range[0]}-${range[1]}`);
+    return [name, v];
+  }));
+}
+const dimsOf = (o) => restDims(o.kind, o.p.dims, o.id);
+const HEIGHT_DIMS = ["ridgeHeightM", "apexHeightM", "heightM", "frontHeightM", "seatHeightM", "kerbHeightM"];
+function restHeightM(kind, given, id) {
+  const dims = restDims(kind, given, id);
+  return dims[HEIGHT_DIMS.find((name) => name in dims)];
+}
+
+// Centre and long axis of an instance: from its outline (survey footprint or traced roof), else its point and
+// bearing_deg (clockwise from north, default 0). lengthM/widthM are the outline's sizes (null for a point). ground is
+// the median ground under the outline; dropM (metres) how far the lowest ground lies below it, so bases sunk by it
+// reach the ground on a slope or across the raised walkway slab (stages/kerbs.mjs) instead of floating on its low side.
+function restPlacement(ctx, o) {
+  const ring = o.footprint ?? o.ring;
+  if (ring) {
+    const r = orientedRect(ring);
+    const dropM = (ctx.medianGround(ring) - ctx.minGround(ring)) / M(1);
+    if (o.p.bearing_deg === undefined) return { centre: r.centre, u: r.u, lengthM: 2 * r.halfLength, widthM: 2 * r.halfWidth, ground: ctx.medianGround(ring), dropM };
+    const b = (o.p.bearing_deg * Math.PI) / 180;
+    const u = [Math.sin(b), -Math.cos(b)];
+    const along = Math.abs(u[0] * r.u[0] + u[1] * r.u[1]) >= Math.SQRT1_2;
+    return { centre: r.centre, u, lengthM: 2 * (along ? r.halfLength : r.halfWidth), widthM: 2 * (along ? r.halfWidth : r.halfLength), ground: ctx.medianGround(ring), dropM };
+  }
+  if (!o.point) throw new Error(`furniture: ${o.kind} ${o.id} needs a Point or a Polygon`);
+  const bearing = ((o.p.bearing_deg ?? 0) * Math.PI) / 180;
+  return { centre: o.point, u: [Math.sin(bearing), -Math.cos(bearing)], lengthM: null, widthM: null, ground: ctx.groundAt(...o.point), dropM: 0 };
+}
+
+// Instance colours: "#rrggbb" or a palette name (C); absent -> fallback.
+function paintOf(value, fallback, id) {
+  if (value === undefined || value === null) return fallback;
+  if (/^#[0-9a-f]{6}$/i.test(value)) return rgb(value);
+  if (C[value]) return C[value];
+  throw new Error(`furniture: ${id} colour ${value} is neither #rrggbb nor a palette name`);
+}
+
+// Hip roof over the local rectangle |s| <= hs, |t| <= ht from height h0 at the eaves to `top` (a pyramid when square):
+// four planes of equal pitch in `paint`, the ridge along the longer side; `band` ({ paint, widthM }) lays an eave
+// band along the lower edge of every plane (the blue edge of the scene_a5 roof).
+function hipRoof(ctx, f, hs, ht, h0, top, paint, band = null) {
+  const alongS = hs >= ht;
+  const half = Math.abs(hs - ht);
+  const ridgeEnd = ([s, t]) => (alongS ? [Math.sign(s) * half, 0] : [0, Math.sign(t) * half]);
+  const corners = [[-hs, -ht], [hs, -ht], [hs, ht], [-hs, ht]];
+  const middle = local(f, 0, 0, h0);
+  for (let i = 0; i < 4; i += 1) {
+    const a = corners[i];
+    const b = corners[(i + 1) % 4];
+    const [ra, rb] = [ridgeEnd(a), ridgeEnd(b)];
+    const plan = ra[0] === rb[0] && ra[1] === rb[1] ? [[...a, h0], [...b, h0], [...rb, top]] : [[...a, h0], [...b, h0], [...rb, top], [...ra, top]];
+    const points = plan.map(([s, t, h]) => local(f, s, t, h));
+    const centre = points.reduce((acc, p) => [acc[0] + p[0] / points.length, acc[1] + p[1] / points.length, acc[2] + p[2] / points.length], [0, 0, 0]);
+    ctx.solid.face(points, sub(centre, middle), paint);
+    if (band) {
+      const k = band.widthM / Math.min(hs, ht);
+      const up = (corner, end) => [corner[0] + (end[0] - corner[0]) * k, corner[1] + (end[1] - corner[1]) * k, h0 + (top - h0) * k + 0.01];
+      const strip = [[...a, h0 + 0.01], [...b, h0 + 0.01], up(b, rb), up(a, ra)].map(([s, t, h]) => local(f, s, t, h));
+      ctx.solid.face(strip, sub(centre, middle), band.paint);
+    }
+  }
+  return { corners, ridgeEnd };
+}
+
+// Axis of a rest space drawn along a line (rows, long roofs, awnings).
+// Axis of a row kind: its LineString (lean-corrected for roofs), else the long centreline of its outline (a survey roof
+// retyped to a row kind).
+function axisOf(o) {
+  const line = o.axis ?? o.line;
+  if (line) return line;
+  const ring = o.footprint ?? o.ring;
+  if (!ring) throw new Error(`furniture: ${o.kind} ${o.id} needs a LineString axis, not a Point`);
+  const r = orientedRect(ring);
+  const [dx, dz] = [r.u[0] * M(r.halfLength), r.u[1] * M(r.halfLength)];
+  return [[r.centre[0] - dx, r.centre[1] - dz], [r.centre[0] + dx, r.centre[1] + dz]];
+}
+
+// Rest-space candidates that would draw an existing object twice: within radiusM of an object of the same class (all
+// roofed kinds are one class, the rest go by kind, street lamps included). Returns [{ id, other, kind, distanceM }].
+const dedupClass = (kind, subtype) => (ROOFED.has(kind) ? "roofed" : kind === "plaza_structure" ? `${kind}/${subtype}` : kind);
+export function duplicatesOf(candidates, existing, radiusM = 3) {
+  const found = [];
+  for (const o of candidates) {
+    const outline = o.footprint ?? o.ring;
+    const at = o.point ?? (outline ? ringCentroid(outline) : [(o.line[0][0] + o.line.at(-1)[0]) / 2, (o.line[0][1] + o.line.at(-1)[1]) / 2]);
+    for (const other of existing) {
+      if (other.id === o.id || dedupClass(other.kind, other.subtype) !== dedupClass(o.kind, o.subtype)) continue;
+      const distanceM = objectDistance(at, other) / M(1);
+      if (distanceM < radiusM) found.push({ id: o.id, other: other.id, kind: o.kind, distanceM: Number(distanceM.toFixed(2)) });
+    }
+  }
+  return found;
+}
+
+// Whole-set duplicate audit: every pair of the same class (roofed kinds one class, the rest by kind) closer than
+// radiusM among the drawn objects (survey and rest spaces), the lamps (surveyed and estimated) and the estimated benches.
+// Returns [{ id, other, kind, distanceM }] once per pair.
+// Survey pairs that touch by design (one structure surveyed in parts) are listed, not counted.
+export const AUDIT_COMPOUNDS = {
+  "OC0064+OC0065": "the two crossing bars of one X-shaped pergola in the pocket park",
+};
+export function auditDuplicates(objects, lamps = [], benches = [], radiusM = 3) {
+  const items = [
+    ...objects.filter((o) => o.kind !== "street_lamp"),
+    ...lamps.map((lamp) => ({ id: lamp.id, kind: "street_lamp", point: lamp.at })),
+    ...benches.map((bench, i) => ({ id: `EB${String(i + 1).padStart(3, "0")}`, kind: "bench", point: bench.at })),
+  ];
+  return duplicatesOf(items, items, radiusM).filter(({ id, other }) => id < other && !AUDIT_COMPOUNDS[`${id}+${other}`]);
+}
+
+// Fabric stripes across a length: equal bands about widthM wide, colour index alternating 0, 1, 0, ...
+export function stripeBands(lengthM, widthM) {
+  const n = Math.max(1, Math.round(lengthM / widthM));
+  return Array.from({ length: n }, (_, k) => ({ s0: (lengthM * k) / n, s1: (lengthM * (k + 1)) / n, colour: k % 2 }));
+}
+
+// A face seen from both sides (canopies and fabric are open underneath).
+function twoSided(ctx, points, outward, paint, underPaint = paint) {
+  ctx.solid.face(points, outward, paint);
+  ctx.solid.face(points, [-outward[0], -outward[1], -outward[2]], underPaint);
+}
+
 // ---------------------------------------------------------------- builders, one per kind
-const B = {};
+export const B = {};
 
 B.low_wall = (ctx, o) => {
+  if (o.p.dims !== undefined) {
+    // rest-space low wall (VR scene_a9: red-brick planter walls): catalogue thickness and height, colour per instance
+    const d = dimsOf(o);
+    wall(ctx, ctx.solid, o.line, d.thicknessM, d.heightM, paintOf(o.p.colour, C.concrete, o.id));
+    return;
+  }
   const curvedPlaza = o.id === "OB0024"; // VR scene_c1: blue-grey coping around the red terrace
   const colour = curvedPlaza ? C.slate : /white/.test(o.p.note ?? "") ? C.white : C.concrete;
   wall(ctx, ctx.solid, o.line, 0.3, o.heightM, colour);
@@ -295,6 +475,31 @@ B.fence = (ctx, o) => {
 };
 
 B.planter = (ctx, o) => {
+  if (o.p.dims !== undefined) {
+    // rest-space planter (VR scene_a9 / scene_c1: square tree pits with a stone kerb, gravel or soil inside): a kerb
+    // 0.2 m wide and kerbHeightM high round the ring, the fill 0.05 m below its top; along a line, a kerb wall.
+    const d = dimsOf(o);
+    const kerb = paintOf(o.p.colour, C.stone, o.id);
+    if (o.line) {
+      wall(ctx, ctx.solid, o.line, 0.3, d.kerbHeightM, kerb);
+      return;
+    }
+    const fill = { lawn: C.lawn, soil: C.soil, gravel: C.gravel, shrub: C.shrub }[o.p.fill ?? "soil"];
+    if (!fill) throw new Error(`furniture: planter ${o.id} fill ${o.p.fill} is not lawn, soil, gravel or shrub`);
+    const inner = offsetLine([...o.ring, o.ring[0]], insideSign(o.ring) * M(0.2)).slice(0, -1);
+    const kerbTop = (x, z) => ctx.groundAt(x, z) + M(d.kerbHeightM);
+    const fillTop = (x, z) => ctx.groundAt(x, z) + M(Math.max(0.02, d.kerbHeightM - 0.05));
+    ctx.solid.prism(o.ring, ctx.minGround(o.ring) - M(0.1), kerbTop, kerb, { topFace: false });
+    ctx.solid.flat(o.ring, [inner], kerbTop, kerb);
+    const middle = ringCentroid(inner);
+    for (let i = 0; i < inner.length; i += 1) {
+      const [p, q] = [inner[i], inner[(i + 1) % inner.length]];
+      const toMiddle = [middle[0] - (p[0] + q[0]) / 2, 0, middle[1] - (p[1] + q[1]) / 2];
+      ctx.solid.face([[p[0], fillTop(...p), p[1]], [q[0], fillTop(...q), q[1]], [q[0], kerbTop(...q), q[1]], [p[0], kerbTop(...p), p[1]]], toMiddle, kerb);
+    }
+    ctx.solid.flat(inner, [], fillTop, fill);
+    return;
+  }
   if (o.line) {
     wall(ctx, ctx.solid, o.line, 0.3, o.heightM, /red/.test(o.p.note ?? "") ? C.brick : C.stone);
     return;
@@ -308,15 +513,24 @@ B.bench = (ctx, o) => {
   const length = Math.hypot(b[0] - a[0], b[1] - a[1]) / M(1);
   const u = [(b[0] - a[0]) / (length * M(1)), (b[1] - a[1]) / (length * M(1))];
   const long = /long|stand/.test(o.p.note ?? "");
-  const count = long ? 1 : Math.max(1, Math.round(length / 2.4));
-  const each = long ? length : Math.min(1.8, length / count - 0.3);
+  // rest-space bench rows (VR scene_c1: long dark box benches beside the tree pits; scene_a9: timber benches): one
+  // bench of catalogue lengthM every spacing_m along the line, centred on it; style "box" draws the backless box bench
+  const rest = o.p.dims !== undefined ? dimsOf(o) : null;
+  const spacing = o.p.spacing_m;
+  const count = spacing ? Math.floor(length / spacing + 1e-9) + 1 : long ? 1 : Math.max(1, Math.round(length / 2.4));
+  const each = rest ? rest.lengthM : long ? length : Math.min(1.8, length / count - 0.3);
+  const style = !rest ? { back: !long, seat: long ? C.white : C.wood }
+    : o.p.style === "box" ? { back: false, seat: paintOf(o.p.colour, C.plazaBench, o.id), legs: paintOf(o.p.colour, C.plazaBench, o.id), depthM: rest.depthM }
+    : { back: o.p.back ?? true, seat: paintOf(o.p.colour, C.wood, o.id), depthM: rest.depthM };
   for (let k = 0; k < count; k += 1) {
-    const c = [a[0] + (b[0] - a[0]) * ((k + 0.5) / count), a[1] + (b[1] - a[1]) * ((k + 0.5) / count)];
+    const pos = spacing ? ((length - (count - 1) * spacing) / 2 + k * spacing) / length : (k + 0.5) / count;
+    const c = [a[0] + (b[0] - a[0]) * pos, a[1] + (b[1] - a[1]) * pos];
     const side = [c[0] - u[1] * M(1), c[1] + u[0] * M(1)];
     const paved = ctx.sites.inArea(side) || [ctx.sites.classes.PAVING, ctx.sites.classes.ASPHALT].includes(ctx.sites.labelAt(side));
     const f = facingFrame(ctx, c, u, paved ? side : [c[0] + u[1] * M(1), c[1] - u[0] * M(1)]);
-    benchAt(ctx, f, each, { back: !long, seat: long ? C.white : C.wood });
+    benchAt(ctx, f, each, style);
   }
+  return { benches: count };
 };
 
 // Bus shelters (posts, roof, glass back and side panes, bench), court shelters (no glass) and the long school-bus
@@ -356,6 +570,191 @@ B.bus_stop_shelter = (ctx, o) => {
     pane([hl - 0.15, -hw + 0.2], [hl - 0.15, 0]);
   }
   benchAt(ctx, frame(local(f, 0, -hw + 0.5, 0), f.u), Math.min(2.4, 2 * hl - 0.6), { back: false, seat: C.galvanised, depthM: 0.4 });
+};
+
+// Covered rows (VR scene_a6 l: two bike shelters, each a striped blue and light-blue fabric hood with a front valance
+// on thin galvanised frames): modules about moduleLengthM long repeated along the axis (its straight chord), each
+// moduleWidthM deep on four posts, its roof rising roofPitchDeg from the front (right of the axis) to the back, striped
+// across every stripe_m (default 1.0 m) in `colours` [a, b] or plain in roofColour. Returns { modules }.
+B.canopy_shelter_row = (ctx, o) => {
+  const axis = axisOf(o);
+  const d = dimsOf(o);
+  const [a, b] = [axis[0], axis.at(-1)];
+  const lengthM = lineLength(axis) / M(1);
+  const modules = Math.max(1, Math.round(lengthM / d.moduleLengthM));
+  const step = lengthM / modules;
+  const colours = o.p.colours ? o.p.colours.map((c) => paintOf(c, null, o.id)) : [paintOf(o.p.roofColour, C.roofBlue, o.id)];
+  const posts = paintOf(o.p.postColour, C.galvanised, o.id);
+  const hw = d.moduleWidthM / 2;
+  const rise = d.moduleWidthM * Math.tan((d.roofPitchDeg * Math.PI) / 180);
+  const roofAt = (t) => d.heightM + (rise * (t + hw)) / (2 * hw);
+  const along0 = frame([a[0], 0, a[1]], [b[0] - a[0], b[1] - a[1]]);
+  for (let k = 0; k < modules; k += 1) {
+    const [s0, s1] = [k * step + 0.15, (k + 1) * step - 0.15];
+    const f = frame([a[0], ctx.groundAt(...localPlan(along0, (s0 + s1) / 2, 0)), a[1]], along0.u);
+    for (const s of [s0 + 0.25, s1 - 0.25]) {
+      for (const t of [-hw + 0.1, hw - 0.1]) ctx.solid.box(f, [s - 0.03, s + 0.03], [t - 0.03, t + 0.03], [-0.1, roofAt(t)], posts);
+    }
+    for (const t of [-hw + 0.1, hw - 0.1]) ctx.solid.box(f, [s0, s1], [t - 0.03, t + 0.03], [roofAt(t) - 0.08, roofAt(t)], posts);
+    const [front, back] = [-hw - 0.1, hw + 0.1];
+    for (const band of stripeBands(s1 - s0, o.p.stripe_m ?? 1.0)) {
+      const [sa, sb] = [s0 + band.s0, s0 + band.s1];
+      const paint = colours[band.colour % colours.length];
+      twoSided(ctx, [local(f, sa, front, roofAt(front)), local(f, sb, front, roofAt(front)), local(f, sb, back, roofAt(back)), local(f, sa, back, roofAt(back))], [0, 1, 0], paint);
+      const valance = [local(f, sa, front, roofAt(front)), local(f, sb, front, roofAt(front)), local(f, sb, front - 0.12, roofAt(front) - 0.4), local(f, sa, front - 0.12, roofAt(front) - 0.4)];
+      twoSided(ctx, valance, sub(local(f, 0, -1, 0), local(f, 0, 0, 0)), paint);
+    }
+  }
+  return { modules };
+};
+
+// Long bus-terminal roof (VR scene_a4 r: two rows of white steel posts, white inverted-U ribs standing proud of a
+// translucent white roof, a dark fascia along the front, blue bay plates on the front posts, solar panels over the far
+// part and a white lattice screen at the back): posts every postSpacingM along the axis, widthM across, heightM to the
+// roof; solar_from (0-1 along the axis) starts the panels, back_wall true adds the screen (left of the axis).
+B.terminal_shelter = (ctx, o) => {
+  const axis = axisOf(o);
+  const d = dimsOf(o);
+  const half = d.widthM / 2;
+  const h = d.heightM;
+  const S = ctx.solid;
+  const stations = along(axis, M(d.postSpacingM)).map(({ p, u }) => ({ p, u, n: [-u[1], u[0]], g: ctx.groundAt(...p) }));
+  const at = ({ p, n, g }, side, offsetM, hM) => [p[0] + n[0] * M(side * offsetM), g + M(hM), p[1] + n[1] * M(side * offsetM)];
+  stations.forEach((st, i) => {
+    for (const side of [1, -1]) {
+      const post = at(st, side, half - 0.3, 0);
+      S.pole([post[0], post[2]], st.g - M(0.1), st.g + M(h), 0.07, 0.07, C.white, { sides: 6 });
+    }
+    const plate = frame(at(st, -1, half - 0.3, 0), st.u);
+    S.box(plate, [-0.15, 0.15], [-0.12, -0.08], [1.6, 2.0], C.signBlue);
+    // inverted-U rib above the roof
+    const [l0, r0] = [at(st, 1, half + 0.1, h), at(st, -1, half + 0.1, h)];
+    const [l1, r1] = [at(st, 1, half + 0.1, h + 0.35), at(st, -1, half + 0.1, h + 0.35)];
+    S.beam(l0, l1, 0.08, 0.08, C.white);
+    S.beam(r0, r1, 0.08, 0.08, C.white);
+    S.beam(l1, r1, 0.08, 0.1, C.white);
+    const next = stations[i + 1];
+    if (!next) return;
+    ctx.glass.face([at(st, 1, half + 0.15, h + 0.04), at(next, 1, half + 0.15, h + 0.04), at(next, -1, half + 0.15, h + 0.04), at(st, -1, half + 0.15, h + 0.04)], [0, 1, 0], GLASS.canopy);
+    S.beam(at(st, 1, half - 0.3, h), at(next, 1, half - 0.3, h), 0.1, 0.16, C.white, { ends: false });
+    S.beam(at(st, -1, half - 0.3, h), at(next, -1, half - 0.3, h), 0.1, 0.16, C.white, { ends: false });
+    S.beam(at(st, -1, half + 0.15, h - 0.05), at(next, -1, half + 0.15, h - 0.05), 0.08, 0.3, C.slate, { ends: false });
+    if (o.p.solar_from !== undefined && i / Math.max(1, stations.length - 2) >= o.p.solar_from) {
+      // one tilted panel per bay, clear of the ribs
+      const inset = (q, r, k) => [q[0] + (r[0] - q[0]) * k, q[1] + (r[1] - q[1]) * k, q[2] + (r[2] - q[2]) * k];
+      const [a0, a1, b0, b1] = [at(st, 1, half * 0.7, h + 0.55), at(next, 1, half * 0.7, h + 0.55), at(st, -1, half * 0.7, h + 0.42), at(next, -1, half * 0.7, h + 0.42)];
+      S.face([inset(a0, a1, 0.08), inset(a0, a1, 0.92), inset(b0, b1, 0.92), inset(b0, b1, 0.08)], [0, 1, 0], rgb("#26344a"));
+    }
+  });
+  if (o.p.back_wall) railing(ctx, offsetLine(axis, M(half - 0.3)), 1.2, C.white, { stepM: 2, rails: [1, 0.05], panel: rgb("#f4f4f4", 140) });
+};
+
+// Striped fabric canopy (VR scene_a10 d/f: a long blue and light-blue striped tent over the walk beside the plaza, its
+// ends hipped). profile "gable": the axis is the ridge, both eaves frontHeightM high depthM apart, 25 degree slopes,
+// hipped ends, posts every 3 m along both eaves; profile "lean-to" (default): the axis is the facade line, the fabric
+// falls 15 degrees from the wall to frontHeightM at depthM to its left, posts along the front. Stripes about
+// stripeWidthM wide across the length alternate `colours` [a, b]; a 0.25 m valance hangs from every eave. Returns
+// { stripes }.
+B.awning = (ctx, o) => {
+  const axis = axisOf(o);
+  const d = dimsOf(o);
+  const [a, b] = [axis[0], axis.at(-1)];
+  const L = Math.hypot(b[0] - a[0], b[1] - a[1]) / M(1);
+  const f = frame([a[0], ctx.groundAt((a[0] + b[0]) / 2, (a[1] + b[1]) / 2), a[1]], [b[0] - a[0], b[1] - a[1]]);
+  const colours = (o.p.colours ?? ["#2a86dc", "#a8def4"]).map((c) => paintOf(c, null, o.id));
+  const posts = paintOf(o.p.postColour, C.white, o.id);
+  const H = d.frontHeightM;
+  const bands = stripeBands(L, d.stripeWidthM);
+  const outward = (t, h) => sub(local(f, 0, t, h), local(f, 0, 0, 0));
+  const gable = o.p.profile === "gable";
+  const [tFront, tBack] = gable ? [-d.depthM / 2, d.depthM / 2] : [0, d.depthM];
+  const top = gable ? H + (d.depthM / 2) * Math.tan((25 * Math.PI) / 180) : H + d.depthM * Math.tan((15 * Math.PI) / 180);
+  const hip = gable ? Math.min(d.depthM / 2, L / 2) : 0;
+  // the upper edge of a gable slope at s (the hip line near the ends, the ridge between), as [t-fraction, h]
+  const upper = (s) => {
+    const k = hip > 0 ? Math.min(1, s / hip, (L - s) / hip) : 1;
+    return [1 - k, H + (top - H) * k];
+  };
+  for (const band of bands) {
+    const paint = colours[band.colour];
+    if (gable) {
+      const breaks = [hip, L - hip].filter((s) => s > band.s0 && s < band.s1).sort((x, y) => y - x);
+      for (const side of [-1, 1]) {
+        const t0 = side * (d.depthM / 2);
+        const ups = [band.s1, ...breaks, band.s0].map((s) => {
+          const [k, h] = upper(s);
+          return local(f, s, t0 * k, h);
+        });
+        twoSided(ctx, [local(f, band.s0, t0, H), local(f, band.s1, t0, H), ...ups], outward(side, 1.5), paint);
+      }
+    } else {
+      twoSided(ctx, [local(f, band.s0, tBack, H), local(f, band.s1, tBack, H), local(f, band.s1, tFront, top), local(f, band.s0, tFront, top)], outward(1, 1.5), paint);
+    }
+    for (const t of gable ? [tFront, tBack] : [tBack]) {
+      twoSided(ctx, [local(f, band.s0, t, H), local(f, band.s1, t, H), local(f, band.s1, t, H - 0.25), local(f, band.s0, t, H - 0.25)], outward(Math.sign(t), 0), paint);
+    }
+  }
+  if (gable) {
+    twoSided(ctx, [local(f, 0, tFront, H), local(f, 0, tBack, H), local(f, hip, 0, top)], sub(local(f, -1, 0, H + 1), local(f, 0, 0, H)), colours[bands[0].colour]);
+    twoSided(ctx, [local(f, L, tFront, H), local(f, L, tBack, H), local(f, L - hip, 0, top)], sub(local(f, L + 1, 0, H + 1), local(f, L, 0, H)), colours[bands.at(-1).colour]);
+  }
+  const count = Math.max(1, Math.ceil((L - 0.3) / 3));
+  for (const t of gable ? [tFront, tBack] : [tBack]) {
+    const inset = t > 0 ? t - 0.1 : t + 0.1;
+    for (let k = 0; k <= count; k += 1) {
+      const s = 0.15 + ((L - 0.3) * k) / count;
+      ctx.solid.box(f, [s - 0.035, s + 0.035], [inset - 0.035, inset + 0.035], [-0.1, H - 0.02], posts);
+    }
+    ctx.solid.box(f, [0.1, L - 0.1], [inset - 0.03, inset + 0.03], [H - 0.08, H - 0.02], posts);
+  }
+  return { stripes: bands.length };
+};
+
+// Small closed booth (VR scene_f3 r: yellow timber siding under a red corrugated low gable roof, a white door and a
+// glazed front): walls in wallColour, a door and a window on the front (-t), and a roof of form `roof` ("gable"
+// default, "hip", "mono", "flat") in roofColour over a 0.3 m overhang; heightM is the top of the roof and roofRiseM
+// its rise above the eaves. A survey outline is the roof seen on the photo: the plan is that outline less the overhang.
+B.hut = (ctx, o) => {
+  const d = dimsOf(o);
+  const at = restPlacement(ctx, o);
+  const ov = 0.3;
+  const planOf = (roofM, name) => (o.p.dims?.[name] === undefined && roofM ? clampTo(roofM - 2 * ov, REST_TYPES.hut.dims[name].range) : d[name]);
+  const hs = planOf(at.lengthM, "planWidthM") / 2;
+  const ht = planOf(at.widthM, "planDepthM") / 2;
+  const f = frame([at.centre[0], at.ground, at.centre[1]], at.u);
+  const S = ctx.solid;
+  const wall = paintOf(o.p.wallColour, C.offWhite, o.id);
+  const roof = paintOf(o.p.roofColour, styleColour(o, C.roofRed), o.id);
+  const top = d.heightM;
+  const eave = top - d.roofRiseM;
+  const [rs, rt] = [hs + ov, ht + ov];
+  const form = o.p.roof ?? "gable";
+  let wallTop = eave;
+  if (form === "gable") {
+    wallTop = eave + (d.roofRiseM * ov) / rt;
+    for (const side of [-1, 1]) {
+      twoSided(ctx, [local(f, -rs, side * rt, eave), local(f, rs, side * rt, eave), local(f, rs, 0, top), local(f, -rs, 0, top)], sub(local(f, 0, side, 1), local(f, 0, 0, 0)), roof, C.offWhite);
+      S.face([local(f, side * hs, -ht, wallTop), local(f, side * hs, ht, wallTop), local(f, side * hs, 0, top)], sub(local(f, side, 0, 0), local(f, 0, 0, 0)), wall);
+    }
+  } else if (form === "hip") {
+    wallTop = eave + (d.roofRiseM * ov) / Math.min(rs, rt);
+    hipRoof(ctx, f, rs, rt, eave, top, roof);
+  } else if (form === "mono") {
+    const roofAt = (t) => eave + (d.roofRiseM * (t + rt)) / (2 * rt);
+    wallTop = roofAt(-ht);
+    twoSided(ctx, [local(f, -rs, -rt, eave), local(f, rs, -rt, eave), local(f, rs, rt, top), local(f, -rs, rt, top)], [0, 1, 0], roof, C.offWhite);
+    for (const side of [-1, 1]) S.face([local(f, side * hs, -ht, wallTop), local(f, side * hs, ht, wallTop), local(f, side * hs, ht, roofAt(ht))], sub(local(f, side, 0, 0), local(f, 0, 0, 0)), wall);
+    S.face([local(f, -hs, ht, wallTop), local(f, hs, ht, wallTop), local(f, hs, ht, roofAt(ht)), local(f, -hs, ht, roofAt(ht))], sub(local(f, 0, 1, 0), local(f, 0, 0, 0)), wall);
+  } else if (form === "flat") {
+    wallTop = top - 0.15;
+    S.box(f, [-rs, rs], [-rt, rt], [top - 0.15, top], { top: roof, side: roof, bottom: C.offWhite }, { bottom: true });
+  } else {
+    throw new Error(`furniture: hut ${o.id} roof ${form} is not gable, hip, mono or flat`);
+  }
+  S.box(f, [-hs, hs], [-ht, ht], [-0.1 - at.dropM, wallTop], { top: wall, side: wall });
+  const doorS = -hs + 0.75;
+  S.box(f, [doorS - 0.45, doorS + 0.45], [-ht - 0.04, -ht], [0, Math.min(2.05, wallTop - 0.1)], paintOf(o.p.doorColour, C.white, o.id));
+  if (hs - doorS > 1.6) S.box(f, [doorS + 0.8, hs - 0.5], [-ht - 0.04, -ht], [0.9, Math.min(2.0, wallTop - 0.15)], C.window);
 };
 
 // Pergolas along an axis (posts both sides, edge beams, slats or a solid roof) or over a polygon (posts along the
@@ -432,6 +831,176 @@ B.gazebo = (ctx, o) => {
   for (const p of posts) ctx.solid.pole(p, g + M(0.3), g + M(eave), 0.1, 0.1, C.wood, { sides: 4 });
   const base = ring.map(([x, z]) => [x, g + M(eave), z]);
   ctx.solid.cone([c[0], g + M(h), c[1]], base, roofColour, { basePaint: C.wood });
+};
+
+// Square hip-roof 정자 (VR scene_d4 l: brown roof under the pines beside the D4 path; scene_a5 d: silver-grey metal
+// panels with blue fascia and hip caps): a stone plinth with a timber deck floorHeightM high and a front step, four
+// square timber columns with knee braces, an eave beam ring, railings on `railingSides` sides (back, left, right,
+// front), and a hip roof over plan + 2 x roofOverhangM from the eaves (soffit and fascia) to ridgeHeightM. Colours:
+// roofColour (panels), trimColour (fascia, hip caps), postColour. A survey outline is the roof seen on the photo, so
+// without planWidthM/planDepthM the plan is that outline less the overhang, kept inside the catalogue range.
+B.pavilion_hip = (ctx, o) => {
+  const d = dimsOf(o);
+  const at = restPlacement(ctx, o);
+  const planOf = (roofM, name) => (o.p.dims?.[name] === undefined && roofM ? clampTo(roofM - 2 * d.roofOverhangM, REST_TYPES.pavilion_hip.dims[name].range) : d[name]);
+  const hs = planOf(at.lengthM, "planWidthM") / 2;
+  const ht = planOf(at.widthM, "planDepthM") / 2;
+  const f = frame([at.centre[0], at.ground, at.centre[1]], at.u);
+  const S = ctx.solid;
+  const roof = paintOf(o.p.roofColour, styleColour(o, C.roofBrown), o.id);
+  const trim = paintOf(o.p.trimColour, roof, o.id);
+  const posts = paintOf(o.p.postColour, C.wood, o.id);
+  const { floorHeightM: F, eaveHeightM: E, ridgeHeightM: R, columnSizeM: cs, roofOverhangM: ov, railingHeightM: rh } = d;
+  if (F > 0) {
+    S.box(f, [-hs, hs], [-ht, ht], [-0.1 - at.dropM, F - 0.06], C.stone);
+    S.box(f, [-hs + 0.02, hs - 0.02], [-ht + 0.02, ht - 0.02], [F - 0.06, F], { top: C.timber, side: C.wood });
+    if (F > 0.25) S.box(f, [-0.7, 0.7], [-ht - Math.min(0.4, ov), -ht], [-0.1 - at.dropM, F / 2], C.stone);
+  }
+  const cx = hs - cs / 2;
+  const cz = ht - cs / 2;
+  for (const s of [-cx, cx]) {
+    for (const t of [-cz, cz]) {
+      S.box(f, [s - cs / 2, s + cs / 2], [t - cs / 2, t + cs / 2], [F, E], posts);
+      S.beam(local(f, s, t, E - 0.85), local(f, s - Math.sign(s) * 0.6, t, E - 0.3), 0.08, 0.08, posts);
+      S.beam(local(f, s, t, E - 0.85), local(f, s, t - Math.sign(t) * 0.6, E - 0.3), 0.08, 0.08, posts);
+    }
+  }
+  for (const t of [-cz, cz]) S.box(f, [-hs, hs], [t - 0.09, t + 0.09], [E - 0.3, E], posts);
+  for (const s of [-cx, cx]) S.box(f, [s - 0.09, s + 0.09], [-ht, ht], [E - 0.3, E], posts);
+  // railings: back (+t), left (-s), right (+s), front (-t); top rail, bottom rail and balusters every 0.3 m
+  const sides = [["t", cz], ["s", -cx], ["s", cx], ["t", -cz]].slice(0, d.railingSides);
+  for (const [axis, at0] of sides) {
+    const span = axis === "t" ? cx : cz;
+    const rail = (h0, h1, a0, a1, w) => (axis === "t" ? S.box(f, [a0, a1], [at0 - w, at0 + w], [h0, h1], C.timber) : S.box(f, [at0 - w, at0 + w], [a0, a1], [h0, h1], C.timber));
+    rail(F + rh - 0.06, F + rh, -span, span, 0.05);
+    rail(F + 0.06, F + 0.12, -span, span, 0.04);
+    for (let a = -span + 0.3; a < span - 0.15; a += 0.3) rail(F + 0.12, F + rh - 0.06, a - 0.02, a + 0.02, 0.02);
+  }
+  // roof: soffit and fascia, then the hip planes and the caps along the hips (and the ridge), set just below the planes
+  const fascia = 0.16;
+  const [rs, rt] = [hs + ov, ht + ov];
+  S.box(f, [-rs, rs], [-rt, rt], [E, E + fascia], { top: roof, side: trim, bottom: C.timber }, { bottom: true, top: false });
+  const { corners, ridgeEnd } = hipRoof(ctx, f, rs, rt, E + fascia, R, roof, trim === roof ? null : { paint: trim, widthM: 0.3 });
+  for (const corner of corners) {
+    const [s1, t1] = ridgeEnd(corner);
+    const run = Math.hypot(s1 - corner[0], t1 - corner[1]);
+    const k = Math.min(0.5, 0.2 / run);
+    const start = [corner[0] + (s1 - corner[0]) * k, corner[1] + (t1 - corner[1]) * k, E + fascia + (R - E - fascia) * k];
+    S.beam(local(f, start[0], start[1], start[2] - 0.05), local(f, s1, t1, R - 0.05), 0.14, 0.1, trim);
+  }
+  const ridgeA = ridgeEnd([-1, -1]);
+  const ridgeB = ridgeEnd([1, 1]);
+  if (ridgeA[0] !== ridgeB[0] || ridgeA[1] !== ridgeB[1]) S.beam(local(f, ...ridgeA, R - 0.05), local(f, ...ridgeB, R - 0.05), 0.14, 0.1, trim);
+};
+
+// Octagonal gazebo (catalogue vendor envelope HD-S101 7.0 x 7.0 x H5.3 m; VR scene_a5 r shows the garden one as a teal
+// octagonal canopy in three stepped tiers held by one offset mast): with support "posts" (default) eight columns on
+// an optional raised octagonal deck and an eave ring, roof from the fascia at eaveHeightM to apexHeightM; with support
+// "cantilever" a mast outside the canopy on a white pad that bends over the top into a hook ending on the canopy hub,
+// the bend's crest at apexHeightM and the canopy apex CANTILEVER_HOOK_M below it. Roof: octagon of circumscribed
+// diameter circumscribedM, one plane per side and tier; with tiers 2 or 3 every tier above the skirt starts
+// OCTAGON_TIER_LIFT_M above the one below and overhangs its vent (dark riser), so the steps read from any side; ribs and
+// tier fascias in trimColour. Optional deck { lengthM, widthM, offsetM: [s, t], benchLengthM } (VR scene_a5: a timber
+// deck beside the mast with a timber bench under the canopy edge; estimated sizes) is drawn on the ground in the
+// instance frame. A survey outline gives the diameter when circumscribedM is not set.
+const OCTAGON_TIER_LIFT_M = 0.15;
+const CANTILEVER_HOOK_M = 0.45;
+const OCTAGON_TIER_RADII = { 1: [1], 2: [1, 0.5], 3: [1, 0.62, 0.32] };
+B.pavilion_octagon = (ctx, o) => {
+  const d = dimsOf(o);
+  const at = restPlacement(ctx, o);
+  const diameter = o.p.dims?.circumscribedM === undefined && at.lengthM ? clampTo(at.lengthM, REST_TYPES.pavilion_octagon.dims.circumscribedM.range) : d.circumscribedM;
+  const R = diameter / 2;
+  const f = frame([at.centre[0], at.ground, at.centre[1]], at.u);
+  const S = ctx.solid;
+  const roof = paintOf(o.p.roofColour, styleColour(o, C.roofGreen), o.id);
+  const trim = paintOf(o.p.trimColour, roof, o.id);
+  const posts = paintOf(o.p.postColour, C.wood, o.id);
+  const { floorHeightM: F, eaveHeightM: E, apexHeightM: A, columnCount: n } = d;
+  const angle = (i) => ((i + 0.5) / n) * Math.PI * 2;
+  const planRing = (radius) => Array.from({ length: n }, (_, i) => localPlan(f, Math.cos(angle(i)) * radius, Math.sin(angle(i)) * radius));
+  const ring = (radius, h) => Array.from({ length: n }, (_, i) => local(f, Math.cos(angle(i)) * radius, Math.sin(angle(i)) * radius, h));
+  if (F > 0) {
+    S.prism(planRing(R - 0.35), at.ground - M(0.1 + at.dropM), at.ground + M(F - 0.06), C.stone);
+    S.prism(planRing(R - 0.37), at.ground + M(F - 0.06), at.ground + M(F), { side: C.wood, top: C.timber });
+  }
+  const cantilever = (o.p.support ?? "posts") === "cantilever";
+  const top = cantilever ? A - CANTILEVER_HOOK_M : A;
+  if (cantilever) {
+    // mast on its pad, a quarter bend into the level crest (beam top at A), then the hook down onto the hub
+    const mast = R + 0.35;
+    const crest = A - 0.05;
+    const bend = 0.6;
+    const hook = 0.35;
+    S.box(f, [mast - 0.8, mast + 0.8], [-0.8, 0.8], [-0.05, 0.12], C.offWhite);
+    S.box(f, [mast - 0.22, mast + 0.22], [-0.22, 0.22], [0.12, 0.3], posts);
+    S.pole(localPlan(f, mast, 0), ctx.groundAt(...localPlan(f, mast, 0)) - M(0.1), at.ground + M(crest - bend), 0.07, 0.065, posts, { cap: false });
+    const arc = (cs, ch, r, a0, a1) => Array.from({ length: 7 }, (_, k) => {
+      const t = a0 + ((a1 - a0) * k) / 6;
+      return [cs + r * Math.cos(t), ch + r * Math.sin(t)];
+    });
+    const path = [...arc(mast - bend, crest - bend, bend, 0, Math.PI / 2), ...arc(hook, crest - hook, hook, Math.PI / 2, Math.PI), [0, top + 0.06]];
+    for (let k = 0; k + 1 < path.length; k += 1) S.beam(local(f, path[k][0], 0, path[k][1]), local(f, path[k + 1][0], 0, path[k + 1][1]), 0.1, 0.1, posts, { ends: k === path.length - 2 });
+    S.pole(localPlan(f, 0, 0), at.ground + M(top - 0.25), at.ground + M(top + 0.06), 0.12, 0.08, trim);
+  } else {
+    const columns = planRing(R - 0.55);
+    for (const p of columns) S.pole(p, F > 0 ? at.ground + M(F) : ctx.groundAt(...p) - M(0.1), at.ground + M(E), d.columnSizeM / 2, d.columnSizeM / 2, posts, { sides: 4 });
+    const tops = ring(R - 0.55, E - 0.12);
+    for (let i = 0; i < n; i += 1) S.beam(tops[i], tops[(i + 1) % n], 0.14, 0.24, posts, { ends: false });
+  }
+  const fascia = 0.12;
+  const band = (radius, h0, h1, paint) => {
+    const lower = ring(radius, h0);
+    const upper = ring(radius, h1);
+    for (let i = 0; i < n; i += 1) {
+      const j = (i + 1) % n;
+      const out = sub(local(f, Math.cos((angle(i) + angle(j)) / 2), Math.sin((angle(i) + angle(j)) / 2), h0), local(f, 0, 0, h0));
+      S.face([lower[i], lower[j], upper[j], upper[i]], out, paint);
+    }
+  };
+  band(R, E, E + fascia, trim);
+  // tiers: outer radius Ro of each tier, inner ring 0.72 x the next tier's Ro (the last one closes at the apex); one pitch
+  // for all tiers so the canopy rises from E + fascia to its top through every lift
+  const radii = (OCTAGON_TIER_RADII[o.p.tiers ?? 1] ?? OCTAGON_TIER_RADII[1]).map((k) => k * R);
+  const inner = radii.map((_, i) => (i + 1 < radii.length ? 0.72 * radii[i + 1] : 0));
+  const lift = OCTAGON_TIER_LIFT_M;
+  const run = radii.reduce((sum, r, i) => sum + r - inner[i], 0);
+  const pitch = (top - E - fascia - lift * (radii.length - 1)) / run;
+  if (pitch <= 0) throw new Error(`furniture: ${o.id} pavilion_octagon apex ${top} m leaves no pitch over the eave ${E} m`);
+  const rib = (p, q) => S.beam([p[0], p[1] - M(0.04), p[2]], [q[0], q[1] - M(0.04), q[2]], 0.08, 0.07, trim, { ends: false });
+  let h0 = E + fascia;
+  radii.forEach((Ro, i) => {
+    if (i > 0) band(Ro, h0 - 0.08, h0, trim);
+    const h1 = h0 + (Ro - inner[i]) * pitch;
+    const lower = ring(Ro, h0);
+    if (inner[i] === 0) {
+      const apex = local(f, 0, 0, h1);
+      S.cone(apex, lower, roof, { basePaint: roof });
+      for (const p of lower) rib(p, apex);
+      return;
+    }
+    const upper = ring(inner[i], h1);
+    for (let k = 0; k < n; k += 1) {
+      const j = (k + 1) % n;
+      const quad = [lower[k], lower[j], upper[j], upper[k]];
+      const out = sub(local(f, Math.cos((angle(k) + angle(j)) / 2) * Ro, Math.sin((angle(k) + angle(j)) / 2) * Ro, h1 + Ro), local(f, 0, 0, h0));
+      S.face(quad, out, roof);
+      S.face(quad, [-out[0], -out[1], -out[2]], roof);
+      rib(lower[k], upper[k]);
+    }
+    band(inner[i], h1, h1 + lift, C.metal);
+    h0 = h1 + lift;
+  });
+  const deck = o.p.deck;
+  if (deck) {
+    const [ds, dt] = deck.offsetM ?? [0, 0];
+    const df = frame(local(f, ds, dt, 0), f.u);
+    const hl = deck.lengthM / 2;
+    const hw = deck.widthM / 2;
+    S.box(df, [-hl, hl], [-hw, hw], [-0.05, 0.12], { top: paintOf(deck.colour, C.wood, o.id), side: C.brown });
+    for (let s = -hl + 0.15; s < hl; s += 0.15) S.box(df, [s - 0.004, s + 0.004], [-hw, hw], [0.12, 0.122], C.brown, { sides: [false, false, false, false] });
+    if (deck.benchLengthM) benchAt(ctx, frame(local(df, 0, 0, 0.12), df.u), deck.benchLengthM, { back: false, seat: C.timber, legs: C.galvanised, depthM: 0.45 });
+  }
 };
 
 B.bike_rack = (ctx, o) => {
@@ -677,6 +1246,62 @@ B.gate_sign = (ctx, o) => {
   ctx.solid.box(f, [-length / 2, length / 2], [-depth / 2, depth / 2], [plinth, plinth + letters], { top: slab, side: slab });
   const band = rgb(p.bandColour ?? p.colour ?? "#f4f3ee");
   ctx.solid.box(f, [-length * 0.42, length * 0.42], [-depth * 0.3, depth * 0.3], [plinth + letters + 0.1, o.heightM], { top: band, side: band });
+};
+
+// Garden walls (VR scene_a5 r: a white-coped wall round the walled garden carrying a brown timber lattice screen):
+// along a LineString, catalogue thicknessM and heightM in `colour`, a 0.06 m coping in copingColour, piers every
+// pier_spacing_m when set, and a lattice screen lattice_m high on top when set.
+B.garden_wall = (ctx, o) => {
+  if (!o.line) throw new Error(`furniture: garden_wall ${o.id} needs a LineString`);
+  const d = dimsOf(o);
+  const body = paintOf(o.p.colour, C.brick, o.id);
+  wall(ctx, ctx.solid, o.line, d.thicknessM, d.heightM - 0.06, body);
+  wall(ctx, ctx.solid, o.line, d.thicknessM + 0.06, 0.06, paintOf(o.p.copingColour, C.offWhite, o.id), { baseM: d.heightM - 0.06 });
+  if (o.p.pier_spacing_m) {
+    for (const { p, u } of along(o.line, M(o.p.pier_spacing_m))) {
+      ctx.solid.box(frame([p[0], ctx.groundAt(...p), p[1]], u), [-0.2, 0.2], [-(d.thicknessM / 2 + 0.05), d.thicknessM / 2 + 0.05], [-0.08, d.heightM + 0.04], body);
+    }
+  }
+  if (o.p.lattice_m) {
+    const lattice = paintOf(o.p.latticeColour, C.wood, o.id);
+    railing(ctx, o.line, o.p.lattice_m, lattice, { baseM: d.heightM, stepM: 1.8, rails: [1, 0.03], postM: 0.08, panel: [...lattice.slice(0, 3), 170] });
+  }
+};
+
+// Free-standing boards (VR scene_a10 r: white notice panels in blue frames on two blue posts under a sloping rain hood;
+// scene_a4 r: the dark terminal board): a panel width_m wide and panel_m tall on two legs, its bottom clearance_m
+// above the ground, facing bearing_deg (a Point) or the left of a LineString; colour is the face, frameColour the
+// legs, the edges and the hood (hood true). Missing sizes take SIGNBOARD; every size is an estimate.
+const SIGNBOARD = { widthM: 1.8, panelM: 1.2, clearanceM: 0.6 };
+B.signboard = (ctx, o) => {
+  let centre;
+  let u;
+  if (o.line) {
+    const [a, b] = [o.line[0], o.line.at(-1)];
+    centre = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+    u = [b[0] - a[0], b[1] - a[1]];
+  } else if (o.point) {
+    const bearing = ((o.p.bearing_deg ?? 0) * Math.PI) / 180;
+    centre = o.point;
+    u = [-Math.cos(bearing), -Math.sin(bearing)];
+  } else throw new Error(`furniture: signboard ${o.id} needs a Point or a LineString`);
+  const w = o.p.width_m ?? SIGNBOARD.widthM;
+  const ph = o.p.panel_m ?? SIGNBOARD.panelM;
+  const c = o.p.clearance_m ?? SIGNBOARD.clearanceM;
+  const face = paintOf(o.p.colour, C.white, o.id);
+  const edge = paintOf(o.p.frameColour, C.signBlue, o.id);
+  const f = frame([centre[0], ctx.groundAt(...centre), centre[1]], u);
+  const S = ctx.solid;
+  for (const s of [-w / 2 + 0.06, w / 2 - 0.06]) S.box(f, [s - 0.05, s + 0.05], [-0.09, 0.01], [-0.1, c + ph + 0.05], edge);
+  S.box(f, [-w / 2, w / 2], [-0.03, 0.03], [c, c + ph], { side: face, top: edge });
+  S.box(f, [-w / 2 - 0.04, w / 2 + 0.04], [-0.05, 0.05], [c - 0.05, c], edge);
+  S.box(f, [-w / 2 - 0.04, w / 2 + 0.04], [-0.05, 0.05], [c + ph, c + ph + 0.05], edge);
+  if (o.p.hood) {
+    const [h0, h1] = [c + ph + 0.05, c + ph + 0.2];
+    const at = (s, t, h) => local(f, s, t, h);
+    S.hexa([at(-w / 2 - 0.1, -0.25, h1 - 0.04), at(w / 2 + 0.1, -0.25, h1 - 0.04), at(w / 2 + 0.1, 0.4, h0), at(-w / 2 - 0.1, 0.4, h0),
+      at(-w / 2 - 0.1, -0.25, h1), at(w / 2 + 0.1, -0.25, h1), at(w / 2 + 0.1, 0.4, h0 + 0.06), at(-w / 2 - 0.1, 0.4, h0 + 0.06)], edge, { bottom: true });
+  }
 };
 
 B.floodlight_pole = (ctx, o) => {
@@ -955,7 +1580,6 @@ function estimateBenches(ctx, lamps) {
 export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs, groundAt }) {
   const roads = roadNetwork(inputs);
   const ctx = makeContext({ groundAt, objects: furniture.objects, roads, sites, fieldCentre: furniture.fieldCentre });
-  ctx.colours = C;
   ctx.signalIndex = 0;
   const counts = {};
   const tally = (kind, estimated) => {
@@ -963,6 +1587,7 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     counts[kind][estimated ? "estimated" : "surveyed"] += 1;
   };
   const built = [];
+  const restSpaces = [];
   for (const o of furniture.objects) {
     if (o.kind === "street_lamp") continue;
     const builder = B[o.kind];
@@ -971,8 +1596,10 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     if (builder(ctx, o) === false) continue;
     const kind = o.kind === "plaza_structure" ? `plaza_structure/${o.subtype}` : o.kind;
     // Objects of rest-spaces.geojson are placed from the VR, not surveyed on the photo: counted as estimated.
-    tally(kind, o.source === "rest-spaces.geojson");
+    tally(kind, o.source === "rest-spaces");
     built.push([o.id, kind, Number(o.heightM.toFixed(2)), o.heightSource, 1, ctx.solid.triangleCount + ctx.glass.triangleCount - before]);
+    // rest-space instances: catalogue kinds given dims, or survey objects retyped to a catalogue kind
+    if (REST_TYPES[o.kind] && (o.source === "rest-spaces" || o.p.dims !== undefined || o.surveyKind !== o.kind)) restSpaces.push([o.id, o.kind, REST_TYPES[o.kind].dimsSource, o.p.vr_scene ?? null, o.p.photo_support ?? null, true]);
   }
   appendLampSolids(ctx.solid, lamps, groundAt);
   for (const lamp of lamps) tally(`street_lamp/${lamp.type}`, lamp.estimated);
@@ -984,6 +1611,19 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     tally(bench.plaza ? "bench/plaza (VR)" : "bench", true);
   }
 
+  // per-kind provenance of the rest spaces (VR-located features and survey objects retyped to a catalogue kind)
+  const restSpaceKinds = {};
+  for (const [id, kind, dimsSource, scene, support] of restSpaces) {
+    const entry = (restSpaceKinds[kind] ??= { label: `${REST_TYPES[kind].label} (추정)`, count: 0, estimated: true, dimsSource, ids: [], vrScenes: [], photoSupport: {} });
+    entry.count += 1;
+    entry.ids.push(id);
+    const o = furniture.objects.find((q) => q.id === id);
+    const vrScene = scene ?? /scene_[a-z0-9]+/.exec(furniture.retyped[id]?.reason ?? "")?.[0] ?? null;
+    if (vrScene && !entry.vrScenes.includes(vrScene)) entry.vrScenes.push(vrScene);
+    const key = support ?? (o.source === "survey" ? "survey outline" : "none");
+    entry.photoSupport[key] = (entry.photoSupport[key] ?? 0) + 1;
+  }
+  const duplicates = auditDuplicates(furniture.objects, lamps, benches);
   const furnitureMaterial = glb.addMaterial({ name: "Furniture", pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1], metallicFactor: 0, roughnessFactor: 0.82 } });
   const glassMaterial = glb.addMaterial({ name: "Furniture_Glass", pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1], metallicFactor: 0, roughnessFactor: 0.35 }, alphaMode: "BLEND", doubleSided: true });
   const extras = {
@@ -997,17 +1637,25 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     objects: built.map(([id, kind, h, source, estimated]) => [id, kind, h, source, estimated]),
     // [x, z (scene units), length m, 1 = plaza bench from VR]
     estimatedBenches: benches.map((b) => [Number(b.at[0].toFixed(2)), Number(b.at[1].toFixed(2)), b.lengthM, b.plaza ? 1 : 0]),
+    ...(restSpaces.length ? {
+      restSpacesNote: "parametric rest spaces from data/rest-space-catalogue.json: [id, kind, dimsSource, VR scene, photo support, estimated]; every dimension is an estimate (추정)",
+      restSpaces,
+      restSpaceKinds,
+    } : {}),
+    duplicateAudit: { radiusM: 3, rule: "same class (roofed kinds one class, plaza structures by subtype, the rest by kind) over survey, rest spaces, lamps and estimated benches", pairs: duplicates, compounds: AUDIT_COMPOUNDS },
   };
   glb.addNode({ name: "Furniture", mesh: glb.addMesh("Furniture", [ctx.solid.toPrimitive(furnitureMaterial)]), extras }, { root: true });
   glb.addNode({ name: "Furniture_Glass", mesh: glb.addMesh("Furniture_Glass", [ctx.glass.toPrimitive(glassMaterial)]) }, { root: true });
 
   const summary = Object.entries(counts).sort(([a], [b]) => a.localeCompare(b)).map(([kind, c]) => `${kind} ${c.surveyed}${c.estimated ? `+${c.estimated}e` : ""}`).join(", ");
   console.log(
-    `furniture: ${built.length} surveyed objects + ${lamps.length} lamps (${lampStats.surveyed} surveyed) + ${benches.length} estimated benches; ` +
+    `furniture: ${built.filter(([id]) => !id.startsWith("RS")).length} surveyed objects + ${built.filter(([id]) => id.startsWith("RS")).length} VR-placed (rest-spaces.geojson) + ${lamps.length} lamps (${lampStats.surveyed} surveyed) + ${benches.length} estimated benches; ` +
     `Furniture ${ctx.solid.triangleCount} triangles / ${ctx.solid.vertexCount} vertices, Furniture_Glass ${ctx.glass.triangleCount} triangles; ${summary}`,
   );
   for (const { id, reason } of furniture.excluded) console.log(`furniture: left out ${id}: ${reason}`);
   for (const [id, r] of Object.entries(furniture.retyped)) console.log(`furniture: ${id} built as ${r.kind}: ${r.reason}`);
   for (const line of ctx.skipped) console.log(`furniture: photo only ${line}`);
+  for (const [kind, entry] of Object.entries(restSpaceKinds)) console.log(`furniture: rest space ${kind} ${entry.count} (${entry.label}; ${entry.vrScenes.join(", ")}; ${Object.entries(entry.photoSupport).map(([k, v]) => `${k} ${v}`).join(", ")})`);
+  console.log(`furniture: duplicate audit (3 m, same class): ${duplicates.length} pairs${duplicates.length ? ` ${JSON.stringify(duplicates)}` : ""}`);
   return { glow: ctx.glow, counts, benches: benches.length };
 }

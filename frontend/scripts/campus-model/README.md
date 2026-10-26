@@ -627,6 +627,29 @@ housing, warm lens, red/green/amber signal lenses). `Lamps_pools` is the instanc
 (radius 7.5 / 5.5 / 4.5 m by type), drawn by CityModel at night only. The node extras list every lamp as
 `[id, type, height m, estimated, x, z]`.
 
+### Rest spaces (`data/rest-space-catalogue.json`, `data/photo/rest-spaces.geojson`)
+
+Pavilions, shelters, benches, walls and planters seen in the SCNU 360 VR tour are parametric kinds of
+`data/rest-space-catalogue.json`. Each type names its builder in `stages/furniture.mjs` and gives its dimensions in
+metres with an allowed range, plus a `dimsSource` (KDS 34 50 15, vendor envelopes, VR or photo reading). Every value
+is an estimate (추정). Instances come from two places:
+
+- `data/photo/rest-spaces.geojson`, the second furniture input, is read after the survey (`REST_SPACES_FILE`
+  overrides it in tests). It holds one feature group per VR sighting of `data/photo/rest-spaces-reconciliation.json`
+  decided `missing`. Each feature cites its VR scene, face and columns, its `photo_support` and `confidence`, and how
+  its position was found. Roofs and walls the photo shows are traced on it (within 0.25 m). VR-only positions keep
+  `confidence` <= 0.4 and skip the relief-lean shift.
+- Survey objects the VR shows as a catalogue kind are retyped (`RETYPED`, with builder props): OC0078 and OC0120 as
+  `pavilion_hip`, OC0121 as `pavilion_octagon`, OC0119 as `terminal_shelter`, OC0153 as `canopy_shelter_row`.
+
+The `Furniture` node extras list every rest space (`restSpaces`) and a per-kind summary (`restSpaceKinds`): its label
+ending in (추정), count, `estimated: true`, `dimsSource`, VR scenes and photo support. A whole-set duplicate audit
+(`duplicateAudit`) runs on every build. It checks survey objects, rest spaces, lamps and estimated benches for pairs of
+the same class closer than 3 m, where roofed kinds count as one class, plaza structures go by subtype and the rest by
+kind. The build logs the pair count, which is 0. The two crossing bars of the X-shaped pergola (OC0064, OC0065) are
+listed as one compound. `data/photo/restSpaces.test.mjs` checks the provenance, the catalogue ranges, the 3 m rule
+against the survey and the coverage of the reconciliation table.
+
 ### Estimated benches
 
 The photo resolves 3 benches. VR scene_c1 shows long dark-blue box benches beside the tree pits on both long sides of

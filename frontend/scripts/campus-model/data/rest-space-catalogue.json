@@ -91,7 +91,7 @@
       "label": "버스 터미널 쉼터",
       "dims": {
         "heightM": { "default": 3.0, "range": [2.6, 3.2] },
-        "widthM": { "default": 3.5, "range": [3.0, 4.0] },
+        "widthM": { "default": 3.5, "range": [3.0, 8.0], "rangeSource": "upper bound 8.0 m from the school-bus terminal roof (VR scene_a4 r; survey outline OC0119 on the NGII 2025 sheet 8.1 m across) (estimated, 추정)" },
         "postSpacingM": { "default": 4.0, "range": [3.0, 5.0] }
       },
       "dimsSource": "vendor example (Q22 Q-GP 2.5-3.5 m shelter heights) and KDS 34 50 15 그늘막 2.5-3.0 m; width and post spacing from VR reading of scene_a4 (estimated)",
@@ -105,7 +105,7 @@
       "dims": {
         "frontHeightM": { "default": 2.4, "range": [2.2, 2.8] },
         "depthM": { "default": 2.5, "range": [2.0, 3.0] },
-        "stripeWidthM": { "default": 0.5, "range": [0.3, 0.8] }
+        "stripeWidthM": { "default": 0.5, "range": [0.3, 1.6], "rangeSource": "upper bound 1.6 m from VR scene_a10 face d: the striped tent's stripes read about 1.5 m (estimated, 추정)" }
       },
       "dimsSource": "VR reading of the blue-white striped awning in scene_a10, front edge kept inside the KDS 34 50 15 그늘막 band minus 0.3 m for a facade-hung awning (estimated)",
       "materials": { "fabric": "instance colours [a, b]", "frame": "metal" },
@@ -116,21 +116,21 @@
       "builder": "hut",
       "label": "소형 부스",
       "dims": {
-        "planWidthM": { "default": 2.4, "range": [2.0, 4.0] },
+        "planWidthM": { "default": 2.4, "range": [2.0, 10.5], "rangeSource": "upper bound 10.5 m from the tennis-court hut (VR scene_f3 face r reads about 9 m; its roof traced on the NGII 2025 sheet is 11.0 x 4.3 m, 10.4 m without the eaves) (estimated, 추정)" },
         "planDepthM": { "default": 2.4, "range": [2.0, 4.0] },
         "heightM": { "default": 2.6, "range": [2.3, 3.2] },
         "roofRiseM": { "default": 0.6, "range": [0.3, 1.0] }
       },
-      "dimsSource": "VR reading of the tennis-court hut (scene_f3) and the green-roof booth (scene_f2); hip or gable roof per instance (estimated)",
+      "dimsSource": "VR reading of the tennis-court hut (scene_f3; the scene_f2 sighting is EV charging bays, not a booth); hip or gable roof per instance (estimated)",
       "materials": { "walls": "instance wallColour", "roof": "instance roofColour" },
-      "colourSource": "VR reading: red roof in scene_f3, green roof in scene_f2 (estimated)",
+      "colourSource": "VR reading: red roof in scene_f3 (estimated)",
       "estimated": true
     },
     "bench": {
       "builder": "bench",
       "label": "벤치",
       "dims": {
-        "lengthM": { "default": 1.8, "range": [1.2, 2.4] },
+        "lengthM": { "default": 1.8, "range": [1.2, 6.0], "rangeSource": "upper bound 6.0 m from VR scene_c1 face l: the dark box benches beside the 3 m tree pits read about 5-6 m long (estimated, 추정)" },
         "depthM": { "default": 0.6, "range": [0.4, 0.7] },
         "seatHeightM": { "default": 0.45, "range": [0.4, 0.48] }
       },
