@@ -623,7 +623,9 @@ export function CityModel({
         for (let i = 0; i < child.count; i += 1) {
           luminanceSum +=
             0.2126 * summer[i * 3] + 0.7152 * summer[i * 3 + 1] + 0.0722 * summer[i * 3 + 2];
-          const profile = getAutumnProfile(autumnIndex, SPECIES_AUTUMN_PALETTES[child.material.name]);
+          // per-tree colour read on the VR tour (generator extras.autumn: [group, shade, mix] or 0), else the hashed choice
+          const vr = Array.isArray(child.userData.autumn) && child.userData.autumn[i] ? child.userData.autumn[i] : null;
+          const profile = getAutumnProfile(autumnIndex, SPECIES_AUTUMN_PALETTES[child.material.name], vr);
           profile.color = profile.color.map((value) => value * CROWN_ALBEDO_SCALE);
           profiles.push(profile);
           autumnIndex += 1;

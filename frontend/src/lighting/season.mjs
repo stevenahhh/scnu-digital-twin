@@ -90,9 +90,25 @@ function hashUnit(index, salt) {
   return (x >>> 0) / 4294967296;
 }
 
+// The date of the SCNU 360 VR tour capture the per-tree colours were read on (ASSUMED: late October; the compare-vr
+// harness renders at this clock). A crown with a VR reading reaches its read colour by this date.
+export const VR_CAPTURE_DATE = new Date("2026-10-24T12:00:00+09:00");
+
 // Species group, phase and colour choice of one crown instance; deterministic in its index. palette: AUTUMN_PALETTE
-// (crowns of unknown species) or one of SPECIES_AUTUMN_PALETTES.
-export function getAutumnProfile(index, palette = AUTUMN_PALETTE) {
+// (crowns of unknown species) or one of SPECIES_AUTUMN_PALETTES. vr: [palette group, shade 0..1, mix 0..1] read on the
+// VR for this tree (data/photo/tree-vr-fit.json via the crown node's extras.autumn); it replaces the hashed choice.
+export function getAutumnProfile(index, palette = AUTUMN_PALETTE, vr = null) {
+  if (vr) {
+    const entry = palette[Math.min(palette.length - 1, Math.max(0, vr[0]))];
+    const [a, b] = entry.colors;
+    return {
+      species: entry.species,
+      phase: 0,
+      color: [0, 1, 2].map((c) => a[c] + (b[c] - a[c]) * vr[1]),
+      maxMix: vr[2],
+      weightScale: 1 / Math.max(0.05, getAutumnWeight(VR_CAPTURE_DATE)),
+    };
+  }
   const pick = hashUnit(index, 1);
   let group = palette.length - 1;
   for (let i = 0, edge = 0; i < palette.length; i += 1) {
