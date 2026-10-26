@@ -538,6 +538,27 @@ The first pass tested candidates by their vertices and left out `bike_rack`, whi
 | 16 | scene_f1 d | RS0016, RS0016B long benches, face d registered on the lane diamonds and the footway kerb |
 | 17 | scene_f2 d | not a rest space (EV charging bays) |
 
+### VR rest spaces (`rest-spaces.geojson`)
+
+The rest spaces the VR shows and this survey lacks (`rest-spaces-reconciliation.json`, decision `missing`) are 9 features
+for 7 sightings. Every dimension and position is an estimate (추정).
+
+| id | kind | VR scene / face | position | photo | confidence |
+|---|---|---|---|---|---|
+| RS0003 | garden_wall (white coping, timber lattice) | scene_a5 / r | white coping line traced on the photo | wall | 0.6 |
+| RS0006 | bench (orange timber) | scene_a9 / f | 1.1 m in front of RS0007W, where the VR bearing meets it | none | 0.4 |
+| RS0007 | planter (3 x 3 m gravel tree pit) | scene_a9 / f | VR bearing and depression angle from the station | none | 0.4 |
+| RS0007W | low_wall (red brick, 0.7 m) | scene_a9 / f | south edge of the paved plaza on the photo | wall | 0.5 |
+| RS0011 | hut (yellow timber, red gable roof) | scene_f3 / r | roof traced at the south clay courts | roof | 0.7 |
+| RS0013 | bus_stop_shelter / court_shelter (flat grey roof) | scene_d2 / r | VR bearing, distance for an estimated camera height (+-5 m) | none | 0.3 |
+| RS0015 | bus_stop_shelter | scene_f1 / l | roof traced at the east bus bay | roof | 0.6 |
+| RS0016, RS0016B | bench (long, timber) | scene_f1 / d | face d registered on the lane diamonds and the footway kerb (about 1 m) | none | 0.4 |
+
+Tolerance: traced outlines sit within 0.25 m of the photo; the planter wall RS0007W is visible only at its west end
+(about 0.3 m). Duplicates: no feature lies within 3 m of a survey object of its class, and the build's whole-set audit
+(survey, rest spaces, lamps, estimated benches) finds no pair. Retypes, matches, not-rest-space and deferred decisions are
+in the applied table above.
+
 ## Licence
 
 Source: **국토지리정보원 (NGII), 정사영상 2025, sheet 34702020 (순천020)**, metadata 202504000734702020, made by

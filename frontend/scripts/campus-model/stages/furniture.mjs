@@ -400,19 +400,35 @@ function axisOf(o) {
 
 // Rest-space candidates that would draw an existing object twice: within radiusM of an object of the same class (all
 // roofed kinds are one class, the rest go by kind, street lamps included). Returns [{ id, other, kind, distanceM }].
-const dedupClass = (kind) => (ROOFED.has(kind) ? "roofed" : kind);
+const dedupClass = (kind, subtype) => (ROOFED.has(kind) ? "roofed" : kind === "plaza_structure" ? `${kind}/${subtype}` : kind);
 export function duplicatesOf(candidates, existing, radiusM = 3) {
   const found = [];
   for (const o of candidates) {
     const outline = o.footprint ?? o.ring;
     const at = o.point ?? (outline ? ringCentroid(outline) : [(o.line[0][0] + o.line.at(-1)[0]) / 2, (o.line[0][1] + o.line.at(-1)[1]) / 2]);
     for (const other of existing) {
-      if (other.id === o.id || dedupClass(other.kind) !== dedupClass(o.kind)) continue;
+      if (other.id === o.id || dedupClass(other.kind, other.subtype) !== dedupClass(o.kind, o.subtype)) continue;
       const distanceM = objectDistance(at, other) / M(1);
       if (distanceM < radiusM) found.push({ id: o.id, other: other.id, kind: o.kind, distanceM: Number(distanceM.toFixed(2)) });
     }
   }
   return found;
+}
+
+// Whole-set duplicate audit: every pair of the same class (roofed kinds one class, the rest by kind) closer than
+// radiusM among the drawn objects (survey and rest spaces), the lamps (surveyed and estimated) and the estimated benches.
+// Returns [{ id, other, kind, distanceM }] once per pair.
+// Survey pairs that touch by design (one structure surveyed in parts) are listed, not counted.
+export const AUDIT_COMPOUNDS = {
+  "OC0064+OC0065": "the two crossing bars of one X-shaped pergola in the pocket park",
+};
+export function auditDuplicates(objects, lamps = [], benches = [], radiusM = 3) {
+  const items = [
+    ...objects.filter((o) => o.kind !== "street_lamp"),
+    ...lamps.map((lamp) => ({ id: lamp.id, kind: "street_lamp", point: lamp.at })),
+    ...benches.map((bench, i) => ({ id: `EB${String(i + 1).padStart(3, "0")}`, kind: "bench", point: bench.at })),
+  ];
+  return duplicatesOf(items, items, radiusM).filter(({ id, other }) => id < other && !AUDIT_COMPOUNDS[`${id}+${other}`]);
 }
 
 // Fabric stripes across a length: equal bands about widthM wide, colour index alternating 0, 1, 0, ...
@@ -1580,7 +1596,7 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     tally(kind, o.source === "rest-spaces");
     built.push([o.id, kind, Number(o.heightM.toFixed(2)), o.heightSource, 1, ctx.solid.triangleCount + ctx.glass.triangleCount - before]);
     // rest-space instances: catalogue kinds given dims, or survey objects retyped to a catalogue kind
-    if (REST_TYPES[o.kind] && (o.p.dims !== undefined || o.surveyKind !== o.kind)) restSpaces.push([o.id, o.kind, REST_TYPES[o.kind].dimsSource, o.p.vr_scene ?? null, o.p.photo_support ?? null, true]);
+    if (REST_TYPES[o.kind] && (o.source === "rest-spaces" || o.p.dims !== undefined || o.surveyKind !== o.kind)) restSpaces.push([o.id, o.kind, REST_TYPES[o.kind].dimsSource, o.p.vr_scene ?? null, o.p.photo_support ?? null, true]);
   }
   appendLampSolids(ctx.solid, lamps, groundAt);
   for (const lamp of lamps) tally(`street_lamp/${lamp.type}`, lamp.estimated);
@@ -1592,6 +1608,19 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     tally(bench.plaza ? "bench/plaza (VR)" : "bench", true);
   }
 
+  // per-kind provenance of the rest spaces (VR-located features and survey objects retyped to a catalogue kind)
+  const restSpaceKinds = {};
+  for (const [id, kind, dimsSource, scene, support] of restSpaces) {
+    const entry = (restSpaceKinds[kind] ??= { label: `${REST_TYPES[kind].label} (추정)`, count: 0, estimated: true, dimsSource, ids: [], vrScenes: [], photoSupport: {} });
+    entry.count += 1;
+    entry.ids.push(id);
+    const o = furniture.objects.find((q) => q.id === id);
+    const vrScene = scene ?? /scene_[a-z0-9]+/.exec(furniture.retyped[id]?.reason ?? "")?.[0] ?? null;
+    if (vrScene && !entry.vrScenes.includes(vrScene)) entry.vrScenes.push(vrScene);
+    const key = support ?? (o.source === "survey" ? "survey outline" : "none");
+    entry.photoSupport[key] = (entry.photoSupport[key] ?? 0) + 1;
+  }
+  const duplicates = auditDuplicates(furniture.objects, lamps, benches);
   const furnitureMaterial = glb.addMaterial({ name: "Furniture", pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1], metallicFactor: 0, roughnessFactor: 0.82 } });
   const glassMaterial = glb.addMaterial({ name: "Furniture_Glass", pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1], metallicFactor: 0, roughnessFactor: 0.35 }, alphaMode: "BLEND", doubleSided: true });
   const extras = {
@@ -1608,18 +1637,22 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     ...(restSpaces.length ? {
       restSpacesNote: "parametric rest spaces from data/rest-space-catalogue.json: [id, kind, dimsSource, VR scene, photo support, estimated]; every dimension is an estimate (추정)",
       restSpaces,
+      restSpaceKinds,
     } : {}),
+    duplicateAudit: { radiusM: 3, rule: "same class (roofed kinds one class, plaza structures by subtype, the rest by kind) over survey, rest spaces, lamps and estimated benches", pairs: duplicates, compounds: AUDIT_COMPOUNDS },
   };
   glb.addNode({ name: "Furniture", mesh: glb.addMesh("Furniture", [ctx.solid.toPrimitive(furnitureMaterial)]), extras }, { root: true });
   glb.addNode({ name: "Furniture_Glass", mesh: glb.addMesh("Furniture_Glass", [ctx.glass.toPrimitive(glassMaterial)]) }, { root: true });
 
   const summary = Object.entries(counts).sort(([a], [b]) => a.localeCompare(b)).map(([kind, c]) => `${kind} ${c.surveyed}${c.estimated ? `+${c.estimated}e` : ""}`).join(", ");
   console.log(
-    `furniture: ${built.length} surveyed objects + ${lamps.length} lamps (${lampStats.surveyed} surveyed) + ${benches.length} estimated benches; ` +
+    `furniture: ${built.filter(([id]) => !id.startsWith("RS")).length} surveyed objects + ${built.filter(([id]) => id.startsWith("RS")).length} VR-placed (rest-spaces.geojson) + ${lamps.length} lamps (${lampStats.surveyed} surveyed) + ${benches.length} estimated benches; ` +
     `Furniture ${ctx.solid.triangleCount} triangles / ${ctx.solid.vertexCount} vertices, Furniture_Glass ${ctx.glass.triangleCount} triangles; ${summary}`,
   );
   for (const { id, reason } of furniture.excluded) console.log(`furniture: left out ${id}: ${reason}`);
   for (const [id, r] of Object.entries(furniture.retyped)) console.log(`furniture: ${id} built as ${r.kind}: ${r.reason}`);
   for (const line of ctx.skipped) console.log(`furniture: photo only ${line}`);
+  for (const [kind, entry] of Object.entries(restSpaceKinds)) console.log(`furniture: rest space ${kind} ${entry.count} (${entry.label}; ${entry.vrScenes.join(", ")}; ${Object.entries(entry.photoSupport).map(([k, v]) => `${k} ${v}`).join(", ")})`);
+  console.log(`furniture: duplicate audit (3 m, same class): ${duplicates.length} pairs${duplicates.length ? ` ${JSON.stringify(duplicates)}` : ""}`);
   return { glow: ctx.glow, counts, benches: benches.length };
 }

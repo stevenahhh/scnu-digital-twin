@@ -51,3 +51,14 @@ test("one feature group per sighting decided missing, none for the others", () =
     if (s.decision !== "missing") assert.ok(!s.instanceId, `${s.scene} ${s.decision}: no instance id`);
   }
 });
+
+test("the whole-set audit reports a planted duplicate gazebo, and only that pair", async () => {
+  const { auditDuplicates } = await import("../../stages/furniture.mjs");
+  assert.deepEqual(auditDuplicates(furniture.objects), [], "the committed set has no duplicate pair");
+  const gazebo = furniture.objects.find((o) => o.kind === "gazebo");
+  const [x, z] = gazebo.footprint.reduce((a, p, _, r) => [a[0] + p[0] / r.length, a[1] + p[1] / r.length], [0, 0]);
+  const planted = { id: "RS9999", kind: "gazebo", point: [x + 0.6242171526, z], p: {} };
+  const pairs = auditDuplicates([...furniture.objects, planted]);
+  assert.equal(pairs.length, 1);
+  assert.deepEqual([pairs[0].id, pairs[0].other].sort(), [gazebo.id, "RS9999"].sort());
+});
