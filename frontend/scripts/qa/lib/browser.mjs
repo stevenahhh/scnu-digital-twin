@@ -157,6 +157,11 @@ export class Browser {
   // SCREENS "tap": retry up to 12 s, scrollIntoView for camera presets, native click at the centre.
   async tap(selector, text, { timeoutMs = 12000 } = {}) {
     if (selector.includes("camera-preset")) {
+      // Named presets live in the 시점 menu (HudToolbar); open it first when the item is not in the DOM.
+      await this.run((sel) => {
+        if (!document.querySelector(sel)) document.querySelector("[data-qa=camera-view-menu]")?.click();
+      }, selector);
+      await sleep(300);
       await this.run((sel) => document.querySelector(sel)?.scrollIntoView({ inline: "center", block: "nearest" }), selector);
     }
     const deadline = Date.now() + timeoutMs;
