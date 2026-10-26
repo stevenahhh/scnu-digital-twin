@@ -13,6 +13,8 @@ from simulation.network_schema import iter_features, load_feature_collection
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 SUMO = ROOT / "sumo"
+PROJ_EPSG5186 = "+proj=tmerc +lat_0=38 +lon_0=127 +k=1 +x_0=200000 +y_0=600000 +ellps=GRS80 +units=m +no_defs"
+PEDESTRIAN_KINDS = {"sidewalk", "crosswalk", "shared_path", "pedestrian_gate", "building_entrance", "parking_walk"}
 
 
 def write_xml(root: Element, path: Path) -> None:
@@ -20,11 +22,27 @@ def write_xml(root: Element, path: Path) -> None:
     ElementTree(root).write(path, encoding="utf-8", xml_declaration=True)
 
 
-def prepare(network: dict, output: Path) -> dict:
+def _anchor(transform: dict) -> tuple[float, float]:
+    anchor = transform.get("epsg5186_anchor")
+    if not anchor or "E" not in anchor or "N" not in anchor:
+        raise KeyError("coordinate_transform.json에 epsg5186_anchor(E, N)가 없습니다. 상대 좌표로 SUMO 파일을 쓰지 않습니다.")
+    return float(anchor["E"]), float(anchor["N"])
+
+
+def _coord(value: float) -> str:
+    return f"{round(value, 6):.6f}".rstrip("0").rstrip(".")
+
+
+def prepare(network: dict, output: Path, transform: dict | None = None) -> dict:
+    """Write SUMO PlainXML in absolute EPSG:5186 metres (simulation x/z + the D4 anchor) with netOffset 0,0."""
+    east, north = _anchor(transform if transform is not None else json.loads((DATA / "coordinate_transform.json").read_text(encoding="utf-8")))
+    absolute = lambda point: f"{_coord(float(point[0]) + east)},{_coord(float(point[1]) + north)}"
     node_features = {feature.feature_id: feature for feature in iter_features(network, "node")}
     nodes = Element("nodes")
+    SubElement(nodes, "location", netOffset="0.00,0.00", projParameter=PROJ_EPSG5186)
     for node_id, feature in node_features.items():
-        SubElement(nodes, "node", id=node_id, x=str(feature.coordinates[0]), y=str(feature.coordinates[1]), type="priority")
+        x, y = absolute(feature.coordinates).split(",")
+        SubElement(nodes, "node", id=node_id, x=x, y=y, type="priority")
     edges_xml = Element("edges")
     included = []
     for feature in iter_features(network, "edge"):
@@ -34,16 +52,21 @@ def prepare(network: dict, output: Path) -> dict:
         allowed = set(props.get("allowed_types") or ())
         if not allowed:
             continue
-        sumo_allow = []
-        if "car" in allowed: sumo_allow.append("passenger")
-        if "person" in allowed: sumo_allow.append("pedestrian")
-        if "scooter" in allowed: sumo_allow.append("bicycle")
+        if props.get("kind") in PEDESTRIAN_KINDS:
+            sumo_allow = ["pedestrian"]
+        elif "car" in allowed:
+            sumo_allow = ["passenger"]
+        else:
+            sumo_allow = [name for agent, name in (("person", "pedestrian"), ("scooter", "bicycle")) if agent in allowed]
         attributes = {
             "id": feature.feature_id, "from": str(props["from_node"]), "to": str(props["to_node"]),
-            "numLanes": "1", "speed": str(float(props.get("speed_limit") or 10) / 3.6),
+            "numLanes": str(int(props.get("lanes") or 1)) if "passenger" in sumo_allow else "1",
+            "speed": str(float(props.get("speed_limit") or 10) / 3.6),
             "allow": " ".join(sumo_allow),
-            "shape": " ".join(f"{point[0]},{point[1]}" for point in feature.coordinates),
+            "shape": " ".join(absolute(point) for point in feature.coordinates),
         }
+        if props.get("width_m") is not None:
+            attributes["width"] = str(float(props["width_m"]) / int(attributes["numLanes"]))
         SubElement(edges_xml, "edge", **attributes)
         included.append(feature.feature_id)
     write_xml(nodes, output / "campus.nod.xml")
@@ -67,7 +90,10 @@ def prepare(network: dict, output: Path) -> dict:
     built = False
     error = None
     if netconvert and included:
-        result = subprocess.run([netconvert, "--node-files", str(output / "campus.nod.xml"), "--edge-files", str(output / "campus.edg.xml"), "--output-file", str(net_path)], capture_output=True, text=True)
+        result = subprocess.run([
+            netconvert, "--node-files", str(output / "campus.nod.xml"), "--edge-files", str(output / "campus.edg.xml"),
+            "--offset.disable-normalization", "true", "--output-file", str(net_path),
+        ], capture_output=True, text=True)
         built = result.returncode == 0
         error = None if built else result.stderr.strip()
     config = Element("configuration")
@@ -83,6 +109,7 @@ def prepare(network: dict, output: Path) -> dict:
         "authoritative_edges_exported": len(included), "netconvert_available": bool(netconvert),
         "campus_net_built": built, "error": error,
         "ready": built and net_path.exists(),
+        "frame": "EPSG:5186", "net_offset": [0, 0], "epsg5186_anchor": {"E": east, "N": north},
         "note": "Derived/unapproved geometry is deliberately excluded from SUMO network generation.",
     }
     (output / "generation_status.json").write_text(json.dumps(status, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -96,7 +123,8 @@ def main() -> None:
     args = parser.parse_args()
     status = prepare(load_feature_collection(args.network), args.output)
     print(json.dumps(status, ensure_ascii=False))
-    raise SystemExit(0 if status["ready"] else 2)
+    # Smoke only: without netconvert the PlainXML inputs are still written (exit 0); a failed netconvert run exits 2.
+    raise SystemExit(0 if status["ready"] or not status["netconvert_available"] else 2)
 
 
 if __name__ == "__main__":

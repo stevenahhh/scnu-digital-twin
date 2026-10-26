@@ -128,11 +128,15 @@ class CoordinateTransform:
         latitude = reference_lat + math.degrees(float(z) / radius)
         return longitude, latitude
 
+    # SUMO files from prepare_sumo are in absolute EPSG:5186 metres: sumo_origin E/N (the D4 anchor, absent = 0)
+    # makes sim <-> SUMO a pure translation; x/z keep their earlier meaning on top of it.
     def sumo_to_simulation(self, x: float, z: float) -> Tuple[float, float]:
-        return float(x) + self.sumo_origin["x"], float(z) + self.sumo_origin["z"]
+        origin = self.sumo_origin
+        return float(x) - float(origin.get("E", 0.0)) + origin["x"], float(z) - float(origin.get("N", 0.0)) + origin["z"]
 
     def simulation_to_sumo(self, x: float, z: float) -> Tuple[float, float]:
-        return float(x) - self.sumo_origin["x"], float(z) - self.sumo_origin["z"]
+        origin = self.sumo_origin
+        return float(x) - origin["x"] + float(origin.get("E", 0.0)), float(z) - origin["z"] + float(origin.get("N", 0.0))
 
     def as_dict(self) -> Dict:
         return {
