@@ -178,7 +178,8 @@ bun scripts/campus-model/fetch/treeInventory.mjs [--debug <dir>]   # crowns.png 
 - Species type (`ginkgo`, `broadleaf` for zelkova and cherry, `pine`, `metasequoia`, `conifer` for clipped columnar
   evergreens): a VR group polygon of `data/photo/tree-species.json` (metasequoia rows and stands at the C1 plaza, C2/C3
   and D1), else the colour class of the crowns within 9 m on the VR cube faces (each crown projected into every face
-  that sees it, nearest crown per pixel, building prisms occluding; yellow is ginkgo or, when columnar, metasequoia;
+  that sees it, nearest crown per pixel, building prisms occluding; yellow is ginkgo on a street edge (zelkova elsewhere)
+  or, when columnar, metasequoia;
   russet or red is broadleaf; dark green is pine or, when columnar, conifer), else the MCEE forest type, else the
   photo tone. Every crown records its source (`speciesSource`) and the number of VR views it was read in.
 - The build draws every crown that does not stand on a building, a road zone, an off-campus lot or roofed furniture
