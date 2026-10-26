@@ -23,6 +23,7 @@
 //   network/stalls.mjs  estimated stall dividers in the gaps of detected rows, and the circular-arc speed humps
 //   surfaces.mjs  the Ground_* decal meshes (asphalt, pavers, lots, aprons, painted surfaces) with CC0 tiles; no photo pixels
 //   outerTerrain.mjs  the OuterTerrain hill ring around EXTENT, feathered onto Topography's edge
+//   context.mjs / contextGround.mjs  off-campus building masses and the streets around the campus beyond EXTENT
 //   trees.mjs     tree inventory and hedges (placeTrees, after the ground), species geometry and instanced Trees_* nodes (buildTrees)
 //   furniture.mjs the surveyed outdoor objects (loadFurniture, before the trees: footprints trees keep out of) and the
 //                 merged Furniture / Furniture_Glass nodes
@@ -48,6 +49,7 @@ import { buildGround } from "./stages/ground.mjs";
 import { buildFurniture, loadFurniture } from "./stages/furniture.mjs";
 import { buildLights, placeLamps } from "./stages/lights.mjs";
 import { buildContext, meshHeightAt } from "./stages/context.mjs";
+import { buildContextGround } from "./stages/contextGround.mjs";
 import { buildMarkings, describeMarkings, loadMarkings } from "./stages/markings.mjs";
 import { buildOuterTerrain } from "./stages/outerTerrain.mjs";
 import { KERB_EXPOSED_M, buildKerbs, groundDecalOffset, slabRefine } from "./stages/kerbs.mjs";
@@ -114,6 +116,12 @@ const outerHeightAt = meshHeightAt(outerTerrain.positions, outerTerrain.indices)
 const inExtent = (x, z) => x >= EXTENT.minX && x <= EXTENT.maxX && z >= EXTENT.minZ && z <= EXTENT.maxZ;
 const contextGround = (x, z) => (inExtent(x, z) ? groundAt(x, z) : outerHeightAt(x, z) ?? groundAt(Math.min(Math.max(x, EXTENT.minX), EXTENT.maxX), Math.min(Math.max(z, EXTENT.minZ), EXTENT.maxZ)));
 buildContext({ glb, parts: contextParts, groundAt: contextGround });
+// The streets around the campus beyond EXTENT (stages/contextGround.mjs): OSM centrelines on the OuterTerrain ring, merged
+// per tile, not part of the road network; widths and lanes 추정. Added last, so nothing above changes.
+await buildContextGround({
+  glb, layers, paint: markings.pieces, heightAt: outerHeightAt,
+  footprints: [...contextParts.map((p) => p.outer), ...[...selectableBuildings, ...campusBuildings].flatMap((b) => b.parts.map((p) => p.outer))],
+});
 
 // ---------------------------------------------------------------- height sidecar
 // The ground the traffic agents stand on (scene units): the drawn Topography plus the raised walkway slab
