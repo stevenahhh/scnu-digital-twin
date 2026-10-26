@@ -1,0 +1,42 @@
+{
+ "type": "FeatureCollection",
+ "name": "vr-lamps",
+ "properties": {
+  "note": "Lamps the SCNU 360 VR tour shows that the photo survey missed. Existence from the VR (cube face and column), base from the NGII 2025 photo (the sun-side root of the pole shadow, by eye). Two-station VR bearings with the resected stations (scripts/perf/vr_lamp_bearings.py) are reported in vrFix: with two rays the intersection has no redundancy, so the photo base is used. Heights estimated (추정)."
+ },
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "VRL001",
+    "kind": "street_lamp",
+    "method": "vr+photo",
+    "source": "SCNU 360 VR scene_b7 l col 1633 (white post-top lamp at the parking-island corner) + NGII 2025 pole-shadow root",
+    "confidence": 0.6,
+    "estimated": true,
+    "height_m": 4,
+    "height_source": "VR post-top lantern (estimated)",
+    "pole_verdict": "by-eye-root",
+    "residual_m": 0.25,
+    "vrFix": {
+     "stations": [
+      "scene_b7",
+      "scene_d5"
+     ],
+     "E": 244076.63,
+     "N": 263895.83,
+     "distanceToPhotoBaseM": 5,
+     "note": "second ray (scene_d5) 168 px from its prediction: likely another object, so the fix is not used"
+    },
+    "lamp_type": "path"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     127.482709,
+     34.97019263
+    ]
+   }
+  }
+ ]
+}
