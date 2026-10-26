@@ -54,7 +54,8 @@ const MCEE_CACHE = path.join(CACHE, "mcee");
 //               carriageways (ways 1364521191/1364521192), MCEE folds it into class 154 (road).
 //   fountain    the fountain at the west end of the plaza's oval lawn; mapped by neither source.
 //   reclass     an OSM area painted as another surface: OSM way 367126960 (natural=water, pond, west of
-//               the stadium) is a sunken lawn on current imagery, not open water.
+//               the stadium) is a sunken lawn on current imagery, not open water; OSM way 366373760
+//               (leisure=pitch, sport=tennis, F3 학생테니스장) is a clay court, not the green hard court.
 //   parking     surface car-park bays OSM does not map (no amenity=parking / parking_space there):
 //               a single row of bays along `axis`, `depthMetres` deep, `bayMetres` per bay (2.5 m
 //               perpendicular, 6 m parallel). The three rows line the access road west of the stadium.
@@ -69,6 +70,7 @@ const SUPPLEMENTS = [
   { kind: "roundabout", note: "central intersection roundabout (centre estimated; radius 10.7 m fitted to the painted rim on the NGII 2025 orthophoto, 2026-10-24)", centre: [127.4806378, 34.9692591], radiusMetres: 10.7 },
   { kind: "fountain", note: "central plaza fountain (estimate)", centre: [127.4799993, 34.9695797], radiusMetres: 3.6 },
   { kind: "reclass", note: "OSM pond west of the stadium is a sunken lawn (estimate)", osm: "way/367126960", surface: "lawn" },
+  { kind: "reclass", note: "OSM tennis pitch south of F1 (F3 학생테니스장) is clay: orange-tan on the NGII 2025 orthophoto inside the traced court fence (objects-campus OC0173, which the OSM outline matches within about 3 m) and in SCNU 360 VR scene_f3 f/r (estimate)", osm: "way/366373760", surface: "clay" },
   { kind: "parking", note: "bays along the building west of the access road (estimate)", axis: [[127.4810799, 34.9688447], [127.4809641, 34.9684043]], depthMetres: 5, bayMetres: 2.5 },
   { kind: "parking", note: "parallel bays on the north kerb of the access road (estimate)", axis: [[127.4812904, 34.9684072], [127.4817167, 34.9683451]], depthMetres: 2.5, bayMetres: 6 },
   { kind: "parking", note: "bays south of the access road (estimate)", axis: [[127.4812887, 34.9683155], [127.4815764, 34.9682772]], depthMetres: 5, bayMetres: 2.5 },
