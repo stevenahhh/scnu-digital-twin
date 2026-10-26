@@ -4,6 +4,18 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
+// Records every application fetch() (url + performance.now()) before the app runs. The fixture server's request log
+// sees transport-level hits, which include Chrome's automatic resend of an idempotent GET when a reused keep-alive
+// socket is closed (that is how the fixtures emulate "server down"), so app polling rates are read from here.
+const FETCH_RECORDER = `(() => {
+  const original = window.fetch;
+  window.__qaFetches = [];
+  window.fetch = function qaRecordedFetch(input, init) {
+    try { window.__qaFetches.push({ url: String(typeof input === "string" ? input : input?.url ?? input), t: performance.now() }); } catch {}
+    return original.apply(this, arguments);
+  };
+})();`;
+
 export const VIEWPORTS = Object.freeze({
   D: Object.freeze({ id: "D", width: 1440, height: 900, scale: 1, mobile: false }),
   P: Object.freeze({ id: "P", width: 390, height: 844, scale: 2, mobile: true }),
@@ -101,6 +113,7 @@ export class Browser {
     await view.cdp("Emulation.setTimezoneOverride", { timezoneId: "Asia/Seoul" });
     await browser.setMedia({ reducedMotion, colorScheme });
     if (clock) await view.cdp("Page.addScriptToEvaluateOnNewDocument", { source: clockScript(clock) });
+    await view.cdp("Page.addScriptToEvaluateOnNewDocument", { source: FETCH_RECORDER });
     return browser;
   }
 

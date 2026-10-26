@@ -239,10 +239,12 @@ export const SLOP_UX_CHECKS = [
       if (!navigatedAt) return result(false, { navigatedAt: null }, "navigation time recorded");
       const remaining = navigatedAt + 60000 - Date.now();
       if (remaining > 0) await ctx.sleep(remaining);
-      const requests = (await ctx.readRequests()).filter((r) => r.path.startsWith("/api/traffic") && r.at >= navigatedAt && r.at <= navigatedAt + 60000);
+      // Application requests (fetch calls since navigation), not transport hits: see FETCH_RECORDER in lib/browser.mjs.
+      const requests = await ctx.inPage(() => (window.__qaFetches ?? []).filter((r) => new URL(r.url, location.href).pathname.endsWith("/api/traffic") && r.t <= 60000).map((r) => ({ at: Math.round(r.t) })));
+      const transportHits = (await ctx.readRequests()).filter((r) => r.path.startsWith("/api/traffic") && r.at >= navigatedAt && r.at <= navigatedAt + 60000).length;
       const gaps = requests.slice(1).map((r, i) => r.at - requests[i].at);
       const increasing = gaps.every((g, i) => i === 0 || g >= gaps[i - 1]);
-      return result(requests.length <= 4 && increasing, { trafficRequestsIn60s: requests.length, intervalsMs: gaps.slice(0, 10) }, "<= 4 requests with increasing intervals");
+      return result(requests.length <= 4 && increasing, { trafficRequestsIn60s: requests.length, intervalsMs: gaps.slice(0, 10), transportHits }, "<= 4 requests with increasing intervals");
     },
   }),
   defineCheck("V-S-105", {
