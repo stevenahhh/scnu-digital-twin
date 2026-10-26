@@ -2,6 +2,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { CAMERA_PRESETS } from "../../../src/camera/cameraPresets.mjs";
 import {
   HOOKS, chips, contrasts, defineCheck, exists, hueDistance, hueOf, intersection, missingHook, panelAlpha, panelInfo,
   parseCssColor, pixelDiff, result, sceneRegion, textItems, worstContrast,
@@ -310,7 +311,10 @@ export const VISUALQA_CHECKS = [
         const reachable = presets.filter((el) => { const r = el.getBoundingClientRect(); const top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); return r.width > 0 && (top === el || el.contains(top)); }).length;
         return { backControls: backs.length, backGlyphs: glyphs.size, presets: presets.length, presetsReachable: reachable };
       });
-      return result(m.backControls === 1 && m.backGlyphs === 1 && (ctx.viewport === "D" || m.presetsReachable >= 9), m, "<= 3 groups; one standard back glyph; all 9 presets reachable at P");
+      // 시점 개수는 제품의 CAMERA_PRESETS에서 읽는다(감사 당시 문구의 "9개"는 실제 시점 수와 다르다).
+      const total = CAMERA_PRESETS.length;
+      return result(m.backControls === 1 && m.backGlyphs === 1 && (ctx.viewport === "D" || m.presetsReachable >= total), { ...m, presetCount: total },
+        `<= 3 groups; one standard back glyph; all ${total} presets reachable at P`);
     },
   }),
   defineCheck("V-Q-19", {
