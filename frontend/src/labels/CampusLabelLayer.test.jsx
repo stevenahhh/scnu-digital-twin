@@ -49,6 +49,21 @@ describe("CampusLabelLayer", () => {
     expect(hidden.every((slot) => slot.style.pointerEvents === "none")).toBe(true);
   });
 
+  it("writes each shown slot's anchor y as data-anchor-top and clears it when the slot hides", () => {
+    const entries = Array.from({ length: 20 }, (_, i) => entry(`BLD_X${String(i).padStart(2, "0")}`));
+    const { container, update, visibleSlots } = mount(entries);
+    update();
+    const points = project(entries);
+    const shown = visibleSlots();
+    expect(shown.length).toBeGreaterThan(0);
+    for (const slot of shown) expect(slot.dataset.anchorTop).toBe(String(Math.round(points.get(slot.dataset.labelSlot).y)));
+    const hidden = [...container.querySelectorAll("[data-label-slot]")].filter((slot) => slot.style.visibility !== "visible");
+    expect(hidden.length).toBeGreaterThan(0);
+    expect(hidden.every((slot) => slot.dataset.anchorTop === undefined)).toBe(true);
+    update({ hidden: true });
+    expect([...container.querySelectorAll("[data-label-slot]")].every((slot) => slot.dataset.anchorTop === undefined)).toBe(true);
+  });
+
   it("orders the chips in the DOM (= Tab order) by priority: tier, then data, then distance", () => {
     const entries = [
       entry("BLD_FAR2", { tier: 2 }),
