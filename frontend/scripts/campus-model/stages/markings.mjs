@@ -114,6 +114,8 @@ const FIXED_COLOUR_KINDS = new Set(["kerb_no_parking", "centre_line_yellow", "ze
 const STROKED_KINDS = new Set(["lane_line_dashed", "lane_line_solid", "edge_line", "centre_line_yellow", "parking_line", "kerb_no_parking", "give_way_line"]);
 // Above the Ground_* layers (at most 0.036 m, stages/surfaces.mjs); pack.mjs keeps positions as float.
 const LIFT_M = 0.04;
+const SYMBOL_LIFT_M = 0.012;
+const ON_FILL_KINDS = new Set(["disabled_parking", "bike_lane_blue"]);
 // A point is on a building or a sidewalk for the regular geometry only when it and four points BLOCK_PROBE_M around it
 // are: the A003 outlines and the building footprints are not exact to the kerb, so an edge line beside one stays.
 const BLOCK_PROBE_M = 0.3;
@@ -849,9 +851,11 @@ export function buildMarkings({ glb, markings, surface, extraHeight = () => 0 })
   const uvs = [];
   const indices = [];
   const index = new Map();
-  const lift = metres(LIFT_M);
-  const vertex = ([x, z], colour) => {
-    const key = `${Math.round(x * 1e5)},${Math.round(z * 1e5)},${colour}`;
+  // a white symbol painted on a blue fill (the access symbol, the P, a bicycle) lies SYMBOL_LIFT_M above the fill: at
+  // one height the two coplanar colours z-fight and the symbol breaks up
+  const liftOf = (piece) => metres(LIFT_M + (piece.colour === "white" && ON_FILL_KINDS.has(piece.kind) ? SYMBOL_LIFT_M : 0));
+  const vertex = ([x, z], colour, lift) => {
+    const key = `${Math.round(x * 1e5)},${Math.round(z * 1e5)},${colour},${lift}`;
     let i = index.get(key);
     if (i === undefined) {
       i = positions.length / 3;
@@ -877,7 +881,7 @@ export function buildMarkings({ glb, markings, surface, extraHeight = () => 0 })
         const cross = (tri[1][0] - tri[0][0]) * (tri[2][1] - tri[0][1]) - (tri[1][1] - tri[0][1]) * (tri[2][0] - tri[0][0]);
         if (Math.abs(cross) < 1e-10) continue;
         const ordered = cross < 0 ? tri : [tri[0], tri[2], tri[1]];
-        indices.push(...ordered.map((p) => vertex(p, piece.colour)));
+        indices.push(...ordered.map((p) => vertex(p, piece.colour, liftOf(piece))));
       }
     }
   }
@@ -975,7 +979,7 @@ function describeRegular(r) {
     `dashed lines by statute ${dashes.statute ?? 0}, by the photo's period ${dashes.photo ?? 0}, as detected ${dashes["detected dashes"] ?? 0}; ` +
     `${r.crossingGroups} bar groups -> ${r.crossings} crossings (${r.crossingRowsAligned} rows on a shared bar grid, ${r.crossingRowsOwnGrid} rows on their own period and phase), ${r.barsDetected} detected bars -> ${r.barsDrawn} equal bars, ` +
     `${r.stopInCrossing.length} stop lines inside a crossing left out (${r.stopInCrossing.join(", ") || "none"}); ` +
-    `bay symbols: ${r.baySymbols.wheelchair} wheelchairs, ${r.baySymbols.p} P (${r.baySymbols.existing} bays with a drawn symbol, ${r.baySymbols.orientationGuessed} upright direction 추정); ` +
+    `bay symbols: ${r.baySymbols.wheelchair} wheelchairs, ${r.baySymbols.p} P, ${r.baySymbols.scooters} scooters, ${r.baySymbols.aisles} hatched aisles (${r.baySymbols.existing} replacing a traced figure, ${r.baySymbols.orientationGuessed} upright direction 추정); ` +
     `${r.stopSquared} stop lines squared to their lane; ${r.rectangles} rectangles, ${r.outlines} snapped outlines; templates: ${glyphs}; ` +
     `left out: ${r.dropped.blocked} on buildings or sidewalks, ${r.dropped.textTooSmall} text blobs too small for a character`;
 }

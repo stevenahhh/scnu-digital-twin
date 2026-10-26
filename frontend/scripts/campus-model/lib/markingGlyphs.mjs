@@ -292,16 +292,123 @@ export const triangleTemplate = (length, width, w) => outline([[-width / 2, leng
 export const chevronTemplate = (depth, span, w) => [[bar([0, -depth / 2], [-span / 2, depth / 2], w)], [bar([0, -depth / 2], [span / 2, depth / 2], w)]];
 
 // Wheelchair symbol (장애인 전용) in a size x size box: head, back and seat, leg, wheel ring.
+// A polyline stroked `w` wide as ONE ring, mitred at every joint (limit 3): one solid band with crisp edges, no
+// joint pieces or overlaps.
+export function band(points, w) {
+  const h = w / 2;
+  const left = [];
+  const right = [];
+  for (let i = 0; i < points.length; i += 1) {
+    const p = points[i];
+    const dir = (a, b) => { const l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1; return [(b[0] - a[0]) / l, (b[1] - a[1]) / l]; };
+    const before = i > 0 ? dir(points[i - 1], p) : null;
+    const after = i + 1 < points.length ? dir(p, points[i + 1]) : null;
+    let t = before && after ? [before[0] + after[0], before[1] + after[1]] : before ?? after;
+    const tl = Math.hypot(t[0], t[1]) || 1;
+    t = [t[0] / tl, t[1] / tl];
+    const n = [-t[1], t[0]];
+    const ref = after ?? before;
+    const k = h / Math.max(1 / 3, n[0] * -ref[1] + n[1] * ref[0]);
+    left.push([p[0] + n[0] * k, p[1] + n[1] * k]);
+    right.push([p[0] - n[0] * k, p[1] - n[1] * k]);
+  }
+  return [...left, ...right.reverse()];
+}
+// An arc band (centre c, radius r, from a0 to a1 degrees counter-clockwise, `w` wide) as one ring.
+export function arcBand(c, r, a0, a1, w, step = 6) {
+  const n = Math.max(2, Math.ceil(Math.abs(a1 - a0) / step));
+  const at = (rad, k) => { const a = ((a0 + ((a1 - a0) * k) / n) * Math.PI) / 180; return [c[0] + rad * Math.cos(a), c[1] + rad * Math.sin(a)]; };
+  const outer = Array.from({ length: n + 1 }, (_, k) => at(r + w / 2, k));
+  const inner = Array.from({ length: n + 1 }, (_, k) => at(r - w / 2, n - k));
+  return [...outer, ...inner];
+}
+
+// Wheelchair: the international symbol of access (ISO 7001 PI PF 006, the figure KS and 도로교통공단 paint in 장애인
+// 전용주차구역), `size` tall, facing +x, top +y; proportions approximated (추정). A solid head disc, the back-seat-shin-
+// foot as one band, the arm as one band, the wheel as an open arc band; strokes 0.11 of the size, so a 1.5 m symbol
+// has 0.16 m strokes (crisp at 0.1 m/px).
 export function wheelchairTemplate(size) {
   const s = size;
-  const w = 0.09 * s;
+  const P = (x, y) => [x * s, y * s];
+  const w = 0.11 * s;
   return [
-    [ring([-0.08 * s, 0.38 * s], 0.08 * s, 0.08 * s, 16)],
-    ...strokes([[-0.12 * s, 0.24 * s], [-0.12 * s, -0.02 * s], [0.16 * s, -0.02 * s], [0.26 * s, -0.3 * s], [0.36 * s, -0.3 * s]], w),
-    [bar([-0.12 * s, 0.14 * s], [0.12 * s, 0.14 * s], w)],
-    ...ellipseRing([-0.06 * s, -0.16 * s], 0.24 * s, 0.24 * s, w),
+    [ring(P(-0.13, 0.4), 0.09 * s, 0.09 * s, 28)],
+    [band([P(-0.17, 0.27), P(-0.17, -0.04), P(0.18, -0.04), P(0.27, -0.37), P(0.42, -0.37)], w)],
+    [band([P(-0.17, 0.12), P(0.1, 0.12)], 0.09 * s)],
+    [arcBand(P(-0.1, -0.19), 0.26 * s, 75, 345, 0.1 * s)],
   ];
 }
+
+// P of a parking or PM bay: stem and bowl as ONE polygon with the counter as its hole, `height` tall (width 0.62 of
+// it, stroke 0.17), top +y, centred on its box.
+export function parkingPTemplate(height) {
+  const H = height;
+  const w = 0.17 * H;
+  const R = 0.29 * H;
+  const W = 0.62 * H;
+  const x1 = W - R;
+  const arc = (r, sign) => Array.from({ length: 13 }, (_, k) => {
+    const a = Math.PI / 2 - (Math.PI * k) / 12;
+    return [x1 + r * Math.cos(a), H - R + r * Math.sin(a)];
+  });
+  const outer = [[0, 0], [0, H], ...arc(R), [w, H - 2 * R], [w, 0]];
+  const hole = [[w, H - w], ...arc(R - w), [w, H - 2 * R + w]].reverse();
+  const shift = ([x, y]) => [x - W / 2, y - H / 2];
+  return [[outer.map(shift), hole.map(shift)]];
+}
+// Kick scooter (PM, 개인형 이동장치) in side view, as painted in a PM bay: `length` long, front +x, top +y; two wheels
+// (rings), deck, stem and handlebar, each one solid ring; proportions approximated (추정).
+export function scooterTemplate(length) {
+  const s = length;
+  const P = (x, y) => [x * s, y * s];
+  const wheel = (x) => [ring(P(x, 0.12), 0.12 * s, 0.12 * s, 28), ring(P(x, 0.12), 0.055 * s, 0.055 * s, 28).reverse()];
+  return [
+    wheel(-0.38),
+    wheel(0.38),
+    [band([P(-0.27, 0.25), P(0.3, 0.25)], 0.09 * s)],
+    [band([P(0.36, 0.22), P(0.28, 0.74)], 0.085 * s)],
+    [band([P(0.14, 0.74), P(0.42, 0.74)], 0.085 * s)],
+  ];
+}
+
+// A convex ring clipped to the box [x0, x1] x [y0, y1] (Sutherland-Hodgman).
+function clipToBox(poly, x0, y0, x1, y1) {
+  const edges = [[(p) => p[0] >= x0, (a, b) => [x0, a[1] + ((b[1] - a[1]) * (x0 - a[0])) / (b[0] - a[0])]],
+    [(p) => p[0] <= x1, (a, b) => [x1, a[1] + ((b[1] - a[1]) * (x1 - a[0])) / (b[0] - a[0])]],
+    [(p) => p[1] >= y0, (a, b) => [a[0] + ((b[0] - a[0]) * (y0 - a[1])) / (b[1] - a[1]), y0]],
+    [(p) => p[1] <= y1, (a, b) => [a[0] + ((b[0] - a[0]) * (y1 - a[1])) / (b[1] - a[1]), y1]]];
+  let out = poly;
+  for (const [inside, cut] of edges) {
+    const src = out;
+    out = [];
+    for (let i = 0; i < src.length; i += 1) {
+      const a = src[(i + src.length - 1) % src.length];
+      const b = src[i];
+      if (inside(b)) {
+        if (!inside(a)) out.push(cut(a, b));
+        out.push(b);
+      } else if (inside(a)) out.push(cut(a, b));
+    }
+    if (!out.length) return out;
+  }
+  return out;
+}
+
+// Hatched access aisle (보행안전통로) beside or behind a disabled bay: a `length` x `width` strip centred on the origin,
+// x along the strip, y across it with -y the edge it shares with the bay (a `line`-wide divider there) and +y its
+// outer edge; 45-degree stripes `stripe` wide every `pitch` along x, clipped to the strip. Sizes 추정.
+export function hatchTemplate(length, width, { stripe = 0.25, pitch = 0.8, line = 0.12 } = {}) {
+  const [x0, x1, y0, y1] = [-length / 2, length / 2, -width / 2, width / 2];
+  const polys = [[[[x0, y0], [x1, y0], [x1, y0 + line], [x0, y0 + line]]]];
+  const d = stripe * Math.SQRT2;
+  const span = x1 - (x0 - width - d);
+  for (let t = x0 - width - d + (span % pitch) / 2; t < x1; t += pitch) {
+    const c = clipToBox([[t, y0], [t + d, y0], [t + d + width, y1], [t + width, y1]], x0, y0 + line, x1, y1);
+    if (c.length >= 3 && Math.abs(c.reduce((a, q, i) => a + q[0] * c[(i + 1) % c.length][1] - c[(i + 1) % c.length][0] * q[1], 0)) / 2 > 0.005) polys.push([c]);
+  }
+  return polys;
+}
+
 // Bicycle symbol in a length (along) x width (across) box: two wheels and the frame.
 export function bicycleTemplate(length, width) {
   // painted in side view, flat on the lane: wheels behind and ahead, the frame between them
