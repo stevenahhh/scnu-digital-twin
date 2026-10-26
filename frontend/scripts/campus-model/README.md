@@ -568,8 +568,12 @@ base from the drawn terrain surface (`topographySurface`).
 
 Decisions taken against the survey, logged by the build and listed in the `Furniture` node extras:
 
-- OC0111, the SCNU letter monument, is left out. Only VR scene_a19 shows it (confidence 0.2); the 2025 photo shows
-  that corner of the gate plaza under construction, so it is not consistent with the photo.
+- OC0111, the survey point of the SCNU letter monument, is left out: the monument is built once, as `RS-GATE-A19`
+  (`gate_sign`) in `data/photo/rest-spaces.geojson`, placed by the bearings and depression of VR scene_a19 (l face)
+  about 13 m further south at the plaza's road edge. The 2025 photo shows that corner of the plaza under construction,
+  so the position is VR-only and estimated (confidence 0.4). `B.gate_sign` builds a white letter slab and name band
+  on a planted stone bed from the feature's `length_m`, `depth_m`, `height_m`, `plinth_m`, `colour` and `bandColour`;
+  the lettering itself is not modelled. Objects of `rest-spaces.geojson` are counted as estimated in the node extras.
 - OB0010 was surveyed as a white roofed pergola. VR scene_a19 shows no roof there, only the stepped arc of the
   finished plaza, and the photo shows a curved edge with a thin shadow, so it is built as a two-tier curved step.
 - Parasols and the kiosk get 2.4 m instead of the generic 0.5 m `plaza_structure` default.

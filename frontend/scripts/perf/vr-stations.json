@@ -2994,9 +2994,18 @@
       "station": true,
       "yaw_deg": true
     },
-    "refined": false,
-    "refined_by": "compare-vr todo 2",
-    "refined_note": "title (gate) has no footprint; road axes and the gate plaza line up at the original yaw by eye; no building pair to measure"
+    "refined_by": "compare-vr todo 14",
+    "refined_note": "camera placed over the gate crossing between the two red traffic islands as the d face shows them (NE island upper right, SW island lower left), height 11.7 m from the car length on the d face; yaw kept (road axes)",
+    "yaw_refined_deg": 284,
+    "station_refined_x": 465.19,
+    "station_refined_z": -164.16,
+    "refined_confidence": 0.5,
+    "height_refined_m": 11.7,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "gate crossing islands",
+      "RS-GATE-A19"
+    ]
   },
   {
     "scene": "scene_b1",
