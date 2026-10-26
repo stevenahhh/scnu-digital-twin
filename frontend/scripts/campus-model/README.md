@@ -189,6 +189,19 @@ bun scripts/campus-model/fetch/treeInventory.mjs [--debug <dir>] [--out <file>] 
   building prisms occluding; yellow is ginkgo on a street edge (zelkova elsewhere) or, when columnar, metasequoia;
   russet or red is broadleaf; dark green is pine or, when columnar, conifer), else the MCEE forest type, else the
   photo tone. Every tree records its source (`speciesSource`), its photo crown and the number of VR views.
+- Near-station VR fit (`data/photo/tree-vr-fit.json`): every tree within 40 m of a station whose compare-vr strip passed
+  (all four faces, 38 stations; a12, b2, c5, d1 skipped) is projected into the cube faces that see it unoccluded
+  (`fetch/tree_vr.py` fit mode: depth buffer of all crowns, building prisms). On the VR at that spot it reads the
+  foliage colour class (yellow, ochre, red, dark, green), the crown width (the foliage run through the crown at
+  mid-height, gaps of 4 px closed; a run reaching the search edge is a merged row) and the crown top (foliage above the
+  centre with sky directly above it; tops of trees behind are excluded that way, and the change is capped at 1.6 x).
+  Up to the 3 nearest views are combined. Species change only where every view agrees (or one view within 30 m):
+  yellow or ochre and columnar -> metasequoia, yellow oval broadleaf -> ginkgo, very dark -> pine (columnar: conifer),
+  red or ochre pine -> broadleaf. Deciduous crowns get their autumn colour from the reading ([palette group, shade,
+  mix], reached by the VR capture date, `src/lighting/season.mjs`). Each correction lists its VR scene:face and
+  distance. `data/photo/tree-vr-manual.json` adds corrections read by eye where the fit misreads a tree (scene_c1 f, r
+  and l). Scrub: `tree-species.json` SG01 marks the D4 west slope; crowns there without a CHMv2 height over 5 m are
+  low shrub mounds (`shrub`, `Tree_Shrub`).
 - The build (`placeTrees`, after the ground stage) stands a trunk on open ground (surface class NATURAL), in a surveyed
   planter, in a street-tree pit (a footway cell within 1.5 m of the carriageway) or in a paved tree pit (a photo crown
   centred over plaza or footway paving with no open ground within half its radius, like the plaza rows of VR scene_c1);
@@ -196,8 +209,8 @@ bun scripts/campus-model/fetch/treeInventory.mjs [--debug <dir>] [--out <file>] 
   has its trunk on the lawn; a trunk elsewhere moves to the nearest allowed point within 3 m, or is left out. No crown comes within 2 m of a VR tour camera position (`scripts/perf/vr-stations.json`). Hedges
   are clipped boxes on the shrub planters and the planter walls along building fronts of the furniture survey.
 
-Shapes are read on the VR tour: ginkgo with a conical-oval crown, broadleaf with a broad rounded one, pine with a tall
-red-brown bole under irregular flat pads, metasequoia with seven drooping tiers with notched rims over a red-brown
+Shapes are read on the VR tour: ginkgo with a smooth conical-oval crown, broadleaf with a smooth rounded mass and two
+irregular lobes, pine with a red-brown bole leaning about 7 degrees under five irregular flat pads stepping up along it, metasequoia with seven drooping tiers with notched rims over a red-brown
 trunk, columnar conifers with four tight tiers and no visible stem (lower tiers and undersides a little darker), hedges as boxes.
 Each species is one node with a trunk and a crown child (`EXT_mesh_gpu_instancing`), so the draw calls do not grow
 with the trees; every instance carries its own tint (the tiered conifers also drift in hue). Crown materials are per
