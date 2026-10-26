@@ -46,11 +46,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { EXTENT, metres, modelToGeo } from "../lib/frame.mjs";
 import { segmentDistance } from "../lib/geometry.mjs";
+import { openSheet } from "../lib/ngiiSheet.mjs";
 import { encodePng } from "../lib/png.mjs";
 import { SUPPORT_STEP_M, gridPoints, markingCandidates } from "../stages/markings.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const SHEET = path.join(HERE, "..", ".cache", "ngii-ortho", "(B060)정사영상_2025_34702020");
 const OUTPUT = path.join(HERE, "..", "data", "photo", "markings-gate.json");
 const MARGIN_M = 10;
 
@@ -107,24 +107,9 @@ function toKorea2000(lon, lat) {
 // ---------------------------------------------------------------- the sheet
 // Window of the sheet over EXTENT + MARGIN_M: RGB bytes, and the sheet pixel (integer = pixel centre) of a model point.
 async function readSheet() {
-  const [a, , , e, c, f] = (await Bun.file(`${SHEET}.tfw`).text()).trim().split(/\s+/).map(Number);
-  const file = Bun.file(`${SHEET}.tif`);
-  const head = new DataView(await file.slice(0, 8).arrayBuffer());
-  const little = head.getUint16(0) === 0x4949;
-  const ifdOffset = head.getUint32(4, little);
-  const ifd = new DataView(await file.slice(ifdOffset, ifdOffset + 2 + 12 * 64).arrayBuffer());
-  const tags = {};
-  for (let i = 0; i < ifd.getUint16(0, little); i += 1) {
-    const at = 2 + i * 12;
-    const type = ifd.getUint16(at + 2, little);
-    tags[ifd.getUint16(at, little)] = { type, count: ifd.getUint32(at + 4, little), value: type === 3 ? ifd.getUint16(at + 8, little) : ifd.getUint32(at + 8, little) };
-  }
-  const width = tags[256].value;
-  const height = tags[257].value;
-  if (tags[259].value !== 1 || tags[277].value !== 3 || tags[284]?.value !== 1 || tags[273].count !== 1) {
-    throw new Error(`${SHEET}.tif: expected one strip of uncompressed chunky RGB`);
-  }
-  const data = tags[273].value;
+  const sheet = openSheet();
+  const { width, height } = sheet;
+  const { a, d: e, c, f } = sheet.tfw;
   const toPixel = (x, z) => {
     const [east, north] = toKorea2000(...modelToGeo(x, z));
     return [(east - c) / a, (north - f) / e];
@@ -137,9 +122,8 @@ async function readSheet() {
   const row1 = Math.min(height - 1, Math.ceil(Math.max(...corners.map((p) => p[1])) + margin));
   const w = col1 - col0 + 1;
   const h = row1 - row0 + 1;
-  const rows = new Uint8Array(await file.slice(data + row0 * width * 3, data + (row1 + 1) * width * 3).arrayBuffer());
-  const rgb = new Uint8Array(w * h * 3);
-  for (let y = 0; y < h; y += 1) rgb.set(rows.subarray((y * width + col0) * 3, (y * width + col1 + 1) * 3), y * w * 3);
+  const rgb = sheet.readWindow(col0, row0, w, h);
+  sheet.close();
   return { rgb, width: w, height: h, toPixel: (x, z) => { const [u, v] = toPixel(x, z); return [u - col0, v - row0]; }, metresPerPixel: a };
 }
 
