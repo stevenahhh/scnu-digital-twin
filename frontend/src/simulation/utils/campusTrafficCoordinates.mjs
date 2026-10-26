@@ -1,3 +1,5 @@
+import { SCENE_UNITS_PER_METRE } from '../../geo/epsg5186.mjs';
+
 // The simulation network (backend routes.geojson) is in local east/north meters around the D4 coordinate
 // 127.4764043, 34.9700548, the anchor the VWorld dashboard also uses for its campus model and traffic overlay.
 // uni.glb carries its export scale (0.6242 scene units per meter), and `origin` is where the BLD_D4 label anchor
@@ -5,7 +7,7 @@
 // and backend/build_mobility_data.py use the same frame.
 export const CAMPUS_TRAFFIC_COORDINATE_CONFIG = Object.freeze({
   origin: { x: -214.35, y: 24, z: -93.251 },
-  scale: 0.6242171526,
+  scale: SCENE_UNITS_PER_METRE,
   rotation_degrees: 0,
   invert_z: true,
 });
