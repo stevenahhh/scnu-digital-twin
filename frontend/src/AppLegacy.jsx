@@ -327,6 +327,7 @@ function Dashboard() {
   const [selectedId, setSelectedId] = useState("");
   // 패널 제목에 쓸 건물 이름(라벨과 같은 이름). selectedId는 라벨 강조에도 쓰여 BLD_* id일 수 있다.
   const [selectedTitle, setSelectedTitle] = useState("");
+  const [selectedEstimate, setSelectedEstimate] = useState(null);
   const [selectedBuildingId, setSelectedBuildingId] = useState("D4");
   const [editorRequest, setEditorRequest] = useState(null);
   const [installationPlans, setInstallationPlans] = useState([]);
@@ -530,6 +531,7 @@ function Dashboard() {
   const handleSelect = useCallback((name) => {
     setSelectedId(name);
     setSelectedTitle("");
+    setSelectedEstimate(null);
     setPopupData(null);
     setPopupError(null);
   }, []);
@@ -568,6 +570,7 @@ function Dashboard() {
     buildingId,
     displayName,
     title = displayName,
+    estimate = null,
   }) => {
     if (buildingId !== selectedBuildingId) {
       installationLoadGenerationRef.current += 1;
@@ -577,6 +580,7 @@ function Dashboard() {
     }
     setSelectedId(displayName);
     setSelectedTitle(title);
+    setSelectedEstimate(estimate);
     setSelectedBuildingId(buildingId);
     setActiveTab("energy");
     setPopupData(null);
@@ -672,6 +676,7 @@ function Dashboard() {
       displayName: obj?.userData?.buildingName ?? obj?.name ?? buildingId,
       title: obj?.userData?.buildingLabel ?? obj?.userData?.buildingName ?? obj?.name ?? buildingId,
       area: obj?.userData?.area ?? 0,
+      estimate: obj?.userData?.estimate ?? null,
     });
 
     if (isD4ElementId(elementId)) {
@@ -720,6 +725,7 @@ function Dashboard() {
       elementId,
       buildingId,
       displayName: anchor.displayName ?? anchor.name ?? buildingId,
+      estimate: anchor.estimate ?? null,
     });
     fetchMicroclimate(elementId);
   }, [activeTab, buildingViewMode, selectedBuildingId, selectBuilding, fetchMicroclimate]);
@@ -1191,6 +1197,7 @@ function Dashboard() {
                   loading={popupLoading}
                   error={popupError}
                   title={selectedId ? selectedTitle || selectedId : selectedId}
+                  estimate={selectedId ? selectedEstimate : null}
                   onClose={closeMicroclimatePanel}
                 />
               </PanelErrorBoundary>

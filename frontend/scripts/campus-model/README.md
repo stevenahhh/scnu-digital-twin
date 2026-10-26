@@ -76,7 +76,7 @@ read at run time and never written to any output.
 |---|---|---|---|
 | `osm` | OpenStreetMap `api.openstreetmap.org/api/0.6/map` for the bbox (split into quadrants if the API refuses the area): `leisure=stadium/track/pitch/sports_centre/playground`, `sport=*`, surface `amenity=parking`, `area:highway`, `highway=pedestrian` + `area=yes`, `place=square`, `natural=water`, `landuse=basin` | ODbL 1.0, © OpenStreetMap contributors | ponds (water with a stone rim), plazas (2 m pavers), parking (asphalt with 2.5 x 5 m bay lines); pitches only where no MCEE outline covers them; the stadium selects the track outline |
 | `facilities` | MCEE `lv3_2025y` class 141 (문화·체육·휴양시설) polygons, same WFS and cache as the land cover | KOGL Type 1 | the running track (8 lanes of 1.22 m with lane lines, red D-zones, football pitch with markings) fitted to the outline inside the OSM stadium; courts and the plaza's oval lawn where a label applies |
-| `supplements` | project-authored | - | surface labels (which MCEE outline is the basketball, futsal, multi or tennis court, or the oval lawn), circles for the red roundabout of the central intersection (estimated centre, radius 10.7 m fitted to its painted rim on the NGII 2025 orthophoto) and the plaza fountain (estimated), which neither source maps, a `reclass` that paints the OSM pond west of the stadium (way 367126960, a sunken lawn on current imagery) as lawn, and three estimated rows of car-park bays along the access road west of the stadium (no `amenity=parking` there in OSM) |
+| `supplements` | project-authored | - | surface labels (which MCEE outline is the basketball, futsal, multi or tennis court, or the oval lawn), circles for the red roundabout of the central intersection (estimated centre, radius 10.7 m fitted to its painted rim on the NGII 2025 orthophoto) and the plaza fountain (estimated), which neither source maps, a `reclass` that paints the OSM pond west of the stadium (way 367126960, a sunken lawn on current imagery) as lawn, a `reclass` that paints the OSM tennis pitch of F3 학생테니스장 (way 366373760; its outline matches the court fence traced on the NGII 2025 photo, `objects-campus.geojson` OC0173) as an orange-tan clay court read in VR scene_f3 (a `lawn` reclass applies only to water, `clay` only to a pitch), and three estimated rows of car-park bays along the access road west of the stadium (no `amenity=parking` there in OSM) |
 
 The supplement positions and sizes are estimates. Replace them once OSM maps those features.
 
@@ -194,6 +194,19 @@ building cannot. Both are absent by default, and a build without them is byte-id
   look's buildings, for tiled roofs that the photo samples as grey (A9 청운관's orange clay tiles). Extras record it as
   `roofColourSource`.
 
+A building entry (not a look) may also carry `roof`: `{ "kind": "gable", "eaveMetres", "ridgeMetres",
+"overhangMetres", "source" }`, for a small building that the LOD4 mesh and the photo give flat but the VR tour shows
+pitched. `stages/buildings.mjs` replaces the flat roof of each of its form masses with a gable over the mass's
+minimum-area rectangle (ridge along the long side, eaves overhanging by `overhangMetres`) and logs
+`curated pitched roofs`; the pick proxy records `roofFormSource`. The building needs a `data/building-forms.json`
+form. Only use: the F3 학생테니스장 hut (`BLD_SCNU_R138317`, look `F3-hut`: yellow timber walls, red gable roof, eave
+2.5 m, ridge at its GIS height 3.3 m, from VR scene_f3 r; estimated).
+
+A building entry may also lower the 12 m² drawing minimum for that one footprint: `minAreaMetres` (the smallest area
+it is drawn at) with `minAreaSource` (why it stands). The build logs `small footprints included`; the global minimum
+is unchanged. Only use: the 10 m² annex beside the B5 greenhouse (`BLD_SCNU_R687709`, GIS record and VWorld photo;
+hidden by nearer buildings or trees in every VR scene that predicts it, so it keeps the generic annex look, estimated).
+
 Roof types are checked. A curated `form` mass may only be `flat` (`fetch/building_forms.py` draws curated masses
 flat), and a `data/building-forms.json` mass must be one of flat, gable, hipped, mono-pitch and curved. Any other value
 stops the build with an error instead of quietly becoming a flat roof.
@@ -286,6 +299,11 @@ storey median used, or null):
 
 The lineage describes the height rule; a building whose form comes from `data/building-forms.json` (VWorld LOD4
 or a photo trace) keeps the lineage of its footprint while its masses carry their own `heightSource`.
+
+The Legacy dashboard reads `heightLineage`, `footprintEstimated` and `formEstimated` from the selected node
+(`src/CityModel.jsx`) and shows a 추정 caption under the building name in the microclimate panel
+(`data-qa="estimate-caption"`): `높이·형태 추정` when the lineage is not `gis-height`, `높이 GIS, 형태 추정` when only the
+footprint or form is estimated. VWorld and `?model=uni` have no such extras and show no caption.
 
 OSM outlines are traced from imagery and sit about 3 m off the cadastral frame of `uni.glb`;
 GIS건물통합정보 outlines follow the cadastral frame. The build shifts all footprints by the median centroid offset of one-to-one `BLD_*` matches and
@@ -669,6 +687,27 @@ benches. All are flagged estimated in the build log and the node extras (`estima
 triangles). Packed positions were 14-bit over the campus then (about 5 cm steps; float since the modelled ground), so
 no part is thinner than 6 cm. CityModel keeps both furniture meshes out of pointer raycasts. Every position is from the
 photo or a rule, and every shape and height an estimate: none of it is survey data.
+
+## VR comparison (`scripts/perf/compare-vr.mjs`)
+
+A local QA harness, not part of the build or the product. With the dev server running it renders the Legacy model
+from each exterior station of the SCNU 360 VR tour (`scripts/perf/vr-stations.json`: 42 stations, their estimated
+positions, heights and the yaw refined against the renders) with four 90-degree cameras and puts each render next to
+the cached VR cube face of the same direction:
+
+```bash
+cd frontend
+bun x vite --host 127.0.0.1 --port 5182          # any free port; pass it as --url
+bun scripts/perf/compare-vr.mjs --scene scene_d4 [--scene ...] | --all [--out <dir>] [--prefix after-] [--url http://127.0.0.1:5182/] [--port 9353]
+bun scripts/perf/vr-manifest.mjs --before <dir> --after <dir> --out <dir>   # exit 1 when any of the 42 scenes lacks a pair
+```
+
+Per scene it writes `<prefix><scene>-<face>-side.png` (render | VR face) and `<prefix><scene>-strip.png` (VR row over
+render row). The VR faces come from the gitignored `.cache/vr/`; every output goes under `.omo/` only. VR imagery is
+compared, never committed, shipped or linked from the dashboard. `vr-manifest.mjs` checks that every station has a
+before strip, an after strip and four after side images (valid PNGs) and writes `MANIFEST.json` / `MANIFEST.md`.
+Stations are estimated (20-40 m nominal error before refinement), so a comparison shows agreement in degrees and
+metres, never an exact match.
 
 ## Frame
 

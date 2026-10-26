@@ -2,9 +2,11 @@ import { AlertTriangle, Clock, Gauge, Sun, Thermometer, TreePine, Wind, X } from
 
 /**
  * Shared microclimate popup panel for AppLegacy and AppVWorld.
- * Props: `{ data, loading, error, onClose, title? }` — `data` is the
+ * Props: `{ data, loading, error, onClose, title?, estimate? }` — `data` is the
  * `/microclimate/elements/{id}/popup` payload with every nested field optional;
- * `title` is the fallback heading shown before `data` arrives (the selected id).
+ * `title` is the fallback heading shown before `data` arrives (the selected id);
+ * `estimate` is `{ heightLineage, footprintEstimated, formEstimated }` read from the
+ * campus GLB extras (Legacy only) and drives the 추정 caption under the heading.
  */
 
 const FACTOR_META = {
@@ -28,7 +30,18 @@ export const MICROCLIMATE_STRINGS = Object.freeze({
   close: "닫기",
   risk: "위험도",
   reasons: "원인 분석",
+  heightFormEstimate: "높이·형태 추정",
+  formEstimate: "높이 GIS, 형태 추정",
 });
+
+/** GLB extras → the building's 추정 caption, or null when nothing is flagged. */
+export function describeEstimate(estimate) {
+  if (!isObject(estimate)) return null;
+  const heightEstimated = isText(estimate.heightLineage) && estimate.heightLineage !== "gis-height";
+  if (heightEstimated) return MICROCLIMATE_STRINGS.heightFormEstimate;
+  if (estimate.formEstimated === true || estimate.footprintEstimated === true) return MICROCLIMATE_STRINGS.formEstimate;
+  return null;
+}
 
 const isObject = (value) => value !== null && typeof value === "object";
 const isText = (value) => typeof value === "string" && value.length > 0;
@@ -65,7 +78,7 @@ function errorText(error) {
   return String(error);
 }
 
-export function MicroclimatePanel({ data, loading = false, error = null, onClose, title }) {
+export function MicroclimatePanel({ data, loading = false, error = null, onClose, title, estimate = null }) {
   const payload = isObject(data) ? data : null;
   const thermal = isObject(payload?.thermal) ? payload.thermal : null;
   const riskColor = isText(thermal?.risk_color) ? thermal.risk_color : null;
@@ -75,6 +88,7 @@ export function MicroclimatePanel({ data, loading = false, error = null, onClose
 
   const heading = payload?.name ?? title ?? payload?.element_id ?? "";
   const subtitle = payload ? [payload.zone_id, thermal?.stress_category].filter(isText).join(" · ") : "";
+  const estimateCaption = describeEstimate(estimate);
   const noteMessage = isText(payload?.data_note?.message) ? payload.data_note.message : "";
   const isSample = payload?.sample_data === true;
 
@@ -130,6 +144,15 @@ export function MicroclimatePanel({ data, loading = false, error = null, onClose
               </span>
             )}
           </div>
+          {estimateCaption && (
+            <div
+              className="mt-0.5 text-[11px] font-medium"
+              style={{ color: onRisk ? "rgba(255,255,255,0.85)" : "var(--colors-ink-subtle)" }}
+              data-qa="estimate-caption"
+            >
+              {estimateCaption}
+            </div>
+          )}
           {subtitle && (
             <div className="mt-0.5 text-sm" style={{ color: onRisk ? "rgba(255,255,255,0.85)" : "var(--colors-ink-subtle)" }}>
               {subtitle}

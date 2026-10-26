@@ -87,3 +87,14 @@ test("offsetRing moves a ring outward by the given distance whatever its orienta
   }
   assert.equal(discRing([0, 0], 2, 16).length, 16);
 });
+
+test("a reclass to clay paints an OSM tennis pitch as a clay court; clay on a non-pitch area is an error", () => {
+  const pitch = { id: "way/1", kind: "pitch", tags: { leisure: "pitch", sport: "tennis" }, rings: [rect(300, -100, 330, -80)] };
+  const ground = (supplements, osm = [pitch]) => ({ osm, lines: [], facilities: [], supplements, unlabelledLabels: [] });
+  const plain = buildSurfaces({ ...fixture(), groundFeatures: ground([]) }).layers.find((l) => l.source_ref === "way/1");
+  assert.equal(plain.paint.surface, undefined);
+  const clay = buildSurfaces({ ...fixture(), groundFeatures: ground([{ kind: "reclass", osm: "way/1", surface: "clay" }]) }).layers.find((l) => l.source_ref === "way/1");
+  assert.deepEqual([clay.paint.kind, clay.paint.sport, clay.paint.surface, clay.estimated], ["pitch", "tennis", "clay", true]);
+  const water = { id: "way/2", kind: "water", rings: [rect(300, -60, 330, -40)] };
+  assert.throws(() => buildSurfaces({ ...fixture(), groundFeatures: ground([{ kind: "reclass", osm: "way/2", surface: "clay" }], [pitch, water]) }), /reclass clay applies to an OSM pitch/);
+});

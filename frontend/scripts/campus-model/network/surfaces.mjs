@@ -344,9 +344,13 @@ export function buildSurfaces({ inputs, walkways, groundFeatures = null, offCamp
     if (groundFeatures.unlabelledLabels?.length) throw new Error(`osm-ground.json: surface labels outside every facility polygon: ${groundFeatures.unlabelledLabels.map((l) => l.note).join("; ")}`);
     const ofKind = (kind) => groundFeatures.osm.filter((f) => f.kind === kind);
     const reclassed = new Map(groundFeatures.supplements.filter((f) => f.kind === "reclass").map((f) => [f.osm, f.surface]));
+    // Reclass surfaces: a water area painted as lawn (natural ground), a pitch painted as clay.
+    const RECLASS = { lawn: "water", clay: "pitch" };
     for (const [id, surface] of reclassed) {
-      if (!groundFeatures.osm.some((f) => f.id === id)) throw new Error(`osm-ground.json: reclass target ${id} is not an OSM area`);
-      if (surface !== "lawn") throw new Error(`osm-ground.json: unknown reclass surface ${surface}`);
+      const target = groundFeatures.osm.find((f) => f.id === id);
+      if (!target) throw new Error(`osm-ground.json: reclass target ${id} is not an OSM area`);
+      if (!RECLASS[surface]) throw new Error(`osm-ground.json: unknown reclass surface ${surface}`);
+      if (RECLASS[surface] !== target.kind) throw new Error(`osm-ground.json: reclass ${surface} applies to an OSM ${RECLASS[surface]}, ${id} is a ${target.kind}`);
     }
     const tmPoint = ([x, z]) => sceneToTm(x, z);
     for (const water of ofKind("water")) {
@@ -364,7 +368,8 @@ export function buildSurfaces({ inputs, walkways, groundFeatures = null, offCamp
       const outer = pitch.rings[0];
       const centroid = outer.reduce((acc, [x, z]) => [acc[0] + x / outer.length, acc[1] + z / outer.length], [0, 0]);
       if (groundFeatures.facilities.some((f) => pointInRing(centroid, f.rings[0]))) continue;
-      add({ cls: "SPORTS", mesh: "Ground_Sports", label: SURFACE_CLASS.SPORTS, precedence: PRECEDENCE.SPORTS, source: "OSM-derived", source_ref: pitch.id, paint: { kind: "pitch", sport: pitch.tags?.sport ?? null } }, pitch.rings);
+      const clay = reclassed.get(pitch.id) === "clay";
+      add({ cls: "SPORTS", mesh: "Ground_Sports", label: SURFACE_CLASS.SPORTS, precedence: PRECEDENCE.SPORTS, source: "OSM-derived", source_ref: pitch.id, paint: { kind: "pitch", sport: pitch.tags?.sport ?? null, ...(clay ? { surface: "clay" } : {}) }, ...(clay ? { estimated: true } : {}) }, pitch.rings);
     }
     for (const facility of groundFeatures.facilities) {
       const ref = `MCEE class-141 facility ${facility.index}`;

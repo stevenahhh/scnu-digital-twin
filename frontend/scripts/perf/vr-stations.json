@@ -2161,16 +2161,17 @@
       "station": true,
       "yaw_deg": true
     },
-    "refined_by": "compare-vr todo 10",
-    "refined_note": "resected from the outer corners of the A13 V plan (VR f cols 512 and 1372) and its glazed inner corner; drone above the east end of A8 at about 31 m (height_refined_m); the placeholder position put the camera inside the A8 cluster",
-    "yaw_refined_deg": 96.3,
-    "station_refined_x": 321.74,
-    "station_refined_z": -58.1,
-    "refined_confidence": 0.5,
-    "height_refined_m": 31,
-    "refined_residual_deg": 2,
+    "refined_by": "compare-vr W5 follow-up (re-resection)",
+    "refined_note": "re-resected on a 0.25-unit grid: the A13 silhouette corners at VR f cols 512 and 1372 and the north-east corner of A8 향림관 at VR r col 72 agree within 0.4 deg at x 323.5, z -64.5 (11.7 m north of A8's north wall, 30 m from A13), yaw 110.9; height 22 m from A13's roof (+10 deg) and entrance (-40 deg) on VR f and A8's top (+34 deg) on VR r (estimated); previous refinement (todo 10): x 321.74, z -58.1, height 31 m, yaw 96.3 put the camera on the rooftop of BLD_Dormitory_Building.001 (A8 향림관 LOD4 masses), so the r and b renders showed its roof and a plain rooftop core",
+    "yaw_refined_deg": 110.9,
+    "station_refined_x": 323.5,
+    "station_refined_z": -64.5,
+    "refined_confidence": 0.6,
+    "height_refined_m": 22,
+    "refined_residual_deg": 0.4,
     "refined_buildings": [
-      "BLD_Dormitory_Building.004 (A13 웅지관)"
+      "BLD_Dormitory_Building.004 (A13 웅지관)",
+      "BLD_Dormitory_Building.001 (A8 향림관)"
     ]
   },
   {

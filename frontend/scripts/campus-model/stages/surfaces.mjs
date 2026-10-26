@@ -162,6 +162,8 @@ const SURFACE = {
   multiApron: [116, 178, 146],
   multiCourt: [168, 82, 68],
   clay: [176, 126, 94],
+  // Orange-tan clay courts (F3 학생테니스장) as read in SCNU 360 VR scene_f3 (estimated).
+  clayCourt: [200, 152, 104],
   tennisCourt: [126, 156, 112],
   lawn: [104, 148, 70],
   water: [58, 88, 100],
@@ -280,7 +282,7 @@ function paintShader(layer, frame, texel) {
     case "track":
       return trackShader(frame, cover);
     case "pitch": {
-      const colour = paint.sport === "tennis" ? SURFACE.tennisCourt : paint.sport === "basketball" ? SURFACE.basketball : SURFACE.turf;
+      const colour = paint.surface === "clay" ? SURFACE.clayCourt : paint.sport === "tennis" ? SURFACE.tennisCourt : paint.sport === "basketball" ? SURFACE.basketball : SURFACE.turf;
       return (s, t, i, j) => mix(grain(colour, i, j, 32, 0.06), LINE_WHITE, cover(rectOutline(s, t, frame.halfLength - 1, frame.halfWidth - 1)) * 0.8);
     }
     case "labels": {

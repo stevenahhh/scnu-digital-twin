@@ -1134,6 +1134,37 @@ function addMassParapet(ctx, solid, ring, height) {
 
 const PLAIN_UV = Object.freeze([[0, 0], [0, 0], [0, 0], [0, 0]]);
 
+// Gable roof triangles ([x, z, metres above the building's ground]) over a ring's minimum-area rectangle (0.5 degree
+// steps): two roof planes from the ridge on the long axis down to the eaves, extended by the overhang.
+function gableTriangles(ring, { eaveMetres, ridgeMetres, overhangMetres = 0 }) {
+  let best = null;
+  for (let a = 0; a < 180; a += 0.5) {
+    const u = [Math.cos((a * Math.PI) / 180), Math.sin((a * Math.PI) / 180)];
+    const v = [-u[1], u[0]];
+    const s = ring.map((p) => p[0] * u[0] + p[1] * u[1]);
+    const t = ring.map((p) => p[0] * v[0] + p[1] * v[1]);
+    const box = { u, v, s0: Math.min(...s), s1: Math.max(...s), t0: Math.min(...t), t1: Math.max(...t) };
+    const area = (box.s1 - box.s0) * (box.t1 - box.t0);
+    if (!best || area < best.area) best = { ...box, area };
+  }
+  const longOnU = best.s1 - best.s0 >= best.t1 - best.t0;
+  const [long, short] = longOnU ? [best.u, best.v] : [best.v, best.u];
+  const [l0, l1, w0, w1] = longOnU ? [best.s0, best.s1, best.t0, best.t1] : [best.t0, best.t1, best.s0, best.s1];
+  const overhang = metres(overhangMetres);
+  const halfWidth = (w1 - w0) / 2;
+  const mid = (w0 + w1) / 2;
+  const edge = eaveMetres - ((ridgeMetres - eaveMetres) * overhang) / halfWidth;
+  const at = (l, w, h) => [long[0] * l + short[0] * w, long[1] * l + short[1] * w, h];
+  const [a, b] = [l0 - overhang, l1 + overhang];
+  const ridge = [at(a, mid, ridgeMetres), at(b, mid, ridgeMetres)];
+  const triangles = [];
+  for (const w of [w0 - overhang, w1 + overhang]) {
+    const eave = [at(a, w, edge), at(b, w, edge)];
+    triangles.push([ridge[0], ridge[1], eave[1]], [ridge[0], eave[1], eave[0]]);
+  }
+  return triangles;
+}
+
 // The roof of a pitched or curved mass: its LOD4 triangles, facing up, on the Roof_Membrane texture and colour.
 function addRoofTriangles(roof, triangles, colour, uvScale) {
   for (const [a, b, c] of triangles) {
@@ -1476,10 +1507,15 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
   const campusBuildings = [];
   // Off-campus buildings are not modelled; their lots are painted as plain ground and kept free of trees.
   const offCampusLots = [];
+  // Footprints under 12 m2 are not drawn, unless their data/scnu-facades.json entry lowers the minimum for that one
+  // building (`minAreaMetres` with `minAreaSource`): an explicit include, never a lower global threshold.
+  const smallIncluded = [];
   for (const part of footprintParts) {
     if (used.has(part.index) || isGroundFeature(part)) continue;
     const named = /순천대/.test(part.name);
-    if (part.areaMetres < 12 || (!named && !(pointInRing(part.centroid, campusHull) && distanceToRoads(part.centroid) < metres(14)))) {
+    const included = part.areaMetres < 12 && part.entry?.minAreaMetres !== undefined && part.areaMetres >= part.entry.minAreaMetres;
+    if (included) smallIncluded.push(`${part.nodeId ?? part.label} ${part.areaMetres.toFixed(1)} m2 (${part.entry.minAreaSource})`);
+    if ((part.areaMetres < 12 && !included) || (!named && !(pointInRing(part.centroid, campusHull) && distanceToRoads(part.centroid) < metres(14)))) {
       offCampusLots.push(part.outer);
       continue;
     }
@@ -1518,6 +1554,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
   console.log(`storey-height rule (2.5-5 m per storey, was 2.5-6.5 m) changed ${ratioChanges.length}: ${ratioChanges.join("; ") || "none"}`);
   console.log(`tower masses over VWorld LOD4 roof levels: ${towers.join("; ") || "none"}`);
   // fetch/buildingForms.mjs derives data/building-forms.json from this selection (the footprints before any form).
+  console.log(`small footprints included by their scnu-facades.json entry (minAreaMetres): ${smallIncluded.join("; ") || "none"}`);
   if (selectOnly) return { selectableBuildings, campusBuildings, offCampusLots, footprintShift };
 
   // ---- building forms (data/building-forms.json): masses replace the footprint parts of the buildings whose form
@@ -1611,6 +1648,27 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
       log.push(`${node} ${list.map((a) => `${a.kind} (${a.id})`).join(", ")}`);
     }
     console.log(`facade attachments (data/facade-attachments.json): ${log.join("; ") || "none"}`);
+  }
+
+  // ---- curated pitched roofs: a data/scnu-facades.json entry's `roof` ({ kind: "gable", eaveMetres, ridgeMetres,
+  // overhangMetres, source }) replaces the flat roof of each of the building's parts with a gable over the part's
+  // minimum-area rectangle, ridge along its long side, eaves overhanging by overhangMetres (small huts the LOD4 mesh
+  // and the photo give flat, the SCNU 360 VR tour shows pitched; every number estimated).
+  {
+    const pitched = [];
+    for (const building of [...selectableBuildings, ...campusBuildings]) {
+      const spec = building.entry?.roof;
+      if (!spec) continue;
+      if (spec.kind !== "gable" || !(spec.ridgeMetres > spec.eaveMetres) || !building.massForm) {
+        throw new Error(`scnu-facades.json: ${building.label ?? building.displayName} roof needs kind "gable", ridgeMetres > eaveMetres and a building-forms.json form`);
+      }
+      for (const part of building.parts) {
+        Object.assign(part, { roof: "gable", eaveMetres: spec.eaveMetres, heightMetres: spec.ridgeMetres, triangles: gableTriangles(part.outer, spec) });
+      }
+      building.roofFormSource = spec.source;
+      pitched.push(`${building.nodeId ?? building.nodeName ?? building.displayName} eave ${spec.eaveMetres} m ridge ${spec.ridgeMetres} m`);
+    }
+    console.log(`curated pitched roofs (scnu-facades.json roof): ${pitched.join("; ") || "none"}`);
   }
   const d4 = selectableBuildings.find((b) => b.nodeName === "BLD_D4");
   if (d4?.massForm) {
@@ -1934,6 +1992,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
         storeyMetresUsed: first.storeyMetresUsed,
         ...(first.footprintEstimated ? { footprintEstimated: true, footprintSource: first.footprintSource } : {}),
         ...formExtras(first),
+        ...(first.roofFormSource ? { roofFormSource: first.roofFormSource } : {}),
       },
     }, { root: true });
   }
