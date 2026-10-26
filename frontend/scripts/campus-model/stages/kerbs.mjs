@@ -12,7 +12,7 @@
 // only its top, outer face and run ends are drawn (the inner face is under the slab). The slab: inside the A003 rings
 // the walkway decals stand KERB_EXPOSED_M higher (slabHeight), falling to 0 over FEATHER_M at every walkway edge without
 // a kerb (no cliff towards a plaza or apron) and at 1/12 (DROP_RAMP, RAMP_RUN_M 1.8 m) towards each dropped kerb.
-// Dropped kerbs: every kerb piece within CROSSING_REACH_M (1.0 m) of a crosswalk polygon (docs/assets/data/
+// Dropped kerbs: every road-facing kerb piece within CROSSING_REACH_M (1.0 m) of a crosswalk polygon (docs/assets/data/
 // crosswalks_wgs84.geojson, CW_001-CW_031), widened by DROP_FLANK_M (0.5 m) each side along the kerb, has height 0
 // (DROP_STEP_M 0 cm); kerbs and slab rise from it at 1/12, so the 1.5 m landing (DROP_LANDING_M) beyond the ramp is
 // level. The gutter: a GUTTER_M (0.35 m, 형식4 default) darker asphalt band (Ground_Gutter, precedence 3.5) on the road
@@ -169,7 +169,8 @@ export function planKerbs({ walkways, outlines, crossings, labelAt, terrainAt, e
   const dropped = [];
   const touched = new Set();
   for (const lineEntry of lines) {
-    const kerbPieces = lineEntry.pieces.filter((piece) => piece.inward);
+    // only road-facing kerbs are crossing approaches (a lawn-side back kerb near a crossing is not dropped)
+    const kerbPieces = lineEntry.pieces.filter((piece) => piece.inward && piece.road);
     for (const crossing of crossingRings) {
       const near = kerbPieces.filter((piece) => {
         const mid = [(piece.p[0] + piece.q[0]) / 2, (piece.p[1] + piece.q[1]) / 2];
@@ -182,7 +183,7 @@ export function planKerbs({ walkways, outlines, crossings, labelAt, terrainAt, e
       let run = null;
       const flush = () => {
         if (!run) return;
-        dropped.push({ cwId: crossing.id, lineIndex: run.lineIndex, ufid: lineEntry.ufid, from: Math.max(0, run.from - DROP_FLANK_M), to: run.to + DROP_FLANK_M, crossFrom: run.from, crossTo: run.to, pieces: run.pieces });
+        dropped.push({ cwId: crossing.id, crossingRing: crossing.ring, lineIndex: run.lineIndex, ufid: lineEntry.ufid, from: Math.max(0, run.from - DROP_FLANK_M), to: run.to + DROP_FLANK_M, crossFrom: run.from, crossTo: run.to, pieces: run.pieces });
         run = null;
       };
       for (const piece of near) {
@@ -260,6 +261,9 @@ export function planKerbs({ walkways, outlines, crossings, labelAt, terrainAt, e
     groundHeightAt: (x, z) => terrainAt(x, z) + slabHeight(x, z) * UNIT,
     exposedM,
     crossings: crossingRings.length,
+    inWalkway,
+    // walkway ring, or paving in the label raster (the walkway side of an open A003 line has no ring)
+    onPaving: (p) => inWalkway(p) || PAVED.has(labelAt(p)),
   };
 }
 
@@ -376,7 +380,7 @@ export async function buildKerbs({ glb, surfaces, groundInfo, surface, crossings
   const skipped = plan.lines.flatMap((l) => l.pieces).filter((piece) => !piece.inward).reduce((acc, piece) => ({ ...acc, [piece.reason]: (acc[piece.reason] ?? 0) + 1 }), {});
   console.log(
     `kerbs: ${plan.pieces.length} segments (${(plan.pieces.reduce((sum, piece) => sum + (piece.s1 - piece.s0), 0)).toFixed(0)} m) on ${kerbLines.length} A003 outlines, ` +
-    `${plan.touched.length} dropped (at ${plan.touched.join(" ")}) of ${plan.crossings} crossings, max height ${maxHeight.toFixed(3)} m; ` +
+    `${plan.dropped.length} dropped kerbs at ${plan.touched.length} of ${plan.crossings} crossings (${plan.touched.join(" ")}), max height ${maxHeight.toFixed(3)} m; ` +
     `no kerb: ${Object.entries(skipped).map(([k, v]) => `${k} ${v}`).join(", ")}`,
   );
   return { plan, kerbLines, gutters: gutterLayers(plan), groundHeightAt: plan.groundHeightAt, warnings };

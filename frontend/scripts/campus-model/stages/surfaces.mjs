@@ -24,6 +24,9 @@ import { encodePng } from "../lib/png.mjs";
 import { hashNoise, smoothNoise } from "../lib/raster.mjs";
 import { orientedFrame } from "../network/surfaces.mjs";
 
+// Statute basis of the tactile paving tile (stages/tactile.mjs, bake/tactile-tile.mjs).
+export const TACTILE_BASIS = "장애인등편의법 시행규칙 별표 1 제16호: 0.3 m 모듈, 36 돌출, 6±1 mm";
+
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const MATERIALS = path.join(HERE, "..", "data", "materials");
 const MANIFEST = path.join(MATERIALS, "ground-materials.json");
@@ -44,6 +47,8 @@ export const GROUND_MESHES = Object.freeze({
   Ground_Apron: { tile: "concrete" },
   // stages/kerbs.mjs: the gutter band on the road side of the kerbs (asphalt darkened 0.72, estimated)
   Ground_Gutter: { tile: "asphalt", baseColorFactor: [0.72, 0.72, 0.72, 1] },
+  // stages/tactile.mjs: generated tactile tile (bake/tactile-tile.mjs), band-aligned UVs
+  Ground_Tactile: { generated: "tactile" },
 });
 const MESH_ORDER = Object.keys(GROUND_MESHES);
 
@@ -94,7 +99,7 @@ function refineTriangle(tri, maxEdge, needsFine) {
 export function surfaceGeometry({ layers, surface, tileSize, heightOffset = (layer) => SURFACE_LIFT_M(layer.precedence), refine = null }) {
   const primitives = new Map();
   layers.forEach((layer, index) => {
-    const painted = !GROUND_MESHES[layer.mesh]?.tile;
+    const painted = !GROUND_MESHES[layer.mesh]?.tile && !GROUND_MESHES[layer.mesh]?.generated;
     // One primitive per class and precedence (its material carries that precedence as the polygon-offset rank, so the
     // offset never contradicts the lift), and one per painted surface (its own texture).
     const key = painted ? `${layer.mesh}#${index}` : `${layer.mesh}@${layer.precedence}`;
@@ -105,17 +110,23 @@ export function surfaceGeometry({ layers, surface, tileSize, heightOffset = (lay
       primitives.set(key, primitive);
     }
     if (!primitive.precedence.includes(layer.precedence)) primitive.precedence.push(layer.precedence);
-    const size = painted ? null : tileSize(layer.mesh);
+    const size = painted || layer.uvFrame ? null : tileSize(layer.mesh);
+    // uvFrame: { origin, u, v (model units, unit vectors), sizeM }: one tile per sizeM along u and v (tactile bands)
+    const frameUv = layer.uvFrame ? ([x, z]) => {
+      const { origin, u, v, sizeM } = layer.uvFrame;
+      const d = [x - origin[0], z - origin[1]];
+      return [(d[0] * u[0] + d[1] * u[1]) / (sizeM * UNIT), (d[0] * v[0] + d[1] * v[1]) / (sizeM * UNIT)];
+    } : null;
     const vertex = ([x, z]) => {
       const lift = heightOffset(layer, x, z);
-      const k = `${Math.round(x * 1e5)},${Math.round(z * 1e5)},${Math.round(lift * 1e5)}`;
+      const k = `${Math.round(x * 1e5)},${Math.round(z * 1e5)},${Math.round(lift * 1e5)}${frameUv ? `#${index}` : ""}`;
       let i = primitive.vertexOf.get(k);
       if (i === undefined) {
         i = primitive.positions.length / 3;
         primitive.vertexOf.set(k, i);
         primitive.positions.push(x, surface.height(x, z) + lift * UNIT, z);
         primitive.normals.push(...surface.normal(x, z));
-        primitive.uvs.push(...(painted ? primitive.frame.uv(x, z) : planarTileUv(x, z, size)));
+        primitive.uvs.push(...(painted ? primitive.frame.uv(x, z) : frameUv ? frameUv([x, z]) : planarTileUv(x, z, size)));
         primitive.uv1.push(...extentUv(x, z));
       }
       return i;
@@ -393,6 +404,23 @@ export async function tileMaterial(glb, { name, cls, rank, ao = null, baseColorF
   });
 }
 
+// Tactile paving material from the generated tile (bake/tactile-tile.mjs).
+async function tactileMaterial(glb, { rank, ao }) {
+  const textures = {};
+  for (const map of ["col", "nor"]) {
+    const file = path.join(MATERIALS, `ground-tactile-${map}.webp`);
+    if (!existsSync(file)) throw new Error(`tactile tile missing: data/materials/ground-tactile-${map}.webp (run bun scripts/campus-model/bake/tactile-tile.mjs)`);
+    textures[map] = glb.addTexture(await pngOf(file), "image/png");
+  }
+  return glb.addMaterial({
+    name: "Ground_Tactile",
+    pbrMetallicRoughness: { baseColorTexture: { index: textures.col }, metallicFactor: 0, roughnessFactor: 0.6 },
+    normalTexture: { index: textures.nor },
+    ...(ao !== null ? { occlusionTexture: { index: ao, texCoord: 1 } } : {}),
+    extras: { estimated: true, polygonOffsetRank: rank, basis: TACTILE_BASIS, note: "placement and guidance length estimated; generated tile" },
+  });
+}
+
 // ---------------------------------------------------------------- natural Topography ground
 // Land-cover colours (estimated albedo), blended bilinearly between the 1-unit land-cover cells with a little noise,
 // at NATURAL_TEXEL_M: the colour map of the Topography's Ground material.
@@ -466,7 +494,10 @@ export async function buildSurfaceMeshes({ glb, layers, surface, ao = null, heig
     if (!primitive.indices.length) continue;
     const { mesh } = primitive;
     let material;
-    if (GROUND_MESHES[mesh].tile) {
+    if (GROUND_MESHES[mesh].generated === "tactile") {
+      if (!materials.has(mesh)) materials.set(mesh, await tactileMaterial(glb, { rank: primitive.rank, ao }));
+      material = materials.get(mesh);
+    } else if (GROUND_MESHES[mesh].tile) {
       const key = `${mesh}@${primitive.rank}`;
       if (!materials.has(key)) materials.set(key, await tileMaterial(glb, { name: mesh, cls: GROUND_MESHES[mesh].tile, rank: primitive.rank, ao, baseColorFactor: GROUND_MESHES[mesh].baseColorFactor ?? null }));
       material = materials.get(key);

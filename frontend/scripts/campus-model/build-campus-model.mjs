@@ -19,6 +19,7 @@
 //                 triangles (buildMarkings)
 //   ground.mjs    the Topography chunks (natural ground) and the class polygons of the modelled ground (network/surfaces.mjs)
 //   kerbs.mjs     kerb ribbons on the A003 outlines, the raised walkway slab, dropped kerbs at crossings, gutter bands
+//   tactile.mjs   tactile paving bands and guidance strips at every dropped kerb
 //   surfaces.mjs  the Ground_* decal meshes (asphalt, pavers, lots, aprons, painted surfaces) with CC0 tiles; no photo pixels
 //   outerTerrain.mjs  the OuterTerrain hill ring around EXTENT, feathered onto Topography's edge
 //   trees.mjs     placement masks and positions (placeTrees), species geometry and instanced Trees_* nodes (buildTrees)
@@ -46,6 +47,7 @@ import { buildMarkings, describeMarkings, loadMarkings } from "./stages/markings
 import { buildOuterTerrain } from "./stages/outerTerrain.mjs";
 import { buildKerbs, groundDecalOffset, slabRefine } from "./stages/kerbs.mjs";
 import { loadInputs } from "./stages/sources.mjs";
+import { planTactile, tactileOffset } from "./stages/tactile.mjs";
 import { buildSurfaceMeshes, describeSurfaces } from "./stages/surfaces.mjs";
 import { buildTrees, placeTrees } from "./stages/trees.mjs";
 
@@ -66,8 +68,11 @@ const markings = await loadMarkings({ inputs, buildings: [...selectableBuildings
 console.log(describeMarkings(markings));
 const { surface, surfaces, groundInfo, layers, aoTexture } = await buildGround({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots });
 const kerbs = await buildKerbs({ glb, surfaces, groundInfo, surface });
+const tactile = planTactile(kerbs.plan);
+console.log(`tactile: ${tactile.bands} bands at ${tactile.dropped} dropped kerbs (${tactile.layers.length - tactile.bands} guidance strips; 0.3 m modules, yellow, estimated placement)`);
 console.log(describeSurfaces(await buildSurfaceMeshes({
-  glb, layers: [...layers, ...kerbs.gutters], surface, ao: aoTexture, heightOffset: groundDecalOffset(kerbs.plan), refine: slabRefine(kerbs.plan),
+  glb, layers: [...layers, ...kerbs.gutters, ...tactile.layers], surface, ao: aoTexture,
+  heightOffset: tactileOffset(kerbs.plan, groundDecalOffset(kerbs.plan)), refine: slabRefine(kerbs.plan),
 })));
 const markingMesh = buildMarkings({ glb, markings, surface });
 const outerTerrain = await buildOuterTerrain({ glb, inputs });
