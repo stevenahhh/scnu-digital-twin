@@ -12,7 +12,9 @@
 // - CROWN_INSTANCE_HUE_SPREAD pulls each tree's tint toward its own luminance, so trees still differ in
 //   lightness but only a little in hue.
 // Both values are fitted to that photo and are not measured leaf albedos.
-export const CROWN_MATERIAL_NAMES = new Set(["Tree_Crown", "Tree_Pine"]);
+// The species crowns of the campus model (stages/trees.mjs): broadleaf (Tree_Crown), ginkgo, pine, metasequoia, the
+// clipped columnar conifers and the hedges all take the same calibration.
+export const CROWN_MATERIAL_NAMES = new Set(["Tree_Crown", "Tree_Pine", "Tree_Ginkgo", "Tree_Metasequoia", "Tree_Conifer", "Tree_Hedge"]);
 export const CROWN_ALBEDO_SCALE = 0.6;
 export const CROWN_INSTANCE_HUE_SPREAD = 0.4;
 

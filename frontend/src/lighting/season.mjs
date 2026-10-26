@@ -39,7 +39,7 @@ export function getAutumnWeight(date) {
   return 1 - smoothstep(AUTUMN_FADE, AUTUMN_END, day);
 }
 
-export const AUTUMN_MATERIAL_NAMES = new Set(["Tree_Crown"]);
+export const AUTUMN_MATERIAL_NAMES = new Set(["Tree_Crown", "Tree_Ginkgo", "Tree_Metasequoia"]);
 
 // Per-tree autumn palette (ASSUMED, an estimate - no per-tree species survey exists for the campus).
 // Each broadleaf instance draws one group from a stable hash of its index. Shares loosely follow the
@@ -58,6 +58,23 @@ export const AUTUMN_PALETTE = [
   // still green at the peak: a slight olive drift only, sRGB about #6e8044..#7a804a
   { species: "green", share: 0.36, colors: [[0.156, 0.216, 0.058], [0.195, 0.216, 0.068]], maxMix: [0.1, 0.35] },
 ];
+// Per-material palettes of the species model (stages/trees.mjs builds one crown material per species type, read on
+// the SCNU 360 VR tour; ASSUMED colours, the same muted range as above). The broadleaf crowns (Tree_Crown) are the
+// zelkova, cherry and late-green trees without the ginkgo, which has its own crowns. weightScale > 1 makes a species
+// turn ahead of the date ramp: in the VR tour (late October) the ginkgo and metasequoia are already half turned while
+// the zelkova and cherry are mostly green; maxPhase narrows their spread of turning dates (AUTUMN_MAX_PHASE otherwise).
+export const SPECIES_AUTUMN_PALETTES = {
+  Tree_Crown: [
+    { species: "zelkova", share: 0.36, colors: AUTUMN_PALETTE[1].colors, maxMix: AUTUMN_PALETTE[1].maxMix },
+    { species: "cherry", share: 0.28, colors: AUTUMN_PALETTE[2].colors, maxMix: AUTUMN_PALETTE[2].maxMix },
+    { species: "green", share: 0.36, colors: AUTUMN_PALETTE[3].colors, maxMix: AUTUMN_PALETTE[3].maxMix },
+  ],
+  // ginkgo yellow, sRGB about #c8ac40..#bcaa4c
+  Tree_Ginkgo: [{ species: "ginkgo", share: 1, colors: [[0.58, 0.42, 0.05], [0.5, 0.4, 0.07]], maxMix: [0.85, 1], weightScale: 3.5, maxPhase: 0.3 }],
+  // metasequoia from yellow-green to orange-ochre crown by crown (VR scene_c1, scene_c2), sRGB about #a8a040..#c88c3c
+  Tree_Metasequoia: [{ species: "metasequoia", share: 1, colors: [[0.39, 0.36, 0.05], [0.58, 0.26, 0.045]], maxMix: [0.55, 0.95], weightScale: 3, maxPhase: 0.3 }],
+};
+
 // Largest per-tree lag on the season weight: a tree with phase p starts turning once the date weight
 // passes p and reaches its full colour together with the others at weight 1 (ASSUMED spread).
 export const AUTUMN_MAX_PHASE = 0.5;
@@ -73,33 +90,36 @@ function hashUnit(index, salt) {
   return (x >>> 0) / 4294967296;
 }
 
-// Species group, phase and colour choice of one crown instance; deterministic in its index.
-export function getAutumnProfile(index) {
+// Species group, phase and colour choice of one crown instance; deterministic in its index. palette: AUTUMN_PALETTE
+// (crowns of unknown species) or one of SPECIES_AUTUMN_PALETTES.
+export function getAutumnProfile(index, palette = AUTUMN_PALETTE) {
   const pick = hashUnit(index, 1);
-  let group = AUTUMN_PALETTE.length - 1;
-  for (let i = 0, edge = 0; i < AUTUMN_PALETTE.length; i += 1) {
-    edge += AUTUMN_PALETTE[i].share;
+  let group = palette.length - 1;
+  for (let i = 0, edge = 0; i < palette.length; i += 1) {
+    edge += palette[i].share;
     if (pick < edge) {
       group = i;
       break;
     }
   }
-  const entry = AUTUMN_PALETTE[group];
+  const entry = palette[group];
   const shade = hashUnit(index, 2);
   const [a, b] = entry.colors;
   const [mixLow, mixHigh] = entry.maxMix;
   return {
     species: entry.species,
-    phase: hashUnit(index, 3) * AUTUMN_MAX_PHASE,
+    phase: hashUnit(index, 3) * (entry.maxPhase ?? AUTUMN_MAX_PHASE),
     color: [0, 1, 2].map((c) => a[c] + (b[c] - a[c]) * shade),
     maxMix: mixLow + (mixHigh - mixLow) * hashUnit(index, 4),
+    weightScale: entry.weightScale ?? 1,
   };
 }
 
 // How far one tree has moved toward its autumn colour for a date weight (0..1): 0 until the weight
 // passes the tree's phase, its maxMix at weight 1, continuous and monotonic in the weight.
 export function getAutumnInstanceMix(weight, profile) {
-  return clamp01((weight - profile.phase) / (1 - profile.phase)) * profile.maxMix;
+  const w = Math.min(1, weight * (profile.weightScale ?? 1));
+  return clamp01((w - profile.phase) / (1 - profile.phase)) * profile.maxMix;
 }
 
 // Writes one tree's autumn crown colour into out (linear RGB). summer is its summer crown colour

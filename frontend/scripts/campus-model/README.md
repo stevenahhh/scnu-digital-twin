@@ -26,7 +26,7 @@ node --test src/campusModelAsset.test.mjs
 | `stages/markings.mjs` | road markings: both photo marking files merged (corrections applied), each candidate checked against the surveyed ground and the paint gate (`data/photo/markings-gate.json`), duplicates removed, estimated crossings where canopy hides the paint, and the `Road_Markings` decal mesh on the Topography triangles (see Road markings) |
 | `stages/ground.mjs` | the class polygons of the modelled ground (`network/surfaces.mjs`), the surface-class label raster the lamp rule reads, the natural Ground material, Topography chunks and the surface the decals and markings lie on (`topographySurface`) (see Modelled ground) |
 | `stages/surfaces.mjs` | the `Ground_*` decal meshes (asphalt, pavers, lots, aprons, painted sports/water surfaces) on the Topography triangles with CC0 tiles and world-planar UVs (see Modelled ground) |
-| `stages/trees.mjs` | `placeTrees` (placement masks, CHMv2-driven placement; runs before the ground) and `buildTrees` (species geometry, instanced tree nodes) |
+| `stages/trees.mjs` | `placeTrees` (the tree inventory and the hedges on the shrub planters; runs before the ground) and `buildTrees` (species geometry, instanced tree nodes) |
 | `stages/furniture.mjs` | `loadFurniture` (the surveyed outdoor objects and the footprints trees keep out of; runs before the trees) and `buildFurniture` (the merged `Furniture` / `Furniture_Glass` nodes and the estimated benches; runs after the ground) (see Street furniture) |
 | `stages/lights.mjs` | `placeLamps` (surveyed lamps plus estimated ones along the walkway outlines), `buildLights` (`Lamps_heads`, `Lamps_pools`) and the lamp poles drawn into `Furniture` |
 | `lib/solids.mjs` | the solid-modelling kit the furniture and lamps share (boxes, beams, poles, prisms, cones; flat-shaded, oriented by geometry) |
@@ -52,7 +52,9 @@ node --test src/campusModelAsset.test.mjs
 | `data/landcover.png` | ground classes (paved, grass, tree, soil, track, court) per scene unit, from MCEE land cover and CHMv2 canopy |
 | `data/ortho/vworld-satellite-z19.jpg` + `.json` | VWorld Satellite z19 tile mosaic (Web Mercator, 3584 x 2816 px, about 0.245 m/px) and its tile range: roof colours, solar panels and the road-marking photo checks only (never baked into the ground) |
 | `data/materials/ground-*.webp` + `ground-materials.json` | CC0 ground tiles (Poly Haven, ambientCG; colour, OpenGL normal, ARM) with their physical sizes: the `Ground_*` and Ground materials |
-| `data/chm.png` | CHMv2 canopy height (8-bit metres); tree placement and crown sizes |
+| `data/chm.png` | CHMv2 canopy height (8-bit metres); tree heights in the tree inventory |
+| `data/trees.json` | the tree inventory: crowns traced on the NGII 2025 sheet, heights, diameters and species types (fetch/treeInventory.mjs; see Trees) |
+| `data/photo/tree-species.json` | species groups (rows and stands) read on the VR tour, polygons traced on the NGII sheet |
 | `data/scnu-facades.json` | curated facade looks (class, colours, window layout, piers, bands, entrance, eave colour) and per-building entries: look, floor/height corrections, tower masses, entrance side (see Facades) |
 | `data/building-forms.json` curated mass fields | `look` draws one mass in a look of its own (the F1 metal drum) and `round` replaces a mass outline with a true cylinder (centre, radius, segments, glass-slot bearings; one fixed bay per segment, radial normals): the E4 round tower, placed from the NGII 2025 roof and VR scene_e4 where the LOD4 slice is 4 m off; both carry a lookSource / roundSource (estimated) |
 | `data/facade-attachments.json` | per BLD_* node, details the masses do not carry, as geometry: E8's red balcony stacks, its teal glass entrance core and green porch roof (a `roof` record recolours a form mass), B2's red fins and ledges and the blank cladding of its west and rear wings, C3's rooftop mast, A13's orange brick end towers, the E7, C3, E6 and D2 glass towers and portal, A3's orange end volumes, and `solar` rooftop arrays (gable frames on A3, tilted rows on E4) (plans from the building's outline vertices, sizes read on the SCNU VR tour and the NGII 2025 sheet; all estimated); drawn on the node's own primitives, so no material or draw call is added |
@@ -159,11 +161,50 @@ and size are estimates.
 
 ### Trees
 
-`Trees_*` instances follow CHMv2 canopy cover: crowns are centred on unblocked cells whose canopy
-height is at least 3 m (`CANOPY_TREE_METRES`), in random order. Each crown gets an estimated radius
-of 1 + 0.25 x the local canopy height (2-5.5 m) and keeps its mean radius (`CROWN_SPACING` 1.0) from
-the others. `model:build` logs how much of the canopy the crowns cover and fails above 12,000
-instances. The broadleaf, round and pine archetypes and their mix are unchanged.
+`Trees_*` are the trees of the tree inventory `data/trees.json` at their positions on the photo. `fetch/treeInventory.mjs`
+writes it offline from the NGII 2025 sheet (`.cache/ngii-ortho/`), CHMv2 (`data/chm.png`), the GIS building footprints,
+the MCEE land cover cache (`.cache/mcee/`), the VR tour cube faces (`.cache/vr/`, through `fetch/tree_vr.py`, `uv run`
+with numpy and Pillow) and `data/photo/tree-species.json`:
+
+```bash
+bun scripts/campus-model/fetch/treeInventory.mjs [--debug <dir>] [--out <file>]   # canopy.png / crowns.png / photo.png / grid.json in <dir>
+```
+
+- Canopy mask: on a 0.5 m grid, cells whose chromaticity is foliage, (2g - r - b) / (r + g + b) >= 0.22 (crowns read
+  0.37-0.39 on the sheet, mown lawn 0.18, the slightly green asphalt 0.10, green roofs 0.09), off the building
+  footprints, sports grounds and water, plus crown shade on CHMv2 canopy. Painted green surfaces that pass are dropped
+  as bright, elongated bands.
+- Crowns: tree tops are local maxima of CHMv2 plus the distance to the canopy edge; each canopy cell joins the top it
+  reaches first inside the canopy (at most 12 m). Height: the CHMv2 maximum, or 1.5 + 2.2 x the radius where CHMv2
+  (2016 imagery) has no canopy.
+- Trees: a photo crown is a row or stand of round(area / spacing disc) trees of its species (spacing 5.5-7.5 m, 3 m for
+  clipped conifers): its canopy cells are split by k-means and each tree stands at its cluster's centroid, moved back by
+  the photo's relief lean at 0.6 x its height, with a crown reaching the 95th percentile of its cells (clamped to the
+  species' crown range), so the crowns cover the canopy as the photo shows it. `scripts/perf/canopy-cover.mjs` checks
+  the drawn cover against the canopy mask per area.
+- Species type (`ginkgo`, `broadleaf` for zelkova and cherry, `pine`, `metasequoia`, `conifer` for clipped columnar
+  evergreens): a VR group polygon of `data/photo/tree-species.json` (metasequoia rows and stands at the C1 plaza, C2/C3
+  and D1; a crown whose own VR colour is listed in `exceptVr` keeps its own reading), else the colour class of the
+  crowns within 9 m on the VR cube faces (each crown projected into every face that sees it, nearest crown per pixel,
+  building prisms occluding; yellow is ginkgo on a street edge (zelkova elsewhere) or, when columnar, metasequoia;
+  russet or red is broadleaf; dark green is pine or, when columnar, conifer), else the MCEE forest type, else the
+  photo tone. Every tree records its source (`speciesSource`), its photo crown and the number of VR views.
+- The build (`placeTrees`, after the ground stage) stands a trunk on open ground (surface class NATURAL), in a surveyed
+  planter, in a street-tree pit (a footway cell within 1.5 m of the carriageway) or in a paved tree pit (a photo crown
+  centred over plaza or footway paving with no open ground within half its radius, like the plaza rows of VR scene_c1);
+  never on a car park, a court, a building, a road or roofed furniture. A crown that only overhangs paving from a lawn
+  has its trunk on the lawn; a trunk elsewhere moves to the nearest allowed point within 3 m, or is left out. No crown comes within 2 m of a VR tour camera position (`scripts/perf/vr-stations.json`). Hedges
+  are clipped boxes on the shrub planters and the planter walls along building fronts of the furniture survey.
+
+Shapes are read on the VR tour: ginkgo with a conical-oval crown, broadleaf with a broad rounded one, pine with a tall
+red-brown bole under irregular flat pads, metasequoia with seven drooping tiers with notched rims over a red-brown
+trunk, columnar conifers with four tight tiers and no visible stem (lower tiers and undersides a little darker), hedges as boxes.
+Each species is one node with a trunk and a crown child (`EXT_mesh_gpu_instancing`), so the draw calls do not grow
+with the trees; every instance carries its own tint (the tiered conifers also drift in hue). Crown materials are per
+species (`Tree_Crown`, `Tree_Ginkgo`, `Tree_Pine`, `Tree_Metasequoia`, `Tree_Conifer`, `Tree_Hedge`); the dashboard
+tints the broadleaf, ginkgo and metasequoia crowns in autumn with their own palettes (`src/lighting/season.mjs`, ginkgo
+and metasequoia turning first, metasequoia from yellow-green to orange-ochre crown by crown, as in the VR tour).
+Positions, heights, diameters and species are estimates, not a tree survey.
 
 ### Facades (`data/scnu-facades.json`, `lib/facadeAtlas.mjs`)
 
@@ -505,8 +546,8 @@ Build order after a ground or network change: `bun run network:build` (network a
   as decal meshes on the terrain (see Modelled ground).
 - `Kerbs`, `Ground_Gutter`: kerb ribbons, dropped kerbs and gutters on the A003 outlines (see Kerbs, slabs and dropped kerbs).
 - `Road_Markings`: the painted road markings the orthophoto shows, one decal mesh on the terrain (see Road markings).
-- `Trees_*`: instanced broadleaf, round and pine trees placed over CHMv2 canopy (see Trees above),
-  kept off buildings, roads, walkways and the roofed street furniture.
+- `Trees_*`: instanced ginkgo, broadleaf, pine, metasequoia and columnar conifer trees at the crowns of the tree
+  inventory, and the hedges (see Trees above), on open ground, planters and tree pits (never on car parks, courts or roads).
 - `Furniture`, `Furniture_Glass`, `Lamps_heads`, `Lamps_pools`: every surveyed outdoor object, the lamps and the
   estimated path lamps and benches (see Street furniture).
 

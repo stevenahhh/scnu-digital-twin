@@ -3,7 +3,9 @@ import test from "node:test";
 import SunCalc from "suncalc";
 import { CAMPUS_LOCATION } from "../utils/sunPosition.mjs";
 import {
+  AUTUMN_MATERIAL_NAMES,
   AUTUMN_PALETTE,
+  SPECIES_AUTUMN_PALETTES,
   getAutumnInstanceColor,
   getAutumnInstanceMix,
   getAutumnProfile,
@@ -161,5 +163,25 @@ test("a 17:50-18:40 KST sweep of 10 frames on 2026-10-24 never jumps", () => {
     assert.ok(Math.abs(nextDay - day) < 0.15, `frame ${frame} day ${day} -> ${nextDay}`);
     night = nextNight;
     day = nextDay;
+  }
+});
+
+test("species palettes: every autumn crown material has one, shares add up, ginkgo and metasequoia turn first", () => {
+  assert.deepEqual(Object.keys(SPECIES_AUTUMN_PALETTES).sort(), [...AUTUMN_MATERIAL_NAMES].sort());
+  for (const palette of Object.values(SPECIES_AUTUMN_PALETTES)) {
+    assert.ok(Math.abs(palette.reduce((sum, entry) => sum + entry.share, 0) - 1) < 1e-9);
+  }
+  assert.ok(!SPECIES_AUTUMN_PALETTES.Tree_Crown.some((entry) => entry.species === "ginkgo"));
+  const oct24 = getAutumnWeight(kst("2026-10-24T12:00:00"));
+  const meanMix = (name) => {
+    const list = Array.from({ length: 2000 }, (_, i) => getAutumnInstanceMix(oct24, getAutumnProfile(i, SPECIES_AUTUMN_PALETTES[name])));
+    return list.reduce((sum, v) => sum + v, 0) / list.length;
+  };
+  assert.ok(meanMix("Tree_Ginkgo") > 2 * meanMix("Tree_Crown"), `ginkgo ${meanMix("Tree_Ginkgo")} vs broadleaf ${meanMix("Tree_Crown")}`);
+  assert.ok(meanMix("Tree_Metasequoia") > meanMix("Tree_Crown"));
+  for (const name of Object.keys(SPECIES_AUTUMN_PALETTES)) {
+    const profile = getAutumnProfile(7, SPECIES_AUTUMN_PALETTES[name]);
+    assert.equal(getAutumnInstanceMix(0, profile), 0);
+    assert.ok(Math.abs(getAutumnInstanceMix(1, profile) - profile.maxMix) < 1e-12);
   }
 });
