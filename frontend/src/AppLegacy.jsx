@@ -853,7 +853,8 @@ function Dashboard() {
         sunVector={sunVector}
         sunVisible={sunVisible}
         sunAltitude={sunAltitude}
-        shadowMapSize={qualityRenderer.shadowMapSize}
+        shadowMapSizes={qualityRenderer.shadowMapSizes}
+        controlsRef={orbitControlsRef}
       />
       <SceneWeatherBinding
         sunIntensityScale={sceneWeatherScene.sunIntensityScale}

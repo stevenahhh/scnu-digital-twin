@@ -8,7 +8,7 @@ import { INTERACTION_DPR_FACTOR } from "../render/interactionDpr.mjs";
 // 화면 공간 AO(N8AO)처럼 깊이 버퍼를 따라 광선을 진행하는 패스는 어느 단계에도 없다. 접촉 그늘은 모든 단계에서
 // GLB에 구워 둔 AO 아틀라스(ao-buildings·ao-ground, 추정 시뮬레이션 값)가 맡는다.
 // 톤 매핑은 모든 단계에서 Neutral이다(후처리 단계에서는 컴포저의 ToneMapping 효과가 맡는다).
-// 단계마다 렌더러 비용도 정한다(QUALITY_RENDERER): 캔버스 픽셀 비율 상한과 태양 그림자 맵 크기.
+// 단계마다 렌더러 비용도 정한다(QUALITY_RENDERER): 캔버스 픽셀 비율 상한과 태양 그림자 맵(캐스케이드) 구성.
 export const QUALITY_TIERS = Object.freeze(["low", "medium", "high"]);
 export const QUALITY_LABELS = Object.freeze({ low: "낮음", medium: "보통", high: "높음" });
 export const QUALITY_STORAGE_KEY = "scnu.renderQuality";
@@ -24,13 +24,18 @@ export const QUALITY_EFFECTS = Object.freeze({
   high: Object.freeze({ bloom: true }),
 });
 
-// 단계별 렌더러 비용. maxDpr은 캔버스 픽셀 비율 상한(조작 중 DPR 낮추기는 이 상한 위에서 다시 0.75배),
-// shadowMapSize는 태양 그림자 맵 한 변의 텍셀 수다(기기 한도·모바일 2048 제한을 넘지 않게 CampusLighting이 줄인다).
-// 그림자는 ShadowBaker로 굳혀 두므로 맵 크기는 주로 메모리와 굽는 순간의 비용이고, 프레임마다 드는 것은 샘플링뿐이다.
+// 단계별 렌더러 비용. maxDpr은 캔버스 픽셀 비율 상한(조작 중 DPR 낮추기는 이 상한 위에서 다시 0.75배)이다.
+// shadowMapSizes는 태양 그림자 맵 한 변의 텍셀 수를 가는 것부터 적는다(기기 한도·모바일 1024 상한은 CampusLighting이 씌운다).
+// - low: 캠퍼스 전체를 덮는 정적 맵 한 장. 모델이 들어올 때와 태양이 움직인 뒤에만 다시 굽는다.
+// - medium: 캐스케이드 2단. 카메라 절두체에 맞춘 한 장 + 캠퍼스 전체 한 장.
+// - high: 캐스케이드 3단. 절두체에 맞춘 두 장 + 캠퍼스 전체 4096² 한 장(조감 시점은 이전 high와 같은 해상도).
+// 멀리서 본 시점처럼 절두체 조각이 캠퍼스만큼 커져 캠퍼스 맵보다 거칠어지는 캐스케이드는 쉬게 한다(SunCascades).
+// 캐스케이드는 태양이 움직이거나(1분 단위) 카메라가 맞춘 범위를 벗어날 때만 다시 그리고, 멈춘 화면에서는 그리지 않는다.
+// 메모리(깊이 4바이트/텍셀, 추정): low 4 MB, medium 32 MB(이전과 같음), high 96 MB(이전 단일 4096² 64 MB). 모바일은 장당 4 MB.
 export const QUALITY_RENDERER = Object.freeze({
-  low: Object.freeze({ maxDpr: 1, shadowMapSize: 1024 }),
-  medium: Object.freeze({ maxDpr: 1.5, shadowMapSize: 2048 }),
-  high: Object.freeze({ maxDpr: 2, shadowMapSize: 4096 }),
+  low: Object.freeze({ maxDpr: 1, shadowMapSizes: Object.freeze([1024]) }),
+  medium: Object.freeze({ maxDpr: 1.5, shadowMapSizes: Object.freeze([2048, 2048]) }),
+  high: Object.freeze({ maxDpr: 2, shadowMapSizes: Object.freeze([2048, 2048, 4096]) }),
 });
 
 // useInteractionDpr의 dpr(평소 [min, max], 조작 중에는 기준 비율 x factor인 숫자)에 단계 상한을 씌운다.

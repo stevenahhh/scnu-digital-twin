@@ -44,11 +44,6 @@ export function getShadowLightPosition(sunVector, { distance = SHADOW_LIGHT_DIST
   return [dx * cos * distance, Math.sin(minAltitude) * distance, dz * cos * distance];
 }
 
-// 2048² gives 0.31 units (~0.5 m) per texel at +-320; desktop GPUs that allow 4096² halve that.
-export function getShadowMapSize({ maxTextureSize, isMobile }) {
-  return maxTextureSize >= 4096 && !isMobile ? 4096 : 2048;
-}
-
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 const normalize = (a) => {

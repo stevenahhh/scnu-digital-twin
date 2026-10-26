@@ -11,7 +11,6 @@ import {
   MIN_LIGHT_ALTITUDE,
   getShadowCameraBounds,
   getShadowLightPosition,
-  getShadowMapSize,
   isInsideShadowCamera,
   toShadowCameraSpace,
 } from "./shadowFrustum.mjs";
@@ -100,10 +99,4 @@ test("every campus mesh centre is inside the shadow camera for azimuths 0, 45, 9
       assert.equal(outside.length, 0, `${outside.length}/${centres.length} centres outside at alt ${altitudeDegrees}, az ${azimuthDegrees}`);
     }
   }
-});
-
-test("desktop GPUs get a 4096 shadow map, mobile and small-texture GPUs 2048", () => {
-  assert.equal(getShadowMapSize({ maxTextureSize: 16384, isMobile: false }), 4096);
-  assert.equal(getShadowMapSize({ maxTextureSize: 16384, isMobile: true }), 2048);
-  assert.equal(getShadowMapSize({ maxTextureSize: 2048, isMobile: false }), 2048);
 });

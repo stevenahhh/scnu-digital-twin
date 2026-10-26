@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { canvasDpr } from "../render/interactionDpr.mjs";
+import { capShadowMapSizes } from "../lighting/shadowCascades.mjs";
 import {
   QUALITY_EFFECTS,
   QUALITY_RENDERER,
@@ -40,11 +41,23 @@ test("only the three tiers parse; low mounts no post-processing", () => {
   for (const tier of QUALITY_TIERS) assert.equal(QUALITY_EFFECTS[tier]?.ao, undefined);
 });
 
-test("tiers set the renderer cost: DPR cap and shadow map size", () => {
+test("tiers set the renderer cost: DPR cap and shadow cascades (low static, medium 2, high 3)", () => {
   assert.deepEqual(
-    QUALITY_TIERS.map((tier) => [QUALITY_RENDERER[tier].maxDpr, QUALITY_RENDERER[tier].shadowMapSize]),
-    [[1, 1024], [1.5, 2048], [2, 4096]],
+    QUALITY_TIERS.map((tier) => [QUALITY_RENDERER[tier].maxDpr, [...QUALITY_RENDERER[tier].shadowMapSizes]]),
+    [[1, [1024]], [1.5, [2048, 2048]], [2, [2048, 2048, 4096]]],
   );
+  // Phones cap every cascade at 1024; desktop GPUs keep the request, small-texture GPUs their limit.
+  const phone = { maxTextureSize: 16384, isMobile: true };
+  const desktop = { maxTextureSize: 16384, isMobile: false };
+  assert.deepEqual(capShadowMapSizes(QUALITY_RENDERER.high.shadowMapSizes, phone), [1024, 1024, 1024]);
+  assert.deepEqual(capShadowMapSizes(QUALITY_RENDERER.high.shadowMapSizes, desktop), [2048, 2048, 4096]);
+  assert.deepEqual(capShadowMapSizes(QUALITY_RENDERER.medium.shadowMapSizes, desktop), [2048, 2048]);
+  assert.deepEqual(capShadowMapSizes([8192], desktop), [4096]);
+  assert.deepEqual(capShadowMapSizes(QUALITY_RENDERER.high.shadowMapSizes, { maxTextureSize: 2048, isMobile: false }), [2048, 2048, 2048]);
+  // Shadow-map memory, 4 bytes per texel (추정): desktop 4 / 32 / 96 MB, phone 4 / 8 / 12 MB.
+  const megabytes = (sizes) => sizes.reduce((sum, size) => sum + size * size * 4, 0) / 1048576;
+  assert.deepEqual(QUALITY_TIERS.map((tier) => megabytes(capShadowMapSizes(QUALITY_RENDERER[tier].shadowMapSizes, desktop))), [4, 32, 96]);
+  assert.deepEqual(QUALITY_TIERS.map((tier) => megabytes(capShadowMapSizes(QUALITY_RENDERER[tier].shadowMapSizes, phone))), [4, 8, 12]);
 });
 
 test("the tier DPR cap applies at rest and the drag regress still lowers DPR under it", () => {
