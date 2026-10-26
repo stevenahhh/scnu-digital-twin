@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useThree } from "@react-three/fiber";
 import { simulationStore, useSimulationStore } from "../stores/simulationStore";
-import { SIMULATION_API_URL } from "../utils/apiConfig";
+import { useAgentDetails } from "../hooks/useAgentDetails.mjs";
 import { AgentTrajectory } from "./AgentTrajectory";
 import { RiskEventLayer } from "./RiskEventLayer";
 import { TrafficEntity } from "./TrafficEntity";
@@ -30,23 +30,7 @@ export function TrafficSimulationLayer({
     if (!document.hidden) invalidate();
   }, [entityMap, invalidate]);
 
-  useEffect(() => {
-    if (!selectedAgentId) return undefined;
-    let disposed = false;
-    const load = async () => {
-      try {
-        const response = await fetch(`${SIMULATION_API_URL}/api/simulation/agents/${encodeURIComponent(selectedAgentId)}`);
-        if (!response.ok) throw new Error(response.status === 404 ? "Agent가 시뮬레이션을 종료했습니다." : `HTTP ${response.status}`);
-        const details = await response.json();
-        if (!disposed && details.id === selectedAgentId) simulationStore.setSelectedAgentDetails(details);
-      } catch (error) {
-        if (!disposed) simulationStore.setSelectedAgentDetails(null, error.message);
-      }
-    };
-    load();
-    const timer = setInterval(load, 1000);
-    return () => { disposed = true; clearInterval(timer); };
-  }, [selectedAgentId]);
+  useAgentDetails(selectedAgentId);
 
   return (
     <group name="campus-traffic-simulation" onPointerMissed={clearAgentSelection}>

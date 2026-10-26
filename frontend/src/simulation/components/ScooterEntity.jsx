@@ -1,8 +1,9 @@
 import React from "react";
+import { RISK_COLORS } from "../utils/riskColors.mjs";
 
 export const ScooterEntity = React.memo(function ScooterEntity({ riskLevel = "normal", state = "moving" }) {
   const risky = riskLevel === "danger" || String(state).toLowerCase() === "wrong_way";
-  const color = risky ? "#dc2626" : riskLevel === "warning" ? "#f59e0b" : "#16866f";
+  const color = risky ? RISK_COLORS.danger : RISK_COLORS[riskLevel] ?? "#16866f";
   return (
     <group>
       <mesh position={[0, 0.18, 0]}>

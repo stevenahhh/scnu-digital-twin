@@ -1,3 +1,4 @@
+import { Alert } from "../ui/Alert.jsx";
 import { EstimateValue } from "../ui/EstimateValue.jsx";
 import { MetricList } from "../ui/MetricList.jsx";
 import { SectionHeader } from "../ui/SectionHeader.jsx";
@@ -47,10 +48,19 @@ export function ParkingSafetyTab({ trafficFeed }) {
     <>
       <section className="flex flex-col gap-3">
         <SectionHeader title="D4 입출차 현황" />
-        <div data-qa="traffic-status" className="flex">
-          <StatusBadge tone={TRAFFIC_STATE_TONES[trafficFeed.state] ?? "neutral"} className="text-caption">
-            {trafficFeed.message}
-          </StatusBadge>
+        <div data-qa="traffic-status" className="flex flex-col">
+          {trafficFeed.state === "offline" ? (
+            <Alert
+              tone="danger"
+              source="traffic"
+              title={trafficFeed.message}
+              message="연결되면 자동으로 다시 받습니다. 끊긴 동안에는 묻는 간격을 30초까지 늘립니다."
+            />
+          ) : (
+            <StatusBadge tone={TRAFFIC_STATE_TONES[trafficFeed.state] ?? "neutral"} className="self-start text-caption">
+              {trafficFeed.message}
+            </StatusBadge>
+          )}
         </div>
         <MetricList items={liveItems} columns={2} caption={live ? "D4 출입구 영상 분석 · 실시간" : null} />
       </section>

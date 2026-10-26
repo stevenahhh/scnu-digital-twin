@@ -9,6 +9,10 @@ export const SELECTION_HEX = ACCENT_HEX;
 export const HOVER_HEX = "#c7cbef";
 // 긴급차량 차체: --colors-emergency와 같은 값. 강조색이 아니라 상태를 뜻하는 의미색이다.
 export const EMERGENCY_HEX = "#ff3b30";
+// 위험(danger) 단계의 교통 객체 차체·고리: --colors-risk-danger와 같은 값. 긴급차량(EMERGENCY_HEX)과 색조가 다르다.
+export const RISK_DANGER_HEX = "#b5179e";
+// 경고(warning) 단계의 교통 객체 차체·고리. 장면에서만 쓰는 상태색이다.
+export const RISK_WARNING_HEX = "#f59e0b";
 // 교통망 디버그 층의 차량 차로: --colors-vehicle-lane과 같은 값. 조작 대상이 아니므로 강조색을 쓰지 않는다.
 export const VEHICLE_LANE_HEX = "#1e88e5";
 // 선택 밖 건물을 흐리게 할 때의 검은 막 투명도(--colors-dim의 알파와 같다).
