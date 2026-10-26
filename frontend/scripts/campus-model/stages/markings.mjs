@@ -1,7 +1,7 @@
 // Road markings stage: the paint the orthophoto shows, as one decal mesh on the Topography surface.
 //
 // Inputs (WGS84), both read from NGII 2025 orthophoto sheet 34702020 (0.25 m; the same photograph as the VWorld z19
-// ground texture, registered to it within 5 mm; methods and hand checks in data/photo/README.md):
+// mosaic, registered to it within 5 mm; methods and hand checks in data/photo/README.md):
 //   - data/photo/markings.geojson, the detection pass: zebra bars grouped per crossing, stop lines, lane, centre and
 //     edge lines, arrows, text, hatching and parking lines, each with its colour and `estimated` (pieces the detection
 //     inferred between two visible ones, e.g. a bar hidden by a car);
@@ -29,7 +29,7 @@
 //      member still needs GROUP_MEMBER_FLOOR);
 //   3. duplicates: where accepted candidates of one colour cover the same paint (DEDUP_SHARE of the smaller one's
 //      area), the smaller one inside a much larger one (DEDUP_CONTAIN) or else the one with less support is dropped.
-// A rejected candidate is not drawn and its paint stays in the photo. Pieces the photo cannot show (`estimated`)
+// A rejected candidate is not drawn (the modelled ground has no photo paint). Pieces the photo cannot show (`estimated`)
 // skip the gate.
 //
 // Geometry, in the model frame, lifted LIFT_M over the terrain triangles it lies on (CityModel adds a polygon offset):
@@ -53,15 +53,12 @@
 // Crossings: OSM crossing ways (data/osm-ground.json) and the digitised crosswalk polygons
 // (docs/assets/data/crosswalks_wgs84.geojson) never draw stripes of their own. One that matches a drawn zebra is
 // drawn from the photo alone (its offset is logged). One without a drawn zebra whose area the photo shows under
-// canopy (the ground stage's street-tree test) gets estimated bars (ZEBRA_PERIOD_M, ZEBRA_BAR_M); under a cast
-// shadow alone the relit photo keeps its own faint paint, and on open asphalt there is none, so those stay undrawn.
+// canopy gets estimated bars (ZEBRA_PERIOD_M, ZEBRA_BAR_M); under a cast shadow alone or on open asphalt the photo
+// shows no paint there, so those stay undrawn.
 //
 // Material: one Road_Marking material whose three-colour palette texture (white, yellow, blue) is both the base colour
 // and the emissive map, so the dashboard's night ramp (CityModel lights every emissiveMap at night) makes the paint
 // glow faintly in its own colour; KHR_materials_emissive_strength (NIGHT_GLOW) caps it. One mesh, one draw call.
-// The ground stage suppresses the photo's own paint under every piece drawn here (`paint`, lib/orthoGround.mjs; holes
-// stay photo), and only there, so wherever the model draws paint the photo shows none and a rejected candidate keeps
-// its photo paint.
 // Everything here is derived from imagery; widths and estimated crossings are estimates, not survey data.
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -69,8 +66,7 @@ import { ShapeUtils, Vector2 } from "three";
 import { EXTENT, SCENE_UNITS_PER_METRE, geoToModel, metres } from "../lib/frame.mjs";
 import { conform } from "../lib/conform.mjs";
 import { pointInRing, ringArea, segmentDistance } from "../lib/geometry.mjs";
-import { sampleOrtho } from "../lib/ortho.mjs";
-import { VEG_EXG, excessGreen, shadowWeight } from "../lib/orthoGround.mjs";
+import { VEG_EXG, excessGreen, sampleOrtho, shadowWeight } from "../lib/ortho.mjs";
 import { encodePng } from "../lib/png.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -106,8 +102,6 @@ const FIXED_COLOUR_KINDS = new Set(["kerb_no_parking", "centre_line_yellow", "ze
 const STROKED_KINDS = new Set(["lane_line_dashed", "lane_line_solid", "edge_line", "centre_line_yellow", "parking_line", "kerb_no_parking", "give_way_line"]);
 // Packed positions are 14-bit over the campus (about 4.9 cm steps), terrain and markings each rounded on their own.
 const LIFT_M = 0.04;
-// Photo paint blurs about one pixel past the detected edge; the suppression mask reaches this far beyond each marking.
-export const SUPPRESS_MARGIN_M = 0.3;
 
 const SHADOW_AZIMUTH_DEG = 272.5;
 const SHADOW_REACH_M = [0.3, 0.6, 0.9];
@@ -586,7 +580,7 @@ export async function loadMarkings({ inputs, buildings }) {
 
   // ---- 2c. traced groups (the bands of one striped hump, the fill, frame and symbol of one blue bay, a ladder's
   // rails and rungs): one fitted model, so drawn or left out as a whole on the members' mean support. Drawing only
-  // some would also erase the photo paint of the others under the suppression margin.
+  // some would leave a traced model half drawn.
   const traced = new Map();
   for (const c of candidates) {
     const group = c.feature.properties.group;
@@ -775,13 +769,11 @@ export async function loadMarkings({ inputs, buildings }) {
     crossings.push(`${id}: no zebra visible, ${(occluded * 100).toFixed(0)} % under canopy, ${bars} estimated bars`);
   }
 
-  // Paint to suppress in the photo: under every piece drawn (its holes stay photo), and nowhere else.
-  const paint = pieces.map((piece) => piece.rings);
   const report = candidates.map((c) => ({
     id: c.id, file: c.file, kind: c.kind, colour: c.colour, method: c.feature.properties.method ?? "detect", estimated: c.estimated, fingerprint: c.fingerprint,
     support: c.support ?? null, recoloured: c.recoloured ?? null, verdict: c.verdict, reason: c.dropped ?? c.review ?? c.duplicateOf ?? null, shapes: c.shapes,
   }));
-  return { pieces, paint, zebras, crossings, warnings, log, report, source: "data/photo/markings.geojson + data/photo/markings-extra.geojson" };
+  return { pieces, zebras, crossings, warnings, log, report, source: "data/photo/markings.geojson + data/photo/markings-extra.geojson" };
 }
 
 // ---------------------------------------------------------------- mesh

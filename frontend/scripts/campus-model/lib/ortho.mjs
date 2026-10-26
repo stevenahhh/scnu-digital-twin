@@ -1,4 +1,5 @@
-// VWorld Satellite orthophoto for the ground albedo and the roof colours.
+// VWorld Satellite orthophoto for the roof colours and the road-marking photo checks (the ground no longer bakes it:
+// plan uhf-ground-roads-routing todo 10, the ground is modelled surfaces).
 //
 // data/ortho/vworld-satellite-z19.jpg is the z19 WMTS tile mosaic (Web Mercator, 256 px tiles) as fetched by
 // fetch/ortho.mjs, and vworld-satellite-z19.json its tile range. The tiles are stored and baked with the
@@ -77,4 +78,70 @@ export function sampleOrtho(ortho, u, v, out = [0, 0, 0]) {
     out[ch] = (rgb[a + ch] * (1 - tx) + rgb[b + ch] * tx) * (1 - ty) + (rgb[c + ch] * (1 - tx) + rgb[d + ch] * tx) * ty;
   }
   return out;
+}
+
+// ---------------------------------------------------------------- colour calibration and photo classes
+// (moved here with the removal of the photo ground composite; used by the roof colours, stages/sources.mjs and the
+// markings checks)
+const SRGB_TO_LINEAR = Float32Array.from({ length: 256 }, (_, c) => {
+  const v = c / 255;
+  return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+});
+const LINEAR_STEPS = 4095;
+const LINEAR_TO_SRGB = Uint8Array.from({ length: LINEAR_STEPS + 1 }, (_, i) => {
+  const v = i / LINEAR_STEPS;
+  return Math.round(255 * (v <= 0.0031308 ? v * 12.92 : 1.055 * v ** (1 / 2.4) - 0.055));
+});
+const toLinear = (c) => SRGB_TO_LINEAR[Math.max(0, Math.min(255, Math.round(c)))];
+const toSrgb = (v) => LINEAR_TO_SRGB[Math.round((v <= 0 ? 0 : v >= 1 ? 1 : v) * LINEAR_STEPS)];
+const luma = (r, g, b) => 0.299 * r + 0.587 * g + 0.114 * b;
+
+// ---------------------------------------------------------------- colour calibration
+// White-balance reference: photo pixels at least WB_MIN_LUMA bright whose channels differ by at most
+// WB_MAX_SPREAD (sRGB) and are not clipped. Albedo: the mosaic's tone curve keeps white membranes near their
+// albedo (linear about 0.7) but crushes mid-tones (lawn 0.07, asphalt 0.09, concrete paving 0.14 in linear
+// light, against typical albedos of about 0.2, 0.15 and 0.3), so after the white balance the linear value is
+// lifted by the power 1 / ALBEDO_GAMMA (ASSUMED 1.5: lawn 0.17, asphalt 0.20, paving 0.27, membranes 0.77; checked
+// with scripts/perf/compare-satellite.mjs at noon). These are estimates, not measured albedos.
+const WB_MIN_LUMA = 170;
+const WB_MAX_SPREAD = 36;
+const ALBEDO_GAMMA = 1.5;
+
+export function photoCalibration(ortho) {
+  const picks = [[], [], []];
+  const { rgb } = ortho;
+  for (let i = 0; i < rgb.length; i += 3 * 7) {
+    const r = rgb[i];
+    const g = rgb[i + 1];
+    const b = rgb[i + 2];
+    if (luma(r, g, b) >= WB_MIN_LUMA && Math.max(r, g, b) - Math.min(r, g, b) <= WB_MAX_SPREAD && Math.max(r, g, b) < 250) {
+      picks[0].push(r);
+      picks[1].push(g);
+      picks[2].push(b);
+    }
+  }
+  if (picks[0].length < 1000) throw new Error(`ortho white balance: only ${picks[0].length} bright neutral pixels`);
+  const reference = picks.map((values) => values.sort((a, b) => a - b)[values.length >> 1]);
+  const linear = reference.map(toLinear);
+  const mean = (linear[0] + linear[1] + linear[2]) / 3;
+  const gains = linear.map((v) => mean / v);
+  // Linear photo value -> linear albedo estimate, and raw photo sRGB -> albedo sRGB, per channel.
+  const albedo = (value, channel) => Math.min(1, Math.max(0, value * gains[channel])) ** (1 / ALBEDO_GAMMA);
+  const lut = gains.map((_, channel) => Uint8Array.from({ length: 256 }, (__, c) => toSrgb(albedo(SRGB_TO_LINEAR[c], channel))));
+  return { reference, gains, gamma: ALBEDO_GAMMA, samples: picks[0].length, lut, albedo, calibrate: (c, channel) => lut[channel][Math.max(0, Math.min(255, Math.round(c)))] };
+}
+
+// ---------------------------------------------------------------- photo classes (raw mosaic values)
+// Vegetation: normalised excess green (2G - R - B) / (R + G + B) above VEG_EXG (lawn about 0.26, crowns 0.32,
+// pavers 0.10, asphalt 0.09, roofs 0.03 in this mosaic). Cast shadow: the mosaic's red channel drops to
+// almost 0 in shadow (asphalt 64 lit, 7 in shadow) while haze keeps green and blue up, so the shadow weight
+// ramps from 0 at SHADOW_RED[1] / SHADOW_LUMA[1] to 1 at SHADOW_RED[0] / SHADOW_LUMA[0].
+export const VEG_EXG = 0.15;
+const SHADOW_RED = [14, 30];
+const SHADOW_LUMA = [48, 72];
+export const excessGreen = (r, g, b) => (2 * g - r - b) / (r + g + b + 1);
+export function shadowWeight(r, g, b) {
+  const red = (SHADOW_RED[1] - r) / (SHADOW_RED[1] - SHADOW_RED[0]);
+  const dark = (SHADOW_LUMA[1] - luma(r, g, b)) / (SHADOW_LUMA[1] - SHADOW_LUMA[0]);
+  return Math.max(0, Math.min(1, red)) * Math.max(0, Math.min(1, dark));
 }

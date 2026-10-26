@@ -1,29 +1,26 @@
-// Ground stage: paint the procedural ground (walkways, ground features from data/osm-ground.json, roads,
-// off-campus lots, building curbs), lay the VWorld z19 orthophoto over it (lib/orthoGround.mjs: the procedural
-// layer only fills what the model draws itself - building footprints swept along their relief lean, tree crowns,
-// street trees over paving, the photo's own paint under the vector road markings - and relights the photo's cast
-// shadows), and emit the chunked Topography terrain. Road markings are geometry (stages/markings.mjs), laid on the
+// Ground stage: the Topography terrain (chunked, natural ground material) and the class polygons of the modelled ground
+// (network/surfaces.mjs: road zones, A003 walkways, lots, plazas, painted surfaces, building aprons), which
+// stages/surfaces.mjs lays on it as Ground_* decal meshes. No photo pixel is baked into the ground (plan
+// uhf-ground-roads-routing todo 10: the orthophoto ground composite and its module are gone; the VWorld z19 mosaic is read
+// only for the roof colours and the road-marking photo checks). The surface-class label raster (groundInfo) the lamp
+// rule reads is rasterised from the same polygons. Road markings are geometry (stages/markings.mjs), laid on the
 // terrain triangles that topographySurface() describes.
-// Topography primitives carry a planar TEXCOORD_1 over EXTENT; data/ao-ground.png (baked from the raw
-// GLB by `bake/bake-ao.mjs --planar`, an estimated simulation and not a measurement) becomes the Ground
-// material's occlusionTexture when its layout tag matches this build's.
+// Topography primitives carry a planar TEXCOORD_1 over EXTENT; data/ao-ground.png (baked from the raw GLB by
+// `bake/bake-ao.mjs --planar`, an estimated simulation and not a measurement) becomes the occlusionTexture of the
+// Ground material and the Ground_* materials when its layout tag matches this build's.
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { EXTENT, SCENE_UNITS_PER_METRE, geoToModel, metres } from "../lib/frame.mjs";
-import { LANDCOVER } from "../lib/landcover.mjs";
+import { tmToScene } from "../../../src/geo/epsg5186.mjs";
+import { EXTENT } from "../lib/frame.mjs";
 import { MeshData } from "../lib/meshData.mjs";
-import { Raster, hashNoise, smoothNoise } from "../lib/raster.mjs";
-import { pointInRing } from "../lib/geometry.mjs";
 import { SURFACE_CLASS } from "../lib/surfaceClass.mjs";
-import { composeOrthoGround } from "../lib/orthoGround.mjs";
-import { buildSurfaces, loadGroundFeatures, loadWalkways as loadSurfaceWalkways, orientedFrame, parkingRing, traceArterials } from "../network/surfaces.mjs";
+import { PX, buildSurfaces, loadGroundFeatures, loadWalkways } from "../network/surfaces.mjs";
 import { GRASS_TILE, naturalGroundMaterial, planarTileUv } from "./surfaces.mjs";
 
 const WIDTH = EXTENT.maxX - EXTENT.minX;
 const DEPTH = EXTENT.maxZ - EXTENT.minZ;
 
-const PX = 6.5; // texture pixels per scene unit: 0.2465 m per texel, the z19 orthophoto's 0.245 m
 const STEP = 2;
 const CHUNK = 42;
 
@@ -42,323 +39,6 @@ function pngLayoutTag(bytes) {
     offset += 12 + length;
   }
   return null;
-}
-
-const WALKWAYS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..", "docs", "assets", "data", "walkways_wgs84.geojson");
-
-// ---------------------------------------------------------------- walkways
-// walkways_wgs84.geojson (A003 sidewalks) holds outlines, not centrelines: closed rings along the kerb and the back
-// edge of each paved area, and open lines where an outline is cut (orthophoto registration, 2026-10-24). Closed rings
-// are filled as the paved area (even-odd per feature, so a ring inside another is a hole); every outline, closed or
-// open, gets an EDGE_STONE_M kerb band centred on it, and lawn next to it is darkened over LAWN_EDGE_M (ASSUMED
-// trampled/shaded edge). `qual` is the paving: SWQ003 block paver, SWQ001 asphalt, SWQ999/null existing paving;
-// `scls` A0033327 marks the red asphalt bicycle lanes. The kerbs come from these outlines only: the road zones are
-// too coarse for kerbs (their edge runs 3-5 m into the sidewalk west of the roundabout).
-const EDGE_STONE_M = 0.3;
-const LAWN_EDGE_M = 0.3;
-const GUTTER_M = 0.25;
-const BICYCLE_LANE = "A0033327";
-
-async function loadWalkways() {
-  const data = JSON.parse(await Bun.file(WALKWAYS).text());
-  return data.features.map(({ properties, geometry }) => {
-    const surface = properties.scls === BICYCLE_LANE ? "bicycle" : properties.qual === "SWQ003" ? "blockPaver" : properties.qual === "SWQ001" ? "asphalt" : "existing";
-    const lines = (geometry.type === "LineString" ? [geometry.coordinates] : geometry.coordinates).map((line) => line.map(([lon, lat]) => geoToModel(lon, lat)));
-    const rings = lines.filter((line) => line.length >= 4 && line[0][0] === line.at(-1)[0] && line[0][1] === line.at(-1)[1]);
-    return { surface, rings, lines };
-  });
-}
-
-// The ground raster also records the surface class each pixel was painted as (SURFACE_CLASS in `labels`,
-// written while `label` is not null; land cover stays NATURAL), so the orthophoto pass fills a walkway under a
-// tree with walkway colour and can tell a street tree over paving from a tree over a lawn.
-const { NATURAL, PAVING, ASPHALT, PAINTED, LOT } = SURFACE_CLASS;
-class LabelledRaster extends Raster {
-  constructor(width, height) {
-    super(width, height);
-    this.labels = new Uint8Array(width * height).fill(NATURAL);
-    this.label = null;
-  }
-
-  set(x, y, rgb, alpha = 1) {
-    super.set(x, y, rgb, alpha);
-    if (this.label !== null && x >= 0 && y >= 0 && x < this.width && y < this.height) this.labels[y * this.width + x] = this.label;
-  }
-}
-
-// Pixel mask of whatever `draw(raster)` paints (any non-zero red channel counts).
-function maskOf(width, height, draw) {
-  const raster = new Raster(width, height);
-  draw(raster);
-  const mask = new Uint8Array(width * height);
-  for (let i = 0; i < mask.length; i += 1) mask[i] = raster.data[i * 3] ? 1 : 0;
-  return mask;
-}
-
-// ---------------------------------------------------------------- ground features
-// data/osm-ground.json (fetch/osm.mjs): OSM stadium/pitches/parking/plazas/water, MCEE class-141
-// facility outlines (track, courts, oval lawn) and project-authored surface labels and estimates.
-const M_PER_PX = 1 / (PX * SCENE_UNITS_PER_METRE); // ~0.4 m per texture pixel
-const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
-const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
-const shadeBy = (c, k) => [c[0] * k, c[1] * k, c[2] * k];
-// Painted lines are thinner than a pixel; draw them about one pixel wide, antialiased.
-const LINE_HALF_WIDTH = 0.22;
-const lineCover = (distance) => clamp01((LINE_HALF_WIDTH + M_PER_PX / 2 - Math.abs(distance)) / M_PER_PX);
-const LINE_WHITE = [236, 236, 228];
-// Distance (m) to the outline of a centred rectangle with half sizes hs x ht.
-const rectOutline = (s, t, hs, ht) => {
-  const dx = Math.abs(s) - hs;
-  const dy = Math.abs(t) - ht;
-  return dx <= 0 && dy <= 0 ? Math.min(-dx, -dy) : Math.hypot(Math.max(dx, 0), Math.max(dy, 0));
-};
-
-const SURFACE = {
-  track: [168, 84, 64],
-  turf: [72, 124, 60],
-  futsal: [52, 106, 66],
-  basketball: [58, 116, 176],
-  multiApron: [116, 178, 146],
-  multiCourt: [168, 82, 68],
-  clay: [176, 126, 94],
-  tennisCourt: [126, 156, 112],
-  lawn: [104, 148, 70],
-  paver: [194, 189, 178],
-  parking: [92, 94, 98],
-  water: [58, 88, 100],
-  rim: [196, 192, 182],
-  roundabout: [170, 76, 64],
-  island: [90, 128, 70],
-};
-
-// Oriented frame of a ring (model units) or of a point and heading: s along the long axis, t across, metres.
-const headingFrame = ([cx, cz], degrees) => ({ cx, cz, ux: Math.cos((degrees * Math.PI) / 180), uz: Math.sin((degrees * Math.PI) / 180) });
-const pixelToModel = (px, py) => [EXTENT.minX + (px + 0.5) / PX, EXTENT.minZ + (py + 0.5) / PX];
-function toLocal(frame, px, py) {
-  const [x, z] = pixelToModel(px, py);
-  const dx = x - frame.cx;
-  const dz = z - frame.cz;
-  return [(dx * frame.ux + dz * frame.uz) / SCENE_UNITS_PER_METRE, (-dx * frame.uz + dz * frame.ux) / SCENE_UNITS_PER_METRE];
-}
-const grain = (base, px, py, seed, amount = 0.08) => shadeBy(base, 1 - amount / 2 + hashNoise(px, py, seed) * amount);
-
-// Running track fitted to the outer edge of the facility outline: semicircular ends, 8 lanes of
-// 1.22 m with white lane lines, red D-zones, and a football pitch with standard markings inside.
-function trackShader(frame) {
-  const radius = frame.halfWidth;
-  const straight = Math.max(0, frame.halfLength - radius);
-  const band = 8 * 1.22;
-  const inner = radius - band;
-  const pitchHalfWidth = Math.min(34, inner - 2);
-  const pitchHalfLength = Math.min(52.5, straight + Math.sqrt(Math.max(0, inner * inner - pitchHalfWidth * pitchHalfWidth)) - 1);
-  return (px, py) => {
-    const [s, t] = toLocal(frame, px, py);
-    const depth = radius - (Math.abs(s) <= straight ? Math.abs(t) : Math.hypot(Math.abs(s) - straight, t));
-    if (depth < band + LINE_HALF_WIDTH) {
-      const lane = depth / 1.22;
-      return mix(grain(SURFACE.track, px, py, 21), LINE_WHITE, lineCover((lane - Math.round(lane)) * 1.22) * 0.85);
-    }
-    if (Math.abs(s) > pitchHalfLength + 0.5 || Math.abs(t) > pitchHalfWidth + 0.5) return grain(SURFACE.track, px, py, 21);
-    const stripe = Math.floor((s + pitchHalfLength) / ((pitchHalfLength * 2) / 18)) % 2 ? 1.05 : 0.95;
-    const turf = grain(shadeBy(SURFACE.turf, stripe), px, py, 22, 0.06);
-    const boxS = Math.abs(s) - (pitchHalfLength - 8.25);
-    const goalS = Math.abs(s) - (pitchHalfLength - 2.75);
-    const d = Math.min(
-      rectOutline(s, t, pitchHalfLength, pitchHalfWidth),
-      Math.abs(t) <= pitchHalfWidth ? Math.abs(s) : Infinity,
-      Math.abs(Math.hypot(s, t) - 9.15),
-      rectOutline(boxS, t, 8.25, 20.16),
-      rectOutline(goalS, t, 2.75, 9.16),
-    );
-    return mix(turf, LINE_WHITE, lineCover(d) * 0.85);
-  };
-}
-
-// Surfaces of labelled facility areas, drawn around the label point.
-function surfaceShader(label, polygonFrame) {
-  const frame = label.headingDegrees === undefined ? polygonFrame : headingFrame(label.point, label.headingDegrees);
-  const local = (px, py) => toLocal(frame, px, py);
-  switch (label.surface) {
-    case "basketball":
-      return (px, py) => {
-        const base = grain(SURFACE.basketball, px, py, 23, 0.05);
-        if (label.lines === false) return base;
-        const [s, t] = local(px, py);
-        const key = Math.abs(s) - (14 - 2.9);
-        const d = Math.min(
-          rectOutline(s, t, 14, 7.5),
-          Math.abs(t) <= 7.5 ? Math.abs(s) : Infinity,
-          Math.abs(Math.hypot(s, t) - 1.8),
-          rectOutline(key, t, 2.9, 2.45),
-          Math.abs(s) < 14 - 1.575 - 0.0 ? Math.abs(Math.hypot(Math.abs(s) - (14 - 1.575), t) - 6.75) : Infinity,
-        );
-        return mix(base, LINE_WHITE, lineCover(d) * 0.85);
-      };
-    case "futsal":
-      return (px, py) => {
-        const [s, t] = local(px, py);
-        const d = Math.min(rectOutline(s, t, 20, 10), Math.abs(t) <= 10 ? Math.abs(s) : Infinity, Math.abs(Math.hypot(s, t) - 3), Math.abs(Math.hypot(Math.abs(s) - 20, t) - 6));
-        return mix(grain(SURFACE.futsal, px, py, 24, 0.06), LINE_WHITE, lineCover(d) * 0.8);
-      };
-    case "multi":
-      return (px, py) => {
-        const [s, t] = local(px, py);
-        const inside = Math.abs(s) <= 9 && Math.abs(t) <= 4.5;
-        const base = grain(inside ? SURFACE.multiCourt : SURFACE.multiApron, px, py, 25, 0.05);
-        return mix(base, LINE_WHITE, lineCover(Math.min(rectOutline(s, t, 9, 4.5), Math.abs(t) <= 4.5 ? Math.abs(s) : Infinity)) * 0.8);
-      };
-    case "tennis":
-      return (px, py) => {
-        const [s, t] = local(px, py);
-        let colour = grain(SURFACE.clay, px, py, 26, 0.08);
-        for (const offset of [-8.2, 8.2]) {
-          const tt = t - offset;
-          if (Math.abs(s) <= 11.885 + 3 && Math.abs(tt) <= 5.485 + 2) colour = grain(SURFACE.tennisCourt, px, py, 27, 0.05);
-          const d = Math.min(rectOutline(s, tt, 11.885, 5.485), rectOutline(s, tt, 11.885, 4.115), rectOutline(s, tt, 6.4, 4.115), Math.abs(tt) <= 4.115 && Math.abs(s) <= 6.4 ? Math.abs(tt) : Infinity, Math.abs(tt) <= 5.485 ? Math.abs(s) : Infinity);
-          colour = mix(colour, LINE_WHITE, lineCover(d) * 0.8);
-        }
-        return colour;
-      };
-    case "lawn":
-      return (px, py) => grain(SURFACE.lawn, px, py, 28, 0.1);
-    default:
-      throw new Error(`osm-ground.json: unknown surface ${label.surface}`);
-  }
-}
-
-// Parking lot: asphalt with double-loaded rows of `bay` x `depth` m bays (6 m aisle) along the lot's
-// long axis; OSM lots use 2.5 x 5 m.
-function parkingShader(frame, bay = 2.5, depth = 5) {
-  const module = depth * 2 + 6;
-  return (px, py) => {
-    const [s, t] = toLocal(frame, px, py);
-    const base = grain(SURFACE.parking, px, py, 29, 0.1);
-    const across = t + frame.halfWidth - 0.6;
-    const inRow = ((across % module) + module) % module;
-    let d = Infinity;
-    if (across > 0 && Math.abs(s) < frame.halfLength - 0.6 && (inRow < depth || inRow > module - depth)) {
-      d = Math.abs(((s % bay) + bay) % bay - bay / 2) - bay / 2;
-      d = Math.min(Math.abs(d), Math.abs(inRow < depth ? inRow : module - inRow));
-    }
-    return mix(base, LINE_WHITE, lineCover(d) * 0.7);
-  };
-}
-
-// Plaza: 2 m pavers with darker joints and per-tile tint.
-function paverShader(frame) {
-  return (px, py) => {
-    const [s, t] = toLocal(frame, px, py);
-    const tile = hashNoise(Math.floor(s / 2), Math.floor(t / 2), 30);
-    const joint = Math.min(Math.abs(s - Math.round(s / 2) * 2), Math.abs(t - Math.round(t / 2) * 2));
-    return shadeBy(SURFACE.paver, (0.95 + tile * 0.08) * (1 - lineCover(joint) * 0.06));
-  };
-}
-
-
-async function paintGroundFeatures(ground, toPixel) {
-  const features = await loadGroundFeatures();
-  if (features.unlabelledLabels.length) throw new Error(`osm-ground.json: surface labels outside every facility polygon: ${features.unlabelledLabels.map((l) => l.note).join("; ")}`);
-  const pixelRings = (rings) => rings.map((ring) => ring.map(toPixel));
-  const ofKind = (kind) => features.osm.filter((f) => f.kind === kind);
-  const reclassed = new Map(features.supplements.filter((f) => f.kind === "reclass").map((f) => [f.osm, f.surface]));
-  for (const [id, surface] of reclassed) {
-    const area = features.osm.find((f) => f.id === id);
-    if (!area) throw new Error(`osm-ground.json: reclass target ${id} is not an OSM area`);
-    if (surface !== "lawn") throw new Error(`osm-ground.json: unknown reclass surface ${surface}`);
-    ground.label = NATURAL;
-    ground.fillPolygon(pixelRings(area.rings), (x, y) => grain(SURFACE.lawn, x, y, 28, 0.1));
-  }
-  for (const water of ofKind("water")) {
-    if (reclassed.has(water.id)) continue;
-    ground.label = PAINTED;
-    ground.fillPolygon(pixelRings(water.rings), (x, y) => grain(SURFACE.water, x, y, 31, 0.06));
-    ground.label = PAVING;
-    for (const ring of water.rings) ground.strokePolyline([...ring, ring[0]].map(toPixel), metres(0.8) * PX, () => SURFACE.rim);
-  }
-  ground.label = null;
-  return {
-    lines: features.lines,
-    surfaces(afterPlazas) {
-      ground.label = PAVING;
-      for (const plaza of ofKind("plaza")) ground.fillPolygon(pixelRings(plaza.rings), paverShader(orientedFrame(plaza.rings[0])));
-      ground.label = null;
-      afterPlazas();
-      ground.label = ASPHALT;
-      for (const lot of ofKind("parking")) ground.fillPolygon(pixelRings(lot.rings), parkingShader(orientedFrame(lot.rings[0])));
-      ground.label = PAINTED;
-      // OSM pitches only where no facility outline covers them (MCEE outlines are closer to the ground).
-      for (const pitch of ofKind("pitch")) {
-        const centroid = pitch.rings[0].reduce((acc, [x, z]) => [acc[0] + x / pitch.rings[0].length, acc[1] + z / pitch.rings[0].length], [0, 0]);
-        if (features.facilities.some((f) => pointInRing(centroid, f.rings[0]))) continue;
-        const frame = orientedFrame(pitch.rings[0]);
-        const colour = pitch.tags.sport === "tennis" ? SURFACE.tennisCourt : pitch.tags.sport === "basketball" ? SURFACE.basketball : SURFACE.turf;
-        ground.fillPolygon(pixelRings(pitch.rings), (x, y) => {
-          const [s, t] = toLocal(frame, x, y);
-          return mix(grain(colour, x, y, 32, 0.06), LINE_WHITE, lineCover(rectOutline(s, t, frame.halfLength - 1, frame.halfWidth - 1)) * 0.8);
-        });
-      }
-      for (const facility of features.facilities) {
-        const frame = orientedFrame(facility.rings[0]);
-        ground.label = PAINTED;
-        if (facility.track) {
-          ground.fillPolygon(pixelRings(facility.rings), trackShader(frame));
-          continue;
-        }
-        if (facility.labels.every((l) => l.surface === "lawn")) ground.label = NATURAL;
-        const shaders = facility.labels.map((label) => [label, surfaceShader(label, { ...frame, cx: label.point[0], cz: label.point[1] })]);
-        ground.fillPolygon(pixelRings(facility.rings), (x, y) => {
-          const [mx, mz] = pixelToModel(x, y);
-          let nearest = shaders[0];
-          for (const entry of shaders) {
-            if (Math.hypot(entry[0].point[0] - mx, entry[0].point[1] - mz) < Math.hypot(nearest[0].point[0] - mx, nearest[0].point[1] - mz)) nearest = entry;
-          }
-          return nearest[1](x, y);
-        });
-        if (facility.labels.every((l) => l.surface === "lawn")) {
-          ground.label = PAVING;
-          for (const ring of facility.rings) ground.strokePolyline([...ring, ring[0]].map(toPixel), metres(0.6) * PX, () => SURFACE.rim);
-        }
-      }
-      for (const fountain of features.supplements.filter((f) => f.kind === "fountain")) {
-        const [cx, cy] = toPixel(fountain.point);
-        const r = metres(fountain.radiusMetres) * PX;
-        ground.label = PAVING;
-        ground.fillDisc(cx, cy, r, () => SURFACE.rim);
-        ground.label = PAINTED;
-        ground.fillDisc(cx, cy, r - metres(0.7) * PX, (x, y) => grain([92, 132, 150], x, y, 33, 0.06));
-      }
-      ground.label = null;
-    },
-    overRoads() {
-      // Estimated bays (supplements): painted over the road zones, which already cover parts of them.
-      ground.label = ASPHALT;
-      for (const lot of features.supplements.filter((f) => f.kind === "parking")) {
-        const ring = parkingRing(lot.axis, lot.depthMetres);
-        ground.fillPolygon([ring.map(toPixel)], parkingShader(orientedFrame(ring), lot.bayMetres, lot.depthMetres));
-      }
-      for (const roundabout of features.supplements.filter((f) => f.kind === "roundabout")) {
-        const [cx, cy] = toPixel(roundabout.point);
-        const r = metres(roundabout.radiusMetres) * PX;
-        ground.label = PAINTED;
-        ground.fillDisc(cx, cy, r, (x, y) => grain(SURFACE.roundabout, x, y, 34, 0.08));
-        ground.label = PAVING;
-        ground.fillDisc(cx, cy, r * 0.44, () => SURFACE.rim);
-        ground.label = NATURAL;
-        ground.fillDisc(cx, cy, r * 0.38, (x, y) => grain(SURFACE.island, x, y, 35, 0.12));
-        ground.label = PAVING;
-        ground.fillDisc(cx, cy, r * 0.12, () => [176, 174, 168]);
-      }
-      ground.label = null;
-    },
-  };
-}
-
-// Rectangle `depthMetres` wide centred on the two-point axis (model units).
-// The arterial and connector strips (network/surfaces.mjs traceArterials), painted as asphalt.
-function paintArterials({ ground, toPixel, lines, block, roadZoneMask, asphalt }) {
-  const traced = traceArterials({ lines, block, roadZoneMask, width: ground.width, height: ground.height, toPixel });
-  for (const { ring } of traced.quads) ground.fillPolygon([ring.map(toPixel)], asphalt);
-  return { strips: traced.strips, quads: traced.quads.length };
 }
 
 // The Topography surface as drawn: heightAt sampled on the STEP grid over EXTENT, each cell split into the two
@@ -411,198 +91,26 @@ export function topographySurface(heightAt) {
   };
 }
 
-// paint: rings (model units) of the vector road markings whose paint the photo must not show twice (stages/markings.mjs);
-// structures / objectHoles: rings of the street furniture the photo must not show twice (stages/furniture.mjs).
-// Returns the Topography surface the markings are laid on, and the surface-class raster (groundInfo) the lamp and
-// bench rules read.
-export async function buildGround({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots, paint, paintMargin, treeInstances, structures = [], objectHoles = [] }) {
-  const { heightAt, roadZones, landcoverAt } = inputs;
-  const walkways = await loadWalkways();
-
-  // ---- ground texture
-  const ground = new LabelledRaster(WIDTH * PX, DEPTH * PX);
-  const toPixel = ([x, z]) => [(x - EXTENT.minX) * PX, (z - EXTENT.minZ) * PX];
-  const PALETTE = {
-    [LANDCOVER.PAVED]: [158, 156, 148],
-    [LANDCOVER.GRASS]: [112, 150, 74],
-    [LANDCOVER.TREE]: [74, 106, 52],
-    [LANDCOVER.SOIL]: [170, 140, 102],
-    [LANDCOVER.TRACK]: [178, 84, 66],
-    [LANDCOVER.COURT]: [62, 112, 168],
-  };
-  for (let y = 0; y < ground.height; y += 1) {
-    for (let x = 0; x < ground.width; x += 1) {
-      // bilinear blend of the four nearest class colours softens the 1-unit class grid
-      const fx = x / PX - 0.5;
-      const fy = y / PX - 0.5;
-      const ix = Math.floor(fx);
-      const iy = Math.floor(fy);
-      const tx = fx - ix;
-      const ty = fy - iy;
-      const colourAt = (cx, cy) => PALETTE[landcoverAt(EXTENT.minX + cx + 0.5, EXTENT.minZ + cy + 0.5)];
-      const c00 = colourAt(ix, iy);
-      const c10 = colourAt(ix + 1, iy);
-      const c01 = colourAt(ix, iy + 1);
-      const c11 = colourAt(ix + 1, iy + 1);
-      const k = 0.9 + smoothNoise(x, y, 14, 1) * 0.12 + hashNoise(x, y, 2) * 0.05;
-      const i = (y * ground.width + x) * 3;
-      for (let ch = 0; ch < 3; ch += 1) {
-        const v = (c00[ch] * (1 - tx) + c10[ch] * tx) * (1 - ty) + (c01[ch] * (1 - tx) + c11[ch] * tx) * ty;
-        ground.data[i + ch] = Math.max(0, Math.min(255, v * k));
-      }
-    }
-  }
-  const paving = (x, y) => {
-    const joint = x % 6 === 0 || y % 6 === 0;
-    const k = 0.95 + hashNoise(Math.floor(x / 6), Math.floor(y / 6), 3) * 0.08 - (joint ? 0.06 : 0);
-    return [200 * k, 194 * k, 182 * k];
-  };
-  const asphalt = (x, y) => {
-    const k = 0.9 + hashNoise(x, y, 4) * 0.12 + smoothNoise(x, y, 40, 5) * 0.06;
-    // Weathered asphalt reads mid grey in the reference imagery; the earlier 70/73/77 rendered near-black
-    // once ground AO and the overcast sky were applied (estimated albedo, not measured).
-    return [120 * k, 123 * k, 127 * k];
-  };
-  // Block pavers (~0.2 x 0.1 m) are below texture resolution: warm grey with fine mottling.
-  const blockPaver = (x, y) => {
-    const k = 0.94 + hashNoise(x, y, 7) * 0.08 + smoothNoise(x, y, 12, 8) * 0.04;
-    return [186 * k, 178 * k, 166 * k];
-  };
-  const bicycleLane = (x, y) => {
-    const k = 0.92 + hashNoise(x, y, 9) * 0.1 + smoothNoise(x, y, 30, 10) * 0.05;
-    return [138 * k, 88 * k, 78 * k];
-  };
-  const WALKWAY_SHADERS = { blockPaver, asphalt, bicycle: bicycleLane, existing: paving };
-  const walkwayPixels = walkways.map((w) => ({ ...w, ringPixels: w.rings.map((ring) => ring.map(toPixel)), linePixels: w.lines.map((line) => line.map(toPixel)) }));
-  const edgeStonePx = metres(EDGE_STONE_M) * PX;
-  const white = () => [255, 255, 255];
-  // Every walkway outline stroked `width` pixels wide, and the walkway areas with their edge stones.
-  const strokeOutlines = (width) => (r) => { for (const w of walkwayPixels) for (const line of w.linePixels) r.strokePolyline(line, width, white); };
-  const walkwayArea = (r) => {
-    for (const w of walkwayPixels) if (w.ringPixels.length) r.fillPolygon(w.ringPixels, white);
-    strokeOutlines(edgeStonePx)(r);
-  };
-  // Paved areas, then the edge stones on their outlines; bicycle lanes last so the red lane stays continuous where it
-  // runs beside a paver walk. `clip(x, y)` limits a repaint to some pixels (others keep their colour).
-  // A clipped repaint leaves the surface classes alone (most of its pixels keep their colour).
-  const WALKWAY_CLASS = { blockPaver: PAVING, asphalt: ASPHALT, bicycle: PAINTED, existing: PAVING };
-  const paintWalkways = (clip = null) => {
-    const keep = (shade) => (x, y) => {
-      if (!clip || clip(x, y)) return shade(x, y);
-      const i = (y * ground.width + x) * 3;
-      return [ground.data[i], ground.data[i + 1], ground.data[i + 2]];
-    };
-    for (const w of [...walkwayPixels].sort((a, b) => (a.surface === "bicycle") - (b.surface === "bicycle"))) {
-      if (!w.ringPixels.length) continue;
-      ground.label = clip ? null : WALKWAY_CLASS[w.surface];
-      ground.fillPolygon(w.ringPixels, keep(WALKWAY_SHADERS[w.surface]));
-    }
-    ground.label = clip ? null : PAVING;
-    for (const w of walkwayPixels) for (const line of w.linePixels) ground.strokePolyline(line, edgeStonePx, keep(() => [164, 160, 150]));
-    ground.label = null;
-  };
-  const groundFeatures = await paintGroundFeatures(ground, toPixel);
-  const paintWalkwaysAndLawnEdges = () => {
-    paintWalkways();
-    // Lawn edge: darken grass within LAWN_EDGE_M outside each walkway's edge stones (once per pixel).
-    const area = maskOf(ground.width, ground.height, walkwayArea);
-    const band = maskOf(ground.width, ground.height, strokeOutlines(edgeStonePx + 2 * metres(LAWN_EDGE_M) * PX));
-    const d = ground.data;
-    for (let p = 0; p < band.length; p += 1) {
-      if (!band[p] || area[p]) continue;
-      const i = p * 3;
-      if (d[i + 1] > d[i] + 8 && d[i + 1] > d[i + 2] + 8) for (let ch = 0; ch < 3; ch += 1) d[i + ch] *= 0.8;
-    }
-  };
-  // Road zones go over plazas, walkways over road zones (the A003 outlines are surveyed, the road zones coarse),
-  // and facility surfaces and building curbs over both.
-  groundFeatures.surfaces(() => {
-    ground.label = ASPHALT;
-    for (const polygon of roadZones) ground.fillPolygon(polygon.map((ring) => ring.map(toPixel)), asphalt);
-    ground.label = null;
-    paintWalkwaysAndLawnEdges();
-  });
-  {
-    // Kerb (0.15 m step, ASSUMED): the edge stones above, and the step's shadow as a GUTTER_M darker band on the
-    // asphalt just outside every walkway outline.
-    const area = maskOf(ground.width, ground.height, walkwayArea);
-    const gutter = maskOf(ground.width, ground.height, strokeOutlines(edgeStonePx + 2 * metres(GUTTER_M) * PX));
-    const d = ground.data;
-    for (let p = 0; p < gutter.length; p += 1) {
-      if (gutter[p] && !area[p] && ground.labels[p] === ASPHALT) for (let ch = 0; ch < 3; ch += 1) d[p * 3 + ch] *= 0.72;
-    }
-  }
-  groundFeatures.overRoads();
-  ground.label = LOT;
-  for (const lot of offCampusLots) {
-    ground.fillPolygon([lot.map(toPixel)], (x, y) => {
-      const k = 0.94 + hashNoise(x, y, 6) * 0.08;
-      return [150 * k, 148 * k, 141 * k];
-    });
-  }
-  ground.label = null;
-  {
-    // Off-campus lots cover the street-side walkways; repaint those inside the lots only.
-    const lots = maskOf(ground.width, ground.height, (r) => {
-      for (const lot of offCampusLots) r.fillPolygon([lot.map(toPixel)], () => [255, 255, 255]);
-    });
-    paintWalkways((x, y) => lots[y * ground.width + x] === 1);
-  }
-  ground.label = ASPHALT;
-  const arterial = paintArterials({
-    ground,
-    toPixel,
-    lines: groundFeatures.lines,
-    block: maskOf(ground.width, ground.height, (r) => {
-      walkwayArea(r);
-      for (const lot of offCampusLots) r.fillPolygon([lot.map(toPixel)], white);
-      for (const building of [...selectableBuildings, ...campusBuildings]) {
-        for (const part of building.parts) r.fillPolygon([part.outer.map(toPixel)], white);
-      }
-    }),
-    roadZoneMask: maskOf(ground.width, ground.height, (r) => {
-      for (const polygon of roadZones) r.fillPolygon(polygon.map((ring) => ring.map(toPixel)), white);
-    }),
-    asphalt,
-  });
-  ground.label = PAVING;
-  console.log(`arterial: ${arterial.strips} traced strips (${arterial.quads} quads), asphalt only (markings: stages/markings.mjs)`);
-  for (const building of [...selectableBuildings, ...campusBuildings]) {
-    for (const part of building.parts) {
-      ground.strokePolyline([...part.outer, part.outer[0]].map(toPixel), metres(2.2) * PX, () => [182, 178, 170]);
-    }
-  }
-  ground.label = null;
-  const photo = composeOrthoGround({
-    ground,
-    classes: ground.labels,
-    ortho: inputs.ortho,
-    calibration: inputs.orthoCalibration,
-    toPixel,
-    pixelCentre: pixelToModel,
-    metresPerPixel: M_PER_PX,
-    unitsPerPixel: 1 / PX,
+// Returns the Topography surface the decals and markings are laid on, the class polygons (layers) and the
+// surface-class raster (groundInfo) the lamp rule reads.
+export async function buildGround({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots }) {
+  const { heightAt, landcoverAt } = inputs;
+  const surfaces = buildSurfaces({
+    inputs,
+    walkways: await loadWalkways(),
+    groundFeatures: await loadGroundFeatures(),
+    offCampusLots,
     buildings: [...selectableBuildings, ...campusBuildings],
-    crowns: Object.values(treeInstances).flat(),
-    paint,
-    paintMargin,
-    structures,
-    objectHoles,
+    crosswalks: inputs.crosswalks,
   });
-  console.log(
-    `ground: photo paint suppressed under ${paint.length} vector markings (${photo.paintPixels} px refilled, ${paintMargin} m margin); ` +
-    `furniture: ${structures.length} roof/footprint rings filled (${(photo.shares.structure * 100).toFixed(2)} %), ${objectHoles.length} pole head/shadow holes (${photo.objectPixels} px refilled); ` +
-    `relief lean of ${photo.lean.found} of ${photo.lean.searched} building parts found in the photo (median ${photo.lean.medianRate?.toFixed(3) ?? "-"} m per m), ` +
-    `largest: ${photo.lean.largest.join(", ")}`,
-  );
-  const share = (key) => `${(photo.shares[key] * 100).toFixed(1)} %`;
-  console.log(
-    `ground: VWorld z19 orthophoto ${photo.width}x${photo.height} at ${photo.metresPerPixel.toFixed(4)} m/px; procedural fill under buildings ${share("building")}, ` +
-    `open-ground tree crowns ${share("crown")}, street trees over paving ${share("street")}; photo canopy kept in groves ${share("grove")}; ` +
-    `relit shadows ${share("shadow")}; ` +
-    `white balance ${inputs.orthoCalibration.gains.map((g) => g.toFixed(3)).join("/")} from ${inputs.orthoCalibration.samples} neutral pixels, ` +
-    `albedo lift 1/${inputs.orthoCalibration.gamma} (estimated)`,
-  );
+  const width = Math.round(WIDTH * PX);
+  const height = Math.round(DEPTH * PX);
+  const labels = surfaces.labelRaster(width, height, ([E, N]) => {
+    const [x, z] = tmToScene(E, N);
+    return [(x - EXTENT.minX) * PX, (z - EXTENT.minZ) * PX];
+  });
+  console.log(`ground: ${surfaces.layers.length} class polygons, arterial ${surfaces.arterial.strips} traced strips (${surfaces.arterial.quads} quads); label raster ${width}x${height}`);
+
   // Ground AO first: the natural Ground material and the Ground_* decals (stages/surfaces.mjs) share it.
   let aoTexture = null;
   if (existsSync(AO_GROUND)) {
@@ -624,13 +132,11 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
     ...glb.json.asset.extras,
     aoGroundLayout: AO_GROUND_LAYOUT,
     aoGroundSize: AO_GROUND_SIZE,
-    orthophoto: {
-      source: inputs.ortho.meta.source,
-      attribution: inputs.ortho.meta.attribution,
-      licence: inputs.ortho.meta.licence,
-      tiles: `z${inputs.ortho.meta.zoom} x ${inputs.ortho.meta.x0}-${inputs.ortho.meta.x1}, y ${inputs.ortho.meta.y0}-${inputs.ortho.meta.y1}, fetched ${inputs.ortho.meta.tilesFetched}`,
-      groundMetresPerPixel: Number(M_PER_PX.toFixed(4)),
-      note: "ground albedo, roof colours and solar panels are estimates derived from imagery, not measurements",
+    ground: {
+      method: "modelled surfaces (plan uhf-ground-roads-routing)",
+      photoPixelsBaked: false,
+      materials: "data/materials/ground-materials.json",
+      note: "ground albedo, kerb heights and material values are estimates, not measurements",
     },
   };
 
@@ -676,20 +182,11 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
     }
   }
   glb.addNode({ name: "Topography", children: topographyChildren }, { root: true });
-  // Class polygons for the Ground_* decal meshes (stages/surfaces.mjs buildSurfaceMeshes).
-  const surfaces = buildSurfaces({
-    inputs,
-    walkways: await loadSurfaceWalkways(),
-    groundFeatures: await loadGroundFeatures(),
-    offCampusLots,
-    buildings: [...selectableBuildings, ...campusBuildings],
-    crosswalks: inputs.crosswalks,
-  });
   return {
     surfaces,
     layers: surfaces.layers,
     aoTexture,
     surface: topographySurface(heightAt),
-    groundInfo: { width: ground.width, height: ground.height, px: PX, labels: ground.labels, classes: SURFACE_CLASS },
+    groundInfo: { width, height, px: PX, labels, classes: SURFACE_CLASS },
   };
 }

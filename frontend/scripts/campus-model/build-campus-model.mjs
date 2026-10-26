@@ -3,7 +3,8 @@
 //   - public/uni.glb               terrain heights, the original BLD_* ids and their footprints
 //   - data/gis-buildings.json      building footprints, floor counts and heights (fetch-sources.mjs)
 //   - data/landcover.png           MCEE land-cover classes and CHMv2 canopy (fetch-sources.mjs)
-//   - data/ortho/                  VWorld z19 orthophoto mosaic for the ground and roof colours (fetch/ortho.mjs)
+//   - data/ortho/                  VWorld z19 orthophoto mosaic: roof colours and the markings paint gate only (fetch/ortho.mjs)
+//   - data/materials/ground-*.webp CC0 ground material tiles (fetch/groundMaterials.mjs, ground-materials.json)
 //   - data/cop30.png               Copernicus GLO-30 heights for the outer terrain ring (fetch/terrain.mjs)
 //   - docs/assets/data/*.geojson   road zones, walkways and crosswalks
 //   - data/photo/markings.geojson  road markings traced from the NGII 2025 orthophoto
@@ -14,14 +15,14 @@
 // This file only sequences the stages (scripts/campus-model/stages/):
 //   sources.mjs   loads the inputs and builds the terrain heightfield
 //   buildings.mjs selects BLD_*/CampusBuildings, their materials, meshes and nodes
-//   markings.mjs  road markings from the photo detection (loadMarkings, before the ground, which suppresses the photo's
-//                 own paint under them) and their decal mesh on the Topography triangles (buildMarkings)
-//   ground.mjs    paints the ground texture (orthophoto over the procedural layer) and the Topography chunks
+//   markings.mjs  road markings from the photo detection (loadMarkings) and their decal mesh on the Topography
+//                 triangles (buildMarkings)
+//   ground.mjs    the Topography chunks (natural ground) and the class polygons of the modelled ground (network/surfaces.mjs)
+//   surfaces.mjs  the Ground_* decal meshes (asphalt, pavers, lots, aprons, painted surfaces) with CC0 tiles; no photo pixels
 //   outerTerrain.mjs  the OuterTerrain hill ring around EXTENT, feathered onto Topography's edge
-//   trees.mjs     placement masks and positions (placeTrees, before the ground, which keeps the photo's crowns
-//                 out from under them), species geometry and instanced Trees_* nodes (buildTrees)
-//   furniture.mjs the surveyed outdoor objects (loadFurniture, before the trees and the ground: footprints trees keep
-//                 out of, photo areas the ground suppresses) and the merged Furniture / Furniture_Glass nodes
+//   trees.mjs     placement masks and positions (placeTrees), species geometry and instanced Trees_* nodes (buildTrees)
+//   furniture.mjs the surveyed outdoor objects (loadFurniture, before the trees: footprints trees keep out of) and the
+//                 merged Furniture / Furniture_Glass nodes
 //                 (buildFurniture, after the ground, on the drawn terrain)
 //   lights.mjs    lamp positions (placeLamps: surveyed lamps plus estimated ones along the walkway outlines), the
 //                 merged Lamps_heads and the instanced Lamps_pools
@@ -40,7 +41,7 @@ import { buildBuildings } from "./stages/buildings.mjs";
 import { buildGround } from "./stages/ground.mjs";
 import { buildFurniture, loadFurniture } from "./stages/furniture.mjs";
 import { buildLights, placeLamps } from "./stages/lights.mjs";
-import { SUPPRESS_MARGIN_M, buildMarkings, describeMarkings, loadMarkings } from "./stages/markings.mjs";
+import { buildMarkings, describeMarkings, loadMarkings } from "./stages/markings.mjs";
 import { buildOuterTerrain } from "./stages/outerTerrain.mjs";
 import { loadInputs } from "./stages/sources.mjs";
 import { buildSurfaceMeshes, describeSurfaces } from "./stages/surfaces.mjs";
@@ -61,11 +62,7 @@ const { selectableBuildings, campusBuildings, offCampusLots } = await buildBuild
 const treePlacement = placeTrees({ inputs, selectableBuildings, campusBuildings, offCampusLots, blockedRings: furniture.treeBlock });
 const markings = await loadMarkings({ inputs, buildings: [...selectableBuildings, ...campusBuildings] });
 console.log(describeMarkings(markings));
-const { surface, groundInfo, layers, aoTexture } = await buildGround({
-  glb, inputs, selectableBuildings, campusBuildings, offCampusLots,
-  paint: markings.paint, paintMargin: SUPPRESS_MARGIN_M, treeInstances: treePlacement.treeInstances,
-  structures: furniture.photoMask.structures, objectHoles: furniture.photoMask.holes,
-});
+const { surface, groundInfo, layers, aoTexture } = await buildGround({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots });
 console.log(describeSurfaces(await buildSurfaceMeshes({ glb, layers, surface, ao: aoTexture })));
 const markingMesh = buildMarkings({ glb, markings, surface });
 const outerTerrain = await buildOuterTerrain({ glb, inputs });

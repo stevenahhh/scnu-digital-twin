@@ -6,8 +6,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { EXTENT, geoToModel, metres } from "../lib/frame.mjs";
 import { cleanRing, pointInRing, ringArea } from "../lib/geometry.mjs";
-import { loadOrtho } from "../lib/ortho.mjs";
-import { photoCalibration } from "../lib/orthoGround.mjs";
+import { loadOrtho, photoCalibration } from "../lib/ortho.mjs";
 import { decodePng } from "../lib/png.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
