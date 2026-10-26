@@ -4483,16 +4483,21 @@
       "station": true,
       "yaw_deg": true
     },
-    "yaw_refined_deg": 12.6,
-    "refined_residual_deg": 3,
+    "yaw_refined_deg": 3.5,
+    "refined_residual_deg": 0.5,
     "refined_buildings": [
       "BLD_SCNU_C3",
       "BLD_D3"
     ],
-    "refined_by": "compare-vr todo 2",
-    "refined_confidence": 0.9,
+    "refined_by": "manual control-point resection (scripts/perf/vr_control_points.py d-face model), hand-read points",
+    "refined_confidence": 0.8,
     "reverted_note": "PR #74 control-point pose reverted 2026-10-27 after the compare-vr strip check: yaw 180 deg off: the red-brick block with the teal entrance rendered in the b face instead of f (markings lane: disabled bay MX00231 projected onto the zebra); the guided matches fitted a self-consistent wrong pose on repeated texture",
-    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR",
+    "station_refined_x": 212.13,
+    "station_refined_z": -282.02,
+    "height_refined_m": 16.76,
+    "refined_residual_m": 0.46,
+    "refined_note": "6 hand-read control points on the d face and the NGII 2025 sheet (crossing end bars, the four corners of the disabled bay MX00231; scripts/perf/vr-control-points.json): residuals 0.15-0.46 m; height from the fit (estimated). Replaces the pre-#74 compare-vr yaw 12.6 (9 deg off) restored by the revert, and the #74 siftD solution (yaw 188.56), which was 180 deg off. Check: the nadir face warped with this pose continues the road edges, the yellow dashed line and both crossings onto the sheet."
   },
   {
     "scene": "scene_c5",
