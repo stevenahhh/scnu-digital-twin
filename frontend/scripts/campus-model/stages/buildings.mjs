@@ -1217,7 +1217,8 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
   const corrections = [];
   const footprintParts = footprints.flatMap((b, index) => (b.status === "demolished" ? [] : b.polygons.map((polygon) => {
     const [outer, ...holes] = polygon.map(toModelRing);
-    const entry = recordEntry(catalogue, b.label ?? b.name);
+    // A data/vr-buildings.json record's label drops the registry code (학군단), so its entry is also looked up by name.
+    const entry = recordEntry(catalogue, b.label ?? b.name) ?? (b.estimated === true ? recordEntry(catalogue, b.name) : null);
     const part = {
       index,
       name: b.name,

@@ -5,5 +5,41 @@
     "NGII 2025 orthophoto sheet 34702020 (footprints traced by eye, 0.25 m GSD)",
     "SCNU campus registry list.do codes"
   ],
-  "buildings": []
+  "buildings": [
+    {
+      "code": "D5",
+      "name": "순천대학교 D5 학군단",
+      "label": "학군단",
+      "nodeId": "BLD_SCNU_D5",
+      "status": "standing",
+      "floors": 4,
+      "floorsSource": "VR scene_d5 storey count (estimated)",
+      "heightMetres": 0,
+      "undergroundFloors": 0,
+      "usability": "교육연구시설 (추정)",
+      "polygons": [
+        [
+          [
+            [127.47718791, 34.97069914],
+            [127.47732287, 34.97067036],
+            [127.47724804, 34.97043468],
+            [127.47711999, 34.97047028],
+            [127.47713854, 34.9705329],
+            [127.47710189, 34.97054039],
+            [127.47712955, 34.97063432],
+            [127.47716621, 34.97062684],
+            [127.47718791, 34.97069914]
+          ]
+        ]
+      ],
+      "footprintSource": "NGII 2025 orthophoto trace (estimated) + VR scene_d5",
+      "nameSource": "SCNU registry D5 학군단 (campus list.do point 243578.6, 263932.9 EPSG:5186, 2.3 m from the traced centroid); VR scene_d5 sign D5 학군단 / 159 ROTC. A different building from the demolished 학군단 (B9) lot at (244098, 263974), GIS record 768588, which stays skipped",
+      "estimated": true,
+      "confidence": 0.6,
+      "vrScenes": [
+        "scene_d5"
+      ],
+      "registerName": null
+    }
+  ]
 }

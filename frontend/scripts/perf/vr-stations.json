@@ -5311,9 +5311,16 @@
       "station": true,
       "yaw_deg": true
     },
-    "refined": false,
-    "refined_by": "compare-vr todo 2",
-    "refined_note": "D5 학군단 (title) has no footprint (todo 9); station outside the campus terrain, no building to measure"
+    "refined_by": "compare-vr todo 9",
+    "refined_note": "station and yaw resected from the two east-facade corners of the traced D5 (VR f +44 and -13.6 deg) with the camera about 9 m from the north-east corner; the scene is not the placeholder position",
+    "yaw_refined_deg": 224.7,
+    "station_refined_x": 101.84,
+    "station_refined_z": -309.02,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "BLD_SCNU_D5"
+    ],
+    "refined_confidence": 0.6
   },
   {
     "scene": "scene_e1",

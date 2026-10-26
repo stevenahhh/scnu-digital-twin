@@ -43,6 +43,7 @@
   { "id": "F1", "class": "silver metal, blue glass", "pattern": "ribbon", "texture": "metal", "wall": "#c3c9cd", "glass": "#3d6fa8", "frame": "#d6dbdf", "windowHeight": 0.25, "sill": 0.6, "mullions": 2, "ground": "glazed", "entrance": { "canopy": "#c3c9cd", "sign": "#2f5d8c" }, "parapet": "#c3c9cd", "sources": "VR scene_f1 (corrugated silver cladding, blue glass bands); LOD4 SC030061" },
   { "id": "F2", "class": "cream render", "pattern": "punched", "texture": "render", "wall": "#e9ddb5", "glass": "#5d7c8a", "frame": "#efe9d6", "windows": 2, "windowWidth": 0.62, "windowHeight": 0.42, "parapet": "#e9ddb5", "sources": "VR scene_f2 (cream render block with external stair)" },
   { "id": "F4", "class": "beige render housing", "pattern": "punched", "texture": "render", "wall": "#e6e3da", "glass": "#6f8790", "windows": 2, "windowWidth": 0.6, "windowHeight": 0.42, "band": { "colour": "#cfcac0", "height": 0.08 }, "parapet": "#e6e3da", "sources": "LOD4 SCI24076 facade palette (light render)" },
+  { "id": "D5", "class": "pink and yellow panel stripes on pilotis", "pattern": "punched", "texture": "panel", "wall": "#dc7a76", "trim": "#e3c463", "glass": "#4c9fae", "frame": "#dcbb5e", "windows": 1, "windowWidth": 0.42, "windowHeight": 0.5, "sill": 0.3, "piers": { "every": 1, "width": 0.45, "colour": "#e2c25f" }, "ground": "glazed", "plinth": "#c9c9c4", "entrance": { "canopy": "#e8e8e3", "sign": "#2b62b8" }, "parapet": "#dc7a76", "sources": "VR scene_d5 (pink and yellow vertical panel stripes, teal windows in yellow frames, white panel middle bay with the 159 ROTC sign, glazed entrance under pilotis, blue D5 학군단 lettering)" },
   { "id": "greenhouse", "class": "greenhouse", "pattern": "greenhouse", "texture": "glass", "wall": "#dfe7e4", "glass": "#c4dcd6", "frame": "#f2f4f2", "plinth": "#a9aca8", "bay": 3.0, "parapet": "#e6ecea", "sources": "VR scene_b4, scene_c2 (white-framed glass greenhouses)" },
   { "id": "annex", "class": "concrete annex", "pattern": "punched", "texture": "concrete", "wall": "#d9d8d2", "windowsEvery": 2, "windowWidth": 0.4, "windowHeight": 0.32, "sill": 0.45, "parapet": "#cfcec8", "sources": "generic look for small plant and service annexes" },
   { "id": "generic-scnu", "class": "white render", "pattern": "punched", "texture": "render", "wall": "#e7e7e2", "windowWidth": 0.5, "parapet": "#dcdcd6", "sources": "generic look for SCNU buildings without a curated look" },
@@ -95,6 +96,7 @@
   { "code": "E8", "look": "E8", "floors": 7, "heightMetres": 23.8, "floorsSource": "VWorld LT_C_BLDGINFO 16동 인문예술대학 grnd_flr 7", "heightSource": "register height of 16동 인문예술대학 (VWorld LT_C_BLDGINFO; LOD4 roof 23-26 m)" },
   { "code": "F1", "look": "F1" },
   { "code": "F2", "look": "F2" },
-  { "code": "F4", "look": "F4" }
+  { "code": "F4", "look": "F4" },
+  { "code": "D5", "look": "D5" }
  ]
 }
