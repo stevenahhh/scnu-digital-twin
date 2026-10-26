@@ -550,7 +550,7 @@ export async function loadMarkings({ inputs, buildings }) {
   const pieces = [];
   const log = {
     corrections: applied, kinds: {}, files: {}, estimated: {},
-    dropped: { other, building: 0, sidewalk: 0, offRoad: 0, vegetation: 0, shadow: 0 },
+    dropped: { other, building: 0, sidewalk: 0, offRoad: 0, vegetation: 0, shadow: 0, islandKerb: 0 },
   };
   const count = (table, kind) => { table[kind] = (table[kind] ?? 0) + 1; };
   const step = metres(SUPPORT_STEP_M);
@@ -564,6 +564,12 @@ export async function loadMarkings({ inputs, buildings }) {
     const verdict = gate.review?.[c.id]?.verdict;
     c.review = verdict === "not paint" ? gate.review[c.id].reason : null;
     c.byEye = verdict === "paint";
+    // the yellow kerb of a raised island (data/photo/markings-extra.geojson kind island_kerb) is a structure, not
+    // carriageway paint: logged, never drawn
+    if (p.kind === "island_kerb") {
+      c.dropped = "islandKerb";
+      continue;
+    }
     if (p.kind !== "zebra_bar" && !c.byEye) {
       const { type, coordinates } = c.feature.geometry;
       const first = c.shapes[0];
@@ -935,7 +941,8 @@ export function describeMarkings({ log, crossings, zebras, warnings = [] }) {
     `  per kind: ${Object.entries(log.kinds).sort(([a], [b]) => a.localeCompare(b)).map(([kind, t]) => row(kind, t)).join("; ")}`,
     `  per file: ${Object.entries(log.files).map(([file, t]) => row(file, t)).join("; ")}`,
     `  left out by context: ${log.dropped.other} 'other', ${log.dropped.building} inside buildings, ${log.dropped.sidewalk} on A003 sidewalks, ` +
-      `${log.dropped.offRoad} lines off the road, ${log.dropped.vegetation} in vegetation, ${log.dropped.shadow} casting a shadow (raised objects); ` +
+      `${log.dropped.offRoad} lines off the road, ${log.dropped.vegetation} in vegetation, ${log.dropped.shadow} casting a shadow (raised objects), ` +
+      `${log.dropped.islandKerb} island_kerb (yellow kerbs of raised islands, not drawn); ` +
       `${zebras.length} drawn zebras; estimated crossing bars: ${estimated}`,
     `  zebra period ${ZEBRA_PERIOD_M} m (measured), bar ${ZEBRA_BAR_M.toFixed(2)} m (assumed); statute widths ${Object.entries(LINE_WIDTH_M_BY_KIND).map(([k, w]) => `${k} ${w}`).join(", ")} m (estimated); ` +
       `stop lines ${STOP_LINE_M.join("-")} m; crossing width warnings: ${warnings.length}`,
@@ -957,7 +964,8 @@ function describeRegular(r) {
     `${r.parallelSnapped} set parallel, ${r.duplicateLines} duplicate lines dropped; straight runs deviate at most ` +
     `${(Math.max(0, ...r.straightness) * 100).toFixed(1)} cm from straight; detected points within ${p95.toFixed(2)} m (p95 of the per-line p95) of the fitted path); ` +
     `dashed lines by statute ${dashes.statute ?? 0}, by the photo's period ${dashes.photo ?? 0}, as detected ${dashes["detected dashes"] ?? 0}; ` +
-    `${r.crossingGroups} bar groups -> ${r.crossings} crossings, ${r.barsDetected} detected bars -> ${r.barsDrawn} equal bars; ` +
+    `${r.crossingGroups} bar groups -> ${r.crossings} crossings (${r.crossingRowsAligned} rows on a shared bar grid), ${r.barsDetected} detected bars -> ${r.barsDrawn} equal bars, ` +
+    `${r.stopInCrossing.length} stop lines inside a crossing left out (${r.stopInCrossing.join(", ") || "none"}); ` +
     `${r.stopSquared} stop lines squared to their lane; ${r.rectangles} rectangles, ${r.outlines} snapped outlines; templates: ${glyphs}; ` +
     `left out: ${r.dropped.blocked} on buildings or sidewalks, ${r.dropped.textTooSmall} text blobs too small for a character`;
 }
