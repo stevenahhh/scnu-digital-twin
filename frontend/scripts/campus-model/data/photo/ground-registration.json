@@ -1,0 +1,442 @@
+{
+ "note": "Photo registration of MCEE facility outlines (osm-ground.json facilities stay as fetched; lib/groundRegistration.mjs applies these in network/surfaces.mjs loadGroundFeatures). move: original vertex indices of ring 0, dE/dN metres (EPSG:5186). Measured on the NGII 2025 sheet (34702020) as the median position of the strongest red-minus-green step within +-1.5 m of each segment (the red track against the green apron; luminance cannot see that boundary), MAD <= 0.10 m; vertices between measured segments interpolated. Estimated (추정).",
+ "corrections": [
+  {
+   "id": "GR_F22_41",
+   "target": "facility",
+   "index": 22,
+   "l3Code": "141",
+   "check": [
+    127.4828739,
+    34.96828
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    41
+   ],
+   "dE": 0.31,
+   "dN": -0.05,
+   "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.31 m inside the MCEE outline here",
+   "estimated": true
+  },
+  {
+   "id": "GR_F22_42",
+   "target": "facility",
+   "index": 22,
+   "l3Code": "141",
+   "check": [
+    127.4828739,
+    34.96828
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    42
+   ],
+   "dE": 0.42,
+   "dN": -0.08,
+   "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.43 m inside the MCEE outline here",
+   "estimated": true
+  },
+  {
+   "id": "GR_F22_43",
+   "target": "facility",
+   "index": 22,
+   "l3Code": "141",
+   "check": [
+    127.4828739,
+    34.96828
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    43
+   ],
+   "dE": 0.53,
+   "dN": -0.12,
+   "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.54 m inside the MCEE outline here",
+   "estimated": true
+  },
+  {
+   "id": "GR_F22_44",
+   "target": "facility",
+   "index": 22,
+   "l3Code": "141",
+   "check": [
+    127.4828739,
+    34.96828
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    44
+   ],
+   "dE": 0.58,
+   "dN": -0.15,
+   "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.60 m inside the MCEE outline here",
+   "estimated": true
+  },
+  {
+   "id": "GR_F22_45",
+   "target": "facility",
+   "index": 22,
+   "l3Code": "141",
+   "check": [
+    127.4828739,
+    34.96828
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    45
+   ],
+   "dE": 0.58,
+   "dN": -0.15,
+   "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.60 m inside the MCEE outline here",
+   "estimated": true
+  },
+  {
+   "id": "GR_F22_46",
+   "target": "facility",
+   "index": 22,
+   "l3Code": "141",
+   "check": [
+    127.4828739,
+    34.96828
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    46
+   ],
+   "dE": 0.58,
+   "dN": -0.15,
+   "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.60 m inside the MCEE outline here",
+   "estimated": true
+  },
+  {
+   "id": "GR_F22_47",
+   "target": "facility",
+   "index": 22,
+   "l3Code": "141",
+   "check": [
+    127.4828739,
+    34.96828
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    47
+   ],
+   "dE": 0.57,
+   "dN": -0.16,
+   "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.59 m inside the MCEE outline here",
+   "estimated": true
+  },
+  {
+   "id": "GR_F22_48",
+   "target": "facility",
+   "index": 22,
+   "l3Code": "141",
+   "check": [
+    127.4828739,
+    34.96828
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    48
+   ],
+   "dE": 0.55,
+   "dN": -0.18,
+   "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.58 m inside the MCEE outline here",
+   "estimated": true
+  },
+  {
+   "id": "GR_F22_49",
+   "target": "facility",
+   "index": 22,
+   "l3Code": "141",
+   "check": [
+    127.4828739,
+    34.96828
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    49
+   ],
+   "dE": 0.52,
+   "dN": -0.21,
+   "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.56 m inside the MCEE outline here",
+   "estimated": true
+  },
+  {
+   "id": "GR_F22_50",
+   "target": "facility",
+   "index": 22,
+   "l3Code": "141",
+   "check": [
+    127.4828739,
+    34.96828
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    50
+   ],
+   "dE": 0.5,
+   "dN": -0.23,
+   "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.55 m inside the MCEE outline here",
+   "estimated": true
+  },
+  {
+   "id": "GR_F22_51",
+   "target": "facility",
+   "index": 22,
+   "l3Code": "141",
+   "check": [
+    127.4828739,
+    34.96828
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    51
+   ],
+   "dE": 0.52,
+   "dN": -0.34,
+   "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.62 m inside the MCEE outline here",
+   "estimated": true
+  },
+  {
+   "id": "GR_F22_52",
+   "target": "facility",
+   "index": 22,
+   "l3Code": "141",
+   "check": [
+    127.4828739,
+    34.96828
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    52
+   ],
+   "dE": 0.53,
+   "dN": -0.45,
+   "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.70 m inside the MCEE outline here",
+   "estimated": true
+  },
+  {
+   "id": "GR_F22_53",
+   "target": "facility",
+   "index": 22,
+   "l3Code": "141",
+   "check": [
+    127.4828739,
+    34.96828
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    53
+   ],
+   "dE": 0.48,
+   "dN": -0.46,
+   "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.66 m inside the MCEE outline here",
+   "estimated": true
+  },
+  {
+   "id": "GR_F22_54",
+   "target": "facility",
+   "index": 22,
+   "l3Code": "141",
+   "check": [
+    127.4828739,
+    34.96828
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    54
+   ],
+   "dE": 0.39,
+   "dN": -0.44,
+   "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.59 m inside the MCEE outline here",
+   "estimated": true
+  },
+  {
+   "id": "GR_F22_55",
+   "target": "facility",
+   "index": 22,
+   "l3Code": "141",
+   "check": [
+    127.4828739,
+    34.96828
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    55
+   ],
+   "dE": 0.31,
+   "dN": -0.42,
+   "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.52 m inside the MCEE outline here",
+   "estimated": true
+  },
+  {
+   "id": "GR_F22_56",
+   "target": "facility",
+   "index": 22,
+   "l3Code": "141",
+   "check": [
+    127.4828739,
+    34.96828
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    56
+   ],
+   "dE": 0.29,
+   "dN": -0.47,
+   "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.55 m inside the MCEE outline here",
+   "estimated": true
+  },
+  {
+   "id": "GR_F22_57",
+   "target": "facility",
+   "index": 22,
+   "l3Code": "141",
+   "check": [
+    127.4828739,
+    34.96828
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    57
+   ],
+   "dE": 0.22,
+   "dN": -0.45,
+   "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.50 m inside the MCEE outline here",
+   "estimated": true
+  },
+  {
+   "id": "GR_F22_58",
+   "target": "facility",
+   "index": 22,
+   "l3Code": "141",
+   "check": [
+    127.4828739,
+    34.96828
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    58
+   ],
+   "dE": 0.14,
+   "dN": -0.38,
+   "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.40 m inside the MCEE outline here",
+   "estimated": true
+  },
+  {
+   "id": "GR_F22_59",
+   "target": "facility",
+   "index": 22,
+   "l3Code": "141",
+   "check": [
+    127.4828739,
+    34.96828
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    59
+   ],
+   "dE": 0.11,
+   "dN": -0.36,
+   "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.38 m inside the MCEE outline here",
+   "estimated": true
+  },
+  {
+   "id": "GR_F22_60",
+   "target": "facility",
+   "index": 22,
+   "l3Code": "141",
+   "check": [
+    127.4828739,
+    34.96828
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    60
+   ],
+   "dE": 0.08,
+   "dN": -0.32,
+   "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.33 m inside the MCEE outline here",
+   "estimated": true
+  },
+  {
+   "id": "GR_F22_61",
+   "target": "facility",
+   "index": 22,
+   "l3Code": "141",
+   "check": [
+    127.4828739,
+    34.96828
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    61
+   ],
+   "dE": 0.05,
+   "dN": -0.28,
+   "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.28 m inside the MCEE outline here",
+   "estimated": true
+  },
+  {
+   "id": "GR_F22_67",
+   "target": "facility",
+   "index": 22,
+   "l3Code": "141",
+   "check": [
+    127.4828739,
+    34.96828
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    67
+   ],
+   "dE": -0.17,
+   "dN": -0.21,
+   "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.27 m inside the MCEE outline here",
+   "estimated": true
+  },
+  {
+   "id": "GR_F22_68",
+   "target": "facility",
+   "index": 22,
+   "l3Code": "141",
+   "check": [
+    127.4828739,
+    34.96828
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    68
+   ],
+   "dE": -0.24,
+   "dN": -0.21,
+   "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.32 m inside the MCEE outline here",
+   "estimated": true
+  }
+ ]
+}

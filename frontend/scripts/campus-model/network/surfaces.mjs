@@ -36,6 +36,7 @@ import { encodePng } from "../lib/png.mjs";
 import { Raster } from "../lib/raster.mjs";
 import { SURFACE_CLASS } from "../lib/surfaceClass.mjs";
 import { readA003 } from "../lib/a003.mjs";
+import { readGroundRegistration, registerFacilities } from "../lib/groundRegistration.mjs";
 import { pavingPattern } from "../lib/pavingPatterns.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -82,7 +83,7 @@ export async function loadGroundFeatures() {
   const data = JSON.parse(await Bun.file(GROUND_FEATURES).text());
   const toModel = (ring) => ring.map(([lon, lat]) => geoToModel(lon, lat));
   const osm = data.osm.features.map((f) => ({ ...f, rings: f.rings.map(toModel) }));
-  const facilities = data.facilities.features.map((f, index) => ({ index, rings: f.rings.map(toModel) }));
+  const facilities = registerFacilities(data.facilities.features, readGroundRegistration()).map((f, index) => ({ index, rings: f.rings.map(toModel) }));
   const supplements = data.supplements.features.map((f) => ({
     ...f,
     ...(f.at || f.centre ? { point: geoToModel(...(f.at ?? f.centre)) } : {}),
