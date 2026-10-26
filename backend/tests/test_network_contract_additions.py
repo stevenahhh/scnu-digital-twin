@@ -111,7 +111,7 @@ def test_car_keeps_to_the_right_half_of_a_two_lane_non_derived_road():
     graph = MobilityGraph(payload)
     assert graph.lateral_offset("car", "allowed_road", derived=False, width_m=8.0, lanes=2) == pytest.approx(-2.0)
     assert graph.lateral_offset("car", "allowed_road", derived=False, width_m=None, lanes=2) == pytest.approx(-1.5)
-    assert graph.lateral_offset("car", "allowed_road", derived=False, width_m=8.0, lanes=1) == 0.0
+    assert graph.lateral_offset("car", "allowed_road", derived=False, width_m=4.0, lanes=1) == 0.0
     east = graph.shortest_path("P_A", "P_B", "car")
     x, z, heading, _ = graph.interpolate(east, 50, "car")
     # Heading east (+x), the right-hand side is south (-z).

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import heapq
 import hashlib
+import logging
 import math
 from dataclasses import dataclass
 from pathlib import Path
@@ -14,6 +15,14 @@ except ImportError:
 
 
 Point = Tuple[float, float]
+LOGGER = logging.getLogger(__name__)
+
+# Estimated values, not survey data: a default lane centre-to-centre width and half a car's width.
+DEFAULT_LANE_WIDTH_M = 3.00
+HALF_CAR_WIDTH_M = 0.9
+CARRIAGEWAY_MIN_WIDTH_M = 5.5
+SCOOTER_KERB_BIAS_M = 0.5
+VERTEX_BLEND_M = 3.0
 
 
 @dataclass(frozen=True)
@@ -64,6 +73,7 @@ class MobilityGraph:
         self.metadata = dict(payload.get("metadata") or {})
         # route_cost_multipliers (mobility_policy.json): {agent: {kind | kind + "_estimated": factor}}
         self.cost_multipliers = dict(self.metadata.get("route_cost_multipliers") or {})
+        self._narrow_logged: set = set()
         self.derived_lateral_offsets = dict(self.metadata.get("derived_lateral_offsets_m") or {
             "person": {"shared_path": 2.8, "sidewalk": 2.8},
             "scooter": {"shared_path": 1.4, "sidewalk": 1.4, "bike_lane": 1.4, "scooter_lane": 1.4, "allowed_road": -1.0},
@@ -232,9 +242,30 @@ class MobilityGraph:
             return 0.0
         if derived:
             return float(self.derived_lateral_offsets.get(str(agent_type), {}).get(str(edge_kind), 0.0))
-        if agent_type == "car" and lanes >= 2:
-            return -(width_m or 6.0) / 4
+        if agent_type == "car" or (agent_type == "scooter" and edge_kind == "allowed_road"):
+            return self._lane_offset(agent_type, width_m, lanes)
         return 0.0
+
+    def _lane_offset(self, agent_type: str, width_m: float | None, lanes: int) -> float:
+        """Keep-right half-lane offset (negative), clamped so the agent stays inside the carriageway.
+
+        Lane width is width_m / lanes (estimated 3.00 m when width_m is absent); the magnitude is capped at
+        width_m / 2 - 0.9 (half a car width, estimated). A scooter adds 0.5 m toward the kerb under the same cap.
+        """
+        lanes = max(1, int(lanes))
+        if not (lanes >= 2 or (width_m is not None and width_m >= CARRIAGEWAY_MIN_WIDTH_M)):
+            return 0.0
+        lane_width = width_m / lanes if width_m else DEFAULT_LANE_WIDTH_M
+        carriageway = width_m if width_m else lane_width * lanes
+        limit = carriageway / 2 - HALF_CAR_WIDTH_M
+        if limit <= 0:
+            key = (carriageway, lanes)
+            if key not in self._narrow_logged:
+                self._narrow_logged.add(key)
+                LOGGER.warning("edge too narrow for lane offset: width_m=%.2f lanes=%d", carriageway, lanes)
+            return 0.0
+        magnitude = lane_width / 2 + (SCOOTER_KERB_BIAS_M if agent_type == "scooter" else 0.0)
+        return -min(magnitude, limit)
 
     @staticmethod
     def _segment_flags(path: GraphPath, segment: int) -> Tuple[bool, float | None, int]:
@@ -273,8 +304,26 @@ class MobilityGraph:
             )
             dx, dz = second[0] - first[0], second[1] - first[1]
             segment_length = max(math.hypot(dx, dz), 1e-9)
-            x += (-dz / segment_length) * smooth_offset
-            z += (dx / segment_length) * smooth_offset
+            vx, vz = (-dz / segment_length) * smooth_offset, (dx / segment_length) * smooth_offset
+            if not self._segment_flags(path, segment)[0]:
+                # Blend the offset normal with the neighbouring segment's over VERTEX_BLEND_M either side of a
+                # vertex (weight 0.5 at the vertex) so a corner does not make the position jump.
+                for neighbour, weight_distance in ((segment - 1, value - path.cumulative_lengths[segment]),
+                                                   (segment + 1, path.cumulative_lengths[segment + 1] - value)):
+                    if not 0 <= neighbour < len(path.segment_lengths) or neighbour >= len(path.edge_kinds):
+                        continue
+                    flags = self._segment_flags(path, neighbour)
+                    other = self.lateral_offset(agent_type, path.edge_kinds[neighbour], *flags)
+                    if flags[0] or other == 0.0:
+                        continue
+                    weight = 0.5 * max(0.0, 1.0 - weight_distance / VERTEX_BLEND_M)
+                    a, b = path.points[neighbour], path.points[neighbour + 1]
+                    ndx, ndz = b[0] - a[0], b[1] - a[1]
+                    nlen = max(math.hypot(ndx, ndz), 1e-9)
+                    vx += weight * ((-ndz / nlen) * other - vx)
+                    vz += weight * ((ndx / nlen) * other - vz)
+            x += vx
+            z += vz
         heading = (math.degrees(math.atan2(second[0] - first[0], second[1] - first[1])) + 360) % 360
         return x, z, heading, segment
 
