@@ -71,8 +71,8 @@ export const SPECIES_AUTUMN_PALETTES = {
   ],
   // ginkgo yellow, sRGB about #c8ac40..#bcaa4c
   Tree_Ginkgo: [{ species: "ginkgo", share: 1, colors: [[0.58, 0.42, 0.05], [0.5, 0.4, 0.07]], maxMix: [0.85, 1], weightScale: 3.5, maxPhase: 0.3 }],
-  // metasequoia orange-ochre, sRGB about #c08a3e..#c89c48
-  Tree_Metasequoia: [{ species: "metasequoia", share: 1, colors: [[0.53, 0.25, 0.048], [0.58, 0.33, 0.065]], maxMix: [0.75, 0.95], weightScale: 3, maxPhase: 0.3 }],
+  // metasequoia from yellow-green to orange-ochre crown by crown (VR scene_c1, scene_c2), sRGB about #a8a040..#c88c3c
+  Tree_Metasequoia: [{ species: "metasequoia", share: 1, colors: [[0.39, 0.36, 0.05], [0.58, 0.26, 0.045]], maxMix: [0.55, 0.95], weightScale: 3, maxPhase: 0.3 }],
 };
 
 // Largest per-tree lag on the season weight: a tree with phase p starts turning once the date weight
