@@ -75,6 +75,13 @@ function normalise(look) {
     windowHeight: look.windowHeight ?? 0.45,
     sill: look.sill ?? 0.3,
     mullions: look.mullions ?? 2,
+    // punched windows (facades-r4): `panes` vertical panes per window (default 1, 2 when wide), `transom` a horizontal
+    // bar at that fraction of the window height from its top, `framePx` frame and mullion width in atlas pixels (1)
+    panes: look.panes ?? null,
+    transom: look.transom ?? null,
+    framePx: look.framePx ?? 1,
+    // `lintel` { colour, height }: a band at window-head level across the storey (stone or render heads), like `band` at the floor
+    lintel: look.lintel ? { height: look.lintel.height ?? 0.05, colour: hex(look.lintel.colour) } : null,
     spandrelHeight: look.spandrelHeight ?? 0.22,
     piers: look.piers ? { every: look.piers.every ?? 1, width: look.piers.width ?? 0.15, colour: hex(look.piers.colour ?? look.wall) } : null,
     band: look.band ? { height: look.band.height ?? 0.1, colour: hex(look.band.colour) } : null,
@@ -157,13 +164,18 @@ function glassShade(look, salt) {
 
 // One window: frame border, glass, vertical mullions; lit at night with probability `lit`.
 function windowAt(canvas, look, x0, y0, x1, y1, rng, { mullions = 1, lit = look.lit, salt = 0 } = {}) {
+  const f = look.framePx ?? 1;
   canvas.rect(x0, y0, x1, y1, solid(look.frame, look.seed + 5), KIND.FRAME);
-  canvas.rect(x0 + 1, y0 + 1, x1 - 1, y1 - 1, glassShade(look, salt), KIND.GLASS);
+  canvas.rect(x0 + f, y0 + f, x1 - f, y1 - f, glassShade(look, salt), KIND.GLASS);
   for (let m = 1; m < mullions; m += 1) {
     const mx = x0 + ((x1 - x0) * m) / mullions;
-    canvas.rect(mx - 0.5, y0, mx + 1, y1, solid(look.frame, look.seed + 6), KIND.FRAME);
+    canvas.rect(mx - f / 2, y0, mx + f / 2 + 0.5, y1, solid(look.frame, look.seed + 6), KIND.FRAME);
   }
-  if (rng() < lit) canvas.glow(x0 + 1, y0 + 1, x1 - 1, y1 - 1, tint(rng() < 0.75 ? LIT : LIT_COOL, 0.65 + rng() * 0.35));
+  if (look.transom) {
+    const ty = y0 + (y1 - y0) * look.transom;
+    canvas.rect(x0, ty - f / 2, x1, ty + f / 2 + 0.5, solid(look.frame, look.seed + 6), KIND.FRAME);
+  }
+  if (rng() < lit) canvas.glow(x0 + f, y0 + f, x1 - f, y1 - f, tint(rng() < 0.75 ? LIT : LIT_COOL, 0.65 + rng() * 0.35));
 }
 
 function piers(canvas, look, y0, y1) {
@@ -230,13 +242,14 @@ function paintStorey(canvas, look, top, rng, { ground = false } = {}) {
       }
       for (let w = 0; w < look.windows; w += 1) {
         const x0 = start + w * (width + gap);
-        windowAt(canvas, look, x0, winTop, x0 + width, winBottom, rng, { mullions: width > 18 ? 2 : 1, salt: b * 7 + w + top });
+        windowAt(canvas, look, x0, winTop, x0 + width, winBottom, rng, { mullions: look.panes ?? (width > 18 ? 2 : 1), salt: b * 7 + w + top });
         canvas.rect(x0 - 1, winBottom, x0 + width + 1, winBottom + 2, solid(tint(look.trim, 1.1), look.seed + 17), KIND.SILL);
       }
     }
   }
   if (!glazedGround) piers(canvas, look, top, bottom);
   if (look.band) canvas.rect(0, bottom - look.band.height * ROW_PX, TILE_W, bottom, solid(look.band.colour, look.seed + 18), KIND.SILL);
+  if (look.lintel && look.pattern === "punched") canvas.rect(0, winTop - 1 - look.lintel.height * ROW_PX, TILE_W, winTop - 1, solid(look.lintel.colour, look.seed + 21), KIND.SILL);
   if (ground) canvas.rect(0, bottom - PLINTH_PX, TILE_W, bottom, solid(look.plinth, look.seed + 19), KIND.SILL);
 }
 
