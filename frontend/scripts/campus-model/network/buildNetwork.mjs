@@ -443,6 +443,19 @@ export function walkwaySurfaces(strips, toTm, crossings = []) {
   };
 }
 
+// Building POIs are carried over from the previous network; a building of building_entrances.json without one (an
+// entrance added since) gets a derived building POI on its first entrance, so trips can start and end there.
+export function entrancePois(entrancesJson, old) {
+  const known = new Set(old.features.filter((f) => f.properties.feature_type === "poi").map((f) => f.properties.poi_id));
+  return entrancesJson.buildings.filter((b) => !known.has(b.building_id) && b.entrances?.length).map((b) => {
+    const e = b.entrances[0];
+    return {
+      type: "Feature", id: b.building_id, geometry: { type: "Point", coordinates: [e.position[0], e.position[2]] },
+      properties: { poi_id: b.building_id, name: b.building_name, kind: "building", category: b.category ?? "academic", node_id: e.node_id, allowed_types: e.allowed_types, external: false, id: b.building_id, feature_type: "poi", source: "derived", confidence: 0.3, derived: true, authoritative: false, position_source: `entrance ${e.entrance_id} of building_entrances.json (estimated)` },
+    };
+  });
+}
+
 // Add-only `epsg5186_anchor` and `epsg5186_local_to_grid` in coordinate_transform.json (text edits that keep the hand
 // formatting). The simulation frame is true east/north at the D4 anchor; EPSG:5186 grid north is turned by the meridian
 // convergence (about 0.27 deg) and scaled, so SUMO coordinates are anchor + M [x, z], not anchor + [x, z].
@@ -489,14 +502,15 @@ if (import.meta.main) {
   const painted = photoCrossings({ groups: zebraGroups(await readJson(path.join(REPO, "frontend/scripts/campus-model/data/photo/markings.geojson")), lonLatToSim), crossings: ctx.crossings, roadPolygons: ctx.roads.polygons });
   walkable.push(...painted.polygons);
   console.log(`painted zebra crossings without a CW polygon: ${painted.stats.crossings} added (skipped: ${painted.stats.fewBars} < 4 bars, ${painted.stats.inCw} in a CW polygon, ${painted.stats.offRoad} off the road)`);
-  const { entrances, pois } = poiInputs(await readJson(PATHS.entrances), old);
+  const entrancesJson = await readJson(PATHS.entrances);
+  const { entrances, pois } = poiInputs(entrancesJson, old);
   const fallback = buildFallback({ roads: ctx.roads, graph, coverage: sidewalks.coverage, pois: [...entrances.map((e) => ({ id: e.building_id, p: e.position })), ...pois.map((p) => ({ id: p.poi_id, p: p.p }))], plazas: walkable.filter((w) => w.class === "plaza"), buildings: ctx.buildings, warn: quiet });
   const connectors = buildConnectors({ entrances, pois, graph, walkable, roadPolygons: ctx.roads.polygons, buildings: ctx.buildings, warn: quiet });
   const walkways = buildWalkways({ graph, walkable, roadPolygons: ctx.roads.polygons, buildings: ctx.buildings, warn: console.warn });
   console.log(walkwayStats(walkways.stats));
   for (const u of walkways.stats.unresolved) console.log(`  unresolved ${JSON.stringify(u)}`);
   for (const u of walkways.stats.sidewalkOnVehicle) console.log(`  measured on carriageway ${JSON.stringify(u)}`);
-  const poiFeatures = old.features.filter((f) => f.properties.feature_type === "poi");
+  const poiFeatures = [...old.features.filter((f) => f.properties.feature_type === "poi"), ...entrancePois(entrancesJson, old)];
   // main-gate traffic islands (data/photo/gate-structures.geojson): subtracted from the carriageway for every car check
   const { loadIslands, routeAroundIslands, islandPolygons } = await import("./gateIslands.mjs");
   const islands = loadIslands(await readJson(path.join(REPO, "frontend/scripts/campus-model/data/photo/gate-structures.geojson")), lonLatToSim);
