@@ -286,7 +286,8 @@ export async function loadInputs() {
     const row = Math.max(0, Math.min(landcoverPng.height - 1, Math.floor(z - EXTENT.minZ)));
     return landcoverPng.pixels[row * landcoverPng.width + col];
   };
-  // VWorld z19 orthophoto (data/ortho/, stored under consent D1) for the ground albedo and the roof colours.
+  // VWorld z19 orthophoto (data/ortho/, stored under consent D1) for the roof colours and the road-marking photo checks
+  // (never baked into the ground).
   const ortho = await loadOrtho();
   const orthoCalibration = photoCalibration(ortho);
   return { source, heightAt, footprints, roadZones, walkways, crosswalks, landcoverPng, landcoverAt, ortho, orthoCalibration };

@@ -124,8 +124,7 @@ function lumpyCrown(radius, height, seed) {
   return g;
 }
 
-// Placement runs before the ground stage, which needs the crown footprints (stages/ground.mjs keeps the
-// orthophoto's own crowns out from under them); buildTrees emits the instanced nodes from it later.
+// Placement runs before the ground stage; buildTrees emits the instanced nodes from it later.
 // blockedRings: plan rings (model units) of the street furniture trees must not grow through (stages/furniture.mjs).
 export function placeTrees({ inputs, selectableBuildings, campusBuildings, offCampusLots, blockedRings = [] }) {
   const { heightAt, roadZones } = inputs;
