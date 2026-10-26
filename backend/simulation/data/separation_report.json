@@ -13,23 +13,23 @@
   "routing_polygon_check": true,
   "samples": {
     "person": 60000,
-    "car": 18000,
+    "car": 17966,
     "scooter": 18000
   },
   "agents_seen": {
     "person": 100,
-    "car": 30,
+    "car": 31,
     "scooter": 30
   },
-  "person_on_walkable": 98.66,
-  "car_on_road": 99.861,
+  "person_on_walkable": 99.993,
+  "car_on_road": 99.839,
   "measured_only": {
-    "person_on_walkable": 23.312,
-    "car_on_road": 99.656,
+    "person_on_walkable": 16.205,
+    "car_on_road": 99.622,
     "pass": false
   },
   "definitions": {
-    "person_on_walkable": "person samples inside crossing|sidewalk, or inside plaza|walkway_estimated and not inside road|lot, / all person samples x 100 (measured + estimated polygons)",
+    "person_on_walkable": "person samples inside crossing|crossing_estimated|sidewalk, or inside plaza|walkway_estimated and not inside road|lot, / all person samples x 100 (measured + estimated polygons)",
     "car_on_road": "car samples inside road|lot and not inside sidewalk / all car samples x 100 (measured + estimated polygons)",
     "measured_only": "same, counting only polygons with estimated=false as allowed surface (the vehicle-surface and sidewalk exclusions still use every polygon)"
   },
@@ -39,393 +39,289 @@
     "car": 99.0
   },
   "gate": true,
-  "pass": false,
+  "pass": true,
   "breakdown": {
     "edge_kind": {
       "car:allowed_road": {
-        "samples": 17847,
-        "inside": 17822,
-        "inside_measured": 17785
+        "samples": 17949,
+        "inside": 17920,
+        "inside_measured": 17881
       },
       "car:parking_connection": {
-        "samples": 153,
-        "inside": 153,
-        "inside_measured": 153
+        "samples": 17,
+        "inside": 17,
+        "inside_measured": 17
       },
       "person:building_entrance": {
-        "samples": 1172,
-        "inside": 1170,
-        "inside_measured": 426
+        "samples": 600,
+        "inside": 600,
+        "inside_measured": 0
       },
       "person:crosswalk": {
-        "samples": 722,
-        "inside": 722,
-        "inside_measured": 519
+        "samples": 2095,
+        "inside": 2095,
+        "inside_measured": 1303
       },
       "person:shared_path": {
-        "samples": 47862,
-        "inside": 47060,
-        "inside_measured": 2802
+        "samples": 51337,
+        "inside": 51333,
+        "inside_measured": 2455
       },
       "person:sidewalk": {
-        "samples": 10244,
-        "inside": 10244,
-        "inside_measured": 10240
+        "samples": 5968,
+        "inside": 5968,
+        "inside_measured": 5965
       }
     },
     "class": {
       "car:None": {
-        "samples": 3,
+        "samples": 4,
         "inside": 0,
         "inside_measured": 0
       },
       "car:crossing": {
-        "samples": 1251,
-        "inside": 1250,
-        "inside_measured": 1250
+        "samples": 1308,
+        "inside": 1307,
+        "inside_measured": 1307
+      },
+      "car:crossing_estimated": {
+        "samples": 216,
+        "inside": 216,
+        "inside_measured": 216
       },
       "car:lot": {
-        "samples": 403,
-        "inside": 403,
-        "inside_measured": 403
+        "samples": 257,
+        "inside": 257,
+        "inside_measured": 257
       },
       "car:road": {
-        "samples": 16226,
-        "inside": 16226,
-        "inside_measured": 16190
+        "samples": 16135,
+        "inside": 16135,
+        "inside_measured": 16098
       },
       "car:sidewalk": {
-        "samples": 21,
+        "samples": 24,
         "inside": 0,
         "inside_measured": 0
       },
       "car:walkway_estimated": {
-        "samples": 96,
-        "inside": 96,
-        "inside_measured": 95
+        "samples": 22,
+        "inside": 22,
+        "inside_measured": 20
       },
       "person:crossing": {
-        "samples": 5483,
-        "inside": 5483,
-        "inside_measured": 1993
+        "samples": 4628,
+        "inside": 4628,
+        "inside_measured": 2467
+      },
+      "person:crossing_estimated": {
+        "samples": 2895,
+        "inside": 2895,
+        "inside_measured": 78
       },
       "person:plaza": {
-        "samples": 472,
-        "inside": 468,
-        "inside_measured": 0
-      },
-      "person:road": {
-        "samples": 253,
-        "inside": 0,
+        "samples": 1337,
+        "inside": 1336,
         "inside_measured": 0
       },
       "person:sidewalk": {
-        "samples": 11994,
-        "inside": 11994,
-        "inside_measured": 11994
+        "samples": 7178,
+        "inside": 7178,
+        "inside_measured": 7178
       },
       "person:walkway_estimated": {
-        "samples": 41798,
-        "inside": 41251,
+        "samples": 43962,
+        "inside": 43959,
         "inside_measured": 0
       },
       "scooter:None": {
-        "samples": 113
+        "samples": 5
       },
       "scooter:crossing": {
-        "samples": 4612
+        "samples": 2488
       },
-      "scooter:plaza": {
-        "samples": 56
+      "scooter:crossing_estimated": {
+        "samples": 260
       },
       "scooter:road": {
-        "samples": 13132
+        "samples": 14580
       },
       "scooter:sidewalk": {
-        "samples": 53
+        "samples": 652
       },
       "scooter:walkway_estimated": {
-        "samples": 34
+        "samples": 15
       }
     },
     "state": {
-      "car:DWELLING": {
-        "samples": 128,
-        "inside": 128,
-        "inside_measured": 128
-      },
       "car:MOVING": {
-        "samples": 17872,
-        "inside": 17847,
-        "inside_measured": 17810
+        "samples": 17966,
+        "inside": 17937,
+        "inside_measured": 17898
       },
       "person:MOVING": {
         "samples": 60000,
-        "inside": 59196,
-        "inside_measured": 13987
+        "inside": 59996,
+        "inside_measured": 9723
       }
     }
   },
   "offenders": [
     {
-      "entity_id": "person_025",
-      "type": "person",
-      "edge_id": "EDGE_FBJ_FBN_ND_161_1",
-      "kind": "shared_path",
-      "state": "MOVING",
-      "samples_outside": 91,
-      "point": [
-        478.428,
-        -206.75
-      ],
-      "distance_m": 2.664
-    },
-    {
-      "entity_id": "person_040",
-      "type": "person",
-      "edge_id": "EDGE_FBJ_FBN_ND_017_1",
-      "kind": "shared_path",
-      "state": "MOVING",
-      "samples_outside": 86,
-      "point": [
-        91.282,
-        -206.782
-      ],
-      "distance_m": 3.447
-    },
-    {
-      "entity_id": "person_070",
-      "type": "person",
-      "edge_id": "EDGE_FB_0046",
-      "kind": "shared_path",
-      "state": "MOVING",
-      "samples_outside": 61,
-      "point": [
-        559.516,
-        -26.016
-      ],
-      "distance_m": 0.288
-    },
-    {
-      "entity_id": "person_060",
-      "type": "person",
-      "edge_id": "EDGE_FB_0025",
-      "kind": "shared_path",
-      "state": "MOVING",
-      "samples_outside": 55,
-      "point": [
-        295.89,
-        -195.25
-      ],
-      "distance_m": 0.799
-    },
-    {
-      "entity_id": "person_088",
-      "type": "person",
-      "edge_id": "EDGE_FB_0025",
-      "kind": "shared_path",
-      "state": "MOVING",
-      "samples_outside": 47,
-      "point": [
-        295.788,
-        -195.25
-      ],
-      "distance_m": 0.788
-    },
-    {
-      "entity_id": "person_045",
-      "type": "person",
-      "edge_id": "EDGE_FB_0019",
-      "kind": "shared_path",
-      "state": "MOVING",
-      "samples_outside": 45,
-      "point": [
-        119.907,
-        -105.25
-      ],
-      "distance_m": 0.928
-    },
-    {
-      "entity_id": "person_084",
-      "type": "person",
-      "edge_id": "EDGE_FB_0046",
-      "kind": "shared_path",
-      "state": "MOVING",
-      "samples_outside": 45,
-      "point": [
-        559.468,
-        -25.968
-      ],
-      "distance_m": 0.266
-    },
-    {
-      "entity_id": "person_011",
-      "type": "person",
-      "edge_id": "EDGE_FB_0025",
-      "kind": "shared_path",
-      "state": "MOVING",
-      "samples_outside": 42,
-      "point": [
-        295.803,
-        -195.25
-      ],
-      "distance_m": 0.803
-    },
-    {
-      "entity_id": "person_019",
-      "type": "person",
-      "edge_id": "EDGE_FB_0025",
-      "kind": "shared_path",
-      "state": "MOVING",
-      "samples_outside": 42,
-      "point": [
-        295.891,
-        -195.25
-      ],
-      "distance_m": 0.798
-    },
-    {
-      "entity_id": "person_085",
-      "type": "person",
-      "edge_id": "EDGE_FB_0063",
-      "kind": "shared_path",
-      "state": "MOVING",
-      "samples_outside": 40,
-      "point": [
-        93.171,
-        -183.171
-      ],
-      "distance_m": 0.547
-    },
-    {
-      "entity_id": "person_090",
-      "type": "person",
-      "edge_id": "EDGE_FBJ_FBN_0004_1",
-      "kind": "shared_path",
-      "state": "MOVING",
-      "samples_outside": 38,
-      "point": [
-        295.846,
-        -195.25
-      ],
-      "distance_m": 0.843
-    },
-    {
-      "entity_id": "person_086",
-      "type": "person",
-      "edge_id": "EDGE_FBJ_FBN_ND_181_1",
-      "kind": "shared_path",
-      "state": "MOVING",
-      "samples_outside": 34,
-      "point": [
-        559.534,
-        -26.034
-      ],
-      "distance_m": 0.262
-    },
-    {
-      "entity_id": "person_001",
-      "type": "person",
-      "edge_id": "EDGE_FB_0076",
-      "kind": "shared_path",
-      "state": "MOVING",
-      "samples_outside": 29,
-      "point": [
-        441.75,
-        -185.178
-      ],
-      "distance_m": 1.322
-    },
-    {
-      "entity_id": "person_051",
-      "type": "person",
-      "edge_id": "EDGE_FBJ_CWN_022_B_1",
-      "kind": "shared_path",
-      "state": "MOVING",
-      "samples_outside": 29,
-      "point": [
-        392.75,
-        -222.922
-      ],
-      "distance_m": 0.896
-    },
-    {
-      "entity_id": "person_041",
-      "type": "person",
-      "edge_id": "EDGE_FBJ_FBN_ND_083_1",
-      "kind": "shared_path",
-      "state": "MOVING",
-      "samples_outside": 23,
-      "point": [
-        184.86,
-        -251.86
-      ],
-      "distance_m": 0.0
-    },
-    {
-      "entity_id": "person_077",
-      "type": "person",
-      "edge_id": "EDGE_FBJ_FBN_ND_083_1",
-      "kind": "shared_path",
-      "state": "MOVING",
-      "samples_outside": 23,
-      "point": [
-        186.088,
-        -252.25
-      ],
-      "distance_m": 0.0
-    },
-    {
-      "entity_id": "person_050",
-      "type": "person",
-      "edge_id": "EDGE_FB_0015",
-      "kind": "shared_path",
-      "state": "MOVING",
-      "samples_outside": 16,
-      "point": [
-        2.25,
-        58.211
-      ],
-      "distance_m": 0.211
-    },
-    {
-      "entity_id": "person_025",
-      "type": "person",
-      "edge_id": "EDGE_FB_0020",
-      "kind": "shared_path",
-      "state": "MOVING",
-      "samples_outside": 13,
-      "point": [
-        484.668,
-        -207.168
-      ],
-      "distance_m": 0.0
-    },
-    {
-      "entity_id": "car_011",
+      "entity_id": "car_001",
       "type": "car",
       "edge_id": "EDGE_ROAD_0351",
       "kind": "allowed_road",
       "state": "MOVING",
-      "samples_outside": 10,
+      "samples_outside": 7,
       "point": [
-        583.632,
-        28.854
+        583.533,
+        28.876
       ],
       "distance_m": 0.0
     },
     {
-      "entity_id": "person_026",
+      "entity_id": "car_001",
+      "type": "car",
+      "edge_id": "EDGE_ROAD_0356",
+      "kind": "allowed_road",
+      "state": "MOVING",
+      "samples_outside": 7,
+      "point": [
+        614.768,
+        8.6
+      ],
+      "distance_m": 0.0
+    },
+    {
+      "entity_id": "car_022",
+      "type": "car",
+      "edge_id": "EDGE_ROAD_0351",
+      "kind": "allowed_road",
+      "state": "MOVING",
+      "samples_outside": 5,
+      "point": [
+        582.131,
+        29.199
+      ],
+      "distance_m": 0.0
+    },
+    {
+      "entity_id": "car_024",
+      "type": "car",
+      "edge_id": "EDGE_ROAD_0351",
+      "kind": "allowed_road",
+      "state": "MOVING",
+      "samples_outside": 5,
+      "point": [
+        582.062,
+        29.214
+      ],
+      "distance_m": 0.0
+    },
+    {
+      "entity_id": "car_017",
+      "type": "car",
+      "edge_id": "EDGE_OSMLINK_PERI_NODE_0032",
+      "kind": "allowed_road",
+      "state": "MOVING",
+      "samples_outside": 2,
+      "point": [
+        652.693,
+        -161.692
+      ],
+      "distance_m": 0.388
+    },
+    {
+      "entity_id": "car_004",
+      "type": "car",
+      "edge_id": "EDGE_ROAD_0278",
+      "kind": "allowed_road",
+      "state": "MOVING",
+      "samples_outside": 1,
+      "point": [
+        385.26,
+        -4.887
+      ],
+      "distance_m": 0.002
+    },
+    {
+      "entity_id": "car_006",
+      "type": "car",
+      "edge_id": "EDGE_ROAD_0308",
+      "kind": "allowed_road",
+      "state": "MOVING",
+      "samples_outside": 1,
+      "point": [
+        363.778,
+        -107.11
+      ],
+      "distance_m": 0.004
+    },
+    {
+      "entity_id": "car_027",
+      "type": "car",
+      "edge_id": "EDGE_ROAD_0350",
+      "kind": "allowed_road",
+      "state": "MOVING",
+      "samples_outside": 1,
+      "point": [
+        386.57,
+        -54.801
+      ],
+      "distance_m": 0.005
+    },
+    {
+      "entity_id": "person_035",
       "type": "person",
-      "edge_id": "EDGE_CWC_030_B",
+      "edge_id": "EDGE_FB_0025",
       "kind": "shared_path",
       "state": "MOVING",
-      "samples_outside": 8,
+      "samples_outside": 1,
       "point": [
-        331.59,
-        -238.874
+        272.887,
+        -263.27
       ],
-      "distance_m": 0.16
+      "distance_m": 0.0
+    },
+    {
+      "entity_id": "person_043",
+      "type": "person",
+      "edge_id": "EDGE_FB_0025",
+      "kind": "shared_path",
+      "state": "MOVING",
+      "samples_outside": 1,
+      "point": [
+        272.898,
+        -263.273
+      ],
+      "distance_m": 0.0
+    },
+    {
+      "entity_id": "person_065",
+      "type": "person",
+      "edge_id": "EDGE_FBJ_FBN_ND_085_1",
+      "kind": "shared_path",
+      "state": "MOVING",
+      "samples_outside": 1,
+      "point": [
+        222.316,
+        -156.459
+      ],
+      "distance_m": 0.0
+    },
+    {
+      "entity_id": "person_079",
+      "type": "person",
+      "edge_id": "EDGE_FBJ_FBN_0004_1",
+      "kind": "shared_path",
+      "state": "MOVING",
+      "samples_outside": 1,
+      "point": [
+        282.548,
+        -218.24
+      ],
+      "distance_m": 0.0
     }
   ]
 }
