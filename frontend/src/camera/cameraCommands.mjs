@@ -39,8 +39,8 @@ export function panPositions(position, target, right, forward) {
 
 const toArray = (vector) => [vector.x, vector.y, vector.z];
 
-// 사용자 궤도 조작처럼 start/end를 보내 눌린 시점 표시와 투어가 풀리게 한다.
-function applyMove(controls, { position, target }) {
+// 사용자 궤도 조작처럼 start/end를 보내 눌린 시점 표시와 투어가 풀리게 한다. 공유 링크의 카메라도 이 길로 놓는다(비행 없음).
+export function applyMove(controls, { position, target }) {
   if (!controls) return false;
   controls.dispatchEvent?.({ type: "start" });
   controls.object.position.set(...position);

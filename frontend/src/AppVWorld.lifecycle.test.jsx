@@ -38,6 +38,8 @@ beforeEach(() => {
   window.matchMedia = vi.fn(() => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
 });
 afterEach(() => {
+  // 대시보드가 화면 상태를 주소에 쓴다(useUrlState): 다음 테스트가 그 주소로 시작하지 않게 되돌린다.
+  window.history.replaceState(null, "", "/");
   cleanup();
   vi.unstubAllGlobals();
 });

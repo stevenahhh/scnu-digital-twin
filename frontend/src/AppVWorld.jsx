@@ -24,6 +24,7 @@ import { PresentationToggle } from "./components/CampusHud";
 import { DashboardTabContent } from "./panel/DashboardTabContent";
 import { FeedStamps, sheetPlacement } from "./panel/FeedStatus";
 import { useFeedStatus } from "./hooks/useFeedStatus.mjs";
+import { urlSelectionTarget, useDashboardUrlState } from "./hooks/useDashboardUrlState.mjs";
 import { summarizeWeather } from "./panel/weatherSummary.mjs";
 
 // 지도 영상 위에 까는 야간 음영과 해 쪽 햇빛. 해 고도·방위(도)에서 투명도와 위치를 정한다.
@@ -73,6 +74,11 @@ export default function App() {
       loadPopup(target.elementId);
     } else clearPopup();
   }, [clearPopup, loadPopup, revealOnPhone, selectBuilding]);
+  // 공유 링크: 건물·장면 시각·패널·탭(VWorld 카메라는 SDK가 가져 주소에 담지 않는다).
+  useDashboardUrlState({
+    building: selection.selectedId, onBuilding: (id) => handleVWorldSelection(urlSelectionTarget(id)),
+    clock, panelState, activeTab, setActiveTab,
+  });
   const closeMicroclimatePopup = useCallback(() => {
     clearSelection();
     clearPopup();

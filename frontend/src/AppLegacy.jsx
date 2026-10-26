@@ -17,8 +17,7 @@ import { SelectionInspector } from "./panel/SelectionInspector";
 import { gateTextFor } from "./labels/gateDistance.mjs";
 import { PanelErrorBoundary } from "./components/PanelErrorBoundary";
 import { useSimulationSocket } from "./simulation";
-import { D4SectionExperience } from "./vworld/D4SectionExperience";
-import { createPlanDraftFromExisting } from "./features/energy/installations/installationPlanApi.mjs";
+import { LegacyD4Pane } from "./panel/LegacyD4Pane";
 import { useViewportMode } from "./hooks/useViewportMode.mjs";
 import { useWeatherFeed } from "./hooks/useWeatherFeed";
 import { useTrafficFeed } from "./simulation/hooks/useTrafficFeed";
@@ -28,6 +27,7 @@ import { useSelectionState } from "./hooks/useSelectionState.mjs";
 import { useSunClock } from "./hooks/useSunClock.mjs";
 import { useThemeMode } from "./hooks/useThemeMode.mjs";
 import { useLegacyBuildingFlow } from "./hooks/useLegacyBuildingFlow.mjs";
+import { useDashboardUrlState } from "./hooks/useDashboardUrlState.mjs";
 import { DashboardShell, shellInsetRight } from "./panel/DashboardShell";
 import { usePanelState } from "./panel/usePanelState.mjs";
 import { CampusEnergyOverview } from "./panel/CampusEnergyOverview";
@@ -102,6 +102,10 @@ function Dashboard() {
     onSectionExit: plans.refreshAll,
   });
   const isCampus = flow.buildingViewMode === "campus";
+  useDashboardUrlState({
+    building: isCampus ? selection.selectedId : "BLD_D4", onBuilding: flow.selectFromUrl,
+    clock, panelState, activeTab, setActiveTab, controlsRef: orbitControlsRef,
+  });
   const rendering = useCampusRendering({
     canvasStateRef,
     interactionDpr,
@@ -138,7 +142,6 @@ function Dashboard() {
     selection.setSelectedBuildingId(request.buildingId);
     flow.openD4Section(request);
   };
-  const editor = flow.editorRequest;
   // 인스펙터 제목: 고른 건물의 레지스트리 이름, 없으면 클릭한 메시의 이름.
   const panelTitle = selection.selectedId ? flow.selectionTitle || selection.selectedTitle || selection.selectedId : "";
   const inspector = isCampus && selection.selectedId ? (
@@ -196,8 +199,6 @@ function Dashboard() {
         }}
       />
       {isSceneLoading && <SceneLoadingNotice key={sceneAttempt} insetRight={mapInsetRight} onRetry={retryScene} />}
-
-
       <DashboardShell
         ref={panelRef}
         mode={viewportMode}
@@ -208,22 +209,8 @@ function Dashboard() {
         hidden={presentation.presenting}
         onPaneExit={flow.exitD4Section}
         pane={!isCampus && (
-          <D4SectionExperience
-            buildingId={editor?.buildingId ?? selection.selectedBuildingId}
-            scenarioId={editor?.scenarioId}
-            installationPlanId={editor?.installationPlanId}
-            startInstallation={Boolean(editor?.scenarioId || editor?.installationPlanId)}
-            onClose={flow.exitD4Section}
-            onPlanSaved={plans.refreshAll}
-            createInstallationPlanDraft={createPlanDraftFromExisting}
-            onPlansChange={plans.onPlansChange}
-            onRepresentativeChange={plans.onRepresentativeChange}
-            planRefreshKey={plans.refreshKey}
-            presets={viewportMode === "phone" ? CAMERA_PRESETS : null}
-            onSelectPreset={(preset) => {
-              flow.exitD4Section();
-              camera.selectPreset(preset);
-            }}
+          <LegacyD4Pane
+            flow={flow} selection={selection} plans={plans} camera={camera} phone={viewportMode === "phone"}
           />
         )}
         timeReadout={sceneTimeReadout(clock.sceneMinuteOfDay)}
@@ -265,7 +252,6 @@ function Dashboard() {
           )}
         />
       </DashboardShell>
-
     </div>
   );
 }

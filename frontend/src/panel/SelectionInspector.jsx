@@ -9,6 +9,7 @@ import { Skeleton } from "../ui/Skeleton.jsx";
 import { Spinner } from "../ui/Spinner.jsx";
 import { StatusBadge } from "../ui/StatusBadge.jsx";
 import { formatHHmm } from "../ui/format.mjs";
+import { LinkCopyButton } from "./LinkCopyButton.jsx";
 
 // 고른 건물 하나의 인스펙터(두 대시보드 공용). 데이터는 `/microclimate/elements/{id}/popup` 한 번의 응답(usePopupData)이다.
 // 머리: 레지스트리 이름(title) + 코드 배지 + 닫기(Esc도 같다). 대표값: 국지 기온 추정 하나와 위험도.
@@ -233,7 +234,10 @@ export function SelectionInspector({
             </p>
           )}
         </div>
-        <Button variant="ghost" iconOnly label={INSPECTOR_STRINGS.close} icon={<X aria-hidden="true" className="h-4 w-4" />} onClick={onClose} />
+        <div className="flex shrink-0 items-start gap-1">
+          <LinkCopyButton />
+          <Button variant="ghost" iconOnly label={INSPECTOR_STRINGS.close} icon={<X aria-hidden="true" className="h-4 w-4" />} onClick={onClose} />
+        </div>
       </div>
 
       {shown && !loading && (
