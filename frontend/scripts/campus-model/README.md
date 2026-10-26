@@ -111,6 +111,17 @@ outline, are rasterised into the surface-class label raster (`groundInfo`) the l
 and roughness is an estimate (`extras.estimated`), and `asset.extras.ground.photoPixelsBaked` is `false`. After a
 ground geometry change, re-bake the ground AO: `bun scripts/campus-model/bake/bake-ao.mjs --planar`.
 
+### Kerbs, slabs and dropped kerbs (`stages/kerbs.mjs`)
+
+Kerbs stand only on the A003 outlines (never extrapolated onto a road edge): a 0.20 m wide ribbon on the walkway
+side of the outline, its outer face on the line, 0.15 m exposed (assumed, asserted under the 0.25 m legal cap) and
+0.10 m buried, skipped where both sides are paved (another walkway, a plaza, a building apron). Inside the A003 rings
+the walkway decals stand on a slab 0.15 m up (3 mm under the kerb top, so the stone shows), feathered to 0 over 0.5 m
+at every walkway edge without a kerb. A crossing polygon (CW_001-CW_031) within 1.0 m of a kerb drops it to 0 across
+the crossing plus 0.5 m each side, and kerb and slab rise from there at 1/12 (1.8 m run, then the level landing). A
+0.35 m darker asphalt gutter (`Ground_Gutter`) runs on the road side of every road-facing kerb. Furniture, lamps and
+the height sidecar stand on the slab (`groundHeightAt`). All of it is an estimate (`Kerbs` node extras).
+
 ### Roof colours and solar panels (`lib/roofPhoto.mjs`)
 
 Every modelled roof is sampled in the orthophoto every 0.25 m inside its footprint, 1 m clear of the
@@ -437,6 +448,7 @@ stand). Masses, heights and voids are estimates derived from VWorld's models and
   mesh are filtered out), natural ground (land-cover colours under the CC0 grass relief; see Modelled ground).
 - `Ground_Asphalt`, `Ground_Pavers`, `Ground_Lot`, `Ground_Apron`, `Ground_Sports`: the modelled ground surfaces
   as decal meshes on the terrain (see Modelled ground).
+- `Kerbs`, `Ground_Gutter`: kerb ribbons, dropped kerbs and gutters on the A003 outlines (see Kerbs, slabs and dropped kerbs).
 - `Road_Markings`: the painted road markings the orthophoto shows, one decal mesh on the terrain (see Road markings).
 - `Trees_*`: instanced broadleaf, round and pine trees placed over CHMv2 canopy (see Trees above),
   kept off buildings, roads, walkways and the roofed street furniture.
@@ -519,8 +531,8 @@ Under a cast shadow alone, or on open asphalt, no zebra was detected and it stay
 The mesh: every piece is triangulated and split along the Topography grid lines and diagonals wherever a flat
 triangle would leave the terrain by more than 5 mm, so each triangle lies on one terrain triangle
 (`topographySurface` in `stages/ground.mjs` reproduces the chunk triangulation), 4 cm above it, with the
-terrain's interpolated normals. Packed positions are 14-bit over the campus (about 5 cm steps), so CityModel draws
-the material with a polygon offset; it casts no shadow and takes no pointer raycasts. One `Road_Marking` material
+terrain's interpolated normals. CityModel draws the material with a polygon offset (positions were 14-bit, about
+5 cm steps, before the modelled ground; they are float since then, see pack.mjs); it casts no shadow and takes no pointer raycasts. One `Road_Marking` material
 with a white/yellow/blue palette texture as base colour and emissive map (no vertex colours): the dashboard lights
 every emissive map at night, so the paint stays faintly visible after dark (`KHR_materials_emissive_strength` 0.18).
 One mesh, one draw call: 2,137 pieces, 45,391 triangles; `campus-v2.glb` is 4,168,048 B (4,051,068 B before M3) and
@@ -615,8 +627,8 @@ benches. All are flagged estimated in the build log and the node extras (`estima
 `Furniture_Glass` one translucent primitive that casts none (1 draw call), and `Lamps_heads` stays one primitive.
 `scripts/perf/bench.mjs --quality low` measures 131 / 28 / 127 draw calls (overview / d4 / oblique15) against 128 / 27 /
 124 before, with 0 console errors; `campus-v2.glb` grows from 3,578,368 B to 4,051,068 B (about 46,000 furniture
-triangles). Packed positions are 14-bit over the campus (about 5 cm steps), so no
-part is thinner than 6 cm. CityModel keeps both furniture meshes out of pointer raycasts. Every position is from the
+triangles). Packed positions were 14-bit over the campus then (about 5 cm steps; float since the modelled ground), so
+no part is thinner than 6 cm. CityModel keeps both furniture meshes out of pointer raycasts. Every position is from the
 photo or a rule, and every shape and height an estimate: none of it is survey data.
 
 ## Frame

@@ -100,7 +100,7 @@ const DOUBLE_OFFSET_M = 0.15;
 // recoloured from the photo.
 const FIXED_COLOUR_KINDS = new Set(["kerb_no_parking", "centre_line_yellow", "zebra_bar", "disabled_parking", "bike_lane_blue"]);
 const STROKED_KINDS = new Set(["lane_line_dashed", "lane_line_solid", "edge_line", "centre_line_yellow", "parking_line", "kerb_no_parking", "give_way_line"]);
-// Packed positions are 14-bit over the campus (about 4.9 cm steps), terrain and markings each rounded on their own.
+// Above the Ground_* layers (at most 0.036 m, stages/surfaces.mjs); pack.mjs keeps positions as float.
 const LIFT_M = 0.04;
 
 const SHADOW_AZIMUTH_DEG = 272.5;

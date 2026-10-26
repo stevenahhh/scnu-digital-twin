@@ -72,7 +72,7 @@ const LABEL_WRAPPER_STYLE = Object.freeze({ pointerEvents: "none" });
 const NON_CASTER_MATERIAL_NAME = "Ground";
 const NON_CASTER_PARENT_PATTERN = /^Trees_.*_trunk/;
 // 노면 표시(Road_Marking, 생성기 stages/markings.mjs): 항공사진에서 찾은 도색을 지형 삼각형 위 4 cm에 얹은 얇은 메시다.
-// 압축된 위치값이 약 5 cm 단위로 반올림되어 지면과 겹칠 수 있으므로 폴리곤 오프셋으로 늘 지면 앞에 그린다.
+// 지면 층(Ground_*, 최대 3.6 cm)보다 높고, 먼 거리의 깊이 정밀도에서도 겹치지 않도록 폴리곤 오프셋으로 늘 지면 앞에 그린다.
 // 평평한 도색이라 그림자를 드리우지 않고, 캠퍼스 전체에 걸친 삼각형을 포인터가 움직일 때마다 검사하지 않도록 클릭 판정에서도 뺀다.
 // 밤에는 다른 발광 재질처럼 emissiveMap으로 은은하게 빛난다(밝기는 GLB의 emissive strength).
 const ROAD_MARKING_MATERIAL_NAME = "Road_Marking";

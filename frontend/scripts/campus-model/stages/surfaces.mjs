@@ -33,14 +33,17 @@ const DEPTH = EXTENT.maxZ - EXTENT.minZ;
 
 export const SURFACE_LIFT_M = (precedence) => Math.min(0.036, 0.006 * precedence);
 
-// Mesh -> CC0 tile class (ground-materials.json `cls`) and CityModel polygon-offset rank (above the Topography).
+// Mesh -> CC0 tile class (ground-materials.json `cls`). Each primitive's material carries its layers' precedence as
+// extras.polygonOffsetRank (CityModel), so the polygon offset and the lift agree.
 export const GROUND_MESHES = Object.freeze({
-  Ground_Sports: { rank: 1 },
-  Ground_Asphalt: { tile: "asphalt", rank: 3 },
-  Ground_Lot: { tile: "lot", rank: 4 },
-  Ground_Pavers: { tile: "pavers", rank: 5 },
-  Ground_Bicycle: { tile: "asphalt-red", rank: 5.5 },
-  Ground_Apron: { tile: "concrete", rank: 6 },
+  Ground_Sports: {},
+  Ground_Asphalt: { tile: "asphalt" },
+  Ground_Lot: { tile: "lot" },
+  Ground_Pavers: { tile: "pavers" },
+  Ground_Bicycle: { tile: "asphalt-red" },
+  Ground_Apron: { tile: "concrete" },
+  // stages/kerbs.mjs: the gutter band on the road side of the kerbs (asphalt darkened 0.72, estimated)
+  Ground_Gutter: { tile: "asphalt", baseColorFactor: [0.72, 0.72, 0.72, 1] },
 });
 const MESH_ORDER = Object.keys(GROUND_MESHES);
 
@@ -72,18 +75,33 @@ export function triangulate(rings) {
   return ShapeUtils.triangulateShape(contour, holes).map((face) => face.map((k) => [all[k].x, all[k].y]));
 }
 
+// Splits a triangle (model units) into four until its longest edge is at most maxEdge wherever needsFine(point,
+// reachModel) holds (the slab ramps of stages/kerbs.mjs vary within a terrain triangle).
+function refineTriangle(tri, maxEdge, needsFine) {
+  const longest = Math.max(...tri.map((p, i) => Math.hypot(tri[(i + 1) % 3][0] - p[0], tri[(i + 1) % 3][1] - p[1])));
+  const centre = [(tri[0][0] + tri[1][0] + tri[2][0]) / 3, (tri[0][1] + tri[1][1] + tri[2][1]) / 3];
+  if (longest <= maxEdge || !needsFine(centre, longest)) return [tri];
+  const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  const [a, b, c] = tri;
+  const [ab, bc, ca] = [mid(a, b), mid(b, c), mid(c, a)];
+  return [[a, ab, ca], [ab, b, bc], [ca, bc, c], [ab, bc, ca]].flatMap((t) => refineTriangle(t, maxEdge, needsFine));
+}
+
 // One primitive per mesh (per surface for the painted ones): conformed, lifted, upward triangles with planar tile UVs
 // (or local texture UVs) and the planar EXTENT TEXCOORD_1. tileSize(mesh) -> metres; heightOffset(layer, x, z) ->
-// metres above the terrain (default: the precedence lift).
-export function surfaceGeometry({ layers, surface, tileSize, heightOffset = (layer) => SURFACE_LIFT_M(layer.precedence) }) {
+// metres above the terrain (default: the precedence lift); refine: { maxEdgeM, needsFine(layer, point, reachModel) }
+// for layers whose height varies inside a terrain triangle (the raised walkway slab).
+export function surfaceGeometry({ layers, surface, tileSize, heightOffset = (layer) => SURFACE_LIFT_M(layer.precedence), refine = null }) {
   const primitives = new Map();
   layers.forEach((layer, index) => {
     const painted = !GROUND_MESHES[layer.mesh]?.tile;
-    const key = painted ? `${layer.mesh}#${index}` : layer.mesh;
+    // One primitive per class and precedence (its material carries that precedence as the polygon-offset rank, so the
+    // offset never contradicts the lift), and one per painted surface (its own texture).
+    const key = painted ? `${layer.mesh}#${index}` : `${layer.mesh}@${layer.precedence}`;
     let primitive = primitives.get(key);
     if (!primitive) {
       const frame = painted ? orientedFrame(layer.rings[0].map(([E, N]) => tmToScene(E, N))) : null;
-      primitive = { mesh: layer.mesh, layer: painted ? layer : null, frame, positions: [], normals: [], uvs: [], uv1: [], indices: [], vertexOf: new Map(), sourceTriangles: 0, precedence: [] };
+      primitive = { mesh: layer.mesh, rank: layer.precedence, layer: painted ? layer : null, frame, positions: [], normals: [], uvs: [], uv1: [], indices: [], vertexOf: new Map(), sourceTriangles: 0, precedence: [] };
       primitives.set(key, primitive);
     }
     if (!primitive.precedence.includes(layer.precedence)) primitive.precedence.push(layer.precedence);
@@ -103,7 +121,8 @@ export function surfaceGeometry({ layers, surface, tileSize, heightOffset = (lay
       return i;
     };
     if (painted && !primitive.frame.uv) primitive.frame.uv = paintedUv(primitive.frame, layer);
-    for (const tri of triangulate(layer.rings)) {
+    const fine = refine ? (tri) => refineTriangle(tri, refine.maxEdgeM * UNIT, (p, reach) => refine.needsFine(layer, p, reach)) : (tri) => [tri];
+    for (const tri of triangulate(layer.rings).flatMap(fine)) {
       primitive.sourceTriangles += 1;
       for (const piece of conform(tri, surface)) {
         const cross = (piece[1][0] - piece[0][0]) * (piece[2][1] - piece[0][1]) - (piece[1][1] - piece[0][1]) * (piece[2][0] - piece[0][0]);
@@ -113,7 +132,7 @@ export function surfaceGeometry({ layers, surface, tileSize, heightOffset = (lay
       }
     }
   });
-  return [...primitives.values()].sort((a, b) => MESH_ORDER.indexOf(a.mesh) - MESH_ORDER.indexOf(b.mesh));
+  return [...primitives.values()].sort((a, b) => MESH_ORDER.indexOf(a.mesh) - MESH_ORDER.indexOf(b.mesh) || a.rank - b.rank);
 }
 
 // ---------------------------------------------------------------- painted surfaces (sports, water, roundabout)
@@ -437,9 +456,9 @@ export async function naturalGroundMaterial(glb, landcoverAt, ao) {
 
 // ---------------------------------------------------------------- stage
 // layers: network/surfaces.mjs layers; surface: topographySurface(); ao: the ground AO texture index or null.
-export async function buildSurfaceMeshes({ glb, layers, surface, ao = null, heightOffset }) {
+export async function buildSurfaceMeshes({ glb, layers, surface, ao = null, heightOffset, refine = null }) {
   const tileSize = (mesh) => groundTile(GROUND_MESHES[mesh].tile).entry.physicalSizeM;
-  const primitives = surfaceGeometry({ layers, surface, tileSize, heightOffset });
+  const primitives = surfaceGeometry({ layers, surface, tileSize, heightOffset, refine });
   const paintedNormal = glb.addTexture(paintedNormalMap(), "image/png");
   const materials = new Map();
   const byMesh = new Map();
@@ -448,8 +467,9 @@ export async function buildSurfaceMeshes({ glb, layers, surface, ao = null, heig
     const { mesh } = primitive;
     let material;
     if (GROUND_MESHES[mesh].tile) {
-      if (!materials.has(mesh)) materials.set(mesh, await tileMaterial(glb, { name: mesh, cls: GROUND_MESHES[mesh].tile, rank: GROUND_MESHES[mesh].rank, ao }));
-      material = materials.get(mesh);
+      const key = `${mesh}@${primitive.rank}`;
+      if (!materials.has(key)) materials.set(key, await tileMaterial(glb, { name: mesh, cls: GROUND_MESHES[mesh].tile, rank: primitive.rank, ao, baseColorFactor: GROUND_MESHES[mesh].baseColorFactor ?? null }));
+      material = materials.get(key);
     } else {
       const texture = paintedTexture(primitive);
       material = glb.addMaterial({
@@ -459,7 +479,7 @@ export async function buildSurfaceMeshes({ glb, layers, surface, ao = null, heig
         ...(ao !== null ? { occlusionTexture: { index: ao, texCoord: 1 } } : {}),
         extras: {
           estimated: true,
-          polygonOffsetRank: GROUND_MESHES[mesh].rank,
+          polygonOffsetRank: primitive.rank,
           paint: primitive.layer.paint.kind,
           texelM: Number(texture.texel.toFixed(4)),
           source: primitive.layer.source,

@@ -18,6 +18,7 @@
 //   markings.mjs  road markings from the photo detection (loadMarkings) and their decal mesh on the Topography
 //                 triangles (buildMarkings)
 //   ground.mjs    the Topography chunks (natural ground) and the class polygons of the modelled ground (network/surfaces.mjs)
+//   kerbs.mjs     kerb ribbons on the A003 outlines, the raised walkway slab, dropped kerbs at crossings, gutter bands
 //   surfaces.mjs  the Ground_* decal meshes (asphalt, pavers, lots, aprons, painted surfaces) with CC0 tiles; no photo pixels
 //   outerTerrain.mjs  the OuterTerrain hill ring around EXTENT, feathered onto Topography's edge
 //   trees.mjs     placement masks and positions (placeTrees), species geometry and instanced Trees_* nodes (buildTrees)
@@ -43,6 +44,7 @@ import { buildFurniture, loadFurniture } from "./stages/furniture.mjs";
 import { buildLights, placeLamps } from "./stages/lights.mjs";
 import { buildMarkings, describeMarkings, loadMarkings } from "./stages/markings.mjs";
 import { buildOuterTerrain } from "./stages/outerTerrain.mjs";
+import { buildKerbs, groundDecalOffset, slabRefine } from "./stages/kerbs.mjs";
 import { loadInputs } from "./stages/sources.mjs";
 import { buildSurfaceMeshes, describeSurfaces } from "./stages/surfaces.mjs";
 import { buildTrees, placeTrees } from "./stages/trees.mjs";
@@ -62,12 +64,16 @@ const { selectableBuildings, campusBuildings, offCampusLots } = await buildBuild
 const treePlacement = placeTrees({ inputs, selectableBuildings, campusBuildings, offCampusLots, blockedRings: furniture.treeBlock });
 const markings = await loadMarkings({ inputs, buildings: [...selectableBuildings, ...campusBuildings] });
 console.log(describeMarkings(markings));
-const { surface, groundInfo, layers, aoTexture } = await buildGround({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots });
-console.log(describeSurfaces(await buildSurfaceMeshes({ glb, layers, surface, ao: aoTexture })));
+const { surface, surfaces, groundInfo, layers, aoTexture } = await buildGround({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots });
+const kerbs = await buildKerbs({ glb, surfaces, groundInfo, surface });
+console.log(describeSurfaces(await buildSurfaceMeshes({
+  glb, layers: [...layers, ...kerbs.gutters], surface, ao: aoTexture, heightOffset: groundDecalOffset(kerbs.plan), refine: slabRefine(kerbs.plan),
+})));
 const markingMesh = buildMarkings({ glb, markings, surface });
 const outerTerrain = await buildOuterTerrain({ glb, inputs });
 const treeInstances = buildTrees({ glb, placement: treePlacement });
-const groundAt = (x, z) => surface.height(x, z);
+// Furniture and lamps stand on the raised walkway slab where there is one (stages/kerbs.mjs).
+const groundAt = kerbs.groundHeightAt;
 const { lamps, stats: lampStats, sites } = placeLamps({ inputs, furniture, selectableBuildings, campusBuildings, offCampusLots, groundInfo });
 const { glow } = buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs, groundAt });
 buildLights({ glb, lamps, stats: lampStats, groundAt, glow });
