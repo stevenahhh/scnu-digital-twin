@@ -15,11 +15,12 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { simulationToTm, tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { METRES_PER_DEGREE_LAT, METRES_PER_DEGREE_LON, geoToModel, metres, modelToGeo } from "../lib/frame.mjs";
 import { pointInRing, ringArea, ringCentroid } from "../lib/geometry.mjs";
 import { mulberry32 } from "../lib/raster.mjs";
 import { Kit, along, bufferLine, frame, lineLength, local, localPlan, offsetLine, orientedRect, rgb, sub, toLocal } from "../lib/solids.mjs";
-import { GLOW_UV, POLE_KINDS, appendLampSolids, distanceToLines, objectDistance, roadNetwork, towardRoad } from "./lights.mjs";
+import { GLOW_UV, POLE_KINDS, appendLampSolids, objectDistance, roadNetwork, towardRoad } from "./lights.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const OBJECTS = path.join(HERE, "..", "data", "photo", "objects-campus.geojson");
@@ -30,6 +31,8 @@ const GROUND_FEATURES = path.join(HERE, "..", "data", "osm-ground.json");
 // Standing-pole bases read from the photo (fetch/poleRoots.mjs): every lamp, signal, sign and floodlight pole of the
 // survey stands at its root there; a pole the review rejects is left out. POLE_ROOTS_FILE swaps it (tests).
 export const POLE_ROOTS = process.env.POLE_ROOTS_FILE ?? path.join(HERE, "..", "data", "photo", "pole-roots.json");
+// By-eye outline check of shelters, fences, walls and planters on the photo: shift (offsetM [east, south] m) or reject.
+export const OUTLINE_REVIEW = process.env.OUTLINE_REVIEW_FILE ?? path.join(HERE, "..", "data", "photo", "outline-review.json");
 const M = metres;
 
 // ---------------------------------------------------------------- decisions taken against the survey
@@ -131,6 +134,7 @@ export function loadFurniture() {
   const objects = [];
   const excluded = [];
   const ids = new Set();
+  const outlineReview = existsSync(OUTLINE_REVIEW) ? JSON.parse(readFileSync(OUTLINE_REVIEW, "utf8")).reviews : {};
   const poleRoots = existsSync(POLE_ROOTS) ? new Map(JSON.parse(readFileSync(POLE_ROOTS, "utf8")).poles.map((q) => [q.id, q])) : new Map();
   const features = [...data.features.map((f) => ({ ...f, source: "survey" })), ...rest.features.map((f) => ({ ...f, source: "rest-spaces" }))];
   for (const { properties: raw, geometry: g, source } of features) {
@@ -141,7 +145,16 @@ export function loadFurniture() {
       continue;
     }
     const p = RETYPED[raw.id]?.props ? { ...raw, ...RETYPED[raw.id].props } : raw;
-    const toModel = ([lon, lat]) => geoToModel(lon, lat);
+    const outline = outlineReview[raw.id];
+    if (outline?.verdict === "reject") {
+      excluded.push({ id: raw.id, kind: raw.kind, reason: `outline review: ${outline.note}` });
+      continue;
+    }
+    const [shiftX, shiftZ] = outline?.verdict === "shift" ? [M(outline.offsetM[0]), M(outline.offsetM[1])] : [0, 0];
+    const toModel = ([lon, lat]) => {
+      const [x, z] = geoToModel(lon, lat);
+      return [x + shiftX, z + shiftZ];
+    };
     const object = { id: p.id, kind: RETYPED[p.id]?.kind ?? p.kind, surveyKind: p.kind, subtype: p.subtype ?? null, source, p, ...heightOf(p) };
     if (g.type === "Point") object.point = toModel(g.coordinates);
     else if (g.type === "LineString") object.line = g.coordinates.map(toModel);
@@ -151,8 +164,9 @@ export function loadFurniture() {
       excluded.push({ id: p.id, kind: p.kind, reason: `pole review: ${pole.note}` });
       continue;
     }
+    if (outline) object.outline = { verdict: outline.verdict, offsetM: outline.offsetM ?? [0, 0] };
     if (pole) {
-      if (pole.root) object.point = toModel(pole.root);
+      if (pole.root) object.point = geoToModel(...pole.root);
       object.pole = { verdict: pole.verdict, shiftM: pole.shiftM ?? 0, residualM: pole.residualM ?? null, site: pole.site ?? null };
     }
     // Roofs were outlined on the photo, so they include the relief lean; the footprint is the outline moved back. A rest
@@ -1194,18 +1208,61 @@ B.stadium_seating = (ctx, o) => {
   }
 };
 
-// Signal poles (VR scene_a19): the mast arm reaches over the arterial the signal controls, past its OSM centreline by
-// SIGNAL_ARM_PAST_M (clamped to 3.5-9 m); away from the arterial it reaches toward the nearest carriageway.
-const SIGNAL_ARM_PAST_M = 1.5;
+// Signal poles (VR scene_a19). Each pole controls the approach whose centreline is nearest (data/network/roads.json
+// edges, plus the OSM arterial and connector lines outside the campus road zones), within SIGNAL_REACH_M: the mast arm
+// reaches from the pole square across that carriageway's near lanes to the centreline (clamped to 3.5-9 m), and the
+// heads face the traffic in those lanes. With right-hand traffic the near lanes run with the kerb on their right, so the
+// heads look back along them, toward the vehicles coming at the pole (signalApproach).
+const SIGNAL_REACH_M = 25;
+const NETWORK = path.join(HERE, "..", "data", "network", "roads.json");
+let networkLines = null;
+function approachLines(ctx) {
+  networkLines ??= JSON.parse(readFileSync(NETWORK, "utf8")).edges.map((e) => ({
+    id: e.properties.id,
+    road: e.properties.road_id ?? null,
+    line: e.geometry.coordinates.map(([x, y]) => tmToScene(...simulationToTm({ x, z: y }))),
+  }));
+  return [
+    ...networkLines,
+    ...ctx.roads.arterials.map((line, i) => ({ id: `OSM_ARTERIAL_${i}`, road: null, line })),
+    ...ctx.roads.connectors.map((line, i) => ({ id: `OSM_CONNECTOR_${i}`, road: null, line })),
+  ];
+}
+
+// The approach a signal at `at` controls: nearest centreline within reachM. Returns { id, road, armDir (unit, toward the
+// centreline), armM, travelDir (unit, the near lanes' traffic), headsFace (unit, = -travelDir) } or null.
+export function signalApproach(at, lines, reachM = SIGNAL_REACH_M) {
+  let best = null;
+  for (const { id, road, line } of lines) {
+    for (let i = 0; i + 1 < line.length; i += 1) {
+      const [a, b] = [line[i], line[i + 1]];
+      const dx = b[0] - a[0];
+      const dz = b[1] - a[1];
+      const t = Math.max(0, Math.min(1, ((at[0] - a[0]) * dx + (at[1] - a[1]) * dz) / (dx * dx + dz * dz || 1)));
+      const q = [a[0] + t * dx, a[1] + t * dz];
+      const d = Math.hypot(q[0] - at[0], q[1] - at[1]);
+      if (!best || d < best.d) best = { id, road, q, d };
+    }
+  }
+  if (!best || best.d > M(reachM) || best.d < 1e-6) return null;
+  const armDir = [(best.q[0] - at[0]) / best.d, (best.q[1] - at[1]) / best.d];
+  // scene plan: x east, z south. n = centreline -> pole; right-hand traffic keeps the kerb (n) on its right, which in
+  // this frame is travel = (n.z, -n.x).
+  const n = [-armDir[0], -armDir[1]];
+  const travelDir = [n[1], -n[0]];
+  return { id: best.id, road: best.road, armDir, armM: best.d / M(1), travelDir, headsFace: [-travelDir[0], -travelDir[1]] };
+}
+
 B.traffic_signal_pole = (ctx, o) => {
   const at = o.point;
   const g = ctx.groundAt(...at);
-  const arterial = towardRoad(at, { arterials: ctx.roads.arterials, connectors: [], zoneRings: [] }, 30);
-  const dir = arterial ?? towardRoad(at, ctx.roads) ?? [1, 0];
+  const approach = signalApproach(at, approachLines(ctx));
+  const dir = approach?.armDir ?? towardRoad(at, ctx.roads) ?? [1, 0];
   const f = frame([at[0], g, at[1]], dir);
-  const lines = arterial ? ctx.roads.arterials : [...ctx.roads.arterials, ...ctx.roads.connectors];
-  const reach = distanceToLines(at, lines) / M(1);
-  const arm = Math.max(3.5, Math.min(9, reach + SIGNAL_ARM_PAST_M));
+  const arm = Math.max(3.5, Math.min(9, approach?.armM ?? 3.5));
+  // which side of the arm frame (t sign) the heads' lenses face
+  const face = approach ? Math.sign(f.v[0] * approach.headsFace[0] + f.v[1] * approach.headsFace[1]) || -1 : -1;
+  (ctx.signals ??= []).push([o.id, approach?.id ?? null, approach?.road ?? null, approach ? Number(((((Math.atan2(approach.headsFace[0], -approach.headsFace[1]) * 180) / Math.PI) + 360) % 360).toFixed(1)) : null, Number(arm.toFixed(2))]);
   ctx.solid.box(f, [-0.3, 0.3], [-0.3, 0.3], [-0.1, 0.25], C.concrete);
   ctx.solid.pole(at, g - M(0.1), g + M(6.6), 0.15, 0.11, C.signalPole);
   ctx.solid.beam(local(f, 0, 0, 6.15), local(f, arm, 0, 6.15), 0.13, 0.13, C.signalPole);
@@ -1213,13 +1270,12 @@ B.traffic_signal_pole = (ctx, o) => {
   const lit = ctx.signalIndex++ % 2 === 0 ? GLOW_UV.red : GLOW_UV.green;
   for (const s of [arm - 0.8, arm * 0.55]) {
     ctx.solid.box(f, [s - 0.66, s + 0.66], [-0.17, 0.17], [5.62, 6.0], C.black);
-    for (const side of [-1, 1]) {
-      [-0.45, -0.15, 0.15, 0.45].forEach((ds, k) => {
-        const t = side * 0.176;
-        const uv = side < 0 ? (k === 0 ? lit : GLOW_UV.dark) : (k === 3 ? (lit === GLOW_UV.red ? GLOW_UV.green : GLOW_UV.red) : GLOW_UV.dark);
-        ctx.glow.face([local(f, s + ds - 0.1, t, 5.71), local(f, s + ds + 0.1, t, 5.71), local(f, s + ds + 0.1, t, 5.91), local(f, s + ds - 0.1, t, 5.91)], [f.v[0] * side, 0, f.v[1] * side], uv);
-      });
-    }
+    // lenses on the side facing the approach (red top, amber, green bottom read along the head); the back stays dark
+    [-0.45, -0.15, 0.15, 0.45].forEach((ds, k) => {
+      const t = face * 0.176;
+      const uv = (k === 0 && lit === GLOW_UV.red) || (k === 3 && lit === GLOW_UV.green) ? lit : GLOW_UV.dark;
+      ctx.glow.face([local(f, s + ds - 0.1, t, 5.71), local(f, s + ds + 0.1, t, 5.71), local(f, s + ds + 0.1, t, 5.91), local(f, s + ds - 0.1, t, 5.91)], [f.v[0] * face, 0, f.v[1] * face], uv);
+    });
   }
 };
 
@@ -1570,6 +1626,7 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
   const roads = roadNetwork(inputs);
   const ctx = makeContext({ groundAt, objects: furniture.objects, roads, sites, fieldCentre: furniture.fieldCentre });
   ctx.signalIndex = 0;
+  ctx.signals = [];
   const counts = {};
   const tally = (kind, estimated) => {
     counts[kind] ??= { surveyed: 0, estimated: 0 };
@@ -1624,6 +1681,8 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     photoOnly: ctx.skipped,
     estimatedBenchesNote: `estimated positions: ${benches.length} plaza benches from VR scene_c1 (no rule-placed benches)`,
     // standing poles: [id, kind, pole verdict, shift from the survey m, residual m, x, z (scene units)]
+    // signals: [id, approach centreline id, RD_ id, heads facing bearing deg, arm m]
+    signals: ctx.signals,
     poles: furniture.objects.filter((o) => POLE_KINDS.has(o.kind) && o.point).map((o) => [o.id, o.kind, o.pole?.verdict ?? "unreviewed", o.pole?.shiftM ?? 0, o.pole?.residualM ?? null, Number(o.point[0].toFixed(2)), Number(o.point[1].toFixed(2))]),
     objects: built.map(([id, kind, h, source, estimated]) => [id, kind, h, source, estimated]),
     // [x, z (scene units), length m, 1 = plaza bench from VR]

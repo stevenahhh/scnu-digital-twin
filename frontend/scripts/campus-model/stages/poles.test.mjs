@@ -88,3 +88,28 @@ test("pole-roots.json: residuals within their thresholds, rule seeds only with p
     }
   }
 });
+
+test("signal heads face the traffic in the near lanes of the nearest approach (right-hand traffic)", async () => {
+  const { signalApproach } = await import("./furniture.mjs");
+  // east-west centreline at z = 0 (scene +z is south). Driving east, the right-hand kerb is the south one, so a pole
+  // 6 m south of the centreline stands beside eastbound lanes and its heads look west, at that traffic.
+  const lines = [{ id: "E1", road: "RD_T", line: [[-50, 0], [50, 0]] }];
+  const south = signalApproach([0, metres(6)], lines);
+  assert.equal(south.id, "E1");
+  assert.ok(Math.abs(south.armM - 6) < 1e-6, "arm reaches the centreline");
+  assert.deepEqual(south.armDir.map((v) => Math.round(v) + 0), [0, -1], "arm points north, over the lanes");
+  assert.deepEqual(south.travelDir.map((v) => Math.round(v) + 0), [1, 0], "south-side lanes run east");
+  assert.deepEqual(south.headsFace.map((v) => Math.round(v) + 0), [-1, 0], "heads look west, at the eastbound traffic");
+  const north = signalApproach([0, -metres(6)], lines);
+  assert.deepEqual(north.headsFace.map((v) => Math.round(v) + 0), [1, 0], "north-side heads look east, at westbound traffic");
+  assert.equal(signalApproach([0, metres(40)], lines), null, "no approach beyond the reach");
+});
+
+test("outline-review.json: every verdict is ok, shift (with a small offset) or reject (with a reason)", () => {
+  const { reviews } = JSON.parse(readFileSync(path.join(HERE, "..", "data", "photo", "outline-review.json"), "utf8"));
+  for (const [id, r] of Object.entries(reviews)) {
+    assert.ok(["ok", "shift", "reject"].includes(r.verdict), `${id} verdict ${r.verdict}`);
+    assert.ok(r.note, `${id} has no note`);
+    if (r.verdict === "shift") assert.ok(Math.hypot(...r.offsetM) <= 5, `${id} shift ${r.offsetM} over 5 m`);
+  }
+});

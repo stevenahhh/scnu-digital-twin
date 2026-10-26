@@ -684,6 +684,23 @@ kind. The build logs the pair count, which is 0. The two crossing bars of the X-
 listed as one compound. `data/photo/restSpaces.test.mjs` checks the provenance, the catalogue ranges, the 3 m rule
 against the survey and the coverage of the reconciliation table.
 
+### Outline check (shelters, fences, walls, planters)
+
+Every bus shelter, fence, low, retaining and garden wall and planter outline of the survey and of
+`data/photo/rest-spaces.geojson` (55) was drawn over its NGII 2025 chip and checked by eye
+(`data/photo/outline-review.json`). 47 lie on their photo feature within about 1 m; 5 are moved onto it (`shift`,
+offset in metres east/south: planters OC0073, OC0117, OC0156 and the court shelters OC0163, OC0164); 3 are left out:
+the photo shows nothing there (bus shelter OC0057, planter OC0154 on the court surface) or the bed is another
+planter's (OC0155 duplicates OC0156). Every shift is a
+by-eye estimate (추정). The survey has no bollards (not resolvable at 0.25 m), so none are drawn.
+
+### Signal heads
+
+Each signal pole controls the approach whose centreline is nearest (the `data/network/roads.json` edges and the OSM
+arterial/connector lines, within 25 m): the mast arm reaches from the pole to that centreline (3.5-9 m) and the heads
+face the traffic in its near lanes (right-hand traffic: the heads look back along the lanes whose kerb is the pole's).
+The `Furniture` extras list each signal as `[id, centreline id, RD_ id, heads facing bearing, arm m]`.
+
 ### Plaza benches
 
 The photo resolves 3 benches. VR scene_c1 shows long dark-blue box benches beside the tree pits on both long sides of
