@@ -184,9 +184,20 @@ export function dominantDirections(ring) {
   });
 }
 
-export function regularOutline(ring, directions, tol = 0.1) {
+// The traced outline is pixel-jittered (0.25 m photo): simplify it at growing tolerances until the snapped outline
+// keeps every corner within OUTLINE_MOVE_M of the trace; else the finest simplified trace.
+export const simplifyRing = (ring) => simplify(ring, 0.1);
+export function regularOutline(ring, directions) {
+  for (const tol of [0.1, 0.15, 0.2, 0.3]) {
+    const out = snapOutline(ring, directions, tol);
+    if (out) return out;
+  }
+  return simplify(ring, 0.1);
+}
+
+function snapOutline(ring, directions, tol) {
   const simple = simplify(ring, tol);
-  if (simple.length < 3) return ring;
+  if (simple.length < 3) return null;
   const dirs = [...dominantDirections(simple), ...directions];
   const cosSnap = Math.cos((SNAP_DEG * Math.PI) / 180);
   const cosMerge = Math.cos((8 * Math.PI) / 180);
@@ -204,7 +215,7 @@ export function regularOutline(ring, directions, tol = 0.1) {
     return { mid: scale(add(scale(x.mid, x.length), scale(y.mid, y.length)), 1 / length), dir: x.length >= y.length ? x.dir : y.dir, length };
   };
   const start = edges.findIndex((e, i) => !same(edges[(i + edges.length - 1) % edges.length], e));
-  if (start < 0) return simple;
+  if (start < 0) return null;
   edges = [...edges.slice(start), ...edges.slice(0, start)];
   const runs = [];
   for (const e of edges) {
@@ -212,7 +223,7 @@ export function regularOutline(ring, directions, tol = 0.1) {
     else runs.push(e);
   }
   if (runs.length > 1 && same(runs.at(-1), runs[0])) runs[0] = merge(runs.pop(), runs[0]);
-  if (runs.length < 3) return simple;
+  if (runs.length < 3) return null;
   const sinMin = Math.sin((10 * Math.PI) / 180);
   const out = runs.map((x, i) => {
     const y = runs[(i + 1) % runs.length];
@@ -221,8 +232,65 @@ export function regularOutline(ring, directions, tol = 0.1) {
     const t = ((y.mid[0] - x.mid[0]) * y.dir[1] - (y.mid[1] - x.mid[1]) * y.dir[0]) / denom;
     return add(x.mid, scale(x.dir, t));
   });
-  const moved = Math.max(...out.map((p) => Math.min(...ring.map((q) => norm(sub(p, q))))));
-  return moved <= OUTLINE_MOVE_M ? out : simple;
+  const closed = [...ring, ring[0]];
+  const moved = Math.max(...out.map((p) => distanceToPolyline(p, closed)));
+  return moved <= OUTLINE_MOVE_M ? out : null;
+}
+
+// Straight strokes of a painted frame (a stall row's rail and dividers, an L): along each dominant direction, the
+// interior points (0.05 m grid) are binned across it; every peak of at least STROKE_MIN_M of paint becomes one straight
+// stroke over its longest continuous run (gaps under 0.7 m: a rail crossed by an earlier divider). Returns [{ from, to }] in metres.
+const STROKE_MIN_M = 1;
+export function strokesFromBlob(rings, directions) {
+  const step = 0.05;
+  let points = gridIn([rings], step);
+  const out = [];
+  for (const u of directions) {
+    if (points.length < STROKE_MIN_M / step) break;
+    const n = perpOf(u);
+    const t = points.map((p) => dot(p, n));
+    const t0 = Math.min(...t);
+    const bins = new Float64Array(Math.ceil((Math.max(...t) - t0) / step) + 2);
+    for (const v of t) bins[Math.floor((v - t0) / step)] += 1;
+    const smooth = Array.from(bins, (_, k) => (bins[k - 1] ?? 0) + bins[k] + (bins[k + 1] ?? 0));
+    const minCount = (STROKE_MIN_M / step) * 2;
+    const peaks = [];
+    for (let k = 0; k < smooth.length; k += 1) {
+      if (smooth[k] < minCount || smooth[k] < (smooth[k - 1] ?? 0) || smooth[k] < (smooth[k + 1] ?? 0)) continue;
+      if (peaks.some((q) => Math.abs(q - k) * step < 0.3)) continue;
+      peaks.push(k);
+    }
+    const used = new Set();
+    for (const k of peaks) {
+      const near = [];
+      points.forEach((p, i) => {
+        if (Math.abs(t[i] - (t0 + (k + 0.5) * step)) <= 0.15) near.push(i);
+      });
+      // the paint a stroke takes: its run, 0.3 m either side (the blurred rim of a 0.25 m-pixel line)
+      const taken = [];
+      points.forEach((p, i) => {
+        if (Math.abs(t[i] - (t0 + (k + 0.5) * step)) <= 0.3) taken.push(i);
+      });
+      const tc = near.reduce((acc, i) => acc + t[i], 0) / near.length;
+      const sv = near.map((i) => dot(points[i], u)).sort((a, b) => a - b);
+      let best = null;
+      let start = 0;
+      for (let i = 1; i <= sv.length; i += 1) {
+        if (i === sv.length || sv[i] - sv[i - 1] > 0.7) {
+          if (!best || sv[i - 1] - sv[start] > best[1] - best[0]) best = [sv[start], sv[i - 1]];
+          start = i;
+        }
+      }
+      if (!best || best[1] - best[0] < STROKE_MIN_M) continue;
+      out.push({ from: add(scale(u, best[0]), scale(n, tc)), to: add(scale(u, best[1]), scale(n, tc)) });
+      for (const i of taken) {
+        const sp = dot(points[i], u);
+        if (sp >= best[0] - 0.3 && sp <= best[1] + 0.3) used.add(i);
+      }
+    }
+    points = points.filter((_, i) => !used.has(i));
+  }
+  return out;
 }
 
 // Score of a template against the photo blob: intersection over union of their areas (0.05 m grid).
@@ -260,7 +328,7 @@ export function regularise(drawn, ctx) {
   const pieces = [];
   const stats = {
     chains: 0, fragments: 0, straightRuns: 0, arcs: 0, straightness: [], residual: [], dashPeriods: [], duplicateLines: 0,
-    crossings: 0, crossingGroups: 0, crossingList: [], barsDrawn: 0, barsDetected: 0, zebraPhaseResidual: [], glyphs: {}, textReadings: [], dropped: { blocked: 0, textTooSmall: 0 },
+    crossings: 0, crossingGroups: 0, crossingList: [], blockedIds: [], frameStrokes: 0, barsDrawn: 0, barsDetected: 0, zebraPhaseResidual: [], glyphs: {}, textReadings: [], dropped: { blocked: 0, textTooSmall: 0 },
     stopSquared: 0, parallelSnapped: 0, outlines: 0, rectangles: 0,
   };
   const emit = (rings, colour, kind, extra = {}) => pieces.push({ rings: rings.map((r) => r.map(toScene)), colour, kind, estimated: false, ...extra });
@@ -269,6 +337,7 @@ export function regularise(drawn, ctx) {
     const samples = polys.flatMap((rings) => rings[0]);
     if (blockedShare(samples) > BLOCKED_SHARE) {
       stats.dropped.blocked += 1;
+      stats.blockedIds.push(extra?.id ?? kind);
       return;
     }
     for (const rings of polys) emit(rings, colour, kind, extra);
@@ -320,7 +389,20 @@ export function regularise(drawn, ctx) {
         const box = orientedBox(rings[0]);
         const fill = polygonArea(rings) / Math.max(1e-6, 4 * box.halfLong * box.halfShort);
         if (fill < RECT_FILL || box.halfLong < 2 * box.halfShort) {
-          glyphs.push(c);
+          // the dominant directions first, then the same turned by 6 deg for a rail that bends along the row
+          const turn = (d, deg) => {
+            const a = Math.atan2(d[1], d[0]) + (deg * Math.PI) / 180;
+            return [Math.cos(a), Math.sin(a)];
+          };
+          const main = dominantDirections(simplifyRing(rings[0]));
+          const strokes = strokesFromBlob(rings, [...main, ...main.flatMap((d) => [6, -6].map((deg) => turn(d, deg)))]);
+          if (!strokes.length) {
+            glyphs.push(c);
+            continue;
+          }
+          const half = ctx.statute.widthFor(c.kind) / 2;
+          emitPoly(strokes.map(({ from, to }) => [rect(scale(add(from, to), 0.5), unit(sub(to, from)), perpOf(unit(sub(to, from))), norm(sub(to, from)) / 2 + half, half)]), c.colour, c.kind, { id: c.id });
+          stats.frameStrokes += strokes.length;
           continue;
         }
         points = [sub(box.centre, scale(box.long, box.halfLong)), add(box.centre, scale(box.long, box.halfLong))];
@@ -592,10 +674,10 @@ export function regularise(drawn, ctx) {
         const s = rings[0].map((p) => dot(sub(p, box.centre), u));
         const t = rings[0].map((p) => dot(sub(p, box.centre), v));
         const centre = add(box.centre, add(scale(u, (Math.min(...s) + Math.max(...s)) / 2), scale(v, (Math.min(...t) + Math.max(...t)) / 2)));
-        emitPoly([[rect(centre, u, v, (Math.max(...s) - Math.min(...s)) / 2, (Math.max(...t) - Math.min(...t)) / 2)]], c.colour, c.kind);
+        emitPoly([[rect(centre, u, v, (Math.max(...s) - Math.min(...s)) / 2, (Math.max(...t) - Math.min(...t)) / 2)]], c.colour, c.kind, { id: c.id });
         stats.rectangles += 1;
       } else {
-        emitPoly([rings.map((ring) => regularOutline(ring, dirs))], c.colour, c.kind);
+        emitPoly([rings.map((ring) => regularOutline(ring, dirs))], c.colour, c.kind, { id: c.id });
         stats.outlines += 1;
       }
     }
