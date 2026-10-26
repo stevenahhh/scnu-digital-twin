@@ -1,5 +1,5 @@
 {
- "description": "Building forms of the modelled campus buildings: per building a list of masses (outer ring, courtyard rings, base and top in metres above the building's lowest ground, parapet, roof type, pitched-roof triangles, columns under raised parts), the voids they leave (courtyards open to the sky, light wells, passages under raised masses), the relief lean of its roof in the NGII 2025 orthophoto and the photo IoU of the roof outline (lean-corrected). source: the VWorld LOD4 mesh, or the current footprint when LOD4 has no model or its outline disagrees with the photo. Rings are lon/lat (EPSG:4326). Estimates derived from VWorld's LOD4 models and the photo, not survey data.",
+ "description": "Building forms of the modelled campus buildings: per building a list of masses (outer ring, courtyard rings, base and top in metres above the building's lowest ground, parapet, roof type, pitched-roof triangles, columns under raised parts), the voids they leave (courtyards open to the sky, light wells, passages under raised masses), the relief lean of its roof in the NGII 2025 orthophoto and the photo IoU of the roof outline (lean-corrected). source: the VWorld LOD4 mesh, or the current footprint when LOD4 has no model or its outline disagrees with the photo. Rings are lon/lat (EPSG:4326). Estimates derived from VWorld's LOD4 models and the photo, not survey data. Curated mass fields (facades-r3, not from fetch/building_forms.py): look (a look of scnu-facades.json for this mass only) and round ({ centre: [lon, lat], radiusMetres, segments, slots: compass bearings of glass slots }: a true cylinder replaces the outline), each with a lookSource or roundSource.",
  "sources": [
   "VWorld 3D building models, 3D Tiles facility_LOD4/Jeollanam-do/Suncheon-si (keyless; stored under consent D1 of 2026-10-24; 출처: 브이월드)",
   "NGII 2025 orthophoto sheet 34702020, 0.25 m (국토지리정보원; read locally, not committed; licence decision D2)",
@@ -26794,7 +26794,20 @@
      "areaSquareMetres": 49.9,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 0.89
+     "photoSupport": 0.89,
+     "look": "E4-drum",
+     "round": {
+      "centre": [
+       127.47854998,
+       34.96974691
+      ],
+      "radiusMetres": 3.9,
+      "segments": 24,
+      "slots": [
+       60
+      ]
+     },
+     "roundSource": "curated (facades-r3): the round tower stands about 4 m north of this LOD4 slice on the NGII 2025 sheet (white round roof, lean-corrected like the main mass) and at the north end of the brick block in VR scene_e4 f; centre and radius 3.9 m from the photo roof, one glass slot facing 60 deg (estimated)"
     },
     {
      "outer": [
@@ -35904,7 +35917,9 @@
      "roof": "flat",
      "areaSquareMetres": 258.7,
      "parapetMetres": 1,
-     "photoSupport": 1
+     "photoSupport": 1,
+     "look": "F1-drum",
+     "lookSource": "curated (facades-r3): VR scene_f2 l, the north drum is silver standing-seam metal without windows (estimated)"
     },
     {
      "outer": [
