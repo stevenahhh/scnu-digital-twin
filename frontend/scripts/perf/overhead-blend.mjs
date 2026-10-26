@@ -13,11 +13,24 @@
 // Usage (Legacy dev server already running in frontend/, e.g. `vite --host 127.0.0.1 --port 5184`):
 //   bun scripts/perf/overhead-blend.mjs --url http://127.0.0.1:5184/ --out <dir> [--prefix before-] [--tile 100]
 //       [--campus-only] [--max-shift 4] [--edge-floor 0.02] [--json <path>] [--clock 2026-10-24T12:00:00+09:00]
+//       [--visible-ground]
 //   bun scripts/perf/overhead-blend.mjs --compare <before.json> <after.json> --out <dir>
 //       [--before-images <dir>:<prefix>] [--after-images <dir>:<prefix>]   (render-only window pairs, residuals.md)
 // Outputs: <prefix>tile-<E0>-<N0>-side.png (render | photo), <prefix>tile-<E0>-<N0>-blend.png (photo + render at 50 %
 // | edges: render red, photo cyan), the same pair for the four compare-satellite windows (<prefix><name>-*.png,
 // 800 x 600) and the JSON report. dx > 0: render content east of the photo; dy > 0: render content south.
+//
+// Visible-ground mode (--visible-ground; the full mode above still runs and is still reported, unchanged): per 100 m tile
+// a second, ground-only render (meshes matching VISIBLE_HIDE: buildings, trees, furniture, lamps, traffic hidden) is
+// compared with the same photo window after removing, from BOTH edge maps, (a) every building footprint of
+// data/gis-buildings.json dilated by VISIBLE.leanBufferM (the photo shows the roof there, displaced by relief lean, while
+// the render shows the ground under it) and (b) the photo's canopy and deep shade (G above R and B by VISIBLE.canopyGreen,
+// or luminance below VISIBLE.shadeLum, dilated VISIBLE.canopyDilatePx; trees are not ground). The threshold is the same
+// 1 photo px. A tile is "not measurable" when less than VISIBLE.minVisibleShare (N) of it is visible ground, when its
+// render edge share inside the visible ground is below VISIBLE.minEdgeShare, or when the correlation peak ratio is below
+// VISIBLE.minRatio (X); otherwise PASS or FAIL. N, X and the edge floor are justified in overheadBlendCore.mjs VISIBLE.
+// JSON: `visibleGround` { thresholds, tiles, summary }; images <prefix>tile-<E0>-<N0>-visible-blend.png (excluded
+// ground darkened). The run passes only when every reported mode passes.
 // Exit 0 PASS, 1 FAIL, 2 missing sheet or unreachable server (NGII_SHEET overrides the sheet path).
 // Chrome is driven over --remote-debugging-pipe, so no TCP port is opened besides the dev server's.
 import { spawn } from "node:child_process";
@@ -29,11 +42,14 @@ import { D4_SCENE, EXTENT } from "../campus-model/lib/frame.mjs";
 import { DEFAULT_SHEET, openSheet } from "../campus-model/lib/ngiiSheet.mjs";
 import { decodePng, encodePng } from "../campus-model/lib/png.mjs";
 import { GRID_CONVERGENCE_DEG, sceneToTm, tmToPixel, tmToScene, wgs84ToTm } from "../../src/geo/epsg5186.mjs";
-import { EDGE_THRESHOLD, aggregate, measureTile, pointInRing, renderHalf, residualsMarkdown, sideBySide, tileGrid } from "./overheadBlendCore.mjs";
+import { EDGE_THRESHOLD, VISIBLE, aggregate, aggregateVisible, canopyMask, footprintMask, measureTile, measureVisible, pointInRing, renderHalf, residualsMarkdown, sideBySide, tileGrid } from "./overheadBlendCore.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const CAMPUS = join(HERE, "../campus-model/data/osm-campus.json");
+const BUILDINGS = join(HERE, "../campus-model/data/gis-buildings.json");
+// Ground-only render of the visible-ground mode: the GLB roots and runtime groups that are not ground.
+const VISIBLE_HIDE = "^(BLD_|CampusBuildings|Trees_|Furniture|Lamps_|campus-traffic)";
 const METRES_PER_PIXEL = 0.25;
 const PASS_PX = 1;
 
@@ -59,6 +75,7 @@ const maxShift = Number(option("max-shift", "4"));
 const edgeFloor = Number(option("edge-floor", "0.02"));
 const jsonPath = resolve(option("json", join(outDir, `${prefix}overhead-blend.json`)));
 const clock = option("clock", "2026-10-24T12:00:00+09:00");
+const visibleGround = args.includes("--visible-ground");
 if (Number.isNaN(Date.parse(clock))) throw new Error(`--clock is not a date: ${clock}`);
 
 // ---------------------------------------------------------------- --compare <before.json> <after.json> --out <dir>
@@ -174,7 +191,7 @@ const PAGE_HELPERS = `(() => {
       const c = new Box3().setFromObject(node).getCenter(store.getState().camera.position.clone());
       return { x: c.x, y: c.y, z: c.z };
     },
-    render({ centreX, centreZ, upX, upZ, halfWidth, halfHeight, width, height }) {
+    render({ centreX, centreZ, upX, upZ, halfWidth, halfHeight, width, height, hide }) {
       const state = store.getState();
       const { gl, scene, camera } = state;
       const saved = {
@@ -182,6 +199,8 @@ const PAGE_HELPERS = `(() => {
         projection: camera.projectionMatrix.clone(), projectionInverse: camera.projectionMatrixInverse.clone(),
         fog: scene.fog, pixelRatio: gl.getPixelRatio(), width: state.size.width, height: state.size.height,
       };
+      const hidden = [];
+      if (hide) { const re = new RegExp(hide); scene.traverse((o) => { if (o.visible && re.test(o.name || "")) { o.visible = false; hidden.push(o); } }); }
       try {
         scene.fog = null;
         camera.up.set(upX, 0, upZ);
@@ -202,6 +221,7 @@ const PAGE_HELPERS = `(() => {
         for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
         return btoa(binary);
       } finally {
+        hidden.forEach((o) => { o.visible = true; });
         scene.fog = saved.fog;
         camera.position.copy(saved.position); camera.quaternion.copy(saved.quaternion); camera.up.copy(saved.up);
         camera.projectionMatrix.copy(saved.projection); camera.projectionMatrixInverse.copy(saved.projectionInverse);
@@ -325,11 +345,38 @@ try {
     return rest;
   };
 
+  // visible-ground pass of one tile: ground-only render, footprints (+ lean buffer) and photo canopy removed from both
+  const footprints = visibleGround ? JSON.parse(readFileSync(BUILDINGS, "utf8")).buildings.flatMap((b) => b.polygons.map((poly) => poly[0].map(([lon, lat]) => wgs84ToTm(lon, lat)))) : [];
+  const measureVisibleTile = async (view, label) => {
+    const b64 = await evaluate(`window.__blend.render(${JSON.stringify({
+      centreX: view.centre[0] + offset.x, centreZ: view.centre[1] + offset.z, upX: view.up[0], upZ: view.up[1],
+      halfWidth: view.halfWidth, halfHeight: view.halfHeight, width: view.width, height: view.height, hide: VISIBLE_HIDE,
+    })})`);
+    const render = new Uint8Array(Buffer.from(b64, "base64"));
+    const photo = sheet.readWindow(view.col0, view.row0, view.width, view.height);
+    const toPx = ([E, N]) => [(E - view.E0) / METRES_PER_PIXEL, (view.N0 + view.height * METRES_PER_PIXEL - N) / METRES_PER_PIXEL];
+    const feet = footprintMask(footprints.map((ring) => ring.map(toPx)), view.width, view.height, VISIBLE.leanBufferM / METRES_PER_PIXEL);
+    const canopy = canopyMask(photo, view.width, view.height);
+    const excluded = feet.map((v, i) => v | canopy[i]);
+    const result = measureVisible({ render, photo, width: view.width, height: view.height, channels: 4, excluded, maxShift, passPx: PASS_PX });
+    const dimmed = photo.slice();
+    for (let i = 0; i < excluded.length; i += 1) if (excluded[i]) for (let k = 0; k < 3; k += 1) dimmed[i * 3 + k] >>= 2;
+    writeFileSync(join(outDir, `${prefix}${label}-visible-blend.png`), composeBlend(render, dimmed, result.renderEdges, result.photoEdges, view.width, view.height));
+    const { renderEdges, photoEdges, ...rest } = result;
+    return { ...rest, footprintShare: Math.round((feet.reduce((n, v) => n + v, 0) / feet.length) * 10000) / 10000 };
+  };
+
   const tileResults = [];
+  const visibleResults = [];
   for (const t of tiles) {
     const r = await measure(viewFor(t.E0, t.N0, tileM, tileM), `tile-${t.E0}-${t.N0}`);
     tileResults.push({ E0: t.E0, N0: t.N0, ...r });
     console.log(`TILE ${t.E0} ${t.N0} dx=${r.dx} dy=${r.dy} ratio=${r.ratio} edgeShare=${r.edgeShare} signal=${r.signal} pass=${r.pass}`);
+    if (visibleGround) {
+      const v = await measureVisibleTile(viewFor(t.E0, t.N0, tileM, tileM), `tile-${t.E0}-${t.N0}`);
+      visibleResults.push({ E0: t.E0, N0: t.N0, ...v });
+      console.log(`VISIBLE ${t.E0} ${t.N0} ${v.verdict} dx=${v.dx} dy=${v.dy} ratio=${v.ratio} visible=${v.visibleShare} edgeShare=${v.edgeShare}${v.reason ? ` (${v.reason})` : ""}`);
+    }
   }
   const windows = [];
   for (const w of WINDOWS) {
@@ -341,6 +388,7 @@ try {
   }
 
   const summary = aggregate(tileResults);
+  const visibleSummary = visibleGround ? aggregateVisible(visibleResults) : null;
   const report = {
     generatedAt: new Date().toISOString(),
     url,
@@ -357,13 +405,18 @@ try {
     tiles: tileResults,
     windows,
     images: { dir: outDir, prefix },
+    ...(visibleGround ? { visibleGround: {
+      description: "ground-only render vs photo with building footprints (+ lean buffer) and photo canopy/shade removed from both edge maps; same 1 px threshold",
+      hide: VISIBLE_HIDE, footprints: "data/gis-buildings.json", thresholds: { passPx: PASS_PX, maxShift, ...VISIBLE }, ...visibleSummary, tiles: visibleResults,
+    } } : {}),
     consoleErrors,
   };
   mkdirSync(dirname(jsonPath), { recursive: true });
   writeFileSync(jsonPath, `${JSON.stringify(report, null, 2)}\n`);
   console.log(`RESULT ${summary.pass ? "PASS" : "FAIL"}: ${summary.signalTiles}/${summary.tilesTotal} signal tiles, ${summary.failingTiles} beyond ${PASS_PX} px, max shift ${summary.maxShiftPx} px; json ${jsonPath}`);
+  if (visibleSummary) console.log(`RESULT_VISIBLE ${visibleSummary.pass ? "PASS" : "FAIL"}: ${visibleSummary.measurableTiles}/${visibleSummary.tilesTotal} measurable tiles, ${visibleSummary.failingTiles} beyond ${PASS_PX} px, ${visibleSummary.notMeasurable} not measurable`);
   console.log(`CONSOLE_ERRORS ${consoleErrors.length}`);
-  exitCode = summary.pass ? 0 : 1;
+  exitCode = summary.pass && (!visibleSummary || visibleSummary.pass) ? 0 : 1;
 } catch (error) {
   exitCode = 1;
   console.error("OVERHEAD_BLEND_ERROR", error.stack ?? error);

@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { EXTENT, modelToGeo } from "../campus-model/lib/frame.mjs";
 import { wgs84ToTm } from "../../src/geo/epsg5186.mjs";
-import { SIDE_GAP, aggregate, measureTile, renderHalf, residualsMarkdown, sideBySide, tileGrid } from "./overheadBlendCore.mjs";
+import { SIDE_GAP, VISIBLE, aggregate, aggregateVisible, canopyMask, footprintMask, measureTile, measureVisible, renderHalf, residualsMarkdown, sideBySide, tileGrid } from "./overheadBlendCore.mjs";
 
 const W = 120;
 const H = 100;
@@ -113,4 +113,57 @@ test("residualsMarkdown lists every tile before vs after with the PASS counts", 
   assert.match(md, /before: 2\/2 .* after: 1\/2/);
   assert.match(md, /\| 3,4 \| 0, 0 PASS \| -2, 0 FAIL \|/);
   assert.match(md, /\| main-gate \| 0, 0 PASS \| -2, 0 FAIL \|/);
+});
+
+test("footprintMask fills a footprint and dilates it by the lean buffer", () => {
+  const ring = [[10, 10], [20, 10], [20, 20], [10, 20], [10, 10]];
+  const m = footprintMask([ring], 40, 40, 3);
+  assert.equal(m[15 * 40 + 15], 1, "inside");
+  assert.equal(m[15 * 40 + 22], 1, "within the 3 px buffer");
+  assert.equal(m[15 * 40 + 26], 0, "beyond the buffer");
+  assert.equal(footprintMask([ring.map(([x, y]) => [x + 100, y])], 40, 40, 3).some(Boolean), false, "a footprint off the tile marks nothing");
+});
+
+test("canopyMask marks green canopy and deep shade, not grey ground", () => {
+  const px = (rgb) => new Uint8Array([...rgb]);
+  const photo = new Uint8Array([...px([60, 90, 50]), ...px([15, 15, 15]), ...px([120, 120, 118])]);
+  assert.deepEqual([...canopyMask(photo, 3, 1, { dilatePx: 0 })], [1, 1, 0]);
+});
+
+const pattern = (w, h, shift = 0) => {
+  const out = new Uint8Array(w * h * 3).fill(90);
+  for (let y = 0; y < h; y += 1) for (let x = 0; x < w; x += 1) {
+    const xs = x - shift;
+    if ((xs > 10 && xs < 14) || (y > 20 && y < 23) || (xs + y) % 37 === 0) out.fill(220, (y * w + x) * 3, (y * w + x) * 3 + 3);
+  }
+  return out;
+};
+
+test("measureVisible passes an aligned tile, fails a 2 px shift and ignores what is excluded", () => {
+  const w = 60, h = 60, none = new Uint8Array(w * h);
+  const loose = { minVisibleShare: 0, minEdgeShare: 0, minRatio: 0 };
+  assert.equal(measureVisible({ render: pattern(w, h), photo: pattern(w, h), width: w, height: h, excluded: none, ...loose }).verdict, "PASS");
+  const off = measureVisible({ render: pattern(w, h, 2), photo: pattern(w, h), width: w, height: h, excluded: none, ...loose });
+  assert.deepEqual([off.verdict, off.dx], ["FAIL", 2]);
+  // a roof in the render that the photo shows elsewhere is removed by the mask and stops pulling the peak
+  const roof = pattern(w, h); for (let y = 35; y < 55; y += 1) roof.fill(250, (y * w + 35) * 3, (y * w + 55) * 3);
+  const feet = new Uint8Array(w * h); for (let y = 33; y < 57; y += 1) feet.fill(1, y * w + 33, y * w + 57);
+  assert.equal(measureVisible({ render: roof, photo: pattern(w, h), width: w, height: h, excluded: feet, ...loose }).verdict, "PASS");
+});
+
+test("measureVisible reports not measurable with the reason (visible share, edge share, flat peak)", () => {
+  const w = 40, h = 40;
+  const most = new Uint8Array(w * h).fill(1); most.fill(0, 0, 40);
+  const r = measureVisible({ render: pattern(w, h), photo: pattern(w, h), width: w, height: h, excluded: most });
+  assert.equal(r.verdict, "not measurable");
+  assert.match(r.reason, /visible ground 2\.5 % < 8 %/);
+  const flat = new Uint8Array(w * h * 3).fill(100);
+  assert.match(measureVisible({ render: flat, photo: flat, width: w, height: h, excluded: new Uint8Array(w * h) }).reason, /edge share/);
+  assert.equal(VISIBLE.minRatio, 1.1);
+});
+
+test("aggregateVisible passes only when no measurable tile fails", () => {
+  assert.deepEqual(aggregateVisible([{ verdict: "PASS" }, { verdict: "not measurable" }]), { tilesTotal: 2, measurableTiles: 1, notMeasurable: 1, failingTiles: 0, pass: true });
+  assert.equal(aggregateVisible([{ verdict: "PASS" }, { verdict: "FAIL" }]).pass, false);
+  assert.equal(aggregateVisible([{ verdict: "not measurable" }]).pass, false);
 });

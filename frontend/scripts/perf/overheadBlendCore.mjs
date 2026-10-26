@@ -188,3 +188,107 @@ export function residualsMarkdown(before, after) {
   }
   return `${lines.join("\n")}\n`;
 }
+
+// ---------------------------------------------------------------- visible-ground mode (--visible-ground)
+// The full mode compares everything the render shows. Two things there are not ground the dashboard shows correctly by
+// construction: the ground under a building (the render hides buildings in this mode, the photo shows the roof, leaned
+// by relief displacement) and the ground under trees (the photo shows canopy and its shade, the ground-only render does
+// not). The visible-ground mode removes both from BOTH edge maps and correlates what is left.
+export const VISIBLE = Object.freeze({
+  leanBufferM: 2, // building footprints are dilated by this much (photo roof lean)
+  canopyGreen: 8, // photo pixel is canopy when G exceeds R and B by this much
+  shadeLum: 30, // ... or is darker than this (deep shade under trees and buildings)
+  canopyDilatePx: 2,
+  // Measurability, chosen from the R2 evidence (62 tile measurements, campus 100 m tiles on GLBs b148320 and 865023c;
+  // EVID r2/work/visible-eval*.txt):
+  //   X minRatio 1.10: peak / best score outside the peak's 3 x 3 neighbourhood. All nine values below 1.09 (1.035-1.083)
+  //     are flat or periodic correlations (stadium lane and pitch lines, a tile of thin fragments) and hold the only shift
+  //     off by more than 1 px (-2,-2 at 1.078); every value from 1.112 up lands within 1 px. 1.10 sits in that gap.
+  //   N minVisibleShare 0.08: the smallest visible share measured, 9.3 % (a canopy-covered tile), still gives a sharp
+  //     correct peak (ratio 1.45), so no failure in the evidence comes from too little visible ground; 8 % is just below
+  //     the tested range, and less than that is called untested rather than guessed.
+  //   minEdgeShare 0.003: the lowest render edge share with a sharp peak is 0.0039; the one tile below (0.0023-0.0026)
+  //     has no usable edges.
+  minVisibleShare: 0.08,
+  minEdgeShare: 0.003,
+  minRatio: 1.1,
+});
+
+const dilate = (mask, width, height, r) => {
+  if (r <= 0) return mask;
+  const out = new Uint8Array(mask.length);
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      if (!mask[y * width + x]) continue;
+      for (let j = -r; j <= r; j += 1) for (let i = -r; i <= r; i += 1) {
+        const xx = x + i;
+        const yy = y + j;
+        if (xx >= 0 && yy >= 0 && xx < width && yy < height && i * i + j * j <= r * r) out[yy * width + xx] = 1;
+      }
+    }
+  }
+  return out;
+};
+
+// rings: building footprints in tile pixels ([[x, y], ...], pixel centres at +0.5); returns the filled, dilated mask.
+export function footprintMask(rings, width, height, bufferPx) {
+  const mask = new Uint8Array(width * height);
+  for (const ring of rings) {
+    const xs = ring.map((p) => p[0]);
+    const ys = ring.map((p) => p[1]);
+    if (Math.max(...xs) < -bufferPx || Math.min(...xs) > width + bufferPx || Math.max(...ys) < -bufferPx || Math.min(...ys) > height + bufferPx) continue;
+    for (let y = Math.max(0, Math.floor(Math.min(...ys))); y <= Math.min(height - 1, Math.ceil(Math.max(...ys))); y += 1) {
+      for (let x = Math.max(0, Math.floor(Math.min(...xs))); x <= Math.min(width - 1, Math.ceil(Math.max(...xs))); x += 1) {
+        if (pointInRing([x + 0.5, y + 0.5], ring)) mask[y * width + x] = 1;
+      }
+    }
+    // the outline itself, so footprints thinner than a pixel still count before dilation
+    for (let k = 0; k + 1 < ring.length; k += 1) {
+      const [a, b] = [ring[k], ring[k + 1]];
+      const n = Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) * 2) + 1;
+      for (let s = 0; s <= n; s += 1) {
+        const x = Math.floor(a[0] + ((b[0] - a[0]) * s) / n);
+        const y = Math.floor(a[1] + ((b[1] - a[1]) * s) / n);
+        if (x >= 0 && y >= 0 && x < width && y < height) mask[y * width + x] = 1;
+      }
+    }
+  }
+  return dilate(mask, width, height, Math.round(bufferPx));
+}
+
+// Photo canopy and deep shade (RGB, 3 channels), dilated.
+export function canopyMask(photo, width, height, { green = VISIBLE.canopyGreen, shade = VISIBLE.shadeLum, dilatePx = VISIBLE.canopyDilatePx } = {}) {
+  const mask = new Uint8Array(width * height);
+  for (let i = 0; i < width * height; i += 1) {
+    const [r, g, b] = [photo[i * 3], photo[i * 3 + 1], photo[i * 3 + 2]];
+    if ((g > r + green && g > b + green) || 0.299 * r + 0.587 * g + 0.114 * b < shade) mask[i] = 1;
+  }
+  return dilate(mask, width, height, dilatePx);
+}
+
+// One tile in visible-ground mode: excluded = footprint or canopy mask (1 = not visible ground).
+export function measureVisible({ render, photo, width, height, channels = 3, excluded, maxShift = 4, passPx = 1, minVisibleShare = VISIBLE.minVisibleShare, minEdgeShare = VISIBLE.minEdgeShare, minRatio = VISIBLE.minRatio }) {
+  const keep = (edges) => edges.map((v, i) => (excluded[i] ? 0 : v));
+  const renderEdges = keep(sobel(luminance(render, width, height, channels), width, height));
+  const photoEdges = keep(sobel(luminance(photo, width, height, 3), width, height));
+  const visibleShare = excluded.reduce((n, v) => n + (v ? 0 : 1), 0) / (width * height);
+  const share = edgeShare(renderEdges);
+  const { dx, dy, ratio } = correlate(renderEdges, photoEdges, width, height, maxShift);
+  const reasons = [];
+  if (visibleShare < minVisibleShare) reasons.push(`visible ground ${(visibleShare * 100).toFixed(1)} % < ${minVisibleShare * 100} %`);
+  if (share < minEdgeShare) reasons.push(`edge share ${share.toFixed(4)} < ${minEdgeShare}`);
+  if (!(ratio >= minRatio)) reasons.push(`peak ratio ${Number.isFinite(ratio) ? ratio.toFixed(3) : ratio} < ${minRatio}`);
+  const verdict = reasons.length ? "not measurable" : Math.max(Math.abs(dx), Math.abs(dy)) <= passPx ? "PASS" : "FAIL";
+  return {
+    dx, dy, ratio: Number.isFinite(ratio) ? Math.round(ratio * 1000) / 1000 : null,
+    visibleShare: Math.round(visibleShare * 10000) / 10000, edgeShare: Math.round(share * 10000) / 10000,
+    verdict, reason: reasons.join("; ") || null, renderEdges, photoEdges,
+  };
+}
+
+// Visible-ground summary: PASS when no measurable tile fails and at least one is measurable.
+export function aggregateVisible(tiles) {
+  const measurable = tiles.filter((t) => t.verdict !== "not measurable");
+  const failing = measurable.filter((t) => t.verdict === "FAIL");
+  return { tilesTotal: tiles.length, measurableTiles: measurable.length, notMeasurable: tiles.length - measurable.length, failingTiles: failing.length, pass: measurable.length > 0 && failing.length === 0 };
+}
