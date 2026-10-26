@@ -65,7 +65,8 @@ export async function loadWalkways() {
 const ESTIMATED_WALKWAYS = path.join(HERE, "..", "data", "network", "walkways.json");
 export async function loadEstimatedWalkways(file = ESTIMATED_WALKWAYS) {
   const f = Bun.file(file);
-  return (await f.exists()) ? JSON.parse(await f.text()).strips : [];
+  const data = (await f.exists()) ? JSON.parse(await f.text()) : {};
+  return { strips: data.strips ?? [], crossings: data.crossings ?? [] };
 }
 export const walkwaySurface = ({ scls, qual }) => (scls === BICYCLE_LANE ? "bicycle" : qual === "SWQ003" ? "blockPaver" : qual === "SWQ001" ? "asphalt" : "existing");
 const isClosed = (line) => line.length >= 2 && line[0][0] === line.at(-1)[0] && line[0][1] === line.at(-1)[1];
@@ -312,7 +313,7 @@ function walkwayPolygons(rings) {
 // inputs: { roadZones } (model units, as stages/sources.mjs loadInputs); walkways: loadWalkways(); groundFeatures:
 // loadGroundFeatures() (optional); offCampusLots: rings; buildings: [{ parts: [{ outer }] }]; crosswalks: rings
 // (model units, passed through in EPSG:5186 for the kerb stage). warn: where skipped inputs are reported.
-export function buildSurfaces({ inputs, walkways, groundFeatures = null, offCampusLots = [], buildings = [], crosswalks = [], estimatedWalkways = [], warn = console.warn }) {
+export function buildSurfaces({ inputs, walkways, groundFeatures = null, offCampusLots = [], buildings = [], crosswalks = [], estimatedWalkways = [], estimatedCrossings = [], warn = console.warn }) {
   const layers = [];
   const strokes = [];
   const skipped = [];
@@ -486,6 +487,10 @@ export function buildSurfaces({ inputs, walkways, groundFeatures = null, offCamp
   // ---- 2 estimated walkways (paving under the road and lot layers, like the plazas; already in EPSG:5186)
   for (const strip of estimatedWalkways) {
     layers.push({ cls: "PAVING", mesh: "Ground_Walkway", label: SURFACE_CLASS.PAVING, precedence: PRECEDENCE.PAVING, source: "project-estimated", source_ref: strip.source_ref ?? strip.id, estimated: true, walkwayEstimated: true, rings: strip.rings });
+  }
+  // ---- 4.5 estimated crossings: unpainted kerb-drop strips over the road and lot layers, under the A003 walkways
+  for (const crossing of estimatedCrossings) {
+    layers.push({ cls: "PAVING", mesh: "Ground_CrossingEstimated", label: SURFACE_CLASS.PAVING, precedence: (PRECEDENCE.LOT + PRECEDENCE.A003) / 2, source: "project-estimated", source_ref: crossing.source_ref ?? crossing.id, estimated: true, crossingEstimated: true, rings: crossing.rings });
   }
 
   const crossings = crosswalks.map((ring) => toTmRing(ring)).filter(Boolean);

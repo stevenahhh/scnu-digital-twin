@@ -424,20 +424,22 @@ export function polygonCollections({ walkable, roadPolygons }) {
     return f;
   });
   return {
-    walkable: { type: "FeatureCollection", metadata: meta("walkable polygons for the separation trace: sidewalk (NGII A003 strips), crossing (CW polygons), plaza (OSM plazas, rims and building aprons; aprons estimated)"), features: unique(walkable.map((p, i) => poly(p, i, "WALK"))) },
+    walkable: { type: "FeatureCollection", metadata: meta("walkable polygons for the separation trace: sidewalk (NGII A003 strips), crossing (CW polygons, painted zebras, estimated kerb approaches), crossing_estimated (estimated unmarked crossings, 추정), walkway_estimated (estimated walkway strips, 추정), plaza (OSM plazas, rims and building aprons; aprons estimated)"), features: unique(walkable.map((p, i) => poly(p, i, "WALK"))) },
     road: { type: "FeatureCollection", metadata: meta("road polygons for the separation trace: road (road zones, arterial/connector strips traced to the A003 kerbs, estimated gap bridges), lot (car parks)"), features: unique(roadPolygons.map((p, i) => poly(p, i, "ROAD"))) },
   };
 }
 
 // Estimated walkway strips for the ground stage (network/surfaces.mjs draws them with the paver material), EPSG:5186.
-export function walkwaySurfaces(strips, toTm) {
+export function walkwaySurfaces(strips, toTm, crossings = []) {
   return {
     metadata: {
       generator: "frontend/scripts/campus-model/network/walkways.mjs (via buildNetwork.mjs)", coordinate_system: "EPSG:5186 (Korea 2000 / Central Belt 2010)",
-      description: "estimated walkway strips (1.5 m paved shoulder/path, 추정) where an estimated pedestrian edge crosses open ground; not NGII A003 sidewalks",
+      description: "estimated walkway strips (1.5 m paved shoulder/path, 추정) where an estimated pedestrian edge crosses open ground, and estimated crossings (3 m, 추정) where it must cross a road with no CW polygon or painted zebra; not NGII A003 sidewalks or measured crossings",
       estimated: true,
     },
     strips: strips.map((s) => ({ id: s.id, source_ref: s.source_ref, estimated: true, rings: s.rings.map((ring) => ring.map(([x, z]) => toTm({ x, z }).map((v) => round(v)))) })),
+    // estimated crossings (3 m, no CW polygon and no painted zebra; 추정): drawn as an unpainted kerb-drop strip
+    crossings: crossings.map((s) => ({ id: s.id, source_ref: s.source_ref, estimated: true, rings: s.rings.map((ring) => ring.map(([x, z]) => toTm({ x, z }).map((v) => round(v)))) })),
   };
 }
 
@@ -512,11 +514,11 @@ if (import.meta.main) {
     await Bun.write(PATHS.baseline, Bun.file(PATHS.network));
     console.log(`baseline copied: ${path.relative(REPO, PATHS.baseline)}`);
   }
-  const { walkable: walkFc, road: roadFc } = polygonCollections({ walkable: [...walkable, ...walkways.approaches, ...walkways.strips], roadPolygons: ctx.roads.polygons });
+  const { walkable: walkFc, road: roadFc } = polygonCollections({ walkable: [...walkable, ...walkways.approaches, ...walkways.strips, ...walkways.crossings], roadPolygons: ctx.roads.polygons });
   await Bun.write(PATHS.network, `${JSON.stringify(collection)}\n`);
   await Bun.write(path.join(DATA, "walkable_polygons.geojson"), `${JSON.stringify(walkFc)}\n`);
   await Bun.write(path.join(DATA, "road_polygons.geojson"), `${JSON.stringify(roadFc)}\n`);
-  await Bun.write(PATHS.estimatedWalkways, `${JSON.stringify(walkwaySurfaces(walkways.strips, simulationToTm))}\n`);
+  await Bun.write(PATHS.estimatedWalkways, `${JSON.stringify(walkwaySurfaces(walkways.strips, simulationToTm, walkways.crossings))}\n`);
   const transformPath = path.join(DATA, "coordinate_transform.json");
   await Bun.write(transformPath, addAnchor(await Bun.file(transformPath).text()));
   console.log(`written campus_transport_network.geojson, walkable_polygons.geojson (${walkFc.features.length}), road_polygons.geojson (${roadFc.features.length}), coordinate_transform.json epsg5186_anchor`);

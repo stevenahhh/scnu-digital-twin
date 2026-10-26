@@ -10,14 +10,19 @@
 // crossing-approach polygon (class crossing, estimated). Simulation frame (metres east/north of the D4 anchor).
 //
 // Nothing here relaxes the separation: road and lot cells are never walkable; an estimated edge with no carriageway-free
-// route inside the search window keeps its shortest carriageway crossing and is reported (stats.unresolved), never
-// covered by a walkable polygon.
+// route inside the search window keeps its shortest carriageway crossing, reported (stats.unresolved); when it is still
+// needed after the drop step (POIs stay connected only through it) that stretch becomes an ESTIMATED crossing polygon
+// (class crossing_estimated, 추정), counted only under the measured+estimated definition.
 import { PolygonGrid, UnionFind, dist, lineLength, round, sampleLine } from "./geom.mjs";
 
 export const CELL_M = 0.5;
 export const STRIP_HALF_WIDTH_M = 0.75; // 1.5 m estimated walkway (추정)
 export const APPROACH_MAX_M = 4; // longest kerb-to-paint stretch covered by an estimated crossing approach
 export const APPROACH_HALF_WIDTH_M = 1.0;
+// an estimated crossing where a needed estimated path crosses a road with no measured or painted crossing (추정):
+// 3 m wide, over the shortest carriageway stretch the search found, 0.4 m onto each kerb
+export const ESTIMATED_CROSSING_HALF_WIDTH_M = 1.5;
+const KERB_OVERLAP_M = 0.4;
 // a painted crossing polygon digitised shorter than the carriageway it marks: the crossing line continues to the
 // opposite kerb, covered by an estimated crossing extension (only along a measured crosswalk edge, never elsewhere)
 export const EXTENSION_MAX_M = 15;
@@ -33,12 +38,12 @@ const WALK_COST = { [CLS.OPEN]: 1.6, [CLS.PLAZA]: 1.1, [CLS.SIDEWALK]: 1, [CLS.C
 // Surface class at a point with the trace oracle's precedence: a building blocks; crossing and measured sidewalk are
 // walkable over a road zone; road and lot are vehicle surface over plaza and open ground.
 export function surfaceClassifier({ walkable = [], roadPolygons = [], buildings = [] }) {
-  const walk = new PolygonGrid(walkable.filter((w) => w.class === "crossing" || w.class === "sidewalk" || w.class === "plaza"), 20);
+  const walk = new PolygonGrid(walkable.filter((w) => ["crossing", "crossing_estimated", "sidewalk", "plaza"].includes(w.class)), 20);
   const vehicle = new PolygonGrid(roadPolygons.filter((r) => r.class === "road" || r.class === "lot"), 20);
   const blocks = new PolygonGrid(buildings, 20);
   return (p) => {
     if (blocks.contains(p)) return CLS.BUILDING;
-    if (walk.contains(p, (w) => w.class === "crossing")) return CLS.CROSSING;
+    if (walk.contains(p, (w) => w.class === "crossing" || w.class === "crossing_estimated")) return CLS.CROSSING;
     if (walk.contains(p, (w) => w.class === "sidewalk")) return CLS.SIDEWALK;
     if (vehicle.contains(p)) return CLS.VEHICLE;
     if (walk.contains(p)) return CLS.PLAZA;
@@ -193,12 +198,29 @@ const bad = (c) => c === CLS.VEHICLE || c === CLS.BUILDING;
 // path itself avoided (vehicle or building), checked every SAMPLE_M.
 export function pullString(points, classify) {
   if (points.length <= 2) return points;
-  const segmentOk = (a, b) => sampleLine([a, b], SAMPLE_M).every((q) => !bad(classify(q)));
+  // a straight segment never enters a building and never spends more metres on the carriageway than the cell path it
+  // replaces (+0.5 m, and none where the cells kept off it): a crossing stays one straight span instead of a staircase of cells, a path beside the road
+  // never shortcuts along it
+  const onVehicle = [0];
+  for (let k = 0; k + 1 < points.length; k += 1) {
+    const mid = [(points[k][0] + points[k + 1][0]) / 2, (points[k][1] + points[k + 1][1]) / 2];
+    onVehicle.push(onVehicle[k] + (classify(mid) === CLS.VEHICLE ? dist(points[k], points[k + 1]) : 0));
+  }
+  const segmentOk = (i, j) => {
+    let vehicle = 0;
+    for (const q of sampleLine([points[i], points[j]], SAMPLE_M)) {
+      const c = classify(q);
+      if (c === CLS.BUILDING) return false;
+      if (c === CLS.VEHICLE) vehicle += SAMPLE_M;
+    }
+    const path = onVehicle[j] - onVehicle[i];
+    return path > 0 ? vehicle <= path + 0.5 : vehicle === 0;
+  };
   const out = [points[0]];
   let i = 0;
   while (i < points.length - 1) {
     let j = points.length - 1;
-    while (j > i + 1 && !segmentOk(points[i], points[j])) j -= 1;
+    while (j > i + 1 && !segmentOk(i, j)) j -= 1;
     out.push(points[j]);
     i = j;
   }
@@ -237,7 +259,7 @@ export function buildWalkways({ graph, walkable = [], roadPolygons = [], buildin
   const grid = new SurfaceGrid(classify);
   const cellClass = (p) => classify(p);
   const personEdge = (e) => PERSON_KINDS.has(e.kind);
-  const stats = { movedNodes: 0, rerouted: 0, rerouteGrowthM: 0, unresolved: [], strips: 0, stripM: 0, approaches: 0, sidewalkOnVehicle: [], crosswalksRedrawn: 0, droppedCrossingEdges: [] };
+  const stats = { movedNodes: 0, rerouted: 0, rerouteGrowthM: 0, unresolved: [], strips: 0, stripM: 0, approaches: 0, sidewalkOnVehicle: [], crosswalksRedrawn: 0, droppedCrossingEdges: [], estimatedCrossings: [] };
 
   // ---- 1. person nodes on the carriageway or in a building move to the nearest free ground
   const personNodes = new Set(graph.edges.filter(personEdge).flatMap((e) => [e.from, e.to]));
@@ -371,10 +393,34 @@ export function buildWalkways({ graph, walkable = [], roadPolygons = [], buildin
       } else if (!e.estimated) stats.sidewalkOnVehicle.push({ edge: e.id, kind: e.kind, length_m: round(length, 1), at: samples[i].map((v) => round(v, 1)) });
     }
   }
+  // ---- 4. estimated crossings: every estimated person edge still on the carriageway after 2c is needed to keep a POI
+  // reachable; its road stretch becomes an estimated crossing polygon (class crossing_estimated, estimated: true), so
+  // people cross the road only on a measured, painted or estimated crossing. The route penalty stays: a measured
+  // crossing is still preferred wherever one connects.
+  const crossings = [];
+  for (const e of graph.edges.filter((x) => personEdge(x) && x.estimated)) {
+    let onRoad = 0;
+    for (let s = 0; s + 1 < e.points.length; s += 1) {
+      const seg = [e.points[s], e.points[s + 1]];
+      const samples = sampleLine(seg, SAMPLE_M);
+      const classes = samples.map(cellClass);
+      for (const [i, j] of runs(samples, classes, (c) => c === CLS.VEHICLE)) {
+        const a = samples[i], b = samples[j];
+        const what = (j - i + 1) * SAMPLE_M < 1 ? "kerb corner clip shorter than 1 m" : "estimated crossing (no CW polygon, no painted zebra)";
+        crossings.push({ class: "crossing_estimated", id: `CWEST_${e.id}_${s}_${i}`, source_ref: `${e.id} ${what}; 추정`, estimated: true, rings: [stripRing(a, b, ESTIMATED_CROSSING_HALF_WIDTH_M, KERB_OVERLAP_M)] });
+        onRoad += (j - i + 1) * SAMPLE_M;
+      }
+    }
+    if (onRoad > 0) {
+      e.crosses_carriageway_m = e.crosses_carriageway_m ?? round(onRoad, 1);
+      e.crossing_estimated = true;
+      stats.estimatedCrossings.push({ edge: e.id, carriageway_m: round(onRoad, 1) });
+    }
+  }
   stats.strips = strips.length;
   stats.stripM = round(stats.stripM, 1);
   stats.rerouteGrowthM = round(stats.rerouteGrowthM, 1);
-  return { strips, approaches, moved, stats };
+  return { strips, approaches, crossings, moved, stats };
 }
 
-export const statsLine = (s) => `walkways: ${s.movedNodes} nodes moved off the carriageway, ${s.rerouted} estimated edges re-drawn (+${s.rerouteGrowthM} m), ${s.crosswalksRedrawn} crosswalk lines re-drawn through their polygon, ${s.droppedCrossingEdges.length} carriageway-crossing estimated edges dropped, ${s.strips} estimated walkway strips (${s.stripM} m of line), ${s.approaches} crossing approaches (estimated), ${s.unresolved.length} unresolved, ${s.sidewalkOnVehicle.length} measured stretches on the carriageway`;
+export const statsLine = (s) => `walkways: ${s.movedNodes} nodes moved off the carriageway, ${s.rerouted} estimated edges re-drawn (+${s.rerouteGrowthM} m), ${s.crosswalksRedrawn} crosswalk lines re-drawn through their polygon, ${s.droppedCrossingEdges.length} carriageway-crossing estimated edges dropped, ${s.strips} estimated walkway strips (${s.stripM} m of line), ${s.approaches} crossing approaches (estimated), ${s.estimatedCrossings.length} estimated crossings on ${s.estimatedCrossings.reduce((t, c) => t + c.carriageway_m, 0).toFixed(1)} m of carriageway, ${s.unresolved.length} unresolved, ${s.sidewalkOnVehicle.length} measured stretches on the carriageway`;

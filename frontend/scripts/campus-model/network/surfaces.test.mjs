@@ -122,3 +122,12 @@ test("estimated walkway strips become estimated Ground_Walkway paving under the 
   assert.equal(walkway[0].source_ref, "EDGE_FB_T");
   assert.ok(walkway[0].precedence < Math.min(...layers.filter((l) => l.cls === "ASPHALT").map((l) => l.precedence)));
 });
+
+test("estimated crossings become estimated Ground_CrossingEstimated strips over the road and lot, under the A003 walkways", () => {
+  const crossing = { id: "CWEST_T", source_ref: "EDGE_FB_T estimated crossing", rings: [[[243600, 263800], [243603, 263800], [243603, 263810], [243600, 263810]]] };
+  const { layers } = buildSurfaces({ ...fixture(), estimatedCrossings: [crossing] });
+  const [layer] = layers.filter((l) => l.mesh === "Ground_CrossingEstimated");
+  assert.equal(layer.estimated, true);
+  assert.ok(layer.precedence > Math.max(...layers.filter((l) => l.cls === "ASPHALT" || l.cls === "LOT").map((l) => l.precedence)));
+  assert.ok(layer.precedence < Math.min(...layers.filter((l) => l.walkway).map((l) => l.precedence)));
+});

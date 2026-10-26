@@ -47,7 +47,7 @@ test("an estimated join across the road crosses at the crossing polygon", () => 
   assert.equal(out.stats.unresolved.length, 0);
 });
 
-test("without a crossing polygon a needed join keeps a short carriageway stretch and is reported, never covered", () => {
+test("without a crossing polygon a needed join crosses at the shortest span, covered by an estimated crossing", () => {
   const g = graphWith(
     [{ id: "EDGE_J", from: "N", to: "S", kind: "shared_path", estimated: true, points: [[10, 6], [10, -6]] }],
     [["N", [10, 6], "poi"], ["S", [10, -6], "poi"]],
@@ -55,10 +55,28 @@ test("without a crossing polygon a needed join keeps a short carriageway stretch
   const out = buildWalkways({ graph: g, walkable: [], roadPolygons, warn: quiet });
   assert.equal(out.stats.unresolved.length, 1);
   assert.ok(g.edges[0].crosses_carriageway_m >= 8 && g.edges[0].crosses_carriageway_m <= 9.5);
-  const walkable = surfaceClassifier({ walkable: [...out.strips, ...out.approaches], roadPolygons });
-  // strips may touch the kerb, but no walkable polygon makes a carriageway point walkable for the oracle
-  assert.ok(out.approaches.length === 0);
-  assert.equal(walkable([10, 0]), CLS.VEHICLE);
+  assert.equal(g.edges[0].crossing_estimated, true);
+  assert.ok(out.crossings.length >= 1 && out.crossings.every((c) => c.class === "crossing_estimated" && c.estimated && /추정/.test(c.source_ref)));
+  // every carriageway sample of the route lies on an estimated crossing; strips and approaches never cover the road
+  const covered = surfaceClassifier({ walkable: out.crossings, roadPolygons });
+  assert.ok(sampleLine(g.edges[0].points, 0.2).every((q) => covered(q) !== CLS.VEHICLE));
+  const notCovered = surfaceClassifier({ walkable: [...out.strips, ...out.approaches], roadPolygons });
+  assert.equal(notCovered([10, 0]), CLS.VEHICLE);
+  // one straight span across the road, about 3 m wide: 1.4 m to the side of the route is inside, 1.7 m is not
+  const onRoad = g.edges[0].points.filter((p) => Math.abs(p[1]) < 4);
+  assert.ok(onRoad.length <= 2, `straight span, got ${JSON.stringify(g.edges[0].points)}`);
+  const x = sampleLine(g.edges[0].points, 0.2).find((q) => Math.abs(q[1]) < 0.1)[0];
+  assert.equal(covered([x + 1.4, 0]), CLS.CROSSING);
+  assert.equal(covered([x + 1.7, 0]), CLS.VEHICLE);
+});
+
+test("a join that crosses at a crossing polygon gets no estimated crossing", () => {
+  const g = graphWith(
+    [{ id: "EDGE_J", from: "N", to: "S", kind: "shared_path", estimated: true, points: [[10, 6], [10, -6]] }],
+    [["N", [10, 6], "fallback"], ["S", [10, -6], "fallback"]],
+  );
+  const out = buildWalkways({ graph: g, walkable: [crossing], roadPolygons, warn: quiet });
+  assert.equal(out.crossings.length, 0);
 });
 
 test("an unneeded carriageway-crossing join is dropped (people cross only at crossings)", () => {
@@ -86,4 +104,18 @@ test("a measured crosswalk whose painted polygon is shorter than the carriageway
   assert.ok(out.approaches.length > 0);
   assert.ok(out.approaches.every((a) => a.class === "crossing" && a.estimated && /CW_S/.test(a.source_ref)));
   assert.deepEqual(g.edges[0].points, [[30, -4.5], [30, 4.5]], "the measured line is kept");
+});
+
+test("a route that may cross the road is never straightened along it", () => {
+  // two fallback nodes on the same kerb side 40 m apart with the road between them and no free route around
+  // (buildings close both ends): the route crosses where it must, never runs 40 m down the carriageway
+  const blocks = [{ rings: [rect(-300, 4, 5, 30)] }, { rings: [rect(45, 4, 300, 30)] }, { rings: [rect(5, 12, 45, 30)] }];
+  const g = graphWith(
+    [{ id: "EDGE_R", from: "A", to: "B", kind: "shared_path", estimated: true, points: [[8, 6], [42, 6]] }],
+    [["A", [8, 6], "poi"], ["B", [42, 6], "poi"]],
+  );
+  buildWalkways({ graph: g, walkable: [], roadPolygons, buildings: blocks, warn: quiet });
+  const classify = surfaceClassifier({ walkable: [], roadPolygons, buildings: blocks });
+  const onRoad = sampleLine(g.edges[0].points, 0.2).filter((q) => classify(q) === CLS.VEHICLE).length * 0.2;
+  assert.ok(onRoad < 1, `carriageway metres ${onRoad}`);
 });

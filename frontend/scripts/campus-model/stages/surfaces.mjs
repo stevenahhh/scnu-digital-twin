@@ -47,6 +47,8 @@ export const GROUND_MESHES = Object.freeze({
   Ground_Apron: { tile: "concrete" },
   // network/walkways.mjs: estimated walkway strips beside the carriageway where NGII A003 has no sidewalk (추정)
   Ground_Walkway: { tile: "pavers" },
+  // network/walkways.mjs: estimated crossings where no CW polygon or painted zebra exists, an unpainted kerb drop (추정)
+  Ground_CrossingEstimated: { tile: "concrete", baseColorFactor: [0.86, 0.86, 0.84, 1] },
   // stages/kerbs.mjs: the gutter band on the road side of the kerbs (asphalt darkened 0.72, estimated)
   Ground_Gutter: { tile: "asphalt", baseColorFactor: [0.72, 0.72, 0.72, 1] },
   // network/stalls.mjs: the circular-arc speed humps (buildHumpMeshes), asphalt
@@ -578,7 +580,8 @@ export async function buildSurfaceMeshes({ glb, layers, surface, ao = null, heig
     glb.json.meshes[index].primitives.forEach((p, k) => {
       p.attributes.TEXCOORD_1 = glb.addAccessor(entry.primitives[k].uv1, "VEC2");
     });
-    const note = mesh === "Ground_Walkway" ? { note: "추정 보행로: estimated 1.5 m walkway strips where no NGII A003 sidewalk exists (network/walkways.mjs), not surveyed" } : {};
+    const note = mesh === "Ground_Walkway" ? { note: "추정 보행로: estimated 1.5 m walkway strips where no NGII A003 sidewalk exists (network/walkways.mjs), not surveyed" }
+      : mesh === "Ground_CrossingEstimated" ? { note: "추정 횡단: estimated 3 m unmarked crossings (kerb drop, no paint) where a needed path crosses a road with no CW polygon or painted zebra (network/walkways.mjs), not surveyed" } : {};
     glb.addNode({ name: mesh, mesh: index, extras: { groundLayers: counts[mesh], precedence: [...entry.precedence].sort((a, b) => a - b), estimated: true, ...note } }, { root: true });
     stats.push({ mesh, triangles: entry.triangles, layers: counts[mesh], primitives: entry.primitives.length });
   }

@@ -102,7 +102,7 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
     offCampusLots,
     buildings: [...selectableBuildings, ...campusBuildings],
     crosswalks: inputs.crosswalks,
-    estimatedWalkways: await loadEstimatedWalkways(),
+    ...(await loadEstimatedWalkways().then(({ strips, crossings }) => ({ estimatedWalkways: strips, estimatedCrossings: crossings }))),
   });
   const width = Math.round(WIDTH * PX);
   const height = Math.round(DEPTH * PX);

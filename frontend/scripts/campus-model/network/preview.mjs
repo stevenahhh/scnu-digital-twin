@@ -27,7 +27,7 @@ export const WINDOWS = {
   "east-woodland": { centre: fromScene(355, -185), widthM: 240, heightM: 150 },
 };
 
-const POLYGON_COLOURS = { road: [178, 178, 178], lot: [160, 160, 168], sidewalk: [214, 214, 206], plaza: [226, 222, 210], crossing: [252, 252, 252], walkway_estimated: [214, 186, 140] };
+const POLYGON_COLOURS = { road: [178, 178, 178], lot: [160, 160, 168], sidewalk: [214, 214, 206], plaza: [226, 222, 210], crossing: [252, 252, 252], walkway_estimated: [214, 186, 140], crossing_estimated: [236, 214, 170] };
 const BACKGROUND = [238, 240, 232];
 const EDGE_STYLE = {
   sidewalk: { colour: [30, 90, 210], thick: 1 },
@@ -64,7 +64,7 @@ export function renderPreviewPng({ layers = [], edges = [], nodes = [], points =
   const raster = new Raster(widthPx, heightPx);
   raster.fillPolygon([[[0, 0], [widthPx, 0], [widthPx, heightPx], [0, heightPx]]], () => BACKGROUND);
   const px = ([x, y]) => [(x - minX) * scale, (maxY - y) * scale];
-  const order = ["plaza", "walkway_estimated", "lot", "road", "sidewalk", "crossing"];
+  const order = ["plaza", "walkway_estimated", "lot", "road", "sidewalk", "crossing_estimated", "crossing"];
   for (const cls of order) {
     for (const layer of layers.filter((l) => l.class === cls)) raster.fillPolygon(layer.rings.map((r) => r.map(px)), () => POLYGON_COLOURS[cls]);
   }
