@@ -1714,7 +1714,8 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
     };
     const log = [];
     for (const [node, list] of byNode) {
-      const building = selectableBuildings.find((b) => b.nodeName === node);
+      // a uni.glb BLD_* node, or a campus building drawn in CampusBuildings with its BLD_SCNU_* pick proxy
+      const building = selectableBuildings.find((b) => b.nodeName === node) ?? campusBuildings.find((b) => b.nodeId === node);
       if (!building) throw new Error(`facade-attachments.json: no building node ${node}`);
       building.attachments = list.map((a) => ({
         ...a,
