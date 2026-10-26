@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useThree } from "@react-three/fiber";
-import { Bloom, EffectComposer, N8AO, Outline, SMAA } from "@react-three/postprocessing";
+import { Bloom, EffectComposer, Outline, SMAA } from "@react-three/postprocessing";
 import { RenderPass } from "postprocessing";
 import { LinearSRGBColorSpace, SRGBColorSpace } from "three";
 import { CAMPUS_CANVAS_GL } from "../lighting/CampusLighting";
@@ -12,7 +12,8 @@ import { SELECTION_HEX } from "../ui/sceneTokens.mjs";
 // Medium/High 품질 단계의 후처리. AppLegacy가 React.lazy로 불러오므로 low 단계는 이 청크를 받지 않는다.
 // EffectComposer는 우선순위 1 useFrame으로 R3F의 기본 렌더를 대신할 뿐 스스로 프레임을 요청하지 않는다.
 // 그래서 demand 루프(정지 화면 0프레임)는 그대로이고, 마운트·설정 변경 때만 한 번 invalidate한다.
-const AO_RADIUS = 3; // 장면 단위(약 0.62 단위/m), 약 5 m
+// 화면 공간 AO(N8AO, 깊이 버퍼를 따라 광선을 진행하는 패스)는 쓰지 않는다. 접촉 그늘은 모든 단계에서 GLB에 구워 둔
+// AO 아틀라스(ao-buildings·ao-ground, glTF occlusionTexture -> aoMap)가 맡고, 이 컴포저는 SMAA·선택 외곽선·밤 bloom만 돌린다.
 // 장면 버퍼는 Neutral 톤 매핑을 거친 화면 값(0..1)을 담으므로 임계값도 그 기준이다. 밤에만 켜서
 // 조명 받은 벽이 어두울 때 창문·가로등 발광만 번지게 한다. 창문 수백 개가 넓은 mip 번짐으로 더해지면
 // 장면 전체가 떠 보이므로 번짐 반경과 단계 수를 줄여 발광체 가까이에만 남긴다.
@@ -68,8 +69,8 @@ function useScreenReferredBuffers(composerRef) {
 
 // @react-three/postprocessing는 CSS 크기(size)가 바뀔 때만 composer.setSize를 부르고, 픽셀 비율(dpr)만 바뀔 때는 부르지 않는다.
 // 그런데 자식이 바뀌어 패스를 다시 붙이면(시간 재생·선택으로 이 컴포넌트가 다시 렌더될 때) addPass가 그 순간의 드로잉 버퍼
-// 크기로 패스를 맞춘다. 줌·회전 중(interactionDpr가 dpr을 0.75배로 낮춘 동안) 다시 붙은 N8AO는 dpr이 돌아온 뒤에도
-// 작은 버퍼에 남아 깊이 버퍼와 해상도가 어긋나고, 화면에 회색 얼룩·띠가 정지 화면까지 남는다.
+// 크기로 패스를 맞춘다. 줌·회전 중(interactionDpr가 dpr을 0.75배로 낮춘 동안) 다시 붙은 패스는 dpr이 돌아온 뒤에도
+// 작은 버퍼에 남아 입력 버퍼와 해상도가 어긋난다(예전 N8AO에서는 회색 얼룩·띠가 정지 화면까지 남았다).
 // dpr이 바뀔 때마다 컴포저 전체(입력 버퍼와 모든 패스)를 현재 드로잉 버퍼 크기로 다시 맞춘다.
 function useComposerFollowsPixelRatio(composerRef) {
   const dpr = useThree((state) => state.viewport.dpr);
@@ -99,13 +100,6 @@ export default function HighTierEffects({ tier, sunAltitude, selectedElementId =
   if (!preset) return null;
   return (
     <EffectComposer ref={composerRef} multisampling={0} autoClear={false}>
-      <N8AO
-        halfRes={preset.ao.halfRes}
-        quality={preset.ao.quality}
-        intensity={preset.ao.intensity}
-        aoRadius={AO_RADIUS}
-        distanceFalloff={1}
-      />
       {bloomIntensity > 0 ? (
         <Bloom
           mipmapBlur

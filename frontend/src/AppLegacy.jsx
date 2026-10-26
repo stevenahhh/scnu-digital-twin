@@ -853,7 +853,8 @@ function Dashboard() {
         sunVector={sunVector}
         sunVisible={sunVisible}
         sunAltitude={sunAltitude}
-        shadowMapSize={qualityRenderer.shadowMapSize}
+        shadowMapSizes={qualityRenderer.shadowMapSizes}
+        controlsRef={orbitControlsRef}
       />
       <SceneWeatherBinding
         sunIntensityScale={sceneWeatherScene.sunIntensityScale}
@@ -887,7 +888,7 @@ function Dashboard() {
           onDragStart={releaseOnDrag}
           headlineById={headlineById}
         />
-        <CampusTrafficSimulation />
+        <CampusTrafficSimulation contactShadows={quality === "high"} />
         <ShadowBaker sunKey={sunVector.join(",")} />
       </Suspense>
       <OrbitControls

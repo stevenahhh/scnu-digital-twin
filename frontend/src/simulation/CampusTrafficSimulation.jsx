@@ -31,7 +31,8 @@ function modelCenterOf(scene) {
   return campusModelCenter([center.x - sceneOrigin.x, 0, center.z - sceneOrigin.z]);
 }
 
-export function CampusTrafficSimulation() {
+// contactShadows: blob shadows under agents (high tier). Agents never cast into the on-demand sun shadow maps.
+export function CampusTrafficSimulation({ contactShadows = false } = {}) {
   const { scene } = useGLTF(CAMPUS_MODEL_URL);
   const raycaster = useMemo(() => new THREE.Raycaster(), []);
   const cache = useRef(new Map());
@@ -77,6 +78,7 @@ export function CampusTrafficSimulation() {
       resolveHeight={resolveHeight}
       showTrafficLights={false}
       showRiskEvents
+      contactShadows={contactShadows}
     />
     <NetworkDebugLayer coordinateConfig={CAMPUS_TRAFFIC_COORDINATE_CONFIG} resolveHeight={resolveHeight} enabled={editorEnabled && showNetwork} />
     <RouteDigitizerLayer coordinateConfig={CAMPUS_TRAFFIC_COORDINATE_CONFIG} resolveHeight={resolveHeight} />

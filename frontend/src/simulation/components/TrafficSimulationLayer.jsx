@@ -16,6 +16,7 @@ export function TrafficSimulationLayer({
   resolveHeight,
   showRiskEvents = true,
   showTrafficLights = false,
+  contactShadows = false,
 }) {
   const entities = useSimulationStore((state) => Array.from(state.entities.values()));
   const trafficLights = useSimulationStore((state) => state.trafficLights);
@@ -61,6 +62,7 @@ export function TrafficSimulationLayer({
           resolveHeight={resolveHeight}
           selected={entity.id === selectedAgentId}
           onSelect={(id) => simulationStore.selectAgent(id)}
+          contactShadow={contactShadows}
         />
       ))}
       <AgentTrajectory details={selectedAgentDetails} coordinateConfig={coordinateConfig} resolveHeight={resolveHeight} />
