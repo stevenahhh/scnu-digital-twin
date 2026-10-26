@@ -1,5 +1,5 @@
 {
-  "description": "Tree species groups read on the SCNU 360 VR tour (vr.scnu.ac.kr/360vr, visual reference only; nothing copied or linked) where one species fills a row or stand. A crown inside a polygon takes its species unless its own VR colour class is listed in exceptVr (VG01: the plaza also holds green broadleaf trees and dark pines, VR scene_e1 r). Polygons traced on the NGII 2025 orthophoto around the trees the VR scenes show (estimated, 추정). Read by scripts/campus-model/fetch/treeInventory.mjs.",
+  "description": "Tree species groups read on the SCNU 360 VR tour (vr.scnu.ac.kr/360vr, visual reference only; nothing copied or linked) where one species fills a row or stand. A crown inside a polygon takes its species unless its own VR colour class is listed in exceptVr (VG01: the plaza also holds green broadleaf trees and dark pines, VR scene_e1 r). Polygons traced on the NGII 2025 orthophoto around the trees the VR scenes show (estimated, 추정). maxHeightM: a crown with a CHMv2 height above it keeps its own reading. Read by scripts/campus-model/fetch/treeInventory.mjs.",
   "frame": "WGS84 [lon, lat]",
   "groups": [
     {
@@ -120,6 +120,34 @@
         [
           127.4793555,
           34.9693284
+        ]
+      ]
+    },
+    {
+      "id": "SG01",
+      "species": "shrub",
+      "maxHeightM": 5,
+      "source": "NGII 2025 orthophoto (d4-block, west slope): rough low scrub and grass, no closed crowns; crowns there without a CHMv2 height over 5 m are drawn as low shrub mass, taller CHMv2 crowns stay trees",
+      "polygon": [
+        [
+          127.4756014,
+          34.9708014
+        ],
+        [
+          127.4759522,
+          34.9708014
+        ],
+        [
+          127.4759873,
+          34.9696173
+        ],
+        [
+          127.4756014,
+          34.9696173
+        ],
+        [
+          127.4756014,
+          34.9708014
         ]
       ]
     }

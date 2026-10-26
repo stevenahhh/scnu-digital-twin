@@ -1,0 +1,175 @@
+{
+  "description": "Per-tree corrections read by eye on the SCNU 360 VR tour (visual reference only) where the automatic VR fit (data/photo/tree-vr-fit.json) misreads a tree: each entry sets fields of the tree nearest `at` (EPSG:5186 metres, within 3 m) and cites the VR scene:face. Applied by scripts/campus-model/fetch/treeInventory.mjs after the fit; estimated (추정).",
+  "entries": [
+    {
+      "at": [
+        243814.39,
+        263839.92
+      ],
+      "view": "scene_c1:f",
+      "set": {
+        "species": "pine",
+        "crownDiameterM": 9,
+        "heightM": 9.5
+      },
+      "note": "spreading Korean red pines flanking the library stairs"
+    },
+    {
+      "at": [
+        243809.03,
+        263821.47
+      ],
+      "view": "scene_c1:f",
+      "set": {
+        "species": "pine",
+        "crownDiameterM": 9,
+        "heightM": 9.5
+      },
+      "note": "spreading Korean red pines flanking the library stairs"
+    },
+    {
+      "at": [
+        243839.85,
+        263841.16
+      ],
+      "view": "scene_c1:r",
+      "set": {
+        "species": "metasequoia",
+        "crownDiameterM": 5.5,
+        "heightM": 16,
+        "autumn": [
+          0,
+          0.85,
+          0.95
+        ]
+      },
+      "note": "dense ochre metasequoia cluster close to the camera"
+    },
+    {
+      "at": [
+        243831.7,
+        263838.08
+      ],
+      "view": "scene_c1:r",
+      "set": {
+        "species": "metasequoia",
+        "crownDiameterM": 5.5,
+        "heightM": 16,
+        "autumn": [
+          0,
+          0.85,
+          0.95
+        ]
+      },
+      "note": "dense ochre metasequoia cluster close to the camera"
+    },
+    {
+      "at": [
+        243837.64,
+        263835.39
+      ],
+      "view": "scene_c1:r",
+      "set": {
+        "species": "metasequoia",
+        "crownDiameterM": 5.5,
+        "heightM": 16,
+        "autumn": [
+          0,
+          0.85,
+          0.95
+        ]
+      },
+      "note": "dense ochre metasequoia cluster close to the camera"
+    },
+    {
+      "at": [
+        243831.83,
+        263810.85
+      ],
+      "view": "scene_c1:l",
+      "set": {
+        "species": "metasequoia",
+        "crownDiameterM": 5.5,
+        "heightM": 15,
+        "autumn": [
+          0,
+          0.15,
+          0.95
+        ]
+      },
+      "note": "full yellow metasequoia rows along the plaza"
+    },
+    {
+      "at": [
+        243822.58,
+        263802.31
+      ],
+      "view": "scene_c1:l",
+      "set": {
+        "species": "metasequoia",
+        "crownDiameterM": 5.5,
+        "heightM": 15,
+        "autumn": [
+          0,
+          0.15,
+          0.95
+        ]
+      },
+      "note": "full yellow metasequoia rows along the plaza"
+    },
+    {
+      "at": [
+        243829.16,
+        263799.78
+      ],
+      "view": "scene_c1:l",
+      "set": {
+        "species": "metasequoia",
+        "crownDiameterM": 5.5,
+        "heightM": 15,
+        "autumn": [
+          0,
+          0.15,
+          0.95
+        ]
+      },
+      "note": "full yellow metasequoia rows along the plaza"
+    },
+    {
+      "at": [
+        243824.79,
+        263808.73
+      ],
+      "view": "scene_c1:l",
+      "set": {
+        "species": "metasequoia",
+        "crownDiameterM": 5.5,
+        "heightM": 15,
+        "autumn": [
+          0,
+          0.15,
+          0.95
+        ]
+      },
+      "note": "full yellow metasequoia rows along the plaza"
+    },
+    {
+      "at": [
+        243831.22,
+        263805.08
+      ],
+      "view": "scene_c1:l",
+      "set": {
+        "species": "metasequoia",
+        "crownDiameterM": 5.5,
+        "heightM": 15,
+        "autumn": [
+          0,
+          0.15,
+          0.95
+        ]
+      },
+      "note": "full yellow metasequoia rows along the plaza"
+    }
+  ]
+}
