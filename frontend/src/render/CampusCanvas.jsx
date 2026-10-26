@@ -1,4 +1,5 @@
 import { forwardRef, useMemo } from "react";
+import { useCameraKeys } from "../camera/useCameraKeys.mjs";
 import { Canvas } from "@react-three/fiber";
 import { CAMPUS_CANVAS_GL } from "../lighting/CampusLighting";
 import { sceneBackgroundFor } from "../lighting/sceneBackground.mjs";
@@ -20,6 +21,7 @@ export const CampusCanvas = forwardRef(function CampusCanvas(
   { insetRight, rendering, sunState, weatherScene, scene, camera, flow },
   mapLayerRef,
 ) {
+  useCameraKeys({ targetRef: mapLayerRef, controlsRef: scene.controlsRef, onHome: camera.goHome });
   const sunVector = useMemo(
     () => getSunVector({ altitude: sunState.altitude, azimuth: sunState.azimuth }),
     [sunState.altitude, sunState.azimuth],
@@ -28,6 +30,8 @@ export const CampusCanvas = forwardRef(function CampusCanvas(
     <div
       ref={mapLayerRef}
       data-qa="campus-map-layer"
+      tabIndex={0}
+      aria-label="3D 캠퍼스 지도. 화살표로 회전, Shift+화살표로 이동, +와 -로 확대·축소, H로 처음 시점"
       className={`absolute inset-0 z-0 flex select-none items-center justify-center ${CANVAS_FALLBACK_SURFACE_CLASS}`}
     >
       <PanelErrorBoundary

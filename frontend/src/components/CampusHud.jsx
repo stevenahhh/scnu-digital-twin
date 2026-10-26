@@ -1,12 +1,16 @@
 import { forwardRef } from "react";
 import { CloudSun } from "lucide-react";
 import { CAMERA_PRESETS } from "../camera/cameraPresets.mjs";
-import { CameraPresetBar } from "./CameraPresetBar";
+import { CameraControls } from "./CameraControls";
+import { HudToolbar } from "./HudToolbar";
 import { TimeSlider } from "./TimeSlider";
 
-// 지도 위 조작: 카메라 시점(왼쪽 위)과 시간 슬라이더(왼쪽 아래). 지도보다 앞에 두어 Tab이 라벨보다 먼저 닿는다.
+// 지도 위 조작: 카메라 시점(왼쪽 위), 시간 슬라이더(왼쪽 아래), 확대·회전 단추(오른쪽 아래). 지도보다 앞에 두어 Tab이 라벨보다 먼저 닿는다.
 // 오른쪽 끝은 패널 토글(w-7)과 그 여백만큼 비운다. 좁은 화면에서 열린 패널이 지도를 다 덮으면 보이지 않게 한다.
-export const CampusHud = forwardRef(function CampusHud({ hidden, insetRight, camera, clock, playing, onPlayingChange, sceneWeather }, ref) {
+export const CampusHud = forwardRef(function CampusHud(
+  { hidden, insetRight, camera, clock, playing, onPlayingChange, sceneWeather },
+  ref,
+) {
   return (
     <div
       ref={ref}
@@ -15,7 +19,7 @@ export const CampusHud = forwardRef(function CampusHud({ hidden, insetRight, cam
       className={`pointer-events-none absolute inset-y-0 left-0 z-[6] transition-[right] duration-300 ${hidden ? "invisible" : ""}`}
       style={{ right: `calc(${insetRight} + 2.75rem)` }}
     >
-      <CameraPresetBar
+      <HudToolbar
         presets={CAMERA_PRESETS}
         activeId={camera.activePresetId}
         onSelect={camera.selectPreset}
@@ -41,6 +45,7 @@ export const CampusHud = forwardRef(function CampusHud({ hidden, insetRight, cam
           </p>
         )}
       />
+      <CameraControls controlsRef={camera.controlsRef} onHome={camera.goHome} className="absolute right-4 top-1/2 -translate-y-1/2 sm:bottom-4 sm:top-auto sm:translate-y-0" />
     </div>
   );
 });

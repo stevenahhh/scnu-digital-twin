@@ -3,13 +3,18 @@ import { FOCUSABLE_SELECTOR } from "../components/AccessibleDialog.jsx";
 import { cx } from "./cx.mjs";
 
 // 트리거에 붙어 뜨는 작은 면(범례, 시점 메뉴). Esc나 바깥 클릭으로 닫히고, Esc로 닫으면 포커스가 트리거로 돌아간다.
-// renderTrigger는 트리거 버튼에 넘길 속성(ref, onClick, aria-*)을 받는다.
+// renderTrigger는 트리거 버튼에 넘길 속성(ref, onClick, aria-*)을 받는다. children이 함수면 close()를 받아
+// 메뉴 항목을 고른 뒤 스스로 닫을 수 있다(닫히면 포커스는 트리거로 돌아간다).
 export function Popover({ label, role = "dialog", renderTrigger, align = "start", qa, className, children }) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef(null);
   const panelRef = useRef(null);
   const wrapperRef = useRef(null);
   const panelId = useId();
+  const close = () => {
+    setOpen(false);
+    triggerRef.current?.focus();
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -56,7 +61,7 @@ export function Popover({ label, role = "dialog", renderTrigger, align = "start"
             className,
           )}
         >
-          {children}
+          {typeof children === "function" ? children({ close }) : children}
         </div>
       )}
     </div>

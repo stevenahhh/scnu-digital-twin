@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CAMERA_PRESETS, OVERVIEW_PRESET_ID } from "./cameraPresets.mjs";
+
+const OVERVIEW_PRESET = CAMERA_PRESETS.find((preset) => preset.id === OVERVIEW_PRESET_ID);
 import { isFlyToEvent, useFlyTo } from "./useFlyTo.mjs";
 import { useCameraTour } from "./useCameraTour.mjs";
 
@@ -25,6 +27,9 @@ export function useCampusCamera({ controlsRef, getScene, onOrbitStart, onOrbitEn
     goToPreset(preset);
   }, [goToPreset, stopTour]);
 
+  // 처음 시점(카메라 단추·H 키): 전체 시점으로 돌아간다.
+  const goHome = useCallback(() => selectPreset(OVERVIEW_PRESET), [selectPreset]);
+
   // 시점 비행이 보낸 start는 사용자 조작이 아니므로 투어와 눌린 표시를 그대로 둔다.
   const handleOrbitStart = useCallback((event) => {
     onOrbitStart();
@@ -34,7 +39,7 @@ export function useCampusCamera({ controlsRef, getScene, onOrbitStart, onOrbitEn
   }, [onOrbitStart, stopTour]);
 
   return {
-    activePresetId, activePresetRef, selectPreset, touring, toggleTour, stopTour,
+    controlsRef, activePresetId, activePresetRef, selectPreset, goHome, touring, toggleTour, stopTour,
     handleOrbitStart, handleOrbitEnd: onOrbitEnd,
   };
 }
