@@ -1,8 +1,8 @@
 import React from "react";
-import { ACCENT_HEX } from "../../ui/sceneTokens.mjs";
+import { EMERGENCY_HEX } from "../../ui/sceneTokens.mjs";
 
 export const VehicleEntity = React.memo(function VehicleEntity({ riskLevel = "normal", emergency = false }) {
-  const color = emergency ? ACCENT_HEX : riskLevel === "danger" ? "#dc2626" : riskLevel === "warning" ? "#f59e0b" : "#25636b";
+  const color = emergency ? EMERGENCY_HEX : riskLevel === "danger" ? "#dc2626" : riskLevel === "warning" ? "#f59e0b" : "#25636b";
   return (
     <group>
       <mesh castShadow position={[0, 0.48, 0]}>

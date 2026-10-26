@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import test from "node:test";
+import { EMERGENCY_HEX, SELECTION_HEX, VEHICLE_LANE_HEX } from "./sceneTokens.mjs";
 
 const require = createRequire(import.meta.url);
 const tokensCss = readFileSync(new URL("./tokens.css", import.meta.url), "utf8");
@@ -59,6 +60,26 @@ for (const [theme, values] of [["dark", dark], ["light", light]]) {
     const ratio = contrast(values.get("--colors-on-primary"), values.get("--colors-primary"));
     assert.ok(ratio >= 4.5, `${theme} --colors-on-primary on --colors-primary is ${ratio.toFixed(2)} < 4.5`);
   });
+}
+
+test("scene colours repeat their tokens", () => {
+  assert.equal(SELECTION_HEX, dark.get("--colors-primary"));
+  assert.equal(EMERGENCY_HEX, dark.get("--colors-emergency"));
+  assert.equal(VEHICLE_LANE_HEX, dark.get("--colors-vehicle-lane"));
+});
+
+test("the emergency colour is a status colour, not the accent", () => {
+  assert.notEqual(dark.get("--colors-emergency").toLowerCase(), dark.get("--colors-primary").toLowerCase());
+  assert.notEqual(VEHICLE_LANE_HEX.toLowerCase(), SELECTION_HEX.toLowerCase());
+});
+
+for (const [theme, values] of [["dark", dark], ["light", light]]) {
+  for (const token of ["emergency", "vehicle-lane"]) {
+    test(`${theme}: scene colour --colors-${token} clears 3:1 against --colors-canvas`, () => {
+      const ratio = contrast(values.get(`--colors-${token}`), values.get("--colors-canvas"));
+      assert.ok(ratio >= 3, `${theme} --colors-${token} on --colors-canvas is ${ratio.toFixed(2)} < 3`);
+    });
+  }
 }
 
 test("the retired tokens are gone", () => {

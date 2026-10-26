@@ -44,6 +44,11 @@
   --colors-label-halo: rgba(0, 0, 0, 0.55);
   --colors-estimate-ink: var(--colors-ink-subtle);
 
+  /* 색: 장면 의미색. 강조색(조작·선택)과 섞지 않는다. 장면은 테마와 상관없이 같은 값을 쓰고
+     ui/sceneTokens.mjs가 같은 값을 되풀이한다. */
+  --colors-emergency: #ff3b30;
+  --colors-vehicle-lane: #1e88e5;
+
   /* 데이터 색 단계(낮음 0 -> 높음 6). 열·복사 지도처럼 값의 크기를 나타낼 때만 쓴다. */
   --data-heat-0: #2c7bb6;
   --data-heat-1: #00a6ca;

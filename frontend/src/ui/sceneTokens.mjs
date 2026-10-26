@@ -7,5 +7,9 @@ export const ACCENT_HEX = "#5e6ad2";
 export const SELECTION_HEX = ACCENT_HEX;
 // 마우스를 올린 건물 쪽으로 옮겨 가는 옅은 색: 강조색 35% + 흰색 65%.
 export const HOVER_HEX = "#c7cbef";
+// 긴급차량 차체: --colors-emergency와 같은 값. 강조색이 아니라 상태를 뜻하는 의미색이다.
+export const EMERGENCY_HEX = "#ff3b30";
+// 교통망 디버그 층의 차량 차로: --colors-vehicle-lane과 같은 값. 조작 대상이 아니므로 강조색을 쓰지 않는다.
+export const VEHICLE_LANE_HEX = "#1e88e5";
 // 선택 밖 건물을 흐리게 할 때의 검은 막 투명도(--colors-dim의 알파와 같다).
 export const DIM_ALPHA = 0.2;
