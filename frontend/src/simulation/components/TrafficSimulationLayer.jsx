@@ -4,11 +4,13 @@ import { simulationStore, useSimulationStore } from "../stores/simulationStore";
 import { useAgentDetails } from "../hooks/useAgentDetails.mjs";
 import { AgentTrajectory } from "./AgentTrajectory";
 import { RiskEventLayer } from "./RiskEventLayer";
+import { InstancedTrafficAgents } from "./InstancedTrafficAgents";
 import { TrafficEntity } from "./TrafficEntity";
 import { TrafficSignal } from "./TrafficSignal";
 
 // R3F는 바뀐 이벤트 핸들러를 prop 변경으로 보고 invalidate한다. 연결 상태 갱신만으로 다시 그리지 않도록 참조를 고정한다.
 const clearAgentSelection = () => simulationStore.selectAgent(null);
+const selectAgent = (id) => simulationStore.selectAgent(id);
 
 export function TrafficSimulationLayer({
   coordinateConfig,
@@ -37,7 +39,7 @@ export function TrafficSimulationLayer({
       {showTrafficLights && trafficLights.map((signal) => (
         <TrafficSignal key={signal.signal_id} signal={signal} coordinateConfig={coordinateConfig} />
       ))}
-      {entities.map((entity) => (
+      {renderEntity ? entities.map((entity) => (
         <TrafficEntity
           key={entity.id}
           entity={entity}
@@ -45,10 +47,20 @@ export function TrafficSimulationLayer({
           renderEntity={renderEntity}
           resolveHeight={resolveHeight}
           selected={entity.id === selectedAgentId}
-          onSelect={(id) => simulationStore.selectAgent(id)}
+          onSelect={selectAgent}
           contactShadow={contactShadows}
         />
-      ))}
+      )) : (
+        // 기본 모양은 종류·부품별 InstancedMesh로 그린다(에이전트 수와 무관한 드로우콜). renderEntity를 주면 에이전트마다 그린다.
+        <InstancedTrafficAgents
+          entities={entities}
+          coordinateConfig={coordinateConfig}
+          resolveHeight={resolveHeight}
+          selectedAgentId={selectedAgentId}
+          onSelect={selectAgent}
+          contactShadows={contactShadows}
+        />
+      )}
       <AgentTrajectory details={selectedAgentDetails} coordinateConfig={coordinateConfig} resolveHeight={resolveHeight} />
       {showRiskEvents && <RiskEventLayer coordinateConfig={coordinateConfig} resolveHeight={resolveHeight} />}
     </group>
