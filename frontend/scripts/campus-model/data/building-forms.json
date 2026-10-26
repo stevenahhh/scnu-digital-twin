@@ -9830,7 +9830,7 @@
    "key": "BLD_B7",
    "label": "순천대학교 B7 산학협력관",
    "footprintSource": "uni.glb outline",
-   "source": "Curated form traced on the NGII 2025 orthophoto sheet 34702020 (roof edges moved back by the relief lean of the registration field, 0.196 m per metre of height southwards) checked against the uni.glb and OSM way/1486502962 outlines; storeys, pilotis, podium and low east wing from SCNU 360 VR scene_b7 (visual reference only)",
+   "source": "Curated form traced on the NGII 2025 orthophoto sheet 34702020 (roof edges moved back by the relief lean of the registration field, 0.196 m per metre of height southwards) checked against the uni.glb and OSM way/1486502962 outlines; storeys, pilotis, podium and low east wing from SCNU 360 VR scene_b7 (visual reference only); 2026-10-26: the main ring no longer runs out to the pilotis corner and back (that spike crossed itself in model metres and stopped fetch/buildingForms.mjs), so the main mass ends where the raised mass over the pilotis begins",
    "lod4Models": [],
    "storeyMetres": 4.4,
    "lean": [
@@ -9843,12 +9843,12 @@
    ],
    "iou": {
     "lod4": null,
-    "footprint": 0.882,
-    "curated": 0.771,
-    "final": 0.771
+    "footprint": 0.859,
+    "curated": 0.779,
+    "final": 0.779
    },
    "flags": [
-    "curated form (data/scnu-facades.json): photo IoU 0.771 against 0.882 for the current footprint"
+    "curated form (data/scnu-facades.json): photo IoU 0.779 against 0.859 for the current footprint"
    ],
    "masses": [
     {
@@ -9878,10 +9878,6 @@
        34.97026848
       ],
       [
-       127.48277555,
-       34.97037259
-      ],
-      [
        127.48284979,
        34.97035691
       ],
@@ -9892,16 +9888,12 @@
       [
        127.48279434,
        34.97046168
-      ],
-      [
-       127.48277555,
-       34.97040243
       ]
      ],
      "holes": [
       [
        [
-        127.48293301,
+        127.48293302,
         34.97058243
        ],
        [
@@ -9973,7 +9965,7 @@
      "kind": "wing",
      "floors": 2,
      "roof": "flat",
-     "areaSquareMetres": 298.5,
+     "areaSquareMetres": 298.6,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
      "heightSource": "estimated: 2-storey east wing with a roof garden (VR scene_b7) x 4.4 m"
@@ -9989,7 +9981,7 @@
        34.97058243
       ],
       [
-       127.48293301,
+       127.48293302,
        34.97058243
       ],
       [
@@ -10061,7 +10053,7 @@
       ],
       [
        [
-        127.48284125,
+        127.48284126,
         34.97036033
        ],
        [
@@ -10073,7 +10065,7 @@
         34.97036664
        ],
        [
-        127.48284125,
+        127.48284124,
         34.97036664
        ]
       ],
@@ -10097,7 +10089,7 @@
       ],
       [
        [
-        127.48280408,
+        127.48280407,
         34.97045008
        ],
        [
@@ -10133,7 +10125,7 @@
        34.97058243
       ],
       [
-       127.48293301,
+       127.48293302,
        34.97058243
       ],
       [
@@ -26160,13 +26152,13 @@
   },
   {
    "key": "BLD_Dormitory_Building.004",
-   "label": "",
+   "label": "순천대학교 A13 웅지관",
    "footprintSource": "uni.glb outline",
    "source": "uni.glb outline",
    "lod4Models": [],
    "lean": [
-    -0.04,
-    0.087
+    -0.03,
+    0.067
    ],
    "leanPrior": [
     -0.04,
@@ -26174,8 +26166,8 @@
    ],
    "iou": {
     "lod4": null,
-    "footprint": 0.881,
-    "final": 0.881
+    "footprint": 0.862,
+    "final": 0.862
    },
    "flags": [
     "no VWorld LOD4 model over this footprint"
@@ -26184,79 +26176,79 @@
     {
      "outer": [
       [
-       127.48170427,
-       34.96717142
+       127.4817041,
+       34.96717135
       ],
       [
-       127.48163839,
-       34.96711728
+       127.48163822,
+       34.96711722
       ],
       [
-       127.48181248,
-       34.966976
+       127.48181229,
+       34.96697592
       ],
       [
-       127.48180375,
-       34.96694745
+       127.48180356,
+       34.96694738
       ],
       [
-       127.48167639,
-       34.96697682
+       127.4816762,
+       34.96697675
       ],
       [
-       127.48165705,
-       34.96690464
+       127.48165686,
+       34.96690458
       ],
       [
-       127.48200898,
-       34.96682838
+       127.48200878,
+       34.96682829
       ],
       [
-       127.4820206,
-       34.96685681
+       127.4820204,
+       34.96685672
       ],
       [
-       127.48208797,
-       34.96684408
+       127.48208776,
+       34.96684399
       ],
       [
-       127.4820958,
-       34.9668698
+       127.48209559,
+       34.96686971
       ],
       [
-       127.4821698,
-       34.96685606
+       127.48216959,
+       34.96685597
       ],
       [
-       127.48219408,
-       34.96692898
+       127.48219387,
+       34.96692889
       ],
       [
-       127.48197898,
-       34.96697542
+       127.48197878,
+       34.96697534
       ],
       [
-       127.48197361,
-       34.96695615
+       127.48197342,
+       34.96695607
       ],
       [
-       127.48194254,
-       34.9669617
+       127.48194234,
+       34.96696162
       ],
       [
-       127.48187671,
-       34.96701638
+       127.48187653,
+       34.9670163
       ],
       [
-       127.48188511,
-       34.96702244
+       127.48188492,
+       34.96702236
       ]
      ],
      "holes": [],
      "baseMetres": 0,
-     "topMetres": 24,
+     "topMetres": 26.4,
      "kind": "main",
-     "floors": 7,
+     "floors": 8,
      "roof": "flat",
      "parapetMetres": 0.9,
      "parapetEstimated": true,

@@ -132,11 +132,21 @@ const bareName = (name) => (name ?? "").replace(/^순천대학교\s*/, "").trim(
 function loadCatalogue() {
   const file = JSON.parse(readFileSync(path.join(DATA, "scnu-facades.json"), "utf8"));
   const looks = new Map(file.looks.map((look) => [look.id, look]));
+  for (const look of file.looks) {
+    if (look.zones && !(look.zones.base?.storeys > 0 && looks.has(look.zones.base.look))) {
+      throw new Error(`scnu-facades.json: look ${look.id} zones need base.storeys > 0 and a known base.look`);
+    }
+  }
   const byNode = new Map();
   const byName = new Map();
   const byCode = new Map();
   for (const entry of file.buildings) {
     if (!looks.has(entry.look)) throw new Error(`scnu-facades.json: ${entry.node ?? entry.name ?? entry.code} uses unknown look ${entry.look}`);
+    // Curated forms are drawn with flat roofs (fetch/building_forms.py curated_masses); any other roof is an error,
+    // never a silent flat roof.
+    for (const mass of entry.form?.masses ?? []) {
+      if (mass.roof !== undefined && mass.roof !== "flat") throw new Error(`scnu-facades.json: ${entry.node ?? entry.name ?? entry.code} form mass roof "${mass.roof}" is not supported (curated forms are flat)`);
+    }
     if (entry.node) byNode.set(entry.node, entry);
     else if (entry.name) byName.set(entry.name, entry);
     else byCode.set(entry.code, entry);
@@ -443,9 +453,18 @@ function addWalls(mesh, ring, outward, base, top, charts, { skip = null, colour 
 // of the entrance edge, one of two upper rows (and either orientation) above. Walls start `bottom`; a mass standing
 // on the ground also gets the strip below the ground line (down to `base`) in the plinth band. Edges shorter than
 // half a bay take a sliver of plain wall. The entrance edge can carry a canopy slab over the doors.
+// Facade zones (look field `zones`, data/scnu-facades.json): the lowest `base.storeys` storeys take the tile of look
+// `base.look` (a brick base under a panel block). Absent zones leave the facade exactly as before.
+function zonesOf(look, tiles) {
+  const base = look.zones?.base;
+  return base ? { baseStoreys: base.storeys, baseTile: tiles.get(base.look) } : null;
+}
+
+// Roof types building-forms.json may carry (fetch/building_forms.py roof_kind; curated masses are flat).
+const KNOWN_ROOFS = new Set(["flat", "gable", "hipped", "mono-pitch", "curved"]);
 const CANOPY_DEPTH = metres(2.2);
 const CANOPY_THICKNESS = metres(0.3);
-function addFacade(mesh, ordered, { base, ground, bottom, top, floors, look, tile, entranceEdge = -1, canopy = false, seed, charts }) {
+function addFacade(mesh, ordered, { base, ground, bottom, top, floors, look, tile, zones = null, entranceEdge = -1, canopy = false, seed, charts }) {
   const storey = (top - ground) / floors;
   const lowest = bottom > ground + 1e-6 ? bottom : base;
   const depth = top - lowest;
@@ -471,7 +490,8 @@ function addFacade(mesh, ordered, { base, ground, bottom, top, floors, look, til
     };
     if (length > 1e-6) {
       if (lowest === base) {
-        const [p0, p1] = [plinthUv(tile, 0), plinthUv(tile, TILE_BAYS)];
+        const plinthTile = zones?.baseTile ?? tile;
+        const [p0, p1] = [plinthUv(plinthTile, 0), plinthUv(plinthTile, TILE_BAYS)];
         cell(0, 1, base, ground, [p0, p1, p1, p0]);
       }
       const bays = Math.max(1, Math.round(length / bay));
@@ -483,8 +503,9 @@ function addFacade(mesh, ordered, { base, ground, bottom, top, floors, look, til
         const from = Math.max(y0, bottom);
         const f0 = (from - y0) / storey;
         const row = s === 0 ? ROWS.GROUND : rng() < 0.5 ? ROWS.UPPER_A : ROWS.UPPER_B;
+        const rowTile = zones?.baseTile && s < zones.baseStoreys ? zones.baseTile : tile;
         const emit = (g0, g1, tileRow, b0, b1) => {
-          cell(g0 / bays, g1 / bays, from, y1, [tileUv(tile, tileRow, b0, f0), tileUv(tile, tileRow, b1, f0), tileUv(tile, tileRow, b1, 1), tileUv(tile, tileRow, b0, 1)]);
+          cell(g0 / bays, g1 / bays, from, y1, [tileUv(rowTile, tileRow, b0, f0), tileUv(rowTile, tileRow, b1, f0), tileUv(rowTile, tileRow, b1, 1), tileUv(rowTile, tileRow, b0, 1)]);
         };
         if (sliver) {
           emit(0, bays, row, 0, Math.min(0.3, length / bay));
@@ -661,7 +682,7 @@ function buildingPrimitives(building, seed, { heightAt, facadeMaterial, tiles, l
     for (const [massIndex, mass] of partMasses(part).entries()) {
       const top = ground + metres(mass.heightMetres);
       const floors = Math.max(1, mass.floors || Math.round(mass.heightMetres / 3.6));
-      const facade = { base, ground, bottom: ground + metres(mass.fromMetres), top, floors, look, tile, seed: seed * 31 + partIndex * 7 + massIndex, charts };
+      const facade = { base, ground, bottom: ground + metres(mass.fromMetres), top, floors, look, tile, zones: zonesOf(look, tiles), seed: seed * 31 + partIndex * 7 + massIndex, charts };
       const onEntrance = massIndex === 0 && entrance?.part === part;
       addFacade(walls, orderedRing(mass.outer, true), { ...facade, entranceEdge: onEntrance ? entrance.edge : -1, canopy: onEntrance && Boolean(building.entry) && !greenhouse });
       mass.holes.forEach((hole) => addFacade(walls, orderedRing(hole, false), facade));
@@ -897,7 +918,7 @@ function roofSurface(triangles) {
 // below the ground line; plain masses get eave-coloured quads. Under a pitched roof the cells stop at the edge's eave
 // line and a plain gable fills the wall up to the roof profile.
 function addMassRing(ctx, solid, ordered, { facade, cellsOnGround = false, entranceEdge = -1, canopy = false, seed }) {
-  const { walls, plain, charts, solids, look, tile, ground, plinthBase, storey, plainColour, surface } = ctx;
+  const { walls, plain, charts, solids, look, tile, zones = null, ground, plinthBase, storey, plainColour, surface } = ctx;
   const rng = mulberry32(seed);
   const bay = metres(look.bay ?? 3.6);
   const peak = solid.peak;
@@ -947,7 +968,8 @@ function addMassRing(ctx, solid, ordered, { facade, cellsOnGround = false, entra
         if (cellsTop > lo + 1e-3) {
           if (lo <= ground + 1e-3 && solid.bottom <= ground + 1e-3) {
             if (cells) {
-              const [p0, p1] = [plinthUv(tile, 0), plinthUv(tile, TILE_BAYS)];
+              const plinthTile = zones?.baseTile ?? tile;
+              const [p0, p1] = [plinthUv(plinthTile, 0), plinthUv(plinthTile, TILE_BAYS)];
               quad(walls, run.t0, run.t1, plinthBase, plinthBase, ground, ground, [p0, p1, p1, p0]);
             } else {
               quad(plain, run.t0, run.t1, plinthBase, plinthBase, ground, ground, PLAIN_UV, plainColour);
@@ -965,12 +987,13 @@ function addMassRing(ctx, solid, ordered, { facade, cellsOnGround = false, entra
               if (to - from < 1e-3) continue;
               const [f0, f1] = [(from - y0) / storey, (to - y0) / storey];
               const row = k === 0 ? ROWS.GROUND : rng() < 0.5 ? ROWS.UPPER_A : ROWS.UPPER_B;
+              const rowTile = zones?.baseTile && k < zones.baseStoreys ? zones.baseTile : tile;
               const cell = (g0, g1, tileRow, u) => {
                 const c0 = Math.max(g0, run.t0 * bays);
                 const c1 = Math.min(g1, run.t1 * bays);
                 if (c1 - c0 < 1e-6) return;
                 quad(walls, c0 / bays, c1 / bays, from, from, to, to,
-                  [tileUv(tile, tileRow, u(c0), f0), tileUv(tile, tileRow, u(c1), f0), tileUv(tile, tileRow, u(c1), f1), tileUv(tile, tileRow, u(c0), f1)]);
+                  [tileUv(rowTile, tileRow, u(c0), f0), tileUv(rowTile, tileRow, u(c1), f0), tileUv(rowTile, tileRow, u(c1), f1), tileUv(rowTile, tileRow, u(c0), f1)]);
               };
               if (sliver) {
                 cell(0, bays, row, (c) => (c / bays) * Math.min(0.3, length / bay));
@@ -1107,7 +1130,7 @@ function massPrimitives(building, seed, { heightAt, facadeMaterial, tiles, looks
     const storey = (top - ground) / floors;
     const surface = part.triangles ? roofSurface(part.triangles.map((t) => t.map(([x, z, h]) => [x, ground + metres(h), z]))) : null;
     const shape = { ...solid, top: surface ? ground + metres(part.eaveMetres ?? part.heightMetres) : top, eave: ground + metres(part.eaveMetres ?? part.heightMetres), peak: top, bottom };
-    const ctx = { walls, plain, charts, solids, look, tile, ground, plinthBase, storey, plainColour: part.kind === "canopy" ? trimColour : wallColour, surface };
+    const ctx = { walls, plain, charts, solids, look, tile, zones: zonesOf(look, tiles), ground, plinthBase, storey, plainColour: part.kind === "canopy" ? trimColour : wallColour, surface };
     const facade = !PLAIN_KINDS.has(part.kind);
     const onEntrance = entrance?.part === part;
     // Cores take the building's storey grid, so the cells of a facade-flush core line up with the walls beside it.
@@ -1477,7 +1500,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
         eaveMetres: m.eaveMetres ?? null,
         kind: m.kind,
         floors: m.floors,
-        roof: m.roof,
+        roof: KNOWN_ROOFS.has(m.roof) ? m.roof : (() => { throw new Error(`building-forms.json: ${formKey(building)} mass roof "${m.roof}" is not a known roof type`); })(),
         triangles: m.triangles?.map((t) => t.map(([lon, lat, h]) => [...toModel([lon, lat]), h])) ?? null,
         columns: m.columns?.map((r) => cleanRing(r.map(toModel))) ?? [],
         heightSource: m.heightSource ?? (fromLod4 ? `VWorld LOD4 ${m.roof} roof at ${m.topMetres} m (estimated)` : heightSource),
@@ -1534,7 +1557,10 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
     metallicRoughnessTexture: { index: glb.addTexture(textures.arm, "image/png"), texCoord: 0 },
   });
   // Facade atlas: one tile per look in use (lib/facadeAtlas.mjs); every wall of every building on one material.
-  const usedLooks = [...new Set([...selectableBuildings, ...campusBuildings].map((b) => b.look))];
+  const usedLooks = [...new Set([...selectableBuildings, ...campusBuildings].flatMap((b) => {
+    const base = catalogue.looks.get(b.look).zones?.base;
+    return base ? [b.look, base.look] : [b.look];
+  }))];
   const facadeAtlas = await buildFacadeAtlas(usedLooks.map((id) => ({ ...catalogue.looks.get(id), id })));
   const clamped = { repeat: false };
   const facadeMaterial = glb.addMaterial({
@@ -1656,6 +1682,18 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
     // CampusBuildings roof. BLD_* roofs used to get a Roof_Photo_* material variant instead; the dashboard tints
     // material colours (night, hover), which mixes a variant's colour towards the tint but multiplies a vertex
     // colour by it, so the vertex-coloured campus roofs rendered darker than BLD_* roofs of the same colour.
+    // A look's roofColour (data/scnu-facades.json, read in the SCNU 360 VR tour) replaces the photo or tag colour where
+    // the photo samples a tiled roof as grey (A9's orange clay tiles).
+    const vrRoofs = [];
+    for (const building of [...selectableBuildings, ...campusBuildings]) {
+      const colour = catalogue.looks.get(building.look).roofColour;
+      if (!colour) continue;
+      building.roofColourRgb = hex(colour);
+      building.roofColourSource = `SCNU 360 VR tour, look ${building.look} roofColour ${colour} (estimated)`;
+      for (const part of building.massForm ? building.parts : []) part.roofColourRgb = building.roofColourRgb;
+      vrRoofs.push(`${building.nodeName ?? (building.displayName || "(unnamed)")} ${colour}`);
+    }
+    if (vrRoofs.length) console.log(`roof colours from the VR tour (look roofColour): ${vrRoofs.join("; ")}`);
     for (const building of [...selectableBuildings, ...campusBuildings]) {
       for (const part of building.massForm ? building.parts : []) {
         if (part.roofColourRgb) part.roofColour = roofFactor(part.roofColourRgb).map((v) => Math.round(v * 255));
