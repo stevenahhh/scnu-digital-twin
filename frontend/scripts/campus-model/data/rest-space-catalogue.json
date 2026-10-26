@@ -105,7 +105,7 @@
       "dims": {
         "frontHeightM": { "default": 2.4, "range": [2.2, 2.8] },
         "depthM": { "default": 2.5, "range": [2.0, 3.0] },
-        "stripeWidthM": { "default": 0.5, "range": [0.3, 0.8] }
+        "stripeWidthM": { "default": 0.5, "range": [0.3, 1.6], "rangeSource": "upper bound 1.6 m from VR scene_a10 face d: the striped tent's stripes read about 1.5 m (estimated, 추정)" }
       },
       "dimsSource": "VR reading of the blue-white striped awning in scene_a10, front edge kept inside the KDS 34 50 15 그늘막 band minus 0.3 m for a facade-hung awning (estimated)",
       "materials": { "fabric": "instance colours [a, b]", "frame": "metal" },
@@ -116,7 +116,7 @@
       "builder": "hut",
       "label": "소형 부스",
       "dims": {
-        "planWidthM": { "default": 2.4, "range": [2.0, 4.0] },
+        "planWidthM": { "default": 2.4, "range": [2.0, 9.5], "rangeSource": "upper bound 9.5 m from VR scene_f3 face r: the tennis-court hut reads about 9 m long (estimated, 추정)" },
         "planDepthM": { "default": 2.4, "range": [2.0, 4.0] },
         "heightM": { "default": 2.6, "range": [2.3, 3.2] },
         "roofRiseM": { "default": 0.6, "range": [0.3, 1.0] }
@@ -130,7 +130,7 @@
       "builder": "bench",
       "label": "벤치",
       "dims": {
-        "lengthM": { "default": 1.8, "range": [1.2, 2.4] },
+        "lengthM": { "default": 1.8, "range": [1.2, 6.0], "rangeSource": "upper bound 6.0 m from VR scene_c1 face l: the dark box benches beside the 3 m tree pits read about 5-6 m long (estimated, 추정)" },
         "depthM": { "default": 0.6, "range": [0.4, 0.7] },
         "seatHeightM": { "default": 0.45, "range": [0.4, 0.48] }
       },
