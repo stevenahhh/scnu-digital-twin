@@ -722,6 +722,39 @@ geometry, every value an estimate (추정):
   non-slip surfacing of the E4 junction and of the carriageway past E7 (`red`: Ground_Bicycle's red asphalt tile at
   precedence 5.8, label ASPHALT, under the markings).
 
+### Plaza and walk paving (VR patterns, `data/paving-patterns.json`)
+
+The paving of every walk and plaza the 42 exterior VR scenes show was read from their cube faces (module size, bond,
+colours, accents, border bands) into `data/paving-patterns.json`; `lib/pavingPatterns.mjs` draws each pattern as one
+seamless colour tile and a joint-relief tile (80 px per metre, no photo pixel). Every value is an estimate (추정).
+
+- `Ground_Pavers` (A003 block-paver and existing walkways, OSM plazas, plain supplements) and `Ground_Walkway` take
+  `campus-speckle`, the light grey 0.3 m pavers with scattered dark and blue-grey squares that most VR scenes show
+  (the CC0 PavingStones150 tile is no longer used there). Geometry and labels of the walkable layers are unchanged.
+- Plazas whose paving differs are `catalogue` paving supplements of `data/osm-ground.json` (`Ground_Plaza`, precedence
+  5.8, label PAVING): an outline traced on the NGII 2025 sheet (or an OSM pedestrian area), a pattern laid along an
+  `axis`, and optional `borders` drawn inside the outline at 5.85. A restyle stays out of the label raster (label
+  null): kerbs, the walkway slab, lamps and the network see the same ground as before. A plaza the walkable layers
+  lack (`walkable: true`: the C1 brick forecourt, the E1 slab forecourt, the A9, D4 and E7 plazas, the F1 forecourt,
+  the A1 and west B7 pink walks, each over 69-98 % natural ground before) is labelled PAVING at the base paving
+  precedence, so it claims natural ground only, never a road, walkway or apron.
+- `water` supplements are pools on a plaza: painted water at 5.95 (above the paving) with an optional stone `rim`
+  band outside the outline (the C1 central-plaza pool, outline of the survey pond OC0081).
+
+| VR scene(s) | place | pattern |
+|---|---|---|
+| c1 d/r/b, e1 f/r/d | central plaza (OSM way/1364516955) | plaza-mottled, slate border; pool water with a slate rim |
+| c1 f | forecourt below the library steps | brick-herringbone, grey border |
+| e1 f | slab forecourt south of the central plaza | slab-grey |
+| a9, a10 | A9 tree plaza | dorm-blue (terracotta squares on a 1.2 m grid) |
+| d4 f/d | D4 entrance plaza | d4-stripes |
+| e7 f/d | E7 front plaza | e7-white |
+| a19 l/f | SW gate plaza (road-edge strip; the rest was under construction on the sheet) | gate-bands |
+| b2 f, b1 l | B2 forecourt (OSM way/1364237870) | slab-grey |
+| f1 f | F1 forecourt, with the lawn island RS-LS-F1ISLAND | slab-grey |
+| d2 f/r | D2 planted courtyard | slab-grey, slate border |
+| b7 l/d/r, a1 l | pink-red walks around B7 and north of the A1 fountain pond | pink-paver |
+
 ### Outline check (shelters, fences, walls, planters)
 
 Every bus shelter, fence, low, retaining and garden wall and planter outline of the survey and of

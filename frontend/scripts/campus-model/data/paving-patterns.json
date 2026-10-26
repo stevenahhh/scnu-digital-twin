@@ -1,0 +1,341 @@
+{
+  "description": "Paving patterns read from the SCNU 360 VR tour (visual reference only, nothing copied): module sizes, bonds, colours and accent shares of the campus walks and plazas, drawn by lib/pavingPatterns.mjs as repeating colour + relief tiles (no photo pixel). Colours are sRGB estimates from the VR faces under daylight; module sizes are counted against known lengths (bay widths, steps, the 0.3 m tactile module). Every value is an estimate (추정).",
+  "patterns": {
+    "campus-speckle": {
+      "label": "light grey 0.3 m concrete pavers with scattered dark grey and blue-grey squares (campus sidewalk standard)",
+      "moduleM": [
+        0.3,
+        0.3
+      ],
+      "bond": "stack",
+      "repeatM": 4.8,
+      "base": [
+        [
+          "#c8c8c3",
+          0.45
+        ],
+        [
+          "#bdbeba",
+          0.3
+        ],
+        [
+          "#d2d1cb",
+          0.25
+        ]
+      ],
+      "accents": [
+        [
+          "#5d6268",
+          0.07
+        ],
+        [
+          "#7a8c9e",
+          0.05
+        ]
+      ],
+      "joint": "#a3a39e",
+      "jointM": 0.008,
+      "source": "VR scene_a2 d, scene_a3 d/l, scene_a4 d, scene_b2 d, scene_b4 d, scene_c2 d, scene_d1 d, scene_e3 d, scene_e5 r"
+    },
+    "plaza-mottled": {
+      "label": "central plaza: 0.5 m granite squares mixed light, mid and dark grey with dark slate squares",
+      "moduleM": [
+        0.5,
+        0.5
+      ],
+      "bond": "stack",
+      "repeatM": 6,
+      "base": [
+        [
+          "#c3c2bd",
+          0.45
+        ],
+        [
+          "#a9aaa6",
+          0.32
+        ],
+        [
+          "#92938f",
+          0.15
+        ]
+      ],
+      "accents": [
+        [
+          "#4e545a",
+          0.08
+        ]
+      ],
+      "joint": "#8d8d88",
+      "jointM": 0.01,
+      "source": "VR scene_c1 d/r/b and scene_e1 f/r/d (the pond plaza)"
+    },
+    "brick-herringbone": {
+      "label": "red clay brick 0.2 x 0.1 m in a 90 degree herringbone",
+      "moduleM": [
+        0.2,
+        0.1
+      ],
+      "bond": "herringbone",
+      "repeatM": 2.4,
+      "base": [
+        [
+          "#b35641",
+          0.35
+        ],
+        [
+          "#a24a39",
+          0.25
+        ],
+        [
+          "#c2654a",
+          0.25
+        ],
+        [
+          "#8f4537",
+          0.15
+        ]
+      ],
+      "accents": [],
+      "joint": "#8a776c",
+      "jointM": 0.01,
+      "source": "VR scene_c1 f (the forecourt below the library steps)"
+    },
+    "pink-paver": {
+      "label": "pink-red concrete pavers 0.2 x 0.1 m in running bond",
+      "moduleM": [
+        0.2,
+        0.1
+      ],
+      "bond": "running",
+      "repeatM": 2.4,
+      "base": [
+        [
+          "#c27b6c",
+          0.4
+        ],
+        [
+          "#b56d60",
+          0.35
+        ],
+        [
+          "#cd8b7b",
+          0.25
+        ]
+      ],
+      "accents": [],
+      "joint": "#9c7a70",
+      "jointM": 0.008,
+      "source": "VR scene_b7 l/d (walks around B7), scene_a1 l (the walk north of the fountain pond), scene_e5 r (entrance forecourt)"
+    },
+    "dorm-blue": {
+      "label": "dorm plaza: blue-grey 0.4 m pavers with a small terracotta square on a 1.2 m grid",
+      "moduleM": [
+        0.4,
+        0.4
+      ],
+      "bond": "stack",
+      "repeatM": 4.8,
+      "base": [
+        [
+          "#8d99a4",
+          0.35
+        ],
+        [
+          "#9ca5ae",
+          0.3
+        ],
+        [
+          "#7d8894",
+          0.2
+        ],
+        [
+          "#afb5ba",
+          0.15
+        ]
+      ],
+      "accents": [],
+      "grid": {
+        "pitchM": 1.2,
+        "sizeM": 0.14,
+        "colour": "#b0654a"
+      },
+      "joint": "#6a7179",
+      "jointM": 0.008,
+      "source": "VR scene_a9 d/b, scene_a10 d/l (the A9 tree plaza)"
+    },
+    "d4-stripes": {
+      "label": "D4 plaza: white speckled 0.3 m pavers with 0.6 m dark grey stripes every 3.6 m along the plaza",
+      "moduleM": [
+        0.3,
+        0.3
+      ],
+      "bond": "stack",
+      "repeatM": 7.2,
+      "base": [
+        [
+          "#d8d8d3",
+          0.55
+        ],
+        [
+          "#cfd0cb",
+          0.45
+        ]
+      ],
+      "accents": [
+        [
+          "#6f7378",
+          0.06
+        ],
+        [
+          "#8aa0b4",
+          0.04
+        ]
+      ],
+      "stripes": {
+        "pitchM": 3.6,
+        "widthM": 0.6,
+        "colour": "#5d6166"
+      },
+      "joint": "#b2b2ad",
+      "jointM": 0.008,
+      "source": "VR scene_d4 f/d (the long entrance plaza east of D4)"
+    },
+    "e7-white": {
+      "label": "near-white 0.3 m pavers with scattered dark grey, blue and terracotta squares",
+      "moduleM": [
+        0.3,
+        0.3
+      ],
+      "bond": "stack",
+      "repeatM": 4.8,
+      "base": [
+        [
+          "#dedcd5",
+          0.6
+        ],
+        [
+          "#d4d2cb",
+          0.4
+        ]
+      ],
+      "accents": [
+        [
+          "#5f646a",
+          0.05
+        ],
+        [
+          "#6f8aa6",
+          0.04
+        ],
+        [
+          "#b26a4c",
+          0.03
+        ]
+      ],
+      "joint": "#bdbbb4",
+      "jointM": 0.008,
+      "source": "VR scene_e7 f/d (the E7 front plaza)"
+    },
+    "slab-grey": {
+      "label": "large light grey concrete slabs 0.6 m",
+      "moduleM": [
+        0.6,
+        0.6
+      ],
+      "bond": "stack",
+      "repeatM": 6,
+      "base": [
+        [
+          "#c6c6c2",
+          0.5
+        ],
+        [
+          "#bcbcb8",
+          0.3
+        ],
+        [
+          "#cfcfca",
+          0.2
+        ]
+      ],
+      "accents": [],
+      "joint": "#a2a29d",
+      "jointM": 0.01,
+      "source": "VR scene_b2 f (B2 forecourt), scene_f1 f (F1 forecourt), scene_d2 f/r (D2 courtyard), scene_e1 f (forecourt south of the central plaza)"
+    },
+    "slate-band": {
+      "label": "dark slate band 0.3 x 0.6 m",
+      "moduleM": [
+        0.6,
+        0.3
+      ],
+      "bond": "stack",
+      "repeatM": 2.4,
+      "base": [
+        [
+          "#525b63",
+          0.5
+        ],
+        [
+          "#5d666e",
+          0.5
+        ]
+      ],
+      "accents": [],
+      "joint": "#3f464c",
+      "jointM": 0.008,
+      "source": "VR scene_c1 d (the band around the pool), scene_d2 f (courtyard borders)"
+    },
+    "grey-band": {
+      "label": "mid grey border pavers 0.3 x 0.6 m",
+      "moduleM": [
+        0.6,
+        0.3
+      ],
+      "bond": "stack",
+      "repeatM": 2.4,
+      "base": [
+        [
+          "#9fa19f",
+          0.5
+        ],
+        [
+          "#a9aba8",
+          0.5
+        ]
+      ],
+      "accents": [],
+      "joint": "#858784",
+      "jointM": 0.008,
+      "source": "VR scene_c1 f (borders of the brick forecourt)"
+    },
+    "gate-bands": {
+      "label": "gate plaza: light grey 0.6 m slabs with 1.2 m blue-grey bands across the plaza every 2.4 m",
+      "moduleM": [
+        0.6,
+        0.6
+      ],
+      "bond": "stack",
+      "repeatM": 4.8,
+      "base": [
+        [
+          "#c9c9c5",
+          0.5
+        ],
+        [
+          "#bfc0bc",
+          0.5
+        ]
+      ],
+      "accents": [],
+      "stripes": {
+        "pitchM": 2.4,
+        "widthM": 1.2,
+        "colour": "#7c8794"
+      },
+      "joint": "#a4a4a0",
+      "jointM": 0.01,
+      "source": "VR scene_a19 l/f (the finished SW gate plaza; the 2025 sheet shows the bands at its road edge, the rest under construction)"
+    }
+  }
+}

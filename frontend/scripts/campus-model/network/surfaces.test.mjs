@@ -4,7 +4,7 @@ import test from "node:test";
 import { tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { EXTENT } from "../lib/frame.mjs";
 import { SURFACE_CLASS } from "../lib/surfaceClass.mjs";
-import { PX, buildSurfaces, discRing, offsetRing } from "./surfaces.mjs";
+import { PRECEDENCE, PX, buildSurfaces, discRing, offsetRing } from "./surfaces.mjs";
 
 // Model-unit rectangles (closed when `close`).
 const rect = (x0, z0, x1, z1, close = false) => {
@@ -114,6 +114,32 @@ test("a tiles paving supplement is a PAVING layer between the walkways and the a
   const red = buildSurfaces({ ...fixture(), groundFeatures: { ...groundFeatures, supplements: [{ kind: "paving", note: "red junction", pattern: "red", ring: rect(170, -200, 190, -180) }] } }).layers.find((l) => l.source_ref === "paving: red junction");
   assert.deepEqual([red.mesh, red.cls, red.label, red.precedence, red.estimated], ["Ground_Bicycle", "ASPHALT", SURFACE_CLASS.ASPHALT, tiles.precedence, true]);
   assert.throws(() => buildSurfaces({ ...fixture(), groundFeatures: { ...groundFeatures, supplements: [{ kind: "paving", note: "bad", ring: rect(0, 0, 1, 1) }] } }), /needs a ring and pattern/);
+});
+
+test("a catalogue paving supplement is a Ground_Plaza layer along its axis with inner border bands; water sits above it", () => {
+  const ring = rect(170, -200, 190, -180);
+  const supplements = [
+    { kind: "paving", note: "plaza", pattern: "catalogue", tile: "plaza-mottled", ring, axis: [[170, -200], [190, -200]], borders: [{ widthM: 0.6, tile: "slate-band" }] },
+    { kind: "water", note: "pool", ring: rect(175, -195, 185, -185), rim: { widthM: 0.6, tile: "slate-band" } },
+  ];
+  const { layers } = buildSurfaces({ ...fixture(), groundFeatures: { osm: [], lines: [], facilities: [], unlabelledLabels: [], supplements } });
+  const plaza = layers.find((l) => l.source_ref === "paving: plaza");
+  assert.deepEqual([plaza.mesh, plaza.pattern, plaza.label, plaza.precedence], ["Ground_Plaza", "plaza-mottled", null, PRECEDENCE.TILES], "a restyle leaves the label raster alone");
+  const without = buildSurfaces({ ...fixture(), groundFeatures: { osm: [], lines: [], facilities: [], unlabelledLabels: [], supplements: [] } });
+  const withPlaza = buildSurfaces({ ...fixture(), groundFeatures: { osm: [], lines: [], facilities: [], unlabelledLabels: [], supplements: [supplements[0]] } });
+  assert.deepEqual(withPlaza.labelRaster(width, height, toPixel), without.labelRaster(width, height, toPixel));
+  const added = buildSurfaces({ ...fixture(), groundFeatures: { osm: [], lines: [], facilities: [], unlabelledLabels: [], supplements: [{ ...supplements[0], walkable: true }] } }).layers.find((l) => l.source_ref === "paving: plaza");
+  assert.deepEqual([added.label, added.walkableAdded, added.labelPrecedence], [SURFACE_CLASS.PAVING, true, PRECEDENCE.PAVING], "an added plaza claims natural ground only");
+  assert.deepEqual(plaza.uvFrame.u, [1, 0]);
+  assert.equal(plaza.uvFrame.sizeM, 6);
+  const band = layers.find((l) => l.source_ref.startsWith("paving band slate-band"));
+  assert.equal(band.rings.length, 2, "a band is the outline with the inset as its hole");
+  assert.ok(band.precedence > plaza.precedence);
+  const water = layers.find((l) => l.source_ref === "water: pool");
+  assert.deepEqual([water.mesh, water.paint.kind, water.label], ["Ground_Sports", "water", SURFACE_CLASS.PAINTED]);
+  assert.ok(water.precedence > band.precedence && water.precedence < PRECEDENCE.APRON);
+  assert.ok(layers.some((l) => l.source_ref.startsWith("water rim slate-band")));
+  assert.throws(() => buildSurfaces({ ...fixture(), groundFeatures: { osm: [], lines: [], facilities: [], unlabelledLabels: [], supplements: [{ kind: "paving", note: "x", pattern: "catalogue", tile: "moss", ring }] } }), /no pattern moss/);
 });
 
 test("estimated walkway strips become estimated Ground_Walkway paving under the road layers", () => {

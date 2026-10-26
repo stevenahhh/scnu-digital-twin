@@ -13,6 +13,9 @@
 //   4           LOT       Ground_Lot       OSM parking, the estimated bays of data/osm-ground.json supplements,
 //                                          off-campus lots; the roundabout (painted ring, rim, island) over the road
 //   5 / 5.5     A003      Ground_Pavers / Ground_Asphalt / Ground_Bicycle   NGII A003 walkway rings by `qual` / `scls`
+//   5.8 (5.85)  TILES     Ground_Plaza     catalogue paving supplements (data/paving-patterns.json, VR-read patterns along an
+//                                          axis) and their inner border bands at 5.85; label PAVING
+//   5.95        POOL      Ground_Sports    water supplements (pools on a plaza, painted water) and their stone rim bands (5.85)
 //   5.8         TILES     Ground_Sports /  project paving supplements of data/osm-ground.json (patterned courtyard tiles
 //                         Ground_Pavers /  or plain pavers, label PAVING; red non-slip road surfacing, Ground_Bicycle tile,
 //                         Ground_Bicycle   label ASPHALT; all estimated): above the walkways, under the aprons
@@ -32,6 +35,7 @@ import { cleanRing, pointInRing, ringArea } from "../lib/geometry.mjs";
 import { encodePng } from "../lib/png.mjs";
 import { Raster } from "../lib/raster.mjs";
 import { SURFACE_CLASS } from "../lib/surfaceClass.mjs";
+import { pavingPattern } from "../lib/pavingPatterns.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const GROUND_FEATURES = path.join(HERE, "..", "data", "osm-ground.json");
@@ -48,7 +52,7 @@ const FACILITY_RIM_M = 0.6;
 const FOUNTAIN_RIM_M = 0.7;
 const BICYCLE_LANE = "A0033327";
 
-export const PRECEDENCE = Object.freeze({ SPORTS: 1, PAVING: 2, ASPHALT: 3, LOT: 4, A003: 5, BICYCLE: 5.5, TILES: 5.8, APRON: 6 });
+export const PRECEDENCE = Object.freeze({ SPORTS: 1, PAVING: 2, ASPHALT: 3, LOT: 4, A003: 5, BICYCLE: 5.5, TILES: 5.8, TILE_BANDS: 5.85, POOL: 5.95, APRON: 6 });
 
 // ---------------------------------------------------------------- inputs
 // A003 walkways (walkways_wgs84.geojson): outlines, not centrelines. Closed rings run along the kerb and the back edge
@@ -84,6 +88,7 @@ export async function loadGroundFeatures() {
     ...(f.at || f.centre ? { point: geoToModel(...(f.at ?? f.centre)) } : {}),
     ...(f.axis ? { axis: toModel(f.axis) } : {}),
     ...(f.ring ? { ring: toModel(f.ring) } : {}),
+    ...(f.holes ? { holes: f.holes.map(toModel) } : {}),
   }));
   const areaM2 = (ring) => Math.abs(ringArea(ring)) / SCENE_UNITS_PER_METRE ** 2;
   const stadiums = osm.filter((f) => f.kind === "stadium");
@@ -471,7 +476,25 @@ export function buildSurfaces({ inputs, walkways, groundFeatures = null, offCamp
   // ---- 5.8 paving supplements: a courtyard's patterned tiles (pattern "tiles", running along `axis`), plain pavers, or
   // the red non-slip surfacing of a carriageway (pattern "red": the red asphalt tile of the bicycle lanes, still road)
   for (const paving of groundFeatures?.supplements.filter((f) => f.kind === "paving") ?? []) {
-    if (!(paving.ring?.length >= 3) || !(paving.pattern === "plain" || paving.pattern === "red" || (paving.pattern === "tiles" && paving.axis))) throw new Error(`osm-ground.json: paving "${paving.note}" needs a ring and pattern "plain", "red" or "tiles" with an axis`);
+    if (!(paving.ring?.length >= 3) || !(paving.pattern === "plain" || paving.pattern === "red" || (paving.pattern === "catalogue" && paving.tile) || (paving.pattern === "tiles" && paving.axis))) throw new Error(`osm-ground.json: paving "${paving.note}" needs a ring and pattern "plain", "red", "catalogue" with a tile or "tiles" with an axis`);
+    if (paving.pattern === "catalogue") {
+      // VR-read pattern (data/paving-patterns.json) laid along `axis` (default: the ring's first edge), with border bands
+      // of their own pattern inside the outline (widthM from the edge inward)
+      const [a, b] = paving.axis ?? [paving.ring[0], paving.ring[1]];
+      const length = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      const u = [(b[0] - a[0]) / length, (b[1] - a[1]) / length];
+      const frame = (tile) => ({ origin: a, u, v: [-u[1], u[0]], sizeM: pavingPattern(tile).repeatM });
+      // A catalogue paving restyles ground the walkable layers already hold, so it stays out of the label raster (label
+      // null: kerbs, slab and lamps see the same ground as before); `walkable` marks a plaza missing from them, added as PAVING.
+      // It joins the raster at the base PAVING precedence, so it claims natural ground only, never a road, walkway or apron.
+      const base = { cls: "PAVING", mesh: "Ground_Plaza", label: paving.walkable ? SURFACE_CLASS.PAVING : null, source: "project-estimated", source_ref: `paving: ${paving.note}`, estimated: true, ...(paving.walkable ? { walkableAdded: true, labelPrecedence: PRECEDENCE.PAVING } : {}) };
+      // holes: ground the paving leaves to a layer drawn there instead (a pool and its rim), so the two never overlap
+      add({ ...base, precedence: PRECEDENCE.TILES, pattern: paving.tile, uvFrame: frame(paving.tile) }, [paving.ring, ...(paving.holes ?? [])]);
+      for (const band of paving.borders ?? []) {
+        add({ ...base, precedence: PRECEDENCE.TILE_BANDS, pattern: band.tile, uvFrame: frame(band.tile), source_ref: `paving band ${band.tile}: ${paving.note}` }, [paving.ring, offsetRing(paving.ring, -metres(band.widthM))]);
+      }
+      continue;
+    }
     if (paving.pattern === "red") {
       add({ cls: "ASPHALT", mesh: "Ground_Bicycle", label: SURFACE_CLASS.ASPHALT, precedence: PRECEDENCE.TILES, source: "project-estimated", source_ref: `paving: ${paving.note}`, estimated: true }, [paving.ring]);
       continue;
@@ -481,6 +504,18 @@ export function buildSurfaces({ inputs, walkways, groundFeatures = null, offCamp
       continue;
     }
     add({ cls: "PAVING", mesh: "Ground_Sports", label: SURFACE_CLASS.PAVING, precedence: PRECEDENCE.TILES, source: "project-estimated", source_ref: `paving: ${paving.note}`, paint: { kind: "tiles", axis: paving.axis.map(([x, z]) => sceneToTm(x, z)) }, estimated: true }, [paving.ring]);
+  }
+
+  // ---- 5.95 water supplements: a pool on a plaza (painted water above the paving) and its stone rim outside the outline
+  for (const pool of groundFeatures?.supplements.filter((f) => f.kind === "water") ?? []) {
+    if (!(pool.ring?.length >= 3)) throw new Error(`osm-ground.json: water "${pool.note}" needs a ring`);
+    add({ cls: "SPORTS", mesh: "Ground_Sports", label: SURFACE_CLASS.PAINTED, precedence: PRECEDENCE.POOL, source: "project-estimated", source_ref: `water: ${pool.note}`, paint: { kind: "water", ...(pool.tint ? { tint: pool.tint } : {}) }, estimated: true }, [pool.ring]);
+    if (pool.rim) {
+      const [a, b] = [pool.ring[0], pool.ring[1]];
+      const length = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      const u = [(b[0] - a[0]) / length, (b[1] - a[1]) / length];
+      add({ cls: "PAVING", mesh: "Ground_Plaza", label: null, precedence: PRECEDENCE.TILE_BANDS, source: "project-estimated", source_ref: `water rim ${pool.rim.tile}: ${pool.note}`, pattern: pool.rim.tile, uvFrame: { origin: a, u, v: [-u[1], u[0]], sizeM: pavingPattern(pool.rim.tile).repeatM }, estimated: true }, [offsetRing(pool.ring, metres(pool.rim.widthM)), pool.ring]);
+    }
   }
 
   // ---- 6 building aprons
@@ -524,9 +559,11 @@ class LabelFill extends Raster {
 
 // Layers (even-odd per polygon) and strokes in precedence order; toPixel maps [E, N] to pixel coordinates.
 export function labelRaster({ layers, strokes = [] }, width, height, toPixel) {
+  const rank = (item) => item.labelPrecedence ?? item.precedence;
   const fill = new LabelFill(width, height);
-  const items = [...layers.map((layer, order) => ({ layer, order })), ...strokes.map((stroke, order) => ({ stroke, order: layers.length + order }))]
-    .sort((a, b) => ((a.layer ?? a.stroke).precedence - (b.layer ?? b.stroke).precedence) || a.order - b.order);
+  // layers with label null are material overlays (catalogue paving): they leave the raster as it is
+  const items = [...layers.filter((layer) => layer.label !== null).map((layer, order) => ({ layer, order })), ...strokes.map((stroke, order) => ({ stroke, order: layers.length + order }))]
+    .sort((a, b) => (rank(a.layer ?? a.stroke) - rank(b.layer ?? b.stroke)) || a.order - b.order);
   const none = () => null;
   for (const item of items) {
     if (item.layer) {

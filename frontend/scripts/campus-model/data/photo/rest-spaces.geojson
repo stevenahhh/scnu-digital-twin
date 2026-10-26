@@ -1136,6 +1136,85 @@
           ]
         ]
       }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS-LS-F1ISLAND",
+        "kind": "planter",
+        "estimated": true,
+        "fill": "lawn",
+        "colour": "#b9b6ad",
+        "dims": {
+          "kerbHeightM": 0.15
+        },
+        "vr_scene": "scene_f1",
+        "vr_face": "f",
+        "vr_cols": [
+          700,
+          1300
+        ],
+        "photo_support": "outline",
+        "confidence": 0.55,
+        "position_method": "photo: the leaf-shaped lawn island with shrubs in the F1 forecourt traced on the NGII 2025 sheet",
+        "height_source": "catalogue planter + VR scene_f1 f: a low stone kerb (estimated)",
+        "note": "crescent-shaped lawn island with shrubs and a low kerb in the F1 slab forecourt (VR scene_f1 f cols 700-1300 of 2048)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.48429185,
+              34.96633137
+            ],
+            [
+              127.48428918,
+              34.96624935
+            ],
+            [
+              127.48433258,
+              34.96618158
+            ],
+            [
+              127.48441547,
+              34.96612716
+            ],
+            [
+              127.48448873,
+              34.96610884
+            ],
+            [
+              127.48449646,
+              34.96611963
+            ],
+            [
+              127.48446486,
+              34.9661468
+            ],
+            [
+              127.48438201,
+              34.96620842
+            ],
+            [
+              127.48434956,
+              34.96627706
+            ],
+            [
+              127.48432689,
+              34.96633213
+            ],
+            [
+              127.48430943,
+              34.96634121
+            ],
+            [
+              127.48429185,
+              34.96633137
+            ]
+          ]
+        ]
+      }
     }
   ]
 }

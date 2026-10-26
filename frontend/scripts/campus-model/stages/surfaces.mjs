@@ -23,6 +23,7 @@ import { LANDCOVER } from "../lib/landcover.mjs";
 import { encodePng } from "../lib/png.mjs";
 import { hashNoise, smoothNoise } from "../lib/raster.mjs";
 import { orientedFrame } from "../network/surfaces.mjs";
+import { pavingPattern, pavingTile } from "../lib/pavingPatterns.mjs";
 
 // Statute basis of the tactile paving tile (stages/tactile.mjs, bake/tactile-tile.mjs).
 export const TACTILE_BASIS = "장애인등편의법 시행규칙 별표 1 제16호: 0.3 m 모듈, 36 돌출, 6±1 mm";
@@ -42,11 +43,14 @@ export const GROUND_MESHES = Object.freeze({
   Ground_Sports: {},
   Ground_Asphalt: { tile: "asphalt" },
   Ground_Lot: { tile: "lot" },
-  Ground_Pavers: { tile: "pavers" },
+  // VR scenes a2-e5: light grey pavers with scattered dark squares (data/paving-patterns.json campus-speckle, 추정)
+  Ground_Pavers: { pattern: "campus-speckle" },
   Ground_Bicycle: { tile: "asphalt-red" },
+  // catalogue paving supplements: one primitive per pattern, laid along each supplement's axis (layer.pattern, uvFrame)
+  Ground_Plaza: { patterned: true },
   Ground_Apron: { tile: "concrete" },
   // network/walkways.mjs: estimated walkway strips beside the carriageway where NGII A003 has no sidewalk (추정)
-  Ground_Walkway: { tile: "pavers" },
+  Ground_Walkway: { pattern: "campus-speckle" },
   // stages/kerbs.mjs: the gutter band on the road side of the kerbs (asphalt darkened 0.72, estimated)
   Ground_Gutter: { tile: "asphalt", baseColorFactor: [0.72, 0.72, 0.72, 1] },
   // network/stalls.mjs: the circular-arc speed humps (buildHumpMeshes), asphalt
@@ -103,14 +107,17 @@ function refineTriangle(tri, maxEdge, needsFine) {
 export function surfaceGeometry({ layers, surface, tileSize, heightOffset = (layer) => SURFACE_LIFT_M(layer.precedence), refine = null }) {
   const primitives = new Map();
   layers.forEach((layer, index) => {
-    const painted = !GROUND_MESHES[layer.mesh]?.tile && !GROUND_MESHES[layer.mesh]?.generated;
+    const spec = GROUND_MESHES[layer.mesh] ?? {};
+    const painted = !spec.tile && !spec.generated && !spec.pattern && !spec.patterned;
+    const pattern = spec.patterned ? layer.pattern : spec.pattern ?? null;
+    if (spec.patterned && !pattern) throw new Error(`surfaces: ${layer.mesh} layer ${layer.source_ref} has no pattern`);
     // One primitive per class and precedence (its material carries that precedence as the polygon-offset rank, so the
-    // offset never contradicts the lift), and one per painted surface (its own texture).
-    const key = painted ? `${layer.mesh}#${index}` : `${layer.mesh}@${layer.precedence}`;
+    // offset never contradicts the lift), per catalogue pattern, and one per painted surface (its own texture).
+    const key = painted ? `${layer.mesh}#${index}` : `${layer.mesh}@${layer.precedence}${spec.patterned ? `#${pattern}` : ""}`;
     let primitive = primitives.get(key);
     if (!primitive) {
       const frame = painted ? orientedFrame(layer.rings[0].map(([E, N]) => tmToScene(E, N))) : null;
-      primitive = { mesh: layer.mesh, rank: layer.precedence, layer: painted ? layer : null, frame, positions: [], normals: [], uvs: [], uv1: [], indices: [], vertexOf: new Map(), sourceTriangles: 0, precedence: [] };
+      primitive = { mesh: layer.mesh, rank: layer.precedence, layer: painted ? layer : null, pattern, frame, positions: [], normals: [], uvs: [], uv1: [], indices: [], vertexOf: new Map(), sourceTriangles: 0, precedence: [] };
       primitives.set(key, primitive);
     }
     if (!primitive.precedence.includes(layer.precedence)) primitive.precedence.push(layer.precedence);
@@ -329,8 +336,11 @@ function paintShader(layer, frame, texel) {
         return nearest.shade(ls, lt, i, j);
       };
     }
-    case "water":
-      return (s, t, i, j) => grain(SURFACE.water, i, j, 31, 0.06);
+    case "water": {
+      // tint: a pool's own water colour read from the VR (sRGB hex, estimated)
+      const colour = paint.tint ? [1, 3, 5].map((k) => parseInt(paint.tint.slice(k, k + 2), 16)) : SURFACE.water;
+      return (s, t, i, j) => grain(colour, i, j, 31, 0.06);
+    }
     case "fountain":
       return (s, t, i, j) => grain(SURFACE.fountain, i, j, 33, 0.06);
     case "roundabout":
@@ -440,6 +450,27 @@ export async function tileMaterial(glb, { name, cls, rank, ao = null, baseColorF
   });
 }
 
+// Paving pattern material (lib/pavingPatterns.mjs): colour and joint relief tiles drawn from the VR-read catalogue; the
+// textures are shared by every primitive of the pattern.
+const patternCache = new WeakMap();
+async function patternMaterial(glb, { name, id, rank, ao }) {
+  let byId = patternCache.get(glb);
+  if (!byId) patternCache.set(glb, (byId = new Map()));
+  if (!byId.has(id)) {
+    const tile = pavingTile(id);
+    byId.set(id, { tile, col: glb.addTexture(tile.colour, "image/png"), nor: glb.addTexture(tile.normal, "image/png") });
+  }
+  const { tile, col, nor } = byId.get(id);
+  const p = pavingPattern(id);
+  return glb.addMaterial({
+    name,
+    pbrMetallicRoughness: { baseColorTexture: { index: col }, metallicFactor: 0, roughnessFactor: 0.82 },
+    normalTexture: { index: nor },
+    ...(ao !== null ? { occlusionTexture: { index: ao, texCoord: 1 } } : {}),
+    extras: { estimated: true, polygonOffsetRank: rank, paving: id, label: `${p.label} (추정)`, repeatM: tile.repeatM, source: p.source, note: "pattern, module size and colours read from the SCNU 360 VR tour: estimated, not measured; no photo pixels" },
+  });
+}
+
 // Tactile paving material from the generated tile (bake/tactile-tile.mjs).
 async function tactileMaterial(glb, { rank, ao }) {
   const textures = {};
@@ -521,7 +552,7 @@ export async function naturalGroundMaterial(glb, landcoverAt, ao) {
 // ---------------------------------------------------------------- stage
 // layers: network/surfaces.mjs layers; surface: topographySurface(); ao: the ground AO texture index or null.
 export async function buildSurfaceMeshes({ glb, layers, surface, ao = null, heightOffset, refine = null }) {
-  const tileSize = (mesh) => groundTile(GROUND_MESHES[mesh].tile).entry.physicalSizeM;
+  const tileSize = (mesh) => (GROUND_MESHES[mesh].pattern ? pavingPattern(GROUND_MESHES[mesh].pattern).repeatM : groundTile(GROUND_MESHES[mesh].tile).entry.physicalSizeM);
   const primitives = surfaceGeometry({ layers, surface, tileSize, heightOffset, refine });
   const paintedNormal = glb.addTexture(paintedNormalMap(), "image/png");
   const materials = new Map();
@@ -533,6 +564,10 @@ export async function buildSurfaceMeshes({ glb, layers, surface, ao = null, heig
     if (GROUND_MESHES[mesh].generated === "tactile") {
       if (!materials.has(mesh)) materials.set(mesh, await tactileMaterial(glb, { rank: primitive.rank, ao }));
       material = materials.get(mesh);
+    } else if (primitive.pattern) {
+      const key = `${primitive.pattern}@${primitive.rank}`;
+      if (!materials.has(key)) materials.set(key, await patternMaterial(glb, { name: mesh, id: primitive.pattern, rank: primitive.rank, ao }));
+      material = materials.get(key);
     } else if (GROUND_MESHES[mesh].tile) {
       const key = `${mesh}@${primitive.rank}`;
       if (!materials.has(key)) materials.set(key, await tileMaterial(glb, { name: mesh, cls: GROUND_MESHES[mesh].tile, rank: primitive.rank, ao, baseColorFactor: GROUND_MESHES[mesh].baseColorFactor ?? null }));
