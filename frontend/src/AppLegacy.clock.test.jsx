@@ -11,7 +11,7 @@ vi.mock("@react-three/fiber", () => ({ Canvas: () => null }));
 vi.mock("@react-three/drei", () => ({ OrbitControls: () => null, useProgress: () => ({ active: false, loaded: 0 }) }));
 vi.mock("./lighting/CampusLighting", () => ({ CAMPUS_CANVAS_GL: {}, CampusLighting: () => null }));
 vi.mock("./CityModel", () => ({ CityModel: () => null }));
-vi.mock("./simulation", () => ({ CampusTrafficSimulation: () => null, TrafficSafetyPanel: () => null, useSimulationSocket: vi.fn() }));
+vi.mock("./simulation", () => ({ CampusTrafficSimulation: () => null, TrafficSafetyPanel: () => null, useSimulationSocket: vi.fn(), useSimulationStore: (select) => select({ connectionStatus: "연결 중" }) }));
 vi.mock("./vworld/D4SectionExperience", () => ({ D4SectionExperience: () => null }));
 vi.mock("./features/energy/installations/installationPlanApi.mjs", async (importOriginal) => ({
   ...(await importOriginal()),

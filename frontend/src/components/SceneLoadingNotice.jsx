@@ -51,7 +51,8 @@ function formatModelProgress(bytes) {
 }
 
 // 3D 캠퍼스 모델 로딩 안내. 열린 패널을 뺀 지도 영역 가운데(insetRight)에 놓인다.
-export const SceneLoadingNotice = forwardRef(function SceneLoadingNotice({ insetRight }, ref) {
+// onRetry: 모델을 다시 받는다(페이지를 새로 읽지 않는다). 부르는 쪽이 key를 바꿔 지연 타이머도 처음부터 센다.
+export const SceneLoadingNotice = forwardRef(function SceneLoadingNotice({ insetRight, onRetry }, ref) {
   const [slow, setSlow] = useState(false);
   const progress = formatModelProgress(useCampusModelProgress());
 
@@ -72,7 +73,7 @@ export const SceneLoadingNotice = forwardRef(function SceneLoadingNotice({ inset
         {slow ? (
           <>
             <span className="min-w-0 break-keep">3D 캠퍼스 모델 응답이 지연되고 있습니다. 네트워크를 확인하세요.</span>
-            <Button className="pointer-events-auto" onClick={() => window.location.reload()}>다시 시도</Button>
+            <Button className="pointer-events-auto" onClick={onRetry}>다시 시도</Button>
           </>
         ) : (
           <span className="min-w-0 break-keep">

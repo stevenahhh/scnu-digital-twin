@@ -3,7 +3,6 @@ import VWorldRenderer from "./vworld/VWorldRenderer";
 import { sceneBackgroundFor } from "./lighting/sceneBackground.mjs";
 import { AccessibleDialog } from "./components/AccessibleDialog";
 import { MicroclimatePanel } from "./components/MicroclimatePanel";
-import { PanelErrorBoundary } from "./components/PanelErrorBoundary";
 import { useSimulationSocket } from "./simulation";
 import { createPlanDraftFromExisting } from "./features/energy/installations/installationPlanApi.mjs";
 import { useViewportMode } from "./hooks/useViewportMode.mjs";
@@ -16,14 +15,13 @@ import { useSunClock } from "./hooks/useSunClock.mjs";
 import { useThemeMode } from "./hooks/useThemeMode.mjs";
 import { DashboardShell, shellInsetRight } from "./panel/DashboardShell";
 import { usePanelState } from "./panel/usePanelState.mjs";
+import { usePanelViewMemory } from "./panel/usePanelViewMemory.mjs";
 import { Wordmark } from "./panel/Wordmark";
 import { HudTimeReadout, sceneTimeReadout } from "./components/HudTimeReadout";
-import { BasicStatusTab } from "./panel/BasicStatusTab";
-import { ParkingSafetyTab } from "./panel/ParkingSafetyTab";
-import { EnergyTab } from "./panel/EnergyTab";
-import { EnvironmentTab } from "./panel/EnvironmentTab";
 import { SettingsDialog } from "./panel/SettingsDialog";
-import { WeatherErrorBanner } from "./panel/WeatherErrorBanner";
+import { DashboardTabContent } from "./panel/DashboardTabContent";
+import { FeedStamps } from "./panel/FeedStatus";
+import { useFeedStatus } from "./hooks/useFeedStatus.mjs";
 import { summarizeWeather } from "./panel/weatherSummary.mjs";
 
 // 지도 영상 위에 까는 야간 음영과 해 쪽 햇빛. 해 고도·방위(도)에서 투명도와 위치를 정한다.
@@ -54,6 +52,8 @@ export default function App() {
   const clock = useSunClock();
   const selection = useSelectionState();
   const plans = useInstallationPlans(selection.selectedBuildingId);
+  const feeds = useFeedStatus({ weather: weatherFeed, traffic: trafficFeed, plans });
+  const panelScrollRef = useRef(null);
   const popup = usePopupData();
 
   const summary = summarizeWeather({ feed: weatherFeed, mode: clock.mode, simTemp: clock.simTemp });
@@ -72,6 +72,13 @@ export default function App() {
     clearSelection();
     clearPopup();
   }, [clearPopup, clearSelection]);
+  // D4 상세에 들어갈 때의 탭·스크롤을 기억했다가 나올 때 되돌린다(Legacy와 같은 규칙).
+  const viewMemory = usePanelViewMemory({ activeTab, setActiveTab, scrollRef: panelScrollRef });
+  const handleD4SectionChange = useCallback((open) => {
+    if (open) viewMemory.save();
+    else viewMemory.restore();
+    setIsD4SectionOpen(open);
+  }, [viewMemory]);
   const closeEditor = () => {
     setEditorRequest(null);
     plans.refreshAll();
@@ -88,7 +95,7 @@ export default function App() {
       <div className="absolute inset-0 z-0">
         <VWorldRenderer
           onSelection={handleVWorldSelection}
-          onD4SectionChange={setIsD4SectionOpen}
+          onD4SectionChange={handleD4SectionChange}
           simulationDate={clock.sunDate}
           editorRequest={editorRequest}
           onEditorClose={closeEditor}
@@ -129,7 +136,12 @@ export default function App() {
           className="pointer-events-none absolute left-0 top-0 z-[6] flex items-start gap-2 p-4 transition-[right] duration-300"
           style={{ right: mapInsetRight }}
         >
-          <HudTimeReadout minuteOfDay={clock.sceneMinuteOfDay} />
+          <HudTimeReadout
+            minuteOfDay={clock.sceneMinuteOfDay}
+            statusSlot={viewportMode !== "phone" && (
+              <FeedStamps feeds={feeds} retry={feeds.retry} placement={{ expanded: panelState.open, activeTab }} />
+            )}
+          />
           {viewportMode !== "phone" && <Wordmark className="ml-auto mt-2.5 text-ink-muted" />}
         </div>
       )}
@@ -145,35 +157,21 @@ export default function App() {
         timeReadout={sceneTimeReadout(clock.sceneMinuteOfDay)}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        footer={weatherFeed.state === "error" && (
-          <WeatherErrorBanner message={weatherFeed.message} onRetry={weatherFeed.refresh} busy={summary.isBusy} />
-        )}
+        scrollRef={panelScrollRef}
+        freshnessSlot={<FeedStamps feeds={feeds} retry={feeds.retry} compact />}
       >
-        {activeTab === "dashboard" && (
-          <PanelErrorBoundary label="기본 현황">
-            <BasicStatusTab
-              summary={summary}
-              sunAltitudeDegrees={clock.sunAltitudeDegrees}
-              onOpenSettings={() => setIsSettingsOpen(true)}
-              onRefreshWeather={weatherFeed.refresh}
-            />
-          </PanelErrorBoundary>
-        )}
-        {activeTab === "parking_safety" && (
-          <PanelErrorBoundary label="주차·안전">
-            <ParkingSafetyTab trafficFeed={trafficFeed} />
-          </PanelErrorBoundary>
-        )}
-        {activeTab === "energy" && (
-          <PanelErrorBoundary label="에너지">
-            <EnergyTab buildingId={selection.selectedBuildingId} plans={plans} onOpenRecommendation={setEditorRequest} />
-          </PanelErrorBoundary>
-        )}
-        {activeTab === "environment" && (
-          <PanelErrorBoundary label="환경 시뮬">
-            <EnvironmentTab clock={clock} />
-          </PanelErrorBoundary>
-        )}
+        <DashboardTabContent
+          activeTab={activeTab}
+          summary={summary}
+          feeds={feeds}
+          clock={clock}
+          trafficFeed={trafficFeed}
+          plans={plans}
+          buildingId={selection.selectedBuildingId}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          onRefreshWeather={weatherFeed.refresh}
+          onOpenRecommendation={setEditorRequest}
+        />
       </DashboardShell>
 
       {/* 건물 미기후 팝업: VWorld는 탭이 아니라 지도 위 대화상자로 보여 준다(의도된 차이). */}

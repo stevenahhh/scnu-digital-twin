@@ -7,6 +7,7 @@ import { SectionHeader } from "../ui/SectionHeader.jsx";
 import { StatusBadge } from "../ui/StatusBadge.jsx";
 import { formatHHmm, formatNumber } from "../ui/format.mjs";
 import { PanelClock } from "./PanelClock.jsx";
+import { FeedStatusRows } from "./FeedStatus.jsx";
 
 const iconClass = "h-4 w-4";
 
@@ -32,7 +33,8 @@ function weatherCaption(summary) {
 }
 
 // 기본 현황 탭: 시계, 시스템 상태, 현재 기상(관측값), 태양 고도(계산 추정), 경보와 단기 예보.
-export function BasicStatusTab({ summary, sunAltitudeDegrees, onOpenSettings, onRefreshWeather }) {
+// feeds/retry는 useFeedStatus 결과다. 시스템 상태 줄이 끊긴 피드의 유일한 알림이다.
+export function BasicStatusTab({ summary, feeds, retry, sunAltitudeDegrees, onOpenSettings, onRefreshWeather }) {
   const { weather } = summary;
   const measured = (value, unit) => <EstimateValue value={value} unit={unit} estimated={false} />;
   const weatherItems = [
@@ -62,12 +64,12 @@ export function BasicStatusTab({ summary, sunAltitudeDegrees, onOpenSettings, on
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3 rounded-card border border-hairline bg-surface-2 p-4">
-        <span className="shrink-0 text-caption text-ink-muted">시스템 상태</span>
-        <span data-qa="weather-status" className="min-w-0 text-right">
-          <StatusBadge tone={summary.statusTone} className="text-caption">{summary.status}</StatusBadge>
-        </span>
-      </div>
+      <FeedStatusRows
+        feeds={feeds}
+        retry={retry}
+        liveText={{ weather: summary.status }}
+        liveTone={{ weather: summary.statusTone }}
+      />
 
       <section className="flex flex-col gap-3">
         <SectionHeader title="현재 기상" />

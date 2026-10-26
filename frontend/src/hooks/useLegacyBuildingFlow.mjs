@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import commonElements from "../../../common/data/common_elemetns.json";
 import { isProximitySuspended, resolveSelectionTitle, useSelectionState as useLabelSelection } from "../labels/useSelectionState.mjs";
 import { isD4ElementId } from "../utils/d4BuildingData.mjs";
+import { usePanelViewMemory } from "../panel/usePanelViewMemory.mjs";
 
 const buildingCodeOf = (elementId) => elementId.slice("BLD_".length);
 const ELEMENT_NAMES = new Map(commonElements.elements.map((element) => [element.element_id, element.name]));
@@ -16,7 +17,8 @@ export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef
   const [editorRequest, setEditorRequest] = useState(null);
   const [labelRegistry, setLabelRegistry] = useState(null);
   const label = useLabelSelection();
-  const { activeTab, setActiveTab, setIsPanelOpen } = panel;
+  const { activeTab, setActiveTab, setIsPanelOpen, scrollRef } = panel;
+  const viewMemory = usePanelViewMemory({ activeTab, setActiveTab, scrollRef });
   const { highlight, clearSelection, selectedBuildingId } = selection;
   const { select: selectLabel, confirm: confirmLabel, clear: clearLabel, selectionRef } = label;
 
@@ -40,20 +42,21 @@ export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef
     else clearLabel();
   }, [clearLabel, highlight, popup.clear, selectLabel]);
 
+  // D4 상세가 열린 동안 셸은 숨고(hidden), 나오면 들어가기 전의 탭·스크롤·패널 열림 상태 그대로 돌아온다.
   const openD4Section = useCallback((request = null) => {
+    viewMemory.save();
     setEditorRequest(request);
     clearAll();
     popup.clear();
     setBuildingViewMode("section");
-    setIsPanelOpen(false);
-  }, [clearAll, popup.clear, setIsPanelOpen]);
+  }, [clearAll, popup.clear, viewMemory.save]);
 
   const exitD4Section = useCallback(() => {
     setBuildingViewMode("campus");
-    setIsPanelOpen(true);
     setEditorRequest(null);
+    viewMemory.restore();
     onSectionExit();
-  }, [onSectionExit, setIsPanelOpen]);
+  }, [onSectionExit, viewMemory.restore]);
 
   const showMicroclimate = useCallback((elementId) => {
     setActiveTab("microclimate");
@@ -93,8 +96,8 @@ export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef
     if (anchor && activePresetRef.current) return;
     if (isProximitySuspended(selectionRef.current)) return;
     if (!anchor) {
+      // 탭은 사용자만 바꾼다. 멀어지면 선택만 풀고 탭은 그대로 둔다.
       if (activeTab === "microclimate") {
-        setActiveTab("dashboard");
         clearAll();
         popup.clear();
       }

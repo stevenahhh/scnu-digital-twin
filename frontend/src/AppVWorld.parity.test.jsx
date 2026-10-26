@@ -12,6 +12,7 @@ vi.mock("./vworld/VWorldRenderer", () => ({ default: () => null }));
 vi.mock("./simulation", () => ({
   TrafficSafetyPanel: () => null,
   useSimulationSocket: vi.fn(),
+  useSimulationStore: (select) => select({ connectionStatus: "연결 중" }),
 }));
 vi.mock("./features/energy/analysis", () => ({
   BuildingAnalysis: ({ plansStatus }) => <div data-plans-status={plansStatus}>건물 에너지 분석</div>,
@@ -159,5 +160,20 @@ describe("VWorld and Legacy feature parity", () => {
     await user.click(retry);
     await waitFor(() => expect(countCalls(fetchMock, "/environment/full")).toBe(weatherCallsBefore + 1));
     expect(await screen.findByText(WEATHER_NETWORK)).toBeTruthy();
+  });
+  it("shows exactly 3 alerts and 3 다시 시도 buttons when weather, traffic and energy are down", async () => {
+    const offline = async () => {
+      throw new TypeError("Failed to fetch");
+    };
+    stubFetch({ weather: offline, traffic: offline });
+    installationClient.listDetails.mockRejectedValueOnce(new TypeError("Failed to fetch"));
+    const { container } = render(<App />);
+    const panel = container.querySelector('[data-qa="dashboard-panel"]');
+    await waitFor(() => expect(within(panel).getAllByRole("alert")).toHaveLength(3));
+    expect(within(panel).getAllByRole("alert").map((alert) => alert.dataset.source)).toEqual(["weather", "traffic", "energy"]);
+    expect(within(panel).getAllByRole("button", { name: "다시 시도" })).toHaveLength(3);
+    // 패널이 그 피드를 보여 주는 동안 HUD 갱신 표시는 다시 시도를 되풀이하지 않는다(새로 고침 아이콘만).
+    expect(screen.getAllByRole("button", { name: /다시 시도/ })).toHaveLength(3);
+    expect(container.querySelector('[data-qa="weather-error-banner"]')).toBeNull();
   });
 });

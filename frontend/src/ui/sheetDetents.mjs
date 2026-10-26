@@ -5,8 +5,8 @@ export const PEEK_HEIGHT = 96;
 export const PROJECTION_MS = 150;
 
 // 화면에 보이는 시트 높이(px). full은 시트 요소 자체의 높이(100dvh에서 위쪽 안전 영역을 뺀 값)다.
-export function detentHeights(viewportHeight, fullHeight = viewportHeight) {
-  return { peek: PEEK_HEIGHT, half: Math.round(viewportHeight / 2), full: fullHeight };
+export function detentHeights(viewportHeight, fullHeight = viewportHeight, peekHeight = PEEK_HEIGHT) {
+  return { peek: peekHeight, half: Math.round(viewportHeight / 2), full: fullHeight };
 }
 
 export function clampHeight(height, heights) {

@@ -9,6 +9,8 @@ import { Wordmark } from "./Wordmark.jsx";
 
 const TAB_ICONS = { dashboard: LayoutDashboard, parking_safety: Car, energy: Zap, environment: Leaf };
 const TARGET_44 = "h-11 min-h-11 w-11 min-w-11";
+// 폰 시트 peek: 손잡이(48) + 머리 두 줄(시각·워드마크·여닫기 44, 갱신 표시·검색 44) + 사이 4 + 아래 8. 화면의 25 % 미만.
+export const SHELL_PEEK_HEIGHT = 148;
 const SURFACE_MOTION = "transition-transform duration-surface ease-[var(--motion-ease-standard)] motion-reduce:transition-none";
 
 // 패널이 차지하는 오른쪽 폭: 지도와 HUD는 이만큼 비켜 선다. 태블릿 서랍과 폰 시트는 장면 위에 겹친다.
@@ -25,7 +27,7 @@ export function shellInsetRight(mode, open) {
 export const DashboardShell = forwardRef(function DashboardShell(
   {
     mode, open, onOpenChange, detent, onDetentChange, hidden = false,
-    activeTab, onTabChange, extraTabs = [], timeReadout = null, freshnessSlot = null, searchSlot = null, footer, children,
+    activeTab, onTabChange, extraTabs = [], timeReadout = null, freshnessSlot = null, searchSlot = null, footer, scrollRef, children,
   },
   panelRef,
 ) {
@@ -62,25 +64,30 @@ export const DashboardShell = forwardRef(function DashboardShell(
         data-qa="dashboard-panel"
         detent={detent}
         onDetentChange={onDetentChange}
+        peekHeight={SHELL_PEEK_HEIGHT}
         className={hidden ? "invisible" : undefined}
         header={(
-          <div className="flex h-11 items-center gap-2">
-            {timeReadout && <p data-qa="sheet-time" className="shrink-0 text-body font-semibold tabular-nums text-ink">{timeReadout}</p>}
-            {freshnessSlot}
-            <div className="min-w-0 flex-1">{searchSlot}</div>
-            <Wordmark className="shrink-0 text-ink-muted" />
-            <Button
-              variant="ghost"
-              iconOnly
-              label={expanded ? "패널 닫기" : "패널 열기"}
-              icon={<ChevronUp aria-hidden="true" className={cx("h-5 w-5", expanded && "rotate-180")} />}
-              onClick={() => onDetentChange(expanded ? "peek" : "half")}
-              className={TARGET_44}
-            />
+          <div className="flex flex-col gap-1">
+            <div className="flex h-11 items-center gap-2">
+              {timeReadout && <p data-qa="sheet-time" className="shrink-0 text-body font-semibold tabular-nums text-ink">{timeReadout}</p>}
+              <Wordmark className="ml-auto shrink-0 text-ink-muted" />
+              <Button
+                variant="ghost"
+                iconOnly
+                label={expanded ? "패널 닫기" : "패널 열기"}
+                icon={<ChevronUp aria-hidden="true" className={cx("h-5 w-5", expanded && "rotate-180")} />}
+                onClick={() => onDetentChange(expanded ? "peek" : "half")}
+                className={TARGET_44}
+              />
+            </div>
+            <div className="flex min-h-11 items-center gap-2 overflow-x-auto">
+              {freshnessSlot}
+              {searchSlot && <div className="min-w-0 flex-1">{searchSlot}</div>}
+            </div>
           </div>
         )}
       >
-        <DashboardPanel activeTab={activeTab} onTabChange={selectTab} extraTabs={extraTabs} footer={footer}>
+        <DashboardPanel activeTab={activeTab} onTabChange={selectTab} extraTabs={extraTabs} footer={footer} scrollRef={scrollRef}>
           {children}
         </DashboardPanel>
       </Sheet>
@@ -107,12 +114,14 @@ export const DashboardShell = forwardRef(function DashboardShell(
         transform: open ? "translateX(0)" : "translateX(calc(100% - var(--dashboard-rail-width)))",
       }}
     >
-      <div ref={contentRef} aria-hidden={open ? undefined : "true"} className="pointer-events-auto h-full border-l border-hairline">
+      {/* 레일로 접힌 동안 내용은 레일 밑에 남지만 보이지도, 닿지도 않는다(스크롤 위치는 그대로 지킨다). */}
+      <div ref={contentRef} aria-hidden={open ? undefined : "true"} className={cx("pointer-events-auto h-full border-l border-hairline", !open && "invisible")}>
         <DashboardPanel
           activeTab={activeTab}
           onTabChange={onTabChange}
           extraTabs={extraTabs}
           footer={footer}
+          scrollRef={scrollRef}
           headerAction={open && (
             <Button
               variant="ghost"

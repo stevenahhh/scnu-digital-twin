@@ -1,11 +1,17 @@
 import { Suspense, lazy, memo, useEffect } from "react";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, useGLTF } from "@react-three/drei";
 import { CityModel } from "../CityModel";
+import { CAMPUS_MODEL_URL } from "../campusModelAsset.mjs";
 import { CampusLighting } from "../lighting/CampusLighting";
 import { ShadowBaker } from "../lighting/ShadowBaker";
 import { SUN_DISC_HEX } from "../lighting/sceneBackground.mjs";
 import { SceneWeatherBinding } from "../weather/SceneWeatherBinding";
 import { CampusTrafficSimulation } from "../simulation";
+
+// 모델 응답이 멈췄을 때 다시 시도: 캐시된 요청을 지우면, attempt로 다시 마운트된 Suspense가 GLB를 새로 받는다(페이지는 새로 읽지 않는다).
+export function clearCampusModel() {
+  useGLTF.clear(CAMPUS_MODEL_URL);
+}
 
 // 보통/높음 품질의 후처리 청크. 낮음에서는 마운트하지 않으므로 내려받지도 않는다.
 const HighTierEffects = lazy(() => import("../postfx/HighTierEffects"));
@@ -26,7 +32,7 @@ export const CampusScene = memo(function CampusScene({
   background, sunVector, sunVisible, sunAltitude, weatherScene, quality, shadowMapSizes,
   controlsRef, selectedId, labelsHidden, occluderRef, chromeRefs,
   activePresetId, selectedElementId, selectionOutline, onLabelRegistry, onDragStart, headlineById,
-  onSelect, onBuildingClick, onBuildingProximity, onD4Enter, onOrbitStart, onOrbitEnd, onLoadingChange,
+  onSelect, onBuildingClick, onBuildingProximity, onD4Enter, onOrbitStart, onOrbitEnd, onLoadingChange, attempt = 0,
 }) {
   return (
     <>
@@ -50,7 +56,7 @@ export const CampusScene = memo(function CampusScene({
           <meshBasicMaterial color={SUN_DISC_HEX} />
         </mesh>
       )}
-      <Suspense fallback={<SceneLoadingSignal onChange={onLoadingChange} />}>
+      <Suspense key={attempt} fallback={<SceneLoadingSignal onChange={onLoadingChange} />}>
         <CityModel
           position={[0, 0, 0]}
           controlsRef={controlsRef}

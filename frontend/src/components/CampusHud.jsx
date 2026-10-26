@@ -2,7 +2,7 @@ import { forwardRef } from "react";
 import { CloudSun } from "lucide-react";
 import { CAMERA_PRESETS } from "../camera/cameraPresets.mjs";
 import { Wordmark } from "../panel/Wordmark";
-import { PEEK_HEIGHT } from "../ui/sheetDetents.mjs";
+import { SHELL_PEEK_HEIGHT } from "../panel/DashboardShell";
 import { CameraControls } from "./CameraControls";
 import { HudTimeReadout } from "./HudTimeReadout";
 import { HudToolbar } from "./HudToolbar";
@@ -22,7 +22,7 @@ export const CampusHud = forwardRef(function CampusHud(
       data-qa="campus-hud"
       data-label-chrome-layer=""
       className="pointer-events-none absolute left-0 top-0 z-[6] transition-[right] duration-300"
-      style={{ right: insetRight, bottom: phone ? `${PEEK_HEIGHT}px` : "0px" }}
+      style={{ right: insetRight, bottom: phone ? `${SHELL_PEEK_HEIGHT}px` : "0px" }}
     >
       <div className="absolute left-4 right-4 top-4 flex flex-wrap items-start gap-2">
         <HudTimeReadout minuteOfDay={clock.sceneMinuteOfDay} statusSlot={statusSlot} />

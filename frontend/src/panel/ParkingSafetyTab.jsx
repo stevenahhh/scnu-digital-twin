@@ -1,10 +1,11 @@
-import { Alert } from "../ui/Alert.jsx";
 import { EstimateValue } from "../ui/EstimateValue.jsx";
 import { MetricList } from "../ui/MetricList.jsx";
 import { SectionHeader } from "../ui/SectionHeader.jsx";
 import { StatusBadge } from "../ui/StatusBadge.jsx";
 import { formatShortTime } from "../ui/format.mjs";
 import { TRAFFIC_STATE_TONES } from "../hooks/feedStatus.mjs";
+import { isFeedDown } from "../hooks/feedStatusModel.mjs";
+import { FeedAlert } from "./FeedStatus.jsx";
 import { TrafficSafetyPanel } from "../simulation";
 import trafficData from "../utils/trafficData.json";
 
@@ -20,7 +21,7 @@ const sampleValue = (text) => (
 );
 
 // 주차·안전 탭. 위쪽은 영상 분석이 센 실시간 값, 아래쪽 `샘플 데이터` 묶음은 시연용 접수 자료로 서로 섞지 않는다.
-export function ParkingSafetyTab({ trafficFeed }) {
+export function ParkingSafetyTab({ trafficFeed, feedStatus, onRetry }) {
   const live = trafficFeed.state === "live";
   const stats = live ? trafficFeed.stats : null;
   const liveItems = [
@@ -49,13 +50,8 @@ export function ParkingSafetyTab({ trafficFeed }) {
       <section className="flex flex-col gap-3">
         <SectionHeader title="D4 입출차 현황" />
         <div data-qa="traffic-status" className="flex flex-col">
-          {trafficFeed.state === "offline" ? (
-            <Alert
-              tone="danger"
-              source="traffic"
-              title={trafficFeed.message}
-              message="연결되면 자동으로 다시 받습니다. 끊긴 동안에는 묻는 간격을 30초까지 늘립니다."
-            />
+          {isFeedDown(feedStatus) ? (
+            <FeedAlert feed="traffic" status={feedStatus} onRetry={onRetry} />
           ) : (
             <StatusBadge tone={TRAFFIC_STATE_TONES[trafficFeed.state] ?? "neutral"} className="self-start text-caption">
               {trafficFeed.message}

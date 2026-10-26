@@ -1,6 +1,7 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { sceneBackgroundFor } from "./lighting/sceneBackground.mjs";
 import { CampusCanvas } from "./render/CampusCanvas";
+import { clearCampusModel } from "./render/CampusScene";
 import { useCampusRendering } from "./render/useCampusRendering.mjs";
 import { useInteractionDpr } from "./render/interactionDpr.mjs";
 import { QUALITY_LABELS, QUALITY_TIERS } from "./settings/qualityPreset.mjs";
@@ -26,13 +27,11 @@ import { useThemeMode } from "./hooks/useThemeMode.mjs";
 import { useLegacyBuildingFlow } from "./hooks/useLegacyBuildingFlow.mjs";
 import { DashboardShell, shellInsetRight } from "./panel/DashboardShell";
 import { usePanelState } from "./panel/usePanelState.mjs";
-import { BasicStatusTab } from "./panel/BasicStatusTab";
-import { ParkingSafetyTab } from "./panel/ParkingSafetyTab";
-import { EnergyTab } from "./panel/EnergyTab";
 import { CampusEnergyOverview } from "./panel/CampusEnergyOverview";
-import { EnvironmentTab } from "./panel/EnvironmentTab";
+import { DashboardTabContent } from "./panel/DashboardTabContent";
 import { SettingsDialog } from "./panel/SettingsDialog";
-import { WeatherErrorBanner } from "./panel/WeatherErrorBanner";
+import { FeedStamps } from "./panel/FeedStatus";
+import { useFeedStatus } from "./hooks/useFeedStatus.mjs";
 import { summarizeWeather } from "./panel/weatherSummary.mjs";
 
 // ?ui=gallery는 공용 기본 요소 확인 화면만 띄운다. 따로 나눠 불러와 대시보드 번들에는 들어가지 않는다.
@@ -65,12 +64,19 @@ function Dashboard() {
   const closeSettings = useCallback(() => setIsSettingsOpen(false), []);
   const [isTimePlaying, setIsTimePlaying] = useState(false);
   const [isSceneLoading, setIsSceneLoading] = useState(false);
+  const [sceneAttempt, setSceneAttempt] = useState(0);
+  const retryScene = () => {
+    clearCampusModel();
+    setSceneAttempt((value) => value + 1);
+  };
   const [themeMode, setThemeMode] = useThemeMode();
   const weatherFeed = useWeatherFeed();
   const trafficFeed = useTrafficFeed();
   const clock = useSunClock();
   const selection = useSelectionState();
   const plans = useInstallationPlans(selection.selectedBuildingId);
+  const feeds = useFeedStatus({ weather: weatherFeed, traffic: trafficFeed, plans });
+  const panelScrollRef = useRef(null);
   const popup = usePopupData();
   const canvasStateRef = useRef(null);
   const getScene = useCallback(() => canvasStateRef.current?.scene ?? null, []);
@@ -84,7 +90,7 @@ function Dashboard() {
   const flow = useLegacyBuildingFlow({
     selection,
     popup,
-    panel: { activeTab, setActiveTab, setIsPanelOpen: panelState.setProgrammaticOpen },
+    panel: { activeTab, setActiveTab, setIsPanelOpen: panelState.setProgrammaticOpen, scrollRef: panelScrollRef },
     activePresetRef: camera.activePresetRef,
     onSectionExit: plans.refreshAll,
   });
@@ -135,6 +141,9 @@ function Dashboard() {
           ref={hudRef}
           mode={viewportMode}
           insetRight={mapInsetRight}
+          statusSlot={viewportMode !== "phone" && (
+            <FeedStamps feeds={feeds} retry={feeds.retry} placement={{ expanded: panelState.open, activeTab }} />
+          )}
           camera={camera}
           clock={clock}
           playing={isTimePlaying}
@@ -157,9 +166,10 @@ function Dashboard() {
           occluderRef: panelRef,
           chromeRefs: labelChromeRefs,
           onLoadingChange: setIsSceneLoading,
+          attempt: sceneAttempt,
         }}
       />
-      {isSceneLoading && <SceneLoadingNotice insetRight={mapInsetRight} />}
+      {isSceneLoading && <SceneLoadingNotice key={sceneAttempt} insetRight={mapInsetRight} onRetry={retryScene} />}
 
       {!isCampus && (
         <D4SectionExperience
@@ -188,62 +198,45 @@ function Dashboard() {
         activeTab={activeTab}
         onTabChange={changeTab}
         extraTabs={microclimateTab}
-        footer={weatherFeed.state === "error" && (
-          <WeatherErrorBanner message={weatherFeed.message} onRetry={weatherFeed.refresh} busy={summary.isBusy} />
-        )}
+        scrollRef={panelScrollRef}
+        freshnessSlot={<FeedStamps feeds={feeds} retry={feeds.retry} compact />}
       >
-        {activeTab === "dashboard" && (
-          <PanelErrorBoundary label="기본 현황">
-            <BasicStatusTab
-              summary={summary}
-              sunAltitudeDegrees={clock.sunAltitudeDegrees}
-              onOpenSettings={() => setIsSettingsOpen(true)}
-              onRefreshWeather={weatherFeed.refresh}
+        <DashboardTabContent
+          activeTab={activeTab}
+          summary={summary}
+          feeds={feeds}
+          clock={clock}
+          trafficFeed={trafficFeed}
+          plans={plans}
+          buildingId={selection.selectedBuildingId}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          onRefreshWeather={weatherFeed.refresh}
+          onOpenRecommendation={openRecommendation}
+          campusOverview={(
+            <CampusEnergyOverview
+              onSelection={flow.selectBuilding}
+              onBuildingSelect={selectFromEnergy}
+              refreshKey={plans.overlayRefreshKey}
+              selectedBuildingId={selection.selectedBuildingId}
             />
-          </PanelErrorBoundary>
-        )}
-        {activeTab === "microclimate" && (
-          <PanelErrorBoundary label="미기후">
-            <MicroclimatePanel
-              data={popup.data}
-              loading={popup.loading}
-              error={popup.error}
-              errorDetail={popup.errorDetail}
-              onRetry={popup.retry}
-              lastData={popup.lastData}
-              title={panelTitle}
-              estimate={selection.selectedId ? selection.selectedEstimate : null}
-              onClose={flow.closeMicroclimate}
-            />
-          </PanelErrorBoundary>
-        )}
-        {activeTab === "parking_safety" && (
-          <PanelErrorBoundary label="주차·안전">
-            <ParkingSafetyTab trafficFeed={trafficFeed} />
-          </PanelErrorBoundary>
-        )}
-        {activeTab === "energy" && (
-          <PanelErrorBoundary label="에너지">
-            <EnergyTab
-              buildingId={selection.selectedBuildingId}
-              plans={plans}
-              onOpenRecommendation={openRecommendation}
-              campusOverview={(
-                <CampusEnergyOverview
-                  onSelection={flow.selectBuilding}
-                  onBuildingSelect={selectFromEnergy}
-                  refreshKey={plans.overlayRefreshKey}
-                  selectedBuildingId={selection.selectedBuildingId}
-                />
-              )}
-            />
-          </PanelErrorBoundary>
-        )}
-        {activeTab === "environment" && (
-          <PanelErrorBoundary label="환경 시뮬">
-            <EnvironmentTab clock={clock} />
-          </PanelErrorBoundary>
-        )}
+          )}
+        >
+          {activeTab === "microclimate" && (
+            <PanelErrorBoundary label="미기후">
+              <MicroclimatePanel
+                data={popup.data}
+                loading={popup.loading}
+                error={popup.error}
+                errorDetail={popup.errorDetail}
+                onRetry={popup.retry}
+                lastData={popup.lastData}
+                title={panelTitle}
+                estimate={selection.selectedId ? selection.selectedEstimate : null}
+                onClose={flow.closeMicroclimate}
+              />
+            </PanelErrorBoundary>
+          )}
+        </DashboardTabContent>
       </DashboardShell>
 
       {isSettingsOpen && (

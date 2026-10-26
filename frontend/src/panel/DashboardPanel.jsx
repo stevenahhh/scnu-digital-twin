@@ -15,7 +15,7 @@ export function dashboardTitle(activeTab, tabs = DASHBOARD_TABS) {
 
 // 두 대시보드가 함께 쓰는 패널 내용: 제목, 탭(Segmented), 스크롤되는 본문, 아래 고정 칸(footer).
 // 어디에 놓일지(붙박이 패널·서랍·바텀 시트)는 DashboardShell이 정한다. 양옆 여백은 16px로 같다.
-export function DashboardPanel({ activeTab, onTabChange, extraTabs = [], headerAction = null, footer, children }) {
+export function DashboardPanel({ activeTab, onTabChange, extraTabs = [], headerAction = null, footer, scrollRef, children }) {
   const tabs = [...DASHBOARD_TABS, ...extraTabs];
   const options = tabs.map((tab) => ({ ...tab, qa: `dashboard-tab-${tab.value}` }));
   return (
@@ -27,7 +27,7 @@ export function DashboardPanel({ activeTab, onTabChange, extraTabs = [], headerA
         </div>
         <Segmented kind="tabs" label="대시보드 보기" size="sm" options={options} value={activeTab} onChange={onTabChange} />
       </header>
-      <div className="dashboard-panel-content flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 pb-8">{children}</div>
+      <div ref={scrollRef} data-qa="panel-scroll" className="dashboard-panel-content flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 pb-8">{children}</div>
       {footer}
     </section>
   );
