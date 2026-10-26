@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 // Packs the generator's raw GLB (scripts/campus-model/.build/campus-v2.raw.glb) into the shipped
-// public/campus-v2.glb in two steps:
+// public/campus-v2.glb in three steps:
 //   1. Terrain join: the Topography_* chunk primitives (one shared Ground material, identity transforms,
 //      one attribute layout) are merged into a single Topography_joined primitive under the Topography
 //      parent, which takes ~107 draw calls back. Nothing else is joined: BLD_* nodes, trees, crosswalks
@@ -8,10 +8,12 @@
 //      The dashboard finds terrain by the parent name (traffic) and the /^Topography/ mesh name (camera).
 //   2. gltf-transform optimize: WebP textures capped at 4096 px, float (unquantized) geometry, with no
 //      flatten, join, palette or simplify, so every BLD_* root node and mesh name the
-//      dashboard selects by survives packing. Geometry is not compressed: meshopt quantization rounds positions to
+//      dashboard selects by survives packing. Geometry is not quantized: meshopt quantization rounds positions to
 //      14 bits of each mesh's extent (about 5 cm over the campus, vertically too), coarser than the 6 mm lift steps
 //      between the Ground_* layers and the 3 mm between a raised walkway decal and its kerb top (stages/surfaces.mjs,
 //      stages/kerbs.mjs); the layers would z-fight (plan uhf-ground-roads-routing: no size limit applies).
+//   3. compress.mjs: lossless EXT_meshopt_compression of those float buffers, without quantization
+//      (docs/OPTIMIZATION-FORMULA.md, 2026-10-26 pass). drei's useGLTF decodes it with three's meshopt decoder.
 // gltfpack is not used: its default quantization inserts dequantization parent nodes.
 //
 //   bun run model:pack                  raw -> public/campus-v2.glb, then verify names and counts
@@ -24,6 +26,7 @@ import { brotliCompressSync, constants as zlib, gzipSync } from "node:zlib";
 import { NodeIO } from "@gltf-transform/core";
 import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
 import { MeshoptDecoder } from "meshoptimizer";
+import { compressFile } from "./compress.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FRONTEND = path.resolve(HERE, "../..");
@@ -174,6 +177,9 @@ async function verify(rawFile, packedFile, terrain) {
   } else if (terrainPrimitives[0].getIndices().getCount() / 3 !== terrain.triangles) {
     failures.push(`${TERRAIN_JOINED} has ${terrainPrimitives[0].getIndices().getCount() / 3} triangles, the chunks had ${terrain.triangles}`);
   }
+  if (!root.listExtensionsUsed().some((extension) => extension.extensionName === "EXT_meshopt_compression")) {
+    failures.push("EXT_meshopt_compression is not used");
+  }
   const nonWebp = textures.filter((texture) => texture.getMimeType() !== "image/webp");
   if (nonWebp.length) failures.push(`${nonWebp.length} textures are not image/webp`);
   if (failures.length) throw new Error(`campus-v2.glb pack check failed:\n  ${failures.join("\n  ")}`);
@@ -206,10 +212,12 @@ console.log(
   `(${terrain.vertices} vertices, ${terrain.triangles} triangles), ${statSync(JOINED_OUTPUT).size} B before optimize`,
 );
 optimize(JOINED_OUTPUT, PACKED_OUTPUT);
+const optimizedBytes = statSync(PACKED_OUTPUT).size;
+await compressFile(PACKED_OUTPUT, PACKED_OUTPUT);
 const counts = await verify(JOINED_OUTPUT, PACKED_OUTPUT, terrain);
 const packedBytes = statSync(PACKED_OUTPUT).size;
 console.log(
-  `campus-v2.glb packed: ${rawBytes} B raw -> ${packedBytes} B, ${counts.nodes} nodes, ${counts.buildings} BLD nodes, ${counts.proxies} BLD_SCNU pick proxies, ` +
+  `campus-v2.glb packed: ${rawBytes} B raw -> ${optimizedBytes} B optimized -> ${packedBytes} B meshopt, ${counts.nodes} nodes, ${counts.buildings} BLD nodes, ${counts.proxies} BLD_SCNU pick proxies, ` +
   `${counts.meshes} meshes, ${counts.textures} webp textures`,
 );
 if (process.argv.includes("--precompress")) {
