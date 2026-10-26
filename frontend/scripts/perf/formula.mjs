@@ -34,7 +34,7 @@ const ref = option("ref", null);
 const refLabel = option("ref-label", "baseline");
 const qFrom = option("q-from", null);
 const skipQ = args.includes("--skip-q") || Boolean(qFrom);
-const MODEL_ASSET = /\/campus-v2(?!-height)[^/]*\.(glb|ktx2)(\?|$)|\.wasm(\?|$)/;
+const MODEL_ASSET = /\/campus-v2(?!-height)[^/]*\.(glb|ktx2)(\?|$)|\.wasm(\?|$)|\/basis_transcoder\.js(\?|$)/;
 mkdirSync(out, { recursive: true });
 
 function run(cmd, argv) {

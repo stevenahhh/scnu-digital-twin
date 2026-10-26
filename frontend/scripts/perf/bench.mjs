@@ -9,7 +9,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
 const NOISE_FLOOR_MS = 1.5; // M5 Pro run-to-run spread of gpuMs.median (BUILD-PLAN U00, MEASURED)
-const ASSET_RE = /\.(glb|gltf|bin|ktx2|drc|wasm|hdr|exr)(\?|$)/;
+const ASSET_RE = /\.(glb|gltf|bin|ktx2|drc|wasm|hdr|exr)(\?|$)|\/basis_transcoder\.js(\?|$)/;
 // Local backends (weather 8000, vision 8001, simulation 8002). Unless --live-backends is given they answer
 // 404, so a missing service cannot add console errors or change the frame (the d4 camera is within the
 // app's 120-unit proximity radius and opens building popups).
