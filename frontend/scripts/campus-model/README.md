@@ -741,6 +741,15 @@ arterial/connector lines, within 25 m): the mast arm reaches from the pole to th
 face the traffic in its near lanes (right-hand traffic: the heads look back along the lanes whose kerb is the pole's).
 The `Furniture` extras list each signal as `[id, centreline id, RD_ id, heads facing bearing, arm m]`.
 
+### Gate structures (`data/photo/gate-structures.geojson`)
+
+The NGII 2025 photo shows three yellow-kerbed islands across the main-gate approach and a blue panelled canopy over
+the lanes between the middle and south islands (traced on a 4x chip with a 1 m grid). Each island is its photo axis
+buffered by its width with rounded ends (`traffic_island`: 0.15 m kerb, yellow kerb and rim, concrete top); the canopy
+(`gate_canopy`) is the photo roof outline moved back by the relief lean, on four posts. Its height (7.5 m) comes from
+its west-cast shadow (추정); its colours are the photo's. VR scene_a19 looks down this road from 73 m away, but the
+canopy can't be resolved there. Every size is an estimate (추정).
+
 ### Plaza benches
 
 The photo resolves 3 benches. VR scene_c1 shows long dark-blue box benches beside the tree pits on both long sides of

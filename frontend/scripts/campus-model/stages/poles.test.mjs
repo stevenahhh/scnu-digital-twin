@@ -123,3 +123,16 @@ test("signal-arms.json: photo arms within the drawn range; heads perpendicular t
     assert.ok(Math.abs(r.armDir[0] * r.headsFace[0] + r.armDir[1] * r.headsFace[1]) < 1e-9, `${id} heads perpendicular to the arm`);
   }
 });
+
+test("gate-structures.geojson: three islands (axis + width) and one canopy outline, all estimated and sourced", () => {
+  const { features } = JSON.parse(readFileSync(path.join(HERE, "..", "data", "photo", "gate-structures.geojson"), "utf8"));
+  const islands = features.filter((f) => f.properties.kind === "traffic_island");
+  const canopies = features.filter((f) => f.properties.kind === "gate_canopy");
+  assert.equal(islands.length, 3);
+  assert.equal(canopies.length, 1);
+  for (const f of features) {
+    assert.equal(f.properties.estimated, true, `${f.properties.id} is estimated`);
+    assert.ok(f.properties.source && f.properties.method, `${f.properties.id} has a source`);
+  }
+  for (const f of islands) assert.ok(f.geometry.type === "LineString" && f.properties.width_m > 0.5 && f.properties.width_m < 3, `${f.properties.id} island axis and width`);
+});
