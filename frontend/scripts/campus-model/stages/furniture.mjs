@@ -17,7 +17,7 @@ import { fileURLToPath } from "node:url";
 import { METRES_PER_DEGREE_LAT, METRES_PER_DEGREE_LON, geoToModel, metres, modelToGeo } from "../lib/frame.mjs";
 import { pointInRing, ringArea, ringCentroid } from "../lib/geometry.mjs";
 import { mulberry32 } from "../lib/raster.mjs";
-import { Kit, along, bufferLine, frame, local, localPlan, offsetLine, orientedRect, rgb, sub, toLocal } from "../lib/solids.mjs";
+import { Kit, along, bufferLine, frame, lineLength, local, localPlan, offsetLine, orientedRect, rgb, sub, toLocal } from "../lib/solids.mjs";
 import { GLOW_UV, LAMP_SPACING_M, appendLampSolids, distanceToLines, objectDistance, roadNetwork, towardRoad } from "./lights.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -60,7 +60,7 @@ export function leanOffset([x, z], heightM) {
   return [M(east * heightM), -M(north * heightM)];
 }
 
-const ROOFED = new Set(["bus_stop_shelter", "pergola", "gazebo", "bike_rack", "reviewing_stand", "stadium_seating", "trash_station", "pavilion_hip", "pavilion_octagon"]);
+const ROOFED = new Set(["bus_stop_shelter", "pergola", "gazebo", "bike_rack", "reviewing_stand", "stadium_seating", "trash_station", "pavilion_hip", "pavilion_octagon", "canopy_shelter_row", "terminal_shelter", "awning", "hut"]);
 const ROOFED_SUBTYPES = new Set(["kiosk", "parasol"]);
 
 // ---------------------------------------------------------------- palette (sRGB, estimated from VR and the photo)
@@ -346,6 +346,25 @@ function hipRoof(ctx, f, hs, ht, h0, top, paint, band = null) {
   return { corners, ridgeEnd };
 }
 
+// Axis of a rest space drawn along a line (rows, long roofs, awnings).
+function axisOf(o) {
+  const line = o.axis ?? o.line;
+  if (!line) throw new Error(`furniture: ${o.kind} ${o.id} needs a LineString axis, not a ${o.point ? "Point" : "Polygon"}`);
+  return line;
+}
+
+// Fabric stripes across a length: equal bands about widthM wide, colour index alternating 0, 1, 0, ...
+export function stripeBands(lengthM, widthM) {
+  const n = Math.max(1, Math.round(lengthM / widthM));
+  return Array.from({ length: n }, (_, k) => ({ s0: (lengthM * k) / n, s1: (lengthM * (k + 1)) / n, colour: k % 2 }));
+}
+
+// A face seen from both sides (canopies and fabric are open underneath).
+function twoSided(ctx, points, outward, paint, underPaint = paint) {
+  ctx.solid.face(points, outward, paint);
+  ctx.solid.face(points, [-outward[0], -outward[1], -outward[2]], underPaint);
+}
+
 // ---------------------------------------------------------------- builders, one per kind
 export const B = {};
 
@@ -430,6 +449,191 @@ B.bus_stop_shelter = (ctx, o) => {
     pane([hl - 0.15, -hw + 0.2], [hl - 0.15, 0]);
   }
   benchAt(ctx, frame(local(f, 0, -hw + 0.5, 0), f.u), Math.min(2.4, 2 * hl - 0.6), { back: false, seat: C.galvanised, depthM: 0.4 });
+};
+
+// Covered rows (VR scene_a6 l: two bike shelters, each a striped blue and light-blue fabric hood with a front valance
+// on thin galvanised frames): modules about moduleLengthM long repeated along the axis (its straight chord), each
+// moduleWidthM deep on four posts, its roof rising roofPitchDeg from the front (right of the axis) to the back, striped
+// across every stripe_m (default 1.0 m) in `colours` [a, b] or plain in roofColour. Returns { modules }.
+B.canopy_shelter_row = (ctx, o) => {
+  const axis = axisOf(o);
+  const d = dimsOf(o);
+  const [a, b] = [axis[0], axis.at(-1)];
+  const lengthM = lineLength(axis) / M(1);
+  const modules = Math.max(1, Math.round(lengthM / d.moduleLengthM));
+  const step = lengthM / modules;
+  const colours = o.p.colours ? o.p.colours.map((c) => paintOf(c, null, o.id)) : [paintOf(o.p.roofColour, C.roofBlue, o.id)];
+  const posts = paintOf(o.p.postColour, C.galvanised, o.id);
+  const hw = d.moduleWidthM / 2;
+  const rise = d.moduleWidthM * Math.tan((d.roofPitchDeg * Math.PI) / 180);
+  const roofAt = (t) => d.heightM + (rise * (t + hw)) / (2 * hw);
+  const along0 = frame([a[0], 0, a[1]], [b[0] - a[0], b[1] - a[1]]);
+  for (let k = 0; k < modules; k += 1) {
+    const [s0, s1] = [k * step + 0.15, (k + 1) * step - 0.15];
+    const f = frame([a[0], ctx.groundAt(...localPlan(along0, (s0 + s1) / 2, 0)), a[1]], along0.u);
+    for (const s of [s0 + 0.25, s1 - 0.25]) {
+      for (const t of [-hw + 0.1, hw - 0.1]) ctx.solid.box(f, [s - 0.03, s + 0.03], [t - 0.03, t + 0.03], [-0.1, roofAt(t)], posts);
+    }
+    for (const t of [-hw + 0.1, hw - 0.1]) ctx.solid.box(f, [s0, s1], [t - 0.03, t + 0.03], [roofAt(t) - 0.08, roofAt(t)], posts);
+    const [front, back] = [-hw - 0.1, hw + 0.1];
+    for (const band of stripeBands(s1 - s0, o.p.stripe_m ?? 1.0)) {
+      const [sa, sb] = [s0 + band.s0, s0 + band.s1];
+      const paint = colours[band.colour % colours.length];
+      twoSided(ctx, [local(f, sa, front, roofAt(front)), local(f, sb, front, roofAt(front)), local(f, sb, back, roofAt(back)), local(f, sa, back, roofAt(back))], [0, 1, 0], paint);
+      const valance = [local(f, sa, front, roofAt(front)), local(f, sb, front, roofAt(front)), local(f, sb, front - 0.12, roofAt(front) - 0.4), local(f, sa, front - 0.12, roofAt(front) - 0.4)];
+      twoSided(ctx, valance, sub(local(f, 0, -1, 0), local(f, 0, 0, 0)), paint);
+    }
+  }
+  return { modules };
+};
+
+// Long bus-terminal roof (VR scene_a4 r: two rows of white steel posts, white inverted-U ribs standing proud of a
+// translucent white roof, a dark fascia along the front, blue bay plates on the front posts, solar panels over the far
+// part and a white lattice screen at the back): posts every postSpacingM along the axis, widthM across, heightM to the
+// roof; solar_from (0-1 along the axis) starts the panels, back_wall true adds the screen (left of the axis).
+B.terminal_shelter = (ctx, o) => {
+  const axis = axisOf(o);
+  const d = dimsOf(o);
+  const half = d.widthM / 2;
+  const h = d.heightM;
+  const S = ctx.solid;
+  const stations = along(axis, M(d.postSpacingM)).map(({ p, u }) => ({ p, u, n: [-u[1], u[0]], g: ctx.groundAt(...p) }));
+  const at = ({ p, n, g }, side, offsetM, hM) => [p[0] + n[0] * M(side * offsetM), g + M(hM), p[1] + n[1] * M(side * offsetM)];
+  stations.forEach((st, i) => {
+    for (const side of [1, -1]) {
+      const post = at(st, side, half - 0.3, 0);
+      S.pole([post[0], post[2]], st.g - M(0.1), st.g + M(h), 0.07, 0.07, C.white, { sides: 6 });
+    }
+    const plate = frame(at(st, -1, half - 0.3, 0), st.u);
+    S.box(plate, [-0.15, 0.15], [-0.12, -0.08], [1.6, 2.0], C.signBlue);
+    // inverted-U rib above the roof
+    const [l0, r0] = [at(st, 1, half + 0.1, h), at(st, -1, half + 0.1, h)];
+    const [l1, r1] = [at(st, 1, half + 0.1, h + 0.35), at(st, -1, half + 0.1, h + 0.35)];
+    S.beam(l0, l1, 0.08, 0.08, C.white);
+    S.beam(r0, r1, 0.08, 0.08, C.white);
+    S.beam(l1, r1, 0.08, 0.1, C.white);
+    const next = stations[i + 1];
+    if (!next) return;
+    ctx.glass.face([at(st, 1, half + 0.15, h + 0.04), at(next, 1, half + 0.15, h + 0.04), at(next, -1, half + 0.15, h + 0.04), at(st, -1, half + 0.15, h + 0.04)], [0, 1, 0], GLASS.canopy);
+    S.beam(at(st, 1, half - 0.3, h), at(next, 1, half - 0.3, h), 0.1, 0.16, C.white, { ends: false });
+    S.beam(at(st, -1, half - 0.3, h), at(next, -1, half - 0.3, h), 0.1, 0.16, C.white, { ends: false });
+    S.beam(at(st, -1, half + 0.15, h - 0.05), at(next, -1, half + 0.15, h - 0.05), 0.08, 0.3, C.slate, { ends: false });
+    if (o.p.solar_from !== undefined && i / Math.max(1, stations.length - 2) >= o.p.solar_from) {
+      // one tilted panel per bay, clear of the ribs
+      const inset = (q, r, k) => [q[0] + (r[0] - q[0]) * k, q[1] + (r[1] - q[1]) * k, q[2] + (r[2] - q[2]) * k];
+      const [a0, a1, b0, b1] = [at(st, 1, half * 0.7, h + 0.55), at(next, 1, half * 0.7, h + 0.55), at(st, -1, half * 0.7, h + 0.42), at(next, -1, half * 0.7, h + 0.42)];
+      S.face([inset(a0, a1, 0.08), inset(a0, a1, 0.92), inset(b0, b1, 0.92), inset(b0, b1, 0.08)], [0, 1, 0], rgb("#26344a"));
+    }
+  });
+  if (o.p.back_wall) railing(ctx, offsetLine(axis, M(half - 0.3)), 1.2, C.white, { stepM: 2, rails: [1, 0.05], panel: rgb("#f4f4f4", 140) });
+};
+
+// Striped fabric canopy (VR scene_a10 d/f: a long blue and light-blue striped tent over the walk beside the plaza, its
+// ends hipped). profile "gable": the axis is the ridge, both eaves frontHeightM high depthM apart, 25 degree slopes,
+// hipped ends, posts every 3 m along both eaves; profile "lean-to" (default): the axis is the facade line, the fabric
+// falls 15 degrees from the wall to frontHeightM at depthM to its left, posts along the front. Stripes about
+// stripeWidthM wide across the length alternate `colours` [a, b]; a 0.25 m valance hangs from every eave. Returns
+// { stripes }.
+B.awning = (ctx, o) => {
+  const axis = axisOf(o);
+  const d = dimsOf(o);
+  const [a, b] = [axis[0], axis.at(-1)];
+  const L = Math.hypot(b[0] - a[0], b[1] - a[1]) / M(1);
+  const f = frame([a[0], ctx.groundAt((a[0] + b[0]) / 2, (a[1] + b[1]) / 2), a[1]], [b[0] - a[0], b[1] - a[1]]);
+  const colours = (o.p.colours ?? ["#2a86dc", "#a8def4"]).map((c) => paintOf(c, null, o.id));
+  const posts = paintOf(o.p.postColour, C.white, o.id);
+  const H = d.frontHeightM;
+  const bands = stripeBands(L, d.stripeWidthM);
+  const outward = (t, h) => sub(local(f, 0, t, h), local(f, 0, 0, 0));
+  const gable = o.p.profile === "gable";
+  const [tFront, tBack] = gable ? [-d.depthM / 2, d.depthM / 2] : [0, d.depthM];
+  const top = gable ? H + (d.depthM / 2) * Math.tan((25 * Math.PI) / 180) : H + d.depthM * Math.tan((15 * Math.PI) / 180);
+  const hip = gable ? Math.min(d.depthM / 2, L / 2) : 0;
+  // the upper edge of a gable slope at s (the hip line near the ends, the ridge between), as [t-fraction, h]
+  const upper = (s) => {
+    const k = hip > 0 ? Math.min(1, s / hip, (L - s) / hip) : 1;
+    return [1 - k, H + (top - H) * k];
+  };
+  for (const band of bands) {
+    const paint = colours[band.colour];
+    if (gable) {
+      const breaks = [hip, L - hip].filter((s) => s > band.s0 && s < band.s1).sort((x, y) => y - x);
+      for (const side of [-1, 1]) {
+        const t0 = side * (d.depthM / 2);
+        const ups = [band.s1, ...breaks, band.s0].map((s) => {
+          const [k, h] = upper(s);
+          return local(f, s, t0 * k, h);
+        });
+        twoSided(ctx, [local(f, band.s0, t0, H), local(f, band.s1, t0, H), ...ups], outward(side, 1.5), paint);
+      }
+    } else {
+      twoSided(ctx, [local(f, band.s0, tBack, H), local(f, band.s1, tBack, H), local(f, band.s1, tFront, top), local(f, band.s0, tFront, top)], outward(1, 1.5), paint);
+    }
+    for (const t of gable ? [tFront, tBack] : [tBack]) {
+      twoSided(ctx, [local(f, band.s0, t, H), local(f, band.s1, t, H), local(f, band.s1, t, H - 0.25), local(f, band.s0, t, H - 0.25)], outward(Math.sign(t), 0), paint);
+    }
+  }
+  if (gable) {
+    twoSided(ctx, [local(f, 0, tFront, H), local(f, 0, tBack, H), local(f, hip, 0, top)], sub(local(f, -1, 0, H + 1), local(f, 0, 0, H)), colours[bands[0].colour]);
+    twoSided(ctx, [local(f, L, tFront, H), local(f, L, tBack, H), local(f, L - hip, 0, top)], sub(local(f, L + 1, 0, H + 1), local(f, L, 0, H)), colours[bands.at(-1).colour]);
+  }
+  const count = Math.max(1, Math.ceil((L - 0.3) / 3));
+  for (const t of gable ? [tFront, tBack] : [tBack]) {
+    const inset = t > 0 ? t - 0.1 : t + 0.1;
+    for (let k = 0; k <= count; k += 1) {
+      const s = 0.15 + ((L - 0.3) * k) / count;
+      ctx.solid.box(f, [s - 0.035, s + 0.035], [inset - 0.035, inset + 0.035], [-0.1, H - 0.02], posts);
+    }
+    ctx.solid.box(f, [0.1, L - 0.1], [inset - 0.03, inset + 0.03], [H - 0.08, H - 0.02], posts);
+  }
+  return { stripes: bands.length };
+};
+
+// Small closed booth (VR scene_f3 r: yellow timber siding under a red corrugated low gable roof, a white door and a
+// glazed front): walls in wallColour, a door and a window on the front (-t), and a roof of form `roof` ("gable"
+// default, "hip", "mono", "flat") in roofColour over a 0.3 m overhang; heightM is the top of the roof and roofRiseM
+// its rise above the eaves. A survey outline is the roof seen on the photo: the plan is that outline less the overhang.
+B.hut = (ctx, o) => {
+  const d = dimsOf(o);
+  const at = restPlacement(ctx, o);
+  const ov = 0.3;
+  const planOf = (roofM, name) => (o.p.dims?.[name] === undefined && roofM ? clampTo(roofM - 2 * ov, REST_TYPES.hut.dims[name].range) : d[name]);
+  const hs = planOf(at.lengthM, "planWidthM") / 2;
+  const ht = planOf(at.widthM, "planDepthM") / 2;
+  const f = frame([at.centre[0], at.ground, at.centre[1]], at.u);
+  const S = ctx.solid;
+  const wall = paintOf(o.p.wallColour, C.offWhite, o.id);
+  const roof = paintOf(o.p.roofColour, styleColour(o, C.roofRed), o.id);
+  const top = d.heightM;
+  const eave = top - d.roofRiseM;
+  const [rs, rt] = [hs + ov, ht + ov];
+  const form = o.p.roof ?? "gable";
+  let wallTop = eave;
+  if (form === "gable") {
+    wallTop = eave + (d.roofRiseM * ov) / rt;
+    for (const side of [-1, 1]) {
+      twoSided(ctx, [local(f, -rs, side * rt, eave), local(f, rs, side * rt, eave), local(f, rs, 0, top), local(f, -rs, 0, top)], sub(local(f, 0, side, 1), local(f, 0, 0, 0)), roof, C.offWhite);
+      S.face([local(f, side * hs, -ht, wallTop), local(f, side * hs, ht, wallTop), local(f, side * hs, 0, top)], sub(local(f, side, 0, 0), local(f, 0, 0, 0)), wall);
+    }
+  } else if (form === "hip") {
+    wallTop = eave + (d.roofRiseM * ov) / Math.min(rs, rt);
+    hipRoof(ctx, f, rs, rt, eave, top, roof);
+  } else if (form === "mono") {
+    const roofAt = (t) => eave + (d.roofRiseM * (t + rt)) / (2 * rt);
+    wallTop = roofAt(-ht);
+    twoSided(ctx, [local(f, -rs, -rt, eave), local(f, rs, -rt, eave), local(f, rs, rt, top), local(f, -rs, rt, top)], [0, 1, 0], roof, C.offWhite);
+    for (const side of [-1, 1]) S.face([local(f, side * hs, -ht, wallTop), local(f, side * hs, ht, wallTop), local(f, side * hs, ht, roofAt(ht))], sub(local(f, side, 0, 0), local(f, 0, 0, 0)), wall);
+    S.face([local(f, -hs, ht, wallTop), local(f, hs, ht, wallTop), local(f, hs, ht, roofAt(ht)), local(f, -hs, ht, roofAt(ht))], sub(local(f, 0, 1, 0), local(f, 0, 0, 0)), wall);
+  } else if (form === "flat") {
+    wallTop = top - 0.15;
+    S.box(f, [-rs, rs], [-rt, rt], [top - 0.15, top], { top: roof, side: roof, bottom: C.offWhite }, { bottom: true });
+  } else {
+    throw new Error(`furniture: hut ${o.id} roof ${form} is not gable, hip, mono or flat`);
+  }
+  S.box(f, [-hs, hs], [-ht, ht], [-0.1, wallTop], { top: wall, side: wall });
+  const doorS = -hs + 0.75;
+  S.box(f, [doorS - 0.45, doorS + 0.45], [-ht - 0.04, -ht], [0, Math.min(2.05, wallTop - 0.1)], paintOf(o.p.doorColour, C.white, o.id));
+  if (hs - doorS > 1.6) S.box(f, [doorS + 0.8, hs - 0.5], [-ht - 0.04, -ht], [0.9, Math.min(2.0, wallTop - 0.15)], C.window);
 };
 
 // Pergolas along an axis (posts both sides, edge beams, slats or a solid roof) or over a polygon (posts along the
