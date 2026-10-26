@@ -59,7 +59,7 @@ class PolygonIndex:
             props = feature.get("properties") or {}
             parts = [geometry.get("coordinates") or []] if geometry.get("type") == "Polygon" else geometry.get("coordinates") or []
             for rings in parts:
-                polygons.append({"rings": rings, "class": props.get("class"), "id": props.get("id") or feature.get("id")})
+                polygons.append({"rings": rings, "class": props.get("class"), "id": props.get("id") or feature.get("id"), "estimated": bool(props.get("estimated", False))})
         return cls(polygons, priority=priority)
 
     @classmethod
@@ -75,6 +75,34 @@ class PolygonIndex:
             if box[0] <= x <= box[2] and box[1] <= z <= box[3] and point_in_rings(x, z, polygon["rings"]):
                 found.append(polygon)
         return found
+
+    def hits(self, x: float, z: float) -> List[Dict]:
+        """Every polygon containing the point (each dict carries `class`, `id` and `estimated` when loaded from a file)."""
+        return self._containing(float(x), float(z))
+
+    def distance_to(self, x: float, z: float, classes: Optional[Iterable[str]] = None, max_radius: float = 500.0) -> Optional[float]:
+        """Distance in metres to the nearest polygon of `classes` (0 inside), None beyond `max_radius`."""
+        x, z = float(x), float(z)
+        wanted = set(classes) if classes is not None else None
+        best: Optional[float] = None
+        for polygon in self.polygons:
+            if wanted is not None and polygon.get("class") not in wanted:
+                continue
+            box = polygon["box"]
+            gap = math.hypot(max(box[0] - x, 0.0, x - box[2]), max(box[1] - z, 0.0, z - box[3]))
+            if gap > max_radius or (best is not None and gap >= best):
+                continue
+            if point_in_rings(x, z, polygon["rings"]):
+                return 0.0
+            for ring in polygon["rings"]:
+                for (ax, az), (bx, bz) in zip(ring, ring[1:]):
+                    ax, az, bx, bz = float(ax), float(az), float(bx), float(bz)
+                    dx, dz = bx - ax, bz - az
+                    t = max(0.0, min(1.0, ((x - ax) * dx + (z - az) * dz) / max(dx * dx + dz * dz, 1e-12)))
+                    d = math.hypot(x - ax - t * dx, z - az - t * dz)
+                    if best is None or d < best:
+                        best = d
+        return best if best is not None and best <= max_radius else None
 
     def classify(self, x: float, z: float) -> Optional[str]:
         hits = self._containing(float(x), float(z))
