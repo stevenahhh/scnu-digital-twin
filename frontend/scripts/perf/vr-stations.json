@@ -2141,9 +2141,17 @@
       "station": true,
       "yaw_deg": true
     },
-    "refined": false,
-    "refined_by": "compare-vr todo 2",
-    "refined_note": "title building 웅지관 has no footprint (todo 10); skyline candidates +44/+74 deg not supported by buildings"
+    "refined_by": "compare-vr todo 10",
+    "refined_note": "resected from the outer corners of the A13 V plan (VR f cols 512 and 1372) and its glazed inner corner; drone above the east end of A8 at about 31 m (height_refined_m); the placeholder position put the camera inside the A8 cluster",
+    "yaw_refined_deg": 96.3,
+    "station_refined_x": 321.74,
+    "station_refined_z": -58.1,
+    "refined_confidence": 0.5,
+    "height_refined_m": 31,
+    "refined_residual_deg": 2,
+    "refined_buildings": [
+      "BLD_Dormitory_Building.004 (A13 웅지관)"
+    ]
   },
   {
     "scene": "scene_a15",

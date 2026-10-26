@@ -40,6 +40,49 @@
         "scene_d5"
       ],
       "registerName": null
+    },
+    {
+      "code": "A13",
+      "name": "순천대학교 A13 웅지관",
+      "label": "웅지관",
+      "nodeId": "BLD_SCNU_A13",
+      "status": "standing",
+      "floors": 8,
+      "floorsSource": "VR scene_a13 storey count (estimated)",
+      "heightMetres": 0,
+      "undergroundFloors": 0,
+      "usability": "공동주택(기숙사) (추정)",
+      "polygons": [
+        [
+          [
+            [127.48165419, 34.96719375],
+            [127.48184897, 34.96705039],
+            [127.48187951, 34.96699311],
+            [127.48196869, 34.96698153],
+            [127.48211954, 34.96694983],
+            [127.48219838, 34.96693255],
+            [127.48218065, 34.96684101],
+            [127.48209491, 34.9668543],
+            [127.48208441, 34.96682112],
+            [127.4820157, 34.96681264],
+            [127.48183735, 34.96683866],
+            [127.48163988, 34.96687902],
+            [127.48164053, 34.96698489],
+            [127.48179011, 34.96697036],
+            [127.48158582, 34.96712918],
+            [127.48165419, 34.96719375]
+          ]
+        ]
+      ],
+      "footprintSource": "NGII 2025 orthophoto trace (estimated) + VR scene_a13",
+      "nameSource": "SCNU registry A13 웅지관 (campus list.do point 244016.5, 263531.7 EPSG:5186, inside the traced outline); VR scene_a13 sign A13 웅지관; scene_001 hotspots spot1/spot18 point at the same building. The un-outlined solar-roofed building at the stadium south-west corner (the other candidate, 243898 263562, is the 26동 lawn). uni.glb already draws this building as BLD_Dormitory_Building.004 with no name: the generator matches this record into that node (name, floors, look; the uni.glb outline and id stay), so no BLD_SCNU_A13 node is added",
+      "estimated": true,
+      "confidence": 0.5,
+      "vrScenes": [
+        "scene_a13",
+        "scene_001"
+      ],
+      "registerName": null
     }
   ]
 }
