@@ -45,6 +45,8 @@ export const GROUND_MESHES = Object.freeze({
   Ground_Pavers: { tile: "pavers" },
   Ground_Bicycle: { tile: "asphalt-red" },
   Ground_Apron: { tile: "concrete" },
+  // network/walkways.mjs: estimated walkway strips beside the carriageway where NGII A003 has no sidewalk (추정)
+  Ground_Walkway: { tile: "pavers" },
   // stages/kerbs.mjs: the gutter band on the road side of the kerbs (asphalt darkened 0.72, estimated)
   Ground_Gutter: { tile: "asphalt", baseColorFactor: [0.72, 0.72, 0.72, 1] },
   // network/stalls.mjs: the circular-arc speed humps (buildHumpMeshes), asphalt
@@ -576,7 +578,8 @@ export async function buildSurfaceMeshes({ glb, layers, surface, ao = null, heig
     glb.json.meshes[index].primitives.forEach((p, k) => {
       p.attributes.TEXCOORD_1 = glb.addAccessor(entry.primitives[k].uv1, "VEC2");
     });
-    glb.addNode({ name: mesh, mesh: index, extras: { groundLayers: counts[mesh], precedence: [...entry.precedence].sort((a, b) => a - b), estimated: true } }, { root: true });
+    const note = mesh === "Ground_Walkway" ? { note: "추정 보행로: estimated 1.5 m walkway strips where no NGII A003 sidewalk exists (network/walkways.mjs), not surveyed" } : {};
+    glb.addNode({ name: mesh, mesh: index, extras: { groundLayers: counts[mesh], precedence: [...entry.precedence].sort((a, b) => a - b), estimated: true, ...note } }, { root: true });
     stats.push({ mesh, triangles: entry.triangles, layers: counts[mesh], primitives: entry.primitives.length });
   }
   return stats;

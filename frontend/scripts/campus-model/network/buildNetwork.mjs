@@ -79,7 +79,7 @@ const nullNode = { poi_id: null, road_id: null, source_route_id: null };
 // roads: buildRoads() result (interior features + perimeter); graph: NetGraph of the pedestrian side after crossings,
 // fallback and connectors; pois: the old POI features; kerbPieces: [{ points, height_m }] (simulation frame);
 // policy: mobility_policy.json; old: the previous network FC (property names and metadata keys).
-export function assembleNetwork({ roads, graph, pois, kerbPieces = [], policy, old, roadPolygons = null, perimeterRef = "backend/simulation/data/osm/perimeter_roads.geojson", log = console.log }) {
+export function assembleNetwork({ roads, graph, pois, kerbPieces = [], policy, old, roadPolygons = null, sidewalkPolygons = [], perimeterRef = "backend/simulation/data/osm/perimeter_roads.geojson", log = console.log }) {
   const nodes = new Map(); // id -> { id, p, props }
   const edges = []; // { id, from, to, points, props }
   const addNode = (id, p, props) => {
@@ -98,6 +98,8 @@ export function assembleNetwork({ roads, graph, pois, kerbPieces = [], policy, o
   // kept: outside them there is no road surface to check a car against
   const roadGrid = roadPolygons ? new PolygonGrid(roadPolygons, 20) : null;
   const onRoadPt = (q) => !roadGrid || roadGrid.contains(q);
+  const sidewalkGrid = new PolygonGrid(sidewalkPolygons, 20);
+  const carSurface = (q) => roadGrid.contains(q) && !sidewalkGrid.contains(q);
   const periNode = (nid, p) => {
     if (!nodes.has(nid)) addNode(nid, p, { ...nullNode, kind: "road_end", source: "OSM-derived", confidence: 0.5, derived: true, authoritative: false, estimated: true });
     return nid;
@@ -205,13 +207,34 @@ export function assembleNetwork({ roads, graph, pois, kerbPieces = [], policy, o
     const link = kind === "parking" ? "parking_connection" : kind === "scooter_parking" ? "scooter_parking_connection" : (kind === "gate" || kind === "external") && allowed.includes("car") ? "vehicle_gate" : null;
     if (!link) continue;
     let best = null;
+    // a car POI joins a road node that itself lies on car surface (not an OSM run end outside the road polygons)
+    const carNodeOk = (cid) => !roadGrid || !allowed.includes("car") || carSurface(nodes.get(cid).p);
     for (const cid of cars) {
       const d = dist(nodes.get(cid).p, node.p);
-      if (!best || d < best.d) best = { cid, d };
+      if (carNodeOk(cid) && (!best || d < best.d)) best = { cid, d };
     }
     if (!best) continue;
     const pts = best.d < 0.5 ? [node.p, [node.p[0] + 0.5, node.p[1]]] : [node.p, nodes.get(best.cid).p];
     if (best.d < 0.5) throw new Error(`${node.id} coincides with ${best.cid}`);
+    // (W4 b) a POI shared by cars and people gets its own vehicle anchor: cars start, dwell and leave on the road or
+    // lot (inside a road/lot polygon, off the sidewalk), people at the POI node on walkable ground
+    if (allowed.includes("person") && allowed.includes("car") && roadGrid) {
+      // the anchor starts the longest stretch next to the road node that lies wholly on car surface
+      const along = sampleLine([node.p, nodes.get(best.cid).p], 0.25);
+      let at = along.length;
+      while (at > 0 && carSurface(along[at - 1])) at -= 1;
+      const vid = `${node.id}_V`;
+      if (at + 2 < along.length && dist(along[at + 2], nodes.get(best.cid).p) >= 0.5) {
+        addNode(vid, along[at + 2], { ...nullNode, kind: "vehicle_anchor", poi_id: f.id, source: "GIS-derived", confidence: 0.3, derived: true, authoritative: false, estimated: true, position_source: `first point on the road/lot polygon along the vehicle access of ${f.id} (estimated)` });
+        f.properties.vehicle_node_id = vid;
+        pts[0] = along[at + 2];
+        edges.push({ id: `EDGE_POIV_${node.id}`, from: best.cid, to: vid, points: pts.slice().reverse(), props: { kind: link, legacy_kind: LEGACY_KIND[link] ?? link, allowed_types: [...policy.kinds[link].allowed_types], bidirectional: true, speed_limit: SPEED[link], road_ids: [], road_id: null, crosswalk_id: null, source_ref: `${f.id} vehicle access`, source: "GIS-derived", confidence: 0.3, authoritative: false, derived: true, estimated: true, gap_reason: "vehicle anchor of a POI shared with pedestrians", road_share: 1, poi_id: f.id } });
+      } else {
+        // no road/lot surface between the POI and the road network: cars use the road node itself
+        f.properties.vehicle_node_id = best.cid;
+      }
+      continue;
+    }
     // a link that leaves the road polygons is an estimate of the access, not a measured carriageway
     const linkSamples = sampleLine(pts, 0.5);
     const roadShare = roadGrid ? linkSamples.filter((q) => roadGrid.contains(q)).length / linkSamples.length : 1;
@@ -236,7 +259,8 @@ export function assembleNetwork({ roads, graph, pois, kerbPieces = [], policy, o
         if (d >= 0.5 && (!best || d < best.d)) best = { cid, d };
       }
       if (!best) continue;
-      edges.push({ id: `EDGE_POIS_${node.id}`, from: node.id, to: best.cid, points: [node.p, nodes.get(best.cid).p], props: { kind: "shared_path", legacy_kind: "shared_path_derived", allowed_types: [...policy.kinds.shared_path.allowed_types], bidirectional: true, speed_limit: 12, road_ids: [], road_id: null, crosswalk_id: null, source: "derived_from_vehicle_network", source_ref: `${f.id} scooter access`, confidence: 0.2, authoritative: false, derived: true, estimated: true, gap_reason: "scooter access to a POI reached only over sidewalks (scooters may not use them)", poi_id: f.id } });
+      // scooter-only (people cross the carriageway only at crossings): an estimated scooter lane to the road node
+      edges.push({ id: `EDGE_POIS_${node.id}`, from: node.id, to: best.cid, points: [node.p, nodes.get(best.cid).p], props: { kind: "scooter_lane", legacy_kind: "scooter_lane", allowed_types: [...policy.kinds.scooter_lane.allowed_types], bidirectional: true, speed_limit: 12, road_ids: [], road_id: null, crosswalk_id: null, source: "derived_from_vehicle_network", source_ref: `${f.id} scooter access`, confidence: 0.2, authoritative: false, derived: true, estimated: true, gap_reason: "scooter access to a POI reached only over sidewalks (scooters may not use them)", poi_id: f.id } });
       uf.union(node.id, best.cid);
     }
   }
@@ -246,7 +270,7 @@ export function assembleNetwork({ roads, graph, pois, kerbPieces = [], policy, o
     const uf = new UnionFind();
     const active = edges.filter((e) => e.props.allowed_types.includes(agent));
     for (const e of active) uf.union(e.from, e.to);
-    const poiNodes = pois.filter((f) => (f.properties.allowed_types ?? []).includes(agent)).map((f) => f.properties.node_id).filter((n) => nodes.has(n));
+    const poiNodes = pois.filter((f) => (f.properties.allowed_types ?? []).includes(agent)).map((f) => (agent === "car" ? f.properties.vehicle_node_id ?? f.properties.node_id : f.properties.node_id)).filter((n) => nodes.has(n));
     const score = new Map();
     for (const e of active) if (e.props.source !== "OSM-derived") score.set(uf.find(e.from), (score.get(uf.find(e.from)) ?? 0) + lineLength(e.points));
     for (const n of poiNodes) score.set(uf.find(n), (score.get(uf.find(n)) ?? 0) + 1e7);
@@ -285,6 +309,7 @@ export function assembleNetwork({ roads, graph, pois, kerbPieces = [], policy, o
     e.from = merge.get(e.from) ?? e.from;
     e.to = merge.get(e.to) ?? e.to;
   }
+  for (const f of pois) if (f.properties.vehicle_node_id) f.properties.vehicle_node_id = merge.get(f.properties.vehicle_node_id) ?? f.properties.vehicle_node_id;
   // ---- features
   const nodeFeatures = [...nodes.values()].sort((a, b) => a.id.localeCompare(b.id)).map((n) => ({ type: "Feature", id: n.id, geometry: { type: "Point", coordinates: n.p.map((v) => round(v)) }, properties: { id: n.id, feature_type: "node", ...n.props } }));
   const edgeFeatures = edges.filter((e) => !(e.from === e.to && lineLength(e.points) < 0.05)).sort((a, b) => a.id.localeCompare(b.id)).map((e) => {
@@ -350,6 +375,39 @@ export function assembleNetwork({ roads, graph, pois, kerbPieces = [], policy, o
   return { collection, stats, pruned };
 }
 
+// Largest keep-right offset per car edge that keeps a car body (half width 0.9 m, estimated, plus 0.1 m) on the road or
+// lot surface and off the sidewalk: the smaller side clearance of the centreline, every 2 m, rays at 0.1 m steps.
+export const HALF_CAR_M = 0.9;
+export function addLaneClearance(features, { roadPolygons, sidewalkPolygons = [] }) {
+  const roadGrid = new PolygonGrid(roadPolygons, 20);
+  const sidewalkGrid = new PolygonGrid(sidewalkPolygons, 20);
+  const car = (q) => roadGrid.contains(q) && !sidewalkGrid.contains(q);
+  const clearance = (q, n) => {
+    if (!car(q)) return 0;
+    let d = 0;
+    while (d < 8 && car([q[0] + n[0] * (d + 0.1), q[1] + n[1] * (d + 0.1)])) d += 0.1;
+    return d;
+  };
+  let capped = 0;
+  for (const f of features) {
+    const p = f.properties;
+    if (p.feature_type !== "edge" || !p.allowed_types.includes("car")) continue;
+    const pts = f.geometry.coordinates;
+    let min = Infinity;
+    for (let i = 0; i + 1 < pts.length; i += 1) {
+      const [a, b] = [pts[i], pts[i + 1]];
+      const l = dist(a, b);
+      if (l < 1e-6) continue;
+      const n = [-(b[1] - a[1]) / l, (b[0] - a[0]) / l];
+      for (const q of sampleLine([a, b], 2)) min = Math.min(min, clearance(q, n), clearance(q, [-n[0], -n[1]]));
+    }
+    if (!Number.isFinite(min)) continue;
+    p.lane_offset_cap_m = round(Math.max(0, min - HALF_CAR_M - 0.1), 2);
+    capped += 1;
+  }
+  return capped;
+}
+
 // Trace-oracle polygons (simulation frame).
 export function polygonCollections({ walkable, roadPolygons }) {
   const poly = (p, i, prefix) => ({
@@ -366,8 +424,22 @@ export function polygonCollections({ walkable, roadPolygons }) {
     return f;
   });
   return {
-    walkable: { type: "FeatureCollection", metadata: meta("walkable polygons for the separation trace: sidewalk (NGII A003 strips), crossing (CW polygons), plaza (OSM plazas, rims and building aprons; aprons estimated)"), features: unique(walkable.map((p, i) => poly(p, i, "WALK"))) },
+    walkable: { type: "FeatureCollection", metadata: meta("walkable polygons for the separation trace: sidewalk (NGII A003 strips), crossing (CW polygons, painted zebras, estimated kerb approaches), crossing_estimated (estimated unmarked crossings, 추정), walkway_estimated (estimated walkway strips, 추정), plaza (OSM plazas, rims and building aprons; aprons estimated)"), features: unique(walkable.map((p, i) => poly(p, i, "WALK"))) },
     road: { type: "FeatureCollection", metadata: meta("road polygons for the separation trace: road (road zones, arterial/connector strips traced to the A003 kerbs, estimated gap bridges), lot (car parks)"), features: unique(roadPolygons.map((p, i) => poly(p, i, "ROAD"))) },
+  };
+}
+
+// Estimated walkway strips for the ground stage (network/surfaces.mjs draws them with the paver material), EPSG:5186.
+export function walkwaySurfaces(strips, toTm, crossings = []) {
+  return {
+    metadata: {
+      generator: "frontend/scripts/campus-model/network/walkways.mjs (via buildNetwork.mjs)", coordinate_system: "EPSG:5186 (Korea 2000 / Central Belt 2010)",
+      description: "estimated walkway strips (1.5 m paved shoulder/path, 추정) where an estimated pedestrian edge crosses open ground, and estimated crossings (3 m, 추정, routing/walkable only, not drawn in the model) where it must cross a road with no CW polygon or painted zebra; not NGII A003 sidewalks or measured crossings",
+      estimated: true,
+    },
+    strips: strips.map((s) => ({ id: s.id, source_ref: s.source_ref, estimated: true, rings: s.rings.map((ring) => ring.map(([x, z]) => toTm({ x, z }).map((v) => round(v)))) })),
+    // estimated crossings (3 m, no CW polygon and no painted zebra; 추정): routing / walkable polygons only, not drawn
+    crossings: crossings.map((s) => ({ id: s.id, source_ref: s.source_ref, estimated: true, rings: s.rings.map((ring) => ring.map(([x, z]) => toTm({ x, z }).map((v) => round(v)))) })),
   };
 }
 
@@ -391,6 +463,8 @@ if (import.meta.main) {
   const { buildFallback } = await import("./fallback.mjs");
   const { buildConnectors, poiInputs, walkablePolygons } = await import("./connectors.mjs");
   const { NetGraph } = await import("./graph.mjs");
+  const { buildWalkways, statsLine: walkwayStats } = await import("./walkways.mjs");
+  const { simulationToTm } = await import("../../../src/geo/epsg5186.mjs");
   const DATA = path.join(REPO, "backend/simulation/data");
   const baselineFile = Bun.file(PATHS.baseline);
   const ctx = await loadNetworkContext();
@@ -402,11 +476,23 @@ if (import.meta.main) {
   const graph = NetGraph.fromSidewalks(sidewalks);
   const crossings = buildCrossings({ crosswalks: ctx.crossings, roads: ctx.roads, graph, strips: sidewalks.strips, kerbTouched: ctx.kerbs.touched, warn: quiet });
   const walkable = walkablePolygons({ strips: sidewalks.strips, crossings: ctx.crossings, layers: ctx.layers });
+  // painted zebras of the orthophoto that no CW polygon covers are crossings too (people cross only at crossings)
+  const { photoCrossings, zebraGroups } = await import("./photoCrossings.mjs");
+  const { lonLatToSim } = await import("./context.mjs");
+  const painted = photoCrossings({ groups: zebraGroups(await readJson(path.join(REPO, "frontend/scripts/campus-model/data/photo/markings.geojson")), lonLatToSim), crossings: ctx.crossings, roadPolygons: ctx.roads.polygons });
+  walkable.push(...painted.polygons);
+  console.log(`painted zebra crossings without a CW polygon: ${painted.stats.crossings} added (skipped: ${painted.stats.fewBars} < 4 bars, ${painted.stats.inCw} in a CW polygon, ${painted.stats.offRoad} off the road)`);
   const { entrances, pois } = poiInputs(await readJson(PATHS.entrances), old);
   const fallback = buildFallback({ roads: ctx.roads, graph, coverage: sidewalks.coverage, pois: [...entrances.map((e) => ({ id: e.building_id, p: e.position })), ...pois.map((p) => ({ id: p.poi_id, p: p.p }))], plazas: walkable.filter((w) => w.class === "plaza"), buildings: ctx.buildings, warn: quiet });
   const connectors = buildConnectors({ entrances, pois, graph, walkable, roadPolygons: ctx.roads.polygons, buildings: ctx.buildings, warn: quiet });
+  const walkways = buildWalkways({ graph, walkable, roadPolygons: ctx.roads.polygons, buildings: ctx.buildings, warn: console.warn });
+  console.log(walkwayStats(walkways.stats));
+  for (const u of walkways.stats.unresolved) console.log(`  unresolved ${JSON.stringify(u)}`);
+  for (const u of walkways.stats.sidewalkOnVehicle) console.log(`  measured on carriageway ${JSON.stringify(u)}`);
   const poiFeatures = old.features.filter((f) => f.properties.feature_type === "poi");
-  const { collection, stats } = assembleNetwork({ roads: ctx.roads, graph, pois: poiFeatures, kerbPieces: ctx.kerbs.pieces, policy, old, roadPolygons: ctx.roads.polygons });
+  const sidewalkPolygons = walkable.filter((w) => w.class === "sidewalk");
+  const { collection, stats } = assembleNetwork({ roads: ctx.roads, graph, pois: poiFeatures, kerbPieces: ctx.kerbs.pieces, policy, old, roadPolygons: ctx.roads.polygons, sidewalkPolygons });
+  console.log(`lane offset caps on ${addLaneClearance(collection.features, { roadPolygons: ctx.roads.polygons, sidewalkPolygons })} car edges`);
   if (arg("--extra-edges")) collection.features.push(...(await readJson(arg("--extra-edges"))).features);
   const errors = checkCollection(collection, old, policy);
   console.log(`sidewalks: ${sidewalks.stats.strips} strips, ${sidewalks.stats.edges} edges; crossings: ${crossings.stats.edges} edges (${crossings.stats.connectors} estimated end connectors); fallback: ${fallback.stats.retainedRuns} runs ${fallback.stats.retainedM} m; connectors: ${connectors.stats.entrances} entrances, ${connectors.stats.pois} POIs (${connectors.stats.estimated} estimated)`);
@@ -428,10 +514,11 @@ if (import.meta.main) {
     await Bun.write(PATHS.baseline, Bun.file(PATHS.network));
     console.log(`baseline copied: ${path.relative(REPO, PATHS.baseline)}`);
   }
-  const { walkable: walkFc, road: roadFc } = polygonCollections({ walkable, roadPolygons: ctx.roads.polygons });
+  const { walkable: walkFc, road: roadFc } = polygonCollections({ walkable: [...walkable, ...walkways.approaches, ...walkways.strips, ...walkways.crossings], roadPolygons: ctx.roads.polygons });
   await Bun.write(PATHS.network, `${JSON.stringify(collection)}\n`);
   await Bun.write(path.join(DATA, "walkable_polygons.geojson"), `${JSON.stringify(walkFc)}\n`);
   await Bun.write(path.join(DATA, "road_polygons.geojson"), `${JSON.stringify(roadFc)}\n`);
+  await Bun.write(PATHS.estimatedWalkways, `${JSON.stringify(walkwaySurfaces(walkways.strips, simulationToTm, walkways.crossings))}\n`);
   const transformPath = path.join(DATA, "coordinate_transform.json");
   await Bun.write(transformPath, addAnchor(await Bun.file(transformPath).text()));
   console.log(`written campus_transport_network.geojson, walkable_polygons.geojson (${walkFc.features.length}), road_polygons.geojson (${roadFc.features.length}), coordinate_transform.json epsg5186_anchor`);

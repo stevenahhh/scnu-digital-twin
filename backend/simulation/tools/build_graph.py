@@ -11,12 +11,12 @@ from simulation.polygon_index import PolygonIndex, sample_line
 
 ROOT = Path(__file__).resolve().parents[1]
 # Optional edge attributes carried onto the runtime edge when present (validated by network_schema).
-OPTIONAL_EDGE_FIELDS = ("width_m", "kerb_height_m", "lanes", "estimated", "source_ref")
+OPTIONAL_EDGE_FIELDS = ("width_m", "kerb_height_m", "lanes", "estimated", "source_ref", "placed", "lanes_source", "lane_offset_cap_m", "crosses_carriageway_m")
 DATA = ROOT / "data"
 # Share of an edge's 1 m samples that must lie on its agents' surface (walkable polygons for people, road polygons for
 # cars); a crossing may also use the carriageway it spans. Estimated edges are declared off-polygon and only tagged.
 POLYGON_SHARE = 0.95
-WALKABLE_CLASSES = ("sidewalk", "crossing", "plaza")
+WALKABLE_CLASSES = ("sidewalk", "crossing", "crossing_estimated", "plaza", "walkway_estimated")
 ROAD_CLASSES = ("road", "lot")
 
 
@@ -93,6 +93,7 @@ def build(network: dict, policy: dict, authoritative_only: bool = False, walkabl
             "category": props.get("category"), "node_id": str(props["node_id"]),
             "allowed_types": list(props.get("allowed_types") or []),
             "external": bool(props.get("external", False)),
+            **({"vehicle_node_id": str(props["vehicle_node_id"])} if props.get("vehicle_node_id") else {}),
             "derived": bool(props.get("derived", False)),
             "source": props.get("source", "unknown"), "confidence": props.get("confidence"),
         })

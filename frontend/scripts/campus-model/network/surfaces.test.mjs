@@ -112,3 +112,13 @@ test("a tiles paving supplement is a PAVING layer between the walkways and the a
   assert.deepEqual([plain.mesh, plain.label, plain.precedence], ["Ground_Pavers", SURFACE_CLASS.PAVING, tiles.precedence]);
   assert.throws(() => buildSurfaces({ ...fixture(), groundFeatures: { ...groundFeatures, supplements: [{ kind: "paving", note: "bad", ring: rect(0, 0, 1, 1) }] } }), /needs a ring and pattern/);
 });
+
+test("estimated walkway strips become estimated Ground_Walkway paving under the road layers", () => {
+  const strip = { id: "WALKWAY_T", source_ref: "EDGE_FB_T", rings: [[[243600, 263800], [243610, 263800], [243610, 263801.5], [243600, 263801.5]]] };
+  const { layers } = buildSurfaces({ ...fixture(), estimatedWalkways: [strip] });
+  const walkway = layers.filter((l) => l.mesh === "Ground_Walkway");
+  assert.equal(walkway.length, 1);
+  assert.equal(walkway[0].estimated, true);
+  assert.equal(walkway[0].source_ref, "EDGE_FB_T");
+  assert.ok(walkway[0].precedence < Math.min(...layers.filter((l) => l.cls === "ASPHALT").map((l) => l.precedence)));
+});

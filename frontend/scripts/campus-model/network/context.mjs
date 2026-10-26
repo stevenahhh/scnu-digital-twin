@@ -28,6 +28,7 @@ export const PATHS = {
   elementsCopy: path.join(REPO, "backend/simulation/data/source/common_elemetns.json"),
   osmGround: path.join(HERE, "../data/osm-ground.json"),
   sidewalks: path.join(HERE, "../data/network/sidewalks.json"),
+  estimatedWalkways: path.join(HERE, "../data/network/walkways.json"),
 };
 
 export const tmToSim = ([E, N]) => {

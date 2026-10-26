@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import heapq
 import hashlib
+import logging
 import math
 from dataclasses import dataclass
 from pathlib import Path
@@ -14,6 +15,16 @@ except ImportError:
 
 
 Point = Tuple[float, float]
+LOGGER = logging.getLogger(__name__)
+
+# Estimated values, not survey data: a default lane centre-to-centre width and half a car's width.
+DEFAULT_LANE_WIDTH_M = 3.00
+HALF_CAR_WIDTH_M = 0.9
+CARRIAGEWAY_MIN_WIDTH_M = 5.5
+SCOOTER_KERB_BIAS_M = 0.5
+VERTEX_BLEND_M = 3.0
+# route cost (m-equivalent) per metre of carriageway crossed without a crossing polygon: 1 km detour per 2 m
+UNMARKED_CROSSING_COST_PER_M = 500.0
 
 
 @dataclass(frozen=True)
@@ -32,6 +43,14 @@ class GraphEdge:
     width_m: float | None = None
     lanes: int = 1
     estimated: bool = False
+    # "walkway_estimated": the generator drew this estimated edge where people walk (off the carriageway), so the
+    # development-only lateral offset for centreline copies does not apply.
+    placed: str | None = None
+    # largest keep-right offset (m) that keeps a car body on this edge's road polygon (generator, from the polygons)
+    lane_offset_cap_m: float | None = None
+    # metres of carriageway an estimated person edge crosses with no crossing polygon (generator); routed only when no
+    # other connection exists
+    crosses_carriageway_m: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -54,6 +73,7 @@ class GraphPath:
     edge_derived: Tuple[bool, ...] = ()
     edge_widths: Tuple[float | None, ...] = ()
     edge_lanes: Tuple[int, ...] = ()
+    edge_offset_caps: Tuple[float | None, ...] = ()
 
 
 class MobilityGraph:
@@ -64,6 +84,7 @@ class MobilityGraph:
         self.metadata = dict(payload.get("metadata") or {})
         # route_cost_multipliers (mobility_policy.json): {agent: {kind | kind + "_estimated": factor}}
         self.cost_multipliers = dict(self.metadata.get("route_cost_multipliers") or {})
+        self._narrow_logged: set = set()
         self.derived_lateral_offsets = dict(self.metadata.get("derived_lateral_offsets_m") or {
             "person": {"shared_path": 2.8, "sidewalk": 2.8},
             "scooter": {"shared_path": 1.4, "sidewalk": 1.4, "bike_lane": 1.4, "scooter_lane": 1.4, "allowed_road": -1.0},
@@ -88,8 +109,12 @@ class MobilityGraph:
                 road_ids=tuple(str(value) for value in raw.get("road_ids") or ()), points=points, length=length,
                 derived=bool(raw.get("derived", True)),
                 width_m=float(raw["width_m"]) if raw.get("width_m") is not None else None,
-                lanes=int(raw.get("lanes") or 1),
+                # 0 = lane count unknown (the generator assumed 1 lane): lane width falls back to the estimated default
+                lanes=0 if raw.get("lanes_source") == "assumed" else int(raw.get("lanes") or 1),
                 estimated=bool(raw.get("estimated", False)),
+                placed=raw.get("placed"),
+                lane_offset_cap_m=float(raw["lane_offset_cap_m"]) if raw.get("lane_offset_cap_m") is not None else None,
+                crosses_carriageway_m=float(raw.get("crosses_carriageway_m") or 0.0),
             )
             self.edges[edge.edge_id] = edge
             self.adjacency[edge.source].append((edge.target, edge, False))
@@ -133,8 +158,10 @@ class MobilityGraph:
         agent_type: str,
         edge_cost_factors: Dict[str, float] | None = None,
     ) -> GraphPath:
-        origin_node = str(self.poi(origin)["node_id"])
-        destination_node = str(self.poi(destination)["node_id"])
+        # a POI shared by cars and people has a vehicle anchor on the road/lot surface (vehicle_node_id)
+        key = "vehicle_node_id" if agent_type == "car" else "node_id"
+        origin_node = str(self.poi(origin).get(key) or self.poi(origin)["node_id"])
+        destination_node = str(self.poi(destination).get(key) or self.poi(destination)["node_id"])
         queue: List[Tuple[float, str]] = [(0.0, origin_node)]
         distance = {origin_node: 0.0}
         previous: Dict[str, Tuple[str, GraphEdge, bool]] = {}
@@ -149,6 +176,8 @@ class MobilityGraph:
                     continue
                 factor = max(0.1, float((edge_cost_factors or {}).get(edge.edge_id, 1.0)))
                 candidate = cost + edge.length * self._kind_cost(agent_type, edge.kind) * self._policy_multiplier(agent_type, edge) * factor
+                if agent_type == "person" and edge.crosses_carriageway_m:
+                    candidate += UNMARKED_CROSSING_COST_PER_M * edge.crosses_carriageway_m
                 if candidate < distance.get(neighbor, math.inf):
                     distance[neighbor] = candidate
                     previous[neighbor] = (node_id, edge, reverse)
@@ -191,16 +220,17 @@ class MobilityGraph:
         # Segment metadata follows edges, while edge geometries currently have
         # one segment. Normalize defensively for authored multi-point edges.
         segment_edge_ids, segment_kinds, segment_roads, segment_speeds = [], [], [], []
-        segment_derived, segment_widths, segment_lanes = [], [], []
+        segment_derived, segment_widths, segment_lanes, segment_caps = [], [], [], []
         for _, _, edge, reverse in steps:
             count = max(1, len(edge.points) - 1)
             segment_edge_ids.extend([edge.edge_id] * count)
             segment_kinds.extend([edge.kind] * count)
             segment_roads.extend([edge.road_ids[0] if edge.road_ids else None] * count)
             segment_speeds.extend([edge.speed_limit] * count)
-            segment_derived.extend([edge.derived] * count)
+            segment_derived.extend([edge.derived and not edge.placed] * count)
             segment_widths.extend([edge.width_m] * count)
             segment_lanes.extend([edge.lanes] * count)
+            segment_caps.extend([edge.lane_offset_cap_m] * count)
         signature = hashlib.sha1("|".join(segment_edge_ids).encode("utf-8")).hexdigest()[:8]
         path = GraphPath(
             path_id=f"TRIP_ROUTE_{agent_type}_{origin}_TO_{destination}_{signature}", origin=origin, destination=destination,
@@ -208,7 +238,7 @@ class MobilityGraph:
             node_ids=tuple(node_ids), edge_ids=tuple(edge_ids), segment_edge_ids=tuple(segment_edge_ids), edge_kinds=tuple(segment_kinds),
             road_ids=tuple(segment_roads), speed_limits=tuple(segment_speeds), points=tuple(points),
             segment_lengths=segment_lengths, cumulative_lengths=tuple(cumulative), total_length=cumulative[-1],
-            edge_derived=tuple(segment_derived), edge_widths=tuple(segment_widths), edge_lanes=tuple(segment_lanes),
+            edge_derived=tuple(segment_derived), edge_widths=tuple(segment_widths), edge_lanes=tuple(segment_lanes), edge_offset_caps=tuple(segment_caps),
         )
         self.paths[path.path_id] = path
         return path
@@ -220,6 +250,7 @@ class MobilityGraph:
         derived: bool = True,
         width_m: float | None = None,
         lanes: int = 1,
+        cap: float | None = None,
     ) -> float:
         """Lateral offset from the edge line, positive to the left of travel.
 
@@ -232,16 +263,41 @@ class MobilityGraph:
             return 0.0
         if derived:
             return float(self.derived_lateral_offsets.get(str(agent_type), {}).get(str(edge_kind), 0.0))
-        if agent_type == "car" and lanes >= 2:
-            return -(width_m or 6.0) / 4
+        if agent_type == "car" or (agent_type == "scooter" and edge_kind == "allowed_road"):
+            return self._lane_offset(agent_type, width_m, lanes, cap)
         return 0.0
 
+    def _lane_offset(self, agent_type: str, width_m: float | None, lanes: int, cap: float | None = None) -> float:
+        """Keep-right half-lane offset (negative), clamped so the agent stays inside the carriageway.
+
+        Lane width is width_m / lanes (estimated 3.00 m when width_m is absent or the lane count is unknown, lanes 0:
+        a wide paved zone with an assumed single lane is a two-way road, not one 16 m lane); the magnitude is capped
+        at width_m / 2 - 0.9 (half a car width, estimated). A scooter adds 0.5 m toward the kerb under the same cap.
+        """
+        known = int(lanes) > 0
+        lanes = max(1, int(lanes))
+        if not (lanes >= 2 or (width_m is not None and width_m >= CARRIAGEWAY_MIN_WIDTH_M)):
+            return 0.0
+        lane_width = width_m / lanes if width_m and known else DEFAULT_LANE_WIDTH_M
+        carriageway = width_m if width_m else lane_width * lanes
+        limit = carriageway / 2 - HALF_CAR_WIDTH_M
+        if limit <= 0:
+            key = (carriageway, lanes)
+            if key not in self._narrow_logged:
+                self._narrow_logged.add(key)
+                LOGGER.warning("edge too narrow for lane offset: width_m=%.2f lanes=%d", carriageway, lanes)
+            return 0.0
+        magnitude = lane_width / 2 + (SCOOTER_KERB_BIAS_M if agent_type == "scooter" else 0.0)
+        # cap: the generator's measured clearance from this centreline to the road polygon edge (minus half a car)
+        return -min(magnitude, limit, cap if cap is not None else math.inf)
+
     @staticmethod
-    def _segment_flags(path: GraphPath, segment: int) -> Tuple[bool, float | None, int]:
+    def _segment_flags(path: GraphPath, segment: int) -> Tuple[bool, float | None, int, float | None]:
         derived = path.edge_derived[segment] if segment < len(path.edge_derived) else True
         width = path.edge_widths[segment] if segment < len(path.edge_widths) else None
         lanes = path.edge_lanes[segment] if segment < len(path.edge_lanes) else 1
-        return derived, width, lanes
+        cap = path.edge_offset_caps[segment] if segment < len(path.edge_offset_caps) else None
+        return derived, width, lanes, cap
 
     def interpolate(self, path: GraphPath, distance: float, agent_type: str | None = None) -> Tuple[float, float, float, int]:
         value = min(max(0.0, float(distance)), path.total_length)
@@ -273,8 +329,26 @@ class MobilityGraph:
             )
             dx, dz = second[0] - first[0], second[1] - first[1]
             segment_length = max(math.hypot(dx, dz), 1e-9)
-            x += (-dz / segment_length) * smooth_offset
-            z += (dx / segment_length) * smooth_offset
+            vx, vz = (-dz / segment_length) * smooth_offset, (dx / segment_length) * smooth_offset
+            if not self._segment_flags(path, segment)[0]:
+                # Blend the offset normal with the neighbouring segment's over VERTEX_BLEND_M either side of a
+                # vertex (weight 0.5 at the vertex) so a corner does not make the position jump.
+                for neighbour, weight_distance in ((segment - 1, value - path.cumulative_lengths[segment]),
+                                                   (segment + 1, path.cumulative_lengths[segment + 1] - value)):
+                    if not 0 <= neighbour < len(path.segment_lengths) or neighbour >= len(path.edge_kinds):
+                        continue
+                    flags = self._segment_flags(path, neighbour)
+                    other = self.lateral_offset(agent_type, path.edge_kinds[neighbour], *flags)
+                    if flags[0] or other == 0.0:
+                        continue
+                    weight = 0.5 * max(0.0, 1.0 - weight_distance / VERTEX_BLEND_M)
+                    a, b = path.points[neighbour], path.points[neighbour + 1]
+                    ndx, ndz = b[0] - a[0], b[1] - a[1]
+                    nlen = max(math.hypot(ndx, ndz), 1e-9)
+                    vx += weight * ((-ndz / nlen) * other - vx)
+                    vz += weight * ((ndx / nlen) * other - vz)
+            x += vx
+            z += vz
         heading = (math.degrees(math.atan2(second[0] - first[0], second[1] - first[1])) + 360) % 360
         return x, z, heading, segment
 
