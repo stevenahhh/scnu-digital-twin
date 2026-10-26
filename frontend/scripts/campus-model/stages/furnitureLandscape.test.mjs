@@ -51,6 +51,32 @@ test("duplicate rule: a planted lamp 2 m from a surveyed lamp is caught, 4 m awa
   assert.equal(found[0].distanceM, 2);
 });
 
+test("terraced_steps: the flights rise by their own risers from the bottom edge, whatever the edge order", () => {
+  const flights = [{ steps: 4, rise_m: 0.15, tread_m: 0.35, landing_m: 2 }, { steps: 3, rise_m: 0.16, tread_m: 0.3, landing_m: 1 }];
+  const edge = [[0, 0], [0, M(6)]];
+  const { ctx } = build("terraced_steps", { line: edge }, { up_bearing_deg: 270, colour: "#b0b0b0", flights });
+  near(maxHeightM(ctx), 4 * 0.15 + 3 * 0.16, "top landing");
+  const xs = ctx.solid.mesh.positions.filter((_, i) => i % 3 === 0);
+  // bearing 270 climbs west (-x): every solid lies on that side of the edge, 4 x 0.35 + 2 + 3 x 0.3 + 1 m deep
+  near(Math.max(...xs) / M(1), 0, "bottom edge");
+  near(Math.min(...xs) / M(1), -(4 * 0.35 + 2 + 3 * 0.3 + 1), "depth");
+  const reversed = build("terraced_steps", { line: [...edge].reverse() }, { up_bearing_deg: 270, colour: "#b0b0b0", flights }).ctx;
+  near(Math.min(...reversed.solid.mesh.positions.filter((_, i) => i % 3 === 0)) / M(1), -(4 * 0.35 + 2 + 3 * 0.3 + 1), "reversed edge");
+  // a landing that runs back to the ground ends at 0.02 m above it
+  const ramp = build("terraced_steps", { line: edge }, { up_bearing_deg: 270, colour: "#b0b0b0", flights: [{ steps: 4, rise_m: 0.15, tread_m: 0.35, landing_m: 10, landing_to_ground: true }] }).ctx;
+  const pos = ramp.solid.mesh.positions;
+  const farTops = [];
+  for (let i = 0; i < pos.length; i += 3) if (Math.abs(pos[i] / M(1) + 11.4) < 1e-6 && pos[i + 1] > 0) farTops.push(pos[i + 1] / M(1));
+  near(Math.max(...farTops), 0.02, "forecourt end");
+});
+
+test("pond_basin: coping to its height, jets above it", () => {
+  const ring = [[0, 0], [M(10), 0], [M(10), M(6)], [0, M(6)]];
+  const { ctx } = build("pond_basin", { ring }, { coping: { thicknessM: 0.4, heightM: 0.45 }, copingColour: "#c9c3b6", jets: [[127.48, 34.968, 1.6]] });
+  near(maxHeightM(ctx), 0.45, "coping");
+  near(Math.max(...ctx.glass.mesh.positions.filter((_, i) => i % 3 === 1)) / M(1), 1.6, "jet");
+});
+
 function near(actual, expected, label) {
   assert.ok(Math.abs(actual - expected) < 1e-6, `${label}: ${actual} != ${expected}`);
 }

@@ -1561,6 +1561,99 @@ B.plaza_structure = (ctx, o) => {
   return builder(ctx, o);
 };
 
+// ---------------------------------------------------------------- VR landscape (rest-spaces.geojson RS-LS-*)
+// Stepped approaches and outdoor stairs read from the VR (risers counted, rise and tread estimated) on a bottom edge
+// traced on the NGII 2025 sheet (LineString, either order), climbing toward up_bearing_deg. Unlike stepsOnTerrain the
+// flights rise by their own risers from the lowest ground on the bottom edge: the terrain is smoothed under most
+// approaches (C1 rises 1 m where the VR counts 19 risers, D4 is flat). Every step and landing is a solid down to the
+// ground under it, so a raised landing shows its cheeks; a landing with landing_to_ground slopes back to the ground at its
+// far edge (the D4 forecourt down to the drive). flights: [{ steps, rise_m, tread_m, width_m?, landing_m?,
+// landing_width_m?, landingColour?, landing_to_ground? }]; planters: hedge beds on a kerb whose top runs from top_m[0] to
+// top_m[1] (metres above the bottom edge) over s; rails: handrails 0.9 m above the treads at t. s along the climb from
+// the bottom edge, t across it (metres). Every dimension is an estimate (추정).
+const bearingDir = (deg) => [Math.sin((deg * Math.PI) / 180), -Math.cos((deg * Math.PI) / 180)];
+B.terraced_steps = (ctx, o) => {
+  const [a, b] = [o.line[0], o.line.at(-1)];
+  const edgeM = Math.hypot(b[0] - a[0], b[1] - a[1]) / M(1);
+  const across = [(b[0] - a[0]) / M(edgeM), (b[1] - a[1]) / M(edgeM)];
+  const want = bearingDir(o.p.up_bearing_deg);
+  const up = -across[1] * want[0] + across[0] * want[1] >= 0 ? [-across[1], across[0]] : [across[1], -across[0]];
+  const centre = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  const base = Math.min(...[a, centre, b].map((p) => ctx.groundAt(...p)));
+  const f = frame([centre[0], base, centre[1]], up);
+  const stepPaint = { top: rgb(o.p.colour), side: rgb(o.p.riserColour ?? o.p.colour) };
+  const sOf = (x, z) => toLocal(f, [x, z])[0];
+  const slab = (s0, s1, t0, t1, top, paint) => {
+    const ring = [localPlan(f, s0, t0), localPlan(f, s1, t0), localPlan(f, s1, t1), localPlan(f, s0, t1)];
+    ctx.solid.prism(ring, (x, z) => ctx.groundAt(x, z) - M(0.1), top, paint);
+  };
+  // tread levels (metres above base) by s, for the rails
+  const treads = [];
+  let s = 0;
+  let level = 0;
+  for (const flight of o.p.flights) {
+    const width = flight.width_m ?? edgeM;
+    for (let i = 0; i < flight.steps; i += 1) {
+      level += flight.rise_m;
+      slab(s, s + flight.tread_m, -width / 2, width / 2, base + M(level), stepPaint);
+      treads.push([s, s + flight.tread_m, level]);
+      s += flight.tread_m;
+    }
+    if (!flight.landing_m) continue;
+    const [s0, s1, top0] = [s, s + flight.landing_m, base + M(level)];
+    const landingWidth = flight.landing_width_m ?? width;
+    const top = flight.landing_to_ground
+      ? (x, z) => top0 + (ctx.groundAt(x, z) + M(0.02) - top0) * Math.min(1, Math.max(0, (sOf(x, z) - s0) / (s1 - s0)))
+      : top0;
+    slab(s0, s1, -landingWidth / 2, landingWidth / 2, top, { top: rgb(flight.landingColour ?? o.p.landingColour ?? o.p.colour), side: stepPaint.side });
+    treads.push([s0, s1, level]);
+    s = s1;
+  }
+  for (const planter of o.p.planters ?? []) {
+    const [s0, s1] = planter.s;
+    const [t0, t1] = planter.t;
+    const kerbTop = (x, z) => base + M(planter.top_m[0] + ((planter.top_m[1] - planter.top_m[0]) * Math.min(1, Math.max(0, (sOf(x, z) - s0) / (s1 - s0)))));
+    const ring = [localPlan(f, s0, t0), localPlan(f, s1, t0), localPlan(f, s1, t1), localPlan(f, s0, t1)];
+    ctx.solid.prism(ring, (x, z) => ctx.groundAt(x, z) - M(0.1), kerbTop, { top: C.soil, side: rgb(planter.kerbColour) });
+    const inset = [localPlan(f, s0 + 0.1, t0 + 0.1), localPlan(f, s1 - 0.1, t0 + 0.1), localPlan(f, s1 - 0.1, t1 - 0.1), localPlan(f, s0 + 0.1, t1 - 0.1)];
+    ctx.solid.prism(inset, kerbTop, (x, z) => kerbTop(x, z) + M(planter.hedge_m), C.shrub);
+  }
+  const levelAt = (sm) => (treads.find(([s0, s1]) => sm >= s0 - 1e-6 && sm <= s1 + 1e-6) ?? treads.at(-1))[2];
+  for (const rail of o.p.rails ?? []) {
+    const [s0, s1] = rail.s;
+    const n = Math.max(1, Math.ceil((s1 - s0) / 2));
+    const posts = Array.from({ length: n + 1 }, (_, k) => {
+      const sm = s0 + ((s1 - s0) * k) / n;
+      const [x, z] = localPlan(f, sm, rail.t);
+      return [x, base + M(levelAt(sm)), z];
+    });
+    for (const [x, y, z] of posts) ctx.solid.pole([x, z], y - M(0.05), y + M(0.9), 0.025, 0.025, C.galvanised, { sides: 6 });
+    for (let k = 0; k + 1 < posts.length; k += 1) {
+      const [p, q] = [posts[k], posts[k + 1]];
+      ctx.solid.beam([p[0], p[1] + M(0.9), p[2]], [q[0], q[1] + M(0.9), q[2]], 0.05, 0.05, C.galvanised);
+    }
+  }
+};
+
+// Fountain pond (VR scene_a1): stone coping inside the outline, spray jets (translucent cones) and rocks in the water.
+// The water surface is the ground stage's (OSM water painted on Ground_Sports). jets: [lon, lat, height m]; rocks:
+// [lon, lat, size m]. Every dimension is an estimate (추정).
+B.pond_basin = (ctx, o) => {
+  const sign = insideSign(o.ring);
+  const { thicknessM, heightM } = o.p.coping;
+  wall(ctx, ctx.solid, o.ring, thicknessM, heightM, rgb(o.p.copingColour), { closed: true, offsetM: (sign * thicknessM) / 2 });
+  for (const [lon, lat, h] of o.p.jets ?? []) {
+    const p = geoToModel(lon, lat);
+    const g = ctx.groundAt(...p);
+    ctx.glass.cone([p[0], g + M(h), p[1]], disc(p, M(0.3), 8).map(([x, z]) => [x, g + M(0.03), z]), rgb("#eef3f5", 170), { base: false });
+  }
+  for (const [lon, lat, size] of o.p.rocks ?? []) {
+    const p = geoToModel(lon, lat);
+    const g = ctx.groundAt(...p);
+    ctx.solid.cone([p[0], g + M(size * 0.6), p[1]], disc(p, M(size / 2), 7).map(([x, z]) => [x, g - M(0.05), z]), C.metal, { base: false });
+  }
+};
+
 // Steps fitted to the terrain: treads perpendicular to the fitted slope, each band's tread at its highest ground,
 // risers down to the next. Flat ground (relief under STEPS_MIN_RELIEF_M) leaves the steps unmodelled.
 function stepsOnTerrain(ctx, o) {
@@ -1687,7 +1780,7 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
   const furnitureMaterial = glb.addMaterial({ name: "Furniture", pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1], metallicFactor: 0, roughnessFactor: 0.82 } });
   const glassMaterial = glb.addMaterial({ name: "Furniture_Glass", pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1], metallicFactor: 0, roughnessFactor: 0.35 }, alphaMode: "BLEND", doubleSided: true });
   const extras = {
-    source: "data/photo/objects-campus.geojson (NGII 2025 orthophoto survey, 175 objects; positions from the photo) and data/photo/rest-spaces.geojson (VR-located rest spaces and the A19 gate sign; positions estimated); shapes, colours and heights estimated from the SCNU 360 VR tour (visual reference only)",
+    source: "data/photo/objects-campus.geojson (NGII 2025 orthophoto survey, 175 objects; positions from the photo) and data/photo/rest-spaces.geojson (VR-located rest spaces, the A19 gate sign and the RS-LS VR landscape items: steps, the A1 pond, a sign stone, a PM rack; positions estimated); shapes, colours and heights estimated from the SCNU 360 VR tour (visual reference only)",
     heightsNote: "every height is an estimate, not a measurement; objects lists [id, kind, height m, height source, estimated]",
     counts,
     excluded: furniture.excluded,
