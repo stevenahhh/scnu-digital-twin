@@ -113,3 +113,13 @@ test("outline-review.json: every verdict is ok, shift (with a small offset) or r
     if (r.verdict === "shift") assert.ok(Math.hypot(...r.offsetM) <= 5, `${id} shift ${r.offsetM} over 5 m`);
   }
 });
+
+test("signal-arms.json: photo arms within the drawn range; heads perpendicular to the arm", async () => {
+  const { approachFromArm } = await import("./furniture.mjs");
+  const { arms } = JSON.parse(readFileSync(path.join(HERE, "..", "data", "photo", "signal-arms.json"), "utf8"));
+  for (const [id, a] of Object.entries(arms)) {
+    assert.ok(a.bearingDeg >= 0 && a.bearingDeg < 360 && a.lengthM >= 3.5 && a.lengthM <= 9, `${id} arm ${a.bearingDeg} deg ${a.lengthM} m`);
+    const r = approachFromArm([Math.sin((a.bearingDeg * Math.PI) / 180), -Math.cos((a.bearingDeg * Math.PI) / 180)], a.lengthM);
+    assert.ok(Math.abs(r.armDir[0] * r.headsFace[0] + r.armDir[1] * r.headsFace[1]) < 1e-9, `${id} heads perpendicular to the arm`);
+  }
+});

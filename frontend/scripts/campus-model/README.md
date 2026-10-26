@@ -696,7 +696,9 @@ by-eye estimate (추정). The survey has no bollards (not resolvable at 0.25 m),
 
 ### Signal heads
 
-Each signal pole controls the approach whose centreline is nearest (the `data/network/roads.json` edges and the OSM
+Where the NGII photo shows a signal's mast arm (its thin dark line or west-cast shadow, read on 4x chips:
+`data/photo/signal-arms.json`, OB0000, OB0001, OB0003, OC0045) the arm takes that bearing and length. Otherwise each
+signal pole controls the approach whose centreline is nearest (the `data/network/roads.json` edges and the OSM
 arterial/connector lines, within 25 m): the mast arm reaches from the pole to that centreline (3.5-9 m) and the heads
 face the traffic in its near lanes (right-hand traffic: the heads look back along the lanes whose kerb is the pole's).
 The `Furniture` extras list each signal as `[id, centreline id, RD_ id, heads facing bearing, arm m]`.

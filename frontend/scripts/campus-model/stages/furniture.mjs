@@ -1208,7 +1208,8 @@ B.stadium_seating = (ctx, o) => {
   }
 };
 
-// Signal poles (VR scene_a19). Each pole controls the approach whose centreline is nearest (data/network/roads.json
+// Signal poles (VR scene_a19). Where the photo shows the mast arm (data/photo/signal-arms.json) it sets the arm; otherwise
+// each pole controls the approach whose centreline is nearest (data/network/roads.json
 // edges, plus the OSM arterial and connector lines outside the campus road zones), within SIGNAL_REACH_M: the mast arm
 // reaches from the pole square across that carriageway's near lanes to the centreline (clamped to 3.5-9 m), and the
 // heads face the traffic in those lanes. With right-hand traffic the near lanes run with the kerb on their right, so the
@@ -1253,10 +1254,23 @@ export function signalApproach(at, lines, reachM = SIGNAL_REACH_M) {
   return { id: best.id, road: best.road, armDir, armM: best.d / M(1), travelDir, headsFace: [-travelDir[0], -travelDir[1]] };
 }
 
+// Arms the photo shows (data/photo/signal-arms.json) win over the rule: bearing and length read on the photo chip.
+const SIGNAL_ARMS = path.join(HERE, "..", "data", "photo", "signal-arms.json");
+let photoArms = null;
+// Approach derived from an arm direction (scene plan unit vector) and length: heads face the near-lane traffic as above.
+export function approachFromArm(armDir, armM, id = "photo") {
+  const n = [-armDir[0], -armDir[1]];
+  const travelDir = [n[1], -n[0]];
+  return { id, road: null, armDir, armM, travelDir, headsFace: [-travelDir[0], -travelDir[1]] };
+}
 B.traffic_signal_pole = (ctx, o) => {
   const at = o.point;
   const g = ctx.groundAt(...at);
-  const approach = signalApproach(at, approachLines(ctx));
+  photoArms ??= existsSync(SIGNAL_ARMS) ? JSON.parse(readFileSync(SIGNAL_ARMS, "utf8")).arms : {};
+  const photo = photoArms[o.id];
+  const approach = photo
+    ? approachFromArm([Math.sin((photo.bearingDeg * Math.PI) / 180), -Math.cos((photo.bearingDeg * Math.PI) / 180)], photo.lengthM, "photo-arm")
+    : signalApproach(at, approachLines(ctx));
   const dir = approach?.armDir ?? towardRoad(at, ctx.roads) ?? [1, 0];
   const f = frame([at[0], g, at[1]], dir);
   const arm = Math.max(3.5, Math.min(9, approach?.armM ?? 3.5));
@@ -1681,7 +1695,7 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     photoOnly: ctx.skipped,
     estimatedBenchesNote: `estimated positions: ${benches.length} plaza benches from VR scene_c1 (no rule-placed benches)`,
     // standing poles: [id, kind, pole verdict, shift from the survey m, residual m, x, z (scene units)]
-    // signals: [id, approach centreline id, RD_ id, heads facing bearing deg, arm m]
+    // signals: [id, approach centreline id or "photo-arm", RD_ id, heads facing bearing deg, arm m]
     signals: ctx.signals,
     poles: furniture.objects.filter((o) => POLE_KINDS.has(o.kind) && o.point).map((o) => [o.id, o.kind, o.pole?.verdict ?? "unreviewed", o.pole?.shiftM ?? 0, o.pole?.residualM ?? null, Number(o.point[0].toFixed(2)), Number(o.point[1].toFixed(2))]),
     objects: built.map(([id, kind, h, source, estimated]) => [id, kind, h, source, estimated]),
