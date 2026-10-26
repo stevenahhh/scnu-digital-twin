@@ -104,6 +104,7 @@ gone). The ground is vector polygons in EPSG:5186, each with a precedence, a sou
 | 4 | lot | `Ground_Lot` | OSM parking, the estimated supplement bays, off-campus lots; the roundabout over the road |
 | 5 (5.5) | A003 | `Ground_Pavers` / `Ground_Asphalt` (`Ground_Bicycle`) | the 42 closed A003 walkway rings by `qual`/`scls` (the bicycle lanes are open outlines only, so no red lane polygon yet) |
 | 6 | apron | `Ground_Apron` | the 2.2 m band centred on every building outline |
+| 2 | estimated walkway | `Ground_Walkway` | 1.5 m paver strips where an estimated pedestrian path runs beside the road with no A003 sidewalk (`data/network/walkways.json`, written by `network:build`; extras note 추정 보행로). Estimated crossings in the same file are routing polygons only and are not drawn |
 
 There are no polygon booleans: `stages/surfaces.mjs` conforms every polygon to the Topography triangles
 (`lib/conform.mjs`) and lifts it 0.006 m per precedence step (at most 0.036 m, under the markings' 0.04 m), and
@@ -468,6 +469,22 @@ the other two keep their outlines and heights. Glass atrium and skylight roofs t
 E5) are read as parapets, so the atrium is drawn open down to its floor. Storey heights come from the curated floor
 counts over the LOD4 roofs; seven buildings come out at 4.7-5.4 m per storey (halls, labs, B2, D3, C2, A7, the
 stand). Masses, heights and voids are estimates derived from VWorld's models and the photo, not survey data.
+
+## Transport network (`network/`)
+
+`bun run network:build` (`network/buildNetwork.mjs`) composes the separated pedestrian/vehicle network the simulation
+routes on, from the same ground inputs: `sidewalks.mjs` (NGII A003 strips and centrelines, fills the `SW_` placeholders),
+`crossings.mjs` (CW polygons), `roads.mjs` (vehicle centrelines from the road zones, `ND_` ids, OSM perimeter roads),
+`fallback.mjs` (estimated shared paths only where A003 is missing), `connectors.mjs` (building entrances, gates, car
+parks), `photoCrossings.mjs` (painted zebras of the orthophoto that no CW polygon covers), `walkways.mjs` (estimated
+paths redrawn off the carriageway, estimated walkway strips and estimated crossings, 추정) and `preview.mjs`
+(vector-only PNG). It writes `backend/simulation/data/{campus_transport_network,walkable_polygons,road_polygons,
+sidewalk_gaps}.geojson` and `data/network/walkways.json`. No offset-buffer sidewalks: every sidewalk comes from an A003
+outline, every estimate carries `estimated: true`.
+
+Build order after a ground or network change: `bun run network:build` (network and `data/network/walkways.json`), then
+`bun run model:build`, `bun scripts/campus-model/bake/bake-ao.mjs`, `bun scripts/campus-model/bake/bake-ao.mjs --planar`
+(re-bake after ground geometry changes) and `bun run model:build` again.
 
 ## What the model contains
 

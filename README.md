@@ -94,6 +94,8 @@ cd backend; ..\.venv\Scripts\python -m uvicorn simulation.main:app --host 127.0.
 
 상태 확인: `http://127.0.0.1:8002/health`
 
+분리 교통망(인도·횡단보도/차도) 재생성: `bun run --cwd frontend network:build` (자세한 내용과 60초 분리 검증은 `backend/simulation/README.md` "보행/차량 분리 교통망").
+
 ### 4) Frontend (`127.0.0.1:5173`)
 
 `frontend` 폴더에서 실행합니다. Legacy(Three.js)와 VWorld는 별개 엔트리입니다.
