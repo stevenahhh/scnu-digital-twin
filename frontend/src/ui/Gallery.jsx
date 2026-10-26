@@ -4,9 +4,14 @@ import { Alert } from "./Alert.jsx";
 import { Breadcrumb } from "./Breadcrumb.jsx";
 import { Button } from "./Button.jsx";
 import { Disclosure } from "./Disclosure.jsx";
+import { EstimateValue } from "./EstimateValue.jsx";
+import { FreshnessStamp } from "./FreshnessStamp.jsx";
+import { MetricList } from "./MetricList.jsx";
 import { Popover } from "./Popover.jsx";
 import { SectionHeader } from "./SectionHeader.jsx";
 import { Segmented } from "./Segmented.jsx";
+import { Skeleton } from "./Skeleton.jsx";
+import { Spinner } from "./Spinner.jsx";
 import { StatusBadge } from "./StatusBadge.jsx";
 
 // 공용 기본 요소를 한 화면에 늘어놓는 확인용 화면(?ui=gallery). 시각 QA가 이 화면을 찍는다.
@@ -212,6 +217,87 @@ function PopoverGallery() {
   );
 }
 
+// 갤러리 화면의 고정 시각(KST 09:40). 스크린숏이 찍을 때마다 달라지지 않게 한다.
+const SAMPLE_AT = "2026-10-26T00:40:00Z";
+
+function MetricGallery() {
+  return (
+    <GallerySection id="metric" title="지표 목록">
+      <MetricList
+        caption="KMA 초단기실황과 건물 모델로 계산한 추정값입니다."
+        items={[
+          { label: "기온", value: <EstimateValue value={24.3} digits={1} unit="°C" /> },
+          { label: "풍속", value: <EstimateValue value={2.1} digits={1} unit="m/s" /> },
+          { label: "습도", value: null, empty: { message: "기상 서버에 연결할 수 없습니다", actionLabel: "다시 시도", onAction: () => {} } },
+          { label: "정문 진입 차량", value: <EstimateValue value={12} unit="대" estimated={false} /> },
+        ]}
+      />
+    </GallerySection>
+  );
+}
+
+function EstimateGallery() {
+  const [temperature, setTemperature] = useState(24.3);
+  return (
+    <GallerySection id="estimate" title="추정값과 실측값">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="flex flex-col gap-1">
+          <span className="text-caption text-ink-subtle">추정</span>
+          <EstimateValue value={temperature} digits={1} unit="°C" source="KMA 초단기실황" at={SAMPLE_AT} />
+        </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-caption text-ink-subtle">실측</span>
+          <EstimateValue value={12} unit="대" estimated={false} source="정문 카메라" at={SAMPLE_AT} />
+        </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-caption text-ink-subtle">지난 값</span>
+          <EstimateValue value={23.9} digits={1} unit="°C" source="KMA 초단기실황" at={SAMPLE_AT} stale />
+        </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-caption text-ink-subtle">값 없음</span>
+          <EstimateValue value={undefined} unit="°C" onAction={() => {}} />
+        </div>
+      </div>
+      <Button size="sm" className="self-start" data-qa="gallery-estimate-bump" onClick={() => setTemperature((value) => Math.round((value + 0.4) * 10) / 10)}>
+        값 바꾸기
+      </Button>
+    </GallerySection>
+  );
+}
+
+function FreshnessGallery() {
+  return (
+    <GallerySection id="freshness" title="갱신 시각">
+      <Row label="기상">
+        <FreshnessStamp at={SAMPLE_AT} feed="weather" feedLabel="기상 데이터" onRefresh={() => {}} />
+      </Row>
+      <Row label="교통">
+        <FreshnessStamp at={null} feed="traffic" feedLabel="교통" onRefresh={() => {}} />
+      </Row>
+      <Row label="에너지">
+        <FreshnessStamp at={SAMPLE_AT} feed="energy" feedLabel="에너지" onRefresh={() => {}} refreshing />
+      </Row>
+    </GallerySection>
+  );
+}
+
+function LoadingGallery() {
+  return (
+    <GallerySection id="loading" title="불러오는 중">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="flex flex-col gap-3 rounded-card border border-hairline p-3">
+          <Skeleton shape="circle" />
+          <Skeleton lines={3} />
+        </div>
+        <div className="flex flex-col gap-3 rounded-card border border-hairline p-3">
+          <Skeleton shape="block" />
+          <Spinner label="KMA 예보 가져오는 중" delayMs={0} />
+        </div>
+      </div>
+    </GallerySection>
+  );
+}
+
 export default function Gallery() {
   const [theme, setTheme] = useState(() => (params().get("theme") === "light" ? "light" : "dark"));
 
@@ -245,6 +331,10 @@ export default function Gallery() {
         <BreadcrumbGallery />
         <DisclosureGallery />
         <PopoverGallery />
+        <MetricGallery />
+        <EstimateGallery />
+        <FreshnessGallery />
+        <LoadingGallery />
       </div>
     </main>
   );

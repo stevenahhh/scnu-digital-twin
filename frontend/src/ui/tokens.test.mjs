@@ -85,7 +85,7 @@ for (const [theme, values] of [["dark", dark], ["light", light]]) {
 test("the retired tokens are gone", () => {
   // 이름을 조각으로 적어, 계획의 rg 검사가 이 테스트 파일 자체를 잡지 않게 한다.
   const retired = [["inverse", ""], ["brand", "secure"], ["semantic", "overlay"], ["ink", "tertiary"], ["hairline", "tertiary"], ["surface", "4"], ["spacing", "section"]];
-  for (const name of retired.map((parts) => parts.join("-"))) {
+  for (const name of retired.map(([head, tail]) => `${head}-${tail}`)) {
     assert.ok(!tokensCss.includes(name), `tokens.css still declares ${name}`);
   }
 });

@@ -28,3 +28,8 @@ http://127.0.0.1:<port>/?ui=gallery&theme=light  밝은 테마
 | `Breadcrumb` | `Breadcrumb.jsx` | `nav[aria-label="breadcrumb"]`, 마지막을 뺀 단계는 버튼 |
 | `Disclosure` | `Disclosure.jsx` | `aria-expanded` 요약 버튼, 내용이 아래로 자란다 |
 | `Popover` | `Popover.jsx` | 트리거에 붙는 면, Esc·바깥 클릭으로 닫힘, 포커스는 트리거로 |
+| `MetricList` | `MetricList.jsx` | 이름·값 두 열 `dl`, 빈 값은 이유와 다음 동작, 묶음마다 출처 설명 하나 |
+| `EstimateValue` | `EstimateValue.jsx` | 값·단위·`추정` 배지·`출처 · HH:mm`, 실측은 `data-qa="measured-value"`, 값이 바뀌면 200ms 강조와 `갱신됨` 알림 |
+| `FreshnessStamp` | `FreshnessStamp.jsx` | `갱신 HH:mm` 또는 `갱신 없음`, 안에 새로 고침 버튼 |
+| `Skeleton` | `Skeleton.jsx` | line·block·circle 자리 표시, `aria-hidden`, 움직임 줄이기에서 정지 |
+| `Spinner` | `Spinner.jsx` | `delayMs`(기본 1000ms) 뒤에만 보이고 작업 이름을 붙인다 |
