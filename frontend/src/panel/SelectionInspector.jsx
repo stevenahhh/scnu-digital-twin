@@ -23,6 +23,7 @@ export const INSPECTOR_STRINGS = Object.freeze({
   staleValues: "저장된 값",
   observed: "관측",
   loading: "미기후 추정 가져오는 중",
+  notFound: "미기후 추정을 불러오지 못했습니다",
   empty: "이 건물의 미기후 추정 데이터가 없습니다",
   showAll: "전체 보기",
   close: "닫기",
@@ -256,9 +257,13 @@ export function SelectionInspector({
       )}
 
       {notFound && !loading && (
-        <div data-qa="inspector-empty" className="flex flex-col items-start gap-2 rounded-card bg-surface-2 px-3 py-3">
-          <p className="break-keep text-body text-ink-muted">{INSPECTOR_STRINGS.empty}</p>
-          {onShowAll && <Button size="sm" onClick={onShowAll}>{INSPECTOR_STRINGS.showAll}</Button>}
+        // 404: 무엇이 안 됐는지 한 줄, 바로 아래에 왜(데이터 없음)와 다음 행동(전체 보기)을 담은 빈 상태.
+        <div className="flex flex-col gap-2">
+          <p data-qa="inspector-not-found" className="break-keep text-body font-medium text-ink">{INSPECTOR_STRINGS.notFound}</p>
+          <div data-qa="inspector-empty" className="flex flex-col items-start gap-2 rounded-card bg-surface-2 px-3 py-3">
+            <p className="break-keep text-body text-ink-muted">{INSPECTOR_STRINGS.empty}</p>
+            {onShowAll && <Button size="sm" onClick={onShowAll}>{INSPECTOR_STRINGS.showAll}</Button>}
+          </div>
         </div>
       )}
 

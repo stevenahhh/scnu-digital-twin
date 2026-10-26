@@ -158,6 +158,8 @@ describe("SelectionInspector", () => {
     const onShowAll = vi.fn();
     show({ error: "이 건물의 미기후 데이터가 없습니다", errorStatus: 404 }, { title: "학군단", onShowAll });
     expect(screen.queryByRole("alert")).toBeNull();
+    const line = document.querySelector('[data-qa="inspector-not-found"]');
+    expect(line.nextElementSibling).toBe(document.querySelector('[data-qa="inspector-empty"]'));
     expect(screen.getByText("이 건물의 미기후 추정 데이터가 없습니다")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "전체 보기" }));
     expect(onShowAll).toHaveBeenCalledTimes(1);
