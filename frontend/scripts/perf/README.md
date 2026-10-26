@@ -28,6 +28,8 @@ bun scripts/perf/bench.mjs http://127.0.0.1:5181/ before <outDir> --compare http
 | `--clock` | `2026-10-24T15:00:00+09:00` | Pinned page clock. The sun position follows it, so it is fixed by default. |
 | `--chrome` | system Google Chrome | Chrome binary. |
 | `--live-backends` | off | Let requests reach the local weather, vision and simulation services (`127.0.0.1:80*`). By default they get a 404 so that a missing service can't add console errors: the `d4` camera is within the app's 120-unit proximity radius and opens building popups. |
+| `--orbit` | 0 | Seconds of one camera turn around the origin (260 units out, 180 up) after the fixed views, invalidating the R3F store every frame. Writes `orbit.fps` (rendered frames per second) and `orbit.low1` (1000 / mean of the slowest 1 % of frame intervals). |
+| `--dpr` | 1 | Device scale factor of the emulated screen. |
 
 You need the **vite dev server**. The bench imports the same `three` module the
 app uses, from `/node_modules/.vite/deps/three.js`, so it does not work against a
@@ -90,3 +92,23 @@ Network failures logged by the browser, such as an unreachable weather API, go t
 **Noise floor:** on the M5 Pro, run-to-run spread of `gpuMs.median` is about
 1.5 ms (measured). A GPU-time difference smaller than that is not a result, and
 the compare file marks it `below noise floor`.
+
+## Optimisation formula (`formula.mjs`, `fidelity.mjs`)
+
+`formula.mjs` measures every input of `docs/OPTIMIZATION-FORMULA.md` against one running dev server, one Chrome at a
+time: `bench.mjs --quality low` (5 runs) for D, T, L, B and X; `--quality medium` and `high` (1 run each) for D at those
+tiers (`drawCallsGl`, since post-processing resets `renderer.info`); three 60 s orbits (1440 x 900 low and high,
+390 x 844 low) for F; and `overhead-blend.mjs --campus-only` plus `fidelity.mjs` for Q.
+
+```bash
+bun scripts/perf/formula.mjs --url http://127.0.0.1:5190/ --label after --out <dir> --cdp 9190 --ref <dir> --ref-label before
+```
+
+- B: bytes of `campus-v2*.glb`, `.ktx2` and `.wasm` files the page fetched (the dev server sends them uncompressed).
+- X (`textureMemory.gpuTextureMB`) is an estimate (추정) from the scene, not a driver reading: each distinct texture
+  source of the main scene's materials, compressed textures by their mip data, others as RGBA8 with a full mip chain.
+- L: `loadMs`, navigation (HTTP cache off, fresh profile) to more than 5 campus labels, which need the GLB.
+- Q: `fidelity.mjs` picks the 12 campus tiles whose photo has the largest edge share (the photo alone decides, so
+  every candidate is scored on the same tiles) and averages the luma SSIM (8 x 8 windows every 4 px) of render
+  against photo. With `--ref` it also reports `Qself`, the SSIM against the reference run's render (1 = identical).
+

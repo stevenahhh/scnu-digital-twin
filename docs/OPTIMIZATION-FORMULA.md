@@ -1,10 +1,15 @@
-# 최적화 공식 (보류 - 사용자 승인 후에만 실행)
+# 최적화 공식 (2026-10-26 승인, 실행 중)
 
 > 이 문서는 공식만 정의한다. **최적화 작업은 사용자의 별도 승인 또는 프롬프트가 있을 때만 시작한다.** 현재 목표(Ultra high fidelity)에서는 파일 크기·로딩 시간·브라우저 측정값 제한을 두지 않는다.
 
 ## 상태
-- 작성일 2026-10-25. 현재 목표(Ultra high fidelity 모델)에서는 최적화를 하지 않는다. 이 문서는 다음 단계의 계약서다.
-- **runs only after user approval**: 사용자의 별도 승인 프롬프트가 있기 전에는 어떤 최적화 PR도 열지 않는다.
+- 작성일 2026-10-25. 이 문서는 최적화 단계의 계약서다.
+- **2026-10-26 사용자 승인("지금부터는 최적화도 같이 하면 될 듯"), 최적화 패스 실행 중** (브랜치 `feature/optimisation-pass`, dev-next 기준).
+  범위는 생성기 단계 뒤(pack 후처리, GLB 로더, 그림자·후처리 밖의 렌더 설정, 측정 스크립트)다.
+- 측정: `frontend/scripts/perf/formula.mjs`가 아래 입력을 한 번에 잰다(`bench.mjs` low 5회·medium/high 1회, `--orbit 60` 궤도,
+  `overhead-blend.mjs --campus-only` + `fidelity.mjs`).
+- 점수 해석: 아래 식 그대로(`literal`)는 max(0, ·) 때문에 B·D·T·L이 줄어도 점수가 오르지 않는다. 이번 패스는 같은 λ로
+  감소에도 같은 크기의 가점을 주는 `signed` 점수(max(0, ·)를 뺀 식)로 후보를 고르고, 두 값을 모두 기록한다(`fidelityCore.mjs` `score`).
 
 ## 입력 (측정값, 측정 방법)
 | 기호 | 뜻 | 측정 |
@@ -15,7 +20,7 @@
 | X | GPU 텍스처 메모리(MB) | renderer.info.memory.textures × 해상도 합 |
 | L | 첫 프레임까지 시간(TTI, 콜드 캐시, ms) | Performance API in appcheck |
 | F | 1440x900 중간 줌 60초 평균 fps / 1% low | bench.mjs |
-| Q | 시각 충실도(참조 대비 SSIM, 12타일 평균) | overhead blend 비교 스크립트 |
+| Q | 시각 충실도(참조 대비 SSIM, 12타일 평균) | `overhead-blend.mjs --campus-only` 타일 중 사진 에지 비율 상위 12개, 렌더 대 NGII 사진 휘도 SSIM(8 x 8 창, 4 px 간격) 평균: `fidelity.mjs` |
 
 ## 기준선 (2026-10-25, 8e68a7e)
 B 4.84 MB · D 127/27/123 · T ≈1.04 M · L 미측정 · F 60 fps(Low) · Q 미측정(이번 목표에서 측정 시작)
