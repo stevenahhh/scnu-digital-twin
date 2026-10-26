@@ -25,6 +25,7 @@ import { CAMPUS_HEIGHTFIELD_URLS, loadHeightfield } from "./terrain/heightfield.
 import { DIM_ALPHA, HOVER_HEX, SELECTION_HEX } from "./ui/sceneTokens.mjs";
 import {
   AUTUMN_MATERIAL_NAMES,
+  SPECIES_AUTUMN_PALETTES,
   SUN_ALTITUDE_KEY,
   getAutumnInstanceColor,
   getAutumnProfile,
@@ -150,8 +151,10 @@ const SELECTION_EMISSIVE = new THREE.Color(SELECTION_HEX).multiplyScalar(0.15);
 const NO_EMISSIVE = new THREE.Color(0, 0, 0);
 const NIGHT_TINT_COLOR = new THREE.Color("#c8d6e5");
 const NIGHT_TINT_MIX = 0.16;
-// 가을 단풍(추정): 활엽수 수관(Tree_Crown) 인스턴스마다 수종 비슷한 색(은행 노랑, 느티 적갈, 벚 빨강, 늦게 물드는 초록)과
-// 물드는 시점을 해시로 정해, 날짜 가중치가 바뀔 때만 인스턴스 색(instanceColor)을 다시 쓴다. 소나무(Tree_Pine)는 그대로.
+// 가을 단풍(추정): 낙엽수 수관 인스턴스마다 물드는 시점과 색을 해시로 정해, 날짜 가중치가 바뀔 때만 인스턴스 색(instanceColor)을
+// 다시 쓴다. 수종별 재질(생성기 stages/trees.mjs)마다 팔레트가 다르다: 활엽수(Tree_Crown)는 느티 적갈·벚 빨강·늦게 물드는 초록,
+// 은행(Tree_Ginkgo)은 노랑, 메타세쿼이아(Tree_Metasequoia)는 적갈색이고, 소나무·상록 침엽수·생울타리는 그대로다.
+// 재질에 팔레트가 없으면(예: uni.glb) 예전처럼 은행을 섞은 공통 팔레트를 쓴다.
 // 수종 배정은 추정값이며 실제 수목 조사 결과가 아니다.
 // 주야·계절 가중치가 이만큼 바뀌어야 재질을 다시 쓴다.
 const RAMP_EPSILON = 1e-4;
@@ -620,7 +623,7 @@ export function CityModel({
         for (let i = 0; i < child.count; i += 1) {
           luminanceSum +=
             0.2126 * summer[i * 3] + 0.7152 * summer[i * 3 + 1] + 0.0722 * summer[i * 3 + 2];
-          const profile = getAutumnProfile(autumnIndex);
+          const profile = getAutumnProfile(autumnIndex, SPECIES_AUTUMN_PALETTES[child.material.name]);
           profile.color = profile.color.map((value) => value * CROWN_ALBEDO_SCALE);
           profiles.push(profile);
           autumnIndex += 1;
