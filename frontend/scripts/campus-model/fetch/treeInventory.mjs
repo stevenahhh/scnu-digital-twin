@@ -7,7 +7,7 @@
 // Method (all values estimates, 추정):
 //   1. A 0.5 m grid in EPSG:5186 over EXTENT; each cell takes the mean of its 2 x 2 sheet pixels and the CHMv2 height
 //      under it.
-//   2. Canopy: green cells (excess green 2g - r - b over the chroma sum >= CANOPY_EXG) that are textured (luma standard
+//   2. Canopy (off building footprints): green cells (excess green 2g - r - b over the chroma sum >= CANOPY_EXG) that are textured (luma standard
 //      deviation over 2.5 m >= CANOPY_TEXTURE; mown lawn is smooth) or stand on CHMv2 canopy (>= 3 m), plus dark
 //      cells (crown shade, luma < SHADE_LUMA) inside 1.5 m of such canopy with CHMv2 >= 3 m.
 //   3. Tree tops: local maxima of a crown surface (CHMv2 smoothed at 1.2 m plus 1.5 x the distance to the canopy
@@ -38,13 +38,22 @@ import { CACHE, DATA } from "./common.mjs";
 
 const CELL = 0.5;
 const EARTH = 6378137;
-const CANOPY_EXG = 0.035;
-const CANOPY_EXG_ABS = 12;
-const CANOPY_TEXTURE = 9;
-const CANOPY_TEXTURE_CHM = 6;
+const CANOPY_EXG = 0.22;
+const CANOPY_EXG_ABS = 5;
+const CANOPY_TEXTURE = 3;
+const CANOPY_TEXTURE_CHM = 3;
 const SHADE_LUMA = 55;
-const CROWN_MAX_M = 7.5;
+const CROWN_MAX_M = 12;
 const MIN_CROWN_M2 = 8;
+// Spacing of one tree in a row or stand and its crown range (m), read on the VR tour (ASSUMED).
+const SPECIES_FORM = {
+  ginkgo: { spacingM: 6.5, crownM: [3, 7] },
+  broadleaf: { spacingM: 7.5, crownM: [3, 10] },
+  pine: { spacingM: 6.5, crownM: [3, 9] },
+  metasequoia: { spacingM: 5.5, crownM: [2.5, 5] },
+  conifer: { spacingM: 3, crownM: [1.5, 3.5] },
+};
+const GROUP_MAX = 24;
 const COLUMNAR_RATIO = 1.8;
 const COLUMNAR_MIN_M = 12;
 const MAX_CROWN_LUMA = 145;
@@ -66,6 +75,8 @@ const LEAN_FIELD = { E: [-0.02, -0.01285, -0.00121], N: [-0.0549, -0.01201, -0.0
 
 const args = process.argv.slice(2);
 const debugDir = args.includes("--debug") ? args[args.indexOf("--debug") + 1] : null;
+// --out <file>: write the inventory elsewhere (scripts/perf/canopy-cover.mjs reads the canopy mask without touching data/).
+const OUT = args.includes("--out") ? path.resolve(args[args.indexOf("--out") + 1]) : path.join(DATA, "trees.json");
 
 // ---- grid over EXTENT in EPSG:5186 (north-up)
 const corners = [[EXTENT.minX, EXTENT.minZ], [EXTENT.maxX, EXTENT.minZ], [EXTENT.minX, EXTENT.maxZ], [EXTENT.maxX, EXTENT.maxZ]].map(([x, z]) => sceneToTm(x, z));
@@ -223,15 +234,42 @@ const MCEE = new Uint16Array(N);
 }
 const exgSmooth = gauss(exg, 0.5);
 const exgAbs = gauss(Float32Array.from({ length: N }, (_, k) => 2 * G[k] - R[k] - B[k]), 0.5);
+// Building footprints (data/gis-buildings.json): roofs are never canopy (textured green roofs read as foliage).
+const BUILDING = new Uint8Array(N);
+function fillTm(rings, mark) {
+  const ys = rings[0].map((p) => p[1]);
+  const j0 = Math.max(0, Math.floor((N1 - Math.max(...ys)) / CELL));
+  const j1 = Math.min(H - 1, Math.ceil((N1 - Math.min(...ys)) / CELL));
+  for (let j = j0; j <= j1; j += 1) {
+    const y = cellN(j);
+    const xs = [];
+    for (const ring of rings) {
+      for (let a = 0, b = ring.length - 1; a < ring.length; b = a, a += 1) {
+        const [xa, ya] = ring[a];
+        const [xb, yb] = ring[b];
+        if (ya > y !== yb > y) xs.push(xa + ((y - ya) * (xb - xa)) / (yb - ya));
+      }
+    }
+    xs.sort((p, q) => p - q);
+    for (let q = 0; q + 1 < xs.length; q += 2) {
+      const i0 = Math.max(0, Math.ceil((xs[q] - E0) / CELL - 0.5));
+      const i1 = Math.min(W - 1, Math.floor((xs[q + 1] - E0) / CELL - 0.5));
+      for (let i = i0; i <= i1; i += 1) mark(j * W + i);
+    }
+  }
+}
+for (const bld of JSON.parse(readFileSync(path.join(DATA, "gis-buildings.json"), "utf8")).buildings) {
+  for (const poly of bld.polygons ?? []) fillTm(poly.map((ring) => ring.map(([lon, lat]) => wgs84ToTm(lon, lat))), (k) => { BUILDING[k] = 1; });
+}
 const canopy = new Uint8Array(N);
 for (let k = 0; k < N; k += 1) {
-  if (MCEE[k] === 622 || MCEE[k] === 711 || MCEE[k] === 712) continue;
+  if (BUILDING[k] || MCEE[k] === 622 || MCEE[k] === 711 || MCEE[k] === 712) continue;
   if (exgSmooth[k] >= CANOPY_EXG && exgAbs[k] >= CANOPY_EXG_ABS && G[k] >= R[k] && texture[k] >= (CHM[k] >= 3 ? CANOPY_TEXTURE_CHM : CANOPY_TEXTURE)) canopy[k] = 1;
 }
 {
   // crown shade next to canopy, where CHMv2 holds canopy
   const near = distanceInside(canopy.map((v) => 1 - v));
-  for (let k = 0; k < N; k += 1) if (!canopy[k] && luma[k] < SHADE_LUMA && exgAbs[k] >= 4 && texture[k] >= CANOPY_TEXTURE_CHM && CHM[k] >= 3 && near[k] <= 1.5) canopy[k] = 2;
+  for (let k = 0; k < N; k += 1) if (!canopy[k] && !BUILDING[k] && luma[k] < SHADE_LUMA && exgAbs[k] >= 4 && texture[k] >= CANOPY_TEXTURE_CHM && CHM[k] >= 3 && near[k] <= 1.5) canopy[k] = 2;
   // open by one cell: drop single-cell specks
   const keep = new Uint8Array(N);
   for (let j = 1; j < H - 1; j += 1) for (let i = 1; i < W - 1; i += 1) {
@@ -363,7 +401,7 @@ for (let t = 0; t < T; t += 1) {
   if (luma0 > MAX_CROWN_LUMA || elongation > MAX_ELONGATION) { rejected += 1; continue; }
   const forest = a.f321 > a.n / 2 ? 321 : a.f311 > a.n / 2 ? 311 : a.f331 > a.n / 2 ? 331 : null;
   toneByForest[forest ?? "none"].push([luma0, blueRed]);
-  records.push({ e: pe - le, n: pn - ln, radius, height, chmSupported, luma: luma0, blueRed, elongation, texture: a.tex / a.n, forest });
+  records.push({ t, pe, pn, e: pe - le, n: pn - ln, radius, height, chmSupported, luma: luma0, blueRed, elongation, texture: a.tex / a.n, forest });
 }
 
 // ---- VR tour colours (tree_vr.py): every crown seen from the 42 exterior stations, nearest views first
@@ -531,31 +569,100 @@ records.forEach((c, k) => {
   ]);
 });
 
+// ---- trees: a photo crown wider than one tree of its species is a row or stand (as in the VR tour). Its canopy cells
+// are split into round(area / spacing disc) clusters (k-means, seeded at the farthest cells), each a tree at the cluster
+// centroid whose crown reaches the 95th percentile of its cells (plus one cell) (so the crowns cover the photo canopy as it lies),
+// clamped to the species' crown range; narrow species keep their own diameter. Height: the CHMv2 maximum over the
+// cluster, else the crown's. Each tree is moved back by the relief lean at 0.6 x its height.
+const cellsOf = Array.from({ length: T }, () => []);
+for (let k = 0; k < N; k += 1) if (owner[k] >= 0) cellsOf[owner[k]].push(k);
+const trees = [];
+const treeCounts = Object.fromEntries(SPECIES.map((sp) => [sp, 0]));
+crowns.forEach((row, index) => {
+  const c = records[index];
+  const species = SPECIES[row[4]];
+  const form = SPECIES_FORM[species];
+  const cells = cellsOf[c.t];
+  const pts = cells.map((k) => [cellE(k % W), cellN((k - (k % W)) / W), CHM[k]]);
+  const area = cells.length * CELL * CELL;
+  const count = Math.max(1, Math.min(GROUP_MAX, Math.round(area / ((Math.PI / 4) * form.spacingM ** 2))));
+  // farthest-point seeds, then Lloyd iterations
+  const seeds = [[c.pe, c.pn]];
+  if (count > 1) {
+    seeds.length = 0;
+    let far = pts.reduce((best, p) => (Math.hypot(p[0] - c.pe, p[1] - c.pn) > Math.hypot(best[0] - c.pe, best[1] - c.pn) ? p : best), pts[0]);
+    seeds.push([far[0], far[1]]);
+    while (seeds.length < count) {
+      far = pts.reduce((best, p) => {
+        const d = Math.min(...seeds.map(([x, y]) => Math.hypot(p[0] - x, p[1] - y)));
+        return d > best.d ? { p, d } : best;
+      }, { p: pts[0], d: -1 }).p;
+      seeds.push([far[0], far[1]]);
+    }
+  }
+  let label = new Int32Array(pts.length);
+  for (let iter = 0; iter < (count > 1 ? 8 : 1); iter += 1) {
+    pts.forEach((p, i) => {
+      let best = 0;
+      let bestD = Infinity;
+      seeds.forEach(([x, y], j) => {
+        const d = (p[0] - x) ** 2 + (p[1] - y) ** 2;
+        if (d < bestD) { bestD = d; best = j; }
+      });
+      label[i] = best;
+    });
+    seeds.forEach((sd, j) => {
+      let sx = 0, sy = 0, n = 0;
+      pts.forEach((p, i) => { if (label[i] === j) { sx += p[0]; sy += p[1]; n += 1; } });
+      if (n) { sd[0] = sx / n; sd[1] = sy / n; }
+    });
+  }
+  seeds.forEach(([x, y], j) => {
+    const mine = pts.filter((_, i) => label[i] === j);
+    if (!mine.length) return;
+    const d = mine.map((p) => Math.hypot(p[0] - x, p[1] - y)).sort((a, b) => a - b);
+    const reach = d[Math.min(d.length - 1, Math.floor(0.95 * d.length))] + CELL;
+    const radius = Math.min(form.crownM[1] / 2, Math.max(form.crownM[0] / 2, reach));
+    const chmTop = Math.max(...mine.map((p) => p[2]));
+    const fromChm = chmTop >= 3;
+    const height = fromChm ? Math.min(30, chmTop) : c.height;
+    const [le, ln] = lean(x, y, 0.6 * height);
+    treeCounts[species] += 1;
+    trees.push([
+      Math.round((x - le) * 100) / 100, Math.round((y - ln) * 100) / 100, Math.round(2 * radius * 10) / 10, Math.round(height * 10) / 10,
+      row[4], fromChm ? 1 : 0, row[6], row[7], row[8], row[9], index,
+    ]);
+  });
+});
+
 const out = {
   description: "Tree crowns over the campus model EXTENT, traced on the NGII 2025 orthophoto (sheet 34702020) with CHMv2 heights and species types read on the SCNU 360 VR tour; every value is an estimate (추정). Written by scripts/campus-model/fetch/treeInventory.mjs.",
   frame: "EPSG:5186 metres (east, north): trunk position after removing the photo's relief lean",
   species: SPECIES,
-  columns: ["east", "north", "crownDiameterM", "heightM", "species", "heightFromChm", "speciesSource", "vrViews", "photoLuma", "photoBlueMinusRed"],
+  columns: ["east", "north", "crownDiameterM", "heightM", "species", "heightFromChm", "speciesSource", "vrViews", "photoLuma", "photoBlueMinusRed", "photoCrown"],
   method: {
     grid: `${CELL} m cells, 2 x 2 sheet pixels each`,
-    canopy: `smoothed excess green >= ${CANOPY_EXG} (and 2g - r - b >= ${CANOPY_EXG_ABS}), g >= r, luma std over 2.5 m >= ${CANOPY_TEXTURE} (${CANOPY_TEXTURE_CHM} on CHMv2 canopy); crown shade (luma < ${SHADE_LUMA}) within 1.5 m on CHMv2 canopy; no crowns on MCEE sports grounds or water`,
+    canopy: `smoothed excess green >= ${CANOPY_EXG} (and 2g - r - b >= ${CANOPY_EXG_ABS}), g >= r, luma std over 2.5 m >= ${CANOPY_TEXTURE} (${CANOPY_TEXTURE_CHM} on CHMv2 canopy); crown shade (luma < ${SHADE_LUMA}) within 1.5 m on CHMv2 canopy; no crowns on GIS building footprints, MCEE sports grounds or water`,
     tops: "local maxima of CHMv2 (smoothed 1.2 m) + 1.5 x distance to the canopy edge (cap 4 m), window 2.5-5 m by height",
     crowns: `geodesic flood inside the canopy from the tops, at most ${CROWN_MAX_M} m; crowns under ${MIN_CROWN_M2} m2, brighter than luma ${MAX_CROWN_LUMA} or more elongated than ${MAX_ELONGATION} dropped; diameter of the equal-area circle`,
     height: "CHMv2 maximum over the crown; 1.5 + 2.2 x radius (3-14 m, ASSUMED) where CHMv2 has no canopy",
     lean: "position moved back by the registration lean field at 0.6 x height",
+    trees: `a photo crown is split into round(area / spacing disc) trees (spacing ${Object.entries(SPECIES_FORM).map(([k, f]) => `${k} ${f.spacingM} m`).join(", ")}; at most ${GROUP_MAX}) by k-means over its canopy cells; crown radius = 95th percentile distance (plus one cell) of the tree's cells, clamped to the species range (${Object.entries(SPECIES_FORM).map(([k, f]) => `${k} ${f.crownM.join("-")} m`).join(", ")}); height = CHMv2 maximum over its cells`,
     species: `VR group polygon (data/photo/tree-species.json) first; else the weighted majority VR colour class of the crowns within ${NEIGHBOUR_M} m on the VR tour cube faces (tree_vr.py; yellow -> ginkgo on a street edge, broadleaf elsewhere, or metasequoia when columnar: height >= ${COLUMNAR_MIN_M} m and height / diameter >= ${COLUMNAR_RATIO}; warm -> broadleaf (zelkova/cherry); dark -> pine, or conifer when columnar; green -> broadleaf, or ginkgo on a street edge (within ${STREET_EDGE_M} m of a road zone) with a yellow neighbour); unseen crowns: MCEE forest type (321 conifer -> pine, 311 broadleaf), else photo tone (luma < ${PINE_LUMA} and (b - r) / sum < ${PINE_BLUE_RED} -> pine), else broadleaf`,
   },
   counts,
+  treeCounts,
   speciesSources: sources,
   vrClasses,
-  crowns,
+  crowns: crowns.length,
+  trees,
 };
-writeFileSync(path.join(DATA, "trees.json"), `${JSON.stringify(out).replace(/\],\[/g, "],\n[")}\n`);
+writeFileSync(OUT, `${JSON.stringify(out).replace(/\],\[/g, "],\n[")}\n`);
 {
   const med = (list, c) => (list.length ? list.map((v) => v[c]).sort((p, q) => p - q)[Math.floor(list.length / 2)].toFixed(3) : "-");
   console.log(`trees: crown photo tone by MCEE forest type (median luma / (b - r)): ${Object.entries(toneByForest).map(([k, v]) => `${k} n=${v.length} ${med(v, 0)} / ${med(v, 1)}`).join("; ")}`);
 }
-console.log(`trees: ${tops.length} tops, ${rejected} bright or elongated regions dropped, ${crowns.length} crowns (${Object.entries(counts).map(([k, v]) => `${k} ${v}`).join(", ")}); VR colour ${JSON.stringify(vrClasses)}; sources ${JSON.stringify(sources)}; grid ${W} x ${H}`);
+console.log(`trees: ${tops.length} tops, ${rejected} bright or elongated regions dropped, ${crowns.length} crowns (${Object.entries(counts).map(([k, v]) => `${k} ${v}`).join(", ")}) -> ${trees.length} trees (${Object.entries(treeCounts).map(([k, v]) => `${k} ${v}`).join(", ")}); VR colour ${JSON.stringify(vrClasses)}; sources ${JSON.stringify(sources)}; grid ${W} x ${H}`);
 
 if (debugDir) {
   mkdirSync(debugDir, { recursive: true });
@@ -564,11 +671,12 @@ if (debugDir) {
   const img = new Uint8Array(N * 3);
   for (let k = 0; k < N; k += 1) { img[k * 3] = R[k]; img[k * 3 + 1] = G[k]; img[k * 3 + 2] = B[k]; }
   writeFileSync(path.join(debugDir, "photo.png"), encodePng(W, H, 3, img));
+  writeFileSync(path.join(debugDir, "canopy.png"), encodePng(W, H, 1, Uint8Array.from(canopy, (v) => (v ? 255 : 0))));
   for (let k = 0; k < N; k += 1) {
     const i = k % W;
     if (owner[k] >= 0 && i + 1 < W && k + W < N && (owner[k + 1] !== owner[k] || owner[k + W] !== owner[k])) img.set([255, 255, 255], k * 3);
   }
-  for (const c of crowns) {
+  for (const c of trees) {
     const i = Math.round((c[0] - E0) / CELL - 0.5);
     const j = Math.round((N1 - c[1]) / CELL - 0.5);
     for (let dj = -2; dj <= 2; dj += 1) for (let di = -2; di <= 2; di += 1) {
