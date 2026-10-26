@@ -1546,18 +1546,14 @@
       "station": true,
       "yaw_deg": true
     },
-    "yaw_refined_deg": 59.81,
-    "refined_residual_deg": 0.07,
+    "yaw_refined_deg": 63,
+    "refined_residual_deg": 3,
     "refined_buildings": [
       "BLD_A7"
     ],
-    "refined_by": "manual control-point resection (scripts/perf/vr_control_points.py)",
-    "refined_confidence": 0.85,
-    "station_refined_x": 242.91,
-    "station_refined_z": 12.89,
-    "height_refined_m": 13.79,
-    "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by siftG); least squares: residual RMS 0.44 m, max 0.65 m; split-half agreement 0.07 m / 0.07 deg; formal sigma 0.06 m / 0.06 deg; height from the face scale (estimated)",
-    "refined_residual_m": 0.07
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.6,
+    "reverted_note": "PR #74 control-point pose reverted 2026-10-27 after the compare-vr strip check: renders looked across open ground instead of the apartment towers and orange roof the VR faces show; the guided matches fitted a self-consistent wrong pose on repeated texture"
   },
   {
     "scene": "scene_a9",
@@ -4462,19 +4458,15 @@
       "station": true,
       "yaw_deg": true
     },
-    "yaw_refined_deg": 188.56,
-    "refined_residual_deg": 0.06,
+    "yaw_refined_deg": 12.6,
+    "refined_residual_deg": 3,
     "refined_buildings": [
       "BLD_SCNU_C3",
       "BLD_D3"
     ],
-    "refined_by": "manual control-point resection (scripts/perf/vr_control_points.py)",
-    "refined_confidence": 0.85,
-    "station_refined_x": 215.63,
-    "station_refined_z": -290.85,
-    "height_refined_m": 14.49,
-    "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by siftD); least squares: residual RMS 0.42 m, max 0.69 m; split-half agreement 0.09 m / 0.04 deg; formal sigma 0.06 m / 0.06 deg; height from the face scale (estimated)",
-    "refined_residual_m": 0.09
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.9,
+    "reverted_note": "PR #74 control-point pose reverted 2026-10-27 after the compare-vr strip check: yaw 180 deg off: the red-brick block with the teal entrance rendered in the b face instead of f (markings lane: disabled bay MX00231 projected onto the zebra); the guided matches fitted a self-consistent wrong pose on repeated texture"
   },
   {
     "scene": "scene_c5",
@@ -5348,19 +5340,15 @@
       "station": true,
       "yaw_deg": true
     },
-    "yaw_refined_deg": 131.47,
-    "refined_residual_deg": 0.08,
+    "yaw_refined_deg": 290.9,
+    "refined_residual_deg": 2,
     "refined_buildings": [
       "BLD_D4",
       "BLD_D3"
     ],
-    "refined_by": "manual control-point resection (scripts/perf/vr_control_points.py)",
-    "refined_confidence": 0.85,
-    "station_refined_x": 111.49,
-    "station_refined_z": -206.69,
-    "height_refined_m": 10.42,
-    "refined_note": "55 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by siftG); least squares: residual RMS 0.40 m, max 0.63 m; split-half agreement 0.03 m / 0.03 deg; formal sigma 0.06 m / 0.08 deg; height from the face scale (estimated)",
-    "refined_residual_m": 0.06
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.9,
+    "reverted_note": "PR #74 control-point pose reverted 2026-10-27 after the compare-vr strip check: renders missed the glass D4 block that fills the VR f face; the guided matches fitted a self-consistent wrong pose on repeated texture"
   },
   {
     "scene": "scene_d5",
@@ -5520,18 +5508,17 @@
       "station": true,
       "yaw_deg": true
     },
-    "refined_by": "manual control-point resection (scripts/perf/vr_control_points.py)",
-    "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by siftG around the named building); least squares: residual RMS 0.40 m, max 0.63 m; split-half agreement 0.03 m / 0.13 deg; formal sigma 0.05 m / 0.05 deg; height from the face scale (estimated)",
-    "yaw_refined_deg": 355.22,
-    "station_refined_x": 398.48,
-    "station_refined_z": -268.52,
-    "refined_residual_deg": 0.13,
+    "refined_by": "compare-vr todo 9",
+    "refined_note": "station and yaw resected from the two east-facade corners of the traced D5 (VR f +44 and -13.6 deg) with the camera about 9 m from the north-east corner; the scene is not the placeholder position",
+    "yaw_refined_deg": 224.7,
+    "station_refined_x": 101.84,
+    "station_refined_z": -309.02,
+    "refined_residual_deg": 3,
     "refined_buildings": [
       "BLD_SCNU_D5"
     ],
-    "refined_confidence": 0.85,
-    "height_refined_m": 14.67,
-    "refined_residual_m": 0.05
+    "refined_confidence": 0.6,
+    "reverted_note": "PR #74 control-point pose reverted 2026-10-27 after the compare-vr strip check: renders looked at a blue block instead of the pink/yellow 학군단 in the VR f face; the guided matches fitted a self-consistent wrong pose on repeated texture"
   },
   {
     "scene": "scene_e1",

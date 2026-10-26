@@ -1337,6 +1337,8 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
       footprintEstimated: b.estimated === true,
       // ... and its use class (추정), which picks the storey median (웅지관 is a dormitory).
       ...(b.estimated === true ? { usability: b.usability } : {}),
+      // GIS use class of every record (off-campus context masses pick their facade by it)
+      use: b.usability ?? null,
       outer,
       holes,
       centroid: ringCentroid(outer),
@@ -1508,6 +1510,10 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
   const campusBuildings = [];
   // Off-campus buildings are not modelled; their lots are painted as plain ground and kept free of trees.
   const offCampusLots = [];
+  // ... and every off-campus footprint of 12 m2 or more (inside EXTENT and on the OuterTerrain ring) also becomes a
+  // context mass (stages/context.mjs):
+  // height from GIS (source height or floors x the storey median, else one storey; 추정), no BLD_ id, not selectable.
+  const contextParts = [];
   // Footprints under 12 m2 are not drawn, unless their data/scnu-facades.json entry lowers the minimum for that one
   // building (`minAreaMetres` with `minAreaSource`): an explicit include, never a lower global threshold.
   const smallIncluded = [];
@@ -1518,6 +1524,10 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
     if (included) smallIncluded.push(`${part.nodeId ?? part.label} ${part.areaMetres.toFixed(1)} m2 (${part.entry.minAreaSource})`);
     if ((part.areaMetres < 12 && !included) || (!named && !(pointInRing(part.centroid, campusHull) && distanceToRoads(part.centroid) < metres(14)))) {
       offCampusLots.push(part.outer);
+      if (part.areaMetres >= 12) {
+        const height = heightOf(part, false, medians) ?? assumedHeight(part, false, medians);
+        contextParts.push({ outer: part.outer, holes: part.holes, use: part.use, floors: part.floors || null, ...height, index: part.index });
+      }
       continue;
     }
     const isSCNU = SCNU_NAME.test(part.name) || bldNodes.some(({ footprint }) => part.outer.some((p) => pointInRing(p, footprint.outer)));
@@ -1556,7 +1566,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
   console.log(`tower masses over VWorld LOD4 roof levels: ${towers.join("; ") || "none"}`);
   // fetch/buildingForms.mjs derives data/building-forms.json from this selection (the footprints before any form).
   console.log(`small footprints included by their scnu-facades.json entry (minAreaMetres): ${smallIncluded.join("; ") || "none"}`);
-  if (selectOnly) return { selectableBuildings, campusBuildings, offCampusLots, footprintShift };
+  if (selectOnly) return { selectableBuildings, campusBuildings, offCampusLots, contextParts, footprintShift };
 
   // ---- building forms (data/building-forms.json): masses replace the footprint parts of the buildings whose form
   // comes from the VWorld LOD4 mesh or a photo-traced outline; the rest keep their footprint (and the form record).
@@ -2010,5 +2020,5 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
   }
   console.log(`SCNU pick proxies: ${proxies.size} (${[...proxies].map(([id, [b]]) => `${id} ${b.label}`).join("; ")})`);
 
-  return { selectableBuildings, campusBuildings, offCampusLots };
+  return { selectableBuildings, campusBuildings, offCampusLots, contextParts };
 }
