@@ -76,7 +76,8 @@ const fakeSocketScript = (agents, status = "running") => `(() => {
       super();
       this.url = url; this.readyState = 0; this.onopen = null; this.onmessage = null; this.onerror = null; this.onclose = null;
       if (N === 0) return;
-      setTimeout(() => { this.readyState = 1; this.onopen?.({ type: "open" }); this.timer = setInterval(() => this.tick(), 100); this.tick(); }, 50);
+      // A socket closed while connecting never opens (React StrictMode mounts the socket hook twice in dev).
+      setTimeout(() => { if (this.readyState !== 0) return; this.readyState = 1; this.onopen?.({ type: "open" }); this.timer = setInterval(() => this.tick(), 100); this.tick(); }, 50);
     }
     tick() {
       // Paused: the server keeps sending updates, but the time and every position stay the same.
@@ -238,7 +239,19 @@ const measureScript = (view, warmup, frames) => `(async () => {
   const elapsed = last - start;
   for (let i = 0; i < 120 && (B.pending.length || B.activeQuery); i++) { await frame(); B.poll(); }
   // Idle: 2 s with no input. idleFrames2s counts the rAF frames in which anything was drawn.
+  // Release the camera pin first: pinning in onBeforeRender fights OrbitControls, and once any frame starts the two keep
+  // each other drawing. The app gets 1.5 s to settle on its own camera, then 2 s without input are counted.
+  B.view = null;
+  await new Promise((r) => setTimeout(r, 1500));
   const idleStart = B.gl.calls;
+  // Who asks for the idle frames: stacks of requestAnimationFrame calls made by the page (not by this script).
+  const realRaf = window.requestAnimationFrame;
+  const idleRafCallers = {};
+  window.requestAnimationFrame = function (cb) {
+    const stack = (new Error().stack || "").split("\\n").slice(2, 8).map((l) => l.trim().replace(/https?:\\/\\/[^/]+/, "")).join(" <- ");
+    if (!/measureScript|<anonymous>/.test(stack.split(" <- ")[0])) idleRafCallers[stack] = (idleRafCallers[stack] || 0) + 1;
+    return realRaf.call(window, cb);
+  };
   let idleFrames2s = 0;
   const idleEnd = performance.now() + 2000;
   for (let c = B.gl.calls; performance.now() < idleEnd;) {
@@ -246,7 +259,12 @@ const measureScript = (view, warmup, frames) => `(async () => {
     if (B.gl.calls !== c) idleFrames2s += 1;
     c = B.gl.calls;
   }
+  window.requestAnimationFrame = realRaf;
   const idleDrawCalls2s = B.gl.calls - idleStart;
+  // Pin the view again and draw it once for the screenshot that follows.
+  B.view = view;
+  B.store?.getState().invalidate();
+  await frame(); await frame();
   const pct = (values, p) => { if (!values.length) return null; const s = [...values].sort((a, b) => a - b);
     return s[Math.min(s.length - 1, Math.floor(s.length * p))]; };
   const col = (k) => B.frames.map((f) => f[k]);
@@ -259,6 +277,7 @@ const measureScript = (view, warmup, frames) => `(async () => {
     triangles: pct(col("infoTris"), 0.5), trianglesGl: Math.round(pct(col("glTris"), 0.5)),
     gpuMs: B.ext ? { median: pct(B.gpu, 0.5), p95: pct(B.gpu, 0.95), samples: B.gpu.length, disjointDropped: B.disjointDrops } : null,
     idleDrawCalls2s, idleFrames2s,
+    idleRafCallers: Object.entries(idleRafCallers).sort((a, b) => b[1] - a[1]).slice(0, 5),
     heapMB: performance.memory ? +(performance.memory.usedJSHeapSize / 1048576).toFixed(1) : null };
 })()`;
 
