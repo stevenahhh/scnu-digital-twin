@@ -32,6 +32,8 @@ const GROUND_FEATURES = path.join(HERE, "..", "data", "osm-ground.json");
 // survey stands at its root there; a pole the review rejects is left out. POLE_ROOTS_FILE swaps it (tests).
 export const POLE_ROOTS = process.env.POLE_ROOTS_FILE ?? path.join(HERE, "..", "data", "photo", "pole-roots.json");
 // By-eye outline check of shelters, fences, walls and planters on the photo: shift (offsetM [east, south] m) or reject.
+// Main-gate islands and canopy traced on the photo (data/photo/README.md "Gate structures"); GATE_STRUCTURES_FILE swaps it.
+export const GATE_STRUCTURES = process.env.GATE_STRUCTURES_FILE ?? path.join(HERE, "..", "data", "photo", "gate-structures.geojson");
 export const OUTLINE_REVIEW = process.env.OUTLINE_REVIEW_FILE ?? path.join(HERE, "..", "data", "photo", "outline-review.json");
 const M = metres;
 
@@ -95,7 +97,7 @@ export function leanOffset([x, z], heightM) {
   return [M(east * heightM), -M(north * heightM)];
 }
 
-const ROOFED = new Set(["bus_stop_shelter", "pergola", "gazebo", "bike_rack", "reviewing_stand", "stadium_seating", "trash_station", "pavilion_hip", "pavilion_octagon", "canopy_shelter_row", "terminal_shelter", "awning", "hut"]);
+const ROOFED = new Set(["bus_stop_shelter", "pergola", "gazebo", "bike_rack", "reviewing_stand", "stadium_seating", "trash_station", "pavilion_hip", "pavilion_octagon", "canopy_shelter_row", "terminal_shelter", "awning", "hut", "gate_canopy"]);
 const ROOFED_SUBTYPES = new Set(["kiosk", "parasol"]);
 
 // ---------------------------------------------------------------- palette (sRGB, estimated from VR and the photo)
@@ -136,7 +138,12 @@ export function loadFurniture() {
   const ids = new Set();
   const outlineReview = existsSync(OUTLINE_REVIEW) ? JSON.parse(readFileSync(OUTLINE_REVIEW, "utf8")).reviews : {};
   const poleRoots = existsSync(POLE_ROOTS) ? new Map(JSON.parse(readFileSync(POLE_ROOTS, "utf8")).poles.map((q) => [q.id, q])) : new Map();
-  const features = [...data.features.map((f) => ({ ...f, source: "survey" })), ...rest.features.map((f) => ({ ...f, source: "rest-spaces" }))];
+  const gate = existsSync(GATE_STRUCTURES) ? JSON.parse(readFileSync(GATE_STRUCTURES, "utf8")) : { features: [] };
+  const features = [
+    ...data.features.map((f) => ({ ...f, source: "survey" })),
+    ...rest.features.map((f) => ({ ...f, source: "rest-spaces" })),
+    ...gate.features.map((f) => ({ ...f, source: "survey" })),
+  ];
   for (const { properties: raw, geometry: g, source } of features) {
     if (ids.has(raw.id)) throw new Error(`furniture: duplicate object id ${raw.id} (${source})`);
     ids.add(raw.id);
@@ -1030,6 +1037,50 @@ B.pavilion_octagon = (ctx, o) => {
     for (let s = -hl + 0.15; s < hl; s += 0.15) S.box(df, [s - 0.004, s + 0.004], [-hw, hw], [0.12, 0.122], C.brown, { sides: [false, false, false, false] });
     if (deck.benchLengthM) benchAt(ctx, frame(local(df, 0, 0, 0.12), df.u), deck.benchLengthM, { back: false, seat: C.timber, legs: C.galvanised, depthM: 0.45 });
   }
+};
+
+// Traffic islands (main gate, data/photo/gate-structures.geojson): a raised kerb ring kerb_height_m high round the island
+// outline (axis line buffered by width_m / 2, rounded ends), yellow paint on the kerb and a 0.18 m rim, a grey concrete top.
+export function capsule(line, halfM, segments = 6) {
+  const [a, b] = [line[0], line.at(-1)];
+  const L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+  const u = [(b[0] - a[0]) / L, (b[1] - a[1]) / L];
+  const n = [-u[1], u[0]];
+  const r = M(halfM);
+  const ring = [];
+  for (let k = 0; k <= segments; k += 1) {
+    const t = -Math.PI / 2 + (k / segments) * Math.PI; // around the b end, from -n to +n
+    ring.push([b[0] + (u[0] * Math.cos(t) - n[0] * Math.sin(t)) * r, b[1] + (u[1] * Math.cos(t) - n[1] * Math.sin(t)) * r]);
+  }
+  for (let k = 0; k <= segments; k += 1) {
+    const t = Math.PI / 2 + (k / segments) * Math.PI; // around the a end
+    ring.push([a[0] + (u[0] * Math.cos(t) - n[0] * Math.sin(t)) * r, a[1] + (u[1] * Math.cos(t) - n[1] * Math.sin(t)) * r]);
+  }
+  return ring;
+}
+B.traffic_island = (ctx, o) => {
+  const ring = capsule(o.line, (o.p.width_m ?? 1.5) / 2);
+  const g = ctx.minGround(ring);
+  const kerbM = o.p.kerb_height_m ?? 0.15;
+  const inner = offsetLine([...ring, ring[0]], insideSign(ring) * M(0.18)).slice(0, -1);
+  ctx.solid.prism(ring, g - M(0.05), g + M(kerbM), paintOf(o.p.colour, C.roofYellow, o.id));
+  // the concrete top inside the 0.18 m painted rim, a hair above the rim so the two never share a plane
+  ctx.solid.prism(inner, g, g + M(kerbM + 0.01), paintOf(o.p.fill, C.concreteDark, o.id), { walls: false });
+};
+
+// Gate canopy (main gate): a flat panelled roof over the lanes on four posts, roof outline = the photo outline moved back by
+// the relief lean (footprint), height from its shadow (estimated); colour the roof, postColour the posts and edge band.
+B.gate_canopy = (ctx, o) => {
+  const r = orientedRect(o.footprint);
+  const f = frame([r.centre[0], ctx.minGround(o.footprint), r.centre[1]], r.u);
+  const h = o.heightM;
+  const roof = paintOf(o.p.colour, C.roofBlue, o.id);
+  const post = paintOf(o.p.postColour, C.offWhite, o.id);
+  const [hl, hw] = [r.halfLength, r.halfWidth];
+  for (const s of [-hl + 0.3, hl - 0.3]) for (const t of [-hw + 0.3, hw - 0.3]) ctx.solid.box(f, [s - 0.15, s + 0.15], [t - 0.15, t + 0.15], [-0.1, h - 0.35], post);
+  // edge band and roof slab are closed underneath: a driver looks up at the blue panels
+  ctx.solid.box(f, [-hl, hl], [-hw, hw], [h - 0.35, h - 0.2], { top: post, side: post, bottom: roof }, { bottom: true });
+  ctx.solid.box(f, [-hl, hl], [-hw, hw], [h - 0.2, h], { top: roof, side: post, bottom: roof }, { bottom: true });
 };
 
 B.bike_rack = (ctx, o) => {
