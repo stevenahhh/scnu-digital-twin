@@ -6,6 +6,7 @@ import math
 from pathlib import Path
 
 from simulation.network_schema import iter_features, load_feature_collection, load_policy, normalize_kind
+from simulation.tools.validate_network import line_intersects
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -37,6 +38,20 @@ def build(network: dict, policy: dict) -> dict:
         else:
             points = [point for edge in crosswalks for point in edge.coordinates]
             x, z = sum(point[0] for point in points) / len(points), sum(point[1] for point in points) / len(points)
+        traced = next((edge.properties["conflict_polygon"] for edge in crosswalks if edge.properties.get("conflict_polygon")), None)
+        if traced:
+            # the digitised crosswalk polygon carried by the crossing edge (network/crossings.mjs); the vehicle lanes it
+            # covers are the road edges the crossing line intersects
+            intersecting = [road.feature_id for road in roads if any(line_intersects(edge.coordinates, road.coordinates) for edge in crosswalks)]
+            areas.append({
+                "conflict_area_id": f"CA_{crosswalk_id}", "crosswalk_id": crosswalk_id,
+                "crosswalk_edge_ids": [edge.feature_id for edge in crosswalks],
+                "intersecting_vehicle_lanes": intersecting, "participants": ["car", "person", "scooter"],
+                "source": "ortho-traced", "confidence": min(float(edge.properties.get("confidence") or 0) for edge in crosswalks),
+                "derived": False, "geometry_note": "digitised crosswalk polygon (docs/assets/data/crosswalks_wgs84.geojson)",
+                "geometry": {"type": "Polygon", "coordinates": [traced]},
+            })
+            continue
         half = 2.5
         polygon = [[x - half, z - half], [x + half, z - half], [x + half, z + half], [x - half, z + half], [x - half, z - half]]
         intersecting = [road.feature_id for road in roads if related_nodes & {str(road.properties.get("from_node")), str(road.properties.get("to_node"))}]
@@ -48,7 +63,9 @@ def build(network: dict, policy: dict) -> dict:
             "derived": True, "geometry_note": "5 m square around metadata-mapped crosswalk node; not a surveyed crosswalk polygon",
             "geometry": {"type": "Polygon", "coordinates": [polygon]},
         })
-    return {"metadata": {"status": "derived until crosswalk and lane geometries are authoritative"}, "conflict_areas": areas}
+    traced = sum(1 for area in areas if not area["derived"])
+    status = "derived until crosswalk and lane geometries are authoritative" if not traced else f"{traced} of {len(areas)} areas from digitised crosswalk polygons; the rest derived"
+    return {"metadata": {"status": status}, "conflict_areas": areas}
 
 
 def main() -> None:
