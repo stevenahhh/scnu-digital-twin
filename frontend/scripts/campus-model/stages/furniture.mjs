@@ -17,7 +17,7 @@ import { fileURLToPath } from "node:url";
 import { METRES_PER_DEGREE_LAT, METRES_PER_DEGREE_LON, geoToModel, metres, modelToGeo } from "../lib/frame.mjs";
 import { pointInRing, ringArea, ringCentroid } from "../lib/geometry.mjs";
 import { mulberry32 } from "../lib/raster.mjs";
-import { Kit, along, bufferLine, frame, local, localPlan, offsetLine, orientedRect, rgb, toLocal } from "../lib/solids.mjs";
+import { Kit, along, bufferLine, frame, local, localPlan, offsetLine, orientedRect, rgb, sub, toLocal } from "../lib/solids.mjs";
 import { GLOW_UV, LAMP_SPACING_M, appendLampSolids, distanceToLines, objectDistance, roadNetwork, towardRoad } from "./lights.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -60,7 +60,7 @@ export function leanOffset([x, z], heightM) {
   return [M(east * heightM), -M(north * heightM)];
 }
 
-const ROOFED = new Set(["bus_stop_shelter", "pergola", "gazebo", "bike_rack", "reviewing_stand", "stadium_seating", "trash_station"]);
+const ROOFED = new Set(["bus_stop_shelter", "pergola", "gazebo", "bike_rack", "reviewing_stand", "stadium_seating", "trash_station", "pavilion_hip", "pavilion_octagon"]);
 const ROOFED_SUBTYPES = new Set(["kiosk", "parasol"]);
 
 // ---------------------------------------------------------------- palette (sRGB, estimated from VR and the photo)
@@ -83,6 +83,8 @@ const openRing = (ring) => {
 const disc = ([x, z], radius, n = 8) => Array.from({ length: n }, (_, i) => [x + Math.cos((i / n) * Math.PI * 2) * radius, z + Math.sin((i / n) * Math.PI * 2) * radius]);
 
 function heightOf(p) {
+  // Rest-space instances (data/rest-space-catalogue.json kinds) without a height of their own take their type's.
+  if (p.height_m === undefined && REST_TYPES[p.kind]) return { heightM: restHeightM(p.kind, p.dims, p.id), heightSource: `catalogue ${p.kind} (estimated)` };
   if (SUBTYPE_HEIGHT_M[p.subtype] && /kind default/.test(p.height_source ?? "")) return { heightM: SUBTYPE_HEIGHT_M[p.subtype], heightSource: `subtype default for a ${p.subtype} (the survey's ${p.height_m} m is its plaza_structure default)` };
   if (p.kind === "plaza_structure" && p.subtype === "planter") return { heightM: PLAZA_PLANTER_KERB_M, heightSource: "VR scene_c1: lawn squares with a low kerb" };
   return { heightM: p.height_m, heightSource: p.height_source ?? "survey" };
@@ -109,7 +111,7 @@ export function loadFurniture() {
     else if (g.type === "LineString") object.line = g.coordinates.map(toModel);
     else object.ring = openRing(g.coordinates[0].map(toModel));
     // Roofs were outlined on the photo, so they include the relief lean; the footprint is the outline moved back.
-    if (ROOFED.has(object.kind) || ROOFED_SUBTYPES.has(object.subtype)) {
+    if ((ROOFED.has(object.kind) || ROOFED_SUBTYPES.has(object.subtype)) && (object.ring || object.line)) {
       object.photoRing = object.ring ?? bufferLine(object.line, M((p.width_m ?? 2) / 2));
       const [dx, dz] = leanOffset(ringCentroid(object.photoRing), object.heightM);
       object.footprint = object.photoRing.map(([x, z]) => [x - dx, z - dz]);
@@ -132,14 +134,14 @@ export function loadFurniture() {
 }
 
 // ---------------------------------------------------------------- building helpers
-function makeContext({ groundAt, objects, roads, sites, fieldCentre }) {
+export function makeContext({ groundAt, objects, roads, sites, fieldCentre }) {
   const solid = new Kit();
   const glass = new Kit();
   const glow = new Kit({ uvs: true });
   const samples = (ring) => [...ring, ringCentroid(ring), ...ring.map((p, i) => [(p[0] + ring[(i + 1) % ring.length][0]) / 2, (p[1] + ring[(i + 1) % ring.length][1]) / 2])];
   const heights = (ring) => samples(ring).map(([x, z]) => groundAt(x, z)).sort((a, b) => a - b);
   return {
-    solid, glass, glow, groundAt, objects, roads, sites, fieldCentre,
+    solid, glass, glow, groundAt, objects, roads, sites, fieldCentre, colours: C,
     byId: new Map(objects.map((o) => [o.id, o])),
     minGround: (ring) => heights(ring)[0],
     maxGround: (ring) => heights(ring).at(-1),
@@ -272,8 +274,80 @@ const styleColour = (o, fallback) => {
   return fallback;
 };
 
+// ---------------------------------------------------------------- rest spaces (data/rest-space-catalogue.json)
+// Parametric pavilions, shelters and garden pieces. An instance (a rest-space feature, or a survey object retyped to a
+// catalogue kind) sets `dims` overrides by catalogue name; every other dimension is its type's default. Every value is
+// an estimate (추정): KDS 34 50 15 ranges, vendor envelopes and VR reading, named per type in its dimsSource.
+const REST_TYPES = JSON.parse(readFileSync(path.join(HERE, "..", "data", "rest-space-catalogue.json"), "utf8")).types;
+const clampTo = (value, [lo, hi]) => Math.min(hi, Math.max(lo, value));
+
+export function restDims(kind, given = {}, id = kind) {
+  const type = REST_TYPES[kind];
+  if (!type) throw new Error(`furniture: ${kind} is not a type of data/rest-space-catalogue.json (${id})`);
+  for (const name of Object.keys(given)) if (!type.dims[name]) throw new Error(`furniture: ${id} sets ${name}, not a ${kind} dimension`);
+  return Object.fromEntries(Object.entries(type.dims).map(([name, { default: value, range }]) => {
+    const v = given[name] ?? value;
+    if (!(v >= range[0] && v <= range[1])) throw new Error(`furniture: ${id} ${kind}.${name} ${v} lies outside the catalogue range ${range[0]}-${range[1]}`);
+    return [name, v];
+  }));
+}
+const dimsOf = (o) => restDims(o.kind, o.p.dims, o.id);
+const HEIGHT_DIMS = ["ridgeHeightM", "apexHeightM", "heightM", "frontHeightM", "seatHeightM", "kerbHeightM"];
+function restHeightM(kind, given, id) {
+  const dims = restDims(kind, given, id);
+  return dims[HEIGHT_DIMS.find((name) => name in dims)];
+}
+
+// Centre and long axis of an instance: from its outline (survey footprint or traced roof), else its point and
+// bearing_deg (clockwise from north, default 0). lengthM/widthM are the outline's sizes (null for a point).
+function restPlacement(ctx, o) {
+  const ring = o.footprint ?? o.ring;
+  if (ring) {
+    const r = orientedRect(ring);
+    return { centre: r.centre, u: r.u, lengthM: 2 * r.halfLength, widthM: 2 * r.halfWidth, ground: ctx.medianGround(ring) };
+  }
+  if (!o.point) throw new Error(`furniture: ${o.kind} ${o.id} needs a Point or a Polygon`);
+  const bearing = ((o.p.bearing_deg ?? 0) * Math.PI) / 180;
+  return { centre: o.point, u: [Math.sin(bearing), -Math.cos(bearing)], lengthM: null, widthM: null, ground: ctx.groundAt(...o.point) };
+}
+
+// Instance colours: "#rrggbb" or a palette name (C); absent -> fallback.
+function paintOf(value, fallback, id) {
+  if (value === undefined || value === null) return fallback;
+  if (/^#[0-9a-f]{6}$/i.test(value)) return rgb(value);
+  if (C[value]) return C[value];
+  throw new Error(`furniture: ${id} colour ${value} is neither #rrggbb nor a palette name`);
+}
+
+// Hip roof over the local rectangle |s| <= hs, |t| <= ht from height h0 at the eaves to `top` (a pyramid when square):
+// four planes of equal pitch in `paint`, the ridge along the longer side; `band` ({ paint, widthM }) lays an eave
+// band along the lower edge of every plane (the blue edge of the scene_a5 roof).
+function hipRoof(ctx, f, hs, ht, h0, top, paint, band = null) {
+  const alongS = hs >= ht;
+  const half = Math.abs(hs - ht);
+  const ridgeEnd = ([s, t]) => (alongS ? [Math.sign(s) * half, 0] : [0, Math.sign(t) * half]);
+  const corners = [[-hs, -ht], [hs, -ht], [hs, ht], [-hs, ht]];
+  const middle = local(f, 0, 0, h0);
+  for (let i = 0; i < 4; i += 1) {
+    const a = corners[i];
+    const b = corners[(i + 1) % 4];
+    const [ra, rb] = [ridgeEnd(a), ridgeEnd(b)];
+    const plan = ra[0] === rb[0] && ra[1] === rb[1] ? [[...a, h0], [...b, h0], [...rb, top]] : [[...a, h0], [...b, h0], [...rb, top], [...ra, top]];
+    const points = plan.map(([s, t, h]) => local(f, s, t, h));
+    const centre = points.reduce((acc, p) => [acc[0] + p[0] / points.length, acc[1] + p[1] / points.length, acc[2] + p[2] / points.length], [0, 0, 0]);
+    ctx.solid.face(points, sub(centre, middle), paint);
+    if (band) {
+      const k = band.widthM / Math.min(hs, ht);
+      const up = (corner, end) => [corner[0] + (end[0] - corner[0]) * k, corner[1] + (end[1] - corner[1]) * k, h0 + (top - h0) * k + 0.01];
+      const strip = [[...a, h0 + 0.01], [...b, h0 + 0.01], up(b, rb), up(a, ra)].map(([s, t, h]) => local(f, s, t, h));
+      ctx.solid.face(strip, sub(centre, middle), band.paint);
+    }
+  }
+  return { corners, ridgeEnd };
+}
+
 // ---------------------------------------------------------------- builders, one per kind
-const B = {};
+export const B = {};
 
 B.low_wall = (ctx, o) => {
   const curvedPlaza = o.id === "OB0024"; // VR scene_c1: blue-grey coping around the red terrace
@@ -432,6 +506,135 @@ B.gazebo = (ctx, o) => {
   for (const p of posts) ctx.solid.pole(p, g + M(0.3), g + M(eave), 0.1, 0.1, C.wood, { sides: 4 });
   const base = ring.map(([x, z]) => [x, g + M(eave), z]);
   ctx.solid.cone([c[0], g + M(h), c[1]], base, roofColour, { basePaint: C.wood });
+};
+
+// Square hip-roof 정자 (VR scene_d4 l: brown roof under the pines beside the D4 path; scene_a5 d: silver-grey metal
+// panels with blue fascia and hip caps): a stone plinth with a timber deck floorHeightM high and a front step, four
+// square timber columns with knee braces, an eave beam ring, railings on `railingSides` sides (back, left, right,
+// front), and a hip roof over plan + 2 x roofOverhangM from the eaves (soffit and fascia) to ridgeHeightM. Colours:
+// roofColour (panels), trimColour (fascia, hip caps), postColour. A survey outline is the roof seen on the photo, so
+// without planWidthM/planDepthM the plan is that outline less the overhang, kept inside the catalogue range.
+B.pavilion_hip = (ctx, o) => {
+  const d = dimsOf(o);
+  const at = restPlacement(ctx, o);
+  const planOf = (roofM, name) => (o.p.dims?.[name] === undefined && roofM ? clampTo(roofM - 2 * d.roofOverhangM, REST_TYPES.pavilion_hip.dims[name].range) : d[name]);
+  const hs = planOf(at.lengthM, "planWidthM") / 2;
+  const ht = planOf(at.widthM, "planDepthM") / 2;
+  const f = frame([at.centre[0], at.ground, at.centre[1]], at.u);
+  const S = ctx.solid;
+  const roof = paintOf(o.p.roofColour, styleColour(o, C.roofBrown), o.id);
+  const trim = paintOf(o.p.trimColour, roof, o.id);
+  const posts = paintOf(o.p.postColour, C.wood, o.id);
+  const { floorHeightM: F, eaveHeightM: E, ridgeHeightM: R, columnSizeM: cs, roofOverhangM: ov, railingHeightM: rh } = d;
+  if (F > 0) {
+    S.box(f, [-hs, hs], [-ht, ht], [-0.1, F - 0.06], C.stone);
+    S.box(f, [-hs + 0.02, hs - 0.02], [-ht + 0.02, ht - 0.02], [F - 0.06, F], { top: C.timber, side: C.wood });
+    if (F > 0.25) S.box(f, [-0.7, 0.7], [-ht - Math.min(0.4, ov), -ht], [-0.1, F / 2], C.stone);
+  }
+  const cx = hs - cs / 2;
+  const cz = ht - cs / 2;
+  for (const s of [-cx, cx]) {
+    for (const t of [-cz, cz]) {
+      S.box(f, [s - cs / 2, s + cs / 2], [t - cs / 2, t + cs / 2], [F, E], posts);
+      S.beam(local(f, s, t, E - 0.85), local(f, s - Math.sign(s) * 0.6, t, E - 0.3), 0.08, 0.08, posts);
+      S.beam(local(f, s, t, E - 0.85), local(f, s, t - Math.sign(t) * 0.6, E - 0.3), 0.08, 0.08, posts);
+    }
+  }
+  for (const t of [-cz, cz]) S.box(f, [-hs, hs], [t - 0.09, t + 0.09], [E - 0.3, E], posts);
+  for (const s of [-cx, cx]) S.box(f, [s - 0.09, s + 0.09], [-ht, ht], [E - 0.3, E], posts);
+  // railings: back (+t), left (-s), right (+s), front (-t); top rail, bottom rail and balusters every 0.3 m
+  const sides = [["t", cz], ["s", -cx], ["s", cx], ["t", -cz]].slice(0, d.railingSides);
+  for (const [axis, at0] of sides) {
+    const span = axis === "t" ? cx : cz;
+    const rail = (h0, h1, a0, a1, w) => (axis === "t" ? S.box(f, [a0, a1], [at0 - w, at0 + w], [h0, h1], C.timber) : S.box(f, [at0 - w, at0 + w], [a0, a1], [h0, h1], C.timber));
+    rail(F + rh - 0.06, F + rh, -span, span, 0.05);
+    rail(F + 0.06, F + 0.12, -span, span, 0.04);
+    for (let a = -span + 0.3; a < span - 0.15; a += 0.3) rail(F + 0.12, F + rh - 0.06, a - 0.02, a + 0.02, 0.02);
+  }
+  // roof: soffit and fascia, then the hip planes and the caps along the hips (and the ridge), set just below the planes
+  const fascia = 0.16;
+  const [rs, rt] = [hs + ov, ht + ov];
+  S.box(f, [-rs, rs], [-rt, rt], [E, E + fascia], { top: roof, side: trim, bottom: C.timber }, { bottom: true, top: false });
+  const { corners, ridgeEnd } = hipRoof(ctx, f, rs, rt, E + fascia, R, roof, trim === roof ? null : { paint: trim, widthM: 0.3 });
+  for (const corner of corners) {
+    const [s1, t1] = ridgeEnd(corner);
+    const run = Math.hypot(s1 - corner[0], t1 - corner[1]);
+    const k = Math.min(0.5, 0.2 / run);
+    const start = [corner[0] + (s1 - corner[0]) * k, corner[1] + (t1 - corner[1]) * k, E + fascia + (R - E - fascia) * k];
+    S.beam(local(f, start[0], start[1], start[2] - 0.05), local(f, s1, t1, R - 0.05), 0.14, 0.1, trim);
+  }
+  const ridgeA = ridgeEnd([-1, -1]);
+  const ridgeB = ridgeEnd([1, 1]);
+  if (ridgeA[0] !== ridgeB[0] || ridgeA[1] !== ridgeB[1]) S.beam(local(f, ...ridgeA, R - 0.05), local(f, ...ridgeB, R - 0.05), 0.14, 0.1, trim);
+};
+
+// Octagonal gazebo (catalogue vendor envelope HD-S101 7.0 x 7.0 x H5.3 m; VR scene_a5 r shows the garden one as a teal
+// octagonal canopy with a vented two-tier crown held by one offset mast): with support "posts" (default) eight columns
+// on an optional raised octagonal deck and an eave ring; with support "cantilever" a mast outside the canopy on a
+// white pad, an arm to the crown and a hub. Roof: octagon of circumscribed diameter circumscribedM from the fascia at
+// eaveHeightM to apexHeightM, one plane per side (tiers 2: a skirt, a vent gap and a raised crown), ribs in trimColour.
+// A survey outline gives the diameter when circumscribedM is not set.
+B.pavilion_octagon = (ctx, o) => {
+  const d = dimsOf(o);
+  const at = restPlacement(ctx, o);
+  const diameter = o.p.dims?.circumscribedM === undefined && at.lengthM ? clampTo(at.lengthM, REST_TYPES.pavilion_octagon.dims.circumscribedM.range) : d.circumscribedM;
+  const R = diameter / 2;
+  const f = frame([at.centre[0], at.ground, at.centre[1]], at.u);
+  const S = ctx.solid;
+  const roof = paintOf(o.p.roofColour, styleColour(o, C.roofGreen), o.id);
+  const trim = paintOf(o.p.trimColour, roof, o.id);
+  const posts = paintOf(o.p.postColour, C.wood, o.id);
+  const { floorHeightM: F, eaveHeightM: E, apexHeightM: A, columnCount: n } = d;
+  const angle = (i) => ((i + 0.5) / n) * Math.PI * 2;
+  const planRing = (radius) => Array.from({ length: n }, (_, i) => localPlan(f, Math.cos(angle(i)) * radius, Math.sin(angle(i)) * radius));
+  const ring = (radius, h) => Array.from({ length: n }, (_, i) => local(f, Math.cos(angle(i)) * radius, Math.sin(angle(i)) * radius, h));
+  if (F > 0) {
+    S.prism(planRing(R - 0.35), at.ground - M(0.1), at.ground + M(F - 0.06), C.stone);
+    S.prism(planRing(R - 0.37), at.ground + M(F - 0.06), at.ground + M(F), { side: C.wood, top: C.timber });
+  }
+  if ((o.p.support ?? "posts") === "cantilever") {
+    const mast = R + 0.35;
+    S.box(f, [mast - 0.6, mast + 0.6], [-0.6, 0.6], [-0.05, 0.12], C.offWhite);
+    S.pole(localPlan(f, mast, 0), at.ground - M(0.1), at.ground + M(A - 0.15), 0.08, 0.07, posts);
+    S.beam(local(f, mast, 0, A - 0.25), local(f, 0, 0, A - 0.25), 0.1, 0.1, posts);
+    S.beam(local(f, mast, 0, A - 1.1), local(f, mast * 0.45, 0, A - 0.3), 0.07, 0.07, posts);
+    S.pole(localPlan(f, 0, 0), at.ground + M(E - 0.2), at.ground + M(A - 0.2), 0.05, 0.05, posts);
+  } else {
+    const columns = planRing(R - 0.55);
+    for (const p of columns) S.pole(p, at.ground + M(F > 0 ? F : -0.1), at.ground + M(E), d.columnSizeM / 2, d.columnSizeM / 2, posts, { sides: 4 });
+    const tops = ring(R - 0.55, E - 0.12);
+    for (let i = 0; i < n; i += 1) S.beam(tops[i], tops[(i + 1) % n], 0.14, 0.24, posts, { ends: false });
+  }
+  const fascia = 0.12;
+  const eave = ring(R, E);
+  const edge = ring(R, E + fascia);
+  for (let i = 0; i < n; i += 1) {
+    const j = (i + 1) % n;
+    const mid = local(f, Math.cos((angle(i) + angle(j)) / 2) * R, Math.sin((angle(i) + angle(j)) / 2) * R, E);
+    S.face([eave[i], eave[j], edge[j], edge[i]], sub(mid, local(f, 0, 0, E)), trim);
+  }
+  const apex = local(f, 0, 0, A);
+  const rib = (a, b) => S.beam([a[0], a[1] - M(0.04), a[2]], [b[0], b[1] - M(0.04), b[2]], 0.08, 0.07, trim, { ends: false });
+  if ((o.p.tiers ?? 1) === 2) {
+    // skirt up to the vent, then the crown (both sides of the skirt drawn: it is seen from below through the vent)
+    const crownR = 0.32 * R;
+    const ventH = E + fascia + (A - E - fascia) * 0.68;
+    const vent = ring(crownR, ventH);
+    for (let i = 0; i < n; i += 1) {
+      const j = (i + 1) % n;
+      const quad = [edge[i], edge[j], vent[j], vent[i]];
+      const out = sub(local(f, Math.cos((angle(i) + angle(j)) / 2) * R, Math.sin((angle(i) + angle(j)) / 2) * R, A), local(f, 0, 0, E));
+      S.face(quad, out, roof);
+      S.face(quad, [-out[0], -out[1], -out[2]], C.offWhite);
+      rib(edge[i], vent[i]);
+    }
+    const crown = ring(crownR * 1.4, ventH - 0.14);
+    S.cone(apex, crown, roof, { basePaint: C.offWhite });
+    for (const p of crown) rib(p, apex);
+  } else {
+    S.cone(apex, edge, roof, { basePaint: C.offWhite });
+    for (const p of edge) rib(p, apex);
+  }
 };
 
 B.bike_rack = (ctx, o) => {
@@ -955,7 +1158,6 @@ function estimateBenches(ctx, lamps) {
 export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs, groundAt }) {
   const roads = roadNetwork(inputs);
   const ctx = makeContext({ groundAt, objects: furniture.objects, roads, sites, fieldCentre: furniture.fieldCentre });
-  ctx.colours = C;
   ctx.signalIndex = 0;
   const counts = {};
   const tally = (kind, estimated) => {
@@ -963,6 +1165,7 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     counts[kind][estimated ? "estimated" : "surveyed"] += 1;
   };
   const built = [];
+  const restSpaces = [];
   for (const o of furniture.objects) {
     if (o.kind === "street_lamp") continue;
     const builder = B[o.kind];
@@ -973,6 +1176,8 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     // Objects of rest-spaces.geojson are placed from the VR, not surveyed on the photo: counted as estimated.
     tally(kind, o.source === "rest-spaces.geojson");
     built.push([o.id, kind, Number(o.heightM.toFixed(2)), o.heightSource, 1, ctx.solid.triangleCount + ctx.glass.triangleCount - before]);
+    // rest-space instances: catalogue kinds given dims, or survey objects retyped to a catalogue kind
+    if (REST_TYPES[o.kind] && (o.p.dims !== undefined || o.surveyKind !== o.kind)) restSpaces.push([o.id, o.kind, REST_TYPES[o.kind].dimsSource, o.p.vr_scene ?? null, o.p.photo_support ?? null, true]);
   }
   appendLampSolids(ctx.solid, lamps, groundAt);
   for (const lamp of lamps) tally(`street_lamp/${lamp.type}`, lamp.estimated);
@@ -997,6 +1202,10 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     objects: built.map(([id, kind, h, source, estimated]) => [id, kind, h, source, estimated]),
     // [x, z (scene units), length m, 1 = plaza bench from VR]
     estimatedBenches: benches.map((b) => [Number(b.at[0].toFixed(2)), Number(b.at[1].toFixed(2)), b.lengthM, b.plaza ? 1 : 0]),
+    ...(restSpaces.length ? {
+      restSpacesNote: "parametric rest spaces from data/rest-space-catalogue.json: [id, kind, dimsSource, VR scene, photo support, estimated]; every dimension is an estimate (추정)",
+      restSpaces,
+    } : {}),
   };
   glb.addNode({ name: "Furniture", mesh: glb.addMesh("Furniture", [ctx.solid.toPrimitive(furnitureMaterial)]), extras }, { root: true });
   glb.addNode({ name: "Furniture_Glass", mesh: glb.addMesh("Furniture_Glass", [ctx.glass.toPrimitive(glassMaterial)]) }, { root: true });
