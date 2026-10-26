@@ -26,6 +26,8 @@ function parseArgs(argv) {
     agents: 0,
     // Simulation status the fake socket reports with --agents (running|paused). Paused keeps sending the same positions.
     "agent-status": "running",
+    // Press the dashboard's "패널 닫기" button after load (on a phone-width screen the panel covers the whole map).
+    "close-panel": false,
     // Render quality tier seeded into localStorage before load (low|medium|high); empty keeps the app default.
     // Post-processing passes reset renderer.info, so draw-call counts are comparable only at "low".
     quality: "",
@@ -40,6 +42,7 @@ function parseArgs(argv) {
     const key = arg.slice(2);
     if (key === "compare") { opts.compare = { url: argv[++i], label: argv[++i] }; continue; }
     if (key === "live-backends") { opts.liveBackends = true; continue; }
+    if (key === "close-panel") { opts["close-panel"] = true; continue; }
     if (!(key in opts)) throw new Error(`unknown option ${arg}`);
     const value = argv[++i];
     opts[key] = typeof opts[key] === "number" ? Number(value) : value;
@@ -428,6 +431,11 @@ async function runOnce(config, runIndex, outDir, opts) {
     const loadMs = Date.now() - t0;
     if (labels <= 5) throw new Error(`campus labels never appeared (${labels}) at ${config.url}`);
 
+    if (opts["close-panel"]) {
+      const closed = await evaluate(`(() => { const b = document.querySelector('button[aria-label="패널 닫기"]'); if (!b) return false; b.click(); return true; })()`);
+      if (!closed) throw new Error("--close-panel: no 패널 닫기 button");
+      await Bun.sleep(1000);
+    }
     const gpu = await evaluate(attachScript);
     if (/swiftshader/i.test(gpu.renderer)) throw new Error(`software renderer detected (${gpu.renderer}); aborting`);
 
