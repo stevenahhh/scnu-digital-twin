@@ -27,6 +27,10 @@ class GraphEdge:
     road_ids: Tuple[str, ...]
     points: Tuple[Point, ...]
     length: float
+    # Old payloads carry no flags: treat their edges as derived single-lane geometry.
+    derived: bool = True
+    width_m: float | None = None
+    lanes: int = 1
 
 
 @dataclass(frozen=True)
@@ -45,6 +49,10 @@ class GraphPath:
     segment_lengths: Tuple[float, ...]
     cumulative_lengths: Tuple[float, ...]
     total_length: float
+    # Per segment, like edge_kinds; empty for paths built before these fields existed.
+    edge_derived: Tuple[bool, ...] = ()
+    edge_widths: Tuple[float | None, ...] = ()
+    edge_lanes: Tuple[int, ...] = ()
 
 
 class MobilityGraph:
@@ -75,6 +83,9 @@ class MobilityGraph:
                 edge_id=str(raw["id"]), source=str(raw["from"]), target=str(raw["to"]), kind=str(raw["kind"]),
                 allowed_types=tuple(raw["allowed_types"]), speed_limit=float(raw.get("speed_limit", 10)) / 3.6,
                 road_ids=tuple(str(value) for value in raw.get("road_ids") or ()), points=points, length=length,
+                derived=bool(raw.get("derived", True)),
+                width_m=float(raw["width_m"]) if raw.get("width_m") is not None else None,
+                lanes=int(raw.get("lanes") or 1),
             )
             self.edges[edge.edge_id] = edge
             self.adjacency[edge.source].append((edge.target, edge, False))
@@ -170,12 +181,16 @@ class MobilityGraph:
         # Segment metadata follows edges, while edge geometries currently have
         # one segment. Normalize defensively for authored multi-point edges.
         segment_edge_ids, segment_kinds, segment_roads, segment_speeds = [], [], [], []
+        segment_derived, segment_widths, segment_lanes = [], [], []
         for _, _, edge, reverse in steps:
             count = max(1, len(edge.points) - 1)
             segment_edge_ids.extend([edge.edge_id] * count)
             segment_kinds.extend([edge.kind] * count)
             segment_roads.extend([edge.road_ids[0] if edge.road_ids else None] * count)
             segment_speeds.extend([edge.speed_limit] * count)
+            segment_derived.extend([edge.derived] * count)
+            segment_widths.extend([edge.width_m] * count)
+            segment_lanes.extend([edge.lanes] * count)
         signature = hashlib.sha1("|".join(segment_edge_ids).encode("utf-8")).hexdigest()[:8]
         path = GraphPath(
             path_id=f"TRIP_ROUTE_{agent_type}_{origin}_TO_{destination}_{signature}", origin=origin, destination=destination,
@@ -183,15 +198,40 @@ class MobilityGraph:
             node_ids=tuple(node_ids), edge_ids=tuple(edge_ids), segment_edge_ids=tuple(segment_edge_ids), edge_kinds=tuple(segment_kinds),
             road_ids=tuple(segment_roads), speed_limits=tuple(segment_speeds), points=tuple(points),
             segment_lengths=segment_lengths, cumulative_lengths=tuple(cumulative), total_length=cumulative[-1],
+            edge_derived=tuple(segment_derived), edge_widths=tuple(segment_widths), edge_lanes=tuple(segment_lanes),
         )
         self.paths[path.path_id] = path
         return path
 
-    def lateral_offset(self, agent_type: str | None, edge_kind: str | None) -> float:
-        """Development-only offset for geometry derived from a vehicle centerline."""
+    def lateral_offset(
+        self,
+        agent_type: str | None,
+        edge_kind: str | None,
+        derived: bool = True,
+        width_m: float | None = None,
+        lanes: int = 1,
+    ) -> float:
+        """Lateral offset from the edge line, positive to the left of travel.
+
+        Derived edges (copies of a vehicle centreline) keep the development-only policy offset. A non-derived edge is
+        drawn where its feature is, so it gets no offset, except a car on a road of two or more lanes, which keeps to
+        the right-hand half: -(width_m or 6.0) / 4. interpolate() adds the offset along the normal (-dz, dx), which
+        points to the LEFT of the travel direction (dx, dz) in this x=east, z=north frame, so negative is right.
+        """
         if edge_kind in {"crosswalk", "building_entrance", "parking_connection", "parking_walk", "scooter_parking_connection", "pedestrian_gate", "vehicle_gate"}:
             return 0.0
-        return float(self.derived_lateral_offsets.get(str(agent_type), {}).get(str(edge_kind), 0.0))
+        if derived:
+            return float(self.derived_lateral_offsets.get(str(agent_type), {}).get(str(edge_kind), 0.0))
+        if agent_type == "car" and lanes >= 2:
+            return -(width_m or 6.0) / 4
+        return 0.0
+
+    @staticmethod
+    def _segment_flags(path: GraphPath, segment: int) -> Tuple[bool, float | None, int]:
+        derived = path.edge_derived[segment] if segment < len(path.edge_derived) else True
+        width = path.edge_widths[segment] if segment < len(path.edge_widths) else None
+        lanes = path.edge_lanes[segment] if segment < len(path.edge_lanes) else 1
+        return derived, width, lanes
 
     def interpolate(self, path: GraphPath, distance: float, agent_type: str | None = None) -> Tuple[float, float, float, int]:
         value = min(max(0.0, float(distance)), path.total_length)
@@ -206,12 +246,16 @@ class MobilityGraph:
         x = first[0] + (second[0] - first[0]) * ratio
         z = first[1] + (second[1] - first[1]) * ratio
         kind = path.edge_kinds[segment] if segment < len(path.edge_kinds) else None
-        offset = self.lateral_offset(agent_type, kind)
+        offset = self.lateral_offset(agent_type, kind, *self._segment_flags(path, segment))
         if offset:
-            previous_kind = path.edge_kinds[segment - 1] if segment > 0 and segment - 1 < len(path.edge_kinds) else kind
-            next_kind = path.edge_kinds[segment + 1] if segment + 1 < len(path.edge_kinds) else kind
-            start_offset = 0.0 if self.lateral_offset(agent_type, previous_kind) == 0.0 else offset
-            end_offset = 0.0 if self.lateral_offset(agent_type, next_kind) == 0.0 else offset
+            has_previous = segment > 0 and segment - 1 < len(path.edge_kinds)
+            has_next = segment + 1 < len(path.edge_kinds)
+            previous_kind = path.edge_kinds[segment - 1] if has_previous else kind
+            next_kind = path.edge_kinds[segment + 1] if has_next else kind
+            previous_flags = self._segment_flags(path, segment - 1 if has_previous else segment)
+            next_flags = self._segment_flags(path, segment + 1 if has_next else segment)
+            start_offset = 0.0 if self.lateral_offset(agent_type, previous_kind, *previous_flags) == 0.0 else offset
+            end_offset = 0.0 if self.lateral_offset(agent_type, next_kind, *next_flags) == 0.0 else offset
             smooth_offset = (
                 offset * math.sin(math.pi * ratio)
                 if start_offset == 0.0 and end_offset == 0.0
