@@ -1,0 +1,6992 @@
+[
+  {
+    "scene": "scene_001",
+    "title": "항공뷰 정문",
+    "station_e": 244274,
+    "station_n": 263669.5,
+    "station_x": 522.47,
+    "station_z": -134.84,
+    "height_m_est": 74.6,
+    "yaw_deg": 287.3,
+    "method": "hotspot-bearings",
+    "confidence": 0.85,
+    "residual_m": 10.8,
+    "residual_estimated": false,
+    "xml_coord_real": false,
+    "xml_lat": 34.96832278,
+    "xml_lng": 127.48496833,
+    "xml_alt": 58.74,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_A17",
+        "name": "A17 체육관 · A18 체육관 증축동",
+        "face": "f",
+        "approx_col_range": [
+          29,
+          312
+        ],
+        "dist_m": 87
+      },
+      {
+        "bld_id": "BLD_SCNU_A17",
+        "name": "A17 체육관 · A18 체육관 증축동",
+        "face": "l",
+        "approx_col_range": [
+          1519,
+          1966
+        ],
+        "dist_m": 87
+      },
+      {
+        "bld_id": "BLD_SCNU_F1",
+        "name": "F1 국제문화컨벤션관",
+        "face": "l",
+        "approx_col_range": [
+          835,
+          1213
+        ],
+        "dist_m": 143
+      },
+      {
+        "bld_id": "BLD_SCNU_F2",
+        "name": "F2 평생교육원",
+        "face": "l",
+        "approx_col_range": [
+          1189,
+          1380
+        ],
+        "dist_m": 182
+      },
+      {
+        "bld_id": "BLD_SCNU_B1",
+        "name": "B1 박물관",
+        "face": "f",
+        "approx_col_range": [
+          1263,
+          1646
+        ],
+        "dist_m": 185
+      },
+      {
+        "bld_id": "BLD_SCNU_R688041",
+        "name": "A16 교직원테니스장 부속 시설 (추정)",
+        "face": "l",
+        "approx_col_range": [
+          1799,
+          1902
+        ],
+        "dist_m": 196
+      },
+      {
+        "bld_id": "BLD_SCNU_R688980",
+        "name": "A16 교직원테니스장 부속 시설 (추정)",
+        "face": "l",
+        "approx_col_range": [
+          1751,
+          1788
+        ],
+        "dist_m": 201
+      },
+      {
+        "bld_id": "BLD_SCNU_B2",
+        "name": "B2 70주년기념관",
+        "face": "f",
+        "approx_col_range": [
+          1152,
+          1361
+        ],
+        "dist_m": 245
+      },
+      {
+        "bld_id": "BLD_SCNU_R138317",
+        "name": "F3 학생테니스장 부속 시설(마동) (추정)",
+        "face": "l",
+        "approx_col_range": [
+          1355,
+          1405
+        ],
+        "dist_m": 259
+      },
+      {
+        "bld_id": "BLD_SCNU_B7",
+        "name": "B7 산학협력관",
+        "face": "f",
+        "approx_col_range": [
+          1757,
+          2016
+        ],
+        "dist_m": 260
+      },
+      {
+        "bld_id": "BLD_SCNU_B7",
+        "name": "B7 산학협력관",
+        "face": "r",
+        "approx_col_range": [
+          5,
+          5
+        ],
+        "dist_m": 260
+      },
+      {
+        "bld_id": "BLD_SCNU_R69065",
+        "name": "A15 운동장 본부석 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          507,
+          631
+        ],
+        "dist_m": 277
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [],
+    "flagged": "resected from 37 hotspot ath bearings (median |res| ~2 deg); d face matches ortho (stadium green roof, parking); h from hotspot atv; h from scene_001 hotspot atv; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": false,
+      "station": false,
+      "yaw_deg": true
+    },
+    "yaw_refined_deg": 287.3,
+    "refined_residual_deg": 2,
+    "refined_buildings": [
+      "BLD_SCNU_F1",
+      "BLD_B1"
+    ],
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.9
+  },
+  {
+    "scene": "scene_002",
+    "title": "글로컬 대학",
+    "station_e": 243943.2,
+    "station_n": 264001.3,
+    "station_x": 316.99,
+    "station_z": -342.97,
+    "height_m_est": 52,
+    "yaw_deg": 198.1,
+    "method": "xml-coord",
+    "confidence": 0.55,
+    "residual_m": 20,
+    "residual_estimated": true,
+    "xml_coord_real": true,
+    "xml_lat": 34.97116194,
+    "xml_lng": 127.48119722,
+    "xml_alt": 63.63,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_R688403",
+        "name": "C2 친환경농업센터 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          1589,
+          1978
+        ],
+        "dist_m": 81
+      },
+      {
+        "bld_id": "BLD_SCNU_R688401",
+        "name": "B6 제1중앙공급실 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          1285,
+          1468
+        ],
+        "dist_m": 82
+      },
+      {
+        "bld_id": "BLD_SCNU_R687750",
+        "name": "B6 제1중앙공급실 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          1037,
+          1120
+        ],
+        "dist_m": 85
+      },
+      {
+        "bld_id": "BLD_SCNU_R687777",
+        "name": "C2 친환경농업센터 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          1561,
+          1679
+        ],
+        "dist_m": 87
+      },
+      {
+        "bld_id": "BLD_SCNU_R690033",
+        "name": "C2 친환경농업센터 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          1674,
+          1942
+        ],
+        "dist_m": 91
+      },
+      {
+        "bld_id": "BLD_SCNU_R690034",
+        "name": "B6 제1중앙공급실 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          893,
+          985
+        ],
+        "dist_m": 92
+      },
+      {
+        "bld_id": "BLD_SCNU_R687828",
+        "name": "B6 제1중앙공급실 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          779,
+          890
+        ],
+        "dist_m": 93
+      },
+      {
+        "bld_id": "BLD_SCNU_B6",
+        "name": "B6 제1중앙공급실",
+        "face": "f",
+        "approx_col_range": [
+          785,
+          1235
+        ],
+        "dist_m": 97
+      },
+      {
+        "bld_id": "BLD_SCNU_R687746",
+        "name": "조미채소기술센터유리온실",
+        "face": "f",
+        "approx_col_range": [
+          662,
+          761
+        ],
+        "dist_m": 98
+      },
+      {
+        "bld_id": "BLD_SCNU_B5",
+        "name": "B5 생명산업과학대학온실",
+        "face": "f",
+        "approx_col_range": [
+          268,
+          711
+        ],
+        "dist_m": 98
+      },
+      {
+        "bld_id": "BLD_SCNU_R687709",
+        "name": "B5 생명산업과학대학온실 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          353,
+          416
+        ],
+        "dist_m": 103
+      },
+      {
+        "bld_id": "BLD_SCNU_C2",
+        "name": "C2 친환경농업센터",
+        "face": "f",
+        "approx_col_range": [
+          1417,
+          2027
+        ],
+        "dist_m": 107
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [],
+    "flagged": "XML coordinate; yaw = circular mean of (bearing - ath) over hotspots to B3/E8/D4; A1 hotspots inconsistent, ignored; height not measured; h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "refined": false,
+    "refined_by": "compare-vr todo 2",
+    "refined_note": "skyline correlation suggests -1 to -3.5 deg (low-cost match) but no building pair was read at the refined yaw; original kept"
+  },
+  {
+    "scene": "scene_a1",
+    "title": "대학본부",
+    "station_e": 243957,
+    "station_n": 263719.5,
+    "station_x": 324.75,
+    "station_z": -167,
+    "height_m_est": 14,
+    "yaw_deg": 200.9,
+    "method": "ortho-match",
+    "confidence": 0.55,
+    "residual_m": 5,
+    "residual_estimated": true,
+    "xml_coord_real": false,
+    "xml_lat": 34.96832278,
+    "xml_lng": 127.48496833,
+    "xml_alt": 58.74,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_A1",
+        "name": "A1 대학본부",
+        "face": "f",
+        "approx_col_range": [
+          1014,
+          1923
+        ],
+        "dist_m": 38
+      },
+      {
+        "bld_id": "BLD_SCNU_A1",
+        "name": "A1 대학본부",
+        "face": "r",
+        "approx_col_range": [
+          42,
+          42
+        ],
+        "dist_m": 38
+      },
+      {
+        "bld_id": "BLD_SCNU_R688057",
+        "name": "A1 대학본부 부속동 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          368,
+          716
+        ],
+        "dist_m": 41
+      },
+      {
+        "bld_id": "BLD_SCNU_A2",
+        "name": "A2 약학대학",
+        "face": "r",
+        "approx_col_range": [
+          314,
+          1716
+        ],
+        "dist_m": 44
+      },
+      {
+        "bld_id": "BLD_SCNU_A2",
+        "name": "A2 약학대학",
+        "face": "f",
+        "approx_col_range": [
+          1961,
+          1961
+        ],
+        "dist_m": 44
+      },
+      {
+        "bld_id": "BLD_SCNU_W366373751",
+        "name": "A1 대학본부",
+        "face": "f",
+        "approx_col_range": [
+          215,
+          1940
+        ],
+        "dist_m": 58
+      },
+      {
+        "bld_id": "BLD_SCNU_W366373751",
+        "name": "A1 대학본부",
+        "face": "r",
+        "approx_col_range": [
+          65,
+          287
+        ],
+        "dist_m": 58
+      },
+      {
+        "bld_id": "BLD_SCNU_R69065",
+        "name": "A15 운동장 본부석 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          161,
+          298
+        ],
+        "dist_m": 75
+      },
+      {
+        "bld_id": "BLD_SCNU_R69065",
+        "name": "A15 운동장 본부석 (추정)",
+        "face": "l",
+        "approx_col_range": [
+          1851,
+          2042
+        ],
+        "dist_m": 75
+      },
+      {
+        "bld_id": "BLD_SCNU_B2",
+        "name": "B2 70주년기념관",
+        "face": "b",
+        "approx_col_range": [
+          975,
+          1803
+        ],
+        "dist_m": 86
+      },
+      {
+        "bld_id": "BLD_SCNU_B4",
+        "name": "B4 생명산업과학 2호관(그린스마트팜스쿨)",
+        "face": "b",
+        "approx_col_range": [
+          94,
+          871
+        ],
+        "dist_m": 97
+      },
+      {
+        "bld_id": "BLD_SCNU_B4",
+        "name": "B4 생명산업과학 2호관(그린스마트팜스쿨)",
+        "face": "r",
+        "approx_col_range": [
+          2001,
+          2045
+        ],
+        "dist_m": 97
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "sculpture",
+        "face": "l",
+        "approx_col_range": [
+          300,
+          1000
+        ],
+        "note": "fountain pond"
+      }
+    ],
+    "flagged": "station resected from A1 (f col ~1640) and A2 \"약학대\" sign block (r col ~1020); stadium in l consistent; h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "refined": false,
+    "refined_by": "compare-vr todo 2",
+    "refined_note": "solver candidates -4 / +5 deg disagree; ortho-match station 20-40 m uncertain; original kept"
+  },
+  {
+    "scene": "scene_a2",
+    "title": "약학대학",
+    "station_e": 243835.8,
+    "station_n": 263647.2,
+    "station_x": 248.86,
+    "station_z": -122.27,
+    "height_m_est": 14,
+    "yaw_deg": 20.2,
+    "method": "ortho-match",
+    "confidence": 0.4,
+    "residual_m": 40,
+    "residual_estimated": true,
+    "xml_coord_real": false,
+    "xml_lat": 34.96832278,
+    "xml_lng": 127.48496833,
+    "xml_alt": 58.74,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_A4",
+        "name": "A4 학생생활관 부속동 · A5 학생생활관 진리관",
+        "face": "r",
+        "approx_col_range": [
+          887,
+          1568
+        ],
+        "dist_m": 31
+      },
+      {
+        "bld_id": "BLD_SCNU_W366373751",
+        "name": "A1 대학본부",
+        "face": "r",
+        "approx_col_range": [
+          502,
+          688
+        ],
+        "dist_m": 35
+      },
+      {
+        "bld_id": "BLD_SCNU_W366373751",
+        "name": "A1 대학본부",
+        "face": "f",
+        "approx_col_range": [
+          1313,
+          1736
+        ],
+        "dist_m": 35
+      },
+      {
+        "bld_id": "BLD_SCNU_E2",
+        "name": "E2 기초교육관",
+        "face": "l",
+        "approx_col_range": [
+          449,
+          1599
+        ],
+        "dist_m": 44
+      },
+      {
+        "bld_id": "BLD_SCNU_A6",
+        "name": "A6 학생생활관 창조관",
+        "face": "b",
+        "approx_col_range": [
+          832,
+          1380
+        ],
+        "dist_m": 44
+      },
+      {
+        "bld_id": "BLD_SCNU_A7",
+        "name": "A7 학생생활관 관리동",
+        "face": "b",
+        "approx_col_range": [
+          53,
+          557
+        ],
+        "dist_m": 54
+      },
+      {
+        "bld_id": "BLD_SCNU_A7",
+        "name": "A7 학생생활관 관리동",
+        "face": "r",
+        "approx_col_range": [
+          1580,
+          2040
+        ],
+        "dist_m": 54
+      },
+      {
+        "bld_id": "BLD_SCNU_A1",
+        "name": "A1 대학본부",
+        "face": "f",
+        "approx_col_range": [
+          1635,
+          1871
+        ],
+        "dist_m": 62
+      },
+      {
+        "bld_id": "BLD_SCNU_A1",
+        "name": "A1 대학본부",
+        "face": "r",
+        "approx_col_range": [
+          66,
+          402
+        ],
+        "dist_m": 62
+      },
+      {
+        "bld_id": "BLD_SCNU_E1",
+        "name": "E1 학생회관",
+        "face": "l",
+        "approx_col_range": [
+          1635,
+          2039
+        ],
+        "dist_m": 66
+      },
+      {
+        "bld_id": "BLD_SCNU_E1",
+        "name": "E1 학생회관",
+        "face": "f",
+        "approx_col_range": [
+          25,
+          825
+        ],
+        "dist_m": 66
+      },
+      {
+        "bld_id": "BLD_SCNU_A2",
+        "name": "A2 약학대학",
+        "face": "f",
+        "approx_col_range": [
+          1245,
+          1800
+        ],
+        "dist_m": 84
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "bench",
+        "face": "d",
+        "approx_col_range": [
+          0,
+          700
+        ],
+        "note": "benches on paved path"
+      }
+    ],
+    "flagged": "A2 signed block at f col ~1400; station from d-face ortho-match, yaw re-derived; position weak; h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "refined": false,
+    "refined_by": "compare-vr todo 2",
+    "refined_note": "A2 signed block not matched at any yaw within +-45 deg (skyline cost 3.9+); station position likely off"
+  },
+  {
+    "scene": "scene_a3",
+    "title": "천연물신약 연구소",
+    "station_e": 243869.8,
+    "station_n": 263781.8,
+    "station_x": 270.53,
+    "station_z": -206.14,
+    "height_m_est": 10,
+    "yaw_deg": 232,
+    "method": "xml-coord",
+    "confidence": 0.4,
+    "residual_m": 20,
+    "residual_estimated": true,
+    "xml_coord_real": true,
+    "xml_lat": 34.96918611,
+    "xml_lng": 127.48038222,
+    "xml_alt": 15.97,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_E1",
+        "name": "E1 학생회관",
+        "face": "f",
+        "approx_col_range": [
+          397,
+          1822
+        ],
+        "dist_m": 30
+      },
+      {
+        "bld_id": "BLD_SCNU_A2",
+        "name": "A2 약학대학",
+        "face": "l",
+        "approx_col_range": [
+          414,
+          1372
+        ],
+        "dist_m": 44
+      },
+      {
+        "bld_id": "BLD_SCNU_B4",
+        "name": "B4 생명산업과학 2호관(그린스마트팜스쿨)",
+        "face": "b",
+        "approx_col_range": [
+          652,
+          1226
+        ],
+        "dist_m": 54
+      },
+      {
+        "bld_id": "BLD_SCNU_R688059",
+        "name": "E1 학생회관 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          1025,
+          1195
+        ],
+        "dist_m": 73
+      },
+      {
+        "bld_id": "BLD_SCNU_C1",
+        "name": "C1 도서관",
+        "face": "r",
+        "approx_col_range": [
+          251,
+          1065
+        ],
+        "dist_m": 82
+      },
+      {
+        "bld_id": "BLD_SCNU_W366373751",
+        "name": "A1 대학본부",
+        "face": "l",
+        "approx_col_range": [
+          960,
+          1900
+        ],
+        "dist_m": 85
+      },
+      {
+        "bld_id": "BLD_SCNU_A1",
+        "name": "A1 대학본부",
+        "face": "l",
+        "approx_col_range": [
+          1049,
+          1555
+        ],
+        "dist_m": 93
+      },
+      {
+        "bld_id": "BLD_SCNU_B6",
+        "name": "B6 제1중앙공급실",
+        "face": "b",
+        "approx_col_range": [
+          79,
+          616
+        ],
+        "dist_m": 111
+      },
+      {
+        "bld_id": "BLD_SCNU_E2",
+        "name": "E2 기초교육관",
+        "face": "f",
+        "approx_col_range": [
+          664,
+          973
+        ],
+        "dist_m": 116
+      },
+      {
+        "bld_id": "BLD_SCNU_B2",
+        "name": "B2 70주년기념관",
+        "face": "b",
+        "approx_col_range": [
+          1342,
+          1838
+        ],
+        "dist_m": 119
+      },
+      {
+        "bld_id": "BLD_SCNU_B5",
+        "name": "B5 생명산업과학대학온실",
+        "face": "b",
+        "approx_col_range": [
+          656,
+          964
+        ],
+        "dist_m": 121
+      },
+      {
+        "bld_id": "BLD_SCNU_C2",
+        "name": "C2 친환경농업센터",
+        "face": "r",
+        "approx_col_range": [
+          1374,
+          1818
+        ],
+        "dist_m": 126
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "sculpture",
+        "face": "l",
+        "approx_col_range": [
+          1200,
+          1500
+        ],
+        "note": "rock in central roundabout (red ring)"
+      },
+      {
+        "kind": "stairs",
+        "face": "r",
+        "approx_col_range": [
+          1200,
+          2048
+        ],
+        "note": "terraced stone plaza"
+      }
+    ],
+    "flagged": "title building (white/orange, solar roof) has no footprint id; yaw from d-face NCC only; central roundabout visible in l; h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "yaw_refined_deg": 157.5,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "BLD_E1"
+    ],
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.6,
+    "refined_note": "title building (A3) has no footprint; yaw set by E1 (blue/white block in r) and the roundabout in l"
+  },
+  {
+    "scene": "scene_a4",
+    "title": "부속동",
+    "station_e": 243852.8,
+    "station_n": 263658.8,
+    "station_x": 259.5,
+    "station_z": -129.4,
+    "height_m_est": 16,
+    "yaw_deg": 135,
+    "method": "ortho-match",
+    "confidence": 0.5,
+    "residual_m": 40,
+    "residual_estimated": true,
+    "xml_coord_real": false,
+    "xml_lat": 34.96832278,
+    "xml_lng": 127.48496833,
+    "xml_alt": 58.74,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_W366373751",
+        "name": "A1 대학본부",
+        "face": "l",
+        "approx_col_range": [
+          681,
+          1965
+        ],
+        "dist_m": 15
+      },
+      {
+        "bld_id": "BLD_SCNU_W366373751",
+        "name": "A1 대학본부",
+        "face": "f",
+        "approx_col_range": [
+          249,
+          249
+        ],
+        "dist_m": 15
+      },
+      {
+        "bld_id": "BLD_SCNU_A4",
+        "name": "A4 학생생활관 부속동 · A5 학생생활관 진리관",
+        "face": "f",
+        "approx_col_range": [
+          564,
+          1725
+        ],
+        "dist_m": 29
+      },
+      {
+        "bld_id": "BLD_SCNU_A1",
+        "name": "A1 대학본부",
+        "face": "l",
+        "approx_col_range": [
+          1095,
+          1862
+        ],
+        "dist_m": 41
+      },
+      {
+        "bld_id": "BLD_SCNU_E1",
+        "name": "E1 학생회관",
+        "face": "b",
+        "approx_col_range": [
+          951,
+          1933
+        ],
+        "dist_m": 56
+      },
+      {
+        "bld_id": "BLD_SCNU_E1",
+        "name": "E1 학생회관",
+        "face": "l",
+        "approx_col_range": [
+          10,
+          10
+        ],
+        "dist_m": 56
+      },
+      {
+        "bld_id": "BLD_SCNU_E2",
+        "name": "E2 기초교육관",
+        "face": "r",
+        "approx_col_range": [
+          1641,
+          2038
+        ],
+        "dist_m": 57
+      },
+      {
+        "bld_id": "BLD_SCNU_E2",
+        "name": "E2 기초교육관",
+        "face": "b",
+        "approx_col_range": [
+          70,
+          739
+        ],
+        "dist_m": 57
+      },
+      {
+        "bld_id": "BLD_SCNU_A6",
+        "name": "A6 학생생활관 창조관",
+        "face": "r",
+        "approx_col_range": [
+          478,
+          1004
+        ],
+        "dist_m": 61
+      },
+      {
+        "bld_id": "BLD_SCNU_A7",
+        "name": "A7 학생생활관 관리동",
+        "face": "f",
+        "approx_col_range": [
+          1352,
+          2029
+        ],
+        "dist_m": 64
+      },
+      {
+        "bld_id": "BLD_SCNU_A7",
+        "name": "A7 학생생활관 관리동",
+        "face": "r",
+        "approx_col_range": [
+          3,
+          204
+        ],
+        "dist_m": 64
+      },
+      {
+        "bld_id": "BLD_SCNU_A2",
+        "name": "A2 약학대학",
+        "face": "l",
+        "approx_col_range": [
+          718,
+          1255
+        ],
+        "dist_m": 64
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "shelter",
+        "face": "r",
+        "approx_col_range": [
+          1100,
+          2048
+        ],
+        "note": "long bus-terminal shelter (continues into b col 0-900)"
+      },
+      {
+        "kind": "other",
+        "face": "f",
+        "approx_col_range": [
+          1300,
+          1700
+        ],
+        "note": "round one-storey building with blue band (rotunda)"
+      }
+    ],
+    "flagged": "A7 teal roof / dorm cluster in f as predicted; position from ortho-match; h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "refined": false,
+    "refined_by": "compare-vr todo 2",
+    "refined_note": "skyline suggests -2 to +4 deg, not confirmed on two buildings; original kept"
+  },
+  {
+    "scene": "scene_a5",
+    "title": "진리관",
+    "station_e": 243969.8,
+    "station_n": 263644.8,
+    "station_x": 332.49,
+    "station_z": -120.31,
+    "height_m_est": 23.9,
+    "yaw_deg": 228,
+    "method": "ortho-match",
+    "confidence": 0.45,
+    "residual_m": 40,
+    "residual_estimated": true,
+    "xml_coord_real": false,
+    "xml_lat": 34.96832278,
+    "xml_lng": 127.48496833,
+    "xml_alt": 58.74,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_W366373751",
+        "name": "A1 대학본부",
+        "face": "b",
+        "approx_col_range": [
+          323,
+          323
+        ],
+        "dist_m": 2
+      },
+      {
+        "bld_id": "BLD_SCNU_W366373751",
+        "name": "A1 대학본부",
+        "face": "r",
+        "approx_col_range": [
+          287,
+          713
+        ],
+        "dist_m": 2
+      },
+      {
+        "bld_id": "BLD_SCNU_W366373751",
+        "name": "A1 대학본부",
+        "face": "f",
+        "approx_col_range": [
+          311,
+          311
+        ],
+        "dist_m": 2
+      },
+      {
+        "bld_id": "BLD_SCNU_R688057",
+        "name": "A1 대학본부 부속동 (추정)",
+        "face": "r",
+        "approx_col_range": [
+          866,
+          1764
+        ],
+        "dist_m": 13
+      },
+      {
+        "bld_id": "BLD_SCNU_R69065",
+        "name": "A15 운동장 본부석 (추정)",
+        "face": "l",
+        "approx_col_range": [
+          1006,
+          1242
+        ],
+        "dist_m": 19
+      },
+      {
+        "bld_id": "BLD_SCNU_R69065",
+        "name": "A15 운동장 본부석 (추정)",
+        "face": "b",
+        "approx_col_range": [
+          1452,
+          1700
+        ],
+        "dist_m": 19
+      },
+      {
+        "bld_id": "BLD_SCNU_A4",
+        "name": "A4 학생생활관 부속동 · A5 학생생활관 진리관",
+        "face": "f",
+        "approx_col_range": [
+          150,
+          1761
+        ],
+        "dist_m": 30
+      },
+      {
+        "bld_id": "BLD_SCNU_A1",
+        "name": "A1 대학본부",
+        "face": "r",
+        "approx_col_range": [
+          538,
+          1150
+        ],
+        "dist_m": 39
+      },
+      {
+        "bld_id": "BLD_SCNU_A2",
+        "name": "A2 약학대학",
+        "face": "r",
+        "approx_col_range": [
+          868,
+          1457
+        ],
+        "dist_m": 76
+      },
+      {
+        "bld_id": "BLD_SCNU_R768570",
+        "name": "11동 생명대온실",
+        "face": "f",
+        "approx_col_range": [
+          874,
+          1065
+        ],
+        "dist_m": 93
+      },
+      {
+        "bld_id": "BLD_SCNU_A7",
+        "name": "A7 학생생활관 관리동",
+        "face": "f",
+        "approx_col_range": [
+          939,
+          1383
+        ],
+        "dist_m": 99
+      },
+      {
+        "bld_id": "BLD_SCNU_A8",
+        "name": "A8 학생생활관 향림관",
+        "face": "f",
+        "approx_col_range": [
+          60,
+          706
+        ],
+        "dist_m": 103
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "pavilion",
+        "face": "r",
+        "approx_col_range": [
+          1450,
+          1650
+        ],
+        "note": "green octagonal gazebo/umbrella in garden"
+      },
+      {
+        "kind": "pavilion",
+        "face": "d",
+        "approx_col_range": [
+          1300,
+          1900
+        ],
+        "note": "blue square hip-roof 정자 next to garden"
+      },
+      {
+        "kind": "garden",
+        "face": "r",
+        "approx_col_range": [
+          400,
+          2048
+        ],
+        "note": "walled garden with lawn"
+      }
+    ],
+    "flagged": "stadium in l and b, dorm tower in f; position from ortho-match; h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "yaw_refined_deg": 228,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "BLD_A4"
+    ],
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.6
+  },
+  {
+    "scene": "scene_a6",
+    "title": "창조관",
+    "station_e": 243838.7,
+    "station_n": 263566.9,
+    "station_x": 250.48,
+    "station_z": -72.12,
+    "height_m_est": 10,
+    "yaw_deg": 287.1,
+    "method": "xml-coord",
+    "confidence": 0.75,
+    "residual_m": 20,
+    "residual_estimated": true,
+    "xml_coord_real": true,
+    "xml_lat": 34.96725083,
+    "xml_lng": 127.48003056,
+    "xml_alt": 15.17,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_A7",
+        "name": "A7 학생생활관 관리동",
+        "face": "b",
+        "approx_col_range": [
+          25,
+          1649
+        ],
+        "dist_m": 5
+      },
+      {
+        "bld_id": "BLD_SCNU_A7",
+        "name": "A7 학생생활관 관리동",
+        "face": "r",
+        "approx_col_range": [
+          1114,
+          1114
+        ],
+        "dist_m": 5
+      },
+      {
+        "bld_id": "BLD_SCNU_A6",
+        "name": "A6 학생생활관 창조관",
+        "face": "l",
+        "approx_col_range": [
+          1413,
+          2040
+        ],
+        "dist_m": 25
+      },
+      {
+        "bld_id": "BLD_SCNU_A6",
+        "name": "A6 학생생활관 창조관",
+        "face": "f",
+        "approx_col_range": [
+          200,
+          1817
+        ],
+        "dist_m": 25
+      },
+      {
+        "bld_id": "BLD_SCNU_A6",
+        "name": "A6 학생생활관 창조관",
+        "face": "r",
+        "approx_col_range": [
+          190,
+          206
+        ],
+        "dist_m": 25
+      },
+      {
+        "bld_id": "BLD_SCNU_A9",
+        "name": "A9 학생생활관 청운관",
+        "face": "b",
+        "approx_col_range": [
+          1344,
+          2039
+        ],
+        "dist_m": 47
+      },
+      {
+        "bld_id": "BLD_SCNU_A9",
+        "name": "A9 학생생활관 청운관",
+        "face": "l",
+        "approx_col_range": [
+          82,
+          628
+        ],
+        "dist_m": 47
+      },
+      {
+        "bld_id": "BLD_SCNU_R768570",
+        "name": "11동 생명대온실",
+        "face": "b",
+        "approx_col_range": [
+          374,
+          848
+        ],
+        "dist_m": 50
+      },
+      {
+        "bld_id": "BLD_SCNU_A10",
+        "name": "A10 인재관 · A11 제2중앙공급실",
+        "face": "l",
+        "approx_col_range": [
+          691,
+          1801
+        ],
+        "dist_m": 53
+      },
+      {
+        "bld_id": "BLD_SCNU_A4",
+        "name": "A4 학생생활관 부속동 · A5 학생생활관 진리관",
+        "face": "b",
+        "approx_col_range": [
+          43,
+          466
+        ],
+        "dist_m": 54
+      },
+      {
+        "bld_id": "BLD_SCNU_A4",
+        "name": "A4 학생생활관 부속동 · A5 학생생활관 진리관",
+        "face": "r",
+        "approx_col_range": [
+          1066,
+          2041
+        ],
+        "dist_m": 54
+      },
+      {
+        "bld_id": "BLD_SCNU_A12",
+        "name": "A12 우정원",
+        "face": "l",
+        "approx_col_range": [
+          946,
+          1356
+        ],
+        "dist_m": 71
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "shelter",
+        "face": "l",
+        "approx_col_range": [
+          500,
+          1550
+        ],
+        "note": "row of blue-canopy covered shelters (bike/walkway)"
+      },
+      {
+        "kind": "garden",
+        "face": "l",
+        "approx_col_range": [
+          600,
+          1500
+        ],
+        "note": "tree plaza"
+      }
+    ],
+    "flagged": "A6 tower centred in f; A7 teal hip roof in b where predicted (seen); h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "yaw_refined_deg": 267.1,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "BLD_SCNU_A6",
+      "BLD_A7"
+    ],
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.9
+  },
+  {
+    "scene": "scene_a8",
+    "title": "향림관",
+    "station_e": 243893.2,
+    "station_n": 263533.8,
+    "station_x": 284.41,
+    "station_z": -51.25,
+    "height_m_est": 16,
+    "yaw_deg": 63,
+    "method": "ortho-match",
+    "confidence": 0.45,
+    "residual_m": 40,
+    "residual_estimated": true,
+    "xml_coord_real": false,
+    "xml_lat": 34.96832278,
+    "xml_lng": 127.48496833,
+    "xml_alt": 58.74,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_A9",
+        "name": "A9 학생생활관 청운관",
+        "face": "b",
+        "approx_col_range": [
+          47,
+          1724
+        ],
+        "dist_m": 6
+      },
+      {
+        "bld_id": "BLD_SCNU_R85389",
+        "name": "27동 학생생활관(향림관)",
+        "face": "r",
+        "approx_col_range": [
+          113,
+          1323
+        ],
+        "dist_m": 11
+      },
+      {
+        "bld_id": "BLD_SCNU_A7",
+        "name": "A7 학생생활관 관리동",
+        "face": "l",
+        "approx_col_range": [
+          250,
+          1487
+        ],
+        "dist_m": 20
+      },
+      {
+        "bld_id": "BLD_SCNU_A8",
+        "name": "A8 학생생활관 향림관",
+        "face": "f",
+        "approx_col_range": [
+          747,
+          1591
+        ],
+        "dist_m": 22
+      },
+      {
+        "bld_id": "BLD_SCNU_R768570",
+        "name": "11동 생명대온실",
+        "face": "l",
+        "approx_col_range": [
+          1361,
+          1885
+        ],
+        "dist_m": 26
+      },
+      {
+        "bld_id": "BLD_SCNU_A10",
+        "name": "A10 인재관 · A11 제2중앙공급실",
+        "face": "b",
+        "approx_col_range": [
+          1017,
+          1480
+        ],
+        "dist_m": 57
+      },
+      {
+        "bld_id": "BLD_SCNU_A4",
+        "name": "A4 학생생활관 부속동 · A5 학생생활관 진리관",
+        "face": "f",
+        "approx_col_range": [
+          93,
+          709
+        ],
+        "dist_m": 62
+      },
+      {
+        "bld_id": "BLD_SCNU_A4",
+        "name": "A4 학생생활관 부속동 · A5 학생생활관 진리관",
+        "face": "l",
+        "approx_col_range": [
+          1135,
+          1969
+        ],
+        "dist_m": 62
+      },
+      {
+        "bld_id": "BLD_SCNU_R688840",
+        "name": "A8 학생생활관 향림관 부속동 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          1636,
+          2039
+        ],
+        "dist_m": 63
+      },
+      {
+        "bld_id": "BLD_SCNU_R688840",
+        "name": "A8 학생생활관 향림관 부속동 (추정)",
+        "face": "r",
+        "approx_col_range": [
+          5,
+          5
+        ],
+        "dist_m": 63
+      },
+      {
+        "bld_id": "BLD_SCNU_A6",
+        "name": "A6 학생생활관 창조관",
+        "face": "b",
+        "approx_col_range": [
+          1609,
+          2024
+        ],
+        "dist_m": 76
+      },
+      {
+        "bld_id": "BLD_SCNU_A6",
+        "name": "A6 학생생활관 창조관",
+        "face": "l",
+        "approx_col_range": [
+          40,
+          704
+        ],
+        "dist_m": 76
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [],
+    "flagged": "A7 teal roof in l as predicted; A8 tower ~10 deg off label; h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "yaw_refined_deg": 63,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "BLD_A7"
+    ],
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.6
+  },
+  {
+    "scene": "scene_a9",
+    "title": "청운관",
+    "station_e": 243851.2,
+    "station_n": 263539.4,
+    "station_x": 258.18,
+    "station_z": -54.89,
+    "height_m_est": 10,
+    "yaw_deg": 148.4,
+    "method": "xml-coord",
+    "confidence": 0.7,
+    "residual_m": 20,
+    "residual_estimated": true,
+    "xml_coord_real": true,
+    "xml_lat": 34.96700194,
+    "xml_lng": 127.48016556,
+    "xml_alt": 17.54,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_A7",
+        "name": "A7 학생생활관 관리동",
+        "face": "b",
+        "approx_col_range": [
+          1217,
+          1994
+        ],
+        "dist_m": 15
+      },
+      {
+        "bld_id": "BLD_SCNU_A7",
+        "name": "A7 학생생활관 관리동",
+        "face": "l",
+        "approx_col_range": [
+          500,
+          1285
+        ],
+        "dist_m": 15
+      },
+      {
+        "bld_id": "BLD_SCNU_A9",
+        "name": "A9 학생생활관 청운관",
+        "face": "f",
+        "approx_col_range": [
+          782,
+          1910
+        ],
+        "dist_m": 23
+      },
+      {
+        "bld_id": "BLD_SCNU_A9",
+        "name": "A9 학생생활관 청운관",
+        "face": "l",
+        "approx_col_range": [
+          1867,
+          1909
+        ],
+        "dist_m": 23
+      },
+      {
+        "bld_id": "BLD_SCNU_A10",
+        "name": "A10 인재관 · A11 제2중앙공급실",
+        "face": "r",
+        "approx_col_range": [
+          276,
+          1438
+        ],
+        "dist_m": 28
+      },
+      {
+        "bld_id": "BLD_SCNU_A6",
+        "name": "A6 학생생활관 창조관",
+        "face": "b",
+        "approx_col_range": [
+          126,
+          1184
+        ],
+        "dist_m": 34
+      },
+      {
+        "bld_id": "BLD_SCNU_A6",
+        "name": "A6 학생생활관 창조관",
+        "face": "r",
+        "approx_col_range": [
+          1581,
+          1778
+        ],
+        "dist_m": 34
+      },
+      {
+        "bld_id": "BLD_SCNU_R768570",
+        "name": "11동 생명대온실",
+        "face": "l",
+        "approx_col_range": [
+          784,
+          1186
+        ],
+        "dist_m": 44
+      },
+      {
+        "bld_id": "BLD_SCNU_R85389",
+        "name": "27동 학생생활관(향림관)",
+        "face": "f",
+        "approx_col_range": [
+          72,
+          450
+        ],
+        "dist_m": 51
+      },
+      {
+        "bld_id": "BLD_SCNU_A12",
+        "name": "A12 우정원",
+        "face": "r",
+        "approx_col_range": [
+          439,
+          1042
+        ],
+        "dist_m": 58
+      },
+      {
+        "bld_id": "BLD_SCNU_A8",
+        "name": "A8 학생생활관 향림관",
+        "face": "l",
+        "approx_col_range": [
+          1373,
+          1763
+        ],
+        "dist_m": 62
+      },
+      {
+        "bld_id": "BLD_SCNU_A4",
+        "name": "A4 학생생활관 부속동 · A5 학생생활관 진리관",
+        "face": "l",
+        "approx_col_range": [
+          111,
+          1101
+        ],
+        "dist_m": 72
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "bench",
+        "face": "f",
+        "approx_col_range": [
+          600,
+          2048
+        ],
+        "note": "paved plaza with tree planters and benches (also r, d)"
+      },
+      {
+        "kind": "garden",
+        "face": "r",
+        "approx_col_range": [
+          0,
+          2048
+        ],
+        "note": "tree-planter plaza"
+      }
+    ],
+    "flagged": "A9 centred in f, A8 arch-window block in l (seen); h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "refined": false,
+    "refined_by": "compare-vr todo 2",
+    "refined_note": "close-range plaza view: the near A9/A8 blocks fill the faces and skyline matching is ambiguous (-36 deg candidate rejected by eye); original kept"
+  },
+  {
+    "scene": "scene_a10",
+    "title": "인재관",
+    "station_e": 243852,
+    "station_n": 263542.5,
+    "station_x": 258.68,
+    "station_z": -56.83,
+    "height_m_est": 14,
+    "yaw_deg": 237,
+    "method": "ortho-match",
+    "confidence": 0.5,
+    "residual_m": 40,
+    "residual_estimated": true,
+    "xml_coord_real": false,
+    "xml_lat": 34.96832278,
+    "xml_lng": 127.48496833,
+    "xml_alt": 58.74,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_A7",
+        "name": "A7 학생생활관 관리동",
+        "face": "r",
+        "approx_col_range": [
+          1156,
+          2022
+        ],
+        "dist_m": 12
+      },
+      {
+        "bld_id": "BLD_SCNU_A7",
+        "name": "A7 학생생활관 관리동",
+        "face": "b",
+        "approx_col_range": [
+          552,
+          1427
+        ],
+        "dist_m": 12
+      },
+      {
+        "bld_id": "BLD_SCNU_A9",
+        "name": "A9 학생생활관 청운관",
+        "face": "l",
+        "approx_col_range": [
+          77,
+          1964
+        ],
+        "dist_m": 23
+      },
+      {
+        "bld_id": "BLD_SCNU_A10",
+        "name": "A10 인재관 · A11 제2중앙공급실",
+        "face": "f",
+        "approx_col_range": [
+          296,
+          1415
+        ],
+        "dist_m": 31
+      },
+      {
+        "bld_id": "BLD_SCNU_A6",
+        "name": "A6 학생생활관 창조관",
+        "face": "r",
+        "approx_col_range": [
+          80,
+          1179
+        ],
+        "dist_m": 34
+      },
+      {
+        "bld_id": "BLD_SCNU_A6",
+        "name": "A6 학생생활관 창조관",
+        "face": "f",
+        "approx_col_range": [
+          1503,
+          2036
+        ],
+        "dist_m": 34
+      },
+      {
+        "bld_id": "BLD_SCNU_R768570",
+        "name": "11동 생명대온실",
+        "face": "b",
+        "approx_col_range": [
+          840,
+          1266
+        ],
+        "dist_m": 42
+      },
+      {
+        "bld_id": "BLD_SCNU_R85389",
+        "name": "27동 학생생활관(향림관)",
+        "face": "l",
+        "approx_col_range": [
+          175,
+          556
+        ],
+        "dist_m": 51
+      },
+      {
+        "bld_id": "BLD_SCNU_A12",
+        "name": "A12 우정원",
+        "face": "f",
+        "approx_col_range": [
+          455,
+          1030
+        ],
+        "dist_m": 60
+      },
+      {
+        "bld_id": "BLD_SCNU_A8",
+        "name": "A8 학생생활관 향림관",
+        "face": "b",
+        "approx_col_range": [
+          1452,
+          1850
+        ],
+        "dist_m": 61
+      },
+      {
+        "bld_id": "BLD_SCNU_A4",
+        "name": "A4 학생생활관 부속동 · A5 학생생활관 진리관",
+        "face": "b",
+        "approx_col_range": [
+          156,
+          1149
+        ],
+        "dist_m": 69
+      },
+      {
+        "bld_id": "BLD_SCNU_A4",
+        "name": "A4 학생생활관 부속동 · A5 학생생활관 진리관",
+        "face": "r",
+        "approx_col_range": [
+          1832,
+          2033
+        ],
+        "dist_m": 69
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "bench",
+        "face": "f",
+        "approx_col_range": [
+          0,
+          1500
+        ],
+        "note": "tree-planter plaza with benches"
+      },
+      {
+        "kind": "shelter",
+        "face": "f",
+        "approx_col_range": [
+          1700,
+          2048
+        ],
+        "note": "blue-white striped awning (also d)"
+      }
+    ],
+    "flagged": "A7 관리동 in b as predicted (seen); h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "yaw_refined_deg": 237,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "BLD_A7"
+    ],
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.6
+  },
+  {
+    "scene": "scene_a12",
+    "title": "우정원",
+    "station_e": 243924.2,
+    "station_n": 263352.8,
+    "station_x": 303.21,
+    "station_z": 61.82,
+    "height_m_est": 14,
+    "yaw_deg": 321,
+    "method": "ortho-match",
+    "confidence": 0.45,
+    "residual_m": 40,
+    "residual_estimated": true,
+    "xml_coord_real": false,
+    "xml_lat": 34.96832278,
+    "xml_lng": 127.48496833,
+    "xml_alt": 58.74,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_A9",
+        "name": "A9 학생생활관 청운관",
+        "face": "f",
+        "approx_col_range": [
+          1192,
+          1556
+        ],
+        "dist_m": 144
+      },
+      {
+        "bld_id": "BLD_SCNU_R85389",
+        "name": "27동 학생생활관(향림관)",
+        "face": "r",
+        "approx_col_range": [
+          38,
+          55
+        ],
+        "dist_m": 151
+      },
+      {
+        "bld_id": "BLD_SCNU_R85389",
+        "name": "27동 학생생활관(향림관)",
+        "face": "f",
+        "approx_col_range": [
+          1600,
+          1637
+        ],
+        "dist_m": 151
+      },
+      {
+        "bld_id": "BLD_SCNU_R688840",
+        "name": "A8 학생생활관 향림관 부속동 (추정)",
+        "face": "r",
+        "approx_col_range": [
+          138,
+          257
+        ],
+        "dist_m": 163
+      },
+      {
+        "bld_id": "BLD_SCNU_A12",
+        "name": "A12 우정원",
+        "face": "f",
+        "approx_col_range": [
+          849,
+          1055
+        ],
+        "dist_m": 166
+      },
+      {
+        "bld_id": "BLD_SCNU_A10",
+        "name": "A10 인재관 · A11 제2중앙공급실",
+        "face": "f",
+        "approx_col_range": [
+          989,
+          1228
+        ],
+        "dist_m": 175
+      },
+      {
+        "bld_id": "BLD_SCNU_A8",
+        "name": "A8 학생생활관 향림관",
+        "face": "f",
+        "approx_col_range": [
+          1758,
+          1783
+        ],
+        "dist_m": 182
+      },
+      {
+        "bld_id": "BLD_SCNU_A8",
+        "name": "A8 학생생활관 향림관",
+        "face": "r",
+        "approx_col_range": [
+          161,
+          166
+        ],
+        "dist_m": 182
+      },
+      {
+        "bld_id": "BLD_SCNU_A7",
+        "name": "A7 학생생활관 관리동",
+        "face": "f",
+        "approx_col_range": [
+          1350,
+          1634
+        ],
+        "dist_m": 200
+      },
+      {
+        "bld_id": "BLD_SCNU_F4",
+        "name": "F4 연립관사",
+        "face": "r",
+        "approx_col_range": [
+          1565,
+          1655
+        ],
+        "dist_m": 206
+      },
+      {
+        "bld_id": "BLD_SCNU_R768570",
+        "name": "11동 생명대온실",
+        "face": "f",
+        "approx_col_range": [
+          1601,
+          1711
+        ],
+        "dist_m": 208
+      },
+      {
+        "bld_id": "BLD_SCNU_A6",
+        "name": "A6 학생생활관 창조관",
+        "face": "f",
+        "approx_col_range": [
+          1062,
+          1342
+        ],
+        "dist_m": 214
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [],
+    "flagged": "A12 slim tower in f approximately; h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "refined": false,
+    "refined_by": "compare-vr todo 2",
+    "refined_note": "A12 slim tower not reproduced at any candidate yaw; station position likely off (outside the campus terrain extent)"
+  },
+  {
+    "scene": "scene_a13",
+    "title": "웅지관",
+    "station_e": 243931.5,
+    "station_n": 263498,
+    "station_x": 308.17,
+    "station_z": -28.82,
+    "height_m_est": 14,
+    "yaw_deg": 54,
+    "method": "ortho-match",
+    "confidence": 0.3,
+    "residual_m": 40,
+    "residual_estimated": true,
+    "xml_coord_real": false,
+    "xml_lat": 34.96832278,
+    "xml_lng": 127.48496833,
+    "xml_alt": 58.74,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_R85389",
+        "name": "27동 학생생활관(향림관)",
+        "face": "f",
+        "approx_col_range": [
+          821,
+          1268
+        ],
+        "dist_m": 12
+      },
+      {
+        "bld_id": "BLD_SCNU_R85389",
+        "name": "27동 학생생활관(향림관)",
+        "face": "l",
+        "approx_col_range": [
+          450,
+          781
+        ],
+        "dist_m": 12
+      },
+      {
+        "bld_id": "BLD_SCNU_R688840",
+        "name": "A8 학생생활관 향림관 부속동 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          755,
+          1286
+        ],
+        "dist_m": 27
+      },
+      {
+        "bld_id": "BLD_SCNU_A8",
+        "name": "A8 학생생활관 향림관",
+        "face": "l",
+        "approx_col_range": [
+          1274,
+          1402
+        ],
+        "dist_m": 43
+      },
+      {
+        "bld_id": "BLD_SCNU_A8",
+        "name": "A8 학생생활관 향림관",
+        "face": "f",
+        "approx_col_range": [
+          651,
+          749
+        ],
+        "dist_m": 43
+      },
+      {
+        "bld_id": "BLD_SCNU_A9",
+        "name": "A9 학생생활관 청운관",
+        "face": "l",
+        "approx_col_range": [
+          70,
+          746
+        ],
+        "dist_m": 49
+      },
+      {
+        "bld_id": "BLD_SCNU_A9",
+        "name": "A9 학생생활관 청운관",
+        "face": "b",
+        "approx_col_range": [
+          1513,
+          1927
+        ],
+        "dist_m": 49
+      },
+      {
+        "bld_id": "BLD_SCNU_R768570",
+        "name": "11동 생명대온실",
+        "face": "l",
+        "approx_col_range": [
+          1064,
+          1341
+        ],
+        "dist_m": 69
+      },
+      {
+        "bld_id": "BLD_SCNU_A7",
+        "name": "A7 학생생활관 관리동",
+        "face": "l",
+        "approx_col_range": [
+          669,
+          1220
+        ],
+        "dist_m": 73
+      },
+      {
+        "bld_id": "BLD_SCNU_A4",
+        "name": "A4 학생생활관 부속동 · A5 학생생활관 진리관",
+        "face": "f",
+        "approx_col_range": [
+          5,
+          245
+        ],
+        "dist_m": 90
+      },
+      {
+        "bld_id": "BLD_SCNU_A4",
+        "name": "A4 학생생활관 부속동 · A5 학생생활관 진리관",
+        "face": "l",
+        "approx_col_range": [
+          1129,
+          2042
+        ],
+        "dist_m": 90
+      },
+      {
+        "bld_id": "BLD_SCNU_A10",
+        "name": "A10 인재관 · A11 제2중앙공급실",
+        "face": "b",
+        "approx_col_range": [
+          1883,
+          2008
+        ],
+        "dist_m": 93
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [],
+    "flagged": "no footprint for 웅지관; search centred on scene_001 a13 hotspot point (244012,263559); stadium in l; h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "refined": false,
+    "refined_by": "compare-vr todo 2",
+    "refined_note": "title building 웅지관 has no footprint (todo 10); skyline candidates +44/+74 deg not supported by buildings"
+  },
+  {
+    "scene": "scene_a15",
+    "title": "운동장",
+    "station_e": 244057,
+    "station_n": 263617,
+    "station_x": 386.86,
+    "station_z": -102.72,
+    "height_m_est": 16,
+    "yaw_deg": 269,
+    "method": "ortho-match",
+    "confidence": 0.65,
+    "residual_m": 40,
+    "residual_estimated": true,
+    "xml_coord_real": false,
+    "xml_lat": 34.96832278,
+    "xml_lng": 127.48496833,
+    "xml_alt": 58.74,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_R69065",
+        "name": "A15 운동장 본부석 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          1121,
+          1601
+        ],
+        "dist_m": 66
+      },
+      {
+        "bld_id": "BLD_SCNU_R688041",
+        "name": "A16 교직원테니스장 부속 시설 (추정)",
+        "face": "l",
+        "approx_col_range": [
+          52,
+          240
+        ],
+        "dist_m": 72
+      },
+      {
+        "bld_id": "BLD_SCNU_R688980",
+        "name": "A16 교직원테니스장 부속 시설 (추정)",
+        "face": "l",
+        "approx_col_range": [
+          210,
+          282
+        ],
+        "dist_m": 85
+      },
+      {
+        "bld_id": "BLD_SCNU_A17",
+        "name": "A17 체육관 · A18 체육관 증축동",
+        "face": "b",
+        "approx_col_range": [
+          885,
+          1424
+        ],
+        "dist_m": 87
+      },
+      {
+        "bld_id": "BLD_SCNU_A4",
+        "name": "A4 학생생활관 부속동 · A5 학생생활관 진리관",
+        "face": "f",
+        "approx_col_range": [
+          781,
+          1135
+        ],
+        "dist_m": 91
+      },
+      {
+        "bld_id": "BLD_SCNU_W366373751",
+        "name": "A1 대학본부",
+        "face": "f",
+        "approx_col_range": [
+          1312,
+          1628
+        ],
+        "dist_m": 91
+      },
+      {
+        "bld_id": "BLD_SCNU_R688057",
+        "name": "A1 대학본부 부속동 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          1454,
+          1722
+        ],
+        "dist_m": 102
+      },
+      {
+        "bld_id": "BLD_SCNU_A8",
+        "name": "A8 학생생활관 향림관",
+        "face": "f",
+        "approx_col_range": [
+          164,
+          589
+        ],
+        "dist_m": 122
+      },
+      {
+        "bld_id": "BLD_SCNU_R688840",
+        "name": "A8 학생생활관 향림관 부속동 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          20,
+          156
+        ],
+        "dist_m": 127
+      },
+      {
+        "bld_id": "BLD_SCNU_R688840",
+        "name": "A8 학생생활관 향림관 부속동 (추정)",
+        "face": "l",
+        "approx_col_range": [
+          1951,
+          1951
+        ],
+        "dist_m": 127
+      },
+      {
+        "bld_id": "BLD_SCNU_A1",
+        "name": "A1 대학본부",
+        "face": "f",
+        "approx_col_range": [
+          1418,
+          1651
+        ],
+        "dist_m": 130
+      },
+      {
+        "bld_id": "BLD_SCNU_F2",
+        "name": "F2 평생교육원",
+        "face": "b",
+        "approx_col_range": [
+          1931,
+          2041
+        ],
+        "dist_m": 144
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "other",
+        "face": "f",
+        "approx_col_range": [
+          700,
+          1500
+        ],
+        "note": "grandstand with blue seats and roof"
+      }
+    ],
+    "flagged": "d face is turf with centre circle: station placed at field centre read from ortho; grandstand in f -> yaw ~269; h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "refined": false,
+    "refined_by": "compare-vr todo 2",
+    "refined_note": "skyline suggests +17 deg (cost 1.04) but the field-centre station makes building columns ambiguous; original kept"
+  },
+  {
+    "scene": "scene_a16",
+    "title": "교직원 테니스장",
+    "station_e": 244080.8,
+    "station_n": 263575.2,
+    "station_x": 401.56,
+    "station_z": -76.59,
+    "height_m_est": 20.9,
+    "yaw_deg": 117,
+    "method": "ortho-match",
+    "confidence": 0.5,
+    "residual_m": 40,
+    "residual_estimated": true,
+    "xml_coord_real": false,
+    "xml_lat": 34.96832278,
+    "xml_lng": 127.48496833,
+    "xml_alt": 58.74,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_R688041",
+        "name": "A16 교직원테니스장 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          918,
+          1256
+        ],
+        "dist_m": 27
+      },
+      {
+        "bld_id": "BLD_SCNU_R688980",
+        "name": "A16 교직원테니스장 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          1233,
+          1351
+        ],
+        "dist_m": 38
+      },
+      {
+        "bld_id": "BLD_SCNU_A17",
+        "name": "A17 체육관 · A18 체육관 증축동",
+        "face": "l",
+        "approx_col_range": [
+          1460,
+          1920
+        ],
+        "dist_m": 66
+      },
+      {
+        "bld_id": "BLD_SCNU_A17",
+        "name": "A17 체육관 · A18 체육관 증축동",
+        "face": "f",
+        "approx_col_range": [
+          36,
+          443
+        ],
+        "dist_m": 66
+      },
+      {
+        "bld_id": "BLD_SCNU_F2",
+        "name": "F2 평생교육원",
+        "face": "f",
+        "approx_col_range": [
+          1113,
+          1566
+        ],
+        "dist_m": 99
+      },
+      {
+        "bld_id": "BLD_SCNU_R69065",
+        "name": "A15 운동장 본부석 (추정)",
+        "face": "b",
+        "approx_col_range": [
+          1013,
+          1292
+        ],
+        "dist_m": 101
+      },
+      {
+        "bld_id": "BLD_SCNU_R138317",
+        "name": "F3 학생테니스장 부속 시설(마동) (추정)",
+        "face": "r",
+        "approx_col_range": [
+          6,
+          69
+        ],
+        "dist_m": 118
+      },
+      {
+        "bld_id": "BLD_SCNU_R138317",
+        "name": "F3 학생테니스장 부속 시설(마동) (추정)",
+        "face": "f",
+        "approx_col_range": [
+          2037,
+          2037
+        ],
+        "dist_m": 118
+      },
+      {
+        "bld_id": "BLD_SCNU_A4",
+        "name": "A4 학생생활관 부속동 · A5 학생생활관 진리관",
+        "face": "b",
+        "approx_col_range": [
+          604,
+          890
+        ],
+        "dist_m": 121
+      },
+      {
+        "bld_id": "BLD_SCNU_R688840",
+        "name": "A8 학생생활관 향림관 부속동 (추정)",
+        "face": "r",
+        "approx_col_range": [
+          1717,
+          1966
+        ],
+        "dist_m": 123
+      },
+      {
+        "bld_id": "BLD_SCNU_A8",
+        "name": "A8 학생생활관 향림관",
+        "face": "b",
+        "approx_col_range": [
+          84,
+          325
+        ],
+        "dist_m": 124
+      },
+      {
+        "bld_id": "BLD_SCNU_A8",
+        "name": "A8 학생생활관 향림관",
+        "face": "r",
+        "approx_col_range": [
+          1988,
+          1988
+        ],
+        "dist_m": 124
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "garden",
+        "face": "f",
+        "approx_col_range": [
+          1280,
+          2048
+        ],
+        "note": "hedge lettering 진리 정의 창조 on slope (into r col 0-400)"
+      }
+    ],
+    "flagged": "over track SE; gym A17 at f-left; yaw re-derived from gym; h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "refined": false,
+    "refined_by": "compare-vr todo 2",
+    "refined_note": "skyline suggests +14-17 deg, not confirmed on two buildings; original kept"
+  },
+  {
+    "scene": "scene_f3",
+    "title": "학생 테니스장",
+    "station_e": 244220.8,
+    "station_n": 263514.2,
+    "station_x": 488.76,
+    "station_z": -38.09,
+    "height_m_est": 14,
+    "yaw_deg": 228,
+    "method": "ortho-match",
+    "confidence": 0.45,
+    "residual_m": 40,
+    "residual_estimated": true,
+    "xml_coord_real": false,
+    "xml_lat": 34.96832278,
+    "xml_lng": 127.48496833,
+    "xml_alt": 58.74,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_F1",
+        "name": "F1 국제문화컨벤션관",
+        "face": "l",
+        "approx_col_range": [
+          1050,
+          2039
+        ],
+        "dist_m": 12
+      },
+      {
+        "bld_id": "BLD_SCNU_F1",
+        "name": "F1 국제문화컨벤션관",
+        "face": "f",
+        "approx_col_range": [
+          46,
+          843
+        ],
+        "dist_m": 12
+      },
+      {
+        "bld_id": "BLD_SCNU_F1",
+        "name": "F1 국제문화컨벤션관",
+        "face": "r",
+        "approx_col_range": [
+          1017,
+          1897
+        ],
+        "dist_m": 12
+      },
+      {
+        "bld_id": "BLD_SCNU_F2",
+        "name": "F2 평생교육원",
+        "face": "r",
+        "approx_col_range": [
+          21,
+          99
+        ],
+        "dist_m": 47
+      },
+      {
+        "bld_id": "BLD_SCNU_F2",
+        "name": "F2 평생교육원",
+        "face": "f",
+        "approx_col_range": [
+          1091,
+          2011
+        ],
+        "dist_m": 47
+      },
+      {
+        "bld_id": "BLD_SCNU_A17",
+        "name": "A17 체육관 · A18 체육관 증축동",
+        "face": "r",
+        "approx_col_range": [
+          952,
+          1621
+        ],
+        "dist_m": 74
+      },
+      {
+        "bld_id": "BLD_SCNU_R688980",
+        "name": "A16 교직원테니스장 부속 시설 (추정)",
+        "face": "r",
+        "approx_col_range": [
+          383,
+          443
+        ],
+        "dist_m": 113
+      },
+      {
+        "bld_id": "BLD_SCNU_R138317",
+        "name": "F3 학생테니스장 부속 시설(마동) (추정)",
+        "face": "f",
+        "approx_col_range": [
+          1207,
+          1319
+        ],
+        "dist_m": 115
+      },
+      {
+        "bld_id": "BLD_SCNU_R688041",
+        "name": "A16 교직원테니스장 부속 시설 (추정)",
+        "face": "r",
+        "approx_col_range": [
+          449,
+          570
+        ],
+        "dist_m": 116
+      },
+      {
+        "bld_id": "BLD_SCNU_R688981",
+        "name": "F1 국제문화컨벤션관 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          306,
+          380
+        ],
+        "dist_m": 121
+      },
+      {
+        "bld_id": "BLD_SCNU_F4",
+        "name": "F4 연립관사",
+        "face": "f",
+        "approx_col_range": [
+          673,
+          835
+        ],
+        "dist_m": 140
+      },
+      {
+        "bld_id": "BLD_SCNU_R688840",
+        "name": "A8 학생생활관 향림관 부속동 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          1922,
+          2037
+        ],
+        "dist_m": 253
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "shelter",
+        "face": "f",
+        "approx_col_range": [
+          1950,
+          2048
+        ],
+        "note": "red-roof tennis-court hut (into r col 0-500)"
+      }
+    ],
+    "flagged": "clay courts below in f; position from ortho-match; h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "refined": false,
+    "refined_by": "compare-vr todo 2",
+    "refined_note": "clay courts in f; skyline -41..-54 deg candidates unconfirmed; station position off"
+  },
+  {
+    "scene": "scene_a17",
+    "title": "체육관",
+    "station_e": 244115.8,
+    "station_n": 263556.2,
+    "station_x": 423.35,
+    "station_z": -64.62,
+    "height_m_est": 14,
+    "yaw_deg": 45,
+    "method": "ortho-match",
+    "confidence": 0.35,
+    "residual_m": 40,
+    "residual_estimated": true,
+    "xml_coord_real": false,
+    "xml_lat": 34.96832278,
+    "xml_lng": 127.48496833,
+    "xml_alt": 58.74,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_R688041",
+        "name": "A16 교직원테니스장 부속 시설 (추정)",
+        "face": "l",
+        "approx_col_range": [
+          851,
+          1094
+        ],
+        "dist_m": 6
+      },
+      {
+        "bld_id": "BLD_SCNU_R688041",
+        "name": "A16 교직원테니스장 부속 시설 (추정)",
+        "face": "b",
+        "approx_col_range": [
+          1186,
+          1336
+        ],
+        "dist_m": 6
+      },
+      {
+        "bld_id": "BLD_SCNU_R688980",
+        "name": "A16 교직원테니스장 부속 시설 (추정)",
+        "face": "b",
+        "approx_col_range": [
+          490,
+          1020
+        ],
+        "dist_m": 7
+      },
+      {
+        "bld_id": "BLD_SCNU_A17",
+        "name": "A17 체육관 · A18 체육관 증축동",
+        "face": "f",
+        "approx_col_range": [
+          580,
+          1531
+        ],
+        "dist_m": 43
+      },
+      {
+        "bld_id": "BLD_SCNU_F2",
+        "name": "F2 평생교육원",
+        "face": "r",
+        "approx_col_range": [
+          825,
+          1426
+        ],
+        "dist_m": 60
+      },
+      {
+        "bld_id": "BLD_SCNU_F1",
+        "name": "F1 국제문화컨벤션관",
+        "face": "r",
+        "approx_col_range": [
+          321,
+          1389
+        ],
+        "dist_m": 90
+      },
+      {
+        "bld_id": "BLD_SCNU_R138317",
+        "name": "F3 학생테니스장 부속 시설(마동) (추정)",
+        "face": "b",
+        "approx_col_range": [
+          35,
+          35
+        ],
+        "dist_m": 93
+      },
+      {
+        "bld_id": "BLD_SCNU_R138317",
+        "name": "F3 학생테니스장 부속 시설(마동) (추정)",
+        "face": "r",
+        "approx_col_range": [
+          1960,
+          2036
+        ],
+        "dist_m": 93
+      },
+      {
+        "bld_id": "BLD_SCNU_R69065",
+        "name": "A15 운동장 본부석 (추정)",
+        "face": "l",
+        "approx_col_range": [
+          690,
+          901
+        ],
+        "dist_m": 141
+      },
+      {
+        "bld_id": "BLD_SCNU_R688840",
+        "name": "A8 학생생활관 향림관 부속동 (추정)",
+        "face": "b",
+        "approx_col_range": [
+          1576,
+          1751
+        ],
+        "dist_m": 151
+      },
+      {
+        "bld_id": "BLD_SCNU_A8",
+        "name": "A8 학생생활관 향림관",
+        "face": "b",
+        "approx_col_range": [
+          1769,
+          2025
+        ],
+        "dist_m": 155
+      },
+      {
+        "bld_id": "BLD_SCNU_A4",
+        "name": "A4 학생생활관 부속동 · A5 학생생활관 진리관",
+        "face": "l",
+        "approx_col_range": [
+          292,
+          580
+        ],
+        "dist_m": 160
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "stairs",
+        "face": "f",
+        "approx_col_range": [
+          900,
+          1500
+        ],
+        "note": "grand stairs to gym (also r col 300-700)"
+      }
+    ],
+    "flagged": "gym appears ~25 deg right of its predicted label: station position off; low confidence; h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "yaw_refined_deg": 27,
+    "refined_residual_deg": 4,
+    "refined_buildings": [
+      "BLD_SCNU_A17"
+    ],
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.35,
+    "refined_note": "yaw 27 brings the gym within ~4 deg of its VR columns (was ~20 deg off at 45); the station position is still off: the render stands over the sports field while the VR stands at the street by the gym stairs"
+  },
+  {
+    "scene": "scene_a19",
+    "title": "정문",
+    "station_e": 244195.4,
+    "station_n": 263718.2,
+    "station_x": 473.53,
+    "station_z": -165.5,
+    "height_m_est": 13.8,
+    "yaw_deg": 284,
+    "method": "xml-coord",
+    "confidence": 0.5,
+    "residual_m": 20,
+    "residual_estimated": true,
+    "xml_coord_real": true,
+    "xml_lat": 34.96859917,
+    "xml_lng": 127.48394333,
+    "xml_alt": 26.6,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_A17",
+        "name": "A17 체육관 · A18 체육관 증축동",
+        "face": "l",
+        "approx_col_range": [
+          740,
+          1309
+        ],
+        "dist_m": 86
+      },
+      {
+        "bld_id": "BLD_SCNU_B1",
+        "name": "B1 박물관",
+        "face": "f",
+        "approx_col_range": [
+          1303,
+          1884
+        ],
+        "dist_m": 92
+      },
+      {
+        "bld_id": "BLD_SCNU_B1",
+        "name": "B1 박물관",
+        "face": "r",
+        "approx_col_range": [
+          57,
+          57
+        ],
+        "dist_m": 92
+      },
+      {
+        "bld_id": "BLD_SCNU_B2",
+        "name": "B2 70주년기념관",
+        "face": "f",
+        "approx_col_range": [
+          1155,
+          1471
+        ],
+        "dist_m": 153
+      },
+      {
+        "bld_id": "BLD_SCNU_R688041",
+        "name": "A16 교직원테니스장 부속 시설 (추정)",
+        "face": "l",
+        "approx_col_range": [
+          1259,
+          1321
+        ],
+        "dist_m": 177
+      },
+      {
+        "bld_id": "BLD_SCNU_F1",
+        "name": "F1 국제문화컨벤션관",
+        "face": "l",
+        "approx_col_range": [
+          583,
+          816
+        ],
+        "dist_m": 180
+      },
+      {
+        "bld_id": "BLD_SCNU_B7",
+        "name": "B7 산학협력관",
+        "face": "r",
+        "approx_col_range": [
+          86,
+          430
+        ],
+        "dist_m": 183
+      },
+      {
+        "bld_id": "BLD_SCNU_R688980",
+        "name": "A16 교직원테니스장 부속 시설 (추정)",
+        "face": "l",
+        "approx_col_range": [
+          1236,
+          1260
+        ],
+        "dist_m": 187
+      },
+      {
+        "bld_id": "BLD_SCNU_B3",
+        "name": "B3 생명산업과학 1호관(그린스마트팜스쿨)",
+        "face": "f",
+        "approx_col_range": [
+          1446,
+          1865
+        ],
+        "dist_m": 192
+      },
+      {
+        "bld_id": "BLD_SCNU_F2",
+        "name": "F2 평생교육원",
+        "face": "l",
+        "approx_col_range": [
+          833,
+          994
+        ],
+        "dist_m": 200
+      },
+      {
+        "bld_id": "BLD_SCNU_R69065",
+        "name": "A15 운동장 본부석 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          189,
+          385
+        ],
+        "dist_m": 209
+      },
+      {
+        "bld_id": "BLD_SCNU_W366373751",
+        "name": "A1 대학본부",
+        "face": "f",
+        "approx_col_range": [
+          371,
+          696
+        ],
+        "dist_m": 228
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "sign",
+        "face": "l",
+        "approx_col_range": [
+          600,
+          900
+        ],
+        "note": "SCNU gate sign sculpture"
+      },
+      {
+        "kind": "stairs",
+        "face": "l",
+        "approx_col_range": [
+          1000,
+          2048
+        ],
+        "note": "gate plaza with stepped lawn edge"
+      },
+      {
+        "kind": "shelter",
+        "face": "b",
+        "approx_col_range": [
+          250,
+          500
+        ],
+        "note": "bus stop shelter"
+      },
+      {
+        "kind": "sign",
+        "face": "f",
+        "approx_col_range": [
+          1450,
+          1650
+        ],
+        "note": "large billboard"
+      }
+    ],
+    "flagged": "gate has no footprint; yaw from d-face NCC; avenue into campus in f (seen, plausible); h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "refined": false,
+    "refined_by": "compare-vr todo 2",
+    "refined_note": "title (gate) has no footprint; road axes and the gate plaza line up at the original yaw by eye; no building pair to measure"
+  },
+  {
+    "scene": "scene_b1",
+    "title": "박물관",
+    "station_e": 244096.5,
+    "station_n": 263737,
+    "station_x": 411.88,
+    "station_z": -177.51,
+    "height_m_est": 18.3,
+    "yaw_deg": 6,
+    "method": "ortho-match",
+    "confidence": 0.55,
+    "residual_m": 40,
+    "residual_estimated": true,
+    "xml_coord_real": false,
+    "xml_lat": 34.96832278,
+    "xml_lng": 127.48496833,
+    "xml_alt": 58.74,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_B1",
+        "name": "B1 박물관",
+        "face": "f",
+        "approx_col_range": [
+          567,
+          1576
+        ],
+        "dist_m": 33
+      },
+      {
+        "bld_id": "BLD_SCNU_B2",
+        "name": "B2 70주년기념관",
+        "face": "l",
+        "approx_col_range": [
+          1481,
+          1990
+        ],
+        "dist_m": 60
+      },
+      {
+        "bld_id": "BLD_SCNU_B2",
+        "name": "B2 70주년기념관",
+        "face": "f",
+        "approx_col_range": [
+          499,
+          499
+        ],
+        "dist_m": 60
+      },
+      {
+        "bld_id": "BLD_SCNU_A17",
+        "name": "A17 체육관 · A18 체육관 증축동",
+        "face": "b",
+        "approx_col_range": [
+          8,
+          563
+        ],
+        "dist_m": 119
+      },
+      {
+        "bld_id": "BLD_SCNU_A17",
+        "name": "A17 체육관 · A18 체육관 증축동",
+        "face": "r",
+        "approx_col_range": [
+          1908,
+          2009
+        ],
+        "dist_m": 119
+      },
+      {
+        "bld_id": "BLD_SCNU_B3",
+        "name": "B3 생명산업과학 1호관(그린스마트팜스쿨)",
+        "face": "f",
+        "approx_col_range": [
+          83,
+          741
+        ],
+        "dist_m": 127
+      },
+      {
+        "bld_id": "BLD_SCNU_B3",
+        "name": "B3 생명산업과학 1호관(그린스마트팜스쿨)",
+        "face": "l",
+        "approx_col_range": [
+          2035,
+          2035
+        ],
+        "dist_m": 127
+      },
+      {
+        "bld_id": "BLD_SCNU_R69065",
+        "name": "A15 운동장 본부석 (추정)",
+        "face": "b",
+        "approx_col_range": [
+          1784,
+          1953
+        ],
+        "dist_m": 132
+      },
+      {
+        "bld_id": "BLD_SCNU_R69065",
+        "name": "A15 운동장 본부석 (추정)",
+        "face": "l",
+        "approx_col_range": [
+          23,
+          23
+        ],
+        "dist_m": 132
+      },
+      {
+        "bld_id": "BLD_SCNU_W366373751",
+        "name": "A1 대학본부",
+        "face": "l",
+        "approx_col_range": [
+          83,
+          728
+        ],
+        "dist_m": 142
+      },
+      {
+        "bld_id": "BLD_SCNU_R688057",
+        "name": "A1 대학본부 부속동 (추정)",
+        "face": "l",
+        "approx_col_range": [
+          246,
+          450
+        ],
+        "dist_m": 145
+      },
+      {
+        "bld_id": "BLD_SCNU_B4",
+        "name": "B4 생명산업과학 2호관(그린스마트팜스쿨)",
+        "face": "l",
+        "approx_col_range": [
+          1336,
+          1947
+        ],
+        "dist_m": 154
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "stairs",
+        "face": "f",
+        "approx_col_range": [
+          300,
+          1900
+        ],
+        "note": "stepped plaza in front of museum"
+      }
+    ],
+    "flagged": "B1 museum centred in f (seen); h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "yaw_refined_deg": 8,
+    "refined_residual_deg": 2,
+    "refined_buildings": [
+      "BLD_B1"
+    ],
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.6
+  },
+  {
+    "scene": "scene_b2",
+    "title": "70주년기념관",
+    "station_e": 243957,
+    "station_n": 263922,
+    "station_x": 325.36,
+    "station_z": -293.4,
+    "height_m_est": 35.8,
+    "yaw_deg": 159,
+    "method": "ortho-match",
+    "confidence": 0.5,
+    "residual_m": 40,
+    "residual_estimated": true,
+    "xml_coord_real": false,
+    "xml_lat": 34.96832278,
+    "xml_lng": 127.48496833,
+    "xml_alt": 58.74,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_B5",
+        "name": "B5 생명산업과학대학온실",
+        "face": "f",
+        "approx_col_range": [
+          699,
+          1955
+        ],
+        "dist_m": 21
+      },
+      {
+        "bld_id": "BLD_SCNU_B5",
+        "name": "B5 생명산업과학대학온실",
+        "face": "r",
+        "approx_col_range": [
+          174,
+          174
+        ],
+        "dist_m": 21
+      },
+      {
+        "bld_id": "BLD_SCNU_R687746",
+        "name": "조미채소기술센터유리온실",
+        "face": "f",
+        "approx_col_range": [
+          2035,
+          2035
+        ],
+        "dist_m": 23
+      },
+      {
+        "bld_id": "BLD_SCNU_R687746",
+        "name": "조미채소기술센터유리온실",
+        "face": "r",
+        "approx_col_range": [
+          182,
+          550
+        ],
+        "dist_m": 23
+      },
+      {
+        "bld_id": "BLD_SCNU_R687709",
+        "name": "B5 생명산업과학대학온실 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          833,
+          1020
+        ],
+        "dist_m": 23
+      },
+      {
+        "bld_id": "BLD_SCNU_R687828",
+        "name": "B6 제1중앙공급실 부속 시설 (추정)",
+        "face": "r",
+        "approx_col_range": [
+          648,
+          1009
+        ],
+        "dist_m": 26
+      },
+      {
+        "bld_id": "BLD_SCNU_B6",
+        "name": "B6 제1중앙공급실",
+        "face": "r",
+        "approx_col_range": [
+          361,
+          1285
+        ],
+        "dist_m": 31
+      },
+      {
+        "bld_id": "BLD_SCNU_R690034",
+        "name": "B6 제1중앙공급실 부속 시설 (추정)",
+        "face": "r",
+        "approx_col_range": [
+          902,
+          1175
+        ],
+        "dist_m": 33
+      },
+      {
+        "bld_id": "BLD_SCNU_R687750",
+        "name": "B6 제1중앙공급실 부속 시설 (추정)",
+        "face": "r",
+        "approx_col_range": [
+          1295,
+          1448
+        ],
+        "dist_m": 42
+      },
+      {
+        "bld_id": "BLD_SCNU_B3",
+        "name": "B3 생명산업과학 1호관(그린스마트팜스쿨)",
+        "face": "l",
+        "approx_col_range": [
+          1857,
+          2014
+        ],
+        "dist_m": 42
+      },
+      {
+        "bld_id": "BLD_SCNU_B3",
+        "name": "B3 생명산업과학 1호관(그린스마트팜스쿨)",
+        "face": "f",
+        "approx_col_range": [
+          26,
+          870
+        ],
+        "dist_m": 42
+      },
+      {
+        "bld_id": "BLD_SCNU_B4",
+        "name": "B4 생명산업과학 2호관(그린스마트팜스쿨)",
+        "face": "f",
+        "approx_col_range": [
+          940,
+          2000
+        ],
+        "dist_m": 55
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [],
+    "flagged": "B2 teal-glass hall centred in f (seen); h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "refined": false,
+    "refined_by": "compare-vr todo 2",
+    "refined_note": "high drone shot over the B2 plaza; skyline candidates +36/+75 deg contradict the B2 hall in f; original kept"
+  },
+  {
+    "scene": "scene_b3",
+    "title": "생명산업과학대 1호관",
+    "station_e": 244001.7,
+    "station_n": 263842.5,
+    "station_x": 353.01,
+    "station_z": -243.65,
+    "height_m_est": 13.8,
+    "yaw_deg": 42.3,
+    "method": "xml-coord",
+    "confidence": 0.65,
+    "residual_m": 20,
+    "residual_estimated": true,
+    "xml_coord_real": true,
+    "xml_lat": 34.96972778,
+    "xml_lng": 127.48182917,
+    "xml_alt": 23.07,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_B2",
+        "name": "B2 70주년기념관",
+        "face": "r",
+        "approx_col_range": [
+          616,
+          1719
+        ],
+        "dist_m": 13
+      },
+      {
+        "bld_id": "BLD_SCNU_B2",
+        "name": "B2 70주년기념관",
+        "face": "b",
+        "approx_col_range": [
+          460,
+          791
+        ],
+        "dist_m": 13
+      },
+      {
+        "bld_id": "BLD_SCNU_B4",
+        "name": "B4 생명산업과학 2호관(그린스마트팜스쿨)",
+        "face": "l",
+        "approx_col_range": [
+          153,
+          1127
+        ],
+        "dist_m": 19
+      },
+      {
+        "bld_id": "BLD_SCNU_B4",
+        "name": "B4 생명산업과학 2호관(그린스마트팜스쿨)",
+        "face": "b",
+        "approx_col_range": [
+          1497,
+          1905
+        ],
+        "dist_m": 19
+      },
+      {
+        "bld_id": "BLD_SCNU_B3",
+        "name": "B3 생명산업과학 1호관(그린스마트팜스쿨)",
+        "face": "f",
+        "approx_col_range": [
+          29,
+          1665
+        ],
+        "dist_m": 29
+      },
+      {
+        "bld_id": "BLD_SCNU_B3",
+        "name": "B3 생명산업과학 1호관(그린스마트팜스쿨)",
+        "face": "l",
+        "approx_col_range": [
+          1370,
+          1998
+        ],
+        "dist_m": 29
+      },
+      {
+        "bld_id": "BLD_SCNU_B5",
+        "name": "B5 생명산업과학대학온실",
+        "face": "l",
+        "approx_col_range": [
+          833,
+          1476
+        ],
+        "dist_m": 41
+      },
+      {
+        "bld_id": "BLD_SCNU_R687709",
+        "name": "B5 생명산업과학대학온실 부속 시설 (추정)",
+        "face": "l",
+        "approx_col_range": [
+          1303,
+          1381
+        ],
+        "dist_m": 63
+      },
+      {
+        "bld_id": "BLD_SCNU_R687746",
+        "name": "조미채소기술센터유리온실",
+        "face": "l",
+        "approx_col_range": [
+          897,
+          1099
+        ],
+        "dist_m": 75
+      },
+      {
+        "bld_id": "BLD_SCNU_B6",
+        "name": "B6 제1중앙공급실",
+        "face": "l",
+        "approx_col_range": [
+          672,
+          994
+        ],
+        "dist_m": 83
+      },
+      {
+        "bld_id": "BLD_SCNU_B1",
+        "name": "B1 박물관",
+        "face": "r",
+        "approx_col_range": [
+          134,
+          901
+        ],
+        "dist_m": 85
+      },
+      {
+        "bld_id": "BLD_SCNU_R687828",
+        "name": "B6 제1중앙공급실 부속 시설 (추정)",
+        "face": "l",
+        "approx_col_range": [
+          962,
+          1058
+        ],
+        "dist_m": 90
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [],
+    "flagged": "B3 centred in f; tall B2 in b where predicted (seen); h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "yaw_refined_deg": 42.3,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "BLD_B3",
+      "BLD_B2"
+    ],
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.9
+  },
+  {
+    "scene": "scene_b4",
+    "title": "생명산업과학대 2호관",
+    "station_e": 243969.1,
+    "station_n": 263808.1,
+    "station_x": 332.6,
+    "station_z": -222.24,
+    "height_m_est": 10,
+    "yaw_deg": 313.4,
+    "method": "xml-coord",
+    "confidence": 0.65,
+    "residual_m": 20,
+    "residual_estimated": true,
+    "xml_coord_real": true,
+    "xml_lat": 34.96941861,
+    "xml_lng": 127.48147111,
+    "xml_alt": 21.79,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_B2",
+        "name": "B2 70주년기념관",
+        "face": "r",
+        "approx_col_range": [
+          1183,
+          1891
+        ],
+        "dist_m": 17
+      },
+      {
+        "bld_id": "BLD_SCNU_B2",
+        "name": "B2 70주년기념관",
+        "face": "b",
+        "approx_col_range": [
+          164,
+          674
+        ],
+        "dist_m": 17
+      },
+      {
+        "bld_id": "BLD_SCNU_B4",
+        "name": "B4 생명산업과학 2호관(그린스마트팜스쿨)",
+        "face": "f",
+        "approx_col_range": [
+          213,
+          1331
+        ],
+        "dist_m": 35
+      },
+      {
+        "bld_id": "BLD_SCNU_B4",
+        "name": "B4 생명산업과학 2호관(그린스마트팜스쿨)",
+        "face": "r",
+        "approx_col_range": [
+          587,
+          638
+        ],
+        "dist_m": 35
+      },
+      {
+        "bld_id": "BLD_SCNU_A2",
+        "name": "A2 약학대학",
+        "face": "l",
+        "approx_col_range": [
+          690,
+          1206
+        ],
+        "dist_m": 64
+      },
+      {
+        "bld_id": "BLD_SCNU_B5",
+        "name": "B5 생명산업과학대학온실",
+        "face": "r",
+        "approx_col_range": [
+          173,
+          241
+        ],
+        "dist_m": 65
+      },
+      {
+        "bld_id": "BLD_SCNU_B5",
+        "name": "B5 생명산업과학대학온실",
+        "face": "f",
+        "approx_col_range": [
+          1504,
+          1695
+        ],
+        "dist_m": 65
+      },
+      {
+        "bld_id": "BLD_SCNU_B3",
+        "name": "B3 생명산업과학 1호관(그린스마트팜스쿨)",
+        "face": "r",
+        "approx_col_range": [
+          420,
+          1360
+        ],
+        "dist_m": 68
+      },
+      {
+        "bld_id": "BLD_SCNU_R687746",
+        "name": "조미채소기술센터유리온실",
+        "face": "f",
+        "approx_col_range": [
+          1486,
+          1675
+        ],
+        "dist_m": 84
+      },
+      {
+        "bld_id": "BLD_SCNU_B6",
+        "name": "B6 제1중앙공급실",
+        "face": "f",
+        "approx_col_range": [
+          1067,
+          1522
+        ],
+        "dist_m": 87
+      },
+      {
+        "bld_id": "BLD_SCNU_R687709",
+        "name": "B5 생명산업과학대학온실 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          2038,
+          2038
+        ],
+        "dist_m": 90
+      },
+      {
+        "bld_id": "BLD_SCNU_R687709",
+        "name": "B5 생명산업과학대학온실 부속 시설 (추정)",
+        "face": "r",
+        "approx_col_range": [
+          2,
+          87
+        ],
+        "dist_m": 90
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "other",
+        "face": "f",
+        "approx_col_range": [
+          700,
+          1100
+        ],
+        "note": "straight paved path across lawn"
+      }
+    ],
+    "flagged": "B4 in f; B2 in b where predicted (seen); h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "yaw_refined_deg": 313.4,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "BLD_B4",
+      "BLD_B3"
+    ],
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.9
+  },
+  {
+    "scene": "scene_b7",
+    "title": "산학협력관",
+    "station_e": 244088.1,
+    "station_n": 263882.9,
+    "station_x": 407.05,
+    "station_z": -268.62,
+    "height_m_est": 10,
+    "yaw_deg": 41,
+    "method": "xml-coord",
+    "confidence": 0.65,
+    "residual_m": 20,
+    "residual_estimated": true,
+    "xml_coord_real": true,
+    "xml_lat": 34.97008833,
+    "xml_lng": 127.48277722,
+    "xml_alt": 21.76,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_B3",
+        "name": "B3 생명산업과학 1호관(그린스마트팜스쿨)",
+        "face": "b",
+        "approx_col_range": [
+          1083,
+          2015
+        ],
+        "dist_m": 16
+      },
+      {
+        "bld_id": "BLD_SCNU_B3",
+        "name": "B3 생명산업과학 1호관(그린스마트팜스쿨)",
+        "face": "l",
+        "approx_col_range": [
+          38,
+          466
+        ],
+        "dist_m": 16
+      },
+      {
+        "bld_id": "BLD_SCNU_B7",
+        "name": "B7 산학협력관",
+        "face": "f",
+        "approx_col_range": [
+          173,
+          1829
+        ],
+        "dist_m": 30
+      },
+      {
+        "bld_id": "BLD_SCNU_B1",
+        "name": "B1 박물관",
+        "face": "r",
+        "approx_col_range": [
+          1187,
+          2041
+        ],
+        "dist_m": 42
+      },
+      {
+        "bld_id": "BLD_SCNU_B1",
+        "name": "B1 박물관",
+        "face": "b",
+        "approx_col_range": [
+          38,
+          289
+        ],
+        "dist_m": 42
+      },
+      {
+        "bld_id": "BLD_SCNU_B2",
+        "name": "B2 70주년기념관",
+        "face": "b",
+        "approx_col_range": [
+          585,
+          1370
+        ],
+        "dist_m": 68
+      },
+      {
+        "bld_id": "BLD_SCNU_B4",
+        "name": "B4 생명산업과학 2호관(그린스마트팜스쿨)",
+        "face": "b",
+        "approx_col_range": [
+          1499,
+          1985
+        ],
+        "dist_m": 103
+      },
+      {
+        "bld_id": "BLD_SCNU_B4",
+        "name": "B4 생명산업과학 2호관(그린스마트팜스쿨)",
+        "face": "l",
+        "approx_col_range": [
+          21,
+          21
+        ],
+        "dist_m": 103
+      },
+      {
+        "bld_id": "BLD_SCNU_B5",
+        "name": "B5 생명산업과학대학온실",
+        "face": "b",
+        "approx_col_range": [
+          2010,
+          2010
+        ],
+        "dist_m": 110
+      },
+      {
+        "bld_id": "BLD_SCNU_B5",
+        "name": "B5 생명산업과학대학온실",
+        "face": "l",
+        "approx_col_range": [
+          100,
+          363
+        ],
+        "dist_m": 110
+      },
+      {
+        "bld_id": "BLD_SCNU_R687709",
+        "name": "B5 생명산업과학대학온실 부속 시설 (추정)",
+        "face": "l",
+        "approx_col_range": [
+          335,
+          368
+        ],
+        "dist_m": 119
+      },
+      {
+        "bld_id": "BLD_SCNU_R687746",
+        "name": "조미채소기술센터유리온실",
+        "face": "l",
+        "approx_col_range": [
+          191,
+          350
+        ],
+        "dist_m": 144
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [],
+    "flagged": "B7 glass block centred at f col ~1050 (hlookat -19 is not the building centre); yaw re-derived; h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "yaw_refined_deg": 41,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "BLD_B7"
+    ],
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.6
+  },
+  {
+    "scene": "scene_c1",
+    "title": "도서관",
+    "station_e": 243830.1,
+    "station_n": 263830.7,
+    "station_x": 245.86,
+    "station_z": -236.79,
+    "height_m_est": 10,
+    "yaw_deg": 293.6,
+    "method": "xml-coord",
+    "confidence": 0.7,
+    "residual_m": 20,
+    "residual_estimated": true,
+    "xml_coord_real": true,
+    "xml_lat": 34.96962861,
+    "xml_lng": 127.47994944,
+    "xml_alt": 20.06,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_C1",
+        "name": "C1 도서관",
+        "face": "f",
+        "approx_col_range": [
+          203,
+          1717
+        ],
+        "dist_m": 40
+      },
+      {
+        "bld_id": "BLD_SCNU_C1",
+        "name": "C1 도서관",
+        "face": "l",
+        "approx_col_range": [
+          1660,
+          1669
+        ],
+        "dist_m": 40
+      },
+      {
+        "bld_id": "BLD_SCNU_E1",
+        "name": "E1 학생회관",
+        "face": "l",
+        "approx_col_range": [
+          144,
+          1526
+        ],
+        "dist_m": 62
+      },
+      {
+        "bld_id": "BLD_SCNU_B4",
+        "name": "B4 생명산업과학 2호관(그린스마트팜스쿨)",
+        "face": "b",
+        "approx_col_range": [
+          15,
+          803
+        ],
+        "dist_m": 81
+      },
+      {
+        "bld_id": "BLD_SCNU_B4",
+        "name": "B4 생명산업과학 2호관(그린스마트팜스쿨)",
+        "face": "r",
+        "approx_col_range": [
+          1992,
+          1992
+        ],
+        "dist_m": 81
+      },
+      {
+        "bld_id": "BLD_SCNU_C2",
+        "name": "C2 친환경농업센터",
+        "face": "r",
+        "approx_col_range": [
+          453,
+          1061
+        ],
+        "dist_m": 84
+      },
+      {
+        "bld_id": "BLD_SCNU_B6",
+        "name": "B6 제1중앙공급실",
+        "face": "r",
+        "approx_col_range": [
+          1270,
+          1813
+        ],
+        "dist_m": 84
+      },
+      {
+        "bld_id": "BLD_SCNU_R688059",
+        "name": "E1 학생회관 부속 시설 (추정)",
+        "face": "l",
+        "approx_col_range": [
+          815,
+          960
+        ],
+        "dist_m": 93
+      },
+      {
+        "bld_id": "BLD_SCNU_E3",
+        "name": "E3 사범대학1호관",
+        "face": "f",
+        "approx_col_range": [
+          11,
+          312
+        ],
+        "dist_m": 97
+      },
+      {
+        "bld_id": "BLD_SCNU_E3",
+        "name": "E3 사범대학1호관",
+        "face": "l",
+        "approx_col_range": [
+          1857,
+          2043
+        ],
+        "dist_m": 97
+      },
+      {
+        "bld_id": "BLD_SCNU_C3",
+        "name": "C3 공동실험실습관",
+        "face": "r",
+        "approx_col_range": [
+          68,
+          404
+        ],
+        "dist_m": 98
+      },
+      {
+        "bld_id": "BLD_SCNU_C3",
+        "name": "C3 공동실험실습관",
+        "face": "f",
+        "approx_col_range": [
+          1703,
+          1991
+        ],
+        "dist_m": 98
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "bench",
+        "face": "l",
+        "approx_col_range": [
+          200,
+          900
+        ],
+        "note": "bench rows under trees on library plaza"
+      },
+      {
+        "kind": "stairs",
+        "face": "f",
+        "approx_col_range": [
+          900,
+          1500
+        ],
+        "note": "stepped approach to library"
+      },
+      {
+        "kind": "sculpture",
+        "face": "b",
+        "approx_col_range": [
+          600,
+          1000
+        ],
+        "note": "fountain pond with sculpture"
+      },
+      {
+        "kind": "bench",
+        "face": "b",
+        "approx_col_range": [
+          1000,
+          1900
+        ],
+        "note": "benches around pond plaza"
+      }
+    ],
+    "flagged": "library C1 centred in f (seen); h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "yaw_refined_deg": 288.6,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "BLD_C1"
+    ],
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.6,
+    "refined_note": "library centred; the near pond plaza in b is ~5-10 deg off (parallax of the station position)"
+  },
+  {
+    "scene": "scene_c2",
+    "title": "친환경농업센터",
+    "station_e": 243848.3,
+    "station_n": 263892.7,
+    "station_x": 257.4,
+    "station_z": -275.45,
+    "height_m_est": 10,
+    "yaw_deg": 11.9,
+    "method": "xml-coord",
+    "confidence": 0.65,
+    "residual_m": 20,
+    "residual_estimated": true,
+    "xml_coord_real": true,
+    "xml_lat": 34.97018694,
+    "xml_lng": 127.48015194,
+    "xml_alt": 14.89,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_C2",
+        "name": "C2 친환경농업센터",
+        "face": "f",
+        "approx_col_range": [
+          238,
+          1863
+        ],
+        "dist_m": 23
+      },
+      {
+        "bld_id": "BLD_SCNU_C2",
+        "name": "C2 친환경농업센터",
+        "face": "l",
+        "approx_col_range": [
+          1756,
+          1756
+        ],
+        "dist_m": 23
+      },
+      {
+        "bld_id": "BLD_SCNU_B6",
+        "name": "B6 제1중앙공급실",
+        "face": "r",
+        "approx_col_range": [
+          234,
+          909
+        ],
+        "dist_m": 40
+      },
+      {
+        "bld_id": "BLD_SCNU_C1",
+        "name": "C1 도서관",
+        "face": "l",
+        "approx_col_range": [
+          23,
+          883
+        ],
+        "dist_m": 50
+      },
+      {
+        "bld_id": "BLD_SCNU_C1",
+        "name": "C1 도서관",
+        "face": "b",
+        "approx_col_range": [
+          1414,
+          1979
+        ],
+        "dist_m": 50
+      },
+      {
+        "bld_id": "BLD_SCNU_R690033",
+        "name": "C2 친환경농업센터 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          973,
+          1262
+        ],
+        "dist_m": 52
+      },
+      {
+        "bld_id": "BLD_SCNU_R688401",
+        "name": "B6 제1중앙공급실 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          1582,
+          1954
+        ],
+        "dist_m": 52
+      },
+      {
+        "bld_id": "BLD_SCNU_C3",
+        "name": "C3 공동실험실습관",
+        "face": "l",
+        "approx_col_range": [
+          1302,
+          2026
+        ],
+        "dist_m": 53
+      },
+      {
+        "bld_id": "BLD_SCNU_R687777",
+        "name": "C2 친환경농업센터 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          1289,
+          1430
+        ],
+        "dist_m": 55
+      },
+      {
+        "bld_id": "BLD_SCNU_R688403",
+        "name": "C2 친환경농업센터 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          1067,
+          1433
+        ],
+        "dist_m": 58
+      },
+      {
+        "bld_id": "BLD_SCNU_C4",
+        "name": "C4 환경친화형물질공장 기술혁신센터",
+        "face": "f",
+        "approx_col_range": [
+          2,
+          286
+        ],
+        "dist_m": 60
+      },
+      {
+        "bld_id": "BLD_SCNU_C4",
+        "name": "C4 환경친화형물질공장 기술혁신센터",
+        "face": "l",
+        "approx_col_range": [
+          1937,
+          1985
+        ],
+        "dist_m": 60
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [],
+    "flagged": "C2 centred in f (seen); h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "yaw_refined_deg": 353.9,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "BLD_C2",
+      "BLD_SCNU_B6"
+    ],
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.9
+  },
+  {
+    "scene": "scene_c3",
+    "title": "공동실험실습관",
+    "station_e": 243777.8,
+    "station_n": 263906.9,
+    "station_x": 213.49,
+    "station_z": -284.49,
+    "height_m_est": 19,
+    "yaw_deg": 22.6,
+    "method": "xml-coord",
+    "confidence": 0.7,
+    "residual_m": 20,
+    "residual_estimated": true,
+    "xml_coord_real": true,
+    "xml_lat": 34.9703175,
+    "xml_lng": 127.47938167,
+    "xml_alt": 9.36,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_C1",
+        "name": "C1 도서관",
+        "face": "r",
+        "approx_col_range": [
+          1567,
+          1704
+        ],
+        "dist_m": 26
+      },
+      {
+        "bld_id": "BLD_SCNU_C1",
+        "name": "C1 도서관",
+        "face": "b",
+        "approx_col_range": [
+          87,
+          1467
+        ],
+        "dist_m": 26
+      },
+      {
+        "bld_id": "BLD_SCNU_C1",
+        "name": "C1 도서관",
+        "face": "l",
+        "approx_col_range": [
+          351,
+          362
+        ],
+        "dist_m": 26
+      },
+      {
+        "bld_id": "BLD_SCNU_C3",
+        "name": "C3 공동실험실습관",
+        "face": "f",
+        "approx_col_range": [
+          274,
+          1727
+        ],
+        "dist_m": 26
+      },
+      {
+        "bld_id": "BLD_SCNU_C3",
+        "name": "C3 공동실험실습관",
+        "face": "l",
+        "approx_col_range": [
+          1848,
+          1848
+        ],
+        "dist_m": 26
+      },
+      {
+        "bld_id": "BLD_SCNU_C2",
+        "name": "C2 친환경농업센터",
+        "face": "r",
+        "approx_col_range": [
+          54,
+          584
+        ],
+        "dist_m": 46
+      },
+      {
+        "bld_id": "BLD_SCNU_C2",
+        "name": "C2 친환경농업센터",
+        "face": "f",
+        "approx_col_range": [
+          1675,
+          2044
+        ],
+        "dist_m": 46
+      },
+      {
+        "bld_id": "BLD_SCNU_R690076",
+        "name": "C3 공동실험실습관 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          964,
+          1119
+        ],
+        "dist_m": 48
+      },
+      {
+        "bld_id": "BLD_SCNU_C4",
+        "name": "C4 환경친화형물질공장 기술혁신센터",
+        "face": "f",
+        "approx_col_range": [
+          1144,
+          1482
+        ],
+        "dist_m": 50
+      },
+      {
+        "bld_id": "BLD_SCNU_D1",
+        "name": "D1 창업보육센터",
+        "face": "l",
+        "approx_col_range": [
+          1185,
+          1653
+        ],
+        "dist_m": 59
+      },
+      {
+        "bld_id": "BLD_SCNU_D2",
+        "name": "D2 공학 1호관(우주항공첨단소재스쿨)",
+        "face": "l",
+        "approx_col_range": [
+          84,
+          1155
+        ],
+        "dist_m": 79
+      },
+      {
+        "bld_id": "BLD_SCNU_R690033",
+        "name": "C2 친환경농업센터 부속 시설 (추정)",
+        "face": "r",
+        "approx_col_range": [
+          31,
+          75
+        ],
+        "dist_m": 90
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "other",
+        "face": "d",
+        "approx_col_range": [
+          0,
+          2048
+        ],
+        "note": "crosswalk and disabled bay"
+      }
+    ],
+    "flagged": "C3 (glass stair tower, antenna) centred in f (seen); h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "yaw_refined_deg": 12.6,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "BLD_SCNU_C3",
+      "BLD_D3"
+    ],
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.9
+  },
+  {
+    "scene": "scene_c5",
+    "title": "순천대학교 어린이집",
+    "station_e": 243760.5,
+    "station_n": 263997.3,
+    "station_x": 202.95,
+    "station_z": -340.99,
+    "height_m_est": 10,
+    "yaw_deg": 100.5,
+    "method": "xml-coord",
+    "confidence": 0.55,
+    "residual_m": 20,
+    "residual_estimated": true,
+    "xml_coord_real": true,
+    "xml_lat": 34.97113333,
+    "xml_lng": 127.47919667,
+    "xml_alt": 21.64,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_D1",
+        "name": "D1 창업보육센터",
+        "face": "r",
+        "approx_col_range": [
+          1359,
+          1954
+        ],
+        "dist_m": 41
+      },
+      {
+        "bld_id": "BLD_SCNU_C3",
+        "name": "C3 공동실험실습관",
+        "face": "r",
+        "approx_col_range": [
+          1,
+          821
+        ],
+        "dist_m": 41
+      },
+      {
+        "bld_id": "BLD_SCNU_C3",
+        "name": "C3 공동실험실습관",
+        "face": "f",
+        "approx_col_range": [
+          1734,
+          1962
+        ],
+        "dist_m": 41
+      },
+      {
+        "bld_id": "BLD_SCNU_R690076",
+        "name": "C3 공동실험실습관 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          1675,
+          1960
+        ],
+        "dist_m": 52
+      },
+      {
+        "bld_id": "BLD_SCNU_C4",
+        "name": "C4 환경친화형물질공장 기술혁신센터",
+        "face": "f",
+        "approx_col_range": [
+          1470,
+          1771
+        ],
+        "dist_m": 60
+      },
+      {
+        "bld_id": "BLD_SCNU_D2",
+        "name": "D2 공학 1호관(우주항공첨단소재스쿨)",
+        "face": "r",
+        "approx_col_range": [
+          1422,
+          1996
+        ],
+        "dist_m": 75
+      },
+      {
+        "bld_id": "BLD_SCNU_D2",
+        "name": "D2 공학 1호관(우주항공첨단소재스쿨)",
+        "face": "b",
+        "approx_col_range": [
+          0,
+          639
+        ],
+        "dist_m": 75
+      },
+      {
+        "bld_id": "BLD_SCNU_C2",
+        "name": "C2 친환경농업센터",
+        "face": "f",
+        "approx_col_range": [
+          1461,
+          1901
+        ],
+        "dist_m": 87
+      },
+      {
+        "bld_id": "BLD_SCNU_C1",
+        "name": "C1 도서관",
+        "face": "r",
+        "approx_col_range": [
+          443,
+          1059
+        ],
+        "dist_m": 99
+      },
+      {
+        "bld_id": "BLD_SCNU_R690033",
+        "name": "C2 친환경농업센터 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          1262,
+          1337
+        ],
+        "dist_m": 108
+      },
+      {
+        "bld_id": "BLD_SCNU_R688403",
+        "name": "C2 친환경농업센터 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          1171,
+          1289
+        ],
+        "dist_m": 112
+      },
+      {
+        "bld_id": "BLD_SCNU_R687777",
+        "name": "C2 친환경농업센터 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          1279,
+          1320
+        ],
+        "dist_m": 125
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [],
+    "flagged": "daycare has no footprint; yaw from C3 antenna tower seen at f col ~1800; h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "refined": false,
+    "refined_by": "compare-vr todo 2",
+    "refined_note": "daycare (title) has no footprint; skyline candidates -45..-72 deg rejected by eye; original kept"
+  },
+  {
+    "scene": "scene_d1",
+    "title": "창업보육센터",
+    "station_e": 243823,
+    "station_n": 263801.5,
+    "station_x": 241.36,
+    "station_z": -218.59,
+    "height_m_est": 14,
+    "yaw_deg": 327,
+    "method": "ortho-match",
+    "confidence": 0.5,
+    "residual_m": 40,
+    "residual_estimated": true,
+    "xml_coord_real": false,
+    "xml_lat": 34.96832278,
+    "xml_lng": 127.48496833,
+    "xml_alt": 58.74,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_C1",
+        "name": "C1 도서관",
+        "face": "f",
+        "approx_col_range": [
+          557,
+          1365
+        ],
+        "dist_m": 32
+      },
+      {
+        "bld_id": "BLD_SCNU_C1",
+        "name": "C1 도서관",
+        "face": "l",
+        "approx_col_range": [
+          1766,
+          1966
+        ],
+        "dist_m": 32
+      },
+      {
+        "bld_id": "BLD_SCNU_E1",
+        "name": "E1 학생회관",
+        "face": "l",
+        "approx_col_range": [
+          523,
+          1236
+        ],
+        "dist_m": 34
+      },
+      {
+        "bld_id": "BLD_SCNU_E1",
+        "name": "E1 학생회관",
+        "face": "b",
+        "approx_col_range": [
+          1021,
+          1699
+        ],
+        "dist_m": 34
+      },
+      {
+        "bld_id": "BLD_SCNU_R688059",
+        "name": "E1 학생회관 부속 시설 (추정)",
+        "face": "b",
+        "approx_col_range": [
+          2026,
+          2030
+        ],
+        "dist_m": 63
+      },
+      {
+        "bld_id": "BLD_SCNU_R688059",
+        "name": "E1 학생회관 부속 시설 (추정)",
+        "face": "l",
+        "approx_col_range": [
+          309,
+          334
+        ],
+        "dist_m": 63
+      },
+      {
+        "bld_id": "BLD_SCNU_E3",
+        "name": "E3 사범대학1호관",
+        "face": "l",
+        "approx_col_range": [
+          1280,
+          1787
+        ],
+        "dist_m": 85
+      },
+      {
+        "bld_id": "BLD_SCNU_B4",
+        "name": "B4 생명산업과학 2호관(그린스마트팜스쿨)",
+        "face": "r",
+        "approx_col_range": [
+          1011,
+          1546
+        ],
+        "dist_m": 89
+      },
+      {
+        "bld_id": "BLD_SCNU_A2",
+        "name": "A2 약학대학",
+        "face": "b",
+        "approx_col_range": [
+          306,
+          947
+        ],
+        "dist_m": 94
+      },
+      {
+        "bld_id": "BLD_SCNU_B6",
+        "name": "B6 제1중앙공급실",
+        "face": "r",
+        "approx_col_range": [
+          545,
+          932
+        ],
+        "dist_m": 111
+      },
+      {
+        "bld_id": "BLD_SCNU_E4",
+        "name": "E4 사범대학2호관",
+        "face": "f",
+        "approx_col_range": [
+          65,
+          222
+        ],
+        "dist_m": 114
+      },
+      {
+        "bld_id": "BLD_SCNU_E4",
+        "name": "E4 사범대학2호관",
+        "face": "l",
+        "approx_col_range": [
+          1765,
+          1888
+        ],
+        "dist_m": 114
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "stairs",
+        "face": "l",
+        "approx_col_range": [
+          1500,
+          2048
+        ],
+        "note": "outdoor stair"
+      }
+    ],
+    "flagged": "D1 signed block centred in f (seen); h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "refined": false,
+    "refined_by": "compare-vr todo 2",
+    "refined_note": "D1 block centred in f by eye but the render shows trees; station position off; candidates -37/-42 deg unconfirmed"
+  },
+  {
+    "scene": "scene_d2",
+    "title": "공과대학1호관",
+    "station_e": 243638.1,
+    "station_n": 263901.5,
+    "station_x": 126.28,
+    "station_z": -281.57,
+    "height_m_est": 10,
+    "yaw_deg": 44.3,
+    "method": "xml-coord",
+    "confidence": 0.65,
+    "residual_m": 20,
+    "residual_estimated": true,
+    "xml_coord_real": true,
+    "xml_lat": 34.97027528,
+    "xml_lng": 127.47785167,
+    "xml_alt": 4.82,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_D2",
+        "name": "D2 공학 1호관(우주항공첨단소재스쿨)",
+        "face": "r",
+        "approx_col_range": [
+          314,
+          1544
+        ],
+        "dist_m": 15
+      },
+      {
+        "bld_id": "BLD_SCNU_D2",
+        "name": "D2 공학 1호관(우주항공첨단소재스쿨)",
+        "face": "f",
+        "approx_col_range": [
+          882,
+          1403
+        ],
+        "dist_m": 15
+      },
+      {
+        "bld_id": "BLD_SCNU_D2",
+        "name": "D2 공학 1호관(우주항공첨단소재스쿨)",
+        "face": "l",
+        "approx_col_range": [
+          1175,
+          1728
+        ],
+        "dist_m": 15
+      },
+      {
+        "bld_id": "BLD_SCNU_D2",
+        "name": "D2 공학 1호관(우주항공첨단소재스쿨)",
+        "face": "b",
+        "approx_col_range": [
+          1313,
+          2018
+        ],
+        "dist_m": 15
+      },
+      {
+        "bld_id": "BLD_SCNU_D3",
+        "name": "D3 공학 2호관(우주항공첨단소재스쿨)",
+        "face": "b",
+        "approx_col_range": [
+          449,
+          1343
+        ],
+        "dist_m": 42
+      },
+      {
+        "bld_id": "BLD_SCNU_E4",
+        "name": "E4 사범대학2호관",
+        "face": "r",
+        "approx_col_range": [
+          967,
+          1316
+        ],
+        "dist_m": 86
+      },
+      {
+        "bld_id": "BLD_SCNU_D1",
+        "name": "D1 창업보육센터",
+        "face": "f",
+        "approx_col_range": [
+          1155,
+          1442
+        ],
+        "dist_m": 89
+      },
+      {
+        "bld_id": "BLD_SCNU_C1",
+        "name": "C1 도서관",
+        "face": "r",
+        "approx_col_range": [
+          48,
+          888
+        ],
+        "dist_m": 101
+      },
+      {
+        "bld_id": "BLD_SCNU_D4",
+        "name": "D4 공학 3호관(우주항공첨단소재스쿨)",
+        "face": "l",
+        "approx_col_range": [
+          351,
+          414
+        ],
+        "dist_m": 108
+      },
+      {
+        "bld_id": "BLD_SCNU_D4",
+        "name": "D4 공학 3호관(우주항공첨단소재스쿨)",
+        "face": "b",
+        "approx_col_range": [
+          1321,
+          1467
+        ],
+        "dist_m": 108
+      },
+      {
+        "bld_id": "BLD_SCNU_E3",
+        "name": "E3 사범대학1호관",
+        "face": "r",
+        "approx_col_range": [
+          1027,
+          1868
+        ],
+        "dist_m": 118
+      },
+      {
+        "bld_id": "BLD_SCNU_C3",
+        "name": "C3 공동실험실습관",
+        "face": "f",
+        "approx_col_range": [
+          1448,
+          1810
+        ],
+        "dist_m": 128
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "shelter",
+        "face": "r",
+        "approx_col_range": [
+          1050,
+          1300
+        ],
+        "note": "small roofed shelter/pergola with bench on central planted island"
+      },
+      {
+        "kind": "stairs",
+        "face": "f",
+        "approx_col_range": [
+          700,
+          1100
+        ],
+        "note": "outdoor stair up to D2"
+      },
+      {
+        "kind": "stairs",
+        "face": "l",
+        "approx_col_range": [
+          1300,
+          1700
+        ],
+        "note": "hillside stair"
+      }
+    ],
+    "flagged": "D2 (white, glass stair tower) centred in f (seen); h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "yaw_refined_deg": 44.3,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "BLD_D2"
+    ],
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.6
+  },
+  {
+    "scene": "scene_d3",
+    "title": "공과대학2호관",
+    "station_e": 243627.7,
+    "station_n": 263822.4,
+    "station_x": 119.53,
+    "station_z": -232.21,
+    "height_m_est": 10,
+    "yaw_deg": 300,
+    "method": "xml-coord",
+    "confidence": 0.7,
+    "residual_m": 20,
+    "residual_estimated": true,
+    "xml_coord_real": true,
+    "xml_lat": 34.9695625,
+    "xml_lng": 127.47773333,
+    "xml_alt": 2.14,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_D3",
+        "name": "D3 공학 2호관(우주항공첨단소재스쿨)",
+        "face": "f",
+        "approx_col_range": [
+          3,
+          1911
+        ],
+        "dist_m": 14
+      },
+      {
+        "bld_id": "BLD_SCNU_D3",
+        "name": "D3 공학 2호관(우주항공첨단소재스쿨)",
+        "face": "l",
+        "approx_col_range": [
+          1123,
+          1807
+        ],
+        "dist_m": 14
+      },
+      {
+        "bld_id": "BLD_SCNU_D2",
+        "name": "D2 공학 1호관(우주항공첨단소재스쿨)",
+        "face": "r",
+        "approx_col_range": [
+          69,
+          1339
+        ],
+        "dist_m": 53
+      },
+      {
+        "bld_id": "BLD_SCNU_D2",
+        "name": "D2 공학 1호관(우주항공첨단소재스쿨)",
+        "face": "f",
+        "approx_col_range": [
+          1569,
+          1828
+        ],
+        "dist_m": 53
+      },
+      {
+        "bld_id": "BLD_SCNU_E3",
+        "name": "E3 사범대학1호관",
+        "face": "b",
+        "approx_col_range": [
+          622,
+          1792
+        ],
+        "dist_m": 54
+      },
+      {
+        "bld_id": "BLD_SCNU_E4",
+        "name": "E4 사범대학2호관",
+        "face": "r",
+        "approx_col_range": [
+          2037,
+          2041
+        ],
+        "dist_m": 64
+      },
+      {
+        "bld_id": "BLD_SCNU_E4",
+        "name": "E4 사범대학2호관",
+        "face": "b",
+        "approx_col_range": [
+          3,
+          681
+        ],
+        "dist_m": 64
+      },
+      {
+        "bld_id": "BLD_SCNU_E5",
+        "name": "E5 사범대학3호관",
+        "face": "b",
+        "approx_col_range": [
+          1563,
+          2030
+        ],
+        "dist_m": 77
+      },
+      {
+        "bld_id": "BLD_SCNU_E5",
+        "name": "E5 사범대학3호관",
+        "face": "l",
+        "approx_col_range": [
+          38,
+          210
+        ],
+        "dist_m": 77
+      },
+      {
+        "bld_id": "BLD_SCNU_R301217",
+        "name": "E8 인문예술관(애니메이션문화콘텐츠스쿨)",
+        "face": "l",
+        "approx_col_range": [
+          709,
+          1095
+        ],
+        "dist_m": 88
+      },
+      {
+        "bld_id": "BLD_SCNU_C1",
+        "name": "C1 도서관",
+        "face": "r",
+        "approx_col_range": [
+          1511,
+          2008
+        ],
+        "dist_m": 110
+      },
+      {
+        "bld_id": "BLD_SCNU_C1",
+        "name": "C1 도서관",
+        "face": "b",
+        "approx_col_range": [
+          45,
+          583
+        ],
+        "dist_m": 110
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "other",
+        "face": "d",
+        "approx_col_range": [
+          0,
+          900
+        ],
+        "note": "personal-mobility parking bay (blue)"
+      }
+    ],
+    "flagged": "red-brick D3 centred in f with D4 glass block behind (seen); h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "yaw_refined_deg": 288,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "BLD_D3",
+      "BLD_D4"
+    ],
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.9
+  },
+  {
+    "scene": "scene_d4",
+    "title": "공과대학3호관",
+    "station_e": 243554,
+    "station_n": 263876.8,
+    "station_x": 73.69,
+    "station_z": -266.37,
+    "height_m_est": 10,
+    "yaw_deg": 306.9,
+    "method": "xml-coord",
+    "confidence": 0.7,
+    "residual_m": 20,
+    "residual_estimated": true,
+    "xml_coord_real": true,
+    "xml_lat": 34.97005583,
+    "xml_lng": 127.47692917,
+    "xml_alt": 19.59,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_D2",
+        "name": "D2 공학 1호관(우주항공첨단소재스쿨)",
+        "face": "b",
+        "approx_col_range": [
+          81,
+          395
+        ],
+        "dist_m": 35
+      },
+      {
+        "bld_id": "BLD_SCNU_D2",
+        "name": "D2 공학 1호관(우주항공첨단소재스쿨)",
+        "face": "r",
+        "approx_col_range": [
+          956,
+          2029
+        ],
+        "dist_m": 35
+      },
+      {
+        "bld_id": "BLD_SCNU_D3",
+        "name": "D3 공학 2호관(우주항공첨단소재스쿨)",
+        "face": "b",
+        "approx_col_range": [
+          241,
+          1700
+        ],
+        "dist_m": 36
+      },
+      {
+        "bld_id": "BLD_SCNU_D4",
+        "name": "D4 공학 3호관(우주항공첨단소재스쿨)",
+        "face": "f",
+        "approx_col_range": [
+          1224,
+          1548
+        ],
+        "dist_m": 51
+      },
+      {
+        "bld_id": "BLD_SCNU_D4",
+        "name": "D4 공학 3호관(우주항공첨단소재스쿨)",
+        "face": "l",
+        "approx_col_range": [
+          1139,
+          1490
+        ],
+        "dist_m": 51
+      },
+      {
+        "bld_id": "BLD_SCNU_R301217",
+        "name": "E8 인문예술관(애니메이션문화콘텐츠스쿨)",
+        "face": "b",
+        "approx_col_range": [
+          1682,
+          2008
+        ],
+        "dist_m": 136
+      },
+      {
+        "bld_id": "BLD_SCNU_R301217",
+        "name": "E8 인문예술관(애니메이션문화콘텐츠스쿨)",
+        "face": "l",
+        "approx_col_range": [
+          2,
+          211
+        ],
+        "dist_m": 136
+      },
+      {
+        "bld_id": "BLD_SCNU_E3",
+        "name": "E3 사범대학1호관",
+        "face": "b",
+        "approx_col_range": [
+          739,
+          1244
+        ],
+        "dist_m": 143
+      },
+      {
+        "bld_id": "BLD_SCNU_E4",
+        "name": "E4 사범대학2호관",
+        "face": "b",
+        "approx_col_range": [
+          568,
+          829
+        ],
+        "dist_m": 148
+      },
+      {
+        "bld_id": "BLD_SCNU_E8",
+        "name": "E8 인문예술관(애니메이션문화콘텐츠스쿨)",
+        "face": "l",
+        "approx_col_range": [
+          60,
+          97
+        ],
+        "dist_m": 159
+      },
+      {
+        "bld_id": "BLD_SCNU_E8",
+        "name": "E8 인문예술관(애니메이션문화콘텐츠스쿨)",
+        "face": "b",
+        "approx_col_range": [
+          1976,
+          2024
+        ],
+        "dist_m": 159
+      },
+      {
+        "bld_id": "BLD_SCNU_E5",
+        "name": "E5 사범대학3호관",
+        "face": "b",
+        "approx_col_range": [
+          1205,
+          1545
+        ],
+        "dist_m": 163
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "pavilion",
+        "face": "l",
+        "approx_col_range": [
+          1250,
+          1450
+        ],
+        "note": "정자 (brown hip roof) beside path, left of D4 plaza"
+      },
+      {
+        "kind": "stairs",
+        "face": "f",
+        "approx_col_range": [
+          700,
+          1400
+        ],
+        "note": "long stepped entrance plaza to D4"
+      },
+      {
+        "kind": "sign",
+        "face": "l",
+        "approx_col_range": [
+          0,
+          300
+        ],
+        "note": "road text 어린이보호 at road"
+      }
+    ],
+    "flagged": "D4 centred in f (seen); D3/E cluster in b; h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "yaw_refined_deg": 290.9,
+    "refined_residual_deg": 2,
+    "refined_buildings": [
+      "BLD_D4",
+      "BLD_D3"
+    ],
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.9
+  },
+  {
+    "scene": "scene_d5",
+    "title": "학군단",
+    "station_e": 243972,
+    "station_n": 264061,
+    "station_x": 335.14,
+    "station_z": -380.12,
+    "height_m_est": 14,
+    "yaw_deg": 120,
+    "method": "ortho-match",
+    "confidence": 0.3,
+    "residual_m": 40,
+    "residual_estimated": true,
+    "xml_coord_real": false,
+    "xml_lat": 34.96832278,
+    "xml_lng": 127.48496833,
+    "xml_alt": 58.74,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_R688403",
+        "name": "C2 친환경농업센터 부속 시설 (추정)",
+        "face": "r",
+        "approx_col_range": [
+          1158,
+          1310
+        ],
+        "dist_m": 144
+      },
+      {
+        "bld_id": "BLD_SCNU_R688401",
+        "name": "B6 제1중앙공급실 부속 시설 (추정)",
+        "face": "r",
+        "approx_col_range": [
+          1016,
+          1109
+        ],
+        "dist_m": 148
+      },
+      {
+        "bld_id": "BLD_SCNU_R687777",
+        "name": "C2 친환경농업센터 부속 시설 (추정)",
+        "face": "r",
+        "approx_col_range": [
+          1156,
+          1205
+        ],
+        "dist_m": 151
+      },
+      {
+        "bld_id": "BLD_SCNU_R687750",
+        "name": "B6 제1중앙공급실 부속 시설 (추정)",
+        "face": "r",
+        "approx_col_range": [
+          877,
+          925
+        ],
+        "dist_m": 151
+      },
+      {
+        "bld_id": "BLD_SCNU_R690033",
+        "name": "C2 친환경농업센터 부속 시설 (추정)",
+        "face": "r",
+        "approx_col_range": [
+          1212,
+          1319
+        ],
+        "dist_m": 154
+      },
+      {
+        "bld_id": "BLD_SCNU_R690034",
+        "name": "B6 제1중앙공급실 부속 시설 (추정)",
+        "face": "r",
+        "approx_col_range": [
+          785,
+          844
+        ],
+        "dist_m": 157
+      },
+      {
+        "bld_id": "BLD_SCNU_R687828",
+        "name": "B6 제1중앙공급실 부속 시설 (추정)",
+        "face": "r",
+        "approx_col_range": [
+          717,
+          786
+        ],
+        "dist_m": 158
+      },
+      {
+        "bld_id": "BLD_SCNU_R687709",
+        "name": "B5 생명산업과학대학온실 부속 시설 (추정)",
+        "face": "r",
+        "approx_col_range": [
+          444,
+          481
+        ],
+        "dist_m": 160
+      },
+      {
+        "bld_id": "BLD_SCNU_B5",
+        "name": "B5 생명산업과학대학온실",
+        "face": "r",
+        "approx_col_range": [
+          379,
+          647
+        ],
+        "dist_m": 160
+      },
+      {
+        "bld_id": "BLD_SCNU_B7",
+        "name": "B7 산학협력관",
+        "face": "f",
+        "approx_col_range": [
+          1091,
+          1427
+        ],
+        "dist_m": 160
+      },
+      {
+        "bld_id": "BLD_SCNU_R687746",
+        "name": "조미채소기술센터유리온실",
+        "face": "r",
+        "approx_col_range": [
+          640,
+          689
+        ],
+        "dist_m": 161
+      },
+      {
+        "bld_id": "BLD_SCNU_B6",
+        "name": "B6 제1중앙공급실",
+        "face": "r",
+        "approx_col_range": [
+          714,
+          991
+        ],
+        "dist_m": 163
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "other",
+        "face": "r",
+        "approx_col_range": [
+          1150,
+          1400
+        ],
+        "note": "small yellow-wall green tiled-roof building"
+      }
+    ],
+    "flagged": "D5 학군단 building (new, pink/yellow) visible in f/r but its registry footprint is marked demolished; station unreliable; h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "refined": false,
+    "refined_by": "compare-vr todo 2",
+    "refined_note": "D5 학군단 (title) has no footprint (todo 9); station outside the campus terrain, no building to measure"
+  },
+  {
+    "scene": "scene_e1",
+    "title": "학생회관",
+    "station_e": 243862.8,
+    "station_n": 263803.2,
+    "station_x": 266.18,
+    "station_z": -219.56,
+    "height_m_est": 16,
+    "yaw_deg": 207,
+    "method": "ortho-match",
+    "confidence": 0.55,
+    "residual_m": 40,
+    "residual_estimated": true,
+    "xml_coord_real": false,
+    "xml_lat": 34.96832278,
+    "xml_lng": 127.48496833,
+    "xml_alt": 58.74,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_E1",
+        "name": "E1 학생회관",
+        "face": "f",
+        "approx_col_range": [
+          731,
+          1986
+        ],
+        "dist_m": 43
+      },
+      {
+        "bld_id": "BLD_SCNU_E1",
+        "name": "E1 학생회관",
+        "face": "r",
+        "approx_col_range": [
+          152,
+          152
+        ],
+        "dist_m": 43
+      },
+      {
+        "bld_id": "BLD_SCNU_B4",
+        "name": "B4 생명산업과학 2호관(그린스마트팜스쿨)",
+        "face": "b",
+        "approx_col_range": [
+          1329,
+          1861
+        ],
+        "dist_m": 50
+      },
+      {
+        "bld_id": "BLD_SCNU_B4",
+        "name": "B4 생명산업과학 2호관(그린스마트팜스쿨)",
+        "face": "l",
+        "approx_col_range": [
+          11,
+          308
+        ],
+        "dist_m": 50
+      },
+      {
+        "bld_id": "BLD_SCNU_A2",
+        "name": "A2 약학대학",
+        "face": "l",
+        "approx_col_range": [
+          1157,
+          2012
+        ],
+        "dist_m": 61
+      },
+      {
+        "bld_id": "BLD_SCNU_C1",
+        "name": "C1 도서관",
+        "face": "r",
+        "approx_col_range": [
+          501,
+          1473
+        ],
+        "dist_m": 72
+      },
+      {
+        "bld_id": "BLD_SCNU_R688059",
+        "name": "E1 학생회관 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          1220,
+          1396
+        ],
+        "dist_m": 82
+      },
+      {
+        "bld_id": "BLD_SCNU_B6",
+        "name": "B6 제1중앙공급실",
+        "face": "b",
+        "approx_col_range": [
+          814,
+          1249
+        ],
+        "dist_m": 92
+      },
+      {
+        "bld_id": "BLD_SCNU_C2",
+        "name": "C2 친환경농업센터",
+        "face": "b",
+        "approx_col_range": [
+          95,
+          574
+        ],
+        "dist_m": 105
+      },
+      {
+        "bld_id": "BLD_SCNU_C2",
+        "name": "C2 친환경농업센터",
+        "face": "r",
+        "approx_col_range": [
+          2004,
+          2004
+        ],
+        "dist_m": 105
+      },
+      {
+        "bld_id": "BLD_SCNU_W366373751",
+        "name": "A1 대학본부",
+        "face": "l",
+        "approx_col_range": [
+          1486,
+          1602
+        ],
+        "dist_m": 107
+      },
+      {
+        "bld_id": "BLD_SCNU_W366373751",
+        "name": "A1 대학본부",
+        "face": "f",
+        "approx_col_range": [
+          129,
+          483
+        ],
+        "dist_m": 107
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "stairs",
+        "face": "d",
+        "approx_col_range": [
+          0,
+          2048
+        ],
+        "note": "round stage with stepped seating, paved plaza with tree squares"
+      },
+      {
+        "kind": "sculpture",
+        "face": "r",
+        "approx_col_range": [
+          1000,
+          1300
+        ],
+        "note": "sculpture in pond"
+      },
+      {
+        "kind": "sculpture",
+        "face": "l",
+        "approx_col_range": [
+          500,
+          900
+        ],
+        "note": "central roundabout"
+      }
+    ],
+    "flagged": "E1 blue/white block in f; central roundabout in l and sculpture pond in r (seen); h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "yaw_refined_deg": 207,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "BLD_E1"
+    ],
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.6
+  },
+  {
+    "scene": "scene_e2",
+    "title": "기초교육관",
+    "station_e": 243616.8,
+    "station_n": 263773.2,
+    "station_x": 112.54,
+    "station_z": -201.57,
+    "height_m_est": 14,
+    "yaw_deg": 129,
+    "method": "ortho-match",
+    "confidence": 0.35,
+    "residual_m": 40,
+    "residual_estimated": true,
+    "xml_coord_real": false,
+    "xml_lat": 34.96832278,
+    "xml_lng": 127.48496833,
+    "xml_alt": 58.74,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_D3",
+        "name": "D3 공학 2호관(우주항공첨단소재스쿨)",
+        "face": "b",
+        "approx_col_range": [
+          1141,
+          1984
+        ],
+        "dist_m": 26
+      },
+      {
+        "bld_id": "BLD_SCNU_D3",
+        "name": "D3 공학 2호관(우주항공첨단소재스쿨)",
+        "face": "l",
+        "approx_col_range": [
+          96,
+          134
+        ],
+        "dist_m": 26
+      },
+      {
+        "bld_id": "BLD_SCNU_R301217",
+        "name": "E8 인문예술관(애니메이션문화콘텐츠스쿨)",
+        "face": "r",
+        "approx_col_range": [
+          527,
+          1286
+        ],
+        "dist_m": 38
+      },
+      {
+        "bld_id": "BLD_SCNU_E3",
+        "name": "E3 사범대학1호관",
+        "face": "l",
+        "approx_col_range": [
+          1643,
+          2007
+        ],
+        "dist_m": 38
+      },
+      {
+        "bld_id": "BLD_SCNU_E3",
+        "name": "E3 사범대학1호관",
+        "face": "f",
+        "approx_col_range": [
+          13,
+          723
+        ],
+        "dist_m": 38
+      },
+      {
+        "bld_id": "BLD_SCNU_E5",
+        "name": "E5 사범대학3호관",
+        "face": "f",
+        "approx_col_range": [
+          734,
+          1645
+        ],
+        "dist_m": 47
+      },
+      {
+        "bld_id": "BLD_SCNU_E8",
+        "name": "E8 인문예술관(애니메이션문화콘텐츠스쿨)",
+        "face": "r",
+        "approx_col_range": [
+          828,
+          1035
+        ],
+        "dist_m": 66
+      },
+      {
+        "bld_id": "BLD_SCNU_E4",
+        "name": "E4 사범대학2호관",
+        "face": "l",
+        "approx_col_range": [
+          1231,
+          1575
+        ],
+        "dist_m": 82
+      },
+      {
+        "bld_id": "BLD_SCNU_D2",
+        "name": "D2 공학 1호관(우주항공첨단소재스쿨)",
+        "face": "l",
+        "approx_col_range": [
+          53,
+          931
+        ],
+        "dist_m": 102
+      },
+      {
+        "bld_id": "BLD_SCNU_D2",
+        "name": "D2 공학 1호관(우주항공첨단소재스쿨)",
+        "face": "b",
+        "approx_col_range": [
+          1785,
+          2021
+        ],
+        "dist_m": 102
+      },
+      {
+        "bld_id": "BLD_SCNU_D4",
+        "name": "D4 공학 3호관(우주항공첨단소재스쿨)",
+        "face": "b",
+        "approx_col_range": [
+          781,
+          1423
+        ],
+        "dist_m": 122
+      },
+      {
+        "bld_id": "BLD_SCNU_E7",
+        "name": "E7 사회과학관(애니메이션문화콘텐츠스쿨)",
+        "face": "r",
+        "approx_col_range": [
+          164,
+          391
+        ],
+        "dist_m": 140
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [],
+    "flagged": "E2 not clearly identified; low confidence; h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "refined": false,
+    "refined_by": "compare-vr todo 2",
+    "refined_note": "E2 not identified (as in the station survey); skyline +14..+36 deg candidates unconfirmed"
+  },
+  {
+    "scene": "scene_e3",
+    "title": "사범대학1호관",
+    "station_e": 243723.8,
+    "station_n": 263746,
+    "station_x": 179.31,
+    "station_z": -184.25,
+    "height_m_est": 16.2,
+    "yaw_deg": 232.3,
+    "method": "xml-coord",
+    "confidence": 0.6,
+    "residual_m": 20,
+    "residual_estimated": true,
+    "xml_coord_real": true,
+    "xml_lat": 34.96887,
+    "xml_lng": 127.47878194,
+    "xml_alt": 5.89,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_E1",
+        "name": "E1 학생회관",
+        "face": "l",
+        "approx_col_range": [
+          53,
+          283
+        ],
+        "dist_m": 39
+      },
+      {
+        "bld_id": "BLD_SCNU_E1",
+        "name": "E1 학생회관",
+        "face": "b",
+        "approx_col_range": [
+          1046,
+          1744
+        ],
+        "dist_m": 39
+      },
+      {
+        "bld_id": "BLD_SCNU_E3",
+        "name": "E3 사범대학1호관",
+        "face": "r",
+        "approx_col_range": [
+          187,
+          1765
+        ],
+        "dist_m": 43
+      },
+      {
+        "bld_id": "BLD_SCNU_E3",
+        "name": "E3 사범대학1호관",
+        "face": "b",
+        "approx_col_range": [
+          110,
+          236
+        ],
+        "dist_m": 43
+      },
+      {
+        "bld_id": "BLD_SCNU_E3",
+        "name": "E3 사범대학1호관",
+        "face": "f",
+        "approx_col_range": [
+          1984,
+          2022
+        ],
+        "dist_m": 43
+      },
+      {
+        "bld_id": "BLD_SCNU_E5",
+        "name": "E5 사범대학3호관",
+        "face": "f",
+        "approx_col_range": [
+          205,
+          1993
+        ],
+        "dist_m": 49
+      },
+      {
+        "bld_id": "BLD_SCNU_E4",
+        "name": "E4 사범대학2호관",
+        "face": "r",
+        "approx_col_range": [
+          1206,
+          1644
+        ],
+        "dist_m": 66
+      },
+      {
+        "bld_id": "BLD_SCNU_C1",
+        "name": "C1 도서관",
+        "face": "b",
+        "approx_col_range": [
+          374,
+          969
+        ],
+        "dist_m": 74
+      },
+      {
+        "bld_id": "BLD_SCNU_C1",
+        "name": "C1 도서관",
+        "face": "r",
+        "approx_col_range": [
+          1913,
+          2022
+        ],
+        "dist_m": 74
+      },
+      {
+        "bld_id": "BLD_SCNU_R688059",
+        "name": "E1 학생회관 부속 시설 (추정)",
+        "face": "b",
+        "approx_col_range": [
+          1885,
+          2009
+        ],
+        "dist_m": 74
+      },
+      {
+        "bld_id": "BLD_SCNU_R688059",
+        "name": "E1 학생회관 부속 시설 (추정)",
+        "face": "l",
+        "approx_col_range": [
+          1,
+          1
+        ],
+        "dist_m": 74
+      },
+      {
+        "bld_id": "BLD_SCNU_E2",
+        "name": "E2 기초교육관",
+        "face": "l",
+        "approx_col_range": [
+          742,
+          1898
+        ],
+        "dist_m": 79
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [],
+    "flagged": "hlookat=95: E3 in r; long E-block spans f/r (seen, approximate); h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "yaw_refined_deg": 229.3,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "BLD_E7",
+      "BLD_E5"
+    ],
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.9
+  },
+  {
+    "scene": "scene_e4",
+    "title": "사범대학2호관",
+    "station_e": 243736.1,
+    "station_n": 263852.6,
+    "station_x": 187.29,
+    "station_z": -250.73,
+    "height_m_est": 10,
+    "yaw_deg": 236.3,
+    "method": "xml-coord",
+    "confidence": 0.6,
+    "residual_m": 20,
+    "residual_estimated": true,
+    "xml_coord_real": true,
+    "xml_lat": 34.96983,
+    "xml_lng": 127.47892194,
+    "xml_alt": 3.76,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_C1",
+        "name": "C1 도서관",
+        "face": "b",
+        "approx_col_range": [
+          1080,
+          1854
+        ],
+        "dist_m": 9
+      },
+      {
+        "bld_id": "BLD_SCNU_C1",
+        "name": "C1 도서관",
+        "face": "l",
+        "approx_col_range": [
+          752,
+          1110
+        ],
+        "dist_m": 9
+      },
+      {
+        "bld_id": "BLD_SCNU_C1",
+        "name": "C1 도서관",
+        "face": "r",
+        "approx_col_range": [
+          1025,
+          1898
+        ],
+        "dist_m": 9
+      },
+      {
+        "bld_id": "BLD_SCNU_E4",
+        "name": "E4 사범대학2호관",
+        "face": "f",
+        "approx_col_range": [
+          638,
+          1347
+        ],
+        "dist_m": 28
+      },
+      {
+        "bld_id": "BLD_SCNU_E3",
+        "name": "E3 사범대학1호관",
+        "face": "f",
+        "approx_col_range": [
+          152,
+          848
+        ],
+        "dist_m": 47
+      },
+      {
+        "bld_id": "BLD_SCNU_E3",
+        "name": "E3 사범대학1호관",
+        "face": "l",
+        "approx_col_range": [
+          1652,
+          1812
+        ],
+        "dist_m": 47
+      },
+      {
+        "bld_id": "BLD_SCNU_D2",
+        "name": "D2 공학 1호관(우주항공첨단소재스쿨)",
+        "face": "r",
+        "approx_col_range": [
+          2,
+          1289
+        ],
+        "dist_m": 56
+      },
+      {
+        "bld_id": "BLD_SCNU_D2",
+        "name": "D2 공학 1호관(우주항공첨단소재스쿨)",
+        "face": "f",
+        "approx_col_range": [
+          2039,
+          2039
+        ],
+        "dist_m": 56
+      },
+      {
+        "bld_id": "BLD_SCNU_E1",
+        "name": "E1 학생회관",
+        "face": "l",
+        "approx_col_range": [
+          702,
+          1412
+        ],
+        "dist_m": 80
+      },
+      {
+        "bld_id": "BLD_SCNU_C3",
+        "name": "C3 공동실험실습관",
+        "face": "b",
+        "approx_col_range": [
+          156,
+          802
+        ],
+        "dist_m": 88
+      },
+      {
+        "bld_id": "BLD_SCNU_D1",
+        "name": "D1 창업보육센터",
+        "face": "r",
+        "approx_col_range": [
+          1420,
+          1711
+        ],
+        "dist_m": 89
+      },
+      {
+        "bld_id": "BLD_SCNU_C2",
+        "name": "C2 친환경농업센터",
+        "face": "b",
+        "approx_col_range": [
+          830,
+          1219
+        ],
+        "dist_m": 110
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "sculpture",
+        "face": "r",
+        "approx_col_range": [
+          700,
+          1000
+        ],
+        "note": "round planter/sculpture on red-paved plaza"
+      }
+    ],
+    "flagged": "E4 in f approximately (seen); h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "refined": false,
+    "refined_by": "compare-vr todo 2",
+    "refined_note": "close-range view under trees; skyline candidates -13/-20 deg unconfirmed"
+  },
+  {
+    "scene": "scene_e5",
+    "title": "사범대학3호관",
+    "station_e": 243705.7,
+    "station_n": 263746.8,
+    "station_x": 167.95,
+    "station_z": -184.81,
+    "height_m_est": 10,
+    "yaw_deg": 220.5,
+    "method": "xml-coord",
+    "confidence": 0.65,
+    "residual_m": 20,
+    "residual_estimated": true,
+    "xml_coord_real": true,
+    "xml_lat": 34.96887806,
+    "xml_lng": 127.47858278,
+    "xml_alt": 6.3,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_E3",
+        "name": "E3 사범대학1호관",
+        "face": "r",
+        "approx_col_range": [
+          353,
+          1111
+        ],
+        "dist_m": 31
+      },
+      {
+        "bld_id": "BLD_SCNU_E3",
+        "name": "E3 사범대학1호관",
+        "face": "b",
+        "approx_col_range": [
+          34,
+          894
+        ],
+        "dist_m": 31
+      },
+      {
+        "bld_id": "BLD_SCNU_E5",
+        "name": "E5 사범대학3호관",
+        "face": "f",
+        "approx_col_range": [
+          25,
+          1696
+        ],
+        "dist_m": 31
+      },
+      {
+        "bld_id": "BLD_SCNU_E5",
+        "name": "E5 사범대학3호관",
+        "face": "r",
+        "approx_col_range": [
+          179,
+          348
+        ],
+        "dist_m": 31
+      },
+      {
+        "bld_id": "BLD_SCNU_E1",
+        "name": "E1 학생회관",
+        "face": "l",
+        "approx_col_range": [
+          8,
+          522
+        ],
+        "dist_m": 57
+      },
+      {
+        "bld_id": "BLD_SCNU_E1",
+        "name": "E1 학생회관",
+        "face": "b",
+        "approx_col_range": [
+          1434,
+          1969
+        ],
+        "dist_m": 57
+      },
+      {
+        "bld_id": "BLD_SCNU_E4",
+        "name": "E4 사범대학2호관",
+        "face": "b",
+        "approx_col_range": [
+          4,
+          299
+        ],
+        "dist_m": 61
+      },
+      {
+        "bld_id": "BLD_SCNU_E4",
+        "name": "E4 사범대학2호관",
+        "face": "r",
+        "approx_col_range": [
+          1769,
+          2042
+        ],
+        "dist_m": 61
+      },
+      {
+        "bld_id": "BLD_SCNU_C1",
+        "name": "C1 도서관",
+        "face": "b",
+        "approx_col_range": [
+          474,
+          1313
+        ],
+        "dist_m": 84
+      },
+      {
+        "bld_id": "BLD_SCNU_R688059",
+        "name": "E1 학생회관 부속 시설 (추정)",
+        "face": "l",
+        "approx_col_range": [
+          222,
+          334
+        ],
+        "dist_m": 92
+      },
+      {
+        "bld_id": "BLD_SCNU_E2",
+        "name": "E2 기초교육관",
+        "face": "l",
+        "approx_col_range": [
+          865,
+          1944
+        ],
+        "dist_m": 93
+      },
+      {
+        "bld_id": "BLD_SCNU_R301217",
+        "name": "E8 인문예술관(애니메이션문화콘텐츠스쿨)",
+        "face": "f",
+        "approx_col_range": [
+          1349,
+          2038
+        ],
+        "dist_m": 100
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "garden",
+        "face": "b",
+        "approx_col_range": [
+          1000,
+          1900
+        ],
+        "note": "lawn garden with topiary shrubs"
+      }
+    ],
+    "flagged": "E5 orange-frame block centred in f (seen); h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "yaw_refined_deg": 235.5,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "BLD_E5",
+      "BLD_E3"
+    ],
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.9
+  },
+  {
+    "scene": "scene_e6",
+    "title": "미래창조관",
+    "station_e": 243754.2,
+    "station_n": 263596.2,
+    "station_x": 197.78,
+    "station_z": -90.63,
+    "height_m_est": 13.8,
+    "yaw_deg": 213,
+    "method": "xml-coord",
+    "confidence": 0.7,
+    "residual_m": 20,
+    "residual_estimated": true,
+    "xml_coord_real": true,
+    "xml_lat": 34.96751806,
+    "xml_lng": 127.47910611,
+    "xml_alt": 4.3,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_E6",
+        "name": "E6 미래창조관",
+        "face": "f",
+        "approx_col_range": [
+          71,
+          1756
+        ],
+        "dist_m": 37
+      },
+      {
+        "bld_id": "BLD_SCNU_E6",
+        "name": "E6 미래창조관",
+        "face": "r",
+        "approx_col_range": [
+          70,
+          70
+        ],
+        "dist_m": 37
+      },
+      {
+        "bld_id": "BLD_SCNU_E6",
+        "name": "E6 미래창조관",
+        "face": "l",
+        "approx_col_range": [
+          1954,
+          1954
+        ],
+        "dist_m": 37
+      },
+      {
+        "bld_id": "BLD_SCNU_E2",
+        "name": "E2 기초교육관",
+        "face": "r",
+        "approx_col_range": [
+          1385,
+          1917
+        ],
+        "dist_m": 38
+      },
+      {
+        "bld_id": "BLD_SCNU_E2",
+        "name": "E2 기초교육관",
+        "face": "b",
+        "approx_col_range": [
+          62,
+          983
+        ],
+        "dist_m": 38
+      },
+      {
+        "bld_id": "BLD_SCNU_A6",
+        "name": "A6 학생생활관 창조관",
+        "face": "l",
+        "approx_col_range": [
+          21,
+          1618
+        ],
+        "dist_m": 42
+      },
+      {
+        "bld_id": "BLD_SCNU_A6",
+        "name": "A6 학생생활관 창조관",
+        "face": "b",
+        "approx_col_range": [
+          2006,
+          2023
+        ],
+        "dist_m": 42
+      },
+      {
+        "bld_id": "BLD_SCNU_A10",
+        "name": "A10 인재관 · A11 제2중앙공급실",
+        "face": "l",
+        "approx_col_range": [
+          1223,
+          1836
+        ],
+        "dist_m": 75
+      },
+      {
+        "bld_id": "BLD_SCNU_E7",
+        "name": "E7 사회과학관(애니메이션문화콘텐츠스쿨)",
+        "face": "r",
+        "approx_col_range": [
+          51,
+          685
+        ],
+        "dist_m": 92
+      },
+      {
+        "bld_id": "BLD_SCNU_E7",
+        "name": "E7 사회과학관(애니메이션문화콘텐츠스쿨)",
+        "face": "f",
+        "approx_col_range": [
+          1886,
+          1886
+        ],
+        "dist_m": 92
+      },
+      {
+        "bld_id": "BLD_SCNU_E5",
+        "name": "E5 사범대학3호관",
+        "face": "r",
+        "approx_col_range": [
+          1140,
+          1639
+        ],
+        "dist_m": 92
+      },
+      {
+        "bld_id": "BLD_SCNU_A7",
+        "name": "A7 학생생활관 관리동",
+        "face": "l",
+        "approx_col_range": [
+          380,
+          850
+        ],
+        "dist_m": 94
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [],
+    "flagged": "E6 centred in f, A12 tower in l where predicted (seen); h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "yaw_refined_deg": 195,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "BLD_E6",
+      "BLD_E2",
+      "BLD_A12"
+    ],
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.9
+  },
+  {
+    "scene": "scene_e7",
+    "title": "사회과학대학",
+    "station_e": 243653.2,
+    "station_n": 263631.4,
+    "station_x": 134.87,
+    "station_z": -112.9,
+    "height_m_est": 11.7,
+    "yaw_deg": 224.5,
+    "method": "xml-coord",
+    "confidence": 0.75,
+    "residual_m": 20,
+    "residual_estimated": true,
+    "xml_coord_real": true,
+    "xml_lat": 34.96783972,
+    "xml_lng": 127.4780025,
+    "xml_alt": 6.08,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_E7",
+        "name": "E7 사회과학관(애니메이션문화콘텐츠스쿨)",
+        "face": "r",
+        "approx_col_range": [
+          23,
+          123
+        ],
+        "dist_m": 34
+      },
+      {
+        "bld_id": "BLD_SCNU_E7",
+        "name": "E7 사회과학관(애니메이션문화콘텐츠스쿨)",
+        "face": "f",
+        "approx_col_range": [
+          764,
+          1336
+        ],
+        "dist_m": 34
+      },
+      {
+        "bld_id": "BLD_SCNU_E7",
+        "name": "E7 사회과학관(애니메이션문화콘텐츠스쿨)",
+        "face": "l",
+        "approx_col_range": [
+          1706,
+          1882
+        ],
+        "dist_m": 34
+      },
+      {
+        "bld_id": "BLD_SCNU_E5",
+        "name": "E5 사범대학3호관",
+        "face": "b",
+        "approx_col_range": [
+          10,
+          1131
+        ],
+        "dist_m": 51
+      },
+      {
+        "bld_id": "BLD_SCNU_E5",
+        "name": "E5 사범대학3호관",
+        "face": "r",
+        "approx_col_range": [
+          1869,
+          2002
+        ],
+        "dist_m": 51
+      },
+      {
+        "bld_id": "BLD_SCNU_E6",
+        "name": "E6 미래창조관",
+        "face": "l",
+        "approx_col_range": [
+          853,
+          1362
+        ],
+        "dist_m": 66
+      },
+      {
+        "bld_id": "BLD_SCNU_E2",
+        "name": "E2 기초교육관",
+        "face": "b",
+        "approx_col_range": [
+          1397,
+          2017
+        ],
+        "dist_m": 67
+      },
+      {
+        "bld_id": "BLD_SCNU_R301217",
+        "name": "E8 인문예술관(애니메이션문화콘텐츠스쿨)",
+        "face": "r",
+        "approx_col_range": [
+          766,
+          1425
+        ],
+        "dist_m": 75
+      },
+      {
+        "bld_id": "BLD_SCNU_E8",
+        "name": "E8 인문예술관(애니메이션문화콘텐츠스쿨)",
+        "face": "r",
+        "approx_col_range": [
+          987,
+          1131
+        ],
+        "dist_m": 104
+      },
+      {
+        "bld_id": "BLD_SCNU_E3",
+        "name": "E3 사범대학1호관",
+        "face": "b",
+        "approx_col_range": [
+          18,
+          704
+        ],
+        "dist_m": 121
+      },
+      {
+        "bld_id": "BLD_SCNU_A6",
+        "name": "A6 학생생활관 창조관",
+        "face": "l",
+        "approx_col_range": [
+          273,
+          839
+        ],
+        "dist_m": 147
+      },
+      {
+        "bld_id": "BLD_SCNU_E1",
+        "name": "E1 학생회관",
+        "face": "b",
+        "approx_col_range": [
+          914,
+          1436
+        ],
+        "dist_m": 152
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "garden",
+        "face": "f",
+        "approx_col_range": [
+          400,
+          1400
+        ],
+        "note": "paved plaza with tree planter"
+      },
+      {
+        "kind": "stairs",
+        "face": "d",
+        "approx_col_range": [
+          800,
+          1400
+        ],
+        "note": "outdoor stair"
+      },
+      {
+        "kind": "other",
+        "face": "r",
+        "approx_col_range": [
+          100,
+          700
+        ],
+        "note": "red cycle/footpath with crosswalk"
+      }
+    ],
+    "flagged": "E7 centred in f, red-balcony E8 in r where predicted (seen); h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "yaw_refined_deg": 214.5,
+    "refined_residual_deg": 2,
+    "refined_buildings": [
+      "BLD_E7",
+      "BLD_E8"
+    ],
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.9
+  },
+  {
+    "scene": "scene_e8",
+    "title": "인문예술대학",
+    "station_e": 243613,
+    "station_n": 263710.7,
+    "station_x": 110,
+    "station_z": -162.55,
+    "height_m_est": 11.7,
+    "yaw_deg": 274.3,
+    "method": "xml-coord",
+    "confidence": 0.75,
+    "residual_m": 20,
+    "residual_estimated": true,
+    "xml_coord_real": true,
+    "xml_lat": 34.96855667,
+    "xml_lng": 127.47756611,
+    "xml_alt": 4.51,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_R301217",
+        "name": "E8 인문예술관(애니메이션문화콘텐츠스쿨)",
+        "face": "f",
+        "approx_col_range": [
+          50,
+          1990
+        ],
+        "dist_m": 15
+      },
+      {
+        "bld_id": "BLD_SCNU_R301217",
+        "name": "E8 인문예술관(애니메이션문화콘텐츠스쿨)",
+        "face": "l",
+        "approx_col_range": [
+          1502,
+          1940
+        ],
+        "dist_m": 15
+      },
+      {
+        "bld_id": "BLD_SCNU_R301217",
+        "name": "E8 인문예술관(애니메이션문화콘텐츠스쿨)",
+        "face": "r",
+        "approx_col_range": [
+          665,
+          665
+        ],
+        "dist_m": 15
+      },
+      {
+        "bld_id": "BLD_SCNU_E8",
+        "name": "E8 인문예술관(애니메이션문화콘텐츠스쿨)",
+        "face": "f",
+        "approx_col_range": [
+          781,
+          1148
+        ],
+        "dist_m": 31
+      },
+      {
+        "bld_id": "BLD_SCNU_E5",
+        "name": "E5 사범대학3호관",
+        "face": "b",
+        "approx_col_range": [
+          16,
+          1706
+        ],
+        "dist_m": 37
+      },
+      {
+        "bld_id": "BLD_SCNU_E5",
+        "name": "E5 사범대학3호관",
+        "face": "r",
+        "approx_col_range": [
+          2008,
+          2033
+        ],
+        "dist_m": 37
+      },
+      {
+        "bld_id": "BLD_SCNU_E3",
+        "name": "E3 사범대학1호관",
+        "face": "r",
+        "approx_col_range": [
+          1589,
+          2025
+        ],
+        "dist_m": 66
+      },
+      {
+        "bld_id": "BLD_SCNU_E3",
+        "name": "E3 사범대학1호관",
+        "face": "b",
+        "approx_col_range": [
+          32,
+          248
+        ],
+        "dist_m": 66
+      },
+      {
+        "bld_id": "BLD_SCNU_E7",
+        "name": "E7 사회과학관(애니메이션문화콘텐츠스쿨)",
+        "face": "l",
+        "approx_col_range": [
+          527,
+          1113
+        ],
+        "dist_m": 77
+      },
+      {
+        "bld_id": "BLD_SCNU_D3",
+        "name": "D3 공학 2호관(우주항공첨단소재스쿨)",
+        "face": "r",
+        "approx_col_range": [
+          572,
+          969
+        ],
+        "dist_m": 88
+      },
+      {
+        "bld_id": "BLD_SCNU_E2",
+        "name": "E2 기초교육관",
+        "face": "b",
+        "approx_col_range": [
+          1056,
+          1589
+        ],
+        "dist_m": 123
+      },
+      {
+        "bld_id": "BLD_SCNU_E4",
+        "name": "E4 사범대학2호관",
+        "face": "r",
+        "approx_col_range": [
+          1594,
+          1834
+        ],
+        "dist_m": 126
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "garden",
+        "face": "f",
+        "approx_col_range": [
+          500,
+          1600
+        ],
+        "note": "courtyard plaza with planters"
+      }
+    ],
+    "flagged": "E8 courtyard centred in f, teal E7 in l where predicted (seen); h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "yaw_refined_deg": 272.3,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "BLD_E8",
+      "BLD_E7"
+    ],
+    "refined_by": "compare-vr todo 2",
+    "refined_confidence": 0.9
+  },
+  {
+    "scene": "scene_f1",
+    "title": "국제문화 컨벤션관",
+    "station_e": 244267,
+    "station_n": 263460.5,
+    "station_x": 517.47,
+    "station_z": -4.4,
+    "height_m_est": 20.9,
+    "yaw_deg": 255,
+    "method": "ortho-match",
+    "confidence": 0.55,
+    "residual_m": 40,
+    "residual_estimated": true,
+    "xml_coord_real": false,
+    "xml_lat": 34.96832278,
+    "xml_lng": 127.48496833,
+    "xml_alt": 58.74,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_F1",
+        "name": "F1 국제문화컨벤션관",
+        "face": "f",
+        "approx_col_range": [
+          52,
+          1185
+        ],
+        "dist_m": 39
+      },
+      {
+        "bld_id": "BLD_SCNU_F1",
+        "name": "F1 국제문화컨벤션관",
+        "face": "l",
+        "approx_col_range": [
+          2011,
+          2033
+        ],
+        "dist_m": 39
+      },
+      {
+        "bld_id": "BLD_SCNU_F1",
+        "name": "F1 국제문화컨벤션관",
+        "face": "r",
+        "approx_col_range": [
+          253,
+          719
+        ],
+        "dist_m": 39
+      },
+      {
+        "bld_id": "BLD_SCNU_F2",
+        "name": "F2 평생교육원",
+        "face": "f",
+        "approx_col_range": [
+          1438,
+          2028
+        ],
+        "dist_m": 89
+      },
+      {
+        "bld_id": "BLD_SCNU_F2",
+        "name": "F2 평생교육원",
+        "face": "r",
+        "approx_col_range": [
+          25,
+          44
+        ],
+        "dist_m": 89
+      },
+      {
+        "bld_id": "BLD_SCNU_R688981",
+        "name": "F1 국제문화컨벤션관 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          479,
+          569
+        ],
+        "dist_m": 99
+      },
+      {
+        "bld_id": "BLD_SCNU_F4",
+        "name": "F4 연립관사",
+        "face": "f",
+        "approx_col_range": [
+          695,
+          821
+        ],
+        "dist_m": 138
+      },
+      {
+        "bld_id": "BLD_SCNU_A17",
+        "name": "A17 체육관 · A18 체육관 증축동",
+        "face": "r",
+        "approx_col_range": [
+          460,
+          889
+        ],
+        "dist_m": 144
+      },
+      {
+        "bld_id": "BLD_SCNU_R138317",
+        "name": "F3 학생테니스장 부속 시설(마동) (추정)",
+        "face": "f",
+        "approx_col_range": [
+          1230,
+          1316
+        ],
+        "dist_m": 147
+      },
+      {
+        "bld_id": "BLD_SCNU_R688980",
+        "name": "A16 교직원테니스장 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          1998,
+          2038
+        ],
+        "dist_m": 177
+      },
+      {
+        "bld_id": "BLD_SCNU_R688980",
+        "name": "A16 교직원테니스장 부속 시설 (추정)",
+        "face": "r",
+        "approx_col_range": [
+          4,
+          4
+        ],
+        "dist_m": 177
+      },
+      {
+        "bld_id": "BLD_SCNU_R688041",
+        "name": "A16 교직원테니스장 부속 시설 (추정)",
+        "face": "r",
+        "approx_col_range": [
+          1,
+          111
+        ],
+        "dist_m": 181
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "shelter",
+        "face": "l",
+        "approx_col_range": [
+          550,
+          800
+        ],
+        "note": "bus stop shelter"
+      },
+      {
+        "kind": "bench",
+        "face": "d",
+        "approx_col_range": [
+          500,
+          1400
+        ],
+        "note": "two benches on sidewalk"
+      },
+      {
+        "kind": "sculpture",
+        "face": "b",
+        "approx_col_range": [
+          900,
+          1200
+        ],
+        "note": "statue in plaza by glass building"
+      }
+    ],
+    "flagged": "F1 convention hall with screen centred in f (seen); h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "refined": false,
+    "refined_by": "compare-vr todo 2",
+    "refined_note": "F1 hall in f within ~4 deg at the original yaw; no second building in view to confirm"
+  },
+  {
+    "scene": "scene_f2",
+    "title": "평생교육원",
+    "station_e": 244015.8,
+    "station_n": 263587.8,
+    "station_x": 361.03,
+    "station_z": -84.59,
+    "height_m_est": 14,
+    "yaw_deg": 129,
+    "method": "ortho-match",
+    "confidence": 0.45,
+    "residual_m": 40,
+    "residual_estimated": true,
+    "xml_coord_real": false,
+    "xml_lat": 34.96832278,
+    "xml_lng": 127.48496833,
+    "xml_alt": 58.74,
+    "visible_buildings": [
+      {
+        "bld_id": "BLD_SCNU_R69065",
+        "name": "A15 운동장 본부석 (추정)",
+        "face": "b",
+        "approx_col_range": [
+          1167,
+          1734
+        ],
+        "dist_m": 42
+      },
+      {
+        "bld_id": "BLD_SCNU_A4",
+        "name": "A4 학생생활관 부속동 · A5 학생생활관 진리관",
+        "face": "b",
+        "approx_col_range": [
+          202,
+          813
+        ],
+        "dist_m": 55
+      },
+      {
+        "bld_id": "BLD_SCNU_A8",
+        "name": "A8 학생생활관 향림관",
+        "face": "r",
+        "approx_col_range": [
+          1139,
+          1673
+        ],
+        "dist_m": 71
+      },
+      {
+        "bld_id": "BLD_SCNU_W366373751",
+        "name": "A1 대학본부",
+        "face": "b",
+        "approx_col_range": [
+          822,
+          1447
+        ],
+        "dist_m": 72
+      },
+      {
+        "bld_id": "BLD_SCNU_R688840",
+        "name": "A8 학생생활관 향림관 부속동 (추정)",
+        "face": "r",
+        "approx_col_range": [
+          931,
+          1133
+        ],
+        "dist_m": 78
+      },
+      {
+        "bld_id": "BLD_SCNU_R688057",
+        "name": "A1 대학본부 부속동 (추정)",
+        "face": "b",
+        "approx_col_range": [
+          1192,
+          1423
+        ],
+        "dist_m": 86
+      },
+      {
+        "bld_id": "BLD_SCNU_R688041",
+        "name": "A16 교직원테니스장 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          547,
+          690
+        ],
+        "dist_m": 93
+      },
+      {
+        "bld_id": "BLD_SCNU_R688980",
+        "name": "A16 교직원테니스장 부속 시설 (추정)",
+        "face": "f",
+        "approx_col_range": [
+          694,
+          747
+        ],
+        "dist_m": 101
+      },
+      {
+        "bld_id": "BLD_SCNU_R85389",
+        "name": "27동 학생생활관(향림관)",
+        "face": "r",
+        "approx_col_range": [
+          1052,
+          1452
+        ],
+        "dist_m": 102
+      },
+      {
+        "bld_id": "BLD_SCNU_A1",
+        "name": "A1 대학본부",
+        "face": "b",
+        "approx_col_range": [
+          962,
+          1273
+        ],
+        "dist_m": 112
+      },
+      {
+        "bld_id": "BLD_SCNU_R768570",
+        "name": "11동 생명대온실",
+        "face": "r",
+        "approx_col_range": [
+          1803,
+          1864
+        ],
+        "dist_m": 112
+      },
+      {
+        "bld_id": "BLD_SCNU_R768570",
+        "name": "11동 생명대온실",
+        "face": "b",
+        "approx_col_range": [
+          60,
+          112
+        ],
+        "dist_m": 112
+      }
+    ],
+    "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
+    "outdoor_objects_seen": [
+      {
+        "kind": "shelter",
+        "face": "d",
+        "approx_col_range": [
+          1400,
+          1900
+        ],
+        "note": "small green-roof hut/booth"
+      }
+    ],
+    "flagged": "F2 beige block (평생교육원 sign) in f; curved F1 annex in l; h from d-face scale search (weak; low shots often hit the 10-14 m search floor); residual_m estimated; height_m_est estimated",
+    "estimated": {
+      "height_m_est": true,
+      "residual_m": true,
+      "station": true,
+      "yaw_deg": true
+    },
+    "refined": false,
+    "refined_by": "compare-vr todo 2",
+    "refined_note": "F2 beige block not reproduced; station position off (render stands over the track); +25..+68 deg candidates rejected"
+  }
+]
