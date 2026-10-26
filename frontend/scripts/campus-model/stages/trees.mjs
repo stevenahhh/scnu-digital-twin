@@ -304,7 +304,7 @@ export function buildTrees({ glb, placement }) {
   const species = {
     ginkgo: [
       geometryPrimitive(trunk(0.17, 0.25, 3.4), materials.trunk),
-      geometryPrimitive(latheCrown([[0, 2.6], [1.35, 3.2], [2.0, 4.6], [1.85, 6.3], [1.25, 7.9], [0.45, 8.9], [0, 9.2]], 6, 0.18, 11), materials.ginkgo),
+      geometryPrimitive(latheCrown([[0, 2.4], [1.5, 3.0], [2.0, 4.3], [2.0, 5.8], [1.6, 7.3], [0.9, 8.5], [0, 9.2]], 6, 0.18, 11), materials.ginkgo),
     ],
     broadleaf: [
       geometryPrimitive(trunk(0.18, 0.27, 3.0), materials.trunk),
