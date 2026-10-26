@@ -37,6 +37,15 @@ export class MeshData {
     let nx = uy * vz - uz * vy;
     let ny = uz * vx - ux * vz;
     let nz = ux * vy - uy * vx;
+    // A stretch whose top meets its base at one end (p3 === p0) is still a visible triangle. Take its normal from
+    // the diagonals then: a zero normal makes the shader's normalize() NaN, which Bloom spreads into black blocks.
+    if (Math.hypot(nx, ny, nz) < 1e-12) {
+      const [ax, ay, az] = [p2[0] - p0[0], p2[1] - p0[1], p2[2] - p0[2]];
+      const [bx, by, bz] = [p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2]];
+      nx = ay * bz - az * by;
+      ny = az * bx - ax * bz;
+      nz = ax * by - ay * bx;
+    }
     const length = Math.hypot(nx, ny, nz) || 1;
     nx /= length;
     ny /= length;
