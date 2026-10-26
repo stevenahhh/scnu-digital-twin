@@ -85,6 +85,8 @@ const LABEL_HOST_STYLE = "position:absolute;inset:0;pointer-events:none;z-index:
 const NON_CASTER_MATERIAL_NAME = "Ground";
 // Tree trunks, and the far off-campus context tiles (scripts/campus-model/stages/context.mjs) beyond the shadow camera.
 const NON_CASTER_PARENT_PATTERN = /^(Trees_.*_trunk|Context_Far_)/;
+// 그림자 카메라 밖의 먼 맥락 타일(건물·도로, Context_Far_*)은 그림자를 받아도 그려질 그림자가 없으므로 받지 않는다(셰이더 비용만 듦).
+const NON_RECEIVER_PARENT_PATTERN = /^Context_Far_/;
 // 노면 표시(Road_Marking, 생성기 stages/markings.mjs): 항공사진에서 찾은 도색을 지형 삼각형 위 4 cm에 얹은 얇은 메시다.
 // 지면 층(Ground_*, 최대 3.6 cm)보다 높고, 먼 거리의 깊이 정밀도에서도 겹치지 않도록 폴리곤 오프셋으로 늘 지면 앞에 그린다.
 // 평평한 도색이라 그림자를 드리우지 않고, 캠퍼스 전체에 걸친 삼각형을 포인터가 움직일 때마다 검사하지 않도록 클릭 판정에서도 뺀다.
@@ -560,7 +562,7 @@ export function CityModel({
         NON_CASTER_PARENT_PATTERN.test(child.name);
       child.castShadow = !isNonCaster;
       if (isNonCaster) nonCasterNames.push(child.name);
-      child.receiveShadow = true;
+      child.receiveShadow = !(NON_RECEIVER_PARENT_PATTERN.test(child.parent?.name ?? "") || NON_RECEIVER_PARENT_PATTERN.test(child.name));
       child.material = child.material.clone();
       if (isFurniture) child.raycast = () => {};
       if (isRoadMarking) {

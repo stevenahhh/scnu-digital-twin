@@ -732,6 +732,30 @@ class picks the section and a vertex colour per building the wall tone. All mass
 with the one `Context_Building` material. Nodes are `Context_Buildings_<i>_<j>` with extras
 `{ context: true, selectable: false }`: no `BLD_` id, so CityModel never selects them.
 
+### Context ground (`stages/contextGround.mjs`)
+
+The streets around the campus outside `EXTENT`, out to the context buildings, on the OuterTerrain mesh. Source: the
+OSM arterial and connector centrelines of `data/osm-ground.json` (the ways `network/surfaces.mjs` traces inside
+`EXTENT`), fitted as straight runs and arcs (`lib/markingFit.mjs fitPath`). OSM gives no widths or lane counts here,
+so:
+
+- lane count: only where the same road (OSM name and class) carries gate-accepted paint inside `EXTENT`
+  (`stages/markings.mjs` pieces): per 10 m section, one yellow centre line with white lane lines on both sides counts
+  (whites left + 1) + (whites right + 1), and the road takes the smallest count (mid-block; junction approaches add
+  turn lanes); a yellow line alone in two or more sections is one lane each way. No paint, no lane count.
+- carriageway: lanes x 3.25 m clamped to the asphalt traced inside `EXTENT` where the lane count is known, else a
+  half-width per highway class (`ROAD_CLASS`, 추정); narrowed where a building footprint is closer.
+- sidewalks raised 0.15 m on primary, secondary and tertiary ways (class width, 추정), cut at junction mouths and
+  buildings, with plain concrete kerb faces; markings only on roads with a lane count: the yellow centre line (double
+  at 4 lanes or more) and white dashed lane lines at the statute 3 m / 5 m (`DASH_BY_KIND`), left out near junctions.
+- materials: the CC0 asphalt and concrete tiles and the campus-speckle paver textures already in the model (no new
+  images, no photo pixels) and the shared `Road_Marking` palette.
+
+One node per 200 m tile: `Ground_Context_<i>_<j>`, or `Context_Far_Ground_<i>_<j>` beyond `CONTEXT_REACH`. Ground_*
+materials cast no shadow, and CityModel does not let `Context_Far_*` nodes (ground and building tiles) receive shadows:
+they lie outside the shadow camera. The stage runs last and adds nodes only; it is not part of the road network,
+routing or walkable sets, and the campus ground nodes stay byte-identical.
+
 ### Lamps
 
 Every `street_lamp` of the survey is a lamp: the poles placed on the photo and the data.go.kr 순천시_가로등 points
