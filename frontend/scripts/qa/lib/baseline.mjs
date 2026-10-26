@@ -83,11 +83,21 @@ export function scenarioKey({ entry, state, viewport, theme }) {
 }
 
 // Compares one captured scenario with its baseline. Returns { pass, problems: [..] }.
+// States whose pixels depend on frame timing (S11 is captured mid-drag: the held orbit ends at a pose
+// that varies with the frame rate). Their dHash is reported but only the key rects gate.
+export const PIXEL_VOLATILE_STATES = Object.freeze(["S11"]);
+
+export function isPixelVolatile(key) {
+  const state = String(key).split("/")[1]?.split("-")[0];
+  return PIXEL_VOLATILE_STATES.includes(state);
+}
+
 export function compareScenario(current, baseline) {
   if (!baseline) return { pass: false, problems: [{ kind: "missing-baseline", detail: "scenario missing from baselines.json" }] };
   const problems = [];
   const distance = dHashDistance(current.dhash, baseline.dhash);
-  if (distance > DHASH_MAX_BITS) problems.push({ kind: "dhash", detail: `dHash distance ${distance} bits > ${DHASH_MAX_BITS}`, distance });
+  const volatile = isPixelVolatile(current.key);
+  if (distance > DHASH_MAX_BITS && !volatile) problems.push({ kind: "dhash", detail: `dHash distance ${distance} bits > ${DHASH_MAX_BITS}`, distance });
   const rectShifts = {};
   for (const name of Object.keys(KEY_RECTS)) {
     const shift = rectShift(current.rects?.[name] ?? null, baseline.rects?.[name] ?? null);
@@ -101,7 +111,7 @@ export function compareScenario(current, baseline) {
       });
     }
   }
-  return { pass: problems.length === 0, distance, rectShifts, problems };
+  return { pass: problems.length === 0, distance, dhashGating: !volatile, rectShifts, problems };
 }
 
 export function loadBaselines(file) {

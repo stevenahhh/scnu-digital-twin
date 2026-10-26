@@ -121,6 +121,23 @@ export async function applyTheme(ctx, theme) {
   return applied === "light";
 }
 
+// VWorld streams map tiles from a live service after every camera move and refines them in batches;
+// wait until three screenshots 1.5 s apart all stay within 1 % PNG size (min 6 s, max 40 s) so a
+// frame is never half-loaded or caught between two refinement batches.
+export async function settleTiles(ctx) {
+  const t0 = Date.now();
+  const sizes = [(await ctx.b.screenshot()).length];
+  for (;;) {
+    await sleep(1500);
+    sizes.push((await ctx.b.screenshot()).length);
+    const last = sizes.slice(-3);
+    const stable = last.length === 3 && Math.max(...last) / Math.min(...last) - 1 < 0.01;
+    const elapsed = Date.now() - t0;
+    if ((elapsed >= 6000 && stable) || elapsed > 40000) break;
+  }
+  ctx.actions.push(`map tiles settled after ${Math.round((Date.now() - t0) / 100) / 10} s`);
+}
+
 export async function loadAndSettle(ctx, url) {
   await ctx.b.navigate(url);
   ctx.memo.set(`${ctx.stateLabel}:navigatedAt`, Date.now());

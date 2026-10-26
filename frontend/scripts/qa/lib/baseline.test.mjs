@@ -46,6 +46,16 @@ test("rect fingerprint tolerance is 4 px per edge", () => {
   assert.equal(verdict.problems[0].rect, "panel");
 });
 
+test("the mid-drag state S11 is gated by key rects only", () => {
+  const base = { dhash: "0000000000000000", rects: { panel: { x: 0, y: 0, w: 10, h: 10 } } };
+  const drift = compareScenario({ key: "legacy/S11-P-dark", dhash: "0000000000000fff", rects: base.rects }, base);
+  assert.equal(drift.pass, true);
+  assert.equal(drift.dhashGating, false);
+  const moved = compareScenario({ key: "legacy/S11-P-dark", dhash: "0000000000000000", rects: { panel: { x: 9, y: 0, w: 10, h: 10 } } }, base);
+  assert.equal(moved.pass, false);
+  assert.equal(compareScenario({ key: "legacy/S01-P-dark", dhash: "0000000000000fff", rects: base.rects }, base).pass, false);
+});
+
 test("hash drift above the limit and a missing baseline are regressions", () => {
   const drift = compareScenario({ dhash: "00000000000001ff", rects: {} }, { dhash: "0000000000000000", rects: {} });
   assert.equal(drift.pass, false);

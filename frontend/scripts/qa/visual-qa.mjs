@@ -11,7 +11,7 @@ import { setFixtures, readFixtureRequests } from "./lib/fixtures.mjs";
 import { inPage, decode } from "./lib/probe.mjs";
 import { KEY_RECTS, compareScenario, dHashPng, loadBaselines, roundRect, saveBaselines, scenarioKey } from "./lib/baseline.mjs";
 import { EXIT, exitCodeFor, rollupChecks, writeReport } from "./lib/report.mjs";
-import { STATES, CHAIN_IDS, S17_SUBSTATES, VWORLD_STATE_IDS, parseStateList, stateById, loadAndSettle, applyTheme } from "./lib/states.mjs";
+import { STATES, CHAIN_IDS, S17_SUBSTATES, VWORLD_STATE_IDS, parseStateList, stateById, loadAndSettle, applyTheme, settleTiles } from "./lib/states.mjs";
 import { appliesTo, loadChecks, loadOwners, makeImageCache } from "./lib/registry.mjs";
 
 const QA_DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -325,6 +325,7 @@ async function runPass({ args, entry, viewport, theme, baseUrl, selected, baseli
     await state.steps(ctx);
     if (label === "S01" && args.quality) await applyQuality(ctx);
     await runScript(ctx, label, baseUrl);
+    if (requested && entry === "vworld" && state.id !== "S11") await settleTiles(ctx);
     if (requested) await capture(state, label, fixtures);
     else ctx.actions = [];
     if (state.after) await state.after(ctx);

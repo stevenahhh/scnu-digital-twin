@@ -68,11 +68,11 @@ The phone step is larger than the audit's 13/16 px proposal on purpose, because 
 - Z-layers: every overlay takes its stacking from one of five layer tokens, in the order `--layer-canvas` (0) < `--layer-labels` (10) < `--layer-hud` (20) < `--layer-rail` (30) < `--layer-modal` (50). Tailwind exposes them as `z-canvas`, `z-labels`, `z-hud`, `z-rail` and `z-modal`. Use no other z-index values.
 - Scene labels keep an 8px margin from the viewport edge and a 12px margin from HUD and panel rectangles. A label that would cross either margin is hidden, never clipped.
 
-Layout lines (one per screen):
+Layout lines (one per screen). The visual QA harness records every element that owns vertical scroll in each captured state (`scroll-owners.json` next to the frames), so these lines can be checked against the product:
 
-Layout: dashboard - fixed: scene canvas, HUD toolbar, time readout, panel rail (desktop) / drawer (tablet) / bottom sheet (phone); scroll owner: the panel body; overlay stack: canvas < labels < hud < rail < modal
+Layout: dashboard - fixed: scene canvas, HUD toolbar, time readout with freshness stamp, panel rail (desktop) / drawer (tablet) / bottom sheet (phone); scroll owner: the panel body; overlay stack: canvas < labels < hud < rail < modal
 Layout: inspector - fixed: inspector header (name, code badge, close) pinned above the tabs (desktop) or at the sheet's half detent (phone); scroll owner: the panel body that contains it; overlay stack: canvas < labels < hud < rail < modal
-Layout: D4 pane - fixed: breadcrumb and floor picker; scroll owner: the room list; overlay stack: canvas < labels < hud < rail < modal
+Layout: D4 pane - fixed: breadcrumb, floor picker and the scene beside the pane; scroll owner: the room list; overlay stack: canvas < labels < hud < rail < modal
 Layout: settings sheet - fixed: sheet header with close; scroll owner: the sheet body; overlay stack: canvas < labels < hud < rail < modal
 Layout: presentation mode - fixed: scene canvas, time readout, tour pager; scroll owner: none; overlay stack: canvas < labels < hud < rail < modal
 

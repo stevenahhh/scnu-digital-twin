@@ -75,6 +75,11 @@ also saves screenshots at those offsets after the S04/S12 chip tap (the DOM is a
 | 2 | usage error: unknown flag, bad value, unknown check id (`unknown check id X` on stderr) |
 | 3 | a requested entry cannot run (VWorld without `VITE_VWORLD_API_KEY`); reported as `SKIPPED` |
 
+S11 is captured mid-drag and the held orbit ends at a pose that depends on the frame rate, so S11
+scenarios are gated by their key rects only (the dHash distance is still reported). VWorld states wait
+for the live map tiles to stop streaming before capture (three screenshots 1.5 s apart within 1 %,
+min 6 s, max 40 s).
+
 The harness kills its process tree (Vite, Chrome) before returning the code. `--update-baseline`
 rewrites the captured scenarios in `baselines.json` (others are kept); check FAILs still exit 1.
 
