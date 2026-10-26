@@ -297,7 +297,22 @@ function SliderRow({ label, valueLabel, min, max, step = 1, value, onValueChange
   );
 }
 
+// ?ui=gallery는 공용 기본 요소 확인 화면만 띄운다. 따로 나눠 불러와 대시보드 번들에는 들어가지 않는다.
+const UiGallery = lazy(() => import("./ui/Gallery.jsx"));
+const SHOW_UI_GALLERY = new URLSearchParams(window.location.search).get("ui") === "gallery";
+
 export default function App() {
+  if (SHOW_UI_GALLERY) {
+    return (
+      <Suspense fallback={null}>
+        <UiGallery />
+      </Suspense>
+    );
+  }
+  return <Dashboard />;
+}
+
+function Dashboard() {
   useSimulationSocket();
   const orbitControlsRef = useRef(null);
   const panelRef = useRef(null);
