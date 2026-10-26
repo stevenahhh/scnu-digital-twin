@@ -88,60 +88,6 @@
     {
       "type": "Feature",
       "properties": {
-        "id": "RS0011",
-        "kind": "hut",
-        "estimated": true,
-        "roof": "gable",
-        "wallColour": "#d9a95a",
-        "roofColour": "#b5473e",
-        "bearing_deg": 167.3,
-        "dims": {
-          "heightM": 3,
-          "roofRiseM": 0.45
-        },
-        "vr_scene": "scene_f3",
-        "vr_face": "r",
-        "vr_cols": [
-          0,
-          500
-        ],
-        "photo_support": "roof",
-        "confidence": 0.7,
-        "position_method": "photo: red roof outline traced on the NGII 2025 sheet (task-25/ortho/f3-hut-zoom.png); the plan is the outline less a 0.3 m overhang",
-        "height_source": "catalogue hut + VR scene_f3 (estimated)",
-        "note": "yellow timber hut with a red low gable roof on the clay tennis courts (VR scene_f3)"
-      },
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              127.483028,
-              34.9662903
-            ],
-            [
-              127.4830736,
-              34.966298
-            ],
-            [
-              127.4831004,
-              34.9662022
-            ],
-            [
-              127.4830538,
-              34.9661939
-            ],
-            [
-              127.483028,
-              34.9662903
-            ]
-          ]
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "id": "RS0015",
         "kind": "bus_stop_shelter",
         "estimated": true,

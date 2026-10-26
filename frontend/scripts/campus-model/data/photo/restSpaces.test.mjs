@@ -62,3 +62,30 @@ test("the whole-set audit reports a planted duplicate gazebo, and only that pair
   assert.equal(pairs.length, 1);
   assert.deepEqual([pairs[0].id, pairs[0].other].sort(), [gazebo.id, "RS9999"].sort());
 });
+
+// The failure this guards against: a small structure (hut, kiosk, booth) drawn both as a building and as a rest space,
+// as the scene_f3 tennis hut was (BLD_SCNU_R138317, 46 m2). Large records are left out: their raw footprints can wrap
+// courtyards and gardens their drawn forms keep open (the a5 walled garden inside the A1 OSM outline).
+const SMALL_BUILDING_M2 = 200;
+test("no roofed rest space stands inside a small building footprint (it would be drawn twice)", async () => {
+  const { geoToModel } = await import("../../lib/frame.mjs");
+  const { pointInRing } = await import("../../lib/geometry.mjs");
+  const records = [
+    ...JSON.parse(readFileSync(new URL("../gis-buildings.json", import.meta.url), "utf8")).buildings,
+    ...JSON.parse(readFileSync(new URL("../vr-buildings.json", import.meta.url), "utf8")).buildings,
+  ].filter((r) => r.status !== "demolished" && (r.areaMetres ?? 0) < SMALL_BUILDING_M2);
+  // a polygon is [outer, ...holes]
+  const toModel = (ring) => ring.map(([lon, lat]) => geoToModel(lon, lat));
+  const shapes = records.flatMap((r) => (r.polygons ?? []).map((poly) => {
+    const rings = Array.isArray(poly[0][0]) ? poly : [poly];
+    return { id: r.nodeId ?? r.name, outer: toModel(rings[0]), holes: rings.slice(1).map(toModel) };
+  }));
+  const ROOFED = new Set(["pavilion_hip", "pavilion_octagon", "terminal_shelter", "canopy_shelter_row", "hut", "awning", "bus_stop_shelter", "pergola", "gazebo"]);
+  const inside = [];
+  for (const o of furniture.objects.filter((x) => ROOFED.has(x.kind) && (x.source === "rest-spaces" || x.surveyKind !== x.kind))) {
+    const pts = o.footprint ?? o.ring ?? o.axis ?? o.line ?? [o.point];
+    const c = pts.reduce((a, p) => [a[0] + p[0] / pts.length, a[1] + p[1] / pts.length], [0, 0]);
+    for (const { id, outer, holes } of shapes) if (pointInRing(c, outer) && !holes.some((h) => pointInRing(c, h))) inside.push(`${o.id} ${o.kind} in ${id}`);
+  }
+  assert.deepEqual(inside, []);
+});

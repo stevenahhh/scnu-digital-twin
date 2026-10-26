@@ -8,9 +8,9 @@
   "summary": {
     "sightings": 24,
     "restSightings": 17,
-    "match": 8,
+    "match": 9,
     "retype": 5,
-    "missing": 8,
+    "missing": 7,
     "ambiguous": 1,
     "landscape": 28,
     "notRestSpace": 3,
@@ -331,14 +331,16 @@
       "geometry": "ray 10-120 m at 271.6 deg",
       "yawUsed": 228,
       "candidates": [],
-      "decision": "missing",
-      "ref": null,
+      "decision": "match",
+      "ref": "BLD_SCNU_R138317",
       "reason": "no surveyed object within 8 m of the ray",
       "typeId": "hut",
       "photo_blob": "yes",
       "photo_note": "no hut roof distinguishable on the ray; a small red patch 20 m off it",
-      "instanceId": "RS0011",
-      "applied": "RS0011 hut traced on the photo at the south clay courts (the scene_f3 pin is 60 m off)"
+      "instanceId": null,
+      "applied": "no rest-space feature: the hut is the registered building BLD_SCNU_R138317 (F3 학생테니스장 부속 시설(마동), 46 m2, 1 floor, GIS standing) whose footprint lies 1.7 m from the roof traced on the photo; drawing it as a hut too drew it twice",
+      "vr_confirmed": "BLD_SCNU_R138317",
+      "reason_applied": "found by the grounding probe after the rebase onto the modelled ground: the building's mass hid the hut. Follow-up for the building-look lane: give BLD_SCNU_R138317 the VR look (yellow timber walls, red low gable roof, scene_f3 r)"
     },
     {
       "restSighting": 10,

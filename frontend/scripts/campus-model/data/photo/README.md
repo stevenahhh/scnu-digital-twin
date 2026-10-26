@@ -509,8 +509,8 @@ Method: each sighting is a ray from its VR station (`scripts/perf/vr-stations.js
 #### Applied (todo 25, 2026-10-26)
 
 The table above is the first pass. Applying it against the photo changed nine rows (the JSON keeps the first-pass
-reason and adds `applied`, `reason_applied`, `vr_confirmed`): 8 placed as new features in `rest-spaces.geojson`
-(11 features with the gate sign of todo 14), 5 retypes of survey objects the VR shows as a catalogue kind, 8 matches, 3 not rest spaces.
+reason and adds `applied`, `reason_applied`, `vr_confirmed`): 7 placed as new features in `rest-spaces.geojson`
+(10 features with the gate sign of todo 14), 5 retypes of survey objects the VR shows as a catalogue kind, 9 matches, 3 not rest spaces.
 The first pass tested candidates by their vertices and left out `bike_rack`, which hid OC0119 and OC0153.
 
 | # | scene | outcome |
@@ -526,7 +526,7 @@ The first pass tested candidates by their vertices and left out `bike_rack`, whi
 | 7 | scene_a10 f | match RS0006: same plaza (the scene_a10 station stands 8 m from its corner) |
 | 8 | scene_a10 f/d | match OC0153: the 'striped awning' is the bike-shelter row seen from above; no awning instance |
 | - | scene_a16 f | not a rest space: the hedge lettering is a planting |
-| 9 | scene_f3 r | RS0011 hut, red roof traced at the south clay courts (the pin is 60 m off) |
+| 9 | scene_f3 r | match BLD_SCNU_R138317: the hut is the registered building F3 학생테니스장 부속 시설(마동), so no rest-space feature (its VR look, yellow timber and a red gable roof, is a follow-up for the building looks) |
 | 10 | scene_a19 b | match OB0009 |
 | 11 | scene_c1 l | match estimateBenches: the box benches beside the tree pits are the 8 plaza benches already drawn (VR reading 5.8 m from one) |
 | 12 | scene_c1 b | match estimateBenches |
@@ -540,8 +540,8 @@ The first pass tested candidates by their vertices and left out `bike_rack`, whi
 
 ### VR rest spaces (`rest-spaces.geojson`)
 
-The rest spaces the VR shows and this survey lacks (`rest-spaces-reconciliation.json`, decision `missing`) are 10 features
-for 8 sightings (plus the A19 gate sign of todo 14). Every dimension and position is an estimate (추정).
+The rest spaces the VR shows and this survey lacks (`rest-spaces-reconciliation.json`, decision `missing`) are 9 features
+for 7 sightings (plus the A19 gate sign of todo 14). Every dimension and position is an estimate (추정).
 
 | id | kind | VR scene / face | position | photo | confidence |
 |---|---|---|---|---|---|
@@ -549,14 +549,13 @@ for 8 sightings (plus the A19 gate sign of todo 14). Every dimension and positio
 | RS0006 | bench (orange timber) | scene_a9 / f | 1.1 m in front of RS0007W, where the VR bearing meets it | none | 0.4 |
 | RS0007 | planter (3 x 3 m gravel tree pit) | scene_a9 / f | VR bearing and depression angle from the station | none | 0.4 |
 | RS0007W | low_wall (red brick, 0.7 m) | scene_a9 / f | south edge of the paved plaza on the photo | wall | 0.5 |
-| RS0011 | hut (yellow timber, red gable roof) | scene_f3 / r | roof traced at the south clay courts | roof | 0.7 |
 | RS0013 | bus_stop_shelter / court_shelter (flat grey roof) | scene_d2 / r | grey panel roof traced in the planted courtyard | roof | 0.6 |
 | RS0001 | bench x 3 (timber, 1.5 m) | scene_a2 / d | face d from the resected station (about 1 m); benches under tree shade on the photo | none | 0.4 |
 | RS0015 | bus_stop_shelter | scene_f1 / l | roof traced at the east bus bay | roof | 0.6 |
 | RS0016, RS0016B | bench (long, timber) | scene_f1 / d | face d registered on the lane diamonds and the footway kerb (about 1 m) | none | 0.4 |
 
 Tolerance: traced outlines sit within 0.25 m of the photo; the planter wall RS0007W is visible only at its west end
-(about 0.3 m). Duplicates: no feature lies within 3 m of a survey object of its class, and the build's whole-set audit
+(about 0.3 m). Duplicates: no feature lies within 3 m of a survey object of its class, no roofed rest space stands inside a building footprint (GIS or VR-only; the f3 tennis hut is the building BLD_SCNU_R138317), and the build's whole-set audit
 (survey, rest spaces, lamps, estimated benches) finds no pair. Retypes, matches, not-rest-space and deferred decisions are
 in the applied table above.
 
