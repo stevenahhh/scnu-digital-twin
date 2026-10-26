@@ -159,7 +159,8 @@
     "station_refined_z": -143.19,
     "height_refined_m": 100.42,
     "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by siftD); least squares: residual RMS 0.41 m, max 0.65 m; split-half agreement 0.06 m / 0.14 deg; formal sigma 0.05 m / 0.05 deg; height from the face scale (estimated)",
-    "refined_residual_m": 0.06
+    "refined_residual_m": 0.06,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_002",
@@ -318,7 +319,8 @@
     "height_refined_m": 100.85,
     "refined_confidence": 0.85,
     "refined_residual_deg": 0.24,
-    "refined_residual_m": 0.11
+    "refined_residual_m": 0.11,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_a1",
@@ -487,7 +489,8 @@
     "height_refined_m": 23.93,
     "refined_confidence": 0.85,
     "refined_residual_deg": 0.05,
-    "refined_residual_m": 0.05
+    "refined_residual_m": 0.05,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_a2",
@@ -667,7 +670,8 @@
       "A2 disabled bays"
     ],
     "refined_confidence": 0.85,
-    "refined_residual_m": 0.11
+    "refined_residual_m": 0.11,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_a3",
@@ -848,7 +852,8 @@
     "station_refined_x": 269.44,
     "station_refined_z": -203.52,
     "height_refined_m": 14.81,
-    "refined_residual_m": 0.1
+    "refined_residual_m": 0.1,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_a4",
@@ -1026,7 +1031,8 @@
     "height_refined_m": 15.24,
     "refined_confidence": 0.85,
     "refined_residual_deg": 0.12,
-    "refined_residual_m": 0.16
+    "refined_residual_m": 0.16,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_a5",
@@ -1215,7 +1221,8 @@
     "station_refined_z": -120.26,
     "height_refined_m": 24.42,
     "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by siftD); least squares: residual RMS 0.43 m, max 0.63 m; split-half agreement 0.03 m / 0.03 deg; formal sigma 0.06 m / 0.06 deg; height from the face scale (estimated)",
-    "refined_residual_m": 0.06
+    "refined_residual_m": 0.06,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_a6",
@@ -1396,7 +1403,8 @@
     "station_refined_z": -69.62,
     "height_refined_m": 12.15,
     "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by manual control points); least squares: residual RMS 0.36 m, max 0.64 m; split-half agreement 0.04 m / 0.13 deg; formal sigma 0.05 m / 0.06 deg; height from the face scale (estimated)",
-    "refined_residual_m": 0.05
+    "refined_residual_m": 0.05,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_a8",
@@ -1553,7 +1561,8 @@
     ],
     "refined_by": "compare-vr todo 2",
     "refined_confidence": 0.6,
-    "reverted_note": "PR #74 control-point pose reverted 2026-10-27 after the compare-vr strip check: renders looked across open ground instead of the apartment towers and orange roof the VR faces show; the guided matches fitted a self-consistent wrong pose on repeated texture"
+    "reverted_note": "PR #74 control-point pose reverted 2026-10-27 after the compare-vr strip check: renders looked across open ground instead of the apartment towers and orange roof the VR faces show; the guided matches fitted a self-consistent wrong pose on repeated texture",
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_a9",
@@ -1731,7 +1740,8 @@
     "height_refined_m": 9.57,
     "refined_confidence": 0.85,
     "refined_residual_deg": 0.21,
-    "refined_residual_m": 0.06
+    "refined_residual_m": 0.06,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_a10",
@@ -1911,7 +1921,8 @@
     "station_refined_z": -56.42,
     "height_refined_m": 12.39,
     "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by manual control points); least squares: residual RMS 0.41 m, max 0.62 m; split-half agreement 0.12 m / 0.11 deg; formal sigma 0.05 m / 0.06 deg; height from the face scale (estimated)",
-    "refined_residual_m": 0.12
+    "refined_residual_m": 0.12,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_a12",
@@ -2063,7 +2074,8 @@
     },
     "refined": false,
     "refined_by": "compare-vr todo 2",
-    "refined_note": "A12 slim tower not reproduced at any candidate yaw; station position likely off (outside the campus terrain extent)"
+    "refined_note": "A12 slim tower not reproduced at any candidate yaw; station position likely off (outside the campus terrain extent)",
+    "strip_check": "2026-10-27 compare-vr strip FAILED: renders town blocks where the VR shows the campus dormitories (wrong block); pose unresolved (estimated)"
   },
   {
     "scene": "scene_a13",
@@ -2225,7 +2237,8 @@
       "BLD_Dormitory_Building.004 (A13 웅지관)",
       "BLD_Dormitory_Building.001 (A8 향림관)"
     ],
-    "refined_residual_m": 0.06
+    "refined_residual_m": 0.06,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_a15",
@@ -2394,7 +2407,8 @@
     "height_refined_m": 17.26,
     "refined_confidence": 0.85,
     "refined_residual_deg": 0.11,
-    "refined_residual_m": 0.13
+    "refined_residual_m": 0.13,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_a16",
@@ -2563,7 +2577,8 @@
     "height_refined_m": 21.01,
     "refined_confidence": 0.85,
     "refined_residual_deg": 0.09,
-    "refined_residual_m": 0.06
+    "refined_residual_m": 0.06,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_f3",
@@ -2743,7 +2758,8 @@
       "clay court fence corner"
     ],
     "refined_confidence": 0.85,
-    "refined_residual_m": 0.05
+    "refined_residual_m": 0.05,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_a17",
@@ -2914,7 +2930,8 @@
     "station_refined_x": 492.79,
     "station_refined_z": -121.67,
     "height_refined_m": 17.6,
-    "refined_residual_m": 0.09
+    "refined_residual_m": 0.09,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_a19",
@@ -3113,7 +3130,8 @@
       "gate crossing islands",
       "RS-GATE-A19"
     ],
-    "refined_residual_m": 0.11
+    "refined_residual_m": 0.11,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_b1",
@@ -3284,7 +3302,8 @@
     "station_refined_z": -176.71,
     "height_refined_m": 18.02,
     "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by siftG); least squares: residual RMS 0.42 m, max 0.67 m; split-half agreement 0.09 m / 0.01 deg; formal sigma 0.06 m / 0.05 deg; height from the face scale (estimated)",
-    "refined_residual_m": 0.09
+    "refined_residual_m": 0.09,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_b2",
@@ -3443,7 +3462,8 @@
     "height_refined_m": 35.45,
     "refined_confidence": 0.85,
     "refined_residual_deg": 0.08,
-    "refined_residual_m": 0.14
+    "refined_residual_m": 0.14,
+    "strip_check": "2026-10-27 compare-vr strip FAILED: f face shows a grey block and red brick where the VR shows the teal-glass B2 frontage; also wrong before #74; pose unresolved (estimated)"
   },
   {
     "scene": "scene_b3",
@@ -3605,7 +3625,8 @@
     "station_refined_z": -244.14,
     "height_refined_m": 13.01,
     "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by old); least squares: residual RMS 0.43 m, max 0.61 m; split-half agreement 0.12 m / 0.04 deg; formal sigma 0.06 m / 0.06 deg; height from the face scale (estimated)",
-    "refined_residual_m": 0.12
+    "refined_residual_m": 0.12,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_b4",
@@ -3777,7 +3798,8 @@
     "station_refined_z": -219.77,
     "height_refined_m": 12.7,
     "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by manual control points); least squares: residual RMS 0.41 m, max 0.65 m; split-half agreement 0.10 m / 0.26 deg; formal sigma 0.05 m / 0.07 deg; height from the face scale (estimated)",
-    "refined_residual_m": 0.1
+    "refined_residual_m": 0.1,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_b7",
@@ -3938,7 +3960,8 @@
     "station_refined_z": -267.43,
     "height_refined_m": 13.72,
     "refined_note": "43 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by manual control points); least squares: residual RMS 0.37 m, max 0.62 m; split-half agreement 0.06 m / 0.00 deg; formal sigma 0.06 m / 0.07 deg; height from the face scale (estimated)",
-    "refined_residual_m": 0.06
+    "refined_residual_m": 0.06,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_c1",
@@ -4136,7 +4159,8 @@
     "station_refined_x": 244.56,
     "station_refined_z": -234.22,
     "height_refined_m": 8.9,
-    "refined_residual_m": 0.14
+    "refined_residual_m": 0.14,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_c2",
@@ -4298,7 +4322,8 @@
     "station_refined_z": -271.8,
     "height_refined_m": 14.15,
     "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by manual control points); least squares: residual RMS 0.41 m, max 0.68 m; split-half agreement 0.08 m / 0.01 deg; formal sigma 0.05 m / 0.05 deg; height from the face scale (estimated)",
-    "refined_residual_m": 0.08
+    "refined_residual_m": 0.08,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_c3",
@@ -4466,7 +4491,8 @@
     ],
     "refined_by": "compare-vr todo 2",
     "refined_confidence": 0.9,
-    "reverted_note": "PR #74 control-point pose reverted 2026-10-27 after the compare-vr strip check: yaw 180 deg off: the red-brick block with the teal entrance rendered in the b face instead of f (markings lane: disabled bay MX00231 projected onto the zebra); the guided matches fitted a self-consistent wrong pose on repeated texture"
+    "reverted_note": "PR #74 control-point pose reverted 2026-10-27 after the compare-vr strip check: yaw 180 deg off: the red-brick block with the teal entrance rendered in the b face instead of f (markings lane: disabled bay MX00231 projected onto the zebra); the guided matches fitted a self-consistent wrong pose on repeated texture",
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_c5",
@@ -4626,7 +4652,8 @@
     "refined_buildings": [
       "BLD_SCNU_C5",
       "BLD_SCNU_C3"
-    ]
+    ],
+    "strip_check": "2026-10-27 compare-vr strip FAILED: faces only partly agree; not confirmable; pose unresolved (estimated)"
   },
   {
     "scene": "scene_d1",
@@ -4788,7 +4815,8 @@
     },
     "refined": false,
     "refined_by": "compare-vr todo 2",
-    "refined_note": "D1 block centred in f by eye but the render shows trees; station position off; candidates -37/-42 deg unconfirmed"
+    "refined_note": "D1 block centred in f by eye but the render shows trees; station position off; candidates -37/-42 deg unconfirmed",
+    "strip_check": "2026-10-27 compare-vr strip FAILED: renders a plaza and trees where the VR shows the 창업보육센터 red-brick block; pose unresolved (estimated)"
   },
   {
     "scene": "scene_d2",
@@ -4990,7 +5018,8 @@
     "height_refined_m": 10.46,
     "refined_method": "resection on the photo: the open shelter's roof (VR r col 1203, row 1510) and the white block's north-west corner (VR b col 837, row 1715)",
     "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by siftG); least squares: residual RMS 0.41 m, max 0.65 m; split-half agreement 0.01 m / 0.08 deg; formal sigma 0.06 m / 0.08 deg; height from the face scale (estimated)",
-    "refined_residual_m": 0.06
+    "refined_residual_m": 0.06,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_d3",
@@ -5162,7 +5191,8 @@
     "station_refined_z": -232.3,
     "height_refined_m": 9.31,
     "refined_note": "47 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by old); least squares: residual RMS 0.41 m, max 0.64 m; split-half agreement 0.09 m / 0.24 deg; formal sigma 0.06 m / 0.09 deg; height from the face scale (estimated)",
-    "refined_residual_m": 0.09
+    "refined_residual_m": 0.09,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_d4",
@@ -5348,7 +5378,8 @@
     ],
     "refined_by": "compare-vr todo 2",
     "refined_confidence": 0.9,
-    "reverted_note": "PR #74 control-point pose reverted 2026-10-27 after the compare-vr strip check: renders missed the glass D4 block that fills the VR f face; the guided matches fitted a self-consistent wrong pose on repeated texture"
+    "reverted_note": "PR #74 control-point pose reverted 2026-10-27 after the compare-vr strip check: renders missed the glass D4 block that fills the VR f face; the guided matches fitted a self-consistent wrong pose on repeated texture",
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_d5",
@@ -5518,7 +5549,8 @@
       "BLD_SCNU_D5"
     ],
     "refined_confidence": 0.6,
-    "reverted_note": "PR #74 control-point pose reverted 2026-10-27 after the compare-vr strip check: renders looked at a blue block instead of the pink/yellow 학군단 in the VR f face; the guided matches fitted a self-consistent wrong pose on repeated texture"
+    "reverted_note": "PR #74 control-point pose reverted 2026-10-27 after the compare-vr strip check: renders looked at a blue block instead of the pink/yellow 학군단 in the VR f face; the guided matches fitted a self-consistent wrong pose on repeated texture",
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_e1",
@@ -5707,7 +5739,8 @@
     "station_refined_z": -219.96,
     "height_refined_m": 16.79,
     "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by siftG); least squares: residual RMS 0.39 m, max 0.62 m; split-half agreement 0.12 m / 0.13 deg; formal sigma 0.05 m / 0.05 deg; height from the face scale (estimated)",
-    "refined_residual_m": 0.12
+    "refined_residual_m": 0.12,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_e2",
@@ -5866,7 +5899,8 @@
     "height_refined_m": 13.59,
     "refined_confidence": 0.85,
     "refined_residual_deg": 0.05,
-    "refined_residual_m": 0.05
+    "refined_residual_m": 0.05,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_e3",
@@ -6028,7 +6062,8 @@
     "station_refined_z": -184.21,
     "height_refined_m": 16.18,
     "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by old); least squares: residual RMS 0.44 m, max 0.65 m; split-half agreement 0.20 m / 0.02 deg; formal sigma 0.06 m / 0.05 deg; height from the face scale (estimated)",
-    "refined_residual_m": 0.2
+    "refined_residual_m": 0.2,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_e4",
@@ -6190,7 +6225,8 @@
     },
     "refined": false,
     "refined_by": "compare-vr todo 2",
-    "refined_note": "close-range view under trees; skyline candidates -13/-20 deg unconfirmed"
+    "refined_note": "close-range view under trees; skyline candidates -13/-20 deg unconfirmed",
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_e5",
@@ -6362,7 +6398,8 @@
     "station_refined_z": -184.15,
     "height_refined_m": 9.8,
     "refined_note": "56 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by old); least squares: residual RMS 0.44 m, max 0.62 m; split-half agreement 0.11 m / 0.12 deg; formal sigma 0.06 m / 0.08 deg; height from the face scale (estimated)",
-    "refined_residual_m": 0.11
+    "refined_residual_m": 0.11,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_e6",
@@ -6520,7 +6557,8 @@
       "BLD_A12"
     ],
     "refined_by": "compare-vr todo 2",
-    "refined_confidence": 0.9
+    "refined_confidence": 0.9,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_e7",
@@ -6710,7 +6748,8 @@
     "station_refined_z": -110.0,
     "height_refined_m": 14.01,
     "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by siftG); least squares: residual RMS 0.45 m, max 0.66 m; split-half agreement 0.08 m / 0.14 deg; formal sigma 0.06 m / 0.06 deg; height from the face scale (estimated)",
-    "refined_residual_m": 0.08
+    "refined_residual_m": 0.08,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_e8",
@@ -6882,7 +6921,8 @@
     "station_refined_z": -160.4,
     "height_refined_m": 10.28,
     "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by siftG); least squares: residual RMS 0.33 m, max 0.61 m; split-half agreement 0.04 m / 0.05 deg; formal sigma 0.05 m / 0.09 deg; height from the face scale (estimated)",
-    "refined_residual_m": 0.05
+    "refined_residual_m": 0.05,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_f1",
@@ -7080,7 +7120,8 @@
       "east footway kerb"
     ],
     "refined_confidence": 0.85,
-    "refined_residual_m": 0.16
+    "refined_residual_m": 0.16,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   },
   {
     "scene": "scene_f2",
@@ -7260,6 +7301,7 @@
       "F1/F2 parking island"
     ],
     "refined_confidence": 0.85,
-    "refined_residual_m": 0.06
+    "refined_residual_m": 0.06,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
   }
 ]
