@@ -14,6 +14,8 @@ import { CampusHud } from "./components/CampusHud";
 import { sceneTimeReadout } from "./components/HudTimeReadout";
 import { SceneLoadingNotice } from "./components/SceneLoadingNotice";
 import { SelectionInspector } from "./panel/SelectionInspector";
+import { CompareButton, ComparisonPane } from "./panel/ComparisonPane";
+import { useComparisonSet } from "./state/useComparisonSet.mjs";
 import { gateTextFor } from "./labels/gateDistance.mjs";
 import { PanelErrorBoundary } from "./components/PanelErrorBoundary";
 import { useSimulationSocket } from "./simulation";
@@ -80,6 +82,7 @@ function Dashboard() {
   const trafficFeed = useTrafficFeed();
   const clock = useSunClock();
   const selection = useSelectionState();
+  const comparison = useComparisonSet();
   const plans = useInstallationPlans(selection.selectedBuildingId);
   const feeds = useFeedStatus({ weather: weatherFeed, traffic: trafficFeed, plans });
   const panelScrollRef = useRef(null);
@@ -144,12 +147,15 @@ function Dashboard() {
   };
   // 인스펙터 제목: 고른 건물의 레지스트리 이름, 없으면 클릭한 메시의 이름.
   const panelTitle = selection.selectedId ? flow.selectionTitle || selection.selectedTitle || selection.selectedId : "";
-  const inspector = isCampus && selection.selectedId ? (
+  const inspector = comparison.open ? (
+    <ComparisonPane ids={comparison.ids} onRemove={comparison.remove} onClose={() => comparison.setOpen(false)} />
+  ) : isCampus && selection.selectedId ? (
     <SelectionInspector
       title={panelTitle}
       popup={popup}
       estimate={selection.selectedEstimate}
       gateText={gateTextFor(flow.selectionPosition)}
+      onCompare={() => comparison.add(selection.selectedId)}
       onClose={flow.closeMicroclimate}
       onShowAll={() => {
         flow.closeMicroclimate();
@@ -178,6 +184,7 @@ function Dashboard() {
         playing={isTimePlaying}
         onPlayingChange={setIsTimePlaying}
         sceneWeather={sceneWeather}
+        compareSlot={<CompareButton comparison={comparison} className="mt-1" />}
       />
       <CampusCanvas
         ref={mapLayerRef}
@@ -196,6 +203,7 @@ function Dashboard() {
           onLoadingChange: setIsSceneLoading,
           attempt: sceneAttempt,
           presentation: presentation.presenting,
+          onCompare: comparison.add,
         }}
       />
       {isSceneLoading && <SceneLoadingNotice key={sceneAttempt} insetRight={mapInsetRight} onRetry={retryScene} />}

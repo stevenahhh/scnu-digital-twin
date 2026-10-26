@@ -290,6 +290,7 @@ export function CityModel({
   onBuildingClick,
   onBuildingProximity,
   onD4Enter,
+  onCompare,
   controlsRef,
   // 태양 고도(라디안)를 주면 그 값으로, 아니면 CampusLighting이 루트 씬에 남긴 고도로 창문 불빛과 야간 색을
   // 연속으로 바꾼다. 둘 다 없을 때만 isNight로 켜고 끈다.
@@ -1212,6 +1213,11 @@ export function CityModel({
   const labelHandlersRef = useRef(null);
   labelHandlersRef.current = {
     onSelect: (slot, event) => {
+      // Shift+클릭: 고르지 않고 비교 묶음에 넣는다(건물만).
+      if (event?.shiftKey && onCompare && slot.id?.startsWith("BLD_")) {
+        onCompare(slot.id);
+        return;
+      }
       const anchor = anchorById.get(slot.id);
       if (anchor) handleLabelClick(anchor, event);
     },

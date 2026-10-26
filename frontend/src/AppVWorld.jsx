@@ -25,6 +25,8 @@ import { DashboardTabContent } from "./panel/DashboardTabContent";
 import { FeedStamps, sheetPlacement } from "./panel/FeedStatus";
 import { useFeedStatus } from "./hooks/useFeedStatus.mjs";
 import { urlSelectionTarget, useDashboardUrlState } from "./hooks/useDashboardUrlState.mjs";
+import { CompareButton, ComparisonPane } from "./panel/ComparisonPane";
+import { useComparisonSet } from "./state/useComparisonSet.mjs";
 import { summarizeWeather } from "./panel/weatherSummary.mjs";
 
 // 지도 영상 위에 까는 야간 음영과 해 쪽 햇빛. 해 고도·방위(도)에서 투명도와 위치를 정한다.
@@ -55,6 +57,7 @@ export default function App() {
   const trafficFeed = useTrafficFeed();
   const clock = useSunClock();
   const selection = useSelectionState();
+  const comparison = useComparisonSet();
   const plans = useInstallationPlans(selection.selectedBuildingId);
   const feeds = useFeedStatus({ weather: weatherFeed, traffic: trafficFeed, plans });
   const panelScrollRef = useRef(null);
@@ -162,6 +165,7 @@ export default function App() {
           )}
         />
         <PresentationToggle presenting={presentation.presenting} onToggle={presentation.toggle} className="mt-1" />
+        {!presentation.presenting && <CompareButton comparison={comparison} className="mt-1" />}
         {viewportMode !== "phone" && !presentation.presenting && <Wordmark className="ml-auto mt-2.5 text-ink-muted" />}
         </div>
         {/* 시간 조작은 Legacy와 같은 하나뿐인 조작이다. 지도 조작 열(왼쪽 아래)과 겹치지 않게 오른쪽 아래에 둔다. */}
@@ -192,10 +196,13 @@ export default function App() {
         timeReadout={sceneTimeReadout(clock.sceneMinuteOfDay)}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        inspector={selection.selectedId && !isD4SectionOpen ? (
+        inspector={comparison.open ? (
+          <ComparisonPane ids={comparison.ids} onRemove={comparison.remove} onClose={() => comparison.setOpen(false)} />
+        ) : selection.selectedId && !isD4SectionOpen ? (
           <SelectionInspector
             title={selection.selectedTitle || popup.data?.name || selection.selectedId}
             popup={popup}
+            onCompare={selection.selectedId.startsWith("BLD_") ? () => comparison.add(selection.selectedId) : null}
             onClose={closeMicroclimatePopup}
             onShowAll={closeMicroclimatePopup}
           />

@@ -1,4 +1,4 @@
-import { Clock, CircleAlert, Droplets, Gauge, MapPin, Sun, Thermometer, TreePine, Wind, X } from "lucide-react";
+import { Clock, CircleAlert, Droplets, Gauge, GitCompare, MapPin, Sun, Thermometer, TreePine, Wind, X } from "lucide-react";
 import { Alert } from "../ui/Alert.jsx";
 import { Button } from "../ui/Button.jsx";
 import { Disclosure } from "../ui/Disclosure.jsx";
@@ -9,6 +9,8 @@ import { Skeleton } from "../ui/Skeleton.jsx";
 import { Spinner } from "../ui/Spinner.jsx";
 import { StatusBadge } from "../ui/StatusBadge.jsx";
 import { formatHHmm } from "../ui/format.mjs";
+import { ExportActions } from "../ui/ExportActions.jsx";
+import { COMPARISON_METRICS } from "./ComparisonPane.jsx";
 import { LinkCopyButton } from "./LinkCopyButton.jsx";
 
 // 고른 건물 하나의 인스펙터(두 대시보드 공용). 데이터는 `/microclimate/elements/{id}/popup` 한 번의 응답(usePopupData)이다.
@@ -177,7 +179,7 @@ function Sections({ payload, estimate }) {
 }
 
 export function SelectionInspector({
-  title, popup, estimate: glbEstimate = null, gateText = null, onClose, onShowAll, className,
+  title, popup, estimate: glbEstimate = null, gateText = null, onClose, onShowAll, onCompare = null, className,
 }) {
   const { data, loading = false, error = null, errorStatus = null, errorDetail, retry, lastData } = popup;
   const payload = isObject(data) ? data : null;
@@ -288,6 +290,22 @@ export function SelectionInspector({
           {freshness.stale ? <CircleAlert aria-hidden="true" className="h-4 w-4" /> : <Clock aria-hidden="true" className="h-4 w-4" />}
           <span>{freshness.text}</span>
         </p>
+      )}
+      {(onCompare || (shown && !loading)) && (
+        <div className="flex flex-wrap items-center gap-2 border-t border-hairline pt-3">
+          {onCompare && (
+            <Button size="sm" variant="secondary" data-qa="compare-add" icon={<GitCompare aria-hidden="true" className="h-4 w-4" />} onClick={onCompare}>
+              비교에 추가
+            </Button>
+          )}
+          {shown && !loading && (
+            <ExportActions
+              kind="inspector"
+              columns={[{ key: "name", label: "건물" }, ...COMPARISON_METRICS.map((metric) => ({ key: metric.key, label: metric.unit ? `${metric.label}(${metric.unit})` : metric.label, estimated: true }))]}
+              rows={[{ name: heading, ...Object.fromEntries(COMPARISON_METRICS.map((metric) => [metric.key, metric.read(shown) ?? null])) }]}
+            />
+          )}
+        </div>
       )}
     </section>
   );

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { WEATHER_API_URL } from "../simulation/utils/apiConfig";
+import { rememberPopup } from "../state/popupCache.mjs";
 
 export const POPUP_ERRORS = Object.freeze({
   // 기상 피드 알림과 같은 문구를 되풀이하지 않는다: 인스펙터의 원인은 미기후 추정 요청이다.
@@ -45,6 +46,7 @@ export function usePopupData({ apiUrl = WEATHER_API_URL, fetchImpl } = {}) {
       const response = await request(`${apiUrl}/microclimate/elements/${elementId}/popup`, { signal: controller.signal });
       if (!response.ok) throw new PopupHttpError(response.status);
       const data = await response.json();
+      rememberPopup(elementId, data);
       if (controllerRef.current === controller) setState({ ...EMPTY, data, lastData: data });
     } catch (error) {
       if (error?.name === "AbortError" || controllerRef.current !== controller) return;

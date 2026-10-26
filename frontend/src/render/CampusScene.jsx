@@ -34,6 +34,7 @@ export const CampusScene = memo(function CampusScene({
   controlsRef, selectedId, labelsHidden, occluderRef, chromeRefs,
   activePresetId, selectedElementId, selectionOutline, onLabelRegistry, onDragStart, headlineById,
   onSelect, onBuildingClick, onBuildingProximity, onD4Enter, onOrbitStart, onOrbitEnd, onLoadingChange, attempt = 0, presentation = false,
+  onCompare,
 }) {
   return (
     <>
@@ -66,6 +67,7 @@ export const CampusScene = memo(function CampusScene({
           isNight={!sunVisible}
           selectedId={selectedId}
           onSelect={onSelect}
+          onCompare={onCompare}
           onBuildingClick={onBuildingClick}
           onBuildingProximity={onBuildingProximity}
           onD4Enter={onD4Enter}

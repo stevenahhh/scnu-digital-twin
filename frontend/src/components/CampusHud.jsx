@@ -13,7 +13,10 @@ import { TimeSlider } from "./TimeSlider";
 // 지도보다 앞에 두어 Tab이 라벨보다 먼저 닿는다. 오른쪽은 패널(레일)이 차지한 폭만큼 비킨다(insetRight).
 // 폰에서는 바텀 시트의 peek 높이만큼 아래를 비워 슬라이더가 시트에 가리지 않게 하고, 워드마크는 시트 머리에 있다.
 export const CampusHud = forwardRef(function CampusHud(
-  { mode = "desktop", insetRight, camera, clock, playing, onPlayingChange, sceneWeather, statusSlot = null, presenting = false, onTogglePresentation, tour = null },
+  {
+    mode = "desktop", insetRight, camera, clock, playing, onPlayingChange, sceneWeather, statusSlot = null, presenting = false,
+    onTogglePresentation, tour = null, compareSlot = null,
+  },
   ref,
 ) {
   const phone = mode === "phone";
@@ -50,6 +53,7 @@ export const CampusHud = forwardRef(function CampusHud(
           onToggleTour={camera.toggleTour}
         />
         {toggle}
+        {compareSlot}
         {!phone && <Wordmark className="ml-auto mt-2.5 text-ink-muted" />}
       </div>
       <TimeSlider
