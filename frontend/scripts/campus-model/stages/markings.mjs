@@ -114,6 +114,8 @@ const FIXED_COLOUR_KINDS = new Set(["kerb_no_parking", "centre_line_yellow", "ze
 const STROKED_KINDS = new Set(["lane_line_dashed", "lane_line_solid", "edge_line", "centre_line_yellow", "parking_line", "kerb_no_parking", "give_way_line"]);
 // Above the Ground_* layers (at most 0.036 m, stages/surfaces.mjs); pack.mjs keeps positions as float.
 const LIFT_M = 0.04;
+const SYMBOL_LIFT_M = 0.012;
+const ON_FILL_KINDS = new Set(["disabled_parking", "bike_lane_blue"]);
 // A point is on a building or a sidewalk for the regular geometry only when it and four points BLOCK_PROBE_M around it
 // are: the A003 outlines and the building footprints are not exact to the kerb, so an edge line beside one stays.
 const BLOCK_PROBE_M = 0.3;
@@ -849,9 +851,11 @@ export function buildMarkings({ glb, markings, surface, extraHeight = () => 0 })
   const uvs = [];
   const indices = [];
   const index = new Map();
-  const lift = metres(LIFT_M);
-  const vertex = ([x, z], colour) => {
-    const key = `${Math.round(x * 1e5)},${Math.round(z * 1e5)},${colour}`;
+  // a white symbol painted on a blue fill (the access symbol, the P, a bicycle) lies SYMBOL_LIFT_M above the fill: at
+  // one height the two coplanar colours z-fight and the symbol breaks up
+  const liftOf = (piece) => metres(LIFT_M + (piece.colour === "white" && ON_FILL_KINDS.has(piece.kind) ? SYMBOL_LIFT_M : 0));
+  const vertex = ([x, z], colour, lift) => {
+    const key = `${Math.round(x * 1e5)},${Math.round(z * 1e5)},${colour},${lift}`;
     let i = index.get(key);
     if (i === undefined) {
       i = positions.length / 3;
@@ -877,7 +881,7 @@ export function buildMarkings({ glb, markings, surface, extraHeight = () => 0 })
         const cross = (tri[1][0] - tri[0][0]) * (tri[2][1] - tri[0][1]) - (tri[1][1] - tri[0][1]) * (tri[2][0] - tri[0][0]);
         if (Math.abs(cross) < 1e-10) continue;
         const ordered = cross < 0 ? tri : [tri[0], tri[2], tri[1]];
-        indices.push(...ordered.map((p) => vertex(p, piece.colour)));
+        indices.push(...ordered.map((p) => vertex(p, piece.colour, liftOf(piece))));
       }
     }
   }

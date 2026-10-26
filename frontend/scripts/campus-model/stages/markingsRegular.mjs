@@ -735,7 +735,7 @@ export function regularise(drawn, ctx) {
         const size = 2 * box.halfLong;
         const pick = axes.map((f) => ({ t: place(wheelchairTemplate(size), box.centre, f), f }))
           .map((x) => ({ ...x, score: overlapScore(rings ? [rings] : [], x.t) })).sort((x, y) => y.score - x.score)[0];
-        emitPoly(pick.t, c.colour, c.kind, { glyph: "wheelchair" });
+        emitPoly(pick.t, c.colour, c.kind, { glyph: "wheelchair", tid: `tpl ${c.id}` });
         glyphCount("wheelchair");
         continue;
       }
@@ -955,7 +955,14 @@ export function regularise(drawn, ctx) {
     // bay (blobs of the painted symbol, at most BAY_SYMBOL_BLOB_M across) give way to the template
     const centreOf = (pc) => { const r = pc.rings[0].map(toM); return scale(r.reduce((a, q) => add(a, q), [0, 0]), 1 / r.length); };
     const whitePieces = pieces.filter((pc) => pc.kind === "disabled_parking" && pc.colour === "white" && !pc.estimated);
-    const whiteTemplates = whitePieces.filter((pc) => pc.glyph === "wheelchair").map((pc) => ({ pc, c: centreOf(pc) }));
+    // one entry per drawn template (its parts share a tid): replaced or kept as a whole
+    const byTid = new Map();
+    for (const pc of whitePieces.filter((x) => x.glyph === "wheelchair")) {
+      const k = pc.tid ?? pc;
+      if (!byTid.has(k)) byTid.set(k, []);
+      byTid.get(k).push(pc);
+    }
+    const whiteTemplates = [...byTid.values()].map((parts) => ({ parts, c: scale(parts.map(centreOf).reduce((a, q) => add(a, q), [0, 0]), 1 / parts.length) }));
     const whites = whiteTemplates.map((t) => t.c);
     const blobs = whitePieces.filter((pc) => !pc.glyph && orientedBox(pc.rings[0].map(toM)).halfLong * 2 <= BAY_SYMBOL_BLOB_M).map((pc) => ({ pc, c: centreOf(pc) }));
     const replaced = new Set();
@@ -997,7 +1004,7 @@ export function regularise(drawn, ctx) {
         const inCell = (w) => Math.abs(dot(sub(w, centre), across)) <= width / 2 && Math.abs(dot(sub(w, centre), depth)) <= deep / 2;
         // a P bay's painted figure read as a wheelchair gives way to its P
         if (rule?.symbol === "P") {
-          for (const t of whiteTemplates) if (inCell(t.c)) replaced.add(t.pc);
+          for (const t of whiteTemplates) if (inCell(t.c)) for (const pc of t.parts) replaced.add(pc);
         } else if (whites.some(inCell)) {
           stats.baySymbols.existing += 1;
           continue;
