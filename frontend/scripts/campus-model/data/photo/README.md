@@ -475,9 +475,9 @@ shadow, and MX01746). MX01746 replaces MK00926, a white dash that `markings.geoj
 
 ### VR rest-space reconciliation (2026-10-25)
 
-24 VR sightings (the 17 rest-space sightings of the VR station survey plus 7 garden and plaza items) against this survey: 7 match, 0 retype, **17 missing**; 28 further landscape items (steps, sculptures, signs) are listed in the JSON only. Machine copy: `rest-spaces-reconciliation.json`.
+24 VR sightings (the 17 rest-space sightings of the VR station survey plus 7 garden and plaza items) against this survey: 7 match, 0 retype, **16 missing**, 1 not a rest space (#17, scene_f2: EV charging bays); 28 further landscape items (steps, sculptures, signs) are listed in the JSON only. Machine copy: `rest-spaces-reconciliation.json`.
 
-Method: each sighting is a ray from its VR station (`scripts/perf/vr-stations.json`, refined yaw where present) at the face bearing plus the column angle of the sighting's middle column, 10-120 m long; a sighting on the nadir face (d) is a strip under the station, offset by its column. Surveyed objects of kind pergola, gazebo, bus_stop_shelter, bench, planter, low_wall, plaza_structure or fence within 8 m of it are candidates. `match`: a candidate of a kind that already stands for what the VR shows (the nearest one; two of that kind within 8 m set `ambiguous`). `retype`: only a candidate whose survey kind the VR corrects. `missing`: none. The photo column says whether the NGII 2025 photo shows a roof, wall or planter at the ray. Stations placed by ortho-match carry a nominal 40 m error, so a `missing` there can also be a station error; the reason says so. Nothing here changes the model: a later stage applies the decisions and creates the `RS` instances.
+Method: each sighting is a ray from its VR station (`scripts/perf/vr-stations.json`, refined yaw where present) at the face bearing plus the column angle of the sighting's middle column, 10-120 m long; a sighting on the nadir face (d) is a strip under the station, offset by its column. Surveyed objects of kind pergola, gazebo, bus_stop_shelter, bench, planter, low_wall, plaza_structure or fence within 8 m of it are candidates. `match`: a candidate of a kind that already stands for what the VR shows (the nearest one; two of that kind within 8 m set `ambiguous`). `retype`: only a candidate whose survey kind the VR corrects. `missing`: none. `not_rest_space`: a re-read of the VR face shows the sighting is no rest space at all (nothing is placed). The photo column says whether the NGII 2025 photo shows a roof, wall or planter at the ray. Stations placed by ortho-match carry a nominal 40 m error, so a `missing` there can also be a station error; the reason says so. Nothing here changes the model: a later stage applies the decisions and creates the `RS` instances.
 
 | # | scene / face / cols | kind seen | bearing | candidates within 8 m | decision | reason | typeId | photo | instance |
 |---|---|---|---:|---|---|---|---|---|---|
@@ -504,7 +504,7 @@ Method: each sighting is a ray from its VR station (`scripts/perf/vr-stations.js
 | - | scene_e8 / f / 500-1600 | garden: courtyard plaza with planters | 273.8 | OC0102 planter 1.1 m | match OC0102 | planter OC0102 lies 1.1 m from the ray (30 m out) | planter | yes | - |
 | 15 | scene_f1 / l / 550-800 | shelter: bus stop shelter | 146.2 | none | missing | no surveyed object within 8 m of the ray | bus_stop_shelter | no | RS0015 |
 | 16 | scene_f1 / d / 500-1400 | bench: two benches on sidewalk | nadir | none | missing | no surveyed object within 8 m of the ray | bench | no | RS0016 |
-| 17 | scene_f2 / d / 1400-1900 | shelter: small green-roof hut/booth | nadir | none | missing | no surveyed object within 8 m of the ray | hut | no | RS0017 |
+| 17 | scene_f2 / d / 1400-1900 | not a rest space: two green-painted EV charging bays (re-read; first noted as a green-roof hut/booth) | nadir | none | not_rest_space | the green patch is the 전기차 충전 구역 marking with wheel stops and a charger cabinet, not a roof | - | no | - |
 
 ## Licence
 

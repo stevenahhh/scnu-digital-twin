@@ -121,9 +121,9 @@
         "heightM": { "default": 2.6, "range": [2.3, 3.2] },
         "roofRiseM": { "default": 0.6, "range": [0.3, 1.0] }
       },
-      "dimsSource": "VR reading of the tennis-court hut (scene_f3) and the green-roof booth (scene_f2); hip or gable roof per instance (estimated)",
+      "dimsSource": "VR reading of the tennis-court hut (scene_f3; the scene_f2 sighting is EV charging bays, not a booth); hip or gable roof per instance (estimated)",
       "materials": { "walls": "instance wallColour", "roof": "instance roofColour" },
-      "colourSource": "VR reading: red roof in scene_f3, green roof in scene_f2 (estimated)",
+      "colourSource": "VR reading: red roof in scene_f3 (estimated)",
       "estimated": true
     },
     "bench": {
