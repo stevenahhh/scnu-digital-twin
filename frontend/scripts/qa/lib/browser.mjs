@@ -95,6 +95,9 @@ export class Browser {
     await view.cdp("Emulation.setDeviceMetricsOverride", {
       width: viewport.width, height: viewport.height, deviceScaleFactor: viewport.scale, mobile: viewport.mobile,
     });
+    // Phone = a touch device: without this `(pointer: coarse)` never matches, so every 44 px touch-target rule the app
+    // ships under that query is invisible to the 44 px rows (V-Q-17, V-F-73, GAP-33). Mouse input stays mouse input.
+    await view.cdp("Emulation.setTouchEmulationEnabled", viewport.mobile ? { enabled: true, maxTouchPoints: 5 } : { enabled: false });
     await view.cdp("Emulation.setTimezoneOverride", { timezoneId: "Asia/Seoul" });
     await browser.setMedia({ reducedMotion, colorScheme });
     if (clock) await view.cdp("Page.addScriptToEvaluateOnNewDocument", { source: clockScript(clock) });

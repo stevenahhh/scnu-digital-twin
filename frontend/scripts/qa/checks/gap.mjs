@@ -533,8 +533,7 @@ export const GAP_CHECKS = [
             if (el.tagName !== "BUTTON" && el.tagName !== "INPUT" && !el.matches("[data-qa=sheet-handle]")) continue;
             measured += 1;
             const r = el.getBoundingClientRect();
-            const h = el.type === "range" ? 16 : r.height;
-            if (r.width < 44 || h < 44) small.push(`${sel} ${Math.round(r.width)}x${Math.round(h)}`);
+            if (r.width < 44 || r.height < 44) small.push(`${sel} ${Math.round(r.width)}x${Math.round(r.height)}`);
           }
         }
         return { measured, under44: small.slice(0, 10), under44Count: small.length };
