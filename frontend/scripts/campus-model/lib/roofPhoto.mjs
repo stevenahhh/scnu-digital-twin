@@ -3,7 +3,7 @@
 //
 // sampleRoofPhoto() samples the photo every SAMPLE_M inside a building's footprint, skipping a band EDGE_M wide
 // along the outline (parapets, and the facade that leans into the roof outline in the photo), and sorts every
-// sample (raw mosaic values, see lib/orthoGround.mjs) into:
+// sample (raw mosaic values, see lib/ortho.mjs) into:
 //   - shadow: cast shadow (shadowWeight >= 0.5, or red below ROOF_SHADOW_RED with luminance below
 //     ROOF_SHADOW_LUMA), from parapets, rooftop plant or a taller neighbour;
 //   - panel: photovoltaic modules, which read dark slate blue in this mosaic (cluster centres on the C1, C2, B1
@@ -29,8 +29,7 @@
 // cells are panel.
 import { SCENE_UNITS_PER_METRE } from "./frame.mjs";
 import { pointInRing, segmentDistance } from "./geometry.mjs";
-import { sampleOrtho } from "./ortho.mjs";
-import { VEG_EXG, excessGreen, shadowWeight } from "./orthoGround.mjs";
+import { VEG_EXG, excessGreen, sampleOrtho, shadowWeight } from "./ortho.mjs";
 
 const SAMPLE_M = 0.25;
 const EDGE_M = 1.0;

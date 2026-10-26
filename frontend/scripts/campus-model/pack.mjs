@@ -6,11 +6,12 @@
 //      parent, which takes ~107 draw calls back. Nothing else is joined: BLD_* nodes, trees, crosswalks
 //      and OuterTerrain (a different Ground material with COLOR_0 and no UVs) keep their structure.
 //      The dashboard finds terrain by the parent name (traffic) and the /^Topography/ mesh name (camera).
-//   2. gltf-transform optimize: meshopt geometry compression with mesh quantization, WebP textures capped
-//      at 4096 px (only the 3276 x 2457 orthophoto ground exceeds 2048; it keeps its 0.25 m texels), with no
+//   2. gltf-transform optimize: WebP textures capped at 4096 px, float (unquantized) geometry, with no
 //      flatten, join, palette or simplify, so every BLD_* root node and mesh name the
-//      dashboard selects by survives packing. Quantization moves each mesh's offset/scale onto its node's
-//      translation/scale; the meshes stay in scene space.
+//      dashboard selects by survives packing. Geometry is not compressed: meshopt quantization rounds positions to
+//      14 bits of each mesh's extent (about 5 cm over the campus, vertically too), coarser than the 6 mm lift steps
+//      between the Ground_* layers and the 3 mm between a raised walkway decal and its kerb top (stages/surfaces.mjs,
+//      stages/kerbs.mjs); the layers would z-fight (plan uhf-ground-roads-routing: no size limit applies).
 // gltfpack is not used: its default quantization inserts dequantization parent nodes.
 //
 //   bun run model:pack                  raw -> public/campus-v2.glb, then verify names and counts
@@ -40,7 +41,7 @@ const OPTIMIZE_ARGS = [
   "--join", "false",
   "--palette", "false",
   "--simplify", "false",
-  "--compress", "meshopt",
+  "--compress", "false",
   "--texture-compress", "webp",
   "--texture-size", "4096",
 ];
@@ -182,7 +183,6 @@ async function verify(rawFile, packedFile, terrain) {
 function optimize(rawFile, packedFile) {
   const cli = path.join(FRONTEND, "node_modules", ".bin", "gltf-transform");
   const result = spawnSync(cli, ["optimize", rawFile, packedFile, ...OPTIMIZE_ARGS], { stdio: ["ignore", "inherit", "pipe"], encoding: "utf8" });
-  // quantize warns once per primitive whose tiled TEXCOORD_0 leaves [0, 1]; those stay float and are fine.
   const stderr = (result.stderr ?? "").split("\n").filter((line) => line && !line.includes("Skipping TEXCOORD_0; out of [0,1] range"));
   if (stderr.length) process.stderr.write(`${stderr.join("\n")}\n`);
   if (result.error) throw result.error;

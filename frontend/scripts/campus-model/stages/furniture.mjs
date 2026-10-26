@@ -7,9 +7,8 @@
 //   Furniture_Glass  translucent, vertex colours with alpha, no shadow: shelter glass, translucent canopies, goal nets,
 //                    mesh fences and ball-stop nets.
 // The lit lenses of the traffic signals go into the Lamps_heads primitive (stages/lights.mjs) so they glow at night.
-// loadFurniture() runs before the trees and the ground: it returns the footprints the trees keep out of and the photo
-// areas the ground stage suppresses (roofs that are now 3D, pole heads and pole shadows). buildFurniture() runs after
-// the ground, on the drawn terrain surface.
+// loadFurniture() runs before the trees and the ground: it returns the footprints the trees keep out of.
+// buildFurniture() runs after the ground, on the drawn terrain surface.
 // Every height is an ESTIMATE (height_source per object in the GeoJSON, or the defaults below); the node extras list
 // each object with its height and source.
 import { existsSync, readFileSync } from "node:fs";
@@ -63,7 +62,6 @@ export function leanOffset([x, z], heightM) {
 
 const ROOFED = new Set(["bus_stop_shelter", "pergola", "gazebo", "bike_rack", "reviewing_stand", "stadium_seating", "trash_station"]);
 const ROOFED_SUBTYPES = new Set(["kiosk", "parasol"]);
-const POLE_KINDS = new Set(["street_lamp", "traffic_signal_pole", "sign_pole", "floodlight_pole"]);
 
 // ---------------------------------------------------------------- palette (sRGB, estimated from VR and the photo)
 const C = {
@@ -121,29 +119,7 @@ export function loadFurniture() {
     objects.push(object);
   }
 
-  // Photo suppression: roofs that are now 3D (photo outline and footprint) are refilled from the ground around them,
-  // and so are the heads and the thin cast shadows of the poles placed on the photo (pole roots by eye; the data.go.kr
-  // points are metre-level, so their photo poles are not where the model stands and are left alone).
   const sun = data.properties.sun_estimate;
-  const shadowAzimuth = ((sun.azimuth_deg + 180) * Math.PI) / 180;
-  const shadowDir = [Math.sin(shadowAzimuth), -Math.cos(shadowAzimuth)];
-  const shadowPerMetre = 1 / Math.tan((sun.elevation_deg * Math.PI) / 180);
-  const structures = objects.filter((o) => o.photoRing).flatMap((o) => [o.photoRing, o.footprint]);
-  const holes = [];
-  for (const o of objects) {
-    if (!POLE_KINDS.has(o.kind) || !o.point || !["by-eye-photo", "shadow"].includes(o.p.method)) continue;
-    const h = o.kind === "sign_pole" ? 3 : o.heightM;
-    const [bx, bz] = o.point;
-    const length = M(h * shadowPerMetre);
-    const half = M(0.3);
-    const nx = -shadowDir[1] * half;
-    const nz = shadowDir[0] * half;
-    const tip = [bx + shadowDir[0] * length, bz + shadowDir[1] * length];
-    holes.push([[bx + nx, bz + nz], [tip[0] + nx, tip[1] + nz], [tip[0] - nx, tip[1] - nz], [bx - nx, bz - nz]]);
-    holes.push(disc(tip, M(0.9)));
-    const [lx, lz] = leanOffset(o.point, h);
-    holes.push(disc([bx + lx, bz + lz], M(0.7)));
-  }
   const treeBlock = [
     ...objects.filter((o) => o.footprint).map((o) => o.footprint),
     ...objects.filter((o) => ["pond", "fountain"].includes(o.subtype)).map((o) => o.ring),
@@ -152,7 +128,7 @@ export function loadFurniture() {
   const fieldCentre = stadium ? ringCentroid(stadium.rings[0].map(([lon, lat]) => geoToModel(lon, lat))) : null;
   // The 구령대 is also a GIS building record (운동장 본부석); the buildings stage leaves its generic mass out for it.
   const detailedStructures = objects.filter((o) => o.kind === "reviewing_stand").map((o) => o.footprint);
-  return { objects, excluded, retyped: RETYPED, photoMask: { structures, holes }, treeBlock, detailedStructures, fieldCentre, sun };
+  return { objects, excluded, retyped: RETYPED, treeBlock, detailedStructures, fieldCentre, sun };
 }
 
 // ---------------------------------------------------------------- building helpers
@@ -813,7 +789,7 @@ P.fountain = (ctx, o) => {
   ctx.solid.pole(c, g + M(0.87), g + M(1.3), 0.12, 0.08, C.stone, { sides: 6 });
 };
 // Central plaza pond (VR scene_c1): coping wall, a planted island at the west end with a stone plinth and a bronze
-// sculpture. The water itself stays the photo's.
+// sculpture. The water surface is left to the ground stage (OSM water as a painted Ground_Sports surface).
 P.pond = (ctx, o) => {
   const sign = insideSign(o.ring);
   wall(ctx, ctx.solid, o.ring, 0.5, 0.45, C.stone, { closed: true, offsetM: sign * 0.25 });
@@ -876,7 +852,7 @@ B.plaza_structure = (ctx, o) => {
 };
 
 // Steps fitted to the terrain: treads perpendicular to the fitted slope, each band's tread at its highest ground,
-// risers down to the next. Flat ground (relief under STEPS_MIN_RELIEF_M) leaves the steps to the photo.
+// risers down to the next. Flat ground (relief under STEPS_MIN_RELIEF_M) leaves the steps unmodelled.
 function stepsOnTerrain(ctx, o) {
   const ring = o.ring;
   const xs = ring.map(([x]) => x);
@@ -888,7 +864,7 @@ function stepsOnTerrain(ctx, o) {
   const heights = points.map(([, , y]) => y);
   const relief = (Math.max(...heights) - Math.min(...heights)) / M(1);
   if (points.length < 6 || relief < STEPS_MIN_RELIEF_M) {
-    ctx.skipped.push(`${o.id} (${o.subtype}, terrain relief ${relief.toFixed(2)} m: steps stay in the photo)`);
+    ctx.skipped.push(`${o.id} (${o.subtype}, terrain relief ${relief.toFixed(2)} m: steps not modelled)`);
     return false;
   }
   // least-squares plane y = a x + b z + c

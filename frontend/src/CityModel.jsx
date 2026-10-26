@@ -72,11 +72,17 @@ const LABEL_WRAPPER_STYLE = Object.freeze({ pointerEvents: "none" });
 const NON_CASTER_MATERIAL_NAME = "Ground";
 const NON_CASTER_PARENT_PATTERN = /^Trees_.*_trunk/;
 // 노면 표시(Road_Marking, 생성기 stages/markings.mjs): 항공사진에서 찾은 도색을 지형 삼각형 위 4 cm에 얹은 얇은 메시다.
-// 압축된 위치값이 약 5 cm 단위로 반올림되어 지면과 겹칠 수 있으므로 폴리곤 오프셋으로 늘 지면 앞에 그린다.
+// 지면 층(Ground_*, 최대 3.6 cm)보다 높고, 먼 거리의 깊이 정밀도에서도 겹치지 않도록 폴리곤 오프셋으로 늘 지면 앞에 그린다.
 // 평평한 도색이라 그림자를 드리우지 않고, 캠퍼스 전체에 걸친 삼각형을 포인터가 움직일 때마다 검사하지 않도록 클릭 판정에서도 뺀다.
 // 밤에는 다른 발광 재질처럼 emissiveMap으로 은은하게 빛난다(밝기는 GLB의 emissive strength).
 const ROAD_MARKING_MATERIAL_NAME = "Road_Marking";
 const ROAD_MARKING_POLYGON_OFFSET = Object.freeze({ factor: -1, units: -4 });
+// 모델링한 지면 층(Ground_*, 생성기 stages/surfaces.mjs·kerbs.mjs): 아스팔트·보도블록·자전거도로·주차장·운동 표면 등을 지형 위
+// 0.6-3.6 cm에 얹은 데칼 메시다. 지면처럼 그림자를 받기만 하고 드리우지 않으며, 캠퍼스 전체에 걸친 삼각형이라 클릭 판정에서 뺀다.
+// 재질 extras.polygonOffsetRank(1-7, 높을수록 위 층) 순서로 폴리곤 오프셋을 주되, 가장 높은 층도 노면 표시(factor -1,
+// units -4)보다 뒤에 그려지도록 한 단계를 작게 잡는다.
+const GROUND_LAYER_PATTERN = /^Ground_/;
+const GROUND_LAYER_OFFSET_STEP = Object.freeze({ factor: 0.12, units: 0.5 });
 // 가로등(Lamp_*): 실제 조명 없이 밤에만 머리(Lamp_Head)가 빛나고 바닥 빛 웅덩이(Lamp_Pool)를 가산 합성으로 그린다.
 // 그림자·클릭 대상에서 빼고, 웅덩이는 낮에는 숨겨 드로우콜을 쓰지 않는다. 가로등 위치는 항공사진 조사값이고,
 // 사진으로 찾지 못한 캠퍼스 보행로 가로등은 규칙으로 놓은 추정값이다. 신호등 렌즈도 같은 머리 메시에 들어 있어 밤에 빛난다.
@@ -194,8 +200,14 @@ function getSelectableRoot(object) {
   return root || object;
 }
 
+// Anchors are in the model's own frame (before the recentring group's -center shift): boxes are taken in world space
+// and moved back into the scene's frame, so the result does not depend on whether the shift was already applied when
+// this runs (a recomputation after the shift used to return the shifted D4 anchor, so center collapsed to 0 and the
+// default view opened off the campus).
 function buildLabelAnchors(scene) {
   const anchors = new Map();
+  scene.updateWorldMatrix(true, true);
+  const toSceneFrame = scene.matrixWorld.clone().invert();
 
   scene.traverse((child) => {
     if (!child.isMesh) return;
@@ -204,7 +216,7 @@ function buildLabelAnchors(scene) {
     const meta = getSelectableMeta(root);
     if (!meta || anchors.has(meta.elementId)) return;
 
-    const box = new THREE.Box3().setFromObject(root);
+    const box = new THREE.Box3().setFromObject(root).applyMatrix4(toSceneFrame);
     if (box.isEmpty()) return;
 
     const center = box.getCenter(new THREE.Vector3());
@@ -437,9 +449,11 @@ export function CityModel({
       }
 
       const isRoadMarking = child.material?.name === ROAD_MARKING_MATERIAL_NAME;
+      const isGroundLayer = GROUND_LAYER_PATTERN.test(child.material?.name ?? "");
       const isFurniture = FURNITURE_MATERIAL_PATTERN.test(child.material?.name ?? "");
       const isNonCaster =
         isRoadMarking ||
+        isGroundLayer ||
         child.material?.name === FURNITURE_GLASS_MATERIAL_NAME ||
         child.material?.name === NON_CASTER_MATERIAL_NAME ||
         NON_CASTER_PARENT_PATTERN.test(child.parent?.name ?? "") ||
@@ -454,6 +468,13 @@ export function CityModel({
         child.material.polygonOffset = true;
         child.material.polygonOffsetFactor = ROAD_MARKING_POLYGON_OFFSET.factor;
         child.material.polygonOffsetUnits = ROAD_MARKING_POLYGON_OFFSET.units;
+      }
+      if (isGroundLayer) {
+        const rank = child.material.userData?.polygonOffsetRank ?? 1;
+        child.raycast = () => {};
+        child.material.polygonOffset = true;
+        child.material.polygonOffsetFactor = -rank * GROUND_LAYER_OFFSET_STEP.factor;
+        child.material.polygonOffsetUnits = -rank * GROUND_LAYER_OFFSET_STEP.units;
       }
       child.userData.selectableName = getSelectableMeta(child)?.name ?? null;
 

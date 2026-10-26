@@ -24,14 +24,17 @@ node --test src/campusModelAsset.test.mjs
 | `stages/sources.mjs` | uni.glb scene, heightfield, building footprints, GeoJSON layers, land cover |
 | `stages/buildings.mjs` | building selection, floor/height corrections, building forms (masses, courtyards, raised parts, pitched roofs; see Building forms), facade looks and cells, tower masses, roof colours and solar panels from the orthophoto, building meshes and nodes |
 | `stages/markings.mjs` | road markings: both photo marking files merged (corrections applied), each candidate checked against the surveyed ground and the paint gate (`data/photo/markings-gate.json`), duplicates removed, estimated crossings where canopy hides the paint, and the `Road_Markings` decal mesh on the Topography triangles (see Road markings) |
-| `stages/ground.mjs` | procedural ground layer (land cover, ground features from `osm-ground.json`), the orthophoto laid over it (photo paint under the markings suppressed), ground material, Topography chunks and the surface the markings lie on (`topographySurface`) |
+| `stages/ground.mjs` | the class polygons of the modelled ground (`network/surfaces.mjs`), the surface-class label raster the lamp rule reads, the natural Ground material, Topography chunks and the surface the decals and markings lie on (`topographySurface`) (see Modelled ground) |
+| `stages/surfaces.mjs` | the `Ground_*` decal meshes (asphalt, pavers, lots, aprons, painted sports/water surfaces) on the Topography triangles with CC0 tiles and world-planar UVs (see Modelled ground) |
 | `stages/trees.mjs` | `placeTrees` (placement masks, CHMv2-driven placement; runs before the ground) and `buildTrees` (species geometry, instanced tree nodes) |
-| `stages/furniture.mjs` | `loadFurniture` (the surveyed outdoor objects, the footprints trees keep out of and the photo areas the ground suppresses; runs before the trees) and `buildFurniture` (the merged `Furniture` / `Furniture_Glass` nodes and the estimated benches; runs after the ground) (see Street furniture) |
+| `stages/furniture.mjs` | `loadFurniture` (the surveyed outdoor objects and the footprints trees keep out of; runs before the trees) and `buildFurniture` (the merged `Furniture` / `Furniture_Glass` nodes and the estimated benches; runs after the ground) (see Street furniture) |
 | `stages/lights.mjs` | `placeLamps` (surveyed lamps plus estimated ones along the walkway outlines), `buildLights` (`Lamps_heads`, `Lamps_pools`) and the lamp poles drawn into `Furniture` |
 | `lib/solids.mjs` | the solid-modelling kit the furniture and lamps share (boxes, beams, poles, prisms, cones; flat-shaded, oriented by geometry) |
 | `lib/geometry.mjs` | plan-view ring helpers (area, centroid, point-in-ring, cleaning) |
-| `lib/ortho.mjs` | the VWorld z19 mosaic in `data/ortho/` and its Web Mercator frame |
-| `lib/orthoGround.mjs` | orthophoto ground composition and the photo colour calibration (see Orthophoto ground) |
+| `lib/ortho.mjs` | the VWorld z19 mosaic in `data/ortho/`, its Web Mercator frame, the photo colour calibration and the vegetation/shadow tests (roof colours and the markings checks only) |
+| `lib/conform.mjs` | splits flat decal triangles along the Topography grid so markings and ground layers follow the terrain |
+| `lib/surfaceClass.mjs` | the surface classes of the ground label raster |
+| `network/surfaces.mjs` | the ground class polygons in EPSG:5186 with precedence and provenance, and the label raster (`--stats`, `--preview <png>`) |
 | `lib/facadeAtlas.mjs` | the facade atlas: one painted tile per facade look, its emissive, normal and metallic-roughness maps (see Facades) |
 | `lib/textures.mjs` | roof membrane and rooftop-equipment textures, and the detail-map builder the facade atlas shares |
 | `lib/roofPhoto.mjs` | roof colour sampling and solar-panel detection (see Roof colours and solar panels) |
@@ -43,12 +46,13 @@ node --test src/campusModelAsset.test.mjs
 | `public/uni.glb` | terrain heights, original `BLD_*` node names and outlines |
 | `data/gis-buildings.json` | building footprints (lon/lat) with `name`, `floors`, `undergroundFloors`, `heightMetres`, `areaMetres`, `usability`, `structure`, `approvalDate`, `pnu`, and per record `footprintSource` / `floorsSource` |
 | `data/landcover.png` | ground classes (paved, grass, tree, soil, track, court) per scene unit, from MCEE land cover and CHMv2 canopy |
-| `data/ortho/vworld-satellite-z19.jpg` + `.json` | VWorld Satellite z19 tile mosaic (Web Mercator, 3584 x 2816 px, about 0.245 m/px) and its tile range: ground albedo, roof colours, solar panels |
+| `data/ortho/vworld-satellite-z19.jpg` + `.json` | VWorld Satellite z19 tile mosaic (Web Mercator, 3584 x 2816 px, about 0.245 m/px) and its tile range: roof colours, solar panels and the road-marking photo checks only (never baked into the ground) |
+| `data/materials/ground-*.webp` + `ground-materials.json` | CC0 ground tiles (Poly Haven, ambientCG; colour, OpenGL normal, ARM) with their physical sizes: the `Ground_*` and Ground materials |
 | `data/chm.png` | CHMv2 canopy height (8-bit metres); tree placement and crown sizes |
 | `data/scnu-facades.json` | curated facade looks (class, colours, window layout, piers, bands, entrance, eave colour) and per-building entries: look, floor/height corrections, tower masses, entrance side (see Facades) |
 | `data/lod4-facades.json` | per SCNU footprint: the VWorld LOD4 models over it, their facade palette, wall height and roof levels with outlines (fetch/lod4Facades.mjs) |
 | `data/building-forms.json` | per modelled campus building: its masses (outer and courtyard rings, base and top heights, parapet, roof type and pitched-roof triangles, columns), voids, relief lean and photo IoU, from the VWorld LOD4 meshes and the NGII 2025 orthophoto (fetch/buildingForms.mjs; see Building forms) |
-| `data/osm-ground.json` | ground features painted into the texture (see below) |
+| `data/osm-ground.json` | ground features drawn as class polygons (see below) |
 | `docs/assets/data/road_zones_wgs84.geojson` | asphalt road surfaces |
 | `docs/assets/data/walkways_wgs84.geojson` | A003 sidewalk outlines (closed rings along kerb and back edge, some open lines): paved areas and kerbs |
 | `docs/assets/data/crosswalks_wgs84.geojson` | digitised crosswalk polygons: only where a crossing the photo shows no zebra for gets estimated bars |
@@ -58,9 +62,9 @@ node --test src/campusModelAsset.test.mjs
 
 `fetch/ortho.mjs` (also run by `fetch-sources.mjs`) caches the z19 WMTS tiles over EXTENT in `.cache/`
 (ignored by git) and writes them, unresampled, into the committed mosaic `data/ortho/`. VWorld data is
-stored and baked by the project owner's consent of 2026-10-24 (D1 in `docs/data-licences.md`; attribution
-`출처: 브이월드`, also written to the GLB's `asset.extras.orthophoto`). The API key is read at run time and
-never written to any output.
+stored by the project owner's consent of 2026-10-24 (D1 in `docs/data-licences.md`; attribution `출처: 브이월드`)
+and read only for the roof colours and the markings checks; no mosaic pixel is baked into the ground. The API key is
+read at run time and never written to any output.
 
 ### Ground features (`data/osm-ground.json`)
 
@@ -81,40 +85,42 @@ between the nearest measured A003 walkways on each side; junction mouths are tra
 Its lane lines, centre lines and crossings are the photo's own (see Road markings). The OSM crossing ways lie up
 to 3 m off the painted zebras at the main gate, so they only decide where an estimated crossing goes.
 
-### Orthophoto ground (`lib/orthoGround.mjs`)
+### Modelled ground (`network/surfaces.mjs`, `stages/surfaces.mjs`)
 
-The `Topography` texture is the VWorld z19 orthophoto resampled into the scene frame: 3276 x 2457 px over
-EXTENT, 0.2465 m per texel (`PX` 6.5 in `stages/ground.mjs`; `pack.mjs` caps textures at 4096 px so it
-keeps that size, about 0.76 MB as WebP). The procedural ground above (land cover, walkways, roads, ground
-features) is still painted, at the same resolution, and every pixel records the surface class it was painted
-as (natural ground, light paving, asphalt, painted sports surfaces, off-campus lots). The photo replaces it
-everywhere except where the photo would double what the model draws itself:
+No photo pixel is baked into the ground (plan uhf-ground-roads-routing todo 10; the former orthophoto composite is
+gone). The ground is vector polygons in EPSG:5186, each with a precedence, a source (`NGII-A003`, `road-zone-measured`,
+`OSM-derived`, `project-estimated`) and a source reference (A003 `ufid`, OSM way id, road-zone index):
 
-- under every road marking the model draws (`stages/markings.mjs`), plus 0.3 m: the photo's own paint is refilled
-  from the photo around it (normalised box means at 2-32 px) before anything else reads the photo, so no paint
-  shows twice;
-- under every modelled footprint plus a margin of 0.6 m + 3 % of the building's height, swept along the relief
-  lean of the photo: the mosaic joins two flight strips, so roofs are displaced from their footprints by up to
-  about 0.3 m per metre of height (south in the north of the campus, north in the south) with the facade in
-  between. For every part at least 4 m tall the roof outline is searched in the photo (the offset within
-  0.34 x height with the strongest brightness step across the outline, kept when it beats the median offset by
-  25 %), and the footprint swept to that offset is masked; towers sweep with their own height. The build logs the
-  offsets (median 0.225 m per metre; BLD_D4 8.5 m at 29 m);
-- under a modelled tree crown (+0.4 m) in the open, and wherever the photo shows vegetation on a surface
-  painted as paving or asphalt (street trees over roads, walkways and plazas, where the model has no tree).
-  Inside groves (crowns cover at least 60 % of the ground within 8 m) the photo canopy stays, so the gaps
-  between modelled crowns look like canopy;
-- the photo's cast shadows on open ground (taken in the morning, shadows fall west-north-west; the
-  dashboard casts its own for its clock) are relit, grown by 2 px over the penumbra.
+| Precedence | Class | Mesh | Polygons |
+|---|---|---|---|
+| 0 | natural | `Topography` | the whole EXTENT: land-cover colour map (0.5 m/texel) under the CC0 grass relief tile |
+| 1 | painted | `Ground_Sports` | OSM pitches, the MCEE facility outlines with their project surface labels, the running track, water |
+| 2 | paving | `Ground_Pavers` / `Ground_Apron` | OSM plazas; stone rims of water, lawn facilities and the fountain |
+| 3 | asphalt | `Ground_Asphalt` | the 96 road zones and the arterial/connector strips traced from the OSM centrelines to the surveyed edges |
+| 4 | lot | `Ground_Lot` | OSM parking, the estimated supplement bays, off-campus lots; the roundabout over the road |
+| 5 (5.5) | A003 | `Ground_Pavers` / `Ground_Asphalt` (`Ground_Bicycle`) | the 42 closed A003 walkway rings by `qual`/`scls` (the bicycle lanes are open outlines only, so no red lane polygon yet) |
+| 6 | apron | `Ground_Apron` | the 2.2 m band centred on every building outline |
 
-A filled pixel takes the local mean photo colour of its surface class around it (5 m, then 20 m, then the
-whole raster) times the procedural layer's luminance detail; a relit shadow pixel takes the same lit colour
-times the photo's own high-pass luminance, so markings inside a shadow survive. Edges are feathered over
-2 px. Off-campus lots keep the photo. Colour: a white balance from bright, nearly grey pixels (membranes
-read cyan in the mosaic) and a lift of the linear value by the power 1/1.5 towards albedo (the mosaic
-crushes mid-tones; lawn 0.17, asphalt 0.20, paving 0.27, white membranes 0.77 after the lift). The mean
-albedo of the photo ground (linear 0.25) matches the procedural ground it replaces (0.24). The build logs
-the share of each fill. All of it is an estimate derived from imagery, not a measured albedo.
+There are no polygon booleans: `stages/surfaces.mjs` conforms every polygon to the Topography triangles
+(`lib/conform.mjs`) and lifts it 0.006 m per precedence step (at most 0.036 m, under the markings' 0.04 m), and
+CityModel adds a polygon offset by the material's `extras.polygonOffsetRank`, smaller than the markings' own. The
+materials are CC0 tiles (`data/materials/ground-materials.json`) on world-planar UVs that repeat every physical tile
+size in EPSG:5186 metres, with the ground AO on TEXCOORD_1; painted surfaces get a per-surface texture at 0.05 m/texel
+(track lanes, court and pitch lines 0.10 m wide). The same polygons, plus the 0.3 m edge-stone band on every A003
+outline, are rasterised into the surface-class label raster (`groundInfo`) the lamp rule reads. Every albedo, relief
+and roughness is an estimate (`extras.estimated`), and `asset.extras.ground.photoPixelsBaked` is `false`. After a
+ground geometry change, re-bake the ground AO: `bun scripts/campus-model/bake/bake-ao.mjs --planar`.
+
+### Kerbs, slabs and dropped kerbs (`stages/kerbs.mjs`)
+
+Kerbs stand only on the A003 outlines (never extrapolated onto a road edge): a 0.20 m wide ribbon on the walkway
+side of the outline, its outer face on the line, 0.15 m exposed (assumed, asserted under the 0.25 m legal cap) and
+0.10 m buried, skipped where both sides are paved (another walkway, a plaza, a building apron). Inside the A003 rings
+the walkway decals stand on a slab 0.15 m up (3 mm under the kerb top, so the stone shows), feathered to 0 over 0.5 m
+at every walkway edge without a kerb. A crossing polygon (CW_001-CW_031) within 1.0 m of a kerb drops it to 0 across
+the crossing plus 0.5 m each side, and kerb and slab rise from there at 1/12 (1.8 m run, then the level landing). A
+0.35 m darker asphalt gutter (`Ground_Gutter`) runs on the road side of every road-facing kerb. Furniture, lamps and
+the height sidecar stand on the slab (`groundHeightAt`). All of it is an estimate (`Kerbs` node extras).
 
 ### Roof colours and solar panels (`lib/roofPhoto.mjs`)
 
@@ -439,9 +445,10 @@ stand). Masses, heights and voids are estimates derived from VWorld's models and
   unnamed ones inside the campus next to a campus road). Off-campus buildings are left out; their lots are
   painted as plain ground.
 - `Topography`: chunked terrain using `uni.glb`'s ground heights (structures in the old terrain
-  mesh are filtered out), textured with the VWorld z19 orthophoto at 0.2465 m per texel, with the procedural
-  layer (land cover, roads, walkways, curbs and the ground features above) filling in under buildings and
-  tree crowns (see Orthophoto ground).
+  mesh are filtered out), natural ground (land-cover colours under the CC0 grass relief; see Modelled ground).
+- `Ground_Asphalt`, `Ground_Pavers`, `Ground_Lot`, `Ground_Apron`, `Ground_Sports`: the modelled ground surfaces
+  as decal meshes on the terrain (see Modelled ground).
+- `Kerbs`, `Ground_Gutter`: kerb ribbons, dropped kerbs and gutters on the A003 outlines (see Kerbs, slabs and dropped kerbs).
 - `Road_Markings`: the painted road markings the orthophoto shows, one decal mesh on the terrain (see Road markings).
 - `Trees_*`: instanced broadleaf, round and pine trees placed over CHMv2 canopy (see Trees above),
   kept off buildings, roads, walkways and the roofed street furniture.
@@ -450,7 +457,7 @@ stand). Masses, heights and voids are estimates derived from VWorld's models and
 
 ## Road markings (`stages/markings.mjs`)
 
-Two files list the painted markings of the NGII 2025 orthophoto, the same photograph as the ground texture (registered
+Two files list the painted markings of the NGII 2025 orthophoto, the same photograph as the VWorld z19 mosaic (registered
 to it within 5 mm; methods, hand checks and recall in `data/photo/README.md`):
 
 - `data/photo/markings.geojson`, the detection pass;
@@ -482,8 +489,7 @@ candidate is drawn only when the photo backs it:
 3. duplicates: accepted candidates of one colour covering the same 0.1 m cells (half the smaller one's area) keep one:
    the larger when it contains the smaller three times over, else the better supported.
 
-A rejected candidate is not drawn and its paint stays in the photo: the ground stage refills the photo under drawn
-pieces only (their holes stay photo). The 2026-10-25 build: 2,734 candidates, 2,059 drawn (24 estimated crossing
+A rejected candidate is not drawn (the modelled ground carries no photo paint). The 2026-10-25 build: 2,734 candidates, 2,059 drawn (24 estimated crossing
 bars), 213 rejected by the paint gate, 177 by eye, 188 duplicates, 97 left out by context:
 
 | kind | drawn | gate | by eye | duplicate | context |
@@ -519,14 +525,14 @@ bars, drawn at 0.50 m with 0.40 m gaps.
 Crossings: the OSM crossing ways and the digitised crosswalk polygons never draw stripes. One that matches a drawn
 zebra is drawn from the photo alone; the build logs how far the OSM way lies off it. One without a drawn zebra whose
 area the photo shows mostly under canopy gets estimated bars (0.903 m period, 0.50 m bars; OSM ways 4.57 m wide after
-REG's translation, polygons trimmed by their median 1.45 m overrun). Under a cast shadow alone, or on open asphalt, it
-stays undrawn: the relit photo keeps whatever paint it has.
+REG's translation, polygons trimmed by their median 1.45 m overrun; 0.50 m bars are assumed, the period measured).
+Under a cast shadow alone, or on open asphalt, no zebra was detected and it stays undrawn.
 
 The mesh: every piece is triangulated and split along the Topography grid lines and diagonals wherever a flat
 triangle would leave the terrain by more than 5 mm, so each triangle lies on one terrain triangle
 (`topographySurface` in `stages/ground.mjs` reproduces the chunk triangulation), 4 cm above it, with the
-terrain's interpolated normals. Packed positions are 14-bit over the campus (about 5 cm steps), so CityModel draws
-the material with a polygon offset; it casts no shadow and takes no pointer raycasts. One `Road_Marking` material
+terrain's interpolated normals. CityModel draws the material with a polygon offset (positions were 14-bit, about
+5 cm steps, before the modelled ground; they are float since then, see pack.mjs); it casts no shadow and takes no pointer raycasts. One `Road_Marking` material
 with a white/yellow/blue palette texture as base colour and emissive map (no vertex colours): the dashboard lights
 every emissive map at night, so the paint stays faintly visible after dark (`KHR_materials_emissive_strength` 0.18).
 One mesh, one draw call: 2,137 pieces, 45,391 triangles; `campus-v2.glb` is 4,168,048 B (4,051,068 B before M3) and
@@ -615,23 +621,14 @@ the central pond; they are placed from VR (4 per side, 7 m apart, 4.5 m outside 
 lawn too), facing the path, on campus, off roads and buildings, 1.5 m from objects and lamps and 30 m from other
 benches. All are flagged estimated in the build log and the node extras (`estimatedBenches`).
 
-### Photo suppression
-
-The ground stage keeps the photo from drawing what is now 3D (`composeOrthoGround` in `lib/orthoGround.mjs`): the
-roof outline traced on the photo and the footprint under it of every roofed object (shelters, pergolas, gazebos,
-bike shelters, the stands and the 구령대, bins, kiosk, parasols) are filled like building footprints (0.3 m margin,
-with the surface class painted under them), and for every pole placed on the photo the head (moved by the lean) and
-the thin cast shadow (azimuth 272.5°, 0.53 m per metre of height, 0.6 m wide) are refilled from the photo around
-them. data.go.kr poles are left alone: they are metre-level positions, so their photo poles are elsewhere.
-
 ### Draw calls and size
 
 `Furniture` is one opaque primitive with vertex colours (it casts shadows, so 2 draw calls with the shadow pass),
 `Furniture_Glass` one translucent primitive that casts none (1 draw call), and `Lamps_heads` stays one primitive.
 `scripts/perf/bench.mjs --quality low` measures 131 / 28 / 127 draw calls (overview / d4 / oblique15) against 128 / 27 /
 124 before, with 0 console errors; `campus-v2.glb` grows from 3,578,368 B to 4,051,068 B (about 46,000 furniture
-triangles). Packed positions are 14-bit over the campus (about 5 cm steps), so no
-part is thinner than 6 cm. CityModel keeps both furniture meshes out of pointer raycasts. Every position is from the
+triangles). Packed positions were 14-bit over the campus then (about 5 cm steps; float since the modelled ground), so
+no part is thinner than 6 cm. CityModel keeps both furniture meshes out of pointer raycasts. Every position is from the
 photo or a rule, and every shape and height an estimate: none of it is survey data.
 
 ## Frame
