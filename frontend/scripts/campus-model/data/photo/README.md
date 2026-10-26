@@ -572,9 +572,9 @@ surfaces are paving supplements of `../osm-ground.json`. Every dimension is an e
 | scene_b1 f | stepped plaza in front of the museum | mapped | OC0096 stepped_terrace (the ortho-match station put the ray past it) |
 | scene_b4 f | straight paved path across the lawn | built | three plain paving supplements: path, 8 x 8 m square, path to the road |
 | scene_c1 f | stepped approach to the library | built | RS-LS-C1STEPS: 14 + 5 risers, centre and side hedges, tile landing, terrace |
-| scene_c3 d | crosswalk and disabled bay | mapped | markings MK00135-MK00153 and MX00231 / MX01310 / MX01311 |
+| scene_c3 d | crosswalk and disabled bay | markings lane | road paint: the crossing and blue bay under the station (MK00796, MK00797, MX00231, MX01310, MX01311) are in the markings data but not drawn by the paint gate; left to the markings lane |
 | scene_d1 l | outdoor stair | built | RS-LS-D1STAIR: 2 x 9 risers south of D1 (the station record is about 150 m off D1) |
-| scene_d3 d | blue PM bay | built | bay paint MX00361 (markings); RS-LS-D3PMRACK rack |
+| scene_d3 d | blue PM bay | built | RS-LS-D3PMRACK rack; the bay paint MX00361 is rejected by the paint gate (blue support 0.579 < 0.6): markings-lane follow-up |
 | scene_d4 f | stepped entrance plaza | built | RS-LS-D4STEPS: 4 risers across the passage, forecourt sloping back to the drive |
 | scene_e4 r | round planter / sculpture on the red plaza | built | RS-LS-E4STONE sign stone; red surfacing supplement of the junction |
 | scene_e7 d | outdoor stair | built | RS-LS-E7STAIR: 6 + 7 + 6 risers, two landings |

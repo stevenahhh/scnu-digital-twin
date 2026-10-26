@@ -54,7 +54,7 @@ test("one feature group per sighting decided missing, none for the others", () =
 
 // Landscape rows of the reconciliation decided missing (steps, ponds, paths, surfaces): each carries the verdict it was
 // applied with, and every feature or surface supplement it names exists.
-test("every landscape row decided missing is applied to a built feature, an existing node or an off-campus verdict", () => {
+test("every landscape row decided missing is applied to a built feature, an existing node, the markings lane or an off-campus verdict", () => {
   const ground = JSON.parse(readFileSync(new URL("../osm-ground.json", import.meta.url), "utf8"));
   const ids = new Set(rest.features.map((f) => f.properties.id));
   const built = new Set(placed.map((o) => o.id));
@@ -63,7 +63,7 @@ test("every landscape row decided missing is applied to a built feature, an exis
   for (const row of missing) {
     const applied = row.applied;
     assert.ok(applied, `${row.scene} ${row.note}: no applied verdict`);
-    assert.ok(["built", "mapped", "not_on_campus"].includes(applied.verdict), `${row.scene}: verdict ${applied.verdict}`);
+    assert.ok(["built", "mapped", "markings_lane", "not_on_campus"].includes(applied.verdict), `${row.scene}: verdict ${applied.verdict}`);
     assert.ok(applied.evidence?.length > 20, `${row.scene}: evidence`);
     for (const id of applied.features ?? []) {
       assert.ok(ids.has(id), `${row.scene}: ${id} is not in rest-spaces.geojson`);
@@ -71,7 +71,7 @@ test("every landscape row decided missing is applied to a built feature, an exis
     }
     for (const prefix of applied.supplements ?? []) assert.ok(ground.supplements.features.some((f) => f.note?.startsWith(prefix)), `${row.scene}: no osm-ground supplement "${prefix}"`);
     if (applied.verdict === "built") assert.ok((applied.features ?? []).length + (applied.supplements ?? []).length > 0, `${row.scene}: built names nothing`);
-    if (applied.verdict !== "not_on_campus") assert.ok(applied.nodes?.length > 0, `${row.scene}: model nodes`);
+    if (["built", "mapped"].includes(applied.verdict)) assert.ok(applied.nodes?.length > 0, `${row.scene}: model nodes`);
   }
 });
 

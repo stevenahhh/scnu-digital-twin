@@ -705,7 +705,8 @@ against the survey and the coverage of the reconciliation table.
 ### VR landscape (steps, the A1 pond, lawn paths, red surfacing)
 
 The 12 landscape rows of `data/photo/rest-spaces-reconciliation.json` decided `missing` carry an `applied` verdict
-(`built`, `mapped` to an existing node, or `not_on_campus`; see `data/photo/README.md`). The built ones are real
+(`built`, `mapped` to an existing node, `markings_lane` for road paint the markings stage owns, or `not_on_campus`; see
+`data/photo/README.md`). The built ones are real
 geometry, every value an estimate (추정):
 
 - `terraced_steps` (`RS-LS-C1STEPS`, `-D4STEPS`, `-E7STAIR`, `-D1STAIR`): a bottom edge traced on the NGII sheet and

@@ -19,9 +19,10 @@
     "landscapeApplied": {
       "rows": 12,
       "built": 9,
-      "mapped": 2,
+      "mapped": 1,
       "notOnCampus": 1,
-      "by": "landscape-vr (data/photo/rest-spaces.geojson RS-LS-*, data/osm-ground.json supplements), 2026-10-26"
+      "by": "landscape-vr (data/photo/rest-spaces.geojson RS-LS-*, data/osm-ground.json supplements), 2026-10-26",
+      "markingsLane": 1
     }
   },
   "sightings": [
@@ -952,14 +953,12 @@
       "ref": null,
       "reason": "no surveyed object within 8 m of the ray",
       "applied": {
-        "verdict": "mapped",
+        "verdict": "markings_lane",
         "features": [],
         "supplements": [],
-        "nodes": [
-          "Road_Markings (zebra MK00135-MK00153, disabled bays MX00231 / MX01310 / MX01311)"
-        ],
-        "evidence": "the zebra crossing and the blue disabled bay under the scene_c3 station are traced in data/photo/markings.geojson and markings-extra.geojson and drawn by the markings stage (other lane); nothing to add",
-        "by": "landscape-vr (2026-10-26)"
+        "nodes": [],
+        "by": "landscape-vr (2026-10-26)",
+        "evidence": "road paint, not landscape: the crossing and the blue disabled bay right under the scene_c3 station (about 3-8 m) are traced in markings.geojson / markings-extra.geojson (MK00796, MK00797; MX00231, MX01310, MX01311) but the markings paint gate does not draw them (top-down qa/landscape-vr/topdown/c3-crosswalk-bay-topdown.png: only the zebra MK00135-MK00153 and the bay about 17 m north are drawn). Left to the markings lane (stages/markings.mjs is out of this lane's scope)"
       }
     },
     {
@@ -1056,10 +1055,9 @@
         ],
         "supplements": [],
         "nodes": [
-          "Road_Markings (blue bay MX00361)",
           "Furniture#RS-LS-D3PMRACK"
         ],
-        "evidence": "the blue bay paint is MX00361 of markings-extra.geojson (drawn by the markings stage, other lane); the blue kick-scooter rack along its back in VR scene_d3 d was missing and is built",
+        "evidence": "the blue kick-scooter rack along the back of the bay in VR scene_d3 d was missing and is built (RS-LS-D3PMRACK); the bay paint MX00361 of markings-extra.geojson is rejected by the markings paint gate (blue support 0.579 < 0.6, markings-gate.json), so the blue fill is not drawn: a markings-lane follow-up",
         "by": "landscape-vr (2026-10-26)"
       }
     },
