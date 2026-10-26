@@ -15,8 +15,10 @@ import { LANDCOVER } from "../lib/landcover.mjs";
 import { MeshData } from "../lib/meshData.mjs";
 import { encodePng } from "../lib/png.mjs";
 import { Raster, hashNoise, smoothNoise } from "../lib/raster.mjs";
-import { pointInRing, ringArea } from "../lib/geometry.mjs";
-import { SURFACE_CLASS, composeOrthoGround } from "../lib/orthoGround.mjs";
+import { pointInRing } from "../lib/geometry.mjs";
+import { SURFACE_CLASS } from "../lib/surfaceClass.mjs";
+import { composeOrthoGround } from "../lib/orthoGround.mjs";
+import { loadGroundFeatures, orientedFrame, parkingRing, traceArterials } from "../network/surfaces.mjs";
 
 const WIDTH = EXTENT.maxX - EXTENT.minX;
 const DEPTH = EXTENT.maxZ - EXTENT.minZ;
@@ -42,7 +44,6 @@ function pngLayoutTag(bytes) {
   return null;
 }
 
-const GROUND_FEATURES = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "osm-ground.json");
 const WALKWAYS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..", "docs", "assets", "data", "walkways_wgs84.geojson");
 
 // ---------------------------------------------------------------- walkways
@@ -131,30 +132,6 @@ const SURFACE = {
 };
 
 // Oriented frame of a ring (model units) or of a point and heading: s along the long axis, t across, metres.
-function orientedFrame(ring) {
-  let best = null;
-  for (let a = 0; a < 180; a += 0.5) {
-    const ux = Math.cos((a * Math.PI) / 180);
-    const uz = Math.sin((a * Math.PI) / 180);
-    let s0 = Infinity, s1 = -Infinity, t0 = Infinity, t1 = -Infinity;
-    for (const [x, z] of ring) {
-      const s = x * ux + z * uz;
-      const t = -x * uz + z * ux;
-      s0 = Math.min(s0, s); s1 = Math.max(s1, s); t0 = Math.min(t0, t); t1 = Math.max(t1, t);
-    }
-    const area = (s1 - s0) * (t1 - t0);
-    if (!best || area < best.area) best = { area, ux, uz, s0, s1, t0, t1 };
-  }
-  const { ux, uz, s0, s1, t0, t1 } = best;
-  const sc = (s0 + s1) / 2;
-  const tc = (t0 + t1) / 2;
-  const frame = { cx: sc * ux - tc * uz, cz: sc * uz + tc * ux, ux, uz, halfLength: (s1 - s0) / 2 / SCENE_UNITS_PER_METRE, halfWidth: (t1 - t0) / 2 / SCENE_UNITS_PER_METRE };
-  if (frame.halfWidth > frame.halfLength) {
-    [frame.ux, frame.uz] = [-uz, ux];
-    [frame.halfLength, frame.halfWidth] = [frame.halfWidth, frame.halfLength];
-  }
-  return frame;
-}
 const headingFrame = ([cx, cz], degrees) => ({ cx, cz, ux: Math.cos((degrees * Math.PI) / 180), uz: Math.sin((degrees * Math.PI) / 180) });
 const pixelToModel = (px, py) => [EXTENT.minX + (px + 0.5) / PX, EXTENT.minZ + (py + 0.5) / PX];
 function toLocal(frame, px, py) {
@@ -277,29 +254,6 @@ function paverShader(frame) {
   };
 }
 
-async function loadGroundFeatures() {
-  const data = JSON.parse(await Bun.file(GROUND_FEATURES).text());
-  const toModel = (ring) => ring.map(([lon, lat]) => geoToModel(lon, lat));
-  const osm = data.osm.features.map((f) => ({ ...f, rings: f.rings.map(toModel) }));
-  const facilities = data.facilities.features.map((f) => ({ rings: f.rings.map(toModel) }));
-  const supplements = data.supplements.features.map((f) => ({
-    ...f,
-    ...(f.at || f.centre ? { point: geoToModel(...(f.at ?? f.centre)) } : {}),
-    ...(f.axis ? { axis: toModel(f.axis) } : {}),
-  }));
-  const areaM2 = (ring) => Math.abs(ringArea(ring)) / SCENE_UNITS_PER_METRE ** 2;
-  const stadiums = osm.filter((f) => f.kind === "stadium");
-  const labels = supplements.filter((f) => f.kind === "surface");
-  const painted = [];
-  for (const facility of facilities) {
-    const outer = facility.rings[0];
-    const own = labels.filter((label) => pointInRing(label.point, outer));
-    const centroid = outer.reduce((acc, [x, z]) => [acc[0] + x / outer.length, acc[1] + z / outer.length], [0, 0]);
-    if (own.length) painted.push({ ...facility, labels: own });
-    else if (areaM2(outer) >= 8000 && stadiums.some((s) => pointInRing(centroid, s.rings[0]))) painted.push({ ...facility, track: true });
-  }
-  return { osm, lines: data.osm.lines ?? [], facilities: painted, supplements, unlabelledLabels: labels.filter((l) => !painted.some((p) => p.labels?.includes(l))) };
-}
 
 async function paintGroundFeatures(ground, toPixel) {
   const features = await loadGroundFeatures();
@@ -400,123 +354,11 @@ async function paintGroundFeatures(ground, toPixel) {
 }
 
 // Rectangle `depthMetres` wide centred on the two-point axis (model units).
-function parkingRing([[ax, az], [bx, bz]], depthMetres) {
-  const length = Math.hypot(bx - ax, bz - az);
-  const half = metres(depthMetres) / 2;
-  const nx = (-(bz - az) / length) * half;
-  const nz = ((bx - ax) / length) * half;
-  return [[ax + nx, az + nz], [bx + nx, bz + nz], [bx - nx, bz - nz], [ax - nx, az - nz]];
-}
-
-// ---------------------------------------------------------------- arterial road
-// The arterial east of the campus (Jungang-ro) lies outside the measured road zones. Its carriageway
-// follows the OSM centreline (osm-ground.json `osm.lines`): every SAMPLE_M along the line the asphalt
-// runs out to the nearest measured A003 walkway (edge stones included), building or off-campus lot on
-// each side, so the surveyed sidewalks bound it and the OSM line's few-metre offset does not show. With
-// nothing within ARTERIAL_MAX_HALF_M a side falls back to ARTERIAL_FALLBACK_HALF_M (ESTIMATED).
-// Connectors (side roads sharing a node with the arterial) are traced the same way from the junction
-// until they reach a measured road zone or CONNECTOR_MAX_M. The asphalt carries no painted markings: lane
-// lines, centre lines and crossings are the photo's, drawn as geometry by stages/markings.mjs.
-const SAMPLE_M = 1;
-const MARCH_M = 0.2;
-const ARTERIAL_MAX_HALF_M = 16;
-const ARTERIAL_FALLBACK_HALF_M = 8;
-const CONNECTOR_MAX_HALF_M = 8;
-const CONNECTOR_FALLBACK_HALF_M = 4;
-const CONNECTOR_MAX_M = 60;
-
-// Points every SAMPLE_M along a polyline (model units) with unit direction u and arc length s (m).
-function resample(line) {
-  const out = [];
-  let s = 0;
-  for (let i = 0; i + 1 < line.length; i += 1) {
-    const [ax, az] = line[i];
-    const [bx, bz] = line[i + 1];
-    const length = Math.hypot(bx - ax, bz - az) / SCENE_UNITS_PER_METRE;
-    if (length < 1e-6) continue;
-    const u = [(bx - ax) / (length * SCENE_UNITS_PER_METRE), (bz - az) / (length * SCENE_UNITS_PER_METRE)];
-    const first = out.length ? Math.ceil((s - out.at(-1).s) / SAMPLE_M) * SAMPLE_M - (s - out.at(-1).s) : 0;
-    for (let d = first; d < length; d += SAMPLE_M) out.push({ p: [ax + u[0] * metres(d), az + u[1] * metres(d)], u, s: s + d });
-    s += length;
-  }
-  const [x, z] = line.at(-1);
-  if (out.length) out.push({ p: [x, z], u: out.at(-1).u, s });
-  return out;
-}
-
-const median = (values, radius) => values.map((_, i) => {
-  const window = values.slice(Math.max(0, i - radius), i + radius + 1).filter((v) => v !== null).sort((a, b) => a - b);
-  return window.length ? window[window.length >> 1] : null;
-});
-
+// The arterial and connector strips (network/surfaces.mjs traceArterials), painted as asphalt.
 function paintArterials({ ground, toPixel, lines, block, roadZoneMask, asphalt }) {
-  const toModel = (line) => line.map(([lon, lat]) => geoToModel(lon, lat));
-  const arterials = lines.filter((l) => l.kind === "arterial").map((l) => toModel(l.line));
-  const connectors = lines.filter((l) => l.kind === "connector").map((l) => toModel(l.line));
-  const key = ([x, z]) => `${x.toFixed(4)},${z.toFixed(4)}`;
-  const arterialKeys = new Set(arterials.flat().map(key));
-  const pixelIndex = ([x, z]) => {
-    const [px, py] = toPixel([x, z]);
-    const ix = Math.floor(px);
-    const iy = Math.floor(py);
-    return ix < 0 || iy < 0 || ix >= ground.width || iy >= ground.height ? -1 : iy * ground.width + ix;
-  };
-  // Metres from p along direction n to the first blocked pixel or the raster edge; null if p is blocked.
-  const march = (p, n, maxMetres) => {
-    for (let d = 0; d <= maxMetres; d += MARCH_M) {
-      const index = pixelIndex([p[0] + n[0] * metres(d), p[1] + n[1] * metres(d)]);
-      if (index < 0) return d;
-      if (block[index]) return d === 0 ? null : d;
-    }
-    return Infinity;
-  };
-  const strips = [];
-  const trace = (samples, maxHalf, fallbackHalf) => {
-    const sides = samples.map(({ p, u }) => {
-      const n = [-u[1], u[0]];
-      const left = march(p, [-n[0], -n[1]], maxHalf);
-      const right = march(p, n, maxHalf);
-      if (left === null || right === null) return [null, null];
-      return [left === Infinity ? fallbackHalf : left, right === Infinity ? fallbackHalf : right];
-    });
-    const left = median(sides.map((s) => s[0]), 3);
-    const right = median(sides.map((s) => s[1]), 3);
-    return samples.map((sample, i) => ({ ...sample, n: [-sample.u[1], sample.u[0]], left: left[i], right: right[i] }));
-  };
-  for (const line of arterials) {
-    const samples = trace(resample(line), ARTERIAL_MAX_HALF_M, ARTERIAL_FALLBACK_HALF_M).filter((s) => pixelIndex(s.p) >= 0);
-    if (!samples.some((s) => s.left !== null)) continue;
-    strips.push(samples);
-  }
-  for (const line of connectors) {
-    for (const [index, p] of line.entries()) {
-      if (!arterialKeys.has(key(p))) continue;
-      for (const part of [line.slice(index), line.slice(0, index + 1).reverse()]) {
-        if (part.length < 2) continue;
-        const samples = [];
-        for (const sample of resample(part)) {
-          const at = pixelIndex(sample.p);
-          if (at < 0 || sample.s > CONNECTOR_MAX_M || (sample.s > 2 && roadZoneMask[at])) break;
-          samples.push(sample);
-        }
-        if (samples.length >= 2) strips.push(trace(samples, CONNECTOR_MAX_HALF_M, CONNECTOR_FALLBACK_HALF_M));
-      }
-    }
-  }
-  const edge = (s, side) => (side < 0
-    ? [s.p[0] - s.n[0] * metres(s.left), s.p[1] - s.n[1] * metres(s.left)]
-    : [s.p[0] + s.n[0] * metres(s.right), s.p[1] + s.n[1] * metres(s.right)]);
-  let quads = 0;
-  for (const samples of strips) {
-    for (let i = 0; i + 1 < samples.length; i += 1) {
-      const a = samples[i];
-      const b = samples[i + 1];
-      if (a.left === null || b.left === null) continue;
-      ground.fillPolygon([[edge(a, -1), edge(b, -1), edge(b, 1), edge(a, 1)].map(toPixel)], asphalt);
-      quads += 1;
-    }
-  }
-  return { strips: strips.length, quads };
+  const traced = traceArterials({ lines, block, roadZoneMask, width: ground.width, height: ground.height, toPixel });
+  for (const { ring } of traced.quads) ground.fillPolygon([ring.map(toPixel)], asphalt);
+  return { strips: traced.strips, quads: traced.quads.length };
 }
 
 // The Topography surface as drawn: heightAt sampled on the STEP grid over EXTENT, each cell split into the two

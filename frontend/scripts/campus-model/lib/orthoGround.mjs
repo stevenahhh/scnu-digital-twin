@@ -37,6 +37,7 @@
 // Everything here is an estimate derived from imagery, not a measurement of surface albedo.
 import { metres } from "./frame.mjs";
 import { Raster } from "./raster.mjs";
+import { SURFACE_CLASS } from "./surfaceClass.mjs";
 
 const SRGB_TO_LINEAR = Float32Array.from({ length: 256 }, (_, c) => {
   const v = c / 255;
@@ -101,8 +102,7 @@ export function shadowWeight(r, g, b) {
   return Math.max(0, Math.min(1, red)) * Math.max(0, Math.min(1, dark));
 }
 
-// Surface classes of the procedural raster (stages/ground.mjs writes them into its labels).
-export const SURFACE_CLASS = Object.freeze({ NATURAL: 0, PAVING: 1, ASPHALT: 2, PAINTED: 3, LOT: 4 });
+// Surface classes of the procedural raster (stages/ground.mjs writes them into its labels; lib/surfaceClass.mjs).
 const CLASS_COUNT = 5;
 
 // ---------------------------------------------------------------- composition
