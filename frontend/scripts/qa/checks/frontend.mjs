@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import {
   chipByText, chips, contrasts, defineCheck, hasUpperEyebrow, hudRects, hueDistance, hueOf, intersection,
   panelAlpha, panelInfo, parseCssColor, result, roofBox, sampleFrames, textItems, worstContrast,
+  openPanelSection,
 } from "./common.mjs";
 
 const D = ["D"];
@@ -501,8 +502,9 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-47", {
-    states: ["S01"], viewports: D,
+    states: ["S01"], viewports: D, mutates: true,
     async run(ctx) {
+      const opened = await openPanelSection(ctx);
       const m = await ctx.inPage((qa) => {
         const alert = qa.one("[data-qa=weather-error-banner]") ?? qa.one("[data-qa=weather-status]");
         const cards = qa.all("[data-qa=dashboard-panel] .grid > *").filter(qa.visible);
@@ -511,10 +513,11 @@ export const FRONTEND_CHECKS = [
         const distance = ar && firstCard ? Math.round(firstCard.top - ar.bottom) : null;
         return { alertToFirstCardPx: distance, alertBelowCards: ar && firstCard ? ar.top > firstCard.bottom : null };
       });
-      const reloads = ["AppLegacy.jsx", "AppVWorld.jsx", "components/MicroclimatePanel.jsx", "components/PanelErrorBoundary.jsx"].map(readSrc).join("\n").match(/window\.location\.reload/g)?.length ?? 0;
-      const microRetry = /다시 시도/.test(readSrc("components/MicroclimatePanel.jsx"));
+      // MicroclimatePanel was replaced by the selection inspector (todo 31); its retry now lives there.
+      const reloads = ["AppLegacy.jsx", "AppVWorld.jsx", "panel/SelectionInspector.jsx", "components/PanelErrorBoundary.jsx"].map(readSrc).join("\n").match(/window\.location\.reload/g)?.length ?? 0;
+      const microRetry = /다시 시도/.test(readSrc("panel/SelectionInspector.jsx"));
       const placed = m.alertToFirstCardPx != null && m.alertToFirstCardPx >= 0 && m.alertToFirstCardPx <= 16;
-      return result(placed && microRetry && reloads === 0, { ...m, microclimateRetry: microRetry, reloadCalls: reloads }, "alert within 16 px above the failed group; every error has a retry; 0 reload calls");
+      return result(placed && microRetry && reloads === 0, { ...m, microclimateRetry: microRetry, reloadCalls: reloads, opened }, "alert within 16 px above the failed group; every error has a retry; 0 reload calls");
     },
   }),
   defineCheck("V-F-48", {

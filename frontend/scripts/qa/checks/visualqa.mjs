@@ -6,6 +6,7 @@ import { CAMERA_PRESETS } from "../../../src/camera/cameraPresets.mjs";
 import {
   HOOKS, chips, contrasts, defineCheck, exists, hueDistance, hueOf, intersection, missingHook, panelAlpha, panelInfo,
   parseCssColor, pixelDiff, result, sceneRegion, textItems, worstContrast,
+  openPanelSection,
 } from "./common.mjs";
 
 const D = ["D"];
@@ -26,7 +27,8 @@ async function bannerAndCards(ctx) {
 async function degradedCards(ctx) {
   return ctx.inPage((qa) => {
     const panel = qa.one("[data-qa=dashboard-panel]");
-    const cards = panel ? [...panel.querySelectorAll(".rounded-xl,.rounded-lg")].filter((el) => qa.visible(el) && /(^|\s)-(°C|m\/s|%|\s|$)|불러오지 못|연결할 수 없/.test(qa.txt(el))) : [];
+    // Cards use the rounded-card radius token since the token pass (W1); the older radius classes are still matched.
+    const cards = panel ? [...panel.querySelectorAll(".rounded-card,.rounded-xl,.rounded-lg")].filter((el) => qa.visible(el) && /(^|\s)-(°C|m\/s|%|\s|$)|불러오지 못|연결할 수 없/.test(qa.txt(el))) : [];
     return cards.map((card) => ({ text: qa.txt(card).slice(0, 50), action: Boolean(card.querySelector("button,a")), bareDash: /(^|\s)-(°C|m\/s|%|\s|$)/.test(qa.txt(card)) }));
   });
 }
@@ -446,15 +448,16 @@ export const VISUALQA_CHECKS = [
     },
   }),
   defineCheck("V-Q-27", {
-    states: ["S01"], viewports: DP,
+    states: ["S01"], viewports: DP, mutates: true,
     async run(ctx) {
+      await openPanelSection(ctx);
       const cards = await degradedCards(ctx);
       const bad = cards.filter((c) => c.bareDash || !c.action);
       return result(cards.length > 0 && bad.length === 0, { degradedCards: cards.length, withoutExplanationOrAction: bad.slice(0, 5) }, "each degraded card shows an explanation and a next-action control");
     },
   }),
   defineCheck("V-Q-28", {
-    states: ["S01", "S06", "S07", "S12"], viewports: DP,
+    states: ["S01", "S06", "S07", "S12"], viewports: DP, mutates: true,
     async run(ctx) {
       if (ctx.state === "S12") {
         const m = await ctx.inPage((qa) => ({
@@ -469,7 +472,8 @@ export const VISUALQA_CHECKS = [
         const energy = await ctx.inPage((qa) => qa.textNodesShown().filter((i) => /에너지|설치 계획|분석/.test(i.value) && /못했|없습니다/.test(i.value)).length);
         return result(before && after && before.tab != null && before.tab === after.tab && energy <= 1, { tabBefore: before?.tab ?? null, tabAfter: after?.tab ?? null, energyCauseMessages: energy }, "no tab change without a user action; energy cause reported once");
       }
-      // The weather failure must sit next to the weather cards (within 16 px above them).
+      // The weather failure must sit next to the weather cards (within 16 px above them): open the section first.
+      await openPanelSection(ctx);
       const m = await ctx.inPage((qa) => {
         const failure = qa.one("[data-qa=weather-error-banner]") ?? qa.all("[role=alert]").find((el) => qa.visible(el) && /기상/.test(qa.txt(el)));
         const card = qa.all("[data-qa=dashboard-panel] *").find((el) => qa.visible(el) && el.children.length > 0 && /^현재 기온/.test(qa.txt(el)));

@@ -8,6 +8,25 @@ export { contrastAgainst, pixelDiff, parseCssColor, hueOf, hueDistance, luminanc
 export const result = (pass, measured, expected) => ({ pass: Boolean(pass), measured, expected });
 export const missingHook = (selector, expected, extra = {}) => ({ pass: false, measured: { missingHook: selector, ...extra }, expected });
 
+// Rail-first shell: the panel starts collapsed (desktop rail, phone sheet peek), so a row that measures panel content
+// opens the panel section it measures first, the way a user would (패널 열기, then the tab). Only for checks marked
+// `mutates: true` (they run in the probe replay, never in the captured frames). Returns the actions taken.
+export async function openPanelSection(ctx, tab = "dashboard") {
+  const actions = [];
+  if (await ctx.b.center('[aria-label="패널 열기"]')) {
+    await ctx.b.tap('[aria-label="패널 열기"]');
+    actions.push("패널 열기");
+    await ctx.sleep(1200);
+  }
+  const selector = `[data-qa=dashboard-tab-${tab}]`;
+  if (await ctx.inPage((qa, a) => Boolean(qa.one(a.sel)) && qa.one(a.sel).getAttribute("aria-selected") !== "true", { sel: selector })) {
+    await ctx.b.tap(selector);
+    actions.push(`tab ${tab}`);
+    await ctx.sleep(800);
+  }
+  return actions;
+}
+
 // Builds a check object carrying its literal audit row as `doc`.
 export function defineCheck(id, spec) {
   const row = ROWS[id];

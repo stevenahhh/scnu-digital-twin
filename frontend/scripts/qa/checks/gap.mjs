@@ -3,6 +3,7 @@ import {
   HOOKS, canvasRect, chipByText, chips, contrasts, defineCheck, exists, hasUpperEyebrow, hudRects, intersection,
   gapBetween, luminanceStep, missingHook, panelInfo, pixelDiff, rectOf, result, roofBox, sampleFrames,
   sceneRegion, selectedTab, textItems, meanLuminance, worstContrast,
+  openPanelSection,
 } from "./common.mjs";
 
 const D = ["D"];
@@ -153,8 +154,10 @@ export const GAP_CHECKS = [
     },
   }),
   defineCheck("GAP-09", {
-    states: ["S04"], viewports: DP,
+    states: ["S04"], viewports: DP, mutates: true,
     async run(ctx) {
+      // Desktop starts on the rail (the inspector is a card beside it); the row measures the open panel's tab strip.
+      if (ctx.viewport === "D") await openPanelSection(ctx);
       const before = ctx.memo.get("S04:before-click");
       const m = await ctx.inPage((qa) => {
         const inspector = qa.one("[data-qa=selection-inspector]");
