@@ -194,6 +194,46 @@ export class Browser {
     await withTimeout(this.view.press(key), 30000, `press ${key}`);
   }
 
+  // Camera settle instead of a fixed wait: an in-page requestAnimationFrame loop counts consecutive frames in which the
+  // label layer reports no motion (data-motion != "true") and no visible chip moved more than epsilonPx. Settled after
+  // `frames` such frames in a row; gives up after timeoutMs (reported, never silently treated as settled). Frames only
+  // count once motion has been seen or armMs has passed, so a fly that starts a frame late is not read as "still".
+  async cameraSettle({ frames = 8, epsilonPx = 0.5, timeoutMs = 15000, armMs = 600 } = {}) {
+    const started = Date.now();
+    await this.run((need, eps, arm) => {
+      if (window.__qaSettle) window.__qaSettle.cancel = true;
+      const state = { done: false, still: 0, cancel: false, sawMotion: false, t0: performance.now() };
+      window.__qaSettle = state;
+      let previous = null;
+      const tick = () => {
+        if (state.cancel) return;
+        const moving = document.querySelector("[data-qa=campus-label-layer]")?.dataset.motion === "true";
+        const now = [...document.querySelectorAll("button[data-qa=campus-label]")].map((el) => {
+          const r = el.getBoundingClientRect();
+          return [r.x, r.y];
+        });
+        let delta = previous && previous.length === now.length ? 0 : Infinity;
+        if (delta === 0) now.forEach(([x, y], i) => { delta = Math.max(delta, Math.abs(x - previous[i][0]), Math.abs(y - previous[i][1])); });
+        previous = now;
+        if (moving || (delta !== Infinity && delta > eps)) state.sawMotion = true;
+        const armed = state.sawMotion || performance.now() - state.t0 > arm;
+        state.still = armed && !moving && delta <= eps ? state.still + 1 : 0;
+        if (state.still >= need) state.done = true;
+        else requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }, frames, epsilonPx, armMs);
+    for (;;) {
+      const done = await this.run(() => Boolean(window.__qaSettle?.done));
+      if (done) return { settled: true, ms: Date.now() - started };
+      if (Date.now() - started > timeoutMs) {
+        await this.run(() => { if (window.__qaSettle) window.__qaSettle.cancel = true; });
+        return { settled: false, ms: Date.now() - started };
+      }
+      await sleep(100);
+    }
+  }
+
   async setTimeMinutes(minutes) {
     return this.run((value) => {
       const input = document.querySelector("[data-qa=time-slider] input[type=range]");
