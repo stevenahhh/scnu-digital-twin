@@ -832,11 +832,18 @@ B.pavilion_hip = (ctx, o) => {
 };
 
 // Octagonal gazebo (catalogue vendor envelope HD-S101 7.0 x 7.0 x H5.3 m; VR scene_a5 r shows the garden one as a teal
-// octagonal canopy with a vented two-tier crown held by one offset mast): with support "posts" (default) eight columns
-// on an optional raised octagonal deck and an eave ring; with support "cantilever" a mast outside the canopy on a
-// white pad, an arm to the crown and a hub. Roof: octagon of circumscribed diameter circumscribedM from the fascia at
-// eaveHeightM to apexHeightM, one plane per side (tiers 2: a skirt, a vent gap and a raised crown), ribs in trimColour.
-// A survey outline gives the diameter when circumscribedM is not set.
+// octagonal canopy in three stepped tiers held by one offset mast): with support "posts" (default) eight columns on
+// an optional raised octagonal deck and an eave ring, roof from the fascia at eaveHeightM to apexHeightM; with support
+// "cantilever" a mast outside the canopy on a white pad that bends over the top into a hook ending on the canopy hub,
+// the bend's crest at apexHeightM and the canopy apex CANTILEVER_HOOK_M below it. Roof: octagon of circumscribed
+// diameter circumscribedM, one plane per side and tier; with tiers 2 or 3 every tier above the skirt starts
+// OCTAGON_TIER_LIFT_M above the one below and overhangs its vent (dark riser), so the steps read from any side; ribs and
+// tier fascias in trimColour. Optional deck { lengthM, widthM, offsetM: [s, t], benchLengthM } (VR scene_a5: a timber
+// deck beside the mast with a timber bench under the canopy edge; estimated sizes) is drawn on the ground in the
+// instance frame. A survey outline gives the diameter when circumscribedM is not set.
+const OCTAGON_TIER_LIFT_M = 0.15;
+const CANTILEVER_HOOK_M = 0.45;
+const OCTAGON_TIER_RADII = { 1: [1], 2: [1, 0.5], 3: [1, 0.62, 0.32] };
 B.pavilion_octagon = (ctx, o) => {
   const d = dimsOf(o);
   const at = restPlacement(ctx, o);
@@ -855,13 +862,24 @@ B.pavilion_octagon = (ctx, o) => {
     S.prism(planRing(R - 0.35), at.ground - M(0.1), at.ground + M(F - 0.06), C.stone);
     S.prism(planRing(R - 0.37), at.ground + M(F - 0.06), at.ground + M(F), { side: C.wood, top: C.timber });
   }
-  if ((o.p.support ?? "posts") === "cantilever") {
+  const cantilever = (o.p.support ?? "posts") === "cantilever";
+  const top = cantilever ? A - CANTILEVER_HOOK_M : A;
+  if (cantilever) {
+    // mast on its pad, a quarter bend into the level crest (beam top at A), then the hook down onto the hub
     const mast = R + 0.35;
-    S.box(f, [mast - 0.6, mast + 0.6], [-0.6, 0.6], [-0.05, 0.12], C.offWhite);
-    S.pole(localPlan(f, mast, 0), at.ground - M(0.1), at.ground + M(A - 0.15), 0.08, 0.07, posts);
-    S.beam(local(f, mast, 0, A - 0.25), local(f, 0, 0, A - 0.25), 0.1, 0.1, posts);
-    S.beam(local(f, mast, 0, A - 1.1), local(f, mast * 0.45, 0, A - 0.3), 0.07, 0.07, posts);
-    S.pole(localPlan(f, 0, 0), at.ground + M(E - 0.2), at.ground + M(A - 0.2), 0.05, 0.05, posts);
+    const crest = A - 0.05;
+    const bend = 0.6;
+    const hook = 0.35;
+    S.box(f, [mast - 0.8, mast + 0.8], [-0.8, 0.8], [-0.05, 0.12], C.offWhite);
+    S.box(f, [mast - 0.22, mast + 0.22], [-0.22, 0.22], [0.12, 0.3], posts);
+    S.pole(localPlan(f, mast, 0), at.ground - M(0.1), at.ground + M(crest - bend), 0.07, 0.065, posts, { cap: false });
+    const arc = (cs, ch, r, a0, a1) => Array.from({ length: 7 }, (_, k) => {
+      const t = a0 + ((a1 - a0) * k) / 6;
+      return [cs + r * Math.cos(t), ch + r * Math.sin(t)];
+    });
+    const path = [...arc(mast - bend, crest - bend, bend, 0, Math.PI / 2), ...arc(hook, crest - hook, hook, Math.PI / 2, Math.PI), [0, top + 0.06]];
+    for (let k = 0; k + 1 < path.length; k += 1) S.beam(local(f, path[k][0], 0, path[k][1]), local(f, path[k + 1][0], 0, path[k + 1][1]), 0.1, 0.1, posts, { ends: k === path.length - 2 });
+    S.pole(localPlan(f, 0, 0), at.ground + M(top - 0.25), at.ground + M(top + 0.06), 0.12, 0.08, trim);
   } else {
     const columns = planRing(R - 0.55);
     for (const p of columns) S.pole(p, at.ground + M(F > 0 ? F : -0.1), at.ground + M(E), d.columnSizeM / 2, d.columnSizeM / 2, posts, { sides: 4 });
@@ -869,34 +887,57 @@ B.pavilion_octagon = (ctx, o) => {
     for (let i = 0; i < n; i += 1) S.beam(tops[i], tops[(i + 1) % n], 0.14, 0.24, posts, { ends: false });
   }
   const fascia = 0.12;
-  const eave = ring(R, E);
-  const edge = ring(R, E + fascia);
-  for (let i = 0; i < n; i += 1) {
-    const j = (i + 1) % n;
-    const mid = local(f, Math.cos((angle(i) + angle(j)) / 2) * R, Math.sin((angle(i) + angle(j)) / 2) * R, E);
-    S.face([eave[i], eave[j], edge[j], edge[i]], sub(mid, local(f, 0, 0, E)), trim);
-  }
-  const apex = local(f, 0, 0, A);
-  const rib = (a, b) => S.beam([a[0], a[1] - M(0.04), a[2]], [b[0], b[1] - M(0.04), b[2]], 0.08, 0.07, trim, { ends: false });
-  if ((o.p.tiers ?? 1) === 2) {
-    // skirt up to the vent, then the crown (both sides of the skirt drawn: it is seen from below through the vent)
-    const crownR = 0.32 * R;
-    const ventH = E + fascia + (A - E - fascia) * 0.68;
-    const vent = ring(crownR, ventH);
+  const band = (radius, h0, h1, paint) => {
+    const lower = ring(radius, h0);
+    const upper = ring(radius, h1);
     for (let i = 0; i < n; i += 1) {
       const j = (i + 1) % n;
-      const quad = [edge[i], edge[j], vent[j], vent[i]];
-      const out = sub(local(f, Math.cos((angle(i) + angle(j)) / 2) * R, Math.sin((angle(i) + angle(j)) / 2) * R, A), local(f, 0, 0, E));
-      S.face(quad, out, roof);
-      S.face(quad, [-out[0], -out[1], -out[2]], C.offWhite);
-      rib(edge[i], vent[i]);
+      const out = sub(local(f, Math.cos((angle(i) + angle(j)) / 2), Math.sin((angle(i) + angle(j)) / 2), h0), local(f, 0, 0, h0));
+      S.face([lower[i], lower[j], upper[j], upper[i]], out, paint);
     }
-    const crown = ring(crownR * 1.4, ventH - 0.14);
-    S.cone(apex, crown, roof, { basePaint: C.offWhite });
-    for (const p of crown) rib(p, apex);
-  } else {
-    S.cone(apex, edge, roof, { basePaint: C.offWhite });
-    for (const p of edge) rib(p, apex);
+  };
+  band(R, E, E + fascia, trim);
+  // tiers: outer radius Ro of each tier, inner ring 0.72 x the next tier's Ro (the last one closes at the apex); one pitch
+  // for all tiers so the canopy rises from E + fascia to its top through every lift
+  const radii = (OCTAGON_TIER_RADII[o.p.tiers ?? 1] ?? OCTAGON_TIER_RADII[1]).map((k) => k * R);
+  const inner = radii.map((_, i) => (i + 1 < radii.length ? 0.72 * radii[i + 1] : 0));
+  const lift = OCTAGON_TIER_LIFT_M;
+  const run = radii.reduce((sum, r, i) => sum + r - inner[i], 0);
+  const pitch = (top - E - fascia - lift * (radii.length - 1)) / run;
+  if (pitch <= 0) throw new Error(`furniture: ${o.id} pavilion_octagon apex ${top} m leaves no pitch over the eave ${E} m`);
+  const rib = (p, q) => S.beam([p[0], p[1] - M(0.04), p[2]], [q[0], q[1] - M(0.04), q[2]], 0.08, 0.07, trim, { ends: false });
+  let h0 = E + fascia;
+  radii.forEach((Ro, i) => {
+    if (i > 0) band(Ro, h0 - 0.08, h0, trim);
+    const h1 = h0 + (Ro - inner[i]) * pitch;
+    const lower = ring(Ro, h0);
+    if (inner[i] === 0) {
+      const apex = local(f, 0, 0, h1);
+      S.cone(apex, lower, roof, { basePaint: roof });
+      for (const p of lower) rib(p, apex);
+      return;
+    }
+    const upper = ring(inner[i], h1);
+    for (let k = 0; k < n; k += 1) {
+      const j = (k + 1) % n;
+      const quad = [lower[k], lower[j], upper[j], upper[k]];
+      const out = sub(local(f, Math.cos((angle(k) + angle(j)) / 2) * Ro, Math.sin((angle(k) + angle(j)) / 2) * Ro, h1 + Ro), local(f, 0, 0, h0));
+      S.face(quad, out, roof);
+      S.face(quad, [-out[0], -out[1], -out[2]], roof);
+      rib(lower[k], upper[k]);
+    }
+    band(inner[i], h1, h1 + lift, C.metal);
+    h0 = h1 + lift;
+  });
+  const deck = o.p.deck;
+  if (deck) {
+    const [ds, dt] = deck.offsetM ?? [0, 0];
+    const df = frame(local(f, ds, dt, 0), f.u);
+    const hl = deck.lengthM / 2;
+    const hw = deck.widthM / 2;
+    S.box(df, [-hl, hl], [-hw, hw], [-0.05, 0.12], { top: paintOf(deck.colour, C.wood, o.id), side: C.brown });
+    for (let s = -hl + 0.15; s < hl; s += 0.15) S.box(df, [s - 0.004, s + 0.004], [-hw, hw], [0.12, 0.122], C.brown, { sides: [false, false, false, false] });
+    if (deck.benchLengthM) benchAt(ctx, frame(local(df, 0, 0, 0.12), df.u), deck.benchLengthM, { back: false, seat: C.timber, legs: C.galvanised, depthM: 0.45 });
   }
 };
 

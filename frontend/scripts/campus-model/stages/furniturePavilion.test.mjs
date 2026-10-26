@@ -36,11 +36,24 @@ test("pavilion_hip: plan + 2 x overhang wide, as high as the ridge", () => {
 
 test("pavilion_octagon: the apex is apexHeightM, cantilever or posts", () => {
   for (const support of ["posts", "cantilever"]) {
-    for (const tiers of [1, 2]) {
+    for (const tiers of [1, 2, 3]) {
       const { box } = build("pavilion_octagon", { support, tiers, dims: { apexHeightM: 4.2, eaveHeightM: 2.5 } });
       near(box.max[1], 4.2, `apex (${support}, tiers ${tiers})`);
     }
   }
+});
+
+test("pavilion_octagon cantilever: the hook crest tops the canopy, tiers step up, the deck carries a bench", () => {
+  const props = { support: "cantilever", dims: { apexHeightM: 4.0, eaveHeightM: 2.4, circumscribedM: 4.7, floorHeightM: 0 } };
+  const heights = (ctx) => ctx.solid.mesh.positions.filter((_, i) => i % 3 === 1).map((y) => y / metres(1));
+  const one = build("pavilion_octagon", { ...props, tiers: 1 });
+  const three = build("pavilion_octagon", { ...props, tiers: 3 });
+  assert.ok(three.triangles > one.triangles, "three tiers draw more than one");
+  const levels = new Set(heights(three.ctx).filter((y) => y > 2.4 && y < 3.6).map((y) => y.toFixed(3)));
+  assert.ok(levels.size > new Set(heights(one.ctx).filter((y) => y > 2.4 && y < 3.6).map((y) => y.toFixed(3))).size, "tier steps add height levels");
+  const decked = build("pavilion_octagon", { ...props, tiers: 3, deck: { lengthM: 3, widthM: 2, offsetM: [-1.6, 0.4], benchLengthM: 1.8 } });
+  assert.ok(heights(decked.ctx).some((y) => Math.abs(y - 0.12) < 1e-6), "deck top at 0.12 m");
+  assert.ok(heights(decked.ctx).some((y) => Math.abs(y - (0.12 + 0.46)) < 1e-6), "bench seat 0.46 m above the deck");
 });
 
 test("a floor height of 0 leaves the deck out", () => {
