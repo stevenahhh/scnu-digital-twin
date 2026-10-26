@@ -1,5 +1,5 @@
 /* @vitest-environment jsdom */
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { MicroclimatePanel, describeFreshness } from "./MicroclimatePanel.jsx";
 
@@ -64,17 +64,23 @@ describe("MicroclimatePanel", () => {
     render(<MicroclimatePanel data={payload()} onClose={onClose} />);
 
     expect(screen.getByRole("heading", { name: "공과대학 3호관" })).toBeTruthy();
-    expect(screen.getByText("zone_D · 열 스트레스 없음")).toBeTruthy();
-    for (const tile of ["22°C", "21.8°C", "23.9°C", "18°C"]) expect(screen.getByText(tile)).toBeTruthy();
+    expect(screen.getByText("zone_D")).toBeTruthy();
+    expect(screen.getByText("열 스트레스 없음")).toBeTruthy();
+    const estimates = screen.getAllByText((_, el) => el?.dataset?.qa === "estimate-value");
+    expect(estimates.map((el) => el.querySelector(".tabular-nums").textContent)).toEqual(["22", "21.8", "23.9", "18"]);
+    for (const el of estimates) {
+      expect(el.textContent).toContain("°C");
+      expect(el.textContent).toContain("추정");
+    }
     expect(screen.getByText("위험도").nextElementSibling.textContent).toBe("낮음");
+    expect(screen.getByText("위험도").nextElementSibling.dataset.tone).toBe("success");
     for (const factor of ["그늘", "녹지", "통풍", "복사"]) expect(screen.getByText(factor)).toBeTruthy();
     expect(screen.queryByText("재질열")).toBeNull();
     expect(screen.getByText(/기준 기온 대비 \+1\.9°C/)).toBeTruthy();
     expect(screen.getByText("원인 분석")).toBeTruthy();
     for (const reason of POPUP_BASELINE.reasons) expect(screen.getByText(reason)).toBeTruthy();
-    expect(screen.getByText("🌡 20.1°C")).toBeTruthy();
-    expect(screen.getByText("💧 45%")).toBeTruthy();
-    expect(screen.getByText("💨 0.8m/s")).toBeTruthy();
+    const measured = screen.getAllByText((_, el) => el?.dataset?.qa === "measured-value").map((el) => el.textContent);
+    expect(measured).toEqual(["20.1°C", "45%", "0.8m/s"]);
     expect(screen.queryByText("샘플 데이터")).toBeNull();
     expect(screen.queryByTestId("microclimate-freshness")).toBeNull();
     expect(screen.queryByText("기상 데이터 없음")).toBeNull();
@@ -91,15 +97,15 @@ describe("MicroclimatePanel", () => {
     expect(screen.getByText("기상 데이터 없음")).toBeTruthy();
     expect(screen.getByText("zone_D")).toBeTruthy();
     expect(screen.queryByText("위험도")).toBeNull();
-    expect(screen.queryByText("22°C")).toBeNull();
+    expect(screen.queryAllByText((_, el) => el?.dataset?.qa === "estimate-value")).toHaveLength(0);
     expect(screen.getByText("그늘")).toBeTruthy();
-    expect(screen.getByText("🌡 20.1°C")).toBeTruthy();
+    expect(screen.getAllByText((_, el) => el?.dataset?.qa === "measured-value")[0].textContent).toBe("20.1°C");
     first.unmount();
 
     expect(() => render(<MicroclimatePanel data={{ element_id: "BLD_X" }} onClose={() => {}} />)).not.toThrow();
     expect(screen.getByRole("heading", { name: "BLD_X" })).toBeTruthy();
     expect(screen.getByText("기상 데이터 없음")).toBeTruthy();
-    expect(screen.getByText("추정")).toBeTruthy();
+    expect(screen.getByTestId("microclimate-estimate-badge").textContent).toBe("추정");
     expect(screen.queryByText("원인 분석")).toBeNull();
   });
 
@@ -143,13 +149,13 @@ describe("MicroclimatePanel", () => {
     const data = payload();
     const view = render(<MicroclimatePanel data={data} onClose={() => {}} />);
 
-    const badge = screen.getByText("추정");
+    const badge = screen.getByTestId("microclimate-estimate-badge");
     expect(badge.getAttribute("title")).toBe(data.data_note.message);
     expect(badge.textContent).toContain(data.data_note.message);
     expect(badge.closest("[data-testid='microclimate-panel']")).not.toBeNull();
 
     view.rerender(<MicroclimatePanel data={payload((p) => { delete p.data_note; })} onClose={() => {}} />);
-    const bare = screen.getByText("추정");
+    const bare = screen.getByTestId("microclimate-estimate-badge");
     expect(bare.getAttribute("title")).toBeNull();
     expect(bare.textContent).toBe("추정");
   });
@@ -157,13 +163,45 @@ describe("MicroclimatePanel", () => {
   it("keeps the loading, error and empty states of the Legacy panel", () => {
     const view = render(<MicroclimatePanel data={null} loading title="BLD_D4" onClose={() => {}} />);
     expect(screen.getByRole("heading", { name: "BLD_D4" })).toBeTruthy();
-    expect(screen.getByText("미기후 데이터 불러오는 중…")).toBeTruthy();
-    expect(screen.queryByText("추정")).toBeNull();
+    expect(screen.getAllByText((_, el) => el?.dataset?.qa === "skeleton").length).toBeGreaterThan(0);
+    expect(screen.queryByTestId("microclimate-estimate-badge")).toBeNull();
 
     view.rerender(<MicroclimatePanel data={null} error="기상 서버에 연결할 수 없습니다" onClose={() => {}} />);
     expect(screen.getByRole("alert").textContent).toContain("기상 서버에 연결할 수 없습니다");
 
     view.rerender(<MicroclimatePanel data={null} onClose={() => {}} />);
     expect(screen.getByText("이 건물의 상세 미기후 데이터를 선택해 확인하세요.")).toBeTruthy();
+  });
+
+  it("keeps the header on surface-2 whatever risk_color says, with no kicker and no emoji", () => {
+    const { container } = render(<MicroclimatePanel data={payload((p) => { p.thermal.risk_color = "#F57C00"; })} onClose={() => {}} />);
+    const header = screen.getByRole("heading", { name: "공과대학 3호관" }).closest(".rounded-card");
+    expect(header.className).toMatch(/\bbg-surface-2\b/);
+    expect(header.getAttribute("style")).toBeNull();
+    expect(container.textContent).not.toMatch(/MICROCLIMATE|[\u{1F300}-\u{1FAFF}]/u);
+    expect(within(header).getByText("D4").dataset.tone).toBe("neutral");
+  });
+
+  it("offers one 다시 시도 with a copyable detail and keeps the last payload under the error", () => {
+    const onRetry = vi.fn();
+    render(
+      <MicroclimatePanel
+        data={null}
+        error="기상 서버에 연결할 수 없습니다"
+        errorDetail="BLD_D4: Failed to fetch"
+        onRetry={onRetry}
+        lastData={payload()}
+        onClose={() => {}}
+      />,
+    );
+    const alert = screen.getByRole("alert");
+    expect(alert.dataset.source).toBe("microclimate");
+    const retries = within(alert).getAllByRole("button", { name: "다시 시도" });
+    expect(retries).toHaveLength(1);
+    fireEvent.click(retries[0]);
+    expect(onRetry).toHaveBeenCalledTimes(1);
+    fireEvent.click(within(alert).getByRole("button", { name: "자세히" }));
+    expect(within(alert).getByText("BLD_D4: Failed to fetch")).toBeTruthy();
+    expect(screen.getAllByText((_, el) => el?.dataset?.qa === "estimate-value")).toHaveLength(4);
   });
 });

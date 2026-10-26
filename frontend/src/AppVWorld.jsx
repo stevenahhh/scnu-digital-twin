@@ -174,6 +174,9 @@ export default function App() {
             data={popup.data}
             loading={popup.loading}
             error={popup.error}
+            errorDetail={popup.errorDetail}
+            onRetry={popup.retry}
+            lastData={popup.lastData}
             title={selection.selectedId}
             onClose={closeMicroclimatePopup}
           />

@@ -17,27 +17,34 @@ class PopupHttpError extends Error {
 
 // 건물 하나의 미기후 팝업(`/microclimate/elements/{id}/popup`, 완전한 응답 하나)을 받는다.
 // 새 요청이나 언마운트는 이전 요청을 끊는다. 알려진 실패만 문구로 바꾸고, 그 밖의 오류는 다시 던진다.
+// lastData는 같은 건물의 마지막 정상 응답이다. 다시 시도가 실패해도 그 값을 알림 아래에 그대로 보여 줄 수 있다.
+const EMPTY = Object.freeze({ data: null, loading: false, error: null, errorDetail: null, lastData: null });
+
 export function usePopupData({ apiUrl = WEATHER_API_URL, fetchImpl } = {}) {
-  const [state, setState] = useState({ data: null, loading: false, error: null, errorDetail: null });
+  const [state, setState] = useState(EMPTY);
   const controllerRef = useRef(null);
+  const elementIdRef = useRef(null);
 
   const clear = useCallback(() => {
     controllerRef.current?.abort();
     controllerRef.current = null;
-    setState({ data: null, loading: false, error: null, errorDetail: null });
+    elementIdRef.current = null;
+    setState(EMPTY);
   }, []);
 
   const load = useCallback(async (elementId) => {
     controllerRef.current?.abort();
     const controller = new AbortController();
     controllerRef.current = controller;
-    setState({ data: null, loading: true, error: null, errorDetail: null });
+    const sameElement = elementIdRef.current === elementId;
+    elementIdRef.current = elementId;
+    setState((previous) => ({ ...EMPTY, loading: true, lastData: sameElement ? previous.data ?? previous.lastData : null }));
     const request = fetchImpl ?? globalThis.fetch;
     try {
       const response = await request(`${apiUrl}/microclimate/elements/${elementId}/popup`, { signal: controller.signal });
       if (!response.ok) throw new PopupHttpError(response.status);
       const data = await response.json();
-      if (controllerRef.current === controller) setState({ data, loading: false, error: null, errorDetail: null });
+      if (controllerRef.current === controller) setState({ ...EMPTY, data, lastData: data });
     } catch (error) {
       if (error?.name === "AbortError" || controllerRef.current !== controller) return;
       let message;
@@ -47,11 +54,15 @@ export function usePopupData({ apiUrl = WEATHER_API_URL, fetchImpl } = {}) {
         setState((previous) => ({ ...previous, loading: false }));
         throw error;
       }
-      setState({ data: null, loading: false, error: message, errorDetail: `${elementId}: ${error.message}` });
+      setState((previous) => ({ ...previous, loading: false, error: message, errorDetail: `${elementId}: ${error.message}` }));
     }
   }, [apiUrl, fetchImpl]);
 
+  const retry = useCallback(() => {
+    if (elementIdRef.current) load(elementIdRef.current);
+  }, [load]);
+
   useEffect(() => () => controllerRef.current?.abort(), []);
 
-  return { ...state, load, clear };
+  return { ...state, load, retry, clear };
 }

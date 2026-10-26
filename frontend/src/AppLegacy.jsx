@@ -211,6 +211,9 @@ function Dashboard() {
               data={popup.data}
               loading={popup.loading}
               error={popup.error}
+              errorDetail={popup.errorDetail}
+              onRetry={popup.retry}
+              lastData={popup.lastData}
               title={panelTitle}
               estimate={selection.selectedId ? selection.selectedEstimate : null}
               onClose={flow.closeMicroclimate}

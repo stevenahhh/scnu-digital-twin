@@ -1,60 +1,70 @@
-import { AlertTriangle, Clock, Gauge, Sun, Thermometer, TreePine, Wind, X } from "lucide-react";
+import {
+  CircleAlert, Clock, Droplets, Gauge, MapPin, Sun, Thermometer, TreePine, Wind, X,
+} from "lucide-react";
+import { Alert } from "../ui/Alert.jsx";
+import { Button } from "../ui/Button.jsx";
+import { EstimateValue } from "../ui/EstimateValue.jsx";
+import { MetricList } from "../ui/MetricList.jsx";
+import { SectionHeader } from "../ui/SectionHeader.jsx";
+import { Skeleton } from "../ui/Skeleton.jsx";
+import { Spinner } from "../ui/Spinner.jsx";
+import { StatusBadge } from "../ui/StatusBadge.jsx";
+import { formatHHmm } from "../ui/format.mjs";
 
 /**
  * Shared microclimate popup panel for AppLegacy and AppVWorld.
- * Props: `{ data, loading, error, onClose, title?, estimate? }` — `data` is the
- * `/microclimate/elements/{id}/popup` payload with every nested field optional;
- * `title` is the fallback heading shown before `data` arrives (the selected id);
- * `estimate` is `{ heightLineage, footprintEstimated, formEstimated }` read from the
- * campus GLB extras (Legacy only) and drives the 추정 caption under the heading.
+ * Props: `{ data, loading, error, errorDetail, onRetry, lastData, onClose, title? }` - `data` is the
+ * `/microclimate/elements/{id}/popup` payload with every nested field optional; `title` is the heading shown before
+ * `data` arrives; `lastData` is the last good payload of the same building, kept visible under an error;
+ * `estimate` is `{ heightLineage, footprintEstimated, formEstimated }` from the campus GLB extras (Legacy only)
+ * and drives the 추정 caption under the heading.
  */
 
 const FACTOR_META = {
-  shade:         { Icon: Sun,         label: "그늘" },
-  vegetation:    { Icon: TreePine,    label: "녹지" },
-  wind:          { Icon: Wind,        label: "통풍" },
-  radiation:     { Icon: Thermometer, label: "복사" },
-  material_heat: { Icon: Gauge,       label: "재질열" },
+  shade: { Icon: Sun, label: "그늘" },
+  vegetation: { Icon: TreePine, label: "녹지" },
+  wind: { Icon: Wind, label: "통풍" },
+  radiation: { Icon: Thermometer, label: "복사" },
+  material_heat: { Icon: Gauge, label: "재질열" },
 };
 
-export const MICROCLIMATE_STRINGS = Object.freeze({
-  kicker: "MICROCLIMATE",
+// 서버의 risk_level 문구를 배지 톤으로. 모르는 값은 중립이다.
+const RISK_TONES = { 낮음: "success", 보통: "warning", 높음: "danger", "매우 높음": "danger" };
+
+export const PANEL_STRINGS = Object.freeze({
   estimate: "추정",
   sample: "샘플 데이터",
   sampleNote: "실측이 아닌 샘플 기상 데이터로 계산된 값입니다.",
   missingThermal: "기상 데이터 없음",
   stale: "저장된 기상 데이터 표시 중",
   observed: "관측",
-  loading: "미기후 데이터 불러오는 중…",
+  loading: "미기후 추정 가져오는 중",
   empty: "이 건물의 상세 미기후 데이터를 선택해 확인하세요.",
   close: "닫기",
   risk: "위험도",
   reasons: "원인 분석",
+  source: "미기후 모델",
+  baseWeather: "기준 기상",
   heightFormEstimate: "높이·형태 추정",
   formEstimate: "높이 GIS, 형태 추정",
 });
+
+const isObject = (value) => value !== null && typeof value === "object";
+const isText = (value) => typeof value === "string" && value.length > 0;
+const iconLabel = (Icon, label) => (
+  <span className="inline-flex items-center gap-1">
+    <Icon aria-hidden="true" className="h-4 w-4 shrink-0" />
+    {label}
+  </span>
+);
 
 /** GLB extras → the building's 추정 caption, or null when nothing is flagged. */
 export function describeEstimate(estimate) {
   if (!isObject(estimate)) return null;
   const heightEstimated = isText(estimate.heightLineage) && estimate.heightLineage !== "gis-height";
-  if (heightEstimated) return MICROCLIMATE_STRINGS.heightFormEstimate;
-  if (estimate.formEstimated === true || estimate.footprintEstimated === true) return MICROCLIMATE_STRINGS.formEstimate;
+  if (heightEstimated) return PANEL_STRINGS.heightFormEstimate;
+  if (estimate.formEstimated === true || estimate.footprintEstimated === true) return PANEL_STRINGS.formEstimate;
   return null;
-}
-
-const isObject = (value) => value !== null && typeof value === "object";
-const isText = (value) => typeof value === "string" && value.length > 0;
-
-function formatUnit(value, unit) {
-  return Number.isFinite(value) ? `${value}${unit}` : "-";
-}
-
-function formatClock(iso) {
-  if (!isText(iso)) return null;
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return null;
-  return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 }
 
 /** `data.freshness.weather` → `{ text, stale }` (`관측 HH:mm` | `저장된 기상 데이터 표시 중 · N분 전`) or null. */
@@ -64,11 +74,11 @@ export function describeFreshness(weather) {
     const minutes = Number.isFinite(weather.age_seconds) ? Math.max(0, Math.round(weather.age_seconds / 60)) : null;
     return {
       stale: true,
-      text: minutes === null ? MICROCLIMATE_STRINGS.stale : `${MICROCLIMATE_STRINGS.stale} · ${minutes}분 전`,
+      text: minutes === null ? PANEL_STRINGS.stale : `${PANEL_STRINGS.stale} · ${minutes}분 전`,
     };
   }
-  const clock = formatClock(weather.observed_at) ?? formatClock(weather.fetched_at);
-  return clock ? { stale: false, text: `${MICROCLIMATE_STRINGS.observed} ${clock}` } : null;
+  const clock = formatHHmm(weather.observed_at) ?? formatHHmm(weather.fetched_at);
+  return clock ? { stale: false, text: `${PANEL_STRINGS.observed} ${clock}` } : null;
 }
 
 function errorText(error) {
@@ -78,216 +88,167 @@ function errorText(error) {
   return String(error);
 }
 
-export function MicroclimatePanel({ data, loading = false, error = null, onClose, title, estimate = null }) {
-  const payload = isObject(data) ? data : null;
-  const thermal = isObject(payload?.thermal) ? payload.thermal : null;
-  const riskColor = isText(thermal?.risk_color) ? thermal.risk_color : null;
-  const onRisk = Boolean(payload) && Boolean(riskColor);
-  const riskBg = riskColor ? `${riskColor}18` : "var(--colors-surface-2)";
-  const badgeStyle = onRisk ? { background: "rgba(255,255,255,0.18)", color: "white" } : undefined;
-
-  const heading = payload?.name ?? title ?? payload?.element_id ?? "";
-  const subtitle = payload ? [payload.zone_id, thermal?.stress_category].filter(isText).join(" · ") : "";
-  const estimateCaption = describeEstimate(estimate);
-  const noteMessage = isText(payload?.data_note?.message) ? payload.data_note.message : "";
-  const isSample = payload?.sample_data === true;
-
-  const factorEntries = Object.entries(isObject(payload?.factors) ? payload.factors : {})
-    .filter(([, value]) => isObject(value))
-    .slice(0, 4);
-  const delta = isObject(payload?.delta) ? payload.delta : null;
-  const reasons = Array.isArray(payload?.reasons) ? payload.reasons.filter(isText) : [];
-  const baseWeather = isObject(payload?.base_weather) ? payload.base_weather : null;
-  const freshness = describeFreshness(payload?.freshness?.weather);
-  const riskScore = Number.isFinite(thermal?.risk_score) ? Math.min(Math.max(thermal.risk_score, 0), 4) : 0;
-  const message = errorText(error);
+function PopupBody({ payload }) {
+  const thermal = isObject(payload.thermal) ? payload.thermal : null;
+  const weather = payload.freshness?.weather;
+  const at = isObject(weather) ? weather.observed_at ?? weather.fetched_at : null;
+  const stale = weather?.stale === true;
+  const estimate = (value, unit) => (
+    <EstimateValue value={value} unit={unit} source={PANEL_STRINGS.source} at={at} stale={stale} />
+  );
+  const factors = Object.entries(isObject(payload.factors) ? payload.factors : {}).filter(([, value]) => isObject(value)).slice(0, 4);
+  const delta = isObject(payload.delta) ? payload.delta : null;
+  const reasons = Array.isArray(payload.reasons) ? payload.reasons.filter(isText) : [];
+  const base = isObject(payload.base_weather) ? payload.base_weather : null;
+  const freshness = describeFreshness(weather);
+  const meta = [
+    isText(payload.zone_id) && { id: "zone", label: "구역", value: <span className="text-body text-ink">{payload.zone_id}</span> },
+    isText(thermal?.stress_category) && {
+      id: "stress", label: "열 스트레스", value: <span className="text-body text-ink">{thermal.stress_category}</span>,
+    },
+  ].filter(Boolean);
 
   return (
-    <div className="space-y-4" data-testid="microclimate-panel">
-      <div
-        className="flex items-start justify-between rounded-lg px-4 py-3"
-        style={{ background: riskColor ?? "var(--colors-surface-2)" }}
-      >
-        <div className="min-w-0">
-          <div
-            className="text-[11px] font-extrabold uppercase tracking-[0.08em]"
-            style={{ color: onRisk ? "rgba(255,255,255,0.85)" : "var(--colors-primary)" }}
-          >
-            {MICROCLIMATE_STRINGS.kicker}
+    <div className="flex flex-col gap-4">
+      {meta.length > 0 && <MetricList items={meta} />}
+      {thermal ? (
+        <>
+          <MetricList
+            columns={2}
+            items={[
+              { id: "local", label: "기온", value: estimate(thermal.local_temp, "°C") },
+              { id: "feels", label: "체감", value: estimate(thermal.feels_like, "°C") },
+              { id: "utci", label: "UTCI", value: estimate(thermal.utci, "°C") },
+              { id: "wbgt", label: "WBGT", value: estimate(thermal.wbgt, "°C") },
+            ]}
+          />
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-caption text-ink-muted">{PANEL_STRINGS.risk}</span>
+            <StatusBadge tone={RISK_TONES[thermal.risk_level] ?? "neutral"} className="text-caption">
+              {thermal.risk_level ?? "알 수 없음"}
+            </StatusBadge>
           </div>
-          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-            <h3
-              className="font-[700] text-[16px] tracking-[-0.1px]"
-              style={{ color: onRisk ? "white" : "var(--colors-ink)" }}
-            >
-              {heading}
-            </h3>
-            {payload && (
-              <span
-                className="dashboard-status-badge inline-flex items-center font-[700] leading-4"
-                style={badgeStyle}
-                title={noteMessage || undefined}
-                data-testid="microclimate-estimate-badge"
-              >
-                {MICROCLIMATE_STRINGS.estimate}
-                {noteMessage && <span className="sr-only"> · {noteMessage}</span>}
-              </span>
-            )}
-            {isSample && (
-              <span
-                className="dashboard-status-badge inline-flex items-center font-[700] leading-4"
-                style={badgeStyle}
-                title={MICROCLIMATE_STRINGS.sampleNote}
-                data-testid="microclimate-sample-badge"
-              >
-                {MICROCLIMATE_STRINGS.sample}
-              </span>
-            )}
-          </div>
-          {estimateCaption && (
-            <div
-              className="mt-0.5 text-[11px] font-medium"
-              style={{ color: onRisk ? "rgba(255,255,255,0.85)" : "var(--colors-ink-subtle)" }}
-              data-qa="estimate-caption"
-            >
-              {estimateCaption}
-            </div>
-          )}
-          {subtitle && (
-            <div className="mt-0.5 text-sm" style={{ color: onRisk ? "rgba(255,255,255,0.85)" : "var(--colors-ink-subtle)" }}>
-              {subtitle}
-            </div>
-          )}
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="transition-opacity hover:opacity-70"
-          style={{ color: onRisk ? "white" : "var(--colors-ink-muted)" }}
-          aria-label={MICROCLIMATE_STRINGS.close}
-          title={MICROCLIMATE_STRINGS.close}
+        </>
+      ) : (
+        <p className="rounded-card bg-surface-2 px-3 py-4 text-center text-caption text-ink-muted">{PANEL_STRINGS.missingThermal}</p>
+      )}
+
+      {factors.length > 0 && (
+        <MetricList
+          columns={2}
+          items={factors.map(([key, value]) => {
+            const factor = FACTOR_META[key] ?? { label: key };
+            return {
+              id: key,
+              label: factor.Icon ? iconLabel(factor.Icon, factor.label) : factor.label,
+              value: <span className="text-body font-medium text-ink">{isText(value.level) ? value.level : "알 수 없음"}</span>,
+            };
+          })}
+        />
+      )}
+
+      {isText(delta?.label) && (
+        <p className={`flex items-center gap-1.5 text-body font-medium ${delta.temp > 0 ? "text-danger" : "text-primary"}`}>
+          <MapPin aria-hidden="true" className="h-4 w-4 shrink-0" />
+          {delta.label}
+        </p>
+      )}
+
+      {reasons.length > 0 && (
+        <section className="flex flex-col gap-2">
+          <SectionHeader level={4} title={PANEL_STRINGS.reasons} />
+          <ul className="flex flex-col gap-1">
+            {reasons.map((reason) => <li key={reason} className="break-keep text-caption text-ink-muted">{reason}</li>)}
+          </ul>
+        </section>
+      )}
+
+      {base && (
+        <MetricList
+          caption={PANEL_STRINGS.baseWeather}
+          items={[
+            { id: "temperature", label: iconLabel(Thermometer, "기온"), value: <EstimateValue value={base.temperature} unit="°C" estimated={false} /> },
+            { id: "humidity", label: iconLabel(Droplets, "습도"), value: <EstimateValue value={base.humidity} unit="%" estimated={false} /> },
+            { id: "wind", label: iconLabel(Wind, "풍속"), value: <EstimateValue value={base.wind_speed} unit="m/s" estimated={false} /> },
+          ]}
+        />
+      )}
+      {freshness && (
+        <p
+          className="flex items-center gap-1 text-caption text-ink-muted"
+          data-testid="microclimate-freshness"
+          data-stale={freshness.stale ? "true" : "false"}
         >
-          <X size={18} />
-        </button>
+          {freshness.stale ? <CircleAlert aria-hidden="true" className="h-4 w-4" /> : <Clock aria-hidden="true" className="h-4 w-4" />}
+          <span>{freshness.text}</span>
+        </p>
+      )}
+    </div>
+  );
+}
+
+export function MicroclimatePanel({
+  data, loading = false, error = null, errorDetail, onRetry, lastData, onClose, title, estimate = null,
+}) {
+  const payload = isObject(data) ? data : null;
+  const shown = payload ?? (isObject(lastData) ? lastData : null);
+  const message = errorText(error);
+  const estimateCaption = describeEstimate(estimate);
+  const heading = shown?.name ?? title ?? shown?.element_id ?? "";
+  const code = isText(shown?.element_id) && shown.element_id.startsWith("BLD_") ? shown.element_id.slice(4) : null;
+  const noteMessage = isText(shown?.data_note?.message) ? shown.data_note.message : "";
+
+  const badges = shown && (
+    <>
+      {code && <StatusBadge tone="neutral">{code}</StatusBadge>}
+      <StatusBadge tone="estimate" title={noteMessage || undefined} data-testid="microclimate-estimate-badge">
+        {PANEL_STRINGS.estimate}
+        {noteMessage && <span className="sr-only"> · {noteMessage}</span>}
+      </StatusBadge>
+      {shown.sample_data === true && (
+        <StatusBadge tone="sample" title={PANEL_STRINGS.sampleNote} data-testid="microclimate-sample-badge" />
+      )}
+    </>
+  );
+
+  return (
+    <div className="flex flex-col gap-4" data-testid="microclimate-panel">
+      <div className="flex items-start justify-between gap-3 rounded-card bg-surface-2 px-4 py-3">
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <SectionHeader title={heading} badge={badges} />
+          {estimateCaption && <p data-qa="estimate-caption" className="text-caption text-ink-muted">{estimateCaption}</p>}
+        </div>
+        <Button
+          variant="ghost"
+          iconOnly
+          label={PANEL_STRINGS.close}
+          icon={<X aria-hidden="true" className="h-4 w-4" />}
+          onClick={onClose}
+        />
       </div>
 
       {loading && (
-        <div role="status" className="flex items-center justify-center gap-3 px-2 py-8 text-sm text-[var(--colors-ink-muted)]">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--colors-hairline)] border-t-[var(--colors-primary)]" />
-          {MICROCLIMATE_STRINGS.loading}
+        <div className="flex flex-col gap-3" data-qa="microclimate-loading">
+          <Skeleton lines={4} />
+          <Spinner label={PANEL_STRINGS.loading} />
         </div>
       )}
 
       {message && !loading && (
-        <div role="alert" className="flex items-center gap-2 px-2 py-6 text-sm text-[var(--colors-semantic-danger,#D32F2F)]">
-          <AlertTriangle size={16} /> {message}
-        </div>
+        <Alert
+          tone="danger"
+          source="microclimate"
+          title={message}
+          message={shown ? "아래는 마지막으로 받은 값입니다" : undefined}
+          actions={onRetry ? [{ label: "다시 시도", onClick: onRetry }] : []}
+          detail={errorDetail}
+        />
       )}
 
-      {payload && !loading && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-4 gap-2">
-            {thermal ? (
-              [
-                { label: "기온", value: thermal.local_temp },
-                { label: "체감", value: thermal.feels_like },
-                { label: "UTCI", value: thermal.utci },
-                { label: "WBGT", value: thermal.wbgt },
-              ].map(({ label, value }) => (
-                <div key={label} className="rounded-lg p-2 text-center" style={{ background: riskBg }}>
-                  <div className="text-[10px] font-medium text-[var(--colors-ink-subtle)]">{label}</div>
-                  <div className="mt-1 text-[13px] font-[900] text-[var(--colors-ink)]">{formatUnit(value, "°C")}</div>
-                </div>
-              ))
-            ) : (
-              <div className="col-span-4 rounded-lg bg-[var(--colors-surface-2)] px-3 py-4 text-center">
-                <div className="text-[12px] font-[700] text-[var(--colors-ink-subtle)]">{MICROCLIMATE_STRINGS.missingThermal}</div>
-              </div>
-            )}
-          </div>
+      {shown && !loading && <PopupBody payload={shown} />}
 
-          {thermal && (
-            <div>
-              <div className="mb-1.5 flex items-center justify-between text-sm">
-                <span className="text-[var(--colors-ink-subtle)]">{MICROCLIMATE_STRINGS.risk}</span>
-                <span className="font-[700]" style={{ color: riskColor ?? "var(--colors-ink)" }}>{thermal.risk_level ?? "-"}</span>
-              </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-[var(--colors-surface-2)]">
-                <div
-                  className="h-full rounded-full"
-                  style={{ width: `${(riskScore / 4) * 100}%`, background: riskColor ?? "var(--colors-hairline-strong)" }}
-                />
-              </div>
-            </div>
-          )}
-
-          {factorEntries.length > 0 && (
-            <div className="grid grid-cols-4 gap-1.5">
-              {factorEntries.map(([key, val]) => {
-                const meta = FACTOR_META[key] ?? { label: key };
-                const Icon = meta.Icon;
-                return (
-                  <div key={key} className="rounded-lg p-2 text-center bg-[var(--colors-surface-2)]">
-                    {Icon && <Icon size={12} className="mx-auto mb-1 text-[var(--colors-ink-muted)]" />}
-                    <div className="text-[10px] font-medium text-[var(--colors-ink-subtle)]">{meta.label}</div>
-                    <div className="mt-0.5 text-[10px] font-[800] text-[var(--colors-ink)]">{isText(val.level) ? val.level : "-"}</div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {isText(delta?.label) && (
-            <div
-              className="rounded-lg px-3 py-2 text-[12px] font-[700]"
-              style={{ background: riskBg, color: delta.temp > 0 ? "#D32F2F" : "#1976D2" }}
-            >
-              📍 {delta.label}
-            </div>
-          )}
-
-          {reasons.length > 0 && (
-            <div>
-              <div className="mb-1.5 text-sm font-medium text-[var(--colors-ink-subtle)]">{MICROCLIMATE_STRINGS.reasons}</div>
-              <ul className="space-y-1">
-                {reasons.map((reason) => (
-                  <li key={reason} className="flex items-start gap-1.5 text-[12px] text-[var(--colors-ink-muted)]">
-                    <span className="mt-0.5 shrink-0 font-[900]" style={{ color: riskColor ?? "var(--colors-ink-subtle)" }}>·</span>
-                    {reason}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {(baseWeather || freshness) && (
-            <div className="border-t border-[var(--colors-hairline)] pt-3 text-[12px] font-[700] text-[var(--colors-ink-subtle)]">
-              {baseWeather && (
-                <div className="flex gap-3">
-                  <span>🌡 {formatUnit(baseWeather.temperature, "°C")}</span>
-                  <span>💧 {formatUnit(baseWeather.humidity, "%")}</span>
-                  <span>💨 {formatUnit(baseWeather.wind_speed, "m/s")}</span>
-                </div>
-              )}
-              {freshness && (
-                <div
-                  className={`${baseWeather ? "mt-1.5 " : ""}flex items-center gap-1 text-[11px] font-medium text-[var(--colors-ink-subtle)]`}
-                  data-testid="microclimate-freshness"
-                  data-stale={freshness.stale ? "true" : "false"}
-                >
-                  {freshness.stale ? <AlertTriangle size={11} /> : <Clock size={11} />}
-                  <span>{freshness.text}</span>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {!payload && !loading && !message && (
-        <div className="px-2 text-sm leading-6 text-[var(--colors-ink-muted)]">
-          {MICROCLIMATE_STRINGS.empty}
-        </div>
+      {!shown && !loading && !message && (
+        <p className="break-keep px-2 text-body text-ink-muted">{PANEL_STRINGS.empty}</p>
       )}
     </div>
   );
