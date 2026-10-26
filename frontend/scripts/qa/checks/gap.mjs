@@ -465,10 +465,39 @@ export const GAP_CHECKS = [
     },
   }),
   defineCheck("GAP-29", {
-    states: ["S01"], viewports: D,
+    states: ["S01"], viewports: D, mutates: true,
     async run(ctx) {
       if (!(await exists(ctx, HOOKS.presentation))) return missingHook(HOOKS.presentation, "HUD and panel hidden, time visible, chips 1.5x, dot pager, Esc restores");
-      return result(false, { presentationToggle: true, note: "flow asserted by todo 35" }, "presentation mode behaviour");
+      // Row: activate 발표 모드, start 투어, press Esc. The tour is started first (its button lives in the toolbar that
+      // presentation hides); P is the documented key.
+      const layout = () => ctx.inPage((qa) => {
+        const sizes = qa.all("button[data-qa=campus-label]").filter(qa.visible).map((el) => parseFloat(getComputedStyle(el.querySelector("[data-qa=label-chip]") ?? el).fontSize));
+        const panel = qa.one("[data-qa=dashboard-panel]");
+        const pager = qa.one("[data-qa=tour-pager]");
+        return {
+          presenting: qa.one("[data-qa=campus-hud]")?.getAttribute("data-presenting") === "true",
+          toolbar: Boolean(qa.all("[data-qa=camera-view-menu]").find(qa.visible)),
+          panelVisible: Boolean(panel && qa.visible(panel) && panel.getAttribute("aria-hidden") !== "true"),
+          panelOpen: panel?.getAttribute("data-open") ?? null,
+          time: Boolean(qa.all("[data-qa=hud-time-readout]").find(qa.visible)),
+          chipPx: sizes.length ? Math.max(...sizes) : null,
+          pager: pager && qa.visible(pager) ? pager.getAttribute("aria-label") : null,
+        };
+      });
+      const before = await layout();
+      const tour = (await ctx.b.tap("[data-qa=camera-tour-toggle]", null, { timeoutMs: 4000 })).ok;
+      await ctx.sleep(600);
+      await ctx.b.key("p");
+      await ctx.sleep(1500);
+      const on = await layout();
+      await ctx.b.key("Escape");
+      await ctx.sleep(1200);
+      const after = await layout();
+      if (tour) await ctx.b.tap("[data-qa=camera-tour-toggle]", null, { timeoutMs: 4000 });
+      const scale = before.chipPx && on.chipPx ? Math.round((on.chipPx / before.chipPx) * 100) / 100 : null;
+      const pass = tour && on.presenting && !on.toolbar && !on.panelVisible && on.time && scale >= 1.5 && /^투어 \d+\/\d+$/.test(on.pager ?? "")
+        && !after.presenting && after.toolbar === before.toolbar && after.panelVisible === before.panelVisible && after.panelOpen === before.panelOpen;
+      return result(pass, { tourStarted: tour, before, presenting: on, afterEsc: after, chipScale: scale }, "HUD and panel hidden, time readout visible, chip text 1.5x, dot pager during the tour, Esc restores the previous layout");
     },
   }),
   defineCheck("GAP-30", {
