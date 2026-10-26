@@ -629,29 +629,37 @@ Decisions taken against the survey, logged by the build and listed in the `Furni
 ### Lamps
 
 Every `street_lamp` of the survey is a lamp: the poles placed on the photo and the data.go.kr 순천시_가로등 points
-the survey kept on footways, verges and medians. The data.go.kr points it rejected (on roofs, on the gate
-carriageway) are gone, and `data/streetlights.json` is no longer read. A surveyed pole that falls inside a modelled
-building footprint is moved 0.6 m outside the nearest footprint edge (the build logs it; OC0084).
+the survey kept on footways, verges and medians. `data/streetlights.json` is no longer read.
+
+**Pole bases (all standing poles: lamps, signal, sign and floodlight poles).** `fetch/poleRoots.mjs` writes
+`data/photo/pole-roots.json` and `loadFurniture` puts each pole there:
+
+- Review sheets (`fetch/pole_review_sheets.py`): NGII 2025 chips around every seed with metre ticks. In this photo a pole
+  shows as a thin pole image leaning away from the photo nadir (relief) plus a thin shadow running west; its base is
+  where the two meet. The verdicts are in `data/photo/pole-review.json`: `seed` (base at the seed), `root` (base at an
+  offset in metres), `head` (floodlight head; base = head minus the relief lean `leanOffset` for the estimated
+  height), `reject` (no pole there).
+- The shadow detector (`lib/poleShadow.mjs`) searches 1 m around each by-eye base for the sun-side end of a pole
+  shadow. Within 0.5 m of the by-eye base the pole goes to the detected root (`shadow-root`) and `residualM` is the
+  distance between the two; otherwise the by-eye base is kept (`by-eye-root`, `residualM` 0.25 m estimated; floodlight
+  heads 0.5 m). Seeds with no visible base stay where the survey put them (`unresolved`, metre-level).
+- The 67 lamps the old rule placed every 27 m along the A003 walkway outlines were seeds too
+  (`data/photo/pole-seeds-rule.json`); none shows a pole on the photo, so none is drawn.
+- `checkPoles` (stages/lights.mjs) is the placement contract. A pole whose base the photo shows, or whose seed the photo
+  shows on a median or island (review `site`), stays out of buildings (moved up to 4 m outside the footprint edge): the
+  carriageway raster paints medians, islands and narrow footways as asphalt, and the photo outranks it. Every other pole
+  also stays off carriageways (asphalt outside the A003 paved area), moved up to 8 m (its seed's own uncertainty) to the
+  kerb line plus 0.3 m. Moves are logged; a pole that cannot move, or two poles closer than 1 m, fails the build.
 
 Types (estimated from VR scene_a19 and the campus panoramas): `arterial` (8 m galvanised pole, single curved arm, LED
 cobra head 2.1 m out) for data.go.kr points and lamps by the arterial; `campusRoad` (the same shape at 6 m) for lamps
 beside a carriageway; `path` (4 m dark post-top lantern) elsewhere. Arms point at the nearest carriageway (OSM
 centrelines or road-zone edges).
 
-Estimated lamps fill campus paths and roads the photo cannot resolve (4-6 m poles under canopy cast 2-3 m shadows).
-They walk the A003 walkway outlines (`walkways_wgs84.geojson`: closed rings are the kerb plus the back edge of a
-sidewalk, filled even-odd per feature; open lines are cut outlines), one candidate every 27 m (the measured
-data.go.kr spacing), 0.45 m inside the paved side. A candidate is kept only on campus (within 60 m of a campus
-building, outside off-campus lots, 20 m or more from the public arterial), off every road (road zones, crosswalks,
-asphalt outside the walkways), at least 1 m from buildings, 1.5 m from surveyed objects, 13.5 m from surveyed lamps
-and 20 m from other estimated lamps. Bicycle lanes get none. Where the outer side of the outline is road, the lamp is
-a `campusRoad` lamp facing it; otherwise a `path` lantern. The build fails if an estimated lamp lands on a road zone,
-a crosswalk or in a building.
-
 `Lamps_heads` merges every luminaire and the signal lenses into one primitive (`Lamp_Head`, emissive mask: dark
 housing, warm lens, red/green/amber signal lenses). `Lamps_pools` is the instanced ground disc under each lit head
 (radius 7.5 / 5.5 / 4.5 m by type), drawn by CityModel at night only. The node extras list every lamp as
-`[id, type, height m, estimated, x, z]`.
+`[id, type, height m, pole verdict, x, z]`.
 
 ### Rest spaces (`data/rest-space-catalogue.json`, `data/photo/rest-spaces.geojson`)
 
@@ -670,19 +678,18 @@ is an estimate (추정). Instances come from two places:
 
 The `Furniture` node extras list every rest space (`restSpaces`) and a per-kind summary (`restSpaceKinds`): its label
 ending in (추정), count, `estimated: true`, `dimsSource`, VR scenes and photo support. A whole-set duplicate audit
-(`duplicateAudit`) runs on every build. It checks survey objects, rest spaces, lamps and estimated benches for pairs of
+(`duplicateAudit`) runs on every build. It checks survey objects, rest spaces, lamps and the plaza benches for pairs of
 the same class closer than 3 m, where roofed kinds count as one class, plaza structures go by subtype and the rest by
 kind. The build logs the pair count, which is 0. The two crossing bars of the X-shaped pergola (OC0064, OC0065) are
 listed as one compound. `data/photo/restSpaces.test.mjs` checks the provenance, the catalogue ranges, the 3 m rule
 against the survey and the coverage of the reconciliation table.
 
-### Estimated benches
+### Plaza benches
 
 The photo resolves 3 benches. VR scene_c1 shows long dark-blue box benches beside the tree pits on both long sides of
-the central pond; they are placed from VR (4 per side, 7 m apart, 4.5 m outside the pond). Elsewhere one bench every
-54 m along the walkway outlines, 0.9 m outside the paved edge on lawn (the surface class 1.2 m further out must be
-lawn too), facing the path, on campus, off roads and buildings, 1.5 m from objects and lamps and 30 m from other
-benches. All are flagged estimated in the build log and the node extras (`estimatedBenches`).
+the central pond; they are placed from VR (4 per side, 7 m apart, 4.5 m outside the pond) and flagged estimated in the
+build log and the node extras (`estimatedBenches`). The benches the old rule put every 54 m along the walkway outlines
+are gone: neither the photo nor the VR shows them.
 
 ### Draw calls and size
 
