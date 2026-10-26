@@ -3,8 +3,8 @@ import {
   ContractParseError,
   parseRoofLayoutDocument,
   summarizePanelArray,
-} from "./roofContracts.mjs";
-import { D4_ROOF_SCENARIO_FIXTURE } from "./fixtures/d4RoofScenarioFixture.mjs";
+} from "../../src/features/energy/domain/roofContracts.mjs";
+import { D4_ROOF_SCENARIO_FIXTURE } from "../../src/features/energy/domain/fixtures/d4RoofScenarioFixture.mjs";
 
 const parsed = parseRoofLayoutDocument(JSON.parse(JSON.stringify(D4_ROOF_SCENARIO_FIXTURE)));
 const summary = summarizePanelArray(parsed.scenarios[0].arrays[0], parsed.modules);

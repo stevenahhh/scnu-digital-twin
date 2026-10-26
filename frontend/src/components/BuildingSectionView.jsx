@@ -2,8 +2,9 @@ import { Html } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
+import { ACCENT_HEX } from "../ui/sceneTokens.mjs";
 
-const ACTIVE_ROOM_COLOR = "#3b82f6";
+const ACTIVE_ROOM_COLOR = ACCENT_HEX;
 const IDLE_ROOM_COLOR = "#94a3b8";
 
 function getFloorY(floor) {
@@ -51,7 +52,7 @@ export function BuildingSectionView({
           </div>
           <div className="mt-3 flex items-center gap-3 text-[11px] font-[800] text-white/75">
             <span className="inline-flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-sm bg-[#3b82f6]" />사용 중
+              <span className="h-2.5 w-2.5 rounded-sm bg-[var(--colors-primary)]" />사용 중
             </span>
             <span className="inline-flex items-center gap-1.5">
               <span className="h-2.5 w-2.5 rounded-sm bg-[#94a3b8]" />미사용
