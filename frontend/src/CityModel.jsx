@@ -200,8 +200,14 @@ function getSelectableRoot(object) {
   return root || object;
 }
 
+// Anchors are in the model's own frame (before the recentring group's -center shift): boxes are taken in world space
+// and moved back into the scene's frame, so the result does not depend on whether the shift was already applied when
+// this runs (a recomputation after the shift used to return the shifted D4 anchor, so center collapsed to 0 and the
+// default view opened off the campus).
 function buildLabelAnchors(scene) {
   const anchors = new Map();
+  scene.updateWorldMatrix(true, true);
+  const toSceneFrame = scene.matrixWorld.clone().invert();
 
   scene.traverse((child) => {
     if (!child.isMesh) return;
@@ -210,7 +216,7 @@ function buildLabelAnchors(scene) {
     const meta = getSelectableMeta(root);
     if (!meta || anchors.has(meta.elementId)) return;
 
-    const box = new THREE.Box3().setFromObject(root);
+    const box = new THREE.Box3().setFromObject(root).applyMatrix4(toSceneFrame);
     if (box.isEmpty()) return;
 
     const center = box.getCenter(new THREE.Vector3());
