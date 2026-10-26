@@ -628,9 +628,26 @@
       "station": true,
       "yaw_deg": true
     },
-    "refined": false,
-    "refined_by": "compare-vr todo 2",
-    "refined_note": "A2 signed block not matched at any yaw within +-45 deg (skyline cost 3.9+); station position likely off"
+    "refined_by": "W4 station check (todo 30 follow-up): resected against the NGII 2025 sheet and the model (estimated)",
+    "refined_note": "the ortho-match pin stood 155 m west, over the bus terminal; the camera hovers over the lawn and tiled plaza east of A2's entrance, looking west at A2 (A1 left, A3 behind right)",
+    "refined_previous": {
+      "refined_by": "compare-vr todo 2",
+      "refined_note": "A2 signed block not matched at any yaw within +-45 deg (skyline cost 3.9+); station position likely off",
+      "refined": false
+    },
+    "station_refined_x": 327.94,
+    "station_refined_z": -178.33,
+    "station_refined_lat": 34.96878439,
+    "station_refined_lng": 127.48138935,
+    "height_refined_m": 15.4,
+    "yaw_refined_deg": 257.2,
+    "refined_method": "resection on the photo: A2's entrance canopy and the two disabled bays in front of it (VR f cols 998, 794, 1050 with rows)",
+    "refined_residual_deg": 1.69,
+    "refined_buildings": [
+      "BLD_SCNU_A2 entrance",
+      "A2 disabled bays"
+    ],
+    "refined_confidence": 0.7
   },
   {
     "scene": "scene_a3",
@@ -2638,9 +2655,26 @@
       "station": true,
       "yaw_deg": true
     },
-    "refined": false,
-    "refined_by": "compare-vr todo 2",
-    "refined_note": "clay courts in f; skyline -41..-54 deg candidates unconfirmed; station position off"
+    "refined_by": "W4 station check (todo 30 follow-up): resected against the NGII 2025 sheet and the model (estimated)",
+    "refined_note": "the ortho-match pin stood 70 m east, over the F1 roof; the camera hovers over the north-east corner of the clay courts, looking south along them",
+    "refined_previous": {
+      "refined_by": "compare-vr todo 2",
+      "refined_note": "clay courts in f; skyline -41..-54 deg candidates unconfirmed; station position off",
+      "refined": false
+    },
+    "station_refined_x": 441.56,
+    "station_refined_z": -11.96,
+    "station_refined_lat": 34.96638186,
+    "station_refined_lng": 127.48338223,
+    "height_refined_m": 15.3,
+    "yaw_refined_deg": 188.5,
+    "refined_method": "nadir registration plus one bearing: VR face d shows the camera over the north clay block just inside its north-east fence corner (corner 7 m away at the image bottom-left); yaw and height from the red-roofed hut on face r (col 269, row 1498)",
+    "refined_residual_deg": 1.5,
+    "refined_buildings": [
+      "tennis hut RS0011",
+      "clay court fence corner"
+    ],
+    "refined_confidence": 0.6
   },
   {
     "scene": "scene_a17",
@@ -4821,13 +4855,30 @@
       "station": true,
       "yaw_deg": true
     },
-    "yaw_refined_deg": 44.3,
-    "refined_residual_deg": 3,
+    "yaw_refined_deg": 309.1,
+    "refined_residual_deg": 0,
     "refined_buildings": [
-      "BLD_D2"
+      "open shelter in the planted courtyard",
+      "white block south-east of the lot"
     ],
-    "refined_by": "compare-vr todo 2",
-    "refined_confidence": 0.6
+    "refined_by": "W4 station check (todo 30 follow-up): resected against the NGII 2025 sheet and the model (estimated)",
+    "refined_confidence": 0.75,
+    "refined_previous": {
+      "yaw_refined_deg": 44.3,
+      "refined_residual_deg": 3,
+      "refined_buildings": [
+        "BLD_D2"
+      ],
+      "refined_by": "compare-vr todo 2",
+      "refined_confidence": 0.6
+    },
+    "station_refined_x": 121.82,
+    "station_refined_z": -280.15,
+    "station_refined_lat": 34.97025482,
+    "station_refined_lng": 127.47777345,
+    "height_refined_m": 11.3,
+    "refined_method": "resection on the photo: the open shelter's roof (VR r col 1203, row 1510) and the white block's north-west corner (VR b col 837, row 1715)",
+    "refined_note": "position within 7.5 m of the xml-coord point; the earlier refined yaw 44.3 put the planted courtyard (with the shelter) on face r when it lies north-east: the yaw is 309"
   },
   {
     "scene": "scene_d3",
@@ -6858,9 +6909,26 @@
       "station": true,
       "yaw_deg": true
     },
-    "refined": false,
-    "refined_by": "compare-vr todo 2",
-    "refined_note": "F1 hall in f within ~4 deg at the original yaw; no second building in view to confirm"
+    "refined_by": "W4 station check (todo 30 follow-up): resected against the NGII 2025 sheet and the model (estimated)",
+    "refined_note": "position within 2.5 m of the ortho-match pin, yaw 259.7 (4.7 deg from the pin's). The station lies east of the modelled EXTENT (x > 502): the model holds nothing on the faces l and b",
+    "refined_previous": {
+      "refined_by": "compare-vr todo 2",
+      "refined_note": "F1 hall in f within ~4 deg at the original yaw; no second building in view to confirm",
+      "refined": false
+    },
+    "station_refined_x": 519.68,
+    "station_refined_z": -5.47,
+    "station_refined_lat": 34.96628807,
+    "station_refined_lng": 127.48475258,
+    "height_refined_m": 19,
+    "yaw_refined_deg": 259.7,
+    "refined_method": "nadir registration: VR face d matched on the photo by the two lane diamonds (along the arterial) and the footway kerb (across it); height from the face d ground scale",
+    "refined_residual_deg": null,
+    "refined_buildings": [
+      "arterial lane diamonds",
+      "east footway kerb"
+    ],
+    "refined_confidence": 0.6
   },
   {
     "scene": "scene_f2",
@@ -7020,8 +7088,25 @@
       "station": true,
       "yaw_deg": true
     },
-    "refined": false,
-    "refined_by": "compare-vr todo 2",
-    "refined_note": "F2 beige block not reproduced; station position off (render stands over the track); +25..+68 deg candidates rejected"
+    "refined_by": "W4 station check (todo 30 follow-up): resected against the NGII 2025 sheet and the model (estimated)",
+    "refined_note": "the ortho-match pin stood 189 m west, over the athletics track; the camera is over the parking lot between F1's curved west wall and F2's north end, looking south along F2",
+    "refined_previous": {
+      "refined_by": "compare-vr todo 2",
+      "refined_note": "F2 beige block not reproduced; station position off (render stands over the track); +25..+68 deg candidates rejected",
+      "refined": false
+    },
+    "station_refined_x": 473.87,
+    "station_refined_z": -49.8,
+    "station_refined_lat": 34.96692828,
+    "station_refined_lng": 127.48394907,
+    "height_refined_m": 12.4,
+    "yaw_refined_deg": 199.8,
+    "refined_method": "resection on the photo: F2's south-east corner and its north stair tower (VR f cols 991, 1997) and the planted island of the F1/F2 parking lot (VR f col 998)",
+    "refined_residual_deg": 3.57,
+    "refined_buildings": [
+      "BLD_SCNU_F2",
+      "F1/F2 parking island"
+    ],
+    "refined_confidence": 0.6
   }
 ]
