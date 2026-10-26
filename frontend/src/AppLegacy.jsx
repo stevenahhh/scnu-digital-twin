@@ -11,7 +11,8 @@ import { isD4ElementId } from "./utils/d4BuildingData.mjs";
 import { CampusHud } from "./components/CampusHud";
 import { sceneTimeReadout } from "./components/HudTimeReadout";
 import { SceneLoadingNotice } from "./components/SceneLoadingNotice";
-import { MicroclimatePanel } from "./components/MicroclimatePanel";
+import { SelectionInspector } from "./panel/SelectionInspector";
+import { gateTextFor } from "./labels/gateDistance.mjs";
 import { PanelErrorBoundary } from "./components/PanelErrorBoundary";
 import { useSimulationSocket } from "./simulation";
 import { D4SectionExperience } from "./vworld/D4SectionExperience";
@@ -55,8 +56,9 @@ function Dashboard() {
   const panelRef = useRef(null);
   const mapLayerRef = useRef(null);
   const hudRef = useRef(null);
+  const inspectorRef = useRef(null);
   // 캠퍼스 라벨은 이 조작 UI 밑에 그려지므로, 겹치는 라벨은 CityModel이 숨긴다.
-  const labelChromeRefs = useMemo(() => [hudRef], []);
+  const labelChromeRefs = useMemo(() => [hudRef, inspectorRef], []);
   const [activeTab, setActiveTab] = useState("dashboard");
   const viewportMode = useViewportMode();
   const panelState = usePanelState(viewportMode);
@@ -90,7 +92,7 @@ function Dashboard() {
   const flow = useLegacyBuildingFlow({
     selection,
     popup,
-    panel: { activeTab, setActiveTab, setIsPanelOpen: panelState.setProgrammaticOpen, scrollRef: panelScrollRef },
+    panel: { activeTab, setActiveTab, scrollRef: panelScrollRef, onSelectionShown: panelState.revealOnPhone },
     activePresetRef: camera.activePresetRef,
     onSectionExit: plans.refreshAll,
   });
@@ -125,12 +127,22 @@ function Dashboard() {
     selection.setSelectedBuildingId(request.buildingId);
     flow.openD4Section(request);
   };
-  const showMicroclimateTab = Boolean(selection.selectedId) || activeTab === "microclimate";
-  const microclimateTab = showMicroclimateTab ? [{ value: "microclimate", label: "미기후" }] : [];
-  const changeTab = (tab) => (tab === "microclimate" ? flow.openMicroclimateTab() : setActiveTab(tab));
   const editor = flow.editorRequest;
-  // 미기후 패널 제목: 고른 건물의 레지스트리 이름, 없으면 클릭한 메시의 이름.
+  // 인스펙터 제목: 고른 건물의 레지스트리 이름, 없으면 클릭한 메시의 이름.
   const panelTitle = selection.selectedId ? flow.selectionTitle || selection.selectedTitle || selection.selectedId : "";
+  const inspector = isCampus && selection.selectedId ? (
+    <SelectionInspector
+      title={panelTitle}
+      popup={popup}
+      estimate={selection.selectedEstimate}
+      gateText={gateTextFor(flow.selectionPosition)}
+      onClose={flow.closeMicroclimate}
+      onShowAll={() => {
+        flow.closeMicroclimate();
+        camera.goHome();
+      }}
+    />
+  ) : null;
 
   // 루트는 overflow: clip으로 자른다. hidden은 스크롤 컨테이너라서 Tab 포커스가 화면 밖 요소로 가면 대시보드가 밀려 남는다.
   return (
@@ -196,8 +208,9 @@ function Dashboard() {
         hidden={!isCampus}
         timeReadout={sceneTimeReadout(clock.sceneMinuteOfDay)}
         activeTab={activeTab}
-        onTabChange={changeTab}
-        extraTabs={microclimateTab}
+        onTabChange={setActiveTab}
+        inspector={inspector}
+        inspectorRef={inspectorRef}
         scrollRef={panelScrollRef}
         freshnessSlot={<FeedStamps feeds={feeds} retry={feeds.retry} compact />}
       >
@@ -220,23 +233,7 @@ function Dashboard() {
               selectedBuildingId={selection.selectedBuildingId}
             />
           )}
-        >
-          {activeTab === "microclimate" && (
-            <PanelErrorBoundary label="미기후">
-              <MicroclimatePanel
-                data={popup.data}
-                loading={popup.loading}
-                error={popup.error}
-                errorDetail={popup.errorDetail}
-                onRetry={popup.retry}
-                lastData={popup.lastData}
-                title={panelTitle}
-                estimate={selection.selectedId ? selection.selectedEstimate : null}
-                onClose={flow.closeMicroclimate}
-              />
-            </PanelErrorBoundary>
-          )}
-        </DashboardTabContent>
+        />
       </DashboardShell>
 
       {isSettingsOpen && (

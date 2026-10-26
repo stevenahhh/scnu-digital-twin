@@ -49,6 +49,9 @@ describe("AppVWorld installation selection lifecycle", () => {
     const user = userEvent.setup();
     render(<App />);
     await user.click(screen.getByRole("button", { name: "D4 선택" }));
+    // 선택은 탭을 바꾸지 않는다. 사용자가 에너지 탭을 연다.
+    expect(screen.getByRole("tab", { name: "기본 현황" }).getAttribute("aria-selected")).toBe("true");
+    await user.click(screen.getByRole("tab", { name: "에너지" }));
     await user.click(screen.getByRole("button", { name: "새 대표 선택" }));
     expect((await screen.findByTestId("app-representative")).textContent).toBe("plan-new");
 
@@ -56,14 +59,27 @@ describe("AppVWorld installation selection lifecycle", () => {
     expect(screen.getByTestId("app-representative").textContent).toBe("plan-new");
   });
 
-  it("holds the building popup while the D4 detail experience is open and shows it after the experience closes", async () => {
+  it("holds the selection inspector while the D4 detail experience is open and shows it after the experience closes", async () => {
     const user = userEvent.setup();
-    render(<App />);
+    const { container } = render(<App />);
     await user.click(screen.getByRole("button", { name: "D4 상세 열기" }));
+    expect(container.querySelector('[data-qa="selection-inspector"]')).toBeNull();
     expect(screen.queryByRole("dialog")).toBeNull();
 
     await user.click(screen.getByRole("button", { name: "D4 상세 닫기" }));
-    expect(await screen.findByRole("dialog", { name: "D4" })).toBeTruthy();
+    expect(await screen.findByRole("region", { name: "선택한 건물 D4" })).toBeTruthy();
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("keeps the 기본 현황 tab and its scrollTop when returning from the D4 section (VWorld)", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<App />);
+    const scroller = () => container.querySelector('[data-qa="panel-scroll"]');
+    scroller().scrollTop = 300;
+    await user.click(screen.getByRole("button", { name: "D4 상세 열기" }));
+    await user.click(screen.getByRole("button", { name: "D4 상세 닫기" }));
+    expect(screen.getByRole("tab", { name: "기본 현황" }).getAttribute("aria-selected")).toBe("true");
+    expect(Math.abs(scroller().scrollTop - 300)).toBeLessThanOrEqual(8);
   });
 
   it("keeps the map overlays full width and interactive above the phone bottom sheet", async () => {

@@ -1,8 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import VWorldRenderer from "./vworld/VWorldRenderer";
 import { sceneBackgroundFor } from "./lighting/sceneBackground.mjs";
-import { AccessibleDialog } from "./components/AccessibleDialog";
-import { MicroclimatePanel } from "./components/MicroclimatePanel";
+import { SelectionInspector } from "./panel/SelectionInspector";
 import { useSimulationSocket } from "./simulation";
 import { createPlanDraftFromExisting } from "./features/energy/installations/installationPlanApi.mjs";
 import { useViewportMode } from "./hooks/useViewportMode.mjs";
@@ -60,15 +59,17 @@ export default function App() {
   const summary = summarizeWeather({ feed: weatherFeed, mode: clock.mode, simTemp: clock.simTemp });
   const lighting = mapLighting(clock.sunAltitudeDegrees, clock.sunBearingDegrees, clock.sunState.visible);
 
-  // VWorld에서 건물을 고르면 에너지 탭으로 옮기고 미기후 팝업을 띄운다(frontend/AGENTS.md 의도된 차이).
+  // VWorld에서 건물을 고르면 Legacy와 같은 선택 인스펙터가 열린다. 탭은 바꾸지 않는다(폰에서는 시트를 half로).
   const { selectBuilding, clearSelection } = selection;
   const { load: loadPopup, clear: clearPopup } = popup;
+  const { revealOnPhone } = panelState;
   const handleVWorldSelection = useCallback((target) => {
     selectBuilding(target);
-    setActiveTab("energy");
-    if (target.elementId?.startsWith("BLD_")) loadPopup(target.elementId);
-    else clearPopup();
-  }, [clearPopup, loadPopup, selectBuilding]);
+    if (target.elementId?.startsWith("BLD_")) {
+      revealOnPhone();
+      loadPopup(target.elementId);
+    } else clearPopup();
+  }, [clearPopup, loadPopup, revealOnPhone, selectBuilding]);
   const closeMicroclimatePopup = useCallback(() => {
     clearSelection();
     clearPopup();
@@ -176,6 +177,14 @@ export default function App() {
         timeReadout={sceneTimeReadout(clock.sceneMinuteOfDay)}
         activeTab={activeTab}
         onTabChange={setActiveTab}
+        inspector={selection.selectedId && !isD4SectionOpen ? (
+          <SelectionInspector
+            title={selection.selectedTitle || popup.data?.name || selection.selectedId}
+            popup={popup}
+            onClose={closeMicroclimatePopup}
+            onShowAll={closeMicroclimatePopup}
+          />
+        ) : null}
         scrollRef={panelScrollRef}
         freshnessSlot={<FeedStamps feeds={feeds} retry={feeds.retry} compact />}
       >
@@ -193,26 +202,6 @@ export default function App() {
         />
       </DashboardShell>
 
-      {/* 건물 미기후 팝업: VWorld는 탭이 아니라 지도 위 대화상자로 보여 준다(의도된 차이). */}
-      <AccessibleDialog
-        open={Boolean(selection.selectedId) && !isD4SectionOpen}
-        onClose={closeMicroclimatePopup}
-        title={popup.data?.name ?? selection.selectedId}
-        className="pointer-events-auto absolute left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 [&>h2]:sr-only"
-      >
-        <section className="max-h-[80vh] w-[340px] overflow-y-auto rounded-card border border-hairline bg-surface-1 p-4 text-ink shadow-dialog">
-          <MicroclimatePanel
-            data={popup.data}
-            loading={popup.loading}
-            error={popup.error}
-            errorDetail={popup.errorDetail}
-            onRetry={popup.retry}
-            lastData={popup.lastData}
-            title={selection.selectedId}
-            onClose={closeMicroclimatePopup}
-          />
-        </section>
-      </AccessibleDialog>
 
       {isSettingsOpen && <SettingsDialog onClose={closeSettings} themeMode={themeMode} onThemeChange={setThemeMode} />}
     </div>

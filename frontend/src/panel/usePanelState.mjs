@@ -38,6 +38,11 @@ export function usePanelState(mode) {
     else setOpen(true);
   }, [mode]);
 
+  // 건물을 고르면 폰에서만 시트를 half로 올린다. 데스크톱 레일은 그대로 두고 인스펙터 카드가 레일 옆에 뜬다.
+  const revealOnPhone = useCallback(() => {
+    if (mode === "phone") setDetent((current) => (current === "peek" ? "half" : current));
+  }, [mode]);
+
   const conceal = useCallback(() => {
     if (mode === "phone") setDetent("peek");
     else setOpen(false);
@@ -46,5 +51,5 @@ export function usePanelState(mode) {
   // 기존 흐름(useLegacyBuildingFlow)은 setIsPanelOpen(boolean)으로 패널을 연다.
   const setProgrammaticOpen = useCallback((next) => (next ? reveal() : conceal()), [conceal, reveal]);
 
-  return { open, setUserOpen, detent, setDetent, reveal, conceal, setProgrammaticOpen };
+  return { open, setUserOpen, detent, setDetent, reveal, revealOnPhone, conceal, setProgrammaticOpen };
 }

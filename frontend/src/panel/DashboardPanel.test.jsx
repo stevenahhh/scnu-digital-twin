@@ -29,9 +29,9 @@ describe("DashboardPanel", () => {
 
   it("reports tab changes and appends extra tabs after the fixed four", () => {
     const onTabChange = vi.fn();
-    renderPanel({ onTabChange, extraTabs: [{ value: "microclimate", label: "미기후" }] });
-    fireEvent.click(screen.getByRole("tab", { name: "미기후" }));
-    expect(onTabChange).toHaveBeenCalledWith("microclimate");
+    renderPanel({ onTabChange, extraTabs: [{ value: "compare", label: "비교" }] });
+    fireEvent.click(screen.getByRole("tab", { name: "비교" }));
+    expect(onTabChange).toHaveBeenCalledWith("compare");
     fireEvent.keyDown(screen.getByRole("tab", { name: "기본 현황" }), { key: "ArrowRight" });
     expect(onTabChange).toHaveBeenLastCalledWith("parking_safety");
   });

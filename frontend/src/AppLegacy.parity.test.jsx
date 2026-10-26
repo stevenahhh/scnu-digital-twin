@@ -677,4 +677,19 @@ describe("Legacy and VWorld feature parity", () => {
     expect(Math.abs(scroller().scrollTop - 300)).toBeLessThanOrEqual(8);
     expect(container.querySelector('[data-qa="dashboard-panel"]').dataset.open).toBe("true");
   });
+  it("opens the selection inspector above the four tabs without changing the tab or adding a 미기후 tab", async () => {
+    stubFetch();
+    const { container } = render(<App />);
+    await act(async () => {
+      sceneMock.cityModelProps.onSelect("BLD_C1", 1200, [0, 0, 0], "BLD_C1");
+      await sceneMock.cityModelProps.onBuildingClick({ name: "BLD_C1", parent: { name: "BLD_C1" }, userData: { buildingLabel: "도서관" } });
+    });
+    const inspector = container.querySelector('[data-qa="selection-inspector"]');
+    expect(inspector).not.toBeNull();
+    expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual(["기본 현황", "주차·안전", "에너지", "환경 시뮬"]);
+    expect(screen.getByRole("tab", { name: "기본 현황" }).getAttribute("aria-selected")).toBe("true");
+    expect(inspector.compareDocumentPosition(screen.getByRole("tablist")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    fireEvent.click(within(inspector).getByRole("button", { name: "닫기" }));
+    expect(container.querySelector('[data-qa="selection-inspector"]')).toBeNull();
+  });
 });

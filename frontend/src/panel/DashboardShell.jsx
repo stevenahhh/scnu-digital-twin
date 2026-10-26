@@ -27,7 +27,8 @@ export function shellInsetRight(mode, open) {
 export const DashboardShell = forwardRef(function DashboardShell(
   {
     mode, open, onOpenChange, detent, onDetentChange, hidden = false,
-    activeTab, onTabChange, extraTabs = [], timeReadout = null, freshnessSlot = null, searchSlot = null, footer, scrollRef, children,
+    activeTab, onTabChange, extraTabs = [], timeReadout = null, freshnessSlot = null, searchSlot = null, footer, scrollRef,
+    inspector = null, inspectorRef, children,
   },
   panelRef,
 ) {
@@ -87,6 +88,8 @@ export const DashboardShell = forwardRef(function DashboardShell(
           </div>
         )}
       >
+        {/* 고른 건물은 시트 맨 위(half 단계에서 보이는 자리)에 나온다. */}
+        {inspector && <div ref={inspectorRef} className="pb-3">{inspector}</div>}
         <DashboardPanel activeTab={activeTab} onTabChange={selectTab} extraTabs={extraTabs} footer={footer} scrollRef={scrollRef}>
           {children}
         </DashboardPanel>
@@ -122,6 +125,7 @@ export const DashboardShell = forwardRef(function DashboardShell(
           extraTabs={extraTabs}
           footer={footer}
           scrollRef={scrollRef}
+          inspector={open && inspector}
           headerAction={open && (
             <Button
               variant="ghost"
@@ -136,6 +140,16 @@ export const DashboardShell = forwardRef(function DashboardShell(
           {children}
         </DashboardPanel>
       </div>
+      {!open && inspector && (
+        // 레일로 접힌 동안 인스펙터는 레일 왼쪽의 360px 카드다(패널을 열지 않는다).
+        <div
+          ref={inspectorRef}
+          data-qa="inspector-card"
+          className="pointer-events-auto absolute right-[calc(100%+0.5rem)] top-4 max-h-[calc(100%-2rem)] w-[360px] overflow-y-auto"
+        >
+          {inspector}
+        </div>
+      )}
       {!open && (
         <nav
           aria-label="대시보드 레일"
