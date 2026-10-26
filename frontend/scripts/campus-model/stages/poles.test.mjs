@@ -136,3 +136,15 @@ test("gate-structures.geojson: three islands (axis + width) and one canopy outli
   }
   for (const f of islands) assert.ok(f.geometry.type === "LineString" && f.properties.width_m > 0.5 && f.properties.width_m < 3, `${f.properties.id} island axis and width`);
 });
+
+test("vr-lamps.geojson: every VR-located lamp has a photo base within 0.25 m (by eye) and names its VR scene", () => {
+  const { features } = JSON.parse(readFileSync(path.join(HERE, "..", "data", "photo", "vr-lamps.geojson"), "utf8"));
+  for (const f of features) {
+    const p = f.properties;
+    assert.equal(p.kind, "street_lamp");
+    assert.equal(f.geometry.type, "Point");
+    assert.ok(p.residual_m <= 0.25, `${p.id} residual ${p.residual_m} m`);
+    assert.match(p.source, /scene_[a-z0-9_]+/, `${p.id} names its VR scene`);
+    assert.equal(p.estimated, true);
+  }
+});

@@ -34,6 +34,8 @@ export const POLE_ROOTS = process.env.POLE_ROOTS_FILE ?? path.join(HERE, "..", "
 // By-eye outline check of shelters, fences, walls and planters on the photo: shift (offsetM [east, south] m) or reject.
 // Main-gate islands and canopy traced on the photo (data/photo/README.md "Gate structures"); GATE_STRUCTURES_FILE swaps it.
 export const GATE_STRUCTURES = process.env.GATE_STRUCTURES_FILE ?? path.join(HERE, "..", "data", "photo", "gate-structures.geojson");
+// Lamps the VR shows and the photo survey missed (base from the photo shadow root); VR_LAMPS_FILE swaps it.
+export const VR_LAMPS = process.env.VR_LAMPS_FILE ?? path.join(HERE, "..", "data", "photo", "vr-lamps.geojson");
 export const OUTLINE_REVIEW = process.env.OUTLINE_REVIEW_FILE ?? path.join(HERE, "..", "data", "photo", "outline-review.json");
 const M = metres;
 
@@ -143,6 +145,7 @@ export function loadFurniture() {
     ...data.features.map((f) => ({ ...f, source: "survey" })),
     ...rest.features.map((f) => ({ ...f, source: "rest-spaces" })),
     ...gate.features.map((f) => ({ ...f, source: "survey" })),
+    ...(existsSync(VR_LAMPS) ? JSON.parse(readFileSync(VR_LAMPS, "utf8")).features : []).map((f) => ({ ...f, source: "survey" })),
   ];
   for (const { properties: raw, geometry: g, source } of features) {
     if (ids.has(raw.id)) throw new Error(`furniture: duplicate object id ${raw.id} (${source})`);
@@ -172,6 +175,7 @@ export function loadFurniture() {
       continue;
     }
     if (outline) object.outline = { verdict: outline.verdict, offsetM: outline.offsetM ?? [0, 0] };
+    if (!pole && p.pole_verdict) object.pole = { verdict: p.pole_verdict, shiftM: 0, residualM: p.residual_m ?? null, site: null };
     if (pole) {
       if (pole.root) object.point = geoToModel(...pole.root);
       object.pole = { verdict: pole.verdict, shiftM: pole.shiftM ?? 0, residualM: pole.residualM ?? null, site: pole.site ?? null };
