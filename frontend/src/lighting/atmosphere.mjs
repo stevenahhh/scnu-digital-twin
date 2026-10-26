@@ -25,6 +25,19 @@ export function getSkyNightMix(altitude) {
   return t * t * (3 - 2 * t);
 }
 
+// The canvas clear colour follows the fog so background, fog and far ground meet without a seam; it is never darker
+// than CLEAR_COLOR_FLOOR_HEX (the darkest canvas the dark theme allows).
+export const CLEAR_COLOR_FLOOR_HEX = "#0b0c0e";
+const luminance = (hex) => {
+  const [r, g, b] = [1, 3, 5].map((index) => parseInt(hex.slice(index, index + 2), 16));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+
+export function getClearColor(altitude) {
+  const fog = getFogColor(altitude);
+  return luminance(fog) >= luminance(CLEAR_COLOR_FLOOR_HEX) ? fog : CLEAR_COLOR_FLOOR_HEX;
+}
+
 // Fog colour by sun altitude (radians): night below the horizon, warm haze near it, day haze above 25 deg.
 export function getFogColor(altitude) {
   const degrees = (altitude * 180) / Math.PI;

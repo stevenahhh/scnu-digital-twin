@@ -35,7 +35,11 @@ export function useSunClock() {
     [now, isLiveMode, sunDay, sunHour, sunMinute, sunMonth],
   );
   const sunState = useMemo(
-    () => getSunState({ date: sunDate, latitude: CAMPUS_LOCATION.latitude, longitude: CAMPUS_LOCATION.longitude }),
+    // minuteOfDay: 밤 불빛·주변광 곡선(lighting/nightCurve.mjs)이 장면 시각으로 쓴다.
+    () => ({
+      ...getSunState({ date: sunDate, latitude: CAMPUS_LOCATION.latitude, longitude: CAMPUS_LOCATION.longitude }),
+      minuteOfDay: sunDate.getHours() * 60 + sunDate.getMinutes(),
+    }),
     [sunDate],
   );
 

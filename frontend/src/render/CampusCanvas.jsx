@@ -2,7 +2,7 @@ import { forwardRef, useMemo } from "react";
 import { useCameraKeys } from "../camera/useCameraKeys.mjs";
 import { Canvas } from "@react-three/fiber";
 import { CAMPUS_CANVAS_GL } from "../lighting/CampusLighting";
-import { sceneBackgroundFor } from "../lighting/sceneBackground.mjs";
+import { getClearColor } from "../lighting/atmosphere.mjs";
 import { getSunVector } from "../utils/sunPosition.mjs";
 import { PanelErrorBoundary } from "../components/PanelErrorBoundary";
 import { CampusScene } from "./CampusScene";
@@ -53,7 +53,8 @@ export const CampusCanvas = forwardRef(function CampusCanvas(
           style={{ overflow: "clip" }}
         >
           <CampusScene
-            background={sceneBackgroundFor(sunState.visible)}
+            background={getClearColor(sunState.altitude)}
+            sceneMinute={sunState.minuteOfDay}
             sunVector={sunVector}
             sunVisible={sunState.visible}
             sunAltitude={sunState.altitude}

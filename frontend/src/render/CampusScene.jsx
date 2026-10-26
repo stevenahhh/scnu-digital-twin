@@ -3,6 +3,7 @@ import { OrbitControls, useGLTF } from "@react-three/drei";
 import { CityModel } from "../CityModel";
 import { CAMPUS_MODEL_URL } from "../campusModelAsset.mjs";
 import { CampusLighting } from "../lighting/CampusLighting";
+import { HorizonSkirt } from "../lighting/HorizonSkirt";
 import { ShadowBaker } from "../lighting/ShadowBaker";
 import { SUN_DISC_HEX } from "../lighting/sceneBackground.mjs";
 import { SceneWeatherBinding } from "../weather/SceneWeatherBinding";
@@ -29,7 +30,7 @@ function SceneLoadingSignal({ onChange }) {
 // 3D 캠퍼스 장면(R3F Canvas의 자식). 값이 실제로 바뀔 때만 다시 그리도록 memo로 감싼다: 장면 트리가 다시 그려지면
 // 인라인 이벤트 핸들러가 바뀐 것으로 보고 R3F가 invalidate해서 demand 루프가 한 장을 더 그린다.
 export const CampusScene = memo(function CampusScene({
-  background, sunVector, sunVisible, sunAltitude, weatherScene, quality, shadowMapSizes,
+  background, sunVector, sunVisible, sunAltitude, sceneMinute, weatherScene, quality, shadowMapSizes,
   controlsRef, selectedId, labelsHidden, occluderRef, chromeRefs,
   activePresetId, selectedElementId, selectionOutline, onLabelRegistry, onDragStart, headlineById,
   onSelect, onBuildingClick, onBuildingProximity, onD4Enter, onOrbitStart, onOrbitEnd, onLoadingChange, attempt = 0, presentation = false,
@@ -41,9 +42,11 @@ export const CampusScene = memo(function CampusScene({
         sunVector={sunVector}
         sunVisible={sunVisible}
         sunAltitude={sunAltitude}
+        sceneMinute={sceneMinute}
         shadowMapSizes={shadowMapSizes}
         controlsRef={controlsRef}
       />
+      <HorizonSkirt />
       <SceneWeatherBinding
         sunIntensityScale={weatherScene.sunIntensityScale}
         fogDensityScale={weatherScene.fogDensityScale}

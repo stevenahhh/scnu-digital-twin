@@ -1,6 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { cx } from "./ui/cx.mjs";
-import { sceneBackgroundFor } from "./lighting/sceneBackground.mjs";
+import { getClearColor } from "./lighting/atmosphere.mjs";
 import { CampusCanvas } from "./render/CampusCanvas";
 import { clearCampusModel } from "./render/CampusScene";
 import { useCampusRendering } from "./render/useCampusRendering.mjs";
@@ -158,7 +158,7 @@ function Dashboard() {
   // 루트는 overflow: clip으로 자른다. hidden은 스크롤 컨테이너라서 Tab 포커스가 화면 밖 요소로 가면 대시보드가 밀려 남는다.
   return (
     <div className={cx(ROOT_CLASS, presentation.cursorHidden && "cursor-none")}>
-      <div className="absolute inset-0" style={{ background: sceneBackgroundFor(clock.sunState.visible) }} />
+      <div className="absolute inset-0" style={{ background: getClearColor(clock.sunState.altitude) }} />
       {/* HUD는 D4 패인이 열려도 남는다: 시각·시점 메뉴가 패인 왼쪽 장면 위에 그대로 있다. */}
       <CampusHud
         ref={hudRef}
