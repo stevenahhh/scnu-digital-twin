@@ -37,7 +37,7 @@ function validateRecords(records) {
     if (typeof r.nodeId !== "string" || !/^BLD_SCNU_([A-Z]\d+|V\d+)$/.test(r.nodeId)) fail("nodeId must be BLD_SCNU_<code> or BLD_SCNU_V<n>");
     if (r.code && r.nodeId !== `BLD_SCNU_${r.code}`) fail("nodeId must be BLD_SCNU_<code> when the record has a code");
     if (r.status !== "standing") fail("status must be standing");
-    if (!Number.isInteger(r.floors) || r.floors < 1) fail("floors must be a positive integer");
+    if (!Number.isInteger(r.floors) || r.floors < 1) fail("floors must be >= 1 (a whole storey count)");
     const scene = /^VR (scene_[a-z0-9]+) storey count \(estimated\)$/.exec(r.floorsSource ?? "")?.[1];
     if (!scene) fail("floorsSource must read 'VR scene_<id> storey count (estimated)'");
     if (r.heightMetres !== 0) fail("heightMetres must be 0 (height comes from floors x median)");

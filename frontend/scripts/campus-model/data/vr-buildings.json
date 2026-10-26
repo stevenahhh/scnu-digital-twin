@@ -119,6 +119,44 @@
         "scene_001"
       ],
       "registerName": null
+    },
+    {
+      "code": "C5",
+      "name": "순천대학교 C5 어린이집",
+      "label": "어린이집",
+      "nodeId": "BLD_SCNU_C5",
+      "status": "standing",
+      "floors": 2,
+      "floorsSource": "VR scene_c5 storey count (estimated)",
+      "heightMetres": 0,
+      "undergroundFloors": 0,
+      "usability": "노유자시설 (추정)",
+      "polygons": [
+        [
+          [
+            [127.47938886, 34.97112225],
+            [127.47948006, 34.97110385],
+            [127.47971719, 34.97105556],
+            [127.47969997, 34.97092375],
+            [127.47958858, 34.97092414],
+            [127.47958907, 34.97100853],
+            [127.47944299, 34.97101129],
+            [127.47943348, 34.97094728],
+            [127.47921887, 34.97094199],
+            [127.47921936, 34.97102488],
+            [127.47938841, 34.97104539],
+            [127.47938886, 34.97112225]
+          ]
+        ]
+      ],
+      "footprintSource": "NGII 2025 orthophoto trace (estimated) + VR scene_c5",
+      "nameSource": "SCNU registry C5 순천대학교 어린이집 (campus list.do point 243780.4, 263983.8 EPSG:5186, inside the traced outline); VR scene_c5 sign C5 어린이집. The green-roofed courtyard building north of C3/C4, by the north gate (C6 북문)",
+      "estimated": true,
+      "confidence": 0.6,
+      "vrScenes": [
+        "scene_c5"
+      ],
+      "registerName": null
     }
   ]
 }

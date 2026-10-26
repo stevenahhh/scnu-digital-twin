@@ -4462,9 +4462,17 @@
       "station": true,
       "yaw_deg": true
     },
-    "refined": false,
-    "refined_by": "compare-vr todo 2",
-    "refined_note": "daycare (title) has no footprint; skyline candidates -45..-72 deg rejected by eye; original kept"
+    "refined_by": "compare-vr todo 12",
+    "refined_note": "station moved 7 m south inside the forecourt so the two-storey block's north-west corner sits at its VR column (f -31 deg) with the C3 north-east corner at f +29 deg; yaw kept (C3 antenna tower)",
+    "yaw_refined_deg": 100.5,
+    "station_refined_x": 203.22,
+    "station_refined_z": -336.44,
+    "refined_confidence": 0.6,
+    "refined_residual_deg": 3,
+    "refined_buildings": [
+      "BLD_SCNU_C5",
+      "BLD_SCNU_C3"
+    ]
   },
   {
     "scene": "scene_d1",
