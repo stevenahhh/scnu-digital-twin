@@ -383,9 +383,10 @@ export async function buildOuterTerrain({ glb, inputs }) {
     name: "Ground",
     pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1], metallicFactor: 0, roughnessFactor: 1 },
   });
+  const finalPositions = pick(positions, 3, Float32Array);
   const mesh = glb.addMesh("OuterTerrain", [
     {
-      positions: pick(positions, 3, Float32Array),
+      positions: finalPositions,
       normals: pick(normals, 3, Float32Array),
       colors: pick(colours, 4, Uint8Array),
       indices: outIndices,
@@ -400,5 +401,8 @@ export async function buildOuterTerrain({ glb, inputs }) {
     vertexCount: keep.length,
     triangleCount: outIndices.length / 3,
     attribution: meta.attribution,
+    // the drawn mesh, for things that stand on the ring (stages/context.mjs meshHeightAt)
+    positions: finalPositions,
+    indices: outIndices,
   };
 }

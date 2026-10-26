@@ -663,6 +663,18 @@ Decisions taken against the survey, logged by the build and listed in the `Furni
 - Steps are built only where the terrain climbs at least 0.6 m across the outline (OC0096, OC0169). OC0071, OC0085
   and OC0105 lie on flat terrain in `uni.glb`, so their steps stay in the photo texture.
 
+### Context buildings (`stages/context.mjs`)
+
+Every off-campus GIS건물통합정보 footprint of 12 m2 or more is drawn as a cheap context mass instead of a flat lot:
+inside `EXTENT` on the drawn ground, outside it on the OuterTerrain mesh (`meshHeightAt`), up to `CONTEXT_REACH`
+(290 units, about 465 m) from the EXTENT centre. Farther masses stay flat: the shadow camera is fitted to the campus. Height: the GIS source height when it gives 2.5-5 m per storey, else floors x the
+storey median, else one storey (all 추정). The footprint is extruded from 0.3 m below its lowest ground point to its
+highest ground point + height, with a flat roof and no attachments. One 96 x 32 texture (residential windows,
+commercial glass band, plain roof) maps one section per wall bay of about 3.2 m with v counting storeys; the GIS use
+class picks the section and a vertex colour per building the wall tone. All masses of one 200 m tile are one primitive
+with the one `Context_Building` material. Nodes are `Context_Buildings_<i>_<j>` with extras
+`{ context: true, selectable: false }`: no `BLD_` id, so CityModel never selects them.
+
 ### Lamps
 
 Every `street_lamp` of the survey is a lamp: the poles placed on the photo and the data.go.kr 순천시_가로등 points

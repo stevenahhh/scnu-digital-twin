@@ -47,6 +47,7 @@ import { buildBuildings } from "./stages/buildings.mjs";
 import { buildGround } from "./stages/ground.mjs";
 import { buildFurniture, loadFurniture } from "./stages/furniture.mjs";
 import { buildLights, placeLamps } from "./stages/lights.mjs";
+import { buildContext, meshHeightAt } from "./stages/context.mjs";
 import { buildMarkings, describeMarkings, loadMarkings } from "./stages/markings.mjs";
 import { buildOuterTerrain } from "./stages/outerTerrain.mjs";
 import { KERB_EXPOSED_M, buildKerbs, groundDecalOffset, slabRefine } from "./stages/kerbs.mjs";
@@ -68,7 +69,7 @@ const inputs = await loadInputs();
 
 const glb = new GlbBuilder();
 const furniture = loadFurniture();
-const { selectableBuildings, campusBuildings, offCampusLots } = await buildBuildings({ glb, inputs, detailedStructures: furniture.detailedStructures });
+const { selectableBuildings, campusBuildings, offCampusLots, contextParts } = await buildBuildings({ glb, inputs, detailedStructures: furniture.detailedStructures });
 const treePlacement = placeTrees({ inputs, selectableBuildings, campusBuildings, offCampusLots, blockedRings: furniture.treeBlock });
 const markings = await loadMarkings({ inputs, buildings: [...selectableBuildings, ...campusBuildings] });
 console.log(describeMarkings(markings));
@@ -107,6 +108,11 @@ const groundAt = kerbs.groundHeightAt;
 const { lamps, stats: lampStats, sites } = placeLamps({ inputs, furniture, selectableBuildings, campusBuildings, offCampusLots, groundInfo });
 const { glow } = buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs, groundAt });
 buildLights({ glb, lamps, stats: lampStats, groundAt, glow });
+// Off-campus context masses on the drawn terrain (stages/context.mjs): merged per tile, not selectable, heights 추정.
+const outerHeightAt = meshHeightAt(outerTerrain.positions, outerTerrain.indices);
+const inExtent = (x, z) => x >= EXTENT.minX && x <= EXTENT.maxX && z >= EXTENT.minZ && z <= EXTENT.maxZ;
+const contextGround = (x, z) => (inExtent(x, z) ? groundAt(x, z) : outerHeightAt(x, z) ?? groundAt(Math.min(Math.max(x, EXTENT.minX), EXTENT.maxX), Math.min(Math.max(z, EXTENT.minZ), EXTENT.maxZ)));
+buildContext({ glb, parts: contextParts, groundAt: contextGround });
 
 // ---------------------------------------------------------------- height sidecar
 // The ground the traffic agents stand on (scene units): the drawn Topography plus the raised walkway slab
