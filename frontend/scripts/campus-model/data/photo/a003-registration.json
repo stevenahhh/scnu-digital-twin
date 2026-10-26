@@ -2,28 +2,83 @@
   "note": "Photo registration of NGII A003 sidewalk outlines (docs/assets/data/walkways_wgs84.geojson stays as delivered; lib/a003.mjs applies these). Each entry moves original vertices by dE/dN metres (EPSG:5186) or inserts a vertex on a straight segment, where the NGII 2025 orthophoto (sheet 34702020, 0.25 m) shows the kerb off the A003 line. Offsets: median perpendicular position of the strongest luminance step within +-1.5 m of the line, every 0.5 m along it, cross-checked on the 0.1 m/px render-over-photo blend. Estimated (추정).",
   "corrections": [
     {
-      "id": "REG001", "op": "move", "ufid": "100034702020A00310100000000047655", "line": 0, "vertices": [0, 1, 32], "dE": 0.83, "dN": -0.17,
-      "reason": "FBN22 junction: the east end cap of the sidewalk north-west of the zebra lies 0.85 m west of the photo kerb (segment 0, 6 samples, MAD 0.50 m, gradient 64)", "estimated": true
+      "id": "REG001",
+      "op": "move",
+      "ufid": "100034702020A00310100000000047655",
+      "line": 0,
+      "vertices": [
+        0,
+        1,
+        32
+      ],
+      "dE": 0.705,
+      "dN": -0.045,
+      "reason": "FBN22 junction: the east end cap of the sidewalk north-west of the zebra lies 0.85 m west of the photo kerb (segment 0, 6 samples, MAD 0.50 m, gradient 64); follow-up: moved -0.125 m E / +0.125 m N, the half-pixel bias of the first photo sampling (pixel centres as the world file gives them)",
+      "estimated": true
     },
     {
-      "id": "REG002", "op": "move", "ufid": "100034702020A00310100000000047554", "line": 0, "vertices": [1], "dE": 0.63, "dN": -0.12,
-      "reason": "FBN22 junction: the east kerb of the sidewalk south of the zebra lies 0.64 m west of the photo kerb (segment 0, 19 samples, MAD 0.30 m, gradient 48); south end of that kerb", "estimated": true
+      "id": "REG002",
+      "op": "move",
+      "ufid": "100034702020A00310100000000047554",
+      "line": 0,
+      "vertices": [
+        1
+      ],
+      "dE": 0.505,
+      "dN": 0.005,
+      "reason": "FBN22 junction: the east kerb of the sidewalk south of the zebra lies 0.64 m west of the photo kerb (segment 0, 19 samples, MAD 0.30 m, gradient 48); south end of that kerb; follow-up: moved -0.125 m E / +0.125 m N, the half-pixel bias of the first photo sampling (pixel centres as the world file gives them)",
+      "estimated": true
     },
     {
-      "id": "REG003", "op": "move", "ufid": "100034702020A00310100000000047554", "line": 0, "vertices": [0, 13, 14, 15], "dE": 0.78, "dN": 0.66,
-      "reason": "FBN22 junction: north-east corner of the same sidewalk, where the east kerb (0.64 m east) meets the north cap (1.00 m north-east, segment 12, 6 samples, MAD 0.30 m, gradient 40)", "estimated": true
+      "id": "REG003",
+      "op": "move",
+      "ufid": "100034702020A00310100000000047554",
+      "line": 0,
+      "vertices": [
+        0,
+        13,
+        14,
+        15
+      ],
+      "dE": 0.655,
+      "dN": 0.785,
+      "reason": "FBN22 junction: north-east corner of the same sidewalk, where the east kerb (0.64 m east) meets the north cap (1.00 m north-east, segment 12, 6 samples, MAD 0.30 m, gradient 40); follow-up: moved -0.125 m E / +0.125 m N, the half-pixel bias of the first photo sampling (pixel centres as the world file gives them)",
+      "estimated": true
     },
     {
-      "id": "REG004", "op": "move", "ufid": "100034702020A00310100000000047554", "line": 0, "vertices": [12], "dE": 0.25, "dN": 1.08,
-      "reason": "FBN22 junction: north-west corner of the same sidewalk: the north cap 1.00 m north-east while the west edge stays (segment 11 offset -0.05 m)", "estimated": true
+      "id": "REG004",
+      "op": "move",
+      "ufid": "100034702020A00310100000000047554",
+      "line": 0,
+      "vertices": [
+        12
+      ],
+      "dE": 0.125,
+      "dN": 1.205,
+      "reason": "FBN22 junction: north-west corner of the same sidewalk: the north cap 1.00 m north-east while the west edge stays (segment 11 offset -0.05 m); follow-up: moved -0.125 m E / +0.125 m N, the half-pixel bias of the first photo sampling (pixel centres as the world file gives them)",
+      "estimated": true
     },
     {
-      "id": "REG005", "op": "insert", "ufid": "100034702020A00310100000000047532", "line": 0, "after": 61, "E": 244142.07, "N": 263717.33,
-      "reason": "CW_001 west of the crossing: the north kerb of the strip south of the road lies about 0.35 m south of the photo kerb at E 244142 and on the line at its ends (segment 61, south-west 20 m box 0.29 m, render probe 0.40 m)", "estimated": true
+      "id": "REG005",
+      "op": "insert",
+      "ufid": "100034702020A00310100000000047532",
+      "line": 0,
+      "after": 61,
+      "E": 244141.945,
+      "N": 263717.455,
+      "reason": "CW_001 west of the crossing: the north kerb of the strip south of the road lies about 0.35 m south of the photo kerb at E 244142 and on the line at its ends (segment 61, south-west 20 m box 0.29 m, render probe 0.40 m); follow-up: moved -0.125 m E / +0.125 m N, the half-pixel bias of the first photo sampling (pixel centres as the world file gives them)",
+      "estimated": true
     },
     {
-      "id": "REG006", "op": "insert", "ufid": "100034702020A00310100000000047532", "line": 0, "after": 52, "E": 244142.10, "N": 263712.61,
-      "reason": "CW_001 west of the crossing: the south line of the same strip, same 0.40 m north at E 244142 (segment 52, south-west 20 m box 0.44 m)", "estimated": true
+      "id": "REG006",
+      "op": "insert",
+      "ufid": "100034702020A00310100000000047532",
+      "line": 0,
+      "after": 52,
+      "E": 244141.975,
+      "N": 263712.735,
+      "reason": "CW_001 west of the crossing: the south line of the same strip, same 0.40 m north at E 244142 (segment 52, south-west 20 m box 0.44 m); follow-up: moved -0.125 m E / +0.125 m N, the half-pixel bias of the first photo sampling (pixel centres as the world file gives them)",
+      "estimated": true
     }
   ]
 }
