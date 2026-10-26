@@ -486,8 +486,9 @@ records.forEach((c, k) => {
     species = group.species;
     source = `vr-group:${group.id}`;
   } else if (voted === "yellow") {
-    species = c.height >= COLUMNAR_MIN_M && ratio >= COLUMNAR_RATIO ? "metasequoia" : "ginkgo";
-    source = "vr-colour:yellow";
+    // the VR tour shows ginkgo as street rows; a yellow crown away from a street is a turning zelkova or a woodland tree
+    species = c.height >= COLUMNAR_MIN_M && ratio >= COLUMNAR_RATIO ? "metasequoia" : street ? "ginkgo" : "broadleaf";
+    source = street || species === "metasequoia" ? "vr-colour:yellow" : "vr-colour:yellow-off-street";
   } else if (voted === "dark") {
     species = c.height >= 6 && ratio >= COLUMNAR_RATIO ? "conifer" : "pine";
     source = "vr-colour:dark";
@@ -542,7 +543,7 @@ const out = {
     crowns: `geodesic flood inside the canopy from the tops, at most ${CROWN_MAX_M} m; crowns under ${MIN_CROWN_M2} m2, brighter than luma ${MAX_CROWN_LUMA} or more elongated than ${MAX_ELONGATION} dropped; diameter of the equal-area circle`,
     height: "CHMv2 maximum over the crown; 1.5 + 2.2 x radius (3-14 m, ASSUMED) where CHMv2 has no canopy",
     lean: "position moved back by the registration lean field at 0.6 x height",
-    species: `VR group polygon (data/photo/tree-species.json) first; else the weighted majority VR colour class of the crowns within ${NEIGHBOUR_M} m on the VR tour cube faces (tree_vr.py; yellow -> ginkgo, or metasequoia when columnar: height >= ${COLUMNAR_MIN_M} m and height / diameter >= ${COLUMNAR_RATIO}; warm -> broadleaf (zelkova/cherry); dark -> pine, or conifer when columnar; green -> broadleaf, or ginkgo on a street edge (within ${STREET_EDGE_M} m of a road zone) with a yellow neighbour); unseen crowns: MCEE forest type (321 conifer -> pine, 311 broadleaf), else photo tone (luma < ${PINE_LUMA} and (b - r) / sum < ${PINE_BLUE_RED} -> pine), else broadleaf`,
+    species: `VR group polygon (data/photo/tree-species.json) first; else the weighted majority VR colour class of the crowns within ${NEIGHBOUR_M} m on the VR tour cube faces (tree_vr.py; yellow -> ginkgo on a street edge, broadleaf elsewhere, or metasequoia when columnar: height >= ${COLUMNAR_MIN_M} m and height / diameter >= ${COLUMNAR_RATIO}; warm -> broadleaf (zelkova/cherry); dark -> pine, or conifer when columnar; green -> broadleaf, or ginkgo on a street edge (within ${STREET_EDGE_M} m of a road zone) with a yellow neighbour); unseen crowns: MCEE forest type (321 conifer -> pine, 311 broadleaf), else photo tone (luma < ${PINE_LUMA} and (b - r) / sum < ${PINE_BLUE_RED} -> pine), else broadleaf`,
   },
   counts,
   speciesSources: sources,
