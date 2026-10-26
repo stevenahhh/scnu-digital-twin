@@ -83,6 +83,7 @@ const MARKINGS = path.join(HERE, "..", "data", "photo", "markings.geojson");
 const MARKINGS_EXTRA = path.join(HERE, "..", "data", "photo", "markings-extra.geojson");
 const MARKINGS_GATE = path.join(HERE, "..", "data", "photo", "markings-gate.json");
 const MARKINGS_TEXT = path.join(HERE, "..", "data", "photo", "markings-text.json");
+const MARKINGS_BAYS = path.join(HERE, "..", "data", "photo", "markings-bays.json");
 const GROUND_FEATURES = path.join(HERE, "..", "data", "osm-ground.json");
 const CROSSWALKS = path.resolve(HERE, "../../../..", "docs", "assets", "data", "crosswalks_wgs84.geojson");
 
@@ -109,7 +110,7 @@ const STROKE_WIDTH_M = [0.1, 0.5];
 const DOUBLE_OFFSET_M = 0.15;
 // Kinds whose colour is fixed by what they are (yellow kerb and centre lines, white zebra bars, blue bays): never
 // recoloured from the photo.
-const FIXED_COLOUR_KINDS = new Set(["kerb_no_parking", "centre_line_yellow", "zebra_bar", "disabled_parking", "bike_lane_blue"]);
+const FIXED_COLOUR_KINDS = new Set(["kerb_no_parking", "centre_line_yellow", "zebra_bar", "disabled_parking", "bike_lane_blue", "green_band"]);
 const STROKED_KINDS = new Set(["lane_line_dashed", "lane_line_solid", "edge_line", "centre_line_yellow", "parking_line", "kerb_no_parking", "give_way_line"]);
 // Above the Ground_* layers (at most 0.036 m, stages/surfaces.mjs); pack.mjs keeps positions as float.
 const LIFT_M = 0.04;
@@ -148,8 +149,12 @@ const OCCLUDED_SHARE = 0.5;
 const MATCH_ANGLE_DEG = 25;
 const MATCH_REACH_M = 3;
 
-const PALETTE_SRGB = { white: [226, 226, 220], yellow: [228, 172, 52], blue: [40, 120, 196] };
-const PALETTE_COLOURS = ["white", "yellow", "blue"];
+// green: the green bands across the E7 red carriageway (colour from the VR tour, 추정); the gate measures no green, so a
+// green piece is drawn only when the chip review accepts it
+const PALETTE_SRGB = { white: [226, 226, 220], yellow: [228, 172, 52], blue: [40, 120, 196], green: [38, 140, 96] };
+const PALETTE_COLOURS = ["white", "yellow", "blue", "green"];
+// the colours bake/markings-gate.mjs measures, in its order: supports are [white, yellow, blue, fingerprint, ...]
+const GATE_COLOURS = ["white", "yellow", "blue"];
 const PALETTE_U = Object.fromEntries(PALETTE_COLOURS.map((colour, i) => [colour, (i + 0.5) / PALETTE_COLOURS.length]));
 const NIGHT_GLOW = 0.18;
 
@@ -586,9 +591,9 @@ export async function loadMarkings({ inputs, buildings }) {
     // Support per palette colour. A polygon whose own colour fails but whose paint the photo shows white or yellow
     // is drawn in that colour (the detection's colour label is wrong for some text and stall outlines); a line, or a
     // kind with a fixed colour, is not: a yellow kerb line the photo shows white is a light kerb stone, not white paint.
-    const share = Object.fromEntries(PALETTE_COLOURS.map((colour, k) => [colour, gate.supports[c.id][k]]));
-    c.support = share[c.colour];
-    const singleSupport = c.single ? gate.supports[c.id][4 + PALETTE_COLOURS.indexOf(c.colour)] : undefined;
+    const share = Object.fromEntries(GATE_COLOURS.map((colour, k) => [colour, gate.supports[c.id][k]]));
+    c.support = share[c.colour] ?? 0;
+    const singleSupport = c.single ? gate.supports[c.id][4 + GATE_COLOURS.indexOf(c.colour)] : undefined;
     if (c.single && c.support < GATE_SUPPORT && singleSupport >= GATE_SUPPORT) Object.assign(c, { shapes: c.single, support: singleSupport, singled: true });
     if (!c.estimated && c.support < GATE_SUPPORT && c.feature.geometry.type === "Polygon" && !FIXED_COLOUR_KINDS.has(c.kind) && !c.feature.properties.group) {
       // white and yellow only: paint in a cast shadow reads blue-grey, and blue paint is its own kinds
@@ -631,7 +636,7 @@ export async function loadMarkings({ inputs, buildings }) {
       if (c.review || c.byEye) continue;
       if (mean >= GATE_SUPPORT && c.support === undefined) {
         // left out by the context tests: a member of a traced model stands with its group
-        c.support = gate.supports[c.id][PALETTE_COLOURS.indexOf(c.colour)];
+        c.support = GATE_COLOURS.includes(c.colour) ? gate.supports[c.id][GATE_COLOURS.indexOf(c.colour)] : 0;
         c.cells = new Set(c.shapes.flatMap((rings) => gridPoints(rings, step)).map(([x, z]) => `${Math.floor(x / cell)},${Math.floor(z / cell)}`));
         c.dropped = null;
       }
@@ -716,6 +721,7 @@ export async function loadMarkings({ inputs, buildings }) {
     }),
     roadAxes: truth.roadLines,
     textMarkings,
+    baySymbols: JSON.parse(await Bun.file(MARKINGS_BAYS).text()).bays,
     statute: {
       widthFor: lineWidthFor, stopLineWidth, dash: DASH_BY_KIND, doubleOffsetM: DOUBLE_OFFSET_M, zebraPeriodM: ZEBRA_PERIOD_M, zebraBarM: ZEBRA_BAR_M,
     },
@@ -967,8 +973,9 @@ function describeRegular(r) {
     `${r.parallelSnapped} set parallel, ${r.duplicateLines} duplicate lines dropped; straight runs deviate at most ` +
     `${(Math.max(0, ...r.straightness) * 100).toFixed(1)} cm from straight; detected points within ${p95.toFixed(2)} m (p95 of the per-line p95) of the fitted path); ` +
     `dashed lines by statute ${dashes.statute ?? 0}, by the photo's period ${dashes.photo ?? 0}, as detected ${dashes["detected dashes"] ?? 0}; ` +
-    `${r.crossingGroups} bar groups -> ${r.crossings} crossings (${r.crossingRowsAligned} rows on a shared bar grid), ${r.barsDetected} detected bars -> ${r.barsDrawn} equal bars, ` +
+    `${r.crossingGroups} bar groups -> ${r.crossings} crossings (${r.crossingRowsAligned} rows on a shared bar grid, ${r.crossingRowsOwnGrid} rows on their own period and phase), ${r.barsDetected} detected bars -> ${r.barsDrawn} equal bars, ` +
     `${r.stopInCrossing.length} stop lines inside a crossing left out (${r.stopInCrossing.join(", ") || "none"}); ` +
+    `bay symbols: ${r.baySymbols.wheelchair} wheelchairs, ${r.baySymbols.p} P (${r.baySymbols.existing} bays with a drawn symbol, ${r.baySymbols.orientationGuessed} upright direction 추정); ` +
     `${r.stopSquared} stop lines squared to their lane; ${r.rectangles} rectangles, ${r.outlines} snapped outlines; templates: ${glyphs}; ` +
     `left out: ${r.dropped.blocked} on buildings or sidewalks, ${r.dropped.textTooSmall} text blobs too small for a character`;
 }

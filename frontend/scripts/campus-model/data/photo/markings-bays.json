@@ -1,0 +1,53 @@
+{
+  "source": "SCNU 360 VR tour (.cache/vr cube faces) and the NGII 2025 orthophoto sheet 34702020 (0.25 m, 4x chips)",
+  "generated": "2026-10-27",
+  "note": "Bay symbols, keyed by a blue bay piece id (stages/markingsRegular.mjs emitBaySymbols). symbol: wheelchair (default), P (a parking or PM bay painted with a white P; a wheelchair template read from its painted figure gives way) or none; upBearingDeg: the direction the symbol's top points (degrees from north, clockwise; snapped to the bay axis nearest it), read where the bay's open end (aisle) and back (kerb, planting, building) show on the NGII 4x chip or the VR view; cells: the number of bays side by side when the piece's size misleads the row rule. Without upBearingDeg the back is the end that meets a kerb, sidewalk or building, else 추정.",
+  "bays": {
+    "MX00361": {
+      "symbol": "P",
+      "cells": 1,
+      "upBearingDeg": 270,
+      "source": "VR scene_d3 face l: one long blue PM bay along the kerb; the P lies across the bay, its top towards the kerb and PM rack on the west, upright for a driver in the aisle (road) to the east; NGII 4x chip: road east, planting and building west"
+    },
+    "MX00660": {
+      "symbol": "P",
+      "cells": 1,
+      "upBearingDeg": 211,
+      "source": "VR scene_e8 face l: blue PM bay with a white P upright as seen from the station (top away from it); its painted PM figure is not a wheelchair"
+    },
+    "MX00231": {
+      "upBearingDeg": 0,
+      "source": "VR scene_c3 face d: wheelchair upright with its top to the north, aisle on the south road; NGII chip"
+    },
+    "MX00230": {
+      "upBearingDeg": 0,
+      "source": "NGII 4x chip: bay between the buildings (north) and the road with the zebra (south, the aisle)"
+    },
+    "MX01287": {
+      "upBearingDeg": 217,
+      "source": "NGII 4x chip: open end to the asphalt in the north-east, back to the paving in the south-west"
+    },
+    "MX01357": {
+      "upBearingDeg": 180,
+      "source": "NGII 4x chip: last bay of an east-west stall row, aisle north, back the building to the south"
+    },
+    "MX01362": {
+      "upBearingDeg": 270,
+      "source": "NGII 4x chip: first bay of a north-south stall row, aisle east, back the planting to the west"
+    },
+    "MX01371": {
+      "cells": 2,
+      "upBearingDeg": 330,
+      "source": "NGII 4x chip: two bays side by side, back to the building in the north-west, open to the plaza in the south-east"
+    },
+    "MX00267": {
+      "cells": 2,
+      "upBearingDeg": 180,
+      "source": "NGII 4x chip and VR scene_b7 face l: two bays at the end of the row, aisle north, planting south"
+    },
+    "MX00774": {
+      "upBearingDeg": 180,
+      "source": "NGII 4x chip and VR scene_a5 face d: last bay of an east-west stall row, aisle north, trees south"
+    }
+  }
+}

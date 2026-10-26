@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
-  chainFragments, dashPhase, fitCrossing, fitPath, layDashes, measuredPeriod, mergeCrossings, resample, straightness,
+  chainFragments, dashPhase, fitCrossing, fitPeriod, fitPath, layDashes, measuredPeriod, mergeCrossings, resample, straightness,
 } from "./markingFit.mjs";
 
 // Deterministic jitter (no Math.random): a fixed pseudo-random sequence in [-amp, amp].
@@ -126,4 +126,17 @@ test("a crossing split by a median is one bar set; two adjacent rows share one b
     const d = Math.min(...fa.barCentres.map((q) => Math.abs((((c[0] - q[0]) % period) + period) % period)));
     assert.ok(d < 1e-9 || Math.abs(d - period) < 1e-9, `bar off the shared grid by ${d}`);
   }
+});
+
+test("each crossing row fits its own period and phase within the measured range", () => {
+  // a row painted at 0.917 m with an offset phase, bars jittered +-3 cm: its own fit, not the 0.903 m statute grid
+  const t = Array.from({ length: 12 }, (_, k) => 0.23 + k * 0.917 + jitter(k, 0.03));
+  const own = fitPeriod(t, [0.88, 0.93]);
+  assert.ok(Math.abs(own.period - 0.917) <= 0.003, `period ${own.period}`);
+  const bars = t.map((x, k) => ({ id: `r${k}`, centre: [x, 0], axis: [0, 1], length: 3 }));
+  const fit = fitCrossing(bars, { period: 0.903, bar: 0.5, periodRange: [0.88, 0.93] });
+  assert.ok(Math.abs(fit.period - 0.917) <= 0.003);
+  // every detected bar lies within 5 cm of a drawn one (a shared 0.903 m grid would drift 0.15 m over 11 periods)
+  for (const x of t) assert.ok(Math.min(...fit.barCentres.map((c) => Math.abs(c[0] - x))) <= 0.05, `bar at ${x}`);
+  assert.equal(fitPeriod(t.slice(0, 3), [0.88, 0.93]), null, "too few bars: the nominal period");
 });
