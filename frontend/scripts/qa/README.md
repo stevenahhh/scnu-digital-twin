@@ -7,7 +7,8 @@ SwiftShader GL), evaluates the audit checks, compares every captured scenario wi
 ```bash
 bun frontend/scripts/qa/visual-qa.mjs --entry legacy|vworld|both --viewport D|P|both \
   --theme dark|light|both --states S01..S17 --only <ids> --out <dir> [--update-baseline]
-node --test frontend/scripts/qa/lib/*.test.mjs frontend/scripts/qa/checks/*.test.mjs
+bun frontend/scripts/qa/static-checks.mjs [--only <ids>] [--json <path>]
+node --test frontend/scripts/qa/lib/*.test.mjs frontend/scripts/qa/checks/*.test.mjs frontend/scripts/qa/static-checks.test.mjs
 ```
 
 ## Viewports, states, themes
@@ -90,3 +91,11 @@ Checks are written against these hooks now and FAIL until the owning todo adds t
 `[data-qa=sample-badge]`, `[data-qa=campus-label-layer]`, `[data-qa=search-field]`,
 `[data-qa=legend]`, `[data-qa=breadcrumb]`, `[data-qa=camera-controls]`,
 `[data-qa=presentation-toggle]`, `[data-qa=sheet-handle]`, `[data-qa=d4-room-grid]`.
+
+## Static checks
+
+`static-checks.mjs` runs the 101 static rows of AUDIT section 7 and the token lint with no
+browser and prints `PASS|FAIL <id> <count> <first path:line>` per rule; exit 1 on any FAIL.
+`bun run test` runs it as a third stage. Until `scripts/qa/.static-enforced` exists (created by
+todo 21) the stage is advisory: it prints every FAIL line and `static=advisory-fail` but does not
+fail the test run.
