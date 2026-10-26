@@ -13,7 +13,8 @@ try:
     from .mobility_graph import GraphPath, MobilityGraph
     from .od_manager import ODManager
     from .risk_engine import RiskEngine
-    from .runtime_network import load_runtime_graph
+    from .polygon_index import PolygonIndex
+    from .runtime_network import load_polygon_indexes, load_runtime_graph
     from .scenario_manager import ScenarioManager
     from .statistics_manager import StatisticsManager
     from .trip_manager import TripManager
@@ -25,7 +26,8 @@ except ImportError:
     from mobility_graph import GraphPath, MobilityGraph
     from od_manager import ODManager
     from risk_engine import RiskEngine
-    from runtime_network import load_runtime_graph
+    from polygon_index import PolygonIndex
+    from runtime_network import load_polygon_indexes, load_runtime_graph
     from scenario_manager import ScenarioManager
     from statistics_manager import StatisticsManager
     from trip_manager import TripManager
@@ -48,6 +50,9 @@ class SimulationEngine:
         self.seed = seed
         graph_payload, self.network_runtime = load_runtime_graph(self.data_dir)
         self.graph = MobilityGraph(graph_payload)
+        walkable, roads = load_polygon_indexes(self.data_dir)
+        # surface under each agent (crossing over road over the rest where they overlap); None without polygon files
+        self.surface_index = PolygonIndex.merge(*(index for index in (walkable, roads) if index is not None), priority=("crossing", "sidewalk", "plaza", "road", "lot")) if (walkable or roads) else None
         self.routes = self.graph  # compatibility for callers that inspect route_id
         self.scenarios = ScenarioManager(self.data_dir / "sample_scenario.json")
         self.risk_engine = RiskEngine(self.data_dir / "risk_config.json")
@@ -234,6 +239,8 @@ class SimulationEngine:
         entity["in_crosswalk"] = entity["edge_kind"] == "crosswalk" or str(entity.get("road_id")).startswith("CW_")
         entity["in_risk_zone"] = entity.get("road_id") in self.risk_zone_ids
         entity["current_position"] = [round(entity["x"], 3), 0.0, round(entity["z"], 3)]
+        index = getattr(self, "surface_index", None)
+        entity["surface_class"] = index.classify(entity["x"], entity["z"]) if index is not None else None
         entity["previous_position"] = [round(entity["previous_x"], 3), 0.0, round(entity["previous_z"], 3)]
         if entity["type"] == "person":
             if entity.get("trip_status") == "DWELLING":

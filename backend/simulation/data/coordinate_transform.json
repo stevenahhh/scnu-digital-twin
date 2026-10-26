@@ -4,6 +4,7 @@
   "rotation_degrees": 0.0,
   "invert_z": true,
   "wgs84_reference": {"longitude": 127.4764043, "latitude": 34.9700548},
+  "epsg5186_anchor": {"E": 243506.088, "N": 263876.4214},
   "sumo_origin": {"x": 0.0, "z": 0.0},
   "source": "derived from current GLB export scale and CityModel recentering",
   "confidence": 0.5,

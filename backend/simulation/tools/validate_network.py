@@ -53,7 +53,7 @@ def component_count(nodes: Set[str], edges: Iterable[Tuple[str, str]]) -> Tuple[
     return components, largest
 
 
-def validate(network: dict, policy: dict) -> dict:
+def validate(network: dict, policy: dict, walkable=None, roads=None) -> dict:
     errors: List[Dict] = []
     warnings: List[Dict] = []
     nodes = {}
@@ -93,6 +93,17 @@ def validate(network: dict, policy: dict) -> dict:
             warnings.append({"code": "KERB_ABOVE_LEGAL_CAP", "feature_id": edge.feature_id, "kerb_height_m": kerb})
         if kind == "crosswalk" and numeric(width) and width < 4.0:
             warnings.append({"code": "CROSSING_NARROWER_THAN_4M", "feature_id": edge.feature_id, "width_m": width})
+
+    if walkable is not None or roads is not None:
+        from simulation.tools.build_graph import POLYGON_SHARE, polygon_shares
+        for edge in edges:
+            props = edge.properties
+            if props.get("estimated"):
+                continue
+            kind = normalize_kind(str(props.get("kind") or ""), policy)
+            for agent, share in polygon_shares(edge.coordinates, kind, walkable, roads).items():
+                if agent in (props.get("allowed_types") or []) and share < POLYGON_SHARE:
+                    warnings.append({"code": "EDGE_OUTSIDE_POLYGONS", "feature_id": edge.feature_id, "agent_type": agent, "share": round(share, 3)})
 
     for position, identifiers in duplicate_positions.items():
         if len(identifiers) > 1:
@@ -185,6 +196,12 @@ def validate(network: dict, policy: dict) -> dict:
     }
 
 
+def load_polygon_indexes(data_dir: Path):
+    from simulation.polygon_index import PolygonIndex
+    walkable_path, road_path = data_dir / "walkable_polygons.geojson", data_dir / "road_polygons.geojson"
+    return (PolygonIndex.load(walkable_path) if walkable_path.exists() else None, PolygonIndex.load(road_path) if road_path.exists() else None)
+
+
 def markdown(report: dict, network_path: Path) -> str:
     summary = report["summary"]
     lines = [
@@ -211,7 +228,8 @@ def main() -> None:
     parser.add_argument("--json", type=Path, default=DATA / "network_validation.json")
     parser.add_argument("--markdown", type=Path, default=DATA / "network_validation.md")
     args = parser.parse_args()
-    report = validate(load_feature_collection(args.network), load_policy(args.policy))
+    walkable, roads = load_polygon_indexes(args.network.parent)
+    report = validate(load_feature_collection(args.network), load_policy(args.policy), walkable, roads)
     args.json.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     args.markdown.write_text(markdown(report, args.network), encoding="utf-8")
     print(json.dumps(report["summary"], ensure_ascii=False))

@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 
 import pytest
@@ -20,16 +21,26 @@ def test_transport_source_of_truth_is_the_default_runtime(monkeypatch):
     assert all(entity["route_geometry"] == "derived_offset" for entity in engine.entities.values())
 
 
-def test_research_runtime_rejects_derived_only_network():
+def test_research_runtime_rejects_derived_only_network(tmp_path):
+    # The shipped network now has measured (authoritative) edges, so the derived-only case is the derived-v1 baseline.
+    data = tmp_path / "data"
+    data.mkdir()
+    (tmp_path / "config").mkdir()
+    shutil.copy(DATA / "campus_transport_network.derived-v1.geojson", data / "campus_transport_network.geojson")
+    shutil.copy(DATA.parent / "config" / "mobility_policy.json", tmp_path / "config" / "mobility_policy.json")
+    for name in ("walkable_polygons.geojson", "road_polygons.geojson"):
+        shutil.copy(DATA / name, data / name)
     with pytest.raises(ValueError, match="승인된"):
-        load_runtime_graph(DATA, mode="research")
+        load_runtime_graph(data, mode="research")
 
 
 def test_derived_shared_path_has_agent_specific_lateral_offset():
     payload, _ = load_runtime_graph(DATA, mode="transport-derived")
     graph = MobilityGraph(payload)
     path = graph.shortest_path("BLD_D4", "BLD_C1", "person")
-    segment = next(index for index, kind in enumerate(path.edge_kinds) if kind == "shared_path")
+    # a segment inside a derived shared path (its neighbours too), where the offset is not ramped down to a neighbour
+    kinds = path.edge_kinds
+    segment = next(index for index in range(1, len(kinds) - 1) if kinds[index - 1] == kinds[index] == kinds[index + 1] == "shared_path" and path.edge_derived[index])
     distance = (path.cumulative_lengths[segment] + path.cumulative_lengths[segment + 1]) / 2
     raw_x, raw_z, _, _ = graph.interpolate(path, distance)
     person_x, person_z, _, _ = graph.interpolate(path, distance, "person")
@@ -89,7 +100,8 @@ def test_default_population_is_distributed_across_campus_extent():
     assert len({(int(x // 100), int(z // 100)) for x, z in positions}) >= 22
     coverage = engine.statistics()["network_coverage"]
     assert coverage["car"]["planned_percent"] > 30
-    assert coverage["person"]["planned_percent"] > 60
+    # 341 person edges now include the A003 sidewalk strips away from the demo OD corridors (was 182 derived copies)
+    assert coverage["person"]["planned_percent"] > 35
     # Scooter has access to both derived road and shared-path duplicates, so
     # its denominator is 360 edges; 20% still represents broad campus routes.
     assert coverage["scooter"]["planned_percent"] > 18

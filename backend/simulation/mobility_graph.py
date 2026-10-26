@@ -31,6 +31,7 @@ class GraphEdge:
     derived: bool = True
     width_m: float | None = None
     lanes: int = 1
+    estimated: bool = False
 
 
 @dataclass(frozen=True)
@@ -61,6 +62,8 @@ class MobilityGraph:
     def __init__(self, source: str | Path | Dict) -> None:
         payload = dict(source) if isinstance(source, dict) else load_json(source)
         self.metadata = dict(payload.get("metadata") or {})
+        # route_cost_multipliers (mobility_policy.json): {agent: {kind | kind + "_estimated": factor}}
+        self.cost_multipliers = dict(self.metadata.get("route_cost_multipliers") or {})
         self.derived_lateral_offsets = dict(self.metadata.get("derived_lateral_offsets_m") or {
             "person": {"shared_path": 2.8, "sidewalk": 2.8},
             "scooter": {"shared_path": 1.4, "sidewalk": 1.4, "bike_lane": 1.4, "scooter_lane": 1.4, "allowed_road": -1.0},
@@ -86,6 +89,7 @@ class MobilityGraph:
                 derived=bool(raw.get("derived", True)),
                 width_m=float(raw["width_m"]) if raw.get("width_m") is not None else None,
                 lanes=int(raw.get("lanes") or 1),
+                estimated=bool(raw.get("estimated", False)),
             )
             self.edges[edge.edge_id] = edge
             self.adjacency[edge.source].append((edge.target, edge, False))
@@ -116,6 +120,12 @@ class MobilityGraph:
         }
         return preferences.get(agent_type, {}).get(kind, 1.0)
 
+    def _policy_multiplier(self, agent_type: str, edge: GraphEdge) -> float:
+        table = self.cost_multipliers.get(agent_type) or {}
+        if edge.estimated and f"{edge.kind}_estimated" in table:
+            return float(table[f"{edge.kind}_estimated"])
+        return float(table.get(edge.kind, 1.0))
+
     def shortest_path(
         self,
         origin: str,
@@ -138,7 +148,7 @@ class MobilityGraph:
                 if agent_type not in edge.allowed_types:
                     continue
                 factor = max(0.1, float((edge_cost_factors or {}).get(edge.edge_id, 1.0)))
-                candidate = cost + edge.length * self._kind_cost(agent_type, edge.kind) * factor
+                candidate = cost + edge.length * self._kind_cost(agent_type, edge.kind) * self._policy_multiplier(agent_type, edge) * factor
                 if candidate < distance.get(neighbor, math.inf):
                     distance[neighbor] = candidate
                     previous[neighbor] = (node_id, edge, reverse)

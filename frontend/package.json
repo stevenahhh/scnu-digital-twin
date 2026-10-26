@@ -12,7 +12,8 @@
     "model:fetch": "bun scripts/campus-model/fetch-sources.mjs",
     "model:build": "bun scripts/campus-model/build-campus-model.mjs && bun scripts/campus-model/pack.mjs",
     "model:pack": "bun scripts/campus-model/pack.mjs",
-    "model:precompress": "bun scripts/campus-model/pack.mjs --precompress"
+    "model:precompress": "bun scripts/campus-model/pack.mjs --precompress",
+    "network:build": "bun scripts/campus-model/network/buildNetwork.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.122.0",
