@@ -78,8 +78,9 @@ function storeyFor(part, isSCNU, medians) {
 }
 
 // Roof-slab height in metres (the 0.9 m parapet is added on top as geometry, see PARAPET), where it came from and
-// its lineage (heightLineage: gis-height, curated:scnu-facades, floors x median; uni.glb-outline and assumed are set
-// by the callers, vr-floors x median is reserved for VR storey counts), or null when the record has neither a
+// its lineage (heightLineage: gis-height, curated:scnu-facades, floors x median, or vr-floors x median when the floor
+// count was read in the SCNU 360 VR tour (floorsSource "VR scene_..."); uni.glb-outline and assumed are set by the
+// callers), or null when the record has neither a
 // height nor a floor count. A curated height (data/scnu-facades.json) wins; a source height is used when it gives
 // MIN-MAX_STOREY_METRES per storey (or when floors are unknown); otherwise floors x the class storey median.
 // maxStorey exists so the build can log what the former 6.5 m limit would have given.
@@ -97,7 +98,7 @@ export function heightOf(part, isSCNU, medians, maxStorey = MAX_STOREY_METRES) {
     return {
       heightMetres: Math.max(floors * storey.metres, MIN_HEIGHT),
       heightSource: `estimated: ${floors} floors x ${storey.metres} m (${storey.cls} storey median)`,
-      heightLineage: "floors x median",
+      heightLineage: /^VR scene_/.test(part.floorsSource ?? "") ? "vr-floors x median" : "floors x median",
       storeyMetresUsed: storey.metres,
     };
   }
@@ -1438,6 +1439,9 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
   const bySource = Object.groupBy(heightLog, (entry) => entry.heightSource.replace(/: .*/, ""));
   console.log(`height sources: ${Object.entries(bySource).map(([key, list]) => `${key} ${list.length}`).join(", ")}; ` +
     `floor rule used for ${(bySource.estimated ?? []).length} buildings: ${(bySource.estimated ?? []).map((e) => e.label).join(", ")}`);
+  const byLineage = Object.groupBy([...selectableBuildings, ...campusBuildings], (b) => b.heightLineage);
+  console.log(`height lineage: ${Object.entries(byLineage).map(([key, list]) => `${key} ${list.length}`).join(", ")}; ` +
+    `vr-floors x median: ${(byLineage["vr-floors x median"] ?? []).map((b) => b.label ?? b.displayName ?? b.nodeName).join(", ") || "none"}`);
   console.log(`floor/height corrections (data/scnu-facades.json): ${corrections.length}`);
   for (const line of corrections) console.log(`  ${line}`);
   console.log(`storey-height rule (2.5-5 m per storey, was 2.5-6.5 m) changed ${ratioChanges.length}: ${ratioChanges.join("; ") || "none"}`);

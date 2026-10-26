@@ -265,7 +265,7 @@ storey median used, or null):
 | `curated:scnu-facades` | a `heightMetres` override in `data/scnu-facades.json` |
 | `uni.glb-outline` | a `BLD_*` node with no floor data kept its `uni.glb` outline height |
 | `floors x median` | floors x the class storey median |
-| `vr-floors x median` | reserved: storey count read in the SCNU 360 VR tour x the class median |
+| `vr-floors x median` | floors x the class storey median, the floor count read in the SCNU 360 VR tour (`floorsSource` starting `VR scene_`; a valid GIS height still wins) |
 | `assumed` | no height and no floors: assumed storey count x the class median |
 
 The lineage describes the height rule; a building whose form comes from `data/building-forms.json` (VWorld LOD4
