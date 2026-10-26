@@ -140,3 +140,51 @@ export function aggregate(tiles) {
     maxShiftPx,
   };
 }
+
+// ---------------------------------------------------------------- before/after comparison (--compare)
+// A `<window>-side.png` is render | 8 px gap | photo. The left half is render-only (no photo pixels), safe for PR images.
+export const SIDE_GAP = 8;
+export function renderHalf(pixels, width, height, channels = 3) {
+  const w = (width - SIDE_GAP) / 2;
+  if (!Number.isInteger(w) || w <= 0) throw new Error(`not a side-by-side image: width ${width}`);
+  const out = new Uint8Array(w * height * 3);
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < w; x += 1) {
+      const s = (y * width + x) * channels;
+      out.set([pixels[s], pixels[s + 1], pixels[s + 2]], (y * w + x) * 3);
+    }
+  }
+  return { pixels: out, width: w, height };
+}
+
+// Two RGB images of the same size side by side with the same gap (before left, after right).
+export function sideBySide(a, b) {
+  if (a.width !== b.width || a.height !== b.height) throw new Error("before and after differ in size");
+  const W = a.width * 2 + SIDE_GAP;
+  const out = new Uint8Array(W * a.height * 3).fill(17);
+  for (let y = 0; y < a.height; y += 1) {
+    out.set(a.pixels.subarray(y * a.width * 3, (y + 1) * a.width * 3), y * W * 3);
+    out.set(b.pixels.subarray(y * b.width * 3, (y + 1) * b.width * 3), (y * W + a.width + SIDE_GAP) * 3);
+  }
+  return { pixels: out, width: W, height: a.height };
+}
+
+// Per-tile (and per-window) dx/dy before vs after as a Markdown table, with the PASS counts of both runs.
+export function residualsMarkdown(before, after) {
+  const key = (t) => `${t.E0},${t.N0}`;
+  const prior = new Map(before.tiles.map((t) => [key(t), t]));
+  const cell = (t) => (t ? `${t.dx}, ${t.dy} ${t.signal ? (t.pass ? "PASS" : "FAIL") : "no signal"}` : "-");
+  const passed = (run) => run.tiles.filter((t) => t.signal && t.pass).length;
+  const lines = [
+    `before: ${passed(before)}/${before.signalTiles} signal tiles within ${before.thresholds?.passPx ?? 1} px (pass ${before.pass}); after: ${passed(after)}/${after.signalTiles} (pass ${after.pass})`,
+    "",
+    "| tile E0, N0 | before dx, dy | after dx, dy |",
+    "| --- | --- | --- |",
+    ...after.tiles.map((t) => `| ${key(t)} | ${cell(prior.get(key(t)))} | ${cell(t)} |`),
+  ];
+  const windows = new Map((before.windows ?? []).map((w) => [w.name, w]));
+  if (after.windows?.length) {
+    lines.push("", "| window | before dx, dy | after dx, dy |", "| --- | --- | --- |", ...after.windows.map((w) => `| ${w.name} | ${cell(windows.get(w.name))} | ${cell(w)} |`));
+  }
+  return `${lines.join("\n")}\n`;
+}
