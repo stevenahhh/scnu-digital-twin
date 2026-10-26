@@ -154,9 +154,3 @@
     --text-micro-leading: 16px;
   }
 }
-
-@media (max-width: 439px) {
-  :root {
-    --dashboard-panel-width: 100vw;
-  }
-}

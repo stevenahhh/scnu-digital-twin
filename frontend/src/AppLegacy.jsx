@@ -8,14 +8,14 @@ import { useCampusCamera } from "./camera/useCampusCamera.mjs";
 import { useSceneWeather } from "./weather/useSceneWeather.mjs";
 import { isD4ElementId } from "./utils/d4BuildingData.mjs";
 import { CampusHud } from "./components/CampusHud";
+import { sceneTimeReadout } from "./components/HudTimeReadout";
 import { SceneLoadingNotice } from "./components/SceneLoadingNotice";
 import { MicroclimatePanel } from "./components/MicroclimatePanel";
 import { PanelErrorBoundary } from "./components/PanelErrorBoundary";
 import { useSimulationSocket } from "./simulation";
 import { D4SectionExperience } from "./vworld/D4SectionExperience";
 import { createPlanDraftFromExisting } from "./features/energy/installations/installationPlanApi.mjs";
-import { usePanelCoversViewport } from "./hooks/usePanelCoversViewport";
-import { useInert } from "./hooks/useInert.mjs";
+import { useViewportMode } from "./hooks/useViewportMode.mjs";
 import { useWeatherFeed } from "./hooks/useWeatherFeed";
 import { useTrafficFeed } from "./simulation/hooks/useTrafficFeed";
 import { usePopupData } from "./hooks/usePopupData.mjs";
@@ -24,8 +24,8 @@ import { useSelectionState } from "./hooks/useSelectionState.mjs";
 import { useSunClock } from "./hooks/useSunClock.mjs";
 import { useThemeMode } from "./hooks/useThemeMode.mjs";
 import { useLegacyBuildingFlow } from "./hooks/useLegacyBuildingFlow.mjs";
-import { DashboardPanel } from "./panel/DashboardPanel";
-import { PanelToggle } from "./panel/PanelToggle";
+import { DashboardShell, shellInsetRight } from "./panel/DashboardShell";
+import { usePanelState } from "./panel/usePanelState.mjs";
 import { BasicStatusTab } from "./panel/BasicStatusTab";
 import { ParkingSafetyTab } from "./panel/ParkingSafetyTab";
 import { EnergyTab } from "./panel/EnergyTab";
@@ -55,16 +55,14 @@ function Dashboard() {
   const orbitControlsRef = useRef(null);
   const panelRef = useRef(null);
   const mapLayerRef = useRef(null);
-  const sceneStatusRef = useRef(null);
   const hudRef = useRef(null);
-  const panelToggleRef = useRef(null);
   // 캠퍼스 라벨은 이 조작 UI 밑에 그려지므로, 겹치는 라벨은 CityModel이 숨긴다.
-  const labelChromeRefs = useMemo(() => [hudRef, panelToggleRef], []);
+  const labelChromeRefs = useMemo(() => [hudRef], []);
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [isPanelOpen, setIsPanelOpen] = useState(true);
+  const viewportMode = useViewportMode();
+  const panelState = usePanelState(viewportMode);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const closeSettings = useCallback(() => setIsSettingsOpen(false), []);
-  const togglePanel = () => setIsPanelOpen((open) => !open);
   const [isTimePlaying, setIsTimePlaying] = useState(false);
   const [isSceneLoading, setIsSceneLoading] = useState(false);
   const [themeMode, setThemeMode] = useThemeMode();
@@ -86,7 +84,7 @@ function Dashboard() {
   const flow = useLegacyBuildingFlow({
     selection,
     popup,
-    panel: { activeTab, setActiveTab, setIsPanelOpen },
+    panel: { activeTab, setActiveTab, setIsPanelOpen: panelState.setProgrammaticOpen },
     activePresetRef: camera.activePresetRef,
     onSectionExit: plans.refreshAll,
   });
@@ -96,16 +94,11 @@ function Dashboard() {
     interactionDpr,
     modalOpen: !isCampus,
     selectionKey: `${selection.selectedId}|${clock.sunState.visible}|${isSceneLoading}`,
-    panelKey: `${isPanelOpen}|${activeTab}|${flow.buildingViewMode}`,
+    panelKey: `${panelState.open}|${panelState.detent}|${activeTab}|${flow.buildingViewMode}`,
   });
 
-  const isPanelVisible = isCampus && isPanelOpen;
-  const panelCoversViewport = usePanelCoversViewport();
-  const isMapCoveredByPanel = isPanelVisible && panelCoversViewport;
-  // 3D 지도 위 안내는 열린 패널을 뺀 지도 영역 가운데에 둔다.
-  const mapInsetRight = isPanelVisible && !panelCoversViewport ? "var(--dashboard-panel-width)" : "0px";
-  useInert([panelRef], !isPanelVisible, []);
-  useInert([mapLayerRef, sceneStatusRef, hudRef], isMapCoveredByPanel, [isSceneLoading, flow.buildingViewMode]);
+  // 지도·HUD·안내는 패널(또는 레일)이 차지한 오른쪽 폭만큼 비켜 선다. 폰 시트 위 장면은 계속 조작할 수 있다.
+  const mapInsetRight = shellInsetRight(viewportMode, panelState.open);
 
   const summary = summarizeWeather({ feed: weatherFeed, mode: clock.mode, simTemp: clock.simTemp });
   const sceneWeather = useSceneWeather({ weatherData: weatherFeed.data, weatherState: weatherFeed.state });
@@ -140,7 +133,7 @@ function Dashboard() {
       {isCampus && (
         <CampusHud
           ref={hudRef}
-          hidden={isMapCoveredByPanel}
+          mode={viewportMode}
           insetRight={mapInsetRight}
           camera={camera}
           clock={clock}
@@ -166,7 +159,7 @@ function Dashboard() {
           onLoadingChange: setIsSceneLoading,
         }}
       />
-      {isSceneLoading && <SceneLoadingNotice ref={sceneStatusRef} insetRight={mapInsetRight} />}
+      {isSceneLoading && <SceneLoadingNotice insetRight={mapInsetRight} />}
 
       {!isCampus && (
         <D4SectionExperience
@@ -183,11 +176,15 @@ function Dashboard() {
         />
       )}
 
-      {isCampus && <PanelToggle ref={panelToggleRef} open={isPanelOpen} onToggle={togglePanel} />}
-
-      <DashboardPanel
+      <DashboardShell
         ref={panelRef}
-        visible={isPanelVisible}
+        mode={viewportMode}
+        open={panelState.open}
+        onOpenChange={panelState.setUserOpen}
+        detent={panelState.detent}
+        onDetentChange={panelState.setDetent}
+        hidden={!isCampus}
+        timeReadout={sceneTimeReadout(clock.sceneMinuteOfDay)}
         activeTab={activeTab}
         onTabChange={changeTab}
         extraTabs={microclimateTab}
@@ -247,7 +244,7 @@ function Dashboard() {
             <EnvironmentTab clock={clock} />
           </PanelErrorBoundary>
         )}
-      </DashboardPanel>
+      </DashboardShell>
 
       {isSettingsOpen && (
         <SettingsDialog

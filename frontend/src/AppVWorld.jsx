@@ -6,8 +6,7 @@ import { MicroclimatePanel } from "./components/MicroclimatePanel";
 import { PanelErrorBoundary } from "./components/PanelErrorBoundary";
 import { useSimulationSocket } from "./simulation";
 import { createPlanDraftFromExisting } from "./features/energy/installations/installationPlanApi.mjs";
-import { usePanelCoversViewport } from "./hooks/usePanelCoversViewport";
-import { useInert } from "./hooks/useInert.mjs";
+import { useViewportMode } from "./hooks/useViewportMode.mjs";
 import { useWeatherFeed } from "./hooks/useWeatherFeed";
 import { useTrafficFeed } from "./simulation/hooks/useTrafficFeed";
 import { usePopupData } from "./hooks/usePopupData.mjs";
@@ -15,8 +14,10 @@ import { useInstallationPlans } from "./hooks/useInstallationPlans.mjs";
 import { useSelectionState } from "./hooks/useSelectionState.mjs";
 import { useSunClock } from "./hooks/useSunClock.mjs";
 import { useThemeMode } from "./hooks/useThemeMode.mjs";
-import { DashboardPanel } from "./panel/DashboardPanel";
-import { PanelToggle } from "./panel/PanelToggle";
+import { DashboardShell, shellInsetRight } from "./panel/DashboardShell";
+import { usePanelState } from "./panel/usePanelState.mjs";
+import { Wordmark } from "./panel/Wordmark";
+import { HudTimeReadout, sceneTimeReadout } from "./components/HudTimeReadout";
 import { BasicStatusTab } from "./panel/BasicStatusTab";
 import { ParkingSafetyTab } from "./panel/ParkingSafetyTab";
 import { EnergyTab } from "./panel/EnergyTab";
@@ -41,7 +42,8 @@ export default function App() {
   const panelRef = useRef(null);
   const [editorRequest, setEditorRequest] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [isPanelOpen, setIsPanelOpen] = useState(true);
+  const viewportMode = useViewportMode();
+  const panelState = usePanelState(viewportMode);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const closeSettings = useCallback(() => setIsSettingsOpen(false), []);
   // D4 상세 화면(자체 대화상자)이 열린 동안에는 건물 팝업을 띄우지 않는다. 화면 뒤에 가린 팝업이 키보드 포커스를 가두지 않게 한다.
@@ -75,10 +77,8 @@ export default function App() {
     plans.refreshAll();
   };
 
-  const isPanelVisible = isPanelOpen && !isD4SectionOpen;
-  const panelCoversViewport = usePanelCoversViewport();
-  const mapInsetRight = isPanelVisible && !panelCoversViewport ? "var(--dashboard-panel-width)" : "0px";
-  useInert([panelRef], !isPanelVisible);
+  // 지도 위 문구·버튼과 야간 음영은 패널(또는 레일)이 차지한 오른쪽 폭만큼 비켜 선다.
+  const mapInsetRight = isD4SectionOpen ? "0px" : shellInsetRight(viewportMode, panelState.open);
 
   // 루트는 overflow: clip으로 자른다. hidden은 스크롤 컨테이너라서 Tab 포커스가 화면 밖 요소로 가면 대시보드가 밀려 남는다.
   return (
@@ -98,7 +98,6 @@ export default function App() {
           onInstallationPlansChange={plans.onPlansChange}
           onRepresentativeInstallationPlanChange={plans.onRepresentativeChange}
           representativeRefreshKey={plans.overlayRefreshKey}
-          overlaysCovered={isPanelVisible && panelCoversViewport}
           overlayInsetRight={mapInsetRight}
           // 야간 음영·햇빛·그라데이션은 지도 영상만 어둡게 해야 하므로 렌더러가 지도 바로 위·지도 위 문구와 버튼 아래에 그린다.
           mapBackdrop={(
@@ -107,14 +106,14 @@ export default function App() {
                 id="vworld-available-area"
                 className="pointer-events-none absolute bottom-0 left-0 top-0 z-[1] transition-[right,background-color] duration-300"
                 style={{
-                  right: isPanelVisible ? "var(--dashboard-panel-width)" : "0px",
+                  right: mapInsetRight,
                   backgroundColor: `rgba(3, 10, 24, ${lighting.nightOpacity})`,
                 }}
               />
               <div
                 className="pointer-events-none absolute bottom-0 left-0 top-0 z-[2] transition-[right,opacity] duration-300"
                 style={{
-                  right: isPanelVisible ? "var(--dashboard-panel-width)" : "0px",
+                  right: mapInsetRight,
                   background: `radial-gradient(circle at ${lighting.glowX}% ${lighting.glowY}%, `
                     + `rgba(255, 218, 138, ${lighting.glowOpacity}) 0%, transparent 42%)`,
                 }}
@@ -124,11 +123,26 @@ export default function App() {
         />
       </div>
 
-      {!isD4SectionOpen && <PanelToggle open={isPanelOpen} onToggle={() => setIsPanelOpen((open) => !open)} />}
+      {!isD4SectionOpen && (
+        <div
+          data-qa="campus-hud"
+          className="pointer-events-none absolute left-0 top-0 z-[6] flex items-start gap-2 p-4 transition-[right] duration-300"
+          style={{ right: mapInsetRight }}
+        >
+          <HudTimeReadout minuteOfDay={clock.sceneMinuteOfDay} />
+          {viewportMode !== "phone" && <Wordmark className="ml-auto mt-2.5 text-ink-muted" />}
+        </div>
+      )}
 
-      <DashboardPanel
+      <DashboardShell
         ref={panelRef}
-        visible={isPanelVisible}
+        mode={viewportMode}
+        open={panelState.open}
+        onOpenChange={panelState.setUserOpen}
+        detent={panelState.detent}
+        onDetentChange={panelState.setDetent}
+        hidden={isD4SectionOpen}
+        timeReadout={sceneTimeReadout(clock.sceneMinuteOfDay)}
         activeTab={activeTab}
         onTabChange={setActiveTab}
         footer={weatherFeed.state === "error" && (
@@ -160,7 +174,7 @@ export default function App() {
             <EnvironmentTab clock={clock} />
           </PanelErrorBoundary>
         )}
-      </DashboardPanel>
+      </DashboardShell>
 
       {/* 건물 미기후 팝업: VWorld는 탭이 아니라 지도 위 대화상자로 보여 준다(의도된 차이). */}
       <AccessibleDialog

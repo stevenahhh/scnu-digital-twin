@@ -232,17 +232,14 @@ describe("VWorldRenderer retained map integration", () => {
     expect(returnFocusRef.current).toBe(opener);
   });
 
-  it("takes the map overlays out of focus while the open dashboard panel covers the map, but never the D4 detail", async () => {
+  it("keeps the map overlays focusable (the phone sheet leaves the map usable) and never puts the D4 detail inside them", async () => {
     mocks.vw = createVw();
     window.__scnuVWorldMapInstance = retainedMap();
     const simulationDate = new Date("2026-05-18T12:00:00+09:00");
-    const { rerender } = render(<VWorldRenderer onSelection={vi.fn()} simulationDate={simulationDate} overlaysCovered />);
+    render(<VWorldRenderer onSelection={vi.fn()} simulationDate={simulationDate} overlayInsetRight="0px" />);
 
     const opener = await screen.findByRole("button", { name: "D4 공과대학 3호관 상세 보기" });
     const overlays = opener.closest('[data-qa="vworld-map-overlays"]');
-    expect(overlays.hasAttribute("inert")).toBe(true);
-
-    rerender(<VWorldRenderer onSelection={vi.fn()} simulationDate={simulationDate} overlaysCovered={false} />);
     expect(overlays.hasAttribute("inert")).toBe(false);
 
     fireEvent.click(opener);

@@ -137,8 +137,10 @@ const countCalls = (fetchMock, fragment) =>
   fetchMock.mock.calls.filter(([url]) => String(url).includes(fragment)).length;
 
 beforeEach(() => {
+  // 패널을 열어 둔 채 떠난 재방문 사용자. 첫 방문(레일로 시작)은 panel/DashboardShell.test.jsx가 다룬다.
+  vi.stubGlobal("localStorage", { getItem: (key) => (key === "scnu.panelOpen" ? "true" : null), setItem() {} });
   stubFetch();
-  window.matchMedia = vi.fn(() => ({ matches: false }));
+  window.matchMedia = vi.fn(() => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
   controlsMock.current = controlsMock.create();
   progressMock.state = { active: false, loaded: 0, total: 0, progress: 0, item: "", errors: [] };
   fileLoaderMock.loads.length = 0;
@@ -156,6 +158,8 @@ afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
 });
+
+const phoneMatchMedia = vi.fn((query) => ({ matches: query === "(max-width: 639px)" || query === "(max-width: 1023px)", addEventListener() {}, removeEventListener() {} }));
 
 describe("Legacy and VWorld feature parity", () => {
   it("renders the VWorld campus status and full energy surfaces inside the energy tab", () => {
@@ -273,31 +277,27 @@ describe("Legacy and VWorld feature parity", () => {
     }
   });
 
-  it("takes the 3D map out of focus while the open panel covers a narrow viewport, and hands CityModel the panel that hides labels", () => {
-    vi.stubGlobal("innerWidth", 390);
+  it("keeps the 3D map interactive above the phone bottom sheet, and hands CityModel the sheet that hides labels", () => {
+    window.matchMedia = phoneMatchMedia;
     const { container } = render(<App />);
     const mapLayer = container.querySelector('[data-qa="campus-map-layer"]');
-    expect(sceneMock.cityModelProps.occluderRef.current).toBe(container.querySelector('[data-qa="dashboard-panel"]'));
-    expect(mapLayer.hasAttribute("inert")).toBe(true);
-
-    fireEvent.click(screen.getByRole("button", { name: "패널 닫기" }));
+    const sheet = container.querySelector('[data-qa="dashboard-panel"]');
+    expect(sheet.dataset.detent).toBe("peek");
+    expect(sceneMock.cityModelProps.occluderRef.current).toBe(sheet);
     expect(mapLayer.hasAttribute("inert")).toBe(false);
 
     fireEvent.click(screen.getByRole("button", { name: "패널 열기" }));
-    expect(mapLayer.hasAttribute("inert")).toBe(true);
-
-    vi.stubGlobal("innerWidth", 1024);
-    fireEvent(window, new Event("resize"));
+    expect(sheet.dataset.detent).toBe("half");
     expect(mapLayer.hasAttribute("inert")).toBe(false);
   });
 
-  it("hands CityModel the map chrome (HUD layer and panel toggle) that campus labels must stay beneath", () => {
+  it("hands CityModel the map chrome (HUD layer) that campus labels must stay beneath; the panel and its rail are the occluder", () => {
     const { container } = render(<App />);
     const chrome = sceneMock.cityModelProps.chromeRefs.map((ref) => ref.current);
     const hud = container.querySelector('[data-qa="campus-hud"]');
     expect(chrome).toContain(hud);
     expect(hud.hasAttribute("data-label-chrome-layer")).toBe(true);
-    expect(chrome).toContain(screen.getByRole("button", { name: "패널 닫기" }));
+    expect(sceneMock.cityModelProps.occluderRef.current).toBe(container.querySelector('[data-qa="dashboard-panel"]'));
     // 라벨 층은 지면 시점(정문)에서 거리 단계로 바뀌므로 눌린 시점을 함께 받는다.
     expect(sceneMock.cityModelProps.activePresetId).toBe("overview");
     fireEvent.click(presetButton(container, "gate"));
@@ -393,7 +393,7 @@ describe("Legacy and VWorld feature parity", () => {
       expect(notice.className).toMatch(/\bpx-10\b/);
 
       fireEvent.click(screen.getByRole("button", { name: "패널 닫기" }));
-      expect(notice.style.right).toBe("0px");
+      expect(notice.style.right).toBe("var(--dashboard-rail-width)");
 
       fireEvent.click(screen.getByRole("button", { name: "패널 열기" }));
       expect(notice.style.right).toBe("var(--dashboard-panel-width)");
@@ -501,7 +501,7 @@ describe("Legacy and VWorld feature parity", () => {
   });
 
   it("jumps instead of animating when the user prefers reduced motion", () => {
-    window.matchMedia = vi.fn((query) => ({ matches: query.includes("prefers-reduced-motion") }));
+    window.matchMedia = vi.fn((query) => ({ matches: query.includes("prefers-reduced-motion"), addEventListener() {}, removeEventListener() {} }));
     const { container } = render(<App />);
     const controls = controlsMock.current;
     const d4 = presetButton(container, "d4");
@@ -623,7 +623,7 @@ describe("Legacy and VWorld feature parity", () => {
       expect(frame.className).toMatch(/\bpx-10\b/);
 
       fireEvent.click(screen.getByRole("button", { name: "패널 닫기" }));
-      expect(frame.style.right).toBe("0px");
+      expect(frame.style.right).toBe("var(--dashboard-rail-width)");
     } finally {
       sceneMock.fail = false;
       errorSpy.mockRestore();

@@ -41,7 +41,8 @@ afterEach(() => {
 describe("Legacy dashboard clock", () => {
   it("ticks the panel clock every second without committing the dashboard", async () => {
     vi.useFakeTimers({ now: new Date("2026-10-26T03:00:00.000Z") });
-    window.matchMedia = vi.fn(() => ({ matches: false }));
+    window.matchMedia = vi.fn(() => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+    vi.stubGlobal("localStorage", { getItem: (key) => (key === "scnu.panelOpen" ? "true" : null), setItem() {} });
     vi.stubGlobal("fetch", vi.fn(() => new Promise(() => {})));
     render(<App />);
     // 첫 화면의 전환 애니메이션(그리기 루프를 잠시 always로 돌리는 3초)이 끝날 때까지 먼저 보낸다.

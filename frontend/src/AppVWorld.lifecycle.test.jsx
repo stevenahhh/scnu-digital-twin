@@ -30,15 +30,19 @@ vi.mock("./features/energy/campus/CampusComparisonPanel", () => ({ CampusCompari
 import App from "./AppVWorld.jsx";
 
 beforeEach(() => {
+  // 패널을 열어 둔 채 떠난 재방문 사용자. 첫 방문(레일로 시작)은 panel/DashboardShell.test.jsx가 다룬다.
+  vi.stubGlobal("localStorage", { getItem: (key) => (key === "scnu.panelOpen" ? "true" : null), setItem() {} });
   vi.stubGlobal("fetch", vi.fn(async (url) => String(url).includes("/popup")
     ? { ok: false, status: 404, json: async () => null }
     : { ok: true, status: 200, json: async () => ({ base_weather: { temperature: 20 }, weather_timeline: [] }) }));
-  window.matchMedia = vi.fn(() => ({ matches: false }));
+  window.matchMedia = vi.fn(() => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
 });
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
 });
+
+const phoneMatchMedia = vi.fn((query) => ({ matches: query === "(max-width: 639px)" || query === "(max-width: 1023px)", addEventListener() {}, removeEventListener() {} }));
 
 describe("AppVWorld installation selection lifecycle", () => {
   it("does not let an older same-building representative load overwrite a newer selection", async () => {
@@ -62,23 +66,18 @@ describe("AppVWorld installation selection lifecycle", () => {
     expect(await screen.findByRole("dialog", { name: "D4" })).toBeTruthy();
   });
 
-  it("marks the map overlays covered only while the open panel spans a narrow viewport", async () => {
-    vi.stubGlobal("innerWidth", 390);
+  it("keeps the map overlays full width and interactive above the phone bottom sheet", async () => {
+    window.matchMedia = phoneMatchMedia;
     const user = userEvent.setup();
-    render(<App />);
+    const { container } = render(<App />);
     const renderer = screen.getByTestId("vworld-renderer");
-    expect(renderer.dataset.overlaysCovered).toBe("true");
-
-    await user.click(screen.getByRole("button", { name: "패널 닫기" }));
+    const sheet = container.querySelector('[data-qa="dashboard-panel"]');
+    expect(sheet.dataset.detent).toBe("peek");
+    expect(renderer.dataset.overlayInsetRight).toBe("0px");
     expect(renderer.dataset.overlaysCovered).toBe("false");
 
     await user.click(screen.getByRole("button", { name: "패널 열기" }));
-    expect(renderer.dataset.overlaysCovered).toBe("true");
-
-    vi.stubGlobal("innerWidth", 1024);
-    act(() => {
-      window.dispatchEvent(new Event("resize"));
-    });
+    expect(sheet.dataset.detent).toBe("half");
     expect(renderer.dataset.overlaysCovered).toBe("false");
   });
 
@@ -89,12 +88,13 @@ describe("AppVWorld installation selection lifecycle", () => {
     expect(renderer.dataset.overlayInsetRight).toBe("var(--dashboard-panel-width)");
 
     await user.click(screen.getByRole("button", { name: "패널 닫기" }));
-    expect(renderer.dataset.overlayInsetRight).toBe("0px");
+    expect(renderer.dataset.overlayInsetRight).toBe("var(--dashboard-rail-width)");
 
     await user.click(screen.getByRole("button", { name: "패널 열기" }));
     expect(renderer.dataset.overlayInsetRight).toBe("var(--dashboard-panel-width)");
 
-    vi.stubGlobal("innerWidth", 390);
+    // 폰 폭에서는 패널이 바텀 시트라 지도 오버레이가 화면 폭 전체를 쓴다.
+    window.matchMedia = phoneMatchMedia;
     act(() => {
       window.dispatchEvent(new Event("resize"));
     });
@@ -110,7 +110,7 @@ describe("AppVWorld installation selection lifecycle", () => {
     expect(tint.style.right).toBe("var(--dashboard-panel-width)");
 
     await user.click(screen.getByRole("button", { name: "패널 닫기" }));
-    expect(tint.style.right).toBe("0px");
+    expect(tint.style.right).toBe("var(--dashboard-rail-width)");
   });
 
   it("hides the dashboard panel and its toggle while the D4 detail experience is open and restores them after it closes", async () => {

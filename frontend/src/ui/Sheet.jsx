@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { clampHeight, cycleDetent, detentHeights, nearestDetent, stepDetent } from "./sheetDetents.mjs";
 import { FOCUS_RING } from "./Button.jsx";
 import { cx } from "./cx.mjs";
@@ -27,13 +27,22 @@ function usePrefersReducedMotion() {
 
 // 폰(<640px)용 바텀 시트. peek(96px)·half(50dvh)·full 세 단계. 시트 바깥(위쪽 장면)은 계속 조작할 수 있고,
 // peek·half에서는 포커스를 가두지 않는다. 본문 스크롤은 full에서만 생긴다(같은 축 스크롤을 겹치지 않는다).
-export function Sheet({ label, detent: detentProp, defaultDetent = "peek", onDetentChange, header, children, className }) {
+// 나머지 속성(data-qa 등)과 ref는 시트 요소에 그대로 붙는다(대시보드 셸이 패널 훅과 라벨 가림 기준으로 쓴다).
+export const Sheet = forwardRef(function Sheet(
+  { label, detent: detentProp, defaultDetent = "peek", onDetentChange, header, children, className, ...rest },
+  forwardedRef,
+) {
   const [detentState, setDetentState] = useState(defaultDetent);
   const detent = detentProp ?? detentState;
   const [dragHeight, setDragHeight] = useState(null);
   const [fading, setFading] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
   const sheetRef = useRef(null);
+  const attachRef = useCallback((node) => {
+    sheetRef.current = node;
+    if (typeof forwardedRef === "function") forwardedRef(node);
+    else if (forwardedRef) forwardedRef.current = node;
+  }, [forwardedRef]);
   const dragRef = useRef(null);
   const draggedRef = useRef(false);
   const firstRender = useRef(true);
@@ -114,11 +123,12 @@ export function Sheet({ label, detent: detentProp, defaultDetent = "peek", onDet
 
   return (
     <section
-      ref={sheetRef}
+      ref={attachRef}
       role="region"
       aria-label={label}
       data-qa="sheet"
       data-detent={detent}
+      {...rest}
       onKeyDown={handleKeyDown}
       style={{
         height: "calc(100dvh - env(safe-area-inset-top))",
@@ -159,4 +169,4 @@ export function Sheet({ label, detent: detentProp, defaultDetent = "peek", onDet
       </div>
     </section>
   );
-}
+});

@@ -93,7 +93,6 @@ export default function VWorldRenderer({
   onRepresentativeInstallationPlanChange,
   representativeRefreshKey,
   onD4SectionChange,
-  overlaysCovered = false,
   overlayInsetRight = "0px",
   mapBackdrop = null,
 }) {
@@ -105,7 +104,6 @@ export default function VWorldRenderer({
   const overlayObjectIdsRef = useRef([]);
   const highlightedRoadZoneRef = useRef(null);
   const highlightedRoadZoneIdsRef = useRef([]);
-  const overlaysRef = useRef(null);
   const campusGltfModelRef = useRef(null);
   const trafficSimulationRef = useRef(null);
   const cameraControllerRef = useRef(null);
@@ -354,23 +352,14 @@ export default function VWorldRenderer({
     };
   }, [handleOverlayDataChange, loadAttempt]);
 
-  // 좁은 화면에서 열린 대시보드 패널은 지도 전체를 덮는다. 그 밑의 지도 오버레이는 보이지 않으므로
-  // 포커스·클릭·보조 기술 대상에서 뺀다. D4 상세는 이 묶음 밖에 두어 영향을 받지 않는다.
-  useEffect(() => {
-    const overlays = overlaysRef.current;
-    if (!overlays) return;
-    if (overlaysCovered) overlays.setAttribute("inert", "");
-    else overlays.removeAttribute("inert");
-  }, [overlaysCovered]);
-
   return (
     <div className="relative h-full w-full">
-      <div id={VWORLD_MAP_ID} className="h-full w-full" />
+      {/* 지도 자체에 Legacy 캔버스와 같은 이름을 준다(화면 읽기·랜드마크). */}
+      <div id={VWORLD_MAP_ID} role="region" aria-label="순천대 캠퍼스 3D 지도" className="h-full w-full" />
       {mapBackdrop}
       {/* 지도 위 문구와 버튼은 열린 패널을 뺀 지도 영역 안에만 둔다. 상태 문구는 위쪽 왼쪽 열, 지도 조작은 아래쪽 왼쪽 열에
           쌓는다. 절대 위치는 두 열에만 주어 화면이 좁아도 서로 겹치거나 패널 밑으로 들어가지 않는다. */}
       <div
-        ref={overlaysRef}
         data-qa="vworld-map-overlays"
         className="pointer-events-none absolute inset-y-0 left-0 transition-[right] duration-300"
         style={{ right: overlayInsetRight }}
@@ -378,7 +367,7 @@ export default function VWorldRenderer({
         {!isD4SectionOpen && (
           <div
             data-qa="vworld-left-stack"
-            className="pointer-events-none absolute left-6 top-6 z-20 flex max-w-[calc(100%-3rem)] flex-col items-start gap-3"
+            className="pointer-events-none absolute left-4 top-[4.5rem] z-20 flex max-w-[calc(100%-2rem)] flex-col items-start gap-3"
           >
             {isLoading && !hasLoadError && (
               <Spinner

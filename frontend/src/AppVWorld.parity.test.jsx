@@ -60,8 +60,10 @@ const countCalls = (fetchMock, fragment) =>
   fetchMock.mock.calls.filter(([url]) => String(url).includes(fragment)).length;
 
 beforeEach(() => {
+  // 패널을 열어 둔 채 떠난 재방문 사용자. 첫 방문(레일로 시작)은 panel/DashboardShell.test.jsx가 다룬다.
+  vi.stubGlobal("localStorage", { getItem: (key) => (key === "scnu.panelOpen" ? "true" : null), setItem() {} });
   stubFetch();
-  window.matchMedia = vi.fn(() => ({ matches: false }));
+  window.matchMedia = vi.fn(() => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
 });
 
 afterEach(() => {

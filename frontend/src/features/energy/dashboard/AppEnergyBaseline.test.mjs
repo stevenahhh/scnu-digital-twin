@@ -12,7 +12,7 @@ test("AppVWorld exposes an energy tab and a dedicated feature boundary", async (
     read("../../../panel/DashboardPanel.jsx"),
     read("../../../panel/EnergyTab.jsx"),
   ]);
-  assert.match(app, /<DashboardPanel/);
+  assert.match(app, /<DashboardShell/);
   assert.match(app, /<EnergyTab/);
   assert.match(panel, /value: "energy", label: "에너지"/);
   assert.match(energyTab, /<EnergyDashboard/);
