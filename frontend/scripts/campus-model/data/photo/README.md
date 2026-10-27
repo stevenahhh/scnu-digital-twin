@@ -747,13 +747,24 @@ The leftovers of the second pass, all estimated (추정):
   scene_a5 r lawn quartile and the NGII 2025 photo's), and the cells within 0.8 m of the stepping stones
   (`wear_paths`) in a worn tone. The dashboard has no seasonal tint for furniture (only tree crowns are tinted), so the
   turf is drawn in its VR (autumn) tone.
-- Trees: SD-A1RG-T1..T8, a new site-detail kind `roof_tree` (species, crown_m, height_m, roof_m, box_m) that the trees
+- Trees: SD-A1RG-T1..T8, a new site-detail kind `site_tree` (species, crown_m, height_m, roof_m, box_m) that the trees
   stage draws on the roof; T1..T3 stand in the timber tree boxes SD-A5-TB1..TB3 (their VR rays agree within 0.15 m).
   Shrub balls and clipped masses: SD-A1RG-S1..S6 (hedge Points). All from VR scene_a5 r rays at the roof height.
 - The room in the garden (BLD_A1 form masses 5 and 16) takes the new look A1-roofroom, tan brick (its walls rise less than a storey over the wing
   roof and are drawn plain in the parapet colour, so the white coping of the VR is not drawn).
 - OC0120 (the 정자) is moved 2.2 m to where VR scene_a5 d and the LOD box (mass 7) put it. The teal tiered structure by
   the lattice wall in VR scene_a5 r is the parasol OC0121, not the 정자.
+
+## F1 forecourt and wing roof (a1-roof-r2, F1 follow-up)
+
+- The F1 curved wing's flat roof is a red-brown membrane in VR scene_f1 f, so roof attachments (data/facade-attachments.json)
+  recolour form masses 1, 2 and 8 #94604a.
+- RS-LS-F1ISLAND, the crescent island in the F1 forecourt, is a low mound (mound_m 0.45, its cells raised from 2 m in from
+  the kerb) of autumn ornamental grass (four VR tones at 0.82 of their value). On it stand SD-F1-IT1 (a pine) and IT2 (a
+  small broadleaf tree) as site_tree with box_m, the mound under them, and SD-F1-IS1..IS4 (low shrubs). All are placed at
+  their crowns on the NGII 2025 photo: the VR rays from scene_f1 land 1-4 m off the photo island at 40 m range. `hedge:
+  false` keeps the trees stage from edging it with a clipped hedge (its shrubs stand loose; a low stone kerb only).
+- SD-F1-LED1, the LED wall, is one neutral emissive field (#5d6b7a). The VR shows an image there; no imagery is copied.
 
 ## Licence
 
