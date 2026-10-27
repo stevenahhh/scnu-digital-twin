@@ -431,6 +431,7 @@ export const FRONTEND_CHECKS = [
       }
       const noRing = rows.filter((r) => r.outline <= 0 && !r.ring).map((r) => r.label);
       let pressedChanges = 0;
+      const unchanged = [];
       for (const row of rows.slice(0, 8)) {
         await ctx.b.mouse("mouseMoved", row.x, row.y, 0);
         await ctx.b.mouse("mousePressed", row.x, row.y, 1);
@@ -438,8 +439,9 @@ export const FRONTEND_CHECKS = [
         await ctx.b.mouse("mouseMoved", 2, 2, 1);
         await ctx.b.mouse("mouseReleased", 2, 2, 0);
         if (during && during !== [row.bg, row.transform].join("|")) pressedChanges += 1;
+        else unchanged.push(`${row.label}${during ? "" : " (nothing under the pointer)"}`);
       }
-      return result(rows.length > 0 && noRing.length === 0 && pressedChanges === Math.min(8, rows.length), { focusStops: rows.length, withoutFocusRing: noRing.slice(0, 8), pressedStyleChanges: `${pressedChanges}/${Math.min(8, rows.length)}` },
+      return result(rows.length > 0 && noRing.length === 0 && pressedChanges === Math.min(8, rows.length), { focusStops: rows.length, withoutFocusRing: noRing.slice(0, 8), pressedStyleChanges: `${pressedChanges}/${Math.min(8, rows.length)}`, withoutPressedChange: unchanged },
         "every control shows a focus-visible outline and an active/pressed style change");
     },
   }),
