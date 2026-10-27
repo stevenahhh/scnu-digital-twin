@@ -35614,7 +35614,9 @@
      "areaSquareMetres": 495.2,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 1
+     "photoSupport": 1,
+     "look": "F1-wing",
+     "lookSource": "curated (site-detail-vr): VR scene_f1 f, the curved low wing is silver standing-seam metal with a few narrow windows and a blue glass base (estimated)"
     },
     {
      "outer": [
@@ -35828,7 +35830,9 @@
      "areaSquareMetres": 381.8,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 0.97
+     "photoSupport": 0.97,
+     "look": "F1-wing",
+     "lookSource": "curated (site-detail-vr): VR scene_f1 f, the curved low wing is silver standing-seam metal with a few narrow windows and a blue glass base (estimated)"
     },
     {
      "outer": [
@@ -35964,7 +35968,9 @@
      "roof": "flat",
      "areaSquareMetres": 152.6,
      "parapetMetres": 1,
-     "photoSupport": 0.99
+     "photoSupport": 0.99,
+     "look": "F1-drum",
+     "lookSource": "curated (site-detail-vr): VR scene_f1 f, the tall shaft behind the wing is pale standing-seam metal without windows, like the north drum (estimated)"
     },
     {
      "outer": [
@@ -36369,7 +36375,9 @@
      "areaSquareMetres": 71.8,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 0.91
+     "photoSupport": 0.91,
+     "look": "F1-wing",
+     "lookSource": "curated (site-detail-vr): VR scene_f1 f, the curved low wing is silver standing-seam metal with a few narrow windows and a blue glass base (estimated)"
     },
     {
      "outer": [
