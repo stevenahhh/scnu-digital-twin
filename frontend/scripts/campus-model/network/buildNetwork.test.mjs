@@ -4,7 +4,7 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { addAnchor, assembleNetwork, checkCollection, entrancePois, propertyNames } from "./buildNetwork.mjs";
+import { addAnchor, assembleNetwork, checkCollection, entrancePois, propertyNames, waterCrossings, waterPolygons } from "./buildNetwork.mjs";
 import { NetGraph } from "./graph.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -89,4 +89,17 @@ test("a building of building_entrances.json without a POI gets a derived buildin
   assert.equal(out.length, 1);
   assert.deepEqual([out[0].id, out[0].properties.kind, out[0].properties.node_id, out[0].properties.derived], ["BLD_E8", "building", "POI_ENT_E8_MAIN", true]);
   assert.deepEqual(out[0].geometry.coordinates, [75.8, -165.8]);
+});
+
+test("network:build fails on a person edge across water: the old straight S20 link over the c1 pool is caught", () => {
+  // pool oval (simplified) and the PR #101 straight EDGE_PLAZA_PAVEDCOURT_0003_2 (PLAZA_PAVEDCOURT_0003 -> CWN_013_A)
+  const pool = { id: "water: c1 pool", rings: [Array.from({ length: 24 }, (_, k) => [345 + 14 * Math.cos((k * Math.PI) / 12), -50 + 6 * Math.sin((k * Math.PI) / 12)])] };
+  const edge = (id, coordinates, allowed = ["person"]) => ({ type: "Feature", id, geometry: { type: "LineString", coordinates }, properties: { feature_type: "edge", allowed_types: allowed } });
+  const old = edge("EDGE_PLAZA_PAVEDCOURT_0003_2", [[313.609, -45.379], [388.032, -55.037]]);
+  const around = edge("EDGE_PLAZA_PAVEDCOURT_0003_2", [[313.609, -45.379], [330, -60], [360, -60], [388.032, -55.037]]);
+  const car = edge("EDGE_ROAD", [[300, -50], [400, -50]], ["car"]);
+  assert.equal(waterCrossings([old], [pool]).length, 1);
+  assert.match(waterCrossings([old], [pool])[0], /crosses water water: c1 pool/);
+  assert.deepEqual(waterCrossings([around, car], [pool]), []);
+  assert.deepEqual(waterPolygons([{ paint: { kind: "water" }, source_ref: "w", rings: [[[0, 0]]] }, { paint: { kind: "tiles" }, rings: [] }]).map((w) => w.id), ["w"]);
 });

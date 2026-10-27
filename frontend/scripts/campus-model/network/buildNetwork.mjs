@@ -456,6 +456,20 @@ export function entrancePois(entrancesJson, old) {
   });
 }
 
+// Water areas of the surface layers (paint kind water: OSM ponds and plaza pools), simulation frame.
+export const waterPolygons = (layers) => layers.filter((l) => l.paint?.kind === "water").map((l) => ({ id: l.source_ref, rings: l.rings }));
+
+// Person edges with a sample (0.2 m) in water: `<edge> crosses water <id> over <m> m` per edge (network:build fails on any).
+export function waterCrossings(features, water) {
+  const grid = new PolygonGrid(water, 20);
+  const out = [];
+  for (const f of features.filter((x) => x.properties.feature_type === "edge" && x.properties.allowed_types?.includes("person"))) {
+    const wet = sampleLine(f.geometry.coordinates, 0.2).map((q) => grid.find(q)).filter(Boolean);
+    if (wet.length) out.push(`${f.id}: person edge crosses water ${wet[0].id} over ${(wet.length * 0.2).toFixed(1)} m`);
+  }
+  return out;
+}
+
 // Add-only `epsg5186_anchor` and `epsg5186_local_to_grid` in coordinate_transform.json (text edits that keep the hand
 // formatting). The simulation frame is true east/north at the D4 anchor; EPSG:5186 grid north is turned by the meridian
 // convergence (about 0.27 deg) and scaled, so SUMO coordinates are anchor + M [x, z], not anchor + [x, z].
@@ -506,9 +520,14 @@ if (import.meta.main) {
   const { entrances, pois } = poiInputs(entrancesJson, old);
   const fallback = buildFallback({ roads: ctx.roads, graph, coverage: sidewalks.coverage, pois: [...entrances.map((e) => ({ id: e.building_id, p: e.position })), ...pois.map((p) => ({ id: p.poi_id, p: p.p }))], plazas: walkable.filter((w) => w.class === "plaza"), buildings: ctx.buildings, warn: quiet });
   const connectors = buildConnectors({ entrances, pois, graph, walkable, roadPolygons: ctx.roads.polygons, buildings: ctx.buildings, warn: quiet });
+  // water (OSM ponds, plaza pools: surface layers painted water) blocks people like a building in the walkways: no link
+  // or estimated walkway is drawn across it, and the check below fails the build on any person edge that still crosses it
+  const water = waterPolygons(ctx.layers);
+  const blocks = [...ctx.buildings, ...water];
+  // plaza link candidates skip buildings only: a link whose straight line meets water is routed round it by the walkways
   const plazas = plazaLinks({ graph, walkable, roadPolygons: ctx.roads.polygons, buildings: ctx.buildings });
   console.log(`walkable plazas joined: ${plazas.stats.plazas} (${plazas.stats.links} estimated links: ${plazas.edges.map((e) => `${e.id} -> ${e.to}`).join(", ")})`);
-  const walkways = buildWalkways({ graph, walkable, roadPolygons: ctx.roads.polygons, buildings: ctx.buildings, warn: console.warn });
+  const walkways = buildWalkways({ graph, walkable, roadPolygons: ctx.roads.polygons, buildings: blocks, warn: console.warn });
   console.log(walkwayStats(walkways.stats));
   for (const u of walkways.stats.unresolved) console.log(`  unresolved ${JSON.stringify(u)}`);
   for (const u of walkways.stats.sidewalkOnVehicle) console.log(`  measured on carriageway ${JSON.stringify(u)}`);
@@ -526,7 +545,7 @@ if (import.meta.main) {
   console.log(`gate islands: ${islands.length}; car edges split round them: ${islandRoutes.split.map((r) => `${r.edge} ${r.from_m}-${r.to_m} m (gaps ${r.forwardGapM} / ${r.reverseGapM} m)`).join(", ") || "none"}${islandRoutes.unresolved.length ? `; UNRESOLVED ${JSON.stringify(islandRoutes.unresolved)}` : ""}`);
   console.log(`lane offset caps on ${addLaneClearance(collection.features, { roadPolygons: ctx.roads.polygons, sidewalkPolygons: notCarriageway })} car edges`);
   if (arg("--extra-edges")) collection.features.push(...(await readJson(arg("--extra-edges"))).features);
-  const errors = checkCollection(collection, old, policy);
+  const errors = [...checkCollection(collection, old, policy), ...waterCrossings(collection.features, water)];
   console.log(`sidewalks: ${sidewalks.stats.strips} strips, ${sidewalks.stats.edges} edges; crossings: ${crossings.stats.edges} edges (${crossings.stats.connectors} estimated end connectors); fallback: ${fallback.stats.retainedRuns} runs ${fallback.stats.retainedM} m; connectors: ${connectors.stats.entrances} entrances, ${connectors.stats.pois} POIs (${connectors.stats.estimated} estimated)`);
   console.log(`network: ${stats.nodes} nodes, ${stats.edges} edges, ${stats.pois} POIs; person ${stats.personNodes} nodes / ${stats.personEdges} edges, car ${stats.carNodes} nodes / ${stats.carEdges} edges; authoritative ${stats.authoritative}, estimated ${stats.estimated}`);
   console.log(`edges by kind ${JSON.stringify(stats.kinds)}`);
