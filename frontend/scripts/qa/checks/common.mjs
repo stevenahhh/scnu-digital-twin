@@ -92,6 +92,12 @@ export async function withPanelOpen(ctx, tab, measure) {
     if ((actions.includes("패널 열기") || reopenedSheet) && await ctx.b.center('[aria-label="패널 닫기"]')) {
       await ctx.b.tap('[aria-label="패널 닫기"]');
       await ctx.sleep(900);
+    } else if (ctx.viewport === "P" && startDetent === "half" && nowDetent === "full") {
+      // Raised from half to full with the handle: step it back down the same way.
+      if (await ctx.inPage((qa) => { const handle = qa.one("[data-qa=sheet-handle]"); handle?.focus(); return Boolean(handle); })) {
+        await ctx.b.key("ArrowDown");
+        await ctx.sleep(800);
+      }
     }
   }
 }
