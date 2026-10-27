@@ -19,6 +19,7 @@ import { EQUIPMENT_MODULE_UV, EQUIPMENT_PLAIN_UV, ROOF_METRES, equipmentAtlas, r
 import { MODULE_DEPTH_M, MODULE_TILT_DEGREES, panelModules, sampleRoofPhoto } from "../lib/roofPhoto.mjs";
 import { cleanRing, pointInRing, ringArea, ringCentroid, segmentDistance } from "../lib/geometry.mjs";
 import { addBalconies, addFins, addMast, addSolar, attachmentsByNode } from "../lib/attachments.mjs";
+import { frontKit, kitInstances } from "../lib/frontKit.mjs";
 import { Box3 } from "three";
 import { meshFootprint, toModelRing } from "./sources.mjs";
 
@@ -533,9 +534,9 @@ const zoneTile = (zones, s, tile) => {
 const KNOWN_ROOFS = new Set(["flat", "gable", "hipped", "mono-pitch", "curved"]);
 const CANOPY_DEPTH = metres(2.2);
 const CANOPY_THICKNESS = metres(0.3);
-// `front` ({ tile, fascia, block }, from the facade entry's `front`): the entrance edge takes its own tile on every storey,
-// a flat fascia slab over its top storeys (overhanging, on the front look's canopy colour) and a side block at one end
-// (on its plinth colour); every other edge keeps the building's look. Sizes estimated from the VR (추정).
+// `front` (the facade entry's `front`, see lib/frontKit.mjs): the entrance edge takes its own tile on every storey and
+// collects its solid pieces (fascia band, columns, fins, side block, rooftop block) into front.kit, which the stage
+// emits as one instanced node under the building; every other edge keeps the building's look. Sizes 추정 (VR).
 function addFacade(mesh, ordered, { base, ground, bottom, top, floors, look, tile, zones = null, entranceEdge = -1, canopy = false, front = null, seed, charts }) {
   const storey = (top - ground) / floors;
   const lowest = bottom > ground + 1e-6 ? bottom : base;
@@ -608,20 +609,7 @@ function addFacade(mesh, ordered, { base, ground, bottom, top, floors, look, til
           else emit(g0, g1, tileRow, 0, k);
         }
       }
-      if (front && i === entranceEdge) {
-        const aoAt = (t, y) => (charts ? [s0 + t * length, top - y, chart] : null);
-        if (front.fascia) {
-          const y = top - front.fascia.storeys * storey;
-          addCanopy(mesh, point, 0, 1, y, canopyUv(front.tile), aoAt(0.5, y), { thickness: top - y + metres(front.fascia.rise ?? 0), depth: metres(front.fascia.overhang) });
-        }
-        if (front.block) {
-          // the block's end of the edge: the vertex further along its compass side (south = larger z, east = larger x)
-          const k = { south: [1, 1], north: [1, -1], east: [0, 1], west: [0, -1] }[front.block.end];
-          const startIsEnd = (a[k[0]] - b[k[0]]) * k[1] > 0;
-          const [t0, t1] = startIsEnd ? [0, front.block.share] : [1 - front.block.share, 1];
-          addCanopy(mesh, point, t0, t1, ground, plinthUv(front.tile, 0.5), aoAt((t0 + t1) / 2, ground), { thickness: front.block.storeys * storey, depth: metres(front.block.depth) });
-        }
-      }
+      if (front && i === entranceEdge) front.kit.push(...frontKit({ a, b, ground, top, storey, front, metres }));
     }
     distance += length;
   }
@@ -630,10 +618,10 @@ function addFacade(mesh, ordered, { base, ground, bottom, top, floors, look, til
 
 // Canopy slab over the doors: top, underside, front and both ends, all on the canopy fascia colour of the tile and
 // on one AO texel of the wall behind it (zero UV1 area, so the bake leaves the wall's texels to the wall).
-function addCanopy(mesh, point, t0, t1, y, uv, ao, { thickness = CANOPY_THICKNESS, depth = CANOPY_DEPTH } = {}) {
+function addCanopy(mesh, point, t0, t1, y, uv, ao) {
   const yb = y;
-  const yt = y + thickness;
-  const d = depth;
+  const yt = y + CANOPY_THICKNESS;
+  const d = CANOPY_DEPTH;
   const uvs = [uv, uv, uv, uv];
   const faces = [
     [point(t0, yb, d), point(t1, yb, d), point(t1, yt, d), point(t0, yt, d)],
@@ -657,6 +645,28 @@ function addBox(mesh, cx, cz, sx, sz, y0, y1, angle, charts) {
   const from = mesh.vertexCount;
   mesh.horizontalPolygon(ring, [], y1);
   charts.addPlanar(mesh, from);
+}
+
+// Unit cube centred on the origin (front kit pieces scale it), outward faces.
+function unitCube() {
+  const mesh = new MeshData({ uvs: false });
+  for (const [axis, sign] of [[0, 1], [0, -1], [1, 1], [1, -1], [2, 1], [2, -1]]) {
+    const normal = [0, 0, 0];
+    normal[axis] = sign;
+    const [p, q] = [(axis + 1) % 3, (axis + 2) % 3];
+    const corner = (cp, cq) => {
+      const v = [0, 0, 0];
+      v[axis] = sign * 0.5;
+      v[p] = cp * 0.5;
+      v[q] = cq * 0.5;
+      return v;
+    };
+    const base = mesh.vertexCount;
+    for (const [cp, cq] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) mesh.vertex(corner(cp, cq), normal);
+    if (sign > 0) { mesh.triangle(base, base + 1, base + 2); mesh.triangle(base, base + 2, base + 3); }
+    else { mesh.triangle(base, base + 2, base + 1); mesh.triangle(base, base + 3, base + 2); }
+  }
+  return mesh;
 }
 
 // A MeshData whose vertices also carry AO chart coordinates: mesh.ao holds (s, t, chart) per vertex.
@@ -794,7 +804,7 @@ const MODULE_RISE = metres(MODULE_DEPTH_M * Math.sin((MODULE_TILT_DEGREES * Math
 
 const linearByte = (rgb) => [...rgb.map((c) => Math.round(srgbToLinear(c / 255) * 255)), 255];
 
-function buildingPrimitives(building, seed, { heightAt, facadeMaterial, tiles, looks, roofMaterial, parapetMaterial, equipmentMaterial, charts }) {
+function buildingPrimitives(building, seed, { heightAt, facadeMaterial, tiles, looks, roofMaterial, parapetMaterial, equipmentMaterial, charts, frontKits }) {
   const look = looks.get(building.look);
   const tile = tiles.get(building.look);
   const greenhouse = look.pattern === "greenhouse";
@@ -808,8 +818,9 @@ function buildingPrimitives(building, seed, { heightAt, facadeMaterial, tiles, l
   const rng = mulberry32(seed);
   const entrance = entranceOf(building, building.entry);
   const frontEntry = building.entry?.front;
-  const front = frontEntry ? { tile: tiles.get(frontEntry.look), fascia: frontEntry.fascia ?? null, block: frontEntry.block ?? null } : null;
+  const front = frontEntry ? { ...frontEntry, tile: tiles.get(frontEntry.look), kit: [] } : null;
   if (front && !front.tile) throw new Error(`front look ${frontEntry.look} has no facade tile`);
+  if (front) frontKits.set(building, front.kit);
   for (const [partIndex, part] of building.parts.entries()) {
     if (!part.outer || part.outer.length < 3) continue;
     const samples = [...part.outer, ringCentroid(part.outer)].map(([x, z]) => heightAt(x, z));
@@ -1054,9 +1065,9 @@ function roofSurface(triangles) {
 // `ground`, the ground row for the first storey, the entrance row and canopy on the entrance edge) and the plinth band
 // below the ground line; plain masses get eave-coloured quads. Under a pitched roof the cells stop at the edge's eave
 // line and a plain gable fills the wall up to the roof profile.
-// `front` ({ tile, fascia, block }, from the facade entry's `front`): the entrance edge takes its own tile on every storey,
-// a flat fascia slab over its top storeys (overhanging, on the front look's canopy colour) and a side block at one end
-// (on its plinth colour); every other edge keeps the building's look. Sizes estimated from the VR (추정).
+// `front` (the facade entry's `front`, see lib/frontKit.mjs): the entrance edge takes its own tile on every storey and
+// collects its solid pieces (fascia band, columns, fins, side block, rooftop block) into front.kit, which the stage
+// emits as one instanced node under the building; every other edge keeps the building's look. Sizes 추정 (VR).
 function addMassRing(ctx, solid, ordered, { roundBays = null, facade, cellsOnGround = false, entranceEdge = -1, canopy = false, front = null, seed }) {
   const { walls, plain, charts, solids, look, tile, zones = null, ground, plinthBase, storey, plainColour, surface } = ctx;
   const rng = mulberry32(seed);
@@ -1165,18 +1176,7 @@ function addMassRing(ctx, solid, ordered, { roundBays = null, facade, cellsOnGro
                 }
                 if (!frontDone) {
                   frontDone = true;
-                  const aoAt = (t, y) => (charts ? [s0 + t * length, peak - y, chart] : null);
-                  if (front.fascia) {
-                    const y = solid.top - front.fascia.storeys * storey;
-                    addCanopy(walls, point, 0, 1, y, canopyUv(front.tile), aoAt(0.5, y), { thickness: solid.top - y + metres(front.fascia.rise ?? 0), depth: metres(front.fascia.overhang) });
-                  }
-                  if (front.block) {
-                    // the block's end of the edge: the vertex further along its compass side (south = larger z, east = larger x)
-                    const k = { south: [1, 1], north: [1, -1], east: [0, 1], west: [0, -1] }[front.block.end];
-                    const startIsEnd = (a[k[0]] - b[k[0]]) * k[1] > 0;
-                    const [t0, t1] = startIsEnd ? [0, front.block.share] : [1 - front.block.share, 1];
-                    addCanopy(walls, point, t0, t1, ground, plinthUv(front.tile, 0.5), aoAt((t0 + t1) / 2, ground), { thickness: front.block.storeys * storey, depth: metres(front.block.depth) });
-                  }
+                  front.kit.push(...frontKit({ a, b, ground, top: solid.top, storey, front, metres }));
                 }
               } else {
                 push(0, bays);
@@ -1298,7 +1298,7 @@ function addRoofTriangles(roof, triangles, colour, uvScale) {
 
 // One building with a mass form: walls, roofs, parapets, soffits, columns, rooftop plant and solar modules, in the
 // same four primitives as buildingPrimitives (facade atlas, roof membrane, parapet, equipment).
-function massPrimitives(building, seed, { heightAt, facadeMaterial, tiles, looks, roofMaterial, parapetMaterial, equipmentMaterial, charts, solids }) {
+function massPrimitives(building, seed, { heightAt, facadeMaterial, tiles, looks, roofMaterial, parapetMaterial, equipmentMaterial, charts, solids, frontKits }) {
   const look = looks.get(building.look);
   const tile = tiles.get(building.look);
   const greenhouse = look.pattern === "greenhouse";
@@ -1314,8 +1314,9 @@ function massPrimitives(building, seed, { heightAt, facadeMaterial, tiles, looks
   const storeyMetres = building.form?.storeyMetres ?? 4.0;
   const entrance = entranceOf(building, building.entry);
   const frontEntry = building.entry?.front;
-  const front = frontEntry ? { tile: tiles.get(frontEntry.look), fascia: frontEntry.fascia ?? null, block: frontEntry.block ?? null } : null;
+  const front = frontEntry ? { ...frontEntry, tile: tiles.get(frontEntry.look), kit: [] } : null;
   if (front && !front.tile) throw new Error(`front look ${frontEntry.look} has no facade tile`);
+  if (front) frontKits.set(building, front.kit);
   const lod4Canopy = building.parts.some((p) => p.kind === "canopy");
   const roofFallback = building.roofColour ?? [255, 255, 255, 255];
   for (const [index, part] of building.parts.entries()) {
@@ -2000,7 +2001,8 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
   // All primitives are built first so the AO charts can be packed before any TEXCOORD_1 is written.
   const charts = new AoCharts();
   const solids = [...selectableBuildings, ...campusBuildings].flatMap((building) => solidsOf(building, heightAt));
-  const primitivesContext = { heightAt, facadeMaterial, tiles: facadeAtlas.tiles, looks: catalogue.looks, roofMaterial, parapetMaterial, equipmentMaterial, charts, solids };
+  const frontKits = new Map();
+  const primitivesContext = { heightAt, facadeMaterial, tiles: facadeAtlas.tiles, looks: catalogue.looks, roofMaterial, parapetMaterial, equipmentMaterial, charts, solids, frontKits };
   const primitivesOf = (building, seed) => (building.massForm ? massPrimitives(building, seed, primitivesContext) : buildingPrimitives(building, seed, primitivesContext));
   const selectablePrimitives = selectableBuildings.map((building, index) => primitivesOf(building, 1000 + index));
   const merged = new Map();
@@ -2063,9 +2065,22 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
     console.warn(`building AO atlas: ${path.basename(AO_ATLAS)} missing; see scripts/campus-model/bake/README.md`);
   }
 
+  // Front kits (lib/frontKit.mjs): one instanced unit-cube node per building front, coloured per instance; a child of
+  // the building node, so a click on a fin selects the building.
+  let kitMesh = null;
+  const addKitNode = (name, kit, root) => {
+    if (kitMesh === null) {
+      const material = glb.addMaterial({ name: "Facade_FrontKit", pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1], metallicFactor: 0.25, roughnessFactor: 0.5 } });
+      kitMesh = glb.addMesh("Facade_FrontKit", [unitCube().toPrimitive(material)]);
+    }
+    return glb.addNode({ name: `FrontKit_${name}`, mesh: kitMesh, extensions: glb.instancingExtension(kitInstances(kit)), extras: { pieces: kit.length, source: "front kit from VR (추정)" } }, { root });
+  };
   selectableBuildings.forEach((building, index) => {
     const mesh = addAoMesh(building.nodeName, selectablePrimitives[index]);
+    const kit = frontKits.get(building);
+    const kitNode = kit?.length ? addKitNode(building.nodeName, kit, false) : null;
     glb.addNode({
+      ...(kitNode !== null ? { children: [kitNode] } : {}),
       name: building.nodeName,
       mesh,
       extras: {
@@ -2099,6 +2114,10 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
   {
     const mesh = addAoMesh("CampusBuildings", campusPrimitives);
     glb.addNode({ name: "CampusBuildings", mesh, extras: { buildings: campusBuildings.map((b) => b.displayName).filter(Boolean) } }, { root: true });
+    for (const building of campusBuildings) {
+      const kit = frontKits.get(building);
+      if (kit?.length && !building.drawnByFurniture) addKitNode(building.nodeName ?? building.displayName ?? "CampusBuilding", kit, true);
+    }
   }
 
   // Named SCNU campus buildings stay merged in CampusBuildings for drawing (no extra draw calls) and get one
