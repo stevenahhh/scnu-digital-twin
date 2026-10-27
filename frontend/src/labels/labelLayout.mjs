@@ -57,7 +57,9 @@ function fingerprintOf(placed) {
     .join("|");
 }
 
-// candidates: rankLabelCandidates 결과 순서(우선순위)의 [{ id, kind: 'chip'|'dot', selected?, anchor: { x, y, depth? }, width, height }].
+// candidates: rankLabelCandidates 결과 순서(우선순위)의 [{ id, kind: 'chip'|'dot', selected?, anchor: { x, y, depth? }, width, height,
+//   hitPad? }]. hitPad = { x, y }: 보이는 칩 밖으로 누르는 영역(버튼)이 더 나간 만큼(폰 44 px 버튼 등). 가장자리·HUD·패널 여백은
+//   누르는 영역 기준으로 지킨다(칩끼리의 간격은 보이는 칩 기준).
 // opts: area(뷰포트), chrome(HUD 사각형 목록), occluder(열린 패널), focusBoxes(선택·호버 건물 상자 [{ id, left, top, right,
 // bottom, depth }]), band(+ previous, now: 있으면 applyHysteresis로 보일 칩을 먼저 고른다), previous(직전 layoutLabels 결과).
 // 반환: { placed: [{ id, kind, rect, leader, state }], hidden: Set, hiddenReasons: Map(id -> 'cap'|'edge'|'chrome'|'collision'),
@@ -97,11 +99,20 @@ export function layoutLabels(candidates, opts) {
     ![...(occluder ? [occluder] : []), ...chrome].some((r) => contains(r, a.x, a.y));
   const inSafeArea = (r) => r.left >= safeArea.left && r.top >= safeArea.top && r.right <= safeArea.right && r.bottom <= safeArea.bottom;
   const kept = [];
+  let pad = { x: 0, y: 0 };
+  const outer = (r) => (pad.x || pad.y ? { left: r.left - pad.x, top: r.top - pad.y, right: r.right + pad.x, bottom: r.bottom + pad.y } : r);
   const reasonAt = (r) => {
-    if (!inSafeArea(r)) return "edge";
-    if (blockers.some((b) => overlaps(b.rect, r))) return "chrome";
+    if (!inSafeArea(outer(r))) return "edge";
+    if (blockers.some((b) => overlaps(b.rect, outer(r)))) return "chrome";
     if (kept.some((k) => overlaps(inflate(k, spacing), r))) return "collision";
     return null;
+  };
+  // 누르는 영역까지 안전 영역 안으로 들어가게 민다.
+  const clampChip = (r) => {
+    const o = clampIntoSafe(outer(r));
+    const dx = o.left + pad.x - r.left;
+    const dy = o.top + pad.y - r.top;
+    return { left: r.left + dx, top: r.top + dy, right: r.right + dx, bottom: r.bottom + dy };
   };
 
   const placed = [];
@@ -111,15 +122,16 @@ export function layoutLabels(candidates, opts) {
       hide(candidate.id, "cap");
       continue;
     }
+    pad = { x: Math.max(0, candidate.hitPad?.x ?? 0), y: Math.max(0, candidate.hitPad?.y ?? 0) };
     const natural = chipRect(candidate);
     const offsets = [];
     for (let d = 0; d <= maxDisplacement; d += DISPLACEMENT_STEP_PX) offsets.push(-d);
     // HUD에 걸리면 숨기기 전에 아래쪽 자리(HUD 밑으로 비켜 가기)도 보고, 그래도 걸리면 그 HUD 바로 아래·위 자리를 본다.
-    const hudHits = blockers.filter((b) => b.hud && overlaps(b.rect, natural));
+    const hudHits = blockers.filter((b) => b.hud && overlaps(b.rect, outer(natural)));
     if (hudHits.length) {
       for (let d = DISPLACEMENT_STEP_PX; d <= maxDisplacement; d += DISPLACEMENT_STEP_PX) offsets.push(d);
       if (anchorShown(candidate.anchor)) {
-        const escapes = hudHits.flatMap((b) => [b.rect.bottom - natural.top, b.rect.top - natural.bottom]);
+        const escapes = hudHits.flatMap((b) => [b.rect.bottom - outer(natural).top, b.rect.top - outer(natural).bottom]);
         for (const dy of escapes.filter((d) => Math.abs(d) <= MAX_HUD_ESCAPE_PX).sort((a, b) => Math.abs(a) - Math.abs(b))) {
           if (!offsets.includes(dy)) offsets.push(dy);
         }
@@ -134,10 +146,10 @@ export function layoutLabels(candidates, opts) {
       }
     }
     // 가장자리에 걸려 둘 자리가 없으면 같은 후보 자리들을 가장자리 안으로 밀어 넣어 본다. 앵커가 보이는 곳에 있을 때만.
-    const clampTried = !rect && anchorShown(candidate.anchor) && offsets.some((dy) => !inSafeArea(shift(natural, dy)));
+    const clampTried = !rect && anchorShown(candidate.anchor) && offsets.some((dy) => !inSafeArea(outer(shift(natural, dy))));
     if (clampTried) {
       for (const dy of offsets) {
-        const r = clampIntoSafe(shift(natural, dy));
+        const r = clampChip(shift(natural, dy));
         if (reasonAt(r) === null) {
           rect = r;
           break;
@@ -146,11 +158,11 @@ export function layoutLabels(candidates, opts) {
     }
     if (!rect && candidate.selected) {
       // 선택된 칩은 늘 남긴다. 둘 자리가 없으면 가장자리 안쪽으로 끌어들인다.
-      rect = clampIntoSafe(natural);
+      rect = clampChip(natural);
     }
     if (!rect) {
       // 밀어 넣어 봤다면 숨기는 이유는 밀어 넣은 자리에서 막은 것(겹침·HUD)이다.
-      hide(candidate.id, reasonAt(clampTried ? clampIntoSafe(natural) : natural));
+      hide(candidate.id, reasonAt(clampTried ? clampChip(natural) : natural));
       continue;
     }
     const displaced = needsLeader(rect, natural);
@@ -166,6 +178,7 @@ export function layoutLabels(candidates, opts) {
   }
 
   // 점은 칩과 겹치면 숨기되 점끼리는 겹쳐도 둔다.
+  pad = { x: 0, y: 0 };
   for (const candidate of dots) {
     const rect = dotRect(candidate);
     const reason = !inSafeArea(rect)

@@ -149,6 +149,17 @@ describe("CampusLabelLayer", () => {
     expect([dot.getAttribute("cx"), dot.getAttribute("cy")]).toEqual(["3", "400"]);
   });
 
+  it("keeps chips inside the 8 px edge margin while the camera moves, without hiding them", () => {
+    const entries = [entry("BLD_MOVE")];
+    const { update, visibleSlots } = mount(entries);
+    update({ points: new Map([["BLD_MOVE", { x: 300, y: 400, depth: 100, distance: 100 }]]) });
+    expect(visibleSlots()).toHaveLength(1);
+    // The anchor slides off the left edge mid-drag: the chip stays visible, pinned at x = 8, with a leader to the anchor.
+    update({ motion: true, points: new Map([["BLD_MOVE", { x: -200, y: 400, depth: 100, distance: 100 }]]) });
+    expect(visibleSlots()).toHaveLength(1);
+    expect(visibleSlots()[0].style.transform).toMatch(/^translate3d\(8px,/);
+  });
+
   it("marks an estimated name with the glyph, a dashed chip and 명칭 추정 in the accessible name", () => {
     const entries = [entry("BLD_SCNU_R1", { displayName: "부속 시설", estimatedName: true, tier: 3, code: null })];
     const { container, update } = mount(entries);

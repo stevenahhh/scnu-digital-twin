@@ -306,3 +306,15 @@ test("property: 200 random sets never overlap, keep margins, draw leaders and ke
     assert.equal(result.placed.length + result.hidden.size, candidates.length, `seed ${seed}: every candidate accounted for`);
   }
 });
+
+test("keeps the tap area (hitPad), not only the visible chip, clear of the HUD margin and the screen edge", () => {
+  const hud = { left: 0, top: 0, right: 1000, bottom: 40 };
+  // Without padding the 20 px chip (top 54) clears the HUD's 12 px margin (52).
+  assert.equal(byId(run([chip("A", 300, 80)], { chrome: [hud] }), "A").rect.top, 54);
+  // A 44 px button (12 px above and below the chip) would reach 42: the chip moves down until the button is 12 px clear.
+  const padded = byId(run([chip("A", 300, 80, { hitPad: { x: 0, y: 12 } })], { chrome: [hud] }), "A");
+  assert.ok(padded.rect.top - 12 >= hud.bottom + 12, `button top ${padded.rect.top - 12}`);
+  // At the bottom edge the button keeps the 8 px edge margin.
+  const low = byId(run([chip("B", 300, 795, { hitPad: { x: 0, y: 12 }, selected: true })]), "B");
+  assert.ok(low.rect.bottom + 12 <= area.bottom - 8, `button bottom ${low.rect.bottom + 12}`);
+});

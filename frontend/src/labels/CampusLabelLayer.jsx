@@ -72,6 +72,9 @@ function sameView(a, b) {
 // entries: 레지스트리 항목 배열(+ hasData). controllerRef.current는 { update(frame), setMotion(on), setHovered(id) }를 받는다.
 // frame = { points: Map(id -> { x, y, depth, distance }) (카메라 앞·지형에 가리지 않은 앵커만), area, chrome, occluder,
 //           focusBoxes, band, now, motion, hidden }.
+// 카메라가 움직이는 동안 칩(누르는 영역)을 둘 화면 가장자리 여백(labelLayout의 edgeMargin과 같다).
+const MOTION_EDGE_PX = 8;
+
 export function CampusLabelLayer({
   entries,
   selectedId = null,
@@ -218,10 +221,20 @@ export function CampusLabelLayer({
             hideNode(id);
             continue;
           }
-          const leader = offset.leader
-            ? { from: { x: anchor.x + offset.leader.fx, y: anchor.y + offset.leader.fy }, to: anchor }
-            : null;
-          writeSlot(id, anchor.x + offset.dx, anchor.y + offset.dy, area, leader, offset.opacity, anchor.y);
+          // 움직이는 동안에도 칩(누르는 영역)은 화면 가장자리 여백 안에 둔다. 밖으로 미끄러지는 칩은 숨기지 않고(보임이 바뀌지 않게)
+          // 가장자리에 붙여 연결선으로 앵커를 가리킨다. 멈추면 다시 배치한다.
+          const size = sizeOf(id);
+          const rawX = anchor.x + offset.dx;
+          const rawY = anchor.y + offset.dy;
+          const x = Math.min(Math.max(rawX, area.left + MOTION_EDGE_PX), Math.max(area.left + MOTION_EDGE_PX, area.right - MOTION_EDGE_PX - size.hitWidth));
+          const y = Math.min(Math.max(rawY, area.top + MOTION_EDGE_PX), Math.max(area.top + MOTION_EDGE_PX, area.bottom - MOTION_EDGE_PX - size.hitHeight));
+          const clamped = x !== rawX || y !== rawY;
+          const leader = clamped
+            ? { from: { x: x + size.hitWidth / 2, y: y + (size.hitHeight + size.height) / 2 }, to: anchor }
+            : offset.leader
+              ? { from: { x: anchor.x + offset.leader.fx, y: anchor.y + offset.leader.fy }, to: anchor }
+              : null;
+          writeSlot(id, x, y, area, leader, offset.opacity, anchor.y);
         }
         return;
       }
@@ -240,6 +253,8 @@ export function CampusLabelLayer({
           anchor: anchorOf.get(candidate.id),
           width: size.width,
           height: size.height,
+          // 누르는 영역(버튼)이 보이는 칩보다 큰 만큼. 가장자리·HUD 여백은 버튼까지 지킨다.
+          hitPad: { x: Math.max(0, (size.hitWidth - size.width) / 2), y: Math.max(0, (size.hitHeight - size.height) / 2) },
         });
       }
       const result = layoutLabels(candidates, {
