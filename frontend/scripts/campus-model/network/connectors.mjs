@@ -16,7 +16,7 @@
 // within 50 m`; any connector whose 0.5 m samples are < 95 % walkable is labelled estimated too. Vehicle-side links (vehicle_gate, parking_connection, scooter_parking_connection) are added by
 // buildNetwork.mjs (todo 20). building_entrances.json is not edited: `snapped_node` is reported per entrance.
 import path from "node:path";
-import { PolygonGrid, dist, inRings, lineLength, round, sampleLine, segmentNearest } from "./geom.mjs";
+import { PolygonGrid, UnionFind, dist, inRings, lineLength, round, sampleLine, segmentNearest } from "./geom.mjs";
 
 export const REACH_M = 50;
 export const PLACE_M = 30;
@@ -308,4 +308,57 @@ if (import.meta.main) {
     console.log(`preview ${previewPath}`);
   }
   process.exit(result.stats.coincident > 0 ? 1 : 0);
+}
+
+// Walkable paving plazas (PAVEDCOURT_*, network/surfaces.mjs walkablePlaza) that no person edge crosses get a plaza node
+// inside and estimated pedestrian links (kind sidewalk: people only) to the nearest person nodes, one on each side
+// where one exists within PLAZA_REACH_M (two links at least 90 deg apart) in the main person component (most POIs),
+// so routes can cross the plaza. A link never
+// cuts a building footprint; network/walkways.mjs re-draws a link that touches a road, lot or building, as for every
+// estimated person edge.
+const PLAZA_REACH_M = 80;
+const PERSON_LINK_KINDS = new Set(["sidewalk", "crosswalk", "shared_path", "pedestrian_gate", "building_entrance", "parking_walk"]);
+export function plazaLinks({ graph, walkable = [], roadPolygons = [], buildings = [] }) {
+  const footGrid = new PolygonGrid(buildings, 20);
+  const roadGrid = new PolygonGrid(roadPolygons.filter((p) => p.class === "road" || p.class === "lot"), 20);
+  const cutsFootprint = (a, b) => footGrid.candidates([(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], dist(a, b) / 2 + 1)
+    .some((poly) => poly.rings.some((ring) => ring.some((r, k) => segmentsCross(a, b, r, ring[(k + 1) % ring.length]))));
+  const out = [];
+  for (const plaza of walkable.filter((w) => /^PAVEDCOURT_/.test(w.id ?? ""))) {
+    const person = graph.edges.filter((e) => PERSON_LINK_KINDS.has(e.kind));
+    if (person.some((e) => sampleLine(e.points, 0.5).some((q) => inRings(q, plaza.rings)))) continue;
+    // an interior point: the 0.5 m grid point inside the plaza nearest its vertex mean, off buildings and roads
+    const pts = plaza.rings[0];
+    const c = [pts.reduce((t, q) => t + q[0], 0) / pts.length, pts.reduce((t, q) => t + q[1], 0) / pts.length];
+    const xs = pts.map((q) => q[0]), zs = pts.map((q) => q[1]);
+    let at = null;
+    for (let x = Math.min(...xs); x <= Math.max(...xs); x += 0.5) for (let z = Math.min(...zs); z <= Math.max(...zs); z += 0.5) {
+      const q = [x, z];
+      if (!inRings(q, plaza.rings) || footGrid.contains(q) || roadGrid.contains(q)) continue;
+      if (!at || dist(q, c) < dist(at, c)) at = q;
+    }
+    if (!at) continue;
+    // only nodes of the main person component (the one holding the most POIs, then the most nodes): buildNetwork keeps
+    // that one and prunes the others, with any link into them
+    const uf = new UnionFind();
+    for (const e of person) uf.union(e.from, e.to);
+    const ends = new Set(person.flatMap((e) => [e.from, e.to]));
+    const score = new Map();
+    for (const id of ends) score.set(uf.find(id), (score.get(uf.find(id)) ?? 0) + (graph.nodes.get(id)?.kind === "poi" ? 1e6 : 1));
+    const main = [...score.entries()].sort((x, y) => y[1] - x[1])[0]?.[0];
+    const cands = [...ends].filter((id) => uf.find(id) === main).map((id) => graph.nodes.get(id)).filter((n) => n && n.kind !== "poi" && dist(n.p, at) <= PLAZA_REACH_M && dist(n.p, at) >= 0.5 && !cutsFootprint(at, n.p))
+      .sort((m, n) => dist(m.p, at) - dist(n.p, at) || m.id.localeCompare(n.id));
+    if (!cands.length) continue;
+    const first = cands[0];
+    const dir = (n) => Math.atan2(n.p[1] - at[1], n.p[0] - at[0]);
+    const second = cands.find((n) => Math.abs(((dir(n) - dir(first) + 3 * Math.PI) % (2 * Math.PI)) - Math.PI) >= Math.PI / 2);
+    const nodeId = `PLAZA_${plaza.id}`;
+    graph.addNode(nodeId, at, { kind: "plaza", estimated: true, position_source: `inside ${plaza.id} (${plaza.source_ref}; estimated)` });
+    [first, second].filter(Boolean).forEach((n, k) => {
+      const e = { id: `EDGE_${nodeId}_${k + 1}`, from: nodeId, to: n.id, points: [at, n.p], kind: "sidewalk", source: "derived", derived: true, estimated: true, confidence: 0.3, authoritative: false, surface: "plaza", gap_reason: `walkable plaza ${plaza.id} joined to the nearest person node${second ? "s on two sides" : ""} (estimated)` };
+      graph.addEdge(e);
+      out.push(e);
+    });
+  }
+  return { edges: out, stats: { plazas: new Set(out.map((e) => e.from)).size, links: out.length } };
 }

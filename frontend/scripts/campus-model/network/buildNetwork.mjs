@@ -481,7 +481,7 @@ if (import.meta.main) {
   const { buildSidewalks } = await import("./sidewalks.mjs");
   const { buildCrossings } = await import("./crossings.mjs");
   const { buildFallback } = await import("./fallback.mjs");
-  const { buildConnectors, poiInputs, walkablePolygons } = await import("./connectors.mjs");
+  const { buildConnectors, plazaLinks, poiInputs, walkablePolygons } = await import("./connectors.mjs");
   const { NetGraph } = await import("./graph.mjs");
   const { buildWalkways, statsLine: walkwayStats } = await import("./walkways.mjs");
   const { simulationToTm } = await import("../../../src/geo/epsg5186.mjs");
@@ -506,6 +506,8 @@ if (import.meta.main) {
   const { entrances, pois } = poiInputs(entrancesJson, old);
   const fallback = buildFallback({ roads: ctx.roads, graph, coverage: sidewalks.coverage, pois: [...entrances.map((e) => ({ id: e.building_id, p: e.position })), ...pois.map((p) => ({ id: p.poi_id, p: p.p }))], plazas: walkable.filter((w) => w.class === "plaza"), buildings: ctx.buildings, warn: quiet });
   const connectors = buildConnectors({ entrances, pois, graph, walkable, roadPolygons: ctx.roads.polygons, buildings: ctx.buildings, warn: quiet });
+  const plazas = plazaLinks({ graph, walkable, roadPolygons: ctx.roads.polygons, buildings: ctx.buildings });
+  console.log(`walkable plazas joined: ${plazas.stats.plazas} (${plazas.stats.links} estimated links: ${plazas.edges.map((e) => `${e.id} -> ${e.to}`).join(", ")})`);
   const walkways = buildWalkways({ graph, walkable, roadPolygons: ctx.roads.polygons, buildings: ctx.buildings, warn: console.warn });
   console.log(walkwayStats(walkways.stats));
   for (const u of walkways.stats.unresolved) console.log(`  unresolved ${JSON.stringify(u)}`);

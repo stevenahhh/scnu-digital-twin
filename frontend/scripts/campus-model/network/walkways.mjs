@@ -30,6 +30,9 @@ const SAMPLE_M = 0.2;
 // a route that must cross the carriageway without a crossing polygon takes the shortest stretch on it
 const CARRIAGEWAY_COST = 1000;
 const RELOCATE_REACH_M = 30;
+// an edge with no route at all that is the only link of a group of nodes is replaced by the shortest walkable link
+// (no carriageway, no building) from that group to the rest of the person graph, searched up to this distance
+const REJOIN_REACH_M = 80;
 const PERSON_KINDS = new Set(["sidewalk", "crosswalk", "shared_path", "pedestrian_gate", "building_entrance", "parking_walk"]);
 
 export const CLS = Object.freeze({ OPEN: 1, PLAZA: 2, SIDEWALK: 3, CROSSING: 4, VEHICLE: 5, BUILDING: 6 });
@@ -259,7 +262,7 @@ export function buildWalkways({ graph, walkable = [], roadPolygons = [], buildin
   const grid = new SurfaceGrid(classify);
   const cellClass = (p) => classify(p);
   const personEdge = (e) => PERSON_KINDS.has(e.kind);
-  const stats = { movedNodes: 0, rerouted: 0, rerouteGrowthM: 0, unresolved: [], strips: 0, stripM: 0, approaches: 0, sidewalkOnVehicle: [], crosswalksRedrawn: 0, droppedCrossingEdges: [], estimatedCrossings: [] };
+  const stats = { movedNodes: 0, rerouted: 0, rerouteGrowthM: 0, unresolved: [], strips: 0, stripM: 0, approaches: 0, sidewalkOnVehicle: [], crosswalksRedrawn: 0, droppedCrossingEdges: [], estimatedCrossings: [], rejoined: [] };
 
   // ---- 1. person nodes on the carriageway or in a building move to the nearest free ground
   const personNodes = new Set(graph.edges.filter(personEdge).flatMap((e) => [e.from, e.to]));
@@ -283,6 +286,43 @@ export function buildWalkways({ graph, walkable = [], roadPolygons = [], buildin
     if (moved.has(e.to)) e.points = [...e.points.slice(0, -1), graph.nodes.get(e.to).p];
   }
 
+  // An estimated edge with no route at all (its ends are cut off from each other by buildings and carriageway, e.g. a
+  // centreline derived through a building junction) is dropped when its ends stay connected without it; when it is the
+  // only link of a group of nodes, the nearest pair (group node, other node) joined by a walkable route replaces it.
+  const rejoin = (e) => {
+    const rest = graph.edges.filter((x) => personEdge(x) && x !== e);
+    const uf = new UnionFind();
+    for (const x of rest) uf.union(x.from, x.to);
+    if (uf.find(e.from) === uf.find(e.to)) {
+      graph.edges.splice(graph.edges.indexOf(e), 1);
+      stats.rejoined.push({ edge: e.id, dropped: true });
+      return true;
+    }
+    const all = [...new Set([e.from, e.to, ...rest.flatMap((x) => [x.from, x.to])])];
+    const sideA = all.filter((id) => uf.find(id) === uf.find(e.from));
+    const sideB = all.filter((id) => uf.find(id) === uf.find(e.to));
+    const cutEnd = sideA.length <= sideB.length ? e.from : e.to;
+    const cut = cutEnd === e.from ? sideA : sideB;
+    const main = all.filter((id) => uf.find(id) !== uf.find(cutEnd));
+    const pairs = [];
+    for (const u of cut) for (const v of main) {
+      const d = dist(graph.nodes.get(u).p, graph.nodes.get(v).p);
+      if (d <= REJOIN_REACH_M) pairs.push([d, u, v]);
+    }
+    pairs.sort((x, y) => x[0] - y[0] || x[1].localeCompare(y[1]) || x[2].localeCompare(y[2]));
+    for (const [d, u, v] of pairs) {
+      const a = graph.nodes.get(u).p, b = graph.nodes.get(v).p;
+      const cells = grid.route(a, b, { margin: Math.max(40, d) });
+      if (!cells) continue;
+      const points = pullString([a, ...cells.slice(1, -1), b], cellClass).map((q) => q.slice());
+      graph.edges.splice(graph.edges.indexOf(e), 1);
+      graph.addEdge({ ...e, id: `${e.id}_W`, from: u, to: v, points, placed: "walkway_estimated", gap_reason: `replaces ${e.id} (no walkable route between its ends); nearest walkable link to the rest of the network (estimated)` });
+      stats.rejoined.push({ edge: e.id, via: `${e.id}_W`, from: u, to: v, length_m: round(lineLength(points), 1) });
+      return true;
+    }
+    return false;
+  };
+
   // ---- 2. estimated person edges that touch a road/lot or a building are re-drawn on walkable ground
   for (const e of graph.edges.filter((x) => personEdge(x) && x.estimated)) {
     const samples = sampleLine(e.points, SAMPLE_M);
@@ -297,6 +337,7 @@ export function buildWalkways({ graph, walkable = [], roadPolygons = [], buildin
       crossesVehicle = true;
     }
     if (!cells) {
+      if (rejoin(e)) continue;
       warn(`walkways: ${e.id} has no route at all; geometry kept`);
       stats.unresolved.push({ edge: e.id, reason: "no route", length_m: round(lineLength(e.points), 1) });
       continue;
@@ -423,4 +464,4 @@ export function buildWalkways({ graph, walkable = [], roadPolygons = [], buildin
   return { strips, approaches, crossings, moved, stats };
 }
 
-export const statsLine = (s) => `walkways: ${s.movedNodes} nodes moved off the carriageway, ${s.rerouted} estimated edges re-drawn (+${s.rerouteGrowthM} m), ${s.crosswalksRedrawn} crosswalk lines re-drawn through their polygon, ${s.droppedCrossingEdges.length} carriageway-crossing estimated edges dropped, ${s.strips} estimated walkway strips (${s.stripM} m of line), ${s.approaches} crossing approaches (estimated), ${s.estimatedCrossings.length} estimated crossings on ${s.estimatedCrossings.reduce((t, c) => t + c.carriageway_m, 0).toFixed(1)} m of carriageway, ${s.unresolved.length} unresolved, ${s.sidewalkOnVehicle.length} measured stretches on the carriageway`;
+export const statsLine = (s) => `walkways: ${s.movedNodes} nodes moved off the carriageway, ${s.rerouted} estimated edges re-drawn (+${s.rerouteGrowthM} m), ${s.crosswalksRedrawn} crosswalk lines re-drawn through their polygon, ${s.droppedCrossingEdges.length} carriageway-crossing estimated edges dropped, ${s.rejoined.length} edges without any route replaced by a walkable link${s.rejoined.length ? ` (${s.rejoined.map((r) => (r.dropped ? `${r.edge} dropped` : `${r.edge} -> ${r.via} ${r.from}-${r.to} ${r.length_m} m`)).join(", ")})` : ""}, ${s.strips} estimated walkway strips (${s.stripM} m of line), ${s.approaches} crossing approaches (estimated), ${s.estimatedCrossings.length} estimated crossings on ${s.estimatedCrossings.reduce((t, c) => t + c.carriageway_m, 0).toFixed(1)} m of carriageway, ${s.unresolved.length} unresolved, ${s.sidewalkOnVehicle.length} measured stretches on the carriageway`;

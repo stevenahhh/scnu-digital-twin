@@ -119,3 +119,40 @@ test("a route that may cross the road is never straightened along it", () => {
   const onRoad = sampleLine(g.edges[0].points, 0.2).filter((q) => classify(q) === CLS.VEHICLE).length * 0.2;
   assert.ok(onRoad < 1, `carriageway metres ${onRoad}`);
 });
+
+test("an estimated edge with no route at all is replaced by the nearest walkable link from the group it alone connects", () => {
+  // a pocket (x -10..10) closed to the north by a long building wall and open to the south; the derived edge P-Q runs
+  // through the wall, so no route exists in the search window. The pocket (P, P2) joins the rest at S, south of it.
+  const buildings = [{ rings: [rect(-400, 4, 400, 6)] }, { rings: [rect(-12, -50, -10, 4)] }, { rings: [rect(10, -50, 12, 4)] }];
+  const g = graphWith(
+    [
+      { id: "EDGE_X", from: "P", to: "Q", kind: "shared_path", estimated: true, points: [[0, 0], [0, 12]] },
+      { id: "EDGE_P", from: "P", to: "P2", kind: "shared_path", estimated: true, points: [[0, 0], [0, -30]] },
+      { id: "EDGE_M1", from: "Q", to: "M", kind: "sidewalk", estimated: false, points: [[0, 12], [60, 12]] },
+      { id: "EDGE_M2", from: "M", to: "S", kind: "sidewalk", estimated: false, points: [[60, 12], [60, -60], [0, -60]] },
+    ],
+    [["P", [0, 0], "fallback"], ["P2", [0, -30], "fallback"], ["Q", [0, 12], "fallback"], ["M", [60, 12], "fallback"], ["S", [0, -60], "fallback"]],
+  );
+  const out = buildWalkways({ graph: g, walkable: [], roadPolygons: [], buildings, warn: quiet });
+  const classify = surfaceClassifier({ walkable: [], roadPolygons: [], buildings });
+  assert.ok(!g.edges.some((e) => e.id === "EDGE_X"), "the edge through the building is gone");
+  const w = g.edges.find((e) => e.id === "EDGE_X_W");
+  assert.deepEqual([w.from, w.to], ["P2", "S"]);
+  assert.ok(sampleLine(w.points, 0.2).every((q) => classify(q) !== CLS.BUILDING && classify(q) !== CLS.VEHICLE));
+  assert.equal(out.stats.unresolved.length, 0);
+  assert.deepEqual(out.stats.rejoined.map((r) => r.edge), ["EDGE_X"]);
+});
+
+test("an estimated edge with no route at all whose ends stay connected without it is dropped", () => {
+  const buildings = [{ rings: [rect(-400, 4, 400, 6)] }];
+  const g = graphWith(
+    [
+      { id: "EDGE_X", from: "P", to: "Q", kind: "shared_path", estimated: true, points: [[0, 0], [0, 12]] },
+      { id: "EDGE_A", from: "P", to: "Q", kind: "sidewalk", estimated: false, points: [[0, 0], [150, 0], [150, 12], [0, 12]] },
+    ],
+    [["P", [0, 0], "fallback"], ["Q", [0, 12], "fallback"]],
+  );
+  const out = buildWalkways({ graph: g, walkable: [], roadPolygons: [], buildings, warn: quiet });
+  assert.deepEqual(g.edges.map((e) => e.id), ["EDGE_A"]);
+  assert.deepEqual(out.stats.rejoined, [{ edge: "EDGE_X", dropped: true }]);
+});

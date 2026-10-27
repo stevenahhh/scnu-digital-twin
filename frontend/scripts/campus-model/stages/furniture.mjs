@@ -1341,9 +1341,27 @@ export function approachFromArm(armDir, armM, id = "photo") {
   const travelDir = [n[1], -n[0]];
   return { id, road: null, armDir, armM, travelDir, headsFace: [-travelDir[0], -travelDir[1]] };
 }
+// A pedestrian signal post (signal-arms.json `posts`, read on the VR): no mast arm, one two-aspect head on the post
+// facing `faceDeg` (bearing from north) across the crossing it serves.
+let signalPosts = null;
+function pedestrianPost(ctx, o, at, g, post) {
+  const faceDir = [Math.sin((post.faceDeg * Math.PI) / 180), -Math.cos((post.faceDeg * Math.PI) / 180)];
+  const f = frame([at[0], g, at[1]], faceDir);
+  (ctx.signals ??= []).push([o.id, "pedestrian-post", null, post.faceDeg, 0]);
+  ctx.solid.box(f, [-0.2, 0.2], [-0.2, 0.2], [-0.1, 0.2], C.concrete);
+  ctx.solid.pole(at, g - M(0.1), g + M(3.6), 0.07, 0.06, C.signalPole);
+  ctx.solid.box(f, [0.08, 0.36], [-0.17, 0.17], [2.3, 3.05], C.black);
+  const lit = ctx.signalIndex++ % 2 === 0 ? GLOW_UV.red : GLOW_UV.green;
+  // red man above, green man below, on the face side
+  [[2.7, GLOW_UV.red], [2.36, GLOW_UV.green]].forEach(([h, uv]) => {
+    ctx.glow.face([local(f, 0.361, -0.12, h), local(f, 0.361, 0.12, h), local(f, 0.361, 0.12, h + 0.28), local(f, 0.361, -0.12, h + 0.28)], [f.u[0], 0, f.u[1]], uv === lit ? lit : GLOW_UV.dark);
+  });
+}
 B.traffic_signal_pole = (ctx, o) => {
   const at = o.point;
   const g = ctx.groundAt(...at);
+  signalPosts ??= existsSync(SIGNAL_ARMS) ? JSON.parse(readFileSync(SIGNAL_ARMS, "utf8")).posts ?? {} : {};
+  if (signalPosts[o.id]) return pedestrianPost(ctx, o, at, g, signalPosts[o.id]);
   photoArms ??= existsSync(SIGNAL_ARMS) ? JSON.parse(readFileSync(SIGNAL_ARMS, "utf8")).arms : {};
   const photo = photoArms[o.id];
   const approach = photo

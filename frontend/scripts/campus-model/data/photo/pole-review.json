@@ -394,9 +394,10 @@
    "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
   },
   "OB0003": {
-   "verdict": "site",
-   "site": "median",
-   "note": "signal on the yellow-hatched median: the seed is on the median paint between the opposing lanes; pole base not resolvable"
+   "verdict": "vr",
+   "root": [127.48409793, 34.96873206],
+   "residualM": 0.47,
+   "note": "signal: the base is in building shadow on the photo; VR scene_a19 shows the pole on the east footway just behind the kerb, south of the crossing (8.35 m east of the median seed). Base = mean of the a19 ray cut with the photo-registered kerb (0.17 m inside the footway) and the a19 position moved by the a19-vs-photo offset of the crossing's south-east bar end (0.93 m apart, residual half of that); the scene_a17 line of sight (86 m, base hidden by a tree) passes 1.4 m west"
   },
   "OC0100": {
    "verdict": "site",

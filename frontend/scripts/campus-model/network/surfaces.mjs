@@ -489,8 +489,10 @@ export function buildSurfaces({ inputs, walkways, groundFeatures = null, offCamp
       // null: kerbs, slab and lamps see the same ground as before); `walkable` marks a plaza missing from them, added as PAVING.
       // It joins the raster at the base PAVING precedence, so it claims natural ground only, never a road, walkway or apron.
       const base = { cls: "PAVING", mesh: "Ground_Plaza", label: paving.walkable ? SURFACE_CLASS.PAVING : null, source: "project-estimated", source_ref: `paving: ${paving.note}`, estimated: true, ...(paving.walkable ? { walkableAdded: true, labelPrecedence: PRECEDENCE.PAVING } : {}) };
-      // holes: ground the paving leaves to a layer drawn there instead (a pool and its rim), so the two never overlap
-      add({ ...base, precedence: PRECEDENCE.TILES, pattern: paving.tile, uvFrame: frame(paving.tile) }, [paving.ring, ...(paving.holes ?? [])]);
+      // holes: ground the paving leaves to a layer drawn there instead (a pool and its rim), so the two never overlap.
+      // A walkable catalogue plaza also joins the pedestrian polygons (walkablePlaza, as the E8 courtyard below); its
+      // border bands lie inside the ring and add nothing there.
+      add({ ...base, precedence: PRECEDENCE.TILES, pattern: paving.tile, uvFrame: frame(paving.tile), ...(paving.walkable ? { walkablePlaza: true } : {}) }, [paving.ring, ...(paving.holes ?? [])]);
       for (const band of paving.borders ?? []) {
         add({ ...base, precedence: PRECEDENCE.TILE_BANDS, pattern: band.tile, uvFrame: frame(band.tile), source_ref: `paving band ${band.tile}: ${paving.note}` }, [paving.ring, offsetRing(paving.ring, -metres(band.widthM))]);
       }

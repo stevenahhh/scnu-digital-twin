@@ -1,13 +1,15 @@
 {
- "note": "Signal mast arms read on the NGII 2025 photo (4x chips with a 30 deg rose and 1 m ticks around each pole): bearing (deg from north) and length (m) of the arm's thin dark line or its west-cast shadow from the pole base, by eye (추정). stages/furniture.mjs uses these where present and the nearest-centreline rule otherwise.",
+ "note": "Signal mast arms read on the NGII 2025 photo (4x chips with a 30 deg rose and 1 m ticks around each pole): bearing (deg from north) and length (m) of the arm's thin dark line or its west-cast shadow from the pole base, by eye (추정). stages/furniture.mjs uses these where present and the nearest-centreline rule otherwise. posts: pedestrian signal posts without a mast arm (read on the VR), one head facing faceDeg.",
  "arms": {
   "OB0000": { "bearingDeg": 272, "lengthM": 7.9, "note": "dark arm line runs west from the pole over the arterial lanes, 7.9 m (twice the pole shadow)" },
-  "OB0001": { "bearingDeg": 277, "lengthM": 4.2, "note": "dark line runs west from the island tip over the lanes, 4.2 m" },
-  "OB0003": { "bearingDeg": 272, "lengthM": 3.5, "note": "dark line west from the pole on the hatched median with a heavier head blob; arm and pole shadow overlap, low confidence" },
+  "OB0003": { "bearingDeg": 275, "lengthM": 8.0, "note": "VR scene_a19 (pole on the east kerb south of the crossing, arm over the northbound lanes, heads lit facing south) and scene_a17: head 5.9 m from the pole at 277 deg by two VR rays; the photo arm shadow (cast 2.9 m west) runs 272 deg and ends 8.2 m from the pole; 275 deg / 8.0 m (추정). Replaces the photo read 272 deg 3.5 m from the median seed, which was the arm shadow" },
   "OC0045": { "bearingDeg": 218, "lengthM": 3.8, "note": "the yellow-orange arm itself is visible, running south-west from the pole, 3.8 m" }
  },
  "noArm": {
   "OB0002": "only a short west shadow and the head blob at the pole; no arm line, centreline rule used",
   "OC0133": "dark ground and crossing bars hide any arm line; centreline rule used"
+ },
+ "posts": {
+  "OB0001": { "faceDeg": 160, "note": "VR scene_a19: a 4 m post on the island's west tip with one pedestrian head lit toward the south crossing, no mast arm; the photo 'arm' 277 deg 4.2 m was the post shadow (추정)" }
  }
 }

@@ -73,9 +73,9 @@ test("checkPoles moves a pole off a carriageway and out of a building, and flags
 });
 
 test("pole-roots.json: residuals within their thresholds, rule seeds only with photo evidence, no duplicates within 1 m", () => {
-  const limits = { "shadow-root": 0.25, "by-eye-root": 0.25, "head-lean": 0.5, "epoch-root": 0.5 };
+  const limits = { "shadow-root": 0.25, "by-eye-root": 0.25, "head-lean": 0.5, "epoch-root": 0.5, "vr-root": 0.5 };
   for (const pole of ROOTS.poles) {
-    assert.ok(["shadow-root", "by-eye-root", "head-lean", "epoch-root", "unresolved", "rejected"].includes(pole.verdict), `${pole.id} verdict ${pole.verdict}`);
+    assert.ok(["shadow-root", "by-eye-root", "head-lean", "epoch-root", "vr-root", "unresolved", "rejected"].includes(pole.verdict), `${pole.id} verdict ${pole.verdict}`);
     if (pole.root) assert.ok(pole.residualM <= limits[pole.verdict], `${pole.id} residual ${pole.residualM} m over ${limits[pole.verdict]} m`);
     if (pole.source === "rule") assert.ok(pole.verdict === "rejected" || pole.root, `rule seed ${pole.id} is drawn without photo evidence`);
     if (pole.verdict === "rejected") assert.ok(pole.note, `${pole.id} rejected without a reason`);
@@ -169,6 +169,14 @@ test("signal-arms.json: photo arms within the drawn range; heads perpendicular t
     assert.ok(a.bearingDeg >= 0 && a.bearingDeg < 360 && a.lengthM >= 3.5 && a.lengthM <= 9, `${id} arm ${a.bearingDeg} deg ${a.lengthM} m`);
     const r = approachFromArm([Math.sin((a.bearingDeg * Math.PI) / 180), -Math.cos((a.bearingDeg * Math.PI) / 180)], a.lengthM);
     assert.ok(Math.abs(r.armDir[0] * r.headsFace[0] + r.armDir[1] * r.headsFace[1]) < 1e-9, `${id} heads perpendicular to the arm`);
+  }
+});
+
+test("signal-arms.json: a pedestrian post has no photo arm and a head bearing", () => {
+  const { arms, posts = {} } = JSON.parse(readFileSync(path.join(HERE, "..", "data", "photo", "signal-arms.json"), "utf8"));
+  for (const [id, p] of Object.entries(posts)) {
+    assert.ok(!arms[id], `${id} is a post and an arm`);
+    assert.ok(p.faceDeg >= 0 && p.faceDeg < 360 && p.note, `${id} post head bearing and source`);
   }
 });
 
