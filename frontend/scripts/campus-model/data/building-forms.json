@@ -20041,11 +20041,12 @@
      "baseMetres": 0,
      "topMetres": 32.94,
      "kind": "main",
-     "floors": 8,
+     "floors": 7,
      "roof": "flat",
      "areaSquareMetres": 788.8,
      "parapetMetres": 1,
-     "photoSupport": 0.97
+     "photoSupport": 0.97,
+     "floorsSource": "curated (facades-flags 2026-10-27): VR scene_a4 l shows two podium storeys, the glazed band storey and four white panel storeys up to the main roof (8 -> 7); the LOD4 roof height is kept, so the storeys are taller (estimated)"
     },
     {
      "outer": [
@@ -20175,11 +20176,12 @@
      "baseMetres": 0,
      "topMetres": 36.58,
      "kind": "core",
-     "floors": 9,
+     "floors": 8,
      "roof": "flat",
      "areaSquareMetres": 114.2,
      "parapetMetres": 0.55,
-     "photoSupport": 1
+     "photoSupport": 1,
+     "floorsSource": "curated (facades-flags 2026-10-27): VR scene_a4 l shows two podium storeys, the glazed band storey and four white panel storeys up to the main roof (9 -> 8); the LOD4 roof height is kept, so the storeys are taller (estimated)"
     },
     {
      "outer": [
@@ -20354,14 +20356,15 @@
      "baseMetres": 0,
      "topMetres": 36.58,
      "kind": "core",
-     "floors": 9,
+     "floors": 8,
      "roof": "flat",
      "areaSquareMetres": 23.5,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
      "photoSupport": 0.79,
      "look": "A1-glass",
-     "lookSource": "curated (facades-flags 2026-10-27): VR scene_a4 l, the west-end core of the main block is a light-blue glass stair tower (estimated)"
+     "lookSource": "curated (facades-flags 2026-10-27): VR scene_a4 l, the west-end core of the main block is a light-blue glass stair tower (estimated)",
+     "floorsSource": "curated (facades-flags 2026-10-27): VR scene_a4 l shows two podium storeys, the glazed band storey and four white panel storeys up to the main roof (9 -> 8); the LOD4 roof height is kept, so the storeys are taller (estimated)"
     },
     {
      "outer": [
@@ -20386,12 +20389,13 @@
      "baseMetres": 0,
      "topMetres": 34.65,
      "kind": "core",
-     "floors": 8,
+     "floors": 7,
      "roof": "flat",
      "areaSquareMetres": 14.4,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 1
+     "photoSupport": 1,
+     "floorsSource": "curated (facades-flags 2026-10-27): VR scene_a4 l shows two podium storeys, the glazed band storey and four white panel storeys up to the main roof (8 -> 7); the LOD4 roof height is kept, so the storeys are taller (estimated)"
     },
     {
      "outer": [
@@ -20552,14 +20556,15 @@
      "baseMetres": 0,
      "topMetres": 32.33,
      "kind": "core",
-     "floors": 8,
+     "floors": 7,
      "roof": "flat",
      "areaSquareMetres": 10.7,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
      "photoSupport": 0.01,
      "look": "A1-orange",
-     "lookSource": "curated (facades-flags 2026-10-27): VR scene_a4 l (cols 1515-1700, bearings 73-78 deg = this 7.9 m x 1.35 m projection of the south face): the orange frame round an inset balcony stack over the yellow podium and the glazed band (estimated)"
+     "lookSource": "curated (facades-flags 2026-10-27): VR scene_a4 l (cols 1515-1700, bearings 73-78 deg = this 7.9 m x 1.35 m projection of the south face): the orange frame round an inset balcony stack over the yellow podium and the glazed band (estimated)",
+     "floorsSource": "curated (facades-flags 2026-10-27): VR scene_a4 l shows two podium storeys, the glazed band storey and four white panel storeys up to the main roof (8 -> 7); the LOD4 roof height is kept, so the storeys are taller (estimated)"
     },
     {
      "outer": [
@@ -20584,12 +20589,13 @@
      "baseMetres": 0,
      "topMetres": 34.65,
      "kind": "core",
-     "floors": 8,
+     "floors": 7,
      "roof": "flat",
      "areaSquareMetres": 10.4,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 1
+     "photoSupport": 1,
+     "floorsSource": "curated (facades-flags 2026-10-27): VR scene_a4 l shows two podium storeys, the glazed band storey and four white panel storeys up to the main roof (8 -> 7); the LOD4 roof height is kept, so the storeys are taller (estimated)"
     },
     {
      "outer": [
@@ -20690,12 +20696,13 @@
      "baseMetres": 0,
      "topMetres": 35.37,
      "kind": "core",
-     "floors": 9,
+     "floors": 8,
      "roof": "flat",
      "areaSquareMetres": 6.7,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 1
+     "photoSupport": 1,
+     "floorsSource": "curated (facades-flags 2026-10-27): VR scene_a4 l shows two podium storeys, the glazed band storey and four white panel storeys up to the main roof (9 -> 8); the LOD4 roof height is kept, so the storeys are taller (estimated)"
     },
     {
      "outer": [
