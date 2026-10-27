@@ -266,7 +266,7 @@ export function applyVrContext(records, context) {
   for (const entry of context.floors ?? []) {
     const hits = out.flatMap((r, i) => (r.footprintSource === entry.footprintSource || r.footprintSource.startsWith(`${entry.footprintSource} `) ? [i] : []));
     if (hits.length !== 1) throw new Error(`vr-context-buildings.json: ${entry.footprintSource} matches ${hits.length} footprint records (expected 1)`);
-    out[hits[0]] = { ...out[hits[0]], floors: entry.floors, floorsSource: entry.floorsSource, usability: entry.usability, ...(entry.heightMetres ? { heightMetres: entry.heightMetres } : {}) };
+    out[hits[0]] = { ...out[hits[0]], floors: entry.floors, floorsSource: entry.floorsSource, usability: entry.usability, estimated: true, ...(entry.heightMetres ? { heightMetres: entry.heightMetres } : {}) };
   }
   for (const b of context.buildings ?? []) {
     out.push({ ...b, areaMetres: Math.round(Math.abs(ringArea(toModelRing(b.polygons[0][0]))) / metres(1) ** 2) });

@@ -460,7 +460,8 @@ Off-campus buildings the VR tour shows that the footprint file draws wrongly or 
   footprint record matched by `footprintSource` (equal, or a prefix followed by a space). Each entry must match exactly
   one record that has no floors of its own, else the build stops. An entry may also set `heightMetres` (with `heightNote`) where the
   off-campus storey median (3.95 m, set by shops) does not fit: the towers use 3.24 m, the median of the GIS 공동주택 records
-  of 5+ storeys.
+  of 5+ storeys. Records changed or added by this file are `estimated: true` and so never enter the storey medians
+  (`storeyMedians` skips estimated records).
 - `buildings`: footprints traced by eye on the NGII 2025 orthophoto where neither GIS nor OSM has one, in the
   `gis-buildings.json` shape with `name: ""` (never `순천대학교`), so they become context masses (`stages/context.mjs`).
 
