@@ -134,6 +134,36 @@ describe("VWorldLabelLayer", () => {
     }
   });
 
+  it("stays faded while the pointer is held on the map, even when the camera has stopped, and settles 150 ms after release", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      const { Cesium, scene } = fakeMap();
+      const canvas = document.createElement("canvas");
+      canvas.getBoundingClientRect = scene.canvas.getBoundingClientRect;
+      scene.canvas = canvas;
+      const { container } = render(<VWorldLabelLayer Cesium={Cesium} scene={scene} getModelMatrix={() => "m"} loadGlb={loadGlb} />);
+      await waitFor(() => expect(container.querySelector('[data-qa="campus-label-layer"]')).not.toBeNull());
+      const layer = () => container.querySelector('[data-qa="campus-label-layer"]');
+      act(() => scene.postRender.raise());
+      fireEvent.pointerDown(canvas);
+      expect(layer().dataset.motion).toBe("true");
+      // The SDK reports the end of the camera move while the button is still down: the fade stays.
+      act(() => {
+        scene.camera.moveEnd.raise();
+        vi.advanceTimersByTime(400);
+        scene.postRender.raise();
+      });
+      expect(layer().dataset.motion).toBe("true");
+      fireEvent.pointerUp(window);
+      act(() => {
+        vi.advanceTimersByTime(160);
+      });
+      expect(layer().dataset.motion).toBe("false");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("hides every chip while the camera is at globe distance (before the map flies to the campus)", async () => {
     const { Cesium, scene } = fakeMap();
     scene.camera.positionCartographic.height = 1_700_000;

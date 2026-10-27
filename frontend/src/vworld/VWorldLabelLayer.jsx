@@ -41,6 +41,8 @@ export function VWorldLabelLayer({
   onClear,
   // 앵커를 읽은 뒤 레지스트리 항목 목록을 한 번 알린다(검색칸이 같은 항목을 쓴다).
   onEntries,
+  // 읽은 campus-buildings.glb의 JSON을 한 번 알린다(카메라 시점이 노드 경계 상자를 쓴다).
+  onGlb,
   loadGlb = defaultLoadGlb,
 }) {
   const [entries, setEntries] = useState(null);
@@ -50,6 +52,8 @@ export function VWorldLabelLayer({
   const motionRef = useRef(false);
   const settleTimerRef = useRef(null);
   const lastPoseRef = useRef(null);
+  const onGlbRef = useRef(onGlb);
+  onGlbRef.current = onGlb;
   const state = useRef({});
   state.current = { selectedId, hidden, presentation, occluderRef, chromeRefs };
 
@@ -58,7 +62,9 @@ export function VWorldLabelLayer({
     loadGlb(CAMPUS_GLTF_OVERLAY_CONFIG.url)
       .then((buffer) => {
         if (cancelled) return;
-        setEntries(buildVWorldLabelEntries({ json: readGlbJson(buffer), elements: commonElements.elements, presets: CAMERA_PRESETS }));
+        const json = readGlbJson(buffer);
+        setEntries(buildVWorldLabelEntries({ json, elements: commonElements.elements, presets: CAMERA_PRESETS }));
+        onGlbRef.current?.(json);
       })
       .catch((error) => {
         // 라벨 앵커 없이도 지도는 쓸 수 있다(SDK 건물 클릭·D4 표지는 그대로).
@@ -89,7 +95,10 @@ export function VWorldLabelLayer({
       motionRef.current = true;
       controllerRef.current?.setMotion(true);
     };
+    // 지도를 누르고 있는 동안(끌기)은 카메라가 멈춰 있어도 움직이는 중이다(Legacy의 드래그와 같다). 손을 떼면 150 ms 뒤 재배치.
+    let held = false;
     const onMoveEnd = () => {
+      if (held) return;
       clearTimeout(settleTimerRef.current);
       settleTimerRef.current = setTimeout(() => {
         motionRef.current = false;
@@ -142,12 +151,27 @@ export function VWorldLabelLayer({
       const band = resolveLabelBand({ distance, pitchDegrees, presentation: presenting, touch });
       controller.update({ points, area, chrome, occluder, focusBoxes: [], band, now: performance.now(), motion });
     };
+    const onPointerDown = () => {
+      held = true;
+      onMoveStart();
+    };
+    const onPointerUp = () => {
+      if (!held) return;
+      held = false;
+      onMoveEnd();
+    };
+    scene.canvas.addEventListener?.("pointerdown", onPointerDown);
+    globalThis.addEventListener?.("pointerup", onPointerUp);
+    globalThis.addEventListener?.("pointercancel", onPointerUp);
     scene.postRender.addEventListener(onPostRender);
     scene.camera.moveStart?.addEventListener(onMoveStart);
     scene.camera.moveEnd?.addEventListener(onMoveEnd);
     passesRef.current = 2;
     requestRender();
     return () => {
+      scene.canvas.removeEventListener?.("pointerdown", onPointerDown);
+      globalThis.removeEventListener?.("pointerup", onPointerUp);
+      globalThis.removeEventListener?.("pointercancel", onPointerUp);
       scene.postRender.removeEventListener(onPostRender);
       scene.camera.moveStart?.removeEventListener(onMoveStart);
       scene.camera.moveEnd?.removeEventListener(onMoveEnd);
