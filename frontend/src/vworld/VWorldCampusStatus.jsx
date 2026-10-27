@@ -42,9 +42,10 @@ export function VWorldCampusStatus({ onSelection, date = "2026-05-18", client, s
     >
       <SectionHeader title="건물별 태양광 상태" subtitle={`시뮬레이션 기준일 ${formatDayLabel(date)}`} />
       {state.status === "loading" && <p role="status" className="text-caption text-ink-muted">건물 상태 확인 중</p>}
-      {state.status === "error" && (
-        <p role={feedDown ? "status" : "alert"} className="text-caption text-ink-muted">상태 API에 연결하지 못했습니다</p>
-      )}
+      {/* 에너지 피드가 끊긴 동안은 피드 상태 줄이 알리므로 여기는 기다린다고만 적는다(실패 문구를 두 번 내지 않는다). */}
+      {state.status === "error" && (feedDown
+        ? <p role="status" className="text-caption text-ink-muted">에너지 연결을 기다리는 중 · 돌아오면 다시 불러옵니다</p>
+        : <p role="alert" className="text-caption text-ink-muted">상태 API에 연결하지 못했습니다</p>)}
       {state.status === "success" && state.entries.length === 0 && (
         <p className="text-caption text-ink-muted">표시할 건물 상태가 없습니다</p>
       )}

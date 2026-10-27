@@ -141,13 +141,16 @@ export default function App() {
           // (해 쪽 햇빛 그라데이션은 화면 전체 장식 그라데이션이라 뺐다: V-F-44.)
           mapBackdrop={(
             <>
+              {/* 야간 음영은 지도 전체에(떠 있는 인스펙터 카드 뒤까지) 깐다. 지도 사용 영역(SDK availableArea)은 따로 둔다. */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 z-[1] transition-[background-color] duration-300"
+                style={{ backgroundColor: `rgba(3, 10, 24, ${lighting.nightOpacity})` }}
+              />
               <div
                 id="vworld-available-area"
-                className="pointer-events-none absolute bottom-0 left-0 top-0 z-[1] transition-[right,background-color] duration-300"
-                style={{
-                  right: mapInsetRight,
-                  backgroundColor: `rgba(3, 10, 24, ${lighting.nightOpacity})`,
-                }}
+                className="pointer-events-none absolute bottom-0 left-0 top-0 z-[1] transition-[right] duration-300"
+                style={{ right: mapInsetRight }}
               />
             </>
           )}

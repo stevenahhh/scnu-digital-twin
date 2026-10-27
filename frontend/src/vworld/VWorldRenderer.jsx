@@ -166,9 +166,13 @@ export default function VWorldRenderer({
   const [campusStatus, setCampusStatus] = useState(null);
   const [trafficStatus, setTrafficStatus] = useState(null);
   const [isD4SectionOpen, setIsD4SectionOpen] = useState(false);
+  const onClearSelectionRef = useRef(onClearSelection);
+  onClearSelectionRef.current = onClearSelection;
+  // D4 상세에서 돌아오면 Legacy처럼 선택이 풀린 캠퍼스 지도로 돌아간다(D4 인스펙터가 남지 않는다).
   const closeD4Section = useCallback(() => {
     setIsD4SectionOpen(false);
     setDetailRequest(null);
+    onClearSelectionRef.current?.();
     onEditorClose?.();
   }, [onEditorClose]);
   // 대시보드 레일에서 다른 탭을 고르면(d4CloseKey가 바뀌면) D4 패인을 닫는다.
