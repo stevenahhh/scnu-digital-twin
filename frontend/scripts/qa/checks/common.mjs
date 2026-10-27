@@ -223,7 +223,19 @@ export async function modelEdgeStep(ctx) {
       samples += 1;
     }
   }
-  return { edge: corners, step: Math.round(worst * 1000) / 1000, samples };
+  // No usable sample: either the edge is not on screen at all (the scene region lies inside the model rectangle - the ground
+  // reaches every side of the view, so no bounding edge is visible) or it is hidden by HUD/panel.
+  const inside = ([x, y]) => {
+    let hit = false;
+    for (let i = 0, j = corners.length - 1; i < corners.length; j = i, i += 1) {
+      const [xi, yi] = corners[i]; const [xj, yj] = corners[j];
+      if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) hit = !hit;
+    }
+    return hit;
+  };
+  const edgeOffScreen = Boolean(region) && samples === 0
+    && [[region.x, region.y], [region.x + region.w, region.y], [region.x, region.y + region.h], [region.x + region.w, region.y + region.h]].every(inside);
+  return { edge: corners, step: Math.round(worst * 1000) / 1000, samples, edgeOffScreen };
 }
 
 export async function chipByText(ctx, text) {

@@ -433,7 +433,7 @@ export const GAP_CHECKS = [
       const m = await modelEdgeStep(ctx);
       const clear = await ctx.inPage(() => getComputedStyle(document.querySelector("canvas")?.parentElement ?? document.body).backgroundColor);
       if (!m.edge) return missingHook("[data-model-edge]", "no luminance step > 20% along the bounding edge");
-      return result(m.samples > 0 && m.step <= 0.2, { maxLuminanceStepAcrossEdge: m.step, edgeSamples: m.samples, canvasBackdrop: clear }, "no luminance step > 20% along the bounding edge (20 px inside vs 20 px outside); clear colour not darker than #0b0c0e");
+      return result((m.edgeOffScreen || (m.samples > 0 && m.step <= 0.2)), { maxLuminanceStepAcrossEdge: m.step, edgeSamples: m.samples, edgeOffScreen: m.edgeOffScreen, canvasBackdrop: clear }, "no luminance step > 20% along the bounding edge (20 px inside vs 20 px outside); clear colour not darker than #0b0c0e");
     },
   }),
   defineCheck("GAP-26", {

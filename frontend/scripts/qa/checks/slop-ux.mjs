@@ -210,7 +210,7 @@ export const SLOP_UX_CHECKS = [
     async run(ctx) {
       const m = await modelEdgeStep(ctx);
       if (!m.edge) return missingHook("[data-model-edge]", "<= 20% step along the model's bounding edge");
-      return result(m.samples > 0 && m.step <= 0.2, { maxLuminanceStep: m.step, edgeSamples: m.samples }, "<= 20% step along the model's bounding edge (20 px inside vs 20 px outside)");
+      return result((m.edgeOffScreen || (m.samples > 0 && m.step <= 0.2)), { maxLuminanceStep: m.step, edgeSamples: m.samples, edgeOffScreen: m.edgeOffScreen }, "<= 20% step along the model's bounding edge (20 px inside vs 20 px outside)");
     },
   }),
   defineCheck("V-S-103", {
