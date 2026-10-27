@@ -199,8 +199,22 @@ export const STATES = Object.freeze([
   {
     id: "S03", name: "zoomed-in-plaza-labels",
     steps: async (ctx) => {
-      await ctx.b.wheel(ctx.map.x, ctx.map.y, -300, 14);
-      ctx.actions.push(`14x mouseWheel deltaY=-300 at ${ctx.map.x},${ctx.map.y}`);
+      // Legacy zooms toward the orbit target (the campus centre). The VWorld SDK zooms toward the cursor, so a wheel at the
+      // map centre after S02 dives into whatever lies there; zoom toward a fixed campus anchor instead: the 도서관 chip's
+      // anchor point (data-anchor-top, the chip's centre x), else the map centre.
+      let { x, y } = ctx.map;
+      if (ctx.entry === "vworld") {
+        const anchor = await ctx.b.run(() => {
+          const slot = [...document.querySelectorAll("[data-label-slot]")].find((node) => node.style.visibility === "visible"
+            && node.querySelector("button[data-qa=campus-label]")?.getAttribute("data-element-id") === "BLD_C1");
+          if (!slot?.dataset.anchorTop) return null;
+          const r = slot.getBoundingClientRect();
+          return [Math.round(r.x + r.width / 2), Math.round(Number(slot.dataset.anchorTop))];
+        });
+        if (anchor) [x, y] = anchor;
+      }
+      await ctx.b.wheel(x, y, -300, 14);
+      ctx.actions.push(`14x mouseWheel deltaY=-300 at ${x},${y}${ctx.entry === "vworld" ? " (VWorld: 도서관 anchor)" : ""}`);
       await wait(ctx, 2500);
     },
   },
