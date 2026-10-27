@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { CalendarDays } from "lucide-react";
-import { formatClock } from "../ui/format.mjs";
+import { formatClock, formatDayLabel } from "../ui/format.mjs";
 import { formatMinuteOfDay } from "../weather/sceneClock.mjs";
 import { useUpdatedCue } from "../ui/useUpdatedCue.mjs";
 
@@ -23,7 +23,8 @@ export function PanelClock({ sceneMinuteOfDay, sceneDate }) {
       </p>
       <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-caption text-ink-muted">
         <CalendarDays aria-hidden="true" className="h-4 w-4 shrink-0" />
-        <span className="tabular-nums">{sceneDate}</span>
+        {/* 장면 날짜는 한국어 날짜로(ISO 형식을 그대로 보이지 않는다: V-Q-12). 기계용 값은 dateTime에 둔다. */}
+        <time dateTime={sceneDate} className="tabular-nums">{formatDayLabel(sceneDate)}</time>
         <time dateTime={now.toISOString()} className="tabular-nums">현재 {formatClock(now)}</time>
       </p>
     </div>
