@@ -72,13 +72,13 @@ const RETYPED = {
   },
   OC0120: {
     kind: "pavilion_hip",
-    reason: "VR scene_a5 d (cols 1300-1900): the walled-garden 정자, silver-grey metal roof panels with blue fascia and hip caps; drawn by the catalogue pavilion_hip builder (estimated)",
-    props: { roofColour: "#a3abb0", trimColour: "#1d6fe3" },
+    reason: "VR scene_a5 d (cols 1300-1900): the walled-garden 정자, silver-grey metal roof panels with blue fascia and hip caps; drawn by the catalogue pavilion_hip builder (estimated); it stands in the roof garden of A1 (roof_m 12.98: the wing roof, VR scene_a5 r/d over the parapet); BLD_A1 form mass 7 (the same 정자 as a 2.9 m box) is drawnBy OC0120",
+    props: { roofColour: "#a3abb0", trimColour: "#1d6fe3", roof_m: 12.98 },
   },
   OC0121: {
     kind: "pavilion_octagon",
-    reason: "VR scene_a5 r (cols 1450-1650): a teal octagonal cantilever parasol in three stepped tiers on a curved hook mast, a timber deck with a bench beside it; drawn by the catalogue pavilion_octagon builder (estimated)",
-    props: { support: "cantilever", tiers: 3, roofColour: "#1c8f86", trimColour: "#57b3a8", postColour: "#7a5a3c", bearing_deg: 90, deck: { lengthM: 3.2, widthM: 2.2, offsetM: [-2.6, 0.6], benchLengthM: 1.8, colour: "#8a4f36" }, dims: { eaveHeightM: 2.4, apexHeightM: 4.0, floorHeightM: 0 } },
+    reason: "VR scene_a5 r (cols 1450-1650): a teal octagonal cantilever parasol in three stepped tiers on a curved hook mast, a timber deck with a bench beside it; drawn by the catalogue pavilion_octagon builder (estimated); it stands in the roof garden of A1 (roof_m 12.98: the wing roof, VR scene_a5 r/d over the parapet); moved onto its photo disc (data/photo/outline-review.json)",
+    props: { roof_m: 12.98, support: "cantilever", tiers: 3, roofColour: "#1c8f86", trimColour: "#57b3a8", postColour: "#7a5a3c", bearing_deg: 90, deck: { lengthM: 3.2, widthM: 2.2, offsetM: [-2.6, 0.6], benchLengthM: 1.8, colour: "#8a4f36" }, dims: { eaveHeightM: 2.4, apexHeightM: 4.0, floorHeightM: 0 } },
   },
   OC0153: {
     kind: "canopy_shelter_row",
@@ -198,7 +198,8 @@ export function loadFurniture() {
       object.leanM = 0;
     } else if ((ROOFED.has(object.kind) || ROOFED_SUBTYPES.has(object.subtype)) && (object.ring || object.line)) {
       object.photoRing = object.ring ?? bufferLine(object.line, M((p.width_m ?? 2) / 2));
-      const [dx, dz] = leanOffset(ringCentroid(object.photoRing), object.heightM);
+      // on a roof (roof_m) the photo roof stands roof_m higher, so it leans further
+      const [dx, dz] = leanOffset(ringCentroid(object.photoRing), object.heightM + (p.roof_m ?? 0));
       object.footprint = object.photoRing.map(([x, z]) => [x - dx, z - dz]);
       if (object.line) object.axis = object.line.map(([x, z]) => [x - dx, z - dz]);
       object.leanM = Math.hypot(dx, dz) / M(1);
@@ -1588,6 +1589,22 @@ B.bin = (ctx, o) => {
     const s = (k - (n - 1) / 2) * 0.65;
     ctx.solid.box(f, [s - 0.275, s + 0.275], [-0.225, 0.225], [-0.05, 0.88], paint);
     ctx.solid.box(f, [s - 0.29, s + 0.29], [-0.24, 0.24], [0.88, 0.95], paintOf(o.p.lidColour, C.metal, o.id));
+  }
+};
+// Paved or stepping-stone path (VR scene_a5 r: the grey stones across the A1 roof garden lawn): a LineString width_m
+// wide (1 m), each leg a convex slab height_m (0.15 m) above the ground running half a width past its ends so the
+// joints close; colour the stone.
+B.paving_path = (ctx, o) => {
+  if (!o.line) throw new Error(`furniture: paving_path ${o.id} needs a LineString`);
+  const w = (o.p.width_m ?? 1) / 2;
+  const paint = paintOf(o.p.colour, C.stone, o.id);
+  const top = (x, z) => ctx.groundAt(x, z) + M(o.p.height_m ?? 0.15);
+  for (let i = 0; i + 1 < o.line.length; i += 1) {
+    const [a, b] = [o.line[i], o.line[i + 1]];
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    const u = [((b[0] - a[0]) / len) * M(w), ((b[1] - a[1]) / len) * M(w)];
+    const slab = [[a[0] - u[0] - u[1], a[1] - u[1] + u[0]], [b[0] + u[0] - u[1], b[1] + u[1] + u[0]], [b[0] + u[0] + u[1], b[1] + u[1] - u[0]], [a[0] - u[0] + u[1], a[1] - u[1] - u[0]]];
+    ctx.solid.prism(slab, ctx.minGround(slab) - M(0.05), top, paint);
   }
 };
 B.handrail = (ctx, o) => railing(ctx, o.line, o.p.height_m ?? STREET.railM, paintOf(o.p.colour, C.galvanised, o.id), { stepM: 1.5, rails: [1, 0.5], postM: 0.05, railM: 0.05 });

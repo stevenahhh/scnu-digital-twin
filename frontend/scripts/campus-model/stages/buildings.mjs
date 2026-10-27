@@ -1654,7 +1654,13 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
       formOriginals = building.parts;
       const heightSource = building.parts[0]?.heightSource ?? building.heightSource;
       const fromLod4 = form.source.startsWith("VWorld LOD4");
-      building.parts = form.masses.map((m) => ({
+      // `drawnBy` (curated): the mass is a structure that the furniture stage draws as that object (A1 mass 7 is the
+      // OC0120 정자 of its roof garden), so the building leaves it out; its index in the form stays.
+      const drawnElsewhere = (m) => {
+        if (m.drawnBy !== undefined && (typeof m.drawnBy !== "string" || !m.drawnBy)) throw new Error(`building-forms.json: ${formKey(building)} mass drawnBy must name a furniture object`);
+        return m.drawnBy !== undefined;
+      };
+      building.parts = form.masses.filter((m) => !drawnElsewhere(m)).map((m) => ({
         // `round` (curated): a cylinder of `segments` sides round a lon/lat centre replaces the mesh outline (VR + photo)
         ...roundOf(m, toModel, formKey(building)),
         look: lookOf(m, catalogue, formKey(building)),

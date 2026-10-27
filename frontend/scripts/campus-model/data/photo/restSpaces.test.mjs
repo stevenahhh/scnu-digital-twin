@@ -105,7 +105,8 @@ test("no roofed rest space stands inside a small building footprint (it would be
   }));
   const ROOFED = new Set(["pavilion_hip", "pavilion_octagon", "terminal_shelter", "canopy_shelter_row", "hut", "awning", "bus_stop_shelter", "pergola", "gazebo"]);
   const inside = [];
-  for (const o of furniture.objects.filter((x) => ROOFED.has(x.kind) && (x.source === "rest-spaces" || x.surveyKind !== x.kind))) {
+  // an object on a roof (roof_m, the A1 roof garden) stands over its building by design
+  for (const o of furniture.objects.filter((x) => ROOFED.has(x.kind) && !x.p.roof_m && (x.source === "rest-spaces" || x.surveyKind !== x.kind))) {
     const pts = o.footprint ?? o.ring ?? o.axis ?? o.line ?? [o.point];
     const c = pts.reduce((a, p) => [a[0] + p[0] / pts.length, a[1] + p[1] / pts.length], [0, 0]);
     for (const { id, outer, holes } of shapes) if (pointInRing(c, outer) && !holes.some((h) => pointInRing(c, h))) inside.push(`${o.id} ${o.kind} in ${id}`);

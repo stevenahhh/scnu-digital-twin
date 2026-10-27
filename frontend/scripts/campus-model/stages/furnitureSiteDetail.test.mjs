@@ -92,3 +92,12 @@ test("an object on a roof is built roof_m above the terrain into the same kits",
   near(Math.max(...ys(ctx)), 13.5, "box top on the roof");
   assert.ok(Math.min(...ys(ctx)) > 12.8, "nothing below the roof");
 });
+
+test("paving_path: every leg a slab height_m above the ground, width_m wide", () => {
+  const ctx = flatContext();
+  B.paving_path(ctx, { id: "SD-T7", kind: "paving_path", line: [[0, 0], [M(4), 0], [M(4), M(3)]], p: { width_m: 1, height_m: 0.15 } });
+  near(Math.max(...ys(ctx)), 0.15, "slab top");
+  const xs = ctx.solid.mesh.positions.filter((_, i) => i % 3 === 0).map((x) => x / M(1));
+  near(Math.min(...xs), -0.5, "half a width past the first end");
+  assert.throws(() => B.paving_path(ctx, { id: "SD-T8", kind: "paving_path", point: [0, 0], p: {} }), /needs a LineString/);
+});
