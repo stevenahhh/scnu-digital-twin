@@ -163,6 +163,20 @@ describe("CampusLabelLayer", () => {
     expect(visibleSlots()[0].style.transform).toMatch(/^translate3d\(8px,/);
   });
 
+  it("rewrites every chip when the camera stops, even when the settled layout equals the one before the move", () => {
+    const entries = [entry("BLD_BACK")];
+    const { update, visibleSlots } = mount(entries);
+    const home = new Map([["BLD_BACK", { x: 300, y: 400, depth: 100, distance: 100 }]]);
+    update({ points: home });
+    const settled = visibleSlots()[0].style.transform;
+    // Mid-move the anchor slides off the edge: the chip is pinned to the 8 px margin...
+    update({ motion: true, points: new Map([["BLD_BACK", { x: -200, y: 400, depth: 100, distance: 100 }]]) });
+    expect(visibleSlots()[0].style.transform).toMatch(/^translate3d\(8px,/);
+    // ...and back home the same layout puts it back where it was.
+    update({ points: home });
+    expect(visibleSlots()[0].style.transform).toBe(settled);
+  });
+
   it("marks an estimated name with the glyph, a dashed chip and 명칭 추정 in the accessible name", () => {
     const entries = [entry("BLD_SCNU_R1", { displayName: "부속 시설", estimatedName: true, tier: 3, code: null })];
     const { container, update } = mount(entries);

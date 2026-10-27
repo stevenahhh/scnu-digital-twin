@@ -221,6 +221,9 @@ export function CampusLabelLayer({
 
       // 카메라가 움직이는 동안: 보이던 칩 묶음과 앵커로부터의 상대 위치를 그대로 두고 앵커만 따라간다(보임/숨김을 바꾸지 않는다).
       if (frame.motion && lastRef.current.layout) {
+        // 움직이는 동안 쓴 자리(앵커 따라가기·가장자리 고정)는 멈춘 뒤 배치가 같아도 다시 써야 한다. 지문을 비워 다음 정지 배치가
+        // 모든 칩을 다시 쓰고 놓지 않은 칩을 숨기게 한다(전에는 같은 배치면 건너뛰어 움직일 때 자리에 남았다).
+        lastRef.current.fingerprint = "";
         for (const [id, offset] of lastRef.current.placed) {
           const anchor = anchorOf.get(id);
           if (!anchor) {
