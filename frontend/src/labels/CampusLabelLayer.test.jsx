@@ -163,6 +163,17 @@ describe("CampusLabelLayer", () => {
     expect(visibleSlots()[0].style.transform).toMatch(/^translate3d\(8px,/);
   });
 
+  it("keeps a moving chip 12 px clear of the HUD", () => {
+    const entries = [entry("BLD_TOP")];
+    const { update, visibleSlots } = mount(entries);
+    const hud = { left: 0, top: 0, right: 1440, bottom: 60 };
+    update({ chrome: [hud], points: new Map([["BLD_TOP", { x: 300, y: 400, depth: 100, distance: 100 }]]) });
+    // Mid-drag the anchor slides up under the HUD: the chip is not hidden, it sits 12 px below the HUD.
+    update({ motion: true, chrome: [hud], points: new Map([["BLD_TOP", { x: 300, y: 20, depth: 100, distance: 100 }]]) });
+    const y = Number(visibleSlots()[0].style.transform.match(/translate3d\([^,]+,\s*(-?\d+)px/)[1]);
+    expect(y).toBeGreaterThanOrEqual(hud.bottom + 12);
+  });
+
   it("rewrites every chip when the camera stops, even when the settled layout equals the one before the move", () => {
     const entries = [entry("BLD_BACK")];
     const { update, visibleSlots } = mount(entries);

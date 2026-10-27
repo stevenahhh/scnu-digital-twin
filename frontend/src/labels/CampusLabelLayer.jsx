@@ -236,7 +236,15 @@ export function CampusLabelLayer({
           const rawX = anchor.x + offset.dx;
           const rawY = anchor.y + offset.dy;
           const x = Math.min(Math.max(rawX, area.left + MOTION_EDGE_PX), Math.max(area.left + MOTION_EDGE_PX, area.right - MOTION_EDGE_PX - size.hitWidth));
-          const y = Math.min(Math.max(rawY, area.top + MOTION_EDGE_PX), Math.max(area.top + MOTION_EDGE_PX, area.bottom - MOTION_EDGE_PX - size.hitHeight));
+          let y = Math.min(Math.max(rawY, area.top + MOTION_EDGE_PX), Math.max(area.top + MOTION_EDGE_PX, area.bottom - MOTION_EDGE_PX - size.hitHeight));
+          // HUD에 걸리면 HUD 12 px 아래(자리가 없으면 위)로 옮긴다(멈춘 배치의 chromeMargin과 같다).
+          for (const r of frame.chrome ?? []) {
+            const margin = 12;
+            if (x < r.right + margin && x + size.hitWidth > r.left - margin && y < r.bottom + margin && y + size.hitHeight > r.top - margin) {
+              const below = r.bottom + margin;
+              y = below + size.hitHeight <= area.bottom - MOTION_EDGE_PX ? below : Math.max(area.top + MOTION_EDGE_PX, r.top - margin - size.hitHeight);
+            }
+          }
           const clamped = x !== rawX || y !== rawY;
           const leader = clamped
             ? { from: { x: x + size.hitWidth / 2, y: y + (size.hitHeight + size.height) / 2 }, to: anchor }
