@@ -623,6 +623,76 @@ a follow-up: it needs letter-shaped geometry), road junctions a17 and a19 and b1
 a2, a3, a5, a8, a13, b3, c1, c3, d4, e1 and e4, where the remaining differences are trees or paint. The clipped shrub
 balls on the e2 lawn are left out: that nadir face could not be registered on the photo within 3 m.
 
+## VR site detail, second pass (site-detail-r2)
+
+The leftovers of the first pass, added to `site-detail.geojson` (231 features in all, 184 new), all estimated (추정):
+
+- Street furniture at every strip station, read on the VR cube faces at full resolution (2048 px, the band below the
+  40 m ground line of each face, f over r and b over l): bollards and delineator posts, bike and PM stands, bins,
+  handrails and guard rails along stairs, ramps and raised footways, campus signboards, notice and direction boards,
+  sign totems, entrance canopies, benches, flower pots, kerbed beds and their clipped hedges, and wheel stops in car-park
+  rows. New builders in `stages/furniture.mjs`: `bollard`, `bike_stands`, `bin`, `handrail`, `entrance_canopy`;
+  `bench`, `signboard`, `planter`, `fence`, `bike_rack`, `bus_stop_shelter` and the kiosk and sculpture plaza
+  structures are the survey's own builders.
+- Positions: each VR pixel is cast onto the ground from the station pose (scripts/perf/vr-stations.json, the corrected
+  poses of PR #89) and a face is used only where the markings data and the photo-traced objects, projected back into it,
+  land on what they mark (crossings, stall lines, bays, kerbs). Two faces were registered by least squares on four to
+  six such points: scene_e6 (0.5-1.0 m) and scene_d4 (0.6-1.6 m). Faces that do not fit (scene_d3 f/r, scene_e2 b/l,
+  scene_a5 r, the A10 plaza from scene_a10 l) were not used; items beyond 40 m were left out.
+- `hedge_text`: the hedge lettering 진리 정의 창조 on the scene_a16 slope (SD-A16-HT1), letter-shaped clipped hedges along
+  the road-marking Hangul strokes (lib/markingGlyphs.mjs), its baseline and extent traced on the NGII photo, where the
+  letters show (checked to about 1 m).
+- The first-pass leftovers: the E4 planter (the rough-stone kerb of the raised pine bed, SD-E4-K1) and the D4 planters
+  (two forecourt tree pits, SD-D4-T1, T2) are placed now; the C3 west row (SD-C3-W1, five stalls on the aisle paint
+  MK01402/MK01400); the E2 shrub balls stay out: scene_e2's nadir face still does not fit the pose.
+- `led_screen`: F1's LED screen (SD-F1-LED1) on the east wall of its glazed front block, an emissive panel of plain
+  vertical colour fields sampled from VR scene_f1 f (no image), in the node Furniture_Screen; its texture is both the
+  base colour and the emissive map, so it lights with the windows at night.
+
+| station | registration | built |
+|---|---|---|
+| scene_e6 | reg on MX00739/MX00801 (4 pts, 0.5-1.0 m; camera on the car-park plane ~13 m S of the record) | SD-E6-01 wheel stops, SD-E6-B1, B2 |
+| scene_e1 | pose (roundabout island and crossing within ~50 px) | SD-E1-B1..B5, SD-E1-S1, S2, SD-E1-P1..P4 |
+| scene_e2 | pose fits r and f (bays within ~40 px); b and l off (kerb paint across the real kerb), not used | SD-E2-H1, SD-E2-ST1 |
+| scene_e3 | pose (stall paint, crossing within ~40 px) | SD-E3-W1, SD-E3-S1, S2 |
+| scene_e4 | pose (re-measured in #89; r-face markers fit the junction) | SD-E4-C1, SD-E4-S1, SD-E4-K1 |
+| scene_e5 | pose (bay and footway markers within ~50 px) | SD-E5-C1, C2, SD-E5-H1, SD-E5-S1..S3 |
+| scene_e7 | pose (planter and crossing markers fit) | SD-E7-C1, SD-E7-B1, B2, SD-E7-BIN1, SD-E7-S1 |
+| scene_e8 | pose (road-edge markers fit) | SD-E8-B1, SD-E8-S1..S3, SD-E8-PM1 |
+| scene_d1 | pose (crossing markers on the bars) | SD-D1-H1, SD-D1-P1, P2, SD-D1-S1, S2 |
+| scene_d2 | pose (stair and bay markers fit) | SD-D2-01 rail, SD-D2-S1, S2, SD-D2-B1, SD-D2-PM1 |
+| scene_d3 | pose fits face l (PM-bay and crossing markers); faces f and r are uncertain (the blue tent of face f does not land on a blue shape of the photo) | SD-D3-H1 |
+| scene_d4 | reg on RS-LS-D4STEPS and the kickboard bay MX00293 (6 pts, 0.6-1.6 m; camera ~9.6 m W of the record) | SD-D4-PM1, SD-D4-T1, T2, SD-D4-H1, H2 |
+| scene_d5 | pose (stall markers on the aisle line) | SD-D5-S1, SD-D5-P1 |
+| scene_c1 | pose (stair and pond markers fit) | SD-C1-B1, SD-C1-BIN1 |
+| scene_c2 | pose (bay and stair markers fit in f, crossing in r) | SD-C2-C1, SD-C2-01 stops, SD-C2-B1, SD-C2-H1, H2, SD-C2-S1, SD-C2-P1 |
+| scene_c3 | pose (crossing and stall-paint markers fit) | SD-C3-C1, SD-C3-H1, SD-C3-K1, SD-C3-BR1, SD-C3-W1 |
+| scene_c5 | pose (solved in #89; crossing markers fit) | SD-C5-W1, W2, SD-C5-H1, H2, SD-C5-P1..P4, SD-C5-S1 |
+| scene_b1 | pose (gate islands and canopy within 2-3 m) | SD-B1-P1, P2, SD-B1-PL1, SD-B1-S1 |
+| scene_b2 | pose (solved in #89; crossing markers fit) | SD-B2-B1, B2, SD-B2-PL3, SD-B2-S3 |
+| scene_b3 | pose (door threshold and corner of face r consistent) | SD-B3-C1, SD-B3-S1, SD-B3-K1, SD-B3-T1..T4 |
+| scene_b4 | pose (blue-bay markers fit) | SD-B4-B1, SD-B4-S1, SD-B4-T1, T2, SD-B4-P1 |
+| scene_b7 | pose (r1 rows within 2-3 m) | SD-B7-P1, P2, SD-B7-02 stops, SD-B7-PL1..PL3, SD-B7-T1, T2 |
+| scene_a1 | pose (bay and stall-paint markers fit) | SD-A1-C1, SD-A1-S1..S3, SD-A1-W1, W2 |
+| scene_a2 | pose (crossing markers on the bars; the totem of face f 2.6 m from SD-A1-S1) | SD-A2-ST1, SD-A2-B1, B2, SD-A2-BIN1, SD-A2-S1 |
+| scene_a3 | pose (crossing markers fit) | SD-A3-P1, SD-A3-H1, H2, SD-A3-S1 |
+| scene_a4 | pose (bus-bay outlines within 2-4 m of SD-A4-01) | SD-A4-01 stops, SD-A4-W2, SD-A4-B1, SD-A4-S1, SD-A4-P1 |
+| scene_a5 | face f (stall markers on the lines); face r's garden rays fall 10 m from the pavilion beside them (face r not used) | SD-A5-W1 |
+| scene_a6 | pose (centre-dash markers fit; face r's row 2.3 m from SD-A6-01) | SD-A6-W1, SD-A6-H1, H2, SD-A6-K1, SD-A6-BIN1, SD-A6-B1, SD-A6-HG1, HG2 |
+| scene_a8 | pose (stall-line markers fit in face r) | SD-A8-R1, SD-A8-S1, SD-A8-T1 |
+| scene_a9 | pose for face f; face r lands 2-3 m south of the wall RS0007W, so its benches are set on RS0006's line | SD-A9-B1..B4 |
+| scene_a10 | pose (booth 1.9 m from SD-A6-K1, ramp rails 0.6 m from SD-A6-H1/H2: cross-checks) | SD-A10-S1, S2 |
+| scene_a12 | pose (solved in #89; stall markers on the lines) | SD-A12-HG1, HG2, SD-A12-H1, SD-A12-BR1 |
+| scene_a13 | pose (road-edge markers on the edge lines) | SD-A13-W1, SD-A13-F1, SD-A13-P1, SD-A13-S1, SD-A13-H1 |
+| scene_a16 | photo (the letters are visible on the NGII sheet; strokes overlaid and checked to about 1 m) | SD-A16-HT1 |
+| scene_a15 | - | none |
+| scene_a17 | pose (lane-arrow and crossing markers fit) | SD-A17-BS1, SD-A17-B1, SD-A17-H1, H2, SD-A17-S1, S2, SD-A17-P1, P2, SD-A17-F1 |
+| scene_a19 | pose (fitted in the markings survey) | SD-A19-P1..P4, SD-A19-H1, SD-A19-B1, SD-A19-S1, SD-A19-F1, SD-A19-BIN1 |
+| scene_f3 | pose (stall markers on the lines) | SD-F3-B1, SD-F3-W1..W5, SD-F3-H1, H2, SD-F3-S1 |
+| scene_f2 | pose (stall markers on SD-F2-01/02) | SD-F2-01, 02 stops, SD-F2-W3, SD-F2-H1, SD-F2-P1 |
+| scene_001, scene_002 | - | none |
+| scene_f1 | pose (face d registered in the rest-space pass; face f plaza edge 3.9 m from the island) | SD-F1-P1, SD-F1-PL1, PL2 |
+
 ## Licence
 
 Source: **국토지리정보원 (NGII), 정사영상 2025, sheet 34702020 (순천020)**, metadata 202504000734702020, made by
