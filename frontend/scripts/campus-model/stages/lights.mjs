@@ -115,7 +115,8 @@ export function nearestSite(p, ok, maxM = 4, insetM = 0.3) {
 }
 
 // Placement contract of every standing pole (lamps, signal, sign and floodlight poles):
-//   - a pole whose base the photo shows (verdict shadow-root, by-eye-root or head-lean) or whose seed the photo shows on
+//   - a pole whose base the photo shows (verdict shadow-root, by-eye-root, head-lean, or epoch-root: read on other-year
+//     aerials registered to the sheet) or whose seed the photo shows on
 //     a median or island (site "median") stays off buildings only: the carriageway raster paints medians, islands and
 //     narrow footways as asphalt, and the photo outranks it;
 //   - any other pole (base not resolvable, metre-level seed) stays off carriageways (asphalt outside the A003 paved area)
@@ -125,7 +126,7 @@ export function nearestSite(p, ok, maxM = 4, insetM = 0.3) {
 export const POLE_MIN_SPACING_M = 1;
 const EVIDENCE_MOVE_M = 4;
 const UNRESOLVED_MOVE_M = 8;
-export const PHOTO_BASE_VERDICTS = new Set(["shadow-root", "by-eye-root", "head-lean"]);
+export const PHOTO_BASE_VERDICTS = new Set(["shadow-root", "by-eye-root", "head-lean", "epoch-root"]);
 export function checkPoles(poles, { onCarriageway, inBuilding }) {
   const moved = [];
   const offenders = [];

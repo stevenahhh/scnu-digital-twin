@@ -31,10 +31,12 @@ export const POLE_ROOTS = path.join(PHOTO, "pole-roots.json");
 const OBJECTS = path.join(PHOTO, "objects-campus.geojson");
 const RULE_SEEDS = path.join(PHOTO, "pole-seeds-rule.json");
 const REVIEW = path.join(PHOTO, "pole-review.json");
-// round 2: every other source tried for the unresolved poles (attempts, seed uncertainty, confidence)
+// rounds 2 and 3: every other source tried for the unresolved poles (attempts, seed uncertainty, confidence); round 3
+// adds `resolved` for a pole whose base other-year aerials registered to the sheet put within 0.5 m (epoch-root)
 const SOURCES = path.join(PHOTO, "pole-sources.json");
-// confidence of a placed base by method (estimate): detector-confirmed, by eye, floodlight head minus lean
-const CONFIDENCE = { "shadow-root": 0.9, "by-eye-root": 0.7, "head-lean": 0.6 };
+// confidence of a placed base by method (estimate): detector-confirmed, by eye, floodlight head minus lean, other-year aerials
+const CONFIDENCE = { "shadow-root": 0.9, "by-eye-root": 0.7, "head-lean": 0.6, "epoch-root": 0.6 };
+const EPOCH_MAX_RESIDUAL_M = 0.5;
 export const POLE_KINDS = ["street_lamp", "traffic_signal_pole", "sign_pole", "floodlight_pole"];
 const GSD = 0.25;
 const REFINE_RADIUS_M = 1;
@@ -92,11 +94,29 @@ function main() {
   const tried = JSON.parse(readFileSync(SOURCES, "utf8")).poles;
   // an unresolved pole stays at its seed, estimated, with what was tried and why it did not resolve
   const unresolved = (id) => ({ estimated: true, ...(tried[id] ?? {}) });
+  // a pole the other-year aerials resolve: base = seed + offset (EPSG:5186 metres), at least two independent epochs
+  // within 0.5 m (pole-sources.json `resolved`)
+  const epochRoot = (s) => {
+    const t = tried[s.id];
+    const q = t?.resolved;
+    if (!q) return null;
+    if (q.residualM > EPOCH_MAX_RESIDUAL_M || q.independentEpochs.length < 2) throw new Error(`${s.id}: epoch-root needs >= 2 independent epochs and residual <= ${EPOCH_MAX_RESIDUAL_M} m`);
+    const [E, N] = wgs84ToTm(...s.seed);
+    const root = tmToWgs84(E + q.offsetTmM[0], N + q.offsetTmM[1]).map((v) => round(v, 8));
+    const { resolved, ...rest } = t;
+    return { ...rest, verdict: "epoch-root", root, shiftM: round(Math.hypot(...q.offsetTmM), 2), residualM: q.residualM, residualKind: "largest distance of an epoch's base from the mean of the agreeing epochs, combined with the epoch-to-sheet registration sigma", confidence: CONFIDENCE["epoch-root"], epochRoot: resolved };
+  };
   const records = [];
   for (const s of seeds()) {
     const r = review[s.id];
     const record = { id: s.id, kind: s.kind, source: s.source, heightM: s.heightM, seed: s.seed.map((v) => round(v, 8)) };
     if (s.ruleType) record.ruleType = s.ruleType;
+    const fromEpochs = (!r || r.verdict === "site") ? epochRoot(s) : null;
+    if (fromEpochs) {
+      Object.assign(record, fromEpochs, { note: `base read on other-year aerials (${fromEpochs.epochRoot.independentEpochs.join(", ")}) registered to the sheet` });
+      records.push(record);
+      continue;
+    }
     if (!r) {
       Object.assign(record, { verdict: "unresolved", note: "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)", ...unresolved(s.id) });
       records.push(record);
@@ -148,7 +168,7 @@ function main() {
   const at = (q) => placed[Math.min(placed.length - 1, Math.round(q * (placed.length - 1)))];
   const residualStats = { resolved: placed.length, unresolved: records.filter((r) => r.verdict === "unresolved").length, maxM: placed.at(-1), medianM: placed.length % 2 ? placed[(placed.length - 1) / 2] : round((placed[placed.length / 2 - 1] + placed[placed.length / 2]) / 2, 2), p95M: at(0.95) };
   const doc = {
-    note: "Standing-pole bases read from the NGII 2025 orthophoto (sheet 34702020, 0.25 m GSD). verdict shadow-root: by-eye base confirmed by the shadow detector (lib/poleShadow.mjs) within 0.5 m, placed at the detected root; by-eye-root: base by eye (data/photo/pole-review.json); head-lean: floodlight head minus the relief lean; unresolved: no base visible, survey and data.go.kr poles stay at their seed (metre-level; site 'median' when the photo shows the seed on a median or island); rejected: no pole there (not drawn). Positions WGS84; residualM per pole; heights stay estimates (추정). Unresolved poles carry estimated: true, attempts (every other source tried in round 2: data/photo/pole-sources.json), seedUncertaintyM and confidence; placed poles carry confidence by method.",
+    note: "Standing-pole bases read from the NGII 2025 orthophoto (sheet 34702020, 0.25 m GSD). verdict shadow-root: by-eye base confirmed by the shadow detector (lib/poleShadow.mjs) within 0.5 m, placed at the detected root; by-eye-root: base by eye (data/photo/pole-review.json); head-lean: floodlight head minus the relief lean; epoch-root: base read by eye on other-year aerials (순천시 airmap 2013-2024) registered to the sheet, at least two independent epochs within 0.5 m (data/photo/pole-sources.json resolved); unresolved: no base visible, survey and data.go.kr poles stay at their seed (metre-level; site 'median' when the photo shows the seed on a median or island); rejected: no pole there (not drawn). Positions WGS84; residualM per pole; heights stay estimates (추정). Unresolved poles carry estimated: true, attempts (every other source tried in round 2: data/photo/pole-sources.json), seedUncertaintyM and confidence; placed poles carry confidence by method.",
     generator: "scripts/campus-model/fetch/poleRoots.mjs",
     sun: { ...SUN, note: "sun of the photo as estimated in data/photo/README.md (shadows fall west)" },
     counts,

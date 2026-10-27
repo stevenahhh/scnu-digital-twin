@@ -806,6 +806,14 @@ the survey kept on footways, verges and medians. `data/streetlights.json` is no 
   within 0.5 m), two-ray VR fixes from the resected stations (rays crossing at 20 degrees or more, both showing the pole
   base) and shadow tip plus estimated height. None qualified; each unresolved record carries `estimated`, `attempts`
   (method, result, reason), `seedUncertaintyM` and `confidence`, and `pole-roots.json` has `residualStats`.
+- Round 3 adds other-year aerials: the 순천시 airmap WMS (2013, 2015, 2017 at 10 cm, 2018-2024 at 12 cm; keyless, EPSG:5186;
+  kept outside the repository) is registered to the sheet around each pole on painted-feature windows (sigma 0.01-0.19 m
+  where it registers), and the base is read by eye on every registered epoch: each flight has its own sun and nadir, so
+  a pole hidden in 2025 can show its shadow root or the foot of its relief-leaning image in another year. A pole moves
+  (`epoch-root`) when at least two independent epochs agree within 0.5 m and the base lies within 0.5 m of their mean
+  (`pole-sources.json` `resolved`: offset from the seed in EPSG:5186 metres, picks, registration, residual). Two did
+  (OC0054, OC0130); Kakao skyview HD and the city's 2025 layer are the 2025 photo again. `epoch-root` counts as a photo
+  base for `checkPoles`.
 - The 67 lamps the old rule placed every 27 m along the A003 walkway outlines were seeds too
   (`data/photo/pole-seeds-rule.json`); none shows a pole on the photo, so none is drawn.
 - `checkPoles` (stages/lights.mjs) is the placement contract. A pole whose base the photo shows, or whose seed the photo

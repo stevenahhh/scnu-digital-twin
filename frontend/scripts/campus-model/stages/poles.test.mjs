@@ -73,9 +73,9 @@ test("checkPoles moves a pole off a carriageway and out of a building, and flags
 });
 
 test("pole-roots.json: residuals within their thresholds, rule seeds only with photo evidence, no duplicates within 1 m", () => {
-  const limits = { "shadow-root": 0.25, "by-eye-root": 0.25, "head-lean": 0.5 };
+  const limits = { "shadow-root": 0.25, "by-eye-root": 0.25, "head-lean": 0.5, "epoch-root": 0.5 };
   for (const pole of ROOTS.poles) {
-    assert.ok(["shadow-root", "by-eye-root", "head-lean", "unresolved", "rejected"].includes(pole.verdict), `${pole.id} verdict ${pole.verdict}`);
+    assert.ok(["shadow-root", "by-eye-root", "head-lean", "epoch-root", "unresolved", "rejected"].includes(pole.verdict), `${pole.id} verdict ${pole.verdict}`);
     if (pole.root) assert.ok(pole.residualM <= limits[pole.verdict], `${pole.id} residual ${pole.residualM} m over ${limits[pole.verdict]} m`);
     if (pole.source === "rule") assert.ok(pole.verdict === "rejected" || pole.root, `rule seed ${pole.id} is drawn without photo evidence`);
     if (pole.verdict === "rejected") assert.ok(pole.note, `${pole.id} rejected without a reason`);
@@ -89,8 +89,8 @@ test("pole-roots.json: residuals within their thresholds, rule seeds only with p
   }
 });
 
-test("pole-roots.json round 2: placed poles within 0.5 m with a confidence; unresolved poles estimated at their seed with every source tried", () => {
-  const methods = ["ngii-wide-search", "vworld-z19", "esri-z18", "vr-two-ray", "shadow-tip"];
+test("pole-roots.json rounds 2 and 3: placed poles within 0.5 m with a confidence; unresolved poles estimated at their seed with every source tried", () => {
+  const methods = ["ngii-wide-search", "vworld-z19", "esri-z18", "vr-two-ray", "shadow-tip", "suncheon-airmap", "kakao-skyview-hd"];
   const placed = [];
   for (const pole of ROOTS.poles) {
     if (pole.root) {
@@ -112,6 +112,29 @@ test("pole-roots.json round 2: placed poles within 0.5 m with a confidence; unre
   assert.equal(stats.resolved, placed.length);
   assert.equal(stats.resolved + stats.unresolved, ROOTS.poles.filter((p) => p.verdict !== "rejected").length);
   assert.equal(stats.maxM, Math.max(...placed));
+});
+
+test("pole-roots.json round 3: an epoch-root pole sits at its seed plus the offset read on at least two independent epochs within 0.5 m", async () => {
+  const { tmToWgs84, wgs84ToTm } = await import("../../../src/geo/epsg5186.mjs");
+  const epochPoles = ROOTS.poles.filter((p) => p.verdict === "epoch-root");
+  assert.deepEqual(epochPoles.map((p) => p.id).sort(), ["OC0054", "OC0130"]);
+  for (const pole of epochPoles) {
+    const q = pole.epochRoot;
+    assert.equal(q.method, "epoch-root");
+    assert.ok(q.independentEpochs.length >= 2 && q.independentEpochs.every((e) => /^20(1[3-9]|2[0-4])_1[02]cm$/.test(e)), `${pole.id} independent epochs ${q.independentEpochs}`);
+    assert.ok(q.maxDevM <= 0.5 && pole.residualM <= 0.5, `${pole.id} picks within ${q.maxDevM} m of the base, residual ${pole.residualM} m`);
+    const picks = q.independentEpochs.map((e) => q.picksTmM[e]);
+    assert.ok(picks.some((a, i) => picks.slice(i + 1).some((b) => Math.hypot(a[0] - b[0], a[1] - b[1]) <= 0.5)), `${pole.id}: two independent epochs agree within 0.5 m`);
+    for (const e of q.independentEpochs) assert.ok(q.registration[e]?.windows >= 3 && q.registration[e].sigmaM <= 0.2, `${pole.id} ${e} registered`);
+    // every independent pick lies within 0.5 m of the placed base
+    for (const e of q.independentEpochs) assert.ok(Math.hypot(q.picksTmM[e][0] - q.offsetTmM[0], q.picksTmM[e][1] - q.offsetTmM[1]) <= 0.5, `${pole.id} ${e} pick`);
+    const [E, N] = wgs84ToTm(...pole.seed);
+    const expected = tmToWgs84(E + q.offsetTmM[0], N + q.offsetTmM[1]);
+    const [rE, rN] = wgs84ToTm(...pole.root);
+    assert.ok(Math.hypot(rE - E - q.offsetTmM[0], rN - N - q.offsetTmM[1]) < 0.01, `${pole.id} root ${pole.root} vs ${expected}`);
+    assert.ok(pole.confidence > 0.5 && pole.confidence <= 1 && pole.estimated === undefined, `${pole.id} placed, not estimated`);
+    assert.ok(pole.attempts.some((a) => a.method === "suncheon-airmap" && a.result === "resolved"), `${pole.id} attempts`);
+  }
 });
 
 test("signal heads face the traffic in the near lanes of the nearest approach (right-hand traffic)", async () => {
