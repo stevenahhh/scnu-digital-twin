@@ -63,3 +63,8 @@ export function createVWorldSelectionHighlight({ Cesium, scene, getModel, getMod
   };
   return { set, dispose };
 }
+
+// Cesium 고르기 결과에서 glTF 노드 이름: 런타임 노드(detail.node)가 감싼 node.name, 옛 형태(detail.node.name·node.name·mesh.name) 순.
+export function pickedNodeName(picked) {
+  return picked?.detail?.node?.node?.name ?? picked?.detail?.node?.name ?? picked?.node?.name ?? picked?.mesh?.name ?? null;
+}

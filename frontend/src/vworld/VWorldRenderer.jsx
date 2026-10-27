@@ -22,7 +22,7 @@ import { createCampusGltfOverlay, createCampusModelMatrix, removeCampusGltfOverl
 import { createVWorldLabelProjector } from "./labelProjection.mjs";
 import { applyCampusZoomLimits } from "./cameraLimits.mjs";
 import { createVWorldCampusCamera } from "./campusCamera.mjs";
-import { createVWorldSelectionHighlight } from "./selectionHighlight.mjs";
+import { createVWorldSelectionHighlight, pickedNodeName } from "./selectionHighlight.mjs";
 import { CAMPUS_BLOCKED_ELEMENT_IDS, CAMPUS_BUILDING_MAP, resolveBuildingMeta } from "../utils/buildingLabels.mjs";
 import { campusCenterOf, glbLabelAnchors, glbNodeBoxes } from "./labelAnchors.mjs";
 import commonElements from "../../../common/data/common_elemetns.json";
@@ -293,8 +293,8 @@ export default function VWorldRenderer({
     const handler = Cesium.ScreenSpaceEventHandler ? new Cesium.ScreenSpaceEventHandler(scene.canvas) : null;
     handler?.setInputAction((movement) => {
       const picked = scene.pick?.(movement.endPosition);
-      // Cesium 1.99는 고른 노드를 picked.detail.node에 둔다(picked.node가 아니다).
-      const name = picked?.primitive === campusGltfModelRef.current ? picked?.detail?.node?.name ?? picked?.node?.name ?? picked?.mesh?.name ?? null : null;
+      // VWorld의 Cesium은 고른 노드를 picked.detail.node(런타임 노드)에 두고, glTF 노드 이름은 그 안의 node.name에 있다.
+      const name = picked?.primitive === campusGltfModelRef.current ? pickedNodeName(picked) : null;
       const meta = name ? resolveBuildingMeta(name, { elementNames, buildingMap: CAMPUS_BUILDING_MAP, blockedIds: CAMPUS_BLOCKED_ELEMENT_IDS }) : null;
       const id = meta && boxById.has(meta.elementId) ? meta.elementId : null;
       setHoveredLabelId((current) => (current === id ? current : id));

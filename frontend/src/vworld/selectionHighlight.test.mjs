@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { DIM_MODULATE, createVWorldSelectionHighlight } from "./selectionHighlight.mjs";
+import { DIM_MODULATE, createVWorldSelectionHighlight, pickedNodeName } from "./selectionHighlight.mjs";
 
 function fakeCesium() {
   class Color { constructor(r, g, b, a) { Object.assign(this, { r, g, b, a }); } withAlpha(a) { return Object.assign(new Color(this.r, this.g, this.b, a), { hex: this.hex }); } }
@@ -50,4 +50,10 @@ test("hover adds a hover-colour box, clearing restores the overlay, nothing draw
   const early = setup({ matrix: null });
   early.highlight.set({ selectedId: "BLD_C1" });
   assert.equal(early.added.length, 0);
+});
+
+test("reads the glTF node name from the runtime node a Cesium pick returns", () => {
+  assert.equal(pickedNodeName({ detail: { node: { node: { name: "BLD_C1" } } } }), "BLD_C1");
+  assert.equal(pickedNodeName({ detail: { node: { name: "BLD_D2" } } }), "BLD_D2");
+  assert.equal(pickedNodeName({ primitive: {} }), null);
 });
