@@ -483,7 +483,7 @@ if (import.meta.main) {
   const { buildFallback } = await import("./fallback.mjs");
   const { buildConnectors, plazaLinks, poiInputs, walkablePolygons } = await import("./connectors.mjs");
   const { NetGraph } = await import("./graph.mjs");
-  const { buildWalkways, statsLine: walkwayStats } = await import("./walkways.mjs");
+  const { buildWalkways, keepSurfacesOf, statsLine: walkwayStats } = await import("./walkways.mjs");
   const { simulationToTm } = await import("../../../src/geo/epsg5186.mjs");
   const DATA = path.join(REPO, "backend/simulation/data");
   const baselineFile = Bun.file(PATHS.baseline);
@@ -520,6 +520,8 @@ if (import.meta.main) {
   const sidewalkPolygons = walkable.filter((w) => w.class === "sidewalk");
   const notCarriageway = [...sidewalkPolygons, ...islandPolys];
   const { collection, stats } = assembleNetwork({ roads: ctx.roads, graph, pois: poiFeatures, kerbPieces: ctx.kerbs.pieces, policy, old, roadPolygons: ctx.roads.polygons, sidewalkPolygons: notCarriageway });
+  const dropped = keepSurfacesOf(walkways, new Set(collection.features.filter((f) => f.properties.feature_type === "edge").map((f) => f.id)));
+  console.log(`estimated surfaces of pruned edges removed: ${dropped.strips} strips, ${dropped.approaches} crossing approaches, ${dropped.crossings} estimated crossings`);
   const islandRoutes = routeAroundIslands(collection.features, islands);
   console.log(`gate islands: ${islands.length}; car edges split round them: ${islandRoutes.split.map((r) => `${r.edge} ${r.from_m}-${r.to_m} m (gaps ${r.forwardGapM} / ${r.reverseGapM} m)`).join(", ") || "none"}${islandRoutes.unresolved.length ? `; UNRESOLVED ${JSON.stringify(islandRoutes.unresolved)}` : ""}`);
   console.log(`lane offset caps on ${addLaneClearance(collection.features, { roadPolygons: ctx.roads.polygons, sidewalkPolygons: notCarriageway })} car edges`);

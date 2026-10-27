@@ -464,4 +464,18 @@ export function buildWalkways({ graph, walkable = [], roadPolygons = [], buildin
   return { strips, approaches, crossings, moved, stats };
 }
 
+// The network build prunes person edges outside the main component after the walkways are drawn; the estimated strips,
+// crossing approaches and estimated crossings of a pruned edge go with it, so no walkable surface remains for an edge
+// that is not in the network. edgeIds: the ids of the edges kept. Returns the number removed per kind.
+export function keepSurfacesOf(walkways, edgeIds) {
+  const edgeOf = { strips: (x) => x.source_ref, approaches: (x) => x.id.slice("CWAPPROACH_".length).replace(/_\d+_\d+$/, ""), crossings: (x) => x.id.slice("CWEST_".length).replace(/_\d+_\d+$/, "") };
+  const removed = {};
+  for (const [key, of] of Object.entries(edgeOf)) {
+    const kept = walkways[key].filter((x) => edgeIds.has(of(x)));
+    removed[key] = walkways[key].length - kept.length;
+    walkways[key] = kept;
+  }
+  return removed;
+}
+
 export const statsLine = (s) => `walkways: ${s.movedNodes} nodes moved off the carriageway, ${s.rerouted} estimated edges re-drawn (+${s.rerouteGrowthM} m), ${s.crosswalksRedrawn} crosswalk lines re-drawn through their polygon, ${s.droppedCrossingEdges.length} carriageway-crossing estimated edges dropped, ${s.rejoined.length} edges without any route replaced by a walkable link${s.rejoined.length ? ` (${s.rejoined.map((r) => (r.dropped ? `${r.edge} dropped` : `${r.edge} -> ${r.via} ${r.from}-${r.to} ${r.length_m} m`)).join(", ")})` : ""}, ${s.strips} estimated walkway strips (${s.stripM} m of line), ${s.approaches} crossing approaches (estimated), ${s.estimatedCrossings.length} estimated crossings on ${s.estimatedCrossings.reduce((t, c) => t + c.carriageway_m, 0).toFixed(1)} m of carriageway, ${s.unresolved.length} unresolved, ${s.sidewalkOnVehicle.length} measured stretches on the carriageway`;

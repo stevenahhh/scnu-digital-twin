@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { NetGraph } from "./graph.mjs";
 import { sampleLine } from "./geom.mjs";
-import { CLS, buildWalkways, surfaceClassifier } from "./walkways.mjs";
+import { CLS, buildWalkways, keepSurfacesOf, surfaceClassifier } from "./walkways.mjs";
 
 const closed = (pts) => [...pts, pts[0]];
 const rect = (x0, y0, x1, y1) => closed([[x0, y0], [x1, y0], [x1, y1], [x0, y1]]);
@@ -155,4 +155,15 @@ test("an estimated edge with no route at all whose ends stay connected without i
   const out = buildWalkways({ graph: g, walkable: [], roadPolygons: [], buildings, warn: quiet });
   assert.deepEqual(g.edges.map((e) => e.id), ["EDGE_A"]);
   assert.deepEqual(out.stats.rejoined, [{ edge: "EDGE_X", dropped: true }]);
+});
+
+test("estimated surfaces of an edge the network build pruned are removed; those of kept edges stay", () => {
+  const w = {
+    strips: [{ id: "WALKWAY_EDGE_A_0", source_ref: "EDGE_A" }, { id: "WALKWAY_EDGE_B_X_0", source_ref: "EDGE_B_X" }],
+    approaches: [{ id: "CWAPPROACH_EDGE_A_0_1" }, { id: "CWAPPROACH_EDGE_B_X_2_0" }],
+    crossings: [{ id: "CWEST_EDGE_B_X_0_12" }, { id: "CWEST_EDGE_A_1_3" }],
+  };
+  const removed = keepSurfacesOf(w, new Set(["EDGE_A"]));
+  assert.deepEqual(removed, { strips: 1, approaches: 1, crossings: 1 });
+  assert.deepEqual([w.strips.map((x) => x.id), w.approaches.map((x) => x.id), w.crossings.map((x) => x.id)], [["WALKWAY_EDGE_A_0"], ["CWAPPROACH_EDGE_A_0_1"], ["CWEST_EDGE_A_1_3"]]);
 });
