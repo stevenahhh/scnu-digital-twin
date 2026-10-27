@@ -34,3 +34,40 @@ export function calibrateCrownInstance([r, g, b], out = [0, 0, 0]) {
   out[2] = y + (b - y) * CROWN_INSTANCE_HUE_SPREAD;
   return out;
 }
+
+// ---- foliage cards (generator stages/trees.mjs: Trees_<kind>_foliage, materials Tree_Foliage_<kind> with
+// extras.crownMaterial naming the crown material whose calibration and autumn palette they share).
+export const crownMaterialName = (material) => material?.userData?.crownMaterial ?? material?.name;
+// Crowns that carry foliage cards: near the camera they shrink to a core under the cards and they cast no shadow (the
+// alpha-tested cards cast the tree's shadow instead).
+export const FOLIAGE_CROWN_PATTERN = /^Trees_(ginkgo|broadleaf|pine|metasequoia|conifer|canopy)_crown$/;
+// Distance LOD in scene units (0.6242 per metre): the cards fade out (collapse per instance) between start and end,
+// about 136-152 m, and the crown grows from FOLIAGE_CORE x its width back to its full fitted width over the same band.
+export const FOLIAGE_LOD = Object.freeze({ start: 85, end: 95, core: 0.6 });
+// Stable per-species salt for the hashed autumn profile, so a tree's crown and its cards draw the same colour.
+export function autumnSalt(nodeName) {
+  const key = String(nodeName ?? "").replace(/_(crown|foliage)$/, "");
+  let h = 2166136261;
+  for (let i = 0; i < key.length; i += 1) h = Math.imul(h ^ key.charCodeAt(i), 16777619) >>> 0;
+  return h % 1000003;
+}
+// Vertex shader patch for three's MeshStandardMaterial (onBeforeCompile): mode "cards" collapses each instance beyond
+// the LOD band, mode "core" narrows the crown inside it. The instance origin's distance to the camera decides.
+export function patchFoliageLod(shader, mode, lod = FOLIAGE_LOD) {
+  const f = (v) => v.toFixed(3);
+  const apply = mode === "cards"
+    ? `transformed *= 1.0 - smoothstep(${f(lod.start)}, ${f(lod.end)}, lodDist);`
+    : `transformed.xz *= mix(${f(lod.core)}, 1.0, smoothstep(${f(lod.start)}, ${f(lod.end)}, lodDist));`;
+  shader.vertexShader = shader.vertexShader.replace(
+    "#include <begin_vertex>",
+    `#include <begin_vertex>
+#ifdef USE_INSTANCING
+  vec4 lodOrigin = modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+#else
+  vec4 lodOrigin = modelMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+#endif
+  float lodDist = distance(lodOrigin.xyz, cameraPosition);
+  ${apply}`,
+  );
+  return shader;
+}
