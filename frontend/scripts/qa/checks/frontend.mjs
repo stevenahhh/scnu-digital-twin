@@ -858,7 +858,8 @@ export const FRONTEND_CHECKS = [
       const readings = [];
       for (let i = 0; i < 10; i += 1) {
         readings.push(await ctx.inPage((qa) => ({
-          chip: qa.txt(qa.all("button[data-qa=campus-label]").find((el) => el.getAttribute("aria-pressed") === "true")) || null,
+          // The building name without the code badge ("C1 도서관" -> 도서관), like chipByText.
+          chip: (() => { const el = qa.all("button[data-qa=campus-label]").find((b) => b.getAttribute("aria-pressed") === "true"); return el ? qa.chipName(el) : null; })(),
           mesh: qa.one("[data-qa=campus-map-layer]")?.getAttribute("data-selected-id") ?? null,
           title: qa.txt(qa.one("[data-qa=selection-inspector] h2,[data-qa=selection-inspector] h3")) || null,
         })));

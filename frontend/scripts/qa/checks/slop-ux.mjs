@@ -19,7 +19,8 @@ async function inspectorTitleVsChip(ctx) {
     const pressed = qa.all("button[data-qa=campus-label]").find((el) => el.getAttribute("aria-pressed") === "true");
     const inspector = qa.one("[data-qa=selection-inspector]");
     const titleEl = inspector?.querySelector("h1,h2,h3") ?? [...document.querySelectorAll("[data-qa=dashboard-panel] h2,[data-qa=dashboard-panel] h3")].find((el) => qa.visible(el));
-    return { chip: pressed ? qa.txt(pressed) : null, title: titleEl ? qa.txt(titleEl) : null, inspectorHook: Boolean(inspector) };
+    // chipName: the building name without the code badge ("C1 도서관" -> 도서관), the string the title is compared with.
+    return { chip: pressed ? qa.chipName(pressed) : null, title: titleEl ? qa.txt(titleEl) : null, inspectorHook: Boolean(inspector) };
   });
   return result(m.chip === "도서관" && m.title === m.chip, m, "identical string (도서관)");
 }
