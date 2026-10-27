@@ -605,9 +605,10 @@ export default function VWorldRenderer({
                   </button>
                 </div>
               )}
-              {/* 공용 Button(보조): 다른 단추와 같은 크기·굵기·모서리(V-F-35, 굵기 800 없음: V-F-23). */}
+              {/* 공용 Button(보조, 작은 크기): 지도 위 다른 단추와 같은 크기·굵기·모서리(V-F-35, 굵기 800 없음: V-F-23). */}
               <Button
                 ref={d4OpenerRef}
+                size="sm"
                 variant="secondary"
                 className="pointer-events-auto"
                 onClick={() => {
