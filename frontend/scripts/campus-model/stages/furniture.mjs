@@ -36,6 +36,10 @@ export const POLE_ROOTS = process.env.POLE_ROOTS_FILE ?? path.join(HERE, "..", "
 export const GATE_STRUCTURES = process.env.GATE_STRUCTURES_FILE ?? path.join(HERE, "..", "data", "photo", "gate-structures.geojson");
 // Lamps the VR shows and the photo survey missed (base from the photo shadow root); VR_LAMPS_FILE swaps it.
 export const VR_LAMPS = process.env.VR_LAMPS_FILE ?? path.join(HERE, "..", "data", "photo", "vr-lamps.geojson");
+// Ground-level site detail the VR stations show within about 40 m and the survey lacks (clipped hedges and shrub masses,
+// kerbed lawn islands and tree pits, car-park stall rows and wheel stops, an entrance stair), placed on the NGII 2025
+// photo with standard dimensions (estimated; data/photo/README.md "VR site detail"); SITE_DETAIL_FILE swaps it (tests).
+export const SITE_DETAIL = process.env.SITE_DETAIL_FILE ?? path.join(HERE, "..", "data", "photo", "site-detail.geojson");
 export const OUTLINE_REVIEW = process.env.OUTLINE_REVIEW_FILE ?? path.join(HERE, "..", "data", "photo", "outline-review.json");
 const M = metres;
 
@@ -144,6 +148,7 @@ export function loadFurniture() {
   const features = [
     ...data.features.map((f) => ({ ...f, source: "survey" })),
     ...rest.features.map((f) => ({ ...f, source: "rest-spaces" })),
+    ...(existsSync(SITE_DETAIL) ? JSON.parse(readFileSync(SITE_DETAIL, "utf8")).features : []).map((f) => ({ ...f, source: "site-detail" })),
     ...gate.features.map((f) => ({ ...f, source: "survey" })),
     ...(existsSync(VR_LAMPS) ? JSON.parse(readFileSync(VR_LAMPS, "utf8")).features : []).map((f) => ({ ...f, source: "survey" })),
   ];
@@ -464,6 +469,7 @@ export function duplicatesOf(candidates, existing, radiusM = 3) {
 // Survey pairs that touch by design (one structure surveyed in parts) are listed, not counted.
 export const AUDIT_COMPOUNDS = {
   "OC0064+OC0065": "the two crossing bars of one X-shaped pergola in the pocket park",
+  "SD-E3-06+SD-E3-07": "a clipped shrub and the small ball beside it (VR scene_e3 d)",
 };
 export function auditDuplicates(objects, lamps = [], benches = [], radiusM = 3) {
   const items = [
@@ -1444,6 +1450,69 @@ B.signboard = (ctx, o) => {
   }
 };
 
+// ---------------------------------------------------------------- VR site detail (data/photo/site-detail.geojson)
+// Standard dimensions, every one an estimate (추정): clipped hedge 0.8 m wide, 1.0 m tall; stall 2.5 x 5.0 m with
+// 0.1 m white dividers (주차장법 시행규칙 제3조: 일반형 2.5 x 5.0 m); wheel stop 1.6 x 0.15 x 0.12 m, 0.9 m in from the
+// stall's back. Paint lies 0.045 m over the ground, just above the markings stage's 0.04 m.
+const SITE = { hedgeWidthM: 0.8, hedgeHeightM: 1.0, stallWidthM: 2.5, stallDepthM: 5.0, paintM: 0.1, paintLiftM: 0.045 };
+const shrubPaint = (o) => {
+  const k = 0.9 + mulberry32([...o.id].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) | 0, 7))() * 0.2;
+  const base = paintOf(o.p.colour, C.shrub, o.id);
+  return base.map((v, i) => (i < 3 ? Math.min(255, Math.round(v * k)) : v));
+};
+// Clipped hedge along a line (width_m, height_m), or a clipped shrub mass: a Polygon, or a Point with radius_m (a
+// round topiary), drawn as a body and a slightly inset crown.
+B.hedge = (ctx, o) => {
+  const h = o.p.height_m ?? SITE.hedgeHeightM;
+  const paint = shrubPaint(o);
+  if (o.line) {
+    wall(ctx, ctx.solid, o.line, o.p.width_m ?? SITE.hedgeWidthM, h, paint);
+    return;
+  }
+  const ring = o.ring ?? disc(o.point, M(o.p.radius_m ?? 0.6), 10);
+  const crown = offsetLine([...ring, ring[0]], insideSign(ring) * M(Math.min(0.15, h * 0.15))).slice(0, -1);
+  const top = (x, z) => ctx.groundAt(x, z) + M(h * 0.82);
+  ctx.solid.prism(ring, ctx.minGround(ring) - M(0.1), top, paint);
+  ctx.solid.prism(crown, top, (x, z) => ctx.groundAt(x, z) + M(h), paint);
+};
+// Car-park stall row: the LineString runs along the stalls' open (aisle) end from the first divider to the last; the
+// stalls lie on `side` (left or right walking along it), depth_m deep, `stalls` of them (default length / 2.5 m). Skewed
+// rows (dividers not square to the row, as the photo shows them) give divider_bearing_deg, the compass bearing of a
+// divider from the aisle into the stall; depth_m is then measured along the divider. Draws the dividers (unless
+// dividers is false), the back line when back_line, the
+// aisle-end line when front_line (boxed bays), plus wheel_stops.
+export function stallRow(line, { stalls, side = "left", depthM = SITE.stallDepthM, bearingDeg } = {}) {
+  const [a, b] = [line[0], line.at(-1)];
+  const lengthM = Math.hypot(b[0] - a[0], b[1] - a[1]) / M(1);
+  const n = stalls ?? Math.max(1, Math.round(lengthM / SITE.stallWidthM));
+  const u = [(b[0] - a[0]) / M(lengthM), (b[1] - a[1]) / M(lengthM)];
+  const v = bearingDeg !== undefined ? [Math.sin((bearingDeg * Math.PI) / 180), -Math.cos((bearingDeg * Math.PI) / 180)] : side === "left" ? [u[1], -u[0]] : [-u[1], u[0]];
+  const at = (sM, tM) => [a[0] + u[0] * M(sM) + v[0] * M(tM), a[1] + u[1] * M(sM) + v[1] * M(tM)];
+  const dividers = Array.from({ length: n + 1 }, (_, k) => [at((lengthM * k) / n, 0), at((lengthM * k) / n, depthM)]);
+  const stops = Array.from({ length: n }, (_, k) => ({ centre: at((lengthM * (k + 0.5)) / n, depthM - 0.9), u }));
+  return { n, lengthM, u, v, dividers, stops, back: [at(0, depthM), at(lengthM, depthM)] };
+}
+function paintStrip(ctx, p, q, widthM, paint) {
+  const pts = densify([p, q], 1);
+  const len = Math.hypot(q[0] - p[0], q[1] - p[1]);
+  const n = [-(q[1] - p[1]) / len * M(widthM / 2), (q[0] - p[0]) / len * M(widthM / 2)];
+  for (let i = 0; i + 1 < pts.length; i += 1) {
+    const [c, d] = [pts[i], pts[i + 1]];
+    ctx.solid.flat([[c[0] - n[0], c[1] - n[1]], [d[0] - n[0], d[1] - n[1]], [d[0] + n[0], d[1] + n[1]], [c[0] + n[0], c[1] + n[1]]], [], (x, z) => ctx.groundAt(x, z) + M(SITE.paintLiftM), paint);
+  }
+}
+B.stall_row = (ctx, o) => {
+  const row = stallRow(o.line, { stalls: o.p.stalls, side: o.p.side, depthM: o.p.depth_m ?? SITE.stallDepthM, bearingDeg: o.p.divider_bearing_deg });
+  const paint = paintOf(o.p.colour, C.white, o.id);
+  // dividers: false where the markings data already paints the row (only the wheel stops are added)
+  if (o.p.dividers !== false) for (const [p, q] of row.dividers) paintStrip(ctx, p, q, SITE.paintM, paint);
+  if (o.p.back_line) paintStrip(ctx, ...row.back, SITE.paintM, paint);
+  if (o.p.front_line) paintStrip(ctx, row.dividers[0][0], row.dividers.at(-1)[0], SITE.paintM, paint);
+  if (!o.p.wheel_stops) return;
+  const stop = paintOf(o.p.stopColour, C.concreteDark, o.id);
+  for (const s of row.stops) ctx.solid.box(frame([s.centre[0], ctx.groundAt(...s.centre), s.centre[1]], s.u), [-0.8, 0.8], [-0.075, 0.075], [-0.03, 0.12], stop);
+};
+
 B.floodlight_pole = (ctx, o) => {
   const at = o.point;
   const g = ctx.groundAt(...at);
@@ -1803,8 +1872,8 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     const before = ctx.solid.triangleCount + ctx.glass.triangleCount;
     if (builder(ctx, o) === false) continue;
     const kind = o.kind === "plaza_structure" ? `plaza_structure/${o.subtype}` : o.kind;
-    // Objects of rest-spaces.geojson are placed from the VR, not surveyed on the photo: counted as estimated.
-    tally(kind, o.source === "rest-spaces");
+    // Objects of rest-spaces.geojson and site-detail.geojson are placed from the VR, not surveyed on the photo: counted as estimated.
+    tally(kind, o.source === "rest-spaces" || o.source === "site-detail");
     built.push([o.id, kind, Number(o.heightM.toFixed(2)), o.heightSource, 1, ctx.solid.triangleCount + ctx.glass.triangleCount - before]);
     // rest-space instances: catalogue kinds given dims, or survey objects retyped to a catalogue kind
     if (REST_TYPES[o.kind] && (o.source === "rest-spaces" || o.p.dims !== undefined || o.surveyKind !== o.kind)) restSpaces.push([o.id, o.kind, REST_TYPES[o.kind].dimsSource, o.p.vr_scene ?? null, o.p.photo_support ?? null, true]);
@@ -1835,7 +1904,7 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
   const furnitureMaterial = glb.addMaterial({ name: "Furniture", pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1], metallicFactor: 0, roughnessFactor: 0.82 } });
   const glassMaterial = glb.addMaterial({ name: "Furniture_Glass", pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1], metallicFactor: 0, roughnessFactor: 0.35 }, alphaMode: "BLEND", doubleSided: true });
   const extras = {
-    source: "data/photo/objects-campus.geojson (NGII 2025 orthophoto survey, 175 objects; positions from the photo) and data/photo/rest-spaces.geojson (VR-located rest spaces, the A19 gate sign and the RS-LS VR landscape items: steps, the A1 pond, a sign stone, a PM rack; positions estimated); shapes, colours and heights estimated from the SCNU 360 VR tour (visual reference only)",
+    source: "data/photo/objects-campus.geojson (NGII 2025 orthophoto survey, 175 objects; positions from the photo) and data/photo/rest-spaces.geojson (VR-located rest spaces, the A19 gate sign and the RS-LS VR landscape items: steps, the A1 pond, a sign stone, a PM rack; positions estimated) and data/photo/site-detail.geojson (VR station site detail within about 40 m: clipped hedges and shrub masses, lawn islands, tree pits, car-park stall rows and wheel stops, an entrance stair; positions on the photo or registered VR nadir faces, standard dimensions estimated); shapes, colours and heights estimated from the SCNU 360 VR tour (visual reference only)",
     heightsNote: "every height is an estimate, not a measurement; objects lists [id, kind, height m, height source, estimated]",
     counts,
     excluded: furniture.excluded,
@@ -1861,7 +1930,7 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
 
   const summary = Object.entries(counts).sort(([a], [b]) => a.localeCompare(b)).map(([kind, c]) => `${kind} ${c.surveyed}${c.estimated ? `+${c.estimated}e` : ""}`).join(", ");
   console.log(
-    `furniture: ${built.filter(([id]) => !id.startsWith("RS")).length} surveyed objects + ${built.filter(([id]) => id.startsWith("RS")).length} VR-placed (rest-spaces.geojson) + ${lamps.length} lamps at photo pole bases + ${benches.length} VR plaza benches (추정); ` +
+    `furniture: ${built.filter(([id]) => !id.startsWith("RS") && !id.startsWith("SD")).length} surveyed objects + ${built.filter(([id]) => id.startsWith("RS")).length} VR-placed (rest-spaces.geojson) + ${built.filter(([id]) => id.startsWith("SD")).length} VR site detail (site-detail.geojson) + ${lamps.length} lamps at photo pole bases + ${benches.length} VR plaza benches (추정); ` +
     `Furniture ${ctx.solid.triangleCount} triangles / ${ctx.solid.vertexCount} vertices, Furniture_Glass ${ctx.glass.triangleCount} triangles; ${summary}`,
   );
   for (const { id, reason } of furniture.excluded) console.log(`furniture: left out ${id}: ${reason}`);

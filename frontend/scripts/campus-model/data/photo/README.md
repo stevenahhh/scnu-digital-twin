@@ -581,6 +581,48 @@ surfaces are paving supplements of `../osm-ground.json`. Every dimension is an e
 | scene_e7 r | red path with crosswalk | built | red surfacing supplement of the carriageway; crossings are markings (the raised yellow crossing under the station is not in the markings data) |
 | scene_f1 b | statue by the glass building | not on campus | the 순천시문화건강센터 plaza east of the arterial, outside the campus outline and EXTENT |
 
+## VR site detail (`site-detail.geojson`)
+
+Ground-level detail the VR stations show within about 40 m of the camera and the model lacked, for everything that is
+not a tree (trees lane) and not carriageway paint (markings lane): clipped hedges and shrub masses, kerbed lawn islands
+and tree pits, car-park stall rows and wheel stops, and one entrance stair. 47 features at 14 of the 38 strip stations
+(a12, b2, c5 and d1 are left out), drawn by `stages/furniture.mjs` (`hedge`, `stall_row`, `planter`, `terraced_steps`).
+Every position and dimension is an estimate (추정); each feature names its VR scene and face.
+
+Method: for each station an NGII chip of +-40 m around the station (0.25 m, x3) was compared with the VR cube faces and
+the nadir face turned north-up and scaled to the chip, and with the model render of the same faces (compare-vr). An
+item the photo shows (`photo_support` `outline`) is traced on the chip; an item under canopy or too small for the photo
+(`none`) is placed from the nadir face registered on a feature both show (a blue bay, the kerbs, the road edge), about
+2-4 m. Stall rows give the aisle-end line, the stall count, the side and, where the photo shows the dividers skewed,
+`divider_bearing_deg`; standard sizes: stall 2.5 x 5.0 m (주차장법 시행규칙 제3조), divider 0.1 m, wheel stop
+1.6 x 0.15 x 0.12 m 0.9 m in from the stall back, clipped hedge 0.8 m wide and 1.0 m tall unless the VR reads otherwise.
+Rows the markings data already paints carry `dividers: false` (only wheel stops are added). Hedge and planter features
+are not shrub planters for the trees stage (no `fill: "shrub"`), so the trees lane's hedges are unchanged.
+
+| station | VR shows, model lacked | built |
+|---|---|---|
+| scene_e6 | planted island with clipped masses between E6 and its car park; 10 + 12 stalls on bare asphalt | SD-E6-01..08: two stall rows (skewed as on the photo), the lawn island on a 0.15 m kerb, five clipped masses |
+| scene_e3 | clipped topiary on the lawns either side of the approach road | SD-E3-01..08 (nadir face, about 3 m) |
+| scene_e5 | lawn garden with topiary masses | SD-E5-01, 02, 04 |
+| scene_e7 | clipped shrub bed along the E7 front | SD-E7-01 |
+| scene_e8 | stall rows of the E8 car park, yellow-black wheel stops | SD-E8-01 (wheel stops), SD-E8-02 (under the canopy) |
+| scene_d2 | entrance stair to D2 between two clipped beds | SD-D2-01 (12 risers), SD-D2-02, 03 |
+| scene_d3 | stall row under the trees and a kerbed island with tree grates | SD-D3-01, 02 (registered on the PM bay) |
+| scene_d5 | wheel stops along the D5 stall row | SD-D5-01 (17 stops; dividers already painted) |
+| scene_c2 | six stalls nose-in to C2's front | SD-C2-01 |
+| scene_b4 | clipped shrub masses on the lawn by the path | SD-B4-01..03 |
+| scene_b7 | two boxed stall rows of the B7 car park | SD-B7-01, 02 |
+| scene_a4 | nine boxed school-bus bays | SD-A4-01 (outlines; the bay lettering is paint) |
+| scene_a6 | stall rows along A6 | SD-A6-01, 02 |
+| scene_a10 / a9 | clipped hedge on the plaza's north bed; square tree pits | SD-A10-01, SD-A10-P1..P7 (pits at the tree inventory's trunks) |
+| scene_f2 | two stall rows of the concrete car park between F1 and F2 | SD-F2-01, 02 |
+
+The other stations show nothing of this class the model lacks within 40 m, or only items left for other lanes: the
+drone stations 001 and 002 (100 m up), the sports fields a15 and a16 (the hedge lettering 진리 정의 창조 on the a16 slope is
+a follow-up: it needs letter-shaped geometry), road junctions a17 and a19 and b1, f1 and f3 (already modelled), and a1,
+a2, a3, a5, a8, a13, b3, c1, c3, d4, e1 and e4, where the remaining differences are trees or paint. The clipped shrub
+balls on the e2 lawn are left out: that nadir face could not be registered on the photo within 3 m.
+
 ## Licence
 
 Source: **국토지리정보원 (NGII), 정사영상 2025, sheet 34702020 (순천020)**, metadata 202504000734702020, made by
