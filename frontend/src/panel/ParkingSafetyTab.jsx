@@ -31,10 +31,12 @@ export function ParkingSafetyTab({ trafficFeed, feedStatus, onRetry }) {
     { id: "exited", label: "오늘 누적 출차", value: count(stats?.exited) },
   ];
   const sampleItems = [
-    { id: "reports", label: "위험 구역 접수", value: sampleValue(`${trafficData.length}건`) },
+    { id: "reports", label: "위험 구역 접수", value: sampleValue(`${trafficData.length}건`), risk: true },
     { id: "priority", label: "AI 자동 분류(우선 처리 대상)", value: sampleValue(`${AI_PRIORITY_COUNT}건`) },
+    // 위험 접수 행: 위험은 상태 배지와 글자가 알린다(왼쪽 색 띠 없음). data-risk로 표시한다.
     ...RISK_REPORTS.map((item) => ({
       id: item.report_id,
+      risk: true,
       label: `${item.category} · ${formatShortTime(item.timestamp) ?? "시각 없음"}`,
       value: (
         <span className="inline-flex flex-wrap items-center justify-end gap-1">

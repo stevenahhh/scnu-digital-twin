@@ -9,7 +9,7 @@ export function MetricList({ items, caption, columns = 1, className, ...rest }) 
     <div className={cx("flex flex-col gap-2", className)} {...rest}>
       <dl data-qa="metric-list" className={cx("grid gap-x-4 gap-y-2", columns === 2 ? "sm:grid-cols-2" : "grid-cols-1")}>
         {items.map((item) => (
-          <div key={item.id ?? item.label} className="flex min-w-0 items-baseline justify-between gap-3 border-b border-hairline pb-2 last:border-b-0">
+          <div key={item.id ?? item.label} data-risk={item.risk ? "true" : undefined} className="flex min-w-0 items-baseline justify-between gap-3 border-b border-hairline pb-2 last:border-b-0">
             <dt className="break-keep text-caption text-ink-muted">{item.label}</dt>
             <dd className="min-w-0 text-right">
               {item.value ?? (

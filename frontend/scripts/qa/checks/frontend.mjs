@@ -470,6 +470,9 @@ export const FRONTEND_CHECKS = [
     states: ["S13"], viewports: D, fixtures: "up", mutates: true,
     async run(ctx) {
       return withPanelOpen(ctx, null, async () => {
+      // The risk rows sit below the live values in the panel's scroll body: scroll them into view, as a user would.
+      await ctx.inPage((qa) => { qa.one("[data-qa=dashboard-panel] [data-risk]")?.scrollIntoView({ block: "center" }); return true; });
+      await ctx.sleep(300);
       const m = await ctx.inPage((qa) => {
         const rows = qa.all("[data-qa=dashboard-panel] li, [data-qa=dashboard-panel] article, [data-qa=dashboard-panel] [data-risk]").filter((el) => qa.visible(el) && /위험|주의|risk/i.test(qa.txt(el)));
         return { riskRows: rows.length, withLeftStripe: rows.filter((el) => parseFloat(getComputedStyle(el).borderLeftWidth) >= 2).length };
