@@ -61,24 +61,36 @@ async function discs(file) {
   for (const node of doc.getRoot().listNodes()) {
     const name = node.getName();
     if (!/^Trees_.*_crown$/.test(name) || /hedge/.test(name) || !node.getMesh()) continue;
+    // Round crowns: their radial reach on both axes. Canopy masses (Trees_canopy_crown, scaled along and across a run
+    // of trees): their reach along x and z, as a rotated ellipse.
     let reach = 0;
+    let reachX = 0;
+    let reachZ = 0;
     for (const prim of node.getMesh().listPrimitives()) {
       const pos = prim.getAttribute("POSITION");
       const v = [0, 0, 0];
       for (let i = 0; i < pos.getCount(); i += 1) {
         pos.getElement(i, v);
         reach = Math.max(reach, Math.hypot(v[0], v[2]));
+        reachX = Math.max(reachX, Math.abs(v[0]));
+        reachZ = Math.max(reachZ, Math.abs(v[2]));
       }
     }
+    const elliptic = /^Trees_canopy_/.test(name);
     const inst = node.getExtension("EXT_mesh_gpu_instancing");
     const t = inst.getAttribute("TRANSLATION");
     const s = inst.getAttribute("SCALE");
+    const q = inst.getAttribute("ROTATION");
     const tv = [0, 0, 0];
     const sv = [1, 1, 1];
+    const qv = [0, 0, 0, 1];
     for (let i = 0; i < t.getCount(); i += 1) {
       t.getElement(i, tv);
       if (s) s.getElement(i, sv);
-      out.push([tv[0], tv[2], reach * Math.max(sv[0], sv[2])]);
+      if (q) q.getElement(i, qv);
+      const angle = 2 * Math.atan2(qv[1], qv[3]);
+      if (elliptic) out.push([tv[0], tv[2], reachX * sv[0], reachZ * sv[2], angle]);
+      else out.push([tv[0], tv[2], reach * Math.max(sv[0], sv[2]), reach * Math.max(sv[0], sv[2]), 0]);
     }
   }
   return out;
@@ -102,12 +114,21 @@ function photoCover(cells) {
   }
   return hit / cells.length;
 }
+// A point (scene units) inside a crown ellipse [x, z, rx, rz, angle] (rotation about y as three.js applies it).
+const insideCrown = (x, z, [dx, dz, rx, rz, a]) => {
+  const px = x - dx;
+  const pz = z - dz;
+  const u = px * Math.cos(a) - pz * Math.sin(a);
+  const v = px * Math.sin(a) + pz * Math.cos(a);
+  return (u / rx) ** 2 + (v / rz) ** 2 <= 1;
+};
 function modelCover(cells, list) {
   const B = 8;
   const buckets = new Map();
   for (const d of list) {
-    for (let bx = Math.floor((d[0] - d[2]) / B); bx <= Math.floor((d[0] + d[2]) / B); bx += 1) {
-      for (let bz = Math.floor((d[1] - d[2]) / B); bz <= Math.floor((d[1] + d[2]) / B); bz += 1) {
+    const r = Math.max(d[2], d[3]);
+    for (let bx = Math.floor((d[0] - r) / B); bx <= Math.floor((d[0] + r) / B); bx += 1) {
+      for (let bz = Math.floor((d[1] - r) / B); bz <= Math.floor((d[1] + r) / B); bz += 1) {
         const key = `${bx},${bz}`;
         if (!buckets.has(key)) buckets.set(key, []);
         buckets.get(key).push(d);
@@ -117,14 +138,14 @@ function modelCover(cells, list) {
   let hit = 0;
   for (const [e, n] of cells) {
     const [x, z] = tmToScene(e, n);
-    if ((buckets.get(`${Math.floor(x / B)},${Math.floor(z / B)}`) ?? []).some(([dx, dz, r]) => (x - dx) ** 2 + (z - dz) ** 2 <= r * r)) hit += 1;
+    if ((buckets.get(`${Math.floor(x / B)},${Math.floor(z / B)}`) ?? []).some((d) => insideCrown(x, z, d))) hit += 1;
   }
   return hit / cells.length;
 }
 
 const models = [];
 // --inventory: the crowns of a data/trees.json as drawn before the build's placement rules (a quick check).
-const inventoryDiscs = (file) => JSON.parse(readFileSync(file, "utf8")).trees.map(([e, n, d]) => [...tmToScene(e, n), (d / 2) * 0.6242171526]);
+const inventoryDiscs = (file) => JSON.parse(readFileSync(file, "utf8")).trees.map(([e, n, d]) => [...tmToScene(e, n), (d / 2) * 0.6242171526, (d / 2) * 0.6242171526, 0]);
 for (const g of glbs) models.push({ ...g, discs: g.kind === "inventory" ? inventoryDiscs(g.file) : await discs(g.file) });
 const rows = WINDOWS.map((w) => {
   const cells = windowCells(w);
@@ -132,15 +153,45 @@ const rows = WINDOWS.map((w) => {
   for (const m of models) row[m.label] = modelCover(cells, m.discs);
   return row;
 });
+// Camera clearance: the smallest distance (m) from a VR camera position (scripts/perf/vr-stations.json, refined x/z) to
+// the edge of any crown of each GLB, the crown boundary sampled every 2 degrees (negative: the camera is inside a crown).
+const stations = JSON.parse(readFileSync(join(HERE, "vr-stations.json"), "utf8")).map((st) => [st.scene, st.station_refined_x ?? st.station_x, st.station_refined_z ?? st.station_z]);
+const clearance = (list) => {
+  let worst = { m: Infinity };
+  for (const d of list) {
+    const [dx, dz, rx, rz, a] = d;
+    for (const [scene, sx, sz] of stations) {
+      if (Math.hypot(sx - dx, sz - dz) - Math.max(rx, rz) > worst.m * 0.6242171526) continue;
+      let m = Infinity;
+      for (let k = 0; k < 180; k += 1) {
+        const t = (k / 180) * Math.PI * 2;
+        const u = rx * Math.cos(t);
+        const v = rz * Math.sin(t);
+        const ex = dx + u * Math.cos(a) + v * Math.sin(a);
+        const ez = dz - u * Math.sin(a) + v * Math.cos(a);
+        m = Math.min(m, Math.hypot(sx - ex, sz - ez));
+      }
+      const metresOut = (insideCrown(sx, sz, d) ? -m : m) / 0.6242171526;
+      if (metresOut < worst.m) worst = { m: metresOut, scene };
+    }
+  }
+  return worst;
+};
 const pct = (v) => `${(100 * v).toFixed(1)} %`;
 const md = [
   `| window | photo canopy mask | ${models.map((m) => `${m.label} (${m.discs.length} crowns)`).join(" | ")} | ${models.map((m) => `${m.label} - photo`).join(" | ")} |`,
   `|---|---:|${models.map(() => "---:").join("|")}|${models.map(() => "---:").join("|")}|`,
   ...rows.map((r) => `| ${r.window} | ${pct(r.photo)} | ${models.map((m) => pct(r[m.label])).join(" | ")} | ${models.map((m) => `${(100 * (r[m.label] - r.photo)).toFixed(1)} pp`).join(" | ")} |`),
 ].join("\n");
+const clearanceLines = models.map((m) => {
+  const c = clearance(m.discs);
+  return `${m.label}: min crown-edge distance to a VR camera ${c.m.toFixed(2)} m (${c.scene})`;
+});
 console.log(md);
+console.log(clearanceLines.join("\n"));
 if (outDir) {
   mkdirSync(outDir, { recursive: true });
   writeFileSync(join(outDir, "canopy-cover.json"), `${JSON.stringify({ windows: WINDOWS, rows, models: models.map(({ label, file, discs: d }) => ({ label, file, crowns: d.length })) }, null, 2)}\n`);
   writeFileSync(join(outDir, "canopy-cover.md"), `${md}\n`);
+  writeFileSync(join(outDir, "station-clearance.txt"), `${clearanceLines.join("\n")}\n`);
 }

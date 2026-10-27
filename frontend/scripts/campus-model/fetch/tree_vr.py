@@ -161,14 +161,17 @@ def main():
 
 
 # ---------------------------------------------------------------- near-station fit (mode "fit")
-# For each station and each tree within FIT_RANGE_M (at least FIT_MIN_M away): the crown is projected into every face
+# For each station and each tree within FIT_RANGE_M (at least FIT_MIN_M away; beyond FIT_NEAR_M only where the tree is
+# unobstructed: it owns at least FIT_FAR_VISIBLE of its crown ellipse): the crown is projected into every face
 # that sees it; where the tree owns at least FIT_VISIBLE of its crown ellipse in the depth buffer of all trees (and no
 # building prism stands in front) the VR face is read at 1024 px: foliage pixels (hue 15-175 deg, saturation >= 0.15,
 # value >= 0.08), their median colour inside the inner half of the ellipse, the width of the foliage run through the
 # crown centre at mid-crown height (searched within 2.2 x the model crown; a run that reaches the search edge is a
 # merged row, width unknown) and the top of the foliage contiguous above the centre (within 0.35 x the crown width
 # of the centre column; a top at the image edge, or one without sky directly above it, is unknown). Widths and tops are turned into metres at the tree's depth.
-FIT_RANGE_M = 40.0
+FIT_RANGE_M = 80.0
+FIT_NEAR_M = 40.0
+FIT_FAR_VISIBLE = 0.75
 FIT_MIN_M = 3.0
 FIT_RES = 1024
 FIT_VISIBLE = 0.45
@@ -221,7 +224,8 @@ def fit_main():
         target = set(np.where((dist <= FIT_RANGE_M) & (dist >= FIT_MIN_M))[0].tolist())
         if not target:
             continue
-        bidx = [i for i, b in enumerate(buildings) if b["box"][0] < cx + 80 * U and b["box"][2] > cx - 80 * U and b["box"][1] < cz + 80 * U and b["box"][3] > cz - 80 * U]
+        reach = (FIT_RANGE_M + 30) * U
+        bidx = [i for i, b in enumerate(buildings) if b["box"][0] < cx + reach and b["box"][2] > cx - reach and b["box"][1] < cz + reach and b["box"][3] > cz - reach]
         for face, off in FACES.items():
             th = math.radians(st["yaw"] + off)
             fwd = (math.sin(th), -math.cos(th))
@@ -266,7 +270,7 @@ def fit_main():
                 i0, i1 = int(c0), int(math.ceil(c1))
                 j0, j1 = int(r0), int(math.ceil(r1))
                 own = int((owner[j0:j1, i0:i1] == k).sum())
-                if own < FIT_VISIBLE * area:
+                if own < (FIT_VISIBLE if dist[k] <= FIT_NEAR_M else FIT_FAR_VISIBLE) * area:
                     continue
                 x, z, gy, by, ty, r = trees[k]
                 if segment_hits_building(cx, cz, cy, x, z, (by + ty) / 2, buildings, bidx):
