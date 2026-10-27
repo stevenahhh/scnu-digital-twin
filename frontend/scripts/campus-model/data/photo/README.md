@@ -607,7 +607,7 @@ are not shrub planters for the trees stage (no `fill: "shrub"`), so the trees la
 | scene_e7 | clipped shrub bed along the E7 front | SD-E7-01 |
 | scene_e8 | stall rows of the E8 car park, yellow-black wheel stops | SD-E8-01 (wheel stops), SD-E8-02 (under the canopy) |
 | scene_d2 | entrance stair to D2 between two clipped beds | SD-D2-01 (12 risers), SD-D2-02, 03 |
-| scene_d3 | stall row under the trees and a kerbed island with tree grates | SD-D3-01, 02 (registered on the PM bay) |
+| scene_d3 | stall row under the trees and a kerbed island with tree grates | SD-D3-02 (registered on the PM bay); the row SD-D3-01 is replaced by SD-D3-P2 in the third pass |
 | scene_d5 | wheel stops along the D5 stall row | SD-D5-01 (17 stops; dividers already painted) |
 | scene_c2 | six stalls nose-in to C2's front | SD-C2-01 |
 | scene_b4 | clipped shrub masses on the lawn by the path | SD-B4-01..03 |
@@ -692,6 +692,29 @@ The leftovers of the first pass, added to `site-detail.geojson` (231 features in
 | scene_f2 | pose (stall markers on SD-F2-01/02) | SD-F2-01, 02 stops, SD-F2-W3, SD-F2-H1, SD-F2-P1 |
 | scene_001, scene_002 | - | none |
 | scene_f1 | pose (face d registered in the rest-space pass; face f plaza edge 3.9 m from the island) | SD-F1-P1, SD-F1-PL1, PL2 |
+
+## VR site detail, third pass (site-detail-r3)
+
+The leftovers of the second pass, all estimated (추정):
+
+- Parasols take any colour: the instance's `colour` (#rrggbb or a palette name) or a colour word or hex in its note
+  (`parasolColour`); the existing white and blue parasols draw as before. SD-A4-PA1: the red cafe parasol of VR
+  scene_a4 l, at its red disc on the NGII photo.
+- Latin capitals A-Z join the marking and hedge glyph set (`glyphElements` in lib/markingGlyphs.mjs; road text is
+  unchanged: no marking reading uses Latin letters). SD-E7-HT1: the clipped hedge letters SSC of VR scene_e7 f in the
+  lawn of planter OC0137, its south-east lobe traced on the photo (every stroke inside OC0137).
+- scene_d3 car park: faces l and r registered on NGII anchors (the PM bay paint MX00361 and the white aisle-edge line
+  that shows in the canopy gap north of the station; residuals 0.4-0.9 m; camera about 4 m south-west of the record,
+  yaw -11.8 deg, 8.6 m up). SD-D3-P1, P2, P3: the three stall rows of face r; P2 runs on under the camera and replaces
+  the first pass's SD-D3-01, which the older registration had put in the aisle.
+- OC0109 (scene_b1): the survey's grey roofed shelter is a long banner board (VR scene_b1 l); the photo shows no roof,
+  only the board's thin pale top edge. Left out in `stages/furniture.mjs` EXCLUDED, rebuilt as SD-B1-S2 (signboard).
+- Not resolved, with the reason: the a5 garden tree boxes (the photo anchors of that face, the teal parasol, the brick
+  building, the deck, the garden wall and the nadir face's markings, do not give one consistent registration: fits
+  disagree by 3-10 m, and the boxes do not show on the photo); the A10 plaza benches of scene_a10 l (one clean photo
+  anchor, the info totem's teal base; a shift by it still sets a bench on a tree pit and one on the road, and the tree
+  inventory's trunks do not pair one-to-one with the VR trees); the E2 shrub balls (the NGII photo shows only closed
+  canopy over that lawn, so they cannot be traced there either).
 
 ## Licence
 
