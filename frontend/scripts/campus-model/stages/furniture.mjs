@@ -18,6 +18,8 @@ import { fileURLToPath } from "node:url";
 import { simulationToTm, tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { METRES_PER_DEGREE_LAT, METRES_PER_DEGREE_LON, geoToModel, metres, modelToGeo } from "../lib/frame.mjs";
 import { pointInRing, ringArea, ringCentroid } from "../lib/geometry.mjs";
+import { hangulElements } from "../lib/markingGlyphs.mjs";
+import { encodePng } from "../lib/png.mjs";
 import { mulberry32 } from "../lib/raster.mjs";
 import { Kit, along, bufferLine, frame, lineLength, local, localPlan, offsetLine, orientedRect, rgb, sub, toLocal } from "../lib/solids.mjs";
 import { GLOW_UV, POLE_KINDS, appendLampSolids, objectDistance, roadNetwork, towardRoad } from "./lights.mjs";
@@ -37,8 +39,10 @@ export const GATE_STRUCTURES = process.env.GATE_STRUCTURES_FILE ?? path.join(HER
 // Lamps the VR shows and the photo survey missed (base from the photo shadow root); VR_LAMPS_FILE swaps it.
 export const VR_LAMPS = process.env.VR_LAMPS_FILE ?? path.join(HERE, "..", "data", "photo", "vr-lamps.geojson");
 // Ground-level site detail the VR stations show within about 40 m and the survey lacks (clipped hedges and shrub masses,
-// kerbed lawn islands and tree pits, car-park stall rows and wheel stops, an entrance stair), placed on the NGII 2025
-// photo with standard dimensions (estimated; data/photo/README.md "VR site detail"); SITE_DETAIL_FILE swaps it (tests).
+// kerbed lawn islands and tree pits, car-park stall rows and wheel stops, an entrance stair; street furniture: bollards,
+// bike and PM stands, bins, handrails, signboards, entrance canopies; the a16 hedge lettering; the F1 LED screen), placed
+// on the NGII 2025 photo or cast from registered VR faces with standard dimensions (estimated; data/photo/README.md "VR
+// site detail" and its second pass); SITE_DETAIL_FILE swaps it (tests).
 export const SITE_DETAIL = process.env.SITE_DETAIL_FILE ?? path.join(HERE, "..", "data", "photo", "site-detail.geojson");
 export const OUTLINE_REVIEW = process.env.OUTLINE_REVIEW_FILE ?? path.join(HERE, "..", "data", "photo", "outline-review.json");
 const M = metres;
@@ -216,12 +220,13 @@ export function loadFurniture() {
 // ---------------------------------------------------------------- building helpers
 export function makeContext({ groundAt, objects, roads, sites, fieldCentre }) {
   const solid = new Kit();
+  const screen = new Kit({ uvs: true });
   const glass = new Kit();
   const glow = new Kit({ uvs: true });
   const samples = (ring) => [...ring, ringCentroid(ring), ...ring.map((p, i) => [(p[0] + ring[(i + 1) % ring.length][0]) / 2, (p[1] + ring[(i + 1) % ring.length][1]) / 2])];
   const heights = (ring) => samples(ring).map(([x, z]) => groundAt(x, z)).sort((a, b) => a - b);
   return {
-    solid, glass, glow, groundAt, objects, roads, sites, fieldCentre, colours: C,
+    solid, glass, glow, screen, screens: [], groundAt, objects, roads, sites, fieldCentre, colours: C,
     byId: new Map(objects.map((o) => [o.id, o])),
     minGround: (ring) => heights(ring)[0],
     maxGround: (ring) => heights(ring).at(-1),
@@ -469,6 +474,17 @@ export function duplicatesOf(candidates, existing, radiusM = 3) {
 // Survey pairs that touch by design (one structure surveyed in parts) are listed, not counted.
 export const AUDIT_COMPOUNDS = {
   "OC0064+OC0065": "the two crossing bars of one X-shaped pergola in the pocket park",
+  "SD-E1-B1+SD-E1-B3": "timber block benches grouped on the e1 plaza (VR scene_e1 f)",
+  "SD-E1-B2+SD-E1-B3": "timber block benches grouped on the e1 plaza (VR scene_e1 f)",
+  "SD-E1-B4+SD-E1-B5": "a pair of timber block benches on the e1 plaza (VR scene_e1 f)",
+  "SD-A6-02+SD-A6-W1": "wheel stops added to the stall row beside SD-A6-02 (VR scene_a6 f)",
+  "SD-B2-B1+SD-B2-B2": "a bench and a box bench at one planter (VR scene_b2 f)",
+  "SD-B4-T1+SD-B4-T2": "two clipped shrub mounds side by side (VR scene_b4 l)",
+  "SD-B7-PL1+SD-B7-PL2": "a pair of planter boxes at one door (VR scene_b7 b)",
+  "SD-B7-T1+SD-B7-T2": "the conifers of the two planter boxes (VR scene_b7 b)",
+  "SD-A6-H1+SD-A6-H2": "the two handrails of one ramp (VR scene_a6 f)",
+  "SD-A10-S1+SD-A10-S2": "two hooded notice boards side by side (VR scene_a10 r)",
+  "SD-A17-P1+SD-A17-P2": "a pair of bollards at one car park entrance (VR scene_a17 b)",
   "SD-E3-06+SD-E3-07": "a clipped shrub and the small ball beside it (VR scene_e3 d)",
 };
 export function auditDuplicates(objects, lamps = [], benches = [], radiusM = 3) {
@@ -1513,6 +1529,104 @@ B.stall_row = (ctx, o) => {
   for (const s of row.stops) ctx.solid.box(frame([s.centre[0], ctx.groundAt(...s.centre), s.centre[1]], s.u), [-0.8, 0.8], [-0.075, 0.075], [-0.03, 0.12], stop);
 };
 
+// Street furniture of the VR site-detail sweep (standard dimensions, every one an estimate, \uCD94\uC815): bollard 0.9 m tall,
+// 0.18 m across (\uBCF4\uB3C4\uC6A9 \uBCFC\uB77C\uB4DC 0.8-1.0 m, 0.1-0.2 m); bike or PM stand an inverted U 0.75 m tall and 0.7 m wide every
+// spacing_m (0.9 m); litter bin 0.55 x 0.45 x 0.95 m; handrail 0.9 m (KDS \uACC4\uB2E8 \uB09C\uAC04 0.85-0.9 m) on posts every 1.5 m.
+const STREET = { bollardM: 0.9, standM: 0.75, standSpacingM: 0.9, railM: 0.9 };
+// Points along a LineString every spacing_m (both ends included), or the Point itself.
+const rowPoints = (o, spacingM) => (o.point ? [o.point] : along(o.line, M(o.p.spacing_m ?? spacingM)).map(({ p }) => p));
+B.bollard = (ctx, o) => {
+  const h = o.p.height_m ?? STREET.bollardM;
+  const paint = paintOf(o.p.colour, C.concreteDark, o.id);
+  for (const p of rowPoints(o, 1.5)) {
+    const g = ctx.groundAt(...p);
+    ctx.solid.pole(p, g - M(0.05), g + M(h), 0.09, 0.09, paint, { sides: 8 });
+    if (o.p.band) ctx.solid.pole(p, g + M(h - 0.2), g + M(h - 0.1), 0.095, 0.095, paintOf(o.p.band, C.white, o.id), { sides: 8, cap: false });
+  }
+};
+// Open bike or PM stands (no roof): an inverted U across the line every spacing_m.
+B.bike_stands = (ctx, o) => {
+  const [a, b] = [o.line[0], o.line.at(-1)];
+  const paint = paintOf(o.p.colour, C.galvanised, o.id);
+  const h = o.p.height_m ?? STREET.standM;
+  const f = frame([a[0], 0, a[1]], [b[0] - a[0], b[1] - a[1]]);
+  for (const p of rowPoints(o, STREET.standSpacingM)) {
+    const g = ctx.groundAt(...p);
+    const [s] = toLocal(f, p);
+    const lift = (t, hh) => { const q = local(f, s, t, 0); return [q[0], g + M(hh), q[2]]; };
+    ctx.solid.beam(lift(-0.35, -0.05), lift(-0.35, h), 0.05, 0.05, paint);
+    ctx.solid.beam(lift(0.35, -0.05), lift(0.35, h), 0.05, 0.05, paint);
+    ctx.solid.beam(lift(-0.35, h), lift(0.35, h), 0.05, 0.05, paint);
+  }
+};
+B.bin = (ctx, o) => {
+  const bearing = ((o.p.bearing_deg ?? 0) * Math.PI) / 180;
+  const f = frame([o.point[0], ctx.groundAt(...o.point), o.point[1]], [Math.sin(bearing), -Math.cos(bearing)]);
+  const n = o.p.count ?? 1;
+  const paint = paintOf(o.p.colour, C.binBlue, o.id);
+  for (let k = 0; k < n; k += 1) {
+    const s = (k - (n - 1) / 2) * 0.65;
+    ctx.solid.box(f, [s - 0.275, s + 0.275], [-0.225, 0.225], [-0.05, 0.88], paint);
+    ctx.solid.box(f, [s - 0.29, s + 0.29], [-0.24, 0.24], [0.88, 0.95], paintOf(o.p.lidColour, C.metal, o.id));
+  }
+};
+B.handrail = (ctx, o) => railing(ctx, o.line, o.p.height_m ?? STREET.railM, paintOf(o.p.colour, C.galvanised, o.id), { stepM: 1.5, rails: [1, 0.5], postM: 0.05, railM: 0.05 });
+// Entrance canopy: a flat slab (0.25 m) at height_m over the Polygon, on round columns at the ring corners named in
+// posts (vertex indices; none: cantilevered from the building).
+B.entrance_canopy = (ctx, o) => {
+  const g = ctx.medianGround(o.ring);
+  const h = M(o.heightM);
+  const paint = paintOf(o.p.colour, C.white, o.id);
+  ctx.solid.prism(o.ring, g + h - M(0.25), g + h, paint);
+  for (const i of o.p.posts ?? []) ctx.solid.pole(o.ring[i], ctx.groundAt(...o.ring[i]) - M(0.05), g + h - M(0.25), 0.15, 0.15, paintOf(o.p.postColour, C.white, o.id));
+};
+// Clipped-hedge lettering (VR scene_a16: \uC9C4\uB9AC \uC815\uC758 \uCC3D\uC870 on the slope): the road-marking Hangul strokes
+// (lib/markingGlyphs.mjs) as hedges stroke_m wide and height_m tall. The LineString is the baseline of the text from its
+// first character to its last; the tops of the letters lie to its left. char_height_m tall, char_width_m wide, gap_m
+// between characters, a space 0.6 of a character.
+export function hedgeTextStrokes(line, text, { heightM, widthM = heightM, gapM = 0.3 }) {
+  const [a, b] = [line[0], line.at(-1)];
+  const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+  const u = [(b[0] - a[0]) / len, (b[1] - a[1]) / len];
+  const up = [u[1], -u[0]];
+  const strokes = [];
+  let s = 0;
+  for (const ch of text) {
+    if (ch === " ") { s += widthM * 0.6 + gapM; continue; }
+    const at = ([x, y]) => [a[0] + u[0] * M(s + x * widthM) + up[0] * M((1 - y) * heightM), a[1] + u[1] * M(s + x * widthM) + up[1] * M((1 - y) * heightM)];
+    for (const e of hangulElements(ch) ?? []) {
+      if (e.ellipse) {
+        const [cx, cy, rx, ry] = e.ellipse;
+        strokes.push({ closed: true, points: Array.from({ length: 16 }, (_, i) => at([cx + rx * Math.cos((i / 16) * 2 * Math.PI), cy + ry * Math.sin((i / 16) * 2 * Math.PI)])) });
+      } else strokes.push({ closed: false, points: e.map(at) });
+    }
+    s += widthM + gapM;
+  }
+  return strokes;
+}
+B.hedge_text = (ctx, o) => {
+  const paint = shrubPaint(o);
+  for (const st of hedgeTextStrokes(o.line, o.p.text, { heightM: o.p.char_height_m, widthM: o.p.char_width_m, gapM: o.p.gap_m })) {
+    wall(ctx, ctx.solid, st.points, o.p.stroke_m ?? 0.5, o.heightM, paint, { closed: st.closed });
+  }
+};
+// LED screen on a facade: a panel standoff_m in front of the wall line (LineString, left to right as seen from the
+// front), from bottom_m to top_m above the ground, in vertical colour fields (fields: sRGB hex, left to right; no image).
+// Drawn into Furniture_Screen, whose colour-field texture is also its emissive map (lit at night like the windows).
+B.led_screen = (ctx, o) => {
+  const [a, b] = [o.line[0], o.line.at(-1)];
+  const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+  const out = [-(b[1] - a[1]) / len, (b[0] - a[0]) / len];
+  const off = M(o.p.standoff_m ?? 0.15);
+  const g = Math.min(ctx.groundAt(...a), ctx.groundAt(...b));
+  const [y0, y1] = [g + M(o.p.bottom_m), g + M(o.p.top_m)];
+  const p = (q, y) => [q[0] + out[0] * off, y, q[1] + out[1] * off];
+  ctx.screens.push({ id: o.id, corners: [p(a, y0), p(b, y0), p(b, y1), p(a, y1)], normal: [out[0], 0, out[1]], fields: o.p.fields });
+  // dark frame and back box
+  const ring = [a, b, [b[0] + out[0] * off, b[1] + out[1] * off], [a[0] + out[0] * off, a[1] + out[1] * off]];
+  ctx.solid.prism(ring, y0 - M(0.1), y1 + M(0.1), paintOf(o.p.frameColour, C.black, o.id));
+};
+
 B.floodlight_pole = (ctx, o) => {
   const at = o.point;
   const g = ctx.groundAt(...at);
@@ -1927,6 +2041,36 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
   };
   glb.addNode({ name: "Furniture", mesh: glb.addMesh("Furniture", [ctx.solid.toPrimitive(furnitureMaterial)]), extras }, { root: true });
   glb.addNode({ name: "Furniture_Glass", mesh: glb.addMesh("Furniture_Glass", [ctx.glass.toPrimitive(glassMaterial)]) }, { root: true });
+  // LED screens (B.led_screen): one colour-field texture, 8 px per field, base colour by day and emissive map at night.
+  if (ctx.screens.length) {
+    const fields = ctx.screens.flatMap((s) => s.fields);
+    const w = fields.length * 8;
+    const pixels = new Uint8Array(w * 8 * 3);
+    fields.forEach((hex, i) => {
+      const n = Number.parseInt(hex.slice(1), 16);
+      for (let y = 0; y < 8; y += 1) for (let x = 0; x < 8; x += 1) pixels.set([n >> 16, (n >> 8) & 255, n & 255], (y * w + i * 8 + x) * 3);
+    });
+    const texture = glb.addTexture(encodePng(w, 8, 3, pixels), "image/png", { repeat: false });
+    glb.extensionsUsed.add("KHR_materials_emissive_strength");
+    const screenMaterial = glb.addMaterial({
+      name: "Furniture_Screen",
+      pbrMetallicRoughness: { baseColorTexture: { index: texture }, metallicFactor: 0, roughnessFactor: 0.4 },
+      emissiveFactor: [1, 1, 1],
+      emissiveTexture: { index: texture },
+      extensions: { KHR_materials_emissive_strength: { emissiveStrength: 1.5 } },
+    });
+    let start = 0;
+    for (const s of ctx.screens) {
+      // u over this screen's fields (texel centres at the ends), v 0 at the top
+      const [u0, u1] = [(start * 8 + 0.5) / w, ((start + s.fields.length) * 8 - 0.5) / w];
+      start += s.fields.length;
+      const base = ctx.screen.mesh.vertexCount;
+      [[u0, 1], [u1, 1], [u1, 0], [u0, 0]].forEach((uv, i) => ctx.screen.mesh.vertex(s.corners[i], s.normal, uv));
+      ctx.screen.mesh.triangle(base, base + 1, base + 2);
+      ctx.screen.mesh.triangle(base, base + 2, base + 3);
+    }
+    glb.addNode({ name: "Furniture_Screen", mesh: glb.addMesh("Furniture_Screen", [ctx.screen.toPrimitive(screenMaterial)]), extras: { screens: ctx.screens.map((s) => [s.id, s.fields]), note: "LED screens as plain colour fields, no image (estimated)" } }, { root: true });
+  }
 
   const summary = Object.entries(counts).sort(([a], [b]) => a.localeCompare(b)).map(([kind, c]) => `${kind} ${c.surveyed}${c.estimated ? `+${c.estimated}e` : ""}`).join(", ");
   console.log(
