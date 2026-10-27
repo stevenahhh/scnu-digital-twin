@@ -145,6 +145,12 @@ function Dashboard() {
     selection.setSelectedBuildingId(request.buildingId);
     flow.openD4Section(request);
   };
+  // 검색 결과: 칩 클릭과 같은 선택에 더해 카메라를 그 건물로 옮긴다.
+  const handleSearchPick = (entry) => {
+    flow.selectFromSearch(entry);
+    camera.flyToBuilding(entry.elementId);
+  };
+  const editor = flow.editorRequest;
   // 인스펙터 제목: 고른 건물의 레지스트리 이름, 없으면 클릭한 메시의 이름.
   const panelTitle = selection.selectedId ? flow.selectionTitle || selection.selectedTitle || selection.selectedId : "";
   const inspector = comparison.open ? (
@@ -185,6 +191,7 @@ function Dashboard() {
         onPlayingChange={setIsTimePlaying}
         sceneWeather={sceneWeather}
         compareSlot={<CompareButton comparison={comparison} className="mt-1" />}
+        search={{ registry: flow.labelRegistry, onPick: handleSearchPick }}
       />
       <CampusCanvas
         ref={mapLayerRef}
