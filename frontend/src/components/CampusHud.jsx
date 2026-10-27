@@ -41,7 +41,7 @@ export const CampusHud = forwardRef(function CampusHud(
       ref={ref}
       data-qa="campus-hud"
       data-label-chrome-layer=""
-      className="pointer-events-none absolute left-0 top-0 z-[6]"
+      className="pointer-events-none absolute left-0 top-0 z-[6] transition-none"
       style={{ right: insetRight, bottom: phone ? `${SHELL_PEEK_HEIGHT}px` : "0px" }}
     >
       <div className="absolute left-4 right-4 top-4 flex flex-wrap items-start gap-2">
