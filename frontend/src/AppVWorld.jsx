@@ -20,6 +20,8 @@ import { Wordmark } from "./panel/Wordmark";
 import { HudTimeReadout, sceneTimeReadout } from "./components/HudTimeReadout";
 import { HudToolbar } from "./components/HudToolbar";
 import { CameraControls } from "./components/CameraControls";
+import { TourPager } from "./components/CampusHud";
+import { tourPosition } from "./panel/presentationLayout.mjs";
 import { mapLighting } from "./vworld/mapLighting.mjs";
 import { QUALITY_LABELS, QUALITY_TIERS, useQualityPreset } from "./settings/qualityPreset.mjs";
 import { VWORLD_DEFAULT_QUALITY, applyVWorldQuality } from "./vworld/renderQuality.mjs";
@@ -133,6 +135,7 @@ export default function App() {
         ref={hudRef}
         data-qa="campus-hud"
         data-label-chrome-layer=""
+        data-presenting={presentation.presenting ? "true" : undefined}
         className="pointer-events-none absolute left-0 top-0 z-[6] transition-none"
         style={{ right: mapInsetRight, bottom: mapInsetBottom }}
       >
@@ -164,6 +167,10 @@ export default function App() {
           {viewportMode !== "phone" && !presentation.presenting && <Wordmark className="mt-1.5 shrink-0 rounded-control bg-[var(--colors-label-bg)] px-2 py-1 text-ink-muted" />}
         </div>
         </div>
+        {/* 발표 모드에서 투어 중이면 아래 가운데에 지금 시점의 점 표시(Legacy와 같은 TourPager). */}
+        {presentation.presenting && camera.touring && tourPosition(CAMERA_PRESETS, camera.activePresetId) && (
+          <TourPager {...tourPosition(CAMERA_PRESETS, camera.activePresetId)} />
+        )}
         {/* 카메라 단추(확대·축소·회전·처음 시점): Legacy와 같은 단추, VWorld 카메라를 움직인다. 시간 조작 위 오른쪽 가운데. */}
         {!presentation.presenting && camera.ready && (
           <CameraControls onZoom={camera.zoomBy} onRotate={camera.rotateBy} onHome={camera.goHome} className="absolute right-4 top-1/2 -translate-y-1/2" />
