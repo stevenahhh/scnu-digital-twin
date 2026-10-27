@@ -147,7 +147,7 @@ export function leafAtlas() {
 // inside the crown surface, so the cards form the visible surface; every corner is pulled inside the crown's horizontal
 // footprint (radial reach, or its x/z ellipse for elliptic crowns), so a card never reaches past the fitted crown. Normals point out from the crown axis
 // (soft, volumetric light); COLOR_0 darkens the inner and lower cards.
-export function foliageCards(crown, { count, size, tile, kind, inner = 0.25, seed, elliptic = false }) {
+export function foliageCards(crown, { count, size, tile, kind, inner = 0.25, seed, elliptic = false, crossCard = 0 }) {
   const rng = mulberry32(seed);
   const tris = [];
   let total = 0;
@@ -239,16 +239,21 @@ export function foliageCards(crown, { count, size, tile, kind, inner = 0.25, see
     const side = norm(cross(nrm, along));
     const hw = w / 2;
     const hh = h / 2;
-    const corners = [[-hh, -hw], [hh, -hw], [hh, hw], [-hh, hw]].map(([s1, s2]) => clampCorner(pt.map((v, k) => v + along[k] * s1 + side[k] * s2)));
     const uv = [[0, 0], [1, 0], [1, 1], [0, 1]].map(([x, y]) => [u0 + x * 0.5, v0 + y * 0.5]);
     // light: out from the crown axis, a little up; shade: inner cards and the lower crown darker
     const ln = norm([out[0] + nrm[0] * 0.4, out[1] + 0.3 + nrm[1] * 0.4, out[2] + nrm[2] * 0.4]);
     const shade = Math.round(255 * Math.min(1, (isInner ? 0.62 : 0.86) + 0.18 * (pt[1] / top)));
-    for (const idx of [0, 1, 2, 0, 2, 3]) {
-      positions.push(...corners[idx]);
-      normals.push(...ln);
-      uvs.push(...uv[idx]);
-      colors.push(shade, shade, shade, 255);
+    // the card, and with `crossCard` a second card through the same long axis turned 90 degrees (crossCard x its width), so a
+    // spray seen edge-on still shows foliage
+    const planes = crossCard > 0 ? [[side, hw], [nrm, hw * crossCard]] : [[side, hw]];
+    for (const [dir, half] of planes) {
+      const corners = [[-hh, -half], [hh, -half], [hh, half], [-hh, half]].map(([s1, s2]) => clampCorner(pt.map((v, k) => v + along[k] * s1 + dir[k] * s2)));
+      for (const idx of [0, 1, 2, 0, 2, 3]) {
+        positions.push(...corners[idx]);
+        normals.push(...ln);
+        uvs.push(...uv[idx]);
+        colors.push(shade, shade, shade, 255);
+      }
     }
   }
   return {
