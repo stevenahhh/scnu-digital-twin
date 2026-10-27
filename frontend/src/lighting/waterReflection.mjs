@@ -15,9 +15,16 @@ export const WATER_REFLECTION_EVERY = Object.freeze({ low: 3, medium: 2, high: 1
 export const MIN_POOL_PX = 48;
 // Should the mirror of a pool (bounding sphere radius r, at distance d from a perspective camera of vertical fov
 // fovDeg and viewport height px) render on frame `frame` for this tier?
-export function mirrorDue({ frame, tier, radius, distance, fovDeg, viewportPx }) {
+// Skipping only thins out refreshes during continuous small camera motion: a texture from another viewpoint (camera
+// moved more than JUMP_UNITS or turned more than JUMP_DEG since it was rendered) or a camera now at rest on a stale
+// texture always refreshes, so a jump or the end of a move never leaves a wrong reflection on screen.
+export const JUMP_UNITS = 2;
+export const JUMP_DEG = 5;
+export function mirrorDue({ frame, tier, radius, distance, fovDeg, viewportPx, movedSinceTexture = 0, turnedSinceTexture = 0, cameraAtRest = false }) {
   const every = WATER_REFLECTION_EVERY[tier] ?? WATER_REFLECTION_EVERY.low;
-  if (frame % every !== 0) return false;
+  const stale = movedSinceTexture > 1e-4 || turnedSinceTexture > 1e-3;
+  const jumped = movedSinceTexture > JUMP_UNITS || turnedSinceTexture > JUMP_DEG;
+  if (!jumped && !(cameraAtRest && stale) && frame % every !== 0) return false;
   const sizePx = (radius / Math.max(distance, 1e-3)) * (viewportPx / 2 / Math.tan(((fovDeg ?? 45) * Math.PI) / 360)) * 2;
   return sizePx >= MIN_POOL_PX;
 }

@@ -41,3 +41,12 @@ test("mirrorDue: every Nth frame per tier, and never for a pool smaller than MIN
   assert.deepEqual([0, 1, 2, 3].map((f) => mirrorDue({ ...near, frame: f, tier: "low" })), [true, false, false, true]);
   assert.equal(mirrorDue({ ...near, distance: 2000, frame: 0, tier: "high" }), false, "a far, tiny pool keeps its last reflection");
 });
+
+test("mirrorDue refreshes off-schedule after a camera jump or when the camera stops on a stale texture", async () => {
+  const { mirrorDue } = await import("./waterReflection.mjs");
+  const base = { radius: 10, distance: 40, fovDeg: 45, viewportPx: 900, tier: "low", frame: 1 };
+  assert.equal(mirrorDue({ ...base, movedSinceTexture: 0.5, turnedSinceTexture: 1 }), false, "small motion waits for its frame");
+  assert.equal(mirrorDue({ ...base, movedSinceTexture: 0, turnedSinceTexture: 90 }), true, "a turn to another view refreshes");
+  assert.equal(mirrorDue({ ...base, movedSinceTexture: 0.5, cameraAtRest: true }), true, "a camera at rest on a stale texture refreshes");
+  assert.equal(mirrorDue({ ...base, cameraAtRest: true }), false, "a camera at rest on a current texture does not");
+});

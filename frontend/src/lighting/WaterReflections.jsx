@@ -57,6 +57,9 @@ function buildMirrors(source, size, ripple, tier, clock) {
     const render = mirror.onBeforeRender;
     const centre = new Vector3();
     let rendered = false;
+    const texPos = new Vector3();
+    const texDir = new Vector3();
+    const dir = new Vector3();
     mirror.onBeforeRender = (...args) => {
       if (guard) return;
       const [renderer, , camera] = args;
@@ -64,8 +67,13 @@ function buildMirrors(source, size, ripple, tier, clock) {
       centre.copy(geometry.boundingSphere.center).applyMatrix4(mirror.matrixWorld);
       const radius = geometry.boundingSphere.radius;
       // the first pass always runs, so a mirror never shows an empty texture
-      if (rendered && !mirrorDue({ frame: clock.frame, tier, radius, distance: centre.distanceTo(camera.position), fovDeg: camera.fov, viewportPx: renderer.getDrawingBufferSize(buffer).y })) return;
+      camera.getWorldDirection(dir);
+      const moved = rendered ? texPos.distanceTo(camera.position) : Infinity;
+      const turned = rendered ? (Math.acos(Math.min(1, Math.max(-1, texDir.dot(dir)))) * 180) / Math.PI : Infinity;
+      if (rendered && !mirrorDue({ frame: clock.frame, tier, radius, distance: centre.distanceTo(camera.position), fovDeg: camera.fov, viewportPx: renderer.getDrawingBufferSize(buffer).y, movedSinceTexture: moved, turnedSinceTexture: turned, cameraAtRest: clock.atRest })) return;
       rendered = true;
+      texPos.copy(camera.position);
+      texDir.copy(dir);
       guard = true;
       try { render.apply(mirror, args); } finally { guard = false; }
     };
@@ -75,7 +83,7 @@ function buildMirrors(source, size, ripple, tier, clock) {
 
 export function WaterReflections({ quality = "low" }) {
   const { scene } = useThree();
-  const state = useRef({ source: null, mirrors: [], frames: 0, ripple: null, clock: { frame: 0 } });
+  const state = useRef({ source: null, mirrors: [], frames: 0, ripple: null, clock: { frame: 0, atRest: false }, lastCam: null });
 
   useEffect(() => {
     const s = state.current;
@@ -93,7 +101,8 @@ export function WaterReflections({ quality = "low" }) {
   // a tier change rebuilds the mirrors at the new texture size
   useEffect(() => () => clear(state.current), [quality]);
 
-  useFrame(({ clock }) => {
+  useFrame((state3) => {
+    const { clock } = state3;
     const s = state.current;
     if (s.source && !s.source.parent) clear(s); // the model was reloaded
     if (!s.source) {
@@ -107,6 +116,10 @@ export function WaterReflections({ quality = "low" }) {
       water.visible = false;
     }
     s.clock.frame += 1;
+    // at rest: the camera has not moved since the previous frame
+    const cam = state3.camera;
+    s.clock.atRest = s.lastCam ? s.lastCam.equals(cam.matrixWorld) : false;
+    (s.lastCam ??= cam.matrixWorld.clone()).copy(cam.matrixWorld);
     const t = clock.elapsedTime;
     for (const m of s.mirrors) m.material.uniforms.time.value = t;
   });
