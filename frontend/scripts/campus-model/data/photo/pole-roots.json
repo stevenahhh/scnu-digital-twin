@@ -1,5 +1,5 @@
 {
- "note": "Standing-pole bases read from the NGII 2025 orthophoto (sheet 34702020, 0.25 m GSD). verdict shadow-root: by-eye base confirmed by the shadow detector (lib/poleShadow.mjs) within 0.5 m, placed at the detected root; by-eye-root: base by eye (data/photo/pole-review.json); head-lean: floodlight head minus the relief lean; epoch-root: base read by eye on other-year aerials (순천시 airmap 2013-2024) registered to the sheet, at least two independent epochs within 0.5 m (data/photo/pole-sources.json resolved); unresolved: no base visible, survey and data.go.kr poles stay at their seed (metre-level; site 'median' when the photo shows the seed on a median or island); rejected: no pole there (not drawn). Positions WGS84; residualM per pole; heights stay estimates (추정). Unresolved poles carry estimated: true, attempts (every other source tried in round 2: data/photo/pole-sources.json), seedUncertaintyM and confidence; placed poles carry confidence by method.",
+ "note": "Standing-pole bases read from the NGII 2025 orthophoto (sheet 34702020, 0.25 m GSD). verdict shadow-root: by-eye base confirmed by the shadow detector (lib/poleShadow.mjs) within 0.5 m, placed at the detected root; by-eye-root: base by eye (data/photo/pole-review.json); head-lean: floodlight head minus the relief lean; vr-root: base hidden on the photo, read on the VR tour against photo features (pole-review verdict vr); epoch-root: base read by eye on other-year aerials (순천시 airmap 2013-2024) registered to the sheet, at least two independent epochs within 0.5 m (data/photo/pole-sources.json resolved); unresolved: no base visible, survey and data.go.kr poles stay at their seed (metre-level; site 'median' when the photo shows the seed on a median or island); rejected: no pole there (not drawn). Positions WGS84; residualM per pole; heights stay estimates (추정). Unresolved poles carry estimated: true, attempts (every other source tried in round 2: data/photo/pole-sources.json), seedUncertaintyM and confidence; placed poles carry confidence by method.",
  "generator": "scripts/campus-model/fetch/poleRoots.mjs",
  "sun": {
   "azimuthDeg": 92.5,
@@ -8,9 +8,10 @@
  },
  "counts": {
   "traffic_signal_pole/by-eye-photo": {
-   "unresolved": 3,
+   "unresolved": 2,
    "shadow-root": 1,
-   "by-eye-root": 1
+   "by-eye-root": 1,
+   "vr-root": 1
   },
   "street_lamp/by-eye-photo": {
    "unresolved": 6,
@@ -39,10 +40,10 @@
   }
  },
  "residualStats": {
-  "resolved": 17,
-  "unresolved": 47,
+  "resolved": 18,
+  "unresolved": 46,
   "maxM": 0.5,
-  "medianM": 0.25,
+  "medianM": 0.29,
   "p95M": 0.5
  },
  "poles": [
@@ -172,55 +173,16 @@
     127.48400649,
     34.96873152
    ],
-   "verdict": "unresolved",
-   "site": "median",
-   "note": "signal on the yellow-hatched median: the seed is on the median paint between the opposing lanes; pole base not resolvable",
-   "estimated": true,
-   "attempts": [
-    {
-     "method": "ngii-wide-search",
-     "result": "rejected",
-     "score": 18.96,
-     "fromSeedM": 1.37,
-     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: broad 2 m streak of the signal head or arm; no 1 px pole line, root not visible"
-    },
-    {
-     "method": "vworld-z19",
-     "result": "not-independent",
-     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
-    },
-    {
-     "method": "esri-z18",
-     "result": "unregistered",
-     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
-    },
-    {
-     "method": "vr-two-ray",
-     "result": "unresolved",
-     "rays": 0,
-     "baseRays": 0,
-     "why": "0 base-checked ray(s) of 0"
-    },
-    {
-     "method": "shadow-tip",
-     "result": "unresolved",
-     "why": "tip visible, root hidden: tip + h / tan 62 deg back to the root with h 6.5 m 추정 (+-1 m) gives about 0.6 m along the shadow, over 0.5 m",
-     "residualM": 0.6
-    },
-    {
-     "method": "suncheon-airmap",
-     "result": "unresolved",
-     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
-     "registeredEpochs": 8
-    },
-    {
-     "method": "kakao-skyview-hd",
-     "result": "not-independent",
-     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
-    }
+   "verdict": "vr-root",
+   "root": [
+    127.48409793,
+    34.96873206
    ],
-   "seedUncertaintyM": 1.2,
-   "confidence": 0.3
+   "shiftM": 8.35,
+   "residualM": 0.47,
+   "residualKind": "spread of the VR and photo constraints (estimate)",
+   "confidence": 0.6,
+   "note": "signal: the base is in building shadow on the photo; VR scene_a19 shows the pole on the east footway just behind the kerb, south of the crossing (8.35 m east of the median seed). Base = mean of the a19 ray cut with the photo-registered kerb (0.17 m inside the footway) and the a19 position moved by the a19-vs-photo offset of the crossing's south-east bar end (0.93 m apart, residual half of that); the scene_a17 line of sight (86 m, base hidden by a tree) passes 1.4 m west"
   },
   {
    "id": "OB0004",
