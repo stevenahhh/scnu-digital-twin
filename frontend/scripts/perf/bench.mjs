@@ -63,6 +63,8 @@ const VIEWS = [
   { name: "overview", position: [0, 260, 260], target: [0, 0, 0] },
   { name: "d4", anchor: "BLD_D4", offset: [60, 50, 60] },
   { name: "oblique15", position: [-220, 110, 180], target: [0, 0, 0] },
+  // the C1 plaza pools in front of the library (water reflections), from the east over the pools
+  { name: "c1pool", anchor: "BLD_C1001", offset: [70, 25, 15] }, // BLD_C1.001 (three drops the dot)
 ];
 
 // Local backends also open WebSockets (simulation 8002), which Fetch interception does not see. Unless --live-backends
