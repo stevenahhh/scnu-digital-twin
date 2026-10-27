@@ -49,7 +49,7 @@ import {
   crownMaterialName,
   patchFoliageLod,
 } from "./lighting/foliage.mjs";
-import { WATER_MATERIAL_NAME, patchWaterFresnel } from "./lighting/water.mjs";
+import { WATER_ENV_INTENSITY, WATER_MATERIAL_NAME, patchWaterFresnel } from "./lighting/water.mjs";
 
 // 클릭하지 않아도 카메라가 이 거리 안으로 들어오면 "가까이 간" 것으로 본다.
 // 클릭 시 자동으로 붙는 카메라 거리(FOCUS_CAMERA_OFFSET 기준 약 94유닛)보다 살짝
@@ -567,6 +567,7 @@ export function CityModel({
       if (child.material.name === WATER_MATERIAL_NAME) {
         child.material.onBeforeCompile = (shader) => patchWaterFresnel(shader);
         child.material.customProgramCacheKey = () => "campus-water-fresnel";
+        child.material.envMapIntensity = WATER_ENV_INTENSITY;
         child.material.needsUpdate = true;
       }
       if (isRoadMarking) {

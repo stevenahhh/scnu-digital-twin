@@ -5,7 +5,10 @@
 // other half of the water look: the surface is see-through looking down (the painted pool floor shows) and nearly
 // opaque at grazing angles, where the reflection dominates. Estimated look, not a measured optical model.
 export const WATER_MATERIAL_NAME = "Furniture_Water";
-export const WATER_ALPHA = Object.freeze({ down: 0.6, grazing: 0.95, power: 3 });
+export const WATER_ALPHA = Object.freeze({ down: 0.7, grazing: 0.95, power: 3 });
+// Sky reflection strength on the water (envMapIntensity): a calm pool mirrors the bright sky far more than the paving
+// round it, so the water reads as water and not as lawn (VR scene_c1 b). Estimated.
+export const WATER_ENV_INTENSITY = 2.2;
 
 // Fragment shader patch for MeshStandardMaterial (onBeforeCompile).
 export function patchWaterFresnel(shader, alpha = WATER_ALPHA) {

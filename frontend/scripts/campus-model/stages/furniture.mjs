@@ -1763,7 +1763,7 @@ P.fountain = (ctx, o) => {
 // water. The painted ground water (osm-ground.json supplement, same outline) is the pool floor. Every dimension is an
 // estimate (추정): rings at s (m east of the centre) x t from the VR and a faint ring on the sheet at s 10, t -3.
 const POND = {
-  copingM: 0.6, copingHeightM: 0.35, waterM: 0.22, copingColour: "#cfccc4", waterColour: "#55664c",
+  copingM: 0.6, copingHeightM: 0.35, waterM: 0.22, copingColour: "#cfccc4", waterColour: "#8aa27a",
   island: { s: -6.6, halfS: 3.7, halfT: 4.2 },
   rings: [[2.5, -3.3], [2.5, 3.3], [10, -3.3], [10, 3.3]], ringRadiusM: 1.4, nozzles: 16, ringColour: "#4c5068",
 };
@@ -1919,7 +1919,7 @@ B.terraced_steps = (ctx, o) => {
     const inset = [localPlan(f, s0 + 0.1, t0 + 0.1), localPlan(f, s1 - 0.1, t0 + 0.1), localPlan(f, s1 - 0.1, t1 - 0.1), localPlan(f, s0 + 0.1, t1 - 0.1)];
     // a clipped hedge with a rounded top (VR scene_c1 f)
     const half = Math.min(s1 - s0, t1 - t0) / 2 - 0.1;
-    ctx.solid.rounded(inset, (x, z) => kerbTop(x, z) - M(0.05), (x, z) => kerbTop(x, z) + M(planter.hedge_m), Math.min(planter.hedge_m * 0.7, half * 0.85), C.shrub);
+    ctx.solid.rounded(inset, (x, z) => kerbTop(x, z) - M(0.05), (x, z) => kerbTop(x, z) + M(planter.hedge_m), Math.min(planter.hedge_m * 0.7, half * 0.85), planter.hedgeColour ? rgb(planter.hedgeColour) : C.shrub);
   }
   // rounded clipped shrub masses beside the flights: a rounded-rectangle plan inside s x t, standing on the bank whose
   // level runs from rise_m[0] to rise_m[1] (metres above the bottom edge) over s, height_m over it

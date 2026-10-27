@@ -788,6 +788,7 @@
               2.15
             ],
             "hedge_m": 0.75,
+            "hedgeColour": "#2f5a2d",
             "kerbColour": "#e7e6e1"
           },
           {
@@ -804,6 +805,7 @@
               2.1
             ],
             "hedge_m": 0.85,
+            "hedgeColour": "#2f5a2d",
             "kerbColour": "#e7e6e1"
           },
           {
@@ -820,6 +822,7 @@
               2.1
             ],
             "hedge_m": 0.85,
+            "hedgeColour": "#2f5a2d",
             "kerbColour": "#e7e6e1"
           }
         ],
@@ -865,6 +868,7 @@
               13.1
             ],
             "height_m": 1.2,
+            "colour": "#2f5a2d",
             "rise_m": [
               0.25,
               1.5
@@ -881,6 +885,7 @@
               -9.75
             ],
             "height_m": 1.05,
+            "colour": "#2f5a2d",
             "rise_m": [
               0.25,
               1.4
@@ -897,6 +902,7 @@
               -13.9
             ],
             "height_m": 0.6,
+            "colour": "#2f5a2d",
             "rise_m": [
               0.2,
               0.3
@@ -913,6 +919,7 @@
               14.6
             ],
             "height_m": 0.8,
+            "colour": "#2f5a2d",
             "rise_m": [
               1.6,
               1.9
