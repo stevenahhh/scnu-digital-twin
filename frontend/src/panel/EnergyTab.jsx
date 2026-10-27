@@ -10,7 +10,8 @@ import { EnergyDashboard } from "../features/energy/dashboard/EnergyDashboard";
 export function EnergyTab({ buildingId, plans, feedStatus, onRetry, campusOverview, onOpenRecommendation }) {
   return (
     <>
-      <SectionHeader level={2} title="에너지" />
+      {/* 탭 제목(h2)은 패널 머리에 있다. 이 머리글은 그 아래 묶음이다. */}
+      <SectionHeader level={3} title="에너지" />
       {isFeedDown(feedStatus) && <FeedAlert feed="energy" status={feedStatus} onRetry={onRetry} />}
       {campusOverview}
       <BuildingAnalysis
