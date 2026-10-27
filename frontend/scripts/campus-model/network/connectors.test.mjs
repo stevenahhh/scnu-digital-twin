@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildConnectors, walkablePolygons } from "./connectors.mjs";
+import { buildConnectors, plazaLinks, walkablePolygons } from "./connectors.mjs";
 import { inRings, lineLength, sampleLine } from "./geom.mjs";
 import { NetGraph } from "./graph.mjs";
 import { buildSidewalks } from "./sidewalks.mjs";
@@ -69,4 +69,32 @@ test("a paving supplement marked walkable joins the walkable polygons as an esti
   ] });
   assert.equal(out.length, 1);
   assert.deepEqual([out[0].class, out[0].estimated, out[0].id], ["plaza", true, "PAVEDCOURT_0001"]);
+});
+
+test("a walkable plaza no person edge crosses gets a plaza node with estimated people-only links to nearest nodes on two sides", () => {
+  const g = new NetGraph();
+  for (const [id, p] of [["W", [-15, 5]], ["W2", [-15, 40]], ["E", [25, 5]], ["E2", [25, 40]], ["F", [5, -8]], ["F2", [5, -12]]]) g.addNode(id, p, { kind: "sidewalk" });
+  g.addNode("POI_W", [-15, 45], { kind: "poi" });
+  g.addNode("POI_E", [25, 45], { kind: "poi" });
+  g.addEdge({ id: "SW_W", from: "W", to: "W2", kind: "sidewalk", points: [[-15, 5], [-15, 40]] });
+  g.addEdge({ id: "SW_E", from: "E", to: "E2", kind: "sidewalk", points: [[25, 5], [25, 40]] });
+  g.addEdge({ id: "POI_W_E", from: "W2", to: "POI_W", kind: "building_entrance", points: [[-15, 40], [-15, 45]] });
+  g.addEdge({ id: "POI_E_E", from: "E2", to: "POI_E", kind: "building_entrance", points: [[25, 40], [25, 45]] });
+  g.addEdge({ id: "W_E", from: "W2", to: "E2", kind: "sidewalk", points: [[-15, 40], [25, 40]] });
+  // a closer fragment outside the main component (pruned by buildNetwork), even one with a POI, is never a link target
+  g.addNode("POI_F", [5, -14], { kind: "poi" });
+  g.addEdge({ id: "FRAG", from: "F", to: "F2", kind: "shared_path", points: [[5, -8], [5, -12]] });
+  g.addEdge({ id: "FRAG_P", from: "F2", to: "POI_F", kind: "building_entrance", points: [[5, -12], [5, -14]] });
+  const plaza = { class: "plaza", id: "PAVEDCOURT_0001", source_ref: "paving: test", estimated: true, rings: [rect(0, 0, 10, 10)] };
+  const crossed = { class: "plaza", id: "PAVEDCOURT_0002", source_ref: "paving: crossed", estimated: true, rings: [rect(-20, 30, -10, 35)] };
+  const out = plazaLinks({ graph: g, walkable: [plaza, crossed] });
+  assert.deepEqual(out.edges.map((e) => [e.from, e.to, e.kind, e.estimated]), [["PLAZA_PAVEDCOURT_0001", "W", "sidewalk", true], ["PLAZA_PAVEDCOURT_0001", "E", "sidewalk", true]]);
+  assert.ok(inRings(g.nodes.get("PLAZA_PAVEDCOURT_0001").p, plaza.rings));
+  assert.equal(out.stats.plazas, 1, "a plaza a person edge already crosses is left alone");
+  const walled = new NetGraph();
+  for (const [id, p] of [["W", [-15, 5]], ["W2", [-15, 40]]]) walled.addNode(id, p, { kind: "sidewalk" });
+  walled.addNode("POI_W", [-15, 45], { kind: "poi" });
+  walled.addEdge({ id: "SW_W", from: "W", to: "W2", kind: "sidewalk", points: [[-15, 5], [-15, 40]] });
+  walled.addEdge({ id: "POI_W_E", from: "W2", to: "POI_W", kind: "building_entrance", points: [[-15, 40], [-15, 45]] });
+  assert.equal(plazaLinks({ graph: walled, walkable: [plaza], buildings: [{ rings: [rect(-12, -50, -11, 60)] }] }).edges.length, 0, "no link through a building");
 });
