@@ -53,6 +53,8 @@ const median = (values) => {
 export function storeyMedians(footprints) {
   const groups = { education: [], dormitory: [], other: [] };
   for (const record of footprints) {
+    // estimated records (data/vr-buildings.json, data/vr-context-buildings.json) never feed the GIS storey statistic
+    if (record.estimated) continue;
     const floors = record.floors || 0;
     const height = record.heightMetres || 0;
     if (!(floors > 0 && height > 0)) continue;

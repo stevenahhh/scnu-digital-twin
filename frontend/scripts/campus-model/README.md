@@ -451,6 +451,27 @@ green-roofed building in scene_d5 is a private house off campus (GIS record 4531
 A record looks up its `data/scnu-facades.json` entry by label, then by name (the label drops the code), and its
 `usability` picks the storey median (dormitory for 웅지관).
 
+### VR context buildings (`data/vr-context-buildings.json`)
+
+Off-campus buildings the VR tour shows that the footprint file draws wrongly or not at all. `stages/sources.mjs`
+(`applyVrContext`) applies it after `gis-buildings.json` and `vr-buildings.json`:
+
+- `floors`: storey count, `floorsSource` and a Korean use class (`... (추정)`, for the storey median and wall tone) for a
+  footprint record matched by `footprintSource` (equal, or a prefix followed by a space). Each entry must match exactly
+  one record that has no floors of its own, else the build stops. An entry may also set `heightMetres` (with `heightNote`) where the
+  off-campus storey median (3.95 m, set by shops) does not fit: the towers use 3.24 m, the median of the GIS 공동주택 records
+  of 5+ storeys. Records changed or added by this file are `estimated: true` and so never enter the storey medians
+  (`storeyMedians` skips estimated records).
+- `buildings`: footprints traced by eye on the NGII 2025 orthophoto where neither GIS nor OSM has one, in the
+  `gis-buildings.json` shape with `name: ""` (never `순천대학교`), so they become context masses (`stages/context.mjs`).
+
+Records (2026-10-27, from scene_f1): 순천시문화건강센터 (OSM way/366373762, 3 storeys), its indoor pool hall (2), the
+신매곡 서한이다음 2차 towers (11 OSM ways, 25 or 15 storeys by footprint size, 81 or 48.6 m) and the 4-storey blue-glass block on
+중앙로 (traced). `stages/vrContextBuildings.test.mjs` checks the file; `VR_CONTEXT_FILE` points the loader and the test
+at another one. `fetch/buildings.mjs` takes OSM footprints of buildings GIS lacks across the whole `BBOX` (it used to stop
+30 units outside `EXTENT`), except outlines of 5,000 m2 or more that hold two or more GIS buildings (school grounds,
+temple precincts tagged `building`).
+
 ### Building forms (`data/building-forms.json`)
 
 A campus building is not one prism. `fetch/buildingForms.mjs` gives every modelled building (the selection of
