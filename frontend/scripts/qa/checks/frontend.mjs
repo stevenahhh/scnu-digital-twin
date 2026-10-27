@@ -164,6 +164,17 @@ export const FRONTEND_CHECKS = [
     states: ["S05", "S08", "S15"], viewports: D, themes: ["dark", "light"], mutates: true,
     async run(ctx) {
       return withPanelOpen(ctx, null, async () => {
+      // S15: the editor's primary action (배치 저장) sits below the fold of the D4 pane; scroll it into view the way a user
+      // would and measure a fresh frame.
+      if (ctx.state === "S15" && await ctx.inPage(() => {
+        const save = document.querySelector('button[aria-label="배치 저장"]');
+        if (!save) return false;
+        save.scrollIntoView({ block: "center" });
+        return true;
+      })) {
+        await ctx.sleep(600);
+        if (ctx.refreshImage) await ctx.refreshImage();
+      }
       const m = await primaryFilled(ctx);
       const rows = contrasts(ctx, m.filled.filter((f) => f.box.w > 0));
       const worst = worstContrast(rows);

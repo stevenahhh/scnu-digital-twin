@@ -348,9 +348,12 @@ export const VISUALQA_CHECKS = [
     async run(ctx) {
       const dirs = [ctx.outDir, process.env.QA_EVIDENCE_DIR ? path.join(process.env.QA_EVIDENCE_DIR, "before") : null].filter((dir) => dir && existsSync(dir));
       const files = new Set(dirs.flatMap((dir) => readdirSync(dir)));
-      // Screenshots are written as <entry>-<state>-<viewport>-<theme>.png: every entry captured in the run needs all 24 pairs.
-      const entries = [...new Set([...files].map((file) => /^(legacy|vworld)-S\d{2}-/.exec(file)?.[1]).filter(Boolean))];
-      const prefixes = entries.length ? entries.map((entry) => `${entry}-`) : [""];
+      // Screenshots are written as <state>-<viewport>-<theme>.png for Legacy and vworld-<state>-... for VWorld: every entry
+      // captured in the run needs all 24 pairs.
+      const entries = [];
+      if ([...files].some((file) => /^S\d{2}-/.test(file))) entries.push("legacy");
+      if ([...files].some((file) => /^vworld-S\d{2}-/.test(file))) entries.push("vworld");
+      const prefixes = entries.length ? entries.map((entry) => (entry === "vworld" ? "vworld-" : "")) : [""];
       const missing = [];
       for (const prefix of prefixes) for (let n = 1; n <= 12; n += 1) for (const vp of ["D", "P"]) {
         const id = `${prefix}S${String(n).padStart(2, "0")}-${vp}`;
