@@ -380,7 +380,8 @@ export const FRONTEND_CHECKS = [
         document.body.appendChild(probe);
         const primary = getComputedStyle(probe).color;
         probe.remove();
-        const active = qa.all("[aria-pressed=true],[aria-selected=true]").filter(qa.visible);
+        // Selected toggles, tabs and radio options (Segmented radiogroups mark the chosen option with aria-checked).
+        const active = qa.all("[aria-pressed=true],[aria-selected=true],[aria-checked=true]").filter(qa.visible);
         return active.map((el) => ({ text: qa.txt(el).slice(0, 20), border: getComputedStyle(el).borderTopColor, accentBorder: getComputedStyle(el).borderTopColor === primary, glyph: Boolean(el.querySelector("svg")) }));
       });
       const bad = m.filter((a) => a.accentBorder || !a.glyph);
