@@ -130,17 +130,29 @@ export function backdropColor(image, box, scale, ink) {
   const y0 = Math.max(0, Math.floor(box.y * scale));
   const x1 = Math.min(image.width, Math.ceil((box.x + box.w) * scale));
   const y1 = Math.min(image.height, Math.ceil((box.y + box.h) * scale));
-  let n = 0;
-  const sum = { r: 0, g: 0, b: 0 };
+  // The backdrop is the box's dominant non-ink colour: anti-aliased glyph edges (blends of ink and backdrop) are not
+  // backdrop, and averaging them in pulls the "backdrop" toward the ink (white 12 px text on #5e6ad2 read 4.18:1 instead
+  // of 4.69:1). Pixels are bucketed by 4 bits per channel; the most frequent bucket's mean is returned.
+  const buckets = new Map();
   for (let y = y0; y < y1; y += 1) {
     for (let x = x0; x < x1; x += 1) {
       const p = pixel(image, x, y);
       if (ink && Math.abs(p.r - ink.r) + Math.abs(p.g - ink.g) + Math.abs(p.b - ink.b) < 90) continue;
-      sum.r += p.r; sum.g += p.g; sum.b += p.b; n += 1;
+      const key = ((p.r >> 4) << 8) | ((p.g >> 4) << 4) | (p.b >> 4);
+      const bucket = buckets.get(key) ?? { r: 0, g: 0, b: 0, n: 0 };
+      bucket.r += p.r; bucket.g += p.g; bucket.b += p.b; bucket.n += 1;
+      buckets.set(key, bucket);
     }
   }
-  if (n === 0) return null;
-  return { r: sum.r / n, g: sum.g / n, b: sum.b / n };
+  if (buckets.size === 0) return null;
+  // Without an ink colour (meanLuminance) the caller wants the plain mean of the box.
+  if (!ink) {
+    const all = [...buckets.values()].reduce((a, b) => ({ r: a.r + b.r, g: a.g + b.g, b: a.b + b.b, n: a.n + b.n }), { r: 0, g: 0, b: 0, n: 0 });
+    return { r: all.r / all.n, g: all.g / all.n, b: all.b / all.n };
+  }
+  let best = null;
+  for (const bucket of buckets.values()) if (!best || bucket.n > best.n) best = bucket;
+  return { r: best.r / best.n, g: best.g / best.n, b: best.b / best.n };
 }
 
 // WCAG ratio of a text colour against the rendered pixels behind its box.

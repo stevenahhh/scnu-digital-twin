@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { JSDOM } from "jsdom";
-import { pageProbeSource } from "./probe.mjs";
+import { contrastAgainst, meanLuminance, pageProbeSource } from "./probe.mjs";
 
 // Markup shaped like CampusLabelLayer + SceneLabel output: a leader svg before each slot, the slot div, the chip button
 // with the code as a StatusBadge, the name, and the hover value (hidden until hover).
@@ -37,4 +37,23 @@ test("leaderOf finds the slot's sibling leader only while it is shown", () => {
   assert.equal(shown.__qa.leaderOf(shown.document.querySelector("button"))?.getAttribute("data-qa"), "label-leader");
   // A chip outside a slot (no layer leader) has none.
   assert.equal(shown.__qa.leaderOf(shown.document.getElementById("plain")), null);
+});
+
+
+test("contrast is measured against the dominant backdrop, not the anti-aliased glyph edges", () => {
+  // 20 x 10 px of #5e6ad2 with a white glyph stroke and a ring of half-blended edge pixels around it.
+  const width = 20; const height = 10; const pixels = new Uint8Array(width * height * 4);
+  const put = (x, y, [r, g, b]) => { const i = (y * width + x) * 4; pixels.set([r, g, b, 255], i); };
+  for (let y = 0; y < height; y += 1) for (let x = 0; x < width; x += 1) put(x, y, [94, 106, 210]);
+  for (let x = 2; x < 18; x += 1) { put(x, 5, [255, 255, 255]); put(x, 4, [175, 180, 232]); put(x, 6, [175, 180, 232]); }
+  const ratio = contrastAgainst({ width, height, channels: 4, pixels }, { x: 0, y: 0, w: width, h: height }, 1, "rgb(255, 255, 255)");
+  assert.ok(Math.abs(ratio - 4.69) < 0.05, `ratio ${ratio}`);
+});
+
+test("meanLuminance stays the plain mean of the box", () => {
+  const width = 2; const height = 1; const pixels = new Uint8Array([0, 0, 0, 255, 255, 255, 255, 255]);
+  const mean = meanLuminance({ width, height, channels: 4, pixels }, { x: 0, y: 0, w: 2, h: 1 }, 1);
+  const black = meanLuminance({ width: 1, height: 1, channels: 4, pixels: new Uint8Array([0, 0, 0, 255]) }, { x: 0, y: 0, w: 1, h: 1 }, 1);
+  const white = meanLuminance({ width: 1, height: 1, channels: 4, pixels: new Uint8Array([255, 255, 255, 255]) }, { x: 0, y: 0, w: 1, h: 1 }, 1);
+  assert.ok(mean > black && mean < white);
 });
