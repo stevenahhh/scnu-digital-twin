@@ -280,7 +280,8 @@ export default function VWorldRenderer({
     const handler = Cesium.ScreenSpaceEventHandler ? new Cesium.ScreenSpaceEventHandler(scene.canvas) : null;
     handler?.setInputAction((movement) => {
       const picked = scene.pick?.(movement.endPosition);
-      const name = picked?.primitive === campusGltfModelRef.current ? picked?.node?.name ?? picked?.mesh?.name ?? null : null;
+      // Cesium 1.99는 고른 노드를 picked.detail.node에 둔다(picked.node가 아니다).
+      const name = picked?.primitive === campusGltfModelRef.current ? picked?.detail?.node?.name ?? picked?.node?.name ?? picked?.mesh?.name ?? null : null;
       const meta = name ? resolveBuildingMeta(name, { elementNames, buildingMap: CAMPUS_BUILDING_MAP, blockedIds: CAMPUS_BLOCKED_ELEMENT_IDS }) : null;
       const id = meta && boxById.has(meta.elementId) ? meta.elementId : null;
       setHoveredLabelId((current) => (current === id ? current : id));
