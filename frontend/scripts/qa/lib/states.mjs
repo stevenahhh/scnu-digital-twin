@@ -174,9 +174,11 @@ async function enterD4(ctx, beforeLabelTap) {
   await wait(ctx, 4000);
 }
 
-async function selectLibrary(ctx, waitAfterMs) {
+async function selectLibrary(ctx, waitAfterMs, { beforeClick } = {}) {
   await act(ctx, "[data-qa=camera-preset-library]");
   await settleCamera(ctx);
+  // The idle frame right before the chip tap (after the preset flight): "before" and "after" show the same view.
+  if (beforeClick) await beforeClick();
   await act(ctx, CHIP, "도서관");
   await samplesAfterTrigger(ctx, ctx.stateLabel);
   const extra = waitAfterMs - SAMPLE_OFFSETS_MS[SAMPLE_OFFSETS_MS.length - 1];
@@ -218,22 +220,27 @@ export const STATES = Object.freeze([
         if (anchor) [x, y] = anchor;
       }
       if (ctx.entry === "vworld") {
-        // Legacy's 14 ticks (OrbitControls: x0.95 each, from the 520-unit cap) leave the camera ~406 m from its target at
-        // ~45 deg, about 290 m above the ground. The SDK's wheel zoom is far stronger per tick, so 14 ticks dive to the
-        // rooftops; wheel one tick at a time toward the anchor and stop at the same height above the ground.
-        const heightAboveGround = () => ctx.b.run(() => {
+        // Legacy's 14 ticks (OrbitControls: x0.95 each, from the 520-unit cap) leave the camera ~406 m from its target. The SDK's
+        // wheel moves the camera along its tilted view direction, so wheel ticks carry the view centre off campus. Zoom toward the
+        // anchor instead: the ground point under the 도서관 anchor, approached along the current view direction to 406 m.
+        const zoomed = await ctx.b.run((ax, ay) => {
           const viewer = window.ws3d?.viewer;
-          const c = viewer?.camera?.positionCartographic;
-          if (!c) return null;
-          return c.height - (viewer.scene.globe.getHeight(c) ?? 0);
-        });
-        let ticks = 0;
-        for (let h = await heightAboveGround(); ticks < 20 && h != null && h > 290; h = await heightAboveGround()) {
-          await ctx.b.wheel(x, y, -300, 1);
-          ticks += 1;
-          await sleep(500);
-        }
-        ctx.actions.push(`${ticks}x mouseWheel deltaY=-300 at ${x},${y} (VWorld: 도서관 anchor, until ~290 m above the ground)`);
+          const Cesium = window.Cesium;
+          if (!viewer || !Cesium) return false;
+          const camera = viewer.camera;
+          const ray = camera.getPickRay(new Cesium.Cartesian2(ax, ay));
+          const ground = (ray && viewer.scene.globe.pick(ray, viewer.scene)) ?? camera.pickEllipsoid(new Cesium.Cartesian2(ax, ay));
+          if (!ground) return false;
+          const toGround = Cesium.Cartesian3.normalize(Cesium.Cartesian3.subtract(ground, camera.positionWC, new Cesium.Cartesian3()), new Cesium.Cartesian3());
+          const destination = Cesium.Cartesian3.subtract(ground, Cesium.Cartesian3.multiplyByScalar(toGround, 406, new Cesium.Cartesian3()), new Cesium.Cartesian3());
+          const normal = Cesium.Ellipsoid.WGS84.geodeticSurfaceNormal(destination, new Cesium.Cartesian3());
+          const along = Cesium.Cartesian3.multiplyByScalar(toGround, Cesium.Cartesian3.dot(normal, toGround), new Cesium.Cartesian3());
+          const up = Cesium.Cartesian3.normalize(Cesium.Cartesian3.subtract(normal, along, new Cesium.Cartesian3()), new Cesium.Cartesian3());
+          camera.setView({ destination, orientation: { direction: toGround, up } });
+          viewer.scene.requestRender();
+          return true;
+        }, x, y);
+        ctx.actions.push(`VWorld: camera toward the 도서관 anchor at ${x},${y} to 406 m (Legacy S03 distance)${zoomed ? "" : " FAILED"}`);
       } else {
         await ctx.b.wheel(x, y, -300, 14);
         ctx.actions.push(`14x mouseWheel deltaY=-300 at ${x},${y}`);
@@ -244,8 +251,7 @@ export const STATES = Object.freeze([
   {
     id: "S04", name: "building-selected-library",
     steps: async (ctx) => {
-      await ctx.snapshot("S04:before-click");
-      await selectLibrary(ctx, 3500);
+      await selectLibrary(ctx, 3500, { beforeClick: () => ctx.snapshot("S04:before-click") });
     },
   },
   {
