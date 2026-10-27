@@ -72,6 +72,9 @@ export async function restoreCamera(ctx, saved) {
 export async function withPanelOpen(ctx, tab, measure) {
   const before = await ctx.inPage((qa) => qa.all("[data-qa^=dashboard-tab-]").find((el) => el.getAttribute("aria-selected") === "true")?.getAttribute("data-qa")?.replace("dashboard-tab-", "") ?? null);
   const startDetent = ctx.viewport === "P" ? await ctx.inPage((qa) => qa.one("[data-qa=dashboard-panel]")?.getAttribute("data-detent") ?? null) : null;
+  // Checks scroll the panel body to reach what they measure; the scroll position carries over to later checks and tabs.
+  const scrollBody = "[data-qa=dashboard-panel] .overflow-y-auto";
+  const startScroll = await ctx.inPage((qa, a) => qa.one(a.sel)?.scrollTop ?? null, { sel: scrollBody });
   const actions = await openPanelSection(ctx, tab);
   if (actions.length > 0 && ctx.refreshImage) await ctx.refreshImage();
   try {
@@ -83,6 +86,7 @@ export async function withPanelOpen(ctx, tab, measure) {
     }
     // Desktop: close what 패널 열기 opened. Phone: put the sheet back to the detent it was found at (패널 닫기 lowers it
     // to peek; raising it with the handle is undone the same way), so later replay states keep the map they expect.
+    if (startScroll != null) await ctx.inPage((qa, a) => { const el = qa.one(a.sel); if (el) el.scrollTop = a.top; return true; }, { sel: scrollBody, top: startScroll });
     const nowDetent = ctx.viewport === "P" ? await ctx.inPage((qa) => qa.one("[data-qa=dashboard-panel]")?.getAttribute("data-detent") ?? null) : null;
     const reopenedSheet = ctx.viewport === "P" && startDetent === "peek" && nowDetent !== "peek";
     if ((actions.includes("패널 열기") || reopenedSheet) && await ctx.b.center('[aria-label="패널 닫기"]')) {
