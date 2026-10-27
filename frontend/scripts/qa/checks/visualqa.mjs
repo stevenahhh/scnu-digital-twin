@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { CAMERA_PRESETS } from "../../../src/camera/cameraPresets.mjs";
 import {
+  sheetSettle,
   HOOKS, chips, contrasts, defineCheck, exists, hueDistance, hueOf, intersection, missingHook, panelAlpha, panelInfo,
   parseCssColor, pixelDiff, result, sceneRegion, textItems, worstContrast,
   openPanelSection,
@@ -363,7 +364,8 @@ export const VISUALQA_CHECKS = [
       if (ctx.viewport === "P" && (await ctx.inPage((qa) => qa.one("[data-qa=dashboard-panel]")?.getAttribute("data-detent") !== "peek"))
         && (await ctx.b.center('[aria-label="패널 닫기"]'))) {
         await ctx.b.tap('[aria-label="패널 닫기"]');
-        await ctx.sleep(800);
+        await ctx.sleep(150);
+        await sheetSettle(ctx);
       }
       let expandedChip = false;
       if (await ctx.b.center("[data-qa=time-chip]")) {

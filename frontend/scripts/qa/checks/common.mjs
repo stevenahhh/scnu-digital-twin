@@ -11,6 +11,21 @@ export const missingHook = (selector, expected, extra = {}) => ({ pass: false, m
 // Rail-first shell: the panel starts collapsed (desktop rail, phone sheet peek), so a row that measures panel content
 // opens the panel section it measures first, the way a user would (패널 열기, then the tab). Only for checks marked
 // `mutates: true` (they run in the probe replay, never in the captured frames). Returns the actions taken.
+// Phone sheet detents slide (0.3 s, longer on a loaded renderer): wait until the sheet's top holds still across two
+// samples (bounded) instead of a fixed delay, so the next tap lands on what the settled page shows.
+export async function sheetSettle(ctx, timeoutMs = 4000) {
+  const top = () => ctx.inPage((qa) => Math.round(qa.one("[data-qa=dashboard-panel]")?.getBoundingClientRect().top ?? -1));
+  const deadline = Date.now() + timeoutMs;
+  let last = await top();
+  while (Date.now() < deadline) {
+    await ctx.sleep(150);
+    const now = await top();
+    if (now === last) return now;
+    last = now;
+  }
+  return last;
+}
+
 export async function openPanelSection(ctx, tab = "dashboard") {
   const actions = [];
   if (await ctx.b.center('[aria-label="패널 열기"]')) {
@@ -91,12 +106,14 @@ export async function withPanelOpen(ctx, tab, measure) {
     const reopenedSheet = ctx.viewport === "P" && startDetent === "peek" && nowDetent !== "peek";
     if ((actions.includes("패널 열기") || reopenedSheet) && await ctx.b.center('[aria-label="패널 닫기"]')) {
       await ctx.b.tap('[aria-label="패널 닫기"]');
-      await ctx.sleep(900);
+      await ctx.sleep(150);
+      await sheetSettle(ctx);
     } else if (ctx.viewport === "P" && startDetent === "half" && nowDetent === "full") {
       // Raised from half to full with the handle: step it back down the same way.
       if (await ctx.inPage((qa) => { const handle = qa.one("[data-qa=sheet-handle]"); handle?.focus(); return Boolean(handle); })) {
         await ctx.b.key("ArrowDown");
-        await ctx.sleep(800);
+        await ctx.sleep(150);
+        await sheetSettle(ctx);
       }
     }
   }

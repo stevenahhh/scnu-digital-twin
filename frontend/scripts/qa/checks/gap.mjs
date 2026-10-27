@@ -1,5 +1,6 @@
 // GAP-01..GAP-37 (DESIGN-AUDIT section 3 rows as section-7 checks). Each `doc` holds the literal row.
 import {
+  sheetSettle,
   HOOKS, canvasRect, chipByText, chips, contrasts, defineCheck, exists, hasUpperEyebrow, hudRects, intersection,
   gapBetween, luminanceStep, missingHook, modelEdgeStep, panelInfo, pixelDiff, rectOf, result, roofBox, sampleFrames,
   sceneRegion, selectedTab, textItems, meanLuminance, worstContrast,
@@ -360,7 +361,8 @@ export const GAP_CHECKS = [
       if (startDetent === "peek" && await ctx.inPage((qa) => qa.one("[data-qa=dashboard-panel]")?.getAttribute("data-detent") !== "peek")
         && await ctx.b.center('[aria-label="패널 닫기"]')) {
         await ctx.b.tap('[aria-label="패널 닫기"]');
-        await ctx.sleep(900);
+        await ctx.sleep(150);
+        await sheetSettle(ctx);
       }
       const pass = focused && listed.some((text) => /도서관/.test(text)) && chip?.pressed === "true" && cameraChange > 0.03;
       return result(pass, { field, focused, listed: listed.slice(0, 8), chipPressed: chip?.pressed ?? null, cameraChange },
