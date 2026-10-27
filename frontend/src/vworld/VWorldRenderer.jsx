@@ -534,7 +534,8 @@ export default function VWorldRenderer({
               ref={leftStackRef}
               data-qa="vworld-left-stack"
               data-label-chrome-layer=""
-              className="pointer-events-none absolute left-4 top-[4.5rem] z-20 flex max-w-[calc(100%-2rem)] flex-col items-start gap-3"
+              className="pointer-events-none absolute left-4 z-20 flex max-w-[calc(100%-2rem)] flex-col items-start gap-3"
+              style={{ top: "var(--vworld-hud-bottom, 4.5rem)" }}
             >
               {labelEntries && <SearchField registry={labelEntries} onPick={handleSearchPick} />}
               {isLoading && !hasLoadError && (

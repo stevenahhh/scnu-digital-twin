@@ -125,6 +125,17 @@ export default function App() {
   const [isTimePlaying, setIsTimePlaying] = useState(false);
   // HUD가 지도보다 먼저 그려지므로(탭 순서) 지도 위 문구·버튼은 HUD 안 자리로 옮겨 그린다.
   const [hudOverlayHost, setHudOverlayHost] = useState(null);
+  // 지도 위 왼쪽 열(검색·카드)은 HUD 줄 바로 아래에서 시작한다(폰에서 HUD가 두 줄이 되어도 겹치지 않게).
+  const hudRowRef = useRef(null);
+  useEffect(() => {
+    const row = hudRowRef.current;
+    if (!row || typeof ResizeObserver === "undefined") return undefined;
+    const publish = () => document.documentElement.style.setProperty("--vworld-hud-bottom", `${Math.round(row.getBoundingClientRect().bottom)}px`);
+    publish();
+    const observer = new ResizeObserver(publish);
+    observer.observe(row);
+    return () => observer.disconnect();
+  }, []);
 
   // 루트는 overflow: clip으로 자른다. hidden은 스크롤 컨테이너라서 Tab 포커스가 화면 밖 요소로 가면 대시보드가 밀려 남는다.
   return (
@@ -143,7 +154,7 @@ export default function App() {
         <div ref={setHudOverlayHost} data-label-chrome-layer="" className="pointer-events-none fixed inset-0" />
         {/* 시간 카드는 줄지 않는다(줄면 글자가 두 줄로 꺾여 아래 검색칸을 덮었다). 오른쪽 조작 묶음은 자리가 모자라면 자기
             칸 안에서 오른쪽으로 줄을 바꾼다(왼쪽 열의 검색칸·카드를 덮지 않는다). */}
-        <div data-label-chrome-layer="" className="flex items-start gap-2 p-4">
+        <div ref={hudRowRef} data-label-chrome-layer="" className="flex flex-wrap items-start gap-2 p-4">
         <div className="shrink-0">
           <HudTimeReadout
             minuteOfDay={clock.sceneMinuteOfDay}
@@ -152,7 +163,8 @@ export default function App() {
             )}
           />
         </div>
-        <div data-label-chrome-layer="" className="flex min-w-0 flex-1 flex-wrap items-start justify-end gap-2">
+        {/* 폰에서는 조작 묶음이 시간 카드 아래 한 줄을 다 쓰고 왼쪽부터 놓인다. */}
+        <div data-label-chrome-layer="" className="flex min-w-0 flex-1 flex-wrap items-start justify-start gap-2 max-sm:basis-full sm:justify-end">
           {!presentation.presenting && camera.ready && (
             <HudToolbar
               presets={CAMERA_PRESETS}
