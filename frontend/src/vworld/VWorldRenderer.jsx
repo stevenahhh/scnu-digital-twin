@@ -19,6 +19,9 @@ import { replaceRepresentativePlanObjects } from "./representativePlanVWorld.mjs
 import { createCampusGltfOverlay, createCampusModelMatrix, removeCampusGltfOverlay } from "./campusGltfOverlay.mjs";
 import { createVWorldLabelProjector } from "./labelProjection.mjs";
 import { applyCampusZoomLimits } from "./cameraLimits.mjs";
+import { createVWorldCampusCamera } from "./campusCamera.mjs";
+import { campusCenterOf, glbLabelAnchors, glbNodeBoxes } from "./labelAnchors.mjs";
+import commonElements from "../../../common/data/common_elemetns.json";
 import { VWorldLabelLayer, centroidOf } from "./VWorldLabelLayer";
 import { SearchField } from "../components/SearchField";
 import { createVWorldTrafficSimulation } from "./trafficSimulationOverlay.mjs";
@@ -113,6 +116,10 @@ export default function VWorldRenderer({
   labelOccluderRef = null,
   labelChromeRefs = null,
   presentation = false,
+  // 시점 버튼이 쓰는 카메라(createVWorldCampusCamera). 준비되면 넘기고, 지도가 사라지면 null.
+  onCampusCamera,
+  // 사용자가 지도를 누르거나 끌기 시작했을 때(시점 표시·투어를 멈춘다).
+  onUserCameraStart,
 }) {
   const onSelectionPropRef = useRef(onSelection);
   onSelectionPropRef.current = onSelection;
@@ -127,6 +134,7 @@ export default function VWorldRenderer({
   }, [selectedId]);
   const [labelScene, setLabelScene] = useState(null);
   const [labelEntries, setLabelEntries] = useState(null);
+  const [campusGlb, setCampusGlb] = useState(null);
   const leftStackRef = useRef(null);
   const bottomStackRef = useRef(null);
   const simulationDateRef = useRef(simulationDate);
@@ -205,6 +213,15 @@ export default function VWorldRenderer({
   }, [focusLabelPosition]);
   const handleLabelCluster = useCallback((members) => focusLabelPosition(centroidOf(members)), [focusLabelPosition]);
   const defaultChromeRefs = useRef([leftStackRef, bottomStackRef]).current;
+  const onCampusCameraRef = useRef(onCampusCamera);
+  onCampusCameraRef.current = onCampusCamera;
+  useEffect(() => {
+    if (!labelScene || !campusGlb) return undefined;
+    const elementNames = new Map(commonElements.elements.map(({ element_id: id, name }) => [id, name]));
+    const center = campusCenterOf(glbLabelAnchors(campusGlb, { elementNames }));
+    onCampusCameraRef.current?.(createVWorldCampusCamera({ ...labelScene, getModelMatrix: getLabelModelMatrix, boxes: glbNodeBoxes(campusGlb), center }));
+    return () => onCampusCameraRef.current?.(null);
+  }, [campusGlb, getLabelModelMatrix, labelScene]);
 
   const handleOverlayDataChange = useCallback((overlays) => {
     overlayDataRef.current = overlays;
@@ -426,7 +443,7 @@ export default function VWorldRenderer({
   return (
     <div className="relative h-full w-full">
       {/* 지도 자체에 Legacy 캔버스와 같은 이름을 준다(화면 읽기·랜드마크). */}
-      <div id={VWORLD_MAP_ID} role="region" aria-label="순천대 캠퍼스 3D 지도" className="h-full w-full" />
+      <div id={VWORLD_MAP_ID} role="region" aria-label="순천대 캠퍼스 3D 지도" className="h-full w-full" onPointerDown={() => onUserCameraStart?.()} onWheel={() => onUserCameraStart?.()} />
       {mapBackdrop}
       {labelScene && (
         <VWorldLabelLayer
@@ -441,6 +458,7 @@ export default function VWorldRenderer({
           onSelectEntry={handleLabelSelect}
           onSelectCluster={handleLabelCluster}
           onEntries={setLabelEntries}
+          onGlb={setCampusGlb}
           onClear={() => {
             setSelectedLabelId(null);
             onClearSelection?.();

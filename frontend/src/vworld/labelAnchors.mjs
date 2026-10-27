@@ -86,6 +86,23 @@ function excluded(name) {
   return lower.includes("학교") || lower.includes("topography") || lower.includes("terrain") || lower.includes("ground");
 }
 
+// 메시가 있는 모든 노드의 경계 상자(모델 좌표), 키는 GLTFLoader의 런타임 이름(공백 -> _, [ ] . : / 뺌). 카메라 시점의 focus가 쓴다.
+export function glbNodeBoxes(json) {
+  const boxes = new Map();
+  const visit = (index, parentMatrix) => {
+    const node = json.nodes[index];
+    const matrix = multiply(parentMatrix, localMatrix(node));
+    if (node.mesh !== undefined && typeof node.name === "string") {
+      const box = meshBox(json, node.mesh, matrix);
+      const key = node.name.replace(/\s/g, "_").replace(/[[\].:/]/g, "");
+      if (box && !boxes.has(key)) boxes.set(key, box);
+    }
+    for (const child of node.children ?? []) visit(child, matrix);
+  };
+  for (const root of json.scenes[json.scene ?? 0].nodes) visit(root, IDENTITY);
+  return boxes;
+}
+
 // elementNames: 요소 id -> 이름(common_elemetns.json). 돌려주는 앵커는 buildLabelRegistry가 받는 모양이다.
 export function glbLabelAnchors(json, { elementNames }) {
   const anchors = new Map();
@@ -126,8 +143,7 @@ const SYNTHETIC_ZONE_IDS = new Set(ZONES.filter((zone) => zone.synthetic).map((z
 export function buildVWorldLabelEntries({ json, elements, presets }) {
   const elementNames = new Map(elements.map(({ element_id: id, name }) => [id, name]));
   const anchors = glbLabelAnchors(json, { elementNames });
-  const d4 = anchors.find((anchor) => anchor.elementId === "BLD_D4");
-  const center = d4 ? campusModelCenter(d4.position) : { x: 0, z: 0 };
+  const center = campusCenterOf(anchors);
   const registry = buildLabelRegistry({ elements, anchors, presets });
   return [...registry.values()]
     .filter((entry) => entry.displayName && entry.position)
@@ -138,4 +154,10 @@ export function buildVWorldLabelEntries({ json, elements, presets }) {
         ? [entry.position[0] + center.x, entry.position[1], entry.position[2] + center.z]
         : entry.position,
     }));
+}
+
+// Legacy CityModel의 재중심화 값: BLD_D4 라벨 앵커가 교통 좌표 원점에 오게 하는 x, z.
+export function campusCenterOf(anchors) {
+  const d4 = anchors.find((anchor) => anchor.elementId === "BLD_D4");
+  return d4 ? campusModelCenter(d4.position) : { x: 0, z: 0 };
 }

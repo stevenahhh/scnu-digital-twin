@@ -18,6 +18,9 @@ import { usePanelState } from "./panel/usePanelState.mjs";
 import { usePanelViewMemory } from "./panel/usePanelViewMemory.mjs";
 import { Wordmark } from "./panel/Wordmark";
 import { HudTimeReadout, sceneTimeReadout } from "./components/HudTimeReadout";
+import { HudToolbar } from "./components/HudToolbar";
+import { CAMERA_PRESETS } from "./camera/cameraPresets.mjs";
+import { useVWorldCampusCamera } from "./vworld/useVWorldCampusCamera.mjs";
 import { SettingsSheet } from "./panel/SettingsSheet";
 import { usePresentationMode } from "./panel/usePresentationMode.mjs";
 import { PresentationToggle } from "./components/CampusHud";
@@ -47,6 +50,9 @@ export default function App() {
   // 라벨이 피해 갈 HUD(시간 표시·발표 모드·시간 조작). 통과용 레이어라 안쪽 요소 사각형을 쓴다.
   const hudRef = useRef(null);
   const labelChromeRefs = useMemo(() => [hudRef], []);
+  // Legacy와 같은 시점 버튼·투어(VWorld 카메라로 날아간다).
+  const [campusCamera, setCampusCamera] = useState(null);
+  const camera = useVWorldCampusCamera(campusCamera);
   const [editorRequest, setEditorRequest] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard");
   const viewportMode = useViewportMode();
@@ -134,6 +140,8 @@ export default function App() {
           overlayInsetBottom={mapInsetBottom}
           overlaysHidden={presentation.presenting}
           selectedId={selection.selectedId}
+          onCampusCamera={setCampusCamera}
+          onUserCameraStart={camera.handleUserCameraStart}
           onClearSelection={closeMicroclimatePopup}
           labelOccluderRef={panelRef}
           labelChromeRefs={labelChromeRefs}
@@ -176,6 +184,15 @@ export default function App() {
             <FeedStamps feeds={feeds} retry={feeds.retry} placement={{ expanded: panelState.open, activeTab }} />
           )}
         />
+        {!presentation.presenting && camera.ready && (
+          <HudToolbar
+            presets={CAMERA_PRESETS}
+            activeId={camera.activePresetId}
+            onSelect={camera.selectPreset}
+            touring={camera.touring}
+            onToggleTour={camera.toggleTour}
+          />
+        )}
         <PresentationToggle presenting={presentation.presenting} onToggle={presentation.toggle} className="mt-1" />
         {!presentation.presenting && <CompareButton comparison={comparison} className="mt-1" />}
         {viewportMode !== "phone" && !presentation.presenting && <Wordmark className="ml-auto mt-2.5 text-ink-muted" />}

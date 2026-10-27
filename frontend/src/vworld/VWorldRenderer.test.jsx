@@ -188,7 +188,8 @@ describe("VWorldRenderer retained map integration", () => {
     mocks.vw = createVw();
     const onSelection = vi.fn();
     const onClearSelection = vi.fn();
-    const props = { d4PaneHost: paneHost(), onSelection, onClearSelection, simulationDate: new Date("2026-05-18T12:00:00+09:00") };
+    const onCampusCamera = vi.fn();
+    const props = { d4PaneHost: paneHost(), onSelection, onClearSelection, onCampusCamera, simulationDate: new Date("2026-05-18T12:00:00+09:00") };
     const view = render(<VWorldRenderer {...props} selectedId="" />);
 
     const layer = await screen.findByTestId("vworld-label-layer");
@@ -208,8 +209,13 @@ describe("VWorldRenderer retained map integration", () => {
     act(() => mocks.labelProps.onClear());
     expect(onClearSelection).toHaveBeenCalledTimes(1);
 
+    // The layer hands over the parsed GLB: the renderer builds the preset camera from it.
+    act(() => mocks.labelProps.onGlb({ scene: 0, scenes: [{ nodes: [] }], nodes: [] }));
+    expect(typeof onCampusCamera.mock.calls.at(-1)[0]?.flyTo).toBe("function");
+
     view.unmount();
     expect(screen.queryByTestId("vworld-label-layer")).toBeNull();
+    expect(onCampusCamera.mock.calls.at(-1)[0]).toBeNull();
     window.Cesium = previousCesium;
   });
 
