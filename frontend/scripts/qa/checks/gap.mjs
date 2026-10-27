@@ -96,17 +96,24 @@ export const GAP_CHECKS = [
         // The rail-first shell may start collapsed: open it first, collapse it with 패널 닫기, then leave it as it was found
         // (the probe replay's later S01 checks expect the start state).
         const startedOpen = panel.toggle.label === "패널 닫기";
-        if (!startedOpen) {
-          await ctx.b.tap('[aria-label="패널 열기"]');
-          await ctx.sleep(800);
-        }
-        const opened = await panelInfo(ctx);
+        // Wait for the slide to finish (bounded) instead of a fixed delay a loaded renderer may not meet.
+        const settle = async (wantOpen) => {
+          const deadline = Date.now() + 4000;
+          let info = await panelInfo(ctx);
+          while (Date.now() < deadline && (wantOpen ? info.visibleWidth <= 72 : info.visibleWidth > 72)) {
+            await ctx.sleep(150);
+            info = await panelInfo(ctx);
+          }
+          await ctx.sleep(150);
+          return panelInfo(ctx);
+        };
+        if (!startedOpen) await ctx.b.tap('[aria-label="패널 열기"]');
+        const opened = await settle(true);
         await ctx.b.tap('[aria-label="패널 닫기"]');
-        await ctx.sleep(800);
-        const collapsed = await panelInfo(ctx);
+        const collapsed = await settle(false);
         if (startedOpen) {
           await ctx.b.tap('[aria-label="패널 열기"]');
-          await ctx.sleep(800);
+          await settle(true);
         }
         return result(collapsed.visibleWidth <= 72, { openWidth: opened.visibleWidth, collapsedVisibleWidth: collapsed.visibleWidth, toggle: panel.toggle, startedOpen }, "the collapse control reduces the panel to <= 72 px");
       }
