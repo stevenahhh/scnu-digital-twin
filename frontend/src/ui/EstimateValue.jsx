@@ -58,7 +58,7 @@ export function EstimateValue({
   const provenance = [source, clock].filter(Boolean).join(" · ");
 
   return (
-    <span data-qa={qa} data-estimated={estimated ? "true" : undefined} data-stale={stale ? "true" : undefined} className={cx("inline-flex flex-col gap-0.5", className)}>
+    <span data-qa={qa} data-estimated={estimated ? "true" : undefined} data-stale={stale ? "true" : undefined} className={cx("inline-flex flex-col gap-1", className)}>
       <span className="inline-flex flex-wrap items-baseline gap-1">
         <span
           className={cx(

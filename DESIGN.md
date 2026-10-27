@@ -57,7 +57,7 @@ Scene colours: the 3D scene cannot read CSS variables, so `sceneTokens.mjs` repe
 | Title | `--text-title` | `--text-title-leading` | `--text-title-weight` | 20/26, 600 | 22/28 | Panel, inspector and dialog titles |
 | Body | `--text-body` | `--text-body-leading` | `--text-body-weight` | 14/20, 400 | 17/24 | Controls and supporting copy |
 | Caption | `--text-caption` | `--text-caption-leading` | `--text-caption-weight` | 12/16, 500 | 15/20 | Metadata, scene labels, provenance |
-| Micro | `--text-micro` | `--text-micro-leading` | `--text-micro-weight` | 11/14, 600 | 13/16 | Badges only |
+| Micro | `--text-micro` | `--text-micro-leading` | `--text-micro-weight` | 11/14, 600 | 13/16 | D4 room tags only (badges use Caption: the panel keeps every text at or above the secondary floor) |
 
 The phone step is larger than the audit's 13/16 px proposal on purpose, because one-handed phone reading at arm's length needs 17 px body text. Tailwind exposes the steps as `text-display`, `text-title`, `text-body`, `text-caption` and `text-micro`. Each class sets the size, line height and weight together.
 
@@ -92,7 +92,7 @@ Shared primitives live in `frontend/src/ui/` and both entries use them (Legacy `
 - **Accessibility**: arrow keys move with a roving tabindex, `aria-selected` or `aria-checked` marks the active segment, and segments are 44px tall under a coarse pointer.
 
 ### StatusBadge
-- **Structure**: `--text-micro` text on a tone wash with tone text, `rounded-control`, and an optional lucide icon. The tones are neutral, success, warning, danger, estimate (`추정`) and sample (`샘플 데이터`, `data-qa="sample-badge"`).
+- **Structure**: `--text-caption` text on a tone wash with tone text, `rounded-control`, and an optional lucide icon. The tones are neutral, success, warning, danger, estimate (`추정`) and sample (`샘플 데이터`, `data-qa="sample-badge"`).
 - **States**: static. The text is always present.
 - **Accessibility**: every tone pair clears 4.5:1, and state is never shown by colour or a dot alone.
 

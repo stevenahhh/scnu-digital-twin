@@ -17,7 +17,7 @@ describe("StatusBadge", () => {
     render(<StatusBadge tone="success">실시간</StatusBadge>);
     const badge = screen.getByText("실시간");
     expect(badge.dataset.tone).toBe("success");
-    expect(badge.className).toContain("text-micro");
+    expect(badge.className).toContain("text-caption");
     expect(badge.className).toContain("rounded-control");
   });
 

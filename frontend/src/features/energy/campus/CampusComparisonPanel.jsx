@@ -51,8 +51,8 @@ const COMPONENTS = [
   ["constraints", "제약 위반"],
 ];
 const percent = (value) => `${(value * 100).toFixed(1)}%`;
-const cell = "border-b border-hairline px-2 py-1.5 text-right tabular-nums";
-const rowHeader = "border-b border-hairline px-2 py-1.5 text-left font-medium text-ink-muted";
+const cell = "border-b border-hairline px-2 py-2 text-right tabular-nums";
+const rowHeader = "border-b border-hairline px-2 py-2 text-left font-medium text-ink-muted";
 
 // 같은 날짜·기상 프리셋의 대표 설치안을 표로 비교한다. 열은 건물(순위 순), 행은 지표.
 function ComparisonTable({ ranked, onOpenRecommendation }) {
@@ -77,9 +77,9 @@ function ComparisonTable({ ranked, onOpenRecommendation }) {
                 key={item.scenarioId}
                 scope="col"
                 data-status="simulated"
-                className="border-b border-hairline px-2 py-1.5 text-right align-bottom"
+                className="border-b border-hairline px-2 py-2 text-right align-bottom"
               >
-                <span className="block text-micro text-ink-muted">
+                <span className="block text-caption text-ink-muted">
                   {`${item.rank}위 · ${STATUS_LABELS[item.buildingStatus]}`}
                 </span>
                 <span className="block break-keep font-semibold">{item.buildingName}</span>
@@ -105,7 +105,7 @@ function ComparisonTable({ ranked, onOpenRecommendation }) {
               배치
             </th>
             {ranked.map((item) => (
-              <td key={item.scenarioId} className="px-2 py-1.5 text-right">
+              <td key={item.scenarioId} className="px-2 py-2 text-right">
                 <Button
                   size="sm"
                   variant="ghost"

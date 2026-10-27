@@ -13,7 +13,7 @@ export function StatusBadge({ tone = "neutral", icon: Icon, children, title, cla
       data-tone={tone}
       title={title}
       style={badgeStyle(tone)}
-      className={cx("inline-flex shrink-0 items-center gap-1 whitespace-normal break-keep rounded-control border px-1.5 py-0.5 text-micro", className)}
+      className={cx("inline-flex shrink-0 items-center gap-1 whitespace-normal break-keep rounded-control border px-2 py-0 text-caption", className)}
       {...rest}
     >
       {Icon && <Icon aria-hidden="true" className="h-3 w-3 shrink-0" />}
