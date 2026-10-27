@@ -83,12 +83,6 @@
     { "kind": "block", "id": "D2 portal lintel", "plan": [[127.47758186, 34.97027549], [127.47759468, 34.97031372], [127.47757569, 34.97031804], [127.47756286, 34.97027981]], "look": "D2-frame", "bottomMetres": 13, "topMetres": 15.8, "floors": 1, "bandMetres": 0.6, "source": "VR scene_d2 f (cols 330-470 of 1024) at the re-surveyed pose of PR #74: the entrance portal just north of the step in the west wing's east face, a deep light grey frame (0.8 m piers, lintel from 13 m) round teal curtain glass set 0.4 m behind it; 6 m of the face from 0.4 m north of the step (estimated)" },
     { "kind": "block", "id": "D2 portal glass", "plan": [[127.47757764, 34.97027645], [127.47759046, 34.97031468], [127.47757569, 34.97031804], [127.47756286, 34.97027981]], "look": "D2-portal", "topMetres": 13, "floors": 4, "bandMetres": 0, "source": "VR scene_d2 f (cols 330-470 of 1024) at the re-surveyed pose of PR #74: the entrance portal just north of the step in the west wing's east face, a deep light grey frame (0.8 m piers, lintel from 13 m) round teal curtain glass set 0.4 m behind it; 6 m of the face from 0.4 m north of the step (estimated)" }
    ]
-  },
-  {
-   "node": "BLD_A1",
-   "attachments": [
-    { "kind": "block", "id": "A1 west glass stair tower", "plan": [[127.48040057, 34.96818188], [127.48046733, 34.96816764], [127.48050795, 34.96829675], [127.48044119, 34.96831098]], "look": "A1-glass", "bottomMetres": 0, "topMetres": 36.58, "floors": 8, "bandMetres": 0.3, "source": "facades-flags 2026-10-27: VR scene_a4 l (cols 830-1090 of the face, bearings 37-50 deg): the full-height light-blue glass stair tower at the west end of A1's main block, standing proud of the white panel; plan = the west 6 m of the main block's south face (building-forms.json BLD_A1 mass 1), 14.5 m deep to the north face, 0.3 m proud on the south and west; up to the 36.58 m cores (estimated)" }
-   ]
   }
  ]
 }
