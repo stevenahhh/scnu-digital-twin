@@ -671,6 +671,7 @@ what is drawn is regular geometry fitted to the accepted pieces (`stages/marking
 |---|---|
 | lines (lane, centre, edge, kerb, stall and give-way lines) | the fragments of one line (same kind and colour, ends facing each other, a gap of at most 3 m, or 13.5 m for dashed lines, i.e. one hidden dash) chained in order and fitted as straight runs (robust Huber line, 90 % of the points within 0.10 m, none beyond 0.30 m) joined by tangent circular arcs sized to the paint at the bend; straight runs of parallel lines within 8 m and 3° share one direction. A straight run is exactly straight; the detected points lie within 0.12 m (p95; at most 0.24 m) of the fitted path. Widths are the statute ones (`LINE_WIDTH_M_BY_KIND`, 추정) |
 | dashed lines | statute dashes along the fitted line (white lane line 3 m paint / 5 m gap, yellow 3 m / 3 m: 경찰청 교통노면표시 설치·관리 업무편람 표 2-1, 도로교통법 시행규칙 별표 6), phased on the detected dashes (circular mean of their centres); where at least four detected dashes give a period more than 15 % off the statute one, the photo's period and median dash; dashes are laid only over the detected extent |
+| short dense dashes (junction guide lines) | where every photo dash of a line is short (median 0.4-1.2 m, longest 1.5 m) the photo's own pattern: with 3 or more dashes spaced at most 4 m the median dash and start-to-start spacing laid along the line, else the detected dashes as they are (a6, a4/a10, a19, b7: 0.7-1.0 m dashes); the statute 3 m / 5 m stays everywhere else |
 | `double` yellow lines | two lines 0.15 m either side of the fitted centreline (0.30 m between centres, 추정), or one line where only that reading is on paint |
 | stop lines | the detected rectangle, straight, squared to the lane line it closes (within 25°), width clamped into 0.30-0.45 m |
 | `zebra_bar` | per crossing ONE oriented rectangle: bar groups whose rectangles overlap at the same axis, or that lie in one row less than 3 m apart along the walk (a median or a car splits the detected bars), are one crossing; every crossing row has its own bar grid, period (0.88-0.93 m) and phase fitted to its own detected bars (the main-gate west row repeats at 0.914 m, its east neighbour at 0.900 m); adjacent rows share one grid only where their own grids agree (period within 5 mm, bars within 0.1 m); a "stop line" inside a crossing rectangle is a bar read twice and is left out; equal 0.50 m bars at the measured 0.903 m period along the walk axis, phase from the detected bars, length the median detected bar, axis set to the road line's when within 5°. A crossing fused to a painted frame (`fused_frame`) is its outline with straightened edges |
@@ -679,6 +680,7 @@ what is drawn is regular geometry fitted to the accepted pieces (`stages/marking
 | stall frames and other line-kind outlines (a rail with its dividers, an L) | straight strokes at the statute width: along each dominant direction of the outline, every band of at least 1 m of paint becomes one stroke over its longest run |
 | hatch stripes, hump bands, blue bays, other painted areas | their rectangle when they fill it (72 %), else their outline with the edges snapped to its dominant directions and to its group's (bands of one hump, fill and frame of one bay) |
 | bay symbols | every blue bay gets its white symbol unless a wheelchair template is already drawn there: a wheelchair (장애인 전용), or the P of a parking or PM bay named in `data/photo/markings-bays.json`; a blue piece longer than 6.5 m is a row of 3.4 m bays (or the file's `cells`); upright for the driver entering from the aisle: the file's bearing (read on the 4x chip or the VR view), else the end that meets a kerb, sidewalk or building is the back, else 추정. Small white blobs of a painted symbol inside the bay give way to the template |
+| VR-only templates | `data/photo/markings-vr.json`: markings the VR shows that the photo predates (the light-blue bus-stop box at the main gate, VR scene_a19 face b; the hatched median of the f1 arterial): a template at the read centre and bearing, a fifth palette colour `light_blue`, estimated (추정), no paint gate |
 | green bands | the green bands across the E7 red carriageway (`green_band`, a fourth palette colour); the gate measures no green, so they are drawn on the chip review |
 | `dotted` guide lines | their `dots` squares |
 | `other` | left out |
@@ -790,6 +792,11 @@ so:
 - sidewalks raised 0.15 m on primary, secondary and tertiary ways (class width, 추정), cut at junction mouths and
   buildings, with plain concrete kerb faces; markings only on roads with a lane count: the yellow centre line (double
   at 4 lanes or more) and white dashed lane lines at the statute 3 m / 5 m (`DASH_BY_KIND`), left out near junctions.
+- photo paint beyond `EXTENT`: the arterial at VR scene_f1 (`PAINT_BEYOND_EXTENT` in `stages/markings.mjs`, x 502-540,
+  z -45-20) is traced on the NGII sheet like the campus paint (candidates in `markings-extra.geojson`, measured by the
+  paint gate) and drawn here at the marking lift instead of the statute lines, which stay out of that window. The
+  hatched median is a VR-only template (`hatched_median`): band and axis fitted to its yellow paint on the sheet,
+  stripe pitch and lean read in VR scene_f1 face d (추정; the 0.25 m sheet does not resolve the stripes).
 - materials: the CC0 asphalt and concrete tiles and the campus-speckle paver textures already in the model (no new
   images, no photo pixels) and the shared `Road_Marking` palette.
 

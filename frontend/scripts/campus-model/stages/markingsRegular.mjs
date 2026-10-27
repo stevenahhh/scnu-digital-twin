@@ -64,6 +64,13 @@ const ZEBRA_ROAD_SNAP_DEG = 5;
 const BAY_ROW_M = 6.5;
 const BAY_WIDTH_M = 3.4;
 const BAY_SYMBOL_BLOB_M = 2.2;
+// junction guide lines (short dense dashes, the photo's own pattern): see the dash step of the line pass
+// a dotted guide line whose photo dashes are dash-length (not 0.5 m dots) keeps them too
+const GUIDE_DASH_MIN_M = 0.4;
+const GUIDE_DASH_MAX_M = 1.2;
+const GUIDE_DASH_LONGEST_M = 1.5;
+const GUIDE_PERIOD_MAX_M = 4;
+const GUIDE_MIN_DASHES = 3;
 const BAY_SYMBOL_M = 1.5;
 const BAY_P_M = 2.0;
 const BAY_SYMBOL_MARGIN_M = 0.25;
@@ -521,18 +528,39 @@ export function regularise(drawn, ctx) {
       const nominal = ch.dotted ? ctx.statute.dash.guide_dotted : ctx.statute.dash[ch.kind] ?? null;
       const detected = ch.members.map((m) => [projectArc(ch.path, m.points[0]), projectArc(ch.path, m.points.at(-1))].sort((a, b) => a - b))
         .filter(([a, b]) => b - a > (ch.dotted ? 0.05 : 0.3));
-      if (detected.length) {
+      // a junction guide line: short dense dashes (median detected dash <= GUIDE_DASH_MAX_M, start-to-start spacing
+      // <= GUIDE_PERIOD_MAX_M, at least GUIDE_MIN_DASHES) keeps the photo's own dash and period; the statute lane
+      // pattern (3 m / 5 m) would draw them as a few long dashes
+      // each member's span along the chain over all its points (its first and last ring points can be adjacent corners)
+      const spans = ch.members.map((m) => { const t = m.points.map((q) => projectArc(ch.path, q)); return [Math.min(...t), Math.max(...t)]; })
+        .filter(([a, b]) => b - a > 0.3).sort((a, b) => a[0] - b[0]);
+      const lengths = spans.map(([a, b]) => b - a);
+      const starts = spans.map(([a]) => a);
+      const spacing = starts.slice(1).map((a, i) => a - starts[i]).filter((d) => d > 0.2);
+      const short = spans.length > 0 && median(lengths) >= GUIDE_DASH_MIN_M && median(lengths) <= GUIDE_DASH_MAX_M && Math.max(...lengths) <= GUIDE_DASH_LONGEST_M;
+      const guide = short && spans.length >= GUIDE_MIN_DASHES && spacing.length >= GUIDE_MIN_DASHES - 1 && median(spacing) <= GUIDE_PERIOD_MAX_M;
+      if (guide) {
+        const dash = median(lengths);
+        const period = Math.max(dash + 0.2, median(spacing));
+        intervals = layDashes({ length, detected: spans, dash, gap: period - dash }).dashes;
+        stats.dashPeriods.push({ kind: ch.kind, colour: ch.colour, dotted: ch.dotted, dashes: spans.length, measured: period, used: period, dash, source: "photo guide", ids: ch.ids });
+      } else if (short) {
+        // short dashes whose period cannot be measured (too few, or gaps where dashes are worn or hidden): the photo's
+        // own dashes as detected (a statute 3 m dash would draw paint the photo does not show)
+        intervals = spans;
+        stats.dashPeriods.push({ kind: ch.kind, colour: ch.colour, dotted: ch.dotted, dashes: spans.length, measured: null, used: null, dash: median(lengths), source: "photo short dashes", ids: ch.ids });
+      } else if (detected.length) {
         const statutePeriod = nominal ? nominal[0] + nominal[1] : null;
         const period = measuredPeriod(detected, statutePeriod ?? median(detected.map(([a, b]) => b - a)) * 2);
         const usePhoto = Boolean(period) && (!nominal || (detected.length >= 4 && Math.abs(period - statutePeriod) / statutePeriod > 0.15));
         if (!nominal && !period) {
           intervals = detected;
-          stats.dashPeriods.push({ kind: ch.kind, colour: ch.colour, dotted: ch.dotted, dashes: detected.length, measured: null, used: null, dash: null, source: "detected dashes" });
+          stats.dashPeriods.push({ kind: ch.kind, colour: ch.colour, dotted: ch.dotted, dashes: detected.length, measured: null, used: null, dash: null, source: "detected dashes", ids: ch.ids });
         } else {
           const dash = usePhoto ? Math.min(period * 0.6, Math.max(ch.dotted ? 0.2 : 1, median(detected.map(([a, b]) => b - a)))) : nominal[0];
           const gap = usePhoto ? period - dash : nominal[1];
           intervals = layDashes({ length, detected, dash, gap }).dashes;
-          stats.dashPeriods.push({ kind: ch.kind, colour: ch.colour, dotted: ch.dotted, dashes: detected.length, measured: period, used: dash + gap, dash, source: usePhoto ? "photo" : "statute" });
+          stats.dashPeriods.push({ kind: ch.kind, colour: ch.colour, dotted: ch.dotted, dashes: detected.length, measured: period, used: dash + gap, dash, source: usePhoto ? "photo" : "statute", ids: ch.ids });
         }
       }
     }

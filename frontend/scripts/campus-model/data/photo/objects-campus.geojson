@@ -3939,7 +3939,7 @@
     "height_source": "by eye / VR",
     "estimated": true,
     "survey_window": "main_gate",
-    "note": "blue roof on the east footway of the arterial; outline by eye, roof position includes relief lean (<0.5 m at this height)",
+    "note": "blue roof on the east footway of the arterial; outline by eye, roof position includes relief lean (<0.5 m at this height); moved 2026-10-27 (markings-r5): the roof blob straddled the kerb onto the carriageway; VR scene_a19 face b shows the shelter on the footway behind the bus-stop box, so it stands 0.3 m behind the kerb the box is read on, along it (bearing 351, 추정)",
     "area_m2": 14.4,
     "vr_scene": "scene_a19",
     "style": {
@@ -3953,24 +3953,24 @@
     "coordinates": [
      [
       [
-       127.48412445,
-       34.96863348
+       127.48413577,
+       34.96859192
       ],
       [
-       127.48415182,
-       34.96863337
+       127.48416281,
+       34.96859544
       ],
       [
-       127.48415152,
-       34.96858154
+       127.48415666,
+       34.9686274
       ],
       [
-       127.48412414,
-       34.96858165
+       127.48412962,
+       34.96862388
       ],
       [
-       127.48412445,
-       34.96863348
+       127.48413577,
+       34.96859192
       ]
      ]
     ]

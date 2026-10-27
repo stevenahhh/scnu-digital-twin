@@ -71,6 +71,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { ShapeUtils, Vector2 } from "three";
 import { EXTENT, SCENE_UNITS_PER_METRE, geoToModel, metres } from "../lib/frame.mjs";
+import { busStopBoxTemplate, hatchedMedianTemplate } from "../lib/markingGlyphs.mjs";
 import { conform } from "../lib/conform.mjs";
 import { pointInRing, ringArea, segmentDistance } from "../lib/geometry.mjs";
 import { VEG_EXG, excessGreen, sampleOrtho, shadowWeight } from "../lib/ortho.mjs";
@@ -81,6 +82,14 @@ import { readA003 } from "../lib/a003.mjs";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const MARKINGS = path.join(HERE, "..", "data", "photo", "markings.geojson");
 const MARKINGS_EXTRA = path.join(HERE, "..", "data", "photo", "markings-extra.geojson");
+// templated markings read in the VR where the photo shows no paint (it predates them): placed, estimated (추정)
+const TEMPLATES_VR = { bus_stop_box: busStopBoxTemplate, hatched_median: (l, w, m) => hatchedMedianTemplate(l, w, m.pattern) };
+// Photo paint traced beyond EXTENT (scene units): the arterial at VR scene_f1, east of the campus, now that the context
+// ground (stages/contextGround.mjs) draws a carriageway there. The paint gate measures it too (bake/markings-gate.mjs);
+// buildMarkings leaves it out (no Topography there) and contextGround draws it on its own carriageway.
+export const PAINT_BEYOND_EXTENT = Object.freeze({ minX: 502, maxX: 540, minZ: -45, maxZ: 20 });
+export const inMarkingExtent = ([x, z]) => x >= EXTENT.minX && x <= EXTENT.maxX && z >= EXTENT.minZ && z <= EXTENT.maxZ;
+const MARKINGS_VR = path.join(HERE, "..", "data", "photo", "markings-vr.json");
 const MARKINGS_GATE = path.join(HERE, "..", "data", "photo", "markings-gate.json");
 const MARKINGS_TEXT = path.join(HERE, "..", "data", "photo", "markings-text.json");
 const MARKINGS_BAYS = path.join(HERE, "..", "data", "photo", "markings-bays.json");
@@ -153,11 +162,12 @@ const MATCH_REACH_M = 3;
 
 // green: the green bands across the E7 red carriageway (colour from the VR tour, 추정); the gate measures no green, so a
 // green piece is drawn only when the chip review accepts it
-const PALETTE_SRGB = { white: [226, 226, 220], yellow: [228, 172, 52], blue: [40, 120, 196], green: [38, 140, 96] };
-const PALETTE_COLOURS = ["white", "yellow", "blue", "green"];
+// light_blue: the bus-stop box (VR scene_a19, 추정); data/photo/markings-vr.json
+const PALETTE_SRGB = { white: [226, 226, 220], yellow: [228, 172, 52], blue: [40, 120, 196], green: [38, 140, 96], light_blue: [110, 190, 225] };
+const PALETTE_COLOURS = ["white", "yellow", "blue", "green", "light_blue"];
 // the colours bake/markings-gate.mjs measures, in its order: supports are [white, yellow, blue, fingerprint, ...]
 const GATE_COLOURS = ["white", "yellow", "blue"];
-const PALETTE_U = Object.fromEntries(PALETTE_COLOURS.map((colour, i) => [colour, (i + 0.5) / PALETTE_COLOURS.length]));
+export const PALETTE_U = Object.fromEntries(PALETTE_COLOURS.map((colour, i) => [colour, (i + 0.5) / PALETTE_COLOURS.length]));
 const NIGHT_GLOW = 0.18;
 
 const UNIT = SCENE_UNITS_PER_METRE;
@@ -582,7 +592,10 @@ export async function loadMarkings({ inputs, buildings }) {
       const { type, coordinates } = c.feature.geometry;
       const first = c.shapes[0];
       const centre = type === "LineString" ? centroidOf(toModel(coordinates)) : centroidOf(first[0]);
-      c.dropped = checks.inBuilding(centre) ? "building"
+      // beyond EXTENT the campus rasters are blank: the paint there (PAINT_BEYOND_EXTENT) was traced inside the
+      // arterial's carriageway band only, so the context checks do not apply
+      c.dropped = !inMarkingExtent(centre) ? null
+        : checks.inBuilding(centre) ? "building"
         : truth.onSidewalk(centre) ? "sidewalk"
           : ROAD_CHECKED.has(p.kind) && !truth.onRoad(centre) ? "offRoad"
             : type === "Polygon" && checks.vegetated(first) ? "vegetation"
@@ -732,6 +745,21 @@ export async function loadMarkings({ inputs, buildings }) {
   zebras.push(...regular.zebras);
   log.regular = regular.stats;
 
+  // ---- VR-only templated markings (data/photo/markings-vr.json): the photo predates the paint, so no gate; each is a
+  // template at its read centre, front along its travel bearing, estimated
+  log.vrOnly = [];
+  for (const m of JSON.parse(await Bun.file(MARKINGS_VR).text()).markings) {
+    const centre = geoToModel(...m.centre);
+    const b = (m.travelBearingDeg * Math.PI) / 180;
+    const f = [Math.sin(b), -Math.cos(b)];
+    const r = [-f[1], f[0]];
+    const polys = TEMPLATES_VR[m.kind](m.lengthM, m.widthM, m);
+    for (const rings of polys) {
+      pieces.push({ rings: rings.map((ring) => ring.map(([x, y]) => [centre[0] + metres(x) * r[0] + metres(y) * f[0], centre[1] + metres(x) * r[1] + metres(y) * f[1]])), colour: m.colour, kind: m.kind, estimated: true, id: m.id });
+    }
+    log.vrOnly.push(`${m.id} ${m.kind} ${m.lengthM} x ${m.widthM} m`);
+  }
+
   // Crossing width check on the drawn zebras (bar length; warnings only, the photo's crossings are never rejected).
   const warnings = zebras.map((z) => crossingWidthWarning(z.id, (2 * z.halfLength) / UNIT)).filter(Boolean);
   for (const warning of warnings) console.warn(warning);
@@ -868,6 +896,8 @@ export function buildMarkings({ glb, markings, surface, extraHeight = () => 0 })
   };
   let source = 0;
   for (const piece of markings.pieces) {
+    // paint beyond EXTENT lies on the context ground, drawn there
+    if (!inMarkingExtent(piece.rings[0].reduce((a, q) => [a[0] + q[0] / piece.rings[0].length, a[1] + q[1] / piece.rings[0].length], [0, 0]))) continue;
     const [outer, ...holes] = piece.rings;
     const contour = outer.map(([x, z]) => new Vector2(x, z));
     const holeVectors = holes.map((ring) => ring.map(([x, z]) => new Vector2(x, z)));
@@ -951,6 +981,7 @@ export function describeMarkings({ log, crossings, zebras, warnings = [] }) {
   return [
     `markings: corrections from markings-extra.geojson: ${log.corrections.deleted} deleted, ${log.corrections.rekinded} re-kinded; ` +
       `candidates drawn/rejected (paint gate: support >= ${GATE_SUPPORT}; by eye: chip review): ${row("all", total)}`,
+    `  VR-only templates (data/photo/markings-vr.json, 추정): ${(log.vrOnly ?? []).join("; ") || "none"}`,
     `  per kind: ${Object.entries(log.kinds).sort(([a], [b]) => a.localeCompare(b)).map(([kind, t]) => row(kind, t)).join("; ")}`,
     `  per file: ${Object.entries(log.files).map(([file, t]) => row(file, t)).join("; ")}`,
     `  left out by context: ${log.dropped.other} 'other', ${log.dropped.building} inside buildings, ${log.dropped.sidewalk} on A003 sidewalks, ` +

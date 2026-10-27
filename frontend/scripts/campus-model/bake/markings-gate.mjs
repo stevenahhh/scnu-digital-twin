@@ -48,7 +48,7 @@ import { EXTENT, metres, modelToGeo } from "../lib/frame.mjs";
 import { segmentDistance } from "../lib/geometry.mjs";
 import { openSheet } from "../lib/ngiiSheet.mjs";
 import { encodePng } from "../lib/png.mjs";
-import { SUPPORT_STEP_M, gridPoints, markingCandidates } from "../stages/markings.mjs";
+import { PAINT_BEYOND_EXTENT, SUPPORT_STEP_M, gridPoints, markingCandidates } from "../stages/markings.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const OUTPUT = path.join(HERE, "..", "data", "photo", "markings-gate.json");
@@ -114,7 +114,10 @@ async function readSheet() {
     const [east, north] = toKorea2000(...modelToGeo(x, z));
     return [(east - c) / a, (north - f) / e];
   };
-  const corners = [[EXTENT.minX, EXTENT.minZ], [EXTENT.maxX, EXTENT.minZ], [EXTENT.minX, EXTENT.maxZ], [EXTENT.maxX, EXTENT.maxZ]].map(([x, z]) => toPixel(x, z));
+  // EXTENT and the traced paint beyond it (stages/markings.mjs PAINT_BEYOND_EXTENT)
+  const [minX, minZ] = [Math.min(EXTENT.minX, PAINT_BEYOND_EXTENT.minX), Math.min(EXTENT.minZ, PAINT_BEYOND_EXTENT.minZ)];
+  const [maxX, maxZ] = [Math.max(EXTENT.maxX, PAINT_BEYOND_EXTENT.maxX), Math.max(EXTENT.maxZ, PAINT_BEYOND_EXTENT.maxZ)];
+  const corners = [[minX, minZ], [maxX, minZ], [minX, maxZ], [maxX, maxZ]].map(([x, z]) => toPixel(x, z));
   const margin = MARGIN_M / a;
   const col0 = Math.max(0, Math.floor(Math.min(...corners.map((p) => p[0])) - margin));
   const row0 = Math.max(0, Math.floor(Math.min(...corners.map((p) => p[1])) - margin));

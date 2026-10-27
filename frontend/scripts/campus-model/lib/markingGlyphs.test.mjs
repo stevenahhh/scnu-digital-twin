@@ -85,3 +85,39 @@ test("scooter and hatched-aisle templates: solid parts inside their boxes, the a
   assert.ok(divider.x1 - divider.x0 === 5 && divider.y0 === -0.6, "divider on the bay side, full length");
   assert.ok(h.length >= 7, `stripes ${h.length - 1}`);
 });
+
+test("bus-stop box: one outline polygon with its inside as a hole, two chevrons in the front third, inside the box", async () => {
+  const { busStopBoxTemplate } = await import("./markingGlyphs.mjs");
+  const t = busStopBoxTemplate(12, 2.5);
+  assert.equal(t.length, 3);
+  assert.equal(t[0].length, 2, "outline and its hole");
+  const b = bounds(t);
+  assert.ok(Math.abs(b.x1 - b.x0 - 2.5) < 1e-9 && Math.abs(b.y1 - b.y0 - 12) < 1e-9, `box ${b.x1 - b.x0} x ${b.y1 - b.y0}`);
+  for (const chevron of t.slice(1)) assert.ok(bounds([chevron]).y0 > 0, "chevrons in the front half (+y)");
+});
+
+test("Hangul syllables compose: the final under the initial-and-vowel block (전, 용, 금), not beside it", async () => {
+  const { hangulElements } = await import("./markingGlyphs.mjs");
+  // unit-cell y of an element (0 top, 1 bottom): polyline points or the ellipse's extent
+  const ys = (e) => (e.ellipse ? [e.ellipse[1] - e.ellipse[3], e.ellipse[1] + e.ellipse[3]] : e.map((q) => q[1]));
+  const xs = (e) => (e.ellipse ? [e.ellipse[0] - e.ellipse[2], e.ellipse[0] + e.ellipse[2]] : e.map((q) => q[0]));
+  for (const [syllable, finalParts] of [["전", 1], ["용", 1], ["금", 1]]) {
+    const el = hangulElements(syllable);
+    const final = el.slice(-finalParts);
+    const block = el.slice(0, -finalParts);
+    const finalTop = Math.min(...final.flatMap(ys));
+    const blockBottom = Math.max(...block.flatMap(ys));
+    assert.ok(finalTop > blockBottom, `${syllable}: final starts at ${finalTop}, above the block's bottom ${blockBottom}`);
+    const fx = final.flatMap(xs);
+    assert.ok(Math.max(...fx) - Math.min(...fx) >= 0.5, `${syllable}: final spans only part of the cell width`);
+  }
+});
+
+test("hatched median: two boundary lines along the band and leaning stripes between them, all inside it", async () => {
+  const { hatchedMedianTemplate } = await import("./markingGlyphs.mjs");
+  const t = hatchedMedianTemplate(20, 3, { pitch: 1.6, lean: 0.6 });
+  const b = bounds(t);
+  assert.ok(Math.abs(b.x1 - b.x0 - 3) < 1e-9 && Math.abs(b.y1 - b.y0 - 20) < 1e-9);
+  for (const edge of t.slice(0, 2)) { const e = bounds([edge]); assert.ok(Math.abs(e.y1 - e.y0 - 20) < 1e-9, "boundary line along the full length"); }
+  assert.ok(t.length - 2 >= 11 && t.length - 2 <= 15, `stripes ${t.length - 2}`);
+});
