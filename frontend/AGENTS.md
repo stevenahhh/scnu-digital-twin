@@ -88,7 +88,7 @@ Every dashboard fix lands in both entries unless it's listed as intentional belo
 | `SelectionInspector` (`src/panel/`) | shared component | shared component |
 | Dialogs and error boundary | shared | shared |
 | Renderer (intentional) | Three.js GLB (`CityModel.jsx`) | VWorld WebGL SDK |
-| Render quality (intentional) | `설정` dialog 낮음/보통/높음 (`settings/qualityPreset.mjs`, lazy `postfx/HighTierEffects.jsx`) | none; the SDK owns rendering |
+| Render quality | `설정` dialog 낮음/보통/높음 (`settings/qualityPreset.mjs`, lazy `postfx/HighTierEffects.jsx`) | same setting and stored value; `vworld/renderQuality.mjs` maps it to Cesium resolution scale, FXAA and shadows |
 | D4 entry (intentional) | GLB mesh click | `MODEL_NAME` or D4 coordinate marker |
 | Building selection | opens the selection inspector (tab unchanged) | opens the selection inspector (tab unchanged) |
 | Building detail | selection inspector above the tabs (rail: card beside it; phone: sheet `half`) | same |

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import VWorldRenderer from "./vworld/VWorldRenderer";
 import { sceneBackgroundFor } from "./lighting/sceneBackground.mjs";
 import { SelectionInspector } from "./panel/SelectionInspector";
@@ -21,6 +21,8 @@ import { HudTimeReadout, sceneTimeReadout } from "./components/HudTimeReadout";
 import { HudToolbar } from "./components/HudToolbar";
 import { CameraControls } from "./components/CameraControls";
 import { mapLighting } from "./vworld/mapLighting.mjs";
+import { QUALITY_LABELS, QUALITY_TIERS, useQualityPreset } from "./settings/qualityPreset.mjs";
+import { VWORLD_DEFAULT_QUALITY, applyVWorldQuality } from "./vworld/renderQuality.mjs";
 import { CAMERA_PRESETS } from "./camera/cameraPresets.mjs";
 import { useVWorldCampusCamera } from "./vworld/useVWorldCampusCamera.mjs";
 import { SettingsSheet } from "./panel/SettingsSheet";
@@ -79,6 +81,13 @@ export default function App() {
     } else clearPopup();
   }, [clearPopup, loadPopup, revealOnPhone, selectBuilding]);
   // 공유 링크: 건물·장면 시각·패널·탭(VWorld 카메라는 SDK가 가져 주소에 담지 않는다).
+  // 렌더링 품질: Legacy와 같은 설정(같은 저장 값)을 Cesium의 해상도·보정·그림자로 옮긴다. 고른 값이 없으면 높음.
+  const rendering = useQualityPreset();
+  const qualityTier = rendering.qualitySource ? rendering.quality : VWORLD_DEFAULT_QUALITY;
+  useEffect(() => {
+    applyVWorldQuality(qualityTier);
+  }, [qualityTier, campusCamera]);
+  const qualitySetting = { tiers: QUALITY_TIERS, labels: QUALITY_LABELS, value: qualityTier, onChange: rendering.setQuality, source: rendering.qualitySource };
   // 공유 링크의 카메라: 캠퍼스 카메라가 준비되기 전에는 없음(주소의 시점은 준비될 때까지 다시 시도해 놓는다).
   const campusCameraRef = useRef(null);
   campusCameraRef.current = campusCamera;
@@ -252,6 +261,7 @@ export default function App() {
               mode={viewportMode}
               themeMode={themeMode}
               onThemeChange={setThemeMode}
+              quality={qualitySetting}
               onOpenChange={(open) => open && panelState.setDetent("peek")}
             />
           )}

@@ -1,4 +1,5 @@
 import { getSunState } from "../utils/sunPosition.mjs";
+import { vworldShadowsEnabled } from "./renderQuality.mjs";
 
 const CAMPUS = Object.freeze({ longitude: 127.4764043, latitude: 34.9700548 });
 // Below the horizon the SDK's sun light leaves the campus model black on the (shaded) map. Through twilight (0 to
@@ -50,8 +51,11 @@ export function applyVWorldSunSimulation(date) {
   viewer.scene.globe.enableLighting = true;
   viewer.scene.globe.dynamicAtmosphereLighting = true;
   viewer.scene.globe.dynamicAtmosphereLightingFromSun = true;
-  if (Cesium?.ShadowMode?.ENABLED !== undefined) {
-    viewer.scene.globe.shadows = Cesium.ShadowMode.ENABLED;
+  // 그림자는 렌더링 품질(높음)이 켰을 때만 켠다(renderQuality.mjs).
+  const shadows = vworldShadowsEnabled();
+  const shadowMode = shadows ? Cesium?.ShadowMode?.ENABLED : Cesium?.ShadowMode?.DISABLED;
+  if (shadowMode !== undefined) {
+    viewer.scene.globe.shadows = shadowMode;
   }
   const { altitude } = getSunState({ date, ...CAMPUS });
   const lighting = vworldNightLighting(altitude);
@@ -63,13 +67,13 @@ export function applyVWorldSunSimulation(date) {
   if ("highDynamicRange" in viewer.scene) {
     viewer.scene.highDynamicRange = true;
   }
-  viewer.scene.shadowMap.enabled = true;
+  viewer.scene.shadowMap.enabled = shadows;
   viewer.scene.shadowMap.softShadows = true;
   viewer.scene.shadowMap.darkness = 0.4;
   viewer.scene.sun.show = true;
   viewer.scene.sun.glowFactor = 2;
   viewer.scene.sunBloom = true;
-  viewer.shadows = true;
+  viewer.shadows = shadows;
   viewer.scene.requestRender();
 
   return true;
