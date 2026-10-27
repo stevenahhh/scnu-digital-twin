@@ -93,12 +93,22 @@ export const GAP_CHECKS = [
       const panel = await panelInfo(ctx);
       if (ctx.viewport === "D") {
         if (!panel?.toggle) return result(false, { toggle: null }, "패널 닫기 control collapses the panel to <= 72 px");
+        // The rail-first shell may start collapsed: open it first, collapse it with 패널 닫기, then leave it as it was found
+        // (the probe replay's later S01 checks expect the start state).
+        const startedOpen = panel.toggle.label === "패널 닫기";
+        if (!startedOpen) {
+          await ctx.b.tap('[aria-label="패널 열기"]');
+          await ctx.sleep(800);
+        }
+        const opened = await panelInfo(ctx);
         await ctx.b.tap('[aria-label="패널 닫기"]');
         await ctx.sleep(800);
         const collapsed = await panelInfo(ctx);
-        await ctx.b.tap('[aria-label="패널 열기"]');
-        await ctx.sleep(800);
-        return result(collapsed.visibleWidth <= 72, { openWidth: panel.visibleWidth, collapsedVisibleWidth: collapsed.visibleWidth, toggle: panel.toggle }, "the collapse control reduces the panel to <= 72 px");
+        if (startedOpen) {
+          await ctx.b.tap('[aria-label="패널 열기"]');
+          await ctx.sleep(800);
+        }
+        return result(collapsed.visibleWidth <= 72, { openWidth: opened.visibleWidth, collapsedVisibleWidth: collapsed.visibleWidth, toggle: panel.toggle, startedOpen }, "the collapse control reduces the panel to <= 72 px");
       }
       const selected = (await chips(ctx)).find((chip) => chip.pressed === "true") ?? null;
       const top = panel && panel.visibleWidth > 0 ? panel.rect.y : ctx.height;
