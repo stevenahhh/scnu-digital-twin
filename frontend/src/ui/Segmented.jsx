@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { cx } from "./cx.mjs";
 import { COARSE_TARGET, FOCUS_RING } from "./Button.jsx";
+import { Check } from "lucide-react";
 
 const NEXT_KEYS = new Set(["ArrowRight", "ArrowDown"]);
 const PREV_KEYS = new Set(["ArrowLeft", "ArrowUp"]);
@@ -72,7 +73,7 @@ export function Segmented({ kind = "tabs", label, options, value, onChange, size
               option.disabled && "cursor-not-allowed opacity-50",
             )}
           >
-            {active && <span aria-hidden="true" className="h-1 w-1 shrink-0 rounded-pill bg-current" data-qa="segment-dot" />}
+            {active && <Check aria-hidden="true" className="h-3 w-3 shrink-0" data-qa="segment-dot" />}
             <span className="break-keep sm:whitespace-nowrap">{option.label}</span>
           </button>
         );
