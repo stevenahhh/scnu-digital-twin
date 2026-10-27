@@ -32,3 +32,12 @@ test("rippleNormalMap tiles seamlessly and encodes upward normals", () => {
   assert.ok(seam <= 1.5 * inner, `seam ${seam.toFixed(0)} vs neighbours ${inner.toFixed(0)}`);
   for (let i = 2; i < d.length; i += 4) assert.ok(d[i] > 128, "z component points up");
 });
+
+test("mirrorDue: every Nth frame per tier, and never for a pool smaller than MIN_POOL_PX on screen", async () => {
+  const { mirrorDue, WATER_REFLECTION_EVERY } = await import("./waterReflection.mjs");
+  const near = { radius: 10, distance: 40, fovDeg: 45, viewportPx: 900 };
+  assert.equal(WATER_REFLECTION_EVERY.high, 1);
+  for (let f = 0; f < 6; f += 1) assert.equal(mirrorDue({ ...near, frame: f, tier: "high" }), true);
+  assert.deepEqual([0, 1, 2, 3].map((f) => mirrorDue({ ...near, frame: f, tier: "low" })), [true, false, false, true]);
+  assert.equal(mirrorDue({ ...near, distance: 2000, frame: 0, tier: "high" }), false, "a far, tiny pool keeps its last reflection");
+});

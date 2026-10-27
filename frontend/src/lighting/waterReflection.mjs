@@ -9,6 +9,18 @@
 // Reflection texture size (px, square) per quality tier.
 export const WATER_REFLECTION_SIZE = Object.freeze({ low: 256, medium: 512, high: 1024 });
 export const reflectionSizeFor = (tier) => WATER_REFLECTION_SIZE[tier] ?? WATER_REFLECTION_SIZE.low;
+// The mirror pass re-renders the scene, so it runs only every Nth frame per tier (the texture keeps the last
+// reflection in between) and not at all for a pool smaller than MIN_POOL_PX on screen (it keeps its last reflection).
+export const WATER_REFLECTION_EVERY = Object.freeze({ low: 3, medium: 2, high: 1 });
+export const MIN_POOL_PX = 48;
+// Should the mirror of a pool (bounding sphere radius r, at distance d from a perspective camera of vertical fov
+// fovDeg and viewport height px) render on frame `frame` for this tier?
+export function mirrorDue({ frame, tier, radius, distance, fovDeg, viewportPx }) {
+  const every = WATER_REFLECTION_EVERY[tier] ?? WATER_REFLECTION_EVERY.low;
+  if (frame % every !== 0) return false;
+  const sizePx = (radius / Math.max(distance, 1e-3)) * (viewportPx / 2 / Math.tan(((fovDeg ?? 45) * Math.PI) / 360)) * 2;
+  return sizePx >= MIN_POOL_PX;
+}
 
 // Ripple: UV offset strength of the reflection, ripple scale (repeats per metre of water) and drift speed (repeats
 // per second); fresnel floor (share of reflection looking straight down: a calm pool against a bright sky, VR scene_c1).

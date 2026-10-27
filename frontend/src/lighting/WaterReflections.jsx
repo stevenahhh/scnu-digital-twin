@@ -7,10 +7,10 @@
 // water mesh is hidden while the mirrors stand and shown again when they are removed.
 import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { BufferAttribute, BufferGeometry, Color, DataTexture, DoubleSide, LinearFilter, RepeatWrapping, Vector3 } from "three";
+import { BufferAttribute, BufferGeometry, Color, DataTexture, DoubleSide, LinearFilter, RepeatWrapping, Vector2, Vector3 } from "three";
 import { Reflector } from "three/examples/jsm/objects/Reflector.js";
 import { WATER_MATERIAL_NAME } from "./water.mjs";
-import { WATER_BASE_COLOUR, WATER_REFLECTION_SHADER, reflectionSizeFor, rippleNormalMap, splitPools } from "./waterReflection.mjs";
+import { WATER_BASE_COLOUR, WATER_REFLECTION_SHADER, mirrorDue, reflectionSizeFor, rippleNormalMap, splitPools } from "./waterReflection.mjs";
 
 const RIPPLE_SIZE = 64;
 const SEARCH_EVERY_FRAMES = 30;
@@ -23,11 +23,12 @@ function findWater(scene) {
   return found;
 }
 
-function buildMirrors(source, size, ripple) {
+function buildMirrors(source, size, ripple, tier, clock) {
   source.updateWorldMatrix(true, false);
   const pos = source.geometry.getAttribute("position");
   const world = new Float32Array(pos.count * 3);
   const v = new Vector3();
+  const buffer = new Vector2();
   for (let i = 0; i < pos.count; i += 1) {
     v.fromBufferAttribute(pos, i).applyMatrix4(source.matrixWorld);
     world.set([v.x, v.y, v.z], i * 3);
@@ -54,8 +55,17 @@ function buildMirrors(source, size, ripple) {
     mirror.raycast = () => {};
     // one mirror pass at a time: a pool seen inside another pool's reflection is not mirrored again
     const render = mirror.onBeforeRender;
+    const centre = new Vector3();
+    let rendered = false;
     mirror.onBeforeRender = (...args) => {
       if (guard) return;
+      const [renderer, , camera] = args;
+      mirror.updateWorldMatrix(true, false);
+      centre.copy(geometry.boundingSphere.center).applyMatrix4(mirror.matrixWorld);
+      const radius = geometry.boundingSphere.radius;
+      // the first pass always runs, so a mirror never shows an empty texture
+      if (rendered && !mirrorDue({ frame: clock.frame, tier, radius, distance: centre.distanceTo(camera.position), fovDeg: camera.fov, viewportPx: renderer.getDrawingBufferSize(buffer).y })) return;
+      rendered = true;
       guard = true;
       try { render.apply(mirror, args); } finally { guard = false; }
     };
@@ -65,7 +75,7 @@ function buildMirrors(source, size, ripple) {
 
 export function WaterReflections({ quality = "low" }) {
   const { scene } = useThree();
-  const state = useRef({ source: null, mirrors: [], frames: 0, ripple: null });
+  const state = useRef({ source: null, mirrors: [], frames: 0, ripple: null, clock: { frame: 0 } });
 
   useEffect(() => {
     const s = state.current;
@@ -92,10 +102,11 @@ export function WaterReflections({ quality = "low" }) {
       const water = findWater(scene);
       if (!water || !s.ripple) return;
       s.source = water;
-      s.mirrors = buildMirrors(water, reflectionSizeFor(quality), s.ripple);
+      s.mirrors = buildMirrors(water, reflectionSizeFor(quality), s.ripple, quality, s.clock);
       for (const m of s.mirrors) scene.add(m);
       water.visible = false;
     }
+    s.clock.frame += 1;
     const t = clock.elapsedTime;
     for (const m of s.mirrors) m.material.uniforms.time.value = t;
   });
