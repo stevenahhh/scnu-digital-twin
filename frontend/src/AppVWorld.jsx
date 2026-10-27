@@ -121,58 +121,13 @@ export default function App() {
   // 폰에서는 바텀 시트의 peek 높이만큼 아래를 비운다.
   const mapInsetBottom = viewportMode === "phone" ? `${SHELL_PEEK_HEIGHT}px` : "0px";
   const [isTimePlaying, setIsTimePlaying] = useState(false);
+  // HUD가 지도보다 먼저 그려지므로(탭 순서) 지도 위 문구·버튼은 HUD 안 자리로 옮겨 그린다.
+  const [hudOverlayHost, setHudOverlayHost] = useState(null);
 
   // 루트는 overflow: clip으로 자른다. hidden은 스크롤 컨테이너라서 Tab 포커스가 화면 밖 요소로 가면 대시보드가 밀려 남는다.
   return (
     <div className={`dashboard-root relative h-dvh w-screen overflow-clip bg-canvas text-ink ${presentation.cursorHidden ? "cursor-none" : ""}`}>
       <div className="absolute inset-0" style={{ background: sceneBackgroundFor(clock.sunState.visible) }} />
-
-      <div className="absolute inset-0 z-0">
-        <VWorldRenderer
-          onSelection={handleVWorldSelection}
-          energyFeedDown={isFeedDown(feeds.energy)}
-          onD4SectionChange={handleD4SectionChange}
-          d4PaneHost={d4PaneHost}
-          d4CloseKey={d4CloseKey}
-          simulationDate={clock.sunDate}
-          editorRequest={editorRequest}
-          onEditorClose={closeEditor}
-          onPlanSaved={plans.refreshAll}
-          createInstallationPlanDraft={createPlanDraftFromExisting}
-          installationPlanRefreshKey={plans.refreshKey}
-          onInstallationPlansChange={plans.onPlansChange}
-          onRepresentativeInstallationPlanChange={plans.onRepresentativeChange}
-          representativeRefreshKey={plans.overlayRefreshKey}
-          overlayInsetRight={mapInsetRight}
-          overlayInsetBottom={mapInsetBottom}
-          overlaysHidden={presentation.presenting}
-          selectedId={selection.selectedId}
-          onCampusCamera={setCampusCamera}
-          onUserCameraStart={camera.handleUserCameraStart}
-          onClearSelection={closeMicroclimatePopup}
-          labelOccluderRef={panelRef}
-          labelChromeRefs={labelChromeRefs}
-          presentation={presentation.presenting}
-          // 야간 음영은 지도 영상만 어둡게 해야 하므로 렌더러가 지도 바로 위·지도 위 문구와 버튼 아래에 그린다.
-          // (해 쪽 햇빛 그라데이션은 화면 전체 장식 그라데이션이라 뺐다: V-F-44.)
-          mapBackdrop={(
-            <>
-              {/* 야간 음영은 지도 전체에(떠 있는 인스펙터 카드 뒤까지) 깐다. 지도 사용 영역(SDK availableArea)은 따로 둔다. */}
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 z-[1] transition-[background-color] duration-300"
-                // 밤 남색은 강조색과 같은 색상(약 234도): 선택 지붕의 강조색이 음영을 지나도 같은 색으로 읽힌다(V-F-12·V-Q-10).
-                style={{ backgroundColor: `rgba(6, 8, 26, ${lighting.nightOpacity})` }}
-              />
-              <div
-                id="vworld-available-area"
-                className="pointer-events-none absolute bottom-0 left-0 top-0 z-[1] transition-[right] duration-300"
-                style={{ right: mapInsetRight }}
-              />
-            </>
-          )}
-        />
-      </div>
 
       <div
         ref={hudRef}
@@ -181,6 +136,8 @@ export default function App() {
         className="pointer-events-none absolute left-0 top-0 z-[6] transition-none"
         style={{ right: mapInsetRight, bottom: mapInsetBottom }}
       >
+        {/* 지도 위 문구·버튼(검색·대표 설치 계획·태양광 상태·D4 상세 보기)의 자리: 화면 전체 기준이라 지도 쪽 여백을 그대로 쓴다. */}
+        <div ref={setHudOverlayHost} data-label-chrome-layer="" className="pointer-events-none fixed inset-0" />
         {/* 시간 카드는 줄지 않는다(줄면 글자가 두 줄로 꺾여 아래 검색칸을 덮었다). 오른쪽 조작 묶음은 자리가 모자라면 자기
             칸 안에서 오른쪽으로 줄을 바꾼다(왼쪽 열의 검색칸·카드를 덮지 않는다). */}
         <div data-label-chrome-layer="" className="flex items-start gap-2 p-4">
@@ -224,6 +181,54 @@ export default function App() {
           collapsible={viewportMode === "phone"}
           className="absolute bottom-4 right-4 w-[min(24rem,calc(100%-2rem))]"
         />}
+      </div>
+
+      <div className="absolute inset-0 z-0">
+        <VWorldRenderer
+          overlayHost={hudOverlayHost}
+          onSelection={handleVWorldSelection}
+          energyFeedDown={isFeedDown(feeds.energy)}
+          onD4SectionChange={handleD4SectionChange}
+          d4PaneHost={d4PaneHost}
+          d4CloseKey={d4CloseKey}
+          simulationDate={clock.sunDate}
+          editorRequest={editorRequest}
+          onEditorClose={closeEditor}
+          onPlanSaved={plans.refreshAll}
+          createInstallationPlanDraft={createPlanDraftFromExisting}
+          installationPlanRefreshKey={plans.refreshKey}
+          onInstallationPlansChange={plans.onPlansChange}
+          onRepresentativeInstallationPlanChange={plans.onRepresentativeChange}
+          representativeRefreshKey={plans.overlayRefreshKey}
+          overlayInsetRight={mapInsetRight}
+          overlayInsetBottom={mapInsetBottom}
+          overlaysHidden={presentation.presenting}
+          selectedId={selection.selectedId}
+          onCampusCamera={setCampusCamera}
+          onUserCameraStart={camera.handleUserCameraStart}
+          onClearSelection={closeMicroclimatePopup}
+          labelOccluderRef={panelRef}
+          labelChromeRefs={labelChromeRefs}
+          presentation={presentation.presenting}
+          // 야간 음영은 지도 영상만 어둡게 해야 하므로 렌더러가 지도 바로 위·지도 위 문구와 버튼 아래에 그린다.
+          // (해 쪽 햇빛 그라데이션은 화면 전체 장식 그라데이션이라 뺐다: V-F-44.)
+          mapBackdrop={(
+            <>
+              {/* 야간 음영은 지도 전체에(떠 있는 인스펙터 카드 뒤까지) 깐다. 지도 사용 영역(SDK availableArea)은 따로 둔다. */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 z-[1] transition-[background-color] duration-300"
+                // 밤 남색은 강조색과 같은 색상(약 234도): 선택 지붕의 강조색이 음영을 지나도 같은 색으로 읽힌다(V-F-12·V-Q-10).
+                style={{ backgroundColor: `rgba(6, 8, 26, ${lighting.nightOpacity})` }}
+              />
+              <div
+                id="vworld-available-area"
+                className="pointer-events-none absolute bottom-0 left-0 top-0 z-[1] transition-[right] duration-300"
+                style={{ right: mapInsetRight }}
+              />
+            </>
+          )}
+        />
       </div>
 
       <DashboardShell
