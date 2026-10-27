@@ -348,12 +348,16 @@ export const VISUALQA_CHECKS = [
     async run(ctx) {
       const dirs = [ctx.outDir, process.env.QA_EVIDENCE_DIR ? path.join(process.env.QA_EVIDENCE_DIR, "before") : null].filter((dir) => dir && existsSync(dir));
       const files = new Set(dirs.flatMap((dir) => readdirSync(dir)));
+      // Screenshots are written as <entry>-<state>-<viewport>-<theme>.png: every entry captured in the run needs all 24 pairs.
+      const entries = [...new Set([...files].map((file) => /^(legacy|vworld)-S\d{2}-/.exec(file)?.[1]).filter(Boolean))];
+      const prefixes = entries.length ? entries.map((entry) => `${entry}-`) : [""];
       const missing = [];
-      for (let n = 1; n <= 12; n += 1) for (const vp of ["D", "P"]) {
-        const id = `S${String(n).padStart(2, "0")}-${vp}`;
+      for (const prefix of prefixes) for (let n = 1; n <= 12; n += 1) for (const vp of ["D", "P"]) {
+        const id = `${prefix}S${String(n).padStart(2, "0")}-${vp}`;
         if (!files.has(`${id}-light.png`) || !files.has(`${id}-dark.png`)) missing.push(id);
       }
-      return result(missing.length === 0, { lightDarkPairsFound: 24 - missing.length, missing: missing.slice(0, 8), searched: dirs }, "24 light PNGs exist and pair with the dark set");
+      const expected = 24 * prefixes.length;
+      return result(missing.length === 0, { lightDarkPairsFound: expected - missing.length, expected, entries, missing: missing.slice(0, 8), searched: dirs }, "24 light PNGs exist and pair with the dark set");
     },
   }),
   defineCheck("V-Q-20", {
