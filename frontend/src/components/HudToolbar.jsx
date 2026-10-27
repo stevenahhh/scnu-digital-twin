@@ -87,7 +87,7 @@ export function HudToolbar({ presets, activeId, onSelect, touring = false, onTog
       role="toolbar"
       aria-label="카메라 시점"
       data-qa="camera-preset-bar"
-      className={cx("pointer-events-auto inline-flex w-max items-center gap-1 rounded-card border border-hairline bg-surface-1 p-1 shadow-popover", className)}
+      className={cx("pointer-events-auto inline-flex w-max items-center gap-1 rounded-card border border-hairline bg-surface-1 p-1", className)}
     >
       <Button
         size="sm"

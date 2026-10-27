@@ -16,9 +16,9 @@ import { parseSceneDate, parseTypedTime } from "./timeControl.mjs";
 
 export const TIME_SLIDER_LABEL = "시각 (KST)";
 
-const SURFACE = "pointer-events-auto rounded-card border border-hairline bg-surface-1 px-3 py-2.5 shadow-popover";
+const SURFACE = "pointer-events-auto rounded-card border border-hairline bg-surface-1 px-3 py-2.5";
 // 폰에서 접힌 시간 카드: 장면 시각 칩 하나(누르면 펼친다). 지도를 가리지 않는다.
-const COLLAPSED_SURFACE = "pointer-events-auto rounded-card border border-hairline bg-surface-1 p-1 shadow-popover";
+const COLLAPSED_SURFACE = "pointer-events-auto rounded-card border border-hairline bg-surface-1 p-1";
 const CHIP = cx(
   "flex min-h-11 items-center gap-2 rounded-control px-3",
   "text-caption font-medium text-ink-muted hover:bg-surface-2",

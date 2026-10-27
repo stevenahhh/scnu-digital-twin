@@ -174,7 +174,7 @@ export default function App() {
         ref={hudRef}
         data-qa="campus-hud"
         data-label-chrome-layer=""
-        className="pointer-events-none absolute left-0 top-0 z-[6] transition-[right] duration-300"
+        className="pointer-events-none absolute left-0 top-0 z-[6]"
         style={{ right: mapInsetRight, bottom: mapInsetBottom }}
       >
         <div data-label-chrome-layer="" className="flex items-start gap-2 p-4">
