@@ -34,6 +34,7 @@ import { Spinner } from "../ui/Spinner.jsx";
 import { StatusBadge } from "../ui/StatusBadge.jsx";
 
 const OVERVIEW_PRESET = CAMERA_PRESETS.find((preset) => preset.id === OVERVIEW_PRESET_ID);
+const PAN_STEP = 0.1;
 
 // 교통 시뮬레이션 연결 상태 문구(frontend/AGENTS.md 공용 어휘). 모르는 상태는 끊김으로 본다.
 const TRAFFIC_STATUS = {
@@ -492,6 +493,15 @@ export default function VWorldRenderer({
     };
   }, [handleOverlayDataChange, loadAttempt]);
 
+  // 지도(캔버스)에 포커스가 있을 때 방향키로 땅 위를 옮긴다(Legacy 장면과 같은 키보드 조작). 한 번에 화면 가운데까지 거리의 10%.
+  const handleMapKey = (event) => {
+    const step = { ArrowLeft: [-PAN_STEP, 0], ArrowRight: [PAN_STEP, 0], ArrowUp: [0, PAN_STEP], ArrowDown: [0, -PAN_STEP] }[event.key];
+    if (!step || !campusCameraRef.current) return;
+    event.preventDefault();
+    onUserCameraStart?.();
+    campusCameraRef.current.panBy(...step);
+  };
+
   const mapOverlays = (
     <>
         {/* 지도 위 문구와 버튼은 열린 패널을 뺀 지도 영역 안에만 둔다. 상태 문구는 위쪽 왼쪽 열, 지도 조작은 아래쪽 왼쪽 열에
@@ -609,7 +619,7 @@ export default function VWorldRenderer({
   return (
     <div className="relative h-full w-full">
       {/* 지도 자체에 Legacy 캔버스와 같은 이름을 준다(화면 읽기·랜드마크). */}
-      <div id={VWORLD_MAP_ID} role="region" aria-label="순천대 캠퍼스 3D 지도" data-qa="campus-map-layer" data-selected-id={selectedLabelId ?? undefined} className="h-full w-full" onPointerDown={() => onUserCameraStart?.()} onWheel={() => onUserCameraStart?.()} />
+      <div id={VWORLD_MAP_ID} role="region" aria-label="순천대 캠퍼스 3D 지도" data-qa="campus-map-layer" data-selected-id={selectedLabelId ?? undefined} className="h-full w-full" onPointerDown={() => onUserCameraStart?.()} onWheel={() => onUserCameraStart?.()} onKeyDown={handleMapKey} />
       {mapBackdrop}
       {labelScene && (
         <VWorldLabelLayer

@@ -93,6 +93,30 @@ export function createVWorldCampusCamera({ Cesium, scene, getModelMatrix, boxes,
     return true;
   };
 
+  // 방향키(Legacy OrbitControls처럼 땅 위로 옮기기): right·forward는 화면 가운데까지 거리에 대한 비율. 높이와 보는 방향은 그대로.
+  const panBy = (right, forward) => {
+    const pivot = viewCenter();
+    if (!pivot) return false;
+    const camera = scene.camera;
+    const distance = Cesium.Cartesian3.distance(camera.positionWC, pivot);
+    const up = Cesium.Ellipsoid.WGS84.geodeticSurfaceNormal(pivot, new Cesium.Cartesian3());
+    const flat = (v) => {
+      const along = Cesium.Cartesian3.dot(v, up);
+      const x = v.x - up.x * along; const y = v.y - up.y * along; const z = v.z - up.z * along;
+      const length = Math.hypot(x, y, z) || 1;
+      return { x: x / length, y: y / length, z: z / length };
+    };
+    const r = flat(camera.rightWC);
+    const f = flat(camera.directionWC);
+    const step = { x: (r.x * right + f.x * forward) * distance, y: (r.y * right + f.y * forward) * distance, z: (r.z * right + f.z * forward) * distance };
+    camera.setView({
+      destination: new Cesium.Cartesian3(camera.positionWC.x + step.x, camera.positionWC.y + step.y, camera.positionWC.z + step.z),
+      orientation: { direction: camera.directionWC, up: camera.upWC },
+    });
+    scene.requestRender?.();
+    return true;
+  };
+
   // 지구 고정 좌표 -> Legacy 장면 좌표(toWorld의 역). 공유 링크의 cam=이 두 대시보드에서 같은 뜻이 된다.
   const toScene = (world, matrix) => {
     const inverse = Cesium.Matrix4.inverse(matrix, new Cesium.Matrix4());
@@ -115,7 +139,7 @@ export function createVWorldCampusCamera({ Cesium, scene, getModelMatrix, boxes,
     return true;
   };
 
-  return { viewOf, flyTo, zoomBy, rotateBy, poseOf, applyPose };
+  return { viewOf, flyTo, zoomBy, rotateBy, panBy, poseOf, applyPose };
 }
 
 // Rodrigues: v rotated by angle (radians) about the unit axis.

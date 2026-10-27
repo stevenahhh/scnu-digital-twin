@@ -121,3 +121,31 @@ test("the shared-link pose is written and read back in the Legacy scene frame", 
   assert.equal(early.poseOf(), null);
   assert.equal(early.applyPose(pose), false);
 });
+
+test("arrow-key pans move the camera along the ground, keeping its height and view", () => {
+  const Cesium = fakeCesium();
+  Cesium.Cartesian2 = class { constructor(x, y) { Object.assign(this, { x, y }); } };
+  Cesium.Cartesian3.distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+  const views = [];
+  const scene = {
+    canvas: { clientWidth: 800, clientHeight: 600 },
+    globe: { pick: () => new Cesium.Cartesian3(0, 0, 0) },
+    requestRender: () => {},
+    camera: {
+      getPickRay: () => ({}),
+      positionWC: new Cesium.Cartesian3(0, -100, 100),
+      directionWC: { x: 0, y: Math.SQRT1_2, z: -Math.SQRT1_2 },
+      upWC: { x: 0, y: Math.SQRT1_2, z: Math.SQRT1_2 },
+      rightWC: { x: 1, y: 0, z: 0 },
+      setView: (view) => views.push(view),
+    },
+  };
+  const camera = createVWorldCampusCamera({ Cesium, scene, getModelMatrix: () => null, boxes, center });
+  assert.equal(camera.panBy(0.1, 0), true);
+  assert.equal(camera.panBy(0, 0.1), true);
+  const d = Math.hypot(100, 100) * 0.1;
+  assert.ok(Math.abs(views[0].destination.x - d) < 1e-9 && views[0].destination.z === 100);
+  // Forward is the view direction flattened onto the ground (+y here), not into the ground.
+  assert.ok(Math.abs(views[1].destination.y - (-100 + d)) < 1e-9 && views[1].destination.z === 100);
+  assert.equal(views[1].orientation.direction, scene.camera.directionWC);
+});
