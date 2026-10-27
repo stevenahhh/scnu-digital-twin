@@ -729,6 +729,18 @@ The leftovers of the second pass, all estimated (추정):
   `roof_m` (furniture objects built on a roof, `onRoof` in stages/furniture.mjs), their face-r rays scaled to the
   camera's height above that roof (the teal parasol's photo disc sets it).
 
+## A1 roof garden and the d3 boxed bays (a1-roof-garden)
+
+- The walled garden of VR scene_a5 is the roof garden of A1 (the 12.98 m wing roof). OC0120 (the 정자), OC0121 (the
+  teal parasol) and the lattice wall RS0003 carry `roof_m` 12.98 and are built on that roof (`onRoof`). A roofed
+  photo outline on a roof leans by its height plus roof_m. OC0121's survey ring lay on the teal-roofed room; it is
+  moved 8.9 m east onto the parasol's photo disc (objects-campus.geojson, position_note). BLD_A1 form mass 7, the same 정자 as a
+  2.9 m box, is `drawnBy` OC0120 and left out of the building (stages/buildings.mjs).
+- New: SD-A1RG-L1, the lawn inside the parapets (traced on the NGII 2025 photo), and SD-A1RG-W1..W6, the grey
+  stepping-stone paths of VR scene_a5 r (rays at the roof height): the lawn a planter (fill lawn), the paths the new
+  `paving_path` builder (a LineString width_m wide, a slab per leg).
+- SD-D3-P1..P3 now draw boxed bays (front_line and back_line), as the VR scene_d3 r car park shows them.
+
 ## Licence
 
 Source: **국토지리정보원 (NGII), 정사영상 2025, sheet 34702020 (순천020)**, metadata 202504000734702020, made by

@@ -20328,7 +20328,8 @@
      "areaSquareMetres": 24.4,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 1
+     "photoSupport": 1,
+     "drawnBy": "OC0120"
     },
     {
      "outer": [
