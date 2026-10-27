@@ -363,8 +363,11 @@ export const STATES = Object.freeze([
         await ctx.fixtureControl.up();
         ctx.actions.push("fixtures up for S15 (the plan list needs a plan for 편집)");
       }
-      await act(ctx, "#d4-installation-tab");
+      // Planning sits behind the D4 pane's 설치 계획 disclosure (todo 34); the old installation tab is the fallback.
+      if (await ctx.b.run(() => Boolean(document.querySelector("#d4-installation-tab")))) await act(ctx, "#d4-installation-tab");
+      else await act(ctx, "[data-qa=d4-plan-disclosure] button");
       await wait(ctx, 3000);
+      await ctx.b.run(() => { [...document.querySelectorAll("button")].find((b) => b.textContent.trim() === "편집")?.scrollIntoView({ block: "center" }); return true; });
       await act(ctx, "button", "편집");
       await wait(ctx, 3000);
     },
