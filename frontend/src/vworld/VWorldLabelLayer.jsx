@@ -49,6 +49,7 @@ export function VWorldLabelLayer({
   const frameKeyRef = useRef("");
   const motionRef = useRef(false);
   const settleTimerRef = useRef(null);
+  const lastPoseRef = useRef(null);
   const state = useRef({});
   state.current = { selectedId, hidden, presentation, occluderRef, chromeRefs };
 
@@ -83,6 +84,21 @@ export function VWorldLabelLayer({
     const projector = createVWorldLabelProjector({ Cesium, scene, getModelMatrix });
     const touch = globalThis.matchMedia?.("(pointer: coarse)")?.matches ?? false;
     const requestRender = () => scene.requestRender?.();
+    const onMoveStart = () => {
+      clearTimeout(settleTimerRef.current);
+      motionRef.current = true;
+      controllerRef.current?.setMotion(true);
+    };
+    const onMoveEnd = () => {
+      clearTimeout(settleTimerRef.current);
+      settleTimerRef.current = setTimeout(() => {
+        motionRef.current = false;
+        controllerRef.current?.setMotion(false);
+        passesRef.current = 2;
+        frameKeyRef.current = "";
+        requestRender();
+      }, MOTION_SETTLE_MS);
+    };
     const onPostRender = () => {
       const controller = controllerRef.current;
       if (!controller) return;
@@ -98,7 +114,14 @@ export function VWorldLabelLayer({
       const camera = scene.camera;
       const p = camera.positionWC;
       const d = camera.directionWC;
-      const key = [p.x, p.y, p.z, d.x, d.y, d.z].map((v) => v.toFixed(3)).join(",")
+      const pose = [p.x, p.y, p.z, d.x, d.y, d.z].map((v) => v.toFixed(3)).join(",");
+      // VWorld SDK의 끌기·휠은 camera.moveStart를 내지 않을 때가 있다. 카메라 자세가 프레임 사이에 바뀌면 움직이는 중으로 본다.
+      if (lastPoseRef.current !== null && pose !== lastPoseRef.current) {
+        onMoveStart();
+        onMoveEnd();
+      }
+      lastPoseRef.current = pose;
+      const key = pose
         + `|${rectKey(area)}|${occluder ? rectKey(occluder) : ""}|${chrome.map(rectKey).join(";")}|${isHidden}|${presenting}|${selected}`;
       if (key !== frameKeyRef.current) {
         frameKeyRef.current = key;
@@ -119,21 +142,6 @@ export function VWorldLabelLayer({
       const band = resolveLabelBand({ distance, pitchDegrees, presentation: presenting, touch });
       controller.update({ points, area, chrome, occluder, focusBoxes: [], band, now: performance.now(), motion });
     };
-    const onMoveStart = () => {
-      clearTimeout(settleTimerRef.current);
-      motionRef.current = true;
-      controllerRef.current?.setMotion(true);
-    };
-    const onMoveEnd = () => {
-      clearTimeout(settleTimerRef.current);
-      settleTimerRef.current = setTimeout(() => {
-        motionRef.current = false;
-        controllerRef.current?.setMotion(false);
-        passesRef.current = 2;
-        frameKeyRef.current = "";
-        requestRender();
-      }, MOTION_SETTLE_MS);
-    };
     scene.postRender.addEventListener(onPostRender);
     scene.camera.moveStart?.addEventListener(onMoveStart);
     scene.camera.moveEnd?.addEventListener(onMoveEnd);
@@ -145,6 +153,7 @@ export function VWorldLabelLayer({
       scene.camera.moveEnd?.removeEventListener(onMoveEnd);
       clearTimeout(settleTimerRef.current);
       motionRef.current = false;
+      lastPoseRef.current = null;
     };
   }, [Cesium, scene, entries, getModelMatrix]);
 

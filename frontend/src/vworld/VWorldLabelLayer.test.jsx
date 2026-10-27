@@ -112,6 +112,28 @@ describe("VWorldLabelLayer", () => {
     expect(scene.camera.moveStart.size).toBe(0);
   });
 
+  it("fades while the camera pose changes between renders even without camera.moveStart, and settles 150 ms after it stops", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      const { Cesium, scene } = fakeMap();
+      const { container } = render(<VWorldLabelLayer Cesium={Cesium} scene={scene} getModelMatrix={() => "m"} loadGlb={loadGlb} />);
+      await waitFor(() => expect(container.querySelector('[data-qa="campus-label-layer"]')).not.toBeNull());
+      const layer = () => container.querySelector('[data-qa="campus-label-layer"]');
+      act(() => scene.postRender.raise());
+      expect(layer().dataset.motion).toBe("false");
+      // The SDK drags the camera: only the pose changes.
+      scene.camera.positionWC = new Cesium.Cartesian3(5, 0, 400);
+      act(() => scene.postRender.raise());
+      expect(layer().dataset.motion).toBe("true");
+      act(() => {
+        vi.advanceTimersByTime(160);
+      });
+      expect(layer().dataset.motion).toBe("false");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("hides every chip while the camera is at globe distance (before the map flies to the campus)", async () => {
     const { Cesium, scene } = fakeMap();
     scene.camera.positionCartographic.height = 1_700_000;
