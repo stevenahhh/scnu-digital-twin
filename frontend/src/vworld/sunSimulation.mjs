@@ -24,7 +24,7 @@ function moonlight(Cesium, intensity) {
   const frame = Transforms.eastNorthUpToFixedFrame(Cartesian3.fromDegrees(CAMPUS.longitude, CAMPUS.latitude));
   const local = new Cartesian3(...MOONLIGHT_LOCAL_DIRECTION);
   const direction = Cartesian3.normalize(Matrix4.multiplyByPointAsVector(frame, local, new Cartesian3()), new Cartesian3());
-  return new DirectionalLight({ direction, intensity, color: Color ? new Color(0.78, 0.84, 1, 1) : undefined });
+  return new DirectionalLight({ direction, intensity, color: Color ? new Color(0.8, 0.82, 1, 1) : undefined });
 }
 
 export function applyVWorldSunSimulation(date) {

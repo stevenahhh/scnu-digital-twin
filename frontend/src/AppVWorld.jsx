@@ -161,7 +161,8 @@ export default function App() {
               <div
                 aria-hidden="true"
                 className="pointer-events-none absolute inset-0 z-[1] transition-[background-color] duration-300"
-                style={{ backgroundColor: `rgba(3, 10, 24, ${lighting.nightOpacity})` }}
+                // 밤 남색은 강조색과 같은 색상(약 234도): 선택 지붕의 강조색이 음영을 지나도 같은 색으로 읽힌다(V-F-12·V-Q-10).
+                style={{ backgroundColor: `rgba(6, 8, 26, ${lighting.nightOpacity})` }}
               />
               <div
                 id="vworld-available-area"
