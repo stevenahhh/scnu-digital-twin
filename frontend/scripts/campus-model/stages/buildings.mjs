@@ -136,9 +136,14 @@ function loadCatalogue() {
   const file = JSON.parse(readFileSync(path.join(DATA, "scnu-facades.json"), "utf8"));
   const looks = new Map(file.looks.map((look) => [look.id, look]));
   for (const look of file.looks) {
-    if (look.zones && !(look.zones.base?.storeys > 0 && looks.has(look.zones.base.look))) {
+    if (look.zones?.base && !(look.zones.base.storeys > 0 && looks.has(look.zones.base.look))) {
       throw new Error(`scnu-facades.json: look ${look.id} zones need base.storeys > 0 and a known base.look`);
     }
+    const band = look.zones?.band;
+    if (band && !(Number.isInteger(band.from) && band.from >= 0 && band.storeys > 0 && looks.has(band.look))) {
+      throw new Error(`scnu-facades.json: look ${look.id} zones.band needs from >= 0, storeys > 0 and a known look`);
+    }
+    if (look.zones && !look.zones.base && !band) throw new Error(`scnu-facades.json: look ${look.id} zones need base or band`);
   }
   const byNode = new Map();
   const byName = new Map();
@@ -457,7 +462,8 @@ function addWalls(mesh, ring, outward, base, top, charts, { skip = null, colour 
 // on the ground also gets the strip below the ground line (down to `base`) in the plinth band. Edges shorter than
 // half a bay take a sliver of plain wall. The entrance edge can carry a canopy slab over the doors.
 // Facade zones (look field `zones`, data/scnu-facades.json): the lowest `base.storeys` storeys take the tile of look
-// `base.look` (a brick base under a panel block). Absent zones leave the facade exactly as before.
+// `base.look` (a brick base under a panel block), and `band` { from, storeys, look } the storeys from `from` (0 = the
+// ground storey) of another look (a glazed band storey over a podium). Absent zones leave the facade exactly as before.
 // Curated fields of a building-forms.json mass (the VR and the NGII photo against the LOD4 mesh): `look` draws the mass
 // in a look of its own (the F1 metal drum), `round` { centre: [lon, lat], radiusMetres, segments >= 8, slots: compass
 // bearings of glass slots } makes it a true cylinder: one fixed bay per segment and radial normals (smooth shading).
@@ -509,9 +515,19 @@ export function smoothRound(mesh, from, [cx, cz]) {
 }
 
 function zonesOf(look, tiles) {
-  const base = look.zones?.base;
-  return base ? { baseStoreys: base.storeys, baseTile: tiles.get(base.look) } : null;
+  const { base, band } = look.zones ?? {};
+  if (!base && !band) return null;
+  return {
+    baseStoreys: base?.storeys ?? 0,
+    baseTile: base ? tiles.get(base.look) : null,
+    ...(band ? { bandFrom: band.from, bandTo: band.from + band.storeys, bandTile: tiles.get(band.look) } : {}),
+  };
 }
+// The tile storey s (0 = ground) of a facade with `zones` draws from.
+const zoneTile = (zones, s, tile) => {
+  if (zones?.bandTile && s >= zones.bandFrom && s < zones.bandTo) return zones.bandTile;
+  return zones?.baseTile && s < zones.baseStoreys ? zones.baseTile : tile;
+};
 
 // Roof types building-forms.json may carry (fetch/building_forms.py roof_kind; curated masses are flat).
 const KNOWN_ROOFS = new Set(["flat", "gable", "hipped", "mono-pitch", "curved"]);
@@ -556,7 +572,7 @@ function addFacade(mesh, ordered, { base, ground, bottom, top, floors, look, til
         const from = Math.max(y0, bottom);
         const f0 = (from - y0) / storey;
         const row = s === 0 ? ROWS.GROUND : rng() < 0.5 ? ROWS.UPPER_A : ROWS.UPPER_B;
-        const rowTile = zones?.baseTile && s < zones.baseStoreys ? zones.baseTile : tile;
+        const rowTile = zoneTile(zones, s, tile);
         const emit = (g0, g1, tileRow, b0, b1) => {
           cell(g0 / bays, g1 / bays, from, y1, [tileUv(rowTile, tileRow, b0, f0), tileUv(rowTile, tileRow, b1, f0), tileUv(rowTile, tileRow, b1, 1), tileUv(rowTile, tileRow, b0, 1)]);
         };
@@ -1090,7 +1106,7 @@ function addMassRing(ctx, solid, ordered, { roundBays = null, facade, cellsOnGro
               if (to - from < 1e-3) continue;
               const [f0, f1] = [(from - y0) / storey, (to - y0) / storey];
               const row = k === 0 ? ROWS.GROUND : rng() < 0.5 ? ROWS.UPPER_A : ROWS.UPPER_B;
-              const rowTile = zones?.baseTile && k < zones.baseStoreys ? zones.baseTile : tile;
+              const rowTile = zoneTile(zones, k, tile);
               const cell = (g0, g1, tileRow, u) => {
                 const c0 = Math.max(g0, run.t0 * bays);
                 const c1 = Math.min(g1, run.t1 * bays);
@@ -1404,8 +1420,10 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
       footprintEstimated: b.estimated === true,
       // ... and its use class (추정), which picks the storey median (웅지관 is a dormitory).
       ...(b.estimated === true ? { usability: b.usability } : {}),
-      // GIS use class of every record (off-campus context masses pick their facade by it)
+      // GIS use class of every record (off-campus context masses pick their facade by it), and a curated context look
+      // (data/vr-context-buildings.json: texture section and wall tone) where that class gives the wrong one
       use: b.usability ?? null,
+      contextLook: b.contextLook ?? null,
       outer,
       holes,
       centroid: ringCentroid(outer),
@@ -1593,7 +1611,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
       offCampusLots.push(part.outer);
       if (part.areaMetres >= 12) {
         const height = heightOf(part, false, medians) ?? assumedHeight(part, false, medians);
-        contextParts.push({ outer: part.outer, holes: part.holes, use: part.use, floors: part.floors || null, ...height, index: part.index });
+        contextParts.push({ outer: part.outer, holes: part.holes, use: part.use, floors: part.floors || null, ...height, index: part.index, contextLook: part.contextLook });
       }
       continue;
     }
@@ -1772,10 +1790,10 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
   });
   // Facade atlas: one tile per look in use (lib/facadeAtlas.mjs); every wall of every building on one material.
   const usedLooks = [...new Set([...selectableBuildings, ...campusBuildings].flatMap((b) => {
-    const base = catalogue.looks.get(b.look).zones?.base;
+    const { base, band } = catalogue.looks.get(b.look).zones ?? {};
     const blocks = (b.attachments ?? []).filter((a) => a.kind === "block").map((a) => a.look);
     const partLooks = (b.parts ?? []).map((p) => p.look).filter(Boolean);
-    return [...(base ? [b.look, base.look] : [b.look]), ...blocks, ...partLooks];
+    return [b.look, ...(base ? [base.look] : []), ...(band ? [band.look] : []), ...blocks, ...partLooks];
   }))];
   const facadeAtlas = await buildFacadeAtlas(usedLooks.map((id) => ({ ...catalogue.looks.get(id), id })));
   const clamped = { repeat: false };

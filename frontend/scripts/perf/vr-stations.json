@@ -2577,15 +2577,15 @@
     },
     "refined": false,
     "refined_by": "manual control-point resection (scripts/perf/vr_control_points.py)",
-    "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by old); least squares: residual RMS 0.40 m, max 0.60 m; split-half agreement 0.06 m / 0.09 deg; formal sigma 0.05 m / 0.05 deg; height from the face scale (estimated)",
-    "station_refined_x": 401.99,
-    "station_refined_z": -75.23,
-    "yaw_refined_deg": 116.94,
-    "height_refined_m": 21.01,
+    "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by seed); least squares: residual RMS 0.42 m, max 0.73 m; split-half agreement 0.18 m / 0.09 deg; formal sigma 0.06 m / 0.06 deg; height from the face scale (estimated); re-measured 2026-10-27 (facades-flags): the record put the camera over the track curve, while the VR's nadir is the small turf pitch with the hedge lettering 진리 정의 창조 on the slope to its east; five hand points (centre circle, both goals, lettering symbol, red court) gave 244084.4, 263604.4, h 18.1 m, yaw 127.7 (RMS 2.32 m), then the guided match seeded there gave this pose; 30.8 m north of the old one (estimated)",
+    "station_refined_x": 405.11,
+    "station_refined_z": -94.19,
+    "yaw_refined_deg": 128.51,
+    "height_refined_m": 17.88,
     "refined_confidence": 0.85,
     "refined_residual_deg": 0.09,
-    "refined_residual_m": 0.06,
-    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
+    "refined_residual_m": 0.18,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR (re-measured position)"
   },
   {
     "scene": "scene_f3",

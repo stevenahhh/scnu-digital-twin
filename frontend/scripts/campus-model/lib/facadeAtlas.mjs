@@ -11,7 +11,7 @@
 // first mip levels never read a neighbouring look.
 //
 // Texel size: a bay of 3-4 m and a storey of 3-5 m on 56 px, about 6-9 cm per texel. The colour atlas is 2048 px
-// wide and as tall as its rows of tiles need; emissive, normal and metallic-roughness maps are half that (window
+// wide and as tall as its rows of tiles need (up to MAX_ROWS); emissive, normal and metallic-roughness maps are half that (window
 // glow and relief are soft anyway).
 // Colours are sRGB estimates: the SCNU 360 VR tour panoramas (visual reference only) and the VWorld LOD4 facade
 // photos (data/lod4-facades.json). They are not measurements.
@@ -30,7 +30,10 @@ const TILE_H = 4 * ROW_PX;
 const GUTTER = 8;
 const SLOT = TILE_W + 2 * GUTTER;
 const SLOTS_PER_SIDE = Math.floor(ATLAS_SIZE / SLOT);
-export const MAX_LOOKS = SLOTS_PER_SIDE * SLOTS_PER_SIDE;
+// Rows of tiles: the atlas is as tall as the rows in use (240 px each, so both the full and the half maps stay multiples of
+// 4 for KTX2), up to MAX_ROWS (2400 px, well inside WebGL's 4096 px minimum texture size); eight rows were the square.
+const MAX_ROWS = 10;
+export const MAX_LOOKS = SLOTS_PER_SIDE * MAX_ROWS;
 const NOMINAL_STOREY_METRES = 4.0;
 
 // CC0 relief per wall texture (data/materials, Poly Haven); at 6-9 cm per texel it only adds a soft grain.

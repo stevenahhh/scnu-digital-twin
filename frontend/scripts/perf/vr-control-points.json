@@ -12529,19 +12529,20 @@
  },
  "scene_a16": {
   "method": "manual control points read on the ground-projected cube and the NGII sheet seed a guided SIFT match (3 m window) whose RANSAC inliers are the control points; checked on the warped blend",
+  "manual": [],
   "info": {
    "seed": {
-    "E": 244080.8,
-    "N": 263575.2,
-    "h": 20.9,
-    "yaw": 117.0
+    "E": 244084.4,
+    "N": 263604.4,
+    "h": 18.1,
+    "yaw": 127.7
    },
-   "seededBy": "old",
+   "seededBy": "seed",
    "guideM": 3.0,
-   "guided": 1188,
-   "inliers": 71,
-   "scale": 1.005,
-   "reachH": 2.63,
+   "guided": 1066,
+   "inliers": 64,
+   "scale": 0.989,
+   "reachH": 3.04,
    "faces": [
     "b",
     "d",
@@ -12550,727 +12551,786 @@
     "r"
    ]
   },
-  "manual": [],
   "points": [
    {
     "face": "d",
-    "col": -1649.8,
-    "row": -656.7,
-    "sc": 3251.03,
-    "sr": 3518.17,
+    "col": -1406.0,
+    "row": -912.5,
+    "sc": 3259.56,
+    "sr": 3481.5,
     "seen": {
      "face": "l",
-     "col": 1667.1,
-     "row": 1415.7
-    }
+     "col": 1839.5,
+     "row": 1455.1
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
    },
    {
     "face": "d",
-    "col": 3437.0,
-    "row": 3152.7,
-    "sc": 2785.04,
-    "sr": 3746.61,
+    "col": 3950.4,
+    "row": 3163.7,
+    "sc": 2803.65,
+    "sr": 3597.33,
     "seen": {
      "face": "r",
-     "col": 1926.9,
-     "row": 1458.0
-    }
+     "col": 1772.3,
+     "row": 1381.8
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
    },
    {
     "face": "d",
-    "col": 2845.1,
-    "row": -1157.6,
-    "sc": 3120.9,
-    "sr": 3865.91,
+    "col": 2866.8,
+    "row": -1559.3,
+    "sc": 3108.54,
+    "sr": 3744.26,
     "seen": {
      "face": "f",
-     "col": 1878.7,
-     "row": 1504.3
-    }
+     "col": 1754.3,
+     "row": 1429.5
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
    },
    {
     "face": "d",
-    "col": -629.9,
-    "row": 3245.2,
-    "sc": 2928.46,
-    "sr": 3446.67,
+    "col": -1072.9,
+    "row": 3288.7,
+    "sc": 3013.76,
+    "sr": 3316.32,
     "seen": {
      "face": "b",
-     "col": 1785.6,
-     "row": 1495.5
-    }
+     "col": 1971.2,
+     "row": 1486.4
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
    },
    {
     "face": "d",
-    "col": 849.4,
-    "row": 744.3,
-    "sc": 3055.37,
-    "sr": 3646.8,
+    "col": 1062.0,
+    "row": 437.2,
+    "sc": 3079.55,
+    "sr": 3556.26,
     "seen": {
      "face": "d",
-     "col": 849.4,
-     "row": 744.3
-    }
+     "col": 1062.0,
+     "row": 437.2
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
    },
    {
     "face": "d",
-    "col": 3172.6,
-    "row": 857.0,
-    "sc": 2962.91,
-    "sr": 3815.29,
+    "col": 3428.6,
+    "row": 826.9,
+    "sc": 2953.45,
+    "sr": 3668.34,
     "seen": {
      "face": "r",
-     "col": 944.2,
-     "row": 1511.4
-    }
+     "col": 939.8,
+     "row": 1459.5
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
    },
    {
     "face": "d",
-    "col": 124.8,
-    "row": -1487.8,
-    "sc": 3246.58,
-    "sr": 3679.16,
-    "seen": {
-     "face": "f",
-     "col": 657.0,
-     "row": 1441.0
-    }
-   },
-   {
-    "face": "d",
-    "col": 1170.2,
-    "row": 3124.2,
-    "sc": 2869.46,
-    "sr": 3585.15,
-    "seen": {
-     "face": "b",
-     "col": 952.0,
-     "row": 1522.7
-    }
-   },
-   {
-    "face": "d",
-    "col": -771.2,
-    "row": 1061.2,
-    "sc": 3094.2,
-    "sr": 3520.4,
+    "col": -725.4,
+    "row": 965.7,
+    "sc": 3129.73,
+    "sr": 3437.13,
     "seen": {
      "face": "l",
-     "col": 1002.0,
-     "row": 1607.8
-    }
+     "col": 1057.4,
+     "row": 1623.1
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
    },
    {
     "face": "d",
-    "col": 1158.6,
-    "row": -591.9,
-    "sc": 3142.87,
-    "sr": 3723.38,
+    "col": 264.2,
+    "row": -1437.1,
+    "sc": 3214.95,
+    "sr": 3594.3,
     "seen": {
      "face": "f",
-     "col": 1109.2,
-     "row": 1672.6
-    }
+     "col": 707.5,
+     "row": 1449.6
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
    },
    {
     "face": "d",
-    "col": 1406.8,
-    "row": 1905.7,
-    "sc": 2948.96,
-    "sr": 3645.97,
+    "col": 1088.0,
+    "row": 2065.9,
+    "sc": 2988.63,
+    "sr": 3489.64,
+    "seen": {
+     "face": "b",
+     "col": 960.1,
+     "row": 2029.4
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 4079.5,
+    "row": -508.8,
+    "sc": 2999.41,
+    "sr": 3761.48,
+    "seen": {
+     "face": "r",
+     "col": 510.1,
+     "row": 1366.6
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 2521.3,
+    "row": -238.1,
+    "sc": 3052.37,
+    "sr": 3668.65,
+    "seen": {
+     "face": "r",
+     "col": 160.9,
+     "row": 1723.6
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 2255.5,
+    "row": 1234.6,
+    "sc": 2985.86,
+    "sr": 3587.96,
+    "seen": {
+     "face": "r",
+     "col": 1199.0,
+     "row": 1874.6
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 1348.0,
+    "row": -1956.1,
+    "sc": 3198.98,
+    "sr": 3677.12,
+    "seen": {
+     "face": "f",
+     "col": 1135.0,
+     "row": 1375.4
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": -110.5,
+    "row": 2003.7,
+    "sc": 3042.92,
+    "sr": 3425.1,
+    "seen": {
+     "face": "l",
+     "col": 138.4,
+     "row": 1948.2
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": -1210.9,
+    "row": 44.5,
+    "sc": 3200.13,
+    "sr": 3451.82,
+    "seen": {
+     "face": "l",
+     "col": 1472.1,
+     "row": 1492.8
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": -1015.7,
+    "row": 2088.4,
+    "sc": 3079.42,
+    "sr": 3371.92,
+    "seen": {
+     "face": "l",
+     "col": 488.7,
+     "row": 1537.7
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 2978.6,
+    "row": 1782.3,
+    "sc": 2920.84,
+    "sr": 3605.59,
+    "seen": {
+     "face": "r",
+     "col": 1420.9,
+     "row": 1559.8
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 4100.5,
+    "row": 2332.4,
+    "sc": 2845.03,
+    "sr": 3640.82,
+    "seen": {
+     "face": "r",
+     "col": 1459.1,
+     "row": 1364.3
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 3265.3,
+    "row": -709.4,
+    "sc": 3045.36,
+    "sr": 3729.34,
+    "seen": {
+     "face": "r",
+     "col": 232.0,
+     "row": 1491.2
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 2018.3,
+    "row": -865.1,
+    "sc": 3108.32,
+    "sr": 3665.64,
+    "seen": {
+     "face": "f",
+     "col": 1562.9,
+     "row": 1578.7
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 3202.9,
+    "row": 3450.7,
+    "sc": 2822.89,
+    "sr": 3542.85,
+    "seen": {
+     "face": "b",
+     "col": 104.1,
+     "row": 1455.5
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": -343.8,
+    "row": 264.0,
+    "sc": 3150.58,
+    "sr": 3485.74,
+    "seen": {
+     "face": "l",
+     "col": 1592.3,
+     "row": 1790.4
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 1700.1,
+    "row": -14.8,
+    "sc": 3075.62,
+    "sr": 3610.31,
+    "seen": {
+     "face": "f",
+     "col": 1690.8,
+     "row": 2033.4
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 566.5,
+    "row": 1542.8,
+    "sc": 3040.16,
+    "sr": 3481.71,
     "seen": {
      "face": "d",
-     "col": 1406.8,
-     "row": 1905.7
-    }
+     "col": 566.5,
+     "row": 1542.8
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
    },
    {
     "face": "d",
-    "col": 3116.2,
-    "row": 2015.7,
-    "sc": 2879.32,
-    "sr": 3768.83,
+    "col": 2339.7,
+    "row": 515.9,
+    "sc": 3019.22,
+    "sr": 3623.27,
     "seen": {
      "face": "r",
-     "col": 1509.0,
-     "row": 1524.6
-    }
+     "col": 628.6,
+     "row": 1820.2
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
    },
    {
     "face": "d",
-    "col": 1795.7,
-    "row": -1648.7,
-    "sc": 3194.44,
-    "sr": 3807.08,
+    "col": -87.3,
+    "row": -2038.1,
+    "sc": 3263.37,
+    "sr": 3601.79,
     "seen": {
      "face": "f",
-     "col": 1319.4,
-     "row": 1415.9
-    }
+     "col": 652.0,
+     "row": 1366.0
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
    },
    {
     "face": "d",
-    "col": 2271.8,
-    "row": -241.2,
-    "sc": 3075.33,
-    "sr": 3787.95,
-    "seen": {
-     "face": "f",
-     "col": 2034.2,
-     "row": 1852.6
-    }
-   },
-   {
-    "face": "d",
-    "col": 3421.9,
-    "row": -192.4,
-    "sc": 3030.82,
-    "sr": 3872.3,
-    "seen": {
-     "face": "r",
-     "col": 504.4,
-     "row": 1460.7
-    }
-   },
-   {
-    "face": "d",
-    "col": 2150.4,
-    "row": 2771.4,
-    "sc": 2857.98,
-    "sr": 3668.58,
-    "seen": {
-     "face": "b",
-     "col": 363.3,
-     "row": 1623.4
-    }
-   },
-   {
-    "face": "d",
-    "col": -729.8,
-    "row": -1172.4,
-    "sc": 3254.86,
-    "sr": 3602.77,
-    "seen": {
-     "face": "f",
-     "col": 205.9,
-     "row": 1501.0
-    }
-   },
-   {
-    "face": "d",
-    "col": -1307.2,
-    "row": 176.9,
-    "sc": 3178.78,
-    "sr": 3512.13,
+    "col": -1350.9,
+    "row": 783.0,
+    "sc": 3164.95,
+    "sr": 3412.32,
     "seen": {
      "face": "l",
-     "col": 1395.4,
-     "row": 1473.4
-    }
-   },
-   {
-    "face": "d",
-    "col": 1549.9,
-    "row": 406.8,
-    "sc": 3053.83,
-    "sr": 3712.39,
-    "seen": {
-     "face": "d",
-     "col": 1549.9,
-     "row": 406.8
-    }
-   },
-   {
-    "face": "d",
-    "col": 2034.4,
-    "row": -881.6,
-    "sc": 3132.21,
-    "sr": 3794.47,
-    "seen": {
-     "face": "f",
-     "col": 1566.9,
-     "row": 1573.9
-    }
-   },
-   {
-    "face": "d",
-    "col": -520.0,
-    "row": 426.5,
-    "sc": 3130.61,
-    "sr": 3562.02,
-    "seen": {
-     "face": "l",
-     "col": 1419.5,
-     "row": 1702.9
-    }
-   },
-   {
-    "face": "d",
-    "col": 1007.5,
-    "row": 1380.1,
-    "sc": 3001.88,
-    "sr": 3637.56,
-    "seen": {
-     "face": "d",
-     "col": 1007.5,
-     "row": 1380.1
-    }
-   },
-   {
-    "face": "d",
-    "col": 2512.4,
-    "row": 355.1,
-    "sc": 3024.17,
-    "sr": 3783.02,
-    "seen": {
-     "face": "r",
-     "col": 563.8,
-     "row": 1727.8
-    }
-   },
-   {
-    "face": "d",
-    "col": 1980.5,
-    "row": 3339.4,
-    "sc": 2822.17,
-    "sr": 3635.01,
-    "seen": {
-     "face": "b",
-     "col": 600.3,
-     "row": 1476.3
-    }
-   },
-   {
-    "face": "d",
-    "col": 1336.2,
-    "row": -1321.9,
-    "sc": 3190.43,
-    "sr": 3763.38,
-    "seen": {
-     "face": "f",
-     "col": 1160.0,
-     "row": 1470.6
-    }
-   },
-   {
-    "face": "d",
-    "col": -505.1,
-    "row": 2698.7,
-    "sc": 2962.34,
-    "sr": 3476.05,
-    "seen": {
-     "face": "b",
-     "col": 1957.9,
-     "row": 1649.5
-    }
-   },
-   {
-    "face": "d",
-    "col": 2765.2,
-    "row": -604.5,
-    "sc": 3083.18,
-    "sr": 3839.67,
-    "seen": {
-     "face": "r",
-     "col": 66.3,
-     "row": 1625.6
-    }
-   },
-   {
-    "face": "d",
-    "col": 3325.9,
-    "row": 2656.3,
-    "sc": 2824.72,
-    "sr": 3757.8,
-    "seen": {
-     "face": "r",
-     "col": 1749.7,
-     "row": 1478.9
-    }
-   },
-   {
-    "face": "d",
-    "col": -358.0,
-    "row": 898.3,
-    "sc": 3089.33,
-    "sr": 3554.06,
-    "seen": {
-     "face": "l",
-     "col": 1116.3,
-     "row": 1782.5
-    }
-   },
-   {
-    "face": "d",
-    "col": 3185.4,
-    "row": 1586.9,
-    "sc": 2909.43,
-    "sr": 3788.56,
-    "seen": {
-     "face": "r",
-     "col": 1290.3,
-     "row": 1508.5
-    }
-   },
-   {
-    "face": "d",
-    "col": 3507.8,
-    "row": 2183.7,
-    "sc": 2851.74,
-    "sr": 3790.37,
-    "seen": {
-     "face": "r",
-     "col": 1501.7,
-     "row": 1445.6
-    }
-   },
-   {
-    "face": "d",
-    "col": 2166.0,
-    "row": -1286.7,
-    "sc": 3154.21,
-    "sr": 3820.01,
-    "seen": {
-     "face": "f",
-     "col": 1529.9,
-     "row": 1477.4
-    }
-   },
-   {
-    "face": "d",
-    "col": 1355.6,
-    "row": -219.6,
-    "sc": 3107.84,
-    "sr": 3723.19,
-    "seen": {
-     "face": "f",
-     "col": 1297.0,
-     "row": 1867.0
-    }
-   },
-   {
-    "face": "d",
-    "col": 1620.7,
-    "row": -825.4,
-    "sc": 3143.35,
-    "sr": 3765.4,
-    "seen": {
-     "face": "f",
-     "col": 1354.2,
-     "row": 1590.6
-    }
-   },
-   {
-    "face": "d",
-    "col": 2496.5,
-    "row": -938.3,
-    "sc": 3118.69,
-    "sr": 3830.4,
-    "seen": {
-     "face": "f",
-     "col": 1792.4,
-     "row": 1558.0
-    }
-   },
-   {
-    "face": "d",
-    "col": 3398.2,
-    "row": 215.5,
-    "sc": 3002.08,
-    "sr": 3855.04,
-    "seen": {
-     "face": "r",
-     "col": 675.1,
+     "col": 1127.2,
      "row": 1465.1
-    }
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
    },
    {
     "face": "d",
-    "col": 3346.7,
-    "row": 1171.5,
-    "sc": 2933.06,
-    "sr": 3815.53,
-    "seen": {
-     "face": "r",
-     "col": 1088.7,
-     "row": 1474.8
-    }
-   },
-   {
-    "face": "d",
-    "col": 848.9,
-    "row": -773.7,
-    "sc": 3167.65,
-    "sr": 3705.79,
-    "seen": {
-     "face": "f",
-     "col": 924.0,
-     "row": 1606.9
-    }
-   },
-   {
-    "face": "d",
-    "col": -1329.1,
-    "row": -785.2,
-    "sc": 3249.88,
-    "sr": 3546.5,
-    "seen": {
-     "face": "l",
-     "col": 1810.8,
-     "row": 1469.2
-    }
-   },
-   {
-    "face": "d",
-    "col": 530.3,
-    "row": 739.5,
-    "sc": 3068.49,
-    "sr": 3624.95,
+    "col": 532.4,
+    "row": 813.3,
+    "sc": 3079.74,
+    "sr": 3511.81,
     "seen": {
      "face": "d",
-     "col": 530.3,
-     "row": 739.5
-    }
+     "col": 532.4,
+     "row": 813.3
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
    },
    {
     "face": "d",
-    "col": 3131.3,
-    "row": -1033.4,
-    "sc": 3099.3,
-    "sr": 3882.16,
-    "seen": {
-     "face": "r",
-     "col": 24.3,
-     "row": 1521.0
-    }
-   },
-   {
-    "face": "d",
-    "col": -1061.1,
-    "row": -10.4,
-    "sc": 3181.99,
-    "sr": 3535.32,
-    "seen": {
-     "face": "l",
-     "col": 1531.4,
-     "row": 1526.5
-    }
-   },
-   {
-    "face": "d",
-    "col": -274.4,
-    "row": 615.3,
-    "sc": 3106.08,
-    "sr": 3572.49,
-    "seen": {
-     "face": "l",
-     "col": 1345.6,
-     "row": 1831.4
-    }
-   },
-   {
-    "face": "d",
-    "col": 2203.8,
-    "row": 3201.1,
-    "sc": 2826.0,
-    "sr": 3658.55,
-    "seen": {
-     "face": "b",
-     "col": 468.5,
-     "row": 1505.0
-    }
-   },
-   {
-    "face": "d",
-    "col": 1937.4,
-    "row": 3088.2,
-    "sc": 2845.22,
-    "sr": 3640.86,
-    "seen": {
-     "face": "b",
-     "col": 570.3,
-     "row": 1531.4
-    }
-   },
-   {
-    "face": "d",
-    "col": 2465.8,
-    "row": -405.4,
-    "sc": 3081.84,
-    "sr": 3809.84,
-    "seen": {
-     "face": "r",
-     "col": 9.0,
-     "row": 1750.5
-    }
-   },
-   {
-    "face": "d",
-    "col": 2321.6,
-    "row": -1113.0,
-    "sc": 3136.45,
-    "sr": 3824.83,
-    "seen": {
-     "face": "f",
-     "col": 1645.7,
-     "row": 1514.3
-    }
-   },
-   {
-    "face": "d",
-    "col": -425.2,
-    "row": 3156.9,
-    "sc": 2927.99,
-    "sr": 3465.51,
-    "seen": {
-     "face": "b",
-     "col": 1718.9,
-     "row": 1515.0
-    }
-   },
-   {
-    "face": "d",
-    "col": 1900.2,
-    "row": -1456.1,
-    "sc": 3179.54,
-    "sr": 3808.87,
-    "seen": {
-     "face": "f",
-     "col": 1385.5,
-     "row": 1446.4
-    }
-   },
-   {
-    "face": "d",
-    "col": 3136.4,
-    "row": 2222.9,
-    "sc": 2864.25,
-    "sr": 3761.04,
-    "seen": {
-     "face": "r",
-     "col": 1604.8,
-     "row": 1519.8
-    }
-   },
-   {
-    "face": "d",
-    "col": -637.5,
-    "row": -1339.9,
-    "sc": 3265.48,
-    "sr": 3618.02,
-    "seen": {
-     "face": "f",
-     "col": 303.8,
-     "row": 1467.2
-    }
-   },
-   {
-    "face": "d",
-    "col": 873.0,
-    "row": 1374.5,
-    "sc": 3009.31,
-    "sr": 3626.05,
+    "col": 513.3,
+    "row": 168.7,
+    "sc": 3117.51,
+    "sr": 3537.03,
     "seen": {
      "face": "d",
-     "col": 873.0,
-     "row": 1374.5
-    }
+     "col": 513.3,
+     "row": 168.7
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
    },
    {
     "face": "d",
-    "col": 2006.2,
-    "row": -1373.9,
-    "sc": 3167.6,
-    "sr": 3813.97,
+    "col": -314.4,
+    "row": -1535.3,
+    "sc": 3246.51,
+    "sr": 3567.69,
     "seen": {
      "face": "f",
-     "col": 1443.2,
-     "row": 1460.9
-    }
+     "col": 488.1,
+     "row": 1433.3
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
    },
    {
     "face": "d",
-    "col": 3473.9,
-    "row": -313.8,
-    "sc": 3035.14,
-    "sr": 3879.4,
+    "col": 3338.9,
+    "row": 1335.3,
+    "sc": 2931.13,
+    "sr": 3641.06,
     "seen": {
      "face": "r",
-     "col": 464.7,
-     "row": 1451.4
-    }
+     "col": 1161.4,
+     "row": 1476.4
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
    },
    {
     "face": "d",
-    "col": 2554.4,
-    "row": -474.3,
-    "sc": 3080.02,
-    "sr": 3817.5,
+    "col": 2782.8,
+    "row": 1340.9,
+    "sc": 2954.72,
+    "sr": 3613.91,
     "seen": {
      "face": "r",
-     "col": 21.6,
-     "row": 1708.4
-    }
+     "col": 1208.2,
+     "row": 1619.5
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
    },
    {
     "face": "d",
-    "col": 1912.6,
-    "row": -1491.4,
-    "sc": 3179.54,
-    "sr": 3808.87,
-    "seen": {
-     "face": "f",
-     "col": 1385.5,
-     "row": 1440.4
-    }
-   },
-   {
-    "face": "d",
-    "col": 1823.1,
-    "row": -1624.6,
-    "sc": 3194.44,
-    "sr": 3807.08,
-    "seen": {
-     "face": "f",
-     "col": 1332.7,
-     "row": 1419.5
-    }
-   },
-   {
-    "face": "d",
-    "col": -494.5,
-    "row": 2724.6,
-    "sc": 2962.34,
-    "sr": 3476.05,
-    "seen": {
-     "face": "b",
-     "col": 1937.3,
-     "row": 1639.9
-    }
-   },
-   {
-    "face": "d",
-    "col": 1014.4,
-    "row": 1401.5,
-    "sc": 3001.88,
-    "sr": 3637.56,
-    "seen": {
-     "face": "d",
-     "col": 1014.4,
-     "row": 1401.5
-    }
-   },
-   {
-    "face": "d",
-    "col": -270.9,
-    "row": 636.7,
-    "sc": 3106.08,
-    "sr": 3572.49,
+    "col": -266.0,
+    "row": 1091.1,
+    "sc": 3100.38,
+    "sr": 3457.28,
     "seen": {
      "face": "l",
-     "col": 1329.5,
-     "row": 1833.6
-    }
+     "col": 969.8,
+     "row": 1836.7
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 2772.0,
+    "row": -2008.9,
+    "sc": 3137.89,
+    "sr": 3755.57,
+    "seen": {
+     "face": "f",
+     "col": 1613.9,
+     "row": 1369.3
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 3846.3,
+    "row": -117.5,
+    "sc": 2987.31,
+    "sr": 3735.42,
+    "seen": {
+     "face": "r",
+     "col": 609.6,
+     "row": 1395.0
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 95.6,
+    "row": 1672.8,
+    "sc": 3054.11,
+    "sr": 3452.69,
+    "seen": {
+     "face": "d",
+     "col": 95.6,
+     "row": 1672.8
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 1405.1,
+    "row": 365.5,
+    "sc": 3070.16,
+    "sr": 3577.58,
+    "seen": {
+     "face": "d",
+     "col": 1405.1,
+     "row": 365.5
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": -1093.2,
+    "row": 358.4,
+    "sc": 3176.56,
+    "sr": 3444.55,
+    "seen": {
+     "face": "l",
+     "col": 1345.2,
+     "row": 1518.9
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": -695.2,
+    "row": 2014.0,
+    "sc": 3068.9,
+    "sr": 3391.78,
+    "seen": {
+     "face": "l",
+     "col": 433.4,
+     "row": 1633.6
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 790.3,
+    "row": 575.7,
+    "sc": 3084.17,
+    "sr": 3534.78,
+    "seen": {
+     "face": "d",
+     "col": 790.3,
+     "row": 575.7
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 3195.9,
+    "row": -431.0,
+    "sc": 3031.58,
+    "sr": 3711.69,
+    "seen": {
+     "face": "r",
+     "col": 337.9,
+     "row": 1506.2
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 3216.3,
+    "row": -976.7,
+    "sc": 3061.1,
+    "sr": 3735.75,
+    "seen": {
+     "face": "r",
+     "col": 89.5,
+     "row": 1501.7
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 2525.9,
+    "row": -506.0,
+    "sc": 3068.97,
+    "sr": 3677.57,
+    "seen": {
+     "face": "f",
+     "col": 2029.4,
+     "row": 1709.1
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": -587.3,
+    "row": 736.6,
+    "sc": 3134.08,
+    "sr": 3453.01,
+    "seen": {
+     "face": "l",
+     "col": 1205.9,
+     "row": 1674.5
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": -920.4,
+    "row": 800.0,
+    "sc": 3145.45,
+    "sr": 3434.64,
+    "seen": {
+     "face": "l",
+     "col": 1141.2,
+     "row": 1562.9
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": -85.6,
+    "row": 1746.4,
+    "sc": 3058.27,
+    "sr": 3435.76,
+    "seen": {
+     "face": "l",
+     "col": 356.0,
+     "row": 1968.9
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 129.5,
+    "row": -1522.6,
+    "sc": 3228.35,
+    "sr": 3591.05,
+    "seen": {
+     "face": "f",
+     "col": 664.0,
+     "row": 1435.3
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 1250.8,
+    "row": 370.9,
+    "sc": 3074.7,
+    "sr": 3570.28,
+    "seen": {
+     "face": "d",
+     "col": 1250.8,
+     "row": 370.9
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 3819.7,
+    "row": 3241.8,
+    "sc": 2806.02,
+    "sr": 3587.6,
+    "seen": {
+     "face": "r",
+     "col": 1835.9,
+     "row": 1398.5
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": -831.3,
+    "row": 2011.1,
+    "sc": 3076.42,
+    "sr": 3385.25,
+    "seen": {
+     "face": "l",
+     "col": 478.3,
+     "row": 1588.8
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 209.6,
+    "row": 1629.4,
+    "sc": 3052.32,
+    "sr": 3457.59,
+    "seen": {
+     "face": "d",
+     "col": 209.6,
+     "row": 1629.4
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": -1311.3,
+    "row": -891.0,
+    "sc": 3255.32,
+    "sr": 3484.3,
+    "seen": {
+     "face": "l",
+     "col": 1863.1,
+     "row": 1472.6
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 1269.5,
+    "row": -2002.8,
+    "sc": 3203.66,
+    "sr": 3675.71,
+    "seen": {
+     "face": "f",
+     "col": 1106.7,
+     "row": 1370.0
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": -1379.7,
+    "row": -985.2,
+    "sc": 3264.85,
+    "sr": 3483.29,
+    "seen": {
+     "face": "l",
+     "col": 1879.4,
+     "row": 1459.8
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": -1282.6,
+    "row": 758.6,
+    "sc": 3164.03,
+    "sr": 3415.22,
+    "seen": {
+     "face": "l",
+     "col": 1141.1,
+     "row": 1478.2
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": -983.1,
+    "row": 2150.8,
+    "sc": 3075.02,
+    "sr": 3369.85,
+    "seen": {
+     "face": "l",
+     "col": 448.2,
+     "row": 1546.1
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": -1394.7,
+    "row": -944.5,
+    "sc": 3262.73,
+    "sr": 3483.22,
+    "seen": {
+     "face": "l",
+     "col": 1856.8,
+     "row": 1457.1
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": 2263.3,
+    "row": 1221.2,
+    "sc": 2985.86,
+    "sr": 3587.96,
+    "seen": {
+     "face": "r",
+     "col": 1186.8,
+     "row": 1869.3
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": -1406.0,
+    "row": -912.5,
+    "sc": 3259.56,
+    "sr": 3481.5,
+    "seen": {
+     "face": "l",
+     "col": 1839.5,
+     "row": 1455.1
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
+   },
+   {
+    "face": "d",
+    "col": -1406.0,
+    "row": -912.5,
+    "sc": 3259.56,
+    "sr": 3481.5,
+    "seen": {
+     "face": "l",
+     "col": 1839.5,
+     "row": 1455.1
+    },
+    "what": "ground-projected cube pixel matched on the sheet (guided SIFT/RANSAC)"
    }
   ]
  },

@@ -50,6 +50,7 @@ import { buildFurniture, loadFurniture } from "./stages/furniture.mjs";
 import { buildLights, placeLamps } from "./stages/lights.mjs";
 import { buildContext, meshHeightAt } from "./stages/context.mjs";
 import { buildContextGround } from "./stages/contextGround.mjs";
+import { buildMasts } from "./stages/masts.mjs";
 import { buildMarkings, describeMarkings, loadMarkings } from "./stages/markings.mjs";
 import { buildOuterTerrain } from "./stages/outerTerrain.mjs";
 import { KERB_EXPOSED_M, buildKerbs, groundDecalOffset, slabRefine } from "./stages/kerbs.mjs";
@@ -122,6 +123,8 @@ await buildContextGround({
   glb, layers, paint: markings.pieces, heightAt: outerHeightAt,
   footprints: [...contextParts.map((p) => p.outer), ...[...selectableBuildings, ...campusBuildings].flatMap((b) => b.parts.map((p) => p.outer))],
 });
+// Free-standing lattice telecom masts off campus (stages/masts.mjs), on the context roofs they stand on; heights 추정.
+buildMasts({ glb, parts: contextParts, groundAt: contextGround });
 
 // ---------------------------------------------------------------- height sidecar
 // The ground the traffic agents stand on (scene units): the drawn Topography plus the raised walkway slab

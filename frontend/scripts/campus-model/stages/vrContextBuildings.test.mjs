@@ -52,3 +52,14 @@ test("traced buildings are off-campus, estimated, closed rings with a height fro
     }
   }
 });
+
+test("every look names exactly one footprint record and sets a known section and a #rrggbb tone", () => {
+  const looks = [...(context.looks ?? []).map((e) => ({ at: e.footprintSource, ...e })), ...context.buildings.filter((b) => b.contextLook).map((b) => ({ at: b.footprintSource, ...b.contextLook }))];
+  assert.ok(looks.length > 0);
+  for (const look of looks) {
+    if (context.looks?.some((e) => e.footprintSource === look.at)) assert.equal(matches(look.at).length, 1, `${look.at} matches ${matches(look.at).length} records`);
+    assert.ok(["residential", "commercial"].includes(look.section), `${look.at}: section`);
+    assert.match(look.tone, /^#[0-9a-f]{6}$/i, `${look.at}: tone`);
+    assert.match(look.source, /\(estimated\)/, `${look.at}: source`);
+  }
+});

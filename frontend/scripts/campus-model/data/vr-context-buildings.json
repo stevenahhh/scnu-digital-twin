@@ -1,5 +1,5 @@
 {
- "description": "Off-campus buildings the SCNU 360 VR tour shows that GIS건물통합정보 lacks or gives no storeys. `floors` gives storey counts (a use class for the storey median and wall tone, and optionally heightMetres with heightNote where the off-campus storey median does not fit, e.g. apartment towers) to footprint records of data/gis-buildings.json that carry none, matched by footprintSource prefix; `buildings` are footprints traced by eye on the NGII 2025 orthophoto where neither GIS nor OSM has one. Every value is estimated (추정). Applied by stages/sources.mjs (loadVrContextBuildings) after gis-buildings.json and vr-buildings.json; context masses only (stages/context.mjs), never BLD_ ids.",
+ "description": "Off-campus buildings the SCNU 360 VR tour shows that GIS건물통합정보 lacks or gives no storeys. `floors` gives storey counts (a use class for the storey median and wall tone, and optionally heightMetres with heightNote where the off-campus storey median does not fit, e.g. apartment towers) to footprint records of data/gis-buildings.json that carry none, matched by footprintSource prefix; `buildings` are footprints traced by eye on the NGII 2025 orthophoto where neither GIS nor OSM has one. Every value is estimated (추정). Applied by stages/sources.mjs (loadVrContextBuildings) after gis-buildings.json and vr-buildings.json; context masses only (stages/context.mjs), never BLD_ ids. `looks` set a context mass's texture section (residential | commercial) and wall tone where its use class gives the wrong look; a traced building may carry its own contextLook.",
  "sources": [
   "SCNU 360 VR tour (visual reference only, nothing copied)",
   "NGII 2025 orthophoto sheet 34702020 (footprints traced by eye, 0.25 m GSD)",
@@ -209,6 +209,73 @@
    "vrScenes": [
     "scene_f1"
    ]
+  },
+  {
+   "name": "",
+   "floors": 5,
+   "undergroundFloors": 0,
+   "heightMetres": 0,
+   "usability": "업무시설 (추정)",
+   "structure": null,
+   "approvalDate": null,
+   "pnu": null,
+   "footprintSource": "NGII 2025 orthophoto trace (estimated) + VR scene_a12",
+   "floorsSource": "VR scene_a12 storey count (estimated): glass stair tower at the east end of the beige block, one storey above it",
+   "polygons": [
+    [
+     [
+      [
+       127.48010415,
+       34.96635205
+      ],
+      [
+       127.48014514,
+       34.96635928
+      ],
+      [
+       127.48015471,
+       34.96632932
+      ],
+      [
+       127.48011371,
+       34.96632146
+      ],
+      [
+       127.48010415,
+       34.96635205
+      ]
+     ]
+    ]
+   ],
+   "estimated": true,
+   "vrScenes": [
+    "scene_a12"
+   ],
+   "contextLook": {
+    "section": "commercial",
+    "tone": "#8a7466",
+    "source": "VR scene_a12 l (cols 680-760): brown-framed teal glass stair tower (estimated)"
+   }
+  }
+ ],
+ "looks": [
+  {
+   "footprintSource": "OSM way/366373762",
+   "section": "commercial",
+   "tone": "#7fa8d8",
+   "vrScenes": [
+    "scene_f1"
+   ],
+   "source": "VR scene_f1 b: 순천시문화건강센터 is blue glass in a blue frame; glass-band section tinted blue (#b9d3ec first, too close to the default greys on the strip, then #7fa8d8) (estimated)"
+  },
+  {
+   "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 67871",
+   "section": "residential",
+   "tone": "#d9bfa8",
+   "vrScenes": [
+    "scene_a12"
+   ],
+   "source": "VR scene_a12 l (cols 1000-1330): beige render block with punched windows, not the office glass band its GIS use (업무시설) gives it ; the first tone #e6d2bf rendered paler than the VR, warmed to #d9bfa8 (estimated)"
   }
  ]
 }
