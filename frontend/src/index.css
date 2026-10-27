@@ -114,3 +114,13 @@ input[type="range"]::-webkit-slider-thumb {
   }
   input.time-range::-moz-range-thumb { width: 24px; height: 24px; border: 2px solid var(--colors-surface-1); border-radius: 9999px; background: var(--colors-primary); }
 }
+
+/* 노치·홈 표시줄이 있는 폰(viewport-fit=cover): 지도 위 HUD는 위쪽, 바텀 시트는 아래쪽 안전 영역만큼 비킨다. */
+[data-qa="campus-hud"] {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+[data-qa="dashboard-panel"][data-detent] {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
