@@ -741,6 +741,20 @@ The leftovers of the second pass, all estimated (추정):
   `paving_path` builder (a LineString width_m wide, a slab per leg).
 - SD-D3-P1..P3 now draw boxed bays (front_line and back_line), as the VR scene_d3 r car park shows them.
 
+## A1 roof garden, second round (a1-roof-r2)
+
+- Lawn: SD-A1RG-L1 carries `tones`, patchy 1.2 m cells in four autumn-turf tones (each an equal sRGB mix of a VR
+  scene_a5 r lawn quartile and the NGII 2025 photo's), and the cells within 0.8 m of the stepping stones
+  (`wear_paths`) in a worn tone. The dashboard has no seasonal tint for furniture (only tree crowns are tinted), so the
+  turf is drawn in its VR (autumn) tone.
+- Trees: SD-A1RG-T1..T8, a new site-detail kind `roof_tree` (species, crown_m, height_m, roof_m, box_m) that the trees
+  stage draws on the roof; T1..T3 stand in the timber tree boxes SD-A5-TB1..TB3 (their VR rays agree within 0.15 m).
+  Shrub balls and clipped masses: SD-A1RG-S1..S6 (hedge Points). All from VR scene_a5 r rays at the roof height.
+- The room in the garden (BLD_A1 form masses 5 and 16) takes the new look A1-roofroom, tan brick (its walls rise less than a storey over the wing
+  roof and are drawn plain in the parapet colour, so the white coping of the VR is not drawn).
+- OC0120 (the 정자) is moved 2.2 m to where VR scene_a5 d and the LOD box (mass 7) put it. The teal tiered structure by
+  the lattice wall in VR scene_a5 r is the parasol OC0121, not the 정자.
+
 ## Licence
 
 Source: **국토지리정보원 (NGII), 정사영상 2025, sheet 34702020 (순천020)**, metadata 202504000734702020, made by
