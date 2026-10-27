@@ -888,6 +888,10 @@ export function CityModel({
 
       if (maxDelta < MATERIAL_SETTLE_EPSILON) {
         materialTransitionRef.current = false;
+      } else {
+        // 멈춘 화면(frameloop demand)에서도 색 전환이 끝까지 가도록 다음 프레임을 요청한다. 선택은 렌더 창이 따로 열리지만
+        // 마우스오버 강조는 그렇지 않아, 전에는 한두 프레임만 돌고 거의 칠해지지 않았다.
+        invalidate();
       }
     }
 
@@ -1152,6 +1156,7 @@ export function CityModel({
       hoveredIdRef.current = meta.elementId;
       labelControllerRef.current?.setHovered(meta.elementId);
       materialTransitionRef.current = true;
+      invalidate();
     }
   };
 
@@ -1163,6 +1168,7 @@ export function CityModel({
       hoveredIdRef.current = null;
       labelControllerRef.current?.setHovered(null);
       materialTransitionRef.current = true;
+      invalidate();
     }
   };
 

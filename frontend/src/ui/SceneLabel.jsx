@@ -69,7 +69,15 @@ export function SceneLabel({
       aria-label={accessibleName}
       aria-pressed={state === "selected"}
       onClick={() => onSelect?.(elementId)}
-      className={cx("group relative inline-flex items-center justify-center bg-transparent p-0 outline-none", LABEL_HIT, className)}
+      className={cx(
+        "group relative inline-flex items-center justify-center bg-transparent p-0 outline-none transition-transform duration-state motion-reduce:transition-none",
+        // 버튼도 칩 글자 크기를 가진다(브라우저 기본 16 px가 아니라). 칩의 글자 크기를 재는 쪽이 버튼을 읽어도 같은 값이다.
+        LABEL_TEXT,
+        LABEL_HIT,
+        // 마우스를 올린 건물(칩이나 그 메시)의 칩은 한 단계 떠오른다(그림자와 함께 2 px 위로).
+        state === "hover" && "-translate-y-0.5",
+        className,
+      )}
       {...rest}
     >
       <span

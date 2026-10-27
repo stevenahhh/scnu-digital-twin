@@ -63,6 +63,13 @@ describe("SceneLabel", () => {
     expect(chipOf(button).className).toContain("border-dashed");
   });
 
+  it("lifts the hovered chip one step and leaves the other states in place", () => {
+    const { container, rerender } = render(<SceneLabel name="도서관" elementId="BLD_L" state="hover" />);
+    expect(container.querySelector("button").className).toMatch(/(^|\s)-translate-y-0\.5(\s|$)/);
+    rerender(<SceneLabel name="도서관" elementId="BLD_L" state="idle" />);
+    expect(container.querySelector("button").className).not.toMatch(/translate-y/);
+  });
+
   it("shows the headline value in the hover state", () => {
     render(<SceneLabel name="도서관" elementId="BLD_L" state="hover" value="24.3 °C 추정" />);
     expect(screen.getByText("24.3 °C 추정").className).toContain("inline");
