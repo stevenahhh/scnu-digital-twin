@@ -20,6 +20,8 @@ import { createCampusGltfOverlay, createCampusModelMatrix, removeCampusGltfOverl
 import { createVWorldLabelProjector } from "./labelProjection.mjs";
 import { applyCampusZoomLimits } from "./cameraLimits.mjs";
 import { createVWorldCampusCamera } from "./campusCamera.mjs";
+import { createVWorldSelectionHighlight } from "./selectionHighlight.mjs";
+import { CAMPUS_BLOCKED_ELEMENT_IDS, CAMPUS_BUILDING_MAP, resolveBuildingMeta } from "../utils/buildingLabels.mjs";
 import { campusCenterOf, glbLabelAnchors, glbNodeBoxes } from "./labelAnchors.mjs";
 import commonElements from "../../../common/data/common_elemetns.json";
 import { VWorldLabelLayer, centroidOf } from "./VWorldLabelLayer";
@@ -135,6 +137,9 @@ export default function VWorldRenderer({
   const [labelScene, setLabelScene] = useState(null);
   const [labelEntries, setLabelEntries] = useState(null);
   const [campusGlb, setCampusGlb] = useState(null);
+  // 마우스를 올린 캠퍼스 건물(앵커 요소 id). 상자 강조와 칩 떠오름이 같이 쓴다.
+  const [hoveredLabelId, setHoveredLabelId] = useState(null);
+  const highlightRef = useRef(null);
   const leftStackRef = useRef(null);
   const bottomStackRef = useRef(null);
   const simulationDateRef = useRef(simulationDate);
@@ -222,6 +227,32 @@ export default function VWorldRenderer({
     onCampusCameraRef.current?.(createVWorldCampusCamera({ ...labelScene, getModelMatrix: getLabelModelMatrix, boxes: glbNodeBoxes(campusGlb), center }));
     return () => onCampusCameraRef.current?.(null);
   }, [campusGlb, getLabelModelMatrix, labelScene]);
+
+  // 선택·호버 강조(오버레이 전체 흐리게 + 고른 건물 강조색 상자, 올린 건물 호버 색 상자). 오버레이 GLB 노드를 집어 호버를 안다.
+  useEffect(() => {
+    if (!labelScene || !campusGlb) return undefined;
+    const { Cesium, scene } = labelScene;
+    const elementNames = new Map(commonElements.elements.map(({ element_id: id, name }) => [id, name]));
+    const boxById = new Map(glbLabelAnchors(campusGlb, { elementNames }).map((anchor) => [anchor.elementId, anchor.box]));
+    const highlight = createVWorldSelectionHighlight({ Cesium, scene, getModel: () => campusGltfModelRef.current, getModelMatrix: getLabelModelMatrix, boxById });
+    highlightRef.current = highlight;
+    const handler = Cesium.ScreenSpaceEventHandler ? new Cesium.ScreenSpaceEventHandler(scene.canvas) : null;
+    handler?.setInputAction((movement) => {
+      const picked = scene.pick?.(movement.endPosition);
+      const name = picked?.primitive === campusGltfModelRef.current ? picked?.node?.name ?? picked?.mesh?.name ?? null : null;
+      const meta = name ? resolveBuildingMeta(name, { elementNames, buildingMap: CAMPUS_BUILDING_MAP, blockedIds: CAMPUS_BLOCKED_ELEMENT_IDS }) : null;
+      const id = meta && boxById.has(meta.elementId) ? meta.elementId : null;
+      setHoveredLabelId((current) => (current === id ? current : id));
+    }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+    return () => {
+      handler?.destroy();
+      highlight.dispose();
+      highlightRef.current = null;
+    };
+  }, [campusGlb, getLabelModelMatrix, labelScene]);
+  useEffect(() => {
+    highlightRef.current?.set({ selectedId: selectedLabelId, hoveredId: hoveredLabelId });
+  }, [campusGlb, hoveredLabelId, labelScene, selectedLabelId]);
 
   const handleOverlayDataChange = useCallback((overlays) => {
     overlayDataRef.current = overlays;
@@ -443,7 +474,7 @@ export default function VWorldRenderer({
   return (
     <div className="relative h-full w-full">
       {/* 지도 자체에 Legacy 캔버스와 같은 이름을 준다(화면 읽기·랜드마크). */}
-      <div id={VWORLD_MAP_ID} role="region" aria-label="순천대 캠퍼스 3D 지도" className="h-full w-full" onPointerDown={() => onUserCameraStart?.()} onWheel={() => onUserCameraStart?.()} />
+      <div id={VWORLD_MAP_ID} role="region" aria-label="순천대 캠퍼스 3D 지도" data-qa="campus-map-layer" data-selected-id={selectedLabelId ?? undefined} className="h-full w-full" onPointerDown={() => onUserCameraStart?.()} onWheel={() => onUserCameraStart?.()} />
       {mapBackdrop}
       {labelScene && (
         <VWorldLabelLayer
@@ -451,6 +482,7 @@ export default function VWorldRenderer({
           scene={labelScene.scene}
           getModelMatrix={getLabelModelMatrix}
           selectedId={selectedLabelId}
+          hoveredId={hoveredLabelId}
           hidden={isD4SectionOpen}
           presentation={presentation}
           occluderRef={labelOccluderRef}

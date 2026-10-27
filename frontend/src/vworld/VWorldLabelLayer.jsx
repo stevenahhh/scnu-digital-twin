@@ -32,6 +32,8 @@ export function VWorldLabelLayer({
   scene,
   getModelMatrix,
   selectedId = null,
+  // 지도에서 마우스를 올린 건물(그 칩이 떠오른다).
+  hoveredId = null,
   hidden = false,
   presentation = false,
   occluderRef = null,
@@ -223,7 +225,7 @@ export function VWorldLabelLayer({
   if (!entries) return null;
   return (
     <div ref={hostRef} data-qa="vworld-label-host" className="pointer-events-none absolute inset-0" style={{ zIndex: "var(--layer-labels)" }}>
-      <CampusLabelLayer entries={entries} selectedId={selectedAnchorId} controllerRef={controllerRef} {...callbacks} />
+      <CampusLabelLayer entries={entries} selectedId={selectedAnchorId} hoveredId={hoveredId && entryById.has(hoveredId) ? hoveredId : null} controllerRef={controllerRef} {...callbacks} />
     </div>
   );
 }
