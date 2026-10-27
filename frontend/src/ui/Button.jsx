@@ -64,7 +64,7 @@ export const Button = forwardRef(function Button(
         "relative inline-flex select-none items-center justify-center gap-2 rounded-control font-medium",
         "transition-[background-color,color,filter] duration-micro",
         BUTTON_VARIANTS[variant],
-        iconOnly ? (size === "sm" ? "min-h-8 min-w-8 px-0" : "min-h-10 min-w-10 px-0") : BUTTON_SIZES[size],
+        iconOnly ? (size === "sm" ? "min-h-8 min-w-8 px-0 text-caption" : "min-h-10 min-w-10 px-0 text-body") : BUTTON_SIZES[size],
         COARSE_TARGET,
         iconOnly && "[@media(pointer:coarse)]:min-w-11",
         FOCUS_RING,
