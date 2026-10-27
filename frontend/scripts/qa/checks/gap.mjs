@@ -169,8 +169,9 @@ export const GAP_CHECKS = [
   defineCheck("GAP-09", {
     states: ["S04"], viewports: DP, mutates: true,
     async run(ctx) {
-      // Desktop starts on the rail (the inspector is a card beside it); the row measures the open panel's tab strip.
-      if (ctx.viewport === "D") await openPanelSection(ctx);
+      // Desktop starts on the rail (the inspector is a card beside it); the row measures the open panel's tab strip, then
+      // the panel is put back.
+      const measure = async () => {
       const before = ctx.memo.get("S04:before-click");
       const m = await ctx.inPage((qa) => {
         const inspector = qa.one("[data-qa=selection-inspector]");
@@ -182,6 +183,8 @@ export const GAP_CHECKS = [
       m.tabsBefore = before ? "recorded" : null;
       if (!m.inspector) return missingHook(HOOKS.inspector, "tab count unchanged (4) and the inspector above the tab strip / at the half detent", m);
       return result(m.tabsAfter === 4 && (ctx.viewport === "P" || m.inspectorAboveTabs), m, "tab count 4 and inspector placement");
+      };
+      return ctx.viewport === "D" ? withPanelOpen(ctx, null, measure) : measure();
     },
   }),
   defineCheck("GAP-10", {

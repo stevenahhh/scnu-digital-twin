@@ -71,6 +71,7 @@ export async function restoreCamera(ctx, saved) {
 
 export async function withPanelOpen(ctx, tab, measure) {
   const before = await ctx.inPage((qa) => qa.all("[data-qa^=dashboard-tab-]").find((el) => el.getAttribute("aria-selected") === "true")?.getAttribute("data-qa")?.replace("dashboard-tab-", "") ?? null);
+  const startDetent = ctx.viewport === "P" ? await ctx.inPage((qa) => qa.one("[data-qa=dashboard-panel]")?.getAttribute("data-detent") ?? null) : null;
   const actions = await openPanelSection(ctx, tab);
   if (actions.length > 0 && ctx.refreshImage) await ctx.refreshImage();
   try {
@@ -80,7 +81,11 @@ export async function withPanelOpen(ctx, tab, measure) {
       await ctx.b.tap(`[data-qa=dashboard-tab-${before}]`);
       await ctx.sleep(600);
     }
-    if (actions.includes("패널 열기") && await ctx.b.center('[aria-label="패널 닫기"]')) {
+    // Desktop: close what 패널 열기 opened. Phone: put the sheet back to the detent it was found at (패널 닫기 lowers it
+    // to peek; raising it with the handle is undone the same way), so later replay states keep the map they expect.
+    const nowDetent = ctx.viewport === "P" ? await ctx.inPage((qa) => qa.one("[data-qa=dashboard-panel]")?.getAttribute("data-detent") ?? null) : null;
+    const reopenedSheet = ctx.viewport === "P" && startDetent === "peek" && nowDetent !== "peek";
+    if ((actions.includes("패널 열기") || reopenedSheet) && await ctx.b.center('[aria-label="패널 닫기"]')) {
       await ctx.b.tap('[aria-label="패널 닫기"]');
       await ctx.sleep(900);
     }

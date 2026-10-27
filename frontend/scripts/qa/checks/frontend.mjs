@@ -545,7 +545,7 @@ export const FRONTEND_CHECKS = [
   defineCheck("V-F-47", {
     states: ["S01"], viewports: D, mutates: true,
     async run(ctx) {
-      const opened = await openPanelSection(ctx);
+      return withPanelOpen(ctx, "dashboard", async (opened) => {
       const m = await ctx.inPage((qa) => {
         const alert = qa.one("[data-qa=weather-error-banner]") ?? qa.one("[data-qa=weather-status]");
         const cards = qa.all("[data-qa=dashboard-panel] .grid > *").filter(qa.visible);
@@ -559,6 +559,7 @@ export const FRONTEND_CHECKS = [
       const microRetry = /다시 시도/.test(readSrc("panel/SelectionInspector.jsx"));
       const placed = m.alertToFirstCardPx != null && m.alertToFirstCardPx >= 0 && m.alertToFirstCardPx <= 16;
       return result(placed && microRetry && reloads === 0, { ...m, microclimateRetry: microRetry, reloadCalls: reloads, opened }, "alert within 16 px above the failed group; every error has a retry; 0 reload calls");
+      });
     },
   }),
   defineCheck("V-F-48", {

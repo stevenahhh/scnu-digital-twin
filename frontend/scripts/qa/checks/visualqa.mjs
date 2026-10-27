@@ -503,10 +503,11 @@ export const VISUALQA_CHECKS = [
   defineCheck("V-Q-27", {
     states: ["S01"], viewports: DP, mutates: true,
     async run(ctx) {
-      await openPanelSection(ctx);
+      return withPanelOpen(ctx, "dashboard", async () => {
       const cards = await degradedCards(ctx);
       const bad = cards.filter((c) => c.bareDash || !c.action);
       return result(cards.length > 0 && bad.length === 0, { degradedCards: cards.length, withoutExplanationOrAction: bad.slice(0, 5) }, "each degraded card shows an explanation and a next-action control");
+      });
     },
   }),
   defineCheck("V-Q-28", {
@@ -527,7 +528,7 @@ export const VISUALQA_CHECKS = [
         return result(before && after && before.tab != null && before.tab === after.tab && energy <= 1, { tabBefore: before?.tab ?? null, tabAfter: after?.tab ?? null, energyCauseMessages: energy }, "no tab change without a user action; energy cause reported once");
       }
       // The weather failure must sit next to the weather cards (within 16 px above them): open the section first.
-      await openPanelSection(ctx);
+      return withPanelOpen(ctx, "dashboard", async () => {
       const m = await ctx.inPage((qa) => {
         const failure = qa.one("[data-qa=weather-error-banner]") ?? qa.all("[role=alert]").find((el) => qa.visible(el) && /기상/.test(qa.txt(el)));
         // The card is the innermost element whose text starts with 현재 기온 (its ancestors - the list, the section - start with
@@ -539,6 +540,7 @@ export const VISUALQA_CHECKS = [
       const gap = m.failure && m.weatherCards ? Math.round(m.weatherCards.y - (m.failure.y + m.failure.h)) : null;
       const adjacent = !m.failure || (gap != null && gap >= 0 && gap <= 16);
       return result(adjacent, { ...m, gapAboveWeatherCards: gap }, "failure adjacent to its cards");
+      });
     },
   }),
   defineCheck("V-Q-29", {
