@@ -200,3 +200,22 @@ test("a plaza link whose walkable route exists but is a long detour around a bui
   assert.equal(g.edges.length, 0);
   assert.ok(out.stats.plazaLinks[0].dropped && out.stats.plazaLinks[0].detour_m > 60, JSON.stringify(out.stats.plazaLinks));
 });
+
+test("a plaza link to a crossing goes round a pool (water passed as a block), never across it", () => {
+  // kerb road strip x 20..24 before the crossing; a pool on the straight line (x 8..14, y -3..3)
+  const roadPolygons = [{ class: "road", rings: [rect(20, -300, 24, 300)] }];
+  const pool = { rings: [rect(8, -3, 14, 3)] };
+  const g = graphWith(
+    [
+      { id: "EDGE_PLAZA_PAVEDCOURT_0001_1", from: "P", to: "C", kind: "sidewalk", estimated: true, points: [[0, 0], [26, 0]] },
+      { id: "EDGE_SW", from: "C", to: "Q", kind: "sidewalk", estimated: false, points: [[26, 0], [40, 0]] },
+    ],
+    [["P", [0, 0], "plaza"], ["C", [26, 0], "crossing_end"], ["Q", [40, 0], "poi"]],
+  );
+  buildWalkways({ graph: g, walkable: [], roadPolygons, buildings: [pool], warn: quiet });
+  const e = g.edges.find((x) => x.id === "EDGE_PLAZA_PAVEDCOURT_0001_1");
+  const classify = surfaceClassifier({ walkable: [], roadPolygons, buildings: [pool] });
+  assert.ok(e, "kept");
+  assert.ok(e.points.length >= 3 && e.points.length <= 4, `1-2 bends: ${JSON.stringify(e.points)}`);
+  assert.ok(sampleLine(e.points, 0.2).every((q) => classify(q) !== CLS.BUILDING), "never in the pool");
+});
