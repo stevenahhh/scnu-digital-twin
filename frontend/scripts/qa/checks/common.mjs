@@ -195,6 +195,11 @@ export async function modelEdgeStep(ctx) {
   const corners = raw.split(";").map((p) => p.split(",").map(Number));
   const region = await sceneRegion(ctx);
   const huds = (await hudRects(ctx)).map((h) => h.rect);
+  // Label overlays (chips, anchor dots, leader lines) are DOM drawn over the scene, not the scene's model edge: a sample
+  // that lands on a white anchor dot reads a ~0.9 step on any base. They are skipped like the HUD.
+  const overlays = await ctx.inPage((qa) => qa.all("[data-qa=campus-label-layer] button, [data-qa=campus-label-layer] svg, [data-qa=zone-label], [data-qa=label-anchor-dot]")
+    .filter(qa.visible).map((el) => { const r = el.getBoundingClientRect(); return { l: r.left - 4, t: r.top - 4, r: r.right + 4, b: r.bottom + 4 }; }));
+  huds.push(...overlays);
   const img = ctx.image();
   const cx = corners.reduce((a, p) => a + p[0], 0) / corners.length;
   const cy = corners.reduce((a, p) => a + p[1], 0) / corners.length;
