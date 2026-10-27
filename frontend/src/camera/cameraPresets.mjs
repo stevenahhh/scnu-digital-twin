@@ -28,7 +28,8 @@ export const CAMERA_PRESETS = Object.freeze([
     description: "정문에서 캠퍼스 안쪽을 바라보는 시점",
     fromGround: true,
     position: [240, 38, 15],
-    target: [134, 4, -10],
+    // 목표점은 정문에서 도서관 쪽으로 약 150 units 들어간 중심축 위: 세로 폰 화면에서도 먼 도서관이 HUD 아래에 든다(GAP-37).
+    target: [100, 4, -38],
   },
   {
     id: D4_PRESET_ID,
