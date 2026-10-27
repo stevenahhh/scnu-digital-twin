@@ -1,5 +1,6 @@
 import { createPortal } from "react-dom";
 import { Button } from "../ui/Button.jsx";
+import { CAMERA_PRESETS, D4_CAMERA_OFFSET, OVERVIEW_PRESET_ID } from "../camera/cameraPresets.mjs";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { MapPin, X } from "lucide-react";
 import { createBuildingCameraController } from "./cameraFocus.mjs";
@@ -31,6 +32,8 @@ import { createVWorldTrafficSimulation } from "./trafficSimulationOverlay.mjs";
 import { Alert } from "../ui/Alert.jsx";
 import { Spinner } from "../ui/Spinner.jsx";
 import { StatusBadge } from "../ui/StatusBadge.jsx";
+
+const OVERVIEW_PRESET = CAMERA_PRESETS.find((preset) => preset.id === OVERVIEW_PRESET_ID);
 
 // 교통 시뮬레이션 연결 상태 문구(frontend/AGENTS.md 공용 어휘). 모르는 상태는 끊김으로 본다.
 const TRAFFIC_STATUS = {
@@ -214,12 +217,19 @@ export default function VWorldRenderer({
     const target = createVWorldLabelProjector({ ...labelScene, getModelMatrix: getLabelModelMatrix }).lonLatOf(position);
     if (target) cameraControllerRef.current?.focus(target);
   }, [getLabelModelMatrix, labelScene]);
-  // 칩을 누르면 SDK 건물을 누른 것과 같은 선택(요소 id·건물 코드·이름)을 보내고 카메라를 그 건물로 옮긴다.
+  // 캠퍼스 카메라(Legacy 시점을 VWorld로 옮긴 것). 오버레이·GLB가 준비되면 아래 효과가 채운다.
+  const campusCameraRef = useRef(null);
+  // 칩·검색으로 고르면 SDK 건물을 누른 것과 같은 선택(요소 id·건물 코드·이름)을 보내고, Legacy처럼 그 건물을 가까이 보는
+  // 시점(건물 경계 상자 + D4 시점과 같은 거리)으로 날아간다. 캠퍼스 카메라 전에는 지도 가운데만 그 자리로 옮긴다.
   const handleLabelSelect = useCallback((entry) => {
     const elementId = entry.dataElementId ?? entry.elementId;
     onSelectionRef.current({ elementId, buildingId: elementId.replace(/^BLD_/, ""), displayName: entry.displayName });
     setSelectedLabelId(entry.elementId);
-    focusLabelPosition(entry.position);
+    const flown = campusCameraRef.current?.flyTo(
+      { id: `building:${entry.elementId}`, focus: [entry.elementId], offset: D4_CAMERA_OFFSET, position: OVERVIEW_PRESET.position, target: OVERVIEW_PRESET.target },
+      { reducedMotion: globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false },
+    );
+    if (!flown) focusLabelPosition(entry.position);
   }, [focusLabelPosition]);
   const handleLabelCluster = useCallback((members) => focusLabelPosition(centroidOf(members)), [focusLabelPosition]);
   const defaultChromeRefs = useRef([leftStackRef, bottomStackRef]).current;
@@ -229,8 +239,12 @@ export default function VWorldRenderer({
     if (!labelScene || !campusGlb) return undefined;
     const elementNames = new Map(commonElements.elements.map(({ element_id: id, name }) => [id, name]));
     const center = campusCenterOf(glbLabelAnchors(campusGlb, { elementNames }));
-    onCampusCameraRef.current?.(createVWorldCampusCamera({ ...labelScene, getModelMatrix: getLabelModelMatrix, boxes: glbNodeBoxes(campusGlb), center }));
-    return () => onCampusCameraRef.current?.(null);
+    campusCameraRef.current = createVWorldCampusCamera({ ...labelScene, getModelMatrix: getLabelModelMatrix, boxes: glbNodeBoxes(campusGlb), center });
+    onCampusCameraRef.current?.(campusCameraRef.current);
+    return () => {
+      campusCameraRef.current = null;
+      onCampusCameraRef.current?.(null);
+    };
   }, [campusGlb, getLabelModelMatrix, labelScene]);
 
   // 선택·호버 강조(오버레이 전체 흐리게 + 고른 건물 강조색 상자, 올린 건물 호버 색 상자). 오버레이 GLB 노드를 집어 호버를 안다.
