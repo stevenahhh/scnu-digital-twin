@@ -6,7 +6,8 @@ import { sceneToModelLocal } from "./labelProjection.mjs";
 // 겹친다. SDK 모델에는 건물별 재질이 없어(feature id 없음) 상자를 덧그린다. 상자는 오버레이 modelMatrix를 그대로 쓴다.
 export const SELECTION_FILL_ALPHA = 0.5;
 export const HOVER_FILL_ALPHA = 0.24;
-// Cesium 1.99 Model.color(MODULATE)는 화면 값에 곱한다(Legacy의 dimLinearChannel과 같은 결과).
+// Cesium Model.color를 ColorBlendMode.HIGHLIGHT로 두면 모델 색에 곱한다(Legacy의 dimLinearChannel과 같은 결과).
+// Cesium에는 HIGHLIGHT·REPLACE·MIX만 있다: 없는 이름(MODULATE)을 쓰면 undefined가 들어가 모델 전체가 검게 그려졌다.
 export const DIM_MODULATE = 1 - DIM_ALPHA;
 
 function boxPrimitive(Cesium, matrix, [min, max], hex, alpha) {
@@ -43,7 +44,7 @@ export function createVWorldSelectionHighlight({ Cesium, scene, getModel, getMod
     if (next === key) return;
     key = next;
     if (model) {
-      model.colorBlendMode = Cesium.ColorBlendMode.MODULATE;
+      model.colorBlendMode = Cesium.ColorBlendMode.HIGHLIGHT;
       model.color = selectedId ? new Cesium.Color(DIM_MODULATE, DIM_MODULATE, DIM_MODULATE, 1) : Cesium.Color.WHITE;
     }
     clear();

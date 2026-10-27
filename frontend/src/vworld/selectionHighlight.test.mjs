@@ -8,7 +8,8 @@ function fakeCesium() {
   Color.fromCssColorString = (hex) => Object.assign(new Color(0, 0, 0, 1), { hex });
   class Cartesian3 { constructor(x, y, z) { Object.assign(this, { x, y, z }); } }
   return {
-    Color, Cartesian3, ColorBlendMode: { MODULATE: "modulate" },
+    // Cesium의 실제 열거값(HIGHLIGHT·REPLACE·MIX)만 둔다: 없는 이름을 쓰면 undefined가 되어 아래 검사가 실패한다.
+    Color, Cartesian3, ColorBlendMode: Object.freeze({ HIGHLIGHT: 0, REPLACE: 1, MIX: 2 }),
     Matrix4: class { static multiply(a, b) { return { a, b }; } static fromTranslation(t) { return { t }; } },
     Primitive: class { constructor(o) { this.options = o; } },
     GeometryInstance: class { constructor(o) { Object.assign(this, o); } },
@@ -30,7 +31,7 @@ function setup({ matrix = "m" } = {}) {
 test("a selection dims the whole overlay by DIM_ALPHA and boxes the selected building in the accent", () => {
   const { highlight, added, model } = setup();
   highlight.set({ selectedId: "BLD_C1" });
-  assert.equal(model.colorBlendMode, "modulate");
+  assert.equal(model.colorBlendMode, 0);
   assert.equal(model.color.r, DIM_MODULATE);
   assert.equal(added.length, 1);
   const box = added[0].options.geometryInstances;
