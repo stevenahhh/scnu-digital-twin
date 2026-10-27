@@ -79,9 +79,16 @@ export default function App() {
     } else clearPopup();
   }, [clearPopup, loadPopup, revealOnPhone, selectBuilding]);
   // 공유 링크: 건물·장면 시각·패널·탭(VWorld 카메라는 SDK가 가져 주소에 담지 않는다).
+  // 공유 링크의 카메라: 캠퍼스 카메라가 준비되기 전에는 없음(주소의 시점은 준비될 때까지 다시 시도해 놓는다).
+  const campusCameraRef = useRef(null);
+  campusCameraRef.current = campusCamera;
+  const cameraPose = useMemo(() => ({
+    get: () => campusCameraRef.current?.poseOf() ?? null,
+    apply: (pose) => campusCameraRef.current?.applyPose(pose) ?? false,
+  }), []);
   useDashboardUrlState({
     building: selection.selectedId, onBuilding: (id) => handleVWorldSelection(urlSelectionTarget(id)),
-    clock, panelState, activeTab, setActiveTab,
+    clock, panelState, activeTab, setActiveTab, cameraPose,
   });
   const closeMicroclimatePopup = useCallback(() => {
     clearSelection();

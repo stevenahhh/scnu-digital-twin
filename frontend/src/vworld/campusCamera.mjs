@@ -93,7 +93,29 @@ export function createVWorldCampusCamera({ Cesium, scene, getModelMatrix, boxes,
     return true;
   };
 
-  return { viewOf, flyTo, zoomBy, rotateBy };
+  // 지구 고정 좌표 -> Legacy 장면 좌표(toWorld의 역). 공유 링크의 cam=이 두 대시보드에서 같은 뜻이 된다.
+  const toScene = (world, matrix) => {
+    const inverse = Cesium.Matrix4.inverse(matrix, new Cesium.Matrix4());
+    const local = Cesium.Matrix4.multiplyByPoint(inverse, world, new Cesium.Cartesian3());
+    return [local.y - center.x, local.z, local.x - center.z];
+  };
+  // 지금 시점(Legacy 장면 좌표의 카메라 위치와 화면 가운데 지표점). 오버레이 전이나 가운데에 땅이 없으면 null.
+  const poseOf = () => {
+    const matrix = getModelMatrix();
+    const pivot = matrix ? viewCenter() : null;
+    if (!pivot) return null;
+    return { position: toScene(scene.camera.positionWC, matrix), target: toScene(pivot, matrix) };
+  };
+  // 공유 링크의 시점을 비행 없이 놓는다. 오버레이 전이면 false(호출하는 쪽이 다시 시도한다).
+  const applyPose = (pose) => {
+    const view = viewOf({ id: "url", position: pose.position, target: pose.target });
+    if (!view) return false;
+    scene.camera.setView(view);
+    scene.requestRender?.();
+    return true;
+  };
+
+  return { viewOf, flyTo, zoomBy, rotateBy, poseOf, applyPose };
 }
 
 // Rodrigues: v rotated by angle (radians) about the unit axis.

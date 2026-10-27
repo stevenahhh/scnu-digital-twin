@@ -95,3 +95,29 @@ test("camera buttons zoom toward the ground point at the view centre and orbit i
   scene.camera.pickEllipsoid = () => null;
   assert.equal(camera.zoomBy(0.8), false);
 });
+
+test("the shared-link pose is written and read back in the Legacy scene frame", () => {
+  const Cesium = fakeCesium();
+  Cesium.Cartesian2 = class { constructor(x, y) { Object.assign(this, { x, y }); } };
+  // Cesium's Matrix4 is a class with static helpers; the identity model matrix is its own inverse.
+  Cesium.Matrix4 = Object.assign(function Matrix4() {}, Cesium.Matrix4, { inverse: (m) => m });
+  let placed = null;
+  const scene = {
+    canvas: { clientWidth: 800, clientHeight: 600 },
+    globe: { pick: () => null },
+    requestRender: () => {},
+    camera: { getPickRay: () => ({}), setView: (view) => { placed = view; } },
+  };
+  const camera = createVWorldCampusCamera({ Cesium, scene, getModelMatrix: () => "m", boxes, center });
+  const pose = { position: [12, 80, 40], target: [2, 0, -6] };
+  assert.equal(camera.applyPose(pose), true);
+  // The camera now sits where the pose put it; the ground point under the view centre is the pose's target.
+  scene.camera.positionWC = placed.destination;
+  const [tx, ty, tz] = pose.target;
+  scene.globe.pick = () => new Cesium.Cartesian3(tz + center.z, tx + center.x, ty);
+  assert.deepEqual(camera.poseOf(), pose);
+  // Before the overlay has a model matrix there is no pose to share or place.
+  const early = createVWorldCampusCamera({ Cesium, scene, getModelMatrix: () => null, boxes, center });
+  assert.equal(early.poseOf(), null);
+  assert.equal(early.applyPose(pose), false);
+});
