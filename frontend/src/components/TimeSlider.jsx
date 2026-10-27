@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Check, ChevronDown, ChevronUp, Clock3, Pause, Play } from "lucide-react";
-import { Button } from "../ui/Button.jsx";
+import { Button, FOCUS_RING } from "../ui/Button.jsx";
 import { StatusBadge } from "../ui/StatusBadge.jsx";
 import { cx } from "../ui/cx.mjs";
 import {
@@ -26,6 +26,8 @@ const CHIP = cx(
 const FIELD = cx(
   "min-h-8 rounded-control border border-hairline-strong bg-surface-1 px-2 text-caption tabular-nums text-ink",
   "[@media(pointer:coarse)]:min-h-11 aria-[invalid=true]:border-danger",
+  // 키보드로 날짜·시각 칸에 들어오면 다른 조작과 같은 포커스 테두리(V-F-36).
+  FOCUS_RING,
 );
 const HEADING = "flex min-w-0 items-center gap-1.5 text-caption font-medium text-ink-muted";
 const ICON = "h-3.5 w-3.5";
