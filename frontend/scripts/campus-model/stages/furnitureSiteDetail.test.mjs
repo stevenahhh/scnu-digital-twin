@@ -101,3 +101,12 @@ test("paving_path: every leg a slab height_m above the ground, width_m wide", ()
   near(Math.min(...xs), -0.5, "half a width past the first end");
   assert.throws(() => B.paving_path(ctx, { id: "SD-T8", kind: "paving_path", point: [0, 0], p: {} }), /needs a LineString/);
 });
+
+test("planter tones: patchy cells over the fill, worn beside a named paving_path, refused for another kind", () => {
+  const ring = [[0, 0], [M(6), 0], [M(6), M(6)], [0, M(6)]];
+  const bed = (objects, p) => { const ctx = flatContext(); ctx.objects = objects; B.planter(ctx, { id: "SD-T9", kind: "planter", heightM: 0.15, ring, p: { dims: { kerbHeightM: 0.15 }, fill: "lawn", ...p } }); return ctx.solid.triangleCount; };
+  const plain = bed([], {});
+  const path = { id: "SD-TP", kind: "paving_path", line: [[0, M(3)], [M(6), M(3)]] };
+  assert.ok(bed([path], { tones: ["#706b3f", "#a9a579"], wear_paths: ["SD-TP"], wear_tone: "#8a7d5e" }) >= plain + 2 * 9, "at least nine 1.2 m cells");
+  assert.throws(() => bed([{ ...path, kind: "hedge" }], { tones: ["#706b3f"], wear_paths: ["SD-TP"], wear_tone: "#8a7d5e" }), /is not a paving_path/);
+});
