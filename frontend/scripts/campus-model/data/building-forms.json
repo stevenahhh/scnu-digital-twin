@@ -20359,7 +20359,9 @@
      "areaSquareMetres": 23.5,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 0.79
+     "photoSupport": 0.79,
+     "look": "A1-glass",
+     "lookSource": "curated (facades-flags 2026-10-27): VR scene_a4 l, the west-end core of the main block is a light-blue glass stair tower (estimated)"
     },
     {
      "outer": [
@@ -20555,7 +20557,9 @@
      "areaSquareMetres": 10.7,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 0.01
+     "photoSupport": 0.01,
+     "look": "A1-orange",
+     "lookSource": "curated (facades-flags 2026-10-27): VR scene_a4 l (cols 1515-1700, bearings 73-78 deg = this 7.9 m x 1.35 m projection of the south face): the orange frame round an inset balcony stack over the yellow podium and the glazed band (estimated)"
     },
     {
      "outer": [
@@ -36040,7 +36044,9 @@
      "roof": "flat",
      "areaSquareMetres": 135.1,
      "parapetMetres": 2.16,
-     "photoSupport": 0.32
+     "photoSupport": 0.32,
+     "look": "F1-curtain",
+     "lookSource": "curated (facades-flags 2026-10-27): VR scene_f1 f (cols 1410-2048, bearings 277-297 deg = this two-storey strip along the right block's east face): blue glass curtain wall; the LED screen on it is the site-detail lane's (estimated)"
     },
     {
      "outer": [
@@ -36099,7 +36105,9 @@
      "areaSquareMetres": 90,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 1
+     "photoSupport": 1,
+     "look": "F1-tower",
+     "lookSource": "curated (facades-flags 2026-10-27): VR scene_f1 f (cols 673-848, bearings 234-243 deg = cores 7 and 11 from the station): the tall tower behind the forecourt wing is blue-silver glass, not white panel (estimated)"
     },
     {
      "outer": [
@@ -36901,7 +36909,9 @@
        ]
       ]
      ],
-     "photoSupport": 1
+     "photoSupport": 1,
+     "look": "F1-tower",
+     "lookSource": "curated (facades-flags 2026-10-27): VR scene_f1 f (cols 673-848, bearings 234-243 deg = cores 7 and 11 from the station): the tall tower behind the forecourt wing is blue-silver glass, not white panel (estimated)"
     },
     {
      "outer": [
