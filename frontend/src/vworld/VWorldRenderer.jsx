@@ -222,9 +222,16 @@ export default function VWorldRenderer({
   }, [getLabelModelMatrix, labelScene]);
   // 캠퍼스 카메라(Legacy 시점을 VWorld로 옮긴 것). 오버레이·GLB가 준비되면 아래 효과가 채운다.
   const campusCameraRef = useRef(null);
-  // 칩·검색으로 고르면 SDK 건물을 누른 것과 같은 선택(요소 id·건물 코드·이름)을 보내고, Legacy처럼 그 건물을 가까이 보는
-  // 시점(건물 경계 상자 + D4 시점과 같은 거리)으로 날아간다. 캠퍼스 카메라 전에는 지도 가운데만 그 자리로 옮긴다.
+  // 칩으로 고르면 SDK 건물을 누른 것과 같은 선택(요소 id·건물 코드·이름)을 보내고 지도 가운데를 그 건물로 옮긴다(Legacy 칩과 같다).
   const handleLabelSelect = useCallback((entry) => {
+    const elementId = entry.dataElementId ?? entry.elementId;
+    onSelectionRef.current({ elementId, buildingId: elementId.replace(/^BLD_/, ""), displayName: entry.displayName });
+    setSelectedLabelId(entry.elementId);
+    focusLabelPosition(entry.position);
+  }, [focusLabelPosition]);
+  // 검색으로 고르면 Legacy(camera.flyToBuilding)처럼 그 건물을 가까이 보는 시점(건물 경계 상자 + D4 시점과 같은 거리)으로
+  // 날아간다. 캠퍼스 카메라 전에는 칩과 같이 지도 가운데만 옮긴다.
+  const handleSearchPick = useCallback((entry) => {
     const elementId = entry.dataElementId ?? entry.elementId;
     onSelectionRef.current({ elementId, buildingId: elementId.replace(/^BLD_/, ""), displayName: entry.displayName });
     setSelectedLabelId(entry.elementId);
@@ -520,7 +527,7 @@ export default function VWorldRenderer({
               data-label-chrome-layer=""
               className="pointer-events-none absolute left-4 top-[4.5rem] z-20 flex max-w-[calc(100%-2rem)] flex-col items-start gap-3"
             >
-              {labelEntries && <SearchField registry={labelEntries} onPick={handleLabelSelect} />}
+              {labelEntries && <SearchField registry={labelEntries} onPick={handleSearchPick} />}
               {isLoading && !hasLoadError && (
                 <Spinner
                   delayMs={0}
