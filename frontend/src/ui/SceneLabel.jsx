@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Check } from "lucide-react";
 import { StatusBadge } from "./StatusBadge.jsx";
 import { cx } from "./cx.mjs";
 
@@ -7,8 +8,8 @@ export const SCENE_LABEL_STATES = ["idle", "hover", "focus", "selected", "dimmed
 // 글자 크기: 데스크톱 12px(--text-caption). 640px 미만에서는 같은 토큰의 폰 단계(15px)로 커지고,
 // 640px 이상이지만 굵은 포인터(터치)면 14px(--text-body 데스크톱 단계)로 올린다. transform으로 줄이지 않는다.
 export const LABEL_TEXT = "text-caption [@media(pointer:coarse)_and_(min-width:640px)]:text-body";
-// 버튼(누르는 영역)은 포인터 32px, 굵은 포인터·폰 44px. 보이는 칩과 글자는 그대로이고 투명한 영역만 커진다.
-export const LABEL_HIT = "min-h-8 [@media(pointer:coarse)]:min-h-11 max-[639px]:min-h-11";
+// 버튼(누르는 영역)은 포인터 40x40px, 굵은 포인터·폰 44px. 보이는 칩과 글자는 그대로이고 투명한 영역만 커진다.
+export const LABEL_HIT = "min-h-10 min-w-10 [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:min-w-11 max-[639px]:min-h-11 max-[639px]:min-w-11";
 
 // 선택: 강조색 테두리와 강조색 글자. 글자는 강조색을 ink 쪽으로 섞어 두 테마 모두 4.5:1을 넘긴다.
 const SELECTED_INK = "text-[color:color-mix(in_srgb,var(--colors-primary)_75%,var(--colors-ink))]";
@@ -96,6 +97,8 @@ export function SceneLabel({
         )}
       >
         <StateDot state={state} />
+        {/* 선택: 강조색 테두리와 함께 체크 표시(선택 상태는 색만으로 알리지 않는다). */}
+        {state === "selected" && <Check aria-hidden="true" data-qa="label-selected-glyph" className="h-3 w-3 shrink-0" />}
         {code && <StatusBadge tone="neutral">{code}</StatusBadge>}
         {estimatedName && (
           <span aria-hidden="true" data-qa="label-estimated-glyph" className="shrink-0 text-ink-muted">
