@@ -770,6 +770,15 @@ The leftovers of the second pass, all estimated (추정):
   false` keeps the trees stage from edging it with a clipped hedge (its shrubs stand loose; a low stone kerb only).
 - SD-F1-LED1, the LED wall, is one neutral emissive field (#5d6b7a). The VR shows an image there; no imagery is copied.
 
+## Planter kerbs on uneven ground (planter-kerb-notch)
+
+- A rest-space planter's kerb rings now carry a vertex every 0.5 m (`densifyRing`) and its bed is drawn on a 0.5 m
+  grid (`gridBed`: the inner ring clipped to each square, every vertex at the ground there). The old kerb and bed
+  spanned the survey's corners, up to 99.6 cm of ground change between neighbouring vertices (SD-B3-K1; the F1 island
+  37.2 cm), so the paving could stand above the bed or kerb between them; now at most 7.9 cm.
+- The inner kerb walls face the bed by each edge's own inward side; facing the ring's centroid turned walls away on
+  concave rings (RS0018, RS0018A, SD-E6-03), so they were culled and left gaps in the kerb.
+
 ## Licence
 
 Source: **국토지리정보원 (NGII), 정사영상 2025, sheet 34702020 (순천020)**, metadata 202504000734702020, made by
