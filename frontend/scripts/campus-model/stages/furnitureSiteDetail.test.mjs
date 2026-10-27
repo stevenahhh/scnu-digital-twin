@@ -3,7 +3,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { metres } from "../lib/frame.mjs";
-import { B, hedgeTextStrokes, makeContext, stallRow } from "./furniture.mjs";
+import { rgb } from "../lib/solids.mjs";
+import { B, hedgeTextStrokes, makeContext, parasolColour, stallRow } from "./furniture.mjs";
 
 const M = metres;
 const sites = { inArea: () => false, labelAt: () => null, classes: { PAVING: 1, ASPHALT: 2 } };
@@ -65,4 +66,21 @@ test("hedge lettering: one stroke set per character, tops to the left of the bas
   assert.equal(sc.screens.length, 1);
   near(Math.max(...sc.screens[0].corners.map((c) => c[1] / M(1))), 5, "screen top");
   near(sc.screens[0].corners[0][2] / M(1), 0.15, "screen stands 0.15 m in front of the wall (south of an eastward line)");
+});
+
+test("parasol colour: a hex or a colour word of the note, white otherwise; an instance colour wins", () => {
+  assert.deepEqual(parasolColour("red cafe parasol"), rgb("#c0392b"));
+  assert.deepEqual(parasolColour("blue parasol in the courtyard"), rgb("#3063a7"));
+  assert.deepEqual(parasolColour("parasol #123456 striped"), rgb("#123456"));
+  assert.deepEqual(parasolColour("white cafe parasol"), rgb("#efefeb"));
+  assert.deepEqual(parasolColour("a bored parasol"), rgb("#efefeb"), "colour words match whole words only");
+  const ring = [[0, 0], [M(2), 0], [M(2), M(2)], [0, M(2)]];
+  const ctx = flatContext();
+  B.plaza_structure(ctx, { id: "SD-T5", kind: "plaza_structure", subtype: "parasol", heightM: 2.4, ring, footprint: ring, p: { note: "parasol", colour: "#c0392b" } });
+  assert.ok(ctx.solid.mesh.colors.some((_, i, a) => i % 4 === 0 && a[i] === rgb("#c0392b")[0] && a[i + 1] === rgb("#c0392b")[1]), "the canopy takes the instance colour");
+});
+
+test("hedge lettering in Latin capitals", () => {
+  const strokes = hedgeTextStrokes(line(10), "SSC", { heightM: 2, widthM: 1.6, gapM: 0.3 });
+  assert.equal(strokes.length, 3);
 });

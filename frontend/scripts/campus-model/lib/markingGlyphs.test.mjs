@@ -12,11 +12,20 @@ const bounds = (polys) => {
 
 test("every syllable of the read road texts composes from its jamo", () => {
   for (const char of "국립순천대학교환영합니다안녕히가세요주차금지서행천천히경 0123456789") assert.ok(hasGlyph(char), char);
-  assert.equal(hasGlyph("A"), false);
+  assert.equal(hasGlyph("a"), false);
   // a syllable fills its box: width across, height along travel
   const b = bounds(glyph("환", 1, 2.5));
   assert.ok(b.x1 - b.x0 > 0.75 && b.x1 - b.x0 < 1.15, `width ${b.x1 - b.x0}`);
   assert.ok(b.y1 - b.y0 > 2.2 && b.y1 - b.y0 < 2.7, `height ${b.y1 - b.y0}`);
+});
+
+test("Latin capitals A-Z compose and fill their box", () => {
+  for (const char of "ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
+    assert.ok(hasGlyph(char), char);
+    const b = bounds(glyph(char, 1, 2));
+    assert.ok(b.x1 - b.x0 > 0.3 && b.x1 - b.x0 < 1.2, `${char} width ${b.x1 - b.x0}`);
+    assert.ok(b.y1 - b.y0 > 1.7 && b.y1 - b.y0 < 2.2, `${char} height ${b.y1 - b.y0}`);
+  }
 });
 
 test("a text block reads for the approaching driver: first line farthest (+y), syllables stretched along travel", () => {
