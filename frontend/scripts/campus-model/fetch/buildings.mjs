@@ -13,7 +13,7 @@
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { EXTENT, METRES_PER_DEGREE_LAT, METRES_PER_DEGREE_LON, geoToModel } from "../lib/frame.mjs";
+import { METRES_PER_DEGREE_LAT, METRES_PER_DEGREE_LON } from "../lib/frame.mjs";
 import { pointInRing } from "../lib/geometry.mjs";
 import { BBOX, CACHE, DATA, TIMEOUT_MS, USER_AGENT } from "./common.mjs";
 import { applyScnuNames, readScnuNames } from "./scnuNames.mjs";
@@ -21,6 +21,8 @@ import { applyScnuNames, readScnuNames } from "./scnuNames.mjs";
 const GIS_HELPER = path.join(path.dirname(fileURLToPath(import.meta.url)), "gis_buildings.py");
 const GIS_DIR = path.join(CACHE, "gis");
 const GIS_NAME = "GIS건물통합정보";
+const SITE_MIN_M2 = 30;
+const SITE_OUTLINE_M2 = 5000;
 
 const OSM_URL = `https://api.openstreetmap.org/api/0.6/map.json?bbox=${BBOX.west},${BBOX.south},${BBOX.east},${BBOX.north}`;
 const REGISTRY_URL = "https://w1.scnu.ac.kr/SCNU/campus/list.do";
@@ -114,8 +116,9 @@ export async function fetchBuildings() {
 
   const kept = [];
   for (const { element, polygons } of candidates) {
-    const [x, z] = geoToModel(...polygons[0][0][0]);
-    if (x < EXTENT.minX - 30 || x > EXTENT.maxX + 30 || z < EXTENT.minZ - 30 || z > EXTENT.maxZ + 30) continue;
+    // The whole BBOX, as GIS건물통합정보 is clipped: off-campus buildings GIS lacks stand as context masses
+    // (stages/context.mjs) out to the bbox edge, not only near EXTENT.
+    if (!insideBbox(polygons)) continue;
     const tags = element.tags;
     const outer = polygons[0][0];
     const onCampus = outer.every((p) => pointInRing(p, campusRing)) || pointInRing(outer[0], campusRing);
@@ -232,6 +235,9 @@ async function gisBuildings(zip) {
   const osmOnly = osm.buildings
     .filter((b) => insideBbox(b.polygons))
     .filter((b) => b.polygons.every(([outer]) => coveredShare(outer, outers) < 0.3))
+    // An outline of SITE_OUTLINE_M2 or more holding two or more GIS buildings of SITE_MIN_M2 or more is a site tagged building
+    // (school grounds, a temple precinct), not a building: drawn as one mass it would bury the real buildings.
+    .filter((b) => b.areaMetres < SITE_OUTLINE_M2 || gis.filter((g) => g.areaMetres >= SITE_MIN_M2 && b.polygons.some(([outer]) => pointInRing(ringCentre(g.polygons[0][0]), outer))).length < 2)
     .map((b) => ({ ...b, footprintSource: `${b.footprintSource} (not in ${GIS_NAME})` }));
   return sortBuildings([...gis, ...osmOnly]);
 }
