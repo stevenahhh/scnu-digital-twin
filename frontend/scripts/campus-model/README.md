@@ -269,7 +269,9 @@ building cannot. Both are absent by default, and a build without them is byte-id
 
 - `zones`: `{ "base": { "storeys": n, "look": id } }`. The lowest `base.storeys` storeys take the tile of the `base`
   look, which is an ordinary look in the atlas. Examples: A13 웅지관 (white panel over a two-storey orange brick base),
-  A6 창조관 (brick base), B7 산학협력관 (white panel base on pilotis).
+  A6 창조관 (brick base), B7 산학협력관 (white panel base on pilotis). An optional `band`
+  `{ "from": k, "storeys": n, "look": id }` gives storeys k..k+n-1 (0 = ground) another look, over or without a base:
+  A1 대학본부 has an orange-yellow two-storey podium (A1-podium) under a glazed third storey (A1-band).
 - `roofColour`: `#rrggbb`, read in the VR tour. It replaces the orthophoto or OSM-tag roof colour on every roof of the
   look's buildings, for tiled roofs that the photo samples as grey (A9 청운관's orange clay tiles). Extras record it as
   `roofColourSource`.
@@ -486,6 +488,22 @@ Records (2026-10-27, from scene_f1): 순천시문화건강센터 (OSM way/366373
 at another one. `fetch/buildings.mjs` takes OSM footprints of buildings GIS lacks across the whole `BBOX` (it used to stop
 30 units outside `EXTENT`), except outlines of 5,000 m2 or more that hold two or more GIS buildings (school grounds,
 temple precincts tagged `building`).
+
+`looks` entries (matched the same way as `floors`, any record) set a context mass's texture section (`residential`
+punched windows or `commercial` glass band) and its wall tone (`#rrggbb`) where the use class picks the wrong look; a traced
+building may carry the same `contextLook`. Records: the culture centre in light blue glass (VR scene_f1 b), the beige
+office block in VR scene_a12 l (GIS record 67871, 업무시설 but punched windows) and its traced glass stair tower.
+
+### Lattice masts (`data/lattice-masts.json`, `stages/masts.mjs`)
+
+Free-standing telecom masts the VR shows off campus: a square four-leg lattice tapering from `baseWidthMetres` to
+`topWidthMetres`, panels of about 2.5 m with a ring beam and X braces on every face, `bands` alternating obstruction
+colours (odd, so the first colour is at both ends), an antenna platform with six panel antennas at `platformAt` of the
+height and a lightning rod. A mast stands on the roof of the context mass whose outline holds `at` (on a light core block
+`plinthMetres` tall when given), else on the ground.
+One node per mast, `Context_Mast_<id>` (`Context_Far_Mast_<id>` beyond `CONTEXT_REACH`), not selectable. Record: the
+21 m red-and-white mast on a 3 m core block on the KBS 순천방송국 building, placed by intersecting its bearings from
+scene_a19, a17 and b1 and sized from its elevation in a19 and a17, checked on the a17 strip (추정). `stages/masts.test.mjs` checks the data and the mesh.
 
 ### Building forms (`data/building-forms.json`)
 
