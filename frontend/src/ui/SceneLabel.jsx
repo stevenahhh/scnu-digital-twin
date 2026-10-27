@@ -175,7 +175,8 @@ export function ZoneLabel({ name, className }) {
       aria-hidden="true"
       data-qa="zone-label"
       data-tier="0"
-      className={cx("pointer-events-none select-none break-keep text-body font-semibold tracking-wide text-ink-muted", HALO, className)}
+      // 칩과 같은 반투명 바탕(label-bg) 위에 둔다: 밤 장면이나 라이트 테마에서도 글자가 장면 색에 묻히지 않는다(V-F-17).
+      className={cx("pointer-events-none select-none break-keep rounded-control bg-[var(--colors-label-bg)] px-2 py-1 text-body font-semibold tracking-wide text-ink-muted", HALO, className)}
     >
       {name}
     </span>

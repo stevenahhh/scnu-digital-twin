@@ -141,6 +141,8 @@ describe("ZoneLabel", () => {
     expect(zone.getAttribute("aria-hidden")).toBe("true");
     expect(zone.dataset.tier).toBe("0");
     expect(zone.className).toContain("pointer-events-none");
+    // Same translucent plate as the chips, so the name stays readable over a dark night scene.
+    expect(zone.className).toContain("bg-[var(--colors-label-bg)]");
     expect(screen.queryByRole("button")).toBeNull();
   });
 });
