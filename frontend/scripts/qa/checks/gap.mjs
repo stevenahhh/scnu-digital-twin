@@ -325,7 +325,10 @@ export const GAP_CHECKS = [
       await ctx.sleep(500);
       const listed = await ctx.inPage((qa) => qa.all("[role=listbox] [role=option]").filter(qa.visible).map((el) => qa.txt(el)));
       await ctx.b.key("Enter");
-      await ctx.sleep(3000);
+      // The selection flies the camera: read the chip and the frame once the flight has settled (bounded), not after a
+      // fixed delay that a slow renderer may not reach.
+      await ctx.sleep(300);
+      await ctx.b.cameraSettle?.();
       const chip = await chipByText(ctx, "도서관");
       const after = await ctx.screenshot();
       const cameraChange = box && box.w > 0 && box.h > 0 ? Math.round(pixelDiff(before, after, box, ctx.scale) * 1000) / 1000 : null;

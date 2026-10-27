@@ -414,6 +414,8 @@ export const FRONTEND_CHECKS = [
   defineCheck("V-F-36", {
     states: ["S01"], viewports: D, mutates: true,
     async run(ctx) {
+      // Start on a settled page: earlier replay checks may have just moved the camera (chips and controls still moving).
+      await ctx.b.cameraSettle?.();
       await ctx.inPage(() => { document.activeElement?.blur(); return true; });
       const rows = [];
       for (let i = 0; i < 25; i += 1) {
