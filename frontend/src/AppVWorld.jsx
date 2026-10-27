@@ -20,6 +20,7 @@ import { Wordmark } from "./panel/Wordmark";
 import { HudTimeReadout, sceneTimeReadout } from "./components/HudTimeReadout";
 import { HudToolbar } from "./components/HudToolbar";
 import { CameraControls } from "./components/CameraControls";
+import { isD4ElementId } from "./utils/d4BuildingData.mjs";
 import { TourPager } from "./components/CampusHud";
 import { tourPosition } from "./panel/presentationLayout.mjs";
 import { mapLighting } from "./vworld/mapLighting.mjs";
@@ -78,11 +79,12 @@ export default function App() {
   const handleVWorldSelection = useCallback((target) => {
     selectBuilding(target);
     if (target.elementId?.startsWith("BLD_")) {
-      revealOnPhone();
+      // D4는 D4 상세(패인)로 열리므로 Legacy처럼 시트를 올리지 않는다(돌아오면 들어가기 전 높이 그대로).
+      if (!isD4ElementId(target.elementId)) revealOnPhone();
       loadPopup(target.elementId);
     } else clearPopup();
   }, [clearPopup, loadPopup, revealOnPhone, selectBuilding]);
-  // 공유 링크: 건물·장면 시각·패널·탭(VWorld 카메라는 SDK가 가져 주소에 담지 않는다).
+  // 공유 링크: 건물·장면 시각·패널·탭·카메라 시점(아래 cameraPose).
   // 렌더링 품질: Legacy와 같은 설정(같은 저장 값)을 Cesium의 해상도·보정·그림자로 옮긴다. 고른 값이 없으면 높음.
   const rendering = useQualityPreset();
   const qualityTier = rendering.qualitySource ? rendering.quality : VWORLD_DEFAULT_QUALITY;
