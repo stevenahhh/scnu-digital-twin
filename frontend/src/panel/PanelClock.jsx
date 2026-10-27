@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { CalendarDays } from "lucide-react";
 import { formatClock } from "../ui/format.mjs";
 import { formatMinuteOfDay } from "../weather/sceneClock.mjs";
+import { useUpdatedCue } from "../ui/useUpdatedCue.mjs";
 
 // 패널 머리의 시계 둘. 큰 글자는 장면 시각(지도 위 시간 조작과 같은 값), 작은 글자는 라벨을 붙인 현재 시각이다.
 // 현재 시각의 1초 타이머는 이 잎 컴포넌트만 가져서, 매초 다시 그려지는 것이 이 시계뿐이다.
 export function PanelClock({ sceneMinuteOfDay, sceneDate }) {
   const [now, setNow] = useState(() => new Date());
+  const updated = useUpdatedCue(sceneMinuteOfDay);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000);
@@ -14,7 +16,7 @@ export function PanelClock({ sceneMinuteOfDay, sceneDate }) {
   }, []);
 
   return (
-    <div data-qa="panel-clock" className="min-w-0">
+    <div data-qa="panel-clock" data-updated={updated ? "true" : undefined} className="min-w-0 rounded-control transition-colors duration-state data-[updated=true]:bg-surface-2 motion-reduce:transition-none">
       <p className="text-display tabular-nums text-ink">
         <span className="mr-2 text-title text-ink-muted">장면</span>
         {formatMinuteOfDay(sceneMinuteOfDay)}
