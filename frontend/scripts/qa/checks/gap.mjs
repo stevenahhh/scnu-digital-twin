@@ -332,6 +332,7 @@ export const GAP_CHECKS = [
       });
       const box = await sceneBox();
       const startCamera = await saveCamera(ctx);
+      const startDetent = await ctx.inPage((qa) => qa.one("[data-qa=dashboard-panel]")?.getAttribute("data-detent") ?? null);
       const before = await ctx.screenshot();
       const focused = (await ctx.b.tap(selector)).ok;
       await ctx.b.view.cdp("Input.insertText", { text: "도서관" });
@@ -348,6 +349,12 @@ export const GAP_CHECKS = [
       // Put the page back (no selection, the S01 camera) so the probe replay's later S01 checks start from S01.
       if (await ctx.b.center('[data-qa=selection-inspector] button[aria-label="닫기"]')) await ctx.b.tap('[data-qa=selection-inspector] button[aria-label="닫기"]');
       await restoreCamera(ctx, startCamera);
+      // Phone: the selection raised the sheet to half; lower it back to where S01 had it (the time chip sits under it).
+      if (startDetent === "peek" && await ctx.inPage((qa) => qa.one("[data-qa=dashboard-panel]")?.getAttribute("data-detent") !== "peek")
+        && await ctx.b.center('[aria-label="패널 닫기"]')) {
+        await ctx.b.tap('[aria-label="패널 닫기"]');
+        await ctx.sleep(900);
+      }
       const pass = focused && listed.some((text) => /도서관/.test(text)) && chip?.pressed === "true" && cameraChange > 0.03;
       return result(pass, { field, focused, listed: listed.slice(0, 8), chipPressed: chip?.pressed ?? null, cameraChange },
         "search field exists; a result list shows 도서관; Enter sets the library chip aria-pressed=true and the camera position changes");
