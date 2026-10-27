@@ -281,7 +281,7 @@ export default function App() {
             title={selection.selectedTitle || popup.data?.name || selection.selectedId}
             popup={popup}
             onCompare={selection.selectedId.startsWith("BLD_") ? () => comparison.add(selection.selectedId) : null}
-            gateText={gateTextFor(gateScenePositionOf(vworldLabelEntries, selection.selectedId))}
+            gateText={gateTextFor(gateScenePositionOf(vworldLabelEntries, `BLD_${selection.selectedBuildingId}`))}
             onClose={closeMicroclimatePopup}
             onShowAll={closeMicroclimatePopup}
           />
