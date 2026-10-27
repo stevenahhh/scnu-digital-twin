@@ -144,9 +144,10 @@ export function leafAtlas() {
 // Cards over a crown archetype (non-indexed positions in metres). opts: count, size [w, h] m, tile, kind
 // ("outward": cards face out from the crown, random roll; "droop": a spray hanging down and out; "flat": near
 // horizontal tufts on pads), inner (share of cards inside the crown, filling it), seed. Card centres lie 0.3 of a card
-// inside the crown surface, so the cards form the visible surface and reach at most 0.2 of a card past the fitted crown. Normals point out from the crown axis
+// inside the crown surface, so the cards form the visible surface; every corner is pulled inside the crown's horizontal
+// footprint (radial reach, or its x/z ellipse for elliptic crowns), so a card never reaches past the fitted crown. Normals point out from the crown axis
 // (soft, volumetric light); COLOR_0 darkens the inner and lower cards.
-export function foliageCards(crown, { count, size, tile, kind, inner = 0.25, seed }) {
+export function foliageCards(crown, { count, size, tile, kind, inner = 0.25, seed, elliptic = false }) {
   const rng = mulberry32(seed);
   const tris = [];
   let total = 0;
@@ -164,6 +165,23 @@ export function foliageCards(crown, { count, size, tile, kind, inner = 0.25, see
     for (const q of p) { top = Math.max(top, q[1]); cy += q[1]; }
   }
   cy /= tris.length * 3;
+  // the crown's horizontal footprint: no card corner may reach past it (cover and camera clearance are the crown's)
+  let reach = 0;
+  let reachX = 0;
+  let reachZ = 0;
+  for (let i = 0; i < crown.length; i += 3) {
+    reach = Math.max(reach, Math.hypot(crown[i], crown[i + 2]));
+    reachX = Math.max(reachX, Math.abs(crown[i]));
+    reachZ = Math.max(reachZ, Math.abs(crown[i + 2]));
+  }
+  const clampCorner = ([x, y, z]) => {
+    if (elliptic) {
+      const e = Math.hypot(x / reachX, z / reachZ);
+      return e > 1 ? [x / e, y, z / e] : [x, y, z];
+    }
+    const r = Math.hypot(x, z);
+    return r > reach ? [(x * reach) / r, y, (z * reach) / r] : [x, y, z];
+  };
   const [tu, tv] = TILES[tile];
   const u0 = tu / 2;
   const v0 = tv / 2;
@@ -221,7 +239,7 @@ export function foliageCards(crown, { count, size, tile, kind, inner = 0.25, see
     const side = norm(cross(nrm, along));
     const hw = w / 2;
     const hh = h / 2;
-    const corners = [[-hh, -hw], [hh, -hw], [hh, hw], [-hh, hw]].map(([s1, s2]) => pt.map((v, k) => v + along[k] * s1 + side[k] * s2));
+    const corners = [[-hh, -hw], [hh, -hw], [hh, hw], [-hh, hw]].map(([s1, s2]) => clampCorner(pt.map((v, k) => v + along[k] * s1 + side[k] * s2)));
     const uv = [[0, 0], [1, 0], [1, 1], [0, 1]].map(([x, y]) => [u0 + x * 0.5, v0 + y * 0.5]);
     // light: out from the crown axis, a little up; shade: inner cards and the lower crown darker
     const ln = norm([out[0] + nrm[0] * 0.4, out[1] + 0.3 + nrm[1] * 0.4, out[2] + nrm[2] * 0.4]);

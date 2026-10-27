@@ -592,7 +592,7 @@ export function buildTrees({ glb, placement }) {
     pine: { count: 110, size: [1.85, 1.4], tile: "pine", inner: 0.3, kind: "flat", seed: 205, crown: materials.pine },
     metasequoia: { count: 210, size: [1.7, 0.95], tile: "spray", kind: "droop", inner: 0.25, seed: 207, crown: materials.metasequoia },
     conifer: { count: 56, size: [1.05, 0.8], tile: "spray", inner: 0.3, kind: "outward", seed: 209, crown: materials.conifer },
-    canopy: { count: 360, size: [2.3, 1.95], tile: "broadleaf", inner: 0.3, kind: "outward", seed: 211, crown: materials.broadleaf },
+    canopy: { count: 360, size: [2.3, 1.95], tile: "broadleaf", inner: 0.3, kind: "outward", seed: 211, elliptic: true, crown: materials.broadleaf },
   };
   const foliage = {};
   for (const [kind, f] of Object.entries(FOLIAGE)) {
