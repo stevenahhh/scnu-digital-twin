@@ -140,6 +140,9 @@ export function VWorldLabelLayer({
           : null;
       const chrome = [];
       for (const ref of chromeSources ?? []) if (ref?.current) collectChromeRects(ref.current, chrome);
+      // 지도 영역 바로 옆(12 px 안)에 붙은 패널·레일은 가리개는 아니지만 칩이 12 px 떨어져야 하는 경계다(HUD와 같은 여백).
+      if (panelRect && !occluder && panelRect.width > 0 && panelRect.height > 0 && panelRect.top < area.bottom && panelRect.bottom > area.top
+        && panelRect.left < area.right + 12 && panelRect.right > area.left - 12) chrome.push(panelRect);
       const camera = scene.camera;
       const p = camera.positionWC;
       const d = camera.directionWC;
