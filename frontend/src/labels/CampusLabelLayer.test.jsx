@@ -47,6 +47,9 @@ describe("CampusLabelLayer", () => {
     // hidden chips stay out of hit testing.
     const hidden = [...container.querySelectorAll("[data-label-slot]")].filter((slot) => slot.style.visibility !== "visible");
     expect(hidden.every((slot) => slot.style.pointerEvents === "none")).toBe(true);
+    // ...and out of the Tab order: a parked chip is never focused off screen.
+    expect(hidden.every((slot) => slot.inert === true)).toBe(true);
+    expect(visibleSlots().every((slot) => slot.inert !== true)).toBe(true);
   });
 
   it("writes each shown slot's anchor y as data-anchor-top and clears it when the slot hides", () => {

@@ -125,6 +125,8 @@ export function CampusLabelLayer({
         }
         if (node.style.transform !== PARKED_TRANSFORM) node.style.transform = PARKED_TRANSFORM;
         if (node.dataset.hiddenReason !== reason) node.dataset.hiddenReason = reason;
+        // 숨긴 칩은 Tab·클릭·화면 읽기에서도 빠진다(층 밖으로 옮긴 칩에 포커스가 가면 고리가 화면 밖에 그려졌다).
+        if (!node.inert) node.inert = true;
         if (node.dataset.anchorTop !== undefined) delete node.dataset.anchorTop;
         if (node.dataset.anchorLeft !== undefined) delete node.dataset.anchorLeft;
       }
@@ -158,6 +160,7 @@ export function CampusLabelLayer({
       if (node.style.transform !== transform) node.style.transform = transform;
       if (node.style.visibility !== "visible") node.style.visibility = "visible";
       if (node.dataset.hiddenReason) delete node.dataset.hiddenReason;
+      if (node.inert) node.inert = false;
       const slot = slotById.get(id);
       const pointer = slot?.kind === "zone" ? "none" : "auto";
       if (node.style.pointerEvents !== pointer) node.style.pointerEvents = pointer;
