@@ -124,6 +124,9 @@ export default function VWorldRenderer({
   labelChromeRefs = null,
   // HUD 안의 지도 위 문구·버튼 자리(DOM 요소). 없으면 지도 안에 그대로 그린다.
   overlayHost = null,
+  // 폰의 D4 패인에 둘 캠퍼스 시점 줄(Legacy D4 패인과 같다)과 고른 시점으로 가는 함수.
+  d4Presets = null,
+  onSelectPreset,
   presentation = false,
   // 시점 버튼이 쓰는 카메라(createVWorldCampusCamera). 준비되면 넘기고, 지도가 사라지면 null.
   onCampusCamera,
@@ -686,6 +689,11 @@ export default function VWorldRenderer({
             planRefreshKey={installationPlanRefreshKey}
             returnFocusRef={d4OpenerRef}
             onClose={closeD4Section}
+            presets={d4Presets}
+            onSelectPreset={(preset) => {
+              closeD4Section();
+              onSelectPreset?.(preset);
+            }}
           />
         </Suspense>,
         d4PaneHost,

@@ -205,6 +205,8 @@ export default function App() {
       <div className="absolute inset-0 z-0">
         <VWorldRenderer
           overlayHost={hudOverlayHost}
+          d4Presets={viewportMode === "phone" ? CAMERA_PRESETS : null}
+          onSelectPreset={camera.selectPreset}
           onSelection={handleVWorldSelection}
           energyFeedDown={isFeedDown(feeds.energy)}
           onD4SectionChange={handleD4SectionChange}
