@@ -117,7 +117,9 @@ export const FRONTEND_CHECKS = [
       const lib = await chipByText(ctx, "도서관");
       const border = await ctx.inPage((qa) => {
         const el = qa.all("button[data-qa=campus-label]").find((b) => b.getAttribute("aria-pressed") === "true");
-        return el ? getComputedStyle(el).borderTopColor : null;
+        // The visible border is the chip surface (SceneLabel's [data-qa=label-chip]); the button itself has no border, so its
+        // borderTopColor is only the text colour.
+        return el ? getComputedStyle(el.querySelector("[data-qa=label-chip]") ?? el).borderTopColor : null;
       });
       const design = existsSync(`${ROOT}DESIGN.md`) ? readFileSync(`${ROOT}DESIGN.md`, "utf8") : "";
       const docHex = (design.match(/primary[^\n]*?(#[0-9a-fA-F]{6})/) ?? [])[1] ?? null;
