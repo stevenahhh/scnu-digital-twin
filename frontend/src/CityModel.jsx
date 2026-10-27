@@ -717,6 +717,13 @@ export function CityModel({
       labelAnchors.find((item) => item.name === selectedId || (item.proxy && item.displayName === selectedId));
     return anchor?.elementId ?? null;
   }, [anchorById, labelAnchors, selectedElementId, selectedId]);
+  // 지금 강조한 건물(앵커 id)을 지도 층에 남긴다(data-selected-id, 화면 검사가 칩·제목과 같은 건물인지 본다).
+  useEffect(() => {
+    const layer = gl.domElement.closest?.("[data-qa=campus-map-layer]");
+    if (!layer) return;
+    if (selectedAnchorId) layer.dataset.selectedId = selectedAnchorId;
+    else delete layer.dataset.selectedId;
+  }, [gl, selectedAnchorId]);
   const selectedAnchorIdRef = useRef(selectedAnchorId);
   selectedAnchorIdRef.current = selectedAnchorId;
 
