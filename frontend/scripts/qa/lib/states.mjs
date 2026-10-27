@@ -193,7 +193,8 @@ export const STATES = Object.freeze([
       await closePanelOnMobile(ctx);
       await ctx.b.wheel(ctx.map.x, ctx.map.y, 300, 8);
       ctx.actions.push(`8x mouseWheel deltaY=+300 at ${ctx.map.x},${ctx.map.y}`);
-      await wait(ctx, 2500);
+      // OrbitControls damping keeps the camera (and the faded, frozen label layer) moving well past 2.5 s under SwiftShader.
+      await settleCamera(ctx);
     },
   },
   {
@@ -215,7 +216,7 @@ export const STATES = Object.freeze([
       }
       await ctx.b.wheel(x, y, -300, 14);
       ctx.actions.push(`14x mouseWheel deltaY=-300 at ${x},${y}${ctx.entry === "vworld" ? " (VWorld: 도서관 anchor)" : ""}`);
-      await wait(ctx, 2500);
+      await settleCamera(ctx);
     },
   },
   {
