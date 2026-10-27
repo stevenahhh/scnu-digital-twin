@@ -275,7 +275,9 @@ export async function modelEdgeStep(ctx) {
     if (n < 3) continue;
     const meanIn = sumIn / n;
     const meanOut = sumOut / n;
-    const step = Math.abs(meanIn - meanOut) / Math.max(meanIn, meanOut, 1e-6);
+    // A seam has to be visible: below 0.02 absolute luminance (2% of the range, e.g. 0.017 vs 0.009 on a night map) the
+    // relative step of two near-black bands is noise, not an edge.
+    const step = Math.abs(meanIn - meanOut) < 0.02 ? 0 : Math.abs(meanIn - meanOut) / Math.max(meanIn, meanOut, 1e-6);
     edges.push({ edge: i, samples: n, inside: Math.round(meanIn * 1000) / 1000, outside: Math.round(meanOut * 1000) / 1000, step: Math.round(step * 1000) / 1000 });
     worst = Math.max(worst, step);
     samples += n;
