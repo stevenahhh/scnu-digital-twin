@@ -3,7 +3,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { metres } from "../lib/frame.mjs";
-import { rgb } from "../lib/solids.mjs";
+import { pointInRing } from "../lib/geometry.mjs";
+import { offsetLine, rgb } from "../lib/solids.mjs";
 import { B, hedgeTextStrokes, makeContext, moundAt, onRoof, parasolColour, stallRow } from "./furniture.mjs";
 
 const M = metres;
@@ -121,4 +122,33 @@ test("planter mound: mound_m from mound_ramp_m in from the bed's edge, nothing a
   near(moundAt(o, inner, [M(5), M(5)]) / M(1), 0.45, "centre");
   near(moundAt(o, inner, [0, M(5)]) / M(1), 0, "edge");
   near(moundAt({ p: {} }, inner, [M(5), M(5)]), 0, "no mound");
+});
+
+test("planter on a ridge between its corners: kerb and bed follow the ground (no paving rising through the fill)", () => {
+  // ground: a 0.5 m ridge along x = 3 m, nothing at the ring's corners (x = 0 and 6 m)
+  const ctx = makeContext({ groundAt: (x) => M(0.5 * Math.max(0, 1 - Math.abs(x / M(1) - 3) / 3)), objects: [], roads: { arterials: [], connectors: [], zoneRings: [] }, sites, fieldCentre: null });
+  const ring = [[0, 0], [M(6), 0], [M(6), M(6)], [0, M(6)]];
+  B.planter(ctx, { id: "SD-T10", kind: "planter", heightM: 0.15, ring, p: { dims: { kerbHeightM: 0.15 }, fill: "soil" } });
+  // the fill stands 0.1 m over the ground everywhere, so on the ridge it reaches 0.6 m (the old fill spanned the corners)
+  assert.ok(Math.max(...ys(ctx)) >= 0.6 - 1e-6, `highest vertex ${Math.max(...ys(ctx))} m, the ridge's fill is 0.6 m`);
+});
+
+test("planter with a concave (U-shaped) ring: every kerb wall faces out of the kerb, none into it", () => {
+  const ctx = flatContext();
+  const ring = [[0, 0], [6, 0], [6, 6], [0, 6], [0, 4], [4, 4], [4, 2], [0, 2]].map(([x, z]) => [M(x), M(z)]);
+  B.planter(ctx, { id: "SD-T11", kind: "planter", heightM: 0.15, ring, p: { dims: { kerbHeightM: 0.15 }, fill: "soil" } });
+  const inset = (s) => offsetLine([...ring, ring[0]], s * M(0.2)).slice(0, -1);
+  const inner = pointInRing(inset(1)[0], ring) ? inset(1) : inset(-1); // the kerb's inner edge
+  const { positions, normals, indices } = ctx.solid.mesh;
+  let walls = 0;
+  for (let t = 0; t < indices.length; t += 3) {
+    const [a, b, c] = [indices[t] * 3, indices[t + 1] * 3, indices[t + 2] * 3];
+    if (Math.abs(normals[a + 1]) > 0.1) continue;
+    walls += 1;
+    // from the wall triangle's centre (on its own edge, away from the corners) a step along its normal leaves the kerb
+    const centre = [(positions[a] + positions[b] + positions[c]) / 3, (positions[a + 2] + positions[b + 2] + positions[c + 2]) / 3];
+    const probe = [centre[0] + normals[a] * M(0.05), centre[1] + normals[a + 2] * M(0.05)];
+    assert.ok(!(pointInRing(probe, ring) && !pointInRing(probe, inner)), `a wall at ${centre[0] / M(1)}, ${centre[1] / M(1)} faces into the kerb`);
+  }
+  assert.ok(walls > 0);
 });

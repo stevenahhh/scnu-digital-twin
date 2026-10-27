@@ -619,10 +619,55 @@ function lawnPatches(ctx, o, inner, fillTop, base) {
   }
 }
 
+// A ring with a vertex at least every stepM along each edge (kerbs follow the ground between the survey's corners).
+export function densifyRing(ring, stepM) {
+  const out = [];
+  for (let i = 0; i < ring.length; i += 1) {
+    const [a, b] = [ring[i], ring[(i + 1) % ring.length]];
+    const n = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / M(stepM)));
+    for (let k = 0; k < n; k += 1) out.push([a[0] + ((b[0] - a[0]) * k) / n, a[1] + ((b[1] - a[1]) * k) / n]);
+  }
+  return out;
+}
+// The ring clipped to the square [x0, x1] x [z0, z1] (Sutherland-Hodgman: the window is convex, the ring may not be).
+function clipToSquare(ring, x0, x1, z0, z1) {
+  let out = ring;
+  for (const [axis, bound, keepBelow] of [[0, x0, false], [0, x1, true], [1, z0, false], [1, z1, true]]) {
+    const inside = (p) => (keepBelow ? p[axis] <= bound : p[axis] >= bound);
+    const cut = (p, q) => { const t = (bound - p[axis]) / (q[axis] - p[axis]); return [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]; };
+    const next = [];
+    for (let i = 0; i < out.length; i += 1) {
+      const [p, q] = [out[i], out[(i + 1) % out.length]];
+      if (inside(q)) {
+        if (!inside(p)) next.push(cut(p, q));
+        next.push(q);
+      } else if (inside(p)) next.push(cut(p, q));
+    }
+    out = next;
+    if (out.length < 3) return [];
+  }
+  return out;
+}
+// A bed on a cellM grid: the ring clipped to each grid square, every vertex at top(x, z), so the bed follows the ground
+// under it instead of spanning the ring's corners (on a raised footway or a slope the paving rose through the coarse
+// fill between them: the white notch on the F1 forecourt island). Neighbouring pieces share their clip points.
+export function gridBed(solid, ring, top, paint, cellM = 0.5) {
+  const cell = M(cellM);
+  const xs = ring.map((p) => p[0]);
+  const zs = ring.map((p) => p[1]);
+  for (let i = Math.floor(Math.min(...xs) / cell); i * cell < Math.max(...xs); i += 1) {
+    for (let j = Math.floor(Math.min(...zs) / cell); j * cell < Math.max(...zs); j += 1) {
+      const piece = clipToSquare(ring, i * cell, (i + 1) * cell, j * cell, (j + 1) * cell);
+      if (piece.length >= 3 && Math.abs(ringArea(piece)) > 1e-9) solid.flat(piece, [], top, paint);
+    }
+  }
+}
+
 B.planter = (ctx, o) => {
   if (o.p.dims !== undefined) {
     // rest-space planter (VR scene_a9 / scene_c1: square tree pits with a stone kerb, gravel or soil inside): a kerb
-    // 0.2 m wide and kerbHeightM high round the ring, the fill 0.05 m below its top; along a line, a kerb wall.
+    // 0.2 m wide and kerbHeightM high round the ring, the fill 0.05 m below its top; along a line, a kerb wall. The kerb
+    // rings carry a vertex every 0.5 m and the bed is drawn on a 0.5 m grid, so both follow the ground under them.
     const d = dimsOf(o);
     const kerb = paintOf(o.p.colour, C.stone, o.id);
     if (o.line) {
@@ -631,20 +676,22 @@ B.planter = (ctx, o) => {
     }
     const fill = { lawn: C.lawn, soil: C.soil, gravel: C.gravel, shrub: C.shrub }[o.p.fill ?? "soil"];
     if (!fill) throw new Error(`furniture: planter ${o.id} fill ${o.p.fill} is not lawn, soil, gravel or shrub`);
-    const inner = offsetLine([...o.ring, o.ring[0]], insideSign(o.ring) * M(0.2)).slice(0, -1);
+    const side = insideSign(o.ring);
+    const outer = densifyRing(o.ring, 0.5);
+    const inner = offsetLine([...outer, outer[0]], side * M(0.2)).slice(0, -1);
     const kerbTop = (x, z) => ctx.groundAt(x, z) + M(d.kerbHeightM);
     const fillTop = (x, z) => ctx.groundAt(x, z) + M(Math.max(0.02, d.kerbHeightM - 0.05));
-    ctx.solid.prism(o.ring, ctx.minGround(o.ring) - M(0.1), kerbTop, kerb, { topFace: false });
-    ctx.solid.flat(o.ring, [inner], kerbTop, kerb);
-    const middle = ringCentroid(inner);
+    ctx.solid.prism(outer, ctx.minGround(outer) - M(0.1), kerbTop, kerb, { topFace: false });
+    ctx.solid.flat(outer, [inner], kerbTop, kerb);
     for (let i = 0; i < inner.length; i += 1) {
       const [p, q] = [inner[i], inner[(i + 1) % inner.length]];
-      const toMiddle = [middle[0] - (p[0] + q[0]) / 2, 0, middle[1] - (p[1] + q[1]) / 2];
-      ctx.solid.face([[p[0], fillTop(...p), p[1]], [q[0], fillTop(...q), q[1]], [q[0], kerbTop(...q), q[1]], [p[0], kerbTop(...p), p[1]]], toMiddle, kerb);
+      // the inner kerb wall faces the bed: its edge's own inward side (towards the centroid it faced away on a crescent)
+      const inward = [-(q[1] - p[1]) * side, 0, (q[0] - p[0]) * side];
+      ctx.solid.face([[p[0], fillTop(...p), p[1]], [q[0], fillTop(...q), q[1]], [q[0], kerbTop(...q), q[1]], [p[0], kerbTop(...p), p[1]]], inward, kerb);
     }
-    // under patchy turf the bed takes its second tone, so the seams between cells and the kerb read as turf
+    // under patchy turf the bed takes its second tone, so the strip between the turf grid and the kerb reads as turf
     const bed = o.p.tones ? paintOf(o.p.tones[1] ?? o.p.tones[0], fill, o.id) : fill;
-    ctx.solid.flat(inner, [], fillTop, bed);
+    gridBed(ctx.solid, inner, fillTop, bed);
     if (o.p.tones) lawnPatches(ctx, o, inner, fillTop, bed);
     return;
   }
