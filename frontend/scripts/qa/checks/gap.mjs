@@ -4,6 +4,8 @@ import {
   gapBetween, luminanceStep, missingHook, modelEdgeStep, panelInfo, pixelDiff, rectOf, result, roofBox, sampleFrames,
   sceneRegion, selectedTab, textItems, meanLuminance, worstContrast,
   openPanelSection,
+  restoreCamera,
+  saveCamera,
   withPanelOpen,
 } from "./common.mjs";
 
@@ -316,6 +318,7 @@ export const GAP_CHECKS = [
         return { x: c.left, y: c.top + 80, w: right - c.left, h: Math.max(0, bottom - c.top - 80) };
       });
       const box = await sceneBox();
+      const startCamera = await saveCamera(ctx);
       const before = await ctx.screenshot();
       const focused = (await ctx.b.tap(selector)).ok;
       await ctx.b.view.cdp("Input.insertText", { text: "도서관" });
@@ -326,10 +329,9 @@ export const GAP_CHECKS = [
       const chip = await chipByText(ctx, "도서관");
       const after = await ctx.screenshot();
       const cameraChange = box && box.w > 0 && box.h > 0 ? Math.round(pixelDiff(before, after, box, ctx.scale) * 1000) / 1000 : null;
-      // Put the page back (no selection, overview camera) so the probe replay's later S01 checks start from S01.
+      // Put the page back (no selection, the S01 camera) so the probe replay's later S01 checks start from S01.
       if (await ctx.b.center('[data-qa=selection-inspector] button[aria-label="닫기"]')) await ctx.b.tap('[data-qa=selection-inspector] button[aria-label="닫기"]');
-      await ctx.b.tap("[data-qa=camera-preset-overview]", null, { timeoutMs: 3000 });
-      await ctx.b.cameraSettle?.();
+      await restoreCamera(ctx, startCamera);
       const pass = focused && listed.some((text) => /도서관/.test(text)) && chip?.pressed === "true" && cameraChange > 0.03;
       return result(pass, { field, focused, listed: listed.slice(0, 8), chipPressed: chip?.pressed ?? null, cameraChange },
         "search field exists; a result list shows 도서관; Enter sets the library chip aria-pressed=true and the camera position changes");
@@ -531,6 +533,7 @@ export const GAP_CHECKS = [
         };
       });
       const before = await layout();
+      const startCamera = await saveCamera(ctx);
       const tour = (await ctx.b.tap("[data-qa=camera-tour-toggle]", null, { timeoutMs: 4000 })).ok;
       await ctx.sleep(600);
       await ctx.b.key("p");
@@ -544,8 +547,7 @@ export const GAP_CHECKS = [
       if (await ctx.inPage((qa) => qa.one("[data-qa=camera-tour-toggle]")?.getAttribute("aria-pressed") === "true")) {
         await ctx.b.tap("[data-qa=camera-tour-toggle]", null, { timeoutMs: 4000 });
       }
-      await ctx.b.tap("[data-qa=camera-preset-overview]", null, { timeoutMs: 3000 });
-      await ctx.b.cameraSettle?.();
+      await restoreCamera(ctx, startCamera);
       const scale = before.chipPx && on.chipPx ? Math.round((on.chipPx / before.chipPx) * 100) / 100 : null;
       const pass = tour && on.presenting && !on.toolbar && !on.panelVisible && on.time && scale >= 1.5 && /^투어 \d+\/\d+$/.test(on.pager ?? "")
         && !after.presenting && after.toolbar === before.toolbar && after.panelVisible === before.panelVisible && after.panelOpen === before.panelOpen;

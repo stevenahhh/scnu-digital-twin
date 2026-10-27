@@ -40,6 +40,35 @@ export async function openPanelSection(ctx, tab = "dashboard") {
 // first, the way a user would, measure on a fresh screenshot, and then put the page back (패널 닫기, previous tab) so the
 // probe replay's later states and checks see the page as their own steps left it. tab: dashboard tab id, or null for the
 // state's own tab. Checks using it are `mutates: true`.
+// Probe-replay cleanup for checks that move the camera: VWorld's first view is the SDK's own start pose (not the 전체
+// preset), so the exact pose is saved before and set back after; Legacy starts on the 전체 preset, so it returns there.
+export async function saveCamera(ctx) {
+  if (ctx.entry !== "vworld") return null;
+  return ctx.inPage(() => {
+    const camera = window.ws3d?.viewer?.camera;
+    if (!camera) return null;
+    const v = (c) => [c.x, c.y, c.z];
+    return { position: v(camera.positionWC), direction: v(camera.directionWC), up: v(camera.upWC) };
+  });
+}
+
+export async function restoreCamera(ctx, saved) {
+  if (ctx.entry === "vworld" && saved) {
+    await ctx.inPage((qa, pose) => {
+      const viewer = window.ws3d?.viewer;
+      const C = window.Cesium;
+      if (!viewer || !C) return false;
+      const v = (a) => new C.Cartesian3(a[0], a[1], a[2]);
+      viewer.camera.setView({ destination: v(pose.position), orientation: { direction: v(pose.direction), up: v(pose.up) } });
+      viewer.scene.requestRender();
+      return true;
+    }, saved);
+  } else {
+    await ctx.b.tap("[data-qa=camera-preset-overview]", null, { timeoutMs: 3000 });
+  }
+  await ctx.b.cameraSettle?.();
+}
+
 export async function withPanelOpen(ctx, tab, measure) {
   const before = await ctx.inPage((qa) => qa.all("[data-qa^=dashboard-tab-]").find((el) => el.getAttribute("aria-selected") === "true")?.getAttribute("data-qa")?.replace("dashboard-tab-", "") ?? null);
   const actions = await openPanelSection(ctx, tab);
