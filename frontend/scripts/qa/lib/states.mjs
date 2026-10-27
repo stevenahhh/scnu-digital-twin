@@ -185,6 +185,10 @@ async function selectLibrary(ctx, waitAfterMs, { beforeClick } = {}) {
   if (extra > 0) await wait(ctx, extra);
 }
 
+// The 도서관 ground point on the VWorld map (lon, lat, ellipsoid height in m): where the app's 도서관 search flight centres the
+// view (measured once from that flight, which aims at the library's label anchor).
+export const VWORLD_LIBRARY_GROUND = Object.freeze([127.478934, 34.97016, 38.2]);
+
 export const STATES = Object.freeze([
   {
     id: "S01", name: "initial-load",
@@ -203,34 +207,19 @@ export const STATES = Object.freeze([
   {
     id: "S03", name: "zoomed-in-plaza-labels",
     steps: async (ctx) => {
-      // Legacy zooms toward the orbit target (the campus centre). The VWorld SDK zooms toward the cursor, so a wheel at the
-      // map centre after S02 dives into whatever lies there; zoom toward a fixed campus anchor instead: the 도서관 chip's
-      // anchor point (data-anchor-left/top), else the map centre.
-      let { x, y } = ctx.map;
+      // Legacy zooms toward the orbit target (the campus centre). The VWorld SDK zooms toward the cursor and its wheel moves the
+      // camera along the tilted view direction, which carries the view off campus; so VWorld approaches a fixed campus anchor:
+      // the ground point of the 도서관 (where the app's own 도서관 search flight centres the view), along the current view
+      // direction, to 406 m - the distance Legacy's 14 wheel ticks (OrbitControls x0.95 each from the 520-unit cap) leave.
+      // A fixed point, not the chip: on a phone the 도서관 chip is cap-hidden at S02 and carries no anchor.
+      const { x, y } = ctx.map;
       if (ctx.entry === "vworld") {
-        const anchor = await ctx.b.run(() => {
-          const slot = [...document.querySelectorAll("[data-label-slot]")].find((node) => node.style.visibility === "visible"
-            && node.querySelector("button[data-qa=campus-label]")?.getAttribute("data-element-id") === "BLD_C1");
-          if (!slot?.dataset.anchorTop) return null;
-          // The anchor point itself (a displaced chip sits away from it; the SDK zooms toward the cursor).
-          const r = slot.getBoundingClientRect();
-          const left = Number(slot.dataset.anchorLeft);
-          return [Math.round(Number.isFinite(left) && slot.dataset.anchorLeft !== undefined ? left : r.x + r.width / 2), Math.round(Number(slot.dataset.anchorTop))];
-        });
-        if (anchor) [x, y] = anchor;
-      }
-      if (ctx.entry === "vworld") {
-        // Legacy's 14 ticks (OrbitControls: x0.95 each, from the 520-unit cap) leave the camera ~406 m from its target. The SDK's
-        // wheel moves the camera along its tilted view direction, so wheel ticks carry the view centre off campus. Zoom toward the
-        // anchor instead: the ground point under the 도서관 anchor, approached along the current view direction to 406 m.
-        const zoomed = await ctx.b.run((ax, ay) => {
+        const zoomed = await ctx.b.run((lon, lat, height) => {
           const viewer = window.ws3d?.viewer;
           const Cesium = window.Cesium;
           if (!viewer || !Cesium) return false;
           const camera = viewer.camera;
-          const ray = camera.getPickRay(new Cesium.Cartesian2(ax, ay));
-          const ground = (ray && viewer.scene.globe.pick(ray, viewer.scene)) ?? camera.pickEllipsoid(new Cesium.Cartesian2(ax, ay));
-          if (!ground) return false;
+          const ground = Cesium.Cartesian3.fromDegrees(lon, lat, height);
           const toGround = Cesium.Cartesian3.normalize(Cesium.Cartesian3.subtract(ground, camera.positionWC, new Cesium.Cartesian3()), new Cesium.Cartesian3());
           const destination = Cesium.Cartesian3.subtract(ground, Cesium.Cartesian3.multiplyByScalar(toGround, 406, new Cesium.Cartesian3()), new Cesium.Cartesian3());
           const normal = Cesium.Ellipsoid.WGS84.geodeticSurfaceNormal(destination, new Cesium.Cartesian3());
@@ -239,8 +228,8 @@ export const STATES = Object.freeze([
           camera.setView({ destination, orientation: { direction: toGround, up } });
           viewer.scene.requestRender();
           return true;
-        }, x, y);
-        ctx.actions.push(`VWorld: camera toward the 도서관 anchor at ${x},${y} to 406 m (Legacy S03 distance)${zoomed ? "" : " FAILED"}`);
+        }, ...VWORLD_LIBRARY_GROUND);
+        ctx.actions.push(`VWorld: camera toward the 도서관 ground point ${VWORLD_LIBRARY_GROUND.join(",")} to 406 m (Legacy S03 distance)${zoomed ? "" : " FAILED"}`);
       } else {
         await ctx.b.wheel(x, y, -300, 14);
         ctx.actions.push(`14x mouseWheel deltaY=-300 at ${x},${y}`);
