@@ -89,7 +89,8 @@ export function RepresentativePlanOverlayController({
       aria-label={label}
       aria-pressed={visible}
       onClick={toggle}
-      className="w-full"
+      // 눌린 모양은 다른 토글과 같다(surface-2 바탕 + ink 글자, V-F-34). 눈 글리프가 상태를 함께 알린다.
+      className={cx("w-full", visible && "!bg-surface-2 !text-ink")}
       icon={visible ? <Eye aria-hidden="true" className="h-4 w-4" /> : <EyeOff aria-hidden="true" className="h-4 w-4" />}
     >
       대표 설치 계획
