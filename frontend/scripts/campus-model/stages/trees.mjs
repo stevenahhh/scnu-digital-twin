@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { mergeVertices } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { EXTENT, metres } from "../lib/frame.mjs";
+import { foliageCards, leafAtlas } from "../lib/foliage.mjs";
 import { Raster, mulberry32 } from "../lib/raster.mjs";
 
 const TREES = process.env.TREES_FILE ?? path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "trees.json");
@@ -579,6 +580,34 @@ export function buildTrees({ glb, placement }) {
 
   for (const parts of Object.values(species)) bakeVertexAo(parts);
   for (const kind of ["metasequoia", "conifer"]) shadeTiers(species[kind].at(-1));
+
+  // ---- foliage: alpha-tested leaf-cluster cards over each crown (lib/foliage.mjs), one instanced child per species
+  // (Trees_<kind>_foliage) with the crown's instancing, so its tint, season colour and the fitted size apply. The leaf
+  // atlas is drawn by the generator (no photo pixels, no external asset). The dashboard draws the cards near the camera
+  // and the solid crown alone beyond FOLIAGE_LOD in src/lighting/foliage.mjs; the cards cast the crowns' shadows.
+  const leafTexture = glb.addTexture(leafAtlas(), "image/png");
+  const FOLIAGE = {
+    ginkgo: { count: 70, size: [1.3, 1.1], tile: "ginkgo", kind: "outward", seed: 201, crown: materials.ginkgo },
+    broadleaf: { count: 90, size: [1.5, 1.3], tile: "broadleaf", kind: "outward", seed: 203, crown: materials.broadleaf },
+    pine: { count: 80, size: [1.6, 1.2], tile: "pine", kind: "flat", seed: 205, crown: materials.pine },
+    metasequoia: { count: 150, size: [1.5, 0.8], tile: "spray", kind: "droop", inner: 0.15, seed: 207, crown: materials.metasequoia },
+    conifer: { count: 40, size: [0.9, 0.7], tile: "spray", kind: "outward", seed: 209, crown: materials.conifer },
+    canopy: { count: 260, size: [2.0, 1.7], tile: "broadleaf", kind: "outward", seed: 211, crown: materials.broadleaf },
+  };
+  const foliage = {};
+  for (const [kind, f] of Object.entries(FOLIAGE)) {
+    const crownMaterial = glb.json.materials[f.crown];
+    const material = glb.addMaterial({
+      name: `Tree_Foliage_${kind}`,
+      pbrMetallicRoughness: { baseColorFactor: crownMaterial.pbrMetallicRoughness.baseColorFactor, baseColorTexture: { index: leafTexture }, metallicFactor: 0, roughnessFactor: 0.85 },
+      alphaMode: "MASK",
+      alphaCutoff: 0.5,
+      doubleSided: true,
+      extras: { foliage: true, crownMaterial: crownMaterial.name, texture: "self-generated leaf atlas (lib/foliage.mjs), no external source" },
+    });
+    foliage[kind] = { ...foliageCards(species[kind].at(-1).positions, f), material };
+  }
+  console.log(`trees: foliage cards ${Object.entries(FOLIAGE).map(([k, f]) => `${k} ${f.count}`).join(", ")} per tree (leaf atlas 1024 px, self-generated)`);
   {
     const mean = (c) => c.reduce((sum, value, i) => (i % 4 === 0 ? sum + value : sum), 0) / (c.length / 4) / 255;
     console.log(`trees: vertex AO (${AO_RAYS} rays, ${AO_RAY_METRES} m, floor ${AO_FLOOR}) mean shade ${Object.entries(species).map(([k, parts]) => `${k} ${parts.map((p) => mean(p.colors).toFixed(2)).join("/")}`).join(", ")}`);
@@ -640,6 +669,13 @@ export function buildTrees({ glb, placement }) {
       const autumn = isCrown && instances.some((t) => t.autumn) ? instances.map((t) => (t.autumn ? t.autumn.map((v) => Math.round(v * 100) / 100) : 0)) : null;
       return glb.addNode({ name, mesh, extensions, ...(autumn ? { extras: { autumn } } : {}) });
     });
+    if (foliage[kind]) {
+      const name = `Trees_${kind}_foliage`;
+      const mesh = glb.addMesh(name, [foliage[kind]]);
+      const extensions = glb.instancingExtension({ translations, rotations, scales, colors });
+      const autumn = instances.some((t) => t.autumn) ? instances.map((t) => (t.autumn ? t.autumn.map((v) => Math.round(v * 100) / 100) : 0)) : null;
+      children.push(glb.addNode({ name, mesh, extensions, extras: { foliage: true, ...(autumn ? { autumn } : {}) } }));
+    }
     glb.addNode({
       name: `Trees_${kind}`,
       children,
