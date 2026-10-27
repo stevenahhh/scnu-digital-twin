@@ -8,6 +8,7 @@ import {
   parseCssColor, pixelDiff, result, sceneRegion, textItems, worstContrast,
   openPanelSection,
   contrastAgainst,
+  withPanelOpen,
 } from "./common.mjs";
 
 const D = ["D"];
@@ -51,14 +52,20 @@ async function accentHues(ctx) {
   });
 }
 
+// A colour has a meaningful hue only when it is saturated and not near black; neutral greys (surfaces, hairlines,
+// ink) carry a nominal hue (light surfaces read ~210) that says nothing about the accent.
+function chromatic(c) {
+  if (!c) return false;
+  const max = Math.max(c.r, c.g, c.b);
+  const min = Math.min(c.r, c.g, c.b);
+  return max >= 60 && (max - min) / max >= 0.35;
+}
+
 function hueFamilies(rows) {
   const families = new Set();
   for (const row of rows) {
     const c = parseCssColor(row.value);
-    if (!c) continue;
-    const max = Math.max(c.r, c.g, c.b);
-    const min = Math.min(c.r, c.g, c.b);
-    if (max === 0 || (max - min) / max < 0.35 || max < 60) continue;
+    if (!chromatic(c)) continue;
     families.add(Math.round(hueOf(c) / 30) % 12);
   }
   return families;
@@ -199,8 +206,9 @@ export const VISUALQA_CHECKS = [
     async run(ctx) {
       const rows = await accentHues(ctx);
       const families = hueFamilies(rows.filter((r) => !r.status));
-      const selectedHue = rows.filter((r) => r.selected && r.prop !== "color").map((r) => hueOf(parseCssColor(r.value) ?? { r: 0, g: 0, b: 0 })).find((h) => h != null) ?? null;
-      const errorHue = rows.filter((r) => r.status).map((r) => hueOf(parseCssColor(r.value) ?? { r: 0, g: 0, b: 0 })).find((h) => h != null) ?? null;
+      const hueOfFirstChromatic = (list) => list.map((r) => parseCssColor(r.value)).filter(chromatic).map((c) => hueOf(c)).find((h) => h != null) ?? null;
+      const selectedHue = hueOfFirstChromatic(rows.filter((r) => r.selected && r.prop !== "color"));
+      const errorHue = hueOfFirstChromatic(rows.filter((r) => r.status));
       const distinct = selectedHue == null || errorHue == null || hueDistance(selectedHue, errorHue) >= 30;
       return result(families.size <= 1 && distinct, { nonStatusHueFamilies: families.size, selectionHue: selectedHue, errorHue }, "one accent; selection hue != error hue");
     },
@@ -391,12 +399,17 @@ export const VISUALQA_CHECKS = [
     },
   }),
   defineCheck("V-Q-22", {
-    states: ["S08"], viewports: DP,
+    states: ["S08"], viewports: DP, mutates: true,
     async run(ctx) {
-      const items = await textItems(ctx, "[data-qa=dashboard-panel] *", { maxPx: 14 });
-      const worst = worstContrast(contrasts(ctx, items));
-      const alpha = await panelAlpha(ctx);
-      return result(worst && worst.ratio >= 4.5 && alpha >= 0.9, { worst, panelBackgroundAlpha: alpha }, ">= 4.5:1 and alpha >= 0.9");
+      // Phone: picking the tab leaves the sheet at half; raise it as a user would. Secondary text is the type scale's
+      // secondary step: <= 14 px on desktop, 15 px on the phone (V-Q-11), where nothing is 14 px or smaller.
+      return withPanelOpen(ctx, null, async () => {
+        const phone = (ctx.viewport?.id ?? ctx.viewport) === "P";
+        const items = await textItems(ctx, "[data-qa=dashboard-panel] *", { maxPx: phone ? 15 : 14 });
+        const worst = worstContrast(contrasts(ctx, items));
+        const alpha = await panelAlpha(ctx);
+        return result(worst && worst.ratio >= 4.5 && alpha >= 0.9, { worst, panelBackgroundAlpha: alpha }, ">= 4.5:1 and alpha >= 0.9");
+      });
     },
   }),
   defineCheck("V-Q-23", {
