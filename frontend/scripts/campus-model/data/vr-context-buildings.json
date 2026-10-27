@@ -1,0 +1,214 @@
+{
+ "description": "Off-campus buildings the SCNU 360 VR tour shows that GIS건물통합정보 lacks or gives no storeys. `floors` gives storey counts (a use class for the storey median and wall tone, and optionally heightMetres with heightNote where the off-campus storey median does not fit, e.g. apartment towers) to footprint records of data/gis-buildings.json that carry none, matched by footprintSource prefix; `buildings` are footprints traced by eye on the NGII 2025 orthophoto where neither GIS nor OSM has one. Every value is estimated (추정). Applied by stages/sources.mjs (loadVrContextBuildings) after gis-buildings.json and vr-buildings.json; context masses only (stages/context.mjs), never BLD_ ids.",
+ "sources": [
+  "SCNU 360 VR tour (visual reference only, nothing copied)",
+  "NGII 2025 orthophoto sheet 34702020 (footprints traced by eye, 0.25 m GSD)",
+  "© OpenStreetMap contributors (ODbL 1.0): names and footprints of the matched OSM records"
+ ],
+ "floors": [
+  {
+   "footprintSource": "OSM way/366373762",
+   "floors": 3,
+   "usability": "문화및집회시설 (추정)",
+   "floorsSource": "VR scene_f1 storey count (estimated): 순천시문화건강센터, sign legible on face b",
+   "vrScenes": [
+    "scene_f1"
+   ],
+   "note": "blue-glass two-wing centre with the plaza and 거울연못 west of it"
+  },
+  {
+   "footprintSource": "OSM way/656215332",
+   "floors": 2,
+   "usability": "운동시설 (추정)",
+   "floorsSource": "assumed (estimated): 건강문화센터 수영장 indoor pool hall, double height; behind the centre in scene_f1",
+   "vrScenes": [
+    "scene_f1"
+   ],
+   "note": "pool hall north of the centre"
+  },
+  {
+   "footprintSource": "OSM way/1523396239",
+   "floors": 25,
+   "usability": "공동주택 (추정)",
+   "floorsSource": "VR scene_f1 storey count (estimated): 서한이다음 2차 towers read 20-28 storeys, block 201 about 25",
+   "vrScenes": [
+    "scene_f1"
+   ],
+   "note": "신매곡 서한이다음 2차, 575-596 m2 tower",
+   "heightMetres": 81.0,
+   "heightNote": "25 storeys x 3.24 m, the median of the 15 GIS건물통합정보 공동주택 records of 5+ storeys with a height (estimated)"
+  },
+  {
+   "footprintSource": "OSM way/1523396240",
+   "floors": 25,
+   "usability": "공동주택 (추정)",
+   "floorsSource": "VR scene_f1 storey count (estimated): 서한이다음 2차 towers read 20-28 storeys, block 201 about 25",
+   "vrScenes": [
+    "scene_f1"
+   ],
+   "note": "신매곡 서한이다음 2차, 575-596 m2 tower",
+   "heightMetres": 81.0,
+   "heightNote": "25 storeys x 3.24 m, the median of the 15 GIS건물통합정보 공동주택 records of 5+ storeys with a height (estimated)"
+  },
+  {
+   "footprintSource": "OSM way/1523396241",
+   "floors": 25,
+   "usability": "공동주택 (추정)",
+   "floorsSource": "VR scene_f1 storey count (estimated): 서한이다음 2차 towers read 20-28 storeys, block 201 about 25",
+   "vrScenes": [
+    "scene_f1"
+   ],
+   "note": "신매곡 서한이다음 2차, 575-596 m2 tower",
+   "heightMetres": 81.0,
+   "heightNote": "25 storeys x 3.24 m, the median of the 15 GIS건물통합정보 공동주택 records of 5+ storeys with a height (estimated)"
+  },
+  {
+   "footprintSource": "OSM way/1523396242",
+   "floors": 25,
+   "usability": "공동주택 (추정)",
+   "floorsSource": "VR scene_f1 storey count (estimated): 서한이다음 2차 towers read 20-28 storeys, block 201 about 25",
+   "vrScenes": [
+    "scene_f1"
+   ],
+   "note": "신매곡 서한이다음 2차, 575-596 m2 tower",
+   "heightMetres": 81.0,
+   "heightNote": "25 storeys x 3.24 m, the median of the 15 GIS건물통합정보 공동주택 records of 5+ storeys with a height (estimated)"
+  },
+  {
+   "footprintSource": "OSM way/1523396244",
+   "floors": 25,
+   "usability": "공동주택 (추정)",
+   "floorsSource": "VR scene_f1 storey count (estimated): 서한이다음 2차 towers read 20-28 storeys, block 201 about 25",
+   "vrScenes": [
+    "scene_f1"
+   ],
+   "note": "신매곡 서한이다음 2차, 575-596 m2 tower",
+   "heightMetres": 81.0,
+   "heightNote": "25 storeys x 3.24 m, the median of the 15 GIS건물통합정보 공동주택 records of 5+ storeys with a height (estimated)"
+  },
+  {
+   "footprintSource": "OSM way/1523396245",
+   "floors": 25,
+   "usability": "공동주택 (추정)",
+   "floorsSource": "VR scene_f1 storey count (estimated): 서한이다음 2차 towers read 20-28 storeys, block 201 about 25",
+   "vrScenes": [
+    "scene_f1"
+   ],
+   "note": "신매곡 서한이다음 2차, 575-596 m2 tower",
+   "heightMetres": 81.0,
+   "heightNote": "25 storeys x 3.24 m, the median of the 15 GIS건물통합정보 공동주택 records of 5+ storeys with a height (estimated)"
+  },
+  {
+   "footprintSource": "OSM way/1523396248",
+   "floors": 25,
+   "usability": "공동주택 (추정)",
+   "floorsSource": "VR scene_f1 storey count (estimated): 서한이다음 2차 towers read 20-28 storeys, block 201 about 25",
+   "vrScenes": [
+    "scene_f1"
+   ],
+   "note": "신매곡 서한이다음 2차, 575-596 m2 tower",
+   "heightMetres": 81.0,
+   "heightNote": "25 storeys x 3.24 m, the median of the 15 GIS건물통합정보 공동주택 records of 5+ storeys with a height (estimated)"
+  },
+  {
+   "footprintSource": "OSM way/1523396243",
+   "floors": 15,
+   "usability": "공동주택 (추정)",
+   "floorsSource": "VR scene_f1 storey count (estimated): the slimmer towers of the same complex read 13-18 storeys",
+   "vrScenes": [
+    "scene_f1"
+   ],
+   "note": "신매곡 서한이다음 2차, 221-330 m2 tower",
+   "heightMetres": 48.6,
+   "heightNote": "15 storeys x 3.24 m, the median of the 15 GIS건물통합정보 공동주택 records of 5+ storeys with a height (estimated)"
+  },
+  {
+   "footprintSource": "OSM way/1523396246",
+   "floors": 15,
+   "usability": "공동주택 (추정)",
+   "floorsSource": "VR scene_f1 storey count (estimated): the slimmer towers of the same complex read 13-18 storeys",
+   "vrScenes": [
+    "scene_f1"
+   ],
+   "note": "신매곡 서한이다음 2차, 221-330 m2 tower",
+   "heightMetres": 48.6,
+   "heightNote": "15 storeys x 3.24 m, the median of the 15 GIS건물통합정보 공동주택 records of 5+ storeys with a height (estimated)"
+  },
+  {
+   "footprintSource": "OSM way/1523396247",
+   "floors": 15,
+   "usability": "공동주택 (추정)",
+   "floorsSource": "VR scene_f1 storey count (estimated): the slimmer towers of the same complex read 13-18 storeys",
+   "vrScenes": [
+    "scene_f1"
+   ],
+   "note": "신매곡 서한이다음 2차, 221-330 m2 tower",
+   "heightMetres": 48.6,
+   "heightNote": "15 storeys x 3.24 m, the median of the 15 GIS건물통합정보 공동주택 records of 5+ storeys with a height (estimated)"
+  },
+  {
+   "footprintSource": "OSM way/1523396249",
+   "floors": 15,
+   "usability": "공동주택 (추정)",
+   "floorsSource": "VR scene_f1 storey count (estimated): the slimmer towers of the same complex read 13-18 storeys",
+   "vrScenes": [
+    "scene_f1"
+   ],
+   "note": "신매곡 서한이다음 2차, 221-330 m2 tower",
+   "heightMetres": 48.6,
+   "heightNote": "15 storeys x 3.24 m, the median of the 15 GIS건물통합정보 공동주택 records of 5+ storeys with a height (estimated)"
+  }
+ ],
+ "buildings": [
+  {
+   "name": "",
+   "floors": 4,
+   "undergroundFloors": 0,
+   "heightMetres": 0,
+   "usability": "제1종근린생활시설 (추정)",
+   "structure": null,
+   "approvalDate": null,
+   "pnu": null,
+   "footprintSource": "NGII 2025 orthophoto trace (estimated) + VR scene_f1",
+   "floorsSource": "VR scene_f1 storey count (estimated): blue-glass block on 중앙로 (ground-floor bakery, study cafe above)",
+   "polygons": [
+    [
+     [
+      [
+       127.4849657,
+       34.96594244
+      ],
+      [
+       127.48537405,
+       34.96598561
+      ],
+      [
+       127.48531966,
+       34.96582285
+      ],
+      [
+       127.48523051,
+       34.96582015
+      ],
+      [
+       127.48520256,
+       34.96585271
+      ],
+      [
+       127.48496795,
+       34.96585977
+      ],
+      [
+       127.4849657,
+       34.96594244
+      ]
+     ]
+    ]
+   ],
+   "estimated": true,
+   "vrScenes": [
+    "scene_f1"
+   ]
+  }
+ ]
+}

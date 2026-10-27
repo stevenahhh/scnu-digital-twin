@@ -255,12 +255,35 @@ export async function loadVrBuildings(file = VR_BUILDINGS_FILE) {
   }));
 }
 
+// data/vr-context-buildings.json: off-campus buildings the VR tour shows that GIS lacks or gives no storeys (see README
+// "VR context buildings"). `floors` sets floors, floorsSource, usability (and heightMetres when given) on the footprint record whose footprintSource
+// is the entry's (or starts with it plus a space); every entry must match exactly one record. `buildings` are traced
+// footprints in the gis-buildings.json shape, appended last. All estimated (추정); off campus, so they become context
+// masses. VR_CONTEXT_FILE points the loader (and its test) at another file.
+export const VR_CONTEXT_FILE = process.env.VR_CONTEXT_FILE ?? path.join(SCRIPT, "data", "vr-context-buildings.json");
+export function applyVrContext(records, context) {
+  const out = records.map((r) => r);
+  for (const entry of context.floors ?? []) {
+    const hits = out.flatMap((r, i) => (r.footprintSource === entry.footprintSource || r.footprintSource.startsWith(`${entry.footprintSource} `) ? [i] : []));
+    if (hits.length !== 1) throw new Error(`vr-context-buildings.json: ${entry.footprintSource} matches ${hits.length} footprint records (expected 1)`);
+    out[hits[0]] = { ...out[hits[0]], floors: entry.floors, floorsSource: entry.floorsSource, usability: entry.usability, ...(entry.heightMetres ? { heightMetres: entry.heightMetres } : {}) };
+  }
+  for (const b of context.buildings ?? []) {
+    out.push({ ...b, areaMetres: Math.round(Math.abs(ringArea(toModelRing(b.polygons[0][0]))) / metres(1) ** 2) });
+  }
+  return out;
+}
+async function loadVrContext(records, file = VR_CONTEXT_FILE) {
+  const context = Bun.file(file);
+  return (await context.exists()) ? applyVrContext(records, JSON.parse(await context.text())) : records;
+}
+
 // data/gis-buildings.json is the shipped footprint file, followed by the VR-only records. A local checkout that
 // still has the old data/vworld-buildings.json (never committed again) may build from it until the new file is
 // fetched.
 async function loadBuildingFootprints() {
   const gis = Bun.file(path.join(SCRIPT, "data", "gis-buildings.json"));
-  if (await gis.exists()) return [...JSON.parse(await gis.text()).buildings, ...(await loadVrBuildings())];
+  if (await gis.exists()) return loadVrContext([...JSON.parse(await gis.text()).buildings, ...(await loadVrBuildings())]);
   const legacy = Bun.file(path.join(SCRIPT, "data", "vworld-buildings.json"));
   if (!(await legacy.exists())) throw new Error("data/gis-buildings.json is missing; run bun run model:fetch");
   console.warn("data/gis-buildings.json is missing; using the local-only data/vworld-buildings.json (do not commit it)");
