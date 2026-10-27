@@ -26,9 +26,9 @@ const CHIP = cx(
 const FIELD = cx(
   "min-h-8 rounded-control border border-hairline-strong bg-surface-1 px-2 text-caption tabular-nums text-ink",
   "[@media(pointer:coarse)]:min-h-11 aria-[invalid=true]:border-danger",
-  // 날짜·시각 칸에 들어오면 다른 조작과 같은 포커스 테두리(V-F-36). 기본 날짜·시각 입력은 포커스가 안쪽 칸(그림자 DOM)에
-  // 있어 입력 요소에 :focus-visible이 걸리지 않으므로 :focus로 그린다(글자를 넣는 칸은 마우스로 들어와도 테두리를 보인다).
-  "focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-primary",
+  // 날짜·시각 칸에 들어오면 다른 조작과 같은 포커스 테두리(V-F-36). 기본 날짜·시각 입력은 안쪽(그림자 DOM)의 칸과 달력
+  // 단추가 따로 포커스를 받아 입력 요소에는 :focus가 걸리지 않을 때가 있으므로 :focus-within으로 그린다.
+  "focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary",
 );
 const HEADING = "flex min-w-0 items-center gap-1.5 text-caption font-medium text-ink-muted";
 const ICON = "h-3.5 w-3.5";
