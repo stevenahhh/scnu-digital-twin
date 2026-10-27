@@ -1,0 +1,20 @@
+{
+  "source": "SCNU 360 VR tour cube faces (.cache/vr; stations in scripts/perf/vr-stations.json) where the NGII 2025 orthophoto shows no paint (painted after the photo)",
+  "generated": "2026-10-27",
+  "note": "Templated markings read in the VR only: no paint gate (the photo cannot show them), drawn as estimated (추정) by stages/markings.mjs. centre: WGS84 [lon, lat] of the template's centre; travelBearingDeg: the direction its front faces (degrees from north, clockwise); lengthM along it, widthM across; colour from the palette. The centre comes from back-projecting the VR face with the station pose, its long side put on the kerb line the photo shows.",
+  "markings": [
+    {
+      "id": "a19-bus-stop",
+      "kind": "bus_stop_box",
+      "colour": "light_blue",
+      "centre": [
+        127.48412165,
+        34.96857587
+      ],
+      "travelBearingDeg": 351,
+      "lengthM": 12,
+      "widthM": 2.5,
+      "source": "VR scene_a19 face b: light-blue box along the east kerb at the bus shelter across the main-gate road, two chevrons pointing north (the near-side traffic); corners back-projected with the refined pose (about 12 x 2.4 m); NGII 2025: kerb and shelter, no paint yet"
+    }
+  ]
+}

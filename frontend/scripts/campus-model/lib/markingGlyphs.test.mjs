@@ -85,3 +85,13 @@ test("scooter and hatched-aisle templates: solid parts inside their boxes, the a
   assert.ok(divider.x1 - divider.x0 === 5 && divider.y0 === -0.6, "divider on the bay side, full length");
   assert.ok(h.length >= 7, `stripes ${h.length - 1}`);
 });
+
+test("bus-stop box: one outline polygon with its inside as a hole, two chevrons in the front third, inside the box", async () => {
+  const { busStopBoxTemplate } = await import("./markingGlyphs.mjs");
+  const t = busStopBoxTemplate(12, 2.5);
+  assert.equal(t.length, 3);
+  assert.equal(t[0].length, 2, "outline and its hole");
+  const b = bounds(t);
+  assert.ok(Math.abs(b.x1 - b.x0 - 2.5) < 1e-9 && Math.abs(b.y1 - b.y0 - 12) < 1e-9, `box ${b.x1 - b.x0} x ${b.y1 - b.y0}`);
+  for (const chevron of t.slice(1)) assert.ok(bounds([chevron]).y0 > 0, "chevrons in the front half (+y)");
+});

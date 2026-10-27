@@ -441,6 +441,17 @@ export function hatchTemplate(length, width, { stripe = 0.25, pitch = 0.8, line 
   return polys;
 }
 
+// Bus-stop box (버스정류소, light blue): a `length` x `width` outline (0.15 m stroke) as one polygon with its inside as the
+// hole, front +y, plus two forward chevrons in the front third; centred on the origin. Sizes 추정.
+export function busStopBoxTemplate(length, width) {
+  const w = 0.15;
+  const [hx, hy] = [width / 2, length / 2];
+  const outer = [[-hx, -hy], [hx, -hy], [hx, hy], [-hx, hy]];
+  const inner = [[-hx + w, -hy + w], [-hx + w, hy - w], [hx - w, hy - w], [hx - w, -hy + w]];
+  const chevron = (y) => [band([[-0.3 * width, y - 0.25 * width], [0, y], [0.3 * width, y - 0.25 * width]], w)];
+  return [[outer, inner], chevron(0.3 * length), chevron(0.3 * length - 0.45 * width)];
+}
+
 // Bicycle symbol in a length (along) x width (across) box: two wheels and the frame.
 export function bicycleTemplate(length, width) {
   // painted in side view, flat on the lane: wheels behind and ahead, the frame between them

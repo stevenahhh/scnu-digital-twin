@@ -30,7 +30,7 @@ import { tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { EXTENT, SCENE_UNITS_PER_METRE, geoToModel, metres } from "../lib/frame.mjs";
 import { fitPath, offsetPath, polylineLength, resample, slicePath } from "../lib/markingFit.mjs";
 import { CONTEXT_REACH, TILE_M } from "./context.mjs";
-import { DASH_BY_KIND, LINE_WIDTH_M_BY_KIND } from "./markings.mjs";
+import { DASH_BY_KIND, LINE_WIDTH_M_BY_KIND, PAINT_BEYOND_EXTENT, PALETTE_U, inMarkingExtent } from "./markings.mjs";
 import { strokePath } from "./markingsRegular.mjs";
 import { pavingPattern } from "../lib/pavingPatterns.mjs";
 import { groundTile, planarTileUv, tileMaterial } from "./surfaces.mjs";
@@ -63,7 +63,6 @@ const DOUBLE_OFFSET_M = 0.15;
 // network/surfaces.mjs ARTERIAL_FALLBACK_HALF_M: a traced half this wide hit nothing (not a measurement).
 const TRACE_FALLBACK_HALF_M = 8;
 const MIN_MEASURED = 20;
-const PALETTE_U = { white: 0.125, yellow: 0.375 }; // stages/markings.mjs PALETTE_COLOURS white, yellow, blue, green
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
 const add = (a, b) => [a[0] + b[0], a[1] + b[1]];
@@ -414,7 +413,9 @@ export async function buildContextGround({ glb, lines = JSON.parse(readFileSync(
     }
     // markings on roads with a measured lane count: runs of consecutive live samples away from other roads
     if (!w.lanes) continue;
-    const clear = w.samples.map((s) => s.ok && ![0, 1, -1].some((side) => otherRoad(w, add(s.p, mul(s.n, 0.9 * side * (side > 0 ? s.L : s.R))))));
+    // no statute lines where the photo's own paint is drawn (PAINT_BEYOND_EXTENT, below)
+    const photoPainted = (pM) => { const [x, z] = mul(pM, U); return x >= PAINT_BEYOND_EXTENT.minX && x <= PAINT_BEYOND_EXTENT.maxX && z >= PAINT_BEYOND_EXTENT.minZ && z <= PAINT_BEYOND_EXTENT.maxZ; };
+    const clear = w.samples.map((s) => s.ok && !photoPainted(s.p) && ![0, 1, -1].some((side) => otherRoad(w, add(s.p, mul(s.n, 0.9 * side * (side > 0 ? s.L : s.R))))));
     const keep = clear.map((_, i) => clear.slice(Math.max(0, i - Math.ceil(JUNCTION_M / STEP_M)), i + Math.ceil(JUNCTION_M / STEP_M) + 1).every(Boolean));
     const lineSpecs = [];
     const centre = LINE_WIDTH_M_BY_KIND.centre_line_yellow / 2;
@@ -453,6 +454,24 @@ export async function buildContextGround({ glb, lines = JSON.parse(readFileSync(
     }
   }
 
+  // photo paint beyond EXTENT (stages/markings.mjs PAINT_BEYOND_EXTENT: traced on the NGII sheet, gate-checked), on this
+  // ground at the marking lift, faces up
+  let photoPieces = 0;
+  for (const piece of paint) {
+    const ringsM = piece.rings.map((ring) => ring.map((q) => mul(q, 1 / U)));
+    const c = ringsM[0].reduce((a, q) => [a[0] + q[0] / ringsM[0].length, a[1] + q[1] / ringsM[0].length], [0, 0]);
+    if (inMarkingExtent(mul(c, U)) || PALETTE_U[piece.colour] === undefined) continue;
+    const all = ringsM.flat();
+    const soup = soupOf(c, "marking");
+    for (const [ia, ib, ic] of ShapeUtils.triangulateShape(ringsM[0].map(([x, z]) => new Vector2(x, z)), ringsM.slice(1).map((h) => h.map(([x, z]) => new Vector2(x, z))))) {
+      const [a, b, cc] = [all[ia], all[ib], all[ic]];
+      const up = (b[1] - a[1]) * (cc[0] - a[0]) - (b[0] - a[0]) * (cc[1] - a[1]) > 0;
+      const v = (p) => { const q = vtx(p, MARK_LIFT_M, null); q[3] = PALETTE_U[piece.colour]; q[4] = 0.5; return q; };
+      if (up) soup.tri(v(a), v(b), v(cc)); else soup.tri(v(a), v(cc), v(b));
+    }
+    photoPieces += 1;
+  }
+
   // 5. materials and nodes
   const material = {
     asphalt: await tileMaterial(glb, { name: "Ground_Context_Asphalt", cls: "asphalt", rank: 3, extras: { context: true } }),
@@ -478,6 +497,6 @@ export async function buildContextGround({ glb, lines = JSON.parse(readFileSync(
     measured: [...measured].map(([id, m]) => `${m.road} ${id} ${m.lanes} lanes (${m.sections} sections) ${m.widthM} m`),
   };
   console.log(`context ground: ${stats.ways} OSM ways outside EXTENT in ${stats.tiles} tiles (${far} Context_Far_Ground_*), ${triangles} triangles; ` +
-    `carriageway ${stats.carriagewayM2} m2, sidewalk ${stats.sidewalkM2} m2, lane markings along ${stats.markedM} m; lane counts from the paint inside EXTENT: ${stats.measured.join(", ") || "none"} (widths 추정)`);
+    `carriageway ${stats.carriagewayM2} m2, sidewalk ${stats.sidewalkM2} m2, lane markings along ${stats.markedM} m; photo paint beyond EXTENT ${photoPieces} pieces; lane counts from the paint inside EXTENT: ${stats.measured.join(", ") || "none"} (widths 추정)`);
   return stats;
 }
