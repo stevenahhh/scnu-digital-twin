@@ -161,3 +161,12 @@ export function campusCenterOf(anchors) {
   const d4 = anchors.find((anchor) => anchor.elementId === "BLD_D4");
   return d4 ? campusModelCenter(d4.position) : { x: 0, z: 0 };
 }
+
+// 라벨 항목의 앵커를 Legacy 장면 좌표(재중심화 뒤)로 되돌린다: 정문 거리·방위(gateDistance.mjs)처럼 장면 좌표를 쓰는 값에 쓴다.
+// 항목이 없거나 위치가 없으면 null.
+export function gateScenePositionOf(entries, elementId) {
+  const entry = entries?.find((item) => item.elementId === elementId);
+  if (!entry?.position) return null;
+  const center = campusCenterOf(entries);
+  return [entry.position[0] - center.x, entry.position[1], entry.position[2] - center.z];
+}

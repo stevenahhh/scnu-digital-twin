@@ -21,6 +21,8 @@ import { HudTimeReadout, sceneTimeReadout } from "./components/HudTimeReadout";
 import { HudToolbar } from "./components/HudToolbar";
 import { CameraControls } from "./components/CameraControls";
 import { isD4ElementId } from "./utils/d4BuildingData.mjs";
+import { gateTextFor } from "./labels/gateDistance.mjs";
+import { gateScenePositionOf } from "./vworld/labelAnchors.mjs";
 import { TourPager } from "./components/CampusHud";
 import { tourPosition } from "./panel/presentationLayout.mjs";
 import { mapLighting } from "./vworld/mapLighting.mjs";
@@ -53,6 +55,8 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const viewportMode = useViewportMode();
   const panelState = usePanelState(viewportMode);
+  // VWorld 라벨 항목: 인스펙터에 Legacy와 같은 정문 거리·방위를 쓴다(GAP-37).
+  const [vworldLabelEntries, setVWorldLabelEntries] = useState(null);
   // D4 상세 화면(자체 대화상자)이 열린 동안에는 건물 팝업을 띄우지 않는다. 화면 뒤에 가린 팝업이 키보드 포커스를 가두지 않게 한다.
   const [isD4SectionOpen, setIsD4SectionOpen] = useState(false);
   // D4 상세가 그려질 셸의 패인 자리와, 레일에서 다른 탭을 골라 D4를 닫을 때 바꾸는 값.
@@ -210,6 +214,7 @@ export default function App() {
           d4Presets={viewportMode === "phone" ? CAMERA_PRESETS : null}
           onSelectPreset={camera.selectPreset}
           phone={viewportMode === "phone"}
+          onLabelEntries={setVWorldLabelEntries}
           labelPresetFromGround={Boolean(CAMERA_PRESETS.find((preset) => preset.id === camera.activePresetId)?.fromGround)}
           onSelection={handleVWorldSelection}
           energyFeedDown={isFeedDown(feeds.energy)}
@@ -276,6 +281,7 @@ export default function App() {
             title={selection.selectedTitle || popup.data?.name || selection.selectedId}
             popup={popup}
             onCompare={selection.selectedId.startsWith("BLD_") ? () => comparison.add(selection.selectedId) : null}
+            gateText={gateTextFor(gateScenePositionOf(vworldLabelEntries, selection.selectedId))}
             onClose={closeMicroclimatePopup}
             onShowAll={closeMicroclimatePopup}
           />

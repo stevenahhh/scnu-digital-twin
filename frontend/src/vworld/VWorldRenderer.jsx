@@ -129,6 +129,8 @@ export default function VWorldRenderer({
   onSelectPreset,
   // 지금 시점이 땅 높이 시점(정문)인지: 라벨 거리 단계에 쓴다(Legacy CityModel의 presetFromGround와 같다).
   labelPresetFromGround = false,
+  // 라벨 항목(앵커 위치 포함)이 준비되면 받는다.
+  onLabelEntries,
   // 폰 화면(지도 위 상태 카드를 아래쪽 열로 옮긴다).
   phone = false,
   presentation = false,
@@ -150,6 +152,13 @@ export default function VWorldRenderer({
   }, [selectedId]);
   const [labelScene, setLabelScene] = useState(null);
   const [labelEntries, setLabelEntries] = useState(null);
+  // 라벨 항목을 앱에도 알린다(인스펙터의 정문 거리·방위가 앵커 위치를 쓴다).
+  const onLabelEntriesRef = useRef(onLabelEntries);
+  onLabelEntriesRef.current = onLabelEntries;
+  const handleLabelEntries = useCallback((entries) => {
+    setLabelEntries(entries);
+    onLabelEntriesRef.current?.(entries);
+  }, []);
   const [campusGlb, setCampusGlb] = useState(null);
   // 마우스를 올린 캠퍼스 건물(앵커 요소 id). 상자 강조와 칩 떠오름이 같이 쓴다.
   const [hoveredLabelId, setHoveredLabelId] = useState(null);
@@ -670,7 +679,7 @@ export default function VWorldRenderer({
           chromeRefs={labelChromeRefs ? [...defaultChromeRefs, ...labelChromeRefs] : defaultChromeRefs}
           onSelectEntry={handleLabelSelect}
           onSelectCluster={handleLabelCluster}
-          onEntries={setLabelEntries}
+          onEntries={handleLabelEntries}
           onGlb={setCampusGlb}
           onClear={() => {
             setSelectedLabelId(null);
