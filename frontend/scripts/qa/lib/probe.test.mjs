@@ -57,3 +57,12 @@ test("meanLuminance stays the plain mean of the box", () => {
   const white = meanLuminance({ width: 1, height: 1, channels: 4, pixels: new Uint8Array([255, 255, 255, 255]) }, { x: 0, y: 0, w: 1, h: 1 }, 1);
   assert.ok(mean > black && mean < white);
 });
+
+test("activeTab reads the desktop rail's icon-only tab (aria-current, aria-label) as the open section", () => {
+  const dom = new JSDOM(`<!doctype html><body>
+    <button data-qa="dashboard-tab-dashboard" aria-label="기본 현황" aria-current="page"><svg></svg></button>
+    <button data-qa="dashboard-tab-energy" aria-label="에너지"><svg></svg></button>
+  </body>`, { runScripts: "outside-only" });
+  dom.window.eval(pageProbeSource());
+  assert.equal(dom.window.__qa.activeTab(), "기본 현황");
+});

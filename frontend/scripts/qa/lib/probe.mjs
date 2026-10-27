@@ -46,10 +46,12 @@ export function pageProbeSource() {
   // Active dashboard tab: aria-selected/pressed, else the one tab whose filled background differs.
   const activeTab = () => {
     const tabs = all("[data-qa^=dashboard-tab-]");
-    const aria = tabs.find((el) => el.getAttribute("aria-selected") === "true" || el.getAttribute("aria-pressed") === "true");
-    if (aria) return txt(aria);
+    // The desktop rail's icon-only tabs mark the open section with aria-current="page" and carry their name in aria-label.
+    const aria = tabs.find((el) => el.getAttribute("aria-selected") === "true" || el.getAttribute("aria-pressed") === "true")
+      ?? tabs.find((el) => el.getAttribute("aria-current") === "page");
+    if (aria) return txt(aria) || aria.getAttribute("aria-label") || null;
     const filled = tabs.filter((el) => !/rgba\\(0, 0, 0, 0\\)|transparent/.test(getComputedStyle(el).backgroundColor));
-    return filled.length === 1 ? txt(filled[0]) : null;
+    return filled.length === 1 ? txt(filled[0]) || filled[0].getAttribute("aria-label") || null : null;
   };
   const alphaOf = (value) => { const m = String(value).match(/\\/\\s*([\\d.]+)\\)|rgba\\([^)]*,\\s*([\\d.]+)\\)/); if (m) return Number(m[1] ?? m[2]); return /^(rgb|color)\\(/.test(String(value)) ? 1 : 0; };
   // Alpha of the panel's visible surface: the largest non-transparent box among it and its first descendants.
