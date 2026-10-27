@@ -205,8 +205,12 @@ export async function modelEdgeStep(ctx) {
   const cy = corners.reduce((a, p) => a + p[1], 0) / corners.length;
   const usable = ([x, y]) => region && x >= region.x + 8 && y >= region.y + 8 && x <= region.x + region.w - 8 && y <= region.y + region.h - 8
     && !huds.some((r) => x >= r.l && x <= r.r && y >= r.t && y <= r.b);
+  // A seam shifts the whole band on one side of the edge; single point pairs on textured ground (aerial imagery, trees vs
+  // roofs) measure texture, and at night two near-black pixels read as a ~0.9 relative step. So each edge compares the
+  // mean luminance of its band 20 px inside with its band 20 px outside (>= 3 usable points per edge).
   let worst = 0;
   let samples = 0;
+  const edges = [];
   for (let i = 0; i < corners.length; i += 1) {
     const [ax, ay] = corners[i];
     const [bx, by] = corners[(i + 1) % corners.length];
@@ -218,15 +222,26 @@ export async function modelEdgeStep(ctx) {
     const mx = (ax + bx) / 2 - cx;
     const my = (ay + by) / 2 - cy;
     if (nx * mx + ny * my < 0) { nx = -nx; ny = -ny; }
+    let sumIn = 0;
+    let sumOut = 0;
+    let n = 0;
     for (let d = 20; d < len - 20; d += 40) {
       const q = [ax + ((bx - ax) * d) / len, ay + ((by - ay) * d) / len];
       const inside = [q[0] - nx * 20, q[1] - ny * 20];
       const outside = [q[0] + nx * 20, q[1] + ny * 20];
       if (!usable(inside) || !usable(outside)) continue;
-      const step = luminanceStep(img, [inside, outside], ctx.scale, 4);
-      worst = Math.max(worst, step);
-      samples += 1;
+      const box = ([x, y]) => ({ x: x - 4, y: y - 4, w: 8, h: 8 });
+      sumIn += meanLuminance(img, box(inside), ctx.scale) ?? 0;
+      sumOut += meanLuminance(img, box(outside), ctx.scale) ?? 0;
+      n += 1;
     }
+    if (n < 3) continue;
+    const meanIn = sumIn / n;
+    const meanOut = sumOut / n;
+    const step = Math.abs(meanIn - meanOut) / Math.max(meanIn, meanOut, 1e-6);
+    edges.push({ edge: i, samples: n, inside: Math.round(meanIn * 1000) / 1000, outside: Math.round(meanOut * 1000) / 1000, step: Math.round(step * 1000) / 1000 });
+    worst = Math.max(worst, step);
+    samples += n;
   }
   // No usable sample: either the edge is not on screen at all (the scene region lies inside the model rectangle - the ground
   // reaches every side of the view, so no bounding edge is visible) or it is hidden by HUD/panel.
@@ -240,7 +255,7 @@ export async function modelEdgeStep(ctx) {
   };
   const edgeOffScreen = Boolean(region) && samples === 0
     && [[region.x, region.y], [region.x + region.w, region.y], [region.x, region.y + region.h], [region.x + region.w, region.y + region.h]].every(inside);
-  return { edge: corners, step: Math.round(worst * 1000) / 1000, samples, edgeOffScreen };
+  return { edge: corners, step: Math.round(worst * 1000) / 1000, samples, edgeOffScreen, edges };
 }
 
 export async function chipByText(ctx, text) {

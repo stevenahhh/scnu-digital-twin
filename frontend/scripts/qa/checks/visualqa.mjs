@@ -41,7 +41,8 @@ async function accentHues(ctx) {
     for (const el of qa.all("body *").filter(qa.visible).slice(0, 2500)) {
       if (el.closest("canvas")) continue;
       const s = getComputedStyle(el);
-      const status = Boolean(el.closest("[role=alert],[data-qa$=-error],[data-qa=weather-error-banner],[data-status]"));
+      // Status UI: alerts, error banners, data-status rows and live status indicators (role=status, e.g. a feed badge).
+      const status = Boolean(el.closest("[role=alert],[role=status],[data-qa$=-error],[data-qa=weather-error-banner],[data-status]"));
       for (const prop of ["color", "backgroundColor", "borderTopColor"]) {
         const value = s[prop];
         if (!value || value === "rgba(0, 0, 0, 0)") continue;
