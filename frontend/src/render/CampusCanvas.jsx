@@ -6,6 +6,7 @@ import { getClearColor } from "../lighting/atmosphere.mjs";
 import { getSunVector } from "../utils/sunPosition.mjs";
 import { PanelErrorBoundary } from "../components/PanelErrorBoundary";
 import { CampusScene } from "./CampusScene";
+import { WaterReflections } from "../lighting/WaterReflections";
 
 // 3D 실패 안내(<div role="alert">)가 장면 배경 위에서도 읽히도록 패널 표면 위에 올린다.
 const CANVAS_FALLBACK_SURFACE_CLASS = [
@@ -83,6 +84,7 @@ export const CampusCanvas = forwardRef(function CampusCanvas(
             onDragStart={flow.releaseOnDrag}
             headlineById={flow.headlineById}
           />
+          <WaterReflections quality={rendering.quality} />
         </Canvas>
       </PanelErrorBoundary>
     </div>

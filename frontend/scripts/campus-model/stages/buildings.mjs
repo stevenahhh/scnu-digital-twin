@@ -533,7 +533,10 @@ const zoneTile = (zones, s, tile) => {
 const KNOWN_ROOFS = new Set(["flat", "gable", "hipped", "mono-pitch", "curved"]);
 const CANOPY_DEPTH = metres(2.2);
 const CANOPY_THICKNESS = metres(0.3);
-function addFacade(mesh, ordered, { base, ground, bottom, top, floors, look, tile, zones = null, entranceEdge = -1, canopy = false, seed, charts }) {
+// `front` ({ tile, fascia, block }, from the facade entry's `front`): the entrance edge takes its own tile on every storey,
+// a flat fascia slab over its top storeys (overhanging, on the front look's canopy colour) and a side block at one end
+// (on its plinth colour); every other edge keeps the building's look. Sizes estimated from the VR (추정).
+function addFacade(mesh, ordered, { base, ground, bottom, top, floors, look, tile, zones = null, entranceEdge = -1, canopy = false, front = null, seed, charts }) {
   const storey = (top - ground) / floors;
   const lowest = bottom > ground + 1e-6 ? bottom : base;
   const depth = top - lowest;
@@ -572,7 +575,7 @@ function addFacade(mesh, ordered, { base, ground, bottom, top, floors, look, til
         const from = Math.max(y0, bottom);
         const f0 = (from - y0) / storey;
         const row = s === 0 ? ROWS.GROUND : rng() < 0.5 ? ROWS.UPPER_A : ROWS.UPPER_B;
-        const rowTile = zoneTile(zones, s, tile);
+        const rowTile = front && i === entranceEdge ? front.tile : zoneTile(zones, s, tile);
         const emit = (g0, g1, tileRow, b0, b1) => {
           cell(g0 / bays, g1 / bays, from, y1, [tileUv(rowTile, tileRow, b0, f0), tileUv(rowTile, tileRow, b1, f0), tileUv(rowTile, tileRow, b1, 1), tileUv(rowTile, tileRow, b0, 1)]);
         };
@@ -605,6 +608,20 @@ function addFacade(mesh, ordered, { base, ground, bottom, top, floors, look, til
           else emit(g0, g1, tileRow, 0, k);
         }
       }
+      if (front && i === entranceEdge) {
+        const aoAt = (t, y) => (charts ? [s0 + t * length, top - y, chart] : null);
+        if (front.fascia) {
+          const y = top - front.fascia.storeys * storey;
+          addCanopy(mesh, point, 0, 1, y, canopyUv(front.tile), aoAt(0.5, y), { thickness: top - y + metres(front.fascia.rise ?? 0), depth: metres(front.fascia.overhang) });
+        }
+        if (front.block) {
+          // the block's end of the edge: the vertex further along its compass side (south = larger z, east = larger x)
+          const k = { south: [1, 1], north: [1, -1], east: [0, 1], west: [0, -1] }[front.block.end];
+          const startIsEnd = (a[k[0]] - b[k[0]]) * k[1] > 0;
+          const [t0, t1] = startIsEnd ? [0, front.block.share] : [1 - front.block.share, 1];
+          addCanopy(mesh, point, t0, t1, ground, plinthUv(front.tile, 0.5), aoAt((t0 + t1) / 2, ground), { thickness: front.block.storeys * storey, depth: metres(front.block.depth) });
+        }
+      }
     }
     distance += length;
   }
@@ -613,10 +630,10 @@ function addFacade(mesh, ordered, { base, ground, bottom, top, floors, look, til
 
 // Canopy slab over the doors: top, underside, front and both ends, all on the canopy fascia colour of the tile and
 // on one AO texel of the wall behind it (zero UV1 area, so the bake leaves the wall's texels to the wall).
-function addCanopy(mesh, point, t0, t1, y, uv, ao) {
+function addCanopy(mesh, point, t0, t1, y, uv, ao, { thickness = CANOPY_THICKNESS, depth = CANOPY_DEPTH } = {}) {
   const yb = y;
-  const yt = y + CANOPY_THICKNESS;
-  const d = CANOPY_DEPTH;
+  const yt = y + thickness;
+  const d = depth;
   const uvs = [uv, uv, uv, uv];
   const faces = [
     [point(t0, yb, d), point(t1, yb, d), point(t1, yt, d), point(t0, yt, d)],
@@ -790,6 +807,9 @@ function buildingPrimitives(building, seed, { heightAt, facadeMaterial, tiles, l
   const equipment = aoMesh();
   const rng = mulberry32(seed);
   const entrance = entranceOf(building, building.entry);
+  const frontEntry = building.entry?.front;
+  const front = frontEntry ? { tile: tiles.get(frontEntry.look), fascia: frontEntry.fascia ?? null, block: frontEntry.block ?? null } : null;
+  if (front && !front.tile) throw new Error(`front look ${frontEntry.look} has no facade tile`);
   for (const [partIndex, part] of building.parts.entries()) {
     if (!part.outer || part.outer.length < 3) continue;
     const samples = [...part.outer, ringCentroid(part.outer)].map(([x, z]) => heightAt(x, z));
@@ -800,7 +820,7 @@ function buildingPrimitives(building, seed, { heightAt, facadeMaterial, tiles, l
       const floors = Math.max(1, mass.floors || Math.round(mass.heightMetres / 3.6));
       const facade = { base, ground, bottom: ground + metres(mass.fromMetres), top, floors, look, tile, zones: zonesOf(look, tiles), seed: seed * 31 + partIndex * 7 + massIndex, charts };
       const onEntrance = massIndex === 0 && entrance?.part === part;
-      addFacade(walls, orderedRing(mass.outer, true), { ...facade, entranceEdge: onEntrance ? entrance.edge : -1, canopy: onEntrance && Boolean(building.entry) && !greenhouse });
+      addFacade(walls, orderedRing(mass.outer, true), { ...facade, entranceEdge: onEntrance ? entrance.edge : -1, canopy: onEntrance && Boolean(building.entry) && !greenhouse, front: onEntrance ? front : null });
       mass.holes.forEach((hole) => addFacade(walls, orderedRing(hole, false), facade));
       const roofFrom = roof.vertexCount;
       roof.horizontalPolygon(mass.outer, mass.holes, top, { uvScale: 1 / metres(ROOF_METRES), color: building.roofColour });
@@ -1034,7 +1054,10 @@ function roofSurface(triangles) {
 // `ground`, the ground row for the first storey, the entrance row and canopy on the entrance edge) and the plinth band
 // below the ground line; plain masses get eave-coloured quads. Under a pitched roof the cells stop at the edge's eave
 // line and a plain gable fills the wall up to the roof profile.
-function addMassRing(ctx, solid, ordered, { roundBays = null, facade, cellsOnGround = false, entranceEdge = -1, canopy = false, seed }) {
+// `front` ({ tile, fascia, block }, from the facade entry's `front`): the entrance edge takes its own tile on every storey,
+// a flat fascia slab over its top storeys (overhanging, on the front look's canopy colour) and a side block at one end
+// (on its plinth colour); every other edge keeps the building's look. Sizes estimated from the VR (추정).
+function addMassRing(ctx, solid, ordered, { roundBays = null, facade, cellsOnGround = false, entranceEdge = -1, canopy = false, front = null, seed }) {
   const { walls, plain, charts, solids, look, tile, zones = null, ground, plinthBase, storey, plainColour, surface } = ctx;
   const rng = mulberry32(seed);
   const bay = metres(look.bay ?? 3.6);
@@ -1079,6 +1102,7 @@ function addMassRing(ctx, solid, ordered, { roundBays = null, facade, cellsOnGro
     const bays = fixed !== null ? 1 : Math.max(1, Math.round(length / bay));
     const sliver = fixed === null && length < bay * 0.45;
     let canopyDone = !canopy;
+    let frontDone = !front;
     for (const run of exposureRuns(a, b, solid, solids, solid.bottom, top)) {
       for (const [lo, hi] of run.ranges) {
         const cellsTop = Math.min(hi, eave);
@@ -1106,7 +1130,7 @@ function addMassRing(ctx, solid, ordered, { roundBays = null, facade, cellsOnGro
               if (to - from < 1e-3) continue;
               const [f0, f1] = [(from - y0) / storey, (to - y0) / storey];
               const row = k === 0 ? ROWS.GROUND : rng() < 0.5 ? ROWS.UPPER_A : ROWS.UPPER_B;
-              const rowTile = zoneTile(zones, k, tile);
+              const rowTile = front && i === entranceEdge ? front.tile : zoneTile(zones, k, tile);
               const cell = (g0, g1, tileRow, u) => {
                 const c0 = Math.max(g0, run.t0 * bays);
                 const c1 = Math.min(g1, run.t1 * bays);
@@ -1138,6 +1162,21 @@ function addMassRing(ctx, solid, ordered, { roundBays = null, facade, cellsOnGro
                   const y = ground + Math.min(0.72 * storey, metres(3.6));
                   addCanopy(walls, point, middle - half, middle + half, y, canopyUv(tile), charts ? ao(middle, y) : null);
                   canopyDone = true;
+                }
+                if (!frontDone) {
+                  frontDone = true;
+                  const aoAt = (t, y) => (charts ? [s0 + t * length, peak - y, chart] : null);
+                  if (front.fascia) {
+                    const y = solid.top - front.fascia.storeys * storey;
+                    addCanopy(walls, point, 0, 1, y, canopyUv(front.tile), aoAt(0.5, y), { thickness: solid.top - y + metres(front.fascia.rise ?? 0), depth: metres(front.fascia.overhang) });
+                  }
+                  if (front.block) {
+                    // the block's end of the edge: the vertex further along its compass side (south = larger z, east = larger x)
+                    const k = { south: [1, 1], north: [1, -1], east: [0, 1], west: [0, -1] }[front.block.end];
+                    const startIsEnd = (a[k[0]] - b[k[0]]) * k[1] > 0;
+                    const [t0, t1] = startIsEnd ? [0, front.block.share] : [1 - front.block.share, 1];
+                    addCanopy(walls, point, t0, t1, ground, plinthUv(front.tile, 0.5), aoAt((t0 + t1) / 2, ground), { thickness: front.block.storeys * storey, depth: metres(front.block.depth) });
+                  }
                 }
               } else {
                 push(0, bays);
@@ -1274,6 +1313,9 @@ function massPrimitives(building, seed, { heightAt, facadeMaterial, tiles, looks
   const plinthBase = ground - metres(1.5);
   const storeyMetres = building.form?.storeyMetres ?? 4.0;
   const entrance = entranceOf(building, building.entry);
+  const frontEntry = building.entry?.front;
+  const front = frontEntry ? { tile: tiles.get(frontEntry.look), fascia: frontEntry.fascia ?? null, block: frontEntry.block ?? null } : null;
+  if (front && !front.tile) throw new Error(`front look ${frontEntry.look} has no facade tile`);
   const lod4Canopy = building.parts.some((p) => p.kind === "canopy");
   const roofFallback = building.roofColour ?? [255, 255, 255, 255];
   for (const [index, part] of building.parts.entries()) {
@@ -1296,7 +1338,7 @@ function massPrimitives(building, seed, { heightAt, facadeMaterial, tiles, looks
     const orderedOuter = orderedRing(part.outer, true);
     const roundBays = part.round ? roundBaysOf(part.round, orderedOuter) : null;
     const wallsFrom = walls.vertexCount;
-    addMassRing(coreCtx, shape, orderedOuter, { roundBays, facade, cellsOnGround: part.kind === "core", entranceEdge: onEntrance ? entrance.edge : -1, canopy: onEntrance && Boolean(building.entry) && !greenhouse && !lod4Canopy, seed: seed * 31 + index * 7 });
+    addMassRing(coreCtx, shape, orderedOuter, { roundBays, facade, cellsOnGround: part.kind === "core", entranceEdge: onEntrance ? entrance.edge : -1, canopy: onEntrance && Boolean(building.entry) && !greenhouse && !lod4Canopy, front: onEntrance ? front : null, seed: seed * 31 + index * 7 });
     if (part.round) smoothRound(walls, wallsFrom, part.round.centre);
     part.holes.forEach((hole, k) => addMassRing(ctx, shape, orderedRing(hole, false), { facade, seed: seed * 31 + index * 7 + k + 1 }));
     const colour = part.roofColour ?? roofFallback;
@@ -1793,7 +1835,8 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
     const { base, band } = catalogue.looks.get(b.look).zones ?? {};
     const blocks = (b.attachments ?? []).filter((a) => a.kind === "block").map((a) => a.look);
     const partLooks = (b.parts ?? []).map((p) => p.look).filter(Boolean);
-    return [b.look, ...(base ? [base.look] : []), ...(band ? [band.look] : []), ...blocks, ...partLooks];
+    const front = b.entry?.front?.look ? [b.entry.front.look] : [];
+    return [b.look, ...(base ? [base.look] : []), ...(band ? [band.look] : []), ...blocks, ...partLooks, ...front];
   }))];
   const facadeAtlas = await buildFacadeAtlas(usedLooks.map((id) => ({ ...catalogue.looks.get(id), id })));
   const clamped = { repeat: false };
