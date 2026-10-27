@@ -18,7 +18,8 @@ const PRESET_ICONS = {
 };
 const icon = (Icon) => <Icon aria-hidden="true" className="h-4 w-4" />;
 // 눌린(지금 보고 있는) 시점의 모양 하나: surface-2 바탕 + ink 글자 + 확인 표시. 강조색 테두리는 쓰지 않는다.
-const PRESSED = "bg-surface-2 text-ink";
+// 눌린 단추: 공통 선택 표시(surface-2 바탕, ink 글자). ghost 변형의 bg-transparent·text-ink-muted보다 앞서야 해서 !로 둔다.
+const PRESSED = "!bg-surface-2 !text-ink";
 
 // 시점 메뉴: 위아래 화살표로 항목을 옮기고 Enter로 고른다. Esc는 Popover가 닫고 포커스를 트리거로 돌린다.
 function PresetMenu({ presets, activeId, onSelect, close }) {

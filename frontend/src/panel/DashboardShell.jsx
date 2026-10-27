@@ -58,7 +58,7 @@ const Rail = forwardRef(function Rail({ activeTab, onOpen, className }, toggleRe
             aria-current={tab.value === activeTab ? "page" : undefined}
             icon={<Icon aria-hidden="true" className="h-5 w-5" />}
             onClick={() => onOpen(tab.value)}
-            className={cx(TARGET_44, tab.value === activeTab && "bg-surface-2 text-ink")}
+            className={cx(TARGET_44, tab.value === activeTab && "!bg-surface-2 !text-ink")}
           />
         );
       })}

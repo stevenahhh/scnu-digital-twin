@@ -87,7 +87,7 @@ Shared primitives live in `frontend/src/ui/` and both entries use them (Legacy `
 - **Accessibility**: native `button`, a visible focus ring, and 44px touch targets.
 
 ### Segmented
-- **Structure**: a `pill` track with equal-width text segments that use Korean nouns. It is `role="tablist"` or `role="radiogroup"` by `kind`.
+- **Structure**: a `pill` track with equal-width text segments (control radius, the same active shape as every pressed control) that use Korean nouns. It is `role="tablist"` or `role="radiogroup"` by `kind`.
 - **States**: one active style everywhere: a `surface-2` wash, `ink` text and a 4px dot or check before the label. No accent border and no primary fill. Inactive segments use `ink-subtle` text.
 - **Accessibility**: arrow keys move with a roving tabindex, `aria-selected` or `aria-checked` marks the active segment, and segments are 44px tall under a coarse pointer.
 

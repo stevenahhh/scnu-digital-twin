@@ -61,13 +61,13 @@ export function Segmented({ kind = "tabs", label, options, value, onChange, size
             onClick={() => !option.disabled && !active && onChange?.(option.value)}
             onKeyDown={(event) => handleKeyDown(event, option.value)}
             className={cx(
-              "inline-flex flex-1 basis-0 items-center justify-center gap-2 rounded-pill border font-medium",
+              "inline-flex flex-1 basis-0 items-center justify-center gap-2 rounded-control border font-medium",
               "transition-colors duration-micro",
               size === "sm" ? "min-h-8 px-2 text-caption" : "min-h-10 px-3 text-body",
               COARSE_TARGET,
               FOCUS_RING,
               active
-                ? "border-hairline-strong bg-surface-2 font-semibold text-ink"
+                ? "border-hairline-strong bg-surface-2 text-ink"
                 : "border-transparent text-ink-muted hover:text-ink",
               option.disabled && "cursor-not-allowed opacity-50",
             )}
