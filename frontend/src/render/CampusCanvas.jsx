@@ -36,7 +36,7 @@ export const CampusCanvas = forwardRef(function CampusCanvas(
       aria-describedby="campus-map-keys"
       className={`absolute inset-0 z-0 flex select-none items-center justify-center ${CANVAS_FALLBACK_SURFACE_CLASS}`}
     >
-      <p id="campus-map-keys" className="sr-only">화살표로 회전, Shift+화살표로 이동, +와 -로 확대·축소, H로 처음 시점</p>
+      <p id="campus-map-keys" className="sr-only text-body">화살표로 회전, Shift+화살표로 이동, +와 -로 확대·축소, H로 처음 시점</p>
       <PanelErrorBoundary
         label="3D 캠퍼스"
         message="3D 캠퍼스 모델을 불러오지 못했습니다"

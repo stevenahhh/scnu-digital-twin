@@ -86,7 +86,7 @@ export function SceneLabel({
         className={cx(
           "inline-flex max-w-40 items-center gap-1 rounded-control border border-hairline bg-[var(--colors-label-bg)] font-medium text-ink",
           "transition-[opacity,background-color,box-shadow] duration-state motion-reduce:transition-none",
-          size === "sm" ? "px-1.5 py-0.5" : "px-2 py-1",
+          size === "sm" ? "px-2 py-1" : "px-2 py-1",
           LABEL_TEXT,
           HALO,
           CHIP_FOCUS,

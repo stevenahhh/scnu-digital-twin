@@ -35,7 +35,7 @@ const Rail = forwardRef(function Rail({ activeTab, onOpen, className }, toggleRe
       data-qa="dashboard-rail"
       className={cx("pointer-events-auto absolute inset-y-0 flex w-[var(--dashboard-rail-width)] flex-col items-center gap-2 border-l border-hairline bg-surface-1 py-4", className)}
     >
-      <h2 className="sr-only">{dashboardTitle(activeTab)}</h2>
+      <h2 className="sr-only text-body">{dashboardTitle(activeTab)}</h2>
       <Button
         ref={toggleRef}
         variant="ghost"
