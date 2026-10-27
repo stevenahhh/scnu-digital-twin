@@ -8454,6 +8454,7 @@
     "height_source": "by eye / VR",
     "estimated": true,
     "note": "blue pyramid-roof gazebo in the walled garden",
+    "position_note": "moved 2.2 m (2026-10-27): VR scene_a5 d (the 정자 below the camera, ray at its eave height on the corrected roof scale) and BLD_A1 form mass 7 (the LOD box of the same 정자) both put its centre at 243965.2, 263651.1 TM, about 2 m south of the photo roof (by eye, estimated)",
     "style": {
      "colour": "blue roof",
      "form": "square pyramid roof on posts"
@@ -8466,24 +8467,24 @@
     "coordinates": [
      [
       [
-       127.4813972,
-       34.96804716
+       127.48138879,
+       34.96802865
       ],
       [
-       127.48145191,
-       34.96804018
+       127.48144350,
+       34.96802167
       ],
       [
-       127.48144619,
-       34.96799739
+       127.48143778,
+       34.96797888
       ],
       [
-       127.48139148,
-       34.96800436
+       127.48138307,
+       34.96798585
       ],
       [
-       127.4813972,
-       34.96804716
+       127.48138879,
+       34.96802865
       ]
      ]
     ]

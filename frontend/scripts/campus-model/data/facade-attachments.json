@@ -7,6 +7,14 @@
  ],
  "buildings": [
   {
+   "node": "BLD_SCNU_F1",
+   "attachments": [
+    { "kind": "roof", "id": "F1 curved wing roof", "at": [127.48423525, 34.96595803], "colour": "#94604a", "source": "VR scene_f1 f (cols 150-920 of 2048): the curved metal wing's flat roof is a red-brown (terracotta) membrane inside a pale rim, sunlit about #b17a66 (the photo samples it grey); form mass 1 (estimated)" },
+    { "kind": "roof", "id": "F1 curved wing roof, west", "at": [127.48401025, 34.96611303], "colour": "#94604a", "source": "VR scene_f1 f: the same terracotta membrane on the wing's curved west part, form mass 2 (estimated)" },
+    { "kind": "roof", "id": "F1 curved wing roof, core", "at": [127.48422525, 34.96589803], "colour": "#94604a", "source": "VR scene_f1 f: the same terracotta membrane on the wing's raised core, form mass 8 (estimated)" }
+   ]
+  },
+  {
    "node": "BLD_E8",
    "attachments": [
     { "kind": "balconies", "id": "E8 north wing", "plan": [[127.47741371, 34.96866588], [127.47745024, 34.96865982], [127.4774447, 34.96862711], [127.47740644, 34.9686335]], "open": [1, 2], "column": 2, "storeyMetres": 3.78, "fromStorey": 2, "toStorey": 7, "roofMetres": 26.45, "colour": "#d42a44", "slabColour": "#dcd8d2", "source": "VR scene_e8 r (cols 60-440 of 1024): red balcony stack with a corner column and a roof frame at the courtyard end of the north wing's east wall, slabs at storeys 2-7; plan = the recess of the LOD4 outline between the stair core, the courtyard wall line and the east wall line (3.7 x 3.6 m; estimated)" },

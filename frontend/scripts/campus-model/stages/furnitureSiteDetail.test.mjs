@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { metres } from "../lib/frame.mjs";
 import { rgb } from "../lib/solids.mjs";
-import { B, hedgeTextStrokes, makeContext, onRoof, parasolColour, stallRow } from "./furniture.mjs";
+import { B, hedgeTextStrokes, makeContext, moundAt, onRoof, parasolColour, stallRow } from "./furniture.mjs";
 
 const M = metres;
 const sites = { inArea: () => false, labelAt: () => null, classes: { PAVING: 1, ASPHALT: 2 } };
@@ -100,4 +100,25 @@ test("paving_path: every leg a slab height_m above the ground, width_m wide", ()
   const xs = ctx.solid.mesh.positions.filter((_, i) => i % 3 === 0).map((x) => x / M(1));
   near(Math.min(...xs), -0.5, "half a width past the first end");
   assert.throws(() => B.paving_path(ctx, { id: "SD-T8", kind: "paving_path", point: [0, 0], p: {} }), /needs a LineString/);
+});
+
+test("planter tones: one smooth shared-vertex grid over the fill (no cell edges), worn beside a named paving_path, refused for another kind", () => {
+  const ring = [[0, 0], [M(6), 0], [M(6), M(6)], [0, M(6)]];
+  const bed = (objects, p) => { const ctx = flatContext(); ctx.objects = objects; B.planter(ctx, { id: "SD-T9", kind: "planter", heightM: 0.15, ring, p: { dims: { kerbHeightM: 0.15 }, fill: "lawn", ...p } }); return ctx.solid.mesh; };
+  const plain = bed([], {});
+  const path = { id: "SD-TP", kind: "paving_path", line: [[0, M(3)], [M(6), M(3)]] };
+  const turf = bed([path], { tones: ["#706b3f", "#a9a579"], wear_paths: ["SD-TP"], wear_tone: "#8a7d5e", tone_cell_m: 1 });
+  const quads = (turf.indices.length - plain.indices.length) / 6;
+  const corners = turf.vertexCount - plain.vertexCount;
+  assert.ok(quads >= 9, `${quads} grid quads`);
+  assert.ok(corners < 2 * quads, `${corners} vertices for ${quads} quads: neighbouring quads share their corners`);
+  assert.throws(() => bed([{ ...path, kind: "hedge" }], { tones: ["#706b3f"], wear_paths: ["SD-TP"], wear_tone: "#8a7d5e" }), /is not a paving_path/);
+});
+
+test("planter mound: mound_m from mound_ramp_m in from the bed's edge, nothing at the edge", () => {
+  const inner = [[0, 0], [M(10), 0], [M(10), M(10)], [0, M(10)]];
+  const o = { p: { mound_m: 0.45, mound_ramp_m: 2 } };
+  near(moundAt(o, inner, [M(5), M(5)]) / M(1), 0.45, "centre");
+  near(moundAt(o, inner, [0, M(5)]) / M(1), 0, "edge");
+  near(moundAt({ p: {} }, inner, [M(5), M(5)]), 0, "no mound");
 });

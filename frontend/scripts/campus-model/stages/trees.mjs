@@ -304,7 +304,7 @@ export function placeTrees({ inputs, selectableBuildings, campusBuildings, offCa
   // ---- trees from the inventory
   const treeInstances = Object.fromEntries([...SPECIES, "canopy", "hedge"].map((kind) => [kind, []]));
   const skipped = { blocked: 0, outside: 0, nudged: 0, station: 0, stationMoved: 0 };
-  const stands = { ground: 0, pit: 0, "street-pit": 0, "paved-pit": 0 };
+  const stands = { ground: 0, pit: 0, "street-pit": 0, "paved-pit": 0, roof: 0, vr: 0 };
   const rng = mulberry32(20261027);
   for (const [east, north, diameterM, heightM0, speciesIndex, heightFromChm, source, , , , photoCrown, fitViews, autumn] of inventory.trees) {
     let [x, z] = tmToScene(east, north);
@@ -367,6 +367,24 @@ export function placeTrees({ inputs, selectableBuildings, campusBuildings, offCa
     });
   }
 
+  // ---- trees placed from the VR (site-detail site_tree: the A1 roof garden of VR scene_a5, whose crowns the photo
+  // inventory blocks over the building, and the F1 forecourt island); the trunk stands roof_m (on a roof) plus box_m
+  // (in a tree box or on a mound) above the terrain.
+  const roofRng = mulberry32(107); // its own stream, so the hedges after it keep their tints
+  for (const o of furnitureObjects) {
+    if (o.kind !== "site_tree") continue;
+    const kind = o.p.species;
+    if (!SPECIES.includes(kind) || !o.point) throw new Error(`trees: site_tree ${o.id} needs a Point and a species of ${SPECIES}`);
+    const [x, z] = o.point;
+    if (o.p.roof_m) stands.roof += 1;
+    else stands.vr += 1;
+    const green = 0.86 + roofRng() * 0.28;
+    treeInstances[kind].push({
+      x, y: heightAt(x, z) + metres((o.p.roof_m ?? 0) + (o.p.box_m ?? 0) - 0.2), z, crownM: o.p.crown_m, heightMetres: o.heightM, heightFromChm: false,
+      source: "site-detail", stand: o.p.roof_m ? "roof" : "vr", autumn: o.p.autumn ?? null, fitted: true, photoCrown: `roof:${o.id}`,
+      angle: roofRng() * Math.PI * 2, tint: [green, green, green],
+    });
+  }
 
   // ---- continuous canopy: broadleaf runs of one photo crown become canopy masses
   const masses = { groups: 0, trees: 0, keptForCamera: 0 };
@@ -439,7 +457,8 @@ export function placeTrees({ inputs, selectableBuildings, campusBuildings, offCa
   for (const o of furnitureObjects) {
     if (o.kind !== "planter") continue;
     const note = o.p.note ?? "";
-    const shrubBed = o.ring && (o.p.fill === "shrub" || /shrub|hedge/.test(note));
+    // hedge: false (VR scene_f1 f: the F1 island's shrubs stand loose on its mound, no clipped edge) keeps the ring bare
+    const shrubBed = o.ring && o.p.hedge !== false && (o.p.fill === "shrub" || /shrub|hedge/.test(note));
     const frontWall = o.line && /planter wall along the building front/.test(note);
     if (!shrubBed && !frontWall) continue;
     hedgeSources.push(o.id);

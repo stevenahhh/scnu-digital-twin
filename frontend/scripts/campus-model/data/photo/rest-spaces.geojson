@@ -1219,6 +1219,13 @@
         "kind": "planter",
         "estimated": true,
         "fill": "lawn",
+        "mound_m": 0.45,
+        "hedge": false,
+        "mound_ramp_m": 2.0,
+        "tones": ["#50421a", "#73622b", "#867238", "#9c8650"],
+        "tone_cell_m": 0.4,
+        "tone_scale_m": 2.5,
+        "tone_note": "VR scene_f1 f (cols 820-1480): a low mounded island of ornamental grasses in autumn straw and olive with shrubs, small trees and boulders; the four tones are the VR quartiles at 0.82 of their value (sunlit exposure), blended smoothly by low-frequency noise; mound about 0.45 m (estimated)",
         "colour": "#b9b6ad",
         "dims": {
           "kerbHeightM": 0.15

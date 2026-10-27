@@ -741,6 +741,35 @@ The leftovers of the second pass, all estimated (추정):
   `paving_path` builder (a LineString width_m wide, a slab per leg).
 - SD-D3-P1..P3 now draw boxed bays (front_line and back_line), as the VR scene_d3 r car park shows them.
 
+## A1 roof garden, second round (a1-roof-r2)
+
+- Lawn: SD-A1RG-L1 carries `tones`, a smooth tone map over the bed: a shared-vertex grid (0.6 m) whose vertex colours
+  blend four autumn-turf tones (each an equal sRGB mix of a VR scene_a5 r lawn quartile and the NGII 2025 photo's) by
+  low-frequency value noise (`tone_scale_m` 4 m), so there are no cell edges; the turf is worn within 0.8 m of the
+  stepping stones (`wear_paths`), fading out to 1.6 m. The dashboard has no seasonal tint for furniture (only tree crowns are tinted), so the
+  turf is drawn in its VR (autumn) tone.
+- Trees: SD-A1RG-T1..T8, a new site-detail kind `site_tree` (species, crown_m, height_m, roof_m, box_m) that the trees
+  stage draws on the roof; T1..T3 stand in the timber tree boxes SD-A5-TB1..TB3 (their VR rays agree within 0.15 m).
+  Shrub balls and clipped masses: SD-A1RG-S1..S6, site_tree of species shrub (the trees stage's rounded, dark-green
+  shrub). All from VR scene_a5 r rays at the roof height; every crown clears the roof edge by at least 0.65 m.
+- The room in the garden (BLD_A1 form masses 5 and 16) takes the new look A1-roofroom, tan brick (its walls rise less than a storey over the wing
+  roof and are drawn plain in the parapet colour, so the white coping of the VR is not drawn).
+- OC0120 (the 정자) is moved 2.2 m to where VR scene_a5 d and the LOD box (mass 7) put it. The teal tiered structure by
+  the lattice wall in VR scene_a5 r is the parasol OC0121, not the 정자: face d shows the 정자 below the camera with a grey
+  standing-seam hip roof and a bright blue fascia, as drawn.
+
+## F1 forecourt and wing roof (a1-roof-r2, F1 follow-up)
+
+- The F1 curved wing's flat roof is a red-brown membrane in VR scene_f1 f, so roof attachments (data/facade-attachments.json)
+  recolour form masses 1, 2 and 8 #94604a.
+- RS-LS-F1ISLAND, the crescent island in the F1 forecourt, is a low mound (mound_m 0.45, the tone grid raised from 2 m in
+  from the kerb) of autumn ornamental grass (four VR tones at 0.82 of their value, a smooth tone map 2.5 m across). On it
+  stand SD-F1-IT1 (a pine) and IT2 (a small broadleaf tree) and SD-F1-IS1..IS4 (low shrubs, species shrub) as site_tree
+  with box_m, the mound under them. All are placed at
+  their crowns on the NGII 2025 photo: the VR rays from scene_f1 land 1-4 m off the photo island at 40 m range. `hedge:
+  false` keeps the trees stage from edging it with a clipped hedge (its shrubs stand loose; a low stone kerb only).
+- SD-F1-LED1, the LED wall, is one neutral emissive field (#5d6b7a). The VR shows an image there; no imagery is copied.
+
 ## Licence
 
 Source: **국토지리정보원 (NGII), 정사영상 2025, sheet 34702020 (순천020)**, metadata 202504000734702020, made by

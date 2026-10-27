@@ -77,7 +77,7 @@ const RETYPED = {
   },
   OC0121: {
     kind: "pavilion_octagon",
-    reason: "VR scene_a5 r (cols 1450-1650): a teal octagonal cantilever parasol in three stepped tiers on a curved hook mast, a timber deck with a bench beside it; drawn by the catalogue pavilion_octagon builder (estimated); it stands in the roof garden of A1 (roof_m 12.98: the wing roof, VR scene_a5 r/d over the parapet); moved onto its photo disc (data/photo/outline-review.json)",
+    reason: "VR scene_a5 r (cols 1450-1650): a teal octagonal cantilever parasol in three stepped tiers on a curved hook mast, a timber deck with a bench beside it; drawn by the catalogue pavilion_octagon builder (estimated); it stands in the roof garden of A1 (roof_m 12.98: the wing roof, VR scene_a5 r/d over the parapet); moved onto its photo disc (data/photo/objects-campus.geojson, position_note)",
     props: { roof_m: 12.98, support: "cantilever", tiers: 3, roofColour: "#1c8f86", trimColour: "#57b3a8", postColour: "#7a5a3c", bearing_deg: 90, deck: { lengthM: 3.2, widthM: 2.2, offsetM: [-2.6, 0.6], benchLengthM: 1.8, colour: "#8a4f36" }, dims: { eaveHeightM: 2.4, apexHeightM: 4.0, floorHeightM: 0 } },
   },
   OC0153: {
@@ -476,6 +476,12 @@ export function duplicatesOf(candidates, existing, radiusM = 3) {
 // Returns [{ id, other, kind, distanceM }] once per pair.
 // Survey pairs that touch by design (one structure surveyed in parts) are listed, not counted.
 export const AUDIT_COMPOUNDS = {
+  "SD-A1RG-T1+SD-A1RG-T6": "a small round-crowned tree between the two boxed trees of the A1 roof garden (VR scene_a5 r)",
+  "SD-A1RG-T2+SD-A1RG-T6": "a small round-crowned tree between the two boxed trees of the A1 roof garden (VR scene_a5 r)",
+  "SD-A1RG-S3+SD-A1RG-T8": "a clipped shrub under the broadleaf tree beside the parasol (VR scene_a5 r)",
+  "SD-A1RG-S6+SD-A1RG-T7": "a clipped shrub mass under the tall broadleaf tree east of the room (VR scene_a5 r)",
+  "SD-F1-IS2+SD-F1-IT1": "a low shrub beside the pine on the F1 forecourt island (VR scene_f1 f, photo crowns)",
+  "SD-F1-IS2+SD-F1-IT2": "a low shrub beside the small tree on the F1 forecourt island (VR scene_f1 f, photo crowns)",
   "OC0064+OC0065": "the two crossing bars of one X-shaped pergola in the pocket park",
   "SD-E1-B1+SD-E1-B3": "timber block benches grouped on the e1 plaza (VR scene_e1 f)",
   "SD-E1-B2+SD-E1-B3": "timber block benches grouped on the e1 plaza (VR scene_e1 f)",
@@ -539,6 +545,80 @@ B.fence = (ctx, o) => {
   else railing(ctx, o.line, Math.min(h, 1.2), C.white, { stepM: 2, rails: [1, 0.55, 0.12] });
 };
 
+// Patchy turf on a rest-space planter (site-detail `tones`: sRGB tones; VR scene_a5 r, autumn turf on the A1 roof): one
+// shared-vertex grid tone_cell_m (0.6 m) apart, 2 cm over the bed's fill, its vertex colours a smooth blend of the tones
+// by two octaves of value noise tone_scale_m (4 m) across, so the patches fade into each other with no cell edges; worn
+// turf (wear_tone) within wear_m (0.8 m) of the centre line of a paving_path named in wear_paths, fading out to twice
+// that; the grid fades into the bed's own tone over its outer cell. mound_m (VR scene_f1 f: the F1 forecourt island)
+// raises the grid into a low mound, mound_m at mound_ramp_m (2.5 m) from the bed's edge and over, a smoothstep between.
+export function moundAt(o, inner, q) {
+  if (!o.p.mound_m) return 0;
+  let edge = Infinity;
+  for (let i = 0; i < inner.length; i += 1) edge = Math.min(edge, segmentDistance(q, inner[i], inner[(i + 1) % inner.length]));
+  const t = Math.min(1, edge / M(o.p.mound_ramp_m ?? 2.5));
+  return M(o.p.mound_m) * t * t * (3 - 2 * t);
+}
+function segmentDistance(q, a, b) {
+  const [dx, dz] = [b[0] - a[0], b[1] - a[1]];
+  const t = Math.max(0, Math.min(1, ((q[0] - a[0]) * dx + (q[1] - a[1]) * dz) / (dx * dx + dz * dz)));
+  return Math.hypot(q[0] - a[0] - t * dx, q[1] - a[1] - t * dz);
+}
+const smooth01 = (t) => t * t * (3 - 2 * t);
+const lattice = (i, j, seed) => (Math.imul(Math.imul(i + 4096, 73856093) ^ Math.imul(j + 4096, 19349663) ^ seed, 2654435761) >>> 0) / 4294967296;
+// value noise in [0, 1]: lattice values at whole multiples of `size`, smoothstep-blended between them
+function valueNoise(x, z, size, seed) {
+  const [u, v] = [x / size, z / size];
+  const [i, j] = [Math.floor(u), Math.floor(v)];
+  const [fu, fv] = [smooth01(u - i), smooth01(v - j)];
+  const top = lattice(i, j, seed) * (1 - fu) + lattice(i + 1, j, seed) * fu;
+  const bottom = lattice(i, j + 1, seed) * (1 - fu) + lattice(i + 1, j + 1, seed) * fu;
+  return top * (1 - fv) + bottom * fv;
+}
+const mixPaint = (a, b, t) => [0, 1, 2].map((k) => Math.round(a[k] + (b[k] - a[k]) * t)).concat(255);
+function lawnPatches(ctx, o, inner, fillTop, base) {
+  const tones = o.p.tones.map((t) => paintOf(t, C.lawn, o.id));
+  const wear = paintOf(o.p.wear_tone, C.soil, o.id);
+  const paths = (o.p.wear_paths ?? []).map((id) => {
+    const p = ctx.objects.find((q) => q.id === id);
+    if (p?.kind !== "paving_path") throw new Error(`furniture: ${o.id} wear path ${id} is not a paving_path`);
+    return p.line;
+  });
+  const wearM = M(o.p.wear_m ?? 0.8);
+  const pathDistance = (q) => Math.min(Infinity, ...paths.flatMap((line) => line.slice(1).map((b, i) => segmentDistance(q, line[i], b))));
+  const edgeDistance = (q) => Math.min(...inner.map((a, i) => segmentDistance(q, a, inner[(i + 1) % inner.length])));
+  const cell = M(o.p.tone_cell_m ?? 0.6);
+  const size = M(o.p.tone_scale_m ?? 4);
+  const colourAt = (q) => {
+    const n = Math.min(0.999, Math.max(0, 0.65 * valueNoise(q[0], q[1], size, 11) + 0.35 * valueNoise(q[0], q[1], size / 2.7, 29)));
+    const s = n * (tones.length - 1);
+    const k = Math.floor(s);
+    let c = mixPaint(tones[k], tones[Math.min(k + 1, tones.length - 1)], smooth01(s - k));
+    if (paths.length) c = mixPaint(c, wear, 1 - smooth01(Math.min(1, Math.max(0, (pathDistance(q) - wearM) / wearM))));
+    return mixPaint(base, c, Math.min(1, edgeDistance(q) / cell));
+  };
+  const xs = inner.map((p) => p[0]);
+  const zs = inner.map((p) => p[1]);
+  const [i0, j0] = [Math.floor(Math.min(...xs) / cell), Math.floor(Math.min(...zs) / cell)];
+  const [i1, j1] = [Math.ceil(Math.max(...xs) / cell), Math.ceil(Math.max(...zs) / cell)];
+  const nodes = new Map();
+  const node = (i, j) => {
+    const key = `${i},${j}`;
+    if (!nodes.has(key)) {
+      const q = [i * cell, j * cell];
+      nodes.set(key, ctx.solid.mesh.vertex([q[0], fillTop(...q) + M(0.02) + moundAt(o, inner, q), q[1]], [0, 1, 0], undefined, colourAt(q)));
+    }
+    return nodes.get(key);
+  };
+  for (let i = i0; i < i1; i += 1) {
+    for (let j = j0; j < j1; j += 1) {
+      if (![[i, j], [i + 1, j], [i + 1, j + 1], [i, j + 1]].every(([a, b]) => pointInRing([a * cell, b * cell], inner))) continue;
+      const [a, b, c, d] = [node(i, j), node(i + 1, j), node(i + 1, j + 1), node(i, j + 1)];
+      ctx.solid.mesh.triangle(a, d, c); // (x0,z0) (x0,z1) (x1,z1): faces up
+      ctx.solid.mesh.triangle(a, c, b);
+    }
+  }
+}
+
 B.planter = (ctx, o) => {
   if (o.p.dims !== undefined) {
     // rest-space planter (VR scene_a9 / scene_c1: square tree pits with a stone kerb, gravel or soil inside): a kerb
@@ -562,7 +642,10 @@ B.planter = (ctx, o) => {
       const toMiddle = [middle[0] - (p[0] + q[0]) / 2, 0, middle[1] - (p[1] + q[1]) / 2];
       ctx.solid.face([[p[0], fillTop(...p), p[1]], [q[0], fillTop(...q), q[1]], [q[0], kerbTop(...q), q[1]], [p[0], kerbTop(...p), p[1]]], toMiddle, kerb);
     }
-    ctx.solid.flat(inner, [], fillTop, fill);
+    // under patchy turf the bed takes its second tone, so the seams between cells and the kerb read as turf
+    const bed = o.p.tones ? paintOf(o.p.tones[1] ?? o.p.tones[0], fill, o.id) : fill;
+    ctx.solid.flat(inner, [], fillTop, bed);
+    if (o.p.tones) lawnPatches(ctx, o, inner, fillTop, bed);
     return;
   }
   if (o.line) {
@@ -1607,6 +1690,9 @@ B.paving_path = (ctx, o) => {
     ctx.solid.prism(slab, ctx.minGround(slab) - M(0.05), top, paint);
   }
 };
+// A tree placed from the VR (site-detail site_tree; on a roof with roof_m, on a mound or in a box with box_m): drawn
+// by the trees stage (stages/trees.mjs) with the campus tree species.
+B.site_tree = () => false;
 B.handrail = (ctx, o) => railing(ctx, o.line, o.p.height_m ?? STREET.railM, paintOf(o.p.colour, C.galvanised, o.id), { stepM: 1.5, rails: [1, 0.5], postM: 0.05, railM: 0.05 });
 // Entrance canopy: a flat slab (0.25 m) at height_m over the Polygon, on round columns at the ring corners named in
 // posts (vertex indices; none: cantilevered from the building).

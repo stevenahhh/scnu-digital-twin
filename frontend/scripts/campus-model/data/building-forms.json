@@ -20239,7 +20239,8 @@
      "roof": "flat",
      "areaSquareMetres": 53.9,
      "parapetMetres": 0.61,
-     "photoSupport": 1
+     "photoSupport": 1,
+     "look": "A1-roofroom"
     },
     {
      "outer": [
@@ -20663,7 +20664,8 @@
      "areaSquareMetres": 7.2,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 1
+     "photoSupport": 1,
+     "look": "A1-roofroom"
     },
     {
      "outer": [
