@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { ChevronDown, ChevronUp, Clock3, Pause, Play } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Clock3, Pause, Play } from "lucide-react";
 import { Button } from "../ui/Button.jsx";
 import { StatusBadge } from "../ui/StatusBadge.jsx";
 import { cx } from "../ui/cx.mjs";
@@ -122,7 +122,7 @@ export function TimeSlider({
           <div className="flex shrink-0 items-center gap-2">
             <span data-qa={collapsed ? undefined : "time-slider-value"} className={READOUT}>{timeLabel}</span>
             {onNow && (
-              <Button size="sm" data-qa="time-now" onClick={onNow} aria-pressed={live} className="shrink-0">
+              <Button size="sm" data-qa="time-now" onClick={onNow} aria-pressed={live} icon={live ? <Check aria-hidden="true" className={ICON} /> : undefined} className="shrink-0">
                 지금
               </Button>
             )}
