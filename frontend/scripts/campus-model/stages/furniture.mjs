@@ -543,7 +543,21 @@ B.fence = (ctx, o) => {
 
 // Patchy turf on a rest-space planter (site-detail `tones`: sRGB tones; VR scene_a5 r, autumn turf on the A1 roof):
 // cells tone_cell_m (1.2 m) square wholly inside the bed, 2 cm over its fill, each in the tone a stable hash of the cell
-// picks; cells within wear_m (0.8 m) of the centre line of a paving_path named in wear_paths take wear_tone.
+// picks; cells within wear_m (0.8 m) of the centre line of a paving_path named in wear_paths take wear_tone. mound_m
+// (VR scene_f1 f: the F1 forecourt island) raises the cells into a low mound, mound_m at mound_ramp_m (2.5 m) from the
+// bed's edge and over, a smoothstep in between.
+export function moundAt(o, inner, q) {
+  if (!o.p.mound_m) return 0;
+  let edge = Infinity;
+  for (let i = 0; i < inner.length; i += 1) edge = Math.min(edge, segmentDistance(q, inner[i], inner[(i + 1) % inner.length]));
+  const t = Math.min(1, edge / M(o.p.mound_ramp_m ?? 2.5));
+  return M(o.p.mound_m) * t * t * (3 - 2 * t);
+}
+function segmentDistance(q, a, b) {
+  const [dx, dz] = [b[0] - a[0], b[1] - a[1]];
+  const t = Math.max(0, Math.min(1, ((q[0] - a[0]) * dx + (q[1] - a[1]) * dz) / (dx * dx + dz * dz)));
+  return Math.hypot(q[0] - a[0] - t * dx, q[1] - a[1] - t * dz);
+}
 function lawnPatches(ctx, o, inner, fillTop) {
   const tones = o.p.tones.map((t) => paintOf(t, C.lawn, o.id));
   const wear = paintOf(o.p.wear_tone, C.soil, o.id);
@@ -552,16 +566,11 @@ function lawnPatches(ctx, o, inner, fillTop) {
     if (p?.kind !== "paving_path") throw new Error(`furniture: ${o.id} wear path ${id} is not a paving_path`);
     return p.line;
   });
-  const segment = (q, a, b) => {
-    const [dx, dz] = [b[0] - a[0], b[1] - a[1]];
-    const t = Math.max(0, Math.min(1, ((q[0] - a[0]) * dx + (q[1] - a[1]) * dz) / (dx * dx + dz * dz)));
-    return Math.hypot(q[0] - a[0] - t * dx, q[1] - a[1] - t * dz);
-  };
-  const worn = (q) => paths.some((line) => line.some((a, i) => i + 1 < line.length && segment(q, a, line[i + 1]) < M(o.p.wear_m ?? 0.8)));
+  const worn = (q) => paths.some((line) => line.some((a, i) => i + 1 < line.length && segmentDistance(q, a, line[i + 1]) < M(o.p.wear_m ?? 0.8)));
   const cell = M(o.p.tone_cell_m ?? 1.2);
   const xs = inner.map((p) => p[0]);
   const zs = inner.map((p) => p[1]);
-  const top = (x, z) => fillTop(x, z) + M(0.02);
+  const top = (x, z) => fillTop(x, z) + M(0.02) + moundAt(o, inner, [x, z]);
   for (let i = Math.floor(Math.min(...xs) / cell); i * cell < Math.max(...xs); i += 1) {
     for (let j = Math.floor(Math.min(...zs) / cell); j * cell < Math.max(...zs); j += 1) {
       const sq = [[i * cell, j * cell], [(i + 1) * cell, j * cell], [(i + 1) * cell, (j + 1) * cell], [i * cell, (j + 1) * cell]];
@@ -1643,8 +1652,9 @@ B.paving_path = (ctx, o) => {
     ctx.solid.prism(slab, ctx.minGround(slab) - M(0.05), top, paint);
   }
 };
-// A tree on a roof (site-detail roof_tree): drawn by the trees stage (stages/trees.mjs) with the campus tree species.
-B.roof_tree = () => false;
+// A tree placed from the VR (site-detail site_tree; on a roof with roof_m, on a mound or in a box with box_m): drawn
+// by the trees stage (stages/trees.mjs) with the campus tree species.
+B.site_tree = () => false;
 B.handrail = (ctx, o) => railing(ctx, o.line, o.p.height_m ?? STREET.railM, paintOf(o.p.colour, C.galvanised, o.id), { stepM: 1.5, rails: [1, 0.5], postM: 0.05, railM: 0.05 });
 // Entrance canopy: a flat slab (0.25 m) at height_m over the Polygon, on round columns at the ring corners named in
 // posts (vertex indices; none: cantilevered from the building).
