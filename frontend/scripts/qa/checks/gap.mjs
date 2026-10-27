@@ -206,8 +206,9 @@ export const GAP_CHECKS = [
       // camera presets are exempt because the row allows them the shortName.
       const m = await ctx.inPage((qa) => {
         const names = [
-          ...qa.all("button[data-qa=campus-label]").map((el) => qa.txt(el)),
-          ...qa.all("h1,h2,h3,[role=heading],[data-qa=selection-inspector] *,[data-qa=breadcrumb],[role=dialog] div").filter((el) => qa.visible(el) && !el.closest("[data-qa^=camera-preset-]") && el.children.length === 0).map((el) => qa.txt(el)),
+          // All mounted chips: hidden pooled chips have no innerText, so read the name from the DOM (qa.chipName).
+          ...qa.all("button[data-qa=campus-label]").map((el) => qa.chipName(el)),
+          ...qa.all("h1,h2,h3,[role=heading],[data-qa=selection-inspector] *,[data-qa=breadcrumb] *,[role=dialog] div").filter((el) => qa.visible(el) && !el.closest("[data-qa^=camera-preset-]") && el.children.length === 0).map((el) => qa.txt(el)),
         ].filter((t) => /3호관|^도서관$/.test(t) && /공대|공과대학|도서관/.test(t));
         const headings = qa.all("h1,h2,h3,h4,[role=heading]").filter(qa.visible).map((el) => qa.txt(el));
         return { names: [...new Set(names)], headings: headings.slice(0, 30), texts: qa.textNodesShown().map((item) => item.value).slice(0, 400) };
@@ -455,6 +456,9 @@ export const GAP_CHECKS = [
     states: ["S13"], viewports: D, mutates: true,
     async run(ctx) {
       return withPanelOpen(ctx, null, async () => {
+      // The sample group sits below the live values in the panel's scroll body: scroll it into view, as a user would.
+      await ctx.inPage((qa) => { qa.one("[data-qa=dashboard-panel] [data-qa=sample-group]")?.scrollIntoView({ block: "center" }); return true; });
+      await ctx.sleep(300);
       const m = await ctx.inPage((qa) => ({
         badges: qa.all("[data-qa=sample-badge]").filter(qa.visible).length,
         sampleWords: qa.textNodesShown(qa.one("[data-qa=dashboard-panel]") ?? document.body).filter((item) => /샘플|예시|sample/i.test(item.value)).length,

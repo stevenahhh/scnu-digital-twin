@@ -5,6 +5,7 @@ import {
   chipByText, chips, contrasts, defineCheck, hasUpperEyebrow, hudRects, hueDistance, hueOf, intersection,
   panelAlpha, panelInfo, parseCssColor, result, roofBox, sampleFrames, textItems, worstContrast,
   openPanelSection,
+  withPanelOpen,
 } from "./common.mjs";
 
 const D = ["D"];
@@ -140,8 +141,9 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-13", {
-    states: ["S01"], viewports: D, themes: ["dark", "light"],
+    states: ["S01"], viewports: D, themes: ["dark", "light"], mutates: true,
     async run(ctx) {
+      return withPanelOpen(ctx, null, async () => {
       // Tone badges: short labels (<= 12 chars, <= 12 px) on their own bordered or filled pill.
       const badgeTexts = await ctx.inPage((qa) => qa.all("[data-qa=dashboard-panel] span, [data-qa=dashboard-panel] div").filter((el) => {
         if (!qa.visible(el)) return false;
@@ -153,15 +155,18 @@ export const FRONTEND_CHECKS = [
       const rows = contrasts(ctx, items);
       const worst = worstContrast(rows);
       return result(rows.length > 0 && worst.ratio >= 4.5, { badgesMeasured: rows.length, worst }, ">= 4.5:1 for every tone badge");
+      });
     },
   }),
   defineCheck("V-F-14", {
-    states: ["S05", "S08"], viewports: D, themes: ["dark", "light"],
+    states: ["S05", "S08"], viewports: D, themes: ["dark", "light"], mutates: true,
     async run(ctx) {
+      return withPanelOpen(ctx, null, async () => {
       const m = await primaryFilled(ctx);
       const rows = contrasts(ctx, m.filled.filter((f) => f.box.w > 0));
       const worst = worstContrast(rows);
       return result(rows.length > 0 && worst.ratio >= 4.5, { filledPrimaryControls: rows.length, worst }, ">= 4.5:1 white text on filled-primary controls");
+      });
     },
   }),
   defineCheck("V-F-15", {
@@ -195,13 +200,19 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-18", {
-    states: ["S07", "S08"], viewports: D,
+    states: ["S07", "S08"], viewports: D, mutates: true,
     async run(ctx) {
-      const tokens = await tokenColors(ctx, ["--colors-ink-subtle"]);
-      const items = await textItems(ctx, "[data-qa=dashboard-panel] *", { color: tokens["--colors-ink-subtle"] });
+      return withPanelOpen(ctx, null, async () => {
+      // The audit's ink-subtle is the shipped ink-muted (DESIGN.md section 2, as in V-F-17); measure both secondary inks.
+      const tokens = await tokenColors(ctx, ["--colors-ink-muted", "--colors-ink-subtle"]);
+      const items = [
+        ...(await textItems(ctx, "[data-qa=dashboard-panel] *", { color: tokens["--colors-ink-muted"] })),
+        ...(await textItems(ctx, "[data-qa=dashboard-panel] *", { color: tokens["--colors-ink-subtle"] })),
+      ];
       const worst = worstContrast(contrasts(ctx, items));
       const alpha = await panelAlpha(ctx);
       return result(worst && worst.ratio >= 4.5 && alpha >= 0.9, { worst, inkSubtleTexts: items.length, panelBackgroundAlpha: alpha }, ">= 4.5:1 and panel alpha >= 0.9");
+      });
     },
   }),
   defineCheck("V-F-19", {
@@ -236,8 +247,9 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-23", {
-    states: ["S05"], viewports: D,
+    states: ["S05"], viewports: D, mutates: true,
     async run(ctx) {
+      return withPanelOpen(ctx, null, async () => {
       const m = await ctx.inPage((qa) => {
         const weights = new Set();
         let worstBlock = 0;
@@ -249,6 +261,7 @@ export const FRONTEND_CHECKS = [
         return { weights: [...weights].sort(), maxBoldPerBlock: worstBlock };
       });
       return result(m.weights.every((w) => [400, 500, 600, 700].includes(w)) && m.maxBoldPerBlock <= 1, m, "weights in {400, 500, 600, 700}; <= 1 bold element per block");
+      });
     },
   }),
   defineCheck("V-F-26", {
@@ -265,8 +278,9 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-27", {
-    states: ["S01", "S05"], viewports: D,
+    states: ["S01", "S05"], viewports: D, mutates: true,
     async run(ctx) {
+      return withPanelOpen(ctx, null, async () => {
       const m = await ctx.inPage((qa) => {
         const h1 = qa.all("h1").filter((el) => qa.visible(el) || el.classList.contains("sr-only")).length;
         const visibleH1 = qa.all("h1").filter(qa.visible).length;
@@ -276,6 +290,7 @@ export const FRONTEND_CHECKS = [
         return { visibleH1, h1, h2InsideCards: h2InCard, outline };
       });
       return result(m.visibleH1 === 1 && m.h2InsideCards === 0, m, "exactly one visible h1, card titles h3, no h2 inside a card");
+      });
     },
   }),
   defineCheck("V-F-28", {
@@ -314,8 +329,9 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-31", {
-    states: ["S01", "S05"], viewports: D,
+    states: ["S01", "S05"], viewports: D, mutates: true,
     async run(ctx) {
+      return withPanelOpen(ctx, null, async () => {
       const m = await ctx.inPage((qa) => {
         const rails = qa.all("[role=tablist], [data-qa=dashboard-panel] .rounded-full.p-1, [data-qa=dashboard-panel] .p-1, [role=dialog] .p-1").filter(qa.visible);
         return rails.map((rail) => {
@@ -326,11 +342,13 @@ export const FRONTEND_CHECKS = [
       });
       const bad = m.filter((p) => p.outer < 1000 && Math.abs(p.inner - (p.outer - p.padding)) > 0.5);
       return result(m.length > 0 && bad.length === 0, { pairs: m.slice(0, 6), mismatched: bad.length }, "inner = outer - padding for every pair");
+      });
     },
   }),
   defineCheck("V-F-32", {
-    states: ["S01", "S06"], viewports: D,
+    states: ["S01", "S06"], viewports: D, mutates: true,
     async run(ctx) {
+      return withPanelOpen(ctx, null, async () => {
       // The panel scroll body's direct children are the card/header stack of the active tab.
       const gaps = await ctx.inPage((qa) => {
         const body = qa.one("[data-qa=dashboard-panel] .overflow-y-auto");
@@ -343,6 +361,7 @@ export const FRONTEND_CHECKS = [
       const base = ctx.memo.get("V-F-32:S01") ?? gaps;
       const all = [...new Set([...base, ...gaps].filter((g) => g >= 0))];
       return result(all.length <= 1, { s01Gaps: base, thisStateGaps: gaps }, "identical gap values across tabs");
+      });
     },
   }),
   defineCheck("V-F-33", {
@@ -362,8 +381,9 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-34", {
-    states: ["S01", "S05", "S08", "S10"], viewports: D,
+    states: ["S01", "S05", "S08", "S10"], viewports: D, mutates: true,
     async run(ctx) {
+      return withPanelOpen(ctx, null, async () => {
       const styles = await ctx.inPage((qa) => qa.all("[aria-pressed=true],[aria-selected=true]").filter((el) => qa.visible(el) && el.tagName === "BUTTON" && !el.closest("[data-qa=campus-label]")).map((el) => { const s = getComputedStyle(el); return [s.backgroundColor, s.color, s.fontWeight, s.borderTopLeftRadius].join("|"); }));
       const seen = ctx.memo.get("V-F-34:styles") ?? [];
       const all = [...new Set([...seen, ...styles])];
@@ -371,6 +391,7 @@ export const FRONTEND_CHECKS = [
       const css = readSrc("index.css");
       const variants = (css.match(/\.dashboard-segment|\.dashboard-tab/g) ?? []).length;
       return result(styles.length > 0 && all.length === 1 && variants === 0, { activeStylesSoFar: all, legacyCssVariants: variants }, "one identical active style across all segmented controls; 0 unused CSS variants");
+      });
     },
   }),
   defineCheck("V-F-35", {
@@ -439,14 +460,16 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-41", {
-    states: ["S13"], viewports: D, fixtures: "up",
+    states: ["S13"], viewports: D, fixtures: "up", mutates: true,
     async run(ctx) {
+      return withPanelOpen(ctx, null, async () => {
       const m = await ctx.inPage((qa) => {
         const rows = qa.all("[data-qa=dashboard-panel] li, [data-qa=dashboard-panel] article, [data-qa=dashboard-panel] [data-risk]").filter((el) => qa.visible(el) && /위험|주의|risk/i.test(qa.txt(el)));
         return { riskRows: rows.length, withLeftStripe: rows.filter((el) => parseFloat(getComputedStyle(el).borderLeftWidth) >= 2).length };
       });
       // Without a rendered risk row there is nothing to verify, which is a FAIL, not a pass.
       return result(m.riskRows > 0 && m.withLeftStripe === 0, m, "border-left-width 0 on every risk row; a tone badge + text carries the risk");
+      });
     },
   }),
   defineCheck("V-F-42", {
@@ -724,13 +747,16 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-63", {
-    states: ["S06"], viewports: D,
+    // The ranking and the comparison only exist when the energy API answers: measure at S17's fixtures-up S06.
+    states: ["S06"], viewports: D, mutates: true, fixtures: "up",
     async run(ctx) {
+      return withPanelOpen(ctx, "energy", async () => {
       const m = await ctx.inPage((qa) => {
         const panel = qa.one("[data-qa=dashboard-panel]");
         return { orderedLists: panel?.querySelectorAll("ol").length ?? 0, tables: panel?.querySelectorAll("table").length ?? 0, h2: panel?.querySelectorAll("h2").length ?? 0 };
       });
       return result(m.orderedLists >= 1 && m.tables >= 1 && m.h2 <= 1, m, "ranking is an ol, comparison a table, <= 1 heading group");
+      });
     },
   }),
   defineCheck("V-F-64", {
@@ -793,6 +819,8 @@ export const FRONTEND_CHECKS = [
   defineCheck("V-F-71", {
     states: ["S01"], viewports: D, mutates: true,
     async run(ctx) {
+      // The refresh lives in the 기본 현황 weather card: open the panel first (rail-first shell).
+      return withPanelOpen(ctx, null, async () => {
       const count = () => ctx.inPage((qa) => qa.all(".animate-spin,[role=status],[aria-busy=true]").filter(qa.visible).length);
       const base = await count();
       const tapped = await ctx.b.tap('[aria-label="기상 데이터 새로고침"]', null, { timeoutMs: 2000 });
@@ -806,6 +834,7 @@ export const FRONTEND_CHECKS = [
       const analysis = run.ok ? (await count()) - base2 : null;
       if (toEnergy.ok) await ctx.b.tap("[data-qa=dashboard-tab-dashboard]", null, { timeoutMs: 2000 });
       return result(tapped.ok && run.ok && weather <= 1 && analysis <= 1, { refreshTapped: tapped.ok, weatherIndicators: weather, analysisRunFound: run.ok, analysisIndicators: analysis }, "one progress indicator per action");
+      });
     },
   }),
   defineCheck("V-F-72", {

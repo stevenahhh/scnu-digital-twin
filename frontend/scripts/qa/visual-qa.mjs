@@ -299,6 +299,8 @@ async function runPass({ args, entry, viewport, theme, baseUrl, selected, baseli
       args, b, entry, viewport: viewport.id, theme: themeLabel, state: scenarioInfo.state, stateLabel: label, fixtures, memo, runMemo,
       scale: viewport.scale, width: viewport.width, height: viewport.height, mobile: viewport.mobile, map: ctx.map,
       png, image: makeImageCache(png), decode, baseUrl, outDir: args.out, file,
+      // Probe checks that change the page (open the panel) re-capture before measuring pixels.
+      async refreshImage() { this.png = await b.screenshot(); this.image = makeImageCache(this.png); },
       inPage: (fn, a) => inPage(b, fn, a),
       screenshot: async () => decode(await b.screenshot()),
       setFixtures: (opts) => setFixtures(baseUrl, opts),

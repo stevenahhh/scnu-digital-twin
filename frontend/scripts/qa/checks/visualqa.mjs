@@ -443,7 +443,8 @@ export const VISUALQA_CHECKS = [
         const glyphless = active.filter((el) => !el.querySelector("svg")).length;
         const chip = qa.all("button[data-qa=campus-label]").find((el) => el.getAttribute("aria-pressed") === "true");
         const title = qa.txt(qa.one("[data-qa=selection-inspector] h2,[data-qa=selection-inspector] h3")) || null;
-        return { activeElements: active.length, accentOutlined: outlined, withoutGlyph: glyphless, chip: chip ? qa.txt(chip) : null, title };
+        // chipName: the building name without the code badge, the string the panel title shows.
+        return { activeElements: active.length, accentOutlined: outlined, withoutGlyph: glyphless, chip: chip ? qa.chipName(chip) : null, title };
       });
       const titleOk = !["S04", "S12"].includes(ctx.state) || (m.chip && m.title === m.chip);
       return result(m.accentOutlined === 0 && m.withoutGlyph === 0 && titleOk, m, "active/selected = wash + glyph (no accent outline); highlight name == panel title");
