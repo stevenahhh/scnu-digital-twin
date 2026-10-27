@@ -85,6 +85,7 @@ export function RepresentativePlanOverlayController({
     aria-label="대표 설치 계획 지도 레이어"
   >
     <Button
+      size="sm"
       variant="ghost"
       aria-label={label}
       aria-pressed={visible}
