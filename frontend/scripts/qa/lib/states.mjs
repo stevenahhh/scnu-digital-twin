@@ -169,7 +169,8 @@ async function enterD4(ctx, beforeLabelTap) {
   await act(ctx, "[data-qa=camera-preset-d4]");
   await settleCamera(ctx);
   if (beforeLabelTap) await beforeLabelTap();
-  await act(ctx, CHIP, "공대 3호관");
+  // Building chips show the one display name (GAP-12), not the preset short name 공대 3호관.
+  await act(ctx, CHIP, "공과대학 3호관");
   await wait(ctx, 4000);
 }
 
