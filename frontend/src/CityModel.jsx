@@ -50,6 +50,7 @@ import {
   patchFoliageLod,
 } from "./lighting/foliage.mjs";
 import { WATER_ENV_INTENSITY, WATER_MATERIAL_NAME, patchWaterFresnel } from "./lighting/water.mjs";
+import { clipPolygonAhead } from "./render/clipPolygon.mjs";
 
 // 클릭하지 않아도 카메라가 이 거리 안으로 들어오면 "가까이 간" 것으로 본다.
 // 클릭 시 자동으로 붙는 카메라 거리(FOCUS_CAMERA_OFFSET 기준 약 94유닛)보다 살짝
@@ -1134,15 +1135,16 @@ export function CityModel({
 
     controller.update({ points, area, chrome, occluder, focusBoxes, band, now: performance.now(), motion });
 
-    // 모델(지면) 경계 사각형의 화면 모서리 네 점. 카메라 뒤로 간 모서리가 있으면 쓰지 않는다.
+    // 모델(지면) 경계 사각형을 카메라 앞쪽(가까운 면 안)으로 잘라 화면에 투영한 꼭짓점들(data-model-edge, 화면 검사용).
     const edge = groundEdgeRef.current;
     const layer = gl.domElement.closest?.("[data-qa=campus-map-layer]");
     if (layer) {
       let value = "";
       if (edge) {
-        const corners = [[edge.minX, edge.minZ], [edge.maxX, edge.minZ], [edge.maxX, edge.maxZ], [edge.minX, edge.maxZ]];
-        const inFront = corners.every(([x, z]) => (x - camera.position.x) * forward.x + (edge.y - camera.position.y) * forward.y + (z - camera.position.z) * forward.z > camera.near);
-        if (inFront) value = corners.map(([x, z]) => { const p = toScreen(x, edge.y, z); return `${Math.round(p.x)},${Math.round(p.y)}`; }).join(";");
+        const corners = [[edge.minX, edge.y, edge.minZ], [edge.maxX, edge.y, edge.minZ], [edge.maxX, edge.y, edge.maxZ], [edge.minX, edge.y, edge.maxZ]];
+        const ahead = (p) => (p[0] - camera.position.x) * forward.x + (p[1] - camera.position.y) * forward.y + (p[2] - camera.position.z) * forward.z - camera.near * 2;
+        const clipped = clipPolygonAhead(corners, ahead);
+        if (clipped.length >= 3) value = clipped.map(([x, y, z]) => { const p = toScreen(x, y, z); return `${Math.round(p.x)},${Math.round(p.y)}`; }).join(";");
       }
       if (layer.dataset.modelEdge !== value) layer.dataset.modelEdge = value;
     }
