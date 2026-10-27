@@ -51,6 +51,8 @@
         "id": "RS0003",
         "kind": "garden_wall",
         "estimated": true,
+        "roof_m": 12.98,
+        "roof_note": "the walled garden is the roof garden of A1 (the 12.98 m wing roof; VR scene_a5 r/d show the lattice wall on the roof edge above the road)",
         "colour": "#e4e1d8",
         "copingColour": "#f4f3ef",
         "lattice_m": 0.9,
