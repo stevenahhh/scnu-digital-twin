@@ -140,7 +140,8 @@ function applyLampPoolFalloff(material) {
 
 // 색 전환은 선택/주야가 바뀐 뒤에만, 남은 차이가 이 값보다 작아질 때까지 돈다.
 const MATERIAL_SETTLE_EPSILON = 1e-3;
-const MATERIAL_EASE_RATE = 8;
+// 1/s. 150 ms(--motion-settle)에 약 95%까지 간다. 멈춘 화면에서는 프레임이 드물어 느린 감쇠는 300 ms 안에 거의 칠하지 못했다.
+const MATERIAL_EASE_RATE = 20;
 // 선택 강조: 보통·높음 단계는 후처리 외곽선(HighTierEffects의 Outline)이 맡고, 낮음 단계(후처리 없음)는 선택 건물 재질을
 // 강조색 쪽으로 35% 옮기고 강조색 발광 0.15를 더한다. 어느 단계든 선택이 있으면 나머지 메시는 20% 어둡게 한다(DIM_ALPHA).
 const SELECTION_COLOR = new THREE.Color(SELECTION_HEX);
@@ -156,10 +157,10 @@ const NIGHT_TINT_MIX = 0.16;
 // 수종 배정은 추정값이며 실제 수목 조사 결과가 아니다.
 // 주야·계절 가중치가 이만큼 바뀌어야 재질을 다시 쓴다.
 const RAMP_EPSILON = 1e-4;
-// 마우스를 올린 건물은 평소 색을 호버 색 쪽으로 12%만 옮긴다. 선택 강조보다 약하다.
+// 마우스를 올린 건물은 평소 색을 호버 색 쪽으로 20% 옮긴다(은은하게, 선택 강조 35%보다 약하다).
 // 재질은 메시마다 복제돼 있어 다른 건물로 번지지 않는다.
 const HOVER_COLOR = new THREE.Color(HOVER_HEX);
-const HOVER_TINT_MIX = 0.12;
+const HOVER_TINT_MIX = 0.2;
 // 프레임마다 새 객체를 만들지 않도록 재사용하는 스크래치 값.
 const scratchColor = new THREE.Color();
 const scratchHoverColor = new THREE.Color();
