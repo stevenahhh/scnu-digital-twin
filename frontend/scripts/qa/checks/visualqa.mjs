@@ -365,15 +365,22 @@ export const VISUALQA_CHECKS = [
         await ctx.b.tap('[aria-label="패널 닫기"]');
         await ctx.sleep(800);
       }
+      let expandedChip = false;
       if (await ctx.b.center("[data-qa=time-chip]")) {
         await ctx.b.tap("[data-qa=time-chip]");
         await ctx.sleep(600);
+        expandedChip = true;
       }
       const items = await textItems(ctx, "[data-qa=dashboard-panel] *, [data-qa=time-slider] *, [role=dialog] *", { maxPx: 14, limit: 200 });
       // Pixels from a fresh frame: this replay changes the page (opened sections, the chip), so the frame captured before
       // the checks would not match the text boxes measured now.
       const frame = await ctx.screenshot();
       const worst = worstContrast(items.map((item) => ({ text: item.text, px: item.px, ratio: contrastAgainst(frame, item.box, ctx.scale, item.color) })));
+      // Put the time card back to its chip so the probe replay's later checks see the page as the state left it.
+      if (expandedChip && await ctx.b.center('[aria-label="시간 조작 접기"]')) {
+        await ctx.b.tap('[aria-label="시간 조작 접기"]');
+        await ctx.sleep(400);
+      }
       return result(items.length > 0 && worst && worst.ratio >= 4.5, { probes: items.length, worst }, "every probe >= 4.5:1 (ticks and the count badge included)");
     },
   }),
