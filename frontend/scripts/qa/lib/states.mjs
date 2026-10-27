@@ -203,15 +203,17 @@ export const STATES = Object.freeze([
     steps: async (ctx) => {
       // Legacy zooms toward the orbit target (the campus centre). The VWorld SDK zooms toward the cursor, so a wheel at the
       // map centre after S02 dives into whatever lies there; zoom toward a fixed campus anchor instead: the 도서관 chip's
-      // anchor point (data-anchor-top, the chip's centre x), else the map centre.
+      // anchor point (data-anchor-left/top), else the map centre.
       let { x, y } = ctx.map;
       if (ctx.entry === "vworld") {
         const anchor = await ctx.b.run(() => {
           const slot = [...document.querySelectorAll("[data-label-slot]")].find((node) => node.style.visibility === "visible"
             && node.querySelector("button[data-qa=campus-label]")?.getAttribute("data-element-id") === "BLD_C1");
           if (!slot?.dataset.anchorTop) return null;
+          // The anchor point itself (a displaced chip sits away from it; the SDK zooms toward the cursor).
           const r = slot.getBoundingClientRect();
-          return [Math.round(r.x + r.width / 2), Math.round(Number(slot.dataset.anchorTop))];
+          const left = Number(slot.dataset.anchorLeft);
+          return [Math.round(Number.isFinite(left) && slot.dataset.anchorLeft !== undefined ? left : r.x + r.width / 2), Math.round(Number(slot.dataset.anchorTop))];
         });
         if (anchor) [x, y] = anchor;
       }
