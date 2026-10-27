@@ -215,9 +215,18 @@ export default function VWorldRenderer({
     fallbackModelMatrixRef.current ??= createCampusModelMatrix(viewer, window.Cesium);
     return fallbackModelMatrixRef.current;
   }, []);
+  // 고른 건물을 지도 가운데로 옮긴다. 이미 화면 가운데 부분(가로·세로 가운데 60%)에 보이면 그대로 둔다(Legacy 칩처럼
+  // 가까이 보이는 건물을 눌러도 카메라가 움직이지 않는다).
   const focusLabelPosition = useCallback((position) => {
     if (!labelScene) return;
-    const target = createVWorldLabelProjector({ ...labelScene, getModelMatrix: getLabelModelMatrix }).lonLatOf(position);
+    const projector = createVWorldLabelProjector({ ...labelScene, getModelMatrix: getLabelModelMatrix });
+    const area = labelScene.scene.canvas?.getBoundingClientRect?.();
+    const point = area ? projector.project([{ elementId: "focus", position }], area, { clip: false }).points.get("focus") : null;
+    const central = point && area
+      && Math.abs(point.x - (area.left + area.width / 2)) <= area.width * 0.3
+      && Math.abs(point.y - (area.top + area.height / 2)) <= area.height * 0.3;
+    if (central) return;
+    const target = projector.lonLatOf(position);
     if (target) cameraControllerRef.current?.focus(target);
   }, [getLabelModelMatrix, labelScene]);
   // 캠퍼스 카메라(Legacy 시점을 VWorld로 옮긴 것). 오버레이·GLB가 준비되면 아래 효과가 채운다.

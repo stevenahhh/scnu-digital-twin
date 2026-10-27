@@ -6,7 +6,8 @@ const CAMPUS = Object.freeze({ longitude: 127.4764043, latitude: 34.9700548 });
 // -24 deg) the model is lit instead by a fixed, cool light from above that weakens as the sun sinks, so it keeps
 // reading as buildings and keeps darkening after dusk with the map shade (AppVWorld mapLighting).
 const NIGHT_RAMP_DEGREES = 24;
-const MOONLIGHT_INTENSITY = Object.freeze({ dusk: 1.2, night: 0.4 });
+// 밤에도 건물이 건물로 읽히는 세기(Legacy 밤 장면처럼). 해가 질수록 약해진다.
+const MOONLIGHT_INTENSITY = Object.freeze({ dusk: 2.4, night: 1.6 });
 // Light travels down and slightly north-west in the campus east-north-up frame.
 const MOONLIGHT_LOCAL_DIRECTION = Object.freeze([0.3, -0.35, -0.89]);
 
