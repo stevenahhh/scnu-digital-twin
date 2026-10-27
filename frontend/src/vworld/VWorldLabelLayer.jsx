@@ -4,7 +4,7 @@ import { CAMERA_PRESETS } from "../camera/cameraPresets.mjs";
 import { CampusLabelLayer } from "../labels/CampusLabelLayer.jsx";
 import { resolveLabelBand } from "../labels/labelBands.mjs";
 import { CAMPUS_GLTF_OVERLAY_CONFIG } from "./campusGltfOverlay.mjs";
-import { buildVWorldLabelEntries, readGlbJson } from "./labelAnchors.mjs";
+import { buildVWorldLabelEntries, glbNodeBoxes, readGlbJson } from "./labelAnchors.mjs";
 import { createVWorldLabelProjector } from "./labelProjection.mjs";
 
 // 카메라가 멈춘 뒤 한 번 더 배치하기까지 기다리는 시간(tokens.css --motion-settle, Legacy와 같다).
@@ -52,6 +52,8 @@ export function VWorldLabelLayer({
   const motionRef = useRef(false);
   const settleTimerRef = useRef(null);
   const lastPoseRef = useRef(null);
+  const footprintRef = useRef(null);
+  const hostRef = useRef(null);
   const onGlbRef = useRef(onGlb);
   onGlbRef.current = onGlb;
   const state = useRef({});
@@ -63,6 +65,14 @@ export function VWorldLabelLayer({
       .then((buffer) => {
         if (cancelled) return;
         const json = readGlbJson(buffer);
+        // 캠퍼스 모델의 바닥 사각형(모델 좌표): 모든 노드 경계 상자의 수평 범위, 가장 낮은 높이.
+        let minX = Infinity; let maxX = -Infinity; let minZ = Infinity; let maxZ = -Infinity; let minY = Infinity;
+        for (const [min, max] of glbNodeBoxes(json).values()) {
+          minX = Math.min(minX, min[0]); maxX = Math.max(maxX, max[0]); minZ = Math.min(minZ, min[2]); maxZ = Math.max(maxZ, max[2]); minY = Math.min(minY, min[1]);
+        }
+        footprintRef.current = Number.isFinite(minX)
+          ? [[minX, minY, minZ], [maxX, minY, minZ], [maxX, minY, maxZ], [minX, minY, maxZ]].map((position, i) => ({ elementId: `edge${i}`, position }))
+          : null;
         setEntries(buildVWorldLabelEntries({ json, elements: commonElements.elements, presets: CAMERA_PRESETS }));
         onGlbRef.current?.(json);
       })
@@ -148,6 +158,12 @@ export function VWorldLabelLayer({
         controller.update({ hidden: true });
         return;
       }
+      // 모델 바닥 사각형의 화면 모서리 네 점(화면 검사가 가장자리 안팎 밝기를 잰다). 투영이 안 되는 모서리가 있으면 비운다.
+      if (hostRef.current && footprintRef.current) {
+        const corners = projector.project(footprintRef.current, area, { clip: false }).points;
+        const value = corners.size === 4 ? footprintRef.current.map(({ elementId }) => { const c = corners.get(elementId); return `${Math.round(c.x)},${Math.round(c.y)}`; }).join(";") : "";
+        if (hostRef.current.dataset.modelEdge !== value) hostRef.current.dataset.modelEdge = value;
+      }
       const band = resolveLabelBand({ distance, pitchDegrees, presentation: presenting, touch });
       controller.update({ points, area, chrome, occluder, focusBoxes: [], band, now: performance.now(), motion });
     };
@@ -206,7 +222,7 @@ export function VWorldLabelLayer({
 
   if (!entries) return null;
   return (
-    <div data-qa="vworld-label-host" className="pointer-events-none absolute inset-0" style={{ zIndex: "var(--layer-labels)" }}>
+    <div ref={hostRef} data-qa="vworld-label-host" className="pointer-events-none absolute inset-0" style={{ zIndex: "var(--layer-labels)" }}>
       <CampusLabelLayer entries={entries} selectedId={selectedAnchorId} controllerRef={controllerRef} {...callbacks} />
     </div>
   );

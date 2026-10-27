@@ -78,6 +78,10 @@ describe("VWorldLabelLayer", () => {
     const shown = visibleChips(container);
     expect(shown.length).toBeGreaterThan(0);
     expect(container.querySelector('[data-label-slot="BLD_C1"] button[data-qa="campus-label"]')).not.toBeNull();
+    // The campus footprint's four screen corners for the edge-luminance QA rows (GAP-25, V-S-102).
+    const edge = container.querySelector('[data-qa="vworld-label-host"]').dataset.modelEdge;
+    expect(edge.split(";").map((p) => p.split(",").map(Number)).every((xy) => xy.length === 2 && xy.every(Number.isFinite))).toBe(true);
+    expect(edge.split(";")).toHaveLength(4);
   });
 
   it("selects through onSelectEntry with the registry entry, marks the selected chip and clears on Escape", async () => {

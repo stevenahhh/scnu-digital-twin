@@ -1,6 +1,6 @@
 // V-S-82..V-S-107: browser half of the remove-ai-slops findings. Each `doc` holds the literal row.
 import {
-  chipByText, chips, contrasts, defineCheck, gapBetween, hudRects, intersection, luminanceStep, missingHook, HOOKS,
+  chipByText, chips, contrasts, defineCheck, gapBetween, hudRects, intersection, luminanceStep, missingHook, modelEdgeStep, HOOKS,
   panelInfo, pixelDiff, result, roofBox, sampleFrames, sceneRegion, textItems, worstContrast,
 } from "./common.mjs";
 
@@ -207,13 +207,9 @@ export const SLOP_UX_CHECKS = [
   defineCheck("V-S-102", {
     states: ["S01"], viewports: D,
     async run(ctx) {
-      const region = await sceneRegion(ctx);
-      const img = ctx.image();
-      const cy = Math.round(region.y + region.h * 0.6);
-      const points = [];
-      for (let x = region.x + 20; x < region.x + region.w - 20; x += 40) points.push([x, cy]);
-      const step = luminanceStep(img, points, ctx.scale, 4);
-      return result(step <= 0.2, { maxLuminanceStep: step }, "<= 20% step along the model's bounding edge");
+      const m = await modelEdgeStep(ctx);
+      if (!m.edge) return missingHook("[data-model-edge]", "<= 20% step along the model's bounding edge");
+      return result(m.samples > 0 && m.step <= 0.2, { maxLuminanceStep: m.step, edgeSamples: m.samples }, "<= 20% step along the model's bounding edge (20 px inside vs 20 px outside)");
     },
   }),
   defineCheck("V-S-103", {

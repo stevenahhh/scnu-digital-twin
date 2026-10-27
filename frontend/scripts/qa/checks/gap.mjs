@@ -1,7 +1,7 @@
 // GAP-01..GAP-37 (DESIGN-AUDIT section 3 rows as section-7 checks). Each `doc` holds the literal row.
 import {
   HOOKS, canvasRect, chipByText, chips, contrasts, defineCheck, exists, hasUpperEyebrow, hudRects, intersection,
-  gapBetween, luminanceStep, missingHook, panelInfo, pixelDiff, rectOf, result, roofBox, sampleFrames,
+  gapBetween, luminanceStep, missingHook, modelEdgeStep, panelInfo, pixelDiff, rectOf, result, roofBox, sampleFrames,
   sceneRegion, selectedTab, textItems, meanLuminance, worstContrast,
   openPanelSection,
 } from "./common.mjs";
@@ -424,14 +424,11 @@ export const GAP_CHECKS = [
   defineCheck("GAP-25", {
     states: ["S02"], viewports: D,
     async run(ctx) {
-      const region = await sceneRegion(ctx);
-      const img = ctx.image();
-      const cy = Math.round(region.y + region.h * 0.55);
-      const points = [];
-      for (let x = region.x + 20; x < region.x + region.w - 20; x += 40) points.push([x, cy]);
-      const step = luminanceStep(img, points, ctx.scale, 4);
+      // Row: sample ground luminance along the model's bounding rectangle and 20 px outward (data-model-edge).
+      const m = await modelEdgeStep(ctx);
       const clear = await ctx.inPage(() => getComputedStyle(document.querySelector("canvas")?.parentElement ?? document.body).backgroundColor);
-      return result(step <= 0.2, { maxLuminanceStepAlongRow: step, canvasBackdrop: clear }, "no luminance step > 20% along the bounding edge; clear colour not darker than #0b0c0e");
+      if (!m.edge) return missingHook("[data-model-edge]", "no luminance step > 20% along the bounding edge");
+      return result(m.samples > 0 && m.step <= 0.2, { maxLuminanceStepAcrossEdge: m.step, edgeSamples: m.samples, canvasBackdrop: clear }, "no luminance step > 20% along the bounding edge (20 px inside vs 20 px outside); clear colour not darker than #0b0c0e");
     },
   }),
   defineCheck("GAP-26", {

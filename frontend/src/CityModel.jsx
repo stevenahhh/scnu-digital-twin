@@ -361,6 +361,7 @@ export function CityModel({
   const cameraPoseRef = useRef(null);
   // 카메라 지면 충돌용 지면 격자(월드 좌표). 캠퍼스 지형과 바깥 산을 모두 덮는다.
   const groundGridRef = useRef(null);
+  const groundEdgeRef = useRef(null);
 
   // 누르기·놓기는 window 캡처 단계에서 먼저 기록한다. R3F의 pointerup과 라벨 click보다 앞서고, OrbitControls가
   // 포인터를 캡처해도 빠지지 않는다. 누른 곳이 캔버스인지, 라벨인지, 그 밖(패널 등)인지도 함께 남긴다.
@@ -739,6 +740,16 @@ export function CityModel({
       sources.push({ positions, index: object.geometry.index?.array ?? null });
     });
     groundGridRef.current = sources.length > 0 ? buildGroundGrid(sources) : null;
+    // 지면 메시의 수평 범위(장면 좌표)와 평균 높이: 화면 검사(QA)가 모델 가장자리 안팎의 밝기를 잰다(data-model-edge).
+    let minX = Infinity; let maxX = -Infinity; let minZ = Infinity; let maxZ = -Infinity; let sumY = 0; let n = 0;
+    for (const { positions } of sources) {
+      for (let k = 0; k < positions.length; k += 3) {
+        minX = Math.min(minX, positions[k]); maxX = Math.max(maxX, positions[k]);
+        minZ = Math.min(minZ, positions[k + 2]); maxZ = Math.max(maxZ, positions[k + 2]);
+        sumY += positions[k + 1]; n += 1;
+      }
+    }
+    groundEdgeRef.current = n > 0 ? { minX, maxX, minZ, maxZ, y: sumY / n } : null;
     invalidate();
   }, [scene, center, invalidate]);
 
@@ -1115,6 +1126,19 @@ export function CityModel({
     }
 
     controller.update({ points, area, chrome, occluder, focusBoxes, band, now: performance.now(), motion });
+
+    // 모델(지면) 경계 사각형의 화면 모서리 네 점. 카메라 뒤로 간 모서리가 있으면 쓰지 않는다.
+    const edge = groundEdgeRef.current;
+    const layer = gl.domElement.closest?.("[data-qa=campus-map-layer]");
+    if (layer) {
+      let value = "";
+      if (edge) {
+        const corners = [[edge.minX, edge.minZ], [edge.maxX, edge.minZ], [edge.maxX, edge.maxZ], [edge.minX, edge.maxZ]];
+        const inFront = corners.every(([x, z]) => (x - camera.position.x) * forward.x + (edge.y - camera.position.y) * forward.y + (z - camera.position.z) * forward.z > camera.near);
+        if (inFront) value = corners.map(([x, z]) => { const p = toScreen(x, edge.y, z); return `${Math.round(p.x)},${Math.round(p.y)}`; }).join(";");
+      }
+      if (layer.dataset.modelEdge !== value) layer.dataset.modelEdge = value;
+    }
   });
 
   // R3F는 pointerup에 delta를 계산하지 않는다(항상 0). 클릭 여부는 pointerGuard가 누른 위치·시간으로 판단한다.

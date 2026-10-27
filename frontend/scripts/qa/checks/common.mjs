@@ -160,6 +160,47 @@ export async function sceneRegion(ctx) {
   return { x: canvas.x, y: canvas.y, w: Math.max(0, right - canvas.x), h: canvas.h };
 }
 
+// Luminance step across the model's bounding edge (AUDIT GAP-25/V-S-102: "sample ground luminance along the model's bounding
+// rectangle and 20 px outward"). The app writes the ground rectangle's four screen corners as data-model-edge (Legacy: the GLB
+// ground meshes; VWorld: the campus overlay footprint). Every 40 px along each edge, compare 20 px inside with 20 px outside;
+// samples off the scene region or under a HUD rect are skipped. Returns { step, samples, edge } or { edge: null }.
+export async function modelEdgeStep(ctx) {
+  const raw = await ctx.inPage((qa) => qa.all("[data-model-edge]").map((el) => el.getAttribute("data-model-edge")).find(Boolean) ?? null);
+  if (!raw) return { edge: null, step: null, samples: 0 };
+  const corners = raw.split(";").map((p) => p.split(",").map(Number));
+  const region = await sceneRegion(ctx);
+  const huds = (await hudRects(ctx)).map((h) => h.rect);
+  const img = ctx.image();
+  const cx = corners.reduce((a, p) => a + p[0], 0) / corners.length;
+  const cy = corners.reduce((a, p) => a + p[1], 0) / corners.length;
+  const usable = ([x, y]) => region && x >= region.x + 8 && y >= region.y + 8 && x <= region.x + region.w - 8 && y <= region.y + region.h - 8
+    && !huds.some((r) => x >= r.l && x <= r.r && y >= r.t && y <= r.b);
+  let worst = 0;
+  let samples = 0;
+  for (let i = 0; i < corners.length; i += 1) {
+    const [ax, ay] = corners[i];
+    const [bx, by] = corners[(i + 1) % corners.length];
+    const len = Math.hypot(bx - ax, by - ay);
+    if (len < 1) continue;
+    let nx = -(by - ay) / len;
+    let ny = (bx - ax) / len;
+    // Outward = away from the rectangle's centre.
+    const mx = (ax + bx) / 2 - cx;
+    const my = (ay + by) / 2 - cy;
+    if (nx * mx + ny * my < 0) { nx = -nx; ny = -ny; }
+    for (let d = 20; d < len - 20; d += 40) {
+      const q = [ax + ((bx - ax) * d) / len, ay + ((by - ay) * d) / len];
+      const inside = [q[0] - nx * 20, q[1] - ny * 20];
+      const outside = [q[0] + nx * 20, q[1] + ny * 20];
+      if (!usable(inside) || !usable(outside)) continue;
+      const step = luminanceStep(img, [inside, outside], ctx.scale, 4);
+      worst = Math.max(worst, step);
+      samples += 1;
+    }
+  }
+  return { edge: corners, step: Math.round(worst * 1000) / 1000, samples };
+}
+
 export async function chipByText(ctx, text) {
   return (await chips(ctx)).find((chip) => chip.text === text || chip.name === text) ?? null;
 }
