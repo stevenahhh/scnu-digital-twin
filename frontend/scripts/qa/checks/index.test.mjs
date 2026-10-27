@@ -42,7 +42,15 @@ test("every check has a literal audit doc, runnable states and a run function", 
     assert.ok(states.length > 0, `${check.id} has no states`);
     for (const state of states) assert.ok(STATE_IDS.includes(state), `${check.id} uses unknown state ${state}`);
     if (!Array.isArray(check.states)) for (const vp of Object.keys(check.states)) assert.ok(["D", "P"].includes(vp), check.id);
-    if (check.fixtures) assert.ok(["down", "up", "delay", "any"].includes(check.fixtures), check.id);
+    const modes = ["down", "up", "delay", "any"];
+    if (check.fixtures && typeof check.fixtures === "object") {
+      // Per-state fixtures: every key is one of the check's states, every value a mode.
+      const states = Array.isArray(check.states) ? check.states : Object.values(check.states).flat();
+      for (const [state, mode] of Object.entries(check.fixtures)) {
+        assert.ok(states.includes(state), `${check.id} fixtures for unknown state ${state}`);
+        assert.ok(modes.includes(mode), `${check.id} fixtures mode ${mode}`);
+      }
+    } else if (check.fixtures) assert.ok(modes.includes(check.fixtures), check.id);
   }
 });
 

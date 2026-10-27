@@ -554,7 +554,8 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-48", {
-    states: ["S12", "S01"], viewports: D, fixtures: "any",
+    // S01 reads empty values with the fixtures down; S12 times skeleton vs spinner with the fixtures delayed (--delay-ms 3000).
+    states: ["S12", "S01"], viewports: D, fixtures: { S01: "down", S12: "delay" },
     async run(ctx) {
       if (ctx.state === "S01") {
         const dashes = await ctx.inPage((qa) => qa.textNodesShown(qa.one("[data-qa=dashboard-panel]") ?? document.body).filter((i) => /^-(°C|m\/s|\s|$)/.test(i.value)).map((i) => i.value).slice(0, 6));

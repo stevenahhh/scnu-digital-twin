@@ -12,7 +12,7 @@ import { inPage, decode } from "./lib/probe.mjs";
 import { KEY_RECTS, compareScenario, dHashPng, loadBaselines, roundRect, saveBaselines, scenarioKey } from "./lib/baseline.mjs";
 import { EXIT, exitCodeFor, rollupChecks, writeReport } from "./lib/report.mjs";
 import { STATES, CHAIN_IDS, S17_SUBSTATES, VWORLD_STATE_IDS, parseStateList, stateById, loadAndSettle, applyTheme, settleTiles } from "./lib/states.mjs";
-import { appliesTo, loadChecks, loadOwners, makeImageCache } from "./lib/registry.mjs";
+import { appliesTo, defaultRequestedIds, loadChecks, loadOwners, makeImageCache, plannedScenarios } from "./lib/registry.mjs";
 
 const QA_DIR = path.dirname(fileURLToPath(import.meta.url));
 const BASELINE_FILE = path.join(QA_DIR, "baselines.json");
@@ -122,7 +122,8 @@ async function main() {
   try {
     args = parseArgs(process.argv.slice(2));
     checks = await loadChecks();
-    args.onlyIds = args.only ? args.only.split(",").map((id) => id.trim()).filter(Boolean) : [...checks.keys()].filter((id) => !id.startsWith("SMOKE-"));
+    const plan = plannedScenarios({ ...args, fixtureLabel: args.delayMs ? "delay" : args.fail?.length ? "up" : "down" }, { chainIds: CHAIN_IDS, vworldStateIds: VWORLD_STATE_IDS, s17SubStates: S17_SUBSTATES });
+    args.onlyIds = args.only ? args.only.split(",").map((id) => id.trim()).filter(Boolean) : defaultRequestedIds(checks, plan);
     const unknown = args.onlyIds.filter((id) => !checks.has(id));
     if (unknown.length) throw new UsageError(`unknown check id ${unknown.join(", ")}`);
   } catch (error) {
