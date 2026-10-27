@@ -39,6 +39,16 @@ export function panPositions(position, target, right, forward) {
 
 const toArray = (vector) => [vector.x, vector.y, vector.z];
 
+// 앞선 드래그의 관성(감쇠로 남은 회전·이동)을 지운다. three의 OrbitControls는 감쇠를 끈 채 update하면 남은 양을 한 번에 쓰고
+// 0으로 만든다. 시점 비행은 이것으로 시작해야 도착한 자리에 그대로 멈춘다(관성이 비행 뒤에도 카메라를 계속 돌리지 않는다).
+export function clearOrbitInertia(controls) {
+  if (!controls?.enableDamping) return false;
+  controls.enableDamping = false;
+  controls.update();
+  controls.enableDamping = true;
+  return true;
+}
+
 // 사용자 궤도 조작처럼 start/end를 보내 눌린 시점 표시와 투어가 풀리게 한다. 공유 링크의 카메라도 이 길로 놓는다(비행 없음).
 export function applyMove(controls, { position, target }) {
   if (!controls) return false;

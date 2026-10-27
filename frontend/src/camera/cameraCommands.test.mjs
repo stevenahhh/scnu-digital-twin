@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { ORBIT_LIMITS, panPositions, rotatePosition, zoomBy, zoomPosition } from "./cameraCommands.mjs";
+import { ORBIT_LIMITS, clearOrbitInertia, panPositions, rotatePosition, zoomBy, zoomPosition } from "./cameraCommands.mjs";
 
 const close = (actual, expected) => actual.forEach((value, index) => assert.ok(Math.abs(value - expected[index]) < 1e-9, `${actual} vs ${expected}`));
 
@@ -34,4 +34,13 @@ test("commands report start/end like a user orbit and refuse to run without cont
   assert.deepEqual(events, ["start", "update", "end"]);
   assert.equal(controls.object.position.z, 50);
   assert.equal(zoomBy(null, 0.5), false);
+});
+
+test("clearOrbitInertia spends leftover damping once with damping off and restores it", () => {
+  const seen = [];
+  const controls = { enableDamping: true, update() { seen.push(this.enableDamping); } };
+  assert.equal(clearOrbitInertia(controls), true);
+  assert.deepEqual(seen, [false]);
+  assert.equal(controls.enableDamping, true);
+  assert.equal(clearOrbitInertia({ enableDamping: false, update() { throw new Error("no update without damping"); } }), false);
 });
