@@ -199,8 +199,11 @@ export class Browser {
     }
   }
 
+  // CDP reads `button` on a mouseMoved as the button held during the move: a plain hover must send "none", or Chrome
+  // treats it as a left-button drag and keeps :hover (and the canvas hover pick) frozen on whatever was under the press.
   async mouse(type, x, y, buttons = 0, modifiers = 0) {
-    await withTimeout(this.view.cdp("Input.dispatchMouseEvent", { type, x, y, button: "left", buttons, clickCount: 1, modifiers }), 30000, type);
+    const button = type === "mouseMoved" && !(buttons & 1) ? "none" : "left";
+    await withTimeout(this.view.cdp("Input.dispatchMouseEvent", { type, x, y, button, buttons, clickCount: type === "mouseMoved" ? 0 : 1, modifiers }), 30000, type);
   }
 
   async key(key) {
