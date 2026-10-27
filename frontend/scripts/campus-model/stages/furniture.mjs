@@ -18,7 +18,7 @@ import { fileURLToPath } from "node:url";
 import { simulationToTm, tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { METRES_PER_DEGREE_LAT, METRES_PER_DEGREE_LON, geoToModel, metres, modelToGeo } from "../lib/frame.mjs";
 import { pointInRing, ringArea, ringCentroid } from "../lib/geometry.mjs";
-import { hangulElements } from "../lib/markingGlyphs.mjs";
+import { glyphElements } from "../lib/markingGlyphs.mjs";
 import { encodePng } from "../lib/png.mjs";
 import { mulberry32 } from "../lib/raster.mjs";
 import { Kit, along, bufferLine, frame, lineLength, local, localPlan, offsetLine, orientedRect, rgb, sub, toLocal } from "../lib/solids.mjs";
@@ -50,6 +50,7 @@ const M = metres;
 // ---------------------------------------------------------------- decisions taken against the survey
 // Each is documented in README "Street furniture"; the build log repeats them.
 const EXCLUDED = {
+  OC0109: "surveyed as a grey roofed shelter on the arterial's south footway, but VR scene_b1 l shows a long slanted banner board there and the NGII photo shows no roof, only the board's thin pale top edge beside a tree shadow: superseded by SD-B1-S2 (data/photo/site-detail.geojson, signboard)",
   OC0111: "SCNU letter monument: superseded by RS-GATE-A19 (data/photo/rest-spaces.geojson, gate_sign), placed from VR scene_a19 (and scene_001) about 13 m further south at the plaza's road edge; the 2025 photo shows that corner of the gate plaza under construction, so this survey position (VR only, confidence 0.2) is left out",
   OC0102: "E8 courtyard raised bed: superseded by RS0018 and RS0018A-C (data/photo/rest-spaces.geojson, planter); the survey drew one 7.7 x 8.8 m soil bed over the entrance walk and its steps, where VR scene_e8 f and the NGII 2025 photo show two L-shaped brick hedge beds beside the walk and hedge strips at the wing walls",
 };
@@ -1594,7 +1595,7 @@ export function hedgeTextStrokes(line, text, { heightM, widthM = heightM, gapM =
   for (const ch of text) {
     if (ch === " ") { s += widthM * 0.6 + gapM; continue; }
     const at = ([x, y]) => [a[0] + u[0] * M(s + x * widthM) + up[0] * M((1 - y) * heightM), a[1] + u[1] * M(s + x * widthM) + up[1] * M((1 - y) * heightM)];
-    for (const e of hangulElements(ch) ?? []) {
+    for (const e of glyphElements(ch) ?? []) {
       if (e.ellipse) {
         const [cx, cy, rx, ry] = e.ellipse;
         strokes.push({ closed: true, points: Array.from({ length: 16 }, (_, i) => at([cx + rx * Math.cos((i / 16) * 2 * Math.PI), cy + ry * Math.sin((i / 16) * 2 * Math.PI)])) });
@@ -1767,11 +1768,20 @@ P.pond = (ctx, o) => {
   const form = [[0.1, 0, 1.6], [0.45, 0.1, 2.4], [0.3, 0.15, 3.3], [-0.25, 0.12, 3.95], [-0.8, 0.05, 4.0], [-1.0, 0, 3.6]];
   for (let k = 0; k + 1 < form.length; k += 1) ctx.solid.beam(local(plinth, ...form[k]), local(plinth, ...form[k + 1]), 0.75 - k * 0.1, 0.55 - k * 0.07, C.bronze);
 };
+const PARASOL_WORDS = { blue: "#3063a7", red: "#c0392b", green: "#3f7b4f", yellow: "#e3b53a", orange: "#e07b2c", beige: "#d8c3a0", brown: "#8f6a4c", grey: "#8c9298", gray: "#8c9298", black: "#2a2d30", white: "#efefeb" };
+export function parasolColour(note = "") {
+  const hex = /#[0-9a-f]{6}\b/i.exec(note);
+  if (hex) return rgb(hex[0]);
+  const word = Object.keys(PARASOL_WORDS).find((w) => new RegExp(`\\b${w}\\b`, "i").test(note));
+  return rgb(word ? PARASOL_WORDS[word] : PARASOL_WORDS.white);
+}
 P.parasol = (ctx, o) => {
   const c = ringCentroid(o.footprint);
   const g = ctx.groundAt(...c);
   const radius = Math.sqrt(Math.abs(ringArea(o.footprint)) / Math.PI);
-  const colour = /blue/.test(o.p.note ?? "") ? C.roofBlue : C.white;
+  // canopy colour: the instance's `colour` (#rrggbb or a palette name), else a colour word in the note (blue, red,
+  // green, yellow, white, beige, ...), else white
+  const colour = o.p.colour !== undefined ? paintOf(o.p.colour, C.white, o.id) : parasolColour(o.p.note);
   ctx.solid.pole(c, g - M(0.05), g + M(o.heightM), 0.03, 0.03, C.metal, { sides: 6 });
   ctx.solid.cone([c[0], g + M(o.heightM + 0.2), c[1]], disc(c, radius, 8).map(([x, z]) => [x, g + M(o.heightM - 0.25), z]), colour, { basePaint: colour });
 };
