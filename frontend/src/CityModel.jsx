@@ -27,7 +27,7 @@ import { ZONES, buildLabelRegistry } from "./labels/labelRegistry.mjs";
 import { campusModelCenter } from "./simulation/utils/campusTrafficCoordinates.mjs";
 import { CAMPUS_MODEL_URL, CAMPUS_MODEL_URLS } from "./campusModelAsset.mjs";
 import { CAMPUS_HEIGHTFIELD_URLS, loadHeightfield } from "./terrain/heightfield.mjs";
-import { DIM_ALPHA, HOVER_HEX, SELECTION_HEX } from "./ui/sceneTokens.mjs";
+import { HOVER_HEX, SELECTION_HEX, dimLinearChannel } from "./ui/sceneTokens.mjs";
 import {
   AUTUMN_MATERIAL_NAMES,
   SCENE_MINUTE_KEY,
@@ -828,7 +828,7 @@ export function CityModel({
           : isHovered
             ? scratchHoverColor.copy(baseColor).lerp(HOVER_COLOR, HOVER_TINT_MIX)
             : hasSelection
-              ? baseColor.multiplyScalar(1 - DIM_ALPHA)
+              ? baseColor.setRGB(dimLinearChannel(baseColor.r), dimLinearChannel(baseColor.g), dimLinearChannel(baseColor.b))
               : baseColor;
 
         // 낮음 단계의 선택 건물은 강조색으로 은은하게 빛난다(창문 발광 지도가 있는 재질은 밤 불빛이 발광을 쓰므로 건드리지 않는다).
