@@ -1,4 +1,5 @@
 import { createPortal } from "react-dom";
+import { Button } from "../ui/Button.jsx";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { MapPin, X } from "lucide-react";
 import { createBuildingCameraController } from "./cameraFocus.mjs";
@@ -590,17 +591,18 @@ export default function VWorldRenderer({
                 </button>
               </div>
             )}
-            <button
+            {/* 공용 Button(보조): 다른 단추와 같은 크기·굵기·모서리(V-F-35, 굵기 800 없음: V-F-23). */}
+            <Button
               ref={d4OpenerRef}
-              type="button"
-              className="dashboard-ghost-button pointer-events-auto min-h-11 px-4 text-xs font-extrabold shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--colors-primary)]"
+              variant="secondary"
+              className="pointer-events-auto"
               onClick={() => {
                 activateCoordinateMarkerSelection(D4_COORDINATE_MARKER, onSelectionRef.current);
                 setIsD4SectionOpen(true);
               }}
             >
               D4 공과대학 3호관 상세 보기
-            </button>
+            </Button>
           </div>
         )}
       </div>
