@@ -78,6 +78,8 @@ export function SceneLabel({
         // 마우스를 올린 건물(칩이나 그 메시)의 칩은 한 단계 떠오른다(그림자와 함께 2 px 위로). 2 px는 전환 없이 바로 옮긴다:
         // 멈춘 화면(frameloop demand)에서는 그릴 프레임이 거의 없어 CSS 전환이 끝나지 않은 채 남았다.
         state === "hover" && "-translate-y-0.5",
+        // 포인터를 칩 위에 올렸을 때도 같은 단계로 떠오른다(마우스오버 표시).
+        state !== "selected" && "hover:-translate-y-0.5",
         className,
       )}
       {...rest}

@@ -76,7 +76,10 @@ describe("SceneLabel", () => {
     const { container, rerender } = render(<SceneLabel name="도서관" elementId="BLD_L" state="hover" />);
     expect(container.querySelector("button").className).toMatch(/(^|\s)-translate-y-0\.5(\s|$)/);
     rerender(<SceneLabel name="도서관" elementId="BLD_L" state="idle" />);
-    expect(container.querySelector("button").className).not.toMatch(/translate-y/);
+    // Idle: lifted only while the pointer is over it (CSS hover), never by default.
+    const idle = container.querySelector("button").className.split(" ");
+    expect(idle).toContain("hover:-translate-y-0.5");
+    expect(idle).not.toContain("-translate-y-0.5");
   });
 
   it("shows the headline value in the hover state", () => {
