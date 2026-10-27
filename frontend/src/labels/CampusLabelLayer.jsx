@@ -126,6 +126,7 @@ export function CampusLabelLayer({
         if (node.style.transform !== PARKED_TRANSFORM) node.style.transform = PARKED_TRANSFORM;
         if (node.dataset.hiddenReason !== reason) node.dataset.hiddenReason = reason;
         if (node.dataset.anchorTop !== undefined) delete node.dataset.anchorTop;
+        if (node.dataset.anchorLeft !== undefined) delete node.dataset.anchorLeft;
       }
       const leader = leadersRef.current.get(id);
       if (leader && leader.style.visibility !== "hidden") leader.style.visibility = "hidden";
@@ -142,14 +143,16 @@ export function CampusLabelLayer({
       sizeCacheRef.current.set(id, size);
       return size;
     };
-    // anchorY: the building anchor's client y. Written as data-anchor-top so screen QA can measure the chip-to-anchor gap.
-    const writeSlot = (id, x, y, area, leader, opacity, anchorY) => {
+    // anchor: the building anchor's client point. Written as data-anchor-left/top so screen QA can measure the chip-to-anchor
+    // gap and find the building under a displaced chip.
+    const writeSlot = (id, x, y, area, leader, opacity, anchor) => {
       const node = nodesRef.current.get(id);
       if (!node) return;
-      const anchorTop = Number.isFinite(anchorY) ? String(Math.round(anchorY)) : undefined;
-      if (node.dataset.anchorTop !== anchorTop) {
-        if (anchorTop === undefined) delete node.dataset.anchorTop;
-        else node.dataset.anchorTop = anchorTop;
+      for (const [key, value] of [["anchorTop", anchor?.y], ["anchorLeft", anchor?.x]]) {
+        const text = Number.isFinite(value) ? String(Math.round(value)) : undefined;
+        if (node.dataset[key] === text) continue;
+        if (text === undefined) delete node.dataset[key];
+        else node.dataset[key] = text;
       }
       const transform = `translate3d(${Math.round(x - area.left)}px, ${Math.round(y - area.top)}px, 0)`;
       if (node.style.transform !== transform) node.style.transform = transform;
@@ -234,7 +237,7 @@ export function CampusLabelLayer({
             : offset.leader
               ? { from: { x: anchor.x + offset.leader.fx, y: anchor.y + offset.leader.fy }, to: anchor }
               : null;
-          writeSlot(id, x, y, area, leader, offset.opacity, anchor.y);
+          writeSlot(id, x, y, area, leader, offset.opacity, anchor);
         }
         return;
       }
@@ -283,7 +286,7 @@ export function CampusLabelLayer({
           opacity,
           leader: item.leader ? { fx: item.leader.from.x - anchor.x, fy: item.leader.from.y - anchor.y } : null,
         });
-        if (result.fingerprint !== lastRef.current.fingerprint) writeSlot(item.id, x, y, area, item.leader, opacity, anchor.y);
+        if (result.fingerprint !== lastRef.current.fingerprint) writeSlot(item.id, x, y, area, item.leader, opacity, anchor);
       }
       if (result.fingerprint !== lastRef.current.fingerprint) {
         for (const id of nodesRef.current.keys()) if (!placed.has(id)) hideNode(id, result.hiddenReasons.get(id) ?? "inactive");

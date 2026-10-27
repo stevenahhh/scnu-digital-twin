@@ -28,12 +28,34 @@ export async function openPanelSection(ctx, tab = "dashboard") {
     await ctx.sleep(800);
   }
   const selector = `[data-qa=dashboard-tab-${tab}]`;
-  if (await ctx.inPage((qa, a) => Boolean(qa.one(a.sel)) && qa.one(a.sel).getAttribute("aria-selected") !== "true", { sel: selector })) {
+  if (tab && await ctx.inPage((qa, a) => Boolean(qa.one(a.sel)) && qa.one(a.sel).getAttribute("aria-selected") !== "true", { sel: selector })) {
     await ctx.b.tap(selector);
     actions.push(`tab ${tab}`);
     await ctx.sleep(800);
   }
   return actions;
+}
+
+// Rail-first shell: rows that measure panel content (the audit captured them with the panel open) open the panel section
+// first, the way a user would, measure on a fresh screenshot, and then put the page back (패널 닫기, previous tab) so the
+// probe replay's later states and checks see the page as their own steps left it. tab: dashboard tab id, or null for the
+// state's own tab. Checks using it are `mutates: true`.
+export async function withPanelOpen(ctx, tab, measure) {
+  const before = await ctx.inPage((qa) => qa.all("[data-qa^=dashboard-tab-]").find((el) => el.getAttribute("aria-selected") === "true")?.getAttribute("data-qa")?.replace("dashboard-tab-", "") ?? null);
+  const actions = await openPanelSection(ctx, tab);
+  if (actions.length > 0 && ctx.refreshImage) await ctx.refreshImage();
+  try {
+    return await measure(actions);
+  } finally {
+    if (tab && before && before !== tab && actions.includes(`tab ${tab}`)) {
+      await ctx.b.tap(`[data-qa=dashboard-tab-${before}]`);
+      await ctx.sleep(600);
+    }
+    if (actions.includes("패널 열기") && await ctx.b.center('[aria-label="패널 닫기"]')) {
+      await ctx.b.tap('[aria-label="패널 닫기"]');
+      await ctx.sleep(900);
+    }
+  }
 }
 
 // Builds a check object carrying its literal audit row as `doc`.
@@ -66,6 +88,9 @@ export async function chips(ctx) {
       tier: el.getAttribute("data-tier") ?? el.closest("[data-tier]")?.getAttribute("data-tier") ?? null,
       whiteSpace: s.whiteSpace,
       leader: Boolean(qa.leaderOf(el)),
+      // The building anchor the layer projected for this chip (data-anchor-left/top on its slot), or null.
+      anchor: (() => { const slot = el.closest("[data-label-slot]"); const x = Number(slot?.dataset.anchorLeft); const y = Number(slot?.dataset.anchorTop);
+        return slot?.dataset.anchorLeft && slot?.dataset.anchorTop && Number.isFinite(x) && Number.isFinite(y) ? { x, y } : null; })(),
       children: [...el.children].map((child) => child.getAttribute("data-qa") ?? child.tagName.toLowerCase()),
     };
   }));

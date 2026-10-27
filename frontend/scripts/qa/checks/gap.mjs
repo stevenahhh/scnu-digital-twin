@@ -4,6 +4,7 @@ import {
   gapBetween, luminanceStep, missingHook, modelEdgeStep, panelInfo, pixelDiff, rectOf, result, roofBox, sampleFrames,
   sceneRegion, selectedTab, textItems, meanLuminance, worstContrast,
   openPanelSection,
+  withPanelOpen,
 } from "./common.mjs";
 
 const D = ["D"];
@@ -408,17 +409,20 @@ export const GAP_CHECKS = [
       if (!lib) return result(false, { libraryChip: null }, "library chip visible to locate its mesh");
       const before = await ctx.screenshot();
       const tabs0 = await ctx.inPage((qa) => qa.all("[data-qa^=dashboard-tab-]").length + qa.all("[data-qa=selection-inspector]").length);
-      const x = lib.rect.x + lib.rect.w / 2;
-      const y = lib.rect.y + lib.rect.h + 24;
+      // Row: the pointer goes onto the 도서관 mesh, not the chip. A displaced chip (pushed below the HUD) is not above its
+      // building, so aim at the building anchor the layer projected (6 units above the roof) when the chip carries one.
+      const x = lib.anchor ? lib.anchor.x : lib.rect.x + lib.rect.w / 2;
+      const y = lib.anchor ? lib.anchor.y + 24 : lib.rect.y + lib.rect.h + 24;
+      const roof = lib.anchor ? { x: lib.anchor.x - 20, y: lib.anchor.y + 6, w: 40, h: 30 } : roofBox(lib);
       await ctx.b.mouse("mouseMoved", x, y, 0);
       await ctx.sleep(300);
       const after = await ctx.screenshot();
       const lib2 = await chipByText(ctx, "도서관");
       const tabs1 = await ctx.inPage((qa) => qa.all("[data-qa^=dashboard-tab-]").length + qa.all("[data-qa=selection-inspector]").length);
       await ctx.b.mouse("mouseMoved", 5, 5, 0);
-      const roof = Math.round(pixelDiff(before, after, roofBox(lib), ctx.scale) * 1000) / 1000;
+      const roofDelta = Math.round(pixelDiff(before, after, roof, ctx.scale) * 1000) / 1000;
       const lifted = Boolean(lib2 && (lib2.rect.y < lib.rect.y - 1 || lib2.text !== lib.text));
-      return result(roof > 0.02 && lifted && tabs0 === tabs1, { roofPixelDelta: roof, chipLiftedOrValue: lifted, tabsAndInspectors: [tabs0, tabs1] }, "hover tints the roof, lifts the chip, opens nothing");
+      return result(roofDelta > 0.02 && lifted && tabs0 === tabs1, { roofPixelDelta: roofDelta, aimedAtAnchor: Boolean(lib.anchor), chipLiftedOrValue: lifted, tabsAndInspectors: [tabs0, tabs1] }, "hover tints the roof, lifts the chip, opens nothing");
     },
   }),
   defineCheck("GAP-25", {
@@ -448,14 +452,16 @@ export const GAP_CHECKS = [
     },
   }),
   defineCheck("GAP-27", {
-    states: ["S13"], viewports: D,
+    states: ["S13"], viewports: D, mutates: true,
     async run(ctx) {
+      return withPanelOpen(ctx, null, async () => {
       const m = await ctx.inPage((qa) => ({
         badges: qa.all("[data-qa=sample-badge]").filter(qa.visible).length,
         sampleWords: qa.textNodesShown(qa.one("[data-qa=dashboard-panel]") ?? document.body).filter((item) => /샘플|예시|sample/i.test(item.value)).length,
       }));
       if (!m.badges) return missingHook(HOOKS.sample, "every sample-sourced element carries the same 샘플 데이터 badge component", m);
       return result(m.badges >= 1, m, "sample rows carry the shared badge");
+      });
     },
   }),
   defineCheck("GAP-28", {

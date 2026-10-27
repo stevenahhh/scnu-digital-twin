@@ -56,7 +56,10 @@ describe("CampusLabelLayer", () => {
     const points = project(entries);
     const shown = visibleSlots();
     expect(shown.length).toBeGreaterThan(0);
-    for (const slot of shown) expect(slot.dataset.anchorTop).toBe(String(Math.round(points.get(slot.dataset.labelSlot).y)));
+    for (const slot of shown) {
+      expect(slot.dataset.anchorTop).toBe(String(Math.round(points.get(slot.dataset.labelSlot).y)));
+      expect(slot.dataset.anchorLeft).toBe(String(Math.round(points.get(slot.dataset.labelSlot).x)));
+    }
     const hidden = [...container.querySelectorAll("[data-label-slot]")].filter((slot) => slot.style.visibility !== "visible");
     expect(hidden.length).toBeGreaterThan(0);
     expect(hidden.every((slot) => slot.dataset.anchorTop === undefined)).toBe(true);
