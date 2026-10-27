@@ -49,6 +49,7 @@ import {
   crownMaterialName,
   patchFoliageLod,
 } from "./lighting/foliage.mjs";
+import { WATER_MATERIAL_NAME, patchWaterFresnel } from "./lighting/water.mjs";
 
 // 클릭하지 않아도 카메라가 이 거리 안으로 들어오면 "가까이 간" 것으로 본다.
 // 클릭 시 자동으로 붙는 카메라 거리(FOCUS_CAMERA_OFFSET 기준 약 94유닛)보다 살짝
@@ -552,6 +553,7 @@ export function CityModel({
         isRoadMarking ||
         isGroundLayer ||
         child.material?.name === FURNITURE_GLASS_MATERIAL_NAME ||
+        child.material?.name === WATER_MATERIAL_NAME ||
         child.material?.name === NON_CASTER_MATERIAL_NAME ||
         NON_CASTER_PARENT_PATTERN.test(child.parent?.name ?? "") ||
         NON_CASTER_PARENT_PATTERN.test(child.name) ||
@@ -561,6 +563,12 @@ export function CityModel({
       child.receiveShadow = !(NON_RECEIVER_PARENT_PATTERN.test(child.parent?.name ?? "") || NON_RECEIVER_PARENT_PATTERN.test(child.name));
       child.material = child.material.clone();
       if (isFurniture) child.raycast = () => {};
+      // 연못 물(Furniture_Water): 하늘 환경맵을 비추고, 내려다보면 비치고 비스듬히 보면 거의 불투명(프레넬)
+      if (child.material.name === WATER_MATERIAL_NAME) {
+        child.material.onBeforeCompile = (shader) => patchWaterFresnel(shader);
+        child.material.customProgramCacheKey = () => "campus-water-fresnel";
+        child.material.needsUpdate = true;
+      }
       if (isRoadMarking) {
         child.raycast = () => {};
         child.material.polygonOffset = true;
