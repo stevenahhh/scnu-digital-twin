@@ -33,6 +33,13 @@ const RELOCATE_REACH_M = 30;
 // an edge with no route at all that is the only link of a group of nodes is replaced by the shortest walkable link
 // (no carriageway, no building) from that group to the rest of the person graph, searched up to this distance
 const REJOIN_REACH_M = 80;
+// A plaza link (connectors.mjs plazaLinks, EDGE_PLAZA_*) whose carriageway-free route is missing or a detour (longer than
+// PLAZA_DETOUR_FACTOR x or PLAZA_DETOUR_EXTRA_M over the straight line) stays straight when it ends at a crossing and
+// crosses at most PLAZA_KERB_GAP_M of carriageway on the way (the road polygon between the footway and the zebra);
+// otherwise it is dropped: it was only the second side of a through route.
+const PLAZA_DETOUR_FACTOR = 2;
+const PLAZA_DETOUR_EXTRA_M = 30;
+const PLAZA_KERB_GAP_M = 8;
 const PERSON_KINDS = new Set(["sidewalk", "crosswalk", "shared_path", "pedestrian_gate", "building_entrance", "parking_walk"]);
 
 export const CLS = Object.freeze({ OPEN: 1, PLAZA: 2, SIDEWALK: 3, CROSSING: 4, VEHICLE: 5, BUILDING: 6 });
@@ -262,7 +269,7 @@ export function buildWalkways({ graph, walkable = [], roadPolygons = [], buildin
   const grid = new SurfaceGrid(classify);
   const cellClass = (p) => classify(p);
   const personEdge = (e) => PERSON_KINDS.has(e.kind);
-  const stats = { movedNodes: 0, rerouted: 0, rerouteGrowthM: 0, unresolved: [], strips: 0, stripM: 0, approaches: 0, sidewalkOnVehicle: [], crosswalksRedrawn: 0, droppedCrossingEdges: [], estimatedCrossings: [], rejoined: [] };
+  const stats = { movedNodes: 0, rerouted: 0, rerouteGrowthM: 0, unresolved: [], strips: 0, stripM: 0, approaches: 0, sidewalkOnVehicle: [], crosswalksRedrawn: 0, droppedCrossingEdges: [], estimatedCrossings: [], rejoined: [], plazaLinks: [] };
 
   // ---- 1. person nodes on the carriageway or in a building move to the nearest free ground
   const personNodes = new Set(graph.edges.filter(personEdge).flatMap((e) => [e.from, e.to]));
@@ -330,6 +337,26 @@ export function buildWalkways({ graph, walkable = [], roadPolygons = [], buildin
     const a = graph.nodes.get(e.from).p;
     const b = graph.nodes.get(e.to).p;
     const d = dist(a, b);
+    if (e.id.startsWith("EDGE_PLAZA_")) {
+      const free = grid.route(a, b, { margin: Math.max(40, 0.6 * d) });
+      const freeM = free ? lineLength(free) : Infinity;
+      if (freeM > Math.max(PLAZA_DETOUR_FACTOR * d, d + PLAZA_DETOUR_EXTRA_M)) {
+        const roadM = sampleLine([a, b], SAMPLE_M).filter((q) => cellClass(q) === CLS.VEHICLE).length * SAMPLE_M;
+        const toCrossing = ["crossing_end", "crosswalk"].includes(graph.nodes.get(e.to)?.kind);
+        const throughBuilding = sampleLine([a, b], SAMPLE_M).some((q) => cellClass(q) === CLS.BUILDING);
+        if (toCrossing && !throughBuilding && roadM <= PLAZA_KERB_GAP_M) {
+          e.points = [a, b];
+          // its road stretch is the kerb strip before the zebra: not offered to 2c (a link the photo shows stays); step 4
+          // covers it with an estimated crossing
+          e.placed = "walkway_estimated";
+          stats.plazaLinks.push({ edge: e.id, kept: "straight to the crossing", carriageway_m: round(roadM, 1), detour_m: Number.isFinite(freeM) ? round(freeM, 1) : null });
+        } else {
+          graph.edges.splice(graph.edges.indexOf(e), 1);
+          stats.plazaLinks.push({ edge: e.id, dropped: true, straight_m: round(d, 1), detour_m: Number.isFinite(freeM) ? round(freeM, 1) : null });
+        }
+        continue;
+      }
+    }
     let cells = grid.route(a, b, { margin: Math.max(40, 0.6 * d) }) ?? grid.route(a, b, { margin: Math.max(150, d) });
     let crossesVehicle = false;
     if (!cells) {
@@ -382,7 +409,8 @@ export function buildWalkways({ graph, walkable = [], roadPolygons = [], buildin
 
   // ---- 2c. (pedestrians cross only at crossing polygons) an estimated edge that still crosses the carriageway is
   // dropped when every POI (where people start, dwell and leave) stays connected to the others without it
-  const essential = [...personNodes].filter((id) => graph.nodes.get(id)?.kind === "poi");
+  // plaza nodes (connectors.mjs plazaLinks) count as POIs here: a walkable plaza stays joined to the network
+  const essential = [...personNodes].filter((id) => ["poi", "plaza"].includes(graph.nodes.get(id)?.kind));
   const label = (edges) => {
     const uf = new UnionFind();
     for (const x of edges) uf.union(x.from, x.to);
@@ -478,4 +506,4 @@ export function keepSurfacesOf(walkways, edgeIds) {
   return removed;
 }
 
-export const statsLine = (s) => `walkways: ${s.movedNodes} nodes moved off the carriageway, ${s.rerouted} estimated edges re-drawn (+${s.rerouteGrowthM} m), ${s.crosswalksRedrawn} crosswalk lines re-drawn through their polygon, ${s.droppedCrossingEdges.length} carriageway-crossing estimated edges dropped, ${s.rejoined.length} edges without any route replaced by a walkable link${s.rejoined.length ? ` (${s.rejoined.map((r) => (r.dropped ? `${r.edge} dropped` : `${r.edge} -> ${r.via} ${r.from}-${r.to} ${r.length_m} m`)).join(", ")})` : ""}, ${s.strips} estimated walkway strips (${s.stripM} m of line), ${s.approaches} crossing approaches (estimated), ${s.estimatedCrossings.length} estimated crossings on ${s.estimatedCrossings.reduce((t, c) => t + c.carriageway_m, 0).toFixed(1)} m of carriageway, ${s.unresolved.length} unresolved, ${s.sidewalkOnVehicle.length} measured stretches on the carriageway`;
+export const statsLine = (s) => `walkways: ${s.movedNodes} nodes moved off the carriageway, ${s.rerouted} estimated edges re-drawn (+${s.rerouteGrowthM} m), ${s.crosswalksRedrawn} crosswalk lines re-drawn through their polygon, ${s.droppedCrossingEdges.length} carriageway-crossing estimated edges dropped, ${s.plazaLinks.length} plaza detour links (${s.plazaLinks.map((x) => `${x.edge} ${x.dropped ? "dropped" : `straight, ${x.carriageway_m} m carriageway`}`).join(", ") || "none"}), ${s.rejoined.length} edges without any route replaced by a walkable link${s.rejoined.length ? ` (${s.rejoined.map((r) => (r.dropped ? `${r.edge} dropped` : `${r.edge} -> ${r.via} ${r.from}-${r.to} ${r.length_m} m`)).join(", ")})` : ""}, ${s.strips} estimated walkway strips (${s.stripM} m of line), ${s.approaches} crossing approaches (estimated), ${s.estimatedCrossings.length} estimated crossings on ${s.estimatedCrossings.reduce((t, c) => t + c.carriageway_m, 0).toFixed(1)} m of carriageway, ${s.unresolved.length} unresolved, ${s.sidewalkOnVehicle.length} measured stretches on the carriageway`;
