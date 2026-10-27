@@ -129,6 +129,8 @@ export default function VWorldRenderer({
   onSelectPreset,
   // 지금 시점이 땅 높이 시점(정문)인지: 라벨 거리 단계에 쓴다(Legacy CityModel의 presetFromGround와 같다).
   labelPresetFromGround = false,
+  // 폰 화면(지도 위 상태 카드를 아래쪽 열로 옮긴다).
+  phone = false,
   presentation = false,
   // 시점 버튼이 쓰는 카메라(createVWorldCampusCamera). 준비되면 넘기고, 지도가 사라지면 null.
   onCampusCamera,
@@ -524,6 +526,31 @@ export default function VWorldRenderer({
     campusCameraRef.current.panBy(...step);
   };
 
+  // 교통 시뮬레이션 배지와 대표 설치 계획 카드: 데스크톱은 왼쪽 위 열(검색 아래), 폰은 왼쪽 아래 열(D4 상세 보기 위)에 하나만 둔다.
+  // 폰 화면 위쪽은 Legacy처럼 검색만 남겨 정문 시점의 도서관처럼 위쪽에 보이는 건물 칩을 가리지 않는다.
+  const mapStatusCards = (
+    <>
+            {trafficStatus && (
+              <StatusBadge tone={TRAFFIC_STATUS[trafficStatus.state]?.tone ?? "warning"} role="status" className="text-caption">
+                {TRAFFIC_STATUS[trafficStatus.state]?.label ?? "교통 시뮬레이션 연결 끊김"}
+              </StatusBadge>
+            )}
+            <RepresentativePlanOverlayController
+              buildingIds={CAMPUS_REPRESENTATIVE_BUILDING_IDS}
+              refreshKey={representativeRefreshKey}
+              onOverlayDataChange={handleOverlayDataChange}
+              onBuildingSelect={(buildingId) => onSelectionRef.current({
+                elementId: `BLD_${buildingId}`,
+                buildingId,
+                displayName: buildingId,
+              })}
+              className="pointer-events-auto"
+              widthClassName="max-w-[18rem]"
+              feedDown={energyFeedDown}
+            />
+    </>
+  );
+
   const mapOverlays = (
     <>
         {/* 지도 위 문구와 버튼은 열린 패널을 뺀 지도 영역 안에만 둔다. 상태 문구는 위쪽 왼쪽 열, 지도 조작은 아래쪽 왼쪽 열에
@@ -565,24 +592,7 @@ export default function VWorldRenderer({
                   {campusStatus.message}
                 </StatusBadge>
               )}
-              {trafficStatus && (
-                <StatusBadge tone={TRAFFIC_STATUS[trafficStatus.state]?.tone ?? "warning"} role="status" className="text-caption">
-                  {TRAFFIC_STATUS[trafficStatus.state]?.label ?? "교통 시뮬레이션 연결 끊김"}
-                </StatusBadge>
-              )}
-              <RepresentativePlanOverlayController
-                buildingIds={CAMPUS_REPRESENTATIVE_BUILDING_IDS}
-                refreshKey={representativeRefreshKey}
-                onOverlayDataChange={handleOverlayDataChange}
-                onBuildingSelect={(buildingId) => onSelectionRef.current({
-                  elementId: `BLD_${buildingId}`,
-                  buildingId,
-                  displayName: buildingId,
-                })}
-                className="pointer-events-auto"
-                widthClassName="max-w-[18rem]"
-                feedDown={energyFeedDown}
-              />
+              {!phone && mapStatusCards}
             </div>
           )}
           {!isD4SectionOpen && (
@@ -597,6 +607,7 @@ export default function VWorldRenderer({
                 feedDown={energyFeedDown}
                 onSelection={(selection) => onSelectionRef.current(selection)}
               />
+              {phone && mapStatusCards}
               {selectedRoadZoneName && (
                 <div
                   role="status"

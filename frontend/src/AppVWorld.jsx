@@ -209,6 +209,7 @@ export default function App() {
           overlayHost={hudOverlayHost}
           d4Presets={viewportMode === "phone" ? CAMERA_PRESETS : null}
           onSelectPreset={camera.selectPreset}
+          phone={viewportMode === "phone"}
           labelPresetFromGround={Boolean(CAMERA_PRESETS.find((preset) => preset.id === camera.activePresetId)?.fromGround)}
           onSelection={handleVWorldSelection}
           energyFeedDown={isFeedDown(feeds.energy)}
