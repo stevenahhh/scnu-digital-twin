@@ -478,6 +478,10 @@ export function duplicatesOf(candidates, existing, radiusM = 3) {
 export const AUDIT_COMPOUNDS = {
   "SD-A1RG-T1+SD-A1RG-T6": "a small round-crowned tree between the two boxed trees of the A1 roof garden (VR scene_a5 r)",
   "SD-A1RG-T2+SD-A1RG-T6": "a small round-crowned tree between the two boxed trees of the A1 roof garden (VR scene_a5 r)",
+  "SD-A1RG-S3+SD-A1RG-T8": "a clipped shrub under the broadleaf tree beside the parasol (VR scene_a5 r)",
+  "SD-A1RG-S6+SD-A1RG-T7": "a clipped shrub mass under the tall broadleaf tree east of the room (VR scene_a5 r)",
+  "SD-F1-IS2+SD-F1-IT1": "a low shrub beside the pine on the F1 forecourt island (VR scene_f1 f, photo crowns)",
+  "SD-F1-IS2+SD-F1-IT2": "a low shrub beside the small tree on the F1 forecourt island (VR scene_f1 f, photo crowns)",
   "OC0064+OC0065": "the two crossing bars of one X-shaped pergola in the pocket park",
   "SD-E1-B1+SD-E1-B3": "timber block benches grouped on the e1 plaza (VR scene_e1 f)",
   "SD-E1-B2+SD-E1-B3": "timber block benches grouped on the e1 plaza (VR scene_e1 f)",
@@ -541,11 +545,12 @@ B.fence = (ctx, o) => {
   else railing(ctx, o.line, Math.min(h, 1.2), C.white, { stepM: 2, rails: [1, 0.55, 0.12] });
 };
 
-// Patchy turf on a rest-space planter (site-detail `tones`: sRGB tones; VR scene_a5 r, autumn turf on the A1 roof):
-// cells tone_cell_m (1.2 m) square wholly inside the bed, 2 cm over its fill, each in the tone a stable hash of the cell
-// picks; cells within wear_m (0.8 m) of the centre line of a paving_path named in wear_paths take wear_tone. mound_m
-// (VR scene_f1 f: the F1 forecourt island) raises the cells into a low mound, mound_m at mound_ramp_m (2.5 m) from the
-// bed's edge and over, a smoothstep in between.
+// Patchy turf on a rest-space planter (site-detail `tones`: sRGB tones; VR scene_a5 r, autumn turf on the A1 roof): one
+// shared-vertex grid tone_cell_m (0.6 m) apart, 2 cm over the bed's fill, its vertex colours a smooth blend of the tones
+// by two octaves of value noise tone_scale_m (4 m) across, so the patches fade into each other with no cell edges; worn
+// turf (wear_tone) within wear_m (0.8 m) of the centre line of a paving_path named in wear_paths, fading out to twice
+// that; the grid fades into the bed's own tone over its outer cell. mound_m (VR scene_f1 f: the F1 forecourt island)
+// raises the grid into a low mound, mound_m at mound_ramp_m (2.5 m) from the bed's edge and over, a smoothstep between.
 export function moundAt(o, inner, q) {
   if (!o.p.mound_m) return 0;
   let edge = Infinity;
@@ -558,7 +563,19 @@ function segmentDistance(q, a, b) {
   const t = Math.max(0, Math.min(1, ((q[0] - a[0]) * dx + (q[1] - a[1]) * dz) / (dx * dx + dz * dz)));
   return Math.hypot(q[0] - a[0] - t * dx, q[1] - a[1] - t * dz);
 }
-function lawnPatches(ctx, o, inner, fillTop) {
+const smooth01 = (t) => t * t * (3 - 2 * t);
+const lattice = (i, j, seed) => (Math.imul(Math.imul(i + 4096, 73856093) ^ Math.imul(j + 4096, 19349663) ^ seed, 2654435761) >>> 0) / 4294967296;
+// value noise in [0, 1]: lattice values at whole multiples of `size`, smoothstep-blended between them
+function valueNoise(x, z, size, seed) {
+  const [u, v] = [x / size, z / size];
+  const [i, j] = [Math.floor(u), Math.floor(v)];
+  const [fu, fv] = [smooth01(u - i), smooth01(v - j)];
+  const top = lattice(i, j, seed) * (1 - fu) + lattice(i + 1, j, seed) * fu;
+  const bottom = lattice(i, j + 1, seed) * (1 - fu) + lattice(i + 1, j + 1, seed) * fu;
+  return top * (1 - fv) + bottom * fv;
+}
+const mixPaint = (a, b, t) => [0, 1, 2].map((k) => Math.round(a[k] + (b[k] - a[k]) * t)).concat(255);
+function lawnPatches(ctx, o, inner, fillTop, base) {
   const tones = o.p.tones.map((t) => paintOf(t, C.lawn, o.id));
   const wear = paintOf(o.p.wear_tone, C.soil, o.id);
   const paths = (o.p.wear_paths ?? []).map((id) => {
@@ -566,18 +583,38 @@ function lawnPatches(ctx, o, inner, fillTop) {
     if (p?.kind !== "paving_path") throw new Error(`furniture: ${o.id} wear path ${id} is not a paving_path`);
     return p.line;
   });
-  const worn = (q) => paths.some((line) => line.some((a, i) => i + 1 < line.length && segmentDistance(q, a, line[i + 1]) < M(o.p.wear_m ?? 0.8)));
-  const cell = M(o.p.tone_cell_m ?? 1.2);
+  const wearM = M(o.p.wear_m ?? 0.8);
+  const pathDistance = (q) => Math.min(Infinity, ...paths.flatMap((line) => line.slice(1).map((b, i) => segmentDistance(q, line[i], b))));
+  const edgeDistance = (q) => Math.min(...inner.map((a, i) => segmentDistance(q, a, inner[(i + 1) % inner.length])));
+  const cell = M(o.p.tone_cell_m ?? 0.6);
+  const size = M(o.p.tone_scale_m ?? 4);
+  const colourAt = (q) => {
+    const n = Math.min(0.999, Math.max(0, 0.65 * valueNoise(q[0], q[1], size, 11) + 0.35 * valueNoise(q[0], q[1], size / 2.7, 29)));
+    const s = n * (tones.length - 1);
+    const k = Math.floor(s);
+    let c = mixPaint(tones[k], tones[Math.min(k + 1, tones.length - 1)], smooth01(s - k));
+    if (paths.length) c = mixPaint(c, wear, 1 - smooth01(Math.min(1, Math.max(0, (pathDistance(q) - wearM) / wearM))));
+    return mixPaint(base, c, Math.min(1, edgeDistance(q) / cell));
+  };
   const xs = inner.map((p) => p[0]);
   const zs = inner.map((p) => p[1]);
-  const top = (x, z) => fillTop(x, z) + M(0.02) + moundAt(o, inner, [x, z]);
-  for (let i = Math.floor(Math.min(...xs) / cell); i * cell < Math.max(...xs); i += 1) {
-    for (let j = Math.floor(Math.min(...zs) / cell); j * cell < Math.max(...zs); j += 1) {
-      const sq = [[i * cell, j * cell], [(i + 1) * cell, j * cell], [(i + 1) * cell, (j + 1) * cell], [i * cell, (j + 1) * cell]];
-      if (!sq.every((p) => pointInRing(p, inner))) continue;
-      const centre = [(i + 0.5) * cell, (j + 0.5) * cell];
-      const hash = Math.imul((i + 4096) * 73856093 ^ (j + 4096) * 19349663, 2654435761) >>> 0;
-      ctx.solid.flat(sq, [], top, worn(centre) ? wear : tones[hash % tones.length]);
+  const [i0, j0] = [Math.floor(Math.min(...xs) / cell), Math.floor(Math.min(...zs) / cell)];
+  const [i1, j1] = [Math.ceil(Math.max(...xs) / cell), Math.ceil(Math.max(...zs) / cell)];
+  const nodes = new Map();
+  const node = (i, j) => {
+    const key = `${i},${j}`;
+    if (!nodes.has(key)) {
+      const q = [i * cell, j * cell];
+      nodes.set(key, ctx.solid.mesh.vertex([q[0], fillTop(...q) + M(0.02) + moundAt(o, inner, q), q[1]], [0, 1, 0], undefined, colourAt(q)));
+    }
+    return nodes.get(key);
+  };
+  for (let i = i0; i < i1; i += 1) {
+    for (let j = j0; j < j1; j += 1) {
+      if (![[i, j], [i + 1, j], [i + 1, j + 1], [i, j + 1]].every(([a, b]) => pointInRing([a * cell, b * cell], inner))) continue;
+      const [a, b, c, d] = [node(i, j), node(i + 1, j), node(i + 1, j + 1), node(i, j + 1)];
+      ctx.solid.mesh.triangle(a, d, c); // (x0,z0) (x0,z1) (x1,z1): faces up
+      ctx.solid.mesh.triangle(a, c, b);
     }
   }
 }
@@ -606,8 +643,9 @@ B.planter = (ctx, o) => {
       ctx.solid.face([[p[0], fillTop(...p), p[1]], [q[0], fillTop(...q), q[1]], [q[0], kerbTop(...q), q[1]], [p[0], kerbTop(...p), p[1]]], toMiddle, kerb);
     }
     // under patchy turf the bed takes its second tone, so the seams between cells and the kerb read as turf
-    ctx.solid.flat(inner, [], fillTop, o.p.tones ? paintOf(o.p.tones[1] ?? o.p.tones[0], fill, o.id) : fill);
-    if (o.p.tones) lawnPatches(ctx, o, inner, fillTop);
+    const bed = o.p.tones ? paintOf(o.p.tones[1] ?? o.p.tones[0], fill, o.id) : fill;
+    ctx.solid.flat(inner, [], fillTop, bed);
+    if (o.p.tones) lawnPatches(ctx, o, inner, fillTop, bed);
     return;
   }
   if (o.line) {

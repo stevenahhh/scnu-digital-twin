@@ -102,12 +102,16 @@ test("paving_path: every leg a slab height_m above the ground, width_m wide", ()
   assert.throws(() => B.paving_path(ctx, { id: "SD-T8", kind: "paving_path", point: [0, 0], p: {} }), /needs a LineString/);
 });
 
-test("planter tones: patchy cells over the fill, worn beside a named paving_path, refused for another kind", () => {
+test("planter tones: one smooth shared-vertex grid over the fill (no cell edges), worn beside a named paving_path, refused for another kind", () => {
   const ring = [[0, 0], [M(6), 0], [M(6), M(6)], [0, M(6)]];
-  const bed = (objects, p) => { const ctx = flatContext(); ctx.objects = objects; B.planter(ctx, { id: "SD-T9", kind: "planter", heightM: 0.15, ring, p: { dims: { kerbHeightM: 0.15 }, fill: "lawn", ...p } }); return ctx.solid.triangleCount; };
+  const bed = (objects, p) => { const ctx = flatContext(); ctx.objects = objects; B.planter(ctx, { id: "SD-T9", kind: "planter", heightM: 0.15, ring, p: { dims: { kerbHeightM: 0.15 }, fill: "lawn", ...p } }); return ctx.solid.mesh; };
   const plain = bed([], {});
   const path = { id: "SD-TP", kind: "paving_path", line: [[0, M(3)], [M(6), M(3)]] };
-  assert.ok(bed([path], { tones: ["#706b3f", "#a9a579"], wear_paths: ["SD-TP"], wear_tone: "#8a7d5e" }) >= plain + 2 * 9, "at least nine 1.2 m cells");
+  const turf = bed([path], { tones: ["#706b3f", "#a9a579"], wear_paths: ["SD-TP"], wear_tone: "#8a7d5e", tone_cell_m: 1 });
+  const quads = (turf.indices.length - plain.indices.length) / 6;
+  const corners = turf.vertexCount - plain.vertexCount;
+  assert.ok(quads >= 9, `${quads} grid quads`);
+  assert.ok(corners < 2 * quads, `${corners} vertices for ${quads} quads: neighbouring quads share their corners`);
   assert.throws(() => bed([{ ...path, kind: "hedge" }], { tones: ["#706b3f"], wear_paths: ["SD-TP"], wear_tone: "#8a7d5e" }), /is not a paving_path/);
 });
 
