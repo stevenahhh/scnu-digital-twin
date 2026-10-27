@@ -215,8 +215,27 @@ export const STATES = Object.freeze([
         });
         if (anchor) [x, y] = anchor;
       }
-      await ctx.b.wheel(x, y, -300, 14);
-      ctx.actions.push(`14x mouseWheel deltaY=-300 at ${x},${y}${ctx.entry === "vworld" ? " (VWorld: 도서관 anchor)" : ""}`);
+      if (ctx.entry === "vworld") {
+        // Legacy's 14 ticks (OrbitControls: x0.95 each, from the 520-unit cap) leave the camera ~406 m from its target at
+        // ~45 deg, about 290 m above the ground. The SDK's wheel zoom is far stronger per tick, so 14 ticks dive to the
+        // rooftops; wheel one tick at a time toward the anchor and stop at the same height above the ground.
+        const heightAboveGround = () => ctx.b.run(() => {
+          const viewer = window.ws3d?.viewer;
+          const c = viewer?.camera?.positionCartographic;
+          if (!c) return null;
+          return c.height - (viewer.scene.globe.getHeight(c) ?? 0);
+        });
+        let ticks = 0;
+        for (let h = await heightAboveGround(); ticks < 20 && h != null && h > 290; h = await heightAboveGround()) {
+          await ctx.b.wheel(x, y, -300, 1);
+          ticks += 1;
+          await sleep(500);
+        }
+        ctx.actions.push(`${ticks}x mouseWheel deltaY=-300 at ${x},${y} (VWorld: 도서관 anchor, until ~290 m above the ground)`);
+      } else {
+        await ctx.b.wheel(x, y, -300, 14);
+        ctx.actions.push(`14x mouseWheel deltaY=-300 at ${x},${y}`);
+      }
       await settleCamera(ctx);
     },
   },
