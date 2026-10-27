@@ -181,25 +181,31 @@ export default function App() {
         className="pointer-events-none absolute left-0 top-0 z-[6] transition-none"
         style={{ right: mapInsetRight, bottom: mapInsetBottom }}
       >
+        {/* 시간 카드는 줄지 않는다(줄면 글자가 두 줄로 꺾여 아래 검색칸을 덮었다). 오른쪽 조작 묶음은 자리가 모자라면 자기
+            칸 안에서 오른쪽으로 줄을 바꾼다(왼쪽 열의 검색칸·카드를 덮지 않는다). */}
         <div data-label-chrome-layer="" className="flex items-start gap-2 p-4">
-        <HudTimeReadout
-          minuteOfDay={clock.sceneMinuteOfDay}
-          statusSlot={viewportMode !== "phone" && !presentation.presenting && (
-            <FeedStamps feeds={feeds} retry={feeds.retry} placement={{ expanded: panelState.open, activeTab }} />
-          )}
-        />
-        {!presentation.presenting && camera.ready && (
-          <HudToolbar
-            presets={CAMERA_PRESETS}
-            activeId={camera.activePresetId}
-            onSelect={camera.selectPreset}
-            touring={camera.touring}
-            onToggleTour={camera.toggleTour}
+        <div className="shrink-0">
+          <HudTimeReadout
+            minuteOfDay={clock.sceneMinuteOfDay}
+            statusSlot={viewportMode !== "phone" && !presentation.presenting && (
+              <FeedStamps feeds={feeds} retry={feeds.retry} placement={{ expanded: panelState.open, activeTab }} />
+            )}
           />
-        )}
-        <PresentationToggle presenting={presentation.presenting} onToggle={presentation.toggle} className="mt-1" />
-        {!presentation.presenting && <CompareButton comparison={comparison} className="mt-1" />}
-        {viewportMode !== "phone" && !presentation.presenting && <Wordmark className="ml-auto mt-1.5 rounded-control bg-[var(--colors-label-bg)] px-2 py-1 text-ink-muted" />}
+        </div>
+        <div data-label-chrome-layer="" className="flex min-w-0 flex-1 flex-wrap items-start justify-end gap-2">
+          {!presentation.presenting && camera.ready && (
+            <HudToolbar
+              presets={CAMERA_PRESETS}
+              activeId={camera.activePresetId}
+              onSelect={camera.selectPreset}
+              touring={camera.touring}
+              onToggleTour={camera.toggleTour}
+            />
+          )}
+          <PresentationToggle presenting={presentation.presenting} onToggle={presentation.toggle} className="mt-1 shrink-0" />
+          {!presentation.presenting && <CompareButton comparison={comparison} className="mt-1 shrink-0" />}
+          {viewportMode !== "phone" && !presentation.presenting && <Wordmark className="mt-1.5 shrink-0 rounded-control bg-[var(--colors-label-bg)] px-2 py-1 text-ink-muted" />}
+        </div>
         </div>
         {/* 카메라 단추(확대·축소·회전·처음 시점): Legacy와 같은 단추, VWorld 카메라를 움직인다. 시간 조작 위 오른쪽 가운데. */}
         {!presentation.presenting && camera.ready && (
