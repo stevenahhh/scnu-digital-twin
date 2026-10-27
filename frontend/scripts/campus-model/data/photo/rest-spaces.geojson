@@ -787,7 +787,7 @@
               0.55,
               2.15
             ],
-            "hedge_m": 0.55,
+            "hedge_m": 0.75,
             "kerbColour": "#e7e6e1"
           },
           {
@@ -803,7 +803,7 @@
               0.5,
               2.1
             ],
-            "hedge_m": 0.6,
+            "hedge_m": 0.85,
             "kerbColour": "#e7e6e1"
           },
           {
@@ -819,7 +819,7 @@
               0.5,
               2.1
             ],
-            "hedge_m": 0.6,
+            "hedge_m": 0.85,
             "kerbColour": "#e7e6e1"
           }
         ],
@@ -853,7 +853,73 @@
             ]
           }
         ],
-        "note": "C1 도서관 front steps: lower flight of 14 risers split by a hedge on a white-tile plinth with handrails, outer hedge strips, a 3.6 m blue-grey tile landing with yellow guide lines, an upper flight of 5 risers with end rails and the entrance terrace (VR scene_c1 f cols 560-1500 of 2048)"
+        "note": "C1 도서관 front steps: lower flight of 14 risers split by a hedge on a white-tile plinth with handrails, outer hedge strips, a 3.6 m blue-grey tile landing with yellow guide lines, an upper flight of 5 risers with end rails and the entrance terrace (VR scene_c1 f cols 560-1500 of 2048); rounded clipped hedges and shrub masses flank the flights (VR scene_c1 f: rounded tops about 0.75-0.85 m over the kerbs, masses up to 1.2 m; positions from the NGII 2025 sheet, estimated)",
+        "masses": [
+          {
+            "s": [
+              0.3,
+              4.5
+            ],
+            "t": [
+              9.75,
+              13.1
+            ],
+            "height_m": 1.2,
+            "rise_m": [
+              0.25,
+              1.5
+            ],
+            "note": "large clipped mass beside the north outer hedge, under the zelkova (VR scene_c1 f right; NGII crown edge)"
+          },
+          {
+            "s": [
+              0.4,
+              4.2
+            ],
+            "t": [
+              -12.7,
+              -9.75
+            ],
+            "height_m": 1.05,
+            "rise_m": [
+              0.25,
+              1.4
+            ],
+            "note": "large clipped mass beside the south outer hedge (VR scene_c1 f left; NGII green edge)"
+          },
+          {
+            "s": [
+              1.0,
+              2.3
+            ],
+            "t": [
+              -15.2,
+              -13.9
+            ],
+            "height_m": 0.6,
+            "rise_m": [
+              0.2,
+              0.3
+            ],
+            "note": "small clipped ball, far south (VR scene_c1 f far left)"
+          },
+          {
+            "s": [
+              5.2,
+              6.8
+            ],
+            "t": [
+              13.0,
+              14.6
+            ],
+            "height_m": 0.8,
+            "rise_m": [
+              1.6,
+              1.9
+            ],
+            "note": "clipped ball on the north bank beyond the zelkova (VR scene_c1 f far right)"
+          }
+        ]
       },
       "geometry": {
         "type": "LineString",

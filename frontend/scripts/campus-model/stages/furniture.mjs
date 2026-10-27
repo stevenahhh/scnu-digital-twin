@@ -1882,7 +1882,25 @@ B.terraced_steps = (ctx, o) => {
     const ring = [localPlan(f, s0, t0), localPlan(f, s1, t0), localPlan(f, s1, t1), localPlan(f, s0, t1)];
     ctx.solid.prism(ring, (x, z) => ctx.groundAt(x, z) - M(0.1), kerbTop, { top: C.soil, side: rgb(planter.kerbColour) });
     const inset = [localPlan(f, s0 + 0.1, t0 + 0.1), localPlan(f, s1 - 0.1, t0 + 0.1), localPlan(f, s1 - 0.1, t1 - 0.1), localPlan(f, s0 + 0.1, t1 - 0.1)];
-    ctx.solid.prism(inset, kerbTop, (x, z) => kerbTop(x, z) + M(planter.hedge_m), C.shrub);
+    // a clipped hedge with a rounded top (VR scene_c1 f)
+    const half = Math.min(s1 - s0, t1 - t0) / 2 - 0.1;
+    ctx.solid.rounded(inset, (x, z) => kerbTop(x, z) - M(0.05), (x, z) => kerbTop(x, z) + M(planter.hedge_m), Math.min(planter.hedge_m * 0.7, half * 0.85), C.shrub);
+  }
+  // rounded clipped shrub masses beside the flights: a rounded-rectangle plan inside s x t, standing on the bank whose
+  // level runs from rise_m[0] to rise_m[1] (metres above the bottom edge) over s, height_m over it
+  for (const mass of o.p.masses ?? []) {
+    const [s0, s1] = mass.s;
+    const [t0, t1] = mass.t;
+    const [cs, ct, hs, ht] = [(s0 + s1) / 2, (t0 + t1) / 2, (s1 - s0) / 2, (t1 - t0) / 2];
+    const plan = Array.from({ length: 20 }, (_, i) => {
+      const a = (i / 20) * Math.PI * 2;
+      const [c, sn] = [Math.cos(a), Math.sin(a)];
+      // superellipse (exponent 3): a clipped, squarish-round outline
+      return localPlan(f, cs + hs * Math.sign(c) * Math.abs(c) ** (2 / 3), ct + ht * Math.sign(sn) * Math.abs(sn) ** (2 / 3));
+    });
+    const bank = (x, z) => base + M(mass.rise_m[0] + ((mass.rise_m[1] - mass.rise_m[0]) * Math.min(1, Math.max(0, (sOf(x, z) - s0) / (s1 - s0)))));
+    const foot = (x, z) => Math.min(bank(x, z), ctx.groundAt(x, z)) - M(0.1);
+    ctx.solid.rounded(plan, foot, (x, z) => bank(x, z) + M(mass.height_m), Math.min(mass.height_m * 0.85, Math.min(hs, ht) * 0.85), mass.colour ? rgb(mass.colour) : C.shrub);
   }
   const levelAt = (sm) => (treads.find(([s0, s1]) => sm >= s0 - 1e-6 && sm <= s1 + 1e-6) ?? treads.at(-1))[2];
   for (const rail of o.p.rails ?? []) {
