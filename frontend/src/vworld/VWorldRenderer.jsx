@@ -16,7 +16,11 @@ import { VWorldCampusStatus } from "./VWorldCampusStatus";
 import { RepresentativePlanOverlayController } from "./RepresentativePlanOverlayController";
 import { CAMPUS_REPRESENTATIVE_BUILDING_IDS } from "./representativePlanOverlay.mjs";
 import { replaceRepresentativePlanObjects } from "./representativePlanVWorld.mjs";
-import { createCampusGltfOverlay, removeCampusGltfOverlay } from "./campusGltfOverlay.mjs";
+import { createCampusGltfOverlay, createCampusModelMatrix, removeCampusGltfOverlay } from "./campusGltfOverlay.mjs";
+import { createVWorldLabelProjector } from "./labelProjection.mjs";
+import { applyCampusZoomLimits } from "./cameraLimits.mjs";
+import { VWorldLabelLayer, centroidOf } from "./VWorldLabelLayer";
+import { SearchField } from "../components/SearchField";
 import { createVWorldTrafficSimulation } from "./trafficSimulationOverlay.mjs";
 import { Alert } from "../ui/Alert.jsx";
 import { Spinner } from "../ui/Spinner.jsx";
@@ -101,8 +105,30 @@ export default function VWorldRenderer({
   overlayInsetRight = "0px",
   overlayInsetBottom = "0px",
   mapBackdrop = null,
+  // 앱이 고른 건물(useSelectionState.selectedId). 비면 라벨 선택도 푼다.
+  selectedId = "",
+  // 라벨 층에서 Esc로 선택을 풀 때.
+  onClearSelection,
+  // 라벨을 가리는 패널과, 라벨이 피해 갈 지도 위 조작 UI(HUD) ref 목록.
+  labelOccluderRef = null,
+  labelChromeRefs = null,
+  presentation = false,
 }) {
-  const onSelectionRef = useRef(onSelection);
+  const onSelectionPropRef = useRef(onSelection);
+  onSelectionPropRef.current = onSelection;
+  // 지도에서 고른 건물의 요소 id. 라벨 층이 그 칩을 선택 상태로 그린다(SDK 건물·D4 표지·칩·SOLAR 카드 모두 이 길로 온다).
+  const [selectedLabelId, setSelectedLabelId] = useState(null);
+  const onSelectionRef = useRef((target) => {
+    setSelectedLabelId(target?.elementId ?? null);
+    onSelectionPropRef.current?.(target);
+  });
+  useEffect(() => {
+    if (!selectedId) setSelectedLabelId(null);
+  }, [selectedId]);
+  const [labelScene, setLabelScene] = useState(null);
+  const [labelEntries, setLabelEntries] = useState(null);
+  const leftStackRef = useRef(null);
+  const bottomStackRef = useRef(null);
   const simulationDateRef = useRef(simulationDate);
   const mapRef = useRef(null);
   const vwRef = useRef(null);
@@ -143,10 +169,6 @@ export default function VWorldRenderer({
   const [detailRequest, setDetailRequest] = useState(null);
   const [selectedRoadZoneName, setSelectedRoadZoneName] = useState(null);
 
-  useEffect(() => {
-    onSelectionRef.current = onSelection;
-  }, [onSelection]);
-
   // D4 상세 화면은 자체 대화상자다. 열려 있는 동안 앱이 건물 팝업을 겹쳐 띄우지 않도록 상태를 알린다.
   useEffect(() => {
     onD4SectionChange?.(isD4SectionOpen);
@@ -158,6 +180,31 @@ export default function VWorldRenderer({
       setIsD4SectionOpen(true);
     }
   }, [editorRequest]);
+
+  // 라벨 앵커의 지도 위치: 캠퍼스 GLB 오버레이의 modelMatrix(지형으로 다시 맞추면 바뀐다). GLB를 못 올렸으면 같은 기준점으로 한 번 만든다.
+  const fallbackModelMatrixRef = useRef(null);
+  const getLabelModelMatrix = useCallback(() => {
+    const model = campusGltfModelRef.current;
+    if (model?.modelMatrix) return model.modelMatrix;
+    const viewer = mapRef.current?._wsViewer;
+    if (!viewer || !window.Cesium) return null;
+    fallbackModelMatrixRef.current ??= createCampusModelMatrix(viewer, window.Cesium);
+    return fallbackModelMatrixRef.current;
+  }, []);
+  const focusLabelPosition = useCallback((position) => {
+    if (!labelScene) return;
+    const target = createVWorldLabelProjector({ ...labelScene, getModelMatrix: getLabelModelMatrix }).lonLatOf(position);
+    if (target) cameraControllerRef.current?.focus(target);
+  }, [getLabelModelMatrix, labelScene]);
+  // 칩을 누르면 SDK 건물을 누른 것과 같은 선택(요소 id·건물 코드·이름)을 보내고 카메라를 그 건물로 옮긴다.
+  const handleLabelSelect = useCallback((entry) => {
+    const elementId = entry.dataElementId ?? entry.elementId;
+    onSelectionRef.current({ elementId, buildingId: elementId.replace(/^BLD_/, ""), displayName: entry.displayName });
+    setSelectedLabelId(entry.elementId);
+    focusLabelPosition(entry.position);
+  }, [focusLabelPosition]);
+  const handleLabelCluster = useCallback((members) => focusLabelPosition(centroidOf(members)), [focusLabelPosition]);
+  const defaultChromeRefs = useRef([leftStackRef, bottomStackRef]).current;
 
   const handleOverlayDataChange = useCallback((overlays) => {
     overlayDataRef.current = overlays;
@@ -248,6 +295,10 @@ export default function VWorldRenderer({
         } catch (error) {
           console.warn("Campus GLB overlay could not be loaded; keeping the D4 fallback model.", error);
         }
+        const labelViewerScene = map._wsViewer?.scene;
+        // 휠·핀치 확대·축소 범위를 Legacy 캠퍼스 궤도와 같게 둔다(지구본까지 빠지면 라벨·선택이 뜻이 없다).
+        applyCampusZoomLimits(labelViewerScene);
+        if (labelViewerScene && window.Cesium) setLabelScene({ Cesium: window.Cesium, scene: labelViewerScene });
         trafficSimulationRef.current?.dispose();
         trafficSimulationRef.current = createVWorldTrafficSimulation({
           map,
@@ -342,6 +393,8 @@ export default function VWorldRenderer({
 
     return () => {
       isDisposed = true;
+      setLabelScene(null);
+      fallbackModelMatrixRef.current = null;
       trafficSimulationRef.current?.dispose();
       trafficSimulationRef.current = null;
       if (!map) return;
@@ -375,6 +428,25 @@ export default function VWorldRenderer({
       {/* 지도 자체에 Legacy 캔버스와 같은 이름을 준다(화면 읽기·랜드마크). */}
       <div id={VWORLD_MAP_ID} role="region" aria-label="순천대 캠퍼스 3D 지도" className="h-full w-full" />
       {mapBackdrop}
+      {labelScene && (
+        <VWorldLabelLayer
+          Cesium={labelScene.Cesium}
+          scene={labelScene.scene}
+          getModelMatrix={getLabelModelMatrix}
+          selectedId={selectedLabelId}
+          hidden={isD4SectionOpen}
+          presentation={presentation}
+          occluderRef={labelOccluderRef}
+          chromeRefs={labelChromeRefs ? [...defaultChromeRefs, ...labelChromeRefs] : defaultChromeRefs}
+          onSelectEntry={handleLabelSelect}
+          onSelectCluster={handleLabelCluster}
+          onEntries={setLabelEntries}
+          onClear={() => {
+            setSelectedLabelId(null);
+            onClearSelection?.();
+          }}
+        />
+      )}
       {/* 지도 위 문구와 버튼은 열린 패널을 뺀 지도 영역 안에만 둔다. 상태 문구는 위쪽 왼쪽 열, 지도 조작은 아래쪽 왼쪽 열에
           쌓는다. 절대 위치는 두 열에만 주어 화면이 좁아도 서로 겹치거나 패널 밑으로 들어가지 않는다. */}
       <div
@@ -385,9 +457,12 @@ export default function VWorldRenderer({
       >
         {!isD4SectionOpen && (
           <div
+            ref={leftStackRef}
             data-qa="vworld-left-stack"
+            data-label-chrome-layer=""
             className="pointer-events-none absolute left-4 top-[4.5rem] z-20 flex max-w-[calc(100%-2rem)] flex-col items-start gap-3"
           >
+            {labelEntries && <SearchField registry={labelEntries} onPick={handleLabelSelect} />}
             {isLoading && !hasLoadError && (
               <Spinner
                 delayMs={0}
@@ -431,7 +506,9 @@ export default function VWorldRenderer({
         )}
         {!isD4SectionOpen && (
           <div
+            ref={bottomStackRef}
             data-qa="vworld-bottom-stack"
+            data-label-chrome-layer=""
             className="pointer-events-none absolute bottom-6 left-6 z-10 flex max-w-[calc(100%-3rem)] flex-col items-start gap-3"
           >
             <VWorldCampusStatus

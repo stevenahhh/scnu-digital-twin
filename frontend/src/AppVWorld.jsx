@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import VWorldRenderer from "./vworld/VWorldRenderer";
 import { sceneBackgroundFor } from "./lighting/sceneBackground.mjs";
 import { SelectionInspector } from "./panel/SelectionInspector";
@@ -44,6 +44,9 @@ function mapLighting(altitudeDegrees, bearingDegrees, sunVisible) {
 export default function App() {
   useSimulationSocket();
   const panelRef = useRef(null);
+  // 라벨이 피해 갈 HUD(시간 표시·발표 모드·시간 조작). 통과용 레이어라 안쪽 요소 사각형을 쓴다.
+  const hudRef = useRef(null);
+  const labelChromeRefs = useMemo(() => [hudRef], []);
   const [editorRequest, setEditorRequest] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard");
   const viewportMode = useViewportMode();
@@ -130,6 +133,11 @@ export default function App() {
           overlayInsetRight={mapInsetRight}
           overlayInsetBottom={mapInsetBottom}
           overlaysHidden={presentation.presenting}
+          selectedId={selection.selectedId}
+          onClearSelection={closeMicroclimatePopup}
+          labelOccluderRef={panelRef}
+          labelChromeRefs={labelChromeRefs}
+          presentation={presentation.presenting}
           // 야간 음영·햇빛·그라데이션은 지도 영상만 어둡게 해야 하므로 렌더러가 지도 바로 위·지도 위 문구와 버튼 아래에 그린다.
           mapBackdrop={(
             <>
@@ -155,11 +163,13 @@ export default function App() {
       </div>
 
       <div
+        ref={hudRef}
         data-qa="campus-hud"
+        data-label-chrome-layer=""
         className="pointer-events-none absolute left-0 top-0 z-[6] transition-[right] duration-300"
         style={{ right: mapInsetRight, bottom: mapInsetBottom }}
       >
-        <div className="flex items-start gap-2 p-4">
+        <div data-label-chrome-layer="" className="flex items-start gap-2 p-4">
         <HudTimeReadout
           minuteOfDay={clock.sceneMinuteOfDay}
           statusSlot={viewportMode !== "phone" && !presentation.presenting && (
