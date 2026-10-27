@@ -172,14 +172,16 @@ describe("CampusLabelLayer", () => {
     expect(button.getAttribute("aria-label")).toBe("부속 시설, 명칭 추정");
   });
 
-  it("names chips by code and full name, shows the short name, and passes keyboard clicks through with detail 0", () => {
+  it("names chips by code and full name, shows the one display name (not the preset short name), and passes keyboard clicks through with detail 0", () => {
     const onSelect = vi.fn();
     const entries = [entry("BLD_D4", { displayName: "공과대학 3호관", shortName: "공대 3호관", code: "D4" })];
     const { container, update } = mount(entries, { onSelect });
     update();
     const button = container.querySelector('[data-element-id="BLD_D4"]');
     expect(button.getAttribute("aria-label")).toBe("D4 공과대학 3호관");
-    expect(button.textContent).toContain("공대 3호관");
+    expect(button.textContent).toContain("공과대학 3호관");
+    expect(button.textContent).not.toContain("공대 3호관");
+    expect(button.closest("[data-label-slot]").dataset.occluded).toBe("false");
     fireEvent.click(button, { detail: 0 });
     expect(onSelect).toHaveBeenCalledTimes(1);
     expect(onSelect.mock.calls[0][0].id).toBe("BLD_D4");
