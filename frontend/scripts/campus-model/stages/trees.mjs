@@ -590,7 +590,7 @@ export function buildTrees({ glb, placement }) {
     ginkgo: { count: 100, size: [1.5, 1.25], tile: "ginkgo", inner: 0.3, kind: "outward", seed: 201, crown: materials.ginkgo },
     broadleaf: { count: 125, size: [1.7, 1.5], tile: "broadleaf", inner: 0.3, kind: "outward", seed: 203, crown: materials.broadleaf },
     pine: { count: 110, size: [1.85, 1.4], tile: "pine", inner: 0.3, kind: "flat", seed: 205, crown: materials.pine },
-    metasequoia: { count: 210, size: [1.7, 0.95], tile: "spray", kind: "droop", inner: 0.25, seed: 207, crown: materials.metasequoia },
+    metasequoia: { count: 210, size: [1.7, 0.95], tile: "spray", kind: "droop", inner: 0.25, crossCard: 0.7, seed: 207, crown: materials.metasequoia },
     conifer: { count: 56, size: [1.05, 0.8], tile: "spray", inner: 0.3, kind: "outward", seed: 209, crown: materials.conifer },
     canopy: { count: 360, size: [2.3, 1.95], tile: "broadleaf", inner: 0.3, kind: "outward", seed: 211, elliptic: true, crown: materials.broadleaf },
   };

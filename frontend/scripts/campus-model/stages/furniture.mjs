@@ -223,11 +223,12 @@ export function makeContext({ groundAt, objects, roads, sites, fieldCentre }) {
   const solid = new Kit();
   const screen = new Kit({ uvs: true });
   const glass = new Kit();
+  const water = new Kit();
   const glow = new Kit({ uvs: true });
   const samples = (ring) => [...ring, ringCentroid(ring), ...ring.map((p, i) => [(p[0] + ring[(i + 1) % ring.length][0]) / 2, (p[1] + ring[(i + 1) % ring.length][1]) / 2])];
   const heights = (ring) => samples(ring).map(([x, z]) => groundAt(x, z)).sort((a, b) => a - b);
   return {
-    solid, glass, glow, screen, screens: [], groundAt, objects, roads, sites, fieldCentre, colours: C,
+    solid, glass, water, glow, screen, screens: [], groundAt, objects, roads, sites, fieldCentre, colours: C,
     byId: new Map(objects.map((o) => [o.id, o])),
     minGround: (ring) => heights(ring)[0],
     maxGround: (ring) => heights(ring).at(-1),
@@ -1755,36 +1756,70 @@ P.fountain = (ctx, o) => {
   ctx.solid.prism(disc(c, M(1.1)), g + M(0.75), g + M(0.87), C.stone);
   ctx.solid.pole(c, g + M(0.87), g + M(1.3), 0.12, 0.08, C.stone, { sides: 6 });
 };
-// Central plaza pond (VR scene_c1): coping wall, a planted island at the west end with a stone plinth and a bronze
-// sculpture. The water surface is left to the ground stage (OSM water as a painted Ground_Sports surface).
+// Central plaza pond (VR scene_c1 b): a long pool with semicircular ends (outline = the outer edge of the coping, traced
+// on the NGII 2025 sheet), a light granite coping, green water (Furniture_Water: glossy and slightly transparent, so the
+// sky reflects in it; the dashboard adds a fresnel alpha), a planted island of rounded clipped shrubs at the west end
+// round a stone plinth and the bronze sculpture, and four ring fountains (a pipe ring of upright nozzles) in the open
+// water. The painted ground water (osm-ground.json supplement, same outline) is the pool floor. Every dimension is an
+// estimate (추정): rings at s (m east of the centre) x t from the VR and a faint ring on the sheet at s 10, t -3.
+const POND = {
+  copingM: 0.6, copingHeightM: 0.35, waterM: 0.22, copingColour: "#cfccc4", waterColour: "#8aa27a",
+  island: { s: -6.6, halfS: 3.7, halfT: 4.2 },
+  rings: [[2.5, -3.3], [2.5, 3.3], [10, -3.3], [10, 3.3]], ringRadiusM: 1.4, nozzles: 16, ringColour: "#4c5068",
+};
 P.pond = (ctx, o) => {
   const sign = insideSign(o.ring);
-  wall(ctx, ctx.solid, o.ring, 0.5, 0.45, C.stone, { closed: true, offsetM: sign * 0.25 });
+  wall(ctx, ctx.solid, o.ring, POND.copingM, POND.copingHeightM, rgb(POND.copingColour), { closed: true, offsetM: (sign * POND.copingM) / 2 });
+  const water = offsetLine([...o.ring, o.ring[0]], sign * M(POND.copingM)).slice(0, -1);
+  const waterY = (x, z) => ctx.groundAt(x, z) + M(POND.waterM);
+  ctx.water.flat(water, [], waterY, rgb(POND.waterColour));
   const r = orientedRect(o.ring);
-  const west = r.u[0] > 0 ? -1 : 1;
+  const east = r.u[0] > 0 ? 1 : -1;
   const f = frame([r.centre[0], 0, r.centre[1]], r.u);
-  const centre = localPlan(f, west * 0.52 * r.halfLength, 0);
+  const at = (sM, tM) => localPlan(f, east * sM, tM);
+  // planted island: a stone-edged bed of rounded clipped shrubs round the plinth
+  const { s: is, halfS, halfT } = POND.island;
+  const centre = at(is, 0);
   const g = ctx.groundAt(...centre);
-  const island = Array.from({ length: 14 }, (_, i) => {
-    const a = (i / 14) * Math.PI * 2;
-    return localPlan(f, west * 0.52 * r.halfLength + Math.cos(a) * 0.3 * r.halfLength, Math.sin(a) * 0.5 * r.halfWidth);
+  const island = Array.from({ length: 20 }, (_, i) => {
+    const a = (i / 20) * Math.PI * 2;
+    return at(is + Math.cos(a) * halfS, Math.sin(a) * halfT);
   });
-  ctx.solid.prism(island, g - M(0.1), (x, z) => ctx.groundAt(x, z) + M(0.28), { side: C.stone, top: C.soil });
-  // dense shrubs over the island (VR scene_c1)
+  ctx.solid.prism(island, g - M(0.1), (x, z) => ctx.groundAt(x, z) + M(0.3), { side: rgb(POND.copingColour), top: C.soil });
   const rng = mulberry32(81);
-  for (let k = 0; k < 22; k += 1) {
-    const a = rng() * Math.PI * 2;
-    const radius = Math.sqrt(rng());
-    const p = localPlan(f, west * 0.52 * r.halfLength + Math.cos(a) * radius * 0.24 * r.halfLength, Math.sin(a) * radius * 0.4 * r.halfWidth);
-    const size = 0.55 + rng() * 0.6;
-    const y = ctx.groundAt(...p) + M(0.2);
-    ctx.solid.cone([p[0], y + M(size * 1.25), p[1]], disc(p, M(size), 6).map(([x, z]) => [x, y, z]), k % 3 ? C.shrub : C.roofGreen, { base: false });
+  for (let k = 0; k < 14; k += 1) {
+    const a = (k / 14) * Math.PI * 2 + rng() * 0.3;
+    const radius = 0.45 + rng() * 0.45;
+    const p = [is + Math.cos(a) * radius * (halfS - 1.1), Math.sin(a) * radius * (halfT - 1.1)];
+    if (Math.hypot(p[0] - is, p[1]) < 1.5) continue;
+    const size = 0.75 + rng() * 0.55;
+    const blob = Array.from({ length: 12 }, (_, i) => {
+      const b = (i / 12) * Math.PI * 2;
+      return at(p[0] + Math.cos(b) * size, p[1] + Math.sin(b) * size * (0.8 + rng() * 0.2));
+    });
+    const y0 = ctx.groundAt(...at(...p)) + M(0.3);
+    ctx.solid.rounded(blob, y0 - M(0.05), y0 + M(size * 1.15), size * 0.8, k % 3 ? C.shrub : C.roofGreen);
   }
   const plinth = frame([centre[0], g, centre[1]], r.u);
   ctx.solid.box(plinth, [-0.8, 0.8], [-0.8, 0.8], [0.2, 1.6], C.offWhite);
   // bronze sculpture: a curved form about 2.6 m tall on the plinth
   const form = [[0.1, 0, 1.6], [0.45, 0.1, 2.4], [0.3, 0.15, 3.3], [-0.25, 0.12, 3.95], [-0.8, 0.05, 4.0], [-1.0, 0, 3.6]];
   for (let k = 0; k + 1 < form.length; k += 1) ctx.solid.beam(local(plinth, ...form[k]), local(plinth, ...form[k + 1]), 0.75 - k * 0.1, 0.55 - k * 0.07, C.bronze);
+  // ring fountains: a pipe ring just under the water and upright nozzles standing out of it
+  const ringPaint = rgb(POND.ringColour);
+  for (const [rs, rt] of POND.rings) {
+    const c = at(rs, rt);
+    const y = waterY(...c);
+    const pts = Array.from({ length: POND.nozzles }, (_, i) => {
+      const a = (i / POND.nozzles) * Math.PI * 2;
+      const q = at(rs + Math.cos(a) * POND.ringRadiusM, rt + Math.sin(a) * POND.ringRadiusM);
+      return [q[0], y + M(0.02), q[1]];
+    });
+    for (let i = 0; i < pts.length; i += 1) {
+      ctx.solid.beam(pts[i], pts[(i + 1) % pts.length], 0.07, 0.07, ringPaint);
+      ctx.solid.pole([pts[i][0], pts[i][2]], y - M(0.02), y + M(0.12), 0.04, 0.03, ringPaint, { sides: 5 });
+    }
+  }
 };
 const PARASOL_WORDS = { blue: "#3063a7", red: "#c0392b", green: "#3f7b4f", yellow: "#e3b53a", orange: "#e07b2c", beige: "#d8c3a0", brown: "#8f6a4c", grey: "#8c9298", gray: "#8c9298", black: "#2a2d30", white: "#efefeb" };
 export function parasolColour(note = "") {
@@ -1882,7 +1917,25 @@ B.terraced_steps = (ctx, o) => {
     const ring = [localPlan(f, s0, t0), localPlan(f, s1, t0), localPlan(f, s1, t1), localPlan(f, s0, t1)];
     ctx.solid.prism(ring, (x, z) => ctx.groundAt(x, z) - M(0.1), kerbTop, { top: C.soil, side: rgb(planter.kerbColour) });
     const inset = [localPlan(f, s0 + 0.1, t0 + 0.1), localPlan(f, s1 - 0.1, t0 + 0.1), localPlan(f, s1 - 0.1, t1 - 0.1), localPlan(f, s0 + 0.1, t1 - 0.1)];
-    ctx.solid.prism(inset, kerbTop, (x, z) => kerbTop(x, z) + M(planter.hedge_m), C.shrub);
+    // a clipped hedge with a rounded top (VR scene_c1 f)
+    const half = Math.min(s1 - s0, t1 - t0) / 2 - 0.1;
+    ctx.solid.rounded(inset, (x, z) => kerbTop(x, z) - M(0.05), (x, z) => kerbTop(x, z) + M(planter.hedge_m), Math.min(planter.hedge_m * 0.7, half * 0.85), planter.hedgeColour ? rgb(planter.hedgeColour) : C.shrub);
+  }
+  // rounded clipped shrub masses beside the flights: a rounded-rectangle plan inside s x t, standing on the bank whose
+  // level runs from rise_m[0] to rise_m[1] (metres above the bottom edge) over s, height_m over it
+  for (const mass of o.p.masses ?? []) {
+    const [s0, s1] = mass.s;
+    const [t0, t1] = mass.t;
+    const [cs, ct, hs, ht] = [(s0 + s1) / 2, (t0 + t1) / 2, (s1 - s0) / 2, (t1 - t0) / 2];
+    const plan = Array.from({ length: 20 }, (_, i) => {
+      const a = (i / 20) * Math.PI * 2;
+      const [c, sn] = [Math.cos(a), Math.sin(a)];
+      // superellipse (exponent 3): a clipped, squarish-round outline
+      return localPlan(f, cs + hs * Math.sign(c) * Math.abs(c) ** (2 / 3), ct + ht * Math.sign(sn) * Math.abs(sn) ** (2 / 3));
+    });
+    const bank = (x, z) => base + M(mass.rise_m[0] + ((mass.rise_m[1] - mass.rise_m[0]) * Math.min(1, Math.max(0, (sOf(x, z) - s0) / (s1 - s0)))));
+    const foot = (x, z) => Math.min(bank(x, z), ctx.groundAt(x, z)) - M(0.1);
+    ctx.solid.rounded(plan, foot, (x, z) => bank(x, z) + M(mass.height_m), Math.min(mass.height_m * 0.85, Math.min(hs, ht) * 0.85), mass.colour ? rgb(mass.colour) : C.shrub);
   }
   const levelAt = (sm) => (treads.find(([s0, s1]) => sm >= s0 - 1e-6 && sm <= s1 + 1e-6) ?? treads.at(-1))[2];
   for (const rail of o.p.rails ?? []) {
@@ -2069,6 +2122,16 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
   };
   glb.addNode({ name: "Furniture", mesh: glb.addMesh("Furniture", [ctx.solid.toPrimitive(furnitureMaterial)]), extras }, { root: true });
   glb.addNode({ name: "Furniture_Glass", mesh: glb.addMesh("Furniture_Glass", [ctx.glass.toPrimitive(glassMaterial)]) }, { root: true });
+  // pool water (P.pond): glossy, slightly transparent, so the sky environment reflects in it; vertex colour = water tint
+  if (ctx.water.vertexCount) {
+    const waterMaterial = glb.addMaterial({
+      name: "Furniture_Water",
+      pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 0.82], metallicFactor: 0, roughnessFactor: 0.06 },
+      alphaMode: "BLEND",
+      extras: { note: "pool water: the dashboard raises its opacity toward grazing views (fresnel, src/lighting/water.mjs)" },
+    });
+    glb.addNode({ name: "Furniture_Water", mesh: glb.addMesh("Furniture_Water", [ctx.water.toPrimitive(waterMaterial)]) }, { root: true });
+  }
   // LED screens (B.led_screen): one colour-field texture, 8 px per field, base colour by day and emissive map at night.
   if (ctx.screens.length) {
     const fields = ctx.screens.flatMap((s) => s.fields);

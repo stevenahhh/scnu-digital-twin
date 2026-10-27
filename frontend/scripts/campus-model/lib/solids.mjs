@@ -152,6 +152,65 @@ export class Kit {
     if (topFace) this.flat(ring, [], yt, p.top);
   }
 
+  // Clipped shrub mass over a plan ring ([x, z] scene units, convex or gently concave): vertical sides from `bottom` up
+  // to radiusM below `top`, then a rounded shoulder of `bands` steps with smooth normals easing in by radiusM to a flat
+  // crown at `top`. bottom / top: numbers (scene units) or (x, z) -> y, as in prism(). radiusM must stay under about
+  // 0.9 x the ring's half width.
+  rounded(ring, bottom, top, radiusM, paint, { bands = 4 } = {}) {
+    const yb = typeof bottom === "function" ? bottom : () => bottom;
+    const yt = typeof top === "function" ? top : () => top;
+    const n = ring.length;
+    const area = ring.reduce((sum, a, i) => {
+      const b = ring[(i + 1) % n];
+      return sum + a[0] * b[1] - b[0] * a[1];
+    }, 0);
+    const sign = area > 0 ? 1 : -1;
+    const edgeOut = (a, b) => {
+      const l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+      return [((b[1] - a[1]) * sign) / l, (-(b[0] - a[0]) * sign) / l];
+    };
+    // outward vertex normals (mitred, at most 2 x) for the inset
+    const out = ring.map((p, i) => {
+      const n1 = edgeOut(ring[(i - 1 + n) % n], p);
+      const n2 = edgeOut(p, ring[(i + 1) % n]);
+      const m = [n1[0] + n2[0], n1[1] + n2[1]];
+      const l = Math.hypot(m[0], m[1]) || 1;
+      const k = 1 / Math.max(0.5, (m[0] * n1[0] + m[1] * n1[1]) / l);
+      return [(m[0] / l) * k, (m[1] / l) * k, m[0] / l, m[1] / l];
+    });
+    const r = M(radiusM);
+    // rows: the foot, then the shoulder bands from vertical (theta 0) to flat (theta 90 deg)
+    const rows = [ring.map((p, i) => ({ p: [p[0], yb(...p), p[1]], nrm: [out[i][2], 0, out[i][3]] }))];
+    for (let k = 0; k <= bands; k += 1) {
+      const th = (k / bands) * (Math.PI / 2);
+      rows.push(ring.map((p, i) => {
+        const x = p[0] - out[i][0] * r * (1 - Math.cos(th));
+        const z = p[1] - out[i][1] * r * (1 - Math.cos(th));
+        return { p: [x, yt(x, z) - r + r * Math.sin(th), z], nrm: unit([out[i][2] * Math.cos(th), Math.sin(th), out[i][3] * Math.cos(th)]) };
+      }));
+    }
+    for (let k = 0; k + 1 < rows.length; k += 1) {
+      const [lo, hi] = [rows[k], rows[k + 1]];
+      for (let i = 0; i < n; i += 1) {
+        const j = (i + 1) % n;
+        const quad = [lo[i], lo[j], hi[j], hi[i]];
+        const base = this.mesh.vertexCount;
+        for (const v of quad) this.vertex(v.p, v.nrm, paint);
+        // wind so the geometric normal agrees with the shading normal
+        const g = cross(sub(quad[1].p, quad[0].p), sub(quad[2].p, quad[0].p));
+        const want = add(add(quad[0].nrm, quad[1].nrm), add(quad[2].nrm, quad[3].nrm));
+        if (dot(g, want) >= 0) {
+          this.mesh.triangle(base, base + 1, base + 2);
+          this.mesh.triangle(base, base + 2, base + 3);
+        } else {
+          this.mesh.triangle(base, base + 2, base + 1);
+          this.mesh.triangle(base, base + 3, base + 2);
+        }
+      }
+    }
+    this.flat(rows.at(-1).map((v) => [v.p[0], v.p[2]]), [], yt, paint);
+  }
+
   // Horizontal (or terrain-following) polygon with holes, facing up (or down).
   flat(outer, holes, y, paint, { down = false } = {}) {
     const height = typeof y === "function" ? y : () => y;
