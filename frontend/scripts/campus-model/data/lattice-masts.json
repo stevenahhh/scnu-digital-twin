@@ -1,0 +1,29 @@
+{
+ "description": "Free-standing lattice telecom masts the SCNU 360 VR tour shows (stages/masts.mjs): square four-leg lattice tapering from baseWidthMetres to topWidthMetres, X braces per panel, painted in alternating obstruction bands, an antenna platform at platformAt of the height. Stands on the roof of the context mass under `at` (or the ground), on a light core block `plinthMetres` tall when given. Every value is estimated (추정).",
+ "sources": [
+  "SCNU 360 VR tour (visual reference only)",
+  "GIS건물통합정보 AL_D010_12_20261009.zip (the building it stands on)"
+ ],
+ "masts": [
+  {
+   "id": "KBS",
+   "name": "KBS 순천방송국 송신 철탑 (추정)",
+   "at": [
+    127.48473815,
+    34.9683
+   ],
+   "onFootprint": "GIS건물통합정보 AL_D010_12_20261009.shp record 137935",
+   "heightMetres": 21,
+   "baseWidthMetres": 3.2,
+   "topWidthMetres": 1.0,
+   "bands": 7,
+   "colours": [
+    "#d6452c",
+    "#f1f1ec"
+   ],
+   "platformAt": 0.74,
+   "source": "VR scene_a19 b (col 1147), scene_a17 b (col 1311), scene_b1 r (col 1198): the red-and-white lattice mast on the KBS 순천방송국 building (sign legible in a19 b and a17 b); position = least-squares intersection of the three bearings (cross-track residuals 2.3, 0.3, 2.4 m); height from the elevation of its foot and top at the triangulated range: 18.1 m (a19, 80 m) and 20.5 m (a17, 56 m), b1 too far to read; seven bands and a platform with antenna panels at about 3/4 of the height (estimated); checked on the compare-vr strips (facades-flags trial): from scene_a17 at 56 m the VR foot is about 3 m and the top about 7 m above the render's, so the mast stands on a 3 m light core block above the 15.8 m context roof (the white core in the VR) and is 21 m tall (estimated)",
+   "plinthMetres": 3
+  }
+ ]
+}
