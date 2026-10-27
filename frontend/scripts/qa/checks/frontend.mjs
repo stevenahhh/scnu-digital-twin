@@ -438,6 +438,8 @@ export const FRONTEND_CHECKS = [
         const during = await ctx.inPage((qa, a) => { const el = document.elementFromPoint(a.x, a.y)?.closest("button,a,[role=tab],input"); return el ? [getComputedStyle(el).backgroundColor, getComputedStyle(el).transform].join("|") : null; }, { x: row.x, y: row.y });
         await ctx.b.mouse("mouseMoved", 2, 2, 1);
         await ctx.b.mouse("mouseReleased", 2, 2, 0);
+        // Each row starts from an idle page: a press on the search field leaves it focused with its list open over the controls below.
+        await ctx.inPage(() => { document.activeElement?.blur(); return true; });
         if (during && during !== [row.bg, row.transform].join("|")) pressedChanges += 1;
         else unchanged.push(`${row.label}${during ? "" : " (nothing under the pointer)"}`);
       }
