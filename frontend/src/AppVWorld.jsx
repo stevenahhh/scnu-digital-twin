@@ -24,6 +24,7 @@ import { PresentationToggle } from "./components/CampusHud";
 import { DashboardTabContent } from "./panel/DashboardTabContent";
 import { FeedStamps, sheetPlacement } from "./panel/FeedStatus";
 import { useFeedStatus } from "./hooks/useFeedStatus.mjs";
+import { isFeedDown } from "./hooks/feedStatusModel.mjs";
 import { urlSelectionTarget, useDashboardUrlState } from "./hooks/useDashboardUrlState.mjs";
 import { CompareButton, ComparisonPane } from "./panel/ComparisonPane";
 import { useComparisonSet } from "./state/useComparisonSet.mjs";
@@ -113,6 +114,7 @@ export default function App() {
       <div className="absolute inset-0 z-0">
         <VWorldRenderer
           onSelection={handleVWorldSelection}
+          energyFeedDown={isFeedDown(feeds.energy)}
           onD4SectionChange={handleD4SectionChange}
           d4PaneHost={d4PaneHost}
           d4CloseKey={d4CloseKey}

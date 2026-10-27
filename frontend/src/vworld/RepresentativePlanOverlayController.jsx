@@ -26,6 +26,7 @@ export function RepresentativePlanOverlayController({
   defaultVisible = true,
   className = "",
   widthClassName = "",
+  feedDown = false,
 }) {
   const api = useMemo(() => client ?? createInstallationPlanClient(), [client]);
   const callbackRef = useRef(onOverlayDataChange);
@@ -36,6 +37,12 @@ export function RepresentativePlanOverlayController({
   // 다시 시도: 같은 조건으로 불러오기를 한 번 더 돌린다(페이지를 새로 고치지 않는다).
   const [attempt, setAttempt] = useState(0);
   const buildingKey = Array.isArray(buildingIds) ? buildingIds.join("\u0000") : "";
+  // 에너지 피드가 돌아오면(끊김 -> 정상) 실패한 목록을 한 번 다시 불러온다.
+  const wasDownRef = useRef(feedDown);
+  useEffect(() => {
+    if (wasDownRef.current && !feedDown) setAttempt((value) => value + 1);
+    wasDownRef.current = feedDown;
+  }, [feedDown]);
 
   useEffect(() => { callbackRef.current = onOverlayDataChange; }, [onOverlayDataChange]);
 
@@ -93,7 +100,13 @@ export function RepresentativePlanOverlayController({
         <Spinner delayMs={0} label={state.message} />
       </div>
     )}
-    {state.status === "error" && (
+    {/* 에너지 피드가 끊긴 동안 그 알림·다시 시도는 피드 상태 줄(패널 또는 HUD) 하나뿐이다: 여기는 원인 한 줄만 둔다. */}
+    {state.status === "error" && feedDown && (
+      <p role="status" data-qa="overlay-feed-deferred" className="break-keep px-2 pb-1 text-caption text-ink-muted">
+        에너지 연결을 기다리는 중 · 돌아오면 대표 설치 계획을 다시 불러옵니다
+      </p>
+    )}
+    {state.status === "error" && !feedDown && (
       <Alert
         tone="danger"
         source="representative-plans"

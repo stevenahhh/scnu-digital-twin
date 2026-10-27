@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Check } from "lucide-react";
 import { createCampusComparisonClient } from "../features/energy/campus/CampusComparisonPanel";
 import { COARSE_TARGET, FOCUS_RING } from "../ui/Button.jsx";
@@ -12,9 +12,16 @@ const TONES = { simulated: "success", incomplete: "warning", no_scenario: "neutr
 
 // 건물별 태양광 시나리오 상태. 놓일 자리(위치·폭)는 쓰는 쪽이 className으로 정한다.
 // selectedBuildingId가 오면 그 건물 칸을 장면 라벨의 선택 모양(surface-2 + ink + 확인 표시)으로 보인다.
-export function VWorldCampusStatus({ onSelection, date = "2026-05-18", client, selectedBuildingId, className = "" }) {
+// feedDown: 에너지 피드가 끊긴 동안은 그 알림을 피드 상태 줄에 맡기고 여기는 상태(role=status)로만 적고, 돌아오면 다시 불러온다.
+export function VWorldCampusStatus({ onSelection, date = "2026-05-18", client, selectedBuildingId, feedDown = false, className = "" }) {
   const api = useMemo(() => client ?? createCampusComparisonClient(), [client]);
   const [state, setState] = useState({ status: "loading", entries: [] });
+  const [attempt, setAttempt] = useState(0);
+  const wasDownRef = useRef(feedDown);
+  useEffect(() => {
+    if (wasDownRef.current && !feedDown) setAttempt((value) => value + 1);
+    wasDownRef.current = feedDown;
+  }, [feedDown]);
   useEffect(() => {
     const controller = new AbortController();
     api.load({ date, weatherPreset: "clear", signal: controller.signal }).then((data) => {
@@ -25,7 +32,7 @@ export function VWorldCampusStatus({ onSelection, date = "2026-05-18", client, s
       if (error?.name !== "AbortError") setState({ status: "error", entries: [] });
     });
     return () => controller.abort();
-  }, [api, date]);
+  }, [api, date, attempt]);
 
   return (
     <aside
@@ -35,7 +42,9 @@ export function VWorldCampusStatus({ onSelection, date = "2026-05-18", client, s
     >
       <SectionHeader title="건물별 태양광 상태" subtitle={`시뮬레이션 기준일 ${formatDayLabel(date)}`} />
       {state.status === "loading" && <p role="status" className="text-caption text-ink-muted">건물 상태 확인 중</p>}
-      {state.status === "error" && <p role="alert" className="text-caption text-ink-muted">상태 API에 연결하지 못했습니다</p>}
+      {state.status === "error" && (
+        <p role={feedDown ? "status" : "alert"} className="text-caption text-ink-muted">상태 API에 연결하지 못했습니다</p>
+      )}
       {state.status === "success" && state.entries.length === 0 && (
         <p className="text-caption text-ink-muted">표시할 건물 상태가 없습니다</p>
       )}
