@@ -141,7 +141,8 @@ export const DashboardShell = forwardRef(function DashboardShell(
     const expanded = detent !== "peek";
     const selectTab = (tab) => {
       onTabChange(tab);
-      onDetentChange("full");
+      // 탭을 고르면 시트를 반만 올린다(peek일 때만). 전체 높이는 사용자가 끌어 올린다(AUDIT V-S-92: 지도 절반은 남는다).
+      if (detent === "peek") onDetentChange("half");
     };
     return (
       <Sheet
