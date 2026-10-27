@@ -487,7 +487,8 @@ export const VISUALQA_CHECKS = [
     async run(ctx) {
       if (ctx.state === "S12") {
         const m = await ctx.inPage((qa) => ({
-          chip: qa.txt(qa.all("button[data-qa=campus-label]").find((el) => el.getAttribute("aria-pressed") === "true")) || null,
+          // The chip shows a code badge since W2 ("C1 도서관"); its name is compared with the title (qa.chipName, #90).
+          chip: (() => { const el = qa.all("button[data-qa=campus-label]").find((b) => b.getAttribute("aria-pressed") === "true"); return el ? qa.chipName(el) || null : null; })(),
           title: qa.txt(qa.one("[data-qa=selection-inspector] h2,[data-qa=selection-inspector] h3") ?? qa.all("[data-qa=dashboard-panel] h3").find(qa.visible)) || null,
         }));
         return result(m.chip && m.chip === m.title, m, "title equals the highlighted chip");
@@ -502,7 +503,9 @@ export const VISUALQA_CHECKS = [
       await openPanelSection(ctx);
       const m = await ctx.inPage((qa) => {
         const failure = qa.one("[data-qa=weather-error-banner]") ?? qa.all("[role=alert]").find((el) => qa.visible(el) && /기상/.test(qa.txt(el)));
-        const card = qa.all("[data-qa=dashboard-panel] *").find((el) => qa.visible(el) && el.children.length > 0 && /^현재 기온/.test(qa.txt(el)));
+        // The card is the innermost element whose text starts with 현재 기온 (its ancestors - the list, the section - start with
+        // the same text in document order); the cards group is that card's parent.
+        const card = qa.all("[data-qa=dashboard-panel] *").filter((el) => qa.visible(el) && el.children.length > 0 && /^현재 기온/.test(qa.txt(el))).at(-1);
         const group = card?.parentElement;
         return { failure: failure && qa.visible(failure) ? qa.r(failure) : null, weatherCards: group ? qa.r(group) : null };
       });
