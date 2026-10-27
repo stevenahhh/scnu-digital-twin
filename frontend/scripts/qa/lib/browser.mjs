@@ -139,7 +139,12 @@ export class Browser {
     return withTimeout(this.view.evaluate(expression), 60000, "evaluate");
   }
 
+  // Under SwiftShader the first capture after the WebGL canvas drew returns the composite from before that draw: on the
+  // 도서관 hover the first capture read a roof delta of 0.014 and a capture right after it (no page change in between)
+  // 0.029, the settled tint. A 1 px clipped capture does not composite the canvas, so one full capture is discarded and
+  // the next one, which shows the page as it is, is returned.
   async screenshot() {
+    await withTimeout(this.view.screenshot({ encoding: "buffer" }), 60000, "screenshot (discarded)");
     const shot = await withTimeout(this.view.screenshot({ encoding: "buffer" }), 60000, "screenshot");
     return new Uint8Array(shot);
   }
