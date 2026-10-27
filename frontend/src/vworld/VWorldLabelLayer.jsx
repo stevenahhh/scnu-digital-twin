@@ -7,6 +7,10 @@ import { CAMPUS_GLTF_OVERLAY_CONFIG } from "./campusGltfOverlay.mjs";
 import { buildVWorldLabelEntries, glbNodeBoxes, readGlbJson } from "./labelAnchors.mjs";
 import { createVWorldLabelProjector } from "./labelProjection.mjs";
 
+// campus-buildings.glb 단위(Legacy 장면과 같이 1 m = 0.6242 units)와 모델 끝 사각형의 여유.
+const MODEL_UNITS_PER_METER = 0.62421715;
+const FOOTPRINT_CLEARANCE_METERS = 60;
+
 // 카메라가 멈춘 뒤 한 번 더 배치하기까지 기다리는 시간(tokens.css --motion-settle, Legacy와 같다).
 const MOTION_SETTLE_MS = 150;
 // 이보다 멀리서 보면(지구본·시군 단위 시점, 장면 단위 약 6.4 km) 캠퍼스가 점 하나라 라벨을 모두 숨긴다.
@@ -67,11 +71,15 @@ export function VWorldLabelLayer({
       .then((buffer) => {
         if (cancelled) return;
         const json = readGlbJson(buffer);
-        // 캠퍼스 모델의 바닥 사각형(모델 좌표): 모든 노드 경계 상자의 수평 범위, 가장 낮은 높이.
+        // 캠퍼스 모델이 끝나는 사각형(모델 좌표): 모든 노드 경계 상자의 수평 범위에 여유를 더하고, 높이는 가장 낮은 곳.
+        // VWorld의 모델은 건물만 있고 바닥판이 없다(바닥은 지도 영상이 끊김 없이 잇는다). 경계 상자 그대로면 가장 바깥
+        // 건물 벽이 모서리에 걸쳐 화면 검사가 벽과 지도의 밝기 차를 모델 가장자리로 읽으므로, 바깥 건물 너머 60 m를 둔다.
+        const clearance = FOOTPRINT_CLEARANCE_METERS * MODEL_UNITS_PER_METER;
         let minX = Infinity; let maxX = -Infinity; let minZ = Infinity; let maxZ = -Infinity; let minY = Infinity;
         for (const [min, max] of glbNodeBoxes(json).values()) {
           minX = Math.min(minX, min[0]); maxX = Math.max(maxX, max[0]); minZ = Math.min(minZ, min[2]); maxZ = Math.max(maxZ, max[2]); minY = Math.min(minY, min[1]);
         }
+        minX -= clearance; maxX += clearance; minZ -= clearance; maxZ += clearance;
         footprintRef.current = Number.isFinite(minX)
           ? [[minX, minY, minZ], [maxX, minY, minZ], [maxX, minY, maxZ], [minX, minY, maxZ]].map((position, i) => ({ elementId: `edge${i}`, position }))
           : null;
