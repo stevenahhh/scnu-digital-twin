@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { NetGraph } from "./graph.mjs";
 import { sampleLine } from "./geom.mjs";
-import { CLS, buildWalkways, surfaceClassifier } from "./walkways.mjs";
+import { CLS, buildWalkways, keepSurfacesOf, surfaceClassifier } from "./walkways.mjs";
 
 const closed = (pts) => [...pts, pts[0]];
 const rect = (x0, y0, x1, y1) => closed([[x0, y0], [x1, y0], [x1, y1], [x0, y1]]);
@@ -155,4 +155,48 @@ test("an estimated edge with no route at all whose ends stay connected without i
   const out = buildWalkways({ graph: g, walkable: [], roadPolygons: [], buildings, warn: quiet });
   assert.deepEqual(g.edges.map((e) => e.id), ["EDGE_A"]);
   assert.deepEqual(out.stats.rejoined, [{ edge: "EDGE_X", dropped: true }]);
+});
+
+test("estimated surfaces of an edge the network build pruned are removed; those of kept edges stay", () => {
+  const w = {
+    strips: [{ id: "WALKWAY_EDGE_A_0", source_ref: "EDGE_A" }, { id: "WALKWAY_EDGE_B_X_0", source_ref: "EDGE_B_X" }],
+    approaches: [{ id: "CWAPPROACH_EDGE_A_0_1" }, { id: "CWAPPROACH_EDGE_B_X_2_0" }],
+    crossings: [{ id: "CWEST_EDGE_B_X_0_12" }, { id: "CWEST_EDGE_A_1_3" }],
+  };
+  const removed = keepSurfacesOf(w, new Set(["EDGE_A"]));
+  assert.deepEqual(removed, { strips: 1, approaches: 1, crossings: 1 });
+  assert.deepEqual([w.strips.map((x) => x.id), w.approaches.map((x) => x.id), w.crossings.map((x) => x.id)], [["WALKWAY_EDGE_A_0"], ["CWAPPROACH_EDGE_A_0_1"], ["CWEST_EDGE_A_1_3"]]);
+});
+
+test("a plaza link whose walkable route is a detour stays straight to a crossing over a short kerb gap, else it is dropped", () => {
+  // a 4 m road strip (x 20..24) between the plaza side and a crossing polygon; buildings close the strip far north and south
+  const roadPolygons = [{ class: "road", rings: [rect(20, -300, 24, 300)] }];
+  const g = graphWith(
+    [
+      { id: "EDGE_PLAZA_PAVEDCOURT_0001_1", from: "P", to: "C", kind: "sidewalk", estimated: true, points: [[0, 0], [26, 0]] },
+      { id: "EDGE_PLAZA_PAVEDCOURT_0001_2", from: "P", to: "F", kind: "sidewalk", estimated: true, points: [[0, 0], [30, 10]] },
+      // the rest of the network (a POI) lies past the crossing: the plaza needs the straight link to stay joined
+      { id: "EDGE_SW", from: "C", to: "Q", kind: "sidewalk", estimated: false, points: [[26, 0], [40, 0]] },
+    ],
+    [["P", [0, 0], "plaza"], ["C", [26, 0], "crossing_end"], ["F", [30, 10], "fallback"], ["Q", [40, 0], "poi"]],
+  );
+  const out = buildWalkways({ graph: g, walkable: [], roadPolygons, warn: quiet });
+  const kept = g.edges.find((e) => e.id === "EDGE_PLAZA_PAVEDCOURT_0001_1");
+  assert.deepEqual(kept.points, [[0, 0], [26, 0]], "straight to the crossing");
+  assert.ok(kept.crosses_carriageway_m >= 3.5 && kept.crosses_carriageway_m <= 4.5, "its kerb strip is an estimated crossing");
+  assert.ok(out.crossings.some((c) => c.id.startsWith("CWEST_EDGE_PLAZA_PAVEDCOURT_0001_1_")));
+  assert.ok(!g.edges.some((e) => e.id === "EDGE_PLAZA_PAVEDCOURT_0001_2"), "the link across the road to a fallback node is dropped");
+  assert.deepEqual(out.stats.plazaLinks.map((x) => [x.edge, Boolean(x.dropped)]), [["EDGE_PLAZA_PAVEDCOURT_0001_1", false], ["EDGE_PLAZA_PAVEDCOURT_0001_2", true]]);
+});
+
+test("a plaza link whose walkable route exists but is a long detour around a building is dropped", () => {
+  // a 60 m wall between the plaza node and the target: the walkable route goes round its end (> 2x the 20 m straight line)
+  const buildings = [{ rings: [rect(-30, 8, 30, 10)] }];
+  const g = graphWith(
+    [{ id: "EDGE_PLAZA_PAVEDCOURT_0002_1", from: "P", to: "F", kind: "sidewalk", estimated: true, points: [[0, 0], [0, 20]] }],
+    [["P", [0, 0], "plaza"], ["F", [0, 20], "fallback"]],
+  );
+  const out = buildWalkways({ graph: g, walkable: [], roadPolygons: [], buildings, warn: quiet });
+  assert.equal(g.edges.length, 0);
+  assert.ok(out.stats.plazaLinks[0].dropped && out.stats.plazaLinks[0].detour_m > 60, JSON.stringify(out.stats.plazaLinks));
 });
