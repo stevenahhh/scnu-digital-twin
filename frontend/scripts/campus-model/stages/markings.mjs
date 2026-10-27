@@ -71,7 +71,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { ShapeUtils, Vector2 } from "three";
 import { EXTENT, SCENE_UNITS_PER_METRE, geoToModel, metres } from "../lib/frame.mjs";
-import { busStopBoxTemplate } from "../lib/markingGlyphs.mjs";
+import { busStopBoxTemplate, hatchedMedianTemplate } from "../lib/markingGlyphs.mjs";
 import { conform } from "../lib/conform.mjs";
 import { pointInRing, ringArea, segmentDistance } from "../lib/geometry.mjs";
 import { VEG_EXG, excessGreen, sampleOrtho, shadowWeight } from "../lib/ortho.mjs";
@@ -83,7 +83,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const MARKINGS = path.join(HERE, "..", "data", "photo", "markings.geojson");
 const MARKINGS_EXTRA = path.join(HERE, "..", "data", "photo", "markings-extra.geojson");
 // templated markings read in the VR where the photo shows no paint (it predates them): placed, estimated (추정)
-const TEMPLATES_VR = { bus_stop_box: busStopBoxTemplate };
+const TEMPLATES_VR = { bus_stop_box: busStopBoxTemplate, hatched_median: (l, w, m) => hatchedMedianTemplate(l, w, m.pattern) };
 // Photo paint traced beyond EXTENT (scene units): the arterial at VR scene_f1, east of the campus, now that the context
 // ground (stages/contextGround.mjs) draws a carriageway there. The paint gate measures it too (bake/markings-gate.mjs);
 // buildMarkings leaves it out (no Topography there) and contextGround draws it on its own carriageway.
@@ -753,7 +753,7 @@ export async function loadMarkings({ inputs, buildings }) {
     const b = (m.travelBearingDeg * Math.PI) / 180;
     const f = [Math.sin(b), -Math.cos(b)];
     const r = [-f[1], f[0]];
-    const polys = TEMPLATES_VR[m.kind](m.lengthM, m.widthM);
+    const polys = TEMPLATES_VR[m.kind](m.lengthM, m.widthM, m);
     for (const rings of polys) {
       pieces.push({ rings: rings.map((ring) => ring.map(([x, y]) => [centre[0] + metres(x) * r[0] + metres(y) * f[0], centre[1] + metres(x) * r[1] + metres(y) * f[1]])), colour: m.colour, kind: m.kind, estimated: true, id: m.id });
     }

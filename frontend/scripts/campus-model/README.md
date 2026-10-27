@@ -680,7 +680,7 @@ what is drawn is regular geometry fitted to the accepted pieces (`stages/marking
 | stall frames and other line-kind outlines (a rail with its dividers, an L) | straight strokes at the statute width: along each dominant direction of the outline, every band of at least 1 m of paint becomes one stroke over its longest run |
 | hatch stripes, hump bands, blue bays, other painted areas | their rectangle when they fill it (72 %), else their outline with the edges snapped to its dominant directions and to its group's (bands of one hump, fill and frame of one bay) |
 | bay symbols | every blue bay gets its white symbol unless a wheelchair template is already drawn there: a wheelchair (장애인 전용), or the P of a parking or PM bay named in `data/photo/markings-bays.json`; a blue piece longer than 6.5 m is a row of 3.4 m bays (or the file's `cells`); upright for the driver entering from the aisle: the file's bearing (read on the 4x chip or the VR view), else the end that meets a kerb, sidewalk or building is the back, else 추정. Small white blobs of a painted symbol inside the bay give way to the template |
-| VR-only templates | `data/photo/markings-vr.json`: markings the VR shows that the photo predates (the light-blue bus-stop box at the main gate, VR scene_a19 face b): a template at the read centre and bearing, a fifth palette colour `light_blue`, estimated (추정), no paint gate |
+| VR-only templates | `data/photo/markings-vr.json`: markings the VR shows that the photo predates (the light-blue bus-stop box at the main gate, VR scene_a19 face b; the hatched median of the f1 arterial): a template at the read centre and bearing, a fifth palette colour `light_blue`, estimated (추정), no paint gate |
 | green bands | the green bands across the E7 red carriageway (`green_band`, a fourth palette colour); the gate measures no green, so they are drawn on the chip review |
 | `dotted` guide lines | their `dots` squares |
 | `other` | left out |
@@ -795,7 +795,8 @@ so:
 - photo paint beyond `EXTENT`: the arterial at VR scene_f1 (`PAINT_BEYOND_EXTENT` in `stages/markings.mjs`, x 502-540,
   z -45-20) is traced on the NGII sheet like the campus paint (candidates in `markings-extra.geojson`, measured by the
   paint gate) and drawn here at the marking lift instead of the statute lines, which stay out of that window. The
-  median's hatch stripes are not resolved at 0.25 m: its two boundary lines are drawn, the stripes are not.
+  hatched median is a VR-only template (`hatched_median`): band and axis fitted to its yellow paint on the sheet,
+  stripe pitch and lean read in VR scene_f1 face d (추정; the 0.25 m sheet does not resolve the stripes).
 - materials: the CC0 asphalt and concrete tiles and the campus-speckle paver textures already in the model (no new
   images, no photo pixels) and the shared `Road_Marking` palette.
 

@@ -15,6 +15,25 @@
       "lengthM": 12,
       "widthM": 2.5,
       "source": "VR scene_a19 face b: light-blue box along the east kerb at the bus shelter across the main-gate road, two chevrons pointing north (the near-side traffic); corners back-projected with the refined pose (about 12 x 2.4 m); NGII 2025: kerb and shelter, no paint yet"
+    },
+    {
+      "id": "f1-median",
+      "kind": "hatched_median",
+      "colour": "yellow",
+      "centre": [
+        127.48469566,
+        34.96618688
+      ],
+      "travelBearingDeg": 347.8,
+      "lengthM": 60.6,
+      "widthM": 2.79,
+      "pattern": {
+        "pitch": 1.6,
+        "stripe": 0.18,
+        "line": 0.15,
+        "lean": 0.59
+      },
+      "source": "the f1 arterial median beyond EXTENT: axis and band edges fitted to the yellow paint of the NGII 2025 sheet east of x 502+10 (the red cycle path excluded; 1246 inliers, band 2.78 m), from the crossing (z -17) to the paint window end (z 20); stripe pitch 1.6 m, lean 0.59 m along per metre across, stripe 0.18 m and boundary line 0.15 m read in VR scene_f1 face d (0.025 m/px), 추정: the 0.25 m sheet does not resolve the stripes"
     }
   ]
 }

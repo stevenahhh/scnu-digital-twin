@@ -452,6 +452,23 @@ export function busStopBoxTemplate(length, width) {
   return [[outer, inner], chevron(0.3 * length), chevron(0.3 * length - 0.45 * width)];
 }
 
+// Hatched median (yellow 안전지대 band): a `length` x `width` band centred on the origin, y along it, x across; a `line`
+// wide boundary line on both long edges and stripes `stripe` wide every `pitch` along y between them, each leaning
+// `lean` metres along y per metre across x (+x moves the stripe towards +y), clipped to the band. Sizes 추정.
+export function hatchedMedianTemplate(length, width, { pitch = 1.6, stripe = 0.18, line = 0.15, lean = 0.6 } = {}) {
+  const [hx, hy] = [width / 2, length / 2];
+  const polys = [-1, 1].map((side) => [[[side * hx, -hy], [side * (hx - line), -hy], [side * (hx - line), hy], [side * hx, hy]]]);
+  const x0 = -hx + line, x1 = hx - line;
+  const d = (stripe * Math.hypot(1, lean)) / 2; // half the stripe's extent along y
+  const reach = Math.abs(lean) * hx + d;
+  for (let c = -hy - reach + pitch / 2; c < hy + reach; c += pitch) {
+    const quad = [[x0, c + lean * x0 - d], [x1, c + lean * x1 - d], [x1, c + lean * x1 + d], [x0, c + lean * x0 + d]];
+    const k = clipToBox(quad, x0, -hy, x1, hy);
+    if (k.length >= 3 && Math.abs(k.reduce((a, q, i) => a + q[0] * k[(i + 1) % k.length][1] - k[(i + 1) % k.length][0] * q[1], 0)) / 2 > 0.005) polys.push([k]);
+  }
+  return polys;
+}
+
 // Bicycle symbol in a length (along) x width (across) box: two wheels and the frame.
 export function bicycleTemplate(length, width) {
   // painted in side view, flat on the lane: wheels behind and ahead, the frame between them
