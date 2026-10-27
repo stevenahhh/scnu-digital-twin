@@ -465,6 +465,9 @@ export const VISUALQA_CHECKS = [
       const transitions = await ctx.inPage((qa) => ["[data-qa=dashboard-panel]", '[aria-label="패널 닫기"]', "[data-qa=campus-hud]"]
         .map((sel) => (qa.one(sel) ? getComputedStyle(qa.one(sel)).transitionProperty : null)).filter(Boolean));
       await ctx.b.setMedia({ reducedMotion: false, colorScheme: ctx.theme === "light" ? "light" : "dark" });
+      // Put the camera back (전체) so the probe replay's later states start from the view their own steps expect.
+      if (tapped.ok) await ctx.b.tap("[data-qa=camera-preset-overview]", null, { timeoutMs: 3000 });
+      await ctx.b.cameraSettle?.();
       const positional = transitions.filter((value) => value.split(",").some((p) => /^(all|right|left|top|bottom|width|height|inset|margin|transform)$/.test(p.trim())));
       const moving = frames.slice(1).filter((frame, i) => pixelDiff(frames[i], frame, region, ctx.scale) > 0.01).length;
       const moved = pixelDiff(start, frames[frames.length - 1], region, ctx.scale);

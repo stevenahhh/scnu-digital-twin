@@ -159,13 +159,20 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-14", {
-    states: ["S05", "S08"], viewports: D, themes: ["dark", "light"], mutates: true,
+    // S05/S08 (the audit's views) no longer have filled-primary segments (DESIGN.md: no primary fill on segments), so the
+    // roof editor's primary actions (S15) are measured too; a run that measured no filled-primary control at all fails.
+    states: ["S05", "S08", "S15"], viewports: D, themes: ["dark", "light"], mutates: true,
     async run(ctx) {
       return withPanelOpen(ctx, null, async () => {
       const m = await primaryFilled(ctx);
       const rows = contrasts(ctx, m.filled.filter((f) => f.box.w > 0));
       const worst = worstContrast(rows);
-      return result(rows.length > 0 && worst.ratio >= 4.5, { filledPrimaryControls: rows.length, worst }, ">= 4.5:1 white text on filled-primary controls");
+      const key = `V-F-14:${ctx.entry}:${ctx.theme}`;
+      const total = (ctx.runMemo.get(key) ?? 0) + rows.length;
+      ctx.runMemo.set(key, total);
+      const contrastOk = rows.length === 0 || worst.ratio >= 4.5;
+      const evidenceOk = ctx.state !== "S15" || total > 0;
+      return result(contrastOk && evidenceOk, { filledPrimaryControls: rows.length, measuredInRunSoFar: total, worst }, ">= 4.5:1 white text on every filled-primary control (>= 1 measured in the run)");
       });
     },
   }),
@@ -817,7 +824,8 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-71", {
-    states: ["S01"], viewports: D, mutates: true,
+    // 분석 실행 exists only when the energy API returns a representative plan: measure at S17's fixtures-up S01.
+    states: ["S01"], viewports: D, mutates: true, fixtures: "up",
     async run(ctx) {
       // The refresh lives in the 기본 현황 weather card: open the panel first (rail-first shell).
       return withPanelOpen(ctx, null, async () => {
@@ -829,6 +837,8 @@ export const FRONTEND_CHECKS = [
       const toEnergy = await ctx.b.tap("[data-qa=dashboard-tab-energy]", null, { timeoutMs: 2000 });
       await ctx.sleep(800);
       const base2 = await count();
+      await ctx.inPage(() => { [...document.querySelectorAll("button")].find((b) => b.textContent.trim() === "분석 실행")?.scrollIntoView({ block: "center" }); return true; });
+      await ctx.sleep(300);
       const run = await ctx.b.tap("button", "분석 실행", { timeoutMs: 2000 });
       await ctx.sleep(150);
       const analysis = run.ok ? (await count()) - base2 : null;
