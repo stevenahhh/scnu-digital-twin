@@ -66,3 +66,11 @@ test("activeTab reads the desktop rail's icon-only tab (aria-current, aria-label
   dom.window.eval(pageProbeSource());
   assert.equal(dom.window.__qa.activeTab(), "기본 현황");
 });
+
+test("activeTab names a selected tab with no visible text (collapsed panel) by its text content", () => {
+  const dom = new JSDOM(`<!doctype html><body>
+    <div style="display:none"><button data-qa="dashboard-tab-dashboard" role="tab" aria-selected="true">기본 현황</button></div>
+  </body>`, { runScripts: "outside-only" });
+  dom.window.eval(pageProbeSource());
+  assert.equal(dom.window.__qa.activeTab(), "기본 현황");
+});
