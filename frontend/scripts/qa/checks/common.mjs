@@ -28,13 +28,16 @@ export async function chips(ctx) {
     const s = getComputedStyle(el);
     return {
       text: qa.txt(el),
+      // The building name without the code badge (qa.chipName); `text` still includes the code ("C1 도서관").
+      name: qa.chipName(el),
+      badge: Boolean(el.querySelector("[data-qa$=badge]")),
       rect: qa.r(el),
       px: qa.eff(el),
       weight: Number(s.fontWeight),
       pressed: el.getAttribute("aria-pressed"),
       tier: el.getAttribute("data-tier") ?? el.closest("[data-tier]")?.getAttribute("data-tier") ?? null,
       whiteSpace: s.whiteSpace,
-      leader: Boolean(el.closest("[data-qa=campus-label]")?.querySelector("[data-qa=label-leader],[data-leader]")),
+      leader: Boolean(qa.leaderOf(el)),
       children: [...el.children].map((child) => child.getAttribute("data-qa") ?? child.tagName.toLowerCase()),
     };
   }));
@@ -130,7 +133,7 @@ export async function sceneRegion(ctx) {
 }
 
 export async function chipByText(ctx, text) {
-  return (await chips(ctx)).find((chip) => chip.text === text) ?? null;
+  return (await chips(ctx)).find((chip) => chip.text === text || chip.name === text) ?? null;
 }
 
 export function roofBox(chip) {

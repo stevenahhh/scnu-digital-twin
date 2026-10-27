@@ -30,6 +30,15 @@ export function pageProbeSource() {
   const inter = (a, b) => { if (!a || !b) return 0; const w = Math.min(a.r, b.r) - Math.max(a.l, b.l); const h = Math.min(a.b, b.b) - Math.max(a.t, b.t); return w > 0 && h > 0 ? Math.round(w * h) : 0; };
   const gap = (a, b) => { const dx = Math.max(0, Math.max(a.l, b.l) - Math.min(a.r, b.r)); const dy = Math.max(0, Math.max(a.t, b.t) - Math.min(a.b, b.b)); return Math.hypot(dx, dy); };
   const chips = () => all('button[data-qa=campus-label]').filter(visible);
+  // A chip's building name: the label-chip text without the code badge, the hover value and the estimated glyph
+  // (SceneLabel renders the code as a StatusBadge child, so the chip's own text reads "C1 도서관").
+  const chipName = (el) => { const root = el.querySelector('[data-qa=label-chip]') || el; const copy = root.cloneNode(true);
+    copy.querySelectorAll('[data-qa$=badge],[data-qa=label-value],[data-qa=label-estimated-glyph],[data-qa=label-dot]').forEach((node) => node.remove());
+    return (copy.textContent || '').replace(/\\s+/g, ' ').trim(); };
+  // The leader drawn for a chip: inside it (SceneLabel) or the sibling svg CampusLabelLayer draws before each slot; only a shown one counts.
+  const leaderOf = (el) => { const slot = el.closest('[data-label-slot]'); const prev = slot && slot.previousElementSibling;
+    const candidates = [el.querySelector('[data-qa=label-leader]'), prev && prev.matches('[data-qa=label-leader]') ? prev : null].filter(Boolean);
+    return candidates.find((node) => getComputedStyle(node).visibility !== 'hidden' && getComputedStyle(node).display !== 'none') || null; };
   const color = (el, prop = 'color') => getComputedStyle(el)[prop];
   const textNodesShown = (root = document.body) => { const out = []; const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     while (walker.nextNode()) { const node = walker.currentNode; const value = node.textContent.trim(); if (!value) continue;
@@ -53,7 +62,7 @@ export function pageProbeSource() {
     return best ? Math.round(alphaOf(getComputedStyle(best).backgroundColor) * 100) / 100 : 0;
   };
   const button = (label) => all('button,[role=button],a').find((el) => visible(el) && (el.getAttribute('aria-label') === label || txt(el) === label));
-  window.__qa = { all, one, r, shown, inView, visible, txt, eff, scaleOf, inter, gap, chips, color, textNodesShown, button, activeTab, alphaOf, surfaceAlpha };
+  window.__qa = { all, one, r, shown, inView, visible, txt, eff, scaleOf, inter, gap, chips, chipName, leaderOf, color, textNodesShown, button, activeTab, alphaOf, surfaceAlpha };
   return true;
 })()`;
 }

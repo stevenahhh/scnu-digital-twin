@@ -621,7 +621,7 @@ export const FRONTEND_CHECKS = [
         const host = el.closest("[data-anchor-top]");
         const top = host ? Number(host.getAttribute("data-anchor-top")) : null;
         const r = el.getBoundingClientRect();
-        return { text: qa.txt(el), offset: top == null ? null : Math.round(r.bottom - top), leader: Boolean(el.closest("[data-qa=campus-label]")?.querySelector("[data-qa=label-leader]")) };
+        return { text: qa.txt(el), offset: top == null ? null : Math.round(r.bottom - top), leader: Boolean(qa.leaderOf(el)) };
       }));
       const bad = m.filter((c) => !c.leader && (c.offset == null || Math.abs(c.offset) > 24));
       return result(m.length > 0 && bad.length === 0, { chips: m.length, withoutAnchorOrLeader: bad.slice(0, 6) }, "every chip within the bbox top edge +/- 24 px or connected by a leader");

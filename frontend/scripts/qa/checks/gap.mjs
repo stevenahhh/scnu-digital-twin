@@ -354,7 +354,7 @@ export const GAP_CHECKS = [
       const long = list.filter((c) => c.text.split(/\s+/).length > 3).map((c) => c.text);
       const qualifier = list.filter((c) => c.text.includes("(추정)")).map((c) => c.text);
       const dorms = list.filter((c) => c.text.startsWith("학생생활관"));
-      const codeInText = list.filter((c) => /^[A-Z]\d+\s/.test(c.text) && !c.children.some((child) => /badge/.test(child))).map((c) => c.text);
+      const codeInText = list.filter((c) => /^[A-Z]\d+\s/.test(c.text) && !(c.badge || c.children.some((child) => /badge/.test(child)))).map((c) => c.text);
       const clustered = dorms.length <= 1;
       return result(long.length === 0 && qualifier.length === 0 && clustered && codeInText.length === 0,
         { overThreeWords: long.slice(0, 5), withEstimateQualifier: qualifier.slice(0, 5), dormitoryChips: dorms.length, codeInText: codeInText.slice(0, 5) },
