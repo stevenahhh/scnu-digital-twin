@@ -2133,749 +2133,91 @@
   ]
  },
  "scene_a10": {
-  "method": "manual control points read on the ground-projected cube and the NGII sheet seed a guided SIFT match (3 m window) whose RANSAC inliers are the control points; checked on the warped blend",
+  "method": "hand-picked control points read on the ground-projected cube (vr_control_points.py sheet2) and the NGII 2025 sheet, spread over the faces; they replace the guided-SIFT set of the earlier solution, whose pose put the side faces 11-17 deg (d3) and 2 m (a10) off (feature/poses-d3-a5-a10)",
   "info": {
-   "seed": {
-    "E": 243851.95,
-    "N": 263542.22,
-    "h": 13.063,
-    "yaw": 231.5
-   },
-   "seededBy": "manual control points",
-   "guideM": 3.0,
-   "guided": 1485,
-   "inliers": 98,
-   "scale": 0.948,
-   "reachH": 3.5,
-   "faces": [
-    "b",
-    "d",
-    "f",
-    "l",
-    "r"
-   ]
+   "seededBy": "hand-picked",
+   "supersededSiftInliers": 60
   },
-  "manual": [],
+  "manual": [
+   {
+    "face": "d",
+    "col": 1701.5,
+    "row": 705.5,
+    "sc": 2078.5,
+    "sr": 3757.8,
+    "what": "raised crossing north-west of the station, its south (shelter) end (paint)"
+   },
+   {
+    "face": "d",
+    "col": 2211.5,
+    "row": 1335.5,
+    "sc": 2078.5,
+    "sr": 3721.7,
+    "what": "raised crossing north-west of the station, its north end (paint)"
+   },
+   {
+    "face": "d",
+    "col": 246.5,
+    "row": 1719.5,
+    "sc": 2157.9,
+    "sr": 3778.3,
+    "what": "raised crossing east of the station, its south end by the parked car (paint)"
+   },
+   {
+    "face": "d",
+    "col": 1311.5,
+    "row": 1965.5,
+    "sc": 2134.7,
+    "sr": 3737.6,
+    "what": "yellow road text 천천히, its middle (paint)"
+   },
+   {
+    "face": "l",
+    "col": 1610,
+    "sc": 2115.9,
+    "sr": 3859.9,
+    "what": "info totem on the A10 plaza (bearing only; photo: its teal base)"
+   }
+  ],
   "points": [
    {
     "face": "d",
-    "col": -2500.5,
-    "row": 2233.3,
-    "sc": 2266.04,
-    "sr": 3872.37,
-    "seen": {
-     "face": "l",
-     "col": 672.0,
-     "row": 1321.1
-    }
+    "col": 1701.5,
+    "row": 705.5,
+    "sc": 2078.5,
+    "sr": 3757.8,
+    "what": "raised crossing north-west of the station, its south (shelter) end (paint)"
    },
    {
     "face": "d",
-    "col": 3998.4,
-    "row": -1988.3,
-    "sc": 1908.32,
-    "sr": 3753.42,
-    "seen": {
-     "face": "f",
-     "col": 2035.0,
-     "row": 1371.7
-    }
+    "col": 2211.5,
+    "row": 1335.5,
+    "sc": 2078.5,
+    "sr": 3721.7,
+    "what": "raised crossing north-west of the station, its north end (paint)"
    },
    {
     "face": "d",
-    "col": 3966.1,
-    "row": 4118.0,
-    "sc": 2143.19,
-    "sr": 3570.6,
-    "seen": {
-     "face": "b",
-     "col": 49.8,
-     "row": 1362.3
-    }
+    "col": 246.5,
+    "row": 1719.5,
+    "sc": 2157.9,
+    "sr": 3778.3,
+    "what": "raised crossing east of the station, its south end by the parked car (paint)"
    },
    {
     "face": "d",
-    "col": -1302.5,
-    "row": -2399.8,
-    "sc": 2052.12,
-    "sr": 3965.92,
-    "seen": {
-     "face": "f",
-     "col": 327.7,
-     "row": 1329.8
-    }
+    "col": 1311.5,
+    "row": 1965.5,
+    "sc": 2134.7,
+    "sr": 3737.6,
+    "what": "yellow road text 천천히, its middle (paint)"
    },
    {
-    "face": "d",
-    "col": 1487.3,
-    "row": 898.6,
-    "sc": 2093.71,
-    "sr": 3763.42,
-    "seen": {
-     "face": "d",
-     "col": 1487.3,
-     "row": 898.6
-    }
-   },
-   {
-    "face": "d",
-    "col": 362.4,
-    "row": 3883.6,
-    "sc": 2243.04,
-    "sr": 3715.92,
-    "seen": {
-     "face": "b",
-     "col": 1260.2,
-     "row": 1390.1
-    }
-   },
-   {
-    "face": "d",
-    "col": 1446.1,
-    "row": -1634.5,
-    "sc": 2001.25,
-    "sr": 3840.93,
-    "seen": {
-     "face": "f",
-     "col": 1186.3,
-     "row": 1418.0
-    }
-   },
-   {
-    "face": "d",
-    "col": 3979.1,
-    "row": 568.5,
-    "sc": 2008.46,
-    "sr": 3678.16,
-    "seen": {
-     "face": "r",
-     "col": 865.9,
-     "row": 1378.3
-    }
-   },
-   {
-    "face": "d",
-    "col": -1187.2,
-    "row": 332.7,
-    "sc": 2154.48,
-    "sr": 3879.58,
-    "seen": {
-     "face": "l",
-     "col": 1343.5,
-     "row": 1497.8
-    }
-   },
-   {
-    "face": "d",
-    "col": -691.7,
-    "row": 2394.5,
-    "sc": 2216.31,
-    "sr": 3802.17,
-    "seen": {
-     "face": "l",
-     "col": 205.0,
-     "row": 1634.8
-    }
-   },
-   {
-    "face": "d",
-    "col": 1530.8,
-    "row": 2629.1,
-    "sc": 2160.53,
-    "sr": 3709.9,
-    "seen": {
-     "face": "b",
-     "col": 700.0,
-     "row": 1676.6
-    }
-   },
-   {
-    "face": "d",
-    "col": -2258.1,
-    "row": -854.6,
-    "sc": 2139.08,
-    "sr": 3956.66,
-    "seen": {
-     "face": "l",
-     "col": 1609.5,
-     "row": 1343.0
-    }
-   },
-   {
-    "face": "d",
-    "col": 2440.5,
-    "row": -403.6,
-    "sc": 2014.17,
-    "sr": 3764.47,
-    "seen": {
-     "face": "f",
-     "col": 2040.2,
-     "row": 1758.3
-    }
-   },
-   {
-    "face": "d",
-    "col": -2248.0,
-    "row": 3778.5,
-    "sc": 2314.94,
-    "sr": 3818.25,
-    "seen": {
-     "face": "l",
-     "col": 161.2,
-     "row": 1344.0
-    }
-   },
-   {
-    "face": "d",
-    "col": -995.3,
-    "row": 4203.8,
-    "sc": 2293.13,
-    "sr": 3757.99,
-    "seen": {
-     "face": "b",
-     "col": 1673.5,
-     "row": 1353.2
-    }
-   },
-   {
-    "face": "d",
-    "col": 3868.9,
-    "row": 2801.6,
-    "sc": 2094.55,
-    "sr": 3615.19,
-    "seen": {
-     "face": "r",
-     "col": 1663.4,
-     "row": 1392.0
-    }
-   },
-   {
-    "face": "d",
-    "col": 2721.5,
-    "row": 1007.5,
-    "sc": 2059.78,
-    "sr": 3713.61,
-    "seen": {
-     "face": "r",
-     "col": 1013.9,
-     "row": 1641.0
-    }
-   },
-   {
-    "face": "d",
-    "col": 2426.7,
-    "row": 3449.0,
-    "sc": 2162.34,
-    "sr": 3650.6,
-    "seen": {
-     "face": "b",
-     "col": 431.1,
-     "row": 1455.8
-    }
-   },
-   {
-    "face": "d",
-    "col": 340.1,
-    "row": 1796.9,
-    "sc": 2162.51,
-    "sr": 3779.17,
-    "seen": {
-     "face": "d",
-     "col": 340.1,
-     "row": 1796.9
-    }
-   },
-   {
-    "face": "d",
-    "col": -1521.4,
-    "row": 1551.7,
-    "sc": 2208.35,
-    "sr": 3856.5,
-    "seen": {
-     "face": "l",
-     "col": 811.0,
-     "row": 1435.5
-    }
-   },
-   {
-    "face": "d",
-    "col": 995.5,
-    "row": -575.1,
-    "sc": 2053.33,
-    "sr": 3823.98,
-    "seen": {
-     "face": "f",
-     "col": 1005.6,
-     "row": 1679.4
-    }
-   },
-   {
-    "face": "d",
-    "col": -999.9,
-    "row": -781.5,
-    "sc": 2105.59,
-    "sr": 3907.34,
-    "seen": {
-     "face": "l",
-     "col": 1937.0,
-     "row": 1541.7
-    }
-   },
-   {
-    "face": "d",
-    "col": 2542.4,
-    "row": 2149.1,
-    "sc": 2108.73,
-    "sr": 3686.5,
-    "seen": {
-     "face": "r",
-     "col": 1782.4,
-     "row": 1713.9
-    }
-   },
-   {
-    "face": "d",
-    "col": -558.6,
-    "row": -1731.9,
-    "sc": 2056.55,
-    "sr": 3920.84,
-    "seen": {
-     "face": "f",
-     "col": 435.5,
-     "row": 1404.1
-    }
-   },
-   {
-    "face": "d",
-    "col": -2173.0,
-    "row": 796.5,
-    "sc": 2201.04,
-    "sr": 3904.49,
-    "seen": {
-     "face": "l",
-     "col": 1096.2,
-     "row": 1351.5
-    }
-   },
-   {
-    "face": "d",
-    "col": -1395.4,
-    "row": 3274.2,
-    "sc": 2269.33,
-    "sr": 3801.58,
-    "seen": {
-     "face": "l",
-     "col": 70.7,
-     "row": 1457.0
-    }
-   },
-   {
-    "face": "d",
-    "col": 1108.9,
-    "row": 3500.6,
-    "sc": 2204.15,
-    "sr": 3696.77,
-    "seen": {
-     "face": "b",
-     "col": 988.2,
-     "row": 1446.8
-    }
-   },
-   {
-    "face": "d",
-    "col": -2129.1,
-    "row": -1642.6,
-    "sc": 2108.12,
-    "sr": 3975.73,
-    "seen": {
-     "face": "l",
-     "col": 1889.5,
-     "row": 1356.1
-    }
-   },
-   {
-    "face": "d",
-    "col": 1750.6,
-    "row": -2364.9,
-    "sc": 1963.45,
-    "sr": 3851.24,
-    "seen": {
-     "face": "f",
-     "col": 1243.2,
-     "row": 1333.0
-    }
-   },
-   {
-    "face": "d",
-    "col": -747.5,
-    "row": 977.0,
-    "sc": 2163.32,
-    "sr": 3842.7,
-    "seen": {
-     "face": "l",
-     "col": 1050.4,
-     "row": 1615.6
-    }
-   },
-   {
-    "face": "d",
-    "col": 2171.3,
-    "row": -1132.7,
-    "sc": 1994.57,
-    "sr": 3797.24,
-    "seen": {
-     "face": "f",
-     "col": 1568.6,
-     "row": 1509.8
-    }
-   },
-   {
-    "face": "d",
-    "col": -1371.0,
-    "row": -1479.0,
-    "sc": 2091.86,
-    "sr": 3943.1,
-    "seen": {
-     "face": "f",
-     "col": 43.7,
-     "row": 1442.5
-    }
-   },
-   {
-    "face": "d",
-    "col": -1661.2,
-    "row": -239.3,
-    "sc": 2147.42,
-    "sr": 3915.04,
-    "seen": {
-     "face": "l",
-     "col": 1505.2,
-     "row": 1414.1
-    }
-   },
-   {
-    "face": "d",
-    "col": 819.6,
-    "row": -2001.6,
-    "sc": 2003.71,
-    "sr": 3875.22,
-    "seen": {
-     "face": "f",
-     "col": 954.5,
-     "row": 1370.1
-    }
-   },
-   {
-    "face": "d",
-    "col": 838.7,
-    "row": 2744.9,
-    "sc": 2183.64,
-    "sr": 3730.91,
-    "seen": {
-     "face": "b",
-     "col": 1133.4,
-     "row": 1632.6
-    }
-   },
-   {
-    "face": "d",
-    "col": -336.2,
-    "row": 1526.0,
-    "sc": 2171.71,
-    "sr": 3812.04,
-    "seen": {
-     "face": "l",
-     "col": 645.0,
-     "row": 1794.7
-    }
-   },
-   {
-    "face": "d",
-    "col": 3783.6,
-    "row": 1219.7,
-    "sc": 2036.8,
-    "sr": 3665.74,
-    "seen": {
-     "face": "r",
-     "col": 1096.3,
-     "row": 1403.4
-    }
-   },
-   {
-    "face": "d",
-    "col": 1142.9,
-    "row": 70.6,
-    "sc": 2071.09,
-    "sr": 3800.9,
-    "seen": {
-     "face": "d",
-     "col": 1142.9,
-     "row": 70.6
-    }
-   },
-   {
-    "face": "d",
-    "col": 4181.8,
-    "row": 3504.6,
-    "sc": 2111.46,
-    "sr": 3579.7,
-    "seen": {
-     "face": "r",
-     "col": 1827.9,
-     "row": 1355.5
-    }
-   },
-   {
-    "face": "d",
-    "col": 3477.3,
-    "row": -2372.4,
-    "sc": 1909.43,
-    "sr": 3784.95,
-    "seen": {
-     "face": "f",
-     "col": 1763.4,
-     "row": 1332.3
-    }
-   },
-   {
-    "face": "d",
-    "col": 3403.4,
-    "row": 316.6,
-    "sc": 2014.73,
-    "sr": 3707.56,
-    "seen": {
-     "face": "r",
-     "col": 719.4,
-     "row": 1464.1
-    }
-   },
-   {
-    "face": "d",
-    "col": -217.6,
-    "row": 3801.3,
-    "sc": 2253.96,
-    "sr": 3740.3,
-    "seen": {
-     "face": "b",
-     "col": 1481.0,
-     "row": 1401.0
-    }
-   },
-   {
-    "face": "d",
-    "col": 1799.0,
-    "row": 2110.9,
-    "sc": 2130.2,
-    "sr": 3713.73,
-    "seen": {
-     "face": "b",
-     "col": 293.3,
-     "row": 1987.8
-    }
-   },
-   {
-    "face": "d",
-    "col": -1787.2,
-    "row": -2096.4,
-    "sc": 2079.35,
-    "sr": 3975.73,
-    "seen": {
-     "face": "f",
-     "col": 101.0,
-     "row": 1359.6
-    }
-   },
-   {
-    "face": "d",
-    "col": 2247.4,
-    "row": 125.9,
-    "sc": 2042.08,
-    "sr": 3754.71,
-    "seen": {
-     "face": "r",
-     "col": 272.5,
-     "row": 1880.3
-    }
-   },
-   {
-    "face": "d",
-    "col": 415.9,
-    "row": 1239.4,
-    "sc": 2140.76,
-    "sr": 3793.99,
-    "seen": {
-     "face": "d",
-     "col": 415.9,
-     "row": 1239.4
-    }
-   },
-   {
-    "face": "d",
-    "col": -1198.0,
-    "row": 2000.3,
-    "sc": 2215.83,
-    "sr": 3831.19,
-    "seen": {
-     "face": "l",
-     "col": 573.2,
-     "row": 1495.5
-    }
-   },
-   {
-    "face": "d",
-    "col": -214.5,
-    "row": 2162.0,
-    "sc": 2192.63,
-    "sr": 3789.8,
-    "seen": {
-     "face": "l",
-     "col": 81.8,
-     "row": 1870.5
-    }
-   },
-   {
-    "face": "d",
-    "col": 1490.4,
-    "row": -578.2,
-    "sc": 2040.12,
-    "sr": 3805.12,
-    "seen": {
-     "face": "f",
-     "col": 1322.0,
-     "row": 1678.2
-    }
-   },
-   {
-    "face": "d",
-    "col": 3364.0,
-    "row": 755.3,
-    "sc": 2032.9,
-    "sr": 3697.46,
-    "seen": {
-     "face": "r",
-     "col": 906.2,
-     "row": 1471.5
-    }
-   },
-   {
-    "face": "d",
-    "col": -1784.5,
-    "row": 3179.4,
-    "sc": 2281.02,
-    "sr": 3816.64,
-    "seen": {
-     "face": "l",
-     "col": 237.3,
-     "row": 1396.9
-    }
-   },
-   {
-    "face": "d",
-    "col": 1818.1,
-    "row": -1506.9,
-    "sc": 1994.91,
-    "sr": 3821.77,
-    "seen": {
-     "face": "f",
-     "col": 1345.1,
-     "row": 1437.9
-    }
-   },
-   {
-    "face": "d",
-    "col": -2202.9,
-    "row": 2484.7,
-    "sc": 2264.38,
-    "sr": 3854.77,
-    "seen": {
-     "face": "l",
-     "col": 559.7,
-     "row": 1348.5
-    }
-   },
-   {
-    "face": "d",
-    "col": -1926.1,
-    "row": 1068.5,
-    "sc": 2204.12,
-    "sr": 3887.54,
-    "seen": {
-     "face": "l",
-     "col": 1007.9,
-     "row": 1379.0
-    }
-   },
-   {
-    "face": "d",
-    "col": 2408.7,
-    "row": -853.2,
-    "sc": 1999.6,
-    "sr": 3780.9,
-    "seen": {
-     "face": "f",
-     "col": 1779.3,
-     "row": 1582.2
-    }
-   },
-   {
-    "face": "d",
-    "col": -1823.0,
-    "row": 86.0,
-    "sc": 2162.1,
-    "sr": 3910.03,
-    "seen": {
-     "face": "l",
-     "col": 1360.7,
-     "row": 1391.9
-    }
-   },
-   {
-    "face": "d",
-    "col": -1319.0,
-    "row": -158.9,
-    "sc": 2136.24,
-    "sr": 3900.14,
-    "seen": {
-     "face": "l",
-     "col": 1540.4,
-     "row": 1471.1
-    }
-   },
-   {
-    "face": "d",
-    "col": 3655.6,
-    "row": 3984.2,
-    "sc": 2145.55,
-    "sr": 3585.52,
-    "seen": {
-     "face": "b",
-     "col": 113.2,
-     "row": 1377.7
-    }
-   },
-   {
-    "face": "d",
-    "col": 4001.0,
-    "row": 3097.0,
-    "sc": 2103.06,
-    "sr": 3599.3,
-    "seen": {
-     "face": "r",
-     "col": 1736.6,
-     "row": 1375.7
-    }
-   },
-   {
-    "face": "d",
-    "col": 1544.7,
-    "row": 592.1,
-    "sc": 2082.28,
-    "sr": 3769.15,
-    "seen": {
-     "face": "d",
-     "col": 1544.7,
-     "row": 592.1
-    }
+    "face": "l",
+    "col": 1610,
+    "sc": 2115.9,
+    "sr": 3859.9,
+    "what": "info totem on the A10 plaza (bearing only; photo: its teal base)"
    }
   ]
  },
@@ -19396,593 +18738,117 @@
   ]
  },
  "scene_d3": {
-  "method": "manual control points read on the ground-projected cube and the NGII sheet seed a guided SIFT match (3 m window) whose RANSAC inliers are the control points; checked on the warped blend",
+  "method": "hand-picked control points read on the ground-projected cube (vr_control_points.py sheet2) and the NGII 2025 sheet, spread over the faces; they replace the guided-SIFT set of the earlier solution, whose pose put the side faces 11-17 deg (d3) and 2 m (a10) off (feature/poses-d3-a5-a10)",
   "info": {
-   "seed": {
-    "E": 243627.7,
-    "N": 263822.4,
-    "h": 10.0,
-    "yaw": 288.0
-   },
-   "seededBy": "old",
-   "guideM": 3.0,
-   "guided": 719,
-   "inliers": 47,
-   "scale": 0.931,
-   "reachH": 3.5,
-   "faces": [
-    "b",
-    "d",
-    "f",
-    "l",
-    "r"
-   ]
+   "seededBy": "hand-picked",
+   "supersededSiftInliers": 47
   },
-  "manual": [],
+  "manual": [
+   {
+    "face": "d",
+    "col": -439.5,
+    "row": 372.5,
+    "sc": 1184,
+    "sr": 2718.1,
+    "what": "south (SSW) end of the blue PM bay MX00361 (paint; photo: the blue rectangle's south end)"
+   },
+   {
+    "face": "d",
+    "col": 512.5,
+    "row": 498.5,
+    "sc": 1182.3,
+    "sr": 2685,
+    "what": "north (NNE) end of the blue PM bay MX00361"
+   },
+   {
+    "face": "d",
+    "col": -1230.5,
+    "row": 1352.5,
+    "sc": 1206.2,
+    "sr": 2743.8,
+    "what": "the two blue disabled bays south of the station (photo: their blue showing at the canopy edge)"
+   },
+   {
+    "face": "r",
+    "col": 983,
+    "sc": 1203.8199999999488,
+    "sr": 2632.179999999935,
+    "what": "west edge line of the car-park aisle, its near end (photo: the white line in the canopy gap)"
+   },
+   {
+    "face": "r",
+    "col": 1087,
+    "sc": 1218.8199999999488,
+    "sr": 2572.179999999935,
+    "what": "west edge line of the car-park aisle, its far end (photo: the white line in the canopy gap)"
+   },
+   {
+    "face": "f",
+    "col": 927,
+    "sc": 1141.8,
+    "sr": 2668.9,
+    "what": "the blue tent along the building's north wall (bearing only; photo: its blue roof)"
+   },
+   {
+    "face": "l",
+    "col": 1167,
+    "sc": 1183.8,
+    "sr": 2814.5,
+    "what": "zebra crossing ZC023 south of the car park, its centre (bearing only; markings data from the photo)"
+   }
+  ],
   "points": [
    {
     "face": "d",
-    "col": -2400.8,
-    "row": 2782.8,
-    "sc": 1235.0,
-    "sr": 2792.03,
-    "seen": {
-     "face": "l",
-     "col": 497.4,
-     "row": 1329.7
-    }
+    "col": -439.5,
+    "row": 372.5,
+    "sc": 1184,
+    "sr": 2718.1,
+    "what": "south (SSW) end of the blue PM bay MX00361 (paint; photo: the blue rectangle's south end)"
    },
    {
     "face": "d",
-    "col": -2400.8,
-    "row": 2782.8,
-    "sc": 1235.0,
-    "sr": 2792.03,
-    "seen": {
-     "face": "l",
-     "col": 497.4,
-     "row": 1329.7
-    }
+    "col": 512.5,
+    "row": 498.5,
+    "sc": 1182.3,
+    "sr": 2685,
+    "what": "north (NNE) end of the blue PM bay MX00361"
    },
    {
     "face": "d",
-    "col": -2198.7,
-    "row": 3351.9,
-    "sc": 1253.81,
-    "sr": 2793.15,
-    "seen": {
-     "face": "l",
-     "col": 283.6,
-     "row": 1348.9
-    }
+    "col": -1230.5,
+    "row": 1352.5,
+    "sc": 1206.2,
+    "sr": 2743.8,
+    "what": "the two blue disabled bays south of the station (photo: their blue showing at the canopy edge)"
    },
    {
-    "face": "d",
-    "col": -1997.8,
-    "row": -313.4,
-    "sc": 1132.14,
-    "sr": 2742.26,
-    "seen": {
-     "face": "l",
-     "col": 1476.6,
-     "row": 1370.6
-    }
+    "face": "r",
+    "col": 983,
+    "sc": 1203.8199999999488,
+    "sr": 2632.179999999935,
+    "what": "west edge line of the car-park aisle, its near end (photo: the white line in the canopy gap)"
    },
    {
-    "face": "d",
-    "col": -1686.6,
-    "row": 2031.9,
-    "sc": 1215.53,
-    "sr": 2758.25,
-    "seen": {
-     "face": "l",
-     "col": 642.5,
-     "row": 1410.4
-    }
+    "face": "r",
+    "col": 1087,
+    "sc": 1218.8199999999488,
+    "sr": 2572.179999999935,
+    "what": "west edge line of the car-park aisle, its far end (photo: the white line in the canopy gap)"
    },
    {
-    "face": "d",
-    "col": -1465.1,
-    "row": 3945.0,
-    "sc": 1284.61,
-    "sr": 2774.27,
-    "seen": {
-     "face": "b",
-     "col": 1895.7,
-     "row": 1382.4
-    }
+    "face": "f",
+    "col": 927,
+    "sc": 1141.8,
+    "sr": 2668.9,
+    "what": "the blue tent along the building's north wall (bearing only; photo: its blue roof)"
    },
    {
-    "face": "d",
-    "col": -1464.2,
-    "row": 4.6,
-    "sc": 1149.18,
-    "sr": 2724.85,
-    "seen": {
-     "face": "l",
-     "col": 1442.9,
-     "row": 1445.0
-    }
-   },
-   {
-    "face": "d",
-    "col": -1464.2,
-    "row": 4.6,
-    "sc": 1149.18,
-    "sr": 2724.85,
-    "seen": {
-     "face": "l",
-     "col": 1442.9,
-     "row": 1445.0
-    }
-   },
-   {
-    "face": "d",
-    "col": -1399.2,
-    "row": 14.8,
-    "sc": 1149.18,
-    "sr": 2724.85,
-    "seen": {
-     "face": "l",
-     "col": 1449.9,
-     "row": 1456.3
-    }
-   },
-   {
-    "face": "d",
-    "col": -1381.5,
-    "row": -53.0,
-    "sc": 1149.18,
-    "sr": 2724.85,
-    "seen": {
-     "face": "l",
-     "col": 1481.9,
-     "row": 1459.5
-    }
-   },
-   {
-    "face": "d",
-    "col": -795.3,
-    "row": 2650.1,
-    "sc": 1248.39,
-    "sr": 2735.16,
-    "seen": {
-     "face": "l",
-     "col": 107.7,
-     "row": 1600.0
-    }
-   },
-   {
-    "face": "d",
-    "col": -717.7,
-    "row": 3088.9,
-    "sc": 1262.34,
-    "sr": 2737.53,
-    "seen": {
-     "face": "b",
-     "col": 1886.8,
-     "row": 1531.2
-    }
-   },
-   {
-    "face": "d",
-    "col": -454.4,
-    "row": -1812.7,
-    "sc": 1097.64,
-    "sr": 2668.65,
-    "seen": {
-     "face": "f",
-     "col": 489.9,
-     "row": 1393.2
-    }
-   },
-   {
-    "face": "d",
-    "col": -183.9,
-    "row": -1349.3,
-    "sc": 1120.33,
-    "sr": 2666.2,
-    "seen": {
-     "face": "f",
-     "col": 502.4,
-     "row": 1465.4
-    }
-   },
-   {
-    "face": "d",
-    "col": -111.5,
-    "row": 1569.7,
-    "sc": 1220.66,
-    "sr": 2698.61,
-    "seen": {
-     "face": "l",
-     "col": 530.7,
-     "row": 1947.3
-    }
-   },
-   {
-    "face": "d",
-    "col": -12.3,
-    "row": 1333.3,
-    "sc": 1212.34,
-    "sr": 2693.4,
-    "seen": {
-     "face": "l",
-     "col": 717.2,
-     "row": 2035.8
-    }
-   },
-   {
-    "face": "d",
-    "col": 464.0,
-    "row": 2380.8,
-    "sc": 1252.66,
-    "sr": 2690.23,
-    "seen": {
-     "face": "b",
-     "col": 1445.6,
-     "row": 1796.0
-    }
-   },
-   {
-    "face": "d",
-    "col": 945.1,
-    "row": 2283.2,
-    "sc": 1257.89,
-    "sr": 2669.8,
-    "seen": {
-     "face": "b",
-     "col": 1087.3,
-     "row": 1855.9
-    }
-   },
-   {
-    "face": "d",
-    "col": 963.1,
-    "row": 3866.1,
-    "sc": 1310.43,
-    "sr": 2691.74,
-    "seen": {
-     "face": "b",
-     "col": 1045.3,
-     "row": 1392.4
-    }
-   },
-   {
-    "face": "d",
-    "col": 966.1,
-    "row": 3985.4,
-    "sc": 1316.51,
-    "sr": 2690.17,
-    "seen": {
-     "face": "b",
-     "col": 1043.4,
-     "row": 1377.5
-    }
-   },
-   {
-    "face": "d",
-    "col": 976.8,
-    "row": -1493.5,
-    "sc": 1128.79,
-    "sr": 2625.45,
-    "seen": {
-     "face": "f",
-     "col": 1004.5,
-     "row": 1440.1
-    }
-   },
-   {
-    "face": "d",
-    "col": 1181.7,
-    "row": -2184.8,
-    "sc": 1105.75,
-    "sr": 2607.02,
-    "seen": {
-     "face": "f",
-     "col": 1074.0,
-     "row": 1350.3
-    }
-   },
-   {
-    "face": "d",
-    "col": 1346.4,
-    "row": -2147.9,
-    "sc": 1110.52,
-    "sr": 2602.13,
-    "seen": {
-     "face": "f",
-     "col": 1127.8,
-     "row": 1354.1
-    }
-   },
-   {
-    "face": "d",
-    "col": 1433.5,
-    "row": 1580.3,
-    "sc": 1239.91,
-    "sr": 2646.74,
-    "seen": {
-     "face": "d",
-     "col": 1433.5,
-     "row": 1580.3
-    }
-   },
-   {
-    "face": "d",
-    "col": 1811.0,
-    "row": 3487.4,
-    "sc": 1306.79,
-    "sr": 2654.79,
-    "seen": {
-     "face": "b",
-     "col": 696.2,
-     "row": 1449.1
-    }
-   },
-   {
-    "face": "d",
-    "col": 2045.5,
-    "row": -1513.9,
-    "sc": 1140.78,
-    "sr": 2588.33,
-    "seen": {
-     "face": "f",
-     "col": 1435.9,
-     "row": 1436.7
-    }
-   },
-   {
-    "face": "d",
-    "col": 2152.1,
-    "row": 2417.1,
-    "sc": 1277.77,
-    "sr": 2630.82,
-    "seen": {
-     "face": "b",
-     "col": 194.2,
-     "row": 1775.9
-    }
-   },
-   {
-    "face": "d",
-    "col": 2225.2,
-    "row": -1952.8,
-    "sc": 1128.81,
-    "sr": 2574.53,
-    "seen": {
-     "face": "f",
-     "col": 1437.0,
-     "row": 1375.8
-    }
-   },
-   {
-    "face": "d",
-    "col": 2363.2,
-    "row": 2445.2,
-    "sc": 1280.21,
-    "sr": 2622.86,
-    "seen": {
-     "face": "b",
-     "col": 58.6,
-     "row": 1761.1
-    }
-   },
-   {
-    "face": "d",
-    "col": 2406.7,
-    "row": 2262.3,
-    "sc": 1272.24,
-    "sr": 2622.04,
-    "seen": {
-     "face": "r",
-     "col": 1940.6,
-     "row": 1781.6
-    }
-   },
-   {
-    "face": "d",
-    "col": 2456.9,
-    "row": 1842.3,
-    "sc": 1257.97,
-    "sr": 2614.34,
-    "seen": {
-     "face": "r",
-     "col": 1608.4,
-     "row": 1755.0
-    }
-   },
-   {
-    "face": "d",
-    "col": 2548.7,
-    "row": 1044.2,
-    "sc": 1233.28,
-    "sr": 2600.26,
-    "seen": {
-     "face": "r",
-     "col": 1037.4,
-     "row": 1711.0
-    }
-   },
-   {
-    "face": "d",
-    "col": 2580.1,
-    "row": -2081.2,
-    "sc": 1126.46,
-    "sr": 2561.05,
-    "seen": {
-     "face": "f",
-     "col": 1536.9,
-     "row": 1361.2
-    }
-   },
-   {
-    "face": "d",
-    "col": 2717.1,
-    "row": -2142.6,
-    "sc": 1124.38,
-    "sr": 2555.8,
-    "seen": {
-     "face": "f",
-     "col": 1571.3,
-     "row": 1354.7
-    }
-   },
-   {
-    "face": "d",
-    "col": 2833.3,
-    "row": -2226.8,
-    "sc": 1125.93,
-    "sr": 2550.92,
-    "seen": {
-     "face": "f",
-     "col": 1593.7,
-     "row": 1346.1
-    }
-   },
-   {
-    "face": "d",
-    "col": 2862.5,
-    "row": -2319.8,
-    "sc": 1121.42,
-    "sr": 2550.47,
-    "seen": {
-     "face": "f",
-     "col": 1586.8,
-     "row": 1337.1
-    }
-   },
-   {
-    "face": "d",
-    "col": 2862.5,
-    "row": -2319.8,
-    "sc": 1121.42,
-    "sr": 2550.47,
-    "seen": {
-     "face": "f",
-     "col": 1586.8,
-     "row": 1337.1
-    }
-   },
-   {
-    "face": "d",
-    "col": 2939.3,
-    "row": -1724.7,
-    "sc": 1144.09,
-    "sr": 2556.07,
-    "seen": {
-     "face": "f",
-     "col": 1737.3,
-     "row": 1405.0
-    }
-   },
-   {
-    "face": "d",
-    "col": 3160.8,
-    "row": -1806.8,
-    "sc": 1143.51,
-    "sr": 2546.34,
-    "seen": {
-     "face": "f",
-     "col": 1796.8,
-     "row": 1394.0
-    }
-   },
-   {
-    "face": "d",
-    "col": 3184.1,
-    "row": -1856.7,
-    "sc": 1141.86,
-    "sr": 2544.87,
-    "seen": {
-     "face": "f",
-     "col": 1791.7,
-     "row": 1387.6
-    }
-   },
-   {
-    "face": "d",
-    "col": 3214.8,
-    "row": -2088.8,
-    "sc": 1133.35,
-    "sr": 2539.79,
-    "seen": {
-     "face": "f",
-     "col": 1744.5,
-     "row": 1360.4
-    }
-   },
-   {
-    "face": "d",
-    "col": 3371.0,
-    "row": -1816.2,
-    "sc": 1146.87,
-    "sr": 2537.26,
-    "seen": {
-     "face": "f",
-     "col": 1870.0,
-     "row": 1392.7
-    }
-   },
-   {
-    "face": "d",
-    "col": 3482.7,
-    "row": 16.1,
-    "sc": 1209.09,
-    "sr": 2557.77,
-    "seen": {
-     "face": "r",
-     "col": 604.0,
-     "row": 1449.9
-    }
-   },
-   {
-    "face": "d",
-    "col": 3571.3,
-    "row": 4466.3,
-    "sc": 1363.66,
-    "sr": 2607.81,
-    "seen": {
-     "face": "b",
-     "col": 265.7,
-     "row": 1328.1
-    }
-   },
-   {
-    "face": "d",
-    "col": 4081.2,
-    "row": 931.2,
-    "sc": 1250.12,
-    "sr": 2547.17,
-    "seen": {
-     "face": "r",
-     "col": 992.6,
-     "row": 1366.4
-    }
-   },
-   {
-    "face": "d",
-    "col": 4174.3,
-    "row": -333.8,
-    "sc": 1205.71,
-    "sr": 2531.37,
-    "seen": {
-     "face": "r",
-     "col": 582.4,
-     "row": 1356.3
-    }
-   },
-   {
-    "face": "d",
-    "col": 4227.4,
-    "row": 342.8,
-    "sc": 1231.02,
-    "sr": 2537.22,
-    "seen": {
-     "face": "r",
-     "col": 805.9,
-     "row": 1350.8
-    }
+    "face": "l",
+    "col": 1167,
+    "sc": 1183.8,
+    "sr": 2814.5,
+    "what": "zebra crossing ZC023 south of the car park, its centre (bearing only; markings data from the photo)"
    }
   ]
  },
