@@ -7,6 +7,7 @@ import {
   HOOKS, chips, contrasts, defineCheck, exists, hueDistance, hueOf, intersection, missingHook, panelAlpha, panelInfo,
   parseCssColor, pixelDiff, result, sceneRegion, textItems, worstContrast,
   openPanelSection,
+  contrastAgainst,
 } from "./common.mjs";
 
 const D = ["D"];
@@ -344,10 +345,24 @@ export const VISUALQA_CHECKS = [
     },
   }),
   defineCheck("V-Q-20", {
-    states: { D: ["S08", "S07", "S01", "S05"], P: ["S08", "S06", "S01"] },
+    states: { D: ["S08", "S07", "S01", "S05"], P: ["S08", "S06", "S01"] }, mutates: true,
     async run(ctx) {
+      // The phone time card rests as a chip (W5); the row's probes include its ticks, so open it the way a user would.
+      // An earlier check in the same replay may have raised the sheet over it: lower the sheet first (패널 닫기 -> peek).
+      if (ctx.viewport === "P" && (await ctx.inPage((qa) => qa.one("[data-qa=dashboard-panel]")?.getAttribute("data-detent") !== "peek"))
+        && (await ctx.b.center('[aria-label="패널 닫기"]'))) {
+        await ctx.b.tap('[aria-label="패널 닫기"]');
+        await ctx.sleep(800);
+      }
+      if (await ctx.b.center("[data-qa=time-chip]")) {
+        await ctx.b.tap("[data-qa=time-chip]");
+        await ctx.sleep(600);
+      }
       const items = await textItems(ctx, "[data-qa=dashboard-panel] *, [data-qa=time-slider] *, [role=dialog] *", { maxPx: 14, limit: 200 });
-      const worst = worstContrast(contrasts(ctx, items));
+      // Pixels from a fresh frame: this replay changes the page (opened sections, the chip), so the frame captured before
+      // the checks would not match the text boxes measured now.
+      const frame = await ctx.screenshot();
+      const worst = worstContrast(items.map((item) => ({ text: item.text, px: item.px, ratio: contrastAgainst(frame, item.box, ctx.scale, item.color) })));
       return result(items.length > 0 && worst && worst.ratio >= 4.5, { probes: items.length, worst }, "every probe >= 4.5:1 (ticks and the count badge included)");
     },
   }),
