@@ -48,7 +48,9 @@ test("a crossing touching one side drops the kerb to 0 there and the slab ramps 
   assert.deepEqual(plan.touched, ["CW_T01"]);
   for (const piece of plan.pieces) {
     const mid = [(piece.p[0] + piece.q[0]) / 2, (piece.p[1] + piece.q[1]) / 2];
-    if (Math.abs(mid[1] + 200) < 1e-6 && mid[0] > 108 && mid[0] < 112) assert.equal(plan.kerbHeight(mid), 0, `kerb at x ${mid[0]}`);
+    // 0 up to float noise: the piece ends come back from the TM projection, whose trig rounds differently in the last
+    // bits between JS engines (V8 vs JavaScriptCore), so a midpoint lies ~1e-15 off its own dropped segment
+    if (Math.abs(mid[1] + 200) < 1e-6 && mid[0] > 108 && mid[0] < 112) assert.ok(Math.abs(plan.kerbHeight(mid)) < 1e-9, `kerb at x ${mid[0]}: ${plan.kerbHeight(mid)}`);
   }
   assert.ok(Math.abs(plan.kerbHeight([118, -200]) - 0.15) < 1e-12, "away from the crossing the kerb is full height");
   assert.ok(Math.abs(plan.slabHeight(110, -200 + 0.9 * U) - 0.075) < 1e-9, "0.9 m from the dropped kerb");
