@@ -163,7 +163,9 @@ export const FRONTEND_CHECKS = [
     // roof editor's primary actions (S15) are measured too; a run that measured no filled-primary control at all fails.
     states: ["S05", "S08", "S15"], viewports: D, themes: ["dark", "light"], mutates: true,
     async run(ctx) {
-      return withPanelOpen(ctx, null, async () => {
+      // S15 measures the D4 roof editor itself: opening the dashboard panel (패널 열기) would replace the D4 pane, editor
+      // included. S05/S08 measure the open panel.
+      const measure = async () => {
       // S15: the editor's primary action (배치 저장) sits below the fold of the D4 pane; scroll it into view the way a user
       // would and measure a fresh frame.
       if (ctx.state === "S15" && await ctx.inPage(() => {
@@ -184,7 +186,8 @@ export const FRONTEND_CHECKS = [
       const contrastOk = rows.length === 0 || worst.ratio >= 4.5;
       const evidenceOk = ctx.state !== "S15" || total > 0;
       return result(contrastOk && evidenceOk, { filledPrimaryControls: rows.length, measuredInRunSoFar: total, worst }, ">= 4.5:1 white text on every filled-primary control (>= 1 measured in the run)");
-      });
+      };
+      return ctx.state === "S15" ? measure() : withPanelOpen(ctx, null, measure);
     },
   }),
   defineCheck("V-F-15", {
