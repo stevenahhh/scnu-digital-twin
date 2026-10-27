@@ -2,7 +2,7 @@
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { createRef } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { CampusLabelLayer } from "./CampusLabelLayer.jsx";
+import { CampusLabelLayer, clearOfChrome } from "./CampusLabelLayer.jsx";
 import { HOLD_MS, resolveLabelBand } from "./labelBands.mjs";
 
 afterEach(cleanup);
@@ -258,5 +258,22 @@ describe("CampusLabelLayer", () => {
     expect(cluster.textContent).toContain("학생생활관 2동");
     fireEvent.click(cluster, { detail: 0 });
     expect(onSelectCluster.mock.calls[0][0].members).toEqual(["BLD_Dormitory_Building", "BLD_Dormitory_Building.001"]);
+  });
+});
+
+describe("clearOfChrome", () => {
+  const area = { left: 0, top: 0, right: 800, bottom: 600 };
+  const size = { hitWidth: 80, hitHeight: 40 };
+  const rect = (left, top, right, bottom) => ({ left, top, right, bottom });
+
+  it("leaves a chip that clears every rect where it is", () => {
+    expect(clearOfChrome({ x: 300, y: 300 }, size, [rect(0, 0, 200, 100)], area)).toEqual({ x: 300, y: 300 });
+  });
+
+  it("moves a chip off a tall left card to the nearest side that clears every rect by 12 px", () => {
+    // A tall card on the left and a second card right under it: below the first lands on the second, so the chip goes right.
+    const rects = [rect(0, 80, 200, 300), rect(0, 300, 280, 560)];
+    const placed = clearOfChrome({ x: 150, y: 200 }, size, rects, area);
+    expect(placed).toEqual({ x: 212, y: 200 });
   });
 });

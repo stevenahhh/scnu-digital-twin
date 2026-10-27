@@ -75,6 +75,36 @@ function sameView(a, b) {
 // 카메라가 움직이는 동안 칩(누르는 영역)을 둘 화면 가장자리 여백(labelLayout의 edgeMargin과 같다).
 const MOTION_EDGE_PX = 8;
 
+// 움직이는 동안 칩 자리 하나를 가리개(HUD·지도 위 카드·패널)에서 12 px 떼어 놓는다. 걸린 가리개마다 위·아래·왼쪽·오른쪽
+// 바깥 자리를 후보로 두고, 화면 여백 안이면서 어떤 가리개에도 걸리지 않는 가장 가까운 곳을 고른다(없으면 처음 자리).
+const MOTION_CHROME_MARGIN = 12;
+export function clearOfChrome(point, size, rects, area) {
+  const hits = (p) => rects.filter((r) => p.x < r.right + MOTION_CHROME_MARGIN && p.x + size.hitWidth > r.left - MOTION_CHROME_MARGIN
+    && p.y < r.bottom + MOTION_CHROME_MARGIN && p.y + size.hitHeight > r.top - MOTION_CHROME_MARGIN);
+  const blocking = hits(point);
+  if (blocking.length === 0) return point;
+  const inside = (p) => p.x >= area.left + MOTION_EDGE_PX && p.x + size.hitWidth <= area.right - MOTION_EDGE_PX
+    && p.y >= area.top + MOTION_EDGE_PX && p.y + size.hitHeight <= area.bottom - MOTION_EDGE_PX;
+  let best = null;
+  let bestDistance = Infinity;
+  for (const r of rects) {
+    for (const p of [
+      { x: point.x, y: r.bottom + MOTION_CHROME_MARGIN },
+      { x: point.x, y: r.top - MOTION_CHROME_MARGIN - size.hitHeight },
+      { x: r.right + MOTION_CHROME_MARGIN, y: point.y },
+      { x: r.left - MOTION_CHROME_MARGIN - size.hitWidth, y: point.y },
+    ]) {
+      if (!inside(p) || hits(p).length > 0) continue;
+      const distance = Math.hypot(p.x - point.x, p.y - point.y);
+      if (distance < bestDistance) {
+        best = p;
+        bestDistance = distance;
+      }
+    }
+  }
+  return best ?? point;
+}
+
 export function CampusLabelLayer({
   entries,
   selectedId = null,
@@ -239,16 +269,10 @@ export function CampusLabelLayer({
           const size = sizeOf(id);
           const rawX = anchor.x + offset.dx;
           const rawY = anchor.y + offset.dy;
-          const x = Math.min(Math.max(rawX, area.left + MOTION_EDGE_PX), Math.max(area.left + MOTION_EDGE_PX, area.right - MOTION_EDGE_PX - size.hitWidth));
-          let y = Math.min(Math.max(rawY, area.top + MOTION_EDGE_PX), Math.max(area.top + MOTION_EDGE_PX, area.bottom - MOTION_EDGE_PX - size.hitHeight));
-          // HUD에 걸리면 HUD 12 px 아래(자리가 없으면 위)로 옮긴다(멈춘 배치의 chromeMargin과 같다).
-          for (const r of frame.chrome ?? []) {
-            const margin = 12;
-            if (x < r.right + margin && x + size.hitWidth > r.left - margin && y < r.bottom + margin && y + size.hitHeight > r.top - margin) {
-              const below = r.bottom + margin;
-              y = below + size.hitHeight <= area.bottom - MOTION_EDGE_PX ? below : Math.max(area.top + MOTION_EDGE_PX, r.top - margin - size.hitHeight);
-            }
-          }
+          const edgeX = Math.min(Math.max(rawX, area.left + MOTION_EDGE_PX), Math.max(area.left + MOTION_EDGE_PX, area.right - MOTION_EDGE_PX - size.hitWidth));
+          const edgeY = Math.min(Math.max(rawY, area.top + MOTION_EDGE_PX), Math.max(area.top + MOTION_EDGE_PX, area.bottom - MOTION_EDGE_PX - size.hitHeight));
+          // HUD·지도 위 카드·패널에 걸리면 12 px 떨어진 가장 가까운 빈자리(위·아래·좌·우)로 옮긴다(멈춘 배치의 chromeMargin과 같다).
+          const { x, y } = clearOfChrome({ x: edgeX, y: edgeY }, size, [...(frame.chrome ?? []), ...(frame.occluder ? [frame.occluder] : [])], area);
           const clamped = x !== rawX || y !== rawY;
           const leader = clamped
             ? { from: { x: x + size.hitWidth / 2, y: y + (size.hitHeight + size.height) / 2 }, to: anchor }
