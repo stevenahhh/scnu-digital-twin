@@ -413,7 +413,14 @@ export const GAP_CHECKS = [
       // Row: the pointer goes onto the 도서관 mesh, not the chip. A displaced chip (pushed below the HUD) is not above its
       // building, so aim at the building anchor the layer projected (6 units above the roof) when the chip carries one.
       const x = lib.anchor ? lib.anchor.x : lib.rect.x + lib.rect.w / 2;
-      const y = lib.anchor ? lib.anchor.y + 24 : lib.rect.y + lib.rect.h + 24;
+      // The mesh, not a chip: step down from the anchor to the first point where the canvas itself is under the pointer
+      // (another chip's 40 px tap area may cover the roof right below the anchor).
+      const y = lib.anchor
+        ? await ctx.inPage((qa, a) => {
+          for (let dy = 12; dy <= 60; dy += 4) if (document.elementFromPoint(a.x, a.y + dy)?.tagName === "CANVAS") return a.y + dy;
+          return a.y + 24;
+        }, { x: lib.anchor.x, y: lib.anchor.y })
+        : lib.rect.y + lib.rect.h + 24;
       const roof = lib.anchor ? { x: lib.anchor.x - 20, y: lib.anchor.y + 6, w: 40, h: 30 } : roofBox(lib);
       await ctx.b.mouse("mouseMoved", x, y, 0);
       await ctx.sleep(300);
@@ -562,7 +569,8 @@ export const GAP_CHECKS = [
         const f = await ctx.inPage((qa) => {
           const el = document.activeElement;
           if (!el || el === document.body) return null;
-          const zone = el.closest("[data-qa=campus-label]") ? "chip" : el.closest("[data-qa=dashboard-panel]") ? "panel" : el.closest("[data-qa=campus-hud]") ? "hud" : "other";
+          // Chips and their collapsed dot form are the label layer's stops, in priority order.
+          const zone = el.closest("[data-qa=campus-label],[data-qa=campus-label-layer]") ? "chip" : el.closest("[data-qa=dashboard-panel]") ? "panel" : el.closest("[data-qa=campus-hud]") ? "hud" : "other";
           const r = el.getBoundingClientRect();
           const s = getComputedStyle(el);
           const ring = parseFloat(s.outlineWidth) || 0;
