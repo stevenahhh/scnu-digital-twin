@@ -4,6 +4,25 @@ const SANITIZED_SUFFIX_PATTERN = /^(BLD_[A-Z]\d+)00\d+$/;
 
 const PROXY_NAME_PREFIX = "BLD_SCNU_";
 
+// GLB 노드 이름 -> 요소 id 보조 표(옛 한글 노드 이름)와 고르지 않는 노드. Legacy(CityModel)와 VWorld 라벨 앵커가 같이 쓴다.
+export const CAMPUS_BLOCKED_ELEMENT_IDS = new Set(["BLD_C1001"]);
+export const CAMPUS_BUILDING_MAP = Object.freeze({
+  대학본부: "BLD_A1",
+  약학대학: "BLD_A2",
+  천연물신약연구소: "BLD_A3",
+  생활관: "BLD_A4",
+  박물관: "BLD_B1",
+  "70주년기념관": "BLD_B2",
+  생명대: "BLD_B3",
+  도서관: "BLD_C1",
+  학생회관: "BLD_E1",
+  사범대: "BLD_E2",
+  창업보육센터: "BLD_D1",
+  공과대1호: "BLD_D2",
+  공과대2호: "BLD_D3",
+  공과대3호: "BLD_D4",
+});
+
 // uni.glb에서 물려받은 노드 BLD_A12와 BLD_A12.001은 실제로 A17 체육관·A18 체육관 증축동 자리다
 // (list.do의 A17·A18 점이 그 바닥면 안, VR scene_a17 "체육관", 같은 VWorld LOD4 모델 SC030058을 VWorld 쪽은 이미 A17로 연다).
 // 요소 BLD_A12는 list.do A12 우정원이 맞으므로(BLD_SCNU_A12 대리 노드가 그 건물) 요소는 그대로 두고 이 노드만 BLD_A17로 잇는다.

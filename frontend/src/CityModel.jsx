@@ -5,7 +5,12 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import * as THREE from "three";
 import commonElements from "../../common/data/common_elemetns.json";
-import { resolveBuildingMeta, resolveProxyDataElementId } from "./utils/buildingLabels.mjs";
+import {
+  CAMPUS_BLOCKED_ELEMENT_IDS,
+  CAMPUS_BUILDING_MAP,
+  resolveBuildingMeta,
+  resolveProxyDataElementId,
+} from "./utils/buildingLabels.mjs";
 import { createPointerGuard, hasCameraMoved } from "./camera/pointerGuard.mjs";
 import {
   GROUND_MESH_NAME,
@@ -60,23 +65,6 @@ const D4_ELEMENT_ID = "BLD_D4";
 // 라벨 지형 가림 판정에 쓰는 높이 사이드카는 campus-v2.glb와 함께 만들어진다. ?model=uni에는 없으므로 판정을 건너뛴다.
 const LABEL_HEIGHTFIELD_URLS = CAMPUS_MODEL_URL === CAMPUS_MODEL_URLS.detailed ? CAMPUS_HEIGHTFIELD_URLS : null;
 
-const BLOCKED_ELEMENT_IDS = new Set(["BLD_C1001"]);
-const BUILDING_MAP = {
-  대학본부: "BLD_A1",
-  약학대학: "BLD_A2",
-  천연물신약연구소: "BLD_A3",
-  생활관: "BLD_A4",
-  박물관: "BLD_B1",
-  "70주년기념관": "BLD_B2",
-  생명대: "BLD_B3",
-  도서관: "BLD_C1",
-  학생회관: "BLD_E1",
-  사범대: "BLD_E2",
-  창업보육센터: "BLD_D1",
-  공과대1호: "BLD_D2",
-  공과대2호: "BLD_D3",
-  공과대3호: "BLD_D4",
-};
 
 const FOCUS_CAMERA_OFFSET = new THREE.Vector3(60, 50, 60);
 // 라벨 층: 카메라가 멈춘 뒤 이만큼 더 기다렸다가 한 번 다시 배치한다(tokens.css --motion-settle).
@@ -190,8 +178,8 @@ function getSelectableMeta(object) {
 
   const buildingMeta = resolveBuildingMeta(rawName, {
     elementNames: ELEMENT_NAME_MAP,
-    buildingMap: BUILDING_MAP,
-    blockedIds: BLOCKED_ELEMENT_IDS,
+    buildingMap: CAMPUS_BUILDING_MAP,
+    blockedIds: CAMPUS_BLOCKED_ELEMENT_IDS,
   });
   const lowerName = `${rawName}`.toLowerCase();
 
