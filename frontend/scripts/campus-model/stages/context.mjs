@@ -86,6 +86,7 @@ export function contextTexture() {
   return encodePng(W, H, 3, px);
 }
 
+const hexRgb = (hex) => [1, 3, 5].map((k) => parseInt(hex.slice(k, k + 2), 16));
 const signedArea = (ring) => ring.reduce((sum, a, i) => {
   const b = ring[(i + 1) % ring.length];
   return sum + a[0] * b[1] - b[0] * a[1];
@@ -135,7 +136,9 @@ export function buildContext({ glb, parts, groundAt }) {
     counts[cls] += 1;
     tallest = Math.max(tallest, part.heightMetres);
     const tones = TONES[cls];
-    const color = [...tones[hash(part.index) % tones.length], 255];
+    // a curated context look (data/vr-context-buildings.json) sets the section and the wall tone of one mass
+    const look = part.contextLook;
+    const color = look?.tone ? [...hexRgb(look.tone), 255] : [...tones[hash(part.index) % tones.length], 255];
     const roof = [...ROOF_TONES[hash(part.index + 7) % ROOF_TONES.length], 255];
     const [cx, cz] = part.outer.reduce((s, p) => [s[0] + p[0] / part.outer.length, s[1] + p[1] / part.outer.length], [0, 0]);
     const ti = Math.floor((cx - EXTENT.minX) / tile);
@@ -143,7 +146,7 @@ export function buildContext({ glb, parts, groundAt }) {
     const key = `${far ? "Far_" : ""}${ti < 0 ? `m${-ti}` : ti}_${tj < 0 ? `m${-tj}` : tj}`;
     if (!tiles.has(key)) tiles.set(key, { mesh: new MeshData({ uvs: true, colors: true }), n: 0 });
     const t = tiles.get(key);
-    const section = SECTION[cls === "commercial" ? "commercial" : "residential"];
+    const section = SECTION[look?.section ?? (cls === "commercial" ? "commercial" : "residential")];
     walls(t.mesh, part.outer, true, base, top, storeys, section, color);
     for (const hole of part.holes ?? []) walls(t.mesh, hole, false, base, top, storeys, section, color);
     const first = t.mesh.vertexCount;

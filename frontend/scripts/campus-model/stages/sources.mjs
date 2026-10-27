@@ -256,7 +256,8 @@ export async function loadVrBuildings(file = VR_BUILDINGS_FILE) {
 }
 
 // data/vr-context-buildings.json: off-campus buildings the VR tour shows that GIS lacks or gives no storeys (see README
-// "VR context buildings"). `floors` sets floors, floorsSource, usability (and heightMetres when given) on the footprint record whose footprintSource
+// "VR context buildings"). `looks` sets a context mass's texture section and wall tone (contextLook) on the record it
+// names, like `floors`. `floors` sets floors, floorsSource, usability (and heightMetres when given) on the footprint record whose footprintSource
 // is the entry's (or starts with it plus a space); every entry must match exactly one record. `buildings` are traced
 // footprints in the gis-buildings.json shape, appended last. All estimated (추정); off campus, so they become context
 // masses. VR_CONTEXT_FILE points the loader (and its test) at another file.
@@ -267,6 +268,11 @@ export function applyVrContext(records, context) {
     const hits = out.flatMap((r, i) => (r.footprintSource === entry.footprintSource || r.footprintSource.startsWith(`${entry.footprintSource} `) ? [i] : []));
     if (hits.length !== 1) throw new Error(`vr-context-buildings.json: ${entry.footprintSource} matches ${hits.length} footprint records (expected 1)`);
     out[hits[0]] = { ...out[hits[0]], floors: entry.floors, floorsSource: entry.floorsSource, usability: entry.usability, estimated: true, ...(entry.heightMetres ? { heightMetres: entry.heightMetres } : {}) };
+  }
+  for (const entry of context.looks ?? []) {
+    const hits = out.flatMap((r, i) => (r.footprintSource === entry.footprintSource || r.footprintSource.startsWith(`${entry.footprintSource} `) ? [i] : []));
+    if (hits.length !== 1) throw new Error(`vr-context-buildings.json: look ${entry.footprintSource} matches ${hits.length} footprint records (expected 1)`);
+    out[hits[0]] = { ...out[hits[0]], contextLook: { section: entry.section, tone: entry.tone } };
   }
   for (const b of context.buildings ?? []) {
     out.push({ ...b, areaMetres: Math.round(Math.abs(ringArea(toModelRing(b.polygons[0][0]))) / metres(1) ** 2) });
