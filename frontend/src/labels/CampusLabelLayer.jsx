@@ -183,6 +183,12 @@ export function CampusLabelLayer({
       const { band, area } = frame;
       // 줌 단계를 층에 남겨 화면 검사(QA)가 읽을 수 있게 한다.
       if (rootRef.current && rootRef.current.dataset.band !== band.band) rootRef.current.dataset.band = band.band;
+      // 발표 모드: 칩 글자를 띠의 chipPx(보통의 1.5배)로 키운다(index.css가 data-presentation일 때만 이 값을 쓴다).
+      if (rootRef.current) {
+        const presenting = String(Boolean(band.presentation));
+        if (rootRef.current.dataset.presentation !== presenting) rootRef.current.dataset.presentation = presenting;
+        rootRef.current.style.setProperty("--label-chip-px", `${band.chipPx}px`);
+      }
       const { selectedId: selected, hoveredId: hovered, focusedId: focused } = rankState.current;
       const base = [];
       for (const slot of slots) {

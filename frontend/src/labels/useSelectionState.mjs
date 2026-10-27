@@ -3,9 +3,9 @@ import { useCallback, useReducer, useRef } from "react";
 // 캠퍼스 건물 선택 상태: 무엇을(elementId, 라벨 앵커 id) 어떤 경로로(source) 골랐는가.
 // 사용자가 직접 고른 선택(클릭·시점·검색)은 카메라 근접 자동 선택에 밀리지 않는다. 근접 자동 선택은 사용자가 드래그로
 // 카메라를 직접 움직이기 시작하거나 선택을 풀면 다시 켜진다. 휠 확대는 드래그가 아니다(고른 건물을 들여다보는 동작).
-// source: 'click' | 'preset' | 'search' | 'proximity' | 'list' | 'drag' | null.
+// source: 'click' | 'preset' | 'search' | 'url' | 'proximity' | 'list' | 'drag' | null. 'url'은 공유 링크로 연 선택이다.
 
-export const PROXIMITY_SUSPENDING_SOURCES = Object.freeze(["click", "preset", "search"]);
+export const PROXIMITY_SUSPENDING_SOURCES = Object.freeze(["click", "preset", "search", "url"]);
 export const INITIAL_SELECTION = Object.freeze({ elementId: null, source: null });
 
 export function selectionReducer(state, action) {

@@ -30,6 +30,13 @@ async function wait(ctx, ms) {
   await sleep(ms);
 }
 
+// After a camera move (preset fly, wheel): wait until the camera and the labels it drives are still, so the next tap
+// lands on the chip at its final position instead of where it was mid-flight.
+async function settleCamera(ctx) {
+  const result = await ctx.b.cameraSettle();
+  ctx.actions.push(result.settled ? `camera settled after ${result.ms} ms (8 still frames)` : `camera NOT settled after ${result.ms} ms`);
+}
+
 async function closePanelOnMobile(ctx) {
   if (ctx.mobile && (await tapIfVisible(ctx, PANEL_CLOSE))) await sleep(1200);
 }
@@ -152,8 +159,15 @@ export async function loadAndSettle(ctx, url) {
 async function enterD4(ctx, beforeLabelTap) {
   await tapIfVisible(ctx, '[aria-label="닫기"]');
   await closePanelOnMobile(ctx);
+  if (ctx.entry === "vworld") {
+    // VWorld has no campus chips: D4 opens from its MODEL_NAME pick or the D4 coordinate-marker button.
+    if (beforeLabelTap) await beforeLabelTap();
+    await act(ctx, "button", "D4 공과대학 3호관 상세 보기");
+    await wait(ctx, 4000);
+    return;
+  }
   await act(ctx, "[data-qa=camera-preset-d4]");
-  await wait(ctx, 3500);
+  await settleCamera(ctx);
   if (beforeLabelTap) await beforeLabelTap();
   await act(ctx, CHIP, "공대 3호관");
   await wait(ctx, 4000);
@@ -161,7 +175,7 @@ async function enterD4(ctx, beforeLabelTap) {
 
 async function selectLibrary(ctx, waitAfterMs) {
   await act(ctx, "[data-qa=camera-preset-library]");
-  await wait(ctx, 3500);
+  await settleCamera(ctx);
   await act(ctx, CHIP, "도서관");
   await samplesAfterTrigger(ctx, ctx.stateLabel);
   const extra = waitAfterMs - SAMPLE_OFFSETS_MS[SAMPLE_OFFSETS_MS.length - 1];
@@ -217,7 +231,7 @@ export const STATES = Object.freeze([
         scrollTop: qa.one("[data-qa=dashboard-panel] .overflow-y-auto")?.scrollTop ?? null,
       })));
       await act(ctx, "[data-qa=camera-preset-overview]");
-      await wait(ctx, 3500);
+      await settleCamera(ctx);
       await setTime(ctx, 1260);
       await wait(ctx, 3500);
     },
@@ -244,7 +258,7 @@ export const STATES = Object.freeze([
       await sleep(600);
       await closePanelOnMobile(ctx);
       await act(ctx, "[data-qa=camera-preset-gate]");
-      await wait(ctx, 4000);
+      await settleCamera(ctx);
     },
   },
   {

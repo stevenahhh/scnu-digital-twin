@@ -9,6 +9,7 @@ import { Button } from "../../../ui/Button.jsx";
 import { SectionHeader } from "../../../ui/SectionHeader.jsx";
 import { Spinner } from "../../../ui/Spinner.jsx";
 import { StatusBadge } from "../../../ui/StatusBadge.jsx";
+import { ExportActions } from "../../../ui/ExportActions.jsx";
 import { formatDayLabel } from "../../../ui/format.mjs";
 
 async function json(response) {
@@ -118,6 +119,13 @@ function ComparisonTable({ ranked, onOpenRecommendation }) {
           </tr>
         </tbody>
       </table>
+      {/* 시뮬레이션 결과라 모든 지표에 추정 표시가 따라간다. */}
+      <ExportActions
+        kind="energy"
+        className="mt-2"
+        columns={[{ key: "building", label: "건물" }, ...rows.map(([label]) => ({ key: label, label, estimated: true }))]}
+        rows={ranked.map((item) => ({ building: item.buildingName, ...Object.fromEntries(rows.map(([label, read]) => [label, read(item)])) }))}
+      />
     </div>
   );
 }

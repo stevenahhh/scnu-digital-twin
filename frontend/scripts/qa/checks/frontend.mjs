@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import {
   chipByText, chips, contrasts, defineCheck, hasUpperEyebrow, hudRects, hueDistance, hueOf, intersection,
   panelAlpha, panelInfo, parseCssColor, result, roofBox, sampleFrames, textItems, worstContrast,
+  openPanelSection,
 } from "./common.mjs";
 
 const D = ["D"];
@@ -183,9 +184,10 @@ export const FRONTEND_CHECKS = [
   defineCheck("V-F-17", {
     states: ["S01", "S15", "S16"], viewports: D, themes: ["light"],
     async run(ctx) {
-      const tokens = await tokenColors(ctx, ["--colors-ink-subtle", "--colors-ink-tertiary"]);
+      // The audit's ink-subtle / ink-tertiary pair is ink-muted / ink-subtle in the shipped tokens (DESIGN.md section 2).
+      const tokens = await tokenColors(ctx, ["--colors-ink-muted", "--colors-ink-subtle"]);
       const items = await textItems(ctx, "body *", { maxPx: 14, limit: 300 });
-      const subtle = items.filter((item) => Object.values(tokens).includes(item.color) || /데이터를 불러오지|불러오지 못했|연결할 수 없/.test(item.text));
+      const subtle = items.filter((item) => Object.values(tokens).includes(item.color) || /데이터를 불러오지|불러오지 못했|연결할 수 없|갱신 없음|확인 \d{1,2}:\d{2}/.test(item.text));
       const worst = worstContrast(contrasts(ctx, subtle));
       return result(subtle.length > 0 && worst && worst.ratio >= 4.5, { measured: subtle.length, worst, tokens }, ">= 4.5:1 for ink-subtle labels and error/status lines in light theme");
     },
@@ -501,8 +503,9 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-47", {
-    states: ["S01"], viewports: D,
+    states: ["S01"], viewports: D, mutates: true,
     async run(ctx) {
+      const opened = await openPanelSection(ctx);
       const m = await ctx.inPage((qa) => {
         const alert = qa.one("[data-qa=weather-error-banner]") ?? qa.one("[data-qa=weather-status]");
         const cards = qa.all("[data-qa=dashboard-panel] .grid > *").filter(qa.visible);
@@ -511,10 +514,11 @@ export const FRONTEND_CHECKS = [
         const distance = ar && firstCard ? Math.round(firstCard.top - ar.bottom) : null;
         return { alertToFirstCardPx: distance, alertBelowCards: ar && firstCard ? ar.top > firstCard.bottom : null };
       });
-      const reloads = ["AppLegacy.jsx", "AppVWorld.jsx", "components/MicroclimatePanel.jsx", "components/PanelErrorBoundary.jsx"].map(readSrc).join("\n").match(/window\.location\.reload/g)?.length ?? 0;
-      const microRetry = /다시 시도/.test(readSrc("components/MicroclimatePanel.jsx"));
+      // MicroclimatePanel was replaced by the selection inspector (todo 31); its retry now lives there.
+      const reloads = ["AppLegacy.jsx", "AppVWorld.jsx", "panel/SelectionInspector.jsx", "components/PanelErrorBoundary.jsx"].map(readSrc).join("\n").match(/window\.location\.reload/g)?.length ?? 0;
+      const microRetry = /다시 시도/.test(readSrc("panel/SelectionInspector.jsx"));
       const placed = m.alertToFirstCardPx != null && m.alertToFirstCardPx >= 0 && m.alertToFirstCardPx <= 16;
-      return result(placed && microRetry && reloads === 0, { ...m, microclimateRetry: microRetry, reloadCalls: reloads }, "alert within 16 px above the failed group; every error has a retry; 0 reload calls");
+      return result(placed && microRetry && reloads === 0, { ...m, microclimateRetry: microRetry, reloadCalls: reloads, opened }, "alert within 16 px above the failed group; every error has a retry; 0 reload calls");
     },
   }),
   defineCheck("V-F-48", {
@@ -649,12 +653,24 @@ export const FRONTEND_CHECKS = [
   defineCheck("V-F-58", {
     states: ["S01", "S05"], viewports: D,
     async run(ctx) {
-      const m = await ctx.inPage((qa) => ({
-        campus: qa.all("[data-qa=campus-label]").length > 0 ? "campus-label" : null,
-        sceneLabels: [...new Set(qa.all("[data-qa=scene-label]").map((el) => el.getAttribute("data-kind") ?? "scene-label"))],
-        d4FloorLabels: qa.all('[aria-label$="층 선택"]').map((el) => el.closest("[data-qa]")?.getAttribute("data-qa") ?? null).slice(0, 3),
-      }));
-      return result(m.sceneLabels.length > 0 && m.d4FloorLabels.every((q) => q === "scene-label"), m, "campus chips, D4 floor labels and room labels render through one SceneLabel (same data-qa)");
+      // One SceneLabel = one chip surface: every campus chip, D4 floor label and D4 room label carries the shared
+      // [data-qa=label-chip] surface with a size tier, and the surface tokens (radius, fill, border, ink) equal the campus
+      // chip's. S01 records the campus chip; S05 compares the D4 labels against it.
+      const m = await ctx.inPage((qa) => {
+        const surface = (el) => (el.matches("[data-qa=label-chip]") ? el : el.querySelector("[data-qa=label-chip]"));
+        const tokens = (el) => { const s = getComputedStyle(el); return [s.borderTopLeftRadius, s.backgroundColor, s.borderTopColor, s.color].join(" | "); };
+        const describe = (el) => { const chip = surface(el); return { qa: el.getAttribute("data-qa"), tier: el.getAttribute("data-tier"), surface: chip ? tokens(chip) : null }; };
+        const campus = qa.all("button[data-qa=campus-label][data-state=idle]").filter(qa.visible).slice(0, 1).map(describe);
+        const d4 = qa.all('[data-qa=d4-pane] [aria-label$="층 선택"],[data-qa=d4-pane] [aria-label$="강의실 상세"]').filter(qa.visible).slice(0, 6).map(describe);
+        return { campus: campus[0] ?? null, d4Labels: d4 };
+      });
+      if (ctx.state === "S01") {
+        ctx.runMemo.set(`V-F-58:${ctx.entry}`, m.campus);
+        return result(Boolean(m.campus?.surface && m.campus.tier), m, "campus chips render the shared label-chip surface with a size tier");
+      }
+      const campus = ctx.runMemo.get(`V-F-58:${ctx.entry}`) ?? null;
+      const same = m.d4Labels.length > 0 && Boolean(campus?.surface) && m.d4Labels.every((label) => label.surface === campus.surface && label.tier != null);
+      return result(same, { campusAtS01: campus, d4Labels: m.d4Labels }, "campus chips, D4 floor labels and room labels render through one SceneLabel (same label-chip surface, size tiers, same surface tokens)");
     },
   }),
   defineCheck("V-F-59", {

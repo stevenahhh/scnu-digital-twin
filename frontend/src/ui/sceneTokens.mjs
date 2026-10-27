@@ -15,6 +15,8 @@ export const RISK_DANGER_HEX = "#b5179e";
 export const RISK_WARNING_HEX = "#f59e0b";
 // 교통망 디버그 층의 차량 차로: --colors-vehicle-lane과 같은 값. 조작 대상이 아니므로 강조색을 쓰지 않는다.
 export const VEHICLE_LANE_HEX = "#1e88e5";
+// 캠퍼스 바깥 먼 땅(지평선 띠)의 색: 바깥 지형의 숲·밭 평균에 맞춘 어두운 녹회색. 안개가 덮어 하늘색으로 이어진다.
+export const FAR_GROUND_HEX = "#4b5646";
 // 선택 밖 건물을 흐리게 할 때의 검은 막 투명도(--colors-dim의 알파와 같다).
 export const DIM_ALPHA = 0.2;
 

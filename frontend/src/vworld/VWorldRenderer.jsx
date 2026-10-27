@@ -84,6 +84,7 @@ function createD4CoordinateMarker(vw) {
 
 export default function VWorldRenderer({
   onSelection,
+  energyFeedDown = false,
   simulationDate,
   editorRequest,
   onEditorClose,
@@ -424,6 +425,7 @@ export default function VWorldRenderer({
               })}
               className="pointer-events-auto"
               widthClassName="max-w-[18rem]"
+              feedDown={energyFeedDown}
             />
           </div>
         )}
@@ -434,6 +436,7 @@ export default function VWorldRenderer({
           >
             <VWorldCampusStatus
               className="hidden max-w-[280px] lg:block"
+              feedDown={energyFeedDown}
               onSelection={(selection) => onSelectionRef.current(selection)}
             />
             {selectedRoadZoneName && (

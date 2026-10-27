@@ -2,6 +2,7 @@ import { PanelErrorBoundary } from "../components/PanelErrorBoundary";
 import { BasicStatusTab } from "./BasicStatusTab";
 import { EnergyTab } from "./EnergyTab";
 import { EnvironmentTab } from "./EnvironmentTab";
+import { PanelClock } from "./PanelClock.jsx";
 import { ParkingSafetyTab } from "./ParkingSafetyTab";
 
 // 두 대시보드가 같이 쓰는 네 탭의 내용. 피드 상태(feeds)는 useFeedStatus 결과이고, 끊긴 피드마다 알림 하나·다시 시도 하나다.
@@ -12,6 +13,8 @@ export function DashboardTabContent({
 }) {
   return (
     <>
+      {/* 패널 시계(장면·현재)는 탭과 상관없이 늘 보인다. 기본 현황은 새로 고침·설정과 한 줄에 같은 시계를 둔다. */}
+      {activeTab !== "dashboard" && <PanelClock sceneMinuteOfDay={clock.sceneMinuteOfDay} sceneDate={clock.sceneDate} />}
       {activeTab === "dashboard" && (
         <PanelErrorBoundary label="기본 현황">
           <BasicStatusTab

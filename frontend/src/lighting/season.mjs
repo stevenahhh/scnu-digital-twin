@@ -221,3 +221,5 @@ export function getSkySunAltitude(altitude) {
 // Key on the R3F root scene's userData where CampusLighting publishes the sun altitude (radians) that
 // it lights the scene with, so CityModel's ramps follow the same sun in live and simulation modes.
 export const SUN_ALTITUDE_KEY = "campusSunAltitude";
+// 장면 시각(0..1439분). CampusLighting이 넣고 CityModel의 창문 불빛 곡선이 읽는다.
+export const SCENE_MINUTE_KEY = "campusSceneMinute";

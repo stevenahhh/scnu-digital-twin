@@ -8,7 +8,8 @@ import { capShadowMapSizes } from "./shadowCascades.mjs";
 import { SunCascades } from "./SunCascades";
 import { applySkyNightFade } from "./skyNightFade.mjs";
 import { SkyEnvironment } from "./SkyEnvironment";
-import { SUN_ALTITUDE_KEY, getDaylightWeight, getSkySunAltitude } from "./season.mjs";
+import { SCENE_MINUTE_KEY, SUN_ALTITUDE_KEY, getDaylightWeight, getSkySunAltitude } from "./season.mjs";
+import { nightAmbientAt } from "./nightCurve.mjs";
 
 // Neutral keeps saturated facade colours from clipping the way ACES does; output stays sRGB.
 export const CAMPUS_CANVAS_GL = { toneMapping: THREE.NeutralToneMapping, toneMappingExposure: 1.0 };
@@ -43,7 +44,7 @@ const isMobileDevice = () =>
 
 // shadowMapSizes is the render-quality tier's request (QUALITY_RENDERER): one size is the single static campus-wide map,
 // two or more are sun cascades (SunCascades), finest first. The device limit and the mobile cap still apply.
-export function CampusLighting({ sunVector, sunAltitude, shadowMapSizes: requestedShadowMapSizes = [1024], controlsRef }) {
+export function CampusLighting({ sunVector, sunAltitude, sceneMinute, shadowMapSizes: requestedShadowMapSizes = [1024], controlsRef }) {
   const gl = useThree((state) => state.gl);
   const maxTextureSize = gl.capabilities.maxTextureSize;
   const scene = useThree((state) => state.scene);
@@ -59,10 +60,15 @@ export function CampusLighting({ sunVector, sunAltitude, shadowMapSizes: request
   // CityModel reads the same altitude for its window-glow and night-tint ramps.
   useLayoutEffect(() => {
     scene.userData[SUN_ALTITUDE_KEY] = sunAltitude;
-  }, [scene, sunAltitude]);
+    scene.userData[SCENE_MINUTE_KEY] = sceneMinute;
+  }, [scene, sunAltitude, sceneMinute]);
   useLayoutEffect(() => () => {
     delete scene.userData[SUN_ALTITUDE_KEY];
+    delete scene.userData[SCENE_MINUTE_KEY];
   }, [scene]);
+  // Night share of the ambient and hemisphere fill keeps darkening past the sky's -12 deg point and later at night.
+  const nightAmbient = NIGHT_AMBIENT * nightAmbientAt(sceneMinute, sunAltitude);
+  const nightFill = nightAmbientAt(sceneMinute, sunAltitude);
   const daylight = getDaylightWeight(sunAltitude);
   // Same azimuth, twilight-stretched altitude for the sky dome and the sky environment light.
   const skySunVector = useMemo(() => {
@@ -90,8 +96,8 @@ export function CampusLighting({ sunVector, sunAltitude, shadowMapSizes: request
   return (
     <>
       <fogExp2 attach="fog" args={[getFogColor(sunAltitude), CAMPUS_FOG_DENSITY]} />
-      <ambientLight intensity={NIGHT_AMBIENT + (DAY_AMBIENT - NIGHT_AMBIENT) * daylight} />
-      <hemisphereLight args={[NIGHT_FILL_SKY, NIGHT_FILL_GROUND, NIGHT_FILL_INTENSITY * (1 - daylight)]} />
+      <ambientLight intensity={nightAmbient + (DAY_AMBIENT - nightAmbient) * daylight} />
+      <hemisphereLight args={[NIGHT_FILL_SKY, NIGHT_FILL_GROUND, NIGHT_FILL_INTENSITY * nightFill * (1 - daylight)]} />
       {cascaded ? (
         <directionalLight
           key={`sun-${shadowKey}`}

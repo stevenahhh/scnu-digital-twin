@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { NIGHT_SKY_SRGB, getFogColor, getSkyNightMix } from "./atmosphere.mjs";
+import { CLEAR_COLOR_FLOOR_HEX, NIGHT_SKY_SRGB, getClearColor, getFogColor, getSkyNightMix } from "./atmosphere.mjs";
 
 const DEG = Math.PI / 180;
 
@@ -28,4 +28,13 @@ test("sky night fade is off with the sun up, monotonic through twilight and full
 test("the faded night sky ends on the night fog colour", () => {
   const hex = `#${NIGHT_SKY_SRGB.map((v) => Math.round(v * 255).toString(16).padStart(2, "0")).join("")}`;
   assert.equal(hex, getFogColor(-20 * DEG));
+});
+
+test("the clear colour follows the fog and is never darker than the dark-theme floor", () => {
+  const lum = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
+  for (let degrees = -90; degrees <= 90; degrees += 1) {
+    const clear = getClearColor(degrees * DEG);
+    assert.ok(lum(clear) >= lum(CLEAR_COLOR_FLOOR_HEX), `too dark at ${degrees} deg`);
+    assert.equal(clear, getFogColor(degrees * DEG));
+  }
 });

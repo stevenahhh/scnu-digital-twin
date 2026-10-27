@@ -50,7 +50,8 @@ export function useTrafficFeed() {
     };
     window.addEventListener("offline", goOffline);
     window.addEventListener("online", goOnline);
-    poll();
+    // 첫 요청은 한 틱 뒤에: 곧바로 정리되는 마운트(StrictMode의 시험 마운트)는 요청을 보내지 않는다.
+    timer = setTimeout(poll, 0);
     return () => {
       active = false;
       clearTimeout(timer);

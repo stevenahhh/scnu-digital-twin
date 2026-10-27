@@ -25,6 +25,7 @@ import { CAMPUS_HEIGHTFIELD_URLS, loadHeightfield } from "./terrain/heightfield.
 import { DIM_ALPHA, HOVER_HEX, SELECTION_HEX } from "./ui/sceneTokens.mjs";
 import {
   AUTUMN_MATERIAL_NAMES,
+  SCENE_MINUTE_KEY,
   SPECIES_AUTUMN_PALETTES,
   SUN_ALTITUDE_KEY,
   getAutumnInstanceColor,
@@ -32,6 +33,7 @@ import {
   getAutumnWeight,
   getNightWeight,
 } from "./lighting/season.mjs";
+import { windowGlowAt } from "./lighting/nightCurve.mjs";
 import {
   CROWN_ALBEDO_SCALE,
   CROWN_MATERIAL_NAMES,
@@ -288,6 +290,7 @@ export function CityModel({
   onBuildingClick,
   onBuildingProximity,
   onD4Enter,
+  onCompare,
   controlsRef,
   // 태양 고도(라디안)를 주면 그 값으로, 아니면 CampusLighting이 루트 씬에 남긴 고도로 창문 불빛과 야간 색을
   // 연속으로 바꾼다. 둘 다 없을 때만 isNight로 켜고 끈다.
@@ -328,7 +331,7 @@ export function CityModel({
   const autumnCrownsRef = useRef([]);
   const materialTransitionRef = useRef(true);
   // 현재 재질에 반영된 단풍 혼합 비율과 야간 가중치. -1은 아직 한 번도 쓰지 않았다는 뜻.
-  const rampRef = useRef({ autumn: -1, night: -1 });
+  const rampRef = useRef({ autumn: -1, night: -1, window: -1 });
   const traverseStatsRef = useRef(null);
   const closeElementIdRef = useRef(null);
   const isInsideD4Ref = useRef(false);
@@ -656,6 +659,8 @@ export function CityModel({
       if (child.material.map) child.material.map.anisotropy = anisotropy;
       if (child.material.emissiveMap) {
         child.userData.hasWindowGlow = true;
+        // 가로등 머리는 밤 내내 가득 켠다. 나머지 발광(창문)은 밤 시간대 곡선(nightCurve.windowGlowAt)을 곱한다.
+        child.userData.isLampHead = child.material.name === "Lamp_Head";
         // 재질에 정해 둔 발광 세기(가로등 머리는 KHR_materials_emissive_strength)를 밤 가중치의 최댓값으로 쓴다.
         child.userData.glowScale = child.material.emissiveIntensity;
         child.material.emissiveIntensity = 0;
@@ -667,7 +672,7 @@ export function CityModel({
     autumnCrownsRef.current = autumnCrowns;
     if (traverseStatsRef.current) traverseStatsRef.current.nonCasterNames = nonCasterNames;
     materialTransitionRef.current = true;
-    rampRef.current = { autumn: -1, night: -1 };
+    rampRef.current = { autumn: -1, night: -1, window: -1 };
   }, [gl, scene]);
 
   const labelAnchors = useMemo(() => {
@@ -772,10 +777,14 @@ export function CityModel({
     // 주야(태양 고도)와 계절(날짜) 가중치는 그 자체가 연속이라 바뀌면 곧바로 반영한다(감쇠 없음).
     const altitude = sunAltitude ?? rootScene.userData[SUN_ALTITUDE_KEY];
     const night = Number.isFinite(altitude) ? getNightWeight(altitude) : isNight ? 1 : 0;
+    const sceneMinute = rootScene.userData[SCENE_MINUTE_KEY];
+    const windowGlow = Number.isFinite(altitude) && Number.isFinite(sceneMinute) ? windowGlowAt(sceneMinute, altitude) : night;
     const autumn = getAutumnWeight(date ?? new Date());
     const ramp = rampRef.current;
     const rampChanged =
-      Math.abs(night - ramp.night) > RAMP_EPSILON || Math.abs(autumn - ramp.autumn) > RAMP_EPSILON;
+      Math.abs(night - ramp.night) > RAMP_EPSILON
+      || Math.abs(autumn - ramp.autumn) > RAMP_EPSILON
+      || Math.abs(windowGlow - ramp.window) > RAMP_EPSILON;
     if (rampChanged) {
       if (Math.abs(autumn - ramp.autumn) > RAMP_EPSILON) {
         const summerColor = [0, 0, 0];
@@ -797,6 +806,7 @@ export function CityModel({
       }
       ramp.night = night;
       ramp.autumn = autumn;
+      ramp.window = windowGlow;
       for (const pool of lampPoolsRef.current) {
         pool.material.opacity = night * LAMP_POOL_STRENGTH;
         pool.visible = night > 0;
@@ -866,7 +876,7 @@ export function CityModel({
         }
 
         if (userData.hasWindowGlow) {
-          const glowTarget = glow * userData.glowScale;
+          const glowTarget = (userData.isLampHead ? glow : glow * ramp.window) * userData.glowScale;
           const glowRemaining = glowTarget - material.emissiveIntensity;
           if (Math.abs(glowRemaining) < MATERIAL_SETTLE_EPSILON) {
             material.emissiveIntensity = glowTarget;
@@ -1203,6 +1213,11 @@ export function CityModel({
   const labelHandlersRef = useRef(null);
   labelHandlersRef.current = {
     onSelect: (slot, event) => {
+      // Shift+클릭: 고르지 않고 비교 묶음에 넣는다(건물만).
+      if (event?.shiftKey && onCompare && slot.id?.startsWith("BLD_")) {
+        onCompare(slot.id);
+        return;
+      }
       const anchor = anchorById.get(slot.id);
       if (anchor) handleLabelClick(anchor, event);
     },

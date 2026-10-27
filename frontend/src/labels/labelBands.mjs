@@ -44,6 +44,7 @@ export function resolveLabelBand({ distance, pitchDegrees, presetFromGround = fa
   }
   return {
     band,
+    presentation,
     cap,
     tierCaps,
     chipPx,

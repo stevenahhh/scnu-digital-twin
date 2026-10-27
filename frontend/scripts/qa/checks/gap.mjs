@@ -3,6 +3,7 @@ import {
   HOOKS, canvasRect, chipByText, chips, contrasts, defineCheck, exists, hasUpperEyebrow, hudRects, intersection,
   gapBetween, luminanceStep, missingHook, panelInfo, pixelDiff, rectOf, result, roofBox, sampleFrames,
   sceneRegion, selectedTab, textItems, meanLuminance, worstContrast,
+  openPanelSection,
 } from "./common.mjs";
 
 const D = ["D"];
@@ -153,8 +154,10 @@ export const GAP_CHECKS = [
     },
   }),
   defineCheck("GAP-09", {
-    states: ["S04"], viewports: DP,
+    states: ["S04"], viewports: DP, mutates: true,
     async run(ctx) {
+      // Desktop starts on the rail (the inspector is a card beside it); the row measures the open panel's tab strip.
+      if (ctx.viewport === "D") await openPanelSection(ctx);
       const before = ctx.memo.get("S04:before-click");
       const m = await ctx.inPage((qa) => {
         const inspector = qa.one("[data-qa=selection-inspector]");
@@ -462,10 +465,39 @@ export const GAP_CHECKS = [
     },
   }),
   defineCheck("GAP-29", {
-    states: ["S01"], viewports: D,
+    states: ["S01"], viewports: D, mutates: true,
     async run(ctx) {
       if (!(await exists(ctx, HOOKS.presentation))) return missingHook(HOOKS.presentation, "HUD and panel hidden, time visible, chips 1.5x, dot pager, Esc restores");
-      return result(false, { presentationToggle: true, note: "flow asserted by todo 35" }, "presentation mode behaviour");
+      // Row: activate 발표 모드, start 투어, press Esc. The tour is started first (its button lives in the toolbar that
+      // presentation hides); P is the documented key.
+      const layout = () => ctx.inPage((qa) => {
+        const sizes = qa.all("button[data-qa=campus-label]").filter(qa.visible).map((el) => parseFloat(getComputedStyle(el.querySelector("[data-qa=label-chip]") ?? el).fontSize));
+        const panel = qa.one("[data-qa=dashboard-panel]");
+        const pager = qa.one("[data-qa=tour-pager]");
+        return {
+          presenting: qa.one("[data-qa=campus-hud]")?.getAttribute("data-presenting") === "true",
+          toolbar: Boolean(qa.all("[data-qa=camera-view-menu]").find(qa.visible)),
+          panelVisible: Boolean(panel && qa.visible(panel) && panel.getAttribute("aria-hidden") !== "true"),
+          panelOpen: panel?.getAttribute("data-open") ?? null,
+          time: Boolean(qa.all("[data-qa=hud-time-readout]").find(qa.visible)),
+          chipPx: sizes.length ? Math.max(...sizes) : null,
+          pager: pager && qa.visible(pager) ? pager.getAttribute("aria-label") : null,
+        };
+      });
+      const before = await layout();
+      const tour = (await ctx.b.tap("[data-qa=camera-tour-toggle]", null, { timeoutMs: 4000 })).ok;
+      await ctx.sleep(600);
+      await ctx.b.key("p");
+      await ctx.sleep(1500);
+      const on = await layout();
+      await ctx.b.key("Escape");
+      await ctx.sleep(1200);
+      const after = await layout();
+      if (tour) await ctx.b.tap("[data-qa=camera-tour-toggle]", null, { timeoutMs: 4000 });
+      const scale = before.chipPx && on.chipPx ? Math.round((on.chipPx / before.chipPx) * 100) / 100 : null;
+      const pass = tour && on.presenting && !on.toolbar && !on.panelVisible && on.time && scale >= 1.5 && /^투어 \d+\/\d+$/.test(on.pager ?? "")
+        && !after.presenting && after.toolbar === before.toolbar && after.panelVisible === before.panelVisible && after.panelOpen === before.panelOpen;
+      return result(pass, { tourStarted: tour, before, presenting: on, afterEsc: after, chipScale: scale }, "HUD and panel hidden, time readout visible, chip text 1.5x, dot pager during the tour, Esc restores the previous layout");
     },
   }),
   defineCheck("GAP-30", {
@@ -533,8 +565,7 @@ export const GAP_CHECKS = [
             if (el.tagName !== "BUTTON" && el.tagName !== "INPUT" && !el.matches("[data-qa=sheet-handle]")) continue;
             measured += 1;
             const r = el.getBoundingClientRect();
-            const h = el.type === "range" ? 16 : r.height;
-            if (r.width < 44 || h < 44) small.push(`${sel} ${Math.round(r.width)}x${Math.round(h)}`);
+            if (r.width < 44 || r.height < 44) small.push(`${sel} ${Math.round(r.width)}x${Math.round(r.height)}`);
           }
         }
         return { measured, under44: small.slice(0, 10), under44Count: small.length };
@@ -579,8 +610,12 @@ export const GAP_CHECKS = [
     },
   }),
   defineCheck("GAP-37", {
-    states: ["S09"], viewports: P,
+    states: ["S09"], viewports: P, mutates: true,
     async run(ctx) {
+      // Row: "tap the 도서관 chip from the gate view" - S09 is the gate view, so the check makes that tap itself.
+      const tapped = (await ctx.b.tap("button[data-qa=campus-label]", "도서관", { timeoutMs: 6000 })).ok;
+      if (!tapped) return result(false, { tapped, note: "도서관 chip not reachable from the gate view" }, "inspector at the half detent shows the distance from 정문 and a direction cue while the building stays visible");
+      await ctx.sleep(2500);
       if (!(await exists(ctx, HOOKS.inspector))) return missingHook(HOOKS.inspector, "inspector at the half detent shows the distance from 정문 and a direction cue while the building stays visible");
       const text = await ctx.inPage((qa) => qa.txt(qa.one("[data-qa=selection-inspector]")));
       return result(/정문[^\n]*\d+\s*m/.test(text) && /(북|남|동|서)/.test(text), { inspectorText: text.slice(0, 120) }, "distance from 정문 and direction");

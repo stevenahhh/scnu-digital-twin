@@ -22,8 +22,12 @@ import { SettingsSheet } from "./panel/SettingsSheet";
 import { usePresentationMode } from "./panel/usePresentationMode.mjs";
 import { PresentationToggle } from "./components/CampusHud";
 import { DashboardTabContent } from "./panel/DashboardTabContent";
-import { FeedStamps } from "./panel/FeedStatus";
+import { FeedStamps, sheetPlacement } from "./panel/FeedStatus";
 import { useFeedStatus } from "./hooks/useFeedStatus.mjs";
+import { isFeedDown } from "./hooks/feedStatusModel.mjs";
+import { urlSelectionTarget, useDashboardUrlState } from "./hooks/useDashboardUrlState.mjs";
+import { CompareButton, ComparisonPane } from "./panel/ComparisonPane";
+import { useComparisonSet } from "./state/useComparisonSet.mjs";
 import { summarizeWeather } from "./panel/weatherSummary.mjs";
 
 // 지도 영상 위에 까는 야간 음영과 해 쪽 햇빛. 해 고도·방위(도)에서 투명도와 위치를 정한다.
@@ -54,6 +58,7 @@ export default function App() {
   const trafficFeed = useTrafficFeed();
   const clock = useSunClock();
   const selection = useSelectionState();
+  const comparison = useComparisonSet();
   const plans = useInstallationPlans(selection.selectedBuildingId);
   const feeds = useFeedStatus({ weather: weatherFeed, traffic: trafficFeed, plans });
   const panelScrollRef = useRef(null);
@@ -73,6 +78,11 @@ export default function App() {
       loadPopup(target.elementId);
     } else clearPopup();
   }, [clearPopup, loadPopup, revealOnPhone, selectBuilding]);
+  // 공유 링크: 건물·장면 시각·패널·탭(VWorld 카메라는 SDK가 가져 주소에 담지 않는다).
+  useDashboardUrlState({
+    building: selection.selectedId, onBuilding: (id) => handleVWorldSelection(urlSelectionTarget(id)),
+    clock, panelState, activeTab, setActiveTab,
+  });
   const closeMicroclimatePopup = useCallback(() => {
     clearSelection();
     clearPopup();
@@ -104,6 +114,7 @@ export default function App() {
       <div className="absolute inset-0 z-0">
         <VWorldRenderer
           onSelection={handleVWorldSelection}
+          energyFeedDown={isFeedDown(feeds.energy)}
           onD4SectionChange={handleD4SectionChange}
           d4PaneHost={d4PaneHost}
           d4CloseKey={d4CloseKey}
@@ -156,6 +167,7 @@ export default function App() {
           )}
         />
         <PresentationToggle presenting={presentation.presenting} onToggle={presentation.toggle} className="mt-1" />
+        {!presentation.presenting && <CompareButton comparison={comparison} className="mt-1" />}
         {viewportMode !== "phone" && !presentation.presenting && <Wordmark className="ml-auto mt-2.5 text-ink-muted" />}
         </div>
         {/* 시간 조작은 Legacy와 같은 하나뿐인 조작이다. 지도 조작 열(왼쪽 아래)과 겹치지 않게 오른쪽 아래에 둔다. */}
@@ -168,6 +180,7 @@ export default function App() {
           playing={isTimePlaying}
           onPlayingChange={setIsTimePlaying}
           live={clock.isLiveMode}
+          collapsible={viewportMode === "phone"}
           className="absolute bottom-4 right-4 w-[min(24rem,calc(100%-2rem))]"
         />}
       </div>
@@ -185,16 +198,21 @@ export default function App() {
         timeReadout={sceneTimeReadout(clock.sceneMinuteOfDay)}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        inspector={selection.selectedId && !isD4SectionOpen ? (
+        inspector={comparison.open ? (
+          <ComparisonPane ids={comparison.ids} onRemove={comparison.remove} onClose={() => comparison.setOpen(false)} />
+        ) : selection.selectedId && !isD4SectionOpen ? (
           <SelectionInspector
             title={selection.selectedTitle || popup.data?.name || selection.selectedId}
             popup={popup}
+            onCompare={selection.selectedId.startsWith("BLD_") ? () => comparison.add(selection.selectedId) : null}
             onClose={closeMicroclimatePopup}
             onShowAll={closeMicroclimatePopup}
           />
         ) : null}
         scrollRef={panelScrollRef}
-        freshnessSlot={<FeedStamps feeds={feeds} retry={feeds.retry} compact />}
+        freshnessSlot={(
+          <FeedStamps feeds={feeds} retry={feeds.retry} placement={sheetPlacement(panelState, activeTab)} compact />
+        )}
       >
         <DashboardTabContent
           activeTab={activeTab}

@@ -1,4 +1,4 @@
-import { Clock, CircleAlert, Droplets, Gauge, MapPin, Sun, Thermometer, TreePine, Wind, X } from "lucide-react";
+import { Clock, CircleAlert, Droplets, Gauge, GitCompare, MapPin, Sun, Thermometer, TreePine, Wind, X } from "lucide-react";
 import { Alert } from "../ui/Alert.jsx";
 import { Button } from "../ui/Button.jsx";
 import { Disclosure } from "../ui/Disclosure.jsx";
@@ -9,6 +9,9 @@ import { Skeleton } from "../ui/Skeleton.jsx";
 import { Spinner } from "../ui/Spinner.jsx";
 import { StatusBadge } from "../ui/StatusBadge.jsx";
 import { formatHHmm } from "../ui/format.mjs";
+import { ExportActions } from "../ui/ExportActions.jsx";
+import { COMPARISON_METRICS } from "./ComparisonPane.jsx";
+import { LinkCopyButton } from "./LinkCopyButton.jsx";
 
 // 고른 건물 하나의 인스펙터(두 대시보드 공용). 데이터는 `/microclimate/elements/{id}/popup` 한 번의 응답(usePopupData)이다.
 // 머리: 레지스트리 이름(title) + 코드 배지 + 닫기(Esc도 같다). 대표값: 국지 기온 추정 하나와 위험도.
@@ -23,6 +26,7 @@ export const INSPECTOR_STRINGS = Object.freeze({
   staleValues: "저장된 값",
   observed: "관측",
   loading: "미기후 추정 가져오는 중",
+  notFound: "미기후 추정을 불러오지 못했습니다",
   empty: "이 건물의 미기후 추정 데이터가 없습니다",
   showAll: "전체 보기",
   close: "닫기",
@@ -175,7 +179,7 @@ function Sections({ payload, estimate }) {
 }
 
 export function SelectionInspector({
-  title, popup, estimate: glbEstimate = null, gateText = null, onClose, onShowAll, className,
+  title, popup, estimate: glbEstimate = null, gateText = null, onClose, onShowAll, onCompare = null, className,
 }) {
   const { data, loading = false, error = null, errorStatus = null, errorDetail, retry, lastData } = popup;
   const payload = isObject(data) ? data : null;
@@ -232,7 +236,10 @@ export function SelectionInspector({
             </p>
           )}
         </div>
-        <Button variant="ghost" iconOnly label={INSPECTOR_STRINGS.close} icon={<X aria-hidden="true" className="h-4 w-4" />} onClick={onClose} />
+        <div className="flex shrink-0 items-start gap-1">
+          <LinkCopyButton />
+          <Button variant="ghost" iconOnly label={INSPECTOR_STRINGS.close} icon={<X aria-hidden="true" className="h-4 w-4" />} onClick={onClose} />
+        </div>
       </div>
 
       {shown && !loading && (
@@ -256,9 +263,13 @@ export function SelectionInspector({
       )}
 
       {notFound && !loading && (
-        <div data-qa="inspector-empty" className="flex flex-col items-start gap-2 rounded-card bg-surface-2 px-3 py-3">
-          <p className="break-keep text-body text-ink-muted">{INSPECTOR_STRINGS.empty}</p>
-          {onShowAll && <Button size="sm" onClick={onShowAll}>{INSPECTOR_STRINGS.showAll}</Button>}
+        // 404: 무엇이 안 됐는지 한 줄, 바로 아래에 왜(데이터 없음)와 다음 행동(전체 보기)을 담은 빈 상태.
+        <div className="flex flex-col gap-2">
+          <p data-qa="inspector-not-found" className="break-keep text-body font-medium text-ink">{INSPECTOR_STRINGS.notFound}</p>
+          <div data-qa="inspector-empty" className="flex flex-col items-start gap-2 rounded-card bg-surface-2 px-3 py-3">
+            <p className="break-keep text-body text-ink-muted">{INSPECTOR_STRINGS.empty}</p>
+            {onShowAll && <Button size="sm" onClick={onShowAll}>{INSPECTOR_STRINGS.showAll}</Button>}
+          </div>
         </div>
       )}
 
@@ -279,6 +290,22 @@ export function SelectionInspector({
           {freshness.stale ? <CircleAlert aria-hidden="true" className="h-4 w-4" /> : <Clock aria-hidden="true" className="h-4 w-4" />}
           <span>{freshness.text}</span>
         </p>
+      )}
+      {(onCompare || (shown && !loading)) && (
+        <div className="flex flex-wrap items-center gap-2 border-t border-hairline pt-3">
+          {onCompare && (
+            <Button size="sm" variant="secondary" data-qa="compare-add" icon={<GitCompare aria-hidden="true" className="h-4 w-4" />} onClick={onCompare}>
+              비교에 추가
+            </Button>
+          )}
+          {shown && !loading && (
+            <ExportActions
+              kind="inspector"
+              columns={[{ key: "name", label: "건물" }, ...COMPARISON_METRICS.map((metric) => ({ key: metric.key, label: metric.unit ? `${metric.label}(${metric.unit})` : metric.label, estimated: true }))]}
+              rows={[{ name: heading, ...Object.fromEntries(COMPARISON_METRICS.map((metric) => [metric.key, metric.read(shown) ?? null])) }]}
+            />
+          )}
+        </div>
       )}
     </section>
   );

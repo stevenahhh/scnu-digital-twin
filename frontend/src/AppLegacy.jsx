@@ -1,6 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { cx } from "./ui/cx.mjs";
-import { sceneBackgroundFor } from "./lighting/sceneBackground.mjs";
+import { getClearColor } from "./lighting/atmosphere.mjs";
 import { CampusCanvas } from "./render/CampusCanvas";
 import { clearCampusModel } from "./render/CampusScene";
 import { useCampusRendering } from "./render/useCampusRendering.mjs";
@@ -14,11 +14,12 @@ import { CampusHud } from "./components/CampusHud";
 import { sceneTimeReadout } from "./components/HudTimeReadout";
 import { SceneLoadingNotice } from "./components/SceneLoadingNotice";
 import { SelectionInspector } from "./panel/SelectionInspector";
+import { CompareButton, ComparisonPane } from "./panel/ComparisonPane";
+import { useComparisonSet } from "./state/useComparisonSet.mjs";
 import { gateTextFor } from "./labels/gateDistance.mjs";
 import { PanelErrorBoundary } from "./components/PanelErrorBoundary";
 import { useSimulationSocket } from "./simulation";
-import { D4SectionExperience } from "./vworld/D4SectionExperience";
-import { createPlanDraftFromExisting } from "./features/energy/installations/installationPlanApi.mjs";
+import { LegacyD4Pane } from "./panel/LegacyD4Pane";
 import { useViewportMode } from "./hooks/useViewportMode.mjs";
 import { useWeatherFeed } from "./hooks/useWeatherFeed";
 import { useTrafficFeed } from "./simulation/hooks/useTrafficFeed";
@@ -28,6 +29,7 @@ import { useSelectionState } from "./hooks/useSelectionState.mjs";
 import { useSunClock } from "./hooks/useSunClock.mjs";
 import { useThemeMode } from "./hooks/useThemeMode.mjs";
 import { useLegacyBuildingFlow } from "./hooks/useLegacyBuildingFlow.mjs";
+import { useDashboardUrlState } from "./hooks/useDashboardUrlState.mjs";
 import { DashboardShell, shellInsetRight } from "./panel/DashboardShell";
 import { usePanelState } from "./panel/usePanelState.mjs";
 import { CampusEnergyOverview } from "./panel/CampusEnergyOverview";
@@ -35,7 +37,7 @@ import { DashboardTabContent } from "./panel/DashboardTabContent";
 import { SettingsSheet } from "./panel/SettingsSheet";
 import { usePresentationMode } from "./panel/usePresentationMode.mjs";
 import { tourPosition } from "./panel/presentationLayout.mjs";
-import { FeedStamps } from "./panel/FeedStatus";
+import { FeedStamps, sheetPlacement } from "./panel/FeedStatus";
 import { useFeedStatus } from "./hooks/useFeedStatus.mjs";
 import { summarizeWeather } from "./panel/weatherSummary.mjs";
 
@@ -80,6 +82,7 @@ function Dashboard() {
   const trafficFeed = useTrafficFeed();
   const clock = useSunClock();
   const selection = useSelectionState();
+  const comparison = useComparisonSet();
   const plans = useInstallationPlans(selection.selectedBuildingId);
   const feeds = useFeedStatus({ weather: weatherFeed, traffic: trafficFeed, plans });
   const panelScrollRef = useRef(null);
@@ -102,6 +105,10 @@ function Dashboard() {
     onSectionExit: plans.refreshAll,
   });
   const isCampus = flow.buildingViewMode === "campus";
+  useDashboardUrlState({
+    building: isCampus ? selection.selectedId : "BLD_D4", onBuilding: flow.selectFromUrl,
+    clock, panelState, activeTab, setActiveTab, controlsRef: orbitControlsRef,
+  });
   const rendering = useCampusRendering({
     canvasStateRef,
     interactionDpr,
@@ -138,15 +145,17 @@ function Dashboard() {
     selection.setSelectedBuildingId(request.buildingId);
     flow.openD4Section(request);
   };
-  const editor = flow.editorRequest;
   // 인스펙터 제목: 고른 건물의 레지스트리 이름, 없으면 클릭한 메시의 이름.
   const panelTitle = selection.selectedId ? flow.selectionTitle || selection.selectedTitle || selection.selectedId : "";
-  const inspector = isCampus && selection.selectedId ? (
+  const inspector = comparison.open ? (
+    <ComparisonPane ids={comparison.ids} onRemove={comparison.remove} onClose={() => comparison.setOpen(false)} />
+  ) : isCampus && selection.selectedId ? (
     <SelectionInspector
       title={panelTitle}
       popup={popup}
       estimate={selection.selectedEstimate}
       gateText={gateTextFor(flow.selectionPosition)}
+      onCompare={() => comparison.add(selection.selectedId)}
       onClose={flow.closeMicroclimate}
       onShowAll={() => {
         flow.closeMicroclimate();
@@ -158,7 +167,7 @@ function Dashboard() {
   // 루트는 overflow: clip으로 자른다. hidden은 스크롤 컨테이너라서 Tab 포커스가 화면 밖 요소로 가면 대시보드가 밀려 남는다.
   return (
     <div className={cx(ROOT_CLASS, presentation.cursorHidden && "cursor-none")}>
-      <div className="absolute inset-0" style={{ background: sceneBackgroundFor(clock.sunState.visible) }} />
+      <div className="absolute inset-0" style={{ background: getClearColor(clock.sunState.altitude) }} />
       {/* HUD는 D4 패인이 열려도 남는다: 시각·시점 메뉴가 패인 왼쪽 장면 위에 그대로 있다. */}
       <CampusHud
         ref={hudRef}
@@ -175,6 +184,7 @@ function Dashboard() {
         playing={isTimePlaying}
         onPlayingChange={setIsTimePlaying}
         sceneWeather={sceneWeather}
+        compareSlot={<CompareButton comparison={comparison} className="mt-1" />}
       />
       <CampusCanvas
         ref={mapLayerRef}
@@ -193,11 +203,10 @@ function Dashboard() {
           onLoadingChange: setIsSceneLoading,
           attempt: sceneAttempt,
           presentation: presentation.presenting,
+          onCompare: comparison.add,
         }}
       />
       {isSceneLoading && <SceneLoadingNotice key={sceneAttempt} insetRight={mapInsetRight} onRetry={retryScene} />}
-
-
       <DashboardShell
         ref={panelRef}
         mode={viewportMode}
@@ -208,22 +217,8 @@ function Dashboard() {
         hidden={presentation.presenting}
         onPaneExit={flow.exitD4Section}
         pane={!isCampus && (
-          <D4SectionExperience
-            buildingId={editor?.buildingId ?? selection.selectedBuildingId}
-            scenarioId={editor?.scenarioId}
-            installationPlanId={editor?.installationPlanId}
-            startInstallation={Boolean(editor?.scenarioId || editor?.installationPlanId)}
-            onClose={flow.exitD4Section}
-            onPlanSaved={plans.refreshAll}
-            createInstallationPlanDraft={createPlanDraftFromExisting}
-            onPlansChange={plans.onPlansChange}
-            onRepresentativeChange={plans.onRepresentativeChange}
-            planRefreshKey={plans.refreshKey}
-            presets={viewportMode === "phone" ? CAMERA_PRESETS : null}
-            onSelectPreset={(preset) => {
-              flow.exitD4Section();
-              camera.selectPreset(preset);
-            }}
+          <LegacyD4Pane
+            flow={flow} selection={selection} plans={plans} camera={camera} phone={viewportMode === "phone"}
           />
         )}
         timeReadout={sceneTimeReadout(clock.sceneMinuteOfDay)}
@@ -232,7 +227,9 @@ function Dashboard() {
         inspector={inspector}
         inspectorRef={inspectorRef}
         scrollRef={panelScrollRef}
-        freshnessSlot={<FeedStamps feeds={feeds} retry={feeds.retry} compact />}
+        freshnessSlot={(
+          <FeedStamps feeds={feeds} retry={feeds.retry} placement={sheetPlacement(panelState, activeTab)} compact />
+        )}
       >
         <DashboardTabContent
           activeTab={activeTab}
@@ -263,7 +260,6 @@ function Dashboard() {
           )}
         />
       </DashboardShell>
-
     </div>
   );
 }

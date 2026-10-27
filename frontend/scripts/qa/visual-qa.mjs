@@ -219,6 +219,9 @@ async function evaluate(check, scenario, ctx) {
 async function runPass({ args, entry, viewport, theme, baseUrl, selected, baselines, entries, scenarios, fixtureMode, fixtureLabel, runMemo, mode }) {
   log(`pass: ${entry} ${viewport.id} ${theme}${mode === "probe" ? " (probe replay for page-mutating checks)" : ""}`);
   const b = await Browser.open({ viewport, clock: args.clock, colorScheme: theme });
+  // Every pass is a first visit: Legacy and VWorld share the origin, and a choice an earlier pass stored (the panel
+  // opened from the rail at S08 writes scnu.panelOpen=true) must not decide how the next pass starts.
+  await b.view.cdp("Storage.clearDataForOrigin", { origin: new URL(baseUrl).origin, storageTypes: "local_storage,session_storage,indexeddb" });
   const memo = new Map();
   const page = entry === "vworld" ? "/index-vworld.html" : "/";
   const ctx = {

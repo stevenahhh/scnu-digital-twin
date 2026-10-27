@@ -3,7 +3,8 @@
 //   /__qa/api/*      weather + energy service   (VITE_API_URL)
 //   /__qa/vision/*   traffic service            (VITE_VISION_API_URL)
 //   /__qa/ws/simulation  WebSocket stub         (VITE_SIMULATION_WS_URL)
-//   POST /__qa/control   { mode: "down"|"up", fail: [route], delayMs }
+//   POST /__qa/control   { mode: "down"|"up", fail: [route], missing: [route], delayMs }
+//   `missing` routes answer a real 404 in either mode (the backend has no such element), e.g. an empty popup.
 // "down" (the default) drops every request on the floor, which the app sees as a network
 // failure, the same class of error as the refused connections in the audit capture run.
 import { createHash } from "node:crypto";
@@ -160,7 +161,7 @@ export function resolveFixture(service, path) {
 }
 
 export function createFixtureState() {
-  return { mode: "down", fail: [], delayMs: 0, requests: [] };
+  return { mode: "down", fail: [], missing: [], delayMs: 0, requests: [] };
 }
 
 function routeMatches(route, path) {
@@ -186,10 +187,11 @@ export function handleFixtureRequest(state, req, res) {
         const next = JSON.parse(raw || "{}");
         state.mode = next.mode === "up" ? "up" : "down";
         state.fail = Array.isArray(next.fail) ? next.fail : [];
+        state.missing = Array.isArray(next.missing) ? next.missing : [];
         state.delayMs = Number(next.delayMs) || 0;
         state.requests = [];
       }
-      sendJson(res, 200, { mode: state.mode, fail: state.fail, delayMs: state.delayMs, requests: state.requests });
+      sendJson(res, 200, { mode: state.mode, fail: state.fail, missing: state.missing, delayMs: state.delayMs, requests: state.requests });
     });
     return true;
   }
@@ -203,6 +205,10 @@ export function handleFixtureRequest(state, req, res) {
     res.setHeader("access-control-allow-headers", "*");
     res.setHeader("access-control-allow-methods", "GET,POST,PUT,DELETE");
     res.end();
+    return true;
+  }
+  if (state.missing.some((route) => routeMatches(route, path))) {
+    sendJson(res, 404, { detail: { code: "not_found", message_ko: "해당 요소의 데이터가 없습니다" } });
     return true;
   }
   if (state.mode === "down") {
@@ -262,11 +268,11 @@ export function qaFixturesPlugin() {
   };
 }
 
-export async function setFixtures(baseUrl, { mode = "down", fail = [], delayMs = 0 } = {}) {
+export async function setFixtures(baseUrl, { mode = "down", fail = [], missing = [], delayMs = 0 } = {}) {
   const response = await fetch(`${baseUrl}${FIXTURE_PREFIX}/control`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ mode, fail, delayMs }),
+    body: JSON.stringify({ mode, fail, missing, delayMs }),
   });
   return response.json();
 }

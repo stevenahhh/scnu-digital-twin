@@ -73,4 +73,17 @@ describe("TimeSlider (one time control)", () => {
     expect(labels.filter((label) => label.className === "hidden sm:inline").map((label) => label.textContent)).toEqual(["03", "09", "15", "21"]);
     expect(ticks[0].parentElement.className).toMatch(/text-\[12px\]/);
   });
+  it("collapses to a scene-time chip when collapsible, expands on tap and collapses again", () => {
+    render(<TimeSlider minuteOfDay={19 * 60} onMinuteChange={vi.fn()} onPlayingChange={vi.fn()} collapsible />);
+    const chip = screen.getByRole("button", { name: /시간 조작 펼치기/ });
+    expect(chip.getAttribute("aria-expanded")).toBe("false");
+    expect(chip.textContent).toContain("19:00");
+    const range = document.querySelector('[data-qa="time-slider"] input[type="range"]');
+    expect(range.closest("[hidden]")).not.toBeNull();
+    fireEvent.click(chip);
+    expect(screen.queryByRole("button", { name: /시간 조작 펼치기/ })).toBeNull();
+    expect(range.closest("[hidden]")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "시간 조작 접기" }));
+    expect(screen.getByRole("button", { name: /시간 조작 펼치기/ })).toBeTruthy();
+  });
 });

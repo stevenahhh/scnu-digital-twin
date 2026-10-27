@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Box3, Raycaster, Vector3 } from "three";
+import { clearOrbitInertia } from "./cameraCommands.mjs";
 import { FLY_DURATION_MS, easeInOutQuad, lerpView, resolveCameraPreset } from "./cameraPresets.mjs";
 
 // prefers-reduced-motion: reduce 이면 비행 대신 바로 점프한다. matchMedia가 없는 환경(테스트, SSR)은 비행한다.
@@ -121,6 +122,7 @@ export function useFlyTo({ controlsRef, getScene }) {
     if (!controls?.object) return false;
     const camera = controls.object;
     const to = resolveCameraPreset(preset, createSceneLookups(getScene?.() ?? null));
+    clearOrbitInertia(controls);
     const from = { position: toArray(camera.position), target: toArray(controls.target) };
 
     if (listenerRef.current?.controls !== controls) {

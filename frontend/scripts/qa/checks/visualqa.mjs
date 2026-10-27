@@ -6,6 +6,8 @@ import { CAMERA_PRESETS } from "../../../src/camera/cameraPresets.mjs";
 import {
   HOOKS, chips, contrasts, defineCheck, exists, hueDistance, hueOf, intersection, missingHook, panelAlpha, panelInfo,
   parseCssColor, pixelDiff, result, sceneRegion, textItems, worstContrast,
+  openPanelSection,
+  contrastAgainst,
 } from "./common.mjs";
 
 const D = ["D"];
@@ -26,7 +28,8 @@ async function bannerAndCards(ctx) {
 async function degradedCards(ctx) {
   return ctx.inPage((qa) => {
     const panel = qa.one("[data-qa=dashboard-panel]");
-    const cards = panel ? [...panel.querySelectorAll(".rounded-xl,.rounded-lg")].filter((el) => qa.visible(el) && /(^|\s)-(°C|m\/s|%|\s|$)|불러오지 못|연결할 수 없/.test(qa.txt(el))) : [];
+    // Cards use the rounded-card radius token since the token pass (W1); the older radius classes are still matched.
+    const cards = panel ? [...panel.querySelectorAll(".rounded-card,.rounded-xl,.rounded-lg")].filter((el) => qa.visible(el) && /(^|\s)-(°C|m\/s|%|\s|$)|불러오지 못|연결할 수 없/.test(qa.txt(el))) : [];
     return cards.map((card) => ({ text: qa.txt(card).slice(0, 50), action: Boolean(card.querySelector("button,a")), bareDash: /(^|\s)-(°C|m\/s|%|\s|$)/.test(qa.txt(card)) }));
   });
 }
@@ -107,10 +110,21 @@ export const VISUALQA_CHECKS = [
         const ok = !bc.banner || (Math.abs(bc.banner.x - bc.cardsLeft) <= 1 && Math.abs(bc.banner.x + bc.banner.w - bc.cardsRight) <= 1);
         return result(ok, bc, "banner and card edges within 1 px");
       }
+      // D4 is a pane beside the map since todo 34 (no dialog; the pane replaces the panel): the 사용 중인 강의실 card must
+      // share the edges of the pane's content column - the floor scene above it and the 설치 계획 row below it.
       const m = await ctx.inPage((qa) => {
-        const room = qa.all("[role=dialog] div").find((el) => el.children.length && qa.txt(el).startsWith("사용 중인 강의실"));
-        const cards = qa.all("[data-qa=dashboard-panel] .rounded-xl").filter(qa.visible);
-        return { roomCard: room ? qa.r(room) : null, panelCardsLeft: cards.length ? Math.round(cards[0].getBoundingClientRect().left) : null, panelCardsRight: cards.length ? Math.round(cards[0].getBoundingClientRect().right) : null };
+        const pane = qa.one("[data-qa=d4-pane]");
+        const room = pane?.querySelector("section[aria-labelledby=d4-in-use-title]") ?? null;
+        const scene = pane?.querySelector("[aria-description]") ?? null;
+        const plan = pane?.querySelector("[data-qa=d4-plan-disclosure]") ?? null;
+        const cards = [scene, plan].filter((el) => el && qa.visible(el));
+        if (cards.length < 2) return { roomCard: room ? qa.r(room) : null, panelCardsLeft: null, panelCardsRight: null, references: cards.length };
+        // Content box (border box minus padding): the column a card in that block would occupy.
+        const box = (el) => { const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return { left: r.left + parseFloat(s.paddingLeft), right: r.right - parseFloat(s.paddingRight) }; };
+        const lefts = cards.map((el) => Math.round(box(el).left));
+        const rights = cards.map((el) => Math.round(box(el).right));
+        if (Math.max(...lefts) - Math.min(...lefts) > 1 || Math.max(...rights) - Math.min(...rights) > 1) return { roomCard: room ? qa.r(room) : null, panelCardsLeft: null, panelCardsRight: null, referenceLefts: lefts, referenceRights: rights };
+        return { roomCard: room ? qa.r(room) : null, panelCardsLeft: lefts[0], panelCardsRight: rights[0] };
       });
       return result(m.roomCard && m.panelCardsLeft != null && Math.abs(m.roomCard.x - m.panelCardsLeft) <= 1 && Math.abs(m.roomCard.x + m.roomCard.w - m.panelCardsRight) <= 1, m, "room card shares the panel cards' edges within 1 px");
     },
@@ -331,10 +345,24 @@ export const VISUALQA_CHECKS = [
     },
   }),
   defineCheck("V-Q-20", {
-    states: { D: ["S08", "S07", "S01", "S05"], P: ["S08", "S06", "S01"] },
+    states: { D: ["S08", "S07", "S01", "S05"], P: ["S08", "S06", "S01"] }, mutates: true,
     async run(ctx) {
+      // The phone time card rests as a chip (W5); the row's probes include its ticks, so open it the way a user would.
+      // An earlier check in the same replay may have raised the sheet over it: lower the sheet first (패널 닫기 -> peek).
+      if (ctx.viewport === "P" && (await ctx.inPage((qa) => qa.one("[data-qa=dashboard-panel]")?.getAttribute("data-detent") !== "peek"))
+        && (await ctx.b.center('[aria-label="패널 닫기"]'))) {
+        await ctx.b.tap('[aria-label="패널 닫기"]');
+        await ctx.sleep(800);
+      }
+      if (await ctx.b.center("[data-qa=time-chip]")) {
+        await ctx.b.tap("[data-qa=time-chip]");
+        await ctx.sleep(600);
+      }
       const items = await textItems(ctx, "[data-qa=dashboard-panel] *, [data-qa=time-slider] *, [role=dialog] *", { maxPx: 14, limit: 200 });
-      const worst = worstContrast(contrasts(ctx, items));
+      // Pixels from a fresh frame: this replay changes the page (opened sections, the chip), so the frame captured before
+      // the checks would not match the text boxes measured now.
+      const frame = await ctx.screenshot();
+      const worst = worstContrast(items.map((item) => ({ text: item.text, px: item.px, ratio: contrastAgainst(frame, item.box, ctx.scale, item.color) })));
       return result(items.length > 0 && worst && worst.ratio >= 4.5, { probes: items.length, worst }, "every probe >= 4.5:1 (ticks and the count badge included)");
     },
   }),
@@ -446,19 +474,21 @@ export const VISUALQA_CHECKS = [
     },
   }),
   defineCheck("V-Q-27", {
-    states: ["S01"], viewports: DP,
+    states: ["S01"], viewports: DP, mutates: true,
     async run(ctx) {
+      await openPanelSection(ctx);
       const cards = await degradedCards(ctx);
       const bad = cards.filter((c) => c.bareDash || !c.action);
       return result(cards.length > 0 && bad.length === 0, { degradedCards: cards.length, withoutExplanationOrAction: bad.slice(0, 5) }, "each degraded card shows an explanation and a next-action control");
     },
   }),
   defineCheck("V-Q-28", {
-    states: ["S01", "S06", "S07", "S12"], viewports: DP,
+    states: ["S01", "S06", "S07", "S12"], viewports: DP, mutates: true,
     async run(ctx) {
       if (ctx.state === "S12") {
         const m = await ctx.inPage((qa) => ({
-          chip: qa.txt(qa.all("button[data-qa=campus-label]").find((el) => el.getAttribute("aria-pressed") === "true")) || null,
+          // The chip shows a code badge since W2 ("C1 도서관"); its name is compared with the title (qa.chipName, #90).
+          chip: (() => { const el = qa.all("button[data-qa=campus-label]").find((b) => b.getAttribute("aria-pressed") === "true"); return el ? qa.chipName(el) || null : null; })(),
           title: qa.txt(qa.one("[data-qa=selection-inspector] h2,[data-qa=selection-inspector] h3") ?? qa.all("[data-qa=dashboard-panel] h3").find(qa.visible)) || null,
         }));
         return result(m.chip && m.chip === m.title, m, "title equals the highlighted chip");
@@ -469,10 +499,13 @@ export const VISUALQA_CHECKS = [
         const energy = await ctx.inPage((qa) => qa.textNodesShown().filter((i) => /에너지|설치 계획|분석/.test(i.value) && /못했|없습니다/.test(i.value)).length);
         return result(before && after && before.tab != null && before.tab === after.tab && energy <= 1, { tabBefore: before?.tab ?? null, tabAfter: after?.tab ?? null, energyCauseMessages: energy }, "no tab change without a user action; energy cause reported once");
       }
-      // The weather failure must sit next to the weather cards (within 16 px above them).
+      // The weather failure must sit next to the weather cards (within 16 px above them): open the section first.
+      await openPanelSection(ctx);
       const m = await ctx.inPage((qa) => {
         const failure = qa.one("[data-qa=weather-error-banner]") ?? qa.all("[role=alert]").find((el) => qa.visible(el) && /기상/.test(qa.txt(el)));
-        const card = qa.all("[data-qa=dashboard-panel] *").find((el) => qa.visible(el) && el.children.length > 0 && /^현재 기온/.test(qa.txt(el)));
+        // The card is the innermost element whose text starts with 현재 기온 (its ancestors - the list, the section - start with
+        // the same text in document order); the cards group is that card's parent.
+        const card = qa.all("[data-qa=dashboard-panel] *").filter((el) => qa.visible(el) && el.children.length > 0 && /^현재 기온/.test(qa.txt(el))).at(-1);
         const group = card?.parentElement;
         return { failure: failure && qa.visible(failure) ? qa.r(failure) : null, weatherCards: group ? qa.r(group) : null };
       });

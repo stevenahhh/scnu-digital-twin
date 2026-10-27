@@ -121,6 +121,13 @@ export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef
   }, [activePresetRef, activeTab, buildingViewMode, clearAll, popup.clear, selectBuilding,
     selectedBuildingId, selection.selectedId, selectionRef, showMicroclimate]);
 
+  // 공유 링크로 연 건물: 평소 고르기와 같은 길(인스펙터, D4는 패인)로 연다.
+  const selectFromUrl = useCallback((elementId) => {
+    selectBuilding({ elementId, buildingId: buildingCodeOf(elementId), displayName: ELEMENT_NAMES.get(elementId) ?? elementId, selectionSource: "url" });
+    if (isD4ElementId(elementId)) openD4Section();
+    else showMicroclimate(elementId);
+  }, [openD4Section, selectBuilding, showMicroclimate]);
+
   // 인스펙터 닫기(닫기 버튼, Esc): 선택만 푼다. 탭은 그대로다.
   const closeMicroclimate = useCallback(() => {
     clearAll();
@@ -136,7 +143,7 @@ export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef
   );
 
   return {
-    buildingViewMode, editorRequest, selectBuilding, handleSelect, openD4Section, exitD4Section,
+    buildingViewMode, editorRequest, selectBuilding, selectFromUrl, handleSelect, openD4Section, exitD4Section,
     handleBuildingClick, handleD4Enter, handleBuildingProximity, closeMicroclimate,
     selectedElementId, headlineById, setLabelRegistry, releaseOnDrag: label.releaseOnDrag,
     selectionPosition: labelRegistry?.get(selectedElementId)?.position ?? null,

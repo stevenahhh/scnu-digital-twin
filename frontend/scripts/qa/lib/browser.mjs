@@ -4,6 +4,18 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
+// Records every application fetch() (url + performance.now()) before the app runs. The fixture server's request log
+// sees transport-level hits, which include Chrome's automatic resend of an idempotent GET when a reused keep-alive
+// socket is closed (that is how the fixtures emulate "server down"), so app polling rates are read from here.
+const FETCH_RECORDER = `(() => {
+  const original = window.fetch;
+  window.__qaFetches = [];
+  window.fetch = function qaRecordedFetch(input, init) {
+    try { window.__qaFetches.push({ url: String(typeof input === "string" ? input : input?.url ?? input), t: performance.now() }); } catch {}
+    return original.apply(this, arguments);
+  };
+})();`;
+
 export const VIEWPORTS = Object.freeze({
   D: Object.freeze({ id: "D", width: 1440, height: 900, scale: 1, mobile: false }),
   P: Object.freeze({ id: "P", width: 390, height: 844, scale: 2, mobile: true }),
@@ -95,9 +107,13 @@ export class Browser {
     await view.cdp("Emulation.setDeviceMetricsOverride", {
       width: viewport.width, height: viewport.height, deviceScaleFactor: viewport.scale, mobile: viewport.mobile,
     });
+    // Phone = a touch device: without this `(pointer: coarse)` never matches, so every 44 px touch-target rule the app
+    // ships under that query is invisible to the 44 px rows (V-Q-17, V-F-73, GAP-33). Mouse input stays mouse input.
+    await view.cdp("Emulation.setTouchEmulationEnabled", viewport.mobile ? { enabled: true, maxTouchPoints: 5 } : { enabled: false });
     await view.cdp("Emulation.setTimezoneOverride", { timezoneId: "Asia/Seoul" });
     await browser.setMedia({ reducedMotion, colorScheme });
     if (clock) await view.cdp("Page.addScriptToEvaluateOnNewDocument", { source: clockScript(clock) });
+    await view.cdp("Page.addScriptToEvaluateOnNewDocument", { source: FETCH_RECORDER });
     return browser;
   }
 
@@ -189,6 +205,46 @@ export class Browser {
 
   async key(key) {
     await withTimeout(this.view.press(key), 30000, `press ${key}`);
+  }
+
+  // Camera settle instead of a fixed wait: an in-page requestAnimationFrame loop counts consecutive frames in which the
+  // label layer reports no motion (data-motion != "true") and no visible chip moved more than epsilonPx. Settled after
+  // `frames` such frames in a row; gives up after timeoutMs (reported, never silently treated as settled). Frames only
+  // count once motion has been seen or armMs has passed, so a fly that starts a frame late is not read as "still".
+  async cameraSettle({ frames = 8, epsilonPx = 0.5, timeoutMs = 15000, armMs = 600 } = {}) {
+    const started = Date.now();
+    await this.run((need, eps, arm) => {
+      if (window.__qaSettle) window.__qaSettle.cancel = true;
+      const state = { done: false, still: 0, cancel: false, sawMotion: false, t0: performance.now() };
+      window.__qaSettle = state;
+      let previous = null;
+      const tick = () => {
+        if (state.cancel) return;
+        const moving = document.querySelector("[data-qa=campus-label-layer]")?.dataset.motion === "true";
+        const now = [...document.querySelectorAll("button[data-qa=campus-label]")].map((el) => {
+          const r = el.getBoundingClientRect();
+          return [r.x, r.y];
+        });
+        let delta = previous && previous.length === now.length ? 0 : Infinity;
+        if (delta === 0) now.forEach(([x, y], i) => { delta = Math.max(delta, Math.abs(x - previous[i][0]), Math.abs(y - previous[i][1])); });
+        previous = now;
+        if (moving || (delta !== Infinity && delta > eps)) state.sawMotion = true;
+        const armed = state.sawMotion || performance.now() - state.t0 > arm;
+        state.still = armed && !moving && delta <= eps ? state.still + 1 : 0;
+        if (state.still >= need) state.done = true;
+        else requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }, frames, epsilonPx, armMs);
+    for (;;) {
+      const done = await this.run(() => Boolean(window.__qaSettle?.done));
+      if (done) return { settled: true, ms: Date.now() - started };
+      if (Date.now() - started > timeoutMs) {
+        await this.run(() => { if (window.__qaSettle) window.__qaSettle.cancel = true; });
+        return { settled: false, ms: Date.now() - started };
+      }
+      await sleep(100);
+    }
   }
 
   async setTimeMinutes(minutes) {
