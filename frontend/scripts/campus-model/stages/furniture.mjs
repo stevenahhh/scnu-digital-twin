@@ -2048,6 +2048,13 @@ function estimateBenches(ctx) {
 }
 
 // ---------------------------------------------------------------- build (after the ground)
+// An object on a roof (site-detail `roof_m`, e.g. the A1 roof garden of VR scene_a5): built as on the terrain raised by
+// roof_m metres, into the same kits.
+export function onRoof(ctx, roofM) {
+  const lifted = makeContext({ groundAt: (x, z) => ctx.groundAt(x, z) + M(roofM), objects: ctx.objects, roads: ctx.roads, sites: ctx.sites, fieldCentre: ctx.fieldCentre });
+  return Object.assign(lifted, { solid: ctx.solid, glass: ctx.glass, glow: ctx.glow, screen: ctx.screen, screens: ctx.screens, skipped: ctx.skipped, signals: ctx.signals });
+}
+
 export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs, groundAt }) {
   const roads = roadNetwork(inputs);
   const ctx = makeContext({ groundAt, objects: furniture.objects, roads, sites, fieldCentre: furniture.fieldCentre });
@@ -2065,7 +2072,7 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     const builder = B[o.kind];
     if (!builder) throw new Error(`furniture: no builder for ${o.kind} (${o.id})`);
     const before = ctx.solid.triangleCount + ctx.glass.triangleCount;
-    if (builder(ctx, o) === false) continue;
+    if (builder(o.p.roof_m ? onRoof(ctx, o.p.roof_m) : ctx, o) === false) continue;
     const kind = o.kind === "plaza_structure" ? `plaza_structure/${o.subtype}` : o.kind;
     // Objects of rest-spaces.geojson and site-detail.geojson are placed from the VR, not surveyed on the photo: counted as estimated.
     tally(kind, o.source === "rest-spaces" || o.source === "site-detail");

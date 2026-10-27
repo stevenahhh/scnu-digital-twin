@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { metres } from "../lib/frame.mjs";
 import { rgb } from "../lib/solids.mjs";
-import { B, hedgeTextStrokes, makeContext, parasolColour, stallRow } from "./furniture.mjs";
+import { B, hedgeTextStrokes, makeContext, onRoof, parasolColour, stallRow } from "./furniture.mjs";
 
 const M = metres;
 const sites = { inArea: () => false, labelAt: () => null, classes: { PAVING: 1, ASPHALT: 2 } };
@@ -83,4 +83,12 @@ test("parasol colour: a hex or a colour word of the note, white otherwise; an in
 test("hedge lettering in Latin capitals", () => {
   const strokes = hedgeTextStrokes(line(10), "SSC", { heightM: 2, widthM: 1.6, gapM: 0.3 });
   assert.equal(strokes.length, 3);
+});
+
+test("an object on a roof is built roof_m above the terrain into the same kits", () => {
+  const ctx = flatContext();
+  const ring = [[0, 0], [M(1), 0], [M(1), M(1)], [0, M(1)]];
+  B.planter(onRoof(ctx, 13), { id: "SD-T6", kind: "planter", heightM: 0.5, ring, p: { dims: { kerbHeightM: 0.5 }, fill: "soil" } });
+  near(Math.max(...ys(ctx)), 13.5, "box top on the roof");
+  assert.ok(Math.min(...ys(ctx)) > 12.8, "nothing below the roof");
 });

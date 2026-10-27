@@ -716,6 +716,19 @@ The leftovers of the second pass, all estimated (추정):
   inventory's trunks do not pair one-to-one with the VR trees); the E2 shrub balls (the NGII photo shows only closed
   canopy over that lawn, so they cannot be traced there either).
 
+## Station poses d3, a10 and the leftovers on them (poses-d3-a5-a10)
+
+- scene_d3 and scene_a10 were re-posed from hand-picked NGII control points (scripts/perf/vr-control-points.json, solved by
+  scripts/perf/vr_control_points.py): d3 7 points over faces d, f, r and l (RMS 1.07 m; the camera 4.5 m from the old
+  record, yaw 17 deg less, 8.6 m up), a10 5 points over faces d and l (RMS 1.00 m; 1.7 m, yaw unchanged, 12.1 m up). Both
+  pass the four-face compare-vr strip test; the guided-SIFT sets they replace had put d3's side faces 11-17 deg off. The
+  scene_a5 pose was re-checked on 4 anchors (RMS 0.71 m) and kept.
+- On the corrected poses: SD-D3-P1..P3 (the d3 stall rows) and SD-A10-S1, S2 (the hooded boards) were re-cast (1.3-2.1 m);
+  SD-D3-H1 keeps its place on the D3 wall. New: SD-A10-B1..B3, the orange plaza benches of VR scene_a10 l, and SD-A5-TB1..TB3,
+  the timber tree boxes of VR scene_a5 r. The walled garden of scene_a5 is the roof garden of A1 (12.98 m): the boxes carry
+  `roof_m` (furniture objects built on a roof, `onRoof` in stages/furniture.mjs), their face-r rays scaled to the
+  camera's height above that roof (the teal parasol's photo disc sets it).
+
 ## Licence
 
 Source: **국토지리정보원 (NGII), 정사영상 2025, sheet 34702020 (순천020)**, metadata 202504000734702020, made by

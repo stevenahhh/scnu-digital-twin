@@ -1222,7 +1222,7 @@
     "height_refined_m": 24.42,
     "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by siftD); least squares: residual RMS 0.43 m, max 0.63 m; split-half agreement 0.03 m / 0.03 deg; formal sigma 0.06 m / 0.06 deg; height from the face scale (estimated)",
     "refined_residual_m": 0.06,
-    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR; re-checked on 4 hand-picked NGII anchors over faces d and r (disabled bay, zebra ZC055, raised crossing, the teal parasol's bearing): RMS 0.71 m, max 1.21 m at the recorded pose, kept"
   },
   {
     "scene": "scene_a6",
@@ -1910,19 +1910,19 @@
       "station": true,
       "yaw_deg": true
     },
-    "yaw_refined_deg": 231.59,
-    "refined_residual_deg": 0.11,
+    "yaw_refined_deg": 231.66,
+    "refined_residual_deg": 1.79,
     "refined_buildings": [
       "BLD_A7"
     ],
-    "refined_by": "manual control-point resection (scripts/perf/vr_control_points.py)",
-    "refined_confidence": 0.85,
-    "station_refined_x": 258.89,
-    "station_refined_z": -56.42,
-    "height_refined_m": 12.39,
-    "refined_note": "60 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by manual control points); least squares: residual RMS 0.41 m, max 0.62 m; split-half agreement 0.12 m / 0.11 deg; formal sigma 0.05 m / 0.06 deg; height from the face scale (estimated)",
-    "refined_residual_m": 0.12,
-    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
+    "refined_by": "hand-picked NGII control points, least squares (scripts/perf/vr_control_points.py solve; feature/poses-d3-a5-a10)",
+    "refined_confidence": 0.8,
+    "station_refined_x": 257.9,
+    "station_refined_z": -56.8,
+    "height_refined_m": 12.1,
+    "refined_note": "5 hand-picked control points on the ground-projected cube and the NGII 2025 sheet, spread over faces d and l: both ends of the north-west raised crossing, the south end of the east raised crossing and the yellow road text (paint), and the A10 plaza's info totem (bearing); residual RMS 1.00 m, max 1.22 m; formal sigma 0.74 m / 1.79 deg; the plaza of face l was 2 m off at the earlier pose; below the tool's 8-point gate, accepted on the four-face strip test; height from the face scale (estimated)",
+    "refined_residual_m": 0.74,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR (hand-picked NGII control points)"
   },
   {
     "scene": "scene_a12",
@@ -5200,20 +5200,20 @@
       "station": true,
       "yaw_deg": true
     },
-    "yaw_refined_deg": 289.52,
-    "refined_residual_deg": 0.24,
+    "yaw_refined_deg": 272.51,
+    "refined_residual_deg": 1.38,
     "refined_buildings": [
       "BLD_D3",
       "BLD_D4"
     ],
-    "refined_by": "manual control-point resection (scripts/perf/vr_control_points.py)",
-    "refined_confidence": 0.85,
-    "station_refined_x": 119.56,
-    "station_refined_z": -232.3,
-    "height_refined_m": 9.31,
-    "refined_note": "47 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by old); least squares: residual RMS 0.41 m, max 0.64 m; split-half agreement 0.09 m / 0.24 deg; formal sigma 0.06 m / 0.09 deg; height from the face scale (estimated)",
-    "refined_residual_m": 0.09,
-    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR"
+    "refined_by": "hand-picked NGII control points, least squares (scripts/perf/vr_control_points.py solve; feature/poses-d3-a5-a10)",
+    "refined_confidence": 0.8,
+    "station_refined_x": 118.06,
+    "station_refined_z": -229.95,
+    "height_refined_m": 8.57,
+    "refined_note": "7 hand-picked control points on the ground-projected cube and the NGII 2025 sheet, spread over faces d, f, r and l: the PM bay paint MX00361 (2 ends), the blue disabled bays, the white aisle-edge line of the car park in the canopy gap (2 bearings), the blue tent roof (bearing) and the zebra crossing ZC023 (bearing); residual RMS 1.07 m, max 1.62 m; formal sigma 1.04 m / 1.38 deg; the earlier SIFT solution put faces f/r 11-17 deg off (the car park of face r fell in forest); below the tool's 8-point gate, accepted on the four-face strip test; height from the face scale (estimated)",
+    "refined_residual_m": 1.04,
+    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR (hand-picked NGII control points)"
   },
   {
     "scene": "scene_d4",
