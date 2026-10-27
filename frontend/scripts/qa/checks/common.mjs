@@ -96,9 +96,17 @@ export async function chips(ctx) {
   }));
 }
 
+// HUD pieces. An element marked data-label-chrome-layer is a pass-through layer (the product's label layer avoids its
+// children's rects, not its own box: VWorldLabelLayer), so the HUD's children are expanded through such layers.
 export async function hudRects(ctx) {
-  return ctx.inPage((qa) => ["[data-qa=camera-preset-bar]", "[data-qa=time-slider]", "[data-qa=campus-hud] > *"]
-    .flatMap((sel) => qa.all(sel).filter(qa.visible).map((el) => ({ sel, rect: qa.r(el) }))));
+  return ctx.inPage((qa) => {
+    const leaves = (el) => (el.hasAttribute("data-label-chrome-layer") ? [...el.children].flatMap(leaves) : [el]);
+    const hudPieces = qa.all("[data-qa=campus-hud]").flatMap((hud) => [...hud.children].flatMap(leaves));
+    return [
+      ...["[data-qa=camera-preset-bar]", "[data-qa=time-slider]"].flatMap((sel) => qa.all(sel).filter(qa.visible).map((el) => ({ sel, rect: qa.r(el) }))),
+      ...hudPieces.filter(qa.visible).map((el) => ({ sel: "[data-qa=campus-hud] piece", rect: qa.r(el) })),
+    ];
+  });
 }
 
 export async function panelInfo(ctx) {
