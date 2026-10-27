@@ -195,7 +195,7 @@ export default function App() {
         )}
         <PresentationToggle presenting={presentation.presenting} onToggle={presentation.toggle} className="mt-1" />
         {!presentation.presenting && <CompareButton comparison={comparison} className="mt-1" />}
-        {viewportMode !== "phone" && !presentation.presenting && <Wordmark className="ml-auto mt-2.5 text-ink-muted" />}
+        {viewportMode !== "phone" && !presentation.presenting && <Wordmark className="ml-auto mt-1.5 rounded-control bg-[var(--colors-label-bg)] px-2 py-1 text-ink-muted" />}
         </div>
         {/* 시간 조작은 Legacy와 같은 하나뿐인 조작이다. 지도 조작 열(왼쪽 아래)과 겹치지 않게 오른쪽 아래에 둔다. */}
         {!presentation.presenting && <TimeSlider
