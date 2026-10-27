@@ -48,5 +48,5 @@ test("foliage cards share their crown's calibration and autumn salt, and the LOD
   const cards = patchFoliageLod({ vertexShader: "a\n#include <begin_vertex>\nb" }, "cards").vertexShader;
   assert.match(cards, /transformed \*= 1\.0 - smoothstep\(85\.000, 95\.000, lodDist\)/);
   const core = patchFoliageLod({ vertexShader: "#include <begin_vertex>" }, "core").vertexShader;
-  assert.match(core, /transformed\.xz \*= mix\(0\.800, 1\.0/);
+  assert.match(core, /transformed\.xz \*= mix\(0\.600, 1\.0/);
 });

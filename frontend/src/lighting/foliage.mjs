@@ -43,7 +43,7 @@ export const crownMaterialName = (material) => material?.userData?.crownMaterial
 export const FOLIAGE_CROWN_PATTERN = /^Trees_(ginkgo|broadleaf|pine|metasequoia|conifer|canopy)_crown$/;
 // Distance LOD in scene units (0.6242 per metre): the cards fade out (collapse per instance) between start and end,
 // about 136-152 m, and the crown grows from FOLIAGE_CORE x its width back to its full fitted width over the same band.
-export const FOLIAGE_LOD = Object.freeze({ start: 85, end: 95, core: 0.8 });
+export const FOLIAGE_LOD = Object.freeze({ start: 85, end: 95, core: 0.6 });
 // Stable per-species salt for the hashed autumn profile, so a tree's crown and its cards draw the same colour.
 export function autumnSalt(nodeName) {
   const key = String(nodeName ?? "").replace(/_(crown|foliage)$/, "");

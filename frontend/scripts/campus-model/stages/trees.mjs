@@ -587,12 +587,12 @@ export function buildTrees({ glb, placement }) {
   // and the solid crown alone beyond FOLIAGE_LOD in src/lighting/foliage.mjs; the cards cast the crowns' shadows.
   const leafTexture = glb.addTexture(leafAtlas(), "image/png");
   const FOLIAGE = {
-    ginkgo: { count: 70, size: [1.3, 1.1], tile: "ginkgo", kind: "outward", seed: 201, crown: materials.ginkgo },
-    broadleaf: { count: 90, size: [1.5, 1.3], tile: "broadleaf", kind: "outward", seed: 203, crown: materials.broadleaf },
-    pine: { count: 80, size: [1.6, 1.2], tile: "pine", kind: "flat", seed: 205, crown: materials.pine },
-    metasequoia: { count: 150, size: [1.5, 0.8], tile: "spray", kind: "droop", inner: 0.15, seed: 207, crown: materials.metasequoia },
-    conifer: { count: 40, size: [0.9, 0.7], tile: "spray", kind: "outward", seed: 209, crown: materials.conifer },
-    canopy: { count: 260, size: [2.0, 1.7], tile: "broadleaf", kind: "outward", seed: 211, crown: materials.broadleaf },
+    ginkgo: { count: 100, size: [1.5, 1.25], tile: "ginkgo", inner: 0.3, kind: "outward", seed: 201, crown: materials.ginkgo },
+    broadleaf: { count: 125, size: [1.7, 1.5], tile: "broadleaf", inner: 0.3, kind: "outward", seed: 203, crown: materials.broadleaf },
+    pine: { count: 110, size: [1.85, 1.4], tile: "pine", inner: 0.3, kind: "flat", seed: 205, crown: materials.pine },
+    metasequoia: { count: 210, size: [1.7, 0.95], tile: "spray", kind: "droop", inner: 0.25, seed: 207, crown: materials.metasequoia },
+    conifer: { count: 56, size: [1.05, 0.8], tile: "spray", inner: 0.3, kind: "outward", seed: 209, crown: materials.conifer },
+    canopy: { count: 360, size: [2.3, 1.95], tile: "broadleaf", inner: 0.3, kind: "outward", seed: 211, crown: materials.broadleaf },
   };
   const foliage = {};
   for (const [kind, f] of Object.entries(FOLIAGE)) {

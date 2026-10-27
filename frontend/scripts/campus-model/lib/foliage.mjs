@@ -143,8 +143,8 @@ export function leafAtlas() {
 
 // Cards over a crown archetype (non-indexed positions in metres). opts: count, size [w, h] m, tile, kind
 // ("outward": cards face out from the crown, random roll; "droop": a spray hanging down and out; "flat": near
-// horizontal tufts on pads), inner (share of cards inside the crown, filling it), seed. Card centres lie half a card
-// inside the crown surface so the cards do not reach past the fitted crown. Normals point out from the crown axis
+// horizontal tufts on pads), inner (share of cards inside the crown, filling it), seed. Card centres lie 0.3 of a card
+// inside the crown surface, so the cards form the visible surface and reach at most 0.2 of a card past the fitted crown. Normals point out from the crown axis
 // (soft, volumetric light); COLOR_0 darkens the inner and lower cards.
 export function foliageCards(crown, { count, size, tile, kind, inner = 0.25, seed }) {
   const rng = mulberry32(seed);
@@ -195,7 +195,7 @@ export function foliageCards(crown, { count, size, tile, kind, inner = 0.25, see
     const isInner = rng() < inner;
     const out = norm([pt[0], 0.35 * (pt[1] - cy), pt[2]]);
     // pull in by half a card (and the inner cards a further 35 % towards the axis at their height)
-    pt = pt.map((v, k) => v - t.n[k] * 0.5 * Math.max(w, h));
+    pt = pt.map((v, k) => v - t.n[k] * 0.3 * Math.max(w, h));
     if (isInner) pt = [pt[0] * 0.65, pt[1], pt[2] * 0.65];
     let nrm;
     let along;
