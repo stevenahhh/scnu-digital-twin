@@ -256,8 +256,10 @@ export const GAP_CHECKS = [
     },
   }),
   defineCheck("GAP-15", {
-    states: ["S08"], viewports: DP,
+    states: ["S08"], viewports: DP, mutates: true,
     async run(ctx) {
+      // Phone: picking the tab leaves the sheet at half, the tab's controls below the fold; raise it as a user would.
+      return withPanelOpen(ctx, null, async () => {
       const sliderLabels = await textItems(ctx, "[data-qa=dashboard-panel] *", { match: "^(온도|월|일|시|분|태양)" });
       const rows = contrasts(ctx, sliderLabels);
       const worst = worstContrast(rows);
@@ -267,6 +269,7 @@ export const GAP_CHECKS = [
       }));
       return result(worst && worst.ratio >= 4.5 && m.segments.join("/") === "실측/시뮬레이션" && m.timeSliders === 0,
         { worstLabel: worst, segments: m.segments, duplicateTimeSliders: m.timeSliders }, "labels >= 4.5:1, segments 실측 / 시뮬레이션, 0 duplicate time sliders");
+      });
     },
   }),
   defineCheck("GAP-16", {
@@ -574,7 +577,9 @@ export const GAP_CHECKS = [
     async run(ctx) {
       await ctx.inPage(() => { document.activeElement?.blur(); document.querySelector("[data-qa=campus-hud]")?.setAttribute("tabindex", "-1"); document.querySelector("[data-qa=campus-hud]")?.focus(); return true; });
       const order = [];
-      for (let i = 0; i < 60; i += 1) {
+      // Row: Tab "until focus returns" (the loop breaks when focus comes back to the HUD); 200 is only a runaway bound. A
+      // zoomed-in view can show more than 60 chips and dots, which a 60-press cap mistook for an order without the panel.
+      for (let i = 0; i < 200; i += 1) {
         await ctx.b.key("Tab");
         const f = await ctx.inPage((qa) => {
           const el = document.activeElement;
@@ -626,15 +631,42 @@ export const GAP_CHECKS = [
   defineCheck("GAP-34", {
     states: ["S01"], viewports: DP, entries: ["vworld"],
     async run(ctx) {
-      const { readFileSync } = await import("node:fs");
+      const { existsSync, readFileSync } = await import("node:fs");
+      const path = await import("node:path");
       const { fileURLToPath } = await import("node:url");
-      const read = (rel) => readFileSync(fileURLToPath(new URL(`../../../src/${rel}`, import.meta.url)), "utf8");
-      const imports = (src) => new Set([...src.matchAll(/from\s+["']([^"']+)["']/g)].map((m) => m[1].replace(/^\.\//, "")));
-      const legacy = imports(read("AppLegacy.jsx"));
-      const vworld = imports(read("AppVWorld.jsx"));
-      const shared = ["SceneLabel", "Segmented", "Alert", "tokens"].map((name) => ({ name, legacy: [...legacy].some((s) => s.includes(name)) || [...legacy].some((s) => s.includes("/ui")), vworld: [...vworld].some((s) => s.includes(name)) || [...vworld].some((s) => s.includes("/ui")) }));
-      const uiShared = [...legacy].filter((s) => s.includes("/ui/") && vworld.has(s));
-      return result(uiShared.length > 0 && shared.every((s) => s.legacy && s.vworld), { sharedUiImports: uiShared, primitives: shared, note: "the GAP-01..33 PASS-set comparison needs a --entry both run" },
+      const srcRoot = fileURLToPath(new URL("../../../src/", import.meta.url));
+      // Both entries reach the shared primitives through shared panel modules (DashboardShell, SelectionInspector, ...),
+      // not always by a direct import: follow local imports transitively and collect every src/ui module reached.
+      const resolve = (from, spec) => {
+        const base = path.resolve(path.dirname(from), spec);
+        for (const candidate of [base, `${base}.jsx`, `${base}.mjs`, `${base}.js`, `${base}.css`, path.join(base, "index.jsx")]) {
+          if (existsSync(candidate) && !candidate.endsWith(path.sep)) try { readFileSync(candidate); return candidate; } catch { /* a directory */ }
+        }
+        return null;
+      };
+      const reached = (entry) => {
+        const seen = new Set();
+        const stack = [path.join(srcRoot, entry)];
+        while (stack.length) {
+          const file = stack.pop();
+          if (seen.has(file)) continue;
+          seen.add(file);
+          const text = readFileSync(file, "utf8");
+          // JS imports (static, side-effect, dynamic) and CSS @import (index.css -> ui/tokens.css).
+          for (const m of text.matchAll(/(?:from\s+|import\s*\(\s*|import\s+|@import\s+)["'](\.{1,2}\/[^"']+)["']/g)) {
+            const next = resolve(file, m[1]);
+            if (next) stack.push(next);
+          }
+        }
+        return new Set([...seen].map((file) => path.relative(srcRoot, file)).filter((rel) => rel.startsWith(`ui${path.sep}`)));
+      };
+      // The real entry points (index.html -> index.jsx -> App -> AppLegacy; index-vworld.html -> index-vworld.jsx).
+      const legacy = reached("index.jsx");
+      const vworld = reached("index-vworld.jsx");
+      const has = (set, name) => [...set].some((rel) => path.basename(rel).startsWith(name));
+      const shared = ["SceneLabel", "Segmented", "Alert", "tokens"].map((name) => ({ name, legacy: has(legacy, name), vworld: has(vworld, name) }));
+      const uiShared = [...legacy].filter((rel) => vworld.has(rel));
+      return result(uiShared.length > 0 && shared.every((s) => s.legacy && s.vworld), { sharedUiImports: uiShared.slice(0, 12), sharedCount: uiShared.length, primitives: shared, note: "the GAP-01..33 PASS-set comparison needs a --entry both run" },
         "same PASS set as Legacy; both entries import the same SceneLabel, Segmented, Alert and token modules");
     },
   }),
