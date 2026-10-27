@@ -9,7 +9,7 @@ import { Browser, BrowserTimeoutError, VIEWPORTS, DEFAULT_CLOCK, closeAllBrowser
 import { startVite, killAll } from "./lib/processes.mjs";
 import { setFixtures, readFixtureRequests } from "./lib/fixtures.mjs";
 import { inPage, decode } from "./lib/probe.mjs";
-import { KEY_RECTS, compareScenario, dHashPng, loadBaselines, roundRect, saveBaselines, scenarioKey } from "./lib/baseline.mjs";
+import { KEY_RECTS, compareScenario, dHashPng, loadBaselines, roundRect, saveBaselines, scenarioKey, scenarioVariant } from "./lib/baseline.mjs";
 import { EXIT, exitCodeFor, rollupChecks, writeReport } from "./lib/report.mjs";
 import { STATES, CHAIN_IDS, S17_SUBSTATES, VWORLD_STATE_IDS, parseStateList, stateById, loadAndSettle, applyTheme, settleTiles } from "./lib/states.mjs";
 import { appliesTo, defaultRequestedIds, loadChecks, loadOwners, makeImageCache, plannedScenarios } from "./lib/registry.mjs";
@@ -260,7 +260,7 @@ async function runPass({ args, entry, viewport, theme, baseUrl, selected, baseli
     }
     ctx.timeOrigin = origin;
     const png = await b.screenshot();
-    const key = scenarioKey({ entry, state: fileState, viewport: viewport.id, theme: themeLabel });
+    const key = scenarioKey({ entry, state: fileState, viewport: viewport.id, theme: themeLabel, variant: scenarioVariant(args) });
     if (mode === "capture") {
       writeFileSync(path.join(args.out, file), png);
       const rects = {};

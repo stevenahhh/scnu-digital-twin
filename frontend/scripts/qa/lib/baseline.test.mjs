@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { DHASH_MAX_BITS, RECT_MAX_PX, compareScenario, dHashDistance, dHashImage, dHashPng, rectShift } from "./baseline.mjs";
+import { DHASH_MAX_BITS, RECT_MAX_PX, compareScenario, dHashDistance, dHashImage, dHashPng, isPixelVolatile, rectShift, scenarioKey, scenarioVariant } from "./baseline.mjs";
 import { encodePng } from "../../campus-model/lib/png.mjs";
 
 function gradient(width, height, flip = false) {
@@ -61,4 +61,13 @@ test("hash drift above the limit and a missing baseline are regressions", () => 
   assert.equal(drift.pass, false);
   assert.equal(drift.distance, 9);
   assert.equal(compareScenario({ dhash: "0000000000000000", rects: {} }, undefined).pass, false);
+});
+
+test("variant runs (delayed fixtures, another model) keep their own baseline keys; plain runs keep the old key", () => {
+  assert.equal(scenarioKey({ entry: "legacy", state: "S01", viewport: "D", theme: "dark" }), "legacy/S01-D-dark");
+  assert.equal(scenarioVariant({}), "");
+  assert.equal(scenarioVariant({ delayMs: 3000 }), "delay3000");
+  assert.equal(scenarioVariant({ urlSuffix: "?model=uni" }), "model=uni");
+  assert.equal(scenarioKey({ entry: "legacy", state: "S01", viewport: "P", theme: "dark", variant: scenarioVariant({ urlSuffix: "?model=uni" }) }), "legacy/S01-P-dark@model=uni");
+  assert.equal(isPixelVolatile("legacy/S11-D-dark@delay3000"), true);
 });

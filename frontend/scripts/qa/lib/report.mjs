@@ -100,7 +100,8 @@ function describe(visible) {
 export function renderIndex(scenarios) {
   const lines = ["# Captured frames", "", "| file | state | viewport | theme | entry | what is visible (from the DOM at capture) | console errors/warnings (new since previous capture) |", "|---|---|---|---|---|---|---|"];
   for (const s of scenarios) {
-    const [entry, rest] = s.key.split("/");
+    const [entry, keyRest] = s.key.split("/");
+    const rest = keyRest.split("@")[0];
     const m = rest.match(/^(.*)-(D|P)-(dark|light)$/);
     lines.push(`| \`${s.file}\` | ${m?.[1] ?? rest} | ${m?.[2] === "P" ? "390x844 @2x" : "1440x900"} | ${m?.[3] ?? "-"} | ${entry} | ${fmt(describe(s.visible))} | ${fmt((s.console ?? []).join("<br>") || "none new")} |`);
   }
