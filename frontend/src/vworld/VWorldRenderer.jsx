@@ -127,6 +127,8 @@ export default function VWorldRenderer({
   // 폰의 D4 패인에 둘 캠퍼스 시점 줄(Legacy D4 패인과 같다)과 고른 시점으로 가는 함수.
   d4Presets = null,
   onSelectPreset,
+  // 지금 시점이 땅 높이 시점(정문)인지: 라벨 거리 단계에 쓴다(Legacy CityModel의 presetFromGround와 같다).
+  labelPresetFromGround = false,
   presentation = false,
   // 시점 버튼이 쓰는 카메라(createVWorldCampusCamera). 준비되면 넘기고, 지도가 사라지면 null.
   onCampusCamera,
@@ -652,6 +654,7 @@ export default function VWorldRenderer({
           hoveredId={hoveredLabelId}
           hidden={isD4SectionOpen}
           presentation={presentation}
+          presetFromGround={labelPresetFromGround}
           occluderRef={labelOccluderRef}
           chromeRefs={labelChromeRefs ? [...defaultChromeRefs, ...labelChromeRefs] : defaultChromeRefs}
           onSelectEntry={handleLabelSelect}

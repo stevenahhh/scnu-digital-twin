@@ -41,6 +41,8 @@ export function VWorldLabelLayer({
   hidden = false,
   presentation = false,
   occluderRef = null,
+  // 지금 시점이 땅 높이 시점(정문)이면 Legacy처럼 거리 단계(street)로 1단 건물을 멀리까지 남긴다.
+  presetFromGround = false,
   chromeRefs = [],
   onSelectEntry,
   onSelectCluster,
@@ -63,7 +65,7 @@ export function VWorldLabelLayer({
   const onGlbRef = useRef(onGlb);
   onGlbRef.current = onGlb;
   const state = useRef({});
-  state.current = { selectedId, hidden, presentation, occluderRef, chromeRefs };
+  state.current = { selectedId, hidden, presentation, occluderRef, chromeRefs, presetFromGround };
 
   useEffect(() => {
     let cancelled = false;
@@ -154,7 +156,7 @@ export function VWorldLabelLayer({
       }
       lastPoseRef.current = pose;
       const key = pose
-        + `|${rectKey(area)}|${occluder ? rectKey(occluder) : ""}|${chrome.map(rectKey).join(";")}|${isHidden}|${presenting}|${selected}`;
+        + `|${rectKey(area)}|${occluder ? rectKey(occluder) : ""}|${chrome.map(rectKey).join(";")}|${isHidden}|${presenting}|${selected}|${state.current.presetFromGround}`;
       if (key !== frameKeyRef.current) {
         frameKeyRef.current = key;
         passesRef.current = 2;
@@ -177,7 +179,7 @@ export function VWorldLabelLayer({
         const value = corners.size === 4 ? footprintRef.current.map(({ elementId }) => { const c = corners.get(elementId); return `${Math.round(c.x)},${Math.round(c.y)}`; }).join(";") : "";
         if (hostRef.current.dataset.modelEdge !== value) hostRef.current.dataset.modelEdge = value;
       }
-      const band = resolveLabelBand({ distance, pitchDegrees, presentation: presenting, touch });
+      const band = resolveLabelBand({ distance, pitchDegrees, presetFromGround: state.current.presetFromGround, presentation: presenting, touch });
       controller.update({ points, area, chrome, occluder, focusBoxes: [], band, now: performance.now(), motion });
     };
     const onPointerDown = () => {
