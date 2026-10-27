@@ -6,7 +6,7 @@ export function SectionHeader({ title, level = 3, badge, subtitle, actions, clas
   const Heading = `h${Math.min(Math.max(level, 2), 4)}`;
   return (
     <div data-qa="section-header" className={cx("flex items-start justify-between gap-3", className)} {...rest}>
-      <div className="flex min-w-0 flex-col gap-0.5">
+      <div className="flex min-w-0 flex-col gap-1">
         <div className="flex flex-wrap items-center gap-2">
           <Heading className={cx("break-keep text-ink", level <= 2 ? "text-title" : "text-body font-semibold")}>{title}</Heading>
           {badge}

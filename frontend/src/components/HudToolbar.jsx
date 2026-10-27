@@ -72,6 +72,9 @@ function PresetMenu({ presets, activeId, onSelect, close }) {
   );
 }
 
+// 폰·굵은 포인터에서는 도구 모음 단추도 44 px 높이로 누른다(데스크톱은 작은 단추 그대로).
+const TOUCH_TARGET = "max-[639px]:min-h-11 [@media(pointer:coarse)]:min-h-11";
+
 // 지도 왼쪽 위 카메라 도구 모음: 전체 · 시점 메뉴 · 투어, 세 묶음. presets는 cameraPresets.mjs의 CAMERA_PRESETS다.
 export function HudToolbar({ presets, activeId, onSelect, touring = false, onToggleTour, className = "" }) {
   const overview = presets.find((preset) => preset.id === OVERVIEW_PRESET_ID);
@@ -93,7 +96,7 @@ export function HudToolbar({ presets, activeId, onSelect, touring = false, onTog
         title={overview.description}
         onClick={() => onSelect(overview)}
         icon={overviewActive ? icon(Check) : icon(Home)}
-        className={cx(overviewActive && PRESSED)}
+        className={cx(TOUCH_TARGET, overviewActive && PRESSED)}
       >
         {overview.title}
       </Button>
@@ -109,7 +112,7 @@ export function HudToolbar({ presets, activeId, onSelect, touring = false, onTog
             data-qa="camera-view-menu"
             title={activeNamed ? `시점: ${activeNamed.title}` : "건물·장소 시점 고르기"}
             icon={icon(Eye)}
-            className={cx(activeNamed && PRESSED)}
+            className={cx(TOUCH_TARGET, activeNamed && PRESSED)}
           >
             시점
             {activeNamed && <span className="text-ink-muted">{activeNamed.shortName ?? activeNamed.title}</span>}
@@ -128,7 +131,7 @@ export function HudToolbar({ presets, activeId, onSelect, touring = false, onTog
         title={touring ? "투어를 멈춥니다" : "시점을 6초마다 차례로 보여 줍니다"}
         onClick={onToggleTour}
         icon={touring ? icon(Pause) : icon(Play)}
-        className={cx(touring && PRESSED)}
+        className={cx(TOUCH_TARGET, touring && PRESSED)}
       >
         {touring ? "투어 멈춤" : "투어 시작"}
       </Button>

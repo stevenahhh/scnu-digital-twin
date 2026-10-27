@@ -427,6 +427,8 @@ describe("Legacy and VWorld feature parity", () => {
     const presentationToggle = container.querySelector('[data-qa="presentation-toggle"]');
     // 비교 단추는 흐려 있어도(aria-disabled) 포커스가 닿아 까닭을 읽을 수 있다.
     const compare = container.querySelector('[data-qa="compare-open"]');
+    // 건물 검색칸은 카메라 도구 모음 바로 뒤에 온다.
+    const search = screen.getByRole("combobox", { name: "건물 검색" });
     const now = screen.getByRole("button", { name: "지금" });
     const play = screen.getByRole("button", { name: "시간 재생" });
     const date = screen.getByLabelText("장면 날짜");
@@ -437,7 +439,7 @@ describe("Legacy and VWorld feature parity", () => {
     // HUD는 장면 시각과 그 옆 갱신 표시 셋(기상·교통·에너지, 새로 고침 단추)으로 시작한다.
     const stamps = [...container.querySelectorAll('[data-qa="campus-hud"] [data-qa="freshness-stamp"] button')];
     expect(stamps.map((button) => button.getAttribute("aria-label"))).toEqual(["기상 새로고침", "교통 새로고침", "에너지 새로고침"]);
-    const expected = [...stamps, overview, menu, tour, presentationToggle, compare, now, play, date, typedTime, slider, ...cameraButtons, mapLayer];
+    const expected = [...stamps, overview, menu, tour, search, presentationToggle, compare, now, play, date, typedTime, slider, ...cameraButtons, mapLayer];
 
     const reached = [];
     for (let i = 0; i < expected.length; i += 1) {

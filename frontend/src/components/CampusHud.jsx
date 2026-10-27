@@ -7,6 +7,7 @@ import { SHELL_PEEK_HEIGHT } from "../panel/DashboardShell";
 import { CameraControls } from "./CameraControls";
 import { HudTimeReadout } from "./HudTimeReadout";
 import { HudToolbar } from "./HudToolbar";
+import { SearchField } from "./SearchField";
 import { TimeSlider } from "./TimeSlider";
 
 // 지도 위 조작. 첫 글자는 장면 시각이고(왼쪽 위), 그 옆에 카메라 도구 모음, 아래에 시간 슬라이더, 오른쪽에 확대·회전 단추.
@@ -15,7 +16,7 @@ import { TimeSlider } from "./TimeSlider";
 export const CampusHud = forwardRef(function CampusHud(
   {
     mode = "desktop", insetRight, camera, clock, playing, onPlayingChange, sceneWeather, statusSlot = null, presenting = false,
-    onTogglePresentation, tour = null, compareSlot = null,
+    onTogglePresentation, tour = null, compareSlot = null, search = null,
   },
   ref,
 ) {
@@ -52,6 +53,7 @@ export const CampusHud = forwardRef(function CampusHud(
           touring={camera.touring}
           onToggleTour={camera.toggleTour}
         />
+        {search && <SearchField registry={search.registry} onPick={search.onPick} />}
         {toggle}
         {compareSlot}
         {!phone && <Wordmark className="ml-auto mt-2.5 text-ink-muted" />}

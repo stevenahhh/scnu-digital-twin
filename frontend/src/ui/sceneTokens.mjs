@@ -20,6 +20,14 @@ export const FAR_GROUND_HEX = "#4b5646";
 // 선택 밖 건물을 흐리게 할 때의 검은 막 투명도(--colors-dim의 알파와 같다).
 export const DIM_ALPHA = 0.2;
 
+// 장면 재질색은 선형(three ColorManagement)이다. DESIGN.md의 dim(rgba(0,0,0,0.2) 막)은 화면(sRGB) 값을 20% 낮추므로,
+// 선형 채널을 sRGB로 바꿔 (1 - alpha)를 곱하고 다시 선형으로 돌린다. 선형에 0.8을 바로 곱하면 화면에서는 약 10%만 어두워진다.
+const toSrgb = (c) => (c <= 0.0031308 ? c * 12.92 : 1.055 * c ** (1 / 2.4) - 0.055);
+const toLinear = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+export function dimLinearChannel(channel, alpha = DIM_ALPHA) {
+  return toLinear(toSrgb(channel) * (1 - alpha));
+}
+
 // 옥상 태양광 편집 장면(RoofEditorScene)의 색. 의미가 같은 DOM 토큰이 있으면 그 값을 따른다.
 export const ROOF_SCENE = Object.freeze({
   massFill: "#415675",

@@ -3,7 +3,7 @@ export function ChartLegend({ items, note }) {
   return (
     <ul className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-caption text-ink-muted" aria-label="범례">
       {items.map((item) => (
-        <li key={item.label} className="inline-flex items-center gap-1.5">
+        <li key={item.label} className="inline-flex items-center gap-2">
           <svg aria-hidden="true" width="16" height="8" viewBox="0 0 16 8" className="shrink-0">
             <rect x="0" y="3" width="16" height="2" rx="1" fill={item.dashed ? "none" : item.color} />
             {item.dashed && (

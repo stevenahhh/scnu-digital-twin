@@ -40,6 +40,17 @@ describe("Button", () => {
     expect(button.className.split(" ")).toContain("[@media(pointer:coarse)]:min-w-11");
   });
 
+  it("gives icon-only buttons the same text step as their size, so each size has one style", () => {
+    render(
+      <>
+        <Button iconOnly size="sm" label="작게" icon={<svg aria-hidden="true" />} />
+        <Button iconOnly size="md" label="보통" icon={<svg aria-hidden="true" />} />
+      </>,
+    );
+    expect(screen.getByRole("button", { name: "작게" }).className.split(" ")).toContain("text-caption");
+    expect(screen.getByRole("button", { name: "보통" }).className.split(" ")).toContain("text-body");
+  });
+
   it("stays focusable when disabled, explains why and ignores clicks", async () => {
     const user = userEvent.setup();
     const onClick = vi.fn();

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CAMERA_PRESETS, OVERVIEW_PRESET_ID } from "./cameraPresets.mjs";
+import { CAMERA_PRESETS, D4_CAMERA_OFFSET, OVERVIEW_PRESET_ID } from "./cameraPresets.mjs";
 
 const OVERVIEW_PRESET = CAMERA_PRESETS.find((preset) => preset.id === OVERVIEW_PRESET_ID);
 import { isFlyToEvent, useFlyTo } from "./useFlyTo.mjs";
@@ -27,6 +27,13 @@ export function useCampusCamera({ controlsRef, getScene, onOrbitStart, onOrbitEn
     goToPreset(preset);
   }, [goToPreset, stopTour]);
 
+  // 검색으로 고른 건물로 날아간다(D4 시점과 같은 거리). 장면에서 그 노드를 못 찾으면 전체 시점 좌표를 쓴다.
+  const flyToBuilding = useCallback((elementId) => {
+    stopTour();
+    const preset = { id: `building:${elementId}`, focus: [elementId], offset: D4_CAMERA_OFFSET, position: OVERVIEW_PRESET.position, target: OVERVIEW_PRESET.target };
+    if (flyTo(preset)) setActivePresetId(null);
+  }, [flyTo, stopTour]);
+
   // 처음 시점(카메라 단추·H 키): 전체 시점으로 돌아간다.
   const goHome = useCallback(() => selectPreset(OVERVIEW_PRESET), [selectPreset]);
 
@@ -39,7 +46,7 @@ export function useCampusCamera({ controlsRef, getScene, onOrbitStart, onOrbitEn
   }, [onOrbitStart, stopTour]);
 
   return {
-    controlsRef, activePresetId, activePresetRef, selectPreset, goHome, touring, toggleTour, stopTour,
+    controlsRef, activePresetId, activePresetRef, selectPreset, goHome, flyToBuilding, touring, toggleTour, stopTour,
     handleOrbitStart, handleOrbitEnd: onOrbitEnd,
   };
 }

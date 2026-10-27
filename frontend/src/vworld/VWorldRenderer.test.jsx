@@ -18,9 +18,18 @@ vi.mock("./webglSdkLoader.mjs", () => ({
   }),
 }));
 vi.mock("./sunSimulation.mjs", () => ({ applyVWorldSunSimulation: vi.fn() }));
-vi.mock("./campusGltfOverlay.mjs", () => ({
+vi.mock("./campusGltfOverlay.mjs", async (importOriginal) => ({
+  ...(await importOriginal()),
   createCampusGltfOverlay: vi.fn(async () => null),
   removeCampusGltfOverlay: vi.fn(),
+}));
+// 라벨 층 자체는 VWorldLabelLayer.test.jsx가 본다. 여기서는 렌더러가 넘기는 값만 기록한다.
+vi.mock("./VWorldLabelLayer", () => ({
+  centroidOf: (entries) => entries[0].position,
+  VWorldLabelLayer: (props) => {
+    mocks.labelProps = props;
+    return <div data-testid="vworld-label-layer" data-selected={props.selectedId ?? ""} data-hidden={String(props.hidden)} />;
+  },
 }));
 vi.mock("./D4SectionExperience", () => ({
   D4SectionExperience: (props) => {
@@ -161,6 +170,47 @@ describe("VWorldRenderer retained map integration", () => {
     const [, cesiumArg, options] = createCampusGltfOverlay.mock.calls.at(-1);
     expect(cesiumArg).toBe(window.Cesium);
     expect(typeof options?.onStatus).toBe("function");
+  });
+
+  it("mounts the campus label layer with the map, selects through onSelection, follows the app selection and unmounts with the map", async () => {
+    const { createCampusGltfOverlay } = await import("./campusGltfOverlay.mjs");
+    createCampusGltfOverlay.mockResolvedValueOnce({ modelMatrix: { id: "campus" } });
+    // 칩으로 고른 건물로 카메라를 옮기는 데 쓰는 만큼만 흉내 낸 Cesium(모델 지역 좌표를 그대로 라디안 경위도로 읽는다).
+    const previousCesium = window.Cesium;
+    window.Cesium = {
+      Cartesian3: class { constructor(x, y, z) { Object.assign(this, { x, y, z }); } },
+      Matrix4: { multiplyByPoint: (_matrix, point) => point },
+      Cartographic: { fromCartesian: (point) => ({ longitude: point.x, latitude: point.y }) },
+    };
+    const scene = { id: "scene" };
+    const map = { ...retainedMap(), _wsViewer: { scene }, lookat: { moveTo: vi.fn() } };
+    window.__scnuVWorldMapInstance = map;
+    mocks.vw = createVw();
+    const onSelection = vi.fn();
+    const onClearSelection = vi.fn();
+    const props = { d4PaneHost: paneHost(), onSelection, onClearSelection, simulationDate: new Date("2026-05-18T12:00:00+09:00") };
+    const view = render(<VWorldRenderer {...props} selectedId="" />);
+
+    const layer = await screen.findByTestId("vworld-label-layer");
+    expect(mocks.labelProps.scene).toBe(scene);
+    expect(mocks.labelProps.getModelMatrix()).toEqual({ id: "campus" });
+    expect(mocks.labelProps.chromeRefs.map((ref) => ref.current?.dataset.qa)).toEqual(["vworld-left-stack", "vworld-bottom-stack"]);
+
+    act(() => mocks.labelProps.onSelectEntry({ elementId: "BLD_C1", dataElementId: "BLD_C1", displayName: "도서관", position: [2, 1, 0] }));
+    expect(onSelection).toHaveBeenCalledWith({ elementId: "BLD_C1", buildingId: "C1", displayName: "도서관" });
+    expect(map.lookat.moveTo).toHaveBeenCalledTimes(1);
+    view.rerender(<VWorldRenderer {...props} selectedId="도서관" />);
+    expect(layer.dataset.selected).toBe("BLD_C1");
+
+    // 앱이 선택을 풀면(인스펙터 닫기) 라벨 선택도 풀리고, Esc는 앱에 알린다.
+    view.rerender(<VWorldRenderer {...props} selectedId="" />);
+    expect(screen.getByTestId("vworld-label-layer").dataset.selected).toBe("");
+    act(() => mocks.labelProps.onClear());
+    expect(onClearSelection).toHaveBeenCalledTimes(1);
+
+    view.unmount();
+    expect(screen.queryByTestId("vworld-label-layer")).toBeNull();
+    window.Cesium = previousCesium;
   });
 
   it("puts the D4 fallback model back when the campus GLB fails after the overlay was returned", async () => {

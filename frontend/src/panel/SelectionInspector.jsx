@@ -125,7 +125,7 @@ function Sections({ payload, estimate }) {
           <p className="rounded-card bg-surface-2 px-3 py-4 text-center text-caption text-ink-muted">{INSPECTOR_STRINGS.missingThermal}</p>
         )}
         {isText(delta?.label) && (
-          <p className={`flex items-center gap-1.5 text-body font-medium ${delta.temp > 0 ? "text-danger" : "text-primary"}`}>
+          <p className={`flex items-center gap-2 text-body font-medium ${delta.temp > 0 ? "text-danger" : "text-primary"}`}>
             <MapPin aria-hidden="true" className="h-4 w-4 shrink-0" />
             {delta.label}
           </p>
@@ -226,7 +226,7 @@ export function SelectionInspector({
       className={`flex flex-col gap-3 rounded-card border border-hairline bg-surface-1 p-4 ${className ?? ""}`}
     >
       <div className="flex items-start justify-between gap-3 rounded-card bg-surface-2 px-3 py-2">
-        <div className="flex min-w-0 flex-col gap-0.5">
+        <div className="flex min-w-0 flex-col gap-1">
           <SectionHeader level={3} title={heading} badge={badges} />
           {estimateCaption && <p data-qa="estimate-caption" className="text-caption text-ink-muted">{estimateCaption}</p>}
           {gateText && (

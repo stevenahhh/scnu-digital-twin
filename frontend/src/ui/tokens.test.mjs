@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import test from "node:test";
-import { EMERGENCY_HEX, RISK_DANGER_HEX, SELECTION_HEX, VEHICLE_LANE_HEX } from "./sceneTokens.mjs";
+import { DIM_ALPHA, EMERGENCY_HEX, RISK_DANGER_HEX, SELECTION_HEX, VEHICLE_LANE_HEX, dimLinearChannel } from "./sceneTokens.mjs";
 
 const require = createRequire(import.meta.url);
 const tokensCss = readFileSync(new URL("./tokens.css", import.meta.url), "utf8");
@@ -123,4 +123,13 @@ test("the Tailwind theme exposes only token-backed colours", () => {
     const token = /^var\((--colors-[a-z0-9-]+)\)$/.exec(value)?.[1];
     assert.ok(token && dark.has(token), `Tailwind colour ${name} must point at a declared token, got ${value}`);
   }
+});
+
+test("the scene dim lowers the displayed (sRGB) value by DIM_ALPHA, like the --colors-dim veil", () => {
+  const toSrgb = (c) => (c <= 0.0031308 ? c * 12.92 : 1.055 * c ** (1 / 2.4) - 0.055);
+  for (const linear of [0.02, 0.18, 0.5, 1]) {
+    const shown = toSrgb(dimLinearChannel(linear));
+    assert.ok(Math.abs(shown / toSrgb(linear) - (1 - DIM_ALPHA)) < 1e-9, `channel ${linear}`);
+  }
+  assert.equal(dimLinearChannel(0), 0);
 });

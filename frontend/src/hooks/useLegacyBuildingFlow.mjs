@@ -127,6 +127,19 @@ export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef
     if (isD4ElementId(elementId)) openD4Section();
     else showMicroclimate(elementId);
   }, [openD4Section, selectBuilding, showMicroclimate]);
+  // 검색으로 고른 건물(레지스트리 항목): 칩을 누른 것과 같은 길(인스펙터, D4는 패인)이고, 경로는 'search'라 근접 자동 선택에 밀리지 않는다.
+  const selectFromSearch = useCallback((entry) => {
+    const dataElementId = entry.dataElementId ?? entry.elementId;
+    selectBuilding({
+      elementId: entry.elementId,
+      buildingId: buildingCodeOf(dataElementId),
+      displayName: entry.displayName,
+      selectionSource: "search",
+    });
+    if (isD4ElementId(dataElementId)) openD4Section();
+    else if (dataElementId.startsWith("BLD_")) showMicroclimate(dataElementId);
+    else popup.clear();
+  }, [openD4Section, popup.clear, selectBuilding, showMicroclimate]);
 
   // 인스펙터 닫기(닫기 버튼, Esc): 선택만 푼다. 탭은 그대로다.
   const closeMicroclimate = useCallback(() => {
@@ -145,7 +158,7 @@ export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef
   return {
     buildingViewMode, editorRequest, selectBuilding, selectFromUrl, handleSelect, openD4Section, exitD4Section,
     handleBuildingClick, handleD4Enter, handleBuildingProximity, closeMicroclimate,
-    selectedElementId, headlineById, setLabelRegistry, releaseOnDrag: label.releaseOnDrag,
+    selectedElementId, headlineById, setLabelRegistry, labelRegistry, selectFromSearch, releaseOnDrag: label.releaseOnDrag,
     selectionPosition: labelRegistry?.get(selectedElementId)?.position ?? null,
     selectionTitle: resolveSelectionTitle(labelRegistry, selectedElementId, ELEMENT_NAMES),
   };

@@ -291,14 +291,39 @@ export const GAP_CHECKS = [
     },
   }),
   defineCheck("GAP-17", {
-    states: ["S01"], viewports: DP,
+    states: ["S01"], viewports: DP, mutates: true,
     async run(ctx) {
-      const field = await ctx.inPage((qa) => {
-        const el = qa.one("[data-qa=search-field]") ?? qa.one("[data-qa=campus-hud] input[type=search]");
+      const selector = "[data-qa=search-field] input[type=search], [data-qa=campus-hud] input[type=search]";
+      const field = await ctx.inPage((qa, a) => {
+        const el = qa.all(a.sel).find(qa.visible);
         return el ? { rect: qa.r(el) } : null;
-      });
+      }, { sel: selector });
       if (!field) return missingHook(HOOKS.search, "search field exists; 도서관 result; Enter selects the library chip and moves the camera");
-      return result(false, { field, note: "typeahead flow is asserted once the field exists (todo 28)" }, "search field exists; Enter selects the library chip and moves the camera");
+      // Row: type 도서관, press Enter; record the camera before/after. The camera is read from the scene pixels left of the panel.
+      const sceneBox = () => ctx.inPage((qa) => {
+        const canvas = qa.all("canvas").find(qa.visible);
+        if (!canvas) return null;
+        const c = canvas.getBoundingClientRect();
+        const panel = qa.one("[data-qa=dashboard-panel]");
+        const p = panel && qa.visible(panel) ? panel.getBoundingClientRect() : null;
+        const right = p && p.left > c.left + 40 ? Math.min(c.right, p.left) : c.right;
+        const bottom = p && p.top > c.top + 40 && p.left <= c.left + 1 ? Math.min(c.bottom, p.top) : c.bottom;
+        return { x: c.left, y: c.top + 80, w: right - c.left, h: Math.max(0, bottom - c.top - 80) };
+      });
+      const box = await sceneBox();
+      const before = await ctx.screenshot();
+      const focused = (await ctx.b.tap(selector)).ok;
+      await ctx.b.view.cdp("Input.insertText", { text: "도서관" });
+      await ctx.sleep(500);
+      const listed = await ctx.inPage((qa) => qa.all("[role=listbox] [role=option]").filter(qa.visible).map((el) => qa.txt(el)));
+      await ctx.b.key("Enter");
+      await ctx.sleep(3000);
+      const chip = await chipByText(ctx, "도서관");
+      const after = await ctx.screenshot();
+      const cameraChange = box && box.w > 0 && box.h > 0 ? Math.round(pixelDiff(before, after, box, ctx.scale) * 1000) / 1000 : null;
+      const pass = focused && listed.some((text) => /도서관/.test(text)) && chip?.pressed === "true" && cameraChange > 0.03;
+      return result(pass, { field, focused, listed: listed.slice(0, 8), chipPressed: chip?.pressed ?? null, cameraChange },
+        "search field exists; a result list shows 도서관; Enter sets the library chip aria-pressed=true and the camera position changes");
     },
   }),
   defineCheck("GAP-18", {
