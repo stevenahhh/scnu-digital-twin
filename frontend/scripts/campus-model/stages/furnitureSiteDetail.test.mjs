@@ -1,9 +1,9 @@
-// Checks for the VR site-detail builders of stages/furniture.mjs (hedges and shrub masses, car-park stall rows) on flat
+// Checks for the VR site-detail builders of stages/furniture.mjs (hedges and shrub masses, car-park stall rows, street furniture, hedge lettering, LED screens) on flat
 // ground.
 import assert from "node:assert/strict";
 import test from "node:test";
 import { metres } from "../lib/frame.mjs";
-import { B, makeContext, stallRow } from "./furniture.mjs";
+import { B, hedgeTextStrokes, makeContext, stallRow } from "./furniture.mjs";
 
 const M = metres;
 const sites = { inArea: () => false, labelAt: () => null, classes: { PAVING: 1, ASPHALT: 2 } };
@@ -37,4 +37,32 @@ test("hedges and shrub masses reach their height", () => {
   near(Math.max(...ys(build("hedge", { point: [0, 0] }, { radius_m: 0.7, height_m: 0.9 }))), 0.9, "round shrub");
   const ring = [[0, 0], [M(3), 0], [M(3), M(2)], [0, M(2)]];
   near(Math.max(...ys(build("hedge", { ring }, {}))), 1.0, "clipped mass, default height");
+});
+
+test("street furniture reaches its standard height; bollards and stands repeat along their line", () => {
+  near(Math.max(...ys(build("bollard", { line: line(6) }, { spacing_m: 1.5 }))), 0.9, "bollard");
+  assert.equal(build("bollard", { line: line(6) }, { spacing_m: 1.5 }).solid.mesh.positions.length, 5 * build("bollard", { point: [0, 0] }, {}).solid.mesh.positions.length);
+  near(Math.max(...ys(build("bike_stands", { line: line(4.5) }, {}))), 0.775, "stand top (0.75 m plus half the tube)");
+  near(Math.max(...ys(build("bin", { point: [0, 0] }, { count: 2 }))), 0.95, "bin");
+  near(Math.max(...ys(build("handrail", { line: line(6) }, {}))), 0.9 + 0.025, "rail top");
+  const ring = [[0, 0], [M(4), 0], [M(4), M(3)], [0, M(3)]];
+  const ctx = flatContext();
+  B.entrance_canopy(ctx, { id: "SD-T2", kind: "entrance_canopy", heightM: 3.2, ring, p: { posts: [2, 3] } });
+  near(Math.max(...ys(ctx)), 3.2, "canopy top");
+  near(Math.min(...ys(ctx)), -0.05, "posts reach into the ground");
+});
+
+test("hedge lettering: one stroke set per character, tops to the left of the baseline; LED screen panel", () => {
+  const strokes = hedgeTextStrokes(line(20), "진리 정의", { heightM: 3, widthM: 3, gapM: 0.5 });
+  assert.ok(strokes.length >= 10, `${strokes.length} strokes`);
+  const zs = strokes.flatMap((s) => s.points.map((p) => p[1] / M(1)));
+  assert.ok(Math.min(...zs) >= -3 - 1e-9 && Math.max(...zs) <= 1e-9, "letters lie north (left) of an eastward baseline");
+  const ctx = flatContext();
+  B.hedge_text(ctx, { id: "SD-T3", kind: "hedge_text", heightM: 0.6, line: line(20), p: { text: "창조", char_height_m: 3, stroke_m: 0.5 } });
+  near(Math.max(...ys(ctx)), 0.6, "hedge text top");
+  const sc = flatContext();
+  B.led_screen(sc, { id: "SD-T4", kind: "led_screen", heightM: 0, line: line(8), p: { bottom_m: 1, top_m: 5, fields: ["#1d2f6b", "#55b8e8"] } });
+  assert.equal(sc.screens.length, 1);
+  near(Math.max(...sc.screens[0].corners.map((c) => c[1] / M(1))), 5, "screen top");
+  near(sc.screens[0].corners[0][2] / M(1), 0.15, "screen stands 0.15 m in front of the wall (south of an eastward line)");
 });
