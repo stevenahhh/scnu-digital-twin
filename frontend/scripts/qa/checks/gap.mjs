@@ -323,6 +323,10 @@ export const GAP_CHECKS = [
       const chip = await chipByText(ctx, "도서관");
       const after = await ctx.screenshot();
       const cameraChange = box && box.w > 0 && box.h > 0 ? Math.round(pixelDiff(before, after, box, ctx.scale) * 1000) / 1000 : null;
+      // Put the page back (no selection, overview camera) so the probe replay's later S01 checks start from S01.
+      if (await ctx.b.center('[data-qa=selection-inspector] button[aria-label="닫기"]')) await ctx.b.tap('[data-qa=selection-inspector] button[aria-label="닫기"]');
+      await ctx.b.tap("[data-qa=camera-preset-overview]", null, { timeoutMs: 3000 });
+      await ctx.b.cameraSettle?.();
       const pass = focused && listed.some((text) => /도서관/.test(text)) && chip?.pressed === "true" && cameraChange > 0.03;
       return result(pass, { field, focused, listed: listed.slice(0, 8), chipPressed: chip?.pressed ?? null, cameraChange },
         "search field exists; a result list shows 도서관; Enter sets the library chip aria-pressed=true and the camera position changes");
@@ -532,7 +536,13 @@ export const GAP_CHECKS = [
       await ctx.b.key("Escape");
       await ctx.sleep(1200);
       const after = await layout();
-      if (tour) await ctx.b.tap("[data-qa=camera-tour-toggle]", null, { timeoutMs: 4000 });
+      // Stop the tour only if it still runs (Esc may already have ended it; a second tap would restart it and keep the
+      // camera touring through the probe replay's later S01 checks), then return to the overview.
+      if (await ctx.inPage((qa) => qa.one("[data-qa=camera-tour-toggle]")?.getAttribute("aria-pressed") === "true")) {
+        await ctx.b.tap("[data-qa=camera-tour-toggle]", null, { timeoutMs: 4000 });
+      }
+      await ctx.b.tap("[data-qa=camera-preset-overview]", null, { timeoutMs: 3000 });
+      await ctx.b.cameraSettle?.();
       const scale = before.chipPx && on.chipPx ? Math.round((on.chipPx / before.chipPx) * 100) / 100 : null;
       const pass = tour && on.presenting && !on.toolbar && !on.panelVisible && on.time && scale >= 1.5 && /^투어 \d+\/\d+$/.test(on.pager ?? "")
         && !after.presenting && after.toolbar === before.toolbar && after.panelVisible === before.panelVisible && after.panelOpen === before.panelOpen;
