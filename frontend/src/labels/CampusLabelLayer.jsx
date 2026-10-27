@@ -223,7 +223,8 @@ export function CampusLabelLayer({
       const anchorOf = new Map(clustered.map((c) => [c.id, { x: c.position[0], y: c.position[1], depth: c.position[2] }]));
 
       // 카메라가 움직이는 동안: 보이던 칩 묶음과 앵커로부터의 상대 위치를 그대로 두고 앵커만 따라간다(보임/숨김을 바꾸지 않는다).
-      if (frame.motion && lastRef.current.layout) {
+      // 선택이 바뀌었으면 움직이는 중이어도 한 번 새로 배치한다(새로 고른 칩이 카메라가 멈출 때까지 숨어 있지 않게).
+      if (frame.motion && lastRef.current.layout && lastRef.current.selected === selected) {
         // 움직이는 동안 쓴 자리(앵커 따라가기·가장자리 고정)는 멈춘 뒤 배치가 같아도 다시 써야 한다. 지문을 비워 다음 정지 배치가
         // 모든 칩을 다시 쓰고 놓지 않은 칩을 숨기게 한다(전에는 같은 배치면 건너뛰어 움직일 때 자리에 남았다).
         lastRef.current.fingerprint = "";
@@ -308,7 +309,7 @@ export function CampusLabelLayer({
       if (result.fingerprint !== lastRef.current.fingerprint) {
         for (const id of nodesRef.current.keys()) if (!placed.has(id)) hideNode(id, result.hiddenReasons.get(id) ?? "inactive");
       }
-      lastRef.current = { layout: result, placed, fingerprint: result.fingerprint };
+      lastRef.current = { layout: result, placed, fingerprint: result.fingerprint, selected };
 
       // 300 ms 유지 규칙은 시간이 지나야 결론이 난다(빈자리를 기다리는 칩, 밀려난 채 남아 있는 칩). 요청 렌더 루프는 카메라가
       // 멈추면 프레임을 더 그리지 않으므로, 기다리는 칩이 있으면 유지 시간이 지난 뒤 배치를 한 번 더 요청한다.

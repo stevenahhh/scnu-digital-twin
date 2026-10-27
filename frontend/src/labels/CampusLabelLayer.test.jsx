@@ -166,6 +166,17 @@ describe("CampusLabelLayer", () => {
     expect(visibleSlots()[0].style.transform).toMatch(/^translate3d\(8px,/);
   });
 
+  it("shows a chip selected while the camera is still moving instead of waiting for the camera to stop", () => {
+    // The far band shows no tier-3 building: it is hidden until it is selected.
+    const entries = [...Array.from({ length: 10 }, (_, i) => entry(`BLD_L${i}`)), entry("BLD_PICK", { tier: 3 })];
+    const { update, rerender, visibleSlots, controllerRef } = mount(entries);
+    update();
+    expect(visibleSlots().map((slot) => slot.dataset.labelSlot)).not.toContain("BLD_PICK");
+    rerender(<CampusLabelLayer entries={entries} controllerRef={controllerRef} measure={measure} selectedId="BLD_PICK" />);
+    update({ motion: true });
+    expect(visibleSlots().map((slot) => slot.dataset.labelSlot)).toContain("BLD_PICK");
+  });
+
   it("keeps a moving chip 12 px clear of the HUD", () => {
     const entries = [entry("BLD_TOP")];
     const { update, visibleSlots } = mount(entries);
