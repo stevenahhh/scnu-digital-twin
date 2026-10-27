@@ -4,12 +4,15 @@ import { Button } from "../ui/Button.jsx";
 import { cx } from "../ui/cx.mjs";
 
 // 지도 오른쪽 아래 카메라 단추: 확대·축소·왼쪽/오른쪽 회전·처음 시점. 마우스 없이도 장면을 움직일 수 있다.
-export function CameraControls({ controlsRef, onHome, className = "" }) {
+// Legacy는 OrbitControls(controlsRef)를, VWorld는 onZoom(factor)·onRotate(radians)로 Cesium 카메라를 움직인다(같은 단계).
+export function CameraControls({ controlsRef, onZoom, onRotate, onHome, className = "" }) {
+  const zoom = onZoom ?? ((factor) => zoomBy(controlsRef.current, factor));
+  const rotate = onRotate ?? ((angle) => rotateBy(controlsRef.current, angle));
   const actions = [
-    ["확대", Plus, () => zoomBy(controlsRef.current, ZOOM_STEP)],
-    ["축소", Minus, () => zoomBy(controlsRef.current, 1 / ZOOM_STEP)],
-    ["왼쪽으로 회전", RotateCcw, () => rotateBy(controlsRef.current, ROTATE_STEP)],
-    ["오른쪽으로 회전", RotateCw, () => rotateBy(controlsRef.current, -ROTATE_STEP)],
+    ["확대", Plus, () => zoom(ZOOM_STEP)],
+    ["축소", Minus, () => zoom(1 / ZOOM_STEP)],
+    ["왼쪽으로 회전", RotateCcw, () => rotate(ROTATE_STEP)],
+    ["오른쪽으로 회전", RotateCw, () => rotate(-ROTATE_STEP)],
     ["처음 시점", Undo2, onHome],
   ];
   return (

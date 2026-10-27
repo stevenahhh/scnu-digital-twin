@@ -19,6 +19,8 @@ import { usePanelViewMemory } from "./panel/usePanelViewMemory.mjs";
 import { Wordmark } from "./panel/Wordmark";
 import { HudTimeReadout, sceneTimeReadout } from "./components/HudTimeReadout";
 import { HudToolbar } from "./components/HudToolbar";
+import { CameraControls } from "./components/CameraControls";
+import { mapLighting } from "./vworld/mapLighting.mjs";
 import { CAMERA_PRESETS } from "./camera/cameraPresets.mjs";
 import { useVWorldCampusCamera } from "./vworld/useVWorldCampusCamera.mjs";
 import { SettingsSheet } from "./panel/SettingsSheet";
@@ -32,17 +34,6 @@ import { urlSelectionTarget, useDashboardUrlState } from "./hooks/useDashboardUr
 import { CompareButton, ComparisonPane } from "./panel/ComparisonPane";
 import { useComparisonSet } from "./state/useComparisonSet.mjs";
 import { summarizeWeather } from "./panel/weatherSummary.mjs";
-
-// 지도 영상 위에 까는 야간 음영과 해 쪽 햇빛. 해 고도·방위(도)에서 투명도와 위치를 정한다.
-function mapLighting(altitudeDegrees, bearingDegrees, sunVisible) {
-  const bearing = (bearingDegrees * Math.PI) / 180;
-  return {
-    glowX: 50 + Math.sin(bearing) * 55,
-    glowY: 50 - Math.cos(bearing) * 55,
-    glowOpacity: sunVisible ? Math.min(0.28, 0.12 + Math.max(0, altitudeDegrees) / 300) : 0,
-    nightOpacity: Math.min(0.68, Math.max(0, ((6 - altitudeDegrees) / 12) * 0.68)),
-  };
-}
 
 export default function App() {
   useSimulationSocket();
@@ -74,7 +65,7 @@ export default function App() {
   const popup = usePopupData();
 
   const summary = summarizeWeather({ feed: weatherFeed, mode: clock.mode, simTemp: clock.simTemp });
-  const lighting = mapLighting(clock.sunAltitudeDegrees, clock.sunBearingDegrees, clock.sunState.visible);
+  const lighting = mapLighting(clock.sunAltitudeDegrees);
 
   // VWorld에서 건물을 고르면 Legacy와 같은 선택 인스펙터가 열린다. 탭은 바꾸지 않는다(폰에서는 시트를 half로).
   const { selectBuilding, clearSelection } = selection;
@@ -146,7 +137,8 @@ export default function App() {
           labelOccluderRef={panelRef}
           labelChromeRefs={labelChromeRefs}
           presentation={presentation.presenting}
-          // 야간 음영·햇빛·그라데이션은 지도 영상만 어둡게 해야 하므로 렌더러가 지도 바로 위·지도 위 문구와 버튼 아래에 그린다.
+          // 야간 음영은 지도 영상만 어둡게 해야 하므로 렌더러가 지도 바로 위·지도 위 문구와 버튼 아래에 그린다.
+          // (해 쪽 햇빛 그라데이션은 화면 전체 장식 그라데이션이라 뺐다: V-F-44.)
           mapBackdrop={(
             <>
               <div
@@ -155,14 +147,6 @@ export default function App() {
                 style={{
                   right: mapInsetRight,
                   backgroundColor: `rgba(3, 10, 24, ${lighting.nightOpacity})`,
-                }}
-              />
-              <div
-                className="pointer-events-none absolute bottom-0 left-0 top-0 z-[2] transition-[right,opacity] duration-300"
-                style={{
-                  right: mapInsetRight,
-                  background: `radial-gradient(circle at ${lighting.glowX}% ${lighting.glowY}%, `
-                    + `rgba(255, 218, 138, ${lighting.glowOpacity}) 0%, transparent 42%)`,
                 }}
               />
             </>
@@ -197,6 +181,10 @@ export default function App() {
         {!presentation.presenting && <CompareButton comparison={comparison} className="mt-1" />}
         {viewportMode !== "phone" && !presentation.presenting && <Wordmark className="ml-auto mt-1.5 rounded-control bg-[var(--colors-label-bg)] px-2 py-1 text-ink-muted" />}
         </div>
+        {/* 카메라 단추(확대·축소·회전·처음 시점): Legacy와 같은 단추, VWorld 카메라를 움직인다. 시간 조작 위 오른쪽 가운데. */}
+        {!presentation.presenting && camera.ready && (
+          <CameraControls onZoom={camera.zoomBy} onRotate={camera.rotateBy} onHome={camera.goHome} className="absolute right-4 top-1/2 -translate-y-1/2" />
+        )}
         {/* 시간 조작은 Legacy와 같은 하나뿐인 조작이다. 지도 조작 열(왼쪽 아래)과 겹치지 않게 오른쪽 아래에 둔다. */}
         {!presentation.presenting && <TimeSlider
           minuteOfDay={clock.sceneMinuteOfDay}

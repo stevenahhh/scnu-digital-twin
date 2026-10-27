@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { CAMERA_PRESETS } from "../camera/cameraPresets.mjs";
+import { CAMERA_PRESETS, OVERVIEW_PRESET_ID } from "../camera/cameraPresets.mjs";
 import { useCameraTour } from "../camera/useCameraTour.mjs";
 
 const reducedMotion = () => globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
@@ -20,5 +20,15 @@ export function useVWorldCampusCamera(campusCamera) {
     stopTour();
     setActivePresetId(null);
   }, [stopTour]);
-  return { ready: Boolean(campusCamera), activePresetId, selectPreset, touring, toggleTour, stopTour, handleUserCameraStart };
+  // 카메라 단추: 확대·회전은 사용자가 지도를 움직인 것과 같다(투어와 누른 시점 표시를 멈춤). 처음 시점은 전체 시점이다.
+  const zoomBy = useCallback((factor) => {
+    handleUserCameraStart();
+    campusCamera?.zoomBy(factor);
+  }, [campusCamera, handleUserCameraStart]);
+  const rotateBy = useCallback((angle) => {
+    handleUserCameraStart();
+    campusCamera?.rotateBy(angle);
+  }, [campusCamera, handleUserCameraStart]);
+  const goHome = useCallback(() => selectPreset(CAMERA_PRESETS.find((preset) => preset.id === OVERVIEW_PRESET_ID)), [selectPreset]);
+  return { ready: Boolean(campusCamera), activePresetId, selectPreset, touring, toggleTour, stopTour, handleUserCameraStart, zoomBy, rotateBy, goHome };
 }

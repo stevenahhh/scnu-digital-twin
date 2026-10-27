@@ -58,3 +58,40 @@ test("does nothing before the overlay has a model matrix", () => {
   const camera = createVWorldCampusCamera({ Cesium: fakeCesium(), scene, getModelMatrix: () => null, boxes, center });
   assert.equal(camera.flyTo(CAMERA_PRESETS[0]), false);
 });
+
+test("camera buttons zoom toward the ground point at the view centre and orbit it about the local up axis", () => {
+  const Cesium = fakeCesium();
+  Cesium.Cartesian2 = class { constructor(x, y) { Object.assign(this, { x, y }); } };
+  Cesium.Cartesian3.distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+  const pivot = new Cesium.Cartesian3(0, 0, 0);
+  const moves = [];
+  const views = [];
+  const scene = {
+    canvas: { clientWidth: 800, clientHeight: 600 },
+    globe: { pick: () => pivot },
+    requestRender: () => {},
+    camera: {
+      getPickRay: () => ({}),
+      positionWC: new Cesium.Cartesian3(100, 0, 100),
+      directionWC: { x: -Math.SQRT1_2, y: 0, z: -Math.SQRT1_2 },
+      upWC: { x: -Math.SQRT1_2, y: 0, z: Math.SQRT1_2 },
+      moveForward: (amount) => moves.push(amount),
+      setView: (view) => views.push(view),
+    },
+  };
+  const camera = createVWorldCampusCamera({ Cesium, scene, getModelMatrix: () => null, boxes, center });
+  // x0.8 = 20% closer to the pivot (141.4 units away), x1.25 = 25% farther.
+  assert.equal(camera.zoomBy(0.8), true);
+  assert.equal(camera.zoomBy(1.25), true);
+  assert.ok(Math.abs(moves[0] - 0.2 * Math.hypot(100, 100)) < 1e-9);
+  assert.ok(Math.abs(moves[1] + 0.25 * Math.hypot(100, 100)) < 1e-9);
+  // A quarter turn about +Z (the fake surface normal) keeps height and distance and turns the view with it.
+  assert.equal(camera.rotateBy(Math.PI / 2), true);
+  const { destination, orientation } = views[0];
+  assert.ok(Math.abs(destination.x) < 1e-9 && Math.abs(destination.y - 100) < 1e-9 && Math.abs(destination.z - 100) < 1e-9);
+  assert.ok(Math.abs(orientation.direction.y + Math.SQRT1_2) < 1e-9 && Math.abs(orientation.direction.z + Math.SQRT1_2) < 1e-9);
+  // No ground point under the view centre: the buttons do nothing.
+  scene.globe.pick = () => null;
+  scene.camera.pickEllipsoid = () => null;
+  assert.equal(camera.zoomBy(0.8), false);
+});

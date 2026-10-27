@@ -56,5 +56,55 @@ export function createVWorldCampusCamera({ Cesium, scene, getModelMatrix, boxes,
     return true;
   };
 
-  return { viewOf, flyTo };
+  // 화면 가운데 지표점: 확대·회전의 중심(Legacy OrbitControls의 target에 해당). 지형을 못 집으면 타원체로.
+  const viewCenter = () => {
+    const canvas = scene.canvas;
+    const middle = new Cesium.Cartesian2((canvas?.clientWidth ?? 0) / 2, (canvas?.clientHeight ?? 0) / 2);
+    const ray = scene.camera.getPickRay?.(middle);
+    return (ray && scene.globe?.pick?.(ray, scene)) ?? scene.camera.pickEllipsoid?.(middle) ?? null;
+  };
+
+  // 카메라 단추(Legacy CameraControls와 같은 단계): factor < 1이면 가운데 지표점으로 그만큼 다가가고, > 1이면 물러난다.
+  const zoomBy = (factor) => {
+    const pivot = viewCenter();
+    if (!pivot) return false;
+    const distance = Cesium.Cartesian3.distance(scene.camera.positionWC, pivot);
+    scene.camera.moveForward(distance * (1 - factor));
+    scene.requestRender?.();
+    return true;
+  };
+
+  // 가운데 지표점을 지나는 그 자리 법선을 축으로 카메라를 돌린다(양수 = 위에서 보아 반시계).
+  const rotateBy = (angle) => {
+    const pivot = viewCenter();
+    if (!pivot) return false;
+    const axis = Cesium.Ellipsoid.WGS84.geodeticSurfaceNormal(pivot, new Cesium.Cartesian3());
+    const turn = (v) => rotateAbout(v, axis, angle);
+    const camera = scene.camera;
+    const offset = turn({ x: camera.positionWC.x - pivot.x, y: camera.positionWC.y - pivot.y, z: camera.positionWC.z - pivot.z });
+    const destination = new Cesium.Cartesian3(pivot.x + offset.x, pivot.y + offset.y, pivot.z + offset.z);
+    const direction = turn(camera.directionWC);
+    const up = turn(camera.upWC);
+    camera.setView({
+      destination,
+      orientation: { direction: new Cesium.Cartesian3(direction.x, direction.y, direction.z), up: new Cesium.Cartesian3(up.x, up.y, up.z) },
+    });
+    scene.requestRender?.();
+    return true;
+  };
+
+  return { viewOf, flyTo, zoomBy, rotateBy };
+}
+
+// Rodrigues: v rotated by angle (radians) about the unit axis.
+function rotateAbout(v, k, angle) {
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+  const dot = k.x * v.x + k.y * v.y + k.z * v.z;
+  const cross = { x: k.y * v.z - k.z * v.y, y: k.z * v.x - k.x * v.z, z: k.x * v.y - k.y * v.x };
+  return {
+    x: v.x * cos + cross.x * sin + k.x * dot * (1 - cos),
+    y: v.y * cos + cross.y * sin + k.y * dot * (1 - cos),
+    z: v.z * cos + cross.z * sin + k.z * dot * (1 - cos),
+  };
 }
