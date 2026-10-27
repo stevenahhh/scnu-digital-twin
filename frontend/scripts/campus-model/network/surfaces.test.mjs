@@ -128,8 +128,12 @@ test("a catalogue paving supplement is a Ground_Plaza layer along its axis with 
   const without = buildSurfaces({ ...fixture(), groundFeatures: { osm: [], lines: [], facilities: [], unlabelledLabels: [], supplements: [] } });
   const withPlaza = buildSurfaces({ ...fixture(), groundFeatures: { osm: [], lines: [], facilities: [], unlabelledLabels: [], supplements: [supplements[0]] } });
   assert.deepEqual(withPlaza.labelRaster(width, height, toPixel), without.labelRaster(width, height, toPixel));
-  const added = buildSurfaces({ ...fixture(), groundFeatures: { osm: [], lines: [], facilities: [], unlabelledLabels: [], supplements: [{ ...supplements[0], walkable: true }] } }).layers.find((l) => l.source_ref === "paving: plaza");
+  const addedLayers = buildSurfaces({ ...fixture(), groundFeatures: { osm: [], lines: [], facilities: [], unlabelledLabels: [], supplements: [{ ...supplements[0], walkable: true }] } }).layers;
+  const added = addedLayers.find((l) => l.source_ref === "paving: plaza");
   assert.deepEqual([added.label, added.walkableAdded, added.labelPrecedence], [SURFACE_CLASS.PAVING, true, PRECEDENCE.PAVING], "an added plaza claims natural ground only");
+  assert.equal(added.walkablePlaza, true, "a walkable catalogue plaza joins the pedestrian polygons");
+  assert.deepEqual(addedLayers.filter((l) => l.walkablePlaza).map((l) => l.source_ref), ["paving: plaza"], "its border bands do not");
+  assert.equal(plaza.walkablePlaza, undefined);
   assert.deepEqual(plaza.uvFrame.u, [1, 0]);
   assert.equal(plaza.uvFrame.sizeM, 6);
   const band = layers.find((l) => l.source_ref.startsWith("paving band slate-band"));
