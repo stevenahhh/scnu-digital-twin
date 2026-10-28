@@ -101,40 +101,40 @@ const ANCHORED_STATUS = Object.freeze({
 // camera preset built on the model frame lands elsewhere. Asking the terrain provider for the anchor's tile at a
 // fixed level gives the same height on every load (65.28 m at D4, level 15). The poll stays as the fallback when
 // the provider cannot sample (no sampleTerrain, a failed or slow tile request, an implausible height).
-const ANCHOR_TERRAIN = Object.freeze({ level: 15, timeoutMs: 10000 });
+const ANCHOR_TERRAIN = Object.freeze({ level: 15, timeoutMs: 20000, retryMs: 500 });
 
-export async function sampleAnchorGroundHeight(viewer, Cesium, { level = ANCHOR_TERRAIN.level, timeoutMs = ANCHOR_TERRAIN.timeoutMs } = {}) {
-  const provider = viewer?.terrainProvider;
-  if (typeof Cesium?.sampleTerrain !== "function" || !provider) return null;
-  const position = Cesium.Cartographic.fromDegrees(CAMPUS_GLTF_OVERLAY_CONFIG.anchor.longitude, CAMPUS_GLTF_OVERLAY_CONFIG.anchor.latitude);
-  let timer;
-  try {
-    const timeout = new Promise((resolve) => { timer = setTimeout(() => resolve(null), timeoutMs); });
-    // Cesium 1.99 (the VWorld SDK) rejects sampleTerrain until the provider is ready, and the overlay is created before
-    // the VWorld terrain is: wait for it first (readyPromise; newer Cesium providers are ready when constructed).
-    const sample = async () => {
-      if (provider.readyPromise && provider.ready !== true) await provider.readyPromise;
-      // A tile request can fail once while the SDK is still starting; try the anchor tile a few times.
-      let lastError = null;
-      for (let attempt = 0; attempt < 3; attempt += 1) {
-        try {
-          const points = await Cesium.sampleTerrain(provider, level, [position]);
-          return points?.[0]?.height ?? null;
-        } catch (error) {
-          lastError = error;
-        }
+export async function sampleAnchorGroundHeight(viewer, Cesium, {
+  level = ANCHOR_TERRAIN.level,
+  timeoutMs = ANCHOR_TERRAIN.timeoutMs,
+  retryMs = ANCHOR_TERRAIN.retryMs,
+  trace = {},
+} = {}) {
+  if (typeof Cesium?.sampleTerrain !== "function" || !viewer?.terrainProvider) return null;
+  const position = () => Cesium.Cartographic.fromDegrees(CAMPUS_GLTF_OVERLAY_CONFIG.anchor.longitude, CAMPUS_GLTF_OVERLAY_CONFIG.anchor.latitude);
+  const deadline = Date.now() + timeoutMs;
+  trace.attempts = 0;
+  // The overlay is created while the viewer may still hold Cesium's default ellipsoid provider (height 0 everywhere) or
+  // a VWorld provider that is not ready yet (Cesium 1.99 rejects sampleTerrain then). Re-read the viewer's provider on
+  // every attempt and keep asking until it answers a plausible ground height.
+  while (Date.now() < deadline) {
+    const provider = viewer.terrainProvider;
+    trace.attempts += 1;
+    trace.provider = provider?.constructor?.name ?? null;
+    try {
+      if (provider?.readyPromise && provider.ready !== true) {
+        await Promise.race([provider.readyPromise, new Promise((resolve) => setTimeout(resolve, Math.max(0, deadline - Date.now())))]);
       }
-      throw lastError;
-    };
-    const sampled = await Promise.race([sample(), timeout]);
-    return isPlausibleGroundHeight(sampled) ? sampled : null;
-  } catch (error) {
-    // A failed tile request is not fatal: the caller falls back to the globe poll.
-    console.warn("VWorld terrain sample for the campus anchor failed; falling back to the globe height.", error);
-    return null;
-  } finally {
-    clearTimeout(timer);
+      const points = await Cesium.sampleTerrain(provider, level, [position()]);
+      const height = points?.[0]?.height;
+      trace.last = height ?? null;
+      if (isPlausibleGroundHeight(height)) return height;
+    } catch (error) {
+      trace.error = String(error?.message ?? error).slice(0, 120);
+    }
+    await new Promise((resolve) => setTimeout(resolve, retryMs));
   }
+  console.warn("VWorld terrain sample for the campus anchor gave no plausible height; falling back to the globe height.", trace);
+  return null;
 }
 
 function anchorToTerrain(viewer, Cesium, model, onStatus) {
@@ -142,7 +142,9 @@ function anchorToTerrain(viewer, Cesium, model, onStatus) {
     reanchorWhenTerrainLoaded(viewer, Cesium, model, onStatus);
     return;
   }
-  sampleAnchorGroundHeight(viewer, Cesium).then((height) => {
+  const trace = {};
+  model.anchorTrace = trace;
+  sampleAnchorGroundHeight(viewer, Cesium, { trace }).then((height) => {
     if (model.isDestroyed?.()) return;
     if (height === null) {
       reanchorWhenTerrainLoaded(viewer, Cesium, model, onStatus);
