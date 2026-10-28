@@ -23,7 +23,7 @@ import {
   polylineLength, projectArc, rect, resample, scale, slicePath, straightness, sub, unit, fitPath, distanceToPolyline, median,
 } from "../lib/markingFit.mjs";
 import { TEMPLATES, crosswalkLength } from "../lib/markingStandards.mjs";
-import { readParkingLots } from "../lib/parkingRows.mjs";
+import { readParkingLots, rowGeometry } from "../lib/parkingRows.mjs";
 import { readFileSync } from "node:fs";
 import { geoToModel } from "../lib/frame.mjs";
 import { roadTextBlock } from "../lib/roadText.mjs";
@@ -480,6 +480,7 @@ export function regularise(drawn, ctx) {
   const glyphs = [];
   const groups = new Map();
   const legacyHumps = [];
+  const legacyBays = [];
   for (const c of drawn) {
     const p = c.feature.properties;
     if (c.zebra) {
@@ -498,6 +499,12 @@ export function regularise(drawn, ctx) {
       // the bands of a striped hump: no standard graphic for the 과속방지턱 stripes is in the standards set, so the
       // traced band paint dev-next drew is carried over unchanged (template legacy_preserved, evidence its trace id)
       legacyHumps.push(c);
+      continue;
+    }
+    if (p.group && c.kind === "disabled_parking") {
+      // a traced blue accessible bay (fill, frame, symbol) where no modelled accessible bay stands: carried over
+      // unchanged from dev-next (legacy_preserved) rather than dropped; the modelled ones are drawn by the stall rows
+      legacyBays.push(c);
       continue;
     }
     if (p.group && !LINE_KINDS.has(c.kind)) {
@@ -974,6 +981,23 @@ export function regularise(drawn, ctx) {
       emit([rect(scale(add(a, b), 0.5), d, perpOf(d), norm(sub(b, a)) / 2, w / 2)], t.colour, "kerb_no_parking", { inst: { t: "no_parking_line", ev: `${l.id} piece ${i}`, p: { shape: "straight", a: toScene(a), b: toScene(b), w, dash: false } } });
     }
   }
+  for (const c of glyphs) if (c.kind === "disabled_parking") legacyBays.push(c);
+  {
+    const geoms = readParkingLots().flatMap((l) => l.rows.map((r) => rowGeometry(r)));
+    const accCentres = geoms.flatMap((g) => g.symbols.map((sy) => sy.centre));
+    // (a carried-over piece touching a modelled stall stroke is left out: the standard stall wins)
+    const strokes = geoms.flatMap((g) => g.rects.filter((r) => !r.shared).map((r) => r.ring));
+    const touches = (ring) => strokes.some((st) => ring.some((q) => insideRing(q, st)) || st.some((q) => insideRing(q, ring)));
+    const byGroup = new Map();
+    for (const c of legacyBays) { const g = c.feature.properties.group ?? c.id; if (!byGroup.has(g)) byGroup.set(g, []); byGroup.get(g).push(c); }
+    for (const members of byGroup.values()) {
+      const all = members.flatMap((c) => shapesM(c).flatMap((rings) => rings[0]));
+      const ctr = scale(all.reduce((acc, q) => add(acc, q), [0, 0]), 1 / all.length);
+      if (accCentres.some((q) => norm(sub(q, ctr)) <= 2.5)) { stats.legacyBaysModelled = (stats.legacyBaysModelled ?? 0) + 1; continue; }
+      for (const c of members) for (const rings of shapesM(c)) { if (touches(rings[0])) { stats.legacyBayPiecesCut = (stats.legacyBayPiecesCut ?? 0) + 1; continue; } emit(rings, c.colour, c.kind, { inst: { t: "legacy_preserved", ev: c.id, p: { group: c.feature.properties.group, source: "dev-next 37fd445 traced accessible bay" } } }); }
+      stats.legacyBays = (stats.legacyBays ?? 0) + 1;
+    }
+  }
   for (const c of legacyHumps) {
     for (const rings of shapesM(c)) emit(rings, c.colour, c.kind, { inst: { t: "legacy_preserved", ev: c.id, p: { group: c.feature.properties.group, source: "dev-next 37fd445 traced hump band" } } });
     stats.legacyHumps = (stats.legacyHumps ?? 0) + 1;
@@ -1018,6 +1042,7 @@ export function regularise(drawn, ctx) {
   for (const c of humpGlyphs) for (const rings of shapesM(c)) emit(rings, c.colour, c.kind, { inst: { t: "legacy_preserved", ev: c.id, p: { source: "dev-next 37fd445 traced hump stripe" } } });
   for (const c of glyphs) {
     if (c.island || c.kind === "speed_bump") continue;
+    if (c.kind === "disabled_parking") continue; // carried over above (legacy_preserved) or drawn by the stall rows
     if (c.kind === "text") texts.push(c);
     else if (ARROW_KINDS.includes(c.kind) || c.kind === "arrow") emitArrow(c);
     else if (c.kind === "diamond" || c.kind === "give_way") emitOutlineSymbol(c);
