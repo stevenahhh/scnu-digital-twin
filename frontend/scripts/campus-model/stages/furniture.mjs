@@ -49,6 +49,9 @@ const M = metres;
 
 // ---------------------------------------------------------------- decisions taken against the survey
 // Each is documented in README "Street furniture"; the build log repeats them.
+// Concrete utility pole (전신주) the roadview shows where the survey placed a lamp: KEPCO 12 m pole set about 2 m deep,
+// tapering from about 0.34 m at the ground to 0.19 m at the top (estimated).
+const UTILITY_POLE = { heightM: 10, baseRadiusM: 0.17, topRadiusM: 0.095 };
 const EXCLUDED = {
   OC0109: "surveyed as a grey roofed shelter on the arterial's south footway, but VR scene_b1 l shows a long slanted banner board there and the NGII photo shows no roof, only the board's thin pale top edge beside a tree shadow: superseded by SD-B1-S2 (data/photo/site-detail.geojson, signboard)",
   OC0111: "SCNU letter monument: superseded by RS-GATE-A19 (data/photo/rest-spaces.geojson, gate_sign), placed from VR scene_a19 (and scene_001) about 13 m further south at the plaza's road edge; the 2025 photo shows that corner of the gate plaza under construction, so this survey position (VR only, confidence 0.2) is left out",
@@ -56,6 +59,36 @@ const EXCLUDED = {
 };
 // A retype may carry props (merged over the survey's properties) for the catalogue builder that now draws the object.
 const RETYPED = {
+  OB0004: {
+    kind: "utility_pole",
+    reason: "Kakao roadview 2026-01 (data/photo/pole-sources.json kakao-roadview): the seed corner holds a concrete utility pole with a sign plate, no lamp standard; drawn as a plain concrete column, no lamp head (height and diameter estimated)",
+    props: { height_m: UTILITY_POLE.heightM, height_source: "KEPCO 12 m concrete pole, about 10 m above ground (estimated)" },
+  },
+  OC0058: {
+    kind: "utility_pole",
+    reason: "Kakao roadview 2026-01 (data/photo/pole-sources.json kakao-roadview): a concrete utility pole with a transformer cabinet stands at the seed; drawn as a plain concrete column, no lamp head (height and diameter estimated)",
+    props: { height_m: UTILITY_POLE.heightM, height_source: "KEPCO 12 m concrete pole, about 10 m above ground (estimated)" },
+  },
+  OC0068: {
+    kind: "utility_pole",
+    reason: "Kakao roadview 2026-01 (data/photo/pole-sources.json kakao-roadview): a concrete utility pole (tag 136) stands at the corner; drawn as a plain concrete column, no lamp head (height and diameter estimated)",
+    props: { height_m: UTILITY_POLE.heightM, height_source: "KEPCO 12 m concrete pole, about 10 m above ground (estimated)" },
+  },
+  OC0167: {
+    kind: "utility_pole",
+    reason: "Kakao roadview 2026-01 (data/photo/pole-sources.json kakao-roadview): two concrete utility poles stand against the planter wall; drawn as a plain concrete column, no lamp head (height and diameter estimated)",
+    props: { height_m: UTILITY_POLE.heightM, height_source: "KEPCO 12 m concrete pole, about 10 m above ground (estimated)" },
+  },
+  OC0171: {
+    kind: "utility_pole",
+    reason: "Kakao roadview 2026-01 (data/photo/pole-sources.json kakao-roadview): a concrete utility pole stands at the retaining wall; drawn as a plain concrete column, no lamp head (height and diameter estimated)",
+    props: { height_m: UTILITY_POLE.heightM, height_source: "KEPCO 12 m concrete pole, about 10 m above ground (estimated)" },
+  },
+  OB0014: {
+    kind: "sign_pole",
+    reason: "Kakao roadview 2026-01 (data/photo/pole-sources.json kakao-roadview): the seed object is a bus-parking (P) sign pole on the plaza edge, no lamp standard; drawn by the sign_pole builder (post and panel, estimated)",
+    props: { height_m: 2.8, height_source: "standard traffic sign post (estimated)" },
+  },
   OB0010: {
     kind: "stepped_arc",
     reason: "surveyed as a white roofed pergola, but VR scene_a19 shows no roof there, only the stepped arc of the finished gate plaza, and the photo shows a curved edge with a thin shadow; built as a two-tier curved step (0.45 m)",
@@ -1795,6 +1828,11 @@ B.led_screen = (ctx, o) => {
   // dark frame and back box
   const ring = [a, b, [b[0] + out[0] * off, b[1] + out[1] * off], [a[0] + out[0] * off, a[1] + out[1] * off]];
   ctx.solid.prism(ring, y0 - M(0.1), y1 + M(0.1), paintOf(o.p.frameColour, C.black, o.id));
+};
+
+B.utility_pole = (ctx, o) => {
+  const g = ctx.groundAt(...o.point);
+  ctx.solid.pole(o.point, g - M(0.1), g + M(o.heightM), UTILITY_POLE.baseRadiusM, UTILITY_POLE.topRadiusM, C.concrete, { sides: 10 });
 };
 
 B.floodlight_pole = (ctx, o) => {

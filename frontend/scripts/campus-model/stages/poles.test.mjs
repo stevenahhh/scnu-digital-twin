@@ -139,6 +139,31 @@ test("pole-roots.json round 3: an epoch-root pole sits at its seed plus the offs
   }
 });
 
+test("pole-roots.json round 4: a roadview-absent seed is rejected and not drawn; utility and sign seeds are drawn as that object", async () => {
+  const { loadFurniture } = await import("./furniture.mjs");
+  const sources = JSON.parse(readFileSync(path.join(HERE, "..", "data", "photo", "pole-sources.json"), "utf8")).poles;
+  const furniture = loadFurniture();
+  const drawn = new Map(furniture.objects.map((o) => [o.id, o]));
+  const verdicts = {};
+  for (const [id, p] of Object.entries(sources)) {
+    const d = p.roadview;
+    if (!d) continue;
+    verdicts[d.verdict] = (verdicts[d.verdict] ?? 0) + 1;
+    const pole = ROOTS.poles.find((q) => q.id === id);
+    if (d.verdict === "absent") {
+      assert.ok(d.panos.length >= 2, `${id}: absent needs two panos`);
+      assert.equal(pole.verdict, "rejected", `${id} roadview-absent but ${pole.verdict}`);
+      assert.equal(drawn.has(id), false, `${id} roadview-absent but drawn`);
+      continue;
+    }
+    assert.equal(pole.estimated, true, `${id} ${d.verdict} must stay estimated`);
+    const kind = { "utility-pole": "utility_pole", "sign-pole": "sign_pole" }[d.verdict];
+    if (kind) assert.equal(drawn.get(id)?.kind, kind, `${id} drawn as ${drawn.get(id)?.kind}`);
+    else assert.ok(drawn.has(id), `${id} ${d.verdict} is kept`);
+  }
+  assert.deepEqual(verdicts, { absent: 7, unconfirmed: 20, confirmed: 13, "utility-pole": 5, "sign-pole": 1 });
+});
+
 test("signal heads face the traffic in the near lanes of the nearest approach (right-hand traffic)", async () => {
   const { signalApproach } = await import("./furniture.mjs");
   // east-west centreline at z = 0 (scene +z is south). Driving east, the right-hand kerb is the south one, so a pole

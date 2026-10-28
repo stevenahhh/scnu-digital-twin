@@ -26,7 +26,7 @@ import { readA003 } from "../lib/a003.mjs";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const GROUND_FEATURES = path.join(HERE, "..", "data", "osm-ground.json");
 const BICYCLE_LANE = "A0033327"; // as ground.mjs
-export const POLE_KINDS = new Set(["street_lamp", "traffic_signal_pole", "sign_pole", "floodlight_pole"]);
+export const POLE_KINDS = new Set(["street_lamp", "traffic_signal_pole", "sign_pole", "floodlight_pole", "utility_pole"]);
 
 const POOL_LIFT_M = 0.12;
 
