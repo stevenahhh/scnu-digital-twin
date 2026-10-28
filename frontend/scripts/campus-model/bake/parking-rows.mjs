@@ -23,6 +23,7 @@
 // photo ones (the photo pitch differs from the statute 2.5 m by a few centimetres per bay).
 //
 //   bun scripts/campus-model/bake/parking-rows.mjs [--site <id>]
+import { readMarkings } from "../../qa/markings-audit.mjs";
 import { paintIn } from "../../qa/photoPaint.mjs";
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -531,6 +532,183 @@ for (const r of found) if (!rows.some((q) => overlapShare(r, q) > 0.3 || overlap
 const rejected = new Map((review.rejectRows ?? []).map((x) => [x.near.join(","), x]));
 const kept = rows.filter((r) => ![...rejected.values()].some((x) => norm(sub(toMetres(x.near), [(r.start[0] + r.end[0]) / 2, (r.start[1] + r.end[1]) / 2])) < 3));
 const rejectedRows = rows.length - kept.length;
+// rows along a front line drawn by eye (review.rowLines: the row's front line and a point on its stall side), where the
+// cars hide too many dividers for the divider search: the dividers are read along the line on the photo (white paint
+// peaks within 0.5-4.5 m of the front, 0.1 m steps), the pitch is the one (2.3-3.0 m) that puts the most read dividers on
+// its grid, the bays are the line's length over that pitch; a bay holding the review's accessible point is accessible
+function lineRow(e) {
+  // parallel rows (평행주차, review flag `parallel`): 2.0 m deep, dividers 5.5-7.0 m apart, drawn at least 6.0 m
+  const [tMin, tMax, pMin, pMax, wMin, depth] = e.parallel ? [0.3, 1.7, 5.5, 7.0, 6.0, 2.0] : [0.5, 4.5, 2.3, 3.0, 2.5, 5.0];
+  const a = toMetres(e.front[0]), b = toMetres(e.front[1]), side = toMetres(e.side);
+  const L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+  const u = [(b[0] - a[0]) / L, (b[1] - a[1]) / L];
+  let v = [-u[1], u[0]];
+  if ((side[0] - a[0]) * v[0] + (side[1] - a[1]) * v[1] < 0) v = [-v[0], -v[1]];
+  const pts = [a, b, [a[0] + v[0] * depth, a[1] + v[1] * depth], [b[0] + v[0] * depth, b[1] + v[1] * depth]];
+  const box = [Math.min(...pts.map((p) => p[0])) - 1, Math.min(...pts.map((p) => p[1])) - 1, Math.max(...pts.map((p) => p[0])) + 1, Math.max(...pts.map((p) => p[1])) + 1];
+  const px = paintIn(box, { whiteContrast: 14, pavementMax: 175 }).blobs.filter((bl) => bl.colour === "white" && bl.type !== "car").flatMap((bl) => bl.pts);
+  const prof = [];
+  for (let sv = 0; sv <= L; sv += 0.1) {
+    let n = 0;
+    for (const q of px) { const d = [q[0] - a[0], q[1] - a[1]]; const t = d[0] * v[0] + d[1] * v[1], ss = d[0] * u[0] + d[1] * u[1]; if (t >= tMin && t <= tMax && Math.abs(ss - sv) <= 0.15) n += 1; }
+    prof.push(n);
+  }
+  const mx = Math.max(...prof);
+  const peaks = [];
+  prof.forEach((n, i) => { if (n >= Math.max(4, 0.3 * mx) && n >= (prof[i - 1] ?? 0) && n >= (prof[i + 1] ?? 0) && (!peaks.length || i * 0.1 - peaks.at(-1) > 1.2)) peaks.push(i * 0.1); });
+  if (peaks.length < 2 && !e.parallel) return null;
+  let best = peaks.length < 2 ? { p: wMin, p0: 0, hits: peaks } : null;
+  if (peaks.length >= 2) for (let p = pMin; p <= pMax + 1e-9; p += 0.01) for (const p0 of peaks) {
+    const hits = peaks.filter((x) => { const r = (((x - p0) % p) + p) % p; return Math.min(r, p - r) <= 0.15; });
+    if (!best || hits.length > best.hits.length || (hits.length === best.hits.length && Math.abs(p - wMin) < Math.abs(best.p - wMin))) best = { p, p0, hits };
+  }
+  const first = best.p0 - Math.floor((best.p0 + 0.3) / best.p) * best.p;
+  // the bays the painted length holds at the drawn (statute-clamped) width
+  // (a parallel frame whose middle dividers the photo does not show: its length over the 6.0 m standard bay)
+  const bays = e.parallel ? Math.max(1, Math.round(L / Math.max(best.p, wMin))) : Math.floor((L - first + 0.3) / Math.max(best.p, wMin));
+  if (bays < 1) return null;
+  const start = [a[0] + u[0] * first, a[1] + u[1] * first];
+  const end = [start[0] + u[0] * bays * Math.max(best.p, wMin), start[1] + u[1] * bays * Math.max(best.p, wMin)];
+  const acc = e.accessible ? toMetres(e.accessible) : null;
+  const accessible = acc ? [Math.floor(((acc[0] - start[0]) * u[0] + (acc[1] - start[1]) * u[1]) / best.p)].filter((k) => k >= 0 && k < bays) : [];
+  return {
+    site: `line ${e.id}`, u, v, centre: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], dividers: best.hits.length, sources: [`review ${e.id}`], start, end,
+    bays, pitch: best.p, accessiblePitch: 3.3, depthPhoto: depth, lines: true, partial: false, accessible, rms: 0, parallel: Boolean(e.parallel),
+    photoDividers: best.hits.map((x) => [a[0] + u[0] * x, a[1] + u[1] * x]),
+  };
+}
+for (const e of review.rowLines ?? []) {
+  const r = lineRow(e);
+  console.log(`row line ${e.id}: ${r ? `${r.bays} bays at ${r.pitch.toFixed(2)} m (${r.dividers} dividers read on the photo)` : "no dividers read"}`);
+  if (!r) continue;
+  // the divider search's own reads along this line are replaced
+  for (let i = kept.length - 1; i >= 0; i -= 1) {
+    const q = kept[i];
+    const m = [(q.start[0] + q.end[0]) / 2 - r.start[0], (q.start[1] + q.end[1]) / 2 - r.start[1]];
+    const along = m[0] * r.u[0] + m[1] * r.u[1], across = m[0] * r.v[0] + m[1] * r.v[1];
+    if (along >= -1 && along <= r.bays * r.pitch + 1 && across >= -2 && across <= 6) kept.splice(i, 1);
+  }
+  kept.push(r);
+}
+// rows found in the re-search areas (review.addAreas) are trimmed at their ends to the painted dividers: an end bay
+// whose outer divider shows white paint over less than TRIM_SHARE of its length on the photo is dropped
+const TRIM_SHARE = 0.3;
+let trimmedBays = 0;
+for (const r of kept) {
+  if (!r.sources.some((x) => /^lot-|recheck|B7-south/.test(x))) continue;
+  const box = (() => { const pts = [r.start, r.end, [r.end[0] + r.v[0] * r.depthPhoto, r.end[1] + r.v[1] * r.depthPhoto], [r.start[0] + r.v[0] * r.depthPhoto, r.start[1] + r.v[1] * r.depthPhoto]]; return [Math.min(...pts.map((p) => p[0])) - 1, Math.min(...pts.map((p) => p[1])) - 1, Math.max(...pts.map((p) => p[0])) + 1, Math.max(...pts.map((p) => p[1])) + 1]; })();
+  const paint = paintIn(box, { whiteContrast: 14, pavementMax: 175 }).blobs.filter((b) => b.colour === "white" && b.type !== "car").flatMap((b) => b.pts);
+  const painted = (s) => {
+    const o = [r.start[0] + r.u[0] * s, r.start[1] + r.u[1] * s];
+    let hit = 0, n = 0;
+    for (let t = 0.3; t <= r.depthPhoto - 0.3; t += 0.25) { n += 1; const q = [o[0] + r.v[0] * t, o[1] + r.v[1] * t]; if (paint.some((p) => Math.hypot(p[0] - q[0], p[1] - q[1]) <= 0.25)) hit += 1; }
+    return hit / n;
+  };
+  const len = Math.hypot(r.end[0] - r.start[0], r.end[1] - r.start[1]);
+  let a = 0, b = r.bays;
+  while (b - a > 1 && painted((a * len) / r.bays) < TRIM_SHARE) a += 1;
+  while (b - a > 1 && painted((b * len) / r.bays) < TRIM_SHARE) b -= 1;
+  if (a === 0 && b === r.bays) continue;
+  const step = len / r.bays;
+  const s0 = [r.start[0] + r.u[0] * a * step, r.start[1] + r.u[1] * a * step];
+  r.end = [r.start[0] + r.u[0] * b * step, r.start[1] + r.u[1] * b * step];
+  r.start = s0;
+  r.photoDividers = r.photoDividers.filter((p) => { const s = (p[0] - s0[0]) * r.u[0] + (p[1] - s0[1]) * r.u[1]; return s >= -0.3 && s <= (b - a) * step + 0.3; });
+  r.accessible = r.accessible.filter((k) => k >= a && k < b).map((k) => k - a);
+  trimmedBays += r.bays - (b - a);
+  r.bays = b - a;
+}
+console.log(`re-search rows trimmed to their painted dividers: ${trimmedBays} bays dropped`);
+// end bays under a building of the model (the up-facing triangles of its BLD_* nodes in public/campus-v2.glb, as the
+// markings audit's stall-building check reads them) are dropped: no stall crosses a building
+{
+  const { roofs } = await readMarkings(path.join(HERE, "..", "..", "..", "public", "campus-v2.glb"));
+  const grid = new Map();
+  for (const t of roofs) { const xs = t.map((q) => q[0]), zs = t.map((q) => q[1]); for (let i = Math.floor(Math.min(...xs) / 4); i <= Math.floor(Math.max(...xs) / 4); i += 1) for (let j = Math.floor(Math.min(...zs) / 4); j <= Math.floor(Math.max(...zs) / 4); j += 1) { const k = `${i},${j}`; if (!grid.has(k)) grid.set(k, []); grid.get(k).push(t); } }
+  const inTri = (q, [a, b, c]) => { const f = (p1, p2) => (p2[0] - p1[0]) * (q[1] - p1[1]) - (p2[1] - p1[1]) * (q[0] - p1[0]); const d1 = f(a, b), d2 = f(b, c), d3 = f(c, a); return !((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0)); };
+  const under = (q) => (grid.get(`${Math.floor(q[0] / 4)},${Math.floor(q[1] / 4)}`) ?? []).some((t) => inTri(q, t));
+  let dropped = 0;
+  // the drawn geometry (lib/parkingRows.mjs rowGeometry on the row as written), every stroke corner tested as the audit
+  // does: under a roof together with the four points 0.5 m from it
+  const deep = (q) => [[0, 0], [0.5, 0], [-0.5, 0], [0, 0.5], [0, -0.5]].every(([dx, dz]) => under([q[0] + dx, q[1] + dz]));
+  const asWritten = (r) => ({ start: toGeo(r.start), end: toGeo(r.end), depthBearing: +(((Math.atan2(r.v[0], -r.v[1]) * 180) / Math.PI + 360) % 360).toFixed(2), photoBays: r.bays, photoPitchM: r.pitch, accessible: r.accessible, photoDividers: r.photoDividers.map(toGeo), ...(r.aisle ?? {}), ...(r.parallel ? { parallel: true } : {}) });
+  for (const r of kept) {
+    for (let guard = 0; guard < 40 && r.bays > 0; guard += 1) {
+      const g = rowGeometry(asWritten(r));
+      // a bay stands in a building when its centre lies under a roof of the model (an overhang over the back of the
+      // stall, as the photo shows at B7, is not the building's footprint)
+      const bad = new Set();
+      let s0 = 0;
+      g.widths.forEach((w, k) => { const c = [g.origin[0] + g.u[0] * (s0 + w / 2) + g.v[0] * g.depth / 2, g.origin[1] + g.u[1] * (s0 + w / 2) + g.v[1] * g.depth / 2]; if (deep(c)) bad.add(k); s0 += w; });
+      if (!bad.size) break;
+      const len = Math.hypot(r.end[0] - r.start[0], r.end[1] - r.start[1]), step = len / r.bays;
+      const k = Math.min(...bad);
+      const fromStart = k <= r.bays / 2;
+      if (fromStart) r.start = [r.start[0] + r.u[0] * step, r.start[1] + r.u[1] * step];
+      else r.end = [r.end[0] - r.u[0] * step, r.end[1] - r.u[1] * step];
+      r.accessible = r.accessible.filter((x) => (fromStart ? x >= 1 : x < r.bays - 1)).map((x) => (fromStart ? x - 1 : x));
+      r.bays -= 1;
+      dropped += 1;
+    }
+  }
+  // every row registered on the photo paint: the drawn strokes (statute widths, lib/parkingRows.mjs) moved along and
+  // across the row (+-1.4 m: over half a bay, +-3.0 m) and turned (+-3 deg), coarse then fine (0.05 m, 0.5 deg), to cover the most white paint the photo
+  // shows within 0.1 m of them (qa/photoPaint.mjs, light-lot setting); the row keeps that placement (registered)
+  let registered = 0;
+  for (const r of kept) {
+    // (rows along a by-eye front line keep that line: the cars over them leave too little paint to register on)
+    if (r.aisle || r.bays < 1 || r.sources.some((x) => x.startsWith("review "))) continue;
+    const g0 = rowGeometry(asWritten(r));
+    const ring = g0.rects.flatMap((rc) => rc.ring);
+    const xs = ring.map((q) => q[0]), zs = ring.map((q) => q[1]);
+    const box = [Math.min(...xs) - 2.5, Math.min(...zs) - 2.5, Math.max(...xs) + 2.5, Math.max(...zs) + 2.5];
+    // (paint under a roof of the model is left out)
+    const nearRoof = (q) => under(q);
+    const paint = new Set(paintIn(box, { whiteContrast: 14, pavementMax: 175 }).blobs.filter((b) => b.colour === "white" && b.type !== "car").flatMap((b) => b.pts).filter((q) => !nearRoof(q)).map((q) => Math.round(q[0] * 10) * 100003 + Math.round(q[1] * 10)));
+    if (paint.size < 20) continue;
+    // stroke sample points of the drawn row, relative to its first divider's front corner
+    const o = g0.origin;
+    const samples = [];
+    for (const rc of g0.rects) {
+      const [a, b, , d] = rc.ring;
+      const e1 = [b[0] - a[0], b[1] - a[1]], e2 = [d[0] - a[0], d[1] - a[1]];
+      const n1 = Math.max(1, Math.round(Math.hypot(...e1) / 0.1)), n2 = Math.max(1, Math.round(Math.hypot(...e2) / 0.1));
+      for (let i = 0; i <= n1; i += 1) for (let j = 0; j <= n2; j += 1) samples.push([a[0] + (e1[0] * i) / n1 + (e2[0] * j) / n2 - o[0], a[1] + (e1[1] * i) / n1 + (e2[1] * j) / n2 - o[1]]);
+    }
+    const rotCache = new Map();
+    const rotated = (deg) => { if (!rotCache.has(deg)) { const c = Math.cos((deg * Math.PI) / 180), s = Math.sin((deg * Math.PI) / 180); rotCache.set(deg, samples.map(([x, z]) => [o[0] + x * c - z * s, o[1] + x * s + z * c])); } return rotCache.get(deg); };
+    const score = (ds, dt, deg) => {
+      const sx = g0.u[0] * ds + g0.v[0] * dt, sz = g0.u[1] * ds + g0.v[1] * dt;
+      let n = 0;
+      for (const q of rotated(deg)) if (paint.has(Math.round((q[0] + sx) * 10) * 100003 + Math.round((q[1] + sz) * 10))) n += 1;
+      return n;
+    };
+    let best = { n: score(0, 0, 0), ds: 0, dt: 0, deg: 0 };
+    const base = best.n;
+    // coarse (0.2 m, 1 deg), then fine (0.05 m, 0.5 deg) around the coarse best
+    // (a row along a by-eye front line keeps that line's direction: moved, not turned)
+    const degs = r.sources.some((x) => x.startsWith("review ")) ? [0] : [-3, -2, -1, 0, 1, 2, 3];
+    for (const deg of degs) for (let ds = -1.4; ds <= 1.4 + 1e-9; ds += 0.2) for (let dt = -3.0; dt <= 3.0 + 1e-9; dt += 0.2) { const n = score(ds, dt, deg); if (n > best.n * 1.02) best = { n, ds, dt, deg }; }
+    const c0 = { ...best };
+    for (const deg of degs.length === 1 ? [0] : [c0.deg - 1, c0.deg - 0.5, c0.deg, c0.deg + 0.5, c0.deg + 1]) for (let ds = c0.ds - 0.2; ds <= c0.ds + 0.2 + 1e-9; ds += 0.05) for (let dt = c0.dt - 0.2; dt <= c0.dt + 0.2 + 1e-9; dt += 0.05) { const n = score(ds, dt, deg); if (n > best.n) best = { n, ds, dt, deg }; }
+    if (best.n <= base) continue;
+    const c = Math.cos((best.deg * Math.PI) / 180), s = Math.sin((best.deg * Math.PI) / 180);
+    const rot = (p) => [o[0] + (p[0] - o[0]) * c - (p[1] - o[1]) * s + g0.u[0] * best.ds + g0.v[0] * best.dt, o[1] + (p[0] - o[0]) * s + (p[1] - o[1]) * c + g0.u[1] * best.ds + g0.v[1] * best.dt];
+    const rv = (v) => [v[0] * c - v[1] * s, v[0] * s + v[1] * c];
+    // the written row: start at the drawn first divider, end after its bays at the drawn widths, no further shift
+    const len = g0.widths.reduce((acc, w) => acc + w, 0);
+    r.start = rot(o);
+    r.u = rv(g0.u); r.v = rv(g0.v);
+    r.end = [r.start[0] + r.u[0] * len, r.start[1] + r.u[1] * len];
+    r.photoDividers = r.photoDividers.map(rot);
+    r.registered = { ds: +best.ds.toFixed(2), dt: +best.dt.toFixed(2), deg: best.deg, gain: +(best.n / Math.max(1, base)).toFixed(2) };
+    registered += 1;
+  }
+  console.log(`rows registered on the photo paint: ${registered}`);
+  // (and single-bay reads, too weak to stand as a row)
+  for (let i = kept.length - 1; i >= 0; i -= 1) if (kept[i].bays < (kept[i].parallel ? 1 : 2)) kept.splice(i, 1);
+  console.log(`end bays under a building of the model dropped: ${dropped}`);
+}
 // angled rows by area: the perpendicular reads inside an angled area are its dividers read square, replaced
 for (const area of review.angledAreas ?? []) {
   const r = angledRow(area);
@@ -570,6 +748,8 @@ const lots = [...lotGroups.values()]
       end: toGeo(r.end),
       depthBearing: +(((Math.atan2(r.v[0], -r.v[1]) * 180) / Math.PI + 360) % 360).toFixed(2),
       ...(r.aisle ?? {}),
+      ...(r.parallel ? { parallel: true } : {}),
+      ...(r.registered ? { registered: r.registered } : {}),
       photoBays: r.bays,
       photoPitchM: +r.pitch.toFixed(3),
       photoAccessiblePitchM: +r.accessiblePitch.toFixed(3),

@@ -42,7 +42,8 @@ export function parkingInstances({ blocked = () => false } = {}) {
         const s0 = g.widths.slice(0, k).reduce((a, x) => a + x, 0) + w / 2;
         return [g.origin[0] + g.u[0] * s0 + g.v[0] * g.depth / 2, g.origin[1] + g.u[1] * s0 + g.v[1] * g.depth / 2];
       });
-      if (probes.filter((p) => blocked(toScene(p))).length > probes.length * 0.5) {
+      // (a parallel frame lies along the kerb, its probe on the kerb line: it is read on the carriageway, never skipped)
+      if (!row.parallel && probes.filter((p) => blocked(toScene(p))).length > probes.length * 0.5) {
         log.skippedRows.push(row.id);
         continue;
       }
@@ -53,9 +54,14 @@ export function parkingInstances({ blocked = () => false } = {}) {
       for (const r of g.rects) if (!r.shared) pieces.push({ rings: [r.ring.map(toScene)], colour: "white", kind: "parking_line", estimated: false, inst });
       const sym = TEMPLATES.stall_accessible.symbol;
       for (const s of g.symbols) {
-        const half = sym.squareM / 2;
-        const sq = [[-half, -half], [half, -half], [half, half], [-half, half]].map(([x, y]) => [s.centre[0] + g.u[0] * x + g.v[0] * y, s.centre[1] + g.u[1] * x + g.v[1] * y]);
-        pieces.push({ rings: [sq.map(toScene)], colour: "blue", kind: "disabled_parking", estimated: false, inst });
+        // the accessible bay painted blue over its whole interior (the photo's blue bays; 장애인전용 주차구획 청색 바탕),
+        // inside the white lines so no stroke is covered; the white wheelchair lies over it
+        const s0 = g.widths.slice(0, s.k).reduce((a, w) => a + w, 0), s1 = s0 + g.widths[s.k];
+        const lw = g.line;
+        const at = (a, b) => [g.origin[0] + g.u[0] * a + g.v[0] * b, g.origin[1] + g.u[1] * a + g.v[1] * b];
+        const fill = [at(s0 + lw / 2, lw / 2), at(s1 - lw / 2, lw / 2), at(s1 - lw / 2, g.depth - lw / 2), at(s0 + lw / 2, g.depth - lw / 2)];
+        pieces.push({ rings: [fill.map(toScene)], colour: "blue", kind: "disabled_parking", estimated: false, inst });
+        void sym.squareM;
         // the wheelchair upright for the driver entering from the front line (its top towards the back line)
         for (const rings of wheelchairTemplate(sym.wheelchairM)) {
           pieces.push({ rings: rings.map((ring) => ring.map(([x, y]) => toScene([s.centre[0] + g.u[0] * x + g.v[0] * y, s.centre[1] + g.u[1] * x + g.v[1] * y]))), colour: "white", kind: "disabled_parking", estimated: false, inst });

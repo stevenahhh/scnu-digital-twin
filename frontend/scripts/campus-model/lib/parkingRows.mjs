@@ -84,8 +84,8 @@ export function rowGeometry(row) {
   // the divider direction against the row: square rows within ANGLED_MIN_DEG of 90 deg, else the 경사주차 template
   // of the nearer statute angle (45 or 60 deg), the dividers turned to it on the photo's side
   if (row.photoAngleDeg != null && row.photoAngleDeg < ANGLED_MIN_DEG) return angledGeometry(row, start, v, row.photoAngleDeg < 52.5 ? 45 : 60);
-  const expanded = row.photoPitchM >= EXPANDED_PITCH_M;
-  const tpl = expanded ? TEMPLATES.stall_expanded : TEMPLATES.stall_normal;
+  const expanded = !row.parallel && row.photoPitchM >= EXPANDED_PITCH_M;
+  const tpl = row.parallel ? TEMPLATES.stall_parallel : expanded ? TEMPLATES.stall_expanded : TEMPLATES.stall_normal;
   const acc = TEMPLATES.stall_accessible;
   const n = row.photoBays;
   // the bay width is the photo pitch, clamped to the statute minimum of the template (주차장법 시행규칙 제3조: 2.5 m
@@ -98,7 +98,7 @@ export function rowGeometry(row) {
   // the row's first edge: centred on the photo row, then moved by the median offset of the photo dividers from the
   // drawn edges nearest them (within half a bay), so the grid sits on the painted dividers
   let s0 = (photoLength - length) / 2;
-  if (photoAlong.length) {
+  if (photoAlong.length && !row.registered) {
     const grid = [s0];
     for (const w of widths) grid.push(grid.at(-1) + w);
     const offs = photoAlong.map((p) => grid.reduce((best, g) => (Math.abs(p - g) < Math.abs(best) ? p - g : best), Infinity)).filter((d) => Math.abs(d) <= pitch / 2).sort((a, b) => a - b);
@@ -124,7 +124,7 @@ export function rowGeometry(row) {
   // (each divider read on the photo against the drawn divider nearest it; dividers hidden by cars have no photo partner)
   const residual = photo.length ? Math.max(...photo.map((p) => Math.min(...edges.map((s) => Math.abs(p - s))))) : null;
   return {
-    template: expanded ? "stall_expanded" : "stall_normal", pitch, u, v, origin: P(edges[0], 0), widths, depth, line: lw, rects, symbols,
+    template: row.parallel ? "stall_parallel" : expanded ? "stall_expanded" : "stall_normal", pitch, u, v, origin: P(edges[0], 0), widths, depth, line: lw, rects, symbols,
     surface: rect(edges[0] - lw / 2 - m, edges[n] + lw / 2 + m, -lw / 2 - m, depth + lw / 2 + m), photoResidualM: residual,
   };
 }

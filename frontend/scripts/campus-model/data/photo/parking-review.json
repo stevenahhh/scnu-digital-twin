@@ -299,6 +299,397 @@
    ],
    "reason": "photo stall-line paint around this lot is under 60 % covered by the modelled rows (markings audit stall-paint, P45 at the 2026-10-28 bake): the lot and 8 m around it searched again for rows the traces miss",
    "alone": true
+  },
+  {
+   "id": "apartment-P42",
+   "ring": [
+    [
+     127.47958403,
+     34.96676112
+    ],
+    [
+     127.48014498,
+     34.96676111
+    ],
+    [
+     127.48014496,
+     34.96628199
+    ],
+    [
+     127.47958402,
+     34.966282
+    ]
+   ],
+   "reason": "apartment-block lot around P42: the photo shows two long rows (20-30 stalls) along the block fronts with cars between visible dividers; searched on its own",
+   "alone": true
+  },
+  {
+   "id": "apartment-P43",
+   "ring": [
+    [
+     127.47979412,
+     34.96674567
+    ],
+    [
+     127.48035197,
+     34.96674566
+    ],
+    [
+     127.48035195,
+     34.96628644
+    ],
+    [
+     127.4797941,
+     34.96628645
+    ]
+   ],
+   "reason": "apartment-block lot around P43: the photo shows two long rows (20-30 stalls) along the block fronts with cars between visible dividers; searched on its own",
+   "alone": true
+  },
+  {
+   "id": "apartment-P44",
+   "ring": [
+    [
+     127.48210528,
+     34.96654204
+    ],
+    [
+     127.48266487,
+     34.96654201
+    ],
+    [
+     127.48266483,
+     34.96608149
+    ],
+    [
+     127.48210525,
+     34.96608152
+    ]
+   ],
+   "reason": "apartment-block lot around P44: the photo shows two long rows (20-30 stalls) along the block fronts with cars between visible dividers; searched on its own",
+   "alone": true
+  },
+  {
+   "id": "column-P03",
+   "ring": [
+    [
+     127.47723805,
+     34.97080645
+    ],
+    [
+     127.47759436,
+     34.97080644
+    ],
+    [
+     127.47759435,
+     34.9705002
+    ],
+    [
+     127.47723804,
+     34.9705002
+    ]
+   ],
+   "reason": "column of about 8 stalls along the building (P03) on the photo; searched on its own",
+   "alone": true
+  },
+  {
+   "id": "roadside-J20-3",
+   "ring": [
+    [
+     127.48160556,
+     34.96913163
+    ],
+    [
+     127.48180266,
+     34.96913162
+    ],
+    [
+     127.48180265,
+     34.96900543
+    ],
+    [
+     127.48160555,
+     34.96900543
+    ]
+   ],
+   "reason": "roadside parking frame beside the carriageway at J20 on the photo; searched on its own",
+   "alone": true
+  },
+  {
+   "id": "roadside-J25-1",
+   "ring": [
+    [
+     127.47746374,
+     34.9682929
+    ],
+    [
+     127.47766084,
+     34.9682929
+    ],
+    [
+     127.47766084,
+     34.96816671
+    ],
+    [
+     127.47746374,
+     34.96816671
+    ]
+   ],
+   "reason": "roadside parking frame beside the carriageway at J25 on the photo; searched on its own",
+   "alone": true
+  },
+  {
+   "id": "roadside-J25-2",
+   "ring": [
+    [
+     127.47732654,
+     34.96838917
+    ],
+    [
+     127.47752364,
+     34.96838917
+    ],
+    [
+     127.47752364,
+     34.96826298
+    ],
+    [
+     127.47732654,
+     34.96826298
+    ]
+   ],
+   "reason": "roadside parking frame beside the carriageway at J25 on the photo; searched on its own",
+   "alone": true
+  },
+  {
+   "id": "roadside-J26-1",
+   "ring": [
+    [
+     127.48112598,
+     34.96797661
+    ],
+    [
+     127.48132308,
+     34.9679766
+    ],
+    [
+     127.48132308,
+     34.96785041
+    ],
+    [
+     127.48112598,
+     34.96785042
+    ]
+   ],
+   "reason": "roadside parking frame beside the carriageway at J26 on the photo; searched on its own",
+   "alone": true
+  },
+  {
+   "id": "roadside-J26-2",
+   "ring": [
+    [
+     127.48131673,
+     34.96794677
+    ],
+    [
+     127.48151383,
+     34.96794676
+    ],
+    [
+     127.48151382,
+     34.96782056
+    ],
+    [
+     127.48131672,
+     34.96782057
+    ]
+   ],
+   "reason": "roadside parking frame beside the carriageway at J26 on the photo; searched on its own",
+   "alone": true
+  },
+  {
+   "id": "roadside-J26-3",
+   "ring": [
+    [
+     127.48129636,
+     34.9679309
+    ],
+    [
+     127.48149346,
+     34.96793089
+    ],
+    [
+     127.48149346,
+     34.9678047
+    ],
+    [
+     127.48129636,
+     34.96780471
+    ]
+   ],
+   "reason": "roadside parking frame beside the carriageway at J26 on the photo; searched on its own",
+   "alone": true
+  },
+  {
+   "id": "roadside-J27-1",
+   "ring": [
+    [
+     127.48112598,
+     34.96797661
+    ],
+    [
+     127.48132308,
+     34.9679766
+    ],
+    [
+     127.48132308,
+     34.96785041
+    ],
+    [
+     127.48112598,
+     34.96785042
+    ]
+   ],
+   "reason": "roadside parking frame beside the carriageway at J27 on the photo; searched on its own",
+   "alone": true
+  },
+  {
+   "id": "roadside-J27-3",
+   "ring": [
+    [
+     127.48091279,
+     34.96801339
+    ],
+    [
+     127.48110989,
+     34.96801339
+    ],
+    [
+     127.48110988,
+     34.96788719
+    ],
+    [
+     127.48091278,
+     34.9678872
+    ]
+   ],
+   "reason": "roadside parking frame beside the carriageway at J27 on the photo; searched on its own",
+   "alone": true
+  },
+  {
+   "id": "roadside-J27-5",
+   "ring": [
+    [
+     127.48008342,
+     34.96769009
+    ],
+    [
+     127.48028052,
+     34.96769009
+    ],
+    [
+     127.48028051,
+     34.96756389
+    ],
+    [
+     127.48008341,
+     34.9675639
+    ]
+   ],
+   "reason": "roadside parking frame beside the carriageway at J27 on the photo; searched on its own",
+   "alone": true
+  },
+  {
+   "id": "roadside-J27-7",
+   "ring": [
+    [
+     127.48014564,
+     34.96822732
+    ],
+    [
+     127.48034274,
+     34.96822731
+    ],
+    [
+     127.48034273,
+     34.96810112
+    ],
+    [
+     127.48014563,
+     34.96810113
+    ]
+   ],
+   "reason": "roadside parking frame beside the carriageway at J27 on the photo; searched on its own",
+   "alone": true
+  },
+  {
+   "id": "roadside-J27-9",
+   "ring": [
+    [
+     127.48131673,
+     34.96794677
+    ],
+    [
+     127.48151383,
+     34.96794676
+    ],
+    [
+     127.48151382,
+     34.96782056
+    ],
+    [
+     127.48131672,
+     34.96782057
+    ]
+   ],
+   "reason": "roadside parking frame beside the carriageway at J27 on the photo; searched on its own",
+   "alone": true
+  },
+  {
+   "id": "roadside-J27-12",
+   "ring": [
+    [
+     127.48129636,
+     34.9679309
+    ],
+    [
+     127.48149346,
+     34.96793089
+    ],
+    [
+     127.48149346,
+     34.9678047
+    ],
+    [
+     127.48129636,
+     34.96780471
+    ]
+   ],
+   "reason": "roadside parking frame beside the carriageway at J27 on the photo; searched on its own",
+   "alone": true
+  },
+  {
+   "id": "apartment-P45",
+   "ring": [
+    [
+     127.480991,
+     34.96652475
+    ],
+    [
+     127.48154944,
+     34.96652473
+    ],
+    [
+     127.48154941,
+     34.96606502
+    ],
+    [
+     127.48099097,
+     34.96606504
+    ]
+   ],
+   "reason": "apartment-block lot around P45: the photo shows two long rows along the block fronts with cars between visible dividers; searched on its own",
+   "alone": true
   }
  ],
  "rejectRows": [
@@ -373,6 +764,14 @@
    ],
    "row": "P18-R2",
    "reason": "one-bay \"row\" whose bay centre lies on the A003 sidewalk: paving joints read as dividers"
+  },
+  {
+   "near": [
+    127.47949162500001,
+    34.970490240000004
+   ],
+   "row": "P05-R1 (2026-10-28 bake)",
+   "reason": "two-bay read on a flat roof (rooftop pattern beside the building west of the B4 crossing), not a stall row"
   }
  ],
  "angledAreas": [
@@ -427,6 +826,216 @@
     34.97028361
    ],
    "reason": "5 angled (경사) stall frames at the B4 corner lot, read by eye on the NGII sheet; the row is fitted from the paint in this area"
+  }
+ ],
+ "rowLines": [
+  {
+   "id": "apartment-south-1",
+   "front": [
+    [
+     127.48213396,
+     34.96625412
+    ],
+    [
+     127.48257953,
+     34.96632327
+    ]
+   ],
+   "side": [
+    127.48235499,
+    34.96633917
+   ],
+   "reason": "stall row along the apartment block front (south of the block at x 370-396 scene), cars over most dividers; front line read by eye on the NGII sheet"
+  },
+  {
+   "id": "apartment-south-2",
+   "front": [
+    [
+     127.48226026,
+     34.96622842
+    ],
+    [
+     127.482569,
+     34.96627374
+    ]
+   ],
+   "side": [
+    127.48240761,
+    34.96621642
+   ],
+   "reason": "stall row facing it across the aisle, front line read by eye"
+  },
+  {
+   "id": "apartment-mid-1",
+   "front": [
+    [
+     127.48116865,
+     34.96630528
+    ],
+    [
+     127.48153825,
+     34.96635711
+    ]
+   ],
+   "side": [
+    127.48133757,
+    34.96628145
+   ],
+   "reason": "stall row along the next apartment block (x 315-336 scene), front line read by eye"
+  },
+  {
+   "id": "apartment-mid-2",
+   "front": [
+    [
+     127.48112935,
+     34.966345
+    ],
+    [
+     127.48151861,
+     34.96640448
+    ]
+   ],
+   "side": [
+    127.48132004,
+    34.96640419
+   ],
+   "reason": "stall row facing it across the aisle, front line read by eye"
+  },
+  {
+   "id": "column-P03",
+   "front": [
+    [
+     127.47740881,
+     34.97071818
+    ],
+    [
+     127.47734653,
+     34.97052122
+    ]
+   ],
+   "side": [
+    127.47741705,
+    34.97061364
+   ],
+   "accessible": [
+    127.47738021,
+    34.97058475
+   ],
+   "reason": "column of stalls along the building west of B4 (P03), with one blue accessible bay; front line read by eye"
+  },
+  {
+   "id": "parallel-J09-2",
+   "parallel": true,
+   "front": [
+    [
+     127.48210126,
+     34.96995684
+    ],
+    [
+     127.48222315,
+     34.96991889
+    ]
+   ],
+   "side": [
+    127.48215542,
+    34.96992311
+   ],
+   "reason": "parallel (평행) stall frame beside the carriageway at J09 on the photo (white rectangle 11.9 x 3.7 m); its long edge and the side it lies on from the photo paint blob"
+  },
+  {
+   "id": "parallel-J09-3",
+   "parallel": true,
+   "front": [
+    [
+     127.48183777,
+     34.96995668
+    ],
+    [
+     127.48202333,
+     34.96991382
+    ]
+   ],
+   "side": [
+    127.481927,
+    34.96992484
+   ],
+   "reason": "parallel (평행) stall frame beside the carriageway at J09 on the photo (white rectangle 17.6 x 2.6 m); its long edge and the side it lies on from the photo paint blob"
+  },
+  {
+   "id": "parallel-J26-1",
+   "parallel": true,
+   "front": [
+    [
+     127.48116972,
+     34.96794119
+    ],
+    [
+     127.48128883,
+     34.9679136
+    ]
+   ],
+   "side": [
+    127.48122453,
+    34.96791351
+   ],
+   "reason": "parallel (평행) stall frame beside the carriageway at J26 on the photo (white rectangle 11.3 x 3.4 m); its long edge and the side it lies on from the photo paint blob"
+  },
+  {
+   "id": "parallel-J26-3",
+   "parallel": true,
+   "front": [
+    [
+     127.48135411,
+     34.96788522
+    ],
+    [
+     127.48144083,
+     34.96786605
+    ]
+   ],
+   "side": [
+    127.48139491,
+    34.9678678
+   ],
+   "reason": "parallel (평행) stall frame beside the carriageway at J26 on the photo (white rectangle 8.2 x 1.6 m); its long edge and the side it lies on from the photo paint blob"
+  },
+  {
+   "id": "parallel-J27-2",
+   "parallel": true,
+   "front": [
+    [
+     127.48098685,
+     34.96796859
+    ],
+    [
+     127.48104434,
+     34.9679486
+    ]
+   ],
+   "side": [
+    127.48101133,
+    34.96795029
+   ],
+   "reason": "parallel (평행) stall frame beside the carriageway at J27 on the photo (white rectangle 5.7 x 2.2 m); its long edge and the side it lies on from the photo paint blob"
+  },
+  {
+   "id": "parallel-J27-3",
+   "parallel": true,
+   "front": [
+    [
+     127.48014351,
+     34.9676424
+    ],
+    [
+     127.48022472,
+     34.96762742
+    ]
+   ],
+   "side": [
+    127.48018196,
+    34.96762699
+   ],
+   "reason": "parallel (평행) stall frame beside the carriageway at J27 on the photo (white rectangle 7.6 x 1.6 m); its long edge and the side it lies on from the photo paint blob"
   }
  ]
 }
