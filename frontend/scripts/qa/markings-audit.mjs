@@ -14,7 +14,9 @@
 //               (data/photo/parking-lots.json, photoStalls)
 //   coverage   a centre or edge line the photo shows along a road (data/photo/road-lines.json, read on the NGII sheet
 //              by bake/road-lines.mjs) without a model line of its colour along it: less than COVER_SOLID of a solid
-//              photo line (COVER_DASHED of a dashed one) within COVER_M of a drawn line, crossings excluded
+//              photo line within COVER_M of a drawn line (junction mouths and crossings cut a solid line), or, for a
+//              dashed one, less than COVER_DASHED of it within COVER_M of the line through a drawn dash parallel to it
+//              within DASH_REACH_M (the gaps of a dashed line are part of the line); crossings excluded
 //
 // A GLB built with stages/markingsStandard.mjs carries one record per marking instance in the Road_Markings node extras
 // (`markingInstances`) and the instance index in every vertex's v texture coordinate, so the audit checks each
@@ -38,8 +40,9 @@ export const TOL_M = 0.02;
 export const SPACING_M = 0.05;
 export const SAMPLE_M = 0.02;
 export const COVER_M = 0.35;
-export const COVER_SOLID = 0.8;
-export const COVER_DASHED = 0.35;
+export const COVER_SOLID = 0.7;
+export const COVER_DASHED = 0.7;
+export const DASH_REACH_M = 5.5;
 const U = SCENE_UNITS_PER_METRE;
 // palette order of stages/markings.mjs (PALETTE_COLOURS): u = (i + 0.5) / 5
 const PALETTE = ["white", "yellow", "blue", "green", "light_blue"];
@@ -486,8 +489,16 @@ function modelLines(records, tris, colour) {
     }
   });
   const dist = (q, [a, b]) => { const ab = sub(b, a), l2 = dot(ab, ab); const t = l2 > 0 ? Math.max(0, Math.min(1, dot(sub(q, a), ab) / l2)) : 0; return norm(sub(q, [a[0] + ab[0] * t, a[1] + ab[1] * t])); };
+  // the infinite line through a drawn piece parallel to `d` (within 5 deg), reaching q within DASH_REACH_M along it
+  const lineDist = (q, [a, b]) => { const ab = sub(b, a), l = norm(ab); const u = [ab[0] / l, ab[1] / l]; return Math.abs((q[0] - a[0]) * u[1] - (q[1] - a[1]) * u[0]); };
+  const parallel = (sg, d) => { const ab = sub(sg[1], sg[0]); const l = norm(ab); return l > 0.3 && Math.abs(dot(ab, d)) / l >= Math.cos((5 * Math.PI) / 180); };
   return {
     near: (q, r) => (grid.get(`${Math.floor(q[0] / cell)},${Math.floor(q[1] / cell)}`) ?? []).some((i) => dist(q, segs[i]) <= r),
+    nearDashed: (q, r, d) => {
+      const out = new Set();
+      for (let dx = -2; dx <= 2; dx += 1) for (let dz = -2; dz <= 2; dz += 1) for (const i of grid.get(`${Math.floor(q[0] / cell) + dx},${Math.floor(q[1] / cell) + dz}`) ?? []) out.add(i);
+      return [...out].some((i) => dist(q, segs[i]) <= DASH_REACH_M && parallel(segs[i], d) && lineDist(q, segs[i]) <= r);
+    },
     excluded: (q) => exclude.some((c) => norm(sub(q, c)) < 6),
   };
 }
@@ -504,7 +515,8 @@ function lineCoverage(roadLines, records, tris, out) {
     }
     const counted = samples.filter((q) => !m.excluded(q));
     if (counted.length < 4) continue;
-    const share = counted.filter((q) => m.near(q, COVER_M)).length / counted.length;
+    const d = (() => { const a = l.pts[0], b = l.pts.at(-1); const v = sub(b, a); const n = norm(v) || 1; return [v[0] / n, v[1] / n]; })();
+    const share = counted.filter((q) => (l.pattern === "dashed" ? m.nearDashed(q, COVER_M, d) : m.near(q, COVER_M))).length / counted.length;
     const need = l.pattern === "dashed" ? COVER_DASHED : COVER_SOLID;
     rows.push({ id: l.id, kind: l.kind, share });
     if (share < need) out.push({ check: "coverage", id: l.id, detail: `photo ${l.pattern} ${l.kind} ${l.lengthM} m: ${(share * 100).toFixed(0)} % drawn (need ${need * 100} %)`, at: counted[counted.length >> 1] });
