@@ -161,7 +161,7 @@ export function resolveFixture(service, path) {
 }
 
 export function createFixtureState() {
-  return { mode: "down", fail: [], missing: [], delayMs: 0, requests: [] };
+  return { mode: "down", fail: [], missing: [], delayMs: 0, requests: [], inFlight: new Map(), nextId: 0 };
 }
 
 function routeMatches(route, path) {
@@ -191,7 +191,7 @@ export function handleFixtureRequest(state, req, res) {
         state.delayMs = Number(next.delayMs) || 0;
         state.requests = [];
       }
-      sendJson(res, 200, { mode: state.mode, fail: state.fail, missing: state.missing, delayMs: state.delayMs, requests: state.requests });
+      sendJson(res, 200, { mode: state.mode, fail: state.fail, missing: state.missing, delayMs: state.delayMs, requests: state.requests, inFlightSince: [...state.inFlight.values()] });
     });
     return true;
   }
@@ -224,8 +224,12 @@ export function handleFixtureRequest(state, req, res) {
     if (fixture) sendJson(res, fixture[0], fixture[1]);
     else sendJson(res, 404, { detail: { code: "not_found", message_ko: "픽스처가 없는 경로입니다" } });
   };
-  if (state.delayMs > 0) setTimeout(respond, state.delayMs);
-  else respond();
+  if (state.delayMs > 0) {
+    // Delayed answers are tracked until sent, so a capture can wait for the ones a state's steps started.
+    const id = state.nextId++;
+    state.inFlight.set(id, Date.now());
+    setTimeout(() => { state.inFlight.delete(id); respond(); }, state.delayMs);
+  } else respond();
   return true;
 }
 
@@ -275,6 +279,19 @@ export async function setFixtures(baseUrl, { mode = "down", fail = [], missing =
     body: JSON.stringify({ mode, fail, missing, delayMs }),
   });
   return response.json();
+}
+
+// Waits (bounded) until every delayed fixture answer started at or before `since` has been sent. Later requests
+// (polling) are not waited for. Returns { settled, ms }.
+export async function waitFixturesAnswered(baseUrl, since, timeoutMs) {
+  const t0 = Date.now();
+  for (;;) {
+    const response = await fetch(`${baseUrl}${FIXTURE_PREFIX}/control`);
+    const pending = ((await response.json()).inFlightSince ?? []).filter((at) => at <= since);
+    if (pending.length === 0) return { settled: true, ms: Date.now() - t0 };
+    if (Date.now() - t0 > timeoutMs) return { settled: false, ms: Date.now() - t0 };
+    await new Promise((resolve) => setTimeout(resolve, 150));
+  }
 }
 
 export async function readFixtureRequests(baseUrl) {

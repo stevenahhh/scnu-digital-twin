@@ -7,7 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Browser, BrowserTimeoutError, VIEWPORTS, DEFAULT_CLOCK, closeAllBrowsers, sleep, withTimeout } from "./lib/browser.mjs";
 import { startVite, killAll } from "./lib/processes.mjs";
-import { setFixtures, readFixtureRequests } from "./lib/fixtures.mjs";
+import { setFixtures, readFixtureRequests, waitFixturesAnswered } from "./lib/fixtures.mjs";
 import { inPage, decode } from "./lib/probe.mjs";
 import { KEY_RECTS, compareScenario, dHashPng, loadBaselines, roundRect, saveBaselines, scenarioKey, scenarioVariant } from "./lib/baseline.mjs";
 import { EXIT, exitCodeFor, rollupChecks, writeReport } from "./lib/report.mjs";
@@ -332,6 +332,12 @@ async function runPass({ args, entry, viewport, theme, baseUrl, selected, baseli
     if (label === "S01" && args.quality) await applyQuality(ctx);
     await runScript(ctx, label, baseUrl);
     if (requested && entry === "vworld" && state.id !== "S11") await settleTiles(ctx);
+    if (requested && args.delayMs > 0) {
+      // Delay run: the frame shows the answers this state asked for, not a race against the 3 s delay.
+      const waited = await waitFixturesAnswered(baseUrl, Date.now(), args.delayMs * 2 + 2000);
+      await b.run(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      ctx.actions.push(waited.settled ? `delayed answers in flight before capture arrived after ${waited.ms} ms` : `delayed answers still in flight after ${waited.ms} ms`);
+    }
     if (requested) await capture(state, label, fixtures);
     else ctx.actions = [];
     if (state.after) await state.after(ctx);
