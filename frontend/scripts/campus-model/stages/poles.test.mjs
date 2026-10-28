@@ -89,8 +89,8 @@ test("pole-roots.json: residuals within their thresholds, rule seeds only with p
   }
 });
 
-test("pole-roots.json rounds 2 and 3: placed poles within 0.5 m with a confidence; unresolved poles estimated at their seed with every source tried", () => {
-  const methods = ["ngii-wide-search", "vworld-z19", "esri-z18", "vr-two-ray", "shadow-tip", "suncheon-airmap", "kakao-skyview-hd"];
+test("pole-roots.json rounds 2 to 4: placed poles within 0.5 m with a confidence; unresolved poles estimated at their seed with every source tried", () => {
+  const methods = ["ngii-wide-search", "vworld-z19", "esri-z18", "vr-two-ray", "shadow-tip", "suncheon-airmap", "kakao-skyview-hd", "kakao-roadview"];
   const placed = [];
   for (const pole of ROOTS.poles) {
     if (pole.root) {
@@ -107,6 +107,8 @@ test("pole-roots.json rounds 2 and 3: placed poles within 0.5 m with a confidenc
       assert.ok(a.result && a.why, `${pole.id} ${a.method} without a result and reason`);
       assert.ok(!(a.residualM <= 0.5), `${pole.id} ${a.method} resolved to ${a.residualM} m but the pole did not move`);
     }
+    const roadview = pole.attempts.at(-1);
+    assert.ok(["pole-seen", "not-seen", "not-a-lamp", "sign-pole"].includes(roadview.result) && roadview.panos.length >= 2, `${pole.id} roadview ${roadview.result}`);
   }
   const stats = ROOTS.residualStats;
   assert.equal(stats.resolved, placed.length);

@@ -99,6 +99,39 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "pole-seen",
+     "panos": [
+      {
+       "id": "1205033494",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205033492",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview: a pedestrian-signal pole stands on the corner footway about 1.3 m behind the kerb at the crosswalk end; foot visible; bearing within 1 deg of the seed, depression puts it ~9 m from pano 1205033494 (seed 6.8 m)",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m",
+     "measured": {
+      "feetTmM": {
+       "1205032948": [
+        244217.09,
+        263707.27
+       ],
+       "1205032950": [
+        244216.35,
+        263706.99
+       ]
+      },
+      "rangesM": [
+       21.6,
+       19.2
+      ],
+      "spreadM": 0.79
+     }
     }
    ],
    "seedUncertaintyM": 1.2,
@@ -236,6 +269,26 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-a-lamp",
+     "panos": [
+      {
+       "id": "1205033500",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205033503",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1146305099",
+       "date": "2021-12-13"
+      }
+     ],
+     "observation": "2026-01/2021-12 roadview: at the seed corner (7-Eleven) only a concrete utility pole with a sign plate and a fire hydrant; no separate lamp standard",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 1.2,
@@ -336,6 +389,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205032952",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205033492",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview: the seed falls on the carriageway; no sign pole within +-20 deg; the nearby island carries the signal pole (OB0008) and a parasol",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 1.2,
@@ -393,6 +462,39 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "pole-seen",
+     "panos": [
+      {
+       "id": "1205032952",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205032950",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview (two panos): a signal pole with mast arm stands on the brick island about 1 m inside the island tip kerb; foot clearly visible",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m",
+     "measured": {
+      "feetTmM": {
+       "1205032948": [
+        244196.91,
+        263695.99
+       ],
+       "1205032950": [
+        244196.65,
+        263695.17
+       ]
+      },
+      "rangesM": [
+       16.2,
+       7.2
+      ],
+      "spreadM": 0.86
+     }
     }
    ],
    "seedUncertaintyM": 1.2,
@@ -510,6 +612,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "sign-pole",
+     "panos": [
+      {
+       "id": "1205149680",
+       "date": "2026-01-27"
+      },
+      {
+       "id": "1205149668",
+       "date": "2026-01-27"
+      }
+     ],
+     "observation": "2026-01 roadview: the seed object is a 'P bus parking' sign pole on the plaza edge (foot visible); no lamp standard within +-20 deg",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 1.2,
@@ -567,6 +685,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205147648",
+       "date": "2026-01-27"
+      },
+      {
+       "id": "1205147641",
+       "date": "2026-01-27"
+      }
+     ],
+     "observation": "2026-01 roadview: stream bridge rail and verge only; no lamp at the seed",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -624,6 +758,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "pole-seen",
+     "panos": [
+      {
+       "id": "1205147660",
+       "date": "2026-01-27"
+      },
+      {
+       "id": "1205147657",
+       "date": "2026-01-27"
+      }
+     ],
+     "observation": "2026-01 roadview (two panos): a brown cast-iron post-top lamp stands on the paved corner by the bridge parapet end, beside the bus shelter; foot visible; GPS-frame rays meet about 2.2 m W, 1.2 m S of the seed (GPS bias 1.5-3 m, see controls)",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -681,6 +831,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205147670",
+       "date": "2026-01-27"
+      },
+      {
+       "id": "1205147673",
+       "date": "2026-01-27"
+      }
+     ],
+     "observation": "2026-01 roadview: a brown post-top lamp at the stream rail about 12 deg off the seed bearing, next to a utility pole; not at the seed",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -738,6 +904,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "pole-seen",
+     "panos": [
+      {
+       "id": "1205147679",
+       "date": "2026-01-27"
+      },
+      {
+       "id": "1205147682",
+       "date": "2026-01-27"
+      }
+     ],
+     "observation": "2026-01 roadview (two panos): a brown post-top lamp on the footway against the stream rail; foot visible",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -795,6 +977,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "pole-seen",
+     "panos": [
+      {
+       "id": "1205147691",
+       "date": "2026-01-27"
+      },
+      {
+       "id": "1205147688",
+       "date": "2026-01-27"
+      }
+     ],
+     "observation": "2026-01 roadview: a brown post-top lamp carrying a no-parking sign at the stream rail, foot visible; the close pano shows only the rail",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -864,6 +1062,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205147774",
+       "date": "2026-01-27"
+      },
+      {
+       "id": "1205147777",
+       "date": "2026-01-27"
+      }
+     ],
+     "observation": "2026-01 roadview: stream rail and bridge; the nearest lamp is ~11 deg along the rail, not at the seed",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -921,6 +1135,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205147768",
+       "date": "2026-01-27"
+      },
+      {
+       "id": "1205147762",
+       "date": "2026-01-27"
+      }
+     ],
+     "observation": "2026-01 roadview: a brown lamp far along the rail and a mirror post; no lamp at the seed",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -978,6 +1208,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205150309",
+       "date": "2026-01-27"
+      },
+      {
+       "id": "1205033593",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview: bus stop and bakery frontage; no signal pole near the seed bearing",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 1.2,
@@ -1035,6 +1281,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205032887",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205032885",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01/2021-12 roadview: tyre shop forecourt; no pole",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -1092,6 +1354,26 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205032878",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205032881",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1146284646",
+       "date": "2021-12-13"
+      }
+     ],
+     "observation": "2026-01/2021-12 roadview: concrete utility poles in the alley and at the bridge corner; no lamp standard at the seed",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -1149,6 +1431,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205042703",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205033605",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview: vacant lot with weeds; no pole",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -1206,6 +1504,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205149252",
+       "date": "2026-01-27"
+      },
+      {
+       "id": "1205148807",
+       "date": "2026-01-27"
+      }
+     ],
+     "observation": "2026-01 roadview: campus access road; a lamp stands far up the slope near the building, not at the seed",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 1.2,
@@ -1263,6 +1577,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205148117",
+       "date": "2026-01-27"
+      },
+      {
+       "id": "1205148838",
+       "date": "2026-01-27"
+      }
+     ],
+     "observation": "2026-01 roadview: fenced corner and convenience store; no lamp at the seed",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 1.2,
@@ -1320,6 +1650,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "pole-seen",
+     "panos": [
+      {
+       "id": "1205147703",
+       "date": "2026-01-27"
+      },
+      {
+       "id": "1205147700",
+       "date": "2026-01-27"
+      }
+     ],
+     "observation": "2026-01 roadview (two panos): a brown post-top lamp on the footway at the stream rail ~9 deg off the seed bearing; foot visible",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -1524,6 +1870,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-a-lamp",
+     "panos": [
+      {
+       "id": "1205147725",
+       "date": "2026-01-27"
+      },
+      {
+       "id": "1205147722",
+       "date": "2026-01-27"
+      }
+     ],
+     "observation": "2026-01 roadview: a concrete utility pole with transformer cabinet at the seed (agrees with round 3: utility pole, not a lamp)",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -1671,6 +2033,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205032893",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205032895",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview: a concrete utility pole (tag 159) and a grey steel pole on the plaza edge; the steel pole may be the lamp",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -1728,6 +2106,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205032898",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205032900",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview: a pedestrian-signal pole and a sign pole at the corner; no lamp standard at the seed",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -1785,6 +2179,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-a-lamp",
+     "panos": [
+      {
+       "id": "1205033577",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205033573",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview: a concrete utility pole (tag 136) at the corner (agrees with round 3: utility pole)",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -1842,6 +2252,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205150130",
+       "date": "2026-01-27"
+      },
+      {
+       "id": "1205150128",
+       "date": "2026-01-27"
+      }
+     ],
+     "observation": "2026-01 roadview: a thin steel pole and a utility pole at the street corner; lamp identity unclear",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -1911,6 +2337,26 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205033552",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205033555",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1106685675",
+       "date": "2019-04-11"
+      }
+     ],
+     "observation": "2026-01 roadview: cafe corner, a grey steel pole by a tree ~16 deg off; 2019-04 pano blocked by a bus",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -1980,6 +2426,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "pole-seen",
+     "panos": [
+      {
+       "id": "1205032919",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205032921",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview (two panos): a grey steel pole at the planter kerb corner beside a crossing sign; foot visible",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -2049,6 +2511,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205033525",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205033521",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview: plaza with bollard lights; a grey steel pole ~16 deg off the seed bearing",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -2106,6 +2584,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "pole-seen",
+     "panos": [
+      {
+       "id": "1205033521",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205033518",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview (two panos): a black median lamp pole stands in the median hedge (round 3 found none on the aerials); foot inside the hedge",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -2163,6 +2657,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205033515",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205033512",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview: shop plaza and a street tree; no pole at the seed",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -2221,6 +2731,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "pole-seen",
+     "panos": [
+      {
+       "id": "1205033512",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205033509",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview (two panos): a black median lamp pole in the median hedge; foot inside the hedge",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -2278,6 +2804,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205149014",
+       "date": "2026-01-27"
+      },
+      {
+       "id": "1205149016",
+       "date": "2026-01-27"
+      }
+     ],
+     "observation": "2026-01 roadview: garden with the 사범대학 name stone (the recurring white object of round 3); no pole",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 1.2,
@@ -2335,6 +2877,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "pole-seen",
+     "panos": [
+      {
+       "id": "1205032942",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205032944",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview (two panos): a thin stainless lamp pole on the rebuilt corner footway; foot visible",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -2392,6 +2950,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205044126",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205033506",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview: bus shelter and a sign pillar; a grey pole behind the pillar, lamp identity unclear",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -2449,6 +3023,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205044121",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205044130",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview: narrow shop alley; no lamp standard",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -2506,6 +3096,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205044126",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205044117",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview: narrow shop alley; no lamp standard",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -2563,6 +3169,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205044117",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205044121",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview: narrow shop alley; no lamp standard",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -2757,6 +3379,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205033489",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205033485",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview: plaza fence with banners; a pole carrying banner sleeves ~9 deg off the seed bearing",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -2814,6 +3452,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205033478",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205033475",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview: a concrete utility pole (tag 126) and a black post at the planter corner",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -2871,6 +3525,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205043941",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205033475",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview: corner footway with bollards and a black lamp pole ~20 deg off; no signal pole at the seed",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 1.2,
@@ -3103,6 +3773,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205033469",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205032965",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview: the median at the seed holds trees and hedge only; no median lamp at the seed",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -3161,6 +3847,26 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "pole-seen",
+     "panos": [
+      {
+       "id": "1205033458",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205032973",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1106687198",
+       "date": "2019-04-11"
+      }
+     ],
+     "observation": "2026-01 and 2019-04 roadview: black median lamp poles in the median hedge either side of the seed bearing",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -3218,6 +3924,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-a-lamp",
+     "panos": [
+      {
+       "id": "1205032975",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205032977",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview: two concrete utility poles against the planter wall (agrees with round 3: utility pole)",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -3275,6 +3997,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "pole-seen",
+     "panos": [
+      {
+       "id": "1205032985",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205032987",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview: a black lamp pole in the hedge verge beside the planter wall; foot hidden in the hedge",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -3332,6 +4070,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-seen",
+     "panos": [
+      {
+       "id": "1205135077",
+       "date": "2026-01-27"
+      },
+      {
+       "id": "1205135079",
+       "date": "2026-01-27"
+      }
+     ],
+     "observation": "2026-01 roadview: noise barrier and recycling bins at the seed; a steel pole on the kerb ~10 deg off in the second pano",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,
@@ -3389,6 +4143,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "not-a-lamp",
+     "panos": [
+      {
+       "id": "1205135302",
+       "date": "2026-01-27"
+      },
+      {
+       "id": "1205135300",
+       "date": "2026-01-27"
+      }
+     ],
+     "observation": "2026-01 roadview: retaining wall; a concrete utility pole ~16 deg off (agrees with round 3: utility pole)",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 1.2,
@@ -3476,6 +4246,22 @@
      "method": "kakao-skyview-hd",
      "result": "not-independent",
      "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "kakao-roadview",
+     "result": "pole-seen",
+     "panos": [
+      {
+       "id": "1205032989",
+       "date": "2026-01-26"
+      },
+      {
+       "id": "1205032991",
+       "date": "2026-01-26"
+      }
+     ],
+     "observation": "2026-01 roadview: a black lamp pole in the hedge verge; foot hidden in the hedge",
+     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
     }
    ],
    "seedUncertaintyM": 5,

@@ -31,8 +31,10 @@ export const POLE_ROOTS = path.join(PHOTO, "pole-roots.json");
 const OBJECTS = path.join(PHOTO, "objects-campus.geojson");
 const RULE_SEEDS = path.join(PHOTO, "pole-seeds-rule.json");
 const REVIEW = path.join(PHOTO, "pole-review.json");
-// rounds 2 and 3: every other source tried for the unresolved poles (attempts, seed uncertainty, confidence); round 3
+// rounds 2 to 4: every other source tried for the unresolved poles (attempts, seed uncertainty, confidence); round 3
 // adds `resolved` for a pole whose base other-year aerials registered to the sheet put within 0.5 m (epoch-root)
+// round 4 adds the `kakao-roadview` attempt (street-level panos 2010-2026): it records what stands at the seed and moves no
+// pole (no two independent roadview feet agree within 0.5 m)
 const SOURCES = path.join(PHOTO, "pole-sources.json");
 // confidence of a placed base by method (estimate): detector-confirmed, by eye, floodlight head minus lean, other-year aerials, VR tour
 const CONFIDENCE = { "shadow-root": 0.9, "by-eye-root": 0.7, "head-lean": 0.6, "epoch-root": 0.6, "vr-root": 0.6 };
