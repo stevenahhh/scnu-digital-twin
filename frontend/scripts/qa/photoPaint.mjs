@@ -47,7 +47,9 @@ export function paintIn([x0, z0, x1, z1]) {
     const k = j * W + i;
     const mL = mean(SL, i, j);
     if (mL > PAVEMENT_MAX) continue;
-    if (Y[k] - mean(SY, i, j) > YELLOW_CONTRAST && Y[k] > 25) colour[k] = 2;
+    // yellow, not the red of a coloured crossing or a red asphalt ring: green well above blue, red not far above green
+    const [r, g, b] = [rgb[k * 3], rgb[k * 3 + 1], rgb[k * 3 + 2]];
+    if (Y[k] - mean(SY, i, j) > YELLOW_CONTRAST && Y[k] > 25 && g - b > 20 && r - g < 50) colour[k] = 2;
     else if (L[k] - mL > WHITE_CONTRAST && C[k] < GREY_MAX) colour[k] = 1;
   }
   const at = (i, j) => tmToScene(...pixelToTm(c0 + i + 0.5, r0 + j + 0.5, sheet.tfw)).map((v) => v / U);
@@ -80,7 +82,16 @@ export function paintIn([x0, z0, x1, z1]) {
     const ext = (d) => { const s = pts.map((p) => (p[0] - cx) * d[0] + (p[1] - cz) * d[1]); return Math.max(...s) - Math.min(...s) + 0.25; };
     const [a, b] = [ext(u), ext(v)];
     const blob = { id, colour: colour[k] === 2 ? "yellow" : "white", centre: [cx, cz], areaM2: pts.length * 0.0625, longM: Math.max(a, b), shortM: Math.min(a, b), axis: a >= b ? u : v, pts };
-    blob.type = blob.shortM <= 0.6 && blob.longM >= 1.5 ? "stroke" : blob.areaM2 >= 0.75 ? "area" : "speck";
+    blob.fill = blob.areaM2 / (blob.longM * blob.shortM);
+    // a filled white blob of a car's size is a car roof (a car is never painted that solid)
+    blob.car = blob.colour === "white" && blob.fill > 0.6 && blob.longM >= 3.2 && blob.longM <= 5.8 && blob.shortM >= 1.4 && blob.shortM <= 2.3;
+    blob.type = blob.car ? "car" : blob.shortM <= 0.6 && blob.longM >= 1.5 ? "stroke" : blob.areaM2 >= 0.75 ? "area" : "speck";
+    // thin paint: a stroke, or an open figure of strokes (a stall ladder, an outline) that fills little of its box
+    // a figure (island, triangle, chevron, hatch, arrow, text): an area blob that is not a long line read wide
+    // (white: an open figure at least 1 m across; a filled white bar is a stop line or crossing bar, a filled white
+    // patch a roof or a vehicle, both drawn or checked elsewhere)
+    blob.figure = blob.type === "area" && blob.longM / blob.shortM <= 8 && (blob.colour === "yellow" || (blob.fill <= 0.5 && blob.shortM >= 1.0));
+    blob.thin = blob.type === "stroke" || (blob.type === "area" && blob.fill < 0.35);
     blobs.push(blob);
     for (const q of pts) pixels.push({ q, colour: blob.colour, blob: id });
   }

@@ -48,11 +48,13 @@ export const DASH_REACH_M = 5.5;
 // junction paint (photoPaint.mjs): the island, hatch, chevron, triangle, arrow, text and bar paint (area blobs) the
 // orthophoto shows within JUNCTION_PAD_M of a junction's nodes; the model's paint of the same colour must cover
 // JUNCTION_SHARE of it (within PAINT_REACH_M), else the junction fails. Lots: the thin white strokes (stall dividers)
-// inside a lot (its ring and LOT_PAD_M around it) must be covered by drawn stall lines over LOT_SHARE.
+// (and open ladders of them, not filled car roofs) inside a lot (its ring and LOT_PAD_M around it) must be covered by drawn stall lines over LOT_SHARE.
 export const PAINT_REACH_M = 0.35;
 export const JUNCTION_PAD_M = 20;
 export const JUNCTION_SHARE = 0.6;
 export const JUNCTION_MIN_M2 = 4;
+export const BUILDING_PAD_M = 5; // roof rims shifted by relief displacement (3-5 m on the photo) are not road paint
+export const ROAD_INSET_M = 1.0; // junction paint counts on the carriageway only (road_zones), this far inside its kerb
 export const LOT_PAD_M = 4;
 export const LOT_SHARE = 0.6;
 export const LOT_MIN_M2 = 1;
@@ -351,7 +353,9 @@ function checkInstance(rec, tris, out, lotOf) {
       if (Math.abs(c - centres[k] - p.widths[k]) > SPACING_M) fail("spacing", { detail: `bay ${k} ${(c - centres[k]).toFixed(3)} m wide, its template ${p.widths[k]} m`, at: o });
     });
     p.widths.forEach((w, k) => {
-      const ok = Math.abs(w - t.widthM) < 1e-9 || (Math.abs(w - TEMPLATES.stall_accessible.widthM) < 1e-9 && (p.accessible ?? []).includes(k));
+      // the template width, or the measured photo pitch the record carries when it is wider (never narrower than the
+      // statute minimum), or the accessible width on an accessible bay
+      const ok = Math.abs(w - t.widthM) < 1e-9 || (p.pitch > t.widthM && Math.abs(w - p.pitch) < 1e-9) || (Math.abs(w - TEMPLATES.stall_accessible.widthM) < 1e-9 && (p.accessible ?? []).includes(k));
       if (!ok) fail("dimension", { detail: `bay ${k} width ${w} m is not the ${rec.t} or accessible template width`, at: o });
     });
     // depth: along the first divider, front line to back line (the back line of a row sharing it belongs to the other)
@@ -532,13 +536,30 @@ export async function readJunctions(file) {
   }));
 }
 
-// photo paint (area blobs) at each junction covered by model paint of its colour
-function junctionPaint(junctions, tris, out) {
+// the surveyed carriageway (docs/assets/data/road_zones_wgs84.geojson), metres
+export async function readRoadZones(file) {
+  const d = JSON.parse(await Bun.file(file).text());
+  return d.features.flatMap((f) => (f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates))
+    .map((poly) => poly.map((ring) => ring.map(([lon, lat]) => geoToModel(lon, lat).map((v) => v / U))));
+}
+const onCarriageway = (zones) => (q) => zones.some((poly) => pointInRing(q, poly[0]) && !poly.slice(1).some((h) => pointInRing(q, h))
+  && poly.every((ring) => ring.every((a, i) => { const b = ring[(i + 1) % ring.length]; const ab = sub(b, a); const t = Math.max(0, Math.min(1, dot(sub(q, a), ab) / (dot(ab, ab) || 1))); return norm(sub(q, [a[0] + t * ab[0], a[1] + t * ab[1]])) > ROAD_INSET_M; })));
+
+// photo paint (area blobs, cars left out) on the carriageway at each junction, covered by model paint of its colour
+export async function readFootprints(file) {
+  const d = JSON.parse(await Bun.file(file).text());
+  return d.buildings.flatMap((b) => b.polygons.map((poly) => poly[0].map(([lon, lat]) => geoToModel(lon, lat).map((v) => v / U))));
+}
+const nearRing = (q, ring, pad) => pointInRing(q, ring) || ring.some((a, i) => { const b = ring[(i + 1) % ring.length]; const ab = sub(b, a); const t = Math.max(0, Math.min(1, dot(sub(q, a), ab) / (dot(ab, ab) || 1))); return norm(sub(q, [a[0] + t * ab[0], a[1] + t * ab[1]])) <= pad; });
+function junctionPaint(junctions, zones, footprints, tris, out) {
+  const onRoad = onCarriageway(zones);
   const covers = paintIndex(tris, PAINT_REACH_M);
   return junctions.map((j) => {
     const { blobs } = paintIn(j.box);
-    const area = blobs.filter((b) => b.type === "area");
-    const pts = area.flatMap((b) => b.pts.map((q) => ({ q, colour: b.colour })));
+    const area = blobs.filter((b) => b.figure);
+    const [x0, z0, x1, z1] = j.box;
+    const near = footprints.filter((r) => r.some(([x, z]) => x >= x0 - 60 && x <= x1 + 60 && z >= z0 - 60 && z <= z1 + 60));
+    const pts = area.flatMap((b) => b.pts.map((q) => ({ q, colour: b.colour }))).filter((p) => onRoad(p.q) && !near.some((r) => nearRing(p.q, r, BUILDING_PAD_M)));
     const hit = pts.filter((p) => covers(p.q, p.colour));
     const share = pts.length ? hit.length / pts.length : 1;
     const missM2 = (pts.length - hit.length) * 0.0625;
@@ -558,7 +579,7 @@ function lotPaint(lots, tris, records, out) {
     const xs = lot.ringM.map((p) => p[0]), zs = lot.ringM.map((p) => p[1]);
     const box = [Math.min(...xs) - LOT_PAD_M, Math.min(...zs) - LOT_PAD_M, Math.max(...xs) + LOT_PAD_M, Math.max(...zs) + LOT_PAD_M];
     const near = (q) => pointInRing(q, lot.ringM) || lot.ringM.some((a, i) => { const b = lot.ringM[(i + 1) % lot.ringM.length]; const ab = sub(b, a); const s2 = Math.max(0, Math.min(1, dot(sub(q, a), ab) / (dot(ab, ab) || 1))); return norm(sub(q, [a[0] + s2 * ab[0], a[1] + s2 * ab[1]])) <= LOT_PAD_M; });
-    const pts = paintIn(box).blobs.filter((b) => b.type === "stroke" && b.colour === "white" && near(b.centre)).flatMap((b) => b.pts);
+    const pts = paintIn(box).blobs.filter((b) => b.thin && b.colour === "white" && near(b.centre)).flatMap((b) => b.pts);
     const hit = pts.filter((q) => covers(q, "white")).length;
     const share = pts.length ? hit / pts.length : 1;
     if (share < LOT_SHARE && (pts.length - hit) * 0.0625 >= LOT_MIN_M2)
@@ -640,7 +661,9 @@ export async function audit({ glb, lotsFile, roadLinesFile }) {
     void lotRecords;
   }
   const covered = lineCoverage(roadLines, records, tris, out);
-  const junctions = junctionPaint(await readJunctions(path.join(FRONTEND, "scripts", "campus-model", "data", "network", "roads.json")), tris.filter((t) => !t.context), out);
+  const zones = await readRoadZones(path.join(FRONTEND, "..", "docs", "assets", "data", "road_zones_wgs84.geojson"));
+  const footprints = await readFootprints(path.join(FRONTEND, "scripts", "campus-model", "data", "gis-buildings.json"));
+  const junctions = junctionPaint(await readJunctions(path.join(FRONTEND, "scripts", "campus-model", "data", "network", "roads.json")), zones, footprints, tris.filter((t) => !t.context), out);
   const lotsPaint = lotPaint(lots, tris.filter((t) => !t.context), records, out);
   const counts = lots.map((l) => ({ lot: l.id, photo: l.photoStalls, modelled: modelled.get(l.id) ?? 0 }));
   for (const c of counts) if (c.photo !== c.modelled) out.push({ check: "count", id: c.lot, detail: `photo ${c.photo} stalls, model ${c.modelled}` });
