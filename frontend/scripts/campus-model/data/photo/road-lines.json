@@ -1,7 +1,7 @@
 {
  "source": "NGII 2025 orthophoto sheet 34702020 (0.25 m), read by bake/road-lines.mjs over EXTENT",
  "method": "yellow and white paint masks on pavement (9 x 9 px top-hat), thin strokes at least 2 m long with pavement on both sides and outside the photo stall rows, chained end to end (12 deg, 6 m gap, 0.45 m lateral) into lines at least 8 m long; double yellow pairs 0.15-0.5 m apart merged; kept when 70 % of the line lies in a road zone or within 7 m of an OSM arterial or connector; white lines along yellow paint (0.7 m, half their length) and lines along an A003 sidewalk outline (0.45 m, 60 %) are kerbs and left out",
- "offRoad": 160,
+ "offRoad": 162,
  "kerbStones": 24,
  "kerbEdges": 2,
  "rejectedByEye": 13,
@@ -872,34 +872,6 @@
    "colour": "yellow",
    "pattern": "solid",
    "double": false,
-   "lengthM": 8.9,
-   "fill": 0.94,
-   "strokes": 2,
-   "points": [
-    [
-     127.47911443,
-     34.96810356
-    ],
-    [
-     127.47915032,
-     34.96811886
-    ],
-    [
-     127.47915848,
-     34.96812577
-    ],
-    [
-     127.47919669,
-     34.96814619
-    ]
-   ]
-  },
-  {
-   "id": "RL0037",
-   "kind": "centre_line_yellow",
-   "colour": "yellow",
-   "pattern": "solid",
-   "double": false,
    "lengthM": 15.2,
    "fill": 1,
    "strokes": 1,
@@ -915,7 +887,7 @@
    ]
   },
   {
-   "id": "RL0038",
+   "id": "RL0037",
    "kind": "centre_line_yellow",
    "colour": "yellow",
    "pattern": "dashed",
@@ -943,7 +915,7 @@
    ]
   },
   {
-   "id": "RL0039",
+   "id": "RL0038",
    "kind": "centre_line_yellow",
    "colour": "yellow",
    "pattern": "solid",
@@ -963,7 +935,7 @@
    ]
   },
   {
-   "id": "RL0040",
+   "id": "RL0039",
    "kind": "centre_line_yellow",
    "colour": "yellow",
    "pattern": "solid",
@@ -999,7 +971,7 @@
    ]
   },
   {
-   "id": "RL0041",
+   "id": "RL0040",
    "kind": "centre_line_yellow",
    "colour": "yellow",
    "pattern": "solid",
@@ -1035,7 +1007,7 @@
    ]
   },
   {
-   "id": "RL0042",
+   "id": "RL0041",
    "kind": "centre_line_yellow",
    "colour": "yellow",
    "pattern": "solid",
@@ -1063,7 +1035,7 @@
    ]
   },
   {
-   "id": "RL0043",
+   "id": "RL0042",
    "kind": "centre_line_yellow",
    "colour": "yellow",
    "pattern": "solid",
@@ -1083,7 +1055,7 @@
    ]
   },
   {
-   "id": "RL0044",
+   "id": "RL0043",
    "kind": "centre_line_yellow",
    "colour": "yellow",
    "pattern": "solid",
@@ -1111,7 +1083,7 @@
    ]
   },
   {
-   "id": "RL0045",
+   "id": "RL0044",
    "kind": "centre_line_yellow",
    "colour": "yellow",
    "pattern": "solid",
@@ -1131,7 +1103,7 @@
    ]
   },
   {
-   "id": "RL0046",
+   "id": "RL0045",
    "kind": "centre_line_yellow",
    "colour": "yellow",
    "pattern": "solid",
@@ -1151,7 +1123,7 @@
    ]
   },
   {
-   "id": "RL0047",
+   "id": "RL0046",
    "kind": "centre_line_yellow",
    "colour": "yellow",
    "pattern": "solid",
@@ -1179,7 +1151,7 @@
    ]
   },
   {
-   "id": "RL0048",
+   "id": "RL0047",
    "kind": "centre_line_yellow",
    "colour": "yellow",
    "pattern": "solid",
@@ -1199,7 +1171,7 @@
    ]
   },
   {
-   "id": "RL0049",
+   "id": "RL0048",
    "kind": "centre_line_yellow",
    "colour": "yellow",
    "pattern": "dashed",
@@ -1227,7 +1199,7 @@
    ]
   },
   {
-   "id": "RL0050",
+   "id": "RL0049",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -1255,7 +1227,7 @@
    ]
   },
   {
-   "id": "RL0051",
+   "id": "RL0050",
    "kind": "edge_line",
    "colour": "white",
    "pattern": "solid",
@@ -1283,7 +1255,7 @@
    ]
   },
   {
-   "id": "RL0052",
+   "id": "RL0051",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -1343,7 +1315,7 @@
    ]
   },
   {
-   "id": "RL0053",
+   "id": "RL0052",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -1371,7 +1343,7 @@
    ]
   },
   {
-   "id": "RL0054",
+   "id": "RL0053",
    "kind": "edge_line",
    "colour": "white",
    "pattern": "solid",
@@ -1391,7 +1363,7 @@
    ]
   },
   {
-   "id": "RL0055",
+   "id": "RL0054",
    "kind": "edge_line",
    "colour": "white",
    "pattern": "solid",
@@ -1411,7 +1383,7 @@
    ]
   },
   {
-   "id": "RL0056",
+   "id": "RL0055",
    "kind": "edge_line",
    "colour": "white",
    "pattern": "solid",
@@ -1439,7 +1411,7 @@
    ]
   },
   {
-   "id": "RL0057",
+   "id": "RL0056",
    "kind": "edge_line",
    "colour": "white",
    "pattern": "solid",
@@ -1459,7 +1431,7 @@
    ]
   },
   {
-   "id": "RL0058",
+   "id": "RL0057",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -1487,7 +1459,7 @@
    ]
   },
   {
-   "id": "RL0059",
+   "id": "RL0058",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -1523,7 +1495,7 @@
    ]
   },
   {
-   "id": "RL0060",
+   "id": "RL0059",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -1551,7 +1523,7 @@
    ]
   },
   {
-   "id": "RL0061",
+   "id": "RL0060",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -1587,7 +1559,7 @@
    ]
   },
   {
-   "id": "RL0062",
+   "id": "RL0061",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -1647,7 +1619,7 @@
    ]
   },
   {
-   "id": "RL0063",
+   "id": "RL0062",
    "kind": "edge_line",
    "colour": "white",
    "pattern": "solid",
@@ -1667,7 +1639,7 @@
    ]
   },
   {
-   "id": "RL0064",
+   "id": "RL0063",
    "kind": "edge_line",
    "colour": "white",
    "pattern": "solid",
@@ -1695,7 +1667,7 @@
    ]
   },
   {
-   "id": "RL0065",
+   "id": "RL0064",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -1723,27 +1695,7 @@
    ]
   },
   {
-   "id": "RL0066",
-   "kind": "edge_line",
-   "colour": "white",
-   "pattern": "solid",
-   "double": false,
-   "lengthM": 30.7,
-   "fill": 1,
-   "strokes": 1,
-   "points": [
-    [
-     127.48281578,
-     34.97031152
-    ],
-    [
-     127.48314103,
-     34.97024004
-    ]
-   ]
-  },
-  {
-   "id": "RL0067",
+   "id": "RL0065",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -1771,7 +1723,7 @@
    ]
   },
   {
-   "id": "RL0068",
+   "id": "RL0066",
    "kind": "edge_line",
    "colour": "white",
    "pattern": "solid",
@@ -1807,7 +1759,7 @@
    ]
   },
   {
-   "id": "RL0069",
+   "id": "RL0067",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -1843,7 +1795,7 @@
    ]
   },
   {
-   "id": "RL0070",
+   "id": "RL0068",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -1895,7 +1847,7 @@
    ]
   },
   {
-   "id": "RL0071",
+   "id": "RL0069",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -1923,7 +1875,7 @@
    ]
   },
   {
-   "id": "RL0072",
+   "id": "RL0070",
    "kind": "edge_line",
    "colour": "white",
    "pattern": "solid",
@@ -1943,7 +1895,7 @@
    ]
   },
   {
-   "id": "RL0073",
+   "id": "RL0071",
    "kind": "edge_line",
    "colour": "white",
    "pattern": "solid",
@@ -1971,7 +1923,7 @@
    ]
   },
   {
-   "id": "RL0074",
+   "id": "RL0072",
    "kind": "edge_line",
    "colour": "white",
    "pattern": "solid",
@@ -1991,7 +1943,7 @@
    ]
   },
   {
-   "id": "RL0075",
+   "id": "RL0073",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -2043,7 +1995,7 @@
    ]
   },
   {
-   "id": "RL0076",
+   "id": "RL0074",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -2079,7 +2031,7 @@
    ]
   },
   {
-   "id": "RL0077",
+   "id": "RL0075",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -2115,7 +2067,7 @@
    ]
   },
   {
-   "id": "RL0078",
+   "id": "RL0076",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -2167,7 +2119,7 @@
    ]
   },
   {
-   "id": "RL0079",
+   "id": "RL0077",
    "kind": "edge_line",
    "colour": "white",
    "pattern": "solid",
@@ -2187,7 +2139,7 @@
    ]
   },
   {
-   "id": "RL0080",
+   "id": "RL0078",
    "kind": "edge_line",
    "colour": "white",
    "pattern": "solid",
@@ -2207,7 +2159,7 @@
    ]
   },
   {
-   "id": "RL0081",
+   "id": "RL0079",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -2267,7 +2219,7 @@
    ]
   },
   {
-   "id": "RL0082",
+   "id": "RL0080",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -2319,7 +2271,7 @@
    ]
   },
   {
-   "id": "RL0083",
+   "id": "RL0081",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -2347,7 +2299,7 @@
    ]
   },
   {
-   "id": "RL0084",
+   "id": "RL0082",
    "kind": "edge_line",
    "colour": "white",
    "pattern": "solid",
@@ -2367,7 +2319,7 @@
    ]
   },
   {
-   "id": "RL0085",
+   "id": "RL0083",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -2395,7 +2347,7 @@
    ]
   },
   {
-   "id": "RL0086",
+   "id": "RL0084",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -2423,7 +2375,7 @@
    ]
   },
   {
-   "id": "RL0087",
+   "id": "RL0085",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -2467,7 +2419,7 @@
    ]
   },
   {
-   "id": "RL0088",
+   "id": "RL0086",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -2495,7 +2447,7 @@
    ]
   },
   {
-   "id": "RL0089",
+   "id": "RL0087",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -2539,7 +2491,7 @@
    ]
   },
   {
-   "id": "RL0090",
+   "id": "RL0088",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -2567,7 +2519,7 @@
    ]
   },
   {
-   "id": "RL0091",
+   "id": "RL0089",
    "kind": "edge_line",
    "colour": "white",
    "pattern": "solid",
@@ -2595,7 +2547,7 @@
    ]
   },
   {
-   "id": "RL0092",
+   "id": "RL0090",
    "kind": "lane_line_dashed",
    "colour": "white",
    "pattern": "dashed",
@@ -2631,7 +2583,7 @@
    ]
   },
   {
-   "id": "RL0093",
+   "id": "RL0091",
    "kind": "edge_line",
    "colour": "white",
    "pattern": "solid",

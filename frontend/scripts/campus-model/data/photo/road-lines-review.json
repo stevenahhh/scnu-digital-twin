@@ -64,6 +64,14 @@
    ],
    "line": "RL0065",
    "reason": "white reading of the edge of the yellow island outline at the roundabout exit (one painted line, yellow)"
+  },
+  {
+   "near": [
+    127.47915848,
+    34.96812577
+   ],
+   "line": "RL0036",
+   "reason": "front kerb of the stall row west of the 학생회관 lot (P32-R2, found by the lot re-search), not a centre line"
   }
  ]
 }
