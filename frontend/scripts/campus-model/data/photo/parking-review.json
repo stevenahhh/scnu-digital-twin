@@ -1,6 +1,30 @@
 {
  "description": "By-eye review of bake/parking-rows.mjs on the NGII sheet (and the VR tour where noted): addAreas are search areas the traces miss, rejectRows are rows the detector found that are not stall rows, each with its reason. Coordinates WGS84.",
- "addAreas": [],
+ "addAreas": [
+  {
+   "id": "B7-south-facade",
+   "ring": [
+    [
+     127.48272368,
+     34.97035355
+    ],
+    [
+     127.48324995,
+     34.97035352
+    ],
+    [
+     127.48324994,
+     34.97021634
+    ],
+    [
+     127.48272367,
+     34.97021637
+    ]
+   ],
+   "reason": "stall row along the B7 south facade (sunlit dividers on the photo, partly under the building overhang); no traced piece there, so no search area before",
+   "alone": true
+  }
+ ],
  "rejectRows": [
   {
    "near": [
@@ -73,6 +97,30 @@
    ],
    "row": "P18-R2",
    "reason": "one-bay \"row\" whose bay centre lies on the A003 sidewalk: paving joints read as dividers"
+  },
+  {
+   "near": [
+    127.47797065,
+    34.97065482
+   ],
+   "row": "P04-R1",
+   "reason": "angled (경사) stalls in the photo: the perpendicular stall template does not fit them; left unmodelled (residual)"
+  },
+  {
+   "near": [
+    127.47788814,
+    34.97059433
+   ],
+   "row": "P04-R2",
+   "reason": "angled (경사) stalls in the photo: the perpendicular stall template does not fit them; left unmodelled (residual)"
+  },
+  {
+   "near": [
+    127.47803421,
+    34.97024606
+   ],
+   "row": "P09-R1",
+   "reason": "angled (경사) stalls in the photo: the perpendicular stall template does not fit them; left unmodelled (residual)"
   }
  ]
 }

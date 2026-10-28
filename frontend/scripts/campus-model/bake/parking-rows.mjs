@@ -43,6 +43,7 @@ const SITE_MARGIN_M = 5;
 const ROW_MIN_DIVIDERS = 3;
 const PITCH_M = [2.2, 3.6];
 const DEPTH_M = [4.5, 5.5];
+const PARTIAL_MIN_DIVIDERS = 5;
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
 const dot = (a, b) => a[0] * b[0] + a[1] * b[1];
@@ -293,7 +294,17 @@ function fitRow(f, frame, all) {
   }
   const lines = Boolean(best);
   if (best) { v0 = best.a; v1 = best.b; }
-  if (!lines && v1 - v0 < 3) return reject("depth");
+  let partial = false;
+  if (!lines && v1 - v0 < 3) {
+    // dividers seen over part of their length only (the rest under an overhang or a canopy): with at least
+    // PARTIAL_MIN_DIVIDERS of them, the row's one visible long line (a paint peak at either end of the dividers) is its
+    // aisle end and the stalls run the statute depth from it into the hidden part
+    const at = (t) => prof.reduce((b, x) => (Math.abs(x.t - t) <= 0.4 && x.m > (b?.m ?? 0.25) ? x : b), null);
+    const [p0, p1] = [at(v0), at(v1)];
+    if (m.length < PARTIAL_MIN_DIVIDERS || (!p0 && !p1)) return reject("depth");
+    if (p1 && (!p0 || p1.m >= p0.m)) { v1 = p1.t; v0 = v1 - 5.0; } else { v0 = p0.t; v1 = v0 + 5.0; }
+    partial = true;
+  }
   // accessible bays: blue over most of the bay interior
   // bay positions along the row (photo widths), and blue over most of a bay: accessible
   const starts = [];
@@ -308,7 +319,7 @@ function fitRow(f, frame, all) {
     if (b === "accessible" || blue / n > 0.3) accessible.push(k);
   });
   return {
-    centre: f.centre, u: frame.u, v: frame.v, start: P(u0, v0), end: P(uEnd, v0), depthPhoto: v1 - v0, lines,
+    centre: f.centre, u: frame.u, v: frame.v, start: P(u0, v0), end: P(uEnd, v0), depthPhoto: v1 - v0, lines, partial,
     pitch: p, accessiblePitch: pa, bays: kmax - kmin, dividers: m.length, rms, accessible, photoDividers: us.map((x) => P(x, v0)),
   };
 }
@@ -325,7 +336,7 @@ function sites(review) {
   }
   const ground = JSON.parse(readFileSync(path.join(DATA, "osm-ground.json"), "utf8"));
   for (const ft of ground.osm.features.filter((x) => x.kind === "parking")) for (const q of ft.rings[0]) pts.push({ p: toMetres(q), src: ft.id });
-  for (const area of review.addAreas ?? []) for (const q of area.ring) pts.push({ p: toMetres(q), src: area.id });
+  for (const area of (review.addAreas ?? []).filter((a) => !a.alone)) for (const q of area.ring) pts.push({ p: toMetres(q), src: area.id });
   const parent = pts.map((_, i) => i);
   const root = (i) => (parent[i] === i ? i : (parent[i] = root(parent[i])));
   const cell = new Map();
@@ -351,7 +362,10 @@ function sites(review) {
       const corner = (s, t) => [b.u[0] * s + b.v[0] * t, b.u[1] * s + b.v[1] * t];
       return { ring: [corner(b.s0 - m, b.t0 - m), corner(b.s1 + m, b.t0 - m), corner(b.s1 + m, b.t1 + m), corner(b.s0 - m, b.t1 + m)], sources: [...new Set(g.map((q) => q.src))] };
     })
-    .sort((a, b) => a.ring[0][1] - b.ring[0][1] || a.ring[0][0] - b.ring[0][0]);
+    .sort((a, b) => a.ring[0][1] - b.ring[0][1] || a.ring[0][0] - b.ring[0][0])
+    // a review area marked `alone` is searched as drawn, on its own (a large neighbouring site's row directions would
+    // hide its own)
+    .concat((review.addAreas ?? []).filter((a) => a.alone).map((a) => ({ ring: a.ring.map(toMetres), sources: [a.id] })));
 }
 
 // Rows found twice (two directions or overlapping sites): the one with more dividers stays.
@@ -418,7 +432,7 @@ const allSites = sites(review);
 const found = [];
 allSites.forEach((site, si) => {
   const id = `S${String(si + 1).padStart(2, "0")}`;
-  if (only && id !== only) return;
+  if (only && id !== only && !site.sources.includes(only)) return;
   const f = paintField(site.ring);
   const scores = [];
   const frames = [];
@@ -478,6 +492,7 @@ const lots = [...lotGroups.values()]
       photoAccessiblePitchM: +r.accessiblePitch.toFixed(3),
       photoDepthM: +r.depthPhoto.toFixed(2),
       frontBackLines: r.lines,
+      ...(r.partial ? { partialDepth: true } : {}),
       dividerRmsCm: +(r.rms * 100).toFixed(1),
       accessible: r.accessible,
       photoDividers: r.photoDividers.map(toGeo),
