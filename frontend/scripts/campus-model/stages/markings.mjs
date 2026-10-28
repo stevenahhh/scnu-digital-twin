@@ -95,6 +95,7 @@ const MARKINGS_VR = path.join(HERE, "..", "data", "photo", "markings-vr.json");
 const MARKINGS_GATE = path.join(HERE, "..", "data", "photo", "markings-gate.json");
 const MARKINGS_TEXT = path.join(HERE, "..", "data", "photo", "markings-text.json");
 const MARKINGS_BAYS = path.join(HERE, "..", "data", "photo", "markings-bays.json");
+const ROAD_LINES = path.join(HERE, "..", "data", "photo", "road-lines.json");
 const GROUND_FEATURES = path.join(HERE, "..", "data", "osm-ground.json");
 const CROSSWALKS = path.resolve(HERE, "../../../..", "docs", "assets", "data", "crosswalks_wgs84.geojson");
 
@@ -734,6 +735,16 @@ export async function loadMarkings({ inputs, buildings }) {
 
   // ---- 4. regular geometry: the gate decided where paint is; what is drawn there is fitted lines, statute dashes,
   // one bar set per crossing and templates (stages/markingsRegular.mjs)
+  // centre and edge lines read along every road on the photo (bake/road-lines.mjs): line candidates of their own,
+  // chained and fitted with the detected ones (the photo profile is their evidence; duplicates of a detected line
+  // are drawn once)
+  const roadLines = JSON.parse(await Bun.file(ROAD_LINES).text()).lines;
+  for (const l of roadLines) {
+    const lineModel = l.points.map(([lon, lat]) => geoToModel(lon, lat));
+    const p = { id: l.id, kind: l.kind, colour: l.colour, dashed: l.pattern === "dashed", double: false, method: "photo profile" };
+    drawn.push({ feature: { properties: p, geometry: { type: "LineString", coordinates: l.points }, file: "road-lines" }, id: l.id, file: "road-lines", kind: l.kind, colour: l.colour, estimated: false, lineModel, shapes: [], verdict: "drawn" });
+  }
+  log.roadLines = roadLines.length;
   const textMarkings = JSON.parse(await Bun.file(MARKINGS_TEXT).text()).markings;
   const regular = regularise(drawn, {
     unit: UNIT,
