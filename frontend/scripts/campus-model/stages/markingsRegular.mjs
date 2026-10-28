@@ -23,6 +23,8 @@ import {
   polylineLength, projectArc, rect, resample, scale, slicePath, straightness, sub, unit, fitPath, distanceToPolyline, median,
 } from "../lib/markingFit.mjs";
 import { TEMPLATES, crosswalkLength } from "../lib/markingStandards.mjs";
+import { readParkingLots } from "../lib/parkingRows.mjs";
+import { geoToModel } from "../lib/frame.mjs";
 import { roadTextBlock } from "../lib/roadText.mjs";
 import {
   arcBand, ARROW_KINDS, arrowTemplate, bicycleTemplate, chevronTemplate, diamondTemplate, hatchTemplate, parkingPTemplate, scooterTemplate, textBlock, triangleTemplate, wheelchairTemplate,
@@ -216,6 +218,8 @@ export function dominantDirections(ring) {
 export const simplifyRing = (ring) => simplify(ring, 0.1);
 // the sides of a traced island outline are its ring simplified within this (metres)
 export const ISLAND_SIMPLIFY_M = 0.3;
+export const STALL_LOT_REACH_M = 3;
+const insideRing = ([x, z], ring) => { let c = false; for (let i = 0, j = ring.length - 1; i < ring.length; j = i, i += 1) { const [xi, zi] = ring[i], [xj, zj] = ring[j]; if ((zi > z) !== (zj > z) && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) c = !c; } return c; };
 export const ISLAND_LINK_M = 1.2;
 export const ISLAND_MIN_M2 = 3;
 export const ISLAND_SIDE_M = 0.5;
@@ -457,6 +461,10 @@ function clipConvex(subject, clip) {
 export function regularise(drawn, ctx) {
   const U = ctx.unit;
   const toM = (p) => [p[0] / U, p[1] / U];
+  // a traced "stall line" farther than STALL_LOT_REACH_M from every parking lot is road paint (the stop line and lane
+  // edge at a junction mouth), drawn as a solid white line; inside a lot the photo rows draw the stalls
+  const lotRings = readParkingLots().map((l) => l.ring.map(([lon, lat]) => geoToModel(lon, lat).map((v) => v / U)));
+  const nearLot = (q) => lotRings.some((r) => distanceToPolyline(q, [...r, r[0]]) <= STALL_LOT_REACH_M || insideRing(q, r));
   const toScene = (p) => [p[0] * U, p[1] * U];
   const blocked = (p) => ctx.blocked(toScene(p));
   const roadAxes = (ctx.roadAxes ?? []).map((line) => line.map(toM));
@@ -526,7 +534,7 @@ export function regularise(drawn, ctx) {
         const rings = shapesM(c)[0];
         const box = orientedBox(rings[0]);
         const fill = polygonArea(rings) / Math.max(1e-6, 4 * box.halfLong * box.halfShort);
-        if (c.kind === "parking_line") {
+        if (c.kind === "parking_line" && nearLot(box.centre)) {
           stats.stallLinesLeft = (stats.stallLinesLeft ?? 0) + 1;
           continue;
         }
@@ -643,6 +651,7 @@ export function regularise(drawn, ctx) {
   // the detected ones and whole dashes only, double lines as two strokes, cuts at buildings and sidewalks; every
   // straight run and every arc of a fitted line is its own marking instance (template, evidence, geometry)
   const lineTemplate = (ch) => {
+    if (ch.kind === "parking_line" && !nearLot(scale(add(ch.path[0], ch.path.at(-1)), 0.5))) return "lane_solid";
     if (ch.kind === "parking_line") return null; // stalls are drawn from data/photo/parking-lots.json (stages/markingsStandard.mjs)
     if (ch.dotted) return "guide_line";
     if (ch.kind === "give_way_line") return "give_way_line";
