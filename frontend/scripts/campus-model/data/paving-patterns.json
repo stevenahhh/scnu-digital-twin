@@ -2,40 +2,48 @@
   "description": "Paving patterns read from the SCNU 360 VR tour (visual reference only, nothing copied): module sizes, bonds, colours and accent shares of the campus walks and plazas, drawn by lib/pavingPatterns.mjs as repeating colour + relief tiles (no photo pixel). Colours are sRGB estimates from the VR faces under daylight; module sizes are counted against known lengths (bay widths, steps, the 0.3 m tactile module). Every value is an estimate (추정).",
   "patterns": {
     "campus-speckle": {
-      "label": "light grey 0.3 m concrete pavers with scattered dark grey and blue-grey squares (campus sidewalk standard)",
+      "label": "light grey 0.2 m concrete pavers in stack bond with a regular accent grid: 3 x 3 dark grey blocks with a beige centre every 1.6 m (alternate rows shifted 0.8 m) and single terracotta pavers every 0.8 m between them (campus sidewalk standard)",
       "moduleM": [
-        0.3,
-        0.3
+        0.2,
+        0.2
       ],
       "bond": "stack",
       "repeatM": 4.8,
       "base": [
         [
-          "#c8c8c3",
-          0.45
+          "#c4c5c6",
+          0.4
         ],
         [
-          "#bdbeba",
-          0.3
+          "#bcbdbe",
+          0.35
         ],
         [
-          "#d2d1cb",
+          "#cacacb",
           0.25
         ]
       ],
-      "accents": [
-        [
-          "#5d6268",
-          0.07
-        ],
-        [
-          "#7a8c9e",
-          0.05
-        ]
+      "accents": [],
+      "motifs": [
+        {
+          "block": 3,
+          "colour": "#6c737b",
+          "centre": "#c8b48e",
+          "pitch": 8,
+          "stagger": true
+        },
+        {
+          "dot": "#b5735a",
+          "pitch": 4,
+          "offset": [
+            5,
+            1
+          ]
+        }
       ],
-      "joint": "#a3a39e",
-      "jointM": 0.008,
-      "source": "VR scene_a2 d, scene_a3 d/l, scene_a4 d, scene_b2 d, scene_b4 d, scene_c2 d, scene_d1 d, scene_e3 d, scene_e5 r"
+      "joint": "#a6a7a8",
+      "jointM": 0.012,
+      "source": "VR scene_a2 d (sampled: light pavers p40-p60 sRGB 187,192,206 under a blue-white sky, dark accent blocks with a beige centre on a regular staggered grid, terracotta single pavers between); also scene_a3, a4, b2, b4, c2, d1, e3, e5 (same paving); colours neutralised for the sky cast (추정)"
     },
     "plaza-mottled": {
       "label": "central plaza: 0.5 m granite squares mixed light, mid and dark grey with dark slate squares",

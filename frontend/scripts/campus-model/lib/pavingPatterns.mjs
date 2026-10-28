@@ -1,7 +1,8 @@
 // Paving pattern tiles (data/paving-patterns.json): each pattern is drawn as one seamless repeating colour tile and a
 // relief (normal) tile from its joints, at PAVING_PX_PER_M. Module colours are picked per module by a hash that wraps at
 // the repeat, so the tile tiles without seams; accents replace a module's colour with the given share, `grid` puts a
-// small square at every pitch (offset half a pitch), `stripes` paint whole bands across the tile at a pitch. Bonds:
+// small square at every pitch (offset half a pitch), `stripes` paint whole bands across the tile at a pitch, `motifs`
+// place regular accent blocks and dots on the module grid (no random accents). Bonds:
 // stack (a grid), running (rows of height moduleM[1], every other row shifted half a module), herringbone (90 degree,
 // bricks moduleM[0] = 2 x moduleM[1]). No photo pixel is used; every colour and size is a VR estimate (추정).
 import { readFileSync } from "node:fs";
@@ -106,6 +107,31 @@ export function pavingTile(id) {
         }
         colour ??= pick(base, (r - acc) / Math.max(1e-9, 1 - acc));
         if (p.stripes && ((y % p.stripes.pitchM) + p.stripes.pitchM) % p.stripes.pitchM < p.stripes.widthM) colour = hex(p.stripes.colour);
+        // regular accent motifs on the module grid (stack bond): a `block` of n x n modules (its centre module in
+        // `centre`) every `pitch` modules, alternate block rows shifted half a pitch; a `dot` module every `pitch`
+        // modules from `offset`, never inside a block
+        if (p.motifs) {
+          const [mi, mj] = m.key;
+          let inBlock = false;
+          for (const motif of p.motifs.filter((x) => x.block)) {
+            const P = motif.pitch;
+            const row = Math.floor(mj / P);
+            const shift = motif.stagger && row % 2 ? P / 2 : 0;
+            const ii = (((mi - shift) % P) + P) % P;
+            const jj = ((mj % P) + P) % P;
+            if (ii < motif.block && jj < motif.block) {
+              inBlock = true;
+              const mid = (motif.block - 1) / 2;
+              colour = hex(ii === mid && jj === mid && motif.centre ? motif.centre : motif.colour);
+            }
+          }
+          if (!inBlock) {
+            for (const motif of p.motifs.filter((x) => x.dot)) {
+              const P = motif.pitch;
+              if ((((mi - motif.offset[0]) % P) + P) % P === 0 && (((mj - motif.offset[1]) % P) + P) % P === 0) colour = hex(motif.dot);
+            }
+          }
+        }
         if (p.grid) {
           const g = p.grid.pitchM;
           const dx = Math.abs(((x % g) + g) % g - g / 2);
