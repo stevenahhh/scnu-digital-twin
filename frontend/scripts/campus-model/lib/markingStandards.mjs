@@ -21,6 +21,7 @@ export const DOCUMENTS = Object.freeze({
   H23: "교통노면표시 설치·관리 업무편람 (2023)",
   B6: "도로교통법 시행규칙 별표 6 (2027-01-01 시행본 텍스트)",
   PK: "주차장법 시행규칙 제3조 (주차단위구획)",
+  DN: "origin/dev-next 37fd445 traced paint (carried over unchanged where no standard graphic is in the set)",
 });
 
 // Line widths and dash patterns: M19 표 2-1 (printed p15, PDF p31) = H24 표 2-1 (printed p11, PDF p17), 도시부 column.
@@ -64,7 +65,7 @@ export const TEMPLATES = Object.freeze({
   // carried over unchanged from dev-next 37fd445 where no standard graphic is in the standards set: the striped hump
   // bands (국토교통부 과속방지턱 지침 not in standards/; M19 p114 (PDF p130) 그림 4-22 오르막경사면(544) is white triangles
   // on the slope, not the photo's yellow and white stripes)
-  legacy_preserved: { kind: "legacy", colour: null, source: { doc: "dev-next 37fd445", page: "traced paint geometry, unchanged (evidence id = trace id)" }, code: "-" },
+  legacy_preserved: { kind: "legacy", colour: null, source: { doc: "DN", page: "frontend/public/campus-v2.glb at 37fd445, traced paint geometry unchanged (evidence id = trace id)" }, code: "-" },
   stall_accessible: {
     kind: "stall", colour: "white", widthM: 3.3, depthM: 5.0, lineM: 0.15, symbol: { colour: "blue", squareM: 1.6, wheelchairM: 1.3 },
     source: { doc: "PK", page: "제3조 제1항 (장애인전용 3.3 x 5.0 m); 장애인등편의법 시행규칙 별표 1 (바닥 표시)" }, code: "523",

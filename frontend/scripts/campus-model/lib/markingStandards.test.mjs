@@ -8,7 +8,8 @@ import { modelToGeo, SCENE_UNITS_PER_METRE as U } from "./frame.mjs";
 
 test("every template names its colour, kind and a source page in a listed document", () => {
   for (const [id, t] of Object.entries(TEMPLATES)) {
-    assert.ok(["white", "yellow", "blue", "light_blue"].includes(t.colour), `${id} colour`);
+    // (legacy_preserved paint keeps each traced piece's own colour)
+    assert.ok(t.kind === "legacy" ? t.colour === null : ["white", "yellow", "blue", "light_blue"].includes(t.colour), `${id} colour`);
     assert.ok(t.kind, `${id} kind`);
     assert.ok(DOCUMENTS[t.source.doc], `${id} source document`);
     assert.ok(t.source.page.length > 0, `${id} source page`);
