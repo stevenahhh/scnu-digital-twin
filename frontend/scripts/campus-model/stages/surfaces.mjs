@@ -42,7 +42,8 @@ export const SURFACE_LIFT_M = (precedence) => Math.min(0.036, 0.006 * precedence
 export const GROUND_MESHES = Object.freeze({
   Ground_Sports: {},
   Ground_Asphalt: { tile: "asphalt" },
-  Ground_Lot: { tile: "lot" },
+  // campus lots are asphalt like the roads beside them (NGII photo), so a lot reads as one paved surface with its stalls
+  Ground_Lot: { tile: "asphalt" },
   // VR scenes a2-e5: light grey pavers with scattered dark squares (data/paving-patterns.json campus-speckle, 추정)
   Ground_Pavers: { pattern: "campus-speckle" },
   Ground_Bicycle: { tile: "asphalt-red" },
