@@ -241,6 +241,25 @@ for (let i = 0; i < yellow.length; i += 1) {
   lines.push(a);
 }
 lines.push(...white);
+// on a road only: at least ON_ROAD_SHARE of a line's points inside a measured road zone (docs/assets/data/
+// road_zones_wgs84.geojson) or within ARTERIAL_REACH_M of an OSM arterial or connector; roof edges, plaza joints and
+// kerbs of walks the masks also find are left out
+const ON_ROAD_SHARE = 0.7;
+const ARTERIAL_REACH_M = 7;
+const zones = JSON.parse(readFileSync(path.resolve(HERE, "../../../..", "docs", "assets", "data", "road_zones_wgs84.geojson"), "utf8")).features
+  .flatMap((f) => (f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates))
+  .map((poly) => poly.map((ring) => ring.map(([lon, lat]) => geoToModel(lon, lat).map((v) => v / U))));
+const zoneBoxes = zones.map((poly) => { const xs = poly[0].map((q) => q[0]), zs = poly[0].map((q) => q[1]); return [Math.min(...xs), Math.min(...zs), Math.max(...xs), Math.max(...zs)]; });
+const axes = JSON.parse(readFileSync(path.join(DATA, "osm-ground.json"), "utf8")).osm.lines.filter((l) => l.kind === "arterial" || l.kind === "connector")
+  .map((l) => l.line.map(([lon, lat]) => geoToModel(lon, lat).map((v) => v / U)));
+const segDist = (q, a, b) => { const ab = sub(b, a), l2 = dot(ab, ab); const t = l2 > 0 ? Math.max(0, Math.min(1, dot(sub(q, a), ab) / l2)) : 0; return norm(sub(q, [a[0] + ab[0] * t, a[1] + ab[1] * t])); };
+const onRoad = (q) => zones.some((poly, i) => { const b = zoneBoxes[i]; return q[0] >= b[0] && q[0] <= b[2] && q[1] >= b[1] && q[1] <= b[3] && inRing(q, poly[0]) && !poly.slice(1).some((h) => inRing(q, h)); })
+  || axes.some((line) => line.some((a, i) => i > 0 && segDist(q, line[i - 1], a) <= ARTERIAL_REACH_M));
+const offRoad = [];
+for (let i = lines.length - 1; i >= 0; i -= 1) {
+  const share = lines[i].pts.filter(onRoad).length / lines[i].pts.length;
+  if (share < ON_ROAD_SHARE) offRoad.push(...lines.splice(i, 1));
+}
 let k = 0;
 const records = lines.map((l) => {
   const pattern = l.fill >= FILL_SOLID ? "solid" : "dashed";
@@ -249,8 +268,9 @@ const records = lines.map((l) => {
 });
 writeFileSync(OUT, `${JSON.stringify({
   source: "NGII 2025 orthophoto sheet 34702020 (0.25 m), read by bake/road-lines.mjs over EXTENT",
-  method: "yellow and white paint masks on pavement (9 x 9 px top-hat), thin strokes at least 2 m long with pavement on both sides and outside the photo stall rows, chained end to end (12 deg, 6 m gap, 0.45 m lateral) into lines at least 8 m long; double yellow pairs 0.15-0.5 m apart merged",
+  method: "yellow and white paint masks on pavement (9 x 9 px top-hat), thin strokes at least 2 m long with pavement on both sides and outside the photo stall rows, chained end to end (12 deg, 6 m gap, 0.45 m lateral) into lines at least 8 m long; double yellow pairs 0.15-0.5 m apart merged; kept when 70 % of the line lies in a road zone or within 7 m of an OSM arterial or connector",
+  offRoad: offRoad.length,
   lines: records,
 }, null, 1)}\n`);
 const sum = (f) => records.filter(f).reduce((a, l) => a + l.lengthM, 0).toFixed(0);
-console.log(`${records.length} photo lines: ${records.filter((l) => l.kind === "centre_line_yellow").length} centre (${records.filter((l) => l.double).length} double, ${sum((l) => l.colour === "yellow")} m), ${records.filter((l) => l.kind === "edge_line").length} white solid, ${records.filter((l) => l.kind === "lane_line_dashed").length} white dashed (${sum((l) => l.colour === "white")} m) -> ${path.relative(process.cwd(), OUT)}`);
+console.log(`${records.length} photo lines (${offRoad.length} off the road left out): ${records.filter((l) => l.kind === "centre_line_yellow").length} centre (${records.filter((l) => l.double).length} double, ${sum((l) => l.colour === "yellow")} m), ${records.filter((l) => l.kind === "edge_line").length} white solid, ${records.filter((l) => l.kind === "lane_line_dashed").length} white dashed (${sum((l) => l.colour === "white")} m) -> ${path.relative(process.cwd(), OUT)}`);
