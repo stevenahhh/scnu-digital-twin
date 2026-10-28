@@ -858,8 +858,13 @@ the survey kept on footways, verges and medians. `data/streetlights.json` is no 
   2026-01; kept outside the repository). Every estimated pole was viewed on 2-3 panos within 14 m; each record's
   `kakao-roadview` attempt says what stands at the seed (`pole-seen`, `not-seen`, `not-a-lamp`, `sign-pole`). The pano
   positions sit 1.3-3.8 m from the sheet, and ground-registered poses reproduce a control foot to 0.04 m at 11 m but
-  2.2 m at 20 m, so no foot reached two independent roadview estimates within 0.5 m: no pole moved and all 46 stay
-  estimated. Naver panorama, Google Street View, VWorld street-level and older-than-2013 city aerials were not usable
+  2.2 m at 20 m, so no foot reached two independent roadview estimates within 0.5 m and no pole moved. The roadview
+  still settles existence and type (`pole-sources.json` `roadview.verdict`): 7 seeds with no pole on at least two clear
+  2026-01 panos are `absent` and become `rejected` (not drawn); OB0004, OC0058, OC0068, OC0167 and OC0171 are concrete
+  utility poles and OB0014 a bus-parking sign pole, drawn as `utility_pole` (plain concrete column, 10 m, 0.34 to 0.19 m,
+  estimated) and `sign_pole` at the same root (`RETYPED` in `stages/furniture.mjs`); 13 `confirmed` and 20
+  `unconfirmed` (one pano, an occluder, or a pole off the seed bearing within the seed uncertainty) stay estimated at
+  their seed. Naver panorama, Google Street View, VWorld street-level and older-than-2013 city aerials were not usable
   without login or key, or predate the poles.
 - The 67 lamps the old rule placed every 27 m along the A003 walkway outlines were seeds too
   (`data/photo/pole-seeds-rule.json`); none shows a pole on the photo, so none is drawn.
