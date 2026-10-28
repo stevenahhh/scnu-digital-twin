@@ -1,0 +1,70 @@
+{
+ "description": "By-eye review of bake/parking-rows.mjs on the NGII sheet (and the VR tour where noted): addAreas are search areas the traces miss, rejectRows are rows the detector found that are not stall rows, each with its reason. Coordinates WGS84.",
+ "addAreas": [],
+ "rejectRows": [
+  {
+   "near": [
+    127.48340605,
+    34.97112948
+   ],
+   "row": "P01-R1",
+   "reason": "two \"bays\" on the carriageway beside a bus at a stop (bus-stop markings, not stalls)"
+  },
+  {
+   "near": [
+    127.48144573,
+    34.97062245
+   ],
+   "row": "P06-R1",
+   "reason": "kerb strip between the road and the grass verge (yellow kerb line), no stalls"
+  },
+  {
+   "near": [
+    127.47783071,
+    34.97041314
+   ],
+   "row": "P10-R1",
+   "reason": "lines of a hatched island at the lot corner read as dividers"
+  },
+  {
+   "near": [
+    127.48048267,
+    34.97035694
+   ],
+   "row": "P11-R1",
+   "reason": "diagonal hatch of the island next to the lot read as dividers"
+  },
+  {
+   "near": [
+    127.4760656,
+    34.97002654
+   ],
+   "row": "P18-R1",
+   "reason": "edge of the shaded lot over the tree verge: canopy shadow stripes, no stalls"
+  },
+  {
+   "near": [
+    127.47970013,
+    34.96960248
+   ],
+   "row": "P24-R1",
+   "reason": "paving joints and yellow guide lines of a pedestrian plaza, no stalls"
+  },
+  {
+   "near": [
+    127.48041219,
+    34.96647331
+   ],
+   "row": "P51-R1",
+   "reason": "kerb and verge pieces at a road bend, no stalls"
+  },
+  {
+   "near": [
+    127.47829284,
+    34.96949882
+   ],
+   "row": "P28-R1",
+   "reason": "row reaching onto the building roof edge: roof seams read as dividers"
+  }
+ ]
+}
