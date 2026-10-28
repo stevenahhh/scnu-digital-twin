@@ -854,6 +854,13 @@ the survey kept on footways, verges and medians. `data/streetlights.json` is no 
   (`pole-sources.json` `resolved`: offset from the seed in EPSG:5186 metres, picks, registration, residual). Two did
   (OC0054, OC0130); Kakao skyview HD and the city's 2025 layer are the 2025 photo again. `epoch-root` counts as a photo
   base for `checkPoles`.
+- Round 4 adds street level: Kakao Map roadview (keyless node search and HD tiles, epochs 2010-02, 2019-04, 2021-12 and
+  2026-01; kept outside the repository). Every estimated pole was viewed on 2-3 panos within 14 m; each record's
+  `kakao-roadview` attempt says what stands at the seed (`pole-seen`, `not-seen`, `not-a-lamp`, `sign-pole`). The pano
+  positions sit 1.3-3.8 m from the sheet, and ground-registered poses reproduce a control foot to 0.04 m at 11 m but
+  2.2 m at 20 m, so no foot reached two independent roadview estimates within 0.5 m: no pole moved and all 46 stay
+  estimated. Naver panorama, Google Street View, VWorld street-level and older-than-2013 city aerials were not usable
+  without login or key, or predate the poles.
 - The 67 lamps the old rule placed every 27 m along the A003 walkway outlines were seeds too
   (`data/photo/pole-seeds-rule.json`); none shows a pole on the photo, so none is drawn.
 - `checkPoles` (stages/lights.mjs) is the placement contract. A pole whose base the photo shows, or whose seed the photo
