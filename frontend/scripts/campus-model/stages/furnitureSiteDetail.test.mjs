@@ -19,7 +19,7 @@ function build(kind, geometry, p) {
 const ys = (ctx) => ctx.solid.mesh.positions.filter((_, i) => i % 3 === 1).map((y) => y / M(1));
 const near = (a, b, what) => assert.ok(Math.abs(a - b) < 1e-6, `${what}: ${a} vs ${b}`);
 
-test("stall row: one stall per 2.5 m, dividers on the chosen side or bearing, wheel stops 0.9 m in from the back", () => {
+test("stall row geometry: one stall per 2.5 m, dividers on the chosen side or bearing, wheel stops 0.9 m in from the back; nothing drawn", () => {
   const row = stallRow(line(25), { side: "left" });
   assert.equal(row.n, 10);
   assert.equal(row.dividers.length, 11);
@@ -28,10 +28,8 @@ test("stall row: one stall per 2.5 m, dividers on the chosen side or bearing, wh
   near(stallRow(line(25), { bearingDeg: 180, depthM: 4 }).dividers[0][1][1] / M(1), 4, "a bearing of 180 runs south");
   near(row.stops[0].centre[1] / M(1), -4.1, "stop");
   assert.equal(stallRow(line(25), { stalls: 9 }).n, 9);
-  near(Math.max(...ys(build("stall_row", { line: line(25) }, { side: "left" }))), 0.045, "paint lies just over the ground");
-  near(Math.max(...ys(build("stall_row", { line: line(25) }, { side: "left", wheel_stops: true }))), 0.12, "wheel stop top");
-  const stopsOnly = build("stall_row", { line: line(25) }, { side: "left", dividers: false, wheel_stops: true });
-  assert.equal(Math.min(...ys(stopsOnly)), -0.03, "without dividers only the wheel stops are drawn");
+  // the stall paint is the photo-read rows of stages/markingsStandard.mjs: the VR stall rows draw nothing here
+  assert.equal(ys(build("stall_row", { line: line(25) }, { side: "left", wheel_stops: true })).length, 0, "no furniture stall paint");
 });
 
 test("hedges and shrub masses reach their height", () => {

@@ -1659,25 +1659,11 @@ export function stallRow(line, { stalls, side = "left", depthM = SITE.stallDepth
   const stops = Array.from({ length: n }, (_, k) => ({ centre: at((lengthM * (k + 0.5)) / n, depthM - 0.9), u }));
   return { n, lengthM, u, v, dividers, stops, back: [at(0, depthM), at(lengthM, depthM)] };
 }
-function paintStrip(ctx, p, q, widthM, paint) {
-  const pts = densify([p, q], 1);
-  const len = Math.hypot(q[0] - p[0], q[1] - p[1]);
-  const n = [-(q[1] - p[1]) / len * M(widthM / 2), (q[0] - p[0]) / len * M(widthM / 2)];
-  for (let i = 0; i + 1 < pts.length; i += 1) {
-    const [c, d] = [pts[i], pts[i + 1]];
-    ctx.solid.flat([[c[0] - n[0], c[1] - n[1]], [d[0] - n[0], d[1] - n[1]], [d[0] + n[0], d[1] + n[1]], [c[0] + n[0], c[1] + n[1]]], [], (x, z) => ctx.groundAt(x, z) + M(SITE.paintLiftM), paint);
-  }
-}
-B.stall_row = (ctx, o) => {
-  const row = stallRow(o.line, { stalls: o.p.stalls, side: o.p.side, depthM: o.p.depth_m ?? SITE.stallDepthM, bearingDeg: o.p.divider_bearing_deg });
-  const paint = paintOf(o.p.colour, C.white, o.id);
-  // dividers: false where the markings data already paints the row (only the wheel stops are added)
-  if (o.p.dividers !== false) for (const [p, q] of row.dividers) paintStrip(ctx, p, q, SITE.paintM, paint);
-  if (o.p.back_line) paintStrip(ctx, ...row.back, SITE.paintM, paint);
-  if (o.p.front_line) paintStrip(ctx, row.dividers[0][0], row.dividers.at(-1)[0], SITE.paintM, paint);
-  if (!o.p.wheel_stops) return;
-  const stop = paintOf(o.p.stopColour, C.concreteDark, o.id);
-  for (const s of row.stops) ctx.solid.box(frame([s.centre[0], ctx.groundAt(...s.centre), s.centre[1]], s.u), [-0.8, 0.8], [-0.075, 0.075], [-0.03, 0.12], stop);
+// Stall paint and wheel stops are no longer drawn here: every stall row is the photo-read row of
+// data/photo/parking-lots.json drawn as a standard stall template by stages/markingsStandard.mjs (Road_Markings, checked
+// by scripts/qa/markings-audit.mjs); the VR rows of site-detail.geojson disagree with the photo rows in place and pitch.
+B.stall_row = (ctx) => {
+  ctx.skippedStallRows = (ctx.skippedStallRows ?? 0) + 1;
 };
 
 // Street furniture of the VR site-detail sweep (standard dimensions, every one an estimate, \uCD94\uC815): bollard 0.9 m tall,
