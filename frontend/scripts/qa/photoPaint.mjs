@@ -15,7 +15,7 @@ export const GREY_MAX = 40; // white paint is unsaturated
 let sheet = null;
 
 // paint pixels inside the model-metre box [x0, z0, x1, z1]: [{ q: [x, z] metres, colour }], plus blobs
-export function paintIn([x0, z0, x1, z1]) {
+export function paintIn([x0, z0, x1, z1], { whiteContrast = WHITE_CONTRAST, pavementMax = PAVEMENT_MAX } = {}) {
   sheet ??= openSheet();
   const corners = [[x0, z0], [x1, z0], [x1, z1], [x0, z1]].map(([x, z]) => tmToPixel(...sceneToTm(x * U, z * U), sheet.tfw));
   const c0 = Math.max(0, Math.floor(Math.min(...corners.map((p) => p[0]))));
@@ -46,11 +46,11 @@ export function paintIn([x0, z0, x1, z1]) {
   for (let j = 0; j < H; j += 1) for (let i = 0; i < W; i += 1) {
     const k = j * W + i;
     const mL = mean(SL, i, j);
-    if (mL > PAVEMENT_MAX) continue;
+    if (mL > pavementMax) continue;
     // yellow, not the red of a coloured crossing or a red asphalt ring: green well above blue, red not far above green
     const [r, g, b] = [rgb[k * 3], rgb[k * 3 + 1], rgb[k * 3 + 2]];
     if (Y[k] - mean(SY, i, j) > YELLOW_CONTRAST && Y[k] > 25 && g - b > 20 && r - g < 50) colour[k] = 2;
-    else if (L[k] - mL > WHITE_CONTRAST && C[k] < GREY_MAX) colour[k] = 1;
+    else if (L[k] - mL > whiteContrast && C[k] < GREY_MAX) colour[k] = 1;
   }
   const at = (i, j) => tmToScene(...pixelToTm(c0 + i + 0.5, r0 + j + 0.5, sheet.tfw)).map((v) => v / U);
   const pixels = [];

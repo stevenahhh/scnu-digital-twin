@@ -58,6 +58,7 @@ export const ROAD_INSET_M = 1.0; // junction paint counts on the carriageway onl
 export const LOT_PAD_M = 4;
 export const LOT_SHARE = 0.6;
 export const LOT_MIN_M2 = 1;
+export const LOT_PAVEMENT_MAX = 175;
 const U = SCENE_UNITS_PER_METRE;
 // palette order of stages/markings.mjs (PALETTE_COLOURS): u = (i + 0.5) / 5
 const PALETTE = ["white", "yellow", "blue", "green", "light_blue"];
@@ -333,9 +334,12 @@ function checkInstance(rec, tris, out, lotOf) {
     return;
   }
   if (t.kind === "stall") {
-    const o = toM(p.origin), u = p.u, v = p.v, lw = t.lineM;
+    const o = toM(p.origin), u = p.u, v = p.v;
+    // 경사주차: a divider crosses the front line's direction 1 / sin a wider, and the bays repeat w / sin a along it
+    const sinA = t.angleDeg ? Math.sin((t.angleDeg * Math.PI) / 180) : 1;
+    const lw = t.lineM / sinA;
     const covered = coverage(tris);
-    const total = p.widths.reduce((x, w) => x + w, 0);
+    const total = p.widths.reduce((x, w) => x + w, 0) / sinA;
     // the dividers where the mesh crosses a line along the row a quarter of the depth in (clear of any bay symbol)
     const runs = [];
     let run = null;
@@ -350,7 +354,7 @@ function checkInstance(rec, tris, out, lotOf) {
     });
     if (runs.length !== p.bays + 1) fail("dimension", { detail: `${runs.length} dividers drawn for ${p.bays} bays`, at: o });
     else centres.slice(1).forEach((c, k) => {
-      if (Math.abs(c - centres[k] - p.widths[k]) > SPACING_M) fail("spacing", { detail: `bay ${k} ${(c - centres[k]).toFixed(3)} m wide, its template ${p.widths[k]} m`, at: o });
+      if (Math.abs(c - centres[k] - p.widths[k] / sinA) > SPACING_M) fail("spacing", { detail: `bay ${k} ${(c - centres[k]).toFixed(3)} m wide, its template ${p.widths[k]} m`, at: o });
     });
     p.widths.forEach((w, k) => {
       // the template width, or the measured photo pitch the record carries when it is wider (never narrower than the
@@ -366,6 +370,7 @@ function checkInstance(rec, tris, out, lotOf) {
         if (covered(q)) { first ??= t_; last = t_; }
       }
       const want = p.sharedBack ? p.depth : p.depth + lw;
+      if (t.angleDeg && Math.abs(Math.acos(Math.min(1, Math.abs(dot(u, v)))) - (t.angleDeg * Math.PI) / 180) > (0.05 * Math.PI) / 180) fail("dimension", { detail: `dividers at ${(Math.acos(Math.abs(dot(u, v))) * 180 / Math.PI).toFixed(2)} deg, template ${t.angleDeg} deg`, at: o });
       const got = last - first + 0.005;
       if (Math.abs(p.depth - t.depthM) > 1e-9 || Math.abs(got - want) > TOL_M) fail("dimension", { detail: `stall paint ${got.toFixed(3)} m deep, template ${want.toFixed(3)} m`, at: o });
     }
@@ -546,28 +551,36 @@ const onCarriageway = (zones) => (q) => zones.some((poly) => pointInRing(q, poly
   && poly.every((ring) => ring.every((a, i) => { const b = ring[(i + 1) % ring.length]; const ab = sub(b, a); const t = Math.max(0, Math.min(1, dot(sub(q, a), ab) / (dot(ab, ab) || 1))); return norm(sub(q, [a[0] + t * ab[0], a[1] + t * ab[1]])) > ROAD_INSET_M; })));
 
 // photo paint (area blobs, cars left out) on the carriageway at each junction, covered by model paint of its colour
+export async function readJunctionReview(file) {
+  return JSON.parse(await Bun.file(file).text()).rejectBlobs.map((r) => geoToModel(...r.near).map((v) => v / U));
+}
 export async function readFootprints(file) {
   const d = JSON.parse(await Bun.file(file).text());
   return d.buildings.flatMap((b) => b.polygons.map((poly) => poly[0].map(([lon, lat]) => geoToModel(lon, lat).map((v) => v / U))));
 }
 const nearRing = (q, ring, pad) => pointInRing(q, ring) || ring.some((a, i) => { const b = ring[(i + 1) % ring.length]; const ab = sub(b, a); const t = Math.max(0, Math.min(1, dot(sub(q, a), ab) / (dot(ab, ab) || 1))); return norm(sub(q, [a[0] + t * ab[0], a[1] + t * ab[1]])) <= pad; });
-function junctionPaint(junctions, zones, footprints, tris, out) {
+function junctionPaint(junctions, zones, footprints, lots, rejects, tris, out) {
   const onRoad = onCarriageway(zones);
   const covers = paintIndex(tris, PAINT_REACH_M);
   return junctions.map((j) => {
     const { blobs } = paintIn(j.box);
-    const area = blobs.filter((b) => b.figure);
+    // by-eye rejections (data/photo/junction-paint-review.json): blobs that are not road paint
+    const area = blobs.filter((b) => b.figure && !rejects.some((q) => norm(sub(q, b.centre)) <= 1.5));
     const [x0, z0, x1, z1] = j.box;
     const near = footprints.filter((r) => r.some(([x, z]) => x >= x0 - 60 && x <= x1 + 60 && z >= z0 - 60 && z <= z1 + 60));
-    const pts = area.flatMap((b) => b.pts.map((q) => ({ q, colour: b.colour }))).filter((p) => onRoad(p.q) && !near.some((r) => nearRing(p.q, r, BUILDING_PAD_M)));
+    // (lot paint inside a junction window is the stall-paint check's: left out here)
+    const nearLots = lots.filter((l) => l.ringM.some(([x, z]) => x >= x0 - 30 && x <= x1 + 30 && z >= z0 - 30 && z <= z1 + 30));
+    const pts = area.flatMap((b) => b.pts.map((q) => ({ q, colour: b.colour }))).filter((p) => onRoad(p.q) && !near.some((r) => nearRing(p.q, r, BUILDING_PAD_M)) && !nearLots.some((l) => nearRing(p.q, l.ringM, LOT_PAD_M)));
     const hit = pts.filter((p) => covers(p.q, p.colour));
     const share = pts.length ? hit.length / pts.length : 1;
     const missM2 = (pts.length - hit.length) * 0.0625;
     const byColour = Object.fromEntries(["white", "yellow"].map((c) => { const all = pts.filter((p) => p.colour === c); return [c, all.length ? +(all.filter((p) => covers(p.q, c)).length / all.length).toFixed(2) : null]; }));
-    const worst = area.map((b) => ({ b, miss: b.pts.filter((q) => !covers(q, b.colour)).length })).sort((a, b) => b.miss - a.miss)[0];
+    const keep = new Set(pts.map((p) => p.q));
+    const misses = area.map((b) => ({ b, miss: b.pts.filter((q) => keep.has(q) && !covers(q, b.colour)).length })).filter((m) => m.miss).sort((a, b) => b.miss - a.miss);
+    const worst = misses[0];
     if (share < JUNCTION_SHARE && missM2 >= JUNCTION_MIN_M2)
       out.push({ check: "junction-paint", id: j.id, detail: `photo island/hatch/chevron/symbol paint ${(pts.length * 0.0625).toFixed(1)} m2, ${(share * 100).toFixed(0)} % covered by model paint of its colour (white ${byColour.white ?? "-"}, yellow ${byColour.yellow ?? "-"}; need ${JUNCTION_SHARE * 100} %), ${missM2.toFixed(1)} m2 uncovered`, at: worst?.b.centre });
-    return { id: j.id, paintM2: +(pts.length * 0.0625).toFixed(1), share: +share.toFixed(3), ...byColour };
+    return { id: j.id, paintM2: +(pts.length * 0.0625).toFixed(1), share: +share.toFixed(3), ...byColour, uncovered: misses.filter((m) => m.miss * 0.0625 >= 0.5).map((m) => ({ at: m.b.centre.map((v) => +v.toFixed(2)), colour: m.b.colour, m2: +(m.miss * 0.0625).toFixed(2), longM: +m.b.longM.toFixed(1), shortM: +m.b.shortM.toFixed(1) })) };
   });
 }
 
@@ -575,11 +588,30 @@ function junctionPaint(junctions, zones, footprints, tris, out) {
 function lotPaint(lots, tris, records, out) {
   const stallTris = tris.filter((t) => t.colour === "white" && (!records || TEMPLATES[records[t.inst]?.t]?.kind === "stall"));
   const covers = paintIndex(stallTris, PAINT_REACH_M);
+  const stallRecs = (records ?? []).filter((r) => TEMPLATES[r.t]?.kind === "stall").map((r) => ({ o: [r.p.origin[0] / U, r.p.origin[1] / U], u: r.p.u }));
   return lots.map((lot) => {
     const xs = lot.ringM.map((p) => p[0]), zs = lot.ringM.map((p) => p[1]);
     const box = [Math.min(...xs) - LOT_PAD_M, Math.min(...zs) - LOT_PAD_M, Math.max(...xs) + LOT_PAD_M, Math.max(...zs) + LOT_PAD_M];
     const near = (q) => pointInRing(q, lot.ringM) || lot.ringM.some((a, i) => { const b = lot.ringM[(i + 1) % lot.ringM.length]; const ab = sub(b, a); const s2 = Math.max(0, Math.min(1, dot(sub(q, a), ab) / (dot(ab, ab) || 1))); return norm(sub(q, [a[0] + s2 * ab[0], a[1] + s2 * ab[1]])) <= LOT_PAD_M; });
-    const pts = paintIn(box).blobs.filter((b) => b.thin && b.colour === "white" && near(b.centre)).flatMap((b) => b.pts);
+    // lots are often light concrete: the surround may be brighter than asphalt (LOT_PAVEMENT_MAX)
+    const all = paintIn(box, { pavementMax: LOT_PAVEMENT_MAX }).blobs.filter((b) => b.thin && b.colour === "white" && near(b.centre)).flatMap((b) => b.pts);
+    // dividers only: a paint pixel whose local stroke (the paint within 0.6 m) runs along the nearest modelled row's
+    // front line is front or back line paint, which the standard depth places by statute, not by the photo; it is left
+    // out (with no modelled row within 30 m every pixel counts: a missed row)
+    const cell = new Map();
+    for (const q of all) { const k = `${Math.floor(q[0] / 0.6)},${Math.floor(q[1] / 0.6)}`; if (!cell.has(k)) cell.set(k, []); cell.get(k).push(q); }
+    const rowsNear = stallRecs.filter((r) => xs.some((x) => Math.abs(x - r.o[0]) < 60) && zs.some((z) => Math.abs(z - r.o[1]) < 60));
+    const pts = all.filter((q) => {
+      let best = null;
+      for (const r of rowsNear) { const d = norm(sub(q, r.o)); if (d < 30 && (!best || d < best.d)) best = { d, u: r.u }; }
+      if (!best) return true;
+      const nb = [];
+      const [i, j] = [Math.floor(q[0] / 0.6), Math.floor(q[1] / 0.6)];
+      for (let a = -1; a <= 1; a += 1) for (let b = -1; b <= 1; b += 1) for (const o of cell.get(`${i + a},${j + b}`) ?? []) if (norm(sub(o, q)) <= 0.6) nb.push(o);
+      if (nb.length < 4) return true;
+      const ax = principal(nb).dir;
+      return !ax || Math.abs(dot(ax, best.u)) < Math.cos((25 * Math.PI) / 180);
+    });
     const hit = pts.filter((q) => covers(q, "white")).length;
     const share = pts.length ? hit / pts.length : 1;
     if (share < LOT_SHARE && (pts.length - hit) * 0.0625 >= LOT_MIN_M2)
@@ -663,7 +695,7 @@ export async function audit({ glb, lotsFile, roadLinesFile }) {
   const covered = lineCoverage(roadLines, records, tris, out);
   const zones = await readRoadZones(path.join(FRONTEND, "..", "docs", "assets", "data", "road_zones_wgs84.geojson"));
   const footprints = await readFootprints(path.join(FRONTEND, "scripts", "campus-model", "data", "gis-buildings.json"));
-  const junctions = junctionPaint(await readJunctions(path.join(FRONTEND, "scripts", "campus-model", "data", "network", "roads.json")), zones, footprints, tris.filter((t) => !t.context), out);
+  const junctions = junctionPaint(await readJunctions(path.join(FRONTEND, "scripts", "campus-model", "data", "network", "roads.json")), zones, footprints, lots, await readJunctionReview(path.join(FRONTEND, "scripts", "campus-model", "data", "photo", "junction-paint-review.json")), tris.filter((t) => !t.context), out);
   const lotsPaint = lotPaint(lots, tris.filter((t) => !t.context), records, out);
   const counts = lots.map((l) => ({ lot: l.id, photo: l.photoStalls, modelled: modelled.get(l.id) ?? 0 }));
   for (const c of counts) if (c.photo !== c.modelled) out.push({ check: "count", id: c.lot, detail: `photo ${c.photo} stalls, model ${c.modelled}` });

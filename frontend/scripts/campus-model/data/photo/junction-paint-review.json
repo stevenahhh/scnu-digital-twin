@@ -1,0 +1,285 @@
+{
+ "description": "By-eye review of the markings audit junction-paint check (qa/photoPaint.mjs figure blobs) on the NGII sheet: blobs that are not road paint (tree crowns, kerb stones, paving and roof edges), each with its reason; a photo figure blob whose centre lies within 1.5 m of a point here is left out. WGS84.",
+ "rejectBlobs": [
+  {
+   "near": [
+    127.48006645,
+    34.97021479
+   ],
+   "junction": "J04",
+   "reason": "tree crown edge (sunlit leaves read as white or yellow paint)"
+  },
+  {
+   "near": [
+    127.48001706,
+    34.97023787
+   ],
+   "junction": "J04",
+   "reason": "tree crown edge (sunlit leaves read as white or yellow paint)"
+  },
+  {
+   "near": [
+    127.4796695,
+    34.97029313
+   ],
+   "junction": "J04",
+   "reason": "tree crown edge (sunlit leaves read as white or yellow paint)"
+  },
+  {
+   "near": [
+    127.47997173,
+    34.9702413
+   ],
+   "junction": "J04",
+   "reason": "tree crown edge (sunlit leaves read as white or yellow paint)"
+  },
+  {
+   "near": [
+    127.48015635,
+    34.97017558
+   ],
+   "junction": "J04",
+   "reason": "sidewalk paving edge under a tree"
+  },
+  {
+   "near": [
+    127.47811301,
+    34.97030353
+   ],
+   "junction": "J05",
+   "reason": "tree crown edge (sunlit leaves read as white or yellow paint)"
+  },
+  {
+   "near": [
+    127.47823469,
+    34.9709025
+   ],
+   "junction": "J05",
+   "reason": "tree shadow edge"
+  },
+  {
+   "near": [
+    127.47815485,
+    34.97036906
+   ],
+   "junction": "J05",
+   "reason": "tree crown edge (sunlit leaves read as white or yellow paint)"
+  },
+  {
+   "near": [
+    127.48049547,
+    34.97001873
+   ],
+   "junction": "J08",
+   "reason": "light sidewalk paving edge"
+  },
+  {
+   "near": [
+    127.48054157,
+    34.96998294
+   ],
+   "junction": "J08",
+   "reason": "tree crown edge (sunlit leaves read as white or yellow paint)"
+  },
+  {
+   "near": [
+    127.4806975,
+    34.96989559
+   ],
+   "junction": "J08",
+   "reason": "tree crown edge (sunlit leaves read as white or yellow paint)"
+  },
+  {
+   "near": [
+    127.48065918,
+    34.96995319
+   ],
+   "junction": "J08",
+   "reason": "tree crown edge (sunlit leaves read as white or yellow paint)"
+  },
+  {
+   "near": [
+    127.48074097,
+    34.96993074
+   ],
+   "junction": "J08",
+   "reason": "tree crown edge (sunlit leaves read as white or yellow paint)"
+  },
+  {
+   "near": [
+    127.48110198,
+    34.96942063
+   ],
+   "junction": "J09",
+   "reason": "tree and pole shadow"
+  },
+  {
+   "near": [
+    127.47773598,
+    34.96973052
+   ],
+   "junction": "J12",
+   "reason": "tree crown edge (sunlit leaves read as white or yellow paint)"
+  },
+  {
+   "near": [
+    127.47796966,
+    34.96940593
+   ],
+   "junction": "J12",
+   "reason": "red roof edge"
+  },
+  {
+   "near": [
+    127.48110198,
+    34.96942063
+   ],
+   "junction": "J14",
+   "reason": "tree and pole shadow"
+  },
+  {
+   "near": [
+    127.48063209,
+    34.96925471
+   ],
+   "junction": "J16",
+   "reason": "white kerb stone ring of the roundabout island (raised kerb, not paint)"
+  },
+  {
+   "near": [
+    127.48066593,
+    34.96929743
+   ],
+   "junction": "J16",
+   "reason": "white kerb stone ring of the roundabout island (raised kerb, not paint)"
+  },
+  {
+   "near": [
+    127.48059278,
+    34.96928562
+   ],
+   "junction": "J16",
+   "reason": "white kerb stone ring of the roundabout island (raised kerb, not paint)"
+  },
+  {
+   "near": [
+    127.48062706,
+    34.9692767
+   ],
+   "junction": "J16",
+   "reason": "white kerb stone ring of the roundabout island (raised kerb, not paint)"
+  },
+  {
+   "near": [
+    127.48058347,
+    34.96924813
+   ],
+   "junction": "J16",
+   "reason": "white kerb stone ring of the roundabout island (raised kerb, not paint)"
+  },
+  {
+   "near": [
+    127.47907429,
+    34.96861305
+   ],
+   "junction": "J24",
+   "reason": "tree crown edge (sunlit leaves read as white or yellow paint)"
+  },
+  {
+   "near": [
+    127.47934626,
+    34.96762485
+   ],
+   "junction": "J27",
+   "reason": "edge of the red sidewalk paving"
+  },
+  {
+   "near": [
+    127.48026017,
+    34.96817891
+   ],
+   "junction": "J27",
+   "reason": "tree crown edge (sunlit leaves read as white or yellow paint)"
+  },
+  {
+   "near": [
+    127.47912058,
+    34.96759674
+   ],
+   "junction": "J27",
+   "reason": "edge of the red sidewalk paving"
+  },
+  {
+   "near": [
+    127.47954425,
+    34.96795737
+   ],
+   "junction": "J27",
+   "reason": "light paving under a tree"
+  },
+  {
+   "near": [
+    127.47951481,
+    34.96851713
+   ],
+   "junction": "J27",
+   "reason": "tree crown edge (sunlit leaves read as white or yellow paint)"
+  },
+  {
+   "near": [
+    127.48006361,
+    34.96790706
+   ],
+   "junction": "J27",
+   "reason": "tree crown edge (sunlit leaves read as white or yellow paint)"
+  },
+  {
+   "near": [
+    127.47960822,
+    34.96850848
+   ],
+   "junction": "J27",
+   "reason": "tree crown edge (sunlit leaves read as white or yellow paint)"
+  },
+  {
+   "near": [
+    127.47979678,
+    34.96845412
+   ],
+   "junction": "J27",
+   "reason": "tree crown edge (sunlit leaves read as white or yellow paint)"
+  },
+  {
+   "near": [
+    127.48026896,
+    34.96872759
+   ],
+   "junction": "J27",
+   "reason": "sidewalk paving edge"
+  },
+  {
+   "near": [
+    127.47907429,
+    34.96861305
+   ],
+   "junction": "J27",
+   "reason": "tree crown edge (sunlit leaves read as white or yellow paint)"
+  },
+  {
+   "near": [
+    127.47884146,
+    34.96762432
+   ],
+   "junction": "J30",
+   "reason": "edge of the red sidewalk paving"
+  },
+  {
+   "near": [
+    127.47787984,
+    34.96796056
+   ],
+   "junction": "J30",
+   "reason": "edge of the red sidewalk paving and roof"
+  }
+ ]
+}
