@@ -20,7 +20,7 @@
 //   ground.mjs    the Topography chunks (natural ground) and the class polygons of the modelled ground (network/surfaces.mjs)
 //   kerbs.mjs     kerb ribbons on the A003 outlines, the raised walkway slab, dropped kerbs at crossings, gutter bands
 //   tactile.mjs   tactile paving bands and guidance strips at every dropped kerb
-//   network/stalls.mjs  estimated stall dividers in the gaps of detected rows, and the circular-arc speed humps
+//   network/stalls.mjs  the circular-arc speed humps (stalls: stages/markingsStandard.mjs from data/photo/parking-lots.json)
 //   surfaces.mjs  the Ground_* decal meshes (asphalt, pavers, lots, aprons, painted surfaces) with CC0 tiles; no photo pixels
 //   outerTerrain.mjs  the OuterTerrain hill ring around EXTENT, feathered onto Topography's edge
 //   context.mjs / contextGround.mjs  off-campus building masses and the streets around the campus beyond EXTENT
@@ -39,10 +39,9 @@
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { tmToScene } from "../../src/geo/epsg5186.mjs";
 import { EXTENT, SCENE_UNITS_PER_METRE } from "./lib/frame.mjs";
 import { SURFACE_CLASS } from "./lib/surfaceClass.mjs";
-import { HUMP_LENGTH_M, buildHumps, buildStalls, humpProfile, loadSpeedBumps } from "./network/stalls.mjs";
+import { HUMP_LENGTH_M, buildHumps, humpProfile, loadSpeedBumps } from "./network/stalls.mjs";
 import { GlbBuilder } from "./lib/glb.mjs";
 import { buildBuildings } from "./stages/buildings.mjs";
 import { buildGround } from "./stages/ground.mjs";
@@ -85,24 +84,17 @@ console.log(describeSurfaces(await buildSurfaceMeshes({
   glb, layers: [...layers, ...kerbs.gutters, ...tactile.layers], surface, ao: aoTexture,
   heightOffset: tactileOffset(kerbs.plan, groundDecalOffset(kerbs.plan)), refine: slabRefine(kerbs.plan),
 })));
-// Stall gaps (estimated dividers between detected ones) and the speed humps (network/stalls.mjs).
+// The speed humps (network/stalls.mjs).
 const labelAt = ([x, z]) => {
   const i = Math.floor((x - EXTENT.minX) * groundInfo.px);
   const j = Math.floor((z - EXTENT.minZ) * groundInfo.px);
   return i < 0 || j < 0 || i >= groundInfo.width || j >= groundInfo.height ? SURFACE_CLASS.NATURAL : groundInfo.labels[j * groundInfo.width + i];
 };
-const detectedStallPaint = markings.pieces.filter((piece) => piece.kind === "parking_line" && !piece.estimated);
-const parkingLots = layers.filter((l) => l.mesh === "Ground_Lot" && !l.source_ref.startsWith("off-campus"))
-  .map((l) => ({ id: l.source_ref, ring: l.rings[0].map(([E, N]) => tmToScene(E, N)) }));
-const stalls = buildStalls({ lots: parkingLots, markingsParkingLines: detectedStallPaint });
-markings.pieces.push(...stalls.pieces);
 const speedBumps = await loadSpeedBumps();
 const humps = buildHumps({ features: speedBumps, onRoad: (p) => [SURFACE_CLASS.ASPHALT, SURFACE_CLASS.LOT].includes(labelAt(p)) });
 const humpNodes = await buildHumpMeshes({ glb, humps: humps.humps, surface, ao: aoTexture, profile: humpProfile, lengthM: HUMP_LENGTH_M });
 console.log(
-  `stalls: ${detectedStallPaint.length} detected (markings), ${stalls.pieces.length} estimated gaps in ${stalls.rows.filter((r) => r.filled).length} of ${stalls.rows.length} rows ` +
-  `(${stalls.rows.map((r) => `${r.bay} ${r.pitchM} m`).join(", ")}); humps: ${humpNodes} (${speedBumps.length} speed_bump features: ` +
-  `${humps.candidates} hump outlines or band groups, ${humps.candidates - humpNodes} off road)`,
+  `humps: ${humpNodes} (${speedBumps.length} speed_bump features: ${humps.candidates} hump outlines or band groups, ${humps.candidates - humpNodes} off road)`,
 );
 const markingMesh = buildMarkings({ glb, markings, surface, extraHeight: humps.heightAt });
 const outerTerrain = await buildOuterTerrain({ glb, inputs });
@@ -120,7 +112,7 @@ buildContext({ glb, parts: contextParts, groundAt: contextGround });
 // The streets around the campus beyond EXTENT (stages/contextGround.mjs): OSM centrelines on the OuterTerrain ring, merged
 // per tile, not part of the road network; widths and lanes 추정. Added last, so nothing above changes.
 await buildContextGround({
-  glb, layers, paint: markings.pieces, heightAt: outerHeightAt,
+  glb, layers, paint: markings.pieces, records: markings.records, heightAt: outerHeightAt,
   footprints: [...contextParts.map((p) => p.outer), ...[...selectableBuildings, ...campusBuildings].flatMap((b) => b.parts.map((p) => p.outer))],
 });
 // Free-standing lattice telecom masts off campus (stages/masts.mjs), on the context roofs they stand on; heights 추정.

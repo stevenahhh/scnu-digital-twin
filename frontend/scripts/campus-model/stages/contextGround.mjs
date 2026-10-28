@@ -30,7 +30,9 @@ import { tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { EXTENT, SCENE_UNITS_PER_METRE, geoToModel, metres } from "../lib/frame.mjs";
 import { fitPath, offsetPath, polylineLength, resample, slicePath } from "../lib/markingFit.mjs";
 import { CONTEXT_REACH, TILE_M } from "./context.mjs";
-import { DASH_BY_KIND, LINE_WIDTH_M_BY_KIND, PAINT_BEYOND_EXTENT, PALETTE_U, inMarkingExtent } from "./markings.mjs";
+import { DASH_BY_KIND, INSTANCE_CAPACITY, LINE_WIDTH_M_BY_KIND, PAINT_BEYOND_EXTENT, PALETTE_U, inMarkingExtent } from "./markings.mjs";
+import { instanceRecords } from "./markingsStandard.mjs";
+import { TEMPLATES } from "../lib/markingStandards.mjs";
 import { strokePath } from "./markingsRegular.mjs";
 import { pavingPattern } from "../lib/pavingPatterns.mjs";
 import { groundTile, planarTileUv, tileMaterial } from "./surfaces.mjs";
@@ -251,8 +253,26 @@ function sidewalkMaterial(glb) {
 // footprints: building outer rings (scene units); heightAt(x, z): OuterTerrain height or null (scene units).
 const PAINT_KINDS = new Set(["centre_line_yellow", "lane_line_dashed", "lane_line_solid"]);
 
+const TURN_SPLIT_DEG = 12;
+function splitAtTurns(path) {
+  const out = [[path[0]]];
+  for (let i = 1; i < path.length; i += 1) {
+    out.at(-1).push(path[i]);
+    if (i + 1 >= path.length) break;
+    const a = sub(path[i], path[i - 1]);
+    const b = sub(path[i + 1], path[i]);
+    const cos = (a[0] * b[0] + a[1] * b[1]) / (Math.hypot(...a) * Math.hypot(...b) || 1);
+    // the next part starts one step on, so the two strokes do not overlap on the inside of the kink
+    if (cos < Math.cos((TURN_SPLIT_DEG * Math.PI) / 180)) out.push([]);
+  }
+  return out.filter((q) => q.length >= 2);
+}
+
 // paint: stages/markings.mjs pieces ({ kind, rings } in scene units).
-export async function buildContextGround({ glb, lines = JSON.parse(readFileSync(GROUND_FEATURES, "utf8")).osm.lines, layers, paint, footprints, heightAt }) {
+export async function buildContextGround({ glb, lines = JSON.parse(readFileSync(GROUND_FEATURES, "utf8")).osm.lines, layers, paint, records = [], footprints, heightAt }) {
+  // marking instances (stages/markingsStandard.mjs): the photo paint keeps its record, each statute line drawn here gets one
+  const { index: recordOf } = instanceRecords(paint);
+  const vOf = (i) => (i + 0.5) / INSTANCE_CAPACITY;
   const roads = lines.filter((l) => l.kind === "arterial" || l.kind === "connector").filter((l) => ROAD_CLASS[l.tags.highway]);
   const traced = measuredWidths(layers, roads);
   // outline points every metre (a solid line is one long piece, so its centroid alone would miss most sections)
@@ -419,11 +439,12 @@ export async function buildContextGround({ glb, lines = JSON.parse(readFileSync(
     const keep = clear.map((_, i) => clear.slice(Math.max(0, i - Math.ceil(JUNCTION_M / STEP_M)), i + Math.ceil(JUNCTION_M / STEP_M) + 1).every(Boolean));
     const lineSpecs = [];
     const centre = LINE_WIDTH_M_BY_KIND.centre_line_yellow / 2;
-    if (w.lanes >= 4) lineSpecs.push({ offset: DOUBLE_OFFSET_M, half: centre, colour: "yellow" }, { offset: -DOUBLE_OFFSET_M, half: centre, colour: "yellow" });
-    else lineSpecs.push({ offset: 0, half: centre, colour: "yellow" });
+    if (w.lanes >= 4) lineSpecs.push({ offset: DOUBLE_OFFSET_M, half: centre, colour: "yellow", t: "centre_double" }, { offset: -DOUBLE_OFFSET_M, half: centre, colour: "yellow", t: "centre_double" });
+    else lineSpecs.push({ offset: 0, half: centre, colour: "yellow", t: "centre_solid" });
+    void TEMPLATES;
     const laneW = (2 * w.half) / w.lanes;
     for (let k = 1; k < w.lanes / 2; k += 1) {
-      for (const side of [1, -1]) lineSpecs.push({ offset: side * k * laneW, half: LINE_WIDTH_M_BY_KIND.lane_line_dashed / 2, colour: "white", dash: DASH_BY_KIND.lane_line_dashed });
+      for (const side of [1, -1]) lineSpecs.push({ offset: side * k * laneW, half: TEMPLATES.lane_dashed.widthM / 2, colour: "white", dash: [TEMPLATES.lane_dashed.dashM, TEMPLATES.lane_dashed.gapM], t: "lane_dashed" });
     }
     for (let i = 0; i < keep.length; ) {
       if (!keep[i]) { i += 1; continue; }
@@ -437,14 +458,18 @@ export async function buildContextGround({ glb, lines = JSON.parse(readFileSync(
           const pieces = [];
           if (!period) pieces.push([s0, s1]);
           else for (let k = Math.ceil(s0 / period); k * period + spec.dash[0] <= s1; k += 1) pieces.push([k * period, k * period + spec.dash[0]]);
-          for (const [p0, p1] of pieces) {
-            const path = offsetPath(resample(slicePath(w.fit, p0, p1), STEP_M), spec.offset);
+          // a run is cut where its centreline turns more than TURN_SPLIT_DEG at one vertex (a junction kink): each part
+          // a smooth stroke whose edges stay half a width from its centreline
+          const parts = pieces.flatMap(([p0, p1]) => splitAtTurns(offsetPath(resample(slicePath(w.fit, p0, p1), STEP_M), spec.offset)));
+          for (const path of parts) {
             const ring = strokePath(path, spec.half);
             if (!ring) continue;
             const contour = ring.map(([x, z]) => new Vector2(x, z));
             const soup = soupOf(path[0], "marking");
+            const record = records.length;
+            records.push({ id: `C${String(record + 1).padStart(5, "0")}`, t: spec.t, ev: `OSM ${w.id} (context road, lanes from the paint inside EXTENT)`, c: spec.colour, p: { shape: "polyline", path: path.map((q) => [+(q[0] * U).toFixed(5), +(q[1] * U).toFixed(5)]), w: 2 * spec.half, dash: Boolean(spec.dash) } });
             for (const [ia, ib, ic] of ShapeUtils.triangulateShape(contour, [])) {
-              const v = (k) => { const q = vtx(ring[k], MARK_LIFT_M, null); q[3] = PALETTE_U[spec.colour]; q[4] = 0.5; return q; };
+              const v = (k) => { const q = vtx(ring[k], MARK_LIFT_M, null); q[3] = PALETTE_U[spec.colour]; q[4] = vOf(record); return q; };
               soup.tri(v(ia), v(ib), v(ic));
             }
           }
@@ -466,7 +491,7 @@ export async function buildContextGround({ glb, lines = JSON.parse(readFileSync(
     for (const [ia, ib, ic] of ShapeUtils.triangulateShape(ringsM[0].map(([x, z]) => new Vector2(x, z)), ringsM.slice(1).map((h) => h.map(([x, z]) => new Vector2(x, z))))) {
       const [a, b, cc] = [all[ia], all[ib], all[ic]];
       const up = (b[1] - a[1]) * (cc[0] - a[0]) - (b[0] - a[0]) * (cc[1] - a[1]) > 0;
-      const v = (p) => { const q = vtx(p, MARK_LIFT_M, null); q[3] = PALETTE_U[piece.colour]; q[4] = 0.5; return q; };
+      const v = (p) => { const q = vtx(p, MARK_LIFT_M, null); q[3] = PALETTE_U[piece.colour]; q[4] = vOf(recordOf.get(piece.inst)); return q; };
       if (up) soup.tri(v(a), v(b), v(cc)); else soup.tri(v(a), v(cc), v(b));
     }
     photoPieces += 1;

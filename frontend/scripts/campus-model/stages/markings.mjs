@@ -76,7 +76,9 @@ import { conform } from "../lib/conform.mjs";
 import { pointInRing, ringArea, segmentDistance } from "../lib/geometry.mjs";
 import { VEG_EXG, excessGreen, sampleOrtho, shadowWeight } from "../lib/ortho.mjs";
 import { encodePng } from "../lib/png.mjs";
-import { regularise } from "./markingsRegular.mjs";
+import { regularise, hatchPolys } from "./markingsRegular.mjs";
+import { instanceRecords, parkingInstances, resolveOverlaps } from "./markingsStandard.mjs";
+import { TEMPLATES, crosswalkLength } from "../lib/markingStandards.mjs";
 import { readA003 } from "../lib/a003.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -96,8 +98,12 @@ const MARKINGS_BAYS = path.join(HERE, "..", "data", "photo", "markings-bays.json
 const GROUND_FEATURES = path.join(HERE, "..", "data", "osm-ground.json");
 const CROSSWALKS = path.resolve(HERE, "../../../..", "docs", "assets", "data", "crosswalks_wgs84.geojson");
 
-const ZEBRA_PERIOD_M = 0.903;
-const ZEBRA_BAR_M = 0.5;
+// the standard crosswalk (lib/markingStandards.mjs crosswalk: bar 0.45 m, gap 0.45 m; the photo's measured period is
+// 0.903 m, p10-p90 0.896-0.910 m)
+const ZEBRA_PERIOD_M = 0.9;
+const ZEBRA_BAR_M = 0.45;
+// the width the paint gate measures a detected bar at (bake/markings-gate.mjs fingerprints): the detection, not the drawing
+const GATE_ZEBRA_BAR_M = 0.5;
 const ZEBRA_LINK_M = 2;
 const ZEBRA_LINK_DEG = 15;
 // Statute widths and dash periods (경찰청 2024 교통노면표시 설치·관리 업무편람 표 2-1: centre/edge 150-200 mm,
@@ -169,6 +175,7 @@ const PALETTE_COLOURS = ["white", "yellow", "blue", "green", "light_blue"];
 const GATE_COLOURS = ["white", "yellow", "blue"];
 export const PALETTE_U = Object.fromEntries(PALETTE_COLOURS.map((colour, i) => [colour, (i + 0.5) / PALETTE_COLOURS.length]));
 const NIGHT_GLOW = 0.18;
+export const INSTANCE_CAPACITY = 1048576;
 
 const UNIT = SCENE_UNITS_PER_METRE;
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
@@ -509,7 +516,7 @@ function zebraCandidates(features) {
     }, [0, 0]));
     const across = [-axis[1], axis[0]];
     for (const bar of bars) {
-      candidates.push({ feature: bar.feature, shapes: [[rect(bar.centre, axis, across, bar.halfLength, metres(ZEBRA_BAR_M) / 2)]], zebra: { group, axis, centre: bar.centre, halfLength: bar.halfLength } });
+      candidates.push({ feature: bar.feature, shapes: [[rect(bar.centre, axis, across, bar.halfLength, metres(GATE_ZEBRA_BAR_M) / 2)]], zebra: { group, axis, centre: bar.centre, halfLength: bar.halfLength } });
     }
   }
   return candidates;
@@ -753,9 +760,19 @@ export async function loadMarkings({ inputs, buildings }) {
     const b = (m.travelBearingDeg * Math.PI) / 180;
     const f = [Math.sin(b), -Math.cos(b)];
     const r = [-f[1], f[0]];
-    const polys = TEMPLATES_VR[m.kind](m.lengthM, m.widthM, m);
-    for (const rings of polys) {
-      pieces.push({ rings: rings.map((ring) => ring.map(([x, y]) => [centre[0] + metres(x) * r[0] + metres(y) * f[0], centre[1] + metres(x) * r[1] + metres(y) * f[1]])), colour: m.colour, kind: m.kind, estimated: true, id: m.id });
+    const toS = ([x, y]) => [centre[0] + metres(x) * r[0] + metres(y) * f[0], centre[1] + metres(x) * r[1] + metres(y) * f[1]];
+    if (m.kind === "hatched_median") {
+      // the standard hatch over the median band (lib/markingStandards.mjs safety_hatch)
+      const [hx, hy] = [m.widthM / 2, m.lengthM / 2];
+      const band = [[-hx, -hy], [hx, -hy], [hx, hy], [-hx, hy]];
+      const tid = m.colour === "yellow" ? "safety_hatch" : "safety_hatch_white";
+      const inst = { t: tid, ev: `${m.id} (VR)`, p: { centre: centre, long: [f[0], f[1]] } };
+      for (const rings of hatchPolys(band, TEMPLATES[tid], [0, 1])) pieces.push({ rings: rings.map((ring) => ring.map(toS)), colour: TEMPLATES[tid].colour, kind: m.kind, estimated: true, id: m.id, inst });
+    } else {
+      const t = TEMPLATES.bus_stop_box;
+      const polys = TEMPLATES_VR[m.kind](t.lengthM, t.widthM, m);
+      const inst = { t: "bus_stop_box", ev: `${m.id} (VR)`, p: { centre, front: [f[0], f[1]], size: t.lengthM, boxL: t.lengthM, boxW: t.widthM } };
+      for (const rings of polys) pieces.push({ rings: rings.map((ring) => ring.map(toS)), colour: t.colour, kind: m.kind, estimated: true, id: m.id, inst });
     }
     log.vrOnly.push(`${m.id} ${m.kind} ${m.lengthM} x ${m.widthM} m`);
   }
@@ -768,16 +785,18 @@ export async function loadMarkings({ inputs, buildings }) {
   const zebraMatch = (inRegion) => zebras.find((z) => z.barCentres.some(inRegion));
   const crossings = [];
   // Bars stacked along `walk` (unit) over +-halfWalk around `centre`, each 2 x halfBar long across it (model units).
-  const addEstimatedBars = (centre, walk, halfWalk, halfBar) => {
+  const addEstimatedBars = (centre, walk, halfWalk, halfBar, ev) => {
     const along = [-walk[1], walk[0]];
     const period = metres(ZEBRA_PERIOD_M);
     const bar = metres(ZEBRA_BAR_M);
     const n = Math.floor((2 * halfWalk - bar) / period) + 1;
     if (n < 2) return 0;
+    const length = crosswalkLength((2 * halfBar) / UNIT);
     const first = -((n - 1) * period) / 2;
+    const inst = { t: "crosswalk", ev: `${ev} (estimated under canopy)`, p: { centre, axis: along, length, bars: n } };
     for (let k = 0; k < n; k += 1) {
       const c = [centre[0] + walk[0] * (first + k * period), centre[1] + walk[1] * (first + k * period)];
-      pieces.push({ rings: [rect(c, along, walk, halfBar, bar / 2)], colour: "white", kind: "zebra_bar", estimated: true });
+      pieces.push({ rings: [rect(c, along, walk, metres(length) / 2, bar / 2)], colour: "white", kind: "zebra_bar", estimated: true, inst });
       count(log.estimated, "zebra_bar");
     }
     return n;
@@ -819,7 +838,7 @@ export async function loadMarkings({ inputs, buildings }) {
       crossings.push(`${way.id}: no zebra detected, ${(occluded * 100).toFixed(0)} % under canopy (open asphalt or cast shadow), not drawn`);
       continue;
     }
-    const bars = addEstimatedBars(centre, walk, length / 2 - metres(0.3), metres(CROSSING_WIDTH_M) / 2);
+    const bars = addEstimatedBars(centre, walk, length / 2 - metres(0.3), metres(CROSSING_WIDTH_M) / 2, way.id);
     crossings.push(`${way.id}: no zebra visible, ${(occluded * 100).toFixed(0)} % under canopy, ${bars} estimated bars`);
   }
 
@@ -847,15 +866,26 @@ export async function loadMarkings({ inputs, buildings }) {
       continue;
     }
     const halfWalk = Math.max(box.halfLong - metres(POLYGON_OVERRUN_M), Math.min(box.halfLong, metres(1.5)));
-    const bars = addEstimatedBars(box.centre, box.long, halfWalk, box.halfShort);
+    const bars = addEstimatedBars(box.centre, box.long, halfWalk, box.halfShort, id);
     crossings.push(`${id}: no zebra visible, ${(occluded * 100).toFixed(0)} % under canopy, ${bars} estimated bars`);
   }
+
+  // ---- parking stalls (data/photo/parking-lots.json as stall templates), then no two instances on the same ground
+  const parking = parkingInstances({ blocked: (p) => BLOCK_PROBES.every(([dx, dz]) => { const q = [p[0] + metres(dx), p[1] + metres(dz)]; return checks.inBuilding(q) || truth.onSidewalk(q); }) });
+  pieces.push(...parking.pieces);
+  log.parking = parking.log;
+  const resolved = resolveOverlaps(pieces);
+  pieces.length = 0;
+  pieces.push(...resolved.pieces);
+  log.overlaps = resolved.log;
+  const { records } = instanceRecords(pieces);
+  log.instances = records.length;
 
   const report = candidates.map((c) => ({
     id: c.id, file: c.file, kind: c.kind, colour: c.colour, method: c.feature.properties.method ?? "detect", estimated: c.estimated, fingerprint: c.fingerprint,
     support: c.support ?? null, recoloured: c.recoloured ?? null, verdict: c.verdict, reason: c.dropped ?? c.review ?? c.duplicateOf ?? null, shapes: c.shapes,
   }));
-  return { pieces, zebras, crossings, warnings, log, report, source: "data/photo/markings.geojson + data/photo/markings-extra.geojson" };
+  return { pieces, records, zebras, crossings, warnings, log, report, source: "data/photo/markings.geojson + data/photo/markings-extra.geojson + data/photo/parking-lots.json" };
 }
 
 // ---------------------------------------------------------------- mesh
@@ -882,15 +912,19 @@ export function buildMarkings({ glb, markings, surface, extraHeight = () => 0 })
   // a white symbol painted on a blue fill (the access symbol, the P, a bicycle) lies SYMBOL_LIFT_M above the fill: at
   // one height the two coplanar colours z-fight and the symbol breaks up
   const liftOf = (piece) => metres(LIFT_M + (piece.colour === "white" && ON_FILL_KINDS.has(piece.kind) ? SYMBOL_LIFT_M : 0));
-  const vertex = ([x, z], colour, lift) => {
-    const key = `${Math.round(x * 1e5)},${Math.round(z * 1e5)},${colour},${lift}`;
+  // every vertex carries its marking instance: v = (record index + 0.5) / INSTANCE_CAPACITY (the palette texture is one
+  // colour per column, so v does not change the colour); scripts/qa/markings-audit.mjs reads it back
+  const { index: recordOf } = instanceRecords(markings.pieces);
+  const vertex = ([x, z], colour, lift, inst) => {
+    const v = (recordOf.get(inst) + 0.5) / INSTANCE_CAPACITY;
+    const key = `${Math.round(x * 1e5)},${Math.round(z * 1e5)},${colour},${lift},${v}`;
     let i = index.get(key);
     if (i === undefined) {
       i = positions.length / 3;
       index.set(key, i);
       positions.push(x, surface.height(x, z) + lift + metres(extraHeight(x, z)), z);
       normals.push(...surface.normal(x, z));
-      uvs.push(PALETTE_U[colour], 0.5);
+      uvs.push(PALETTE_U[colour], v);
     }
     return i;
   };
@@ -911,7 +945,7 @@ export function buildMarkings({ glb, markings, surface, extraHeight = () => 0 })
         const cross = (tri[1][0] - tri[0][0]) * (tri[2][1] - tri[0][1]) - (tri[1][1] - tri[0][1]) * (tri[2][0] - tri[0][0]);
         if (Math.abs(cross) < 1e-10) continue;
         const ordered = cross < 0 ? tri : [tri[0], tri[2], tri[1]];
-        indices.push(...ordered.map((p) => vertex(p, piece.colour, liftOf(piece))));
+        indices.push(...ordered.map((p) => vertex(p, piece.colour, liftOf(piece), piece.inst)));
       }
     }
   }
@@ -951,7 +985,9 @@ export function buildMarkings({ glb, markings, surface, extraHeight = () => 0 })
         fittedLines: markings.log.regular.chains, straightRuns: markings.log.regular.straightRuns, arcs: markings.log.regular.arcs,
         crossings: markings.log.regular.crossings, templates: markings.log.regular.glyphs,
       } : null,
-      estimatedStallDividers: markings.pieces.filter((p) => p.estimated && p.kind === "parking_line").length,
+      markingInstanceCapacity: INSTANCE_CAPACITY,
+      markingInstances: markings.records,
+      standards: "lib/markingStandards.mjs (template ids, dimensions and source pages)",
       zebra: { periodM: ZEBRA_PERIOD_M, periodSource: "measured", barM: ZEBRA_BAR_M, gapM: Number((ZEBRA_PERIOD_M - ZEBRA_BAR_M).toFixed(3)), barSource: "assumed" },
       statute: {
         source: STATUTE_SOURCE,
@@ -991,6 +1027,9 @@ export function describeMarkings({ log, crossings, zebras, warnings = [] }) {
     `  zebra period ${ZEBRA_PERIOD_M} m (measured), bar ${ZEBRA_BAR_M.toFixed(2)} m (assumed); statute widths ${Object.entries(LINE_WIDTH_M_BY_KIND).map(([k, w]) => `${k} ${w}`).join(", ")} m (estimated); ` +
       `stop lines ${STOP_LINE_M.join("-")} m; crossing width warnings: ${warnings.length}`,
     ...(log.regular ? [describeRegular(log.regular)] : []),
+    ...(log.parking ? [`  standard instances: ${log.instances} (lib/markingStandards.mjs templates); parking: ${log.parking.lots} lots, ${log.parking.rows} rows, ${log.parking.bays} bays (${log.parking.accessible} accessible) from data/photo/parking-lots.json, rows left out on buildings or sidewalks: ${log.parking.skippedRows.join(", ") || "none"}, drawn dividers vs photo dividers at most ${Math.max(0, ...log.parking.residualM.map((r) => r.m)).toFixed(2)} m; ` +
+      `overlaps: ${log.overlaps.pairs} close pairs, ${log.overlaps.cut} lines cut, ${log.overlaps.dropped.length} instances left out (${log.overlaps.dropped.slice(0, 12).join("; ")}${log.overlaps.dropped.length > 12 ? "; ..." : ""}); ` +
+      `not drawn: ${log.regular.stallLinesLeft ?? 0} traced stall lines, ${log.regular.groupsLeft ?? 0} traced group pieces, ${log.regular.estimatedLeft ?? 0} estimated pieces, untemplated ${JSON.stringify(log.regular.untemplated ?? {})}; photo arrow lengths ${JSON.stringify(log.regular.arrowLengths ?? [])}`] : []),
     ...crossings.map((line) => `  crossing ${line}`),
   ].join("\n");
 }

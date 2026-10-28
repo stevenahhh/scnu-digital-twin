@@ -22,8 +22,10 @@ import {
   add, chainFragments, dashPhase, dot, fitCrossing, layDashes, measuredPeriod, mergeCrossings, norm, offsetPath, orientedBox,
   polylineLength, projectArc, rect, resample, scale, slicePath, straightness, sub, unit, fitPath, distanceToPolyline, median,
 } from "../lib/markingFit.mjs";
+import { TEMPLATES, crosswalkLength } from "../lib/markingStandards.mjs";
+import { roadTextBlock } from "../lib/roadText.mjs";
 import {
-  ARROW_KINDS, arrowTemplate, bicycleTemplate, chevronTemplate, diamondTemplate, hatchTemplate, parkingPTemplate, scooterTemplate, textBlock, triangleTemplate, wheelchairTemplate,
+  arcBand, ARROW_KINDS, arrowTemplate, bicycleTemplate, chevronTemplate, diamondTemplate, hatchTemplate, parkingPTemplate, scooterTemplate, textBlock, triangleTemplate, wheelchairTemplate,
 } from "../lib/markingGlyphs.mjs";
 
 const LINE_KINDS = new Set(["lane_line_dashed", "lane_line_solid", "edge_line", "centre_line_yellow", "parking_line", "kerb_no_parking", "give_way_line"]);
@@ -76,7 +78,12 @@ const BAY_P_M = 2.0;
 const BAY_SYMBOL_MARGIN_M = 0.25;
 const BAY_SCOOTER_M = 1.4;
 const ZEBRA_ROW_GAP_M = 1.0;
-const ZEBRA_PERIOD_RANGE_M = [0.88, 0.93];
+// arrow head width as a share of the arrow length (lib/markingGlyphs.mjs arrowTemplate clamps it to 18-32 %)
+const ARROW_HEAD_SHARE = 0.25;
+const LINE_GAP_TEXT = 0.25;
+const HATCH_LINK_M = 1.2;
+// the standard period (bar 0.45 m + gap 0.45 m, lib/markingStandards.mjs crosswalk): every row on it
+const ZEBRA_PERIOD_RANGE_M = [0.9, 0.9];
 const ZEBRA_ALIGN_PERIOD_M = 0.005;
 const ZEBRA_ALIGN_PHASE_M = 0.1;
 
@@ -339,6 +346,87 @@ function place(polys, centre, f) {
   return polys.map((rings) => rings.map((ring) => ring.map(([x, y]) => add(centre, add(scale(r, x - cx), scale(f, y - cy))))));
 }
 
+// Separating-axis test of two oriented boxes { centre, axis, walk, halfL (along axis), halfW (along walk) } (metres).
+function boxesOverlap(a, b) {
+  const corners = (q) => [[1, 1], [1, -1], [-1, -1], [-1, 1]].map(([i, j]) => add(q.centre, add(scale(q.axis, i * q.halfL), scale(q.walk, j * q.halfW))));
+  const ca = corners(a), cb = corners(b);
+  for (const n of [a.axis, a.walk, b.axis, b.walk]) {
+    const pa = ca.map((p) => dot(p, n)), pb = cb.map((p) => dot(p, n));
+    if (Math.max(...pa) <= Math.min(...pb) || Math.max(...pb) <= Math.min(...pa)) return false;
+  }
+  return true;
+}
+function convexHull(points) {
+  const p = [...points].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lower = [];
+  const upper = [];
+  for (const q of p) { while (lower.length >= 2 && cross(lower.at(-2), lower.at(-1), q) <= 0) lower.pop(); lower.push(q); }
+  for (const q of p.reverse()) { while (upper.length >= 2 && cross(upper.at(-2), upper.at(-1), q) <= 0) upper.pop(); upper.push(q); }
+  return [...lower.slice(0, -1), ...upper.slice(0, -1)];
+}
+// Hatch template polygons over a region outline (metres): the border band [outer, inner] and the stripes at
+// t.angleDeg to `long`, t.pitchM apart, clipped to the inside of the border. [] when the region is too small.
+export function hatchPolys(ring, t, long) {
+  let outer = ring;
+  if (areaOf(outer) < 0) outer = [...outer].reverse();
+  const inner = insetRing(outer, t.outlineM);
+  if (!inner || Math.abs(areaOf(inner)) < 0.5) return [];
+  const out = [[outer, [...inner].reverse()]];
+  const c = scale(outer.reduce((acc, q) => add(acc, q), [0, 0]), 1 / outer.length);
+  const reach = Math.max(...outer.map((q) => norm(sub(q, c)))) + 1;
+  const a = Math.atan2(long[1], long[0]) + (t.angleDeg * Math.PI) / 180;
+  const d = [Math.cos(a), Math.sin(a)];
+  const n = perpOf(d);
+  for (let off = -reach; off <= reach; off += t.pitchM) {
+    const piece = clipConvex(inner, rect(add(c, scale(n, off)), d, n, reach, t.stripeM / 2));
+    if (piece.length >= 3 && Math.abs(areaOf(piece)) > 0.01) out.push([piece]);
+  }
+  return out;
+}
+// A convex or near-convex ring moved inward by `d` (each edge offset, corners re-intersected); null when it collapses.
+function insetRing(ring, d) {
+  const n = ring.length;
+  const sign = areaOf(ring) > 0 ? 1 : -1;
+  const lines = ring.map((p, i) => {
+    const q = ring[(i + 1) % n];
+    const e = unit(sub(q, p));
+    const inward = scale(perpOf(e), sign);
+    return { p: add(p, scale(inward, d)), e };
+  });
+  const out = lines.map((l, i) => {
+    const m = lines[(i + n - 1) % n];
+    const den = m.e[0] * l.e[1] - m.e[1] * l.e[0];
+    if (Math.abs(den) < 1e-6) return l.p;
+    const t = ((l.p[0] - m.p[0]) * l.e[1] - (l.p[1] - m.p[1]) * l.e[0]) / den;
+    return add(m.p, scale(m.e, t));
+  });
+  return Math.sign(areaOf(out)) === sign ? out : null;
+}
+// Sutherland-Hodgman: `subject` clipped to the convex polygon `clip`.
+function clipConvex(subject, clip) {
+  const sign = areaOf(clip) > 0 ? 1 : -1;
+  let out = subject;
+  for (let i = 0; i < clip.length && out.length; i += 1) {
+    const a = clip[i];
+    const b = clip[(i + 1) % clip.length];
+    const inside = (p) => sign * ((b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])) >= 0;
+    const cut = (p, q) => {
+      const den = (b[0] - a[0]) * (q[1] - p[1]) - (b[1] - a[1]) * (q[0] - p[0]);
+      const t = ((b[0] - a[0]) * (a[1] - p[1]) - (b[1] - a[1]) * (a[0] - p[0])) / den;
+      return [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t];
+    };
+    const src = out;
+    out = [];
+    for (let k = 0; k < src.length; k += 1) {
+      const p = src[(k + src.length - 1) % src.length];
+      const q = src[k];
+      if (inside(q)) { if (!inside(p)) out.push(cut(p, q)); out.push(q); } else if (inside(p)) out.push(cut(p, q));
+    }
+  }
+  return out;
+}
+
 // ---------------------------------------------------------------- main
 // drawn: candidates the stage draws ({ feature, kind, colour, shapes (scene units), zebra?, frame?, singled? });
 // ctx: { unit (scene units per metre), statute: { widthFor(kind), stopLineWidth(m), dash: { kind: [dash, gap] },
@@ -384,13 +472,15 @@ export function regularise(drawn, ctx) {
       continue;
     }
     if (c.estimated) {
-      // estimated pieces are already statute geometry (dashes, bars, stall dividers laid by rule)
-      for (const rings of c.shapes) pieces.push({ rings, colour: c.colour, kind: c.kind, estimated: true });
+      // estimated (photo-hidden) pieces other than zebra bars are not drawn: no standard instance can be placed without
+      // the photo showing the line it belongs to
+      stats.estimatedLeft = (stats.estimatedLeft ?? 0) + 1;
       continue;
     }
     if (p.group && !LINE_KINDS.has(c.kind)) {
-      if (!groups.has(p.group)) groups.set(p.group, []);
-      groups.get(p.group).push(c);
+      // traced groups (hump bands, blue bays with frame and symbol, ladders): stalls and accessible bays come from
+      // data/photo/parking-lots.json; hump band paint has no template here (the humps are Ground_Hump meshes)
+      stats.groupsLeft = (stats.groupsLeft ?? 0) + 1;
       continue;
     }
     if (c.kind === "stop_line") {
@@ -398,8 +488,9 @@ export function regularise(drawn, ctx) {
       continue;
     }
     if (p.dotted && p.dots) {
-      // guide dots already laid evenly between the first and the last detected dot (featureShapes)
-      for (const rings of c.shapes) pieces.push({ rings, colour: c.colour, kind: c.kind, estimated: false });
+      // a dotted guide line: the guide-line template (0.5 m dashes) from its first to its last detected dot
+      const line = c.lineModel.map(toM);
+      fragments.push({ c, id: c.id, lineId: p.line_id, points: resample([line[0], line.at(-1)], 0.25), kind: c.kind, colour: "white", dashed: true, dotted: true, double: false, width: 0.15 });
       continue;
     }
     if (LINE_KINDS.has(c.kind)) {
@@ -412,6 +503,10 @@ export function regularise(drawn, ctx) {
         const rings = shapesM(c)[0];
         const box = orientedBox(rings[0]);
         const fill = polygonArea(rings) / Math.max(1e-6, 4 * box.halfLong * box.halfShort);
+        if (c.kind === "parking_line") {
+          stats.stallLinesLeft = (stats.stallLinesLeft ?? 0) + 1;
+          continue;
+        }
         if (fill < RECT_FILL || box.halfLong < 2 * box.halfShort) {
           // the dominant directions first, then the same turned by 6 deg for a rail that bends along the row
           const turn = (d, deg) => {
@@ -424,8 +519,14 @@ export function regularise(drawn, ctx) {
             glyphs.push(c);
             continue;
           }
-          const half = ctx.statute.widthFor(c.kind) / 2;
-          emitPoly(strokes.map(({ from, to }) => [rect(scale(add(from, to), 0.5), unit(sub(to, from)), perpOf(unit(sub(to, from))), norm(sub(to, from)) / 2 + half, half)]), c.colour, c.kind, { id: c.id });
+          // each straight stroke of the painted figure is a solid line on its template
+          const tid = c.kind === "kerb_no_parking" ? "no_parking_line" : c.kind === "give_way_line" ? "give_way_line"
+            : c.colour === "yellow" ? (c.kind === "edge_line" ? "no_parking_line" : "centre_solid") : c.kind === "edge_line" ? "edge_line" : "lane_solid";
+          const tl = TEMPLATES[tid];
+          for (const { from, to } of strokes) {
+            const d = unit(sub(to, from));
+            emitPoly([[rect(scale(add(from, to), 0.5), d, perpOf(d), norm(sub(to, from)) / 2, tl.widthM / 2)]], tl.colour, c.kind, { id: c.id, inst: { t: tid, ev: c.id, p: { shape: "straight", a: toScene(from), b: toScene(to), w: tl.widthM, dash: false } } });
+          }
           stats.frameStrokes += strokes.length;
           continue;
         }
@@ -513,82 +614,106 @@ export function regularise(drawn, ctx) {
   }
   stats.duplicateLines = chains.filter((ch) => ch.duplicate).length;
 
-  // draw: dashes, double strokes, cuts at buildings and sidewalks
+  // draw: every line on its standard template (lib/markingStandards.mjs: width, dash and gap), statute dashes phased on
+  // the detected ones and whole dashes only, double lines as two strokes, cuts at buildings and sidewalks; every
+  // straight run and every arc of a fitted line is its own marking instance (template, evidence, geometry)
+  const lineTemplate = (ch) => {
+    if (ch.kind === "parking_line") return null; // stalls are drawn from data/photo/parking-lots.json (stages/markingsStandard.mjs)
+    if (ch.dotted) return "guide_line";
+    if (ch.kind === "give_way_line") return "give_way_line";
+    if (ch.kind === "kerb_no_parking") return "no_parking_line";
+    if (ch.colour === "yellow") return ch.double ? "centre_double" : ch.dashed ? "centre_dashed" : ch.kind === "edge_line" ? "no_parking_line" : "centre_solid";
+    if (ch.dashed) return "lane_dashed";
+    return ch.kind === "edge_line" ? "edge_line" : "lane_solid";
+  };
+  // a chain's fitted pieces with their arc-length spans on its path; a path set straight by the parallel pass is one line
+  const pathPieces = (ch) => {
+    if (ch.path !== ch.fit.path) return [{ type: "line", from: ch.path[0], to: ch.path.at(-1), s0: 0, s1: polylineLength(ch.path) }];
+    const out = [];
+    let s = 0;
+    for (const pc of ch.fit.pieces) {
+      const len = pc.type === "arc" ? pc.radius * pc.theta : norm(sub(pc.to, pc.from));
+      // a joint between two offset runs is not paint of either run: left as a gap
+      if (pc.type !== "joint" && len > 1e-3) out.push({ ...pc, type: pc.type === "arc" ? "arc" : "line", s0: s, s1: s + len });
+      s += len;
+    }
+    return out;
+  };
+  const evidenceOf = (ids) => `${ids[0]}${ids.length > 1 ? ` +${ids.length - 1}` : ""}`;
+  const emitRun = (pieces_, a, b, tid, kind, dash, off, ev) => {
+    const t = TEMPLATES[tid];
+    for (const pc of pieces_) {
+      const s0 = Math.max(a, pc.s0);
+      const s1 = Math.min(b, pc.s1);
+      if (s1 - s0 < (dash ? 0.05 : 0.3)) continue;
+      const whole = dash && s0 <= a + 1e-6 && s1 >= b - 1e-6;
+      if (dash && !whole) continue; // a dash across a straight-to-arc joint would not be a whole dash on either
+      if (pc.type === "line") {
+        const at = (x) => add(pc.from, scale(sub(pc.to, pc.from), (x - pc.s0) / (pc.s1 - pc.s0)));
+        const d = unit(sub(pc.to, pc.from));
+        const n = perpOf(d);
+        const p0 = add(at(s0), scale(n, off));
+        const p1 = add(at(s1), scale(n, off));
+        emit([rect(scale(add(p0, p1), 0.5), d, n, norm(sub(p1, p0)) / 2, t.widthM / 2)], t.colour, kind, { inst: { t: tid, ev, p: { shape: "straight", a: toScene(p0), b: toScene(p1), w: t.widthM, dash: whole } } });
+      } else {
+        const r0 = sub(pc.from, pc.centre);
+        const sgn = Math.sign(r0[0] * (pc.to[1] - pc.centre[1]) - r0[1] * (pc.to[0] - pc.centre[0])) || 1;
+        const A0 = Math.atan2(r0[1], r0[0]);
+        const a0 = A0 + (sgn * pc.theta * (s0 - pc.s0)) / (pc.s1 - pc.s0);
+        const a1 = A0 + (sgn * pc.theta * (s1 - pc.s0)) / (pc.s1 - pc.s0);
+        const r = pc.radius - sgn * off;
+        const stepDeg = Math.max(0.25, (2 * Math.acos(1 - 0.002 / (r + t.widthM / 2)) * 180) / Math.PI);
+        emit([arcBand(pc.centre, r, (a0 * 180) / Math.PI, (a1 * 180) / Math.PI, t.widthM, stepDeg)], t.colour, kind, { inst: { t: tid, ev, p: { shape: "arc", centre: toScene(pc.centre), r: r * U, a0, a1, w: t.widthM } } });
+      }
+    }
+  };
   for (const ch of chains) {
     if (ch.duplicate) continue;
+    let tid = lineTemplate(ch);
+    if (!tid) {
+      stats.stallLinesLeft = (stats.stallLinesLeft ?? 0) + 1;
+      continue;
+    }
     stats.straightRuns += ch.fit.lines.length;
     stats.arcs += ch.fit.pieces.filter((piece) => piece.type === "arc").length;
     stats.residual.push(ch.fit.residual.p95);
     if (ch.fit.lines.length === 1) stats.straightness.push(straightness(ch.path));
     const length = polylineLength(ch.path);
     let intervals = [[0, length]];
-    if (ch.dashed) {
-      // statute pattern of the kind (guide dots for dotted lines); kinds without one keep the photo's period, or
-      // their detected dashes when there are too few to measure it
-      const nominal = ch.dotted ? ctx.statute.dash.guide_dotted : ctx.statute.dash[ch.kind] ?? null;
-      const detected = ch.members.map((m) => [projectArc(ch.path, m.points[0]), projectArc(ch.path, m.points.at(-1))].sort((a, b) => a - b))
-        .filter(([a, b]) => b - a > (ch.dotted ? 0.05 : 0.3));
-      // a junction guide line: short dense dashes (median detected dash <= GUIDE_DASH_MAX_M, start-to-start spacing
-      // <= GUIDE_PERIOD_MAX_M, at least GUIDE_MIN_DASHES) keeps the photo's own dash and period; the statute lane
-      // pattern (3 m / 5 m) would draw them as a few long dashes
-      // each member's span along the chain over all its points (its first and last ring points can be adjacent corners)
+    if (ch.dashed || TEMPLATES[tid].dashM) {
       const spans = ch.members.map((m) => { const t = m.points.map((q) => projectArc(ch.path, q)); return [Math.min(...t), Math.max(...t)]; })
-        .filter(([a, b]) => b - a > 0.3).sort((a, b) => a[0] - b[0]);
+        .filter(([a, b]) => b - a > (ch.dotted ? 0.05 : 0.3)).sort((a, b) => a[0] - b[0]);
       const lengths = spans.map(([a, b]) => b - a);
-      const starts = spans.map(([a]) => a);
-      const spacing = starts.slice(1).map((a, i) => a - starts[i]).filter((d) => d > 0.2);
-      const short = spans.length > 0 && median(lengths) >= GUIDE_DASH_MIN_M && median(lengths) <= GUIDE_DASH_MAX_M && Math.max(...lengths) <= GUIDE_DASH_LONGEST_M;
-      const guide = short && spans.length >= GUIDE_MIN_DASHES && spacing.length >= GUIDE_MIN_DASHES - 1 && median(spacing) <= GUIDE_PERIOD_MAX_M;
-      if (guide) {
-        const dash = median(lengths);
-        const period = Math.max(dash + 0.2, median(spacing));
-        intervals = layDashes({ length, detected: spans, dash, gap: period - dash }).dashes;
-        stats.dashPeriods.push({ kind: ch.kind, colour: ch.colour, dotted: ch.dotted, dashes: spans.length, measured: period, used: period, dash, source: "photo guide", ids: ch.ids });
-      } else if (short) {
-        // short dashes whose period cannot be measured (too few, or gaps where dashes are worn or hidden): the photo's
-        // own dashes as detected (a statute 3 m dash would draw paint the photo does not show)
-        intervals = spans;
-        stats.dashPeriods.push({ kind: ch.kind, colour: ch.colour, dotted: ch.dotted, dashes: spans.length, measured: null, used: null, dash: median(lengths), source: "photo short dashes", ids: ch.ids });
-      } else if (detected.length) {
-        const statutePeriod = nominal ? nominal[0] + nominal[1] : null;
-        const period = measuredPeriod(detected, statutePeriod ?? median(detected.map(([a, b]) => b - a)) * 2);
-        const usePhoto = Boolean(period) && (!nominal || (detected.length >= 4 && Math.abs(period - statutePeriod) / statutePeriod > 0.15));
-        if (!nominal && !period) {
-          intervals = detected;
-          stats.dashPeriods.push({ kind: ch.kind, colour: ch.colour, dotted: ch.dotted, dashes: detected.length, measured: null, used: null, dash: null, source: "detected dashes", ids: ch.ids });
-        } else {
-          const dash = usePhoto ? Math.min(period * 0.6, Math.max(ch.dotted ? 0.2 : 1, median(detected.map(([a, b]) => b - a)))) : nominal[0];
-          const gap = usePhoto ? period - dash : nominal[1];
-          intervals = layDashes({ length, detected, dash, gap }).dashes;
-          stats.dashPeriods.push({ kind: ch.kind, colour: ch.colour, dotted: ch.dotted, dashes: detected.length, measured: period, used: dash + gap, dash, source: usePhoto ? "photo" : "statute", ids: ch.ids });
-        }
+      // short dense dashes (a junction guide line) take the guide-line template whatever their kind
+      if (!ch.dotted && spans.length && median(lengths) <= GUIDE_DASH_MAX_M && ch.colour === "white") tid = "guide_line";
+      const t = TEMPLATES[tid];
+      if (t.dashM) {
+        intervals = spans.length ? layDashes({ length, detected: spans, dash: t.dashM, gap: t.gapM }).dashes : [];
+        intervals = intervals.filter(([a, b]) => b - a >= t.dashM - 1e-6);
+        stats.dashPeriods.push({ kind: ch.kind, colour: ch.colour, dotted: ch.dotted, dashes: spans.length, measured: null, used: t.dashM + t.gapM, dash: t.dashM, source: "statute", template: tid, ids: ch.ids });
       }
     }
-    const width = ch.dotted ? Math.min(0.6, Math.max(0.1, median(ch.members.map((m) => m.width)))) : ctx.statute.widthFor(ch.double ? "centre_line_yellow" : ch.kind);
-    const offsets = ch.double ? [ctx.statute.doubleOffsetM, -ctx.statute.doubleOffsetM] : [0];
+    const t = TEMPLATES[tid];
+    const offsets = tid === "centre_double" ? [(t.widthM + t.gapM) / 2, -(t.widthM + t.gapM) / 2] : [0];
+    const pcs = pathPieces(ch);
+    const ev = evidenceOf(ch.ids);
     for (const [a, b] of intervals) {
-      const piece = slicePath(ch.path, a, b);
-      if (piece.length < 2) continue;
       // cut where the line runs onto a building or a sidewalk
-      const samples = resample(piece, 0.25);
+      const samples = [];
+      for (let s = a; s <= b + 1e-9; s += 0.25) samples.push(s);
+      if (samples.at(-1) < b - 1e-6) samples.push(b);
+      const at = (s) => slicePath(ch.path, s, s + 1e-6)[0] ?? ch.path.at(-1);
       const runs = [];
-      let run = [];
-      for (const p of samples) {
-        if (blocked(p)) {
-          if (run.length) runs.push(run);
-          run = [];
-        } else run.push(p);
+      let run = null;
+      for (const s of samples) {
+        if (blocked(at(s))) { if (run) runs.push(run); run = null; } else if (run) run[1] = s; else run = [s, s];
       }
-      if (run.length) runs.push(run);
-      if (runs.length !== 1 || runs[0].length !== samples.length) stats.dropped.blocked += 1;
-      for (const r of runs) {
-        if (r.length < 3) continue;
-        const sub_ = runs.length === 1 && r.length === samples.length ? piece : slicePath(piece, projectArc(piece, r[0]), projectArc(piece, r.at(-1)));
-        for (const off of offsets) {
-          const line = off ? offsetPath(sub_, off) : sub_;
-          const ring = strokePath(line, width / 2);
-          if (ring) emit([ring], ch.colour, ch.kind);
-        }
+      if (run) runs.push(run);
+      if (runs.length !== 1 || runs[0][0] > a || runs[0][1] < b) stats.dropped.blocked += 1;
+      for (const [r0, r1] of runs) {
+        if (t.dashM && (r0 > a + 1e-6 || r1 < b - 1e-6)) continue; // only whole dashes
+        if (r1 - r0 < (t.dashM ? t.dashM - 1e-6 : 1)) continue;
+        for (const off of offsets) emitRun(pcs, r0, r1, tid, ch.kind, Boolean(t.dashM), off, ev);
       }
     }
   }
@@ -642,7 +767,12 @@ export function regularise(drawn, ctx) {
       stats.stopSquared += 1;
     }
     stopPieces.push({ at: pieces.length, centre: box.centre, id: c.id });
-    emitPoly([[rect(box.centre, unit(along), perpOf(unit(along)), box.halfLong, width / 2)]], c.colour, "stop_line", { id: c.id });
+    void width;
+    const w = TEMPLATES.stop_line.widthM;
+    const ua = unit(along);
+    emitPoly([[rect(box.centre, ua, perpOf(ua), box.halfLong, w / 2)]], "white", "stop_line", {
+      id: c.id, inst: { t: "stop_line", ev: c.id, p: { shape: "straight", a: toScene(sub(box.centre, scale(ua, box.halfLong))), b: toScene(add(box.centre, scale(ua, box.halfLong))), w } },
+    });
   }
 
   // ---- zebras: one crossing, one rectangle, equal bars
@@ -705,26 +835,53 @@ export function regularise(drawn, ctx) {
     }
     for (const r of rows) r.rows = rows.length;
   }
+  const placedCrossings = [];
+  // the longer crossings first: they keep their length
+  merged.sort((a, b) => b.bars.length - a.bars.length);
   for (const crossing of merged) {
     const { fit } = crossing;
     stats.crossings += 1;
     stats.barsDetected += crossing.bars.length;
     stats.zebraPhaseResidual.push(fit.phaseResidual.max);
-    const kept = [];
-    fit.bars.forEach((ring, k) => {
-      if (blockedShare([fit.barCentres[k], ...ring]) > BLOCKED_SHARE) {
-        stats.dropped.blocked += 1;
-        return;
+    // standard crosswalk (532): 0.45 m bars, 0.45 m gaps, the 폭원 snapped to a standard length; bars on a building or a
+    // sidewalk are trimmed from the ends only, so the bars left are one evenly spaced set
+    let length = crosswalkLength(2 * fit.rectangle.halfBar);
+    const tw = TEMPLATES.crosswalk;
+    const rings = fit.barCentres.map((c) => rect(c, fit.rectangle.axis, fit.rectangle.walk, length / 2, tw.barM / 2));
+    const free = rings.map((ring, k) => blockedShare([fit.barCentres[k], ...ring]) <= BLOCKED_SHARE);
+    let best = [0, -1];
+    for (let i = 0; i < free.length; i += 1) {
+      if (!free[i]) continue;
+      let j = i;
+      while (j + 1 < free.length && free[j + 1]) j += 1;
+      if (j - i > best[1] - best[0]) best = [i, j];
+      i = j;
+    }
+    stats.dropped.blocked += free.length - (best[1] - best[0] + 1);
+    let kept = fit.barCentres.slice(best[0], best[1] + 1);
+    if (kept.length) {
+      const centre = scale(kept.reduce((acc, q) => add(acc, q), [0, 0]), 1 / kept.length);
+      // one crossing never covers another (two bar rows of one crossing, or two crossings that meet): the longest
+      // standard length that keeps it clear of the crossings already drawn; none fits -> left out (logged)
+      const halfW = ((kept.length - 1) * (tw.barM + tw.gapM)) / 2 + tw.barM / 2;
+      const options = [length, ...[...tw.lengthsM, ...tw.reducedLengthsM].filter((x) => x < length).sort((a, b) => b - a)];
+      const fits = options.find((L) => !placedCrossings.some((q) => boxesOverlap({ centre, axis: fit.rectangle.axis, walk: fit.rectangle.walk, halfL: L / 2, halfW }, q)));
+      if (fits === undefined) {
+        stats.crossingsCovered = [...(stats.crossingsCovered ?? []), crossing.ids.join("+")];
+        kept = [];
+      } else {
+        placedCrossings.push({ centre, axis: fit.rectangle.axis, walk: fit.rectangle.walk, halfL: fits / 2 + 0.05, halfW: halfW + 0.05 });
+        const inst = { t: "crosswalk", ev: crossing.ids.join("+"), p: { centre: toScene(centre), axis: fit.rectangle.axis, length: fits, bars: kept.length } };
+        for (const c of kept) emit([rect(c, fit.rectangle.axis, fit.rectangle.walk, fits / 2, tw.barM / 2)], "white", "zebra_bar", { inst });
+        length = fits;
       }
-      emit([ring], "white", "zebra_bar");
-      kept.push(fit.barCentres[k]);
-    });
+    }
     stats.barsDrawn += kept.length;
     stats.crossingList.push({ ids: crossing.ids, detected: crossing.bars.length, drawn: kept.length, centre: toScene(fit.rectangle.centre), periodM: +fit.period.toFixed(3), rows: crossing.rows ?? 1, phaseResidualMaxM: +fit.phaseResidual.max.toFixed(3) });
     if (!kept.length) continue;
     zebras.push({
       id: crossing.ids.join("+"), centre: toScene(fit.rectangle.centre), axis: fit.rectangle.axis, bars: kept.length,
-      halfLength: fit.rectangle.halfBar * U, barCentres: kept.map(toScene), merged: crossing.ids.length,
+      halfLength: (length / 2) * U, barCentres: kept.map(toScene), merged: crossing.ids.length,
     });
   }
 
@@ -751,50 +908,85 @@ export function regularise(drawn, ctx) {
 
   // ---- symbols
   const texts = [];
+  const hatches = [];
   for (const c of glyphs) {
     if (c.kind === "text") texts.push(c);
     else if (ARROW_KINDS.includes(c.kind) || c.kind === "arrow") emitArrow(c);
     else if (c.kind === "diamond" || c.kind === "give_way") emitOutlineSymbol(c);
     else if (c.kind === "chevron") emitChevron(c);
+    else if (c.kind === "hatch") hatches.push(c);
     else emitRegularPolygon(c, null);
+  }
+  // hatch stripes traced one by one: the stripes within HATCH_LINK_M of each other are one hatched region (its convex
+  // hull), drawn once from the template
+  {
+    const pts = hatches.map((c) => shapesM(c).flatMap((rings) => rings[0]));
+    const parent = hatches.map((_, i) => i);
+    const root = (i) => (parent[i] === i ? i : (parent[i] = root(parent[i])));
+    for (let i = 0; i < hatches.length; i += 1) for (let j = i + 1; j < hatches.length; j += 1) {
+      if (hatches[i].colour !== hatches[j].colour) continue;
+      if (pts[i].some((p) => pts[j].some((q) => norm(sub(p, q)) <= HATCH_LINK_M))) parent[root(i)] = root(j);
+    }
+    const regions = new Map();
+    hatches.forEach((c, i) => { const r = root(i); if (!regions.has(r)) regions.set(r, []); regions.get(r).push(i); });
+    for (const members of regions.values()) {
+      const all = members.flatMap((i) => pts[i]);
+      const c0 = hatches[members[0]];
+      emitHatch({ ...c0, id: members.map((i) => hatches[i].id).join("+") }, [convexHull(all)]);
+    }
   }
   emitTexts(texts);
 
+  // Instance box of placed polygons in the frame of `f`: length along f, width across.
+  function boxIn(polys, centre, f) {
+    const r = rightOf(f);
+    const pts = polys.flatMap((rings) => rings[0]);
+    const along = pts.map((q) => dot(sub(q, centre), f));
+    const across = pts.map((q) => dot(sub(q, centre), r));
+    return { boxL: Math.max(...along) - Math.min(...along), boxW: Math.max(...across) - Math.min(...across) };
+  }
   function emitRegularPolygon(c, directions) {
+    void directions;
     for (const rings of shapesM(c)) {
       const box = orientedBox(rings[0]);
-      const fill = polygonArea(rings) / Math.max(1e-6, 4 * box.halfLong * box.halfShort);
-      if (c.kind === "disabled_parking" && c.colour === "white" && fill < 0.5) {
-        // upright along one of the bay's own directions, the one whose template covers the painted symbol best
-        const axes = (directions ?? [box.long, box.short]).flatMap((d) => [unit(d), scale(unit(d), -1)]);
-        const size = Math.min(2 * box.halfLong, BAY_SYMBOL_M);
-        const pick = axes.map((f) => ({ t: place(wheelchairTemplate(size), box.centre, f), f }))
-          .map((x) => ({ ...x, score: overlapScore(rings ? [rings] : [], x.t) })).sort((x, y) => y.score - x.score)[0];
-        emitPoly(pick.t, c.colour, c.kind, { glyph: "wheelchair", tid: `tpl ${c.id}`, up: pick.f });
-        glyphCount("wheelchair");
-        continue;
-      }
-      if (c.kind === "bike_lane_blue" && c.colour === "white" && fill < 0.5) {
-        emitPoly(place(bicycleTemplate(2 * box.halfLong, 2 * box.halfShort), box.centre, box.long), c.colour, c.kind);
-        glyphCount("bicycle");
-        continue;
-      }
-      const dirs = directions ?? [box.long, box.short];
-      if (fill >= RECT_FILL && rings.length === 1) {
-        // a stripe or a filled block: its rectangle, the axis snapped to the group's when close
-        const snapped = dirs.find((d) => angleBetween(d, box.long) <= SNAP_DEG && angleBetween(d, box.long) > 0) ?? box.long;
-        const u = unit(snapped);
-        const v = perpOf(u);
-        const s = rings[0].map((p) => dot(sub(p, box.centre), u));
-        const t = rings[0].map((p) => dot(sub(p, box.centre), v));
-        const centre = add(box.centre, add(scale(u, (Math.min(...s) + Math.max(...s)) / 2), scale(v, (Math.min(...t) + Math.max(...t)) / 2)));
-        emitPoly([[rect(centre, u, v, (Math.max(...s) - Math.min(...s)) / 2, (Math.max(...t) - Math.min(...t)) / 2)]], c.colour, c.kind, { id: c.id });
+      if (c.kind === "zebra_bar") {
+        // a crossing whose bars are fused to a painted frame: the standard crosswalk over the frame's extent
+        const tw = TEMPLATES.crosswalk;
+        const length = crosswalkLength(2 * box.halfShort);
+        const n = Math.max(2, Math.floor((2 * box.halfLong + tw.gapM) / (tw.barM + tw.gapM)));
+        const inst = { t: "crosswalk", ev: c.id, p: { centre: toScene(box.centre), axis: box.short, length, bars: n } };
+        for (let k = 0; k < n; k += 1) {
+          const cc = add(box.centre, scale(box.long, (k - (n - 1) / 2) * (tw.barM + tw.gapM)));
+          emit([rect(cc, box.short, box.long, length / 2, tw.barM / 2)], "white", "zebra_bar", { inst });
+        }
         stats.rectangles += 1;
-      } else {
-        emitPoly([rings.map((ring) => regularOutline(ring, dirs))], c.colour, c.kind, { id: c.id });
-        stats.outlines += 1;
+        continue;
       }
+      if (c.kind === "hatch") {
+        emitHatch(c, rings);
+        continue;
+      }
+      stats.untemplated = stats.untemplated ?? {};
+      stats.untemplated[c.kind] = (stats.untemplated[c.kind] ?? 0) + 1;
     }
+  }
+
+  // 안전지대 / 도류화 빗금 (531): the region's outline snapped straight, a 0.15 m border inside it and 0.45 m stripes at
+  // 45 deg to its long side every template pitch, clipped to the inside of the border; yellow or white as the photo shows.
+  function emitHatch(c, rings) {
+    const tid = c.colour === "yellow" ? "safety_hatch" : "safety_hatch_white";
+    const t = TEMPLATES[tid];
+    const box = orientedBox(rings[0]);
+    const outer = regularOutline(rings[0], [box.long, box.short]);
+    const polys = hatchPolys(outer, t, box.long);
+    if (!polys.length) {
+      stats.untemplated = stats.untemplated ?? {};
+      stats.untemplated.hatchTooSmall = (stats.untemplated.hatchTooSmall ?? 0) + 1;
+      return;
+    }
+    const inst = { t: tid, ev: c.id, p: { centre: toScene(box.centre), long: box.long } };
+    for (const piece of polys) emit(piece, t.colour, "hatch", { inst });
+    glyphCount(tid);
   }
 
   function emitArrow(c) {
@@ -811,15 +1003,19 @@ export function regularise(drawn, ctx) {
     const travel = snapped ? travelDirection(box.centre, road) : null;
     const directions = travel && travel.from !== "none" ? [travel.f] : [axis, scale(axis, -1)];
     stats.arrowAxes[snapped ? "road" : "own"] += 1;
+    stats.arrowLengths = [...(stats.arrowLengths ?? []), +length.toFixed(2)];
+    void width;
     let best = null;
     for (const kind of kinds) {
+      // the standard length nearest the photo's (road arrows 5.0 m, lot and ramp arrows 2.0 m)
+      const L = TEMPLATES[kind].lengthsM.reduce((x, y) => (Math.abs(y - length) < Math.abs(x - length) ? y : x));
       for (const f of directions) {
-        const template = place(arrowTemplate(kind, length, width), box.centre, f);
+        const template = place(arrowTemplate(kind, L, ARROW_HEAD_SHARE * L), box.centre, f);
         const score = overlapScore(blob, template);
-        if (!best || score > best.score) best = { kind, template, score };
+        if (!best || score > best.score) best = { kind, template, score, f, L };
       }
     }
-    emitPoly(best.template, c.colour, c.kind, { glyph: best.kind, guessed: c.kind === "arrow" });
+    emitPoly(best.template, "white", c.kind, { glyph: best.kind, guessed: c.kind === "arrow", inst: { t: best.kind, ev: c.id, p: { centre: toScene(box.centre), front: best.f, size: best.L, ...boxIn(best.template, box.centre, best.f) } } });
     glyphCount(c.kind === "arrow" ? `${best.kind} (추정)` : best.kind);
   }
 
@@ -828,16 +1024,17 @@ export function regularise(drawn, ctx) {
     const box = orientedBox(blob.flatMap((rings) => rings[0]));
     const [L, W] = [2 * box.halfLong, 2 * box.halfShort];
     const area = polygonArea(blob[0]);
+    void L; void W; void area;
+    const tid = c.kind === "diamond" ? "crossing_ahead_diamond" : "give_way_triangle";
+    const t = TEMPLATES[tid];
     let best = null;
     for (const f of [box.long, scale(box.long, -1)]) {
-      const perimeter = c.kind === "diamond" ? 4 * Math.hypot(L / 2, W / 2) : W + 2 * Math.hypot(L, W / 2);
-      const w = Math.min(0.45, Math.max(0.1, area / perimeter));
-      const template = place(c.kind === "diamond" ? diamondTemplate(L, W, w) : triangleTemplate(L, W, w), box.centre, f);
+      const template = place(c.kind === "diamond" ? diamondTemplate(t.lengthM, t.widthM, t.lineM) : triangleTemplate(t.lengthM, t.widthM, t.lineM), box.centre, f);
       const score = overlapScore(blob, template);
-      if (!best || score > best.score) best = { template, score };
+      if (!best || score > best.score) best = { template, score, f };
       if (c.kind === "diamond") break;
     }
-    emitPoly(best.template, c.colour, c.kind);
+    emitPoly(best.template, "white", c.kind, { inst: { t: tid, ev: c.id, p: { centre: toScene(box.centre), front: best.f, size: t.lengthM, ...boxIn(best.template, box.centre, best.f) } } });
     glyphCount(c.kind);
   }
 
@@ -849,16 +1046,14 @@ export function regularise(drawn, ctx) {
       emitRegularPolygon(c, null);
       return;
     }
+    const t = TEMPLATES.chevron;
     let best = null;
-    for (const [f, depth, span] of [[box.long, 2 * box.halfLong, 2 * box.halfShort], [scale(box.long, -1), 2 * box.halfLong, 2 * box.halfShort],
-      [box.short, 2 * box.halfShort, 2 * box.halfLong], [scale(box.short, -1), 2 * box.halfShort, 2 * box.halfLong]]) {
-      const arm = Math.hypot(depth, span / 2);
-      const w = Math.min(0.5, Math.max(0.1, polygonArea(blob[0]) / (2 * arm)));
-      const template = place(chevronTemplate(depth - w, span - w, w), box.centre, f);
+    for (const f of [box.long, scale(box.long, -1), box.short, scale(box.short, -1)]) {
+      const template = place(chevronTemplate(t.lengthM - t.lineM, t.widthM - t.lineM, t.lineM), box.centre, f);
       const score = overlapScore(blob, template);
-      if (!best || score > best.score) best = { template, score };
+      if (!best || score > best.score) best = { template, score, f };
     }
-    emitPoly(best.template, c.colour, c.kind);
+    emitPoly(best.template, "white", c.kind, { inst: { t: "chevron", ev: c.id, p: { centre: toScene(box.centre), front: best.f, size: t.lengthM, ...boxIn(best.template, box.centre, best.f) } } });
     glyphCount("chevron");
   }
 
@@ -966,8 +1161,16 @@ export function regularise(drawn, ctx) {
       const height = m.lineHeightM ? m.lineHeightM * (m.lines.length + 0.25 * (m.lines.length - 1)) : Math.max(...along) - Math.min(...along);
       const lines = m.lines ?? [stall ? "경차" : width < TEXT_LONG_WORD_M ? "서행" : "천천히"];
       const middle = add(box.centre, add(scale(f, (Math.max(...along) + Math.min(...along)) / 2), scale(r, (Math.max(...across) + Math.min(...across)) / 2)));
-      const block = textBlock(lines, width, height, { charHeight: m.lineHeightM ?? null });
-      emitPoly(place(block.polys, middle, f), m.colour ?? list[m.members[0]].colour, "text", { glyph: lines.join("/"), guessed: Boolean(m.guessed) });
+      // the standard letterform (lib/roadText.mjs) at the template scale nearest the photo's syllable length, 0.5-2 times
+      // the base size in 0.25 steps (업무편람 2024: 문자의 크기 0.5~2배)
+      const tt = TEMPLATES.road_text;
+      const photoChar = (m.lineHeightM ?? height / (lines.length + LINE_GAP_TEXT * (lines.length - 1)));
+      const scaleT = Math.min(tt.scaleRange[1], Math.max(tt.scaleRange[0], Math.round((photoChar / tt.charHeightM) * 4) / 4));
+      const textBlockStd = roadTextBlock(lines, scaleT);
+      const block = { polys: textBlockStd.polys, charWidth: textBlockStd.charWidthM, charHeight: textBlockStd.charHeightM };
+      void textBlock;
+      const placed = placeAt(block.polys, middle, f);
+      emitPoly(placed, "white", "text", { glyph: lines.join("/"), guessed: Boolean(m.guessed), inst: { t: "road_text", ev: ids.join("+") || m.id, p: { centre: toScene(middle), front: f, scale: scaleT, text: lines.join("/"), ...boxIn(placed, middle, f) } } });
       const label = `${lines.join("/")} (${m.guessed ? "추정" : m.source?.startsWith("VR") ? "VR 판독" : "사진 판독"})`;
       glyphCount(`text ${label}`);
       stats.textReadings.push({
@@ -983,7 +1186,7 @@ export function regularise(drawn, ctx) {
   // the bay's centre, unless a white symbol is already drawn there. A blue piece longer than BAY_ROW_M is a row of
   // bays BAY_WIDTH_M wide. The aisle is the end of the bay that is open: the other end meets a kerb, a sidewalk or a
   // building (ctx.blocked); where neither or both do, ctx.baySymbols may give the bearing, else it is 추정.
-  emitBaySymbols();
+  // blue-bay symbols come with the accessible stall template (stages/markingsStandard.mjs)
   function emitBaySymbols() {
     const blues = pieces.filter((pc) => pc.kind === "disabled_parking" && pc.colour === "blue" && !pc.estimated);
     // a wheelchair template already drawn from a traced white symbol keeps its bay; other small white pieces inside a

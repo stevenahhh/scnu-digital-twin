@@ -38,6 +38,7 @@ import { SURFACE_CLASS } from "../lib/surfaceClass.mjs";
 import { readA003 } from "../lib/a003.mjs";
 import { readGroundRegistration, registerFacilities } from "../lib/groundRegistration.mjs";
 import { pavingPattern } from "../lib/pavingPatterns.mjs";
+import { readParkingLots, rowGeometry } from "../lib/parkingRows.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const GROUND_FEATURES = path.join(HERE, "..", "data", "osm-ground.json");
@@ -442,6 +443,12 @@ export function buildSurfaces({ inputs, walkways, groundFeatures = null, offCamp
   if (groundFeatures) {
     for (const lot of groundFeatures.osm.filter((f) => f.kind === "parking")) {
       add({ cls: "LOT", mesh: "Ground_Lot", label: SURFACE_CLASS.ASPHALT, precedence: PRECEDENCE.LOT, source: "OSM-derived", source_ref: lot.id }, lot.rings);
+    }
+    // the lot surface under every stall row read on the photo (data/photo/parking-lots.json, lib/parkingRows.mjs)
+    for (const lot of readParkingLots()) {
+      for (const row of lot.rows) {
+        add({ cls: "LOT", mesh: "Ground_Lot", label: SURFACE_CLASS.ASPHALT, precedence: PRECEDENCE.LOT, source: "photo-derived", source_ref: `stall row ${row.id}` }, [rowGeometry(row).surface.map(([x, z]) => [x * SCENE_UNITS_PER_METRE, z * SCENE_UNITS_PER_METRE])]);
+      }
     }
     groundFeatures.supplements.filter((f) => f.kind === "parking").forEach((lot, i) => {
       add({ cls: "LOT", mesh: "Ground_Lot", label: SURFACE_CLASS.ASPHALT, precedence: PRECEDENCE.LOT, source: "project-estimated", source_ref: `supplement parking ${i}: ${lot.note ?? ""}`.trim(), estimated: true }, [parkingRing(lot.axis, lot.depthMetres)]);
