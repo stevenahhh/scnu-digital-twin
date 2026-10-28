@@ -214,6 +214,28 @@ export function dominantDirections(ring) {
 // The traced outline is pixel-jittered (0.25 m photo): simplify it at growing tolerances until the snapped outline
 // keeps every corner within OUTLINE_MOVE_M of the trace; else the finest simplified trace.
 export const simplifyRing = (ring) => simplify(ring, 0.1);
+// the sides of a traced island outline are its ring simplified within this (metres)
+export const ISLAND_SIMPLIFY_M = 0.3;
+export const ISLAND_LINK_M = 1.2;
+export const ISLAND_MIN_M2 = 3;
+export const ISLAND_SIDE_M = 0.5;
+export const ISLAND_INSET_M = 1.0; // inner outline of the campus islands, read on the photo (추정)
+// a counter-clockwise ring moved inward by d (each side offset, neighbouring sides intersected); null when it collapses
+export function insetRing(ring_, d) {
+  const ring = ringArea(ring_) < 0 ? [...ring_].reverse() : ring_;
+  const n = ring.length;
+  const lines = ring.map((p, i) => { const q = ring[(i + 1) % n]; const l = Math.hypot(q[0] - p[0], q[1] - p[1]) || 1; const u = [(q[0] - p[0]) / l, (q[1] - p[1]) / l]; const m = [-u[1], u[0]]; return { p: [p[0] + m[0] * d, p[1] + m[1] * d], u }; });
+  const out = [];
+  for (let i = 0; i < n; i += 1) {
+    const a = lines[(i + n - 1) % n], b = lines[i];
+    const den = a.u[0] * b.u[1] - a.u[1] * b.u[0];
+    if (Math.abs(den) < 1e-6) return null;
+    const t = ((b.p[0] - a.p[0]) * b.u[1] - (b.p[1] - a.p[1]) * b.u[0]) / den;
+    out.push([a.p[0] + a.u[0] * t, a.p[1] + a.u[1] * t]);
+  }
+  return ringArea(out) > 0 ? out : null;
+}
+const ringArea = (r) => r.reduce((s, p, i) => { const q = r[(i + 1) % r.length]; return s + p[0] * q[1] - q[0] * p[1]; }, 0) / 2;
 export function regularOutline(ring, directions) {
   for (const tol of [0.1, 0.15, 0.2, 0.3]) {
     const out = snapOutline(ring, directions, tol);
@@ -916,13 +938,57 @@ export function regularise(drawn, ctx) {
       return Math.atan2(b.long[1], b.long[0]) % Math.PI;
     }));
     const directions = [box.long, box.short, [Math.cos(stripe), Math.sin(stripe)], perpOf([Math.cos(stripe), Math.sin(stripe)])];
-    for (const c of members) emitRegularPolygon(c, directions);
+    // a hump or raised-crossing band of diagonal stripes (the campus paints them yellow): one hatched region on the
+    // standard 안전지대 hatch of its colour over the band's hull, not loose stripes
+    const humps = members.filter((c) => c.kind === "speed_bump");
+    if (humps.length) {
+      const yellow = humps.filter((c) => c.colour === "yellow").length * 2 >= humps.length;
+      emitHatch({ ...humps[0], colour: yellow ? "yellow" : "white", id: humps.map((c) => c.id).join("+") }, [convexHull(humps.flatMap((c) => shapesM(c).flatMap((rings) => rings[0])))]);
+    }
+    for (const c of members) if (c.kind !== "speed_bump") emitRegularPolygon(c, directions);
   }
 
   // ---- symbols
   const texts = [];
   const hatches = [];
+  // 교통섬 (도류화) islands: yellow chevron, hatch and outline pieces traced around one figure (the nested triangles at
+  // the roundabout and the junction mouths) are one island, not loose glyphs: pieces within ISLAND_LINK_M of each other
+  // form a figure; one whose hull is at least ISLAND_MIN_M2 is drawn as its outline (the hull simplified to straight
+  // sides) plus the inner outline ISLAND_INSET_M inside it, both standard yellow solid lines (centre_solid, 0.15 m)
+  const islandPieces = glyphs.filter((c) => c.colour === "yellow" && ["chevron", "hatch", "centre_line_yellow"].includes(c.kind));
+  {
+    const pts = islandPieces.map((c) => shapesM(c).flatMap((rings) => rings[0]));
+    const parent = islandPieces.map((_, i) => i);
+    const root = (i) => (parent[i] === i ? i : (parent[i] = root(parent[i])));
+    for (let i = 0; i < pts.length; i += 1) for (let j = i + 1; j < pts.length; j += 1) {
+      if (pts[i].some((a) => pts[j].some((b) => norm(sub(a, b)) <= ISLAND_LINK_M))) parent[root(i)] = root(j);
+    }
+    const figures = new Map();
+    islandPieces.forEach((c, i) => { const r = root(i); if (!figures.has(r)) figures.set(r, []); figures.get(r).push(i); });
+    for (const members of figures.values()) {
+      if (members.length < 2) continue;
+      const hull = convexHull(members.flatMap((i) => pts[i]));
+      if (Math.abs(areaOf(hull)) < ISLAND_MIN_M2) continue;
+      const c0 = islandPieces[members[0]];
+      const fig = { ...c0, id: members.map((i) => islandPieces[i].id).join("+"), kind: "centre_line_yellow" };
+      let outer = simplify([...hull, hull[0]], ISLAND_SIDE_M);
+      if (norm(sub(outer[0], outer.at(-1))) < 1e-6) outer = outer.slice(0, -1);
+      if (outer.length < 3 || !emitOutlineRing(fig, outer)) continue;
+      const inner = insetRing(outer, ISLAND_INSET_M);
+      if (inner && Math.abs(areaOf(inner)) >= 1) emitOutlineRing({ ...fig, id: `${fig.id} inner` }, inner);
+      for (const i of members) islandPieces[i].island = true;
+      stats.islands = (stats.islands ?? 0) + 1;
+    }
+  }
+  // hump / raised-crossing stripes read one by one: hatch pieces of one band, yellow where any stripe of the band is
+  const humpGlyphs = glyphs.filter((c) => c.kind === "speed_bump");
+  const humpCentre = (c) => orientedBox(shapesM(c).flatMap((rings) => rings[0])).centre;
+  for (const c of humpGlyphs) {
+    const yellow = humpGlyphs.some((o) => o.colour === "yellow" && norm(sub(humpCentre(o), humpCentre(c))) <= 4);
+    hatches.push({ ...c, kind: "hatch", colour: yellow ? "yellow" : c.colour });
+  }
   for (const c of glyphs) {
+    if (c.island || c.kind === "speed_bump") continue;
     if (c.kind === "text") texts.push(c);
     else if (ARROW_KINDS.includes(c.kind) || c.kind === "arrow") emitArrow(c);
     else if (c.kind === "diamond" || c.kind === "give_way") emitOutlineSymbol(c);
@@ -979,9 +1045,56 @@ export function regularise(drawn, ctx) {
         emitHatch(c, rings);
         continue;
       }
+      if (LINE_KINDS.has(c.kind) && c.kind !== "parking_line" && emitIslandOutline(c, rings, box)) continue;
       stats.untemplated = stats.untemplated ?? {};
       stats.untemplated[c.kind] = (stats.untemplated[c.kind] ?? 0) + 1;
     }
+  }
+
+  // 도류화 / 교통섬 outline (a traced line kind whose paint is a closed figure: the yellow triangles and islands at the
+  // roundabout and the junction mouths): its outer edge simplified to straight sides (ISLAND_SIMPLIFY_M), each side a
+  // standard solid line of the photo colour set inside the edge, each its own instance, shortened at the corners so
+  // neighbouring sides do not overlap. A thin figure (no hole, under 0.6 m wide) is one straight line on its long axis.
+  function emitIslandOutline(c, rings, box) {
+    const tid = c.colour === "yellow" ? "centre_solid" : "edge_line";
+    const t = TEMPLATES[tid];
+    const w = t.widthM;
+    if (rings.length < 2 && 2 * box.halfShort <= 0.6) {
+      if (2 * box.halfLong < 1) return false;
+      const a = sub(box.centre, scale(box.long, box.halfLong)), b = add(box.centre, scale(box.long, box.halfLong));
+      emit([rect(box.centre, box.long, box.short, box.halfLong, w / 2)], t.colour, c.kind, { inst: { t: tid, ev: c.id, p: { shape: "straight", a: toScene(a), b: toScene(b), w, dash: false } } });
+      stats.islandOutlines = (stats.islandOutlines ?? 0) + 1;
+      return true;
+    }
+    let ring = simplify(rings[0], ISLAND_SIMPLIFY_M);
+    if (ring.length > 1 && norm(sub(ring[0], ring.at(-1))) < 1e-6) ring = ring.slice(0, -1);
+    if (ring.length < 3 || Math.abs(areaOf(ring)) < 1) return false;
+    const ok = emitOutlineRing(c, ring);
+    if (ok) stats.islandOutlines = (stats.islandOutlines ?? 0) + 1;
+    return ok;
+  }
+  // a closed figure's sides as standard solid lines of its colour set inside the ring, one instance per side
+  function emitOutlineRing(c, ring_) {
+    const tid = c.colour === "yellow" ? "centre_solid" : "edge_line";
+    const t = TEMPLATES[tid];
+    const w = t.widthM;
+    const ring = areaOf(ring_) < 0 ? [...ring_].reverse() : ring_;
+    // at a corner of angle phi two sides of width w overlap over w / 2 / tan(phi / 2) along each
+    const n = ring.length;
+    let drawn = 0;
+    for (let i = 0; i < n; i += 1) {
+      const p0 = ring[i], p1 = ring[(i + 1) % n];
+      const d = unit(sub(p1, p0));
+      const inward = [-d[1], d[0]]; // counter-clockwise ring: the inside is on the left
+      const trim = (q, side) => { const phi = Math.acos(Math.max(-1, Math.min(1, dot(unit(sub(side, q)), unit(sub(q === p0 ? p1 : p0, q)))))); return w / 2 / Math.max(0.2, Math.tan(phi / 2)) + 0.01; };
+      const s0 = trim(p0, ring[(i + n - 1) % n]), s1 = trim(p1, ring[(i + 2) % n]);
+      const len = norm(sub(p1, p0)) - s0 - s1;
+      if (len < 0.3) continue;
+      const a = add(add(p0, scale(d, s0)), scale(inward, w / 2)), b = add(a, scale(d, len));
+      emit([rect(scale(add(a, b), 0.5), d, inward, len / 2, w / 2)], t.colour, c.kind, { inst: { t: tid, ev: c.id, p: { shape: "straight", a: toScene(a), b: toScene(b), w, dash: false } } });
+      drawn += 1;
+    }
+    return drawn > 0;
   }
 
   // 안전지대 / 도류화 빗금 (531): the region's outline snapped straight, a 0.15 m border inside it and 0.45 m stripes at
@@ -1038,7 +1151,7 @@ export function regularise(drawn, ctx) {
     const [L, W] = [2 * box.halfLong, 2 * box.halfShort];
     const area = polygonArea(blob[0]);
     void L; void W; void area;
-    const tid = c.kind === "diamond" ? "crossing_ahead_diamond" : "give_way_triangle";
+    const tid = c.kind === "diamond" ? "crossing_ahead_diamond" : c.colour === "yellow" ? "give_way_triangle_yellow" : "give_way_triangle";
     const t = TEMPLATES[tid];
     let best = null;
     for (const f of [box.long, scale(box.long, -1)]) {
@@ -1047,7 +1160,7 @@ export function regularise(drawn, ctx) {
       if (!best || score > best.score) best = { template, score, f };
       if (c.kind === "diamond") break;
     }
-    emitPoly(best.template, "white", c.kind, { inst: { t: tid, ev: c.id, p: { centre: toScene(box.centre), front: best.f, size: t.lengthM, ...boxIn(best.template, box.centre, best.f) } } });
+    emitPoly(best.template, t.colour, c.kind, { inst: { t: tid, ev: c.id, p: { centre: toScene(box.centre), front: best.f, size: t.lengthM, ...boxIn(best.template, box.centre, best.f) } } });
     glyphCount(c.kind);
   }
 
@@ -1059,15 +1172,16 @@ export function regularise(drawn, ctx) {
       emitRegularPolygon(c, null);
       return;
     }
-    const t = TEMPLATES.chevron;
+    const tid = c.colour === "yellow" ? "chevron_yellow" : "chevron";
+    const t = TEMPLATES[tid];
     let best = null;
     for (const f of [box.long, scale(box.long, -1), box.short, scale(box.short, -1)]) {
       const template = place(chevronTemplate(t.lengthM - t.lineM, t.widthM - t.lineM, t.lineM), box.centre, f);
       const score = overlapScore(blob, template);
       if (!best || score > best.score) best = { template, score, f };
     }
-    emitPoly(best.template, "white", c.kind, { inst: { t: "chevron", ev: c.id, p: { centre: toScene(box.centre), front: best.f, size: t.lengthM, ...boxIn(best.template, box.centre, best.f) } } });
-    glyphCount("chevron");
+    emitPoly(best.template, t.colour, c.kind, { inst: { t: tid, ev: c.id, p: { centre: toScene(box.centre), front: best.f, size: t.lengthM, ...boxIn(best.template, box.centre, best.f) } } });
+    glyphCount(tid);
   }
 
   // Text: one marking per lane block. Korean road text reads for the approaching driver: syllables upright to him,

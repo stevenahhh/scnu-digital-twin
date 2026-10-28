@@ -76,7 +76,9 @@ export const TEMPLATES = Object.freeze({
   arrow_uturn: { kind: "glyph", colour: "white", lengthM: 5.0, lengthsM: [5.0, 2.0], source: { doc: "M19", page: "p111 (PDF p127); B6 541" }, code: "541", estimated: ["as arrow_straight"] },
   crossing_ahead_diamond: { kind: "glyph", colour: "white", lengthM: 3.0, widthM: 1.5, lineM: 0.2, source: { doc: "B6", page: "529 횡단보도예고" }, code: "529", estimated: ["B6 drawing is an image: 3.0 x 1.5 m, 0.2 m line 추정"] },
   give_way_triangle: { kind: "glyph", colour: "white", lengthM: 3.0, widthM: 1.5, lineM: 0.2, source: { doc: "H24", page: "p55 (PDF p61) 양보(522)" }, code: "522", estimated: ["drawing is an image: 3.0 x 1.5 m, 0.2 m line 추정"] },
+  give_way_triangle_yellow: { kind: "glyph", colour: "yellow", lengthM: 3.0, widthM: 1.5, lineM: 0.2, source: { doc: "H24", page: "p55 (PDF p61) 양보(522)" }, code: "522", estimated: ["yellow where the photo shows it (campus junction island)", "drawing is an image: 3.0 x 1.5 m, 0.2 m line 추정"] },
   chevron: { kind: "glyph", colour: "white", lengthM: 1.5, widthM: 3.0, lineM: 0.45, source: { doc: "H24", page: "p66 (PDF p72) 갈매기표지: 끝단 각도 45°, 도색 폭 45~50 cm" }, code: "526", estimated: ["arm span 3.0 m, depth 1.5 m 추정"] },
+  chevron_yellow: { kind: "glyph", colour: "yellow", lengthM: 1.5, widthM: 3.0, lineM: 0.45, source: { doc: "H24", page: "p66 (PDF p72) 갈매기표지: 끝단 각도 45°, 도색 폭 45~50 cm" }, code: "526", estimated: ["yellow where the photo shows it: 도류화 between opposing traffic is yellow (H24 안전지대 색)", "arm span 3.0 m, depth 1.5 m 추정"] },
   road_text: {
     kind: "text", colour: "white", charWidthM: 0.75, charHeightM: 2.0, scaleRange: [0.5, 2],
     letterform: "Wanted Sans (OFL, public/fonts) outlines condensed to the 그림 2-2 proportions",
