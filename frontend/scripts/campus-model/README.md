@@ -703,6 +703,33 @@ what is drawn is regular geometry fitted to the accepted pieces (`stages/marking
 | `dotted` guide lines | their `dots` squares |
 | `other` | left out |
 
+Standard instances (supersedes the table above where they differ). Every piece of paint is one instance of a
+standard template of `lib/markingStandards.mjs` (경찰청 교통노면표시 설치·관리 매뉴얼 2019.3, 업무편람 2023/2024,
+도로교통법 시행규칙 별표 6, 주차장법 시행규칙 제3조; each template names its page) with a placement evidence id:
+- lines: every straight run and every arc of a fitted line is its own instance at the template width (0.15 m; stop
+  line 0.40 m), dashes are the template's (lane 3 m / 5 m, centre 3 m / 3 m, guide and give-way 0.5 m / 0.5 m; short
+  dense photo dashes take the guide-line template), whole dashes only, the joint between two offset runs left as a gap;
+- crosswalks (532): 0.45 m bars, 0.45 m gaps, the 폭원 snapped to 4, 6 or 8 m (3 m below 3.5 m), bars trimmed from
+  the ends only, and no crossing covering another (the longest standard length that keeps clear);
+- arrows at 5.0 m (road) or 2.0 m (lot and ramp), the medians of the two size groups of the photo arrows; diamond,
+  give-way triangle and chevron at their template sizes; road text in the 그림 2-2 letterform (Wanted Sans outlines,
+  `data/road-text-glyphs.json` from `fetch/road_text_glyphs.py`) at 0.75 x 2.0 m per syllable times a scale of
+  0.5-2 in 0.25 steps; hatches as one region (traced stripes within 1.2 m joined, convex hull) with a 0.15 m border
+  and 0.45 m stripes at 45 degrees every 1.35 m;
+- parking: the stall rows read on the NGII photo (`bake/parking-rows.mjs` -> `data/photo/parking-lots.json`,
+  by-eye rejections in `data/photo/parking-review.json`) drawn by `lib/parkingRows.mjs`: one straight run per row,
+  bays of 2.5 m (일반형) or 2.6 m (확장형, photo pitch 2.55 m or more) and 3.3 m (장애인전용, blue in the photo, with a
+  1.6 m blue square and the wheelchair), front and back lines, dividers between their inner edges (no overlap),
+  back-to-back rows sharing one back line, the row centred on the photo row; the Ground_Lot surface under every row
+  (`network/surfaces.mjs`). The traced stall frames, blue bays, hump bands and the old gap-filling dividers are not drawn;
+- no two instances share ground (`stages/markingsStandard.mjs`): the weaker one (crosswalk > stall row > stop line >
+  symbols and text > lines > hatch) gives way, a straight line by a cut, anything else whole; the build logs each.
+`Road_Markings` carries the records (`markingInstances`: id, template, evidence, colour, placement) and every vertex
+its record index in v (`(index + 0.5) / markingInstanceCapacity`); the context ground's lines get records too.
+`scripts/qa/markings-audit.mjs` reads them back and fails on a marking without template or evidence, a dimension more
+than 2 cm off its template, a straight run more than 2 cm off its line, any overlap (2 cm lattice), a stall outside its
+lot or off Ground_Lot, uneven stall spacing (5 cm) and a lot whose stall count differs from the photo's.
+
 Nothing regular is kept on a modelled building or an A003 sidewalk (a point counts as on one only when it and four
 points 0.3 m around it are), and fitted lines of one colour covering the same paint (half the shorter within 0.25 m)
 are drawn once.
@@ -923,7 +950,9 @@ colours, accents, border bands) into `data/paving-patterns.json`; `lib/pavingPat
 seamless colour tile and a joint-relief tile (80 px per metre, no photo pixel). Every value is an estimate (추정).
 
 - `Ground_Pavers` (A003 block-paver and existing walkways, OSM plazas, plain supplements) and `Ground_Walkway` take
-  `campus-speckle`, the light grey 0.3 m pavers with scattered dark and blue-grey squares that most VR scenes show
+  `campus-speckle`, the light grey 0.2 m pavers in stack bond with a regular accent grid (3 x 3 dark blocks with a beige
+  centre every 1.6 m, alternate rows shifted, single terracotta pavers every 0.8 m; VR scene_a2 and others; no random
+  accents) that most VR scenes show
   (the CC0 PavingStones150 tile is no longer used there). Geometry and labels of the walkable layers are unchanged.
 - Plazas whose paving differs are `catalogue` paving supplements of `data/osm-ground.json` (`Ground_Plaza`, precedence
   5.8, label PAVING): an outline traced on the NGII 2025 sheet (or an OSM pedestrian area), a pattern laid along an
