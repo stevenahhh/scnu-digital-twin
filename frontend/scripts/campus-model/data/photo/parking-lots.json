@@ -2,14 +2,14 @@
  "source": "NGII 2025 orthophoto sheet 34702020 (0.25 m), read by bake/parking-rows.mjs; review: data/photo/parking-review.json",
  "method": "divider lines per direction, rows of stall-pitch spacing, front/back lines for depth; counts are the bays between the first and last photo divider of each row",
  "droppedDuplicates": [
-  "P06-R8: end bay given up where it meets P06-R7",
-  "P06-R8: end bay given up where it meets P06-R7",
-  "P06-R8: end bay given up where it meets P06-R7",
-  "P06-R8: end bay given up where it meets P06-R7",
-  "P06-R8: end bay given up where it meets P06-R7",
-  "P06-R8: end bay given up where it meets P06-R7",
-  "P06-R8: end bay given up where it meets P06-R7",
-  "P06-R10: end bay given up where it meets P06-R9"
+  "P07-R8: end bay given up where it meets P07-R7",
+  "P07-R8: end bay given up where it meets P07-R7",
+  "P07-R8: end bay given up where it meets P07-R7",
+  "P07-R8: end bay given up where it meets P07-R7",
+  "P07-R8: end bay given up where it meets P07-R7",
+  "P07-R8: end bay given up where it meets P07-R7",
+  "P07-R8: end bay given up where it meets P07-R7",
+  "P07-R10: end bay given up where it meets P07-R9"
  ],
  "note": "a row's photoBays excludes end bays it gives up where it meets another row (trimmedBays): those bays are the other row's",
  "lots": [
@@ -423,6 +423,147 @@
    "id": "P04",
    "ring": [
     [
+     127.47782278,
+     34.97060249
+    ],
+    [
+     127.47789304,
+     34.97066847
+    ],
+    [
+     127.47789961,
+     34.97066847
+    ],
+    [
+     127.4781617,
+     34.97060661
+    ],
+    [
+     127.47818824,
+     34.97056719
+    ],
+    [
+     127.47818824,
+     34.97056178
+    ],
+    [
+     127.47818779,
+     34.97056048
+    ],
+    [
+     127.47784956,
+     34.97055374
+    ],
+    [
+     127.47784299,
+     34.97055374
+    ],
+    [
+     127.47782278,
+     34.97059708
+    ]
+   ],
+   "photoStalls": 9,
+   "photoAccessible": 0,
+   "rows": [
+    {
+     "id": "P04-R1",
+     "site": "S17",
+     "evidence": "NGII 34702020 dividers (3 read); traces MX00218, MX00219, MX00220, MX00222 +15",
+     "start": [
+      127.47789776,
+      34.97057369
+     ],
+     "end": [
+      127.47787852,
+      34.97061496
+     ],
+     "depthBearing": 249,
+     "photoBays": 2,
+     "photoPitchM": 2.474,
+     "photoAccessiblePitchM": 3.4,
+     "photoDepthM": 5.1,
+     "frontBackLines": true,
+     "dividerRmsCm": 3.1,
+     "accessible": [],
+     "photoDividers": [
+      [
+       127.47789776,
+       34.97057369
+      ],
+      [
+       127.47788806,
+       34.97059451
+      ],
+      [
+       127.47787852,
+       34.97061496
+      ]
+     ]
+    },
+    {
+     "id": "P04-R2",
+     "site": "angled B4-north",
+     "evidence": "NGII 34702020 dividers (8 read); traces review B4-north",
+     "start": [
+      127.47817496,
+      34.97056614
+     ],
+     "end": [
+      127.47794654,
+      34.97062005
+     ],
+     "depthBearing": 338,
+     "photoAngleDeg": 52,
+     "aisleBearing": 286,
+     "photoBays": 7,
+     "photoPitchM": 2.4,
+     "photoAccessiblePitchM": 3.3,
+     "photoDepthM": 5,
+     "frontBackLines": true,
+     "dividerRmsCm": 0,
+     "accessible": [],
+     "photoDividers": [
+      [
+       127.47817496,
+       34.97056614
+      ],
+      [
+       127.47815359,
+       34.97057118
+      ],
+      [
+       127.47810951,
+       34.97058159
+      ],
+      [
+       127.47807745,
+       34.97058915
+      ],
+      [
+       127.47804405,
+       34.97059704
+      ],
+      [
+       127.47801199,
+       34.9706046
+      ],
+      [
+       127.47799062,
+       34.97060965
+      ],
+      [
+       127.47794654,
+       34.97062005
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "P05",
+   "ring": [
+    [
      127.47725812,
      34.97033526
     ],
@@ -467,7 +608,7 @@
    "photoAccessible": 0,
    "rows": [
     {
-     "id": "P04-R1",
+     "id": "P05-R1",
      "site": "S15",
      "evidence": "NGII 34702020 dividers (9 read); traces MK01393",
      "start": [
@@ -528,7 +669,7 @@
    ]
   },
   {
-   "id": "P05",
+   "id": "P06",
    "ring": [
     [
      127.47944918,
@@ -575,7 +716,7 @@
    "photoAccessible": 1,
    "rows": [
     {
-     "id": "P05-R1",
+     "id": "P06-R1",
      "site": "S19",
      "evidence": "NGII 34702020 dividers (3 read); traces MX00230, MX01307, MX01308, MX01309",
      "start": [
@@ -614,7 +755,7 @@
    ]
   },
   {
-   "id": "P06",
+   "id": "P07",
    "ring": [
     [
      127.48192829,
@@ -697,7 +838,7 @@
    "photoAccessible": 1,
    "rows": [
     {
-     "id": "P06-R1",
+     "id": "P07-R1",
      "site": "S13",
      "evidence": "NGII 34702020 dividers (11 read); traces MK01395, MK01397, MX00145, MX00146 +20",
      "start": [
@@ -764,7 +905,7 @@
      ]
     },
     {
-     "id": "P06-R2",
+     "id": "P07-R2",
      "site": "S13",
      "evidence": "NGII 34702020 dividers (11 read); traces MK01395, MK01397, MX00145, MX00146 +20",
      "start": [
@@ -831,7 +972,7 @@
      ]
     },
     {
-     "id": "P06-R3",
+     "id": "P07-R3",
      "site": "S13",
      "evidence": "NGII 34702020 dividers (12 read); traces MK01395, MK01397, MX00145, MX00146 +20",
      "start": [
@@ -902,7 +1043,7 @@
      ]
     },
     {
-     "id": "P06-R4",
+     "id": "P07-R4",
      "site": "S13",
      "evidence": "NGII 34702020 dividers (14 read); traces MK01395, MK01397, MX00145, MX00146 +20",
      "start": [
@@ -981,7 +1122,7 @@
      ]
     },
     {
-     "id": "P06-R5",
+     "id": "P07-R5",
      "site": "S13",
      "evidence": "NGII 34702020 dividers (9 read); traces MK01395, MK01397, MX00145, MX00146 +20",
      "start": [
@@ -1040,7 +1181,7 @@
      ]
     },
     {
-     "id": "P06-R6",
+     "id": "P07-R6",
      "site": "S13",
      "evidence": "NGII 34702020 dividers (9 read); traces MK01395, MK01397, MX00145, MX00146 +20",
      "start": [
@@ -1099,7 +1240,7 @@
      ]
     },
     {
-     "id": "P06-R7",
+     "id": "P07-R7",
      "site": "S13",
      "evidence": "NGII 34702020 dividers (9 read); traces MK01395, MK01397, MX00145, MX00146 +20",
      "start": [
@@ -1158,7 +1299,7 @@
      ]
     },
     {
-     "id": "P06-R9",
+     "id": "P07-R9",
      "site": "S13",
      "evidence": "NGII 34702020 dividers (6 read); traces MK01395, MK01397, MX00145, MX00146 +20",
      "start": [
@@ -1205,7 +1346,7 @@
      ]
     },
     {
-     "id": "P06-R10",
+     "id": "P07-R10",
      "site": "S13",
      "evidence": "NGII 34702020 dividers (3 read); traces MK01395, MK01397, MX00145, MX00146 +20",
      "start": [
@@ -1241,7 +1382,7 @@
      "trimmedBays": 1
     },
     {
-     "id": "P06-R11",
+     "id": "P07-R11",
      "site": "S23",
      "evidence": "NGII 34702020 dividers (6 read); traces MK01398, MK01399, MX01618",
      "start": [
@@ -1288,7 +1429,7 @@
      ]
     },
     {
-     "id": "P06-R12",
+     "id": "P07-R12",
      "site": "S13",
      "evidence": "NGII 34702020 dividers (3 read); traces MK01395, MK01397, MX00145, MX00146 +20",
      "start": [
@@ -1323,7 +1464,7 @@
      ]
     },
     {
-     "id": "P06-R13",
+     "id": "P07-R13",
      "site": "S13",
      "evidence": "NGII 34702020 dividers (3 read); traces MK01395, MK01397, MX00145, MX00146 +20",
      "start": [
@@ -1358,7 +1499,7 @@
      ]
     },
     {
-     "id": "P06-R14",
+     "id": "P07-R14",
      "site": "S13",
      "evidence": "NGII 34702020 dividers (3 read); traces MK01395, MK01397, MX00145, MX00146 +20",
      "start": [
@@ -1393,7 +1534,7 @@
      ]
     },
     {
-     "id": "P06-R15",
+     "id": "P07-R15",
      "site": "S13",
      "evidence": "NGII 34702020 dividers (3 read); traces MK01395, MK01397, MX00145, MX00146 +20",
      "start": [
@@ -1432,7 +1573,7 @@
    ]
   },
   {
-   "id": "P07",
+   "id": "P08",
    "ring": [
     [
      127.47924332,
@@ -1475,7 +1616,7 @@
    "photoAccessible": 1,
    "rows": [
     {
-     "id": "P07-R1",
+     "id": "P08-R1",
      "site": "S24",
      "evidence": "NGII 34702020 dividers (3 read); traces MX00231, MX01310, MX01311",
      "start": [
@@ -1514,123 +1655,119 @@
    ]
   },
   {
-   "id": "P08",
+   "id": "P09",
    "ring": [
     [
-     127.48282172,
-     34.97030868
+     127.48279297,
+     34.97031467
     ],
     [
-     127.48282214,
-     34.97030999
+     127.48279339,
+     34.97031598
     ],
     [
-     127.48283646,
-     34.97035395
+     127.48280813,
+     34.97036125
     ],
     [
-     127.48283688,
-     34.97035526
+     127.4828147,
+     34.97036125
     ],
     [
-     127.48284345,
-     34.97035526
+     127.48313159,
+     34.97029134
     ],
     [
-     127.48313168,
-     34.97029168
+     127.48313159,
+     34.97028593
     ],
     [
-     127.48313168,
-     34.97028627
+     127.48311643,
+     34.97023935
     ],
     [
-     127.48313126,
-     34.97028496
+     127.48310986,
+     34.97023935
     ],
     [
-     127.48311651,
-     34.97023969
-    ],
-    [
-     127.48310994,
-     34.97023969
-    ],
-    [
-     127.48282172,
-     34.97030327
+     127.48279297,
+     34.97030926
     ]
    ],
-   "photoStalls": 10,
+   "photoStalls": 11,
    "photoAccessible": 0,
    "rows": [
     {
-     "id": "P08-R1",
-     "site": "S91",
-     "evidence": "NGII 34702020 dividers (10 read); traces B7-south-facade",
+     "id": "P09-R1",
+     "site": "S93",
+     "evidence": "NGII 34702020 dividers (11 read); traces lot-P09-recheck",
      "start": [
-      127.4831271,
-      34.97028856
+      127.48312711,
+      34.9702882
      ],
      "end": [
-      127.48284092,
-      34.97035169
+      127.48281486,
+      34.97035709
      ],
      "depthBearing": 195,
-     "photoBays": 10,
-     "photoPitchM": 2.712,
+     "photoBays": 11,
+     "photoPitchM": 2.709,
      "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5.2,
      "frontBackLines": true,
-     "dividerRmsCm": 1.3,
+     "dividerRmsCm": 8.6,
      "accessible": [],
      "photoDividers": [
       [
-       127.4831271,
-       34.97028856
+       127.48312711,
+       34.9702882
       ],
       [
        127.48309839,
-       34.97029489
+       34.97029454
       ],
       [
-       127.48304127,
-       34.97030749
+       127.48304119,
+       34.97030716
       ],
       [
-       127.48301258,
-       34.97031382
+       127.48301248,
+       34.97031349
       ],
       [
-       127.48298407,
-       34.97032011
+       127.48298386,
+       34.97031981
       ],
       [
-       127.48295573,
-       34.97032636
+       127.48295559,
+       34.97032604
       ],
       [
-       127.48292707,
-       34.97033269
+       127.482927,
+       34.97033235
       ],
       [
-       127.48289837,
-       34.97033902
+       127.48289818,
+       34.97033871
       ],
       [
-       127.48286959,
-       34.97034537
+       127.48286933,
+       34.97034508
       ],
       [
-       127.48284092,
-       34.97035169
+       127.48284068,
+       34.9703514
+      ],
+      [
+       127.48281486,
+       34.97035709
       ]
      ]
     }
    ]
   },
   {
-   "id": "P09",
+   "id": "P10",
    "ring": [
     [
      127.47768645,
@@ -1681,7 +1818,7 @@
    "photoAccessible": 0,
    "rows": [
     {
-     "id": "P09-R1",
+     "id": "P10-R1",
      "site": "S17",
      "evidence": "NGII 34702020 dividers (3 read); traces MX00218, MX00219, MX00220, MX00222 +15",
      "start": [
@@ -1718,7 +1855,7 @@
    ]
   },
   {
-   "id": "P10",
+   "id": "P11",
    "ring": [
     [
      127.47782841,
@@ -1757,7 +1894,7 @@
    "photoAccessible": 0,
    "rows": [
     {
-     "id": "P10-R1",
+     "id": "P11-R1",
      "site": "S22",
      "evidence": "NGII 34702020 dividers (4 read); traces MK00820, MK00822, MX00224, MX00225 +2",
      "start": [
@@ -1798,7 +1935,7 @@
    ]
   },
   {
-   "id": "P11",
+   "id": "P12",
    "ring": [
     [
      127.47951457,
@@ -1853,7 +1990,7 @@
    "photoAccessible": 0,
    "rows": [
     {
-     "id": "P11-R1",
+     "id": "P12-R1",
      "site": "S25",
      "evidence": "NGII 34702020 dividers (3 read); traces MK01400, MK01402, MX00255, MX01649 +1",
      "start": [
@@ -1888,7 +2025,7 @@
      ]
     },
     {
-     "id": "P11-R2",
+     "id": "P12-R2",
      "site": "S25",
      "evidence": "NGII 34702020 dividers (5 read); traces MK01400, MK01402, MX00255, MX01649 +1",
      "start": [
@@ -1933,7 +2070,7 @@
    ]
   },
   {
-   "id": "P12",
+   "id": "P13",
    "ring": [
     [
      127.48280551,
@@ -1992,7 +2129,7 @@
    "photoAccessible": 0,
    "rows": [
     {
-     "id": "P12-R1",
+     "id": "P13-R1",
      "site": "S28",
      "evidence": "NGII 34702020 dividers (15 read); traces MX00282, MX00283, MX00284, MX00345 +3",
      "start": [
@@ -2075,7 +2212,7 @@
      ]
     },
     {
-     "id": "P12-R2",
+     "id": "P13-R2",
      "site": "S28",
      "evidence": "NGII 34702020 dividers (15 read); traces MX00282, MX00283, MX00284, MX00345 +3",
      "start": [
@@ -2160,7 +2297,7 @@
    ]
   },
   {
-   "id": "P13",
+   "id": "P14",
    "ring": [
     [
      127.48063635,
@@ -2199,7 +2336,7 @@
    "photoAccessible": 0,
    "rows": [
     {
-     "id": "P13-R1",
+     "id": "P14-R1",
      "site": "S29",
      "evidence": "NGII 34702020 dividers (6 read); traces MX00258, MX00259, MX00260, MX00261 +2",
      "start": [
@@ -2248,7 +2385,7 @@
    ]
   },
   {
-   "id": "P14",
+   "id": "P15",
    "ring": [
     [
      127.48272561,
@@ -2319,7 +2456,7 @@
    "photoAccessible": 0,
    "rows": [
     {
-     "id": "P14-R1",
+     "id": "P15-R1",
      "site": "S40",
      "evidence": "NGII 34702020 dividers (11 read); traces MK01406, MK01407, MK01408, MK01409 +25",
      "start": [
@@ -2386,7 +2523,7 @@
      ]
     },
     {
-     "id": "P14-R2",
+     "id": "P15-R2",
      "site": "S40",
      "evidence": "NGII 34702020 dividers (4 read); traces MK01406, MK01407, MK01408, MK01409 +25",
      "start": [
@@ -2427,7 +2564,7 @@
    ]
   },
   {
-   "id": "P15",
+   "id": "P16",
    "ring": [
     [
      127.48321559,
@@ -2478,7 +2615,7 @@
    "photoAccessible": 0,
    "rows": [
     {
-     "id": "P15-R1",
+     "id": "P16-R1",
      "site": "S40",
      "evidence": "NGII 34702020 dividers (3 read); traces MK01406, MK01407, MK01408, MK01409 +25",
      "start": [
@@ -2515,7 +2652,7 @@
    ]
   },
   {
-   "id": "P16",
+   "id": "P17",
    "ring": [
     [
      127.48292776,
@@ -2566,7 +2703,7 @@
    "photoAccessible": 0,
    "rows": [
     {
-     "id": "P16-R1",
+     "id": "P17-R1",
      "site": "S36",
      "evidence": "NGII 34702020 dividers (4 read); traces MX00347, MX01665",
      "start": [
@@ -2601,90 +2738,6 @@
       [
        127.48294288,
        34.96974158
-      ]
-     ]
-    }
-   ]
-  },
-  {
-   "id": "P17",
-   "ring": [
-    [
-     127.47867786,
-     34.96963439
-    ],
-    [
-     127.47868775,
-     34.96968055
-    ],
-    [
-     127.47868803,
-     34.96968188
-    ],
-    [
-     127.4786946,
-     34.96968188
-    ],
-    [
-     127.47875273,
-     34.96967344
-    ],
-    [
-     127.47875273,
-     34.96966803
-    ],
-    [
-     127.47874284,
-     34.96962187
-    ],
-    [
-     127.47874255,
-     34.96962054
-    ],
-    [
-     127.47873598,
-     34.96962054
-    ],
-    [
-     127.47867786,
-     34.96962898
-    ]
-   ],
-   "photoStalls": 2,
-   "photoAccessible": 0,
-   "rows": [
-    {
-     "id": "P17-R1",
-     "site": "S38",
-     "evidence": "NGII 34702020 dividers (3 read); traces MX00303",
-     "start": [
-      127.47874849,
-      34.96967019
-     ],
-     "end": [
-      127.47869226,
-      34.96967835
-     ],
-     "depthBearing": 190,
-     "photoBays": 2,
-     "photoPitchM": 2.621,
-     "photoAccessiblePitchM": 3.4,
-     "photoDepthM": 5.1,
-     "frontBackLines": false,
-     "dividerRmsCm": 2,
-     "accessible": [],
-     "photoDividers": [
-      [
-       127.47874849,
-       34.96967019
-      ],
-      [
-       127.47872022,
-       34.96967429
-      ],
-      [
-       127.47869226,
-       34.96967835
       ]
      ]
     }
@@ -2796,6 +2849,129 @@
    "id": "P19",
    "ring": [
     [
+     127.47867786,
+     34.96963439
+    ],
+    [
+     127.47868775,
+     34.96968055
+    ],
+    [
+     127.47868803,
+     34.96968188
+    ],
+    [
+     127.4786946,
+     34.96968188
+    ],
+    [
+     127.47875273,
+     34.96967344
+    ],
+    [
+     127.47883129,
+     34.96957745
+    ],
+    [
+     127.47883129,
+     34.96957204
+    ],
+    [
+     127.4787833,
+     34.96954438
+    ],
+    [
+     127.47877673,
+     34.96954438
+    ],
+    [
+     127.47867786,
+     34.96962898
+    ]
+   ],
+   "photoStalls": 5,
+   "photoAccessible": 0,
+   "rows": [
+    {
+     "id": "P19-R1",
+     "site": "S38",
+     "evidence": "NGII 34702020 dividers (3 read); traces MX00303",
+     "start": [
+      127.47874849,
+      34.96967019
+     ],
+     "end": [
+      127.47869226,
+      34.96967835
+     ],
+     "depthBearing": 190,
+     "photoBays": 2,
+     "photoPitchM": 2.621,
+     "photoAccessiblePitchM": 3.4,
+     "photoDepthM": 5.1,
+     "frontBackLines": false,
+     "dividerRmsCm": 2,
+     "accessible": [],
+     "photoDividers": [
+      [
+       127.47874849,
+       34.96967019
+      ],
+      [
+       127.47872022,
+       34.96967429
+      ],
+      [
+       127.47869226,
+       34.96967835
+      ]
+     ]
+    },
+    {
+     "id": "P19-R2",
+     "site": "S95",
+     "evidence": "NGII 34702020 dividers (4 read); traces lot-P17-recheck",
+     "start": [
+      127.47882649,
+      34.96957535
+     ],
+     "end": [
+      127.47877825,
+      34.96963206
+     ],
+     "depthBearing": 235,
+     "photoBays": 3,
+     "photoPitchM": 2.556,
+     "photoAccessiblePitchM": 3.4,
+     "photoDepthM": 4.7,
+     "frontBackLines": true,
+     "dividerRmsCm": 1.9,
+     "accessible": [],
+     "photoDividers": [
+      [
+       127.47882649,
+       34.96957535
+      ],
+      [
+       127.47881053,
+       34.96959411
+      ],
+      [
+       127.4787943,
+       34.96961319
+      ],
+      [
+       127.47877825,
+       34.96963206
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "P20",
+   "ring": [
+    [
      127.48243616,
      34.96956216
     ],
@@ -2844,7 +3020,7 @@
    "photoAccessible": 1,
    "rows": [
     {
-     "id": "P19-R1",
+     "id": "P20-R1",
      "site": "S40",
      "evidence": "NGII 34702020 dividers (6 read); traces MK01406, MK01407, MK01408, MK01409 +25",
      "start": [
@@ -2895,7 +3071,7 @@
    ]
   },
   {
-   "id": "P20",
+   "id": "P21",
    "ring": [
     [
      127.47615429,
@@ -2938,7 +3114,7 @@
    "photoAccessible": 0,
    "rows": [
     {
-     "id": "P20-R1",
+     "id": "P21-R1",
      "site": "S41",
      "evidence": "NGII 34702020 dividers (10 read); traces MX00292, MX00294, MX00295",
      "start": [
@@ -3003,8 +3179,12 @@
    ]
   },
   {
-   "id": "P21",
+   "id": "P22",
    "ring": [
+    [
+     127.47812633,
+     34.96921314
+    ],
     [
      127.47818924,
      34.96937119
@@ -3026,39 +3206,39 @@
      34.96939742
     ],
     [
-     127.4783507,
-     34.96929393
+     127.4783749,
+     34.96930286
     ],
     [
-     127.4783507,
-     34.96928852
+     127.4783749,
+     34.96929745
     ],
     [
-     127.47826352,
-     34.96922613
+     127.47816815,
+     34.96916922
     ],
     [
-     127.47825695,
-     34.96922613
+     127.47816158,
+     34.96916922
     ],
     [
-     127.47825587,
-     34.96922715
+     127.4781606,
+     34.9691703
     ],
     [
-     127.47821851,
-     34.96926252
+     127.47812732,
+     34.96920666
     ],
     [
-     127.47818924,
-     34.96936579
+     127.47812633,
+     34.96920773
     ]
    ],
-   "photoStalls": 8,
+   "photoStalls": 13,
    "photoAccessible": 0,
    "rows": [
     {
-     "id": "P21-R1",
+     "id": "P22-R1",
      "site": "S44",
      "evidence": "NGII 34702020 dividers (5 read); traces MX00304, MX00362, MX00370, MX00371 +9",
      "start": [
@@ -3101,53 +3281,60 @@
      ]
     },
     {
-     "id": "P21-R2",
-     "site": "S44",
-     "evidence": "NGII 34702020 dividers (5 read); traces MX00304, MX00362, MX00370, MX00371 +9",
+     "id": "P22-R2",
+     "site": "S96",
+     "evidence": "NGII 34702020 dividers (7 read); traces lot-P21-recheck",
      "start": [
-      127.4783088,
-      34.96932659
+      127.47833614,
+      34.96933769
      ],
      "end": [
-      127.47822318,
-      34.96926532
+      127.47813077,
+      34.96921031
      ],
-     "depthBearing": 139,
-     "photoBays": 4,
-     "photoPitchM": 2.581,
+     "depthBearing": 143,
+     "photoBays": 9,
+     "photoPitchM": 2.606,
      "photoAccessiblePitchM": 3.4,
-     "photoDepthM": 5,
-     "frontBackLines": false,
-     "partialDepth": true,
-     "dividerRmsCm": 2.5,
+     "photoDepthM": 4.6,
+     "frontBackLines": true,
+     "dividerRmsCm": 0.8,
      "accessible": [],
      "photoDividers": [
       [
-       127.4783088,
-       34.96932659
+       127.47833614,
+       34.96933769
       ],
       [
-       127.47828747,
-       34.96931133
+       127.47831332,
+       34.96932354
       ],
       [
-       127.47826574,
-       34.96929577
+       127.47829041,
+       34.96930933
       ],
       [
-       127.47824444,
-       34.96928054
+       127.47826772,
+       34.96929525
       ],
       [
-       127.47822318,
-       34.96926532
+       127.47824498,
+       34.96928115
+      ],
+      [
+       127.47822219,
+       34.96926701
+      ],
+      [
+       127.47813077,
+       34.96921031
       ]
      ]
     }
    ]
   },
   {
-   "id": "P22",
+   "id": "P23",
    "ring": [
     [
      127.47816731,
@@ -3198,7 +3385,7 @@
    "photoAccessible": 3,
    "rows": [
     {
-     "id": "P22-R1",
+     "id": "P23-R1",
      "site": "S47",
      "evidence": "NGII 34702020 dividers (13 read); traces MX00365, MX00366, MX00367, MX00377 +32",
      "start": [
@@ -3276,7 +3463,7 @@
      ]
     },
     {
-     "id": "P22-R2",
+     "id": "P23-R2",
      "site": "S47",
      "evidence": "NGII 34702020 dividers (20 read); traces MX00365, MX00366, MX00367, MX00377 +32",
      "start": [
@@ -3383,7 +3570,7 @@
    ]
   },
   {
-   "id": "P23",
+   "id": "P24",
    "ring": [
     [
      127.47797749,
@@ -3430,7 +3617,7 @@
    "photoAccessible": 0,
    "rows": [
     {
-     "id": "P23-R1",
+     "id": "P24-R1",
      "site": "S49",
      "evidence": "NGII 34702020 dividers (8 read); traces MX00363, MX00364, MX00544, MX00545",
      "start": [
@@ -3487,7 +3674,7 @@
    ]
   },
   {
-   "id": "P24",
+   "id": "P25",
    "ring": [
     [
      127.47714949,
@@ -3542,7 +3729,7 @@
    "photoAccessible": 0,
    "rows": [
     {
-     "id": "P24-R1",
+     "id": "P25-R1",
      "site": "S48",
      "evidence": "NGII 34702020 dividers (10 read); traces MX00358, MX00538, MX00539",
      "start": [
@@ -3605,7 +3792,7 @@
      ]
     },
     {
-     "id": "P24-R2",
+     "id": "P25-R2",
      "site": "S48",
      "evidence": "NGII 34702020 dividers (6 read); traces MX00358, MX00538, MX00539",
      "start": [
@@ -3655,7 +3842,7 @@
    ]
   },
   {
-   "id": "P25",
+   "id": "P26",
    "ring": [
     [
      127.48093432,
@@ -3702,7 +3889,7 @@
    "photoAccessible": 3,
    "rows": [
     {
-     "id": "P25-R1",
+     "id": "P26-R1",
      "site": "S52",
      "evidence": "NGII 34702020 dividers (8 read); traces MX00571, MX00572, MX00573, MX00574 +15",
      "start": [
@@ -3759,7 +3946,7 @@
      ]
     },
     {
-     "id": "P25-R2",
+     "id": "P26-R2",
      "site": "S52",
      "evidence": "NGII 34702020 dividers (12 read); traces MX00571, MX00572, MX00573, MX00574 +15",
      "start": [
@@ -3835,7 +4022,7 @@
    ]
   },
   {
-   "id": "P26",
+   "id": "P27",
    "ring": [
     [
      127.47687984,
@@ -3882,7 +4069,7 @@
    "photoAccessible": 0,
    "rows": [
     {
-     "id": "P26-R1",
+     "id": "P27-R1",
      "site": "S53",
      "evidence": "NGII 34702020 dividers (6 read); traces MX00532, MX00533, MX00534, MX00540",
      "start": [
@@ -3931,7 +4118,7 @@
    ]
   },
   {
-   "id": "P27",
+   "id": "P28",
    "ring": [
     [
      127.47741976,
@@ -3978,7 +4165,7 @@
    "photoAccessible": 0,
    "rows": [
     {
-     "id": "P27-R1",
+     "id": "P28-R1",
      "site": "S54",
      "evidence": "NGII 34702020 dividers (3 read); traces MX00535, MX00660, MX01344, MX01345 +5",
      "start": [
@@ -4015,93 +4202,109 @@
    ]
   },
   {
-   "id": "P28",
+   "id": "P29",
    "ring": [
     [
-     127.47837617,
-     34.96844405
+     127.47829031,
+     34.96846546
     ],
     [
-     127.47837631,
-     34.9684454
+     127.47830249,
+     34.96851263
     ],
     [
-     127.47838127,
-     34.96849209
+     127.47830906,
+     34.96851263
     ],
     [
-     127.47838784,
-     34.96849209
+     127.47848525,
+     34.9684818
     ],
     [
-     127.47848329,
-     34.96848521
+     127.47848525,
+     34.96847639
     ],
     [
-     127.47848329,
-     34.9684798
+     127.47848491,
+     34.96847507
     ],
     [
-     127.47847818,
-     34.96843176
+     127.47847341,
+     34.96843054
     ],
     [
-     127.47847161,
-     34.96843176
+     127.47847307,
+     34.96842922
     ],
     [
-     127.47837617,
-     34.96843864
+     127.4784665,
+     34.96842922
+    ],
+    [
+     127.47829031,
+     34.96846005
     ]
    ],
-   "photoStalls": 3,
+   "photoStalls": 6,
    "photoAccessible": 1,
    "rows": [
     {
-     "id": "P28-R1",
-     "site": "S55",
-     "evidence": "NGII 34702020 dividers (4 read); traces MX00547, MX01357, MX01358, MX01359",
+     "id": "P29-R1",
+     "site": "S97",
+     "evidence": "NGII 34702020 dividers (7 read); traces lot-P28-recheck",
      "start": [
-      127.47847803,
-      34.96848197
+      127.47848097,
+      34.96847858
      ],
      "end": [
-      127.4783872,
-      34.96848852
+      127.47830702,
+      34.96850902
      ],
-     "depthBearing": 185,
-     "photoBays": 3,
-     "photoPitchM": 2.647,
-     "photoAccessiblePitchM": 3.2,
-     "photoDepthM": 4.9,
+     "depthBearing": 192,
+     "photoBays": 6,
+     "photoPitchM": 2.588,
+     "photoAccessiblePitchM": 3.298,
+     "photoDepthM": 5.3,
      "frontBackLines": false,
-     "dividerRmsCm": 9.7,
+     "dividerRmsCm": 3.8,
      "accessible": [
       0
      ],
      "photoDividers": [
       [
-       127.47847803,
-       34.96848197
+       127.47848097,
+       34.96847858
       ],
       [
-       127.47844312,
-       34.96848449
+       127.47844565,
+       34.96848477
       ],
       [
-       127.47841424,
-       34.96848657
+       127.47841784,
+       34.96848963
       ],
       [
-       127.4783872,
-       34.96848852
+       127.47838933,
+       34.96849462
+      ],
+      [
+       127.47836209,
+       34.96849939
+      ],
+      [
+       127.47833437,
+       34.96850424
+      ],
+      [
+       127.47830702,
+       34.96850902
       ]
      ]
     }
    ]
   },
   {
-   "id": "P29",
+   "id": "P30",
    "ring": [
     [
      127.48057943,
@@ -4148,7 +4351,7 @@
    "photoAccessible": 1,
    "rows": [
     {
-     "id": "P29-R1",
+     "id": "P30-R1",
      "site": "S56",
      "evidence": "NGII 34702020 dividers (11 read); traces MK01418, MX00692, MX00695, MX01375 +3",
      "start": [
@@ -4219,7 +4422,7 @@
    ]
   },
   {
-   "id": "P30",
+   "id": "P31",
    "ring": [
     [
      127.48127847,
@@ -4258,7 +4461,7 @@
    "photoAccessible": 0,
    "rows": [
     {
-     "id": "P30-R1",
+     "id": "P31-R1",
      "site": "S57",
      "evidence": "NGII 34702020 dividers (9 read); traces MX00579, MX00700, MX01449, MX01690 +5",
      "start": [
@@ -4319,11 +4522,11 @@
    ]
   },
   {
-   "id": "P31",
+   "id": "P32",
    "ring": [
     [
-     127.47924094,
-     34.96822416
+     127.47891991,
+     34.96807998
     ],
     [
      127.47930954,
@@ -4354,23 +4557,31 @@
      34.96818075
     ],
     [
-     127.47927701,
-     34.96818075
+     127.47923572,
+     34.96815015
     ],
     [
-     127.47924195,
-     34.96821769
+     127.47895307,
+     34.9680316
     ],
     [
-     127.47924094,
-     34.96821875
+     127.4789465,
+     34.9680316
+    ],
+    [
+     127.47892065,
+     34.96807337
+    ],
+    [
+     127.47891991,
+     34.96807457
     ]
    ],
-   "photoStalls": 3,
+   "photoStalls": 14,
    "photoAccessible": 0,
    "rows": [
     {
-     "id": "P31-R1",
+     "id": "P32-R1",
      "site": "S58",
      "evidence": "NGII 34702020 dividers (4 read); traces MX00677, MX00678, MX01696, MX01697",
      "start": [
@@ -4407,11 +4618,74 @@
        34.96822134
       ]
      ]
+    },
+    {
+     "id": "P32-R2",
+     "site": "S99",
+     "evidence": "NGII 34702020 dividers (10 read); traces lot-P33-recheck",
+     "start": [
+      127.47920191,
+      34.96819342
+     ],
+     "end": [
+      127.47892406,
+      34.96807688
+     ],
+     "depthBearing": 153,
+     "photoBays": 11,
+     "photoPitchM": 2.615,
+     "photoAccessiblePitchM": 3.4,
+     "photoDepthM": 4.4,
+     "frontBackLines": false,
+     "dividerRmsCm": 4.1,
+     "accessible": [],
+     "photoDividers": [
+      [
+       127.47920191,
+       34.96819342
+      ],
+      [
+       127.47917679,
+       34.96818288
+      ],
+      [
+       127.47910286,
+       34.96815187
+      ],
+      [
+       127.47907767,
+       34.96814131
+      ],
+      [
+       127.47905217,
+       34.96813061
+      ],
+      [
+       127.47902655,
+       34.96811987
+      ],
+      [
+       127.47900115,
+       34.96810921
+      ],
+      [
+       127.47897571,
+       34.96809855
+      ],
+      [
+       127.47895018,
+       34.96808784
+      ],
+      [
+       127.47892406,
+       34.96807688
+      ]
+     ]
     }
    ]
   },
   {
-   "id": "P32",
+   "id": "P33",
    "ring": [
     [
      127.47707771,
@@ -4458,7 +4732,7 @@
    "photoAccessible": 0,
    "rows": [
     {
-     "id": "P32-R1",
+     "id": "P33-R1",
      "site": "S59",
      "evidence": "NGII 34702020 dividers (9 read); traces MX00662",
      "start": [
@@ -4513,114 +4787,6 @@
       [
        127.47709163,
        34.96824242
-      ]
-     ]
-    }
-   ]
-  },
-  {
-   "id": "P33",
-   "ring": [
-    [
-     127.47892957,
-     34.96806167
-    ],
-    [
-     127.47908792,
-     34.9681635
-    ],
-    [
-     127.47909449,
-     34.9681635
-    ],
-    [
-     127.4790955,
-     34.96816243
-    ],
-    [
-     127.47912954,
-     34.96812656
-    ],
-    [
-     127.47913055,
-     34.9681255
-    ],
-    [
-     127.47913055,
-     34.96812009
-    ],
-    [
-     127.47897221,
-     34.96801826
-    ],
-    [
-     127.47896564,
-     34.96801826
-    ],
-    [
-     127.47893058,
-     34.9680552
-    ],
-    [
-     127.47892957,
-     34.96805626
-    ]
-   ],
-   "photoStalls": 7,
-   "photoAccessible": 0,
-   "rows": [
-    {
-     "id": "P33-R1",
-     "site": "S58",
-     "evidence": "NGII 34702020 dividers (8 read); traces MX00677, MX00678, MX01696, MX01697",
-     "start": [
-      127.47909105,
-      34.96815984
-     ],
-     "end": [
-      127.47893524,
-      34.96805964
-     ],
-     "depthBearing": 142,
-     "photoBays": 7,
-     "photoPitchM": 2.595,
-     "photoAccessiblePitchM": 3.4,
-     "photoDepthM": 4.4,
-     "frontBackLines": false,
-     "dividerRmsCm": 5.1,
-     "accessible": [],
-     "photoDividers": [
-      [
-       127.47909105,
-       34.96815984
-      ],
-      [
-       127.47906866,
-       34.96814544
-      ],
-      [
-       127.47904626,
-       34.96813103
-      ],
-      [
-       127.47902367,
-       34.9681165
-      ],
-      [
-       127.47900132,
-       34.96810213
-      ],
-      [
-       127.47897888,
-       34.9680877
-      ],
-      [
-       127.47895649,
-       34.9680733
-      ],
-      [
-       127.47893524,
-       34.96805964
       ]
      ]
     }

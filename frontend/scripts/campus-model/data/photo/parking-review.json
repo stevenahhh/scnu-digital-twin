@@ -23,6 +23,282 @@
    ],
    "reason": "stall row along the B7 south facade (sunlit dividers on the photo, partly under the building overhang); no traced piece there, so no search area before",
    "alone": true
+  },
+  {
+   "id": "lot-P05-recheck",
+   "ring": [
+    [
+     127.47717052,
+     34.97058379
+    ],
+    [
+     127.47749321,
+     34.97058379
+    ],
+    [
+     127.47749321,
+     34.97023967
+    ],
+    [
+     127.47717052,
+     34.97023967
+    ]
+   ],
+   "reason": "photo stall-line paint around this lot is under 60 % covered by the modelled rows (markings audit stall-paint, P05 at the 2026-10-28 bake): the lot and 8 m around it searched again for rows the traces miss",
+   "alone": true
+  },
+  {
+   "id": "lot-P09-recheck",
+   "ring": [
+    [
+     127.48273413,
+     34.97042738
+    ],
+    [
+     127.48321929,
+     34.97042735
+    ],
+    [
+     127.48321927,
+     34.97016757
+    ],
+    [
+     127.48273411,
+     34.9701676
+    ]
+   ],
+   "reason": "photo stall-line paint around this lot is under 60 % covered by the modelled rows (markings audit stall-paint, P09 at the 2026-10-28 bake): the lot and 8 m around it searched again for rows the traces miss",
+   "alone": true
+  },
+  {
+   "id": "lot-P14-recheck",
+   "ring": [
+    [
+     127.48263803,
+     34.96997114
+    ],
+    [
+     127.48322093,
+     34.96997111
+    ],
+    [
+     127.48322091,
+     34.96964655
+    ],
+    [
+     127.482638,
+     34.96964658
+    ]
+   ],
+   "reason": "photo stall-line paint around this lot is under 60 % covered by the modelled rows (markings audit stall-paint, P14 at the 2026-10-28 bake): the lot and 8 m around it searched again for rows the traces miss",
+   "alone": true
+  },
+  {
+   "id": "lot-P17-recheck",
+   "ring": [
+    [
+     127.47859026,
+     34.96975399
+    ],
+    [
+     127.47884033,
+     34.96975399
+    ],
+    [
+     127.47884033,
+     34.96954843
+    ],
+    [
+     127.47859026,
+     34.96954843
+    ]
+   ],
+   "reason": "photo stall-line paint around this lot is under 60 % covered by the modelled rows (markings audit stall-paint, P17 at the 2026-10-28 bake): the lot and 8 m around it searched again for rows the traces miss",
+   "alone": true
+  },
+  {
+   "id": "lot-P21-recheck",
+   "ring": [
+    [
+     127.47810164,
+     34.96950593
+    ],
+    [
+     127.47843831,
+     34.96950593
+    ],
+    [
+     127.4784383,
+     34.96915402
+    ],
+    [
+     127.47810163,
+     34.96915402
+    ]
+   ],
+   "reason": "photo stall-line paint around this lot is under 60 % covered by the modelled rows (markings audit stall-paint, P21 at the 2026-10-28 bake): the lot and 8 m around it searched again for rows the traces miss",
+   "alone": true
+  },
+  {
+   "id": "lot-P28-recheck",
+   "ring": [
+    [
+     127.47828857,
+     34.9685642
+    ],
+    [
+     127.47857089,
+     34.9685642
+    ],
+    [
+     127.47857089,
+     34.96835965
+    ],
+    [
+     127.47828857,
+     34.96835965
+    ]
+   ],
+   "reason": "photo stall-line paint around this lot is under 60 % covered by the modelled rows (markings audit stall-paint, P28 at the 2026-10-28 bake): the lot and 8 m around it searched again for rows the traces miss",
+   "alone": true
+  },
+  {
+   "id": "lot-P32-recheck",
+   "ring": [
+    [
+     127.47699011,
+     34.96831811
+    ],
+    [
+     127.47740762,
+     34.96831811
+    ],
+    [
+     127.47740762,
+     34.9680913
+    ],
+    [
+     127.47699011,
+     34.9680913
+    ]
+   ],
+   "reason": "photo stall-line paint around this lot is under 60 % covered by the modelled rows (markings audit stall-paint, P32 at the 2026-10-28 bake): the lot and 8 m around it searched again for rows the traces miss",
+   "alone": true
+  },
+  {
+   "id": "lot-P33-recheck",
+   "ring": [
+    [
+     127.47884197,
+     34.96823562
+    ],
+    [
+     127.47921815,
+     34.96823561
+    ],
+    [
+     127.47921814,
+     34.96794614
+    ],
+    [
+     127.47884197,
+     34.96794615
+    ]
+   ],
+   "reason": "photo stall-line paint around this lot is under 60 % covered by the modelled rows (markings audit stall-paint, P33 at the 2026-10-28 bake): the lot and 8 m around it searched again for rows the traces miss",
+   "alone": true
+  },
+  {
+   "id": "lot-P35-recheck",
+   "ring": [
+    [
+     127.47920381,
+     34.96813227
+    ],
+    [
+     127.47957087,
+     34.96813226
+    ],
+    [
+     127.47957085,
+     34.96786672
+    ],
+    [
+     127.47920381,
+     34.96786673
+    ]
+   ],
+   "reason": "photo stall-line paint around this lot is under 60 % covered by the modelled rows (markings audit stall-paint, P35 at the 2026-10-28 bake): the lot and 8 m around it searched again for rows the traces miss",
+   "alone": true
+  },
+  {
+   "id": "lot-P38-recheck",
+   "ring": [
+    [
+     127.47869721,
+     34.96756555
+    ],
+    [
+     127.47924219,
+     34.96756554
+    ],
+    [
+     127.47924218,
+     34.96720952
+    ],
+    [
+     127.4786972,
+     34.96720953
+    ]
+   ],
+   "reason": "photo stall-line paint around this lot is under 60 % covered by the modelled rows (markings audit stall-paint, P38 at the 2026-10-28 bake): the lot and 8 m around it searched again for rows the traces miss",
+   "alone": true
+  },
+  {
+   "id": "lot-P39-recheck",
+   "ring": [
+    [
+     127.47950943,
+     34.96712587
+    ],
+    [
+     127.47984089,
+     34.96712587
+    ],
+    [
+     127.47984088,
+     34.96689671
+    ],
+    [
+     127.47950943,
+     34.96689671
+    ]
+   ],
+   "reason": "photo stall-line paint around this lot is under 60 % covered by the modelled rows (markings audit stall-paint, P39 at the 2026-10-28 bake): the lot and 8 m around it searched again for rows the traces miss",
+   "alone": true
+  },
+  {
+   "id": "lot-P45-recheck",
+   "ring": [
+    [
+     127.48114147,
+     34.96640267
+    ],
+    [
+     127.48139553,
+     34.96640266
+    ],
+    [
+     127.48139551,
+     34.96619384
+    ],
+    [
+     127.48114145,
+     34.96619385
+    ]
+   ],
+   "reason": "photo stall-line paint around this lot is under 60 % covered by the modelled rows (markings audit stall-paint, P45 at the 2026-10-28 bake): the lot and 8 m around it searched again for rows the traces miss",
+   "alone": true
   }
  ],
  "rejectRows": [
@@ -97,30 +373,60 @@
    ],
    "row": "P18-R2",
    "reason": "one-bay \"row\" whose bay centre lies on the A003 sidewalk: paving joints read as dividers"
+  }
+ ],
+ "angledAreas": [
+  {
+   "id": "B4-north",
+   "ring": [
+    [
+     127.47789226,
+     34.97068924
+    ],
+    [
+     127.47822077,
+     34.97068923
+    ],
+    [
+     127.47822077,
+     34.97054501
+    ],
+    [
+     127.47789226,
+     34.97054502
+    ]
+   ],
+   "aisle": [
+    127.47805652,
+    34.97055403
+   ],
+   "reason": "7 angled (경사) stall frames along the B4 south facade, read by eye on the NGII sheet; the row is fitted from the paint in this area"
   },
   {
-   "near": [
-    127.47797065,
-    34.97065482
+   "id": "B4-south",
+   "ring": [
+    [
+     127.47789225,
+     34.9702746
+    ],
+    [
+     127.47810579,
+     34.9702746
+    ],
+    [
+     127.47810578,
+     34.97018446
+    ],
+    [
+     127.47789225,
+     34.97018446
+    ]
    ],
-   "row": "P04-R1",
-   "reason": "angled (경사) stalls in the photo: the perpendicular stall template does not fit them; left unmodelled (residual)"
-  },
-  {
-   "near": [
-    127.47788814,
-    34.97059433
+   "aisle": [
+    127.47799081,
+    34.97028361
    ],
-   "row": "P04-R2",
-   "reason": "angled (경사) stalls in the photo: the perpendicular stall template does not fit them; left unmodelled (residual)"
-  },
-  {
-   "near": [
-    127.47803421,
-    34.97024606
-   ],
-   "row": "P09-R1",
-   "reason": "angled (경사) stalls in the photo: the perpendicular stall template does not fit them; left unmodelled (residual)"
+   "reason": "5 angled (경사) stall frames at the B4 corner lot, read by eye on the NGII sheet; the row is fitted from the paint in this area"
   }
  ]
 }

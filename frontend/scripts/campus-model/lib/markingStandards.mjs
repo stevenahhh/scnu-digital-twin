@@ -57,6 +57,10 @@ export const TEMPLATES = Object.freeze({
   // ---- parking (523, PK)
   stall_normal: { kind: "stall", colour: "white", widthM: 2.5, depthM: 5.0, lineM: 0.15, source: { doc: "PK", page: "제3조 제1항 (일반형 2.5 x 5.0 m); M19 p80 (PDF p96) 직각주차 선폭 15~20 cm" }, code: "523" },
   stall_expanded: { kind: "stall", colour: "white", widthM: 2.6, depthM: 5.2, lineM: 0.15, source: { doc: "PK", page: "제3조 제1항 (확장형 2.6 x 5.2 m); M19 p80 (PDF p96) 선폭 15~20 cm" }, code: "523" },
+  // 경사주차 (523): the general stall (2.5 x 5.0 m, 0.15 m white lines) set at the 주차형식 angle of the row, 45 or 60 deg
+  // to the aisle, the angle fitted from the photo dividers
+  stall_angled_45: { kind: "stall", colour: "white", widthM: 2.5, depthM: 5.0, lineM: 0.15, angleDeg: 45, source: { doc: "M19", page: "p81 (PDF p97) 경사주차 그림 4-3: 백색실선 15~20 cm, 세로 500 cm; PK 제3조 제1항 일반형 2.5 x 5.0 m; PK 제6조 제1항 주차형식 45도 대향주차" }, code: "523" },
+  stall_angled_60: { kind: "stall", colour: "white", widthM: 2.5, depthM: 5.0, lineM: 0.15, angleDeg: 60, source: { doc: "M19", page: "p81 (PDF p97) 경사주차 그림 4-3: 백색실선 15~20 cm, 세로 500 cm; PK 제3조 제1항 일반형 2.5 x 5.0 m; PK 제6조 제1항 주차형식 60도 대향주차" }, code: "523" },
   stall_accessible: {
     kind: "stall", colour: "white", widthM: 3.3, depthM: 5.0, lineM: 0.15, symbol: { colour: "blue", squareM: 1.6, wheelchairM: 1.3 },
     source: { doc: "PK", page: "제3조 제1항 (장애인전용 3.3 x 5.0 m); 장애인등편의법 시행규칙 별표 1 (바닥 표시)" }, code: "523",

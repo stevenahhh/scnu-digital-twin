@@ -16,6 +16,50 @@ export const PARKING_LOTS_FILE = path.join(HERE, "..", "data", "photo", "parking
 export const EXPANDED_PITCH_M = 2.55;
 // the lot surface reaches LOT_SURFACE_MARGIN_M beyond the painted row
 export const LOT_SURFACE_MARGIN_M = 0.4;
+export const ANGLED_MIN_DEG = 75;
+
+// 경사주차 row: bays of the template width measured square to the dividers (pitch along the front line w / sin a),
+// the photo pitch used where wider, dividers at the template angle a to the front line, depth 5.0 m along them; the
+// front and back lines run along the row, the dividers stop clear of them (no overlapping strokes)
+function angledGeometry(row, start, vPhoto, deg) {
+  const t = TEMPLATES[`stall_angled_${deg}`];
+  const a = (deg * Math.PI) / 180;
+  const ab = (row.aisleBearing * Math.PI) / 180;
+  const u = [Math.sin(ab), -Math.cos(ab)];
+  const L = (row.photoBays * row.photoPitchM) / Math.sin(a);
+  let n = [-u[1], u[0]];
+  if (n[0] * vPhoto[0] + n[1] * vPhoto[1] < 0) n = scale(n, -1);
+  const along = Math.sign(u[0] * vPhoto[0] + u[1] * vPhoto[1]) || 1;
+  const vs = add(scale(u, along * Math.cos(a)), scale(n, Math.sin(a)));
+  const w = Math.max(t.widthM, Math.round((row.photoPitchM ?? 0) * 100) / 100); // the photo pitch is square to the dividers
+  const step = w / Math.sin(a);
+  const bays = row.photoBays;
+  const lw = t.lineM;
+  const h = t.depthM * Math.sin(a);
+  const photoAlong = (row.photoDividers ?? []).map((q) => { const d = sub(toM(q), start); return d[0] * u[0] + d[1] * u[1]; });
+  let s0 = (L - bays * step) / 2;
+  if (photoAlong.length) {
+    const offs = photoAlong.map((p) => { let best = Infinity; for (let k = 0; k <= bays; k += 1) { const d = p - (s0 + k * step); if (Math.abs(d) < Math.abs(best)) best = d; } return best; }).filter((d) => Math.abs(d) <= step / 2).sort((x, y) => x - y);
+    if (offs.length) s0 += offs[offs.length >> 1];
+  }
+  const P = (s, tn) => add(start, add(scale(u, s), scale(n, tn)));
+  const edges = Array.from({ length: bays + 1 }, (_, k) => s0 + k * step);
+  // the back line runs from the first divider's back end to the last one's
+  const back0 = edges[0] + (along * h) / Math.tan(a), backN = edges[bays] + (along * h) / Math.tan(a);
+  const band = (s1, s2, tn) => [P(Math.min(s1, s2) - lw / 2, tn - lw / 2), P(Math.max(s1, s2) + lw / 2, tn - lw / 2), P(Math.max(s1, s2) + lw / 2, tn + lw / 2), P(Math.min(s1, s2) - lw / 2, tn + lw / 2)];
+  const m = [-vs[1], vs[0]];
+  const trim = (lw / 2) * (1 + Math.cos(a)) / Math.sin(a);
+  const divider = (s) => { const o = P(s, 0); const p0 = add(o, scale(vs, trim)), p1 = add(o, scale(vs, t.depthM - trim)); return [add(p0, scale(m, lw / 2)), add(p1, scale(m, lw / 2)), add(p1, scale(m, -lw / 2)), add(p0, scale(m, -lw / 2))]; };
+  const rects = [
+    { part: "front", ring: band(edges[0], edges[bays], 0) },
+    { part: "back", ring: band(back0, backN, h), shared: row.backLine === false },
+    ...edges.map((s, k) => ({ part: "divider", k, ring: divider(s) })),
+  ];
+  const mg = LOT_SURFACE_MARGIN_M;
+  const surface = [P(Math.min(edges[0], back0) - mg, -mg), P(Math.max(edges[bays], backN) + mg, -mg), P(Math.max(edges[bays], backN) + mg, h + mg), P(Math.min(edges[0], back0) - mg, h + mg)];
+  const residual = photoAlong.length ? Math.max(...photoAlong.map((p) => Math.min(...edges.map((s) => Math.abs(p - s))))) : null;
+  return { template: `stall_angled_${deg}`, angleDeg: deg, photoAngleDeg: row.photoAngleDeg, pitch: w, u, v: vs, origin: P(edges[0], 0), widths: Array(bays).fill(w), depth: t.depthM, line: lw, rects, symbols: [], surface, photoResidualM: residual };
+}
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
 const add = (a, b) => [a[0] + b[0], a[1] + b[1]];
@@ -37,6 +81,9 @@ export function rowGeometry(row) {
   const start = add(toM(row.start), shift);
   const end = add(toM(row.end), shift);
   const u = scale(sub(end, start), 1 / norm(sub(end, start)));
+  // the divider direction against the row: square rows within ANGLED_MIN_DEG of 90 deg, else the 경사주차 template
+  // of the nearer statute angle (45 or 60 deg), the dividers turned to it on the photo's side
+  if (row.photoAngleDeg != null && row.photoAngleDeg < ANGLED_MIN_DEG) return angledGeometry(row, start, v, row.photoAngleDeg < 52.5 ? 45 : 60);
   const expanded = row.photoPitchM >= EXPANDED_PITCH_M;
   const tpl = expanded ? TEMPLATES.stall_expanded : TEMPLATES.stall_normal;
   const acc = TEMPLATES.stall_accessible;

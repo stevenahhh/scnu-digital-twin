@@ -23,6 +23,7 @@
 // photo ones (the photo pitch differs from the statute 2.5 m by a few centimetres per bay).
 //
 //   bun scripts/campus-model/bake/parking-rows.mjs [--site <id>]
+import { paintIn } from "../../qa/photoPaint.mjs";
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -50,6 +51,73 @@ const dot = (a, b) => a[0] * b[0] + a[1] * b[1];
 const norm = (a) => Math.hypot(a[0], a[1]);
 const median = (a) => { const s = [...a].sort((x, y) => x - y); return s[s.length >> 1]; };
 const toMetres = ([lon, lat]) => geoToModel(lon, lat).map((v) => v / U);
+// 경사주차 rows (review.angledAreas, each an area drawn by eye around a row of angled stalls and a point in its aisle):
+// the white paint in the area (qa/photoPaint.mjs, relaxed for the light lot surface) gives the two line directions
+// (the two sharpest local maxima of the projection histograms, 25 deg or more apart): the one along the area's long side is the aisle, the other
+// the dividers, and their angle is the photo angle; the divider peaks along the aisle give the bays and the pitch
+// square to the dividers; the front line is the paint's extreme on the aisle side.
+function angledRow(area) {
+  const ring = area.ring.map(toMetres);
+  const xs = ring.map((p) => p[0]), zs = ring.map((p) => p[1]);
+  const inside = ([x, z]) => { let c = false; for (let i = 0, j = ring.length - 1; i < ring.length; j = i, i += 1) { const [xi, zi] = ring[i], [xj, zj] = ring[j]; if ((zi > z) !== (zj > z) && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) c = !c; } return c; };
+  const px = paintIn([Math.min(...xs), Math.min(...zs), Math.max(...xs), Math.max(...zs)], { whiteContrast: 14, pavementMax: 175 }).blobs
+    .filter((b) => b.colour === "white" && b.type !== "car" && b.type !== "speck").flatMap((b) => b.pts).filter(inside);
+  if (px.length < 50) return null;
+  const sharp = (deg) => { const a = (deg * Math.PI) / 180, n = [-Math.sin(a), Math.cos(a)]; const h = new Map(); for (const q of px) { const k = Math.round((q[0] * n[0] + q[1] * n[1]) / 0.25); h.set(k, (h.get(k) ?? 0) + 1); } let s = 0; for (const v of h.values()) s += v * v; return s; };
+  const all = Array.from({ length: 180 }, (_, d) => ({ d, s: sharp(d) }));
+  // local maxima only (a direction sharper than every direction within 4 deg), so a shoulder of one line is not a second
+  const scores = all.filter((x) => [1, 2, 3, 4].every((k) => x.s >= all[(x.d + k) % 180].s && x.s >= all[(x.d - k + 180) % 180].s)).sort((a, b) => b.s - a.s);
+  const first = scores[0];
+  const second = scores.find((x) => Math.min(Math.abs(x.d - first.d), 180 - Math.abs(x.d - first.d)) >= 25);
+  if (!second) return null;
+  const dirOf = (d) => [Math.cos((d * Math.PI) / 180), Math.sin((d * Math.PI) / 180)];
+  // the aisle runs along the area's long side
+  const c = [px.reduce((s, q) => s + q[0], 0) / px.length, px.reduce((s, q) => s + q[1], 0) / px.length];
+  const spread = (d) => { const u = dirOf(d); const s = px.map((q) => (q[0] - c[0]) * u[0] + (q[1] - c[1]) * u[1]); return Math.max(...s) - Math.min(...s); };
+  const [ua, ud] = spread(first.d) >= spread(second.d) ? [dirOf(first.d), dirOf(second.d)] : [dirOf(second.d), dirOf(first.d)];
+  const angle = (Math.acos(Math.min(1, Math.abs(ua[0] * ud[0] + ua[1] * ud[1]))) * 180) / Math.PI;
+  // dividers: peaks of the paint across the divider direction
+  const nd = [-ud[1], ud[0]];
+  const h = new Map();
+  for (const q of px) { const k = Math.round((q[0] * nd[0] + q[1] * nd[1]) / 0.1); h.set(k, (h.get(k) ?? 0) + 1); }
+  const keys = [...h.keys()].sort((a, b) => a - b);
+  const mx = Math.max(...h.values());
+  const peaks = [];
+  for (const k of keys) { const v = h.get(k); if (v >= 0.35 * mx && v >= (h.get(k - 1) ?? 0) && v >= (h.get(k + 1) ?? 0) && v >= (h.get(k - 2) ?? 0) && v >= (h.get(k + 2) ?? 0)) { if (!peaks.length || k * 0.1 - peaks.at(-1) > 1.5) peaks.push(k * 0.1); } }
+  if (peaks.length < 2) return null;
+  const gaps = peaks.slice(1).map((p, i) => p - peaks[i]).sort((a, b) => a - b);
+  const pitch = gaps[gaps.length >> 1];
+  // the front line: the paint's extreme toward the aisle point, along the aisle normal
+  const na0 = [-ua[1], ua[0]];
+  const aisle = toMetres(area.aisle);
+  const na = (aisle[0] - c[0]) * na0[0] + (aisle[1] - c[1]) * na0[1] > 0 ? na0 : [-na0[0], -na0[1]];
+  const across = px.map((q) => (q[0] - c[0]) * na[0] + (q[1] - c[1]) * na[1]).sort((a, b) => a - b);
+  // the front line: the strongest paint line along the aisle on the aisle side of the area's centre (0.1 m bins,
+  // smoothed over 0.3 m)
+  const hb = new Map();
+  for (const t of across) { const k = Math.round(t / 0.1); hb.set(k, (hb.get(k) ?? 0) + 1); }
+  let front = null, bestV = -1;
+  for (const k of hb.keys()) { if (k <= 0) continue; const v = (hb.get(k - 1) ?? 0) + hb.get(k) + (hb.get(k + 1) ?? 0); if (v > bestV) { bestV = v; front = k * 0.1; } }
+  if (front === null) return null;
+  // each divider's front end: where its line (offset p along nd) meets the front line
+  const vd = (ud[0] * -na[0] + ud[1] * -na[1]) >= 0 ? ud : [-ud[0], -ud[1]]; // from the front into the stall
+  const ends = peaks.map((p) => {
+    // point on the divider line: x = nd * p + t * vd; on the front line: (x - c) . na = front
+    const base = [nd[0] * p, nd[1] * p];
+    const t = (front - ((base[0] - c[0]) * na[0] + (base[1] - c[1]) * na[1])) / (vd[0] * na[0] + vd[1] * na[1]);
+    return [base[0] + vd[0] * t, base[1] + vd[1] * t];
+  });
+  const uAlong = (ends.at(-1)[0] - ends[0][0]) * ua[0] + (ends.at(-1)[1] - ends[0][1]) * ua[1] >= 0 ? ua : [-ua[0], -ua[1]];
+  // a fit outside the statute angles (45 / 60 deg, +-10) or with a pitch under 2.2 m read the wrong lines: not drawn
+  if (angle < 35 || angle > 70 || pitch < 2.2) return { rejected: `fit ${angle.toFixed(0)} deg, pitch ${pitch.toFixed(2)} m` };
+  if (process.env.ANGLED_DEBUG) console.log(JSON.stringify({ id: area.id, c, aisle, na, vd, ua, ud, front, peaks, ends, px: px.length }));
+  const bearing = (d) => +(((Math.atan2(d[0], -d[1]) * 180) / Math.PI + 360) % 360).toFixed(2);
+  return {
+    site: `angled ${area.id}`, u: uAlong, centre: c, dividers: peaks.length, sources: [`review ${area.id}`], start: ends[0], end: ends.at(-1), v: vd,
+    bays: peaks.length - 1, pitch, accessiblePitch: 3.3, depthPhoto: 5.0, lines: true, partial: false, accessible: [], rms: 0,
+    photoDividers: ends, aisle: { photoAngleDeg: +angle.toFixed(1), aisleBearing: bearing(uAlong) }, angledArea: ring,
+  };
+}
 const toGeo = ([x, z]) => modelToGeo(x * U, z * U).map((v) => +v.toFixed(8));
 
 function pointInRing([x, z], ring) {
@@ -463,6 +531,20 @@ for (const r of found) if (!rows.some((q) => overlapShare(r, q) > 0.3 || overlap
 const rejected = new Map((review.rejectRows ?? []).map((x) => [x.near.join(","), x]));
 const kept = rows.filter((r) => ![...rejected.values()].some((x) => norm(sub(toMetres(x.near), [(r.start[0] + r.end[0]) / 2, (r.start[1] + r.end[1]) / 2])) < 3));
 const rejectedRows = rows.length - kept.length;
+// angled rows by area: the perpendicular reads inside an angled area are its dividers read square, replaced
+for (const area of review.angledAreas ?? []) {
+  const r = angledRow(area);
+  // the square reads inside an angled area are its dividers read square: left out either way
+  const ringA = area.ring.map(toMetres);
+  const inA = (q) => { let c = false; for (let i = 0, j = ringA.length - 1; i < ringA.length; j = i, i += 1) { const [xi, zi] = ringA[i], [xj, zj] = ringA[j]; if ((zi > q[1]) !== (zj > q[1]) && q[0] < ((xj - xi) * (q[1] - zi)) / (zj - zi) + xi) c = !c; } return c; };
+  for (let i = kept.length - 1; i >= 0; i -= 1) if (!kept[i].aisle && inA([(kept[i].start[0] + kept[i].end[0]) / 2, (kept[i].start[1] + kept[i].end[1]) / 2])) kept.splice(i, 1);
+  if (r?.rejected) { console.log(`angled area ${area.id}: ${r.rejected}, outside the statute angles: left out (residual)`); continue; }
+  console.log(`angled area ${area.id}: ${r ? `${r.bays} bays, pitch ${r.pitch.toFixed(2)} m square to the dividers, photo angle ${r.aisle.photoAngleDeg} deg` : "no paint read"}`);
+  if (!r) continue;
+  const inArea = (q) => { const ring = r.angledArea; let c = false; for (let i = 0, j = ring.length - 1; i < ring.length; j = i, i += 1) { const [xi, zi] = ring[i], [xj, zj] = ring[j]; if ((zi > q[1]) !== (zj > q[1]) && q[0] < ((xj - xi) * (q[1] - zi)) / (zj - zi) + xi) c = !c; } return c; };
+  for (let i = kept.length - 1; i >= 0; i -= 1) if (inArea([(kept[i].start[0] + kept[i].end[0]) / 2, (kept[i].start[1] + kept[i].end[1]) / 2])) kept.splice(i, 1);
+  kept.push(r);
+}
 const LOT_LINK_M = 9;
 const lp = kept.map((_, i) => i);
 const lroot = (i) => (lp[i] === i ? i : (lp[i] = lroot(lp[i])));
@@ -487,6 +569,7 @@ const lots = [...lotGroups.values()]
       start: toGeo(r.start),
       end: toGeo(r.end),
       depthBearing: +(((Math.atan2(r.v[0], -r.v[1]) * 180) / Math.PI + 360) % 360).toFixed(2),
+      ...(r.aisle ?? {}),
       photoBays: r.bays,
       photoPitchM: +r.pitch.toFixed(3),
       photoAccessiblePitchM: +r.accessiblePitch.toFixed(3),
