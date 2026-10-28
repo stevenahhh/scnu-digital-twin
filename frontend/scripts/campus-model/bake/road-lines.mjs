@@ -286,8 +286,8 @@ for (let i = lines.length - 1; i >= 0; i -= 1) {
   for (let j = 1; j < l.pts.length; j += 1) { const n = Math.max(1, Math.ceil(norm(sub(l.pts[j], l.pts[j - 1])) / 0.5)); for (let t = 0; t < n; t += 1) dense.push([l.pts[j - 1][0] + ((l.pts[j][0] - l.pts[j - 1][0]) * t) / n, l.pts[j - 1][1] + ((l.pts[j][1] - l.pts[j - 1][1]) * t) / n]); }
   if (dense.filter(nearYellow).length >= 0.5 * dense.length) { lines.splice(i, 1); kerbs += 1; }
 }
-// a line hugging a sidewalk outline (A003, within KERB_EDGE_M over KERB_SHARE of its length) is the kerb itself (a
-// light or brown kerb stone the masks read as paint), not a painted line
+// a white line hugging a sidewalk outline (A003, within KERB_EDGE_M over KERB_SHARE of its length) is the kerb stone
+// itself, not paint; a yellow one there is the painted kerb line (kerb_no_parking)
 const KERB_EDGE_M = 0.45;
 const KERB_SHARE = 0.6;
 const kerbSegs = [];
@@ -309,7 +309,10 @@ for (let i = lines.length - 1; i >= 0; i -= 1) {
   const l = lines[i];
   const dense = [];
   for (let j = 1; j < l.pts.length; j += 1) { const n = Math.max(1, Math.ceil(norm(sub(l.pts[j], l.pts[j - 1])) / 0.5)); for (let t = 0; t < n; t += 1) dense.push([l.pts[j - 1][0] + ((l.pts[j][0] - l.pts[j - 1][0]) * t) / n, l.pts[j - 1][1] + ((l.pts[j][1] - l.pts[j - 1][1]) * t) / n]); }
-  if (dense.filter(nearKerb).length >= KERB_SHARE * dense.length) { lines.splice(i, 1); kerbEdges += 1; }
+  if (dense.filter(nearKerb).length < KERB_SHARE * dense.length) continue;
+  // yellow paint along a kerb is the 정차·주차금지 kerb line (real paint): kept, as that kind; white is the kerb stone
+  if (l.colour === "yellow") l.kerbLine = true;
+  else { lines.splice(i, 1); kerbEdges += 1; }
 }
 // by-eye rejections (data/photo/road-lines-review.json): a line passing within 2 m of a rejected point
 const review = JSON.parse(readFileSync(path.join(DATA, "photo", "road-lines-review.json"), "utf8")).rejectLines
@@ -321,7 +324,7 @@ for (let i = lines.length - 1; i >= 0; i -= 1) {
 let k = 0;
 const records = lines.map((l) => {
   const pattern = l.fill >= FILL_SOLID ? "solid" : "dashed";
-  const kind = l.colour === "yellow" ? "centre_line_yellow" : pattern === "solid" ? "edge_line" : "lane_line_dashed";
+  const kind = l.colour === "yellow" ? (l.kerbLine ? "kerb_no_parking" : "centre_line_yellow") : pattern === "solid" ? "edge_line" : "lane_line_dashed";
   return { id: `RL${String(++k).padStart(4, "0")}`, kind, colour: l.colour, pattern, double: Boolean(l.double), lengthM: +l.span.toFixed(1), fill: +l.fill.toFixed(2), strokes: l.strokes, points: l.pts.map(toGeo) };
 });
 writeFileSync(OUT, `${JSON.stringify({
