@@ -42,7 +42,10 @@ async function settleCamera(ctx) {
     if (viewer && Cesium) {
       const c = Cesium.Cartographic.fromCartesian(viewer.camera.positionWC);
       const deg = Cesium.Math.toDegrees;
-      return `lon ${deg(c.longitude).toFixed(6)} lat ${deg(c.latitude).toFixed(6)} h ${c.height.toFixed(1)} heading ${deg(viewer.camera.heading).toFixed(1)} pitch ${deg(viewer.camera.pitch).toFixed(1)}`;
+      let model = null;
+      for (let i = 0; i < viewer.scene.primitives.length; i += 1) { const p = viewer.scene.primitives.get(i); if (p?.id === "SCNU_D4_GLTF_OVERLAY") model = p; }
+      const origin = model ? Cesium.Cartographic.fromCartesian(Cesium.Matrix4.getTranslation(model.modelMatrix, new Cesium.Cartesian3())).height.toFixed(2) : "none";
+      return `lon ${deg(c.longitude).toFixed(6)} lat ${deg(c.latitude).toFixed(6)} h ${c.height.toFixed(1)} heading ${deg(viewer.camera.heading).toFixed(1)} pitch ${deg(viewer.camera.pitch).toFixed(1)} model ${origin} ${model?.anchorSource ?? "unanchored"}`;
     }
     return new URLSearchParams(location.search).get("cam") ?? "unknown";
   }).catch(() => "unknown");

@@ -133,6 +133,8 @@ function anchorToTerrain(viewer, Cesium, model, onStatus) {
       return;
     }
     model.modelMatrix = createCampusModelMatrix(viewer, Cesium, CAMPUS_GLTF_OVERLAY_CONFIG, height);
+    // 어느 길로 높이를 맞췄는지 모델에 남긴다(진단용: 고정 단계 표본 / 지구본 폴링).
+    model.anchorSource = "terrain-sample";
     onStatus?.(ANCHORED_STATUS);
   });
 }
@@ -155,6 +157,7 @@ function reanchorWhenTerrainLoaded(viewer, Cesium, model, onStatus, schedule = s
     if (globe?.tilesLoaded === true && isPlausibleGroundHeight(height)) {
       if (confirming !== null && Math.abs(height - confirming) <= TERRAIN_READY.toleranceMeters) {
         model.modelMatrix = createCampusModelMatrix(viewer, Cesium);
+        model.anchorSource = "globe-poll";
         onStatus?.(ANCHORED_STATUS);
         return;
       }
