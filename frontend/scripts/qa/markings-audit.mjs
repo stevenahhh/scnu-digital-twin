@@ -12,6 +12,9 @@
 //   spacing    a stall row whose divider spacing is uneven by more than SPACING_M (5 cm)
 //   count      a lot whose modelled stall count differs from the stall count read on the photo
 //               (data/photo/parking-lots.json, photoStalls)
+//   coverage   a centre or edge line the photo shows along a road (data/photo/road-lines.json, read on the NGII sheet
+//              by bake/road-lines.mjs) without a model line of its colour along it: less than COVER_SOLID of a solid
+//              photo line (COVER_DASHED of a dashed one) within COVER_M of a drawn line, crossings excluded
 //
 // A GLB built with stages/markingsStandard.mjs carries one record per marking instance in the Road_Markings node extras
 // (`markingInstances`) and the instance index in every vertex's v texture coordinate, so the audit checks each
@@ -19,7 +22,8 @@
 // every connected paint component is an instance without a template, thin parallel white strokes 3.5-6.5 m long side by
 // side are read as stall dividers, and the geometric checks run on those.
 //
-//   bun scripts/qa/markings-audit.mjs [--glb public/campus-v2.glb] [--lots <parking-lots.json>] [--json <out>] [--max 15]
+//   bun scripts/qa/markings-audit.mjs [--glb public/campus-v2.glb] [--lots <parking-lots.json>] [--road-lines <road-lines.json>]
+//       [--json <out>] [--max 15]
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { NodeIO } from "@gltf-transform/core";
@@ -33,6 +37,9 @@ const FRONTEND = path.resolve(HERE, "../..");
 export const TOL_M = 0.02;
 export const SPACING_M = 0.05;
 export const SAMPLE_M = 0.02;
+export const COVER_M = 0.35;
+export const COVER_SOLID = 0.8;
+export const COVER_DASHED = 0.35;
 const U = SCENE_UNITS_PER_METRE;
 // palette order of stages/markings.mjs (PALETTE_COLOURS): u = (i + 0.5) / 5
 const PALETTE = ["white", "yellow", "blue", "green", "light_blue"];
@@ -433,9 +440,82 @@ function legacyAudit(tris, lots, out) {
   return perLot;
 }
 
+// ---------------------------------------------------------------- photo-evidence coverage
+async function readRoadLines(file) {
+  if (!(await Bun.file(file).exists())) return [];
+  return JSON.parse(await Bun.file(file).text()).lines.map((l) => ({ ...l, pts: l.points.map(([lon, lat]) => geoToModel(lon, lat).map((v) => v / U)) }));
+}
+// Model line pieces (metres) of one colour family from the instance records, or, without records, from thin paint
+// components of that colour.
+function modelLines(records, tris, colour) {
+  const segs = [];
+  const exclude = [];
+  if (records) {
+    for (const r of records) {
+      const t = TEMPLATES[r.t];
+      if (!t) continue;
+      if (t.kind === "crosswalk" || r.t === "stop_line") { exclude.push(r.p.centre ? [r.p.centre[0] / U, r.p.centre[1] / U] : [r.p.a[0] / U, r.p.a[1] / U]); continue; }
+      if (t.kind !== "line" || t.colour !== colour) continue;
+      const p = r.p;
+      if (p.shape === "straight") segs.push([[p.a[0] / U, p.a[1] / U], [p.b[0] / U, p.b[1] / U]]);
+      else if (p.shape === "polyline") for (let i = 1; i < p.path.length; i += 1) segs.push([[p.path[i - 1][0] / U, p.path[i - 1][1] / U], [p.path[i][0] / U, p.path[i][1] / U]]);
+      else if (p.shape === "arc") {
+        const c = [p.centre[0] / U, p.centre[1] / U], rr = p.r / U;
+        const n = 16;
+        for (let k = 0; k < n; k += 1) {
+          const a0 = p.a0 + ((p.a1 - p.a0) * k) / n, a1 = p.a0 + ((p.a1 - p.a0) * (k + 1)) / n;
+          segs.push([[c[0] + rr * Math.cos(a0), c[1] + rr * Math.sin(a0)], [c[0] + rr * Math.cos(a1), c[1] + rr * Math.sin(a1)]]);
+        }
+      }
+    }
+  } else {
+    for (const cmp of components(tris.filter((t) => t.colour === colour && !t.context))) {
+      const pr = principal(cmp.flatMap((x) => x.p));
+      if (pr.t1 - pr.t0 > 0.6) continue;
+      segs.push([[pr.c[0] + pr.dir[0] * pr.s0, pr.c[1] + pr.dir[1] * pr.s0], [pr.c[0] + pr.dir[0] * pr.s1, pr.c[1] + pr.dir[1] * pr.s1]]);
+    }
+  }
+  const cell = 4;
+  const grid = new Map();
+  segs.forEach((sg, i) => {
+    const xs = sg.map((q) => q[0]), zs = sg.map((q) => q[1]);
+    for (let x = Math.floor(Math.min(...xs) / cell); x <= Math.floor(Math.max(...xs) / cell); x += 1) for (let z = Math.floor(Math.min(...zs) / cell); z <= Math.floor(Math.max(...zs) / cell); z += 1) {
+      const k = `${x},${z}`;
+      if (!grid.has(k)) grid.set(k, []);
+      grid.get(k).push(i);
+    }
+  });
+  const dist = (q, [a, b]) => { const ab = sub(b, a), l2 = dot(ab, ab); const t = l2 > 0 ? Math.max(0, Math.min(1, dot(sub(q, a), ab) / l2)) : 0; return norm(sub(q, [a[0] + ab[0] * t, a[1] + ab[1] * t])); };
+  return {
+    near: (q, r) => (grid.get(`${Math.floor(q[0] / cell)},${Math.floor(q[1] / cell)}`) ?? []).some((i) => dist(q, segs[i]) <= r),
+    excluded: (q) => exclude.some((c) => norm(sub(q, c)) < 6),
+  };
+}
+function lineCoverage(roadLines, records, tris, out) {
+  const fam = { yellow: modelLines(records, tris, "yellow"), white: modelLines(records, tris, "white") };
+  const rows = [];
+  for (const l of roadLines) {
+    const m = fam[l.colour];
+    const samples = [];
+    for (let i = 1; i < l.pts.length; i += 1) {
+      const [a, b] = [l.pts[i - 1], l.pts[i]];
+      const len = norm(sub(b, a));
+      for (let s_ = 0; s_ < len; s_ += 1) samples.push([a[0] + ((b[0] - a[0]) * s_) / len, a[1] + ((b[1] - a[1]) * s_) / len]);
+    }
+    const counted = samples.filter((q) => !m.excluded(q));
+    if (counted.length < 4) continue;
+    const share = counted.filter((q) => m.near(q, COVER_M)).length / counted.length;
+    const need = l.pattern === "dashed" ? COVER_DASHED : COVER_SOLID;
+    rows.push({ id: l.id, kind: l.kind, share });
+    if (share < need) out.push({ check: "coverage", id: l.id, detail: `photo ${l.pattern} ${l.kind} ${l.lengthM} m: ${(share * 100).toFixed(0)} % drawn (need ${need * 100} %)`, at: counted[counted.length >> 1] });
+  }
+  return rows;
+}
+
 // ---------------------------------------------------------------- main
-export async function audit({ glb, lotsFile }) {
+export async function audit({ glb, lotsFile, roadLinesFile }) {
   const { tris, records, lotRecords, lotTris } = await readMarkings(glb);
+  const roadLines = await readRoadLines(roadLinesFile);
   const lots = await readLots(lotsFile);
   const out = [];
   let modelled;
@@ -482,16 +562,18 @@ export async function audit({ glb, lotsFile }) {
       .map((h) => ({ check: "overlap", id: h.pair, detail: `${h.colours} paint overlaps over ${(h.areaM2 * 1e4).toFixed(0)} cm2`, at: h.at })));
     void lotRecords;
   }
+  const covered = lineCoverage(roadLines, records, tris, out);
   const counts = lots.map((l) => ({ lot: l.id, photo: l.photoStalls, modelled: modelled.get(l.id) ?? 0 }));
   for (const c of counts) if (c.photo !== c.modelled) out.push({ check: "count", id: c.lot, detail: `photo ${c.photo} stalls, model ${c.modelled}` });
-  return { failures: out, counts, triangles: tris.length, instances, mode: records ? "instances" : "geometry-only" };
+  return { failures: out, counts, coverage: covered, triangles: tris.length, instances, mode: records ? "instances" : "geometry-only" };
 }
 
 if (import.meta.main) {
   const glb = path.resolve(option("glb", path.join(FRONTEND, "public", "campus-v2.glb")));
   const lotsFile = path.resolve(option("lots", path.join(FRONTEND, "scripts", "campus-model", "data", "photo", "parking-lots.json")));
   const max = Number(option("max", 15));
-  const result = await audit({ glb, lotsFile });
+  const roadLinesFile = path.resolve(option("road-lines", path.join(FRONTEND, "scripts", "campus-model", "data", "photo", "road-lines.json")));
+  const result = await audit({ glb, lotsFile, roadLinesFile });
   const by = new Map();
   for (const f of result.failures) {
     if (!by.has(f.check)) by.set(f.check, []);
@@ -499,11 +581,12 @@ if (import.meta.main) {
   }
   console.log(`markings audit: ${glb}`);
   console.log(`  mode ${result.mode}; ${result.triangles} marking triangles; ${result.instances} instance records; lots ${result.counts.length}`);
-  for (const check of ["template", "dimension", "straight", "overlap", "stall-lot", "spacing", "count"]) {
+  for (const check of ["template", "dimension", "straight", "overlap", "stall-lot", "spacing", "count", "coverage"]) {
     const list = by.get(check) ?? [];
     console.log(`  ${list.length ? "FAIL" : "PASS"} ${check}: ${list.length}`);
     for (const f of list.slice(0, max)) console.log(`      ${f.id}${f.template ? ` [${f.template}]` : ""}: ${f.detail}${f.at ? ` @ (${(f.at[0] * U).toFixed(1)}, ${(f.at[1] * U).toFixed(1)}) scene` : ""}`);
   }
+  console.log(`  photo road lines: ${result.coverage.length} (${result.coverage.filter((c) => c.kind === "centre_line_yellow").length} centre, ${result.coverage.filter((c) => c.kind === "edge_line").length} edge), median drawn share ${((result.coverage.map((c) => c.share).sort((a, b) => a - b)[result.coverage.length >> 1] ?? 0) * 100).toFixed(0)} %`);
   console.log("  per-lot stalls (photo / model):", result.counts.map((c) => `${c.lot} ${c.photo}/${c.modelled}`).join(", "));
   const json = option("json", null);
   if (json) await Bun.write(json, `${JSON.stringify(result, null, 1)}\n`);
