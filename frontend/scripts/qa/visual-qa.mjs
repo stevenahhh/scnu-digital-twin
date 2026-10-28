@@ -338,6 +338,7 @@ async function runPass({ args, entry, viewport, theme, baseUrl, selected, baseli
       await b.run(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
       ctx.actions.push(waited.settled ? `delayed answers in flight before capture arrived after ${waited.ms} ms` : `delayed answers still in flight after ${waited.ms} ms`);
     }
+    if (requested && await b.refreshHover()) await b.run(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
     if (requested) await capture(state, label, fixtures);
     else ctx.actions = [];
     if (state.after) await state.after(ctx);

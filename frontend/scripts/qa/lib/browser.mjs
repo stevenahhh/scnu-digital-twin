@@ -194,6 +194,7 @@ export class Browser {
     }
     if (!point) return { ok: false, action: `NOT FOUND ${selector}${text ? ` "${text}"` : ""}` };
     await withTimeout(this.view.click(point[0], point[1]), 30000, "click");
+    this.pointer = { x: point[0], y: point[1] };
     return { ok: true, action: `click ${selector}${text ? ` "${text}"` : ""} @${Math.round(point[0])},${Math.round(point[1])}` };
   }
 
@@ -209,6 +210,16 @@ export class Browser {
   async mouse(type, x, y, buttons = 0, modifiers = 0) {
     const button = type === "mouseMoved" && !(buttons & 1) ? "none" : "left";
     await withTimeout(this.view.cdp("Input.dispatchMouseEvent", { type, x, y, button, buttons, clickCount: type === "mouseMoved" ? 0 : 1, modifiers }), 30000, type);
+    this.pointer = { x, y };
+  }
+
+  // Headless Chrome recomputes :hover only on a mouse event. When the page re-lays out under a still pointer (a camera
+  // flight moving the chip that was just tapped), the hover state at capture depends on timing. Re-sending a plain move
+  // at the pointer's current position makes :hover match the final layout, as a desktop browser's own synthetic move does.
+  async refreshHover() {
+    if (!this.pointer) return false;
+    await this.mouse("mouseMoved", this.pointer.x, this.pointer.y, 0);
+    return true;
   }
 
   async key(key) {
