@@ -146,18 +146,37 @@ export async function applyTheme(ctx, theme) {
 // VWorld streams map tiles from a live service after every camera move and refines them in batches;
 // wait until three screenshots 1.5 s apart all stay within 1 % PNG size (min 6 s, max 40 s) so a
 // frame is never half-loaded or caught between two refinement batches.
+// Cesium's own streaming state: the globe and every 3D tileset (VWorld photogrammetry) report all visible tiles loaded.
+// A frame-size heuristic alone lets distant tiles finish refining after the capture, so two runs of the same pose
+// captured different detail levels (S09/S10).
+const cesiumTilesLoaded = (ctx) => ctx.b.run(() => {
+  const scene = window.ws3d?.viewer?.scene;
+  if (!scene) return null;
+  if (scene.globe && scene.globe.tilesLoaded !== true) return false;
+  for (let i = 0; i < scene.primitives.length; i += 1) {
+    const p = scene.primitives.get(i);
+    if (p && p.show !== false && "tilesLoaded" in p && p.tilesLoaded !== true) return false;
+  }
+  return true;
+}).catch(() => null);
+
 export async function settleTiles(ctx) {
   const t0 = Date.now();
   const sizes = [(await ctx.b.screenshot()).length];
+  const loaded = [await cesiumTilesLoaded(ctx)];
   for (;;) {
     await sleep(1500);
     sizes.push((await ctx.b.screenshot()).length);
+    loaded.push(await cesiumTilesLoaded(ctx));
     const last = sizes.slice(-3);
     const stable = last.length === 3 && Math.max(...last) / Math.min(...last) - 1 < 0.01;
+    // null: no Cesium scene to ask (the frame-size test alone decides).
+    const streamed = loaded.slice(-3).every((value) => value !== false) && loaded.length >= 3;
     const elapsed = Date.now() - t0;
-    if ((elapsed >= 6000 && stable) || elapsed > 40000) break;
+    if ((elapsed >= 6000 && stable && streamed) || elapsed > 40000) break;
   }
-  ctx.actions.push(`map tiles settled after ${Math.round((Date.now() - t0) / 100) / 10} s`);
+  const done = loaded.at(-1);
+  ctx.actions.push(`map tiles settled after ${Math.round((Date.now() - t0) / 100) / 10} s${done === false ? " (Cesium still streaming at the 40 s limit)" : ""}`);
 }
 
 export async function loadAndSettle(ctx, url) {
