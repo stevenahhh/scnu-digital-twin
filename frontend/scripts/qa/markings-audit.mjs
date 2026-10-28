@@ -53,7 +53,8 @@ export const PAINT_REACH_M = 0.35;
 export const JUNCTION_PAD_M = 20;
 export const JUNCTION_SHARE = 0.6;
 export const JUNCTION_MIN_M2 = 4;
-export const BUILDING_PAD_M = 5; // roof rims shifted by relief displacement (3-5 m on the photo) are not road paint
+export const BUILDING_PAD_M = 5;
+export const BUILDING_INSIDE_M = 0.5; // roof rims shifted by relief displacement (3-5 m on the photo) are not road paint
 export const ROAD_INSET_M = 1.0; // junction paint counts on the carriageway only (road_zones), this far inside its kerb
 export const LOT_PAD_M = 4;
 export const LOT_SHARE = 0.6;
@@ -113,11 +114,27 @@ export async function readMarkings(file) {
   let capacity = 1;
   let lotRecords = null;
   const lotTris = [];
+  const roofs = []; // up-facing triangles of the campus buildings (nodes under a BLD_* node), metres
+  const isBuilding = (n) => { for (let x = n; x; x = x.getParentNode?.()) if (x.getName().startsWith("BLD_")) return true; return false; };
   for (const node of doc.getRoot().listNodes()) {
     const mesh = node.getMesh();
     if (!mesh) continue;
     const m = node.getWorldMatrix();
     const xf = (x, y, z) => [m[0] * x + m[4] * y + m[8] * z + m[12], m[1] * x + m[5] * y + m[9] * z + m[13], m[2] * x + m[6] * y + m[10] * z + m[14]];
+    if (isBuilding(node)) {
+      for (const prim of mesh.listPrimitives()) {
+        const pos = prim.getAttribute("POSITION");
+        const idx = prim.getIndices();
+        const count = idx ? idx.getCount() : pos.getCount();
+        for (let k = 0; k + 2 < count; k += 3) {
+          const v = [0, 1, 2].map((j) => xf(...pos.getElement(idx ? idx.getScalar(k + j) : k + j, [])));
+          const e1 = [v[1][0] - v[0][0], v[1][1] - v[0][1], v[1][2] - v[0][2]], e2 = [v[2][0] - v[0][0], v[2][1] - v[0][1], v[2][2] - v[0][2]];
+          const nx = e1[1] * e2[2] - e1[2] * e2[1], ny = e1[2] * e2[0] - e1[0] * e2[2], nz = e1[0] * e2[1] - e1[1] * e2[0];
+          if (Math.abs(ny) > 0.8 * Math.hypot(nx, ny, nz)) roofs.push(v.map((q) => [q[0] / U, q[2] / U]));
+        }
+      }
+      continue;
+    }
     const isMarkingNode = node.getName() === "Road_Markings";
     if (isMarkingNode) {
       records = node.getExtras()?.markingInstances ?? null;
@@ -154,7 +171,7 @@ export async function readMarkings(file) {
   }
   // the instance index is only meaningful when the GLB carries the records
   if (!records) for (const t of tris) t.inst = -1;
-  return { tris, records, lotRecords, lotTris };
+  return { tris, records, lotRecords, lotTris, roofs };
 }
 
 // ---------------------------------------------------------------- components (welded at 1 mm, per colour)
@@ -279,6 +296,8 @@ function checkInstance(rec, tris, out, lotOf) {
   const fail = (check, detail) => out.push({ check, id: rec.id, template: rec.t, ...detail });
   if (!t) return fail("template", { detail: `unknown template ${rec.t}` });
   if (!rec.ev || !String(rec.ev).length) fail("template", { detail: "no placement evidence id" });
+  // legacy_preserved: dev-next paint carried over unchanged (its own colours); only the overlap and lot checks apply
+  if (t.kind === "legacy") return;
   if (rec.c !== t.colour && !(t.symbol && rec.c === t.symbol.colour)) fail("dimension", { detail: `colour ${rec.c}, template ${t.colour}` });
   const pts = tris.flatMap((x) => x.p);
   const p = rec.p ?? {};
@@ -338,7 +357,8 @@ function checkInstance(rec, tris, out, lotOf) {
     // 경사주차: a divider crosses the front line's direction 1 / sin a wider, and the bays repeat w / sin a along it
     const sinA = t.angleDeg ? Math.sin((t.angleDeg * Math.PI) / 180) : 1;
     const lw = t.lineM / sinA;
-    const covered = coverage(tris);
+    // (the white strokes only: an accessible bay's blue fill and its symbol are not dividers)
+    const covered = coverage(tris.filter((t) => t.colour === "white"));
     const total = p.widths.reduce((x, w) => x + w, 0) / sinA;
     // the dividers where the mesh crosses a line along the row a quarter of the depth in (clear of any bay symbol)
     const runs = [];
@@ -559,7 +579,7 @@ export async function readFootprints(file) {
   return d.buildings.flatMap((b) => b.polygons.map((poly) => poly[0].map(([lon, lat]) => geoToModel(lon, lat).map((v) => v / U))));
 }
 const nearRing = (q, ring, pad) => pointInRing(q, ring) || ring.some((a, i) => { const b = ring[(i + 1) % ring.length]; const ab = sub(b, a); const t = Math.max(0, Math.min(1, dot(sub(q, a), ab) / (dot(ab, ab) || 1))); return norm(sub(q, [a[0] + t * ab[0], a[1] + t * ab[1]])) <= pad; });
-function junctionPaint(junctions, zones, footprints, lots, rejects, tris, out) {
+function junctionPaint(junctions, zones, footprints, lots, rejects, tris, out, underRoof = () => false) {
   const onRoad = onCarriageway(zones);
   const covers = paintIndex(tris, PAINT_REACH_M);
   return junctions.map((j) => {
@@ -570,7 +590,7 @@ function junctionPaint(junctions, zones, footprints, lots, rejects, tris, out) {
     const near = footprints.filter((r) => r.some(([x, z]) => x >= x0 - 60 && x <= x1 + 60 && z >= z0 - 60 && z <= z1 + 60));
     // (lot paint inside a junction window is the stall-paint check's: left out here)
     const nearLots = lots.filter((l) => l.ringM.some(([x, z]) => x >= x0 - 30 && x <= x1 + 30 && z >= z0 - 30 && z <= z1 + 30));
-    const pts = area.flatMap((b) => b.pts.map((q) => ({ q, colour: b.colour }))).filter((p) => onRoad(p.q) && !near.some((r) => nearRing(p.q, r, BUILDING_PAD_M)) && !nearLots.some((l) => nearRing(p.q, l.ringM, LOT_PAD_M)));
+    const pts = area.flatMap((b) => b.pts.map((q) => ({ q, colour: b.colour }))).filter((p) => onRoad(p.q) && !near.some((r) => nearRing(p.q, r, BUILDING_PAD_M)) && !nearLots.some((l) => nearRing(p.q, l.ringM, LOT_PAD_M)) && !underRoof(p.q));
     const hit = pts.filter((p) => covers(p.q, p.colour));
     const share = pts.length ? hit.length / pts.length : 1;
     const missM2 = (pts.length - hit.length) * 0.0625;
@@ -580,12 +600,12 @@ function junctionPaint(junctions, zones, footprints, lots, rejects, tris, out) {
     const worst = misses[0];
     if (share < JUNCTION_SHARE && missM2 >= JUNCTION_MIN_M2)
       out.push({ check: "junction-paint", id: j.id, detail: `photo island/hatch/chevron/symbol paint ${(pts.length * 0.0625).toFixed(1)} m2, ${(share * 100).toFixed(0)} % covered by model paint of its colour (white ${byColour.white ?? "-"}, yellow ${byColour.yellow ?? "-"}; need ${JUNCTION_SHARE * 100} %), ${missM2.toFixed(1)} m2 uncovered`, at: worst?.b.centre });
-    return { id: j.id, paintM2: +(pts.length * 0.0625).toFixed(1), share: +share.toFixed(3), ...byColour, uncovered: misses.filter((m) => m.miss * 0.0625 >= 0.5).map((m) => ({ at: m.b.centre.map((v) => +v.toFixed(2)), colour: m.b.colour, m2: +(m.miss * 0.0625).toFixed(2), longM: +m.b.longM.toFixed(1), shortM: +m.b.shortM.toFixed(1) })) };
+    return { id: j.id, paintM2: +(pts.length * 0.0625).toFixed(1), share: +share.toFixed(3), ...byColour, uncovered: misses.filter((m) => m.miss * 0.0625 >= 0.5).map((m) => ({ at: m.b.centre.map((v) => +v.toFixed(2)), colour: m.b.colour, m2: +(m.miss * 0.0625).toFixed(2), longM: +m.b.longM.toFixed(1), shortM: +m.b.shortM.toFixed(1), axis: m.b.axis.map((v) => +v.toFixed(4)) })) };
   });
 }
 
 // photo stall-line paint (thin white strokes) in each lot covered by the model's stall lines
-function lotPaint(lots, tris, records, out) {
+function lotPaint(lots, tris, records, out, underRoof = () => false, rejects = []) {
   const stallTris = tris.filter((t) => t.colour === "white" && (!records || TEMPLATES[records[t.inst]?.t]?.kind === "stall"));
   const covers = paintIndex(stallTris, PAINT_REACH_M);
   const stallRecs = (records ?? []).filter((r) => TEMPLATES[r.t]?.kind === "stall").map((r) => ({ o: [r.p.origin[0] / U, r.p.origin[1] / U], u: r.p.u }));
@@ -594,7 +614,9 @@ function lotPaint(lots, tris, records, out) {
     const box = [Math.min(...xs) - LOT_PAD_M, Math.min(...zs) - LOT_PAD_M, Math.max(...xs) + LOT_PAD_M, Math.max(...zs) + LOT_PAD_M];
     const near = (q) => pointInRing(q, lot.ringM) || lot.ringM.some((a, i) => { const b = lot.ringM[(i + 1) % lot.ringM.length]; const ab = sub(b, a); const s2 = Math.max(0, Math.min(1, dot(sub(q, a), ab) / (dot(ab, ab) || 1))); return norm(sub(q, [a[0] + s2 * ab[0], a[1] + s2 * ab[1]])) <= LOT_PAD_M; });
     // lots are often light concrete: the surround may be brighter than asphalt (LOT_PAVEMENT_MAX)
-    const all = paintIn(box, { pavementMax: LOT_PAVEMENT_MAX }).blobs.filter((b) => b.thin && b.colour === "white" && near(b.centre)).flatMap((b) => b.pts);
+    // (by-eye rejections, data/photo/stall-paint-review.json: kerb stones, roof rims and other non-paint strokes)
+    const lotBlobs = paintIn(box, { pavementMax: LOT_PAVEMENT_MAX }).blobs.filter((b) => b.thin && b.colour === "white" && near(b.centre) && !rejects.some((q) => norm(sub(q, b.centre)) <= 1.5));
+    const all = lotBlobs.flatMap((b) => b.pts).filter((q) => ![[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dz]) => underRoof([q[0] + dx, q[1] + dz])));
     // dividers only: a paint pixel whose local stroke (the paint within 0.6 m) runs along the nearest modelled row's
     // front line is front or back line paint, which the standard depth places by statute, not by the photo; it is left
     // out (with no modelled row within 30 m every pixel counts: a missed row)
@@ -616,7 +638,9 @@ function lotPaint(lots, tris, records, out) {
     const share = pts.length ? hit / pts.length : 1;
     if (share < LOT_SHARE && (pts.length - hit) * 0.0625 >= LOT_MIN_M2)
       out.push({ check: "stall-paint", id: lot.id, detail: `photo stall-line paint ${(pts.length * 0.0625).toFixed(1)} m2, ${(share * 100).toFixed(0)} % covered by drawn stall lines (need ${LOT_SHARE * 100} %)`, at: lot.ringM[0] });
-    return { id: lot.id, paintM2: +(pts.length * 0.0625).toFixed(1), share: +share.toFixed(3) };
+    const keepSet = new Set(pts);
+    const uncovered = lotBlobs.map((b) => ({ b, miss: b.pts.filter((q) => keepSet.has(q) && !covers(q, "white")).length })).filter((m) => m.miss * 0.0625 >= 0.3).sort((a, b) => b.miss - a.miss).map((m) => ({ at: m.b.centre.map((v) => +v.toFixed(2)), m2: +(m.miss * 0.0625).toFixed(2) }));
+    return { id: lot.id, paintM2: +(pts.length * 0.0625).toFixed(1), share: +share.toFixed(3), uncovered };
   });
 }
 
@@ -644,7 +668,7 @@ function lineCoverage(roadLines, records, tris, out) {
 
 // ---------------------------------------------------------------- main
 export async function audit({ glb, lotsFile, roadLinesFile }) {
-  const { tris, records, lotRecords, lotTris } = await readMarkings(glb);
+  const { tris, records, lotRecords, lotTris, roofs } = await readMarkings(glb);
   const roadLines = await readRoadLines(roadLinesFile);
   const lots = await readLots(lotsFile);
   const out = [];
@@ -683,6 +707,23 @@ export async function audit({ glb, lotsFile, roadLinesFile }) {
       const off = pts.filter((q) => !onLot(q));
       if (off.length) out.push({ check: "stall-lot", id: rec.id, detail: `${off.length} stall points off the Ground_Lot surface (road or grass)`, at: off[0] });
     });
+    // stalls clear of buildings: no bay stands in a building of the model (its centre under a roof by BUILDING_INSIDE_M)
+    // (the model's own buildings: the up-facing triangles of every BLD_* node; a point is inside when it and the four
+    // points BUILDING_INSIDE_M from it all lie under a roof)
+    const roofGrid = new Map();
+    for (const r of roofs) { const xs = r.map((q) => q[0]), zs = r.map((q) => q[1]); for (let i = Math.floor(Math.min(...xs) / 4); i <= Math.floor(Math.max(...xs) / 4); i += 1) for (let j = Math.floor(Math.min(...zs) / 4); j <= Math.floor(Math.max(...zs) / 4); j += 1) { const k = `${i},${j}`; if (!roofGrid.has(k)) roofGrid.set(k, []); roofGrid.get(k).push(r); } }
+    const inTri = (q, [a, b, c]) => { const s = (p1, p2) => (p2[0] - p1[0]) * (q[1] - p1[1]) - (p2[1] - p1[1]) * (q[0] - p1[0]); const d1 = s(a, b), d2 = s(b, c), d3 = s(c, a); return !((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0)); };
+    const underRoof = (q) => (roofGrid.get(`${Math.floor(q[0] / 4)},${Math.floor(q[1] / 4)}`) ?? []).some((r) => inTri(q, r));
+    const r0 = BUILDING_INSIDE_M;
+    records.forEach((rec) => {
+      if (TEMPLATES[rec.t]?.kind !== "stall") return;
+      const p = rec.p, o = [p.origin[0] / U, p.origin[1] / U];
+      const sinA = TEMPLATES[rec.t].angleDeg ? Math.sin((TEMPLATES[rec.t].angleDeg * Math.PI) / 180) : 1;
+      let s0 = 0;
+      const inside = [];
+      p.widths.forEach((w) => { const a2 = s0 + w / sinA / 2; const c = [o[0] + p.u[0] * a2 + p.v[0] * p.depth / 2, o[1] + p.u[1] * a2 + p.v[1] * p.depth / 2]; if ([[0, 0], [r0, 0], [-r0, 0], [0, r0], [0, -r0]].every(([dx, dz]) => underRoof([c[0] + dx, c[1] + dz]))) inside.push(c); s0 += w / sinA; });
+      if (inside.length) out.push({ check: "stall-building", id: rec.id, detail: `${inside.length} bay centres inside a building of the model (under its roof by over ${BUILDING_INSIDE_M} m)`, at: inside[0] });
+    });
     modelled = new Map(lots.map((l) => [l.id, 0]));
     for (const rec of records) if (TEMPLATES[rec.t]?.kind === "stall" && modelled.has(rec.p.lot)) modelled.set(rec.p.lot, modelled.get(rec.p.lot) + rec.p.bays);
     // within one instance pieces may touch or overlap (the parts of one glyph; the white wheelchair lifted over the blue
@@ -693,10 +734,17 @@ export async function audit({ glb, lotsFile, roadLinesFile }) {
     void lotRecords;
   }
   const covered = lineCoverage(roadLines, records, tris, out);
+  // photo paint under a roof of the model cannot be drawn without crossing a building: left out of both paint checks
+  // (the stall check also leaves out 1 m around the roofs: roof rims and relief-shifted paint at the walls)
+  const roofGridP = new Map();
+  for (const r of roofs) { const xs = r.map((q) => q[0]), zs = r.map((q) => q[1]); for (let i = Math.floor(Math.min(...xs) / 4); i <= Math.floor(Math.max(...xs) / 4); i += 1) for (let j = Math.floor(Math.min(...zs) / 4); j <= Math.floor(Math.max(...zs) / 4); j += 1) { const k = `${i},${j}`; if (!roofGridP.has(k)) roofGridP.set(k, []); roofGridP.get(k).push(r); } }
+  const inTriP = (q, [a, b, c]) => { const f = (p1, p2) => (p2[0] - p1[0]) * (q[1] - p1[1]) - (p2[1] - p1[1]) * (q[0] - p1[0]); const d1 = f(a, b), d2 = f(b, c), d3 = f(c, a); return !((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0)); };
+  const underRoofP = (q) => (roofGridP.get(`${Math.floor(q[0] / 4)},${Math.floor(q[1] / 4)}`) ?? []).some((r) => inTriP(q, r));
   const zones = await readRoadZones(path.join(FRONTEND, "..", "docs", "assets", "data", "road_zones_wgs84.geojson"));
   const footprints = await readFootprints(path.join(FRONTEND, "scripts", "campus-model", "data", "gis-buildings.json"));
-  const junctions = junctionPaint(await readJunctions(path.join(FRONTEND, "scripts", "campus-model", "data", "network", "roads.json")), zones, footprints, lots, await readJunctionReview(path.join(FRONTEND, "scripts", "campus-model", "data", "photo", "junction-paint-review.json")), tris.filter((t) => !t.context), out);
-  const lotsPaint = lotPaint(lots, tris.filter((t) => !t.context), records, out);
+  const junctions = junctionPaint(await readJunctions(path.join(FRONTEND, "scripts", "campus-model", "data", "network", "roads.json")), zones, footprints, lots, await readJunctionReview(path.join(FRONTEND, "scripts", "campus-model", "data", "photo", "junction-paint-review.json")), tris.filter((t) => !t.context), out, underRoofP);
+  const stallReview = JSON.parse(await Bun.file(path.join(FRONTEND, "scripts", "campus-model", "data", "photo", "stall-paint-review.json")).text()).rejectBlobs.map((r) => geoToModel(...r.near).map((v) => v / U));
+  const lotsPaint = lotPaint(lots, tris.filter((t) => !t.context), records, out, underRoofP, stallReview);
   const counts = lots.map((l) => ({ lot: l.id, photo: l.photoStalls, modelled: modelled.get(l.id) ?? 0 }));
   for (const c of counts) if (c.photo !== c.modelled) out.push({ check: "count", id: c.lot, detail: `photo ${c.photo} stalls, model ${c.modelled}` });
   return { failures: out, counts, coverage: covered, junctions, lotsPaint, triangles: tris.length, instances, mode: records ? "instances" : "geometry-only" };
@@ -715,7 +763,7 @@ if (import.meta.main) {
   }
   console.log(`markings audit: ${glb}`);
   console.log(`  mode ${result.mode}; ${result.triangles} marking triangles; ${result.instances} instance records; lots ${result.counts.length}`);
-  for (const check of ["template", "dimension", "straight", "overlap", "stall-lot", "spacing", "count", "coverage", "junction-paint", "stall-paint"]) {
+  for (const check of ["template", "dimension", "straight", "overlap", "stall-lot", "spacing", "count", "coverage", "stall-building", "junction-paint", "stall-paint"]) {
     const list = by.get(check) ?? [];
     console.log(`  ${list.length ? "FAIL" : "PASS"} ${check}: ${list.length}`);
     for (const f of list.slice(0, max)) console.log(`      ${f.id}${f.template ? ` [${f.template}]` : ""}: ${f.detail}${f.at ? ` @ (${(f.at[0] * U).toFixed(1)}, ${(f.at[1] * U).toFixed(1)}) scene` : ""}`);

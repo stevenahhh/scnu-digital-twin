@@ -280,6 +280,30 @@
    ],
    "junction": "J30",
    "reason": "edge of the red sidewalk paving and roof"
+  },
+  {
+   "near": [
+    127.48116484,
+    34.96958243
+   ],
+   "junction": "J09",
+   "reason": "white truck roof and the sidewalk edge beside it (vehicle, not paint)"
+  },
+  {
+   "near": [
+    127.47930797,
+    34.9685733
+   ],
+   "junction": "J24",
+   "reason": "no-standard: yellow and white hump band at the raised crossing; no standard graphic for the hump stripes is in the standards set and dev-next drew none here, so nothing is drawn (residual)"
+  },
+  {
+   "near": [
+    127.47933939,
+    34.96856798
+   ],
+   "junction": "J24",
+   "reason": "no-standard: the same hump band (residual)"
   }
  ]
 }

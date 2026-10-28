@@ -1,0 +1,29 @@
+{
+ "description": "By-eye review of the markings audit stall-paint check (qa/photoPaint.mjs thin white blobs in and around each lot) on the NGII sheet: blobs that are not stall paint (kerb stones, roof rims, building edges), each with its reason; a blob whose centre lies within 1.5 m of a point here is left out. WGS84.",
+ "rejectBlobs": [
+  {
+   "near": [
+    127.48204505,
+    34.96995953
+   ],
+   "lot": "P13",
+   "reason": "white kerb stones along the sidewalk edge beside the parallel frames, not stall paint"
+  },
+  {
+   "near": [
+    127.48191189,
+    34.96999154
+   ],
+   "lot": "P13",
+   "reason": "white kerb stones along the sidewalk edge beside the parallel frames, not stall paint"
+  },
+  {
+   "near": [
+    127.4829568,
+    34.97028795
+   ],
+   "lot": "B7 lot",
+   "reason": "light kerb strip along the B7 facade at the edge of its overhang (runs along the row, joined to the dividers in the mask), not stall paint"
+  }
+ ]
+}
