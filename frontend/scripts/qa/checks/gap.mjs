@@ -566,14 +566,32 @@ export const GAP_CHECKS = [
       });
       const before = await layout();
       const startCamera = await saveCamera(ctx);
+      // Each step waits (bounded) for the state it caused instead of a fixed delay a loaded renderer may not meet: the tour
+      // running, then presentation on with the pager shown and the chip size stable, then presentation off again.
+      const until = async (done, timeoutMs = 8000) => {
+        const deadline = Date.now() + timeoutMs;
+        let last = await layout();
+        while (Date.now() < deadline && !done(last)) {
+          await ctx.sleep(150);
+          last = await layout();
+        }
+        return last;
+      };
       const tour = (await ctx.b.tap("[data-qa=camera-tour-toggle]", null, { timeoutMs: 4000 })).ok;
-      await ctx.sleep(600);
+      const deadline = Date.now() + 4000;
+      while (Date.now() < deadline && !(await ctx.inPage((qa) => qa.one("[data-qa=camera-tour-toggle]")?.getAttribute("aria-pressed") === "true"))) await ctx.sleep(150);
       await ctx.b.key("p");
-      await ctx.sleep(1500);
-      const on = await layout();
+      let on = await until((m) => m.presenting && m.pager !== null);
+      // Chip text scales with a transition: read it once two samples agree.
+      for (let i = 0; i < 20; i += 1) {
+        await ctx.sleep(150);
+        const next = await layout();
+        const stable = next.chipPx === on.chipPx;
+        on = next;
+        if (stable) break;
+      }
       await ctx.b.key("Escape");
-      await ctx.sleep(1200);
-      const after = await layout();
+      const after = await until((m) => !m.presenting && m.toolbar === before.toolbar && m.panelVisible === before.panelVisible);
       // Stop the tour only if it still runs (Esc may already have ended it; a second tap would restart it and keep the
       // camera touring through the probe replay's later S01 checks), then return to the overview.
       if (await ctx.inPage((qa) => qa.one("[data-qa=camera-tour-toggle]")?.getAttribute("aria-pressed") === "true")) {
