@@ -164,6 +164,8 @@ export default function VWorldRenderer({
   const [hoveredLabelId, setHoveredLabelId] = useState(null);
   const highlightRef = useRef(null);
   const leftStackRef = useRef(null);
+  // 폰: 왼쪽 위 열(검색)의 아래 끝(지도 칸 기준 px). 왼쪽 아래 열은 여기까지만 자란다(검색·HUD를 덮지 않게).
+  const [leftStackBottom, setLeftStackBottom] = useState(null);
   const bottomStackRef = useRef(null);
   const simulationDateRef = useRef(simulationDate);
   const mapRef = useRef(null);
@@ -268,6 +270,18 @@ export default function VWorldRenderer({
   }, [focusLabelPosition]);
   const handleLabelCluster = useCallback((members) => focusLabelPosition(centroidOf(members)), [focusLabelPosition]);
   const defaultChromeRefs = useRef([leftStackRef, bottomStackRef]).current;
+  useEffect(() => {
+    const stack = leftStackRef.current;
+    if (!phone || isD4SectionOpen || !stack || typeof ResizeObserver !== "function") {
+      setLeftStackBottom(null);
+      return undefined;
+    }
+    const measure = () => setLeftStackBottom(Math.round(stack.offsetTop + stack.offsetHeight));
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(stack);
+    return () => observer.disconnect();
+  }, [phone, isD4SectionOpen]);
   const onCampusCameraRef = useRef(onCampusCamera);
   onCampusCameraRef.current = onCampusCamera;
   useEffect(() => {
@@ -556,6 +570,7 @@ export default function VWorldRenderer({
               className="pointer-events-auto"
               widthClassName="max-w-[18rem]"
               feedDown={energyFeedDown}
+              fitHeight={phone}
             />
     </>
   );
@@ -609,7 +624,9 @@ export default function VWorldRenderer({
               ref={bottomStackRef}
               data-qa="vworld-bottom-stack"
               data-label-chrome-layer=""
-              className="pointer-events-none absolute bottom-6 left-6 z-10 flex max-w-[calc(100%-3rem)] flex-col items-start gap-3"
+              className="pointer-events-none absolute bottom-6 left-6 z-10 flex max-w-[calc(100%-3rem)] flex-col items-start gap-3 [&>*]:shrink-0 [&>aside]:shrink"
+              // 폰: 상태 카드가 이 열로 오므로 열 높이를 왼쪽 위 열(검색) 아래까지로 묶는다(긴 설치 계획 목록은 카드 안에서 스크롤).
+              style={phone ? { maxHeight: leftStackBottom === null ? "calc(100% - var(--vworld-hud-bottom, 4.5rem) - 2.25rem)" : `calc(100% - ${leftStackBottom}px - 2.25rem)` } : undefined}
             >
               <VWorldCampusStatus
                 className="hidden max-w-[280px] lg:block"

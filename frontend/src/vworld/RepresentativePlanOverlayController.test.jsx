@@ -83,4 +83,14 @@ describe("RepresentativePlanOverlayController", () => {
     await waitFor(() => expect(loadOverlays.mock.calls.length).toBe(calls + 1));
     await waitFor(() => expect(screen.getByRole("button", { name: "다시 시도" })).toBeTruthy());
   });
+
+  it("lets only the plan list scroll inside a height-bounded column (phone), so the card shrinks instead of covering the HUD", async () => {
+    const view = render(<RepresentativePlanOverlayController buildingIds={["D4"]} loadOverlays={vi.fn().mockResolvedValue([overlay])} onOverlayDataChange={vi.fn()} fitHeight />);
+    const list = await screen.findByRole("list", { name: "건물별 대표 설치 계획 상태" });
+    expect(list.className).toMatch(/\boverflow-y-auto\b/);
+    expect(list.closest("aside").className).toMatch(/\bmin-h-0\b/);
+    view.unmount();
+    render(<RepresentativePlanOverlayController buildingIds={["D4"]} loadOverlays={vi.fn().mockResolvedValue([overlay])} onOverlayDataChange={vi.fn()} />);
+    expect((await screen.findByRole("list", { name: "건물별 대표 설치 계획 상태" })).className).not.toMatch(/overflow-y-auto/);
+  });
 });
