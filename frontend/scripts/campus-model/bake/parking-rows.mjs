@@ -700,7 +700,7 @@ console.log(`re-search rows trimmed to their painted dividers: ${trimmedBays} ba
     r.start = rot(o);
     r.u = rv(g0.u); r.v = rv(g0.v);
     r.end = [r.start[0] + r.u[0] * len, r.start[1] + r.u[1] * len];
-    r.photoDividers = r.photoDividers.map(rot);
+    // (the photo dividers stay where the photo shows them: they are the evidence the drawn row is measured against)
     r.registered = { ds: +best.ds.toFixed(2), dt: +best.dt.toFixed(2), deg: best.deg, gain: +(best.n / Math.max(1, base)).toFixed(2) };
     registered += 1;
   }
