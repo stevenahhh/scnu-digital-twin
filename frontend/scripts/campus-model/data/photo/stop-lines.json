@@ -1,0 +1,309 @@
+{
+ "source": "NGII 2025 orthophoto 34702020 (bake/stop-lines.mjs)",
+ "lines": [
+  {
+   "id": "SL-J14-1-S",
+   "kind": "stop_line",
+   "a": [
+    127.48091782,
+    34.96916311
+   ],
+   "b": [
+    127.48094795,
+    34.96916311
+   ],
+   "photoWidthM": 0.78,
+   "lengthM": 2.75,
+   "junction": "J14",
+   "evidence": "NGII 34702020 white paint at SL-J14-1 (by-eye corner)"
+  },
+  {
+   "id": "SL-J14-1-L",
+   "kind": "lane_line_solid",
+   "a": [
+    127.4809505,
+    34.9691853
+   ],
+   "b": [
+    127.48093556,
+    34.96913598
+   ],
+   "photoWidthM": 0.69,
+   "lengthM": 5.64,
+   "junction": "J14",
+   "evidence": "NGII 34702020 white paint at SL-J14-1 (by-eye corner)"
+  },
+  {
+   "id": "SL-J14-2-S",
+   "kind": "stop_line",
+   "a": [
+    127.48109298,
+    34.96920325
+   ],
+   "b": [
+    127.48109298,
+    34.96917397
+   ],
+   "photoWidthM": 0.84,
+   "lengthM": 3.25,
+   "junction": "J14",
+   "evidence": "NGII 34702020 white paint at SL-J14-2 (by-eye corner)"
+  },
+  {
+   "id": "SL-J14-2-L",
+   "kind": "lane_line_solid",
+   "a": [
+    127.48109041,
+    34.96918745
+   ],
+   "b": [
+    127.48110959,
+    34.96918744
+   ],
+   "photoWidthM": 0.74,
+   "lengthM": 1.75,
+   "junction": "J14",
+   "evidence": "NGII 34702020 white paint at SL-J14-2 (by-eye corner)"
+  },
+  {
+   "id": "SL-J18-1-S",
+   "kind": "stop_line",
+   "a": [
+    127.48125413,
+    34.96909234
+   ],
+   "b": [
+    127.48127056,
+    34.96909234
+   ],
+   "photoWidthM": 0.77,
+   "lengthM": 1.5,
+   "junction": "J18",
+   "evidence": "NGII 34702020 white paint at SL-J18-1 (by-eye corner)"
+  },
+  {
+   "id": "SL-J18-1-L",
+   "kind": "lane_line_solid",
+   "a": [
+    127.48127923,
+    34.96911453
+   ],
+   "b": [
+    127.48125866,
+    34.96906535
+   ],
+   "photoWidthM": 0.66,
+   "lengthM": 5.77,
+   "junction": "J18",
+   "evidence": "NGII 34702020 white paint at SL-J18-1 (by-eye corner)"
+  },
+  {
+   "id": "SL-J18-2-L",
+   "kind": "lane_line_solid",
+   "a": [
+    127.48146563,
+    34.96921312
+   ],
+   "b": [
+    127.48149299,
+    34.96921312
+   ],
+   "photoWidthM": 0.82,
+   "lengthM": 2.5,
+   "junction": "J18",
+   "evidence": "NGII 34702020 white paint at SL-J18-2 (by-eye corner)"
+  },
+  {
+   "id": "SL-J20-1-S",
+   "kind": "stop_line",
+   "a": [
+    127.4818064,
+    34.96897289
+   ],
+   "b": [
+    127.48184474,
+    34.96897288
+   ],
+   "photoWidthM": 0.79,
+   "lengthM": 3.5,
+   "junction": "J20",
+   "evidence": "NGII 34702020 white paint at SL-J20-1 (by-eye corner)"
+  },
+  {
+   "id": "SL-J20-1-L",
+   "kind": "lane_line_solid",
+   "a": [
+    127.4818476,
+    34.96899123
+   ],
+   "b": [
+    127.48183314,
+    34.96894352
+   ],
+   "photoWidthM": 0.7,
+   "lengthM": 5.46,
+   "junction": "J20",
+   "evidence": "NGII 34702020 white paint at SL-J20-1 (by-eye corner)"
+  },
+  {
+   "id": "SL-J20-2-S",
+   "kind": "stop_line",
+   "a": [
+    127.48199801,
+    34.96900811
+   ],
+   "b": [
+    127.481998,
+    34.96897208
+   ],
+   "photoWidthM": 0.85,
+   "lengthM": 4,
+   "junction": "J20",
+   "evidence": "NGII 34702020 white paint at SL-J20-2 (by-eye corner)"
+  },
+  {
+   "id": "SL-J20-2-L",
+   "kind": "lane_line_solid",
+   "a": [
+    127.48199539,
+    34.96899011
+   ],
+   "b": [
+    127.48202827,
+    34.96898964
+   ],
+   "photoWidthM": 0.78,
+   "lengthM": 3,
+   "junction": "J20",
+   "evidence": "NGII 34702020 white paint at SL-J20-2 (by-eye corner)"
+  },
+  {
+   "id": "SL-J20-4-S",
+   "kind": "stop_line",
+   "a": [
+    127.48185073,
+    34.96904476
+   ],
+   "b": [
+    127.48185073,
+    34.96902447
+   ],
+   "photoWidthM": 0.82,
+   "lengthM": 2.25,
+   "junction": "J20",
+   "evidence": "NGII 34702020 white paint at SL-J20-4 (by-eye corner)"
+  },
+  {
+   "id": "SL-J20-4-L",
+   "kind": "lane_line_solid",
+   "a": [
+    127.48184228,
+    34.96902471
+   ],
+   "b": [
+    127.48185872,
+    34.96902471
+   ],
+   "photoWidthM": 0.7,
+   "lengthM": 1.5,
+   "junction": "J20",
+   "evidence": "NGII 34702020 white paint at SL-J20-4 (by-eye corner)"
+  },
+  {
+   "id": "SL-J23-1-S",
+   "kind": "stop_line",
+   "a": [
+    127.48338974,
+    34.96865329
+   ],
+   "b": [
+    127.48338974,
+    34.96862177
+   ],
+   "photoWidthM": 0.86,
+   "lengthM": 3.5,
+   "junction": "J23",
+   "evidence": "NGII 34702020 white paint at SL-J23-1 (by-eye corner)"
+  },
+  {
+   "id": "SL-J23-1-L",
+   "kind": "lane_line_solid",
+   "a": [
+    127.48336751,
+    34.96863073
+   ],
+   "b": [
+    127.48338943,
+    34.96863073
+   ],
+   "photoWidthM": 0.81,
+   "lengthM": 2,
+   "junction": "J23",
+   "evidence": "NGII 34702020 white paint at SL-J23-1 (by-eye corner)"
+  },
+  {
+   "id": "SL-J25-3-S",
+   "kind": "stop_line",
+   "a": [
+    127.47740287,
+    34.96822412
+   ],
+   "b": [
+    127.47742473,
+    34.9682238
+   ],
+   "photoWidthM": 0.75,
+   "lengthM": 2,
+   "junction": "J25",
+   "evidence": "NGII 34702020 white paint at SL-J25-3 (by-eye corner)"
+  },
+  {
+   "id": "SL-J25-3-L",
+   "kind": "lane_line_solid",
+   "a": [
+    127.47743454,
+    34.96827149
+   ],
+   "b": [
+    127.47742158,
+    34.96822132
+   ],
+   "photoWidthM": 0.57,
+   "lengthM": 5.69,
+   "junction": "J25",
+   "evidence": "NGII 34702020 white paint at SL-J25-3 (by-eye corner)"
+  },
+  {
+   "id": "SL-J25-1-S",
+   "kind": "stop_line",
+   "a": [
+    127.47753156,
+    34.968228
+   ],
+   "b": [
+    127.47758632,
+    34.968228
+   ],
+   "photoWidthM": 0.8,
+   "lengthM": 5,
+   "junction": "J25",
+   "evidence": "NGII 34702020 white paint at SL-J25-1 (by-eye corner)"
+  },
+  {
+   "id": "SL-J25-1-L",
+   "kind": "lane_line_solid",
+   "a": [
+    127.47758343,
+    34.96824812
+   ],
+   "b": [
+    127.47758343,
+    34.96822785
+   ],
+   "photoWidthM": 0.75,
+   "lengthM": 2.25,
+   "junction": "J25",
+   "evidence": "NGII 34702020 white paint at SL-J25-1 (by-eye corner)"
+  }
+ ]
+}

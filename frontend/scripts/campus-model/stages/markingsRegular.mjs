@@ -24,6 +24,7 @@ import {
 } from "../lib/markingFit.mjs";
 import { TEMPLATES, crosswalkLength } from "../lib/markingStandards.mjs";
 import { readParkingLots } from "../lib/parkingRows.mjs";
+import { readFileSync } from "node:fs";
 import { geoToModel } from "../lib/frame.mjs";
 import { roadTextBlock } from "../lib/roadText.mjs";
 import {
@@ -478,6 +479,7 @@ export function regularise(drawn, ctx) {
   const zebraGroups = new Map();
   const glyphs = [];
   const groups = new Map();
+  const legacyHumps = [];
   for (const c of drawn) {
     const p = c.feature.properties;
     if (c.zebra) {
@@ -490,6 +492,12 @@ export function regularise(drawn, ctx) {
       // estimated (photo-hidden) pieces other than zebra bars are not drawn: no standard instance can be placed without
       // the photo showing the line it belongs to
       stats.estimatedLeft = (stats.estimatedLeft ?? 0) + 1;
+      continue;
+    }
+    if (p.group && c.kind === "speed_bump") {
+      // the bands of a striped hump: no standard graphic for the 과속방지턱 stripes is in the standards set, so the
+      // traced band paint dev-next drew is carried over unchanged (template legacy_preserved, evidence its trace id)
+      legacyHumps.push(c);
       continue;
     }
     if (p.group && !LINE_KINDS.has(c.kind)) {
@@ -939,6 +947,36 @@ export function regularise(drawn, ctx) {
       emitHatch({ ...humps[0], colour: yellow ? "yellow" : "white", id: humps.map((c) => c.id).join("+") }, [convexHull(humps.flatMap((c) => shapesM(c).flatMap((rings) => rings[0])))]);
     }
     for (const c of members) if (c.kind !== "speed_bump") emitRegularPolygon(c, directions);
+  }
+
+  // stop lines meeting lane lines read on the photo (bake/stop-lines.mjs): the stop line on its standard width, the lane
+  // line stub on the solid lane template
+  const photoStops = JSON.parse(readFileSync(new URL("../data/photo/stop-lines.json", import.meta.url), "utf8")).lines;
+  for (const l of photoStops) {
+    const a = geoToModel(...l.a).map((v) => v / U), b = geoToModel(...l.b).map((v) => v / U);
+    const tid = l.kind === "stop_line" ? "stop_line" : "lane_solid";
+    const t = TEMPLATES[tid];
+    const d = unit(sub(b, a));
+    emit([rect(scale(add(a, b), 0.5), d, perpOf(d), norm(sub(b, a)) / 2, t.widthM / 2)], "white", l.kind, { inst: { t: tid, ev: l.id, p: { shape: "straight", a: toScene(a), b: toScene(b), w: t.widthM, dash: false } } });
+    stats.photoStops = (stats.photoStops ?? 0) + 1;
+  }
+  // curved yellow kerb lines read along the sidewalk outlines (bake/kerb-lines.mjs): each straight piece of the line
+  // on the no_parking_line template, shortened at the joints so neighbouring pieces do not overlap
+  for (const l of JSON.parse(readFileSync(new URL("../data/photo/kerb-lines.json", import.meta.url), "utf8")).lines) {
+    const pts = l.points.map((q) => geoToModel(...q).map((v) => v / U));
+    const t = TEMPLATES.no_parking_line;
+    const w = t.widthM;
+    const cut = (i) => { if (i <= 0 || i >= pts.length - 1) return 0; const d1 = unit(sub(pts[i - 1], pts[i])), d2 = unit(sub(pts[i + 1], pts[i])); const phi = Math.acos(Math.max(-1, Math.min(1, dot(d1, d2)))); return w / 2 / Math.max(0.2, Math.tan(phi / 2)) + 0.01; };
+    for (let i = 1; i < pts.length; i += 1) {
+      const d = unit(sub(pts[i], pts[i - 1]));
+      const a = add(pts[i - 1], scale(d, cut(i - 1))), b = sub(pts[i], scale(d, cut(i)));
+      if (norm(sub(b, a)) < 0.2) continue;
+      emit([rect(scale(add(a, b), 0.5), d, perpOf(d), norm(sub(b, a)) / 2, w / 2)], t.colour, "kerb_no_parking", { inst: { t: "no_parking_line", ev: `${l.id} piece ${i}`, p: { shape: "straight", a: toScene(a), b: toScene(b), w, dash: false } } });
+    }
+  }
+  for (const c of legacyHumps) {
+    for (const rings of shapesM(c)) emit(rings, c.colour, c.kind, { inst: { t: "legacy_preserved", ev: c.id, p: { group: c.feature.properties.group, source: "dev-next 37fd445 traced hump band" } } });
+    stats.legacyHumps = (stats.legacyHumps ?? 0) + 1;
   }
 
   // ---- symbols

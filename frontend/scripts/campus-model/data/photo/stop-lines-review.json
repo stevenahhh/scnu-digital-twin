@@ -1,0 +1,95 @@
+{
+ "description": "By-eye corners (NGII sheet) where a stop line meets a lane line and the traces have no stop line; read by bake/stop-lines.mjs. WGS84.",
+ "corners": [
+  {
+   "id": "SL-J14-1",
+   "junction": "J14",
+   "near": [
+    127.48094121,
+    34.96916059
+   ],
+   "reason": "white stop line meeting the lane line at the junction mouth on the photo; no trace there"
+  },
+  {
+   "id": "SL-J14-2",
+   "junction": "J14",
+   "near": [
+    127.48109298,
+    34.96918555
+   ],
+   "reason": "white stop line meeting the lane line at the junction mouth on the photo; no trace there"
+  },
+  {
+   "id": "SL-J18-1",
+   "junction": "J18",
+   "near": [
+    127.48126654,
+    34.96909027
+   ],
+   "reason": "white stop line meeting the lane line at the junction mouth on the photo; no trace there"
+  },
+  {
+   "id": "SL-J18-2",
+   "junction": "J18",
+   "near": [
+    127.48146146,
+    34.96922367
+   ],
+   "reason": "white stop line meeting the lane line at the junction mouth on the photo; no trace there"
+  },
+  {
+   "id": "SL-J20-1",
+   "junction": "J20",
+   "near": [
+    127.48183638,
+    34.96896865
+   ],
+   "reason": "white stop line meeting the lane line at the junction mouth on the photo; no trace there"
+  },
+  {
+   "id": "SL-J20-2",
+   "junction": "J20",
+   "near": [
+    127.48200447,
+    34.96898829
+   ],
+   "reason": "white stop line meeting the lane line at the junction mouth on the photo; no trace there"
+  },
+  {
+   "id": "SL-J20-4",
+   "junction": "J20",
+   "near": [
+    127.48183167,
+    34.96899884
+   ],
+   "reason": "white stop line meeting the lane line at the junction mouth on the photo; no trace there"
+  },
+  {
+   "id": "SL-J23-1",
+   "junction": "J23",
+   "near": [
+    127.48338602,
+    34.96863551
+   ],
+   "reason": "white stop line meeting the lane line at the junction mouth on the photo; no trace there"
+  },
+  {
+   "id": "SL-J25-3",
+   "junction": "J25",
+   "near": [
+    127.47742432,
+    34.96824234
+   ],
+   "reason": "white stop line meeting the lane line at the junction mouth on the photo; no trace there"
+  },
+  {
+   "id": "SL-J25-1",
+   "junction": "J25",
+   "near": [
+    127.47756229,
+    34.96822981
+   ],
+   "reason": "white edge line turning into the stop line at the corner by the yellow island (read first as a parking frame); no trace there"
+  }
+ ]
+}
