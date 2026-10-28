@@ -1029,7 +1029,7 @@ export function describeMarkings({ log, crossings, zebras, warnings = [] }) {
     ...(log.regular ? [describeRegular(log.regular)] : []),
     ...(log.parking ? [`  standard instances: ${log.instances} (lib/markingStandards.mjs templates); parking: ${log.parking.lots} lots, ${log.parking.rows} rows, ${log.parking.bays} bays (${log.parking.accessible} accessible) from data/photo/parking-lots.json, rows left out on buildings or sidewalks: ${log.parking.skippedRows.join(", ") || "none"}, drawn dividers vs photo dividers at most ${Math.max(0, ...log.parking.residualM.map((r) => r.m)).toFixed(2)} m; ` +
       `overlaps: ${log.overlaps.pairs} close pairs, ${log.overlaps.cut} lines cut, ${log.overlaps.dropped.length} instances left out (${log.overlaps.dropped.slice(0, 12).join("; ")}${log.overlaps.dropped.length > 12 ? "; ..." : ""}); ` +
-      `not drawn: ${log.regular.stallLinesLeft ?? 0} traced stall lines, ${log.regular.groupsLeft ?? 0} traced group pieces, ${log.regular.estimatedLeft ?? 0} estimated pieces, untemplated ${JSON.stringify(log.regular.untemplated ?? {})}; photo arrow lengths ${JSON.stringify(log.regular.arrowLengths ?? [])}`] : []),
+      `not drawn: ${log.regular.stallLinesLeft ?? 0} traced stall lines, stop lines without a lane or under 2 m ${(log.regular.stopLinesLeft ?? []).join(" ") || "none"}, ${log.regular.groupsLeft ?? 0} traced group pieces, ${log.regular.estimatedLeft ?? 0} estimated pieces, untemplated ${JSON.stringify(log.regular.untemplated ?? {})}; photo arrow lengths ${JSON.stringify(log.regular.arrowLengths ?? [])}`] : []),
     ...crossings.map((line) => `  crossing ${line}`),
   ].join("\n");
 }

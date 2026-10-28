@@ -82,6 +82,7 @@ const ZEBRA_ROW_GAP_M = 1.0;
 const ARROW_HEAD_SHARE = 0.25;
 const LINE_GAP_TEXT = 0.25;
 const HATCH_LINK_M = 1.2;
+const STOP_MIN_M = 2.0;
 // the standard period (bar 0.45 m + gap 0.45 m, lib/markingStandards.mjs crosswalk): every row on it
 const ZEBRA_PERIOD_RANGE_M = [0.9, 0.9];
 const ZEBRA_ALIGN_PERIOD_M = 0.005;
@@ -762,6 +763,12 @@ export function regularise(drawn, ctx) {
     const width = ctx.statute.stopLineWidth(c.feature.properties.width_m ?? 2 * box.halfShort).width;
     let along = box.long;
     const lane = directionNear(box.centre, STOP_REACH_M, (d) => angleBetween(perpOf(d), box.long) <= STOP_SNAP_DEG);
+    // a stop line closes a lane: shorter than STOP_MIN_M or with no lane line to square to, it is a stray piece of paint
+    // (a stall end or a kerb mark in a lot), not a stop line
+    if (2 * box.halfLong < STOP_MIN_M || !lane) {
+      stats.stopLinesLeft = [...(stats.stopLinesLeft ?? []), c.id];
+      continue;
+    }
     if (lane) {
       along = perpOf(lane.dir);
       stats.stopSquared += 1;
