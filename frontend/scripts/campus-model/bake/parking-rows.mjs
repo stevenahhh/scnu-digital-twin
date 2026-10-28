@@ -652,7 +652,7 @@ console.log(`re-search rows trimmed to their painted dividers: ${trimmedBays} ba
     }
   }
   // every row registered on the photo paint: the drawn strokes (statute widths, lib/parkingRows.mjs) moved along and
-  // across the row (+-1.4 m: over half a bay, +-3.0 m) and turned (+-3 deg), coarse then fine (0.05 m, 0.5 deg), to cover the most white paint the photo
+  // across the row (+-1.4 m: over half a bay, +-3.0 m) and turned (+-2 deg), coarse then fine (0.05 m, 0.5 deg), to cover the most white paint the photo
   // shows within 0.1 m of them (qa/photoPaint.mjs, light-lot setting); the row keeps that placement (registered)
   let registered = 0;
   for (const r of kept) {
@@ -687,10 +687,10 @@ console.log(`re-search rows trimmed to their painted dividers: ${trimmedBays} ba
     const base = best.n;
     // coarse (0.2 m, 1 deg), then fine (0.05 m, 0.5 deg) around the coarse best
     // (a row along a by-eye front line keeps that line's direction: moved, not turned)
-    const degs = r.sources.some((x) => x.startsWith("review ")) ? [0] : [-3, -2, -1, 0, 1, 2, 3];
+    const degs = r.sources.some((x) => x.startsWith("review ")) ? [0] : [-2, -1, 0, 1, 2];
     for (const deg of degs) for (let ds = -1.4; ds <= 1.4 + 1e-9; ds += 0.2) for (let dt = -3.0; dt <= 3.0 + 1e-9; dt += 0.2) { const n = score(ds, dt, deg); if (n > best.n * 1.02) best = { n, ds, dt, deg }; }
     const c0 = { ...best };
-    for (const deg of degs.length === 1 ? [0] : [c0.deg - 1, c0.deg - 0.5, c0.deg, c0.deg + 0.5, c0.deg + 1]) for (let ds = c0.ds - 0.2; ds <= c0.ds + 0.2 + 1e-9; ds += 0.05) for (let dt = c0.dt - 0.2; dt <= c0.dt + 0.2 + 1e-9; dt += 0.05) { const n = score(ds, dt, deg); if (n > best.n) best = { n, ds, dt, deg }; }
+    for (const deg of degs.length === 1 ? [0] : [c0.deg - 0.5, c0.deg, c0.deg + 0.5].filter((x) => Math.abs(x) <= 2)) for (let ds = c0.ds - 0.2; ds <= c0.ds + 0.2 + 1e-9; ds += 0.05) for (let dt = c0.dt - 0.2; dt <= c0.dt + 0.2 + 1e-9; dt += 0.05) { const n = score(ds, dt, deg); if (n > best.n) best = { n, ds, dt, deg }; }
     if (best.n <= base) continue;
     const c = Math.cos((best.deg * Math.PI) / 180), s = Math.sin((best.deg * Math.PI) / 180);
     const rot = (p) => [o[0] + (p[0] - o[0]) * c - (p[1] - o[1]) * s + g0.u[0] * best.ds + g0.v[0] * best.dt, o[1] + (p[0] - o[0]) * s + (p[1] - o[1]) * c + g0.u[1] * best.ds + g0.v[1] * best.dt];
