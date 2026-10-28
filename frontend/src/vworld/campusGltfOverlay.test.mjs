@@ -277,3 +277,48 @@ test("does not read the deprecated readyPromise when Cesium has fromGltfAsync", 
     globalThis.setTimeout = originalSetTimeout;
   }
 });
+
+test("anchors at the terrain provider's fixed-level height, not a coarse tile the globe holds", async () => {
+  const statuses = [];
+  const levels = [];
+  const cesium = {
+    ...fakeCesium(),
+    sampleTerrain: async (provider, level, positions) => { levels.push(level); return positions.map((p) => ({ ...p, height: 65.28 })); },
+  };
+  const viewer = {
+    terrainProvider: {},
+    // A coarse tile that holds steady inside the plausible band: the poll alone would anchor on it.
+    scene: { globe: { tilesLoaded: true, getHeight: () => 85.6 }, primitives: { add: (value) => value } },
+  };
+  const model = await createCampusGltfOverlay({ _wsViewer: viewer }, cesium, { onStatus: (status) => statuses.push(status) });
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(levels, [15]);
+  assert.deepEqual(statuses.map(({ state }) => state), ["loading", "anchored"]);
+  assert.equal(model.modelMatrix.left.left.left.origin.height, 65.28 + CAMPUS_GLTF_OVERLAY_CONFIG.terrainOffsetMeters);
+});
+
+test("falls back to the globe poll when the terrain sample fails", async () => {
+  const callbacks = [];
+  const statuses = [];
+  const originalWarn = console.warn;
+  console.warn = () => {};
+  const cesium = { ...fakeCesium(), sampleTerrain: async () => { throw new Error("tile request failed"); } };
+  const viewer = {
+    terrainProvider: {},
+    scene: { globe: { tilesLoaded: true, getHeight: () => 65.2 }, primitives: { add: (value) => value } },
+  };
+  let model;
+  const originalSetTimeout = globalThis.setTimeout;
+  globalThis.setTimeout = (callback) => { callbacks.push(callback); return 0; };
+  try {
+    model = await createCampusGltfOverlay({ _wsViewer: viewer }, cesium, { onStatus: (status) => statuses.push(status) });
+    // Let the rejected sample settle (it schedules the fallback poll), then run the scheduled polls.
+    await new Promise((resolve) => setImmediate(resolve));
+    while (callbacks.length) callbacks.shift()();
+  } finally {
+    globalThis.setTimeout = originalSetTimeout;
+    console.warn = originalWarn;
+  }
+  assert.deepEqual(statuses.map(({ state }) => state), ["loading", "anchored"]);
+  assert.equal(model.modelMatrix.left.left.left.origin.height, 65.2 + CAMPUS_GLTF_OVERLAY_CONFIG.terrainOffsetMeters);
+});
