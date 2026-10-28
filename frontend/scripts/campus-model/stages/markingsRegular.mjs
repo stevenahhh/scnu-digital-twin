@@ -537,7 +537,7 @@ export function regularise(drawn, ctx) {
       const dotted = Boolean(p.dotted);
       const dashed = c.kind === "lane_line_dashed" || Boolean(p.dashed) || dotted;
       const double = Boolean(p.double) && !c.singled;
-      fragments.push({ c, id: c.id, lineId: p.line_id, points: resample(points, 0.25), kind: c.kind, colour: c.colour, dashed, dotted, double, width });
+      fragments.push({ c, id: c.id, lineId: p.line_id, points: resample(points, 0.25), kind: c.kind, colour: c.colour, dashed, dotted, double, width, photo: c.file === "road-lines" });
       continue;
     }
     glyphs.push(c);
@@ -545,7 +545,8 @@ export function regularise(drawn, ctx) {
 
   // chain per kind, colour, double and dashed; parking lines and give-way dashes stay single (parallel stall
   // dividers and the dashes of a give-way line are separate marks)
-  const keyOf = (f) => `${f.kind}|${f.colour}|${f.double}|${f.dashed}|${f.dotted}`;
+  // the photo road lines (bake/road-lines.mjs) are whole lines already: each is fitted on its own, never chained
+  const keyOf = (f) => `${f.kind}|${f.colour}|${f.double}|${f.dashed}|${f.dotted}|${Boolean(f.photo)}`;
   const byKey = new Map();
   for (const f of fragments) {
     if (!byKey.has(keyOf(f))) byKey.set(keyOf(f), []);
@@ -554,14 +555,14 @@ export function regularise(drawn, ctx) {
   const chains = [];
   for (const list of byKey.values()) {
     const { kind, colour, double, dashed, dotted } = list[0];
-    const single = kind === "parking_line" || kind === "give_way_line";
+    const single = kind === "parking_line" || kind === "give_way_line" || list[0].photo;
     const raw = single ? list.map((f) => ({ ids: [f.id], points: f.points })) : chainFragments(list, { maxGap: dashed ? CHAIN_GAP_M.dashed : CHAIN_GAP_M.solid });
     const byId = new Map(list.map((f) => [f.id, f]));
     for (const chain of raw) {
       const members = chain.ids.map((id) => byId.get(id));
       stats.fragments += members.length;
       const fit = fitPath(chain.points, { fillet: !single });
-      chains.push({ kind, colour, double, dashed, dotted, members, fit, path: fit.path, ids: chain.ids });
+      chains.push({ kind, colour, double, dashed, dotted, members, fit, path: fit.path, ids: chain.ids, photo: Boolean(list[0].photo) });
     }
   }
   stats.chains = chains.length;
@@ -602,7 +603,8 @@ export function regularise(drawn, ctx) {
   }
 
   // one line where two fitted lines of one colour cover the same paint
-  chains.sort((a, b) => polylineLength(b.path) - polylineLength(a.path));
+  // a photo road line outranks traced fragments of the same paint (it is the continuous reading); then the longer
+  chains.sort((a, b) => (b.photo === a.photo ? polylineLength(b.path) - polylineLength(a.path) : b.photo ? 1 : -1));
   for (let i = 0; i < chains.length; i += 1) {
     const small = chains[i];
     for (let j = 0; j < i && !small.duplicate; j += 1) {
@@ -648,7 +650,7 @@ export function regularise(drawn, ctx) {
       const s1 = Math.min(b, pc.s1);
       if (s1 - s0 < (dash ? 0.05 : 0.3)) continue;
       const whole = dash && s0 <= a + 1e-6 && s1 >= b - 1e-6;
-      if (dash && !whole) continue; // a dash across a straight-to-arc joint would not be a whole dash on either
+      // a dash across a straight-to-arc joint is drawn as its two parts (each its own instance, not checked as a whole dash)
       if (pc.type === "line") {
         const at = (x) => add(pc.from, scale(sub(pc.to, pc.from), (x - pc.s0) / (pc.s1 - pc.s0)));
         const d = unit(sub(pc.to, pc.from));
@@ -668,7 +670,10 @@ export function regularise(drawn, ctx) {
       }
     }
   };
+  const debugIds = (process.env.MARKINGS_DEBUG_IDS ?? "").split(",").filter(Boolean);
   for (const ch of chains) {
+    const debug = debugIds.length && ch.ids.some((id) => debugIds.includes(id));
+    if (debug) console.log(`MARKINGS_DEBUG chain ${ch.ids.join("+")} kind ${ch.kind} ${ch.colour} dashed ${ch.dashed} duplicate ${ch.duplicate ?? "-"} length ${polylineLength(ch.path).toFixed(1)} pieces ${ch.fit.pieces.map((p) => p.type).join("/")}`);
     if (ch.duplicate) continue;
     let tid = lineTemplate(ch);
     if (!tid) {
@@ -711,6 +716,7 @@ export function regularise(drawn, ctx) {
       }
       if (run) runs.push(run);
       if (runs.length !== 1 || runs[0][0] > a || runs[0][1] < b) stats.dropped.blocked += 1;
+      if (debug) console.log(`MARKINGS_DEBUG   interval ${a.toFixed(1)}-${b.toFixed(1)} runs ${runs.map(([x, y]) => `${x.toFixed(1)}-${y.toFixed(1)}`).join(" ")}`);
       for (const [r0, r1] of runs) {
         if (t.dashM && (r0 > a + 1e-6 || r1 < b - 1e-6)) continue; // only whole dashes
         if (r1 - r0 < (t.dashM ? t.dashM - 1e-6 : 1)) continue;
