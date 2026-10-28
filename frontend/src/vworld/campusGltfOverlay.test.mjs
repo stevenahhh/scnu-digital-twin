@@ -322,3 +322,25 @@ test("falls back to the globe poll when the terrain sample fails", async () => {
   assert.deepEqual(statuses.map(({ state }) => state), ["loading", "anchored"]);
   assert.equal(model.modelMatrix.left.left.left.origin.height, 65.2 + CAMPUS_GLTF_OVERLAY_CONFIG.terrainOffsetMeters);
 });
+
+test("waits for a Cesium 1.99 terrain provider to be ready before sampling the anchor", async () => {
+  const statuses = [];
+  let ready = false;
+  let releaseReady;
+  const provider = { ready: false, readyPromise: new Promise((resolve) => { releaseReady = () => { ready = true; provider.ready = true; resolve(true); }; }) };
+  const cesium = {
+    ...fakeCesium(),
+    sampleTerrain: async (p, level, positions) => {
+      if (!ready) throw new Error("terrainProvider not ready");
+      return positions.map((position) => ({ ...position, height: 65.28 }));
+    },
+  };
+  const viewer = { terrainProvider: provider, scene: { globe: { tilesLoaded: true, getHeight: () => 85.6 }, primitives: { add: (value) => value } } };
+  const model = await createCampusGltfOverlay({ _wsViewer: viewer }, cesium, { onStatus: (status) => statuses.push(status) });
+  releaseReady();
+  await new Promise((resolve) => setImmediate(resolve));
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(statuses.map(({ state }) => state), ["loading", "anchored"]);
+  assert.equal(model.anchorSource, "terrain-sample");
+  assert.equal(model.modelMatrix.left.left.left.origin.height, 65.28 + CAMPUS_GLTF_OVERLAY_CONFIG.terrainOffsetMeters);
+});

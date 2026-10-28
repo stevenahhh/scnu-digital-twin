@@ -110,7 +110,23 @@ export async function sampleAnchorGroundHeight(viewer, Cesium, { level = ANCHOR_
   let timer;
   try {
     const timeout = new Promise((resolve) => { timer = setTimeout(() => resolve(null), timeoutMs); });
-    const sampled = await Promise.race([Cesium.sampleTerrain(provider, level, [position]).then((points) => points?.[0]?.height ?? null), timeout]);
+    // Cesium 1.99 (the VWorld SDK) rejects sampleTerrain until the provider is ready, and the overlay is created before
+    // the VWorld terrain is: wait for it first (readyPromise; newer Cesium providers are ready when constructed).
+    const sample = async () => {
+      if (provider.readyPromise && provider.ready !== true) await provider.readyPromise;
+      // A tile request can fail once while the SDK is still starting; try the anchor tile a few times.
+      let lastError = null;
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        try {
+          const points = await Cesium.sampleTerrain(provider, level, [position]);
+          return points?.[0]?.height ?? null;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      throw lastError;
+    };
+    const sampled = await Promise.race([sample(), timeout]);
     return isPlausibleGroundHeight(sampled) ? sampled : null;
   } catch (error) {
     // A failed tile request is not fatal: the caller falls back to the globe poll.
