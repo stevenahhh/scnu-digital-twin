@@ -35,7 +35,7 @@ const Rail = forwardRef(function Rail({ activeTab, onOpen, className }, toggleRe
       data-qa="dashboard-rail"
       className={cx("pointer-events-auto absolute inset-y-0 flex w-[var(--dashboard-rail-width)] flex-col items-center gap-2 border-l border-hairline bg-surface-1 py-4", className)}
     >
-      <h2 className="sr-only">{dashboardTitle(activeTab)}</h2>
+      <h2 className="sr-only text-body">{dashboardTitle(activeTab)}</h2>
       <Button
         ref={toggleRef}
         variant="ghost"
@@ -58,7 +58,7 @@ const Rail = forwardRef(function Rail({ activeTab, onOpen, className }, toggleRe
             aria-current={tab.value === activeTab ? "page" : undefined}
             icon={<Icon aria-hidden="true" className="h-5 w-5" />}
             onClick={() => onOpen(tab.value)}
-            className={cx(TARGET_44, tab.value === activeTab && "bg-surface-2 text-ink")}
+            className={cx(TARGET_44, tab.value === activeTab && "!bg-surface-2 !text-ink")}
           />
         );
       })}
@@ -141,7 +141,8 @@ export const DashboardShell = forwardRef(function DashboardShell(
     const expanded = detent !== "peek";
     const selectTab = (tab) => {
       onTabChange(tab);
-      onDetentChange("full");
+      // 탭을 고르면 시트를 반만 올린다(peek일 때만). 전체 높이는 사용자가 끌어 올린다(AUDIT V-S-92: 지도 절반은 남는다).
+      if (detent === "peek") onDetentChange("half");
     };
     return (
       <Sheet

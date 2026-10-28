@@ -38,7 +38,9 @@ describe("DashboardPanel", () => {
 
   it("is an opaque surface with no blur or heavy shadow, titled with the view it shows", () => {
     const { container, rerender } = renderPanel();
-    const surface = container.querySelector("section");
+    // The panel is a named region, not a card section (V-F-27: no h2 inside a card).
+    const surface = screen.getByRole("region", { name: "대시보드" });
+    expect(container.querySelector("section")).toBeNull();
     expect(surface.className).toMatch(/\bbg-surface-1\b/);
     expect(surface.className).not.toMatch(/backdrop|shadow-2xl|color-mix/);
     expect(screen.getByRole("heading", { level: 2 }).textContent).toBe("순천대 캠퍼스 · 기본 현황");

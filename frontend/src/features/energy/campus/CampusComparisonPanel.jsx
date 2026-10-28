@@ -214,7 +214,21 @@ export function CampusComparison({ client, initialDate = "2026-05-18", onOpenRec
           {state.data.ranked.length === 0 ? (
             <p className="py-4 text-center text-body text-ink-muted">비교할 대표 설치안이 없습니다</p>
           ) : (
-            <ComparisonTable ranked={state.data.ranked} onOpenRecommendation={onOpenRecommendation} />
+            <>
+              {/* 순위는 순서 있는 목록, 지표 비교는 표(같은 순서의 열). */}
+              <ol aria-label="추천 순위" data-qa="campus-ranking" className="flex flex-col gap-1">
+                {state.data.ranked.map((item, index) => (
+                  <li key={`${item.buildingId}-${item.scenarioId ?? index}`} className="flex items-baseline justify-between gap-2 text-body text-ink">
+                    <span className="min-w-0 break-keep">
+                      <span className="mr-2 tabular-nums text-ink-muted">{index + 1}</span>
+                      {item.buildingName}
+                    </span>
+                    <span className="shrink-0 tabular-nums">{percent(item.score)}</span>
+                  </li>
+                ))}
+              </ol>
+              <ComparisonTable ranked={state.data.ranked} onOpenRecommendation={onOpenRecommendation} />
+            </>
           )}
           {top && (
             <Button

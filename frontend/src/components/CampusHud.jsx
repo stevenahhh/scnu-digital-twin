@@ -41,7 +41,7 @@ export const CampusHud = forwardRef(function CampusHud(
       ref={ref}
       data-qa="campus-hud"
       data-label-chrome-layer=""
-      className="pointer-events-none absolute left-0 top-0 z-[6] transition-[right] duration-300"
+      className="pointer-events-none absolute left-0 top-0 z-[6] transition-none"
       style={{ right: insetRight, bottom: phone ? `${SHELL_PEEK_HEIGHT}px` : "0px" }}
     >
       <div className="absolute left-4 right-4 top-4 flex flex-wrap items-start gap-2">
@@ -56,7 +56,8 @@ export const CampusHud = forwardRef(function CampusHud(
         {search && <SearchField registry={search.registry} onPick={search.onPick} />}
         {toggle}
         {compareSlot}
-        {!phone && <Wordmark className="ml-auto mt-2.5 text-ink-muted" />}
+        {/* 장면 위에 바로 놓이므로 칩과 같은 반투명 바탕(label-bg) 위에 둔다: 라이트 테마·밤 장면에서도 읽힌다(V-F-17). */}
+        {!phone && <Wordmark className="ml-auto mt-1.5 rounded-control bg-[var(--colors-label-bg)] px-2 py-1 text-ink-muted" />}
       </div>
       <TimeSlider
         minuteOfDay={clock.sceneMinuteOfDay}

@@ -277,3 +277,105 @@ test("does not read the deprecated readyPromise when Cesium has fromGltfAsync", 
     globalThis.setTimeout = originalSetTimeout;
   }
 });
+
+test("anchors at the terrain provider's fixed-level height, not a coarse tile the globe holds", async () => {
+  const statuses = [];
+  const levels = [];
+  const cesium = {
+    ...fakeCesium(),
+    sampleTerrain: async (provider, level, positions) => { levels.push(level); return positions.map((p) => ({ ...p, height: 65.28 })); },
+  };
+  const viewer = {
+    terrainProvider: {},
+    // A coarse tile that holds steady inside the plausible band: the poll alone would anchor on it.
+    scene: { globe: { tilesLoaded: true, getHeight: () => 85.6 }, primitives: { add: (value) => value } },
+  };
+  const model = await createCampusGltfOverlay({ _wsViewer: viewer }, cesium, { onStatus: (status) => statuses.push(status) });
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(levels, [15]);
+  assert.deepEqual(statuses.map(({ state }) => state), ["loading", "anchored"]);
+  assert.equal(model.modelMatrix.left.left.left.origin.height, 65.28 + CAMPUS_GLTF_OVERLAY_CONFIG.terrainOffsetMeters);
+});
+
+test("falls back to the globe poll when the terrain sample fails", async () => {
+  const callbacks = [];
+  const statuses = [];
+  const originalWarn = console.warn;
+  console.warn = () => {};
+  const cesium = { ...fakeCesium(), sampleTerrain: async () => { throw new Error("tile request failed"); } };
+  const viewer = {
+    terrainProvider: {},
+    scene: { globe: { tilesLoaded: true, getHeight: () => 65.2 }, primitives: { add: (value) => value } },
+  };
+  let model;
+  const originalSetTimeout = globalThis.setTimeout;
+  const originalNow = Date.now;
+  let now = originalNow();
+  Date.now = () => now;
+  globalThis.setTimeout = (callback) => { callbacks.push(callback); return 0; };
+  try {
+    model = await createCampusGltfOverlay({ _wsViewer: viewer }, cesium, { onStatus: (status) => statuses.push(status) });
+    // The sample retries until its deadline: step a fake clock past it, then run the fallback polls it schedules.
+    for (let i = 0; i < 200 && statuses.length < 2; i += 1) {
+      await new Promise((resolve) => setImmediate(resolve));
+      now += 1000;
+      while (callbacks.length) callbacks.shift()();
+    }
+  } finally {
+    globalThis.setTimeout = originalSetTimeout;
+    Date.now = originalNow;
+    console.warn = originalWarn;
+  }
+  assert.deepEqual(statuses.map(({ state }) => state), ["loading", "anchored"]);
+  assert.equal(model.modelMatrix.left.left.left.origin.height, 65.2 + CAMPUS_GLTF_OVERLAY_CONFIG.terrainOffsetMeters);
+});
+
+test("waits for a Cesium 1.99 terrain provider to be ready before sampling the anchor", async () => {
+  const statuses = [];
+  let ready = false;
+  let releaseReady;
+  const provider = { ready: false, readyPromise: new Promise((resolve) => { releaseReady = () => { ready = true; provider.ready = true; resolve(true); }; }) };
+  const cesium = {
+    ...fakeCesium(),
+    sampleTerrain: async (p, level, positions) => {
+      if (!ready) throw new Error("terrainProvider not ready");
+      return positions.map((position) => ({ ...position, height: 65.28 }));
+    },
+  };
+  const viewer = { terrainProvider: provider, scene: { globe: { tilesLoaded: true, getHeight: () => 85.6 }, primitives: { add: (value) => value } } };
+  const model = await createCampusGltfOverlay({ _wsViewer: viewer }, cesium, { onStatus: (status) => statuses.push(status) });
+  releaseReady();
+  await new Promise((resolve) => setImmediate(resolve));
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(statuses.map(({ state }) => state), ["loading", "anchored"]);
+  assert.equal(model.anchorSource, "terrain-sample");
+  assert.equal(model.modelMatrix.left.left.left.origin.height, 65.28 + CAMPUS_GLTF_OVERLAY_CONFIG.terrainOffsetMeters);
+});
+
+test("keeps sampling while the viewer still holds the ellipsoid provider and anchors once the terrain provider arrives", async () => {
+  const statuses = [];
+  const ellipsoid = { name: "ellipsoid" };
+  const terrain = { name: "vworld" };
+  const viewer = { terrainProvider: ellipsoid, scene: { globe: { tilesLoaded: true, getHeight: () => 85.6 }, primitives: { add: (value) => value } } };
+  let calls = 0;
+  const cesium = {
+    ...fakeCesium(),
+    sampleTerrain: async (provider, level, positions) => {
+      calls += 1;
+      if (calls === 2) viewer.terrainProvider = terrain;
+      return positions.map((position) => ({ ...position, height: provider === terrain ? 65.28 : 0 }));
+    },
+  };
+  const originalSetTimeout = globalThis.setTimeout;
+  globalThis.setTimeout = (callback) => { queueMicrotask(callback); return 0; };
+  let model;
+  try {
+    model = await createCampusGltfOverlay({ _wsViewer: viewer }, cesium, { onStatus: (status) => statuses.push(status) });
+    for (let i = 0; i < 20 && statuses.length < 2; i += 1) await new Promise((resolve) => setImmediate(resolve));
+  } finally {
+    globalThis.setTimeout = originalSetTimeout;
+  }
+  assert.deepEqual(statuses.map(({ state }) => state), ["loading", "anchored"]);
+  assert.equal(model.anchorSource, "terrain-sample");
+  assert.equal(model.modelMatrix.left.left.left.origin.height, 65.28 + CAMPUS_GLTF_OVERLAY_CONFIG.terrainOffsetMeters);
+});

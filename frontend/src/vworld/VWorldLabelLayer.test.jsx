@@ -78,6 +78,10 @@ describe("VWorldLabelLayer", () => {
     const shown = visibleChips(container);
     expect(shown.length).toBeGreaterThan(0);
     expect(container.querySelector('[data-label-slot="BLD_C1"] button[data-qa="campus-label"]')).not.toBeNull();
+    // The campus footprint's four screen corners for the edge-luminance QA rows (GAP-25, V-S-102).
+    const edge = container.querySelector('[data-qa="vworld-label-host"]').dataset.modelEdge;
+    expect(edge.split(";").map((p) => p.split(",").map(Number)).every((xy) => xy.length === 2 && xy.every(Number.isFinite))).toBe(true);
+    expect(edge.split(";")).toHaveLength(4);
   });
 
   it("selects through onSelectEntry with the registry entry, marks the selected chip and clears on Escape", async () => {
@@ -125,6 +129,36 @@ describe("VWorldLabelLayer", () => {
       scene.camera.positionWC = new Cesium.Cartesian3(5, 0, 400);
       act(() => scene.postRender.raise());
       expect(layer().dataset.motion).toBe("true");
+      act(() => {
+        vi.advanceTimersByTime(160);
+      });
+      expect(layer().dataset.motion).toBe("false");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("stays faded while the pointer is held on the map, even when the camera has stopped, and settles 150 ms after release", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      const { Cesium, scene } = fakeMap();
+      const canvas = document.createElement("canvas");
+      canvas.getBoundingClientRect = scene.canvas.getBoundingClientRect;
+      scene.canvas = canvas;
+      const { container } = render(<VWorldLabelLayer Cesium={Cesium} scene={scene} getModelMatrix={() => "m"} loadGlb={loadGlb} />);
+      await waitFor(() => expect(container.querySelector('[data-qa="campus-label-layer"]')).not.toBeNull());
+      const layer = () => container.querySelector('[data-qa="campus-label-layer"]');
+      act(() => scene.postRender.raise());
+      fireEvent.pointerDown(canvas);
+      expect(layer().dataset.motion).toBe("true");
+      // The SDK reports the end of the camera move while the button is still down: the fade stays.
+      act(() => {
+        scene.camera.moveEnd.raise();
+        vi.advanceTimersByTime(400);
+        scene.postRender.raise();
+      });
+      expect(layer().dataset.motion).toBe("true");
+      fireEvent.pointerUp(window);
       act(() => {
         vi.advanceTimersByTime(160);
       });

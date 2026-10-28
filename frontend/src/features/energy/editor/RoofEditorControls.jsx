@@ -1,4 +1,4 @@
-import { List, Plus, Redo2, RotateCcw, Save, Trash2 } from "lucide-react";
+import { Check, List, Plus, Redo2, RotateCcw, Save, Trash2 } from "lucide-react";
 import { FIELD_INPUT } from "../shared/fieldStyles.mjs";
 import { Alert } from "../../../ui/Alert.jsx";
 import { Button } from "../../../ui/Button.jsx";
@@ -83,6 +83,7 @@ function ControlsBody({
                 aria-pressed={selected}
                 key={array.id}
                 onClick={() => onSelect(array.id)}
+                icon={selected ? <Check aria-hidden="true" className="h-4 w-4" /> : undefined}
                 className={pressedClass(selected)}
               >
                 배열 {index + 1}
@@ -167,6 +168,7 @@ function ControlsBody({
                   size="sm"
                   aria-pressed={selectedArray.orientation === value}
                   onClick={() => onUpdate({ orientation: value })}
+                  icon={selectedArray.orientation === value ? <Check aria-hidden="true" className="h-4 w-4" /> : undefined}
                   className={pressedClass(selectedArray.orientation === value)}
                 >
                   {label}

@@ -138,9 +138,10 @@ function AgentDetails({ agent }) {
     <div className="flex flex-col gap-3 rounded-card bg-surface-2 p-3">
       <SectionHeader level={4} title={agent.id} badge={<StatusBadge tone="neutral">{AGENT_TYPE_LABEL[agent.type] || agent.type}</StatusBadge>} />
       <MetricList items={route} />
-      <SectionHeader level={4} title="안전" />
+      {/* 시뮬레이션이 계산한 값이다: 측정값처럼 보이지 않게 추정으로 표시한다(G4 추정 표시). */}
+      <SectionHeader level={4} title="안전" badge={<StatusBadge tone="estimate">추정</StatusBadge>} />
       <MetricList items={safety} columns={2} />
-      <SectionHeader level={4} title="이동" />
+      <SectionHeader level={4} title="이동" badge={<StatusBadge tone="estimate">추정</StatusBadge>} />
       <MetricList items={trip} columns={2} />
     </div>
   );
@@ -238,6 +239,7 @@ export function TrafficSafetyPanel() {
     <section className="flex flex-col gap-5" aria-label="캠퍼스 교통 시뮬레이션">
       <SectionHeader
         title="캠퍼스 교통 시뮬레이션"
+        badge={<StatusBadge tone="estimate">추정</StatusBadge>}
         subtitle={STATUS_LABEL[snapshot.status]}
         actions={<ConnectionBadge status={snapshot.connectionStatus} />}
       />
@@ -249,7 +251,7 @@ export function TrafficSafetyPanel() {
             items={["car", "person", "scooter"].map((type) => ({
               id: type,
               label: AGENT_TYPE_LABEL[type],
-              value: text(`실주행 ${coverage[type]?.visited_percent || 0}% · 계획 ${coverage[type]?.planned_percent || 0}%`),
+              value: text(`시뮬레이션 주행 ${coverage[type]?.visited_percent || 0}% · 계획 ${coverage[type]?.planned_percent || 0}% (추정)`),
             }))}
           />
           {stats.network_runtime?.derived_allowed && (
@@ -321,7 +323,7 @@ export function TrafficSafetyPanel() {
       {ROUTE_DEBUG_ENABLED && <RouteEditorPanel />}
 
       <section className="flex flex-col gap-2 border-t border-hairline pt-4">
-        <SectionHeader title="실시간 위험 이벤트" />
+        <SectionHeader title="시뮬레이션 위험 이벤트" badge={<StatusBadge tone="estimate">추정</StatusBadge>} />
         <ShortList items={snapshot.riskEvents.slice(0, 20)} shown={SHOWN_RISKS} empty="감지된 이벤트가 없습니다." render={RiskEventRow} />
       </section>
     </section>

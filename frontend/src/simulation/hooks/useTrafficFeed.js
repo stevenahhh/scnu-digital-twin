@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchTrafficOnce } from "./trafficFeedCore.mjs";
 import { VISION_API_URL } from "../utils/apiConfig";
-import { TRAFFIC_FEED_BACKOFF, nextPollDelay } from "./agentDetailsBackoff.mjs";
+import { TRAFFIC_FEED_BACKOFF, nextPollWait } from "./agentDetailsBackoff.mjs";
 
 const INITIAL_RESULT = {
   state: "offline",
@@ -23,16 +23,21 @@ export function useTrafficFeed() {
     let active = true;
     let timer;
     let failures = 0;
+    // 앞 요청 시작에서 이번 시작까지(장애 중 간격이 줄지 않게: nextPollWait).
+    let previousGap = 0;
 
     const poll = async () => {
       clearTimeout(timer);
       if (isBrowserOffline()) return;
+      const startedAt = Date.now();
       const next = await fetchTrafficOnce(fetch, `${VISION_API_URL}/api/traffic`);
       if (!active) return;
       setResult({ ...next, lastUpdatedAt: new Date() });
       failures = next.state === "offline" ? failures + 1 : 0;
       clearTimeout(timer);
-      if (!isBrowserOffline()) timer = setTimeout(poll, nextPollDelay(failures, TRAFFIC_FEED_BACKOFF));
+      const { wait, gap } = nextPollWait({ failures, startedAt, completedAt: Date.now(), previousGap, backoff: TRAFFIC_FEED_BACKOFF });
+      previousGap = failures > 0 ? gap : 0;
+      if (!isBrowserOffline()) timer = setTimeout(poll, wait);
     };
     const goOffline = () => {
       clearTimeout(timer);
@@ -41,11 +46,13 @@ export function useTrafficFeed() {
     const goOnline = () => {
       setPaused(false);
       failures = 0;
+      previousGap = 0;
       poll();
     };
 
     pollNowRef.current = () => {
       failures = 0;
+      previousGap = 0;
       poll();
     };
     window.addEventListener("offline", goOffline);

@@ -151,19 +151,21 @@ test("band tiers decide chip / dot / dropped; selection is always a chip", () =>
   assert.equal(selected[0].kind, "chip");
 });
 
-test("street keeps only front-hemisphere chips within 120 units", () => {
+test("street keeps front-hemisphere chips within 120 units, and landmarks (tier 1) beyond it as orientation cues", () => {
   const street = band(114, 17);
   const ranked = rankLabelCandidates(
     [
       { id: "a", tier: 1, distance: 119, inFront: true },
       { id: "b", tier: 1, distance: 121, inFront: true },
+      { id: "f", tier: 2, distance: 121, inFront: true },
+      { id: "g", tier: 1, distance: 300, inFront: false },
       { id: "c", tier: 2, distance: 40, inFront: false },
       { id: "d", tier: 2, distance: 40 },
       { id: "e", tier: 3, distance: 10 },
     ],
     street,
   );
-  assert.deepEqual(ranked.map((c) => c.id), ["a", "d"]);
+  assert.deepEqual(ranked.map((c) => c.id), ["a", "b", "d"]);
 });
 
 test("ranking does not mutate its input", () => {

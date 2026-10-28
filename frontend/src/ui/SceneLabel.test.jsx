@@ -23,7 +23,7 @@ describe("SceneLabel", () => {
     expect(onSelect).toHaveBeenCalledWith("BLD_D4");
   });
 
-  it("uses the 12px caption step with a 14px coarse-pointer step and a 32/44px hit area", () => {
+  it("uses the 12px caption step with a 14px coarse-pointer step and a 40x40 / 44x44px hit area", () => {
     render(<SceneLabel name="도서관" elementId="BLD_L" />);
     const button = screen.getByRole("button");
     const chip = chipOf(button);
@@ -31,7 +31,9 @@ describe("SceneLabel", () => {
     expect(LABEL_TEXT).toContain("text-caption");
     expect(LABEL_TEXT).toContain("[@media(pointer:coarse)_and_(min-width:640px)]:text-body");
     expect(button.className.split(" ")).toEqual(expect.arrayContaining(LABEL_HIT.split(" ")));
-    expect(LABEL_HIT.split(" ")).toEqual(["min-h-8", "[@media(pointer:coarse)]:min-h-11", "max-[639px]:min-h-11"]);
+    expect(LABEL_HIT.split(" ")).toEqual([
+      "min-h-10", "min-w-10", "[@media(pointer:coarse)]:min-h-11", "[@media(pointer:coarse)]:min-w-11", "max-[639px]:min-h-11", "max-[639px]:min-w-11",
+    ]);
   });
 
   it.each(SCENE_LABEL_STATES)("maps the %s state to data-state", (state) => {
@@ -63,11 +65,21 @@ describe("SceneLabel", () => {
     expect(chipOf(button).className).toContain("border-dashed");
   });
 
+  it("marks the selected chip with a check glyph besides the accent border", () => {
+    const { container, rerender } = render(<SceneLabel name="도서관" elementId="BLD_L" state="selected" />);
+    expect(container.querySelector("button [data-qa=label-selected-glyph]")).not.toBeNull();
+    rerender(<SceneLabel name="도서관" elementId="BLD_L" state="idle" />);
+    expect(container.querySelector("[data-qa=label-selected-glyph]")).toBeNull();
+  });
+
   it("lifts the hovered chip one step and leaves the other states in place", () => {
     const { container, rerender } = render(<SceneLabel name="도서관" elementId="BLD_L" state="hover" />);
     expect(container.querySelector("button").className).toMatch(/(^|\s)-translate-y-0\.5(\s|$)/);
     rerender(<SceneLabel name="도서관" elementId="BLD_L" state="idle" />);
-    expect(container.querySelector("button").className).not.toMatch(/translate-y/);
+    // Idle: lifted only while the pointer is over it (CSS hover), never by default.
+    const idle = container.querySelector("button").className.split(" ");
+    expect(idle).toContain("hover:-translate-y-0.5");
+    expect(idle).not.toContain("-translate-y-0.5");
   });
 
   it("shows the headline value in the hover state", () => {
@@ -129,6 +141,8 @@ describe("ZoneLabel", () => {
     expect(zone.getAttribute("aria-hidden")).toBe("true");
     expect(zone.dataset.tier).toBe("0");
     expect(zone.className).toContain("pointer-events-none");
+    // Same translucent plate as the chips, so the name stays readable over a dark night scene.
+    expect(zone.className).toContain("bg-[var(--colors-label-bg)]");
     expect(screen.queryByRole("button")).toBeNull();
   });
 });

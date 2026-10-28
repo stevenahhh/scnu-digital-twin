@@ -58,8 +58,8 @@ function fingerprintOf(placed) {
 }
 
 // candidates: rankLabelCandidates 결과 순서(우선순위)의 [{ id, kind: 'chip'|'dot', selected?, anchor: { x, y, depth? }, width, height,
-//   hitPad? }]. hitPad = { x, y }: 보이는 칩 밖으로 누르는 영역(버튼)이 더 나간 만큼(폰 44 px 버튼 등). 가장자리·HUD·패널 여백은
-//   누르는 영역 기준으로 지킨다(칩끼리의 간격은 보이는 칩 기준).
+//   hitPad? }]. hitPad = { x, y }: 보이는 칩 밖으로 누르는 영역(버튼)이 더 나간 만큼(데스크톱 40 px, 폰 44 px 버튼). 가장자리·HUD·
+//   패널 여백과 칩끼리의 간격 모두 누르는 영역 기준으로 지킨다.
 // opts: area(뷰포트), chrome(HUD 사각형 목록), occluder(열린 패널), focusBoxes(선택·호버 건물 상자 [{ id, left, top, right,
 // bottom, depth }]), band(+ previous, now: 있으면 applyHysteresis로 보일 칩을 먼저 고른다), previous(직전 layoutLabels 결과).
 // 반환: { placed: [{ id, kind, rect, leader, state }], hidden: Set, hiddenReasons: Map(id -> 'cap'|'edge'|'chrome'|'collision'),
@@ -104,7 +104,7 @@ export function layoutLabels(candidates, opts) {
   const reasonAt = (r) => {
     if (!inSafeArea(outer(r))) return "edge";
     if (blockers.some((b) => overlaps(b.rect, outer(r)))) return "chrome";
-    if (kept.some((k) => overlaps(inflate(k, spacing), r))) return "collision";
+    if (kept.some((k) => overlaps(inflate(k, spacing), outer(r)))) return "collision";
     return null;
   };
   // 누르는 영역까지 안전 영역 안으로 들어가게 민다.
@@ -166,7 +166,8 @@ export function layoutLabels(candidates, opts) {
       continue;
     }
     const displaced = needsLeader(rect, natural);
-    kept.push(rect);
+    // 칩끼리는 누르는 영역(버튼)도 겹치지 않는다(겹친 버튼은 어느 칩을 누를지 모른다).
+    kept.push(outer(rect));
     const occluded = !candidate.selected && focusBoxes.some((box) => box.id !== candidate.id && isAnchorBehindSelectedBox(candidate.anchor, box));
     placed.push({
       id: candidate.id,

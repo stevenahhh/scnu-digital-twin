@@ -34,7 +34,22 @@ async function wait(ctx, ms) {
 // lands on the chip at its final position instead of where it was mid-flight.
 async function settleCamera(ctx) {
   const result = await ctx.b.cameraSettle();
-  ctx.actions.push(result.settled ? `camera settled after ${result.ms} ms (8 still frames)` : `camera NOT settled after ${result.ms} ms`);
+  // The settled pose goes into the action log, so two runs of the same state can be compared (VWorld: the Cesium camera;
+  // Legacy: the cam= link state).
+  const pose = await ctx.b.run(() => {
+    const viewer = window.ws3d?.viewer;
+    const Cesium = window.Cesium;
+    if (viewer && Cesium) {
+      const c = Cesium.Cartographic.fromCartesian(viewer.camera.positionWC);
+      const deg = Cesium.Math.toDegrees;
+      let model = null;
+      for (let i = 0; i < viewer.scene.primitives.length; i += 1) { const p = viewer.scene.primitives.get(i); if (p?.id === "SCNU_D4_GLTF_OVERLAY") model = p; }
+      const origin = model ? Cesium.Cartographic.fromCartesian(Cesium.Matrix4.getTranslation(model.modelMatrix, new Cesium.Cartesian3())).height.toFixed(2) : "none";
+      return `lon ${deg(c.longitude).toFixed(6)} lat ${deg(c.latitude).toFixed(6)} h ${c.height.toFixed(1)} heading ${deg(viewer.camera.heading).toFixed(1)} pitch ${deg(viewer.camera.pitch).toFixed(1)} model ${origin} ${model?.anchorSource ?? "unanchored"} ${JSON.stringify(model?.anchorTrace ?? null)}`;
+    }
+    return new URLSearchParams(location.search).get("cam") ?? "unknown";
+  }).catch(() => "unknown");
+  ctx.actions.push(`${result.settled ? `camera settled after ${result.ms} ms (8 still frames)` : `camera NOT settled after ${result.ms} ms`}; pose ${pose}`);
 }
 
 async function closePanelOnMobile(ctx) {
@@ -131,18 +146,37 @@ export async function applyTheme(ctx, theme) {
 // VWorld streams map tiles from a live service after every camera move and refines them in batches;
 // wait until three screenshots 1.5 s apart all stay within 1 % PNG size (min 6 s, max 40 s) so a
 // frame is never half-loaded or caught between two refinement batches.
+// Cesium's own streaming state: the globe and every 3D tileset (VWorld photogrammetry) report all visible tiles loaded.
+// A frame-size heuristic alone lets distant tiles finish refining after the capture, so two runs of the same pose
+// captured different detail levels (S09/S10).
+const cesiumTilesLoaded = (ctx) => ctx.b.run(() => {
+  const scene = window.ws3d?.viewer?.scene;
+  if (!scene) return null;
+  if (scene.globe && scene.globe.tilesLoaded !== true) return false;
+  for (let i = 0; i < scene.primitives.length; i += 1) {
+    const p = scene.primitives.get(i);
+    if (p && p.show !== false && "tilesLoaded" in p && p.tilesLoaded !== true) return false;
+  }
+  return true;
+}).catch(() => null);
+
 export async function settleTiles(ctx) {
   const t0 = Date.now();
   const sizes = [(await ctx.b.screenshot()).length];
+  const loaded = [await cesiumTilesLoaded(ctx)];
   for (;;) {
     await sleep(1500);
     sizes.push((await ctx.b.screenshot()).length);
+    loaded.push(await cesiumTilesLoaded(ctx));
     const last = sizes.slice(-3);
     const stable = last.length === 3 && Math.max(...last) / Math.min(...last) - 1 < 0.01;
+    // null: no Cesium scene to ask (the frame-size test alone decides).
+    const streamed = loaded.slice(-3).every((value) => value !== false) && loaded.length >= 3;
     const elapsed = Date.now() - t0;
-    if ((elapsed >= 6000 && stable) || elapsed > 40000) break;
+    if ((elapsed >= 6000 && stable && streamed) || elapsed > 40000) break;
   }
-  ctx.actions.push(`map tiles settled after ${Math.round((Date.now() - t0) / 100) / 10} s`);
+  const done = loaded.at(-1);
+  ctx.actions.push(`map tiles settled after ${Math.round((Date.now() - t0) / 100) / 10} s${done === false ? " (Cesium still streaming at the 40 s limit)" : ""}`);
 }
 
 export async function loadAndSettle(ctx, url) {
@@ -169,18 +203,25 @@ async function enterD4(ctx, beforeLabelTap) {
   await act(ctx, "[data-qa=camera-preset-d4]");
   await settleCamera(ctx);
   if (beforeLabelTap) await beforeLabelTap();
-  await act(ctx, CHIP, "공대 3호관");
+  // Building chips show the one display name (GAP-12), not the preset short name 공대 3호관.
+  await act(ctx, CHIP, "공과대학 3호관");
   await wait(ctx, 4000);
 }
 
-async function selectLibrary(ctx, waitAfterMs) {
+async function selectLibrary(ctx, waitAfterMs, { beforeClick } = {}) {
   await act(ctx, "[data-qa=camera-preset-library]");
   await settleCamera(ctx);
+  // The idle frame right before the chip tap (after the preset flight): "before" and "after" show the same view.
+  if (beforeClick) await beforeClick();
   await act(ctx, CHIP, "도서관");
   await samplesAfterTrigger(ctx, ctx.stateLabel);
   const extra = waitAfterMs - SAMPLE_OFFSETS_MS[SAMPLE_OFFSETS_MS.length - 1];
   if (extra > 0) await wait(ctx, extra);
 }
+
+// The 도서관 ground point on the VWorld map (lon, lat, ellipsoid height in m): where the app's 도서관 search flight centres the
+// view (measured once from that flight, which aims at the library's label anchor).
+export const VWORLD_LIBRARY_GROUND = Object.freeze([127.478934, 34.97016, 38.2]);
 
 export const STATES = Object.freeze([
   {
@@ -193,22 +234,47 @@ export const STATES = Object.freeze([
       await closePanelOnMobile(ctx);
       await ctx.b.wheel(ctx.map.x, ctx.map.y, 300, 8);
       ctx.actions.push(`8x mouseWheel deltaY=+300 at ${ctx.map.x},${ctx.map.y}`);
-      await wait(ctx, 2500);
+      // OrbitControls damping keeps the camera (and the faded, frozen label layer) moving well past 2.5 s under SwiftShader.
+      await settleCamera(ctx);
     },
   },
   {
     id: "S03", name: "zoomed-in-plaza-labels",
     steps: async (ctx) => {
-      await ctx.b.wheel(ctx.map.x, ctx.map.y, -300, 14);
-      ctx.actions.push(`14x mouseWheel deltaY=-300 at ${ctx.map.x},${ctx.map.y}`);
-      await wait(ctx, 2500);
+      // Legacy zooms toward the orbit target (the campus centre). The VWorld SDK zooms toward the cursor and its wheel moves the
+      // camera along the tilted view direction, which carries the view off campus; so VWorld approaches a fixed campus anchor:
+      // the ground point of the 도서관 (where the app's own 도서관 search flight centres the view), along the current view
+      // direction, to 406 m - the distance Legacy's 14 wheel ticks (OrbitControls x0.95 each from the 520-unit cap) leave.
+      // A fixed point, not the chip: on a phone the 도서관 chip is cap-hidden at S02 and carries no anchor.
+      const { x, y } = ctx.map;
+      if (ctx.entry === "vworld") {
+        const zoomed = await ctx.b.run((lon, lat, height) => {
+          const viewer = window.ws3d?.viewer;
+          const Cesium = window.Cesium;
+          if (!viewer || !Cesium) return false;
+          const camera = viewer.camera;
+          const ground = Cesium.Cartesian3.fromDegrees(lon, lat, height);
+          const toGround = Cesium.Cartesian3.normalize(Cesium.Cartesian3.subtract(ground, camera.positionWC, new Cesium.Cartesian3()), new Cesium.Cartesian3());
+          const destination = Cesium.Cartesian3.subtract(ground, Cesium.Cartesian3.multiplyByScalar(toGround, 406, new Cesium.Cartesian3()), new Cesium.Cartesian3());
+          const normal = Cesium.Ellipsoid.WGS84.geodeticSurfaceNormal(destination, new Cesium.Cartesian3());
+          const along = Cesium.Cartesian3.multiplyByScalar(toGround, Cesium.Cartesian3.dot(normal, toGround), new Cesium.Cartesian3());
+          const up = Cesium.Cartesian3.normalize(Cesium.Cartesian3.subtract(normal, along, new Cesium.Cartesian3()), new Cesium.Cartesian3());
+          camera.setView({ destination, orientation: { direction: toGround, up } });
+          viewer.scene.requestRender();
+          return true;
+        }, ...VWORLD_LIBRARY_GROUND);
+        ctx.actions.push(`VWorld: camera toward the 도서관 ground point ${VWORLD_LIBRARY_GROUND.join(",")} to 406 m (Legacy S03 distance)${zoomed ? "" : " FAILED"}`);
+      } else {
+        await ctx.b.wheel(x, y, -300, 14);
+        ctx.actions.push(`14x mouseWheel deltaY=-300 at ${x},${y}`);
+      }
+      await settleCamera(ctx);
     },
   },
   {
     id: "S04", name: "building-selected-library",
     steps: async (ctx) => {
-      await ctx.snapshot("S04:before-click");
-      await selectLibrary(ctx, 3500);
+      await selectLibrary(ctx, 3500, { beforeClick: () => ctx.snapshot("S04:before-click") });
     },
   },
   {
@@ -347,8 +413,11 @@ export const STATES = Object.freeze([
         await ctx.fixtureControl.up();
         ctx.actions.push("fixtures up for S15 (the plan list needs a plan for 편집)");
       }
-      await act(ctx, "#d4-installation-tab");
+      // Planning sits behind the D4 pane's 설치 계획 disclosure (todo 34); the old installation tab is the fallback.
+      if (await ctx.b.run(() => Boolean(document.querySelector("#d4-installation-tab")))) await act(ctx, "#d4-installation-tab");
+      else await act(ctx, "[data-qa=d4-plan-disclosure] button");
       await wait(ctx, 3000);
+      await ctx.b.run(() => { [...document.querySelectorAll("button")].find((b) => b.textContent.trim() === "편집")?.scrollIntoView({ block: "center" }); return true; });
       await act(ctx, "button", "편집");
       await wait(ctx, 3000);
     },

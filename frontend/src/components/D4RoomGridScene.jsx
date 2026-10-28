@@ -37,7 +37,7 @@ function RoomBox({ room, x, z, width, isSelected, isInUse, onSelect }) {
         <boxGeometry args={[boxWidth, isUtility ? BOX_HEIGHT * 0.6 : BOX_HEIGHT, ROW_DEPTH - GAP]} />
         <meshStandardMaterial color={roomColor({ isUtility, isSelected })} />
       </mesh>
-      <Html position={[0, (isUtility ? BOX_HEIGHT * 0.3 : BOX_HEIGHT / 2) + 0.06, 0]} center distanceFactor={11}>
+      <Html position={[0, (isUtility ? BOX_HEIGHT * 0.3 : BOX_HEIGHT / 2) + 0.06, 0]} center>
         {isUtility ? (
           <div className={cx("pointer-events-none flex flex-col items-center gap-1 whitespace-nowrap", D4_SCENE_LABEL)}>
             {room.roomNumber}

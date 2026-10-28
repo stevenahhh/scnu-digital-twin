@@ -4,10 +4,14 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { CAMERA_PRESETS } from "../../../src/camera/cameraPresets.mjs";
 import {
+  sheetSettle,
   HOOKS, chips, contrasts, defineCheck, exists, hueDistance, hueOf, intersection, missingHook, panelAlpha, panelInfo,
   parseCssColor, pixelDiff, result, sceneRegion, textItems, worstContrast,
   openPanelSection,
   contrastAgainst,
+  restoreCamera,
+  saveCamera,
+  withPanelOpen,
 } from "./common.mjs";
 
 const D = ["D"];
@@ -40,7 +44,8 @@ async function accentHues(ctx) {
     for (const el of qa.all("body *").filter(qa.visible).slice(0, 2500)) {
       if (el.closest("canvas")) continue;
       const s = getComputedStyle(el);
-      const status = Boolean(el.closest("[role=alert],[data-qa$=-error],[data-qa=weather-error-banner],[data-status]"));
+      // Status UI: alerts, error banners, data-status rows and live status indicators (role=status, e.g. a feed badge).
+      const status = Boolean(el.closest("[role=alert],[role=status],[data-qa$=-error],[data-qa=weather-error-banner],[data-status]"));
       for (const prop of ["color", "backgroundColor", "borderTopColor"]) {
         const value = s[prop];
         if (!value || value === "rgba(0, 0, 0, 0)") continue;
@@ -51,14 +56,20 @@ async function accentHues(ctx) {
   });
 }
 
+// A colour has a meaningful hue only when it is saturated and not near black; neutral greys (surfaces, hairlines,
+// ink) carry a nominal hue (light surfaces read ~210) that says nothing about the accent.
+function chromatic(c) {
+  if (!c) return false;
+  const max = Math.max(c.r, c.g, c.b);
+  const min = Math.min(c.r, c.g, c.b);
+  return max >= 60 && (max - min) / max >= 0.35;
+}
+
 function hueFamilies(rows) {
   const families = new Set();
   for (const row of rows) {
     const c = parseCssColor(row.value);
-    if (!c) continue;
-    const max = Math.max(c.r, c.g, c.b);
-    const min = Math.min(c.r, c.g, c.b);
-    if (max === 0 || (max - min) / max < 0.35 || max < 60) continue;
+    if (!chromatic(c)) continue;
     families.add(Math.round(hueOf(c) / 30) % 12);
   }
   return families;
@@ -199,8 +210,9 @@ export const VISUALQA_CHECKS = [
     async run(ctx) {
       const rows = await accentHues(ctx);
       const families = hueFamilies(rows.filter((r) => !r.status));
-      const selectedHue = rows.filter((r) => r.selected && r.prop !== "color").map((r) => hueOf(parseCssColor(r.value) ?? { r: 0, g: 0, b: 0 })).find((h) => h != null) ?? null;
-      const errorHue = rows.filter((r) => r.status).map((r) => hueOf(parseCssColor(r.value) ?? { r: 0, g: 0, b: 0 })).find((h) => h != null) ?? null;
+      const hueOfFirstChromatic = (list) => list.map((r) => parseCssColor(r.value)).filter(chromatic).map((c) => hueOf(c)).find((h) => h != null) ?? null;
+      const selectedHue = hueOfFirstChromatic(rows.filter((r) => r.selected && r.prop !== "color"));
+      const errorHue = hueOfFirstChromatic(rows.filter((r) => r.status));
       const distinct = selectedHue == null || errorHue == null || hueDistance(selectedHue, errorHue) >= 30;
       return result(families.size <= 1 && distinct, { nonStatusHueFamilies: families.size, selectionHue: selectedHue, errorHue }, "one accent; selection hue != error hue");
     },
@@ -336,12 +348,19 @@ export const VISUALQA_CHECKS = [
     async run(ctx) {
       const dirs = [ctx.outDir, process.env.QA_EVIDENCE_DIR ? path.join(process.env.QA_EVIDENCE_DIR, "before") : null].filter((dir) => dir && existsSync(dir));
       const files = new Set(dirs.flatMap((dir) => readdirSync(dir)));
+      // Screenshots are written as <state>-<viewport>-<theme>.png for Legacy and vworld-<state>-... for VWorld: every entry
+      // captured in the run needs all 24 pairs.
+      const entries = [];
+      if ([...files].some((file) => /^S\d{2}-/.test(file))) entries.push("legacy");
+      if ([...files].some((file) => /^vworld-S\d{2}-/.test(file))) entries.push("vworld");
+      const prefixes = entries.length ? entries.map((entry) => (entry === "vworld" ? "vworld-" : "")) : [""];
       const missing = [];
-      for (let n = 1; n <= 12; n += 1) for (const vp of ["D", "P"]) {
-        const id = `S${String(n).padStart(2, "0")}-${vp}`;
+      for (const prefix of prefixes) for (let n = 1; n <= 12; n += 1) for (const vp of ["D", "P"]) {
+        const id = `${prefix}S${String(n).padStart(2, "0")}-${vp}`;
         if (!files.has(`${id}-light.png`) || !files.has(`${id}-dark.png`)) missing.push(id);
       }
-      return result(missing.length === 0, { lightDarkPairsFound: 24 - missing.length, missing: missing.slice(0, 8), searched: dirs }, "24 light PNGs exist and pair with the dark set");
+      const expected = 24 * prefixes.length;
+      return result(missing.length === 0, { lightDarkPairsFound: expected - missing.length, expected, entries, missing: missing.slice(0, 8), searched: dirs }, "24 light PNGs exist and pair with the dark set");
     },
   }),
   defineCheck("V-Q-20", {
@@ -352,17 +371,25 @@ export const VISUALQA_CHECKS = [
       if (ctx.viewport === "P" && (await ctx.inPage((qa) => qa.one("[data-qa=dashboard-panel]")?.getAttribute("data-detent") !== "peek"))
         && (await ctx.b.center('[aria-label="패널 닫기"]'))) {
         await ctx.b.tap('[aria-label="패널 닫기"]');
-        await ctx.sleep(800);
+        await ctx.sleep(150);
+        await sheetSettle(ctx);
       }
+      let expandedChip = false;
       if (await ctx.b.center("[data-qa=time-chip]")) {
         await ctx.b.tap("[data-qa=time-chip]");
         await ctx.sleep(600);
+        expandedChip = true;
       }
       const items = await textItems(ctx, "[data-qa=dashboard-panel] *, [data-qa=time-slider] *, [role=dialog] *", { maxPx: 14, limit: 200 });
       // Pixels from a fresh frame: this replay changes the page (opened sections, the chip), so the frame captured before
       // the checks would not match the text boxes measured now.
       const frame = await ctx.screenshot();
       const worst = worstContrast(items.map((item) => ({ text: item.text, px: item.px, ratio: contrastAgainst(frame, item.box, ctx.scale, item.color) })));
+      // Put the time card back to its chip so the probe replay's later checks see the page as the state left it.
+      if (expandedChip && await ctx.b.center('[aria-label="시간 조작 접기"]')) {
+        await ctx.b.tap('[aria-label="시간 조작 접기"]');
+        await ctx.sleep(400);
+      }
       return result(items.length > 0 && worst && worst.ratio >= 4.5, { probes: items.length, worst }, "every probe >= 4.5:1 (ticks and the count badge included)");
     },
   }),
@@ -391,12 +418,17 @@ export const VISUALQA_CHECKS = [
     },
   }),
   defineCheck("V-Q-22", {
-    states: ["S08"], viewports: DP,
+    states: ["S08"], viewports: DP, mutates: true,
     async run(ctx) {
-      const items = await textItems(ctx, "[data-qa=dashboard-panel] *", { maxPx: 14 });
-      const worst = worstContrast(contrasts(ctx, items));
-      const alpha = await panelAlpha(ctx);
-      return result(worst && worst.ratio >= 4.5 && alpha >= 0.9, { worst, panelBackgroundAlpha: alpha }, ">= 4.5:1 and alpha >= 0.9");
+      // Phone: picking the tab leaves the sheet at half; raise it as a user would. Secondary text is the type scale's
+      // secondary step: <= 14 px on desktop, 15 px on the phone (V-Q-11), where nothing is 14 px or smaller.
+      return withPanelOpen(ctx, null, async () => {
+        const phone = (ctx.viewport?.id ?? ctx.viewport) === "P";
+        const items = await textItems(ctx, "[data-qa=dashboard-panel] *", { maxPx: phone ? 15 : 14 });
+        const worst = worstContrast(contrasts(ctx, items));
+        const alpha = await panelAlpha(ctx);
+        return result(worst && worst.ratio >= 4.5 && alpha >= 0.9, { worst, panelBackgroundAlpha: alpha }, ">= 4.5:1 and alpha >= 0.9");
+      });
     },
   }),
   defineCheck("V-Q-23", {
@@ -443,7 +475,8 @@ export const VISUALQA_CHECKS = [
         const glyphless = active.filter((el) => !el.querySelector("svg")).length;
         const chip = qa.all("button[data-qa=campus-label]").find((el) => el.getAttribute("aria-pressed") === "true");
         const title = qa.txt(qa.one("[data-qa=selection-inspector] h2,[data-qa=selection-inspector] h3")) || null;
-        return { activeElements: active.length, accentOutlined: outlined, withoutGlyph: glyphless, chip: chip ? qa.txt(chip) : null, title };
+        // chipName: the building name without the code badge, the string the panel title shows.
+        return { activeElements: active.length, accentOutlined: outlined, withoutGlyph: glyphless, chip: chip ? qa.chipName(chip) : null, title };
       });
       const titleOk = !["S04", "S12"].includes(ctx.state) || (m.chip && m.title === m.chip);
       return result(m.accentOutlined === 0 && m.withoutGlyph === 0 && titleOk, m, "active/selected = wash + glyph (no accent outline); highlight name == panel title");
@@ -454,6 +487,7 @@ export const VISUALQA_CHECKS = [
     async run(ctx) {
       await ctx.b.setMedia({ reducedMotion: true, colorScheme: ctx.theme === "light" ? "light" : "dark" });
       const region = await sceneRegion(ctx);
+      const startCamera = await saveCamera(ctx);
       const start = await ctx.screenshot();
       const tapped = await ctx.b.tap("[data-qa=camera-preset-gate]", null, { timeoutMs: 3000 });
       const frames = [];
@@ -464,6 +498,8 @@ export const VISUALQA_CHECKS = [
       const transitions = await ctx.inPage((qa) => ["[data-qa=dashboard-panel]", '[aria-label="패널 닫기"]', "[data-qa=campus-hud]"]
         .map((sel) => (qa.one(sel) ? getComputedStyle(qa.one(sel)).transitionProperty : null)).filter(Boolean));
       await ctx.b.setMedia({ reducedMotion: false, colorScheme: ctx.theme === "light" ? "light" : "dark" });
+      // Put the camera back so the probe replay's later states start from the view their own steps expect.
+      if (tapped.ok) await restoreCamera(ctx, startCamera);
       const positional = transitions.filter((value) => value.split(",").some((p) => /^(all|right|left|top|bottom|width|height|inset|margin|transform)$/.test(p.trim())));
       const moving = frames.slice(1).filter((frame, i) => pixelDiff(frames[i], frame, region, ctx.scale) > 0.01).length;
       const moved = pixelDiff(start, frames[frames.length - 1], region, ctx.scale);
@@ -476,10 +512,11 @@ export const VISUALQA_CHECKS = [
   defineCheck("V-Q-27", {
     states: ["S01"], viewports: DP, mutates: true,
     async run(ctx) {
-      await openPanelSection(ctx);
+      return withPanelOpen(ctx, "dashboard", async () => {
       const cards = await degradedCards(ctx);
       const bad = cards.filter((c) => c.bareDash || !c.action);
       return result(cards.length > 0 && bad.length === 0, { degradedCards: cards.length, withoutExplanationOrAction: bad.slice(0, 5) }, "each degraded card shows an explanation and a next-action control");
+      });
     },
   }),
   defineCheck("V-Q-28", {
@@ -500,7 +537,7 @@ export const VISUALQA_CHECKS = [
         return result(before && after && before.tab != null && before.tab === after.tab && energy <= 1, { tabBefore: before?.tab ?? null, tabAfter: after?.tab ?? null, energyCauseMessages: energy }, "no tab change without a user action; energy cause reported once");
       }
       // The weather failure must sit next to the weather cards (within 16 px above them): open the section first.
-      await openPanelSection(ctx);
+      return withPanelOpen(ctx, "dashboard", async () => {
       const m = await ctx.inPage((qa) => {
         const failure = qa.one("[data-qa=weather-error-banner]") ?? qa.all("[role=alert]").find((el) => qa.visible(el) && /기상/.test(qa.txt(el)));
         // The card is the innermost element whose text starts with 현재 기온 (its ancestors - the list, the section - start with
@@ -512,6 +549,7 @@ export const VISUALQA_CHECKS = [
       const gap = m.failure && m.weatherCards ? Math.round(m.weatherCards.y - (m.failure.y + m.failure.h)) : null;
       const adjacent = !m.failure || (gap != null && gap >= 0 && gap <= 16);
       return result(adjacent, { ...m, gapAboveWeatherCards: gap }, "failure adjacent to its cards");
+      });
     },
   }),
   defineCheck("V-Q-29", {

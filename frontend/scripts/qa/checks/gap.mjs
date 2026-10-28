@@ -1,9 +1,13 @@
 // GAP-01..GAP-37 (DESIGN-AUDIT section 3 rows as section-7 checks). Each `doc` holds the literal row.
 import {
+  sheetSettle,
   HOOKS, canvasRect, chipByText, chips, contrasts, defineCheck, exists, hasUpperEyebrow, hudRects, intersection,
-  gapBetween, luminanceStep, missingHook, panelInfo, pixelDiff, rectOf, result, roofBox, sampleFrames,
+  gapBetween, luminanceStep, missingHook, modelEdgeStep, panelInfo, pixelDiff, rectOf, result, roofBox, sampleFrames,
   sceneRegion, selectedTab, textItems, meanLuminance, worstContrast,
   openPanelSection,
+  restoreCamera,
+  saveCamera,
+  withPanelOpen,
 } from "./common.mjs";
 
 const D = ["D"];
@@ -90,12 +94,29 @@ export const GAP_CHECKS = [
       const panel = await panelInfo(ctx);
       if (ctx.viewport === "D") {
         if (!panel?.toggle) return result(false, { toggle: null }, "패널 닫기 control collapses the panel to <= 72 px");
+        // The rail-first shell may start collapsed: open it first, collapse it with 패널 닫기, then leave it as it was found
+        // (the probe replay's later S01 checks expect the start state).
+        const startedOpen = panel.toggle.label === "패널 닫기";
+        // Wait for the slide to finish (bounded) instead of a fixed delay a loaded renderer may not meet.
+        const settle = async (wantOpen) => {
+          const deadline = Date.now() + 4000;
+          let info = await panelInfo(ctx);
+          while (Date.now() < deadline && (wantOpen ? info.visibleWidth <= 72 : info.visibleWidth > 72)) {
+            await ctx.sleep(150);
+            info = await panelInfo(ctx);
+          }
+          await ctx.sleep(150);
+          return panelInfo(ctx);
+        };
+        if (!startedOpen) await ctx.b.tap('[aria-label="패널 열기"]');
+        const opened = await settle(true);
         await ctx.b.tap('[aria-label="패널 닫기"]');
-        await ctx.sleep(800);
-        const collapsed = await panelInfo(ctx);
-        await ctx.b.tap('[aria-label="패널 열기"]');
-        await ctx.sleep(800);
-        return result(collapsed.visibleWidth <= 72, { openWidth: panel.visibleWidth, collapsedVisibleWidth: collapsed.visibleWidth, toggle: panel.toggle }, "the collapse control reduces the panel to <= 72 px");
+        const collapsed = await settle(false);
+        if (startedOpen) {
+          await ctx.b.tap('[aria-label="패널 열기"]');
+          await settle(true);
+        }
+        return result(collapsed.visibleWidth <= 72, { openWidth: opened.visibleWidth, collapsedVisibleWidth: collapsed.visibleWidth, toggle: panel.toggle, startedOpen }, "the collapse control reduces the panel to <= 72 px");
       }
       const selected = (await chips(ctx)).find((chip) => chip.pressed === "true") ?? null;
       const top = panel && panel.visibleWidth > 0 ? panel.rect.y : ctx.height;
@@ -156,8 +177,9 @@ export const GAP_CHECKS = [
   defineCheck("GAP-09", {
     states: ["S04"], viewports: DP, mutates: true,
     async run(ctx) {
-      // Desktop starts on the rail (the inspector is a card beside it); the row measures the open panel's tab strip.
-      if (ctx.viewport === "D") await openPanelSection(ctx);
+      // Desktop starts on the rail (the inspector is a card beside it); the row measures the open panel's tab strip, then
+      // the panel is put back.
+      const measure = async () => {
       const before = ctx.memo.get("S04:before-click");
       const m = await ctx.inPage((qa) => {
         const inspector = qa.one("[data-qa=selection-inspector]");
@@ -169,6 +191,8 @@ export const GAP_CHECKS = [
       m.tabsBefore = before ? "recorded" : null;
       if (!m.inspector) return missingHook(HOOKS.inspector, "tab count unchanged (4) and the inspector above the tab strip / at the half detent", m);
       return result(m.tabsAfter === 4 && (ctx.viewport === "P" || m.inspectorAboveTabs), m, "tab count 4 and inspector placement");
+      };
+      return ctx.viewport === "D" ? withPanelOpen(ctx, null, measure) : measure();
     },
   }),
   defineCheck("GAP-10", {
@@ -205,8 +229,9 @@ export const GAP_CHECKS = [
       // camera presets are exempt because the row allows them the shortName.
       const m = await ctx.inPage((qa) => {
         const names = [
-          ...qa.all("button[data-qa=campus-label]").map((el) => qa.txt(el)),
-          ...qa.all("h1,h2,h3,[role=heading],[data-qa=selection-inspector] *,[data-qa=breadcrumb],[role=dialog] div").filter((el) => qa.visible(el) && !el.closest("[data-qa^=camera-preset-]") && el.children.length === 0).map((el) => qa.txt(el)),
+          // All mounted chips: hidden pooled chips have no innerText, so read the name from the DOM (qa.chipName).
+          ...qa.all("button[data-qa=campus-label]").map((el) => qa.chipName(el)),
+          ...qa.all("h1,h2,h3,[role=heading],[data-qa=selection-inspector] *,[data-qa=breadcrumb] *,[role=dialog] div").filter((el) => qa.visible(el) && !el.closest("[data-qa^=camera-preset-]") && el.children.length === 0).map((el) => qa.txt(el)),
         ].filter((t) => /3호관|^도서관$/.test(t) && /공대|공과대학|도서관/.test(t));
         const headings = qa.all("h1,h2,h3,h4,[role=heading]").filter(qa.visible).map((el) => qa.txt(el));
         return { names: [...new Set(names)], headings: headings.slice(0, 30), texts: qa.textNodesShown().map((item) => item.value).slice(0, 400) };
@@ -254,8 +279,10 @@ export const GAP_CHECKS = [
     },
   }),
   defineCheck("GAP-15", {
-    states: ["S08"], viewports: DP,
+    states: ["S08"], viewports: DP, mutates: true,
     async run(ctx) {
+      // Phone: picking the tab leaves the sheet at half, the tab's controls below the fold; raise it as a user would.
+      return withPanelOpen(ctx, null, async () => {
       const sliderLabels = await textItems(ctx, "[data-qa=dashboard-panel] *", { match: "^(온도|월|일|시|분|태양)" });
       const rows = contrasts(ctx, sliderLabels);
       const worst = worstContrast(rows);
@@ -265,6 +292,7 @@ export const GAP_CHECKS = [
       }));
       return result(worst && worst.ratio >= 4.5 && m.segments.join("/") === "실측/시뮬레이션" && m.timeSliders === 0,
         { worstLabel: worst, segments: m.segments, duplicateTimeSliders: m.timeSliders }, "labels >= 4.5:1, segments 실측 / 시뮬레이션, 0 duplicate time sliders");
+      });
     },
   }),
   defineCheck("GAP-16", {
@@ -311,16 +339,31 @@ export const GAP_CHECKS = [
         return { x: c.left, y: c.top + 80, w: right - c.left, h: Math.max(0, bottom - c.top - 80) };
       });
       const box = await sceneBox();
+      const startCamera = await saveCamera(ctx);
+      const startDetent = await ctx.inPage((qa) => qa.one("[data-qa=dashboard-panel]")?.getAttribute("data-detent") ?? null);
       const before = await ctx.screenshot();
       const focused = (await ctx.b.tap(selector)).ok;
       await ctx.b.view.cdp("Input.insertText", { text: "도서관" });
       await ctx.sleep(500);
       const listed = await ctx.inPage((qa) => qa.all("[role=listbox] [role=option]").filter(qa.visible).map((el) => qa.txt(el)));
       await ctx.b.key("Enter");
-      await ctx.sleep(3000);
+      // The selection flies the camera: read the chip and the frame once the flight has settled (bounded), not after a
+      // fixed delay that a slow renderer may not reach.
+      await ctx.sleep(300);
+      await ctx.b.cameraSettle?.();
       const chip = await chipByText(ctx, "도서관");
       const after = await ctx.screenshot();
       const cameraChange = box && box.w > 0 && box.h > 0 ? Math.round(pixelDiff(before, after, box, ctx.scale) * 1000) / 1000 : null;
+      // Put the page back (no selection, the S01 camera) so the probe replay's later S01 checks start from S01.
+      if (await ctx.b.center('[data-qa=selection-inspector] button[aria-label="닫기"]')) await ctx.b.tap('[data-qa=selection-inspector] button[aria-label="닫기"]');
+      await restoreCamera(ctx, startCamera);
+      // Phone: the selection raised the sheet to half; lower it back to where S01 had it (the time chip sits under it).
+      if (startDetent === "peek" && await ctx.inPage((qa) => qa.one("[data-qa=dashboard-panel]")?.getAttribute("data-detent") !== "peek")
+        && await ctx.b.center('[aria-label="패널 닫기"]')) {
+        await ctx.b.tap('[aria-label="패널 닫기"]');
+        await ctx.sleep(150);
+        await sheetSettle(ctx);
+      }
       const pass = focused && listed.some((text) => /도서관/.test(text)) && chip?.pressed === "true" && cameraChange > 0.03;
       return result(pass, { field, focused, listed: listed.slice(0, 8), chipPressed: chip?.pressed ?? null, cameraChange },
         "search field exists; a result list shows 도서관; Enter sets the library chip aria-pressed=true and the camera position changes");
@@ -408,30 +451,37 @@ export const GAP_CHECKS = [
       if (!lib) return result(false, { libraryChip: null }, "library chip visible to locate its mesh");
       const before = await ctx.screenshot();
       const tabs0 = await ctx.inPage((qa) => qa.all("[data-qa^=dashboard-tab-]").length + qa.all("[data-qa=selection-inspector]").length);
-      const x = lib.rect.x + lib.rect.w / 2;
-      const y = lib.rect.y + lib.rect.h + 24;
+      // Row: the pointer goes onto the 도서관 mesh, not the chip. A displaced chip (pushed below the HUD) is not above its
+      // building, so aim at the building anchor the layer projected (6 units above the roof) when the chip carries one.
+      const x = lib.anchor ? lib.anchor.x : lib.rect.x + lib.rect.w / 2;
+      // The mesh, not a chip: step down from the anchor to the first point where the canvas itself is under the pointer
+      // (another chip's 40 px tap area may cover the roof right below the anchor).
+      const y = lib.anchor
+        ? await ctx.inPage((qa, a) => {
+          for (let dy = 12; dy <= 60; dy += 4) if (document.elementFromPoint(a.x, a.y + dy)?.tagName === "CANVAS") return a.y + dy;
+          return a.y + 24;
+        }, { x: lib.anchor.x, y: lib.anchor.y })
+        : lib.rect.y + lib.rect.h + 24;
+      const roof = lib.anchor ? { x: lib.anchor.x - 20, y: lib.anchor.y + 6, w: 40, h: 30 } : roofBox(lib);
       await ctx.b.mouse("mouseMoved", x, y, 0);
       await ctx.sleep(300);
       const after = await ctx.screenshot();
       const lib2 = await chipByText(ctx, "도서관");
       const tabs1 = await ctx.inPage((qa) => qa.all("[data-qa^=dashboard-tab-]").length + qa.all("[data-qa=selection-inspector]").length);
       await ctx.b.mouse("mouseMoved", 5, 5, 0);
-      const roof = Math.round(pixelDiff(before, after, roofBox(lib), ctx.scale) * 1000) / 1000;
+      const roofDelta = Math.round(pixelDiff(before, after, roof, ctx.scale) * 1000) / 1000;
       const lifted = Boolean(lib2 && (lib2.rect.y < lib.rect.y - 1 || lib2.text !== lib.text));
-      return result(roof > 0.02 && lifted && tabs0 === tabs1, { roofPixelDelta: roof, chipLiftedOrValue: lifted, tabsAndInspectors: [tabs0, tabs1] }, "hover tints the roof, lifts the chip, opens nothing");
+      return result(roofDelta > 0.02 && lifted && tabs0 === tabs1, { roofPixelDelta: roofDelta, aimedAtAnchor: Boolean(lib.anchor), chipLiftedOrValue: lifted, tabsAndInspectors: [tabs0, tabs1] }, "hover tints the roof, lifts the chip, opens nothing");
     },
   }),
   defineCheck("GAP-25", {
     states: ["S02"], viewports: D,
     async run(ctx) {
-      const region = await sceneRegion(ctx);
-      const img = ctx.image();
-      const cy = Math.round(region.y + region.h * 0.55);
-      const points = [];
-      for (let x = region.x + 20; x < region.x + region.w - 20; x += 40) points.push([x, cy]);
-      const step = luminanceStep(img, points, ctx.scale, 4);
+      // Row: sample ground luminance along the model's bounding rectangle and 20 px outward (data-model-edge).
+      const m = await modelEdgeStep(ctx);
       const clear = await ctx.inPage(() => getComputedStyle(document.querySelector("canvas")?.parentElement ?? document.body).backgroundColor);
-      return result(step <= 0.2, { maxLuminanceStepAlongRow: step, canvasBackdrop: clear }, "no luminance step > 20% along the bounding edge; clear colour not darker than #0b0c0e");
+      if (!m.edge) return missingHook("[data-model-edge]", "no luminance step > 20% along the bounding edge");
+      return result((m.edgeOffScreen || (m.samples > 0 && m.step <= 0.2)), { maxLuminanceStepAcrossEdge: m.step, edgeSamples: m.samples, edgeOffScreen: m.edgeOffScreen, edges: m.edges, canvasBackdrop: clear }, "no luminance step > 20% along the bounding edge (20 px inside vs 20 px outside); clear colour not darker than #0b0c0e");
     },
   }),
   defineCheck("GAP-26", {
@@ -451,14 +501,19 @@ export const GAP_CHECKS = [
     },
   }),
   defineCheck("GAP-27", {
-    states: ["S13"], viewports: D,
+    states: ["S13"], viewports: D, mutates: true,
     async run(ctx) {
+      return withPanelOpen(ctx, null, async () => {
+      // The sample group sits below the live values in the panel's scroll body: scroll it into view, as a user would.
+      await ctx.inPage((qa) => { qa.one("[data-qa=dashboard-panel] [data-qa=sample-group]")?.scrollIntoView({ block: "center" }); return true; });
+      await ctx.sleep(300);
       const m = await ctx.inPage((qa) => ({
         badges: qa.all("[data-qa=sample-badge]").filter(qa.visible).length,
         sampleWords: qa.textNodesShown(qa.one("[data-qa=dashboard-panel]") ?? document.body).filter((item) => /샘플|예시|sample/i.test(item.value)).length,
       }));
       if (!m.badges) return missingHook(HOOKS.sample, "every sample-sourced element carries the same 샘플 데이터 badge component", m);
       return result(m.badges >= 1, m, "sample rows carry the shared badge");
+      });
     },
   }),
   defineCheck("GAP-28", {
@@ -510,15 +565,39 @@ export const GAP_CHECKS = [
         };
       });
       const before = await layout();
+      const startCamera = await saveCamera(ctx);
+      // Each step waits (bounded) for the state it caused instead of a fixed delay a loaded renderer may not meet: the tour
+      // running, then presentation on with the pager shown and the chip size stable, then presentation off again.
+      const until = async (done, timeoutMs = 8000) => {
+        const deadline = Date.now() + timeoutMs;
+        let last = await layout();
+        while (Date.now() < deadline && !done(last)) {
+          await ctx.sleep(150);
+          last = await layout();
+        }
+        return last;
+      };
       const tour = (await ctx.b.tap("[data-qa=camera-tour-toggle]", null, { timeoutMs: 4000 })).ok;
-      await ctx.sleep(600);
+      const deadline = Date.now() + 4000;
+      while (Date.now() < deadline && !(await ctx.inPage((qa) => qa.one("[data-qa=camera-tour-toggle]")?.getAttribute("aria-pressed") === "true"))) await ctx.sleep(150);
       await ctx.b.key("p");
-      await ctx.sleep(1500);
-      const on = await layout();
+      let on = await until((m) => m.presenting && m.pager !== null);
+      // Chip text scales with a transition: read it once two samples agree.
+      for (let i = 0; i < 20; i += 1) {
+        await ctx.sleep(150);
+        const next = await layout();
+        const stable = next.chipPx === on.chipPx;
+        on = next;
+        if (stable) break;
+      }
       await ctx.b.key("Escape");
-      await ctx.sleep(1200);
-      const after = await layout();
-      if (tour) await ctx.b.tap("[data-qa=camera-tour-toggle]", null, { timeoutMs: 4000 });
+      const after = await until((m) => !m.presenting && m.toolbar === before.toolbar && m.panelVisible === before.panelVisible);
+      // Stop the tour only if it still runs (Esc may already have ended it; a second tap would restart it and keep the
+      // camera touring through the probe replay's later S01 checks), then return to the overview.
+      if (await ctx.inPage((qa) => qa.one("[data-qa=camera-tour-toggle]")?.getAttribute("aria-pressed") === "true")) {
+        await ctx.b.tap("[data-qa=camera-tour-toggle]", null, { timeoutMs: 4000 });
+      }
+      await restoreCamera(ctx, startCamera);
       const scale = before.chipPx && on.chipPx ? Math.round((on.chipPx / before.chipPx) * 100) / 100 : null;
       const pass = tour && on.presenting && !on.toolbar && !on.panelVisible && on.time && scale >= 1.5 && /^투어 \d+\/\d+$/.test(on.pager ?? "")
         && !after.presenting && after.toolbar === before.toolbar && after.panelVisible === before.panelVisible && after.panelOpen === before.panelOpen;
@@ -550,12 +629,15 @@ export const GAP_CHECKS = [
     async run(ctx) {
       await ctx.inPage(() => { document.activeElement?.blur(); document.querySelector("[data-qa=campus-hud]")?.setAttribute("tabindex", "-1"); document.querySelector("[data-qa=campus-hud]")?.focus(); return true; });
       const order = [];
-      for (let i = 0; i < 60; i += 1) {
+      // Row: Tab "until focus returns" (the loop breaks when focus comes back to the HUD); 200 is only a runaway bound. A
+      // zoomed-in view can show more than 60 chips and dots, which a 60-press cap mistook for an order without the panel.
+      for (let i = 0; i < 200; i += 1) {
         await ctx.b.key("Tab");
         const f = await ctx.inPage((qa) => {
           const el = document.activeElement;
           if (!el || el === document.body) return null;
-          const zone = el.closest("[data-qa=campus-label]") ? "chip" : el.closest("[data-qa=dashboard-panel]") ? "panel" : el.closest("[data-qa=campus-hud]") ? "hud" : "other";
+          // Chips and their collapsed dot form are the label layer's stops, in priority order.
+          const zone = el.closest("[data-qa=campus-label],[data-qa=campus-label-layer]") ? "chip" : el.closest("[data-qa=dashboard-panel]") ? "panel" : el.closest("[data-qa=campus-hud]") ? "hud" : "other";
           const r = el.getBoundingClientRect();
           const s = getComputedStyle(el);
           const ring = parseFloat(s.outlineWidth) || 0;
@@ -601,15 +683,42 @@ export const GAP_CHECKS = [
   defineCheck("GAP-34", {
     states: ["S01"], viewports: DP, entries: ["vworld"],
     async run(ctx) {
-      const { readFileSync } = await import("node:fs");
+      const { existsSync, readFileSync } = await import("node:fs");
+      const path = await import("node:path");
       const { fileURLToPath } = await import("node:url");
-      const read = (rel) => readFileSync(fileURLToPath(new URL(`../../../src/${rel}`, import.meta.url)), "utf8");
-      const imports = (src) => new Set([...src.matchAll(/from\s+["']([^"']+)["']/g)].map((m) => m[1].replace(/^\.\//, "")));
-      const legacy = imports(read("AppLegacy.jsx"));
-      const vworld = imports(read("AppVWorld.jsx"));
-      const shared = ["SceneLabel", "Segmented", "Alert", "tokens"].map((name) => ({ name, legacy: [...legacy].some((s) => s.includes(name)) || [...legacy].some((s) => s.includes("/ui")), vworld: [...vworld].some((s) => s.includes(name)) || [...vworld].some((s) => s.includes("/ui")) }));
-      const uiShared = [...legacy].filter((s) => s.includes("/ui/") && vworld.has(s));
-      return result(uiShared.length > 0 && shared.every((s) => s.legacy && s.vworld), { sharedUiImports: uiShared, primitives: shared, note: "the GAP-01..33 PASS-set comparison needs a --entry both run" },
+      const srcRoot = fileURLToPath(new URL("../../../src/", import.meta.url));
+      // Both entries reach the shared primitives through shared panel modules (DashboardShell, SelectionInspector, ...),
+      // not always by a direct import: follow local imports transitively and collect every src/ui module reached.
+      const resolve = (from, spec) => {
+        const base = path.resolve(path.dirname(from), spec);
+        for (const candidate of [base, `${base}.jsx`, `${base}.mjs`, `${base}.js`, `${base}.css`, path.join(base, "index.jsx")]) {
+          if (existsSync(candidate) && !candidate.endsWith(path.sep)) try { readFileSync(candidate); return candidate; } catch { /* a directory */ }
+        }
+        return null;
+      };
+      const reached = (entry) => {
+        const seen = new Set();
+        const stack = [path.join(srcRoot, entry)];
+        while (stack.length) {
+          const file = stack.pop();
+          if (seen.has(file)) continue;
+          seen.add(file);
+          const text = readFileSync(file, "utf8");
+          // JS imports (static, side-effect, dynamic) and CSS @import (index.css -> ui/tokens.css).
+          for (const m of text.matchAll(/(?:from\s+|import\s*\(\s*|import\s+|@import\s+)["'](\.{1,2}\/[^"']+)["']/g)) {
+            const next = resolve(file, m[1]);
+            if (next) stack.push(next);
+          }
+        }
+        return new Set([...seen].map((file) => path.relative(srcRoot, file)).filter((rel) => rel.startsWith(`ui${path.sep}`)));
+      };
+      // The real entry points (index.html -> index.jsx -> App -> AppLegacy; index-vworld.html -> index-vworld.jsx).
+      const legacy = reached("index.jsx");
+      const vworld = reached("index-vworld.jsx");
+      const has = (set, name) => [...set].some((rel) => path.basename(rel).startsWith(name));
+      const shared = ["SceneLabel", "Segmented", "Alert", "tokens"].map((name) => ({ name, legacy: has(legacy, name), vworld: has(vworld, name) }));
+      const uiShared = [...legacy].filter((rel) => vworld.has(rel));
+      return result(uiShared.length > 0 && shared.every((s) => s.legacy && s.vworld), { sharedUiImports: uiShared.slice(0, 12), sharedCount: uiShared.length, primitives: shared, note: "the GAP-01..33 PASS-set comparison needs a --entry both run" },
         "same PASS set as Legacy; both entries import the same SceneLabel, Segmented, Alert and token modules");
     },
   }),

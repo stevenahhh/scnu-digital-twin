@@ -5,6 +5,7 @@ import {
   chipByText, chips, contrasts, defineCheck, hasUpperEyebrow, hudRects, hueDistance, hueOf, intersection,
   panelAlpha, panelInfo, parseCssColor, result, roofBox, sampleFrames, textItems, worstContrast,
   openPanelSection,
+  withPanelOpen,
 } from "./common.mjs";
 
 const D = ["D"];
@@ -140,8 +141,9 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-13", {
-    states: ["S01"], viewports: D, themes: ["dark", "light"],
+    states: ["S01"], viewports: D, themes: ["dark", "light"], mutates: true,
     async run(ctx) {
+      return withPanelOpen(ctx, null, async () => {
       // Tone badges: short labels (<= 12 chars, <= 12 px) on their own bordered or filled pill.
       const badgeTexts = await ctx.inPage((qa) => qa.all("[data-qa=dashboard-panel] span, [data-qa=dashboard-panel] div").filter((el) => {
         if (!qa.visible(el)) return false;
@@ -153,15 +155,39 @@ export const FRONTEND_CHECKS = [
       const rows = contrasts(ctx, items);
       const worst = worstContrast(rows);
       return result(rows.length > 0 && worst.ratio >= 4.5, { badgesMeasured: rows.length, worst }, ">= 4.5:1 for every tone badge");
+      });
     },
   }),
   defineCheck("V-F-14", {
-    states: ["S05", "S08"], viewports: D, themes: ["dark", "light"],
+    // S05/S08 (the audit's views) no longer have filled-primary segments (DESIGN.md: no primary fill on segments), so the
+    // roof editor's primary actions (S15) are measured too; a run that measured no filled-primary control at all fails.
+    states: ["S05", "S08", "S15"], viewports: D, themes: ["dark", "light"], mutates: true,
     async run(ctx) {
+      // S15 measures the D4 roof editor itself: opening the dashboard panel (패널 열기) would replace the D4 pane, editor
+      // included. S05/S08 measure the open panel.
+      const measure = async () => {
+      // S15: the editor's primary action (배치 저장) sits below the fold of the D4 pane; scroll it into view the way a user
+      // would and measure a fresh frame.
+      if (ctx.state === "S15" && await ctx.inPage(() => {
+        const save = document.querySelector('button[aria-label="배치 저장"]');
+        if (!save) return false;
+        save.scrollIntoView({ block: "center" });
+        return true;
+      })) {
+        await ctx.sleep(600);
+        if (ctx.refreshImage) await ctx.refreshImage();
+      }
       const m = await primaryFilled(ctx);
       const rows = contrasts(ctx, m.filled.filter((f) => f.box.w > 0));
       const worst = worstContrast(rows);
-      return result(rows.length > 0 && worst.ratio >= 4.5, { filledPrimaryControls: rows.length, worst }, ">= 4.5:1 white text on filled-primary controls");
+      const key = `V-F-14:${ctx.entry}:${ctx.theme}`;
+      const total = (ctx.runMemo.get(key) ?? 0) + rows.length;
+      ctx.runMemo.set(key, total);
+      const contrastOk = rows.length === 0 || worst.ratio >= 4.5;
+      const evidenceOk = ctx.state !== "S15" || total > 0;
+      return result(contrastOk && evidenceOk, { filledPrimaryControls: rows.length, measuredInRunSoFar: total, worst }, ">= 4.5:1 white text on every filled-primary control (>= 1 measured in the run)");
+      };
+      return ctx.state === "S15" ? measure() : withPanelOpen(ctx, null, measure);
     },
   }),
   defineCheck("V-F-15", {
@@ -195,13 +221,19 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-18", {
-    states: ["S07", "S08"], viewports: D,
+    states: ["S07", "S08"], viewports: D, mutates: true,
     async run(ctx) {
-      const tokens = await tokenColors(ctx, ["--colors-ink-subtle"]);
-      const items = await textItems(ctx, "[data-qa=dashboard-panel] *", { color: tokens["--colors-ink-subtle"] });
+      return withPanelOpen(ctx, null, async () => {
+      // The audit's ink-subtle is the shipped ink-muted (DESIGN.md section 2, as in V-F-17); measure both secondary inks.
+      const tokens = await tokenColors(ctx, ["--colors-ink-muted", "--colors-ink-subtle"]);
+      const items = [
+        ...(await textItems(ctx, "[data-qa=dashboard-panel] *", { color: tokens["--colors-ink-muted"] })),
+        ...(await textItems(ctx, "[data-qa=dashboard-panel] *", { color: tokens["--colors-ink-subtle"] })),
+      ];
       const worst = worstContrast(contrasts(ctx, items));
       const alpha = await panelAlpha(ctx);
       return result(worst && worst.ratio >= 4.5 && alpha >= 0.9, { worst, inkSubtleTexts: items.length, panelBackgroundAlpha: alpha }, ">= 4.5:1 and panel alpha >= 0.9");
+      });
     },
   }),
   defineCheck("V-F-19", {
@@ -236,8 +268,9 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-23", {
-    states: ["S05"], viewports: D,
+    states: ["S05"], viewports: D, mutates: true,
     async run(ctx) {
+      return withPanelOpen(ctx, null, async () => {
       const m = await ctx.inPage((qa) => {
         const weights = new Set();
         let worstBlock = 0;
@@ -249,6 +282,7 @@ export const FRONTEND_CHECKS = [
         return { weights: [...weights].sort(), maxBoldPerBlock: worstBlock };
       });
       return result(m.weights.every((w) => [400, 500, 600, 700].includes(w)) && m.maxBoldPerBlock <= 1, m, "weights in {400, 500, 600, 700}; <= 1 bold element per block");
+      });
     },
   }),
   defineCheck("V-F-26", {
@@ -265,8 +299,9 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-27", {
-    states: ["S01", "S05"], viewports: D,
+    states: ["S01", "S05"], viewports: D, mutates: true,
     async run(ctx) {
+      return withPanelOpen(ctx, null, async () => {
       const m = await ctx.inPage((qa) => {
         const h1 = qa.all("h1").filter((el) => qa.visible(el) || el.classList.contains("sr-only")).length;
         const visibleH1 = qa.all("h1").filter(qa.visible).length;
@@ -276,6 +311,7 @@ export const FRONTEND_CHECKS = [
         return { visibleH1, h1, h2InsideCards: h2InCard, outline };
       });
       return result(m.visibleH1 === 1 && m.h2InsideCards === 0, m, "exactly one visible h1, card titles h3, no h2 inside a card");
+      });
     },
   }),
   defineCheck("V-F-28", {
@@ -314,8 +350,9 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-31", {
-    states: ["S01", "S05"], viewports: D,
+    states: ["S01", "S05"], viewports: D, mutates: true,
     async run(ctx) {
+      return withPanelOpen(ctx, null, async () => {
       const m = await ctx.inPage((qa) => {
         const rails = qa.all("[role=tablist], [data-qa=dashboard-panel] .rounded-full.p-1, [data-qa=dashboard-panel] .p-1, [role=dialog] .p-1").filter(qa.visible);
         return rails.map((rail) => {
@@ -326,11 +363,13 @@ export const FRONTEND_CHECKS = [
       });
       const bad = m.filter((p) => p.outer < 1000 && Math.abs(p.inner - (p.outer - p.padding)) > 0.5);
       return result(m.length > 0 && bad.length === 0, { pairs: m.slice(0, 6), mismatched: bad.length }, "inner = outer - padding for every pair");
+      });
     },
   }),
   defineCheck("V-F-32", {
-    states: ["S01", "S06"], viewports: D,
+    states: ["S01", "S06"], viewports: D, mutates: true,
     async run(ctx) {
+      return withPanelOpen(ctx, null, async () => {
       // The panel scroll body's direct children are the card/header stack of the active tab.
       const gaps = await ctx.inPage((qa) => {
         const body = qa.one("[data-qa=dashboard-panel] .overflow-y-auto");
@@ -343,6 +382,7 @@ export const FRONTEND_CHECKS = [
       const base = ctx.memo.get("V-F-32:S01") ?? gaps;
       const all = [...new Set([...base, ...gaps].filter((g) => g >= 0))];
       return result(all.length <= 1, { s01Gaps: base, thisStateGaps: gaps }, "identical gap values across tabs");
+      });
     },
   }),
   defineCheck("V-F-33", {
@@ -354,7 +394,8 @@ export const FRONTEND_CHECKS = [
         document.body.appendChild(probe);
         const primary = getComputedStyle(probe).color;
         probe.remove();
-        const active = qa.all("[aria-pressed=true],[aria-selected=true]").filter(qa.visible);
+        // Selected toggles, tabs and radio options (Segmented radiogroups mark the chosen option with aria-checked).
+        const active = qa.all("[aria-pressed=true],[aria-selected=true],[aria-checked=true]").filter(qa.visible);
         return active.map((el) => ({ text: qa.txt(el).slice(0, 20), border: getComputedStyle(el).borderTopColor, accentBorder: getComputedStyle(el).borderTopColor === primary, glyph: Boolean(el.querySelector("svg")) }));
       });
       const bad = m.filter((a) => a.accentBorder || !a.glyph);
@@ -362,8 +403,9 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-34", {
-    states: ["S01", "S05", "S08", "S10"], viewports: D,
+    states: ["S01", "S05", "S08", "S10"], viewports: D, mutates: true,
     async run(ctx) {
+      return withPanelOpen(ctx, null, async () => {
       const styles = await ctx.inPage((qa) => qa.all("[aria-pressed=true],[aria-selected=true]").filter((el) => qa.visible(el) && el.tagName === "BUTTON" && !el.closest("[data-qa=campus-label]")).map((el) => { const s = getComputedStyle(el); return [s.backgroundColor, s.color, s.fontWeight, s.borderTopLeftRadius].join("|"); }));
       const seen = ctx.memo.get("V-F-34:styles") ?? [];
       const all = [...new Set([...seen, ...styles])];
@@ -371,6 +413,7 @@ export const FRONTEND_CHECKS = [
       const css = readSrc("index.css");
       const variants = (css.match(/\.dashboard-segment|\.dashboard-tab/g) ?? []).length;
       return result(styles.length > 0 && all.length === 1 && variants === 0, { activeStylesSoFar: all, legacyCssVariants: variants }, "one identical active style across all segmented controls; 0 unused CSS variants");
+      });
     },
   }),
   defineCheck("V-F-35", {
@@ -385,6 +428,8 @@ export const FRONTEND_CHECKS = [
   defineCheck("V-F-36", {
     states: ["S01"], viewports: D, mutates: true,
     async run(ctx) {
+      // Start on a settled page: earlier replay checks may have just moved the camera (chips and controls still moving).
+      await ctx.b.cameraSettle?.();
       await ctx.inPage(() => { document.activeElement?.blur(); return true; });
       const rows = [];
       for (let i = 0; i < 25; i += 1) {
@@ -400,15 +445,19 @@ export const FRONTEND_CHECKS = [
       }
       const noRing = rows.filter((r) => r.outline <= 0 && !r.ring).map((r) => r.label);
       let pressedChanges = 0;
+      const unchanged = [];
       for (const row of rows.slice(0, 8)) {
         await ctx.b.mouse("mouseMoved", row.x, row.y, 0);
         await ctx.b.mouse("mousePressed", row.x, row.y, 1);
         const during = await ctx.inPage((qa, a) => { const el = document.elementFromPoint(a.x, a.y)?.closest("button,a,[role=tab],input"); return el ? [getComputedStyle(el).backgroundColor, getComputedStyle(el).transform].join("|") : null; }, { x: row.x, y: row.y });
         await ctx.b.mouse("mouseMoved", 2, 2, 1);
         await ctx.b.mouse("mouseReleased", 2, 2, 0);
+        // Each row starts from an idle page: a press on the search field leaves it focused with its list open over the controls below.
+        await ctx.inPage(() => { document.activeElement?.blur(); return true; });
         if (during && during !== [row.bg, row.transform].join("|")) pressedChanges += 1;
+        else unchanged.push(`${row.label}${during ? "" : " (nothing under the pointer)"}`);
       }
-      return result(rows.length > 0 && noRing.length === 0 && pressedChanges === Math.min(8, rows.length), { focusStops: rows.length, withoutFocusRing: noRing.slice(0, 8), pressedStyleChanges: `${pressedChanges}/${Math.min(8, rows.length)}` },
+      return result(rows.length > 0 && noRing.length === 0 && pressedChanges === Math.min(8, rows.length), { focusStops: rows.length, withoutFocusRing: noRing.slice(0, 8), pressedStyleChanges: `${pressedChanges}/${Math.min(8, rows.length)}`, withoutPressedChange: unchanged },
         "every control shows a focus-visible outline and an active/pressed style change");
     },
   }),
@@ -439,14 +488,19 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-41", {
-    states: ["S13"], viewports: D, fixtures: "up",
+    states: ["S13"], viewports: D, fixtures: "up", mutates: true,
     async run(ctx) {
+      return withPanelOpen(ctx, null, async () => {
+      // The risk rows sit below the live values in the panel's scroll body: scroll them into view, as a user would.
+      await ctx.inPage((qa) => { qa.one("[data-qa=dashboard-panel] [data-risk]")?.scrollIntoView({ block: "center" }); return true; });
+      await ctx.sleep(300);
       const m = await ctx.inPage((qa) => {
         const rows = qa.all("[data-qa=dashboard-panel] li, [data-qa=dashboard-panel] article, [data-qa=dashboard-panel] [data-risk]").filter((el) => qa.visible(el) && /위험|주의|risk/i.test(qa.txt(el)));
         return { riskRows: rows.length, withLeftStripe: rows.filter((el) => parseFloat(getComputedStyle(el).borderLeftWidth) >= 2).length };
       });
       // Without a rendered risk row there is nothing to verify, which is a FAIL, not a pass.
       return result(m.riskRows > 0 && m.withLeftStripe === 0, m, "border-left-width 0 on every risk row; a tone badge + text carries the risk");
+      });
     },
   }),
   defineCheck("V-F-42", {
@@ -507,7 +561,7 @@ export const FRONTEND_CHECKS = [
   defineCheck("V-F-47", {
     states: ["S01"], viewports: D, mutates: true,
     async run(ctx) {
-      const opened = await openPanelSection(ctx);
+      return withPanelOpen(ctx, "dashboard", async (opened) => {
       const m = await ctx.inPage((qa) => {
         const alert = qa.one("[data-qa=weather-error-banner]") ?? qa.one("[data-qa=weather-status]");
         const cards = qa.all("[data-qa=dashboard-panel] .grid > *").filter(qa.visible);
@@ -521,10 +575,12 @@ export const FRONTEND_CHECKS = [
       const microRetry = /다시 시도/.test(readSrc("panel/SelectionInspector.jsx"));
       const placed = m.alertToFirstCardPx != null && m.alertToFirstCardPx >= 0 && m.alertToFirstCardPx <= 16;
       return result(placed && microRetry && reloads === 0, { ...m, microclimateRetry: microRetry, reloadCalls: reloads, opened }, "alert within 16 px above the failed group; every error has a retry; 0 reload calls");
+      });
     },
   }),
   defineCheck("V-F-48", {
-    states: ["S12", "S01"], viewports: D, fixtures: "any",
+    // S01 reads empty values with the fixtures down; S12 times skeleton vs spinner with the fixtures delayed (--delay-ms 3000).
+    states: ["S12", "S01"], viewports: D, fixtures: { S01: "down", S12: "delay" },
     async run(ctx) {
       if (ctx.state === "S01") {
         const dashes = await ctx.inPage((qa) => qa.textNodesShown(qa.one("[data-qa=dashboard-panel]") ?? document.body).filter((i) => /^-(°C|m\/s|\s|$)/.test(i.value)).map((i) => i.value).slice(0, 6));
@@ -724,13 +780,16 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-63", {
-    states: ["S06"], viewports: D,
+    // The ranking and the comparison only exist when the energy API answers: measure at S17's fixtures-up S06.
+    states: ["S06"], viewports: D, mutates: true, fixtures: "up",
     async run(ctx) {
+      return withPanelOpen(ctx, "energy", async () => {
       const m = await ctx.inPage((qa) => {
         const panel = qa.one("[data-qa=dashboard-panel]");
         return { orderedLists: panel?.querySelectorAll("ol").length ?? 0, tables: panel?.querySelectorAll("table").length ?? 0, h2: panel?.querySelectorAll("h2").length ?? 0 };
       });
       return result(m.orderedLists >= 1 && m.tables >= 1 && m.h2 <= 1, m, "ranking is an ol, comparison a table, <= 1 heading group");
+      });
     },
   }),
   defineCheck("V-F-64", {
@@ -791,8 +850,11 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-71", {
-    states: ["S01"], viewports: D, mutates: true,
+    // 분석 실행 exists only when the energy API returns a representative plan: measure at S17's fixtures-up S01.
+    states: ["S01"], viewports: D, mutates: true, fixtures: "up",
     async run(ctx) {
+      // The refresh lives in the 기본 현황 weather card: open the panel first (rail-first shell).
+      return withPanelOpen(ctx, null, async () => {
       const count = () => ctx.inPage((qa) => qa.all(".animate-spin,[role=status],[aria-busy=true]").filter(qa.visible).length);
       const base = await count();
       const tapped = await ctx.b.tap('[aria-label="기상 데이터 새로고침"]', null, { timeoutMs: 2000 });
@@ -801,11 +863,14 @@ export const FRONTEND_CHECKS = [
       const toEnergy = await ctx.b.tap("[data-qa=dashboard-tab-energy]", null, { timeoutMs: 2000 });
       await ctx.sleep(800);
       const base2 = await count();
+      await ctx.inPage(() => { [...document.querySelectorAll("button")].find((b) => b.textContent.trim() === "분석 실행")?.scrollIntoView({ block: "center" }); return true; });
+      await ctx.sleep(300);
       const run = await ctx.b.tap("button", "분석 실행", { timeoutMs: 2000 });
       await ctx.sleep(150);
       const analysis = run.ok ? (await count()) - base2 : null;
       if (toEnergy.ok) await ctx.b.tap("[data-qa=dashboard-tab-dashboard]", null, { timeoutMs: 2000 });
       return result(tapped.ok && run.ok && weather <= 1 && analysis <= 1, { refreshTapped: tapped.ok, weatherIndicators: weather, analysisRunFound: run.ok, analysisIndicators: analysis }, "one progress indicator per action");
+      });
     },
   }),
   defineCheck("V-F-72", {
@@ -858,7 +923,8 @@ export const FRONTEND_CHECKS = [
       const readings = [];
       for (let i = 0; i < 10; i += 1) {
         readings.push(await ctx.inPage((qa) => ({
-          chip: qa.txt(qa.all("button[data-qa=campus-label]").find((el) => el.getAttribute("aria-pressed") === "true")) || null,
+          // The building name without the code badge ("C1 도서관" -> 도서관), like chipByText.
+          chip: (() => { const el = qa.all("button[data-qa=campus-label]").find((b) => b.getAttribute("aria-pressed") === "true"); return el ? qa.chipName(el) : null; })(),
           mesh: qa.one("[data-qa=campus-map-layer]")?.getAttribute("data-selected-id") ?? null,
           title: qa.txt(qa.one("[data-qa=selection-inspector] h2,[data-qa=selection-inspector] h3")) || null,
         })));

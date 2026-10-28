@@ -418,7 +418,7 @@ describe("Legacy and VWorld feature parity", () => {
     }
   });
 
-  it("puts the freshness stamps, the three camera groups, the time controls and the camera buttons in tab order before the map and the panel", async () => {
+  it("puts the freshness stamps, the three camera groups, the time controls and the camera buttons in tab order; the map region is not a tab stop (HUD -> chips -> panel)", async () => {
     const user = userEvent.setup();
     const { container } = render(<App />);
 
@@ -440,7 +440,7 @@ describe("Legacy and VWorld feature parity", () => {
     // HUD는 장면 시각과 그 옆 갱신 표시 셋(기상·교통·에너지, 새로 고침 단추)으로 시작한다.
     const stamps = [...container.querySelectorAll('[data-qa="campus-hud"] [data-qa="freshness-stamp"] button')];
     expect(stamps.map((button) => button.getAttribute("aria-label"))).toEqual(["기상 새로고침", "교통 새로고침", "에너지 새로고침"]);
-    const expected = [...stamps, overview, menu, tour, search, presentationToggle, compare, now, play, date, typedTime, slider, ...cameraButtons, mapLayer];
+    const expected = [...stamps, overview, menu, tour, search, presentationToggle, compare, now, play, date, typedTime, slider, ...cameraButtons];
 
     const reached = [];
     for (let i = 0; i < expected.length; i += 1) {
@@ -448,6 +448,8 @@ describe("Legacy and VWorld feature parity", () => {
       reached.push(document.activeElement);
     }
     expect(reached).toEqual(expected);
+    // Arrow keys reach the camera from the chips inside the map region; the region itself leaves the tab order.
+    expect(mapLayer.getAttribute("tabindex")).toBe("-1");
     for (const button of [overview, menu, tour, play, ...cameraButtons]) {
       expect(button.getAttribute("type")).toBe("button");
     }

@@ -96,7 +96,10 @@ export function appliesTo(check, scenario) {
   if (check.entries && !check.entries.includes(scenario.entry)) return false;
   if (check.viewports && !check.viewports.includes(scenario.viewport)) return false;
   if (check.themes && !check.themes.includes(scenario.theme)) return false;
-  const fixtures = check.fixtures ?? (Array.isArray(check.states) && check.states.includes("*") ? "any" : "down");
+  // fixtures: one mode for every state, or a per-state map ({ S01: "down", S12: "delay" }) for rows whose states need
+  // different fixtures (a state missing from the map uses "down").
+  const declared = check.fixtures && typeof check.fixtures === "object" ? check.fixtures[scenario.state] ?? "down" : check.fixtures;
+  const fixtures = declared ?? (Array.isArray(check.states) && check.states.includes("*") ? "any" : "down");
   if (fixtures !== "any" && fixtures !== scenario.fixtures) return false;
   const states = Array.isArray(check.states) ? check.states : check.states[scenario.viewport] ?? [];
   return states.includes("*") || states.includes(scenario.state);
@@ -108,4 +111,33 @@ export function makeImageCache(pngBytes) {
     image ??= decode(pngBytes);
     return image;
   };
+}
+
+// The scenarios a run captures (visual-qa.mjs main loop): the chained states of each entry, S16 (Legacy, light theme) and
+// S17's fixtures-up sub-states. stateIds/entries/viewports/themes come from parseArgs; fixtureLabel is "down" or "delay".
+export function plannedScenarios({ entries, viewports, themes, stateIds, fixtureLabel }, { chainIds, vworldStateIds, s17SubStates }) {
+  const out = [];
+  for (const entry of entries) {
+    const available = entry === "vworld" ? vworldStateIds : chainIds;
+    for (const viewport of viewports) {
+      for (const theme of themes) {
+        for (const state of stateIds.filter((id) => available.includes(id))) out.push({ entry, viewport, theme, state, fixtures: fixtureLabel });
+      }
+      if (entry !== "legacy") continue;
+      if (stateIds.includes("S16")) out.push({ entry, viewport, theme: "light", state: "S16", fixtures: fixtureLabel });
+      if (stateIds.includes("S17")) for (const theme of themes) for (const state of s17SubStates) out.push({ entry, viewport, theme, state, fixtures: "up" });
+    }
+  }
+  return out;
+}
+
+// Without --only, a run requests the checks that apply to at least one scenario it captures (plus the aggregate rows,
+// evaluated once at the end). A check that cannot apply to this run - a VWorld-only row in a Legacy run, a delayed-fixture
+// row in a normal run, a light-theme row in a dark run - is not requested, so it is neither run nor counted as a FAIL.
+// An explicit --only list stays as given: a listed id that never applies is still a FAIL.
+export function defaultRequestedIds(checks, scenarios) {
+  return [...checks.values()]
+    .filter((check) => !check.id.startsWith("SMOKE-"))
+    .filter((check) => check.aggregate || scenarios.some((scenario) => appliesTo(check, scenario)))
+    .map((check) => check.id);
 }

@@ -7,12 +7,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Browser, BrowserTimeoutError, VIEWPORTS, DEFAULT_CLOCK, closeAllBrowsers, sleep, withTimeout } from "./lib/browser.mjs";
 import { startVite, killAll } from "./lib/processes.mjs";
-import { setFixtures, readFixtureRequests } from "./lib/fixtures.mjs";
+import { setFixtures, readFixtureRequests, waitFixturesAnswered } from "./lib/fixtures.mjs";
 import { inPage, decode } from "./lib/probe.mjs";
-import { KEY_RECTS, compareScenario, dHashPng, loadBaselines, roundRect, saveBaselines, scenarioKey } from "./lib/baseline.mjs";
+import { KEY_RECTS, compareScenario, dHashPng, loadBaselines, roundRect, saveBaselines, scenarioKey, scenarioVariant } from "./lib/baseline.mjs";
 import { EXIT, exitCodeFor, rollupChecks, writeReport } from "./lib/report.mjs";
 import { STATES, CHAIN_IDS, S17_SUBSTATES, VWORLD_STATE_IDS, parseStateList, stateById, loadAndSettle, applyTheme, settleTiles } from "./lib/states.mjs";
-import { appliesTo, loadChecks, loadOwners, makeImageCache } from "./lib/registry.mjs";
+import { appliesTo, defaultRequestedIds, loadChecks, loadOwners, makeImageCache, plannedScenarios } from "./lib/registry.mjs";
 
 const QA_DIR = path.dirname(fileURLToPath(import.meta.url));
 const BASELINE_FILE = path.join(QA_DIR, "baselines.json");
@@ -122,7 +122,8 @@ async function main() {
   try {
     args = parseArgs(process.argv.slice(2));
     checks = await loadChecks();
-    args.onlyIds = args.only ? args.only.split(",").map((id) => id.trim()).filter(Boolean) : [...checks.keys()].filter((id) => !id.startsWith("SMOKE-"));
+    const plan = plannedScenarios({ ...args, fixtureLabel: args.delayMs ? "delay" : args.fail?.length ? "up" : "down" }, { chainIds: CHAIN_IDS, vworldStateIds: VWORLD_STATE_IDS, s17SubStates: S17_SUBSTATES });
+    args.onlyIds = args.only ? args.only.split(",").map((id) => id.trim()).filter(Boolean) : defaultRequestedIds(checks, plan);
     const unknown = args.onlyIds.filter((id) => !checks.has(id));
     if (unknown.length) throw new UsageError(`unknown check id ${unknown.join(", ")}`);
   } catch (error) {
@@ -259,7 +260,7 @@ async function runPass({ args, entry, viewport, theme, baseUrl, selected, baseli
     }
     ctx.timeOrigin = origin;
     const png = await b.screenshot();
-    const key = scenarioKey({ entry, state: fileState, viewport: viewport.id, theme: themeLabel });
+    const key = scenarioKey({ entry, state: fileState, viewport: viewport.id, theme: themeLabel, variant: scenarioVariant(args) });
     if (mode === "capture") {
       writeFileSync(path.join(args.out, file), png);
       const rects = {};
@@ -299,6 +300,8 @@ async function runPass({ args, entry, viewport, theme, baseUrl, selected, baseli
       args, b, entry, viewport: viewport.id, theme: themeLabel, state: scenarioInfo.state, stateLabel: label, fixtures, memo, runMemo,
       scale: viewport.scale, width: viewport.width, height: viewport.height, mobile: viewport.mobile, map: ctx.map,
       png, image: makeImageCache(png), decode, baseUrl, outDir: args.out, file,
+      // Probe checks that change the page (open the panel) re-capture before measuring pixels.
+      async refreshImage() { this.png = await b.screenshot(); this.image = makeImageCache(this.png); },
       inPage: (fn, a) => inPage(b, fn, a),
       screenshot: async () => decode(await b.screenshot()),
       setFixtures: (opts) => setFixtures(baseUrl, opts),
@@ -329,6 +332,13 @@ async function runPass({ args, entry, viewport, theme, baseUrl, selected, baseli
     if (label === "S01" && args.quality) await applyQuality(ctx);
     await runScript(ctx, label, baseUrl);
     if (requested && entry === "vworld" && state.id !== "S11") await settleTiles(ctx);
+    if (requested && args.delayMs > 0) {
+      // Delay run: the frame shows the answers this state asked for, not a race against the 3 s delay.
+      const waited = await waitFixturesAnswered(baseUrl, Date.now(), args.delayMs * 2 + 2000);
+      await b.run(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      ctx.actions.push(waited.settled ? `delayed answers in flight before capture arrived after ${waited.ms} ms` : `delayed answers still in flight after ${waited.ms} ms`);
+    }
+    if (requested && await b.refreshHover()) await b.run(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
     if (requested) await capture(state, label, fixtures);
     else ctx.actions = [];
     if (state.after) await state.after(ctx);

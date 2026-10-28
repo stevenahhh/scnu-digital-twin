@@ -2,7 +2,7 @@
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { createRef } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { CampusLabelLayer } from "./CampusLabelLayer.jsx";
+import { CampusLabelLayer, clearOfChrome } from "./CampusLabelLayer.jsx";
 import { HOLD_MS, resolveLabelBand } from "./labelBands.mjs";
 
 afterEach(cleanup);
@@ -47,6 +47,9 @@ describe("CampusLabelLayer", () => {
     // hidden chips stay out of hit testing.
     const hidden = [...container.querySelectorAll("[data-label-slot]")].filter((slot) => slot.style.visibility !== "visible");
     expect(hidden.every((slot) => slot.style.pointerEvents === "none")).toBe(true);
+    // ...and out of the Tab order: a parked chip is never focused off screen.
+    expect(hidden.every((slot) => slot.inert === true)).toBe(true);
+    expect(visibleSlots().every((slot) => slot.inert !== true)).toBe(true);
   });
 
   it("writes each shown slot's anchor y as data-anchor-top and clears it when the slot hides", () => {
@@ -56,7 +59,10 @@ describe("CampusLabelLayer", () => {
     const points = project(entries);
     const shown = visibleSlots();
     expect(shown.length).toBeGreaterThan(0);
-    for (const slot of shown) expect(slot.dataset.anchorTop).toBe(String(Math.round(points.get(slot.dataset.labelSlot).y)));
+    for (const slot of shown) {
+      expect(slot.dataset.anchorTop).toBe(String(Math.round(points.get(slot.dataset.labelSlot).y)));
+      expect(slot.dataset.anchorLeft).toBe(String(Math.round(points.get(slot.dataset.labelSlot).x)));
+    }
     const hidden = [...container.querySelectorAll("[data-label-slot]")].filter((slot) => slot.style.visibility !== "visible");
     expect(hidden.length).toBeGreaterThan(0);
     expect(hidden.every((slot) => slot.dataset.anchorTop === undefined)).toBe(true);
@@ -160,6 +166,42 @@ describe("CampusLabelLayer", () => {
     expect(visibleSlots()[0].style.transform).toMatch(/^translate3d\(8px,/);
   });
 
+  it("shows a chip selected while the camera is still moving instead of waiting for the camera to stop", () => {
+    // The far band shows no tier-3 building: it is hidden until it is selected.
+    const entries = [...Array.from({ length: 10 }, (_, i) => entry(`BLD_L${i}`)), entry("BLD_PICK", { tier: 3 })];
+    const { update, rerender, visibleSlots, controllerRef } = mount(entries);
+    update();
+    expect(visibleSlots().map((slot) => slot.dataset.labelSlot)).not.toContain("BLD_PICK");
+    rerender(<CampusLabelLayer entries={entries} controllerRef={controllerRef} measure={measure} selectedId="BLD_PICK" />);
+    update({ motion: true });
+    expect(visibleSlots().map((slot) => slot.dataset.labelSlot)).toContain("BLD_PICK");
+  });
+
+  it("keeps a moving chip 12 px clear of the HUD", () => {
+    const entries = [entry("BLD_TOP")];
+    const { update, visibleSlots } = mount(entries);
+    const hud = { left: 0, top: 0, right: 1440, bottom: 60 };
+    update({ chrome: [hud], points: new Map([["BLD_TOP", { x: 300, y: 400, depth: 100, distance: 100 }]]) });
+    // Mid-drag the anchor slides up under the HUD: the chip is not hidden, it sits 12 px below the HUD.
+    update({ motion: true, chrome: [hud], points: new Map([["BLD_TOP", { x: 300, y: 20, depth: 100, distance: 100 }]]) });
+    const y = Number(visibleSlots()[0].style.transform.match(/translate3d\([^,]+,\s*(-?\d+)px/)[1]);
+    expect(y).toBeGreaterThanOrEqual(hud.bottom + 12);
+  });
+
+  it("rewrites every chip when the camera stops, even when the settled layout equals the one before the move", () => {
+    const entries = [entry("BLD_BACK")];
+    const { update, visibleSlots } = mount(entries);
+    const home = new Map([["BLD_BACK", { x: 300, y: 400, depth: 100, distance: 100 }]]);
+    update({ points: home });
+    const settled = visibleSlots()[0].style.transform;
+    // Mid-move the anchor slides off the edge: the chip is pinned to the 8 px margin...
+    update({ motion: true, points: new Map([["BLD_BACK", { x: -200, y: 400, depth: 100, distance: 100 }]]) });
+    expect(visibleSlots()[0].style.transform).toMatch(/^translate3d\(8px,/);
+    // ...and back home the same layout puts it back where it was.
+    update({ points: home });
+    expect(visibleSlots()[0].style.transform).toBe(settled);
+  });
+
   it("marks an estimated name with the glyph, a dashed chip and 명칭 추정 in the accessible name", () => {
     const entries = [entry("BLD_SCNU_R1", { displayName: "부속 시설", estimatedName: true, tier: 3, code: null })];
     const { container, update } = mount(entries);
@@ -169,14 +211,16 @@ describe("CampusLabelLayer", () => {
     expect(button.getAttribute("aria-label")).toBe("부속 시설, 명칭 추정");
   });
 
-  it("names chips by code and full name, shows the short name, and passes keyboard clicks through with detail 0", () => {
+  it("names chips by code and full name, shows the one display name (not the preset short name), and passes keyboard clicks through with detail 0", () => {
     const onSelect = vi.fn();
     const entries = [entry("BLD_D4", { displayName: "공과대학 3호관", shortName: "공대 3호관", code: "D4" })];
     const { container, update } = mount(entries, { onSelect });
     update();
     const button = container.querySelector('[data-element-id="BLD_D4"]');
     expect(button.getAttribute("aria-label")).toBe("D4 공과대학 3호관");
-    expect(button.textContent).toContain("공대 3호관");
+    expect(button.textContent).toContain("공과대학 3호관");
+    expect(button.textContent).not.toContain("공대 3호관");
+    expect(button.closest("[data-label-slot]").dataset.occluded).toBe("false");
     fireEvent.click(button, { detail: 0 });
     expect(onSelect).toHaveBeenCalledTimes(1);
     expect(onSelect.mock.calls[0][0].id).toBe("BLD_D4");
@@ -214,5 +258,22 @@ describe("CampusLabelLayer", () => {
     expect(cluster.textContent).toContain("학생생활관 2동");
     fireEvent.click(cluster, { detail: 0 });
     expect(onSelectCluster.mock.calls[0][0].members).toEqual(["BLD_Dormitory_Building", "BLD_Dormitory_Building.001"]);
+  });
+});
+
+describe("clearOfChrome", () => {
+  const area = { left: 0, top: 0, right: 800, bottom: 600 };
+  const size = { hitWidth: 80, hitHeight: 40 };
+  const rect = (left, top, right, bottom) => ({ left, top, right, bottom });
+
+  it("leaves a chip that clears every rect where it is", () => {
+    expect(clearOfChrome({ x: 300, y: 300 }, size, [rect(0, 0, 200, 100)], area)).toEqual({ x: 300, y: 300 });
+  });
+
+  it("moves a chip off a tall left card to the nearest side that clears every rect by 12 px", () => {
+    // A tall card on the left and a second card right under it: below the first lands on the second, so the chip goes right.
+    const rects = [rect(0, 80, 200, 300), rect(0, 300, 280, 560)];
+    const placed = clearOfChrome({ x: 150, y: 200 }, size, rects, area);
+    expect(placed).toEqual({ x: 212, y: 200 });
   });
 });

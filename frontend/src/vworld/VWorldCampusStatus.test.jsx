@@ -31,4 +31,14 @@ describe("VWorldCampusStatus", () => {
     fireEvent.click(screen.getByRole("button", { name: "C1 / 도서관 불완전 시나리오 열기" }));
     expect(onSelection).toHaveBeenCalledWith({ elementId: "BLD_C1", buildingId: "C1", displayName: "C1 / 도서관" });
   });
+
+  it("waits quietly while the energy feed is down and reports a failure only when the feed is up", async () => {
+    const failing = { load: async () => { throw new Error("down"); } };
+    const { unmount } = render(<VWorldCampusStatus client={failing} onSelection={() => {}} feedDown />);
+    expect((await screen.findByText(/에너지 연결을 기다리는 중/)).getAttribute("role")).toBe("status");
+    expect(screen.queryByText(/못했습니다/)).toBeNull();
+    unmount();
+    render(<VWorldCampusStatus client={failing} onSelection={() => {}} />);
+    expect((await screen.findByRole("alert")).textContent).toContain("연결하지 못했습니다");
+  });
 });

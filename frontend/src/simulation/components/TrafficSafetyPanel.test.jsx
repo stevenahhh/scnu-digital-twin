@@ -104,3 +104,25 @@ describe("TrafficSafetyPanel", () => {
     expect(screen.getByText("감지된 이벤트가 없습니다.")).toBeTruthy();
   });
 });
+
+describe("TrafficSafetyPanel estimate labelling", () => {
+  it("marks the simulated coverage, risk events and agent metrics as estimates", () => {
+    vi.stubGlobal("fetch", vi.fn());
+    panelState.current.statistics.network_coverage = { car: { visited_percent: 40, planned_percent: 60 } };
+    panelState.current.selectedAgentId = "car-1";
+    panelState.current.selectedAgentDetails = { id: "car-1", type: "car", speed: 5, metrics: {} };
+    try {
+      const { container } = render(<TrafficSafetyPanel />);
+      const estimateHeaders = [...container.querySelectorAll("[data-tone=estimate]")].map((badge) => badge.closest("div")?.textContent ?? "");
+      expect(estimateHeaders.some((text) => text.includes("위험 이벤트"))).toBe(true);
+      expect(estimateHeaders.some((text) => text.includes("안전"))).toBe(true);
+      expect(estimateHeaders.some((text) => text.includes("이동"))).toBe(true);
+      expect(container.textContent).toContain("40% · 계획 60% (추정)");
+      expect(container.textContent).not.toMatch(/실주행|실시간 위험 이벤트/);
+    } finally {
+      panelState.current.statistics.network_coverage = {};
+      panelState.current.selectedAgentId = null;
+      panelState.current.selectedAgentDetails = null;
+    }
+  });
+});

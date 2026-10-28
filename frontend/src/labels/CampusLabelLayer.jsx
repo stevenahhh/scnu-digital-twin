@@ -75,6 +75,36 @@ function sameView(a, b) {
 // 카메라가 움직이는 동안 칩(누르는 영역)을 둘 화면 가장자리 여백(labelLayout의 edgeMargin과 같다).
 const MOTION_EDGE_PX = 8;
 
+// 움직이는 동안 칩 자리 하나를 가리개(HUD·지도 위 카드·패널)에서 12 px 떼어 놓는다. 걸린 가리개마다 위·아래·왼쪽·오른쪽
+// 바깥 자리를 후보로 두고, 화면 여백 안이면서 어떤 가리개에도 걸리지 않는 가장 가까운 곳을 고른다(없으면 처음 자리).
+const MOTION_CHROME_MARGIN = 12;
+export function clearOfChrome(point, size, rects, area) {
+  const hits = (p) => rects.filter((r) => p.x < r.right + MOTION_CHROME_MARGIN && p.x + size.hitWidth > r.left - MOTION_CHROME_MARGIN
+    && p.y < r.bottom + MOTION_CHROME_MARGIN && p.y + size.hitHeight > r.top - MOTION_CHROME_MARGIN);
+  const blocking = hits(point);
+  if (blocking.length === 0) return point;
+  const inside = (p) => p.x >= area.left + MOTION_EDGE_PX && p.x + size.hitWidth <= area.right - MOTION_EDGE_PX
+    && p.y >= area.top + MOTION_EDGE_PX && p.y + size.hitHeight <= area.bottom - MOTION_EDGE_PX;
+  let best = null;
+  let bestDistance = Infinity;
+  for (const r of rects) {
+    for (const p of [
+      { x: point.x, y: r.bottom + MOTION_CHROME_MARGIN },
+      { x: point.x, y: r.top - MOTION_CHROME_MARGIN - size.hitHeight },
+      { x: r.right + MOTION_CHROME_MARGIN, y: point.y },
+      { x: r.left - MOTION_CHROME_MARGIN - size.hitWidth, y: point.y },
+    ]) {
+      if (!inside(p) || hits(p).length > 0) continue;
+      const distance = Math.hypot(p.x - point.x, p.y - point.y);
+      if (distance < bestDistance) {
+        best = p;
+        bestDistance = distance;
+      }
+    }
+  }
+  return best ?? point;
+}
+
 export function CampusLabelLayer({
   entries,
   selectedId = null,
@@ -125,7 +155,10 @@ export function CampusLabelLayer({
         }
         if (node.style.transform !== PARKED_TRANSFORM) node.style.transform = PARKED_TRANSFORM;
         if (node.dataset.hiddenReason !== reason) node.dataset.hiddenReason = reason;
+        // 숨긴 칩은 Tab·클릭·화면 읽기에서도 빠진다(층 밖으로 옮긴 칩에 포커스가 가면 고리가 화면 밖에 그려졌다).
+        if (!node.inert) node.inert = true;
         if (node.dataset.anchorTop !== undefined) delete node.dataset.anchorTop;
+        if (node.dataset.anchorLeft !== undefined) delete node.dataset.anchorLeft;
       }
       const leader = leadersRef.current.get(id);
       if (leader && leader.style.visibility !== "hidden") leader.style.visibility = "hidden";
@@ -142,23 +175,29 @@ export function CampusLabelLayer({
       sizeCacheRef.current.set(id, size);
       return size;
     };
-    // anchorY: the building anchor's client y. Written as data-anchor-top so screen QA can measure the chip-to-anchor gap.
-    const writeSlot = (id, x, y, area, leader, opacity, anchorY) => {
+    // anchor: the building anchor's client point. Written as data-anchor-left/top so screen QA can measure the chip-to-anchor
+    // gap and find the building under a displaced chip.
+    const writeSlot = (id, x, y, area, leader, opacity, anchor) => {
       const node = nodesRef.current.get(id);
       if (!node) return;
-      const anchorTop = Number.isFinite(anchorY) ? String(Math.round(anchorY)) : undefined;
-      if (node.dataset.anchorTop !== anchorTop) {
-        if (anchorTop === undefined) delete node.dataset.anchorTop;
-        else node.dataset.anchorTop = anchorTop;
+      for (const [key, value] of [["anchorTop", anchor?.y], ["anchorLeft", anchor?.x]]) {
+        const text = Number.isFinite(value) ? String(Math.round(value)) : undefined;
+        if (node.dataset[key] === text) continue;
+        if (text === undefined) delete node.dataset[key];
+        else node.dataset[key] = text;
       }
       const transform = `translate3d(${Math.round(x - area.left)}px, ${Math.round(y - area.top)}px, 0)`;
       if (node.style.transform !== transform) node.style.transform = transform;
       if (node.style.visibility !== "visible") node.style.visibility = "visible";
       if (node.dataset.hiddenReason) delete node.dataset.hiddenReason;
+      if (node.inert) node.inert = false;
       const slot = slotById.get(id);
       const pointer = slot?.kind === "zone" ? "none" : "auto";
       if (node.style.pointerEvents !== pointer) node.style.pointerEvents = pointer;
       const nextOpacity = opacity === 1 ? "" : String(opacity);
+      // 고른·올린 건물 뒤로 가려진 앵커의 칩(흐리게 그린다). 화면 검사가 가림 판정을 읽는다(V-F-55).
+      const occluded = opacity < 1 ? "true" : "false";
+      if (node.dataset.occluded !== occluded) node.dataset.occluded = occluded;
       if (node.style.opacity !== nextOpacity) node.style.opacity = nextOpacity;
       const line = leadersRef.current.get(id);
       if (!line) return;
@@ -214,7 +253,11 @@ export function CampusLabelLayer({
       const anchorOf = new Map(clustered.map((c) => [c.id, { x: c.position[0], y: c.position[1], depth: c.position[2] }]));
 
       // 카메라가 움직이는 동안: 보이던 칩 묶음과 앵커로부터의 상대 위치를 그대로 두고 앵커만 따라간다(보임/숨김을 바꾸지 않는다).
-      if (frame.motion && lastRef.current.layout) {
+      // 선택이 바뀌었으면 움직이는 중이어도 한 번 새로 배치한다(새로 고른 칩이 카메라가 멈출 때까지 숨어 있지 않게).
+      if (frame.motion && lastRef.current.layout && lastRef.current.selected === selected) {
+        // 움직이는 동안 쓴 자리(앵커 따라가기·가장자리 고정)는 멈춘 뒤 배치가 같아도 다시 써야 한다. 지문을 비워 다음 정지 배치가
+        // 모든 칩을 다시 쓰고 놓지 않은 칩을 숨기게 한다(전에는 같은 배치면 건너뛰어 움직일 때 자리에 남았다).
+        lastRef.current.fingerprint = "";
         for (const [id, offset] of lastRef.current.placed) {
           const anchor = anchorOf.get(id);
           if (!anchor) {
@@ -226,15 +269,17 @@ export function CampusLabelLayer({
           const size = sizeOf(id);
           const rawX = anchor.x + offset.dx;
           const rawY = anchor.y + offset.dy;
-          const x = Math.min(Math.max(rawX, area.left + MOTION_EDGE_PX), Math.max(area.left + MOTION_EDGE_PX, area.right - MOTION_EDGE_PX - size.hitWidth));
-          const y = Math.min(Math.max(rawY, area.top + MOTION_EDGE_PX), Math.max(area.top + MOTION_EDGE_PX, area.bottom - MOTION_EDGE_PX - size.hitHeight));
+          const edgeX = Math.min(Math.max(rawX, area.left + MOTION_EDGE_PX), Math.max(area.left + MOTION_EDGE_PX, area.right - MOTION_EDGE_PX - size.hitWidth));
+          const edgeY = Math.min(Math.max(rawY, area.top + MOTION_EDGE_PX), Math.max(area.top + MOTION_EDGE_PX, area.bottom - MOTION_EDGE_PX - size.hitHeight));
+          // HUD·지도 위 카드·패널에 걸리면 12 px 떨어진 가장 가까운 빈자리(위·아래·좌·우)로 옮긴다(멈춘 배치의 chromeMargin과 같다).
+          const { x, y } = clearOfChrome({ x: edgeX, y: edgeY }, size, [...(frame.chrome ?? []), ...(frame.occluder ? [frame.occluder] : [])], area);
           const clamped = x !== rawX || y !== rawY;
           const leader = clamped
             ? { from: { x: x + size.hitWidth / 2, y: y + (size.hitHeight + size.height) / 2 }, to: anchor }
             : offset.leader
               ? { from: { x: anchor.x + offset.leader.fx, y: anchor.y + offset.leader.fy }, to: anchor }
               : null;
-          writeSlot(id, x, y, area, leader, offset.opacity, anchor.y);
+          writeSlot(id, x, y, area, leader, offset.opacity, anchor);
         }
         return;
       }
@@ -283,12 +328,12 @@ export function CampusLabelLayer({
           opacity,
           leader: item.leader ? { fx: item.leader.from.x - anchor.x, fy: item.leader.from.y - anchor.y } : null,
         });
-        if (result.fingerprint !== lastRef.current.fingerprint) writeSlot(item.id, x, y, area, item.leader, opacity, anchor.y);
+        if (result.fingerprint !== lastRef.current.fingerprint) writeSlot(item.id, x, y, area, item.leader, opacity, anchor);
       }
       if (result.fingerprint !== lastRef.current.fingerprint) {
         for (const id of nodesRef.current.keys()) if (!placed.has(id)) hideNode(id, result.hiddenReasons.get(id) ?? "inactive");
       }
-      lastRef.current = { layout: result, placed, fingerprint: result.fingerprint };
+      lastRef.current = { layout: result, placed, fingerprint: result.fingerprint, selected };
 
       // 300 ms 유지 규칙은 시간이 지나야 결론이 난다(빈자리를 기다리는 칩, 밀려난 채 남아 있는 칩). 요청 렌더 루프는 카메라가
       // 멈추면 프레임을 더 그리지 않으므로, 기다리는 칩이 있으면 유지 시간이 지난 뒤 배치를 한 번 더 요청한다.
@@ -386,7 +431,8 @@ export function CampusLabelLayer({
     >
       {ordered.map((slot) => {
         const kind = slot.kind === "zone" ? "zone" : view.kinds[slot.id] === "dot" ? "dot" : "chip";
-        const name = slot.shortName ?? slot.displayName;
+        // 건물 칩은 어디서나 같은 한 이름(displayName, AUDIT GAP-12). 구역·묶음 칩만 짧은 이름을 쓴다.
+        const name = kind === "zone" || slot.cluster ? slot.shortName ?? slot.displayName : slot.displayName;
         return (
           <Fragment key={slot.id}>
           <svg ref={registerLeader(slot.id)} aria-hidden="true" data-qa="label-leader" width="1" height="1" style={LEADER_STYLE} className="text-hairline-strong">

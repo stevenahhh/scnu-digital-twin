@@ -83,7 +83,7 @@ test("the slice sphere contains all eight slice corners", () => {
 });
 
 test("every fitted cascade's shadow camera contains its whole frustum slice for many suns and cameras", () => {
-  const cameras = [[[0, 260, 260], [0, 0, 0]], [[-154.4, 96.4, -33.3], [-214.4, 46.4, -93.3]], [[240, 38, 15], [134, 4, -10]]];
+  const cameras = [[[0, 260, 260], [0, 0, 0]], [[-154.4, 96.4, -33.3], [-214.4, 46.4, -93.3]], [[240, 38, 15], [100, 4, -38]]];
   for (const [position, target] of cameras) {
     const { camera, input } = orbitCamera(position, target);
     for (const altitude of [5, 30, 70]) {

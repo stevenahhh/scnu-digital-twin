@@ -139,7 +139,12 @@ export class Browser {
     return withTimeout(this.view.evaluate(expression), 60000, "evaluate");
   }
 
+  // Under SwiftShader the first capture after the WebGL canvas drew returns the composite from before that draw: on the
+  // 도서관 hover the first capture read a roof delta of 0.014 and a capture right after it (no page change in between)
+  // 0.029, the settled tint. A 1 px clipped capture does not composite the canvas, so one full capture is discarded and
+  // the next one, which shows the page as it is, is returned.
   async screenshot() {
+    await withTimeout(this.view.screenshot({ encoding: "buffer" }), 60000, "screenshot (discarded)");
     const shot = await withTimeout(this.view.screenshot({ encoding: "buffer" }), 60000, "screenshot");
     return new Uint8Array(shot);
   }
@@ -189,6 +194,7 @@ export class Browser {
     }
     if (!point) return { ok: false, action: `NOT FOUND ${selector}${text ? ` "${text}"` : ""}` };
     await withTimeout(this.view.click(point[0], point[1]), 30000, "click");
+    this.pointer = { x: point[0], y: point[1] };
     return { ok: true, action: `click ${selector}${text ? ` "${text}"` : ""} @${Math.round(point[0])},${Math.round(point[1])}` };
   }
 
@@ -199,8 +205,21 @@ export class Browser {
     }
   }
 
+  // CDP reads `button` on a mouseMoved as the button held during the move: a plain hover must send "none", or Chrome
+  // treats it as a left-button drag and keeps :hover (and the canvas hover pick) frozen on whatever was under the press.
   async mouse(type, x, y, buttons = 0, modifiers = 0) {
-    await withTimeout(this.view.cdp("Input.dispatchMouseEvent", { type, x, y, button: "left", buttons, clickCount: 1, modifiers }), 30000, type);
+    const button = type === "mouseMoved" && !(buttons & 1) ? "none" : "left";
+    await withTimeout(this.view.cdp("Input.dispatchMouseEvent", { type, x, y, button, buttons, clickCount: type === "mouseMoved" ? 0 : 1, modifiers }), 30000, type);
+    this.pointer = { x, y };
+  }
+
+  // Headless Chrome recomputes :hover only on a mouse event. When the page re-lays out under a still pointer (a camera
+  // flight moving the chip that was just tapped), the hover state at capture depends on timing. Re-sending a plain move
+  // at the pointer's current position makes :hover match the final layout, as a desktop browser's own synthetic move does.
+  async refreshHover() {
+    if (!this.pointer) return false;
+    await this.mouse("mouseMoved", this.pointer.x, this.pointer.y, 0);
+    return true;
   }
 
   async key(key) {

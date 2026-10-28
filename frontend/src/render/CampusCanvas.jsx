@@ -31,12 +31,13 @@ export const CampusCanvas = forwardRef(function CampusCanvas(
     <div
       ref={mapLayerRef}
       data-qa="campus-map-layer"
-      tabIndex={0}
+      // 탭 순서는 HUD -> 칩 -> 패널(AUDIT GAP-32). 지도 영역은 탭 정지가 아니고, 화살표 키는 칩(지도 영역 안)에서 올라와 카메라를 움직인다.
+      tabIndex={-1}
       aria-label="순천대 캠퍼스 3D 지도"
       aria-describedby="campus-map-keys"
       className={`absolute inset-0 z-0 flex select-none items-center justify-center ${CANVAS_FALLBACK_SURFACE_CLASS}`}
     >
-      <p id="campus-map-keys" className="sr-only">화살표로 회전, Shift+화살표로 이동, +와 -로 확대·축소, H로 처음 시점</p>
+      <p id="campus-map-keys" className="sr-only text-body">화살표로 회전, Shift+화살표로 이동, +와 -로 확대·축소, H로 처음 시점</p>
       <PanelErrorBoundary
         label="3D 캠퍼스"
         message="3D 캠퍼스 모델을 불러오지 못했습니다"

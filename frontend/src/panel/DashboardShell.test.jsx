@@ -74,7 +74,7 @@ describe("DashboardShell", () => {
     expect(shell(again.container).dataset.open).toBe("true");
   });
 
-  it("renders the bottom sheet at peek on a phone, goes to full when a tab is tapped, and never covers the scene with a scrim", () => {
+  it("renders the bottom sheet at peek on a phone, keeps it at half when a tab is tapped (full only by dragging), and never covers the scene with a scrim", () => {
     window.matchMedia = mediaFor(390);
     const { container } = render(<Harness />);
     const sheet = shell(container);
@@ -86,7 +86,7 @@ describe("DashboardShell", () => {
     fireEvent.click(screen.getByRole("button", { name: "패널 열기" }));
     expect(sheet.dataset.detent).toBe("half");
     fireEvent.click(screen.getByRole("tab", { name: "환경 시뮬" }));
-    expect(sheet.dataset.detent).toBe("full");
+    expect(sheet.dataset.detent).toBe("half");
     expect(shellInsetRight("phone", true)).toBe("0px");
   });
 

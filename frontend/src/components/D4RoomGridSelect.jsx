@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Check } from "lucide-react";
 import { D4RoomGridScene } from "./D4RoomGridScene";
 import { D4SampleBadge } from "./D4SampleBadge";
 import { D4ScrollRoot } from "./D4ScrollRoot";
@@ -99,7 +99,10 @@ function RoomButtonList({ rooms, roomUsageById, selectedRoomId, onSelectRoom }) 
             onClick={() => onSelectRoom(room.id)}
             className={`flex min-h-11 w-full flex-col items-center justify-center rounded-control border border-hairline bg-surface-2 px-2 py-1 text-body font-semibold text-ink aria-pressed:ring-2 aria-pressed:ring-primary ${COARSE_TARGET} ${FOCUS_RING}`}
           >
-            {formatRoomNumber(room.roomNumber)}
+            <span className="inline-flex items-center gap-1">
+              {selectedRoomId === room.id && <Check aria-hidden="true" className="h-4 w-4" />}
+              {formatRoomNumber(room.roomNumber)}
+            </span>
             {roomUsageById.get(room.id) && <span className="text-micro text-ink-muted">사용 중</span>}
           </button>
         </li>

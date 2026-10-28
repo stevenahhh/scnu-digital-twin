@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   vw: null,
   loaderError: null,
   trafficOnStatus: null,
+  highlightStates: [],
 }));
 
 vi.mock("./webglSdkLoader.mjs", () => ({
@@ -22,6 +23,10 @@ vi.mock("./campusGltfOverlay.mjs", async (importOriginal) => ({
   ...(await importOriginal()),
   createCampusGltfOverlay: vi.fn(async () => null),
   removeCampusGltfOverlay: vi.fn(),
+}));
+// 선택·호버 강조는 selectionHighlight.test.mjs가 본다. 여기서는 렌더러가 넘기는 선택만 기록한다.
+vi.mock("./selectionHighlight.mjs", () => ({
+  createVWorldSelectionHighlight: () => ({ set: (state) => mocks.highlightStates.push(state), dispose: () => {} }),
 }));
 // 라벨 층 자체는 VWorldLabelLayer.test.jsx가 본다. 여기서는 렌더러가 넘기는 값만 기록한다.
 vi.mock("./VWorldLabelLayer", () => ({
@@ -188,7 +193,8 @@ describe("VWorldRenderer retained map integration", () => {
     mocks.vw = createVw();
     const onSelection = vi.fn();
     const onClearSelection = vi.fn();
-    const props = { d4PaneHost: paneHost(), onSelection, onClearSelection, simulationDate: new Date("2026-05-18T12:00:00+09:00") };
+    const onCampusCamera = vi.fn();
+    const props = { d4PaneHost: paneHost(), onSelection, onClearSelection, onCampusCamera, simulationDate: new Date("2026-05-18T12:00:00+09:00") };
     const view = render(<VWorldRenderer {...props} selectedId="" />);
 
     const layer = await screen.findByTestId("vworld-label-layer");
@@ -201,6 +207,7 @@ describe("VWorldRenderer retained map integration", () => {
     expect(map.lookat.moveTo).toHaveBeenCalledTimes(1);
     view.rerender(<VWorldRenderer {...props} selectedId="도서관" />);
     expect(layer.dataset.selected).toBe("BLD_C1");
+    expect(screen.getByRole("region", { name: "순천대 캠퍼스 3D 지도" }).dataset.selectedId).toBe("BLD_C1");
 
     // 앱이 선택을 풀면(인스펙터 닫기) 라벨 선택도 풀리고, Esc는 앱에 알린다.
     view.rerender(<VWorldRenderer {...props} selectedId="" />);
@@ -208,8 +215,14 @@ describe("VWorldRenderer retained map integration", () => {
     act(() => mocks.labelProps.onClear());
     expect(onClearSelection).toHaveBeenCalledTimes(1);
 
+    // The layer hands over the parsed GLB: the renderer builds the preset camera from it.
+    act(() => mocks.labelProps.onGlb({ scene: 0, scenes: [{ nodes: [] }], nodes: [] }));
+    expect(typeof onCampusCamera.mock.calls.at(-1)[0]?.flyTo).toBe("function");
+    expect(screen.getByRole("region", { name: "순천대 캠퍼스 3D 지도" }).dataset.qa).toBe("campus-map-layer");
+
     view.unmount();
     expect(screen.queryByTestId("vworld-label-layer")).toBeNull();
+    expect(onCampusCamera.mock.calls.at(-1)[0]).toBeNull();
     window.Cesium = previousCesium;
   });
 

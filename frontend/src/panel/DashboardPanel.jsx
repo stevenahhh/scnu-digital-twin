@@ -20,7 +20,8 @@ export function DashboardPanel({ activeTab, onTabChange, extraTabs = [], headerA
   const tabs = [...DASHBOARD_TABS, ...extraTabs];
   const options = tabs.map((tab) => ({ ...tab, qa: `dashboard-tab-${tab.value}` }));
   return (
-    <section aria-label="대시보드" className="flex h-full w-full flex-col bg-surface-1 text-ink">
+    // 패널 자체는 카드가 아니라 화면 영역이다(제목 h2를 품는 section이 아님).
+    <div role="region" aria-label="대시보드" className="flex h-full w-full flex-col bg-surface-1 text-ink">
       <header className="dashboard-panel-content flex flex-col gap-4 px-4 pb-4 pt-4">
         <div className="flex min-h-11 items-center justify-between gap-2">
           <h2 className="min-w-0 break-keep text-title text-ink">{dashboardTitle(activeTab, tabs)}</h2>
@@ -31,6 +32,6 @@ export function DashboardPanel({ activeTab, onTabChange, extraTabs = [], headerA
       </header>
       <div ref={scrollRef} data-qa="panel-scroll" className="dashboard-panel-content flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 pb-8">{children}</div>
       {footer}
-    </section>
+    </div>
   );
 }

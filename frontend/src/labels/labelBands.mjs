@@ -79,7 +79,8 @@ export function rankLabelCandidates(candidates, band, { selectedId = null, hover
     else if (band.dotTiers.includes(candidate.tier)) kind = "dot";
     if (!kind) continue;
     if (band.streetRadius !== null && !selected && !attention) {
-      if (candidate.inFront === false || candidate.distance > band.streetRadius) continue;
+      // 랜드마크(계층 1)는 반경 밖이어도 남는다: 정문 시점에서도 도서관 같은 길잡이 건물이 보인다(AUDIT GAP-37). 상한은 그대로다.
+      if (candidate.inFront === false || (candidate.distance > band.streetRadius && candidate.tier !== 1)) continue;
     }
     ranked.push({ ...candidate, kind, selected, attention });
   }

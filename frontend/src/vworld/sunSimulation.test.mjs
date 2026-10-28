@@ -75,3 +75,13 @@ test("applies the selected simulation date to VWorld lighting and shadows", asyn
     }
   }
 });
+
+test("at night the model is lit from above instead of by the set sun, weaker as the sun sinks", async () => {
+  const { vworldNightLighting } = await import("./sunSimulation.mjs");
+  const deg = (d) => (d * Math.PI) / 180;
+  assert.deepEqual(vworldNightLighting(deg(20)), { night: false, modelIntensity: null });
+  const dusk = vworldNightLighting(deg(-3));
+  const evening = vworldNightLighting(deg(-15));
+  const late = vworldNightLighting(deg(-36));
+  assert.ok(dusk.modelIntensity > evening.modelIntensity && evening.modelIntensity > late.modelIntensity && late.modelIntensity > 0);
+});

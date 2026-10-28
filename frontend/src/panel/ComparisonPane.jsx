@@ -109,7 +109,7 @@ export function CompareButton({ comparison, className = "" }) {
       >
         {`비교 ${comparison.ids.length}/3`}
       </Button>
-      <span id={reasonId} className="sr-only">{disabled ? COMPARISON_NEEDS_TWO : ""}</span>
+      <span id={reasonId} className="sr-only text-caption">{disabled ? COMPARISON_NEEDS_TWO : ""}</span>
       <span role="status" className="text-caption text-ink-muted">{comparison.status}</span>
     </span>
   );

@@ -50,6 +50,7 @@ import {
   patchFoliageLod,
 } from "./lighting/foliage.mjs";
 import { WATER_ENV_INTENSITY, WATER_MATERIAL_NAME, patchWaterFresnel } from "./lighting/water.mjs";
+import { clipPolygonAhead } from "./render/clipPolygon.mjs";
 
 // 클릭하지 않아도 카메라가 이 거리 안으로 들어오면 "가까이 간" 것으로 본다.
 // 클릭 시 자동으로 붙는 카메라 거리(FOCUS_CAMERA_OFFSET 기준 약 94유닛)보다 살짝
@@ -140,7 +141,8 @@ function applyLampPoolFalloff(material) {
 
 // 색 전환은 선택/주야가 바뀐 뒤에만, 남은 차이가 이 값보다 작아질 때까지 돈다.
 const MATERIAL_SETTLE_EPSILON = 1e-3;
-const MATERIAL_EASE_RATE = 8;
+// 1/s. 150 ms(--motion-settle)에 약 95%까지 간다. 멈춘 화면에서는 프레임이 드물어 느린 감쇠는 300 ms 안에 거의 칠하지 못했다.
+const MATERIAL_EASE_RATE = 20;
 // 선택 강조: 보통·높음 단계는 후처리 외곽선(HighTierEffects의 Outline)이 맡고, 낮음 단계(후처리 없음)는 선택 건물 재질을
 // 강조색 쪽으로 35% 옮기고 강조색 발광 0.15를 더한다. 어느 단계든 선택이 있으면 나머지 메시는 20% 어둡게 한다(DIM_ALPHA).
 const SELECTION_COLOR = new THREE.Color(SELECTION_HEX);
@@ -156,10 +158,10 @@ const NIGHT_TINT_MIX = 0.16;
 // 수종 배정은 추정값이며 실제 수목 조사 결과가 아니다.
 // 주야·계절 가중치가 이만큼 바뀌어야 재질을 다시 쓴다.
 const RAMP_EPSILON = 1e-4;
-// 마우스를 올린 건물은 평소 색을 호버 색 쪽으로 12%만 옮긴다. 선택 강조보다 약하다.
+// 마우스를 올린 건물은 평소 색을 호버 색 쪽으로 20% 옮긴다(은은하게, 선택 강조 35%보다 약하다).
 // 재질은 메시마다 복제돼 있어 다른 건물로 번지지 않는다.
 const HOVER_COLOR = new THREE.Color(HOVER_HEX);
-const HOVER_TINT_MIX = 0.12;
+const HOVER_TINT_MIX = 0.2;
 // 프레임마다 새 객체를 만들지 않도록 재사용하는 스크래치 값.
 const scratchColor = new THREE.Color();
 const scratchHoverColor = new THREE.Color();
@@ -360,6 +362,7 @@ export function CityModel({
   const cameraPoseRef = useRef(null);
   // 카메라 지면 충돌용 지면 격자(월드 좌표). 캠퍼스 지형과 바깥 산을 모두 덮는다.
   const groundGridRef = useRef(null);
+  const groundEdgeRef = useRef(null);
 
   // 누르기·놓기는 window 캡처 단계에서 먼저 기록한다. R3F의 pointerup과 라벨 click보다 앞서고, OrbitControls가
   // 포인터를 캡처해도 빠지지 않는다. 누른 곳이 캔버스인지, 라벨인지, 그 밖(패널 등)인지도 함께 남긴다.
@@ -715,6 +718,13 @@ export function CityModel({
       labelAnchors.find((item) => item.name === selectedId || (item.proxy && item.displayName === selectedId));
     return anchor?.elementId ?? null;
   }, [anchorById, labelAnchors, selectedElementId, selectedId]);
+  // 지금 강조한 건물(앵커 id)을 지도 층에 남긴다(data-selected-id, 화면 검사가 칩·제목과 같은 건물인지 본다).
+  useEffect(() => {
+    const layer = gl.domElement.closest?.("[data-qa=campus-map-layer]");
+    if (!layer) return;
+    if (selectedAnchorId) layer.dataset.selectedId = selectedAnchorId;
+    else delete layer.dataset.selectedId;
+  }, [gl, selectedAnchorId]);
   const selectedAnchorIdRef = useRef(selectedAnchorId);
   selectedAnchorIdRef.current = selectedAnchorId;
 
@@ -738,6 +748,16 @@ export function CityModel({
       sources.push({ positions, index: object.geometry.index?.array ?? null });
     });
     groundGridRef.current = sources.length > 0 ? buildGroundGrid(sources) : null;
+    // 지면 메시의 수평 범위(장면 좌표)와 평균 높이: 화면 검사(QA)가 모델 가장자리 안팎의 밝기를 잰다(data-model-edge).
+    let minX = Infinity; let maxX = -Infinity; let minZ = Infinity; let maxZ = -Infinity; let sumY = 0; let n = 0;
+    for (const { positions } of sources) {
+      for (let k = 0; k < positions.length; k += 3) {
+        minX = Math.min(minX, positions[k]); maxX = Math.max(maxX, positions[k]);
+        minZ = Math.min(minZ, positions[k + 2]); maxZ = Math.max(maxZ, positions[k + 2]);
+        sumY += positions[k + 1]; n += 1;
+      }
+    }
+    groundEdgeRef.current = n > 0 ? { minX, maxX, minZ, maxZ, y: sumY / n } : null;
     invalidate();
   }, [scene, center, invalidate]);
 
@@ -1114,6 +1134,20 @@ export function CityModel({
     }
 
     controller.update({ points, area, chrome, occluder, focusBoxes, band, now: performance.now(), motion });
+
+    // 모델(지면) 경계 사각형을 카메라 앞쪽(가까운 면 안)으로 잘라 화면에 투영한 꼭짓점들(data-model-edge, 화면 검사용).
+    const edge = groundEdgeRef.current;
+    const layer = gl.domElement.closest?.("[data-qa=campus-map-layer]");
+    if (layer) {
+      let value = "";
+      if (edge) {
+        const corners = [[edge.minX, edge.y, edge.minZ], [edge.maxX, edge.y, edge.minZ], [edge.maxX, edge.y, edge.maxZ], [edge.minX, edge.y, edge.maxZ]];
+        const ahead = (p) => (p[0] - camera.position.x) * forward.x + (p[1] - camera.position.y) * forward.y + (p[2] - camera.position.z) * forward.z - camera.near * 2;
+        const clipped = clipPolygonAhead(corners, ahead);
+        if (clipped.length >= 3) value = clipped.map(([x, y, z]) => { const p = toScreen(x, y, z); return `${Math.round(p.x)},${Math.round(p.y)}`; }).join(";");
+      }
+      if (layer.dataset.modelEdge !== value) layer.dataset.modelEdge = value;
+    }
   });
 
   // R3F는 pointerup에 delta를 계산하지 않는다(항상 0). 클릭 여부는 pointerGuard가 누른 위치·시간으로 판단한다.

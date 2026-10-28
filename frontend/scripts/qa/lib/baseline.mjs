@@ -78,8 +78,20 @@ export function roundRect(rect) {
   return { x: Math.round(rect.x), y: Math.round(rect.y), w: Math.round(rect.w), h: Math.round(rect.h) };
 }
 
-export function scenarioKey({ entry, state, viewport, theme }) {
-  return `${entry}/${state}-${viewport}-${theme}`;
+// variant: a run that renders a different page for the same state (delayed or failing fixtures, another model through the
+// URL) keeps its own baselines, so it is compared with itself rather than with the plain run (see scenarioVariant).
+export function scenarioKey({ entry, state, viewport, theme, variant = "" }) {
+  return `${entry}/${state}-${viewport}-${theme}${variant ? `@${variant}` : ""}`;
+}
+
+// The variant of a run from its flags: "" for a plain run, else e.g. "delay3000", "fail=/api/traffic", "model=uni".
+export function scenarioVariant({ delayMs = 0, fail = [], urlSuffix = "" } = {}) {
+  const parts = [];
+  if (delayMs) parts.push(`delay${delayMs}`);
+  if (fail?.length) parts.push(`fail=${[...fail].sort().join("+")}`);
+  const query = String(urlSuffix ?? "").replace(/^[?&#]+/, "");
+  if (query) parts.push(query);
+  return parts.join("&");
 }
 
 // Compares one captured scenario with its baseline. Returns { pass, problems: [..] }.

@@ -4,7 +4,8 @@ import test from "node:test";
 import commonElements from "../../../common/data/common_elemetns.json" with { type: "json" };
 import { CAMERA_PRESETS } from "../camera/cameraPresets.mjs";
 import { CAMPUS_GLTF_OVERLAY_CONFIG } from "./campusGltfOverlay.mjs";
-import { buildVWorldLabelEntries, glbLabelAnchors, readGlbJson } from "./labelAnchors.mjs";
+import { gateTextFor } from "../labels/gateDistance.mjs";
+import { buildVWorldLabelEntries, gateScenePositionOf, glbLabelAnchors, readGlbJson } from "./labelAnchors.mjs";
 
 const glb = readFileSync(new URL("../../public/campus-buildings.glb", import.meta.url));
 const json = readGlbJson(glb);
@@ -47,4 +48,12 @@ test("entries carry tiers, zones and data flags; the gate zone moves back by the
 
 test("rejects a file that is not a GLB", () => {
   assert.throws(() => readGlbJson(new Uint8Array(32)), /not a GLB/);
+});
+
+test("turns a VWorld label anchor back into Legacy scene coordinates for the distance from 정문", () => {
+  const entries = buildVWorldLabelEntries({ json: readGlbJson(glb), elements: commonElements.elements, presets: CAMERA_PRESETS });
+  // The 정문 zone sits on the gate preset target, so it is under 10 m from the gate anchor once moved back.
+  assert.equal(gateTextFor(gateScenePositionOf(entries, "ZONE_gate")), "정문에서 추정 직선 거리 10 m 미만");
+  assert.match(gateTextFor(gateScenePositionOf(entries, "BLD_C1")), /^정문에서 추정 직선 거리 \d+ m · (북|북동|동|남동|남|남서|서|북서)$/);
+  assert.equal(gateScenePositionOf(entries, "BLD_NOPE"), null);
 });

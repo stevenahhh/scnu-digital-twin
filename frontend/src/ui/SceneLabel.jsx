@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Check } from "lucide-react";
 import { StatusBadge } from "./StatusBadge.jsx";
 import { cx } from "./cx.mjs";
 
@@ -7,8 +8,8 @@ export const SCENE_LABEL_STATES = ["idle", "hover", "focus", "selected", "dimmed
 // 글자 크기: 데스크톱 12px(--text-caption). 640px 미만에서는 같은 토큰의 폰 단계(15px)로 커지고,
 // 640px 이상이지만 굵은 포인터(터치)면 14px(--text-body 데스크톱 단계)로 올린다. transform으로 줄이지 않는다.
 export const LABEL_TEXT = "text-caption [@media(pointer:coarse)_and_(min-width:640px)]:text-body";
-// 버튼(누르는 영역)은 포인터 32px, 굵은 포인터·폰 44px. 보이는 칩과 글자는 그대로이고 투명한 영역만 커진다.
-export const LABEL_HIT = "min-h-8 [@media(pointer:coarse)]:min-h-11 max-[639px]:min-h-11";
+// 버튼(누르는 영역)은 포인터 40x40px, 굵은 포인터·폰 44px. 보이는 칩과 글자는 그대로이고 투명한 영역만 커진다.
+export const LABEL_HIT = "min-h-10 min-w-10 [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:min-w-11 max-[639px]:min-h-11 max-[639px]:min-w-11";
 
 // 선택: 강조색 테두리와 강조색 글자. 글자는 강조색을 ink 쪽으로 섞어 두 테마 모두 4.5:1을 넘긴다.
 const SELECTED_INK = "text-[color:color-mix(in_srgb,var(--colors-primary)_75%,var(--colors-ink))]";
@@ -77,6 +78,8 @@ export function SceneLabel({
         // 마우스를 올린 건물(칩이나 그 메시)의 칩은 한 단계 떠오른다(그림자와 함께 2 px 위로). 2 px는 전환 없이 바로 옮긴다:
         // 멈춘 화면(frameloop demand)에서는 그릴 프레임이 거의 없어 CSS 전환이 끝나지 않은 채 남았다.
         state === "hover" && "-translate-y-0.5",
+        // 포인터를 칩 위에 올렸을 때도 같은 단계로 떠오른다(마우스오버 표시).
+        state !== "selected" && "hover:-translate-y-0.5",
         className,
       )}
       {...rest}
@@ -86,7 +89,7 @@ export function SceneLabel({
         className={cx(
           "inline-flex max-w-40 items-center gap-1 rounded-control border border-hairline bg-[var(--colors-label-bg)] font-medium text-ink",
           "transition-[opacity,background-color,box-shadow] duration-state motion-reduce:transition-none",
-          size === "sm" ? "px-1.5 py-0.5" : "px-2 py-1",
+          size === "sm" ? "px-2 py-1" : "px-2 py-1",
           LABEL_TEXT,
           HALO,
           CHIP_FOCUS,
@@ -96,6 +99,8 @@ export function SceneLabel({
         )}
       >
         <StateDot state={state} />
+        {/* 선택: 강조색 테두리와 함께 체크 표시(선택 상태는 색만으로 알리지 않는다). */}
+        {state === "selected" && <Check aria-hidden="true" data-qa="label-selected-glyph" className="h-3 w-3 shrink-0" />}
         {code && <StatusBadge tone="neutral">{code}</StatusBadge>}
         {estimatedName && (
           <span aria-hidden="true" data-qa="label-estimated-glyph" className="shrink-0 text-ink-muted">
@@ -170,7 +175,8 @@ export function ZoneLabel({ name, className }) {
       aria-hidden="true"
       data-qa="zone-label"
       data-tier="0"
-      className={cx("pointer-events-none select-none break-keep text-body font-semibold tracking-wide text-ink-muted", HALO, className)}
+      // 칩과 같은 반투명 바탕(label-bg) 위에 둔다: 밤 장면이나 라이트 테마에서도 글자가 장면 색에 묻히지 않는다(V-F-17).
+      className={cx("pointer-events-none select-none break-keep rounded-control bg-[var(--colors-label-bg)] px-2 py-1 text-body font-semibold tracking-wide text-ink-muted", HALO, className)}
     >
       {name}
     </span>

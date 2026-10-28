@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { ChevronDown, ChevronUp, Clock3, Pause, Play } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Clock3, Pause, Play } from "lucide-react";
 import { Button } from "../ui/Button.jsx";
 import { StatusBadge } from "../ui/StatusBadge.jsx";
 import { cx } from "../ui/cx.mjs";
@@ -16,9 +16,9 @@ import { parseSceneDate, parseTypedTime } from "./timeControl.mjs";
 
 export const TIME_SLIDER_LABEL = "시각 (KST)";
 
-const SURFACE = "pointer-events-auto rounded-card border border-hairline bg-surface-1 px-3 py-2.5 shadow-popover";
+const SURFACE = "pointer-events-auto rounded-card border border-hairline bg-surface-1 px-3 py-2.5";
 // 폰에서 접힌 시간 카드: 장면 시각 칩 하나(누르면 펼친다). 지도를 가리지 않는다.
-const COLLAPSED_SURFACE = "pointer-events-auto rounded-card border border-hairline bg-surface-1 p-1 shadow-popover";
+const COLLAPSED_SURFACE = "pointer-events-auto rounded-card border border-hairline bg-surface-1 p-1";
 const CHIP = cx(
   "flex min-h-11 items-center gap-2 rounded-control px-3",
   "text-caption font-medium text-ink-muted hover:bg-surface-2",
@@ -26,6 +26,9 @@ const CHIP = cx(
 const FIELD = cx(
   "min-h-8 rounded-control border border-hairline-strong bg-surface-1 px-2 text-caption tabular-nums text-ink",
   "[@media(pointer:coarse)]:min-h-11 aria-[invalid=true]:border-danger",
+  // 날짜·시각 칸에 들어오면 다른 조작과 같은 포커스 테두리(V-F-36). 기본 날짜·시각 입력은 안쪽(그림자 DOM)의 칸과 달력
+  // 단추가 따로 포커스를 받아 입력 요소에는 :focus가 걸리지 않을 때가 있으므로 :focus-within으로 그린다.
+  "focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary",
 );
 const HEADING = "flex min-w-0 items-center gap-1.5 text-caption font-medium text-ink-muted";
 const ICON = "h-3.5 w-3.5";
@@ -122,7 +125,7 @@ export function TimeSlider({
           <div className="flex shrink-0 items-center gap-2">
             <span data-qa={collapsed ? undefined : "time-slider-value"} className={READOUT}>{timeLabel}</span>
             {onNow && (
-              <Button size="sm" data-qa="time-now" onClick={onNow} aria-pressed={live} className="shrink-0">
+              <Button size="sm" data-qa="time-now" onClick={onNow} aria-pressed={live} icon={live ? <Check aria-hidden="true" className={ICON} /> : undefined} className="shrink-0">
                 지금
               </Button>
             )}

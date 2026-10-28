@@ -21,7 +21,7 @@ function Tower({ wing, x, isActive, onSelectFloor }) {
 
   return (
     <group position={[x, 0, 0]}>
-      <Html position={[0, (levels[levels.length - 1] + 1) * FLOOR_STEP + 0.15, 0]} center distanceFactor={11} style={{ pointerEvents: "none" }}>
+      <Html position={[0, (levels[levels.length - 1] + 1) * FLOOR_STEP + 0.15, 0]} center style={{ pointerEvents: "none" }}>
         <div
           className={cx("pointer-events-none whitespace-nowrap", D4_SCENE_LABEL, "text-body", isActive && "ring-2 ring-primary")}
         >
@@ -43,7 +43,7 @@ function Tower({ wing, x, isActive, onSelectFloor }) {
               <boxGeometry args={[BOX_WIDTH, BOX_HEIGHT, BOX_DEPTH]} />
               <meshStandardMaterial color={isActive ? ACTIVE_COLOR : IDLE_COLOR} transparent opacity={0.88} />
             </mesh>
-            <Html position={[0, 0, BOX_DEPTH / 2 + 0.02]} center distanceFactor={11}>
+            <Html position={[0, 0, BOX_DEPTH / 2 + 0.02]} center>
               {/* 캠퍼스 이름표와 같은 장면 라벨(SceneLabel, 작은 단계). */}
               <SceneLabel
                 size="sm"
@@ -73,7 +73,7 @@ function BridgeConnector({ floor }) {
         <boxGeometry args={[2.6, 0.16, 0.7]} />
         <meshStandardMaterial color={ACTIVE_COLOR} transparent opacity={0.75} />
       </mesh>
-      <Html position={[0, 0.42, 0]} center distanceFactor={11} style={{ pointerEvents: "none" }}>
+      <Html position={[0, 0.42, 0]} center style={{ pointerEvents: "none" }}>
         <div className={cx("pointer-events-none whitespace-nowrap border border-hairline", D4_SCENE_LABEL)}>
           구름다리 ({floor}F)
         </div>
