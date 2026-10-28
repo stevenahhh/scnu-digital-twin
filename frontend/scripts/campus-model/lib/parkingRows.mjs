@@ -98,7 +98,9 @@ export function rowGeometry(row) {
   // the row's first edge: centred on the photo row, then moved by the median offset of the photo dividers from the
   // drawn edges nearest them (within half a bay), so the grid sits on the painted dividers
   let s0 = (photoLength - length) / 2;
-  if (photoAlong.length && !row.registered) {
+  // (a row registered on the photo paint is still snapped along itself onto the photo dividers: the registration
+  // scores all its strokes, the dividers set the phase)
+  if (photoAlong.length) {
     const grid = [s0];
     for (const w of widths) grid.push(grid.at(-1) + w);
     const offs = photoAlong.map((p) => grid.reduce((best, g) => (Math.abs(p - g) < Math.abs(best) ? p - g : best), Infinity)).filter((d) => Math.abs(d) <= pitch / 2).sort((a, b) => a - b);
