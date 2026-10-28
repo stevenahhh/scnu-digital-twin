@@ -1,0 +1,69 @@
+{
+ "description": "By-eye review of bake/road-lines.mjs on the NGII sheet: lines the masks read that are not road paint, each with its reason (WGS84 point on the line).",
+ "rejectLines": [
+  {
+   "near": [
+    127.47804115,
+    34.96990448
+   ],
+   "line": "RL0013",
+   "reason": "brown kerb at the edge of the wood (no paint): the yellow mask reads the brown kerb stone"
+  },
+  {
+   "near": [
+    127.47925072,
+    34.97042464
+   ],
+   "line": "RL0066",
+   "reason": "kerb beside the yellow kerb line at the crossing, no white paint"
+  },
+  {
+   "near": [
+    127.48169366,
+    34.96906307
+   ],
+   "line": "RL0073",
+   "reason": "strokes of the road text block (school zone words) read as a dashed line"
+  },
+  {
+   "near": [
+    127.48321299,
+    34.96866176
+   ],
+   "line": "RL0081",
+   "reason": "strokes of the road text block on the main-gate carriageway read as a dashed line"
+  },
+  {
+   "near": [
+    127.48030663,
+    34.96841723
+   ],
+   "line": "RL0086",
+   "reason": "edge of the paved plaza beside the building, not a road line"
+  },
+  {
+   "near": [
+    127.48044459,
+    34.96760435
+   ],
+   "line": "RL0094",
+   "reason": "light kerb stone beside the yellow kerb paint along the road edge"
+  },
+  {
+   "near": [
+    127.47994868,
+    34.96739474
+   ],
+   "line": "RL0096",
+   "reason": "roof shadow edge of the parked bus and the kerb, not paint"
+  },
+  {
+   "near": [
+    127.48083188,
+    34.96920367
+   ],
+   "line": "RL0065",
+   "reason": "white reading of the edge of the yellow island outline at the roundabout exit (one painted line, yellow)"
+  }
+ ]
+}

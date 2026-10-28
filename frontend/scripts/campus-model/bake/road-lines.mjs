@@ -24,6 +24,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { openSheet } from "../lib/ngiiSheet.mjs";
 import { EXTENT, geoToModel, modelToGeo, SCENE_UNITS_PER_METRE as U } from "../lib/frame.mjs";
+import { readA003 } from "../lib/a003.mjs";
 import { pixelToTm, sceneToTm, tmToPixel, tmToScene } from "../../../src/geo/epsg5186.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -260,6 +261,63 @@ for (let i = lines.length - 1; i >= 0; i -= 1) {
   const share = lines[i].pts.filter(onRoad).length / lines[i].pts.length;
   if (share < ON_ROAD_SHARE) offRoad.push(...lines.splice(i, 1));
 }
+// a white "line" running along yellow paint (a traced yellow kerb or centre line, or a yellow chain read here) within
+// KERB_REACH_M over half its length is the light kerb stone beside the yellow kerb paint, not a white line
+const KERB_REACH_M = 0.7;
+const yellowPts = [...yellow.flatMap((c) => c.pts)];
+for (const fn of ["markings.geojson", "markings-extra.geojson"]) {
+  for (const f of JSON.parse(readFileSync(path.join(DATA, "photo", fn), "utf8")).features) {
+    if (f.properties.colour !== "yellow" || f.geometry.type !== "LineString") continue;
+    const pts = f.geometry.coordinates.map(([lon, lat]) => geoToModel(lon, lat).map((v) => v / U));
+    for (let i = 1; i < pts.length; i += 1) {
+      const n = Math.max(1, Math.ceil(norm(sub(pts[i], pts[i - 1])) / 0.5));
+      for (let t = 0; t <= n; t += 1) yellowPts.push([pts[i - 1][0] + ((pts[i][0] - pts[i - 1][0]) * t) / n, pts[i - 1][1] + ((pts[i][1] - pts[i - 1][1]) * t) / n]);
+    }
+  }
+}
+const ycell = new Map();
+for (const q of yellowPts) { const key = `${Math.floor(q[0])},${Math.floor(q[1])}`; if (!ycell.has(key)) ycell.set(key, []); ycell.get(key).push(q); }
+const nearYellow = (q) => { for (let dx = -1; dx <= 1; dx += 1) for (let dz = -1; dz <= 1; dz += 1) for (const y of ycell.get(`${Math.floor(q[0]) + dx},${Math.floor(q[1]) + dz}`) ?? []) if (norm(sub(q, y)) <= KERB_REACH_M) return true; return false; };
+let kerbs = 0;
+for (let i = lines.length - 1; i >= 0; i -= 1) {
+  const l = lines[i];
+  if (l.colour !== "white") continue;
+  const dense = [];
+  for (let j = 1; j < l.pts.length; j += 1) { const n = Math.max(1, Math.ceil(norm(sub(l.pts[j], l.pts[j - 1])) / 0.5)); for (let t = 0; t < n; t += 1) dense.push([l.pts[j - 1][0] + ((l.pts[j][0] - l.pts[j - 1][0]) * t) / n, l.pts[j - 1][1] + ((l.pts[j][1] - l.pts[j - 1][1]) * t) / n]); }
+  if (dense.filter(nearYellow).length >= 0.5 * dense.length) { lines.splice(i, 1); kerbs += 1; }
+}
+// a line hugging a sidewalk outline (A003, within KERB_EDGE_M over KERB_SHARE of its length) is the kerb itself (a
+// light or brown kerb stone the masks read as paint), not a painted line
+const KERB_EDGE_M = 0.45;
+const KERB_SHARE = 0.6;
+const kerbSegs = [];
+for (const f of readA003().features) {
+  for (const line of f.geometry.type === "LineString" ? [f.geometry.coordinates] : f.geometry.coordinates) {
+    const pts = line.map(([lon, lat]) => geoToModel(lon, lat).map((v) => v / U));
+    for (let i = 1; i < pts.length; i += 1) kerbSegs.push([pts[i - 1], pts[i]]);
+  }
+}
+const kcell = new Map();
+kerbSegs.forEach(([a, b], i) => {
+  for (let x = Math.floor(Math.min(a[0], b[0]) / 4); x <= Math.floor(Math.max(a[0], b[0]) / 4); x += 1) for (let z = Math.floor(Math.min(a[1], b[1]) / 4); z <= Math.floor(Math.max(a[1], b[1]) / 4); z += 1) {
+    const key = `${x},${z}`; if (!kcell.has(key)) kcell.set(key, []); kcell.get(key).push(i);
+  }
+});
+const nearKerb = (q) => (kcell.get(`${Math.floor(q[0] / 4)},${Math.floor(q[1] / 4)}`) ?? []).some((i) => segDist(q, ...kerbSegs[i]) <= KERB_EDGE_M);
+let kerbEdges = 0;
+for (let i = lines.length - 1; i >= 0; i -= 1) {
+  const l = lines[i];
+  const dense = [];
+  for (let j = 1; j < l.pts.length; j += 1) { const n = Math.max(1, Math.ceil(norm(sub(l.pts[j], l.pts[j - 1])) / 0.5)); for (let t = 0; t < n; t += 1) dense.push([l.pts[j - 1][0] + ((l.pts[j][0] - l.pts[j - 1][0]) * t) / n, l.pts[j - 1][1] + ((l.pts[j][1] - l.pts[j - 1][1]) * t) / n]); }
+  if (dense.filter(nearKerb).length >= KERB_SHARE * dense.length) { lines.splice(i, 1); kerbEdges += 1; }
+}
+// by-eye rejections (data/photo/road-lines-review.json): a line passing within 2 m of a rejected point
+const review = JSON.parse(readFileSync(path.join(DATA, "photo", "road-lines-review.json"), "utf8")).rejectLines
+  .map((r) => geoToModel(...r.near).map((v) => v / U));
+let reviewed = 0;
+for (let i = lines.length - 1; i >= 0; i -= 1) {
+  if (review.some((q) => lines[i].pts.some((p, j) => j > 0 && segDist(q, lines[i].pts[j - 1], p) <= 2))) { lines.splice(i, 1); reviewed += 1; }
+}
 let k = 0;
 const records = lines.map((l) => {
   const pattern = l.fill >= FILL_SOLID ? "solid" : "dashed";
@@ -268,9 +326,12 @@ const records = lines.map((l) => {
 });
 writeFileSync(OUT, `${JSON.stringify({
   source: "NGII 2025 orthophoto sheet 34702020 (0.25 m), read by bake/road-lines.mjs over EXTENT",
-  method: "yellow and white paint masks on pavement (9 x 9 px top-hat), thin strokes at least 2 m long with pavement on both sides and outside the photo stall rows, chained end to end (12 deg, 6 m gap, 0.45 m lateral) into lines at least 8 m long; double yellow pairs 0.15-0.5 m apart merged; kept when 70 % of the line lies in a road zone or within 7 m of an OSM arterial or connector",
+  method: "yellow and white paint masks on pavement (9 x 9 px top-hat), thin strokes at least 2 m long with pavement on both sides and outside the photo stall rows, chained end to end (12 deg, 6 m gap, 0.45 m lateral) into lines at least 8 m long; double yellow pairs 0.15-0.5 m apart merged; kept when 70 % of the line lies in a road zone or within 7 m of an OSM arterial or connector; white lines along yellow paint (0.7 m, half their length) and lines along an A003 sidewalk outline (0.45 m, 60 %) are kerbs and left out",
   offRoad: offRoad.length,
+  kerbStones: kerbs,
+  kerbEdges,
+  rejectedByEye: reviewed,
   lines: records,
 }, null, 1)}\n`);
 const sum = (f) => records.filter(f).reduce((a, l) => a + l.lengthM, 0).toFixed(0);
-console.log(`${records.length} photo lines (${offRoad.length} off the road left out): ${records.filter((l) => l.kind === "centre_line_yellow").length} centre (${records.filter((l) => l.double).length} double, ${sum((l) => l.colour === "yellow")} m), ${records.filter((l) => l.kind === "edge_line").length} white solid, ${records.filter((l) => l.kind === "lane_line_dashed").length} white dashed (${sum((l) => l.colour === "white")} m) -> ${path.relative(process.cwd(), OUT)}`);
+console.log(`${records.length} photo lines (${offRoad.length} off the road, ${kerbs} kerb stones beside yellow paint, ${kerbEdges} along sidewalk kerbs, ${reviewed} by eye left out): ${records.filter((l) => l.kind === "centre_line_yellow").length} centre (${records.filter((l) => l.double).length} double, ${sum((l) => l.colour === "yellow")} m), ${records.filter((l) => l.kind === "edge_line").length} white solid, ${records.filter((l) => l.kind === "lane_line_dashed").length} white dashed (${sum((l) => l.colour === "white")} m) -> ${path.relative(process.cwd(), OUT)}`);
