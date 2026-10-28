@@ -34,7 +34,19 @@ async function wait(ctx, ms) {
 // lands on the chip at its final position instead of where it was mid-flight.
 async function settleCamera(ctx) {
   const result = await ctx.b.cameraSettle();
-  ctx.actions.push(result.settled ? `camera settled after ${result.ms} ms (8 still frames)` : `camera NOT settled after ${result.ms} ms`);
+  // The settled pose goes into the action log, so two runs of the same state can be compared (VWorld: the Cesium camera;
+  // Legacy: the cam= link state).
+  const pose = await ctx.b.run(() => {
+    const viewer = window.ws3d?.viewer;
+    const Cesium = window.Cesium;
+    if (viewer && Cesium) {
+      const c = Cesium.Cartographic.fromCartesian(viewer.camera.positionWC);
+      const deg = Cesium.Math.toDegrees;
+      return `lon ${deg(c.longitude).toFixed(6)} lat ${deg(c.latitude).toFixed(6)} h ${c.height.toFixed(1)} heading ${deg(viewer.camera.heading).toFixed(1)} pitch ${deg(viewer.camera.pitch).toFixed(1)}`;
+    }
+    return new URLSearchParams(location.search).get("cam") ?? "unknown";
+  }).catch(() => "unknown");
+  ctx.actions.push(`${result.settled ? `camera settled after ${result.ms} ms (8 still frames)` : `camera NOT settled after ${result.ms} ms`}; pose ${pose}`);
 }
 
 async function closePanelOnMobile(ctx) {
