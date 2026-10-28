@@ -1011,13 +1011,11 @@ export function regularise(drawn, ctx) {
       stats.islands = (stats.islands ?? 0) + 1;
     }
   }
-  // hump / raised-crossing stripes read one by one: hatch pieces of one band, yellow where any stripe of the band is
   const humpGlyphs = glyphs.filter((c) => c.kind === "speed_bump");
   const humpCentre = (c) => orientedBox(shapesM(c).flatMap((rings) => rings[0])).centre;
-  for (const c of humpGlyphs) {
-    const yellow = humpGlyphs.some((o) => o.colour === "yellow" && norm(sub(humpCentre(o), humpCentre(c))) <= 4);
-    hatches.push({ ...c, kind: "hatch", colour: yellow ? "yellow" : c.colour });
-  }
+  // (hump stripes read one by one, outside a traced group: carried over unchanged like the grouped bands)
+  void humpCentre;
+  for (const c of humpGlyphs) for (const rings of shapesM(c)) emit(rings, c.colour, c.kind, { inst: { t: "legacy_preserved", ev: c.id, p: { source: "dev-next 37fd445 traced hump stripe" } } });
   for (const c of glyphs) {
     if (c.island || c.kind === "speed_bump") continue;
     if (c.kind === "text") texts.push(c);
