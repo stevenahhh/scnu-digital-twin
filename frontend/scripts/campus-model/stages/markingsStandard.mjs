@@ -16,7 +16,8 @@ import { wheelchairTemplate } from "../lib/markingGlyphs.mjs";
 const SAMPLE_M = 0.02;
 const MIN_RUN_M = 0.5;
 // higher keeps its paint
-const OVERLAP_RANK = { crosswalk: 6, line_stop: 5, stall: 4, glyph: 3, text: 3, line: 2, hatch: 1, surface: 0 };
+// a stall row read on the photo outranks a stop line: inside a lot a traced "stop line" across stalls is a stall line
+const OVERLAP_RANK = { crosswalk: 6, stall: 5.5, line_stop: 5, glyph: 3, text: 3, line: 2, hatch: 1, surface: 0 };
 const rankOf = (inst) => {
   const t = TEMPLATES[inst.t];
   if (!t) return -1;
@@ -35,9 +36,13 @@ export function parkingInstances({ blocked = () => false } = {}) {
     log.lots += 1;
     for (const row of lot.rows) {
       const g = rowGeometry(row);
-      // a row whose painted area runs onto a building or a sidewalk is not drawn (logged)
-      const probes = g.rects.flatMap((r) => r.ring);
-      if (probes.filter((p) => blocked(toScene(p))).length > probes.length * 0.25) {
+      // a row whose bays stand on a building or a sidewalk (most bay centres there) is not drawn (logged); its lines
+      // may reach the kerb of the sidewalk it faces
+      const probes = g.widths.map((w, k) => {
+        const s0 = g.widths.slice(0, k).reduce((a, x) => a + x, 0) + w / 2;
+        return [g.origin[0] + g.u[0] * s0 + g.v[0] * g.depth / 2, g.origin[1] + g.u[1] * s0 + g.v[1] * g.depth / 2];
+      });
+      if (probes.filter((p) => blocked(toScene(p))).length > probes.length * 0.5) {
         log.skippedRows.push(row.id);
         continue;
       }
@@ -76,6 +81,19 @@ function inRing([x, z], ring) {
   return r;
 }
 const inPiece = (p, rings) => rings.filter((ring) => inRing(p, ring)).length % 2 === 1;
+// strictly inside (at least EDGE_M from every edge): two pieces that only touch along an edge do not overlap
+const EDGE_M = 0.001;
+function edgeDistance(p, rings) {
+  let best = Infinity;
+  for (const ring of rings) for (let i = 0; i < ring.length; i += 1) {
+    const a = ring[i], b = ring[(i + 1) % ring.length];
+    const ab = sub(b, a), l2 = dot(ab, ab);
+    const t = l2 > 0 ? Math.max(0, Math.min(1, dot(sub(p, a), ab) / l2)) : 0;
+    best = Math.min(best, Math.hypot(p[0] - a[0] - ab[0] * t, p[1] - a[1] - ab[1] * t));
+  }
+  return best;
+}
+const inPieceStrict = (p, rings) => inPiece(p, rings) && edgeDistance(p, rings) > EDGE_M;
 
 // instance -> its pieces, plan box (metres)
 function groupInstances(pieces) {
@@ -172,7 +190,7 @@ export function resolveOverlaps(pieces, second = false) {
     const [gi, gj] = [groups[i], groups[j]];
     const [strong, weak, weakIndex] = rankOf(gi.inst) >= rankOf(gj.inst) ? [gi, gj, j] : [gj, gi, i];
     const strongPieces = (replacements.get(strong) ?? [strong]).flatMap((g) => g.list);
-    const hit = (p) => strongPieces.some((pc) => inPiece(p, pc.rings.map((r) => r.map(([x, z]) => [x / U, z / U]))));
+    const hit = (p) => strongPieces.some((pc) => inPieceStrict(p, pc.rings.map((r) => r.map(([x, z]) => [x / U, z / U]))));
     const weakGroups = replacements.get(weak) ?? [weak];
     const overlapping = weakGroups.some((g) => g.list.some((pc) => lattice(pc.rings).some(hit)));
     if (!overlapping) continue;

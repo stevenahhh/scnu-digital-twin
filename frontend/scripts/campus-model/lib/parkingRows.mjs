@@ -60,9 +60,10 @@ export function rowGeometry(row) {
   ];
   const symbols = row.accessible.map((k) => ({ k, centre: P((edges[k] + edges[k + 1]) / 2, depth / 2) }));
   const m = LOT_SURFACE_MARGIN_M;
-  // photo residual: each drawn divider against the photo divider nearest it along the row
+  // photo residual along the row
   const photo = (row.photoDividers ?? []).map((q) => { const d = sub(add(toM(q), shift), start); return d[0] * u[0] + d[1] * u[1]; });
-  const residual = photo.length ? Math.max(...edges.map((s) => Math.min(...photo.map((p) => Math.abs(p - s))))) : null;
+  // (each divider read on the photo against the drawn divider nearest it; dividers hidden by cars have no photo partner)
+  const residual = photo.length ? Math.max(...photo.map((p) => Math.min(...edges.map((s) => Math.abs(p - s))))) : null;
   return {
     template: expanded ? "stall_expanded" : "stall_normal", u, v, origin: P(edges[0], 0), widths, depth, line: lw, rects, symbols,
     surface: rect(edges[0] - lw / 2 - m, edges[n] + lw / 2 + m, -lw / 2 - m, depth + lw / 2 + m), photoResidualM: residual,

@@ -65,6 +65,14 @@
    ],
    "row": "P28-R1",
    "reason": "row reaching onto the building roof edge: roof seams read as dividers"
+  },
+  {
+   "near": [
+    127.478652135,
+    34.9696256
+   ],
+   "row": "P18-R2",
+   "reason": "one-bay \"row\" whose bay centre lies on the A003 sidewalk: paving joints read as dividers"
   }
  ]
 }

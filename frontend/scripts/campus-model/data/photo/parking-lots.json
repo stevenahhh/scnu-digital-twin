@@ -2,8 +2,16 @@
  "source": "NGII 2025 orthophoto sheet 34702020 (0.25 m), read by bake/parking-rows.mjs; review: data/photo/parking-review.json",
  "method": "divider lines per direction, rows of stall-pitch spacing, front/back lines for depth; counts are the bays between the first and last photo divider of each row",
  "droppedDuplicates": [
-  "P07-R10 (overlaps P07-R9: one row read twice)"
+  "P07-R8: end bay given up where it meets P07-R7",
+  "P07-R8: end bay given up where it meets P07-R7",
+  "P07-R8: end bay given up where it meets P07-R7",
+  "P07-R8: end bay given up where it meets P07-R7",
+  "P07-R8: end bay given up where it meets P07-R7",
+  "P07-R8: end bay given up where it meets P07-R7",
+  "P07-R8: end bay given up where it meets P07-R7",
+  "P07-R10: end bay given up where it meets P07-R9"
  ],
+ "note": "a row's photoBays excludes end bays it gives up where it meets another row (trimmedBays): those bays are the other row's",
  "lots": [
   {
    "id": "P01",
@@ -67,6 +75,7 @@
      "depthBearing": 190,
      "photoBays": 8,
      "photoPitchM": 2.508,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5.3,
      "frontBackLines": false,
      "dividerRmsCm": 6.2,
@@ -190,6 +199,7 @@
      "depthBearing": 193,
      "photoBays": 4,
      "photoPitchM": 2.603,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.7,
      "frontBackLines": true,
      "dividerRmsCm": 2.4,
@@ -232,6 +242,7 @@
      "depthBearing": 193,
      "photoBays": 8,
      "photoPitchM": 2.598,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.7,
      "frontBackLines": true,
      "dividerRmsCm": 3.4,
@@ -290,6 +301,7 @@
      "depthBearing": 198,
      "photoBays": 5,
      "photoPitchM": 2.604,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5.1,
      "frontBackLines": true,
      "dividerRmsCm": 4.6,
@@ -381,6 +393,7 @@
      "depthBearing": 112,
      "photoBays": 3,
      "photoPitchM": 2.596,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5.2,
      "frontBackLines": false,
      "dividerRmsCm": 4.9,
@@ -476,6 +489,7 @@
      "depthBearing": 157,
      "photoBays": 3,
      "photoPitchM": 2.393,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 7.2,
      "frontBackLines": false,
      "dividerRmsCm": 3.3,
@@ -514,6 +528,7 @@
      "depthBearing": 249,
      "photoBays": 2,
      "photoPitchM": 2.474,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5.1,
      "frontBackLines": true,
      "dividerRmsCm": 3.1,
@@ -601,6 +616,7 @@
      "depthBearing": 112,
      "photoBays": 8,
      "photoPitchM": 2.617,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 3,
      "frontBackLines": false,
      "dividerRmsCm": 6.4,
@@ -708,6 +724,7 @@
      "depthBearing": 188,
      "photoBays": 2,
      "photoPitchM": 2.6,
+     "photoAccessiblePitchM": 3.311,
      "photoDepthM": 4.5,
      "frontBackLines": true,
      "dividerRmsCm": 0,
@@ -771,20 +788,20 @@
      34.97073628
     ],
     [
-     127.48266124,
-     34.97038846
+     127.482704,
+     34.97035997
     ],
     [
-     127.48266124,
-     34.97038306
+     127.482704,
+     34.97035457
     ],
     [
-     127.48263249,
-     34.97013797
+     127.48270357,
+     34.97035326
     ],
     [
-     127.48263207,
-     34.97013667
+     127.48268883,
+     34.97030798
     ],
     [
      127.48261789,
@@ -807,7 +824,7 @@
      34.97024461
     ]
    ],
-   "photoStalls": 94,
+   "photoStalls": 88,
    "photoAccessible": 1,
    "rows": [
     {
@@ -825,6 +842,7 @@
      "depthBearing": 106,
      "photoBays": 10,
      "photoPitchM": 2.579,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5,
      "frontBackLines": false,
      "dividerRmsCm": 5.7,
@@ -891,6 +909,7 @@
      "depthBearing": 106,
      "photoBays": 10,
      "photoPitchM": 2.58,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.9,
      "frontBackLines": false,
      "dividerRmsCm": 4.8,
@@ -957,6 +976,7 @@
      "depthBearing": 106,
      "photoBays": 11,
      "photoPitchM": 2.579,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5,
      "frontBackLines": true,
      "dividerRmsCm": 3,
@@ -1027,6 +1047,7 @@
      "depthBearing": 106,
      "photoBays": 13,
      "photoPitchM": 2.585,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.6,
      "frontBackLines": true,
      "dividerRmsCm": 8.4,
@@ -1105,6 +1126,7 @@
      "depthBearing": 106,
      "photoBays": 8,
      "photoPitchM": 2.591,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5,
      "frontBackLines": false,
      "dividerRmsCm": 2.4,
@@ -1163,6 +1185,7 @@
      "depthBearing": 106,
      "photoBays": 8,
      "photoPitchM": 2.58,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.9,
      "frontBackLines": false,
      "dividerRmsCm": 1.4,
@@ -1221,6 +1244,7 @@
      "depthBearing": 106,
      "photoBays": 8,
      "photoPitchM": 2.586,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5,
      "frontBackLines": true,
      "dividerRmsCm": 5.2,
@@ -1265,60 +1289,6 @@
      ]
     },
     {
-     "id": "P07-R8",
-     "site": "S13",
-     "evidence": "NGII 34702020 dividers (8 read); traces MK01395, MK01397, MX00145, MX00146 +20",
-     "start": [
-      127.48249442,
-      34.97043545
-     ],
-     "end": [
-      127.48243982,
-      34.97027875
-     ],
-     "depthBearing": 106,
-     "photoBays": 7,
-     "photoPitchM": 2.586,
-     "photoDepthM": 5,
-     "frontBackLines": true,
-     "dividerRmsCm": 3.6,
-     "accessible": [],
-     "photoDividers": [
-      [
-       127.48249442,
-       34.97043545
-      ],
-      [
-       127.48248642,
-       34.97041249
-      ],
-      [
-       127.48247877,
-       34.97039054
-      ],
-      [
-       127.48247097,
-       34.97036814
-      ],
-      [
-       127.48246314,
-       34.97034567
-      ],
-      [
-       127.48245537,
-       34.97032336
-      ],
-      [
-       127.4824475,
-       34.97030078
-      ],
-      [
-       127.48243982,
-       34.97027875
-      ]
-     ]
-    },
-    {
      "id": "P07-R9",
      "site": "S13",
      "evidence": "NGII 34702020 dividers (6 read); traces MK01395, MK01397, MX00145, MX00146 +20",
@@ -1333,6 +1303,7 @@
      "depthBearing": 106,
      "photoBays": 5,
      "photoPitchM": 2.579,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5,
      "frontBackLines": false,
      "dividerRmsCm": 2.4,
@@ -1365,6 +1336,42 @@
      ]
     },
     {
+     "id": "P07-R10",
+     "site": "S13",
+     "evidence": "NGII 34702020 dividers (3 read); traces MK01395, MK01397, MX00145, MX00146 +20",
+     "start": [
+      127.48269944,
+      34.97035685
+     ],
+     "end": [
+      127.48267247,
+      34.9703628
+     ],
+     "depthBearing": 195,
+     "photoBays": 1,
+     "photoPitchM": 2.557,
+     "photoAccessiblePitchM": 3.4,
+     "photoDepthM": 4.8,
+     "frontBackLines": false,
+     "dividerRmsCm": 0.5,
+     "accessible": [],
+     "photoDividers": [
+      [
+       127.48269944,
+       34.97035685
+      ],
+      [
+       127.48267247,
+       34.97036281
+      ],
+      [
+       127.48264542,
+       34.97036877
+      ]
+     ],
+     "trimmedBays": 1
+    },
+    {
      "id": "P07-R11",
      "site": "S23",
      "evidence": "NGII 34702020 dividers (6 read); traces MK01398, MK01399, MX01618",
@@ -1379,6 +1386,7 @@
      "depthBearing": 197,
      "photoBays": 6,
      "photoPitchM": 2.597,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.7,
      "frontBackLines": true,
      "dividerRmsCm": 2.6,
@@ -1425,6 +1433,7 @@
      "depthBearing": 195,
      "photoBays": 2,
      "photoPitchM": 2.727,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.7,
      "frontBackLines": true,
      "dividerRmsCm": 9.3,
@@ -1459,6 +1468,7 @@
      "depthBearing": 195,
      "photoBays": 2,
      "photoPitchM": 2.617,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.8,
      "frontBackLines": true,
      "dividerRmsCm": 1.6,
@@ -1493,6 +1503,7 @@
      "depthBearing": 195,
      "photoBays": 2,
      "photoPitchM": 2.602,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.7,
      "frontBackLines": true,
      "dividerRmsCm": 2.3,
@@ -1527,6 +1538,7 @@
      "depthBearing": 195,
      "photoBays": 2,
      "photoPitchM": 2.32,
+     "photoAccessiblePitchM": 3.37,
      "photoDepthM": 4.9,
      "frontBackLines": true,
      "dividerRmsCm": 0,
@@ -1616,6 +1628,7 @@
      "depthBearing": 192,
      "photoBays": 2,
      "photoPitchM": 2.549,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.4,
      "frontBackLines": false,
      "dividerRmsCm": 8.7,
@@ -1705,6 +1718,7 @@
      "depthBearing": 159,
      "photoBays": 2,
      "photoPitchM": 2.499,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5,
      "frontBackLines": true,
      "dividerRmsCm": 2,
@@ -1792,6 +1806,7 @@
      "depthBearing": 108,
      "photoBays": 2,
      "photoPitchM": 2.489,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5,
      "frontBackLines": true,
      "dividerRmsCm": 0.8,
@@ -1871,6 +1886,7 @@
      "depthBearing": 95,
      "photoBays": 3,
      "photoPitchM": 2.425,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 3.7,
      "frontBackLines": false,
      "dividerRmsCm": 6,
@@ -1966,6 +1982,7 @@
      "depthBearing": 194,
      "photoBays": 2,
      "photoPitchM": 2.651,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.8,
      "frontBackLines": true,
      "dividerRmsCm": 11.9,
@@ -2000,6 +2017,7 @@
      "depthBearing": 194,
      "photoBays": 4,
      "photoPitchM": 2.614,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.7,
      "frontBackLines": true,
      "dividerRmsCm": 3.1,
@@ -2099,6 +2117,7 @@
      "depthBearing": 199,
      "photoBays": 14,
      "photoPitchM": 2.591,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.9,
      "frontBackLines": false,
      "dividerRmsCm": 6.3,
@@ -2181,6 +2200,7 @@
      "depthBearing": 199,
      "photoBays": 14,
      "photoPitchM": 2.597,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5,
      "frontBackLines": false,
      "dividerRmsCm": 3.1,
@@ -2320,6 +2340,7 @@
      "depthBearing": 237,
      "photoBays": 5,
      "photoPitchM": 2.538,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5,
      "frontBackLines": true,
      "dividerRmsCm": 4.9,
@@ -2427,6 +2448,7 @@
      "depthBearing": 194,
      "photoBays": 13,
      "photoPitchM": 2.603,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 3,
      "frontBackLines": false,
      "dividerRmsCm": 3.2,
@@ -2493,6 +2515,7 @@
      "depthBearing": 105,
      "photoBays": 3,
      "photoPitchM": 2.59,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5,
      "frontBackLines": false,
      "dividerRmsCm": 2.2,
@@ -2580,6 +2603,7 @@
      "depthBearing": 105,
      "photoBays": 2,
      "photoPitchM": 2.723,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5,
      "frontBackLines": true,
      "dividerRmsCm": 11.6,
@@ -2663,6 +2687,7 @@
      "depthBearing": 191,
      "photoBays": 3,
      "photoPitchM": 2.596,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5.2,
      "frontBackLines": true,
      "dividerRmsCm": 1.8,
@@ -2692,16 +2717,8 @@
    "id": "P18",
    "ring": [
     [
-     127.47862491,
-     34.96958533
-    ],
-    [
-     127.47863442,
-     34.96962971
-    ],
-    [
-     127.4786347,
-     34.96963105
+     127.47867821,
+     34.96963433
     ],
     [
      127.47868839,
@@ -2732,19 +2749,15 @@
      34.96962055
     ],
     [
-     127.47866006,
-     34.96957577
+     127.47873591,
+     34.96962055
     ],
     [
-     127.47865349,
-     34.96957577
-    ],
-    [
-     127.47862491,
-     34.96957992
+     127.47867821,
+     34.96962893
     ]
    ],
-   "photoStalls": 3,
+   "photoStalls": 2,
    "photoAccessible": 0,
    "rows": [
     {
@@ -2762,6 +2775,7 @@
      "depthBearing": 190,
      "photoBays": 2,
      "photoPitchM": 2.621,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5.1,
      "frontBackLines": false,
      "dividerRmsCm": 2,
@@ -2778,36 +2792,6 @@
       [
        127.47869226,
        34.96967835
-      ]
-     ]
-    },
-    {
-     "id": "P18-R2",
-     "site": "S38",
-     "evidence": "NGII 34702020 dividers (2 read); traces MX00303",
-     "start": [
-      127.47866514,
-      34.96962371
-     ],
-     "end": [
-      127.47863913,
-      34.96962749
-     ],
-     "depthBearing": 190,
-     "photoBays": 1,
-     "photoPitchM": 2.412,
-     "photoDepthM": 3.8,
-     "frontBackLines": false,
-     "dividerRmsCm": 0,
-     "accessible": [],
-     "photoDividers": [
-      [
-       127.47866514,
-       34.96962371
-      ],
-      [
-       127.47863913,
-       34.96962749
       ]
      ]
     }
@@ -2875,6 +2859,7 @@
      "depthBearing": 196,
      "photoBays": 9,
      "photoPitchM": 2.652,
+     "photoAccessiblePitchM": 3.219,
      "photoDepthM": 4.8,
      "frontBackLines": true,
      "dividerRmsCm": 4,
@@ -2980,6 +2965,7 @@
      "depthBearing": 194,
      "photoBays": 5,
      "photoPitchM": 2.617,
+     "photoAccessiblePitchM": 3.226,
      "photoDepthM": 4.8,
      "frontBackLines": true,
      "dividerRmsCm": 0.5,
@@ -3073,6 +3059,7 @@
      "depthBearing": 196,
      "photoBays": 9,
      "photoPitchM": 2.574,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.9,
      "frontBackLines": false,
      "dividerRmsCm": 11.7,
@@ -3192,6 +3179,7 @@
      "depthBearing": 139,
      "photoBays": 4,
      "photoPitchM": 2.609,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 3,
      "frontBackLines": false,
      "dividerRmsCm": 4.3,
@@ -3234,6 +3222,7 @@
      "depthBearing": 131,
      "photoBays": 2,
      "photoPitchM": 2.514,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.6,
      "frontBackLines": true,
      "dividerRmsCm": 1.6,
@@ -3325,6 +3314,7 @@
      "depthBearing": 145,
      "photoBays": 12,
      "photoPitchM": 2.607,
+     "photoAccessiblePitchM": 3.318,
      "photoDepthM": 4.6,
      "frontBackLines": true,
      "dividerRmsCm": 2.6,
@@ -3402,6 +3392,7 @@
      "depthBearing": 105,
      "photoBays": 19,
      "photoPitchM": 2.599,
+     "photoAccessiblePitchM": 3.125,
      "photoDepthM": 5.3,
      "frontBackLines": false,
      "dividerRmsCm": 7.4,
@@ -3551,6 +3542,7 @@
      "depthBearing": 96,
      "photoBays": 7,
      "photoPitchM": 2.588,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 3.7,
      "frontBackLines": false,
      "dividerRmsCm": 4.2,
@@ -3658,6 +3650,7 @@
      "depthBearing": 190,
      "photoBays": 9,
      "photoPitchM": 2.577,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 3.3,
      "frontBackLines": false,
      "dividerRmsCm": 3.7,
@@ -3781,6 +3774,7 @@
      "depthBearing": 106,
      "photoBays": 7,
      "photoPitchM": 2.487,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5.5,
      "frontBackLines": false,
      "dividerRmsCm": 4,
@@ -3837,6 +3831,7 @@
      "depthBearing": 106,
      "photoBays": 11,
      "photoPitchM": 2.497,
+     "photoAccessiblePitchM": 3.237,
      "photoDepthM": 5,
      "frontBackLines": true,
      "dividerRmsCm": 5,
@@ -3955,6 +3950,7 @@
      "depthBearing": 94,
      "photoBays": 5,
      "photoPitchM": 2.565,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 3.9,
      "frontBackLines": false,
      "dividerRmsCm": 6.4,
@@ -4046,6 +4042,7 @@
      "depthBearing": 101,
      "photoBays": 2,
      "photoPitchM": 2.561,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5.1,
      "frontBackLines": true,
      "dividerRmsCm": 0.6,
@@ -4125,6 +4122,7 @@
      "depthBearing": 185,
      "photoBays": 3,
      "photoPitchM": 2.647,
+     "photoAccessiblePitchM": 3.2,
      "photoDepthM": 4.9,
      "frontBackLines": false,
      "dividerRmsCm": 9.7,
@@ -4214,6 +4212,7 @@
      "depthBearing": 195,
      "photoBays": 10,
      "photoPitchM": 2.599,
+     "photoAccessiblePitchM": 3.223,
      "photoDepthM": 5.1,
      "frontBackLines": true,
      "dividerRmsCm": 8.8,
@@ -4327,6 +4326,7 @@
      "depthBearing": 194,
      "photoBays": 10,
      "photoPitchM": 2.596,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5.1,
      "frontBackLines": true,
      "dividerRmsCm": 10.4,
@@ -4426,6 +4426,7 @@
      "depthBearing": 142,
      "photoBays": 3,
      "photoPitchM": 2.594,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 3.9,
      "frontBackLines": false,
      "dividerRmsCm": 2.9,
@@ -4513,6 +4514,7 @@
      "depthBearing": 189,
      "photoBays": 8,
      "photoPitchM": 2.58,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 3.7,
      "frontBackLines": false,
      "dividerRmsCm": 3.1,
@@ -4620,6 +4622,7 @@
      "depthBearing": 142,
      "photoBays": 7,
      "photoPitchM": 2.595,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.4,
      "frontBackLines": false,
      "dividerRmsCm": 5.1,
@@ -4719,6 +4722,7 @@
      "depthBearing": 190,
      "photoBays": 16,
      "photoPitchM": 2.604,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.5,
      "frontBackLines": false,
      "dividerRmsCm": 2.5,
@@ -4858,6 +4862,7 @@
      "depthBearing": 150,
      "photoBays": 6,
      "photoPitchM": 2.603,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5.3,
      "frontBackLines": false,
      "dividerRmsCm": 11.4,
@@ -4975,6 +4980,7 @@
      "depthBearing": 196,
      "photoBays": 17,
      "photoPitchM": 2.551,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5,
      "frontBackLines": true,
      "dividerRmsCm": 3.1,
@@ -5069,6 +5075,7 @@
      "depthBearing": 196,
      "photoBays": 2,
      "photoPitchM": 2.555,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.3,
      "frontBackLines": false,
      "dividerRmsCm": 0.8,
@@ -5103,6 +5110,7 @@
      "depthBearing": 196,
      "photoBays": 14,
      "photoPitchM": 2.597,
+     "photoAccessiblePitchM": 3.195,
      "photoDepthM": 4.2,
      "frontBackLines": false,
      "dividerRmsCm": 2.3,
@@ -5244,6 +5252,7 @@
      "depthBearing": 107,
      "photoBays": 12,
      "photoPitchM": 2.634,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.8,
      "frontBackLines": false,
      "dividerRmsCm": 2.5,
@@ -5318,6 +5327,7 @@
      "depthBearing": 107,
      "photoBays": 4,
      "photoPitchM": 2.642,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.6,
      "frontBackLines": true,
      "dividerRmsCm": 1.5,
@@ -5360,6 +5370,7 @@
      "depthBearing": 107,
      "photoBays": 4,
      "photoPitchM": 2.589,
+     "photoAccessiblePitchM": 3.224,
      "photoDepthM": 4.7,
      "frontBackLines": true,
      "dividerRmsCm": 7.9,
@@ -5461,6 +5472,7 @@
      "depthBearing": 191,
      "photoBays": 12,
      "photoPitchM": 2.571,
+     "photoAccessiblePitchM": 3.452,
      "photoDepthM": 4.4,
      "frontBackLines": false,
      "dividerRmsCm": 11,
@@ -5530,6 +5542,7 @@
      "depthBearing": 191,
      "photoBays": 8,
      "photoPitchM": 2.604,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5.5,
      "frontBackLines": false,
      "dividerRmsCm": 5.2,
@@ -5641,6 +5654,7 @@
      "depthBearing": 198,
      "photoBays": 5,
      "photoPitchM": 2.505,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.6,
      "frontBackLines": false,
      "dividerRmsCm": 9.4,
@@ -5736,6 +5750,7 @@
      "depthBearing": 193,
      "photoBays": 7,
      "photoPitchM": 2.5,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5.5,
      "frontBackLines": false,
      "dividerRmsCm": 8,
@@ -5843,6 +5858,7 @@
      "depthBearing": 167,
      "photoBays": 9,
      "photoPitchM": 2.498,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5,
      "frontBackLines": true,
      "dividerRmsCm": 1.6,
@@ -5905,6 +5921,7 @@
      "depthBearing": 257,
      "photoBays": 14,
      "photoPitchM": 2.498,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5,
      "frontBackLines": false,
      "dividerRmsCm": 8,
@@ -5987,6 +6004,7 @@
      "depthBearing": 257,
      "photoBays": 10,
      "photoPitchM": 2.502,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.8,
      "frontBackLines": true,
      "dividerRmsCm": 4.7,
@@ -6053,6 +6071,7 @@
      "depthBearing": 257,
      "photoBays": 10,
      "photoPitchM": 2.493,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.5,
      "frontBackLines": false,
      "dividerRmsCm": 6.3,
@@ -6119,6 +6138,7 @@
      "depthBearing": 257,
      "photoBays": 17,
      "photoPitchM": 2.502,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.8,
      "frontBackLines": true,
      "dividerRmsCm": 5.4,
@@ -6262,6 +6282,7 @@
      "depthBearing": 102,
      "photoBays": 3,
      "photoPitchM": 2.486,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.8,
      "frontBackLines": true,
      "dividerRmsCm": 4.8,
@@ -6349,6 +6370,7 @@
      "depthBearing": 102,
      "photoBays": 2,
      "photoPitchM": 2.561,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.3,
      "frontBackLines": false,
      "dividerRmsCm": 4.5,
@@ -6432,6 +6454,7 @@
      "depthBearing": 166,
      "photoBays": 2,
      "photoPitchM": 2.607,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 4.8,
      "frontBackLines": true,
      "dividerRmsCm": 0.7,
@@ -6515,6 +6538,7 @@
      "depthBearing": 161,
      "photoBays": 2,
      "photoPitchM": 2.526,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 3.7,
      "frontBackLines": false,
      "dividerRmsCm": 10.1,
@@ -6602,6 +6626,7 @@
      "depthBearing": 258,
      "photoBays": 8,
      "photoPitchM": 2.507,
+     "photoAccessiblePitchM": 3.4,
      "photoDepthM": 5,
      "frontBackLines": false,
      "dividerRmsCm": 3.3,

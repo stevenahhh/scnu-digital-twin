@@ -371,6 +371,37 @@ function overlapShare(a, b) {
   return inside / total;
 }
 
+// Whether any painted rectangle of row a intersects any of row b (separating-axis test on the rectangles, metres).
+function rectsIntersect(p, q) {
+  for (const poly of [p, q]) for (let i = 0; i < 4; i += 1) {
+    const e = sub(poly[(i + 1) % 4], poly[i]);
+    const n = [-e[1], e[0]];
+    const pa = p.map((x) => dot(x, n)), pb = q.map((x) => dot(x, n));
+    if (Math.max(...pa) <= Math.min(...pb) + 1e-6 || Math.max(...pb) <= Math.min(...pa) + 1e-6) return false;
+  }
+  return true;
+}
+function paintTouches(a, b) {
+  const ra = rowGeometry(a).rects.filter((r) => !r.shared).map((r) => r.ring);
+  const rb = rowGeometry(b).rects.filter((r) => !r.shared).map((r) => r.ring);
+  return ra.some((x) => rb.some((y) => rectsIntersect(x, y)));
+}
+// Drop the end bay of `row` nearer `other` (start or end moves in by that bay's photo width).
+function trimEndBay(row, other) {
+  if (row.photoBays <= 1) { row.drop = true; return; }
+  const s = toMetres(row.start), e = toMetres(row.end);
+  const oc = rowGeometry(other).origin;
+  const u = [(e[0] - s[0]) / norm(sub(e, s)), (e[1] - s[1]) / norm(sub(e, s))];
+  const atStart = norm(sub(s, oc)) < norm(sub(e, oc));
+  const k = atStart ? 0 : row.photoBays - 1;
+  const w = row.accessible.includes(k) ? (row.photoAccessiblePitchM ?? 3.4) : row.photoPitchM;
+  if (atStart) row.start = toGeo([s[0] + u[0] * w, s[1] + u[1] * w]);
+  else row.end = toGeo([e[0] - u[0] * w, e[1] - u[1] * w]);
+  row.photoBays -= 1;
+  row.accessible = row.accessible.filter((x) => x !== k).map((x) => (atStart ? x - 1 : x));
+  row.trimmedBays = (row.trimmedBays ?? 0) + 1;
+}
+
 function hull(points) {
   const p = [...points].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
   const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
@@ -444,6 +475,7 @@ const lots = [...lotGroups.values()]
       depthBearing: +(((Math.atan2(r.v[0], -r.v[1]) * 180) / Math.PI + 360) % 360).toFixed(2),
       photoBays: r.bays,
       photoPitchM: +r.pitch.toFixed(3),
+      photoAccessiblePitchM: +r.accessiblePitch.toFixed(3),
       photoDepthM: +r.depthPhoto.toFixed(2),
       frontBackLines: r.lines,
       dividerRmsCm: +(r.rms * 100).toFixed(1),
@@ -480,10 +512,21 @@ const lots = [...lotGroups.values()]
     for (let i = 0; i < rows.length; i += 1) for (let j = i + 1; j < rows.length; j += 1) {
       const [A, B] = [rows[i], rows[j]];
       if (A.drop || B.drop || A.shareBackWith === B.id || B.shareBackWith === A.id) continue;
-      if (area(A, B) > 0.02 || area(B, A) > 0.02) {
+      if (area(A, B) > 0.2 || area(B, A) > 0.2) {
         const loser = A.photoBays >= B.photoBays ? B : A;
         loser.drop = true;
         dropped.push(`${loser.id} (overlaps ${loser === A ? B.id : A.id}: one row read twice)`);
+        continue;
+      }
+      // rows that only meet at their ends (an L-shaped corner): the shorter row gives up its end bays there, one by
+      // one, until no painted line of one touches the other's
+      let guard = 0;
+      while (!A.drop && !B.drop && paintTouches(A, B) && guard < 40) {
+        guard += 1;
+        const loser = A.photoBays <= B.photoBays ? A : B;
+        const other = loser === A ? B : A;
+        trimEndBay(loser, other);
+        dropped.push(`${loser.id}: end bay given up where it meets ${other.id}`);
       }
     }
     rows = rows.filter((r) => !r.drop);
@@ -505,6 +548,7 @@ if (!only) writeFileSync(OUT, `${JSON.stringify({
   source: "NGII 2025 orthophoto sheet 34702020 (0.25 m), read by bake/parking-rows.mjs; review: data/photo/parking-review.json",
   method: "divider lines per direction, rows of stall-pitch spacing, front/back lines for depth; counts are the bays between the first and last photo divider of each row",
   droppedDuplicates: dropped,
+  note: "a row's photoBays excludes end bays it gives up where it meets another row (trimmedBays): those bays are the other row's",
   lots,
 }, null, 1)}\n`);
 if (only) console.log("rejected rows:", JSON.stringify(why));
