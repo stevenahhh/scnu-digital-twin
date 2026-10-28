@@ -34,7 +34,7 @@ const REVIEW = path.join(PHOTO, "pole-review.json");
 // rounds 2 to 4: every other source tried for the unresolved poles (attempts, seed uncertainty, confidence); round 3
 // adds `resolved` for a pole whose base other-year aerials registered to the sheet put within 0.5 m (epoch-root)
 // round 4 adds the `kakao-roadview` attempt (street-level panos 2010-2026): it records what stands at the seed and moves no
-// pole (no two independent roadview feet agree within 0.5 m)
+// pole (no two independent roadview feet agree within 0.5 m); its `roadview` decision rejects a seed the latest panos show empty
 const SOURCES = path.join(PHOTO, "pole-sources.json");
 // confidence of a placed base by method (estimate): detector-confirmed, by eye, floodlight head minus lean, other-year aerials, VR tour
 const CONFIDENCE = { "shadow-root": 0.9, "by-eye-root": 0.7, "head-lean": 0.6, "epoch-root": 0.6, "vr-root": 0.6 };
@@ -119,6 +119,12 @@ function main() {
       records.push(record);
       continue;
     }
+    // round 4: a seed with no pole on at least two clear latest-epoch roadview panos is not drawn
+    if (tried[s.id]?.roadview?.verdict === "absent") {
+      Object.assign(record, { verdict: "rejected", note: `roadview: ${tried[s.id].roadview.why} (${tried[s.id].roadview.panos.join(", ")})`, roadview: tried[s.id].roadview });
+      records.push(record);
+      continue;
+    }
     if (!r) {
       Object.assign(record, { verdict: "unresolved", note: "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)", ...unresolved(s.id) });
       records.push(record);
@@ -178,7 +184,7 @@ function main() {
   const at = (q) => placed[Math.min(placed.length - 1, Math.round(q * (placed.length - 1)))];
   const residualStats = { resolved: placed.length, unresolved: records.filter((r) => r.verdict === "unresolved").length, maxM: placed.at(-1), medianM: placed.length % 2 ? placed[(placed.length - 1) / 2] : round((placed[placed.length / 2 - 1] + placed[placed.length / 2]) / 2, 2), p95M: at(0.95) };
   const doc = {
-    note: "Standing-pole bases read from the NGII 2025 orthophoto (sheet 34702020, 0.25 m GSD). verdict shadow-root: by-eye base confirmed by the shadow detector (lib/poleShadow.mjs) within 0.5 m, placed at the detected root; by-eye-root: base by eye (data/photo/pole-review.json); head-lean: floodlight head minus the relief lean; vr-root: base hidden on the photo, read on the VR tour against photo features (pole-review verdict vr); epoch-root: base read by eye on other-year aerials (순천시 airmap 2013-2024) registered to the sheet, at least two independent epochs within 0.5 m (data/photo/pole-sources.json resolved); unresolved: no base visible, survey and data.go.kr poles stay at their seed (metre-level; site 'median' when the photo shows the seed on a median or island); rejected: no pole there (not drawn). Positions WGS84; residualM per pole; heights stay estimates (추정). Unresolved poles carry estimated: true, attempts (every other source tried in round 2: data/photo/pole-sources.json), seedUncertaintyM and confidence; placed poles carry confidence by method.",
+    note: "Standing-pole bases read from the NGII 2025 orthophoto (sheet 34702020, 0.25 m GSD). verdict shadow-root: by-eye base confirmed by the shadow detector (lib/poleShadow.mjs) within 0.5 m, placed at the detected root; by-eye-root: base by eye (data/photo/pole-review.json); head-lean: floodlight head minus the relief lean; vr-root: base hidden on the photo, read on the VR tour against photo features (pole-review verdict vr); epoch-root: base read by eye on other-year aerials (순천시 airmap 2013-2024) registered to the sheet, at least two independent epochs within 0.5 m (data/photo/pole-sources.json resolved); unresolved: no base visible, survey and data.go.kr poles stay at their seed (metre-level; site 'median' when the photo shows the seed on a median or island); rejected: no pole there on the photo review or, round 4, on at least two clear latest-epoch roadview panos (pole-sources.json roadview verdict absent; not drawn). Positions WGS84; residualM per pole; heights stay estimates (추정). Unresolved poles carry estimated: true, attempts (every other source tried in round 2: data/photo/pole-sources.json), seedUncertaintyM and confidence; placed poles carry confidence by method.",
     generator: "scripts/campus-model/fetch/poleRoots.mjs",
     sun: { ...SUN, note: "sun of the photo as estimated in data/photo/README.md (shadows fall west)" },
     counts,

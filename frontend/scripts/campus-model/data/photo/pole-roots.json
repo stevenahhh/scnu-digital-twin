@@ -1,5 +1,5 @@
 {
- "note": "Standing-pole bases read from the NGII 2025 orthophoto (sheet 34702020, 0.25 m GSD). verdict shadow-root: by-eye base confirmed by the shadow detector (lib/poleShadow.mjs) within 0.5 m, placed at the detected root; by-eye-root: base by eye (data/photo/pole-review.json); head-lean: floodlight head minus the relief lean; vr-root: base hidden on the photo, read on the VR tour against photo features (pole-review verdict vr); epoch-root: base read by eye on other-year aerials (순천시 airmap 2013-2024) registered to the sheet, at least two independent epochs within 0.5 m (data/photo/pole-sources.json resolved); unresolved: no base visible, survey and data.go.kr poles stay at their seed (metre-level; site 'median' when the photo shows the seed on a median or island); rejected: no pole there (not drawn). Positions WGS84; residualM per pole; heights stay estimates (추정). Unresolved poles carry estimated: true, attempts (every other source tried in round 2: data/photo/pole-sources.json), seedUncertaintyM and confidence; placed poles carry confidence by method.",
+ "note": "Standing-pole bases read from the NGII 2025 orthophoto (sheet 34702020, 0.25 m GSD). verdict shadow-root: by-eye base confirmed by the shadow detector (lib/poleShadow.mjs) within 0.5 m, placed at the detected root; by-eye-root: base by eye (data/photo/pole-review.json); head-lean: floodlight head minus the relief lean; vr-root: base hidden on the photo, read on the VR tour against photo features (pole-review verdict vr); epoch-root: base read by eye on other-year aerials (순천시 airmap 2013-2024) registered to the sheet, at least two independent epochs within 0.5 m (data/photo/pole-sources.json resolved); unresolved: no base visible, survey and data.go.kr poles stay at their seed (metre-level; site 'median' when the photo shows the seed on a median or island); rejected: no pole there on the photo review or, round 4, on at least two clear latest-epoch roadview panos (pole-sources.json roadview verdict absent; not drawn). Positions WGS84; residualM per pole; heights stay estimates (추정). Unresolved poles carry estimated: true, attempts (every other source tried in round 2: data/photo/pole-sources.json), seedUncertaintyM and confidence; placed poles carry confidence by method.",
  "generator": "scripts/campus-model/fetch/poleRoots.mjs",
  "sun": {
   "azimuthDeg": 92.5,
@@ -20,14 +20,15 @@
   },
   "sign_pole/by-eye-photo": {
    "by-eye-root": 1,
-   "unresolved": 2
+   "rejected": 1,
+   "unresolved": 1
   },
   "street_lamp/data.go.kr": {
-   "unresolved": 35,
+   "unresolved": 29,
+   "rejected": 8,
    "epoch-root": 2,
    "shadow-root": 2,
-   "by-eye-root": 1,
-   "rejected": 2
+   "by-eye-root": 1
   },
   "traffic_signal_pole/shadow": {
    "unresolved": 1
@@ -41,7 +42,7 @@
  },
  "residualStats": {
   "resolved": 18,
-  "unresolved": 46,
+  "unresolved": 39,
   "maxM": 0.5,
   "medianM": 0.29,
   "p95M": 0.5
@@ -135,7 +136,11 @@
     }
    ],
    "seedUncertaintyM": 1.2,
-   "confidence": 0.3
+   "confidence": 0.3,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   {
    "id": "OB0001",
@@ -292,7 +297,11 @@
     }
    ],
    "seedUncertaintyM": 1.2,
-   "confidence": 0.3
+   "confidence": 0.3,
+   "roadview": {
+    "verdict": "utility-pole",
+    "why": "roadview shows a concrete utility pole at the seed, no lamp standard: drawn as that object at the same root (stages/furniture.mjs RETYPED)"
+   }
   },
   {
    "id": "OB0005",
@@ -345,70 +354,16 @@
     127.48403186,
     34.96839115
    ],
-   "verdict": "unresolved",
-   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
-   "estimated": true,
-   "attempts": [
-    {
-     "method": "ngii-wide-search",
-     "result": "rejected",
-     "score": 14.09,
-     "fromSeedM": 0.85,
-     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: V-shaped sign-plate shadows (the tip); root not visible"
-    },
-    {
-     "method": "vworld-z19",
-     "result": "not-independent",
-     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
-    },
-    {
-     "method": "esri-z18",
-     "result": "unregistered",
-     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
-    },
-    {
-     "method": "vr-two-ray",
-     "result": "unresolved",
-     "rays": 1,
-     "baseRays": 0,
-     "why": "0 base-checked ray(s) of 1"
-    },
-    {
-     "method": "shadow-tip",
-     "result": "unresolved",
-     "why": "tip visible, root hidden: tip + h / tan 62 deg back to the root with h 3.0 m 추정 (+-1 m) gives about 0.6 m along the shadow, over 0.5 m",
-     "residualM": 0.6
-    },
-    {
-     "method": "suncheon-airmap",
-     "result": "unresolved",
-     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
-     "registeredEpochs": 10
-    },
-    {
-     "method": "kakao-skyview-hd",
-     "result": "not-independent",
-     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
-    },
-    {
-     "method": "kakao-roadview",
-     "result": "not-seen",
-     "panos": [
-      {
-       "id": "1205032952",
-       "date": "2026-01-26"
-      },
-      {
-       "id": "1205033492",
-       "date": "2026-01-26"
-      }
-     ],
-     "observation": "2026-01 roadview: the seed falls on the carriageway; no sign pole within +-20 deg; the nearby island carries the signal pole (OB0008) and a parasol",
-     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
-    }
-   ],
-   "seedUncertaintyM": 1.2,
-   "confidence": 0.3
+   "verdict": "rejected",
+   "note": "roadview: no pole at the seed bearing (+-22 deg strips, 20 deg above the horizon) on the listed 2026-01 panos, nothing in the bearing that could hide one: not drawn (1205032950, 1205033492)",
+   "roadview": {
+    "verdict": "absent",
+    "panos": [
+     "1205032950",
+     "1205033492"
+    ],
+    "why": "no pole at the seed bearing (+-22 deg strips, 20 deg above the horizon) on the listed 2026-01 panos, nothing in the bearing that could hide one: not drawn"
+   }
   },
   {
    "id": "OB0008",
@@ -498,7 +453,11 @@
     }
    ],
    "seedUncertaintyM": 1.2,
-   "confidence": 0.3
+   "confidence": 0.3,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   {
    "id": "OB0012",
@@ -631,7 +590,11 @@
     }
    ],
    "seedUncertaintyM": 1.2,
-   "confidence": 0.3
+   "confidence": 0.3,
+   "roadview": {
+    "verdict": "sign-pole",
+    "why": "roadview shows a bus-parking sign pole at the seed, no lamp standard: drawn as that object at the same root (stages/furniture.mjs RETYPED)"
+   }
   },
   {
    "id": "OC0031",
@@ -704,7 +667,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a lamp across the stream about 8 deg off the seed bearing may be the seed's own (5 m seed uncertainty); kept at the seed, estimated"
+   }
   },
   {
    "id": "OC0032",
@@ -777,7 +744,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   {
    "id": "OC0035",
@@ -850,7 +821,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a lamp at the stream rail about 12 deg off the seed bearing, within the seed uncertainty; kept at the seed, estimated"
+   }
   },
   {
    "id": "OC0036",
@@ -923,7 +898,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   {
    "id": "OC0038",
@@ -996,7 +975,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   {
    "id": "OC0041",
@@ -1081,7 +1064,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a lamp along the rail about 11 deg off the seed bearing, within the seed uncertainty; kept at the seed, estimated"
+   }
   },
   {
    "id": "OC0043",
@@ -1154,7 +1141,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a lamp far along the rail; the seed bearing is clear but the lamp may be the seed's; kept at the seed, estimated"
+   }
   },
   {
    "id": "OC0045",
@@ -1227,7 +1218,11 @@
     }
    ],
    "seedUncertaintyM": 1.2,
-   "confidence": 0.3
+   "confidence": 0.3,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "roadview shows a yellow sign pylon and a bus shelter with people in the bearing; data/photo/signal-arms.json reads a signal arm on the aerial: conflicting evidence; kept at the seed, estimated"
+   }
   },
   {
    "id": "OC0046",
@@ -1238,69 +1233,16 @@
     127.48307228,
     34.97126743
    ],
-   "verdict": "unresolved",
-   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
-   "estimated": true,
-   "attempts": [
-    {
-     "method": "ngii-wide-search",
-     "result": "rejected",
-     "score": 2.44,
-     "fromSeedM": 3.19,
-     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy and kerb"
-    },
-    {
-     "method": "vworld-z19",
-     "result": "not-independent",
-     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
-    },
-    {
-     "method": "esri-z18",
-     "result": "unregistered",
-     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
-    },
-    {
-     "method": "vr-two-ray",
-     "result": "unresolved",
-     "rays": 0,
-     "baseRays": 0,
-     "why": "0 base-checked ray(s) of 0"
-    },
-    {
-     "method": "shadow-tip",
-     "result": "unresolved",
-     "why": "no shadow tip identifiable"
-    },
-    {
-     "method": "suncheon-airmap",
-     "result": "unresolved",
-     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
-     "registeredEpochs": 6
-    },
-    {
-     "method": "kakao-skyview-hd",
-     "result": "not-independent",
-     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
-    },
-    {
-     "method": "kakao-roadview",
-     "result": "not-seen",
-     "panos": [
-      {
-       "id": "1205032887",
-       "date": "2026-01-26"
-      },
-      {
-       "id": "1205032885",
-       "date": "2026-01-26"
-      }
-     ],
-     "observation": "2026-01/2021-12 roadview: tyre shop forecourt; no pole",
-     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
-    }
-   ],
-   "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "verdict": "rejected",
+   "note": "roadview: no pole at the seed bearing (+-22 deg strips, 20 deg above the horizon) on the listed 2026-01 panos, nothing in the bearing that could hide one: not drawn (1205032887, 1205032885)",
+   "roadview": {
+    "verdict": "absent",
+    "panos": [
+     "1205032887",
+     "1205032885"
+    ],
+    "why": "no pole at the seed bearing (+-22 deg strips, 20 deg above the horizon) on the listed 2026-01 panos, nothing in the bearing that could hide one: not drawn"
+   }
   },
   {
    "id": "OC0047",
@@ -1377,7 +1319,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "concrete utility poles near the bearing; the lamp may be mounted on one of them; kept at the seed, estimated"
+   }
   },
   {
    "id": "OC0048",
@@ -1388,69 +1334,17 @@
     127.48329552,
     34.97152118
    ],
-   "verdict": "unresolved",
-   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
-   "estimated": true,
-   "attempts": [
-    {
-     "method": "ngii-wide-search",
-     "result": "rejected",
-     "score": 9.34,
-     "fromSeedM": 2.86,
-     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: kerb and ground texture"
-    },
-    {
-     "method": "vworld-z19",
-     "result": "not-independent",
-     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
-    },
-    {
-     "method": "esri-z18",
-     "result": "unregistered",
-     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
-    },
-    {
-     "method": "vr-two-ray",
-     "result": "unresolved",
-     "rays": 0,
-     "baseRays": 0,
-     "why": "0 base-checked ray(s) of 0"
-    },
-    {
-     "method": "shadow-tip",
-     "result": "unresolved",
-     "why": "no shadow tip identifiable"
-    },
-    {
-     "method": "suncheon-airmap",
-     "result": "unresolved",
-     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
-     "registeredEpochs": 2
-    },
-    {
-     "method": "kakao-skyview-hd",
-     "result": "not-independent",
-     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
-    },
-    {
-     "method": "kakao-roadview",
-     "result": "not-seen",
-     "panos": [
-      {
-       "id": "1205042703",
-       "date": "2026-01-26"
-      },
-      {
-       "id": "1205033605",
-       "date": "2026-01-26"
-      }
-     ],
-     "observation": "2026-01 roadview: vacant lot with weeds; no pole",
-     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
-    }
-   ],
-   "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "verdict": "rejected",
+   "note": "roadview: no pole at the seed bearing (+-22 deg strips, 20 deg above the horizon) on the listed 2026-01 panos, nothing in the bearing that could hide one: not drawn (1205042703, 1205033605, 1205033601)",
+   "roadview": {
+    "verdict": "absent",
+    "panos": [
+     "1205042703",
+     "1205033605",
+     "1205033601"
+    ],
+    "why": "no pole at the seed bearing (+-22 deg strips, 20 deg above the horizon) on the listed 2026-01 panos, nothing in the bearing that could hide one: not drawn"
+   }
   },
   {
    "id": "OC0049",
@@ -1523,7 +1417,11 @@
     }
    ],
    "seedUncertaintyM": 1.2,
-   "confidence": 0.3
+   "confidence": 0.3,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a lamp up the slope near the building; may be the seed's own; kept at the seed, estimated"
+   }
   },
   {
    "id": "OC0052",
@@ -1596,7 +1494,11 @@
     }
    ],
    "seedUncertaintyM": 1.2,
-   "confidence": 0.3
+   "confidence": 0.3,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "trees stand in the seed bearing on all three panos; kept at the seed, estimated"
+   }
   },
   {
    "id": "OC0053",
@@ -1669,7 +1571,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   {
    "id": "OC0054",
@@ -1889,7 +1795,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "utility-pole",
+    "why": "roadview shows a concrete utility pole at the seed, no lamp standard: drawn as that object at the same root (stages/furniture.mjs RETYPED)"
+   }
   },
   {
    "id": "OC0060",
@@ -2052,7 +1962,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a grey steel pole near the seed bearing may be the lamp; kept at the seed, estimated"
+   }
   },
   {
    "id": "OC0067",
@@ -2125,7 +2039,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a pedestrian-signal pole and a sign pole at the corner; lamp identity unclear; kept at the seed, estimated"
+   }
   },
   {
    "id": "OC0068",
@@ -2198,7 +2116,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "utility-pole",
+    "why": "roadview shows a concrete utility pole at the seed, no lamp standard: drawn as that object at the same root (stages/furniture.mjs RETYPED)"
+   }
   },
   {
    "id": "OC0069",
@@ -2271,7 +2193,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a thin steel pole and a utility pole at the corner; lamp identity unclear; kept at the seed, estimated"
+   }
   },
   {
    "id": "OC0076",
@@ -2360,7 +2286,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a grey steel pole about 16 deg off the seed bearing; the 2019 pano is blocked by a bus; kept at the seed, estimated"
+   }
   },
   {
    "id": "OC0084",
@@ -2445,7 +2375,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   {
    "id": "OC0087",
@@ -2530,7 +2464,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a grey steel pole about 16 deg off the seed bearing; kept at the seed, estimated"
+   }
   },
   {
    "id": "OC0098",
@@ -2603,7 +2541,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   {
    "id": "OC0099",
@@ -2614,69 +2556,16 @@
     127.48406414,
     34.96908441
    ],
-   "verdict": "unresolved",
-   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
-   "estimated": true,
-   "attempts": [
-    {
-     "method": "ngii-wide-search",
-     "result": "rejected",
-     "score": 6.68,
-     "fromSeedM": 3.66,
-     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: building shade"
-    },
-    {
-     "method": "vworld-z19",
-     "result": "not-independent",
-     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
-    },
-    {
-     "method": "esri-z18",
-     "result": "unregistered",
-     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
-    },
-    {
-     "method": "vr-two-ray",
-     "result": "unresolved",
-     "rays": 0,
-     "baseRays": 0,
-     "why": "0 base-checked ray(s) of 0"
-    },
-    {
-     "method": "shadow-tip",
-     "result": "unresolved",
-     "why": "no shadow tip identifiable"
-    },
-    {
-     "method": "suncheon-airmap",
-     "result": "unresolved",
-     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
-     "registeredEpochs": 4
-    },
-    {
-     "method": "kakao-skyview-hd",
-     "result": "not-independent",
-     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
-    },
-    {
-     "method": "kakao-roadview",
-     "result": "not-seen",
-     "panos": [
-      {
-       "id": "1205033515",
-       "date": "2026-01-26"
-      },
-      {
-       "id": "1205033512",
-       "date": "2026-01-26"
-      }
-     ],
-     "observation": "2026-01 roadview: shop plaza and a street tree; no pole at the seed",
-     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
-    }
-   ],
-   "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "verdict": "rejected",
+   "note": "roadview: no pole at the seed bearing (+-22 deg strips, 20 deg above the horizon) on the listed 2026-01 panos, nothing in the bearing that could hide one: not drawn (1205033515, 1205033512)",
+   "roadview": {
+    "verdict": "absent",
+    "panos": [
+     "1205033515",
+     "1205033512"
+    ],
+    "why": "no pole at the seed bearing (+-22 deg strips, 20 deg above the horizon) on the listed 2026-01 panos, nothing in the bearing that could hide one: not drawn"
+   }
   },
   {
    "id": "OC0100",
@@ -2750,7 +2639,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   {
    "id": "OC0103",
@@ -2823,7 +2716,11 @@
     }
    ],
    "seedUncertaintyM": 1.2,
-   "confidence": 0.3
+   "confidence": 0.3,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "garden shrubs could hide a low garden lamp; kept at the seed, estimated"
+   }
   },
   {
    "id": "OC0110",
@@ -2896,7 +2793,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   {
    "id": "OC0113",
@@ -2969,7 +2870,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a grey pole behind a sign pillar; identity unclear; kept at the seed, estimated"
+   }
   },
   {
    "id": "OC0114",
@@ -2980,69 +2885,17 @@
     127.48429543,
     34.96884687
    ],
-   "verdict": "unresolved",
-   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
-   "estimated": true,
-   "attempts": [
-    {
-     "method": "ngii-wide-search",
-     "result": "rejected",
-     "score": 6.66,
-     "fromSeedM": 3.71,
-     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: kerb in shade"
-    },
-    {
-     "method": "vworld-z19",
-     "result": "not-independent",
-     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
-    },
-    {
-     "method": "esri-z18",
-     "result": "unregistered",
-     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
-    },
-    {
-     "method": "vr-two-ray",
-     "result": "unresolved",
-     "rays": 0,
-     "baseRays": 0,
-     "why": "0 base-checked ray(s) of 0"
-    },
-    {
-     "method": "shadow-tip",
-     "result": "unresolved",
-     "why": "no shadow tip identifiable"
-    },
-    {
-     "method": "suncheon-airmap",
-     "result": "unresolved",
-     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
-     "registeredEpochs": 1
-    },
-    {
-     "method": "kakao-skyview-hd",
-     "result": "not-independent",
-     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
-    },
-    {
-     "method": "kakao-roadview",
-     "result": "not-seen",
-     "panos": [
-      {
-       "id": "1205044121",
-       "date": "2026-01-26"
-      },
-      {
-       "id": "1205044130",
-       "date": "2026-01-26"
-      }
-     ],
-     "observation": "2026-01 roadview: narrow shop alley; no lamp standard",
-     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
-    }
-   ],
-   "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "verdict": "rejected",
+   "note": "roadview: no pole at the seed bearing (+-22 deg strips, 20 deg above the horizon) on the listed 2026-01 panos, nothing in the bearing that could hide one: not drawn (1205044126, 1205044121, 1205044130)",
+   "roadview": {
+    "verdict": "absent",
+    "panos": [
+     "1205044126",
+     "1205044121",
+     "1205044130"
+    ],
+    "why": "no pole at the seed bearing (+-22 deg strips, 20 deg above the horizon) on the listed 2026-01 panos, nothing in the bearing that could hide one: not drawn"
+   }
   },
   {
    "id": "OC0115",
@@ -3053,69 +2906,16 @@
     127.48436667,
     34.96885786
    ],
-   "verdict": "unresolved",
-   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
-   "estimated": true,
-   "attempts": [
-    {
-     "method": "ngii-wide-search",
-     "result": "rejected",
-     "score": 7.85,
-     "fromSeedM": 2.95,
-     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: vehicle shade"
-    },
-    {
-     "method": "vworld-z19",
-     "result": "not-independent",
-     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
-    },
-    {
-     "method": "esri-z18",
-     "result": "unregistered",
-     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
-    },
-    {
-     "method": "vr-two-ray",
-     "result": "unresolved",
-     "rays": 0,
-     "baseRays": 0,
-     "why": "0 base-checked ray(s) of 0"
-    },
-    {
-     "method": "shadow-tip",
-     "result": "unresolved",
-     "why": "no shadow tip identifiable"
-    },
-    {
-     "method": "suncheon-airmap",
-     "result": "unresolved",
-     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
-     "registeredEpochs": 1
-    },
-    {
-     "method": "kakao-skyview-hd",
-     "result": "not-independent",
-     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
-    },
-    {
-     "method": "kakao-roadview",
-     "result": "not-seen",
-     "panos": [
-      {
-       "id": "1205044126",
-       "date": "2026-01-26"
-      },
-      {
-       "id": "1205044117",
-       "date": "2026-01-26"
-      }
-     ],
-     "observation": "2026-01 roadview: narrow shop alley; no lamp standard",
-     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
-    }
-   ],
-   "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "verdict": "rejected",
+   "note": "roadview: no pole at the seed bearing (+-22 deg strips, 20 deg above the horizon) on the listed 2026-01 panos, nothing in the bearing that could hide one: not drawn (1205044121, 1205044126)",
+   "roadview": {
+    "verdict": "absent",
+    "panos": [
+     "1205044121",
+     "1205044126"
+    ],
+    "why": "no pole at the seed bearing (+-22 deg strips, 20 deg above the horizon) on the listed 2026-01 panos, nothing in the bearing that could hide one: not drawn"
+   }
   },
   {
    "id": "OC0116",
@@ -3126,69 +2926,17 @@
     127.4844352,
     34.96887336
    ],
-   "verdict": "unresolved",
-   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
-   "estimated": true,
-   "attempts": [
-    {
-     "method": "ngii-wide-search",
-     "result": "rejected",
-     "score": 9.07,
-     "fromSeedM": 1.68,
-     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: vehicle edges"
-    },
-    {
-     "method": "vworld-z19",
-     "result": "not-independent",
-     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
-    },
-    {
-     "method": "esri-z18",
-     "result": "unregistered",
-     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
-    },
-    {
-     "method": "vr-two-ray",
-     "result": "unresolved",
-     "rays": 0,
-     "baseRays": 0,
-     "why": "0 base-checked ray(s) of 0"
-    },
-    {
-     "method": "shadow-tip",
-     "result": "unresolved",
-     "why": "no shadow tip identifiable"
-    },
-    {
-     "method": "suncheon-airmap",
-     "result": "unresolved",
-     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
-     "registeredEpochs": 1
-    },
-    {
-     "method": "kakao-skyview-hd",
-     "result": "not-independent",
-     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
-    },
-    {
-     "method": "kakao-roadview",
-     "result": "not-seen",
-     "panos": [
-      {
-       "id": "1205044117",
-       "date": "2026-01-26"
-      },
-      {
-       "id": "1205044121",
-       "date": "2026-01-26"
-      }
-     ],
-     "observation": "2026-01 roadview: narrow shop alley; no lamp standard",
-     "why": "unresolved: Kakao pano GPS positions sit 1.3-3.8 m from the sheet (controls OB0001, OB0002, OC0061 and the solved pano offsets) and flat-ground pose registration to the sheet reproduces OB0001 to 0.04 m at 11 m but 2.2 m at 20 m, so no foot reaches two independent estimates within 0.5 m"
-    }
-   ],
-   "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "verdict": "rejected",
+   "note": "roadview: no pole at the seed bearing (+-22 deg strips, 20 deg above the horizon) on the listed 2026-01 panos, nothing in the bearing that could hide one: not drawn (1205044117, 1205044121, 1205044114)",
+   "roadview": {
+    "verdict": "absent",
+    "panos": [
+     "1205044117",
+     "1205044121",
+     "1205044114"
+    ],
+    "why": "no pole at the seed bearing (+-22 deg strips, 20 deg above the horizon) on the listed 2026-01 panos, nothing in the bearing that could hide one: not drawn"
+   }
   },
   {
    "id": "OC0130",
@@ -3398,7 +3146,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a pole carrying banner sleeves about 9 deg off the seed bearing; kept at the seed, estimated"
+   }
   },
   {
    "id": "OC0132",
@@ -3471,7 +3223,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a utility pole and a black post at the planter corner; kept at the seed, estimated"
+   }
   },
   {
    "id": "OC0133",
@@ -3544,7 +3300,11 @@
     }
    ],
    "seedUncertaintyM": 1.2,
-   "confidence": 0.3
+   "confidence": 0.3,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a black lamp pole about 20 deg off the seed bearing; kept at the seed, estimated"
+   }
   },
   {
    "id": "OC0142",
@@ -3792,7 +3552,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a median tree stands in the seed bearing on all three panos; kept at the seed, estimated"
+   }
   },
   {
    "id": "OC0152",
@@ -3870,7 +3634,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   {
    "id": "OC0167",
@@ -3943,7 +3711,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "utility-pole",
+    "why": "roadview shows a concrete utility pole at the seed, no lamp standard: drawn as that object at the same root (stages/furniture.mjs RETYPED)"
+   }
   },
   {
    "id": "OC0168",
@@ -4016,7 +3788,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   {
    "id": "OC0170",
@@ -4089,7 +3865,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a steel pole on the kerb about 10 deg off the seed bearing; kept at the seed, estimated"
+   }
   },
   {
    "id": "OC0171",
@@ -4162,7 +3942,11 @@
     }
    ],
    "seedUncertaintyM": 1.2,
-   "confidence": 0.3
+   "confidence": 0.3,
+   "roadview": {
+    "verdict": "utility-pole",
+    "why": "roadview shows a concrete utility pole at the seed, no lamp standard: drawn as that object at the same root (stages/furniture.mjs RETYPED)"
+   }
   },
   {
    "id": "OC0172",
@@ -4265,7 +4049,11 @@
     }
    ],
    "seedUncertaintyM": 5,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   {
    "id": "EL000",

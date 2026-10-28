@@ -1,5 +1,5 @@
 {
- "note": "Pole-roots rounds 2 and 3: every source tried for the poles the NGII 2025 sheet left unresolved; fetch/poleRoots.mjs merges these into data/photo/pole-roots.json. A pole moves only when a source resolves its base to <= 0.5 m or two independent sources agree within 0.5 m. Round 2: none did. Round 3 (other-year aerials, 순천시 airmap 2013-2024 at 10-12 cm, registered to the sheet per pole): 2 resolved (`resolved`, verdict epoch-root), 47 stay at their survey seeds, estimated (추정). seedUncertaintyM: the median shift from seed to resolved root of the poles of the same source (data.go.kr 2.43 / 4.99 / 7.45 m; by-eye survey 0-3.07 m, median 1.2 m), an estimate. Round 4 (Kakao roadview 2010-2026, see sources): every estimated pole viewed; 13 show a lamp, signal or median pole near the seed, 6 seeds are a utility or sign pole, the rest show no pole at the seed; none resolved to 0.5 m, so all stay estimated.",
+ "note": "Pole-roots rounds 2 and 3: every source tried for the poles the NGII 2025 sheet left unresolved; fetch/poleRoots.mjs merges these into data/photo/pole-roots.json. A pole moves only when a source resolves its base to <= 0.5 m or two independent sources agree within 0.5 m. Round 2: none did. Round 3 (other-year aerials, 순천시 airmap 2013-2024 at 10-12 cm, registered to the sheet per pole): 2 resolved (`resolved`, verdict epoch-root), 47 stay at their survey seeds, estimated (추정). seedUncertaintyM: the median shift from seed to resolved root of the poles of the same source (data.go.kr 2.43 / 4.99 / 7.45 m; by-eye survey 0-3.07 m, median 1.2 m), an estimate. Round 4 (Kakao roadview 2010-2026, see sources): every estimated pole viewed; 13 show a lamp, signal or median pole near the seed, 6 seeds are a utility or sign pole, the rest show no pole at the seed; none resolved to 0.5 m, so all stay estimated. Round 4 decisions (roadview `roadview.verdict`): absent poles are not drawn (pole-roots verdict rejected), unconfirmed and confirmed stay estimated at their seed, utility-pole and sign-pole seeds are drawn as that object (stages/furniture.mjs RETYPED).",
  "generated": "2026-10-28",
  "sources": {
   "ngii-wide-search": "lib/poleShadow.mjs detectPoleRoots on the NGII 2025 sheet over 3.5 m around each seed (the first round searched 1 m around by-eye bases only), top 3 candidates reviewed by eye on 8x and 16x chips; on the 15 resolved poles the same search returns the known shadow roots within 0.05 m (OB0001, OC0060, OC0061)",
@@ -91,7 +91,11 @@
     }
    ],
    "seedUncertaintyM": 1.2,
-   "confidence": 0.3
+   "confidence": 0.3,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   "OB0003": {
    "attempts": [
@@ -204,7 +208,11 @@
     }
    ],
    "seedUncertaintyM": 1.2,
-   "confidence": 0.3
+   "confidence": 0.3,
+   "roadview": {
+    "verdict": "utility-pole",
+    "why": "roadview shows a concrete utility pole at the seed, no lamp standard: drawn as that object at the same root (stages/furniture.mjs RETYPED)"
+   }
   },
   "OB0007": {
    "attempts": [
@@ -267,7 +275,15 @@
     }
    ],
    "seedUncertaintyM": 1.2,
-   "confidence": 0.3
+   "confidence": 0.3,
+   "roadview": {
+    "verdict": "absent",
+    "panos": [
+     "1205032950",
+     "1205033492"
+    ],
+    "why": "no pole at the seed bearing (+-22 deg strips, 20 deg above the horizon) on the listed 2026-01 panos, nothing in the bearing that could hide one: not drawn"
+   }
   },
   "OB0008": {
    "attempts": [
@@ -346,7 +362,11 @@
     }
    ],
    "seedUncertaintyM": 1.2,
-   "confidence": 0.3
+   "confidence": 0.3,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   "OB0014": {
    "attempts": [
@@ -408,7 +428,11 @@
     }
    ],
    "seedUncertaintyM": 1.2,
-   "confidence": 0.3
+   "confidence": 0.3,
+   "roadview": {
+    "verdict": "sign-pole",
+    "why": "roadview shows a bus-parking sign pole at the seed, no lamp standard: drawn as that object at the same root (stages/furniture.mjs RETYPED)"
+   }
   },
   "OC0031": {
    "attempts": [
@@ -470,7 +494,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a lamp across the stream about 8 deg off the seed bearing may be the seed's own (5 m seed uncertainty); kept at the seed, estimated"
+   }
   },
   "OC0032": {
    "attempts": [
@@ -532,7 +560,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   "OC0035": {
    "attempts": [
@@ -594,7 +626,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a lamp at the stream rail about 12 deg off the seed bearing, within the seed uncertainty; kept at the seed, estimated"
+   }
   },
   "OC0036": {
    "attempts": [
@@ -656,7 +692,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   "OC0038": {
    "attempts": [
@@ -718,7 +758,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   "OC0042": {
    "attempts": [
@@ -780,7 +824,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a lamp along the rail about 11 deg off the seed bearing, within the seed uncertainty; kept at the seed, estimated"
+   }
   },
   "OC0043": {
    "attempts": [
@@ -842,7 +890,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a lamp far along the rail; the seed bearing is clear but the lamp may be the seed's; kept at the seed, estimated"
+   }
   },
   "OC0045": {
    "attempts": [
@@ -904,7 +956,11 @@
     }
    ],
    "seedUncertaintyM": 1.2,
-   "confidence": 0.3
+   "confidence": 0.3,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "roadview shows a yellow sign pylon and a bus shelter with people in the bearing; data/photo/signal-arms.json reads a signal arm on the aerial: conflicting evidence; kept at the seed, estimated"
+   }
   },
   "OC0046": {
    "attempts": [
@@ -966,7 +1022,15 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "absent",
+    "panos": [
+     "1205032887",
+     "1205032885"
+    ],
+    "why": "no pole at the seed bearing (+-22 deg strips, 20 deg above the horizon) on the listed 2026-01 panos, nothing in the bearing that could hide one: not drawn"
+   }
   },
   "OC0047": {
    "attempts": [
@@ -1032,7 +1096,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "concrete utility poles near the bearing; the lamp may be mounted on one of them; kept at the seed, estimated"
+   }
   },
   "OC0048": {
    "attempts": [
@@ -1094,7 +1162,16 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "absent",
+    "panos": [
+     "1205042703",
+     "1205033605",
+     "1205033601"
+    ],
+    "why": "no pole at the seed bearing (+-22 deg strips, 20 deg above the horizon) on the listed 2026-01 panos, nothing in the bearing that could hide one: not drawn"
+   }
   },
   "OC0049": {
    "attempts": [
@@ -1156,7 +1233,11 @@
     }
    ],
    "seedUncertaintyM": 1.2,
-   "confidence": 0.3
+   "confidence": 0.3,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a lamp up the slope near the building; may be the seed's own; kept at the seed, estimated"
+   }
   },
   "OC0052": {
    "attempts": [
@@ -1218,7 +1299,11 @@
     }
    ],
    "seedUncertaintyM": 1.2,
-   "confidence": 0.3
+   "confidence": 0.3,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "trees stand in the seed bearing on all three panos; kept at the seed, estimated"
+   }
   },
   "OC0053": {
    "attempts": [
@@ -1280,7 +1365,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   "OC0054": {
    "attempts": [
@@ -1472,7 +1561,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "utility-pole",
+    "why": "roadview shows a concrete utility pole at the seed, no lamp standard: drawn as that object at the same root (stages/furniture.mjs RETYPED)"
+   }
   },
   "OC0066": {
    "attempts": [
@@ -1534,7 +1627,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a grey steel pole near the seed bearing may be the lamp; kept at the seed, estimated"
+   }
   },
   "OC0067": {
    "attempts": [
@@ -1596,7 +1693,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a pedestrian-signal pole and a sign pole at the corner; lamp identity unclear; kept at the seed, estimated"
+   }
   },
   "OC0068": {
    "attempts": [
@@ -1658,7 +1759,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "utility-pole",
+    "why": "roadview shows a concrete utility pole at the seed, no lamp standard: drawn as that object at the same root (stages/furniture.mjs RETYPED)"
+   }
   },
   "OC0069": {
    "attempts": [
@@ -1720,7 +1825,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a thin steel pole and a utility pole at the corner; lamp identity unclear; kept at the seed, estimated"
+   }
   },
   "OC0077": {
    "attempts": [
@@ -1786,7 +1895,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a grey steel pole about 16 deg off the seed bearing; the 2019 pano is blocked by a bus; kept at the seed, estimated"
+   }
   },
   "OC0086": {
    "attempts": [
@@ -1848,7 +1961,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   "OC0097": {
    "attempts": [
@@ -1910,7 +2027,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a grey steel pole about 16 deg off the seed bearing; kept at the seed, estimated"
+   }
   },
   "OC0098": {
    "attempts": [
@@ -1972,7 +2093,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   "OC0099": {
    "attempts": [
@@ -2034,7 +2159,15 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "absent",
+    "panos": [
+     "1205033515",
+     "1205033512"
+    ],
+    "why": "no pole at the seed bearing (+-22 deg strips, 20 deg above the horizon) on the listed 2026-01 panos, nothing in the bearing that could hide one: not drawn"
+   }
   },
   "OC0100": {
    "attempts": [
@@ -2096,7 +2229,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   "OC0103": {
    "attempts": [
@@ -2158,7 +2295,11 @@
     }
    ],
    "seedUncertaintyM": 1.2,
-   "confidence": 0.3
+   "confidence": 0.3,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "garden shrubs could hide a low garden lamp; kept at the seed, estimated"
+   }
   },
   "OC0110": {
    "attempts": [
@@ -2220,7 +2361,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   "OC0113": {
    "attempts": [
@@ -2282,7 +2427,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a grey pole behind a sign pillar; identity unclear; kept at the seed, estimated"
+   }
   },
   "OC0114": {
    "attempts": [
@@ -2344,7 +2493,16 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "absent",
+    "panos": [
+     "1205044126",
+     "1205044121",
+     "1205044130"
+    ],
+    "why": "no pole at the seed bearing (+-22 deg strips, 20 deg above the horizon) on the listed 2026-01 panos, nothing in the bearing that could hide one: not drawn"
+   }
   },
   "OC0115": {
    "attempts": [
@@ -2406,7 +2564,15 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "absent",
+    "panos": [
+     "1205044121",
+     "1205044126"
+    ],
+    "why": "no pole at the seed bearing (+-22 deg strips, 20 deg above the horizon) on the listed 2026-01 panos, nothing in the bearing that could hide one: not drawn"
+   }
   },
   "OC0116": {
    "attempts": [
@@ -2468,7 +2634,16 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "absent",
+    "panos": [
+     "1205044117",
+     "1205044121",
+     "1205044114"
+    ],
+    "why": "no pole at the seed bearing (+-22 deg strips, 20 deg above the horizon) on the listed 2026-01 panos, nothing in the bearing that could hide one: not drawn"
+   }
   },
   "OC0130": {
    "attempts": [
@@ -2650,7 +2825,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a pole carrying banner sleeves about 9 deg off the seed bearing; kept at the seed, estimated"
+   }
   },
   "OC0132": {
    "attempts": [
@@ -2712,7 +2891,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a utility pole and a black post at the planter corner; kept at the seed, estimated"
+   }
   },
   "OC0133": {
    "attempts": [
@@ -2774,7 +2957,11 @@
     }
    ],
    "seedUncertaintyM": 1.2,
-   "confidence": 0.3
+   "confidence": 0.3,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a black lamp pole about 20 deg off the seed bearing; kept at the seed, estimated"
+   }
   },
   "OC0151": {
    "attempts": [
@@ -2836,7 +3023,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a median tree stands in the seed bearing on all three panos; kept at the seed, estimated"
+   }
   },
   "OC0152": {
    "attempts": [
@@ -2902,7 +3093,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   "OC0167": {
    "attempts": [
@@ -2964,7 +3159,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "utility-pole",
+    "why": "roadview shows a concrete utility pole at the seed, no lamp standard: drawn as that object at the same root (stages/furniture.mjs RETYPED)"
+   }
   },
   "OC0168": {
    "attempts": [
@@ -3026,7 +3225,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   },
   "OC0170": {
    "attempts": [
@@ -3088,7 +3291,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "unconfirmed",
+    "why": "a steel pole on the kerb about 10 deg off the seed bearing; kept at the seed, estimated"
+   }
   },
   "OC0171": {
    "attempts": [
@@ -3150,7 +3357,11 @@
     }
    ],
    "seedUncertaintyM": 1.2,
-   "confidence": 0.3
+   "confidence": 0.3,
+   "roadview": {
+    "verdict": "utility-pole",
+    "why": "roadview shows a concrete utility pole at the seed, no lamp standard: drawn as that object at the same root (stages/furniture.mjs RETYPED)"
+   }
   },
   "OC0174": {
    "attempts": [
@@ -3212,7 +3423,11 @@
     }
    ],
    "seedUncertaintyM": 5.0,
-   "confidence": 0.2
+   "confidence": 0.2,
+   "roadview": {
+    "verdict": "confirmed",
+    "why": "a pole stands at the seed on the roadview; position stays estimated (no two feet within 0.5 m)"
+   }
   }
  }
 }
