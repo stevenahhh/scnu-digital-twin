@@ -27,6 +27,8 @@
 //   bun scripts/qa/markings-audit.mjs [--glb public/campus-v2.glb] [--lots <parking-lots.json>] [--road-lines <road-lines.json>]
 //       [--json <out>] [--max 15]
 import path from "node:path";
+import { paintIn, paintIndex } from "./photoPaint.mjs";
+import { simulationToTm, tmToScene } from "../../src/geo/epsg5186.mjs";
 import { fileURLToPath } from "node:url";
 import { NodeIO } from "@gltf-transform/core";
 import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
@@ -43,6 +45,17 @@ export const COVER_M = 0.35;
 export const COVER_SOLID = 0.7;
 export const COVER_DASHED = 0.7;
 export const DASH_REACH_M = 5.5;
+// junction paint (photoPaint.mjs): the island, hatch, chevron, triangle, arrow, text and bar paint (area blobs) the
+// orthophoto shows within JUNCTION_PAD_M of a junction's nodes; the model's paint of the same colour must cover
+// JUNCTION_SHARE of it (within PAINT_REACH_M), else the junction fails. Lots: the thin white strokes (stall dividers)
+// inside a lot (its ring and LOT_PAD_M around it) must be covered by drawn stall lines over LOT_SHARE.
+export const PAINT_REACH_M = 0.35;
+export const JUNCTION_PAD_M = 20;
+export const JUNCTION_SHARE = 0.6;
+export const JUNCTION_MIN_M2 = 4;
+export const LOT_PAD_M = 4;
+export const LOT_SHARE = 0.6;
+export const LOT_MIN_M2 = 1;
 const U = SCENE_UNITS_PER_METRE;
 // palette order of stages/markings.mjs (PALETTE_COLOURS): u = (i + 0.5) / 5
 const PALETTE = ["white", "yellow", "blue", "green", "light_blue"];
@@ -88,7 +101,7 @@ export function principal(points) {
 }
 
 // ---------------------------------------------------------------- GLB reading
-async function readMarkings(file) {
+export async function readMarkings(file) {
   await MeshoptDecoder.ready;
   const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({ "meshopt.decoder": MeshoptDecoder });
   const doc = await io.read(file);
@@ -502,6 +515,58 @@ function modelLines(records, tris, colour) {
     excluded: (q) => exclude.some((c) => norm(sub(q, c)) < 6),
   };
 }
+// junctions: the network's intersection nodes clustered within 35 m (the render windows J01..), numbered south to north
+export async function readJunctions(file) {
+  const roads = JSON.parse(await Bun.file(file).text());
+  const pts = roads.nodes.filter((n) => n.properties.kind === "intersection")
+    .map((n) => tmToScene(...simulationToTm({ x: n.geometry.coordinates[0], z: n.geometry.coordinates[1] })))
+    .filter(([x, z]) => x >= 5 && x <= 495 && z >= -370 && z <= -4);
+  const parent = pts.map((_, i) => i);
+  const root = (i) => (parent[i] === i ? i : (parent[i] = root(parent[i])));
+  for (let i = 0; i < pts.length; i += 1) for (let j = i + 1; j < pts.length; j += 1) if (Math.hypot(pts[i][0] - pts[j][0], pts[i][1] - pts[j][1]) / U < 35) parent[root(i)] = root(j);
+  const groups = new Map();
+  pts.forEach((p, i) => { const k = root(i); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(p.map((v) => v / U)); });
+  return [...groups.values()].sort((a, b) => a[0][1] * U - b[0][1] * U || a[0][0] - b[0][0]).map((g, k) => ({
+    id: `J${String(k + 1).padStart(2, "0")}`,
+    box: [Math.min(...g.map((p) => p[0])) - JUNCTION_PAD_M, Math.min(...g.map((p) => p[1])) - JUNCTION_PAD_M, Math.max(...g.map((p) => p[0])) + JUNCTION_PAD_M, Math.max(...g.map((p) => p[1])) + JUNCTION_PAD_M],
+  }));
+}
+
+// photo paint (area blobs) at each junction covered by model paint of its colour
+function junctionPaint(junctions, tris, out) {
+  const covers = paintIndex(tris, PAINT_REACH_M);
+  return junctions.map((j) => {
+    const { blobs } = paintIn(j.box);
+    const area = blobs.filter((b) => b.type === "area");
+    const pts = area.flatMap((b) => b.pts.map((q) => ({ q, colour: b.colour })));
+    const hit = pts.filter((p) => covers(p.q, p.colour));
+    const share = pts.length ? hit.length / pts.length : 1;
+    const missM2 = (pts.length - hit.length) * 0.0625;
+    const byColour = Object.fromEntries(["white", "yellow"].map((c) => { const all = pts.filter((p) => p.colour === c); return [c, all.length ? +(all.filter((p) => covers(p.q, c)).length / all.length).toFixed(2) : null]; }));
+    const worst = area.map((b) => ({ b, miss: b.pts.filter((q) => !covers(q, b.colour)).length })).sort((a, b) => b.miss - a.miss)[0];
+    if (share < JUNCTION_SHARE && missM2 >= JUNCTION_MIN_M2)
+      out.push({ check: "junction-paint", id: j.id, detail: `photo island/hatch/chevron/symbol paint ${(pts.length * 0.0625).toFixed(1)} m2, ${(share * 100).toFixed(0)} % covered by model paint of its colour (white ${byColour.white ?? "-"}, yellow ${byColour.yellow ?? "-"}; need ${JUNCTION_SHARE * 100} %), ${missM2.toFixed(1)} m2 uncovered`, at: worst?.b.centre });
+    return { id: j.id, paintM2: +(pts.length * 0.0625).toFixed(1), share: +share.toFixed(3), ...byColour };
+  });
+}
+
+// photo stall-line paint (thin white strokes) in each lot covered by the model's stall lines
+function lotPaint(lots, tris, records, out) {
+  const stallTris = tris.filter((t) => t.colour === "white" && (!records || TEMPLATES[records[t.inst]?.t]?.kind === "stall"));
+  const covers = paintIndex(stallTris, PAINT_REACH_M);
+  return lots.map((lot) => {
+    const xs = lot.ringM.map((p) => p[0]), zs = lot.ringM.map((p) => p[1]);
+    const box = [Math.min(...xs) - LOT_PAD_M, Math.min(...zs) - LOT_PAD_M, Math.max(...xs) + LOT_PAD_M, Math.max(...zs) + LOT_PAD_M];
+    const near = (q) => pointInRing(q, lot.ringM) || lot.ringM.some((a, i) => { const b = lot.ringM[(i + 1) % lot.ringM.length]; const ab = sub(b, a); const s2 = Math.max(0, Math.min(1, dot(sub(q, a), ab) / (dot(ab, ab) || 1))); return norm(sub(q, [a[0] + s2 * ab[0], a[1] + s2 * ab[1]])) <= LOT_PAD_M; });
+    const pts = paintIn(box).blobs.filter((b) => b.type === "stroke" && b.colour === "white" && near(b.centre)).flatMap((b) => b.pts);
+    const hit = pts.filter((q) => covers(q, "white")).length;
+    const share = pts.length ? hit / pts.length : 1;
+    if (share < LOT_SHARE && (pts.length - hit) * 0.0625 >= LOT_MIN_M2)
+      out.push({ check: "stall-paint", id: lot.id, detail: `photo stall-line paint ${(pts.length * 0.0625).toFixed(1)} m2, ${(share * 100).toFixed(0)} % covered by drawn stall lines (need ${LOT_SHARE * 100} %)`, at: lot.ringM[0] });
+    return { id: lot.id, paintM2: +(pts.length * 0.0625).toFixed(1), share: +share.toFixed(3) };
+  });
+}
+
 function lineCoverage(roadLines, records, tris, out) {
   const fam = { yellow: modelLines(records, tris, "yellow"), white: modelLines(records, tris, "white") };
   const rows = [];
@@ -575,9 +640,11 @@ export async function audit({ glb, lotsFile, roadLinesFile }) {
     void lotRecords;
   }
   const covered = lineCoverage(roadLines, records, tris, out);
+  const junctions = junctionPaint(await readJunctions(path.join(FRONTEND, "scripts", "campus-model", "data", "network", "roads.json")), tris.filter((t) => !t.context), out);
+  const lotsPaint = lotPaint(lots, tris.filter((t) => !t.context), records, out);
   const counts = lots.map((l) => ({ lot: l.id, photo: l.photoStalls, modelled: modelled.get(l.id) ?? 0 }));
   for (const c of counts) if (c.photo !== c.modelled) out.push({ check: "count", id: c.lot, detail: `photo ${c.photo} stalls, model ${c.modelled}` });
-  return { failures: out, counts, coverage: covered, triangles: tris.length, instances, mode: records ? "instances" : "geometry-only" };
+  return { failures: out, counts, coverage: covered, junctions, lotsPaint, triangles: tris.length, instances, mode: records ? "instances" : "geometry-only" };
 }
 
 if (import.meta.main) {
@@ -593,12 +660,14 @@ if (import.meta.main) {
   }
   console.log(`markings audit: ${glb}`);
   console.log(`  mode ${result.mode}; ${result.triangles} marking triangles; ${result.instances} instance records; lots ${result.counts.length}`);
-  for (const check of ["template", "dimension", "straight", "overlap", "stall-lot", "spacing", "count", "coverage"]) {
+  for (const check of ["template", "dimension", "straight", "overlap", "stall-lot", "spacing", "count", "coverage", "junction-paint", "stall-paint"]) {
     const list = by.get(check) ?? [];
     console.log(`  ${list.length ? "FAIL" : "PASS"} ${check}: ${list.length}`);
     for (const f of list.slice(0, max)) console.log(`      ${f.id}${f.template ? ` [${f.template}]` : ""}: ${f.detail}${f.at ? ` @ (${(f.at[0] * U).toFixed(1)}, ${(f.at[1] * U).toFixed(1)}) scene` : ""}`);
   }
   console.log(`  photo road lines: ${result.coverage.length} (${result.coverage.filter((c) => c.kind === "centre_line_yellow").length} centre, ${result.coverage.filter((c) => c.kind === "edge_line").length} edge), median drawn share ${((result.coverage.map((c) => c.share).sort((a, b) => a - b)[result.coverage.length >> 1] ?? 0) * 100).toFixed(0)} %`);
+  console.log("  junction paint covered:", result.junctions.map((j) => `${j.id} ${(j.share * 100).toFixed(0)}%`).join(", "));
+  console.log("  lot stall paint covered:", result.lotsPaint.map((l) => `${l.id} ${(l.share * 100).toFixed(0)}%`).join(", "));
   console.log("  per-lot stalls (photo / model):", result.counts.map((c) => `${c.lot} ${c.photo}/${c.modelled}`).join(", "));
   const json = option("json", null);
   if (json) await Bun.write(json, `${JSON.stringify(result, null, 1)}\n`);
