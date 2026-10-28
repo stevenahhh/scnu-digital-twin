@@ -48,7 +48,7 @@ export function parkingInstances({ blocked = () => false } = {}) {
       }
       const inst = {
         t: g.template, ev: `${row.id}: ${row.evidence}`,
-        p: { lot: lot.id, origin: toScene(g.origin), u: g.u, v: g.v, bays: g.widths.length, depth: g.depth, widths: g.widths, accessible: row.accessible, line: g.line, sharedBack: row.backLine === false },
+        p: { lot: lot.id, origin: toScene(g.origin), u: g.u, v: g.v, bays: g.widths.length, depth: g.depth, widths: g.widths, pitch: g.pitch, accessible: row.accessible, line: g.line, sharedBack: row.backLine === false },
       };
       for (const r of g.rects) if (!r.shared) pieces.push({ rings: [r.ring.map(toScene)], colour: "white", kind: "parking_line", estimated: false, inst });
       const sym = TEMPLATES.stall_accessible.symbol;

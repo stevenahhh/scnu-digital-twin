@@ -41,10 +41,22 @@ export function rowGeometry(row) {
   const tpl = expanded ? TEMPLATES.stall_expanded : TEMPLATES.stall_normal;
   const acc = TEMPLATES.stall_accessible;
   const n = row.photoBays;
-  const widths = Array.from({ length: n }, (_, k) => (row.accessible.includes(k) ? acc.widthM : tpl.widthM));
+  // the bay width is the photo pitch, clamped to the statute minimum of the template (주차장법 시행규칙 제3조: 2.5 m
+  // 일반형, 2.6 m 확장형), so the drawn dividers land on the painted ones; accessible bays keep 3.3 m
+  const pitch = Math.max(tpl.widthM, Math.round((row.photoPitchM ?? tpl.widthM) * 100) / 100);
+  const widths = Array.from({ length: n }, (_, k) => (row.accessible.includes(k) ? acc.widthM : pitch));
   const photoLength = norm(sub(end, start));
   const length = widths.reduce((a, w) => a + w, 0);
-  const s0 = (photoLength - length) / 2;
+  const photoAlong = (row.photoDividers ?? []).map((q) => { const d = sub(add(toM(q), shift), start); return d[0] * u[0] + d[1] * u[1]; });
+  // the row's first edge: centred on the photo row, then moved by the median offset of the photo dividers from the
+  // drawn edges nearest them (within half a bay), so the grid sits on the painted dividers
+  let s0 = (photoLength - length) / 2;
+  if (photoAlong.length) {
+    const grid = [s0];
+    for (const w of widths) grid.push(grid.at(-1) + w);
+    const offs = photoAlong.map((p) => grid.reduce((best, g) => (Math.abs(p - g) < Math.abs(best) ? p - g : best), Infinity)).filter((d) => Math.abs(d) <= pitch / 2).sort((a, b) => a - b);
+    if (offs.length) s0 += offs[offs.length >> 1];
+  }
   const lw = tpl.lineM;
   const depth = tpl.depthM;
   const P = (s, t) => add(start, add(scale(u, s), scale(v, t)));
@@ -61,11 +73,11 @@ export function rowGeometry(row) {
   const symbols = row.accessible.map((k) => ({ k, centre: P((edges[k] + edges[k + 1]) / 2, depth / 2) }));
   const m = LOT_SURFACE_MARGIN_M;
   // photo residual along the row
-  const photo = (row.photoDividers ?? []).map((q) => { const d = sub(add(toM(q), shift), start); return d[0] * u[0] + d[1] * u[1]; });
+  const photo = photoAlong;
   // (each divider read on the photo against the drawn divider nearest it; dividers hidden by cars have no photo partner)
   const residual = photo.length ? Math.max(...photo.map((p) => Math.min(...edges.map((s) => Math.abs(p - s))))) : null;
   return {
-    template: expanded ? "stall_expanded" : "stall_normal", u, v, origin: P(edges[0], 0), widths, depth, line: lw, rects, symbols,
+    template: expanded ? "stall_expanded" : "stall_normal", pitch, u, v, origin: P(edges[0], 0), widths, depth, line: lw, rects, symbols,
     surface: rect(edges[0] - lw / 2 - m, edges[n] + lw / 2 + m, -lw / 2 - m, depth + lw / 2 + m), photoResidualM: residual,
   };
 }
