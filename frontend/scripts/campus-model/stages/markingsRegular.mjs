@@ -224,22 +224,6 @@ export const ISLAND_LINK_M = 1.2;
 export const ISLAND_MIN_M2 = 3;
 export const ISLAND_SIDE_M = 0.5;
 export const ISLAND_INSET_M = 1.0; // inner outline of the campus islands, read on the photo (추정)
-// a counter-clockwise ring moved inward by d (each side offset, neighbouring sides intersected); null when it collapses
-export function insetRing(ring_, d) {
-  const ring = ringArea(ring_) < 0 ? [...ring_].reverse() : ring_;
-  const n = ring.length;
-  const lines = ring.map((p, i) => { const q = ring[(i + 1) % n]; const l = Math.hypot(q[0] - p[0], q[1] - p[1]) || 1; const u = [(q[0] - p[0]) / l, (q[1] - p[1]) / l]; const m = [-u[1], u[0]]; return { p: [p[0] + m[0] * d, p[1] + m[1] * d], u }; });
-  const out = [];
-  for (let i = 0; i < n; i += 1) {
-    const a = lines[(i + n - 1) % n], b = lines[i];
-    const den = a.u[0] * b.u[1] - a.u[1] * b.u[0];
-    if (Math.abs(den) < 1e-6) return null;
-    const t = ((b.p[0] - a.p[0]) * b.u[1] - (b.p[1] - a.p[1]) * b.u[0]) / den;
-    out.push([a.p[0] + a.u[0] * t, a.p[1] + a.u[1] * t]);
-  }
-  return ringArea(out) > 0 ? out : null;
-}
-const ringArea = (r) => r.reduce((s, p, i) => { const q = r[(i + 1) % r.length]; return s + p[0] * q[1] - q[0] * p[1]; }, 0) / 2;
 export function regularOutline(ring, directions) {
   for (const tol of [0.1, 0.15, 0.2, 0.3]) {
     const out = snapOutline(ring, directions, tol);
