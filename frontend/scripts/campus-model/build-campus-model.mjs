@@ -179,6 +179,8 @@ function writeHeightSidecar(heightAt, terrainAt, slabAt, labelAt) {
 // Order matters: the first match wins. A root no rule takes throws.
 const startsWith = (...prefixes) => (name) => prefixes.some((p) => name.startsWith(p));
 const collections = glb.groupRoots([
+  // the generator's invisible pick prisms of named campus buildings: their own collection, so one click hides them
+  { path: "Pick_Proxies", match: startsWith("BLD_SCNU_") },
   { path: "Buildings", match: (name) => name.startsWith("BLD_") || name === "CampusBuildings" },
   { path: "Context/Ground", match: startsWith("Context_Far_Ground_", "Ground_Context_", "OuterTerrain") },
   { path: "Context/Buildings", match: startsWith("Context_Buildings_", "Context_Far_", "Context_Mast_") },

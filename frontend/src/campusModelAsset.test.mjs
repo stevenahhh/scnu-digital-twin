@@ -142,3 +142,19 @@ test("campus-v2.glb stands every VR-only building of vr-buildings.json, with est
   const furniture = roots.find((node) => node.name === "Furniture");
   assert.deepEqual(furniture?.extras?.counts?.gate_sign, { surveyed: 0, estimated: 1 }, "the A19 gate sign is not built exactly once");
 });
+
+test("campus-v2.glb trees are low poly only: no leaf cards, no alpha-tested tree material, every archetype at most 500 triangles", async () => {
+  const campus = await readGlbJson("campus-v2.glb");
+  const treeNodes = campus.nodes.filter((node) => node.name?.startsWith("Trees_"));
+  assert.ok(treeNodes.length > 0, "no Trees_* nodes");
+  for (const node of treeNodes) {
+    assert.ok(!/_foliage$/.test(node.name), `${node.name} is a leaf-card node`);
+    if (node.mesh === undefined) continue;
+    for (const primitive of campus.meshes[node.mesh].primitives) {
+      const material = campus.materials[primitive.material];
+      assert.notEqual(material?.alphaMode, "MASK", `${node.name} uses an alpha-tested material ${material?.name}`);
+      const triangles = (primitive.indices !== undefined ? campus.accessors[primitive.indices].count : campus.accessors[primitive.attributes.POSITION].count) / 3;
+      assert.ok(triangles <= 500, `${node.name} archetype has ${triangles} triangles`);
+    }
+  }
+});
