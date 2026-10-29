@@ -143,53 +143,65 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
     },
   };
 
-  // ---- terrain (chunked so raycasts stay cheap)
-  const topographyChildren = [];
-  for (let cz = EXTENT.minZ; cz < EXTENT.maxZ; cz += CHUNK) {
-    for (let cx = EXTENT.minX; cx < EXTENT.maxX; cx += CHUNK) {
-      const data = new MeshData();
-      const xs = [];
-      const zs = [];
-      for (let x = cx; x < Math.min(cx + CHUNK, EXTENT.maxX) + 1e-6; x += STEP) xs.push(Math.min(x, EXTENT.maxX));
-      for (let z = cz; z < Math.min(cz + CHUNK, EXTENT.maxZ) + 1e-6; z += STEP) zs.push(Math.min(z, EXTENT.maxZ));
-      if (xs.at(-1) < Math.min(cx + CHUNK, EXTENT.maxX)) xs.push(Math.min(cx + CHUNK, EXTENT.maxX));
-      if (zs.at(-1) < Math.min(cz + CHUNK, EXTENT.maxZ)) zs.push(Math.min(cz + CHUNK, EXTENT.maxZ));
-      for (const z of zs) {
-        for (const x of xs) {
-          const nx = heightAt(x - 1, z) - heightAt(x + 1, z);
-          const nz = heightAt(x, z - 1) - heightAt(x, z + 1);
-          const length = Math.hypot(nx, 2, nz);
-          data.vertex([x, heightAt(x, z), z], [nx / length, 2 / length, nz / length], planarTileUv(x, z, natural.tileSize));
+  // ---- terrain (chunked so raycasts stay cheap): built last by buildTopography, from the natural ground the other
+  // ground classes left (lib/partition.mjs), so the Topography never lies under a road, a walkway or a marking.
+  const surface = topographySurface(heightAt);
+  const buildTopography = (claim) => {
+    const topographyChildren = [];
+    let triangles = 0;
+    for (let cz = EXTENT.minZ; cz < EXTENT.maxZ; cz += CHUNK) {
+      for (let cx = EXTENT.minX; cx < EXTENT.maxX; cx += CHUNK) {
+        const data = new MeshData();
+        const vertexOf = new Map();
+        const vertex = ([x, z]) => {
+          const key = `${Math.round(x * 1e5)},${Math.round(z * 1e5)}`;
+          let i = vertexOf.get(key);
+          if (i === undefined) {
+            i = data.vertex([x, surface.height(x, z), z], surface.normal(x, z), planarTileUv(x, z, natural.tileSize));
+            vertexOf.set(key, i);
+          }
+          return i;
+        };
+        for (let z = cz; z < Math.min(cz + CHUNK, EXTENT.maxZ) - 1e-6; z += STEP) {
+          for (let x = cx; x < Math.min(cx + CHUNK, EXTENT.maxX) - 1e-6; x += STEP) {
+            const [x1, z1] = [Math.min(x + STEP, EXTENT.maxX), Math.min(z + STEP, EXTENT.maxZ)];
+            // the two triangles of the cell, as topographySurface splits it (a c b and b c d)
+            for (const tri of [[[x, z], [x, z1], [x1, z]], [[x1, z], [x, z1], [x1, z1]]]) {
+              for (const part of claim(tri)) {
+                for (let k = 1; k + 1 < part.length; k += 1) {
+                  const tri = [vertex(part[0]), vertex(part[k]), vertex(part[k + 1])];
+                  if (tri[0] === tri[1] || tri[1] === tri[2] || tri[0] === tri[2]) continue;
+                  data.indices.push(...tri);
+                  triangles += 1;
+                }
+              }
+            }
+          }
         }
-      }
-      for (let j = 0; j + 1 < zs.length; j += 1) {
-        for (let i = 0; i + 1 < xs.length; i += 1) {
-          const a = j * xs.length + i;
-          const b = a + 1;
-          const c = a + xs.length;
-          const d = c + 1;
-          data.indices.push(a, c, b, b, c, d);
+        if (!data.indices.length) continue;
+        const name = `Topography_${topographyChildren.length}`;
+        const primitive = data.toPrimitive(groundMaterial);
+        const mesh = glb.addMesh(name, [primitive]);
+        // GlbBuilder.addMesh writes TEXCOORD_0 only; the planar AO coordinate is added here.
+        const uv1 = new Float32Array((primitive.positions.length / 3) * 2);
+        for (let v = 0; v < uv1.length / 2; v += 1) {
+          uv1[v * 2] = (primitive.positions[v * 3] - EXTENT.minX) / WIDTH;
+          uv1[v * 2 + 1] = (primitive.positions[v * 3 + 2] - EXTENT.minZ) / DEPTH;
         }
+        glb.json.meshes[mesh].primitives[0].attributes.TEXCOORD_1 = glb.addAccessor(uv1, "VEC2");
+        topographyChildren.push(glb.addNode({ name, mesh }));
       }
-      const name = `Topography_${topographyChildren.length}`;
-      const primitive = data.toPrimitive(groundMaterial);
-      const mesh = glb.addMesh(name, [primitive]);
-      // GlbBuilder.addMesh writes TEXCOORD_0 only; the planar AO coordinate is added here.
-      const uv1 = new Float32Array((primitive.positions.length / 3) * 2);
-      for (let v = 0; v < uv1.length / 2; v += 1) {
-        uv1[v * 2] = (primitive.positions[v * 3] - EXTENT.minX) / WIDTH;
-        uv1[v * 2 + 1] = (primitive.positions[v * 3 + 2] - EXTENT.minZ) / DEPTH;
-      }
-      glb.json.meshes[mesh].primitives[0].attributes.TEXCOORD_1 = glb.addAccessor(uv1, "VEC2");
-      topographyChildren.push(glb.addNode({ name, mesh }));
     }
-  }
-  glb.addNode({ name: "Topography", children: topographyChildren }, { root: true });
+    glb.addNode({ name: "Topography", children: topographyChildren, extras: { naturalGround: true, note: "natural ground only: roads, walkways, lots and markings are cut out of it (Ground_*, Road_Markings)" } }, { root: true });
+    return { chunks: topographyChildren.length, triangles };
+  };
   return {
     surfaces,
     layers: surfaces.layers,
     aoTexture,
-    surface: topographySurface(heightAt),
+    surface,
+    buildTopography,
     groundInfo: { width, height, px: PX, labels, classes: SURFACE_CLASS },
   };
 }
+

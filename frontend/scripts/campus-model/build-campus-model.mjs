@@ -44,6 +44,7 @@ import { EXTENT, SCENE_UNITS_PER_METRE } from "./lib/frame.mjs";
 import { SURFACE_CLASS } from "./lib/surfaceClass.mjs";
 import { HUMP_LENGTH_M, buildHumps, buildStalls, humpProfile, loadSpeedBumps } from "./network/stalls.mjs";
 import { GlbBuilder } from "./lib/glb.mjs";
+import { GroundPartition } from "./lib/partition.mjs";
 import { buildBuildings } from "./stages/buildings.mjs";
 import { buildGround } from "./stages/ground.mjs";
 import { buildFurniture, loadFurniture } from "./stages/furniture.mjs";
@@ -53,10 +54,10 @@ import { buildContextGround } from "./stages/contextGround.mjs";
 import { buildMasts } from "./stages/masts.mjs";
 import { buildMarkings, describeMarkings, loadMarkings } from "./stages/markings.mjs";
 import { buildOuterTerrain } from "./stages/outerTerrain.mjs";
-import { KERB_EXPOSED_M, buildKerbs, groundDecalOffset, slabRefine } from "./stages/kerbs.mjs";
+import { KERB_EXPOSED_M, SLAB_DECAL_DROP_M, buildKerbs } from "./stages/kerbs.mjs";
 import { loadInputs } from "./stages/sources.mjs";
-import { planTactile, tactileOffset } from "./stages/tactile.mjs";
-import { buildHumpMeshes, buildSurfaceMeshes, describeSurfaces } from "./stages/surfaces.mjs";
+import { planTactile } from "./stages/tactile.mjs";
+import { buildHumpMeshes, buildSurfaceMeshes, describeSurfaces, humpLayers } from "./stages/surfaces.mjs";
 import { buildTrees, placeTrees } from "./stages/trees.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -75,16 +76,12 @@ const furniture = loadFurniture();
 const { selectableBuildings, campusBuildings, offCampusLots, contextParts } = await buildBuildings({ glb, inputs, detailedStructures: furniture.detailedStructures });
 const markings = await loadMarkings({ inputs, buildings: [...selectableBuildings, ...campusBuildings] });
 console.log(describeMarkings(markings));
-const { surface, surfaces, groundInfo, layers, aoTexture } = await buildGround({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots });
+const { surface, surfaces, groundInfo, layers, aoTexture, buildTopography } = await buildGround({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots });
 // Trees after the ground: a trunk stands on open ground, in a planter or a street-tree pit (the surface-class raster).
 const treePlacement = placeTrees({ inputs, selectableBuildings, campusBuildings, offCampusLots, blockedRings: furniture.treeBlock, furnitureObjects: furniture.objects, groundInfo });
 const kerbs = await buildKerbs({ glb, surfaces, groundInfo, surface });
 const tactile = planTactile(kerbs.plan);
 console.log(`tactile: ${tactile.bands} bands at ${tactile.dropped} dropped kerbs (${tactile.layers.length - tactile.bands} guidance strips; 0.3 m modules, yellow, estimated placement)`);
-console.log(describeSurfaces(await buildSurfaceMeshes({
-  glb, layers: [...layers, ...kerbs.gutters, ...tactile.layers], surface, ao: aoTexture,
-  heightOffset: tactileOffset(kerbs.plan, groundDecalOffset(kerbs.plan)), refine: slabRefine(kerbs.plan),
-})));
 // Stall gaps (estimated dividers between detected ones) and the speed humps (network/stalls.mjs).
 const labelAt = ([x, z]) => {
   const i = Math.floor((x - EXTENT.minX) * groundInfo.px);
@@ -99,12 +96,41 @@ markings.pieces.push(...stalls.pieces);
 const speedBumps = await loadSpeedBumps();
 const humps = buildHumps({ features: speedBumps, onRoad: (p) => [SURFACE_CLASS.ASPHALT, SURFACE_CLASS.LOT].includes(labelAt(p)) });
 const humpNodes = await buildHumpMeshes({ glb, humps: humps.humps, surface, ao: aoTexture, profile: humpProfile, lengthM: HUMP_LENGTH_M });
+
+// ---------------------------------------------------------------- ground partition (lib/partition.mjs)
+// The ground has no stacked layers: road markings claim their area first, then the ground classes by precedence (hump
+// tops, aprons, tiles, walkways, roads, lots, sports), then the natural Topography takes what is left. Every piece lies
+// on the terrain (plus the walkway slab or a hump's arc), so no two ground triangles share area.
+const partition = new GroundPartition(surface.grid);
+const claim = (piece) => partition.claim(piece);
+// metres of the walkway slab under a ground piece, the walkway decal just under the kerb top (stages/kerbs.mjs)
+const slabDecal = (x, z) => {
+  const slab = kerbs.plan.slabHeight(x, z);
+  return slab - SLAB_DECAL_DROP_M * Math.min(1, slab / 0.03);
+};
+
 console.log(
   `stalls: ${detectedStallPaint.length} detected (markings), ${stalls.pieces.length} estimated gaps in ${stalls.rows.filter((r) => r.filled).length} of ${stalls.rows.length} rows ` +
   `(${stalls.rows.map((r) => `${r.bay} ${r.pitchM} m`).join(", ")}); humps: ${humpNodes} (${speedBumps.length} speed_bump features: ` +
   `${humps.candidates} hump outlines or band groups, ${humps.candidates - humpNodes} off road)`,
 );
-const markingMesh = buildMarkings({ glb, markings, surface, extraHeight: humps.heightAt });
+let stageStart = performance.now();
+const stageTime = (label) => { console.log(`ground partition: ${label} in ${((performance.now() - stageStart) / 1000).toFixed(1)} s, ${partition.cells.size} cells`); stageStart = performance.now(); };
+const markingMesh = buildMarkings({ glb, markings, surface, extraHeight: humps.heightAt, claim, baseOffset: slabDecal });
+stageTime("road markings");
+const groundLayers = [...layers, ...kerbs.gutters, ...tactile.layers, ...humpLayers(humps.humps, HUMP_LENGTH_M)]
+  .map((layer, order) => ({ layer, order }))
+  .sort((a, b) => b.layer.precedence - a.layer.precedence || b.order - a.order)
+  .map(({ layer }) => layer);
+console.log(describeSurfaces(await buildSurfaceMeshes({
+  glb, layers: groundLayers, surface, ao: aoTexture, claim,
+  heightOffset: (layer, x, z) => (layer.hump ? humps.heightAt(x, z) : layer.walkway || layer.tactile ? slabDecal(x, z) : 0),
+  refine: { maxEdgeM: 0.25, needsFine: (layer, p, reach) => layer.hump || ((layer.walkway || layer.tactile) && kerbs.plan.nearSlabChange(p, reach / SCENE_UNITS_PER_METRE)) },
+})));
+stageTime("ground surfaces");
+const topography = buildTopography(claim);
+stageTime("natural Topography");
+console.log(`ground partition: ${partition.cells.size} terrain triangles hold ground; Topography ${topography.triangles} natural triangles in ${topography.chunks} chunks`);
 const outerTerrain = await buildOuterTerrain({ glb, inputs });
 const treeInstances = buildTrees({ glb, placement: treePlacement });
 // Furniture and lamps stand on the raised walkway slab where there is one (stages/kerbs.mjs).

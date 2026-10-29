@@ -67,7 +67,8 @@ export const FLY_TO_START_EVENT = Object.freeze({ type: "start", flyTo: true });
 export const isFlyToEvent = (event) => Boolean(event?.flyTo);
 
 const toArray = (vector) => [vector.x, vector.y, vector.z];
-const TERRAIN_NAME = /^Topography/;
+// 캠퍼스 지면: 자연 지면(Topography)과 그 밖의 바닥면(Ground_*), 노면 표시. 생성기가 바닥을 겹치지 않게 나누므로 셋을 함께 본다.
+const TERRAIN_NAME = /^(Topography|Ground_|Road_Markings)/;
 
 // 장면에서 BLD_* 경계 상자와 지형 높이를 읽는 조회 함수. 장면이 없으면 빈 조회(고정 좌표 사용)를 돌려준다.
 export function createSceneLookups(scene) {

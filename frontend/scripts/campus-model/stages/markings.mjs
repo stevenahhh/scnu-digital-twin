@@ -55,7 +55,7 @@
 //     (data/photo/markings-text.json), else the most likely statute text, logged 추정;
 //   - other painted areas (hatch stripes, hump bands, blue bays, stall frames): rectangles, or outlines with their edges
 //     snapped to their dominant directions.
-// All of it lifted LIFT_M over the terrain triangles it lies on (CityModel adds a polygon offset).
+// All of it lies flush on the ground it is painted on, cut out of the surfaces under it (lib/partition.mjs).
 //
 // Crossings: OSM crossing ways (data/osm-ground.json) and the digitised crosswalk polygons
 // (docs/assets/data/crosswalks_wgs84.geojson) never draw stripes of their own. One that matches a drawn zebra is
@@ -122,8 +122,6 @@ const DOUBLE_OFFSET_M = 0.15;
 const FIXED_COLOUR_KINDS = new Set(["kerb_no_parking", "centre_line_yellow", "zebra_bar", "disabled_parking", "bike_lane_blue", "green_band"]);
 const STROKED_KINDS = new Set(["lane_line_dashed", "lane_line_solid", "edge_line", "centre_line_yellow", "parking_line", "kerb_no_parking", "give_way_line"]);
 // Above the Ground_* layers (at most 0.036 m, stages/surfaces.mjs); pack.mjs keeps positions as float.
-const LIFT_M = 0.04;
-const SYMBOL_LIFT_M = 0.012;
 const ON_FILL_KINDS = new Set(["disabled_parking", "bike_lane_blue"]);
 // A point is on a building or a sidewalk for the regular geometry only when it and four points BLOCK_PROBE_M around it
 // are: the A003 outlines and the building footprints are not exact to the kerb, so an edge line beside one stays.
@@ -873,29 +871,34 @@ function splitFine(tri, maxEdge, near) {
   return [[a, ab, ca], [ab, b, bc], [ca, bc, c], [ab, bc, ca]].flatMap((t) => splitFine(t, maxEdge, near));
 }
 
-export function buildMarkings({ glb, markings, surface, extraHeight = () => 0 }) {
+// claim(piece) -> the convex parts of a conformed piece that no higher ground class holds (lib/partition.mjs);
+// baseOffset(x, z) -> metres of the ground under the paint above the terrain (the raised walkway slab). The paint lies
+// flush on that ground: it is cut out of the surfaces under it, not stacked on them.
+const fan = (poly) => poly.slice(1, -1).map((p, k) => [poly[0], p, poly[k + 2]]);
+export function buildMarkings({ glb, markings, surface, extraHeight = () => 0, claim = (piece) => [piece], baseOffset = () => 0 }) {
   const positions = [];
   const normals = [];
   const uvs = [];
   const indices = [];
   const index = new Map();
-  // a white symbol painted on a blue fill (the access symbol, the P, a bicycle) lies SYMBOL_LIFT_M above the fill: at
-  // one height the two coplanar colours z-fight and the symbol breaks up
-  const liftOf = (piece) => metres(LIFT_M + (piece.colour === "white" && ON_FILL_KINDS.has(piece.kind) ? SYMBOL_LIFT_M : 0));
-  const vertex = ([x, z], colour, lift) => {
-    const key = `${Math.round(x * 1e5)},${Math.round(z * 1e5)},${colour},${lift}`;
+  const vertex = ([x, z], colour) => {
+    const key = `${Math.round(x * 1e5)},${Math.round(z * 1e5)},${colour}`;
     let i = index.get(key);
     if (i === undefined) {
       i = positions.length / 3;
       index.set(key, i);
-      positions.push(x, surface.height(x, z) + lift + metres(extraHeight(x, z)), z);
+      positions.push(x, surface.height(x, z) + metres(baseOffset(x, z) + extraHeight(x, z)), z);
       normals.push(...surface.normal(x, z));
       uvs.push(PALETTE_U[colour], 0.5);
     }
     return i;
   };
   let source = 0;
-  for (const piece of markings.pieces) {
+  // A white symbol painted on a blue fill (the access symbol, the P, a bicycle) claims its area before the fill, so the
+  // fill is cut around it instead of the two colours sharing one plane.
+  const onFill = (piece) => piece.colour === "white" && ON_FILL_KINDS.has(piece.kind);
+  const drawOrder = [...markings.pieces.filter(onFill), ...markings.pieces.filter((piece) => !onFill(piece))];
+  for (const piece of drawOrder) {
     // paint beyond EXTENT lies on the context ground, drawn there
     if (!inMarkingExtent(piece.rings[0].reduce((a, q) => [a[0] + q[0] / piece.rings[0].length, a[1] + q[1] / piece.rings[0].length], [0, 0]))) continue;
     const [outer, ...holes] = piece.rings;
@@ -906,12 +909,12 @@ export function buildMarkings({ glb, markings, surface, extraHeight = () => 0 })
       source += 1;
       const flat = [all[a], all[b], all[c]];
       const near = extraHeight.near ?? (() => false);
-      for (const tri of splitFine(flat, metres(RAISED_EDGE_M), near).flatMap((t) => conform(t, surface))) {
+      for (const tri of splitFine(flat, metres(RAISED_EDGE_M), near).flatMap((t) => conform(t, surface)).flatMap(claim).flatMap(fan)) {
         // Upward face (+y): the (x, z) cross product of the edges must be negative.
         const cross = (tri[1][0] - tri[0][0]) * (tri[2][1] - tri[0][1]) - (tri[1][1] - tri[0][1]) * (tri[2][0] - tri[0][0]);
         if (Math.abs(cross) < 1e-10) continue;
         const ordered = cross < 0 ? tri : [tri[0], tri[2], tri[1]];
-        indices.push(...ordered.map((p) => vertex(p, piece.colour, liftOf(piece))));
+        indices.push(...ordered.map((p) => vertex(p, piece.colour)));
       }
     }
   }

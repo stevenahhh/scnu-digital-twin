@@ -104,7 +104,9 @@ function refineTriangle(tri, maxEdge, needsFine) {
 // (or local texture UVs) and the planar EXTENT TEXCOORD_1. tileSize(mesh) -> metres; heightOffset(layer, x, z) ->
 // metres above the terrain (default: the precedence lift); refine: { maxEdgeM, needsFine(layer, point, reachModel) }
 // for layers whose height varies inside a terrain triangle (the raised walkway slab).
-export function surfaceGeometry({ layers, surface, tileSize, heightOffset = (layer) => SURFACE_LIFT_M(layer.precedence), refine = null }) {
+// claim(piece): the convex parts of a conformed piece no higher class holds (lib/partition.mjs); layers are claimed in
+// the order given, so the caller passes them highest precedence first.
+export function surfaceGeometry({ layers, surface, tileSize, heightOffset = (layer) => SURFACE_LIFT_M(layer.precedence), refine = null, claim = (piece) => [piece] }) {
   const primitives = new Map();
   layers.forEach((layer, index) => {
     const spec = GROUND_MESHES[layer.mesh] ?? {};
@@ -144,9 +146,10 @@ export function surfaceGeometry({ layers, surface, tileSize, heightOffset = (lay
     };
     if (painted && !primitive.frame.uv) primitive.frame.uv = paintedUv(primitive.frame, layer);
     const fine = refine ? (tri) => refineTriangle(tri, refine.maxEdgeM * UNIT, (p, reach) => refine.needsFine(layer, p, reach)) : (tri) => [tri];
-    for (const tri of triangulate(layer.rings).flatMap(fine)) {
+    const fan = (poly) => poly.slice(1, -1).map((p, k) => [poly[0], p, poly[k + 2]]);
+    for (const tri of triangulate(layer.rings)) {
       primitive.sourceTriangles += 1;
-      for (const piece of conform(tri, surface)) {
+      for (const piece of conform(tri, surface).flatMap(claim).flatMap(fan).flatMap(fine)) {
         const cross = (piece[1][0] - piece[0][0]) * (piece[2][1] - piece[0][1]) - (piece[1][1] - piece[0][1]) * (piece[2][0] - piece[0][0]);
         if (Math.abs(cross) < 1e-10) continue;
         const ordered = cross < 0 ? piece : [piece[0], piece[2], piece[1]];
@@ -551,9 +554,9 @@ export async function naturalGroundMaterial(glb, landcoverAt, ao) {
 
 // ---------------------------------------------------------------- stage
 // layers: network/surfaces.mjs layers; surface: topographySurface(); ao: the ground AO texture index or null.
-export async function buildSurfaceMeshes({ glb, layers, surface, ao = null, heightOffset, refine = null }) {
+export async function buildSurfaceMeshes({ glb, layers, surface, ao = null, heightOffset, refine = null, claim }) {
   const tileSize = (mesh) => (GROUND_MESHES[mesh].pattern ? pavingPattern(GROUND_MESHES[mesh].pattern).repeatM : groundTile(GROUND_MESHES[mesh].tile).entry.physicalSizeM);
-  const primitives = surfaceGeometry({ layers, surface, tileSize, heightOffset, refine });
+  const primitives = surfaceGeometry({ layers, surface, tileSize, heightOffset, refine, claim });
   const paintedNormal = glb.addTexture(paintedNormalMap(), "image/png");
   const materials = new Map();
   const byMesh = new Map();
@@ -624,14 +627,28 @@ export const describeSurfaces = (stats) => `surfaces: ${stats.map((s) => `${s.me
   `(${stats.map((s) => `${s.mesh} ${s.layers} polygons${s.primitives > 1 ? ` / ${s.primitives} primitives` : ""}`).join(", ")}); CC0 tiles, no photo pixels`;
 
 // ---------------------------------------------------------------- speed humps
-// One Ground_Hump node per hump of network/stalls.mjs: the arc h(s) over HUMP_LENGTH_M across the hump width, on the
-// asphalt (just above its lift), with closed ends; asphalt tile on world-planar UVs. Dimensions are estimates.
+// The hump tops are partition layers (humpLayers: class Ground_Hump, the arc h(s) over HUMP_LENGTH_M as their height
+// offset), cut out of the asphalt under them. One Ground_Hump_<id> node per hump holds its two end walls (the arc's
+// side faces at t = +-width / 2); asphalt tile on world-planar UVs. Dimensions are estimates.
+export const HUMP_PRECEDENCE = 6.5;
+export function humpLayers(humps, lengthM) {
+  return humps.map((hump) => {
+    const corner = (sM, tM) => sceneToTm(hump.centre[0] + hump.u[0] * sM * UNIT + hump.v[0] * tM * UNIT, hump.centre[1] + hump.u[1] * sM * UNIT + hump.v[1] * tM * UNIT);
+    const [hl, hw] = [lengthM / 2, hump.widthM / 2];
+    return {
+      cls: "ASPHALT", mesh: "Ground_Hump", hump: true, precedence: HUMP_PRECEDENCE, estimated: true,
+      source: "project-estimated", source_ref: `hump ${hump.id}`,
+      rings: [[corner(-hl, -hw), corner(hl, -hw), corner(hl, hw), corner(-hl, hw)]],
+    };
+  });
+}
 export async function buildHumpMeshes({ glb, humps, surface, ao = null, profile, lengthM }) {
   if (!humps.length) return 0;
   const cls = GROUND_MESHES.Ground_Hump.tile;
   const size = groundTile(cls).entry.physicalSizeM;
   const material = await tileMaterial(glb, { name: "Ground_Hump", cls, rank: 3.6, ao, extras: { profile: `circular arc ${lengthM} m x ${profile(0)} m (estimated)` } });
-  const base = SURFACE_LIFT_M(3) + 0.001;
+  // the top is a ground class of the partition (humpLayers); the walls stand on the terrain
+  const base = 0;
   const STEP_S = 0.2;
   const STEP_T = 0.5;
   for (const hump of humps) {
@@ -650,26 +667,6 @@ export async function buildHumpMeshes({ glb, humps, surface, ao = null, profile,
       uv1.push(...extentUv(x, z));
       return positions.length / 3 - 1;
     };
-    const grid = [];
-    for (let i = 0; i <= ns; i += 1) {
-      const sM = -lengthM / 2 + (i * lengthM) / ns;
-      const slope = (profile(sM + 0.01) - profile(sM - 0.01)) / 0.02;
-      const n = [-slope * hump.u[0], 1, -slope * hump.u[1]];
-      const l = Math.hypot(...n);
-      const row = [];
-      for (let j = 0; j <= nt; j += 1) row.push(push(point(sM, -hump.widthM / 2 + (j * hump.widthM) / nt), base + profile(sM), n.map((c) => c / l)));
-      grid.push(row);
-    }
-    for (let i = 0; i < ns; i += 1) {
-      for (let j = 0; j < nt; j += 1) {
-        const [a, b, c, d] = [grid[i][j], grid[i + 1][j], grid[i][j + 1], grid[i + 1][j + 1]];
-        // upward faces: (x, z) cross product negative
-        const ax = positions[a * 3], az = positions[a * 3 + 2];
-        const cross = (positions[b * 3] - ax) * (positions[c * 3 + 2] - az) - (positions[b * 3 + 2] - az) * (positions[c * 3] - ax);
-        if (cross < 0) indices.push(a, b, c, c, b, d);
-        else indices.push(a, c, b, c, d, b);
-      }
-    }
     // closed ends at t = +-width / 2
     for (const [j, side] of [[0, -1], [nt, 1]]) {
       const outward = [hump.v[0] * side, 0, hump.v[1] * side];

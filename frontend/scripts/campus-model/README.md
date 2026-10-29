@@ -110,9 +110,17 @@ gone). The ground is vector polygons in EPSG:5186, each with a precedence, a sou
 | 6 | apron | `Ground_Apron` | the 2.2 m band centred on every building outline |
 | 2 | estimated walkway | `Ground_Walkway` | 1.5 m paver strips where an estimated pedestrian path runs beside the road with no A003 sidewalk (`data/network/walkways.json`, written by `network:build`; extras note 추정 보행로). Estimated crossings in the same file are routing polygons only and are not drawn |
 
-There are no polygon booleans: `stages/surfaces.mjs` conforms every polygon to the Topography triangles
-(`lib/conform.mjs`) and lifts it 0.006 m per precedence step (at most 0.036 m, under the markings' 0.04 m), and
-CityModel adds a polygon offset by the material's `extras.polygonOffsetRank`, smaller than the markings' own. The
+The ground is one planar partition (`lib/partition.mjs`, user decision 2026-10-29: ground textures must not overlap):
+every piece is conformed to the Topography triangles (`lib/conform.mjs`), cut along the terrain grid and claimed in
+order, road markings first (white symbols before the blue fills they sit on), then the classes above by precedence
+(hump tops 6.5 first), then the natural `Topography` takes what is left. A claim keeps only the part no earlier claim
+covers (convex difference per terrain triangle), so no two ground triangles share area and nothing is lifted to sit on
+anything: every surface lies on the terrain, plus the walkway slab (`stages/kerbs.mjs`) or a hump's arc.
+`check-ground-overlap.mjs` samples the plan on a jittered 0.25-unit grid and fails when any point is covered twice or
+not at all (`bun scripts/campus-model/check-ground-overlap.mjs`, `--at x,z` lists the triangles at a point). The
+Topography is therefore natural ground only; the camera and traffic lookups raycast `Ground_*` and `Road_Markings`
+too (`src/camera/terrainClearance.mjs`, `src/camera/useFlyTo.mjs`, the `Ground` collection in
+`src/simulation/CampusTrafficSimulation.jsx`). The
 materials are CC0 tiles (`data/materials/ground-materials.json`) on world-planar UVs that repeat every physical tile
 size in EPSG:5186 metres, with the ground AO on TEXCOORD_1; painted surfaces get a per-surface texture at 0.05 m/texel
 (track lanes, court and pitch lines 0.10 m wide). The same polygons, plus the 0.3 m edge-stone band on every A003
