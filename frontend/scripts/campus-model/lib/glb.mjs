@@ -136,6 +136,32 @@ export class GlbBuilder {
     return index;
   }
 
+  // Moves every scene root node under a collection node (identity transform, extras.collection = true): the first
+  // group whose match(name) is true takes the node, nested groups by "Parent/Child" names. Blender's glTF importer shows
+  // each collection node as an empty with its children, so the outliner reads as layers. Throws on a root no group takes.
+  groupRoots(groups) {
+    const scene = this.json.scenes[0];
+    const byPath = new Map();
+    const collection = (pathName) => {
+      if (byPath.has(pathName)) return byPath.get(pathName);
+      const parts = pathName.split("/");
+      const index = this.json.nodes.push({ name: parts.at(-1), children: [], extras: { collection: true } }) - 1;
+      if (parts.length === 1) scene.nodes.push(index);
+      else this.json.nodes[collection(parts.slice(0, -1).join("/"))].children.push(index);
+      byPath.set(pathName, index);
+      return index;
+    };
+    const roots = scene.nodes;
+    scene.nodes = [];
+    for (const index of roots) {
+      const name = this.json.nodes[index].name ?? "";
+      const group = groups.find((g) => g.match(name));
+      if (!group) throw new Error(`groupRoots: no collection for root node ${name}`);
+      this.json.nodes[collection(group.path)].children.push(index);
+    }
+    return byPath;
+  }
+
   toBuffer() {
     const binary = new Uint8Array(Math.ceil(this.byteLength / 4) * 4);
     let offset = 0;

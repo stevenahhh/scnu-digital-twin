@@ -37,9 +37,21 @@ const file = await readFile(new URL("../../public/campus-v2.glb", import.meta.ur
 const json = JSON.parse(file.subarray(20, 20 + file.readUInt32LE(12)).toString("utf8"));
 const elementNames = new Map(commonElements.elements.map(({ element_id: id, name }) => [id, name]));
 
+// Top-level objects: the scene roots, with the generator's collection nodes (extras.collection, lib/glb.mjs groupRoots)
+// expanded into their children.
+function topLevelNodes(gltf) {
+  const out = [];
+  const visit = (index) => {
+    const node = gltf.nodes[index];
+    if (node.extras?.collection) (node.children ?? []).forEach(visit);
+    else out.push(node);
+  };
+  gltf.scenes[0].nodes.forEach(visit);
+  return out;
+}
+
 const anchors = new Map();
-for (const index of json.scenes[0].nodes) {
-  const node = json.nodes[index];
+for (const node of topLevelNodes(json)) {
   if (!node.name?.startsWith("BLD_")) continue;
   const name = sanitize(node.name);
   const meta = resolveBuildingMeta(name, { elementNames, blockedIds: BLOCKED_ELEMENT_IDS });

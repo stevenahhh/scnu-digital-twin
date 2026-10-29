@@ -171,7 +171,9 @@ const ELEMENT_NAME_MAP = new Map(
 );
 
 function getSelectableMeta(object) {
-  const node = object?.parent && object.parent.name !== "Scene" ? object.parent : object;
+  // 부모가 장면이거나 컬렉션 노드(생성기 lib/glb.mjs groupRoots, extras.collection)이면 그 객체 자신이 선택 단위다.
+  const parent = object?.parent;
+  const node = parent && parent.name !== "Scene" && !parent.userData?.collection ? parent : object;
   const rawName = node?.name;
 
   if (!rawName) return null;

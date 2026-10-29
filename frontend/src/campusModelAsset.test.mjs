@@ -13,6 +13,19 @@ const publicFile = (name) => new URL(`../public/${name}`, import.meta.url);
 // BLD_* roots). A node's bounding box is therefore its primitives' POSITION min/max, dequantized and
 // mapped through that translation/scale. Reading the JSON chunk avoids decoding the meshopt buffers
 // and embedded textures, which node cannot do.
+// Top-level objects: the scene roots, with the generator's collection nodes (extras.collection, lib/glb.mjs groupRoots)
+// expanded into their children.
+function topLevelNodes(gltf) {
+  const out = [];
+  const visit = (index) => {
+    const node = gltf.nodes[index];
+    if (node.extras?.collection) (node.children ?? []).forEach(visit);
+    else out.push(node);
+  };
+  gltf.scenes[0].nodes.forEach(visit);
+  return out;
+}
+
 async function readGlbJson(name) {
   const file = await readFile(publicFile(name));
   return JSON.parse(file.subarray(20, 20 + file.readUInt32LE(12)).toString("utf8"));
@@ -52,7 +65,7 @@ test("the dashboard loads the generated model unless ?model=uni asks for the ori
 
 test("campus-v2.glb keeps every uni.glb building id and the Topography the traffic layer raycasts", async () => {
   const [uni, campus] = await Promise.all([readGlbJson("uni.glb"), readGlbJson("campus-v2.glb")]);
-  const rootNames = new Set(campus.scenes[0].nodes.map((index) => campus.nodes[index].name));
+  const rootNames = new Set(topLevelNodes(campus).map((node) => node.name));
   const uniBuildings = uni.scenes[0].nodes.map((index) => uni.nodes[index].name).filter((name) => name.startsWith("BLD_"));
   assert.ok(uniBuildings.length > 20);
   for (const name of uniBuildings) assert.ok(rootNames.has(name), `${name} is missing from campus-v2.glb`);
@@ -70,7 +83,7 @@ test("campus-v2.glb gives every named SCNU campus building a labelled pick proxy
     ...uni.nodes.map((node) => node.name).filter((name) => name?.startsWith("BLD_")),
     ...elements.elements.map((element) => element.element_id),
   ]);
-  const rootNames = campus.scenes[0].nodes.map((index) => campus.nodes[index].name);
+  const rootNames = topLevelNodes(campus).map((node) => node.name);
   const proxies = campus.nodes.filter((node) => node.name.startsWith("BLD_SCNU_"));
   assert.ok(proxies.length > 20, `only ${proxies.length} BLD_SCNU_* nodes`);
   assert.equal(new Set(proxies.map((node) => node.name)).size, proxies.length, "duplicate BLD_SCNU_* ids");
@@ -110,7 +123,7 @@ test("campus-v2.glb stands every VR-only building of vr-buildings.json, with est
     readGlbJson("campus-v2.glb"),
     readFile(new URL("../scripts/campus-model/data/vr-buildings.json", import.meta.url), "utf8").then(JSON.parse),
   ]);
-  const roots = campus.scenes[0].nodes.map((index) => campus.nodes[index]);
+  const roots = topLevelNodes(campus);
   assert.ok(vr.buildings.length > 0, "vr-buildings.json has no record");
   for (const record of vr.buildings) {
     const proxy = roots.find((node) => node.name === record.nodeId);

@@ -67,7 +67,9 @@ export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef
   }, [onSelectionShown, popup.load]);
 
   const handleBuildingClick = useCallback((obj) => {
-    const elementId = obj?.parent?.name && obj.parent.name !== "Scene" ? obj.parent.name : obj?.name;
+    // 부모가 장면이나 컬렉션 노드(extras.collection)면 그 객체 자신의 이름을 쓴다.
+    const parent = obj?.parent;
+    const elementId = parent?.name && parent.name !== "Scene" && !parent.userData?.collection ? parent.name : obj?.name;
     if (!elementId || !elementId.startsWith("BLD_")) {
       popup.clear();
       return undefined;

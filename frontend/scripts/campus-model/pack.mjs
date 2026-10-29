@@ -167,8 +167,11 @@ async function verify(rawFile, packedFile, terrain) {
   if (sortedNames(nodes).join("\n") !== sortedNames(rawRoot.listNodes()).join("\n")) failures.push("node names differ from the raw GLB");
   if (sortedNames(root.listMeshes()).join("\n") !== sortedNames(rawRoot.listMeshes()).join("\n")) failures.push("mesh names differ from the raw GLB");
   if (uniBuildings.length !== EXPECTED_BUILDINGS) failures.push(`${uniBuildings.length} uni.glb BLD_* nodes, expected ${EXPECTED_BUILDINGS}`);
-  const rootBuildings = root.listScenes()[0].listChildren().filter((node) => node.getName().startsWith("BLD_"));
-  if (rootBuildings.length !== buildings.length) failures.push(`${buildings.length - rootBuildings.length} BLD_* nodes are no longer scene roots`);
+  // BLD_* nodes sit directly under a collection node (extras.collection, lib/glb.mjs groupRoots) or the scene, never
+  // inside another object, so the dashboard's selection still resolves the BLD_* node itself.
+  const topLevel = (node) => node.getParentNode() === null || node.getParentNode().getExtras()?.collection === true;
+  const nestedBuildings = buildings.filter((node) => !topLevel(node));
+  if (nestedBuildings.length) failures.push(`${nestedBuildings.length} BLD_* nodes are nested inside non-collection nodes`);
   for (const node of buildings) {
     if (node.getMesh()?.getName() !== node.getName()) failures.push(`${node.getName()} lost its same-named mesh`);
   }

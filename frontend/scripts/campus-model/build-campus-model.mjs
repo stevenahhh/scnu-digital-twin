@@ -174,6 +174,24 @@ function writeHeightSidecar(heightAt, terrainAt, slabAt, labelAt) {
   };
 }
 
+// ---------------------------------------------------------------- collections
+// Every root node goes under a collection node (lib/glb.mjs groupRoots), so a DCC tool's outliner reads as layers.
+// Order matters: the first match wins. A root no rule takes throws.
+const startsWith = (...prefixes) => (name) => prefixes.some((p) => name.startsWith(p));
+const collections = glb.groupRoots([
+  { path: "Buildings", match: (name) => name.startsWith("BLD_") || name === "CampusBuildings" },
+  { path: "Context/Ground", match: startsWith("Context_Far_Ground_", "Ground_Context_", "OuterTerrain") },
+  { path: "Context/Buildings", match: startsWith("Context_Buildings_", "Context_Far_", "Context_Mast_") },
+  { path: "Ground/Terrain", match: (name) => name === "Topography" },
+  { path: "Ground/Surfaces", match: startsWith("Ground_") },
+  { path: "Ground/Kerbs", match: (name) => name === "Kerbs" },
+  { path: "Ground/Markings", match: (name) => name === "Road_Markings" },
+  { path: "Vegetation", match: startsWith("Trees_") },
+  { path: "Furniture", match: startsWith("Furniture") },
+  { path: "Lighting", match: startsWith("Lamps_") },
+]);
+console.log(`collections: ${[...collections.keys()].join(", ")}`);
+
 // ---------------------------------------------------------------- write
 const bytes = glb.toBuffer();
 await mkdir(path.dirname(OUTPUT), { recursive: true });
