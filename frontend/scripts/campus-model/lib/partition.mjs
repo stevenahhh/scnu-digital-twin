@@ -160,14 +160,14 @@ export class GroundPartition {
     return out;
   }
 
-  claimInCell(piece, key) {
+  claimInCell(piece, key, cellArea = this.cellArea) {
     const debug = process.env.PARTITION_DEBUG_CELL === key;
     let cell = this.cells.get(key);
     if (!cell) {
       cell = { claims: [], area: 0 };
       this.cells.set(key, cell);
     }
-    if (cell.area >= this.cellArea * (1 - 1e-9)) return [];
+    if (cell.area >= cellArea * (1 - 1e-9)) return [];
     let parts = [{ poly: piece, box: bbox(piece) }];
     for (const claim of cell.claims) {
       const next = [];
@@ -184,6 +184,65 @@ export class GroundPartition {
       cell.area += Math.abs(ringArea(part.poly));
     }
     return parts.map((part) => part.poly);
+  }
+}
+
+// Claims per triangle of an irregular terrain mesh (a TIN such as stages/outerTerrain.mjs): positions [x, y, z ...]
+// and triangle indices; the cell of a piece is the TIN triangle it lies in (key = the triangle's first index offset).
+export class TinPartition extends GroundPartition {
+  constructor(positions, indices, bin = 20) {
+    super({ step: 1, x0: 0, z0: 0 });
+    this.positions = positions;
+    this.indices = indices;
+    this.bin = bin;
+    this.bins = new Map();
+    this.triangles = [];
+    for (let t = 0; t < indices.length; t += 3) {
+      const tri = [indices[t], indices[t + 1], indices[t + 2]].map((k) => [positions[k * 3], positions[k * 3 + 2]]);
+      if (ringArea(tri) < 0) tri.reverse();
+      const area = Math.abs(ringArea(tri));
+      if (area < MIN_AREA) continue;
+      const box = bbox(tri);
+      this.triangles[t] = { tri, area, box };
+      for (let i = Math.floor(box[0] / bin); i <= Math.floor(box[2] / bin); i += 1) {
+        for (let j = Math.floor(box[1] / bin); j <= Math.floor(box[3] / bin); j += 1) {
+          const k = `${i},${j}`;
+          if (!this.bins.has(k)) this.bins.set(k, []);
+          this.bins.get(k).push(t);
+        }
+      }
+    }
+  }
+
+  // The TIN triangles whose box meets `box`.
+  candidates(box) {
+    const seen = new Set();
+    for (let i = Math.floor(box[0] / this.bin); i <= Math.floor(box[2] / this.bin); i += 1) {
+      for (let j = Math.floor(box[1] / this.bin); j <= Math.floor(box[3] / this.bin); j += 1) {
+        for (const t of this.bins.get(`${i},${j}`) ?? []) seen.add(t);
+      }
+    }
+    return [...seen];
+  }
+
+  // Claims convex `piece` ([x, z] scene units), cut by every TIN triangle it meets; returns [{ poly, triangle }] for
+  // the parts no earlier claim covers. A piece off the mesh (inside EXTENT, beyond the ring) claims nothing.
+  claimOnTin(piece) {
+    const out = [];
+    const box = bbox(piece);
+    for (const t of this.candidates(box)) {
+      const { tri, area, box: tbox } = this.triangles[t];
+      if (disjoint(box, tbox) || separated(piece, tri)) continue;
+      let part = piece;
+      for (let i = 0; i < 3 && part; i += 1) {
+        const a = tri[i];
+        const b = tri[(i + 1) % 3];
+        part = splitByLine(part, (p) => (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])).inside;
+      }
+      if (!part) continue;
+      for (const poly of this.claimInCell(part, t, area)) out.push({ poly, triangle: t });
+    }
+    return out;
   }
 }
 

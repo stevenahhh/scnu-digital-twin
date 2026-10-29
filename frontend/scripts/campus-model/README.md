@@ -120,7 +120,11 @@ anything: every surface lies on the terrain, plus the walkway slab (`stages/kerb
 not at all (`bun scripts/campus-model/check-ground-overlap.mjs`, `--at x,z` lists the triangles at a point). The
 Topography is therefore natural ground only; the camera and traffic lookups raycast `Ground_*` and `Road_Markings`
 too (`src/camera/terrainClearance.mjs`, `src/camera/useFlyTo.mjs`, the `Ground` collection in
-`src/simulation/CampusTrafficSimulation.jsx`). The
+`src/simulation/CampusTrafficSimulation.jsx`). Beyond EXTENT the same rule holds on the hill ring
+(`TinPartition`, cells = OuterTerrain triangles): off-campus ground pieces (cut along the EXTENT edges first) and the
+context streets (`stages/contextGround.mjs`: markings, then sidewalk tops, then carriageways, flush on the ring, no
+lift) claim their ground, and `stages/outerTerrain.mjs` `emit` draws the ring last from what is left, so
+`check-ground-overlap.mjs --all` covers the whole plan. The
 materials are CC0 tiles (`data/materials/ground-materials.json`) on world-planar UVs that repeat every physical tile
 size in EPSG:5186 metres, with the ground AO on TEXCOORD_1; painted surfaces get a per-surface texture at 0.05 m/texel
 (track lanes, court and pitch lines 0.10 m wide). The same polygons, plus the 0.3 m edge-stone band on every A003
