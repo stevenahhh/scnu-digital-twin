@@ -43,11 +43,9 @@ import {
   CROWN_ALBEDO_SCALE,
   CROWN_MATERIAL_NAMES,
   calibrateCrownInstance,
-  FOLIAGE_CROWN_PATTERN,
   autumnSalt,
   calibrateCrownMaterial,
   crownMaterialName,
-  patchFoliageLod,
 } from "./lighting/foliage.mjs";
 import { WATER_ENV_INTENSITY, WATER_MATERIAL_NAME, patchWaterFresnel } from "./lighting/water.mjs";
 import { clipPolygonAhead } from "./render/clipPolygon.mjs";
@@ -81,7 +79,6 @@ const LABEL_HOST_STYLE = "position:absolute;inset:0;pointer-events:none;z-index:
 const NON_CASTER_MATERIAL_NAME = "Ground";
 // Tree trunks, and the far off-campus context tiles (scripts/campus-model/stages/context.mjs) beyond the shadow camera.
 const NON_CASTER_PARENT_PATTERN = /^(Trees_.*_trunk|Context_Far_)/;
-// 잎 카드가 있는 수관(FOLIAGE_CROWN_PATTERN)은 그림자를 드리우지 않는다: 알파 테스트한 잎 카드가 나무 그림자를 드리운다.
 // 그림자 카메라 밖의 먼 맥락 타일(건물·도로, Context_Far_*)은 그림자를 받아도 그려질 그림자가 없으므로 받지 않는다(셰이더 비용만 듦).
 const NON_RECEIVER_PARENT_PATTERN = /^Context_Far_/;
 // 노면 표시(Road_Marking, 생성기 stages/markings.mjs): 항공사진에서 찾은 도색을 지형 삼각형 위 4 cm에 얹은 얇은 메시다.
@@ -559,8 +556,7 @@ export function CityModel({
         child.material?.name === WATER_MATERIAL_NAME ||
         child.material?.name === NON_CASTER_MATERIAL_NAME ||
         NON_CASTER_PARENT_PATTERN.test(child.parent?.name ?? "") ||
-        NON_CASTER_PARENT_PATTERN.test(child.name) ||
-        FOLIAGE_CROWN_PATTERN.test(child.name);
+        NON_CASTER_PARENT_PATTERN.test(child.name);
       child.castShadow = !isNonCaster;
       if (isNonCaster) nonCasterNames.push(child.name);
       child.receiveShadow = !(NON_RECEIVER_PARENT_PATTERN.test(child.parent?.name ?? "") || NON_RECEIVER_PARENT_PATTERN.test(child.name));
@@ -594,14 +590,6 @@ export function CityModel({
       // 수관 색 보정(lighting/foliage.mjs): 재질 색은 정사영상의 어두운 수관 쪽으로 낮추고, 나무마다 다른 인스턴스 색은
       // 밝기 차이만 남기고 색조 차이를 줄인다. 한 번만 옮긴다.
       // 보정한 여름 색(crownSummer)을 남겨 두어 다시 마운트돼도 두 번 보정하지 않고, 단풍도 이 색에서 출발한다.
-      // 잎 카드(Trees_*_foliage)와 그 수관: 카메라에서 약 150 m 밖에서는 카드를 접고 수관만, 안에서는 수관을 심으로 줄인다.
-      if (child.isInstancedMesh && (child.material.userData?.foliage || FOLIAGE_CROWN_PATTERN.test(child.name)) && !child.userData.foliageLod) {
-        const mode = child.material.userData?.foliage ? "cards" : "core";
-        child.material.onBeforeCompile = (shader) => patchFoliageLod(shader, mode);
-        child.material.customProgramCacheKey = () => `foliage-lod-${mode}`;
-        child.material.needsUpdate = true;
-        child.userData.foliageLod = mode;
-      }
       if (child.isInstancedMesh && CROWN_MATERIAL_NAMES.has(crownMaterialName(child.material)) && !child.userData.crownSummer) {
         if (!child.instanceColor) {
           for (let i = 0; i < child.count; i += 1) child.setColorAt(i, new THREE.Color(1, 1, 1));

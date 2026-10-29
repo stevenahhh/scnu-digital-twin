@@ -7,7 +7,6 @@ import * as THREE from "three";
 import { mergeVertices } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { EXTENT, metres } from "../lib/frame.mjs";
-import { foliageCards, leafAtlas } from "../lib/foliage.mjs";
 import { Raster, mulberry32 } from "../lib/raster.mjs";
 
 const TREES = process.env.TREES_FILE ?? path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "trees.json");
@@ -600,33 +599,7 @@ export function buildTrees({ glb, placement }) {
   for (const parts of Object.values(species)) bakeVertexAo(parts);
   for (const kind of ["metasequoia", "conifer"]) shadeTiers(species[kind].at(-1));
 
-  // ---- foliage: alpha-tested leaf-cluster cards over each crown (lib/foliage.mjs), one instanced child per species
-  // (Trees_<kind>_foliage) with the crown's instancing, so its tint, season colour and the fitted size apply. The leaf
-  // atlas is drawn by the generator (no photo pixels, no external asset). The dashboard draws the cards near the camera
-  // and the solid crown alone beyond FOLIAGE_LOD in src/lighting/foliage.mjs; the cards cast the crowns' shadows.
-  const leafTexture = glb.addTexture(leafAtlas(), "image/png");
-  const FOLIAGE = {
-    ginkgo: { count: 100, size: [1.5, 1.25], tile: "ginkgo", inner: 0.3, kind: "outward", seed: 201, crown: materials.ginkgo },
-    broadleaf: { count: 125, size: [1.7, 1.5], tile: "broadleaf", inner: 0.3, kind: "outward", seed: 203, crown: materials.broadleaf },
-    pine: { count: 110, size: [1.85, 1.4], tile: "pine", inner: 0.3, kind: "flat", seed: 205, crown: materials.pine },
-    metasequoia: { count: 210, size: [1.7, 0.95], tile: "spray", kind: "droop", inner: 0.25, crossCard: 0.7, seed: 207, crown: materials.metasequoia },
-    conifer: { count: 56, size: [1.05, 0.8], tile: "spray", inner: 0.3, kind: "outward", seed: 209, crown: materials.conifer },
-    canopy: { count: 360, size: [2.3, 1.95], tile: "broadleaf", inner: 0.3, kind: "outward", seed: 211, elliptic: true, crown: materials.broadleaf },
-  };
-  const foliage = {};
-  for (const [kind, f] of Object.entries(FOLIAGE)) {
-    const crownMaterial = glb.json.materials[f.crown];
-    const material = glb.addMaterial({
-      name: `Tree_Foliage_${kind}`,
-      pbrMetallicRoughness: { baseColorFactor: crownMaterial.pbrMetallicRoughness.baseColorFactor, baseColorTexture: { index: leafTexture }, metallicFactor: 0, roughnessFactor: 0.85 },
-      alphaMode: "MASK",
-      alphaCutoff: 0.5,
-      doubleSided: true,
-      extras: { foliage: true, crownMaterial: crownMaterial.name, texture: "self-generated leaf atlas (lib/foliage.mjs), no external source" },
-    });
-    foliage[kind] = { ...foliageCards(species[kind].at(-1).positions, f), material };
-  }
-  console.log(`trees: foliage cards ${Object.entries(FOLIAGE).map(([k, f]) => `${k} ${f.count}`).join(", ")} per tree (leaf atlas 1024 px, self-generated)`);
+  // Low poly only: every tree is its trunk and its solid crown. No leaf cards, no leaf texture (user 2026-10-29).
   {
     const mean = (c) => c.reduce((sum, value, i) => (i % 4 === 0 ? sum + value : sum), 0) / (c.length / 4) / 255;
     console.log(`trees: vertex AO (${AO_RAYS} rays, ${AO_RAY_METRES} m, floor ${AO_FLOOR}) mean shade ${Object.entries(species).map(([k, parts]) => `${k} ${parts.map((p) => mean(p.colors).toFixed(2)).join("/")}`).join(", ")}`);
@@ -688,13 +661,6 @@ export function buildTrees({ glb, placement }) {
       const autumn = isCrown && instances.some((t) => t.autumn) ? instances.map((t) => (t.autumn ? t.autumn.map((v) => Math.round(v * 100) / 100) : 0)) : null;
       return glb.addNode({ name, mesh, extensions, ...(autumn ? { extras: { autumn } } : {}) });
     });
-    if (foliage[kind]) {
-      const name = `Trees_${kind}_foliage`;
-      const mesh = glb.addMesh(name, [foliage[kind]]);
-      const extensions = glb.instancingExtension({ translations, rotations, scales, colors });
-      const autumn = instances.some((t) => t.autumn) ? instances.map((t) => (t.autumn ? t.autumn.map((v) => Math.round(v * 100) / 100) : 0)) : null;
-      children.push(glb.addNode({ name, mesh, extensions, extras: { foliage: true, ...(autumn ? { autumn } : {}) } }));
-    }
     glb.addNode({
       name: `Trees_${kind}`,
       children,
