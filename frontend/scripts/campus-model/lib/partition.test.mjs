@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { ringArea } from "./geometry.mjs";
-import { GroundPartition, convexOverlapArea, subtractConvex } from "./partition.mjs";
+import { GroundPartition, TinPartition, convexOverlapArea, subtractConvex } from "./partition.mjs";
 
 const area = (polys) => polys.reduce((sum, p) => sum + Math.abs(ringArea(p)), 0);
 const square = (x, z, s) => [[x, z], [x + s, z], [x + s, z + s], [x, z + s]];
@@ -64,4 +64,16 @@ test("a claim with a repeated closing vertex still removes its whole area from l
   partition.claim(lot);
   const natural = partition.claim([[124, -366], [122, -364], [124, -364]]);
   for (const piece of natural) assert.ok(convexOverlapArea(piece, lot.slice(0, 3)) < 1e-9, `natural ground overlaps the lot: ${JSON.stringify(piece)}`);
+});
+
+test("on an irregular terrain mesh, a road cut by the mesh triangles leaves the terrain exactly the rest", () => {
+  // two triangles of a 10 x 10 square, split along a diagonal the grid partition would not use
+  const positions = [0, 0, 0, 10, 0, 0, 10, 0, 10, 0, 0, 10];
+  const indices = [0, 1, 2, 0, 2, 3];
+  const tin = new TinPartition(positions, indices, 4);
+  const road = tin.claimOnTin([[2, -1], [8, -1], [8, 11], [2, 11]]);
+  assert.ok(Math.abs(area(road.map((r) => r.poly)) - 60) < 1e-9, `road area ${area(road.map((r) => r.poly))}`);
+  const terrain = [0, 3].flatMap((t) => tin.claimInCell(tin.triangles[t].tri, t, tin.triangles[t].area));
+  assert.ok(Math.abs(area(terrain) - 40) < 1e-9, `terrain area ${area(terrain)}`);
+  for (const g of terrain) for (const r of road) assert.ok(convexOverlapArea(g, r.poly) < 1e-9);
 });

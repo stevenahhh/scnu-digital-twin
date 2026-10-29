@@ -54,8 +54,9 @@ const MIN_HALF_M = 2.5;
 const BUILDING_GAP_M = 0.3;
 const MIN_SIDEWALK_M = 1;
 export const SIDEWALK_RAISE_M = 0.15;
-const ROAD_LIFT_M = 0.05;
-const MARK_LIFT_M = 0.07;
+// The streets lie flush on the hill ring, cut out of it (lib/partition.mjs TinPartition): no lift, no stacking.
+const ROAD_LIFT_M = 0;
+const MARK_LIFT_M = 0;
 const SIDEWALK_LIFT_M = ROAD_LIFT_M + SIDEWALK_RAISE_M;
 const BACK_DROP_M = 0.1;
 const JUNCTION_M = 4;
@@ -252,7 +253,7 @@ function sidewalkMaterial(glb) {
 const PAINT_KINDS = new Set(["centre_line_yellow", "lane_line_dashed", "lane_line_solid"]);
 
 // paint: stages/markings.mjs pieces ({ kind, rings } in scene units).
-export async function buildContextGround({ glb, lines = JSON.parse(readFileSync(GROUND_FEATURES, "utf8")).osm.lines, layers, paint, footprints, heightAt }) {
+export async function buildContextGround({ glb, tin, lines = JSON.parse(readFileSync(GROUND_FEATURES, "utf8")).osm.lines, layers, paint, footprints, heightAt }) {
   const roads = lines.filter((l) => l.kind === "arterial" || l.kind === "connector").filter((l) => ROAD_CLASS[l.tags.highway]);
   const traced = measuredWidths(layers, roads);
   // outline points every metre (a solid line is one long piece, so its centroid alone would miss most sections)
@@ -378,6 +379,13 @@ export async function buildContextGround({ glb, lines = JSON.parse(readFileSync(
     const v = (p, lift, along) => { const q = vtx(p, lift, null); q[3] = along / size; q[4] = lift / size; return q; };
     soup.quad(v(a, botA, sAlong), v(b, botB, sAlong + len(sub(b, a))), v(b, topB, sAlong + len(sub(b, a))), v(a, topA, sAlong), [normal[0], 0, normal[1]]);
   };
+  // ground pieces (convex, metres) claimed after every street is laid out: paint first, then sidewalk tops, then the
+  // carriageways (lib/partition.mjs TinPartition), so no two of them, and none of them with the OuterTerrain, share area
+  const pending = { marking: [], pavers: [], asphalt: [] };
+  const defer = (surface, ringM, liftM, colour = null) => {
+    const tris = ringM.length === 3 ? [ringM] : [[ringM[0], ringM[1], ringM[2]], [ringM[0], ringM[2], ringM[3]]];
+    for (const tri of tris) pending[surface].push({ tri, liftM, colour, at: tri[0] });
+  };
   let carriagewayM2 = 0;
   let sidewalkM2 = 0;
   const marked = [];
@@ -386,15 +394,11 @@ export async function buildContextGround({ glb, lines = JSON.parse(readFileSync(
       const [a, b] = [w.samples[i], w.samples[i + 1]];
       if (!a.ok || !b.ok) continue;
       const corner = (s, side, d) => add(s.p, mul(s.n, side * d));
-      const road = soupOf(a.p, "asphalt");
       const [aL, bL, bR, aR] = [corner(a, 1, a.L), corner(b, 1, b.L), corner(b, -1, b.R), corner(a, -1, a.R)];
       // draped across the width too (about every STEP_M), so the terrain between the edges cannot show through
       const across = Math.max(1, Math.ceil(Math.max(a.L + a.R, b.L + b.R) / STEP_M));
       const at = (p, q, k) => add(p, mul(sub(q, p), k / across));
-      for (let k = 0; k < across; k += 1) {
-        road.quad(vtx(at(aL, aR, k), ROAD_LIFT_M, sizes.asphalt), vtx(at(bL, bR, k), ROAD_LIFT_M, sizes.asphalt),
-          vtx(at(bL, bR, k + 1), ROAD_LIFT_M, sizes.asphalt), vtx(at(aL, aR, k + 1), ROAD_LIFT_M, sizes.asphalt));
-      }
+      for (let k = 0; k < across; k += 1) defer("asphalt", [at(aL, aR, k), at(bL, bR, k), at(bL, bR, k + 1), at(aL, aR, k + 1)], ROAD_LIFT_M);
       carriagewayM2 += STEP_M * (a.L + a.R);
       for (const side of [1, -1]) {
         const [wa, wb] = side > 0 ? [a.SL, b.SL] : [a.SR, b.SR];
@@ -403,7 +407,7 @@ export async function buildContextGround({ glb, lines = JSON.parse(readFileSync(
         const [ia, ib, oa, ob] = [corner(a, side, ha), corner(b, side, hb), corner(a, side, ha + wa), corner(b, side, hb + wb)];
         const mid = mul(add(add(ia, ib), add(oa, ob)), 0.25);
         if (otherRoad(w, mid) || owner.at(mid) === w.own) continue; // a junction mouth or this road's own carriageway
-        soupOf(a.p, "pavers").quad(vtx(ia, SIDEWALK_LIFT_M, sizes.pavers), vtx(ib, SIDEWALK_LIFT_M, sizes.pavers), vtx(ob, SIDEWALK_LIFT_M, sizes.pavers), vtx(oa, SIDEWALK_LIFT_M, sizes.pavers));
+        defer("pavers", [ia, ib, ob, oa], SIDEWALK_LIFT_M);
         sidewalkM2 += STEP_M * (wa + wb) / 2;
         const kerb = soupOf(a.p, "kerb");
         const inward = mul(a.n, -side);
@@ -442,11 +446,7 @@ export async function buildContextGround({ glb, lines = JSON.parse(readFileSync(
             const ring = strokePath(path, spec.half);
             if (!ring) continue;
             const contour = ring.map(([x, z]) => new Vector2(x, z));
-            const soup = soupOf(path[0], "marking");
-            for (const [ia, ib, ic] of ShapeUtils.triangulateShape(contour, [])) {
-              const v = (k) => { const q = vtx(ring[k], MARK_LIFT_M, null); q[3] = PALETTE_U[spec.colour]; q[4] = 0.5; return q; };
-              soup.tri(v(ia), v(ib), v(ic));
-            }
+            for (const [ia, ib, ic] of ShapeUtils.triangulateShape(contour, [])) defer("marking", [ring[ia], ring[ib], ring[ic]], MARK_LIFT_M, spec.colour);
           }
         }
       }
@@ -462,15 +462,43 @@ export async function buildContextGround({ glb, lines = JSON.parse(readFileSync(
     const c = ringsM[0].reduce((a, q) => [a[0] + q[0] / ringsM[0].length, a[1] + q[1] / ringsM[0].length], [0, 0]);
     if (inMarkingExtent(mul(c, U)) || PALETTE_U[piece.colour] === undefined) continue;
     const all = ringsM.flat();
-    const soup = soupOf(c, "marking");
     for (const [ia, ib, ic] of ShapeUtils.triangulateShape(ringsM[0].map(([x, z]) => new Vector2(x, z)), ringsM.slice(1).map((h) => h.map(([x, z]) => new Vector2(x, z))))) {
-      const [a, b, cc] = [all[ia], all[ib], all[ic]];
-      const up = (b[1] - a[1]) * (cc[0] - a[0]) - (b[0] - a[0]) * (cc[1] - a[1]) > 0;
-      const v = (p) => { const q = vtx(p, MARK_LIFT_M, null); q[3] = PALETTE_U[piece.colour]; q[4] = 0.5; return q; };
-      if (up) soup.tri(v(a), v(b), v(cc)); else soup.tri(v(a), v(cc), v(b));
+      defer("marking", [all[ia], all[ib], all[ic]], MARK_LIFT_M, piece.colour);
     }
     photoPieces += 1;
   }
+
+  // 4b. claim the ground pieces on the hill ring and lay the parts left, faces up
+  let claimedOff = 0;
+  for (const surface of ["marking", "pavers", "asphalt"]) {
+    for (const { tri, liftM, colour, at } of pending[surface]) {
+      const soup = soupOf(at, surface);
+      const parts = tin.claimOnTin(tri.map((p) => mul(p, U)));
+      if (!parts.length) claimedOff += 1;
+      for (const { poly, triangle } of parts) {
+        // height on the plane of the hill-ring triangle the part lies in (exact, no search)
+        const [ia, ib, ic] = [tin.indices[triangle], tin.indices[triangle + 1], tin.indices[triangle + 2]];
+        const P = (k) => [tin.positions[k * 3], tin.positions[k * 3 + 1], tin.positions[k * 3 + 2]];
+        const [A, B, Cc] = [P(ia), P(ib), P(ic)];
+        const det = (B[2] - Cc[2]) * (A[0] - Cc[0]) + (Cc[0] - B[0]) * (A[2] - Cc[2]);
+        const planeY = ([x, z]) => {
+          const l1 = ((B[2] - Cc[2]) * (x - Cc[0]) + (Cc[0] - B[0]) * (z - Cc[2])) / det;
+          const l2 = ((Cc[2] - A[2]) * (x - Cc[0]) + (A[0] - Cc[0]) * (z - Cc[2])) / det;
+          return l1 * A[1] + l2 * B[1] + (1 - l1 - l2) * Cc[1];
+        };
+        const v = (pScene) => {
+          const q = vtx(mul(pScene, 1 / U), liftM, surface === "marking" ? null : sizes[surface]);
+          q[0] = pScene[0];
+          q[1] = planeY(pScene) + liftM * U;
+          q[2] = pScene[1];
+          if (surface === "marking") { q[3] = PALETTE_U[colour]; q[4] = 0.5; }
+          return q;
+        };
+        for (let k = 1; k + 1 < poly.length; k += 1) soup.tri(v(poly[0]), v(poly[k]), v(poly[k + 1]));
+      }
+    }
+  }
+  console.log(`context ground: ${pending.marking.length + pending.pavers.length + pending.asphalt.length} ground triangles claimed on the OuterTerrain (${claimedOff} off the ring: inside EXTENT or beyond it, not drawn)`);
 
   // 5. materials and nodes
   const material = {

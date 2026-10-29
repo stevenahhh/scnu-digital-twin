@@ -12,8 +12,12 @@ import { EXTENT } from "./lib/frame.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FILE = process.argv[2] && !process.argv[2].startsWith("--") ? process.argv[2] : path.join(HERE, ".build", "campus-v2.raw.glb");
-const GROUND = /^(Topography_\d+|Ground_(?!Context|Hump_)|Road_Markings$)/;
-const STEP = 0.25;
+// --all: the whole plan, the hill ring (OuterTerrain) and the context streets on it included, sampled every 1 unit
+const ALL = process.argv.includes("--all");
+const GROUND = ALL
+  ? /^(Topography_\d+|Ground_(?!Hump_)|Road_Markings$|OuterTerrain$|Context_Far_Ground_)/
+  : /^(Topography_\d+|Ground_(?!Context|Hump_)|Road_Markings$)/;
+const STEP = ALL ? 1 : 0.25;
 const CELL = 1;
 // samples on a shared edge can land exactly on it; the jitter keeps that rare, this bounds what is left
 const MAX_SHARE = 1e-4;
@@ -67,14 +71,17 @@ if (atArg > 0) {
   });
   process.exit(0);
 }
-const cols = Math.ceil((EXTENT.maxX - EXTENT.minX) / CELL);
-const rows = Math.ceil((EXTENT.maxZ - EXTENT.minZ) / CELL);
+const BOUNDS = ALL
+  ? triangles.reduce((b, t) => [Math.min(b[0], t[0], t[2], t[4]), Math.min(b[1], t[1], t[3], t[5]), Math.max(b[2], t[0], t[2], t[4]), Math.max(b[3], t[1], t[3], t[5])], [Infinity, Infinity, -Infinity, -Infinity])
+  : [EXTENT.minX, EXTENT.minZ, EXTENT.maxX, EXTENT.maxZ];
+const cols = Math.ceil((BOUNDS[2] - BOUNDS[0]) / CELL);
+const rows = Math.ceil((BOUNDS[3] - BOUNDS[1]) / CELL);
 const cells = Array.from({ length: cols * rows }, () => []);
 triangles.forEach(([ax, az, bx, bz, cx, cz], k) => {
-  const i0 = Math.max(0, Math.floor((Math.min(ax, bx, cx) - EXTENT.minX) / CELL));
-  const i1 = Math.min(cols - 1, Math.floor((Math.max(ax, bx, cx) - EXTENT.minX) / CELL));
-  const j0 = Math.max(0, Math.floor((Math.min(az, bz, cz) - EXTENT.minZ) / CELL));
-  const j1 = Math.min(rows - 1, Math.floor((Math.max(az, bz, cz) - EXTENT.minZ) / CELL));
+  const i0 = Math.max(0, Math.floor((Math.min(ax, bx, cx) - BOUNDS[0]) / CELL));
+  const i1 = Math.min(cols - 1, Math.floor((Math.max(ax, bx, cx) - BOUNDS[0]) / CELL));
+  const j0 = Math.max(0, Math.floor((Math.min(az, bz, cz) - BOUNDS[1]) / CELL));
+  const j1 = Math.min(rows - 1, Math.floor((Math.max(az, bz, cz) - BOUNDS[1]) / CELL));
   for (let j = j0; j <= j1; j += 1) for (let i = i0; i <= i1; i += 1) cells[j * cols + i].push(k);
 });
 
@@ -92,16 +99,17 @@ const gapAt = [];
 const pairs = {};
 let seed = 12345;
 const random = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff);
-for (let z = EXTENT.minZ + STEP / 2; z < EXTENT.maxZ; z += STEP) {
-  for (let x = EXTENT.minX + STEP / 2; x < EXTENT.maxX; x += STEP) {
+for (let z = BOUNDS[1] + STEP / 2; z < BOUNDS[3]; z += STEP) {
+  for (let x = BOUNDS[0] + STEP / 2; x < BOUNDS[2]; x += STEP) {
     const sx = x + (random() - 0.5) * STEP * 0.8;
     const sz = z + (random() - 0.5) * STEP * 0.8;
-    const cell = cells[Math.floor((sz - EXTENT.minZ) / CELL) * cols + Math.floor((sx - EXTENT.minX) / CELL)];
+    const cell = cells[Math.floor((sz - BOUNDS[1]) / CELL) * cols + Math.floor((sx - BOUNDS[0]) / CELL)] ?? [];
     let hits = 0;
     const owners = [];
     for (const k of cell) if (inside(triangles[k], sx, sz)) { hits += 1; owners.push(meshOf[k]); }
     samples += 1;
-    if (hits === 0) {
+    const inExtent = sx >= EXTENT.minX && sx <= EXTENT.maxX && sz >= EXTENT.minZ && sz <= EXTENT.maxZ;
+    if (hits === 0 && (!ALL || inExtent)) {
       gaps += 1;
       if (gapAt.length < 10) gapAt.push([Number(sx.toFixed(2)), Number(sz.toFixed(2))]);
     }

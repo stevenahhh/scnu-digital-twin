@@ -44,7 +44,7 @@ import { EXTENT, SCENE_UNITS_PER_METRE } from "./lib/frame.mjs";
 import { SURFACE_CLASS } from "./lib/surfaceClass.mjs";
 import { HUMP_LENGTH_M, buildHumps, buildStalls, humpProfile, loadSpeedBumps } from "./network/stalls.mjs";
 import { GlbBuilder } from "./lib/glb.mjs";
-import { GroundPartition } from "./lib/partition.mjs";
+import { GroundPartition, TinPartition, splitByLine } from "./lib/partition.mjs";
 import { buildBuildings } from "./stages/buildings.mjs";
 import { buildGround } from "./stages/ground.mjs";
 import { buildFurniture, loadFurniture } from "./stages/furniture.mjs";
@@ -101,8 +101,33 @@ const humpNodes = await buildHumpMeshes({ glb, humps: humps.humps, surface, ao: 
 // The ground has no stacked layers: road markings claim their area first, then the ground classes by precedence (hump
 // tops, aprons, tiles, walkways, roads, lots, sports), then the natural Topography takes what is left. Every piece lies
 // on the terrain (plus the walkway slab or a hump's arc), so no two ground triangles share area.
+const outerTerrain = await buildOuterTerrain({ glb, inputs });
+const outerHeightAt = meshHeightAt(outerTerrain.positions, outerTerrain.indices);
+// The hill ring is partitioned too: ground pieces beyond EXTENT (off-campus lots and courts) and the context streets
+// claim their ground on it, and the OuterTerrain takes the rest (stages/outerTerrain.mjs emit, at the end).
+const tin = new TinPartition(outerTerrain.positions, outerTerrain.indices);
 const partition = new GroundPartition(surface.grid);
-const claim = (piece) => partition.claim(piece);
+const inExtentXZ = (x, z) => x >= EXTENT.minX && x <= EXTENT.maxX && z >= EXTENT.minZ && z <= EXTENT.maxZ;
+// pieces are cut along the EXTENT edges first, so each part goes to the Topography grid or to the hill ring
+const extentCuts = [(p) => p[0] - EXTENT.minX, (p) => EXTENT.maxX - p[0], (p) => p[1] - EXTENT.minZ, (p) => EXTENT.maxZ - p[1]];
+const claim = (piece) => {
+  const out = [];
+  let rest = piece;
+  for (const f of extentCuts) {
+    if (!rest) break;
+    const { inside, outside } = splitByLine(rest, f);
+    if (outside) out.push(...tin.claimOnTin(outside).map((part) => part.poly));
+    rest = inside;
+  }
+  if (rest) out.push(...partition.claim(rest));
+  return out;
+};
+// the ground under a piece: the Topography inside EXTENT, the hill ring beyond it
+const groundSurface = {
+  grid: surface.grid,
+  height: (x, z) => (inExtentXZ(x, z) ? surface.height(x, z) : outerHeightAt(x, z) ?? surface.height(x, z)),
+  normal: (x, z) => surface.normal(x, z),
+};
 // metres of the walkway slab under a ground piece, the walkway decal just under the kerb top (stages/kerbs.mjs)
 const slabDecal = (x, z) => {
   const slab = kerbs.plan.slabHeight(x, z);
@@ -116,14 +141,14 @@ console.log(
 );
 let stageStart = performance.now();
 const stageTime = (label) => { console.log(`ground partition: ${label} in ${((performance.now() - stageStart) / 1000).toFixed(1)} s, ${partition.cells.size} cells`); stageStart = performance.now(); };
-const markingMesh = buildMarkings({ glb, markings, surface, extraHeight: humps.heightAt, claim, baseOffset: slabDecal });
+const markingMesh = buildMarkings({ glb, markings, surface: groundSurface, extraHeight: humps.heightAt, claim, baseOffset: slabDecal });
 stageTime("road markings");
 const groundLayers = [...layers, ...kerbs.gutters, ...tactile.layers, ...humpLayers(humps.humps, HUMP_LENGTH_M)]
   .map((layer, order) => ({ layer, order }))
   .sort((a, b) => b.layer.precedence - a.layer.precedence || b.order - a.order)
   .map(({ layer }) => layer);
 console.log(describeSurfaces(await buildSurfaceMeshes({
-  glb, layers: groundLayers, surface, ao: aoTexture, claim,
+  glb, layers: groundLayers, surface: groundSurface, ao: aoTexture, claim,
   heightOffset: (layer, x, z) => (layer.hump ? humps.heightAt(x, z) : layer.walkway || layer.tactile ? slabDecal(x, z) : 0),
   refine: { maxEdgeM: 0.25, needsFine: (layer, p, reach) => layer.hump || ((layer.walkway || layer.tactile) && kerbs.plan.nearSlabChange(p, reach / SCENE_UNITS_PER_METRE)) },
 })));
@@ -131,7 +156,6 @@ stageTime("ground surfaces");
 const topography = buildTopography(claim);
 stageTime("natural Topography");
 console.log(`ground partition: ${partition.cells.size} terrain triangles hold ground; Topography ${topography.triangles} natural triangles in ${topography.chunks} chunks`);
-const outerTerrain = await buildOuterTerrain({ glb, inputs });
 const treeInstances = buildTrees({ glb, placement: treePlacement });
 // Furniture and lamps stand on the raised walkway slab where there is one (stages/kerbs.mjs).
 const groundAt = kerbs.groundHeightAt;
@@ -139,18 +163,19 @@ const { lamps, stats: lampStats, sites } = placeLamps({ inputs, furniture, selec
 const { glow } = buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs, groundAt });
 buildLights({ glb, lamps, stats: lampStats, groundAt, glow });
 // Off-campus context masses on the drawn terrain (stages/context.mjs): merged per tile, not selectable, heights 추정.
-const outerHeightAt = meshHeightAt(outerTerrain.positions, outerTerrain.indices);
 const inExtent = (x, z) => x >= EXTENT.minX && x <= EXTENT.maxX && z >= EXTENT.minZ && z <= EXTENT.maxZ;
 const contextGround = (x, z) => (inExtent(x, z) ? groundAt(x, z) : outerHeightAt(x, z) ?? groundAt(Math.min(Math.max(x, EXTENT.minX), EXTENT.maxX), Math.min(Math.max(z, EXTENT.minZ), EXTENT.maxZ)));
 buildContext({ glb, parts: contextParts, groundAt: contextGround });
 // The streets around the campus beyond EXTENT (stages/contextGround.mjs): OSM centrelines on the OuterTerrain ring, merged
 // per tile, not part of the road network; widths and lanes 추정. Added last, so nothing above changes.
 await buildContextGround({
-  glb, layers, paint: markings.pieces, heightAt: outerHeightAt,
+  glb, tin, layers, paint: markings.pieces, heightAt: outerHeightAt,
   footprints: [...contextParts.map((p) => p.outer), ...[...selectableBuildings, ...campusBuildings].flatMap((b) => b.parts.map((p) => p.outer))],
 });
 // Free-standing lattice telecom masts off campus (stages/masts.mjs), on the context roofs they stand on; heights 추정.
 buildMasts({ glb, parts: contextParts, groundAt: contextGround });
+const outerEmitted = outerTerrain.emit(tin);
+console.log(`OuterTerrain: ${outerEmitted.cut} triangles cut around the context streets, ${outerEmitted.triangles} triangles drawn`);
 
 // ---------------------------------------------------------------- height sidecar
 // The ground the traffic agents stand on (scene units): the drawn Topography plus the raised walkway slab
