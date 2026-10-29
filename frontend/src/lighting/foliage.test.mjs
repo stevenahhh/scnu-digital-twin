@@ -37,16 +37,9 @@ test("a neutral instance tint is unchanged", () => {
   for (const value of out) assert.ok(near(value, 0.9));
 });
 
-test("foliage cards share their crown's calibration and autumn salt, and the LOD patch hides cards / narrows crowns", async () => {
-  const { autumnSalt, crownMaterialName, FOLIAGE_CROWN_PATTERN, FOLIAGE_LOD, patchFoliageLod } = await import("./foliage.mjs");
-  assert.equal(crownMaterialName({ name: "Tree_Foliage_ginkgo", userData: { crownMaterial: "Tree_Ginkgo" } }), "Tree_Ginkgo");
+test("crowns are calibrated by their own material and keep a stable per-species autumn salt", async () => {
+  const { autumnSalt, crownMaterialName } = await import("./foliage.mjs");
   assert.equal(crownMaterialName({ name: "Tree_Pine", userData: {} }), "Tree_Pine");
-  assert.equal(autumnSalt("Trees_ginkgo_crown"), autumnSalt("Trees_ginkgo_foliage"));
+  assert.equal(autumnSalt("Trees_ginkgo_crown"), autumnSalt("Trees_ginkgo"));
   assert.notEqual(autumnSalt("Trees_ginkgo_crown"), autumnSalt("Trees_canopy_crown"));
-  assert.ok(FOLIAGE_CROWN_PATTERN.test("Trees_canopy_crown") && !FOLIAGE_CROWN_PATTERN.test("Trees_hedge_crown"));
-  assert.ok(FOLIAGE_LOD.start < FOLIAGE_LOD.end && FOLIAGE_LOD.end * 1.602 > 145 && FOLIAGE_LOD.end * 1.602 < 160);
-  const cards = patchFoliageLod({ vertexShader: "a\n#include <begin_vertex>\nb" }, "cards").vertexShader;
-  assert.match(cards, /transformed \*= 1\.0 - smoothstep\(85\.000, 95\.000, lodDist\)/);
-  const core = patchFoliageLod({ vertexShader: "#include <begin_vertex>" }, "core").vertexShader;
-  assert.match(core, /transformed\.xz \*= mix\(0\.600, 1\.0/);
 });

@@ -55,7 +55,8 @@ export function CampusTrafficSimulation({ contactShadows = false } = {}) {
       if (y !== null) return y + GROUND_CLEARANCE;
     }
 
-    const terrain = scene.getObjectByName("Topography");
+    // 캠퍼스 모델은 바닥을 겹치지 않게 나눠 Ground 컬렉션에 담는다(자연 지면 Topography는 그 일부). uni.glb에는 Topography만 있다.
+    const terrain = scene.getObjectByName("Ground") ?? scene.getObjectByName("Topography");
     if (!terrain) return CAMPUS_TRAFFIC_COORDINATE_CONFIG.origin.y;
 
     const key = `${Math.round(position.x * 2)}:${Math.round(position.z * 2)}`;
