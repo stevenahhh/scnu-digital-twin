@@ -90,6 +90,11 @@ test("campus-v2.glb gives every named SCNU campus building a labelled pick proxy
   for (const record of [687709, 687746, 687750, 687777, 687828, 688041, 688059, 688401, 688403, 688981, 690033, 690034, 690076, 768570]) {
     assert.ok(!campus.nodes.some((node) => node.name === `BLD_SCNU_R${record}`), `removed building BLD_SCNU_R${record} is back`);
   }
+  // the two unnamed buildings between E1 학생회관 and the plaza fountain (no pick proxy): their footprints must stay out of the source
+  const footprints = JSON.parse(await readFile(new URL("../scripts/campus-model/data/gis-buildings.json", import.meta.url), "utf8")).buildings;
+  for (const record of [687571, 687692]) {
+    assert.ok(!footprints.some((b) => b.footprintSource.endsWith(`record ${record}`)), `removed footprint record ${record} is back`);
+  }
   assert.equal(new Set(proxies.map((node) => node.name)).size, proxies.length, "duplicate BLD_SCNU_* ids");
   for (const node of proxies) {
     assert.ok(!taken.has(node.name), `${node.name} collides with an existing BLD_* id`);
