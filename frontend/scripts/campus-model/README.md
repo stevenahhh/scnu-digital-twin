@@ -416,7 +416,7 @@ with `estimated:`, and their labels end in `(추정)`.
 | `standing` | named, visible on current imagery | modelled; the name labels a selectable node |
 | `unresolved` | visible, no name from any source | modelled, no label (listed in the table with its centroid) |
 | `demolished` | absent from the VWorld z19 imagery and the VR tour (car park west of B7, the B7 site, the old 학군단 lot, lawns) | not modelled |
-| `removed` | not seen in the official SCNU VR tour; removed on the user's decision of 2026-10-29 (14 annexes and greenhouses: GIS records 687709, 687746, 687750, 687777, 687828, 688041, 688059, 688401, 688403, 688981, 690033, 690034, 690076, 768570) | dropped from `gis-buildings.json` by `fetch/scnuNames.mjs` (a refetch keeps them out), not modelled |
+| `removed` | not seen in the official SCNU VR tour; removed on the user's decision of 2026-10-29 (14 annexes and greenhouses: GIS records 687709, 687746, 687750, 687777, 687828, 688041, 688059, 688401, 688403, 688981, 690033, 690034, 690076, 768570; and the two small unnamed buildings between E1 학생회관 and the C1 plaza fountain, records 687571 and 687692) | dropped from `gis-buildings.json` by `fetch/scnuNames.mjs` (a refetch keeps them out), not modelled |
 
 Named campus buildings stay merged in `CampusBuildings` for drawing. Each one also gets a pick
 proxy: a root node `BLD_SCNU_<registry code>`, or `BLD_SCNU_R<GIS record>` / `BLD_SCNU_W<OSM way>`

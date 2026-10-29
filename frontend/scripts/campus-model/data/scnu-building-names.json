@@ -313,9 +313,9 @@
     },
     {
       "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687571",
-      "status": "unresolved",
+      "status": "removed",
       "name": "순천대학교",
-      "nameSource": "unresolved: no registry point, OSM name, VWorld LT_C_BLDGINFO/LT_C_SPBD name or identifiable function",
+      "nameSource": "unresolved: no registry point, OSM name, VWorld LT_C_BLDGINFO/LT_C_SPBD name or identifiable function; removed 2026-10-29 (user): the two small buildings between E1 학생회관 and the C1 도서관 plaza fountain are not needed; not modelled",
       "registerName": "순천대학교",
       "centroid": [
         127.480007,
@@ -335,9 +335,9 @@
     },
     {
       "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687692",
-      "status": "unresolved",
+      "status": "removed",
       "name": "순천대학교",
-      "nameSource": "unresolved: no registry point, OSM name, VWorld LT_C_BLDGINFO/LT_C_SPBD name or identifiable function",
+      "nameSource": "unresolved: no registry point, OSM name, VWorld LT_C_BLDGINFO/LT_C_SPBD name or identifiable function; removed 2026-10-29 (user): the two small buildings between E1 학생회관 and the C1 도서관 plaza fountain are not needed; not modelled",
       "registerName": "순천대학교",
       "centroid": [
         127.480173,
