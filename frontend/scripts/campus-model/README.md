@@ -287,8 +287,7 @@ form. Only use: the F3 학생테니스장 hut (`BLD_SCNU_R138317`, look `F3-hut`
 
 A building entry may also lower the 12 m² drawing minimum for that one footprint: `minAreaMetres` (the smallest area
 it is drawn at) with `minAreaSource` (why it stands). The build logs `small footprints included`; the global minimum
-is unchanged. Only use: the 10 m² annex beside the B5 greenhouse (`BLD_SCNU_R687709`, GIS record and VWorld photo;
-hidden by nearer buildings or trees in every VR scene that predicts it, so it keeps the generic annex look, estimated).
+is unchanged. No entry uses it now (the B5 greenhouse annex it was added for was removed on 2026-10-29: not in the VR tour).
 
 Roof types are checked. A curated `form` mass may only be `flat` (`fetch/building_forms.py` draws curated masses
 flat), and a `data/building-forms.json` mass must be one of flat, gable, hipped, mono-pitch and curved. Any other value
@@ -417,6 +416,7 @@ with `estimated:`, and their labels end in `(추정)`.
 | `standing` | named, visible on current imagery | modelled; the name labels a selectable node |
 | `unresolved` | visible, no name from any source | modelled, no label (listed in the table with its centroid) |
 | `demolished` | absent from the VWorld z19 imagery and the VR tour (car park west of B7, the B7 site, the old 학군단 lot, lawns) | not modelled |
+| `removed` | not seen in the official SCNU VR tour; removed on the user's decision of 2026-10-29 (14 annexes and greenhouses: GIS records 687709, 687746, 687750, 687777, 687828, 688041, 688059, 688401, 688403, 688981, 690033, 690034, 690076, 768570) | dropped from `gis-buildings.json` by `fetch/scnuNames.mjs` (a refetch keeps them out), not modelled |
 
 Named campus buildings stay merged in `CampusBuildings` for drawing. Each one also gets a pick
 proxy: a root node `BLD_SCNU_<registry code>`, or `BLD_SCNU_R<GIS record>` / `BLD_SCNU_W<OSM way>`

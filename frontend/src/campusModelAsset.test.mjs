@@ -85,7 +85,11 @@ test("campus-v2.glb gives every named SCNU campus building a labelled pick proxy
   ]);
   const rootNames = topLevelNodes(campus).map((node) => node.name);
   const proxies = campus.nodes.filter((node) => node.name.startsWith("BLD_SCNU_"));
-  assert.ok(proxies.length > 20, `only ${proxies.length} BLD_SCNU_* nodes`);
+  // 17 since 2026-10-29: the 14 annexes and greenhouses missing from the VR tour were removed (scnu-building-names.json status removed)
+  assert.ok(proxies.length >= 17, `only ${proxies.length} BLD_SCNU_* nodes`);
+  for (const record of [687709, 687746, 687750, 687777, 687828, 688041, 688059, 688401, 688403, 688981, 690033, 690034, 690076, 768570]) {
+    assert.ok(!campus.nodes.some((node) => node.name === `BLD_SCNU_R${record}`), `removed building BLD_SCNU_R${record} is back`);
+  }
   assert.equal(new Set(proxies.map((node) => node.name)).size, proxies.length, "duplicate BLD_SCNU_* ids");
   for (const node of proxies) {
     assert.ok(!taken.has(node.name), `${node.name} collides with an existing BLD_* id`);

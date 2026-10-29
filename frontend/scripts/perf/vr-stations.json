@@ -68,16 +68,6 @@
         "dist_m": 185
       },
       {
-        "bld_id": "BLD_SCNU_R688041",
-        "name": "A16 교직원테니스장 부속 시설 (추정)",
-        "face": "l",
-        "approx_col_range": [
-          1799,
-          1902
-        ],
-        "dist_m": 196
-      },
-      {
         "bld_id": "BLD_SCNU_R688980",
         "name": "A16 교직원테니스장 부속 시설 (추정)",
         "face": "l",
@@ -181,76 +171,6 @@
     "xml_alt": 63.63,
     "visible_buildings": [
       {
-        "bld_id": "BLD_SCNU_R688403",
-        "name": "C2 친환경농업센터 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          1589,
-          1978
-        ],
-        "dist_m": 81
-      },
-      {
-        "bld_id": "BLD_SCNU_R688401",
-        "name": "B6 제1중앙공급실 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          1285,
-          1468
-        ],
-        "dist_m": 82
-      },
-      {
-        "bld_id": "BLD_SCNU_R687750",
-        "name": "B6 제1중앙공급실 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          1037,
-          1120
-        ],
-        "dist_m": 85
-      },
-      {
-        "bld_id": "BLD_SCNU_R687777",
-        "name": "C2 친환경농업센터 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          1561,
-          1679
-        ],
-        "dist_m": 87
-      },
-      {
-        "bld_id": "BLD_SCNU_R690033",
-        "name": "C2 친환경농업센터 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          1674,
-          1942
-        ],
-        "dist_m": 91
-      },
-      {
-        "bld_id": "BLD_SCNU_R690034",
-        "name": "B6 제1중앙공급실 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          893,
-          985
-        ],
-        "dist_m": 92
-      },
-      {
-        "bld_id": "BLD_SCNU_R687828",
-        "name": "B6 제1중앙공급실 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          779,
-          890
-        ],
-        "dist_m": 93
-      },
-      {
         "bld_id": "BLD_SCNU_B6",
         "name": "B6 제1중앙공급실",
         "face": "f",
@@ -261,16 +181,6 @@
         "dist_m": 97
       },
       {
-        "bld_id": "BLD_SCNU_R687746",
-        "name": "조미채소기술센터유리온실",
-        "face": "f",
-        "approx_col_range": [
-          662,
-          761
-        ],
-        "dist_m": 98
-      },
-      {
         "bld_id": "BLD_SCNU_B5",
         "name": "B5 생명산업과학대학온실",
         "face": "f",
@@ -279,16 +189,6 @@
           711
         ],
         "dist_m": 98
-      },
-      {
-        "bld_id": "BLD_SCNU_R687709",
-        "name": "B5 생명산업과학대학온실 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          353,
-          416
-        ],
-        "dist_m": 103
       },
       {
         "bld_id": "BLD_SCNU_C2",
@@ -722,16 +622,6 @@
         "dist_m": 54
       },
       {
-        "bld_id": "BLD_SCNU_R688059",
-        "name": "E1 학생회관 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          1025,
-          1195
-        ],
-        "dist_m": 73
-      },
-      {
         "bld_id": "BLD_SCNU_C1",
         "name": "C1 도서관",
         "face": "r",
@@ -1143,16 +1033,6 @@
         "dist_m": 76
       },
       {
-        "bld_id": "BLD_SCNU_R768570",
-        "name": "11동 생명대온실",
-        "face": "f",
-        "approx_col_range": [
-          874,
-          1065
-        ],
-        "dist_m": 93
-      },
-      {
         "bld_id": "BLD_SCNU_A7",
         "name": "A7 학생생활관 관리동",
         "face": "f",
@@ -1313,16 +1193,6 @@
         "dist_m": 47
       },
       {
-        "bld_id": "BLD_SCNU_R768570",
-        "name": "11동 생명대온실",
-        "face": "b",
-        "approx_col_range": [
-          374,
-          848
-        ],
-        "dist_m": 50
-      },
-      {
         "bld_id": "BLD_SCNU_A10",
         "name": "A10 인재관 · A11 제2중앙공급실",
         "face": "l",
@@ -1463,16 +1333,6 @@
           1591
         ],
         "dist_m": 22
-      },
-      {
-        "bld_id": "BLD_SCNU_R768570",
-        "name": "11동 생명대온실",
-        "face": "l",
-        "approx_col_range": [
-          1361,
-          1885
-        ],
-        "dist_m": 26
       },
       {
         "bld_id": "BLD_SCNU_A10",
@@ -1653,16 +1513,6 @@
         "dist_m": 34
       },
       {
-        "bld_id": "BLD_SCNU_R768570",
-        "name": "11동 생명대온실",
-        "face": "l",
-        "approx_col_range": [
-          784,
-          1186
-        ],
-        "dist_m": 44
-      },
-      {
         "bld_id": "BLD_SCNU_R85389",
         "name": "27동 학생생활관(향림관)",
         "face": "f",
@@ -1820,16 +1670,6 @@
           2036
         ],
         "dist_m": 34
-      },
-      {
-        "bld_id": "BLD_SCNU_R768570",
-        "name": "11동 생명대온실",
-        "face": "b",
-        "approx_col_range": [
-          840,
-          1266
-        ],
-        "dist_m": 42
       },
       {
         "bld_id": "BLD_SCNU_R85389",
@@ -2043,16 +1883,6 @@
         "dist_m": 206
       },
       {
-        "bld_id": "BLD_SCNU_R768570",
-        "name": "11동 생명대온실",
-        "face": "f",
-        "approx_col_range": [
-          1601,
-          1711
-        ],
-        "dist_m": 208
-      },
-      {
         "bld_id": "BLD_SCNU_A6",
         "name": "A6 학생생활관 창조관",
         "face": "f",
@@ -2173,16 +2003,6 @@
         "dist_m": 49
       },
       {
-        "bld_id": "BLD_SCNU_R768570",
-        "name": "11동 생명대온실",
-        "face": "l",
-        "approx_col_range": [
-          1064,
-          1341
-        ],
-        "dist_m": 69
-      },
-      {
         "bld_id": "BLD_SCNU_A7",
         "name": "A7 학생생활관 관리동",
         "face": "l",
@@ -2274,16 +2094,6 @@
           1601
         ],
         "dist_m": 66
-      },
-      {
-        "bld_id": "BLD_SCNU_R688041",
-        "name": "A16 교직원테니스장 부속 시설 (추정)",
-        "face": "l",
-        "approx_col_range": [
-          52,
-          240
-        ],
-        "dist_m": 72
       },
       {
         "bld_id": "BLD_SCNU_R688980",
@@ -2435,16 +2245,6 @@
     "xml_lng": 127.48496833,
     "xml_alt": 58.74,
     "visible_buildings": [
-      {
-        "bld_id": "BLD_SCNU_R688041",
-        "name": "A16 교직원테니스장 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          918,
-          1256
-        ],
-        "dist_m": 27
-      },
       {
         "bld_id": "BLD_SCNU_R688980",
         "name": "A16 교직원테니스장 부속 시설 (추정)",
@@ -2686,26 +2486,6 @@
         "dist_m": 115
       },
       {
-        "bld_id": "BLD_SCNU_R688041",
-        "name": "A16 교직원테니스장 부속 시설 (추정)",
-        "face": "r",
-        "approx_col_range": [
-          449,
-          570
-        ],
-        "dist_m": 116
-      },
-      {
-        "bld_id": "BLD_SCNU_R688981",
-        "name": "F1 국제문화컨벤션관 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          306,
-          380
-        ],
-        "dist_m": 121
-      },
-      {
         "bld_id": "BLD_SCNU_F4",
         "name": "F4 연립관사",
         "face": "f",
@@ -2786,26 +2566,6 @@
     "xml_lng": 127.48496833,
     "xml_alt": 58.74,
     "visible_buildings": [
-      {
-        "bld_id": "BLD_SCNU_R688041",
-        "name": "A16 교직원테니스장 부속 시설 (추정)",
-        "face": "l",
-        "approx_col_range": [
-          851,
-          1094
-        ],
-        "dist_m": 6
-      },
-      {
-        "bld_id": "BLD_SCNU_R688041",
-        "name": "A16 교직원테니스장 부속 시설 (추정)",
-        "face": "b",
-        "approx_col_range": [
-          1186,
-          1336
-        ],
-        "dist_m": 6
-      },
       {
         "bld_id": "BLD_SCNU_R688980",
         "name": "A16 교직원테니스장 부속 시설 (추정)",
@@ -2997,16 +2757,6 @@
           1471
         ],
         "dist_m": 153
-      },
-      {
-        "bld_id": "BLD_SCNU_R688041",
-        "name": "A16 교직원테니스장 부속 시설 (추정)",
-        "face": "l",
-        "approx_col_range": [
-          1259,
-          1321
-        ],
-        "dist_m": 177
       },
       {
         "bld_id": "BLD_SCNU_F1",
@@ -3351,46 +3101,6 @@
         "dist_m": 21
       },
       {
-        "bld_id": "BLD_SCNU_R687746",
-        "name": "조미채소기술센터유리온실",
-        "face": "f",
-        "approx_col_range": [
-          2035,
-          2035
-        ],
-        "dist_m": 23
-      },
-      {
-        "bld_id": "BLD_SCNU_R687746",
-        "name": "조미채소기술센터유리온실",
-        "face": "r",
-        "approx_col_range": [
-          182,
-          550
-        ],
-        "dist_m": 23
-      },
-      {
-        "bld_id": "BLD_SCNU_R687709",
-        "name": "B5 생명산업과학대학온실 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          833,
-          1020
-        ],
-        "dist_m": 23
-      },
-      {
-        "bld_id": "BLD_SCNU_R687828",
-        "name": "B6 제1중앙공급실 부속 시설 (추정)",
-        "face": "r",
-        "approx_col_range": [
-          648,
-          1009
-        ],
-        "dist_m": 26
-      },
-      {
         "bld_id": "BLD_SCNU_B6",
         "name": "B6 제1중앙공급실",
         "face": "r",
@@ -3399,26 +3109,6 @@
           1285
         ],
         "dist_m": 31
-      },
-      {
-        "bld_id": "BLD_SCNU_R690034",
-        "name": "B6 제1중앙공급실 부속 시설 (추정)",
-        "face": "r",
-        "approx_col_range": [
-          902,
-          1175
-        ],
-        "dist_m": 33
-      },
-      {
-        "bld_id": "BLD_SCNU_R687750",
-        "name": "B6 제1중앙공급실 부속 시설 (추정)",
-        "face": "r",
-        "approx_col_range": [
-          1295,
-          1448
-        ],
-        "dist_m": 42
       },
       {
         "bld_id": "BLD_SCNU_B3",
@@ -3561,26 +3251,6 @@
         "dist_m": 41
       },
       {
-        "bld_id": "BLD_SCNU_R687709",
-        "name": "B5 생명산업과학대학온실 부속 시설 (추정)",
-        "face": "l",
-        "approx_col_range": [
-          1303,
-          1381
-        ],
-        "dist_m": 63
-      },
-      {
-        "bld_id": "BLD_SCNU_R687746",
-        "name": "조미채소기술센터유리온실",
-        "face": "l",
-        "approx_col_range": [
-          897,
-          1099
-        ],
-        "dist_m": 75
-      },
-      {
         "bld_id": "BLD_SCNU_B6",
         "name": "B6 제1중앙공급실",
         "face": "l",
@@ -3599,16 +3269,6 @@
           901
         ],
         "dist_m": 85
-      },
-      {
-        "bld_id": "BLD_SCNU_R687828",
-        "name": "B6 제1중앙공급실 부속 시설 (추정)",
-        "face": "l",
-        "approx_col_range": [
-          962,
-          1058
-        ],
-        "dist_m": 90
       }
     ],
     "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
@@ -3734,16 +3394,6 @@
         "dist_m": 68
       },
       {
-        "bld_id": "BLD_SCNU_R687746",
-        "name": "조미채소기술센터유리온실",
-        "face": "f",
-        "approx_col_range": [
-          1486,
-          1675
-        ],
-        "dist_m": 84
-      },
-      {
         "bld_id": "BLD_SCNU_B6",
         "name": "B6 제1중앙공급실",
         "face": "f",
@@ -3752,26 +3402,6 @@
           1522
         ],
         "dist_m": 87
-      },
-      {
-        "bld_id": "BLD_SCNU_R687709",
-        "name": "B5 생명산업과학대학온실 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          2038,
-          2038
-        ],
-        "dist_m": 90
-      },
-      {
-        "bld_id": "BLD_SCNU_R687709",
-        "name": "B5 생명산업과학대학온실 부속 시설 (추정)",
-        "face": "r",
-        "approx_col_range": [
-          2,
-          87
-        ],
-        "dist_m": 90
       }
     ],
     "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
@@ -3925,26 +3555,6 @@
           363
         ],
         "dist_m": 110
-      },
-      {
-        "bld_id": "BLD_SCNU_R687709",
-        "name": "B5 생명산업과학대학온실 부속 시설 (추정)",
-        "face": "l",
-        "approx_col_range": [
-          335,
-          368
-        ],
-        "dist_m": 119
-      },
-      {
-        "bld_id": "BLD_SCNU_R687746",
-        "name": "조미채소기술센터유리온실",
-        "face": "l",
-        "approx_col_range": [
-          191,
-          350
-        ],
-        "dist_m": 144
       }
     ],
     "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
@@ -4057,16 +3667,6 @@
           1813
         ],
         "dist_m": 84
-      },
-      {
-        "bld_id": "BLD_SCNU_R688059",
-        "name": "E1 학생회관 부속 시설 (추정)",
-        "face": "l",
-        "approx_col_range": [
-          815,
-          960
-        ],
-        "dist_m": 93
       },
       {
         "bld_id": "BLD_SCNU_E3",
@@ -4238,26 +3838,6 @@
         "dist_m": 50
       },
       {
-        "bld_id": "BLD_SCNU_R690033",
-        "name": "C2 친환경농업센터 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          973,
-          1262
-        ],
-        "dist_m": 52
-      },
-      {
-        "bld_id": "BLD_SCNU_R688401",
-        "name": "B6 제1중앙공급실 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          1582,
-          1954
-        ],
-        "dist_m": 52
-      },
-      {
         "bld_id": "BLD_SCNU_C3",
         "name": "C3 공동실험실습관",
         "face": "l",
@@ -4266,26 +3846,6 @@
           2026
         ],
         "dist_m": 53
-      },
-      {
-        "bld_id": "BLD_SCNU_R687777",
-        "name": "C2 친환경농업센터 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          1289,
-          1430
-        ],
-        "dist_m": 55
-      },
-      {
-        "bld_id": "BLD_SCNU_R688403",
-        "name": "C2 친환경농업센터 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          1067,
-          1433
-        ],
-        "dist_m": 58
       },
       {
         "bld_id": "BLD_SCNU_C4",
@@ -4421,16 +3981,6 @@
         "dist_m": 46
       },
       {
-        "bld_id": "BLD_SCNU_R690076",
-        "name": "C3 공동실험실습관 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          964,
-          1119
-        ],
-        "dist_m": 48
-      },
-      {
         "bld_id": "BLD_SCNU_C4",
         "name": "C4 환경친화형물질공장 기술혁신센터",
         "face": "f",
@@ -4459,16 +4009,6 @@
           1155
         ],
         "dist_m": 79
-      },
-      {
-        "bld_id": "BLD_SCNU_R690033",
-        "name": "C2 친환경농업센터 부속 시설 (추정)",
-        "face": "r",
-        "approx_col_range": [
-          31,
-          75
-        ],
-        "dist_m": 90
       }
     ],
     "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
@@ -4555,16 +4095,6 @@
         "dist_m": 41
       },
       {
-        "bld_id": "BLD_SCNU_R690076",
-        "name": "C3 공동실험실습관 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          1675,
-          1960
-        ],
-        "dist_m": 52
-      },
-      {
         "bld_id": "BLD_SCNU_C4",
         "name": "C4 환경친화형물질공장 기술혁신센터",
         "face": "f",
@@ -4613,36 +4143,6 @@
           1059
         ],
         "dist_m": 99
-      },
-      {
-        "bld_id": "BLD_SCNU_R690033",
-        "name": "C2 친환경농업센터 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          1262,
-          1337
-        ],
-        "dist_m": 108
-      },
-      {
-        "bld_id": "BLD_SCNU_R688403",
-        "name": "C2 친환경농업센터 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          1171,
-          1289
-        ],
-        "dist_m": 112
-      },
-      {
-        "bld_id": "BLD_SCNU_R687777",
-        "name": "C2 친환경농업센터 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          1279,
-          1320
-        ],
-        "dist_m": 125
       }
     ],
     "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
@@ -4726,26 +4226,6 @@
           1699
         ],
         "dist_m": 34
-      },
-      {
-        "bld_id": "BLD_SCNU_R688059",
-        "name": "E1 학생회관 부속 시설 (추정)",
-        "face": "b",
-        "approx_col_range": [
-          2026,
-          2030
-        ],
-        "dist_m": 63
-      },
-      {
-        "bld_id": "BLD_SCNU_R688059",
-        "name": "E1 학생회관 부속 시설 (추정)",
-        "face": "l",
-        "approx_col_range": [
-          309,
-          334
-        ],
-        "dist_m": 63
       },
       {
         "bld_id": "BLD_SCNU_E3",
@@ -5421,86 +4901,6 @@
     "xml_alt": 58.74,
     "visible_buildings": [
       {
-        "bld_id": "BLD_SCNU_R688403",
-        "name": "C2 친환경농업센터 부속 시설 (추정)",
-        "face": "r",
-        "approx_col_range": [
-          1158,
-          1310
-        ],
-        "dist_m": 144
-      },
-      {
-        "bld_id": "BLD_SCNU_R688401",
-        "name": "B6 제1중앙공급실 부속 시설 (추정)",
-        "face": "r",
-        "approx_col_range": [
-          1016,
-          1109
-        ],
-        "dist_m": 148
-      },
-      {
-        "bld_id": "BLD_SCNU_R687777",
-        "name": "C2 친환경농업센터 부속 시설 (추정)",
-        "face": "r",
-        "approx_col_range": [
-          1156,
-          1205
-        ],
-        "dist_m": 151
-      },
-      {
-        "bld_id": "BLD_SCNU_R687750",
-        "name": "B6 제1중앙공급실 부속 시설 (추정)",
-        "face": "r",
-        "approx_col_range": [
-          877,
-          925
-        ],
-        "dist_m": 151
-      },
-      {
-        "bld_id": "BLD_SCNU_R690033",
-        "name": "C2 친환경농업센터 부속 시설 (추정)",
-        "face": "r",
-        "approx_col_range": [
-          1212,
-          1319
-        ],
-        "dist_m": 154
-      },
-      {
-        "bld_id": "BLD_SCNU_R690034",
-        "name": "B6 제1중앙공급실 부속 시설 (추정)",
-        "face": "r",
-        "approx_col_range": [
-          785,
-          844
-        ],
-        "dist_m": 157
-      },
-      {
-        "bld_id": "BLD_SCNU_R687828",
-        "name": "B6 제1중앙공급실 부속 시설 (추정)",
-        "face": "r",
-        "approx_col_range": [
-          717,
-          786
-        ],
-        "dist_m": 158
-      },
-      {
-        "bld_id": "BLD_SCNU_R687709",
-        "name": "B5 생명산업과학대학온실 부속 시설 (추정)",
-        "face": "r",
-        "approx_col_range": [
-          444,
-          481
-        ],
-        "dist_m": 160
-      },
-      {
         "bld_id": "BLD_SCNU_B5",
         "name": "B5 생명산업과학대학온실",
         "face": "r",
@@ -5519,16 +4919,6 @@
           1427
         ],
         "dist_m": 160
-      },
-      {
-        "bld_id": "BLD_SCNU_R687746",
-        "name": "조미채소기술센터유리온실",
-        "face": "r",
-        "approx_col_range": [
-          640,
-          689
-        ],
-        "dist_m": 161
       },
       {
         "bld_id": "BLD_SCNU_B6",
@@ -5650,16 +5040,6 @@
           1473
         ],
         "dist_m": 72
-      },
-      {
-        "bld_id": "BLD_SCNU_R688059",
-        "name": "E1 학생회관 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          1220,
-          1396
-        ],
-        "dist_m": 82
       },
       {
         "bld_id": "BLD_SCNU_B6",
@@ -6032,26 +5412,6 @@
         "dist_m": 74
       },
       {
-        "bld_id": "BLD_SCNU_R688059",
-        "name": "E1 학생회관 부속 시설 (추정)",
-        "face": "b",
-        "approx_col_range": [
-          1885,
-          2009
-        ],
-        "dist_m": 74
-      },
-      {
-        "bld_id": "BLD_SCNU_R688059",
-        "name": "E1 학생회관 부속 시설 (추정)",
-        "face": "l",
-        "approx_col_range": [
-          1,
-          1
-        ],
-        "dist_m": 74
-      },
-      {
         "bld_id": "BLD_SCNU_E2",
         "name": "E2 기초교육관",
         "face": "l",
@@ -6363,16 +5723,6 @@
           1313
         ],
         "dist_m": 84
-      },
-      {
-        "bld_id": "BLD_SCNU_R688059",
-        "name": "E1 학생회관 부속 시설 (추정)",
-        "face": "l",
-        "approx_col_range": [
-          222,
-          334
-        ],
-        "dist_m": 92
       },
       {
         "bld_id": "BLD_SCNU_E2",
@@ -7026,16 +6376,6 @@
         "dist_m": 89
       },
       {
-        "bld_id": "BLD_SCNU_R688981",
-        "name": "F1 국제문화컨벤션관 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          479,
-          569
-        ],
-        "dist_m": 99
-      },
-      {
         "bld_id": "BLD_SCNU_F4",
         "name": "F4 연립관사",
         "face": "f",
@@ -7084,16 +6424,6 @@
           4
         ],
         "dist_m": 177
-      },
-      {
-        "bld_id": "BLD_SCNU_R688041",
-        "name": "A16 교직원테니스장 부속 시설 (추정)",
-        "face": "r",
-        "approx_col_range": [
-          1,
-          111
-        ],
-        "dist_m": 181
       }
     ],
     "visible_buildings_note": "predicted by projecting standing BLD_* footprints within 300 m through the solved station/yaw; not occlusion-checked",
@@ -7235,16 +6565,6 @@
         "dist_m": 86
       },
       {
-        "bld_id": "BLD_SCNU_R688041",
-        "name": "A16 교직원테니스장 부속 시설 (추정)",
-        "face": "f",
-        "approx_col_range": [
-          547,
-          690
-        ],
-        "dist_m": 93
-      },
-      {
         "bld_id": "BLD_SCNU_R688980",
         "name": "A16 교직원테니스장 부속 시설 (추정)",
         "face": "f",
@@ -7271,26 +6591,6 @@
         "approx_col_range": [
           962,
           1273
-        ],
-        "dist_m": 112
-      },
-      {
-        "bld_id": "BLD_SCNU_R768570",
-        "name": "11동 생명대온실",
-        "face": "r",
-        "approx_col_range": [
-          1803,
-          1864
-        ],
-        "dist_m": 112
-      },
-      {
-        "bld_id": "BLD_SCNU_R768570",
-        "name": "11동 생명대온실",
-        "face": "b",
-        "approx_col_range": [
-          60,
-          112
         ],
         "dist_m": 112
       }
