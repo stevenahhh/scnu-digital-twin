@@ -107,8 +107,8 @@ test("maps registry-coded pick proxies to the existing element and leaves estima
   assert.equal(resolveProxyDataElementId("BLD_SCNU_R1", registry("A7"), elementNames), "BLD_A7");
   assert.equal(
     resolveProxyDataElementId(
-      "BLD_SCNU_R690076",
-      { pickProxy: true, nameSource: "estimated: 부속 시설 of C3 공동실험실습관 (footprint 2.6 m from it)" },
+      "BLD_SCNU_R688057",
+      { pickProxy: true, nameSource: "estimated: 부속동 of A1 대학본부 (footprint 0.0 m from it)" },
       elementNames,
     ),
     null,

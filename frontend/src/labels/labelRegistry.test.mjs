@@ -39,9 +39,9 @@ const anchors = [
   // GLB 꼬리 순서와 다르게 넣어도 번호는 꼬리 순서를 따른다.
   dorm("003"), dorm(""), dorm("004"), dorm("001"), dorm("002"),
   { name: "BLD_B5_Greenhouse", elementId: "BLD_B5_Greenhouse", displayName: "생명산업과학대학 온실", dataElementId: "BLD_B5_Greenhouse", proxy: false, position: [0, 0, 0] },
-  proxy("BLD_SCNU_R690076", "C3 공동실험실습관 부속 시설 (추정)", { nameSource: "estimated: 부속 시설 of C3" }),
-  proxy("BLD_SCNU_R687750", "B6 제1중앙공급실 부속 시설 (추정)"),
-  proxy("BLD_SCNU_R687828", "B6 제1중앙공급실 부속 시설 (추정)"),
+  proxy("BLD_SCNU_R688057", "A1 대학본부 부속동 (추정)", { nameSource: "estimated: 부속동 of A1" }),
+  proxy("BLD_SCNU_R688980", "A16 교직원테니스장 부속 시설 (추정)"),
+  proxy("BLD_SCNU_R138317", "A16 교직원테니스장 부속 시설 (추정)"),
   proxy("BLD_SCNU_R69065", "A15 운동장 본부석 (추정)"),
   proxy("BLD_SCNU_A12", "A12 우정원", { nameSource: "SCNU registry A12 (w1.scnu.ac.kr)" }),
   { name: "BLD_Unknown_Thing", elementId: "BLD_Unknown_Thing", displayName: null, dataElementId: "BLD_Unknown_Thing", proxy: false, position: [0, 0, 0] },
@@ -62,7 +62,7 @@ test("tier 1 = landmark ids, matched through the proxy data element id too", () 
 });
 
 test("tier 3 = BLD_SCNU_R* proxies, 부속 시설 / 온실 / 본부석 names and estimated names", () => {
-  for (const id of ["BLD_SCNU_R690076", "BLD_SCNU_R687750", "BLD_SCNU_R69065", "BLD_B5_Greenhouse", "BLD_Unknown_Thing"]) {
+  for (const id of ["BLD_SCNU_R688057", "BLD_SCNU_R688980", "BLD_SCNU_R69065", "BLD_B5_Greenhouse", "BLD_Unknown_Thing"]) {
     assert.equal(entry(id).tier, 3, id);
   }
 });
@@ -96,12 +96,12 @@ test("dormitory blocks are numbered by GLB suffix order and share the dormitory 
   assert.deepEqual(ids.map((id) => entry(id).displayName), [1, 2, 3, 4, 5].map((n) => `학생생활관 ${n}동`));
   for (const id of ids) assert.equal(entry(id).group, "dormitory");
   assert.equal(clusterLabelFor("dormitory", 5), "학생생활관 5동");
-  assert.equal(clusterLabelFor("제1중앙공급실 부속 시설", 2), "제1중앙공급실 부속 시설 2곳");
+  assert.equal(clusterLabelFor("교직원테니스장 부속 시설", 2), "교직원테니스장 부속 시설 2곳");
 });
 
 test("(추정) is stripped from displayName and sets estimatedName; the leading registry code goes too", () => {
-  assert.equal(entry("BLD_SCNU_R690076").displayName, "공동실험실습관 부속 시설");
-  assert.equal(entry("BLD_SCNU_R690076").estimatedName, true);
+  assert.equal(entry("BLD_SCNU_R688057").displayName, "대학본부 부속동");
+  assert.equal(entry("BLD_SCNU_R688057").estimatedName, true);
   assert.equal(entry("BLD_SCNU_R69065").displayName, "운동장 본부석");
   assert.equal(entry("BLD_D4").estimatedName, false);
 });
@@ -122,7 +122,7 @@ test("no two entries share a displayName unless they share a group", () => {
     if (other) assert.ok(other.group && other.group === e.group, `${other.elementId} and ${e.elementId} share ${e.displayName}`);
     seen.set(e.displayName, e);
   }
-  assert.equal(entry("BLD_SCNU_R687750").group, "제1중앙공급실 부속 시설");
+  assert.equal(entry("BLD_SCNU_R688980").group, "교직원테니스장 부속 시설");
 });
 
 test("codes come from BLD_<code> ids, prefixed ids and proxy data element ids", () => {
@@ -130,7 +130,7 @@ test("codes come from BLD_<code> ids, prefixed ids and proxy data element ids", 
   assert.equal(entry("BLD_B5_Greenhouse").code, "B5");
   assert.equal(entry("BLD_SCNU_A12").code, "A12");
   assert.equal(entry("BLD_SCNU_A12").dataElementId, "BLD_A12");
-  assert.equal(entry("BLD_SCNU_R690076").code, null);
+  assert.equal(entry("BLD_SCNU_R688057").code, null);
   assert.equal(entry("BLD_Dormitory_Building").code, null);
 });
 

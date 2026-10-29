@@ -1,5 +1,5 @@
 {
-  "description": "Curated names of SCNU campus buildings in gis-buildings.json, keyed by footprintSource. Applied by fetch/scnuNames.mjs (also run from fetch/buildings.mjs). status: standing (modelled; nodeId is its selectable node unless an existing BLD_* node already covers the footprint), unresolved (modelled, no name found), demolished (not on current imagery; not modelled). Names marked estimated are labelled (추정).",
+  "description": "Curated names of SCNU campus buildings in gis-buildings.json, keyed by footprintSource. Applied by fetch/scnuNames.mjs (also run from fetch/buildings.mjs). status: standing (modelled; nodeId is its selectable node unless an existing BLD_* node already covers the footprint), unresolved (modelled, no name found), demolished (not on current imagery; not modelled), removed (not in the official VR tour; dropped from gis-buildings.json and not modelled). Names marked estimated are labelled (추정).",
   "sources": [
     "SCNU campus registry: POST https://w1.scnu.ac.kr/SCNU/campus/list.do (code, name, point), read 2026-10-24",
     "SCNU 360 VR tour scene list: https://vr.scnu.ac.kr/360vr/tour.xml (scene_<code> titles), read 2026-10-24; panoramas used as visual reference only",
@@ -206,11 +206,9 @@
     },
     {
       "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 690076",
-      "status": "standing",
+      "status": "removed",
       "name": "순천대학교 C3 공동실험실습관 부속 시설",
-      "nameSource": "estimated: 부속 시설 of C3 공동실험실습관 (footprint 2.6 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name)",
-      "label": "C3 공동실험실습관 부속 시설 (추정)",
-      "nodeId": "BLD_SCNU_R690076",
+      "nameSource": "estimated: 부속 시설 of C3 공동실험실습관 (footprint 2.6 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
       "registerName": "순천대학교",
       "centroid": [
         127.479613,
@@ -232,11 +230,9 @@
     },
     {
       "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688059",
-      "status": "standing",
+      "status": "removed",
       "name": "순천대학교 E1 학생회관 부속 시설",
-      "nameSource": "estimated: 부속 시설 of E1 학생회관 (footprint 12.6 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name)",
-      "label": "E1 학생회관 부속 시설 (추정)",
-      "nodeId": "BLD_SCNU_R688059",
+      "nameSource": "estimated: 부속 시설 of E1 학생회관 (footprint 12.6 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
       "registerName": "순천대학교",
       "centroid": [
         127.479657,
@@ -376,11 +372,9 @@
     },
     {
       "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688403",
-      "status": "standing",
+      "status": "removed",
       "name": "순천대학교 C2 친환경농업센터 부속 시설",
-      "nameSource": "estimated: 부속 시설 of C2 친환경농업센터 (footprint 19.6 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name)",
-      "label": "C2 친환경농업센터 부속 시설 (추정)",
-      "nodeId": "BLD_SCNU_R688403",
+      "nameSource": "estimated: 부속 시설 of C2 친환경농업센터 (footprint 19.6 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
       "registerName": "순천대학교",
       "centroid": [
         127.480439,
@@ -389,11 +383,9 @@
     },
     {
       "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 690033",
-      "status": "standing",
+      "status": "removed",
       "name": "순천대학교 C2 친환경농업센터 부속 시설",
-      "nameSource": "estimated: 부속 시설 of C2 친환경농업센터 (footprint 14.6 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name)",
-      "label": "C2 친환경농업센터 부속 시설 (추정)",
-      "nodeId": "BLD_SCNU_R690033",
+      "nameSource": "estimated: 부속 시설 of C2 친환경농업센터 (footprint 14.6 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
       "registerName": "순천대학교",
       "centroid": [
         127.480337,
@@ -415,11 +407,9 @@
     },
     {
       "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687777",
-      "status": "standing",
+      "status": "removed",
       "name": "순천대학교 C2 친환경농업센터 부속 시설",
-      "nameSource": "estimated: 부속 시설 of C2 친환경농업센터 (footprint 16.0 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name)",
-      "label": "C2 친환경농업센터 부속 시설 (추정)",
-      "nodeId": "BLD_SCNU_R687777",
+      "nameSource": "estimated: 부속 시설 of C2 친환경농업센터 (footprint 16.0 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
       "registerName": "순천대학교",
       "centroid": [
         127.480465,
@@ -428,11 +418,9 @@
     },
     {
       "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688401",
-      "status": "standing",
+      "status": "removed",
       "name": "순천대학교 B6 제1중앙공급실 부속 시설",
-      "nameSource": "estimated: 부속 시설 of B6 제1중앙공급실 (footprint 13.1 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name)",
-      "label": "B6 제1중앙공급실 부속 시설 (추정)",
-      "nodeId": "BLD_SCNU_R688401",
+      "nameSource": "estimated: 부속 시설 of B6 제1중앙공급실 (footprint 13.1 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
       "registerName": "순천대학교",
       "centroid": [
         127.480619,
@@ -465,11 +453,9 @@
     },
     {
       "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 768570",
-      "status": "standing",
+      "status": "removed",
       "name": "순천대학교 11동 생명대온실",
-      "nameSource": "VWorld LT_C_BLDGINFO dong_nm",
-      "label": "11동 생명대온실",
-      "nodeId": "BLD_SCNU_R768570",
+      "nameSource": "VWorld LT_C_BLDGINFO dong_nm; removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
       "registerName": "순천대학교 11동 생명대온실",
       "centroid": [
         127.480662,
@@ -491,11 +477,9 @@
     },
     {
       "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687750",
-      "status": "standing",
+      "status": "removed",
       "name": "순천대학교 B6 제1중앙공급실 부속 시설",
-      "nameSource": "estimated: 부속 시설 of B6 제1중앙공급실 (footprint 7.2 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name)",
-      "label": "B6 제1중앙공급실 부속 시설 (추정)",
-      "nodeId": "BLD_SCNU_R687750",
+      "nameSource": "estimated: 부속 시설 of B6 제1중앙공급실 (footprint 7.2 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
       "registerName": "순천대학교",
       "centroid": [
         127.480841,
@@ -517,11 +501,9 @@
     },
     {
       "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 690034",
-      "status": "standing",
+      "status": "removed",
       "name": "순천대학교 B6 제1중앙공급실 부속 시설",
-      "nameSource": "estimated: 부속 시설 of B6 제1중앙공급실 (footprint 2.2 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name)",
-      "label": "B6 제1중앙공급실 부속 시설 (추정)",
-      "nodeId": "BLD_SCNU_R690034",
+      "nameSource": "estimated: 부속 시설 of B6 제1중앙공급실 (footprint 2.2 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
       "registerName": "순천대학교",
       "centroid": [
         127.480952,
@@ -530,11 +512,9 @@
     },
     {
       "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687828",
-      "status": "standing",
+      "status": "removed",
       "name": "순천대학교 B6 제1중앙공급실 부속 시설",
-      "nameSource": "estimated: 부속 시설 of B6 제1중앙공급실 (footprint 1.5 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name)",
-      "label": "B6 제1중앙공급실 부속 시설 (추정)",
-      "nodeId": "BLD_SCNU_R687828",
+      "nameSource": "estimated: 부속 시설 of B6 제1중앙공급실 (footprint 1.5 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
       "registerName": "순천대학교",
       "centroid": [
         127.481048,
@@ -582,11 +562,9 @@
     },
     {
       "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687746",
-      "status": "standing",
+      "status": "removed",
       "name": "순천대학교 조미채소기술센터유리온실",
-      "nameSource": "VWorld LT_C_SPBD buld_nm_dc",
-      "label": "조미채소기술센터유리온실",
-      "nodeId": "BLD_SCNU_R687746",
+      "nameSource": "VWorld LT_C_SPBD buld_nm_dc; removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
       "registerName": "순천대학교",
       "centroid": [
         127.481162,
@@ -645,11 +623,9 @@
     },
     {
       "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687709",
-      "status": "standing",
+      "status": "removed",
       "name": "순천대학교 B5 생명산업과학대학온실 부속 시설",
-      "nameSource": "estimated: 부속 시설 of B5 생명산업과학대학온실 (footprint 0.1 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name)",
-      "label": "B5 생명산업과학대학온실 부속 시설 (추정)",
-      "nodeId": "BLD_SCNU_R687709",
+      "nameSource": "estimated: 부속 시설 of B5 생명산업과학대학온실 (footprint 0.1 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
       "registerName": "순천대학교",
       "centroid": [
         127.481468,
@@ -965,11 +941,9 @@
     },
     {
       "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688041",
-      "status": "standing",
+      "status": "removed",
       "name": "순천대학교 A16 교직원테니스장 부속 시설",
-      "nameSource": "estimated: court-side structure of A16 교직원테니스장 (registry A16 point 17.9 m away; VWorld z19 imagery)",
-      "label": "A16 교직원테니스장 부속 시설 (추정)",
-      "nodeId": "BLD_SCNU_R688041",
+      "nameSource": "estimated: court-side structure of A16 교직원테니스장 (registry A16 point 17.9 m away; VWorld z19 imagery); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
       "registerName": "순천대학교",
       "centroid": [
         127.482982,
@@ -1157,11 +1131,9 @@
     },
     {
       "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688981",
-      "status": "standing",
+      "status": "removed",
       "name": "순천대학교 F1 국제문화컨벤션관 부속 시설",
-      "nameSource": "estimated: 부속 시설 of F1 국제문화컨벤션관 (footprint 8.2 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name)",
-      "label": "F1 국제문화컨벤션관 부속 시설 (추정)",
-      "nodeId": "BLD_SCNU_R688981",
+      "nameSource": "estimated: 부속 시설 of F1 국제문화컨벤션관 (footprint 8.2 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
       "registerName": "순천대학교",
       "centroid": [
         127.483863,
