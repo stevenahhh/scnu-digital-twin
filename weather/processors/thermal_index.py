@@ -273,7 +273,10 @@ def generate_reasons(
     if not reasons:
         reasons.append("현재 열 환경은 쾌적한 수준입니다")
 
-    return reasons
+    return [
+        reason if reason.endswith("(추정)") else f"{reason} (추정)"
+        for reason in reasons
+    ]
 
 
 # =========================================================

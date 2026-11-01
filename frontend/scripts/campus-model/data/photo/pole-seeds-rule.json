@@ -1,0 +1,475 @@
+{
+ "note": "Rule-estimated lamp positions that stages/lights.mjs placed every 27 m along the A003 walkway outlines up to dev-next 1695ea5 (public/campus-v2.glb Lamps_heads extras, estimated = 1). They are search seeds for fetch/poleRoots.mjs only: a lamp is drawn here only where the NGII 2025 photo shows a pole shadow near the seed (data/photo/pole-roots.json). Positions WGS84, heights estimated.",
+ "source": "public/campus-v2.glb @ 1695ea5",
+ "seeds": [
+  {
+   "id": "EL000",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.48317157,
+   "lat": 34.96651833
+  },
+  {
+   "id": "EL001",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.48343699,
+   "lat": 34.96658821
+  },
+  {
+   "id": "EL002",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.48221503,
+   "lat": 34.96655852
+  },
+  {
+   "id": "EL003",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.48250534,
+   "lat": 34.96660472
+  },
+  {
+   "id": "EL004",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.48191734,
+   "lat": 34.96656532
+  },
+  {
+   "id": "EL005",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.48160021,
+   "lat": 34.9668475
+  },
+  {
+   "id": "EL006",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.48318652,
+   "lat": 34.96692396
+  },
+  {
+   "id": "EL007",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.4828983,
+   "lat": 34.96686968
+  },
+  {
+   "id": "EL008",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.4799648,
+   "lat": 34.96726748
+  },
+  {
+   "id": "EL009",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.48003796,
+   "lat": 34.96745015
+  },
+  {
+   "id": "EL010",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.4782778,
+   "lat": 34.96769004
+  },
+  {
+   "id": "EL011",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.47972713,
+   "lat": 34.96772712
+  },
+  {
+   "id": "EL012",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.47997552,
+   "lat": 34.96783354
+  },
+  {
+   "id": "EL013",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.47947891,
+   "lat": 34.96784597
+  },
+  {
+   "id": "EL014",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.47793504,
+   "lat": 34.96782564
+  },
+  {
+   "id": "EL015",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.47770664,
+   "lat": 34.9679777
+  },
+  {
+   "id": "EL016",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.48008131,
+   "lat": 34.96800957
+  },
+  {
+   "id": "EL017",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.48013553,
+   "lat": 34.96828711
+  },
+  {
+   "id": "EL018",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.47988503,
+   "lat": 34.96839498
+  },
+  {
+   "id": "EL019",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.47959875,
+   "lat": 34.9684555
+  },
+  {
+   "id": "EL020",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.47931281,
+   "lat": 34.96851745
+  },
+  {
+   "id": "EL021",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.47905512,
+   "lat": 34.96860222
+  },
+  {
+   "id": "EL022",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.47879409,
+   "lat": 34.96862923
+  },
+  {
+   "id": "EL023",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.48315525,
+   "lat": 34.96859441
+  },
+  {
+   "id": "EL024",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.4828688,
+   "lat": 34.96865479
+  },
+  {
+   "id": "EL025",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.48258304,
+   "lat": 34.96871718
+  },
+  {
+   "id": "EL026",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.48229745,
+   "lat": 34.96877987
+  },
+  {
+   "id": "EL027",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.48201257,
+   "lat": 34.96884501
+  },
+  {
+   "id": "EL028",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.48171489,
+   "lat": 34.96890885
+  },
+  {
+   "id": "EL029",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.47867131,
+   "lat": 34.9690041
+  },
+  {
+   "id": "EL030",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.4775814,
+   "lat": 34.96899242
+  },
+  {
+   "id": "EL031",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.48116003,
+   "lat": 34.96907522
+  },
+  {
+   "id": "EL032",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.48082831,
+   "lat": 34.96910368
+  },
+  {
+   "id": "EL033",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.48041236,
+   "lat": 34.96855886
+  },
+  {
+   "id": "EL034",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.48049535,
+   "lat": 34.96892175
+  },
+  {
+   "id": "EL035",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.48227256,
+   "lat": 34.96896268
+  },
+  {
+   "id": "EL036",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.4819882,
+   "lat": 34.96902956
+  },
+  {
+   "id": "EL037",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.48170402,
+   "lat": 34.96909643
+  },
+  {
+   "id": "EL038",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.48164773,
+   "lat": 34.96947144
+  },
+  {
+   "id": "EL039",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.48123109,
+   "lat": 34.96924807
+  },
+  {
+   "id": "EL040",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.48087428,
+   "lat": 34.96928115
+  },
+  {
+   "id": "EL041",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.48075238,
+   "lat": 34.96970469
+  },
+  {
+   "id": "EL042",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.48083362,
+   "lat": 34.96993862
+  },
+  {
+   "id": "EL043",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.48317607,
+   "lat": 34.96995107
+  },
+  {
+   "id": "EL044",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.4828903,
+   "lat": 34.97001347
+  },
+  {
+   "id": "EL045",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.47742669,
+   "lat": 34.96926202
+  },
+  {
+   "id": "EL046",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.47714618,
+   "lat": 34.96933928
+  },
+  {
+   "id": "EL047",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.47702725,
+   "lat": 34.96954419
+  },
+  {
+   "id": "EL048",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.47706497,
+   "lat": 34.96978549
+  },
+  {
+   "id": "EL049",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.47698182,
+   "lat": 34.97011805
+  },
+  {
+   "id": "EL050",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.48062785,
+   "lat": 34.97001588
+  },
+  {
+   "id": "EL051",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.48042261,
+   "lat": 34.97018686
+  },
+  {
+   "id": "EL052",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.48297733,
+   "lat": 34.9701804
+  },
+  {
+   "id": "EL053",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.48326309,
+   "lat": 34.97011785
+  },
+  {
+   "id": "EL054",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.4801814,
+   "lat": 34.97025676
+  },
+  {
+   "id": "EL055",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.47955443,
+   "lat": 34.97027006
+  },
+  {
+   "id": "EL056",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.4827691,
+   "lat": 34.97024481
+  },
+  {
+   "id": "EL057",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.47924499,
+   "lat": 34.9703778
+  },
+  {
+   "id": "EL058",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.47888097,
+   "lat": 34.97025448
+  },
+  {
+   "id": "EL059",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.47878501,
+   "lat": 34.9700246
+  },
+  {
+   "id": "EL060",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.47884517,
+   "lat": 34.96979225
+  },
+  {
+   "id": "EL061",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.47894621,
+   "lat": 34.96956351
+  },
+  {
+   "id": "EL062",
+   "type": "path",
+   "heightM": 4,
+   "lon": 127.47902006,
+   "lat": 34.96933492
+  },
+  {
+   "id": "EL063",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.48263018,
+   "lat": 34.9704298
+  },
+  {
+   "id": "EL064",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.48269634,
+   "lat": 34.97078127
+  },
+  {
+   "id": "EL065",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.47901887,
+   "lat": 34.97069852
+  },
+  {
+   "id": "EL066",
+   "type": "campusRoad",
+   "heightM": 6,
+   "lon": 127.4789866,
+   "lat": 34.97091686
+  }
+ ]
+}

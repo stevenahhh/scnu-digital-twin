@@ -3,15 +3,40 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>SCNU DT</title>
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin="anonymous" />
-  <link rel="stylesheet" crossorigin="anonymous" href="https://cdn.jsdelivr.net/gh/wanteddev/wanted-sans@v1.0.3/packages/wanted-sans/fonts/webfonts/variable/split/WantedSansVariable.min.css" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/WantedSansVariable.woff2" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23010102'/%3E%3Cpath d='M20 32h24' stroke='%235e6ad2' stroke-width='6' stroke-linecap='round'/%3E%3Cpath d='M32 20v24' stroke='%23f7f8f8' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E" />
 </head>
 
 <body>
-  <div id="root" class="h-screen w-screen"></div>
+  <div id="root" class="h-dvh w-screen"></div>
+  <div id="vworld-boot-status" role="status" aria-live="polite" style="position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; background: #101114; color: #fff; font-family: sans-serif;">
+    VWorld 지도를 불러오는 중입니다
+  </div>
+  <script>
+    window.setTimeout(() => {
+      if (!window.vw) {
+        const status = document.getElementById("vworld-boot-status");
+        if (status) {
+          status.textContent = "";
+          const wrapper = document.createElement("div");
+          wrapper.style.cssText = "display: grid; gap: 12px; justify-items: center; text-align: center; padding: 0 24px;";
+          const message = document.createElement("p");
+          message.style.margin = "0";
+          message.textContent = "VWorld 서버 응답이 지연되고 있습니다. 네트워크와 API 키를 확인하세요.";
+          const retry = document.createElement("button");
+          retry.type = "button";
+          retry.style.cssText = "min-height: 44px; padding: 0 16px; border-radius: 8px; border: 1px solid #5e6ad2; background: #5e6ad2; color: #fff; font: inherit; font-weight: 700; cursor: pointer;";
+          retry.textContent = "다시 시도";
+          retry.addEventListener("click", () => window.location.reload());
+          wrapper.appendChild(message);
+          wrapper.appendChild(retry);
+          status.appendChild(wrapper);
+        }
+      }
+    }, 15000);
+  </script>
   <script src="https://map.vworld.kr/js/webglMapInit.js.do?version=3.0&apiKey=%VITE_VWORLD_API_KEY%"></script>
   <script type="module" src="/src/index-vworld.jsx"></script>
 </body>

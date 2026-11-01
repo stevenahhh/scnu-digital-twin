@@ -1,1135 +1,273 @@
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Sky } from "@react-three/drei";
-import {
-  AlertTriangle,
-  CalendarDays,
-  Car,
-  ChevronLeft,
-  ChevronRight,
-  Clock3,
-  Cloud,
-  Gauge,
-  RefreshCw,
-  Settings,
-  ShieldAlert,
-  SlidersHorizontal,
-  Sun,
-  Thermometer,
-  TreePine,
-  Wind,
-  Moon,
-  Monitor,
-  X,
-} from "lucide-react";
-import { CityModel } from "./CityModel";
-import {
-  CampusTrafficSimulation,
-  TrafficSafetyPanel,
-  useSimulationSocket,
-} from "./simulation";
-import { D4SectionExperience } from "./vworld/D4SectionExperience";
-import { VWorldCampusStatus } from "./vworld/VWorldCampusStatus";
-import { RepresentativePlanOverlayController } from "./vworld/RepresentativePlanOverlayController";
-import { CAMPUS_REPRESENTATIVE_BUILDING_IDS } from "./vworld/representativePlanOverlay.mjs";
-import { EnergyDashboard } from "./features/energy/dashboard/EnergyDashboard";
-import { CampusComparison } from "./features/energy/campus/CampusComparisonPanel";
-import { BuildingAnalysis } from "./features/energy/analysis";
-import {
-  createInstallationPlanClient,
-  createPlanDraftFromExisting,
-} from "./features/energy/installations/installationPlanApi.mjs";
-import trafficData from "./utils/trafficData.json";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { cx } from "./ui/cx.mjs";
+import { getClearColor } from "./lighting/atmosphere.mjs";
+import { CampusCanvas } from "./render/CampusCanvas";
+import { clearCampusModel } from "./render/CampusScene";
+import { useCampusRendering } from "./render/useCampusRendering.mjs";
+import { useInteractionDpr } from "./render/interactionDpr.mjs";
+import { QUALITY_LABELS, QUALITY_TIERS } from "./settings/qualityPreset.mjs";
+import { useCampusCamera } from "./camera/useCampusCamera.mjs";
+import { CAMERA_PRESETS, D4_PRESET_ID } from "./camera/cameraPresets.mjs";
+import { useSceneWeather } from "./weather/useSceneWeather.mjs";
 import { isD4ElementId } from "./utils/d4BuildingData.mjs";
-import {
-  CAMPUS_LOCATION,
-  createSimulationDate,
-  getSunState,
-  getSunVector,
-} from "./utils/sunPosition.mjs";
+import { CampusHud } from "./components/CampusHud";
+import { sceneTimeReadout } from "./components/HudTimeReadout";
+import { SceneLoadingNotice } from "./components/SceneLoadingNotice";
+import { SelectionInspector } from "./panel/SelectionInspector";
+import { CompareButton, ComparisonPane } from "./panel/ComparisonPane";
+import { useComparisonSet } from "./state/useComparisonSet.mjs";
+import { gateTextFor } from "./labels/gateDistance.mjs";
+import { PanelErrorBoundary } from "./components/PanelErrorBoundary";
+import { useSimulationSocket } from "./simulation";
+import { LegacyD4Pane } from "./panel/LegacyD4Pane";
+import { useViewportMode } from "./hooks/useViewportMode.mjs";
+import { useWeatherFeed } from "./hooks/useWeatherFeed";
+import { useTrafficFeed } from "./simulation/hooks/useTrafficFeed";
+import { usePopupData } from "./hooks/usePopupData.mjs";
+import { useInstallationPlans } from "./hooks/useInstallationPlans.mjs";
+import { useSelectionState } from "./hooks/useSelectionState.mjs";
+import { useSunClock } from "./hooks/useSunClock.mjs";
+import { useThemeMode } from "./hooks/useThemeMode.mjs";
+import { useLegacyBuildingFlow } from "./hooks/useLegacyBuildingFlow.mjs";
+import { useDashboardUrlState } from "./hooks/useDashboardUrlState.mjs";
+import { DashboardShell, shellInsetRight } from "./panel/DashboardShell";
+import { usePanelState } from "./panel/usePanelState.mjs";
+import { CampusEnergyOverview } from "./panel/CampusEnergyOverview";
+import { DashboardTabContent } from "./panel/DashboardTabContent";
+import { SettingsSheet } from "./panel/SettingsSheet";
+import { usePresentationMode } from "./panel/usePresentationMode.mjs";
+import { tourPosition } from "./panel/presentationLayout.mjs";
+import { FeedStamps, sheetPlacement } from "./panel/FeedStatus";
+import { useFeedStatus } from "./hooks/useFeedStatus.mjs";
+import { summarizeWeather } from "./panel/weatherSummary.mjs";
 
-const ALERT_RULES = [
-  {
-    id: "heat_island",
-    label: "열섬 현상",
-    check: (d) => (d?.heat_island_index ?? 0) >= 0.5,
-  },
-  {
-    id: "high_temp",
-    label: "고온 경보",
-    check: (d) => (d?.temperature ?? 0) >= 35,
-  },
-  {
-    id: "high_pm10",
-    label: "PM10 초과",
-    check: (d) => (d?.pm10 ?? 0) >= 80,
-  },
-  {
-    id: "high_pm25",
-    label: "PM2.5 초과",
-    check: (d) => (d?.pm25 ?? 0) >= 50,
-  },
-  {
-    id: "strong_wind",
-    label: "강풍 경보",
-    check: (d) => (d?.wind_speed ?? 0) >= 15,
-  },
-];
-
-function formatNumber(value, digits = 1) {
-  if (!Number.isFinite(Number(value))) return "-";
-  return Number(value).toFixed(digits);
-}
-
-function formatShortTime(timestamp) {
-  const date = new Date(timestamp);
-  if (Number.isNaN(date.getTime())) return "-";
-
-  return date.toLocaleTimeString("ko-KR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function getCompassDirection(degrees) {
-  const directions = ["북", "북동", "동", "남동", "남", "남서", "서", "북서"];
-  return directions[Math.round(degrees / 45) % directions.length];
-}
-
-function FloatingPanel({ className = "", children }) {
-  return (
-    <section
-      className={`rounded-[16px] border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] shadow-[0_20px_48px_rgba(0,0,0,0.28)] backdrop-blur-xl pointer-events-auto ${className}`}
-    >
-      {children}
-    </section>
-  );
-}
-
-function MetricCard({ label, value, hint, accent = false }) {
-  return (
-    <div className="rounded-[12px] border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] px-[24px] py-[24px]">
-      <div className="text-[13px] font-[500] uppercase leading-[1.30] tracking-[0.4px] text-[var(--colors-ink-subtle)]">
-        {label}
-      </div>
-      <div
-        className={`mt-2 text-[28px] font-[600] leading-[1.20] tracking-[-0.6px] ${accent ? "text-[var(--colors-primary)]" : "text-[var(--colors-ink)]"}`}
-      >
-        {value}
-      </div>
-      <div className="mt-2 text-[14px] font-[400] leading-[1.50] tracking-[0px] text-[var(--colors-ink-muted)]">{hint}</div>
-    </div>
-  );
-}
-
-function SliderRow({ label, valueLabel, min, max, step = 1, value, onValueChange }) {
-  const stopInputHandling = (event) => event.stopPropagation();
-  const updateFromPointer = (event) => {
-    event.stopPropagation();
-    const { left, width } = event.currentTarget.getBoundingClientRect();
-    const ratio = Math.min(1, Math.max(0, (event.clientX - left) / width));
-    const steppedValue = min + Math.round(((max - min) * ratio) / step) * step;
-    onValueChange(Math.min(max, Math.max(min, steppedValue)));
-  };
-  const handlePointerDown = (event) => {
-    event.currentTarget.setPointerCapture?.(event.pointerId);
-    updateFromPointer(event);
-  };
-  const handlePointerMove = (event) => {
-    if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
-      updateFromPointer(event);
-    }
-  };
-  const handleKeyDown = (event) => {
-    const keyDeltas = {
-      ArrowDown: -step,
-      ArrowLeft: -step,
-      ArrowRight: step,
-      ArrowUp: step,
-      PageDown: -step * 10,
-      PageUp: step * 10,
-    };
-
-    let nextValue = value;
-    if (event.key === "Home") nextValue = min;
-    else if (event.key === "End") nextValue = max;
-    else if (event.key in keyDeltas) nextValue = value + keyDeltas[event.key];
-    else {
-      event.stopPropagation();
-      return;
-    }
-
-    event.preventDefault();
-    event.stopPropagation();
-    onValueChange(Math.min(max, Math.max(min, nextValue)));
-  };
-
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between text-[14px] font-[400] leading-[1.50]">
-        <span className="text-[var(--colors-ink-subtle)]">{label}</span>
-        <span className="font-[500] text-[var(--colors-ink)]">{valueLabel}</span>
-      </div>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        aria-label={label}
-        onChange={(event) => onValueChange(Number(event.target.value))}
-        onClick={stopInputHandling}
-        onKeyDown={handleKeyDown}
-        onMouseDown={stopInputHandling}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onTouchStart={stopInputHandling}
-        className="w-full accent-[var(--colors-primary)] pointer-events-auto"
-      />
-    </div>
-  );
-}
+// ?ui=gallery는 공용 기본 요소 확인 화면만 띄운다. 따로 나눠 불러와 대시보드 번들에는 들어가지 않는다.
+const UiGallery = lazy(() => import("./ui/Gallery.jsx"));
+const ROOT_CLASS = "dashboard-root relative h-dvh w-screen overflow-clip bg-canvas text-ink";
+const D4_PRESET = CAMERA_PRESETS.find((preset) => preset.id === D4_PRESET_ID);
+const SHOW_UI_GALLERY = new URLSearchParams(window.location.search).get("ui") === "gallery";
 
 export default function App() {
+  if (SHOW_UI_GALLERY) {
+    return (
+      <Suspense fallback={null}>
+        <UiGallery />
+      </Suspense>
+    );
+  }
+  return <Dashboard />;
+}
+
+function Dashboard() {
   useSimulationSocket();
   const orbitControlsRef = useRef(null);
-  const [selectedId, setSelectedId] = useState("");
-  const [selectedBuildingId, setSelectedBuildingId] = useState("D4");
-  const [editorRequest, setEditorRequest] = useState(null);
-  const [installationPlans, setInstallationPlans] = useState([]);
-  const [representativePlanId, setRepresentativePlanId] = useState(null);
-  const [overlayRefreshKey, setOverlayRefreshKey] = useState(0);
-  const installationLoadGenerationRef = useRef(0);
-  const installationPlanClient = useMemo(() => createInstallationPlanClient(), []);
-  const [mode, setMode] = useState("simulation");
-  const [weatherData, setWeatherData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [currentTime, setCurrentTime] = useState(() => new Date());
-  const [sunMonth, setSunMonth] = useState(() => new Date().getMonth() + 1);
-  const [sunDay, setSunDay] = useState(() => new Date().getDate());
-  const [sunHour, setSunHour] = useState(() => new Date().getHours());
-  const [sunMinute, setSunMinute] = useState(() => new Date().getMinutes());
-  const [simTemp, setSimTemp] = useState(20);
-  const [activeTab, setActiveTab] = useState("dashboard"); // dashboard, parking, safety, energy, environment
-  const [isPanelOpen, setIsPanelOpen] = useState(true);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isSimulatorOpen, setIsSimulatorOpen] = useState(true);
-  const [themeMode, setThemeMode] = useState("system");
-  const [popupData, setPopupData] = useState(null);
-  const [popupLoading, setPopupLoading] = useState(false);
-  const [popupError, setPopupError] = useState(null);
-  const [trafficStats, setTrafficStats] = useState({ entered: 0, exited: 0, current_cars: 0, total_spaces: 50, is_running: false });
-  const [buildingViewMode, setBuildingViewMode] = useState("campus");
-  const [installationRefreshKey, setInstallationRefreshKey] = useState(0);
-
-  const refreshWeather = useCallback(() => {
-    const apiUrl = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
-    setLoading(true);
-    setError(null);
-
-    fetch(`${apiUrl}/environment/full`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        setWeatherData(data);
-      })
-      .catch((fetchError) => {
-        console.error("환경 데이터 조회 실패:", fetchError);
-        setError(fetchError.message);
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    refreshWeather();
-  }, [refreshWeather]);
-
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    const trafficTimer = setInterval(() => {
-      fetch("http://localhost:8001/api/traffic")
-        .then(res => res.json())
-        .then(data => setTrafficStats(data))
-        .catch(() => {}); // ignore errors if API is not running
-    }, 2000);
-    return () => clearInterval(trafficTimer);
-  }, []);
-
-  useEffect(() => {
-    let activeTheme = themeMode;
-    if (themeMode === "system") {
-      activeTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    }
-    document.documentElement.dataset.theme = activeTheme;
-    document.documentElement.style.colorScheme = activeTheme;
-  }, [themeMode]);
-
-  const activeWeather = useMemo(() => {
-    if (!weatherData?.base_weather) return null;
-    if (mode !== "simulation") return weatherData.base_weather;
-
-    return {
-      ...weatherData.base_weather,
-      temperature: simTemp,
-    };
-  }, [mode, simTemp, weatherData]);
-
-  const activeAlerts = useMemo(() => {
-    if (!activeWeather) return [];
-    return ALERT_RULES.filter((rule) => rule.check(activeWeather));
-  }, [activeWeather]);
-
-  const riskReports = useMemo(() => trafficData.slice(0, 3), []);
-
-  const weatherTimeline = useMemo(() => {
-    if (!Array.isArray(weatherData?.weather_timeline)) return [];
-    return weatherData.weather_timeline.slice(0, 3);
-  }, [weatherData]);
-
-  const sunSimulationDate = useMemo(
-    () =>
-      mode === "live"
-        ? currentTime
-        : createSimulationDate(
-            {
-              month: sunMonth,
-              day: sunDay,
-              hour: sunHour,
-              minute: sunMinute,
-            },
-            currentTime.getFullYear(),
-          ),
-    [currentTime, mode, sunDay, sunHour, sunMinute, sunMonth],
-  );
-
-  const sunState = useMemo(
-    () =>
-      getSunState({
-        date: sunSimulationDate,
-        latitude: CAMPUS_LOCATION.latitude,
-        longitude: CAMPUS_LOCATION.longitude,
-      }),
-    [sunSimulationDate],
-  );
-
-  const sunVector = useMemo(
-    () => getSunVector({ altitude: sunState.altitude, azimuth: sunState.azimuth }),
-    [sunState.altitude, sunState.azimuth],
-  );
-
-  const sceneBackground = sunState.visible ? "#d6e0e6" : "#09111d";
-  const sunAltitudeDegrees = (sunState.altitude * 180) / Math.PI;
-  const sunBearingDegrees = ((sunState.azimuth * 180) / Math.PI + 540) % 360;
-  const systemStatus = loading
-    ? "기상 데이터 갱신 중"
-    : error
-      ? "API 연결 필요"
-      : mode === "simulation"
-        ? "시뮬레이션 가동 중"
-        : "실시간 연동 정상";
-
-  // const period = currentTime.getHours() < 12 ? "오전" : "오후";
-
-  const formattedTime = currentTime.toLocaleTimeString("ko-KR", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
+  const panelRef = useRef(null);
+  const mapLayerRef = useRef(null);
+  const hudRef = useRef(null);
+  const inspectorRef = useRef(null);
+  // 캠퍼스 라벨은 이 조작 UI 밑에 그려지므로, 겹치는 라벨은 CityModel이 숨긴다.
+  const labelChromeRefs = useMemo(() => [hudRef, inspectorRef], []);
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const viewportMode = useViewportMode();
+  const panelState = usePanelState(viewportMode);
+  const [isTimePlaying, setIsTimePlaying] = useState(false);
+  const [isSceneLoading, setIsSceneLoading] = useState(false);
+  const [sceneAttempt, setSceneAttempt] = useState(0);
+  const retryScene = () => {
+    clearCampusModel();
+    setSceneAttempt((value) => value + 1);
+  };
+  const [themeMode, setThemeMode] = useThemeMode();
+  const weatherFeed = useWeatherFeed();
+  const trafficFeed = useTrafficFeed();
+  const clock = useSunClock();
+  const selection = useSelectionState();
+  const comparison = useComparisonSet();
+  const plans = useInstallationPlans(selection.selectedBuildingId);
+  const feeds = useFeedStatus({ weather: weatherFeed, traffic: trafficFeed, plans });
+  const panelScrollRef = useRef(null);
+  const popup = usePopupData();
+  const canvasStateRef = useRef(null);
+  const getScene = useCallback(() => canvasStateRef.current?.scene ?? null, []);
+  const interactionDpr = useInteractionDpr();
+  const camera = useCampusCamera({
+    controlsRef: orbitControlsRef,
+    getScene,
+    onOrbitStart: interactionDpr.onStart,
+    onOrbitEnd: interactionDpr.onEnd,
+  });
+  const flow = useLegacyBuildingFlow({
+    selection,
+    popup,
+    panel: { activeTab, setActiveTab, scrollRef: panelScrollRef, onSelectionShown: panelState.revealOnPhone },
+    activePresetRef: camera.activePresetRef,
+    onSectionEnter: useCallback(() => camera.selectPreset(D4_PRESET), [camera.selectPreset]),
+    onSectionExit: plans.refreshAll,
+  });
+  const isCampus = flow.buildingViewMode === "campus";
+  useDashboardUrlState({
+    building: isCampus ? selection.selectedId : "BLD_D4", onBuilding: flow.selectFromUrl,
+    clock, panelState, activeTab, setActiveTab, controlsRef: orbitControlsRef,
+  });
+  const rendering = useCampusRendering({
+    canvasStateRef,
+    interactionDpr,
+    // D4 패인은 지도 옆에 열리고 장면은 계속 보이므로(카메라가 D4로 날아간다) 그리기를 멈추지 않는다.
+    modalOpen: false,
+    selectionKey: `${selection.selectedId}|${clock.sunState.visible}|${isSceneLoading}`,
+    panelKey: `${panelState.open}|${panelState.detent}|${activeTab}|${flow.buildingViewMode}`,
   });
 
-  const formattedDate = currentTime.toLocaleDateString("ko-KR", {
-    month: "long",
-    day: "numeric",
-    weekday: "short",
-  });
+  // 지도·HUD·안내는 패널(또는 레일)이 차지한 오른쪽 폭만큼 비켜 선다. 폰 시트 위 장면은 계속 조작할 수 있다.
+  const presentation = usePresentationMode({ panelState, activeTab, setActiveTab });
+  const qualitySetting = { tiers: QUALITY_TIERS, labels: QUALITY_LABELS, value: rendering.quality };
+  qualitySetting.onChange = rendering.setQuality;
+  qualitySetting.source = rendering.qualitySource;
+  const mapInsetRight = presentation.presenting
+    ? "0px" : shellInsetRight(viewportMode, panelState.open, !isCampus, Boolean(selection.selectedId));
 
-  const handleSelect = useCallback((name) => {
-    setSelectedId(name);
-    setPopupData(null);
-    setPopupError(null);
-  }, []);
+  const summary = summarizeWeather({ feed: weatherFeed, mode: clock.mode, simTemp: clock.simTemp });
+  const sceneWeather = useSceneWeather({ weatherData: weatherFeed.data, weatherState: weatherFeed.state });
 
-  const createInstallationPlanDraft = useCallback(
-    (context) => createPlanDraftFromExisting(context),
-    [],
-  );
-
-  const openD4Section = useCallback((request = null) => {
-    setEditorRequest(request);
-    setSelectedId("");
-    setPopupData(null);
-    setPopupError(null);
-    setBuildingViewMode("section");
-    setIsPanelOpen(false);
-  }, []);
-
-  // 건물을 클릭하거나 카메라가 D4에 충분히 가까이(줌인) 다가갔을 때 쓰는 진입 경로.
-  // 확대된 캠퍼스 화면은 그대로 배경으로 유지한 채, 그 위에 공간 탐색/태양광 설치
-  // 패널을 투명 오버레이로 띄운다(D4SectionExperience가 자체 페이드인 처리).
-  const enterD4Section = useCallback((request = null) => {
-    openD4Section(request);
-  }, [openD4Section]);
-
-  const handleExitD4Section = useCallback(() => {
-    setBuildingViewMode("campus");
-    setIsPanelOpen(true);
-    setEditorRequest(null);
-    setInstallationRefreshKey((value) => value + 1);
-    setOverlayRefreshKey((value) => value + 1);
-  }, []);
-
-  const selectBuilding = useCallback(({
-    elementId,
-    buildingId,
-    displayName,
-  }) => {
-    if (buildingId !== selectedBuildingId) {
-      installationLoadGenerationRef.current += 1;
-      setInstallationPlans([]);
-      setRepresentativePlanId(null);
-    }
-    setSelectedId(displayName);
-    setSelectedBuildingId(buildingId);
-    setActiveTab("energy");
-    setPopupData(null);
-    setPopupError(null);
-    return elementId;
-  }, [selectedBuildingId]);
-
+  // D4 상세가 열리면 캠퍼스 카메라 투어와 시간 재생을 멈춘다. 뒤에 가려진 장면을 계속 움직일 이유가 없다.
+  const { stopTour } = camera;
   useEffect(() => {
-    const controller = new AbortController();
-    const requestGeneration = installationLoadGenerationRef.current + 1;
-    installationLoadGenerationRef.current = requestGeneration;
-    let active = true;
-    setInstallationPlans([]);
-    setRepresentativePlanId(null);
-    Promise.all([
-      installationPlanClient.listDetails(selectedBuildingId, { signal: controller.signal }),
-      installationPlanClient.getRepresentative(selectedBuildingId, { signal: controller.signal }),
-    ]).then(([plans, representative]) => {
-      if (!active || installationLoadGenerationRef.current !== requestGeneration) return;
-      setInstallationPlans(plans);
-      setRepresentativePlanId(representative?.installationPlanId ?? null);
-    }).catch((loadError) => {
-      if (!active || installationLoadGenerationRef.current !== requestGeneration || loadError?.name === "AbortError") return;
-      setInstallationPlans([]);
-      setRepresentativePlanId(null);
-    });
-    return () => {
-      active = false;
-      controller.abort();
-    };
-  }, [installationPlanClient, installationRefreshKey, selectedBuildingId]);
+    if (isCampus) return;
+    stopTour();
+    setIsTimePlaying(false);
+  }, [isCampus, stopTour]);
 
-  const handleInstallationPlansChange = useCallback((plans) => {
-    installationLoadGenerationRef.current += 1;
-    setInstallationPlans(plans);
-  }, []);
+  const selectFromEnergy = (buildingId) => {
+    const elementId = flow.selectBuilding({ elementId: `BLD_${buildingId}`, buildingId, displayName: buildingId });
+    if (isD4ElementId(elementId)) flow.openD4Section();
+  };
+  const openRecommendation = (request) => {
+    selection.setSelectedBuildingId(request.buildingId);
+    flow.openD4Section(request);
+  };
+  // 검색 결과: 칩 클릭과 같은 선택에 더해 카메라를 그 건물로 옮긴다.
+  const handleSearchPick = (entry) => {
+    flow.selectFromSearch(entry);
+    camera.flyToBuilding(entry.elementId);
+  };
+  const editor = flow.editorRequest;
+  // 인스펙터 제목: 고른 건물의 레지스트리 이름, 없으면 클릭한 메시의 이름.
+  const panelTitle = selection.selectedId ? flow.selectionTitle || selection.selectedTitle || selection.selectedId : "";
+  const inspector = comparison.open ? (
+    <ComparisonPane ids={comparison.ids} onRemove={comparison.remove} onClose={() => comparison.setOpen(false)} />
+  ) : isCampus && selection.selectedId ? (
+    <SelectionInspector
+      title={panelTitle}
+      popup={popup}
+      estimate={selection.selectedEstimate}
+      gateText={gateTextFor(flow.selectionPosition)}
+      onCompare={() => comparison.add(selection.selectedId)}
+      onClose={flow.closeMicroclimate}
+      onShowAll={() => {
+        flow.closeMicroclimate();
+        camera.goHome();
+      }}
+    />
+  ) : null;
 
-  const handleRepresentativeInstallationPlanChange = useCallback((representative) => {
-    installationLoadGenerationRef.current += 1;
-    setRepresentativePlanId(representative?.installationPlanId ?? null);
-    setOverlayRefreshKey((value) => value + 1);
-  }, []);
-
-  const fetchMicroclimate = useCallback(async (elementId) => {
-    setActiveTab("microclimate");
-    setIsPanelOpen(true);
-
-    const apiUrl = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
-    setPopupLoading(true);
-    setPopupError(null);
-    setPopupData(null);
-
-    try {
-      const res = await fetch(`${apiUrl}/microclimate/elements/${elementId}/popup`);
-      if (res.status === 404) {
-        setPopupError("이 건물의 미기후 데이터가 없습니다.");
-        return;
-      }
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setPopupData(await res.json());
-    } catch (err) {
-      console.error("팝업 API 호출 실패:", err);
-      setPopupError("데이터를 불러오지 못했습니다.");
-    } finally {
-      setPopupLoading(false);
-    }
-  }, []);
-
-  const handleBuildingClick = useCallback(async (obj) => {
-    const elementId =
-      obj?.parent?.name && obj.parent.name !== "Scene"
-        ? obj.parent.name
-        : obj?.name;
-
-    if (!elementId || !elementId.startsWith("BLD_")) {
-      setPopupData(null);
-      return;
-    }
-
-    const buildingId = elementId.slice("BLD_".length);
-    selectBuilding({
-      elementId,
-      buildingId,
-      displayName: obj?.userData?.buildingName ?? obj?.name ?? buildingId,
-      area: obj?.userData?.area ?? 0,
-    });
-
-    if (isD4ElementId(elementId)) {
-      enterD4Section();
-      return;
-    }
-
-    await fetchMicroclimate(elementId);
-  }, [enterD4Section, selectBuilding, fetchMicroclimate]);
-
-  // 클릭 없이 카메라가 D4를 일정 크기 이상 확대(줌인)했을 때도 같은 진입 전환을 탄다.
-  const handleD4Enter = useCallback(() => {
-    if (buildingViewMode !== "campus") return;
-    enterD4Section();
-  }, [buildingViewMode, enterD4Section]);
-
-  // 클릭 없이 카메라가 건물 가까이 다가가기만 해도(자유 줌/궤도 회전) 그 건물의
-  // 미기후를 보여준다. 다만 사용자가 주차·안전/에너지/환경 시뮬처럼 다른 목적으로
-  // 명시적으로 골라둔 탭은 방해하지 않고, 기본 현황이거나 이미 미기후를 보는 중일
-  // 때만 자동으로 갱신한다. 반대로 모든 건물에서 일정 범위 밖으로 줌아웃하면
-  // (anchor === null) 미기후 보기를 접고 기본 현황 패널로 되돌아간다.
-  const handleBuildingProximity = useCallback((anchor) => {
-    if (!anchor) {
-      if (activeTab === "microclimate") {
-        setActiveTab("dashboard");
-        setSelectedId("");
-        setPopupData(null);
-        setPopupError(null);
-      }
-      return;
-    }
-
-    const elementId = anchor.elementId;
-    if (!elementId || !elementId.startsWith("BLD_")) return;
-    if (isD4ElementId(elementId)) return;
-    if (buildingViewMode !== "campus") return;
-    if (activeTab !== "dashboard" && activeTab !== "microclimate") return;
-
-    const buildingId = elementId.slice("BLD_".length);
-    if (activeTab === "microclimate" && selectedBuildingId === buildingId) return;
-
-    selectBuilding({
-      elementId,
-      buildingId,
-      displayName: anchor.displayName ?? anchor.name ?? buildingId,
-    });
-    fetchMicroclimate(elementId);
-  }, [activeTab, buildingViewMode, selectedBuildingId, selectBuilding, fetchMicroclimate]);
-
-  const closeMicroclimatePanel = useCallback(() => {
-    setActiveTab("dashboard");
-    setSelectedId("");
-    setPopupData(null);
-    setPopupError(null);
-  }, []);
-
+  // 루트는 overflow: clip으로 자른다. hidden은 스크롤 컨테이너라서 Tab 포커스가 화면 밖 요소로 가면 대시보드가 밀려 남는다.
   return (
-    <div className="dashboard-root relative h-screen w-screen overflow-hidden bg-[var(--colors-canvas)] text-[var(--colors-ink)]">
-      <div className="absolute inset-0" style={{ background: sceneBackground }} />
-
-      <div className="absolute inset-0 z-0">
-        <Canvas camera={{ position: [0, 260, 260], fov: 50 }} shadows>
-          <color attach="background" args={[sceneBackground]} />
-          <fog attach="fog" args={[sceneBackground, 450, 800]} />
-          <ambientLight intensity={sunState.visible ? 1.55 : 0.5} />
-          <directionalLight
-            castShadow
-            intensity={sunState.visible ? 2.2 : 0.35}
-            position={sunVector}
-            shadow-mapSize-width={2048}
-            shadow-mapSize-height={2048}
-          />
-          {sunState.visible && (
-            <mesh position={sunVector.map(v => v * 100)}>
-              <sphereGeometry args={[10, 32, 32]} />
-              <meshBasicMaterial color="#ffe87c" />
-            </mesh>
-          )}
-          <Sky
-            distance={450000}
-            sunPosition={sunVector}
-            inclination={sunState.visible ? 0.52 : 0.08}
-            azimuth={0.25}
-            turbidity={8}
-            rayleigh={0.7}
-          />
-          <Suspense fallback={null}>
-            <CityModel
-              position={[0, 0, 0]}
-              controlsRef={orbitControlsRef}
-              isNight={!sunState.visible}
-              selectedId={selectedId}
-              onSelect={handleSelect}
-              onBuildingClick={handleBuildingClick}
-              onBuildingProximity={handleBuildingProximity}
-              onD4Enter={handleD4Enter}
-            />
-            <CampusTrafficSimulation />
-          </Suspense>
-          <OrbitControls
-            ref={orbitControlsRef}
-            enableDamping
-            dampingFactor={0.05}
-            enableZoom
-            zoomSpeed={1}
-            minDistance={30}
-            maxDistance={520}
-            minPolarAngle={Math.PI / 6}
-            maxPolarAngle={Math.PI / 2.2}
-            target={[0, 0, 0]}
-          />
-        </Canvas>
-      </div>
-
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(1,1,2,0.02)_0%,rgba(1,1,2,0.08)_50%,rgba(1,1,2,0.16)_100%)]" />
-
-      {buildingViewMode === "section" && (
-        <D4SectionExperience
-          buildingId={editorRequest?.buildingId ?? selectedBuildingId}
-          scenarioId={editorRequest?.scenarioId}
-          installationPlanId={editorRequest?.installationPlanId}
-          startInstallation={Boolean(editorRequest?.scenarioId || editorRequest?.installationPlanId)}
-          onClose={handleExitD4Section}
-          onPlanSaved={() => {
-            setInstallationRefreshKey((value) => value + 1);
-            setOverlayRefreshKey((value) => value + 1);
-          }}
-          createInstallationPlanDraft={createInstallationPlanDraft}
-          onPlansChange={handleInstallationPlansChange}
-          onRepresentativeChange={handleRepresentativeInstallationPlanChange}
-          planRefreshKey={installationRefreshKey}
-        />
-      )}
-
-      {/* 패널 토글 버튼 */}
-      {buildingViewMode === "campus" && (
-      <button
-        onClick={() => setIsPanelOpen(v => !v)}
-        className="pointer-events-auto absolute z-20 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-14 rounded-l-xl border border-r-0 border-[var(--colors-hairline)] shadow-lg transition-right duration-300"
-        style={{
-          right: isPanelOpen ? '440px' : '0px',
-          backgroundColor: 'var(--colors-surface-1)',
-          transition: 'right 0.3s ease',
+    <div className={cx(ROOT_CLASS, presentation.cursorHidden && "cursor-none")}>
+      <div className="absolute inset-0" style={{ background: getClearColor(clock.sunState.altitude) }} />
+      {/* HUD는 D4 패인이 열려도 남는다: 시각·시점 메뉴가 패인 왼쪽 장면 위에 그대로 있다. */}
+      <CampusHud
+        ref={hudRef}
+        mode={viewportMode}
+        insetRight={mapInsetRight}
+        presenting={presentation.presenting}
+        onTogglePresentation={presentation.toggle}
+        tour={camera.touring ? tourPosition(CAMERA_PRESETS, camera.activePresetId) : null}
+        statusSlot={viewportMode !== "phone" && (
+          <FeedStamps feeds={feeds} retry={feeds.retry} placement={{ expanded: panelState.open, activeTab }} />
+        )}
+        camera={camera}
+        clock={clock}
+        playing={isTimePlaying}
+        onPlayingChange={setIsTimePlaying}
+        sceneWeather={sceneWeather}
+        compareSlot={<CompareButton comparison={comparison} className="mt-1" />}
+        search={{ registry: flow.labelRegistry, onPick: handleSearchPick }}
+      />
+      <CampusCanvas
+        ref={mapLayerRef}
+        insetRight={mapInsetRight}
+        rendering={rendering}
+        sunState={clock.sunState}
+        sceneDate={clock.sunDate}
+        weatherScene={sceneWeather.scene}
+        camera={camera}
+        flow={flow}
+        scene={{
+          controlsRef: orbitControlsRef,
+          selectedId: selection.selectedId,
+          labelsHidden: !isCampus,
+          occluderRef: panelRef,
+          chromeRefs: labelChromeRefs,
+          onLoadingChange: setIsSceneLoading,
+          attempt: sceneAttempt,
+          presentation: presentation.presenting,
+          onCompare: comparison.add,
         }}
+      />
+      {isSceneLoading && <SceneLoadingNotice key={sceneAttempt} insetRight={mapInsetRight} onRetry={retryScene} />}
+      <DashboardShell
+        ref={panelRef}
+        mode={viewportMode}
+        open={panelState.open}
+        onOpenChange={panelState.setUserOpen}
+        detent={panelState.detent}
+        onDetentChange={panelState.setDetent}
+        hidden={presentation.presenting}
+        onPaneExit={flow.exitD4Section}
+        pane={!isCampus && (
+          <LegacyD4Pane
+            flow={flow} selection={selection} plans={plans} camera={camera} phone={viewportMode === "phone"}
+          />
+        )}
+        timeReadout={sceneTimeReadout(clock.sceneMinuteOfDay)}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        inspector={inspector}
+        inspectorRef={inspectorRef}
+        scrollRef={panelScrollRef}
+        freshnessSlot={(
+          <FeedStamps feeds={feeds} retry={feeds.retry} placement={sheetPlacement(panelState, activeTab)} compact />
+        )}
       >
-        {isPanelOpen ? <ChevronRight size={16} className="text-[var(--colors-ink-subtle)]" /> : <ChevronLeft size={16} className="text-[var(--colors-ink-subtle)]" />}
-      </button>
-      )}
-
-      <div
-        className="pointer-events-none absolute top-0 bottom-0 z-10 w-[440px]"
-        style={{ right: buildingViewMode === "campus" && isPanelOpen ? '0' : '-440px', transition: 'right 0.3s ease' }}
-      >
-        <div
-          className="pointer-events-auto h-full w-full border-l border-[var(--colors-hairline)] shadow-2xl flex flex-col"
-          style={{
-            backgroundColor: 'color-mix(in srgb, var(--colors-surface-1) 30%, transparent)',
-            backdropFilter: 'blur(16px)'
-          }}
-        >
-          {/* Header & Tabs */}
-          <div className="px-6 pt-8 pb-4">
-            <h2 className="text-xl font-[800] tracking-tight mb-5">스마트 시티 대시보드</h2>
-            <div className="flex rounded-lg p-1 border border-[var(--colors-hairline)] gap-0.5" style={{ backgroundColor: 'color-mix(in srgb, var(--colors-surface-2) 50%, transparent)' }}>
-              {[
-                { id: "dashboard", label: "기본 현황" },
-                { id: "parking_safety", label: "주차·안전" },
-                { id: "energy", label: "에너지" },
-                { id: "environment", label: "환경 시뮬" },
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  data-qa={`dashboard-tab-${tab.id}`}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 py-2 text-xs font-[600] rounded-md transition-colors ${activeTab === tab.id ? "bg-[var(--colors-surface-1)] shadow-sm text-[var(--colors-ink)] border border-[var(--colors-hairline)]" : "text-[var(--colors-ink-subtle)] hover:text-[var(--colors-ink)]"}`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Content Area */}
-          <div className="flex-1 overflow-y-auto px-6 pb-8 space-y-6">
-            {activeTab === "dashboard" && (
-              <>
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <div className="font-[600] text-3xl leading-[1.2] tracking-[-0.8px] font-['Linear_Display']">{formattedTime}</div>
-                    <div className="mt-1 flex items-center gap-1 text-sm font-medium text-[var(--colors-ink-muted)]">
-                      <CalendarDays size={14} />
-                      {formattedDate}
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setIsSettingsOpen(true)}
-                      className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] text-[var(--colors-ink-muted)] transition hover:text-[var(--colors-ink)] hover:bg-[var(--colors-surface-2)]"
-                    >
-                      <Settings size={18} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={refreshWeather}
-                      disabled={loading}
-                      className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] text-[var(--colors-ink-muted)] transition hover:text-[var(--colors-ink)] hover:bg-[var(--colors-surface-2)] disabled:opacity-50"
-                    >
-                      <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] p-4 flex justify-between items-center">
-                  <div className="text-sm font-medium text-[var(--colors-ink-subtle)]">시스템 상태</div>
-                  <div className="flex items-center gap-2 text-base font-[700]">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[var(--colors-semantic-success)] shadow-[0_0_8px_var(--colors-semantic-success)]" />
-                    {systemStatus}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] p-4">
-                    <div className="flex items-center gap-2 text-sm font-medium text-[var(--colors-ink-subtle)]">
-                      <Thermometer size={16} /> 현재 기온
-                    </div>
-                    <div className="mt-3 text-2xl font-semibold tracking-[-0.8px]">
-                      {activeWeather?.temperature ?? "-"}°C
-                    </div>
-                  </div>
-                  <div className="rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] p-4">
-                    <div className="flex items-center gap-2 text-sm font-medium text-[var(--colors-ink-subtle)]">
-                      <Wind size={16} /> 풍속 / 습도
-                    </div>
-                    <div className="mt-3 text-sm font-semibold text-[var(--colors-ink)]">
-                      {activeWeather?.wind_speed ?? "-"}m/s · {activeWeather?.humidity ?? "-"}%
-                    </div>
-                  </div>
-                  <div className="rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] p-4">
-                    <div className="flex items-center gap-2 text-sm font-medium text-[var(--colors-ink-subtle)]">
-                      <Cloud size={16} /> 하늘 상태
-                    </div>
-                    <div className="mt-3 text-sm font-semibold text-[var(--colors-ink)]">
-                      {activeWeather?.sky ?? weatherData?.summary?.sky_status ?? "맑음"}
-                    </div>
-                  </div>
-                  <div className="rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] p-4">
-                    <div className="flex items-center gap-2 text-sm font-medium text-[var(--colors-ink-subtle)]">
-                      <Sun size={16} /> 태양 고도
-                    </div>
-                    <div className="mt-3 text-sm font-semibold text-[var(--colors-ink)]">
-                      {formatNumber(sunAltitudeDegrees, 1)}°
-                    </div>
-                  </div>
-                  <div className="col-span-2 rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] p-4">
-                    <div className="flex items-center gap-2 text-sm font-medium text-[var(--colors-ink-subtle)]">
-                      <Gauge size={16} /> 대기질
-                    </div>
-                    <div className="mt-3 text-sm font-semibold text-[var(--colors-ink)]">
-                      {weatherData?.summary?.air_quality_status ?? "보통"}
-                    </div>
-                  </div>
-                </div>
-                {(activeAlerts.length > 0 || weatherTimeline.length > 0) && (
-                  <div className="grid gap-2">
-                    {activeAlerts.map((alert) => (
-                      <div
-                        key={alert.id}
-                        className="flex items-center gap-2 rounded-lg border border-[rgba(94,106,210,0.35)] bg-[rgba(94,106,210,0.14)] px-3 py-2 text-sm font-medium text-[var(--colors-ink)]"
-                      >
-                        <AlertTriangle size={16} className="text-[var(--colors-primary)]" />
-                        {alert.label}
-                      </div>
-                    ))}
-                    {weatherTimeline.map((item, index) => (
-                      <div
-                        key={`${item.fcstTime ?? index}`}
-                        className="flex items-center justify-between rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] px-3 py-2 text-sm"
-                      >
-                        <span className="font-medium text-[var(--colors-ink-subtle)]">{item.fcstTime ?? `${index + 1}차 예보`}</span>
-                        <span className="font-[700] text-[var(--colors-ink)]">
-                          {item.tmp ?? item.temperature ?? "-"}°C
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-
-            {activeTab === "microclimate" && (
-              <div className="space-y-4">
-                <div
-                  className="flex items-start justify-between rounded-lg px-4 py-3"
-                  style={{ background: popupData ? popupData.thermal.risk_color : "var(--colors-surface-2)" }}
-                >
-                  <div>
-                    <div className="text-[11px] font-extrabold uppercase tracking-[0.08em]" style={{ color: popupData ? "rgba(255,255,255,0.85)" : "var(--colors-primary)" }}>
-                      MICROCLIMATE
-                    </div>
-                    <h3
-                      className="mt-0.5 font-[700] text-[16px] tracking-[-0.1px]"
-                      style={{ color: popupData ? "white" : "var(--colors-ink)" }}
-                    >
-                      {popupData?.name ?? selectedId}
-                    </h3>
-                    {popupData && (
-                      <div className="mt-0.5 text-sm" style={{ color: "rgba(255,255,255,0.85)" }}>
-                        {popupData.zone_id} · {popupData.thermal.stress_category}
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    onClick={closeMicroclimatePanel}
-                    className="transition-opacity hover:opacity-70"
-                    style={{ color: popupData ? "white" : "var(--colors-ink-muted)" }}
-                    aria-label="미기후 패널 닫기"
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
-
-                {popupLoading && (
-                  <div className="flex items-center justify-center gap-3 px-2 py-8 text-sm text-[var(--colors-ink-muted)]">
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--colors-hairline)] border-t-[var(--colors-primary)]" />
-                    미기후 데이터 불러오는 중…
-                  </div>
-                )}
-
-                {popupError && !popupLoading && (
-                  <div className="flex items-center gap-2 px-2 py-6 text-sm text-[var(--colors-semantic-danger,#D32F2F)]">
-                    <AlertTriangle size={16} /> {popupError}
-                  </div>
-                )}
-
-                {popupData && !popupLoading && (() => {
-                  const { thermal, factors, delta, reasons, base_weather } = popupData;
-                  const riskBg = `${thermal.risk_color}18`;
-                  const factorMeta = {
-                    shade:       { Icon: Sun,       label: "그늘" },
-                    vegetation:  { Icon: TreePine,  label: "녹지" },
-                    wind:        { Icon: Wind,      label: "통풍" },
-                    radiation:   { Icon: Thermometer, label: "복사" },
-                    material_heat: { Icon: Gauge,   label: "재질열" },
-                  };
-                  return (
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-4 gap-2">
-                        {[
-                          { label: "기온",   value: `${thermal.local_temp}°C` },
-                          { label: "체감",   value: `${thermal.feels_like}°C` },
-                          { label: "UTCI",   value: `${thermal.utci}°C` },
-                          { label: "WBGT",   value: `${thermal.wbgt}°C` },
-                        ].map(({ label, value }) => (
-                          <div key={label} className="rounded-lg p-2 text-center" style={{ background: riskBg }}>
-                            <div className="text-[10px] font-medium text-[var(--colors-ink-subtle)]">{label}</div>
-                            <div className="mt-1 text-[13px] font-[900] text-[var(--colors-ink)]">{value}</div>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div>
-                        <div className="mb-1.5 flex items-center justify-between text-sm">
-                          <span className="text-[var(--colors-ink-subtle)]">위험도</span>
-                          <span className="font-[700]" style={{ color: thermal.risk_color }}>{thermal.risk_level}</span>
-                        </div>
-                        <div className="h-1.5 overflow-hidden rounded-full bg-[var(--colors-surface-2)]">
-                          <div className="h-full rounded-full" style={{ width: `${(thermal.risk_score / 4) * 100}%`, background: thermal.risk_color }} />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-4 gap-1.5">
-                        {Object.entries(factors).slice(0, 4).map(([key, val]) => {
-                          const meta = factorMeta[key] ?? { label: key };
-                          const Icon = meta.Icon;
-                          return (
-                            <div key={key} className="rounded-lg p-2 text-center bg-[var(--colors-surface-2)]">
-                              {Icon && <Icon size={12} className="mx-auto mb-1 text-[var(--colors-ink-muted)]" />}
-                              <div className="text-[10px] font-medium text-[var(--colors-ink-subtle)]">{meta.label}</div>
-                              <div className="mt-0.5 text-[10px] font-[800] text-[var(--colors-ink)]">{val.level}</div>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {delta?.label && (
-                        <div
-                          className="rounded-lg px-3 py-2 text-[12px] font-[700]"
-                          style={{ background: riskBg, color: delta.temp > 0 ? "#D32F2F" : "#1976D2" }}
-                        >
-                          📍 {delta.label}
-                        </div>
-                      )}
-
-                      {reasons?.length > 0 && (
-                        <div>
-                          <div className="mb-1.5 text-sm font-medium text-[var(--colors-ink-subtle)]">원인 분석</div>
-                          <ul className="space-y-1">
-                            {reasons.map((r) => (
-                              <li key={r} className="flex items-start gap-1.5 text-[12px] text-[var(--colors-ink-muted)]">
-                                <span className="mt-0.5 shrink-0 font-[900]" style={{ color: thermal.risk_color }}>·</span>
-                                {r}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      <div className="flex gap-3 border-t border-[var(--colors-hairline)] pt-3 text-[12px] font-[700] text-[var(--colors-ink-subtle)]">
-                        <span>🌡 {base_weather.temperature}°C</span>
-                        <span>💧 {base_weather.humidity}%</span>
-                        <span>💨 {base_weather.wind_speed}m/s</span>
-                      </div>
-                    </div>
-                  );
-                })()}
-
-                {!popupData && !popupLoading && !popupError && (
-                  <div className="px-2 text-sm leading-6 text-[var(--colors-ink-muted)]">
-                    이 건물의 상세 미기후 데이터를 선택해 확인하세요.
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === "parking_safety" && (
-              <div className="space-y-6">
-                <div className="pb-4 border-b border-[var(--colors-hairline)]/50">
-                  <div className="text-base font-[700] text-[var(--colors-ink)] flex items-center gap-2">
-                    <Car size={18} className="text-[var(--colors-primary)]" />
-                    D4 입출차 현황
-                  </div>
-                </div>
-                <div>
-                  <div className="mb-3 text-sm font-[700] text-[var(--colors-ink-subtle)] flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-                    실시간 주차 현황
-                  </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    <MetricCard label="주차 대수" value={`${trafficStats?.current_cars ?? 0}대`} hint={`총 ${trafficStats?.total_spaces ?? 50}면`} accent />
-                    <MetricCard label="누적 입차" value={`${trafficStats?.entered ?? 0}대`} hint="오늘" />
-                    <MetricCard label="누적 출차" value={`${trafficStats?.exited ?? 0}대`} hint="오늘" />
-                  </div>
-                </div>
-
-                <TrafficSafetyPanel />
-                <div className="pb-4 border-b border-[var(--colors-hairline)]/50">
-                  <div className="text-base font-[700] text-[var(--colors-ink)] flex items-center gap-2">
-                    <ShieldAlert size={18} className="text-[var(--colors-primary)]" />
-                    안전 모니터링
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <MetricCard label="위험 구역 접수" value={`${trafficData.length}건`} hint="최근 24시간 기준" />
-                  <MetricCard
-                    label="AI 자동 분류"
-                    value={`${trafficData.filter((item) => item.ai_confidence >= 0.45).length}건`}
-                    hint="우선 처리 대상"
-                    accent
-                  />
-                </div>
-                <div className="pt-2">
-                  <div className="mb-3 text-sm font-[700] text-[var(--colors-ink-subtle)] flex items-center gap-2">
-                    <ShieldAlert size={14} />
-                    안전 및 방범 로그
-                  </div>
-                  <div className="space-y-2">
-                    {riskReports.map((item) => (
-                      <div
-                        key={item.report_id}
-                        className="rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] px-4 py-3"
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <div>
-                            <div className="text-sm font-[700] text-[var(--colors-ink)]">{item.category}</div>
-                            <div className="mt-1 text-[13px] font-medium text-[var(--colors-ink-subtle)]">
-                              {formatShortTime(item.timestamp)}
-                            </div>
-                          </div>
-                          <span className="rounded-full border border-[var(--colors-hairline)] bg-[var(--colors-canvas)] px-2 py-1 text-[12px] font-[700] text-[var(--colors-ink-muted)]">
-                            {item.status}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === "energy" && (
-              <div className="space-y-4">
-                <VWorldCampusStatus
-                  onSelection={(selection) => selectBuilding(selection)}
-                  className="w-full"
-                />
-                <RepresentativePlanOverlayController
-                  buildingIds={CAMPUS_REPRESENTATIVE_BUILDING_IDS}
-                  refreshKey={overlayRefreshKey}
-                  onOverlayDataChange={() => {}}
-                  onBuildingSelect={(buildingId) => {
-                    const elementId = selectBuilding({
-                      elementId: `BLD_${buildingId}`,
-                      buildingId,
-                      displayName: buildingId,
-                    });
-                    if (isD4ElementId(elementId)) openD4Section();
-                  }}
-                  className="w-full"
-                  widthClassName="max-w-none"
-                />
-                <BuildingAnalysis
-                  key={`${selectedBuildingId}:${representativePlanId ?? "none"}`}
-                  buildingId={selectedBuildingId}
-                  plans={installationPlans}
-                  representativePlanId={representativePlanId}
-                />
-                <CampusComparison
-                  onOpenRecommendation={(request) => {
-                    setSelectedBuildingId(request.buildingId);
-                    openD4Section(request);
-                  }}
-                />
-                <EnergyDashboard key={selectedBuildingId} buildingId={selectedBuildingId} />
-              </div>
-            )}
-
-            {activeTab === "environment" && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between gap-4 pb-4 border-b border-[var(--colors-hairline)]/50">
-                  <div className="flex items-center gap-2 text-base font-[700]">
-                    <SlidersHorizontal size={18} className="text-[var(--colors-primary)]" />
-                    환경 시뮬레이션
-                  </div>
-                  <div className="flex rounded-md border border-[var(--colors-hairline)] bg-[var(--colors-canvas)] p-1 text-sm font-[600]">
-                    <button
-                      type="button"
-                      onClick={() => setMode("live")}
-                      className={`rounded px-3 py-1.5 transition-colors ${mode === "live" ? "bg-[var(--colors-surface-2)] shadow-sm text-[var(--colors-ink)] border border-[var(--colors-hairline)]" : "text-[var(--colors-ink-subtle)]"}`}
-                    >
-                      Live
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setMode("simulation")}
-                      className={`rounded px-3 py-1.5 transition-colors ${mode === "simulation" ? "bg-[var(--colors-primary)] shadow-sm text-white" : "text-[var(--colors-ink-subtle)]"}`}
-                    >
-                      Sim
-                    </button>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div className="text-sm font-[700] text-[var(--colors-ink-subtle)]">가상 환경 파라미터</div>
-                  <SliderRow
-                    label="온도 조절"
-                    valueLabel={`${simTemp}°C`}
-                    min={-10}
-                    max={40}
-                    value={simTemp}
-                    onValueChange={setSimTemp}
-                  />
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-3 pt-2">
-                    <SliderRow
-                      label="월"
-                      valueLabel={`${sunMonth}월`}
-                      min={1}
-                      max={12}
-                      value={sunMonth}
-                      onValueChange={setSunMonth}
-                    />
-                    <SliderRow
-                      label="일"
-                      valueLabel={`${sunDay}일`}
-                      min={1}
-                      max={31}
-                      value={sunDay}
-                      onValueChange={setSunDay}
-                    />
-                    <SliderRow
-                      label="시"
-                      valueLabel={`${sunHour}시`}
-                      min={0}
-                      max={23}
-                      value={sunHour}
-                      onValueChange={setSunHour}
-                    />
-                    <SliderRow
-                      label="분"
-                      valueLabel={`${sunMinute}분`}
-                      min={0}
-                      max={59}
-                      value={sunMinute}
-                      onValueChange={setSunMinute}
-                    />
-                  </div>
-                  <div className="mt-4 flex items-center justify-between rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] px-3 py-2 text-xs">
-                    <span className="text-[var(--colors-ink-subtle)]">태양 방향</span>
-                    <span className="font-semibold text-[var(--colors-ink)]">
-                      {getCompassDirection(sunBearingDegrees)} {sunBearingDegrees.toFixed(0)}° · 고도{" "}
-                      {sunAltitudeDegrees.toFixed(1)}°
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {error && (
-            <div className="m-5 mt-auto p-4 rounded-lg bg-[var(--colors-semantic-danger)]/10 text-sm font-medium text-[var(--colors-semantic-danger)] text-center border border-[var(--colors-semantic-danger)]/20 shadow-lg">
-              기상 API 통신 오류: {error}
-            </div>
+        <DashboardTabContent
+          activeTab={activeTab}
+          summary={summary}
+          feeds={feeds}
+          clock={clock}
+          trafficFeed={trafficFeed}
+          plans={plans}
+          buildingId={selection.selectedBuildingId}
+          settings={(
+            <SettingsSheet
+              mode={viewportMode}
+              themeMode={themeMode}
+              onThemeChange={setThemeMode}
+              quality={qualitySetting}
+              onOpenChange={(open) => open && panelState.setDetent("peek")}
+            />
           )}
-        </div>
-      </div>
-
-      {/* Settings Modal */}
-      {isSettingsOpen && (
-        <div className="pointer-events-auto absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <FloatingPanel className="min-w-[400px] px-0 py-0 overflow-hidden shadow-2xl">
-            <div className="flex items-center justify-between border-b border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] px-5 py-4">
-              <h3 className="font-[600] text-[18px] text-[var(--colors-ink)] tracking-[-0.1px]">설정</h3>
-              <button onClick={() => setIsSettingsOpen(false)} className="text-[var(--colors-ink-muted)] hover:text-[var(--colors-ink)] transition-colors">
-                <X size={18} />
-              </button>
-            </div>
-            <div className="p-6 space-y-6">
-              <div>
-                <div className="mb-3 text-[13px] font-medium text-[var(--colors-ink-subtle)]">테마</div>
-                <div className="flex rounded-full border border-[var(--colors-hairline)] bg-[var(--colors-canvas)] p-1">
-                  {[
-                    { value: "light", icon: <Sun size={14} />, label: "라이트" },
-                    { value: "system", icon: <Monitor size={14} />, label: "시스템" },
-                    { value: "dark", icon: <Moon size={14} />, label: "다크" },
-                  ].map(({ value, icon, label }) => (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => setThemeMode(value)}
-                      className={`flex flex-1 items-center justify-center gap-2 rounded-full px-3 py-2 text-sm transition ${themeMode === value ? "bg-[var(--colors-surface-2)] text-[var(--colors-ink)]" : "text-[var(--colors-ink-subtle)] hover:text-[var(--colors-ink)]"}`}
-                    >
-                      {icon}
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </FloatingPanel>
-        </div>
-      )}
+          onRefreshWeather={weatherFeed.refresh}
+          onOpenRecommendation={openRecommendation}
+          campusOverview={(
+            <CampusEnergyOverview
+              onSelection={flow.selectBuilding}
+              onBuildingSelect={selectFromEnergy}
+              refreshKey={plans.overlayRefreshKey}
+              selectedBuildingId={selection.selectedBuildingId}
+            />
+          )}
+        />
+      </DashboardShell>
     </div>
   );
 }

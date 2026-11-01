@@ -2,9 +2,13 @@ import React, { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { simulationHeadingToThree, simulationToThree } from "../utils/coordinateTransform";
+import { ContactShadow } from "./ContactShadow";
 import { PedestrianEntity } from "./PedestrianEntity";
 import { ScooterEntity } from "./ScooterEntity";
 import { VehicleEntity } from "./VehicleEntity";
+import { RISK_COLORS } from "../utils/riskColors.mjs";
+
+const SCRATCH_TARGET = new THREE.Vector3();
 
 function dampAngle(current, target, factor) {
   let difference = (target - current + Math.PI) % (Math.PI * 2) - Math.PI;
@@ -12,7 +16,7 @@ function dampAngle(current, target, factor) {
   return current + difference * factor;
 }
 
-export const TrafficEntity = React.memo(function TrafficEntity({ entity, coordinateConfig, renderEntity, resolveHeight, selected, onSelect }) {
+export const TrafficEntity = React.memo(function TrafficEntity({ entity, coordinateConfig, renderEntity, resolveHeight, selected, onSelect, contactShadow = false }) {
   const group = useRef();
   const initial = useMemo(() => {
     const position = simulationToThree(entity, coordinateConfig);
@@ -30,7 +34,7 @@ export const TrafficEntity = React.memo(function TrafficEntity({ entity, coordin
     const resolvedY = resolveHeight?.(target, entity);
     if (Number.isFinite(resolvedY)) target.y = resolvedY;
     if (![target.x, target.y, target.z].every(Number.isFinite)) return;
-    currentPosition.current.lerp(new THREE.Vector3(target.x, target.y, target.z), smoothing);
+    currentPosition.current.lerp(SCRATCH_TARGET.set(target.x, target.y, target.z), smoothing);
     group.current.position.copy(currentPosition.current);
     const targetHeading = simulationHeadingToThree(entity.heading, coordinateConfig);
     group.current.rotation.y = dampAngle(group.current.rotation.y, targetHeading, smoothing);
@@ -49,6 +53,7 @@ export const TrafficEntity = React.memo(function TrafficEntity({ entity, coordin
         <sphereGeometry args={[2.1, 8, 8]} />
         <meshBasicMaterial transparent opacity={0.001} depthWrite={false} />
       </mesh>
+      {contactShadow && <ContactShadow type={entity.type} />}
       {renderEntity ? renderEntity(entity) : (
         <>
           {entity.type === "car" && <VehicleEntity riskLevel={entity.risk_level} emergency={String(entity.state).toLowerCase() === "emergency"} />}
@@ -60,7 +65,7 @@ export const TrafficEntity = React.memo(function TrafficEntity({ entity, coordin
         <mesh position={[0, 0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <ringGeometry args={[1.1, 1.35, 24]} />
           <meshBasicMaterial
-            color={entity.risk_level === "danger" ? "#ef233c" : entity.risk_level === "warning" ? "#f59e0b" : "#eab308"}
+            color={RISK_COLORS[entity.risk_level] ?? "#eab308"}
             transparent
             opacity={0.75}
             depthWrite={false}

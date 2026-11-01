@@ -2,16 +2,19 @@ export const CAMPUS_GLTF_OVERLAY_CONFIG = Object.freeze({
   url: "/campus-buildings.glb",
   d4SceneNodeIndex: 250,
   anchor: Object.freeze({ longitude: 127.4764043, latitude: 34.9700548 }),
-  // uni.glb's transformed BLD_D4 center/base in local east/north/up metres.
+  // BLD_D4 (node 250) base-center in campus-buildings.glb mapped to Cesium model-local (glTF z, x, yMin); glTF Y-up→Z-up then Z-up→X-up axis correction; export node scale 0.62421715 → 1/0.62421715 = 1.602; heading -90 because model +X (glTF z) points south
   d4LocalAnchorMeters: Object.freeze({
-    east: 46.51332723884707,
-    north: 266.5741379078058,
-    up: 36.85701517946295,
+    east: -266.574,
+    north: 46.513,
+    up: 36.857,
   }),
-  headingDegrees: -14.5,
+  headingDegrees: -90,
   fallbackGroundHeightMeters: 40,
   terrainOffsetMeters: 0.5,
-  modelScale: Object.freeze({ east: 1, north: 1, up: 1 }),
+  // The D4 anchor ground is about 65 m above the ellipsoid. A steady reading outside this band is the bare
+  // ellipsoid (about 0 m, what the globe shows when terrain tiles fail) or a coarse startup tile, not terrain.
+  groundHeightRangeMeters: Object.freeze({ min: 20, max: 120 }),
+  modelScale: Object.freeze({ east: 1.602, north: 1.602, up: 1.602 }),
 });
 
 function getViewer(map) {
@@ -26,13 +29,17 @@ function terrainHeight(viewer, Cesium, longitude, latitude) {
     : CAMPUS_GLTF_OVERLAY_CONFIG.fallbackGroundHeightMeters;
 }
 
-export function createCampusModelMatrix(viewer, Cesium, config = CAMPUS_GLTF_OVERLAY_CONFIG) {
-  const groundHeight = terrainHeight(
-    viewer,
-    Cesium,
-    config.anchor.longitude,
-    config.anchor.latitude,
-  );
+function isPlausibleGroundHeight(height, { min, max } = CAMPUS_GLTF_OVERLAY_CONFIG.groundHeightRangeMeters) {
+  return Number.isFinite(height) && height >= min && height <= max;
+}
+
+// groundHeight: a terrain height already sampled for the anchor; without it the globe's resident tile answers.
+export function createCampusModelMatrix(viewer, Cesium, config = CAMPUS_GLTF_OVERLAY_CONFIG, groundHeight = terrainHeight(
+  viewer,
+  Cesium,
+  config.anchor.longitude,
+  config.anchor.latitude,
+)) {
   const origin = Cesium.Cartesian3.fromDegrees(
     config.anchor.longitude,
     config.anchor.latitude,
@@ -64,10 +71,143 @@ export function createCampusModelMatrix(viewer, Cesium, config = CAMPUS_GLTF_OVE
   );
 }
 
-export async function createCampusGltfOverlay(map, Cesium = globalThis.window?.Cesium) {
+const LOAD_FAILED_STATUS = Object.freeze({
+  state: "error",
+  message: "캠퍼스 3D 모델을 불러오지 못했습니다",
+});
+
+// Until the globe finishes loading its tiles, getHeight answers from whatever
+// coarse tile is already resident and reports the anchor anywhere from -98 m to
+// +133 m, which buries the campus under the terrain. `tilesLoaded` alone is not
+// enough: it flickers true early in startup while the anchor tile is still
+// coarse, and when terrain tiles fail it turns true over the bare ellipsoid
+// (about 0 m). Require the loaded flag, a height inside groundHeightRangeMeters
+// AND two consecutive identical readings, then re-anchor exactly once.
+// Re-anchoring later is unsafe - the coarse readings come back when the camera
+// leaves the campus and its tiles are evicted.
+const TERRAIN_READY = Object.freeze({
+  intervalMs: 250,
+  toleranceMeters: 0.1,
+  maxWaitMs: 30000,
+});
+
+const ANCHORED_STATUS = Object.freeze({
+  state: "anchored",
+  message: "지형 높이를 확인해 캠퍼스 모델 위치를 보정했습니다",
+});
+
+// The poll below anchors on whatever tile the globe holds when two readings agree. A coarse tile can hold steady
+// inside groundHeightRangeMeters too (seen: +20 m), and then the campus floats for the whole session and every
+// camera preset built on the model frame lands elsewhere. Asking the terrain provider for the anchor's tile at a
+// fixed level gives the same height on every load (65.28 m at D4, level 15). The poll stays as the fallback when
+// the provider cannot sample (no sampleTerrain, a failed or slow tile request, an implausible height).
+const ANCHOR_TERRAIN = Object.freeze({ level: 15, timeoutMs: 20000, retryMs: 500 });
+
+export async function sampleAnchorGroundHeight(viewer, Cesium, {
+  level = ANCHOR_TERRAIN.level,
+  timeoutMs = ANCHOR_TERRAIN.timeoutMs,
+  retryMs = ANCHOR_TERRAIN.retryMs,
+  trace = {},
+} = {}) {
+  if (typeof Cesium?.sampleTerrain !== "function" || !viewer?.terrainProvider) return null;
+  const position = () => Cesium.Cartographic.fromDegrees(CAMPUS_GLTF_OVERLAY_CONFIG.anchor.longitude, CAMPUS_GLTF_OVERLAY_CONFIG.anchor.latitude);
+  const deadline = Date.now() + timeoutMs;
+  trace.attempts = 0;
+  // The overlay is created while the viewer may still hold Cesium's default ellipsoid provider (height 0 everywhere) or
+  // a VWorld provider that is not ready yet (Cesium 1.99 rejects sampleTerrain then). Re-read the viewer's provider on
+  // every attempt and keep asking until it answers a plausible ground height.
+  while (Date.now() < deadline) {
+    const provider = viewer.terrainProvider;
+    trace.attempts += 1;
+    trace.provider = provider?.constructor?.name ?? null;
+    try {
+      if (provider?.readyPromise && provider.ready !== true) {
+        await Promise.race([provider.readyPromise, new Promise((resolve) => setTimeout(resolve, Math.max(0, deadline - Date.now())))]);
+      }
+      const points = await Cesium.sampleTerrain(provider, level, [position()]);
+      const height = points?.[0]?.height;
+      trace.last = height ?? null;
+      if (isPlausibleGroundHeight(height)) return height;
+    } catch (error) {
+      trace.error = String(error?.message ?? error).slice(0, 120);
+    }
+    await new Promise((resolve) => setTimeout(resolve, retryMs));
+  }
+  console.warn("VWorld terrain sample for the campus anchor gave no plausible height; falling back to the globe height.", trace);
+  return null;
+}
+
+function anchorToTerrain(viewer, Cesium, model, onStatus) {
+  if (typeof Cesium?.sampleTerrain !== "function" || !viewer?.terrainProvider) {
+    reanchorWhenTerrainLoaded(viewer, Cesium, model, onStatus);
+    return;
+  }
+  const trace = {};
+  model.anchorTrace = trace;
+  sampleAnchorGroundHeight(viewer, Cesium, { trace }).then((height) => {
+    if (model.isDestroyed?.()) return;
+    if (height === null) {
+      reanchorWhenTerrainLoaded(viewer, Cesium, model, onStatus);
+      return;
+    }
+    model.modelMatrix = createCampusModelMatrix(viewer, Cesium, CAMPUS_GLTF_OVERLAY_CONFIG, height);
+    // 어느 길로 높이를 맞췄는지 모델에 남긴다(진단용: 고정 단계 표본 / 지구본 폴링).
+    model.anchorSource = "terrain-sample";
+    onStatus?.(ANCHORED_STATUS);
+  });
+}
+
+function reanchorWhenTerrainLoaded(viewer, Cesium, model, onStatus, schedule = setTimeout) {
+  // Polls run late while Cesium renders, so the limit is wall time; the poll count only keeps
+  // tests with a synchronous scheduler finite.
+  const startedAt = Date.now();
+  let waited = 0;
+  let confirming = null;
+
+  const poll = () => {
+    if (model.isDestroyed?.()) return;
+    const globe = viewer.scene?.globe;
+    const height = globe?.getHeight?.(Cesium.Cartographic.fromDegrees(
+      CAMPUS_GLTF_OVERLAY_CONFIG.anchor.longitude,
+      CAMPUS_GLTF_OVERLAY_CONFIG.anchor.latitude,
+    ));
+
+    if (globe?.tilesLoaded === true && isPlausibleGroundHeight(height)) {
+      if (confirming !== null && Math.abs(height - confirming) <= TERRAIN_READY.toleranceMeters) {
+        model.modelMatrix = createCampusModelMatrix(viewer, Cesium);
+        model.anchorSource = "globe-poll";
+        onStatus?.(ANCHORED_STATUS);
+        return;
+      }
+      confirming = height;
+    } else {
+      confirming = null;
+    }
+
+    waited += TERRAIN_READY.intervalMs;
+    if (waited >= TERRAIN_READY.maxWaitMs || Date.now() - startedAt >= TERRAIN_READY.maxWaitMs) {
+      onStatus?.({
+        state: "terrain-timeout",
+        message: "지형 높이를 확인하지 못해 건물 높이가 부정확할 수 있습니다",
+      });
+      return;
+    }
+    schedule(poll, TERRAIN_READY.intervalMs)?.unref?.();
+  };
+
+  schedule(poll, TERRAIN_READY.intervalMs);
+}
+
+export async function createCampusGltfOverlay(
+  map,
+  Cesium = globalThis.window?.Cesium,
+  { onStatus } = {},
+) {
   const viewer = getViewer(map);
   const fromGltf = Cesium?.Model?.fromGltfAsync ?? Cesium?.Model?.fromGltf;
   if (!viewer || !fromGltf) return null;
+
+  onStatus?.({ state: "loading", message: "캠퍼스 3D 모델을 불러오는 중입니다" });
 
   for (let index = viewer.scene.primitives.length - 1; index >= 0; index -= 1) {
     const primitive = viewer.scene.primitives.get(index);
@@ -76,15 +216,30 @@ export async function createCampusGltfOverlay(map, Cesium = globalThis.window?.C
     }
   }
 
-  const model = await fromGltf.call(Cesium.Model, {
-    url: CAMPUS_GLTF_OVERLAY_CONFIG.url,
-    modelMatrix: createCampusModelMatrix(viewer, Cesium),
-    allowPicking: true,
-    minimumPixelSize: 0,
-    shadows: Cesium.ShadowMode?.DISABLED,
-  });
+  let model;
+  try {
+    model = await fromGltf.call(Cesium.Model, {
+      url: CAMPUS_GLTF_OVERLAY_CONFIG.url,
+      modelMatrix: createCampusModelMatrix(viewer, Cesium),
+      allowPicking: true,
+      minimumPixelSize: 0,
+      shadows: Cesium.ShadowMode?.DISABLED,
+    });
+  } catch (error) {
+    onStatus?.(LOAD_FAILED_STATUS);
+    throw error;
+  }
   model.id = "SCNU_D4_GLTF_OVERLAY";
   viewer.scene.primitives.add(model);
+  if (!Cesium.Model.fromGltfAsync) {
+    // The VWorld SDK bundles Cesium 1.99: fromGltf returns the model before it downloads, and a failed
+    // download only rejects readyPromise. Removing the model also ends the re-anchoring poll.
+    model.readyPromise?.catch(() => {
+      if (!model.isDestroyed?.()) viewer.scene.primitives.remove(model);
+      onStatus?.(LOAD_FAILED_STATUS);
+    });
+  }
+  anchorToTerrain(viewer, Cesium, model, onStatus);
   return model;
 }
 

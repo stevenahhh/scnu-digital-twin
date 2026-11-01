@@ -1,0 +1,2431 @@
+{
+ "note": "Pole-roots rounds 2 and 3: every source tried for the poles the NGII 2025 sheet left unresolved; fetch/poleRoots.mjs merges these into data/photo/pole-roots.json. A pole moves only when a source resolves its base to <= 0.5 m or two independent sources agree within 0.5 m. Round 2: none did. Round 3 (other-year aerials, 순천시 airmap 2013-2024 at 10-12 cm, registered to the sheet per pole): 2 resolved (`resolved`, verdict epoch-root), 47 stay at their survey seeds, estimated (추정). seedUncertaintyM: the median shift from seed to resolved root of the poles of the same source (data.go.kr 2.43 / 4.99 / 7.45 m; by-eye survey 0-3.07 m, median 1.2 m), an estimate.",
+ "generated": "2026-10-27",
+ "sources": {
+  "ngii-wide-search": "lib/poleShadow.mjs detectPoleRoots on the NGII 2025 sheet over 3.5 m around each seed (the first round searched 1 m around by-eye bases only), top 3 candidates reviewed by eye on 8x and 16x chips; on the 15 resolved poles the same search returns the known shadow roots within 0.05 m (OB0001, OC0060, OC0061)",
+  "vworld-z19": "VWorld Satellite z19 (data/ortho/vworld-satellite-z19.*) registers to the sheet at 0.00-0.01 m with NCC 0.89-0.95 at all 15 resolved poles, with the same shadows, vehicles and roofs: it is the same 2025 photo, not a second epoch",
+  "ngii-other-epochs": "NGII publishes 2022-2024 orthophotos of sheet 34702020, but only behind login, cart and the INNORIX client (map.ngii.go.kr); none is available locally or without login. The keyless 순천시 GIS aerials (12 cm, 2022-2024) are All Rights Reserved, internal QA only, and were not used",
+  "esri-z18": "Esri World Imagery z18 (0.49 m/px, another epoch, strong relief lean) sits 4-6 m north of the sheet; local registration (gradient NCC, +-10 m) reaches NCC <= 0.40 with a 0.3-14 m spread between window quadrants at the 15 resolved poles, so no root can be carried to the sheet within 0.5 m",
+  "vr-two-ray": "scripts/perf/vr_lamp_bearings.py rays from the 33 resected stations (a8, c3, d4, d5 excluded), each ray required to show the pole ridge at its base rows, pairs crossing at >= 20 deg, sigma from the station yaw residual and 1 px <= 0.5 m: 32 of the 49 poles have no station within 45 m, 14 one, 3 two; no pair qualified",
+  "shadow-tip": "root = shadow tip moved back toward the sun by h / tan 62 deg; with heights estimated (+-1 m) the along-shadow error is about 0.5 m before the tip is located, so no tip-only pole reaches 0.5 m",
+  "suncheon-airmap": "순천시 생활지리정보시스템 airmap WMS (gis.suncheon.go.kr/gs-gate/airmap, keyless, EPSG:5186), layers 2013/2015/2017 10 cm, 2018-2024 12 cm and 2025 25 cm, fetched at 0.125 m over the pole extent (imagery kept outside the repository; site footer 'All Rights Reserved', used for building the model on the owner's instruction). 2025_25cm registers to the sheet at 0.00 m with NCC 0.99 (the same 2025 photo, not independent); the ten 2013-2024 epochs are independent captures (other shadows, cars, paving). Registration per pole: paint-feature NCC (32 m windows, +-4 m) at 9 windows on a 12 m grid around the seed, mean of the windows within 0.4 m of their median (at least 3), sigma = their RMS (0.01-0.19 m); unregistered where fewer than 3 agree (canopy, shade). Per epoch the median sigma over the poles that register is 0.04-0.09 m (13-32 of the 49 poles per epoch); on the 9 placed shadow/by-eye roots the windows agree to a median sigma of 0.02-0.13 m with shifts of 0.0-0.5 m. Bases picked by eye on 12 m chips (24 px/m) and 6 m zooms (48 px/m) of every registered epoch: pole image (relief lean differs per flight), shadow root (sun differs per flight) or the dark base dot",
+  "kakao-skyview-hd": "Kakao Map skyview HD tiles (map.daumcdn.net/map_skyview_hd, keyless, 0.125 m): registers to the sheet at 0.04 m with NCC 0.95-0.99 at every window, the same 2025 photo, not independent. Kakao's map_skyview_past route returns only the no-data tile at every level",
+  "not-reachable": "Naver Map satellite and past aerials (map.pstatic.net tiles answer 400 outside the signed web client), Google Earth historical imagery (Earth Pro client only; tile scraping is outside Google's terms), VWorld past-year imagery (only the current Satellite layer is served, the same 2025 photo), NGII 국토정보맵 2022-2024 orthophotos (map.ngii.go.kr: login, cart and the INNORIX client): not used"
+ },
+ "poles": {
+  "OB0000": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 18.74,
+     "fromSeedM": 2.33,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: crossing bars"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "dark marks within 1.2 m of the seed on 2018-2024 scatter by 1.2 m (pedestrians, signal heads); no base two epochs agree on",
+     "registeredEpochs": 10
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OB0003": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 18.96,
+     "fromSeedM": 1.37,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: broad 2 m streak of the signal head or arm; no 1 px pole line, root not visible"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "tip visible, root hidden: tip + h / tan 62 deg back to the root with h 6.5 m 추정 (+-1 m) gives about 0.6 m along the shadow, over 0.5 m",
+     "residualM": 0.6
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 8
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OB0004": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 4.68,
+     "fromSeedM": 3.13,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: kerb and structure edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 8
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OB0007": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 14.09,
+     "fromSeedM": 0.85,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: V-shaped sign-plate shadows (the tip); root not visible"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "tip visible, root hidden: tip + h / tan 62 deg back to the root with h 3.0 m 추정 (+-1 m) gives about 0.6 m along the shadow, over 0.5 m",
+     "residualM": 0.6
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 10
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OB0008": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 14.12,
+     "fromSeedM": 3.64,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: crossing and kerb edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole at the island tip on 2013-2019; a signal pole with a mast arm stands there from 2020, its arm root within 0.3 m of the seed on 2021 and 2024, but the foot itself is not separable from the island kerb on the registered epochs",
+     "registeredEpochs": 10
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OB0014": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 8.88,
+     "fromSeedM": 2.67,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: square dark blob, no pole line"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 2
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OC0031": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 7.86,
+     "fromSeedM": 4.43,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: kerb edge under canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 3
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0032": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 21.88,
+     "fromSeedM": 1.14,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: structure edge"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "a post-top lamp shows at the planter's north-west kerb corner on 2013-2021 (head and leaning pole image, about 3.5 m west and 1 m south of the seed), but on the 6 m zooms the foot blurs into the kerb corner and the registered epochs (2015, 2017, 2020, 2022) do not pin it to 0.5 m",
+     "registeredEpochs": 4
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0035": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 27.43,
+     "fromSeedM": 3.09,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: kerb shadow"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "a lamp head shows on 2013 and 2019 near the kerb, but the utility-pole shadows cross the spot; no foot agreed by two epochs",
+     "registeredEpochs": 6
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0036": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 26.4,
+     "fromSeedM": 1.09,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: kerb shadow"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "a lamp head and pole image show on 2013-2022 beside the kerb, but the pole image and the utility-pole shadows cross there; the foot is not pinned to 0.5 m on two registered epochs",
+     "registeredEpochs": 6
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0038": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 6.15,
+     "fromSeedM": 2.72,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "a pole image reaches the kerb near the seed on 2013-2019, but those epochs do not register (rip-rap and water); the registered 2015, 2021, 2022 show no foot",
+     "registeredEpochs": 3
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0042": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 0.01,
+     "fromSeedM": 2.86,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: lane paint, no shadow line"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 3
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0043": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 4.67,
+     "fromSeedM": 1.87,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: crossing and kerb edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "a lamp head shows on 2020 about 3 m west and 3 m south of the seed, a single epoch",
+     "registeredEpochs": 5
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0045": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 18.85,
+     "fromSeedM": 1.7,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: broad shadow of a structure, no pole line"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 3
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OC0046": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 2.44,
+     "fromSeedM": 3.19,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy and kerb"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 6
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0047": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 1.96,
+     "fromSeedM": 2.44,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy and wire shadows"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 6
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0048": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 9.34,
+     "fromSeedM": 2.86,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: kerb and ground texture"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 2
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0049": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 12.98,
+     "fromSeedM": 3.55,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: building shadow"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 0
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OC0052": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 9.41,
+     "fromSeedM": 2.56,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 2
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OC0053": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 8.09,
+     "fromSeedM": 2.77,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy and kerb"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "a lamp head and arm show on 2013-2019 about 5 m north of the seed at the kerb; 2013-2019 do not register (rip-rap and water), 2020-2023 register but show no pole",
+     "registeredEpochs": 3
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0054": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 20.84,
+     "fromSeedM": 2.6,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: vehicle edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "resolved",
+     "residualM": 0.32,
+     "why": "base read on 3 independent registered epochs within 0.51 m of each other, matching the dark base dot on the NGII 2025 sheet"
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2,
+   "resolved": {
+    "method": "epoch-root",
+    "source": "suncheon-airmap",
+    "offsetTmM": [
+     2.75,
+     -2.01
+    ],
+    "independentEpochs": [
+     "2019_12cm",
+     "2021_12cm",
+     "2023_12cm"
+    ],
+    "picksTmM": {
+     "2019_12cm": [
+      2.97,
+      -1.87
+     ],
+     "2021_12cm": [
+      2.8,
+      -2.24
+     ],
+     "2023_12cm": [
+      2.7,
+      -1.8
+     ],
+     "2025_25cm": [
+      2.53,
+      -2.12
+     ]
+    },
+    "excludedPicks": {
+     "2020_12cm": {
+      "offsetTmM": [
+       3.53,
+       -0.82
+      ],
+      "why": "pole image above the base (lean), not the base"
+     },
+     "2024_12cm": {
+      "offsetTmM": [
+       3.01,
+       -1.07
+      ],
+      "why": "pole image above the base (lean), not the base"
+     }
+    },
+    "registration": {
+     "2019_12cm": {
+      "shiftM": [
+       0.03,
+       0.31
+      ],
+      "windows": 3,
+      "sigmaM": 0.02
+     },
+     "2021_12cm": {
+      "shiftM": [
+       -0.23,
+       0.18
+      ],
+      "windows": 7,
+      "sigmaM": 0.19
+     },
+     "2023_12cm": {
+      "shiftM": [
+       0.16,
+       0.74
+      ],
+      "windows": 4,
+      "sigmaM": 0.03
+     },
+     "2025_25cm": {
+      "shiftM": [
+       0,
+       0
+      ],
+      "windows": 9,
+      "sigmaM": 0
+     }
+    },
+    "maxPairM": 0.51,
+    "maxDevM": 0.26,
+    "residualM": 0.32
+   }
+  },
+  "OC0058": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 17.27,
+     "fromSeedM": 3.46,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: vehicle edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "the pole on 2013-2022 is a utility pole with a transformer frame, not a lamp",
+     "registeredEpochs": 3
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0066": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 2.1,
+     "fromSeedM": 2.4,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "canopy or building shade over the seed in every epoch",
+     "registeredEpochs": 5
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0067": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 8.17,
+     "fromSeedM": 2.11,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "dark dots near the seed on 2013, 2015 and 2024 do not agree within 0.5 m and show no pole image",
+     "registeredEpochs": 7
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0068": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 12.98,
+     "fromSeedM": 2.46,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: building and kerb edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "the pole on 2013-2019 is a utility pole (wires, long shadow), not a lamp",
+     "registeredEpochs": 9
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0069": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 7.86,
+     "fromSeedM": 2.44,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: building shade"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "canopy or building shade over the seed in every epoch",
+     "registeredEpochs": 2
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0077": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 14.87,
+     "fromSeedM": 1.43,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: building edge"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 1
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0086": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 5.89,
+     "fromSeedM": 2.36,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "canopy or building shade over the seed in every epoch",
+     "registeredEpochs": 0
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0097": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 12.49,
+     "fromSeedM": 3.24,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: building shade"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "canopy or building shade over the seed in every epoch",
+     "registeredEpochs": 3
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0098": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 4.24,
+     "fromSeedM": 3.29,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "the seed lies on the carriageway beside the median; dark dots near it on 2017 and 2020 are road paint and vehicles, no pole",
+     "registeredEpochs": 2
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0099": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 6.68,
+     "fromSeedM": 3.66,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: building shade"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 4
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0100": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 3.66,
+     "fromSeedM": 3.16,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy and kerb"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "median lamp: the two lantern heads show either side of the median (2018, 2024) but not the base; the head midpoints differ by 1.3 m between epochs (relief lean of 8 m heads)",
+     "registeredEpochs": 5
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0103": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 1.06,
+     "fromSeedM": 3.7,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "a white object about 1.9 m east of the seed recurs on 2015-2020 and 2025 (garden lantern top or a stone); no pole image or shadow, so not a base",
+     "registeredEpochs": 5
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OC0110": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 3.75,
+     "fromSeedM": 3.3,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: crossing and kerb edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "a lamp shows on 2013-2017, but the corner was rebuilt by 2020 and no pole shows from 2021: the old base is not the current one",
+     "registeredEpochs": 7
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0113": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 11.53,
+     "fromSeedM": 3.42,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: plaza structure edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 1,
+     "why": "1 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "intersection corner: vehicles, cabinets and canopy change every epoch; no pole image or root agreed by two epochs",
+     "registeredEpochs": 1
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0114": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 6.66,
+     "fromSeedM": 3.71,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: kerb in shade"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 1
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0115": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 7.85,
+     "fromSeedM": 2.95,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: vehicle shade"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 1
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0116": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 9.07,
+     "fromSeedM": 1.68,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: vehicle edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 1
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0130": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 0.2,
+     "fromSeedM": 3.41,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: roof and kerb edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "resolved",
+     "residualM": 0.33,
+     "why": "base read on 4 independent registered epochs within 0.55 m of each other, matching the dark base dot on the NGII 2025 sheet"
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2,
+   "resolved": {
+    "method": "epoch-root",
+    "source": "suncheon-airmap",
+    "offsetTmM": [
+     4.32,
+     -5.6
+    ],
+    "independentEpochs": [
+     "2018_12cm",
+     "2019_12cm",
+     "2020_12cm",
+     "2021_12cm"
+    ],
+    "picksTmM": {
+     "2018_12cm": [
+      4.43,
+      -5.65
+     ],
+     "2019_12cm": [
+      4.01,
+      -5.65
+     ],
+     "2020_12cm": [
+      4.4,
+      -5.54
+     ],
+     "2021_12cm": [
+      4.55,
+      -5.54
+     ],
+     "ngii": [
+      4.22,
+      -5.6
+     ]
+    },
+    "excludedPicks": {},
+    "registration": {
+     "2018_12cm": {
+      "shiftM": [
+       0.18,
+       0.04
+      ],
+      "windows": 4,
+      "sigmaM": 0.07
+     },
+     "2019_12cm": {
+      "shiftM": [
+       0.21,
+       -0.21
+      ],
+      "windows": 4,
+      "sigmaM": 0.08
+     },
+     "2020_12cm": {
+      "shiftM": [
+       0.04,
+       0
+      ],
+      "windows": 3,
+      "sigmaM": 0.02
+     },
+     "2021_12cm": {
+      "shiftM": [
+       0.08,
+       0.11
+      ],
+      "windows": 6,
+      "sigmaM": 0.1
+     }
+    },
+    "maxPairM": 0.55,
+    "maxDevM": 0.32,
+    "residualM": 0.33
+   }
+  },
+  "OC0131": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 2.03,
+     "fromSeedM": 1.47,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "canopy or building shade over the seed in every epoch",
+     "registeredEpochs": 9
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0132": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 3.41,
+     "fromSeedM": 3.61,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "canopy or building shade over the seed in every epoch",
+     "registeredEpochs": 5
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0133": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 11.16,
+     "fromSeedM": 2.49,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: crossing bars"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "intersection corner under canopy: no pole image or root agreed by two epochs",
+     "registeredEpochs": 5
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OC0151": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 4.71,
+     "fromSeedM": 2.13,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: median tree crowns"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 1,
+     "why": "1 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 3
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0152": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 2.75,
+     "fromSeedM": 1.06,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: median tree crowns"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "median lamp: lantern heads show beside the median on 2018 and 2023-2024, the base under the median planting does not",
+     "registeredEpochs": 3
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0167": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 10.56,
+     "fromSeedM": 3.32,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: building edge"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 1,
+     "why": "1 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "a pole stands at the corner on 2013-2017 and 2021 (wires: a utility pole), and the site was rebuilt in 2020",
+     "registeredEpochs": 2
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0168": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 1.89,
+     "fromSeedM": 2.61,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 1,
+     "why": "1 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "canopy or building shade over the seed in every epoch",
+     "registeredEpochs": 5
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0170": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 8.32,
+     "fromSeedM": 3.04,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy and wire shadows"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "a lamp with a white arm shows on every epoch about 1.3 m west and 3.4 m south of the seed; the verge is under canopy, so only 2013 registers to the sheet (the 24 m-grid registration of 2021-2023 scatters 1-2 m): no two registered epochs",
+     "registeredEpochs": 2
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  },
+  "OC0171": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 8.31,
+     "fromSeedM": 2.5,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy and wall"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "the thick pole on 2018-2020 is a utility pole (wires, long shadow), and the verge does not register (canopy)",
+     "registeredEpochs": 0
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  "OC0174": {
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 5.02,
+     "fromSeedM": 2.44,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "canopy or building shade over the seed in every epoch",
+     "registeredEpochs": 6
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5.0,
+   "confidence": 0.2
+  }
+ }
+}

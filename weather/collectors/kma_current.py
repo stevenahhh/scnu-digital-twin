@@ -20,15 +20,23 @@ from __future__ import annotations
 import math
 from datetime import datetime, timezone, timedelta
 
-import requests
+import config
+from .upstream import UpstreamError, request_json
 
-from config import KMA_SERVICE_KEY, KMA_NX, KMA_NY, CAMPUS_LAT, CAMPUS_LON
 
-
-BASE_URL = "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst"
+BASE_URL = config.KMA_BASE_URL + "/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst"
 
 # 한국 표준시 UTC+9
 KST = timezone(timedelta(hours=9))
+
+
+def _observation_items(data: dict) -> list:
+    """초단기실황 item 목록. 빈 문자열·누락·단일 dict 응답도 목록으로 맞춘다(예보 수집기와 같은 규칙)."""
+    payload = data["response"]["body"]["items"]
+    items = payload.get("item", []) if isinstance(payload, dict) else payload
+    if isinstance(items, dict):
+        items = [items]
+    return items if isinstance(items, list) else []
 
 
 # =========================================================
@@ -129,25 +137,48 @@ def fetch_kma_current(now: datetime | None = None) -> dict:
 
     base_date, base_time = get_latest_base_datetime(now)
 
-    params = {
-        "serviceKey": KMA_SERVICE_KEY,
-        "pageNo": 1,
-        "numOfRows": 100,
-        "dataType": "JSON",
-        "base_date": base_date,
-        "base_time": base_time,
-        "nx": KMA_NX,
-        "ny": KMA_NY,
-    }
+    if not config.KMA_SERVICE_KEY:
+        raise UpstreamError("KMA", "missing_key", "KMA service key is not configured")
 
-    response = requests.get(BASE_URL, params=params, timeout=15)
-    response.raise_for_status()
-    data = response.json()
+    def fetch(date: str, time: str) -> dict:
+        params = {
+            "serviceKey": config.KMA_SERVICE_KEY,
+            "pageNo": 1,
+            "numOfRows": 100,
+            "dataType": "JSON",
+            "base_date": date,
+            "base_time": time,
+            "nx": config.KMA_NX,
+            "ny": config.KMA_NY,
+        }
+        data = request_json(
+            "KMA",
+            BASE_URL,
+            params,
+            connect_timeout=config.WEATHER_UPSTREAM_CONNECT_TIMEOUT_S,
+            read_timeout=config.WEATHER_UPSTREAM_READ_TIMEOUT_S,
+        )
+        if not _observation_items(data):
+            raise UpstreamError("KMA", "no_data", "No current observations returned")
+        return data
 
-    items = data["response"]["body"]["items"]["item"]
+    try:
+        data = fetch(base_date, base_time)
+    except UpstreamError as exc:
+        if exc.kind != "no_data":
+            raise
+        previous = datetime.strptime(f"{base_date}{base_time}", "%Y%m%d%H%M") - timedelta(hours=1)
+        base_date, base_time = previous.strftime("%Y%m%d"), previous.strftime("%H00")
+        data = fetch(base_date, base_time)
+
+    items = _observation_items(data)
+    observed_at = datetime.strptime(
+        f"{base_date}{base_time}", "%Y%m%d%H%M"
+    ).replace(tzinfo=KST).isoformat()
 
     result: dict = {
         "timestamp":          f"{base_date}T{base_time}",
+        "observed_at":        observed_at,
         "temperature":        None,
         "humidity":           None,
         "wind_speed":         None,
@@ -179,7 +210,7 @@ def fetch_kma_current(now: datetime | None = None) -> dict:
     except (ValueError, OSError):
         utc_now = now - timedelta(hours=9)
 
-    solar_alt  = calc_solar_altitude(CAMPUS_LAT, CAMPUS_LON, utc_now)
+    solar_alt  = calc_solar_altitude(config.CAMPUS_LAT, config.CAMPUS_LON, utc_now)
     cloud      = pty_to_cloud_cover(result["precipitation_type"])
     solar_rad  = estimate_solar_radiation(solar_alt, cloud)
 

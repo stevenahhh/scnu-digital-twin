@@ -3,5 +3,6 @@ uvicorn
 websockets
 python-multipart
 ultralytics
+lap
 opencv-python
 numpy

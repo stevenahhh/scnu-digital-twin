@@ -102,7 +102,7 @@ Base unit: 4px.
 
 ### Contributor Row
 
-- **Structure**: rank, identity mark, handle and alias, horizontal commit bar, commit count, PR count.
+- **Structure**: rank, identity mark, handle, maintainer badge with alias, horizontal commit bar, commit count, PR count.
 - **Variants**: lead contributor, standard contributor.
 - **Spacing**: `--space-3` vertical and `--space-4` horizontal.
 - **States**: static.

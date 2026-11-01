@@ -22,3 +22,20 @@ export function getCurrentRoomStatus(room, date) {
     hvacText: isInUse && room.specialType !== "faculty" ? "\uB0C9\uB09C\uBC29\uAE30 \uAC00\uB3D9 \uC911" : "\uB0C9\uB09C\uBC29\uAE30 \uB300\uAE30",
   };
 }
+
+// 강의실 특수 설비 한 줄: 대형 스크린이 먼저, 없으면 PC 대수, 둘 다 없으면 `없음`.
+export function formatEquipmentLabel(room) {
+  if (room.hasLargeScreen) return "대형 스크린, 빔프로젝터";
+  if (room.computerCount) return `PC ${room.computerCount}대`;
+  return "없음";
+}
+
+// 오늘 일정 한 줄: 진행 중인 수업, 없으면 다음 수업, 둘 다 없으면 `오늘 예정 없음`.
+export function describeTodaySchedule(status) {
+  const { currentClass, nextClass } = status;
+  if (currentClass) {
+    return `${currentClass.startHour}:00 - ${currentClass.startHour + currentClass.durationHours}:00 ${currentClass.subject}`;
+  }
+  if (nextClass) return `${nextClass.startHour}:00 예정 · ${nextClass.subject}`;
+  return "오늘 예정 없음";
+}

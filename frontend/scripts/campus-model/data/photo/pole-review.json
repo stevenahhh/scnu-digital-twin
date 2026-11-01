@@ -1,0 +1,426 @@
+{
+ "note": "By-eye verdicts on the pole review sheets (fetch/pole_review_sheets.py: NGII 2025 photo chips with metre ticks around each seed). In this photo a pole shows as a thin pale or dark pole image leaning away from the photo nadir (relief) plus a thin shadow running west; the base is where the two meet. verdict seed = the base is at the seed; root = base at offsetM [east, south] metres from the seed; head = floodlight head at headPx (sheet col, row), base found by removing the relief lean; reject = no pole there; site = base not resolvable but the photo shows the seed on a median or island (kept at the seed, exempt from the carriageway raster, which paints medians as asphalt). Seeds with no entry are unresolved: survey and data.go.kr poles stay at their seed (metre-level), rule seeds are dropped.",
+ "reviews": {
+  "OB0001": {
+   "verdict": "seed",
+   "note": "signal: thin pole shadow runs west from the seed at the island tip"
+  },
+  "OB0002": {
+   "verdict": "seed",
+   "note": "signal: shadow and pole image meet at the seed inside the island"
+  },
+  "OB0006": {
+   "verdict": "root",
+   "offsetM": [
+    -0.53,
+    0.0
+   ],
+   "note": "sign post: small square base 0.5 m west of the seed on the median"
+  },
+  "OB0012": {
+   "verdict": "root",
+   "offsetM": [
+    -0.12,
+    0.56
+   ],
+   "note": "lamp: bright pole image runs north from the base, its shadow runs west-south-west from the same point"
+  },
+  "OB0013": {
+   "verdict": "root",
+   "offsetM": [
+    0.2,
+    0.6
+   ],
+   "note": "lamp: bright pole image north of the base, shadow leaves the base toward the west"
+  },
+  "OC0084": {
+   "verdict": "reject",
+   "note": "the white head and line read as a lamp lie inside the B2 70주년기념관 footprint (GIS record 768585): a rooftop fitting, not a ground pole; no pole at the footway within 3 m"
+  },
+  "OC0172": {
+   "verdict": "root",
+   "offsetM": [
+    2.94,
+    0.88
+   ],
+   "note": "lamp: pale head and pole image east of the seed, base at the south end on the path edge"
+  },
+  "OC0060": {
+   "verdict": "root",
+   "offsetM": [
+    1.75,
+    -1.5
+   ],
+   "note": "stream-road lamp: long west shadow and the south-leaning pole image meet at the base on the footway by the kerb"
+  },
+  "OC0061": {
+   "verdict": "root",
+   "offsetM": [
+    -4.0,
+    2.65
+   ],
+   "note": "stream-road lamp: west shadow and south-leaning pole image meet 4.8 m from the data.go.kr point"
+  },
+  "OC0062": {
+   "verdict": "root",
+   "offsetM": [
+    -6.25,
+    4.05
+   ],
+   "note": "stream-road lamp: west shadow and south-leaning pole image meet 7.4 m from the data.go.kr point (no other pole within 8 m)"
+  },
+  "OB0005": {
+   "verdict": "reject",
+   "note": "by-eye lamp on the open carriageway: no pole image, base or shadow at or near the seed"
+  },
+  "OC0041": {
+   "verdict": "reject",
+   "note": "by-eye lamp on a parking/drive surface: no pole visible within 3 m"
+  },
+  "OC0142": {
+   "verdict": "head",
+   "headPx": [
+    3113.4,
+    3455.4
+   ],
+   "note": "floodlight: bright lamp head at the pitch edge (sheet pixel); base = head minus the photo relief lean for the estimated height"
+  },
+  "OC0143": {
+   "verdict": "head",
+   "headPx": [
+    3100.6,
+    3506.0
+   ],
+   "note": "floodlight: bright lamp head at the pitch edge (sheet pixel); base = head minus the photo relief lean for the estimated height"
+  },
+  "OC0144": {
+   "verdict": "head",
+   "headPx": [
+    3087.4,
+    3556.4
+   ],
+   "note": "floodlight: bright lamp head at the pitch edge (sheet pixel); base = head minus the photo relief lean for the estimated height"
+  },
+  "OC0145": {
+   "verdict": "head",
+   "headPx": [
+    3193.6,
+    3475.6
+   ],
+   "note": "floodlight: bright lamp head at the pitch edge (sheet pixel); base = head minus the photo relief lean for the estimated height"
+  },
+  "OC0146": {
+   "verdict": "head",
+   "headPx": [
+    3181.0,
+    3526.0
+   ],
+   "note": "floodlight: bright lamp head at the pitch edge (sheet pixel); base = head minus the photo relief lean for the estimated height"
+  },
+  "OC0147": {
+   "verdict": "head",
+   "headPx": [
+    3168.2,
+    3576.6
+   ],
+   "note": "floodlight: bright lamp head at the pitch edge (sheet pixel); base = head minus the photo relief lean for the estimated height"
+  },
+  "EL000": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL001": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL002": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL003": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL004": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL005": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL006": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL007": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL008": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL009": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL010": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL011": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL012": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL013": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL014": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL015": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL016": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL017": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL018": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL019": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL020": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL021": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL022": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL023": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL024": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL025": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL026": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL027": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL028": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL029": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL030": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL031": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL032": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL033": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL034": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL035": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL036": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL037": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL038": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL039": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL040": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL041": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL042": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL043": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL044": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL045": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL046": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL047": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL048": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL049": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL050": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL051": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL052": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL053": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL054": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL055": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL056": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL057": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL058": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL059": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL060": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL061": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL062": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL063": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL064": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL065": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "EL066": {
+   "verdict": "reject",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  "OB0003": {
+   "verdict": "vr",
+   "root": [127.48409793, 34.96873206],
+   "residualM": 0.47,
+   "note": "signal: the base is in building shadow on the photo; VR scene_a19 shows the pole on the east footway just behind the kerb, south of the crossing (8.35 m east of the median seed). Base = mean of the a19 ray cut with the photo-registered kerb (0.17 m inside the footway) and the a19 position moved by the a19-vs-photo offset of the crossing's south-east bar end (0.93 m apart, residual half of that); the scene_a17 line of sight (86 m, base hidden by a tree) passes 1.4 m west"
+  },
+  "OC0100": {
+   "verdict": "site",
+   "site": "median",
+   "note": "lamp at the planted median edge of the arterial (chip: median kerb and planting at the seed); base not resolvable"
+  },
+  "OC0151": {
+   "verdict": "site",
+   "site": "median",
+   "note": "lamp on the planted median of the four-lane road (tree pits either side of the seed); base hidden by crowns"
+  },
+  "OC0152": {
+   "verdict": "site",
+   "site": "median",
+   "note": "lamp on the planted median of the four-lane road (tree pits either side of the seed); base hidden by crowns"
+  },
+  "OC0076": {
+   "verdict": "reject",
+   "note": "data.go.kr point under continuous crowns on a carriageway: no base visible and no footway, verge or median within 8 m in the ground raster, so no evidence-backed site for the pole"
+  },
+  "OC0087": {
+   "verdict": "reject",
+   "note": "data.go.kr point under continuous crowns on a carriageway: no base visible and no footway, verge or median within 8 m in the ground raster, so no evidence-backed site for the pole"
+  }
+ }
+}

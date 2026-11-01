@@ -1,0 +1,1302 @@
+{
+  "type": "FeatureCollection",
+  "source": "vr-scnu-360 + ngii-2025-ortho",
+  "description": "Rest spaces and gate structures placed from the SCNU 360 VR tour (visual reference only, nothing copied) and checked against the NGII 2025 orthophoto; read by stages/furniture.mjs after objects-campus.geojson. RS-GATE-A19: the A19 gate sign (todo 14). RS0001-RS0018: VR-located rest spaces (data/photo/README.md 'VR rest spaces'): one feature per rest-space sighting of rest-spaces-reconciliation.json decided missing and placed, kind = data/rest-space-catalogue.json type. photo_support roof/wall: outline traced on the NGII 2025 sheet (within 0.25 m of the photo); none: VR-only position (bearing and depression angle from the VR station, or a nadir face registered on road markings), confidence <= 0.4. RS-LS-*: VR landscape items (steps, pond, sign stone, PM rack) the VR shows and the survey lacks (rest-spaces-reconciliation.json landscape rows decided missing), built by the furniture builders of their kind; photo_support outline: footprint or bottom edge traced on the NGII 2025 sheet. Every value is an estimate (추정).",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS-GATE-A19",
+        "kind": "gate_sign",
+        "subtype": "letter_sign",
+        "confidence": 0.4,
+        "method": "vr-resection",
+        "length_m": 7,
+        "depth_m": 0.45,
+        "height_m": 3.7,
+        "plinth_m": 0.6,
+        "colour": "#f4f3ee",
+        "bandColour": "#f4f3ee",
+        "height_source": "VR scene_a19 + scene_001 (estimated)",
+        "estimated": true,
+        "vr_scene": "scene_a19",
+        "vr_face": "l",
+        "vr_cols": [
+          693,
+          981
+        ],
+        "note": "국립순천대학교 / SCNU letter sign on a planted stone bed at the road edge of the A19 gate plaza. From the scene_a19 camera over the gate crossing (about 244182, 263716, 11.7 m from the car scale on the d face) the letters span l cols 693-981 (bearings 176-192 deg) and their base sits about 21 deg below the horizon, and the slab subtends about 16 deg: about 25 m south of the camera, just inside the plaza edge wall OC0128. Lettering not modelled (plain white slab and name band). Supersedes the survey point OC0111 (left out).",
+        "style": {
+          "colour": "white letters, white name band",
+          "form": "free-standing letter slab on a planted stone bed"
+        }
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            127.4837136,
+            34.96836267
+          ],
+          [
+            127.48379023,
+            34.96835876
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0003",
+        "kind": "garden_wall",
+        "estimated": true,
+        "roof_m": 12.98,
+        "roof_note": "the walled garden is the roof garden of A1 (the 12.98 m wing roof; VR scene_a5 r/d show the lattice wall on the roof edge above the road)",
+        "colour": "#e4e1d8",
+        "copingColour": "#f4f3ef",
+        "lattice_m": 0.9,
+        "latticeColour": "#8a5a3c",
+        "dims": {
+          "heightM": 0.9,
+          "thicknessM": 0.3
+        },
+        "vr_scene": "scene_a5",
+        "vr_face": "r",
+        "vr_cols": [
+          400,
+          2048
+        ],
+        "photo_support": "wall",
+        "confidence": 0.6,
+        "position_method": "photo: white coping line traced on the NGII 2025 sheet (task-25/ortho/a5-wall-zoom.png)",
+        "height_source": "catalogue garden_wall + VR scene_a5 (estimated)",
+        "note": "white-coped wall with a brown timber lattice screen round the walled garden (VR scene_a5 r)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            127.4811204,
+            34.9682274
+          ],
+          [
+            127.4814923,
+            34.9681583
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0015",
+        "kind": "bus_stop_shelter",
+        "estimated": true,
+        "style": {
+          "colour": "grey roof"
+        },
+        "vr_scene": "scene_f1",
+        "vr_face": "l",
+        "vr_cols": [
+          550,
+          800
+        ],
+        "photo_support": "roof",
+        "confidence": 0.6,
+        "position_method": "photo: shelter roof traced on the NGII 2025 sheet beside the bus bay (task-25/ortho/f1-stop-zoom.png)",
+        "height_source": "catalogue bus_stop_shelter + VR scene_f1 (estimated)",
+        "note": "bus stop shelter on the east footway of the arterial (VR scene_f1 l)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.4849108,
+              34.9660769
+            ],
+            [
+              127.4849381,
+              34.9660787
+            ],
+            [
+              127.4849542,
+              34.9660218
+            ],
+            [
+              127.4849258,
+              34.9660177
+            ],
+            [
+              127.4849108,
+              34.9660769
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0016",
+        "kind": "bench",
+        "estimated": true,
+        "back": false,
+        "colour": "#9a5a3a",
+        "spacing_m": 10,
+        "dims": {
+          "lengthM": 4.8,
+          "depthM": 0.45
+        },
+        "vr_scene": "scene_f1",
+        "vr_face": "d",
+        "vr_cols": [
+          500,
+          1400
+        ],
+        "photo_support": "none",
+        "confidence": 0.4,
+        "position_method": "nadir: VR face d registered on the photo by the lane diamonds (along the road) and the footway kerb (across it), about 1 m",
+        "height_source": "catalogue bench + VR scene_f1 (estimated)",
+        "note": "long backless timber bench on the lawn edge beside the footway (VR scene_f1 d)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            127.4848871,
+            34.9662751
+          ],
+          [
+            127.4848963,
+            34.9662325
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0016B",
+        "kind": "bench",
+        "estimated": true,
+        "back": false,
+        "colour": "#9a5a3a",
+        "spacing_m": 10,
+        "dims": {
+          "lengthM": 4.8,
+          "depthM": 0.45
+        },
+        "vr_scene": "scene_f1",
+        "vr_face": "d",
+        "vr_cols": [
+          500,
+          1400
+        ],
+        "photo_support": "none",
+        "confidence": 0.4,
+        "position_method": "nadir: VR face d registered on the photo by the lane diamonds (along the road) and the footway kerb (across it), about 1 m",
+        "height_source": "catalogue bench + VR scene_f1 (estimated)",
+        "note": "long backless timber bench on the lawn edge beside the footway (VR scene_f1 d)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            127.484874,
+            34.9663578
+          ],
+          [
+            127.4848832,
+            34.9663152
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0007",
+        "kind": "planter",
+        "estimated": true,
+        "fill": "gravel",
+        "colour": "#6d7a86",
+        "dims": {
+          "kerbHeightM": 0.15
+        },
+        "vr_scene": "scene_a9",
+        "vr_face": "f",
+        "vr_cols": [
+          600,
+          2048
+        ],
+        "photo_support": "none",
+        "confidence": 0.4,
+        "position_method": "vr: scene_a9 station + face f col 1067 row 1822 (bearing 150.8, 37.9 deg down, 12.9 m); the photo shows the tree crown",
+        "height_source": "catalogue planter + VR scene_a9 (estimated)",
+        "note": "3 x 3 m gravel tree pit with a blue-grey kerb in the paved plaza (VR scene_a9 f)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.4802167,
+              34.9669134
+            ],
+            [
+              127.4802494,
+              34.9669152
+            ],
+            [
+              127.4802516,
+              34.9668882
+            ],
+            [
+              127.4802188,
+              34.9668864
+            ],
+            [
+              127.4802167,
+              34.9669134
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0006",
+        "kind": "bench",
+        "estimated": true,
+        "back": false,
+        "colour": "#d9822b",
+        "spacing_m": 10,
+        "dims": {
+          "lengthM": 1.8
+        },
+        "vr_scene": "scene_a9",
+        "vr_face": "f",
+        "vr_cols": [
+          600,
+          2048
+        ],
+        "photo_support": "none",
+        "confidence": 0.4,
+        "position_method": "vr + photo: 1.1 m in front of the planter wall, where the scene_a9 face f reading (bearing 162.3, 16 m) meets it; under tree crowns on the photo",
+        "height_source": "catalogue bench + VR scene_a9 (estimated)",
+        "note": "orange timber bench in front of the brick planter wall (VR scene_a9 f)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            127.4802036,
+            34.9668604
+          ],
+          [
+            127.4802233,
+            34.9668614
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0007W",
+        "kind": "low_wall",
+        "estimated": true,
+        "colour": "#a5533f",
+        "dims": {
+          "heightM": 0.7,
+          "thicknessM": 0.3
+        },
+        "vr_scene": "scene_a9",
+        "vr_face": "f",
+        "vr_cols": [
+          700,
+          1700
+        ],
+        "photo_support": "wall",
+        "confidence": 0.5,
+        "position_method": "photo: the south edge of the paved plaza (brick-red edge visible at its west end, task-25/ortho/a9-edge-zoom.png), 15.5 m as the VR wall across cols 700-1700",
+        "height_source": "catalogue low_wall + VR scene_a9 (estimated)",
+        "note": "red-brick planter wall with a hedge behind it on the plaza's south edge (VR scene_a9 f)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            127.4800611,
+            34.9668435
+          ],
+          [
+            127.4802309,
+            34.9668518
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0013",
+        "kind": "bus_stop_shelter",
+        "estimated": true,
+        "subtype": "court_shelter",
+        "style": {
+          "colour": "grey roof"
+        },
+        "vr_scene": "scene_d2",
+        "vr_face": "r",
+        "vr_cols": [
+          1050,
+          1300
+        ],
+        "photo_support": "roof",
+        "confidence": 0.6,
+        "position_method": "photo: grey panel roof traced on the NGII 2025 sheet in the planted courtyard, confirmed by the resected scene_d2 station (bearing and depression of the roof on face r)",
+        "height_source": "catalogue bus_stop_shelter + VR scene_d2 (estimated)",
+        "note": "flat grey panel roof on four grey steel posts over a timber bench, no glass (VR scene_d2 r)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.4779076,
+              34.9703777
+            ],
+            [
+              127.4779448,
+              34.9703785
+            ],
+            [
+              127.4779446,
+              34.9703469
+            ],
+            [
+              127.4779063,
+              34.9703462
+            ],
+            [
+              127.4779076,
+              34.9703777
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0001",
+        "kind": "bench",
+        "estimated": true,
+        "back": false,
+        "colour": "#a5533f",
+        "spacing_m": 3.25,
+        "dims": {
+          "lengthM": 1.5,
+          "depthM": 0.45
+        },
+        "vr_scene": "scene_a2",
+        "vr_face": "d",
+        "vr_cols": [
+          0,
+          700
+        ],
+        "photo_support": "none",
+        "confidence": 0.4,
+        "position_method": "nadir: VR face d from the resected scene_a2 station (15.4 m, yaw 257.2), about 1 m; the plaza edge is on the photo, the benches are not resolvable",
+        "height_source": "catalogue bench + VR scene_a2 (estimated)",
+        "note": "three red-brown timber benches along the edge of the diamond-tiled plaza east of A2 (VR scene_a2 d)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            127.4814483,
+            34.9686767
+          ],
+          [
+            127.4814728,
+            34.9687238
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0018",
+        "kind": "planter",
+        "estimated": true,
+        "fill": "shrub",
+        "colour": "#a5533f",
+        "dims": {
+          "kerbHeightM": 0.5
+        },
+        "vr_scene": "scene_e8",
+        "vr_face": "f",
+        "vr_cols": [
+          300,
+          700
+        ],
+        "photo_support": "wall",
+        "confidence": 0.5,
+        "position_method": "photo: dark hedge outline traced on the NGII 2025 sheet 34702020 (0.25 m, crop of the E8 courtyard), matched to the beds the VR shows on face f",
+        "height_source": "catalogue planter + VR scene_e8 f: brick bed walls about knee high (estimated)",
+        "note": "L-shaped red-brick hedge bed north of the entrance walk and steps (VR scene_e8 f)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.47731129,
+              34.96860422
+            ],
+            [
+              127.47731137,
+              34.9686176
+            ],
+            [
+              127.47734388,
+              34.96861747
+            ],
+            [
+              127.47734362,
+              34.96857381
+            ],
+            [
+              127.47728203,
+              34.96857405
+            ],
+            [
+              127.47728213,
+              34.96859095
+            ],
+            [
+              127.47731122,
+              34.96859084
+            ],
+            [
+              127.47731129,
+              34.96860422
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0018A",
+        "kind": "planter",
+        "estimated": true,
+        "fill": "shrub",
+        "colour": "#a5533f",
+        "dims": {
+          "kerbHeightM": 0.5
+        },
+        "vr_scene": "scene_e8",
+        "vr_face": "f",
+        "vr_cols": [
+          1350,
+          1750
+        ],
+        "photo_support": "wall",
+        "confidence": 0.5,
+        "position_method": "photo: dark hedge outline traced on the NGII 2025 sheet 34702020 (0.25 m, crop of the E8 courtyard), matched to the beds the VR shows on face f",
+        "height_source": "catalogue planter + VR scene_e8 f: brick bed walls about knee high (estimated)",
+        "note": "L-shaped red-brick hedge bed south of the entrance walk and steps (VR scene_e8 f)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.47726798,
+              34.96851284
+            ],
+            [
+              127.47726803,
+              34.96852059
+            ],
+            [
+              127.47732107,
+              34.96852038
+            ],
+            [
+              127.47732082,
+              34.96847672
+            ],
+            [
+              127.47730029,
+              34.9684768
+            ],
+            [
+              127.47730045,
+              34.96850497
+            ],
+            [
+              127.47726794,
+              34.9685051
+            ],
+            [
+              127.47726798,
+              34.96851284
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0018B",
+        "kind": "planter",
+        "estimated": true,
+        "fill": "shrub",
+        "colour": "#a5533f",
+        "dims": {
+          "kerbHeightM": 0.5
+        },
+        "vr_scene": "scene_e8",
+        "vr_face": "f",
+        "vr_cols": [
+          150,
+          420
+        ],
+        "photo_support": "wall",
+        "confidence": 0.5,
+        "position_method": "photo: dark hedge outline traced on the NGII 2025 sheet 34702020 (0.25 m, crop of the E8 courtyard), matched to the beds the VR shows on face f",
+        "height_source": "catalogue planter + VR scene_e8 f: brick bed walls about knee high (estimated)",
+        "note": "narrow hedge strip along the north wing's courtyard wall (VR scene_e8 f)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.47734738,
+              34.96863056
+            ],
+            [
+              127.47734741,
+              34.96863577
+            ],
+            [
+              127.47739528,
+              34.96863079
+            ],
+            [
+              127.47739523,
+              34.96862234
+            ],
+            [
+              127.47734735,
+              34.96862534
+            ],
+            [
+              127.47734738,
+              34.96863056
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS0018C",
+        "kind": "planter",
+        "estimated": true,
+        "fill": "shrub",
+        "colour": "#a5533f",
+        "dims": {
+          "kerbHeightM": 0.5
+        },
+        "vr_scene": "scene_e8",
+        "vr_face": "f",
+        "vr_cols": [
+          1700,
+          1900
+        ],
+        "photo_support": "wall",
+        "confidence": 0.5,
+        "position_method": "photo: dark hedge outline traced on the NGII 2025 sheet 34702020 (0.25 m, crop of the E8 courtyard), matched to the beds the VR shows on face f",
+        "height_source": "catalogue planter + VR scene_e8 f: brick bed walls about knee high (estimated)",
+        "note": "short hedge bed at the south wing's east corner (VR scene_e8 f)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.4773583,
+              34.96844911
+            ],
+            [
+              127.47735837,
+              34.96846108
+            ],
+            [
+              127.47737137,
+              34.96846103
+            ],
+            [
+              127.47737123,
+              34.96843709
+            ],
+            [
+              127.47735823,
+              34.96843714
+            ],
+            [
+              127.4773583,
+              34.96844911
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "estimated": true,
+        "id": "RS-LS-A1POND",
+        "kind": "pond_basin",
+        "vr_scene": "scene_a1",
+        "vr_face": "l",
+        "vr_cols": [
+          300,
+          1000
+        ],
+        "photo_support": "outline",
+        "confidence": 0.6,
+        "position_method": "photo: the OSM pond outline way/367126960 matches the dark water surface on the NGII 2025 sheet within about 1 m (north edge on the pink walk, east edge on the road kerb); jets at the two white spray spots of the sheet",
+        "height_m": 0.45,
+        "height_source": "VR scene_a1 l: stone coping about 0.45 m above the walks, water about 0.3 m below it (estimated)",
+        "coping": {
+          "thicknessM": 0.4,
+          "heightM": 0.45
+        },
+        "copingColour": "#c9c3b6",
+        "jets": [
+          [
+            127.48158188,
+            34.96849734,
+            1.6
+          ],
+          [
+            127.48154719,
+            34.96846322,
+            0.9
+          ]
+        ],
+        "rocks": [
+          [
+            127.48162271,
+            34.96845752,
+            0.7
+          ]
+        ],
+        "note": "rectangular fountain pond (about 21 x 16 m) with a light stone coping, two spray jets and a dark rock in the water, between the pink-edged walk (north) and the road (east); VR scene_a1 l cols 300-1000 of 2048. Water: the OSM pond surface of the ground stage (painted water); the old reclass to a sunken lawn is withdrawn"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.48172714,
+              34.96852651
+            ],
+            [
+              127.48149743,
+              34.96856798
+            ],
+            [
+              127.48146048,
+              34.96842931
+            ],
+            [
+              127.48169019,
+              34.96838784
+            ],
+            [
+              127.48172714,
+              34.96852651
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "estimated": true,
+        "id": "RS-LS-C1STEPS",
+        "kind": "terraced_steps",
+        "vr_scene": "scene_c1",
+        "vr_face": "f",
+        "vr_cols": [
+          560,
+          1500
+        ],
+        "photo_support": "outline",
+        "confidence": 0.55,
+        "position_method": "photo: bottom edge on the brick walk edge west of the pond plaza traced on the NGII 2025 sheet (bearing 195.5 deg), lower flight between the two outer hedge strips (15.5 m); depth to the library facade 15.5 m",
+        "up_bearing_deg": 285.5,
+        "height_m": 2.85,
+        "height_source": "VR scene_c1 f: 14 + 5 risers counted at about 0.15 m (estimated)",
+        "colour": "#aeb3b5",
+        "riserColour": "#949a9d",
+        "landingColour": "#7f93a6",
+        "flights": [
+          {
+            "steps": 14,
+            "rise_m": 0.15,
+            "tread_m": 0.33,
+            "landing_m": 3.6,
+            "landing_width_m": 17
+          },
+          {
+            "steps": 5,
+            "rise_m": 0.15,
+            "tread_m": 0.33,
+            "width_m": 14,
+            "landing_m": 5.6,
+            "landing_width_m": 24,
+            "landingColour": "#b9bcbb"
+          }
+        ],
+        "planters": [
+          {
+            "s": [
+              0,
+              4.62
+            ],
+            "t": [
+              -0.6,
+              0.6
+            ],
+            "top_m": [
+              0.55,
+              2.15
+            ],
+            "hedge_m": 0.75,
+            "hedgeColour": "#2f5a2d",
+            "kerbColour": "#e7e6e1"
+          },
+          {
+            "s": [
+              0,
+              4.62
+            ],
+            "t": [
+              7.75,
+              9.6
+            ],
+            "top_m": [
+              0.5,
+              2.1
+            ],
+            "hedge_m": 0.85,
+            "hedgeColour": "#2f5a2d",
+            "kerbColour": "#e7e6e1"
+          },
+          {
+            "s": [
+              0,
+              4.62
+            ],
+            "t": [
+              -9.6,
+              -7.75
+            ],
+            "top_m": [
+              0.5,
+              2.1
+            ],
+            "hedge_m": 0.85,
+            "hedgeColour": "#2f5a2d",
+            "kerbColour": "#e7e6e1"
+          }
+        ],
+        "rails": [
+          {
+            "t": 0.75,
+            "s": [
+              0,
+              4.62
+            ]
+          },
+          {
+            "t": -0.75,
+            "s": [
+              0,
+              4.62
+            ]
+          },
+          {
+            "t": 6.85,
+            "s": [
+              8.22,
+              9.87
+            ]
+          },
+          {
+            "t": -6.85,
+            "s": [
+              8.22,
+              9.87
+            ]
+          }
+        ],
+        "note": "C1 도서관 front steps: lower flight of 14 risers split by a hedge on a white-tile plinth with handrails, outer hedge strips, a 3.6 m blue-grey tile landing with yellow guide lines, an upper flight of 5 risers with end rails and the entrance terrace (VR scene_c1 f cols 560-1500 of 2048); rounded clipped hedges and shrub masses flank the flights (VR scene_c1 f: rounded tops about 0.75-0.85 m over the kerbs, masses up to 1.2 m; positions from the NGII 2025 sheet, estimated)",
+        "masses": [
+          {
+            "s": [
+              0.3,
+              4.5
+            ],
+            "t": [
+              9.75,
+              13.1
+            ],
+            "height_m": 1.2,
+            "colour": "#2f5a2d",
+            "rise_m": [
+              0.25,
+              1.5
+            ],
+            "note": "large clipped mass beside the north outer hedge, under the zelkova (VR scene_c1 f right; NGII crown edge)"
+          },
+          {
+            "s": [
+              0.4,
+              4.2
+            ],
+            "t": [
+              -12.7,
+              -9.75
+            ],
+            "height_m": 1.05,
+            "colour": "#2f5a2d",
+            "rise_m": [
+              0.25,
+              1.4
+            ],
+            "note": "large clipped mass beside the south outer hedge (VR scene_c1 f left; NGII green edge)"
+          },
+          {
+            "s": [
+              1.0,
+              2.3
+            ],
+            "t": [
+              -15.2,
+              -13.9
+            ],
+            "height_m": 0.6,
+            "colour": "#2f5a2d",
+            "rise_m": [
+              0.2,
+              0.3
+            ],
+            "note": "small clipped ball, far south (VR scene_c1 f far left)"
+          },
+          {
+            "s": [
+              5.2,
+              6.8
+            ],
+            "t": [
+              13.0,
+              14.6
+            ],
+            "height_m": 0.8,
+            "colour": "#2f5a2d",
+            "rise_m": [
+              1.6,
+              1.9
+            ],
+            "note": "clipped ball on the north bank beyond the zelkova (VR scene_c1 f far right)"
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            127.47974658,
+            34.96955589
+          ],
+          [
+            127.47979272,
+            34.96969034
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "estimated": true,
+        "id": "RS-LS-D4STEPS",
+        "kind": "terraced_steps",
+        "vr_scene": "scene_d4",
+        "vr_face": "f",
+        "vr_cols": [
+          700,
+          1400
+        ],
+        "photo_support": "outline",
+        "confidence": 0.5,
+        "position_method": "photo: the light paved plaza meets the shaded forecourt between the two D4 wings on the NGII 2025 sheet; bottom edge from the north wing corner to the blue PM bay MX00293 (11 m)",
+        "up_bearing_deg": 279.3,
+        "height_m": 0.6,
+        "height_source": "VR scene_d4 f: 4 risers against a person at the foot of the steps (estimated)",
+        "colour": "#a3a6a8",
+        "riserColour": "#8d9092",
+        "landingColour": "#8e9193",
+        "flights": [
+          {
+            "steps": 4,
+            "rise_m": 0.15,
+            "tread_m": 0.35,
+            "landing_m": 12,
+            "landing_to_ground": true
+          }
+        ],
+        "note": "the long striped paver plaza in front of D4 ends in 4 granite steps across the passage between the wings; the forecourt above (white parking grid) runs back down to the drive under the bridge, its slope estimated (VR scene_d4 f cols 700-1400 of 2048)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            127.47660088,
+            34.97013135
+          ],
+          [
+            127.4765806,
+            34.97003228
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "estimated": true,
+        "id": "RS-LS-E7STAIR",
+        "kind": "terraced_steps",
+        "vr_scene": "scene_e7",
+        "vr_face": "d",
+        "vr_cols": [
+          800,
+          1400
+        ],
+        "photo_support": "outline",
+        "confidence": 0.5,
+        "position_method": "photo: the grey stair area between the road walk and the E7 tile plaza on the NGII 2025 sheet; VR face d registered on the raised yellow crosswalk below the station (f = 214.5 deg)",
+        "up_bearing_deg": 214.5,
+        "height_m": 2.85,
+        "height_source": "VR scene_e7 d: 6 + 7 + 6 risers at about 0.15 m; the terrain rises about 3 m over the stair (estimated)",
+        "colour": "#9a9fa3",
+        "riserColour": "#868b8f",
+        "flights": [
+          {
+            "steps": 6,
+            "rise_m": 0.15,
+            "tread_m": 0.32,
+            "landing_m": 1.6
+          },
+          {
+            "steps": 7,
+            "rise_m": 0.15,
+            "tread_m": 0.32,
+            "landing_m": 1.5
+          },
+          {
+            "steps": 6,
+            "rise_m": 0.15,
+            "tread_m": 0.32,
+            "landing_m": 0.8
+          }
+        ],
+        "rails": [
+          {
+            "t": 1.3,
+            "s": [
+              0,
+              1.92
+            ]
+          }
+        ],
+        "note": "weathered concrete stair of three flights with two landings from the walk south of the red road up to the E7 tile plaza, a short divider rail in the lower flight (VR scene_e7 d cols 800-1400 of 2048)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            127.47802108,
+            34.96780155
+          ],
+          [
+            127.47795272,
+            34.96784062
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "estimated": true,
+        "id": "RS-LS-D1STAIR",
+        "kind": "terraced_steps",
+        "vr_scene": "scene_d1",
+        "vr_face": "l",
+        "vr_cols": [
+          1500,
+          2048
+        ],
+        "photo_support": "outline",
+        "confidence": 0.5,
+        "position_method": "photo: the light 5 x 14 m stair strip south of D1 on the NGII 2025 sheet (the scene_d1 station of vr-stations.json is about 150 m off: D1 stands at E 243727, N 263952; the stair is the one beside it in VR f and l)",
+        "up_bearing_deg": 283.5,
+        "height_m": 2.7,
+        "height_source": "VR scene_d1 l/f: two flights of about 9 risers, the terrain rises 2.6 m over the strip (estimated)",
+        "colour": "#b2b4b2",
+        "riserColour": "#999c9b",
+        "flights": [
+          {
+            "steps": 9,
+            "rise_m": 0.15,
+            "tread_m": 0.35,
+            "landing_m": 2.4
+          },
+          {
+            "steps": 9,
+            "rise_m": 0.15,
+            "tread_m": 0.35,
+            "landing_m": 5.5
+          }
+        ],
+        "rails": [
+          {
+            "t": 2.4,
+            "s": [
+              0,
+              11.85
+            ]
+          }
+        ],
+        "note": "concrete stair with a steel handrail on the road side, from the road walk west up the bank toward the white building (VR scene_d1 l cols 1500-2048 and f cols 0-140 of 2048)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            127.47883729,
+            34.97057144
+          ],
+          [
+            127.47882389,
+            34.97052643
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "estimated": true,
+        "id": "RS-LS-E4STONE",
+        "kind": "plaza_structure",
+        "subtype": "sculpture",
+        "vr_scene": "scene_e4",
+        "vr_face": "r",
+        "vr_cols": [
+          700,
+          1000
+        ],
+        "photo_support": "outline",
+        "confidence": 0.45,
+        "position_method": "photo: the light stone on the lawn corner inside the yellow kerb at the north-west corner of the red junction, NGII 2025 sheet; facing the junction as in VR scene_e4 r",
+        "height_m": 1.5,
+        "height_source": "VR scene_e4 r: a white sign stone about 1 m wide on a two-tier plinth, against the shrubs (estimated)",
+        "note": "공과대학 sign stone on a grey plinth on the round lawn corner of the red-paved junction (VR scene_e4 r cols 700-1000 of 2048)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.47853767,
+              34.96995051
+            ],
+            [
+              127.47855042,
+              34.96995751
+            ],
+            [
+              127.47855589,
+              34.96995077
+            ],
+            [
+              127.47854314,
+              34.96994376
+            ],
+            [
+              127.47853767,
+              34.96995051
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "estimated": true,
+        "id": "RS-LS-D3PMRACK",
+        "kind": "bike_rack",
+        "vr_scene": "scene_d3",
+        "vr_face": "d",
+        "vr_cols": [
+          0,
+          900
+        ],
+        "photo_support": "outline",
+        "confidence": 0.45,
+        "position_method": "photo: the blue PM bay MX00361 (data/photo/markings-extra.geojson) on the NGII 2025 sheet; the rack stands along its west long side against the hedge, as in the VR nadir face",
+        "height_m": 1.2,
+        "height_source": "VR scene_d3 d: low blue rack with a short canopy along the bay (estimated)",
+        "style": {
+          "colour": "blue"
+        },
+        "note": "blue kick-scooter (personal mobility) rack and canopy at the back of the blue bay with the scooter symbol (VR scene_d3 d cols 0-900 of 2048); the bay paint is MX00361"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.47761328,
+              34.9694225
+            ],
+            [
+              127.47762423,
+              34.96942246
+            ],
+            [
+              127.47762461,
+              34.96948826
+            ],
+            [
+              127.47761366,
+              34.9694883
+            ],
+            [
+              127.47761328,
+              34.9694225
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RS-LS-F1ISLAND",
+        "kind": "planter",
+        "estimated": true,
+        "fill": "lawn",
+        "mound_m": 0.45,
+        "hedge": false,
+        "mound_ramp_m": 2.0,
+        "tones": ["#50421a", "#73622b", "#867238", "#9c8650"],
+        "tone_cell_m": 0.4,
+        "tone_scale_m": 2.5,
+        "tone_note": "VR scene_f1 f (cols 820-1480): a low mounded island of ornamental grasses in autumn straw and olive with shrubs, small trees and boulders; the four tones are the VR quartiles at 0.82 of their value (sunlit exposure), blended smoothly by low-frequency noise; mound about 0.45 m (estimated)",
+        "colour": "#b9b6ad",
+        "dims": {
+          "kerbHeightM": 0.15
+        },
+        "vr_scene": "scene_f1",
+        "vr_face": "f",
+        "vr_cols": [
+          700,
+          1300
+        ],
+        "photo_support": "outline",
+        "confidence": 0.55,
+        "position_method": "photo: the leaf-shaped lawn island with shrubs in the F1 forecourt traced on the NGII 2025 sheet",
+        "height_source": "catalogue planter + VR scene_f1 f: a low stone kerb (estimated)",
+        "note": "crescent-shaped lawn island with shrubs and a low kerb in the F1 slab forecourt (VR scene_f1 f cols 700-1300 of 2048)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.48429185,
+              34.96633137
+            ],
+            [
+              127.48428918,
+              34.96624935
+            ],
+            [
+              127.48433258,
+              34.96618158
+            ],
+            [
+              127.48441547,
+              34.96612716
+            ],
+            [
+              127.48448873,
+              34.96610884
+            ],
+            [
+              127.48449646,
+              34.96611963
+            ],
+            [
+              127.48446486,
+              34.9661468
+            ],
+            [
+              127.48438201,
+              34.96620842
+            ],
+            [
+              127.48434956,
+              34.96627706
+            ],
+            [
+              127.48432689,
+              34.96633213
+            ],
+            [
+              127.48430943,
+              34.96634121
+            ],
+            [
+              127.48429185,
+              34.96633137
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+pandas
+streamlit
+plotly
+folium
+streamlit-folium
+Faker
+opencv-python
+easyocr
+sentence-transformers

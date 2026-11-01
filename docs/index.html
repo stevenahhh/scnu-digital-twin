@@ -4,8 +4,38 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>순천대학교 디지털 트윈</title>
-    <script type="text/javascript"
-        src="https://map.vworld.kr/js/webglMapInit.js.do?version=3.0&apiKey=3329D00D-2732-339C-8B7D-D622F356E18C"></script>
+    <script src="vworld-key.local.js"></script>
+    <script>
+        if (
+            typeof window.SCNU_VWORLD_API_KEY === "string" &&
+            window.SCNU_VWORLD_API_KEY.length > 0
+        ) {
+            document.write(
+                '<script src="https://map.vworld.kr/js/webglMapInit.js.do?version=3.0&apiKey=' +
+                encodeURIComponent(window.SCNU_VWORLD_API_KEY) +
+                '"><\/script>'
+            );
+        } else {
+            document.addEventListener("DOMContentLoaded", function () {
+                var overlay = document.createElement("div");
+                overlay.textContent = "VWorld API 키가 없습니다. docs/vworld-key.local.example.js 를 vworld-key.local.js 로 복사하고 키를 넣으세요.";
+                Object.assign(overlay.style, {
+                    position: "fixed",
+                    inset: "0",
+                    zIndex: "100000",
+                    display: "grid",
+                    placeItems: "center",
+                    padding: "24px",
+                    background: "rgba(0, 0, 0, 0.82)",
+                    color: "#fff",
+                    font: "bold 18px sans-serif",
+                    textAlign: "center"
+                });
+                document.body.appendChild(overlay);
+            });
+            window.SCNU_VWORLD_API_KEY_MISSING = true;
+        }
+    </script>
 
     <style>
         html,
@@ -456,6 +486,11 @@
         var sT = -60;
         var sR = 0;
 
+        function initializeMap() {
+        if (typeof window.vw === "undefined") {
+            return;
+        }
+
         var options = {
             mapId: "vmap",
             initPosition: new vw.CameraPosition(
@@ -489,8 +524,11 @@
             loadRotcModel();
 
             loadCrosswalkPolygons();
-
         }, 1500);
+        }
+        if (!window.SCNU_VWORLD_API_KEY_MISSING) {
+            initializeMap();
+        }
 
         function loadD4Model() {
 

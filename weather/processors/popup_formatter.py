@@ -138,6 +138,7 @@ def format_popup_response(
     weather:         Dict[str, Any],
     timestamp:       Optional[str] = None,
     base_utci:       Optional[float] = None,
+    freshness:       Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
     파이프라인 결과 + 건물 메타 + 미기후 특성을 묶어 팝업 응답 dict 반환.
@@ -166,7 +167,7 @@ def format_popup_response(
         "risk_score":      ui["score"],
     }
 
-    return {
+    response = {
         "element_id":   element_id,
         "name":         name,
         "zone_id":      zone_id,
@@ -197,3 +198,6 @@ def format_popup_response(
             "wind_speed":  weather.get("wind_speed"),
         },
     }
+    if freshness is not None:
+        response["freshness"] = freshness
+    return response

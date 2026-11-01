@@ -34,6 +34,12 @@ describe("RoofEditorControls", () => {
     render(<RoofEditorControls arrays={arrays} selectedArray={selectedArray} summary={summary} canSave status={{ kind: "idle", message: "" }} violations={[]} onAdd={vi.fn()} onSelect={vi.fn()} onUpdate={vi.fn()} onDelete={vi.fn()} onUndo={vi.fn()} onSave={vi.fn()} canUndo />);
     expect(screen.getByRole("button", { name: "배열 1" }).getAttribute("aria-pressed")).toBe("true");
     expect(screen.getByRole("button", { name: "배열 2" }).getAttribute("aria-pressed")).toBe("false");
+    // The pressed state is a wash plus a check glyph, not colour alone.
+    expect(screen.getByRole("button", { name: "배열 1" }).querySelector("svg")).not.toBeNull();
+    expect(screen.getByRole("button", { name: "배열 2" }).querySelector("svg")).toBeNull();
+    const orientation = screen.getAllByRole("button").filter((button) => /^(세로형|가로형)$/.test(button.textContent));
+    expect(orientation.map((button) => [button.getAttribute("aria-pressed"), Boolean(button.querySelector("svg"))]))
+      .toEqual(orientation.map((button) => [button.getAttribute("aria-pressed"), button.getAttribute("aria-pressed") === "true"]));
   });
 
   it("labels a seeded recommendation editor with its matching building", () => {
@@ -45,6 +51,7 @@ describe("RoofEditorControls", () => {
   it("announces Korean invalid feedback and disables save", () => {
     render(<RoofEditorControls selectedArray={selectedArray} summary={summary} canSave={false} status="idle" violations={[{ messageKo: "옥상 가장자리에서 0.50m 이상 떨어져야 합니다." }]} onAdd={vi.fn()} onUpdate={vi.fn()} onDelete={vi.fn()} onUndo={vi.fn()} onSave={vi.fn()} canUndo />);
     expect(screen.getByRole("alert").textContent).toContain("옥상 가장자리");
-    expect(screen.getByRole("button", { name: "배치 저장" }).disabled).toBe(true);
+    expect(screen.getByRole("alert").textContent).toContain("오류:");
+    expect(screen.getByRole("button", { name: "배치 저장" }).getAttribute("aria-disabled")).toBe("true");
   });
 });

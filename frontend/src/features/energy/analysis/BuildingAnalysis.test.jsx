@@ -1,6 +1,6 @@
 /* @vitest-environment jsdom */
 import React from "react";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { BuildingAnalysis } from "./BuildingAnalysis.jsx";
@@ -32,6 +32,19 @@ describe("BuildingAnalysis", () => {
     rerender(<BuildingAnalysis buildingId="D4" plans={plans} representativePlanId="plan-representative" initialDate="2026-05-18" client={client} />);
     await waitFor(() => expect(screen.getByLabelText("대표 설치 계획").value).toBe("plan-representative"));
     expect(screen.getByRole("button", { name: "분석 실행" }).disabled).toBe(false);
+  });
+
+  it("tells plan loading and a failed plan load apart from an empty plan list", async () => {
+    const client = clientWith();
+    const view = render(<BuildingAnalysis buildingId="D4" plans={[]} plansStatus="loading" initialDate="2026-05-18" client={client} />);
+    expect(screen.getByText("설치 계획을 불러오는 중입니다.")).toBeTruthy();
+    view.rerender(<BuildingAnalysis buildingId="D4" plans={[]} plansStatus="error" initialDate="2026-05-18" client={client} />);
+    expect(screen.getByText("설치 계획을 불러오지 못해 분석할 수 없습니다.")).toBeTruthy();
+    expect(screen.queryByText("분석할 설치 계획이 없습니다.")).toBeNull();
+    view.rerender(<BuildingAnalysis buildingId="D4" plans={[]} plansStatus="ready" initialDate="2026-05-18" client={client} />);
+    expect(screen.getByText("분석할 설치 계획이 없습니다.")).toBeTruthy();
+    // Not a sleep: lets the mocked client's listScenarios/listRuns promises settle inside act before the test ends.
+    await act(async () => {});
   });
 
   it("creates a persisted definition and sends one atomic comparison run request", async () => {
@@ -98,7 +111,8 @@ describe("BuildingAnalysis", () => {
     });
     expect(screen.getByText("비용 절감")).toBeTruthy();
     expect(screen.getByText("탄소 감축")).toBeTruthy();
-    expect(screen.getByText(/275 KRW\/kWh · 0.61 kgCO2\/kWh/)).toBeTruthy();
+    expect(screen.getByText("275 KRW/kWh")).toBeTruthy();
+    expect(screen.getByText("0.61 kgCO2/kWh")).toBeTruthy();
   });
 
   it("renders the alternate comparison plus grid-draw series and legend from 96 slots", async () => {
@@ -109,7 +123,7 @@ describe("BuildingAnalysis", () => {
     expect(await screen.findByText("대안 계획 발전")).toBeTruthy();
     expect(screen.getByText(/대표 계획은 대안보다/)).toBeTruthy();
     expect(screen.getByRole("img", { name: /96개 15분 구간의 수요, 계통 인입/ })).toBeTruthy();
-    expect(screen.getByText("┄ 계통 인입")).toBeTruthy();
+    expect(screen.getByText("계통 인입")).toBeTruthy();
     expect(document.querySelector('path[data-series="grid-draw"]')?.getAttribute("d")?.split("L")).toHaveLength(96);
   });
 
@@ -126,11 +140,11 @@ describe("BuildingAnalysis", () => {
     const history = analysisRunFixture({ id: "persisted-run" });
     const client = clientWith({ listScenarios: vi.fn().mockResolvedValue([]), listRuns: vi.fn().mockResolvedValue([history]) });
     const first = render(<BuildingAnalysis buildingId="D4" plans={plans} initialDate="2026-05-18" client={client} />);
-    expect(await screen.findByText("실행 스냅샷 · 2026-05-18")).toBeTruthy();
+    expect(await screen.findByText("실행 스냅샷 · 5월 18일")).toBeTruthy();
     expect(screen.getByLabelText("이전 실행 스냅샷").value).toBe("persisted-run");
     first.unmount();
     render(<BuildingAnalysis buildingId="D4" plans={plans} initialDate="2026-05-18" client={client} />);
-    expect(await screen.findByText("실행 스냅샷 · 2026-05-18")).toBeTruthy();
+    expect(await screen.findByText("실행 스냅샷 · 5월 18일")).toBeTruthy();
     expect(client.listRuns).toHaveBeenCalledTimes(2);
     expect(client.listScenarios).toHaveBeenCalledTimes(2);
   });
@@ -164,7 +178,7 @@ describe("BuildingAnalysis", () => {
     const client = clientWith({ createScenario: vi.fn().mockRejectedValue(new Error("definition offline")) });
     const view = render(<BuildingAnalysis buildingId="D4" plans={plans} initialDate="2026-05-18" client={client} />);
     await user.click(screen.getByRole("button", { name: "분석 실행" }));
-    expect((await screen.findByRole("alert")).textContent).toContain("definition offline");
+    expect((await screen.findByRole("alert")).textContent).toContain("요청을 처리하지 못했습니다");
     expect(client.runScenario).not.toHaveBeenCalled();
     expect(screen.queryByText("대표 계획 발전")).toBeNull();
 
@@ -172,7 +186,7 @@ describe("BuildingAnalysis", () => {
     view.unmount();
     render(<BuildingAnalysis buildingId="D4" plans={plans} initialDate="2026-05-18" client={runFailure} />);
     await user.click(screen.getByRole("button", { name: "분석 실행" }));
-    expect((await screen.findByRole("alert")).textContent).toContain("atomic run failed");
+    expect((await screen.findByRole("alert")).textContent).toContain("요청을 처리하지 못했습니다");
     expect(screen.queryByText("대표 계획 발전")).toBeNull();
   });
 });

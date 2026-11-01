@@ -1,0 +1,13 @@
+{
+  "source": "VWorld WMTS Satellite (https://api.vworld.kr/req/wmts/1.0.0/{key}/Satellite/{z}/{y}/{x}.jpeg)",
+  "attribution": "출처: 브이월드 (VWorld Satellite)",
+  "licence": "VWorld terms; stored and baked with the project owner's consent of 2026-10-24 (docs/data-licences.md, D1)",
+  "projection": "EPSG:3857, 256 px tiles; the mosaic's top-left pixel is the top-left corner of tile (x0, y0)",
+  "zoom": 19,
+  "x0": 447793,
+  "x1": 447806,
+  "y0": 207719,
+  "y1": 207729,
+  "tilesFetched": "2026-10-23..2026-10-23",
+  "jpegQuality": 92
+}

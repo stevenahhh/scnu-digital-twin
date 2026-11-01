@@ -1,0 +1,245 @@
+{
+ "note": "By-eye check of the photo outlines of bus shelters, fences, low and retaining walls, garden walls and planters (data/photo/objects-campus.geojson and rest-spaces.geojson) on NGII 2025 chips with the outline drawn over the photo. verdict ok = the outline lies on its photo feature within about 1 m; shift = moved by offsetM [east, south] metres onto the feature (estimated, by eye); reject = the photo shows nothing there (left out). Roofed outlines are compared with the roof (relief lean is removed later as before). No bollards exist in the survey (not resolvable at 0.25 m).",
+ "reviews": {
+  "OB0009": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OB0024": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OB0025": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OB0029": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OB0030": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0033": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0034": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0037": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0039": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0044": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0055": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0057": {
+   "verdict": "reject",
+   "note": "bus shelter: the photo shows an even kerb and road strip there and no roof; nothing to draw"
+  },
+  "OC0059": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0063": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0072": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0073": {
+   "verdict": "shift",
+   "offsetM": [
+    -2.0,
+    -1.0
+   ],
+   "note": "planter outline sat half off the kerbed island; moved onto the island"
+  },
+  "OC0079": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0082": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0083": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0089": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0090": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0091": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0092": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0093": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0094": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0095": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0101": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0109": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0117": {
+   "verdict": "shift",
+   "offsetM": [
+    -2.0,
+    0.0
+   ],
+   "note": "planter outline 2 m east of the kerbed island it outlines"
+  },
+  "OC0119": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0127": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0128": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0129": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0136": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0137": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0139": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0141": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0150": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0154": {
+   "verdict": "reject",
+   "note": "planter: the outline lies on the blue sports-court surface; no planter on the photo"
+  },
+  "OC0155": {
+   "verdict": "reject",
+   "note": "planter outline on open paving; the only planted bed nearby (3.4 m east) is OC0156's, so this one is a duplicate of it"
+  },
+  "OC0156": {
+   "verdict": "shift",
+   "offsetM": [
+    -1.1,
+    0.3
+   ],
+   "note": "planter outline 1 m east of the square planter edge"
+  },
+  "OC0158": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0161": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "OC0163": {
+   "verdict": "shift",
+   "offsetM": [
+    -1.8,
+    -1.9
+   ],
+   "note": "court shelter outline 2.6 m south-east of the blue roof it traces"
+  },
+  "OC0164": {
+   "verdict": "shift",
+   "offsetM": [
+    1.5,
+    -1.35
+   ],
+   "note": "shelter outline 2 m south-west of the blue roof it traces"
+  },
+  "OC0173": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "RS0003": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "RS0015": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "RS0007": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "RS0007W": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "RS0013": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "RS0018": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "RS0018A": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "RS0018B": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  },
+  "RS0018C": {
+   "verdict": "ok",
+   "note": "outline on the photo feature within about 1 m (by eye)"
+  }
+ }
+}

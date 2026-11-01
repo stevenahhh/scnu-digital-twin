@@ -1,14 +1,16 @@
 import React from "react";
+import { EMERGENCY_HEX } from "../../ui/sceneTokens.mjs";
+import { RISK_COLORS } from "../utils/riskColors.mjs";
 
 export const VehicleEntity = React.memo(function VehicleEntity({ riskLevel = "normal", emergency = false }) {
-  const color = emergency ? "#2563eb" : riskLevel === "danger" ? "#dc2626" : riskLevel === "warning" ? "#f59e0b" : "#25636b";
+  const color = emergency ? EMERGENCY_HEX : RISK_COLORS[riskLevel] ?? "#25636b";
   return (
     <group>
-      <mesh castShadow position={[0, 0.48, 0]}>
+      <mesh position={[0, 0.48, 0]}>
         <boxGeometry args={[1.35, 0.75, 2.6]} />
         <meshStandardMaterial color={color} roughness={0.55} />
       </mesh>
-      <mesh castShadow position={[0, 0.95, -0.15]}>
+      <mesh position={[0, 0.95, -0.15]}>
         <boxGeometry args={[1.12, 0.45, 1.2]} />
         <meshStandardMaterial color={emergency ? "#dbeafe" : "#d7e4e5"} roughness={0.35} />
       </mesh>

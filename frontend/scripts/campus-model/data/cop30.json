@@ -1,0 +1,17 @@
+{
+  "source": "https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N34_00_E127_00_DEM/Copernicus_DSM_COG_10_N34_00_E127_00_DEM.tif",
+  "product": "Copernicus DEM GLO-30 (DSM, EGM2008 heights)",
+  "attribution": "produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved",
+  "doi": "10.5270/ESA-c5d3d65",
+  "width": 180,
+  "height": 144,
+  "west": 127.45486111111111,
+  "north": 34.99013888888889,
+  "pixelDegreesX": 0.0002777777777777778,
+  "pixelDegreesY": 0.0002777777777777778,
+  "encoding": {
+    "offset": -100,
+    "scale": 0.1,
+    "note": "metres = offset + value * scale"
+  }
+}

@@ -1,0 +1,148 @@
+{
+  "generated": "2026-10-26",
+  "licence": "CC0 1.0",
+  "size": 1024,
+  "webpQuality": 90,
+  "materials": [
+    {
+      "cls": "asphalt",
+      "use": "carriageway asphalt",
+      "asset": "asphalt_02",
+      "provider": "Poly Haven",
+      "page": "https://polyhaven.com/a/asphalt_02",
+      "authors": "Rob Tuytel",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_diff_1k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_nor_gl_1k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_arm_1k.jpg",
+      "licence": "CC0 1.0",
+      "md5": "fa19772d4817754c3efab708c651f5a8,338da8de636ea36133170578cac82e8e,33820445f43af5e5ee484674b6939271",
+      "physicalSizeM": 3,
+      "physicalSizeSource": "Poly Haven info dimensions (mm) / 1000",
+      "estimated": false,
+      "sourceAspect": 1,
+      "files": {
+        "col": "ground-asphalt-col.webp",
+        "nor": "ground-asphalt-nor.webp",
+        "arm": "ground-asphalt-arm.webp"
+      }
+    },
+    {
+      "cls": "pavers",
+      "use": "block-paver sidewalks and plazas",
+      "asset": "PavingStones150",
+      "provider": "ambientCG",
+      "page": "https://ambientcg.com/view?id=PavingStones150",
+      "authors": "ambientCG",
+      "source_url": "https://ambientcg.com/get?file=PavingStones150_1K-JPG.zip",
+      "licence": "CC0 1.0",
+      "md5": "2c7b9276e09ac4be736fe48eaf95e39f",
+      "physicalSizeM": 0.9,
+      "physicalSizeSource": "ambientCG dimensionX (cm) / 100",
+      "estimated": false,
+      "sourceAspect": 1,
+      "files": {
+        "col": "ground-pavers-col.webp",
+        "nor": "ground-pavers-nor.webp",
+        "arm": "ground-pavers-arm.webp"
+      }
+    },
+    {
+      "cls": "concrete",
+      "use": "kerb stones",
+      "asset": "Concrete034",
+      "provider": "ambientCG",
+      "page": "https://ambientcg.com/view?id=Concrete034",
+      "authors": "ambientCG",
+      "source_url": "https://ambientcg.com/get?file=Concrete034_1K-JPG.zip",
+      "licence": "CC0 1.0",
+      "md5": "86e6572ed6cffec20639c3d8168f0ffd",
+      "physicalSizeM": 1.1,
+      "physicalSizeSource": "ambientCG dimensionX (cm) / 100",
+      "estimated": false,
+      "sourceAspect": 2,
+      "files": {
+        "col": "ground-concrete-col.webp",
+        "nor": "ground-concrete-nor.webp",
+        "arm": "ground-concrete-arm.webp"
+      }
+    },
+    {
+      "cls": "grass",
+      "use": "lawns",
+      "asset": "Grass004",
+      "provider": "ambientCG",
+      "page": "https://ambientcg.com/view?id=Grass004",
+      "authors": "ambientCG",
+      "source_url": "https://ambientcg.com/get?file=Grass004_1K-JPG.zip",
+      "licence": "CC0 1.0",
+      "md5": "ede3ecdf304e4c95212d7ec4157d2e74",
+      "physicalSizeM": 1.4,
+      "physicalSizeSource": "ambientCG dimensionX (cm) / 100",
+      "estimated": false,
+      "sourceAspect": 1,
+      "files": {
+        "col": "ground-grass-col.webp",
+        "nor": "ground-grass-nor.webp",
+        "arm": "ground-grass-arm.webp"
+      }
+    },
+    {
+      "cls": "soil",
+      "use": "bare soil",
+      "asset": "Ground111",
+      "provider": "ambientCG",
+      "page": "https://ambientcg.com/view?id=Ground111",
+      "authors": "ambientCG",
+      "source_url": "https://ambientcg.com/get?file=Ground111_1K-JPG.zip",
+      "licence": "CC0 1.0",
+      "md5": "59e7145dceaef3181e6405fde2f665a1",
+      "physicalSizeM": 2.8,
+      "physicalSizeSource": "ambientCG dimensionX (cm) / 100",
+      "estimated": false,
+      "sourceAspect": 1,
+      "files": {
+        "col": "ground-soil-col.webp",
+        "nor": "ground-soil-nor.webp",
+        "arm": "ground-soil-arm.webp"
+      }
+    },
+    {
+      "cls": "asphalt-red",
+      "use": "red bicycle lane",
+      "asset": "Asphalt029A",
+      "provider": "ambientCG",
+      "page": "https://ambientcg.com/view?id=Asphalt029A",
+      "authors": "ambientCG",
+      "source_url": "https://ambientcg.com/get?file=Asphalt029A_1K-JPG.zip",
+      "licence": "CC0 1.0",
+      "md5": "6d880dc609d50e6067a1b5c8cb5290d0",
+      "physicalSizeM": 2.5,
+      "physicalSizeSource": "ambientcg API gives no dimension; plan value (estimated)",
+      "estimated": true,
+      "sourceAspect": 1,
+      "files": {
+        "col": "ground-asphalt-red-col.webp",
+        "nor": "ground-asphalt-red-nor.webp",
+        "arm": "ground-asphalt-red-arm.webp"
+      }
+    },
+    {
+      "cls": "lot",
+      "use": "parking lots",
+      "asset": "concrete_floor_worn_001",
+      "provider": "Poly Haven",
+      "page": "https://polyhaven.com/a/concrete_floor_worn_001",
+      "authors": "Dimitrios Savva, Rico Cilliers",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_floor_worn_001/concrete_floor_worn_001_diff_1k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_floor_worn_001/concrete_floor_worn_001_nor_gl_1k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_floor_worn_001/concrete_floor_worn_001_arm_1k.jpg",
+      "licence": "CC0 1.0",
+      "md5": "e35597cca586150b1ab2aa9a331a39c5,9de6626758f8793b71182b892c110827,8174fe8a5c982edef079c3c3775e5377",
+      "physicalSizeM": 3,
+      "physicalSizeSource": "Poly Haven info dimensions (mm) / 1000",
+      "estimated": false,
+      "sourceAspect": 1,
+      "files": {
+        "col": "ground-lot-col.webp",
+        "nor": "ground-lot-nor.webp",
+        "arm": "ground-lot-arm.webp"
+      }
+    }
+  ]
+}

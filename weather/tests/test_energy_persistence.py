@@ -19,7 +19,7 @@ from weather.energy.persistence import (
     ScenarioBuildingMismatch,
     ScenarioRepository,
 )
-from weather.energy.seed import D4_SEED_COUNTS, SeedBuilding, seed_buildings
+from weather.energy.seed import D4_BUILDINGS, D4_SEED_COUNTS, SeedBuilding, seed_buildings
 
 
 def array(array_id: str, scenario_id: str = "scenario-test") -> PanelArray:
@@ -79,9 +79,16 @@ def test_d4_seed_matches_frontend_fixture_and_has_repeatable_extension_path(tmp_
             ("D4-roof-west-main",),
         ).fetchone()
         fixture_array = connection.execute(
-            "SELECT rows, columns, module_nominal_power_wp, tilt_deg FROM panel_arrays WHERE id = ?",
+            "SELECT origin_x_m, origin_y_m, rows, columns, azimuth_deg, "
+            "module_nominal_power_wp, tilt_deg FROM panel_arrays WHERE id = ?",
             ("D4-array-south-2x8",),
         ).fetchone()
+        roof_zone_count = connection.execute(
+            "SELECT count(*) FROM roof_zones"
+        ).fetchone()[0]
+        obstacle_count = connection.execute(
+            "SELECT count(*) FROM roof_obstacles"
+        ).fetchone()[0]
         seed_buildings(connection)
         extension = SeedBuilding(
             id="X1", display_name="Extension fixture", rooms=(), roof_zones=(),
@@ -94,9 +101,15 @@ def test_d4_seed_matches_frontend_fixture_and_has_repeatable_extension_path(tmp_
         ).fetchone()[0]
     assert tuple(room) == ("computer_lab", 34, 1)
     assert roof[0] == "D4-roof-west"
-    assert '"xMeters":31' in roof[1]
+    assert '"xMeters":21' in roof[1]
+    assert '"xMeters":28' in roof[1]
+    assert '"yMeters":59' in roof[1]
+    assert '"yMeters":76.5' in roof[1]
     assert roof[2] == 0.5
-    assert tuple(fixture_array) == (2, 8, 441.0, 25.0)
+    assert tuple(fixture_array) == (24.5, 67.0, 1, 4, 90.0, 441.0, 25.0)
+    assert roof_zone_count == D4_SEED_COUNTS["roof_zones"]
+    assert len(D4_BUILDINGS[0].roof_zones) == 4
+    assert obstacle_count == D4_SEED_COUNTS["roof_obstacles"]
     assert stable_rooms == 69
     assert extension_count == 1
 
@@ -196,7 +209,11 @@ def test_multiple_installation_plans_and_atomic_representative_replacement(tmp_p
 def test_plan_updates_preserve_legacy_intervals_and_reject_building_reassignment(tmp_path) -> None:
     database = Database(tmp_path / "energy.sqlite3")
     database.initialize()
-    legacy = scenario(array("legacy-array"))
+    legacy_array = replace(
+        array("legacy-array"), origin_x_m=24.5, origin_y_m=67.0,
+        rows=1, columns=4, azimuth_deg=90.0,
+    )
+    legacy = scenario(legacy_array)
     ScenarioRepository(database).save(legacy)
     plans = InstallationPlanRepository(database)
     plan = plans.get(legacy.id)
@@ -424,7 +441,10 @@ def test_legacy_scenarios_are_exposed_as_plans_without_data_loss(tmp_path) -> No
     path = tmp_path / "legacy.sqlite3"
     database = Database(path)
     database.initialize()
-    legacy = scenario(array("legacy-array"))
+    legacy = scenario(replace(
+        array("legacy-array"), origin_x_m=24.5, origin_y_m=67.0,
+        rows=1, columns=4, azimuth_deg=90.0,
+    ))
     ScenarioRepository(database).save(legacy)
     with database.connect() as connection:
         with connection:
@@ -466,6 +486,11 @@ def test_legacy_scenarios_are_exposed_as_plans_without_data_loss(tmp_path) -> No
     assert migrated.id == legacy.id
     assert migrated.arrays == legacy.arrays
     assert ScenarioRepository(database).get(legacy.id) == legacy
+    assert legacy.arrays[0].origin_x_m == 24.5
+    assert legacy.arrays[0].origin_y_m == 67.0
+    assert legacy.arrays[0].rows == 1
+    assert legacy.arrays[0].columns == 4
+    assert legacy.arrays[0].azimuth_deg == 90.0
     with database.connect() as connection:
         assert connection.execute("PRAGMA user_version").fetchone()[0] >= 3
         assert connection.execute(
