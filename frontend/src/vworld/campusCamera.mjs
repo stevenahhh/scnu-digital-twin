@@ -1,5 +1,6 @@
 import { FLY_DURATION_MS, resolveCameraPreset } from "../camera/cameraPresets.mjs";
 import { sceneToModelLocal } from "./labelProjection.mjs";
+import { TILT_LIMITS } from "../camera/cameraCommands.mjs";
 
 // Legacy 카메라 시점(cameraPresets.mjs, 재중심화한 장면 좌표)을 VWorld(Cesium) 카메라로 옮긴다.
 // 장면 좌표 + 캠퍼스 중심(D4 앵커로 구한 재중심화 값) = campus-buildings.glb 모델 좌표 -> 모델 지역 좌표(glTF z, x, y)
@@ -69,7 +70,37 @@ export function createVWorldCampusCamera({ Cesium, scene, getModelMatrix, boxes,
     const pivot = viewCenter();
     if (!pivot) return false;
     const distance = Cesium.Cartesian3.distance(scene.camera.positionWC, pivot);
-    scene.camera.moveForward(distance * (1 - factor));
+    // 휠 확대와 같은 범위(cameraLimits.mjs) 안에 머문다. 트랙패드 핀치는 이 길로 연속해서 들어온다.
+    const controller = scene.screenSpaceCameraController;
+    const next = Math.min(controller?.maximumZoomDistance ?? Infinity, Math.max(controller?.minimumZoomDistance ?? 0, distance * factor));
+    scene.camera.moveForward(distance - next);
+    scene.requestRender?.();
+    return true;
+  };
+
+  // 기울이기(Legacy tiltBy와 같은 뜻): 가운데 지표점에서 본 카메라의 극각(그 자리 법선과 이루는 각)을 angle만큼 늘린다.
+  // 양수면 지평선 쪽으로 눕는다. 극각은 Legacy OrbitControls의 범위(TILT_LIMITS) 안에 머문다.
+  const tiltBy = (angle) => {
+    const pivot = viewCenter();
+    if (!pivot) return false;
+    const camera = scene.camera;
+    const normal = Cesium.Ellipsoid.WGS84.geodeticSurfaceNormal(pivot, new Cesium.Cartesian3());
+    const offset = { x: camera.positionWC.x - pivot.x, y: camera.positionWC.y - pivot.y, z: camera.positionWC.z - pivot.z };
+    const distance = Math.hypot(offset.x, offset.y, offset.z);
+    const cross = { x: normal.y * offset.z - normal.z * offset.y, y: normal.z * offset.x - normal.x * offset.z, z: normal.x * offset.y - normal.y * offset.x };
+    const crossLength = Math.hypot(cross.x, cross.y, cross.z);
+    if (distance === 0 || crossLength === 0) return false;
+    const polar = Math.acos(Math.min(1, Math.max(-1, (normal.x * offset.x + normal.y * offset.y + normal.z * offset.z) / distance)));
+    const next = Math.min(TILT_LIMITS.maxPolarAngle, Math.max(TILT_LIMITS.minPolarAngle, polar + angle));
+    const axis = { x: cross.x / crossLength, y: cross.y / crossLength, z: cross.z / crossLength };
+    const turn = (v) => rotateAbout(v, axis, next - polar);
+    const moved = turn(offset);
+    const direction = turn(camera.directionWC);
+    const up = turn(camera.upWC);
+    camera.setView({
+      destination: new Cesium.Cartesian3(pivot.x + moved.x, pivot.y + moved.y, pivot.z + moved.z),
+      orientation: { direction: new Cesium.Cartesian3(direction.x, direction.y, direction.z), up: new Cesium.Cartesian3(up.x, up.y, up.z) },
+    });
     scene.requestRender?.();
     return true;
   };
@@ -139,7 +170,7 @@ export function createVWorldCampusCamera({ Cesium, scene, getModelMatrix, boxes,
     return true;
   };
 
-  return { viewOf, flyTo, zoomBy, rotateBy, panBy, poseOf, applyPose };
+  return { viewOf, flyTo, zoomBy, rotateBy, tiltBy, panBy, poseOf, applyPose };
 }
 
 // Rodrigues: v rotated by angle (radians) about the unit axis.

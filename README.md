@@ -69,6 +69,8 @@ bun run --cwd frontend dev:legacy
 
 브라우저에서 `http://127.0.0.1:5173`을 엽니다. 기상 API가 없어도 지도와 건물 선택은 됩니다. 패널의 날씨 칸만 "기상 갱신 없음"으로 뜹니다. VWorld 모드는 `dev:vworld`로 띄우고 `/index-vworld.html`로 들어갑니다. Vision API(8001)는 YOLO 가중치와 카메라가 있을 때만 필요합니다.
 
+카메라 제스처(두 대시보드 공통): 트랙패드는 핀치 확대·축소, 두 손가락 가로 쓸기 회전, Option(Alt)+두 손가락 세로 쓸기 기울이기이고, 터치 화면은 한 손가락 끌기 회전, 두 손가락 핀치 확대·끌기 이동·비틀기 회전입니다(`frontend/src/camera/cameraGestures.mjs`).
+
 Windows 명령, 포트 바꾸기, 휴대폰에서 열기, 태양광 개발용 SQLite 설정은 아래 접힌 절에 있습니다.
 
 ### 자주 쓰는 명령

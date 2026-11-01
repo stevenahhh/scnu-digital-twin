@@ -27,6 +27,20 @@ export function rotatePosition(position, target, radians) {
   return add(target, [dx * cos + dz * sin, dy, -dx * sin + dz * cos]);
 }
 
+// 기울이기: 목표점에서 본 카메라의 극각(세로축과 이루는 각)을 radians만큼 늘린다(양수 = 지평선 쪽으로 눕기).
+// 극각은 OrbitControls의 minPolarAngle..maxPolarAngle 안에 머물고, 거리와 방위는 그대로다.
+export const TILT_LIMITS = Object.freeze({ minPolarAngle: Math.PI / 6, maxPolarAngle: Math.PI / 2.2 });
+export function tiltPosition(position, target, radians, limits = TILT_LIMITS) {
+  const [dx, dy, dz] = sub(position, target);
+  const distance = Math.hypot(dx, dy, dz);
+  if (distance === 0) return [...position];
+  const flat = Math.hypot(dx, dz);
+  const polar = Math.atan2(flat, dy);
+  const next = Math.min(limits.maxPolarAngle, Math.max(limits.minPolarAngle, polar + radians));
+  const azimuth = Math.atan2(dx, dz);
+  return add(target, [distance * Math.sin(next) * Math.sin(azimuth), distance * Math.cos(next), distance * Math.sin(next) * Math.cos(azimuth)]);
+}
+
 // 화면 기준 옆(right)·앞(forward)으로 위치와 목표를 함께 옮긴다. 앞은 바닥에 투영한 시선 방향이다.
 export function panPositions(position, target, right, forward) {
   const view = sub(target, position);
@@ -68,6 +82,24 @@ export function zoomBy(controls, factor) {
 export function rotateBy(controls, radians) {
   if (!controls) return false;
   return applyMove(controls, { position: rotatePosition(toArray(controls.object.position), toArray(controls.target), radians) });
+}
+
+export function tiltBy(controls, radians) {
+  if (!controls) return false;
+  const limits = {
+    minPolarAngle: controls.minPolarAngle ?? TILT_LIMITS.minPolarAngle,
+    maxPolarAngle: controls.maxPolarAngle ?? TILT_LIMITS.maxPolarAngle,
+  };
+  return applyMove(controls, { position: tiltPosition(toArray(controls.object.position), toArray(controls.target), radians, limits) });
+}
+
+// 손가락 비틀기처럼 OrbitControls가 이미 끌기 중일 때의 회전: start/end를 다시 보내지 않고 위치만 돌린다
+// (끌기 도중 end를 보내면 끌기가 끝난 것으로 보고 해상도·클릭 판별이 흐트러진다).
+export function rotateDuringDrag(controls, radians) {
+  if (!controls) return false;
+  controls.object.position.set(...rotatePosition(toArray(controls.object.position), toArray(controls.target), radians));
+  controls.update();
+  return true;
 }
 
 export function panBy(controls, right, forward) {

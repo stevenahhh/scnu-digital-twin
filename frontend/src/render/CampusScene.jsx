@@ -1,6 +1,7 @@
 import { Suspense, lazy, memo, useEffect } from "react";
 import { OrbitControls, useGLTF } from "@react-three/drei";
 import { CityModel } from "../CityModel";
+import { OrbitGestures } from "../camera/OrbitGestures";
 import { CAMPUS_MODEL_URL } from "../campusModelAsset.mjs";
 import { CampusLighting } from "../lighting/CampusLighting";
 import { HorizonSkirt } from "../lighting/HorizonSkirt";
@@ -100,6 +101,7 @@ export const CampusScene = memo(function CampusScene({
         maxPolarAngle={Math.PI / 2.2}
         target={[0, 0, 0]}
       />
+      <OrbitGestures controlsRef={controlsRef} />
       {quality !== "low" && (
         <Suspense fallback={null}>
           <HighTierEffects tier={quality} sunAltitude={sunAltitude} selectedElementId={selectedElementId} />
