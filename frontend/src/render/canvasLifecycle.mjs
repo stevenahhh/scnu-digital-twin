@@ -1,9 +1,15 @@
 // Canvas onCreated에서 붙이는 렌더 루프 보조 장치. useThree 대신 onCreated의 RootState를 받아서
 // Canvas를 목(mock)으로 바꾼 컴포넌트 테스트에서도 앱 트리가 그대로 렌더된다.
 
+// 포인터 선택에서 빼는 메시가 들어가는 카메라 레이어(CityModel POINTER_EXCLUDED_LAYER). 지면 층·노면 표시·시설물·가로등은
+// 이 레이어에만 있어 포인터 레이캐스트가 건너뛰고, 카메라는 두 레이어를 모두 봐서 그대로 그린다.
+export const POINTER_EXCLUDED_LAYER = 1;
+
 // WebGL 컨텍스트를 잃으면 preventDefault()로 복구를 요청하고, 복구되면 demand 루프에 한 장을 다시 그리게 한다.
 export function attachCanvasLifecycle(state, { win = globalThis.window } = {}) {
   const canvas = state.gl.domElement;
+  state.camera?.layers?.enable(POINTER_EXCLUDED_LAYER);
+  state.raycaster?.layers?.disable(POINTER_EXCLUDED_LAYER);
   const onLost = (event) => event.preventDefault();
   const onRestored = () => state.invalidate();
   canvas.addEventListener("webglcontextlost", onLost);

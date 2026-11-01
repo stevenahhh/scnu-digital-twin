@@ -68,6 +68,7 @@ const HEIGHT_JSON = path.join(FRONTEND, "public", "campus-v2-height.json");
 // 0.25 scene units (about 0.40 m): sub-metre sampling so the 0.15 m walkway slab (stages/kerbs.mjs) shows in the sidecar.
 const HEIGHT_STEP = 0.25;
 const PROBES_PER_KIND = 12;
+const metresToUnits = (m) => m * SCENE_UNITS_PER_METRE;
 
 const inputs = await loadInputs();
 
@@ -219,7 +220,8 @@ function writeHeightSidecar(heightAt, terrainAt, slabAt, labelAt) {
     meta: {
       width, height, originX: EXTENT.minX, originZ: EXTENT.minZ, step: HEIGHT_STEP, minY, scale,
       includesKerbSlab: true,
-      note: "생성기 지형 + 인도 단차(추정), 측량값 아님",
+      includesHumps: true,
+      note: "생성기 지형 + 인도 단차 + 과속방지턱(추정), 측량값 아님",
       probes,
     },
   };
@@ -249,7 +251,8 @@ console.log(`collections: ${[...collections.keys()].join(", ")}`);
 const bytes = glb.toBuffer();
 await mkdir(path.dirname(OUTPUT), { recursive: true });
 await Bun.write(OUTPUT, bytes);
-const sidecar = writeHeightSidecar(kerbs.groundHeightAt, (x, z) => surface.height(x, z), kerbs.plan.slabHeight, labelAt);
+// The speed humps raise the drawn road (network/stalls.mjs humpProfile); the agents must climb them too.
+const sidecar = writeHeightSidecar((x, z) => kerbs.groundHeightAt(x, z) + metresToUnits(humps.heightAt(x, z)), (x, z) => surface.height(x, z), kerbs.plan.slabHeight, labelAt);
 await Bun.write(HEIGHT_BIN, sidecar.bytes);
 await Bun.write(HEIGHT_JSON, `${JSON.stringify(sidecar.meta, null, 2)}\n`);
 const treeCount = Object.values(treeInstances).reduce((sum, list) => sum + list.length, 0);

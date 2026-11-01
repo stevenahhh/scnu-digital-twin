@@ -19,7 +19,7 @@ const CANVAS_FALLBACK_SURFACE_CLASS = [
 // Legacy 3D 캠퍼스 지도 층. 실패하면 열린 패널을 뺀 지도 영역(insetRight) 가운데에 안내를 띄운다.
 // select-none: 캔버스나 라벨에서 시작한 드래그가 라벨·패널 글자를 선택하지 않게 한다.
 export const CampusCanvas = forwardRef(function CampusCanvas(
-  { insetRight, rendering, sunState, weatherScene, scene, camera, flow },
+  { insetRight, rendering, sunState, sceneDate, weatherScene, scene, camera, flow },
   mapLayerRef,
 ) {
   useCameraKeys({ targetRef: mapLayerRef, controlsRef: scene.controlsRef, onHome: camera.goHome });
@@ -57,6 +57,7 @@ export const CampusCanvas = forwardRef(function CampusCanvas(
           <CampusScene
             background={getClearColor(sunState.altitude)}
             sceneMinute={sunState.minuteOfDay}
+            sceneDate={sceneDate}
             sunVector={sunVector}
             sunVisible={sunState.visible}
             sunAltitude={sunState.altitude}

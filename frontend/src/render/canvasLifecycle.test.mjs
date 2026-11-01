@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { attachBenchBridge, attachCanvasLifecycle } from "./canvasLifecycle.mjs";
+import { Layers } from "three";
+import { POINTER_EXCLUDED_LAYER, attachBenchBridge, attachCanvasLifecycle } from "./canvasLifecycle.mjs";
 
 function fakeState() {
   const internal = { frames: 0 };
@@ -49,6 +50,15 @@ describe("attachCanvasLifecycle", () => {
     detach();
     state.gl.domElement.dispatchEvent(new Event("webglcontextrestored"));
     assert.equal(state.invalidations, 1);
+  });
+
+  it("draws the pointer-excluded layer but keeps the pointer raycaster off it", () => {
+    const state = { ...fakeState(), camera: { layers: new Layers() }, raycaster: { layers: new Layers() } };
+    attachCanvasLifecycle(state, { win: {} });
+    const excluded = new Layers();
+    excluded.set(POINTER_EXCLUDED_LAYER);
+    assert.equal(state.camera.layers.test(excluded), true);
+    assert.equal(state.raycaster.layers.test(excluded), false);
   });
 });
 

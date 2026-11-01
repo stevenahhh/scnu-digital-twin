@@ -49,6 +49,7 @@ import {
 } from "./lighting/foliage.mjs";
 import { WATER_ENV_INTENSITY, WATER_MATERIAL_NAME, patchWaterFresnel } from "./lighting/water.mjs";
 import { clipPolygonAhead } from "./render/clipPolygon.mjs";
+import { POINTER_EXCLUDED_LAYER } from "./render/canvasLifecycle.mjs";
 
 // 클릭하지 않아도 카메라가 이 거리 안으로 들어오면 "가까이 간" 것으로 본다.
 // 클릭 시 자동으로 붙는 카메라 거리(FOCUS_CAMERA_OFFSET 기준 약 94유닛)보다 살짝
@@ -111,6 +112,9 @@ const LAMP_POOL_DEPTH_BIAS = 0.5;
 // (Furniture_Glass)은 그림자를 드리우지 않는다. 위치는 항공사진 조사값이고 모양·높이는 VR 투어를 보고 정한 추정값이다.
 const FURNITURE_MATERIAL_PATTERN = /^Furniture/;
 const FURNITURE_GLASS_MATERIAL_NAME = "Furniture_Glass";
+// 포인터 선택에서 빼는 메시(지면 층·노면 표시·시설물·가로등): 포인터 레이캐스트(render/canvasLifecycle.mjs가 raycaster.layers에서
+// 이 레이어를 끈다)는 보지 않지만 메시의 raycast는 그대로라서 카메라 시점(useFlyTo)과 교통 폴백의 지면 높이 조회는 맞는다.
+const skipPointer = (mesh) => mesh.layers.set(POINTER_EXCLUDED_LAYER);
 function applyLampPoolFalloff(material) {
   material.vertexColors = false;
   material.onBeforeCompile = (shader) => {
@@ -514,7 +518,7 @@ export function CityModel({
 
       if (LAMP_MATERIAL_PATTERN.test(child.material?.name ?? "")) {
         child.castShadow = false;
-        child.raycast = () => {};
+        skipPointer(child);
         if (child.material.name === LAMP_POOL_MATERIAL_NAME) {
           child.receiveShadow = false;
           child.material = child.material.clone();
@@ -563,7 +567,7 @@ export function CityModel({
       if (isNonCaster) nonCasterNames.push(child.name);
       child.receiveShadow = !(NON_RECEIVER_PARENT_PATTERN.test(child.parent?.name ?? "") || NON_RECEIVER_PARENT_PATTERN.test(child.name));
       child.material = child.material.clone();
-      if (isFurniture) child.raycast = () => {};
+      if (isFurniture) skipPointer(child);
       // 연못 물(Furniture_Water): 하늘 환경맵을 비추고, 내려다보면 비치고 비스듬히 보면 거의 불투명(프레넬)
       if (child.material.name === WATER_MATERIAL_NAME) {
         child.material.onBeforeCompile = (shader) => patchWaterFresnel(shader);
@@ -572,14 +576,14 @@ export function CityModel({
         child.material.needsUpdate = true;
       }
       if (isRoadMarking) {
-        child.raycast = () => {};
+        skipPointer(child);
         child.material.polygonOffset = true;
         child.material.polygonOffsetFactor = ROAD_MARKING_POLYGON_OFFSET.factor;
         child.material.polygonOffsetUnits = ROAD_MARKING_POLYGON_OFFSET.units;
       }
       if (isGroundLayer) {
         const rank = child.material.userData?.polygonOffsetRank ?? 1;
-        child.raycast = () => {};
+        skipPointer(child);
         child.material.polygonOffset = true;
         child.material.polygonOffsetFactor = -rank * GROUND_LAYER_OFFSET_STEP.factor;
         child.material.polygonOffsetUnits = -rank * GROUND_LAYER_OFFSET_STEP.units;

@@ -198,6 +198,7 @@ function Dashboard() {
         insetRight={mapInsetRight}
         rendering={rendering}
         sunState={clock.sunState}
+        sceneDate={clock.sunDate}
         weatherScene={sceneWeather.scene}
         camera={camera}
         flow={flow}

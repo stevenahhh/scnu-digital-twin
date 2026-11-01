@@ -30,7 +30,7 @@ function SceneLoadingSignal({ onChange }) {
 // 3D 캠퍼스 장면(R3F Canvas의 자식). 값이 실제로 바뀔 때만 다시 그리도록 memo로 감싼다: 장면 트리가 다시 그려지면
 // 인라인 이벤트 핸들러가 바뀐 것으로 보고 R3F가 invalidate해서 demand 루프가 한 장을 더 그린다.
 export const CampusScene = memo(function CampusScene({
-  background, sunVector, sunVisible, sunAltitude, sceneMinute, weatherScene, quality, shadowMapSizes,
+  background, sunVector, sunVisible, sunAltitude, sceneMinute, sceneDate, weatherScene, quality, shadowMapSizes,
   controlsRef, selectedId, labelsHidden, occluderRef, chromeRefs,
   activePresetId, selectedElementId, selectionOutline, onLabelRegistry, onDragStart, headlineById,
   onSelect, onBuildingClick, onBuildingProximity, onD4Enter, onOrbitStart, onOrbitEnd, onLoadingChange, attempt = 0, presentation = false,
@@ -65,6 +65,7 @@ export const CampusScene = memo(function CampusScene({
           position={[0, 0, 0]}
           controlsRef={controlsRef}
           isNight={!sunVisible}
+          date={sceneDate}
           selectedId={selectedId}
           onSelect={onSelect}
           onCompare={onCompare}
