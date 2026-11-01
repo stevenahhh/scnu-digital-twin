@@ -96,6 +96,39 @@ test("camera buttons zoom toward the ground point at the view centre and orbit i
   assert.equal(camera.zoomBy(0.8), false);
 });
 
+test("trackpad tilt swings the camera about the view centre within the Legacy polar limits, and pinch zoom respects the zoom range", () => {
+  const Cesium = fakeCesium();
+  Cesium.Cartesian2 = class { constructor(x, y) { Object.assign(this, { x, y }); } };
+  Cesium.Cartesian3.distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+  const views = [];
+  const moves = [];
+  const scene = {
+    canvas: { clientWidth: 800, clientHeight: 600 },
+    globe: { pick: () => new Cesium.Cartesian3(0, 0, 0) },
+    screenSpaceCameraController: { minimumZoomDistance: 100, maximumZoomDistance: 1000 },
+    requestRender: () => {},
+    camera: {
+      getPickRay: () => ({}),
+      positionWC: new Cesium.Cartesian3(100, 0, 100),
+      directionWC: { x: -Math.SQRT1_2, y: 0, z: -Math.SQRT1_2 },
+      upWC: { x: -Math.SQRT1_2, y: 0, z: Math.SQRT1_2 },
+      moveForward: (amount) => moves.push(amount),
+      setView: (view) => views.push(view),
+    },
+  };
+  const camera = createVWorldCampusCamera({ Cesium, scene, getModelMatrix: () => null, boxes, center });
+  const polarOf = ({ x, y, z }) => Math.atan2(Math.hypot(x, y), z);
+  assert.equal(camera.tiltBy(0.1), true);
+  assert.ok(Math.abs(polarOf(views[0].destination) - (Math.PI / 4 + 0.1)) < 1e-9);
+  assert.ok(Math.abs(Math.hypot(views[0].destination.x, views[0].destination.y, views[0].destination.z) - Math.hypot(100, 100)) < 1e-9);
+  assert.ok(Math.abs(views[0].destination.y) < 1e-9);
+  camera.tiltBy(5);
+  assert.ok(Math.abs(polarOf(views[1].destination) - Math.PI / 2.2) < 1e-9);
+  // 141 m away with a 100 m floor: a 0.1x pinch stops at the floor instead of passing through the ground.
+  camera.zoomBy(0.1);
+  assert.ok(Math.abs(moves[0] - (Math.hypot(100, 100) - 100)) < 1e-9);
+});
+
 test("the shared-link pose is written and read back in the Legacy scene frame", () => {
   const Cesium = fakeCesium();
   Cesium.Cartesian2 = class { constructor(x, y) { Object.assign(this, { x, y }); } };

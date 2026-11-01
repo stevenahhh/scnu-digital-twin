@@ -22,6 +22,7 @@ import { createCampusGltfOverlay, createCampusModelMatrix, removeCampusGltfOverl
 import { createVWorldLabelProjector } from "./labelProjection.mjs";
 import { applyCampusZoomLimits } from "./cameraLimits.mjs";
 import { createVWorldCampusCamera } from "./campusCamera.mjs";
+import { attachCameraGestures } from "../camera/cameraGestures.mjs";
 import { createVWorldSelectionHighlight, pickedNodeName } from "./selectionHighlight.mjs";
 import { CAMPUS_BLOCKED_ELEMENT_IDS, CAMPUS_BUILDING_MAP, resolveBuildingMeta } from "../utils/buildingLabels.mjs";
 import { campusCenterOf, glbLabelAnchors, glbNodeBoxes } from "./labelAnchors.mjs";
@@ -284,6 +285,8 @@ export default function VWorldRenderer({
   }, [phone, isD4SectionOpen]);
   const onCampusCameraRef = useRef(onCampusCamera);
   onCampusCameraRef.current = onCampusCamera;
+  const onUserCameraStartRef = useRef(onUserCameraStart);
+  onUserCameraStartRef.current = onUserCameraStart;
   useEffect(() => {
     if (!labelScene || !campusGlb) return undefined;
     const elementNames = new Map(commonElements.elements.map(({ element_id: id, name }) => [id, name]));
@@ -295,6 +298,22 @@ export default function VWorldRenderer({
       onCampusCameraRef.current?.(null);
     };
   }, [campusGlb, getLabelModelMatrix, labelScene]);
+
+  // 트랙패드 제스처(Legacy OrbitGestures와 같은 조작): Cesium은 ctrl wheel(Chrome·Firefox 핀치)을 확대로 쓰지 않고 가로 스와이프도
+  // 버리므로 여기서 핀치 확대, 가로 스와이프 회전, Option+세로 스와이프 기울이기, Safari 핀치·비틀기를 처리한다.
+  // 터치 화면의 두 손가락 핀치·비틀기·기울이기는 Cesium이 스스로 한다(여기서 또 돌리면 비틀기가 두 배로 돈다).
+  // 캔버스를 감싼 요소의 캡처 단계에서 Cesium보다 먼저 받는다.
+  useEffect(() => {
+    const host = labelScene?.scene.canvas?.parentElement;
+    if (!host) return undefined;
+    const camera = () => campusCameraRef.current;
+    return attachCameraGestures(host, {
+      start: () => onUserCameraStartRef.current?.(),
+      zoom: (factor) => camera()?.zoomBy(factor),
+      rotate: (radians) => camera()?.rotateBy(radians),
+      tilt: (radians) => camera()?.tiltBy(radians),
+    });
+  }, [labelScene]);
 
   // 선택·호버 강조(오버레이 전체 흐리게 + 고른 건물 강조색 상자, 올린 건물 호버 색 상자). 오버레이 GLB 노드를 집어 호버를 안다.
   useEffect(() => {
