@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import * as THREE from "three";
 import { mergeVertices } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import { MeshoptSimplifier } from "meshoptimizer";
 import { tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { EXTENT, metres } from "../lib/frame.mjs";
 import { Raster, mulberry32 } from "../lib/raster.mjs";
@@ -54,8 +55,9 @@ const WIDTH = EXTENT.maxX - EXTENT.minX;
 const DEPTH = EXTENT.maxZ - EXTENT.minZ;
 
 // smooth: normals averaged over coincident vertices (rounded crowns read as foliage masses, not facets).
-function geometryPrimitive(geometry, material, { smooth = false } = {}) {
+function geometryPrimitive(geometry, material, { smooth = false, simplify = false } = {}) {
   let g;
+  if (simplify) geometry = simplifyCrown(geometry);
   if (smooth) {
     const bare = new THREE.BufferGeometry();
     bare.setAttribute("position", geometry.attributes.position.clone());
@@ -73,6 +75,33 @@ function geometryPrimitive(geometry, material, { smooth = false } = {}) {
     indices: Array.from({ length: g.attributes.position.count }, (_, i) => i),
     material,
   };
+}
+
+// Crown simplification: the smooth-shaded crowns (lumpy icosahedra, lathes and tiers merged into one mass) carry far more
+// triangles than their silhouette needs once instanced hundreds of times (the canopy masses alone were 170 k triangles
+// of the frame). meshopt collapses interior edges of the welded mass to CROWN_SIMPLIFY_RATIO of the triangles within
+// CROWN_SIMPLIFY_ERROR of its extent, before the smooth normals are computed, so the mass stays closed and rounded.
+const CROWN_SIMPLIFY_RATIO = 0.45;
+const CROWN_SIMPLIFY_ERROR = 0.08;
+function simplifyCrown(geometry) {
+  const bare = new THREE.BufferGeometry();
+  bare.setAttribute("position", geometry.attributes.position.clone());
+  if (geometry.index) bare.setIndex(geometry.index.clone());
+  const welded = mergeVertices(bare, 1e-4);
+  const positions = welded.attributes.position.array;
+  // a lathe's pole fans weld into degenerate triangles; dropped so the simplifier sees a closed manifold
+  const index = Array.from(welded.index.array);
+  const clean = [];
+  for (let t = 0; t < index.length; t += 3) {
+    if (index[t] !== index[t + 1] && index[t + 1] !== index[t + 2] && index[t] !== index[t + 2]) clean.push(index[t], index[t + 1], index[t + 2]);
+  }
+  const indices = Uint32Array.from(clean);
+  const target = Math.floor((indices.length * CROWN_SIMPLIFY_RATIO) / 3) * 3;
+  const [simplified] = MeshoptSimplifier.simplify(indices, positions, 3, target, CROWN_SIMPLIFY_ERROR, []);
+  const out = new THREE.BufferGeometry();
+  out.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  out.setIndex(new THREE.BufferAttribute(simplified, 1));
+  return out;
 }
 
 // Per-vertex ambient occlusion baked into COLOR_0 (U34). Each vertex casts AO_RAYS cosine-weighted
@@ -495,7 +524,8 @@ export function placeTrees({ inputs, selectableBuildings, campusBuildings, offCa
   return { treeInstances, inventory, skipped, stands, hedgeSources, masses };
 }
 
-export function buildTrees({ glb, placement }) {
+export async function buildTrees({ glb, placement }) {
+  await MeshoptSimplifier.ready;
   const { treeInstances, inventory, skipped, stands, hedgeSources, masses } = placement;
 
   // ---- materials (base colours: summer foliage, estimated against the VR tour and the NGII photo; the dashboard
@@ -540,7 +570,7 @@ export function buildTrees({ glb, placement }) {
   const species = {
     ginkgo: [
       geometryPrimitive(trunk(0.17, 0.25, 3.4), materials.trunk),
-      geometryPrimitive(latheCrown([[0, 2.4], [1.5, 3.0], [2.0, 4.3], [2.05, 5.8], [1.65, 7.3], [0.9, 8.5], [0, 9.2]], 8, 0.22, 11), materials.ginkgo, { smooth: true }),
+      geometryPrimitive(latheCrown([[0, 2.4], [1.5, 3.0], [2.0, 4.3], [2.05, 5.8], [1.65, 7.3], [0.9, 8.5], [0, 9.2]], 8, 0.22, 11), materials.ginkgo, { smooth: true, simplify: true }),
     ],
     broadleaf: [
       geometryPrimitive(trunk(0.18, 0.27, 3.0), materials.trunk),
@@ -549,7 +579,7 @@ export function buildTrees({ glb, placement }) {
         lumpyCrown(2.45, 3.9, 7).translate(0, 4.6, 0),
         lobe(1.6, 1.5, 1.7, 5.3, 0.7, 21),
         lobe(1.45, 1.35, -1.4, 5.7, -1.1, 23),
-      ]), materials.broadleaf, { smooth: true }),
+      ]), materials.broadleaf, { smooth: true, simplify: true }),
     ],
     pine: [
       // a red-brown bole leaning about 7 degrees, as the campus red pines do
@@ -560,7 +590,7 @@ export function buildTrees({ glb, placement }) {
       geometryPrimitive(trunk(0.18, 0.32, 5.0), materials.pineTrunk),
       // eleven overlapping, drooping tiers on a full, broad-based cone (VR scene_c1 l and r, scene_e1 r, scene_c2 l): each tier
       // 2.4 m deep stepped 0.95 m, radius 2.3 m at the base easing to the tip, smooth-shaded so the foliage reads soft
-      geometryPrimitive(tieredCrown(Array.from({ length: 11 }, (_, i) => [2.2 + i * 0.95, 2.2 + i * 0.95 + 2.4, 2.3 * (1 - i / 11) ** 0.8 + 0.3]), 7, 0.72, 13, 0.3), materials.metasequoia, { smooth: true }),
+      geometryPrimitive(tieredCrown(Array.from({ length: 11 }, (_, i) => [2.2 + i * 0.95, 2.2 + i * 0.95 + 2.4, 2.3 * (1 - i / 11) ** 0.8 + 0.3]), 7, 0.72, 13, 0.3), materials.metasequoia, { smooth: true, simplify: true }),
     ],
     conifer: [
       geometryPrimitive(tieredCrown([[0.2, 1.9, 1.1], [1.3, 3.1, 1.0], [2.5, 4.3, 0.8], [3.7, 5.6, 0.5]], 5, 0.85, 17), materials.conifer),
@@ -576,11 +606,11 @@ export function buildTrees({ glb, placement }) {
         lumpyCrown(2.2, 2.4, 59).translate(2.0, 8.1, -1.4),
         lobe(2.6, 1.2, -4.6, 4.6, -1.6, 61),
         lobe(2.5, 1.2, 4.7, 4.5, -1.2, 67),
-      ]), materials.broadleaf, { smooth: true }),
+      ]), materials.broadleaf, { smooth: true, simplify: true }),
     ],
     shrub: [
       // low scrub mound (D4 west slope, data/photo/tree-species.json SG01): its height comes from the instance
-      geometryPrimitive(lumpyCrown(1, 0.9, 31).translate(0, 0.3, 0), materials.shrub, { smooth: true }),
+      geometryPrimitive(lumpyCrown(1, 0.9, 31).translate(0, 0.3, 0), materials.shrub, { smooth: true, simplify: true }),
     ],
     hedge: [
       // unit box on y = 0..1 without its bottom face (x along the hedge, z across)

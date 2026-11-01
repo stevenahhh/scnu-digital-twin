@@ -73,6 +73,8 @@ import { ShapeUtils, Vector2 } from "three";
 import { EXTENT, SCENE_UNITS_PER_METRE, geoToModel, metres } from "../lib/frame.mjs";
 import { busStopBoxTemplate, hatchedMedianTemplate } from "../lib/markingGlyphs.mjs";
 import { conform } from "../lib/conform.mjs";
+import { decimateDecal } from "../lib/decimate.mjs";
+import { DECIMATE_TOLERANCE_M } from "./surfaces.mjs";
 import { pointInRing, ringArea, segmentDistance } from "../lib/geometry.mjs";
 import { VEG_EXG, excessGreen, sampleOrtho, shadowWeight } from "../lib/ortho.mjs";
 import { encodePng } from "../lib/png.mjs";
@@ -875,7 +877,7 @@ function splitFine(tri, maxEdge, near) {
 // baseOffset(x, z) -> metres of the ground under the paint above the terrain (the raised walkway slab). The paint lies
 // flush on that ground: it is cut out of the surfaces under it, not stacked on them.
 const fan = (poly) => poly.slice(1, -1).map((p, k) => [poly[0], p, poly[k + 2]]);
-export function buildMarkings({ glb, markings, surface, extraHeight = () => 0, claim = (piece) => [piece], baseOffset = () => 0 }) {
+export async function buildMarkings({ glb, markings, surface, extraHeight = () => 0, claim = (piece) => [piece], baseOffset = () => 0, decimate = true }) {
   const positions = [];
   const normals = [];
   const uvs = [];
@@ -934,13 +936,19 @@ export function buildMarkings({ glb, markings, surface, extraHeight = () => 0, c
     // CityModel multiplies its night weight (0..1) by this strength; by day the emissive intensity is 0.
     extensions: { KHR_materials_emissive_strength: { emissiveStrength: NIGHT_GLOW } },
   });
-  const mesh = glb.addMesh("Road_Markings", [{
-    positions: Float32Array.from(positions),
-    normals: Float32Array.from(normals),
-    uvs: Float32Array.from(uvs),
-    indices,
-    material,
-  }]);
+  // Decimation (lib/decimate.mjs): every outline vertex of the paint stays, so each dash, bar and line keeps its plan
+  // geometry; only the partition's interior slivers collapse where the terrain is flat within DECIMATE_TOLERANCE_M.
+  let primitive = { positions: Float32Array.from(positions), normals: Float32Array.from(normals), uvs: Float32Array.from(uvs), indices };
+  const sourceTriangles = indices.length / 3;
+  if (decimate) {
+    const out = await decimateDecal({
+      positions: primitive.positions, indices, toleranceM: DECIMATE_TOLERANCE_M, unitsPerMetre: SCENE_UNITS_PER_METRE,
+      attributes: [{ array: primitive.normals, size: 3 }, { array: primitive.uvs, size: 2 }],
+    });
+    primitive = { positions: out.positions, normals: out.attributes[0].array, uvs: out.attributes[1].array, indices: Array.from(out.indices) };
+    console.log(`markings: decimated ${out.before} -> ${out.after} triangles (paint outlines locked)`);
+  }
+  const mesh = glb.addMesh("Road_Markings", [{ ...primitive, material }]);
   const detected = markings.pieces.filter((p) => !p.estimated).length;
   glb.addNode({
     name: "Road_Markings",
@@ -969,7 +977,7 @@ export function buildMarkings({ glb, markings, surface, extraHeight = () => 0, c
       warnings: markings.warnings,
     },
   }, { root: true });
-  return { vertices: positions.length / 3, triangles: indices.length / 3, sourceTriangles: source };
+  return { vertices: primitive.positions.length / 3, triangles: primitive.indices.length / 3, sourceTriangles: source, conformedTriangles: sourceTriangles };
 }
 
 // Build summary of the corrections, the gate and the crossings.

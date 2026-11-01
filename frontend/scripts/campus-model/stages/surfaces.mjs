@@ -18,6 +18,7 @@ import { fileURLToPath } from "node:url";
 import { ShapeUtils, Vector2 } from "three";
 import { sceneToTm, tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { conform } from "../lib/conform.mjs";
+import { decimateDecal } from "../lib/decimate.mjs";
 import { EXTENT, SCENE_UNITS_PER_METRE } from "../lib/frame.mjs";
 import { LANDCOVER } from "../lib/landcover.mjs";
 import { encodePng } from "../lib/png.mjs";
@@ -554,9 +555,31 @@ export async function naturalGroundMaterial(glb, landcoverAt, ao) {
 
 // ---------------------------------------------------------------- stage
 // layers: network/surfaces.mjs layers; surface: topographySurface(); ao: the ground AO texture index or null.
-export async function buildSurfaceMeshes({ glb, layers, surface, ao = null, heightOffset, refine = null, claim }) {
+// Decimation of the final decal primitives (lib/decimate.mjs): every outline vertex stays, interior and seam vertices go
+// where the surface stays within DECIMATE_TOLERANCE_M of the terrain. 2 cm: well under the 6 mm layer lifts only in
+// plan, the lift itself rides on the kept vertices; on flat ground the partition slivers collapse to a few triangles.
+export const DECIMATE_TOLERANCE_M = 0.02;
+export async function buildSurfaceMeshes({ glb, layers, surface, ao = null, heightOffset, refine = null, claim, decimate = true }) {
   const tileSize = (mesh) => (GROUND_MESHES[mesh].pattern ? pavingPattern(GROUND_MESHES[mesh].pattern).repeatM : groundTile(GROUND_MESHES[mesh].tile).entry.physicalSizeM);
   const primitives = surfaceGeometry({ layers, surface, tileSize, heightOffset, refine, claim });
+  let decimated = { before: 0, after: 0 };
+  if (decimate) {
+    for (const primitive of primitives) {
+      if (!primitive.indices.length) continue;
+      const out = await decimateDecal({
+        positions: primitive.positions, indices: primitive.indices, toleranceM: DECIMATE_TOLERANCE_M, unitsPerMetre: UNIT,
+        attributes: [{ array: Float32Array.from(primitive.normals), size: 3 }, { array: Float32Array.from(primitive.uvs), size: 2 }, { array: Float32Array.from(primitive.uv1), size: 2 }],
+      });
+      decimated.before += out.before;
+      decimated.after += out.after;
+      primitive.positions = Array.from(out.positions);
+      primitive.normals = Array.from(out.attributes[0].array);
+      primitive.uvs = Array.from(out.attributes[1].array);
+      primitive.uv1 = Array.from(out.attributes[2].array);
+      primitive.indices = Array.from(out.indices);
+    }
+    console.log(`surfaces: decimated ${decimated.before} -> ${decimated.after} triangles (outlines locked, ${DECIMATE_TOLERANCE_M} m tolerance)`);
+  }
   const paintedNormal = glb.addTexture(paintedNormalMap(), "image/png");
   const materials = new Map();
   const byMesh = new Map();
