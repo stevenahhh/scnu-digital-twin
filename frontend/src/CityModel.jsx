@@ -112,6 +112,25 @@ const LAMP_POOL_DEPTH_BIAS = 0.5;
 // (Furniture_Glass)은 그림자를 드리우지 않는다. 위치는 항공사진 조사값이고 모양·높이는 VR 투어를 보고 정한 추정값이다.
 const FURNITURE_MATERIAL_PATTERN = /^Furniture/;
 const FURNITURE_GLASS_MATERIAL_NAME = "Furniture_Glass";
+// 환경(하늘) 반사는 빛날 수 있는 재질에만: 건물 유리를 품은 재질(정면 아틀라스·앞면 키트·반투명 유리)과 연못 물(lighting/water.mjs).
+// 그 밖(지면·지붕·수관·시설물)은 환경맵의 반사(specular) 항만 끄고 확산(diffuse) 하늘빛은 그대로 받아 조명 균형이 바뀌지 않는다.
+// 정면 아틀라스는 벽과 유리가 한 재질이라 벽 픽셀도 반사 항을 받지만 거칠기 0.6-0.95(lib/textures.mjs)라 흐릿하게 퍼질 뿐이다.
+const GLASS_MATERIAL_PATTERN = /^(Facade_Atlas|Facade_FrontKit|Furniture_Glass)$/;
+function disableEnvSpecular(material) {
+  const previous = material.onBeforeCompile;
+  material.onBeforeCompile = (shader, renderer) => {
+    previous?.(shader, renderer);
+    // lights_fragment_maps가 환경맵에서 채운 radiance를 비우고 lights_fragment_end의 RE_IndirectSpecular에 넘긴다.
+    // iblIrradiance(확산 하늘빛)는 그대로 둔다.
+    shader.fragmentShader = shader.fragmentShader.replace(
+      "#include <lights_fragment_end>",
+      "radiance = vec3( 0.0 );\n  clearcoatRadiance = vec3( 0.0 );\n  #include <lights_fragment_end>",
+    );
+  };
+  const key = material.customProgramCacheKey;
+  material.customProgramCacheKey = () => `${key ? key.call(material) : ""}|campus-no-env-specular`;
+  material.needsUpdate = true;
+}
 // 포인터 선택에서 빼는 메시(지면 층·노면 표시·시설물·가로등): 포인터 레이캐스트(render/canvasLifecycle.mjs가 raycaster.layers에서
 // 이 레이어를 끈다)는 보지 않지만 메시의 raycast는 그대로라서 카메라 시점(useFlyTo)과 교통 폴백의 지면 높이 조회는 맞는다.
 const skipPointer = (mesh) => mesh.layers.set(POINTER_EXCLUDED_LAYER);
@@ -648,6 +667,10 @@ export function CityModel({
           profiles,
           meanLuminance: luminanceSum / Math.max(child.count, 1),
         });
+      }
+      // 하늘 반사(specular 환경맵)는 유리와 물에만 남긴다(GLASS_MATERIAL_PATTERN).
+      if (child.material.isMeshStandardMaterial && child.material.name !== WATER_MATERIAL_NAME && !GLASS_MATERIAL_PATTERN.test(child.material.name)) {
+        disableEnvSpecular(child.material);
       }
       // campus-v2.glb: sharper ground/facade textures at grazing angles, and window glow only at night.
       if (child.material.map) child.material.map.anisotropy = anisotropy;
