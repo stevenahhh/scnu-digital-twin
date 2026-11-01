@@ -42,6 +42,8 @@ const TERRAIN_PARENT = "Topography";
 const TERRAIN_CHUNK = /^Topography_/;
 const TERRAIN_JOINED = "Topography_joined";
 const TRIANGLES = 4;
+// Materials that must carry the baked AO (building atlas: stages/buildings.mjs; ground: stages/ground.mjs).
+const AO_MATERIALS = ["Facade_Atlas", "Roof_Membrane", "Roof_Parapet", "Roof_Equipment", "Ground_Asphalt"];
 
 const OPTIMIZE_ARGS = [
   "--flatten", "false",
@@ -186,6 +188,13 @@ async function verify(rawFile, packedFile, terrain) {
   }
   if (!root.listExtensionsUsed().some((extension) => extension.extensionName === "EXT_meshopt_compression")) {
     failures.push("EXT_meshopt_compression is not used");
+  }
+  // The baked AO must be attached: stages/buildings.mjs and stages/ground.mjs leave it out with a warning when the baked
+  // PNG's layout tag does not match this build (a stale bake after a geometry change), which silently shipped flat buildings.
+  for (const name of AO_MATERIALS) {
+    const material = root.listMaterials().find((candidate) => candidate.getName() === name);
+    if (!material) failures.push(`material ${name} is missing`);
+    else if (!material.getOcclusionTexture()) failures.push(`${name} has no occlusionTexture: re-bake the AO (scripts/campus-model/bake/README.md)`);
   }
   const nonKtx2 = textures.filter((texture) => texture.getMimeType() !== "image/ktx2");
   if (nonKtx2.length) failures.push(`${nonKtx2.length} textures are not image/ktx2`);

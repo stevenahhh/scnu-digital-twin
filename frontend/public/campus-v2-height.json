@@ -7,7 +7,8 @@
   "minY": 11.888323783874512,
   "scale": 0.006242171526,
   "includesKerbSlab": true,
-  "note": "생성기 지형 + 인도 단차(추정), 측량값 아님",
+  "includesHumps": true,
+  "note": "생성기 지형 + 인도 단차 + 과속방지턱(추정), 측량값 아님",
   "probes": [
     {
       "kind": "walkway",
