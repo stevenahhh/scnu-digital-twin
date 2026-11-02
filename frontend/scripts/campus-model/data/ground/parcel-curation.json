@@ -1,5 +1,5 @@
 {
- "note": "Reviewed changes on top of the seeded ground parcels (plan campus-ground-truth-redesign todo 13a, design section 5). fit/parcelsSeed.mjs applies them, so they survive a reseed: edit here, never in parcels.json. replace: a seeded parcel's ring read again from the photo. remove: a seeded parcel the photo contradicts. add: road or lot parcels for asphalt with none; rings EPSG:5186 [E, N], traced from the NGII 2025 orthophoto, estimated true where shade or crowns hide part of the edge (추정). notAsphalt: areas qa/asphaltScan.mjs reads as asphalt that are not, each with its reason. unreachable: parking rows qa/parkingConnectivity.mjs finds no road for, each with its reason.",
+ "note": "Reviewed changes on top of the seeded ground parcels (plan campus-ground-truth-redesign todo 13a, design section 5). fit/parcelsSeed.mjs applies them, so they survive a reseed: edit here, never in parcels.json. replace: a seeded parcel's ring read again from the photo. remove: a seeded parcel the photo contradicts. add: road or lot parcels for pavement with none; rings EPSG:5186 [E, N], traced from the NGII 2025 orthophoto, surface concrete where the photo shows concrete. Tier and estimated are what qa/asphaltScan.mjs measures outside the occlusion masks (gradeParcel; it fails when a record differs), estimated true is 추정. notAsphalt: areas qa/asphaltScan.mjs reads as asphalt that are not, each with its reason. unreachable: parking rows qa/parkingConnectivity.mjs finds no road for, each with its reason.",
  "replace": [
   {
    "id": "PARCEL_ASPHALT_ROAD_ZONE_50",
@@ -92,6 +92,14 @@
   {
    "id": "PARCEL_PAVING_EDGE_FBJ_SWN_0012_1_2",
    "reason": "estimated strip of EDGE_FBJ_SWN_0012_1 on the north tip of the E3 island lawn; the photo shows no path"
+  },
+  {
+   "id": "PARCEL_PAVING_BUILDING_97",
+   "reason": "estimated apron strip under the BLD_D2 footbridge; NGII shows the lane running on either side of the bridge, so it wrongly cuts the lane"
+  },
+  {
+   "id": "PARCEL_PAVING_BUILDING_98",
+   "reason": "estimated apron strip under the BLD_D2 footbridge; NGII shows the lane running on either side of the bridge, so it wrongly cuts the lane"
   }
  ],
  "add": [
@@ -209,7 +217,7 @@
     ]
    ],
    "evidence": {
-    "tier": "T1",
+    "tier": "T4",
     "refs": [
      "NGII 2025 orthophoto, traced by eye",
      "qa/asphaltScan.mjs"
@@ -223,19 +231,43 @@
    "class": "lot",
    "ring": [
     [
-     244148.1,
-     263571.3
+     244147.8,
+     263571.4
     ],
     [
      244170,
      263576.9
     ],
     [
-     244173.8,
-     263553.5
+     244172.8,
+     263559.1
     ],
     [
-     244148.1,
+     244163.6,
+     263559.4
+    ],
+    [
+     244162.8,
+     263563.8
+    ],
+    [
+     244159.7,
+     263563.1
+    ],
+    [
+     244160.6,
+     263557.5
+    ],
+    [
+     244161.9,
+     263553.1
+    ],
+    [
+     244162.8,
+     263552.4
+    ],
+    [
+     244148.8,
      263550
     ]
    ],
@@ -243,11 +275,12 @@
     "tier": "T1",
     "refs": [
      "NGII 2025 orthophoto, traced by eye",
+     "12 cm aerial: planted island",
      "qa/asphaltScan.mjs"
     ]
    },
-   "estimated": false,
-   "reason": "asphalt lot north of the road"
+   "estimated": true,
+   "reason": "asphalt lot north of the road, around the kerbed planted island (cut out, read on the 12 cm aerial)"
   },
   {
    "id": "PARCEL_LOT_E243829_N263490",
@@ -532,7 +565,7 @@
     ]
    ],
    "evidence": {
-    "tier": "T1",
+    "tier": "T4",
     "refs": [
      "NGII 2025 orthophoto, traced by eye",
      "qa/asphaltScan.mjs"
@@ -611,7 +644,7 @@
     ]
    ],
    "evidence": {
-    "tier": "T1",
+    "tier": "T4",
     "refs": [
      "NGII 2025 orthophoto, traced by eye",
      "qa/asphaltScan.mjs"
@@ -646,13 +679,13 @@
     ]
    ],
    "evidence": {
-    "tier": "T1",
+    "tier": "T4",
     "refs": [
      "NGII 2025 orthophoto, traced by eye",
      "qa/asphaltScan.mjs"
     ]
    },
-   "estimated": false,
+   "estimated": true,
    "reason": "north strip of the lot beside the brown roof, between the row and the seeded lot"
   },
   {
@@ -732,7 +765,7 @@
     ]
    ],
    "evidence": {
-    "tier": "T1",
+    "tier": "T4",
     "refs": [
      "NGII 2025 orthophoto, traced by eye",
      "qa/asphaltScan.mjs"
@@ -785,32 +818,36 @@
    "class": "lot",
    "ring": [
     [
-     243893.8,
-     263695.6
+     243893.4,
+     263696.3
     ],
     [
-     243936.3,
-     263684.4
+     243914.1,
+     263692.2
     ],
     [
-     243925,
-     263682.5
+     243920.6,
+     263690.3
     ],
     [
-     243915.6,
-     263685
+     243935.9,
+     263684.7
     ],
     [
-     243913.1,
-     263686.3
+     243926.3,
+     263685.8
     ],
     [
-     243908.8,
-     263686.9
+     243915.2,
+     263688.4
     ],
     [
-     243889.4,
-     263692.5
+     243914.4,
+     263685.3
+    ],
+    [
+     243890,
+     263692.6
     ]
    ],
    "evidence": {
@@ -821,7 +858,7 @@
     ]
    },
    "estimated": false,
-   "reason": "strip of asphalt along the seeded road north of the solar-roof building"
+   "reason": "strip of asphalt along the seeded road north of the solar-roof building, in front of the row; the kerbed hedge planter east of the row is left out"
   },
   {
    "id": "PARCEL_ROAD_E3_NW",
@@ -961,7 +998,7 @@
     ]
    ],
    "evidence": {
-    "tier": "T1",
+    "tier": "T4",
     "refs": [
      "NGII 2025 orthophoto, traced by eye",
      "qa/asphaltScan.mjs"
@@ -979,7 +1016,7 @@
      263835.4
     ],
     [
-     243720.8,
+     243720.9,
      263835
     ],
     [
@@ -988,7 +1025,7 @@
     ],
     [
      243730,
-     263819.2
+     263819.1
     ],
     [
      243734.6,
@@ -996,50 +1033,54 @@
     ],
     [
      243735.4,
-     263809.2
+     263809.1
     ],
     [
-     243732.9,
-     263809.2
+     243734.9,
+     263806.1
     ],
     [
-     243732.1,
-     263812.1
+     243721.8,
+     263808.4
     ],
     [
-     243722.1,
-     263812.3
+     243721.4,
+     263806.1
     ],
     [
-     243714.6,
-     263811.5
+     243714.1,
+     263807.5
     ],
     [
-     243710.8,
-     263811.3
+     243710.2,
+     263800.4
     ],
     [
-     243706.3,
-     263812.3
+     243706.1,
+     263805.9
+    ],
+    [
+     243706.2,
+     263812.4
     ],
     [
      243712.1,
      263818.8
     ],
     [
-     243710.8,
-     263821.7
+     243710.9,
+     263821.6
     ]
    ],
    "evidence": {
-    "tier": "T1",
+    "tier": "T4",
     "refs": [
      "NGII 2025 orthophoto, traced by eye",
      "qa/asphaltScan.mjs"
     ]
    },
-   "estimated": false,
-   "reason": "asphalt lot between the round building and the zone 52 road, with the gap to it at the south-east corner"
+   "estimated": true,
+   "reason": "asphalt lot between the round building and the zone 52 road, with the gap to it at the south-east corner. The photo shows the leaned roof south of it: the south edge is carried to the walls of the GIS footprint as an estimate"
   },
   {
    "id": "PARCEL_LOT_E243826_N263596",
@@ -1146,7 +1187,7 @@
     ]
    ],
    "evidence": {
-    "tier": "T1",
+    "tier": "T4",
     "refs": [
      "NGII 2025 orthophoto, traced by eye",
      "qa/asphaltScan.mjs"
@@ -1289,7 +1330,7 @@
     ]
    ],
    "evidence": {
-    "tier": "T1",
+    "tier": "T4",
     "refs": [
      "NGII 2025 orthophoto, traced by eye",
      "qa/asphaltScan.mjs"
@@ -1368,7 +1409,7 @@
     ]
    ],
    "evidence": {
-    "tier": "T1",
+    "tier": "T4",
     "refs": [
      "NGII 2025 orthophoto, traced by eye",
      "qa/asphaltScan.mjs"
@@ -1414,6 +1455,18 @@
      263878.8
     ],
     [
+     243606,
+     263884
+    ],
+    [
+     243612,
+     263884
+    ],
+    [
+     243612,
+     263876.3
+    ],
+    [
      243617.5,
      263874.4
     ],
@@ -1442,8 +1495,16 @@
      263876.9
     ],
     [
-     243582.5,
-     263880
+     243581,
+     263877.5
+    ],
+    [
+     243577.7,
+     263878
+    ],
+    [
+     243577.6,
+     263886
     ],
     [
      243578.1,
@@ -1471,14 +1532,14 @@
     ]
    ],
    "evidence": {
-    "tier": "T1",
+    "tier": "T4",
     "refs": [
      "NGII 2025 orthophoto, traced by eye",
      "qa/asphaltScan.mjs"
     ]
    },
    "estimated": true,
-   "reason": "service lane west of the long white building, under the footbridge and round its south side; building shade hides most of its south part"
+   "reason": "service lane west of the long white building, under the footbridge and round its south side; building shade hides most of its south part; east of the building it takes in the start of the lane north"
   },
   {
    "id": "PARCEL_LOT_E244180_N263505",
@@ -1570,14 +1631,16 @@
     ]
    ],
    "evidence": {
-    "tier": "T1",
+    "tier": "T4",
     "refs": [
      "NGII 2025 orthophoto, traced by eye",
-     "qa/asphaltScan.mjs"
+     "12 cm aerial",
+     "VR scene_f2"
     ]
    },
    "estimated": true,
-   "reason": "pale paved yard carrying the rows of LOT_E244175 and LOT_E244195, and its drive from the road; concrete on the photo, drawn as lot"
+   "reason": "pale concrete yard carrying the rows of LOT_E244175 and LOT_E244195, and its drive from the road: concrete on NGII, on the 12 cm aerial and in VR scene_f2 with cars parked on it",
+   "surface": "concrete"
   },
   {
    "id": "PARCEL_LOT_E243880_N263655",
@@ -1609,7 +1672,7 @@
     ]
    ],
    "evidence": {
-    "tier": "T1",
+    "tier": "T4",
     "refs": [
      "NGII 2025 orthophoto, traced by eye",
      "qa/asphaltScan.mjs"
@@ -1780,6 +1843,53 @@
    },
    "estimated": true,
    "reason": "asphalt apron and lane between 2공학관 buildings; crowns hide the west side"
+  },
+  {
+   "id": "PARCEL_ROAD_E244179_N263386",
+   "class": "road",
+   "ring": [
+    [
+     244175.7,
+     263391.3
+    ],
+    [
+     244179.6,
+     263386.9
+    ],
+    [
+     244182,
+     263388.2
+    ],
+    [
+     244180.4,
+     263383.2
+    ],
+    [
+     244179.3,
+     263380.7
+    ],
+    [
+     244176.8,
+     263380.6
+    ],
+    [
+     244171.8,
+     263381.8
+    ],
+    [
+     244171.8,
+     263386.8
+    ]
+   ],
+   "evidence": {
+    "tier": "T1",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "qa/asphaltScan.mjs"
+    ]
+   },
+   "estimated": false,
+   "reason": "lane running south from the end of the road by the tennis courts, which the scan listed as covered with 75 % of it left"
   }
  ],
  "notAsphalt": [
@@ -2046,28 +2156,94 @@
      263437
     ]
    ]
+  },
+  {
+   "id": "CONCRETE_E244195_N263487",
+   "reason": "the east side of the concrete yard, grey in building shade on NGII; VR scene_f2 shows the same pavement as pale concrete. A parcel with surface concrete, not asphalt",
+   "ring": [
+    [
+     244185,
+     263460
+    ],
+    [
+     244205,
+     263460
+    ],
+    [
+     244205,
+     263516
+    ],
+    [
+     244185,
+     263516
+    ]
+   ]
+  },
+  {
+   "id": "CONCRETE_E244200_N263442",
+   "reason": "the south end of the concrete yard in building shade on NGII, same pavement as VR scene_f2 shows pale",
+   "ring": [
+    [
+     244194,
+     263428
+    ],
+    [
+     244206,
+     263428
+    ],
+    [
+     244206,
+     263455
+    ],
+    [
+     244194,
+     263455
+    ]
+   ]
+  },
+  {
+   "id": "PLANTER_E243920_N263686",
+   "reason": "kerbed hedge planter and the shaded strip against the wall behind it, read on NGII; no car way between them and the row",
+   "ring": [
+    [
+     243914.4,
+     263688.1
+    ],
+    [
+     243926.3,
+     263685.5
+    ],
+    [
+     243936.3,
+     263684.4
+    ],
+    [
+     243925,
+     263681.9
+    ],
+    [
+     243914.4,
+     263684.7
+    ]
+   ]
   }
  ],
  "unreachable": [
   {
    "row": "LOT_E243769_N263982/R1",
-   "reason": "T2 row with no photo support, in a walled yard between roofs; no vehicle way on the photo. Todo 14 decides whether the row exists"
+   "reason": "T2 row with no paint on the photo, in the pale yard west of the building. The 12 cm aerial shows cars parked there, so a way exists, but the yard is not asphalt and a paved footpath lies between it and the road: this map draws no way to it"
   },
   {
    "row": "LOT_E243769_N263982/R2",
-   "reason": "T2 row with no photo support, in the same walled yard; no vehicle way on the photo. Todo 14 decides whether the row exists"
+   "reason": "T2 row with no paint on the photo, in the same pale yard as R1: cars on the aerial, no asphalt way on the map"
   },
   {
    "row": "LOT_E243521_N263869/R1",
-   "reason": "two-stall row on a plaza strip beside the building; the photo shows no drive to it. Todo 14 decides whether the row exists"
+   "reason": "two-stall row on a striped plaza strip beside the building; the photo shows no drive to it"
   },
   {
    "row": "LOT_E243992_N264038/R1",
    "reason": "outside the campus polygon, on a city street this ground map does not cover"
-  },
-  {
-   "row": "LOT_E243587_N263908/R1",
-   "reason": "its lane runs south under the footbridge, but the stair cores of BLD_D2 stand in the lane in the model and leave under 2 m; the north end meets a city road outside the campus polygon, which has no parcel"
   },
   {
    "row": "LOT_E244085_N263959/R1",

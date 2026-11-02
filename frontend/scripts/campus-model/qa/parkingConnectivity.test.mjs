@@ -32,6 +32,23 @@ test("deleting the link names every row it stranded", () => {
   assert.deepEqual(connectivity(parking, parcels, { without: ["PARCEL_LINK", "PARCEL_SHORT"] }).stranded.map((s) => s.id), ["LOT_A/R1", "LOT_A/R2"]);
 });
 
+test("a row reached only over a concrete yard connects and says so; the rest say asphalt", () => {
+  const yard = parcel("PARCEL_YARD", "lot", rect(40, 10, 50, 40), { surface: "concrete" });
+  const out = connectivity(doc(row("LOT_A/R1", 50, 35)), [ROAD, yard, ROW_PARCEL]);
+  assert.deepEqual(out.rows.map((r) => [r.id, r.connected, r.via]), [["LOT_A/R1", true, "concrete"]]);
+  assert.deepEqual(out.overConcrete, ["LOT_A/R1"]);
+  const asphalt = connectivity(doc(row("LOT_A/R1", 50, 35)), [ROAD, LINK, ROW_PARCEL]);
+  assert.equal(asphalt.rows[0].via, "asphalt");
+  assert.deepEqual(asphalt.overConcrete, []);
+  assert.deepEqual(connectivity(doc(row("LOT_A/R1", 50, 35)), [ROAD, yard, ROW_PARCEL], { without: ["PARCEL_YARD"] }).stranded.map((s) => s.id), ["LOT_A/R1"]);
+});
+
+test("a row standing on concrete beside the asphalt way still says asphalt", () => {
+  const onYard = parcel("PARCEL_YARD", "lot", rect(50, 28, 62, 37), { surface: "concrete" });
+  const out = connectivity(doc(row("LOT_A/R1", 50, 35)), [ROAD, LINK, onYard]);
+  assert.equal(out.rows[0].via, "asphalt");
+});
+
 test("a road parcel of unknown source is a link and not a road: a row on it alone is stranded", () => {
   const island = parcel("PARCEL_SUPPORT_ROAD", "road", rect(40, 30, 70, 40), { source: "photo-paint-support" });
   const { stranded } = connectivity(doc(row("LOT_A/R1", 50, 35)), [ROAD, island, ROW_PARCEL]);

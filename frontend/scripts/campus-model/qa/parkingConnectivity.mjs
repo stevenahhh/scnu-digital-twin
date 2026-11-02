@@ -31,7 +31,8 @@ const rowLines = (row) => {
 export const standingMasses = (forms, toTm) => forms.buildings.flatMap((b) => b.masses.filter((m) => m.baseMetres < OVERHEAD_BASE_M).map((m) => [m.outer, ...(m.holes ?? [])].map((r) => r.map(([lon, lat]) => toTm(lon, lat)))));
 
 // parking: parking.json; parcels: parcels.json `parcels`. blocked: [rings] that no car crosses (building footprints).
-// Returns { rows: [{ id, connected }], stranded: [{ id, reason }], unexplained: [ids], staleReasons: [ids] }.
+// Returns { rows: [{ id, connected, via: "asphalt" | "concrete" | null }], stranded: [{ id, reason }], overConcrete: [ids], unexplained: [ids], staleReasons: [ids] }.
+// A parcel with surface "concrete" carries cars but is no asphalt: a row reached only across one says so in overConcrete.
 export function connectivity(parking, parcels, { blocked = [], reasons = [], without = [] } = {}) {
   const known = new Set(parcels.map((p) => p.id));
   for (const id of without) if (!known.has(id)) throw new Error(`connectivity: --without names no parcel: ${id}`);
@@ -49,32 +50,41 @@ export function connectivity(parking, parcels, { blocked = [], reasons = [], wit
     const top = rasterTop(list, grid);
     const passable = new Uint8Array(w * h);
     for (let k = 0; k < w * h; k += 1) passable[k] = top[k] >= 0 && (list[top[k]].class === "road" || list[top[k]].class === "lot") ? 1 : 0;
+    const concrete = (k) => list[top[k]]?.surface === "concrete";
     if (blocked.length) {
       const wall = rasterTop(blocked.map((rings) => ({ ring: rings[0], holes: rings.slice(1), precedence: 0 })), grid);
       for (let k = 0; k < w * h; k += 1) if (wall[k] >= 0) passable[k] = 0;
     }
     const radius = Math.ceil(CLEARANCE_M / 2 / CELL_M);
-    const clear = erodeCells(passable, w, h, radius);
-    const reached = new Uint8Array(w * h);
-    const stack = [];
-    for (let k = 0; k < w * h; k += 1) {
-      if (clear[k] && list[top[k]]?.class === "road" && ROAD_SOURCES.has(list[top[k]].source)) { reached[k] = 1; stack.push(k); }
-    }
-    while (stack.length) {
-      const k = stack.pop();
-      const x = k % w;
-      for (const m of [x + 1 < w ? k + 1 : -1, x > 0 ? k - 1 : -1, k + w < w * h ? k + w : -1, k - w >= 0 ? k - w : -1]) {
-        if (m >= 0 && clear[m] && !reached[m]) { reached[m] = 1; stack.push(m); }
+    const flood = (mask) => {
+      const clear = erodeCells(mask, w, h, radius);
+      const reached = new Uint8Array(w * h);
+      const stack = [];
+      for (let k = 0; k < w * h; k += 1) {
+        if (clear[k] && list[top[k]]?.class === "road" && ROAD_SOURCES.has(list[top[k]].source)) { reached[k] = 1; stack.push(k); }
       }
-    }
-    const touch = dilateCells(reached, w, h, radius + Math.ceil(TOUCH_M / CELL_M));
+      while (stack.length) {
+        const k = stack.pop();
+        const x = k % w;
+        for (const m of [x + 1 < w ? k + 1 : -1, x > 0 ? k - 1 : -1, k + w < w * h ? k + w : -1, k - w >= 0 ? k - w : -1]) {
+          if (m >= 0 && clear[m] && !reached[m]) { reached[m] = 1; stack.push(m); }
+        }
+      }
+      return dilateCells(reached, w, h, radius + Math.ceil(TOUCH_M / CELL_M));
+    };
+    const touchAny = flood(passable);
+    const touchAsphalt = flood(passable.map((v, k) => (v && !concrete(k) ? 1 : 0)));
     for (const row of rows) {
       const shape = shapes.get(row.id);
       if (!shape) { results.push({ id: row.id, connected: false }); continue; }
       const footprint = rasterTop([{ ring: shape[0], holes: [], precedence: 0 }], grid);
-      let connected = false;
-      for (let k = 0; k < w * h && !connected; k += 1) connected = footprint[k] === 0 && touch[k] === 1 && passable[k] === 1;
-      results.push({ id: row.id, connected });
+      let via = null;
+      for (let k = 0; k < w * h && via !== "asphalt"; k += 1) {
+        if (footprint[k] !== 0 || passable[k] !== 1) continue;
+        if (touchAsphalt[k]) via = "asphalt";
+        else if (touchAny[k]) via = "concrete";
+      }
+      results.push({ id: row.id, connected: via !== null, via });
     }
   } else {
     for (const row of rows) results.push({ id: row.id, connected: false });
@@ -86,6 +96,7 @@ export function connectivity(parking, parcels, { blocked = [], reasons = [], wit
   return {
     rows: results,
     stranded,
+    overConcrete: results.filter((r) => r.via === "concrete").map((r) => r.id),
     unexplained: stranded.filter((s) => !s.reason).map((s) => s.id),
     staleReasons: reasons.map((r) => r.row).filter((id) => ok.has(id) || !all.has(id)),
   };
@@ -101,8 +112,9 @@ if (import.meta.main) {
   const parking = data("ground/parking.json");
   const curation = data("ground/parcel-curation.json");
   const result = connectivity(parking, data("ground/parcels.json").parcels, { blocked, reasons: curation.unreachable, without });
-  console.log(`CONNECTIVITY ${JSON.stringify({ rows: result.rows.length, connected: result.rows.filter((r) => r.connected).length, stranded: result.stranded.length, unexplained: result.unexplained.length, staleReasons: result.staleReasons.length, without })}`);
+  console.log(`CONNECTIVITY ${JSON.stringify({ rows: result.rows.length, connected: result.rows.filter((r) => r.connected).length, stranded: result.stranded.length, overConcrete: result.overConcrete.length, unexplained: result.unexplained.length, staleReasons: result.staleReasons.length, without })}`);
   for (const s of result.stranded) console.log(`STRANDED ${s.id}${s.reason ? `: ${s.reason}` : " (no reason)"}`);
+  for (const id of result.overConcrete) console.log(`OVER CONCRETE ${id}: reaches a road only across a concrete yard`);
   for (const id of result.staleReasons) console.log(`STALE REASON ${id}: the row connects or no longer exists`);
   const out = opt("--out", null);
   if (out) {

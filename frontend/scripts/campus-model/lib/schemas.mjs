@@ -153,6 +153,8 @@ export function overlapPairs(list) {
   return pairs;
 }
 
+const PARCEL_SURFACES = new Set(["concrete"]); // asphalt or the class's own surface when absent
+
 function parcels(doc) {
   if (!doc || typeof doc !== "object" || !Array.isArray(doc.parcels)) return ["parcels: parcels must be an array"];
   const errors = [];
@@ -167,6 +169,7 @@ function parcels(doc) {
     if (!PARCEL_CLASSES.has(parcel.cls)) fail(`cls must be one of ${[...PARCEL_CLASSES].join(", ")}`);
     if (parcel.class !== undefined && !DESIGN_CLASSES.includes(parcel.class)) fail(`class must be one of ${DESIGN_CLASSES.join(", ")}`);
     if (parcel.class !== undefined && parcel.paintAllowed !== PAINT_CLASSES.has(parcel.class)) fail(`paintAllowed must be ${PAINT_CLASSES.has(parcel.class)} for class ${parcel.class}`);
+    if (parcel.surface !== undefined && !PARCEL_SURFACES.has(parcel.surface)) fail(`surface must be one of ${[...PARCEL_SURFACES].join(", ")}`);
     if (!isRing(parcel.ring)) fail("ring must be at least 3 [E, N] pairs");
     if (!Array.isArray(parcel.holes) || !parcel.holes.every(isRing)) fail("holes must be an array of rings");
     if (!Number.isFinite(parcel.precedence)) fail("precedence must be a number");
@@ -397,6 +400,7 @@ function parcelCuration(doc) {
     const id = named(r, i, "add");
     graded(r, id);
     if (r?.class !== "road" && r?.class !== "lot") errors.push(`${id}: class must be road or lot`);
+    if (r?.surface !== undefined && !PARCEL_SURFACES.has(r.surface)) errors.push(`${id}: surface must be one of ${[...PARCEL_SURFACES].join(", ")}`);
   });
   doc.notAsphalt.forEach((r, i) => {
     const id = isText(r?.id) ? r.id : `notAsphalt[${i}]`;

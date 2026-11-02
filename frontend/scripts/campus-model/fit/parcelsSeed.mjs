@@ -198,7 +198,8 @@ export function applyParcelCuration(seeded, curation) {
   });
   const added = curation.add.map((r) => ({
     id: r.id, cls: r.class === "lot" ? "LOT" : "ASPHALT", class: r.class, ring: r.ring, holes: [], precedence: SUPPORT_PRECEDENCE[r.class],
-    mesh: r.class === "lot" ? "Ground_Lot" : "Ground_Asphalt", label: null, source: "photo-curated", source_ref: r.reason, evidence: r.evidence, paintAllowed: true, estimated: r.estimated, curated: "todo 13a",
+    ...(r.surface ? { surface: r.surface } : {}), // a lot the photo shows as concrete keeps its class (paint, connectivity) and draws concrete
+    mesh: r.surface === "concrete" ? "Ground_Apron" : r.class === "lot" ? "Ground_Lot" : "Ground_Asphalt", label: null, source: "photo-curated", source_ref: r.reason, evidence: r.evidence, paintAllowed: true, estimated: r.estimated, curated: "todo 13a",
   }));
   return { kept, added };
 }

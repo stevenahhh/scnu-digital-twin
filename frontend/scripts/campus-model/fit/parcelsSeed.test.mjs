@@ -141,6 +141,15 @@ test("parcel curation replaces a ring in place, removes a parcel and adds new on
   assert.ok(validate("parcels", { parcels: [...kept, ...added] }).ok);
 });
 
+test("a curated concrete lot is drawn with the concrete mesh and stays a lot", () => {
+  const curation = { ...emptyCuration, add: [{ id: "PARCEL_LOT_YARD", class: "lot", surface: "concrete", ring: square(0, 0, 20), evidence: { tier: "T1", refs: ["photo"] }, estimated: true, reason: "pale yard" }, { id: "PARCEL_LOT_PLAIN", class: "lot", ring: square(40, 0, 5), evidence: { tier: "T1", refs: [] }, estimated: false, reason: "lot" }] };
+  const { added } = applyParcelCuration([], curation);
+  assert.deepEqual([added[0].class, added[0].cls, added[0].mesh, added[0].surface, added[0].paintAllowed], ["lot", "LOT", "Ground_Apron", "concrete", true]);
+  assert.equal(added[1].mesh, "Ground_Lot");
+  assert.equal(added[1].surface, undefined);
+  assert.ok(validate("parcels", { parcels: added }).ok);
+});
+
 test("parcel curation naming a parcel the seed does not have fails by name", () => {
   const seeded = seedParcels([layer({})]);
   assert.throws(() => applyParcelCuration(seeded, { ...emptyCuration, remove: [{ id: "PARCEL_GONE", reason: "x" }] }), /PARCEL_GONE/);
@@ -159,6 +168,7 @@ test("validator rejects malformed parcel curation records, each by id", () => {
     [{ ...emptyCuration, add: [{ ...good, reason: "" }] }, /PARCEL_ROAD_NEW: reason/],
     [{ ...emptyCuration, add: [{ ...good, evidence: { tier: "T9", refs: [] } }] }, /PARCEL_ROAD_NEW: evidence/],
     [{ ...emptyCuration, add: [{ ...good, evidence: { tier: "T4", refs: [] } }] }, /PARCEL_ROAD_NEW: estimated/],
+    [{ ...emptyCuration, add: [{ ...good, surface: "gravel" }] }, /PARCEL_ROAD_NEW: surface/],
     [{ ...emptyCuration, remove: [{ id: "PARCEL_X" }] }, /PARCEL_X: reason/],
     [{ ...emptyCuration, notAsphalt: [{ id: "ROOF", ring: square(0, 0, 1) }] }, /ROOF: reason/],
     [{ ...emptyCuration, unreachable: [{ row: "LOT/R1" }] }, /LOT\/R1: reason/],

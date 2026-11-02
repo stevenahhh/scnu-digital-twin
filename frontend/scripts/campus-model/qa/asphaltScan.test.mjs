@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { baselineStatus, cellGrid, isAsphalt, openCells, proposeRings, rasterTop, scanRegions } from "./asphaltScan.mjs";
+import { baselineStatus, cellGrid, edgeVisibility, gradeParcel, isAsphalt, maskedShare, openCells, proposeRings, rasterTop, scanRegions } from "./asphaltScan.mjs";
 
 const ASPHALT = [63, 83, 85];
 const GRASS = [60, 95, 40];
@@ -22,6 +22,38 @@ test("isAsphalt takes the photo's grey road and refuses grass, deep shade, white
   assert.equal(isAsphalt(10, 20, 35), false, "shade darker than any lit road");
   assert.equal(isAsphalt(235, 235, 235), false);
   assert.equal(isAsphalt(170, 70, 50), false);
+});
+
+// Each bound alone: every colour here passes the other five bounds, so dropping or moving this one bound fails its row.
+const BAND_CASES = [
+  ["minLuma", [25, 46, 43], [24, 45, 42]], // luma 38 / 37
+  ["maxLuma", [112, 133, 130], [113, 134, 131]], // luma 125 / 126
+  ["minGreenBlue", [82, 86, 100], [82, 85, 100]], // G-B -14 / -15
+  ["maxGreenBlue", [82, 109, 100], [82, 110, 100]], // G-B 9 / 10
+  ["minRedBlue", [52, 97, 100], [51, 97, 100]], // R-B -48 / -49
+  ["maxRedBlue", [94, 103, 100], [95, 103, 100]], // R-B -6 / -5
+];
+for (const [bound, inside, outside] of BAND_CASES) {
+  test(`isAsphalt: ${bound} is the only thing between ${inside} and ${outside}`, () => {
+    assert.equal(isAsphalt(...inside), true);
+    assert.equal(isAsphalt(...outside), false);
+  });
+}
+
+test("cellGrid needs 8 unmasked pixels to judge a cell: 7 leave it unknown", () => {
+  const rgb = new Uint8Array(16 * 3);
+  for (let k = 0; k < 16; k += 1) rgb.set(ASPHALT, k * 3);
+  const maskOf = (visible) => Uint8Array.from({ length: 16 }, (_, k) => (k < visible ? 0 : 1));
+  const judged = cellGrid({ w: 4, h: 4, origin: [0, 4], gsdM: 0.25, rgb }, maskOf(8));
+  assert.deepEqual([judged.visible[0], judged.asphalt[0]], [1, 1]);
+  const unknown = cellGrid({ w: 4, h: 4, origin: [0, 4], gsdM: 0.25, rgb }, maskOf(7));
+  assert.deepEqual([unknown.visible[0], unknown.asphalt[0]], [0, 0]);
+});
+
+test("scanRegions lists 50 m2 and drops 49 m2 when no minimum is given", () => {
+  const blockOf = (n) => gridOf(n, 1, () => true);
+  assert.equal(scanRegions(blockOf(50), []).regions.length, 1);
+  assert.equal(scanRegions(blockOf(49), []).regions.length, 0);
 });
 
 test("cellGrid decides each cell on its visible pixels and leaves a mostly hidden cell unknown", () => {
@@ -112,6 +144,30 @@ test("baselineStatus says which parcel covered an old area and leaves an uncover
   assert.deepEqual(open.map((s) => s.status), ["open", "open"]);
 });
 
+// A 60 m2 area, x cells 0..59 of one row, with the first `n` cells on the road parcel.
+const strip = () => gridOf(60, 1, () => true);
+const onRoad = (n) => (n ? [parcel("PARCEL_NEW", "road", [[0, 0], [n, 0], [n, 1], [0, 1]])] : []);
+const stripRegion = () => scanRegions(strip(), [], { minAreaM2: 50 }).regions;
+
+test("baselineStatus: an area is not covered when most of it is left, however small the remainder", () => {
+  // 45 of 60 m2 left is 75 %, under the 50 m2 minimum: the road touches it, it does not cover it
+  const [partial] = baselineStatus(stripRegion(), strip(), onRoad(15));
+  assert.equal(partial.status, "open");
+  assert.equal(partial.leftM2, 45);
+});
+
+test("baselineStatus closes an area at 20 % left and not at 21 %", () => {
+  assert.equal(baselineStatus(stripRegion(), strip(), onRoad(48))[0].status, "covered"); // 12 of 60 left
+  assert.equal(baselineStatus(stripRegion(), strip(), onRoad(47))[0].status, "open"); // 13 of 60 left
+});
+
+test("baselineStatus: parcels and reasons together close an area; a reason alone must also reach 80 %", () => {
+  const reason = (n) => [{ id: "ROOF_1", ring: [[60 - n, 0], [60, 0], [60, 1], [60 - n, 1]], reason: "dark roof" }];
+  assert.equal(baselineStatus(stripRegion(), strip(), onRoad(30), reason(30))[0].status, "covered");
+  assert.equal(baselineStatus(stripRegion(), strip(), [], reason(48))[0].status, "reason");
+  assert.equal(baselineStatus(stripRegion(), strip(), [], reason(47))[0].status, "open");
+});
+
 test("proposeRings traces a filled block, bridges a car-sized gap and stays off hard cells", () => {
   const grid = gridOf(40, 30, (E, N) => E > 5 && E < 35 && N > 5 && N < 25 && !(E > 18 && E < 21 && N > 12 && N < 15));
   const hard = new Uint8Array(grid.w * grid.h);
@@ -131,4 +187,46 @@ test("proposeRings counts hidden cells at the edge, so a shaded edge can be flag
   const [p] = proposeRings(grid, { soft, hard: new Uint8Array(grid.w * grid.h), covered: new Uint8Array(grid.w * grid.h), minAreaM2: 50 });
   assert.ok(p.hiddenEdgeShare > 0.15, `hidden edge share ${p.hiddenEdgeShare}`);
   assert.ok(Math.max(...p.ring.map(([E]) => E)) >= 28, "hidden cells next to asphalt join the proposal");
+});
+
+test("a concrete parcel does not cover photo asphalt: the scan still lists it and baselineStatus leaves it open", () => {
+  const grid = gridOf(20, 20, () => true);
+  const yard = { ...parcel("PARCEL_YARD", "lot", square(0, 0, 20), 4), surface: "concrete" };
+  assert.equal(scanRegions(grid, [yard], { minAreaM2: 50 }).regions[0].areaM2, 400);
+  const region = scanRegions(grid, [], { minAreaM2: 50 }).regions;
+  assert.equal(baselineStatus(region, grid, [yard])[0].status, "open");
+});
+
+const nothing = () => false;
+test("edgeVisibility counts only edge with no road or lot beyond it, and what hides that edge", () => {
+  const rings = [square(0, 0, 10)];
+  assert.deepEqual(edgeVisibility(rings, { isDrivable: nothing, hidden: nothing, dark: nothing }), { freeM: 40, hiddenM: 0, darkM: 0 });
+  assert.equal(edgeVisibility(rings, { isDrivable: (E) => E < 0, hidden: nothing, dark: nothing }).freeM, 30, "the west side is a seam");
+  assert.equal(edgeVisibility([[...rings[0]].reverse()], { isDrivable: (E) => E < 0, hidden: nothing, dark: nothing }).freeM, 30, "ring direction does not matter");
+  assert.equal(edgeVisibility(rings, { isDrivable: nothing, hidden: (E) => E > 10, dark: nothing }).hiddenM, 10);
+  assert.equal(edgeVisibility(rings, { isDrivable: nothing, hidden: nothing, dark: (E) => E > 9 }).darkM, 12);
+  const outside = (E, N) => E < 0 || E > 10 || N < 0 || N > 10;
+  assert.equal(edgeVisibility(rings, { isDrivable: outside, hidden: nothing, dark: nothing }).freeM, 0);
+});
+
+test("gradeParcel: measured needs the edge and the area outside the masks; most of the edge hidden is an estimate", () => {
+  const grade = (freeM, hiddenM, darkM = 0, maskedAreaShare = 0) => { const g = gradeParcel({ freeM, hiddenM, darkM, maskedAreaShare }); return [g.tier, g.estimated]; };
+  assert.deepEqual(grade(100, 25), ["T1", false]);
+  assert.deepEqual(grade(100, 26), ["T1", true]);
+  assert.deepEqual(grade(100, 50), ["T1", true]);
+  assert.deepEqual(grade(100, 51), ["T4", true]);
+  assert.deepEqual(grade(100, 20, 6), ["T1", true], "unmasked shade hides an edge too");
+  assert.deepEqual(grade(9, 7), ["T1", false], "a parcel that is mostly seam has little edge to lose");
+  assert.deepEqual(grade(11, 11), ["T4", true]);
+  assert.deepEqual(grade(100, 0, 0, 0.26), ["T1", true], "a quarter of the area under masks is not measured");
+  assert.deepEqual(grade(0, 0), ["T1", false]);
+});
+
+test("maskedShare is the share of a parcel's cells the photo cannot judge, holes left out", () => {
+  const visible = new Uint8Array(100);
+  for (let y = 0; y < 10; y += 1) for (let x = 0; x < 5; x += 1) visible[y * 10 + x] = 1;
+  const grid = { w: 10, h: 10, origin: [0, 10], cellM: 1, visible };
+  assert.equal(maskedShare(grid, [square(0, 0, 10)]), 0.5);
+  assert.equal(maskedShare(grid, [square(0, 0, 5)]), 0);
+  assert.equal(maskedShare(grid, [square(0, 0, 10), square(5, 0, 5)]), 25 / 75);
 });

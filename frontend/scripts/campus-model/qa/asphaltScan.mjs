@@ -6,7 +6,7 @@
 // `notAsphalt`). No pixel leaves the caller; the report holds vectors and numbers.
 //
 //   bun scripts/campus-model/qa/asphaltScan.mjs [--out <dir>] [--parcels <file>] [--min-area 50] [--propose <file.json>]
-//   Exits 1 when an area over the minimum has neither a road or lot parcel nor a reason. --propose writes traced rings for
+//   Exits 1 when an area over the minimum has neither a road or lot parcel nor a reason, or a curated parcel's tier is not what the masks give. --propose writes traced rings for
 //   the open areas: a starting point to check against the photo, not a record.
 //
 // Grid: { w, h, origin: [E, N] of the top-left corner, cellM }, cell (x, y) centred at (E0 + (x + 0.5) cellM, N0 - (y + 0.5) cellM).
@@ -131,6 +131,8 @@ export function rasterTop(parcels, grid) {
 }
 
 const drivable = (p) => p.class === "road" || p.class === "lot";
+// a parcel the photo shows as asphalt: a concrete yard is drivable, but its grey does not count as asphalt covered
+const coversAsphalt = (p) => drivable(p) && p.surface !== "concrete";
 
 function checkReasons(notAsphalt) {
   for (const entry of notAsphalt) {
@@ -154,7 +156,7 @@ export function scanRegions(grid, parcels, { minAreaM2 = MIN_AREA_M2, notAsphalt
   for (let k = 0; k < w * h; k += 1) {
     if (!asphalt[k]) continue;
     asphaltCells += 1;
-    if (top[k] >= 0 && drivable(parcels[top[k]])) { coveredCells += 1; continue; }
+    if (top[k] >= 0 && coversAsphalt(parcels[top[k]])) { coveredCells += 1; continue; }
     if (reasonAt[k] >= 0) {
       const id = notAsphalt[reasonAt[k]].id;
       explained[id] = (explained[id] ?? 0) + cellArea;
@@ -196,8 +198,8 @@ export function scanRegions(grid, parcels, { minAreaM2 = MIN_AREA_M2, notAsphalt
   return { regions, explained, asphaltM2: asphaltCells * cellArea, coveredM2: coveredCells * cellArea };
 }
 
-// What became of each area of the scan without this todo's parcels. covered / reason: at most a small remainder is left;
-// open: an area of at least minAreaM2 still has neither.
+// What became of each area of the scan without this todo's parcels. covered / reason: at most 20 % of it is left (the share
+// alone decides; a small area with most of it left is not covered). open: more than that has neither.
 export function baselineStatus(regions, grid, parcels, notAsphalt = [], minAreaM2 = MIN_AREA_M2) {
   checkReasons(notAsphalt);
   const top = rasterTop(parcels, grid);
@@ -210,14 +212,14 @@ export function baselineStatus(regions, grid, parcels, notAsphalt = [], minAreaM
     let left = 0;
     for (const k of region.cells) {
       const p = top[k] >= 0 ? parcels[top[k]] : null;
-      if (p && drivable(p)) by.set(p.id, (by.get(p.id) ?? 0) + 1);
+      if (p && coversAsphalt(p)) by.set(p.id, (by.get(p.id) ?? 0) + 1);
       else if (reasonAt[k] >= 0) reasons.set(reasonAt[k], (reasons.get(reasonAt[k]) ?? 0) + 1);
       else left += 1;
     }
     const covered = [...by.values()].reduce((s, v) => s + v, 0);
     const reasoned = [...reasons.values()].reduce((s, v) => s + v, 0);
     const leftM2 = left * cellArea;
-    const closed = left <= (1 - COVERED_SHARE) * region.cells.length || leftM2 < minAreaM2;
+    const closed = region.cells.length - left >= COVERED_SHARE * region.cells.length - 1e-9; // the float margin keeps exactly 20 % left closed
     const status = !closed || (covered === 0 && reasoned === 0) ? "open" : covered >= reasoned ? "covered" : "reason";
     const main = [...reasons.entries()].sort((a, b) => b[1] - a[1])[0];
     return {
@@ -226,6 +228,52 @@ export function baselineStatus(regions, grid, parcels, notAsphalt = [], minAreaM
       ...(main ? { reasonId: notAsphalt[main[0]].id, reason: notAsphalt[main[0]].reason } : {}),
     };
   });
+}
+
+// ---------------------------------------------------------------- evidence tier of a curated parcel
+// Design §2: T1 is what the photo shows outside the masks. Only edge with no road or lot beyond it can be read at all.
+export const GRADE = Object.freeze({ measuredShare: 0.25, measuredLostM: 10, maskedArea: 0.25, t1Share: 0.5 });
+const EDGE_STEP_M = 0.5;
+
+// rings: outer rings. Callbacks take (E, N). Walks every edge: free when isDrivable is false 1 m outside the parcel;
+// free edge is hidden with a mask within 0.75 m across it, else dark where unmasked shade leaves it unreadable.
+export function edgeVisibility(rings, { isDrivable, hidden, dark }) {
+  let [free, lost, shade] = [0, 0, 0];
+  rings.forEach((ring) => {
+    const twice = ring.reduce((a, [x, y], i) => { const [u, v] = ring[(i + 1) % ring.length]; return a + x * v - u * y; }, 0);
+    const sign = twice > 0 ? 1 : -1;
+    ring.forEach((a, i) => {
+      const b = ring[(i + 1) % ring.length];
+      const L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      if (L === 0) return;
+      const t = [(b[0] - a[0]) / L, (b[1] - a[1]) / L];
+      const n = [t[1] * sign, -t[0] * sign];
+      for (let s = EDGE_STEP_M / 2; s < L; s += EDGE_STEP_M) {
+        const P = [a[0] + t[0] * s, a[1] + t[1] * s];
+        if (isDrivable(P[0] + n[0], P[1] + n[1])) continue;
+        free += EDGE_STEP_M;
+        if ([-0.75, -0.25, 0.25, 0.75].some((d) => hidden(P[0] + n[0] * d, P[1] + n[1] * d))) lost += EDGE_STEP_M;
+        else if (dark(P[0], P[1])) shade += EDGE_STEP_M;
+      }
+    });
+  });
+  return { freeM: free, hiddenM: lost, darkM: shade };
+}
+
+// The share of a parcel's cells with too few unmasked pixels to judge (grid.visible).
+export function maskedShare(grid, rings) {
+  let [cells, masked] = [0, 0];
+  fillRings(grid, rings, (k) => { cells += 1; if (!grid.visible[k]) masked += 1; });
+  return cells ? masked / cells : 0;
+}
+
+// Measured (T1, not estimated) needs the edge readable and the area outside the masks; T1 with estimated:true when the photo
+// still shows at least half of the free edge; below that the outline is an estimate (T4).
+export function gradeParcel({ freeM, hiddenM, darkM, maskedAreaShare }) {
+  const lostM = hiddenM + darkM;
+  const share = freeM ? lostM / freeM : 0;
+  if ((share <= GRADE.measuredShare || lostM <= GRADE.measuredLostM) && maskedAreaShare <= GRADE.maskedArea) return { tier: "T1", estimated: false };
+  return share <= GRADE.t1Share ? { tier: "T1", estimated: true } : { tier: "T4", estimated: true };
 }
 
 // ---------------------------------------------------------------- proposals
@@ -393,6 +441,23 @@ if (import.meta.main) {
   const now = scanRegions(opened, parcels, { minAreaM2, notAsphalt: curation.notAsphalt });
   const status = baselineStatus(before.regions, opened, parcels, curation.notAsphalt, minAreaM2);
   const unexplained = now.regions.map(({ cells, ...r }) => r);
+  // the graded evidence of each curated parcel, by the rule above
+  const fine = { w: win.w >> 1, h: win.h >> 1, origin: win.origin, cellM: gsdM * 2 };
+  const fineTop = rasterTop(parcels, fine);
+  const lookup = (E, N, mask, w, h, cell, outside) => { const i = Math.floor((E - win.origin[0]) / cell); const j = Math.floor((win.origin[1] - N) / cell); return i < 0 || j < 0 || i >= w || j >= h ? outside : mask[j * w + i]; };
+  const isDrivable = (E, N) => { const k = lookup(E, N, fineTop, fine.w, fine.h, fine.cellM, -1); return k >= 0 && drivable(parcels[k]); };
+  const hidden = (E, N) => Boolean(lookup(E, N, masks.any, win.w, win.h, gsdM, 1));
+  const luma = (E, N) => { const i = Math.floor((E - win.origin[0]) / gsdM); const j = Math.floor((win.origin[1] - N) / gsdM); if (i < 0 || j < 0 || i >= win.w || j >= win.h) return 0; const k = (j * win.w + i) * 3; return (win.rgb[k] + win.rgb[k + 1] + win.rgb[k + 2]) / 3; };
+  const dark = (E, N) => { const around = []; for (const dy of [-1, 0, 1]) for (const dx of [-1, 0, 1]) around.push(luma(E + dx, N + dy)); return median(around) < 50; };
+  const tiers = curation.add.flatMap((rec) => {
+    const p = parcels.find((q) => q.id === rec.id);
+    if (!p) return [];
+    const edge = edgeVisibility([p.ring], { isDrivable, hidden, dark });
+    const maskedAreaShare = Math.round(maskedShare(grid, [p.ring]) * 1000) / 1000;
+    const want = gradeParcel({ ...edge, maskedAreaShare });
+    return [{ id: p.id, ...edge, maskedAreaShare, tier: p.evidence.tier, estimated: p.estimated, wantTier: want.tier, wantEstimated: want.estimated }];
+  });
+  const tierErrors = tiers.filter((t) => t.tier !== t.wantTier || t.estimated !== t.wantEstimated);
   const report = {
     note: "Photo asphalt (NGII 2025, 1 m cells, occlusion masks off) with no road or lot parcel. Candidates checked by eye; areas are the visible part only, so shade and crowns make them smaller than the real surface.",
     parcels: path.basename(parcelsFile),
@@ -404,21 +469,24 @@ if (import.meta.main) {
     baselineCoveredShare: Math.round((before.coveredM2 / before.asphaltM2) * 1000) / 1000,
     baselineAreas: status,
     unexplained,
+    tiers,
   };
   const counts = status.reduce((acc, s) => ({ ...acc, [s.status]: (acc[s.status] ?? 0) + 1 }), {});
-  console.log(`ASPHALT ${JSON.stringify({ baselineAreas: status.length, ...counts, unexplained: unexplained.length, coveredShare: report.coveredShare, baselineCoveredShare: report.baselineCoveredShare })}`);
+  console.log(`ASPHALT ${JSON.stringify({ baselineAreas: status.length, ...counts, unexplained: unexplained.length, coveredShare: report.coveredShare, baselineCoveredShare: report.baselineCoveredShare, tierErrors: tierErrors.length })}`);
+  for (const s of status) if (s.status === "open") console.error(`OPEN BASELINE ${s.areaM2} m2 at ${s.centre.join(",")}: ${s.leftM2} m2 left, touched by ${s.by.join(", ") || "nothing"}`);
+  for (const t of tierErrors) console.error(`TIER ${t.id}: record ${t.tier} estimated:${t.estimated}, the masks give ${t.wantTier} estimated:${t.wantEstimated} (free ${t.freeM} m, hidden ${t.hiddenM} m, dark ${t.darkM} m, masked area ${t.maskedAreaShare})`);
   for (const r of unexplained) console.error(`OPEN ${r.areaM2} m2 at ${r.centre.join(",")} bbox ${r.bbox.join(",")} under ${JSON.stringify(r.under)}`);
   const out = opt("--out", null);
   if (out) {
     mkdirSync(out, { recursive: true });
     writeFileSync(path.join(out, "asphalt-scan.json"), `${JSON.stringify(report, null, 1)}\n`);
     const rows = status.map((s) => `| ${s.centre.join(", ")} | ${s.areaM2} | ${s.status} | ${s.status === "covered" ? s.by.join(", ") : s.reason ?? ""} | ${s.leftM2} |`);
-    writeFileSync(path.join(out, "asphalt-scan.md"), `# Photo asphalt with no road or lot parcel\n\n${report.note}\n\nMinimum ${minAreaM2} m2, width at least ${report.openWidthM} m. Asphalt on road or lot parcels: ${report.baselineCoveredShare} before, ${report.coveredShare} now. Areas still open: ${unexplained.length}.\n\n| Centre E, N | Visible m2 | Status | Parcel or reason | Left m2 |\n|---|---|---|---|---|\n${rows.join("\n")}\n`);
+    writeFileSync(path.join(out, "asphalt-scan.md"), `# Photo asphalt with no road or lot parcel\n\n${report.note}\n\nMinimum ${minAreaM2} m2, width at least ${report.openWidthM} m. Asphalt on road or lot parcels: ${report.baselineCoveredShare} before, ${report.coveredShare} now. Areas still open: ${unexplained.length}.\n\n| Centre E, N | Visible m2 | Status | Parcel or reason | Left m2 |\n|---|---|---|---|---|\n${rows.join("\n")}\n\n## Evidence of the curated parcels\n\nFree edge has no road or lot beyond it. T1 with estimated false: at most 25 % of it (or 10 m) lost to masks and shade, and at most 25 % of the area masked. T1 with estimated true: at most half lost. T4: the rest.\n\n| Parcel | Free m | Hidden m | Dark m | Masked area | Tier | Estimated |\n|---|---|---|---|---|---|---|\n${tiers.map((t) => `| ${t.id} | ${t.freeM} | ${t.hiddenM} | ${t.darkM} | ${t.maskedAreaShare} | ${t.tier} | ${t.estimated} |`).join("\n")}\n`);
   }
   const proposeFile = opt("--propose", null);
   if (proposeFile) {
     const top = rasterTop(parcels, grid);
-    const covered = top.map((i) => (i >= 0 && drivable(parcels[i]) ? 1 : 0));
+    const covered = top.map((i) => (i >= 0 && coversAsphalt(parcels[i]) ? 1 : 0));
     const hard = coarsen(masks.roofs, win.w, win.h, CELL_PX);
     const soft = coarsen(masks.any, win.w, win.h, CELL_PX);
     for (let k = 0; k < soft.length; k += 1) if (hard[k]) soft[k] = 0;
@@ -426,5 +494,5 @@ if (import.meta.main) {
     writeFileSync(proposeFile, `${JSON.stringify(proposals)}\n`);
     console.log(`PROPOSED ${proposals.length} rings -> ${proposeFile}`);
   }
-  if (unexplained.length) process.exit(1);
+  if (unexplained.length || tierErrors.length || status.some((s) => s.status === "open")) process.exit(1);
 }
