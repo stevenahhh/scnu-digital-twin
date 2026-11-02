@@ -372,7 +372,42 @@ function parkingCuration(doc) {
   return errors;
 }
 
-const KINDS = { bldNodeMap, registration, parcels, parking, parkingCuration };
+// data/ground/parcel-curation.json: reviewed changes on top of the seeded parcels (fit/parcelsSeed.mjs). Every record says why.
+function parcelCuration(doc) {
+  if (!doc || typeof doc !== "object") return ["parcelCuration: must be an object"];
+  const errors = [];
+  for (const key of ["replace", "remove", "add", "notAsphalt", "unreachable"]) if (!Array.isArray(doc[key])) errors.push(`parcelCuration: ${key} must be an array`);
+  if (errors.length) return errors;
+  const reasoned = (record, id) => { if (!isText(record?.reason)) errors.push(`${id}: reason must be a non-empty string`); };
+  const graded = (record, id) => {
+    if (!isRing(record?.ring)) errors.push(`${id}: ring must be at least 3 [E, N] pairs`);
+    if (!TIERS.has(record?.evidence?.tier) || !Array.isArray(record?.evidence?.refs) || !record.evidence.refs.every(isText)) errors.push(`${id}: evidence must have tier T0-T4 and refs`);
+    if (typeof record?.estimated !== "boolean") errors.push(`${id}: estimated must be a boolean`);
+    else if (record.evidence?.tier === "T4" && !record.estimated) errors.push(`${id}: estimated must be true for a T4 parcel`);
+    reasoned(record, id);
+  };
+  const named = (record, index, key) => {
+    const id = isText(record?.id) ? record.id : `${key}[${index}]`;
+    if (!/^PARCEL_[A-Z0-9_]+$/.test(record?.id ?? "")) errors.push(`${id}: id must match PARCEL_[A-Z0-9_]+`);
+    return id;
+  };
+  doc.replace.forEach((r, i) => graded(r, named(r, i, "replace")));
+  doc.remove.forEach((r, i) => reasoned(r, named(r, i, "remove")));
+  doc.add.forEach((r, i) => {
+    const id = named(r, i, "add");
+    graded(r, id);
+    if (r?.class !== "road" && r?.class !== "lot") errors.push(`${id}: class must be road or lot`);
+  });
+  doc.notAsphalt.forEach((r, i) => {
+    const id = isText(r?.id) ? r.id : `notAsphalt[${i}]`;
+    if (!isRing(r?.ring)) errors.push(`${id}: ring must be at least 3 [E, N] pairs`);
+    reasoned(r, id);
+  });
+  doc.unreachable.forEach((r, i) => reasoned(r, isText(r?.row) ? r.row : `unreachable[${i}]`));
+  return errors;
+}
+
+const KINDS = { bldNodeMap, registration, parcels, parking, parkingCuration, parcelCuration };
 
 export function validate(kind, doc) {
   const check = KINDS[kind];

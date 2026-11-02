@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { validate } from "../lib/schemas.mjs";
-import { PARCELS_FILE, compareToLayers, parkingRowParcels, registrationRefs, seedParcels } from "./parcelsSeed.mjs";
+import { CURATION_FILE, PARCELS_FILE, applyParcelCuration, compareToLayers, parkingRowParcels, registrationRefs, seedParcels } from "./parcelsSeed.mjs";
 
 const square = (x, y, s) => [[x, y], [x + s, y], [x + s, y + s], [x, y + s]];
 const layer = (over) => ({ cls: "PAVING", mesh: "Ground_Pavers", label: 2, precedence: 2, source: "OSM-derived", source_ref: "way/1", rings: [square(0, 0, 10)], ...over });
@@ -114,6 +114,70 @@ test("data/ground/parcels.json equals today's ground layers ring for ring", { sk
   assert.equal(check.valid, true);
   assert.equal(check.layerDiffs, 0);
   assert.ok(check.worstAreaDiffM2 <= 0.1, line);
+});
+
+const emptyCuration = { note: "n", replace: [], remove: [], add: [], notAsphalt: [], unreachable: [] };
+
+test("parcel curation replaces a ring in place, removes a parcel and adds new ones after the rest", () => {
+  const seeded = seedParcels([layer({}), layer({ source_ref: "way/2", rings: [square(20, 0, 4)] }), layer({ cls: "ASPHALT", source: "road-zone-measured", source_ref: "road zone 3", precedence: 3, rings: [square(50, 0, 5)] })]);
+  const curation = {
+    ...emptyCuration,
+    remove: [{ id: seeded[1].id, reason: "no path on the photo" }],
+    replace: [{ id: seeded[2].id, ring: square(50, 0, 4), evidence: { tier: "T1", refs: ["photo kerb"] }, estimated: true, reason: "edge on the photo kerb" }],
+    add: [{ id: "PARCEL_ROAD_NEW", class: "road", ring: square(70, 0, 5), evidence: { tier: "T1", refs: ["asphalt scan"] }, estimated: false, reason: "access road" }, { id: "PARCEL_LOT_NEW", class: "lot", ring: square(80, 0, 5), evidence: { tier: "T1", refs: ["asphalt scan"] }, estimated: true, reason: "lot apron" }],
+  };
+  const { kept, added } = applyParcelCuration(seeded, curation);
+  assert.deepEqual(kept.map((p) => p.id), [seeded[0].id, seeded[2].id]);
+  assert.deepEqual(kept[1].ring, square(50, 0, 4));
+  assert.equal(kept[1].evidence.tier, "T1");
+  assert.equal(kept[1].estimated, true);
+  assert.equal(kept[1].curated, "todo 13a");
+  assert.equal(kept[1].source, "road-zone-measured", "replacing a ring keeps where the parcel came from");
+  assert.deepEqual(added.map((p) => [p.id, p.cls, p.class, p.mesh, p.precedence, p.paintAllowed, p.label]), [
+    ["PARCEL_ROAD_NEW", "ASPHALT", "road", "Ground_Asphalt", 3, true, null],
+    ["PARCEL_LOT_NEW", "LOT", "lot", "Ground_Lot", 4, true, null],
+  ]);
+  assert.equal(added[0].source, "photo-curated");
+  assert.ok(validate("parcels", { parcels: [...kept, ...added] }).ok);
+});
+
+test("parcel curation naming a parcel the seed does not have fails by name", () => {
+  const seeded = seedParcels([layer({})]);
+  assert.throws(() => applyParcelCuration(seeded, { ...emptyCuration, remove: [{ id: "PARCEL_GONE", reason: "x" }] }), /PARCEL_GONE/);
+  assert.throws(() => applyParcelCuration(seeded, { ...emptyCuration, replace: [{ id: "PARCEL_GONE2", ring: square(0, 0, 1), evidence: { tier: "T1", refs: [] }, estimated: false, reason: "x" }] }), /PARCEL_GONE2/);
+  assert.throws(() => applyParcelCuration(seeded, { ...emptyCuration, add: [{ id: seeded[0].id, class: "road", ring: square(0, 0, 1), evidence: { tier: "T1", refs: [] }, estimated: false, reason: "x" }] }), new RegExp(seeded[0].id));
+});
+
+test("validator rejects malformed parcel curation records, each by id", () => {
+  const good = { id: "PARCEL_ROAD_NEW", class: "road", ring: square(0, 0, 5), evidence: { tier: "T1", refs: ["r"] }, estimated: false, reason: "why" };
+  const cases = [
+    [null, /parcelCuration/],
+    [{ ...emptyCuration, add: "x" }, /add must be an array/],
+    [{ ...emptyCuration, add: [{ ...good, id: "road" }] }, /PARCEL_/],
+    [{ ...emptyCuration, add: [{ ...good, class: "lawn" }] }, /PARCEL_ROAD_NEW: class/],
+    [{ ...emptyCuration, add: [{ ...good, ring: [[0, 0]] }] }, /PARCEL_ROAD_NEW: ring/],
+    [{ ...emptyCuration, add: [{ ...good, reason: "" }] }, /PARCEL_ROAD_NEW: reason/],
+    [{ ...emptyCuration, add: [{ ...good, evidence: { tier: "T9", refs: [] } }] }, /PARCEL_ROAD_NEW: evidence/],
+    [{ ...emptyCuration, add: [{ ...good, evidence: { tier: "T4", refs: [] } }] }, /PARCEL_ROAD_NEW: estimated/],
+    [{ ...emptyCuration, remove: [{ id: "PARCEL_X" }] }, /PARCEL_X: reason/],
+    [{ ...emptyCuration, notAsphalt: [{ id: "ROOF", ring: square(0, 0, 1) }] }, /ROOF: reason/],
+    [{ ...emptyCuration, unreachable: [{ row: "LOT/R1" }] }, /LOT\/R1: reason/],
+  ];
+  for (const [doc, pattern] of cases) {
+    const { ok, errors } = validate("parcelCuration", doc);
+    assert.equal(ok, false, String(pattern));
+    assert.ok(errors.some((e) => pattern.test(e)), `${pattern}: ${errors.join("; ")}`);
+  }
+  assert.ok(validate("parcelCuration", { ...emptyCuration, add: [good] }).ok);
+});
+
+test("data/ground/parcel-curation.json is valid and every record it names is in parcels.json as curated", () => {
+  const curation = JSON.parse(readFileSync(CURATION_FILE, "utf8"));
+  const { ok, errors } = validate("parcelCuration", curation);
+  assert.ok(ok, errors.join("\n"));
+  const parcels = new Map(JSON.parse(readFileSync(PARCELS_FILE, "utf8")).parcels.map((p) => [p.id, p]));
+  for (const { id } of curation.remove) assert.equal(parcels.has(id), false, `${id} is removed by the curation but still in parcels.json`);
+  for (const { id, ring } of [...curation.replace, ...curation.add]) assert.deepEqual(parcels.get(id)?.ring, ring, `${id}: parcels.json differs from the curation; run parcelsSeed --write`);
 });
 
 test("a parking row off road and lot ground gets its footprint as a lot parcel; a row on a lot gets none", () => {
