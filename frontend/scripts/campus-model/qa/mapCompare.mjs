@@ -239,8 +239,8 @@ export function parkingObjects(doc, { resolveAnchor = null } = {}) {
     }
     for (const line of lot.lines ?? []) {
       const colour = line.colour === "yellow" ? "yellow" : "white";
-      if (line.abs) out.push({ id: line.id, kind: "parking_line", colour, geometry: { type: "line", coords: line.abs } });
-      else out.push({ id: line.id, kind: "parking_line", colour, geometry: { type: "area", rings: [line.ring] } });
+      if (line.abs) out.push({ id: line.id, kind: "parking_line", colour, estimated: Boolean(line.estimated), geometry: { type: "line", coords: line.abs } });
+      else out.push({ id: line.id, kind: "parking_line", colour, estimated: Boolean(line.estimated), geometry: { type: "area", rings: [line.ring] } });
     }
   }
   return out;
@@ -313,6 +313,24 @@ export function missingDividers(doc, objects, sheet, masks = {}, { resolveAnchor
     }
   }
   return out;
+}
+
+// One line per lot, for todo 14's acceptance: a reviewed lot holds support >= LOT_SUPPORT over what the photo can judge, or is
+// marked estimated with a reason; a lot nobody reviewed never passes.
+export const LOT_SUPPORT = 0.7;
+export function lotSummary(doc, results) {
+  return doc.lots.map((lot) => {
+    const own = results.filter((r) => r.id.startsWith(`${lot.id}/`));
+    const judged = own.filter((r) => /\/(D\d+|L\d+)$/.test(r.id) && !r.occluded);
+    const support = judged.length ? round(judged.reduce((n, r) => n + r.support, 0) / judged.length) : null;
+    const estimated = Boolean(lot.estimated);
+    return {
+      lot: lot.id, curated: lot.curated ?? null, unreviewed: Boolean(lot.unreviewed), estimated, estimatedReason: lot.estimatedReason ?? null,
+      rows: lot.rows.length, lines: (lot.lines ?? []).length, visible: judged.length, support,
+      over: own.filter((r) => r.over).map((r) => r.id), missing: own.filter((r) => r.missing).length,
+      accepted: !lot.unreviewed && (estimated || (support !== null && support >= LOT_SUPPORT)),
+    };
+  });
 }
 
 // Per row: what the acceptance of a curated lot reads. results: scoreObjects plus missingDividers.

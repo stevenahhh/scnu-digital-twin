@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { TOLERANCES, classify, missingDividers, parkingObjects, rowSummary, scoreObjects } from './mapCompare.mjs';
+import { TOLERANCES, classify, lotSummary, missingDividers, parkingObjects, rowSummary, scoreObjects } from './mapCompare.mjs';
 
 // 40 x 40 m window at 0.25 m, top-left corner (1000, 2040): pixel (i, j) centre = (1000 + (i + 0.5) / 4, 2040 - (j + 0.5) / 4).
 const GSD = 0.25;
@@ -235,4 +235,37 @@ test('rowSummary names a stall flag with its stall, and a flagged width marks th
   assert.deepEqual(s.estimatedValues, ['S0 widthM', 'S0 figureSide']);
   assert.equal(parkingObjects(doc).find((o) => o.id === 'LOT_A/R1/S0/fill').estimated, true);
   assert.equal(parkingObjects(parkingDoc(parkingRow({ stalls: [{ ...stall, estimatedFields: undefined }] }))).find((o) => o.id === 'LOT_A/R1/S0/fill').estimated, false);
+});
+
+test('lotSummary reads one line per lot: support of what the photo can judge, over and missing, and whether acceptance holds', () => {
+  const lot = (id, extra = {}) => ({ id, rows: [{ id: `${id}/R1`, stalls: [], evidence: { tier: 'T1' }, estimated: false }], lines: [{ id: `${id}/L1` }], ...extra });
+  const doc = { lots: [lot('LOT_A', { curated: 'todo 14' }), lot('LOT_B', { curated: 'todo 14' }), lot('LOT_C', { curated: 'todo 14', estimated: true, estimatedReason: 'shade' }), lot('LOT_D', { unreviewed: true }), lot('LOT_E', { curated: 'todo 14' })] };
+  const r = (id, support, extra = {}) => ({ id, support, occluded: false, over: false, ...extra });
+  const results = [
+    r('LOT_A/R1/D0', 1), r('LOT_A/R1/D1', 0.8), r('LOT_A/L1', 1), r('LOT_A/R1/D2', null, { occluded: true }), r('LOT_A/R1/missing@1.0', 0, { over: true, missing: true }),
+    r('LOT_B/R1/D0', 0.4), r('LOT_B/L1', 0.6, { over: true }),
+    r('LOT_C/R1/D0', 0.2),
+    r('LOT_D/R1/D0', 1),
+    r('LOT_E/R1/D0', null, { occluded: true }),
+  ];
+  const by = Object.fromEntries(lotSummary(doc, results).map((x) => [x.lot, x]));
+  assert.equal(by.LOT_A.support, 0.933);
+  assert.equal(by.LOT_A.visible, 3);
+  assert.deepEqual(by.LOT_A.over, ['LOT_A/R1/missing@1.0']);
+  assert.equal(by.LOT_A.missing, 1);
+  assert.equal(by.LOT_A.accepted, true);
+  assert.equal(by.LOT_B.support, 0.5);
+  assert.equal(by.LOT_B.accepted, false);
+  assert.equal(by.LOT_C.accepted, true);
+  assert.equal(by.LOT_C.estimatedReason, 'shade');
+  assert.equal(by.LOT_D.accepted, false, 'a lot nobody reviewed is listed, whatever its paint says');
+  assert.equal(by.LOT_E.support, null);
+  assert.equal(by.LOT_E.accepted, false, 'nothing visible and not marked estimated');
+});
+
+test('a free line the record marks estimated says so in the objects', () => {
+  const doc = { lots: [{ id: 'LOT_A', rows: [], lines: [{ id: 'LOT_A/L1', abs: [[0, 0], [1, 0]], widthM: 0.1, colour: 'white', estimated: true }, { id: 'LOT_A/L2', abs: [[0, 1], [1, 1]], widthM: 0.1, colour: 'white' }] }] };
+  const out = parkingObjects(doc);
+  assert.equal(out.find((o) => o.id === 'LOT_A/L1').estimated, true);
+  assert.equal(out.find((o) => o.id === 'LOT_A/L2').estimated, false);
 });

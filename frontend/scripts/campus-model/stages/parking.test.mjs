@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { assertLotsOnParcels, describeParking, estimatedValueReport, implausibleStalls, parkingPlan, rowLayout, symbolPieceReport } from "./parking.mjs";
+import { assertLotsOnParcels, describeParking, estimatedValueReport, implausibleStalls, lotReviewReport, parkingPlan, rowLayout, symbolPieceReport } from "./parking.mjs";
 
 const identity = (E, N) => [E, N];
 // A row along +E from (0, 0): side -1 is the right of the axis, so the stalls run south.
@@ -241,4 +241,19 @@ test("estimatedValueReport carries the stall flags by stall id; a row with none 
   const why = { reason: "VR" };
   const stall = { id: "LOT_A/R1/S0", index: 0, kind: "accessible", widthM: 3, symbol: "wheelchair", estimatedFields: { symbolUp: why } };
   assert.deepEqual(estimatedValueReport(doc([row({ stalls: [stall] })])), { "LOT_A/R1": { tier: "T1", estimated: false, dividers: [], fields: {}, stalls: { "LOT_A/R1/S0": { symbolUp: why } } } });
+});
+
+test("implausibleStalls reads a skewed row across its stalls: 3.7 m along the rail at 45 degrees is a 2.6 m stall", () => {
+  const skewed = row({ dividerBearingDeg: 225, pitchM: 3.7, count: 4, backLine: { abs: [[0, 0], [11.1, 0]] } });
+  assert.deepEqual(implausibleStalls(doc([skewed])), []);
+  const tooWide = row({ dividerBearingDeg: 225, pitchM: 5.5, count: 3, backLine: { abs: [[0, 0], [11, 0]] } });
+  assert.deepEqual(implausibleStalls(doc([tooWide])).map((x) => x.widthM), [3.889, 3.889]);
+});
+
+test("a free line marked estimated is drawn estimated and reaches the report; the lots report lists the unreviewed and the estimated", () => {
+  const line = { id: "LOT_A/L1", abs: [[0, 0], [2, 0]], widthM: 0.1, colour: "white", estimated: true, evidence: { tier: "T2", refs: ["hidden"] } };
+  const d = doc([row()], { lines: [line] });
+  assert.equal(parkingPlan(d, { toScene: identity }).pieces.find((p) => p.id === "LOT_A/L1").estimated, true);
+  assert.deepEqual(estimatedValueReport(d)["LOT_A/L1"], { tier: "T2", estimated: true, line: true });
+  assert.deepEqual(lotReviewReport({ lots: [{ id: "LOT_A", curated: "todo 14", estimated: true, estimatedReason: "shade", rows: [] }, { id: "LOT_B", unreviewed: true, rows: [] }, { id: "LOT_C", curated: "todo 14", rows: [] }] }), { curated: 2, unreviewed: ["LOT_B"], estimated: { LOT_A: "shade" } });
 });

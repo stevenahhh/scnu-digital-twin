@@ -55,7 +55,7 @@ import { occlusionMask } from "../campus-model/lib/occlusion.mjs";
 import { modelToGeo } from "../campus-model/lib/frame.mjs";
 import { orientedBox } from "../campus-model/lib/markingFit.mjs";
 import { paintMasks } from "../campus-model/lib/paintMasks.mjs";
-import { TOLERANCES, missingDividers, parkingObjects, rowSummary, scoreObjects } from "../campus-model/qa/mapCompare.mjs";
+import { TOLERANCES, lotSummary, missingDividers, parkingObjects, rowSummary, scoreObjects } from "../campus-model/qa/mapCompare.mjs";
 import { EDGE_THRESHOLD, VISIBLE, aggregate, aggregateVisible, canopyMask, footprintMask, measureTile, measureVisible, pointInRing, renderHalf, residualsMarkdown, sideBySide, tileGrid } from "./overheadBlendCore.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -222,6 +222,7 @@ if (args.includes("--objects")) {
   const missing = missingDividers(parkingDoc, parkingScored, { ...win, paint }, masks);
   scored.push(...missing);
   const rows = rowSummary(parkingDoc, scored);
+  const lots = lotSummary(parkingDoc, scored);
   const overList = scored.filter((r) => r.over);
   const byTier = {};
   for (const r of scored) {
@@ -240,7 +241,7 @@ if (args.includes("--objects")) {
   const report = {
     generatedAt: new Date().toISOString(), sheet: DEFAULT_SHEET.split("/").pop(), metresPerPixel: gsd,
     source: "stages/markings.mjs markingCandidates (drawn pieces), EPSG:5186", masks: { leans: leanSource, trees: "data/trees.json", shadows: "lib/poleShadow.mjs SUN" },
-    tolerances: TOLERANCES, byTier, overTolerance: overList.length, parkingRows: rows, objects: scored,
+    tolerances: TOLERANCES, byTier, overTolerance: overList.length, parkingLots: lots, parkingRows: rows, objects: scored,
   };
   writeFileSync(join(outDir, "objects.json"), `${JSON.stringify(report, null, 1)}\n`);
   const row = (r) => `| ${r.id} | ${r.kind} | ${r.tier} | ${r.near ?? ""} | ${r.residual_m ?? ""} | ${r.iou ?? ""} | ${r.support ?? ""} | ${r.occluded ? "yes" : ""} | ${r.over ? "OVER" : ""} |`;
@@ -250,6 +251,8 @@ if (args.includes("--objects")) {
     `Sheet ${report.sheet}, ${scored.length} objects from markingCandidates; occlusion leans: ${leanSource}. Values are photo residuals (추정), warnings only.`, "",
     "## By tier", "", "| tier | objects | occluded | over | median residual m |", "|---|---|---|---|---|",
     ...Object.entries(byTier).map(([k, t]) => `| ${k} | ${t.objects} | ${t.occluded} | ${t.over} | ${t.medianResidualM ?? ""} |`), "",
+    "## Parking lots (one line per lot; a reviewed lot holds support >= 0.7 or is marked estimated with a reason)", "", "| lot | reviewed | 추정 | support | visible | over | missing | accepted | reason |", "|---|---|---|---|---|---|---|---|---|",
+    ...lots.map((l) => `| ${l.lot} | ${l.curated ?? (l.unreviewed ? "UNREVIEWED" : "")} | ${l.estimated ? "추정" : ""} | ${l.support ?? ""} | ${l.visible} | ${l.over.length} | ${l.missing} | ${l.accepted ? "yes" : "NO"} | ${l.estimatedReason ?? ""} |`), "",
     "## Parking rows (generated from parking.json)", "", "| row | tier | dividers | visible | support | median residual m | max residual m | over | missing | back | front | 추정 dividers | 추정 values |", "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
     ...rows.map((r) => `| ${r.row} | ${r.tier}${r.estimated ? " 추정" : ""} | ${r.dividers} | ${r.visibleDividers} | ${r.support ?? ""} | ${r.medianResidualM ?? ""} | ${r.maxResidualM ?? ""} | ${r.over.length} | ${r.missing} | ${r.endLines.back?.support ?? ""} | ${r.endLines.front?.support ?? ""} | ${r.estimatedDividers.join(" ")} | ${r.estimatedValues.join(", ")} |`), "",
     `## Over tolerance (${overList.length})`, "", head, ...overList.map(row), "",

@@ -4,7 +4,7 @@ import test from "node:test";
 
 import { validate } from "../lib/schemas.mjs";
 import { parkingPlan } from "../stages/parking.mjs";
-import { applyCuration, seedLots, stallRowRecord } from "./parkingSeed.mjs";
+import { applyCuration, seedLots, stallRowRecord, unmarkedLotParcels } from "./parkingSeed.mjs";
 
 // A divider piece at across position x (E), running north-south from y0 to y1.
 const line = (x, y0 = 0, y1 = -5, id = `P${x}`) => ({ id, colour: "white", ring: [[x - 0.05, y0], [x + 0.05, y0], [x + 0.05, y1], [x - 0.05, y1]] });
@@ -480,4 +480,60 @@ test("the real curation's stall flags reach parking.json", () => {
   const flagged = [...stalls(load("parking-curation")).values()].filter((s) => s.estimatedFields);
   assert.ok(flagged.length > 0, "nothing flagged");
   for (const stall of flagged) assert.deepEqual(seeded.get(stall.id).estimatedFields, stall.estimatedFields, stall.id);
+});
+
+test("a seeded lot no curation reviewed builds estimated and is listed: a proposal never reviewed is not T1 paint", () => {
+  const logged = [];
+  const doc = applyCuration(twoLots(), curation(), { log: (m) => logged.push(m) });
+  const other = doc.lots.find((l) => l.id !== "LOT_KEEP");
+  assert.equal(other.unreviewed, true);
+  assert.ok(other.rows.length && other.rows.every((r) => r.estimated === true));
+  assert.ok(other.rows.every((r) => r.evidence.refs.at(-1).includes("not reviewed")));
+  assert.ok(logged.some((m) => m.startsWith(`UNREVIEWED ${other.id}`)));
+  assert.equal(doc.lots.find((l) => l.id === "LOT_KEEP").unreviewed, undefined);
+  assert.deepEqual(validate("parking", doc).errors, []);
+});
+
+test("the photo grades a row from its own start offset, not from the back line's start", () => {
+  const seen = [];
+  const input = curation();
+  input.lots[0].rows[0].startOffsetM = 0.5;
+  applyCuration(twoLots(), input, { photo: { line: (q) => { seen.push(q.from); return { visible: 1, contrast: 40, offsetM: 0 }; }, blue: () => ({ visible: 1, share: 1 }) } });
+  const [p, q] = input.lots[0].rows[0].backLine.abs;
+  const length = Math.hypot(q[0] - p[0], q[1] - p[1]);
+  const first = [p[0] + ((q[0] - p[0]) / length) * 0.5, p[1] + ((q[1] - p[1]) / length) * 0.5];
+  assert.ok(Math.hypot(seen[0][0] - first[0], seen[0][1] - first[1]) < 1e-6, JSON.stringify(seen[0]));
+});
+
+test("a curated lot marked estimated says why, and the mark reaches the lot in parking.json", () => {
+  const withMark = (over) => { const c = curation(); Object.assign(c.lots[0].rows[0], { paintBack: true, paintFront: true }); Object.assign(c.lots[0], over); return c; };
+  assert.deepEqual(validate("parkingCuration", withMark({ estimated: true, estimatedReason: "the shade hides its rows" })).errors, []);
+  assert.match(validate("parkingCuration", withMark({ estimated: true })).errors.join("\n"), /LOT_KEEP: estimated needs an estimatedReason/);
+  assert.match(validate("parkingCuration", withMark({ estimated: true, estimatedReason: "   " })).errors.join("\n"), /estimatedReason/);
+  assert.match(validate("parkingCuration", withMark({ estimated: "yes", estimatedReason: "x" })).errors.join("\n"), /estimated must be a boolean/);
+  const kept = applyCuration(twoLots(), withMark({ estimated: true, estimatedReason: "the shade hides its rows" })).lots.find((l) => l.id === "LOT_KEEP");
+  assert.equal(kept.estimated, true);
+  assert.equal(kept.estimatedReason, "the shade hides its rows");
+});
+
+test("a free line may be marked estimated, and only with a boolean", () => {
+  const c = curation();
+  Object.assign(c.lots[0].rows[0], { paintBack: true, paintFront: true });
+  c.lots[0].lines = [{ id: "LOT_KEEP/L1", abs: [[0, 0], [1, 0]], widthM: 0.1, colour: "white", estimated: "maybe", evidence: { tier: "T2", refs: ["x"] } }];
+  assert.match(validate("parkingCuration", c).errors.join("\n"), /L1: estimated must be a boolean/);
+  c.lots[0].lines[0].estimated = true;
+  assert.deepEqual(validate("parkingCuration", c).errors, []);
+});
+
+test("unmarkedLotParcels names campus lot parcels with no record on them, not the off-campus ones", () => {
+  const box = (x) => [[x, 0], [x + 10, 0], [x + 10, 10], [x, 10]];
+  const parcels = [
+    { id: "PARCEL_LOT_WAY_1", class: "lot", source: "OSM-derived", source_ref: "way/1", ring: box(0) },
+    { id: "PARCEL_LOT_WAY_2", class: "lot", source: "OSM-derived", source_ref: "way/2", ring: box(100) },
+    { id: "PARCEL_LOT_SUPPLEMENT_PARKING_0", class: "lot", source: "project-estimated", source_ref: "supplement parking 0: bays", ring: box(200) },
+    { id: "PARCEL_LOT_OFF_CAMPUS_LOT_0", class: "lot", source: "project-estimated", source_ref: "off-campus lot 0", ring: box(300) },
+    { id: "PARCEL_ROAD", class: "road", source: "OSM-derived", source_ref: "way/3", ring: box(400) },
+  ];
+  const doc = { lots: [{ id: "LOT_A", rows: [{ backLine: { abs: [[2, 2], [8, 2]] }, side: 1, depthM: 4, pitchM: 3, count: 3, stalls: [] }] }, { id: "LOT_B", rows: [], lines: [{ abs: [[203, 3], [205, 3]], widthM: 0.1 }] }] };
+  assert.deepEqual(unmarkedLotParcels(doc, parcels), ["PARCEL_LOT_WAY_2"]);
 });

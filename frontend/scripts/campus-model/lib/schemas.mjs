@@ -291,6 +291,7 @@ function parkingLine(line, fail) {
   const straight = Array.isArray(line.abs) && line.abs.length === 2 && line.abs.every(isPair) && positive(line.widthM);
   if (!straight && !isRing(line.ring)) fail("needs abs (two [E, N] pairs) with widthM, or a ring");
   if (!["white", "yellow"].includes(line.colour)) fail("colour must be white or yellow");
+  if (line.estimated !== undefined && typeof line.estimated !== "boolean") fail("estimated must be a boolean");
   if (!TIERS.has(line.evidence?.tier)) fail("evidence.tier must be T0-T4");
   if (!Array.isArray(line.evidence?.refs) || !line.evidence.refs.every(isText)) fail("evidence.refs must be an array of strings");
 }
@@ -362,6 +363,8 @@ function parkingCuration(doc) {
     const fail = (message) => errors.push(`${id}: ${message}`);
     if (!isPair(lot?.anchor)) fail("anchor must be an [E, N] pair");
     if (!isText(lot?.curated)) fail("curated must name the todo that reviewed the lot");
+    if (lot?.estimated !== undefined && typeof lot.estimated !== "boolean") fail("estimated must be a boolean");
+    if (lot?.estimated === true && !(isText(lot?.estimatedReason) && lot.estimatedReason.trim())) fail("estimated needs an estimatedReason");
     if (!(Array.isArray(lot?.retired) && lot.retired.every(isText))) fail("retired must be an array of ids");
     if (!Array.isArray(lot?.lines)) fail("lines must be an array");
     const records = [...(Array.isArray(lot?.rows) ? lot.rows : []), ...(Array.isArray(lot?.lines) ? lot.lines : [])];

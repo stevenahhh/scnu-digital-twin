@@ -533,7 +533,7 @@ function gradeRow(row, photo) {
   const narrow = widths.filter((w) => w < MIN_STALL_M);
   if (row.evidence.tier === "T1" && row.divider?.style !== "none" && narrow.length) demote(row, `${narrow.length} stalls under ${MIN_STALL_M} m`);
   if (!photo) return;
-  let s = 0;
+  let s = row.startOffsetM ?? 0;
   const cells = widths.map((w, index) => { const c = { index, s0: s, s1: s + w }; s += w; return c; });
   for (const c of cells) {
     const stall = row.stalls.find((x) => x.index === c.index);
@@ -555,7 +555,7 @@ function gradeRow(row, photo) {
     if (row.evidence.tier === "T1" && !(row.evidence.photoSupport >= BLUE_MIN)) demote(row, row.evidence.photoSupport === null ? "its fills are hidden on the photo" : `no blue paint under its fills (${row.evidence.photoSupport})`);
     return;
   }
-  const lines = [0, ...cells.map((c) => c.s1)].map((at) => photo.line({ from: f.at(at, 0), dir: f.d, across: f.a, lengthM: row.depthM }));
+  const lines = [row.startOffsetM ?? 0, ...cells.map((c) => c.s1)].map((at) => photo.line({ from: f.at(at, 0), dir: f.d, across: f.a, lengthM: row.depthM }));
   const visible = lines.filter((m) => m.visible >= VISIBLE);
   const painted = visible.filter((m) => m.contrast >= PAINT_CONTRAST);
   row.evidence.photoSupport = visible.length ? r3(painted.length / visible.length) : null;
@@ -652,8 +652,8 @@ function gradeCurated(row, photo) {
   if (row.estimatedDividers) {
     // a person may read what the mask hides, not overrule what the photo sees
     const f = frameOf(row);
-    let s = 0;
-    const places = [0, ...widthsOf(row).map((w) => (s += w))];
+    let s = row.startOffsetM ?? 0;
+    const places = [s, ...widthsOf(row).map((w) => (s += w))];
     for (const i of graded.estimatedDividers ?? []) {
       if (!row.estimatedDividers.includes(i) && photo.line({ from: f.at(places[i], 0), dir: f.d, across: f.a, lengthM: row.depthM }).visible >= VISIBLE) throw new Error(`${row.id}: estimatedDividers leaves out divider ${i}, which the photo sees without paint`);
     }
@@ -678,7 +678,7 @@ export function applyCuration(doc, curation, { photo = null, log = () => {} } = 
     const rows = structuredClone(entry.rows);
     if (photo) rows.forEach((row) => gradeCurated(row, photo));
     log(`CURATED ${entry.id} replaces seeded ${doc.lots[index].id}: ${doc.lots[index].rows.length} rows and ${(doc.lots[index].lines ?? []).length} lines -> ${rows.length} rows and ${entry.lines.length} lines`);
-    lots[index] = { id: entry.id, parcel: doc.lots[index].parcel ?? null, curated: entry.curated, rows, ...(entry.lines.length ? { lines: structuredClone(entry.lines) } : {}) };
+    lots[index] = { id: entry.id, parcel: doc.lots[index].parcel ?? null, curated: entry.curated, ...(entry.estimated ? { estimated: true, estimatedReason: entry.estimatedReason } : {}), rows, ...(entry.lines.length ? { lines: structuredClone(entry.lines) } : {}) };
   }
   const curatedRows = lots.filter((_, i) => taken.has(i)).flatMap((lot) => lot.rows);
   for (const [i, lot] of lots.entries()) {
@@ -690,7 +690,29 @@ export function applyCuration(doc, curation, { photo = null, log = () => {} } = 
       if (on) throw new Error(`${row.id} lies on curated row ${on.id}`);
     }
   }
+  // what no person reviewed is not paint anyone vouches for: it builds estimated, and the lot is listed (plan todo 14)
+  lots.forEach((lot, i) => {
+    if (taken.has(i)) return;
+    log(`UNREVIEWED ${lot.id}: ${lot.rows.length} rows and ${(lot.lines ?? []).length} lines build estimated`);
+    lots[i] = {
+      ...lot,
+      unreviewed: true,
+      rows: lot.rows.map((row) => ({ ...row, estimated: true, evidence: { ...row.evidence, refs: [...row.evidence.refs, "lot not reviewed in parking-curation.json"] } })),
+      ...(lot.lines ? { lines: lot.lines.map((line) => ({ ...line, estimated: true })) } : {}),
+    };
+  });
   return { ...doc, lots };
+}
+
+// A campus lot parcel (OSM or the supplement list; the off-campus and roundabout classes are other people's ground) with no
+// row or line of a parking.json lot on it stays unmarked, which the seed logs: no evidence, no paint.
+export function unmarkedLotParcels(doc, parcels) {
+  const points = doc.lots.flatMap((lot) => [
+    ...lot.rows.map((row) => { const f = frameOf(row); return f.at(f.length / 2, row.depthM / 2); }),
+    ...(lot.lines ?? []).flatMap((line) => line.ring ?? line.abs),
+  ]);
+  return parcels.filter((p) => p.class === "lot" && (p.source === "OSM-derived" || /^supplement parking/.test(p.source_ref ?? "")))
+    .filter((p) => !points.some((point) => pointInRing(point, p.ring))).map((p) => p.id);
 }
 
 // ---------------------------------------------------------------- the seed
@@ -769,6 +791,7 @@ async function cli(args) {
       if (!lot.parcel) missing.push(lot.id);
     }
     writeFileSync(out, `${JSON.stringify(doc, null, 1)}\n`);
+    for (const id of unmarkedLotParcels(doc, parcels)) console.log(`UNMARKED ${id}: no record on this lot parcel, so no stall paint is drawn on it`);
     console.log(`LINKED ${doc.lots.length - missing.length}/${doc.lots.length}; no parcel: ${missing.join(", ") || "none"}; beyond every parcel, left out: ${dropped.join(", ") || "none"}`);
     return;
   }

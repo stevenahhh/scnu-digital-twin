@@ -215,7 +215,7 @@ export function parkingPlan(doc, { toScene = tmToScene, resolveAnchor = null } =
         const n = [(-(q[1] - p[1]) / length) * (line.widthM / 2), ((q[0] - p[0]) / length) * (line.widthM / 2)];
         ring = [add(p, mul(n, -1)), add(q, mul(n, -1)), add(q, n), add(p, n)];
       }
-      push([ring], line.colour === "yellow" ? "yellow" : "white", "parking_line", line.id, line.id, { estimated: line.evidence.tier === "T4" });
+      push([ring], line.colour === "yellow" ? "yellow" : "white", "parking_line", line.id, line.id, { estimated: Boolean(line.estimated) || line.evidence.tier === "T4" });
     }
   }
   return { pieces, wheelStops, rows, lots: doc.lots.length };
@@ -228,13 +228,16 @@ export function assertLotsOnParcels(doc, parcels) {
   if (bad.length) throw new Error(bad.map((lot) => `${lot.id}: parcel ${lot.parcel} is not in parcels.json`).join("\n"));
 }
 
-// Stalls no single stall can be: too narrow, or general and too wide. Named by row in the build log and markings.report.
+// Stalls no single stall can be: too narrow, or general and too wide, measured across the stall: a skewed row's places along
+// its back line are wider than the stall by 1 / sin of the angle. Named by row in the build log and markings.report.
 export function implausibleStalls(doc) {
   const out = [];
   for (const lot of doc.lots) {
     for (const row of lot.rows) {
+      const { a, d } = row.backLine.abs ? rowFrame(row, null) : { a: [1, 0], d: [0, 1] };
+      const across = Math.abs(a[0] * d[1] - a[1] * d[0]);
       for (const { index, s0, s1, stall } of rowLayout(row).cells) {
-        const widthM = Number((s1 - s0).toFixed(3));
+        const widthM = Number(((s1 - s0) * across).toFixed(3));
         const general = !stall || stall.kind === "general";
         if (widthM < MIN_STALL_M || (general && widthM > MAX_GENERAL_STALL_M)) out.push({ row: row.id, index, kind: stall?.kind ?? "general", widthM, estimated: row.estimated, dividers: row.divider?.style !== "none" });
       }
@@ -253,7 +256,17 @@ export function estimatedValueReport(doc) {
     const hasStalls = Object.keys(stalls).length > 0;
     if (row.estimated || dividers.length || Object.keys(fields).length || hasStalls) out[row.id] = { tier: row.evidence.tier, estimated: row.estimated, dividers, fields, ...(hasStalls ? { stalls } : {}) };
   }
+  for (const line of doc.lots.flatMap((lot) => lot.lines ?? [])) if (line.estimated) out[line.id] = { tier: line.evidence.tier, estimated: true, line: true };
   return out;
+}
+
+// Which lots a person reviewed: the lots marked estimated with their reason, and the ones nobody reviewed.
+export function lotReviewReport(doc) {
+  return {
+    curated: doc.lots.filter((lot) => lot.curated).length,
+    unreviewed: doc.lots.filter((lot) => lot.unreviewed).map((lot) => lot.id),
+    estimated: Object.fromEntries(doc.lots.filter((lot) => lot.estimated).map((lot) => [lot.id, lot.estimatedReason])),
+  };
 }
 
 // markings.report: the symbol pieces by glyph and record. `unrecorded` must be 0: a symbol exists only through its record.
