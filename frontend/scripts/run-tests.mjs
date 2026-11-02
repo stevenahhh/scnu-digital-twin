@@ -3,7 +3,7 @@ import { existsSync, globSync } from 'node:fs';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const nodeResult = spawnSync(process.execPath, ['--test', 'src/**/*.test.mjs', 'scripts/campus-model/**/*.test.mjs', 'scripts/perf/*.test.mjs'], {
+const nodeResult = spawnSync(process.execPath, ['--test', 'src/**/*.test.mjs', 'scripts/campus-model/**/*.test.mjs', 'scripts/perf/*.test.mjs', 'scripts/lab/*.test.mjs'], {
   stdio: 'inherit',
 });
 const nodePassed = nodeResult.status === 0;
