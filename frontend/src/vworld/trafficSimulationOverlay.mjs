@@ -22,7 +22,7 @@ export function trafficModelUri(entity) {
   return `/traffic/${entity.type}${variant}.glb`;
 }
 
-function entityModel(entity) {
+function entityModel(entity, Cesium) {
   return {
     uri: trafficModelUri(entity),
     scale: 1,
@@ -30,13 +30,8 @@ function entityModel(entity) {
     maximumScale: 1,
     runAnimations: false,
     shadows: 1,
+    heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
   };
-}
-
-function terrainHeight(viewer, Cesium, longitude, latitude) {
-  const cartographic = Cesium.Cartographic.fromDegrees(longitude, latitude);
-  const height = viewer.scene?.globe?.getHeight?.(cartographic);
-  return Number.isFinite(height) ? height : 40;
 }
 
 export function createVWorldTrafficSimulation({
@@ -62,17 +57,16 @@ export function createVWorldTrafficSimulation({
     for (const entity of entities) {
       if (!entity?.id || !["car", "person", "scooter"].includes(entity.type)) continue;
       const point = simulationPointToVWorld(entity);
-      const ground = terrainHeight(viewer, Cesium, point.longitude, point.latitude);
       const heading = Cesium.Math.toRadians(Number(entity.heading || 0) + 90);
       const id = `SCNU_SIM_${entity.id}`;
-      const position = Cesium.Cartesian3.fromDegrees(point.longitude, point.latitude, ground + 0.08);
+      const position = Cesium.Cartesian3.fromDegrees(point.longitude, point.latitude, 0.08);
       const values = {
         position,
         orientation: Cesium.Transforms.headingPitchRollQuaternion(
           position,
           new Cesium.HeadingPitchRoll(heading, 0, 0),
         ),
-        model: entityModel(entity),
+        model: entityModel(entity, Cesium),
       };
       const existing = viewer.entities.getById(id);
       if (existing) Object.assign(existing, values);

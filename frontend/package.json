@@ -5,8 +5,12 @@
     "dev": "vite",
     "dev:legacy": "vite --host 127.0.0.1 --port 5173",
     "dev:vworld": "vite --host 127.0.0.1 --port 5173 --open index-vworld.html",
+    "dev:solar": "vite --host 127.0.0.1 --port 5173 --open index-solar.html",
+    "dev:paper": "vite --host 127.0.0.1 --port 5173 --open index-paper.html",
     "build": "vite build",
     "build:vworld": "vite build --mode vworld --outDir dist-vworld",
+    "build:solar": "vite build --mode solar --outDir dist-solar",
+    "build:paper": "vite build --mode paper --outDir dist-paper",
     "preview": "vite preview",
     "test": "node --test \"src/**/*.test.mjs\" && node -e \"const fs=require('node:fs'),path=require('node:path'),cp=require('node:child_process');const files=[];function walk(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true}).sort((a,b)=>a.name.localeCompare(b.name))){const file=path.join(dir,entry.name);if(entry.isDirectory())walk(file);else if(entry.name.endsWith('.test.jsx'))files.push(file)}}walk('src');if(!files.length)throw new Error('No .test.jsx files found');const result=cp.spawnSync(process.execPath,[require.resolve('vitest/vitest.mjs'),'run',...files],{stdio:'inherit'});process.exit(result.status??1)\""
   },

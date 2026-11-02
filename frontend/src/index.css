@@ -26,6 +26,10 @@
   --colors-inverse-ink: #000000;
   --colors-brand-secure: #7a7fad;
   --colors-semantic-success: #27a644;
+  --colors-semantic-danger: #d45555;
+  --colors-semantic-danger-border: rgba(212, 85, 85, 0.4);
+  --colors-semantic-danger-surface: rgba(212, 85, 85, 0.1);
+  --colors-chart-demand: #828fff;
   --colors-semantic-overlay: #000000;
   --dashboard-panel-width: 440px;
 
@@ -80,6 +84,7 @@ input, textarea {
   --colors-ink-muted: #4f5358;
   --colors-ink-subtle: #737880;
   --colors-ink-tertiary: #9298a1;
+  --colors-chart-demand: #5e6ad2;
 }
 
 body {

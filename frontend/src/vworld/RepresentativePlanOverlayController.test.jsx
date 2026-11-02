@@ -26,6 +26,21 @@ describe("RepresentativePlanOverlayController", () => {
     expect(onOverlayDataChange).toHaveBeenLastCalledWith([overlay]);
   });
 
+  it("can publish the map layer without rendering the left control panel", async () => {
+    const onOverlayDataChange = vi.fn();
+    render(
+      <RepresentativePlanOverlayController
+        buildingIds={["D4"]}
+        loadOverlays={vi.fn().mockResolvedValue([overlay])}
+        onOverlayDataChange={onOverlayDataChange}
+        renderPanel={false}
+      />,
+    );
+
+    await waitFor(() => expect(onOverlayDataChange).toHaveBeenCalledWith([overlay]));
+    expect(screen.queryByRole("button", { name: "대표 설치 계획 숨기기" })).toBeNull();
+  });
+
   it("does not republish a pending result after the layer is hidden", async () => {
     const user = userEvent.setup();
     const pending = deferred();

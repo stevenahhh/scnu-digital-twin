@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { MapPin, X } from "lucide-react";
-import { createBuildingCameraController } from "./cameraFocus.mjs";
+import { createBuildingCameraController, focusMapAt } from "./cameraFocus.mjs";
 import { D4_COORDINATE_HIT_TOLERANCE_DEGREES, isCoordinateMarkerHit } from "./coordinateMarkerHit.mjs";
 import { D4_COORDINATE_MARKER } from "./d4CoordinateMarker.mjs";
 import { createD4VWorldModel, removeD4VWorldModel } from "./d4VWorldModel.mjs";
@@ -83,6 +83,7 @@ export default function VWorldRenderer({
   onInstallationPlansChange,
   onRepresentativeInstallationPlanChange,
   representativeRefreshKey,
+  presentationMode = false,
 }) {
   const onSelectionRef = useRef(onSelection);
   const simulationDateRef = useRef(simulationDate);
@@ -163,6 +164,14 @@ export default function VWorldRenderer({
           viewport: document.getElementById(VWORLD_MAP_ID),
           availableArea: document.getElementById(VWORLD_AVAILABLE_AREA_ID),
         });
+        if (presentationMode) {
+          focusMapAt(map, vw, {
+            longitude: D4_COORDINATE_MARKER.longitude,
+            latitude: D4_COORDINATE_MARKER.latitude,
+            altitude: 140,
+            heading: -15,
+          });
+        }
         applyVWorldSunSimulation(simulationDateRef.current);
 
         const poiLayer = map.getLayerElement("POI_GROUP");
@@ -182,7 +191,7 @@ export default function VWorldRenderer({
           console.warn("Campus GLB overlay could not be loaded; keeping the D4 fallback model.", error);
         }
         trafficSimulationRef.current?.dispose();
-        trafficSimulationRef.current = createVWorldTrafficSimulation({ map });
+        trafficSimulationRef.current = presentationMode ? null : createVWorldTrafficSimulation({ map });
         handleOverlayDataChange(overlayDataRef.current);
         createD4CoordinateMarker(vw);
 
@@ -292,7 +301,7 @@ export default function VWorldRenderer({
       cameraControllerRef.current?.dispose();
       cameraControllerRef.current = null;
     };
-  }, [handleOverlayDataChange]);
+  }, [handleOverlayDataChange, presentationMode]);
 
   return (
     <div className="relative h-full w-full">
@@ -319,21 +328,21 @@ export default function VWorldRenderer({
           </div>
         </div>
       )}
-      {!isD4SectionOpen && <VWorldCampusStatus onSelection={(selection) => onSelectionRef.current(selection)} />}
+      {!presentationMode && !isD4SectionOpen && <VWorldCampusStatus onSelection={(selection) => onSelectionRef.current(selection)} />}
       {!isD4SectionOpen && (
         <RepresentativePlanOverlayController
           buildingIds={CAMPUS_REPRESENTATIVE_BUILDING_IDS}
           refreshKey={representativeRefreshKey}
+          renderPanel={false}
           onOverlayDataChange={handleOverlayDataChange}
           onBuildingSelect={(buildingId) => onSelectionRef.current({
             elementId: `BLD_${buildingId}`,
             buildingId,
             displayName: buildingId,
           })}
-          className="absolute left-6 top-6 z-20"
         />
       )}
-      {!isD4SectionOpen && (
+      {!presentationMode && !isD4SectionOpen && (
         <button
           type="button"
           className="dashboard-ghost-button absolute bottom-6 left-6 z-10 min-h-11 px-4 text-xs font-extrabold shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--colors-primary)]"
@@ -345,7 +354,7 @@ export default function VWorldRenderer({
           D4 공과대학 3호관 상세 보기
         </button>
       )}
-      {!isD4SectionOpen && selectedRoadZoneName && (
+      {!presentationMode && !isD4SectionOpen && selectedRoadZoneName && (
         <div
           role="status"
           className="dashboard-status-badge pointer-events-auto absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 px-3 py-2 text-xs font-extrabold shadow-lg"

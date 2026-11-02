@@ -18,6 +18,7 @@ export function RepresentativePlanOverlayController({
   onBuildingSelect,
   refreshKey,
   defaultVisible = true,
+  renderPanel = true,
   className = "",
   widthClassName = "max-w-72",
 }) {
@@ -62,6 +63,8 @@ export function RepresentativePlanOverlayController({
     setVisible(next);
     callbackRef.current?.(next ? overlays : []);
   };
+
+  if (!renderPanel) return null;
 
   const overlayByBuilding = new Map(overlays.map((overlay) => [overlay.buildingId, overlay]));
   const label = visible ? "대표 설치 계획 숨기기" : "대표 설치 계획 표시하기";

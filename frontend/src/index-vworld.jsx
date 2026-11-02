@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
+import "./vworld/cinematicFlythrough.mjs";
 import AppVWorld from "./AppVWorld";
 
 ReactDOM.createRoot(document.getElementById("root")).render(

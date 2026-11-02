@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   createdIds: [],
   receivedBuildingIds: [],
+  receivedRenderPanel: [],
   vw: null,
 }));
 
@@ -13,9 +14,10 @@ vi.mock("./webglSdkLoader.mjs", () => ({ loadVWorldWebGlSdk: vi.fn(async () => m
 vi.mock("./sunSimulation.mjs", () => ({ applyVWorldSunSimulation: vi.fn() }));
 vi.mock("./VWorldCampusStatus", () => ({ VWorldCampusStatus: () => null }));
 vi.mock("./RepresentativePlanOverlayController", () => ({
-  RepresentativePlanOverlayController: ({ buildingIds, onOverlayDataChange }) => {
+  RepresentativePlanOverlayController: ({ buildingIds, onOverlayDataChange, renderPanel }) => {
     useEffect(() => {
       mocks.receivedBuildingIds.push(...buildingIds);
+      mocks.receivedRenderPanel.push(renderPanel);
       onOverlayDataChange([{
         buildingId: "D4",
         installationPlanId: "strict-plan",
@@ -85,6 +87,7 @@ afterEach(() => {
   delete window.__scnuVWorldMapInstance;
   mocks.createdIds.length = 0;
   mocks.receivedBuildingIds.length = 0;
+  mocks.receivedRenderPanel.length = 0;
 });
 
 class ResizeObserver {
@@ -103,5 +106,6 @@ describe("VWorldRenderer retained map integration", () => {
     await waitFor(() => expect(mocks.createdIds).toContain("SCNU_REPRESENTATIVE_PANEL_strict-plan_array-1"));
     expect(mocks.vw.Map).not.toHaveBeenCalled();
     expect(new Set(mocks.receivedBuildingIds)).toEqual(new Set(["C1", "D1", "D2", "D3", "D4"]));
+    expect(new Set(mocks.receivedRenderPanel)).toEqual(new Set([false]));
   });
 });

@@ -35,6 +35,8 @@ import {
   createSimulationDate,
   getSunState,
 } from "./utils/sunPosition.mjs";
+import { loadEnvironment } from "./utils/weatherApi.mjs";
+import { useDashboardDemo } from "./vworld/dashboardDemo.mjs";
 
 const ALERT_RULES = [
   {
@@ -214,11 +216,7 @@ export default function App() {
     setLoading(true);
     setError(null);
 
-    fetch(`${apiUrl}/environment/full`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
+    loadEnvironment(apiUrl)
       .then((data) => {
         setWeatherData(data);
       })
@@ -384,6 +382,17 @@ export default function App() {
     },
     [fetchPopupData, selectedBuildingId],
   );
+
+  useDashboardDemo({
+    selectBuilding: handleVWorldSelection,
+    setActiveTab,
+    setMode,
+    setSimTemp,
+    setSunMonth,
+    setSunDay,
+    setSunHour,
+    setSunMinute,
+  });
 
   useEffect(() => {
     const controller = new AbortController();

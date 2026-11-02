@@ -8,8 +8,8 @@ An operational campus command center with restrained, high-contrast surfaces ove
 
 | Role | Token | Dark | Light | Usage |
 |---|---|---:|---:|---|
-| Accent | `--colors-primary` | `#5e6ad2` | `#5e6ad2` | Active controls and selections |
-| Accent hover | `--colors-primary-hover` | `#828fff` | `#828fff` | Interactive hover |
+| Accent | `--colors-primary` | `#3b82f6` | `#3b82f6` | Active controls and selections |
+| Accent hover | `--colors-primary-hover` | `#60a5fa` | `#60a5fa` | Interactive hover |
 | Canvas | `--colors-canvas` | `#010102` | `#ffffff` | App and 3D background |
 | Surface 1 | `--colors-surface-1` | `#0f1011` | `#f7f8f8` | Panels and popovers |
 | Surface 2 | `--colors-surface-2` | `#141516` | `#f0f2f4` | Nested controls and cards |
@@ -20,6 +20,10 @@ An operational campus command center with restrained, high-contrast surfaces ove
 | Hairline | `--colors-hairline` | `#23252a` | `#e0e2e5` | Borders and dividers |
 | Strong hairline | `--colors-hairline-strong` | `#34343a` | `#c8ccd2` | Active boundaries |
 | Success | `--colors-semantic-success` | `#27a644` | `#27a644` | Occupied/healthy state |
+| Danger | `--colors-semantic-danger` | `#d45555` | `#d45555` | Error state and destructive emphasis |
+| Danger border | `--colors-semantic-danger-border` | `rgba(212,85,85,0.4)` | `rgba(212,85,85,0.4)` | Error surface boundary |
+| Danger surface | `--colors-semantic-danger-surface` | `rgba(212,85,85,0.1)` | `rgba(212,85,85,0.1)` | Error surface fill |
+| Demand series | `--colors-chart-demand` | `#828fff` | `#5e6ad2` | Predicted demand chart and legend |
 
 3D-only materials use the corresponding visual roles: primary violet for selection, slate for idle rooms, blue for occupied rooms, and amber for the selected room. They are confined to the rendered scene and do not create UI tokens.
 
@@ -69,11 +73,19 @@ An operational campus command center with restrained, high-contrast surfaces ove
 - **Interaction**: array drag and field edits commit only after geometry validation; the latest valid edit has one-step undo. Color transitions use the existing 150ms token and no decorative motion.
 - **Accessibility**: mode tabs, array list, numeric fields, orientation controls, undo/delete/reload/save are keyboard reachable; errors use an assertive alert and do not rely on red alone.
 
+### Solar presentation page
+- **Structure**: a full-height split shell with the VWorld campus map as the primary region and one independently scrolling energy evidence rail. Solar controls remain inside the spatial region and never compete with the evidence rail for scroll ownership.
+- **Responsive scroll ownership**: at `xl` and above the evidence rail owns vertical scroll inside a fixed `100dvh` shell; below `xl` the map and evidence rail form one document flow so touch users scroll the page once without nested scrollbars.
+- **States**: daylight, night, API loading, API error, API empty, and calculated energy results.
+- **Interaction**: month, day, hour, and minute controls update the sun position; month and day also synchronize the energy simulation date.
+- **Accessibility**: every range control exposes a Korean accessible name and visible value; headings preserve natural Korean phrase wrapping at desktop, tablet, and mobile widths.
+
 ## 6. Motion & Interaction
 
 - Micro interactions use 150ms ease-out; panel changes use 300ms ease-in-out.
 - Only opacity, transform, and filter animate.
 - D4 selection is a meaningful spatial mode change; no decorative looping motion is added.
+- Presentation capture uses a 60-second, constant-speed VWorld drone path: an outside approach that establishes the main gate, stadium flyover, dormitory, west-side climb, engineering loop, Engineering Building 3, library, and a forward-looking descent that ends before passing Life Sciences. The camera travels along one arc-length spline at roughly 26 m/s, faces its forward tangent, shifts from a shallow approach angle to an aerial survey angle and back for descent, and banks only slightly through turns; it never jump-cuts, zooms between targets, or loops during normal product use. The route remains isolated behind the explicit `cinematic=1` capture mode.
 - Reduced-motion users receive the same states without nonessential transitions.
 
 ## 7. Depth & Surface

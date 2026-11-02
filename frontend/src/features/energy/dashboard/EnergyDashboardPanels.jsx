@@ -47,10 +47,10 @@ export function EnergyChart({ data }) {
     <svg role="img" aria-label="96개 15분 구간의 가상 예측 수요와 시나리오 발전 비교" viewBox="0 0 640 180" className="mt-4 h-[180px] w-full" preserveAspectRatio="none">
       {[0, 45, 90, 135, 180].map((y) => <line key={y} x1="0" x2="640" y1={y} y2={y} stroke="var(--colors-hairline)" />)}
       <path d={path(irradiance, irradianceMax)} fill="none" stroke="var(--colors-ink-subtle)" strokeDasharray="4 5" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
-      <path d={path(demand, energyMax)} fill="none" stroke="#828fff" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
-      <path d={path(generation, energyMax)} fill="none" stroke="#27a644" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
+      <path d={path(demand, energyMax)} fill="none" stroke="var(--colors-chart-demand)" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
+      <path d={path(generation, energyMax)} fill="none" stroke="var(--colors-semantic-success)" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
     </svg>
-    <div className="mt-2 flex flex-wrap gap-4 text-[11px] font-bold"><span className="text-[#828fff]">— 수요 · 가상 예측</span><span className="text-[#27a644]">— 발전</span><span className="text-[var(--colors-ink-subtle)]">┄ 일사량 · 시나리오/추정</span></div>
+    <div className="mt-2 flex flex-wrap gap-4 text-[11px] font-bold"><span className="text-[var(--colors-chart-demand)]">— 수요 · 가상 예측</span><span className="text-[var(--colors-semantic-success)]">— 발전</span><span className="text-[var(--colors-ink-subtle)]">┄ 일사량 · 시나리오/추정</span></div>
   </section>;
 }
 

@@ -68,3 +68,26 @@ test("anchors the campus GLB to D4 and registers it as a Cesium primitive", asyn
   assert.equal(added[0], model);
   assert.equal(removeCampusGltfOverlay({ _wsViewer: viewer }, model), true);
 });
+
+test("waits for the resolved D4 terrain height instead of burying the model at fallback altitude", async () => {
+  const Cesium = fakeCesium();
+  Cesium.sampleTerrainMostDetailed = async (_terrainProvider, positions) => positions.map(
+    (position) => ({ ...position, height: 85.59891678969467 }),
+  );
+  const viewer = {
+    terrainProvider: { id: "vworld-terrain" },
+    scene: {
+      globe: { getHeight: () => 40 },
+      primitives: {
+        length: 0,
+        get: () => null,
+        add: (model) => model,
+        remove: () => false,
+      },
+    },
+  };
+
+  const model = await createCampusGltfOverlay({ _wsViewer: viewer }, Cesium);
+
+  assert.equal(model.options.modelMatrix.left.left.left.origin.height, 86.09891678969467);
+});

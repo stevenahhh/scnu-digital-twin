@@ -18,16 +18,27 @@ function getViewer(map) {
   return map?._wsViewer ?? null;
 }
 
-function terrainHeight(viewer, Cesium, longitude, latitude) {
+async function terrainHeight(viewer, Cesium, longitude, latitude) {
   const cartographic = Cesium.Cartographic.fromDegrees(longitude, latitude);
   const sampledHeight = viewer.scene?.globe?.getHeight?.(cartographic);
+  if (typeof Cesium.sampleTerrainMostDetailed === "function" && viewer.terrainProvider) {
+    try {
+      const [resolved] = await Cesium.sampleTerrainMostDetailed(
+        viewer.terrainProvider,
+        [cartographic],
+      );
+      if (Number.isFinite(resolved?.height)) return resolved.height;
+    } catch {
+      // Use the best cached height below when detailed terrain is unavailable.
+    }
+  }
   return Number.isFinite(sampledHeight)
     ? sampledHeight
     : CAMPUS_GLTF_OVERLAY_CONFIG.fallbackGroundHeightMeters;
 }
 
-export function createCampusModelMatrix(viewer, Cesium, config = CAMPUS_GLTF_OVERLAY_CONFIG) {
-  const groundHeight = terrainHeight(
+export async function createCampusModelMatrix(viewer, Cesium, config = CAMPUS_GLTF_OVERLAY_CONFIG) {
+  const groundHeight = await terrainHeight(
     viewer,
     Cesium,
     config.anchor.longitude,
@@ -78,7 +89,7 @@ export async function createCampusGltfOverlay(map, Cesium = globalThis.window?.C
 
   const model = await fromGltf.call(Cesium.Model, {
     url: CAMPUS_GLTF_OVERLAY_CONFIG.url,
-    modelMatrix: createCampusModelMatrix(viewer, Cesium),
+    modelMatrix: await createCampusModelMatrix(viewer, Cesium),
     allowPicking: true,
     minimumPixelSize: 0,
     shadows: Cesium.ShadowMode?.DISABLED,
