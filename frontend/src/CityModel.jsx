@@ -335,7 +335,9 @@ export function CityModel({
   onDragStart,
   ...props
 }) {
-  const { scene } = useGLTF(CAMPUS_MODEL_URL, true, true, extendCampusLoader);
+  const { scene, asset } = useGLTF(CAMPUS_MODEL_URL, true, true, extendCampusLoader);
+  // Frame v2 GLB는 asset.extras.frameVersion을 기록한다. 없으면 v1(uni.glb) 규칙으로 재중심화한다.
+  const frameVersion = asset?.extras?.frameVersion;
   const { camera, gl, scene: rootScene, invalidate } = useThree();
   const [targetPos, setTargetPos] = useState(null);
   const tintedMeshesRef = useRef([]);
@@ -702,9 +704,9 @@ export function CityModel({
   const center = useMemo(() => {
     const d4Anchor = labelAnchors.find((anchor) => anchor.elementId === D4_ELEMENT_ID);
     if (!d4Anchor) return new THREE.Vector3(0, 0, 0);
-    const { x, z } = campusModelCenter(d4Anchor.position);
+    const { x, z } = campusModelCenter(d4Anchor.position, { frameVersion });
     return new THREE.Vector3(x, 0, z);
-  }, [labelAnchors]);
+  }, [labelAnchors, frameVersion]);
 
   // 라벨 이름·계층·구역은 레지스트리 한 곳에서 온다. 위치는 재중심화 전 모델 좌표다(정문 구역만 장면 좌표라 되돌린다).
   const anchorById = useMemo(() => new Map(labelAnchors.map((anchor) => [anchor.elementId, anchor])), [labelAnchors]);

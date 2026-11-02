@@ -8,6 +8,7 @@
 // (lib/roofPhoto.mjs; estimates, not measurements). Buildings listed in data/building-forms.json with VWorld LOD4 or
 // photo-traced masses are built from those masses (see mass forms below): wings, stepped levels, courtyards, rooftop
 // cores, raised parts and pitched or curved roofs.
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -20,12 +21,110 @@ import { MODULE_DEPTH_M, MODULE_TILT_DEGREES, panelModules, sampleRoofPhoto } fr
 import { cleanRing, pointInRing, ringArea, ringCentroid, segmentDistance } from "../lib/geometry.mjs";
 import { addBalconies, addFins, addMast, addSolar, attachmentsByNode } from "../lib/attachments.mjs";
 import { frontKit, kitInstances } from "../lib/frontKit.mjs";
-import { Box3 } from "three";
 import { meshFootprint, toModelRing } from "./sources.mjs";
+import { validate } from "../lib/schemas.mjs";
 
 const UNIT_AREA = metres(1) ** 2;
 const PARAPET = metres(0.9);
 const DATA = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data");
+const FRONTEND = path.resolve(DATA, "../../..");
+const REPO = path.resolve(FRONTEND, "..");
+
+// ---------------------------------------------------------------- node -> footprint (data/bld-node-map.json)
+// The map's inputs record the sha256 of the files it was matched on; a build on other inputs stops (stale map).
+export const NODE_MAP_INPUTS = ["frontend/public/uni.glb", "frontend/scripts/campus-model/data/gis-buildings.json"];
+export const hashInputs = () => Object.fromEntries(NODE_MAP_INPUTS.map((file) => [file, createHash("sha256").update(readFileSync(path.join(REPO, file))).digest("hex")]));
+export function checkNodeMapInputs(nodeMap, actual) {
+  for (const file of NODE_MAP_INPUTS) {
+    const recorded = nodeMap.inputs?.[file];
+    if (recorded !== actual[file]) {
+      throw new Error(`bld-node-map: stale map, ${file} sha256 ${actual[file]} but the map records ${recorded ?? "none"}; rerun bun scripts/campus-model/fetch/bldNodeMap.mjs and check its curated entries`);
+    }
+  }
+}
+
+// Keeps the side of `ring` nearer to `self` than to `other` (perpendicular bisector cut, Sutherland-Hodgman).
+function clipNearer(ring, self, other) {
+  const n = [other[0] - self[0], other[1] - self[1]];
+  const m = [(self[0] + other[0]) / 2, (self[1] + other[1]) / 2];
+  const side = (p) => (p[0] - m[0]) * n[0] + (p[1] - m[1]) * n[1];
+  const out = [];
+  ring.forEach((p, i) => {
+    const q = ring[(i + 1) % ring.length];
+    const [sp, sq] = [side(p), side(q)];
+    if (sp <= 0) out.push(p);
+    if ((sp < 0 && sq > 0) || (sp > 0 && sq < 0)) {
+      const t = sp / (sp - sq);
+      out.push([p[0] + t * (q[0] - p[0]), p[1] + t * (q[1] - p[1])]);
+    }
+  });
+  return out;
+}
+
+const footprintSourceOf = (source) => source.replace(/^OSM way\/(\d+).*$/, "osm:way/$1");
+
+// Footprint of every uni.glb BLD_* node from data/bld-node-map.json (design §3): the parts of its GIS record, unmoved.
+// A curated gis:null node takes (in order) its share of a record another node maps (split by the bisector between
+// the node outlines: BLD_C1 / BLD_C1.001), the estimated VR trace around its outline centre (A13), or its uni.glb
+// outline (estimated). Throws "bld-node-map: <node> ..." on an entry without a node, a node without an entry, a
+// record missing from the footprints, or a record that does not lie at the node.
+export function nodeFootprints({ bldNodes, footprintParts, nodeMap }) {
+  const nodes = new Map(bldNodes.map((n) => [n.rawName, n]));
+  const entries = new Map();
+  for (const entry of nodeMap.entries) {
+    if (!nodes.has(entry.nodeId)) throw new Error(`bld-node-map: ${entry.nodeId} is not a uni.glb BLD_* node`);
+    entries.set(entry.nodeId, entry);
+  }
+  for (const name of nodes.keys()) if (!entries.has(name)) throw new Error(`bld-node-map: ${name} has no entry`);
+  const outlineCentre = (name) => ringCentroid(nodes.get(name).footprint.outer);
+  const result = new Map();
+  const byRecord = new Map();
+  for (const [name, entry] of entries) {
+    if (!entry.gis) continue;
+    const parts = footprintParts.filter((p) => p.footprintSource === entry.gis.footprintSource);
+    if (!parts.length) throw new Error(`bld-node-map: ${name} maps to ${entry.gis.footprintSource}, which is not a standing footprint`);
+    const outline = nodes.get(name).footprint.outer;
+    const centre = outlineCentre(name);
+    // At the node: the outline centre is in the record, a record centre is in the outline, or they lie within 5 m.
+    const near = parts.some((p) => pointInRing(centre, p.outer) || pointInRing(p.centroid, outline) || Math.hypot(p.centroid[0] - centre[0], p.centroid[1] - centre[1]) < metres(5));
+    if (!near) throw new Error(`bld-node-map: ${name} maps to ${entry.gis.footprintSource}, which does not lie at the node's uni.glb outline`);
+    byRecord.set(entry.gis.footprintSource, [name]);
+    result.set(name, { parts, footprintSource: footprintSourceOf(entry.gis.footprintSource), footprintEstimated: false });
+  }
+  const estimated = [];
+  for (const [name, entry] of entries) {
+    if (entry.gis) continue;
+    const centre = outlineCentre(name);
+    const shared = footprintParts.find((p) => byRecord.has(p.footprintSource) && pointInRing(centre, p.outer));
+    if (shared) byRecord.get(shared.footprintSource).push(name);
+    else estimated.push(name);
+  }
+  for (const names of byRecord.values()) {
+    if (names.length < 2) continue;
+    const parts = result.get(names[0]).parts;
+    const sorted = [...names].sort();
+    for (const name of names) {
+      const self = outlineCentre(name);
+      const cut = parts.map((p) => {
+        let outer = p.outer;
+        for (const other of names) if (other !== name) outer = clipNearer(outer, self, outlineCentre(other));
+        return { ...p, outer, holes: [], centroid: outer.length >= 3 ? ringCentroid(outer) : p.centroid };
+      }).filter((p) => p.outer.length >= 3);
+      result.set(name, {
+        parts: cut, footprintSource: footprintSourceOf(parts[0].footprintSource), footprintEstimated: false,
+        footprintPart: `${sorted.indexOf(name) + 1}/${names.length} (bisector split between ${sorted.join(", ")})`,
+      });
+    }
+  }
+  for (const name of estimated) {
+    const centre = outlineCentre(name);
+    const trace = footprintParts.find((p) => p.footprintEstimated && pointInRing(centre, p.outer));
+    result.set(name, trace
+      ? { parts: [trace], footprintSource: trace.footprintSource, footprintEstimated: true }
+      : { parts: [], footprintSource: "uni.glb outline", footprintEstimated: true });
+  }
+  return result;
+}
 
 const jpeg = async (png, quality = 86) => new Bun.Image(png).jpeg({ quality }).toBuffer();
 
@@ -683,6 +782,9 @@ const aoPrimitive = (mesh, material) => ({ ...mesh.toPrimitive(material), ao: me
 // the parapet primitive; blocks as prisms with the facade cells of their own look (walls), a roof cap one band above
 // the building's roof (roof), and the band and parapet (parapet). Rooftop modules under a block's cap are lifted onto it.
 const ATTACHMENTS = path.join(DATA, "facade-attachments.json");
+// How far a roof attachment point may sit outside the mass it recolours (stages/buildings.mjs roof attachments).
+const ROOF_ATTACH_REACH_M = 5;
+const ringDistance = (p, ring) => Math.min(...ring.map((a, i) => segmentDistance(p, a, ring[(i + 1) % ring.length])));
 
 function attachmentGround(building, heightAt) {
   if (building.massForm) return formGround(building, heightAt);
@@ -1398,27 +1500,6 @@ function massPrimitives(building, seed, { heightAt, facadeMaterial, tiles, looks
       for (const p of [...face, ...[...face].reverse()]) equipment.ao.push(p[0] - roofMin[0], p[2] - roofMin[1], roofChart);
     }
   }
-  // BLD_D4 anchors the traffic frame with its bounding-box centre (CityModel, campusModelAsset.test.mjs): two 1 cm
-  // triangles 2 m under the terrain make the new form's box symmetric about the uni.glb centre.
-  if (building.anchorCentre) {
-    const [cx, cz] = building.anchorCentre;
-    let hx = 0;
-    let hz = 0;
-    for (const mesh of [walls, roof, plain, equipment]) {
-      for (let k = 0; k < mesh.positions.length; k += 3) {
-        hx = Math.max(hx, Math.abs(mesh.positions[k] - cx));
-        hz = Math.max(hz, Math.abs(mesh.positions[k + 2] - cz));
-      }
-    }
-    const y = plinthBase - metres(0.5);
-    const d = metres(0.01);
-    for (const [x, z] of [[cx - hx, cz - hz], [cx + hx, cz + hz]]) {
-      const base = walls.vertexCount;
-      for (const p of [[x, y, z], [x + Math.sign(cx - x) * d, y, z], [x, y, z + Math.sign(cz - z) * d]]) walls.vertex(p, [0, 1, 0], [0, 0]);
-      walls.triangle(base, base + 1, base + 2);
-      walls.ao.push(0, 0, 0, 0, 0, 0, 0, 0, 0);
-    }
-  }
   addAttachments(building, { walls, roof, plain }, { heightAt, tiles, looks, charts, seed });
   return [
     aoPrimitive(walls, facadeMaterial),
@@ -1486,44 +1567,15 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
     const rawName = source.rawNames[index];
     return object.isMesh && rawName.startsWith("BLD_") ? [{ object, index, rawName, footprint: meshFootprint(object) }] : [];
   });
-  // A footprint belongs to an outline when its centroid lies inside it, or (for U- and L-shaped
-  // buildings whose centroid falls outside the outline itself) within 5 m of the outline's centroid.
-  const matchesIn = (outline) => {
-    const [cx, cz] = ringCentroid(outline);
-    return footprintParts.filter((part) => !isGroundFeature(part) &&
-      (pointInRing(part.centroid, outline) || Math.hypot(part.centroid[0] - cx, part.centroid[1] - cz) < metres(5)));
-  };
-  const areaOf = (ring) => Math.abs(ringArea(ring)) / UNIT_AREA;
-  // An outline is replaced only when the source footprints cover the uni.glb outline to within 15 %.
-  const areaAgrees = (matches, outline) => {
-    const ratio = matches.reduce((sum, part) => sum + part.areaMetres, 0) / areaOf(outline);
-    return ratio >= 0.85 && ratio <= 1.15;
-  };
+  // Every node draws the footprint data/bld-node-map.json names, in the GIS frame (no shift onto uni.glb, design §3).
+  const nodeMapFile = path.join(DATA, "bld-node-map.json");
+  const nodeMap = JSON.parse(readFileSync(nodeMapFile, "utf8"));
+  const mapCheck = validate("bldNodeMap", nodeMap);
+  if (!mapCheck.ok) throw new Error(`bld-node-map: ${mapCheck.errors.join("; ")}`);
+  checkNodeMapInputs(nodeMap, hashInputs());
+  const nodeParts = nodeFootprints({ bldNodes, footprintParts, nodeMap });
 
-  // Footprints traced from imagery (OSM) sit a few metres off the cadastral frame uni.glb uses. The
-  // median centroid offset over one-to-one matches of similar area moves them onto uni.glb (and onto
-  // the roads); for cadastral footprints it comes out close to zero.
-  let footprintShift;
-  {
-    const deltas = bldNodes.flatMap(({ footprint }) => {
-      const matches = matchesIn(footprint.outer);
-      if (matches.length !== 1 || !areaAgrees(matches, footprint.outer)) return [];
-      const [cx, cz] = ringCentroid(footprint.outer);
-      return [[cx - matches[0].centroid[0], cz - matches[0].centroid[1]]];
-    });
-    const median = (values) => values.sort((a, b) => a - b)[values.length >> 1];
-    const [dx, dz] = deltas.length >= 5 ? [median(deltas.map((d) => d[0])), median(deltas.map((d) => d[1]))] : [0, 0];
-    const move = (ring) => ring.map(([x, z]) => [x + dx, z + dz]);
-    for (const part of footprintParts) {
-      part.outer = move(part.outer);
-      part.holes = part.holes.map(move);
-      part.centroid = ringCentroid(part.outer);
-    }
-    footprintShift = [dx, dz];
-    console.log(`footprint shift onto uni.glb: ${(dx / metres(1)).toFixed(2)} m east, ${(-dz / metres(1)).toFixed(2)} m north (median of ${deltas.length} matches)`);
-  }
-
-  // Tower masses (data/scnu-facades.json tower): the convex hull of the named VWorld LOD4 roof levels, shifted like
+  // Tower masses (data/scnu-facades.json tower): the convex hull of the named VWorld LOD4 roof levels, placed like
   // the footprints; partMasses clips it to the part.
   const towers = [];
   for (const part of footprintParts) {
@@ -1535,10 +1587,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
       console.warn(`tower for ${part.label ?? part.name}: no VWorld LOD4 roof level ${tower.levels} for ${tower.lod4} in lod4-facades.json; left out`);
       continue;
     }
-    const hull = convexHull(points.map(([lon, lat]) => {
-      const [x, z] = geoToModel(lon, lat);
-      return [x + footprintShift[0], z + footprintShift[1]];
-    }));
+    const hull = convexHull(points.map(([lon, lat]) => geoToModel(lon, lat)));
     part.tower = { floors: tower.floors, heightMetres: tower.heightMetres, floorsSource: tower.floorsSource, hull };
     towers.push(`${part.label ?? part.name} (${part.footprintSource.replace(/^.* record /, "record ")}): ${tower.floors} floors, ${tower.heightMetres} m over LOD4 roof level ${(tower.levels ?? [0]).join("+")}`);
   }
@@ -1559,29 +1608,25 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
 
   for (const { object, rawName, footprint } of bldNodes) {
     const materialName = [].concat(object.material)[0]?.name ?? "";
-    const inside = matchesIn(footprint.outer);
-    // No footprint centred inside the outline: take floors from one whose outline contains its centre.
+    const chosen = nodeParts.get(rawName);
+    // Floors, height and name come from the footprint record(s) the node draws, or for a node drawn from its uni.glb
+    // outline, from the records its outline centre lies in.
     const outlineCentre = ringCentroid(footprint.outer);
-    const matches = inside.length ? inside : footprintParts.filter((part) => !isGroundFeature(part) && pointInRing(outlineCentre, part.outer));
+    const matches = chosen.parts.length ? chosen.parts : footprintParts.filter((part) => !isGroundFeature(part) && pointInRing(outlineCentre, part.outer));
     matches.forEach((part) => used.add(part.index));
     const sourceHeight = (footprint.topY - footprint.minY) / metres(1);
     const kept = { heightMetres: Math.max(sourceHeight, MIN_HEIGHT), heightSource: "uni.glb outline height", heightLineage: "uni.glb-outline", storeyMetresUsed: null };
     const name = matches.map((part) => part.name).find(Boolean) ?? "";
-    // BLD_D4 anchors the traffic frame through its bounding box, so it keeps the original outline. A node whose
-    // outline is only a corner of the record around it keeps that outline too, unless the record's entry asks for
-    // the record's footprint (useRecordFootprint: the uni.glb outline leaves most of the building out).
-    const useRecord = !inside.length && matches.length > 0 && matches.every((m) => m.entry?.useRecordFootprint);
-    const keepOutline = rawName === "BLD_D4" || (!inside.length && !useRecord) || (inside.length > 0 && !areaAgrees(inside, footprint.outer));
     const heights = matches.map((part) => heightWithLog(part, true, `${rawName} ${bareName(part.label ?? part.name)}`)).filter(Boolean);
-    const parts = keepOutline
-      ? [{
+    const parts = chosen.parts.length
+      ? chosen.parts.map((part) => ({ outer: part.outer, holes: part.holes, ...(heightOf(part, true, medians) ?? kept), floors: part.floors, tower: part.tower }))
+      : [{
         outer: footprint.outer,
         holes: footprint.holes,
         ...(heights.length ? heights.reduce((a, b) => (b.heightMetres > a.heightMetres ? b : a)) : kept),
         floors: Math.max(0, ...matches.map((m) => m.floors || 0)) || Math.round(sourceHeight / 3.6),
         tower: matches.find((m) => m.tower)?.tower,
-      }]
-      : matches.map((part) => ({ outer: part.outer, holes: part.holes, ...(heightOf(part, true, medians) ?? kept), floors: part.floors, tower: part.tower }));
+      }];
     let floorsSource = [...new Set(matches.map((m) => m.floorsSource).filter((s) => s && s !== "none"))].join(", ") || "none";
     // A node entry sets the look, and floors/height where several nodes share one record (BLD_C1, BLD_C1.001).
     const nodeEntry = catalogue.byNode.get(rawName);
@@ -1596,11 +1641,10 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
     }
     const entry = nodeEntry ?? matches.map((m) => m.entry).find(Boolean) ?? null;
     const look = entry?.look ?? (/Glass/.test(materialName) ? "greenhouse" : genericLook(name, Math.abs(ringArea(footprint.outer)) / UNIT_AREA, true));
-    const footprintSource = keepOutline ? "uni.glb outline" : [...new Set(matches.map((m) => m.footprintSource))].join(", ");
-    if (useRecord) corrections.push(`${rawName}: footprint uni.glb outline -> ${footprintSource} (useRecordFootprint)`);
+    const { footprintSource, footprintEstimated, footprintPart } = chosen;
     heightLog.push({ label: rawName, footprintSource, floorsSource, heightSource: parts[0].heightSource, heightMetres: parts[0].heightMetres });
     selectableBuildings.push({
-      nodeName: rawName, displayName: name, look, entry, footprintSource, floorsSource, heightSource: parts[0].heightSource,
+      nodeName: rawName, displayName: name, look, entry, footprintSource, footprintEstimated, footprintPart, floorsSource, heightSource: parts[0].heightSource,
       heightLineage: parts[0].heightLineage, storeyMetresUsed: parts[0].storeyMetresUsed, parts,
     });
   }
@@ -1694,16 +1738,13 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
   console.log(`tower masses over VWorld LOD4 roof levels: ${towers.join("; ") || "none"}`);
   // fetch/buildingForms.mjs derives data/building-forms.json from this selection (the footprints before any form).
   console.log(`small footprints included by their scnu-facades.json entry (minAreaMetres): ${smallIncluded.join("; ") || "none"}`);
-  if (selectOnly) return { selectableBuildings, campusBuildings, offCampusLots, contextParts, footprintShift };
+  if (selectOnly) return { selectableBuildings, campusBuildings, offCampusLots, contextParts };
 
   // ---- building forms (data/building-forms.json): masses replace the footprint parts of the buildings whose form
   // comes from the VWorld LOD4 mesh or a photo-traced outline; the rest keep their footprint (and the form record).
   {
     const forms = loadForms();
-    const toModel = ([lon, lat]) => {
-      const [x, z] = geoToModel(lon, lat);
-      return [x + footprintShift[0], z + footprintShift[1]];
-    };
+    const toModel = ([lon, lat]) => geoToModel(lon, lat);
     const used = [];
     const detachedLog = [];
     let formOriginals = [];
@@ -1775,13 +1816,10 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
     console.log(`building forms (data/building-forms.json): ${used.length} buildings built from masses (${used.join(", ")}); ` +
       `low masses outside a uni.glb node's outline drawn with CampusBuildings: ${detachedLog.join("; ") || "none"}`);
   }
-  // ---- facade attachments (data/facade-attachments.json): lon/lat to model, shifted like the footprints
+  // ---- facade attachments (data/facade-attachments.json): lon/lat to model, like the footprints
   {
     const byNode = existsSync(ATTACHMENTS) ? attachmentsByNode(JSON.parse(readFileSync(ATTACHMENTS, "utf8")), catalogue.looks) : new Map();
-    const toModel = ([lon, lat]) => {
-      const [x, z] = geoToModel(lon, lat);
-      return [x + footprintShift[0], z + footprintShift[1]];
-    };
+    const toModel = ([lon, lat]) => geoToModel(lon, lat);
     const log = [];
     for (const [node, list] of byNode) {
       // a uni.glb BLD_* node, or a campus building drawn in CampusBuildings with its BLD_SCNU_* pick proxy
@@ -1818,12 +1856,6 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
     }
     console.log(`curated pitched roofs (scnu-facades.json roof): ${pitched.join("; ") || "none"}`);
   }
-  const d4 = selectableBuildings.find((b) => b.nodeName === "BLD_D4");
-  if (d4?.massForm) {
-    const box = new Box3().setFromObject(bldNodes.find((n) => n.rawName === "BLD_D4").object);
-    d4.anchorCentre = [(box.min.x + box.max.x) / 2, (box.min.z + box.max.z) / 2];
-  }
-
   // ---- materials
   // Detail maps (U42) ship as PNG in the raw GLB; the pack step re-encodes every texture as WebP.
   // Roughness and metal come from the packed map (G, B), so both factors are 1.
@@ -1942,10 +1974,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
     // OSM tags for roofs the photo could not colour
     const file = existsSync(ROOF_TAGS) ? JSON.parse(readFileSync(ROOF_TAGS, "utf8")) : null;
     if (!file) console.warn(`roof colours: ${path.basename(ROOF_TAGS)} missing (bun scripts/campus-model/fetch/roofTags.mjs)`);
-    const tagged = (file?.buildings ?? []).map((entry) => {
-      const [x, z] = geoToModel(...entry.centre);
-      return { ...entry, point: [x + footprintShift[0], z + footprintShift[1]], colour: roofColourFromTags(entry.tags) };
-    });
+    const tagged = (file?.buildings ?? []).map((entry) => ({ ...entry, point: geoToModel(...entry.centre), colour: roofColourFromTags(entry.tags) }));
     const applied = [];
     for (const building of [...selectableBuildings, ...campusBuildings]) {
       if (building.roofColourRgb) continue;
@@ -1976,7 +2005,12 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
     const partRoofs = [];
     for (const building of [...selectableBuildings, ...campusBuildings]) {
       for (const a of (building.attachments ?? []).filter((x) => x.kind === "roof")) {
-        const part = building.massForm ? building.parts.find((p) => p.outer?.length >= 3 && pointInRing(a.at, p.outer)) : null;
+        // The point is read off the photo/VR; since Frame v2 the LOD4 masses are rigidly fitted to the GIS footprint
+        // (fit_rigid moves them up to ~4 m), so a point on a mass edge can fall just outside it. The part holding the
+        // point wins; otherwise the nearest part within ROOF_ATTACH_REACH_M of it, and anything farther still throws.
+        const parts = building.massForm ? building.parts.filter((p) => p.outer?.length >= 3) : [];
+        const part = parts.find((p) => pointInRing(a.at, p.outer))
+          ?? parts.map((p) => ({ p, d: ringDistance(a.at, p.outer) })).filter((x) => x.d <= metres(ROOF_ATTACH_REACH_M)).sort((x, y) => x.d - y.d)[0]?.p;
         if (!part) throw new Error(`facade-attachments.json: roof ${a.id} of ${building.nodeName ?? building.nodeId} is not inside a mass of its form`);
         part.roofColourRgb = hex(a.colour);
         partRoofs.push(`${building.nodeName ?? building.nodeId} ${a.id} ${a.colour}`);
@@ -2086,6 +2120,9 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
       extras: {
         displayName: building.displayName,
         source: building.footprintSource,
+        footprintEstimated: building.footprintEstimated,
+        footprintSource: building.footprintSource,
+        ...(building.footprintPart ? { footprintPart: building.footprintPart } : {}),
         floorsSource: building.floorsSource,
         heightSource: building.parts[0].heightSource ?? building.heightSource,
         heightLineage: building.heightLineage,

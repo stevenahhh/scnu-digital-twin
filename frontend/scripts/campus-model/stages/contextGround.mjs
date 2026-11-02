@@ -94,7 +94,8 @@ function distanceToPolyline(p, line) {
 export function measuredWidths(layers, lines) {
   const quads = new Map();
   for (const l of layers) {
-    if (l.cls !== "ASPHALT" || l.source !== "OSM-derived") continue;
+    // a quad whose two corners collapsed in cleanRing (a zero-length side) has no left/right corner pair to measure
+    if (l.cls !== "ASPHALT" || l.source !== "OSM-derived" || l.rings[0].length !== 4) continue;
     if (!quads.has(l.source_ref)) quads.set(l.source_ref, []);
     quads.get(l.source_ref).push(l.rings[0].map(([E, N]) => mul(tmToScene(E, N), 1 / U)));
   }

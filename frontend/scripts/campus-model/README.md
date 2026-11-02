@@ -363,8 +363,7 @@ Height rule (`heightOf` in `stages/buildings.mjs`), giving the roof-slab height 
 - An entry's `tower` adds a taller mass on the part: the convex hull of the named VWorld LOD4 roof levels,
   clipped to the footprint, standing on the part's roof (A1 대학본부, 8 floors on a 3-floor podium; A5 진리관, 12
   floors on the 2-floor A4 annex; A6 창조관, 11 floors on 6). The podium's parapet leaves out the stretches under
-  the tower. `useRecordFootprint` lets a `uni.glb` node take the register footprint around it when its own outline
-  leaves most of the building out (BLD_A4, whose outline missed the 진리관 tower).
+  the tower.
 
 All of these heights are estimates, not measurements. Node extras carry `heightSource` (the human-readable
 reason) and, on every `BLD_*` node and `BLD_SCNU_*` proxy, `heightLineage` with `storeyMetresUsed` (the

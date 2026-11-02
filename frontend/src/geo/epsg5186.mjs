@@ -3,7 +3,7 @@
 // EPSG:5186 is GRS80 Transverse Mercator, lat0 38, lon0 127, k0 1, FE 200000, FN 600000 (NGII sheet metadata).
 // The TM series is Krüger's (the form used for UTM), carried to n^4: forward/inverse error is far below 1 mm
 // inside Korea. Scene units are uni.glb's (0.6242 per metre, +x east, +z south) with BLD_D4's bounding-box
-// centre at D4_SCENE; the simulation frame is metres east/north of the D4 anchor. Pure module, no dependencies.
+// centre at D4_SCENE_ANCHOR; the simulation frame is metres east/north of the D4 anchor. Pure module, no dependencies.
 
 export const EPSG5186 = Object.freeze({
   lat0: 38,
@@ -15,12 +15,16 @@ export const EPSG5186 = Object.freeze({
   f: 1 / 298.257222101,
 });
 
-// uni.glb (and the traffic simulation) live in scene units with BLD_D4's bounding-box centre at D4_SCENE.
+// uni.glb (and the traffic simulation) live in scene units with BLD_D4's bounding-box centre at D4_SCENE_ANCHOR.
 // The SketchUp source behind uni.glb is the VWorld cadastral footprint set shifted by a constant offset
 // (median over 43 buildings whose areas match within 1 %: 4.40 m east, 0.44 m north).
 export const SCENE_UNITS_PER_METRE = 0.6242171526;
 export const D4_ANCHOR = Object.freeze({ longitude: 127.4764043, latitude: 34.9700548 });
-export const D4_SCENE = Object.freeze({ x: 46.513, z: -266.574 });
+// Frame v2: the scene position that puts the GIS BLD_D4 footprint bbox centre (GIS건물통합정보 AL_D010_12_20261009
+// record 133154, EPSG:5186 [243507.55, 263879.65]) exactly on the uni.glb BLD_D4 bbox centre (46.721, -266.797).
+// fetch/frameV2.mjs computes it as v1 (46.513, -266.574) plus the v1 residual (2.030, 1.514 scene units, 4.06 m).
+export const FRAME_VERSION = 2;
+export const D4_SCENE_ANCHOR = Object.freeze({ x: 48.543, z: -265.06 });
 export const SOURCE_MODEL_OFFSET = Object.freeze({ x: 2.744, z: -0.274 });
 
 const DEG = Math.PI / 180;
@@ -183,15 +187,15 @@ function localToGrid(east, north) {
 export function tmToScene(E, N) {
   const [east, north] = gridToLocal(E, N);
   return [
-    D4_SCENE.x + east * SCENE_UNITS_PER_METRE - SOURCE_MODEL_OFFSET.x,
-    D4_SCENE.z - north * SCENE_UNITS_PER_METRE - SOURCE_MODEL_OFFSET.z,
+    D4_SCENE_ANCHOR.x + east * SCENE_UNITS_PER_METRE - SOURCE_MODEL_OFFSET.x,
+    D4_SCENE_ANCHOR.z - north * SCENE_UNITS_PER_METRE - SOURCE_MODEL_OFFSET.z,
   ];
 }
 
 export function sceneToTm(x, z) {
   return localToGrid(
-    (x + SOURCE_MODEL_OFFSET.x - D4_SCENE.x) / SCENE_UNITS_PER_METRE,
-    -(z + SOURCE_MODEL_OFFSET.z - D4_SCENE.z) / SCENE_UNITS_PER_METRE,
+    (x + SOURCE_MODEL_OFFSET.x - D4_SCENE_ANCHOR.x) / SCENE_UNITS_PER_METRE,
+    -(z + SOURCE_MODEL_OFFSET.z - D4_SCENE_ANCHOR.z) / SCENE_UNITS_PER_METRE,
   );
 }
 

@@ -27,7 +27,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { D4_SCENE, SCENE_UNITS_PER_METRE } from "../campus-model/lib/frame.mjs";
+import { D4_SCENE_ANCHOR, SCENE_UNITS_PER_METRE } from "../campus-model/lib/frame.mjs";
 import { bearingToDirection, faceYaw, stationWorld } from "./lib/vrCamera.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -347,7 +347,7 @@ try {
   let offset = null;
   const measureOffset = async () => {
     const d4World = await evaluate(`window.__compare.worldCentre("BLD_D4")`);
-    const next = { x: d4World.x - D4_SCENE.x, z: d4World.z - D4_SCENE.z };
+    const next = { x: d4World.x - D4_SCENE_ANCHOR.x, z: d4World.z - D4_SCENE_ANCHOR.z };
     if (!offset || Math.abs(next.x - offset.x) > 1e-3 || Math.abs(next.z - offset.z) > 1e-3) {
       const groupMatrix = await evaluate(`window.__compare.groupTransform()`);
       console.log(`FRAME offset world-minus-scene x=${next.x.toFixed(3)} z=${next.z.toFixed(3)}; D4 parent matrixWorld=${JSON.stringify(groupMatrix.map((v) => +v.toFixed(4)))}`);

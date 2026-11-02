@@ -40,7 +40,7 @@ import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { tmToScene } from "../../src/geo/epsg5186.mjs";
-import { EXTENT, SCENE_UNITS_PER_METRE } from "./lib/frame.mjs";
+import { EXTENT, SCENE_UNITS_PER_METRE, frameAssetExtras } from "./lib/frame.mjs";
 import { SURFACE_CLASS } from "./lib/surfaceClass.mjs";
 import { HUMP_LENGTH_M, buildHumps, buildStalls, humpProfile, loadSpeedBumps } from "./network/stalls.mjs";
 import { GlbBuilder } from "./lib/glb.mjs";
@@ -248,6 +248,8 @@ const collections = glb.groupRoots([
 console.log(`collections: ${[...collections.keys()].join(", ")}`);
 
 // ---------------------------------------------------------------- write
+// Frame v2 tags sit beside the AO tags stages/buildings.mjs writes; lib/frame.mjs campusModelAsset reads them.
+glb.json.asset.extras = { ...glb.json.asset.extras, ...frameAssetExtras() };
 const bytes = glb.toBuffer();
 await mkdir(path.dirname(OUTPUT), { recursive: true });
 await Bun.write(OUTPUT, bytes);

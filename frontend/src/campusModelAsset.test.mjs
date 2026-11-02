@@ -2,9 +2,8 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { CAMPUS_MODEL_URLS, resolveCampusModelUrl } from "./campusModelAsset.mjs";
-import { campusModelCenter } from "./simulation/utils/campusTrafficCoordinates.mjs";
+import { tmToScene } from "./geo/epsg5186.mjs";
 
 const publicFile = (name) => new URL(`../public/${name}`, import.meta.url);
 
@@ -48,12 +47,6 @@ function nodeBox(json, node) {
     }
   }
   return box;
-}
-
-async function loadUniScene() {
-  const file = await readFile(publicFile("uni.glb"));
-  const gltf = await new GLTFLoader().parseAsync(file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength), "");
-  return gltf.scene;
 }
 
 test("the dashboard loads the generated model unless ?model=uni asks for the original", () => {
@@ -106,25 +99,24 @@ test("campus-v2.glb gives every named SCNU campus building a labelled pick proxy
   }
 });
 
-test("campus-v2.glb sits on the traffic simulation frame like uni.glb", async () => {
-  const [uniScene, campus] = await Promise.all([loadUniScene(), readGlbJson("campus-v2.glb")]);
-  const campusCenterOf = (name) => nodeBox(campus, campus.nodes.find((node) => node.name === name)).getCenter(new THREE.Vector3());
-  const uniCenterOf = (name) => new THREE.Box3().setFromObject(uniScene.getObjectByName(name)).getCenter(new THREE.Vector3());
+test("campus-v2.glb is Frame v2 and every GIS-mapped BLD_* node stands over its GIS footprint centre", async () => {
+  const [campus, nodeMap] = await Promise.all([
+    readGlbJson("campus-v2.glb"),
+    readFile(new URL("../scripts/campus-model/data/bld-node-map.json", import.meta.url), "utf8").then(JSON.parse),
+  ]);
 
-  // CityModel recenters on the BLD_D4 anchor; it must not move, or vehicles leave their roads.
-  const d4 = campusCenterOf("BLD_D4");
-  const uniD4 = uniCenterOf("BLD_D4");
-  assert.ok(Math.hypot(d4.x - uniD4.x, d4.z - uniD4.z) < 0.05, "BLD_D4 moved");
-
-  // Rebuilt footprints come from VWorld, so other buildings may differ slightly from uni.glb's outlines.
-  const center = campusModelCenter([d4.x, d4.y, d4.z]);
-  const uniCenter = campusModelCenter([uniD4.x, uniD4.y, uniD4.z]);
-  for (const id of ["BLD_D3", "BLD_D2", "BLD_C1", "BLD_E1", "BLD_A1", "BLD_B7"]) {
-    const rebuilt = campusCenterOf(id);
-    const original = uniCenterOf(id);
-    const error = Math.hypot(rebuilt.x - center.x - (original.x - uniCenter.x), rebuilt.z - center.z - (original.z - uniCenter.z));
-    assert.ok(error < 3, `${id} is ${error.toFixed(2)} scene units from its uni.glb position`);
+  // Frame v2: the GIS footprint is the frame. Each node's footprint parts sit on their GIS centres within 0.05 m
+  // (stages/buildingsFrame.test.mjs); the node bbox spans its LOD4 masses, so here it only has to stay over its own GIS
+  // footprint centre (bld-node-map.json gisCentreTm) within the footprint's reach, and the asset must say Frame v2.
+  assert.equal(campus.asset.extras?.frameVersion, 2, "campus-v2.glb is not Frame v2");
+  assert.deepEqual(campus.asset.extras?.anchor?.scene?.length, 2, "campus-v2.glb has no Frame v2 anchor");
+  for (const entry of nodeMap.entries.filter((e) => e.gisCentreTm)) {
+    const box = nodeBox(campus, campus.nodes.find((node) => node.name === entry.nodeId));
+    const [x, z] = tmToScene(...entry.gisCentreTm);
+    assert.ok(x > box.min.x && x < box.max.x && z > box.min.z && z < box.max.z, `${entry.nodeId} does not stand over its GIS footprint centre`);
   }
+  // Buildings follow GIS, not uni.glb's outlines (todo 5 decision); the v1/v2 recentring rule has its own tests in
+  // simulation/utils/campusTrafficCoordinates.test.mjs.
 });
 
 test("campus-v2.glb stands every VR-only building of vr-buildings.json, with estimated footprint and height lineage", async () => {

@@ -24,13 +24,13 @@
 //
 // Frames: windows are given in uni.glb scene units (+x east, +z south, 0.6242171526 units/m), the same
 // frame as gen/lib/frame.mjs. The runtime recentres the model (CityModel group at -center), so the
-// script measures BLD_D4's world bounding-box centre and subtracts D4_SCENE to get that offset. Mosaic
+// script measures BLD_D4's world bounding-box centre and subtracts D4_SCENE_ANCHOR to get that offset. Mosaic
 // pixels come from modelToGeo() of the window corners and Web Mercator rows from the bounds JSON.
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { D4_SCENE, SCENE_UNITS_PER_METRE, modelToGeo } from "../campus-model/lib/frame.mjs";
+import { D4_SCENE_ANCHOR, SCENE_UNITS_PER_METRE, modelToGeo } from "../campus-model/lib/frame.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, "../../..");
@@ -39,7 +39,7 @@ const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const METRES_PER_PIXEL = 0.25;
 
 // Window centres in scene units (picked on the z19 mosaic); sizes in metres (=> 800 x 600 px at 0.25 m/px).
-//   d4-block      BLD_D4 bounding-box centre (D4_SCENE) with D3 and the west slope
+//   d4-block      BLD_D4 bounding-box centre (D4_SCENE_ANCHOR) with D3 and the west slope
 //   main-gate     east entrance on the arterial road, north-east of the stadium
 //   central-lawn  oval-pond plaza, roundabout and lawns north of BLD_E1
 //   east-woodland tree belt between the B buildings and the stadium
@@ -303,7 +303,7 @@ try {
   await evaluate(PAGE_HELPERS);
 
   const d4World = await evaluate(`window.__compare.worldCentre("BLD_D4")`);
-  const offset = { x: d4World.x - D4_SCENE.x, z: d4World.z - D4_SCENE.z };
+  const offset = { x: d4World.x - D4_SCENE_ANCHOR.x, z: d4World.z - D4_SCENE_ANCHOR.z };
   const groupMatrix = await evaluate(`window.__compare.groupTransform()`);
   console.log(`FRAME offset world-minus-scene x=${offset.x.toFixed(3)} z=${offset.z.toFixed(3)}; D4 parent matrixWorld=${JSON.stringify(groupMatrix.map((v) => +v.toFixed(4)))}`);
 
