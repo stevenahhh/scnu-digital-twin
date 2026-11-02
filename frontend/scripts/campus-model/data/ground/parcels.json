@@ -205043,20 +205043,20 @@
    "class": "lot",
    "ring": [
     [
-     243669.2445,
-     263796.3991
+     243662.1036,
+     263796.7108
     ],
     [
-     243677.8919,
-     263804.3235
+     243668.4288,
+     263802.2834
     ],
     [
-     243674.5922,
-     263807.9243
+     243671.7076,
+     263798.5618
     ],
     [
-     243665.9448,
-     263799.9999
+     243665.3824,
+     263792.9891
     ]
    ],
    "holes": [],
@@ -205081,20 +205081,20 @@
    "class": "lot",
    "ring": [
     [
-     243672.1439,
-     263789.7373
+     243666.2746,
+     263780.1122
     ],
     [
-     243679.0391,
-     263794.5739
+     243692.5728,
+     263797.9916
     ],
     [
-     243681.0762,
-     263791.8705
+     243689.7616,
+     263802.1265
     ],
     [
-     243674.181,
-     263787.0339
+     243663.4634,
+     263784.2471
     ]
    ],
    "holes": [],
@@ -205119,20 +205119,20 @@
    "class": "lot",
    "ring": [
     [
-     243678.0119,
-     263814.1888
+     243676.2031,
+     263809.3812
     ],
     [
-     243679.9527,
-     263819.6542
+     243679.7592,
+     263819.7799
     ],
     [
-     243684.2804,
-     263818.2689
+     243684.5281,
+     263818.1491
     ],
     [
-     243682.3396,
-     263812.8035
+     243680.9719,
+     263807.7504
     ]
    ],
    "holes": [],
@@ -205142,7 +205142,7 @@
    "source": "parking-record",
    "source_ref": "parking row LOT_E3_S/R5",
    "evidence": {
-    "tier": "T2",
+    "tier": "T1",
     "refs": [
      "LOT_E3_S/R5"
     ]
@@ -205150,6 +205150,48 @@
    "paintAllowed": true,
    "estimated": true,
    "curated": "todo 12"
+  },
+  {
+   "id": "PARCEL_LOT_E3_S_R8",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     243668.3906,
+     263802.2838
+    ],
+    [
+     243676.6738,
+     263809.5824
+    ],
+    [
+     243679.9529,
+     263805.861
+    ],
+    [
+     243671.6697,
+     263798.5623
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "mesh": "Ground_Lot",
+   "label": null,
+   "source": "parking-record",
+   "source_ref": "parking row LOT_E3_S/R8",
+   "evidence": {
+    "tier": "T1",
+    "refs": [
+     "LOT_E3_S/R8"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 12",
+   "over": [
+    "PARCEL_LOT_E3_S_R1",
+    "PARCEL_LOT_E3_S_R5"
+   ]
   },
   {
    "id": "PARCEL_LOT_E243668_N263569_R1",
@@ -212571,47 +212613,6 @@
    ]
   },
   {
-   "id": "PARCEL_SUPPORT_LOT_243668_263796",
-   "cls": "LOT",
-   "class": "lot",
-   "ring": [
-    [
-     243664.874,
-     263792.9302
-    ],
-    [
-     243664.9508,
-     263792.8478
-    ],
-    [
-     243671.483,
-     263798.9398
-    ],
-    [
-     243671.4062,
-     263799.0222
-    ]
-   ],
-   "holes": [],
-   "precedence": 4,
-   "mesh": "Ground_Lot",
-   "label": null,
-   "source": "photo-paint-support",
-   "source_ref": "paint support: 1 detected pieces (LOT_E3_S/L1@243668.18,263795.93)",
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "LOT_E3_S/L1@243668.18,263795.93"
-    ]
-   },
-   "paintAllowed": true,
-   "estimated": true,
-   "curated": "todo 9",
-   "over": [
-    "PARCEL_LOT_E3_S_R1"
-   ]
-  },
-  {
    "id": "PARCEL_SUPPORT_LOT_243671_263572",
    "cls": "LOT",
    "class": "lot",
@@ -214921,44 +214922,6 @@
     "tier": "T1",
     "refs": [
      "LOT_E243647_N263960/R1/back@243659.72,263964.15"
-    ]
-   },
-   "paintAllowed": true,
-   "estimated": true,
-   "curated": "todo 9"
-  },
-  {
-   "id": "PARCEL_SUPPORT_LOT_243676_263752",
-   "cls": "LOT",
-   "class": "lot",
-   "ring": [
-    [
-     243675.3952,
-     263750.6564
-    ],
-    [
-     243675.5383,
-     263750.6119
-    ],
-    [
-     243676.4288,
-     263753.4766
-    ],
-    [
-     243676.2857,
-     263753.5211
-    ]
-   ],
-   "holes": [],
-   "precedence": 6.2,
-   "mesh": "Ground_Lot",
-   "label": null,
-   "source": "photo-paint-support",
-   "source_ref": "paint support: 1 detected pieces (LOT_E3_S/L2@243675.91,263752.07)",
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "LOT_E3_S/L2@243675.91,263752.07"
     ]
    },
    "paintAllowed": true,

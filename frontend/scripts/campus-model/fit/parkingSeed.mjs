@@ -18,6 +18,10 @@
 //      over the ground beside them, or for a row of blue cells the mean share of its fills on blue. It never counts detections:
 //      the paint gate accepted false strokes, which is what this step found. A row with no such evidence is not T1.
 //
+//   6. A lot in data/ground/parking-curation.json replaces what the steps above made there (applyCuration): reviewed records are
+//      kept in that file, never in parking.json, which this seed rewrites. The file names its lots by an anchor point and its rows
+//      by their own ids, so the numbering of the steps above cannot move them.
+//
 //   bun scripts/campus-model/fit/parkingSeed.mjs --write    writes parking.json with parcel null (then run parcelsSeed.mjs --write)
 //   bun scripts/campus-model/fit/parkingSeed.mjs --link     names each lot's parcel from parcels.json
 import { orientedBox } from "../lib/markingFit.mjs";
@@ -533,7 +537,7 @@ function gradeRow(row, photo) {
   const cells = widths.map((w, index) => { const c = { index, s0: s, s1: s + w }; s += w; return c; });
   for (const c of cells) {
     const stall = row.stalls.find((x) => x.index === c.index);
-    if (!stall || stall.kind === "general") continue;
+    if (!stall || (stall.kind !== "accessible" && stall.kind !== "pm")) continue; // only these are filled blue
     const [i0, i1, j0, j1] = [c.s0 + 0.1, c.s1 - 0.1, 0.1, row.depthM - 0.1];
     const seen = photo.blue([f.at(i0, j0), f.at(i1, j0), f.at(i1, j1), f.at(i0, j1)]);
     c.share = seen.share;
@@ -631,13 +635,62 @@ function assignLots(rows, lines, named) {
   return lots;
 }
 
+// ---------------------------------------------------------------- 6. curated lots
+// curation: data/ground/parking-curation.json. Each lot takes the place of the seeded lot its anchor lies on. The photo measures
+// its rows (photoSupport, paintSupport, which dividers it cannot confirm) but does not decide for the person: a row the person
+// read and the mask hides stays as read, and a T1 row with paint missing under it stops the seed, so the file gets looked at.
+function hitsLot(lot, point) {
+  return lot.rows.some((row) => pointInRing(point, footprint(row))) || (lot.lines ?? []).some((line) => {
+    const b = bounds(line.ring ?? line.abs);
+    return point[0] >= b[0] - 0.5 && point[0] <= b[2] + 0.5 && point[1] >= b[1] - 0.5 && point[1] <= b[3] + 0.5;
+  });
+}
+function gradeCurated(row, photo) {
+  const graded = structuredClone(row);
+  gradeRow(graded, photo);
+  if (row.evidence.tier === "T1" && graded.evidence.tier !== "T1" && graded.evidence.photoSupport !== null) throw new Error(`${row.id}: curated T1 but photoSupport ${graded.evidence.photoSupport}`);
+  row.evidence.photoSupport = graded.evidence.photoSupport ?? null;
+  for (const stall of row.stalls) {
+    const seen = graded.stalls.find((x) => x.index === stall.index);
+    if ("paintSupport" in seen) stall.paintSupport = seen.paintSupport;
+    if (seen.estimated) stall.estimated = true;
+  }
+  if (!row.estimatedDividers && graded.estimatedDividers?.length) row.estimatedDividers = graded.estimatedDividers;
+}
+export function applyCuration(doc, curation, { photo = null, log = () => {} } = {}) {
+  const taken = new Map();
+  const lots = doc.lots.map((lot) => ({ ...lot }));
+  for (const entry of curation.lots) {
+    const index = doc.lots.findIndex((lot) => hitsLot(lot, entry.anchor));
+    const where = `${entry.id}: anchor ${JSON.stringify(entry.anchor)}`;
+    if (index < 0) throw new Error(`${where} lies on no seeded lot`);
+    if (taken.has(index)) throw new Error(`${where} lies on a lot another curation took (${taken.get(index)})`);
+    taken.set(index, entry.id);
+    const rows = structuredClone(entry.rows);
+    if (photo) rows.forEach((row) => gradeCurated(row, photo));
+    log(`CURATED ${entry.id} replaces seeded ${doc.lots[index].id}: ${doc.lots[index].rows.length} rows and ${(doc.lots[index].lines ?? []).length} lines -> ${rows.length} rows and ${entry.lines.length} lines`);
+    lots[index] = { id: entry.id, parcel: doc.lots[index].parcel ?? null, curated: entry.curated, rows, ...(entry.lines.length ? { lines: structuredClone(entry.lines) } : {}) };
+  }
+  const curatedRows = lots.filter((_, i) => taken.has(i)).flatMap((lot) => lot.rows);
+  for (const [i, lot] of lots.entries()) {
+    if (taken.has(i)) continue;
+    for (const row of lot.rows) {
+      const f = frameOf(row);
+      const mid = f.at(f.length / 2, row.depthM / 2);
+      const on = curatedRows.find((other) => pointInRing(mid, footprint(other)));
+      if (on) throw new Error(`${row.id} lies on curated row ${on.id}`);
+    }
+  }
+  return { ...doc, lots };
+}
+
 // ---------------------------------------------------------------- the seed
 // lines: [{ id, colour, ring }]; cells: [{ ids, cell, centre, widthM, deepM, acrossBearingDeg, upBearingDeg, symbol, rule }];
 // stallRows: features of site-detail with `line` in EPSG:5186; probe(p, q) -> { visible, support } of the photo along a
 // divider position; propose(id, ring, backHint) -> estimator rows on the photo; named: { lotId: { ring, backHint } };
 // photo: { line({ from, dir, across, lengthM }) -> { visible, contrast, offsetM }, blue(ring) -> { visible, share } }.
 // Returns the parking.json document (parcel null).
-export function seedLots({ lines, cells, stallRows, probe = () => ({ visible: 1, support: 0 }), propose = () => [], named = {}, photo = null, log = () => {} }) {
+export function seedLots({ lines, cells, stallRows, probe = () => ({ visible: 1, support: 0 }), propose = () => [], named = {}, photo = null, log = () => {}, curation = null }) {
   const pieces = lines.map((line) => {
     const box = orientedBox(line.ring);
     return { ...line, box: { ...box, long: northward(box.long), short: box.short } };
@@ -674,7 +727,8 @@ export function seedLots({ lines, cells, stallRows, probe = () => ({ visible: 1,
   }
   rows.filter((row) => row.photoGrid).forEach(refitPhotoGrid);
   for (const row of rows) gradeRow(row, photo);
-  return { lots: assignLots(rows, absorbEndLines(rows, free.map(asLine)), Object.fromEntries(Object.entries(named).map(([id, def]) => [id, def.ring ?? def]))) };
+  const doc = { lots: assignLots(rows, absorbEndLines(rows, free.map(asLine)), Object.fromEntries(Object.entries(named).map(([id, def]) => [id, def.ring ?? def]))) };
+  return curation ? applyCuration(doc, curation, { photo, log }) : doc;
 }
 
 // ---------------------------------------------------------------- CLI
@@ -686,7 +740,7 @@ async function cli(args) {
   const here = path.dirname(fileURLToPath(import.meta.url));
   const data = path.join(here, "..", "data");
   const out = path.join(data, "ground", "parking.json");
-  const stamp = "Parametric parking rows (design §6, plan campus-ground-truth-redesign todo 12). Seeded by fit/parkingSeed.mjs from data/photo/evidence/parking-migration.json; hand edits go here, id by id. Coordinates EPSG:5186 metres; widths and depths are estimates (추정) unless the evidence says otherwise.";
+  const stamp = "Parametric parking rows (design §6, plan campus-ground-truth-redesign todo 12). Seeded by fit/parkingSeed.mjs from data/photo/evidence/parking-migration.json and data/ground/parking-curation.json: reviewed lots are edited in the curation file, this file is rewritten by the seed. Coordinates EPSG:5186 metres; widths and depths are estimates (추정) unless the evidence says otherwise.";
   if (args.includes("--link")) {
     const { loadParcels, topParcelAt } = await import("../lib/parcels.mjs");
     const doc = JSON.parse(readFileSync(out, "utf8"));
@@ -760,7 +814,11 @@ async function cli(args) {
   // shade hides no line (lineContrast reads the ground beside it), but the blue test needs lit pixels
   const unshaded = { ...campus, mask: campus.hidden };
   const photo = { line: (q) => lineContrast(unshaded, q), blue: (ring) => blueShare(campus, blue, ring) };
+  const curation = JSON.parse(readFileSync(path.join(data, "ground", "parking-curation.json"), "utf8"));
+  const curationCheck = validate("parkingCuration", curation);
+  if (!curationCheck.ok) throw new Error(`parking-curation.json is invalid:\n${curationCheck.errors.join("\n")}`);
   const doc = seedLots({
+    curation,
     log: console.log,
     photo,
     propose,

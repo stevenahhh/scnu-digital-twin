@@ -65,7 +65,7 @@ export function rowLayout(row, lengthM = null) {
 }
 
 // The back line's frame: at(s, t) in EPSG:5186, a along the line, d from the back towards the aisle.
-function rowFrame(row, resolveAnchor) {
+export function rowFrame(row, resolveAnchor) {
   let line = row.backLine.abs;
   if (!line) {
     if (!resolveAnchor) throw new Error(`${row.id}: backLine.anchor needs a wall resolver`);
@@ -164,6 +164,14 @@ export function parkingPlan(doc, { toScene = tmToScene, resolveAnchor = null } =
           let polys = scooterTemplate(Math.min(SCOOTER_M, 0.8 * side.across(), (1.6 * h) / 0.78));
           if (mirror) polys = polys.map((rs) => rs.map((ring) => ring.map(([x, y]) => [-x, y]).reverse()));
           symbolPieces(place(polys, add(centreOf(), mul(side.n, h)), up), "scooter");
+          own[side.key] += side.sign * 2 * h;
+        }
+        // a P beside the wheelchair (scene_e5 b: the bay along the kerb at E3's south-east corner)
+        if (stall.figure?.symbol === "P") {
+          const side = SIDES[stall.figure.side];
+          const h = side.half() / 2;
+          const up = Number.isFinite(stall.figure.upBearingDeg) ? bearing(stall.figure.upBearingDeg) : mul(side.n, -1);
+          symbolPieces(place(parkingPTemplate(Math.min(P_M, 0.6 * side.across(), 1.6 * h)), add(centreOf(), mul(side.n, h)), up), "P");
           own[side.key] += side.sign * 2 * h;
         }
         if (stall.symbol === "wheelchair" || stall.symbol === "P") {

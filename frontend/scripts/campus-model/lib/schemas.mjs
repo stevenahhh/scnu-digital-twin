@@ -237,7 +237,8 @@ function parkingRow(row, lotId, fail) {
       if (!STALL_KINDS.has(s?.kind)) at(`kind must be one of ${[...STALL_KINDS].join(", ")}`);
       if (s?.widthM !== undefined && !positive(s.widthM)) at("widthM must be > 0");
       if (s?.aisle && (!AISLE_SIDES.includes(s.aisle.side) || !positive(s.aisle.widthM))) at(`aisle needs side ${AISLE_SIDES.join("|")} and widthM > 0`);
-      if (s?.figure && (s.figure.symbol !== "scooter" || !AISLE_SIDES.includes(s.figure.side))) at(`figure needs symbol scooter and side ${AISLE_SIDES.join("|")}`);
+      if (s?.figure && (!["scooter", "P"].includes(s.figure.symbol) || !AISLE_SIDES.includes(s.figure.side))) at(`figure needs symbol scooter or P and side ${AISLE_SIDES.join("|")}`);
+      if (s?.figure?.upBearingDeg !== undefined && !Number.isFinite(s.figure.upBearingDeg)) at("figure.upBearingDeg must be a number");
       if (s?.symbol !== undefined && ![null, "wheelchair", "P"].includes(s.symbol)) at("symbol must be wheelchair, P or null");
       if (s?.upBearingDeg !== undefined && !Number.isFinite(s.upBearingDeg)) at("upBearingDeg must be a number");
       if (!(s?.paintSupport === undefined || s.paintSupport === null || (Number.isFinite(s.paintSupport) && s.paintSupport >= 0 && s.paintSupport <= 1))) at("paintSupport must be in [0, 1] or null");
@@ -273,6 +274,7 @@ function parking(doc) {
     else if (lots.has(id)) fail("id repeats");
     else lots.add(id);
     if (!(lot?.parcel === null || lot?.parcel === undefined || /^PARCEL_[A-Z0-9_]+$/.test(lot.parcel))) fail("parcel must be a PARCEL_* id or null");
+    if (lot?.curated !== undefined && !isText(lot.curated)) fail("curated must name the todo that reviewed the lot");
     // design §6.1: an accessible bay is a member of a row, so its direction and place come from the row
     for (const [i, bay] of (lot?.bays ?? []).entries()) fail(`accessible bay ${bay?.id ?? `bays[${i}]`} is outside any row: make it a stall of a row`);
     if (lot?.lines !== undefined && !Array.isArray(lot.lines)) fail("lines must be an array");
@@ -296,7 +298,26 @@ function parking(doc) {
   return errors;
 }
 
-const KINDS = { bldNodeMap, registration, parcels, parking };
+// ---- data/ground/parking-curation.json (plan todo 13): the lots a person reviewed, as whole records the seed takes in place of
+// its own. A lot is found by its anchor, never by the seed's name; its row ids are the file's, and a retired id stays retired.
+function parkingCuration(doc) {
+  if (!doc || typeof doc !== "object" || !Array.isArray(doc.lots)) return ["parkingCuration: lots must be an array"];
+  const errors = [];
+  for (const lot of doc.lots) {
+    const id = isText(lot?.id) ? lot.id : "lots[?]";
+    const fail = (message) => errors.push(`${id}: ${message}`);
+    if (!isPair(lot?.anchor)) fail("anchor must be an [E, N] pair");
+    if (!isText(lot?.curated)) fail("curated must name the todo that reviewed the lot");
+    if (!(Array.isArray(lot?.retired) && lot.retired.every(isText))) fail("retired must be an array of ids");
+    if (!Array.isArray(lot?.lines)) fail("lines must be an array");
+    const records = [...(Array.isArray(lot?.rows) ? lot.rows : []), ...(Array.isArray(lot?.lines) ? lot.lines : [])];
+    for (const record of records) if (Array.isArray(lot?.retired) && lot.retired.includes(record?.id)) errors.push(`${record.id} is retired and cannot be used again`);
+  }
+  errors.push(...parking({ lots: doc.lots.map((lot) => ({ id: lot?.id, rows: lot?.rows, lines: Array.isArray(lot?.lines) ? lot.lines : [] })) }));
+  return errors;
+}
+
+const KINDS = { bldNodeMap, registration, parcels, parking, parkingCuration };
 
 export function validate(kind, doc) {
   const check = KINDS[kind];

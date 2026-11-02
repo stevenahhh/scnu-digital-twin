@@ -36,7 +36,9 @@
 // measures) is scored against the photo's paint masks (lib/paintMasks.mjs) with leaned roofs, crowns and cast shadows
 // masked out (lib/occlusion.mjs, leans from data/photo/building-lean.json or the leanPrior of building-forms.json) by
 // qa/mapCompare.mjs: lateral residual for lines, IoU for areas. Writes <out>/objects.json and <out>/objects.md with the
-// over-tolerance list; over-tolerance is a warning (exit 0), as §10.1 says the photo can be wrong. No new renderer:
+// over-tolerance list; over-tolerance is a warning (exit 0), as §10.1 says the photo can be wrong. Stall paint comes from the
+// generated rows of data/ground/parking.json (--parking <file> reads another record), not from the photo detections, which are
+// no longer drawn; missingDividers lists the paint no record explains, and the report gives a table per row. No new renderer:
 // the drawn geometry is read from the generator's own records, the dev server is only checked like the other modes.
 // Exit 0 PASS, 1 FAIL, 2 missing sheet or unreachable server (NGII_SHEET overrides the sheet path).
 // Chrome is driven over --remote-debugging-pipe, so no TCP port is opened besides the dev server's.
@@ -53,7 +55,7 @@ import { occlusionMask } from "../campus-model/lib/occlusion.mjs";
 import { modelToGeo } from "../campus-model/lib/frame.mjs";
 import { orientedBox } from "../campus-model/lib/markingFit.mjs";
 import { paintMasks } from "../campus-model/lib/paintMasks.mjs";
-import { TOLERANCES, scoreObjects } from "../campus-model/qa/mapCompare.mjs";
+import { TOLERANCES, missingDividers, parkingObjects, rowSummary, scoreObjects } from "../campus-model/qa/mapCompare.mjs";
 import { EDGE_THRESHOLD, VISIBLE, aggregate, aggregateVisible, canopyMask, footprintMask, measureTile, measureVisible, pointInRing, renderHalf, residualsMarkdown, sideBySide, tileGrid } from "./overheadBlendCore.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -186,7 +188,8 @@ if (args.includes("--objects")) {
   // drawn pieces -> objects: line kinds become the long-axis centreline of each piece, the rest stay areas
   const LINE = /^(centre_line|lane_line|edge_line|guide_|parking_line|kerb|stop_line)/;
   const { candidates } = await markingCandidates();
-  const objects = candidates.map((c) => {
+  const parkingDoc = JSON.parse(readFileSync(resolve(option("parking", join(data, "ground", "parking.json"))), "utf8"));
+  const objects = candidates.filter((c) => c.kind !== "parking_line" && c.kind !== "disabled_parking").map((c) => {
     const rings = c.shapes.map((shape) => shape.map((ring) => ring.map(toTm)));
     if (LINE.test(c.kind) && c.kind !== "stop_line") {
       const parts = rings.map((shape) => {
@@ -197,6 +200,8 @@ if (args.includes("--objects")) {
     }
     return rings.map((shape, i) => ({ id: rings.length > 1 ? `${c.id}#${i}` : c.id, kind: c.kind, colour: c.colour, geometry: { type: "area", rings: shape } }));
   }).flat();
+  const parkingScored = parkingObjects(parkingDoc);
+  objects.push(...parkingScored.map((o) => (o.geometry.type === "line" ? { ...o, geometry: { type: "line", parts: [o.geometry.coords] } } : o)));
   const scored = scoreObjects(objects, { ...win, paint }, masks);
   // nearest BLD_* node (GIS footprint centre) for each object, so a reader can find "E3 parking rows"
   const nodes = JSON.parse(readFileSync(join(data, "bld-node-map.json"), "utf8")).entries.filter((e) => e.gisCentreTm);
@@ -214,6 +219,9 @@ if (args.includes("--objects")) {
     r.centreTm = c.map((v) => Math.round(v * 100) / 100);
     r.near = best && best.d <= 80 ? best.id : null;
   });
+  const missing = missingDividers(parkingDoc, parkingScored, { ...win, paint }, masks);
+  scored.push(...missing);
+  const rows = rowSummary(parkingDoc, scored);
   const overList = scored.filter((r) => r.over);
   const byTier = {};
   for (const r of scored) {
@@ -221,7 +229,7 @@ if (args.includes("--objects")) {
     t.objects += 1;
     if (r.occluded) t.occluded += 1;
     if (r.over) t.over += 1;
-    if (r.residual_m !== null) t.residuals.push(r.residual_m);
+    if (r.residual_m !== null && r.residual_m !== undefined) t.residuals.push(r.residual_m);
   }
   for (const t of Object.values(byTier)) {
     const s = t.residuals.sort((a, b) => a - b);
@@ -232,7 +240,7 @@ if (args.includes("--objects")) {
   const report = {
     generatedAt: new Date().toISOString(), sheet: DEFAULT_SHEET.split("/").pop(), metresPerPixel: gsd,
     source: "stages/markings.mjs markingCandidates (drawn pieces), EPSG:5186", masks: { leans: leanSource, trees: "data/trees.json", shadows: "lib/poleShadow.mjs SUN" },
-    tolerances: TOLERANCES, byTier, overTolerance: overList.length, objects: scored,
+    tolerances: TOLERANCES, byTier, overTolerance: overList.length, parkingRows: rows, objects: scored,
   };
   writeFileSync(join(outDir, "objects.json"), `${JSON.stringify(report, null, 1)}\n`);
   const row = (r) => `| ${r.id} | ${r.kind} | ${r.tier} | ${r.near ?? ""} | ${r.residual_m ?? ""} | ${r.iou ?? ""} | ${r.support ?? ""} | ${r.occluded ? "yes" : ""} | ${r.over ? "OVER" : ""} |`;
@@ -242,7 +250,8 @@ if (args.includes("--objects")) {
     `Sheet ${report.sheet}, ${scored.length} objects from markingCandidates; occlusion leans: ${leanSource}. Values are photo residuals (추정), warnings only.`, "",
     "## By tier", "", "| tier | objects | occluded | over | median residual m |", "|---|---|---|---|---|",
     ...Object.entries(byTier).map(([k, t]) => `| ${k} | ${t.objects} | ${t.occluded} | ${t.over} | ${t.medianResidualM ?? ""} |`), "",
-    "## E3 parking rows", "", head, ...scored.filter((r) => r.near === "BLD_E3" && r.tier === "parking_divider").map(row), "",
+    "## Parking rows (generated from parking.json)", "", "| row | tier | dividers | visible | support | median residual m | max residual m | over | missing | back | front |", "|---|---|---|---|---|---|---|---|---|---|---|",
+    ...rows.map((r) => `| ${r.row} | ${r.tier}${r.estimated ? " 추정" : ""} | ${r.dividers} | ${r.visibleDividers} | ${r.support ?? ""} | ${r.medianResidualM ?? ""} | ${r.maxResidualM ?? ""} | ${r.over.length} | ${r.missing} | ${r.endLines.back?.support ?? ""} | ${r.endLines.front?.support ?? ""} |`), "",
     `## Over tolerance (${overList.length})`, "", head, ...overList.map(row), "",
   ].join("\n");
   writeFileSync(join(outDir, "objects.md"), md);

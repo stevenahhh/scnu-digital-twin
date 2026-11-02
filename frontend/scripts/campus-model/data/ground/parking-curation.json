@@ -1,0 +1,454 @@
+{
+ "note": "Reviewed parking lots (plan campus-ground-truth-redesign todo 13, design section 6). fit/parkingSeed.mjs replaces the seeded lot under each anchor with these records, so they survive a reseed: edit here, never in parking.json. Ids: a lot is found by its anchor point (the seed names lots by their bounding box, which moves); row and line ids are this file's and never renumber; a removed id goes to retired and is not used again. Stall and depth values are measured on the NGII 2025 orthophoto unless a ref says estimate (추정); photoSupport and paintSupport are measured by the seed.",
+ "lots": [
+  {
+   "id": "LOT_E3_S",
+   "anchor": [
+    243700.593,
+    263773.67
+   ],
+   "curated": "todo 13",
+   "retired": [
+    "LOT_E3_S/R2",
+    "LOT_E3_S/L1",
+    "LOT_E3_S/L2",
+    "LOT_E3_S/L3",
+    "LOT_E3_S/L4",
+    "LOT_E3_S/L5",
+    "LOT_E3_S/L6",
+    "LOT_E3_S/L7",
+    "LOT_E3_S/L8",
+    "LOT_E3_S/L9",
+    "LOT_E3_S/L10",
+    "LOT_E3_S/L11",
+    "LOT_E3_S/L12",
+    "LOT_E3_S/L13",
+    "LOT_E3_S/L14"
+   ],
+   "rows": [
+    {
+     "id": "LOT_E3_S/R1",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "backLine": {
+      "abs": [
+       [
+        243662.527,
+        263796.684
+       ],
+       [
+        243668.402,
+        263801.86
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 2.61,
+     "depthM": 4.36,
+     "count": 4,
+     "paintBack": true,
+     "paintFront": true,
+     "stalls": [],
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "NGII 2025 rectified along the aisle rail: dividers at 0.02, 2.59, 5.19, 7.85 m, the front rail on 3 of 3 stalls (68-20 levels); the back rail seen only at 5.7-7.5 m, 4.36 m from the front, the rest under crowns",
+       "MX01668, MX01671; the 0.6 m gap to R8 is two lines on the photo, so these are two rows",
+       "under the crown model on the 12 cm aerial and in shade on VR: nothing to cross-check"
+      ]
+     }
+    },
+    {
+     "id": "LOT_E3_S/R3",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "backLine": {
+      "abs": [
+       [
+        243666.354,
+        263780.529
+       ],
+       [
+        243692.156,
+        263798.071
+       ]
+      ]
+     },
+     "side": 1,
+     "pitchM": 2.6,
+     "depthM": 4.4,
+     "count": 13,
+     "paintFront": true,
+     "stalls": [],
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "NGII 2025 rectified along the aisle rail: 13 dividers at 2.60 m from the rail, read at 0.4-2.6 m; 12 stalls where the old record had 3",
+       "depth 4.4 m is an estimate (추정) from the other rows of this lot: the leaned E3 roof hides the rest of each divider and the back line, so no back line is drawn; the GIS wall lies 5.7-6.1 m from the rail",
+       "MX00376; stall 8 under a parked car"
+      ]
+     }
+    },
+    {
+     "id": "LOT_E3_S/R4",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "backLine": {
+      "abs": [
+       [
+        243669.887,
+        263713.01
+       ],
+       [
+        243676.927,
+        263747.039
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 2.6,
+     "depthM": 4.72,
+     "count": 14,
+     "paintBack": true,
+     "paintFront": true,
+     "stalls": [
+      {
+       "id": "LOT_E3_S/R4/S0",
+       "index": 0,
+       "kind": "accessible",
+       "widthM": 3.55,
+       "aisle": {
+        "side": "start",
+        "widthM": 1.25
+       },
+       "symbol": "wheelchair"
+      }
+     ],
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "NGII 2025 rectified along the back rail: 14 lines bounding 13 stalls, the accessible bay first; both rails fit within 0.05 m; dividers 1 and 2 beside parked cars in the photo",
+       "blue MX01354 (was row R2, retired: the bay is a member of this row); VR scene_e3 f shows the hatched bay at the end of this row",
+       "MX01682, MX01679, MX00377; the 12 cm aerial (2024) shows the same row at about 2.45 m pitch with its rails 4.50 m apart, older paint on older asphalt"
+      ]
+     }
+    },
+    {
+     "id": "LOT_E3_S/R5",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "backLine": {
+      "abs": [
+       [
+        243676.584,
+        263809.568
+       ],
+       [
+        243679.946,
+        263819.399
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 2.5975,
+     "depthM": 4.44,
+     "count": 5,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [],
+     "stalls": [],
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "NGII 2025 rectified: dividers at -0.03, 2.62, 5.17, 7.75, 10.36 m (first faint), rails 4.44 m apart; the back rail seen from 5 m on, the front along all stalls",
+       "read by eye where the crown model hides it (task-12 review N6): the photo shows the paint, so no divider is flagged",
+       "MX00304; in shadow on the 12 cm aerial"
+      ]
+     }
+    },
+    {
+     "id": "LOT_E3_S/R6",
+     "divider": {
+      "style": "single",
+      "widthM": 0.12,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": {
+      "offsetFromBackM": -0.1,
+      "lengthM": 0.7,
+      "colour": "#d9b43a",
+      "every": 1
+     },
+     "estimated": false,
+     "backLine": {
+      "abs": [
+       [
+        243686.107,
+        263766.479
+       ],
+       [
+        243713.359,
+        263784.498
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 2.61,
+     "depthM": 4.43,
+     "count": 13,
+     "paintBack": true,
+     "paintFront": true,
+     "stalls": [
+      {
+       "id": "LOT_E3_S/R6/S0",
+       "index": 0,
+       "kind": "accessible",
+       "widthM": 3.25,
+       "aisle": {
+        "side": "start",
+        "widthM": 1.25
+       },
+       "symbol": "wheelchair"
+      },
+      {
+       "id": "LOT_E3_S/R6/S11",
+       "index": 11,
+       "kind": "accessible",
+       "widthM": 3.32,
+       "aisle": {
+        "side": "start",
+        "widthM": 1.25
+       },
+       "symbol": "wheelchair"
+      }
+     ],
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "NGII 2025 rectified along the back rail: 13 lines bounding 12 stalls, 2 accessible at the ends, hatch on the start side of both; back and front rails fit within 0.02 m, 4.43 m apart",
+       "blue MX01336, MX01338; dividers MX01676; estimator on LOT_E3_S 13/13 detected",
+       "VR scene_e3 r, scene_e5 r (fresh black asphalt, as NGII): white back and front lines, two blue ends; yellow-black wheel stops about 0.7 m long on the back line, one per stall, read by eye (SD-E3-W1 said 0.9 m off and 1.6 m long, which the VR does not show)",
+       "12 cm aerial (2024, grey asphalt): 13 stalls at 2.45 m pitch, older paint; end lines read 4.50 m apart inside the aerial, seen on 11 and 10 of 12 stall spans, so it confirms they exist, not their place. lineContrast passes 12 of 12 spans on both lines here"
+      ]
+     }
+    },
+    {
+     "id": "LOT_E3_S/R7",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "backLine": {
+      "abs": [
+       [
+        243714.426,
+        263772.328
+       ],
+       [
+        243716.279,
+        263769.843
+       ]
+      ]
+     },
+     "side": 1,
+     "pitchM": 3.1,
+     "depthM": 5,
+     "count": 2,
+     "stalls": [
+      {
+       "id": "LOT_E3_S/R7/S0",
+       "index": 0,
+       "kind": "accessible",
+       "widthM": 3.1,
+       "aisle": null,
+       "symbol": "wheelchair",
+       "upBearingDeg": 143.3,
+       "figure": {
+        "symbol": "P",
+        "side": "front",
+        "upBearingDeg": 143.3
+       }
+      }
+     ],
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "NGII 2025: blue box 3.1 x 5.0 m along the kerb, white border",
+       "blue MX01340; VR scene_e5 b, scene_e5 r: a P and a wheelchair read from the road, tops towards the kerb, the P at the north-east end; the box runs along the kerb, so the width is across it"
+      ]
+     }
+    },
+    {
+     "id": "LOT_E3_S/R8",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "backLine": {
+      "abs": [
+       [
+        243668.814,
+        263802.257
+       ],
+       [
+        243676.647,
+        263809.159
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 2.61,
+     "depthM": 4.36,
+     "count": 5,
+     "paintFront": true,
+     "stalls": [],
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "NGII 2025 rectified along the aisle rail: dividers at -0.03, 2.57, 5.20, 7.80, 10.41 m, 49-80 levels near the rail",
+       "depth from R1 (추정): crowns hide the far ends, and no back line is seen, so none is drawn",
+       "MX01668, MX01671"
+      ]
+     }
+    },
+    {
+     "id": "LOT_E3_S/R9",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "backLine": {
+      "abs": [
+       [
+        243676.61,
+        263749.492
+       ],
+       [
+        243679.337,
+        263762.264
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 2.612,
+     "depthM": 4.52,
+     "count": 6,
+     "paintBack": true,
+     "paintFront": true,
+     "stalls": [],
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "NGII 2025 rectified along the back rail: 6 lines bounding 5 stalls at 76-95 levels, rails fit within 0.03 m, 4.52 m apart; a clear gap and a 0.8 m step from R4, so its own row",
+       "MX01679, MX00377; the 12 cm aerial (2024) shows the same 5 stalls at 2.31 m pitch with its rails 4.17 m apart, older paint"
+      ]
+     }
+    },
+    {
+     "id": "LOT_E3_S/R10",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "backLine": {
+      "abs": [
+       [
+        243689.883,
+        263751.325
+       ],
+       [
+        243697.757,
+        263757.586
+       ]
+      ]
+     },
+     "side": 1,
+     "pitchM": 5.03,
+     "depthM": 2.13,
+     "count": 3,
+     "paintBack": true,
+     "paintFront": true,
+     "stalls": [
+      {
+       "id": "LOT_E3_S/R10/S0",
+       "index": 0,
+       "kind": "parallel"
+      },
+      {
+       "id": "LOT_E3_S/R10/S1",
+       "index": 1,
+       "kind": "parallel"
+      }
+     ],
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "NGII 2025 rectified: two boxes end to end along the island, lines at -0.03, 5.04, 10.03 m, rails 2.13 m apart, 58-87 levels; replaces free lines L10-L14",
+       "MX01673; under tree shadow on the 12 cm aerial, its road-side rail is visible there"
+      ]
+     }
+    }
+   ],
+   "lines": []
+  }
+ ]
+}

@@ -155,3 +155,19 @@ test("implausibleStalls names the rows with stalls too narrow, or general stalls
   assert.ok(list.some((x) => x.row === "LOT_A/R2" && x.widthM === 1.09));
   assert.deepEqual(implausibleStalls(doc([row()])), []);
 });
+
+test("a bay with a P figure draws the P at its side and the wheelchair in the rest, each with its own bearing", () => {
+  const stall = { id: "LOT_A/R1/S0", index: 0, kind: "accessible", widthM: 3, symbol: "wheelchair", upBearingDeg: 90, figure: { symbol: "P", side: "start", upBearingDeg: 90 } };
+  const { pieces } = plan([row({ count: 2, pitchM: 6, stalls: [stall], backLine: { abs: [[0, 0], [6, 0]] } })]);
+  const of = (glyph) => pieces.filter((p) => p.glyph === glyph).flatMap((p) => p.rings.flat());
+  assert.ok(of("P").length > 0, "the P is drawn");
+  assert.ok(of("wheelchair").length > 0, "the wheelchair is drawn");
+  const midE = (pts) => pts.reduce((n, p) => n + p[0], 0) / pts.length;
+  assert.ok(midE(of("P")) < 1.5, `the P lies in the start half: ${midE(of("P"))}`);
+  assert.ok(midE(of("wheelchair")) > 1.5, `the wheelchair lies in the other half: ${midE(of("wheelchair"))}`);
+});
+
+test("a figure that is neither scooter nor P is refused", () => {
+  const stall = { index: 0, kind: "accessible", widthM: 3, figure: { symbol: "Q", side: "start" } };
+  assert.throws(() => plan([row({ count: 2, stalls: [stall] })]), /figure needs symbol scooter or P/);
+});

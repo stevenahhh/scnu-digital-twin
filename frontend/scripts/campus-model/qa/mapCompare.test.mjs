@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { TOLERANCES, classify, scoreObjects } from './mapCompare.mjs';
+import { TOLERANCES, classify, missingDividers, parkingObjects, rowSummary, scoreObjects } from './mapCompare.mjs';
 
 // 40 x 40 m window at 0.25 m, top-left corner (1000, 2040): pixel (i, j) centre = (1000 + (i + 0.5) / 4, 2040 - (j + 0.5) / 4).
 const GSD = 0.25;
@@ -114,4 +114,97 @@ test('classify maps kinds onto the §10.1 tolerance table', () => {
   assert.equal(classify('text', 'area'), 'other');
   assert.deepEqual(TOLERANCES.parking_divider, { residualM: 0.3, support: 0.5 });
   assert.deepEqual(TOLERANCES.crossing_bar, { residualM: 0.2, iou: 0.6 });
+});
+
+// ---- generated parking rows (plan todo 13): the check has to read parking.json, and a line the record lost has to show
+// A row along +E at N = 2030, stalls running south 5 m; painted on the photo at E = 1005 + k * 2.5, k = 0..4, with both rails.
+const LINES = [0, 1, 2, 3, 4].map((k) => 1005 + k * 2.5);
+const paintedRow = paintWhere((E, N) => (N < 2030 && N > 2025 && LINES.some((x) => Math.abs(E - x) <= 0.13)) || (E > 1004.9 && E < 1015.1 && (Math.abs(N - 2030) <= 0.13 || Math.abs(N - 2025) <= 0.13)));
+const parkingRow = (over = {}) => ({
+  id: 'LOT_A/R1', backLine: { abs: [[1005, 2030], [1015, 2030]] }, side: -1, pitchM: 2.5, depthM: 5, startOffsetM: 0, count: 5,
+  divider: { style: 'single', widthM: 0.1, colour: 'white' }, endCaps: true, paintBack: true, paintFront: true, stalls: [], wheelStops: null,
+  entryFrom: 'aisle', evidence: { tier: 'T1', refs: ['t'], photoSupport: 1 }, estimated: false, ...over,
+});
+const parkingDoc = (row = parkingRow(), lines = []) => ({ lots: [{ id: 'LOT_A', parcel: 'PARCEL_A', rows: [row], lines }] });
+
+test('parkingObjects gives each divider and each painted end line of a row as a parking line, in the row\'s place', () => {
+  const objects = parkingObjects(parkingDoc());
+  assert.deepEqual(objects.map((o) => o.id), ['LOT_A/R1/D0', 'LOT_A/R1/D1', 'LOT_A/R1/D2', 'LOT_A/R1/D3', 'LOT_A/R1/D4', 'LOT_A/R1/back', 'LOT_A/R1/front']);
+  assert.ok(objects.every((o) => classify(o.kind, o.geometry.type, o.colour) === 'parking_divider'));
+  const d2 = objects[2].geometry.coords;
+  assert.ok(Math.abs(d2[0][0] - 1010) < 1e-6 && Math.abs(d2[1][0] - 1010) < 1e-6);
+  assert.ok(d2[0][1] < 2030 && d2[1][1] > 2025, 'the ends stop short of the rails, whose paint would read as the divider\'s');
+});
+
+test('parkingObjects draws no end line the record does not name, and a blue bay as an area without its hatch', () => {
+  const stall = { id: 'LOT_A/R1/S0', index: 0, kind: 'accessible', widthM: 3, aisle: { side: 'start', widthM: 1 }, symbol: 'wheelchair' };
+  const objects = parkingObjects(parkingDoc(parkingRow({ paintBack: false, paintFront: false, stalls: [stall] })));
+  assert.equal(objects.filter((o) => /(back|front)$/.test(o.id)).length, 0);
+  const [fill] = objects.filter((o) => o.colour === 'blue');
+  assert.equal(fill.id, 'LOT_A/R1/S0/fill');
+  assert.equal(classify(fill.kind, fill.geometry.type, fill.colour), 'blue_zone');
+  const xs = fill.geometry.rings[0].map((p) => p[0]);
+  assert.ok(Math.min(...xs) >= 1005 + 1, 'the hatched aisle is not blue');
+});
+
+test('a row on its paint scores within tolerance and misses nothing', () => {
+  const doc = parkingDoc();
+  const objects = parkingObjects(doc);
+  const scored = scoreObjects(objects, sheetWith(paintedRow), {});
+  assert.deepEqual(scored.filter((r) => r.over).map((r) => r.id), []);
+  assert.ok(scored.every((r) => r.support >= 0.95 && r.residual_m <= 0.1), JSON.stringify(scored[0]));
+  assert.deepEqual(missingDividers(doc, objects, sheetWith(paintedRow), {}), []);
+});
+
+test('deleting one bay from the record lists the divider it lost as over tolerance', () => {
+  const doc = parkingDoc(parkingRow({ count: 4, backLine: { abs: [[1005, 2030], [1012.5, 2030]] } }));
+  const missing = missingDividers(doc, parkingObjects(doc), sheetWith(paintedRow), {});
+  assert.equal(missing.length, 1, JSON.stringify(missing));
+  assert.equal(missing[0].tier, 'parking_divider');
+  assert.equal(missing[0].over, true);
+  assert.equal(missing[0].missing, true);
+  assert.equal(missing[0].row, 'LOT_A/R1');
+  assert.ok(Math.abs(missing[0].centreTm[0] - 1015) < 0.2, JSON.stringify(missing[0]));
+});
+
+test('a divider the record lost in the middle of a row is listed too', () => {
+  // the record has 4 dividers with one 5 m stall: the line at E = 1010 is on the photo and nowhere in the record
+  const stall = { index: 1, kind: 'general', widthM: 5 };
+  const doc = parkingDoc(parkingRow({ count: 4, stalls: [stall] }));
+  const missing = missingDividers(doc, parkingObjects(doc), sheetWith(paintedRow), {});
+  assert.deepEqual(missing.map((m) => Math.round(m.centreTm[0])), [1010]);
+});
+
+test('paint under the occlusion mask is no evidence of a missing divider', () => {
+  const doc = parkingDoc(parkingRow({ count: 4, backLine: { abs: [[1005, 2030], [1012.5, 2030]] } }));
+  const any = paintWhere((E) => E > 1013);
+  assert.deepEqual(missingDividers(doc, parkingObjects(doc), sheetWith(paintedRow), { any }), []);
+});
+
+test('a line drawn by a neighbouring record is not missing from this row', () => {
+  const doc = parkingDoc(parkingRow({ count: 4, backLine: { abs: [[1005, 2030], [1012.5, 2030]] } }), [{ id: 'LOT_A/L1', abs: [[1015, 2030], [1015, 2025]], widthM: 0.1, colour: 'white', evidence: { tier: 'T1', refs: ['t'] } }]);
+  assert.deepEqual(missingDividers(doc, parkingObjects(doc), sheetWith(paintedRow), {}), []);
+});
+
+test('rowSummary reports dividers, support and worst residual per row, and counts what is missing', () => {
+  const doc = parkingDoc();
+  const objects = parkingObjects(doc);
+  const scored = scoreObjects(objects, sheetWith(paintedRow), {});
+  const [s] = rowSummary(doc, [...scored, { id: 'LOT_A/R1/missing@7', row: 'LOT_A/R1', missing: true, over: true }]);
+  assert.equal(s.row, 'LOT_A/R1');
+  assert.equal(s.dividers, 5);
+  assert.equal(s.stalls, 4);
+  assert.equal(s.visibleDividers, 5);
+  assert.ok(s.support >= 0.95);
+  assert.ok(s.maxResidualM <= 0.1);
+  assert.equal(s.missing, 1);
+  assert.equal(s.endLines.back.over, false);
+});
+
+test('a wide accessible bay deleted from the end of a row still shows its far line: the walk reaches past the widest stall', () => {
+  // painted lines 2.5 m apart and a last line 3.4 m on; the record stops one bay short
+  const wide = paintWhere((E, N) => N < 2030 && N > 2025 && [1005, 1007.5, 1010, 1013.4].some((x) => Math.abs(E - x) <= 0.13));
+  const doc = parkingDoc(parkingRow({ count: 3, backLine: { abs: [[1005, 2030], [1010, 2030]] } }));
+  const missing = missingDividers(doc, parkingObjects(doc), sheetWith(wide), {});
+  assert.deepEqual(missing.map((m) => Math.round(m.centreTm[0] * 10) / 10), [1013.4]);
 });

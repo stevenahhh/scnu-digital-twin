@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { validate } from "../lib/schemas.mjs";
 import { parkingPlan } from "../stages/parking.mjs";
-import { seedLots, stallRowRecord } from "./parkingSeed.mjs";
+import { applyCuration, seedLots, stallRowRecord } from "./parkingSeed.mjs";
 
 // A divider piece at across position x (E), running north-south from y0 to y1.
 const line = (x, y0 = 0, y1 = -5, id = `P${x}`) => ({ id, colour: "white", ring: [[x - 0.05, y0], [x + 0.05, y0], [x + 0.05, y1], [x - 0.05, y1]] });
@@ -271,15 +271,108 @@ test("a rail row is not rescued by the photo: paint under a rail is the rail", (
 });
 
 test("a row keeps its place when only one of its dividers lies on a bigger row's rail", () => {
-  // a ladder running north from the rail of the east-west row, its first divider on that rail
-  const crossing = [0, 2.5, 5, 7.5].map((d, k) => rail(10 + d, 5, 10, `C${k}`));
-  const doc = seed({ lines: [...ladder(10), ...crossing.map((p) => ({ ...p, ring: p.ring.map(([x, y]) => [x + 25, y]) })), rail(10, 5, 10, "C0b")] });
+  // a four-line ladder running north from the back rail of the east-west row, its first line on that rail
+  const logs = [];
+  const doc = seed({ lines: [...ladder(0), ...[0, 2.5, 5, 7.5].map((d, k) => rail(d, 5, 10, `C${k}`))], log: (m) => logs.push(m) });
   const rows = doc.lots.flatMap((l) => l.rows);
   assert.deepEqual(rows.map((r) => r.count).sort((a, b) => a - b), [4, 11]);
+  assert.equal(logs.filter((m) => m.startsWith("RAIL kept") && m.includes("1/4")).length, 1, "the guard really puts one divider on a rail");
+});
+
+test("a row with 2 of its 3 dividers on rails is dissolved, as the real row of gate review 2 was", () => {
+  // the rails of two ladders 7 m apart, and one line of its own between them: one own divider is not a row
+  const logs = [];
+  const doc = seed({ lines: [...ladder(0), ...ladder(-12, 11, 0, "B"), rail(-5, 5, 11, "ON1"), rail(-8.5, 5, 11, "OWN"), rail(-12, 5, 11, "ON2")], log: (m) => logs.push(m) });
+  assert.deepEqual(doc.lots.flatMap((l) => l.rows).map((r) => r.count), [11, 11]);
+  assert.equal(logs.filter((m) => m.startsWith("RAIL dissolved") && m.includes("2/3")).length, 1, logs.join(" | "));
+  assert.deepEqual(doc.lots.flatMap((l) => l.lines ?? []).map((l) => l.evidence.refs[0]), ["OWN"], "its own piece stays a free line");
 });
 
 test("a short ladder is not dissolved into a longer row that happens to run past it", () => {
   // two rows at right angles: neither's dividers lie on the other's back or front line
   const doc = seed({ lines: [...ladder(0), ...[0, 2.5, 5, 7.5].map((d, k) => rail(-20 - d, 5, 10, `S${k}`))] });
   assert.deepEqual(doc.lots.flatMap((l) => l.rows).map((r) => r.count).sort((a, b) => a - b), [4, 11]);
+});
+
+// ---- curation (plan todo 13): records a person reviewed live in data/ground/parking-curation.json and survive a reseed
+const curatedRow = (over = {}) => ({
+  id: "LOT_KEEP/R7", backLine: { abs: [[0, 0], [10, 0]] }, side: -1, pitchM: 2.5, depthM: 5, startOffsetM: 0, count: 5,
+  divider: { style: "single", widthM: 0.1, colour: "white" }, endCaps: true, stalls: [], wheelStops: null, entryFrom: "aisle",
+  evidence: { tier: "T1", refs: ["hand"] }, estimated: false, ...over,
+});
+const curation = (over = {}) => ({ lots: [{ id: "LOT_KEEP", anchor: [5, -2], curated: "todo 13", rows: [curatedRow()], lines: [], retired: ["LOT_KEEP/R1"], ...over }] });
+const twoLots = (shift = 0) => seed({ lines: [...[0, 2.5, 5, 7.5, 10].map((x) => line(x + shift)), ...[100, 102.5, 105, 107.5].map((x) => line(x))] });
+
+test("a curated lot replaces the seed's records at its anchor, whatever the seed called them", () => {
+  const seeded = twoLots();
+  const before = seeded.lots.map((l) => l.id);
+  const doc = applyCuration(seeded, curation());
+  const lot = doc.lots.find((l) => l.id === "LOT_KEEP");
+  assert.ok(lot, `lots: ${doc.lots.map((l) => l.id)}`);
+  assert.equal(lot.curated, "todo 13");
+  assert.deepEqual(lot.rows.map((r) => r.id), ["LOT_KEEP/R7"]);
+  assert.equal(doc.lots.length, before.length, "the other lot stays");
+  assert.deepEqual(validate("parking", doc).errors, []);
+});
+
+test("curated ids do not move when the seed renumbers its lots", () => {
+  const first = applyCuration(twoLots(), curation());
+  const second = applyCuration(twoLots(3), curation());
+  const ids = (doc) => doc.lots.find((l) => l.id === "LOT_KEEP").rows.map((r) => r.id);
+  assert.notDeepEqual(twoLots().lots.map((l) => l.id), twoLots(3).lots.map((l) => l.id), "the seed's own names did move");
+  assert.deepEqual(ids(first), ids(second));
+});
+
+test("applying a curation does not edit the curation records in place", () => {
+  const input = curation();
+  const frozen = JSON.stringify(input);
+  applyCuration(twoLots(), input, { photo: { line: () => ({ visible: 1, contrast: 40, offsetM: 0 }), blue: () => ({ visible: 1, share: 1 }) } });
+  assert.equal(JSON.stringify(input), frozen);
+});
+
+test("a curation names what it cannot place", () => {
+  assert.throws(() => applyCuration(twoLots(), curation({ anchor: [500, 500] })), /LOT_KEEP: anchor \[500,500\] lies on no seeded lot/);
+  assert.throws(() => applyCuration(twoLots(), { lots: [curation().lots[0], { ...curation().lots[0], id: "LOT_OTHER", rows: [], retired: [] }] }), /LOT_OTHER: anchor .* lies on a lot another curation took/);
+});
+
+test("an uncurated row on curated ground is an error, so nothing is drawn twice", () => {
+  // the curated row sits over the second seeded lot too
+  const over = curation({ rows: [curatedRow({ backLine: { abs: [[100, 0], [110, 0]] } })] });
+  assert.throws(() => applyCuration(twoLots(), over), /LOT_E100_N\d+\/R1 lies on curated row LOT_KEEP\/R7/);
+});
+
+test("the photo grades a curated row but cannot rewrite the person's reading; a T1 row the photo refutes stops the seed", () => {
+  const painted = { line: () => ({ visible: 1, contrast: 40, offsetM: 0 }), blue: () => ({ visible: 1, share: 1 }) };
+  const [row] = applyCuration(twoLots(), curation(), { photo: painted }).lots.find((l) => l.id === "LOT_KEEP").rows;
+  assert.equal(row.evidence.photoSupport, 1);
+  assert.equal(row.evidence.tier, "T1");
+  const bare = { ...painted, line: () => ({ visible: 1, contrast: 0, offsetM: 0 }) };
+  assert.throws(() => applyCuration(twoLots(), curation(), { photo: bare }), /LOT_KEEP\/R7: curated T1 but photoSupport 0/);
+  const hidden = { ...painted, line: () => ({ visible: 0, contrast: null, offsetM: 0 }) };
+  const [shade] = applyCuration(twoLots(), curation(), { photo: hidden }).lots.find((l) => l.id === "LOT_KEEP").rows;
+  assert.equal(shade.evidence.photoSupport, null, "hidden is no evidence, not a refutation");
+  assert.equal(shade.evidence.tier, "T1");
+});
+
+test("the curation file's validator names malformed records", () => {
+  const errors = (doc) => validate("parkingCuration", doc).errors.join(" | ");
+  assert.equal(errors(curation()), "");
+  assert.match(errors({}), /lots must be an array/);
+  assert.match(errors(curation({ anchor: [1] })), /LOT_KEEP: anchor must be an \[E, N\] pair/);
+  assert.match(errors(curation({ anchor: [1, "2"] })), /anchor must be/);
+  assert.match(errors(curation({ curated: 3 })), /LOT_KEEP: curated must name the todo/);
+  assert.match(errors(curation({ retired: "R1" })), /LOT_KEEP: retired must be an array of ids/);
+  assert.match(errors(curation({ retired: ["LOT_KEEP/R7"] })), /LOT_KEEP\/R7 is retired and cannot be used again/);
+  assert.match(errors(curation({ rows: [curatedRow({ id: "LOT_OTHER/R1" })] })), /row id must start with LOT_KEEP\//);
+  assert.match(errors(curation({ rows: "x" })), /rows must be an array/);
+  assert.match(errors(curation({ rows: [curatedRow({ pitchM: 1 })] })), /pitchM 1 m is under 2 m/);
+  assert.match(errors({ lots: [curation().lots[0], curation().lots[0]] }), /LOT_KEEP: id repeats/);
+  assert.match(errors(curation({ id: "lot keep" })), /id must match/);
+});
+
+test("parallel stalls are graded on their lines, not on blue paint they do not have", () => {
+  const photo = { line: () => ({ visible: 1, contrast: 40, offsetM: 0 }), blue: () => ({ visible: 1, share: 0 }) };
+  const stalls = [{ id: "LOT_KEEP/R7/S0", index: 0, kind: "parallel" }, { id: "LOT_KEEP/R7/S1", index: 1, kind: "parallel" }];
+  const [row] = applyCuration(twoLots(), curation({ rows: [curatedRow({ count: 3, pitchM: 5, depthM: 2.1, stalls })] }), { photo }).lots.find((l) => l.id === "LOT_KEEP").rows;
+  assert.equal(row.evidence.photoSupport, 1);
 });
