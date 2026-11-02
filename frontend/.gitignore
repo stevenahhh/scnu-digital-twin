@@ -1,2 +1,4 @@
 # Campus model generator: uncompressed intermediate GLB (pack.mjs ships public/campus-v2.glb)
 scripts/campus-model/.build/
+# Parking row estimator output (fit/parkingRows.mjs): proposals for review, never committed
+scripts/campus-model/data/ground/parking.proposals.json

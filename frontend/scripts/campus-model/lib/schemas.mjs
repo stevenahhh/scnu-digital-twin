@@ -190,7 +190,74 @@ function parcels(doc) {
   return errors;
 }
 
-const KINDS = { bldNodeMap, registration, parcels };
+// ---- data/ground/parking.json (design §6.1): lot id -> parametric rows; accessible bays are row members.
+const STALL_KINDS = new Set(["general", "expanded", "accessible", "parallel", "light", "ev"]);
+const DIVIDER_STYLES = new Set(["single", "double", "U", "T"]);
+const positive = (v) => Number.isFinite(v) && v > 0;
+function backLineErrors(line) {
+  if (!line || typeof line !== "object") return "backLine must be { abs } or { anchor }";
+  if (line.abs !== undefined) return Array.isArray(line.abs) && line.abs.length === 2 && line.abs.every(isPair) ? null : "backLine.abs must be two [E, N] pairs";
+  const a = line.anchor;
+  if (a && isText(a.building) && isText(a.wall) && [a.s0M, a.s1M, a.tM].every(Number.isFinite)) return null;
+  return "backLine.anchor needs building, wall, s0M, s1M, tM";
+}
+function parkingRow(row, lotId, fail) {
+  if (!isText(row?.id) || !row.id.startsWith(`${lotId}/`)) fail(`row id must start with ${lotId}/`);
+  const lineError = backLineErrors(row?.backLine);
+  if (lineError) fail(lineError);
+  if (row.side !== 1 && row.side !== -1) fail("side must be +1 or -1");
+  if (!positive(row.pitchM)) fail("pitchM must be a number > 0");
+  if (!positive(row.depthM)) fail("depthM must be a number > 0");
+  if (!Number.isFinite(row.startOffsetM ?? 0)) fail("startOffsetM must be a number");
+  if (!(row.count === null || (Number.isInteger(row.count) && row.count >= 2))) fail("count must be an integer >= 2 or null");
+  if (row.divider !== undefined && (!DIVIDER_STYLES.has(row.divider?.style) || !positive(row.divider?.widthM))) fail(`divider needs style (${[...DIVIDER_STYLES].join(", ")}) and widthM > 0`);
+  if (!Array.isArray(row.stalls)) fail("stalls must be an array (exception stalls only)");
+  else {
+    const seen = new Set();
+    row.stalls.forEach((s, i) => {
+      const at = (m) => fail(`stalls[${i}] ${m}`);
+      const bays = Number.isInteger(row.count) ? row.count - 1 : Infinity;
+      if (!(Number.isInteger(s?.index) && s.index >= 0 && s.index < bays)) at(`index must be an integer in [0, ${bays})`);
+      else if (seen.has(s.index)) at("index repeats");
+      else seen.add(s.index);
+      if (!STALL_KINDS.has(s?.kind)) at(`kind must be one of ${[...STALL_KINDS].join(", ")}`);
+      if (s?.widthM !== undefined && !positive(s.widthM)) at("widthM must be > 0");
+      if (s?.aisle && (!["start", "end"].includes(s.aisle.side) || !positive(s.aisle.widthM))) at("aisle needs side start|end and widthM > 0");
+    });
+  }
+  if (!(row.wheelStops === null || row.wheelStops === undefined || (Number.isFinite(row.wheelStops.offsetFromBackM) && positive(row.wheelStops.lengthM)))) fail("wheelStops needs offsetFromBackM and lengthM > 0");
+  if (!TIERS.has(row.evidence?.tier)) fail("evidence.tier must be T0-T4");
+  if (!Array.isArray(row.evidence?.refs) || !row.evidence.refs.every(isText)) fail("evidence.refs must be an array of strings");
+  const ps = row.evidence?.photoSupport;
+  if (!(ps === null || ps === undefined || (Number.isFinite(ps) && ps >= 0 && ps <= 1))) fail("evidence.photoSupport must be in [0, 1] or null");
+  if (typeof row.estimated !== "boolean") fail("estimated must be a boolean");
+  else if (row.evidence?.tier === "T4" && !row.estimated) fail("estimated must be true for a T4 row");
+}
+function parking(doc) {
+  if (!doc || typeof doc !== "object" || !Array.isArray(doc.lots)) return ["parking: lots must be an array"];
+  const errors = [];
+  const lots = new Set();
+  const rows = new Set();
+  doc.lots.forEach((lot, index) => {
+    const id = isText(lot?.id) ? lot.id : `lots[${index}]`;
+    const fail = (message) => errors.push(`${id}: ${message}`);
+    if (!/^LOT_[A-Z0-9_]+$/.test(lot?.id ?? "")) fail("id must match LOT_[A-Z0-9_]+");
+    else if (lots.has(id)) fail("id repeats");
+    else lots.add(id);
+    if (!(lot?.parcel === null || lot?.parcel === undefined || /^PARCEL_[A-Z0-9_]+$/.test(lot.parcel))) fail("parcel must be a PARCEL_* id or null");
+    if (!Array.isArray(lot?.rows)) return fail("rows must be an array");
+    lot.rows.forEach((row, r) => {
+      const rid = isText(row?.id) ? row.id : `${id}/rows[${r}]`;
+      const rowFail = (message) => errors.push(`${rid}: ${message}`);
+      if (rows.has(rid)) rowFail("row id repeats");
+      rows.add(rid);
+      parkingRow(row ?? {}, id, rowFail);
+    });
+  });
+  return errors;
+}
+
+const KINDS = { bldNodeMap, registration, parcels, parking };
 
 export function validate(kind, doc) {
   const check = KINDS[kind];
