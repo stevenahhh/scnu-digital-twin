@@ -287,7 +287,7 @@ export default function VWorldRenderer({
   useEffect(() => {
     if (!labelScene || !campusGlb) return undefined;
     const elementNames = new Map(commonElements.elements.map(({ element_id: id, name }) => [id, name]));
-    const center = campusCenterOf(glbLabelAnchors(campusGlb, { elementNames }));
+    const center = campusCenterOf(glbLabelAnchors(campusGlb, { elementNames }), campusGlb.asset?.extras?.frameVersion);
     campusCameraRef.current = createVWorldCampusCamera({ ...labelScene, getModelMatrix: getLabelModelMatrix, boxes: glbNodeBoxes(campusGlb), center });
     onCampusCameraRef.current?.(campusCameraRef.current);
     return () => {
