@@ -401,6 +401,7 @@ function parcelCuration(doc) {
     graded(r, id);
     if (r?.class !== "road" && r?.class !== "lot") errors.push(`${id}: class must be road or lot`);
     if (r?.surface !== undefined && !PARCEL_SURFACES.has(r.surface)) errors.push(`${id}: surface must be one of ${[...PARCEL_SURFACES].join(", ")}`);
+    if (r?.unreadEdgeM !== undefined && !(Number.isFinite(r.unreadEdgeM) && r.unreadEdgeM >= 0)) errors.push(`${id}: unreadEdgeM must be a length in metres, 0 or more`);
   });
   doc.notAsphalt.forEach((r, i) => {
     const id = isText(r?.id) ? r.id : `notAsphalt[${i}]`;

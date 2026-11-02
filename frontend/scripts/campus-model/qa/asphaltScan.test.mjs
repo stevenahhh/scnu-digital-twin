@@ -217,9 +217,18 @@ test("gradeParcel: measured needs the edge and the area outside the masks; most 
   assert.deepEqual(grade(100, 51), ["T4", true]);
   assert.deepEqual(grade(100, 20, 6), ["T1", true], "unmasked shade hides an edge too");
   assert.deepEqual(grade(9, 7), ["T1", false], "a parcel that is mostly seam has little edge to lose");
+  assert.deepEqual(grade(30, 10), ["T1", false], "10 m lost is still within the allowance, though it is a third of the edge");
+  assert.deepEqual(grade(100, 0, 0, 0.25), ["T1", false], "exactly a quarter of the area under masks is still measured");
   assert.deepEqual(grade(11, 11), ["T4", true]);
   assert.deepEqual(grade(100, 0, 0, 0.26), ["T1", true], "a quarter of the area under masks is not measured");
   assert.deepEqual(grade(0, 0), ["T1", false]);
+});
+
+test("gradeParcel counts edge the curator read as having nothing on it: a record can say less than the masks, never more", () => {
+  const road = { freeM: 61, hiddenM: 0, darkM: 2.5, maskedAreaShare: 0 };
+  assert.deepEqual(gradeParcel(road), { tier: "T1", estimated: false });
+  assert.deepEqual(gradeParcel({ ...road, unreadM: 17 }), { tier: "T1", estimated: true });
+  assert.deepEqual(gradeParcel({ ...road, unreadM: 40 }), { tier: "T4", estimated: true });
 });
 
 test("maskedShare is the share of a parcel's cells the photo cannot judge, holes left out", () => {

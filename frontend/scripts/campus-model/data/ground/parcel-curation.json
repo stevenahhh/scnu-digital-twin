@@ -1,5 +1,5 @@
 {
- "note": "Reviewed changes on top of the seeded ground parcels (plan campus-ground-truth-redesign todo 13a, design section 5). fit/parcelsSeed.mjs applies them, so they survive a reseed: edit here, never in parcels.json. replace: a seeded parcel's ring read again from the photo. remove: a seeded parcel the photo contradicts. add: road or lot parcels for pavement with none; rings EPSG:5186 [E, N], traced from the NGII 2025 orthophoto, surface concrete where the photo shows concrete. Tier and estimated are what qa/asphaltScan.mjs measures outside the occlusion masks (gradeParcel; it fails when a record differs), estimated true is 추정. notAsphalt: areas qa/asphaltScan.mjs reads as asphalt that are not, each with its reason. unreachable: parking rows qa/parkingConnectivity.mjs finds no road for, each with its reason.",
+ "note": "Reviewed changes on top of the seeded ground parcels (plan campus-ground-truth-redesign todo 13a, design section 5). fit/parcelsSeed.mjs applies them, so they survive a reseed: edit here, never in parcels.json. replace: a seeded parcel's ring read again from the photo. remove: a seeded parcel the photo contradicts. add: road or lot parcels for pavement with none; rings EPSG:5186 [E, N], traced from the NGII 2025 orthophoto, surface concrete where the photo shows concrete. Tier and estimated are what qa/asphaltScan.mjs measures outside the occlusion masks (gradeParcel; it fails when a record differs), estimated true is 추정. unreadEdgeM: free edge in metres the masks cannot see but the photo does not show either; it counts as lost in that grade. notAsphalt: areas qa/asphaltScan.mjs reads as asphalt that are not, each with its reason. unreachable: parking rows qa/parkingConnectivity.mjs finds no road for, each with its reason.",
  "replace": [
   {
    "id": "PARCEL_ASPHALT_ROAD_ZONE_50",
@@ -239,32 +239,32 @@
      263576.9
     ],
     [
-     244172.8,
-     263559.1
+     244172.9,
+     263556.8
     ],
     [
-     244163.6,
-     263559.4
+     244163.3,
+     263557
     ],
     [
-     244162.8,
-     263563.8
+     244162.05,
+     263562.55
     ],
     [
-     244159.7,
-     263563.1
+     244158.95,
+     263561.85
     ],
     [
-     244160.6,
-     263557.5
+     244159.85,
+     263556.25
     ],
     [
-     244161.9,
-     263553.1
+     244161.15,
+     263551.85
     ],
     [
-     244162.8,
-     263552.4
+     244162.05,
+     263551.5
     ],
     [
      244148.8,
@@ -280,7 +280,7 @@
     ]
    },
    "estimated": true,
-   "reason": "asphalt lot north of the road, around the kerbed planted island (cut out, read on the 12 cm aerial)"
+   "reason": "asphalt lot north of the road, around the kerbed planted island: the island is cut out on NGII, where the painted bays on its north side stay in the lot; the 12 cm aerial shows the island and lies about 1 m off NGII here"
   },
   {
    "id": "PARCEL_LOT_E243829_N263490",
@@ -1546,8 +1546,8 @@
    "class": "lot",
    "ring": [
     [
-     244153.1,
-     263523.8
+     244150.6,
+     263524.4
     ],
     [
      244183.8,
@@ -1626,8 +1626,8 @@
      263516.3
     ],
     [
-     244154.4,
-     263515
+     244152.4,
+     263514.6
     ]
    ],
    "evidence": {
@@ -1874,7 +1874,27 @@
     ],
     [
      244171.8,
-     263381.8
+     263381
+    ],
+    [
+     244160,
+     263378.8
+    ],
+    [
+     244154,
+     263377.4
+    ],
+    [
+     244152,
+     263382.2
+    ],
+    [
+     244160,
+     263383.9
+    ],
+    [
+     244169.9,
+     263385.9
     ],
     [
      244171.8,
@@ -1885,11 +1905,13 @@
     "tier": "T1",
     "refs": [
      "NGII 2025 orthophoto, traced by eye",
+     "12 cm aerial: lane continues",
      "qa/asphaltScan.mjs"
     ]
    },
-   "estimated": false,
-   "reason": "lane running south from the end of the road by the tennis courts, which the scan listed as covered with 75 % of it left"
+   "estimated": true,
+   "reason": "lane running west along the south hedge from the end of the road by the tennis courts; it leaves the campus polygon at its west end, where this parcel stops. Estimated: 17 of its 61 m free edge shows no edge on NGII (5 m cut at the polygon and 4.5 m on the paved corner, where pavement carries on; 7.5 m against a crown no mask knows)",
+   "unreadEdgeM": 17
   }
  ],
  "notAsphalt": [

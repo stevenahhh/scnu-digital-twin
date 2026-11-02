@@ -269,8 +269,10 @@ export function maskedShare(grid, rings) {
 
 // Measured (T1, not estimated) needs the edge readable and the area outside the masks; T1 with estimated:true when the photo
 // still shows at least half of the free edge; below that the outline is an estimate (T4).
-export function gradeParcel({ freeM, hiddenM, darkM, maskedAreaShare }) {
-  const lostM = hiddenM + darkM;
+// unreadM: free edge the curator looked at and found nothing to read (pavement carrying on, a crown no mask knows); the masks
+// cannot see it, so the record states it (parcel-curation.json unreadEdgeM). It can only lower a grade.
+export function gradeParcel({ freeM, hiddenM, darkM, unreadM = 0, maskedAreaShare }) {
+  const lostM = hiddenM + darkM + unreadM;
   const share = freeM ? lostM / freeM : 0;
   if ((share <= GRADE.measuredShare || lostM <= GRADE.measuredLostM) && maskedAreaShare <= GRADE.maskedArea) return { tier: "T1", estimated: false };
   return share <= GRADE.t1Share ? { tier: "T1", estimated: true } : { tier: "T4", estimated: true };
@@ -454,8 +456,9 @@ if (import.meta.main) {
     if (!p) return [];
     const edge = edgeVisibility([p.ring], { isDrivable, hidden, dark });
     const maskedAreaShare = Math.round(maskedShare(grid, [p.ring]) * 1000) / 1000;
-    const want = gradeParcel({ ...edge, maskedAreaShare });
-    return [{ id: p.id, ...edge, maskedAreaShare, tier: p.evidence.tier, estimated: p.estimated, wantTier: want.tier, wantEstimated: want.estimated }];
+    const unreadM = rec.unreadEdgeM ?? 0;
+    const want = gradeParcel({ ...edge, unreadM, maskedAreaShare });
+    return [{ id: p.id, ...edge, unreadM, maskedAreaShare, tier: p.evidence.tier, estimated: p.estimated, wantTier: want.tier, wantEstimated: want.estimated }];
   });
   const tierErrors = tiers.filter((t) => t.tier !== t.wantTier || t.estimated !== t.wantEstimated);
   const report = {
@@ -474,14 +477,14 @@ if (import.meta.main) {
   const counts = status.reduce((acc, s) => ({ ...acc, [s.status]: (acc[s.status] ?? 0) + 1 }), {});
   console.log(`ASPHALT ${JSON.stringify({ baselineAreas: status.length, ...counts, unexplained: unexplained.length, coveredShare: report.coveredShare, baselineCoveredShare: report.baselineCoveredShare, tierErrors: tierErrors.length })}`);
   for (const s of status) if (s.status === "open") console.error(`OPEN BASELINE ${s.areaM2} m2 at ${s.centre.join(",")}: ${s.leftM2} m2 left, touched by ${s.by.join(", ") || "nothing"}`);
-  for (const t of tierErrors) console.error(`TIER ${t.id}: record ${t.tier} estimated:${t.estimated}, the masks give ${t.wantTier} estimated:${t.wantEstimated} (free ${t.freeM} m, hidden ${t.hiddenM} m, dark ${t.darkM} m, masked area ${t.maskedAreaShare})`);
+  for (const t of tierErrors) console.error(`TIER ${t.id}: record ${t.tier} estimated:${t.estimated}, the masks give ${t.wantTier} estimated:${t.wantEstimated} (free ${t.freeM} m, hidden ${t.hiddenM} m, dark ${t.darkM} m, unread ${t.unreadM} m, masked area ${t.maskedAreaShare})`);
   for (const r of unexplained) console.error(`OPEN ${r.areaM2} m2 at ${r.centre.join(",")} bbox ${r.bbox.join(",")} under ${JSON.stringify(r.under)}`);
   const out = opt("--out", null);
   if (out) {
     mkdirSync(out, { recursive: true });
     writeFileSync(path.join(out, "asphalt-scan.json"), `${JSON.stringify(report, null, 1)}\n`);
     const rows = status.map((s) => `| ${s.centre.join(", ")} | ${s.areaM2} | ${s.status} | ${s.status === "covered" ? s.by.join(", ") : s.reason ?? ""} | ${s.leftM2} |`);
-    writeFileSync(path.join(out, "asphalt-scan.md"), `# Photo asphalt with no road or lot parcel\n\n${report.note}\n\nMinimum ${minAreaM2} m2, width at least ${report.openWidthM} m. Asphalt on road or lot parcels: ${report.baselineCoveredShare} before, ${report.coveredShare} now. Areas still open: ${unexplained.length}.\n\n| Centre E, N | Visible m2 | Status | Parcel or reason | Left m2 |\n|---|---|---|---|---|\n${rows.join("\n")}\n\n## Evidence of the curated parcels\n\nFree edge has no road or lot beyond it. T1 with estimated false: at most 25 % of it (or 10 m) lost to masks and shade, and at most 25 % of the area masked. T1 with estimated true: at most half lost. T4: the rest.\n\n| Parcel | Free m | Hidden m | Dark m | Masked area | Tier | Estimated |\n|---|---|---|---|---|---|---|\n${tiers.map((t) => `| ${t.id} | ${t.freeM} | ${t.hiddenM} | ${t.darkM} | ${t.maskedAreaShare} | ${t.tier} | ${t.estimated} |`).join("\n")}\n`);
+    writeFileSync(path.join(out, "asphalt-scan.md"), `# Photo asphalt with no road or lot parcel\n\n${report.note}\n\nMinimum ${minAreaM2} m2, width at least ${report.openWidthM} m. Asphalt on road or lot parcels: ${report.baselineCoveredShare} before, ${report.coveredShare} now. Areas still open: ${unexplained.length}.\n\n| Centre E, N | Visible m2 | Status | Parcel or reason | Left m2 |\n|---|---|---|---|---|\n${rows.join("\n")}\n\n## Evidence of the curated parcels\n\nFree edge has no road or lot beyond it. T1 with estimated false: at most 25 % of it (or 10 m) lost to masks, shade and edge the curator could not read, and at most 25 % of the area masked. T1 with estimated true: at most half lost. T4: the rest.\n\n| Parcel | Free m | Hidden m | Dark m | Unread m | Masked area | Tier | Estimated |\n|---|---|---|---|---|---|---|---|\n${tiers.map((t) => `| ${t.id} | ${t.freeM} | ${t.hiddenM} | ${t.darkM} | ${t.unreadM} | ${t.maskedAreaShare} | ${t.tier} | ${t.estimated} |`).join("\n")}\n`);
   }
   const proposeFile = opt("--propose", null);
   if (proposeFile) {

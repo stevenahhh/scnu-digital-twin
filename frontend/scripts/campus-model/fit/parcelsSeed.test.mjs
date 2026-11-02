@@ -169,6 +169,7 @@ test("validator rejects malformed parcel curation records, each by id", () => {
     [{ ...emptyCuration, add: [{ ...good, evidence: { tier: "T9", refs: [] } }] }, /PARCEL_ROAD_NEW: evidence/],
     [{ ...emptyCuration, add: [{ ...good, evidence: { tier: "T4", refs: [] } }] }, /PARCEL_ROAD_NEW: estimated/],
     [{ ...emptyCuration, add: [{ ...good, surface: "gravel" }] }, /PARCEL_ROAD_NEW: surface/],
+    [{ ...emptyCuration, add: [{ ...good, unreadEdgeM: -1 }] }, /PARCEL_ROAD_NEW: unreadEdgeM/],
     [{ ...emptyCuration, remove: [{ id: "PARCEL_X" }] }, /PARCEL_X: reason/],
     [{ ...emptyCuration, notAsphalt: [{ id: "ROOF", ring: square(0, 0, 1) }] }, /ROOF: reason/],
     [{ ...emptyCuration, unreachable: [{ row: "LOT/R1" }] }, /LOT\/R1: reason/],
