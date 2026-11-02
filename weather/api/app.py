@@ -31,6 +31,7 @@ from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from requests import RequestException
 
 _WEATHER_ROOT = str(Path(__file__).parent.parent)
 if _WEATHER_ROOT not in sys.path:
@@ -411,7 +412,20 @@ def get_heatmap():
 
 def _build_zone_environment(weather: Optional[Dict[str, Any]] = None):
     weather = dict(weather or fetch_kma_current())
-    air_quality = fetch_air_quality()
+    try:
+        air_quality = {
+            **fetch_air_quality(),
+            "air_quality_source": "airkorea",
+        }
+    except (RequestException, ValueError):
+        air_quality = {
+            "pm10": None,
+            "pm25": None,
+            "o3": None,
+            "khai_value": None,
+            "khai_grade": "",
+            "air_quality_source": "unavailable",
+        }
     weather.update(air_quality)
     return build_environment_result(weather, ZONES)
 
