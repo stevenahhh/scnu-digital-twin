@@ -214,3 +214,31 @@ test("estimatedValueReport names every row with an estimated value, for the GLB 
 test("the build log counts the flagged values", () => {
   assert.match(describeParking(plan([row({ count: 2, paintBack: true, estimatedFields: { paintBack: { reason: "x" } } })])), /1 추정 값/);
 });
+
+test("a stall's flags mark the pieces they cover, no others, and change no geometry", () => {
+  const why = { reason: "VR" };
+  const stall = { id: "LOT_A/R1/S0", index: 0, kind: "accessible", widthM: 3, aisle: { side: "start", widthM: 1 }, symbol: "wheelchair", figure: { symbol: "P", side: "front", upBearingDeg: 90 } };
+  const over = { count: 2, pitchM: 6, backLine: { abs: [[0, 0], [6, 0]] } };
+  const flags = { figureSide: why, figureUp: why, symbolUp: why };
+  const flagged = plan([row({ ...over, stalls: [{ ...stall, estimatedFields: flags }] })]);
+  const pieces = (glyph) => flagged.pieces.filter((p) => p.glyph === glyph);
+  assert.ok(pieces("P").length > 0);
+  for (const p of pieces("P")) { assert.equal(p.estimated, true); assert.deepEqual(p.estimatedFields, ["figureSide", "figureUp"]); }
+  for (const p of pieces("wheelchair")) { assert.equal(p.estimated, true); assert.deepEqual(p.estimatedFields, ["symbolUp"]); }
+  for (const p of pieces("aisle")) assert.equal(p.estimated, false);
+  assert.equal(pieces("border")[0].estimated, false);
+  assert.equal(flagged.rows[0].estimatedValues, 3);
+  assert.equal(flagged.rows[0].tier, "T1");
+  const rings = (p) => p.pieces.map((x) => x.rings);
+  assert.deepEqual(rings(flagged), rings(plan([row({ ...over, stalls: [stall] })])));
+  const wide = plan([row({ ...over, stalls: [{ ...stall, estimatedFields: { widthM: why, aisleWidthM: why } }] })]).pieces;
+  assert.deepEqual(wide.find((p) => p.glyph === "border").estimatedFields, ["widthM"]);
+  assert.equal(wide.find((p) => p.id.endsWith("/fill")).estimated, true);
+  assert.deepEqual(wide.find((p) => p.glyph === "aisle").estimatedFields, ["aisleWidthM"]);
+});
+
+test("estimatedValueReport carries the stall flags by stall id; a row with none has no stalls key", () => {
+  const why = { reason: "VR" };
+  const stall = { id: "LOT_A/R1/S0", index: 0, kind: "accessible", widthM: 3, symbol: "wheelchair", estimatedFields: { symbolUp: why } };
+  assert.deepEqual(estimatedValueReport(doc([row({ stalls: [stall] })])), { "LOT_A/R1": { tier: "T1", estimated: false, dividers: [], fields: {}, stalls: { "LOT_A/R1/S0": { symbolUp: why } } } });
+});

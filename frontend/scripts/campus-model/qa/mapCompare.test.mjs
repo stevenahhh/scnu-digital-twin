@@ -227,3 +227,12 @@ test('parkingObjects marks the objects a flag covers', () => {
   assert.equal(by('LOT_A/R1/back').estimated, true);
   assert.equal(by('LOT_A/R1/front').estimated, false);
 });
+
+test('rowSummary names a stall flag with its stall, and a flagged width marks the fill', () => {
+  const stall = { id: 'LOT_A/R1/S0', index: 0, kind: 'accessible', widthM: 3, symbol: 'wheelchair', figure: { symbol: 'P', side: 'front' }, estimatedFields: { widthM: { reason: 'x' }, figureSide: { reason: 'y' } } };
+  const doc = parkingDoc(parkingRow({ stalls: [stall] }));
+  const [s] = rowSummary(doc, []);
+  assert.deepEqual(s.estimatedValues, ['S0 widthM', 'S0 figureSide']);
+  assert.equal(parkingObjects(doc).find((o) => o.id === 'LOT_A/R1/S0/fill').estimated, true);
+  assert.equal(parkingObjects(parkingDoc(parkingRow({ stalls: [{ ...stall, estimatedFields: undefined }] }))).find((o) => o.id === 'LOT_A/R1/S0/fill').estimated, false);
+});

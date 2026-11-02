@@ -234,7 +234,7 @@ export function parkingObjects(doc, { resolveAnchor = null } = {}) {
         if (aisle?.side === "end") box.s1 = s1 - aisle.widthM;
         if (aisle?.side === "back") box.t0 = aisle.widthM;
         if (aisle?.side === "front") box.t1 = row.depthM - aisle.widthM;
-        out.push({ id: `${stall.id ?? `${row.id}/S${stall.index}`}/fill`, kind: "disabled_parking", colour: "blue", row: row.id, geometry: { type: "area", rings: [[at(box.s0, box.t0), at(box.s1, box.t0), at(box.s1, box.t1), at(box.s0, box.t1)]] } });
+        out.push({ id: `${stall.id ?? `${row.id}/S${stall.index}`}/fill`, kind: "disabled_parking", colour: "blue", row: row.id, estimated: Boolean(row.estimated || flagged.depthM || stall.estimated || stall.estimatedFields?.widthM), geometry: { type: "area", rings: [[at(box.s0, box.t0), at(box.s1, box.t0), at(box.s1, box.t1), at(box.s0, box.t1)]] } });
       }
     }
     for (const line of lot.lines ?? []) {
@@ -328,7 +328,10 @@ export function rowSummary(doc, results) {
       out.push({
         lot: lot.id, row: row.id, tier: row.evidence.tier, estimated: row.estimated,
         estimatedDividers: row.estimatedDividers ?? [],
-        estimatedValues: Object.entries(row.estimatedFields ?? {}).map(([name, flag]) => (flag.seenM ? `${name} seen ${flag.seenM[0]}-${flag.seenM[1]} m` : name)),
+        estimatedValues: [
+          ...Object.entries(row.estimatedFields ?? {}).map(([name, flag]) => (flag.seenM ? `${name} seen ${flag.seenM[0]}-${flag.seenM[1]} m` : name)),
+          ...row.stalls.flatMap((s) => Object.keys(s.estimatedFields ?? {}).map((name) => `S${s.index} ${name}`)),
+        ],
         dividers: dividers.length, stalls: Math.max(0, dividers.length - 1), visibleDividers: seen.length,
         support: seen.length ? round(seen.reduce((n, r) => n + r.support, 0) / seen.length) : null,
         medianResidualM: residuals.length ? round(median(residuals)) : null, maxResidualM: residuals.length ? Math.max(...residuals) : null,

@@ -441,3 +441,43 @@ test("the real curation passes those rules and its flags reach parking.json", ()
   assert.ok(flagged.length > 0, "nothing flagged");
   for (const row of flagged) assert.deepEqual(seeded.get(row.id).estimatedFields, row.estimatedFields, row.id);
 });
+
+// ---- a stall's own values read by eye: where its symbols stand and which way they read, and widths the paint does not bound
+const bay = (over = {}) => ({ id: "LOT_KEEP/R7/S0", index: 0, kind: "accessible", widthM: 3, symbol: "wheelchair", ...over });
+const P = { symbol: "P", side: "front", upBearingDeg: 90 };
+
+test("a curated T1 row must flag which way a symbol reads, and where a second figure stands", () => {
+  assert.match(curationErrors({ stalls: [bay()] }), /LOT_KEEP\/R7\/S0: symbol direction is read by eye: flag symbolUp in estimatedFields/);
+  assert.equal(curationErrors({ stalls: [bay({ estimatedFields: { symbolUp: why } })] }), "");
+  const figure = (estimatedFields) => curationErrors({ stalls: [bay({ figure: P, estimatedFields })] });
+  assert.match(figure({ symbolUp: why }), /LOT_KEEP\/R7\/S0: figure is read by eye: flag figureSide and figureUp/);
+  assert.match(figure({ symbolUp: why, figureSide: why }), /flag figureSide and figureUp/);
+  assert.equal(figure({ symbolUp: why, figureSide: why, figureUp: why }), "");
+  assert.equal(curationErrors({ estimated: true, evidence: { tier: "T2", refs: ["t"] }, stalls: [bay()] }), "", "a row marked estimated says so as a whole");
+});
+
+test("a stall flag on its own satisfies a ref that calls a value an estimate", () => {
+  const evidence = { tier: "T1", refs: ["width read by eye"] };
+  assert.match(curationErrors({ ...bothLines, evidence }), /refs call a value estimated/);
+  assert.equal(curationErrors({ evidence, stalls: [bay({ estimatedFields: { symbolUp: why, widthM: why } })] }), "");
+});
+
+test("a stall's estimatedFields names real values of the stall, each with its reason", () => {
+  const errors = (stall) => validate("parking", { lots: [{ id: "LOT_KEEP", rows: [curatedRow({ stalls: [stall] })] }] }).errors.join(" | ");
+  assert.equal(errors(bay({ aisle: { side: "start", widthM: 1 }, figure: P, estimatedFields: { widthM: why, aisleWidthM: why, symbolUp: why, figureSide: why, figureUp: why } })), "");
+  assert.match(errors(bay({ estimatedFields: "symbolUp" })), /stalls\[0\] estimatedFields must be an object/);
+  assert.match(errors(bay({ estimatedFields: { depthM: why } })), /stalls\[0\] estimatedFields\.depthM is not a field that can be flagged/);
+  assert.match(errors(bay({ estimatedFields: { symbolUp: {} } })), /stalls\[0\] estimatedFields\.symbolUp needs a reason/);
+  assert.match(errors(bay({ estimatedFields: { figureSide: why } })), /stalls\[0\] estimatedFields\.figureSide flags a value the stall does not have/);
+  assert.match(errors(bay({ estimatedFields: { aisleWidthM: why } })), /estimatedFields\.aisleWidthM flags a value the stall does not have/);
+  assert.match(errors(bay({ symbol: null, estimatedFields: { symbolUp: why } })), /estimatedFields\.symbolUp flags a value the stall does not have/);
+});
+
+test("the real curation's stall flags reach parking.json", () => {
+  const load = (name) => JSON.parse(readFileSync(new URL(`../data/ground/${name}.json`, import.meta.url), "utf8"));
+  const stalls = (doc) => new Map(doc.lots.flatMap((l) => l.rows).flatMap((r) => r.stalls).map((s) => [s.id, s]));
+  const seeded = stalls(load("parking"));
+  const flagged = [...stalls(load("parking-curation")).values()].filter((s) => s.estimatedFields);
+  assert.ok(flagged.length > 0, "nothing flagged");
+  for (const stall of flagged) assert.deepEqual(seeded.get(stall.id).estimatedFields, stall.estimatedFields, stall.id);
+});

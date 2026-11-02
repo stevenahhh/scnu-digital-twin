@@ -136,10 +136,14 @@ export function parkingPlan(doc, { toScene = tmToScene, resolveAnchor = null } =
       for (const { s0, s1, stall } of cells) {
         if (!stall) continue;
         const record = stall.id ?? `${row.id}/S${stall.index}`;
+        const stallFlags = stall.estimatedFields ?? {};
+        const estimatedBy = (...names) => { const on = names.filter((n) => stallFlags[n]); return on.length ? { estimated: true, estimatedFields: on } : {}; };
+        const boxFields = [...(flagged.depthM ? ["depthM"] : []), ...(stallFlags.widthM ? ["widthM"] : [])];
+        const boxFlag = { estimated: Boolean(row.estimated || stall.estimated || boxFields.length), ...(boxFields.length ? { estimatedFields: boxFields } : {}) };
         if (FILLED.has(stall.kind)) {
           const [i0, i1, j0, j1] = [s0 + FILL_INSET_M, s1 - FILL_INSET_M, FILL_INSET_M, depth - FILL_INSET_M];
-          push([quad(i0, i1, j0, j1)], "blue", "disabled_parking", record, `${record}/fill`, { estimated: Boolean(row.estimated || stall.estimated || flagged.depthM), ...depthFlag });
-          push([quad(s0, s1, 0, depth), quad(i0, i1, j0, j1).reverse()], "white", "disabled_parking", record, `${record}/border`, { glyph: "border", estimated: Boolean(row.estimated || stall.estimated || flagged.depthM), ...depthFlag });
+          push([quad(i0, i1, j0, j1)], "blue", "disabled_parking", record, `${record}/fill`, boxFlag);
+          push([quad(s0, s1, 0, depth), quad(i0, i1, j0, j1).reverse()], "white", "disabled_parking", record, `${record}/border`, { glyph: "border", ...boxFlag });
         }
         // the part of the bay the symbol owns, narrowed by a hatched aisle and a second figure
         const own = { s0, s1, t0: 0, t1: depth };
@@ -150,12 +154,12 @@ export function parkingPlan(doc, { toScene = tmToScene, resolveAnchor = null } =
           back: { n: mul(d, -1), key: "t0", sign: 1, half: () => (own.t1 - own.t0) / 2, across: () => own.s1 - own.s0 },
           front: { n: d, key: "t1", sign: -1, half: () => (own.t1 - own.t0) / 2, across: () => own.s1 - own.s0 },
         };
-        const symbolPieces = (polys, glyph) => polys.forEach((rings, k) => push(rings, "white", "disabled_parking", record, `${record}/${glyph}${k}`, { glyph }));
+        const symbolPieces = (polys, glyph, ...fields) => polys.forEach((rings, k) => push(rings, "white", "disabled_parking", record, `${record}/${glyph}${k}`, { glyph, ...estimatedBy(...fields) }));
         if (stall.aisle) {
           const side = SIDES[stall.aisle.side];
           const h = side.half();
           const width = stall.aisle.outside ? stall.aisle.widthM : Math.min(stall.aisle.widthM, 0.9 * h);
-          symbolPieces(placeAt(hatchTemplate(side.across(), width), add(centreOf(), mul(side.n, stall.aisle.outside ? h + width / 2 : h - width / 2)), side.n), "aisle");
+          symbolPieces(placeAt(hatchTemplate(side.across(), width), add(centreOf(), mul(side.n, stall.aisle.outside ? h + width / 2 : h - width / 2)), side.n), "aisle", "aisleWidthM");
           if (!stall.aisle.outside) own[side.key] += side.sign * width;
         }
         if (stall.figure?.symbol === "scooter") {
@@ -165,7 +169,7 @@ export function parkingPlan(doc, { toScene = tmToScene, resolveAnchor = null } =
           const mirror = dot(rightOf(up), bearing(stall.figure.frontBearingDeg ?? 0)) < 0;
           let polys = scooterTemplate(Math.min(SCOOTER_M, 0.8 * side.across(), (1.6 * h) / 0.78));
           if (mirror) polys = polys.map((rs) => rs.map((ring) => ring.map(([x, y]) => [-x, y]).reverse()));
-          symbolPieces(place(polys, add(centreOf(), mul(side.n, h)), up), "scooter");
+          symbolPieces(place(polys, add(centreOf(), mul(side.n, h)), up), "scooter", "figureSide", "figureUp");
           own[side.key] += side.sign * 2 * h;
         }
         // a P beside the wheelchair (scene_e5 b: the bay along the kerb at E3's south-east corner)
@@ -173,14 +177,14 @@ export function parkingPlan(doc, { toScene = tmToScene, resolveAnchor = null } =
           const side = SIDES[stall.figure.side];
           const h = side.half() / 2;
           const up = Number.isFinite(stall.figure.upBearingDeg) ? bearing(stall.figure.upBearingDeg) : mul(side.n, -1);
-          symbolPieces(place(parkingPTemplate(Math.min(P_M, 0.6 * side.across(), 1.6 * h)), add(centreOf(), mul(side.n, h)), up), "P");
+          symbolPieces(place(parkingPTemplate(Math.min(P_M, 0.6 * side.across(), 1.6 * h)), add(centreOf(), mul(side.n, h)), up), "P", "figureSide", "figureUp");
           own[side.key] += side.sign * 2 * h;
         }
         if (stall.symbol === "wheelchair" || stall.symbol === "P") {
           const up = Number.isFinite(stall.upBearingDeg) ? bearing(stall.upBearingDeg) : mul(d, -1);
           const [W, D] = [own.s1 - own.s0, own.t1 - own.t0];
           const polys = stall.symbol === "P" ? parkingPTemplate(Math.min(P_M, 0.6 * D, (0.6 * W) / 0.62)) : wheelchairTemplate(Math.min(SYMBOL_M, 0.55 * W, 0.45 * D));
-          symbolPieces(place(polys, centreOf(), up), stall.symbol);
+          symbolPieces(place(polys, centreOf(), up), stall.symbol, "symbolUp");
         }
       }
 
@@ -200,7 +204,7 @@ export function parkingPlan(doc, { toScene = tmToScene, resolveAnchor = null } =
       rows.push({
         lot: lot.id, row: row.id, dividers: drawn, estimatedDividers: estimatedSet.size, specialStalls: row.stalls.filter((s) => s.kind !== "general").length,
         wheelStops: wheelStops.length - before, photoSupport: row.evidence.photoSupport ?? null, tier: row.evidence.tier,
-        ...(Object.keys(flagged).length ? { estimatedValues: Object.keys(flagged).length } : {}),
+        ...(() => { const n = Object.keys(flagged).length + row.stalls.reduce((sum, s) => sum + Object.keys(s.estimatedFields ?? {}).length, 0); return n ? { estimatedValues: n } : {}; })(),
       });
     }
     for (const line of lot.lines ?? []) {
@@ -245,7 +249,9 @@ export function estimatedValueReport(doc) {
   const out = {};
   for (const row of doc.lots.flatMap((lot) => lot.rows)) {
     const [dividers, fields] = [row.estimatedDividers ?? [], row.estimatedFields ?? {}];
-    if (row.estimated || dividers.length || Object.keys(fields).length) out[row.id] = { tier: row.evidence.tier, estimated: row.estimated, dividers, fields };
+    const stalls = Object.fromEntries(row.stalls.filter((s) => s.estimatedFields).map((s) => [s.id ?? `${row.id}/S${s.index}`, s.estimatedFields]));
+    const hasStalls = Object.keys(stalls).length > 0;
+    if (row.estimated || dividers.length || Object.keys(fields).length || hasStalls) out[row.id] = { tier: row.evidence.tier, estimated: row.estimated, dividers, fields, ...(hasStalls ? { stalls } : {}) };
   }
   return out;
 }

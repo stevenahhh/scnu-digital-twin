@@ -226,6 +226,20 @@ function estimatedFieldErrors(row, fail) {
     else if (!(isPair(flag.seenM) && flag.seenM[0] < flag.seenM[1])) fail(`estimatedFields.${name}.seenM must be [from, to] in metres along the row`);
   }
 }
+// The same for a stall: its width and hatch where the paint does not bound them, which way its symbol reads, where a second
+// figure stands and which way that reads.
+const STALL_ESTIMATED_FIELDS = { widthM: (s) => s.widthM !== undefined, aisleWidthM: (s) => Boolean(s.aisle), symbolUp: (s) => Boolean(s.symbol), figureSide: (s) => Boolean(s.figure), figureUp: (s) => Boolean(s.figure) };
+function stallEstimatedErrors(stall, at) {
+  const fields = stall.estimatedFields;
+  if (fields === undefined) return;
+  if (!fields || typeof fields !== "object" || Array.isArray(fields)) return at("estimatedFields must be an object: { field: { reason } }");
+  for (const [name, flag] of Object.entries(fields)) {
+    const has = STALL_ESTIMATED_FIELDS[name];
+    if (!has) { at(`estimatedFields.${name} is not a field that can be flagged (${Object.keys(STALL_ESTIMATED_FIELDS).join(", ")})`); continue; }
+    if (!has(stall)) at(`estimatedFields.${name} flags a value the stall does not have`);
+    if (!isText(flag?.reason)) at(`estimatedFields.${name} needs a reason`);
+  }
+}
 function parkingRow(row, lotId, fail) {
   if (!isText(row?.id) || !row.id.startsWith(`${lotId}/`)) fail(`row id must start with ${lotId}/`);
   const lineError = backLineErrors(row?.backLine);
@@ -260,6 +274,7 @@ function parkingRow(row, lotId, fail) {
       if (s?.upBearingDeg !== undefined && !Number.isFinite(s.upBearingDeg)) at("upBearingDeg must be a number");
       if (!(s?.paintSupport === undefined || s.paintSupport === null || (Number.isFinite(s.paintSupport) && s.paintSupport >= 0 && s.paintSupport <= 1))) at("paintSupport must be in [0, 1] or null");
       if (s?.estimated !== undefined && typeof s.estimated !== "boolean") at("estimated must be a boolean");
+      if (s) stallEstimatedErrors(s, at);
       if (row.estimated === false && Number.isFinite(s?.widthM) && s.widthM < MIN_STALL_M) at(`width ${s.widthM} m is under ${MIN_STALL_M} m in a row not marked estimated`);
     });
   }
@@ -328,7 +343,15 @@ function curatedReadingErrors(row) {
   const bounded = (row.paintBack && row.paintFront) || (Array.isArray(row.stalls) && row.stalls.some((s) => FILLED_KINDS.has(s?.kind)));
   if (!bounded && !fields.depthM) errors.push(`${row.id}: depthM is not bounded by two painted lines: flag it in estimatedFields`);
   if (row.wheelStops && !fields.wheelStops) errors.push(`${row.id}: wheelStops are read on the VR: flag them in estimatedFields`);
-  if (!Object.keys(fields).length && Array.isArray(row.evidence.refs) && row.evidence.refs.some((ref) => CALLED_ESTIMATE.test(ref))) errors.push(`${row.id}: refs call a value estimated or partly seen: flag it in estimatedFields`);
+  const stalls = Array.isArray(row.stalls) ? row.stalls : [];
+  const flagsOf = (s) => (s?.estimatedFields && typeof s.estimatedFields === "object" ? s.estimatedFields : {});
+  for (const s of stalls) {
+    const own = flagsOf(s);
+    if (s?.symbol && !own.symbolUp) errors.push(`${s.id ?? row.id}: symbol direction is read by eye: flag symbolUp in estimatedFields`);
+    if (s?.figure && !(own.figureSide && own.figureUp)) errors.push(`${s.id ?? row.id}: figure is read by eye: flag figureSide and figureUp in estimatedFields`);
+  }
+  const anyFlag = Object.keys(fields).length || stalls.some((s) => Object.keys(flagsOf(s)).length);
+  if (!anyFlag && Array.isArray(row.evidence.refs) && row.evidence.refs.some((ref) => CALLED_ESTIMATE.test(ref))) errors.push(`${row.id}: refs call a value estimated or partly seen: flag it in estimatedFields`);
   return errors;
 }
 function parkingCuration(doc) {
