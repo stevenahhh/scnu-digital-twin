@@ -31,6 +31,13 @@
 // VISIBLE.minRatio (X); otherwise PASS or FAIL. N, X and the edge floor are justified in overheadBlendCore.mjs VISIBLE.
 // JSON: `visibleGround` { thresholds, tiles, summary }; images <prefix>tile-<E0>-<N0>-visible-blend.png (excluded
 // ground darkened). The run passes only when every reported mode passes.
+// Objects mode (--objects; plan campus-ground-truth-redesign todo 10, design §10.1): instead of the tile capture, every
+// road-marking piece the markings stage draws (stages/markings.mjs markingCandidates, the same pieces the paint gate
+// measures) is scored against the photo's paint masks (lib/paintMasks.mjs) with leaned roofs, crowns and cast shadows
+// masked out (lib/occlusion.mjs, leans from data/photo/building-lean.json or the leanPrior of building-forms.json) by
+// qa/mapCompare.mjs: lateral residual for lines, IoU for areas. Writes <out>/objects.json and <out>/objects.md with the
+// over-tolerance list; over-tolerance is a warning (exit 0), as §10.1 says the photo can be wrong. No new renderer:
+// the drawn geometry is read from the generator's own records, the dev server is only checked like the other modes.
 // Exit 0 PASS, 1 FAIL, 2 missing sheet or unreachable server (NGII_SHEET overrides the sheet path).
 // Chrome is driven over --remote-debugging-pipe, so no TCP port is opened besides the dev server's.
 import { spawn } from "node:child_process";
@@ -43,6 +50,10 @@ import { DEFAULT_SHEET, openSheet } from "../campus-model/lib/ngiiSheet.mjs";
 import { decodePng, encodePng } from "../campus-model/lib/png.mjs";
 import { GRID_CONVERGENCE_DEG, sceneToTm, tmToPixel, tmToScene, wgs84ToTm } from "../../src/geo/epsg5186.mjs";
 import { occlusionMask } from "../campus-model/lib/occlusion.mjs";
+import { modelToGeo } from "../campus-model/lib/frame.mjs";
+import { orientedBox } from "../campus-model/lib/markingFit.mjs";
+import { paintMasks } from "../campus-model/lib/paintMasks.mjs";
+import { TOLERANCES, scoreObjects } from "../campus-model/qa/mapCompare.mjs";
 import { EDGE_THRESHOLD, VISIBLE, aggregate, aggregateVisible, canopyMask, footprintMask, measureTile, measureVisible, pointInRing, renderHalf, residualsMarkdown, sideBySide, tileGrid } from "./overheadBlendCore.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -135,6 +146,108 @@ try {
   console.error(`server unreachable: ${url} (${error.cause?.code ?? error.message})`);
   sheet.close();
   process.exit(2);
+}
+
+// ---------------------------------------------------------------- --objects (per-object map-space comparison)
+if (args.includes("--objects")) {
+  const { markingCandidates } = await import("../campus-model/stages/markings.mjs");
+  const data = join(HERE, "..", "campus-model", "data");
+  const toTm = ([x, z]) => wgs84ToTm(...modelToGeo(x, z));
+  // sheet window over EXTENT (+10 m), origin = top-left pixel corner
+  const gsd = sheet.tfw.a;
+  const cornersTm = [[EXTENT.minX, EXTENT.minZ], [EXTENT.maxX, EXTENT.minZ], [EXTENT.minX, EXTENT.maxZ], [EXTENT.maxX, EXTENT.maxZ]].map(toTm);
+  const E0 = Math.min(...cornersTm.map((p) => p[0])) - 10;
+  const N1 = Math.max(...cornersTm.map((p) => p[1])) + 10;
+  const [colF, rowF] = tmToPixel(E0, N1, sheet.tfw);
+  const col0 = Math.max(0, Math.round(colF));
+  const row0 = Math.max(0, Math.round(rowF));
+  const w = Math.min(sheet.width - col0, Math.ceil((Math.max(...cornersTm.map((p) => p[0])) + 10 - E0) / gsd));
+  const h = Math.min(sheet.height - row0, Math.ceil((N1 - Math.min(...cornersTm.map((p) => p[1])) + 10) / gsd));
+  const rgb = sheet.readWindow(col0, row0, w, h);
+  sheet.close();
+  const origin = [sheet.tfw.c + col0 * gsd - gsd / 2, sheet.tfw.f + row0 * sheet.tfw.d - sheet.tfw.d / 2];
+  const paint = paintMasks({ rgb, width: w, height: h, metresPerPixel: gsd });
+  // occluders: leaned building masses (todo 6 leans when present), tree crowns, their shadows
+  const forms = JSON.parse(readFileSync(join(data, "building-forms.json"), "utf8"));
+  let leanSource = "data/photo/building-lean.json";
+  let leans = new Map();
+  try {
+    leans = new Map(JSON.parse(readFileSync(join(data, "photo", "building-lean.json"), "utf8")).buildings.map((b) => [b.id, b.lean]));
+  } catch {
+    leanSource = "building-forms.json leanPrior (data/photo/building-lean.json missing)";
+  }
+  const buildings = forms.buildings.flatMap((b) => b.masses.map((m) => ({
+    rings: [m.outer, ...(m.holes ?? [])].map((r) => r.map(([lon, lat]) => wgs84ToTm(lon, lat))),
+    heightM: m.topMetres, lean: leans.get(b.key) ?? b.leanPrior ?? [0, 0],
+  })));
+  const trees = JSON.parse(readFileSync(join(data, "trees.json"), "utf8")).trees.map(([east, north, crownDiameterM, heightM]) => ({ east, north, crownDiameterM, heightM }));
+  const win = { w, h, origin, gsdM: gsd };
+  const masks = occlusionMask(win, { buildings, trees });
+  // drawn pieces -> objects: line kinds become the long-axis centreline of each piece, the rest stay areas
+  const LINE = /^(centre_line|lane_line|edge_line|guide_|parking_line|kerb|stop_line)/;
+  const { candidates } = await markingCandidates();
+  const objects = candidates.map((c) => {
+    const rings = c.shapes.map((shape) => shape.map((ring) => ring.map(toTm)));
+    if (LINE.test(c.kind) && c.kind !== "stop_line") {
+      const parts = rings.map((shape) => {
+        const b = orientedBox(shape[0]);
+        return [[b.centre[0] - b.long[0] * b.halfLong, b.centre[1] - b.long[1] * b.halfLong], [b.centre[0] + b.long[0] * b.halfLong, b.centre[1] + b.long[1] * b.halfLong]];
+      });
+      return { id: c.id, kind: c.kind, colour: c.colour, geometry: { type: "line", parts } };
+    }
+    return rings.map((shape, i) => ({ id: rings.length > 1 ? `${c.id}#${i}` : c.id, kind: c.kind, colour: c.colour, geometry: { type: "area", rings: shape } }));
+  }).flat();
+  const scored = scoreObjects(objects, { ...win, paint }, masks);
+  // nearest BLD_* node (GIS footprint centre) for each object, so a reader can find "E3 parking rows"
+  const nodes = JSON.parse(readFileSync(join(data, "bld-node-map.json"), "utf8")).entries.filter((e) => e.gisCentreTm);
+  const centreOf = (o) => {
+    const pts = o.geometry.type === "line" ? o.geometry.parts.flat() : o.geometry.rings[0];
+    return [pts.reduce((s, p) => s + p[0], 0) / pts.length, pts.reduce((s, p) => s + p[1], 0) / pts.length];
+  };
+  scored.forEach((r, i) => {
+    const c = centreOf(objects[i]);
+    let best = null;
+    for (const n of nodes) {
+      const d = Math.hypot(n.gisCentreTm[0] - c[0], n.gisCentreTm[1] - c[1]);
+      if (!best || d < best.d) best = { id: n.nodeId, d };
+    }
+    r.centreTm = c.map((v) => Math.round(v * 100) / 100);
+    r.near = best && best.d <= 80 ? best.id : null;
+  });
+  const overList = scored.filter((r) => r.over);
+  const byTier = {};
+  for (const r of scored) {
+    const t = (byTier[r.tier] ??= { objects: 0, occluded: 0, over: 0, residuals: [] });
+    t.objects += 1;
+    if (r.occluded) t.occluded += 1;
+    if (r.over) t.over += 1;
+    if (r.residual_m !== null) t.residuals.push(r.residual_m);
+  }
+  for (const t of Object.values(byTier)) {
+    const s = t.residuals.sort((a, b) => a - b);
+    t.medianResidualM = s.length ? s[s.length >> 1] : null;
+    delete t.residuals;
+  }
+  mkdirSync(outDir, { recursive: true });
+  const report = {
+    generatedAt: new Date().toISOString(), sheet: DEFAULT_SHEET.split("/").pop(), metresPerPixel: gsd,
+    source: "stages/markings.mjs markingCandidates (drawn pieces), EPSG:5186", masks: { leans: leanSource, trees: "data/trees.json", shadows: "lib/poleShadow.mjs SUN" },
+    tolerances: TOLERANCES, byTier, overTolerance: overList.length, objects: scored,
+  };
+  writeFileSync(join(outDir, "objects.json"), `${JSON.stringify(report, null, 1)}\n`);
+  const row = (r) => `| ${r.id} | ${r.kind} | ${r.tier} | ${r.near ?? ""} | ${r.residual_m ?? ""} | ${r.iou ?? ""} | ${r.support ?? ""} | ${r.occluded ? "yes" : ""} | ${r.over ? "OVER" : ""} |`;
+  const head = "| id | kind | tier | near | residual m | IoU | support | occluded | over |\n|---|---|---|---|---|---|---|---|---|";
+  const md = [
+    "# Map-space per-object comparison (design §10.1)", "",
+    `Sheet ${report.sheet}, ${scored.length} objects from markingCandidates; occlusion leans: ${leanSource}. Values are photo residuals (추정), warnings only.`, "",
+    "## By tier", "", "| tier | objects | occluded | over | median residual m |", "|---|---|---|---|---|",
+    ...Object.entries(byTier).map(([k, t]) => `| ${k} | ${t.objects} | ${t.occluded} | ${t.over} | ${t.medianResidualM ?? ""} |`), "",
+    "## E3 parking rows", "", head, ...scored.filter((r) => r.near === "BLD_E3" && r.tier === "parking_divider").map(row), "",
+    `## Over tolerance (${overList.length})`, "", head, ...overList.map(row), "",
+  ].join("\n");
+  writeFileSync(join(outDir, "objects.md"), md);
+  console.log(`OBJECTS ${scored.length} scored, ${scored.filter((r) => r.occluded).length} occluded, ${overList.length} over tolerance; ${join(outDir, "objects.json")}`);
+  process.exit(0);
 }
 
 // ---------------------------------------------------------------- grid-aligned views
