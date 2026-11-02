@@ -55,7 +55,7 @@ import { buildContext, meshHeightAt } from "./stages/context.mjs";
 import { buildContextGround } from "./stages/contextGround.mjs";
 import { buildMasts } from "./stages/masts.mjs";
 import { buildMarkings, describeMarkings, inMarkingExtent, loadMarkings } from "./stages/markings.mjs";
-import { assertLotsOnParcels, describeParking, implausibleStalls, loadParking, parkingPlan, symbolPieceReport } from "./stages/parking.mjs";
+import { assertLotsOnParcels, describeParking, estimatedValueReport, implausibleStalls, loadParking, parkingPlan, symbolPieceReport } from "./stages/parking.mjs";
 import { buildOuterTerrain } from "./stages/outerTerrain.mjs";
 import { KERB_EXPOSED_M, SLAB_DECAL_DROP_M, buildKerbs } from "./stages/kerbs.mjs";
 import { loadInputs } from "./stages/sources.mjs";
@@ -118,13 +118,13 @@ const labelAt = ([x, z]) => {
 }
 // markings.report: the symbol pieces that reach the mesh, in the GLB's Road_Markings extras and in .build; the build stops on
 // a symbol without a parking.json record.
-markings.pieceReport = symbolPieceReport(markings.pieces);
+markings.pieceReport = { ...symbolPieceReport(markings.pieces), estimatedValues: estimatedValueReport(parkingDoc) };
 if (markings.pieceReport.unrecorded) throw new Error(`markings.report: ${markings.pieceReport.unrecorded} symbol pieces without a parking.json record`);
 await mkdir(path.dirname(OUTPUT), { recursive: true });
 await Bun.write(path.join(path.dirname(OUTPUT), "markings.report.json"), `${JSON.stringify({
   symbols: markings.pieceReport,
   implausibleStalls: implausibleStalls(parkingDoc),
-  pieces: markings.pieces.map(({ id, record, kind, colour, glyph, estimated }) => ({ id: id ?? null, record: record ?? null, kind, colour, glyph: glyph ?? null, estimated: Boolean(estimated) })),
+  pieces: markings.pieces.map(({ id, record, kind, colour, glyph, estimated, estimatedFields }) => ({ id: id ?? null, record: record ?? null, kind, colour, glyph: glyph ?? null, estimated: Boolean(estimated), ...(estimatedFields ? { estimatedFields } : {}) })),
 })}\n`);
 console.log(`markings.report: ${JSON.stringify(markings.pieceReport.byGlyph)} on ${markings.pieceReport.records.length} records, ${markings.pieceReport.unrecorded} without a record`);
 const speedBumps = await loadSpeedBumps();

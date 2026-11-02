@@ -649,6 +649,15 @@ function gradeCurated(row, photo) {
   const graded = structuredClone(row);
   gradeRow(graded, photo);
   if (row.evidence.tier === "T1" && graded.evidence.tier !== "T1" && graded.evidence.photoSupport !== null) throw new Error(`${row.id}: curated T1 but photoSupport ${graded.evidence.photoSupport}`);
+  if (row.estimatedDividers) {
+    // a person may read what the mask hides, not overrule what the photo sees
+    const f = frameOf(row);
+    let s = 0;
+    const places = [0, ...widthsOf(row).map((w) => (s += w))];
+    for (const i of graded.estimatedDividers ?? []) {
+      if (!row.estimatedDividers.includes(i) && photo.line({ from: f.at(places[i], 0), dir: f.d, across: f.a, lengthM: row.depthM }).visible >= VISIBLE) throw new Error(`${row.id}: estimatedDividers leaves out divider ${i}, which the photo sees without paint`);
+    }
+  }
   row.evidence.photoSupport = graded.evidence.photoSupport ?? null;
   for (const stall of row.stalls) {
     const seen = graded.stalls.find((x) => x.index === stall.index);

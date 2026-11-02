@@ -2984,6 +2984,15 @@
       ],
       "photoSupport": 1
      },
+     "estimatedFields": {
+      "paintBack": {
+       "reason": "crowns hide the back rail: seen on NGII only over this part, 4.36 m from the front rail; the rest is drawn on its line",
+       "seenM": [
+        5.7,
+        7.5
+       ]
+      }
+     },
      "estimatedDividers": [
       0,
       1
@@ -3027,6 +3036,11 @@
        "MX00376; stall 8 under a parked car"
       ],
       "photoSupport": 0.846
+     },
+     "estimatedFields": {
+      "depthM": {
+       "reason": "dividers read at 0.4-2.6 m from the aisle rail, the leaned E3 roof hides the rest; 4.4 m taken from the other rows of this lot"
+      }
      },
      "estimatedDividers": [
       3,
@@ -3121,16 +3135,28 @@
      "count": 5,
      "paintBack": true,
      "paintFront": true,
-     "estimatedDividers": [],
+     "estimatedDividers": [
+      0,
+      1
+     ],
      "stalls": [],
      "evidence": {
       "tier": "T1",
       "refs": [
        "NGII 2025 rectified: dividers at -0.03, 2.62, 5.17, 7.75, 10.36 m (first faint), rails 4.44 m apart; the back rail seen from 5 m on, the front along all stalls",
-       "read by eye where the crown model hides it (task-12 review N6): the photo shows the paint, so no divider is flagged",
+       "D0 and D1 stay flagged: unmasked, mapCompare support 0.133 and 0.267, raw peaks 8 and 17 levels. D4 is not: 58 levels on the photo, hidden only by the crown model (task-12 review N6)",
        "MX00304; in shadow on the 12 cm aerial"
       ],
       "photoSupport": 0.5
+     },
+     "estimatedFields": {
+      "paintBack": {
+       "reason": "a crown hides the back rail for its first 5 m: seen on NGII only over this part; the rest is drawn on its line",
+       "seenM": [
+        5,
+        10.39
+       ]
+      }
      }
     },
     {
@@ -3203,6 +3229,11 @@
        "12 cm aerial (2024, grey asphalt): 13 stalls at 2.45 m pitch, older paint; end lines read 4.50 m apart inside the aerial, seen on 11 and 10 of 12 stall spans, so it confirms they exist, not their place. lineContrast passes 12 of 12 spans on both lines here"
       ],
       "photoSupport": 1
+     },
+     "estimatedFields": {
+      "wheelStops": {
+       "reason": "read by eye on VR scene_e3 r: length, offset from the back line and one per stall; the generator centres each stop, the VR has them nearer the next divider"
+      }
      }
     },
     {
@@ -3297,6 +3328,11 @@
        "MX01668, MX01671"
       ],
       "photoSupport": 0.667
+     },
+     "estimatedFields": {
+      "depthM": {
+       "reason": "lines seen for 1-2 m near the aisle rail, crowns hide the far ends; 4.36 m taken from R1"
+      }
      },
      "estimatedDividers": [
       1,

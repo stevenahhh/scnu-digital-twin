@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { assertLotsOnParcels, implausibleStalls, parkingPlan, rowLayout, symbolPieceReport } from "./parking.mjs";
+import { assertLotsOnParcels, describeParking, estimatedValueReport, implausibleStalls, parkingPlan, rowLayout, symbolPieceReport } from "./parking.mjs";
 
 const identity = (E, N) => [E, N];
 // A row along +E from (0, 0): side -1 is the right of the axis, so the stalls run south.
@@ -170,4 +170,47 @@ test("a bay with a P figure draws the P at its side and the wheelchair in the re
 test("a figure that is neither scooter nor P is refused", () => {
   const stall = { index: 0, kind: "accessible", widthM: 3, figure: { symbol: "Q", side: "start" } };
   assert.throws(() => plan([row({ count: 2, stalls: [stall] })]), /figure needs symbol scooter or P/);
+});
+
+const stops = { offsetFromBackM: 0.7, lengthM: 1.6, colour: "#d9b43a", every: 1 };
+test("a flagged depth marks the row's dividers, not its measured end line, and keeps the row's tier", () => {
+  const { pieces, rows } = plan([row({ count: 2, paintFront: true, estimatedFields: { depthM: { reason: "from the next row" } } })]);
+  const by = (suffix) => pieces.find((p) => p.id === `LOT_A/R1/${suffix}`);
+  assert.equal(by("D0").estimated, true);
+  assert.deepEqual(by("D0").estimatedFields, ["depthM"]);
+  assert.equal(by("front").estimated, false);
+  assert.equal(by("front").estimatedFields, undefined);
+  assert.equal(rows[0].tier, "T1");
+  assert.equal(rows[0].estimatedValues, 1);
+});
+
+test("a flagged end line and flagged wheel stops carry the flag; unflagged ones do not", () => {
+  const { pieces, wheelStops } = plan([row({ count: 2, paintBack: true, paintFront: true, wheelStops: stops, estimatedFields: { paintBack: { reason: "seen in part", seenM: [5, 7] }, wheelStops: { reason: "VR" } } })]);
+  const back = pieces.find((p) => p.id === "LOT_A/R1/back");
+  assert.equal(back.estimated, true);
+  assert.deepEqual(back.estimatedFields, ["paintBack"]);
+  assert.equal(pieces.find((p) => p.id === "LOT_A/R1/front").estimated, false);
+  assert.equal(pieces.find((p) => p.id === "LOT_A/R1/D0").estimated, false);
+  assert.equal(wheelStops[0].estimated, true);
+  assert.equal(plan([row({ count: 2, wheelStops: stops })]).wheelStops[0].estimated, false);
+});
+
+test("a flag changes no geometry", () => {
+  const rings = (p) => p.pieces.map((x) => x.rings);
+  const over = { count: 3, paintBack: true, paintFront: true, wheelStops: stops };
+  const flags = { depthM: { reason: "x" }, paintBack: { reason: "x", seenM: [1, 2] }, wheelStops: { reason: "x" } };
+  assert.deepEqual(rings(plan([row({ ...over, estimatedFields: flags })])), rings(plan([row(over)])));
+});
+
+test("estimatedValueReport names every row with an estimated value, for the GLB extras", () => {
+  const flags = { depthM: { reason: "from the next row" } };
+  const report = estimatedValueReport(doc([row({ estimatedFields: flags, estimatedDividers: [1] }), row({ id: "LOT_A/R2" }), row({ id: "LOT_A/R3", estimated: true, evidence: { tier: "T2", refs: ["t"] } })]));
+  assert.deepEqual(report, {
+    "LOT_A/R1": { tier: "T1", estimated: false, dividers: [1], fields: flags },
+    "LOT_A/R3": { tier: "T2", estimated: true, dividers: [], fields: {} },
+  });
+});
+
+test("the build log counts the flagged values", () => {
+  assert.match(describeParking(plan([row({ count: 2, paintBack: true, estimatedFields: { paintBack: { reason: "x" } } })])), /1 추정 값/);
 });

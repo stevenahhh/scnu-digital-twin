@@ -215,16 +215,17 @@ export function parkingObjects(doc, { resolveAnchor = null } = {}) {
       const colour = row.divider?.colour === "yellow" ? "yellow" : "white";
       const trim = trimOf(row);
       const estimated = new Set(row.estimatedDividers ?? []);
+      const flagged = row.estimatedFields ?? {};
       const line = (id, kind, from, to, extra = {}) => out.push({ id, kind, colour, row: row.id, ...extra, geometry: { type: "line", coords: [from, to] } });
       if (row.divider?.style !== "none") {
         for (const { index, s } of dividers) {
           if (row.endCaps === false && (index === 0 || index === dividers.length - 1)) continue;
-          line(`${row.id}/D${index}`, "parking_divider", at(s, trim), at(s, row.depthM - trim), { estimated: row.estimated || estimated.has(index) });
+          line(`${row.id}/D${index}`, "parking_divider", at(s, trim), at(s, row.depthM - trim), { estimated: row.estimated || estimated.has(index) || Boolean(flagged.depthM) });
         }
       }
       const [first, last] = [dividers[0].s, dividers.at(-1).s];
-      if (row.paintBack) line(`${row.id}/back`, "parking_line", at(first, 0), at(last, 0));
-      if (row.paintFront) line(`${row.id}/front`, "parking_line", at(first, row.depthM), at(last, row.depthM));
+      if (row.paintBack) line(`${row.id}/back`, "parking_line", at(first, 0), at(last, 0), { estimated: Boolean(row.estimated || flagged.paintBack) });
+      if (row.paintFront) line(`${row.id}/front`, "parking_line", at(first, row.depthM), at(last, row.depthM), { estimated: Boolean(row.estimated || flagged.paintFront) });
       for (const { s0, s1, stall } of cells) {
         if (!stall || !BLUE_KINDS.has(stall.kind)) continue;
         const box = { s0: s0 + 0.1, s1: s1 - 0.1, t0: 0.1, t1: row.depthM - 0.1 };
@@ -325,7 +326,10 @@ export function rowSummary(doc, results) {
       const end = (name) => { const [r] = own((x) => x.id === `${row.id}/${name}`); return r ? { support: r.support, residualM: r.residual_m, over: r.over, occluded: r.occluded } : null; };
       const residuals = seen.map((r) => r.residual_m).filter((v) => v !== null);
       out.push({
-        lot: lot.id, row: row.id, tier: row.evidence.tier, estimated: row.estimated, dividers: dividers.length, stalls: Math.max(0, dividers.length - 1), visibleDividers: seen.length,
+        lot: lot.id, row: row.id, tier: row.evidence.tier, estimated: row.estimated,
+        estimatedDividers: row.estimatedDividers ?? [],
+        estimatedValues: Object.entries(row.estimatedFields ?? {}).map(([name, flag]) => (flag.seenM ? `${name} seen ${flag.seenM[0]}-${flag.seenM[1]} m` : name)),
+        dividers: dividers.length, stalls: Math.max(0, dividers.length - 1), visibleDividers: seen.length,
         support: seen.length ? round(seen.reduce((n, r) => n + r.support, 0) / seen.length) : null,
         medianResidualM: residuals.length ? round(median(residuals)) : null, maxResidualM: residuals.length ? Math.max(...residuals) : null,
         over: dividers.filter((r) => r.over).map((r) => r.id), missing: own((r) => r.missing).length,

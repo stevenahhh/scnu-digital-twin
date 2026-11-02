@@ -210,6 +210,22 @@ function baysOf(row) {
   const length = p && q ? Math.hypot(q[0] - p[0], q[1] - p[1]) : (row.backLine?.anchor?.s1M ?? 0) - (row.backLine?.anchor?.s0M ?? 0);
   return Number.isFinite(length) && positive(row.pitchM) ? Math.max(0, Math.floor((length - (row.startOffsetM ?? 0)) / row.pitchM)) : 0;
 }
+// A value of a row that is an estimate (추정) while the rest of the row is measured. { field: { reason, seenM? } }; seenM is the
+// part of an end line seen on the photo, in metres along the row. It reaches parking.json, the GLB extras and the mapCompare table.
+const ESTIMATED_FIELDS = new Set(["depthM", "wheelStops", "paintBack", "paintFront"]);
+function estimatedFieldErrors(row, fail) {
+  const fields = row.estimatedFields;
+  if (fields === undefined) return;
+  if (!fields || typeof fields !== "object" || Array.isArray(fields)) return fail("estimatedFields must be an object: { field: { reason } }");
+  for (const [name, flag] of Object.entries(fields)) {
+    if (!ESTIMATED_FIELDS.has(name)) { fail(`estimatedFields.${name} is not a field that can be flagged (${[...ESTIMATED_FIELDS].join(", ")})`); continue; }
+    if (name !== "depthM" && !row[name]) fail(`estimatedFields.${name} flags a value the row does not have`);
+    if (!isText(flag?.reason)) fail(`estimatedFields.${name} needs a reason`);
+    if (flag?.seenM === undefined) continue;
+    if (name !== "paintBack" && name !== "paintFront") fail(`estimatedFields.${name}: seenM is only for an end line`);
+    else if (!(isPair(flag.seenM) && flag.seenM[0] < flag.seenM[1])) fail(`estimatedFields.${name}.seenM must be [from, to] in metres along the row`);
+  }
+}
 function parkingRow(row, lotId, fail) {
   if (!isText(row?.id) || !row.id.startsWith(`${lotId}/`)) fail(`row id must start with ${lotId}/`);
   const lineError = backLineErrors(row?.backLine);
@@ -225,6 +241,7 @@ function parkingRow(row, lotId, fail) {
   if (row.paintBack !== undefined && typeof row.paintBack !== "boolean") fail("paintBack must be a boolean");
   if (row.paintFront !== undefined && typeof row.paintFront !== "boolean") fail("paintFront must be a boolean");
   if (row.estimatedDividers !== undefined && !(Array.isArray(row.estimatedDividers) && row.estimatedDividers.every((i) => Number.isInteger(i) && i >= 0 && (!Number.isInteger(row.count) || i < row.count)))) fail("estimatedDividers must list divider indices of the row");
+  estimatedFieldErrors(row, fail);
   if (!Array.isArray(row.stalls)) fail("stalls must be an array (exception stalls only)");
   else {
     const seen = new Set();
@@ -300,6 +317,20 @@ function parking(doc) {
 
 // ---- data/ground/parking-curation.json (plan todo 13): the lots a person reviewed, as whole records the seed takes in place of
 // its own. A lot is found by its anchor, never by the seed's name; its row ids are the file's, and a retired id stays retired.
+// A curated T1 row states what it measured: a value read by eye, or not bounded by what the photo shows, carries its own flag,
+// so an estimate cannot sit under T1 in free text alone. A row marked estimated says so as a whole.
+const CALLED_ESTIMATE = /추정|by eye|\bestimated?\b|seen only|seen from/i;
+const FILLED_KINDS = new Set(["accessible", "pm"]);
+function curatedReadingErrors(row) {
+  if (row?.evidence?.tier !== "T1" || row.estimated !== false) return [];
+  const fields = row.estimatedFields && typeof row.estimatedFields === "object" ? row.estimatedFields : {};
+  const errors = [];
+  const bounded = (row.paintBack && row.paintFront) || (Array.isArray(row.stalls) && row.stalls.some((s) => FILLED_KINDS.has(s?.kind)));
+  if (!bounded && !fields.depthM) errors.push(`${row.id}: depthM is not bounded by two painted lines: flag it in estimatedFields`);
+  if (row.wheelStops && !fields.wheelStops) errors.push(`${row.id}: wheelStops are read on the VR: flag them in estimatedFields`);
+  if (!Object.keys(fields).length && Array.isArray(row.evidence.refs) && row.evidence.refs.some((ref) => CALLED_ESTIMATE.test(ref))) errors.push(`${row.id}: refs call a value estimated or partly seen: flag it in estimatedFields`);
+  return errors;
+}
 function parkingCuration(doc) {
   if (!doc || typeof doc !== "object" || !Array.isArray(doc.lots)) return ["parkingCuration: lots must be an array"];
   const errors = [];
@@ -312,6 +343,7 @@ function parkingCuration(doc) {
     if (!Array.isArray(lot?.lines)) fail("lines must be an array");
     const records = [...(Array.isArray(lot?.rows) ? lot.rows : []), ...(Array.isArray(lot?.lines) ? lot.lines : [])];
     for (const record of records) if (Array.isArray(lot?.retired) && lot.retired.includes(record?.id)) errors.push(`${record.id} is retired and cannot be used again`);
+    for (const row of Array.isArray(lot?.rows) ? lot.rows : []) errors.push(...curatedReadingErrors(row));
   }
   errors.push(...parking({ lots: doc.lots.map((lot) => ({ id: lot?.id, rows: lot?.rows, lines: Array.isArray(lot?.lines) ? lot.lines : [] })) }));
   return errors;

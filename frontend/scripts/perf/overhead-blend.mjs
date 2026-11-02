@@ -250,8 +250,8 @@ if (args.includes("--objects")) {
     `Sheet ${report.sheet}, ${scored.length} objects from markingCandidates; occlusion leans: ${leanSource}. Values are photo residuals (추정), warnings only.`, "",
     "## By tier", "", "| tier | objects | occluded | over | median residual m |", "|---|---|---|---|---|",
     ...Object.entries(byTier).map(([k, t]) => `| ${k} | ${t.objects} | ${t.occluded} | ${t.over} | ${t.medianResidualM ?? ""} |`), "",
-    "## Parking rows (generated from parking.json)", "", "| row | tier | dividers | visible | support | median residual m | max residual m | over | missing | back | front |", "|---|---|---|---|---|---|---|---|---|---|---|",
-    ...rows.map((r) => `| ${r.row} | ${r.tier}${r.estimated ? " 추정" : ""} | ${r.dividers} | ${r.visibleDividers} | ${r.support ?? ""} | ${r.medianResidualM ?? ""} | ${r.maxResidualM ?? ""} | ${r.over.length} | ${r.missing} | ${r.endLines.back?.support ?? ""} | ${r.endLines.front?.support ?? ""} |`), "",
+    "## Parking rows (generated from parking.json)", "", "| row | tier | dividers | visible | support | median residual m | max residual m | over | missing | back | front | 추정 dividers | 추정 values |", "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+    ...rows.map((r) => `| ${r.row} | ${r.tier}${r.estimated ? " 추정" : ""} | ${r.dividers} | ${r.visibleDividers} | ${r.support ?? ""} | ${r.medianResidualM ?? ""} | ${r.maxResidualM ?? ""} | ${r.over.length} | ${r.missing} | ${r.endLines.back?.support ?? ""} | ${r.endLines.front?.support ?? ""} | ${r.estimatedDividers.join(" ")} | ${r.estimatedValues.join(", ")} |`), "",
     `## Over tolerance (${overList.length})`, "", head, ...overList.map(row), "",
   ].join("\n");
   writeFileSync(join(outDir, "objects.md"), md);

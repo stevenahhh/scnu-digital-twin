@@ -111,12 +111,14 @@ export function parkingPlan(doc, { toScene = tmToScene, resolveAnchor = null } =
       const w = row.divider?.widthM ?? 0.1;
       const lineColour = row.divider?.colour === "yellow" ? "yellow" : "white";
       const estimatedSet = new Set(row.estimatedDividers ?? []);
+      const flagged = row.estimatedFields ?? {};
+      const depthFlag = flagged.depthM ? { estimatedFields: ["depthM"] } : {}; // the length of every divider; their places stay measured
       let drawn = 0;
       for (const { index: i, s } of dividers) {
         if (style === "none" || (row.endCaps === false && (i === 0 || i === dividers.length - 1))) continue;
         drawn += 1;
         const id = `${row.id}/D${i}`;
-        const paint = (ring, suffix = "") => push([ring], lineColour, "parking_line", row.id, `${id}${suffix}`, { estimated: row.estimated || estimatedSet.has(i) });
+        const paint = (ring, suffix = "") => push([ring], lineColour, "parking_line", row.id, `${id}${suffix}`, { estimated: row.estimated || estimatedSet.has(i) || Boolean(flagged.depthM), ...depthFlag });
         if (style === "double" || style === "U") {
           paint(quad(s - DOUBLE_GAP_M / 2 - w / 2, s - DOUBLE_GAP_M / 2 + w / 2, 0, depth), "a");
           paint(quad(s + DOUBLE_GAP_M / 2 - w / 2, s + DOUBLE_GAP_M / 2 + w / 2, 0, depth), "b");
@@ -127,17 +129,17 @@ export function parkingPlan(doc, { toScene = tmToScene, resolveAnchor = null } =
         }
       }
       const [first, last] = [dividers[0].s, dividers.at(-1).s];
-      const endLine = (t, name) => push([quad(first, last, t - w / 2, t + w / 2)], lineColour, "parking_line", row.id, `${row.id}/${name}`, { glyph: "end_line", estimated: row.estimated });
-      if (row.paintBack) endLine(0, "back");
-      if (row.paintFront) endLine(depth, "front");
+      const endLine = (t, name, field) => push([quad(first, last, t - w / 2, t + w / 2)], lineColour, "parking_line", row.id, `${row.id}/${name}`, { glyph: "end_line", estimated: row.estimated || Boolean(flagged[field]), ...(flagged[field] ? { estimatedFields: [field] } : {}) });
+      if (row.paintBack) endLine(0, "back", "paintBack");
+      if (row.paintFront) endLine(depth, "front", "paintFront");
 
       for (const { s0, s1, stall } of cells) {
         if (!stall) continue;
         const record = stall.id ?? `${row.id}/S${stall.index}`;
         if (FILLED.has(stall.kind)) {
           const [i0, i1, j0, j1] = [s0 + FILL_INSET_M, s1 - FILL_INSET_M, FILL_INSET_M, depth - FILL_INSET_M];
-          push([quad(i0, i1, j0, j1)], "blue", "disabled_parking", record, `${record}/fill`, { estimated: Boolean(row.estimated || stall.estimated) });
-          push([quad(s0, s1, 0, depth), quad(i0, i1, j0, j1).reverse()], "white", "disabled_parking", record, `${record}/border`, { glyph: "border", estimated: Boolean(row.estimated || stall.estimated) });
+          push([quad(i0, i1, j0, j1)], "blue", "disabled_parking", record, `${record}/fill`, { estimated: Boolean(row.estimated || stall.estimated || flagged.depthM), ...depthFlag });
+          push([quad(s0, s1, 0, depth), quad(i0, i1, j0, j1).reverse()], "white", "disabled_parking", record, `${record}/border`, { glyph: "border", estimated: Boolean(row.estimated || stall.estimated || flagged.depthM), ...depthFlag });
         }
         // the part of the bay the symbol owns, narrowed by a hatched aisle and a second figure
         const own = { s0, s1, t0: 0, t1: depth };
@@ -192,12 +194,13 @@ export function parkingPlan(doc, { toScene = tmToScene, resolveAnchor = null } =
           const centre = toScene(p[0], p[1]);
           const tip = toScene(p[0] + a[0], p[1] + a[1]);
           const norm = Math.hypot(tip[0] - centre[0], tip[1] - centre[1]);
-          wheelStops.push({ id: `${row.id}/W${index}`, record: row.id, centre, u: [(tip[0] - centre[0]) / norm, (tip[1] - centre[1]) / norm], lengthM: row.wheelStops.lengthM, colour: row.wheelStops.colour });
+          wheelStops.push({ id: `${row.id}/W${index}`, record: row.id, centre, u: [(tip[0] - centre[0]) / norm, (tip[1] - centre[1]) / norm], lengthM: row.wheelStops.lengthM, colour: row.wheelStops.colour, estimated: Boolean(row.estimated || flagged.wheelStops) });
         });
       }
       rows.push({
         lot: lot.id, row: row.id, dividers: drawn, estimatedDividers: estimatedSet.size, specialStalls: row.stalls.filter((s) => s.kind !== "general").length,
         wheelStops: wheelStops.length - before, photoSupport: row.evidence.photoSupport ?? null, tier: row.evidence.tier,
+        ...(Object.keys(flagged).length ? { estimatedValues: Object.keys(flagged).length } : {}),
       });
     }
     for (const line of lot.lines ?? []) {
@@ -236,6 +239,17 @@ export function implausibleStalls(doc) {
   return out;
 }
 
+// What the records call estimated, row by row, for the GLB extras and markings.report: a measured row's flagged values and
+// unconfirmed dividers, and every row marked estimated as a whole.
+export function estimatedValueReport(doc) {
+  const out = {};
+  for (const row of doc.lots.flatMap((lot) => lot.rows)) {
+    const [dividers, fields] = [row.estimatedDividers ?? [], row.estimatedFields ?? {}];
+    if (row.estimated || dividers.length || Object.keys(fields).length) out[row.id] = { tier: row.evidence.tier, estimated: row.estimated, dividers, fields };
+  }
+  return out;
+}
+
 // markings.report: the symbol pieces by glyph and record. `unrecorded` must be 0: a symbol exists only through its record.
 export function symbolPieceReport(pieces) {
   const byGlyph = {};
@@ -260,7 +274,7 @@ export function describeParking(plan) {
   const sum = (key) => plan.rows.reduce((n, r) => n + r[key], 0);
   const median = (list) => { const s = list.filter(Number.isFinite).sort((a, b) => a - b); return s.length ? s[s.length >> 1] : null; };
   return [
-    `parking: ${plan.lots} lots, ${plan.rows.length} rows, ${sum("dividers")} dividers (${sum("estimatedDividers")} 추정), ${sum("specialStalls")} special stalls, ${plan.wheelStops.length} wheel stops`,
+    `parking: ${plan.lots} lots, ${plan.rows.length} rows, ${sum("dividers")} dividers (${sum("estimatedDividers")} 추정), ${sum("specialStalls")} special stalls, ${plan.wheelStops.length} wheel stops, ${plan.rows.reduce((n, r) => n + (r.estimatedValues ?? 0), 0)} 추정 값`,
     ...[...lots].map(([id, rows]) => `  ${id}: ${rows.length} rows, ${rows.reduce((n, r) => n + r.dividers, 0)} dividers, ${rows.reduce((n, r) => n + r.estimatedDividers, 0)} 추정, photoSupport ${median(rows.map((r) => r.photoSupport))}`),
   ].join("\n");
 }

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { validate } from "../lib/schemas.mjs";
@@ -356,7 +357,7 @@ test("the photo grades a curated row but cannot rewrite the person's reading; a 
 
 test("the curation file's validator names malformed records", () => {
   const errors = (doc) => validate("parkingCuration", doc).errors.join(" | ");
-  assert.equal(errors(curation()), "");
+  assert.equal(errors(curation({ rows: [curatedRow({ paintBack: true, paintFront: true })] })), "");
   assert.match(errors({}), /lots must be an array/);
   assert.match(errors(curation({ anchor: [1] })), /LOT_KEEP: anchor must be an \[E, N\] pair/);
   assert.match(errors(curation({ anchor: [1, "2"] })), /anchor must be/);
@@ -375,4 +376,68 @@ test("parallel stalls are graded on their lines, not on blue paint they do not h
   const stalls = [{ id: "LOT_KEEP/R7/S0", index: 0, kind: "parallel" }, { id: "LOT_KEEP/R7/S1", index: 1, kind: "parallel" }];
   const [row] = applyCuration(twoLots(), curation({ rows: [curatedRow({ count: 3, pitchM: 5, depthM: 2.1, stalls })] }), { photo }).lots.find((l) => l.id === "LOT_KEEP").rows;
   assert.equal(row.evidence.photoSupport, 1);
+});
+
+// ---- gate review of ce1b649c, B1: a value read by eye carries its own flag, or the row cannot be T1
+const curationErrors = (row) => validate("parkingCuration", curation({ rows: [curatedRow(row)] })).errors.join(" | ");
+const bothLines = { paintBack: true, paintFront: true };
+const why = { reason: "read on the VR" };
+
+test("a curated T1 row must flag a depth no pair of painted lines bounds", () => {
+  assert.match(curationErrors({ paintFront: true }), /LOT_KEEP\/R7: depthM is not bounded by two painted lines: flag it in estimatedFields/);
+  assert.match(curationErrors({}), /depthM is not bounded/);
+  assert.equal(curationErrors(bothLines), "");
+  assert.equal(curationErrors({ paintFront: true, estimatedFields: { depthM: why } }), "");
+  assert.equal(curationErrors({ stalls: [{ id: "LOT_KEEP/R7/S0", index: 0, kind: "accessible" }] }), "", "a filled bay's own border bounds it");
+  assert.equal(curationErrors({ estimated: true, evidence: { tier: "T2", refs: ["hand"] } }), "", "a row marked estimated needs no field flag");
+});
+
+test("a curated T1 row must flag its wheel stops: they are read on the VR, not measured on the photo", () => {
+  const wheelStops = { offsetFromBackM: 0.1, lengthM: 0.7, every: 1 };
+  assert.match(curationErrors({ ...bothLines, wheelStops }), /LOT_KEEP\/R7: wheelStops are read on the VR: flag them in estimatedFields/);
+  assert.equal(curationErrors({ ...bothLines, wheelStops, estimatedFields: { wheelStops: why } }), "");
+});
+
+test("a ref that calls a value an estimate, read by eye or seen in part needs a flag", () => {
+  for (const ref of ["depth is an estimate", "depth from R1 (추정)", "stops read by eye", "the back rail seen only at 5.7-7.5 m", "the back rail seen from 5 m on"]) {
+    assert.match(curationErrors({ ...bothLines, evidence: { tier: "T1", refs: [ref] } }), /refs call a value estimated or partly seen: flag it in estimatedFields/, ref);
+    assert.equal(curationErrors({ ...bothLines, evidence: { tier: "T1", refs: [ref] }, estimatedFields: { paintBack: why } }), "", ref);
+  }
+});
+
+test("estimatedFields names real fields of the row, each with its reason", () => {
+  const errors = (estimatedFields, over = bothLines) => validate("parking", { lots: [{ id: "LOT_KEEP", rows: [curatedRow({ ...over, estimatedFields })] }] }).errors.join(" | ");
+  assert.equal(errors({ paintBack: { reason: "seen in part", seenM: [5, 9] } }), "");
+  assert.match(errors("depthM"), /estimatedFields must be an object/);
+  assert.match(errors(["depthM"]), /estimatedFields must be an object/);
+  assert.match(errors({ pitchM: why }), /estimatedFields\.pitchM is not a field that can be flagged/);
+  assert.match(errors({ depthM: {} }), /estimatedFields\.depthM needs a reason/);
+  assert.match(errors({ depthM: "x" }), /estimatedFields\.depthM needs a reason/);
+  assert.match(errors({ paintBack: { reason: "x", seenM: [9, 5] } }), /estimatedFields\.paintBack\.seenM must be \[from, to\]/);
+  assert.match(errors({ paintBack: { reason: "x", seenM: [5] } }), /seenM must be/);
+  assert.match(errors({ depthM: { reason: "x", seenM: [1, 2] } }), /seenM is only for an end line/);
+  assert.match(errors({ wheelStops: why }), /estimatedFields\.wheelStops flags a value the row does not have/);
+  assert.match(errors({ paintFront: why }, {}), /estimatedFields\.paintFront flags a value the row does not have/);
+});
+
+test("a curated list of estimated dividers cannot clear one the photo sees without paint; one the mask hides it may", () => {
+  // divider 1 stands at E = 2.5
+  const at = (read) => ({ line: ({ from }) => (Math.abs(from[0] - 2.5) < 0.01 ? read : { visible: 1, contrast: 40, offsetM: 0 }), blue: () => ({ visible: 1, share: 1 }) });
+  const list = (estimatedDividers) => curation({ rows: [curatedRow({ estimatedDividers })] });
+  const bare = at({ visible: 1, contrast: 3, offsetM: 0 });
+  assert.throws(() => applyCuration(twoLots(), list([]), { photo: bare }), /LOT_KEEP\/R7: estimatedDividers leaves out divider 1, which the photo sees without paint/);
+  const kept = applyCuration(twoLots(), list([1]), { photo: bare }).lots.find((l) => l.id === "LOT_KEEP").rows[0];
+  assert.deepEqual(kept.estimatedDividers, [1]);
+  const hidden = applyCuration(twoLots(), list([]), { photo: at({ visible: 0, contrast: null, offsetM: 0 }) }).lots.find((l) => l.id === "LOT_KEEP").rows[0];
+  assert.deepEqual(hidden.estimatedDividers, [], "the person read what the mask hides");
+});
+
+test("the real curation passes those rules and its flags reach parking.json", () => {
+  const load = (name) => JSON.parse(readFileSync(new URL(`../data/ground/${name}.json`, import.meta.url), "utf8"));
+  const real = load("parking-curation");
+  assert.deepEqual(validate("parkingCuration", real).errors, []);
+  const seeded = new Map(load("parking").lots.flatMap((l) => l.rows).map((r) => [r.id, r]));
+  const flagged = real.lots.flatMap((l) => l.rows).filter((r) => r.estimatedFields);
+  assert.ok(flagged.length > 0, "nothing flagged");
+  for (const row of flagged) assert.deepEqual(seeded.get(row.id).estimatedFields, row.estimatedFields, row.id);
 });

@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import * as THREE from "three";
 import { CAMPUS_MODEL_URLS, resolveCampusModelUrl } from "./campusModelAsset.mjs";
+import { estimatedValueReport, loadParking } from "../scripts/campus-model/stages/parking.mjs";
 import { tmToScene } from "./geo/epsg5186.mjs";
 
 const publicFile = (name) => new URL(`../public/${name}`, import.meta.url);
@@ -142,6 +143,12 @@ test("campus-v2.glb stands every VR-only building of vr-buildings.json, with est
   }
   const furniture = roots.find((node) => node.name === "Furniture");
   assert.deepEqual(furniture?.extras?.counts?.gate_sign, { surveyed: 0, estimated: 1 }, "the A19 gate sign is not built exactly once");
+});
+
+test("campus-v2.glb Road_Markings extras carry every estimated value of parking.json", async () => {
+  const campus = await readGlbJson("campus-v2.glb");
+  const markings = campus.nodes.find((node) => node.name === "Road_Markings");
+  assert.deepEqual(markings.extras?.report?.estimatedValues, estimatedValueReport(loadParking()));
 });
 
 test("campus-v2.glb trees are low poly only: no leaf cards, no alpha-tested tree material, every archetype at most 500 triangles", async () => {

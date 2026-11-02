@@ -208,3 +208,22 @@ test('a wide accessible bay deleted from the end of a row still shows its far li
   const missing = missingDividers(doc, parkingObjects(doc), sheetWith(wide), {});
   assert.deepEqual(missing.map((m) => Math.round(m.centreTm[0] * 10) / 10), [1013.4]);
 });
+
+test('rowSummary lists what the record calls estimated, for the table, with the seen part of an end line', () => {
+  const doc = parkingDoc(parkingRow({ estimatedDividers: [1], estimatedFields: { depthM: { reason: 'x' }, paintBack: { reason: 'y', seenM: [5.7, 7.5] } } }));
+  const [s] = rowSummary(doc, scoreObjects(parkingObjects(doc), sheetWith(paintedRow), {}));
+  assert.deepEqual(s.estimatedValues, ['depthM', 'paintBack seen 5.7-7.5 m']);
+  assert.deepEqual(s.estimatedDividers, [1]);
+  assert.equal(s.tier, 'T1');
+  const [clean] = rowSummary(parkingDoc(), []);
+  assert.deepEqual(clean.estimatedValues, []);
+  assert.deepEqual(clean.estimatedDividers, []);
+});
+
+test('parkingObjects marks the objects a flag covers', () => {
+  const objects = parkingObjects(parkingDoc(parkingRow({ estimatedFields: { depthM: { reason: 'x' }, paintBack: { reason: 'y' } } })));
+  const by = (id) => objects.find((o) => o.id === id);
+  assert.equal(by('LOT_A/R1/D2').estimated, true);
+  assert.equal(by('LOT_A/R1/back').estimated, true);
+  assert.equal(by('LOT_A/R1/front').estimated, false);
+});
