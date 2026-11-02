@@ -775,7 +775,7 @@ def fit_rigid(plan, target, max_rot=5.0):
                     best, best_s, improved = cand, s, True
     if score(0.0, 0.0, 0.0) >= best_s:
         best, best_s = [0.0, 0.0, 0.0], score(0.0, 0.0, 0.0)
-    tf = {"dx": best[0], "dy": best[1], "rotDeg": best[2], "pivot": [pivot[0], pivot[1]]}
+    tf = {"dx": best[0], "dy": best[1], "rotDeg": best[2], "pivot": [pivot[0], pivot[1]], "atRotationBound": abs(best[2]) >= max_rot - 1e-9}
     fitted = apply_rigid(plan, tf)
     ring = unary_union([p.exterior for p in polys(fitted)])
     edge = unary_union([p.exterior for p in polys(target)])
@@ -803,17 +803,28 @@ def transform_soup(soup, tf):
 CLIPPED_KINDS = ("main", "wing", "podium", "tower")
 
 
+# Returns (kept masses, dropped): every clipped mass part under 3 m2, and every mass wholly outside the zone, is listed
+# in `dropped` so the caller can flag it.
 def clip_to_footprint(masses, footprint, buffer=0.3):
-    zone = footprint.buffer(buffer, join_style="mitre")
+    # One grid step inside the buffer: snapping to GRID moves a vertex by up to half a step, which must not leave it.
+    zone = footprint.buffer(buffer - GRID, join_style="mitre")
     out = []
+    dropped = []
     for m in masses:
         if m["kind"] not in CLIPPED_KINDS:
             out.append(m)
             continue
-        for part in polys(shapely.set_precision(m["poly"].intersection(zone), GRID)):
-            if part.area >= 3.0:
-                out.append({**m, "poly": part})
-    return out
+        parts = polys(shapely.set_precision(m["poly"].intersection(zone), GRID))
+        kept = [p for p in parts if p.area >= 3.0]
+        out.extend({**m, "poly": p} for p in kept)
+        lost = m["poly"].area - sum(p.area for p in kept)
+        if not kept:
+            dropped.append({"kind": m["kind"], "topMetres": round(m["top"], 2), "areaSquareMetres": round(m["poly"].area, 1), "reason": "wholly outside footprint+0.3 m or under 3 m2 after the clip"})
+        else:
+            dropped.extend({"kind": m["kind"], "topMetres": round(m["top"], 2), "areaSquareMetres": round(p.area, 2), "reason": "clipped part under 3 m2"} for p in parts if p.area < 3.0)
+            if lost >= 3.0:
+                dropped.append({"kind": m["kind"], "topMetres": round(m["top"], 2), "areaSquareMetres": round(lost, 1), "reason": "cut off outside footprint+0.3 m"})
+    return out, dropped
 
 
 # ---------------------------------------------------------------- per building
@@ -1130,12 +1141,19 @@ def main():
             record["flags"].append(f"LOD4 masses rejected: photo IoU {iou_lod4} against {iou_footprint} for the current footprint")
         if use_lod4:
             storey = classify(masses, b.get("floors") or 0, label, b.get("tower"))
-            masses = clip_to_footprint(masses, foot[j])
+            masses, clipped = clip_to_footprint(masses, foot[j])
+            for d in clipped:
+                record.setdefault("clippedMasses", []).append(d)
+                record["flags"].append(f"clip: {d['kind']} {d['areaSquareMetres']} m2 at {d['topMetres']} m dropped ({d['reason']})")
+                print(f"WARN {b['key']}: clip dropped {d['kind']} {d['areaSquareMetres']} m2 ({d['reason']})", file=sys.stderr)
+            if registration is not None and registration["atRotationBound"]:
+                record["flags"].append(f"registration rotation at the {registration['rotDeg']:+.1f} deg bound; the fit may need more rotation or a review")
+                print(f"WARN {b['key']}: registration rotation at the bound ({registration['rotDeg']:+.2f} deg)", file=sys.stderr)
             if registration is not None:
                 record["registration"] = {"dx": round(registration["dx"], 3), "dy": round(registration["dy"], 3), "rotDeg": round(registration["rotDeg"], 3),
                                           "pivot": [round(v, 3) for v in registration["pivot"]], "residual_m": round(registration["residual_m"], 3),
                                           "hausdorff_m": round(registration["hausdorff_m"], 3), "planIou": round(registration["iou"], 3),
-                                          "planIouBefore": round(registration["iouBefore"], 3)}
+                                          "planIouBefore": round(registration["iouBefore"], 3), "atRotationBound": registration["atRotationBound"]}
                 record["lod4Residual_m"] = round(registration["residual_m"], 3)
             record["source"] = "VWorld LOD4 mesh (slices and roof pieces)"
             record["storeyMetres"] = round(storey, 2)

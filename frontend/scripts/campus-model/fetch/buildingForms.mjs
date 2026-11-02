@@ -207,6 +207,7 @@ export async function writeBuildingForms() {
       })),
       voids: r.voids.map((v) => ({ ...v, ring: geoRing(v.ring) })),
       ...(r.droppedMasses ? { droppedMasses: r.droppedMasses } : {}),
+      ...(r.clippedMasses ? { clippedMasses: r.clippedMasses } : {}),
     }));
     const file = {
       description: "Building forms of the modelled campus buildings: per building a list of masses (outer ring, courtyard rings, base and top in metres above the building's lowest ground, parapet, roof type, pitched-roof triangles, columns under raised parts), the voids they leave (courtyards open to the sky, light wells, passages under raised masses), the relief lean of its roof in the NGII 2025 orthophoto and the photo IoU of the roof outline (lean-corrected). source: the VWorld LOD4 mesh, or the current footprint when LOD4 has no model or its outline disagrees with the photo. Rings are lon/lat (EPSG:4326). Estimates derived from VWorld's LOD4 models and the photo, not survey data.",
@@ -222,6 +223,12 @@ export async function writeBuildingForms() {
     const lod4 = records.filter((r) => r.source.startsWith("VWorld LOD4"));
     for (const r of records.filter((x) => x.lod4Residual_m > 1)) {
       console.warn(`building forms: ${r.key} LOD4 residual ${r.lod4Residual_m} m after the rigid fit (> 1 m)`);
+    }
+    for (const r of records.filter((x) => x.registration?.atRotationBound)) {
+      console.warn(`building forms: ${r.key} rigid fit rotation at the bound (${r.registration.rotDeg} deg)`);
+    }
+    for (const r of records.filter((x) => x.clippedMasses)) {
+      console.warn(`building forms: ${r.key} clip dropped ${r.clippedMasses.map((d) => `${d.kind} ${d.areaSquareMetres} m2 (${d.reason})`).join("; ")}`);
     }
     const ious = records.map((r) => r.iou.final).filter((v) => v !== null).sort((x, y) => x - y);
     console.log(`building forms: ${lod4.length} of ${records.length} from LOD4, ${records.reduce((n, r) => n + r.voids.length, 0)} voids; median photo IoU ${ious[ious.length >> 1]} -> ${path.relative(process.cwd(), OUTPUT)}`);
