@@ -35,7 +35,7 @@ import { EXTENT, SCENE_UNITS_PER_METRE as U, geoToModel } from "../lib/frame.mjs
 import { CHM_GEOREF } from "../lib/landcover.mjs";
 import { openSheet } from "../lib/ngiiSheet.mjs";
 import { decodePng, encodePng } from "../lib/png.mjs";
-import { LOCAL_SOFT_M, campusLeanRatio, localLeanRatio, revertCrownLean, treePositionFromViews } from "../fit/treePosition.mjs";
+import { campusLeanRatio, revertCrownLean, treePositionFromViews } from "../fit/treePosition.mjs";
 import { CACHE, DATA } from "./common.mjs";
 
 const CELL = 0.5;
@@ -78,14 +78,6 @@ const LEAN_RECORDS = JSON.parse(readFileSync(path.join(DATA, "photo", "building-
 const LEAN_RATIO = campusLeanRatio(LEAN_RECORDS);
 // Height of the crown centre the photo shows, as a fraction of the tree height (ASSUMED, as before todo 16).
 const CROWN_CENTRE = 0.6;
-// Roof-edge leans at their building centres (first mass outline of data/building-forms.json), for the local ratio.
-const LEAN_POINTS = (() => {
-  const centre = new Map(JSON.parse(readFileSync(path.join(DATA, "building-forms.json"), "utf8")).buildings.map((b) => {
-    const ring = b.masses[0].outer.map(([lon, lat]) => wgs84ToTm(lon, lat));
-    return [b.key, [ring.reduce((s, p) => s + p[0], 0) / ring.length, ring.reduce((s, p) => s + p[1], 0) / ring.length]];
-  }));
-  return LEAN_RECORDS.filter((r) => r.method === "roof-edge" && centre.has(r.id)).map((r) => [centre.get(r.id), r.lean]);
-})();
 
 const args = process.argv.slice(2);
 const debugDir = args.includes("--debug") ? args[args.indexOf("--debug") + 1] : null;
@@ -380,7 +372,7 @@ for (let k = 0; k < N; k += 1) {
 // ---- crown records
 // photo crown centre -> trunk: [east, north] offset to subtract for a crown of height h
 const lean = (e, n, h) => {
-  const [te, tn] = revertCrownLean([e, n], h, localLeanRatio(LEAN_POINTS, [e, n]));
+  const [te, tn] = revertCrownLean([e, n], h, LEAN_RATIO);
   return [e - te, n - tn];
 };
 const records = [];
@@ -589,7 +581,7 @@ records.forEach((c, k) => {
 // are split into round(area / spacing disc) clusters (k-means, seeded at the farthest cells), each a tree at the cluster
 // centroid whose crown reaches the 95th percentile of its cells (plus one cell) (so the crowns cover the photo canopy as it lies),
 // clamped to the species' crown range; narrow species keep their own diameter. Height: the CHMv2 maximum over the
-// cluster, else the crown's. Each tree is moved back by the relief lean at 0.6 x its height (local lean ratio); the offset removed is kept as photoLean.
+// cluster, else the crown's. Each tree is moved back by the relief lean at 0.6 x its height (campus lean ratio); the offset removed is kept as photoLean.
 const cellsOf = Array.from({ length: T }, () => []);
 for (let k = 0; k < N; k += 1) if (owner[k] >= 0) cellsOf[owner[k]].push(k);
 const trees = [];
@@ -780,9 +772,11 @@ trees.forEach((row, k) => {
   });
   const [x0, z0] = tmToScene(row[0], row[1]);
   const pos = treePositionFromViews([x0, z0], views, { unitsPerMetre: U });
+  const refinedStations = new Set(views.filter((v) => v.refined).map((v) => v.scene)).size;
+  row.push(pos.estimated, refinedStations);
   if (pos.method !== "vr-intersection") {
     positionCounts["photo-chm"] += 1;
-    if (new Set(views.filter((v) => v.refined).map((v) => v.scene)).size === 1) positionCounts.oneStation += 1;
+    if (refinedStations === 1) positionCounts.oneStation += 1;
     return;
   }
   const [e, n] = sceneToTm(pos.x, pos.z);
@@ -794,7 +788,7 @@ trees.forEach((row, k) => {
   corrections.push({ tree: k, east: row[0], north: row[1], views: pos.scenes, colour: "position", position: [before, [row[0], row[1]]], shiftM: Math.round(Math.hypot(row[0] - before[0], row[1] - before[1]) * 100) / 100 });
 });
 fitCounts.position = positionCounts;
-console.log(`trees: trunk position ${JSON.stringify(positionCounts)} (local lean from ${LEAN_POINTS.length} roof-edge fits)`);
+console.log(`trees: trunk position ${JSON.stringify(positionCounts)} (campus lean ratio [${LEAN_RATIO.join(", ")}] m/m)`);
 
 // ---- manual VR corrections (data/photo/tree-vr-manual.json): set fields of the tree nearest each entry (within 3 m)
 const manual = JSON.parse(readFileSync(path.join(DATA, "photo", "tree-vr-manual.json"), "utf8")).entries;
@@ -834,15 +828,16 @@ const out = {
   description: "Tree crowns over the campus model EXTENT, traced on the NGII 2025 orthophoto (sheet 34702020) with CHMv2 heights and species types read on the SCNU 360 VR tour; every value is an estimate (추정). Written by scripts/campus-model/fetch/treeInventory.mjs.",
   frame: "EPSG:5186 metres (east, north): trunk position after removing the photo's relief lean",
   species: SPECIES,
-  columns: ["east", "north", "crownDiameterM", "heightM", "species", "heightFromChm", "speciesSource", "vrViews", "photoLuma", "photoBlueMinusRed", "photoCrown", "vrFitViews", "autumn", "position", "photoLean"],
-  positionMethods: { "photo-chm": "photo crown centre moved back by the local lean ratio x 0.6 x height (estimated)", "vr-intersection": "intersection of the crown bearings read from two refined VR stations (design §17 rule 2)" },
+  columns: ["east", "north", "crownDiameterM", "heightM", "species", "heightFromChm", "speciesSource", "vrViews", "photoLuma", "photoBlueMinusRed", "photoCrown", "vrFitViews", "autumn", "position", "photoLean", "estimated", "refinedStations"],
+  positionMethods: { "photo-chm": "photo crown centre moved back by the campus lean ratio x 0.6 x height (estimated)", "vr-intersection": "intersection of the crown bearings read from two refined VR stations (design §17 rule 2)" },
   method: {
     grid: `${CELL} m cells, 2 x 2 sheet pixels each`,
     canopy: `smoothed excess green >= ${CANOPY_EXG} (and 2g - r - b >= ${CANOPY_EXG_ABS}), g >= r, luma std over 2.5 m >= ${CANOPY_TEXTURE} (${CANOPY_TEXTURE_CHM} on CHMv2 canopy); crown shade (luma < ${SHADE_LUMA}) within 1.5 m on CHMv2 canopy; no crowns on GIS building footprints, MCEE sports grounds or water`,
     tops: "local maxima of CHMv2 (smoothed 1.2 m) + 1.5 x distance to the canopy edge (cap 4 m), window 2.5-5 m by height",
     crowns: `geodesic flood inside the canopy from the tops, at most ${CROWN_MAX_M} m; crowns under ${MIN_CROWN_M2} m2, brighter than luma ${MAX_CROWN_LUMA} or more elongated than ${MAX_ELONGATION} dropped; diameter of the equal-area circle`,
     height: "CHMv2 maximum over the crown; 1.5 + 2.2 x radius (3-14 m, ASSUMED) where CHMv2 has no canopy",
-    lean: `position moved back by 0.6 x height x the local lean ratio (${LEAN_POINTS.length} roof-edge fits of data/photo/building-lean.json, weight 1 / (d^2 + ${LOCAL_SOFT_M}^2); campus median [${LEAN_RATIO.join(", ")}] m/m); photoLean = [east, north] offset removed (m)`,
+    lean: `position moved back by 0.6 x height x the campus median lean ratio [${LEAN_RATIO.join(", ")}] m/m (roof-edge fits of data/photo/building-lean.json); photoLean = [east, north] offset removed (m)`,
+    estimated: "estimated = true where the position column is photo-chm (one refined VR station or none); refinedStations = refined VR stations that read the crown bearing (1 = one-station tree)",
     trees: `a photo crown is split into round(area / spacing disc) trees (spacing ${Object.entries(SPECIES_FORM).map(([k, f]) => `${k} ${f.spacingM} m`).join(", ")}; at most ${GROUP_MAX}) by k-means over its canopy cells; crown radius = 95th percentile distance (plus one cell) of the tree's cells, clamped to the species range (${Object.entries(SPECIES_FORM).map(([k, f]) => `${k} ${f.crownM.join("-")} m`).join(", ")}); height = CHMv2 maximum over its cells`,
     species: `VR group polygon (data/photo/tree-species.json) first; else the weighted majority VR colour class of the crowns within ${NEIGHBOUR_M} m on the VR tour cube faces (tree_vr.py; yellow -> ginkgo on a street edge, broadleaf elsewhere, or metasequoia when columnar: height >= ${COLUMNAR_MIN_M} m and height / diameter >= ${COLUMNAR_RATIO}; warm -> broadleaf (zelkova/cherry); dark -> pine, or conifer when columnar; green -> broadleaf, or ginkgo on a street edge (within ${STREET_EDGE_M} m of a road zone) with a yellow neighbour); unseen crowns: MCEE forest type (321 conifer -> pine, 311 broadleaf), else photo tone (luma < ${PINE_LUMA} and (b - r) / sum < ${PINE_BLUE_RED} -> pine), else broadleaf`,
   },

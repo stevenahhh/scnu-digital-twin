@@ -27,19 +27,6 @@ export function campusLeanRatio(records) {
   return [median(fitted.map((r) => r.lean[0])), median(fitted.map((r) => r.lean[1]))];
 }
 
-// Local lean ratio at (east, north): the roof-edge building leans weighted by 1 / (d^2 + softM^2), so a crown takes
-// the lean of the buildings around it and far from every building tends to their mean. points: [[east, north], lean].
-export const LOCAL_SOFT_M = 105;
-export function localLeanRatio(points, [east, north], { softM = LOCAL_SOFT_M } = {}) {
-  if (!points.length) throw new Error('localLeanRatio: no roof-edge lean point');
-  let sw = 0, se = 0, sn = 0;
-  for (const [[x, y], [le, ln]] of points) {
-    const w = 1 / ((x - east) ** 2 + (y - north) ** 2 + softM * softM);
-    sw += w; se += w * le; sn += w * ln;
-  }
-  return [se / sw, sn / sw];
-}
-
 export function revertCrownLean([east, north], heightM, [le, ln]) {
   return [east - heightM * le, north - heightM * ln];
 }

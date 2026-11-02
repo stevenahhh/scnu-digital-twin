@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { localLeanRatio, campusLeanRatio, intersectBearings, revertCrownLean, treePositionFromViews } from './treePosition.mjs';
+import { campusLeanRatio, intersectBearings, revertCrownLean, treePositionFromViews } from './treePosition.mjs';
 
 // Bearing (degrees clockwise from north, +z south) from a station to a point in the scene frame.
 const bearingTo = ([sx, sz], [x, z]) => ((Math.atan2(x - sx, -(z - sz)) * 180) / Math.PI + 360) % 360;
@@ -99,11 +99,3 @@ test('crown centre lean is reverted by height x ratio', () => {
   assert.ok(Math.abs(n - 1999.7) < 1e-9);
 });
 
-test('local lean ratio follows the nearest building and tends to the mean far away', () => {
-  const pts = [[[0, 0], [-0.1, 0]], [[1000, 0], [0.1, 0.2]]];
-  const near = localLeanRatio(pts, [0, 0], { softM: 10 });
-  assert.ok(Math.abs(near[0] + 0.1) < 0.001 && Math.abs(near[1]) < 0.001);
-  const far = localLeanRatio(pts, [500, 1e6], { softM: 10 });
-  assert.ok(Math.abs(far[0]) < 1e-6 && Math.abs(far[1] - 0.1) < 1e-6);
-  assert.throws(() => localLeanRatio([], [0, 0]), /roof-edge/);
-});

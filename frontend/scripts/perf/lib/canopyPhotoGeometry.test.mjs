@@ -1,14 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { localLeanRatio, revertCrownLean } from '../../campus-model/fit/treePosition.mjs';
+import { revertCrownLean } from '../../campus-model/fit/treePosition.mjs';
 import { legacyLeanOffset, photoPositions } from './canopyPhotoGeometry.mjs';
 
 test('a crown reverted by its lean and redisplaced lands on its photo blob', () => {
   const blob = [243900.4, 263700.8];
   const heightM = 12;
-  const ratio = localLeanRatio([[[243880, 263720], [-0.08, 0.05]], [[244100, 263500], [0.02, -0.03]]], blob);
-  const trunk = revertCrownLean(blob, 0.6 * heightM, ratio);
+  const trunk = revertCrownLean(blob, 0.6 * heightM, [-0.0485, 0.026]);
   const photoLean = [blob[0] - trunk[0], blob[1] - trunk[1]];
   const [[e, n]] = photoPositions({ columns: ['east', 'north', 'crownDiameterM', 'heightM', 'photoLean'], trees: [[...trunk, 6, heightM, photoLean]] });
   assert.ok(Math.hypot(e - blob[0], n - blob[1]) < 1e-9);
