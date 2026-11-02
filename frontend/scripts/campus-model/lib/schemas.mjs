@@ -48,7 +48,36 @@ function bldNodeMap(doc) {
   return errors;
 }
 
-const KINDS = { bldNodeMap };
+// data/registration.json: per-source transform and residual (design §9), written by fit/registration.mjs.
+function registration(doc) {
+  if (!doc || typeof doc !== "object" || !Array.isArray(doc.sources)) return ["registration: sources must be an array"];
+  const errors = [];
+  if (!isText(doc.frame)) errors.push("registration: frame must name the CRS");
+  const seen = new Set();
+  doc.sources.forEach((entry, index) => {
+    if (!entry || typeof entry !== "object") {
+      errors.push(`sources[${index}]: entry must be an object`);
+      return;
+    }
+    const id = isText(entry.source) ? entry.source : `sources[${index}]`;
+    const fail = (message) => errors.push(`${id}: ${message}`);
+    if (!isText(entry.source)) fail("source must be a non-empty string");
+    else if (seen.has(id)) fail("source repeats");
+    else seen.add(id);
+    if (typeof entry.available !== "boolean") fail("available must be a boolean");
+    if (typeof entry.measured !== "boolean") fail("measured must be a boolean");
+    if (!(entry.residual_m === null || (Number.isFinite(entry.residual_m) && entry.residual_m >= 0))) fail("residual_m must be a number >= 0 or null");
+    if (!(Number.isInteger(entry.n) && entry.n >= 0)) fail("n must be an integer >= 0");
+    if (!(entry.transform === null || (entry.transform && typeof entry.transform === "object" && isText(entry.transform.type)))) fail("transform must be null or an object with a type");
+    if (entry.available && entry.measured) {
+      if (!entry.transform) fail("a measured source needs a transform");
+      if (!(entry.n >= 2)) fail("a measured source needs n >= 2");
+    }
+  });
+  return errors;
+}
+
+const KINDS = { bldNodeMap, registration };
 
 export function validate(kind, doc) {
   const check = KINDS[kind];

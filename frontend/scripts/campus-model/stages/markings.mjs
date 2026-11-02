@@ -80,6 +80,7 @@ import { VEG_EXG, excessGreen, sampleOrtho, shadowWeight } from "../lib/ortho.mj
 import { encodePng } from "../lib/png.mjs";
 import { regularise } from "./markingsRegular.mjs";
 import { readA003 } from "../lib/a003.mjs";
+import { registrationOf } from "../fit/registration.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const MARKINGS = path.join(HERE, "..", "data", "photo", "markings.geojson");
@@ -152,10 +153,11 @@ const DEDUP_SHARE = 0.5;
 const DEDUP_CONTAIN = 3;
 
 // Estimated crossings: painted width of the detected arterial zebras (median 4.57 m, REG), overrun of the digitised
-// polygons past their painted bars (median 1.45 m, REG), and REG's OSM crossing translation (photo minus OSM).
+// polygons past their painted bars (median 1.45 m, REG). REG's OSM crossing translation (photo minus OSM) is the
+// `osm` source of data/registration.json (design §9).
 const CROSSING_WIDTH_M = 4.57;
 const POLYGON_OVERRUN_M = 1.45;
-const OSM_SHIFT_M = { east: -0.905, north: 0.315 };
+const OSM_TRANSFORM = registrationOf("osm").transform;
 const OCCLUDED_SHARE = 0.5;
 const MATCH_ANGLE_DEG = 25;
 const MATCH_REACH_M = 3;
@@ -807,7 +809,7 @@ export async function loadMarkings({ inputs, buildings }) {
       crossings.push(`${way.id}: photo zebra ${match.z.id} (${match.z.bars} bars), OSM way ${(match.lateral / UNIT).toFixed(2)} m off its centreline`);
       continue;
     }
-    const shift = [metres(OSM_SHIFT_M.east), -metres(OSM_SHIFT_M.north)];
+    const shift = [metres(OSM_TRANSFORM.dE), -metres(OSM_TRANSFORM.dN)];
     const centre = [middle[0] + shift[0], middle[1] + shift[1]];
     const across = [-walk[1], walk[0]];
     const band = [];
