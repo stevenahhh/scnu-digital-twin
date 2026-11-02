@@ -1,0 +1,136 @@
+{
+  "generated": "2026-11-02",
+  "frame": "EPSG:5186",
+  "description": "Per-source transform and residual (design §9), written by fit/registration.mjs. Estimates from image matching, not survey data.",
+  "sources": [
+    {
+      "source": "gis-footprint",
+      "available": true,
+      "transform": {
+        "type": "identity"
+      },
+      "residual_m": null,
+      "n": 0,
+      "measured": false,
+      "method": "reference",
+      "note": "GIS건물통합정보 footprints are the geometry reference (design §3); not compared with photos because of relief lean"
+    },
+    {
+      "source": "ngii-2025",
+      "available": true,
+      "transform": {
+        "type": "world-file",
+        "c": 243324.125,
+        "f": 264485.875,
+        "a": 0.25,
+        "d": -0.25
+      },
+      "residual_m": 0,
+      "n": 0,
+      "measured": false,
+      "method": "definition",
+      "note": "NGII 2025 orthophoto sheet 34702020: T1 reference by definition; pixel centres as the world file gives them (no half-pixel correction)"
+    },
+    {
+      "source": "suncheon-12cm",
+      "available": true,
+      "transform": {
+        "type": "similarity",
+        "dE": 1.523,
+        "dN": 2.266,
+        "rotDeg": -0.1058,
+        "scale": 0.999753,
+        "pivot": [
+          243735.68,
+          263709.15
+        ]
+      },
+      "residual_m": 0.419,
+      "n": 59,
+      "measured": true,
+      "method": "ncc-to-ngii",
+      "note": "순천시 airmap 2024_12cm (36 tiles), 10 m patches at GIS corners matched to the NGII sheet; cross-check only (design §9); 66 of 125 matched corners rejected beyond 1 m (leaning roofs, changes between epochs)",
+      "estimated": true
+    },
+    {
+      "source": "vworld-z19",
+      "available": true,
+      "transform": {
+        "type": "rigid",
+        "dE": 0,
+        "dN": -0.001,
+        "rotDeg": -0.0001,
+        "pivot": [
+          243833.72,
+          263750.57
+        ]
+      },
+      "residual_m": 0.009,
+      "n": 427,
+      "measured": true,
+      "method": "ncc-to-ngii",
+      "note": "VWorld Satellite z19 mosaic data/ortho (Web Mercator, about 0.24 m/px), 10 m patches at GIS corners matched to the NGII sheet; 0 of 427 matched corners rejected beyond 1 m (leaning roofs, changes between epochs)",
+      "estimated": true
+    },
+    {
+      "source": "lod4",
+      "available": true,
+      "transform": {
+        "type": "per-building rigid",
+        "file": "data/building-forms.json",
+        "field": "registration",
+        "medianDE": 0.248,
+        "medianDN": 0.045
+      },
+      "residual_m": 0.889,
+      "n": 43,
+      "measured": true,
+      "method": "plan-iou-rigid-per-building",
+      "note": "median of per-building mean outline distance after fit; 7 buildings moved > 2 m are excluded from the median shift",
+      "estimated": true
+    },
+    {
+      "source": "a003",
+      "available": true,
+      "transform": {
+        "type": "identity"
+      },
+      "residual_m": 0.427,
+      "n": 4,
+      "measured": true,
+      "method": "kerb-median-offset",
+      "note": "local kerb corrections only (median dE 0.58 m, dN 0.395 m, MAD as residual); local errors go to parcel curation (design §9)",
+      "estimated": true
+    },
+    {
+      "source": "osm",
+      "available": true,
+      "transform": {
+        "type": "rigid",
+        "dE": -0.905,
+        "dN": 0.315,
+        "rotDeg": 0
+      },
+      "residual_m": null,
+      "n": 0,
+      "measured": false,
+      "method": "recorded",
+      "note": "OSM crossing ways: translation photo minus OSM from the zebra registration (formerly OSM_SHIFT_M in stages/markings.mjs); recorded only, OSM is not geometry",
+      "estimated": true
+    },
+    {
+      "source": "vr-station",
+      "available": true,
+      "transform": {
+        "type": "resection",
+        "file": "scripts/perf/vr-stations.json"
+      },
+      "residual_m": 20,
+      "n": 42,
+      "measured": true,
+      "method": "resection",
+      "note": "median control-point residual of the station resections (kept in vr-stations.json)",
+      "estimated": true
+    }
+  ]
+}

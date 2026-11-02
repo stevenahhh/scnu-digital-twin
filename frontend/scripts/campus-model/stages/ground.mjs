@@ -1,6 +1,7 @@
-// Ground stage: the Topography terrain (chunked, natural ground material) and the class polygons of the modelled ground
-// (network/surfaces.mjs: road zones, A003 walkways, lots, plazas, painted surfaces, building aprons), which
-// stages/surfaces.mjs lays on it as Ground_* decal meshes. No photo pixel is baked into the ground (plan
+// Ground stage: the Topography terrain (chunked, natural ground material) and the class polygons of the modelled ground,
+// read from the one parcel map data/ground/parcels.json (design §5, lib/parcels.mjs; seeded from network/surfaces.mjs:
+// road zones, A003 walkways, lots, plazas, painted surfaces, building aprons, then curated), which
+// stages/surfaces.mjs lays on it as Ground_* decal meshes. The kerb lines are the walkway parcel boundaries. No photo pixel is baked into the ground (plan
 // uhf-ground-roads-routing todo 10: the orthophoto ground composite and its module are gone; the VWorld z19 mosaic is read
 // only for the roof colours and the road-marking photo checks). The surface-class label raster (groundInfo) the lamp
 // rule reads is rasterised from the same polygons. Road markings are geometry (stages/markings.mjs), laid on the
@@ -15,7 +16,8 @@ import { tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { EXTENT } from "../lib/frame.mjs";
 import { MeshData } from "../lib/meshData.mjs";
 import { SURFACE_CLASS } from "../lib/surfaceClass.mjs";
-import { PX, buildSurfaces, loadEstimatedWalkways, loadGroundFeatures, loadWalkways } from "../network/surfaces.mjs";
+import { loadParcels, parcelLayers, parcelOutlines } from "../lib/parcels.mjs";
+import { EDGE_STONE_M, PRECEDENCE, PX, labelRaster } from "../network/surfaces.mjs";
 import { GRASS_TILE, naturalGroundMaterial, planarTileUv } from "./surfaces.mjs";
 
 const WIDTH = EXTENT.maxX - EXTENT.minX;
@@ -91,28 +93,35 @@ export function topographySurface(heightAt) {
   };
 }
 
+// The ground surfaces of a parcel map doc: { layers (stage layer records, file order), outlines (kerb lines: walkway
+// parcel rings closed, then the open A003 kerbLines), strokes (the edge stone along every outline, label KERB),
+// labelRaster }. The label raster keeps network/surfaces.mjs labelRaster semantics (lamps, kerbs, trees read it).
+export function parcelSurfaces(doc) {
+  const layers = parcelLayers(doc.parcels);
+  const outlines = parcelOutlines(doc.parcels, doc.kerbLines ?? []);
+  const strokes = outlines.map((o) => ({ line: o.line, widthM: EDGE_STONE_M, label: SURFACE_CLASS.KERB, precedence: PRECEDENCE.A003 + 0.6 }));
+  return {
+    parcels: doc.parcels,
+    paintExcluded: doc.paintExcluded ?? [],
+    layers,
+    outlines,
+    strokes,
+    labelRaster: (width, height, toPixel) => labelRaster({ layers, strokes }, width, height, toPixel),
+  };
+}
+
 // Returns the Topography surface the decals and markings are laid on, the class polygons (layers) and the
 // surface-class raster (groundInfo) the lamp rule reads.
-export async function buildGround({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots }) {
+export async function buildGround({ glb, inputs, parcelsDoc = loadParcels() }) {
   const { heightAt, landcoverAt } = inputs;
-  const surfaces = buildSurfaces({
-    inputs,
-    walkways: await loadWalkways(),
-    groundFeatures: await loadGroundFeatures(),
-    offCampusLots,
-    buildings: [...selectableBuildings, ...campusBuildings],
-    crosswalks: inputs.crosswalks,
-    // estimated crossings (walkways.json `crossings`) are routing / walkable polygons only: nothing is drawn for them,
-    // the photo shows plain asphalt there
-    estimatedWalkways: (await loadEstimatedWalkways()).strips,
-  });
+  const surfaces = parcelSurfaces(parcelsDoc);
   const width = Math.round(WIDTH * PX);
   const height = Math.round(DEPTH * PX);
   const labels = surfaces.labelRaster(width, height, ([E, N]) => {
     const [x, z] = tmToScene(E, N);
     return [(x - EXTENT.minX) * PX, (z - EXTENT.minZ) * PX];
   });
-  console.log(`ground: ${surfaces.layers.length} class polygons, arterial ${surfaces.arterial.strips} traced strips (${surfaces.arterial.quads} quads); label raster ${width}x${height}`);
+  console.log(`ground: ${surfaces.layers.length} class polygons from data/ground/parcels.json (${surfaces.parcels.filter((p) => p.source === "photo-paint-support").length} paint supports), ${surfaces.outlines.length} kerb lines; label raster ${width}x${height}`);
 
   // Ground AO first: the natural Ground material and the Ground_* decals (stages/surfaces.mjs) share it.
   let aoTexture = null;

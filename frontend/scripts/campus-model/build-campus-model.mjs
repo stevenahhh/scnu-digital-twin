@@ -39,11 +39,12 @@
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { tmToScene } from "../../src/geo/epsg5186.mjs";
+import { sceneToTm, tmToScene } from "../../src/geo/epsg5186.mjs";
 import { EXTENT, SCENE_UNITS_PER_METRE, frameAssetExtras } from "./lib/frame.mjs";
 import { SURFACE_CLASS } from "./lib/surfaceClass.mjs";
 import { HUMP_LENGTH_M, buildHumps, buildStalls, humpProfile, loadSpeedBumps } from "./network/stalls.mjs";
 import { GlbBuilder } from "./lib/glb.mjs";
+import { assertPaintOnParcels, pieceKey } from "./lib/parcels.mjs";
 import { GroundPartition, TinPartition, splitByLine } from "./lib/partition.mjs";
 import { buildBuildings } from "./stages/buildings.mjs";
 import { buildGround } from "./stages/ground.mjs";
@@ -52,7 +53,7 @@ import { buildLights, placeLamps } from "./stages/lights.mjs";
 import { buildContext, meshHeightAt } from "./stages/context.mjs";
 import { buildContextGround } from "./stages/contextGround.mjs";
 import { buildMasts } from "./stages/masts.mjs";
-import { buildMarkings, describeMarkings, loadMarkings } from "./stages/markings.mjs";
+import { buildMarkings, describeMarkings, inMarkingExtent, loadMarkings } from "./stages/markings.mjs";
 import { buildOuterTerrain } from "./stages/outerTerrain.mjs";
 import { KERB_EXPOSED_M, SLAB_DECAL_DROP_M, buildKerbs } from "./stages/kerbs.mjs";
 import { loadInputs } from "./stages/sources.mjs";
@@ -77,7 +78,8 @@ const furniture = loadFurniture();
 const { selectableBuildings, campusBuildings, offCampusLots, contextParts } = await buildBuildings({ glb, inputs, detailedStructures: furniture.detailedStructures });
 const markings = await loadMarkings({ inputs, buildings: [...selectableBuildings, ...campusBuildings] });
 console.log(describeMarkings(markings));
-const { surface, surfaces, groundInfo, layers, aoTexture, buildTopography } = await buildGround({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots });
+// The ground classes come from the one parcel map data/ground/parcels.json (design §5, lib/parcels.mjs).
+const { surface, surfaces, groundInfo, layers, aoTexture, buildTopography } = await buildGround({ glb, inputs });
 // Trees after the ground: a trunk stands on open ground, in a planter or a street-tree pit (the surface-class raster).
 const treePlacement = placeTrees({ inputs, selectableBuildings, campusBuildings, offCampusLots, blockedRings: furniture.treeBlock, furnitureObjects: furniture.objects, groundInfo });
 const kerbs = await buildKerbs({ glb, surfaces, groundInfo, surface });
@@ -90,10 +92,23 @@ const labelAt = ([x, z]) => {
   return i < 0 || j < 0 || i >= groundInfo.width || j >= groundInfo.height ? SURFACE_CLASS.NATURAL : groundInfo.labels[j * groundInfo.width + i];
 };
 const detectedStallPaint = markings.pieces.filter((piece) => piece.kind === "parking_line" && !piece.estimated);
-const parkingLots = layers.filter((l) => l.mesh === "Ground_Lot" && !l.source_ref.startsWith("off-campus"))
+// paint-support parcels (lib/parcels.mjs supportParcels) are not stall lots: the stall rule keeps its seeded lots
+const parkingLots = layers.filter((l) => l.mesh === "Ground_Lot" && !l.source_ref.startsWith("off-campus") && l.source !== "photo-paint-support")
   .map((l) => ({ id: l.source_ref, ring: l.rings[0].map(([E, N]) => tmToScene(E, N)) }));
 const stalls = buildStalls({ lots: parkingLots, markingsParkingLines: detectedStallPaint });
 markings.pieces.push(...stalls.pieces);
+// Design §10.3: paint lies only on parcels that allow it (road, lot). parcels.json `paintExcluded` lists the photo paint
+// on surveyed non-road ground (A003 sidewalks), which is left undrawn; any other piece on such ground throws by id.
+{
+  const toTm = ([x, z]) => sceneToTm(x, z);
+  const excluded = new Set(surfaces.paintExcluded);
+  const centre = (r) => r.reduce((a, q) => [a[0] + q[0] / r.length, a[1] + q[1] / r.length], [0, 0]);
+  const drawn = markings.pieces.filter((p) => inMarkingExtent(centre(p.rings[0])));
+  const kept = markings.pieces.filter((p) => !inMarkingExtent(centre(p.rings[0])) || !excluded.has(pieceKey(p, toTm)));
+  const check = assertPaintOnParcels(kept.filter((p) => inMarkingExtent(centre(p.rings[0]))), surfaces.parcels, toTm);
+  console.log(`paint invariant (§10.3): ${check.checked} pieces inside EXTENT on road/lot parcels, 0 on other ground; ${drawn.length - check.checked} excluded (parcels.json paintExcluded)`);
+  markings.pieces.splice(0, markings.pieces.length, ...kept);
+}
 const speedBumps = await loadSpeedBumps();
 const humps = buildHumps({ features: speedBumps, onRoad: (p) => [SURFACE_CLASS.ASPHALT, SURFACE_CLASS.LOT].includes(labelAt(p)) });
 const humpNodes = await buildHumpMeshes({ glb, humps: humps.humps, surface, ao: aoTexture, profile: humpProfile, lengthM: HUMP_LENGTH_M });
