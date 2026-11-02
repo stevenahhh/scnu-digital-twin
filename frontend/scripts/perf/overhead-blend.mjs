@@ -42,6 +42,7 @@ import { D4_SCENE_ANCHOR, EXTENT } from "../campus-model/lib/frame.mjs";
 import { DEFAULT_SHEET, openSheet } from "../campus-model/lib/ngiiSheet.mjs";
 import { decodePng, encodePng } from "../campus-model/lib/png.mjs";
 import { GRID_CONVERGENCE_DEG, sceneToTm, tmToPixel, tmToScene, wgs84ToTm } from "../../src/geo/epsg5186.mjs";
+import { occlusionMask } from "../campus-model/lib/occlusion.mjs";
 import { EDGE_THRESHOLD, VISIBLE, aggregate, aggregateVisible, canopyMask, footprintMask, measureTile, measureVisible, pointInRing, renderHalf, residualsMarkdown, sideBySide, tileGrid } from "./overheadBlendCore.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -76,6 +77,20 @@ const edgeFloor = Number(option("edge-floor", "0.02"));
 const jsonPath = resolve(option("json", join(outDir, `${prefix}overhead-blend.json`)));
 const clock = option("clock", "2026-10-24T12:00:00+09:00");
 const visibleGround = args.includes("--visible-ground");
+// --occlusion: each window is also measured with leaned roofs (data/photo/building-lean.json), tree crowns
+// (data/trees.json) and their cast shadows (lib/occlusion.mjs) removed from both edge maps (result field `occluded`).
+const occlusion = args.includes("--occlusion");
+const OCCLUDERS = occlusion ? (() => {
+  const data = join(dirname(fileURLToPath(import.meta.url)), "..", "campus-model", "data");
+  const forms = JSON.parse(readFileSync(join(data, "building-forms.json"), "utf8"));
+  const leans = new Map(JSON.parse(readFileSync(join(data, "photo", "building-lean.json"), "utf8")).buildings.map((b) => [b.id, b.lean]));
+  const buildings = forms.buildings.flatMap((b) => b.masses.map((m) => ({
+    rings: [m.outer, ...(m.holes ?? [])].map((r) => r.map(([lon, lat]) => wgs84ToTm(lon, lat))),
+    heightM: m.topMetres, lean: leans.get(b.key) ?? b.leanPrior,
+  })));
+  const trees = JSON.parse(readFileSync(join(data, "trees.json"), "utf8")).trees.map(([east, north, crownDiameterM, heightM]) => ({ east, north, crownDiameterM, heightM }));
+  return { buildings, trees };
+})() : null;
 if (Number.isNaN(Date.parse(clock))) throw new Error(`--clock is not a date: ${clock}`);
 
 // ---------------------------------------------------------------- --compare <before.json> <after.json> --out <dir>
@@ -374,6 +389,16 @@ try {
     writeFileSync(join(outDir, `${prefix}${label}-side.png`), composeSide(render, photo, view.width, view.height));
     writeFileSync(join(outDir, `${prefix}${label}-blend.png`), composeBlend(render, photo, result.renderEdges, result.photoEdges, view.width, view.height));
     const { renderEdges, photoEdges, ...rest } = result;
+    if (occlusion) {
+      const win = { w: view.width, h: view.height, gsdM: METRES_PER_PIXEL, origin: [view.E0, view.N0 + view.height * METRES_PER_PIXEL] };
+      const near = (x0, x1, y0, y1) => ({
+        buildings: OCCLUDERS.buildings.filter((b) => b.rings[0].some(([E, N]) => E > x0 - 60 && E < x1 + 60 && N > y0 - 60 && N < y1 + 60)),
+        trees: OCCLUDERS.trees.filter((t) => t.east > x0 - 30 && t.east < x1 + 30 && t.north > y0 - 30 && t.north < y1 + 30),
+      });
+      const { any } = occlusionMask(win, near(view.E0, view.E0 + view.width * METRES_PER_PIXEL, view.N0, win.origin[1]));
+      const o = measureVisible({ render, photo, width: view.width, height: view.height, channels: 4, excluded: any, maxShift, passPx: PASS_PX });
+      rest.occluded = { dx: o.dx, dy: o.dy, ratio: o.ratio, verdict: o.verdict, visibleShare: o.visibleShare, reason: o.reason };
+    }
     return rest;
   };
 
@@ -403,7 +428,7 @@ try {
   for (const t of tiles) {
     const r = await measure(viewFor(t.E0, t.N0, tileM, tileM), `tile-${t.E0}-${t.N0}`);
     tileResults.push({ E0: t.E0, N0: t.N0, ...r });
-    console.log(`TILE ${t.E0} ${t.N0} dx=${r.dx} dy=${r.dy} ratio=${r.ratio} edgeShare=${r.edgeShare} signal=${r.signal} pass=${r.pass}`);
+    console.log(`TILE ${t.E0} ${t.N0} dx=${r.dx} dy=${r.dy} ratio=${r.ratio} edgeShare=${r.edgeShare} signal=${r.signal} pass=${r.pass}${r.occluded ? ` occ=${r.occluded.verdict}:${r.occluded.dx},${r.occluded.dy}:vis=${r.occluded.visibleShare}` : ""}`);
     if (visibleGround) {
       const v = await measureVisibleTile(viewFor(t.E0, t.N0, tileM, tileM), `tile-${t.E0}-${t.N0}`);
       visibleResults.push({ E0: t.E0, N0: t.N0, ...v });
@@ -419,7 +444,7 @@ try {
     const view = viewFor(snap(Ec - w.widthM / 2), snap(Nc - w.heightM / 2), w.widthM, w.heightM);
     const r = await measure(view, w.name);
     windows.push({ name: w.name, E0: view.E0, N0: view.N0, ...r });
-    console.log(`WINDOW ${w.name} E0=${view.E0} N0=${view.N0} dx=${r.dx} dy=${r.dy} ratio=${r.ratio} edgeShare=${r.edgeShare}`);
+    console.log(`WINDOW ${w.name} E0=${view.E0} N0=${view.N0} dx=${r.dx} dy=${r.dy} ratio=${r.ratio} edgeShare=${r.edgeShare}${r.occluded ? ` occ=${r.occluded.verdict}:${r.occluded.dx},${r.occluded.dy}:vis=${r.occluded.visibleShare}` : ""}`);
   }
 
   const summary = aggregate(tileResults);
