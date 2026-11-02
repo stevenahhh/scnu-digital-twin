@@ -537,3 +537,45 @@ test("unmarkedLotParcels names campus lot parcels with no record on them, not th
   const doc = { lots: [{ id: "LOT_A", rows: [{ backLine: { abs: [[2, 2], [8, 2]] }, side: 1, depthM: 4, pitchM: 3, count: 3, stalls: [] }] }, { id: "LOT_B", rows: [], lines: [{ abs: [[203, 3], [205, 3]], widthM: 0.1 }] }] };
   assert.deepEqual(unmarkedLotParcels(doc, parcels), ["PARCEL_LOT_WAY_2"]);
 });
+
+test("the curation refuses two rows over the same stalls, within a lot or across lots; neighbours pass", () => {
+  const doubled = () => { const c = curation(); Object.assign(c.lots[0].rows[0], { paintBack: true, paintFront: true }); return c; };
+  const clash = doubled();
+  clash.lots[0].rows.push({ ...structuredClone(clash.lots[0].rows[0]), id: "LOT_KEEP/R8" });
+  assert.match(validate("parkingCuration", clash).errors.join("\n"), /LOT_KEEP\/R7 and LOT_KEEP\/R8 overlap/);
+  const acrossLots = doubled();
+  acrossLots.lots.push({ ...structuredClone(acrossLots.lots[0]), id: "LOT_OTHER", anchor: [1, 1], rows: [{ ...structuredClone(acrossLots.lots[0].rows[0]), id: "LOT_OTHER/R1" }] });
+  assert.match(validate("parkingCuration", acrossLots).errors.join("\n"), /overlap/);
+  const beside = doubled();
+  const [first] = beside.lots[0].rows;
+  const shift = (first.depthM + 2) * first.side;
+  const [[px, py], [qx, qy]] = first.backLine.abs;
+  const length = Math.hypot(qx - px, qy - py);
+  const left = [-(qy - py) / length, (qx - px) / length];
+  beside.lots[0].rows.push({ ...structuredClone(first), id: "LOT_KEEP/R8", backLine: { abs: [[px + left[0] * shift, py + left[1] * shift], [qx + left[0] * shift, qy + left[1] * shift]] } });
+  assert.deepEqual(validate("parkingCuration", beside).errors, []);
+});
+
+test("a curated row of blue bays cannot stand on a line the photo sees without paint unless it flags it", () => {
+  const input = curation();
+  const [row] = input.lots[0].rows;
+  const blueRow = { ...row, count: 2, stalls: [{ id: `${row.id}/S0`, index: 0, kind: "accessible", widthM: row.pitchM, symbol: "wheelchair", estimatedFields: { symbolUp: { reason: "test" } } }] };
+  input.lots[0].rows = [blueRow];
+  const photo = { line: ({ from }) => ({ visible: 1, contrast: from[0] === row.backLine.abs[0][0] ? 40 : 2, offsetM: 0 }), blue: () => ({ visible: 1, share: 1 }) };
+  assert.throws(() => applyCuration(twoLots(), input, { photo }), /divider 1, which the photo sees without paint/);
+  blueRow.estimatedDividers = [1];
+  assert.doesNotThrow(() => applyCuration(twoLots(), input, { photo }));
+});
+
+test("a curated lot marked added stands on no seeded lot and joins the document", () => {
+  const input = curation();
+  const [row] = input.lots[0].rows;
+  const [[px, py], [qx, qy]] = row.backLine.abs;
+  input.lots.push({ id: "LOT_NEW", anchor: [px + 500, py + 500], curated: "todo 14", added: true, retired: [], lines: [], rows: [{ ...structuredClone(row), id: "LOT_NEW/R1", backLine: { abs: [[px + 500, py + 500], [qx + 500, qy + 500]] } }] });
+  const doc = applyCuration(twoLots(), input);
+  assert.deepEqual(doc.lots.find((l) => l.id === "LOT_NEW").rows.map((r) => r.id), ["LOT_NEW/R1"]);
+  assert.equal(doc.lots.find((l) => l.id === "LOT_NEW").curated, "todo 14");
+  assert.deepEqual(validate("parking", doc).errors, []);
+  input.lots.at(-1).added = "yes";
+  assert.match(validate("parkingCuration", input).errors.join("\n"), /LOT_NEW: added must be true/);
+});

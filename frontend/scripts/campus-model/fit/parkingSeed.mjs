@@ -649,6 +649,16 @@ function gradeCurated(row, photo) {
   const graded = structuredClone(row);
   gradeRow(graded, photo);
   if (row.evidence.tier === "T1" && graded.evidence.tier !== "T1" && graded.evidence.photoSupport !== null) throw new Error(`${row.id}: curated T1 but photoSupport ${graded.evidence.photoSupport}`);
+  const allFilled = row.stalls.filter((x) => x.kind === "accessible" || x.kind === "pm").length === row.count - 1;
+  if (row.evidence.tier === "T1" && !row.estimated && allFilled) {
+    // gradeRow reads a row of blue bays on its fills only: its lines still have to be paint, or say they are not
+    const f = frameOf(row);
+    let s = row.startOffsetM ?? 0;
+    [s, ...widthsOf(row).map((w) => (s += w))].forEach((at, i) => {
+      const seen = photo.line({ from: f.at(at, 0), dir: f.d, across: f.a, lengthM: row.depthM });
+      if (seen.visible >= VISIBLE && seen.contrast < PAINT_CONTRAST && !row.estimatedDividers?.includes(i)) throw new Error(`${row.id}: estimatedDividers leaves out divider ${i}, which the photo sees without paint`);
+    });
+  }
   if (row.estimatedDividers) {
     // a person may read what the mask hides, not overrule what the photo sees
     const f = frameOf(row);
@@ -669,7 +679,15 @@ function gradeCurated(row, photo) {
 export function applyCuration(doc, curation, { photo = null, log = () => {} } = {}) {
   const taken = new Map();
   const lots = doc.lots.map((lot) => ({ ...lot }));
+  const added = [];
   for (const entry of curation.lots) {
+    if (entry.added) {
+      const rows = structuredClone(entry.rows);
+      if (photo) rows.forEach((row) => gradeCurated(row, photo));
+      log(`CURATED ${entry.id} added: ${rows.length} rows, no seeded lot under it`);
+      added.push({ id: entry.id, parcel: null, curated: entry.curated, ...(entry.estimated ? { estimated: true, estimatedReason: entry.estimatedReason } : {}), rows, ...(entry.lines.length ? { lines: structuredClone(entry.lines) } : {}) });
+      continue;
+    }
     const index = doc.lots.findIndex((lot) => hitsLot(lot, entry.anchor));
     const where = `${entry.id}: anchor ${JSON.stringify(entry.anchor)}`;
     if (index < 0) throw new Error(`${where} lies on no seeded lot`);
@@ -680,7 +698,7 @@ export function applyCuration(doc, curation, { photo = null, log = () => {} } = 
     log(`CURATED ${entry.id} replaces seeded ${doc.lots[index].id}: ${doc.lots[index].rows.length} rows and ${(doc.lots[index].lines ?? []).length} lines -> ${rows.length} rows and ${entry.lines.length} lines`);
     lots[index] = { id: entry.id, parcel: doc.lots[index].parcel ?? null, curated: entry.curated, ...(entry.estimated ? { estimated: true, estimatedReason: entry.estimatedReason } : {}), rows, ...(entry.lines.length ? { lines: structuredClone(entry.lines) } : {}) };
   }
-  const curatedRows = lots.filter((_, i) => taken.has(i)).flatMap((lot) => lot.rows);
+  const curatedRows = [...lots.filter((_, i) => taken.has(i)), ...added].flatMap((lot) => lot.rows);
   for (const [i, lot] of lots.entries()) {
     if (taken.has(i)) continue;
     for (const row of lot.rows) {
@@ -701,7 +719,7 @@ export function applyCuration(doc, curation, { photo = null, log = () => {} } = 
       ...(lot.lines ? { lines: lot.lines.map((line) => ({ ...line, estimated: true })) } : {}),
     };
   });
-  return { ...doc, lots };
+  return { ...doc, lots: [...lots, ...added] };
 }
 
 // A campus lot parcel (OSM or the supplement list; the off-campus and roundabout classes are other people's ground) with no

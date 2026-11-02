@@ -250,7 +250,7 @@ export function parkingObjects(doc, { resolveAnchor = null } = {}) {
 // both ends, and looks for paint running the depth of the row at a place no drawn line explains. Masked places are no evidence.
 const WIDEST_STALL_M = 3.6; // an accessible bay (stages/parking.mjs MAX_GENERAL_STALL_M)
 const RIDGE_SHARE = 0.6; // of a row's depth painted, to be a line at this place
-const RIDGE_MAX_WIDTH_M = 0.8; // wider paint is a band or a fill
+const RIDGE_MAX_WIDTH_M = 1.1; // wider paint is a band or a fill; a line beside a hatch or blurred on NGII reads up to 1.0 m
 const DRAWN_COS = Math.cos((15 * Math.PI) / 180);
 function drawnNear(objects, from, to, tolerance) {
   const u = [to[0] - from[0], to[1] - from[1]];

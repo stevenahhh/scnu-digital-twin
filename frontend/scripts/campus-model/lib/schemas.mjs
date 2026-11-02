@@ -355,6 +355,43 @@ function curatedReadingErrors(row) {
   if (!anyFlag && Array.isArray(row.evidence.refs) && row.evidence.refs.some((ref) => CALLED_ESTIMATE.test(ref))) errors.push(`${row.id}: refs call a value estimated or partly seen: flag it in estimatedFields`);
   return errors;
 }
+// Two rows over the same stalls draw a doubled ladder: the share of one row's footprint lying inside the other, either way round.
+const ROW_OVERLAP = 0.3;
+function rowBox(row) {
+  const line = row?.backLine?.abs;
+  if (!line || !positive(row.depthM) || !positive(row.pitchM) || !Number.isInteger(row.count) || row.divider?.style === "none") return null;
+  const [p, q] = line;
+  const length = Math.hypot(q[0] - p[0], q[1] - p[1]);
+  if (!length) return null;
+  const a = [(q[0] - p[0]) / length, (q[1] - p[1]) / length];
+  const d = Number.isFinite(row.dividerBearingDeg) ? [Math.sin((row.dividerBearingDeg * Math.PI) / 180), Math.cos((row.dividerBearingDeg * Math.PI) / 180)] : [-a[1] * row.side, a[0] * row.side];
+  const stalls = Array.isArray(row.stalls) ? row.stalls : [];
+  let s1 = row.startOffsetM ?? 0;
+  const s0 = s1;
+  for (let i = 0; i < row.count - 1; i += 1) { const st = stalls.find((x) => x?.index === i); s1 += st?.widthM ?? (st?.kind === "accessible" ? 3.3 : row.pitchM); }
+  const at = (s, t) => [p[0] + a[0] * s + d[0] * t, p[1] + a[1] * s + d[1] * t];
+  const det = a[0] * d[1] - a[1] * d[0];
+  const inside = ([x, y]) => { const v = [x - p[0], y - p[1]]; const s = (v[0] * d[1] - v[1] * d[0]) / det; const t = (a[0] * v[1] - a[1] * v[0]) / det; return s >= s0 && s <= s1 && t >= 0 && t <= row.depthM; };
+  const samples = [];
+  for (let s = s0 + 0.2; s < s1; s += 0.5) for (let t = 0.2; t < row.depthM; t += 0.5) samples.push(at(s, t));
+  const xs = samples.map((v) => v[0]);
+  const ys = samples.map((v) => v[1]);
+  return samples.length ? { id: row.id, samples, inside, box: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)] } : null;
+}
+function overlappingRows(rows) {
+  const boxes = rows.map(rowBox).filter(Boolean);
+  const errors = [];
+  const share = (x, y) => x.samples.filter(y.inside).length / x.samples.length;
+  for (let i = 0; i < boxes.length; i += 1) {
+    for (let j = i + 1; j < boxes.length; j += 1) {
+      const [x, y] = [boxes[i], boxes[j]];
+      if (x.box[0] > y.box[2] || y.box[0] > x.box[2] || x.box[1] > y.box[3] || y.box[1] > x.box[3]) continue;
+      const most = Math.max(share(x, y), share(y, x));
+      if (most >= ROW_OVERLAP) errors.push(`${x.id} and ${y.id} overlap (${Math.round(most * 100)} % of one lies on the other): the same stalls cannot be two rows`);
+    }
+  }
+  return errors;
+}
 function parkingCuration(doc) {
   if (!doc || typeof doc !== "object" || !Array.isArray(doc.lots)) return ["parkingCuration: lots must be an array"];
   const errors = [];
@@ -363,6 +400,7 @@ function parkingCuration(doc) {
     const fail = (message) => errors.push(`${id}: ${message}`);
     if (!isPair(lot?.anchor)) fail("anchor must be an [E, N] pair");
     if (!isText(lot?.curated)) fail("curated must name the todo that reviewed the lot");
+    if (lot?.added !== undefined && lot.added !== true) fail("added must be true: a lot with paint and no seeded record");
     if (lot?.estimated !== undefined && typeof lot.estimated !== "boolean") fail("estimated must be a boolean");
     if (lot?.estimated === true && !(isText(lot?.estimatedReason) && lot.estimatedReason.trim())) fail("estimated needs an estimatedReason");
     if (!(Array.isArray(lot?.retired) && lot.retired.every(isText))) fail("retired must be an array of ids");
@@ -372,6 +410,7 @@ function parkingCuration(doc) {
     for (const row of Array.isArray(lot?.rows) ? lot.rows : []) errors.push(...curatedReadingErrors(row));
   }
   errors.push(...parking({ lots: doc.lots.map((lot) => ({ id: lot?.id, rows: lot?.rows, lines: Array.isArray(lot?.lines) ? lot.lines : [] })) }));
+  errors.push(...overlappingRows(doc.lots.flatMap((lot) => (Array.isArray(lot?.rows) ? lot.rows : []))));
   return errors;
 }
 

@@ -93,53 +93,73 @@
      "backLine": {
       "abs": [
        [
-        243489.754,
-        263927.847
+        243489.311,
+        263926.244
        ],
        [
-        243473.402,
-        263866.458
+        243481.878,
+        263898.337
        ]
       ]
      },
      "side": -1,
-     "pitchM": 3.6,
-     "depthM": 6.1,
-     "count": 19,
+     "pitchM": 3.61,
+     "depthM": 5.98,
+     "count": 9,
      "dividerBearingDeg": 243.165,
      "paintBack": true,
-     "stalls": [
-      {
-       "id": "LOT_E243476_N263851/R3/S0",
-       "index": 0,
-       "kind": "general",
-       "widthM": 2.8
-      },
-      {
-       "id": "LOT_E243476_N263851/R3/S1",
-       "index": 1,
-       "kind": "general",
-       "widthM": 2.45
-      },
-      {
-       "id": "LOT_E243476_N263851/R3/S9",
-       "index": 9,
-       "kind": "general",
-       "widthM": 4.55
-      },
-      {
-       "id": "LOT_E243476_N263851/R3/S17",
-       "index": 17,
-       "kind": "general",
-       "widthM": 3.33
-      }
-     ],
+     "stalls": [],
      "evidence": {
       "tier": "T1",
       "refs": [
        "NGII 2025 peaks along the row axis (todo 14): 19 lines bounding 18 stalls, pitch 3.6 m; 2 of 19 open on the photo, 2 with paint contrast",
        "depth 6.1 m via back+run, back rail painted",
-       "long ladder along the west kerb in the building shade: not in the seed, read here"
+       "long ladder along the west kerb in the building shade: not in the seed, read here",
+       "review B5: the first lines at 0 and 2.8 m stood on no paint; the real line is at 1.65 m on the 3.6 m pitch"
+      ],
+      "photoSupport": null
+     },
+     "estimatedDividers": [],
+     "paintFront": true
+    },
+    {
+     "id": "LOT_E243476_N263851/R4",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "backLine": {
+      "abs": [
+       [
+        243481.739,
+        263897.556
+       ],
+       [
+        243473.42,
+        263866.325
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 3.6,
+     "depthM": 6.17,
+     "count": 10,
+     "dividerBearingDeg": 243.165,
+     "paintBack": true,
+     "stalls": [],
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "NGII 2025 peaks along the row axis (todo 14): 19 lines bounding 18 stalls, pitch 3.6 m; 2 of 19 open on the photo, 2 with paint contrast",
+       "depth 6.1 m via back+run, back rail painted",
+       "long ladder along the west kerb in the building shade: not in the seed, read here",
+       "the north part of R3: its lines at 31.38 and 30.53 m are two ladders 0.9 m apart"
       ],
       "photoSupport": 1
      },
@@ -202,7 +222,7 @@
   },
   {
    "id": "LOT_E243489_N263815",
-   "parcel": "PARCEL_ASPHALT_ROAD_ZONE_13",
+   "parcel": "PARCEL_LOT_E243489_N263815_R1",
    "curated": "todo 14",
    "rows": [
     {
@@ -220,25 +240,31 @@
      "backLine": {
       "abs": [
        [
-        243487.741,
-        263823.447
+        243485.377,
+        263824.089
        ],
        [
-        243507.728,
+        243507.727,
         263818.019
        ]
       ]
      },
      "side": -1,
      "pitchM": 2.605,
-     "depthM": 4.5,
-     "count": 9,
+     "depthM": 4.47,
+     "count": 10,
      "dividerBearingDeg": 196.442,
      "paintBack": true,
      "stalls": [
       {
-       "id": "LOT_E243489_N263815/R1/S7",
-       "index": 7,
+       "id": "LOT_E243489_N263815/R1/S0",
+       "index": 0,
+       "kind": "general",
+       "widthM": 2.45
+      },
+      {
+       "id": "LOT_E243489_N263815/R1/S8",
+       "index": 8,
        "kind": "general",
        "widthM": 2.475
       }
@@ -250,14 +276,12 @@
        "depth 4.5 m via back+run, back rail painted",
        "seed: photo dividers 6/6: MX00294 MX00294 MX00294 MX00294 MX00294 MX00294 MX00294 MX00294 MK01295 MK01295; front line MX00294"
       ],
-      "photoSupport": 1
+      "photoSupport": 0.9
      },
-     "estimatedDividers": [],
-     "estimatedFields": {
-      "depthM": {
-       "reason": "paint reads 4.2 m, the far ends lie under crowns or a leaned roof: 4.5 m assumed"
-      }
-     }
+     "estimatedDividers": [
+      0
+     ],
+     "paintFront": true
     }
    ]
   },
@@ -266,7 +290,7 @@
    "parcel": "PARCEL_ASPHALT_ROAD_ZONE_12",
    "curated": "todo 14",
    "estimated": true,
-   "estimatedReason": "the occlusion mask hides every line here (building shade or crowns), so the comparison has nothing to score: read on the photo with the shade lifted",
+   "estimatedReason": "the occlusion mask hides every line here (building shade or crowns), read on the photo with the shade lifted",
    "rows": [
     {
      "id": "LOT_E243491_N263912/R1",
@@ -370,60 +394,66 @@
    "id": "LOT_E243521_N263869",
    "parcel": "PARCEL_LOT_E243521_N263869_R1",
    "curated": "todo 14",
+   "estimated": true,
+   "estimatedReason": "the bay lies against white concrete: the line scan takes the concrete beside its near line, support 0.59",
    "rows": [
     {
      "id": "LOT_E243521_N263869/R1",
-     "backLine": {
-      "abs": [
-       [
-        243521.24,
-        263869.422
-       ],
-       [
-        243521.256,
-        263873.762
-       ]
-      ]
-     },
-     "side": -1,
-     "pitchM": 4.34,
-     "depthM": 5.17,
-     "startOffsetM": 0,
-     "count": 2,
      "divider": {
       "style": "single",
       "widthM": 0.1,
       "colour": "white"
      },
      "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.66",
+       "blue MX00293 cell 0"
+      ],
+      "photoSupport": 0.677
+     },
      "stalls": [
       {
        "id": "LOT_E243521_N263869/R1/S0",
        "index": 0,
        "kind": "accessible",
-       "widthM": 4.34,
-       "aisle": null,
+       "widthM": 3.846,
        "symbol": "wheelchair",
-       "upBearingDeg": 270.3,
        "estimatedFields": {
         "symbolUp": {
-         "reason": "direction kept from the traced cell, read at 0.25 m per pixel on NGII"
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
         }
        },
-       "paintSupport": 0.649
+       "paintSupport": 0.677
       }
      ],
-     "wheelStops": null,
-     "entryFrom": "aisle",
-     "evidence": {
-      "tier": "T1",
-      "refs": [
-       "blue MX00293 cell 0",
-       "todo 14: blue box with its white border read on NGII: the seed record lies on it; left edge residual 0.36 m is the concrete beside the bay"
-      ],
-      "photoSupport": 0.649
+     "backLine": {
+      "abs": [
+       [
+        243521.407,
+        263873.723
+       ],
+       [
+        243525.251,
+        263873.599
+       ]
+      ]
      },
-     "estimated": false
+     "side": -1,
+     "pitchM": 3.846,
+     "depthM": 4.977,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
+      0,
+      1
+     ]
     }
    ]
   },
@@ -432,7 +462,7 @@
    "parcel": "PARCEL_LOT_E243549_N263706_R1",
    "curated": "todo 14",
    "estimated": true,
-   "estimatedReason": "the occlusion mask hides every line here (building shade or crowns), so the comparison has nothing to score: read on the photo with the shade lifted",
+   "estimatedReason": "the occlusion mask hides every line here (building shade or crowns), read on the photo with the shade lifted",
    "rows": [
     {
      "id": "LOT_E243549_N263706/R1",
@@ -449,18 +479,18 @@
      "backLine": {
       "abs": [
        [
-        243552.865,
-        263706.245
+        243552.845,
+        263706.248
        ],
        [
-        243556.387,
-        263724.101
+        243556.367,
+        263724.104
        ]
       ]
      },
      "side": 1,
      "pitchM": 2.58,
-     "depthM": 4.51,
+     "depthM": 4.49,
      "count": 8,
      "dividerBearingDeg": 279.75,
      "paintBack": true,
@@ -519,7 +549,7 @@
      },
      "side": 1,
      "pitchM": 2.58,
-     "depthM": 4.5,
+     "depthM": 4.75,
      "count": 9,
      "dividerBearingDeg": 10.855,
      "paintBack": true,
@@ -534,11 +564,7 @@
       "photoSupport": 1
      },
      "estimatedDividers": [],
-     "estimatedFields": {
-      "depthM": {
-       "reason": "paint reads 3.6 m, the far ends lie under crowns or a leaned roof: 4.5 m assumed"
-      }
-     }
+     "paintFront": true
     },
     {
      "id": "LOT_E243569_N263669/R2",
@@ -555,18 +581,18 @@
      "backLine": {
       "abs": [
        [
-        243566.577,
-        263666.999
+        243566.571,
+        263666.97
        ],
        [
-        243597.078,
-        263660.927
+        243597.072,
+        263660.898
        ]
       ]
      },
      "side": -1,
      "pitchM": 2.6,
-     "depthM": 4.5,
+     "depthM": 4.47,
      "count": 13,
      "dividerBearingDeg": 191.259,
      "paintBack": true,
@@ -607,6 +633,7 @@
      },
      "estimatedDividers": [
       3,
+      4,
       5,
       7,
       9
@@ -624,7 +651,7 @@
    "parcel": "PARCEL_LOT_E243573_N263746_R1",
    "curated": "todo 14",
    "estimated": true,
-   "estimatedReason": "the occlusion mask leaves 1 of its lines open or the open ones lose contrast (building shade or crowns), support 0.67: read on the photo with the shade lifted",
+   "estimatedReason": "R2 lies under the leaned roof of the green building and is T2; R1 has one line open on the photo",
    "rows": [
     {
      "id": "LOT_E243573_N263746/R1",
@@ -726,7 +753,7 @@
    "parcel": "PARCEL_LOT_E243587_N263908_R1",
    "curated": "todo 14",
    "estimated": true,
-   "estimatedReason": "the occlusion mask hides every line here (building shade or crowns), so the comparison has nothing to score: read on the photo with the shade lifted",
+   "estimatedReason": "the occlusion mask hides every line here (building shade or crowns), read on the photo with the shade lifted",
    "rows": [
     {
      "id": "LOT_E243587_N263908/R1",
@@ -740,7 +767,7 @@
      "entryFrom": "aisle",
      "wheelStops": {
       "offsetFromBackM": 0.9,
-      "lengthM": 1.6,
+      "lengthM": 0.6,
       "colour": "#d9b43a",
       "every": 1
      },
@@ -752,15 +779,15 @@
         263909.65
        ],
        [
-        243597.488,
-        263950.467
+        243597.472,
+        263950.409
        ]
       ]
      },
      "side": -1,
      "pitchM": 2.605,
      "depthM": 4.57,
-     "count": 17,
+     "count": 15,
      "dividerBearingDeg": 108.75,
      "paintBack": true,
      "paintFront": true,
@@ -768,20 +795,20 @@
       {
        "id": "LOT_E243587_N263908/R1/S9",
        "index": 9,
-       "kind": "general",
-       "widthM": 3.815
-      },
-      {
-       "id": "LOT_E243587_N263908/R1/S10",
-       "index": 10,
-       "kind": "general",
-       "widthM": 2.27
-      },
-      {
-       "id": "LOT_E243587_N263908/R1/S11",
-       "index": 11,
-       "kind": "general",
-       "widthM": 2.27
+       "kind": "accessible",
+       "widthM": 8.239,
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
+        }
+       },
+       "aisle": {
+        "side": "end",
+        "widthM": 1.2
+       },
+       "paintSupport": null,
+       "estimated": true
       }
      ],
      "evidence": {
@@ -791,14 +818,12 @@
        "depth 4.57 m via rails, back rail painted, front rail painted",
        "seed: photo dividers 17/17: MK01393 MK01393 MK01393 MK01393 MK01393 MK01393 MK01393 MK01393 MK01393 MK01393 MK01393 MK01393 MK01393 MK01393 MK01393 MK01393 MK01393; site-detail SD-D5-01 (VR scene_d5 d): VR "
       ],
-      "photoSupport": 0.941
+      "photoSupport": 1
      },
-     "estimatedDividers": [
-      11
-     ],
+     "estimatedDividers": [],
      "estimatedFields": {
       "wheelStops": {
-       "reason": "from the VR reading of the seed (site-detail): the photo does not read their length or offset"
+       "reason": "from the VR reading of the seed (site-detail): the photo does not read their length or offset; length about 0.6 m by pixel ratio on VR scene_a5 f"
       }
      }
     }
@@ -828,13 +853,13 @@
         263714.915
        ],
        [
-        243598.229,
-        263697.855
+        243598.16,
+        263697.481
        ]
       ]
      },
      "side": 1,
-     "pitchM": 2.925,
+     "pitchM": 3.0621,
      "depthM": 4.88,
      "count": 7,
      "dividerBearingDeg": 100.491,
@@ -851,55 +876,64 @@
        "id": "LOT_E243598_N263687/R3/S1",
        "index": 1,
        "kind": "general",
-       "widthM": 2.7
+       "widthM": 2.825
       },
       {
        "id": "LOT_E243598_N263687/R3/S2",
        "index": 2,
        "kind": "general",
-       "widthM": 2.6
+       "widthM": 2.451
       },
       {
-       "kind": "accessible",
-       "aisle": null,
-       "symbol": "wheelchair",
-       "estimatedFields": {
-        "symbolUp": {
-         "reason": "direction assumed towards the back, the symbol is about 1 m wide at 0.25 m per pixel"
-        }
-       },
        "id": "LOT_E243598_N263687/R3/S3",
        "index": 3,
-       "widthM": 3.15,
-       "paintSupport": 0.795
-      },
-      {
        "kind": "accessible",
-       "aisle": null,
+       "widthM": 3.299,
        "symbol": "wheelchair",
        "estimatedFields": {
         "symbolUp": {
-         "reason": "direction assumed towards the back, the symbol is about 1 m wide at 0.25 m per pixel"
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
         }
        },
+       "aisle": {
+        "side": "end",
+        "widthM": 1.1
+       },
+       "paintSupport": 0.772
+      },
+      {
        "id": "LOT_E243598_N263687/R3/S4",
        "index": 4,
-       "widthM": 3.2,
-       "paintSupport": 0.778
-      },
-      {
        "kind": "accessible",
-       "aisle": null,
+       "widthM": 3.315,
        "symbol": "wheelchair",
        "estimatedFields": {
         "symbolUp": {
-         "reason": "direction assumed towards the back, the symbol is about 1 m wide at 0.25 m per pixel"
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
         }
        },
+       "aisle": {
+        "side": "end",
+        "widthM": 1.1
+       },
+       "paintSupport": 0.761
+      },
+      {
        "id": "LOT_E243598_N263687/R3/S5",
        "index": 5,
-       "widthM": 3.2,
-       "paintSupport": 0.701
+       "kind": "accessible",
+       "widthM": 3.34,
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
+        }
+       },
+       "aisle": {
+        "side": "end",
+        "widthM": 1.1
+       },
+       "paintSupport": 0.728
       }
      ],
      "evidence": {
@@ -915,68 +949,58 @@
     },
     {
      "id": "LOT_E243598_N263687/R2",
-     "backLine": {
-      "abs": [
-       [
-        243598.898,
-        263687.344
-       ],
-       [
-        243602.238,
-        263687.326
-       ]
-      ]
-     },
-     "side": 1,
-     "pitchM": 3.34,
-     "depthM": 5.83,
-     "startOffsetM": 0,
-     "count": 2,
      "divider": {
       "style": "single",
       "widthM": 0.1,
       "colour": "white"
      },
      "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.81",
+       "blue MX00660 cell 0: VR scene_e8 face l: blue PM bay with a white P upright as seen from the station (top away from it); its painted PM figure is not a wheelchair"
+      ],
+      "photoSupport": 0.786
+     },
      "stalls": [
       {
        "id": "LOT_E243598_N263687/R2/S0",
        "index": 0,
        "kind": "pm",
-       "widthM": 3.34,
-       "aisle": null,
+       "widthM": 2.442,
        "symbol": "P",
-       "upBearingDeg": 180.2,
-       "figure": {
-        "symbol": "scooter",
-        "side": "front",
-        "frontBearingDeg": 90
-       },
        "estimatedFields": {
         "symbolUp": {
-         "reason": "direction kept from the traced cell, read at 0.25 m per pixel on NGII"
-        },
-        "figureSide": {
-         "reason": "kept from the traced cell"
-        },
-        "figureUp": {
-         "reason": "kept from the traced cell"
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
         }
        },
-       "paintSupport": 0.552
+       "paintSupport": 0.786
       }
      ],
-     "wheelStops": null,
-     "entryFrom": "aisle",
-     "evidence": {
-      "tier": "T1",
-      "refs": [
-       "blue MX00660 cell 0: VR scene_e8 face l: blue PM bay with a white P upright as seen from the station (top away from it); its painted PM figure is not a wheelchair",
-       "todo 14: the blue bay south of the crosswalk, seed record lies on it"
-      ],
-      "photoSupport": 0.552
+     "backLine": {
+      "abs": [
+       [
+        243599.626,
+        263693.454
+       ],
+       [
+        243602.014,
+        263692.946
+       ]
+      ]
      },
-     "estimated": false
+     "side": -1,
+     "pitchM": 2.442,
+     "depthM": 6.192,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": []
     },
     {
      "id": "LOT_E243598_N263687/R5",
@@ -997,19 +1021,26 @@
         263687.488
        ],
        [
-        243597.114,
-        263682.025
+        243596.486,
+        263674.181
        ]
       ]
      },
      "side": 1,
-     "pitchM": 2.74,
-     "depthM": 4.69,
-     "count": 3,
+     "pitchM": 2.64,
+     "depthM": 4.02,
+     "count": 6,
      "dividerBearingDeg": 100.574,
      "paintBack": true,
      "paintFront": true,
-     "stalls": [],
+     "stalls": [
+      {
+       "id": "LOT_E243598_N263687/R5/S1",
+       "index": 1,
+       "kind": "general",
+       "widthM": 2.84
+      }
+     ],
      "evidence": {
       "tier": "T1",
       "refs": [
@@ -1017,7 +1048,7 @@
        "depth 4.69 m via rails, back rail painted, front rail painted",
        "two boxes south of the blue bay, not in the seed"
       ],
-      "photoSupport": 0.667
+      "photoSupport": 0.833
      },
      "estimatedDividers": [
       2
@@ -1082,57 +1113,60 @@
    "rows": [
     {
      "id": "LOT_E243617_N263806/R1",
-     "backLine": {
-      "abs": [
-       [
-        243616.818,
-        263806.505
-       ],
-       [
-        243616.846,
-        263814.425
-       ]
-      ]
-     },
-     "side": -1,
-     "pitchM": 7.92,
-     "depthM": 4.17,
-     "startOffsetM": 0,
-     "count": 2,
      "divider": {
       "style": "single",
       "widthM": 0.1,
       "colour": "white"
      },
      "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.71",
+       "blue MX00361 cell 0: VR scene_d3 face l: one long blue PM bay along the kerb; the P lies across the bay, its top towards the kerb and PM rack on the west, upright for a driver in the aisle (road) to the east; NGII 4x chip: road east, planting and building west"
+      ],
+      "photoSupport": 0.726
+     },
      "stalls": [
       {
        "id": "LOT_E243617_N263806/R1/S0",
        "index": 0,
        "kind": "pm",
-       "widthM": 7.92,
-       "aisle": null,
+       "widthM": 3.074,
        "symbol": "P",
-       "upBearingDeg": 270.3,
        "estimatedFields": {
         "symbolUp": {
-         "reason": "direction kept from the traced cell, read at 0.25 m per pixel on NGII"
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
         }
        },
-       "paintSupport": 0.583
+       "paintSupport": 0.726
       }
      ],
-     "wheelStops": null,
-     "entryFrom": "aisle",
-     "evidence": {
-      "tier": "T1",
-      "refs": [
-       "blue MX00361 cell 0: VR scene_d3 face l: one long blue PM bay along the kerb; the P lies across the bay, its top towards the kerb and PM rack on the west, upright for a driver in the aisle (road) to the east; NGII 4x chip: road east, planting and building west",
-       "todo 14: the long blue box east of the block, seed record lies on it; its length 7.9 m could be two bays, the photo does not separate them"
-      ],
-      "photoSupport": 0.583
+     "backLine": {
+      "abs": [
+       [
+        243618.86,
+        263814.967
+       ],
+       [
+        243621.87,
+        263814.347
+       ]
+      ]
      },
-     "estimated": false
+     "side": -1,
+     "pitchM": 3.074,
+     "depthM": 8.279,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
+      1
+     ]
     },
     {
      "id": "LOT_E243617_N263806/R4",
@@ -1149,12 +1183,12 @@
      "backLine": {
       "abs": [
        [
-        243629.638,
-        263840.887
+        243629.657,
+        263840.882
        ],
        [
-        243626.235,
-        263828.423
+        243626.254,
+        263828.418
        ]
       ]
      },
@@ -1190,6 +1224,7 @@
       "photoSupport": 0.5
      },
      "estimatedDividers": [
+      0,
       1,
       2
      ]
@@ -1199,18 +1234,18 @@
      "backLine": {
       "abs": [
        [
-        243635.1,
-        263851.261
+        243635.144,
+        263851.558
        ],
        [
-        243626.124,
-        263851.655
+        243626.168,
+        263851.952
        ]
       ]
      },
      "side": 1,
      "pitchM": 2.2462,
-     "depthM": 4.4,
+     "depthM": 4.7,
      "startOffsetM": 0,
      "count": 5,
      "dividerBearingDeg": 188.5,
@@ -1261,51 +1296,51 @@
      "entryFrom": "aisle",
      "wheelStops": null,
      "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.72",
+       "blue bay south of the two boxes, edges read at 0.25 m per pixel; the seed record was narrower than its paint; the hatch at its end is not drawn"
+      ],
+      "photoSupport": 0.451
+     },
+     "stalls": [
+      {
+       "id": "LOT_E243623_N263872/R1/S0",
+       "index": 0,
+       "kind": "accessible",
+       "widthM": 3.657,
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
+        }
+       },
+       "aisle": {
+        "side": "start",
+        "widthM": 0.9
+       },
+       "paintSupport": 0.451
+      }
+     ],
      "backLine": {
       "abs": [
        [
-        243623.222,
-        263891.333
+        243623.266,
+        263891.797
        ],
        [
-        243626.521,
-        263890.509
+        243626.748,
+        263890.678
        ]
       ]
      },
      "side": -1,
-     "pitchM": 3.4,
-     "depthM": 5.7,
+     "pitchM": 3.657,
+     "depthM": 5.125,
      "count": 2,
-     "dividerBearingDeg": 194.036,
      "paintBack": true,
      "paintFront": true,
-     "stalls": [
-      {
-       "kind": "accessible",
-       "aisle": null,
-       "symbol": "wheelchair",
-       "estimatedFields": {
-        "symbolUp": {
-         "reason": "direction assumed towards the back, the symbol is about 1 m wide at 0.25 m per pixel"
-        }
-       },
-       "id": "LOT_E243623_N263872/R1/S0",
-       "index": 0,
-       "widthM": 3.4,
-       "paintSupport": 0.391
-      }
-     ],
-     "evidence": {
-      "tier": "T1",
-      "refs": [
-       "NGII 2025 peaks along the row axis (todo 14): 2 lines bounding 1 stalls, pitch 3.4 m; 2 of 2 open on the photo, 2 with paint contrast",
-       "depth 5.7 m via person, back rail painted, front rail painted",
-       "seed: blue MX01299 cell 0",
-       "blue bay south of the two boxes, edges read at 0.25 m per pixel; the seed record was narrower than its paint; the hatch at its end is not drawn"
-      ],
-      "photoSupport": 0.391
-     },
      "estimatedDividers": []
     },
     {
@@ -1323,12 +1358,12 @@
      "backLine": {
       "abs": [
        [
-        243628.333,
-        263891.383
+        243628.304,
+        263891.392
        ],
        [
-        243629.816,
-        263896.158
+        243629.787,
+        263896.167
        ]
       ]
      },
@@ -1356,18 +1391,18 @@
      "backLine": {
       "abs": [
        [
-        243627.143,
-        263905.448
+        243626.983,
+        263905.39
        ],
        [
-        243628,
-        263903.094
+        243627.84,
+        263903.036
        ]
       ]
      },
      "side": 1,
      "pitchM": 2.5056,
-     "depthM": 5.969,
+     "depthM": 6.139,
      "startOffsetM": 0,
      "count": 2,
      "divider": {
@@ -1394,7 +1429,8 @@
       "depthM": {
        "reason": "kept from the seed: read from the ends of the painted dividers, no pair of rails bounds it"
       }
-     }
+     },
+     "estimatedDividers": []
     },
     {
      "id": "LOT_E243623_N263872/R4",
@@ -1443,60 +1479,6 @@
      }
     },
     {
-     "id": "LOT_E243623_N263872/R5",
-     "backLine": {
-      "abs": [
-       [
-        243632.346,
-        263930.947
-       ],
-       [
-        243634.249,
-        263924.983
-       ]
-      ]
-     },
-     "side": 1,
-     "pitchM": 6.26,
-     "depthM": 6.77,
-     "startOffsetM": 0,
-     "count": 2,
-     "divider": {
-      "style": "single",
-      "widthM": 0.1,
-      "colour": "white"
-     },
-     "endCaps": true,
-     "stalls": [
-      {
-       "id": "LOT_E243623_N263872/R5/S0",
-       "index": 0,
-       "kind": "accessible",
-       "widthM": 6.26,
-       "aisle": null,
-       "symbol": "wheelchair",
-       "upBearingDeg": 342.3,
-       "estimatedFields": {
-        "symbolUp": {
-         "reason": "direction kept from the traced cell, read at 0.25 m per pixel on NGII"
-        }
-       },
-       "paintSupport": 0.462
-      }
-     ],
-     "wheelStops": null,
-     "entryFrom": "aisle",
-     "evidence": {
-      "tier": "T1",
-      "refs": [
-       "blue MX01293+MX01296 cell 0",
-       "todo 14: the two blue bays with their hatches, seed record lies on them"
-      ],
-      "photoSupport": 0.462
-     },
-     "estimated": false
-    },
-    {
      "id": "LOT_E243623_N263872/R6",
      "divider": {
       "style": "single",
@@ -1515,15 +1497,15 @@
         263879.59
        ],
        [
-        243639.242,
-        263891.71
+        243640.558,
+        263896.606
        ]
       ]
      },
      "side": -1,
      "pitchM": 2.5,
-     "depthM": 4.5,
-     "count": 6,
+     "depthM": 4.88,
+     "count": 8,
      "dividerBearingDeg": 105.045,
      "paintBack": true,
      "stalls": [
@@ -1541,17 +1523,14 @@
        "depth 4.5 m via back+run, back rail painted",
        "seed: photo dividers 4/5: MX00225 MX00225 MX00225 MX00225; back line MX00225"
       ],
-      "photoSupport": 0.667
+      "photoSupport": 0.75
      },
      "estimatedDividers": [
       0,
-      4
+      4,
+      6
      ],
-     "estimatedFields": {
-      "depthM": {
-       "reason": "paint reads 3.2 m, the far ends lie under crowns or a leaned roof: 4.5 m assumed"
-      }
-     }
+     "paintFront": true
     },
     {
      "id": "LOT_E243623_N263872/R7",
@@ -1568,19 +1547,19 @@
      "backLine": {
       "abs": [
        [
-        243644.622,
-        263944.6
+        243644.474,
+        263944.982
        ],
        [
-        243664.891,
-        263939.842
+        243667.605,
+        263939.552
        ]
       ]
      },
      "side": -1,
      "pitchM": 2.98,
-     "depthM": 6.15,
-     "count": 8,
+     "depthM": 6.16,
+     "count": 9,
      "dividerBearingDeg": 158.75,
      "stalls": [],
      "evidence": {
@@ -1597,7 +1576,8 @@
       "depthM": {
        "reason": "read from the ends of the painted dividers on NGII (0.25 m per pixel), no rail bounds them"
       }
-     }
+     },
+     "paintBack": true
     },
     {
      "id": "LOT_E243623_N263872/R8",
@@ -1614,19 +1594,19 @@
      "backLine": {
       "abs": [
        [
-        243643.541,
-        263900.419
+        243643.517,
+        263900.485
        ],
        [
-        243655.325,
-        263897.259
+        243664.187,
+        263894.942
        ]
       ]
      },
      "side": -1,
      "pitchM": 3.05,
-     "depthM": 5.6,
-     "count": 5,
+     "depthM": 5.67,
+     "count": 8,
      "dividerBearingDeg": 160.259,
      "paintBack": true,
      "paintFront": true,
@@ -1637,12 +1617,16 @@
        "NGII 2025 peaks along the row axis (todo 14): 5 lines bounding 4 stalls, pitch 3.05 m; 5 of 5 open on the photo, 4 with paint contrast",
        "depth 5.6 m via person, back rail painted, front rail painted",
        "seed: photo dividers 4/4: MX01646 MX01646 MX01646 MX01646",
-       "six skewed boxes, the seed had two and free lines"
+       "six skewed boxes, the seed had two and free lines",
+       "spec of this row read six boxes: cars stand on the places flagged"
       ],
-      "photoSupport": 0.8
+      "photoSupport": 0.5
      },
      "estimatedDividers": [
-      1
+      1,
+      5,
+      6,
+      7
      ]
     },
     {
@@ -1660,18 +1644,18 @@
      "backLine": {
       "abs": [
        [
-        243635.239,
-        263934.832
+        243635.814,
+        263935.003
        ],
        [
-        243636.025,
-        263937.779
+        243636.6,
+        263937.95
        ]
       ]
      },
      "side": -1,
      "pitchM": 3.05,
-     "depthM": 5.68,
+     "depthM": 5.03,
      "count": 2,
      "dividerBearingDeg": 73.431,
      "paintBack": true,
@@ -1687,6 +1671,172 @@
       "photoSupport": 1
      },
      "estimatedDividers": []
+    },
+    {
+     "id": "LOT_E243623_N263872/R10",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.53"
+      ],
+      "photoSupport": 0.662
+     },
+     "stalls": [
+      {
+       "id": "LOT_E243623_N263872/R10/S0",
+       "index": 0,
+       "kind": "accessible",
+       "widthM": 3.167,
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
+        }
+       },
+       "aisle": {
+        "side": "end",
+        "widthM": 1
+       },
+       "paintSupport": 0.662
+      }
+     ],
+     "backLine": {
+      "abs": [
+       [
+        243634.367,
+        263931.705
+       ],
+       [
+        243635.343,
+        263928.692
+       ]
+      ]
+     },
+     "side": 1,
+     "pitchM": 3.167,
+     "depthM": 4.794,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": []
+    },
+    {
+     "id": "LOT_E243623_N263872/R11",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.46"
+      ],
+      "photoSupport": 0.648
+     },
+     "stalls": [
+      {
+       "id": "LOT_E243623_N263872/R11/S0",
+       "index": 0,
+       "kind": "accessible",
+       "widthM": 3.374,
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
+        }
+       },
+       "aisle": {
+        "side": "end",
+        "widthM": 1
+       },
+       "paintSupport": 0.648
+      }
+     ],
+     "backLine": {
+      "abs": [
+       [
+        243633.136,
+        263927.933
+       ],
+       [
+        243634.206,
+        263924.733
+       ]
+      ]
+     },
+     "side": 1,
+     "pitchM": 3.374,
+     "depthM": 4.999,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": []
+    },
+    {
+     "id": "LOT_E243623_N263872/R12",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": true,
+     "evidence": {
+      "tier": "T2",
+      "refs": [
+       "east ladder in building shade with dark cars, not in the seed: lines read with the shade lifted",
+       "not T1: building shade: the seed test reads no contrast; lines read by eye with the shade lifted"
+      ],
+      "photoSupport": 0
+     },
+     "stalls": [],
+     "backLine": {
+      "abs": [
+       [
+        243676.179,
+        263927.813
+       ],
+       [
+        243671.167,
+        263904.833
+       ]
+      ]
+     },
+     "side": -1,
+     "depthM": 5.2,
+     "dividerBearingDeg": 249,
+     "count": 9,
+     "pitchM": 2.935,
+     "estimatedDividers": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ]
     }
    ],
    "lines": [
@@ -1880,8 +2030,8 @@
      "backLine": {
       "abs": [
        [
-        243646.6,
-        263967.205
+        243632.076,
+        263971.336
        ],
        [
         243672.666,
@@ -1891,33 +2041,45 @@
      },
      "side": 1,
      "pitchM": 2.5,
-     "depthM": 4.87,
-     "count": 12,
+     "depthM": 4.89,
+     "count": 18,
      "dividerBearingDeg": 16,
      "paintBack": true,
      "paintFront": true,
      "stalls": [
       {
-       "id": "LOT_E243647_N263960/R1/S0",
-       "index": 0,
+       "id": "LOT_E243647_N263960/R1/S2",
+       "index": 2,
+       "kind": "general",
+       "widthM": 2.2
+      },
+      {
+       "id": "LOT_E243647_N263960/R1/S5",
+       "index": 5,
+       "kind": "general",
+       "widthM": 2.9
+      },
+      {
+       "id": "LOT_E243647_N263960/R1/S6",
+       "index": 6,
        "kind": "general",
        "widthM": 2.32
       },
       {
-       "id": "LOT_E243647_N263960/R1/S1",
-       "index": 1,
+       "id": "LOT_E243647_N263960/R1/S7",
+       "index": 7,
        "kind": "general",
        "widthM": 2.33
       },
       {
-       "id": "LOT_E243647_N263960/R1/S2",
-       "index": 2,
+       "id": "LOT_E243647_N263960/R1/S8",
+       "index": 8,
        "kind": "general",
        "widthM": 2.28
       },
       {
-       "id": "LOT_E243647_N263960/R1/S10",
-       "index": 10,
+       "id": "LOT_E243647_N263960/R1/S16",
+       "index": 16,
        "kind": "general",
        "widthM": 2.67
       }
@@ -1927,12 +2089,17 @@
       "refs": [
        "NGII 2025 peaks along the row axis (todo 14): 12 lines bounding 11 stalls, pitch 2.5 m; 12 of 12 open on the photo, 11 with paint contrast",
        "depth 4.87 m via rails, back rail painted, front rail painted",
-       "seed: photo dividers 12/12: MX01611 MX01611 MX01611 MX01611 MX01611 MX01611 MX01611 MX01611 MX01611 MX01611 MX01611 MX01611; front line MX01611"
+       "seed: photo dividers 12/12: MX01611 MX01611 MX01611 MX01611 MX01611 MX01611 MX01611 MX01611 MX01611 MX01611 MX01611 MX01611; front line MX01611",
+       "west part past the truck and the blue tarp: two boxes read at -10 to -15.1 m"
       ],
-      "photoSupport": 0.917
+      "photoSupport": 0.833
      },
      "estimatedDividers": [
-      11
+      2,
+      3,
+      4,
+      5,
+      17
      ]
     }
    ]
@@ -2004,18 +2171,18 @@
      "backLine": {
       "abs": [
        [
-        243650.797,
-        263680.528
+        243650.782,
+        263680.45
        ],
        [
-        243662.502,
-        263678.272
+        243662.487,
+        263678.194
        ]
       ]
      },
      "side": -1,
      "pitchM": 5.96,
-     "depthM": 2.1,
+     "depthM": 1.97,
      "count": 3,
      "dividerBearingDeg": 191.161,
      "paintBack": true,
@@ -2060,18 +2227,18 @@
      "backLine": {
       "abs": [
        [
-        243666.798,
-        263676.961
+        243666.755,
+        263676.715
        ],
        [
-        243702.19,
-        263670.824
+        243702.147,
+        263670.578
        ]
       ]
      },
      "side": -1,
      "pitchM": 5.98,
-     "depthM": 2.25,
+     "depthM": 2,
      "count": 7,
      "dividerBearingDeg": 189.837,
      "paintBack": true,
@@ -2684,19 +2851,19 @@
      "backLine": {
       "abs": [
        [
-        243672.306,
-        263571.588
+        243671.643,
+        263569.033
        ],
        [
-        243679.199,
-        263598.158
+        243679.217,
+        263598.226
        ]
       ]
      },
      "side": 1,
      "pitchM": 2.64,
      "depthM": 4.68,
-     "count": 11,
+     "count": 12,
      "dividerBearingDeg": 283.294,
      "paintBack": true,
      "paintFront": true,
@@ -2704,23 +2871,31 @@
       {
        "id": "LOT_E243668_N263569/R1/S3",
        "index": 3,
-       "kind": "accessible",
-       "widthM": 3.1,
-       "aisle": null,
-       "symbol": "wheelchair",
-       "upBearingDeg": 102,
-       "estimatedFields": {
-        "symbolUp": {
-         "reason": "direction read at 0.25 m per pixel on NGII or kept from the traced cell"
-        }
-       },
-       "paintSupport": 0.726
+       "kind": "general",
+       "widthM": 2.277
       },
       {
        "id": "LOT_E243668_N263569/R1/S4",
        "index": 4,
+       "kind": "accessible",
+       "widthM": 3.34,
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
+        }
+       },
+       "aisle": {
+        "side": "start",
+        "widthM": 1.3
+       },
+       "paintSupport": 0.667
+      },
+      {
+       "id": "LOT_E243668_N263569/R1/S5",
+       "index": 5,
        "kind": "general",
-       "widthM": 3.3
+       "widthM": 3.423
       }
      ],
      "evidence": {
@@ -2730,9 +2905,11 @@
        "depth 4.68 m via rails, back rail painted, front rail painted",
        "seed: photo dividers 10/11: MK01430 MK01430 MK01430 MK01430 MK01429 MK01429 MK01429 MK01429 MK01429 MK01429; no paint or under 2 m from a divider, not drawn: MK01429"
       ],
-      "photoSupport": 1
+      "photoSupport": 0.917
      },
-     "estimatedDividers": []
+     "estimatedDividers": [
+      0
+     ]
     },
     {
      "id": "LOT_E243668_N263569/R2",
@@ -2797,51 +2974,50 @@
      "entryFrom": "aisle",
      "wheelStops": null,
      "estimated": false,
-     "backLine": {
-      "abs": [
-       [
-        243692.632,
-        263699.359
-       ],
-       [
-        243695.638,
-        263698.452
-       ]
-      ]
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, blue too dark to fit"
+      ],
+      "photoSupport": 0.35
      },
-     "side": 1,
-     "pitchM": 3.14,
-     "depthM": 3.53,
-     "count": 2,
-     "dividerBearingDeg": 12.045,
-     "paintBack": true,
-     "paintFront": true,
      "stalls": [
       {
        "id": "LOT_E243693_N263699/R1/S0",
        "index": 0,
        "kind": "accessible",
-       "widthM": 3.14,
-       "aisle": null,
+       "widthM": 3.404,
        "symbol": "wheelchair",
-       "upBearingDeg": 196.7,
        "estimatedFields": {
         "symbolUp": {
-         "reason": "direction read at 0.25 m per pixel on NGII or kept from the traced cell"
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
         }
        },
-       "paintSupport": 0.42
+       "aisle": {
+        "side": "end",
+        "widthM": 1.3
+       },
+       "paintSupport": 0.35
       }
      ],
-     "evidence": {
-      "tier": "T1",
-      "refs": [
-       "NGII 2025 peaks along the row axis (todo 14): 2 lines bounding 1 stalls, pitch 3.14 m; 2 of 2 open on the photo, 2 with paint contrast",
-       "depth 3.53 m via rails, back rail painted, front rail painted",
-       "seed: blue MX01357 cell 0: NGII 4x chip: last bay of an east-west stall row, aisle north, back the building to the south"
-      ],
-      "photoSupport": 0.42
+     "backLine": {
+      "abs": [
+       [
+        243693.081,
+        263702.609
+       ],
+       [
+        243696.464,
+        263702.227
+       ]
+      ]
      },
+     "side": -1,
+     "pitchM": 3.404,
+     "depthM": 4.068,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
      "estimatedDividers": []
     },
     {
@@ -2859,25 +3035,25 @@
      "backLine": {
       "abs": [
        [
-        243680.586,
-        263705.29
+        243678.061,
+        263705.818
        ],
        [
-        243693.39,
-        263702.765
+        243693.395,
+        263702.794
        ]
       ]
      },
      "side": -1,
      "pitchM": 2.58,
-     "depthM": 4.52,
-     "count": 6,
+     "depthM": 4.55,
+     "count": 7,
      "dividerBearingDeg": 192.408,
      "paintBack": true,
      "stalls": [
       {
-       "id": "LOT_E243693_N263699/R2/S4",
-       "index": 4,
+       "id": "LOT_E243693_N263699/R2/S5",
+       "index": 5,
        "kind": "general",
        "widthM": 2.73
       }
@@ -2891,7 +3067,9 @@
       ],
       "photoSupport": 1
      },
-     "estimatedDividers": [],
+     "estimatedDividers": [
+      0
+     ],
      "estimatedFields": {
       "depthM": {
        "reason": "read from the ends of the painted dividers on NGII (0.25 m per pixel), back rail painted, no front rail"
@@ -2957,63 +3135,64 @@
    "rows": [
     {
      "id": "LOT_E243725_N263816/R1",
-     "backLine": {
-      "abs": [
-       [
-        243728.566,
-        263821.216
-       ],
-       [
-        243729.984,
-        263818.55
-       ]
-      ]
-     },
-     "side": -1,
-     "pitchM": 3.02,
-     "depthM": 4.55,
-     "startOffsetM": 0,
-     "count": 2,
      "divider": {
       "style": "single",
       "widthM": 0.1,
       "colour": "white"
      },
      "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.59",
+       "blue MX01318 cell 0"
+      ],
+      "photoSupport": 0.571
+     },
      "stalls": [
       {
        "id": "LOT_E243725_N263816/R1/S0",
        "index": 0,
        "kind": "accessible",
-       "widthM": 3.02,
-       "aisle": {
-        "side": "front",
-        "widthM": 1
-       },
+       "widthM": 3.684,
        "symbol": "wheelchair",
-       "upBearingDeg": 152,
        "estimatedFields": {
         "symbolUp": {
-         "reason": "direction kept from the traced cell, read at 0.25 m per pixel on NGII"
-        },
-        "aisleWidthM": {
-         "reason": "kept from the traced cell"
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
         }
        },
-       "paintSupport": 0.578
+       "aisle": {
+        "side": "start",
+        "widthM": 1.2
+       },
+       "paintSupport": 0.571
       }
      ],
-     "wheelStops": null,
-     "entryFrom": "aisle",
-     "evidence": {
-      "tier": "T1",
-      "refs": [
-       "blue MX01318 cell 0",
-       "todo 14: the blue bay at the end of the ladder, seed record lies on it"
-      ],
-      "photoSupport": 0.578
+     "backLine": {
+      "abs": [
+       [
+        243728.064,
+        263821.584
+       ],
+       [
+        243729.727,
+        263818.296
+       ]
+      ]
      },
-     "estimated": false
+     "side": -1,
+     "pitchM": 3.684,
+     "depthM": 3.881,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
+      0
+     ]
     },
     {
      "id": "LOT_E243725_N263816/R2",
@@ -3030,19 +3209,19 @@
      "backLine": {
       "abs": [
        [
-        243719.553,
-        263828.364
+        243719.579,
+        263828.379
        ],
        [
-        243723.429,
-        263821.641
+        243724.758,
+        263819.395
        ]
       ]
      },
      "side": 1,
      "pitchM": 2.58,
      "depthM": 4.36,
-     "count": 4,
+     "count": 5,
      "dividerBearingDeg": 61.034,
      "paintBack": true,
      "paintFront": true,
@@ -3066,79 +3245,6 @@
    "curated": "todo 14",
    "rows": [
     {
-     "id": "LOT_E243726_N263569/R1",
-     "divider": {
-      "style": "single",
-      "widthM": 0.1,
-      "colour": "white"
-     },
-     "endCaps": true,
-     "startOffsetM": 0,
-     "entryFrom": "aisle",
-     "wheelStops": null,
-     "estimated": false,
-     "backLine": {
-      "abs": [
-       [
-        243726,
-        263594.111
-       ],
-       [
-        243735.309,
-        263593.235
-       ]
-      ]
-     },
-     "side": -1,
-     "pitchM": 4.675,
-     "depthM": 6.1,
-     "count": 3,
-     "dividerBearingDeg": 185.377,
-     "paintBack": true,
-     "paintFront": true,
-     "stalls": [
-      {
-       "kind": "accessible",
-       "aisle": null,
-       "symbol": "wheelchair",
-       "estimatedFields": {
-        "symbolUp": {
-         "reason": "direction assumed towards the back, the symbol is about 1 m wide at 0.25 m per pixel"
-        }
-       },
-       "id": "LOT_E243726_N263569/R1/S0",
-       "index": 0,
-       "widthM": 4.7,
-       "paintSupport": 0.672
-      },
-      {
-       "kind": "accessible",
-       "aisle": null,
-       "symbol": "wheelchair",
-       "estimatedFields": {
-        "symbolUp": {
-         "reason": "direction assumed towards the back, the symbol is about 1 m wide at 0.25 m per pixel"
-        }
-       },
-       "id": "LOT_E243726_N263569/R1/S1",
-       "index": 1,
-       "widthM": 4.65,
-       "paintSupport": 0.508
-      }
-     ],
-     "evidence": {
-      "tier": "T1",
-      "refs": [
-       "NGII 2025 peaks along the row axis (todo 14): 3 lines bounding 2 stalls, pitch 4.675 m; 3 of 3 open on the photo, 3 with paint contrast",
-       "depth 6.1 m via person, back rail painted, front rail painted",
-       "seed: blue MX01379+MX00734 cell 0",
-       "two blue bays with hatches read side by side; the seed had one bay 9.35 m deep; the hatches are not drawn"
-      ],
-      "photoSupport": 0.59
-     },
-     "estimatedDividers": []
-    },
-    {
      "id": "LOT_E243726_N263569/R2",
      "divider": {
       "style": "single",
@@ -3150,7 +3256,7 @@
      "entryFrom": "aisle",
      "wheelStops": {
       "offsetFromBackM": 0.9,
-      "lengthM": 1.6,
+      "lengthM": 0.6,
       "colour": "#d9b43a",
       "every": 1
      },
@@ -3158,18 +3264,18 @@
      "backLine": {
       "abs": [
        [
-        243736.279,
-        263574.898
+        243736.284,
+        263574.917
        ],
        [
-        243756.496,
-        263569.803
+        243756.501,
+        263569.822
        ]
       ]
      },
      "side": 1,
      "pitchM": 2.6,
-     "depthM": 4.76,
+     "depthM": 4.74,
      "count": 9,
      "dividerBearingDeg": 14.146,
      "paintBack": true,
@@ -3194,7 +3300,7 @@
      "estimatedDividers": [],
      "estimatedFields": {
       "wheelStops": {
-       "reason": "from the VR reading of the seed (site-detail): the photo does not read their length or offset"
+       "reason": "from the VR reading of the seed (site-detail): the photo does not read their length or offset; length about 0.6 m by pixel ratio on VR scene_a5 f"
       }
      }
     },
@@ -3224,7 +3330,7 @@
      },
      "side": -1,
      "pitchM": 2.565,
-     "depthM": 4.765,
+     "depthM": 4.795,
      "count": 11,
      "dividerBearingDeg": 194.75,
      "paintFront": true,
@@ -3260,6 +3366,184 @@
        "reason": "read from the ends of the painted dividers on NGII (0.25 m per pixel), front rail painted, no back rail"
       }
      }
+    },
+    {
+     "id": "LOT_E243726_N263569/R4",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.38"
+      ],
+      "photoSupport": 0.697
+     },
+     "stalls": [
+      {
+       "id": "LOT_E243726_N263569/R4/S0",
+       "index": 0,
+       "kind": "accessible",
+       "widthM": 3.515,
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
+        }
+       },
+       "aisle": {
+        "side": "end",
+        "widthM": 1.2
+       },
+       "paintSupport": 0.697
+      }
+     ],
+     "backLine": {
+      "abs": [
+       [
+        243726.519,
+        263594.238
+       ],
+       [
+        243729.948,
+        263593.462
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 3.515,
+     "depthM": 5.78,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": []
+    },
+    {
+     "id": "LOT_E243726_N263569/R5",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, blue too dark to fit"
+      ],
+      "photoSupport": 0.754
+     },
+     "stalls": [
+      {
+       "id": "LOT_E243726_N263569/R5/S0",
+       "index": 0,
+       "kind": "accessible",
+       "widthM": 3.164,
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
+        }
+       },
+       "aisle": {
+        "side": "end",
+        "widthM": 1.2
+       },
+       "paintSupport": 0.754
+      }
+     ],
+     "backLine": {
+      "abs": [
+       [
+        243729.547,
+        263593.256
+       ],
+       [
+        243732.694,
+        263592.932
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 3.164,
+     "depthM": 4.499,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
+      0,
+      1
+     ]
+    },
+    {
+     "id": "LOT_E243726_N263569/R6",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, blue too dark to fit",
+       "the blue and hatch of this bay are faded: edges by eye"
+      ],
+      "photoSupport": 0.43
+     },
+     "stalls": [
+      {
+       "id": "LOT_E243726_N263569/R6/S0",
+       "index": 0,
+       "kind": "accessible",
+       "widthM": 2.684,
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
+        }
+       },
+       "aisle": {
+        "side": "end",
+        "widthM": 1.2
+       },
+       "paintSupport": 0.43
+      }
+     ],
+     "backLine": {
+      "abs": [
+       [
+        243732.823,
+        263592.761
+       ],
+       [
+        243735.47,
+        263592.32
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 2.684,
+     "depthM": 4.643,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": []
     }
    ]
   },
@@ -3283,18 +3567,18 @@
      "backLine": {
       "abs": [
        [
-        243740.435,
-        263652.493
+        243740.41,
+        263652.536
        ],
        [
-        243756.127,
-        263662.005
+        243756.102,
+        263662.048
        ]
       ]
      },
      "side": 1,
      "pitchM": 2.62,
-     "depthM": 5.38,
+     "depthM": 5.33,
      "count": 8,
      "dividerBearingDeg": 329.5,
      "paintBack": true,
@@ -3326,18 +3610,18 @@
      "backLine": {
       "abs": [
        [
-        243762.611,
-        263666.048
+        243762.595,
+        263666.073
        ],
        [
-        243775.902,
-        263674.348
+        243775.886,
+        263674.373
        ]
       ]
      },
      "side": 1,
      "pitchM": 2.61,
-     "depthM": 5.35,
+     "depthM": 5.32,
      "count": 7,
      "dividerBearingDeg": 328.017,
      "paintBack": true,
@@ -3424,23 +3708,30 @@
      "backLine": {
       "abs": [
        [
-        243776.485,
-        263969.734
+        243776.461,
+        263969.637
        ],
        [
-        243796.622,
-        263964.811
+        243802.057,
+        263963.379
        ]
       ]
      },
      "side": -1,
      "pitchM": 2.6,
-     "depthM": 4.77,
-     "count": 9,
+     "depthM": 4.7,
+     "count": 11,
      "dividerBearingDeg": 193.738,
      "paintBack": true,
      "paintFront": true,
-     "stalls": [],
+     "stalls": [
+      {
+       "id": "LOT_E243759_N263954/R3/S8",
+       "index": 8,
+       "kind": "general",
+       "widthM": 2.95
+      }
+     ],
      "evidence": {
       "tier": "T1",
       "refs": [
@@ -3449,9 +3740,11 @@
        "seed: photo dividers 12/13: MX01633 MX01633 MX01633 MX01633 MX01633 parking_line@243769.875,263969.101 MX01635 MX01635 MX01635 MX01635 MX01635 MX01635 MX01635 MX01635 parking_line@243790.972,263963.54; fron",
        "east part of the same row past the island"
       ],
-      "photoSupport": 1
+      "photoSupport": 0.909
      },
-     "estimatedDividers": []
+     "estimatedDividers": [
+      10
+     ]
     },
     {
      "id": "LOT_E243759_N263954/R2",
@@ -3468,19 +3761,19 @@
      "backLine": {
       "abs": [
        [
-        243767.302,
-        263961.935
+        243764.804,
+        263962.581
        ],
        [
-        243779.859,
-        263958.687
+        243779.791,
+        263958.705
        ]
       ]
      },
      "side": -1,
      "pitchM": 2.58,
-     "depthM": 4.95,
-     "count": 6,
+     "depthM": 4.97,
+     "count": 7,
      "dividerBearingDeg": 194.503,
      "paintBack": true,
      "paintFront": true,
@@ -3492,91 +3785,19 @@
        "depth 4.95 m via rails, back rail painted, front rail painted",
        "seed: photo dividers 6/6: MX01640 MX01640 MX01640 MX01640 MX01640 MX01640 MX01640 MX01640; back line MX01640"
       ],
-      "photoSupport": 1
+      "photoSupport": 0.857
      },
-     "estimatedDividers": []
+     "estimatedDividers": [
+      0
+     ]
     }
    ]
   },
   {
    "id": "LOT_E243761_N263635",
-   "parcel": "PARCEL_ASPHALT_ROAD_ZONE_27",
+   "parcel": "PARCEL_LOT_E243761_N263635_R2",
    "curated": "todo 14",
    "rows": [
-    {
-     "id": "LOT_E243761_N263635/R1",
-     "backLine": {
-      "abs": [
-       [
-        243761.02,
-        263637.565
-       ],
-       [
-        243766.823,
-        263640.914
-       ]
-      ]
-     },
-     "side": -1,
-     "pitchM": 3.35,
-     "depthM": 3.08,
-     "startOffsetM": 0,
-     "count": 3,
-     "divider": {
-      "style": "single",
-      "widthM": 0.1,
-      "colour": "white"
-     },
-     "endCaps": true,
-     "stalls": [
-      {
-       "id": "LOT_E243761_N263635/R1/S0",
-       "index": 0,
-       "kind": "accessible",
-       "widthM": 3.349,
-       "aisle": null,
-       "symbol": "wheelchair",
-       "upBearingDeg": 330,
-       "estimatedFields": {
-        "symbolUp": {
-         "reason": "direction kept from the traced cell, read at 0.25 m per pixel on NGII"
-        }
-       },
-       "paintSupport": 0.753
-      },
-      {
-       "id": "LOT_E243761_N263635/R1/S1",
-       "index": 1,
-       "kind": "accessible",
-       "widthM": 3.35,
-       "aisle": null,
-       "symbol": "wheelchair",
-       "upBearingDeg": 330,
-       "estimatedFields": {
-        "symbolUp": {
-         "reason": "direction kept from the traced cell, read at 0.25 m per pixel on NGII"
-        }
-       },
-       "paintSupport": 0.747
-      }
-     ],
-     "wheelStops": null,
-     "entryFrom": "aisle",
-     "evidence": {
-      "tier": "T1",
-      "refs": [
-       "blue MX01371 cell 0: NGII 4x chip: two bays side by side, back to the building in the north-west, open to the plaza in the south-east",
-       "blue MX01371 cell 1: NGII 4x chip: two bays side by side, back to the building in the north-west, open to the plaza in the south-east",
-       "front line MK01423",
-       "back line MK01423",
-       "todo 14: two blue bays and their hatches by the building, seed record lies on them"
-      ],
-      "photoSupport": 0.75
-     },
-     "estimated": false,
-     "paintFront": true,
-     "paintBack": true
-    },
     {
      "id": "LOT_E243761_N263635/R2",
      "divider": {
@@ -3589,57 +3810,50 @@
      "entryFrom": "aisle",
      "wheelStops": null,
      "estimated": false,
-     "backLine": {
-      "abs": [
-       [
-        243774.033,
-        263643.34
-       ],
-       [
-        243776.802,
-        263644.985
-       ]
-      ]
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.70"
+      ],
+      "photoSupport": 0.683
      },
-     "side": 1,
-     "pitchM": 3.22,
-     "depthM": 5.53,
-     "count": 2,
-     "dividerBearingDeg": 329.04,
-     "paintBack": true,
-     "paintFront": true,
      "stalls": [
       {
        "id": "LOT_E243761_N263635/R2/S0",
        "index": 0,
        "kind": "accessible",
-       "widthM": 3.22,
+       "widthM": 3.117,
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
+        }
+       },
        "aisle": {
         "side": "start",
         "widthM": 1
        },
-       "symbol": "wheelchair",
-       "upBearingDeg": 149.3,
-       "estimatedFields": {
-        "symbolUp": {
-         "reason": "direction read at 0.25 m per pixel on NGII or kept from the traced cell"
-        },
-        "aisleWidthM": {
-         "reason": "hatch width kept from the traced cell, the photo does not bound it to better than a pixel"
-        }
-       },
-       "paintSupport": 0.686
+       "paintSupport": 0.683
       }
      ],
-     "evidence": {
-      "tier": "T1",
-      "refs": [
-       "NGII 2025 peaks along the row axis (todo 14): 2 lines bounding 1 stalls, pitch 3.22 m; 2 of 2 open on the photo, 2 with paint contrast",
-       "depth 5.53 m via rails, back rail painted, front rail painted",
-       "seed: blue MX01369 cell 0"
-      ],
-      "photoSupport": 0.686
+     "backLine": {
+      "abs": [
+       [
+        243771.305,
+        263648.137
+       ],
+       [
+        243773.968,
+        263649.757
+       ]
+      ]
      },
+     "side": -1,
+     "pitchM": 3.117,
+     "depthM": 5.547,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
      "estimatedDividers": []
     },
     {
@@ -3657,35 +3871,29 @@
      "backLine": {
       "abs": [
        [
-        243772.381,
-        263647.827
+        243774.333,
+        263649.223
        ],
        [
-        243784.989,
-        263656.842
+        243784.908,
+        263656.784
        ]
       ]
      },
      "side": -1,
      "pitchM": 2.6,
-     "depthM": 5.228,
-     "count": 7,
+     "depthM": 5.328,
+     "count": 6,
      "dividerBearingDeg": 150,
      "paintFront": true,
-     "stalls": [
-      {
-       "id": "LOT_E243761_N263635/R3/S0",
-       "index": 0,
-       "kind": "general",
-       "widthM": 2.4
-      }
-     ],
+     "stalls": [],
      "evidence": {
       "tier": "T1",
       "refs": [
        "NGII 2025 peaks along the row axis (todo 14): 7 lines bounding 6 stalls, pitch 2.6 m; 7 of 7 open on the photo, 7 with paint contrast",
        "depth 5.228 m via front+run, front rail painted",
-       "seed: photo dividers 4/4: MX00679 MX00679 MX00679 MX00679; front line MX00679"
+       "seed: photo dividers 4/4: MX00679 MX00679 MX00679 MX00679; front line MX00679",
+       "its stalls that lay on the blue bay R2 are gone"
       ],
       "photoSupport": 1
      },
@@ -3695,6 +3903,126 @@
        "reason": "read from the ends of the painted dividers on NGII (0.25 m per pixel), front rail painted, no back rail"
       }
      }
+    },
+    {
+     "id": "LOT_E243761_N263635/R4",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.46"
+      ],
+      "photoSupport": 0.626
+     },
+     "stalls": [
+      {
+       "id": "LOT_E243761_N263635/R4/S0",
+       "index": 0,
+       "kind": "accessible",
+       "widthM": 4.267,
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
+        }
+       },
+       "aisle": {
+        "side": "start",
+        "widthM": 1.1
+       },
+       "paintSupport": 0.626
+      }
+     ],
+     "backLine": {
+      "abs": [
+       [
+        243758.605,
+        263638.055
+       ],
+       [
+        243762.125,
+        263640.467
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 4.267,
+     "depthM": 5.219,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
+      1
+     ]
+    },
+    {
+     "id": "LOT_E243761_N263635/R5",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.55"
+      ],
+      "photoSupport": 0.573
+     },
+     "stalls": [
+      {
+       "id": "LOT_E243761_N263635/R5/S0",
+       "index": 0,
+       "kind": "accessible",
+       "widthM": 4.219,
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
+        }
+       },
+       "aisle": {
+        "side": "end",
+        "widthM": 1
+       },
+       "paintSupport": 0.573
+      }
+     ],
+     "backLine": {
+      "abs": [
+       [
+        243763.194,
+        263639.061
+       ],
+       [
+        243765.337,
+        263635.426
+       ]
+      ]
+     },
+     "side": 1,
+     "pitchM": 4.219,
+     "depthM": 4.215,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
+      1
+     ]
     }
    ],
    "lines": [
@@ -3751,63 +4079,64 @@
    "rows": [
     {
      "id": "LOT_E243767_N263899/R1",
-     "backLine": {
-      "abs": [
-       [
-        243767.262,
-        263904.846
-       ],
-       [
-        243771.432,
-        263904.824
-       ]
-      ]
-     },
-     "side": -1,
-     "pitchM": 4.17,
-     "depthM": 5.42,
-     "startOffsetM": 0,
-     "count": 2,
      "divider": {
       "style": "single",
       "widthM": 0.1,
       "colour": "white"
      },
      "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.47",
+       "blue MX00231 cell 0: VR scene_c3 face d: wheelchair upright with its top to the north, aisle on the south road; NGII chip"
+      ],
+      "photoSupport": 0.559
+     },
      "stalls": [
       {
        "id": "LOT_E243767_N263899/R1/S0",
        "index": 0,
        "kind": "accessible",
-       "widthM": 4.17,
-       "aisle": {
-        "side": "start",
-        "widthM": 1.4
-       },
+       "widthM": 3.433,
        "symbol": "wheelchair",
-       "upBearingDeg": 0.3,
        "estimatedFields": {
         "symbolUp": {
-         "reason": "direction kept from the traced cell, read at 0.25 m per pixel on NGII"
-        },
-        "aisleWidthM": {
-         "reason": "kept from the traced cell"
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
         }
        },
-       "paintSupport": 0.391
+       "aisle": {
+        "side": "start",
+        "widthM": 1.2
+       },
+       "paintSupport": 0.559
       }
      ],
-     "wheelStops": null,
-     "entryFrom": "aisle",
-     "evidence": {
-      "tier": "T1",
-      "refs": [
-       "blue MX00231 cell 0: VR scene_c3 face d: wheelchair upright with its top to the north, aisle on the south road; NGII chip",
-       "todo 14: the blue bay under the tree, seed record lies on it"
-      ],
-      "photoSupport": 0.391
+     "backLine": {
+      "abs": [
+       [
+        243768.206,
+        263904.745
+       ],
+       [
+        243771.534,
+        263903.905
+       ]
+      ]
      },
-     "estimated": false
+     "side": -1,
+     "pitchM": 3.433,
+     "depthM": 4.297,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
+      0
+     ]
     }
    ]
   },
@@ -3816,7 +4145,7 @@
    "parcel": "PARCEL_LOT_E243769_N263982_R1",
    "curated": "todo 14",
    "estimated": true,
-   "estimatedReason": "the occlusion mask hides every line here (building shade or crowns), so the comparison has nothing to score: read on the photo with the shade lifted",
+   "estimatedReason": "the occlusion mask hides every line here (building shade or crowns), read on the photo with the shade lifted",
    "rows": [
     {
      "id": "LOT_E243769_N263982/R1",
@@ -3830,7 +4159,7 @@
      "entryFrom": "aisle",
      "wheelStops": {
       "offsetFromBackM": 0.9,
-      "lengthM": 1.6,
+      "lengthM": 0.6,
       "colour": "#2a2d30",
       "every": 1
      },
@@ -3838,18 +4167,18 @@
      "backLine": {
       "abs": [
        [
-        243776.588,
-        263985.881
+        243776.264,
+        263985.943
        ],
        [
-        243775.621,
-        263982.977
+        243775.297,
+        263983.039
        ]
       ]
      },
      "side": -1,
      "pitchM": 3.06,
-     "depthM": 5.93,
+     "depthM": 5.6,
      "count": 2,
      "dividerBearingDeg": 280.85,
      "paintBack": true,
@@ -3881,10 +4210,12 @@
       ],
       "photoSupport": null
      },
-     "estimatedDividers": [],
+     "estimatedDividers": [
+      1
+     ],
      "estimatedFields": {
       "wheelStops": {
-       "reason": "from the VR reading of the seed (site-detail): the photo does not read their length or offset"
+       "reason": "from the VR reading of the seed (site-detail): the photo does not read their length or offset; length about 0.6 m by pixel ratio on VR scene_a5 f"
       }
      }
     },
@@ -3900,7 +4231,7 @@
      "entryFrom": "aisle",
      "wheelStops": {
       "offsetFromBackM": 0.9,
-      "lengthM": 1.6,
+      "lengthM": 0.6,
       "colour": "#2a2d30",
       "every": 1
      },
@@ -3950,60 +4281,61 @@
    "rows": [
     {
      "id": "LOT_E243784_N263922/R1",
-     "backLine": {
-      "abs": [
-       [
-        243784.342,
-        263925.263
-       ],
-       [
-        243788.092,
-        263925.243
-       ]
-      ]
-     },
-     "side": -1,
-     "pitchM": 3.75,
-     "depthM": 3.34,
-     "startOffsetM": 0,
-     "count": 2,
      "divider": {
       "style": "single",
       "widthM": 0.1,
       "colour": "white"
      },
      "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.58",
+       "objects north of it hide its back: 2.6 m of depth is what the photo shows",
+       "blue MX00230 cell 0: NGII 4x chip: bay between the buildings (north) and the road with the zebra (south, the aisle)"
+      ],
+      "photoSupport": 0.57
+     },
      "stalls": [
       {
        "id": "LOT_E243784_N263922/R1/S0",
        "index": 0,
        "kind": "accessible",
-       "widthM": 3.75,
-       "aisle": null,
+       "widthM": 3.168,
        "symbol": "wheelchair",
-       "upBearingDeg": 0.3,
        "estimatedFields": {
         "symbolUp": {
-         "reason": "direction kept from the traced cell, read at 0.25 m per pixel on NGII"
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
         }
        },
-       "paintSupport": 0.346,
-       "estimated": true
+       "paintSupport": 0.57
       }
      ],
-     "wheelStops": null,
-     "entryFrom": "aisle",
-     "evidence": {
-      "tier": "T2",
-      "refs": [
-       "blue MX00230 cell 0: NGII 4x chip: bay between the buildings (north) and the road with the zebra (south, the aisle)",
-       "accessible stall 0: 0.346 of its fill on photo blue",
-       "not T1: no blue paint under its fills (0.346)",
-       "todo 14: blue bay by the crosswalk, seed record lies on it; marked as before"
-      ],
-      "photoSupport": 0.346
+     "backLine": {
+      "abs": [
+       [
+        243785.01,
+        263925.143
+       ],
+       [
+        243788.098,
+        263924.437
+       ]
+      ]
      },
-     "estimated": true
+     "side": -1,
+     "pitchM": 3.168,
+     "depthM": 2.465,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
+      0
+     ]
     }
    ]
   },
@@ -4023,23 +4355,23 @@
      "startOffsetM": 0,
      "entryFrom": "aisle",
      "wheelStops": null,
-     "estimated": false,
+     "estimated": true,
      "backLine": {
       "abs": [
        [
-        243784.202,
-        263897.958
+        243784.347,
+        263898.509
        ],
        [
-        243804.268,
-        263892.873
+        243809.434,
+        263892.152
        ]
       ]
      },
      "side": 1,
      "pitchM": 2.575,
      "depthM": 4.5,
-     "count": 9,
+     "count": 11,
      "dividerBearingDeg": 14.72,
      "paintBack": true,
      "stalls": [
@@ -4057,22 +4389,23 @@
       }
      ],
      "evidence": {
-      "tier": "T1",
+      "tier": "T2",
       "refs": [
        "NGII 2025 peaks along the row axis (todo 14): 9 lines bounding 8 stalls, pitch 2.575 m; 0 of 9 open on the photo, 0 with paint contrast",
        "depth 4.5 m via person, back rail painted",
        "seed: photo dividers 4/6: MK01400 MK01400 MK01402 MK01402; site-detail SD-C3-W1 (VR scene_c3 r): VR scene_c3 r (cols 1080-1340, rows 1580-2048): the west stall row of the car park, five stalls between the a",
        "gate review item: a real ladder at 2.6 m pitch, recorded 3.44 m before",
-       "the occlusion mask hides these lines; 8 of 9 read paint contrast on the pixels left open"
+       "the occlusion mask hides these lines; 8 of 9 read paint contrast on the pixels left open",
+       "not T1: the lines read for about 2 m from the back rail on a 2.6 m pitch, crowns hide the rest: the seed test over the 4.5 m assumed depth reads none"
       ],
-      "photoSupport": null
+      "photoSupport": 0
      },
-     "estimatedDividers": [],
-     "estimatedFields": {
-      "depthM": {
-       "reason": "stubs read for about 2 m, crowns hide the rest: 4.5 m assumed"
-      }
-     }
+     "estimatedDividers": [
+      0,
+      5,
+      9,
+      10
+     ]
     }
    ]
   },
@@ -4096,19 +4429,19 @@
      "backLine": {
       "abs": [
        [
-        243786.928,
-        263883.509
+        243794.467,
+        263881.507
        ],
        [
-        243809.641,
-        263877.478
+        243809.544,
+        263877.504
        ]
       ]
      },
      "side": 1,
      "pitchM": 2.6,
-     "depthM": 4.8,
-     "count": 10,
+     "depthM": 4.83,
+     "count": 7,
      "dividerBearingDeg": 14.619,
      "paintBack": true,
      "paintFront": true,
@@ -4118,15 +4451,72 @@
       "refs": [
        "NGII 2025 peaks along the row axis (todo 14): 10 lines bounding 9 stalls, pitch 2.6 m; 7 of 10 open on the photo, 6 with paint contrast",
        "depth 4.8 m via rails, back rail painted, front rail painted",
-       "row of boxes south of the building, not in the seed; the free lines were its rail; three dark cars stand on its west end, those places repeat the pitch"
+       "row of boxes south of the building, not in the seed; the free lines were its rail; three dark cars stand on its west end, those places repeat the pitch",
+       "review B2: the three west places lay on a pale roof strip, the cars belong to R2"
       ],
       "photoSupport": 0.857
      },
      "estimatedDividers": [
-      0,
+      6
+     ]
+    },
+    {
+     "id": "LOT_E243795_N263876/R2",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "five stalls north of R1, three with cars: measured on NGII 2025",
+       "review B2",
+       "three cars stand on the first stalls: their two lines repeat the width between the lines read"
+      ],
+      "photoSupport": 0.6
+     },
+     "stalls": [
+      {
+       "id": "LOT_E243795_N263876/R2/S3",
+       "index": 3,
+       "kind": "general",
+       "widthM": 2.69
+      },
+      {
+       "id": "LOT_E243795_N263876/R2/S4",
+       "index": 4,
+       "kind": "general",
+       "widthM": 2.6
+      }
+     ],
+     "backLine": {
+      "abs": [
+       [
+        243783.436,
+        263893.767
+       ],
+       [
+        243796.826,
+        263890.643
+       ]
+      ]
+     },
+     "side": -1,
+     "depthM": 4.83,
+     "dividerBearingDeg": 194.13,
+     "count": 6,
+     "pitchM": 2.82,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
       1,
-      2,
-      9
+      2
      ]
     }
    ]
@@ -4151,19 +4541,19 @@
      "backLine": {
       "abs": [
        [
-        243792.637,
-        263541.495
+        243790.081,
+        263542.062
        ],
        [
-        243795.205,
-        263540.976
+        243795.217,
+        263541.024
        ]
       ]
      },
      "side": 1,
      "pitchM": 2.62,
-     "depthM": 4.2,
-     "count": 2,
+     "depthM": 4.25,
+     "count": 3,
      "dividerBearingDeg": 14.418,
      "paintBack": true,
      "paintFront": true,
@@ -4175,9 +4565,11 @@
        "depth 4.2 m via rails, back rail painted, front rail painted",
        "west boxes of the row; a 3.7 m gap with a car splits it"
       ],
-      "photoSupport": 1
+      "photoSupport": 0.667
      },
-     "estimatedDividers": []
+     "estimatedDividers": [
+      0
+     ]
     },
     {
      "id": "LOT_E243796_N263538/R2",
@@ -4194,38 +4586,38 @@
      "backLine": {
       "abs": [
        [
-        243798.649,
-        263540.074
+        243796.205,
+        263540.689
        ],
        [
-        243812.343,
+        243812.342,
         263536.629
        ]
       ]
      },
      "side": 1,
      "pitchM": 2.62,
-     "depthM": 4.24,
-     "count": 6,
+     "depthM": 4.27,
+     "count": 7,
      "dividerBearingDeg": 14.121,
      "paintBack": true,
      "paintFront": true,
      "stalls": [
       {
-       "id": "LOT_E243796_N263538/R2/S0",
-       "index": 0,
+       "id": "LOT_E243796_N263538/R2/S1",
+       "index": 1,
        "kind": "general",
-       "widthM": 3.68
-      },
-      {
-       "id": "LOT_E243796_N263538/R2/S3",
-       "index": 3,
-       "kind": "general",
-       "widthM": 2.38
+       "widthM": 3.58
       },
       {
        "id": "LOT_E243796_N263538/R2/S4",
        "index": 4,
+       "kind": "general",
+       "widthM": 2.38
+      },
+      {
+       "id": "LOT_E243796_N263538/R2/S5",
+       "index": 5,
        "kind": "general",
        "widthM": 2.82
       }
@@ -4284,7 +4676,7 @@
      "entryFrom": "aisle",
      "wheelStops": {
       "offsetFromBackM": 0.9,
-      "lengthM": 1.6,
+      "lengthM": 0.6,
       "colour": "#d9b43a",
       "every": 1
      },
@@ -4292,125 +4684,39 @@
      "backLine": {
       "abs": [
        [
-        243833.065,
-        263673.657
+        243832.556,
+        263674.242
        ],
        [
-        243825.785,
-        263632.567
+        243832.058,
+        263671.435
        ]
       ]
      },
      "side": -1,
-     "pitchM": 2.23,
-     "depthM": 11.5,
-     "count": 18,
+     "pitchM": 2.85,
+     "depthM": 10.32,
+     "count": 2,
      "dividerBearingDeg": 252.6,
-     "stalls": [
-      {
-       "id": "LOT_E243815_N263630/R1/S0",
-       "index": 0,
-       "kind": "general",
-       "widthM": 3.92
-      },
-      {
-       "id": "LOT_E243815_N263630/R1/S1",
-       "index": 1,
-       "kind": "general",
-       "widthM": 2.83
-      },
-      {
-       "id": "LOT_E243815_N263630/R1/S2",
-       "index": 2,
-       "kind": "general",
-       "widthM": 2.83
-      },
-      {
-       "id": "LOT_E243815_N263630/R1/S3",
-       "index": 3,
-       "kind": "general",
-       "widthM": 1.97
-      },
-      {
-       "id": "LOT_E243815_N263630/R1/S4",
-       "index": 4,
-       "kind": "general",
-       "widthM": 1.97
-      },
-      {
-       "id": "LOT_E243815_N263630/R1/S5",
-       "index": 5,
-       "kind": "general",
-       "widthM": 2.83
-      },
-      {
-       "id": "LOT_E243815_N263630/R1/S6",
-       "index": 6,
-       "kind": "general",
-       "widthM": 1.95
-      },
-      {
-       "id": "LOT_E243815_N263630/R1/S7",
-       "index": 7,
-       "kind": "general",
-       "widthM": 2.83
-      },
-      {
-       "id": "LOT_E243815_N263630/R1/S8",
-       "index": 8,
-       "kind": "general",
-       "widthM": 1.97
-      },
-      {
-       "id": "LOT_E243815_N263630/R1/S9",
-       "index": 9,
-       "kind": "general",
-       "widthM": 2.8
-      },
-      {
-       "id": "LOT_E243815_N263630/R1/S10",
-       "index": 10,
-       "kind": "general",
-       "widthM": 1.98
-      },
-      {
-       "id": "LOT_E243815_N263630/R1/S11",
-       "index": 11,
-       "kind": "general",
-       "widthM": 2.7
-      },
-      {
-       "id": "LOT_E243815_N263630/R1/S12",
-       "index": 12,
-       "kind": "general",
-       "widthM": 1.92
-      },
-      {
-       "id": "LOT_E243815_N263630/R1/S13",
-       "index": 13,
-       "kind": "general",
-       "widthM": 2.87
-      },
-      {
-       "id": "LOT_E243815_N263630/R1/S14",
-       "index": 14,
-       "kind": "general",
-       "widthM": 1.98
-      }
-     ],
+     "stalls": [],
      "evidence": {
       "tier": "T2",
       "refs": [
        "NGII 2025 peaks along the row axis (todo 14): 18 lines bounding 17 stalls, pitch 2.23 m; 18 of 18 open on the photo, 17 with paint contrast",
        "depth 11.5 m via person",
        "seed: site-detail SD-A4-01 (VR scene_a4 r): VR scene_a4 r and b: nine boxed school-bus bays, angled about 13 deg off square, white outlines (each bay's lettering is paint for the markings lane); photo: the ",
-       "bus bays: each box has its own two lines with a 1.95 m gap between boxes, and the row model draws the gaps as stalls. End lines of the boxes and the painted text are not drawn"
+       "bus bays: each box has its own two lines with a 1.95 m gap between boxes, and the row model draws the gaps as stalls. End lines of the boxes and the painted text are not drawn",
+       "bus box 1 of 9: lines and end lines read on NGII; the painted text is not drawn",
+       "not T1: a bus stands on this box: its lines and text are hidden"
       ],
-      "photoSupport": 0.944
+      "photoSupport": 0
      },
      "estimatedDividers": [
-      2
-     ]
+      0,
+      1
+     ],
+     "paintBack": true,
+     "paintFront": true
     },
     {
      "id": "LOT_E243815_N263630/R2",
@@ -4424,7 +4730,7 @@
      "entryFrom": "aisle",
      "wheelStops": {
       "offsetFromBackM": 0.9,
-      "lengthM": 1.6,
+      "lengthM": 0.6,
       "colour": "#2a2d30",
       "every": 1
      },
@@ -4461,52 +4767,459 @@
      "estimatedDividers": [],
      "estimatedFields": {
       "wheelStops": {
-       "reason": "from the VR reading of the seed (site-detail): the photo does not read their length or offset"
+       "reason": "from the VR reading of the seed (site-detail): the photo does not read their length or offset; length about 0.6 m by pixel ratio on VR scene_a5 f"
       }
      }
     },
     {
-     "id": "LOT_E243815_N263630/R3",
-     "backLine": {
-      "abs": [
-       [
-        243831.386,
-        263668.608
-       ],
-       [
-        243832.335,
-        263665.3
-       ]
-      ]
-     },
-     "side": -1,
-     "pitchM": 3.4409,
-     "depthM": 3.384,
-     "startOffsetM": 0,
-     "count": 2,
+     "id": "LOT_E243815_N263630/R5",
      "divider": {
       "style": "single",
       "widthM": 0.1,
       "colour": "white"
      },
      "endCaps": true,
-     "stalls": [],
-     "wheelStops": null,
+     "startOffsetM": 0,
      "entryFrom": "aisle",
+     "wheelStops": {
+      "offsetFromBackM": 0.9,
+      "lengthM": 0.6,
+      "colour": "#d9b43a",
+      "every": 1
+     },
+     "estimated": false,
+     "backLine": {
+      "abs": [
+       [
+        243831.616,
+        263669.548
+       ],
+       [
+        243831.124,
+        263666.772
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 2.82,
+     "depthM": 10.88,
+     "count": 2,
+     "dividerBearingDeg": 252.6,
+     "stalls": [],
      "evidence": {
       "tier": "T1",
       "refs": [
-       "photo dividers 2/2: MK01421 MK01421",
-       "back line MK01421",
-       "todo 14: small seed row, record lies on its paint"
+       "NGII 2025 peaks along the row axis (todo 14): 18 lines bounding 17 stalls, pitch 2.23 m; 18 of 18 open on the photo, 17 with paint contrast",
+       "depth 11.5 m via person",
+       "seed: site-detail SD-A4-01 (VR scene_a4 r): VR scene_a4 r and b: nine boxed school-bus bays, angled about 13 deg off square, white outlines (each bay's lettering is paint for the markings lane); photo: the ",
+       "bus bays: each box has its own two lines with a 1.95 m gap between boxes, and the row model draws the gaps as stalls. End lines of the boxes and the painted text are not drawn",
+       "bus box 2 of 9: lines and end lines read on NGII; the painted text is not drawn"
+      ],
+      "photoSupport": 0.5
+     },
+     "estimatedDividers": [
+      1
+     ],
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedFields": {
+      "wheelStops": {
+       "reason": "one per stall on the VR; length and offset not read on the photo"
+      }
+     }
+    },
+    {
+     "id": "LOT_E243815_N263630/R6",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": {
+      "offsetFromBackM": 0.9,
+      "lengthM": 0.6,
+      "colour": "#d9b43a",
+      "every": 1
+     },
+     "estimated": false,
+     "backLine": {
+      "abs": [
+       [
+        243830.721,
+        263664.804
+       ],
+       [
+        243830.229,
+        263662.027
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 2.82,
+     "depthM": 10.59,
+     "count": 2,
+     "dividerBearingDeg": 252.6,
+     "stalls": [],
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "NGII 2025 peaks along the row axis (todo 14): 18 lines bounding 17 stalls, pitch 2.23 m; 18 of 18 open on the photo, 17 with paint contrast",
+       "depth 11.5 m via person",
+       "seed: site-detail SD-A4-01 (VR scene_a4 r): VR scene_a4 r and b: nine boxed school-bus bays, angled about 13 deg off square, white outlines (each bay's lettering is paint for the markings lane); photo: the ",
+       "bus bays: each box has its own two lines with a 1.95 m gap between boxes, and the row model draws the gaps as stalls. End lines of the boxes and the painted text are not drawn",
+       "bus box 3 of 9: lines and end lines read on NGII; the painted text is not drawn"
       ],
       "photoSupport": 1
      },
-     "estimated": false,
+     "estimatedDividers": [],
      "paintBack": true,
+     "paintFront": true,
+     "estimatedFields": {
+      "wheelStops": {
+       "reason": "one per stall on the VR; length and offset not read on the photo"
+      }
+     }
+    },
+    {
+     "id": "LOT_E243815_N263630/R7",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": {
+      "offsetFromBackM": 0.9,
+      "lengthM": 0.6,
+      "colour": "#d9b43a",
+      "every": 1
+     },
+     "estimated": false,
+     "backLine": {
+      "abs": [
+       [
+        243829.656,
+        263660.015
+       ],
+       [
+        243829.166,
+        263657.248
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 2.81,
+     "depthM": 10.05,
+     "count": 2,
+     "dividerBearingDeg": 252.6,
+     "stalls": [],
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "NGII 2025 peaks along the row axis (todo 14): 18 lines bounding 17 stalls, pitch 2.23 m; 18 of 18 open on the photo, 17 with paint contrast",
+       "depth 11.5 m via person",
+       "seed: site-detail SD-A4-01 (VR scene_a4 r): VR scene_a4 r and b: nine boxed school-bus bays, angled about 13 deg off square, white outlines (each bay's lettering is paint for the markings lane); photo: the ",
+       "bus bays: each box has its own two lines with a 1.95 m gap between boxes, and the row model draws the gaps as stalls. End lines of the boxes and the painted text are not drawn",
+       "bus box 4 of 9: lines and end lines read on NGII; the painted text is not drawn"
+      ],
+      "photoSupport": 1
+     },
+     "estimatedDividers": [],
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedFields": {
+      "wheelStops": {
+       "reason": "one per stall on the VR; length and offset not read on the photo"
+      }
+     }
+    },
+    {
+     "id": "LOT_E243815_N263630/R8",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": {
+      "offsetFromBackM": 0.9,
+      "lengthM": 0.6,
+      "colour": "#d9b43a",
+      "every": 1
+     },
+     "estimated": false,
+     "backLine": {
+      "abs": [
+       [
+        243829.867,
+        263655.608
+       ],
+       [
+        243829.379,
+        263652.851
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 2.8,
+     "depthM": 11.28,
+     "count": 2,
+     "dividerBearingDeg": 252.6,
+     "stalls": [],
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "NGII 2025 peaks along the row axis (todo 14): 18 lines bounding 17 stalls, pitch 2.23 m; 18 of 18 open on the photo, 17 with paint contrast",
+       "depth 11.5 m via person",
+       "seed: site-detail SD-A4-01 (VR scene_a4 r): VR scene_a4 r and b: nine boxed school-bus bays, angled about 13 deg off square, white outlines (each bay's lettering is paint for the markings lane); photo: the ",
+       "bus bays: each box has its own two lines with a 1.95 m gap between boxes, and the row model draws the gaps as stalls. End lines of the boxes and the painted text are not drawn",
+       "bus box 5 of 9: lines and end lines read on NGII; the painted text is not drawn"
+      ],
+      "photoSupport": 1
+     },
+     "estimatedDividers": [],
+     "paintFront": true,
      "estimatedFields": {
       "depthM": {
-       "reason": "kept from the seed: read from the ends of the painted dividers, no pair of rails bounds it"
+       "reason": "one end line or none on the photo: depth from the ends of the painted lines"
+      },
+      "wheelStops": {
+       "reason": "one per stall on the VR; length and offset not read on the photo"
+      }
+     }
+    },
+    {
+     "id": "LOT_E243815_N263630/R9",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": {
+      "offsetFromBackM": 0.9,
+      "lengthM": 0.6,
+      "colour": "#d9b43a",
+      "every": 1
+     },
+     "estimated": false,
+     "backLine": {
+      "abs": [
+       [
+        243829.035,
+        263650.911
+       ],
+       [
+        243828.547,
+        263648.154
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 2.8,
+     "depthM": 11.48,
+     "count": 2,
+     "dividerBearingDeg": 252.6,
+     "stalls": [],
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "NGII 2025 peaks along the row axis (todo 14): 18 lines bounding 17 stalls, pitch 2.23 m; 18 of 18 open on the photo, 17 with paint contrast",
+       "depth 11.5 m via person",
+       "seed: site-detail SD-A4-01 (VR scene_a4 r): VR scene_a4 r and b: nine boxed school-bus bays, angled about 13 deg off square, white outlines (each bay's lettering is paint for the markings lane); photo: the ",
+       "bus bays: each box has its own two lines with a 1.95 m gap between boxes, and the row model draws the gaps as stalls. End lines of the boxes and the painted text are not drawn",
+       "bus box 6 of 9: lines and end lines read on NGII; the painted text is not drawn"
+      ],
+      "photoSupport": 1
+     },
+     "estimatedDividers": [],
+     "paintFront": true,
+     "estimatedFields": {
+      "depthM": {
+       "reason": "one end line or none on the photo: depth from the ends of the painted lines"
+      },
+      "wheelStops": {
+       "reason": "one per stall on the VR; length and offset not read on the photo"
+      }
+     }
+    },
+    {
+     "id": "LOT_E243815_N263630/R10",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": {
+      "offsetFromBackM": 0.9,
+      "lengthM": 0.6,
+      "colour": "#d9b43a",
+      "every": 1
+     },
+     "estimated": false,
+     "backLine": {
+      "abs": [
+       [
+        243828.201,
+        263646.205
+       ],
+       [
+        243827.735,
+        263643.575
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 2.67,
+     "depthM": 11.36,
+     "count": 2,
+     "dividerBearingDeg": 252.6,
+     "stalls": [],
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "NGII 2025 peaks along the row axis (todo 14): 18 lines bounding 17 stalls, pitch 2.23 m; 18 of 18 open on the photo, 17 with paint contrast",
+       "depth 11.5 m via person",
+       "seed: site-detail SD-A4-01 (VR scene_a4 r): VR scene_a4 r and b: nine boxed school-bus bays, angled about 13 deg off square, white outlines (each bay's lettering is paint for the markings lane); photo: the ",
+       "bus bays: each box has its own two lines with a 1.95 m gap between boxes, and the row model draws the gaps as stalls. End lines of the boxes and the painted text are not drawn",
+       "bus box 7 of 9: lines and end lines read on NGII; the painted text is not drawn"
+      ],
+      "photoSupport": 1
+     },
+     "estimatedDividers": [],
+     "paintFront": true,
+     "estimatedFields": {
+      "depthM": {
+       "reason": "one end line or none on the photo: depth from the ends of the painted lines"
+      },
+      "wheelStops": {
+       "reason": "one per stall on the VR; length and offset not read on the photo"
+      }
+     }
+    },
+    {
+     "id": "LOT_E243815_N263630/R11",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": {
+      "offsetFromBackM": 0.9,
+      "lengthM": 0.6,
+      "colour": "#d9b43a",
+      "every": 1
+     },
+     "estimated": false,
+     "backLine": {
+      "abs": [
+       [
+        243827.395,
+        263641.655
+       ],
+       [
+        243826.889,
+        263638.8
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 2.9,
+     "depthM": 11.53,
+     "count": 2,
+     "dividerBearingDeg": 252.6,
+     "stalls": [],
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "NGII 2025 peaks along the row axis (todo 14): 18 lines bounding 17 stalls, pitch 2.23 m; 18 of 18 open on the photo, 17 with paint contrast",
+       "depth 11.5 m via person",
+       "seed: site-detail SD-A4-01 (VR scene_a4 r): VR scene_a4 r and b: nine boxed school-bus bays, angled about 13 deg off square, white outlines (each bay's lettering is paint for the markings lane); photo: the ",
+       "bus bays: each box has its own two lines with a 1.95 m gap between boxes, and the row model draws the gaps as stalls. End lines of the boxes and the painted text are not drawn",
+       "bus box 8 of 9: lines and end lines read on NGII; the painted text is not drawn"
+      ],
+      "photoSupport": 1
+     },
+     "estimatedDividers": [],
+     "paintFront": true,
+     "estimatedFields": {
+      "depthM": {
+       "reason": "one end line or none on the photo: depth from the ends of the painted lines"
+      },
+      "wheelStops": {
+       "reason": "one per stall on the VR; length and offset not read on the photo"
+      }
+     }
+    },
+    {
+     "id": "LOT_E243815_N263630/R12",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": {
+      "offsetFromBackM": 0.9,
+      "lengthM": 0.6,
+      "colour": "#d9b43a",
+      "every": 1
+     },
+     "estimated": false,
+     "backLine": {
+      "abs": [
+       [
+        243825.595,
+        263636.581
+       ],
+       [
+        243825.098,
+        263633.774
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 2.85,
+     "depthM": 9.95,
+     "count": 2,
+     "dividerBearingDeg": 252.6,
+     "stalls": [],
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "NGII 2025 peaks along the row axis (todo 14): 18 lines bounding 17 stalls, pitch 2.23 m; 18 of 18 open on the photo, 17 with paint contrast",
+       "depth 11.5 m via person",
+       "seed: site-detail SD-A4-01 (VR scene_a4 r): VR scene_a4 r and b: nine boxed school-bus bays, angled about 13 deg off square, white outlines (each bay's lettering is paint for the markings lane); photo: the ",
+       "bus bays: each box has its own two lines with a 1.95 m gap between boxes, and the row model draws the gaps as stalls. End lines of the boxes and the painted text are not drawn",
+       "bus box 9 of 9: lines and end lines read on NGII; the painted text is not drawn"
+      ],
+      "photoSupport": 0.5
+     },
+     "estimatedDividers": [
+      1
+     ],
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedFields": {
+      "wheelStops": {
+       "reason": "one per stall on the VR; length and offset not read on the photo"
       }
      }
     }
@@ -4516,6 +5229,8 @@
    "id": "LOT_E243818_N263567",
    "parcel": "PARCEL_LOT_E243818_N263567_R1",
    "curated": "todo 14",
+   "estimated": true,
+   "estimatedReason": "R1 stands under two white cars, R2 half under crowns; both rows T2",
    "rows": [
     {
      "id": "LOT_E243818_N263567/R1",
@@ -4546,7 +5261,7 @@
      "stalls": [],
      "wheelStops": {
       "offsetFromBackM": 0.9,
-      "lengthM": 1.6,
+      "lengthM": 0.6,
       "colour": "#d9b43a",
       "every": 1
      },
@@ -4580,67 +5295,49 @@
      "entryFrom": "aisle",
      "wheelStops": null,
      "estimated": true,
-     "backLine": {
-      "abs": [
-       [
-        243815.4,
-        263567.5
-       ],
-       [
-        243815.4,
-        263562.3
-       ]
-      ]
-     },
-     "side": 1,
-     "pitchM": 2.6,
-     "depthM": 4.6,
-     "count": 3,
-     "dividerBearingDeg": 90,
-     "stalls": [
-      {
-       "kind": "accessible",
-       "aisle": null,
-       "symbol": "wheelchair",
-       "estimatedFields": {
-        "symbolUp": {
-         "reason": "direction assumed towards the back, the symbol is about 1 m wide at 0.25 m per pixel"
-        }
-       },
-       "id": "LOT_E243818_N263567/R2/S0",
-       "index": 0,
-       "widthM": 2.4,
-       "paintSupport": 0.278,
-       "estimated": true
-      },
-      {
-       "kind": "accessible",
-       "aisle": null,
-       "symbol": "wheelchair",
-       "estimatedFields": {
-        "symbolUp": {
-         "reason": "direction assumed towards the back, the symbol is about 1 m wide at 0.25 m per pixel"
-        }
-       },
-       "id": "LOT_E243818_N263567/R2/S1",
-       "index": 1,
-       "widthM": 2.8,
-       "paintSupport": 0.4
-      }
-     ],
      "evidence": {
       "tier": "T2",
       "refs": [
-       "NGII 2025 peaks along the row axis (todo 14): 3 lines bounding 2 stalls, pitch 2.6 m; 3 of 3 open on the photo, 1 with paint contrast",
-       "depth 4.6 m via person",
-       "two blue bays, not in the seed",
-       "crowns cover the west half of both blue bays: east edge and blue read at 0.25 m per pixel, depth and the split between them read by eye"
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, blue too dark to fit",
+       "crowns cover the west half of the bay: east edge and blue read at 0.25 m per pixel; the second patch north of it is a teal car, so one bay"
       ],
-      "photoSupport": 0.339
+      "photoSupport": 0.416
      },
+     "stalls": [
+      {
+       "id": "LOT_E243818_N263567/R2/S0",
+       "index": 0,
+       "kind": "accessible",
+       "widthM": 3.531,
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
+        }
+       },
+       "paintSupport": 0.416
+      }
+     ],
+     "backLine": {
+      "abs": [
+       [
+        243819.955,
+        263565.006
+       ],
+       [
+        243819.867,
+        263561.477
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 3.531,
+     "depthM": 4.206,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
      "estimatedDividers": [
-      1,
-      2
+      0
      ]
     }
    ]
@@ -4665,19 +5362,19 @@
      "backLine": {
       "abs": [
        [
-        243822.233,
-        263589.415
+        243821.603,
+        263589.575
        ],
        [
-        243826.096,
-        263604.911
+        243826.01,
+        263607.254
        ]
       ]
      },
      "side": -1,
      "pitchM": 2.3,
-     "depthM": 4.25,
-     "count": 8,
+     "depthM": 4.87,
+     "count": 9,
      "dividerBearingDeg": 104.248,
      "paintFront": true,
      "stalls": [
@@ -4696,18 +5393,16 @@
        "seed: estimator on SD-A6-01: photo dividers 5/9 detected, 1 under the occlusion mask, theta 166 deg; site-detail SD-A6-01 (VR scene_a6 r): VR scene_a6 r and f: stall row on the drive's west side north of th",
        "white cars stand on its north end; the last place repeats the pitch"
       ],
-      "photoSupport": 0.625
+      "photoSupport": 0.556
      },
      "estimatedDividers": [
       0,
       2,
-      6
+      6,
+      7,
+      8
      ],
-     "estimatedFields": {
-      "depthM": {
-       "reason": "read from the ends of the painted dividers on NGII (0.25 m per pixel), front rail painted, no back rail"
-      }
-     }
+     "paintBack": true
     }
    ]
   },
@@ -4731,18 +5426,18 @@
      "backLine": {
       "abs": [
        [
-        243827.245,
-        263488.967
+        243827.274,
+        263488.959
        ],
        [
-        243825.328,
-        263481.686
+        243825.357,
+        263481.678
        ]
       ]
      },
      "side": -1,
      "pitchM": 2.5,
-     "depthM": 4.42,
+     "depthM": 4.92,
      "count": 4,
      "dividerBearingDeg": 284.751,
      "paintBack": true,
@@ -4759,11 +5454,7 @@
      "estimatedDividers": [
       0
      ],
-     "estimatedFields": {
-      "depthM": {
-       "reason": "read from the ends of the painted dividers on NGII (0.25 m per pixel), back rail painted, no front rail"
-      }
-     }
+     "paintFront": true
     }
    ]
   },
@@ -4772,7 +5463,7 @@
    "parcel": "PARCEL_LOT_E243835_N263905_R1",
    "curated": "todo 14",
    "estimated": true,
-   "estimatedReason": "white cars cover the lines, only the blue fill is read",
+   "estimatedReason": "white and dark cars cover the lines either side of the bay: places repeat the pitch, both rows T2",
    "rows": [
     {
      "id": "LOT_E243835_N263905/R1",
@@ -4786,7 +5477,7 @@
      "entryFrom": "aisle",
      "wheelStops": {
       "offsetFromBackM": 0.9,
-      "lengthM": 1.6,
+      "lengthM": 0.6,
       "colour": "#d9b43a",
       "every": 1
      },
@@ -4794,19 +5485,19 @@
      "backLine": {
       "abs": [
        [
-        243831.275,
-        263912.82
+        243831.117,
+        263912.241
        ],
        [
-        243846.507,
-        263909.012
+        243835.58,
+        263911.125
        ]
       ]
      },
      "side": -1,
-     "pitchM": 2.5,
-     "depthM": 4.8,
-     "count": 8,
+     "pitchM": 2.3,
+     "depthM": 4.2,
+     "count": 3,
      "dividerBearingDeg": 195.286,
      "paintBack": true,
      "stalls": [
@@ -4821,41 +5512,6 @@
        "index": 1,
        "kind": "general",
        "widthM": 1.9
-      },
-      {
-       "kind": "accessible",
-       "aisle": null,
-       "symbol": "wheelchair",
-       "estimatedFields": {
-        "symbolUp": {
-         "reason": "direction assumed towards the back, the symbol is about 1 m wide at 0.25 m per pixel"
-        }
-       },
-       "id": "LOT_E243835_N263905/R1/S2",
-       "index": 2,
-       "widthM": 0.8,
-       "paintSupport": 0.442
-      },
-      {
-       "id": "LOT_E243835_N263905/R1/S3",
-       "index": 3,
-       "kind": "accessible",
-       "widthM": 2.8,
-       "aisle": {
-        "side": "start",
-        "widthM": 1.3
-       },
-       "symbol": "wheelchair",
-       "upBearingDeg": 180.2,
-       "estimatedFields": {
-        "symbolUp": {
-         "reason": "direction read at 0.25 m per pixel on NGII or kept from the traced cell"
-        },
-        "aisleWidthM": {
-         "reason": "hatch width kept from the traced cell, the photo does not bound it to better than a pixel"
-        }
-       },
-       "paintSupport": 0.548
       }
      ],
      "evidence": {
@@ -4866,16 +5522,125 @@
        "seed: estimator on SD-C2-01: photo dividers 4/5 detected, 0 under the occlusion mask, theta 83 deg; site-detail SD-C2-01 (VR scene_c2 f): VR scene_c2 f (cols 300-900, rows 1300-1700): six stalls nose-in to ",
        "white cars cover the lines: only the blue fill and its edges are read, the other places repeat the 2.6 m pitch"
       ],
-      "photoSupport": 0.125
+      "photoSupport": 0
+     },
+     "estimatedDividers": [
+      0,
+      1,
+      2
+     ]
+    },
+    {
+     "id": "LOT_E243835_N263905/R3",
+     "divider": {
+      "style": "single",
+      "widthM": 0.12,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": {
+      "offsetFromBackM": 0.9,
+      "lengthM": 0.6,
+      "colour": "#d9b43a",
+      "every": 1
+     },
+     "estimated": true,
+     "backLine": {
+      "abs": [
+       [
+        243839.085,
+        263910.3
+       ],
+       [
+        243846.361,
+        263908.481
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 2.5,
+     "depthM": 4.25,
+     "count": 4,
+     "dividerBearingDeg": 195.286,
+     "paintBack": true,
+     "stalls": [],
+     "evidence": {
+      "tier": "T2",
+      "refs": [
+       "NGII 2025 peaks along the row axis (todo 14): 8 lines bounding 7 stalls, pitch 2.5 m; 8 of 8 open on the photo, 1 with paint contrast",
+       "depth 4.8 m via person, back rail painted",
+       "seed: estimator on SD-C2-01: photo dividers 4/5 detected, 0 under the occlusion mask, theta 83 deg; site-detail SD-C2-01 (VR scene_c2 f): VR scene_c2 f (cols 300-900, rows 1300-1700): six stalls nose-in to ",
+       "white cars cover the lines: only the blue fill and its edges are read, the other places repeat the 2.6 m pitch"
+      ],
+      "photoSupport": 0
      },
      "estimatedDividers": [
       0,
       1,
       2,
-      3,
-      4,
-      5,
-      6
+      3
+     ]
+    },
+    {
+     "id": "LOT_E243835_N263905/R2",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.61"
+      ],
+      "photoSupport": 0.641
+     },
+     "stalls": [
+      {
+       "id": "LOT_E243835_N263905/R2/S0",
+       "index": 0,
+       "kind": "accessible",
+       "widthM": 3.597,
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
+        }
+       },
+       "aisle": {
+        "side": "start",
+        "widthM": 1.2
+       },
+       "paintSupport": 0.641
+      }
+     ],
+     "backLine": {
+      "abs": [
+       [
+        243835.526,
+        263912.894
+       ],
+       [
+        243839.015,
+        263912.018
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 3.597,
+     "depthM": 4.913,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
+      1
      ]
     }
    ]
@@ -4900,29 +5665,22 @@
      "backLine": {
       "abs": [
        [
-        243840.227,
-        263483.584
+        243840.256,
+        263483.576
        ],
        [
-        243842.063,
-        263490.825
+        243842.694,
+        263493.192
        ]
       ]
      },
      "side": -1,
      "pitchM": 2.45,
-     "depthM": 4.5,
-     "count": 4,
+     "depthM": 4.47,
+     "count": 5,
      "dividerBearingDeg": 104.724,
      "paintBack": true,
-     "stalls": [
-      {
-       "id": "LOT_E243840_N263483/R1/S1",
-       "index": 1,
-       "kind": "general",
-       "widthM": 2.57
-      }
-     ],
+     "stalls": [],
      "evidence": {
       "tier": "T1",
       "refs": [
@@ -4930,9 +5688,11 @@
        "depth 4.5 m via back+run, back rail painted",
        "seed: photo dividers 2/2: MX00861 MX00861; back line MX00861"
       ],
-      "photoSupport": 1
+      "photoSupport": 0.8
      },
-     "estimatedDividers": [],
+     "estimatedDividers": [
+      4
+     ],
      "estimatedFields": {
       "depthM": {
        "reason": "paint reads 3.8 m, the far ends lie under crowns or a leaned roof: 4.5 m assumed"
@@ -4958,7 +5718,7 @@
      "entryFrom": "aisle",
      "wheelStops": {
       "offsetFromBackM": 0.9,
-      "lengthM": 1.6,
+      "lengthM": 0.6,
       "colour": "#2a2d30",
       "every": 1
      },
@@ -4970,15 +5730,15 @@
         263656.283
        ],
        [
-        243955.116,
-        263632.474
+        243952.905,
+        263633.03
        ]
       ]
      },
      "side": -1,
      "pitchM": 2.57,
      "depthM": 4.27,
-     "count": 39,
+     "count": 38,
      "dividerBearingDeg": 194.122,
      "paintBack": true,
      "paintFront": true,
@@ -4996,22 +5756,10 @@
        "widthM": 2.45
       },
       {
-       "id": "LOT_E243861_N263628/R1/S17",
-       "index": 17,
-       "kind": "general",
-       "widthM": 2.45
-      },
-      {
-       "id": "LOT_E243861_N263628/R1/S21",
-       "index": 21,
-       "kind": "general",
-       "widthM": 2.72
-      },
-      {
        "id": "LOT_E243861_N263628/R1/S23",
        "index": 23,
        "kind": "general",
-       "widthM": 2.25
+       "widthM": 2.28
       },
       {
        "id": "LOT_E243861_N263628/R1/S28",
@@ -5030,12 +5778,6 @@
        "index": 36,
        "kind": "general",
        "widthM": 2.71
-      },
-      {
-       "id": "LOT_E243861_N263628/R1/S37",
-       "index": 37,
-       "kind": "general",
-       "widthM": 2.28
       }
      ],
      "evidence": {
@@ -5044,81 +5786,81 @@
        "NGII 2025 peaks along the row axis (todo 14): 39 lines bounding 38 stalls, pitch 2.57 m; 26 of 39 open on the photo, 25 with paint contrast",
        "depth 4.27 m via rails, back rail painted, front rail painted",
        "seed: photo dividers 34/37: MX01704 MX01703 MX01703 MX01703 MX01703 MX01703 MX01703 MX01703 MX01703 MX01703 MX01703 MX01703 MX01703 MX01703 MX01703 MX01703 MX01703 MX01703 MX01703 MX01703 MX01703 MX01703 MX",
-       "the row runs the whole 97 m of the street"
+       "the row runs the whole 97 m of the street",
+       "its last stall was the blue bay R4"
       ],
-      "photoSupport": 0.962
+      "photoSupport": 0.96
      },
      "estimatedDividers": [
       20
      ],
      "estimatedFields": {
       "wheelStops": {
-       "reason": "from site-detail SD-A5-W1 (VR scene_a5 f): VR scene_a5 f (cols 1280-1780, rows 1790-2040): black wheel stops at the; placed one per drawn stall, offset and length not read on the photo"
+       "reason": "from site-detail SD-A5-W1 (VR scene_a5 f): VR scene_a5 f (cols 1280-1780, rows 1790-2040): black wheel stops at the; placed one per drawn stall, offset and length not read on the photo; length about 0.6 m by pixel ratio on VR scene_a5 f"
       }
      }
     },
     {
      "id": "LOT_E243861_N263628/R4",
-     "backLine": {
-      "abs": [
-       [
-        243952.07,
-        263628.427
-       ],
-       [
-        243955.99,
-        263628.407
-       ]
-      ]
-     },
-     "side": 1,
-     "pitchM": 3.92,
-     "depthM": 4.5,
-     "startOffsetM": 0,
-     "count": 2,
      "divider": {
       "style": "single",
       "widthM": 0.1,
       "colour": "white"
      },
      "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.58",
+       "blue MX00774 cell 0: NGII 4x chip and VR scene_a5 face d: last bay of an east-west stall row, aisle north, trees south"
+      ],
+      "photoSupport": null
+     },
      "stalls": [
       {
        "id": "LOT_E243861_N263628/R4/S0",
        "index": 0,
        "kind": "accessible",
-       "widthM": 3.92,
+       "widthM": 3.51,
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
+        }
+       },
        "aisle": {
         "side": "end",
         "widthM": 1.2
-       },
-       "symbol": "wheelchair",
-       "upBearingDeg": 180.2,
-       "estimatedFields": {
-        "symbolUp": {
-         "reason": "direction kept from the traced cell, read at 0.25 m per pixel on NGII"
-        },
-        "aisleWidthM": {
-         "reason": "kept from the traced cell"
-        }
        },
        "paintSupport": null,
        "estimated": true
       }
      ],
-     "wheelStops": null,
-     "entryFrom": "aisle",
-     "evidence": {
-      "tier": "T2",
-      "refs": [
-       "blue MX00774 cell 0: NGII 4x chip and VR scene_a5 face d: last bay of an east-west stall row, aisle north, trees south",
-       "accessible stall 0: hidden on the photo",
-       "not T1: its fills are hidden on the photo",
-       "todo 14: blue bay at the east end, seed record lies on it"
-      ],
-      "photoSupport": null
+     "backLine": {
+      "abs": [
+       [
+        243952.759,
+        263633.043
+       ],
+       [
+        243956.126,
+        263632.05
+       ]
+      ]
      },
-     "estimated": true
+     "side": -1,
+     "pitchM": 3.51,
+     "depthM": 4.199,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
+      1
+     ]
     },
     {
      "id": "LOT_E243861_N263628/R2",
@@ -5135,18 +5877,18 @@
      "backLine": {
       "abs": [
        [
-        243866.88,
-        263662.007
+        243866.957,
+        263662.318
        ],
        [
-        243895.641,
-        263654.885
+        243895.718,
+        263655.196
        ]
       ]
      },
      "side": -1,
      "pitchM": 6.02,
-     "depthM": 2.2,
+     "depthM": 2.02,
      "count": 6,
      "dividerBearingDeg": 193.908,
      "paintBack": true,
@@ -5209,19 +5951,19 @@
      "backLine": {
       "abs": [
        [
-        243899.013,
-        263653.726
+        243899.099,
+        263653.992
        ],
        [
-        243910.55,
-        263649.979
+        243916.409,
+        263648.37
        ]
       ]
      },
      "side": -1,
-     "pitchM": 6.065,
-     "depthM": 2.2,
-     "count": 3,
+     "pitchM": 6.07,
+     "depthM": 2.48,
+     "count": 4,
      "dividerBearingDeg": 197.991,
      "paintBack": true,
      "paintFront": true,
@@ -5237,6 +5979,12 @@
        "id": "LOT_E243861_N263628/R5/S1",
        "index": 1,
        "widthM": 6.1
+      },
+      {
+       "id": "LOT_E243861_N263628/R5/S2",
+       "index": 2,
+       "kind": "parallel",
+       "widthM": 6.07
       }
      ],
      "evidence": {
@@ -5246,10 +5994,11 @@
        "depth 2.2 m via person, back rail painted, front rail painted",
        "gate review item: parallel bays about 6 m long along the north kerb"
       ],
-      "photoSupport": 0.667
+      "photoSupport": 0.75
      },
      "estimatedDividers": [
-      2
+      2,
+      3
      ]
     },
     {
@@ -5319,18 +6068,18 @@
      "backLine": {
       "abs": [
        [
-        243943.826,
-        263642.573
+        243944.071,
+        263643.303
        ],
        [
-        243953.683,
-        263639.257
+        243953.928,
+        263639.987
        ]
       ]
      },
      "side": -1,
      "pitchM": 5.2,
-     "depthM": 2.2,
+     "depthM": 2.27,
      "count": 3,
      "dividerBearingDeg": 198.591,
      "paintBack": true,
@@ -5356,7 +6105,7 @@
        "depth 2.2 m via person, back rail painted, front rail painted",
        "gate review item: parallel bays about 6 m long along the north kerb"
       ],
-      "photoSupport": 0.667
+      "photoSupport": 0.5
      },
      "estimatedDividers": [
       2
@@ -5408,18 +6157,18 @@
      "backLine": {
       "abs": [
        [
-        243874.268,
-        263903.748
+        243874.081,
+        263904.044
        ],
        [
-        243878.694,
-        263915.951
+        243878.507,
+        263916.247
        ]
       ]
      },
      "side": -1,
      "pitchM": 3.245,
-     "depthM": 6,
+     "depthM": 6.75,
      "count": 5,
      "dividerBearingDeg": 147.75,
      "paintBack": true,
@@ -5451,58 +6200,35 @@
      "backLine": {
       "abs": [
        [
-        243885.07,
-        263907.68
+        243885.514,
+        263909.373
        ],
        [
-        243882.071,
-        263896.246
+        243882.069,
+        263896.237
        ]
       ]
      },
      "side": 1,
-     "pitchM": 2.945,
-     "depthM": 7,
+     "pitchM": 3.39,
+     "depthM": 7.03,
      "count": 5,
      "dividerBearingDeg": 64.447,
      "paintBack": true,
      "paintFront": true,
-     "stalls": [
-      {
-       "id": "LOT_E243873_N263898/R2/S0",
-       "index": 0,
-       "kind": "general",
-       "widthM": 2.54
-      },
-      {
-       "id": "LOT_E243873_N263898/R2/S1",
-       "index": 1,
-       "kind": "general",
-       "widthM": 2.53
-      },
-      {
-       "id": "LOT_E243873_N263898/R2/S2",
-       "index": 2,
-       "kind": "general",
-       "widthM": 3.35
-      },
-      {
-       "id": "LOT_E243873_N263898/R2/S3",
-       "index": 3,
-       "kind": "general",
-       "widthM": 3.4
-      }
-     ],
+     "stalls": [],
      "evidence": {
       "tier": "T1",
       "refs": [
        "NGII 2025 peaks along the row axis (todo 14): 5 lines bounding 4 stalls, pitch 2.945 m; 5 of 5 open on the photo, 4 with paint contrast",
        "depth 7 m via rails, back rail painted, front rail painted",
-       "ladder in shade, not in the seed"
+       "ladder in shade, not in the seed",
+       "review B5: the old places at 2.5 m lay on parked cars; the ladder has a 3.38 m pitch, the north place repeats it under a car"
       ],
-      "photoSupport": 0.8
+      "photoSupport": 0.6
      },
      "estimatedDividers": [
+      0,
       1
      ]
     }
@@ -5513,7 +6239,7 @@
    "parcel": "PARCEL_SUPPORT_LOT_243876_263482",
    "curated": "todo 14",
    "estimated": true,
-   "estimatedReason": "the occlusion mask hides every line here (building shade or crowns), so the comparison has nothing to score: read on the photo with the shade lifted",
+   "estimatedReason": "an edge of a painted road box, kept as a line, not parking",
    "rows": [],
    "lines": [
     {
@@ -5588,8 +6314,8 @@
         263695.774
        ],
        [
-        243913.156,
-        263689.934
+        243913.621,
+        263689.816
        ]
       ]
      },
@@ -5611,22 +6337,18 @@
        "id": "LOT_E243882_N263685/R1/S8",
        "index": 8,
        "kind": "accessible",
-       "widthM": 3.15,
-       "aisle": {
-        "side": "end",
-        "widthM": 1
-       },
+       "widthM": 3.54,
        "symbol": "wheelchair",
-       "upBearingDeg": 196.3,
        "estimatedFields": {
         "symbolUp": {
-         "reason": "direction read at 0.25 m per pixel on NGII or kept from the traced cell"
-        },
-        "aisleWidthM": {
-         "reason": "hatch width kept from the traced cell, the photo does not bound it to better than a pixel"
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
         }
        },
-       "paintSupport": 0.743
+       "aisle": {
+        "side": "end",
+        "widthM": 1.3
+       },
+       "paintSupport": 0.683
       }
      ],
      "evidence": {
@@ -5662,18 +6384,18 @@
      "backLine": {
       "abs": [
        [
-        243886.958,
-        263503.338
+        243886.966,
+        263503.367
        ],
        [
-        243906.341,
-        263498.287
+        243906.349,
+        263498.316
        ]
       ]
      },
      "side": -1,
      "pitchM": 2.49,
-     "depthM": 4.5,
+     "depthM": 4.53,
      "count": 9,
      "dividerBearingDeg": 194.604,
      "paintBack": true,
@@ -5813,7 +6535,7 @@
    "parcel": "PARCEL_ASPHALT_ROAD_ZONE_93",
    "curated": "todo 14",
    "estimated": true,
-   "estimatedReason": "the occlusion mask hides every line here (building shade or crowns), so the comparison has nothing to score: read on the photo with the shade lifted",
+   "estimatedReason": "the VR row of the seed, no paint seen: T2 under shade and crowns",
    "rows": [
     {
      "id": "LOT_E243906_N263543/R1",
@@ -5910,7 +6632,7 @@
      "entryFrom": "aisle",
      "wheelStops": {
       "offsetFromBackM": 3.97,
-      "lengthM": 1.6,
+      "lengthM": 0.6,
       "colour": "#d9b43a",
       "every": 1
      },
@@ -5918,12 +6640,12 @@
      "backLine": {
       "abs": [
        [
-        243926.465,
-        263695.795
+        243926.224,
+        263694.756
        ],
        [
-        243932.834,
-        263723.215
+        243932.829,
+        263723.193
        ]
       ]
      },
@@ -5939,50 +6661,47 @@
        "id": "LOT_E243922_N263696/R1/S0",
        "index": 0,
        "kind": "accessible",
-       "widthM": 2.38,
-       "aisle": {
-        "side": "start",
-        "widthM": 1,
-        "outside": true
-       },
+       "widthM": 3.24,
        "symbol": "wheelchair",
-       "upBearingDeg": 283,
        "estimatedFields": {
         "symbolUp": {
-         "reason": "direction read at 0.25 m per pixel on NGII or kept from the traced cell"
-        },
-        "aisleWidthM": {
-         "reason": "hatch width kept from the traced cell, the photo does not bound it to better than a pixel"
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
         }
        },
-       "paintSupport": 0.696
+       "aisle": {
+        "side": "start",
+        "widthM": 1.3
+       },
+       "paintSupport": 0.571
+      },
+      {
+       "id": "LOT_E243922_N263696/R1/S1",
+       "index": 1,
+       "kind": "general",
+       "widthM": 2.706
       },
       {
        "id": "LOT_E243922_N263696/R1/S9",
        "index": 9,
        "kind": "general",
-       "widthM": 3.47
+       "widthM": 2.308
       },
       {
        "id": "LOT_E243922_N263696/R1/S10",
        "index": 10,
        "kind": "accessible",
-       "widthM": 2.3,
-       "aisle": {
-        "side": "start",
-        "widthM": 1
-       },
+       "widthM": 3.44,
        "symbol": "wheelchair",
-       "upBearingDeg": 284.3,
        "estimatedFields": {
         "symbolUp": {
-         "reason": "direction read at 0.25 m per pixel on NGII or kept from the traced cell"
-        },
-        "aisleWidthM": {
-         "reason": "hatch width kept from the traced cell, the photo does not bound it to better than a pixel"
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
         }
        },
-       "paintSupport": 0.81
+       "aisle": {
+        "side": "start",
+        "widthM": 1.2
+       },
+       "paintSupport": 0.669
       }
      ],
      "evidence": {
@@ -5998,7 +6717,7 @@
      "estimatedDividers": [],
      "estimatedFields": {
       "wheelStops": {
-       "reason": "from site-detail SD-A1-W1 (VR scene_a1 r): VR scene_a1 r: yellow-black wheel stops 0.9 m out from the kerb in every; placed one per drawn stall, offset and length not read on the photo"
+       "reason": "from site-detail SD-A1-W1 (VR scene_a1 r): VR scene_a1 r: yellow-black wheel stops 0.9 m out from the kerb in every; placed one per drawn stall, offset and length not read on the photo; length about 0.6 m by pixel ratio on VR scene_a5 f"
       }
      }
     },
@@ -6014,7 +6733,7 @@
      "entryFrom": "aisle",
      "wheelStops": {
       "offsetFromBackM": 3.75,
-      "lengthM": 1.6,
+      "lengthM": 0.6,
       "colour": "#d9b43a",
       "every": 1
      },
@@ -6022,12 +6741,12 @@
      "backLine": {
       "abs": [
        [
-        243934.519,
-        263730.011
+        243934.256,
+        263728.832
        ],
        [
-        243939.396,
-        263751.843
+        243939.403,
+        263751.872
        ]
       ]
      },
@@ -6043,28 +6762,18 @@
        "id": "LOT_E243922_N263696/R3/S0",
        "index": 0,
        "kind": "accessible",
-       "widthM": 2.27,
-       "aisle": {
-        "side": "start",
-        "widthM": 1
-       },
+       "widthM": 3.54,
        "symbol": "wheelchair",
-       "upBearingDeg": 103,
        "estimatedFields": {
         "symbolUp": {
-         "reason": "direction read at 0.25 m per pixel on NGII or kept from the traced cell"
-        },
-        "aisleWidthM": {
-         "reason": "hatch width kept from the traced cell, the photo does not bound it to better than a pixel"
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
         }
        },
-       "paintSupport": 0.83
-      },
-      {
-       "id": "LOT_E243922_N263696/R3/S3",
-       "index": 3,
-       "kind": "general",
-       "widthM": 2.63
+       "aisle": {
+        "side": "start",
+        "widthM": 1.3
+       },
+       "paintSupport": 0.66
       }
      ],
      "evidence": {
@@ -6079,7 +6788,7 @@
      "estimatedDividers": [],
      "estimatedFields": {
       "wheelStops": {
-       "reason": "from site-detail SD-A1-W1 (VR scene_a1 r): VR scene_a1 r: yellow-black wheel stops 0.9 m out from the kerb in every; placed one per drawn stall, offset and length not read on the photo"
+       "reason": "from site-detail SD-A1-W1 (VR scene_a1 r): VR scene_a1 r: yellow-black wheel stops 0.9 m out from the kerb in every; placed one per drawn stall, offset and length not read on the photo; length about 0.6 m by pixel ratio on VR scene_a5 f"
       }
      }
     }
@@ -6146,7 +6855,7 @@
      },
      "side": -1,
      "pitchM": 2.4,
-     "depthM": 4.5,
+     "depthM": 4.38,
      "count": 6,
      "dividerBearingDeg": 168.809,
      "paintBack": true,
@@ -6176,11 +6885,7 @@
      "estimatedDividers": [
       3
      ],
-     "estimatedFields": {
-      "depthM": {
-       "reason": "paint reads 3.9 m, the far ends lie under crowns or a leaned roof: 4.5 m assumed"
-      }
-     }
+     "paintFront": true
     }
    ],
    "lines": [
@@ -6259,57 +6964,60 @@
    "rows": [
     {
      "id": "LOT_E243948_N263834/R1",
-     "backLine": {
-      "abs": [
-       [
-        243948.091,
-        263836.299
-       ],
-       [
-        243950.655,
-        263835.81
-       ]
-      ]
-     },
-     "side": 1,
-     "pitchM": 2.61,
-     "depthM": 4.17,
-     "startOffsetM": 0,
-     "count": 2,
      "divider": {
       "style": "single",
       "widthM": 0.1,
       "colour": "white"
      },
      "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.68",
+       "blue MX01323 cell 0"
+      ],
+      "photoSupport": 0.69
+     },
      "stalls": [
       {
        "id": "LOT_E243948_N263834/R1/S0",
        "index": 0,
        "kind": "accessible",
-       "widthM": 2.61,
-       "aisle": null,
+       "widthM": 3.181,
        "symbol": "wheelchair",
-       "upBearingDeg": 190.8,
        "estimatedFields": {
         "symbolUp": {
-         "reason": "direction kept from the traced cell, read at 0.25 m per pixel on NGII"
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
         }
        },
-       "paintSupport": 0.779
+       "paintSupport": 0.69
       }
      ],
-     "wheelStops": null,
-     "entryFrom": "aisle",
-     "evidence": {
-      "tier": "T1",
-      "refs": [
-       "blue MX01323 cell 0",
-       "todo 14: blue bay at the row end, seed record lies on it"
-      ],
-      "photoSupport": 0.779
+     "backLine": {
+      "abs": [
+       [
+        243948.71,
+        263840.363
+       ],
+       [
+        243951.836,
+        263839.776
+       ]
+      ]
      },
-     "estimated": false
+     "side": -1,
+     "pitchM": 3.181,
+     "depthM": 4.33,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
+      1
+     ]
     },
     {
      "id": "LOT_E243948_N263834/R2",
@@ -6364,7 +7072,7 @@
   },
   {
    "id": "LOT_E243952_N263677",
-   "parcel": "PARCEL_LOT_SUPPLEMENT_PARKING_2_BAYS_SOUTH_OF_THE_ACCESS_RO",
+   "parcel": "PARCEL_LOT_E243952_N263677_R1",
    "curated": "todo 14",
    "rows": [
     {
@@ -6379,7 +7087,7 @@
      "entryFrom": "aisle",
      "wheelStops": {
       "offsetFromBackM": 0.9,
-      "lengthM": 1.6,
+      "lengthM": 0.6,
       "colour": "#2a2d30",
       "every": 1
      },
@@ -6423,13 +7131,11 @@
       1
      ],
      "estimatedFields": {
-      "depthM": {
-       "reason": "read from the ends of the painted dividers on NGII (0.25 m per pixel), back rail painted, no front rail"
-      },
       "wheelStops": {
-       "reason": "from the VR reading of the seed (site-detail): the photo does not read their length or offset"
+       "reason": "from the VR reading of the seed (site-detail): the photo does not read their length or offset; length about 0.6 m by pixel ratio on VR scene_a5 f"
       }
-     }
+     },
+     "paintFront": true
     },
     {
      "id": "LOT_E243952_N263677/R2",
@@ -6446,18 +7152,18 @@
      "backLine": {
       "abs": [
        [
-        243954.218,
-        263697.392
+        243954.34,
+        263697.825
        ],
        [
-        243976.31,
-        263691.173
+        243976.432,
+        263691.606
        ]
       ]
      },
      "side": -1,
      "pitchM": 5.985,
-     "depthM": 2.2,
+     "depthM": 2.07,
      "count": 5,
      "dividerBearingDeg": 195.721,
      "paintBack": true,
@@ -6495,7 +7201,7 @@
        "depth 2.2 m via person, back rail painted, front rail painted",
        "parallel bays by the kerb, not in the seed; were free lines"
       ],
-      "photoSupport": 0.8
+      "photoSupport": 1
      },
      "estimatedDividers": [
       4
@@ -6580,63 +7286,64 @@
    "rows": [
     {
      "id": "LOT_E243974_N263829/R1",
-     "backLine": {
-      "abs": [
-       [
-        243973.901,
-        263828.593
-       ],
-       [
-        243978.071,
-        263828.571
-       ]
-      ]
-     },
-     "side": 1,
-     "pitchM": 4.17,
-     "depthM": 5.42,
-     "startOffsetM": 0,
-     "count": 2,
      "divider": {
       "style": "single",
       "widthM": 0.1,
       "colour": "white"
      },
      "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.60",
+       "blue MX00338 cell 0"
+      ],
+      "photoSupport": 0.615
+     },
      "stalls": [
       {
        "id": "LOT_E243974_N263829/R1/S0",
        "index": 0,
        "kind": "accessible",
-       "widthM": 4.17,
-       "aisle": {
-        "side": "end",
-        "widthM": 1.3
-       },
+       "widthM": 3.349,
        "symbol": "wheelchair",
-       "upBearingDeg": 180.2,
        "estimatedFields": {
         "symbolUp": {
-         "reason": "direction kept from the traced cell, read at 0.25 m per pixel on NGII"
-        },
-        "aisleWidthM": {
-         "reason": "kept from the traced cell"
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
         }
        },
-       "paintSupport": 0.432
+       "aisle": {
+        "side": "end",
+        "widthM": 1.2
+       },
+       "paintSupport": 0.615
       }
      ],
-     "wheelStops": null,
-     "entryFrom": "aisle",
-     "evidence": {
-      "tier": "T1",
-      "refs": [
-       "blue MX00338 cell 0",
-       "todo 14: blue bay at the row end, seed record lies on it"
-      ],
-      "photoSupport": 0.432
+     "backLine": {
+      "abs": [
+       [
+        243974.872,
+        263833.838
+       ],
+       [
+        243978.172,
+        263833.263
+       ]
+      ]
      },
-     "estimated": false
+     "side": -1,
+     "pitchM": 3.349,
+     "depthM": 4.58,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
+      1
+     ]
     }
    ]
   },
@@ -6793,61 +7500,69 @@
    "parcel": "PARCEL_LOT_E243992_N264038_R1",
    "curated": "todo 14",
    "estimated": true,
-   "estimatedReason": "blue bay beside dark cars: hatch and car edges beside its lines",
+   "estimatedReason": "a black car stands against the bay: its near line and hatch read, the far line is under the car",
    "rows": [
     {
      "id": "LOT_E243992_N264038/R1",
-     "backLine": {
-      "abs": [
-       [
-        243991.678,
-        264040.365
-       ],
-       [
-        243994.729,
-        264038.083
-       ]
-      ]
-     },
-     "side": 1,
-     "pitchM": 3.81,
-     "depthM": 4.62,
-     "startOffsetM": 0,
-     "count": 2,
      "divider": {
       "style": "single",
       "widthM": 0.1,
       "colour": "white"
      },
      "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.65",
+       "blue MX01287 cell 0: NGII 4x chip: open end to the asphalt in the north-east, back to the paving in the south-west"
+      ],
+      "photoSupport": 0.66
+     },
      "stalls": [
       {
        "id": "LOT_E243992_N264038/R1/S0",
        "index": 0,
        "kind": "accessible",
-       "widthM": 3.81,
-       "aisle": null,
+       "widthM": 4.135,
        "symbol": "wheelchair",
-       "upBearingDeg": 216.8,
        "estimatedFields": {
         "symbolUp": {
-         "reason": "direction kept from the traced cell, read at 0.25 m per pixel on NGII"
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
         }
        },
-       "paintSupport": 0.727
+       "aisle": {
+        "side": "front",
+        "widthM": 0.9
+       },
+       "paintSupport": 0.66
       }
      ],
-     "wheelStops": null,
-     "entryFrom": "aisle",
-     "evidence": {
-      "tier": "T1",
-      "refs": [
-       "blue MX01287 cell 0: NGII 4x chip: open end to the asphalt in the north-east, back to the paving in the south-west",
-       "todo 14: blue bay beside the dark cars, seed record lies on it"
-      ],
-      "photoSupport": 0.727
+     "backLine": {
+      "abs": [
+       [
+        243994.002,
+        264044.169
+       ],
+       [
+        243997.494,
+        264041.953
+       ]
+      ]
      },
-     "estimated": false
+     "side": -1,
+     "pitchM": 4.135,
+     "depthM": 5.005,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
+      0,
+      1
+     ]
     }
    ]
   },
@@ -6856,7 +7571,7 @@
    "parcel": "PARCEL_ASPHALT_ROAD_ZONE_68",
    "curated": "todo 14",
    "estimated": true,
-   "estimatedReason": "the occlusion mask hides every line here (building shade or crowns), so the comparison has nothing to score: read on the photo with the shade lifted",
+   "estimatedReason": "two path edge lines under crowns, kept as lines, not parking",
    "rows": [],
    "lines": [
     {
@@ -6927,18 +7642,18 @@
      "backLine": {
       "abs": [
        [
-        244002.242,
-        263867.936
+        244002.171,
+        263867.665
        ],
        [
-        244018.663,
-        263863.615
+        244018.592,
+        263863.344
        ]
       ]
      },
      "side": -1,
      "pitchM": 5.53,
-     "depthM": 2.2,
+     "depthM": 1.94,
      "count": 4,
      "dividerBearingDeg": 194.744,
      "paintBack": true,
@@ -7007,7 +7722,7 @@
      },
      "side": -1,
      "pitchM": 2.6,
-     "depthM": 4.72,
+     "depthM": 4.7,
      "count": 11,
      "dividerBearingDeg": 195.042,
      "paintBack": true,
@@ -7055,7 +7770,7 @@
      },
      "side": 1,
      "pitchM": 2.58,
-     "depthM": 4.43,
+     "depthM": 4.46,
      "count": 14,
      "dividerBearingDeg": 284.855,
      "paintBack": true,
@@ -7143,7 +7858,7 @@
      },
      "side": -1,
      "pitchM": 2.57,
-     "depthM": 4.47,
+     "depthM": 4.45,
      "count": 10,
      "dividerBearingDeg": 106,
      "paintBack": true,
@@ -7175,36 +7890,46 @@
      "backLine": {
       "abs": [
        [
-        244042.475,
-        263892.216
+        244042.488,
+        263892.264
        ],
        [
-        244059.991,
-        263887.274
+        244067.636,
+        263885.169
        ]
       ]
      },
      "side": 1,
      "pitchM": 2.6,
-     "depthM": 4.63,
-     "count": 8,
+     "depthM": 4.58,
+     "count": 11,
      "dividerBearingDeg": 15.255,
      "paintBack": true,
      "paintFront": true,
-     "stalls": [],
+     "stalls": [
+      {
+       "id": "LOT_E244011_N263891/R5/S9",
+       "index": 9,
+       "kind": "general",
+       "widthM": 2.73
+      }
+     ],
      "evidence": {
       "tier": "T1",
       "refs": [
        "NGII 2025 peaks along the row axis (todo 14): 8 lines bounding 7 stalls, pitch 2.6 m; 8 of 8 open on the photo, 6 with paint contrast",
        "depth 4.63 m via rails, back rail painted, front rail painted",
        "seed: photo dividers 3/3: MK01401 MK01401 MK01401; front line MK01401",
-       "cars stand on the lines past stall 2; the row runs on at the 2.6 m pitch"
+       "cars stand on the lines past stall 2; the row runs on at the 2.6 m pitch",
+       "todo 14 review B1: white and dark cars stand on the places at 20.8 and 23.4 m up to the blue bays"
       ],
-      "photoSupport": 0.75
+      "photoSupport": 0.636
      },
      "estimatedDividers": [
       3,
-      4
+      4,
+      8,
+      9
      ]
     },
     {
@@ -7326,7 +8051,7 @@
      },
      "side": -1,
      "pitchM": 2.57,
-     "depthM": 4.51,
+     "depthM": 4.48,
      "count": 6,
      "dividerBearingDeg": 104.515,
      "paintBack": true,
@@ -7362,15 +8087,15 @@
         263953.132
        ],
        [
-        244068.831,
-        263928.152
+        244068.169,
+        263925.638
        ]
       ]
      },
      "side": -1,
      "pitchM": 2.585,
      "depthM": 4.99,
-     "count": 11,
+     "count": 12,
      "dividerBearingDeg": 284.991,
      "paintBack": true,
      "paintFront": true,
@@ -7381,7 +8106,7 @@
        "NGII 2025 peaks along the row axis (todo 14): 11 lines bounding 10 stalls, pitch 2.585 m; 11 of 11 open on the photo, 10 with paint contrast",
        "depth 4.99 m via rails, back rail painted, front rail painted"
       ],
-      "photoSupport": 0.909
+      "photoSupport": 0.917
      },
      "estimatedDividers": [
       0
@@ -7413,7 +8138,7 @@
      },
      "side": -1,
      "pitchM": 2.57,
-     "depthM": 5,
+     "depthM": 5.03,
      "count": 9,
      "dividerBearingDeg": 284.212,
      "paintBack": true,
@@ -7444,18 +8169,18 @@
      "backLine": {
       "abs": [
        [
-        244051.458,
-        263925.061
+        244051.429,
+        263925.068
        ],
        [
-        244046.238,
-        263905.112
+        244046.209,
+        263905.119
        ]
       ]
      },
      "side": -1,
      "pitchM": 2.585,
-     "depthM": 4.49,
+     "depthM": 4.46,
      "count": 9,
      "dividerBearingDeg": 283.915,
      "paintBack": true,
@@ -7486,18 +8211,18 @@
      "backLine": {
       "abs": [
        [
-        244079.753,
-        263929.126
+        244080.062,
+        263929.042
        ],
        [
-        244078.235,
-        263924.573
+        244078.544,
+        263924.489
        ]
       ]
      },
      "side": -1,
      "pitchM": 2.4,
-     "depthM": 4.255,
+     "depthM": 4.655,
      "count": 3,
      "dividerBearingDeg": 285.185,
      "paintFront": true,
@@ -7511,11 +8236,7 @@
       "photoSupport": 1
      },
      "estimatedDividers": [],
-     "estimatedFields": {
-      "depthM": {
-       "reason": "read from the ends of the painted dividers on NGII (0.25 m per pixel), front rail painted, no back rail"
-      }
-     }
+     "paintBack": true
     }
    ]
   },
@@ -7684,40 +8405,30 @@
         263829.321
        ],
        [
-        244071.325,
-        263826.032
+        244069.034,
+        263826.639
        ]
       ]
      },
      "side": -1,
      "pitchM": 2.62,
-     "depthM": 4.6,
-     "count": 6,
+     "depthM": 4.68,
+     "count": 5,
      "dividerBearingDeg": 194.832,
      "paintBack": true,
-     "stalls": [
-      {
-       "id": "LOT_E244058_N263822/R1/S4",
-       "index": 4,
-       "kind": "general",
-       "widthM": 2.37
-      }
-     ],
+     "stalls": [],
      "evidence": {
       "tier": "T1",
       "refs": [
        "NGII 2025 peaks along the row axis (todo 14): 6 lines bounding 5 stalls, pitch 2.62 m; 5 of 6 open on the photo, 5 with paint contrast",
        "depth 4.6 m via back+run, back rail painted",
-       "seed: photo dividers 4/4: MK01411 MK01411 MK01411 MK01411; back line MK01411"
+       "seed: photo dividers 4/4: MK01411 MK01411 MK01411 MK01411; back line MK01411",
+       "its last stall was the blue bay R3"
       ],
       "photoSupport": 1
      },
      "estimatedDividers": [],
-     "estimatedFields": {
-      "depthM": {
-       "reason": "read from the ends of the painted dividers on NGII (0.25 m per pixel), back rail painted, no front rail"
-      }
-     }
+     "paintFront": true
     },
     {
      "id": "LOT_E244058_N263822/R2",
@@ -7748,76 +8459,77 @@
      "wheelStops": null,
      "entryFrom": "aisle",
      "evidence": {
-      "tier": "T1",
+      "tier": "T2",
       "refs": [
        "photo dividers 2/2: MX01008 MX01008",
-       "todo 14: long narrow strip by the path, seed record lies on it; no divider read inside it"
+       "todo 14: long narrow strip by the path, seed record lies on it; no divider read inside it",
+       "a strip 2.1 m by 6-7 m beside the path: not settled as a bay"
       ],
       "photoSupport": 1
      },
-     "estimated": false,
+     "estimated": true,
      "estimatedDividers": [
       0
-     ],
-     "estimatedFields": {
-      "depthM": {
-       "reason": "kept from the seed: read from the ends of the painted dividers, no pair of rails bounds it"
-      }
-     }
+     ]
     },
     {
      "id": "LOT_E244058_N263822/R3",
-     "backLine": {
-      "abs": [
-       [
-        244068.031,
-        263822.272
-       ],
-       [
-        244070.825,
-        263821.534
-       ]
-      ]
-     },
-     "side": 1,
-     "pitchM": 2.89,
-     "depthM": 4.35,
-     "startOffsetM": 0,
-     "count": 2,
      "divider": {
       "style": "single",
       "widthM": 0.1,
       "colour": "white"
      },
      "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.69",
+       "blue MX01327 cell 0"
+      ],
+      "photoSupport": 0.655
+     },
      "stalls": [
       {
        "id": "LOT_E244058_N263822/R3/S0",
        "index": 0,
        "kind": "accessible",
-       "widthM": 2.89,
-       "aisle": null,
+       "widthM": 3.403,
        "symbol": "wheelchair",
-       "upBearingDeg": 194.8,
        "estimatedFields": {
         "symbolUp": {
-         "reason": "direction kept from the traced cell, read at 0.25 m per pixel on NGII"
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
         }
        },
-       "paintSupport": 0.742
+       "aisle": {
+        "side": "end",
+        "widthM": 1.2
+       },
+       "paintSupport": 0.655
       }
      ],
-     "wheelStops": null,
-     "entryFrom": "aisle",
-     "evidence": {
-      "tier": "T1",
-      "refs": [
-       "blue MX01327 cell 0",
-       "todo 14: blue bay at the row end, seed record lies on it"
-      ],
-      "photoSupport": 0.742
+     "backLine": {
+      "abs": [
+       [
+        244069.066,
+        263826.625
+       ],
+       [
+        244072.358,
+        263825.764
+       ]
+      ]
      },
-     "estimated": false
+     "side": -1,
+     "pitchM": 3.403,
+     "depthM": 4.644,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": []
     },
     {
      "id": "LOT_E244058_N263822/R4",
@@ -7881,19 +8593,19 @@
      "backLine": {
       "abs": [
        [
-        244086.816,
-        263859.014
+        244086.823,
+        263859.043
        ],
        [
-        244109.52,
-        263853.226
+        244129.74,
+        263848.102
        ]
       ]
      },
      "side": 1,
      "pitchM": 2.61,
-     "depthM": 4.5,
-     "count": 10,
+     "depthM": 4.47,
+     "count": 18,
      "dividerBearingDeg": 13.25,
      "paintBack": true,
      "stalls": [
@@ -7916,68 +8628,25 @@
        "NGII 2025 peaks along the row axis (todo 14): 10 lines bounding 9 stalls, pitch 2.61 m; 5 of 10 open on the photo, 4 with paint contrast",
        "depth 4.5 m via back+run, back rail painted",
        "seed: photo dividers 8/8: MX01619 MX01619 MX01619 MX01619 MX01619 MX01619 MX01619 MX01619; back line MX01619",
-       "gate review item: parked white cars split this run, rail and dividers restored"
+       "gate review item: parked white cars split this run, rail and dividers restored",
+       "todo 14 gate review item: back rail unbroken past the old end, parked cars and a crown on the places flagged; joined with what was E244121/R2"
       ],
-      "photoSupport": 0.8
+      "photoSupport": 0.5
      },
      "estimatedDividers": [
-      0
+      0,
+      10,
+      11,
+      12,
+      13,
+      15,
+      16
      ],
      "estimatedFields": {
       "depthM": {
        "reason": "paint reads 3.2 m, the far ends lie under crowns or a leaned roof: 4.5 m assumed"
       }
      }
-    },
-    {
-     "id": "LOT_E244058_N263822/R6",
-     "divider": {
-      "style": "single",
-      "widthM": 0.1,
-      "colour": "white"
-     },
-     "endCaps": true,
-     "startOffsetM": 0,
-     "entryFrom": "aisle",
-     "wheelStops": null,
-     "estimated": false,
-     "backLine": {
-      "abs": [
-       [
-        244100.361,
-        263845.16
-       ],
-       [
-        244111.158,
-        263842.807
-       ]
-      ]
-     },
-     "side": -1,
-     "pitchM": 2.6,
-     "depthM": 4.93,
-     "count": 5,
-     "dividerBearingDeg": 194.295,
-     "paintBack": true,
-     "paintFront": true,
-     "stalls": [
-      {
-       "id": "LOT_E244058_N263822/R6/S1",
-       "index": 1,
-       "kind": "general",
-       "widthM": 3.25
-      }
-     ],
-     "evidence": {
-      "tier": "T1",
-      "refs": [
-       "NGII 2025 peaks along the row axis (todo 14): 5 lines bounding 4 stalls, pitch 2.6 m; 5 of 5 open on the photo, 5 with paint contrast",
-       "depth 4.93 m via rails, back rail painted, front rail painted",
-       "boxes with white cars, not in the seed"
-      ],
-      "photoSupport": 1
-     },
-     "estimatedDividers": []
     }
    ],
    "lines": [
@@ -8095,85 +8764,193 @@
   },
   {
    "id": "LOT_E244068_N263887",
-   "parcel": "PARCEL_ASPHALT_ROAD_ZONE_66",
+   "parcel": "PARCEL_LOT_E244068_N263887_R2",
    "curated": "todo 14",
    "estimated": true,
-   "estimatedReason": "three hatched blue bays: the hatch reads beside the lines",
+   "estimatedReason": "dark cars stand on two of the three bays: outlines and hatches read, the blue hidden, R3 and R4 T2",
    "rows": [
     {
-     "id": "LOT_E244068_N263887/R1",
-     "backLine": {
-      "abs": [
-       [
-        244067.654,
-        263886.922
-       ],
-       [
-        244075.155,
-        263886.882
-       ]
-      ]
-     },
-     "side": 1,
-     "pitchM": 3.75,
-     "depthM": 4.59,
-     "startOffsetM": 0,
-     "count": 3,
+     "id": "LOT_E244068_N263887/R2",
      "divider": {
       "style": "single",
       "widthM": 0.1,
       "colour": "white"
      },
      "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.50"
+      ],
+      "photoSupport": 0.498
+     },
      "stalls": [
       {
-       "id": "LOT_E244068_N263887/R1/S0",
+       "id": "LOT_E244068_N263887/R2/S0",
        "index": 0,
        "kind": "accessible",
-       "widthM": 3.75,
-       "aisle": null,
+       "widthM": 2.55,
        "symbol": "wheelchair",
-       "upBearingDeg": 180.2,
        "estimatedFields": {
         "symbolUp": {
-         "reason": "direction kept from the traced cell, read at 0.25 m per pixel on NGII"
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
         }
        },
-       "paintSupport": 0.242,
-       "estimated": true
-      },
-      {
-       "id": "LOT_E244068_N263887/R1/S1",
-       "index": 1,
-       "kind": "accessible",
-       "widthM": 3.751,
-       "aisle": null,
-       "symbol": "wheelchair",
-       "upBearingDeg": 180.2,
-       "estimatedFields": {
-        "symbolUp": {
-         "reason": "direction kept from the traced cell, read at 0.25 m per pixel on NGII"
-        }
+       "aisle": {
+        "side": "back",
+        "widthM": 1.4
        },
-       "paintSupport": 0.165,
-       "estimated": true
+       "paintSupport": 0.498
       }
      ],
-     "wheelStops": null,
+     "backLine": {
+      "abs": [
+       [
+        244069.379,
+        263890.943
+       ],
+       [
+        244071.824,
+        263890.216
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 2.55,
+     "depthM": 5.727,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": []
+    },
+    {
+     "id": "LOT_E244068_N263887/R3",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
      "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": true,
      "evidence": {
       "tier": "T2",
       "refs": [
-       "blue MX00267 cell 0: NGII 4x chip and VR scene_b7 face l: two bays at the end of the row, aisle north, planting south",
-       "blue MX00267 cell 1: NGII 4x chip and VR scene_b7 face l: two bays at the end of the row, aisle north, planting south",
-       "accessible stall 0: 0.242 of its fill on photo blue",
-       "accessible stall 1: 0.165 of its fill on photo blue",
-       "not T1: no blue paint under its fills (0.204)",
-       "todo 14: three blue bays with hatches, seed record lies on them; marked as before"
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, blue too dark to fit",
+       "not T1: a dark car stands on this bay: outline and hatch read, the blue hidden"
       ],
-      "photoSupport": 0.204
+      "photoSupport": 0.202
      },
-     "estimated": true
+     "stalls": [
+      {
+       "id": "LOT_E244068_N263887/R3/S0",
+       "index": 0,
+       "kind": "accessible",
+       "widthM": 2.5,
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
+        }
+       },
+       "aisle": {
+        "side": "back",
+        "widthM": 1.4
+       },
+       "paintSupport": 0.202,
+       "estimated": true
+      }
+     ],
+     "backLine": {
+      "abs": [
+       [
+        244071.483,
+        263890.41
+       ],
+       [
+        244073.933,
+        263889.91
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 2.5,
+     "depthM": 5.947,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
+      0,
+      1
+     ]
+    },
+    {
+     "id": "LOT_E244068_N263887/R4",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": true,
+     "evidence": {
+      "tier": "T2",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, blue too dark to fit",
+       "not T1: a dark car stands on this bay: outline and hatch read, the blue hidden"
+      ],
+      "photoSupport": 0.053
+     },
+     "stalls": [
+      {
+       "id": "LOT_E244068_N263887/R4/S0",
+       "index": 0,
+       "kind": "accessible",
+       "widthM": 2.5,
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
+        }
+       },
+       "aisle": {
+        "side": "back",
+        "widthM": 1.4
+       },
+       "paintSupport": 0.053,
+       "estimated": true
+      }
+     ],
+     "backLine": {
+      "abs": [
+       [
+        244073.907,
+        263889.783
+       ],
+       [
+        244076.357,
+        263889.283
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 2.5,
+     "depthM": 5.867,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
+      0
+     ]
     }
    ]
   },
@@ -8231,33 +9008,47 @@
         263958.924
        ],
        [
-        244100.892,
-        263959.975
+        244114.388,
+        263960.921
        ]
       ]
      },
      "side": 1,
      "pitchM": 2.51,
-     "depthM": 4.76,
-     "count": 7,
+     "depthM": 5.14,
+     "count": 12,
      "dividerBearingDeg": 352.739,
      "paintBack": true,
-     "stalls": [],
+     "stalls": [
+      {
+       "id": "LOT_E244085_N263959/R1/S6",
+       "index": 6,
+       "kind": "general",
+       "widthM": 3
+      },
+      {
+       "id": "LOT_E244085_N263959/R1/S7",
+       "index": 7,
+       "kind": "general",
+       "widthM": 3
+      }
+     ],
      "evidence": {
       "tier": "T1",
       "refs": [
        "NGII 2025 peaks along the row axis (todo 14): 7 lines bounding 6 stalls, pitch 2.51 m; 7 of 7 open on the photo, 7 with paint contrast",
        "depth 4.76 m via back+run, back rail painted",
-       "seed: photo dividers 3/3: MX00149 MX00149 MX00149; front line MX00149"
+       "seed: photo dividers 3/3: MX00149 MX00149 MX00149; front line MX00149",
+       "todo 14 review B1: a white car stands on the place at 18 m, the ladder resumes at 21.06 m in open sun"
       ],
-      "photoSupport": 1
+      "photoSupport": 0.75
      },
-     "estimatedDividers": [],
-     "estimatedFields": {
-      "depthM": {
-       "reason": "read from the ends of the painted dividers on NGII (0.25 m per pixel), back rail painted, no front rail"
-      }
-     }
+     "estimatedDividers": [
+      0,
+      7,
+      8
+     ],
+     "paintFront": true
     }
    ]
   },
@@ -8281,12 +9072,12 @@
      "backLine": {
       "abs": [
        [
-        244091.053,
-        263911.439
+        244091.043,
+        263911.411
        ],
        [
-        244122.472,
-        263903.905
+        244122.462,
+        263903.877
        ]
       ]
      },
@@ -8340,7 +9131,7 @@
      "entryFrom": "aisle",
      "wheelStops": {
       "offsetFromBackM": 0.9,
-      "lengthM": 1.6,
+      "lengthM": 0.6,
       "colour": "#d9b43a",
       "every": 1
      },
@@ -8348,19 +9139,19 @@
      "backLine": {
       "abs": [
        [
-        244095.969,
-        263888.697
+        244093.462,
+        263889.384
        ],
        [
-        244128.698,
-        263880.138
+        244138.807,
+        263877.526
        ]
       ]
      },
      "side": 1,
      "pitchM": 2.6,
-     "depthM": 4.45,
-     "count": 14,
+     "depthM": 4.44,
+     "count": 19,
      "dividerBearingDeg": 14.655,
      "paintBack": true,
      "paintFront": true,
@@ -8370,14 +9161,21 @@
       "refs": [
        "NGII 2025 peaks along the row axis (todo 14): 14 lines bounding 13 stalls, pitch 2.6 m; 14 of 14 open on the photo, 14 with paint contrast",
        "depth 4.45 m via rails, back rail painted, front rail painted",
-       "seed: estimator on SD-B7-02: photo dividers 11/12 detected, 0 under the occlusion mask, theta 76 deg; site-detail SD-B7-02 (VR scene_b7 r): VR scene_b7 r: boxed stalls south of the planted island; photo: el"
+       "seed: estimator on SD-B7-02: photo dividers 11/12 detected, 0 under the occlusion mask, theta 76 deg; site-detail SD-B7-02 (VR scene_b7 r): VR scene_b7 r: boxed stalls south of the planted island; photo: el",
+       "todo 14 review B1: a car stands on the places at 39 and 41.65 m; paint resumes at 44.27 m"
       ],
-      "photoSupport": 1
+      "photoSupport": 0.789
      },
-     "estimatedDividers": [],
+     "estimatedDividers": [
+      0,
+      15,
+      16,
+      17,
+      18
+     ],
      "estimatedFields": {
       "wheelStops": {
-       "reason": "from the VR reading of the seed (site-detail): the photo does not read their length or offset"
+       "reason": "from the VR reading of the seed (site-detail): the photo does not read their length or offset; length about 0.6 m by pixel ratio on VR scene_a5 f"
       }
      }
     },
@@ -8400,15 +9198,15 @@
         263883.002
        ],
        [
-        244124.855,
-        263875.163
+        244134.923,
+        263872.554
        ]
       ]
      },
      "side": -1,
      "pitchM": 2.6,
      "depthM": 4.41,
-     "count": 13,
+     "count": 17,
      "dividerBearingDeg": 195.279,
      "paintBack": true,
      "paintFront": true,
@@ -8419,11 +9217,14 @@
        "NGII 2025 peaks along the row axis (todo 14): 13 lines bounding 12 stalls, pitch 2.6 m; 13 of 13 open on the photo, 13 with paint contrast",
        "depth 4.41 m via rails, back rail painted, front rail painted",
        "seed: photo dividers 5/5: MX00284 MX00284 MX00284 MX00284 MX00284; back line MX00284",
-       "the row south of the seed row: the seed had it on the other side of the rail"
+       "the row south of the seed row: the seed had it on the other side of the rail",
+       "todo 14 review B1: the row runs on past the car and crown, lines read at 33.85, 36.45, 39.05, 41.65 m"
       ],
-      "photoSupport": 1
+      "photoSupport": 0.941
      },
-     "estimatedDividers": []
+     "estimatedDividers": [
+      16
+     ]
     }
    ]
   },
@@ -8447,18 +9248,18 @@
      "backLine": {
       "abs": [
        [
-        244101.079,
-        263845.55
+        244101.054,
+        263845.453
        ],
        [
-        244111.126,
-        263842.498
+        244111.101,
+        263842.401
        ]
       ]
      },
      "side": -1,
      "pitchM": 2.625,
-     "depthM": 5.06,
+     "depthM": 5.01,
      "count": 5,
      "dividerBearingDeg": 194.75,
      "paintBack": true,
@@ -8498,7 +9299,7 @@
      "entryFrom": "aisle",
      "wheelStops": {
       "offsetFromBackM": 3.88,
-      "lengthM": 1.6,
+      "lengthM": 0.6,
       "colour": "#2a2d30",
       "every": 1
      },
@@ -8506,19 +9307,19 @@
      "backLine": {
       "abs": [
        [
-        244110.147,
-        263521.01
+        244109.585,
+        263523.446
        ],
        [
-        244119.609,
-        263482.145
+        244119.638,
+        263482.152
        ]
       ]
      },
      "side": -1,
      "pitchM": 2.5,
-     "depthM": 4.78,
-     "count": 17,
+     "depthM": 4.89,
+     "count": 18,
      "dividerBearingDeg": 256.317,
      "paintBack": true,
      "paintFront": true,
@@ -8532,10 +9333,12 @@
       ],
       "photoSupport": 1
      },
-     "estimatedDividers": [],
+     "estimatedDividers": [
+      0
+     ],
      "estimatedFields": {
       "wheelStops": {
-       "reason": "from site-detail SD-F3-W1 (VR scene_f3 r): VR scene_f3 r: black wheel stops at the back of the car park's stall row; placed one per drawn stall, offset and length not read on the photo"
+       "reason": "from site-detail SD-F3-W1 (VR scene_f3 r): VR scene_f3 r: black wheel stops at the back of the car park's stall row; placed one per drawn stall, offset and length not read on the photo; length about 0.6 m by pixel ratio on VR scene_a5 f"
       }
      }
     },
@@ -8565,7 +9368,7 @@
      },
      "side": -1,
      "pitchM": 2.5,
-     "depthM": 5.31,
+     "depthM": 5.39,
      "count": 11,
      "dividerBearingDeg": 166.051,
      "paintBack": true,
@@ -8608,7 +9411,7 @@
      },
      "side": 1,
      "pitchM": 2.505,
-     "depthM": 4.85,
+     "depthM": 4.83,
      "count": 11,
      "dividerBearingDeg": 77.75,
      "paintBack": true,
@@ -8644,7 +9447,7 @@
      "entryFrom": "aisle",
      "wheelStops": {
       "offsetFromBackM": 0.9,
-      "lengthM": 1.6,
+      "lengthM": 0.6,
       "colour": "#2a2d30",
       "every": 1
      },
@@ -8663,7 +9466,7 @@
      },
      "side": -1,
      "pitchM": 2.5,
-     "depthM": 4.79,
+     "depthM": 4.81,
      "count": 11,
      "dividerBearingDeg": 257,
      "paintBack": true,
@@ -8688,7 +9491,7 @@
      "estimatedDividers": [],
      "estimatedFields": {
       "wheelStops": {
-       "reason": "from the VR reading of the seed (site-detail): the photo does not read their length or offset"
+       "reason": "from the VR reading of the seed (site-detail): the photo does not read their length or offset; length about 0.6 m by pixel ratio on VR scene_a5 f"
       }
      }
     },
@@ -8704,7 +9507,7 @@
      "entryFrom": "aisle",
      "wheelStops": {
       "offsetFromBackM": 3.75,
-      "lengthM": 1.6,
+      "lengthM": 0.6,
       "colour": "#2a2d30",
       "every": 1
      },
@@ -8723,7 +9526,7 @@
      },
      "side": 1,
      "pitchM": 2.5,
-     "depthM": 4.65,
+     "depthM": 4.9,
      "count": 15,
      "dividerBearingDeg": 77.074,
      "paintBack": true,
@@ -8752,13 +9555,11 @@
      },
      "estimatedDividers": [],
      "estimatedFields": {
-      "depthM": {
-       "reason": "read from the ends of the painted dividers on NGII (0.25 m per pixel), back rail painted, no front rail"
-      },
       "wheelStops": {
-       "reason": "from site-detail SD-F3-W4 (VR scene_f3 b): VR scene_f3 b: black wheel stops along the back of the east stall row (d; placed one per drawn stall, offset and length not read on the photo"
+       "reason": "from site-detail SD-F3-W4 (VR scene_f3 b): VR scene_f3 b: black wheel stops along the back of the east stall row (d; placed one per drawn stall, offset and length not read on the photo; length about 0.6 m by pixel ratio on VR scene_a5 f"
       }
-     }
+     },
+     "paintFront": true
     }
    ]
   },
@@ -8782,19 +9583,19 @@
      "backLine": {
       "abs": [
        [
-        244128.823,
-        263840.543
+        244129.25,
+        263840.436
        ],
        [
-        244129.398,
-        263843.079
+        244130.411,
+        263845.556
        ]
       ]
      },
      "side": -1,
-     "pitchM": 2.6,
-     "depthM": 5.05,
-     "count": 2,
+     "pitchM": 2.625,
+     "depthM": 4.38,
+     "count": 3,
      "dividerBearingDeg": 104.019,
      "paintBack": true,
      "paintFront": true,
@@ -8806,66 +9607,10 @@
        "depth 5.05 m via rails, back rail painted, front rail painted",
        "seed: photo dividers 2/2: MX01602 MX01602"
       ],
-      "photoSupport": 1
-     },
-     "estimatedDividers": []
-    },
-    {
-     "id": "LOT_E244121_N263839/R2",
-     "divider": {
-      "style": "single",
-      "widthM": 0.1,
-      "colour": "white"
-     },
-     "endCaps": true,
-     "startOffsetM": 0,
-     "entryFrom": "aisle",
-     "wheelStops": null,
-     "estimated": false,
-     "backLine": {
-      "abs": [
-       [
-        244116.519,
-        263851.473
-       ],
-       [
-        244122.142,
-        263850.052
-       ]
-      ]
-     },
-     "side": 1,
-     "pitchM": 2.9,
-     "depthM": 4.89,
-     "count": 3,
-     "dividerBearingDeg": 15.188,
-     "paintBack": true,
-     "paintFront": true,
-     "stalls": [
-      {
-       "id": "LOT_E244121_N263839/R2/S0",
-       "index": 0,
-       "kind": "general",
-       "widthM": 3.2
-      },
-      {
-       "id": "LOT_E244121_N263839/R2/S1",
-       "index": 1,
-       "kind": "general",
-       "widthM": 2.6
-      }
-     ],
-     "evidence": {
-      "tier": "T1",
-      "refs": [
-       "NGII 2025 peaks along the row axis (todo 14): 3 lines bounding 2 stalls, pitch 2.9 m; 3 of 3 open on the photo, 2 with paint contrast",
-       "depth 4.89 m via rails, back rail painted, front rail painted",
-       "bays by the trees, not in the seed; free lines were its rail"
-      ],
       "photoSupport": 0.667
      },
      "estimatedDividers": [
-      1
+      2
      ]
     }
    ]
@@ -8984,7 +9729,7 @@
      "entryFrom": "aisle",
      "wheelStops": {
       "offsetFromBackM": 3.98,
-      "lengthM": 1.6,
+      "lengthM": 0.6,
       "colour": "#2a2d30",
       "every": 1
      },
@@ -8996,15 +9741,15 @@
         263481.393
        ],
        [
-        244163.862,
-        263439.747
+        244160.206,
+        263454.532
        ]
       ]
      },
      "side": -1,
      "pitchM": 2.5,
-     "depthM": 4.88,
-     "count": 18,
+     "depthM": 4.96,
+     "count": 12,
      "dividerBearingDeg": 256.111,
      "paintBack": true,
      "paintFront": true,
@@ -9014,12 +9759,6 @@
        "index": 0,
        "kind": "general",
        "widthM": 2.67
-      },
-      {
-       "id": "LOT_E244150_N263449/R2/S13",
-       "index": 13,
-       "kind": "general",
-       "widthM": 2.7
       }
      ],
      "evidence": {
@@ -9028,16 +9767,17 @@
        "NGII 2025 peaks along the row axis (todo 14): 18 lines bounding 17 stalls, pitch 2.5 m; 18 of 18 open on the photo, 17 with paint contrast",
        "depth 4.88 m via rails, back rail painted, front rail painted",
        "seed: photo dividers 9/10: MX01720 MX01720 MX01717 MX01717 MX01717 MX01717 MX01717 MX01717 parking_line@244157.469,263456.407; back line MX01717",
-       "the last three boxes carry painted text; their places repeat the pitch"
+       "the last three boxes carry painted text; their places repeat the pitch",
+       "ends at the model extent: paint past it is not built"
       ],
-      "photoSupport": 0.944
+      "photoSupport": 0.917
      },
      "estimatedDividers": [
       3
      ],
      "estimatedFields": {
       "wheelStops": {
-       "reason": "from site-detail SD-F3-W2 (VR scene_f3 f): VR scene_f3 f: black wheel stops of the stall row along the court fence ; placed one per drawn stall, offset and length not read on the photo"
+       "reason": "from site-detail SD-F3-W2 (VR scene_f3 f): VR scene_f3 f: black wheel stops of the stall row along the court fence ; placed one per drawn stall, offset and length not read on the photo; length about 0.6 m by pixel ratio on VR scene_a5 f"
       }
      }
     }
@@ -9060,7 +9800,7 @@
      "entryFrom": "aisle",
      "wheelStops": {
       "offsetFromBackM": 0.9,
-      "lengthM": 1.6,
+      "lengthM": 0.6,
       "colour": "#2a2d30",
       "every": 1
      },
@@ -9068,18 +9808,18 @@
      "backLine": {
       "abs": [
        [
-        244177.624,
-        263518.675
+        244177.458,
+        263518.639
        ],
        [
-        244177.73,
-        263508.456
+        244177.564,
+        263508.42
        ]
       ]
      },
      "side": 1,
      "pitchM": 2.56,
-     "depthM": 4.5,
+     "depthM": 4.75,
      "count": 5,
      "dividerBearingDeg": 77.75,
      "stalls": [],
@@ -9090,19 +9830,19 @@
        "depth 4.5 m via run",
        "seed: site-detail SD-F2-02 (VR scene_f2 f): VR scene_f2 f (cols 300-700): the stall row along F1's east side, white outlines; photo: the white front line and dividers, eight stalls (2.5 m); site-detail-r2: "
       ],
-      "photoSupport": 0.8
+      "photoSupport": 0.6
      },
      "estimatedDividers": [
-      3
+      3,
+      4
      ],
      "estimatedFields": {
-      "depthM": {
-       "reason": "paint reads 4.1 m, the far ends lie under crowns or a leaned roof: 4.5 m assumed"
-      },
       "wheelStops": {
-       "reason": "from site-detail SD-F2-W3 (VR scene_f2 f): VR scene_f2 f: black-and-white wheel stops of the four stalls along F2's; placed one per drawn stall, offset and length not read on the photo"
+       "reason": "from site-detail SD-F2-W3 (VR scene_f2 f): VR scene_f2 f: black-and-white wheel stops of the four stalls along F2's; placed one per drawn stall, offset and length not read on the photo; length about 0.6 m by pixel ratio on VR scene_a5 f"
       }
-     }
+     },
+     "paintBack": true,
+     "paintFront": true
     },
     {
      "id": "LOT_E244175_N263499/R3",
@@ -9119,18 +9859,18 @@
      "backLine": {
       "abs": [
        [
-        244179.908,
-        263501.513
+        244179.889,
+        263501.507
        ],
        [
-        244184.408,
-        263484.684
+        244184.389,
+        263484.678
        ]
       ]
      },
      "side": 1,
      "pitchM": 2.5,
-     "depthM": 4.62,
+     "depthM": 4.64,
      "count": 8,
      "dividerBearingDeg": 73.778,
      "paintBack": true,
@@ -9143,13 +9883,12 @@
        "depth 4.62 m via rails, back rail painted, front rail painted",
        "boxes south of the red car, not in the seed"
       ],
-      "photoSupport": 0.5
+      "photoSupport": 0.625
      },
      "estimatedDividers": [
       2,
       3,
-      4,
-      5
+      4
      ]
     }
    ]
@@ -9159,7 +9898,7 @@
    "parcel": "PARCEL_LOT_E244195_N263499_R1",
    "curated": "todo 14",
    "estimated": true,
-   "estimatedReason": "cars cover the row and the building shades it: the lines are not readable",
+   "estimatedReason": "cars cover the row and the building shades it: the lines are not readable, places repeat the VR pitch",
    "rows": [
     {
      "id": "LOT_E244195_N263499/R1",
@@ -9170,8 +9909,8 @@
         263530.307
        ],
        [
-        244202.272,
-        263499.474
+        244203.73,
+        263481.487
        ]
       ]
      },
@@ -9179,7 +9918,7 @@
      "pitchM": 2.5778,
      "depthM": 5,
      "startOffsetM": 0,
-     "count": 13,
+     "count": 20,
      "dividerBearingDeg": 272,
      "divider": {
       "style": "single",
@@ -9190,7 +9929,7 @@
      "stalls": [],
      "wheelStops": {
       "offsetFromBackM": 0.9,
-      "lengthM": 1.6,
+      "lengthM": 0.6,
       "colour": "#2a2d30",
       "every": 1
      },
@@ -9199,7 +9938,8 @@
       "tier": "T2",
       "refs": [
        "site-detail SD-F2-01 (VR scene_f2 f): VR scene_f2 f (cols 600-1100, rows 1000-1900): a row of stalls nose-in to F2's west wall, white dividers on the concrete; photo: twelve stall spaces, cars in six (2.55 m); site-detail-r2: black-and-white wheel stops at the stall backs (VR scene_f2 f)",
-       "todo 14: cars cover the lines of this row and the building shades it: lines are not readable, places repeat the VR pitch"
+       "todo 14: cars cover the lines of this row and the building shades it: lines are not readable, places repeat the VR pitch",
+       "todo 14 review B1: the line of parked cars runs on 18 m, places repeat the pitch"
       ],
       "photoSupport": 0
      },
@@ -9217,7 +9957,14 @@
       9,
       10,
       11,
-      12
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
      ]
     }
    ]
@@ -9264,6 +10011,750 @@
        "todo 14: paint on NGII, support 1, residual 0.248 m, real paint on a road or path edge, no parking stall: kept as a line"
       ]
      }
+    }
+   ]
+  },
+  {
+   "id": "LOT_E244150_N263566",
+   "parcel": "PARCEL_LOT_E244150_N263566_R1",
+   "curated": "todo 14",
+   "estimated": true,
+   "estimatedReason": "the occlusion mask hides most line here (building shade or crowns), read on the photo with the shade lifted",
+   "rows": [
+    {
+     "id": "LOT_E244150_N263566/R1",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": true,
+     "evidence": {
+      "tier": "T2",
+      "refs": [
+       "row of parked cars not recorded before, measured on NGII 2025",
+       "cars on most stalls: places repeat the pitch where flagged",
+       "seven parked cars cover the lines: the two ends read, the places between repeat the width",
+       "not T1: cars cover every line between the two ends"
+      ],
+      "photoSupport": 0.375
+     },
+     "stalls": [],
+     "backLine": {
+      "abs": [
+       [
+        244148.202,
+        263570.149
+       ],
+       [
+        244165.623,
+        263574.131
+       ]
+      ]
+     },
+     "side": -1,
+     "depthM": 4.4,
+     "dividerBearingDeg": 167.12,
+     "count": 8,
+     "pitchM": 2.55,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ]
+    },
+    {
+     "id": "LOT_E244150_N263566/R2",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.77"
+      ],
+      "photoSupport": 0.557
+     },
+     "stalls": [
+      {
+       "id": "LOT_E244150_N263566/R2/S0",
+       "index": 0,
+       "kind": "accessible",
+       "widthM": 3.881,
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
+        }
+       },
+       "aisle": {
+        "side": "start",
+        "widthM": 1.3
+       },
+       "paintSupport": 0.557
+      }
+     ],
+     "backLine": {
+      "abs": [
+       [
+        244165.131,
+        263574.064
+       ],
+       [
+        244168.902,
+        263574.982
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 3.881,
+     "depthM": 4.709,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
+      1
+     ]
+    }
+   ]
+  },
+  {
+   "id": "LOT_E244071_N263790",
+   "parcel": "PARCEL_LOT_E244071_N263790_R1",
+   "curated": "todo 14",
+   "estimated": true,
+   "estimatedReason": "building shade over the ladder and three hatched bays; lines read with the shade lifted",
+   "rows": [
+    {
+     "id": "LOT_E244071_N263790/R1",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": true,
+     "evidence": {
+      "tier": "T2",
+      "refs": [
+       "ladder in shade, not recorded before, measured with the shade lifted",
+       "not T1: building shade: the seed test reads under half the lines"
+      ],
+      "photoSupport": 0.2
+     },
+     "stalls": [],
+     "backLine": {
+      "abs": [
+       [
+        244083.549,
+        263811.403
+       ],
+       [
+        244081.005,
+        263801.773
+       ]
+      ]
+     },
+     "side": -1,
+     "depthM": 4.1,
+     "dividerBearingDeg": 286.8,
+     "count": 5,
+     "pitchM": 2.485,
+     "paintFront": true,
+     "estimatedDividers": [
+      0,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "id": "LOT_E244071_N263790/R2",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": true,
+     "evidence": {
+      "tier": "T2",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, blue too dark to fit",
+       "three hatched blue bays in building shade, stacked; edges by eye with the shade lifted",
+       "not T1: building shade: fills dark, hatches and outline read with the shade lifted"
+      ],
+      "photoSupport": 0
+     },
+     "stalls": [
+      {
+       "id": "LOT_E244071_N263790/R2/S0",
+       "index": 0,
+       "kind": "accessible",
+       "widthM": 3.6,
+       "aisle": {
+        "side": "start",
+        "widthM": 1.3
+       },
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol at 0.25 m per pixel in shade"
+        }
+       },
+       "paintSupport": 0,
+       "estimated": true
+      },
+      {
+       "id": "LOT_E244071_N263790/R2/S1",
+       "index": 1,
+       "kind": "accessible",
+       "widthM": 3.1,
+       "aisle": {
+        "side": "start",
+        "widthM": 1.3
+       },
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol at 0.25 m per pixel in shade"
+        }
+       },
+       "paintSupport": 0,
+       "estimated": true
+      },
+      {
+       "id": "LOT_E244071_N263790/R2/S2",
+       "index": 2,
+       "kind": "accessible",
+       "widthM": 2.95,
+       "aisle": {
+        "side": "start",
+        "widthM": 1.3
+       },
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol at 0.25 m per pixel in shade"
+        }
+       },
+       "paintSupport": null,
+       "estimated": true
+      }
+     ],
+     "backLine": {
+      "abs": [
+       [
+        244080.183,
+        263800.183
+       ],
+       [
+        244077.433,
+        263790.933
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 3.1,
+     "depthM": 3.982,
+     "count": 4,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
+      0,
+      1,
+      2,
+      3
+     ]
+    }
+   ]
+  },
+  {
+   "id": "LOT_E243976_N263545",
+   "parcel": "PARCEL_SUPPORT_LOT_243984_263552",
+   "curated": "todo 14",
+   "rows": [
+    {
+     "id": "LOT_E243976_N263545/R1",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.58",
+       "the blue bay beside the two dark cars"
+      ],
+      "photoSupport": null
+     },
+     "stalls": [
+      {
+       "id": "LOT_E243976_N263545/R1/S0",
+       "index": 0,
+       "kind": "accessible",
+       "widthM": 3.244,
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
+        }
+       },
+       "paintSupport": null,
+       "estimated": true
+      }
+     ],
+     "backLine": {
+      "abs": [
+       [
+        243981.49,
+        263553.544
+       ],
+       [
+        243984.268,
+        263555.22
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 3.244,
+     "depthM": 4.63,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": []
+    },
+    {
+     "id": "LOT_E243976_N263545/R2",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": true,
+     "evidence": {
+      "tier": "T2",
+      "refs": [
+       "pale ladder on concrete, not recorded before",
+       "not T1: pale paint on pale concrete: the seed test reads one line in four"
+      ],
+      "photoSupport": 0.25
+     },
+     "stalls": [
+      {
+       "id": "LOT_E243976_N263545/R2/S2",
+       "index": 2,
+       "kind": "general",
+       "widthM": 2.69
+      }
+     ],
+     "backLine": {
+      "abs": [
+       [
+        243982.252,
+        263566.912
+       ],
+       [
+        243989.008,
+        263569.808
+       ]
+      ]
+     },
+     "side": -1,
+     "depthM": 5.13,
+     "dividerBearingDeg": 158.8,
+     "count": 4,
+     "pitchM": 2.33,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
+      0,
+      1,
+      2
+     ]
+    }
+   ]
+  },
+  {
+   "id": "LOT_E243596_N263630",
+   "parcel": "PARCEL_ASPHALT_ROAD_ZONE_49",
+   "curated": "todo 14",
+   "estimated": true,
+   "estimatedReason": "one bay in sun with its hatch reading as the line, one bay and a box in building shade",
+   "rows": [
+    {
+     "id": "LOT_E243596_N263630/R1",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.58"
+      ],
+      "photoSupport": 0.876
+     },
+     "stalls": [
+      {
+       "id": "LOT_E243596_N263630/R1/S0",
+       "index": 0,
+       "kind": "accessible",
+       "widthM": 3.249,
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
+        }
+       },
+       "aisle": {
+        "side": "end",
+        "widthM": 1
+       },
+       "paintSupport": 0.876
+      }
+     ],
+     "backLine": {
+      "abs": [
+       [
+        243600.04,
+        263647.557
+       ],
+       [
+        243599.946,
+        263644.31
+       ]
+      ]
+     },
+     "side": 1,
+     "pitchM": 3.249,
+     "depthM": 4.437,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
+      0,
+      1
+     ]
+    },
+    {
+     "id": "LOT_E243596_N263630/R2",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, blue too dark to fit",
+       "blue bay in building shade"
+      ],
+      "photoSupport": null
+     },
+     "stalls": [
+      {
+       "id": "LOT_E243596_N263630/R2/S0",
+       "index": 0,
+       "kind": "accessible",
+       "widthM": 3.638,
+       "symbol": "wheelchair",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
+        }
+       },
+       "paintSupport": null,
+       "estimated": true
+      }
+     ],
+     "backLine": {
+      "abs": [
+       [
+        243603.835,
+        263638.799
+       ],
+       [
+        243602.953,
+        263635.269
+       ]
+      ]
+     },
+     "side": 1,
+     "pitchM": 3.638,
+     "depthM": 4.659,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
+      0,
+      1
+     ]
+    },
+    {
+     "id": "LOT_E243596_N263630/R3",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": true,
+     "evidence": {
+      "tier": "T2",
+      "refs": [
+       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, blue too dark to fit",
+       "a box in building shade against the wall, the building hides its far end"
+      ],
+      "photoSupport": 0
+     },
+     "stalls": [
+      {
+       "id": "LOT_E243596_N263630/R3/S0",
+       "index": 0,
+       "kind": "general",
+       "widthM": 3.305
+      }
+     ],
+     "backLine": {
+      "abs": [
+       [
+        243603.949,
+        263634.323
+       ],
+       [
+        243603.273,
+        263631.088
+       ]
+      ]
+     },
+     "side": 1,
+     "pitchM": 3.305,
+     "depthM": 3.318,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  {
+   "id": "LOT_E244186_N263524",
+   "parcel": "PARCEL_LOT_E244186_N263524_R1",
+   "curated": "todo 14",
+   "rows": [
+    {
+     "id": "LOT_E244186_N263524/R1",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": false,
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "outline of a green box read on NGII 2025 at 0.25 m per pixel",
+       "green box with a car, seen on NGII: the green fill is not drawn, only its lines"
+      ],
+      "photoSupport": 0.5
+     },
+     "stalls": [
+      {
+       "id": "LOT_E244186_N263524/R1/S0",
+       "index": 0,
+       "kind": "ev",
+       "widthM": 3.628
+      }
+     ],
+     "backLine": {
+      "abs": [
+       [
+        244183.109,
+        263528.723
+       ],
+       [
+        244186.659,
+        263529.473
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 3.628,
+     "depthM": 4.849,
+     "count": 2,
+     "paintBack": true,
+     "paintFront": true,
+     "estimatedDividers": [
+      1
+     ]
+    }
+   ]
+  },
+  {
+   "id": "LOT_E244185_N263460",
+   "parcel": "PARCEL_LOT_E244185_N263460_R1",
+   "curated": "todo 14",
+   "estimated": true,
+   "estimatedReason": "pale paint on pale concrete and asphalt beside the F2 annex: outlines by eye",
+   "rows": [
+    {
+     "id": "LOT_E244185_N263460/R1",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": true,
+     "evidence": {
+      "tier": "T2",
+      "refs": [
+       "pale ladder on concrete south of the F2 annex, seen on NGII: three boxes, edges by eye",
+       "not T1: pale paint on pale concrete, too faint for the seed test"
+      ],
+      "photoSupport": 0.5
+     },
+     "stalls": [],
+     "backLine": {
+      "abs": [
+       [
+        244185,
+        263475.3125
+       ],
+       [
+        244186.875,
+        263467.5
+       ]
+      ]
+     },
+     "side": 1,
+     "pitchM": 2.68,
+     "depthM": 4.5,
+     "count": 4,
+     "estimatedDividers": [
+      2,
+      3
+     ]
+    },
+    {
+     "id": "LOT_E244185_N263460/R2",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": true,
+     "evidence": {
+      "tier": "T2",
+      "refs": [
+       "a long box along the east edge, 18.6 m by 2.4 m, seen on NGII: one outline, no line inside it reads",
+       "not T1: pale paint on asphalt, too faint for the seed test; places repeat 6.2 m parallel bays"
+      ],
+      "photoSupport": 0
+     },
+     "stalls": [
+      {
+       "id": "LOT_E244185_N263460/R2/S0",
+       "index": 0,
+       "kind": "parallel",
+       "widthM": 6.2
+      },
+      {
+       "id": "LOT_E244185_N263460/R2/S1",
+       "index": 1,
+       "kind": "parallel",
+       "widthM": 6.2
+      },
+      {
+       "id": "LOT_E244185_N263460/R2/S2",
+       "index": 2,
+       "kind": "parallel",
+       "widthM": 6.2
+      }
+     ],
+     "backLine": {
+      "abs": [
+       [
+        244195.9375,
+        263478.75
+       ],
+       [
+        244194.375,
+        263460.3125
+       ]
+      ]
+     },
+     "side": 1,
+     "pitchM": 6.2,
+     "depthM": 2.4,
+     "count": 4,
+     "estimatedDividers": [
+      0,
+      1,
+      2,
+      3
+     ]
     }
    ]
   }

@@ -269,3 +269,11 @@ test('a free line the record marks estimated says so in the objects', () => {
   assert.equal(out.find((o) => o.id === 'LOT_A/L1').estimated, true);
   assert.equal(out.find((o) => o.id === 'LOT_A/L2').estimated, false);
 });
+
+test('missingDividers lists a 1.0 m wide run of paint and not a 1.5 m band', () => {
+  const row = { id: 'LOT_A/R1', backLine: { abs: [[1010, 2030], [1020, 2030]] }, side: -1, pitchM: 2.5, depthM: 5, startOffsetM: 0, count: 5, divider: { style: 'single', widthM: 0.1, colour: 'white' }, stalls: [], evidence: { tier: 'T1', refs: [], photoSupport: 1 }, estimated: false };
+  const doc = { lots: [{ id: 'LOT_A', rows: [row] }] };
+  const run = (width) => missingDividers(doc, [], sheetWith(paintWhere((E, N) => Math.abs(E - 1022.5) <= width / 2 && N <= 2030 && N >= 2025)));
+  assert.equal(run(1.0).filter((m) => /missing@12\./.test(m.id)).length, 1);
+  assert.equal(run(1.5).filter((m) => /missing@12\./.test(m.id)).length, 0);
+});
