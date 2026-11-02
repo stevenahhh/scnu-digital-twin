@@ -9,7 +9,7 @@
 //
 // Usage: bun scripts/perf/vr-manifest.mjs --before <dir> --after <dir> --out <dir> [--stations <file>]
 import { existsSync, mkdirSync, openSync, readSync, closeSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -92,7 +92,7 @@ if (import.meta.main) {
   mkdirSync(resolve(out), { recursive: true });
   writeFileSync(join(resolve(out), "MANIFEST.json"), `${JSON.stringify(manifest, null, 2)}\n`);
   writeFileSync(join(resolve(out), "MANIFEST.md"), markdown(manifest));
-  for (const m of manifest.missing) console.log(`MISSING ${m.scene} ${m.file.split("/").at(-1)}`);
+  for (const m of manifest.missing) console.log(`MISSING ${m.scene} ${basename(m.file)}`);
   console.log(`MANIFEST ${manifest.complete}/${manifest.stations} complete, ${manifest.missing.length} missing files -> ${join(resolve(out), "MANIFEST.json")}`);
   process.exit(manifest.missing.length ? 1 : 0);
 }

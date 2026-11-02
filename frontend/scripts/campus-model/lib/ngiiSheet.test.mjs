@@ -143,5 +143,6 @@ test("compressed TIFF (tag 259 = 5, LZW) is rejected naming the compression", ()
 });
 
 test("missing sheet throws ENOENT with the path", () => {
-  assert.throws(() => openSheet("/nonexistent.tif"), (error) => error.code === "ENOENT" && error.message.includes("/nonexistent.tif"));
+  const missing = path.resolve("/nonexistent.tif");
+  assert.throws(() => openSheet(missing), (error) => error.code === "ENOENT" && error.message.includes(missing));
 });
