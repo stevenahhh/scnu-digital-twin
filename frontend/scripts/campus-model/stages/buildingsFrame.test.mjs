@@ -6,6 +6,7 @@ import { tmToScene, wgs84ToTm } from "../../../src/geo/epsg5186.mjs";
 import { ringArea, ringCentroid } from "../lib/geometry.mjs";
 import { buildBuildings, checkNodeMapInputs, nodeFootprints } from "./buildings.mjs";
 import { toModelRing } from "./sources.mjs";
+import { SCENE_UNITS_PER_METRE } from "../lib/frame.mjs";
 
 const data = (name) => JSON.parse(readFileSync(new URL(`../data/${name}`, import.meta.url), "utf8"));
 const gis = data("gis-buildings.json").buildings;
@@ -49,6 +50,30 @@ test("BLD_D4, BLD_E3 and the LOD4 form building BLD_E5 draw their GIS parts, cen
       const [x, z] = ringCentroid(part.outer);
       const [ex, ez] = gisCentreScene(record.polygons[k][0]);
       assert.ok(Math.abs(x - ex) < 1e-6 && Math.abs(z - ez) < 1e-6, `${nodeId} part ${k}: ${x},${z} vs ${ex},${ez}`);
+    });
+  }
+});
+
+// todo 5 (orchestrator decision 2026-11-02): every GIS-mapped BLD_* node draws its GIS footprint parts with the part
+// centres on the GIS footprint centres within 0.05 m. The node's LOD4 mass bbox is not the measure (cores and canopies
+// keep their LOD4 outline). Estimated nodes without a GIS record (BLD_A12.001, BLD_Dormitory_Building.004) and the
+// C1/C1.001 split halves are checked by the next test.
+test("every GIS-mapped BLD_* node draws its GIS footprint parts, each centred on the GIS centre within 0.05 m", () => {
+  const selection = nodeFootprints({ bldNodes, footprintParts, nodeMap });
+  const split = new Set(["BLD_C1", "BLD_C1.001"]);
+  const mapped = nodeMap.entries.filter((e) => e.gis && !split.has(e.nodeId));
+  assert.ok(mapped.length >= 25, `only ${mapped.length} GIS-mapped nodes`);
+  for (const { nodeId, gis: { footprintSource } } of mapped) {
+    const record = recordOf(footprintSource);
+    const chosen = selection.get(nodeId);
+    // the map names the record by its GIS footprintSource; the stage may carry an OSM record's own id form
+    assert.ok(record, `${nodeId}: no record ${footprintSource}`);
+    assert.equal(chosen.parts.length, record.polygons.length, nodeId);
+    chosen.parts.forEach((part, k) => {
+      const [x, z] = ringCentroid(part.outer);
+      const [ex, ez] = gisCentreScene(record.polygons[k][0]);
+      const error = Math.hypot(x - ex, z - ez) / SCENE_UNITS_PER_METRE;
+      assert.ok(error < 0.05, `${nodeId} part ${k} is ${error.toFixed(3)} m from its GIS footprint centre`);
     });
   }
 });

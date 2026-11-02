@@ -307,6 +307,34 @@ const evaluate = async (expression) => {
   return reply.result.result.value;
 };
 
+// BLD_D4's bbox centre in public/campus-v2.glb (scene frame): POSITION min/max of its primitives, dequantised and mapped
+// through the node's translation/scale, as src/campusModelAsset.test.mjs nodeBox reads it.
+function d4SceneCentre() {
+  return nodeSceneCentre("BLD_D4") ?? { x: D4_SCENE_ANCHOR.x, z: D4_SCENE_ANCHOR.z };
+}
+function nodeSceneCentre(name) {
+  const file = readFileSync(join(HERE, "..", "..", "public", "campus-v2.glb"));
+  const gltf = JSON.parse(file.subarray(20, 20 + file.readUInt32LE(12)).toString("utf8"));
+  const node = gltf.nodes.find((n) => n.name === name);
+  if (!node?.mesh && node?.mesh !== 0) {
+    if (name === "BLD_D4") return null;
+    throw new Error(`--buildings: no mesh node ${name} in public/campus-v2.glb`);
+  }
+  const norm = { 5120: (v) => Math.max(v / 127, -1), 5121: (v) => v / 255, 5122: (v) => Math.max(v / 32767, -1), 5123: (v) => v / 65535 };
+  const t = node.translation ?? [0, 0, 0];
+  const s = node.scale ?? [1, 1, 1];
+  const lo = [Infinity, Infinity];
+  const hi = [-Infinity, -Infinity];
+  for (const p of gltf.meshes[node.mesh].primitives) {
+    const a = gltf.accessors[p.attributes.POSITION];
+    const d = a.normalized ? norm[a.componentType] : (v) => v;
+    for (const c of [a.min, a.max]) {
+      [0, 2].forEach((k, i) => { const w = d(c[k]) * s[k] + t[k]; lo[i] = Math.min(lo[i], w); hi[i] = Math.max(hi[i], w); });
+    }
+  }
+  return { x: (lo[0] + hi[0]) / 2, z: (lo[1] + hi[1]) / 2 };
+}
+
 let exitCode = 1;
 try {
   const { result: { targetInfos } } = await cdp("Target.getTargets", {}, null);
@@ -327,7 +355,11 @@ try {
   await Bun.sleep(3000); // let textures finish uploading (same settle as compare-satellite.mjs)
   await evaluate(PAGE_HELPERS);
   const d4World = await evaluate("window.__blend.d4Centre()");
-  const offset = { x: d4World.x - D4_SCENE_ANCHOR.x, z: d4World.z - D4_SCENE_ANCHOR.z };
+  // world minus scene: BLD_D4's bbox centre in the page against the same centre in the GLB's scene frame. In Frame v2
+  // the bbox centre is not D4_SCENE_ANCHOR (the anchor is the GIS footprint centroid, the node bbox spans its LOD4
+  // masses), so the scene-frame centre is read from the GLB the page loads rather than assumed to be the anchor.
+  const d4Scene = d4SceneCentre();
+  const offset = { x: d4World.x - d4Scene.x, z: d4World.z - d4Scene.z };
   console.log(`FRAME world-minus-scene offset x=${offset.x.toFixed(3)} z=${offset.z.toFixed(3)}; grid convergence ${GRID_CONVERGENCE_DEG.toFixed(4)} deg`);
 
   mkdirSync(outDir, { recursive: true });
@@ -378,8 +410,11 @@ try {
       console.log(`VISIBLE ${t.E0} ${t.N0} ${v.verdict} dx=${v.dx} dy=${v.dy} ratio=${v.ratio} visible=${v.visibleShare} edgeShare=${v.edgeShare}${v.reason ? ` (${v.reason})` : ""}`);
     }
   }
+  // --buildings A,B,...: one 60 x 60 m window per named BLD_* node, centred on its bbox in the GLB scene frame (local QA
+  // only; the windows are measured and saved like the fixed ones).
+  const named = option("buildings", "").split(",").filter(Boolean).map((id) => ({ name: `bld-${id.replace(/^BLD_/, "")}`, ...nodeSceneCentre(`BLD_${id.replace(/^BLD_/, "")}`), widthM: 60, heightM: 60 }));
   const windows = [];
-  for (const w of WINDOWS) {
+  for (const w of [...WINDOWS, ...named]) {
     const [Ec, Nc] = sceneToTm(w.x, w.z);
     const view = viewFor(snap(Ec - w.widthM / 2), snap(Nc - w.heightM / 2), w.widthM, w.heightM);
     const r = await measure(view, w.name);

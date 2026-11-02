@@ -42,6 +42,11 @@
 // Run from frontend/ after editing either markings file:
 //   bun scripts/campus-model/bake/markings-gate.mjs [--masks out.png]
 // `--masks` also writes the three masks over the sheet window (red white, green yellow, blue blue) for inspection.
+// `--rebase-review <old-candidates.json>` (a JSON array of [id, fingerprint, colour, shapes] from markingCandidates()
+// before a frame move) re-stamps a review entry with the current fingerprint only when its candidate is the one it
+// was judged at (old fingerprint equal) and every vertex moved by one and the same vector (a pure frame translation,
+// e.g. Frame v2); any other change keeps the old fingerprint, so the stage still asks for a new review.
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { EXTENT, metres, modelToGeo } from "../lib/frame.mjs";
@@ -264,13 +269,39 @@ for (const c of candidates) {
     supports[c.id].push(...single.map((sum) => Math.round((sum / m) * 1000) / 1000));
   }
 }
+function rebaseReview(review) {
+  const at = process.argv.indexOf("--rebase-review");
+  if (at < 0) return review;
+  const old = new Map(JSON.parse(readFileSync(process.argv[at + 1], "utf8")).map((c) => [c[0], c]));
+  const now = new Map(candidates.map((c) => [c.id, c]));
+  let moved = 0;
+  let shift = null;
+  const out = {};
+  for (const [id, entry] of Object.entries(review)) {
+    out[id] = entry;
+    const before = old.get(id);
+    const after = now.get(id);
+    if (!before || !after || before[1] !== entry.fingerprint || before[2] !== after.colour) continue;
+    const a = before[3].flat(2);
+    const b = after.shapes.flat(2);
+    if (a.length !== b.length || !a.length) continue;
+    const d = [b[0][0] - a[0][0], b[0][1] - a[0][1]];
+    if (!a.every((p, i) => Math.abs(b[i][0] - p[0] - d[0]) < 1e-6 && Math.abs(b[i][1] - p[1] - d[1]) < 1e-6)) continue;
+    if (shift && (Math.abs(shift[0] - d[0]) > 1e-6 || Math.abs(shift[1] - d[1]) > 1e-6)) throw new Error(`--rebase-review: ${id} moved by ${d}, not the common shift ${shift}`);
+    shift = d;
+    out[id] = { ...entry, fingerprint: after.fingerprint };
+    moved += 1;
+  }
+  console.log(`markings gate: ${moved} of ${Object.keys(review).length} review entries re-stamped after a pure translation by ${shift ? shift.map((v) => v.toFixed(3)).join(", ") : "-"} model units`);
+  return out;
+}
 const previous = await Bun.file(OUTPUT).exists() ? JSON.parse(await Bun.file(OUTPUT).text()) : {};
 const gate = {
   source: "NGII 2025 orthophoto sheet 34702020 (0.25 m GSD, EPSG:5186), 국토지리정보원; bake/markings-gate.mjs",
   generated: new Date().toISOString().slice(0, 10),
   method: "share of each candidate's drawn area on white, yellow and blue photo paint (top-hat masks): [white, yellow, blue, geometry fingerprint(, single-line white, yellow, blue)]",
   thresholds: { PAINT_OPEN_M, WHITE_TOPHAT, WHITE_TOPHAT_RAW, WHITE_SPREAD, YELLOW_TOPHAT, YELLOW_MIN, YELLOW_CHROMA, YELLOW_RB, YELLOW_GR, BLUE_TOPHAT, BLUE_AREA, BLUE_BR, BLUE_GREY, SHADOW_SURFACE, SHADOW_RED, SHADOW_REFERENCE, SHADOW_GAIN, HALF_MAX, PEAK_REACH_M, CORE_M, SUPPORT_STEP_M },
-  review: previous.review ?? {},
+  review: rebaseReview(previous.review ?? {}),
   supports,
 };
 await Bun.write(OUTPUT, `${JSON.stringify(gate, null, 0).replace(/\],"/g, '],\n"')}\n`);

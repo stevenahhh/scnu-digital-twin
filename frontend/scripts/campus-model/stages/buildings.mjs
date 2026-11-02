@@ -782,6 +782,9 @@ const aoPrimitive = (mesh, material) => ({ ...mesh.toPrimitive(material), ao: me
 // the parapet primitive; blocks as prisms with the facade cells of their own look (walls), a roof cap one band above
 // the building's roof (roof), and the band and parapet (parapet). Rooftop modules under a block's cap are lifted onto it.
 const ATTACHMENTS = path.join(DATA, "facade-attachments.json");
+// How far a roof attachment point may sit outside the mass it recolours (stages/buildings.mjs roof attachments).
+const ROOF_ATTACH_REACH_M = 5;
+const ringDistance = (p, ring) => Math.min(...ring.map((a, i) => segmentDistance(p, a, ring[(i + 1) % ring.length])));
 
 function attachmentGround(building, heightAt) {
   if (building.massForm) return formGround(building, heightAt);
@@ -2002,7 +2005,12 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
     const partRoofs = [];
     for (const building of [...selectableBuildings, ...campusBuildings]) {
       for (const a of (building.attachments ?? []).filter((x) => x.kind === "roof")) {
-        const part = building.massForm ? building.parts.find((p) => p.outer?.length >= 3 && pointInRing(a.at, p.outer)) : null;
+        // The point is read off the photo/VR; since Frame v2 the LOD4 masses are rigidly fitted to the GIS footprint
+        // (fit_rigid moves them up to ~4 m), so a point on a mass edge can fall just outside it. The part holding the
+        // point wins; otherwise the nearest part within ROOF_ATTACH_REACH_M of it, and anything farther still throws.
+        const parts = building.massForm ? building.parts.filter((p) => p.outer?.length >= 3) : [];
+        const part = parts.find((p) => pointInRing(a.at, p.outer))
+          ?? parts.map((p) => ({ p, d: ringDistance(a.at, p.outer) })).filter((x) => x.d <= metres(ROOF_ATTACH_REACH_M)).sort((x, y) => x.d - y.d)[0]?.p;
         if (!part) throw new Error(`facade-attachments.json: roof ${a.id} of ${building.nodeName ?? building.nodeId} is not inside a mass of its form`);
         part.roofColourRgb = hex(a.colour);
         partRoofs.push(`${building.nodeName ?? building.nodeId} ${a.id} ${a.colour}`);

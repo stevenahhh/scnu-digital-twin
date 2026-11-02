@@ -20207,7 +20207,8 @@
      "roof": "flat",
      "areaSquareMetres": 790,
      "parapetMetres": 1,
-     "photoSupport": 0.98
+     "photoSupport": 0.98,
+     "floorsSource": "curated (facades-flags 2026-10-27): VR scene_a4 l shows two podium storeys, the glazed band storey and four white panel storeys up to the main roof (8 -> 7); the LOD4 roof height is kept, so the storeys are taller (estimated)"
     },
     {
      "outer": [
@@ -20313,7 +20314,8 @@
      "roof": "flat",
      "areaSquareMetres": 114.2,
      "parapetMetres": 0.55,
-     "photoSupport": 1
+     "photoSupport": 1,
+     "floorsSource": "curated (facades-flags 2026-10-27): VR scene_a4 l shows two podium storeys, the glazed band storey and four white panel storeys up to the main roof (9 -> 8); the LOD4 roof height is kept, so the storeys are taller (estimated)"
     },
     {
      "outer": [
@@ -20342,7 +20344,8 @@
      "roof": "flat",
      "areaSquareMetres": 53.9,
      "parapetMetres": 0.61,
-     "photoSupport": 0.98
+     "photoSupport": 0.98,
+     "look": "A1-roofroom"
     },
     {
      "outer": [
@@ -20466,7 +20469,8 @@
      "areaSquareMetres": 24.3,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 1
+     "photoSupport": 1,
+     "drawnBy": "OC0120"
     },
     {
      "outer": [
@@ -20496,7 +20500,10 @@
      "areaSquareMetres": 23.4,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 1
+     "photoSupport": 1,
+     "look": "A1-glass",
+     "lookSource": "curated (facades-flags 2026-10-27): VR scene_a4 l, the west-end core of the main block is a light-blue glass stair tower (estimated)",
+     "floorsSource": "curated (facades-flags 2026-10-27): VR scene_a4 l shows two podium storeys, the glazed band storey and four white panel storeys up to the main roof (9 -> 8); the LOD4 roof height is kept, so the storeys are taller (estimated)"
     },
     {
      "outer": [
@@ -20526,7 +20533,8 @@
      "areaSquareMetres": 14.4,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 1
+     "photoSupport": 1,
+     "floorsSource": "curated (facades-flags 2026-10-27): VR scene_a4 l shows two podium storeys, the glazed band storey and four white panel storeys up to the main roof (8 -> 7); the LOD4 roof height is kept, so the storeys are taller (estimated)"
     },
     {
      "outer": [
@@ -20627,7 +20635,10 @@
      "areaSquareMetres": 10.8,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 0.22
+     "photoSupport": 0.22,
+     "look": "A1-orange",
+     "lookSource": "curated (facades-flags 2026-10-27): VR scene_a4 l (cols 1515-1700, bearings 73-78 deg = this 7.9 m x 1.35 m projection of the south face): the orange frame round an inset balcony stack over the yellow podium and the glazed band (estimated)",
+     "floorsSource": "curated (facades-flags 2026-10-27): VR scene_a4 l shows two podium storeys, the glazed band storey and four white panel storeys up to the main roof (8 -> 7); the LOD4 roof height is kept, so the storeys are taller (estimated)"
     },
     {
      "outer": [
@@ -20657,7 +20668,8 @@
      "areaSquareMetres": 10.4,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 1
+     "photoSupport": 1,
+     "floorsSource": "curated (facades-flags 2026-10-27): VR scene_a4 l shows two podium storeys, the glazed band storey and four white panel storeys up to the main roof (8 -> 7); the LOD4 roof height is kept, so the storeys are taller (estimated)"
     },
     {
      "outer": [
@@ -20725,7 +20737,8 @@
      "areaSquareMetres": 7.2,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 1
+     "photoSupport": 1,
+     "look": "A1-roofroom"
     },
     {
      "outer": [
@@ -20763,7 +20776,8 @@
      "areaSquareMetres": 6.7,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 1
+     "photoSupport": 1,
+     "floorsSource": "curated (facades-flags 2026-10-27): VR scene_a4 l shows two podium storeys, the glazed band storey and four white panel storeys up to the main roof (9 -> 8); the LOD4 roof height is kept, so the storeys are taller (estimated)"
     },
     {
      "outer": [
@@ -28502,7 +28516,20 @@
      "areaSquareMetres": 49.8,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 0.85
+     "photoSupport": 0.85,
+     "look": "E4-drum",
+     "round": {
+      "centre": [
+       127.47854998,
+       34.96974691
+      ],
+      "radiusMetres": 3.9,
+      "segments": 24,
+      "slots": [
+       60
+      ]
+     },
+     "roundSource": "curated (facades-r3): the round tower stands about 4 m north of this LOD4 slice on the NGII 2025 sheet (white round roof, lean-corrected like the main mass) and at the north end of the brick block in VR scene_e4 f; centre and radius 3.9 m from the photo roof, one glass slot facing 60 deg (estimated)"
     },
     {
      "outer": [
@@ -37389,7 +37416,9 @@
      "areaSquareMetres": 494.9,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 0.96
+     "photoSupport": 0.96,
+     "look": "F1-wing",
+     "lookSource": "curated (site-detail-vr): VR scene_f1 f, the curved low wing is silver standing-seam metal with a few narrow windows and a blue glass base (estimated)"
     },
     {
      "outer": [
@@ -37591,7 +37620,9 @@
      "areaSquareMetres": 355.6,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 0.84
+     "photoSupport": 0.84,
+     "look": "F1-wing",
+     "lookSource": "curated (site-detail-vr): VR scene_f1 f, the curved low wing is silver standing-seam metal with a few narrow windows and a blue glass base (estimated)"
     },
     {
      "outer": [
@@ -37684,7 +37715,9 @@
      "roof": "flat",
      "areaSquareMetres": 257.1,
      "parapetMetres": 1,
-     "photoSupport": 1
+     "photoSupport": 1,
+     "look": "F1-drum",
+     "lookSource": "curated (facades-r3): VR scene_f2 l, the north drum is silver standing-seam metal without windows (estimated)"
     },
     {
      "outer": [
@@ -37745,7 +37778,9 @@
      "roof": "flat",
      "areaSquareMetres": 137.2,
      "parapetMetres": 1,
-     "photoSupport": 0.88
+     "photoSupport": 0.88,
+     "look": "F1-drum",
+     "lookSource": "curated (site-detail-vr): VR scene_f1 f, the tall shaft behind the wing is pale standing-seam metal without windows, like the north drum (estimated)"
     },
     {
      "outer": [
@@ -37812,7 +37847,9 @@
      "areaSquareMetres": 90,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 1
+     "photoSupport": 1,
+     "look": "F1-tower",
+     "lookSource": "curated (facades-flags 2026-10-27): VR scene_f1 f (cols 673-848, bearings 234-243 deg = cores 7 and 11 from the station): the tall tower behind the forecourt wing is blue-silver glass, not white panel (estimated)"
     },
     {
      "outer": [
@@ -37865,7 +37902,9 @@
      "roof": "flat",
      "areaSquareMetres": 84.4,
      "parapetMetres": 2.16,
-     "photoSupport": 0.56
+     "photoSupport": 0.56,
+     "look": "F1-curtain",
+     "lookSource": "curated (facades-flags 2026-10-27): VR scene_f1 f (cols 1410-2048, bearings 277-297 deg = this two-storey strip along the right block's east face): blue glass curtain wall; the LED screen on it is the site-detail lane's (estimated)"
     },
     {
      "outer": [
@@ -38146,7 +38185,9 @@
      "areaSquareMetres": 72,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 0.54
+     "photoSupport": 0.54,
+     "look": "F1-wing",
+     "lookSource": "curated (site-detail-vr): VR scene_f1 f, the curved low wing is silver standing-seam metal with a few narrow windows and a blue glass base (estimated)"
     },
     {
      "outer": [
@@ -38620,7 +38661,9 @@
        ]
       ]
      ],
-     "photoSupport": 1
+     "photoSupport": 1,
+     "look": "F1-tower",
+     "lookSource": "curated (facades-flags 2026-10-27): VR scene_f1 f (cols 673-848, bearings 234-243 deg = cores 7 and 11 from the station): the tall tower behind the forecourt wing is blue-silver glass, not white panel (estimated)"
     },
     {
      "outer": [

@@ -12,6 +12,7 @@
 // its header describes the method. Output rings are lon/lat (EPSG:4326, the same frame as gis-buildings.json); the
 // generator maps them with geoToModel, like the footprints and the LOD4 tower outlines. Heights are metres above the
 // building's lowest ground. Everything in the file is an estimate derived from VWorld's models and the photo.
+import { existsSync, readFileSync } from "node:fs";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -27,6 +28,42 @@ import { cached, LAT0, LON0, leafTiles, MX, MY, parseB3dm, tileModels } from "./
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const OUTPUT = path.join(DATA, "building-forms.json");
 const U = SCENE_UNITS_PER_METRE;
+// Curated mass fields (VR looks, the E4 round drum, VR floor counts) are hand edits on top of the generated masses.
+// A regeneration carries each one from the previous file to the new mass of the same kind and height whose centroid
+// lies nearest (within 12 m; centroid metres plus 10 m per unit of log area ratio; the rigid fit moves masses up to ~4 m and the footprint clip shrinks them), one old mass
+// per new mass; a curated mass with no such match fails the run, so no curation is lost silently.
+const CURATED_FIELDS = ["look", "lookSource", "round", "roundSource", "floorsSource", "drawnBy"];
+function carryCurated(records) {
+  if (!existsSync(OUTPUT)) return;
+  const previous = new Map(JSON.parse(readFileSync(OUTPUT, "utf8")).buildings.map((b) => [b.key, b]));
+  const centroid = (ring) => [ring.reduce((s, p) => s + p[0], 0) / ring.length, ring.reduce((s, p) => s + p[1], 0) / ring.length];
+  const metresApart = (a, b) => Math.hypot((a[0] - b[0]) * 111320 * Math.cos((a[1] * Math.PI) / 180), (a[1] - b[1]) * 110950);
+  const lost = [];
+  for (const record of records) {
+    const old = previous.get(record.key);
+    if (!Array.isArray(old?.masses)) continue;
+    // all (old, new) pairs nearest first, so two masses of the same height each keep their own counterpart
+    const curated = old.masses.filter((m) => CURATED_FIELDS.some((k) => k in m));
+    const pairs = curated.flatMap((m, i) => record.masses
+      // cost: centroid distance plus 10 m per unit of log area ratio, so equal-height masses pair by size first
+      .map((n, j) => ({ i, j, d: metresApart(centroid(n.outer), centroid(m.outer)) + 10 * Math.abs(Math.log(n.areaSquareMetres / m.areaSquareMetres)), ratio: n.areaSquareMetres / m.areaSquareMetres, n }))
+      .filter(({ d, ratio, n }) => n.kind === m.kind && Math.abs(n.topMetres - m.topMetres) <= 0.15 && Math.abs(n.baseMetres - m.baseMetres) <= 0.15 && d <= 12 && ratio >= 0.5 && ratio <= 1.33))
+      .sort((a, b) => a.d - b.d);
+    const doneOld = new Set();
+    const taken = new Set();
+    for (const p of pairs) {
+      if (doneOld.has(p.i) || taken.has(p.j)) continue;
+      doneOld.add(p.i);
+      taken.add(p.j);
+      for (const k of CURATED_FIELDS.filter((k) => k in curated[p.i])) p.n[k] = curated[p.i][k];
+    }
+    curated.forEach((m, i) => {
+      if (!doneOld.has(i)) lost.push(`${record.key} ${m.kind} ${m.topMetres} m (${CURATED_FIELDS.filter((k) => k in m).join(", ")})`);
+    });
+  }
+  if (lost.length) throw new Error(`building forms: curated masses with no regenerated counterpart: ${lost.join("; ")}`);
+}
+
 const PYTHON = ["uv", "run", "--no-project", "--with", "shapely==2.2.0", "--with", "numpy==2.5.4", "--with", "opencv-python-headless==5.0.0.93", "python", "-I"];
 // Relief lean of roofs in the NGII mosaic, fitted on 609 roof corners of 132 GIS footprints in the registration study
 // (.omo/ulw-research/20261023-181400/qa/results/registration.json, gis_buildings.transform.lean_field_m_per_m_height):
@@ -209,6 +246,7 @@ export async function writeBuildingForms() {
       ...(r.droppedMasses ? { droppedMasses: r.droppedMasses } : {}),
       ...(r.clippedMasses ? { clippedMasses: r.clippedMasses } : {}),
     }));
+    carryCurated(records);
     const file = {
       description: "Building forms of the modelled campus buildings: per building a list of masses (outer ring, courtyard rings, base and top in metres above the building's lowest ground, parapet, roof type, pitched-roof triangles, columns under raised parts), the voids they leave (courtyards open to the sky, light wells, passages under raised masses), the relief lean of its roof in the NGII 2025 orthophoto and the photo IoU of the roof outline (lean-corrected). source: the VWorld LOD4 mesh, or the current footprint when LOD4 has no model or its outline disagrees with the photo. Rings are lon/lat (EPSG:4326). Estimates derived from VWorld's LOD4 models and the photo, not survey data.",
       sources: [
