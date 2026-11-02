@@ -10,6 +10,11 @@ const RECORDING_SETTLE_MS = 2_000;
 const OUTPUT_BASENAME = "scnu-real-drone-campus-loop-60s-live";
 const LANDMARK_IDS = Object.freeze(["SCNU_CINEMATIC_MAIN_GATE", "SCNU_CINEMATIC_LIFE_SCIENCES"]);
 
+export function cinematicProgress(search, key, fallback) {
+  const value = Number(search.get(key) ?? fallback);
+  return Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : fallback;
+}
+
 function setState(state) {
   document.documentElement.dataset.cinematicState = state;
 }
@@ -265,16 +270,14 @@ const searchParams = typeof globalThis.window === "undefined"
   : new URLSearchParams(globalThis.window.location.search);
 if (searchParams?.get(CINEMATIC_QUERY) === "1") {
   const requestedDuration = Number(searchParams.get("duration"));
-  const requestedStart = Number(searchParams.get("from"));
-  const requestedEnd = Number(searchParams.get("to"));
   const durationMs = Number.isFinite(requestedDuration) && requestedDuration > 0
     ? requestedDuration
     : DEFAULT_DURATION_MS;
   startCinematicCapture({
     shouldRecord: searchParams.get(RECORD_QUERY) === "1",
     durationMs,
-    startProgress: Number.isFinite(requestedStart) ? Math.min(1, Math.max(0, requestedStart)) : 0,
-    endProgress: Number.isFinite(requestedEnd) ? Math.min(1, Math.max(0, requestedEnd)) : 1,
+    startProgress: cinematicProgress(searchParams, "from", 0),
+    endProgress: cinematicProgress(searchParams, "to", 1),
   }).catch((error) => {
     console.error("Cinematic capture failed.", error);
     setState("error");

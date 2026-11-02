@@ -1,5 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { cinematicProgress } from "./cinematicFlythrough.mjs";
+
+test("default cinematic playback traverses the full route and honors explicit bounds", () => {
+  const defaults = new URLSearchParams("cinematic=1&record=1");
+  assert.equal(cinematicProgress(defaults, "from", 0), 0);
+  assert.equal(cinematicProgress(defaults, "to", 1), 1);
+  assert.equal(cinematicProgress(new URLSearchParams("to=0"), "to", 1), 0);
+  assert.equal(cinematicProgress(new URLSearchParams("to=bad"), "to", 1), 1);
+  assert.equal(cinematicProgress(new URLSearchParams("to=2"), "to", 1), 1);
+});
 
 import {
   CINEMATIC_ROUTE_LENGTH_METERS,
