@@ -195,6 +195,9 @@ export async function writeBuildingForms() {
       leanPrior: r.leanPrior,
       iou: r.iou,
       flags: r.flags,
+      // Rigid fit of the LOD4 plan onto the footprint (model metres; building_forms.py fit_rigid), null without LOD4 masses.
+      ...(r.registration ? { registration: r.registration } : {}),
+      lod4Residual_m: r.lod4Residual_m ?? null,
       masses: r.masses.map((m) => ({
         ...m,
         outer: geoRing(m.outer),
@@ -217,6 +220,9 @@ export async function writeBuildingForms() {
     };
     await Bun.write(OUTPUT, `${JSON.stringify(file, null, 1)}\n`);
     const lod4 = records.filter((r) => r.source.startsWith("VWorld LOD4"));
+    for (const r of records.filter((x) => x.lod4Residual_m > 1)) {
+      console.warn(`building forms: ${r.key} LOD4 residual ${r.lod4Residual_m} m after the rigid fit (> 1 m)`);
+    }
     const ious = records.map((r) => r.iou.final).filter((v) => v !== null).sort((x, y) => x - y);
     console.log(`building forms: ${lod4.length} of ${records.length} from LOD4, ${records.reduce((n, r) => n + r.voids.length, 0)} voids; median photo IoU ${ious[ious.length >> 1]} -> ${path.relative(process.cwd(), OUTPUT)}`);
     return file;

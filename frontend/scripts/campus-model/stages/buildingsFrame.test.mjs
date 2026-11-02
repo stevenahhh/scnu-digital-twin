@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import * as THREE from "three";
 import { tmToScene, wgs84ToTm } from "../../../src/geo/epsg5186.mjs";
 import { ringArea, ringCentroid } from "../lib/geometry.mjs";
-import { checkNodeMapInputs, nodeFootprints } from "./buildings.mjs";
+import { buildBuildings, checkNodeMapInputs, nodeFootprints } from "./buildings.mjs";
 import { toModelRing } from "./sources.mjs";
 
 const data = (name) => JSON.parse(readFileSync(new URL(`../data/${name}`, import.meta.url), "utf8"));
@@ -81,6 +82,50 @@ test("a map entry pointing at a wrong GIS record, or at an unknown node, throws 
   const unknown = structuredClone(nodeMap);
   unknown.entries.push({ ...structuredClone(entryOf("BLD_E3")), nodeId: "BLD_NOPE", gis: null, curated: true, reason: "fixture" });
   assert.throws(() => nodeFootprints({ bldNodes, footprintParts, nodeMap: unknown }), /bld-node-map.*BLD_NOPE/);
+});
+
+// buildBuildings itself (selectOnly, the selection fetch/buildingForms.mjs reads): a shift of the footprint parts
+// reintroduced anywhere before the selection returns moves a part off its GIS centroid and fails here. uni.glb is
+// stood in for by box meshes over each node's mapped outline.
+test("buildBuildings draws every GIS-mapped BLD_* part on its GIS centroid within 1e-6", async () => {
+  const scene = new THREE.Group();
+  const rawNames = [];
+  for (const { rawName, footprint } of bldNodes) {
+    const xs = footprint.outer.map((p) => p[0]);
+    const zs = footprint.outer.map((p) => p[1]);
+    const [x0, x1, z0, z1] = [Math.min(...xs), Math.max(...xs), Math.min(...zs), Math.max(...zs)];
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, 10, z1 - z0));
+    mesh.position.set((x0 + x1) / 2, 5, (z0 + z1) / 2);
+    scene.add(mesh);
+    rawNames.push(rawName);
+  }
+  scene.updateMatrixWorld(true);
+  const inputs = { source: { scene, rawNames }, footprints: [...gis, ...vr], roadZones: [], heightAt: () => 0 };
+  const silent = { log: console.log, warn: console.warn };
+  console.log = () => {};
+  console.warn = () => {};
+  let selection;
+  try {
+    selection = await buildBuildings({ glb: null, inputs, selectOnly: true });
+  } finally {
+    Object.assign(console, silent);
+  }
+  let checked = 0;
+  for (const entry of nodeMap.entries.filter((e) => e.gis)) {
+    const record = recordOf(entry.gis.footprintSource);
+    if (!record) continue;
+    const building = selection.selectableBuildings.find((b) => b.nodeName === entry.nodeId);
+    assert.ok(building, entry.nodeId);
+    if (building.footprintPart) continue;
+    assert.equal(building.parts.length, record.polygons.length, entry.nodeId);
+    building.parts.forEach((part, k) => {
+      const [x, z] = ringCentroid(part.outer);
+      const [ex, ez] = ringCentroid(toModelRing(record.polygons[k][0]));
+      assert.ok(Math.hypot(x - ex, z - ez) < 1e-6, `${entry.nodeId} part ${k}: ${x},${z} vs GIS ${ex},${ez}`);
+    });
+    checked += 1;
+  }
+  assert.ok(checked >= 20, `checked ${checked} nodes`);
 });
 
 test("checkNodeMapInputs throws on a stale input hash and passes on the recorded ones", () => {
