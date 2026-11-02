@@ -1,5 +1,6 @@
 // NGII A003 sidewalk outlines (docs/assets/data/walkways_wgs84.geojson, CC BY, kept as delivered) with the photo
-// registration of data/photo/a003-registration.json applied: where the NGII 2025 orthophoto shows a kerb off the A003
+// registration of data/photo/evidence/a003-registration.json applied (todo 9: the ground, kerb and tactile stages read the
+// corrected rings from data/ground/parcels.json; network, markings, lights and sources still read them here): where the NGII 2025 orthophoto shows a kerb off the A003
 // line, vertices are moved (`move`: original vertex indices, dE/dN metres in EPSG:5186) or a vertex is added on a
 // straight segment (`insert`: after an original vertex index, at an absolute EPSG:5186 point). Every reader of the A003
 // outlines (ground, kerbs, network, markings, lights, trees) goes through readA003 so they all see the same kerb.
@@ -12,7 +13,7 @@ import { tmToWgs84, wgs84ToTm } from "../../../src/geo/epsg5186.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const A003_FILE = path.resolve(HERE, "../../../..", "docs", "assets", "data", "walkways_wgs84.geojson");
-export const A003_REGISTRATION = path.join(HERE, "..", "data", "photo", "a003-registration.json");
+export const A003_REGISTRATION = path.join(HERE, "..", "data", "photo", "evidence", "a003-registration.json");
 
 const shifted = ([lon, lat], dE, dN) => {
   const [E, N] = wgs84ToTm(lon, lat);

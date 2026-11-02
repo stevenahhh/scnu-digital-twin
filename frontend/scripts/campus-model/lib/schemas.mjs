@@ -4,6 +4,8 @@
 // prints the errors to stderr when the file is invalid.
 import { readFileSync } from "node:fs";
 
+import { DESIGN_CLASSES, PAINT_CLASSES } from "./parcels.mjs";
+
 const isPair = (value) => Array.isArray(value) && value.length === 2 && value.every(Number.isFinite);
 const isText = (value) => typeof value === "string" && value.length > 0;
 
@@ -163,6 +165,8 @@ function parcels(doc) {
     else if (ids.has(id)) fail(`id repeats parcels[${ids.get(id)}]`);
     else ids.set(id, index);
     if (!PARCEL_CLASSES.has(parcel.cls)) fail(`cls must be one of ${[...PARCEL_CLASSES].join(", ")}`);
+    if (parcel.class !== undefined && !DESIGN_CLASSES.includes(parcel.class)) fail(`class must be one of ${DESIGN_CLASSES.join(", ")}`);
+    if (parcel.class !== undefined && parcel.paintAllowed !== PAINT_CLASSES.has(parcel.class)) fail(`paintAllowed must be ${PAINT_CLASSES.has(parcel.class)} for class ${parcel.class}`);
     if (!isRing(parcel.ring)) fail("ring must be at least 3 [E, N] pairs");
     if (!Array.isArray(parcel.holes) || !parcel.holes.every(isRing)) fail("holes must be an array of rings");
     if (!Number.isFinite(parcel.precedence)) fail("precedence must be a number");

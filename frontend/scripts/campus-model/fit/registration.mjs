@@ -296,8 +296,8 @@ export async function measureAll({ log = () => {} } = {}) {
     estimated: true,
   });
 
-  // A003: kerb offsets measured against the photo (data/photo/a003-registration.json, retired by todo 9).
-  const a003 = JSON.parse(readFileSync(path.join(DATA, "photo", "a003-registration.json"), "utf8")).corrections.filter((c) => c.op === "move");
+  // A003: kerb offsets measured against the photo (data/photo/evidence/a003-registration.json; todo 9 moved it to evidence).
+  const a003 = JSON.parse(readFileSync(path.join(DATA, "photo", "evidence", "a003-registration.json"), "utf8")).corrections.filter((c) => c.op === "move");
   const dE = a003.map((c) => c.dE);
   const dN = a003.map((c) => c.dN);
   const mE = median(dE);

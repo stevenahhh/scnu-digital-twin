@@ -29,6 +29,17 @@ test("seedParcels keeps every ring, gives unique ids and maps sources to evidenc
   assert.ok(validate("parcels", { parcels }).ok);
 });
 
+test("seedParcels keeps the drawing props in render and gives the design class", () => {
+  const [p, q] = seedParcels([
+    layer({ walkway: true, surface: "blockPaver", source: "NGII-A003", source_ref: "UFID_A", precedence: 5 }),
+    layer({ cls: "LOT", mesh: "Ground_Lot", source_ref: "way/9", precedence: 4, rings: [square(40, 0, 5)] }),
+  ]);
+  assert.deepEqual(p.render, { walkway: true, surface: "blockPaver" });
+  assert.equal(p.class, "sidewalk");
+  assert.equal(q.class, "lot");
+  assert.equal(q.render, undefined);
+});
+
 test("registration corrections are recorded once in the parcel they moved, as T1", () => {
   const refs = registrationRefs(
     { corrections: [{ id: "GR_1", target: "facility", index: 22 }, { id: "GR_2", target: "facility", index: 22 }] },
