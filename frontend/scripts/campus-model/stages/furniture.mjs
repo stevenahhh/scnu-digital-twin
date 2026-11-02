@@ -1618,10 +1618,8 @@ B.signboard = (ctx, o) => {
 };
 
 // ---------------------------------------------------------------- VR site detail (data/photo/site-detail.geojson)
-// Standard dimensions, every one an estimate (추정): clipped hedge 0.8 m wide, 1.0 m tall; stall 2.5 x 5.0 m with
-// 0.1 m white dividers (주차장법 시행규칙 제3조: 일반형 2.5 x 5.0 m); wheel stop 1.6 x 0.15 x 0.12 m, 0.9 m in from the
-// stall's back. Paint lies 0.045 m over the ground, just above the markings stage's 0.04 m.
-const SITE = { hedgeWidthM: 0.8, hedgeHeightM: 1.0, stallWidthM: 2.5, stallDepthM: 5.0, paintM: 0.1, paintLiftM: 0.045 };
+// Standard dimensions, every one an estimate (추정): clipped hedge 0.8 m wide, 1.0 m tall.
+const SITE = { hedgeWidthM: 0.8, hedgeHeightM: 1.0 };
 const shrubPaint = (o) => {
   const k = 0.9 + mulberry32([...o.id].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) | 0, 7))() * 0.2;
   const base = paintOf(o.p.colour, C.shrub, o.id);
@@ -1642,44 +1640,6 @@ B.hedge = (ctx, o) => {
   ctx.solid.prism(ring, ctx.minGround(ring) - M(0.1), top, paint);
   ctx.solid.prism(crown, top, (x, z) => ctx.groundAt(x, z) + M(h), paint);
 };
-// Car-park stall row: the LineString runs along the stalls' open (aisle) end from the first divider to the last; the
-// stalls lie on `side` (left or right walking along it), depth_m deep, `stalls` of them (default length / 2.5 m). Skewed
-// rows (dividers not square to the row, as the photo shows them) give divider_bearing_deg, the compass bearing of a
-// divider from the aisle into the stall; depth_m is then measured along the divider. Draws the dividers (unless
-// dividers is false), the back line when back_line, the
-// aisle-end line when front_line (boxed bays), plus wheel_stops.
-export function stallRow(line, { stalls, side = "left", depthM = SITE.stallDepthM, bearingDeg } = {}) {
-  const [a, b] = [line[0], line.at(-1)];
-  const lengthM = Math.hypot(b[0] - a[0], b[1] - a[1]) / M(1);
-  const n = stalls ?? Math.max(1, Math.round(lengthM / SITE.stallWidthM));
-  const u = [(b[0] - a[0]) / M(lengthM), (b[1] - a[1]) / M(lengthM)];
-  const v = bearingDeg !== undefined ? [Math.sin((bearingDeg * Math.PI) / 180), -Math.cos((bearingDeg * Math.PI) / 180)] : side === "left" ? [u[1], -u[0]] : [-u[1], u[0]];
-  const at = (sM, tM) => [a[0] + u[0] * M(sM) + v[0] * M(tM), a[1] + u[1] * M(sM) + v[1] * M(tM)];
-  const dividers = Array.from({ length: n + 1 }, (_, k) => [at((lengthM * k) / n, 0), at((lengthM * k) / n, depthM)]);
-  const stops = Array.from({ length: n }, (_, k) => ({ centre: at((lengthM * (k + 0.5)) / n, depthM - 0.9), u }));
-  return { n, lengthM, u, v, dividers, stops, back: [at(0, depthM), at(lengthM, depthM)] };
-}
-function paintStrip(ctx, p, q, widthM, paint) {
-  const pts = densify([p, q], 1);
-  const len = Math.hypot(q[0] - p[0], q[1] - p[1]);
-  const n = [-(q[1] - p[1]) / len * M(widthM / 2), (q[0] - p[0]) / len * M(widthM / 2)];
-  for (let i = 0; i + 1 < pts.length; i += 1) {
-    const [c, d] = [pts[i], pts[i + 1]];
-    ctx.solid.flat([[c[0] - n[0], c[1] - n[1]], [d[0] - n[0], d[1] - n[1]], [d[0] + n[0], d[1] + n[1]], [c[0] + n[0], c[1] + n[1]]], [], (x, z) => ctx.groundAt(x, z) + M(SITE.paintLiftM), paint);
-  }
-}
-B.stall_row = (ctx, o) => {
-  const row = stallRow(o.line, { stalls: o.p.stalls, side: o.p.side, depthM: o.p.depth_m ?? SITE.stallDepthM, bearingDeg: o.p.divider_bearing_deg });
-  const paint = paintOf(o.p.colour, C.white, o.id);
-  // dividers: false where the markings data already paints the row (only the wheel stops are added)
-  if (o.p.dividers !== false) for (const [p, q] of row.dividers) paintStrip(ctx, p, q, SITE.paintM, paint);
-  if (o.p.back_line) paintStrip(ctx, ...row.back, SITE.paintM, paint);
-  if (o.p.front_line) paintStrip(ctx, row.dividers[0][0], row.dividers.at(-1)[0], SITE.paintM, paint);
-  if (!o.p.wheel_stops) return;
-  const stop = paintOf(o.p.stopColour, C.concreteDark, o.id);
-  for (const s of row.stops) ctx.solid.box(frame([s.centre[0], ctx.groundAt(...s.centre), s.centre[1]], s.u), [-0.8, 0.8], [-0.075, 0.075], [-0.03, 0.12], stop);
-};
-
 // Street furniture of the VR site-detail sweep (standard dimensions, every one an estimate, \uCD94\uC815): bollard 0.9 m tall,
 // 0.18 m across (\uBCF4\uB3C4\uC6A9 \uBCFC\uB77C\uB4DC 0.8-1.0 m, 0.1-0.2 m); bike or PM stand an inverted U 0.75 m tall and 0.7 m wide every
 // spacing_m (0.9 m); litter bin 0.55 x 0.45 x 0.95 m; handrail 0.9 m (KDS \uACC4\uB2E8 \uB09C\uAC04 0.85-0.9 m) on posts every 1.5 m.
@@ -2205,7 +2165,15 @@ export function onRoof(ctx, roofM) {
   return Object.assign(lifted, { solid: ctx.solid, glass: ctx.glass, glow: ctx.glow, screen: ctx.screen, screens: ctx.screens, skipped: ctx.skipped, signals: ctx.signals });
 }
 
-export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs, groundAt }) {
+// The wheel stops of the parking rows (stages/parking.mjs): a bar across each stall, 0.15 m wide and 0.12 m high (추정).
+export function appendWheelStops(ctx, stops) {
+  for (const s of stops) {
+    const half = s.lengthM / 2;
+    ctx.solid.box(frame([s.centre[0], ctx.groundAt(...s.centre), s.centre[1]], s.u), [-half, half], [-0.075, 0.075], [-0.03, 0.12], paintOf(s.colour, C.concreteDark, s.id));
+  }
+}
+
+export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs, groundAt, wheelStops = [] }) {
   const roads = roadNetwork(inputs);
   const ctx = makeContext({ groundAt, objects: furniture.objects, roads, sites, fieldCentre: furniture.fieldCentre });
   ctx.signalIndex = 0;
@@ -2230,6 +2198,8 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     // rest-space instances: catalogue kinds given dims, or survey objects retyped to a catalogue kind
     if (REST_TYPES[o.kind] && (o.source === "rest-spaces" || o.p.dims !== undefined || o.surveyKind !== o.kind)) restSpaces.push([o.id, o.kind, REST_TYPES[o.kind].dimsSource, o.p.vr_scene ?? null, o.p.photo_support ?? null, true]);
   }
+  appendWheelStops(ctx, wheelStops);
+  for (const stop of wheelStops) tally("wheel_stop", true);
   appendLampSolids(ctx.solid, lamps, groundAt);
   for (const lamp of lamps) tally(`street_lamp/${lamp.type}`, false);
   const benches = estimateBenches(ctx);

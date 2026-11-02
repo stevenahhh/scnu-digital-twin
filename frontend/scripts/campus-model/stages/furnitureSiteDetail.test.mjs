@@ -1,11 +1,11 @@
-// Checks for the VR site-detail builders of stages/furniture.mjs (hedges and shrub masses, car-park stall rows, street furniture, hedge lettering, LED screens) on flat
+// Checks for the VR site-detail builders of stages/furniture.mjs (hedges and shrub masses, wheel stops, street furniture, hedge lettering, LED screens) on flat
 // ground.
 import assert from "node:assert/strict";
 import test from "node:test";
 import { metres } from "../lib/frame.mjs";
 import { pointInRing } from "../lib/geometry.mjs";
 import { offsetLine, rgb } from "../lib/solids.mjs";
-import { B, hedgeTextStrokes, makeContext, moundAt, onRoof, parasolColour, stallRow } from "./furniture.mjs";
+import { B, appendWheelStops, hedgeTextStrokes, makeContext, moundAt, onRoof, parasolColour } from "./furniture.mjs";
 
 const M = metres;
 const sites = { inArea: () => false, labelAt: () => null, classes: { PAVING: 1, ASPHALT: 2 } };
@@ -19,19 +19,13 @@ function build(kind, geometry, p) {
 const ys = (ctx) => ctx.solid.mesh.positions.filter((_, i) => i % 3 === 1).map((y) => y / M(1));
 const near = (a, b, what) => assert.ok(Math.abs(a - b) < 1e-6, `${what}: ${a} vs ${b}`);
 
-test("stall row: one stall per 2.5 m, dividers on the chosen side or bearing, wheel stops 0.9 m in from the back", () => {
-  const row = stallRow(line(25), { side: "left" });
-  assert.equal(row.n, 10);
-  assert.equal(row.dividers.length, 11);
-  near(row.dividers[0][1][1] / M(1), -5, "left of an eastward line is north (-z)");
-  near(stallRow(line(25), { side: "right" }).dividers[0][1][1] / M(1), 5, "right is south");
-  near(stallRow(line(25), { bearingDeg: 180, depthM: 4 }).dividers[0][1][1] / M(1), 4, "a bearing of 180 runs south");
-  near(row.stops[0].centre[1] / M(1), -4.1, "stop");
-  assert.equal(stallRow(line(25), { stalls: 9 }).n, 9);
-  near(Math.max(...ys(build("stall_row", { line: line(25) }, { side: "left" }))), 0.045, "paint lies just over the ground");
-  near(Math.max(...ys(build("stall_row", { line: line(25) }, { side: "left", wheel_stops: true }))), 0.12, "wheel stop top");
-  const stopsOnly = build("stall_row", { line: line(25) }, { side: "left", dividers: false, wheel_stops: true });
-  assert.equal(Math.min(...ys(stopsOnly)), -0.03, "without dividers only the wheel stops are drawn");
+test("a wheel stop stands 0.12 m over the ground and sinks 0.03 m into it, along its row", () => {
+  const ctx = flatContext();
+  appendWheelStops(ctx, [{ id: "LOT_A/R1/W0", centre: [M(10), M(4)], u: [1, 0], lengthM: 1.6, colour: "#d9b43a" }]);
+  near(Math.max(...ys(ctx)), 0.12, "wheel stop top");
+  near(Math.min(...ys(ctx)), -0.03, "wheel stop foot");
+  const xs = ctx.solid.mesh.positions.filter((_, i) => i % 3 === 0).map((x) => x / M(1));
+  near(Math.max(...xs) - Math.min(...xs), 1.6, "length along the row");
 });
 
 test("hedges and shrub masses reach their height", () => {

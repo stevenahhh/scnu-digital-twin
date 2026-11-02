@@ -586,7 +586,9 @@ surfaces are paving supplements of `../osm-ground.json`. Every dimension is an e
 Ground-level detail the VR stations show within about 40 m of the camera and the model lacked, for everything that is
 not a tree (trees lane) and not carriageway paint (markings lane): clipped hedges and shrub masses, kerbed lawn islands
 and tree pits, car-park stall rows and wheel stops, and one entrance stair. 47 features at 14 of the 38 strip stations
-(a12, b2, c5 and d1 are left out), drawn by `stages/furniture.mjs` (`hedge`, `stall_row`, `planter`, `terraced_steps`).
+(a12, b2, c5 and d1 are left out), drawn by `stages/furniture.mjs` (`hedge`, `planter`, `terraced_steps`). The 33 `stall_row`
+features moved to `data/ground/parking.json` (plan campus-ground-truth-redesign todo 12); the originals are in
+`evidence/parking-migration.json`.
 Every position and dimension is an estimate (추정); each feature names its VR scene and face.
 
 Method: for each station an NGII chip of +-40 m around the station (0.25 m, x3) was compared with the VR cube faces and

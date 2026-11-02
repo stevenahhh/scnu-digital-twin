@@ -113,6 +113,24 @@ const goodRow = () => ({
   evidence: { tier: 'T1', refs: ['x'], photoSupport: 0.8 }, estimated: false,
 });
 
+test("validate('parking'): an accessible bay outside any row is an error naming the bay", () => {
+  const lot = (extra, rows = [goodRow()]) => ({ lots: [{ id: 'LOT_E3_S', parcel: null, rows, ...extra }] });
+  const loose = validate('parking', lot({ bays: [{ id: 'LOT_E3_S/B7', kind: 'accessible', centre: [0, 0] }] }));
+  assert.equal(loose.ok, false);
+  assert.ok(loose.errors.some((e) => e.startsWith('LOT_E3_S: accessible bay LOT_E3_S/B7 is outside any row')), loose.errors.join('\n'));
+  const past = validate('parking', lot({}, [{ ...goodRow(), stalls: [{ id: 'LOT_E3_S/R1/S40', index: 40, kind: 'accessible', symbol: 'wheelchair' }] }]));
+  assert.ok(past.errors.some((e) => e.startsWith('LOT_E3_S/R1: stalls[0] accessible bay LOT_E3_S/R1/S40 is outside the row')), past.errors.join('\n'));
+  assert.deepEqual(validate('parking', lot({}, [{ ...goodRow(), stalls: [{ id: 'LOT_E3_S/R1/S2', index: 2, kind: 'accessible', widthM: 3.3, aisle: { side: 'back', widthM: 1, outside: true }, symbol: 'wheelchair', upBearingDeg: 10, figure: { symbol: 'scooter', side: 'back', frontBearingDeg: 90 } }, { index: 3, kind: 'pm', symbol: 'P' }] }])).errors, []);
+});
+
+test("validate('parking') checks free lines and the optional row fields by id", () => {
+  const lot = (extra, row = {}) => ({ lots: [{ id: 'LOT_E3_S', parcel: null, rows: [{ ...goodRow(), ...row }], ...extra }] });
+  assert.deepEqual(validate('parking', lot({ lines: [{ id: 'LOT_E3_S/L1', abs: [[0, 0], [1, 0]], widthM: 0.1, colour: 'white', evidence: { tier: 'T1', refs: ['x'] } }, { id: 'LOT_E3_S/L2', ring: [[0, 0], [1, 0], [1, 1]], colour: 'yellow', evidence: { tier: 'T1', refs: ['x'] } }] }, { paintBack: true, paintFront: false, dividerBearingDeg: 10, estimatedDividers: [1] })).errors, []);
+  const bad = validate('parking', lot({ lines: [{ id: 'LOT_E3_S/L1', abs: [[0, 0]], colour: 'red', evidence: {} }] }, { dividerBearingDeg: 'n', estimatedDividers: [99], divider: { style: 'none', widthM: 0.1 } }));
+  for (const start of ['LOT_E3_S/L1: needs abs', 'LOT_E3_S/L1: colour', 'LOT_E3_S/L1: evidence.tier', 'LOT_E3_S/R1: dividerBearingDeg', 'LOT_E3_S/R1: estimatedDividers']) assert.ok(bad.errors.some((e) => e.startsWith(start)), `${start}\n${bad.errors.join('\n')}`);
+  assert.ok(!bad.errors.some((e) => e.includes('divider needs style')), 'style none is a wheel-stop-only row');
+});
+
 test("validate('parking') accepts a well-formed lot and names lot and row ids in errors", () => {
   assert.deepEqual(validate('parking', { lots: [{ id: 'LOT_E3_S', parcel: null, rows: [goodRow()] }] }), { ok: true, errors: [] });
   const bad = goodRow();

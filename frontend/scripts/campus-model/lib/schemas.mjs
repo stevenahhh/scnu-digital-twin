@@ -191,8 +191,9 @@ function parcels(doc) {
 }
 
 // ---- data/ground/parking.json (design §6.1): lot id -> parametric rows; accessible bays are row members.
-const STALL_KINDS = new Set(["general", "expanded", "accessible", "parallel", "light", "ev"]);
-const DIVIDER_STYLES = new Set(["single", "double", "U", "T"]);
+const STALL_KINDS = new Set(["general", "expanded", "accessible", "parallel", "light", "ev", "pm"]);
+const DIVIDER_STYLES = new Set(["single", "double", "U", "T", "none"]); // none: a row of wheel stops whose dividers the photo does not show
+const AISLE_SIDES = ["start", "end", "back", "front"];
 const positive = (v) => Number.isFinite(v) && v > 0;
 function backLineErrors(line) {
   if (!line || typeof line !== "object") return "backLine must be { abs } or { anchor }";
@@ -210,19 +211,26 @@ function parkingRow(row, lotId, fail) {
   if (!positive(row.depthM)) fail("depthM must be a number > 0");
   if (!Number.isFinite(row.startOffsetM ?? 0)) fail("startOffsetM must be a number");
   if (!(row.count === null || (Number.isInteger(row.count) && row.count >= 2))) fail("count must be an integer >= 2 or null");
-  if (row.divider !== undefined && (!DIVIDER_STYLES.has(row.divider?.style) || !positive(row.divider?.widthM))) fail(`divider needs style (${[...DIVIDER_STYLES].join(", ")}) and widthM > 0`);
+  if (row.divider !== undefined && (!DIVIDER_STYLES.has(row.divider?.style) || (row.divider.style !== "none" && !positive(row.divider?.widthM)))) fail(`divider needs style (${[...DIVIDER_STYLES].join(", ")}) and widthM > 0`);
+  if (row.dividerBearingDeg !== undefined && !Number.isFinite(row.dividerBearingDeg)) fail("dividerBearingDeg must be a number (degrees from north, back towards the aisle)");
+  if (row.paintBack !== undefined && typeof row.paintBack !== "boolean") fail("paintBack must be a boolean");
+  if (row.paintFront !== undefined && typeof row.paintFront !== "boolean") fail("paintFront must be a boolean");
+  if (row.estimatedDividers !== undefined && !(Array.isArray(row.estimatedDividers) && row.estimatedDividers.every((i) => Number.isInteger(i) && i >= 0 && (!Number.isInteger(row.count) || i < row.count)))) fail("estimatedDividers must list divider indices of the row");
   if (!Array.isArray(row.stalls)) fail("stalls must be an array (exception stalls only)");
   else {
     const seen = new Set();
     row.stalls.forEach((s, i) => {
       const at = (m) => fail(`stalls[${i}] ${m}`);
       const bays = Number.isInteger(row.count) ? row.count - 1 : Infinity;
-      if (!(Number.isInteger(s?.index) && s.index >= 0 && s.index < bays)) at(`index must be an integer in [0, ${bays})`);
+      if (!(Number.isInteger(s?.index) && s.index >= 0 && s.index < bays)) at(`${s?.kind === "accessible" ? `accessible bay ${s.id ?? "(no id)"} is outside the row: ` : ""}index must be an integer in [0, ${bays})`);
       else if (seen.has(s.index)) at("index repeats");
       else seen.add(s.index);
       if (!STALL_KINDS.has(s?.kind)) at(`kind must be one of ${[...STALL_KINDS].join(", ")}`);
       if (s?.widthM !== undefined && !positive(s.widthM)) at("widthM must be > 0");
-      if (s?.aisle && (!["start", "end"].includes(s.aisle.side) || !positive(s.aisle.widthM))) at("aisle needs side start|end and widthM > 0");
+      if (s?.aisle && (!AISLE_SIDES.includes(s.aisle.side) || !positive(s.aisle.widthM))) at(`aisle needs side ${AISLE_SIDES.join("|")} and widthM > 0`);
+      if (s?.figure && (s.figure.symbol !== "scooter" || !AISLE_SIDES.includes(s.figure.side))) at(`figure needs symbol scooter and side ${AISLE_SIDES.join("|")}`);
+      if (s?.symbol !== undefined && ![null, "wheelchair", "P"].includes(s.symbol)) at("symbol must be wheelchair, P or null");
+      if (s?.upBearingDeg !== undefined && !Number.isFinite(s.upBearingDeg)) at("upBearingDeg must be a number");
     });
   }
   if (!(row.wheelStops === null || row.wheelStops === undefined || (Number.isFinite(row.wheelStops.offsetFromBackM) && positive(row.wheelStops.lengthM)))) fail("wheelStops needs offsetFromBackM and lengthM > 0");
@@ -232,6 +240,14 @@ function parkingRow(row, lotId, fail) {
   if (!(ps === null || ps === undefined || (Number.isFinite(ps) && ps >= 0 && ps <= 1))) fail("evidence.photoSupport must be in [0, 1] or null");
   if (typeof row.estimated !== "boolean") fail("estimated must be a boolean");
   else if (row.evidence?.tier === "T4" && !row.estimated) fail("estimated must be true for a T4 row");
+}
+// A recorded line of paint that belongs to no row (an aisle line, a lone divider): two end points or a traced ring.
+function parkingLine(line, fail) {
+  const straight = Array.isArray(line.abs) && line.abs.length === 2 && line.abs.every(isPair) && positive(line.widthM);
+  if (!straight && !isRing(line.ring)) fail("needs abs (two [E, N] pairs) with widthM, or a ring");
+  if (!["white", "yellow"].includes(line.colour)) fail("colour must be white or yellow");
+  if (!TIERS.has(line.evidence?.tier)) fail("evidence.tier must be T0-T4");
+  if (!Array.isArray(line.evidence?.refs) || !line.evidence.refs.every(isText)) fail("evidence.refs must be an array of strings");
 }
 function parking(doc) {
   if (!doc || typeof doc !== "object" || !Array.isArray(doc.lots)) return ["parking: lots must be an array"];
@@ -245,6 +261,17 @@ function parking(doc) {
     else if (lots.has(id)) fail("id repeats");
     else lots.add(id);
     if (!(lot?.parcel === null || lot?.parcel === undefined || /^PARCEL_[A-Z0-9_]+$/.test(lot.parcel))) fail("parcel must be a PARCEL_* id or null");
+    // design §6.1: an accessible bay is a member of a row, so its direction and place come from the row
+    for (const [i, bay] of (lot?.bays ?? []).entries()) fail(`accessible bay ${bay?.id ?? `bays[${i}]`} is outside any row: make it a stall of a row`);
+    if (lot?.lines !== undefined && !Array.isArray(lot.lines)) fail("lines must be an array");
+    for (const [l, line] of (Array.isArray(lot?.lines) ? lot.lines : []).entries()) {
+      const lid = isText(line?.id) ? line.id : `${id}/lines[${l}]`;
+      const lineFail = (message) => errors.push(`${lid}: ${message}`);
+      if (!isText(line?.id) || !line.id.startsWith(`${id}/`)) lineFail(`line id must start with ${id}/`);
+      if (rows.has(lid)) lineFail("line id repeats");
+      rows.add(lid);
+      parkingLine(line ?? {}, lineFail);
+    }
     if (!Array.isArray(lot?.rows)) return fail("rows must be an array");
     lot.rows.forEach((row, r) => {
       const rid = isText(row?.id) ? row.id : `${id}/rows[${r}]`;

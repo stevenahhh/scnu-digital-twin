@@ -1,4 +1,6 @@
 // Regular geometry for the road markings the paint gate accepted (stages/markings.mjs, loadMarkings step 4).
+// Stall paint is not drawn here: parking_line chains only orient the text beside them, and disabled_parking is dropped
+// (data/ground/parking.json and stages/parking.mjs draw the rows, bays and symbols).
 //
 // The gate decides WHERE paint exists (each photo detection is checked against the NGII sheet); this step decides
 // what the paint looks like, from the statute shapes, so the model shows straight lines, equal dashes, one regular
@@ -10,10 +12,10 @@
 //     stop lines are straight rectangles square to the lane they close;
 //   - zebras: one rectangle per crossing (bar groups that overlap are one crossing), bars along the carriageway at the
 //     measured period, the phase of the detected bars;
-//   - arrows, text, diamonds, give-way triangles, chevrons, wheelchair and bicycle symbols: templates
+//   - arrows, text, diamonds, give-way triangles, chevrons and bicycle symbols: templates
 //     (lib/markingGlyphs.mjs) at the detected centre, orientation and size; text the photo cannot be read on is the
 //     most likely statute text and logged as 추정;
-//   - other painted areas (hatch stripes, hump bands, blue bays, stall frames): rectangles, or outlines whose edges are
+//   - other painted areas (hatch stripes, hump bands): rectangles, or outlines whose edges are
 //     snapped to the dominant directions of their group;
 //   - nothing is kept on a modelled building or an A003 sidewalk, and fitted lines of one colour that cover the same
 //     paint are drawn once.
@@ -23,7 +25,7 @@ import {
   polylineLength, projectArc, rect, resample, scale, slicePath, straightness, sub, unit, fitPath, distanceToPolyline, median,
 } from "../lib/markingFit.mjs";
 import {
-  ARROW_KINDS, arrowTemplate, bicycleTemplate, chevronTemplate, diamondTemplate, hatchTemplate, parkingPTemplate, scooterTemplate, textBlock, triangleTemplate, wheelchairTemplate,
+  ARROW_KINDS, arrowTemplate, bicycleTemplate, chevronTemplate, diamondTemplate, textBlock, triangleTemplate,
 } from "../lib/markingGlyphs.mjs";
 
 const LINE_KINDS = new Set(["lane_line_dashed", "lane_line_solid", "edge_line", "centre_line_yellow", "parking_line", "kerb_no_parking", "give_way_line"]);
@@ -59,11 +61,6 @@ const TEXT_STALL_REACH_M = 3;
 const TEXT_ROAD_MIN_M = 10;
 const TEXT_AXIS_REACH_M = 15;
 const ZEBRA_ROAD_SNAP_DEG = 5;
-// A blue bay piece at least BAY_ROW_M long (and 1.6 times its depth) is a row of bays BAY_WIDTH_M wide (statute
-// disabled bay 3.3-3.5 m, 추정).
-const BAY_ROW_M = 6.5;
-const BAY_WIDTH_M = 3.4;
-const BAY_SYMBOL_BLOB_M = 2.2;
 // junction guide lines (short dense dashes, the photo's own pattern): see the dash step of the line pass
 // a dotted guide line whose photo dashes are dash-length (not 0.5 m dots) keeps them too
 const GUIDE_DASH_MIN_M = 0.4;
@@ -71,10 +68,6 @@ const GUIDE_DASH_MAX_M = 1.2;
 const GUIDE_DASH_LONGEST_M = 1.5;
 const GUIDE_PERIOD_MAX_M = 4;
 const GUIDE_MIN_DASHES = 3;
-const BAY_SYMBOL_M = 1.5;
-const BAY_P_M = 2.0;
-const BAY_SYMBOL_MARGIN_M = 0.25;
-const BAY_SCOOTER_M = 1.4;
 const ZEBRA_ROW_GAP_M = 1.0;
 const ZEBRA_PERIOD_RANGE_M = [0.88, 0.93];
 const ZEBRA_ALIGN_PERIOD_M = 0.005;
@@ -352,7 +345,7 @@ export function regularise(drawn, ctx) {
   const pieces = [];
   const stats = {
     chains: 0, fragments: 0, straightRuns: 0, arcs: 0, straightness: [], residual: [], dashPeriods: [], duplicateLines: 0,
-    baySymbols: { wheelchair: 0, p: 0, scooters: 0, aisles: 0, existing: 0, skipped: 0, orientationGuessed: 0, blobsReplaced: 0, list: [] }, crossings: 0, crossingGroups: 0, crossingRowsAligned: 0, crossingRowsOwnGrid: 0, crossingPeriods: [], stopInCrossing: [], crossingList: [], blockedIds: [], frameStrokes: 0, barsDrawn: 0, barsDetected: 0, zebraPhaseResidual: [], glyphs: {}, textReadings: [], textMissing: [], arrowAxes: { road: 0, own: 0 }, dropped: { blocked: 0, textTooSmall: 0 },
+    crossings: 0, crossingGroups: 0, crossingRowsAligned: 0, crossingRowsOwnGrid: 0, crossingPeriods: [], stopInCrossing: [], crossingList: [], blockedIds: [], frameStrokes: 0, barsDrawn: 0, barsDetected: 0, zebraPhaseResidual: [], glyphs: {}, textReadings: [], textMissing: [], arrowAxes: { road: 0, own: 0 }, dropped: { blocked: 0, textTooSmall: 0 },
     stopSquared: 0, parallelSnapped: 0, outlines: 0, rectangles: 0,
   };
   const emit = (rings, colour, kind, extra = {}) => pieces.push({ rings: rings.map((r) => r.map(toScene)), colour, kind, estimated: false, ...extra });
@@ -761,19 +754,10 @@ export function regularise(drawn, ctx) {
   emitTexts(texts);
 
   function emitRegularPolygon(c, directions) {
+    if (c.kind === "disabled_parking") return; // data/ground/parking.json draws the bays
     for (const rings of shapesM(c)) {
       const box = orientedBox(rings[0]);
       const fill = polygonArea(rings) / Math.max(1e-6, 4 * box.halfLong * box.halfShort);
-      if (c.kind === "disabled_parking" && c.colour === "white" && fill < 0.5) {
-        // upright along one of the bay's own directions, the one whose template covers the painted symbol best
-        const axes = (directions ?? [box.long, box.short]).flatMap((d) => [unit(d), scale(unit(d), -1)]);
-        const size = Math.min(2 * box.halfLong, BAY_SYMBOL_M);
-        const pick = axes.map((f) => ({ t: place(wheelchairTemplate(size), box.centre, f), f }))
-          .map((x) => ({ ...x, score: overlapScore(rings ? [rings] : [], x.t) })).sort((x, y) => y.score - x.score)[0];
-        emitPoly(pick.t, c.colour, c.kind, { glyph: "wheelchair", tid: `tpl ${c.id}`, up: pick.f });
-        glyphCount("wheelchair");
-        continue;
-      }
       if (c.kind === "bike_lane_blue" && c.colour === "white" && fill < 0.5) {
         emitPoly(place(bicycleTemplate(2 * box.halfLong, 2 * box.halfShort), box.centre, box.long), c.colour, c.kind);
         glyphCount("bicycle");
@@ -978,151 +962,6 @@ export function regularise(drawn, ctx) {
     }
   }
 
-  // ---- bay symbols: every blue bay gets its white symbol (도로교통법 시행규칙 별표 6: the wheelchair of a disabled bay;
-  // the P of a parking or PM bay where ctx.baySymbols names it), upright for the driver entering from the aisle, at
-  // the bay's centre, unless a white symbol is already drawn there. A blue piece longer than BAY_ROW_M is a row of
-  // bays BAY_WIDTH_M wide. The aisle is the end of the bay that is open: the other end meets a kerb, a sidewalk or a
-  // building (ctx.blocked); where neither or both do, ctx.baySymbols may give the bearing, else it is 추정.
-  emitBaySymbols();
-  function emitBaySymbols() {
-    const blues = pieces.filter((pc) => pc.kind === "disabled_parking" && pc.colour === "blue" && !pc.estimated);
-    // a wheelchair template already drawn from a traced white symbol keeps its bay; other small white pieces inside a
-    // bay (blobs of the painted symbol, at most BAY_SYMBOL_BLOB_M across) give way to the template
-    const centreOf = (pc) => { const r = pc.rings[0].map(toM); return scale(r.reduce((a, q) => add(a, q), [0, 0]), 1 / r.length); };
-    const whitePieces = pieces.filter((pc) => pc.kind === "disabled_parking" && pc.colour === "white" && !pc.estimated);
-    // one entry per drawn template (its parts share a tid): replaced or kept as a whole
-    const byTid = new Map();
-    for (const pc of whitePieces.filter((x) => x.glyph === "wheelchair")) {
-      const k = pc.tid ?? pc;
-      if (!byTid.has(k)) byTid.set(k, []);
-      byTid.get(k).push(pc);
-    }
-    const whiteTemplates = [...byTid.values()].map((parts) => ({ parts, c: scale(parts.map(centreOf).reduce((a, q) => add(a, q), [0, 0]), 1 / parts.length) }));
-    const whites = whiteTemplates.map((t) => t.c);
-    const blobs = whitePieces.filter((pc) => !pc.glyph && orientedBox(pc.rings[0].map(toM)).halfLong * 2 <= BAY_SYMBOL_BLOB_M).map((pc) => ({ pc, c: centreOf(pc) }));
-    const replaced = new Set();
-    const boxes = blues.map((pc) => { const r = pc.rings[0].map(toM); const xs = r.map((q) => q[0]); const zs = r.map((q) => q[1]); return [Math.min(...xs), Math.min(...zs), Math.max(...xs), Math.max(...zs)]; });
-    const parent = blues.map((_, i) => i);
-    const root = (i) => (parent[i] === i ? i : (parent[i] = root(parent[i])));
-    for (let i = 0; i < blues.length; i += 1) for (let j = i + 1; j < blues.length; j += 1) {
-      const [a, b] = [boxes[i], boxes[j]];
-      if (a[0] <= b[2] + 0.3 && b[0] <= a[2] + 0.3 && a[1] <= b[3] + 0.3 && b[1] <= a[3] + 0.3) parent[root(i)] = root(j);
-    }
-    const bays = new Map();
-    blues.forEach((pc, i) => { if (!bays.has(root(i))) bays.set(root(i), []); bays.get(root(i)).push(pc); });
-    const rules = ctx.baySymbols ?? {};
-    for (const members of bays.values()) {
-      const points = members.flatMap((pc) => pc.rings[0].map(toM));
-      const box = orientedBox(points);
-      const long = 2 * box.halfLong;
-      const short = 2 * box.halfShort;
-      const rule = members.map((pc) => rules[pc.id]).find(Boolean) ?? null;
-      if (rule?.symbol === "none") continue;
-      // a read bearing names the bay's depth axis: the box axis nearest it
-      let row = long >= BAY_ROW_M && long >= 1.6 * short;
-      if (Number.isFinite(rule?.upBearingDeg)) {
-        const b = (rule.upBearingDeg * Math.PI) / 180;
-        row = Math.abs(dot(box.short, [Math.sin(b), -Math.cos(b)])) > Math.abs(dot(box.long, [Math.sin(b), -Math.cos(b)]));
-      }
-      const n = Number.isFinite(rule?.cells) ? rule.cells : row ? Math.max(1, Math.round(long / BAY_WIDTH_M)) : 1;
-      const across = row ? box.long : box.short; // along the row (bay width)
-      const depth = row ? box.short : box.long; // into the bay
-      const width = row ? long / n : short;
-      const deep = row ? short : long;
-      if (width < 1.5 || deep < 2.5) {
-        stats.baySymbols.skipped += 1;
-        continue;
-      }
-      for (let k = 0; k < n; k += 1) {
-        const centre = add(box.centre, scale(across, (k - (n - 1) / 2) * width));
-        // a white symbol drawn inside this bay already
-        // inside a blue bay the bay owns its symbol: a template drawn earlier from the traced white figure (or several,
-        // or one read as a wheelchair in a P bay) gives way to one clean symbol per cell, keeping the traced figure's
-        // photo-fitted direction where the bay has no reading
-        const inCell = (w, m = 0) => Math.abs(dot(sub(w, centre), across)) <= width / 2 + m && Math.abs(dot(sub(w, centre), depth)) <= deep / 2 + m;
-        const traced = whiteTemplates.filter((t) => inCell(t.c, 0.5));
-        for (const t of traced) for (const pc of t.parts) replaced.add(pc);
-        if (traced.length) stats.baySymbols.existing += 1;
-        const tracedUp = traced.map((t) => t.parts[0].up).find(Boolean);
-        // the painted blobs inside the cell (the symbol's, the aisle hatch's) give way to the templates
-        const painted = blobs.filter((b) => Math.abs(dot(sub(b.c, centre), across)) <= width / 2 && Math.abs(dot(sub(b.c, centre), depth)) <= deep / 2);
-        for (const b of painted) replaced.add(b.pc);
-        // the part of the cell the symbol owns: [centre, half extents along across and depth], narrowed by a hatched
-        // access aisle (ctx.baySymbols aisle, read on the photo/VR) and by a second figure (a PM bay's scooter)
-        let own = { c: centre, ha: width / 2, hd: deep / 2 };
-        const sideOf = (bearingDeg) => {
-          const b = (bearingDeg * Math.PI) / 180;
-          const v = [Math.sin(b), -Math.cos(b)];
-          return [[across, "ha"], [scale(across, -1), "ha"], [depth, "hd"], [scale(depth, -1), "hd"]].sort((p, q) => dot(q[0], v) - dot(p[0], v))[0];
-        };
-        const aisle = Array.isArray(rule?.aisle) ? rule.aisle[k] : rule?.aisle;
-        if (Number.isFinite(aisle?.bearingDeg) && Number.isFinite(aisle?.widthM)) {
-          const [n, key] = sideOf(aisle.bearingDeg);
-          const h = own[key];
-          const len = 2 * own[key === "ha" ? "hd" : "ha"];
-          const w = aisle.outside ? aisle.widthM : Math.min(aisle.widthM, 0.45 * 2 * h);
-          // inside the blue cell (the usual case) or, where the photo shows it, just beyond the cell's edge
-          emitPoly(placeAt(hatchTemplate(len, w), add(own.c, scale(n, aisle.outside ? h + w / 2 : h - w / 2)), n), "white", "disabled_parking", { glyph: "aisle" });
-          if (!aisle.outside) own = { ...own, c: add(own.c, scale(n, -w / 2)), [key]: h - w / 2 };
-          stats.baySymbols.aisles += 1;
-        }
-        if (rule?.figure?.symbol === "scooter" && Number.isFinite(rule.figure.endBearingDeg)) {
-          const [e, key] = sideOf(rule.figure.endBearingDeg);
-          const h = own[key] / 2;
-          const at = add(own.c, scale(e, h));
-          const fb = ((rule.figure.frontBearingDeg ?? 0) * Math.PI) / 180;
-          const up = scale(e, -1); // its top towards the bay's own symbol
-          const mirror = dot(rightOf(up), [Math.sin(fb), -Math.cos(fb)]) < 0;
-          let polys = scooterTemplate(Math.min(BAY_SCOOTER_M, 0.8 * 2 * own[key === "ha" ? "hd" : "ha"], (0.8 * 2 * h) / 0.78)) // 1 x 0.78 of its length;
-          if (mirror) polys = polys.map((rings) => rings.map((ring) => ring.map(([x, y]) => [-x, y]).reverse()));
-          emitPoly(place(polys, at, up), "white", "disabled_parking", { glyph: "scooter" });
-          own = { ...own, c: add(own.c, scale(e, -h)), [key]: h };
-          stats.baySymbols.scooters += 1;
-        }
-        const ownBlobs = painted.filter((b) => Math.abs(dot(sub(b.c, own.c), across)) <= own.ha && Math.abs(dot(sub(b.c, own.c), depth)) <= own.hd);
-        const at = ownBlobs.length ? scale(ownBlobs.reduce((acc, b) => add(acc, b.c), [0, 0]), 1 / ownBlobs.length) : own.c;
-        let up = null;
-        let from = "추정";
-        if (Number.isFinite(rule?.upBearingDeg)) {
-          const b = (rule.upBearingDeg * Math.PI) / 180;
-          const read = [Math.sin(b), -Math.cos(b)];
-          up = dot(depth, read) >= 0 ? depth : scale(depth, -1);
-          from = "reading";
-        } else if (tracedUp && rule?.symbol !== "P") {
-          up = Math.abs(dot(tracedUp, depth)) >= Math.abs(dot(tracedUp, across)) ? scale(depth, Math.sign(dot(tracedUp, depth)) || 1) : scale(across, Math.sign(dot(tracedUp, across)) || 1);
-          from = "traced";
-        } else {
-          const end = (sign) => [0.6, 1.2, 1.8].filter((d) => blocked(add(centre, scale(depth, sign * (deep / 2 + d))))).length;
-          const [fwd, back] = [end(1), end(-1)];
-          if (fwd !== back) {
-            up = fwd > back ? depth : scale(depth, -1);
-            from = "kerb";
-          } else up = depth;
-        }
-        const symbol = rule?.symbol ?? "wheelchair";
-        // sizes (추정): the access symbol BAY_SYMBOL_M tall, the P BAY_P_M tall, both within the bay
-        const [ownW, ownD] = [2 * own.ha, 2 * own.hd];
-        const polys = symbol === "P"
-          ? parkingPTemplate(Math.min(BAY_P_M, 0.6 * ownD, (0.6 * ownW) / 0.62))
-          : wheelchairTemplate(Math.min(BAY_SYMBOL_M, 0.55 * ownW, 0.45 * ownD));
-        // the template stays inside its bay: its centre clamped so its extent (local x across, y along `up`) fits the cell
-        const pts = polys.flatMap((rings) => rings[0]);
-        const ext = (k) => (Math.max(...pts.map((q) => q[k])) - Math.min(...pts.map((q) => q[k]))) / 2;
-        const r = rightOf(up);
-        const halfAcross = Math.abs(dot(r, across)) > 0.7 ? own.ha : own.hd;
-        const halfAlong = Math.abs(dot(up, depth)) > 0.7 ? own.hd : own.ha;
-        const clamp = (v, h) => Math.max(-Math.max(0, h), Math.min(Math.max(0, h), v));
-        const off = sub(at, own.c);
-        const inside = add(own.c, add(scale(r, clamp(dot(off, r), halfAcross - ext(0) - BAY_SYMBOL_MARGIN_M)), scale(up, clamp(dot(off, up), halfAlong - ext(1) - BAY_SYMBOL_MARGIN_M))));
-        emitPoly(place(polys, inside, up), "white", "disabled_parking", { glyph: symbol });
-        stats.baySymbols[symbol === "P" ? "p" : "wheelchair"] += 1;
-        if (from === "추정") stats.baySymbols.orientationGuessed += 1;
-        stats.baySymbols.list.push({ ids: members.map((pc) => pc.id).filter(Boolean), cell: k, centre: toScene(centre), upBearingDeg: +(((Math.atan2(up[0], -up[1]) * 180) / Math.PI + 360) % 360).toFixed(1), from, symbol, widthM: +width.toFixed(2), deepM: +deep.toFixed(2), acrossBearingDeg: +(((Math.atan2(across[0], -across[1]) * 180) / Math.PI + 360) % 360).toFixed(1), aisle: aisle ? aisle.bearingDeg : null });
-      }
-    }
-    for (let i = pieces.length - 1; i >= 0; i -= 1) if (replaced.has(pieces[i])) pieces.splice(i, 1);
-    stats.baySymbols.blobsReplaced = replaced.size;
-  }
-
-  return { pieces, zebras, stats };
+  // stall lines stayed in the chains above so stall text can lie along them; data/ground/parking.json draws them
+  return { pieces: pieces.filter((pc) => pc.kind !== "parking_line"), zebras, stats };
 }

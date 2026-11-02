@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { validate } from "../lib/schemas.mjs";
-import { PARCELS_FILE, compareToLayers, registrationRefs, seedParcels } from "./parcelsSeed.mjs";
+import { PARCELS_FILE, compareToLayers, parkingRowParcels, registrationRefs, seedParcels } from "./parcelsSeed.mjs";
 
 const square = (x, y, s) => [[x, y], [x + s, y], [x + s, y + s], [x, y + s]];
 const layer = (over) => ({ cls: "PAVING", mesh: "Ground_Pavers", label: 2, precedence: 2, source: "OSM-derived", source_ref: "way/1", rings: [square(0, 0, 10)], ...over });
@@ -114,4 +114,17 @@ test("data/ground/parcels.json equals today's ground layers ring for ring", { sk
   assert.equal(check.valid, true);
   assert.equal(check.layerDiffs, 0);
   assert.ok(check.worstAreaDiffM2 <= 0.1, line);
+});
+
+test("a parking row off road and lot ground gets its footprint as a lot parcel; a row on a lot gets none", () => {
+  const lotParcel = { id: "PARCEL_LOT_A", cls: "LOT", class: "lot", ring: square(0, 0, 20), holes: [], precedence: 4, paintAllowed: true };
+  const row = (id, E) => ({ id, backLine: { abs: [[E, 10], [E + 5, 10]] }, side: -1, depthM: 5, evidence: { tier: "T1", refs: [] }, estimated: false });
+  const parking = { lots: [{ id: "LOT_A", rows: [row("LOT_A/R1", 5), row("LOT_A/R2", 100)] }] };
+  const divider = (id, E) => ({ id, kind: "parking_line", rings: [[[E, 10], [E + 0.1, 10], [E + 0.1, 5], [E, 5]]] });
+  const out = parkingRowParcels(parking, [divider("LOT_A/R1/D0", 5), divider("LOT_A/R2/D0", 100)], [lotParcel], (p) => p);
+  assert.deepEqual(out.map((p) => p.id), ["PARCEL_LOT_A_R2"]);
+  assert.deepEqual(out[0].evidence.refs, ["LOT_A/R2"]);
+  assert.deepEqual(out[0].ring, [[99.7, 10.3], [105.3, 10.3], [105.3, 4.7], [99.7, 4.7]]);
+  assert.equal(out[0].paintAllowed, true);
+  assert.equal(out[0].label, null);
 });

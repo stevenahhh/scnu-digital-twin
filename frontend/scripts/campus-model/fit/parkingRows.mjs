@@ -147,7 +147,7 @@ function inRing([x, y], ring) {
 
 const luminance = (rgb, k) => 0.299 * rgb[3 * k] + 0.587 * rgb[3 * k + 1] + 0.114 * rgb[3 * k + 2];
 
-function paintThreshold(win) {
+export function paintThreshold(win) {
   const lum = [];
   const step = Math.max(1, Math.floor((win.w * win.h) / 40000));
   for (let k = 0; k < win.w * win.h; k += step) if (!win.mask?.[k]) lum.push(luminance(win.rgb, k));
@@ -264,7 +264,7 @@ export function profilePieces(win, ring) {
 }
 
 // Paint support of one divider segment: { support, visible } over pixels within half a divider of the centre line.
-function measure(win, thr, from, dir, lengthM) {
+export function measure(win, thr, from, dir, lengthM) {
   if (!win?.rgb) return { support: 0, visible: 0 };
   const across = [-dir[1], dir[0]];
   const step = win.gsdM / 2;
