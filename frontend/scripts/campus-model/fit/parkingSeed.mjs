@@ -9,6 +9,8 @@
 //   1. Dividers group into rows (parallel, side by side). The grid walks the gaps: a gap of n pitches holds n-1 undetected
 //      dividers, unless two or more of them are visibly empty (design §6.2 rule 5), which ends the row. A stall whose paint
 //      drifts more than DRIFT_M from the uniform grid becomes an exception, so dividers stay on their paint.
+//      A row whose dividers are mostly other rows' rails is no row (dissolveRailRows): its pieces go back to the free lines,
+//      and step 4 makes them those rows' end lines.
 //   2. A stall_row gives the photo rows under it its wheel stops, end lines and VR reading; alone it is a row of its own.
 //   3. A blue cell becomes a stall of the row it lies in, extends the row it adjoins, or makes a row of its own.
 //   4. Pieces no row takes stay as recorded free lines. Rows and lines within LOT_LINK_M share a lot.
@@ -282,9 +284,36 @@ function rowsFromGroup(group, probe, photo) {
         })(),
       ], photoSupport: null },
       estimated: tier !== "T1",
+      seenDividers: seen,
     });
   }
   return { rows, loose };
+}
+
+// A piece along another row's back or front line, square to that row's dividers, is that row's rail.
+function onRail(piece, row) {
+  const f = frameOf(row);
+  if (Math.abs(dot(piece.box.long, f.a)) < cos(PARALLEL_DEG)) return false;
+  const { s, t } = f.local(piece.box.centre);
+  const overlap = Math.min(f.length, s + piece.box.halfLong) - Math.max(0, s - piece.box.halfLong);
+  return overlap >= piece.box.halfLong && (Math.abs(t) <= END_LINE_M || Math.abs(t - row.depthM) <= END_LINE_M);
+}
+// The paint test asks whether a line exists at a position, not whose line it is: rails of neighbouring rows pass it, and the
+// depth of a row between them reads as a stall width. Only a row with more dividers can own a rail, so two rows at right
+// angles cannot dissolve each other. A row with fewer than two dividers of its own goes; its pieces return as free lines.
+function dissolveRailRows(rows, log) {
+  const count = (row) => row.seenDividers.length;
+  const loose = [];
+  const kept = rows.filter((row) => {
+    const owned = row.seenDividers.filter((x) => !x.members.every((piece) => rows.some((other) => other !== row && count(other) > count(row) && onRail(piece, other))));
+    if (owned.length === count(row)) return true;
+    log(`RAIL ${owned.length >= 2 ? "kept" : "dissolved"}: pitch ${row.pitchM} m, ${count(row) - owned.length}/${count(row)} dividers on other rows' rails, from ${JSON.stringify(row.backLine.abs[0])}: ${row.seenDividers.flatMap((x) => x.members).map(pieceRef).join(" ")}`);
+    if (owned.length >= 2) return true;
+    loose.push(...row.seenDividers.flatMap((x) => x.members));
+    return false;
+  });
+  for (const row of kept) delete row.seenDividers;
+  return { kept, loose };
 }
 
 // Estimator rows that do not lie on a row already found. Their pitch is uniform by construction, so blue cells may refit it.
@@ -608,7 +637,7 @@ function assignLots(rows, lines, named) {
 // divider position; propose(id, ring, backHint) -> estimator rows on the photo; named: { lotId: { ring, backHint } };
 // photo: { line({ from, dir, across, lengthM }) -> { visible, contrast, offsetM }, blue(ring) -> { visible, share } }.
 // Returns the parking.json document (parcel null).
-export function seedLots({ lines, cells, stallRows, probe = () => ({ visible: 1, support: 0 }), propose = () => [], named = {}, photo = null }) {
+export function seedLots({ lines, cells, stallRows, probe = () => ({ visible: 1, support: 0 }), propose = () => [], named = {}, photo = null, log = () => {} }) {
   const pieces = lines.map((line) => {
     const box = orientedBox(line.ring);
     return { ...line, box: { ...box, long: northward(box.long), short: box.short } };
@@ -623,12 +652,14 @@ export function seedLots({ lines, cells, stallRows, probe = () => ({ visible: 1,
     if (piece.ring.length !== 4 || length >= LONG_LINE_M || piece.box.halfLong < MIN_ASPECT * piece.box.halfShort) free.push(piece);
     else candidates.push(piece);
   }
-  const rows = [];
+  const photoRows = [];
   for (const group of groupParallel(candidates)) {
     const { rows: found, loose } = rowsFromGroup(group, probe, photo);
-    rows.push(...found);
+    photoRows.push(...found);
     free.push(...loose);
   }
+  const { kept: rows, loose: rails } = dissolveRailRows(photoRows, log);
+  free.push(...rails);
   for (const [id, { ring, backHint }] of Object.entries(named)) rows.push(...freshProposals(propose(id, ring, backHint), rows));
   for (const feature of stallRows) attachStallRow(feature, rows, propose);
   // first the cells that adjoin a stall row or a photo row; a lone group of cells then forms one row of its own
@@ -730,6 +761,7 @@ async function cli(args) {
   const unshaded = { ...campus, mask: campus.hidden };
   const photo = { line: (q) => lineContrast(unshaded, q), blue: (ring) => blueShare(campus, blue, ring) };
   const doc = seedLots({
+    log: console.log,
     photo,
     propose,
     lines: migration.lines,

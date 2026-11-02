@@ -9922,48 +9922,6 @@
      "backLine": {
       "abs": [
        [
-        244117.798,
-        263515.725
-       ],
-       [
-        244141.082,
-        263521.1
-       ]
-      ]
-     },
-     "side": -1,
-     "pitchM": 4.7793,
-     "depthM": 7.127,
-     "startOffsetM": 0,
-     "count": 6,
-     "divider": {
-      "style": "single",
-      "widthM": 0.1,
-      "colour": "white"
-     },
-     "endCaps": true,
-     "stalls": [],
-     "wheelStops": null,
-     "entryFrom": "aisle",
-     "estimatedDividers": [
-      1,
-      2,
-      3
-     ],
-     "evidence": {
-      "tier": "T1",
-      "refs": [
-       "photo dividers 3/6: MX01713 MX00842 MX00906 MX00842 MX00906"
-      ],
-      "photoSupport": 0.75
-     },
-     "estimated": false
-    },
-    {
-     "id": "LOT_E244107_N263479/R5",
-     "backLine": {
-      "abs": [
-       [
         244118.72,
         263511.685
        ],
@@ -10005,7 +9963,7 @@
      "paintBack": true
     },
     {
-     "id": "LOT_E244107_N263479/R6",
+     "id": "LOT_E244107_N263479/R5",
      "backLine": {
       "abs": [
        [
@@ -10032,7 +9990,7 @@
      "endCaps": true,
      "stalls": [
       {
-       "id": "LOT_E244107_N263479/R6/S6",
+       "id": "LOT_E244107_N263479/R5/S6",
        "index": 6,
        "kind": "general",
        "widthM": 2.299
@@ -10064,7 +10022,7 @@
      "paintFront": true
     },
     {
-     "id": "LOT_E244107_N263479/R7",
+     "id": "LOT_E244107_N263479/R6",
      "backLine": {
       "abs": [
        [
@@ -10090,7 +10048,7 @@
      "endCaps": true,
      "stalls": [
       {
-       "id": "LOT_E244107_N263479/R7/S12",
+       "id": "LOT_E244107_N263479/R6/S12",
        "index": 12,
        "kind": "general",
        "widthM": 2.249
@@ -10103,15 +10061,20 @@
       "refs": [
        "photo dividers 14/14: MX01710 MX01710 MX00842 MX00842 MX00906 MX00842 MX00906 MX00906 MX00906 MX00906 MX00906 MX00906 MX00906 MX00906 MX00906 MX00906",
        "back line MX00906",
-       "back line MX01710"
+       "back line MX01710",
+       "back line MX00842",
+       "front line MX00906",
+       "front line MX00842",
+       "front line MX00906"
       ],
       "photoSupport": 1
      },
      "estimated": false,
-     "paintBack": true
+     "paintBack": true,
+     "paintFront": true
     },
     {
-     "id": "LOT_E244107_N263479/R8",
+     "id": "LOT_E244107_N263479/R7",
      "backLine": {
       "abs": [
        [
@@ -10178,6 +10141,27 @@
      "id": "LOT_E244107_N263479/L2",
      "abs": [
       [
+       244118.485,
+       263511.936
+      ],
+      [
+       244118.354,
+       263513.239
+      ]
+     ],
+     "widthM": 0.1,
+     "colour": "white",
+     "evidence": {
+      "tier": "T1",
+      "refs": [
+       "MX01713"
+      ]
+     }
+    },
+    {
+     "id": "LOT_E244107_N263479/L3",
+     "abs": [
+      [
        244119.757,
        263528.631
       ],
@@ -10196,7 +10180,7 @@
      }
     },
     {
-     "id": "LOT_E244107_N263479/L3",
+     "id": "LOT_E244107_N263479/L4",
      "abs": [
       [
        244124.01,
@@ -10217,7 +10201,7 @@
      }
     },
     {
-     "id": "LOT_E244107_N263479/L4",
+     "id": "LOT_E244107_N263479/L5",
      "abs": [
       [
        244131.911,
@@ -10238,7 +10222,7 @@
      }
     },
     {
-     "id": "LOT_E244107_N263479/L5",
+     "id": "LOT_E244107_N263479/L6",
      "abs": [
       [
        244139.795,
@@ -10259,7 +10243,7 @@
      }
     },
     {
-     "id": "LOT_E244107_N263479/L6",
+     "id": "LOT_E244107_N263479/L7",
      "abs": [
       [
        244142.325,

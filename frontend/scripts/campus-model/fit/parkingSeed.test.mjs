@@ -246,3 +246,40 @@ test("an accessible stall carries the blue share measured under its fill; a row 
   assert.equal(off.estimated, true);
   assert.deepEqual(validate("parking", seed({ cells: [blueCell([50, 50], 90, 0)], photo: photoWith([], { blue: () => 0.08 }) })).errors, []);
 });
+
+// ---- gate review 2 of 27283390, blocker B3: rails of other rows read as dividers
+// A rail piece running east-west at north y, from E x0 to x1.
+const rail = (y, x0 = 5, x1 = 11, id = `RAIL${y}`) => ({ id, colour: "white", ring: [[x0, y + 0.05], [x1, y + 0.05], [x1, y - 0.05], [x0, y - 0.05]] });
+const ladder = (y0, n = 11, x0 = 0, tag = "A") => Array.from({ length: n }, (_, k) => line(x0 + k * 2.5, y0, y0 - 5, `${tag}${k}`));
+
+test("rails of other rows do not make a row: they become those rows' end lines", () => {
+  const doc = seed({ lines: [...ladder(0), ...ladder(-12, 11, 0, "B"), rail(0), rail(-5), rail(-12)] });
+  const rows = doc.lots.flatMap((l) => l.rows);
+  assert.equal(rows.length, 2, rows.map((r) => `${r.count}@${r.pitchM}`).join(" "));
+  assert.ok(rows.every((r) => r.count === 11 && Math.abs(r.pitchM - 2.5) < 1e-3));
+  const north = rows.find((r) => r.backLine.abs[0][1] > -3 || r.backLine.abs[0][1] === -5);
+  assert.ok(north.paintBack && north.paintFront, "both rails of the ladder are its end lines");
+  const south = rows.find((r) => r !== north);
+  assert.ok(south.paintBack || south.paintFront, "the third rail is the other ladder's");
+  assert.deepEqual(doc.lots.flatMap((l) => l.lines ?? []), [], "no piece is left over");
+  assert.deepEqual(validate("parking", doc).errors, []);
+});
+
+test("a rail row is not rescued by the photo: paint under a rail is the rail", () => {
+  const doc = seed({ lines: [...ladder(0), ...ladder(-12, 11, 0, "B"), rail(0), rail(-5), rail(-12)], photo: { line: () => ({ visible: 1, contrast: 40, offsetM: 0 }), blue: () => ({ visible: 1, share: 1 }) } });
+  assert.deepEqual(doc.lots.flatMap((l) => l.rows).map((r) => r.count), [11, 11]);
+});
+
+test("a row keeps its place when only one of its dividers lies on a bigger row's rail", () => {
+  // a ladder running north from the rail of the east-west row, its first divider on that rail
+  const crossing = [0, 2.5, 5, 7.5].map((d, k) => rail(10 + d, 5, 10, `C${k}`));
+  const doc = seed({ lines: [...ladder(10), ...crossing.map((p) => ({ ...p, ring: p.ring.map(([x, y]) => [x + 25, y]) })), rail(10, 5, 10, "C0b")] });
+  const rows = doc.lots.flatMap((l) => l.rows);
+  assert.deepEqual(rows.map((r) => r.count).sort((a, b) => a - b), [4, 11]);
+});
+
+test("a short ladder is not dissolved into a longer row that happens to run past it", () => {
+  // two rows at right angles: neither's dividers lie on the other's back or front line
+  const doc = seed({ lines: [...ladder(0), ...[0, 2.5, 5, 7.5].map((d, k) => rail(-20 - d, 5, 10, `S${k}`))] });
+  assert.deepEqual(doc.lots.flatMap((l) => l.rows).map((r) => r.count).sort((a, b) => a - b), [4, 11]);
+});
