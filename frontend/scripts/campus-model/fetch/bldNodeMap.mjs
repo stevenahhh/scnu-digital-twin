@@ -1,7 +1,8 @@
 // Writes data/bld-node-map.json once (design §3, §11): each uni.glb BLD_* node -> the GIS 건물통합정보 record whose
 // footprint overlaps its outline with IoU >= 0.5. Nodes without such a match get gis:null and fail
 // lib/schemas.mjs validate("bldNodeMap") until they are curated by hand (gis, curated:true, reason). Curated entries
-// already in the file are kept as they are, so a rerun never overwrites a hand decision.
+// already in the file are kept as they are, so a rerun never overwrites a hand decision. `inputs` records the sha256
+// of uni.glb and gis-buildings.json; stages/buildings.mjs stops when they no longer match (stale map).
 //   bun scripts/campus-model/fetch/bldNodeMap.mjs
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -10,6 +11,7 @@ import { pointInRing, ringCentroid } from "../lib/geometry.mjs";
 import { metres } from "../lib/frame.mjs";
 import { validate } from "../lib/schemas.mjs";
 import { loadSourceModel, meshFootprint, toModelRing } from "../stages/sources.mjs";
+import { hashInputs } from "../stages/buildings.mjs";
 import { sceneToTm } from "../../../src/geo/epsg5186.mjs";
 
 const DATA = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data");
@@ -86,9 +88,10 @@ const entries = nodes.map(({ nodeId, footprint }) => {
 writeFileSync(OUTPUT, `${JSON.stringify({
   source: "uni.glb BLD_* nodes matched to data/gis-buildings.json (GIS건물통합정보) by footprint IoU >= 0.5 on a 0.25 m grid; " +
     "gis:null entries are curated by hand (curated:true, reason). Written by fetch/bldNodeMap.mjs.",
+  inputs: hashInputs(),
   entries,
 }, null, 2)}\n`);
 for (const e of entries) console.log(`${e.nodeId}\t${e.gis?.footprintSource.replace(/^.* record /, "record ") ?? "null"}\t${e.iou}`);
-const { ok, errors } = validate("bldNodeMap", { entries });
+const { ok, errors } = validate("bldNodeMap", { inputs: hashInputs(), entries });
 console.log(`${entries.length} entries; validate: ${ok ? "ok" : `${errors.length} errors`}`);
 for (const error of errors) console.error(error);

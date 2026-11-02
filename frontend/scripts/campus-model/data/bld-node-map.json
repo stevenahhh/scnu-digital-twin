@@ -1,5 +1,9 @@
 {
   "source": "uni.glb BLD_* nodes matched to data/gis-buildings.json (GIS건물통합정보) by footprint IoU >= 0.5 on a 0.25 m grid; gis:null entries are curated by hand (curated:true, reason). Written by fetch/bldNodeMap.mjs.",
+  "inputs": {
+    "frontend/public/uni.glb": "61c7b000ea2780886dce5804f8ead042ec5b8d3515d8bed96ce1204b16f12a12",
+    "frontend/scripts/campus-model/data/gis-buildings.json": "3807d90af530a0265be0f77e9f05ee97eb80d66150f322429b5788c9fc0dad3c"
+  },
   "entries": [
     {
       "nodeId": "BLD_E5",

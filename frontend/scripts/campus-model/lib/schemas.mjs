@@ -11,6 +11,10 @@ const isText = (value) => typeof value === "string" && value.length > 0;
 function bldNodeMap(doc) {
   if (!doc || typeof doc !== "object" || !Array.isArray(doc.entries)) return ["bldNodeMap: entries must be an array"];
   const errors = [];
+  // inputs: { <repo-relative path>: sha256 hex } of the files the map was matched on (stale-map check).
+  // Optional here; stages/buildings.mjs requires it (checkNodeMapInputs).
+  if (doc.inputs !== undefined && (!doc.inputs || typeof doc.inputs !== "object" ||
+    !Object.values(doc.inputs).every((v) => /^[0-9a-f]{64}$/.test(v)))) errors.push("bldNodeMap: inputs must map each input file to its sha256 hex");
   const nodes = new Map();
   const records = new Map();
   doc.entries.forEach((entry, index) => {

@@ -10,7 +10,7 @@
 // sheet in .cache/ngii-ortho/ (licence decision D2; never committed) and the relief-lean field of the registration study.
 // The polygon work runs in fetch/building_forms.py (shapely, numpy, OpenCV through `uv run`, like fetch/gis_buildings.py);
 // its header describes the method. Output rings are lon/lat (EPSG:4326, the same frame as gis-buildings.json); the
-// generator maps them with geoToModel plus its footprint shift, like the LOD4 tower outlines. Heights are metres above the
+// generator maps them with geoToModel, like the footprints and the LOD4 tower outlines. Heights are metres above the
 // building's lowest ground. Everything in the file is an estimate derived from VWorld's models and the photo.
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -113,13 +113,10 @@ export async function writeBuildingForms() {
   } finally {
     Object.assign(console, silent);
   }
-  const { selectableBuildings, campusBuildings, footprintShift } = selection;
+  const { selectableBuildings, campusBuildings } = selection;
   const toMetres = ([x, z]) => [Number((x / U).toFixed(3)), Number((-z / U).toFixed(3))];
-  const toGeo = ([east, north]) => modelToGeo(east * U - footprintShift[0], -north * U - footprintShift[1]).map((v) => Number(v.toFixed(8)));
-  const fromGeo = ([lon, lat]) => {
-    const [x, z] = geoToModel(lon, lat);
-    return toMetres([x + footprintShift[0], z + footprintShift[1]]);
-  };
+  const toGeo = ([east, north]) => modelToGeo(east * U, -north * U).map((v) => Number(v.toFixed(8)));
+  const fromGeo = ([lon, lat]) => toMetres(geoToModel(lon, lat));
   // A curated form (data/scnu-facades.json entry `form`, lon/lat like this file) for a building LOD4 does not show.
   const curatedOf = (b) => {
     const form = b.entry?.form;
@@ -154,7 +151,7 @@ export async function writeBuildingForms() {
     };
   });
 
-  // LOD4 models over the selection, in the same model metres (with the footprint shift, as the generator places them).
+  // LOD4 models over the selection, in the same model metres (unshifted, as the generator places them).
   const lonlat = buildings.flatMap((b) => b.parts.flatMap((p) => p.outer)).map(toGeo);
   const bbox = {
     west: Math.min(...lonlat.map((p) => p[0])), east: Math.max(...lonlat.map((p) => p[0])),
@@ -166,8 +163,8 @@ export async function writeBuildingForms() {
       const positions = new Array(model.local.length);
       for (let i = 0; i < model.local.length; i += 3) {
         const [x, z] = geoToModel(model.local[i] / MX + LON0, model.local[i + 1] / MY + LAT0);
-        positions[i] = Number(((x + footprintShift[0]) / U).toFixed(3));
-        positions[i + 1] = Number((-(z + footprintShift[1]) / U).toFixed(3));
+        positions[i] = Number((x / U).toFixed(3));
+        positions[i + 1] = Number((-z / U).toFixed(3));
         positions[i + 2] = Number(model.local[i + 2].toFixed(3));
       }
       models.push({ name: model.name, positions, indices: Array.from(model.indices) });
