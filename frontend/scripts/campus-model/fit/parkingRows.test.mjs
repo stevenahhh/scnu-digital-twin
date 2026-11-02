@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { dividerCandidates, dominantAngleDeg, estimatePitch, proposeLot } from './parkingRows.mjs';
+import { blueShare, lineContrast, dividerCandidates, dominantAngleDeg, estimatePitch, proposeLot } from './parkingRows.mjs';
 import { validate } from '../lib/schemas.mjs';
 
 // Synthetic sheet: 0.05 m pixels, dark asphalt, white dividers 0.12 m wide and 5 m deep, pitch 2.5 m, along +E.
@@ -123,6 +123,27 @@ test("validate('parking'): an accessible bay outside any row is an error naming 
   assert.deepEqual(validate('parking', lot({}, [{ ...goodRow(), stalls: [{ id: 'LOT_E3_S/R1/S2', index: 2, kind: 'accessible', widthM: 3.3, aisle: { side: 'back', widthM: 1, outside: true }, symbol: 'wheelchair', upBearingDeg: 10, figure: { symbol: 'scooter', side: 'back', frontBearingDeg: 90 } }, { index: 3, kind: 'pm', symbol: 'P' }] }])).errors, []);
 });
 
+test("validate('parking'): an accessible stall past a count-null row is an error naming the bay, not silently undrawn", () => {
+  const row = { ...goodRow(), count: null, stalls: [{ id: 'LOT_E3_S/R1/S40', index: 40, kind: 'accessible', symbol: 'wheelchair' }] };
+  const { errors } = validate('parking', { lots: [{ id: 'LOT_E3_S', parcel: null, rows: [row] }] });
+  assert.ok(errors.some((e) => e.startsWith('LOT_E3_S/R1: stalls[0] accessible bay LOT_E3_S/R1/S40 is outside the row')), errors.join('\n'));
+  const fits = { ...goodRow(), count: null, stalls: [{ id: 'LOT_E3_S/R1/S11', index: 11, kind: 'accessible', symbol: 'wheelchair' }] }; // 30 m at 2.5 m: 12 stalls
+  assert.deepEqual(validate('parking', { lots: [{ id: 'LOT_E3_S', parcel: null, rows: [fits] }] }).errors, []);
+  const anchored = { ...goodRow(), count: null, backLine: { anchor: { building: 'BLD_X', wall: 'W1', s0M: 0, s1M: 10, tM: 1 } }, stalls: [{ id: 'LOT_E3_S/R1/S4', index: 4, kind: 'accessible', symbol: 'wheelchair' }] };
+  assert.ok(validate('parking', { lots: [{ id: 'LOT_E3_S', parcel: null, rows: [anchored] }] }).errors.some((e) => e.includes('accessible bay LOT_E3_S/R1/S4 is outside the row')));
+});
+
+test("validate('parking'): a stall under 2 m in a row not marked estimated names the row; an estimated row is left to the report", () => {
+  const row = (over) => ({ lots: [{ id: 'LOT_E3_S', parcel: null, rows: [{ ...goodRow(), ...over }] }] });
+  const narrow = validate('parking', row({ stalls: [{ id: 'LOT_E3_S/R1/S3', index: 3, kind: 'general', widthM: 0.68 }] }));
+  assert.ok(narrow.errors.some((e) => e.startsWith('LOT_E3_S/R1: stalls[0] width 0.68 m is under 2 m')), narrow.errors.join('\n'));
+  const pitch = validate('parking', row({ pitchM: 1.09 }));
+  assert.ok(pitch.errors.some((e) => e.startsWith('LOT_E3_S/R1: pitchM 1.09 m is under 2 m')), pitch.errors.join('\n'));
+  assert.deepEqual(validate('parking', row({ estimated: true, evidence: { tier: 'T2', refs: ['x'], photoSupport: null }, pitchM: 1.09 })).errors, []);
+  assert.deepEqual(validate('parking', row({ stalls: [{ id: 'LOT_E3_S/R1/S3', index: 3, kind: 'accessible', widthM: 3.3, paintSupport: 0.7, estimated: false }] })).errors, []);
+  assert.ok(validate('parking', row({ stalls: [{ id: 'LOT_E3_S/R1/S3', index: 3, kind: 'accessible', paintSupport: 2 }] })).errors.some((e) => e.includes('paintSupport')));
+});
+
 test("validate('parking') checks free lines and the optional row fields by id", () => {
   const lot = (extra, row = {}) => ({ lots: [{ id: 'LOT_E3_S', parcel: null, rows: [{ ...goodRow(), ...row }], ...extra }] });
   assert.deepEqual(validate('parking', lot({ lines: [{ id: 'LOT_E3_S/L1', abs: [[0, 0], [1, 0]], widthM: 0.1, colour: 'white', evidence: { tier: 'T1', refs: ['x'] } }, { id: 'LOT_E3_S/L2', ring: [[0, 0], [1, 0], [1, 1]], colour: 'yellow', evidence: { tier: 'T1', refs: ['x'] } }] }, { paintBack: true, paintFront: false, dividerBearingDeg: 10, estimatedDividers: [1] })).errors, []);
@@ -145,4 +166,60 @@ test("validate('parking') accepts a well-formed lot and names lot and row ids in
   assert.ok(errors.some((e) => e.startsWith('LOT_E3_S/R1: evidence.photoSupport')));
   assert.ok(errors.some((e) => e.startsWith('LOT_OTHER/R1: row id must start with LOT_E3_S/')));
   assert.ok(errors.some((e) => e.startsWith('bad id: id must match')));
+});
+
+// ---- what the seed measures on the photo (gate review of 8c1b9f62)
+const greyWindow = (paint, mask = () => false) => {
+  const [w, h, gsdM] = [120, 120, 0.25];
+  const rgb = new Uint8Array(w * h * 3);
+  const flags = new Uint8Array(w * h);
+  for (let j = 0; j < h; j += 1) for (let i = 0; i < w; i += 1) {
+    const E = (i + 0.5) * gsdM;
+    const N = 30 - (j + 0.5) * gsdM;
+    const [r, g, b] = paint(E, N);
+    rgb.set([r, g, b], (j * w + i) * 3);
+    flags[j * w + i] = mask(E, N) ? 1 : 0;
+  }
+  return { w, h, gsdM, origin: [0, 30], rgb, mask: flags };
+};
+const asphalt = [70, 70, 70];
+const lineAt = (x) => ({ from: [x, 20], dir: [0, -1], across: [1, 0], lengthM: 5 });
+
+test("lineContrast sees a 0.1 m line's blur over the asphalt beside it, and its place within 0.3 m", () => {
+  const win = greyWindow((E) => (Math.abs(E - 10.125) < 0.125 ? [150, 150, 150] : asphalt));
+  const on = lineContrast(win, lineAt(10.1));
+  assert.ok(on.contrast >= 12, `contrast ${on.contrast}`);
+  assert.equal(on.visible, 1);
+  const off = lineContrast(win, lineAt(10.3));
+  assert.ok(off.contrast >= 12, "found within reach");
+  assert.ok(Math.abs(off.offsetM + 0.2) <= 0.1, `offset ${off.offsetM}`);
+  assert.ok(lineContrast(win, lineAt(15)).contrast < 12, "plain asphalt has none");
+});
+
+test("lineContrast does not read the edge between a kerb and asphalt as a line", () => {
+  const win = greyWindow((E) => (E > 10 ? [170, 170, 170] : asphalt));
+  assert.ok(lineContrast(win, lineAt(10)).contrast < 12);
+});
+
+test("lineContrast skips masked pixels and reports how much it saw", () => {
+  const win = greyWindow((E) => (Math.abs(E - 10.125) < 0.125 ? [150, 150, 150] : asphalt), () => true);
+  const out = lineContrast(win, lineAt(10.1));
+  assert.equal(out.visible, 0);
+  const half = greyWindow((E) => (Math.abs(E - 10.125) < 0.125 ? [150, 150, 150] : asphalt), (E, N) => N < 17.5);
+  const seen = lineContrast(half, lineAt(10.1));
+  assert.ok(seen.visible > 0.4 && seen.visible < 0.6, `visible ${seen.visible}`);
+  assert.ok(seen.contrast >= 12);
+});
+
+test("blueShare is the share of a ring's visible pixels on the blue mask", () => {
+  const win = greyWindow(() => asphalt, (E) => E > 20);
+  const blue = new Uint8Array(win.w * win.h);
+  for (let j = 0; j < win.h; j += 1) for (let i = 0; i < 40; i += 1) blue[j * win.w + i] = 1; // E < 10
+  const ring = (E0, E1) => [[E0, 10], [E1, 10], [E1, 15], [E0, 15]];
+  assert.equal(blueShare(win, blue, ring(2, 6)).share, 1);
+  assert.equal(blueShare(win, blue, ring(12, 16)).share, 0);
+  assert.ok(Math.abs(blueShare(win, blue, ring(8, 12)).share - 0.5) < 0.05);
+  const hidden = blueShare(win, blue, ring(22, 26));
+  assert.equal(hidden.visible, 0);
+  assert.equal(hidden.share, null);
 });

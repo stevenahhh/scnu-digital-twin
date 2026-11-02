@@ -195,6 +195,7 @@ const STALL_KINDS = new Set(["general", "expanded", "accessible", "parallel", "l
 const DIVIDER_STYLES = new Set(["single", "double", "U", "T", "none"]); // none: a row of wheel stops whose dividers the photo does not show
 const AISLE_SIDES = ["start", "end", "back", "front"];
 const positive = (v) => Number.isFinite(v) && v > 0;
+const MIN_STALL_M = 2; // the narrowest stall: 주차장법 시행규칙 제3조 parallel 2.0 m
 function backLineErrors(line) {
   if (!line || typeof line !== "object") return "backLine must be { abs } or { anchor }";
   if (line.abs !== undefined) return Array.isArray(line.abs) && line.abs.length === 2 && line.abs.every(isPair) ? null : "backLine.abs must be two [E, N] pairs";
@@ -202,12 +203,20 @@ function backLineErrors(line) {
   if (a && isText(a.building) && isText(a.wall) && [a.s0M, a.s1M, a.tM].every(Number.isFinite)) return null;
   return "backLine.anchor needs building, wall, s0M, s1M, tM";
 }
+// Stalls of a row; count null fits the back line as stages/parking.mjs rowLayout does.
+function baysOf(row) {
+  if (Number.isInteger(row.count)) return row.count - 1;
+  const [p, q] = row.backLine?.abs ?? [];
+  const length = p && q ? Math.hypot(q[0] - p[0], q[1] - p[1]) : (row.backLine?.anchor?.s1M ?? 0) - (row.backLine?.anchor?.s0M ?? 0);
+  return Number.isFinite(length) && positive(row.pitchM) ? Math.max(0, Math.floor((length - (row.startOffsetM ?? 0)) / row.pitchM)) : 0;
+}
 function parkingRow(row, lotId, fail) {
   if (!isText(row?.id) || !row.id.startsWith(`${lotId}/`)) fail(`row id must start with ${lotId}/`);
   const lineError = backLineErrors(row?.backLine);
   if (lineError) fail(lineError);
   if (row.side !== 1 && row.side !== -1) fail("side must be +1 or -1");
   if (!positive(row.pitchM)) fail("pitchM must be a number > 0");
+  else if (row.estimated === false && row.pitchM < MIN_STALL_M) fail(`pitchM ${row.pitchM} m is under ${MIN_STALL_M} m in a row not marked estimated`);
   if (!positive(row.depthM)) fail("depthM must be a number > 0");
   if (!Number.isFinite(row.startOffsetM ?? 0)) fail("startOffsetM must be a number");
   if (!(row.count === null || (Number.isInteger(row.count) && row.count >= 2))) fail("count must be an integer >= 2 or null");
@@ -221,7 +230,7 @@ function parkingRow(row, lotId, fail) {
     const seen = new Set();
     row.stalls.forEach((s, i) => {
       const at = (m) => fail(`stalls[${i}] ${m}`);
-      const bays = Number.isInteger(row.count) ? row.count - 1 : Infinity;
+      const bays = baysOf(row);
       if (!(Number.isInteger(s?.index) && s.index >= 0 && s.index < bays)) at(`${s?.kind === "accessible" ? `accessible bay ${s.id ?? "(no id)"} is outside the row: ` : ""}index must be an integer in [0, ${bays})`);
       else if (seen.has(s.index)) at("index repeats");
       else seen.add(s.index);
@@ -231,6 +240,9 @@ function parkingRow(row, lotId, fail) {
       if (s?.figure && (s.figure.symbol !== "scooter" || !AISLE_SIDES.includes(s.figure.side))) at(`figure needs symbol scooter and side ${AISLE_SIDES.join("|")}`);
       if (s?.symbol !== undefined && ![null, "wheelchair", "P"].includes(s.symbol)) at("symbol must be wheelchair, P or null");
       if (s?.upBearingDeg !== undefined && !Number.isFinite(s.upBearingDeg)) at("upBearingDeg must be a number");
+      if (!(s?.paintSupport === undefined || s.paintSupport === null || (Number.isFinite(s.paintSupport) && s.paintSupport >= 0 && s.paintSupport <= 1))) at("paintSupport must be in [0, 1] or null");
+      if (s?.estimated !== undefined && typeof s.estimated !== "boolean") at("estimated must be a boolean");
+      if (row.estimated === false && Number.isFinite(s?.widthM) && s.widthM < MIN_STALL_M) at(`width ${s.widthM} m is under ${MIN_STALL_M} m in a row not marked estimated`);
     });
   }
   if (!(row.wheelStops === null || row.wheelStops === undefined || (Number.isFinite(row.wheelStops.offsetFromBackM) && positive(row.wheelStops.lengthM)))) fail("wheelStops needs offsetFromBackM and lengthM > 0");

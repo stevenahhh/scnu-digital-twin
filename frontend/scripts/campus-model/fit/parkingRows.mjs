@@ -17,7 +17,7 @@
 //      do. A row needs two supported dividers, so the old ">= 3 detected dividers" rule is gone.
 //   6. A blue piece over a row marks the nearest stall accessible: 3.3 m wide when the blue is >= 3.0 m, else 2.5 m plus
 //      a 1.2 m aisle. A lot with no row gets no stall, accessible or otherwise.
-//   7. photoSupport = median support of the visible positions. A lot with no supported row is T4, estimated.
+//   7. photoSupport = the share of the visible positions with a line on the photo (lineContrast), detected or not. A lot with no supported row is T4, estimated.
 //
 //   bun scripts/campus-model/fit/parkingRows.mjs [--lot LOT_E3_S] [--out <proposals.json>] [--chips <png>]
 import { orientedBox } from "../lib/markingFit.mjs";
@@ -152,6 +152,67 @@ export function paintThreshold(win) {
   const step = Math.max(1, Math.floor((win.w * win.h) / 40000));
   for (let k = 0; k < win.w * win.h; k += step) if (!win.mask?.[k]) lum.push(luminance(win.rgb, k));
   return lum.length ? median(lum) + CONTRAST : Infinity;
+}
+
+// A painted line against the ground beside it, on one line of the photo: the median luminance along it, over the brighter of
+// the two parallel lines SIDE_M away, so the edge of a kerb does not read as a line. Searched within REACH_M across it, since
+// a detected piece may lie that far off its paint. Shade lowers the level on both sides alike, unlike a threshold. Masked
+// pixels are skipped; visible is the share of the line outside the mask.
+export const PAINT_CONTRAST = 12; // grey levels; below this a lit line is not there (gate review of 8c1b9f62, phantom.mjs)
+const LINE_REACH_M = 0.3;
+const LINE_SIDE_M = 0.55;
+const lumAt = (win, [E, N]) => {
+  const x = (E - win.origin[0]) / win.gsdM - 0.5;
+  const y = (win.origin[1] - N) / win.gsdM - 0.5;
+  const i = Math.floor(x);
+  const j = Math.floor(y);
+  if (i < 0 || j < 0 || i + 1 >= win.w || j + 1 >= win.h) return null;
+  const [fx, fy] = [x - i, y - j];
+  const k = j * win.w + i;
+  const top = luminance(win.rgb, k) * (1 - fx) + luminance(win.rgb, k + 1) * fx;
+  const bottom = luminance(win.rgb, k + win.w) * (1 - fx) + luminance(win.rgb, k + win.w + 1) * fx;
+  return top * (1 - fy) + bottom * fy;
+};
+const maskedAt = (win, [E, N]) => {
+  const i = Math.floor((E - win.origin[0]) / win.gsdM);
+  const j = Math.floor((win.origin[1] - N) / win.gsdM);
+  return i < 0 || j < 0 || i >= win.w || j >= win.h || Boolean(win.mask?.[j * win.w + i]);
+};
+export function lineContrast(win, { from, dir, across, lengthM }) {
+  const ts = [];
+  if (lengthM < 0.8) ts.push(lengthM / 2);
+  else for (let t = 0.3; t <= lengthM - 0.3 + 1e-9; t += 0.2) ts.push(t);
+  const open = ts.filter((t) => !maskedAt(win, [from[0] + dir[0] * t, from[1] + dir[1] * t]));
+  const profile = (o) => median(open.map((t) => lumAt(win, [from[0] + dir[0] * t + across[0] * o, from[1] + dir[1] * t + across[1] * o])).filter((v) => v !== null));
+  const visible = open.length / ts.length;
+  if (!open.length) return { visible: 0, contrast: null, offsetM: 0 };
+  let best = { contrast: -Infinity, offsetM: 0 };
+  for (let k = -3; k <= 3; k += 1) {
+    const o = (k * LINE_REACH_M) / 3;
+    const contrast = profile(o) - Math.max(profile(o - LINE_SIDE_M) ?? -Infinity, profile(o + LINE_SIDE_M) ?? -Infinity);
+    if (contrast > best.contrast + 1e-9) best = { contrast, offsetM: o };
+  }
+  return { visible, contrast: round(best.contrast, 1), offsetM: best.offsetM };
+}
+
+// The share of a ring's unmasked pixels on a paint mask (blue, from lib/paintMasks.mjs), and how much of it is unmasked.
+export function blueShare(win, blue, ring) {
+  const xs = ring.map((p) => p[0]);
+  const ys = ring.map((p) => p[1]);
+  const [i0, i1] = [Math.floor((Math.min(...xs) - win.origin[0]) / win.gsdM), Math.ceil((Math.max(...xs) - win.origin[0]) / win.gsdM)];
+  const [j0, j1] = [Math.floor((win.origin[1] - Math.max(...ys)) / win.gsdM), Math.ceil((win.origin[1] - Math.min(...ys)) / win.gsdM)];
+  let [total, open, on] = [0, 0, 0];
+  for (let j = Math.max(0, j0); j <= Math.min(win.h - 1, j1); j += 1) {
+    for (let i = Math.max(0, i0); i <= Math.min(win.w - 1, i1); i += 1) {
+      if (!inRing([win.origin[0] + (i + 0.5) * win.gsdM, win.origin[1] - (j + 0.5) * win.gsdM], ring)) continue;
+      total += 1;
+      const k = j * win.w + i;
+      if (win.mask?.[k]) continue;
+      open += 1;
+      if (blue[k]) on += 1;
+    }
+  }
+  return { visible: total ? open / total : 0, share: open ? on / open : null };
 }
 
 const pixelOf = (win, [E, N]) => [Math.floor((E - win.origin[0]) / win.gsdM), Math.floor((win.origin[1] - N) / win.gsdM)];
@@ -372,7 +433,9 @@ export function proposeLot(lot, { pieces = [], window: win = null, backHint = nu
     if (seg.filter((p) => p.supported).length < 2) continue;
     const id = `${lot.id}/R${rows.length + 1}`;
     const visible = seg.filter((p) => !p.occluded);
-    const photoSupport = round(median(visible.map((p) => (p.detected ? Math.max(p.support, 1) : p.support))) ?? 0, 3);
+    const dirBack = [-n[0], -n[1]];
+    const shows = (p) => win?.rgb && lineContrast(win, { from: p.back, dir: dirBack, across: a, lengthM: depthM }).contrast >= PAINT_CONTRAST;
+    const photoSupport = round(visible.length ? visible.filter(shows).length / visible.length : 0, 3);
     const first = seg[0].back;
     const last = seg[seg.length - 1].back;
     const axis = [last[0] - first[0], last[1] - first[1]];

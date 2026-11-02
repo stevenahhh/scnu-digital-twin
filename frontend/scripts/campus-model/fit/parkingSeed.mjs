@@ -12,10 +12,14 @@
 //   2. A stall_row gives the photo rows under it its wheel stops, end lines and VR reading; alone it is a row of its own.
 //   3. A blue cell becomes a stall of the row it lies in, extends the row it adjoins, or makes a row of its own.
 //   4. Pieces no row takes stay as recorded free lines. Rows and lines within LOT_LINK_M share a lot.
+//   5. Every row is graded on the photo (photo.line, photo.blue): photoSupport is the share of its visible dividers with paint
+//      over the ground beside them, or for a row of blue cells the mean share of its fills on blue. It never counts detections:
+//      the paint gate accepted false strokes, which is what this step found. A row with no such evidence is not T1.
 //
 //   bun scripts/campus-model/fit/parkingSeed.mjs --write    writes parking.json with parcel null (then run parcelsSeed.mjs --write)
 //   bun scripts/campus-model/fit/parkingSeed.mjs --link     names each lot's parcel from parcels.json
 import { orientedBox } from "../lib/markingFit.mjs";
+import { PAINT_CONTRAST } from "./parkingRows.mjs";
 
 const LONG_LINE_M = 7.5;
 const MIN_ASPECT = 3;
@@ -39,6 +43,8 @@ const JOIN_END_M = 1.2;
 const LOT_LINK_M = 8;
 const T3_DEPTH_M = 5;
 const FULL_LENGTH_M = 3;
+const MIN_STALL_M = 2; // pieces closer than this are not two dividers (lib/schemas.mjs)
+const BLUE_MIN = 0.35; // share of a fill on photo blue; the symbol, hatch and border are white
 
 const add = (p, q) => [p[0] + q[0], p[1] + q[1]];
 const sub = (p, q) => [p[0] - q[0], p[1] - q[1]];
@@ -149,7 +155,7 @@ function groupParallel(pieces) {
 }
 
 // One group -> rows, plus the pieces no row took.
-function rowsFromGroup(group, probe) {
+function rowsFromGroup(group, probe, photo) {
   const axis = eastward(group[0].box.short);
   const long = northward(leftOf(axis));
   const a0 = eastward([long[1], -long[0]]);
@@ -157,12 +163,26 @@ function rowsFromGroup(group, probe) {
     const c = dot(piece.box.centre, long);
     return { s: dot(piece.box.centre, a0), t0: c - piece.box.halfLong, t1: c + piece.box.halfLong, piece };
   });
-  const dividers = mergeAcross(items);
+  // a piece closer to a better one than the narrowest stall is not a divider: paint first, then the longer piece
+  const measured = mergeAcross(items).map((x) => {
+    const seen = photo?.line({ from: add(mul(a0, x.s), mul(long, x.t1)), dir: mul(long, -1), across: a0, lengthM: x.t1 - x.t0 });
+    if (!seen) return { ...x, rank: 1 };
+    if (seen.visible < VISIBLE) return { ...x, rank: 1 };
+    return seen.contrast >= PAINT_CONTRAST ? { ...x, s: x.s + seen.offsetM, rank: 2 } : { ...x, rank: 0 };
+  });
+  const kept = [];
+  const dropped = [];
+  for (const x of [...measured].sort((p, q) => q.rank - p.rank || (q.t1 - q.t0) - (p.t1 - p.t0))) (kept.some((k) => Math.abs(k.s - x.s) < MIN_STALL_M) ? dropped : kept).push(x);
+  const dividers = kept.sort((p, q) => p.s - q.s);
   const gaps = dividers.slice(1).map((x, k) => x.s - dividers[k].s);
   const inRange = gaps.filter((g) => g >= PITCH_RANGE[0] && g <= PITCH_RANGE[1]);
   if (!inRange.length) return { rows: [], loose: group };
   const p0 = median(inRange);
-  const probeAt = (s, tBack, tFront) => probe(add(mul(a0, s), mul(long, tBack)), add(mul(a0, s), mul(long, tFront)));
+  const probeAt = (s, tBack, tFront) => {
+    if (!photo) return probe(add(mul(a0, s), mul(long, tBack)), add(mul(a0, s), mul(long, tFront)));
+    const seen = photo.line({ from: add(mul(a0, s), mul(long, tBack)), dir: mul(long, -1), across: a0, lengthM: tBack - tFront });
+    return { visible: seen.visible, support: seen.contrast >= PAINT_CONTRAST ? 1 : 0 };
+  };
 
   // split into runs at visibly empty stretches
   const runs = [];
@@ -238,7 +258,7 @@ function rowsFromGroup(group, probe) {
     const lengths = (full.length ? full : seen).map((x) => x.t1 - x.t0);
     const missing = members.map((x, i) => (x.detected ? null : i)).filter((i) => i !== null);
     const visibleEmpty = missing.length;
-    const support = seen.length / (seen.length + visibleEmpty);
+    const support = seen.length / (seen.length + visibleEmpty); // pieces per position: the tier until the photo grades the row
     const tier = support >= 0.5 ? "T1" : "T2";
     rows.push({
       backLine: { abs: [origin.map(r3), end.map(r3)] },
@@ -254,7 +274,13 @@ function rowsFromGroup(group, probe) {
       wheelStops: null,
       entryFrom: "aisle",
       ...(missing.length ? { estimatedDividers: missing } : {}),
-      evidence: { tier, refs: [`photo dividers ${seen.length}/${members.length}: ${seen.flatMap((x) => x.members).slice(0, 24).map(pieceRef).join(" ")}`], photoSupport: r3(support) },
+      evidence: { tier, refs: [
+        `photo dividers ${seen.length}/${members.length}: ${seen.flatMap((x) => x.members).slice(0, 24).map(pieceRef).join(" ")}`,
+        ...(() => {
+          const within = dropped.filter((x) => x.s >= members[0].s && x.s <= members.at(-1).s).flatMap((x) => x.members);
+          return within.length ? [`no paint or under ${MIN_STALL_M} m from a divider, not drawn: ${within.slice(0, 24).map(pieceRef).join(" ")}`] : [];
+        })(),
+      ], photoSupport: null },
       estimated: tier !== "T1",
     });
   }
@@ -417,12 +443,15 @@ function joinCell(cell, rows) {
   return null;
 }
 function rowFromCell(cell) {
+  // the cell's axes are its across bearing and the square to it. The symbol's bearing can lie along either (a traced figure
+  // often lies along the width), so it only says which end is the back, and the symbol keeps it as its own.
   const up = bearing(cell.upBearingDeg);
   const a = eastward(bearing(cell.acrossBearingDeg));
-  const back = add(cell.centre, mul(up, cell.deepM / 2));
+  const towardsBack = dot(up, leftOf(a)) >= 0 ? leftOf(a) : mul(leftOf(a), -1);
+  const back = add(cell.centre, mul(towardsBack, cell.deepM / 2));
   const start = add(back, mul(a, -cell.widthM / 2));
   const end = add(back, mul(a, cell.widthM / 2));
-  const d = mul(up, -1);
+  const d = mul(towardsBack, -1);
   const row = {
     backLine: { abs: [start.map(r3), end.map(r3)] },
     side: dot(d, leftOf(a)) > 0 ? 1 : -1,
@@ -435,7 +464,7 @@ function rowFromCell(cell) {
     stalls: [],
     wheelStops: null,
     entryFrom: "aisle",
-    evidence: { tier: "T1", refs: [], photoSupport: 1 },
+    evidence: { tier: "T1", refs: [], photoSupport: null },
     estimated: false,
   };
   row.stalls.push(stallFromCell(cell, row, 0, cell.widthM));
@@ -457,6 +486,52 @@ function refitPhotoGrid(row) {
   if (general > 0) row.pitchM = r4((f.length - exceptions.reduce((n, x) => n + x.widthM, 0)) / general);
   delete row.photoGrid;
   delete row.blueCentres;
+}
+
+// ---------------------------------------------------------------- 5. the photo grades every row
+const demote = (row, why) => {
+  row.evidence.refs.push(`not T1: ${why}`);
+  row.evidence.tier = "T2";
+  row.estimated = true;
+};
+function gradeRow(row, photo) {
+  const f = frameOf(row);
+  const widths = widthsOf(row);
+  const narrow = widths.filter((w) => w < MIN_STALL_M);
+  if (row.evidence.tier === "T1" && row.divider?.style !== "none" && narrow.length) demote(row, `${narrow.length} stalls under ${MIN_STALL_M} m`);
+  if (!photo) return;
+  let s = 0;
+  const cells = widths.map((w, index) => { const c = { index, s0: s, s1: s + w }; s += w; return c; });
+  for (const c of cells) {
+    const stall = row.stalls.find((x) => x.index === c.index);
+    if (!stall || stall.kind === "general") continue;
+    const [i0, i1, j0, j1] = [c.s0 + 0.1, c.s1 - 0.1, 0.1, row.depthM - 0.1];
+    const seen = photo.blue([f.at(i0, j0), f.at(i1, j0), f.at(i1, j1), f.at(i0, j1)]);
+    c.share = seen.share;
+    stall.paintSupport = seen.share === null ? null : r3(seen.share);
+    if (seen.share === null || seen.share < BLUE_MIN) {
+      stall.estimated = true;
+      row.evidence.refs.push(`${stall.kind} stall ${stall.index}: ${seen.share === null ? "hidden on the photo" : `${r3(seen.share)} of its fill on photo blue`}`);
+    }
+  }
+  if (row.divider?.style === "none") return;
+  const special = cells.filter((c) => "share" in c);
+  if (special.length === cells.length) {
+    const shares = special.map((c) => c.share).filter((v) => v !== null);
+    row.evidence.photoSupport = shares.length ? r3(shares.reduce((n, v) => n + v, 0) / shares.length) : null;
+    if (row.evidence.tier === "T1" && !(row.evidence.photoSupport >= BLUE_MIN)) demote(row, row.evidence.photoSupport === null ? "its fills are hidden on the photo" : `no blue paint under its fills (${row.evidence.photoSupport})`);
+    return;
+  }
+  const lines = [0, ...cells.map((c) => c.s1)].map((at) => photo.line({ from: f.at(at, 0), dir: f.d, across: f.a, lengthM: row.depthM }));
+  const visible = lines.filter((m) => m.visible >= VISIBLE);
+  const painted = visible.filter((m) => m.contrast >= PAINT_CONTRAST);
+  row.evidence.photoSupport = visible.length ? r3(painted.length / visible.length) : null;
+  if (row.evidence.tier !== "T1") return;
+  const flagged = lines.flatMap((m, i) => (m.visible >= VISIBLE && m.contrast >= PAINT_CONTRAST ? [] : [i]));
+  if (flagged.length) row.estimatedDividers = flagged;
+  else delete row.estimatedDividers;
+  if (!visible.length) demote(row, "no divider visible on the photo");
+  else if (row.evidence.photoSupport < 0.5) demote(row, `no paint under most dividers (${painted.length}/${visible.length} visible ones)`);
 }
 
 // A free line along a row's back or front is that row's end line; one on a divider of an estimator row is that divider.
@@ -530,9 +605,10 @@ function assignLots(rows, lines, named) {
 // ---------------------------------------------------------------- the seed
 // lines: [{ id, colour, ring }]; cells: [{ ids, cell, centre, widthM, deepM, acrossBearingDeg, upBearingDeg, symbol, rule }];
 // stallRows: features of site-detail with `line` in EPSG:5186; probe(p, q) -> { visible, support } of the photo along a
-// divider position; propose(id, ring, backHint) -> estimator rows on the photo; named: { lotId: { ring, backHint } }.
+// divider position; propose(id, ring, backHint) -> estimator rows on the photo; named: { lotId: { ring, backHint } };
+// photo: { line({ from, dir, across, lengthM }) -> { visible, contrast, offsetM }, blue(ring) -> { visible, share } }.
 // Returns the parking.json document (parcel null).
-export function seedLots({ lines, cells, stallRows, probe = () => ({ visible: 1, support: 0 }), propose = () => [], named = {} }) {
+export function seedLots({ lines, cells, stallRows, probe = () => ({ visible: 1, support: 0 }), propose = () => [], named = {}, photo = null }) {
   const pieces = lines.map((line) => {
     const box = orientedBox(line.ring);
     return { ...line, box: { ...box, long: northward(box.long), short: box.short } };
@@ -549,7 +625,7 @@ export function seedLots({ lines, cells, stallRows, probe = () => ({ visible: 1,
   }
   const rows = [];
   for (const group of groupParallel(candidates)) {
-    const { rows: found, loose } = rowsFromGroup(group, probe);
+    const { rows: found, loose } = rowsFromGroup(group, probe, photo);
     rows.push(...found);
     free.push(...loose);
   }
@@ -566,6 +642,7 @@ export function seedLots({ lines, cells, stallRows, probe = () => ({ visible: 1,
     }
   }
   rows.filter((row) => row.photoGrid).forEach(refitPhotoGrid);
+  for (const row of rows) gradeRow(row, photo);
   return { lots: assignLots(rows, absorbEndLines(rows, free.map(asLine)), Object.fromEntries(Object.entries(named).map(([id, def]) => [id, def.ring ?? def]))) };
 }
 
@@ -604,7 +681,8 @@ async function cli(args) {
   const { wgs84ToTm } = await import("../../../src/geo/epsg5186.mjs");
   const { openSheet, sheetWindowForTm } = await import("../lib/ngiiSheet.mjs");
   const { occlusionMask } = await import("../lib/occlusion.mjs");
-  const { LOTS, measure, paintThreshold, proposeLot } = await import("./parkingRows.mjs");
+  const { LOTS, blueShare, lineContrast, measure, paintThreshold, proposeLot } = await import("./parkingRows.mjs");
+  const { paintMasks } = await import("../lib/paintMasks.mjs");
   const read = (f) => JSON.parse(readFileSync(path.join(data, f), "utf8"));
   const migration = read("photo/evidence/parking-migration.json");
   const forms = read("building-forms.json");
@@ -621,8 +699,8 @@ async function cli(args) {
     const origin = [sheet.tfw.c - gsdM / 2 + raw.col0 * gsdM, sheet.tfw.f + gsdM / 2 - raw.row0 * gsdM];
     const geom = { w: raw.w, h: raw.h, origin, gsdM };
     const near = (b) => b.rings[0].some(([E, N]) => E > E0 - 60 && E < E0 + wM + 60 && N < N0 + 60 && N > N0 - hM - 60);
-    const { any } = occlusionMask(geom, { buildings: buildings.filter(near), trees: trees.filter((t) => t.east > E0 - 20 && t.east < E0 + wM + 20 && t.north < N0 + 20 && t.north > N0 - hM - 20) });
-    return { ...geom, rgb: raw.rgb, mask: any };
+    const { any, roofs, crowns } = occlusionMask(geom, { buildings: buildings.filter(near), trees: trees.filter((t) => t.east > E0 - 20 && t.east < E0 + wM + 20 && t.north < N0 + 20 && t.north > N0 - hM - 20) });
+    return { ...geom, rgb: raw.rgb, mask: any, hidden: roofs.map((v, k) => v || crowns[k]) };
   };
   const probe = (p, q) => {
     const win = windowAt(Math.min(p[0], q[0]) - 3, Math.max(p[1], q[1]) + 3, Math.abs(p[0] - q[0]) + 6, Math.abs(p[1] - q[1]) + 6);
@@ -644,7 +722,15 @@ async function cli(args) {
       return { ...row, endCaps: true, ...(hidden.length ? { estimatedDividers: hidden } : {}), evidence: { ...row.evidence, refs: [`estimator on ${id}: ${row.evidence.refs.join("; ")}`] } };
     });
   };
+  const all = [...migration.lines.flatMap((l) => l.ring), ...migration.cells.map((c) => c.centre), ...migration.stallRows.flatMap((s) => s.line)];
+  const [E0, N0] = [Math.min(...all.map((p) => p[0])) - 40, Math.max(...all.map((p) => p[1])) + 40];
+  const campus = windowAt(E0, N0, Math.max(...all.map((p) => p[0])) + 40 - E0, N0 - (Math.min(...all.map((p) => p[1])) - 40));
+  const { blue } = paintMasks({ rgb: campus.rgb, width: campus.w, height: campus.h, metresPerPixel: campus.gsdM });
+  // shade hides no line (lineContrast reads the ground beside it), but the blue test needs lit pixels
+  const unshaded = { ...campus, mask: campus.hidden };
+  const photo = { line: (q) => lineContrast(unshaded, q), blue: (ring) => blueShare(campus, blue, ring) };
   const doc = seedLots({
+    photo,
     propose,
     lines: migration.lines,
     cells: migration.cells,

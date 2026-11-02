@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { validate } from "../lib/schemas.mjs";
+import { parkingPlan } from "../stages/parking.mjs";
 import { seedLots, stallRowRecord } from "./parkingSeed.mjs";
 
 // A divider piece at across position x (E), running north-south from y0 to y1.
@@ -152,4 +153,96 @@ test("rows near each other share a lot; far rows do not; a named ring names its 
   assert.ok(doc.lots[1].id.startsWith("LOT_E"));
   assert.deepEqual(validate("parking", doc).errors, []);
   assert.deepEqual(doc.lots[0].rows.map((r) => r.id), ["LOT_E3_S/R1", "LOT_E3_S/R2"]);
+});
+
+// ---- gate review of 8c1b9f62, blockers B1 and B2
+const blueCell = (centre, across, up, extra = {}) => ({ ids: ["B"], cell: 0, centre, widthM: 2.96, deepM: 4.55, acrossBearingDeg: across, upBearingDeg: up, symbol: "wheelchair", rule: {}, ...extra });
+const fillOf = (doc) => parkingPlan(doc, { toScene: (E, N) => [E, N] }).pieces.find((p) => p.colour === "blue").rings[0];
+const meanOf = (ring) => ring.reduce((a, q) => [a[0] + q[0] / ring.length, a[1] + q[1] / ring.length], [0, 0]);
+
+test("a lone blue cell keeps its centre and size whatever way its symbol points", () => {
+  for (const [across, up] of [[104.8, 194.8], [194.8, 194.8], [194.8, 14.8], [90, 0], [90, 90], [90, 270], [90, 135]]) {
+    const doc = seed({ cells: [blueCell([1000, 1000], across, up)] });
+    const fill = fillOf(doc);
+    const c = meanOf(fill);
+    assert.ok(Math.hypot(c[0] - 1000, c[1] - 1000) < 0.01, `across ${across} up ${up}: moved ${Math.hypot(c[0] - 1000, c[1] - 1000)}`);
+    const row = onlyRow(doc);
+    assert.equal(row.stalls[0].upBearingDeg, up, "the bearing stays the symbol's");
+    const a = bearingVector(across);
+    const span = (v) => { const d = fill.map((q) => q[0] * v[0] + q[1] * v[1]); return Math.max(...d) - Math.min(...d); };
+    assert.ok(Math.abs(span(a) - (2.96 - 0.2)) < 0.01, "width along across");
+    assert.ok(Math.abs(span([-a[1], a[0]]) - (4.55 - 0.2)) < 0.01, "depth square to across");
+  }
+});
+
+const bearingVector = (deg) => [Math.sin((deg * Math.PI) / 180), Math.cos((deg * Math.PI) / 180)];
+// A photo stub: paint at the given E positions, nothing else, everything visible unless masked.
+const photoWith = (paintedAt, { masked = () => false, blue = () => 1 } = {}) => ({
+  line: ({ from, across, lengthM }) => {
+    const hit = paintedAt.find((x) => Math.abs(x - from[0]) <= 0.3);
+    return { visible: masked(from) ? 0 : 1, contrast: hit === undefined ? 0 : 40, offsetM: hit === undefined ? 0 : (hit - from[0]) / across[0], lengthM };
+  },
+  blue: (ring) => ({ visible: 1, share: blue(ring) }),
+});
+
+test("photoSupport measures the photo: a detected piece with no paint under it does not count", () => {
+  const xs = [0, 2.5, 5, 7.5, 10];
+  const good = onlyRow(seed({ lines: xs.map((x) => line(x)), photo: photoWith(xs) }));
+  assert.equal(good.evidence.photoSupport, 1);
+  assert.equal(good.evidence.tier, "T1");
+  const none = onlyRow(seed({ lines: xs.map((x) => line(x)), photo: photoWith([]) }));
+  assert.ok(none.evidence.photoSupport === 0 || none.evidence.photoSupport === null, `support ${none.evidence.photoSupport}`);
+  assert.notEqual(none.evidence.tier, "T1");
+  assert.equal(none.estimated, true);
+  assert.ok(none.evidence.refs.some((r) => /no paint/.test(r)), "the reason is recorded");
+  assert.deepEqual(validate("parking", seed({ lines: xs.map((x) => line(x)), photo: photoWith([]) })).errors, []);
+});
+
+test("a false stroke between real dividers is dropped: the ladder stays regular", () => {
+  const real = [0, 2.6, 5.2, 7.8, 10.4, 13];
+  const row = onlyRow(seed({ lines: [...real.map((x) => line(x)), line(3.6), line(4.3), line(9.1)], photo: photoWith(real) }));
+  assert.equal(row.count, 6);
+  assert.ok(Math.abs(row.pitchM - 2.6) < 1e-3);
+  assert.deepEqual(row.stalls, []);
+  assert.equal(row.estimatedDividers, undefined);
+  assert.equal(row.evidence.photoSupport, 1);
+  assert.ok(row.evidence.refs.some((r) => /no paint/.test(r) && r.includes("P3.6")), "the dropped piece is named");
+});
+
+test("pieces closer than the shortest stall are not two dividers even with no photo to ask: the longer stays", () => {
+  const row = onlyRow(seed({ lines: [...[0, 2.5, 5, 7.5].map((x) => line(x)), line(3.4, -1, -3)] }));
+  assert.equal(row.count, 4);
+  assert.deepEqual(row.stalls, []);
+});
+
+test("a divider the photo cannot confirm is flagged; one the photo shows between pieces is not", () => {
+  const row = onlyRow(seed({ lines: [0, 2.5, 7.5, 10].map((x) => line(x)), photo: photoWith([0, 2.5, 5, 7.5]) }));
+  assert.equal(row.count, 5);
+  assert.deepEqual(row.estimatedDividers, [4]);
+  assert.equal(row.evidence.photoSupport, 0.8);
+});
+
+test("masked dividers do not count against the row but a row with nothing visible is not T1", () => {
+  const xs = [0, 2.5, 5, 7.5];
+  const row = onlyRow(seed({ lines: xs.map((x) => line(x)), photo: photoWith(xs, { masked: (p) => p[0] < 4 }) }));
+  assert.equal(row.evidence.photoSupport, 1, "both visible dividers show paint");
+  assert.equal(row.evidence.tier, "T1");
+  assert.deepEqual(row.estimatedDividers, [0, 1]);
+  const hidden = onlyRow(seed({ lines: xs.map((x) => line(x)), photo: photoWith(xs, { masked: () => true }) }));
+  assert.equal(hidden.evidence.photoSupport, null);
+  assert.equal(hidden.estimated, true);
+  assert.notEqual(hidden.evidence.tier, "T1");
+});
+
+test("an accessible stall carries the blue share measured under its fill; a row of blue cells is graded on it", () => {
+  const on = onlyRow(seed({ cells: [blueCell([50, 50], 90, 0)], photo: photoWith([], { blue: () => 0.8 }) }));
+  assert.equal(on.stalls[0].paintSupport, 0.8);
+  assert.equal(on.evidence.photoSupport, 0.8);
+  assert.equal(on.evidence.tier, "T1");
+  const off = onlyRow(seed({ cells: [blueCell([50, 50], 90, 0)], photo: photoWith([], { blue: () => 0.08 }) }));
+  assert.equal(off.evidence.photoSupport, 0.08);
+  assert.equal(off.stalls[0].estimated, true);
+  assert.notEqual(off.evidence.tier, "T1");
+  assert.equal(off.estimated, true);
+  assert.deepEqual(validate("parking", seed({ cells: [blueCell([50, 50], 90, 0)], photo: photoWith([], { blue: () => 0.08 }) })).errors, []);
 });

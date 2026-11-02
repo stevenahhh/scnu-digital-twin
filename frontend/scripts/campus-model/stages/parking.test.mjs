@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { assertLotsOnParcels, parkingPlan, rowLayout, symbolPieceReport } from "./parking.mjs";
+import { assertLotsOnParcels, implausibleStalls, parkingPlan, rowLayout, symbolPieceReport } from "./parking.mjs";
 
 const identity = (E, N) => [E, N];
 // A row along +E from (0, 0): side -1 is the right of the axis, so the stalls run south.
@@ -144,4 +144,14 @@ test("symbolPieceReport counts symbols by record and flags any without one", () 
   assert.deepEqual(report.byGlyph, { wheelchair: 1, aisle: 1, scooter: 1 });
   assert.equal(report.unrecorded, 1);
   assert.deepEqual(report.records, ["LOT_A/R1/S0"]);
+});
+
+test("implausibleStalls names the rows with stalls too narrow, or general stalls too wide, to be one stall", () => {
+  const list = implausibleStalls(doc([
+    row({ stalls: [{ id: "LOT_A/R1/S2", index: 2, kind: "general", widthM: 0.68 }, { id: "LOT_A/R1/S3", index: 3, kind: "general", widthM: 4.2 }, { id: "LOT_A/R1/S4", index: 4, kind: "accessible", widthM: 4.2 }] }),
+    row({ id: "LOT_A/R2", pitchM: 1.09, divider: { style: "none" }, stalls: [] }),
+  ]));
+  assert.deepEqual(list.filter((x) => x.row === "LOT_A/R1").map((x) => [x.index, x.widthM]), [[2, 0.68], [3, 4.2]]);
+  assert.ok(list.some((x) => x.row === "LOT_A/R2" && x.widthM === 1.09));
+  assert.deepEqual(implausibleStalls(doc([row()])), []);
 });

@@ -29,6 +29,8 @@ const SCOOTER_M = 1.4;
 const TAIL_M = 0.6; // U and T divider tails (추정)
 const DOUBLE_GAP_M = 0.3;
 const FILLED = new Set(["accessible", "pm"]);
+export const MIN_STALL_M = 2.0; // 주차장법 시행규칙 제3조: parallel 2.0 m, the narrowest kind
+export const MAX_GENERAL_STALL_M = 3.6; // wider than the 3.3 m accessible bay plus a margin: likely a missed divider
 export const SYMBOL_GLYPHS = Object.freeze(["wheelchair", "P", "scooter", "aisle"]);
 
 const add = (p, q) => [p[0] + q[0], p[1] + q[1]];
@@ -134,8 +136,8 @@ export function parkingPlan(doc, { toScene = tmToScene, resolveAnchor = null } =
         const record = stall.id ?? `${row.id}/S${stall.index}`;
         if (FILLED.has(stall.kind)) {
           const [i0, i1, j0, j1] = [s0 + FILL_INSET_M, s1 - FILL_INSET_M, FILL_INSET_M, depth - FILL_INSET_M];
-          push([quad(i0, i1, j0, j1)], "blue", "disabled_parking", record, `${record}/fill`);
-          push([quad(s0, s1, 0, depth), quad(i0, i1, j0, j1).reverse()], "white", "disabled_parking", record, `${record}/border`, { glyph: "border" });
+          push([quad(i0, i1, j0, j1)], "blue", "disabled_parking", record, `${record}/fill`, { estimated: Boolean(row.estimated || stall.estimated) });
+          push([quad(s0, s1, 0, depth), quad(i0, i1, j0, j1).reverse()], "white", "disabled_parking", record, `${record}/border`, { glyph: "border", estimated: Boolean(row.estimated || stall.estimated) });
         }
         // the part of the bay the symbol owns, narrowed by a hatched aisle and a second figure
         const own = { s0, s1, t0: 0, t1: depth };
@@ -209,6 +211,21 @@ export function assertLotsOnParcels(doc, parcels) {
   const ids = new Set(parcels.map((p) => p.id));
   const bad = doc.lots.filter((lot) => !ids.has(lot.parcel));
   if (bad.length) throw new Error(bad.map((lot) => `${lot.id}: parcel ${lot.parcel} is not in parcels.json`).join("\n"));
+}
+
+// Stalls no single stall can be: too narrow, or general and too wide. Named by row in the build log and markings.report.
+export function implausibleStalls(doc) {
+  const out = [];
+  for (const lot of doc.lots) {
+    for (const row of lot.rows) {
+      for (const { index, s0, s1, stall } of rowLayout(row).cells) {
+        const widthM = Number((s1 - s0).toFixed(3));
+        const general = !stall || stall.kind === "general";
+        if (widthM < MIN_STALL_M || (general && widthM > MAX_GENERAL_STALL_M)) out.push({ row: row.id, index, kind: stall?.kind ?? "general", widthM, estimated: row.estimated, dividers: row.divider?.style !== "none" });
+      }
+    }
+  }
+  return out;
 }
 
 // markings.report: the symbol pieces by glyph and record. `unrecorded` must be 0: a symbol exists only through its record.

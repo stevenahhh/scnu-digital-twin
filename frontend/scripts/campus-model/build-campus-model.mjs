@@ -55,7 +55,7 @@ import { buildContext, meshHeightAt } from "./stages/context.mjs";
 import { buildContextGround } from "./stages/contextGround.mjs";
 import { buildMasts } from "./stages/masts.mjs";
 import { buildMarkings, describeMarkings, inMarkingExtent, loadMarkings } from "./stages/markings.mjs";
-import { assertLotsOnParcels, describeParking, loadParking, parkingPlan, symbolPieceReport } from "./stages/parking.mjs";
+import { assertLotsOnParcels, describeParking, implausibleStalls, loadParking, parkingPlan, symbolPieceReport } from "./stages/parking.mjs";
 import { buildOuterTerrain } from "./stages/outerTerrain.mjs";
 import { KERB_EXPOSED_M, SLAB_DECAL_DROP_M, buildKerbs } from "./stages/kerbs.mjs";
 import { loadInputs } from "./stages/sources.mjs";
@@ -93,6 +93,11 @@ assertLotsOnParcels(parkingDoc, surfaces.parcels);
 const parking = parkingPlan(parkingDoc);
 markings.pieces.push(...parking.pieces);
 console.log(describeParking(parking));
+{
+  const odd = implausibleStalls(parkingDoc);
+  const rows = [...new Set(odd.map((x) => x.row))];
+  console.log(`parking: ${odd.length} stalls of implausible width in ${rows.length} rows (markings.report): ${rows.join(", ") || "none"}`);
+}
 // The speed humps (network/stalls.mjs) stand on road or lot ground.
 const labelAt = ([x, z]) => {
   const i = Math.floor((x - EXTENT.minX) * groundInfo.px);
@@ -118,6 +123,7 @@ if (markings.pieceReport.unrecorded) throw new Error(`markings.report: ${marking
 await mkdir(path.dirname(OUTPUT), { recursive: true });
 await Bun.write(path.join(path.dirname(OUTPUT), "markings.report.json"), `${JSON.stringify({
   symbols: markings.pieceReport,
+  implausibleStalls: implausibleStalls(parkingDoc),
   pieces: markings.pieces.map(({ id, record, kind, colour, glyph, estimated }) => ({ id: id ?? null, record: record ?? null, kind, colour, glyph: glyph ?? null, estimated: Boolean(estimated) })),
 })}\n`);
 console.log(`markings.report: ${JSON.stringify(markings.pieceReport.byGlyph)} on ${markings.pieceReport.records.length} records, ${markings.pieceReport.unrecorded} without a record`);
