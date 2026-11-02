@@ -1,0 +1,510 @@
+{
+  "source": "uni.glb BLD_* nodes matched to data/gis-buildings.json (GIS건물통합정보) by footprint IoU >= 0.5 on a 0.25 m grid; gis:null entries are curated by hand (curated:true, reason). Written by fetch/bldNodeMap.mjs.",
+  "entries": [
+    {
+      "nodeId": "BLD_E5",
+      "gis": {
+        "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688780",
+        "pnu": "1215010800103130000",
+        "name": "순천대학교 E5 사범대학3호관"
+      },
+      "gisCentreTm": [
+        243669.84,
+        263704.32
+      ],
+      "uniCentreScene": [
+        145.607,
+        -158.809
+      ],
+      "iou": 0.89,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_E1",
+      "gis": {
+        "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 53819",
+        "pnu": "1215010800103130000",
+        "name": "순천대학교 E1 학생회관"
+      },
+      "gisCentreTm": [
+        243808.26,
+        263751.76
+      ],
+      "uniCentreScene": [
+        232.012,
+        -187.639
+      ],
+      "iou": 0.993,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_A4",
+      "gis": {
+        "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 682275",
+        "pnu": "1215010800103130000",
+        "name": "순천대학교 A4 학생생활관 부속동 · A5 학생생활관 진리관"
+      },
+      "gisCentreTm": [
+        243912.99,
+        263612.55
+      ],
+      "uniCentreScene": [
+        278.767,
+        -105.154
+      ],
+      "iou": 0.381,
+      "curated": true,
+      "reason": "IoU 0.381 vs record 682275 (A4 부속동+A5 진리관 one GIS footprint, uni.glb draws A4 alone); name and nearest-record evidence agree"
+    },
+    {
+      "nodeId": "BLD_C1.001",
+      "gis": {
+        "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 300791",
+        "pnu": "1215010800103130000",
+        "name": "순천대학교 C1 도서관"
+      },
+      "gisCentreTm": [
+        243771.66,
+        263856.22
+      ],
+      "uniCentreScene": [
+        216.533,
+        -244.907
+      ],
+      "iou": 0.594,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_Training Lab Building",
+      "gis": {
+        "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 443508",
+        "pnu": "1215010800103130000",
+        "name": "순천대학교 C3 공동실험실습관"
+      },
+      "gisCentreTm": [
+        243787.69,
+        263940.91
+      ],
+      "uniCentreScene": [
+        219.775,
+        -305.705
+      ],
+      "iou": 0.996,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_C1",
+      "gis": null,
+      "gisCentreTm": null,
+      "uniCentreScene": [
+        198.975,
+        -265.117
+      ],
+      "iou": 0.399,
+      "curated": true,
+      "reason": "second uni.glb part of C1 도서관; its only candidate record 300791 (IoU 0.399) is already mapped to BLD_C1.001 (IoU 0.594)"
+    },
+    {
+      "nodeId": "BLD_Dormitory_Building",
+      "gis": {
+        "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 301234",
+        "pnu": "1215010800103130000",
+        "name": "순천대학교 A9 학생생활관 청운관"
+      },
+      "gisCentreTm": [
+        243869.76,
+        263507.8
+      ],
+      "uniCentreScene": [
+        269.628,
+        -35.214
+      ],
+      "iou": 0.979,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_E3",
+      "gis": {
+        "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 70991",
+        "pnu": "1215010800103130000",
+        "name": "순천대학교 E3 사범대학1호관"
+      },
+      "gisCentreTm": [
+        243693.61,
+        263783.37
+      ],
+      "uniCentreScene": [
+        160.546,
+        -207.692
+      ],
+      "iou": 0.991,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_D2",
+      "gis": {
+        "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 44099",
+        "pnu": "1215010800103130000",
+        "name": "순천대학교 D2 공학 1호관(우주항공첨단소재스쿨)"
+      },
+      "gisCentreTm": [
+        243649.68,
+        263923.65
+      ],
+      "uniCentreScene": [
+        133.531,
+        -295.474
+      ],
+      "iou": 0.987,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_D1",
+      "gis": {
+        "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 69208",
+        "pnu": "1215010800103130000",
+        "name": "순천대학교 D1 창업보육센터"
+      },
+      "gisCentreTm": [
+        243726.01,
+        263954.67
+      ],
+      "uniCentreScene": [
+        181.33,
+        -314.486
+      ],
+      "iou": 0.986,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_B7",
+      "gis": {
+        "footprintSource": "OSM way/1486502962 (not in GIS건물통합정보)",
+        "pnu": null,
+        "name": "순천대학교 B7 산학협력관"
+      },
+      "gisCentreTm": [
+        244114.79,
+        263927.31
+      ],
+      "uniCentreScene": [
+        420.512,
+        -299.47
+      ],
+      "iou": 0.647,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_B1",
+      "gis": {
+        "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 768406",
+        "pnu": "1215010800103130000",
+        "name": "순천대학교 B1 박물관"
+      },
+      "gisCentreTm": [
+        244106.71,
+        263807.92
+      ],
+      "uniCentreScene": [
+        418.41,
+        -221.745
+      ],
+      "iou": 0.992,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_A12.001",
+      "gis": null,
+      "gisCentreTm": null,
+      "uniCentreScene": [
+        476.168,
+        -76.915
+      ],
+      "iou": 0,
+      "curated": true,
+      "reason": "IoU 0 with every GIS record, nearest (768553 A17 체육관) 42 m away; uni.glb-only mass with no GIS footprint"
+    },
+    {
+      "nodeId": "BLD_A12",
+      "gis": {
+        "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 768553",
+        "pnu": "1215010800103130000",
+        "name": "순천대학교 A17 체육관 · A18 체육관 증축동"
+      },
+      "gisCentreTm": [
+        244171.47,
+        263606.78
+      ],
+      "uniCentreScene": [
+        458.346,
+        -96.124
+      ],
+      "iou": 0.94,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_D4",
+      "gis": {
+        "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 133154",
+        "pnu": "1215010800103130000",
+        "name": "순천대학교 D4 공학 3호관(우주항공첨단소재스쿨)"
+      },
+      "gisCentreTm": [
+        243507.55,
+        263879.65
+      ],
+      "uniCentreScene": [
+        46.721,
+        -266.797
+      ],
+      "iou": 0.7,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_E8",
+      "gis": {
+        "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 301217",
+        "pnu": "1215010800103130000",
+        "name": "순천대학교 E8 인문예술관(애니메이션문화콘텐츠스쿨)"
+      },
+      "gisCentreTm": [
+        243580.66,
+        263711.41
+      ],
+      "uniCentreScene": [
+        89.879,
+        -163.157
+      ],
+      "iou": 0.981,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_D3",
+      "gis": {
+        "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 312548",
+        "pnu": "1215010800103130000",
+        "name": "순천대학교 D3 공학 2호관(우주항공첨단소재스쿨)"
+      },
+      "gisCentreTm": [
+        243595.5,
+        263835.81
+      ],
+      "uniCentreScene": [
+        99.53,
+        -240.734
+      ],
+      "iou": 0.986,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_E6",
+      "gis": {
+        "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 137008",
+        "pnu": "1215010800103130000",
+        "name": "순천대학교 E6 미래창조관"
+      },
+      "gisCentreTm": [
+        243725.16,
+        263556.95
+      ],
+      "uniCentreScene": [
+        179.562,
+        -66.333
+      ],
+      "iou": 0.985,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_A10",
+      "gis": {
+        "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 301200",
+        "pnu": "1215010800103130000",
+        "name": "순천대학교 A10 인재관 · A11 제2중앙공급실"
+      },
+      "gisCentreTm": [
+        243809.63,
+        263515.98
+      ],
+      "uniCentreScene": [
+        232.142,
+        -40.527
+      ],
+      "iou": 0.967,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_E7",
+      "gis": {
+        "footprintSource": "OSM way/367126939 (not in GIS건물통합정보)",
+        "pnu": null,
+        "name": "순천대학교 E7 사회과학관(애니메이션문화콘텐츠스쿨)"
+      },
+      "gisCentreTm": [
+        243622.6,
+        263589.95
+      ],
+      "uniCentreScene": [
+        114.862,
+        -90.35
+      ],
+      "iou": 0.686,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_B4",
+      "gis": {
+        "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 72362",
+        "pnu": "1215010800103130000",
+        "name": "순천대학교 B4 생명산업과학 2호관(그린스마트팜스쿨)"
+      },
+      "gisCentreTm": [
+        243942.41,
+        263847.12
+      ],
+      "uniCentreScene": [
+        316.016,
+        -246.702
+      ],
+      "iou": 0.997,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_A1",
+      "gis": {
+        "footprintSource": "OSM way/366373751 (not in GIS건물통합정보)",
+        "pnu": null,
+        "name": "순천대학교 A1 대학본부"
+      },
+      "gisCentreTm": [
+        243917.02,
+        263667.34
+      ],
+      "uniCentreScene": [
+        303.026,
+        -135.363
+      ],
+      "iou": 0.652,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_B3",
+      "gis": {
+        "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 135996",
+        "pnu": "1215010800103130000",
+        "name": "순천대학교 B3 생명산업과학 1호관(그린스마트팜스쿨)"
+      },
+      "gisCentreTm": [
+        244029.48,
+        263881.54
+      ],
+      "uniCentreScene": [
+        370.483,
+        -267.912
+      ],
+      "iou": 0.993,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_Dormitory_Building.001",
+      "gis": {
+        "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688902",
+        "pnu": "1215010700105020000",
+        "name": "순천대학교 A8 학생생활관 향림관"
+      },
+      "gisCentreTm": [
+        243937.02,
+        263542.7
+      ],
+      "uniCentreScene": [
+        311.705,
+        -56.784
+      ],
+      "iou": 0.98,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_Dormitory_Building.002",
+      "gis": {
+        "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 85389",
+        "pnu": "1215010800103130000",
+        "name": "순천대학교 27동 학생생활관(향림관)"
+      },
+      "gisCentreTm": [
+        243921.03,
+        263513.88
+      ],
+      "uniCentreScene": [
+        301.584,
+        -38.871
+      ],
+      "iou": 0.973,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_B5_Greenhouse",
+      "gis": {
+        "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 67931",
+        "pnu": "1215010800103130000",
+        "name": "순천대학교 B5 생명산업과학대학온실"
+      },
+      "gisCentreTm": [
+        243959.62,
+        263887.9
+      ],
+      "uniCentreScene": [
+        326.887,
+        -272.091
+      ],
+      "iou": 0.995,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_Dormitory_Building.003",
+      "gis": {
+        "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688840",
+        "pnu": "1215010700105020000",
+        "name": "순천대학교 A8 학생생활관 향림관 부속동"
+      },
+      "gisCentreTm": [
+        243960.51,
+        263520.09
+      ],
+      "uniCentreScene": [
+        326.289,
+        -42.604
+      ],
+      "iou": 0.966,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_B2",
+      "gis": {
+        "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 768585",
+        "pnu": "1215010800103130000",
+        "name": "순천대학교 B2 70주년기념관"
+      },
+      "gisCentreTm": [
+        244026.8,
+        263807.92
+      ],
+      "uniCentreScene": [
+        368.803,
+        -221.997
+      ],
+      "iou": 0.963,
+      "curated": false
+    },
+    {
+      "nodeId": "BLD_Dormitory_Building.004",
+      "gis": null,
+      "gisCentreTm": null,
+      "uniCentreScene": [
+        356.194,
+        -51.743
+      ],
+      "iou": null,
+      "curated": true,
+      "reason": "no GIS footprint overlaps; it is A13 웅지관, present only as data/vr-buildings.json trace (NGII 2025 orthophoto + VR scene_a13)"
+    }
+  ]
+}
