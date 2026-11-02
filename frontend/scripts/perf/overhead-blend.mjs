@@ -38,7 +38,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { D4_SCENE, EXTENT } from "../campus-model/lib/frame.mjs";
+import { D4_SCENE_ANCHOR, EXTENT } from "../campus-model/lib/frame.mjs";
 import { DEFAULT_SHEET, openSheet } from "../campus-model/lib/ngiiSheet.mjs";
 import { decodePng, encodePng } from "../campus-model/lib/png.mjs";
 import { GRID_CONVERGENCE_DEG, sceneToTm, tmToPixel, tmToScene, wgs84ToTm } from "../../src/geo/epsg5186.mjs";
@@ -327,7 +327,7 @@ try {
   await Bun.sleep(3000); // let textures finish uploading (same settle as compare-satellite.mjs)
   await evaluate(PAGE_HELPERS);
   const d4World = await evaluate("window.__blend.d4Centre()");
-  const offset = { x: d4World.x - D4_SCENE.x, z: d4World.z - D4_SCENE.z };
+  const offset = { x: d4World.x - D4_SCENE_ANCHOR.x, z: d4World.z - D4_SCENE_ANCHOR.z };
   console.log(`FRAME world-minus-scene offset x=${offset.x.toFixed(3)} z=${offset.z.toFixed(3)}; grid convergence ${GRID_CONVERGENCE_DEG.toFixed(4)} deg`);
 
   mkdirSync(outDir, { recursive: true });

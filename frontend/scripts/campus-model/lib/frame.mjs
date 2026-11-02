@@ -2,7 +2,7 @@
 //
 // uni.glb (and the traffic simulation, see src/simulation/utils/campusTrafficCoordinates.mjs) live in
 // "scene units": 0.6242 units per metre, +x east, +z south, with BLD_D4's bounding-box centre at
-// D4_SCENE. The SketchUp source behind uni.glb is the VWorld cadastral footprint set shifted by a
+// D4_SCENE_ANCHOR. The SketchUp source behind uni.glb is the VWorld cadastral footprint set shifted by a
 // constant offset (median over 43 buildings whose areas match within 1 %: 4.40 m east, 0.44 m north),
 // so geo data is placed with that same shift to land exactly on the existing model and roads.
 //
@@ -10,7 +10,9 @@
 // goes WGS84 -> EPSG:5186 -> scene, so every layer shares the frame of the NGII orthophoto sheet.
 import {
   D4_ANCHOR,
-  D4_SCENE,
+  D4_ANCHOR_TM,
+  D4_SCENE_ANCHOR,
+  FRAME_VERSION,
   SCENE_UNITS_PER_METRE,
   SOURCE_MODEL_OFFSET,
   sceneToTm,
@@ -19,7 +21,26 @@ import {
   wgs84ToTm,
 } from "../../../src/geo/epsg5186.mjs";
 
-export { D4_ANCHOR, D4_SCENE, SCENE_UNITS_PER_METRE, SOURCE_MODEL_OFFSET };
+export { D4_ANCHOR, D4_ANCHOR_TM, D4_SCENE_ANCHOR, FRAME_VERSION, SCENE_UNITS_PER_METRE, SOURCE_MODEL_OFFSET };
+
+// glTF asset.extras tags recording the frame a GLB was generated in.
+export function frameAssetExtras() {
+  return {
+    frameVersion: FRAME_VERSION,
+    anchor: { epsg5186: [...D4_ANCHOR_TM], scene: [...tmToScene(...D4_ANCHOR_TM)] },
+  };
+}
+
+// Reads the frame tags from a parsed GLB JSON chunk; throws when the GLB predates Frame v2.
+export function campusModelAsset(json) {
+  const extras = json?.asset?.extras ?? {};
+  if (extras.frameVersion === undefined) throw new Error("campus model asset: frameVersion missing");
+  if (extras.frameVersion !== FRAME_VERSION) {
+    throw new Error(`campus model asset: frameVersion ${extras.frameVersion}, expected ${FRAME_VERSION}`);
+  }
+  if (!extras.anchor?.epsg5186 || !extras.anchor?.scene) throw new Error("campus model asset: anchor missing");
+  return { frameVersion: extras.frameVersion, anchor: extras.anchor };
+}
 
 // Local metres per degree at the D4 latitude, kept for callers that grid or scale in degrees.
 const LAT0_RAD = (D4_ANCHOR.latitude * Math.PI) / 180;
