@@ -117,7 +117,7 @@ if (import.meta.main) {
     heightM: m.topMetres, lean: leans.get(b.key) ?? b.leanPrior,
   })));
   const trees = read("trees.json").trees.map(([east, north, crownDiameterM, heightM]) => ({ east, north, crownDiameterM, heightM }));
-  const blobs = ["photo/markings.geojson", "photo/markings-extra.geojson"].flatMap((f) => read(f).features)
+  const blobs = ["photo/evidence/markings.geojson", "photo/evidence/markings-extra.geojson"].flatMap((f) => read(f).features)
     .filter((f) => ["arrow", "text"].includes(f.properties.kind) && f.geometry.type === "Polygon")
     .map((f) => ({ id: f.properties.id, kind: f.properties.kind, ring: f.geometry.coordinates[0].map(([lon, lat]) => wgs84ToTm(lon, lat)) }));
   const sheet = openSheet();

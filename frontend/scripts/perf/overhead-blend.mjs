@@ -152,7 +152,7 @@ try {
 
 // ---------------------------------------------------------------- --objects (per-object map-space comparison)
 if (args.includes("--objects")) {
-  const { markingCandidates } = await import("../campus-model/stages/markings.mjs");
+  const { loadRoadMarkings } = await import("../campus-model/stages/roadMarkings.mjs");
   const data = join(HERE, "..", "campus-model", "data");
   const toTm = ([x, z]) => wgs84ToTm(...modelToGeo(x, z));
   // sheet window over EXTENT (+10 m), origin = top-left pixel corner
@@ -187,7 +187,7 @@ if (args.includes("--objects")) {
   const masks = occlusionMask(win, { buildings, trees });
   // drawn pieces -> objects: line kinds become the long-axis centreline of each piece, the rest stay areas
   const LINE = /^(centre_line|lane_line|edge_line|guide_|parking_line|kerb|stop_line)/;
-  const { candidates } = await markingCandidates();
+  const candidates = loadRoadMarkings().pieces.map((p, i) => ({ ...p, id: `${p.record}#${i}`, shapes: [p.rings] }));
   const parkingDoc = JSON.parse(readFileSync(resolve(option("parking", join(data, "ground", "parking.json"))), "utf8"));
   const objects = candidates.filter((c) => c.kind !== "parking_line" && c.kind !== "disabled_parking").map((c) => {
     const rings = c.shapes.map((shape) => shape.map((ring) => ring.map(toTm)));
@@ -240,7 +240,7 @@ if (args.includes("--objects")) {
   mkdirSync(outDir, { recursive: true });
   const report = {
     generatedAt: new Date().toISOString(), sheet: DEFAULT_SHEET.split("/").pop(), metresPerPixel: gsd,
-    source: "stages/markings.mjs markingCandidates (drawn pieces), EPSG:5186", masks: { leans: leanSource, trees: "data/trees.json", shadows: "lib/poleShadow.mjs SUN" },
+    source: "stages/roadMarkings.mjs generated record pieces, EPSG:5186", masks: { leans: leanSource, trees: "data/trees.json", shadows: "lib/poleShadow.mjs SUN" },
     tolerances: TOLERANCES, byTier, overTolerance: overList.length, parkingLots: lots, parkingRows: rows, objects: scored,
   };
   writeFileSync(join(outDir, "objects.json"), `${JSON.stringify(report, null, 1)}\n`);

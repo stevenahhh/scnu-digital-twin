@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { SCENE_UNITS_PER_METRE, modelToGeo } from "../lib/frame.mjs";
-import { HUMP_HEIGHT_M, buildHumps, humpProfile } from "./stalls.mjs";
+import { HUMP_HEIGHT_M, buildHumps, humpProfile } from "./humpEvidence.mjs";
 
 const U = SCENE_UNITS_PER_METRE;
 test("the hump profile peaks at 0.10 m at s = 0 and is 0 at |s| = 1.8 m", () => {

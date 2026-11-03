@@ -160,15 +160,10 @@ export async function currentSurfaces() {
 // need: the input of the paint curation. Returns the parking plan too, for the row parcels. Row and line records prove
 // the pavement under them, so their pieces count as detected paint here even where the divider itself is estimated.
 export async function currentPaint() {
-  const { loadInputs } = await import("../stages/sources.mjs");
-  const { loadFurnitureSurvey } = await import("../stages/furniture.mjs");
-  const { buildBuildings } = await import("../stages/buildings.mjs");
-  const { loadMarkings, inMarkingExtent } = await import("../stages/markings.mjs");
+  const { loadRoadMarkings } = await import("../stages/roadMarkings.mjs");
+  const { inMarkingExtent } = await import("../stages/markings.mjs");
   const { loadParking, parkingPlan } = await import("../stages/parking.mjs");
-  const { GlbBuilder } = await import("../lib/glb.mjs");
-  const inputs = await loadInputs();
-  const { selectableBuildings, campusBuildings } = await buildBuildings({ glb: new GlbBuilder(), inputs, detailedStructures: loadFurnitureSurvey().detailedStructures });
-  const markings = await loadMarkings({ inputs, buildings: [...selectableBuildings, ...campusBuildings] });
+  const markings = loadRoadMarkings();
   const centre = (r) => r.reduce((a, q) => [a[0] + q[0] / r.length, a[1] + q[1] / r.length], [0, 0]);
   const doc = loadParking();
   const plan = parkingPlan(doc);
@@ -278,7 +273,7 @@ if (import.meta.main) {
   const args = process.argv.slice(2);
   const refs = registrationRefs(JSON.parse(readFileSync(GROUND_REGISTRATION, "utf8")), JSON.parse(readFileSync(A003_REGISTRATION, "utf8")));
   // --check compares the seeded parcels with today's layers (no markings needed, runs on the lab); --write and
-  // --check-curation also rebuild the paint curation, which needs the photo markings gate (Mac caches)
+  // --check-curation also rebuild the paint curation from generated road and parking records.
   const curate = args.includes("--write") || args.includes("--check-curation");
   const doc = curate ? await curatedDoc(refs) : { ...JSON.parse(readFileSync(PARCELS_FILE, "utf8")), parcels: seedParcels(await currentLayers(), refs) };
   const { parcels } = doc;

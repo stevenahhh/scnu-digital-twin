@@ -56,7 +56,7 @@ export const GROUND_MESHES = Object.freeze({
   Ground_Walkway: { pattern: "campus-speckle", baseColorFactor: [0.22, 0.25, 0.18, 1] },
   // stages/kerbs.mjs: the gutter band on the road side of the kerbs (asphalt darkened 0.72, estimated)
   Ground_Gutter: { tile: "asphalt", baseColorFactor: [0.72, 0.72, 0.72, 1] },
-  // network/stalls.mjs: the circular-arc speed humps (buildHumpMeshes), asphalt
+  // roadMarkings.mjs: record-defined circular-arc speed humps, asphalt
   Ground_Hump: { tile: "asphalt" },
   // stages/tactile.mjs: generated tactile tile (bake/tactile-tile.mjs), band-aligned UVs
   Ground_Tactile: { generated: "tactile" },
@@ -667,11 +667,11 @@ export function humpLayers(humps, lengthM) {
     };
   });
 }
-export async function buildHumpMeshes({ glb, humps, surface, ao = null, profile, lengthM }) {
+export async function buildHumpMeshes({ glb, humps, surface, ao = null, profile = humpProfile, lengthM }) {
   if (!humps.length) return 0;
   const cls = GROUND_MESHES.Ground_Hump.tile;
   const size = groundTile(cls).entry.physicalSizeM;
-  const material = await tileMaterial(glb, { name: "Ground_Hump", cls, rank: 3.6, ao, extras: { profile: `circular arc ${lengthM} m x ${profile(0)} m (estimated)` } });
+  const material = await tileMaterial(glb, { name: "Ground_Hump", cls, rank: 3.6, ao, extras: { profile: "record-defined circular arc (estimated)" } });
   // the top is a ground class of the partition (humpLayers); the walls stand on the terrain
   const base = 0;
   const STEP_S = 0.2;
@@ -715,7 +715,7 @@ export async function buildHumpMeshes({ glb, humps, surface, ao = null, profile,
     }
     const mesh = glb.addMesh(`Ground_Hump_${hump.id}`, [{ positions: Float32Array.from(positions), normals: Float32Array.from(normals), uvs: Float32Array.from(uvs), indices, material }]);
     glb.json.meshes[mesh].primitives[0].attributes.TEXCOORD_1 = glb.addAccessor(Float32Array.from(uv1), "VEC2");
-    glb.addNode({ name: `Ground_Hump_${hump.id}`, mesh, extras: { estimated: true, lengthM: humpLength, heightM: height(0), widthM: Number(hump.widthM.toFixed(2)), source: hump.record ?? `data/photo/markings-extra.geojson ${hump.id}` } }, { root: true });
+    glb.addNode({ name: `Ground_Hump_${hump.id}`, mesh, extras: { estimated: true, lengthM: humpLength, heightM: height(0), widthM: Number(hump.widthM.toFixed(2)), source: hump.record } }, { root: true });
   }
   return humps.length;
 }

@@ -14,7 +14,7 @@ import { humpProfile } from "../stages/roadMarkings.mjs";
 export { humpProfile } from "../stages/roadMarkings.mjs";
 
 const UNIT = SCENE_UNITS_PER_METRE;
-const PHOTO = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "photo");
+const PHOTO = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "photo", "evidence");
 
 // Every speed_bump feature of both marking files.
 export async function loadSpeedBumps() {

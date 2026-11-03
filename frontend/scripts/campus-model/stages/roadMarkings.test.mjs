@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { sceneToTm, tmToScene } from "../../../src/geo/epsg5186.mjs";
-import { roadMarkingPlan } from "./roadMarkings.mjs";
+import { loadRoadMarkings, roadMarkingPlan } from "./roadMarkings.mjs";
+import { loadParcels, paintViolations, pieceKey } from "../lib/parcels.mjs";
+import { loadParking, parkingPlan } from "./parking.mjs";
+import { inMarkingExtent } from "./markings.mjs";
 import { buildMarkings } from "./markings.mjs";
 import { GlbBuilder } from "../lib/glb.mjs";
 import { SCENE_UNITS_PER_METRE } from "../lib/frame.mjs";
@@ -131,6 +134,14 @@ test("hump records control height, footprint, bands and the near predicate", () 
   assert.ok(result.pieces.every(p => p.kind === "speed_bump" && p.record === "RD_TEST/sections/0/humps/0"));
 });
 
+test("height sidecar retains first-record priority when two hump outlines overlap", () => {
+  const result = plan(section({ humps: [
+    { atM: 15, lengthM: 4, heightM: 0.1, bands: false },
+    { atM: 15, lengthM: 4, heightM: 0.2, bands: false },
+  ] }));
+  close(result.heightAt(...tmToScene(origin[0] + 15, origin[1])), 0.1);
+});
+
 test("unrecorded paint is absent and separate sections restart their dash phase", () => {
   assert.deepEqual(plan(section()).pieces, []);
   const result = plan([
@@ -227,3 +238,47 @@ test("hump ground layers use each record length rather than the legacy shared le
 });
 
 const subPair = (a, b) => [a[0] - b[0], a[1] - b[1]];
+
+test("new campus records preserve the five restored road marks and the sole island exclusion", () => {
+  const generated = loadRoadMarkings();
+  const inside = p => inMarkingExtent(p.rings[0].reduce((s, q) => [s[0] + q[0] / p.rings[0].length, s[1] + q[1] / p.rings[0].length], [0, 0]));
+  const paint = [...generated.pieces, ...parkingPlan(loadParking()).pieces].filter(inside);
+  const toTm = ([x, z]) => sceneToTm(x, z);
+  const keys = new Set(generated.pieces.map(p => pieceKey(p, toTm)));
+  for (const restored of [
+    "MK01416@243781.87,263714.44",
+    "kerb_no_parking@243807.04,263912.80",
+    "zebra_bar@243734.27,263728.93",
+    "zebra_bar@243881.76,263760.14",
+    "zebra_bar@243559.10,263874.06",
+  ]) assert.ok(keys.has(restored), restored);
+  assert.ok(generated.pieces.every(p => p.record && p.evidence.refs.length));
+  const violations = paintViolations(paint, loadParcels().parcels, toTm);
+  assert.deepEqual([...new Set(violations.map(v => v.piece))], ["LOT_E244011_N263891/R12/D2@244076.30,263925.10"]);
+});
+
+test("paint mesh clips the whole excluded island, including a neighbouring stripe whose centre is outside", async () => {
+  const glb = new GlbBuilder();
+  await buildMarkings({
+    glb, decimate: false,
+    markings: { pieces: [{ rings: [[[200,-200],[204,-200],[204,-198],[200,-198]]], kind: "edge_line", colour: "white", estimated: true }], source: "synthetic" },
+    exclusions: [[[[203,-201],[205,-201],[205,-197],[203,-197]]]],
+    surface: { grid: { step: 20, x0: 0, z0: 0 }, height: () => 0, normal: () => [0,1,0] },
+  });
+  const p = glb.json.meshes[0].primitives[0], bytes = Buffer.concat(glb.chunks);
+  const positions = glb.json.accessors[p.attributes.POSITION], indices = glb.json.accessors[p.indices];
+  const posOffset = glb.json.bufferViews[positions.bufferView].byteOffset;
+  const indexOffset = glb.json.bufferViews[indices.bufferView].byteOffset;
+  const indexSize = indices.componentType === 5123 ? 2 : 4;
+  const point = i => {
+    const k = indexSize === 2 ? bytes.readUInt16LE(indexOffset+i*2) : bytes.readUInt32LE(indexOffset+i*4);
+    return [bytes.readFloatLE(posOffset+k*12), bytes.readFloatLE(posOffset+k*12+8)];
+  };
+  let area = 0;
+  for (let i=0; i<indices.count; i+=3) {
+    const [a,b,c] = [point(i),point(i+1),point(i+2)];
+    assert.ok([a,b,c].every(q => q[0] <= 203));
+    area += Math.abs((b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]))/2;
+  }
+  assert.equal(area, 6);
+});

@@ -842,7 +842,7 @@ async function cli(args) {
     const length = Math.hypot(q[0] - p[0], q[1] - p[1]) || 1;
     return measure(win, paintThreshold(win), p, [(q[0] - p[0]) / length, (q[1] - p[1]) / length], length);
   };
-  const raw = [...read("photo/markings.geojson").features, ...read("photo/markings-extra.geojson").features]
+  const raw = [...read("photo/evidence/markings.geojson").features, ...read("photo/evidence/markings-extra.geojson").features]
     .filter((f) => f.properties.kind === "parking_line" && f.geometry.type === "Polygon")
     .map((f) => ({ id: f.properties.id, kind: "parking_line", ring: f.geometry.coordinates[0].map(([lon, lat]) => wgs84ToTm(lon, lat)) }));
   const propose = (id, ring, backHint) => {

@@ -127,7 +127,7 @@ world positions while recomputing their coordinates in the changed parcels.
 It returns scene-coordinate `pieces` for `buildMarkings`, per-record `humps`
 for `humpLayers`/`buildHumpMeshes`, and a metre-valued `heightAt(x,z)` with
 `heightAt.near` for terrain refinement and height-sidecar sampling.
-`humpProfile` is shared with the existing photo-hump adapter. Ground hump
+`humpProfile` is shared with the seed-only evidence reader. Ground hump
 layers and walls use each record's length and height when supplied.
 
 The generator validates both documents before producing geometry. It reads no
@@ -160,20 +160,36 @@ bun scripts/campus-model/stages/roadMarkings.mjs \
   --out /private/tmp/road-markings.json
 ```
 
-**Todo 23 is not complete.** At base `aed3d889`, neither published
-`road-sections.json` nor `junctions.json` exists. The RD_093 proposal records
-no centre/edge paint and no junction elements; it cannot replace the gate's
-current markings. `road-ground.json` describes ground proposals and explicitly
-unverified nearest-segment associations, not an alternative marking inventory.
-The campus build therefore still uses `loadMarkings` and the photo-hump
-adapter. Photo inputs have not yet been moved to evidence, the gate is still
-read by that legacy path, and `network/stalls.mjs` has not been deleted.
-Do not treat the new generator's unit tests or an unchanged campus render
-as proof that this migration has occurred.
+The campus build now calls `loadRoadMarkings` and reads the published
+`road-sections.json` and `junctions.json`. It never calls the evidence loader.
+`fit/roadMarkingsSeed.mjs --write` regenerates those documents;
+`--check` recomputes them and rejects stale bytes. Both commands use the heavy
+wrapper. `fit/markingEvidence.mjs` and `fit/markingEvidenceFit.mjs` perform
+the evidence support/fit step; `fit/humpEvidence.mjs` reads hump evidence.
+These modules are seed/QA inputs only. `network/stalls.mjs` is removed.
+All five photographic marking files live under `data/photo/evidence/`.
 
-Before switching the campus build, seed section/junction records for the
-current accepted road paint, preserve the five restored todo-22 marks and
-the pedestrian-island divider exclusion, then replace the legacy loader,
-move its photo inputs to evidence, and rerun the parcel/height/visual checks.
-The generator does not silently substitute photo fragments or empty records
-when those inputs are missing.
+The migration seed does **not** copy `road-ground.json`'s local `roadSection`,
+its width/fromM, or its nearest-RD associations. Nor does it interpret the
+RD_093 proposal's `centre:none` as absent paint. It retains the accepted
+paint's fitted control curves, rectangle dimensions, crossing grids and
+glyph template parameters as `details`. Clipped bands and shaped colour
+patches have explicit region boundaries. A word/arrow is a glyph record,
+not a bag of saved triangles. Generated mesh polygons are not stored.
+
+Each detail has `atM`, `lateralOffsetM`, `alongOffsetM`, `yawRad`, shape
+parameters, evidence, a stable id and an order. Its frame is resolved from
+the selected network path at build time; moving that path moves its paint.
+The nearest RD/ND is explicitly a **coordinate reference only**, with
+`association.verified:false` and the distance recorded. It does not establish
+road ownership, traffic connectivity, lane assignment or T1 accuracy of that
+association. Todo 24 must curate those associations and section-wide layouts.
+Section headers use `paintSource:"details", absenceAssessed:false`; their
+`none` values disable additional automatic lines, not the recorded paint.
+Their unreviewed lane-width priors are not used to size the detail geometry.
+
+The build retains the explicit invalid parking divider exclusion and clips
+all paint against that excluded pedestrian parcel, including neighbouring
+stripes whose centres are outside it. The actual GLB, rather than a piece
+centre alone, is checked for overlap. Existing parcel and height-sidecar
+tests remain behavior of record.

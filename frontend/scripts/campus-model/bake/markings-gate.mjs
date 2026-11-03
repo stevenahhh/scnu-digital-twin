@@ -3,7 +3,7 @@
 //
 // For every marking candidate the stage would draw (markingCandidates(): markings.geojson with the corrections of
 // markings-extra.geojson applied, plus markings-extra.geojson), this measures the share of its drawn area that the
-// NGII 2025 orthophoto shows as white, yellow and blue paint, and writes data/photo/markings-gate.json:
+// NGII 2025 orthophoto shows as white, yellow and blue paint, and writes data/photo/evidence/markings-gate.json:
 // `supports: { id: [white, yellow, blue, fingerprint] }`, followed for a `double` line by the three shares of its single-line
 // reading. The stage draws a candidate in its own colour when that
 // share reaches GATE_SUPPORT, in the colour the photo shows when only that one does, and refuses to build when an
@@ -54,10 +54,10 @@ import { segmentDistance } from "../lib/geometry.mjs";
 import { openSheet } from "../lib/ngiiSheet.mjs";
 import { encodePng } from "../lib/png.mjs";
 import { BLUE_AREA, BLUE_BR, BLUE_GREY, BLUE_TOPHAT, HALF_MAX, PAINT_OPEN_M, PEAK_REACH_M, SHADOW_GAIN, SHADOW_RED, SHADOW_REFERENCE, SHADOW_SURFACE, WHITE_SPREAD, WHITE_TOPHAT, WHITE_TOPHAT_RAW, YELLOW_CHROMA, YELLOW_GR, YELLOW_MIN, YELLOW_RB, YELLOW_TOPHAT, paintMasks } from "../lib/paintMasks.mjs";
-import { PAINT_BEYOND_EXTENT, SUPPORT_STEP_M, gridPoints, markingCandidates } from "../stages/markings.mjs";
+import { PAINT_BEYOND_EXTENT, SUPPORT_STEP_M, gridPoints, markingCandidates } from "../fit/markingEvidence.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const OUTPUT = path.join(HERE, "..", "data", "photo", "markings-gate.json");
+const OUTPUT = path.join(HERE, "..", "data", "photo", "evidence", "markings-gate.json");
 const MARGIN_M = 10;
 
 const CORE_M = 0.1;

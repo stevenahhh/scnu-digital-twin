@@ -14,9 +14,14 @@ const arrowTypes = new Set(["straight", "left", "right", "straight_left", "strai
 
 export function roadContext() {
   const roads = JSON.parse(readFileSync(new URL("road_segments.geojson", dataUrl), "utf8"));
+  const network = JSON.parse(readFileSync(new URL("campus_transport_network.geojson", dataUrl), "utf8"));
+  const anchor = network.metadata.epsg5186_anchor;
+  const junctionPoints = network.features.filter(f => f.geometry.type === "Point" && /^ND_/.test(f.properties.id))
+    .map(f => ({ id: f.properties.id, point: f.properties.epsg5186 ?? [anchor.E + f.geometry.coordinates[0], anchor.N + f.geometry.coordinates[1]] }));
   return {
+    nodes: junctionPoints.map(p => p.id), junctionPoints,
     segments: roads.features.map(({ properties: p }) => ({
-      id: p.id,
+      id: p.id, widthM: p.width_m, lanes: p.lanes,
       paths: p.epsg5186.map((line) => ({
         line, lengthM: line.slice(1).reduce((sum, q, i) => sum + Math.hypot(q[0] - line[i][0], q[1] - line[i][1]), 0),
       })),
@@ -41,6 +46,45 @@ function humps(list, fail, fromM, toM) {
     if (!object(h) || !Number.isFinite(h.atM) || h.atM < fromM || h.atM > toM ||
         !positive(h.lengthM) || !positive(h.heightM) || typeof h.bands !== "boolean") fail(`humps[${i}] needs an in-range station, positive dimensions and bands`);
   });
+}
+
+function details(list, fail, length) {
+  if (list === undefined) return;
+  if (!Array.isArray(list)) { fail("details must be an array"); return; }
+  for (const d of list) {
+    const bad = message => fail(`${d?.id ?? "detail"}: ${message}`);
+    if (!object(d)) { bad("expected record"); continue; }
+    if (!text(d.id) || !nonnegative(d.atM) || d.atM > length ||
+        ![d.lateralOffsetM, d.alongOffsetM, d.yawRad].every(Number.isFinite)) bad("invalid road-local anchor");
+    if (!["white","yellow","blue","green","light_blue"].includes(d.colour)) bad("unknown paint colour");
+    evidence(d, bad);
+    const s = d.shape;
+    if (!object(s)) { bad("missing shape"); continue; }
+    switch (s.type) {
+      case "rectangle":
+        if (!positive(s.lengthM) || !positive(s.widthM)) bad("invalid rectangle dimensions");
+        break;
+      case "stroke":
+        if (!positive(s.widthM) || !Array.isArray(s.path) || s.path.length < 2 || !s.path.every(pair)) bad("invalid stroke path or width");
+        break;
+      case "crossing":
+        if (!positive(s.lengthM) || !positive(s.widthM) || !positive(s.periodM) || s.periodM <= s.widthM ||
+            !Number.isInteger(s.count) || s.count < 1 || !Array.isArray(s.slots) ||
+            new Set(s.slots).size !== s.slots.length || s.slots.some(k => !Number.isInteger(k) || k < 0 || k >= s.count)) bad("invalid crossing grid");
+        break;
+      case "hump":
+        if (!positive(s.lengthM) || !positive(s.widthM) || !positive(s.heightM)) bad("invalid hump dimensions");
+        break;
+      case "region":
+        if (!Array.isArray(s.boundary) || !s.boundary.length || s.boundary.some(r => !Array.isArray(r) || r.length < 3 || !r.every(pair))) bad("invalid region boundary");
+        break;
+      case "glyph":
+        if (!["arrow","bicycle","diamond","triangle","chevron","text","bus_stop_box","hatched_median"].includes(s.template) ||
+            !Array.isArray(s.args) || typeof s.centered !== "boolean") bad("invalid glyph template");
+        break;
+      default: bad(`unknown primitive ${s.type}`);
+    }
+  }
 }
 
 export function roadSections(doc, context = roadContext()) {
@@ -72,6 +116,7 @@ export function roadSections(doc, context = roadContext()) {
       if (typeof s.kerbNoParking?.left !== "boolean" || typeof s.kerbNoParking?.right !== "boolean") fail("kerbNoParking needs left/right booleans");
       if (s.dashPhaseM !== undefined && !nonnegative(s.dashPhaseM)) fail("dashPhaseM must be nonnegative");
       humps(s.humps, fail, s.fromM, s.toM);
+      details(s.details, fail, length);
       evidence(s, fail);
     });
   }
@@ -119,6 +164,7 @@ export function junctions(doc, context = roadContext()) {
         if (!Array.isArray(a[kind]) || a[kind].some((r) => !Array.isArray(r?.points) || r.points.length < (kind === "yieldTriangles" ? 3 : 2) || !r.points.every(pair))) fail(`${kind} need EPSG:5186 points`);
       }
       humps(a.humps, fail, 0, length);
+      details(a.details, fail, length);
       evidence(a, fail);
     }
   }
