@@ -6,18 +6,34 @@ import { sceneToTm, wgs84ToTm } from "../../../src/geo/epsg5186.mjs";
 import { loadFurnitureSurvey } from "../stages/furniture.mjs";
 import { pointInRing } from "../lib/geometry.mjs";
 import { positionObject, anchorObject } from "./objectPlacement.mjs";
+import { objectObservations } from "./vrObjectObservations.mjs";
 
 const readJson = (relative) => JSON.parse(readFileSync(new URL(relative, import.meta.url), "utf8"));
 const parcelList = readJson("../data/ground/parcels.json").parcels;
 const parcels = Object.fromEntries(parcelList.map(p => [p.id, p]));
 const roots = new Map(readJson("../data/photo/pole-roots.json").poles.map(p => [p.id, p]));
 const stations = new Map(readJson("../../perf/vr-stations.json").map(s => [s.scene, s]));
+const reviewed = new Map(objectObservations(readJson("../data/free-standing-vr.json"), [...stations.values()]).map(r => [r.id, r]));
 const furniture = loadFurnitureSurvey();
+const finalFile = new URL("../data/free-standing-pole-placements.json", import.meta.url);
+const reconcileIndex = process.argv.indexOf("--reconcile-glb");
+if (reconcileIndex >= 0) {
+  const bytes = readFileSync(process.argv[reconcileIndex + 1]);
+  const packed = JSON.parse(bytes.subarray(20, 20 + bytes.readUInt32LE(12)).toString());
+  if (packed.asset.extras.frameVersion !== 2) throw new Error("stale packed frame");
+  const extras = packed.nodes.find(n => n.name === "Furniture" && n.extras?.poles).extras;
+  writeFileSync(finalFile, JSON.stringify({
+    frameVersion: 2, estimated: true, method: "Furniture.extras.poles after checkPoles; 0.01 scene-unit serialization",
+    poles: extras.poles.map(p => ({ id: p[0], pointScene: p.slice(5, 7) })),
+  }, null, 2) + "\n");
+}
+const finalPoles = readJson("../data/free-standing-pole-placements.json");
+const finalized = new Map(finalPoles.poles.map(p => [p.id, p.pointScene]));
 const records = [];
 for (const object of furniture.objects.filter(o => o.source !== "site-detail")) {
   const shape = object.point ? [object.point] : object.footprint ?? object.ring ?? object.line;
   const centre = shape.reduce((sum, p) => sum.map((v, i) => v + p[i] / shape.length), [0, 0]);
-  const point = sceneToTm(...centre);
+  const point = sceneToTm(...(finalized.get(object.id) ?? centre));
   const containing = parcelList.filter(p => pointInRing(point, p.ring) && !(p.holes ?? []).some(h => pointInRing(point, h)));
   const candidates = containing.length ? containing : parcelList;
   const distance = (p) => Math.min(...p.ring.map(q => Math.hypot(q[0] - point[0], q[1] - point[1])));
@@ -30,12 +46,12 @@ for (const object of furniture.objects.filter(o => o.source !== "site-detail")) 
     seed.photo = { point: wgs84ToTm(...root.root), base: true, occluded: false,
       residualM: root.residualM, ref: `data/photo/pole-roots.json ${root.id} ${root.verdict}; ${root.note}` };
   } else if (object.p.method === "vr+photo" && object.p.pole_verdict === "by-eye-root") {
-    seed.photo = { point, base: true, occluded: false, residualM: object.p.residual_m,
+    seed.photo = { point: sceneToTm(...centre), base: true, occluded: false, residualM: object.p.residual_m,
       ref: `data/photo/vr-lamps.geojson ${object.id}; ${object.p.source}; ${object.p.vrFix?.note ?? ""}` };
   }
-  if (object.p.vr_scene && ["f", "r", "b", "l"].includes(object.p.vr_face) && Array.isArray(object.p.vr_cols)) {
-    const col = (object.p.vr_cols[0] + object.p.vr_cols[1]) / 2;
-    seed.observations = [{ station: stations.get(object.p.vr_scene), reading: { face: object.p.vr_face, col } }];
+  const observation = reviewed.get(object.id);
+  if (observation?.col !== null && observation?.col !== undefined) {
+    seed.observations = [{ station: stations.get(observation.scene), reading: { face: observation.face, col: observation.col } }];
   }
   const sourceReading = /VR (scene_[a-z0-9_]+) ([frbl]) col (\d+)/.exec(object.p.source ?? "");
   if (!seed.observations && sourceReading) {
@@ -43,6 +59,12 @@ for (const object of furniture.objects.filter(o => o.source !== "site-detail")) 
       reading: { face: sourceReading[2], col: Number(sourceReading[3]) } }];
   }
   const placement = positionObject(seed, parcels);
+  placement.vrObservations = observation ? [observation] : [];
+  for (const check of placement.bearingChecks) check.diagnosticOnly = true;
+  if (observation) placement.evidence.refs.push(`reviewed same-object VR silhouette: data/free-standing-vr.json ${object.id}; ${observation.reason}; estimated`);
+  else if (object.p.vr_cols) placement.evidence.refs.push(`legacy visibility range ${object.p.vr_cols.join("..")} is not a same-object observation; no centroid inferred`);
+  if (finalized.has(object.id)) placement.evidence.refs.push(
+    "final pole placement: data/free-standing-pole-placements.json, reconciled from packed Furniture.extras.poles after checkPoles; photo bases retain priority");
   if (object.p.vr_face === "d") placement.evidence.refs.push(`nadir face ${object.p.vr_scene}/d is not a horizontal column bearing`);
   placement.evidence.refs.push(`source=${object.source}; kind=${object.kind}; method=${object.p.method ?? object.p.position_method ?? "unrecorded"}`);
   if (object.source === "plaza-benches") placement.row = {

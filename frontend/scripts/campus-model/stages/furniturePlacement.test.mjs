@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
-import { loadFurniture, B, makeContext } from "./furniture.mjs";
+import { loadFurniture, B, makeContext, buildFurniture } from "./furniture.mjs";
+import { checkPoles } from "./lights.mjs";
+import { GlbBuilder } from "../lib/glb.mjs";
 import { resolveAnchor } from "../lib/anchors.mjs";
 import { sceneToTm } from "../../../src/geo/epsg5186.mjs";
 import { metres } from "../lib/frame.mjs";
@@ -24,7 +26,7 @@ test("the furniture loader applies every free-standing record before downstream 
   }
 });
 
-test("plaza benches are two recorded four-member rows, built once by the existing bench builder", () => {
+test("plaza benches are two recorded four-member rows with catalogue geometry", () => {
   const rows = loadFurniture().objects.filter(o => o.source === "plaza-benches");
   assert.equal(rows.length, 2);
   const sites = { inArea: () => false, labelAt: () => null, classes: { PAVING: 1, ASPHALT: 2 } };
@@ -51,4 +53,26 @@ test("a VR-discovered lamp keeps its separately reviewed photo root over a confl
   assert.equal(lamp.bearingChecks[0].photoResidualM, source.properties.residual_m);
   assert.equal(lamp.bearingChecks[0].decision, "retain_photo_base");
   assert.equal(lamp.bearingChecks[0].pass, false);
+});
+
+test("the real furniture build records the anchor at the post-checkPoles position", () => {
+  const furniture = loadFurniture();
+  const pole = furniture.objects.find(o => o.id === "OC0098");
+  const before = [...pole.point];
+  const constraints = { onCarriageway: ([x]) => x < before[0] + metres(4), inBuilding: () => false };
+  const result = checkPoles([pole], constraints);
+  assert.equal(result.moved.length, 1);
+  assert.deepEqual(result.offenders, []);
+  const glb = new GlbBuilder();
+  buildFurniture({ glb, furniture: { ...furniture, objects: [pole] },
+    lamps: [{ id: pole.id, type: "path", at: pole.point, dir: [1, 0], heightM: 4 }],
+    lampStats: {}, inputs: { roadZones: [] }, groundAt: () => 0,
+    sites: { inArea: () => false, labelAt: () => null, classes: { PAVING: 1, ASPHALT: 2 } } });
+  const extras = glb.json.nodes.find(n => n.name === "Furniture").extras;
+  const record = extras.placementEvidence.find(r => r.id === pole.id);
+  const parcels = Object.fromEntries(JSON.parse(readFileSync(new URL("../data/ground/parcels.json", import.meta.url), "utf8")).parcels.map(p => [p.id, p]));
+  const resolved = resolveAnchor(record, {}, parcels).origin;
+  const final = sceneToTm(...pole.point);
+  assert.ok(Math.hypot(...resolved.map((v, i) => v - final[i])) < 1e-6, `${resolved} != ${final}`);
+  assert.deepEqual(record.pointScene, pole.point);
 });

@@ -1,0 +1,122 @@
+{
+  "frameVersion": 2,
+  "estimated": true,
+  "method": "Manual same-object silhouette review on cached 2048x2048 VR faces; polygon area centroid versus visible packed _OBJECT_ID mask centroid. Pixels are not shipped.",
+  "records": [
+    {
+      "id": "RS-GATE-A19", "scene": "scene_a19", "face": "l", "estimated": true,
+      "target": "SCNU sign assembly, excluding the road signal pole and plaza seats",
+      "referencePolygon": [[691,1204],[979,1204],[984,1337],[696,1345]],
+      "pixelUncertainty": 12, "classification": "placement_error", "previousResidualDeg": 32.254217475,
+      "reason": "Same sign is isolated in the reference; avenue divider is about 520 render vs 518 reference at 1024px, excluding a 32-degree global yaw explanation. Reviewed scene_001 f/l/d as a possible second station: the sign is at the clipped top edge of d and a reliable same-point base was not established. No validated pair or independent photo base."
+    },
+    {
+      "id": "RS0003", "scene": "scene_a5", "face": "r", "estimated": true,
+      "target": "A1 roof-garden perimeter wall, not the entire garden",
+      "referencePolygon": null, "classification": "correspondence_error", "previousResidualDeg": 6.236632955,
+      "reason": "Legacy 400..2048 spans near and far wall segments, clipping at the face edge. The single line record cannot be uniquely matched to all visible lattice and solid wall pieces. No full same-object silhouette or validated second view; do not average this range."
+    },
+    {
+      "id": "RS0015", "scene": "scene_f1", "face": "l", "estimated": true,
+      "target": "Bus shelter roof and visible frame on the east footway, partly hidden by the foreground tree",
+      "referencePolygon": [[508,1670],[610,1556],[721,1562],[739,1584],[673,1778],[589,1815],[563,1700]],
+      "pixelUncertainty": 20, "classification": "station_pose_uncertainty", "previousResidualDeg": -2.088699835,
+      "reason": "Shelter identity verified by the bus bay and roof; independent ground base is hidden. Partial tree occlusion and nearby building registration prevent attributing the residual solely to placement. No validated second station."
+    },
+    {
+      "id": "RS0007", "scene": "scene_a9", "face": "f", "estimated": true,
+      "target": "Central square gravel tree pit in the foreground courtyard",
+      "referencePolygon": [[927,1732],[1111,1733],[1164,1911],[895,1907]],
+      "pixelUncertainty": 18, "classification": "correspondence_error", "previousResidualDeg": 11.221553113,
+      "reason": "Legacy range 600..2048 covered the whole courtyard. The source note instead names the central tree pit near col 1067 row 1822; this polygon follows that physical pit. Base partly occluded, only one validated view."
+    },
+    {
+      "id": "RS0006", "scene": "scene_a9", "face": "f", "estimated": true,
+      "target": "Orange backless bench beside the left foreground brick edge",
+      "referencePolygon": [[602,1962],[624,1967],[694,1829],[672,1828]],
+      "pixelUncertainty": 12, "classification": "correspondence_error", "previousResidualDeg": 29.054963267,
+      "reason": "The bench and planter previously reused 600..2048 despite being different objects. The orange bench is visible beside the left edge. No independent base pick or validated second station."
+    },
+    {
+      "id": "RS0007W", "scene": "scene_a9", "face": "f", "estimated": true,
+      "target": "Brick low wall delimiting the paved courtyard",
+      "referencePolygon": null, "classification": "correspondence_error", "previousResidualDeg": 60.841865285,
+      "reason": "Legacy 700..1700 crosses the far edge while the source describes the south edge; multiple connected walls and clipping prevent identifying which segment the line record represents. Keep unmeasurable, not a measured 60-degree placement error."
+    },
+    {
+      "id": "RS0018", "scene": "scene_e8", "face": "f", "estimated": true,
+      "target": "North L-shaped brick bed beside the entrance steps, on the RIGHT when looking west",
+      "referencePolygon": [[1148,1418],[1197,1400],[1214,1475],[1454,1490],[1464,1570],[1159,1557]],
+      "pixelUncertainty": 20, "classification": "correspondence_error", "previousResidualDeg": 39.603904977,
+      "reason": "Legacy 300..700 selected the opposite side. The right-hand north bed is identified against the entrance stair and north wing. Photo outline retained; no geometry moved to the wrong ray."
+    },
+    {
+      "id": "RS0018A", "scene": "scene_e8", "face": "f", "estimated": true,
+      "target": "South L-shaped brick bed beside the entrance steps, on the LEFT when looking west",
+      "referencePolygon": [[531,1490],[778,1467],[790,1400],[839,1410],[816,1543],[551,1545]],
+      "pixelUncertainty": 20, "classification": "correspondence_error", "previousResidualDeg": -41.711043236,
+      "reason": "Legacy 1350..1750 selected the opposite side. The left-hand south bed is identified against the entrance stairs. Photo outline retained; no validated second station."
+    },
+    {
+      "id": "RS0018B", "scene": "scene_e8", "face": "f", "estimated": true,
+      "target": "Narrow hedge strip along the north courtyard wing, on the RIGHT",
+      "referencePolygon": [[1434,1470],[1508,1509],[1728,1743],[1610,1740],[1478,1600]],
+      "pixelUncertainty": 24, "classification": "correspondence_error", "previousResidualDeg": 63.823303551,
+      "reason": "Legacy 150..420 was left-hand imagery, not the north-wing strip. Right strip's visible wall/hedge silhouette reviewed; vegetation obscures its far end."
+    },
+    {
+      "id": "RS0018C", "scene": "scene_e8", "face": "f", "estimated": true,
+      "target": "Short hedge bed at the south wing east corner, on the LEFT",
+      "referencePolygon": [[161,1648],[345,1663],[551,1450],[502,1419],[362,1525],[186,1584]],
+      "pixelUncertainty": 24, "classification": "correspondence_error", "previousResidualDeg": -73.076112779,
+      "reason": "Legacy 1700..1900 was the wrong side. The bed at the left wing corner is the south-east bed; partial tree occlusion is included in the uncertainty, not solved by moving geometry."
+    },
+    {
+      "id": "RS-LS-C1STEPS", "scene": "scene_c1", "face": "f", "estimated": true,
+      "target": "Library entrance staircase assembly, both lower flights and the upper flight",
+      "referencePolygon": [[553,1584],[1515,1574],[1410,1253],[1398,1162],[706,1167],[687,1250]],
+      "pixelUncertainty": 16, "classification": "station_pose_uncertainty", "previousResidualDeg": -3.351151346,
+      "reason": "Library and pond match broadly; stair geometry and camera parallax remain coupled. Centre hedge occludes part of the lower flights. One validated view only."
+    },
+    {
+      "id": "RS-LS-D1STAIR", "scene": "scene_d1", "face": "l", "estimated": true,
+      "target": "D1 entrance stair visible at the right cube-face edge",
+      "referencePolygon": [[1788,1570],[2048,1488],[2048,1795],[1794,1660]],
+      "pixelUncertainty": 18, "classification": "station_pose_uncertainty", "previousResidualDeg": 6.027091847,
+      "reason": "Same road-side stair identified from handrail and entrance approach; face clipping and D1/D4 registration prevent a unique placement-versus-pose attribution. No independent photo base or second view."
+    },
+    {
+      "id": "RS-LS-E4STONE", "scene": "scene_e4", "face": "r", "estimated": true,
+      "target": "White engineering-college sign stone and its two-tier plinth on the lawn corner",
+      "referencePolygon": [[784,1381],[796,1374],[831,1375],[844,1383],[840,1418],[838,1450],[785,1452]],
+      "pixelUncertainty": 8, "classification": "station_pose_uncertainty", "previousResidualDeg": -27.296242101,
+      "reason": "Stone identity is clear. Nearby tower alignment differs about 70 pixels at 1024px in face f, but this does not establish a 27-degree pose correction. Keep the photo-derived placement; second station not validated."
+    },
+    {
+      "id": "RS-LS-F1ISLAND", "scene": "scene_f1", "face": "f", "estimated": true,
+      "target": "Crescent-shaped low planted island in front of F1, excluding trees behind it",
+      "referencePolygon": [[754,1677],[805,1618],[893,1546],[1015,1510],[1198,1518],[1419,1554],[1557,1602],[1573,1629],[1538,1643],[1250,1612],[1045,1630],[900,1670],[818,1694]],
+      "pixelUncertainty": 16, "classification": "placement_error", "previousResidualDeg": 8.760557154,
+      "reason": "Same isolated crescent identified against the F1 entry. The old 820..1480 visibility range was not its silhouette centroid. Geometry/placement discrepancy remains subject to single-station registration uncertainty."
+    },
+    {
+      "id": "VRL001", "scene": "scene_b7", "face": "l", "estimated": true,
+      "target": "White post-top lamp shaft and footing at the near parking-island corner, excluding the lantern head",
+      "referencePolygon": [[1628,1570],[1636,1570],[1640,1780],[1628,1780]],
+      "pixelUncertainty": 5, "classification": "station_pose_uncertainty", "previousResidualDeg": 18.717866991,
+      "reason": "Photo base remains the stronger constraint (0.25 m recorded residual, 0.5 m limit). B7 near/far landmarks have different parallax; scene_d5 second ray was rejected as another lamp, 168 px mismatch and 5 m from the photo base. No validated replacement pair."
+    },
+    {
+      "id": "PB-C1-N", "scene": "scene_c1", "face": "l", "estimated": true,
+      "target": "Four-member north pond bench row",
+      "referencePolygon": null, "classification": "placement_error",
+      "reason": "VR benches are tree-pit-side assemblies, not a uniquely identifiable four-member 7 m-pitch row. Do not compare an arbitrary visible bench with the entire model row; member correspondence unresolved."
+    },
+    {
+      "id": "PB-C1-S", "scene": "scene_c1", "face": "l", "estimated": true,
+      "target": "Four-member south pond bench row",
+      "referencePolygon": null, "classification": "placement_error",
+      "reason": "VR benches are tree-pit-side assemblies, not a uniquely identifiable four-member 7 m-pitch row. The opposite row is partly hidden by trees and pond structures; member correspondence unresolved."
+    }
+  ]
+}

@@ -88,6 +88,23 @@ export function positionObject(seed, parcels) {
 const geometryKeys = ["point", "line", "ring", "footprint", "axis", "photoRing"];
 const geometryOf = (object) => Object.fromEntries(geometryKeys.filter(key => object[key]).map(key => [key, object[key]]));
 
+// Called at the build boundary, after checkPoles has finalized the position.
+export function finalObjectPlacement(object, parcels) {
+  const shape = object.point ? [object.point] : object.footprint ?? object.ring ?? object.line;
+  const pointScene = shape.reduce((s, p) => s.map((v, i) => v + p[i] / shape.length), [0, 0]);
+  const point = sceneToTm(...pointScene);
+  const frame = resolveAnchor({ id: object.id, anchor: { ...object.anchor, uM: 0, vM: 0 } }, {}, parcels);
+  const d = point.map((v, i) => v - frame.origin[i]);
+  return {
+    id: object.id,
+    anchor: { ...object.anchor, uM: d[0] * frame.a[0] + d[1] * frame.a[1],
+      vM: d[0] * frame.n[0] + d[1] * frame.n[1] },
+    pointScene, point, sourceInput: object.sourceInput,
+    evidence: object.evidence, estimated: true, parcelRelation: object.parcelRelation,
+    bearingChecks: object.bearingChecks, vrObservations: object.vrObservations,
+  };
+}
+
 // Save shape offsets separately from the anchor, so editing a parcel actually moves its furniture.
 export function anchorObject(object, placement, parcels) {
   const sourceGeometry = geometryOf(object);
@@ -130,5 +147,5 @@ export function resolveObject(object, record, parcels) {
     return [key, key === "point" ? toScene(value) : value.map(toScene)];
   }));
   return { ...object, ...geometry, anchor: record.anchor, evidence: record.evidence,
-    bearingChecks: record.bearingChecks, parcelRelation: record.parcelRelation, estimated: true };
+    bearingChecks: record.bearingChecks, vrObservations: record.vrObservations, parcelRelation: record.parcelRelation, estimated: true };
 }

@@ -24,7 +24,7 @@ import { encodePng } from "../lib/png.mjs";
 import { mulberry32 } from "../lib/raster.mjs";
 import { Kit, along, bufferLine, frame, lineLength, local, localPlan, offsetLine, orientedRect, rgb, sub, toLocal } from "../lib/solids.mjs";
 import { GLOW_UV, POLE_KINDS, appendLampSolids, objectDistance, roadNetwork, towardRoad } from "./lights.mjs";
-import { resolveObject, ObjectPlacementError } from "../fit/objectPlacement.mjs";
+import { resolveObject, finalObjectPlacement, ObjectPlacementError } from "../fit/objectPlacement.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const OBJECTS = path.join(HERE, "..", "data", "photo", "objects-campus.geojson");
@@ -2233,7 +2233,19 @@ export function onRoof(ctx, roofM) {
 
 export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs, groundAt }) {
   const roads = roadNetwork(inputs);
+  const parcels = Object.fromEntries(JSON.parse(readFileSync(path.join(HERE, "..", "data", "ground", "parcels.json"), "utf8")).parcels.map(p => [p.id, p]));
   const ctx = makeContext({ groundAt, objects: furniture.objects, roads, sites, fieldCentre: furniture.fieldCentre });
+  const objectIds = new Map(furniture.objects.map((o, i) => [o.id, i + 1]));
+  const vertexIds = new Map([ctx.solid, ctx.glass, ctx.water].map(kit => [kit, []]));
+  const tagVertices = (id) => {
+    for (const [kit, ids] of vertexIds) while (ids.length < kit.vertexCount) ids.push(objectIds.get(id));
+  };
+  const addObjectMesh = (name, kit, material) => {
+    const index = glb.addMesh(name, [kit.toPrimitive(material)]);
+    if (index !== null) glb.json.meshes[index].primitives[0].attributes._OBJECT_ID =
+      glb.addAccessor(Uint16Array.from(vertexIds.get(kit)), "SCALAR");
+    return index;
+  };
   ctx.signalIndex = 0;
   ctx.signals = [];
   const counts = {};
@@ -2249,6 +2261,7 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     if (!builder) throw new Error(`furniture: no builder for ${o.kind} (${o.id})`);
     const before = ctx.solid.triangleCount + ctx.glass.triangleCount;
     if (builder(o.p.roof_m ? onRoof(ctx, o.p.roof_m) : ctx, o) === false) continue;
+    tagVertices(o.id);
     const kind = o.kind === "plaza_structure" ? `plaza_structure/${o.subtype}` : o.kind;
     // Objects of rest-spaces.geojson and site-detail.geojson are placed from the VR, not surveyed on the photo: counted as estimated.
     tally(kind, o.estimated === true || o.source === "rest-spaces" || o.source === "site-detail");
@@ -2256,7 +2269,10 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     // rest-space instances: catalogue kinds given dims, or survey objects retyped to a catalogue kind
     if (REST_TYPES[o.kind] && (o.source === "rest-spaces" || o.p.dims !== undefined || o.surveyKind !== o.kind)) restSpaces.push([o.id, o.kind, REST_TYPES[o.kind].dimsSource, o.p.vr_scene ?? null, o.p.photo_support ?? null, true]);
   }
-  appendLampSolids(ctx.solid, lamps, groundAt);
+  for (const lamp of lamps) {
+    appendLampSolids(ctx.solid, [lamp], groundAt);
+    tagVertices(lamp.id);
+  }
   for (const lamp of lamps) tally(`street_lamp/${lamp.type}`, false);
   // Already built through B.bench above. Keep the existing extras field and duplicate audit input.
   const benches = furniture.objects.filter(o => o.source === "plaza-benches").flatMap(o =>
@@ -2284,10 +2300,9 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     source: "data/photo/objects-campus.geojson (NGII 2025 orthophoto survey, 175 objects; positions from the photo) and data/photo/rest-spaces.geojson (VR-located rest spaces, the A19 gate sign and the RS-LS VR landscape items: steps, the A1 pond, a sign stone, a PM rack; positions estimated) and data/photo/site-detail.geojson (VR station site detail within about 40 m: clipped hedges and shrub masses, lawn islands, tree pits, car-park stall rows and wheel stops, an entrance stair; positions on the photo or registered VR nadir faces, standard dimensions estimated); shapes, colours and heights estimated from the SCNU 360 VR tour (visual reference only)",
     heightsNote: "every height is an estimate, not a measurement; objects lists [id, kind, height m, height source, estimated]",
     counts,
-    placementEvidence: furniture.objects.filter(o => o.anchor?.parcel).map(o => ({
-      id: o.id, anchor: o.anchor, evidence: o.evidence, estimated: true,
-      bearingChecks: o.bearingChecks, parcelRelation: o.parcelRelation,
-    })),
+    renderObjectIds: Object.fromEntries(objectIds),
+    placementEvidence: furniture.objects.filter(o => o.anchor?.parcel).map(o =>
+      finalObjectPlacement(o, parcels)),
     excluded: furniture.excluded,
     retyped: Object.fromEntries(Object.entries(furniture.retyped).map(([id, r]) => [id, `${r.kind}: ${r.reason}`])),
     photoOnly: ctx.skipped,
@@ -2306,8 +2321,8 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     } : {}),
     duplicateAudit: { radiusM: 3, rule: "same class (roofed kinds one class, plaza structures by subtype, the rest by kind) over survey, rest spaces, lamps and estimated benches", pairs: duplicates, compounds: AUDIT_COMPOUNDS },
   };
-  glb.addNode({ name: "Furniture", mesh: glb.addMesh("Furniture", [ctx.solid.toPrimitive(furnitureMaterial)]), extras }, { root: true });
-  glb.addNode({ name: "Furniture_Glass", mesh: glb.addMesh("Furniture_Glass", [ctx.glass.toPrimitive(glassMaterial)]) }, { root: true });
+  glb.addNode({ name: "Furniture", mesh: addObjectMesh("Furniture", ctx.solid, furnitureMaterial), extras }, { root: true });
+  glb.addNode({ name: "Furniture_Glass", mesh: addObjectMesh("Furniture_Glass", ctx.glass, glassMaterial) }, { root: true });
   // pool water (P.pond): glossy, slightly transparent, so the sky environment reflects in it; vertex colour = water tint
   if (ctx.water.vertexCount) {
     const waterMaterial = glb.addMaterial({
@@ -2316,7 +2331,7 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
       alphaMode: "BLEND",
       extras: { note: "pool water: the dashboard raises its opacity toward grazing views (fresnel, src/lighting/water.mjs)" },
     });
-    glb.addNode({ name: "Furniture_Water", mesh: glb.addMesh("Furniture_Water", [ctx.water.toPrimitive(waterMaterial)]) }, { root: true });
+    glb.addNode({ name: "Furniture_Water", mesh: addObjectMesh("Furniture_Water", ctx.water, waterMaterial) }, { root: true });
   }
   // LED screens (B.led_screen): one colour-field texture, 8 px per field, base colour by day and emissive map at night.
   if (ctx.screens.length) {
