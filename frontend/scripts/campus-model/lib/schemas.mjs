@@ -154,6 +154,8 @@ export function overlapPairs(list) {
   return pairs;
 }
 
+const PARCEL_SURFACES = new Set(["concrete"]); // asphalt or the class's own surface when absent
+
 function parcels(doc) {
   if (!doc || typeof doc !== "object" || !Array.isArray(doc.parcels)) return ["parcels: parcels must be an array"];
   const errors = [];
@@ -168,6 +170,7 @@ function parcels(doc) {
     if (!PARCEL_CLASSES.has(parcel.cls)) fail(`cls must be one of ${[...PARCEL_CLASSES].join(", ")}`);
     if (parcel.class !== undefined && !DESIGN_CLASSES.includes(parcel.class)) fail(`class must be one of ${DESIGN_CLASSES.join(", ")}`);
     if (parcel.class !== undefined && parcel.paintAllowed !== PAINT_CLASSES.has(parcel.class)) fail(`paintAllowed must be ${PAINT_CLASSES.has(parcel.class)} for class ${parcel.class}`);
+    if (parcel.surface !== undefined && !PARCEL_SURFACES.has(parcel.surface)) fail(`surface must be one of ${[...PARCEL_SURFACES].join(", ")}`);
     if (!isRing(parcel.ring)) fail("ring must be at least 3 [E, N] pairs");
     if (!Array.isArray(parcel.holes) || !parcel.holes.every(isRing)) fail("holes must be an array of rings");
     if (!Number.isFinite(parcel.precedence)) fail("precedence must be a number");
@@ -220,8 +223,268 @@ function anchors(doc, context = {}) {
   });
   return errors;
 }
+// ---- data/ground/parking.json (design §6.1): lot id -> parametric rows; accessible bays are row members.
+const STALL_KINDS = new Set(["general", "expanded", "accessible", "parallel", "light", "ev", "pm"]);
+const DIVIDER_STYLES = new Set(["single", "double", "U", "T", "none"]); // none: a row of wheel stops whose dividers the photo does not show
+const AISLE_SIDES = ["start", "end", "back", "front"];
+const positive = (v) => Number.isFinite(v) && v > 0;
+const MIN_STALL_M = 2; // the narrowest stall: 주차장법 시행규칙 제3조 parallel 2.0 m
+function backLineErrors(line) {
+  if (!line || typeof line !== "object") return "backLine must be { abs } or { anchor }";
+  if (line.abs !== undefined) return Array.isArray(line.abs) && line.abs.length === 2 && line.abs.every(isPair) ? null : "backLine.abs must be two [E, N] pairs";
+  const a = line.anchor;
+  if (a && isText(a.building) && isText(a.wall) && [a.s0M, a.s1M, a.tM].every(Number.isFinite)) return null;
+  return "backLine.anchor needs building, wall, s0M, s1M, tM";
+}
+// Stalls of a row; count null fits the back line as stages/parking.mjs rowLayout does.
+function baysOf(row) {
+  if (Number.isInteger(row.count)) return row.count - 1;
+  const [p, q] = row.backLine?.abs ?? [];
+  const length = p && q ? Math.hypot(q[0] - p[0], q[1] - p[1]) : (row.backLine?.anchor?.s1M ?? 0) - (row.backLine?.anchor?.s0M ?? 0);
+  return Number.isFinite(length) && positive(row.pitchM) ? Math.max(0, Math.floor((length - (row.startOffsetM ?? 0)) / row.pitchM)) : 0;
+}
+// A value of a row that is an estimate (추정) while the rest of the row is measured. { field: { reason, seenM? } }; seenM is the
+// part of an end line seen on the photo, in metres along the row. It reaches parking.json, the GLB extras and the mapCompare table.
+const ESTIMATED_FIELDS = new Set(["depthM", "wheelStops", "paintBack", "paintFront"]);
+function estimatedFieldErrors(row, fail) {
+  const fields = row.estimatedFields;
+  if (fields === undefined) return;
+  if (!fields || typeof fields !== "object" || Array.isArray(fields)) return fail("estimatedFields must be an object: { field: { reason } }");
+  for (const [name, flag] of Object.entries(fields)) {
+    if (!ESTIMATED_FIELDS.has(name)) { fail(`estimatedFields.${name} is not a field that can be flagged (${[...ESTIMATED_FIELDS].join(", ")})`); continue; }
+    if (name !== "depthM" && !row[name]) fail(`estimatedFields.${name} flags a value the row does not have`);
+    if (!isText(flag?.reason)) fail(`estimatedFields.${name} needs a reason`);
+    if (flag?.seenM === undefined) continue;
+    if (name !== "paintBack" && name !== "paintFront") fail(`estimatedFields.${name}: seenM is only for an end line`);
+    else if (!(isPair(flag.seenM) && flag.seenM[0] < flag.seenM[1])) fail(`estimatedFields.${name}.seenM must be [from, to] in metres along the row`);
+  }
+}
+// The same for a stall: its width and hatch where the paint does not bound them, which way its symbol reads, where a second
+// figure stands and which way that reads.
+const STALL_ESTIMATED_FIELDS = { widthM: (s) => s.widthM !== undefined, aisleWidthM: (s) => Boolean(s.aisle), symbolUp: (s) => Boolean(s.symbol), figureSide: (s) => Boolean(s.figure), figureUp: (s) => Boolean(s.figure) };
+function stallEstimatedErrors(stall, at) {
+  const fields = stall.estimatedFields;
+  if (fields === undefined) return;
+  if (!fields || typeof fields !== "object" || Array.isArray(fields)) return at("estimatedFields must be an object: { field: { reason } }");
+  for (const [name, flag] of Object.entries(fields)) {
+    const has = STALL_ESTIMATED_FIELDS[name];
+    if (!has) { at(`estimatedFields.${name} is not a field that can be flagged (${Object.keys(STALL_ESTIMATED_FIELDS).join(", ")})`); continue; }
+    if (!has(stall)) at(`estimatedFields.${name} flags a value the stall does not have`);
+    if (!isText(flag?.reason)) at(`estimatedFields.${name} needs a reason`);
+  }
+}
+function parkingRow(row, lotId, fail) {
+  if (!isText(row?.id) || !row.id.startsWith(`${lotId}/`)) fail(`row id must start with ${lotId}/`);
+  const lineError = backLineErrors(row?.backLine);
+  if (lineError) fail(lineError);
+  if (row.side !== 1 && row.side !== -1) fail("side must be +1 or -1");
+  if (!positive(row.pitchM)) fail("pitchM must be a number > 0");
+  else if (row.estimated === false && row.pitchM < MIN_STALL_M) fail(`pitchM ${row.pitchM} m is under ${MIN_STALL_M} m in a row not marked estimated`);
+  if (!positive(row.depthM)) fail("depthM must be a number > 0");
+  if (!Number.isFinite(row.startOffsetM ?? 0)) fail("startOffsetM must be a number");
+  if (!(row.count === null || (Number.isInteger(row.count) && row.count >= 2))) fail("count must be an integer >= 2 or null");
+  if (row.divider !== undefined && (!DIVIDER_STYLES.has(row.divider?.style) || (row.divider.style !== "none" && !positive(row.divider?.widthM)))) fail(`divider needs style (${[...DIVIDER_STYLES].join(", ")}) and widthM > 0`);
+  if (row.dividerBearingDeg !== undefined && !Number.isFinite(row.dividerBearingDeg)) fail("dividerBearingDeg must be a number (degrees from north, back towards the aisle)");
+  if (row.paintBack !== undefined && typeof row.paintBack !== "boolean") fail("paintBack must be a boolean");
+  if (row.paintFront !== undefined && typeof row.paintFront !== "boolean") fail("paintFront must be a boolean");
+  if (row.estimatedDividers !== undefined && !(Array.isArray(row.estimatedDividers) && row.estimatedDividers.every((i) => Number.isInteger(i) && i >= 0 && (!Number.isInteger(row.count) || i < row.count)))) fail("estimatedDividers must list divider indices of the row");
+  estimatedFieldErrors(row, fail);
+  if (!Array.isArray(row.stalls)) fail("stalls must be an array (exception stalls only)");
+  else {
+    const seen = new Set();
+    row.stalls.forEach((s, i) => {
+      const at = (m) => fail(`stalls[${i}] ${m}`);
+      const bays = baysOf(row);
+      if (!(Number.isInteger(s?.index) && s.index >= 0 && s.index < bays)) at(`${s?.kind === "accessible" ? `accessible bay ${s.id ?? "(no id)"} is outside the row: ` : ""}index must be an integer in [0, ${bays})`);
+      else if (seen.has(s.index)) at("index repeats");
+      else seen.add(s.index);
+      if (!STALL_KINDS.has(s?.kind)) at(`kind must be one of ${[...STALL_KINDS].join(", ")}`);
+      if (s?.widthM !== undefined && !positive(s.widthM)) at("widthM must be > 0");
+      if (s?.aisle && (!AISLE_SIDES.includes(s.aisle.side) || !positive(s.aisle.widthM))) at(`aisle needs side ${AISLE_SIDES.join("|")} and widthM > 0`);
+      if (s?.figure && (!["scooter", "P"].includes(s.figure.symbol) || !AISLE_SIDES.includes(s.figure.side))) at(`figure needs symbol scooter or P and side ${AISLE_SIDES.join("|")}`);
+      if (s?.figure?.upBearingDeg !== undefined && !Number.isFinite(s.figure.upBearingDeg)) at("figure.upBearingDeg must be a number");
+      if (s?.symbol !== undefined && ![null, "wheelchair", "P"].includes(s.symbol)) at("symbol must be wheelchair, P or null");
+      if (s?.upBearingDeg !== undefined && !Number.isFinite(s.upBearingDeg)) at("upBearingDeg must be a number");
+      if (!(s?.paintSupport === undefined || s.paintSupport === null || (Number.isFinite(s.paintSupport) && s.paintSupport >= 0 && s.paintSupport <= 1))) at("paintSupport must be in [0, 1] or null");
+      if (s?.estimated !== undefined && typeof s.estimated !== "boolean") at("estimated must be a boolean");
+      if (s) stallEstimatedErrors(s, at);
+      if (row.estimated === false && Number.isFinite(s?.widthM) && s.widthM < MIN_STALL_M) at(`width ${s.widthM} m is under ${MIN_STALL_M} m in a row not marked estimated`);
+    });
+  }
+  if (!(row.wheelStops === null || row.wheelStops === undefined || (Number.isFinite(row.wheelStops.offsetFromBackM) && positive(row.wheelStops.lengthM)))) fail("wheelStops needs offsetFromBackM and lengthM > 0");
+  if (!TIERS.has(row.evidence?.tier)) fail("evidence.tier must be T0-T4");
+  if (!Array.isArray(row.evidence?.refs) || !row.evidence.refs.every(isText)) fail("evidence.refs must be an array of strings");
+  const ps = row.evidence?.photoSupport;
+  if (!(ps === null || ps === undefined || (Number.isFinite(ps) && ps >= 0 && ps <= 1))) fail("evidence.photoSupport must be in [0, 1] or null");
+  if (typeof row.estimated !== "boolean") fail("estimated must be a boolean");
+  else if (row.evidence?.tier === "T4" && !row.estimated) fail("estimated must be true for a T4 row");
+}
+// A recorded line of paint that belongs to no row (an aisle line, a lone divider): two end points or a traced ring.
+function parkingLine(line, fail) {
+  const straight = Array.isArray(line.abs) && line.abs.length === 2 && line.abs.every(isPair) && positive(line.widthM);
+  if (!straight && !isRing(line.ring)) fail("needs abs (two [E, N] pairs) with widthM, or a ring");
+  if (!["white", "yellow"].includes(line.colour)) fail("colour must be white or yellow");
+  if (line.estimated !== undefined && typeof line.estimated !== "boolean") fail("estimated must be a boolean");
+  if (!TIERS.has(line.evidence?.tier)) fail("evidence.tier must be T0-T4");
+  if (!Array.isArray(line.evidence?.refs) || !line.evidence.refs.every(isText)) fail("evidence.refs must be an array of strings");
+}
+function parking(doc) {
+  if (!doc || typeof doc !== "object" || !Array.isArray(doc.lots)) return ["parking: lots must be an array"];
+  const errors = [];
+  const lots = new Set();
+  const rows = new Set();
+  doc.lots.forEach((lot, index) => {
+    const id = isText(lot?.id) ? lot.id : `lots[${index}]`;
+    const fail = (message) => errors.push(`${id}: ${message}`);
+    if (!/^LOT_[A-Z0-9_]+$/.test(lot?.id ?? "")) fail("id must match LOT_[A-Z0-9_]+");
+    else if (lots.has(id)) fail("id repeats");
+    else lots.add(id);
+    if (!(lot?.parcel === null || lot?.parcel === undefined || /^PARCEL_[A-Z0-9_]+$/.test(lot.parcel))) fail("parcel must be a PARCEL_* id or null");
+    if (lot?.curated !== undefined && !isText(lot.curated)) fail("curated must name the todo that reviewed the lot");
+    // design §6.1: an accessible bay is a member of a row, so its direction and place come from the row
+    for (const [i, bay] of (lot?.bays ?? []).entries()) fail(`accessible bay ${bay?.id ?? `bays[${i}]`} is outside any row: make it a stall of a row`);
+    if (lot?.lines !== undefined && !Array.isArray(lot.lines)) fail("lines must be an array");
+    for (const [l, line] of (Array.isArray(lot?.lines) ? lot.lines : []).entries()) {
+      const lid = isText(line?.id) ? line.id : `${id}/lines[${l}]`;
+      const lineFail = (message) => errors.push(`${lid}: ${message}`);
+      if (!isText(line?.id) || !line.id.startsWith(`${id}/`)) lineFail(`line id must start with ${id}/`);
+      if (rows.has(lid)) lineFail("line id repeats");
+      rows.add(lid);
+      parkingLine(line ?? {}, lineFail);
+    }
+    if (!Array.isArray(lot?.rows)) return fail("rows must be an array");
+    lot.rows.forEach((row, r) => {
+      const rid = isText(row?.id) ? row.id : `${id}/rows[${r}]`;
+      const rowFail = (message) => errors.push(`${rid}: ${message}`);
+      if (rows.has(rid)) rowFail("row id repeats");
+      rows.add(rid);
+      parkingRow(row ?? {}, id, rowFail);
+    });
+  });
+  return errors;
+}
 
-const KINDS = { bldNodeMap, registration, parcels, anchors };
+// ---- data/ground/parking-curation.json (plan todo 13): the lots a person reviewed, as whole records the seed takes in place of
+// its own. A lot is found by its anchor, never by the seed's name; its row ids are the file's, and a retired id stays retired.
+// A curated T1 row states what it measured: a value read by eye, or not bounded by what the photo shows, carries its own flag,
+// so an estimate cannot sit under T1 in free text alone. A row marked estimated says so as a whole.
+const CALLED_ESTIMATE = /추정|by eye|\bestimated?\b|seen only|seen from/i;
+const FILLED_KINDS = new Set(["accessible", "pm"]);
+function curatedReadingErrors(row) {
+  if (row?.evidence?.tier !== "T1" || row.estimated !== false) return [];
+  const fields = row.estimatedFields && typeof row.estimatedFields === "object" ? row.estimatedFields : {};
+  const errors = [];
+  const bounded = (row.paintBack && row.paintFront) || (Array.isArray(row.stalls) && row.stalls.some((s) => FILLED_KINDS.has(s?.kind)));
+  if (!bounded && !fields.depthM) errors.push(`${row.id}: depthM is not bounded by two painted lines: flag it in estimatedFields`);
+  if (row.wheelStops && !fields.wheelStops) errors.push(`${row.id}: wheelStops are read on the VR: flag them in estimatedFields`);
+  const stalls = Array.isArray(row.stalls) ? row.stalls : [];
+  const flagsOf = (s) => (s?.estimatedFields && typeof s.estimatedFields === "object" ? s.estimatedFields : {});
+  for (const s of stalls) {
+    const own = flagsOf(s);
+    if (s?.symbol && !own.symbolUp) errors.push(`${s.id ?? row.id}: symbol direction is read by eye: flag symbolUp in estimatedFields`);
+    if (s?.figure && !(own.figureSide && own.figureUp)) errors.push(`${s.id ?? row.id}: figure is read by eye: flag figureSide and figureUp in estimatedFields`);
+  }
+  const anyFlag = Object.keys(fields).length || stalls.some((s) => Object.keys(flagsOf(s)).length);
+  if (!anyFlag && Array.isArray(row.evidence.refs) && row.evidence.refs.some((ref) => CALLED_ESTIMATE.test(ref))) errors.push(`${row.id}: refs call a value estimated or partly seen: flag it in estimatedFields`);
+  return errors;
+}
+// Two rows over the same stalls draw a doubled ladder: the share of one row's footprint lying inside the other, either way round.
+const ROW_OVERLAP = 0.3;
+function rowBox(row) {
+  const line = row?.backLine?.abs;
+  if (!line || !positive(row.depthM) || !positive(row.pitchM) || !Number.isInteger(row.count) || row.divider?.style === "none") return null;
+  const [p, q] = line;
+  const length = Math.hypot(q[0] - p[0], q[1] - p[1]);
+  if (!length) return null;
+  const a = [(q[0] - p[0]) / length, (q[1] - p[1]) / length];
+  const d = Number.isFinite(row.dividerBearingDeg) ? [Math.sin((row.dividerBearingDeg * Math.PI) / 180), Math.cos((row.dividerBearingDeg * Math.PI) / 180)] : [-a[1] * row.side, a[0] * row.side];
+  const stalls = Array.isArray(row.stalls) ? row.stalls : [];
+  let s1 = row.startOffsetM ?? 0;
+  const s0 = s1;
+  for (let i = 0; i < row.count - 1; i += 1) { const st = stalls.find((x) => x?.index === i); s1 += st?.widthM ?? (st?.kind === "accessible" ? 3.3 : row.pitchM); }
+  const at = (s, t) => [p[0] + a[0] * s + d[0] * t, p[1] + a[1] * s + d[1] * t];
+  const det = a[0] * d[1] - a[1] * d[0];
+  const inside = ([x, y]) => { const v = [x - p[0], y - p[1]]; const s = (v[0] * d[1] - v[1] * d[0]) / det; const t = (a[0] * v[1] - a[1] * v[0]) / det; return s >= s0 && s <= s1 && t >= 0 && t <= row.depthM; };
+  const samples = [];
+  for (let s = s0 + 0.2; s < s1; s += 0.5) for (let t = 0.2; t < row.depthM; t += 0.5) samples.push(at(s, t));
+  const xs = samples.map((v) => v[0]);
+  const ys = samples.map((v) => v[1]);
+  return samples.length ? { id: row.id, samples, inside, box: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)] } : null;
+}
+function overlappingRows(rows) {
+  const boxes = rows.map(rowBox).filter(Boolean);
+  const errors = [];
+  const share = (x, y) => x.samples.filter(y.inside).length / x.samples.length;
+  for (let i = 0; i < boxes.length; i += 1) {
+    for (let j = i + 1; j < boxes.length; j += 1) {
+      const [x, y] = [boxes[i], boxes[j]];
+      if (x.box[0] > y.box[2] || y.box[0] > x.box[2] || x.box[1] > y.box[3] || y.box[1] > x.box[3]) continue;
+      const most = Math.max(share(x, y), share(y, x));
+      if (most >= ROW_OVERLAP) errors.push(`${x.id} and ${y.id} overlap (${Math.round(most * 100)} % of one lies on the other): the same stalls cannot be two rows`);
+    }
+  }
+  return errors;
+}
+function parkingCuration(doc) {
+  if (!doc || typeof doc !== "object" || !Array.isArray(doc.lots)) return ["parkingCuration: lots must be an array"];
+  const errors = [];
+  for (const lot of doc.lots) {
+    const id = isText(lot?.id) ? lot.id : "lots[?]";
+    const fail = (message) => errors.push(`${id}: ${message}`);
+    if (!isPair(lot?.anchor)) fail("anchor must be an [E, N] pair");
+    if (!isText(lot?.curated)) fail("curated must name the todo that reviewed the lot");
+    if (lot?.added !== undefined && lot.added !== true) fail("added must be true: a lot with paint and no seeded record");
+    if (lot?.estimated !== undefined && typeof lot.estimated !== "boolean") fail("estimated must be a boolean");
+    if (lot?.estimated === true && !(isText(lot?.estimatedReason) && lot.estimatedReason.trim())) fail("estimated needs an estimatedReason");
+    if (!(Array.isArray(lot?.retired) && lot.retired.every(isText))) fail("retired must be an array of ids");
+    if (!Array.isArray(lot?.lines)) fail("lines must be an array");
+    const records = [...(Array.isArray(lot?.rows) ? lot.rows : []), ...(Array.isArray(lot?.lines) ? lot.lines : [])];
+    for (const record of records) if (Array.isArray(lot?.retired) && lot.retired.includes(record?.id)) errors.push(`${record.id} is retired and cannot be used again`);
+    for (const row of Array.isArray(lot?.rows) ? lot.rows : []) errors.push(...curatedReadingErrors(row));
+  }
+  errors.push(...parking({ lots: doc.lots.map((lot) => ({ id: lot?.id, rows: lot?.rows, lines: Array.isArray(lot?.lines) ? lot.lines : [] })) }));
+  errors.push(...overlappingRows(doc.lots.flatMap((lot) => (Array.isArray(lot?.rows) ? lot.rows : []))));
+  return errors;
+}
+
+// data/ground/parcel-curation.json: reviewed changes on top of the seeded parcels (fit/parcelsSeed.mjs). Every record says why.
+function parcelCuration(doc) {
+  if (!doc || typeof doc !== "object") return ["parcelCuration: must be an object"];
+  const errors = [];
+  for (const key of ["replace", "remove", "add", "notAsphalt", "unreachable"]) if (!Array.isArray(doc[key])) errors.push(`parcelCuration: ${key} must be an array`);
+  if (errors.length) return errors;
+  const reasoned = (record, id) => { if (!isText(record?.reason)) errors.push(`${id}: reason must be a non-empty string`); };
+  const graded = (record, id) => {
+    if (!isRing(record?.ring)) errors.push(`${id}: ring must be at least 3 [E, N] pairs`);
+    if (!TIERS.has(record?.evidence?.tier) || !Array.isArray(record?.evidence?.refs) || !record.evidence.refs.every(isText)) errors.push(`${id}: evidence must have tier T0-T4 and refs`);
+    if (typeof record?.estimated !== "boolean") errors.push(`${id}: estimated must be a boolean`);
+    else if (record.evidence?.tier === "T4" && !record.estimated) errors.push(`${id}: estimated must be true for a T4 parcel`);
+    reasoned(record, id);
+  };
+  const named = (record, index, key) => {
+    const id = isText(record?.id) ? record.id : `${key}[${index}]`;
+    if (!/^PARCEL_[A-Z0-9_]+$/.test(record?.id ?? "")) errors.push(`${id}: id must match PARCEL_[A-Z0-9_]+`);
+    return id;
+  };
+  doc.replace.forEach((r, i) => graded(r, named(r, i, "replace")));
+  doc.remove.forEach((r, i) => reasoned(r, named(r, i, "remove")));
+  doc.add.forEach((r, i) => {
+    const id = named(r, i, "add");
+    graded(r, id);
+    if (r?.class !== "road" && r?.class !== "lot") errors.push(`${id}: class must be road or lot`);
+    if (r?.surface !== undefined && !PARCEL_SURFACES.has(r.surface)) errors.push(`${id}: surface must be one of ${[...PARCEL_SURFACES].join(", ")}`);
+    if (r?.unreadEdgeM !== undefined && !(Number.isFinite(r.unreadEdgeM) && r.unreadEdgeM >= 0)) errors.push(`${id}: unreadEdgeM must be a length in metres, 0 or more`);
+  });
+  doc.notAsphalt.forEach((r, i) => {
+    const id = isText(r?.id) ? r.id : `notAsphalt[${i}]`;
+    if (!isRing(r?.ring)) errors.push(`${id}: ring must be at least 3 [E, N] pairs`);
+    reasoned(r, id);
+  });
+  doc.unreachable.forEach((r, i) => reasoned(r, isText(r?.row) ? r.row : `unreachable[${i}]`));
+  return errors;
+}
+
+const KINDS = { bldNodeMap, registration, parcels, parking, parkingCuration, parcelCuration, anchors };
 
 export function validate(kind, doc, context) {
   const check = KINDS[kind];

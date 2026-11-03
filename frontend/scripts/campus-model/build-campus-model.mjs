@@ -20,7 +20,8 @@
 //   ground.mjs    the Topography chunks (natural ground) and the class polygons of the modelled ground (network/surfaces.mjs)
 //   kerbs.mjs     kerb ribbons on the A003 outlines, the raised walkway slab, dropped kerbs at crossings, gutter bands
 //   tactile.mjs   tactile paving bands and guidance strips at every dropped kerb
-//   network/stalls.mjs  estimated stall dividers in the gaps of detected rows, and the circular-arc speed humps
+//   parking.mjs   stall rows, accessible bays, their symbols and the wheel stops from data/ground/parking.json
+//   network/stalls.mjs  the circular-arc speed humps
 //   surfaces.mjs  the Ground_* decal meshes (asphalt, pavers, lots, aprons, painted surfaces) with CC0 tiles; no photo pixels
 //   outerTerrain.mjs  the OuterTerrain hill ring around EXTENT, feathered onto Topography's edge
 //   context.mjs / contextGround.mjs  off-campus building masses and the streets around the campus beyond EXTENT
@@ -42,7 +43,7 @@ import { fileURLToPath } from "node:url";
 import { sceneToTm, tmToScene } from "../../src/geo/epsg5186.mjs";
 import { EXTENT, SCENE_UNITS_PER_METRE, frameAssetExtras } from "./lib/frame.mjs";
 import { SURFACE_CLASS } from "./lib/surfaceClass.mjs";
-import { HUMP_LENGTH_M, buildHumps, buildStalls, humpProfile, loadSpeedBumps } from "./network/stalls.mjs";
+import { HUMP_LENGTH_M, buildHumps, humpProfile, loadSpeedBumps } from "./network/stalls.mjs";
 import { GlbBuilder } from "./lib/glb.mjs";
 import { assertPaintOnParcels, pieceKey } from "./lib/parcels.mjs";
 import { GroundPartition, TinPartition, splitByLine } from "./lib/partition.mjs";
@@ -54,6 +55,7 @@ import { buildContext, meshHeightAt } from "./stages/context.mjs";
 import { buildContextGround } from "./stages/contextGround.mjs";
 import { buildMasts } from "./stages/masts.mjs";
 import { buildMarkings, describeMarkings, inMarkingExtent, loadMarkings } from "./stages/markings.mjs";
+import { assertLotsOnParcels, describeParking, estimatedValueReport, implausibleStalls, loadParking, lotReviewReport, parkingPlan, symbolPieceReport } from "./stages/parking.mjs";
 import { buildOuterTerrain } from "./stages/outerTerrain.mjs";
 import { KERB_EXPOSED_M, SLAB_DECAL_DROP_M, buildKerbs } from "./stages/kerbs.mjs";
 import { loadInputs } from "./stages/sources.mjs";
@@ -85,18 +87,23 @@ const treePlacement = placeTrees({ inputs, selectableBuildings, campusBuildings,
 const kerbs = await buildKerbs({ glb, surfaces, groundInfo, surface });
 const tactile = planTactile(kerbs.plan);
 console.log(`tactile: ${tactile.bands} bands at ${tactile.dropped} dropped kerbs (${tactile.layers.length - tactile.bands} guidance strips; 0.3 m modules, yellow, estimated placement)`);
-// Stall gaps (estimated dividers between detected ones) and the speed humps (network/stalls.mjs).
+// The parking rows of data/ground/parking.json join the paint; a symbol exists only through its record (markings.report).
+const parkingDoc = loadParking();
+assertLotsOnParcels(parkingDoc, surfaces.parcels);
+const parking = parkingPlan(parkingDoc);
+markings.pieces.push(...parking.pieces);
+console.log(describeParking(parking));
+{
+  const odd = implausibleStalls(parkingDoc);
+  const rows = [...new Set(odd.map((x) => x.row))];
+  console.log(`parking: ${odd.length} stalls of implausible width in ${rows.length} rows (markings.report): ${rows.join(", ") || "none"}`);
+}
+// The speed humps (network/stalls.mjs) stand on road or lot ground.
 const labelAt = ([x, z]) => {
   const i = Math.floor((x - EXTENT.minX) * groundInfo.px);
   const j = Math.floor((z - EXTENT.minZ) * groundInfo.px);
   return i < 0 || j < 0 || i >= groundInfo.width || j >= groundInfo.height ? SURFACE_CLASS.NATURAL : groundInfo.labels[j * groundInfo.width + i];
 };
-const detectedStallPaint = markings.pieces.filter((piece) => piece.kind === "parking_line" && !piece.estimated);
-// paint-support parcels (lib/parcels.mjs supportParcels) are not stall lots: the stall rule keeps its seeded lots
-const parkingLots = layers.filter((l) => l.mesh === "Ground_Lot" && !l.source_ref.startsWith("off-campus") && l.source !== "photo-paint-support")
-  .map((l) => ({ id: l.source_ref, ring: l.rings[0].map(([E, N]) => tmToScene(E, N)) }));
-const stalls = buildStalls({ lots: parkingLots, markingsParkingLines: detectedStallPaint });
-markings.pieces.push(...stalls.pieces);
 // Design §10.3: paint lies only on parcels that allow it (road, lot). parcels.json `paintExcluded` lists the photo paint
 // on surveyed non-road ground (A003 sidewalks), which is left undrawn; any other piece on such ground throws by id.
 {
@@ -109,6 +116,17 @@ markings.pieces.push(...stalls.pieces);
   console.log(`paint invariant (§10.3): ${check.checked} pieces inside EXTENT on road/lot parcels, 0 on other ground; ${drawn.length - check.checked} excluded (parcels.json paintExcluded)`);
   markings.pieces.splice(0, markings.pieces.length, ...kept);
 }
+// markings.report: the symbol pieces that reach the mesh, in the GLB's Road_Markings extras and in .build; the build stops on
+// a symbol without a parking.json record.
+markings.pieceReport = { ...symbolPieceReport(markings.pieces), estimatedValues: estimatedValueReport(parkingDoc), lots: lotReviewReport(parkingDoc) };
+if (markings.pieceReport.unrecorded) throw new Error(`markings.report: ${markings.pieceReport.unrecorded} symbol pieces without a parking.json record`);
+await mkdir(path.dirname(OUTPUT), { recursive: true });
+await Bun.write(path.join(path.dirname(OUTPUT), "markings.report.json"), `${JSON.stringify({
+  symbols: markings.pieceReport,
+  implausibleStalls: implausibleStalls(parkingDoc),
+  pieces: markings.pieces.map(({ id, record, kind, colour, glyph, estimated, estimatedFields }) => ({ id: id ?? null, record: record ?? null, kind, colour, glyph: glyph ?? null, estimated: Boolean(estimated), ...(estimatedFields ? { estimatedFields } : {}) })),
+})}\n`);
+console.log(`markings.report: ${JSON.stringify(markings.pieceReport.byGlyph)} on ${markings.pieceReport.records.length} records, ${markings.pieceReport.unrecorded} without a record`);
 const speedBumps = await loadSpeedBumps();
 const humps = buildHumps({ features: speedBumps, onRoad: (p) => [SURFACE_CLASS.ASPHALT, SURFACE_CLASS.LOT].includes(labelAt(p)) });
 const humpNodes = await buildHumpMeshes({ glb, humps: humps.humps, surface, ao: aoTexture, profile: humpProfile, lengthM: HUMP_LENGTH_M });
@@ -151,8 +169,7 @@ const slabDecal = (x, z) => {
 };
 
 console.log(
-  `stalls: ${detectedStallPaint.length} detected (markings), ${stalls.pieces.length} estimated gaps in ${stalls.rows.filter((r) => r.filled).length} of ${stalls.rows.length} rows ` +
-  `(${stalls.rows.map((r) => `${r.bay} ${r.pitchM} m`).join(", ")}); humps: ${humpNodes} (${speedBumps.length} speed_bump features: ` +
+  `humps: ${humpNodes} (${speedBumps.length} speed_bump features: ` +
   `${humps.candidates} hump outlines or band groups, ${humps.candidates - humpNodes} off road)`,
 );
 let stageStart = performance.now();
@@ -176,7 +193,7 @@ const treeInstances = await buildTrees({ glb, placement: treePlacement });
 // Furniture and lamps stand on the raised walkway slab where there is one (stages/kerbs.mjs).
 const groundAt = kerbs.groundHeightAt;
 const { lamps, stats: lampStats, sites } = placeLamps({ inputs, furniture, selectableBuildings, campusBuildings, offCampusLots, groundInfo });
-const { glow } = buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs, groundAt });
+const { glow } = buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs, groundAt, wheelStops: parking.wheelStops });
 buildLights({ glb, lamps, stats: lampStats, groundAt, glow });
 // Off-campus context masses on the drawn terrain (stages/context.mjs): merged per tile, not selectable, heights 추정.
 const inExtent = (x, z) => x >= EXTENT.minX && x <= EXTENT.maxX && z >= EXTENT.minZ && z <= EXTENT.maxZ;

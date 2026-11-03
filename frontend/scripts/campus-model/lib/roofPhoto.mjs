@@ -59,7 +59,34 @@ export const MODULE_TILT_DEGREES = 15;
 const PANEL_FILL = 0.55;
 const MODULE_INSET_M = 0.8; // modules stay this far inside the footprint outline
 
+// A roof-edge lean fit (data/photo/building-lean.json) further than this from the building's registration prior
+// (building-forms leanPrior), in m per m of height, is treated as a failed fit: 0.2 m/m is 4 m on a 20 m roof.
+export const LEAN_PRIOR_CAP = 0.2;
+
 const luma = (r, g, b) => 0.299 * r + 0.587 * g + 0.114 * b;
+
+// The lean used to sample one building's roof: its building-lean.json record, with a roof-edge fit replaced by the
+// prior when it deviates more than LEAN_PRIOR_CAP. Returns { lean, method, deviation } or null without any lean.
+export function roofLean(record, prior) {
+  if (!record) return prior ? { lean: prior, method: "prior-no-record", deviation: null } : null;
+  if (record.method !== "roof-edge" || !prior) return { lean: record.lean, method: record.method, deviation: null };
+  const deviation = Number(Math.hypot(record.lean[0] - prior[0], record.lean[1] - prior[1]).toFixed(3));
+  if (deviation > LEAN_PRIOR_CAP) return { lean: prior, method: "prior-capped", deviation };
+  return { lean: record.lean, method: record.method, deviation };
+}
+
+// Parts moved to where the photo shows their roof: by (height + parapet) x lean, lean [east, north] m/m (model z
+// points south). Without a lean the parts are returned as they are.
+export function leanParts(parts, lean) {
+  if (!lean) return parts;
+  return parts.map((part) => {
+    const h = part.heightMetres + (part.parapetMetres ?? 0);
+    const dx = unit(lean[0] * h);
+    const dz = -unit(lean[1] * h);
+    const move = (ring) => ring.map(([x, z]) => [x + dx, z + dz]);
+    return { ...part, outer: move(part.outer), holes: part.holes.map(move) };
+  });
+}
 const unit = (m) => m * SCENE_UNITS_PER_METRE;
 
 function edgeDistance(point, rings) {

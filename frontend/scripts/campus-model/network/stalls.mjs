@@ -1,14 +1,5 @@
-// Parking stalls and speed humps as vector geometry (plan uhf-ground-roads-routing todo 14), replacing the pixel
-// parking shader of the old ground raster.
-//
-// Stalls: the stall paint the photo shows (`parking_line` pieces the markings stage draws, from data/photo/markings
-// .geojson and markings-extra.geojson) is the only evidence. Thin dividers are grouped into rows (parallel within
-// ROW_ANGLE_DEG, similar length, ends aligned within ROW_OFFSET_M); where a row skips a divider (a gap close to a whole
-// multiple of the row's median pitch) the missing dividers are added at that pitch as `estimated` white lines
-// PARKING_LINE_M wide (the statute parking_line width of stages/markings.mjs). A lot with no detected stall paint gets
-// none (`lot <id>: no stall paint detected, left unmarked`); rows are never invented. Statute bay sizes (주차장법
-// 시행규칙 제3조: general 2.5 x 5.0 m, expanded 2.6 x 5.2 m, accessible 3.3 x 5.0 m, parallel 2.0 x 6.0 m; aisle 6.0 m)
-// classify each row's pitch; the dividers themselves copy their detected neighbours.
+// Speed humps as vector geometry (plan uhf-ground-roads-routing todo 14); the stalls moved to data/ground/parking.json
+// and stages/parking.mjs (plan campus-ground-truth-redesign todo 12).
 //
 // Humps: every traced hump outline (`speed_bump` polygons of markings-extra.geojson without a `group`, at least
 // HUMP_MIN_AREA_M2; and every `hump <id>` group of striped bands without its own outline) is a HUMP_LENGTH_M (3.6 m)
@@ -19,7 +10,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { geoToModel, SCENE_UNITS_PER_METRE } from "../lib/frame.mjs";
-import { pointInRing } from "../lib/geometry.mjs";
 
 const UNIT = SCENE_UNITS_PER_METRE;
 const PHOTO = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "photo");
@@ -30,21 +20,6 @@ export async function loadSpeedBumps() {
   const all = await Promise.all(files.map(async (name) => JSON.parse(await Bun.file(path.join(PHOTO, name)).text()).features));
   return all.flat().filter((f) => f.properties.kind === "speed_bump");
 }
-export const PARKING_LINE_M = 0.1;
-export const BAYS = Object.freeze({
-  general: { widthM: 2.5, depthM: 5.0 },
-  expanded: { widthM: 2.6, depthM: 5.2 },
-  accessible: { widthM: 3.3, depthM: 5.0 },
-  parallel: { widthM: 2.0, depthM: 6.0 },
-});
-export const AISLE_M = 6.0;
-const DIVIDER_ASPECT = 8;
-const ROW_ANGLE_DEG = 10;
-const ROW_OFFSET_M = 1.0;
-const ROW_LENGTH_RATIO = 0.3;
-const PITCH_RANGE_M = [2.0, 6.5];
-const GAP_TOLERANCE = 0.25;
-const MAX_FILL = 4;
 export const HUMP_LENGTH_M = 3.6;
 export const HUMP_HEIGHT_M = 0.1;
 export const HUMP_MIN_AREA_M2 = 2;
@@ -68,79 +43,6 @@ export function orientedBox(ring) {
   return s1 - s0 >= t1 - t0
     ? { centre, long: u, short: v, halfLong: (s1 - s0) / 2, halfShort: (t1 - t0) / 2 }
     : { centre, long: v, short: u, halfLong: (t1 - t0) / 2, halfShort: (s1 - s0) / 2 };
-}
-
-const rect = (c, along, across, halfAlong, halfAcross) => [
-  [c[0] - along[0] * halfAlong - across[0] * halfAcross, c[1] - along[1] * halfAlong - across[1] * halfAcross],
-  [c[0] + along[0] * halfAlong - across[0] * halfAcross, c[1] + along[1] * halfAlong - across[1] * halfAcross],
-  [c[0] + along[0] * halfAlong + across[0] * halfAcross, c[1] + along[1] * halfAlong + across[1] * halfAcross],
-  [c[0] - along[0] * halfAlong + across[0] * halfAcross, c[1] - along[1] * halfAlong + across[1] * halfAcross],
-];
-
-// ---------------------------------------------------------------- stalls
-// lots: [{ id, ring (model units) }]; markingsParkingLines: drawn parking_line pieces ({ rings } model units).
-// Returns { pieces (estimated dividers, marking-piece shaped), rows, log }.
-export function buildStalls({ lots, markingsParkingLines, log = console.log }) {
-  const dividers = [];
-  for (const piece of markingsParkingLines) {
-    const box = orientedBox(piece.rings[0]);
-    if (box.halfLong < DIVIDER_ASPECT * box.halfShort) continue; // stall outlines and symbols, not single dividers
-    dividers.push({ ...box, lengthM: (2 * box.halfLong) / UNIT, widthM: (2 * box.halfShort) / UNIT });
-  }
-  // rows: union of dividers that are parallel, of similar length and side by side
-  const parent = dividers.map((_, i) => i);
-  const root = (i) => (parent[i] === i ? i : (parent[i] = root(parent[i])));
-  const cosLimit = Math.cos((ROW_ANGLE_DEG * Math.PI) / 180);
-  for (let i = 0; i < dividers.length; i += 1) {
-    for (let j = i + 1; j < dividers.length; j += 1) {
-      const a = dividers[i];
-      const b = dividers[j];
-      if (Math.abs(dot(a.long, b.long)) < cosLimit) continue;
-      if (Math.abs(a.lengthM - b.lengthM) > ROW_LENGTH_RATIO * Math.max(a.lengthM, b.lengthM)) continue;
-      const d = sub(b.centre, a.centre);
-      if (Math.abs(dot(d, a.long)) / UNIT > ROW_OFFSET_M) continue;
-      const across = Math.abs(dot(d, a.short)) / UNIT;
-      if (across > PITCH_RANGE_M[1] * (MAX_FILL + 1)) continue;
-      parent[root(i)] = root(j);
-    }
-  }
-  const groups = new Map();
-  dividers.forEach((d, i) => {
-    const r = root(i);
-    if (!groups.has(r)) groups.set(r, []);
-    groups.get(r).push(d);
-  });
-  const pieces = [];
-  const rows = [];
-  for (const members of groups.values()) {
-    if (members.length < 3) continue;
-    const axis = members[0].short;
-    members.sort((a, b) => dot(a.centre, axis) - dot(b.centre, axis));
-    const gaps = members.slice(1).map((m, k) => (dot(m.centre, axis) - dot(members[k].centre, axis)) / UNIT);
-    const pitches = gaps.filter((g) => g >= PITCH_RANGE_M[0] && g <= PITCH_RANGE_M[1]).sort((a, b) => a - b);
-    if (!pitches.length) continue;
-    const pitch = pitches[pitches.length >> 1];
-    const bay = pitch >= 5.5 ? "parallel" : pitch >= 3.0 ? "accessible" : pitch >= 2.55 ? "expanded" : "general";
-    const row = { dividers: members.length, pitchM: Number(pitch.toFixed(2)), bay, filled: 0 };
-    gaps.forEach((gap, k) => {
-      const n = Math.round(gap / pitch);
-      if (n < 2 || n > MAX_FILL + 1 || Math.abs(gap - n * pitch) > GAP_TOLERANCE * pitch) return;
-      const a = members[k];
-      const b = members[k + 1];
-      for (let m = 1; m < n; m += 1) {
-        const t = m / n;
-        const centre = [a.centre[0] + (b.centre[0] - a.centre[0]) * t, a.centre[1] + (b.centre[1] - a.centre[1]) * t];
-        const halfLong = (a.halfLong + b.halfLong) / 2;
-        pieces.push({ rings: [rect(centre, a.long, a.short, halfLong, (PARKING_LINE_M / 2) * UNIT)], colour: "white", kind: "parking_line", estimated: true, centre });
-        row.filled += 1;
-      }
-    });
-    rows.push(row);
-  }
-  for (const lot of lots) {
-    if (!dividers.some((d) => pointInRing(d.centre, lot.ring))) log(`lot ${lot.id}: no stall paint detected, left unmarked`);
-  }
-  return { pieces, rows, dividers: dividers.length };
 }
 
 // ---------------------------------------------------------------- humps
