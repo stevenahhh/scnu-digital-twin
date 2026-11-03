@@ -13,6 +13,7 @@
 // Every height is an ESTIMATE (height_source per object in the GeoJSON, or the defaults below); the node extras list
 // each object with its height and source.
 import { existsSync, readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { simulationToTm, tmToScene } from "../../../src/geo/epsg5186.mjs";
@@ -23,6 +24,7 @@ import { encodePng } from "../lib/png.mjs";
 import { mulberry32 } from "../lib/raster.mjs";
 import { Kit, along, bufferLine, frame, lineLength, local, localPlan, offsetLine, orientedRect, rgb, sub, toLocal } from "../lib/solids.mjs";
 import { GLOW_UV, POLE_KINDS, appendLampSolids, objectDistance, roadNetwork, towardRoad } from "./lights.mjs";
+import { resolveSiteDetail, isWallSiteDetail } from "../lib/siteDetailAnchors.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const OBJECTS = path.join(HERE, "..", "data", "photo", "objects-campus.geojson");
@@ -141,7 +143,7 @@ function heightOf(p) {
 }
 
 // ---------------------------------------------------------------- load (before the trees and the ground)
-export function loadFurniture() {
+export function loadFurniture({ wallSnapshots, anchorFootprints } = {}) {
   const data = JSON.parse(readFileSync(OBJECTS, "utf8"));
   const rest = existsSync(REST_SPACES) ? JSON.parse(readFileSync(REST_SPACES, "utf8")) : { features: [] };
   const objects = [];
@@ -150,21 +152,52 @@ export function loadFurniture() {
   const outlineReview = existsSync(OUTLINE_REVIEW) ? JSON.parse(readFileSync(OUTLINE_REVIEW, "utf8")).reviews : {};
   const poleRoots = existsSync(POLE_ROOTS) ? new Map(JSON.parse(readFileSync(POLE_ROOTS, "utf8")).poles.map((q) => [q.id, q])) : new Map();
   const gate = existsSync(GATE_STRUCTURES) ? JSON.parse(readFileSync(GATE_STRUCTURES, "utf8")) : { features: [] };
+  const siteDetail = existsSync(SITE_DETAIL) ? JSON.parse(readFileSync(SITE_DETAIL, "utf8")).features : [];
+  const anchored = new Map();
+  // Fixtures selected through SITE_DETAIL_FILE remain self-contained.
+  if (!process.env.SITE_DETAIL_FILE) {
+    const saved = JSON.parse(readFileSync(path.join(HERE, "../data/photo/site-detail-anchors.json"), "utf8"));
+    for (const [name, expected] of Object.entries(saved.inputs)) {
+      const actual = createHash("sha256").update(readFileSync(path.resolve(HERE, "..", name))).digest("hex");
+      if (actual !== expected) throw new Error(`site-detail anchors: stale source ${name}; rerun fit/siteDetailAnchors.mjs --write`);
+    }
+    const parcels = JSON.parse(readFileSync(path.join(HERE, "../data/ground/parcels.json"), "utf8")).parcels;
+    const context = { footprints: anchorFootprints ?? saved.footprints,
+      parcels: Object.fromEntries(parcels.map(p => [p.id, p])) };
+    for (const record of saved.records) {
+      if (anchored.has(record.id)) throw new Error(`site-detail anchors: duplicate ${record.id}`);
+      anchored.set(record.id, { record, geometry: resolveSiteDetail(record, context, wallSnapshots) });
+    }
+    const sourceIds = new Set(siteDetail.map(f => f.properties.id));
+    for (const id of anchored.keys()) if (!sourceIds.has(id)) throw new Error(`site-detail anchors: missing source ${id}`);
+    const unresolved = new Map(saved.unresolved.map(r => [r.id, r]));
+    for (const { properties: p } of siteDetail) {
+      if (!isWallSiteDetail(p)) continue;
+      if (!anchored.has(p.id) && !unresolved.get(p.id)?.reason) {
+        throw new Error(`site-detail anchors: ${p.id} has neither an anchor nor an unresolved reason`);
+      }
+      if (anchored.has(p.id) && unresolved.has(p.id)) throw new Error(`site-detail anchors: ${p.id} is also unresolved`);
+    }
+  }
   const features = [
     ...data.features.map((f) => ({ ...f, source: "survey" })),
     ...rest.features.map((f) => ({ ...f, source: "rest-spaces" })),
-    ...(existsSync(SITE_DETAIL) ? JSON.parse(readFileSync(SITE_DETAIL, "utf8")).features : []).map((f) => ({ ...f, source: "site-detail" })),
+    ...siteDetail.map((f) => ({ ...f, source: "site-detail" })),
     ...gate.features.map((f) => ({ ...f, source: "survey" })),
     ...(existsSync(VR_LAMPS) ? JSON.parse(readFileSync(VR_LAMPS, "utf8")).features : []).map((f) => ({ ...f, source: "survey" })),
   ];
-  for (const { properties: raw, geometry: g, source } of features) {
+  for (const { properties: raw, geometry: originalGeometry, source } of features) {
     if (ids.has(raw.id)) throw new Error(`furniture: duplicate object id ${raw.id} (${source})`);
     ids.add(raw.id);
     if (EXCLUDED[raw.id]) {
       excluded.push({ id: raw.id, kind: raw.kind, reason: EXCLUDED[raw.id] });
       continue;
     }
-    const p = RETYPED[raw.id]?.props ? { ...raw, ...RETYPED[raw.id].props } : raw;
+    const placement = source === "site-detail" ? anchored.get(raw.id) : undefined;
+    const g = placement?.geometry ?? originalGeometry;
+    const props = placement ? { ...raw, anchor: placement.record.anchor, estimated: true,
+      evidence: placement.record.evidence, anchorReason: placement.record.reason } : raw;
+    const p = RETYPED[raw.id]?.props ? { ...props, ...RETYPED[raw.id].props } : props;
     const outline = outlineReview[raw.id];
     if (outline?.verdict === "reject") {
       excluded.push({ id: raw.id, kind: raw.kind, reason: `outline review: ${outline.note}` });
@@ -172,6 +205,7 @@ export function loadFurniture() {
     }
     const [shiftX, shiftZ] = outline?.verdict === "shift" ? [M(outline.offsetM[0]), M(outline.offsetM[1])] : [0, 0];
     const toModel = ([lon, lat]) => {
+      if (placement) return tmToScene(lon, lat);
       const [x, z] = geoToModel(lon, lat);
       return [x + shiftX, z + shiftZ];
     };
@@ -2268,6 +2302,10 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     signals: ctx.signals,
     poles: furniture.objects.filter((o) => POLE_KINDS.has(o.kind) && o.point).map((o) => [o.id, o.kind, o.pole?.verdict ?? "unreviewed", o.pole?.shiftM ?? 0, o.pole?.residualM ?? null, Number(o.point[0].toFixed(2)), Number(o.point[1].toFixed(2))]),
     objects: built.map(([id, kind, h, source, estimated]) => [id, kind, h, source, estimated]),
+    siteDetailAnchors: furniture.objects.filter(o => o.p.anchor).map(o => ({
+      id: o.id, anchor: o.p.anchor, estimated: true, evidence: o.p.evidence,
+      ...(o.p.anchorReason ? { reason: o.p.anchorReason } : {}),
+    })),
     // [x, z (scene units), length m, 1 = plaza bench from VR]
     estimatedBenches: benches.map((b) => [Number(b.at[0].toFixed(2)), Number(b.at[1].toFixed(2)), b.lengthM, b.plaza ? 1 : 0]),
     ...(restSpaces.length ? {

@@ -481,6 +481,8 @@ export function placeTrees({ inputs, selectableBuildings, campusBuildings, offCa
   }
 
   // ---- hedges along the shrub planters
+  // loadFurniture resolves site-detail wall/parcel anchors before this stage. Use that same ring/line
+  // for the hedge band, never re-read the old absolute survey coordinates.
   const hedgeSources = [];
   for (const o of furnitureObjects) {
     if (o.kind !== "planter") continue;

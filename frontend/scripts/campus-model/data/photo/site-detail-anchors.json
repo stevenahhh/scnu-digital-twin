@@ -1,0 +1,4111 @@
+{
+  "frameVersion": 2,
+  "inputs": {
+    "data/photo/site-detail.geojson": "e6abfb3dadfff3707032aafafb5caba09ba2710940de17b526bcbee41d4a7658",
+    "data/gis-buildings.json": "3807d90af530a0265be0f77e9f05ee97eb80d66150f322429b5788c9fc0dad3c",
+    "data/vr-buildings.json": "7ab28c3f543f9f6f1d7fa6d6c30e8cc0e8a9657d20eb6c61a568d706ff3dc53f",
+    "data/bld-node-map.json": "8c1cb819f1ce153d80487b86b8f477abe96d2aaeccdb826a4eb45d191ee45d4d",
+    "../../public/uni.glb": "61c7b000ea2780886dce5804f8ead042ec5b8d3515d8bed96ce1204b16f12a12",
+    "../perf/vr-stations.json": "f4086e84e322153bbe90fbeaf574bb9259773a36a7a9818c1924b2c69b1d9fe5"
+  },
+  "footprints": {
+    "BLD_SCNU_F1": {
+      "polygons": [
+        [
+          [
+            [
+              244239.91572977096,
+              263432.12276118365
+            ],
+            [
+              244241.78241504048,
+              263427.61638827546
+            ],
+            [
+              244243.64341003465,
+              263422.3999470341
+            ],
+            [
+              244243.80797311332,
+              263418.59536773234
+            ],
+            [
+              244242.39922944273,
+              263417.17955346225
+            ],
+            [
+              244238.30111734633,
+              263414.76330755925
+            ],
+            [
+              244228.80539639294,
+              263416.1262917282
+            ],
+            [
+              244213.48869954536,
+              263418.17113701504
+            ],
+            [
+              244208.67984070367,
+              263417.30467766075
+            ],
+            [
+              244190.04391112836,
+              263405.0771978131
+            ],
+            [
+              244182.0529722281,
+              263416.32152224676
+            ],
+            [
+              244203.526474883,
+              263429.1174431918
+            ],
+            [
+              244209.50120450088,
+              263453.2655807043
+            ],
+            [
+              244203.7010373637,
+              263451.5400554657
+            ],
+            [
+              244200.15889921418,
+              263451.24554720253
+            ],
+            [
+              244198.87758461197,
+              263451.8051583724
+            ],
+            [
+              244198.16754752377,
+              263453.21070900885
+            ],
+            [
+              244212.22687461972,
+              263503.3477757509
+            ],
+            [
+              244203.72715696457,
+              263532.9175568715
+            ],
+            [
+              244203.85754051295,
+              263536.168845585
+            ],
+            [
+              244205.1181086304,
+              263538.0055238859
+            ],
+            [
+              244209.79335319262,
+              263538.16129422415
+            ],
+            [
+              244217.30443059254,
+              263537.35449402616
+            ],
+            [
+              244220.14740862598,
+              263536.80244916613
+            ],
+            [
+              244228.795774279,
+              263504.83701342164
+            ],
+            [
+              244229.09527760098,
+              263501.4546741559
+            ],
+            [
+              244217.0813382541,
+              263438.2139134567
+            ],
+            [
+              244237.77824209875,
+              263434.0872063974
+            ]
+          ]
+        ]
+      ]
+    }
+  },
+  "records": [
+    {
+      "id": "SD-A10-01",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_A9_",
+        "uM": -7.278715310579228,
+        "vM": 8.083070046202042
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_a10 d: clipped hedge on the raised brick bed along the plaza's north edge, beside the striped bike-shelter row; photo: the plaza edge south of the shelter row"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -10.560477246163163,
+            -2.0700851821487736
+          ],
+          [
+            10.560477246163163,
+            2.0700851821487736
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243841.1832021312,
+        263541.3069655077
+      ]
+    },
+    {
+      "id": "SD-A10-P1",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_A9_",
+        "uM": -8.876865803095875,
+        "vM": 3.852263409551049
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_a10 d and l: square kerbed tree pit (2.8 m) on the plaza paving, at the trunk of the tree inventory; aligned with the plaza grid"
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -1.727809589590617,
+              0.965740347259442
+            ],
+            [
+              0.9659859122703955,
+              1.7278596671316402
+            ],
+            [
+              1.7282331516132592,
+              -0.9655686138226914
+            ],
+            [
+              -0.9664094742606111,
+              -1.7280314004927289
+            ],
+            [
+              -1.727809589590617,
+              0.965740347259442
+            ]
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243838.12807911148,
+        263537.9722941404
+      ]
+    },
+    {
+      "id": "SD-A10-P2",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_A9_",
+        "uM": -13.61043947151701,
+        "vM": -6.10108707329718
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_a10 d and l: square kerbed tree pit (2.8 m) on the plaza paving, at the trunk of the tree inventory; aligned with the plaza grid"
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -1.7285486137637456,
+              0.9657410843534491
+            ],
+            [
+              0.9660959642744836,
+              1.7282020783986023
+            ],
+            [
+              1.7283405354793626,
+              -0.9652269302066103
+            ],
+            [
+              -0.9658878860495497,
+              -1.7287162326319119
+            ],
+            [
+              -1.7285486137637456,
+              0.9657410843534491
+            ]
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243830.03649504972,
+        263530.4888341866
+      ]
+    },
+    {
+      "id": "SD-A10-P3",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_A9_",
+        "uM": -7.567763977228439,
+        "vM": -3.997796541835757
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_a10 d and l: square kerbed tree pit (2.8 m) on the plaza paving, at the trunk of the tree inventory; aligned with the plaza grid"
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -1.7286535836397072,
+              0.9659968853736833
+            ],
+            [
+              0.9659905704386333,
+              1.728459806742016
+            ],
+            [
+              1.728653990043363,
+              -0.9659967746587705
+            ],
+            [
+              -0.965990976934165,
+              -1.728459917619062
+            ],
+            [
+              -1.7286535836397072,
+              0.9659968853736833
+            ]
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243836.42812129162,
+        263530.1975058962
+      ]
+    },
+    {
+      "id": "SD-A10-P4",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_A9_",
+        "uM": 8.121896908989818,
+        "vM": -2.900877087651115
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_a10 d and l: square kerbed tree pit (2.8 m) on the plaza paving, at the trunk of the tree inventory; aligned with the plaza grid"
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -1.7282326413291873,
+              0.9661654439940747
+            ],
+            [
+              0.9655653763356388,
+              1.7282900902574378
+            ],
+            [
+              1.7282330476517767,
+              -0.9661653333115884
+            ],
+            [
+              -0.9655657826203972,
+              -1.7282902011128662
+            ],
+            [
+              -1.7282326413291873,
+              0.9661654439940747
+            ]
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243851.40299800265,
+        263525.3889969274
+      ]
+    },
+    {
+      "id": "SD-A10-P5",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_A9_",
+        "uM": -6.679478316114121,
+        "vM": -9.76360265649835
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_a10 d and l: square kerbed tree pit (2.8 m) on the plaza paving, at the trunk of the tree inventory; aligned with the plaza grid"
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -1.728230984927278,
+              0.9661684705245833
+            ],
+            [
+              0.9655685709767661,
+              1.7282883848694013
+            ],
+            [
+              1.7282313911039475,
+              -0.9661683593989323
+            ],
+            [
+              -0.9655689771480312,
+              -1.7282884959301987
+            ],
+            [
+              -1.728230984927278,
+              0.9661684705245833
+            ]
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243835.11151502904,
+        263524.51418648614
+      ]
+    },
+    {
+      "id": "SD-A10-P6",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_A9_",
+        "uM": 19.112100500521976,
+        "vM": -1.2511937175493975
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_a10 d and l: square kerbed tree pit (2.8 m) on the plaza paving, at the trunk of the tree inventory; aligned with the plaza grid"
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -1.7283445538825981,
+              0.9652205883870356
+            ],
+            [
+              0.9658826700405881,
+              1.7287200574841826
+            ],
+            [
+              1.728553446849636,
+              -0.9657345205419889
+            ],
+            [
+              -0.9660915629697947,
+              -1.7282061251887137
+            ],
+            [
+              -1.7283445538825981,
+              0.9652205883870356
+            ]
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243862.21982640517,
+        263522.8390452582
+      ]
+    },
+    {
+      "id": "SD-A10-P7",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_A9_",
+        "uM": 15.440007136791031,
+        "vM": -6.723318837587729
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_a10 d and l: square kerbed tree pit (2.8 m) on the plaza paving, at the trunk of the tree inventory; aligned with the plaza grid"
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -1.728657152179605,
+              0.9659924916507721
+            ],
+            [
+              0.9659885285889795,
+              1.7284626728196346
+            ],
+            [
+              1.7286575589021225,
+              -0.9659923814979221
+            ],
+            [
+              -0.9659889352844748,
+              -1.7284627829616759
+            ],
+            [
+              -1.728657152179605,
+              0.9659924916507721
+            ]
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243856.7780821875,
+        263519.1220783669
+      ]
+    },
+    {
+      "id": "SD-D3-02",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_9",
+        "uM": 5.755183844971164,
+        "vM": 5.5971086120453295
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_d3 d: kerbed island with two tree grates and a sign at the aisle's north-west corner, registered on the PM bay; about 2 m"
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -3.1716405679381667,
+              0.6727813274451137
+            ],
+            [
+              2.1974384527181403,
+              2.2768587809841185
+            ],
+            [
+              3.1464687365064794,
+              -0.5761568376538406
+            ],
+            [
+              -2.172266621330442,
+              -2.3734832706063997
+            ],
+            [
+              -3.1716405679381667,
+              0.6727813274451137
+            ]
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243616.46697832778,
+        263826.58120118326
+      ]
+    },
+    {
+      "id": "SD-E3-01",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_53",
+        "uM": -4.6316608024175,
+        "vM": -1.9713479430564593
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e3 d (turned north-up on the footway and junction kerbs): clipped topiary ball on the west lawn; position from the station (about 3 m)"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243711.75701898435,
+        263751.75543532806
+      ]
+    },
+    {
+      "id": "SD-E3-02",
+      "anchor": {
+        "parcel": "PARCEL_SUPPORT_ROAD_243712_263738",
+        "uM": -11.245661078400255,
+        "vM": 1.2210355093964296
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e3 d (turned north-up on the footway and junction kerbs): large clipped topiary mass on the west lawn; position from the station (about 3 m)"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243712.7574098763,
+        263745.95564108127
+      ]
+    },
+    {
+      "id": "SD-E3-03",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_54",
+        "uM": -12.291567809857318,
+        "vM": 5.986461438823038
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e3 d (turned north-up on the footway and junction kerbs): large clipped mass in the junction lawn; position from the station (about 3 m)"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243721.05724521825,
+        263737.15537680243
+      ]
+    },
+    {
+      "id": "SD-E3-04",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_54",
+        "uM": -12.33094490853968,
+        "vM": 0.8881367999443257
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e3 d (turned north-up on the footway and junction kerbs): clipped mass in the junction lawn; position from the station (about 3 m)"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243720.05742283858,
+        263732.1558948404
+      ]
+    },
+    {
+      "id": "SD-E3-08",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_EDGE_FBJ_FBN_ND_085_1_8",
+        "uM": 16.647548347098702,
+        "vM": 0.1555935520481686
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e3 d (turned north-up on the footway and junction kerbs): clipped shrub; position from the station (about 3 m)"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243739.25768078776,
+        263751.0550725414
+      ]
+    },
+    {
+      "id": "SD-E5-02",
+      "anchor": {
+        "parcel": "PARCEL_SUPPORT_ROAD_243712_263738",
+        "uM": -7.371232123364414,
+        "vM": -4.2430547189192165
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e5 d (turned north-up on the road edge): clipped topiary cluster, 4 m across; position from the station (about 3 m)"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243707.88709665055,
+        263741.35699662514
+      ]
+    },
+    {
+      "id": "SD-E6-03",
+      "anchor": {
+        "parcel": "PARCEL_LOT_WAY_968040640",
+        "uM": 1.9143813007056498,
+        "vM": 0.8382890740342586
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e6 f: the planted island between the stall row and E6 (lawn on a low kerb, trees and clipped masses); outline traced on the photo"
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -16.12538302843165,
+              3.5539358766976163
+            ],
+            [
+              -10.913678079894078,
+              4.517620866698705
+            ],
+            [
+              -10.565274210969351,
+              -0.4570194903030975
+            ],
+            [
+              13.405237354810035,
+              -0.6450576575781781
+            ],
+            [
+              13.889067750630886,
+              3.544747014337253
+            ],
+            [
+              16.96880531220866,
+              3.2204546661093207
+            ],
+            [
+              18.528281471777408,
+              -4.976816288273078
+            ],
+            [
+              -10.675765476933643,
+              -4.77152828374822
+            ],
+            [
+              -14.511291092959121,
+              -3.9863367040620026
+            ],
+            [
+              -16.12538302843165,
+              3.5539358766976163
+            ]
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243744.61708690118,
+        263573.2896199664
+      ]
+    },
+    {
+      "id": "SD-E6-04",
+      "anchor": {
+        "parcel": "PARCEL_LOT_WAY_968040640",
+        "uM": -11.009243294623449,
+        "vM": 0.9136373700570264
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e6 f cols 120-300: clipped mass at the island's west end; photo outline"
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -2.8518961320513347,
+              2.920608087839136
+            ],
+            [
+              1.1355152578806675,
+              3.8017098635001934
+            ],
+            [
+              2.542862023272419,
+              -3.0594235260125955
+            ],
+            [
+              -0.826481149102595,
+              -3.662894425446729
+            ],
+            [
+              -2.8518961320513347,
+              2.920608087839136
+            ]
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243732.0753843072,
+        263576.40914654755
+      ]
+    },
+    {
+      "id": "SD-E6-05",
+      "anchor": {
+        "parcel": "PARCEL_LOT_WAY_968040640",
+        "uM": -1.492987763965424,
+        "vM": -2.0842305868240603
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e6 f: clipped mound under the second tree; photo crown"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243740.61684668626,
+        263571.2526213572
+      ]
+    },
+    {
+      "id": "SD-E6-06",
+      "anchor": {
+        "parcel": "PARCEL_LOT_WAY_968040640",
+        "uM": 4.712416922322907,
+        "vM": -2.036834696193188
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e6 f: clipped mound; photo crown"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243746.65856775746,
+        263569.83597031026
+      ]
+    },
+    {
+      "id": "SD-E6-07",
+      "anchor": {
+        "parcel": "PARCEL_LOT_WAY_968040640",
+        "uM": 11.257819611124932,
+        "vM": -2.507567775480966
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e6 f: clipped mound; photo crown"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243752.90857524314,
+        263567.8356472315
+      ]
+    },
+    {
+      "id": "SD-E6-08",
+      "anchor": {
+        "parcel": "PARCEL_LOT_WAY_968040640",
+        "uM": 17.600088201571815,
+        "vM": -0.5935745055980153
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e6 f cols 1000-1150: clipped mass at the island's east end; photo outline"
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -1.9619850124117804,
+              3.007533633809887
+            ],
+            [
+              1.1726616294592433,
+              3.339168086307951
+            ],
+            [
+              2.541691532584346,
+              -3.1885740802233156
+            ],
+            [
+              -1.7523681496875334,
+              -3.1581276397882476
+            ],
+            [
+              -1.9619850124117804,
+              3.007533633809887
+            ]
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243759.52329001523,
+        263568.20073570625
+      ]
+    },
+    {
+      "id": "SD-E7-01",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_E7_",
+        "uM": 0.28889973275361047,
+        "vM": -15.649236937610352
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e7 f (cols 500-1500, rows 1300-1500): clipped shrub bed along the E7 front between the forecourt paving and the building; photo outline"
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -12.947996035923701,
+              0.5449833459590852
+            ],
+            [
+              -0.19278454099152775,
+              2.336883655704407
+            ],
+            [
+              13.509749077539512,
+              2.3365606821267964
+            ],
+            [
+              14.142717033651042,
+              0.4390322295989031
+            ],
+            [
+              -2.196226699204918,
+              -2.1963979408190486
+            ],
+            [
+              -12.315458835098017,
+              -3.4610619725793463
+            ],
+            [
+              -12.947996035923701,
+              0.5449833459590852
+            ]
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243642.9100788439,
+        263596.09262954566
+      ]
+    },
+    {
+      "id": "SD-E2-H1",
+      "anchor": {
+        "parcel": "PARCEL_SUPPORT_LOT_243587_263753",
+        "uM": 12.448522302246154,
+        "vM": -3.1537774263359255
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e2 r (cols 910-1000, rows 1460-1490): blue handrail along the entrance ramp beside the disabled bay"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            1.6751494763222707,
+            0.24684133818505583
+          ],
+          [
+            -1.6751494763189412,
+            -0.24684133824316823
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243599.25335696535,
+        263748.6529862059
+      ]
+    },
+    {
+      "id": "SD-E3-S1",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_91",
+        "uM": -15.570884791481042,
+        "vM": 7.109771038196628
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e3 l (cols 940-1030, rows 1440-1490): campus banner board on posts along the footway"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -0.5227499607060596,
+            1.9485956987208193
+          ],
+          [
+            0.5227499607207446,
+            -1.9485956987771442
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243748.5436526604,
+        263721.5246989046
+      ]
+    },
+    {
+      "id": "SD-E3-S2",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_54",
+        "uM": 9.83529302875888,
+        "vM": -3.9416663285220137
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e3 l (cols 1080-1225, rows 1510-1570): long campus banner board on posts along the footway"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            1.9300500112335992,
+            0.6141615109170214
+          ],
+          [
+            -1.9300500112335992,
+            -0.6141615109170214
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243740.91566416682,
+        263723.2338507223
+      ]
+    },
+    {
+      "id": "SD-E4-S1",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_EDGE_CW_016",
+        "uM": 6.574520233164039,
+        "vM": 0.15732469815251637
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e4 f (col 935, rows 1920-1970): small blue building sign (제2...) in the pine bed by the path"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243724.10619463207,
+        263841.54599729227
+      ]
+    },
+    {
+      "id": "SD-E4-K1",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_PAVING_VR_SCENE_E4_R_RED_NON_SLIP_SURFACING_OF_T",
+        "uM": -4.771297129863685,
+        "vM": -5.078344246837054
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e4 f (cols 1680-2048, rows 1690-1710): rough-stone kerb of the raised pine bed along the building east of the entrance (the E4 planter of the first pass, placed now from the re-measured pose)"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            3.0864373359677972,
+            -3.7014675970327717
+          ],
+          [
+            -3.0864373359387254,
+            3.701467597034134
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243705.37171541038,
+        263856.25010183797
+      ]
+    },
+    {
+      "id": "SD-E5-H1",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_55",
+        "uM": -6.689917978069358,
+        "vM": 10.141713911121428
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e5 r (cols 1880-2040, rows 2000-2050): handrail along the ramp at the side entrance"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -0.7959531385931423,
+            1.3690465984892146
+          ],
+          [
+            0.7959531385931423,
+            -1.3690465984892146
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243709.42558695568,
+        263780.1520105868
+      ]
+    },
+    {
+      "id": "SD-E5-S1",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_55",
+        "uM": -13.73145157689656,
+        "vM": -2.118482382995273
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e5 b (col 128, rows 1600-1660): blue disabled-bay sign on the kerb at the bay's head"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243709.7690632834,
+        263766.0177390242
+      ]
+    },
+    {
+      "id": "SD-E5-S2",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_100034702020A00310100000000047547",
+        "uM": -28.616548626080792,
+        "vM": -6.510995327724683
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e5 l (cols 230-390, rows 1440-1480): campus banner board along the footway"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            2.5099437864439818,
+            1.7193751441678757
+          ],
+          [
+            -2.509943786469436,
+            -1.7193751441819862
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243729.54474283126,
+        263736.27352996194
+      ]
+    },
+    {
+      "id": "SD-E5-S3",
+      "anchor": {
+        "parcel": "PARCEL_SUPPORT_ROAD_243712_263738",
+        "uM": -5.5594843060120605,
+        "vM": 1.8847532389374415
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e5 l (cols 450-560, rows 1830-2048): blue direction sign (arrow blades) on a post at the lawn corner"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243714.20769892674,
+        263740.41760991653
+      ]
+    },
+    {
+      "id": "SD-E7-S1",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_44",
+        "uM": -18.080485602330917,
+        "vM": 2.8119053133388006
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e7 r (cols 1540-1690, rows 1950-2048): long campus banner on the footway fence"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -3.0941095197482738,
+            0.6349941626620099
+          ],
+          [
+            3.0941095197233413,
+            -0.6349941626770232
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243639.98104244447,
+        263647.7771643042
+      ]
+    },
+    {
+      "id": "SD-E8-S1",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_78",
+        "uM": 7.276703129440234,
+        "vM": 9.909871273437089
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e8 r (cols 160-315, rows 1890-2048): standing campus banner boards at the building corner by the footway"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -0.16235892864658613,
+            0.6502171198645604
+          ],
+          [
+            0.16235892870385898,
+            -0.6502171198541705
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243603.99093019954,
+        263718.71965928655
+      ]
+    },
+    {
+      "id": "SD-E8-PM1",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_78",
+        "uM": -22.744086357177316,
+        "vM": 10.132753402915345
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e8 l (cols 1480-1590, rows 1690-1850): row of dark PM (personal mobility) racks along the planter wall beside the disabled bay"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -2.787777251362263,
+            0.21671370471598367
+          ],
+          [
+            2.787777251419536,
+            -0.21671370470559365
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243598.41295866904,
+        263689.2207828427
+      ]
+    },
+    {
+      "id": "SD-E8-S2",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_78",
+        "uM": -18.703431115275336,
+        "vM": 10.096560816368381
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e8 l (col 1640, rows 1840-1910): small black PM station sign at the end of the rack row"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243599.1698213066,
+        263693.1900855063
+      ]
+    },
+    {
+      "id": "SD-D1-H1",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_94",
+        "uM": 10.636899024756639,
+        "vM": 12.304180394647
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_d1 f (cols 680-1190, rows 1640-1810): teal guard rail along the front of D1's entrance landing between its two side flights"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -3.4416152318439157,
+            0.5604981488850109
+          ],
+          [
+            3.4416152318439157,
+            -0.5604981488850109
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243733.40188574968,
+        263945.4972678556
+      ]
+    },
+    {
+      "id": "SD-D2-S1",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_EDGE_FB_0006",
+        "uM": 8.25447896119411,
+        "vM": -0.15825769156093727
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_d2 r (col 440, rows 1980-2060): disabled-bay sign on a post at the head of the blue bays"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243633.03347661017,
+        263930.1627002864
+      ]
+    },
+    {
+      "id": "SD-D2-S2",
+      "anchor": {
+        "parcel": "PARCEL_SUPPORT_LOT_243633_263887",
+        "uM": -8.960529490754013,
+        "vM": 0.46207880748800934
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_d2 l (col 1800, rows 1880-2000): PM station post at the rack's end"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243623.73045328353,
+        263891.33447072416
+      ]
+    },
+    {
+      "id": "SD-D4-T1",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_D4_",
+        "uM": -5.501467411459758,
+        "vM": -5.886851650237984
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_d4 f (cols 700-820, rows 1880-2000): square kerbed tree pit on the forecourt paving (the D4 planter of the first pass, placed now on the registered face)"
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0.743343318325617,
+              -0.4829712598582516
+            ],
+            [
+              0.7583532764253825,
+              0.7112467478157878
+            ],
+            [
+              -0.744097209219428,
+              0.4293958576352031
+            ],
+            [
+              -0.757599385527775,
+              -0.6576713454728011
+            ],
+            [
+              0.743343318325617,
+              -0.4829712598582516
+            ]
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243532.4264828653,
+        263874.1616243396
+      ]
+    },
+    {
+      "id": "SD-D4-T2",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_D4_",
+        "uM": -5.584729658767457,
+        "vM": 1.1710101768951016
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_d4 f (cols 1335-1435, rows 1870-1970): second square kerbed tree pit on the forecourt (registered face)"
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0.618493532527989,
+              -0.549561376542639
+            ],
+            [
+              0.6282936167739257,
+              0.30941607433411855
+            ],
+            [
+              -0.6173795594772354,
+              0.6162845369819361
+            ],
+            [
+              -0.6294075897554674,
+              -0.37613923481798006
+            ],
+            [
+              0.618493532527989,
+              -0.549561376542639
+            ]
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243533.83940128947,
+        263881.077114756
+      ]
+    },
+    {
+      "id": "SD-D4-H1",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_10",
+        "uM": 25.60440816297666,
+        "vM": -1.0915134074446038
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_d4 b (cols 1380-2048, rows 1700-2040): guard rail along the raised footway edge at the bend south of D4 (registered pose)"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -6.480341656606099,
+            -0.7947559297709119
+          ],
+          [
+            0.9473044061134462,
+            0.5910313018395634
+          ],
+          [
+            5.533037250550671,
+            0.20372462792665652
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243555.00032083437,
+        263862.104301831
+      ]
+    },
+    {
+      "id": "SD-C2-B1",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_BUILDING_310",
+        "uM": -10.787300434230541,
+        "vM": -7.956957857446566
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_c2 f (cols 820-870, rows 1430-1450): bench by the bicycles at the building wall"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -0.37722831530122436,
+            -0.8803404756797077
+          ],
+          [
+            0.3772283152868038,
+            0.8803404757361007
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243833.15720203877,
+        263918.60806421493
+      ]
+    },
+    {
+      "id": "SD-C2-H2",
+      "anchor": {
+        "parcel": "PARCEL_SUPPORT_LOT_243878_263906",
+        "uM": -5.591897474659972,
+        "vM": 2.8414376221865645
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_c2 r (cols 460-1025, rows 1270-1320): dark guard rail along the walkway above the lower car park"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            7.771642518283491,
+            2.9286501611158684
+          ],
+          [
+            -7.771642518339738,
+            -2.928650161130847
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243873.33114924375,
+        263902.0840197512
+      ]
+    },
+    {
+      "id": "SD-B2-PL3",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_42",
+        "uM": 5.589698035563307,
+        "vM": -12.50100603684908
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_b2 r (col 1660, rows 1660-1700): stone flower pot on the east footway"
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -0.3204283364897217,
+              -0.5498791836456305
+            ],
+            [
+              -0.5500603823513226,
+              0.3212241725057263
+            ],
+            [
+              0.32086935847172715,
+              0.5499973578177303
+            ],
+            [
+              0.5496193602404911,
+              -0.32134234653112814
+            ],
+            [
+              -0.3204283364897217,
+              -0.5498791836456305
+            ]
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        244055.8011787627,
+        263739.7209601975
+      ]
+    },
+    {
+      "id": "SD-B2-S3",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_EDGE_FB_0027",
+        "uM": 4.816040151741315,
+        "vM": 0.5764560410437627
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_b2 l (col 950, rows 1880-1990): blue direction sign on a post at the island corner by the crossing"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        244001.37212533466,
+        263747.08363935753
+      ]
+    },
+    {
+      "id": "SD-B3-K1",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_68",
+        "uM": 24.139572241960373,
+        "vM": 6.253704019662446
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_b3 l: raised brick bed along the brick wing's wall, from the porch to the corner (kerb line from the face, 1.8 m deep to the wall)"
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -8.603702338265311,
+              -1.1137417503783396
+            ],
+            [
+              8.186260052300835,
+              -0.6374269196556064
+            ],
+            [
+              8.60354529078332,
+              1.1141694402377533
+            ],
+            [
+              -8.186103004709333,
+              0.636999229835689
+            ],
+            [
+              -8.603702338265311,
+              -1.1137417503783396
+            ]
+          ]
+        ]
+      },
+      "reason": "B3 bed reading spans BLD_B4/W12, BLD_B5_Greenhouse/W03 and BLD_B3/W05; col 1450 gives s=-8.922697 m on B4/W12 (L=18.643487 m). Retain parcel-local T4 estimate; station/footprint discrepancy unresolved, no clamping.",
+      "centreTM": [
+        243988.10198546067,
+        263855.9272601292
+      ]
+    },
+    {
+      "id": "SD-B3-T1",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_BUILDING_204",
+        "uM": 33.19919640808287,
+        "vM": 22.7212716821928
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_b3 l: clipped juniper topiary in the raised brick bed (position at the bed's middle below the crown)"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "B3 bed reading spans BLD_B4/W12, BLD_B5_Greenhouse/W03 and BLD_B3/W05; col 1450 gives s=-8.922697 m on B4/W12 (L=18.643487 m). Retain parcel-local T4 estimate; station/footprint discrepancy unresolved, no clamping.",
+      "centreTM": [
+        243986.26429579756,
+        263850.3373692967
+      ]
+    },
+    {
+      "id": "SD-B3-T2",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_68",
+        "uM": 24.412010644052486,
+        "vM": 6.2598406325203095
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_b3 l: clipped juniper topiary in the raised brick bed (position at the bed's middle below the crown)"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "B3 bed reading spans BLD_B4/W12, BLD_B5_Greenhouse/W03 and BLD_B3/W05; col 1450 gives s=-8.922697 m on B4/W12 (L=18.643487 m). Retain parcel-local T4 estimate; station/footprint discrepancy unresolved, no clamping.",
+      "centreTM": [
+        243988.18864305076,
+        263856.18562189693
+      ]
+    },
+    {
+      "id": "SD-B3-T3",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_68",
+        "uM": 28.000814724923966,
+        "vM": 6.361028172429739
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_b3 l: clipped juniper topiary in the raised brick bed (position at the bed's middle below the crown)"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "B3 bed reading spans BLD_B4/W12, BLD_B5_Greenhouse/W03 and BLD_B3/W05; col 1450 gives s=-8.922697 m on B4/W12 (L=18.643487 m). Retain parcel-local T4 estimate; station/footprint discrepancy unresolved, no clamping.",
+      "centreTM": [
+        243989.31103136536,
+        263859.59590020234
+      ]
+    },
+    {
+      "id": "SD-B3-T4",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_68",
+        "uM": 31.714905917319143,
+        "vM": 6.465295462846709
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_b3 l: clipped juniper topiary in the raised brick bed (position at the bed's middle below the crown)"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "B3 bed reading spans BLD_B4/W12, BLD_B5_Greenhouse/W03 and BLD_B3/W05; col 1450 gives s=-8.922697 m on B4/W12 (L=18.643487 m). Retain parcel-local T4 estimate; station/footprint discrepancy unresolved, no clamping.",
+      "centreTM": [
+        243990.47302877737,
+        263863.1250795783
+      ]
+    },
+    {
+      "id": "SD-B4-S1",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_100034702020A00310100000000047595",
+        "uM": -40.31087174441783,
+        "vM": 13.002190615263283
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_b4 r: corten-steel frame sign (a hollow square on a plinth) at the paved entrance of the white building"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -0.599113244137898,
+            0.45128910904191005
+          ],
+          [
+            0.5991132441536218,
+            -0.4512891090979538
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243986.87492174876,
+        263816.10134406935
+      ]
+    },
+    {
+      "id": "SD-B7-PL3",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_60",
+        "uM": -29.69695000854508,
+        "vM": -18.688729886133686
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_b7 l: oval kerbed planting island with a small tree and a sign in the aisle of the big car park"
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0.5940899961644296,
+              -2.531506636579881
+            ],
+            [
+              1.5108190402115724,
+              -1.8063163808406413
+            ],
+            [
+              1.8499766217862506,
+              -0.39042290310534544
+            ],
+            [
+              1.482781594785912,
+              1.1734435341928482
+            ],
+            [
+              0.5498166320375473,
+              2.289781700997552
+            ],
+            [
+              -0.5941775713738499,
+              2.530922127770892
+            ],
+            [
+              -1.5109069712357017,
+              1.805732295748594
+            ],
+            [
+              -1.8502779604028754,
+              0.39072658703631036
+            ],
+            [
+              -1.4830828012485884,
+              -1.173140438035611
+            ],
+            [
+              -0.5490385805911704,
+              -2.2892198867348297
+            ],
+            [
+              0.5940899961644296,
+              -2.531506636579881
+            ]
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        244067.29021844128,
+        263901.0463306148
+      ]
+    },
+    {
+      "id": "SD-A1-S1",
+      "anchor": {
+        "parcel": "PARCEL_LOT_SUPPLEMENT_PARKING_0_BAYS_ALONG_THE_BUILDING_WES",
+        "uM": 13.414521790644294,
+        "vM": 2.0728450720593434
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_a1 r: purple 약학대학 sign totem beside the entrance stair"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243929.29817512276,
+        263733.314547104
+      ]
+    },
+    {
+      "id": "SD-A1-S2",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_BUILDING_319",
+        "uM": -1.3871069099529798,
+        "vM": 0.713714955677525
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_a1 f: blue 대학본부 sign totem on the planted bed by the entrance steps"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243923.9820688563,
+        263681.49701859296
+      ]
+    },
+    {
+      "id": "SD-A2-S1",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_72",
+        "uM": 11.869860172045664,
+        "vM": -15.976369749669953
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_a2 b: small sign on a post at the crossing's footway end"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243976.9919224198,
+        263756.336489474
+      ]
+    },
+    {
+      "id": "SD-A3-S1",
+      "anchor": {
+        "parcel": "PARCEL_LOT_ROUNDABOUT_3",
+        "uM": 2.7562139877408995,
+        "vM": -0.5244331810851732
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_a3 l: blue roundabout sign on a post at the edge of the central island (OB0011)"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243893.84344114648,
+        263787.2835372291
+      ]
+    },
+    {
+      "id": "SD-A6-HG1",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_A9_",
+        "uM": 11.16107525016577,
+        "vM": 11.53569582933889
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_a6 l: clipped hedge in the raised brick bed at the plaza's west corner"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.449495651275431,
+            0.46768802380767793
+          ],
+          [
+            -5.449495651248409,
+            -0.467688023796869
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243859.5863959007,
+        263537.6643071646
+      ]
+    },
+    {
+      "id": "SD-A6-HG2",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_84",
+        "uM": -12.19992774334194,
+        "vM": -0.9912380731636934
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_a6 l: clipped hedge in the raised brick bed along the plaza's east edge"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -11.773069367729125,
+            -0.7770391222107338
+          ],
+          [
+            4.148740325697924,
+            0.47101376865897204
+          ],
+          [
+            7.624329042031202,
+            0.30602535355176164
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243825.64035907466,
+        263537.0961651254
+      ]
+    },
+    {
+      "id": "SD-A8-S1",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_93",
+        "uM": 6.619930479716642,
+        "vM": -1.997607467082509
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_a8 f: small black parking notice on a stake at the stall row's end"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243906.6479584977,
+        263543.3151081143
+      ]
+    },
+    {
+      "id": "SD-A9-B2",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_A9_",
+        "uM": 18.85213495082016,
+        "vM": 3.8790330646050224
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_a9 f: orange bench against the plaza's far brick wall"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.09266963385006477,
+            0.7337582281679608
+          ],
+          [
+            -0.09266963385006477,
+            -0.7337582281679608
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243863.88376614323,
+        263527.69889232074
+      ]
+    },
+    {
+      "id": "SD-A12-HG1",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_BUILDING_287",
+        "uM": 4.892160844336123,
+        "vM": -8.864001130636296
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_a12 f: clipped hedge on the raised brick bed along the 우정원 wing, from the stall row to the entrance stair"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.13235619458884174,
+            -4.542098674931169
+          ],
+          [
+            -0.1323561946524815,
+            4.542098674944776
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243816.27954537456,
+        263490.85217651306
+      ]
+    },
+    {
+      "id": "SD-A12-HG2",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_86",
+        "uM": 6.256093182672949,
+        "vM": 3.2961482656071346
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_a12 r: clipped hedge in the raised brick bed along the plaza's edge by the service yard"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            2.320752243581564,
+            4.009565011404283
+          ],
+          [
+            2.9678158667946977,
+            -1.570745777879554
+          ],
+          [
+            -5.288568110370202,
+            -2.438819233553196
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243846.74602523478,
+        263516.0386548673
+      ]
+    },
+    {
+      "id": "SD-A13-H1",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_BUILDING_259",
+        "uM": -24.558314797209352,
+        "vM": -1.509019577331129
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_a13 f: dark rail along the raised planter's edge by the stalls"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            1.6228510041170088,
+            2.2267528913538848
+          ],
+          [
+            -1.622851004142008,
+            -2.2267528913687875
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243981.113401894,
+        263546.7710760487
+      ]
+    },
+    {
+      "id": "SD-A17-H1",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_100034702020A00310100000000047532",
+        "uM": 81.56050754057733,
+        "vM": 7.8710850531376195
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_a17 f: handrail down the middle of the wide stair to the bus stop"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.254249669210126,
+            -0.34829588008673085
+          ],
+          [
+            -4.254249669248434,
+            0.3482958801305558
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        244207.95485140377,
+        263636.25236094254
+      ]
+    },
+    {
+      "id": "SD-A17-S1",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_WAY_975429314_104",
+        "uM": -10.549552026932162,
+        "vM": -0.31666532039227935
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_a17 r: long campus banner on posts along the footway fence"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.18493724883799967,
+            -5.923211020872787
+          ],
+          [
+            -0.18493724882373264,
+            5.923211020809293
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        244203.61276333797,
+        263667.55137077277
+      ]
+    },
+    {
+      "id": "SD-A19-S1",
+      "anchor": {
+        "parcel": "PARCEL_ASPHALT_WAY_975429314_183",
+        "uM": 0.8936351711040772,
+        "vM": 0.06581017655823951
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_a19 r: blue keep-right sign on a post at the median nose"
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        244195.64863675038,
+        263747.3453186721
+      ]
+    },
+    {
+      "id": "SD-F1-PL1",
+      "anchor": {
+        "parcel": "PARCEL_LOT_OFF_CAMPUS_LOT_1287",
+        "uM": 0.9547185912393079,
+        "vM": -0.9499883979367677
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_f1 r: round flower pot with marigolds on the footway corner"
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -0.15906717274989082,
+              -0.615835687544634
+            ],
+            [
+              -0.6164235441574815,
+              0.1590057286272004
+            ],
+            [
+              0.15945943166676096,
+              0.6160693761010565
+            ],
+            [
+              0.6160312853498578,
+              -0.15923941725437502
+            ],
+            [
+              -0.15906717274989082,
+              -0.615835687544634
+            ]
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        244275.59709095926,
+        263485.1921280115
+      ]
+    },
+    {
+      "id": "SD-F1-LED1",
+      "anchor": {
+        "building": "BLD_SCNU_F1",
+        "wall": "W25",
+        "s0M": 25.01109234723715,
+        "s1M": 36.64048653368571,
+        "tM": 0.3
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.629394186448561,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ]
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T2",
+        "refs": [
+          "VR scene_f1 f col 1482 -> BLD_SCNU_F1/W25 s=36.64048653368571 m; eye-read column, estimated",
+          "VR scene_f1 f col 1839 -> BLD_SCNU_F1/W25 s=25.01109234723715 m; eye-read column, estimated",
+          "Generated F1 Facade_Atlas lies about 0.294 m outside the GIS wall; tM=0.30 estimated fascia offset, not a field measurement."
+        ]
+      }
+    }
+  ],
+  "unresolved": [
+    {
+      "id": "SD-B4-01",
+      "kind": "hedge",
+      "centreTM": [
+        243968.8270059388,
+        263811.97437779896
+      ],
+      "nearestParcel": "PARCEL_PAVING_PAVING_VR_SCENE_B4_F_THE_8_X_8_M_PAVED_SQUARE_ON",
+      "nearestParcelDistanceM": 5.617962852690485,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_b4 d (turned to the path and road of the photo): large clipped mass with a patterned top, 7.5 m across; about 4 m"
+    },
+    {
+      "id": "SD-B4-02",
+      "kind": "hedge",
+      "centreTM": [
+        243968.22686131572,
+        263801.57382096327
+      ],
+      "nearestParcel": "PARCEL_ASPHALT_ROAD_ZONE_68",
+      "nearestParcelDistanceM": 3.8518460583530993,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_b4 d (turned to the path and road of the photo): clipped mound under the tree by the path; about 4 m"
+    },
+    {
+      "id": "SD-B4-03",
+      "kind": "hedge",
+      "centreTM": [
+        243968.92721213054,
+        263798.3742424356
+      ],
+      "nearestParcel": "PARCEL_ASPHALT_ROAD_ZONE_68",
+      "nearestParcelDistanceM": 2.3538206416809717,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_b4 d (turned to the path and road of the photo): clipped mound; about 4 m"
+    },
+    {
+      "id": "SD-D2-02",
+      "kind": "hedge",
+      "centreTM": [
+        243623.17138060258,
+        263905.7983289881
+      ],
+      "nearestParcel": "PARCEL_SUPPORT_ROAD_243619_263902",
+      "nearestParcelDistanceM": 1.8133765565360727,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_d2 f: clipped bed north of the entrance stair; photo outline"
+    },
+    {
+      "id": "SD-D2-03",
+      "kind": "hedge",
+      "centreTM": [
+        243622.65040408523,
+        263896.04553517734
+      ],
+      "nearestParcel": "PARCEL_SUPPORT_LOT_243633_263887",
+      "nearestParcelDistanceM": 1.7377825955538209,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_d2 f: clipped bed south of the entrance stair; photo outline"
+    },
+    {
+      "id": "SD-E3-05",
+      "kind": "hedge",
+      "centreTM": [
+        243728.3571477369,
+        263758.6557634279
+      ],
+      "nearestParcel": "PARCEL_PAVING_100034702020A00310100000000047547",
+      "nearestParcelDistanceM": 9.128635953797717,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_e3 d (turned north-up on the footway and junction kerbs): tiered clipped topiary on the east lawn; position from the station (about 3 m)"
+    },
+    {
+      "id": "SD-E3-06",
+      "kind": "hedge",
+      "centreTM": [
+        243735.7576233543,
+        263753.05526414054
+      ],
+      "nearestParcel": "PARCEL_PAVING_EDGE_FBJ_FBN_ND_085_1_8",
+      "nearestParcelDistanceM": 3.364096459227426,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_e3 d (turned north-up on the footway and junction kerbs): clipped shrub on the east lawn; position from the station (about 3 m)"
+    },
+    {
+      "id": "SD-E3-07",
+      "kind": "hedge",
+      "centreTM": [
+        243734.3575830677,
+        263755.1553816073
+      ],
+      "nearestParcel": "PARCEL_PAVING_EDGE_FBJ_FBN_ND_085_1_8",
+      "nearestParcelDistanceM": 5.368283368075093,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_e3 d (turned north-up on the footway and junction kerbs): small clipped ball; position from the station (about 3 m)"
+    },
+    {
+      "id": "SD-E5-01",
+      "kind": "hedge",
+      "centreTM": [
+        243701.48670389154,
+        263742.5578333085
+      ],
+      "nearestParcel": "PARCEL_SUPPORT_ROAD_243712_263738",
+      "nearestParcelDistanceM": 3.1491956405564854,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_e5 d (turned north-up on the road edge): clipped topiary mass, two lobes, 3.4 m across; position from the station (about 3 m)"
+    },
+    {
+      "id": "SD-E5-04",
+      "kind": "hedge",
+      "centreTM": [
+        243696.08668581618,
+        263744.25716282014
+      ],
+      "nearestParcel": "PARCEL_PAVING_EDGE_FB_0037",
+      "nearestParcelDistanceM": 1.0915372721447805,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_e5 d (turned north-up on the road edge): clipped mass at the lawn's west side; position from the station (about 3 m)"
+    },
+    {
+      "id": "SD-E1-S1",
+      "kind": "signboard",
+      "centreTM": [
+        243854.9841270513,
+        263768.33394708904
+      ],
+      "nearestParcel": "PARCEL_SUPPORT_ROAD_243857_263766",
+      "nearestParcelDistanceM": 1.1558581339339302,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_e1 f (cols 600-860, rows 1480-1530): long campus notice board in a dark frame along the path at the plaza's west edge (about 9 m)"
+    },
+    {
+      "id": "SD-E1-S2",
+      "kind": "signboard",
+      "centreTM": [
+        243871.01420916762,
+        263780.8488882948
+      ],
+      "nearestParcel": "PARCEL_ASPHALT_ROAD_ZONE_81",
+      "nearestParcelDistanceM": 1.7684914842020136,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_e1 l (cols 1790-2048, rows 1880-2040): campus banner boards on the lawn by the roundabout (white and blue panels)"
+    },
+    {
+      "id": "SD-E8-S3",
+      "kind": "signboard",
+      "centreTM": [
+        243621.43098862586,
+        263683.7513688273
+      ],
+      "nearestParcel": "PARCEL_ASPHALT_ROAD_ZONE_76",
+      "nearestParcelDistanceM": 1.0032551530811478,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_e8 l (cols 340-390, rows 1700-1810): banner on the fence of the footway west of the crossing"
+    },
+    {
+      "id": "SD-D1-S1",
+      "kind": "signboard",
+      "centreTM": [
+        243723.60181326655,
+        263922.8288578264
+      ],
+      "nearestParcel": "PARCEL_ASPHALT_ROAD_ZONE_94",
+      "nearestParcelDistanceM": 2.170244009932483,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_d1 l (cols 1555-1590, rows 1400-1480): dark campus map board on the lawn edge by the road"
+    },
+    {
+      "id": "SD-D1-S2",
+      "kind": "signboard",
+      "centreTM": [
+        243727.4941959223,
+        263932.1401645482
+      ],
+      "nearestParcel": "PARCEL_ASPHALT_ROAD_ZONE_94",
+      "nearestParcelDistanceM": 0.7605152230039486,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_d1 l (cols 1905-1975, rows 1680-1760): red standing notice board at the foot of the stair"
+    },
+    {
+      "id": "SD-D3-H1",
+      "kind": "handrail",
+      "centreTM": [
+        243611.56944319565,
+        263808.61096593854
+      ],
+      "nearestParcel": "PARCEL_PAVING_BUILDING_166",
+      "nearestParcelDistanceM": 2.9005418275558514,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_d3 l (cols 1555-1660, rows 1690-1730): handrail of the short stair at the building's side door"
+    },
+    {
+      "id": "SD-D4-H2",
+      "kind": "handrail",
+      "centreTM": [
+        243554.80379654403,
+        263849.60331746365
+      ],
+      "nearestParcel": "PARCEL_ASPHALT_ROAD_ZONE_14",
+      "nearestParcelDistanceM": 2.1577960641728144,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_d4 l (cols 10-440, rows 1500-1830): guard rail along the footway on the retaining edge of the road west of the forecourt (registered pose)"
+    },
+    {
+      "id": "SD-D5-S1",
+      "kind": "signboard",
+      "centreTM": [
+        243585.504280092,
+        263951.8814597712
+      ],
+      "nearestParcel": "PARCEL_PAVING_BUILDING_367",
+      "nearestParcelDistanceM": 4.440526524718043,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_d5 r (cols 650-715, rows 1950-2048): blue vertical sign totem of the 제15학생군사교육단 on the lawn at the road corner"
+    },
+    {
+      "id": "SD-C2-H1",
+      "kind": "handrail",
+      "centreTM": [
+        243837.02494934876,
+        263916.7666614604
+      ],
+      "nearestParcel": "PARCEL_PAVING_BUILDING_310",
+      "nearestParcelDistanceM": 0.4529405766237323,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_c2 f (cols 870-990, rows 1450-1510): handrail of the side ramp west of the entrance steps"
+    },
+    {
+      "id": "SD-C2-S1",
+      "kind": "signboard",
+      "centreTM": [
+        243848.8189483536,
+        263905.183621009
+      ],
+      "nearestParcel": "PARCEL_PAVING_100034702020A00310100000000047669",
+      "nearestParcelDistanceM": 1.3294998672433622,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_c2 f (cols 1340-1380, rows 1790-1860): blue information board on posts at the lawn edge"
+    },
+    {
+      "id": "SD-C3-H1",
+      "kind": "handrail",
+      "centreTM": [
+        243807.327973191,
+        263878.9292414932
+      ],
+      "nearestParcel": "PARCEL_PAVING_EDGE_PLAZA_PAVEDCOURT_0003_1",
+      "nearestParcelDistanceM": 1.1196747559245126,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_c3 r (cols 1640-1800, rows 1420-1650): guard rail on the retaining wall at the car park's east side"
+    },
+    {
+      "id": "SD-C5-H1",
+      "kind": "handrail",
+      "centreTM": [
+        243772.9885450739,
+        263996.24933449575
+      ],
+      "nearestParcel": "PARCEL_PAVING_BUILDING_370",
+      "nearestParcelDistanceM": 3.9890194980118747,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_c5 f (cols 130-380, rows 1370-2048): white decorative railing (yellow figures) along the path above the forecourt"
+    },
+    {
+      "id": "SD-C5-P1",
+      "kind": "bollard",
+      "centreTM": [
+        243766.53158120217,
+        263984.9035698668
+      ],
+      "nearestParcel": "PARCEL_PAVING_BUILDING_369",
+      "nearestParcelDistanceM": 2.048722931027428,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_c5 f (col 1460, rows 1520-1600): yellow guard post at the building corner"
+    },
+    {
+      "id": "SD-C5-H2",
+      "kind": "handrail",
+      "centreTM": [
+        243757.11957976627,
+        263982.6584312263
+      ],
+      "nearestParcel": "PARCEL_PAVING_EDGE_FBJ_SWN_0018_1_2",
+      "nearestParcelDistanceM": 1.2420619810999944,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_c5 r (cols 680-890, rows 1500-2048): the white decorative railing continuing along the footway"
+    },
+    {
+      "id": "SD-C5-S1",
+      "kind": "signboard",
+      "centreTM": [
+        243744.7146763179,
+        264003.1380284999
+      ],
+      "nearestParcel": "PARCEL_LOT_OFF_CAMPUS_LOT_312",
+      "nearestParcelDistanceM": 0.8786012127280444,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_c5 b (cols 1170-1210, rows 1430-1500): small notice board on a post at the stream path"
+    },
+    {
+      "id": "SD-B1-PL1",
+      "kind": "planter",
+      "centreTM": [
+        244126.02812732646,
+        263738.36212939443
+      ],
+      "nearestParcel": "PARCEL_ASPHALT_ROAD_ZONE_80",
+      "nearestParcelDistanceM": 0.04844293783025673,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_b1 r (col 820, rows 1590-1640): round stone flower pot on the footway"
+    },
+    {
+      "id": "SD-B1-S1",
+      "kind": "signboard",
+      "centreTM": [
+        244066.2191043163,
+        263729.2870373863
+      ],
+      "nearestParcel": "PARCEL_PAVING_100034702020A00310100000000047532",
+      "nearestParcelDistanceM": 2.174062962974118,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_b1 l (cols 645-745, rows 1600-1700 and up): large campus billboard (multi-panel notice board, about 6 x 3 m) on two posts on the lawn behind the footway"
+    },
+    {
+      "id": "SD-B3-S1",
+      "kind": "signboard",
+      "centreTM": [
+        244013.5297083848,
+        263835.6788438058
+      ],
+      "nearestParcel": "PARCEL_PAVING_EDGE_FB_0046_9",
+      "nearestParcelDistanceM": 0.3196018227438421,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_b3 r: two orange standing figure signs (no-parking stands) at the stair tower's foot"
+    },
+    {
+      "id": "SD-B4-T1",
+      "kind": "hedge",
+      "centreTM": [
+        243956.1580617829,
+        263789.6546861752
+      ],
+      "nearestParcel": "PARCEL_PAVING_100034702020A00310100000000047638",
+      "nearestParcelDistanceM": 2.297701316468838,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_b4 l: clipped shrub mound by the footway under the zelkova, beside a rock"
+    },
+    {
+      "id": "SD-B4-T2",
+      "kind": "hedge",
+      "centreTM": [
+        243953.54804279748,
+        263790.96900907246
+      ],
+      "nearestParcel": "PARCEL_PAVING_100034702020A00310100000000047638",
+      "nearestParcelDistanceM": 2.9396659782872634,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_b4 l: second clipped shrub mound by the footway"
+    },
+    {
+      "id": "SD-B7-PL1",
+      "kind": "planter",
+      "centreTM": [
+        244065.14103929175,
+        263869.76184840983
+      ],
+      "nearestParcel": "PARCEL_ASPHALT_ROAD_ZONE_65",
+      "nearestParcelDistanceM": 3.180852374246274,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_b7 b: black square planter box by the building's side door"
+    },
+    {
+      "id": "SD-B7-PL2",
+      "kind": "planter",
+      "centreTM": [
+        244064.0866999736,
+        263870.23381828784
+      ],
+      "nearestParcel": "PARCEL_ASPHALT_ROAD_ZONE_65",
+      "nearestParcelDistanceM": 4.318632332019843,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_b7 b: black square planter box by the building's side door"
+    },
+    {
+      "id": "SD-B7-T1",
+      "kind": "hedge",
+      "centreTM": [
+        244065.14104197003,
+        263869.7612936921
+      ],
+      "nearestParcel": "PARCEL_ASPHALT_ROAD_ZONE_65",
+      "nearestParcelDistanceM": 3.1807140305629558,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_b7 b: clipped conifer in the planter box (1.5 m over the ground)"
+    },
+    {
+      "id": "SD-B7-T2",
+      "kind": "hedge",
+      "centreTM": [
+        244064.08670265175,
+        263870.2332635694
+      ],
+      "nearestParcel": "PARCEL_ASPHALT_ROAD_ZONE_65",
+      "nearestParcelDistanceM": 4.318493988278469,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_b7 b: clipped conifer in the planter box (1.5 m over the ground)"
+    },
+    {
+      "id": "SD-A1-S3",
+      "kind": "signboard",
+      "centreTM": [
+        243980.6418524849,
+        263680.96212414815
+      ],
+      "nearestParcel": "PARCEL_PAVING_EDGE_FB_0076",
+      "nearestParcelDistanceM": 1.1803976670369707,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_a1 l: blue direction sign on a post at the car park's corner"
+    },
+    {
+      "id": "SD-A3-H1",
+      "kind": "handrail",
+      "centreTM": [
+        243842.4246993358,
+        263755.08756900934
+      ],
+      "nearestParcel": "PARCEL_PAVING_BUILDING_10",
+      "nearestParcelDistanceM": 0.8962836764300046,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_a3 r: dark handrail along the entrance ramp of the blue building"
+    },
+    {
+      "id": "SD-A3-H2",
+      "kind": "handrail",
+      "centreTM": [
+        243840.57382931875,
+        263761.7750697255
+      ],
+      "nearestParcel": "PARCEL_PAVING_BUILDING_12",
+      "nearestParcelDistanceM": 4.041870222478555,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_a3 r: handrail of the entrance steps"
+    },
+    {
+      "id": "SD-A4-S1",
+      "kind": "signboard",
+      "centreTM": [
+        243834.59290533786,
+        263639.37689020956
+      ],
+      "nearestParcel": "PARCEL_PAVING_EDGE_CWC_030_B_12",
+      "nearestParcelDistanceM": 1.4687879446962673,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_a4 r: blue information totem with a mascot on the island footway"
+    },
+    {
+      "id": "SD-A6-H1",
+      "kind": "handrail",
+      "centreTM": [
+        243811.6707948292,
+        263554.7703396708
+      ],
+      "nearestParcel": "PARCEL_PAVING_BUILDING_275",
+      "nearestParcelDistanceM": 0.7179525226613792,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_a6 f: outer handrail of the entrance ramp descending from A6's door"
+    },
+    {
+      "id": "SD-A6-H2",
+      "kind": "handrail",
+      "centreTM": [
+        243811.26508992037,
+        263556.5268532599
+      ],
+      "nearestParcel": "PARCEL_PAVING_BUILDING_277",
+      "nearestParcelDistanceM": 0.7143648404214187,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_a6 f: inner handrail of the entrance ramp"
+    },
+    {
+      "id": "SD-A8-T1",
+      "kind": "planter",
+      "centreTM": [
+        243911.72171841958,
+        263539.3205673264
+      ],
+      "nearestParcel": "PARCEL_ASPHALT_ROAD_ZONE_93",
+      "nearestParcelDistanceM": 2.082107835850716,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_a8 f: square tree pit with a kerb in the paved plaza by the dormitory"
+    },
+    {
+      "id": "SD-A10-S1",
+      "kind": "signboard",
+      "centreTM": [
+        243842.5338105787,
+        263557.8801397376
+      ],
+      "nearestParcel": "PARCEL_ASPHALT_ROAD_ZONE_88",
+      "nearestParcelDistanceM": 1.3626944225086712,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_a10 r: notice board under a blue sloping hood on two blue posts on the lawn by the dormitory; re-cast on the corrected a10 pose"
+    },
+    {
+      "id": "SD-A10-S2",
+      "kind": "signboard",
+      "centreTM": [
+        243846.03747514484,
+        263557.5264127274
+      ],
+      "nearestParcel": "PARCEL_ASPHALT_ROAD_ZONE_88",
+      "nearestParcelDistanceM": 1.7623155785614104,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_a10 r: second blue-hooded notice board beside it; re-cast on the corrected a10 pose"
+    },
+    {
+      "id": "SD-A12-H1",
+      "kind": "handrail",
+      "centreTM": [
+        243809.23080376332,
+        263495.1362859927
+      ],
+      "nearestParcel": "PARCEL_PAVING_BUILDING_292",
+      "nearestParcelDistanceM": 0.28062142677215507,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_a12 f: handrail down the 우정원 entrance stair"
+    },
+    {
+      "id": "SD-A13-S1",
+      "kind": "signboard",
+      "centreTM": [
+        243981.31326027177,
+        263543.1053424921
+      ],
+      "nearestParcel": "PARCEL_PAVING_BUILDING_259",
+      "nearestParcelDistanceM": 0.09405447449252036,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_a13 f: blue sign on a post in the planter by the road"
+    },
+    {
+      "id": "SD-A17-S2",
+      "kind": "signboard",
+      "centreTM": [
+        244202.72886621353,
+        263648.4697222933
+      ],
+      "nearestParcel": "PARCEL_PAVING_100034702020A00310100000000047532",
+      "nearestParcelDistanceM": 0.14896346646954117,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_a17 r: brown-framed notice board (여수애양병원 posters) at the foot of the stair"
+    },
+    {
+      "id": "SD-A17-H2",
+      "kind": "handrail",
+      "centreTM": [
+        244235.68511025602,
+        263670.0548440985
+      ],
+      "nearestParcel": "PARCEL_ASPHALT_WAY_506612860_22",
+      "nearestParcelDistanceM": 0.5507443032989224,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_a17 b: handrail of the steps at the gatehouse"
+    },
+    {
+      "id": "SD-A19-H1",
+      "kind": "handrail",
+      "centreTM": [
+        244159.63713649986,
+        263698.5043774373
+      ],
+      "nearestParcel": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_A19",
+      "nearestParcelDistanceM": 4.912393376328882,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_a19 f: green rail along the stepped arc of the gate plaza"
+    },
+    {
+      "id": "SD-F3-H1",
+      "kind": "handrail",
+      "centreTM": [
+        244168.62147201598,
+        263468.55383569165
+      ],
+      "nearestParcel": "PARCEL_PAVING_BUILDING_342",
+      "nearestParcelDistanceM": 9.21987127798554,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_f3 l: handrail along the entrance ramp of 미래융합대학 평생교육원"
+    },
+    {
+      "id": "SD-F3-H2",
+      "kind": "handrail",
+      "centreTM": [
+        244173.35721452258,
+        263463.197075944
+      ],
+      "nearestParcel": "PARCEL_PAVING_BUILDING_344",
+      "nearestParcelDistanceM": 13.737182057178266,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_f3 l: upper handrail of the ramp"
+    },
+    {
+      "id": "SD-F3-S1",
+      "kind": "signboard",
+      "centreTM": [
+        244170.36110000266,
+        263460.8522036414
+      ],
+      "nearestParcel": "PARCEL_LOT_WAY_968040639",
+      "nearestParcelDistanceM": 10.488344130336175,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_f3 l: blue standing sign board on the lawn by the entrance"
+    },
+    {
+      "id": "SD-F2-H1",
+      "kind": "handrail",
+      "centreTM": [
+        244169.37902919884,
+        263558.4165371719
+      ],
+      "nearestParcel": "PARCEL_SUPPORT_ROAD_244168_263560",
+      "nearestParcelDistanceM": 1.188025272943086,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_f2 r: handrail of the stair up the retaining wall to the building"
+    },
+    {
+      "id": "SD-F1-PL2",
+      "kind": "planter",
+      "centreTM": [
+        244242.34488858515,
+        263485.73709371977
+      ],
+      "nearestParcel": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_F1_",
+      "nearestParcelDistanceM": 0.5550335403783928,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_f1 r: flower pot on the footway by the crossing"
+    },
+    {
+      "id": "SD-B1-S2",
+      "kind": "signboard",
+      "centreTM": [
+        244079.12472697633,
+        263726.66671549657
+      ],
+      "nearestParcel": "PARCEL_PAVING_100034702020A00310100000000047532",
+      "nearestParcelDistanceM": 1.4427435755071392,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_b1 l (cols 1410-1560, rows 1260-1360): long slanted campus banner board on posts at the footway edge, read in r2 as the survey shelter OC0109; NGII photo: the board's thin pale top edge, about 6 m, where OC0109 was outlined (drawn upright)"
+    },
+    {
+      "id": "SD-A5-TB1",
+      "kind": "planter",
+      "centreTM": [
+        243956.10017955216,
+        263652.25701069523
+      ],
+      "nearestParcel": "PARCEL_PAVING_BUILDING_224",
+      "nearestParcelDistanceM": 3.3350708192726333,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_a5 r: square timber tree box in the A1 roof garden (the walled garden is A1's roof, 12.98 m; positions from the face-r rays scaled to the camera's height above the roof, set by the teal parasol's photo disc; about 1.5 m)"
+    },
+    {
+      "id": "SD-A5-TB2",
+      "kind": "planter",
+      "centreTM": [
+        243959.67422301153,
+        263654.96710544464
+      ],
+      "nearestParcel": "PARCEL_PAVING_BUILDING_336",
+      "nearestParcelDistanceM": 0.6592797981331838,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_a5 r: square timber tree box in the A1 roof garden (the walled garden is A1's roof, 12.98 m; positions from the face-r rays scaled to the camera's height above the roof, set by the teal parasol's photo disc; about 1.5 m)"
+    },
+    {
+      "id": "SD-A5-TB3",
+      "kind": "planter",
+      "centreTM": [
+        243944.736858605,
+        263655.09683382034
+      ],
+      "nearestParcel": "PARCEL_PAVING_BUILDING_214",
+      "nearestParcelDistanceM": 4.301521212207729,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_a5 r: small timber tree box in the A1 roof garden (the walled garden is A1's roof, 12.98 m; positions from the face-r rays scaled to the camera's height above the roof, set by the teal parasol's photo disc; about 1.5 m)"
+    },
+    {
+      "id": "SD-A1RG-L1",
+      "kind": "planter",
+      "centreTM": [
+        243949.2292176493,
+        263663.90635065443
+      ],
+      "nearestParcel": "PARCEL_PAVING_BUILDING_335",
+      "nearestParcelDistanceM": 2.9049416634859586,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_a5 r/d: the lawn of the A1 roof garden (the 12.98 m wing roof), inside the parapets and the lattice wall RS0003; outline traced on the NGII 2025 photo (the green inside the parapets), the teal-roofed room stands in it; patchy autumn turf, a smooth tone map (no cell edges): four tones blended by low-frequency noise, each an equal sRGB mix of a VR scene_a5 r lawn quartile (the autumn hue) and the NGII 2025 photo's lawn quartile (its value), worn within 0.8 m of the stepping stones, fading out to 1.6 m (estimated)"
+    },
+    {
+      "id": "SD-A1RG-S5",
+      "kind": "site_tree",
+      "centreTM": [
+        243945.57771012734,
+        263662.220152225
+      ],
+      "nearestParcel": "PARCEL_PAVING_BUILDING_214",
+      "nearestParcelDistanceM": 0.03993216983926878,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_a5 r: a clipped shrub mass by the room's west wall on the A1 roof garden lawn; drawn as the trees stage's rounded shrub (dark green)"
+    }
+  ],
+  "readingAudit": [
+    {
+      "id": "SD-F1-LED1",
+      "scene": "scene_f1",
+      "face": "f",
+      "cols": [
+        1482,
+        1839
+      ],
+      "estimated": true,
+      "hits": [
+        {
+          "tier": "T2",
+          "estimated": true,
+          "wall": "BLD_SCNU_F1/W25",
+          "bearingDeg": 276.7673267299999,
+          "sM": 36.64048653368571,
+          "distanceM": 45.930981453313485,
+          "point": [
+            244222.25693243658,
+            263465.45797585126
+          ],
+          "building": "BLD_SCNU_F1"
+        },
+        {
+          "tier": "T2",
+          "estimated": true,
+          "wall": "BLD_SCNU_F1/W25",
+          "bearingDeg": 291.18622724600004,
+          "sM": 25.01109234723715,
+          "distanceM": 46.589489661777584,
+          "point": [
+            244224.42736790355,
+            263476.88303685887
+          ],
+          "building": "BLD_SCNU_F1"
+        }
+      ],
+      "selectedWall": "BLD_SCNU_F1/W25",
+      "sameWallHits": [
+        {
+          "tier": "T2",
+          "estimated": true,
+          "wall": "BLD_SCNU_F1/W25",
+          "bearingDeg": 276.7673267299999,
+          "sM": 36.64048653368571,
+          "distanceM": 45.930981453313485,
+          "point": [
+            244222.25693243658,
+            263465.45797585126
+          ]
+        },
+        {
+          "tier": "T2",
+          "estimated": true,
+          "wall": "BLD_SCNU_F1/W25",
+          "bearingDeg": 291.18622724600004,
+          "sM": 25.01109234723715,
+          "distanceM": 46.589489661777584,
+          "point": [
+            244224.42736790355,
+            263476.88303685887
+          ]
+        }
+      ],
+      "clean": true
+    },
+    {
+      "id": "SD-B3-K1",
+      "scene": "scene_b3",
+      "face": "l",
+      "cols": [
+        530,
+        1450
+      ],
+      "diagnostic": true,
+      "estimated": true,
+      "hits": [
+        {
+          "tier": "T2",
+          "estimated": true,
+          "wall": "BLD_B4/W12",
+          "bearingDeg": 286.576321829,
+          "sM": 10.419987433412906,
+          "distanceM": 16.891760073334993,
+          "point": [
+            243984.83862009516,
+            263848.1039133203
+          ],
+          "building": "BLD_B4"
+        },
+        {
+          "tier": "T2",
+          "estimated": true,
+          "wall": "BLD_B3/W05",
+          "bearingDeg": 334.9180737019999,
+          "sM": 10.26347512355612,
+          "distanceM": 33.24092999781899,
+          "point": [
+            243986.93708093738,
+            263873.39121974754
+          ],
+          "building": "BLD_B3"
+        }
+      ],
+      "selectedWall": "BLD_B4/W12",
+      "sameWallHits": [
+        {
+          "tier": "T2",
+          "estimated": true,
+          "wall": "BLD_B4/W12",
+          "bearingDeg": 286.576321829,
+          "sM": 10.419987433412906,
+          "distanceM": 16.891760073334993,
+          "point": [
+            243984.83862009516,
+            263848.1039133203
+          ]
+        },
+        {
+          "tier": "T2",
+          "estimated": true,
+          "wall": "BLD_B4/W12",
+          "point": null,
+          "reason": "outside_forward_segment"
+        }
+      ],
+      "clean": false
+    }
+  ],
+  "outsideScope": [
+    {
+      "id": "SD-E8-02",
+      "kind": "stall_row",
+      "observation": "VR scene_e8 d (turned north-up on the blue bays and the plaza edge): a row of empty stalls under the trees on the aisle's east side, dividers and back line; the photo shows only the canopy; position from the station (about 2 m)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-E6-B1",
+      "kind": "bench",
+      "observation": "VR scene_e6 f (col 1229, row 1595): timber bench on the planted island between the clipped masses; position from the face registered on the stall paint (about 1 m)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-E6-B2",
+      "kind": "bench",
+      "observation": "VR scene_e6 f (col 1505, row 1611): short red-brown bench on the island beside a clipped ball; registered (about 1 m)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-E1-B1",
+      "kind": "bench",
+      "observation": "VR scene_e1 f (col 950, row 1589): timber block bench on the plaza north of the station (about 1 m)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-E1-B2",
+      "kind": "bench",
+      "observation": "VR scene_e1 f (col 981, row 1683): timber block bench on the plaza north of the station (about 1 m)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-E1-B3",
+      "kind": "bench",
+      "observation": "VR scene_e1 f (col 1050, row 1640): timber block bench on the plaza north of the station (about 1 m)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-E1-B4",
+      "kind": "bench",
+      "observation": "VR scene_e1 f (col 1500, row 1512): timber block bench on the plaza north of the station (about 1 m)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-E1-B5",
+      "kind": "bench",
+      "observation": "VR scene_e1 f (col 1503, row 1563): timber block bench on the plaza north of the station (about 1 m)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-E1-P1",
+      "kind": "bollard",
+      "observation": "VR scene_e1 l (cols 290-960, rows 1990-2010): orange flexible delineator posts along the near kerb of the roundabout approach",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-E1-P2",
+      "kind": "bollard",
+      "observation": "VR scene_e1 l (cols 90-350, rows 1680-1760): delineator posts along the far kerb west of the roundabout",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-E1-P3",
+      "kind": "bollard",
+      "observation": "VR scene_e1 l (cols 1340-1990, rows 1790-1880): delineator posts along the near kerb east of the roundabout",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-E1-P4",
+      "kind": "bollard",
+      "observation": "VR scene_e1 b (cols 1660-1930, rows 1760-1990): delineator posts along the kerb of the road east of the plaza",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-E2-ST1",
+      "kind": "plaza_structure",
+      "observation": "VR scene_e2 f (cols 1150-1220, rows 1680-1780): memorial sign stone with a dark plaque on a white plinth on the lawn north-west of E2",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-E3-W1",
+      "kind": "stall_row",
+      "observation": "VR scene_e3 r (cols 950-1500, rows 1450-1480): yellow-black wheel stops at the back of the stalls along E3 (the dividers are the markings data's MX01676); aisle line from the face, about 1 m",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-E4-C1",
+      "kind": "entrance_canopy",
+      "observation": "VR scene_e4 f (cols 1430-1620, rows 1530-1720): flat entrance canopy with the red 사범대학 fascia on two white piers at the building's north door; front edge at the pier bases, 4 m deep to the wall",
+      "reason": "todo 19 owns entrance/canopy migration"
+    },
+    {
+      "id": "SD-E5-C1",
+      "kind": "entrance_canopy",
+      "observation": "VR scene_e5 r (cols 380-840, rows 1840-1940): orange cantilevered canopy over E5's main entrance and its steps (no posts)",
+      "reason": "todo 19 owns entrance/canopy migration"
+    },
+    {
+      "id": "SD-E5-C2",
+      "kind": "entrance_canopy",
+      "observation": "VR scene_e5 r (cols 1650-1970, rows 1810-1880): orange cantilevered canopy over the side entrance by the disabled bay",
+      "reason": "todo 19 owns entrance/canopy migration"
+    },
+    {
+      "id": "SD-E7-C1",
+      "kind": "entrance_canopy",
+      "observation": "VR scene_e7 f (cols 1130-1330, rows 1260-1420): E7's entrance canopy (white frame, glass gables) on two front posts; drawn as a flat slab",
+      "reason": "todo 19 owns entrance/canopy migration"
+    },
+    {
+      "id": "SD-E7-B1",
+      "kind": "bench",
+      "observation": "VR scene_e7 f (cols 1630-1700, rows 1610-1680): timber bench on the forecourt's east edge",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-E7-BIN1",
+      "kind": "bin",
+      "observation": "VR scene_e7 f (col 1485, row 1510): grey litter bin at the forecourt's lawn edge",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-E7-B2",
+      "kind": "bench",
+      "observation": "VR scene_e7 l (cols 1670-1725, rows 1690-1730): bench at the plaza's south-west edge",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-E8-B1",
+      "kind": "bench",
+      "observation": "VR scene_e8 f (cols 615-705, rows 1530-1560): timber bench with a back at the courtyard's planter edge",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-D1-P1",
+      "kind": "bollard",
+      "observation": "VR scene_d1 l (cols 1110-1220, rows 1210-1320): orange delineator posts on the centre line of the road north of the junction",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-D1-P2",
+      "kind": "bollard",
+      "observation": "VR scene_d1 l (col 822, rows 1460-1530): white sign bollard with a blue band on the footway",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-D2-B1",
+      "kind": "bench",
+      "observation": "VR scene_d2 r (cols 930-950, rows 2000-2048): timber bench at the courtyard's west edge",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-D2-PM1",
+      "kind": "bike_stands",
+      "observation": "VR scene_d2 l (cols 1470-1790, rows 1600-1990): blue PM docking rack along the blue PM bay's kerb",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-D4-PM1",
+      "kind": "bike_rack",
+      "observation": "VR scene_d4 f (cols 560-730, rows 1460-1530): PM (kickboard) shelter, a steel frame with a dark roof over a row of stands, beside the kickboard bay",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-D5-P1",
+      "kind": "bollard",
+      "observation": "VR scene_d5 b (col 445, rows 1690-1760): steel bollard at the edge of the lawn by the road",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-C1-B1",
+      "kind": "bench",
+      "observation": "VR scene_c1 l (cols 1340-1420, rows 1180-1200): timber bench on the red-paved terrace north-west of the station",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-C1-BIN1",
+      "kind": "bin",
+      "observation": "VR scene_c1 l (col 1320, row 1215): small black litter bin beside the terrace bench",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-C2-C1",
+      "kind": "entrance_canopy",
+      "observation": "VR scene_c2 f (cols 935-1170, rows 1300-1510): orange box canopy over C2's entrance on a red column at its west corner",
+      "reason": "todo 19 owns entrance/canopy migration"
+    },
+    {
+      "id": "SD-C2-P1",
+      "kind": "bollard",
+      "observation": "VR scene_c2 r (cols 910-1280, rows 1920-2048): orange delineator posts on the centre line of the road",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-C3-C1",
+      "kind": "entrance_canopy",
+      "observation": "VR scene_c3 f (cols 830-1300, rows 1390-1750): stainless porte-cochère over the 공동실험실습관 entrance on two round columns (a slab from the columns back to the wall)",
+      "reason": "todo 19 owns entrance/canopy migration"
+    },
+    {
+      "id": "SD-C3-K1",
+      "kind": "plaza_structure",
+      "observation": "VR scene_c3 l (cols 920-1195, rows 1220-1350): blue-roofed kiosk booth with poster panels at the head of the car park lane",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-C3-BR1",
+      "kind": "bike_stands",
+      "observation": "VR scene_c3 l (cols 870-955, rows 1210-1220): blue bicycle stands at the back of the lane",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-C5-W1",
+      "kind": "stall_row",
+      "observation": "VR scene_c5 f (cols 400-780, rows 1400-1640): two boxed white stalls with black wheel stops in the nursery forecourt",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-C5-W2",
+      "kind": "stall_row",
+      "observation": "VR scene_c5 f (cols 1060-1330, rows 1400-1530): the two black wheel stops at the head of the blue disabled bay (the bay is paint)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-C5-P2",
+      "kind": "bollard",
+      "observation": "VR scene_c5 b (cols 320-370, rows 1440-1560): black bollards with yellow bands at the side-road mouth",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-C5-P3",
+      "kind": "bollard",
+      "observation": "VR scene_c5 b (col 1440, rows 1500-1560): black bollard at the footway corner by the bridge",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-C5-P4",
+      "kind": "bollard",
+      "observation": "VR scene_c5 l (cols 360-550, rows 1180-1400): delineator posts on the bridge's centre line",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-B1-P1",
+      "kind": "bollard",
+      "observation": "VR scene_b1 r (cols 1140-1150, rows 1350-1880): orange delineator posts along the centre line of the gate road from the canopy to the crossing (the paint is the markings lane's)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-B1-P2",
+      "kind": "bollard",
+      "observation": "VR scene_b1 r (cols 950-1010, rows 1610-1880): delineator posts along the inbound lane edge north of the gate island",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-B2-B1",
+      "kind": "bench",
+      "observation": "VR scene_b2 f (cols 500-575, rows 1640-1650): timber bench with a back by the forecourt planting",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-B2-B2",
+      "kind": "bench",
+      "observation": "VR scene_b2 f (cols 480-555, rows 1700-1750): timber box bench along the planter's edge",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-B3-C1",
+      "kind": "entrance_canopy",
+      "observation": "VR scene_b3 r: white box canopy cantilevered over the side door beside the glass stair tower (no posts)",
+      "reason": "todo 19 owns entrance/canopy migration"
+    },
+    {
+      "id": "SD-B4-B1",
+      "kind": "bench",
+      "observation": "VR scene_b4 f: timber bench with a back along the west edge of the paved square on the lawn",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-B4-P1",
+      "kind": "bollard",
+      "observation": "VR scene_b4 b: square stone bollards (seat blocks) at the footway corner by the crossing",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-B7-P1",
+      "kind": "bollard",
+      "observation": "VR scene_b7 f: orange bollard at the head of the north car park's stall row",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-B7-P2",
+      "kind": "bollard",
+      "observation": "VR scene_b7 f: orange bollard at the footway corner by the crossing",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A1-C1",
+      "kind": "entrance_canopy",
+      "observation": "VR scene_a1 r: white sloping-roof entrance canopy of 약학대학 over the stair, cantilevered between two purple wall piers",
+      "reason": "todo 19 owns entrance/canopy migration"
+    },
+    {
+      "id": "SD-A1-W1",
+      "kind": "stall_row",
+      "observation": "VR scene_a1 r: yellow-black wheel stops 0.9 m out from the kerb in every stall of the row along the 약학대학 front (the dividers and bays are the markings data's)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A1-W2",
+      "kind": "stall_row",
+      "observation": "VR scene_a1 l: black wheel stops at the back of the stalls along the rock bed (the dividers are the markings data's, markers 2, 20-24 on them)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A2-ST1",
+      "kind": "plaza_structure",
+      "observation": "VR scene_a2 r: rounded white 약학대학 sign stone on rocks at the planted corner by the crossing",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A2-B1",
+      "kind": "bench",
+      "observation": "VR scene_a2 b: timber bench at the stepped edge of the paved plaza by the lawn",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A2-B2",
+      "kind": "bench",
+      "observation": "VR scene_a2 l: timber bench on the path by the pond garden",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A2-BIN1",
+      "kind": "bin",
+      "observation": "VR scene_a2 l: green litter bin at the planting edge of the plaza",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A3-P1",
+      "kind": "bollard",
+      "observation": "VR scene_a3 f: orange delineator posts along the curved kerb of the corner west of the crossing",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A4-B1",
+      "kind": "bench",
+      "observation": "VR scene_a4 f: timber bench at the paved plaza's planting edge",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A4-P1",
+      "kind": "bollard",
+      "observation": "VR scene_a4 r: orange delineator posts on the kerb line at the junction",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A4-W2",
+      "kind": "stall_row",
+      "observation": "VR scene_a4 b: black wheel stops at the back of the stall row along the planting strip (the dividers are the markings data's, markers 53-58 on them)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A6-W1",
+      "kind": "stall_row",
+      "observation": "VR scene_a6 f (cols 1020-2048, rows 1550-1850): yellow-black wheel stops at the back of the stall row with the blue bay by the hedge along A6 (the paint is the markings data's)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A6-K1",
+      "kind": "plaza_structure",
+      "observation": "VR scene_a6 l: dark grey bicycle/PM locker booth at the east end of the striped shelter row",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A6-BIN1",
+      "kind": "bin",
+      "observation": "VR scene_a6 l: round litter bin on the plaza by the booth",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A6-B1",
+      "kind": "bench",
+      "observation": "VR scene_a6 l: orange bench at the plaza's east bed",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A8-R1",
+      "kind": "stall_row",
+      "observation": "VR scene_a8 f (cols 590-900, rows 1340-1730): four white-lined stalls off the dormitory lane, not in the markings data; aisle line and divider direction from the face",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A9-B1",
+      "kind": "bench",
+      "observation": "VR scene_a9 f: orange timber bench along the plaza's west brick bed",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A12-BR1",
+      "kind": "bike_rack",
+      "observation": "VR scene_a12 f: bicycle shelter with a blue-and-white striped canopy beside the entrance",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A13-W1",
+      "kind": "stall_row",
+      "observation": "VR scene_a13 f (cols 820-1070, rows 1630-1880): black wheel stops of the stalls on the paved forecourt beside the blue disabled bay",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A13-F1",
+      "kind": "fence",
+      "observation": "VR scene_a13 f: white picket fence between the forecourt and the running track",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A13-P1",
+      "kind": "bollard",
+      "observation": "VR scene_a13 f: brown bollards at the forecourt's edge by the road",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A17-BS1",
+      "kind": "bus_stop_shelter",
+      "observation": "VR scene_a17 f (cols 860-1130, rows 1590-1820): bus-stop shelter with a curved blue canopy and glass end panels on the footway below the stair",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A17-B1",
+      "kind": "bench",
+      "observation": "VR scene_a17 f: white bench block in front of the shelter",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A17-P1",
+      "kind": "bollard",
+      "observation": "VR scene_a17 b: grey bollard with a blue band on the footway at the car park entrance",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A17-P2",
+      "kind": "bollard",
+      "observation": "VR scene_a17 b: second bollard at the car park entrance",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A17-F1",
+      "kind": "fence",
+      "observation": "VR scene_a17 b: white railing along the raised planting by the footway",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A19-P1",
+      "kind": "bollard",
+      "observation": "VR scene_a19 f (cols 1040-1065, rows 1440-2040): orange delineator posts on the centre line of the gate road",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A19-P2",
+      "kind": "bollard",
+      "observation": "VR scene_a19 f: black-and-yellow barrier blocks across the plaza's path end",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A19-B1",
+      "kind": "bench",
+      "observation": "VR scene_a19 f: timber bench at the plaza's back",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A19-P3",
+      "kind": "bollard",
+      "observation": "VR scene_a19 r: dark bollards at the footway corner by the shops",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A19-F1",
+      "kind": "fence",
+      "observation": "VR scene_a19 b: white railing along the planting behind the footway, from the bus shelter to the corner",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A19-BIN1",
+      "kind": "bin",
+      "observation": "VR scene_a19 b: blue recycling bin on the footway corner",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A19-P4",
+      "kind": "bollard",
+      "observation": "VR scene_a19 l: stone bollards at the plaza's path end by the kerb",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-F3-B1",
+      "kind": "bench",
+      "observation": "VR scene_f3 r: timber bench with a back in front of the tennis hut",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-F3-W1",
+      "kind": "stall_row",
+      "observation": "VR scene_f3 r: black wheel stops at the back of the car park's stall row by the kerb (the dividers are the markings data's)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-F3-W2",
+      "kind": "stall_row",
+      "observation": "VR scene_f3 f: black wheel stops of the stall row along the court fence (the dividers are the markings data's)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-F3-W3",
+      "kind": "stall_row",
+      "observation": "VR scene_f3 b: black wheel stops along the back of the island's west stall row (dividers in the markings data)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-F3-W4",
+      "kind": "stall_row",
+      "observation": "VR scene_f3 b: black wheel stops along the back of the east stall row (dividers in the markings data)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-F3-W5",
+      "kind": "stall_row",
+      "observation": "VR scene_f3 b: black wheel stops of the stalls west of the planted strip",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-F2-W3",
+      "kind": "stall_row",
+      "observation": "VR scene_f2 f: black-and-white wheel stops of the four stalls along F2's east wing (the dividers are the markings data's)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-F2-P1",
+      "kind": "bollard",
+      "observation": "VR scene_f2 b: orange delineator posts along the kerb of the bend to the arterial",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-F1-P1",
+      "kind": "bollard",
+      "observation": "VR scene_f1 f (cols 620-1280, row 1180): round stone bollards along the plaza's edge at the footway",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-D3-P1",
+      "kind": "stall_row",
+      "observation": "VR scene_d3 r (left of the aisle): white-lined stalls of the car park under the pines, nose-in to the west; registered face (the photo shows the aisle-edge line in the canopy gap); depth the standard 5.0 m (the backs are under the pines); re-cast on the corrected d3 pose (feature/poses-d3-a5-a10); boxed bays as the VR shows them (front line along the aisle and back line, feature/a1-roof-garden)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-D3-P2",
+      "kind": "stall_row",
+      "observation": "VR scene_d3 r (right of the aisle): white-lined stalls under the cherry trees, nose-in to the east; registered face; continued 12 m south under the camera, where the nadir face shows the row (it replaces the first pass's SD-D3-01, which the old registration had put in the aisle); re-cast on the corrected d3 pose (feature/poses-d3-a5-a10); boxed bays as the VR shows them (front line along the aisle and back line, feature/a1-roof-garden)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-D3-P3",
+      "kind": "stall_row",
+      "observation": "VR scene_d3 r (far end): a row of stalls across the head of the aisle, nose-in to the north; registered face; re-cast on the corrected d3 pose (feature/poses-d3-a5-a10); boxed bays as the VR shows them (front line along the aisle and back line, feature/a1-roof-garden)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A10-B1",
+      "kind": "bench",
+      "observation": "VR scene_a10 l: orange bench beside the far tree pit of the A10 plaza (re-posed station)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A10-B2",
+      "kind": "bench",
+      "observation": "VR scene_a10 l: orange bench by the info totem (re-posed station)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A10-B3",
+      "kind": "bench",
+      "observation": "VR scene_a10 l: orange bench beside the near tree pit (re-posed station)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A1RG-W1",
+      "kind": "paving_path",
+      "observation": "VR scene_a5 r: the grey stepping-stone path of the A1 roof garden, from the far west end past the teal-roofed room to the tree boxes (about 1 m wide; rays at the roof height)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A1RG-W2",
+      "kind": "paving_path",
+      "observation": "VR scene_a5 r: the grey stepping-stone path of the A1 roof garden, the branch to the parasol deck (about 0.9 m wide; rays at the roof height)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A1RG-T1",
+      "kind": "site_tree",
+      "observation": "VR scene_a5 r: a staked pine in the A1 roof garden, planted in the timber tree box SD-A5-TB1",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A1RG-T2",
+      "kind": "site_tree",
+      "observation": "VR scene_a5 r: a young broadleaf tree, nearly bare in the A1 roof garden, planted in the timber tree box SD-A5-TB2",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A1RG-T3",
+      "kind": "site_tree",
+      "observation": "VR scene_a5 r: a small staked pine in the A1 roof garden, planted in the timber tree box SD-A5-TB3",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A1RG-T4",
+      "kind": "site_tree",
+      "observation": "VR scene_a5 r: a staked pine by the west path in the A1 roof garden",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A1RG-T5",
+      "kind": "site_tree",
+      "observation": "VR scene_a5 r: a small broadleaf tree by the west path in the A1 roof garden",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A1RG-T6",
+      "kind": "site_tree",
+      "observation": "VR scene_a5 r: a small round-crowned tree in the A1 roof garden",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A1RG-T7",
+      "kind": "site_tree",
+      "observation": "VR scene_a5 r: the tall broadleaf tree east of the room in the A1 roof garden",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A1RG-T8",
+      "kind": "site_tree",
+      "observation": "VR scene_a5 r: the broadleaf tree beside the parasol in the A1 roof garden",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A1RG-S1",
+      "kind": "site_tree",
+      "observation": "VR scene_a5 r: a clipped shrub ball by the stepping stones on the A1 roof garden lawn; drawn as the trees stage's rounded shrub (dark green)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A1RG-S2",
+      "kind": "site_tree",
+      "observation": "VR scene_a5 r: a clipped shrub ball at the west end on the A1 roof garden lawn; drawn as the trees stage's rounded shrub (dark green)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A1RG-S3",
+      "kind": "site_tree",
+      "observation": "VR scene_a5 r: a clipped shrub ball near the parasol on the A1 roof garden lawn; drawn as the trees stage's rounded shrub (dark green)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A1RG-S4",
+      "kind": "site_tree",
+      "observation": "VR scene_a5 r: a clipped shrub mass west of the path on the A1 roof garden lawn; drawn as the trees stage's rounded shrub (dark green)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-A1RG-S6",
+      "kind": "site_tree",
+      "observation": "VR scene_a5 r: a clipped shrub mass by the room's east side on the A1 roof garden lawn; drawn as the trees stage's rounded shrub (dark green)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    }
+  ]
+}
