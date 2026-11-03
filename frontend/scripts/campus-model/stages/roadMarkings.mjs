@@ -3,10 +3,10 @@
 // No photo, gate, OSM correction or inferred symbol is read by this generator.
 import { sceneToTm, tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { SCENE_UNITS_PER_METRE } from "../lib/frame.mjs";
-import { add, dot, offsetPath, rect, scale, slicePath, sub, unit } from "../lib/markingFit.mjs";
+import { add, dot, offsetPath, polylineLength, rect, scale, slicePath, sub, unit } from "../lib/markingFit.mjs";
 import { arrowTemplate, bicycleTemplate, busStopBoxTemplate, chevronTemplate, diamondTemplate, hatchedMedianTemplate, hasGlyph, textBlock, triangleTemplate } from "../lib/markingGlyphs.mjs";
 import { readFileSync } from "node:fs";
-import { junctions as validateJunctions, roadContext, roadSections as validateSections } from "../lib/roadSections.mjs";
+import { junctions as validateJunctions, roadContext, roadSections as validateSections, roadPath } from "../lib/roadSections.mjs";
 import { strokePath } from "./markingsRegular.mjs";
 
 const U = SCENE_UNITS_PER_METRE;
@@ -53,83 +53,29 @@ function laneLayout(section) {
 }
 
 export function roadMarkingPlan({ sections, junctions, context = roadContext() }) {
-  const errors = [...validateSections(sections, context), ...validateJunctions(junctions, context)];
+  const errors = [...validateSections(sections, context), ...validateJunctions(junctions, { ...context, roadSections: sections })];
   if (errors.length) throw new RoadMarkingError("roadMarkings", errors.join("; "));
-  const paths = new Map(context.segments.map(s => [s.id, s.paths]));
+  const segments = new Map(context.segments.map(s => [s.id, s]));
+  const pathOf = (id, spec) => roadPath(sections[id], spec, segments.get(id));
   const pieces = [];
   const humps = [];
-  const detailIds = new Set();
-  const details = (list, line, owner) => {
-    for (const d of list ?? []) {
-      if (!d?.id || detailIds.has(d.id)) throw new RoadMarkingError(owner, "missing or duplicate detail id");
-      detailIds.add(d.id);
-      if (![d.atM, d.lateralOffsetM, d.alongOffsetM, d.yawRad].every(Number.isFinite) ||
-          !d.evidence?.refs?.length || !["T0", "T1", "T2", "T3", "T4"].includes(d.evidence?.tier)) throw new RoadMarkingError(d.id, "invalid anchor or evidence");
-      const f = frameAt(line, d.atM, d.id);
-      const tm = add(f.centre, add(scale(left(f.forward), d.lateralOffsetM), scale(f.forward, d.alongOffsetM)));
-      const centre = tmToScene(...tm);
-      const direction = unit(sub(tmToScene(...add(tm, f.forward)), centre));
-      const a = Math.atan2(direction[1], direction[0]) + d.yawRad;
-      const forward = [Math.cos(a), Math.sin(a)], across = [-forward[1], forward[0]];
-      const place = ([x, y]) => add(centre, scale(add(scale(across, x), scale(forward, y)), U));
-      const s = d.shape;
-      const positive = (...xs) => xs.every(n => Number.isFinite(n) && n > 0);
-      let polys;
-      switch (s?.type) {
-        case "rectangle":
-          if (!positive(s.lengthM, s.widthM)) throw new RoadMarkingError(d.id, "invalid rectangle dimensions");
-          polys = [[rect([0, 0], [0, 1], [1, 0], s.lengthM / 2, s.widthM / 2)]];
-          break;
-        case "stroke":
-          if (!positive(s.widthM) || !Array.isArray(s.path) || s.path.length < 2) throw new RoadMarkingError(d.id, "invalid stroke");
-          polys = [[strokePath(s.path, s.widthM / 2)]];
-          break;
-        case "crossing":
-          if (!positive(s.lengthM, s.widthM, s.periodM) || !Number.isInteger(s.count) || s.count < 1 ||
-              !Array.isArray(s.slots) || s.slots.some(k => !Number.isInteger(k) || k < 0 || k >= s.count)) throw new RoadMarkingError(d.id, "invalid crossing slots");
-          polys = s.slots.map(k => [rect([k * s.periodM, 0], [0, 1], [1, 0], s.lengthM / 2, s.widthM / 2)]);
-          break;
-        case "glyph": {
-          const templates = { arrow: arrowTemplate, bicycle: bicycleTemplate, diamond: diamondTemplate,
-            triangle: triangleTemplate, chevron: chevronTemplate, bus_stop_box: busStopBoxTemplate,
-            hatched_median: hatchedMedianTemplate, text: (...args) => textBlock(...args).polys };
-          if (!templates[s.template] || !Array.isArray(s.args)) throw new RoadMarkingError(d.id, "unknown glyph template");
-          polys = templates[s.template](...s.args);
-          if (s.centered) {
-            const points = polys.flatMap(p => p[0]);
-            const mid = [0, 1].map(k => (Math.min(...points.map(p => p[k])) + Math.max(...points.map(p => p[k]))) / 2);
-            polys = polys.map(p => p.map(r => r.map(q => sub(q, mid))));
-          }
-          break;
-        }
-        case "region":
-          if (!Array.isArray(s.boundary) || s.boundary.some(r => !Array.isArray(r) || r.length < 3)) throw new RoadMarkingError(d.id, "invalid painted region");
-          polys = [s.boundary];
-          break;
-        case "hump": {
-          if (!positive(s.lengthM, s.widthM, s.heightM)) throw new RoadMarkingError(d.id, "invalid hump dimensions");
-          humps.push({ id: d.legacyId ?? d.id, record: d.id, order: d.order, centre, u: forward, v: across,
-            widthM: s.widthM, halfWidth: s.widthM * U / 2, lengthM: s.lengthM, heightM: s.heightM,
-            bands: false, evidence: d.evidence, estimated: true });
-          continue;
-        }
-        default: throw new RoadMarkingError(d.id, `unknown primitive ${s?.type}`);
-      }
-      for (const rings of polys) {
-        if (rings.some(r => !r || r.some(p => p.length !== 2 || !p.every(Number.isFinite)))) throw new RoadMarkingError(d.id, "non-finite geometry");
-        pieces.push({ rings: rings.map(r => r.map(place)), record: d.id, order: d.order, kind: d.kind, colour: d.colour,
-          ...(d.legacyId ? { id: d.legacyId } : {}), ...(d.glyph ? { glyph: d.glyph } : {}),
-          estimated: true, evidence: d.evidence });
-      }
-    }
-  };
-  const emit = (rings, record, kind, colour, owner) => {
+  const partCounts = new Map();
+  const emit = (rings, record, kind, colour, owner, objectId = record) => {
+    const part=partCounts.get(record)??0;
+    partCounts.set(record,part+1);
     pieces.push({
-      id: `${record}/${pieces.length}`, record, kind, colour,
+      ...(owner.legacyId ? { id: owner.legacyId } : {}), record, kind, colour,
+      objectId, partId: record+"/part/"+part, ownerId: owner.id,
       evidence: owner.evidence, estimated: owner.estimated,
       ...(owner.reason ? { reason: owner.reason } : {}),
       rings: rings.map(ring => ring.map(([e, n]) => tmToScene(e, n))),
     });
+  };
+  const glyphAt = (polys, centre, travel, record, kind, colour, owner, centered = true) => {
+    const points = polys.flatMap(p => p[0]);
+    const mid = centered ? [0,1].map(k => (Math.min(...points.map(p=>p[k]))+Math.max(...points.map(p=>p[k])))/2) : [0,0];
+    for (const rings of polys) emit(rings.map(r => r.map(([x,y]) =>
+      add(centre,add(scale(right(travel),x-mid[0]),scale(travel,y-mid[1]))))),record,kind,colour,{...owner,estimated:true});
   };
   const linePaint = (line, fromM, toM, offset, type, widthM, phase, id, owner, kind) => {
     if (type === "none") return;
@@ -138,16 +84,18 @@ export function roadMarkingPlan({ sections, junctions, context = roadContext() }
     const offsets = type === "yellow_double" ? [offset - (widthM + 0.15) / 2, offset + (widthM + 0.15) / 2] : [offset];
     const intervals = [];
     if (dashed) {
-      const period = colour === "yellow" ? 6 : 8;
+      const dash = owner.dashPattern?.dashM ?? 3;
+      const period = dash + (owner.dashPattern?.gapM ?? (colour === "yellow" ? 3 : 5));
       const p = phase % period;
       for (let s = fromM - p; s < toM; s += period) {
-        const a = Math.max(fromM, s), b = Math.min(toM, s + 3);
-        if (b > a) intervals.push([a, b]);
+        const a = Math.max(fromM, s), b = Math.min(toM, s + dash);
+        if (b-a > 1e-8) intervals.push([a, b]);
       }
     } else intervals.push([fromM, toM]);
     for (const [a, b] of intervals) {
       // Slice the reference first, so dash stations do not drift with curve offset.
       const part = slicePath(line, a, b).filter((p, i, all) => !i || Math.hypot(...sub(p, all[i - 1])) > 1e-8);
+      if (part.length < 2) continue;
       for (const lateral of offsets) {
         const ring = strokePath(offsetPath(part, lateral), widthM / 2);
         if (ring) emit([ring], id, kind, colour, owner);
@@ -159,28 +107,33 @@ export function roadMarkingPlan({ sections, junctions, context = roadContext() }
     const lanes = laneLayout(section);
     const low = lanes[0].low, high = lanes.at(-1).high;
     const centreTm = add(centre, scale(left(forward), section.lateralOffsetM + (low + high) / 2));
-    const centreScene = tmToScene(...centreTm);
-    const u = unit(sub(tmToScene(...add(centreTm, forward)), centreScene));
+    const bodyCentre = add(centreTm,scale(left(forward),h.lateralOffsetM??0));
+    const bodyWidth = h.widthM??(high-low);
+    const centreScene = tmToScene(...bodyCentre);
+    const u = unit(sub(tmToScene(...add(bodyCentre, forward)), centreScene));
     const v = [-u[1], u[0]];
     humps.push({
-      id, record: id, centre: centreScene, u, v, widthM: high - low, halfWidth: (high - low) * U / 2,
-      tm: { centre: centreTm, forward },
+      id: h.id ?? id, order: h.order ?? owner.order, record: id, centre: centreScene, u, v, widthM: bodyWidth, halfWidth: bodyWidth * U / 2,
+      tm: { centre: bodyCentre, forward },
       lengthM: h.lengthM, heightM: h.heightM, bands: h.bands, evidence: owner.evidence, estimated: owner.estimated,
     });
     if (h.bands) {
-      // Alternating transverse bands, clipped to the recorded hump footprint.
-      const count = Math.ceil(h.lengthM / 0.45);
+      const travelAligned=h.bandAxis==="travel";
+      const extent=travelAligned?high-low:h.lengthM,bandWidth=h.bandWidthM??0.45;
+      const count = Math.ceil(extent / bandWidth-1e-9);
       for (let i = 0; i < count; i += 1) {
-        const a = -h.lengthM / 2 + i * 0.45, b = Math.min(h.lengthM / 2, a + 0.45);
-        emit([rect(add(centreTm, scale(forward, (a + b) / 2)), forward, left(forward), (b - a) / 2, (high - low) / 2)],
-          id, "speed_bump", i % 2 ? "white" : "yellow", owner);
+        const a = -extent / 2 + i * bandWidth, b = Math.min(extent / 2, a + bandWidth);
+        const colour=i%2?(h.bandStartColour==="white"?"yellow":"white"):(h.bandStartColour??"yellow");
+        emit([rect(add(centreTm, scale(travelAligned?left(forward):forward, (a + b) / 2)), forward, left(forward),
+          travelAligned?h.lengthM/2:(b-a)/2,travelAligned?(b-a)/2:(high-low)/2)],
+          id, "speed_bump", colour, owner);
       }
     }
   };
   for (const [segment, road] of Object.entries(sections)) {
     road.sections.forEach((s, i) => {
-      const id = `${segment}/sections/${i}`;
-      const line = paths.get(segment)?.[s.pathIndex ?? 0]?.line;
+      const id = s.id ?? `${segment}/sections/${i}`;
+      const line = pathOf(segment,s)?.line;
       if (!line) throw new RoadMarkingError(id, "road path geometry is missing");
       const lanes = laneLayout(s);
       const boundary = lanes.findIndex(l => l.dir === "bwd");
@@ -188,32 +141,30 @@ export function roadMarkingPlan({ sections, junctions, context = roadContext() }
       linePaint(line, s.fromM, s.toM, s.lateralOffsetM, s.centre.type, s.centre.widthM, s.dashPhaseM ?? 0, `${id}/centre`, s, "centre_line_yellow");
       for (const [side, sign] of [["left", 1], ["right", -1]]) {
         const lateral = s.lateralOffsetM + sign * s.kerbOffsetsM[side];
-        linePaint(line, s.fromM, s.toM, lateral, s.edges[side], 0.15, s.dashPhaseM ?? 0, `${id}/edges/${side}`, s, "edge_line");
-        if (s.kerbNoParking[side]) linePaint(line, s.fromM, s.toM, lateral, "yellow_solid", 0.15, 0, `${id}/kerb/${side}`, s, "kerb_no_parking");
+        linePaint(line, s.fromM, s.toM, lateral, s.edges[side], s.edgeWidthsM?.[side] ?? 0.15, s.dashPhaseM ?? 0, `${id}/edges/${side}`, s, "edge_line");
+        if (s.kerbNoParking[side]) linePaint(line, s.fromM, s.toM, lateral, "yellow_solid", s.kerbWidthM ?? 0.15, 0, `${id}/kerb/${side}`, s, "kerb_no_parking");
       }
       // A same-direction separator is emitted only when the lane records it.
       lanes.forEach((lane, index) => {
         if (lane.line !== undefined && lane.line !== "none") {
           if (!["white_solid", "white_dashed"].includes(lane.line) || lane.dir !== lanes[index + 1]?.dir) throw new RoadMarkingError(id, `lane ${index} has invalid separator`);
-          linePaint(line, s.fromM, s.toM, s.lateralOffsetM + lane.high, lane.line, 0.125, s.dashPhaseM ?? 0,
+          linePaint(line, s.fromM, s.toM, s.lateralOffsetM + lane.high, lane.line, lane.lineWidthM ?? 0.125, s.dashPhaseM ?? 0,
             `${id}/lanes/${index}`, s, lane.line === "white_dashed" ? "lane_line_dashed" : "lane_line_solid");
         }
       });
       s.humps.forEach((h, index) => addHump(line, h.atM, s, h, `${id}/humps/${index}`, s));
-      details(s.details, line, id);
     });
   }
   for (const [node, junction] of Object.entries(junctions)) {
     for (const a of junction.approaches) {
-      const id = `${node}/${a.segment}/${a.pathIndex ?? 0}/${a.end}`;
-      const path = paths.get(a.segment)?.[a.pathIndex ?? 0];
+      const id = a.id ?? `${node}/${a.segment}/${a.pathIndex ?? 0}/${a.end}`;
+      const path = pathOf(a.segment,a);
       if (!path?.line) throw new RoadMarkingError(id, "road path geometry is missing");
-      details(a.details, path.line, id);
       const sign = a.end === "to" ? 1 : -1;
       const station = distance => a.end === "to" ? path.lengthM - distance : distance;
       const at = (distance) => {
         const sM = station(distance);
-        const s = sections[a.segment]?.sections.find(s => (s.pathIndex ?? 0) === (a.pathIndex ?? 0) && sM >= s.fromM && sM <= s.toM);
+        const s = sections[a.segment]?.sections.find(s => (a.section ? s.id === a.section : (s.pathIndex ?? 0) === (a.pathIndex ?? 0)) && sM >= s.fromM && sM <= s.toM);
         if (!s) throw new RoadMarkingError(id, `no section at station ${sM}`);
         const f = frameAt(path.line, sM, id);
         return { ...f, section: s, lanes: laneLayout(s), travel: scale(f.forward, sign),
@@ -224,30 +175,65 @@ export function roadMarkingPlan({ sections, junctions, context = roadContext() }
         const incoming = f.lanes.filter(l => l.dir === (sign === 1 ? "fwd" : "bwd"));
         if (!incoming.length) throw new RoadMarkingError(id, "stop line has no incoming lane");
         const low = incoming[0].low, high = incoming.at(-1).high;
-        emit([rect(add(f.centre, scale(left(f.forward), (low + high) / 2)), f.forward, left(f.forward), 0.2, (high - low) / 2)],
+        emit([rect(add(f.centre, scale(left(f.forward), (low + high) / 2)), f.forward, left(f.forward), (a.stopLineWidthM ?? 0.4) / 2, (high - low) / 2)],
           `${id}/stop`, "stop_line", "white", a);
       }
       if (a.crossing !== null) {
         const c = a.crossing, f = at(c.offsetM);
         const low = f.lanes[0].low, high = f.lanes.at(-1).high;
-        const count = Math.max(0, Math.floor((high - low - c.barWidthM) / c.zebraPeriodM) + 1);
+        const count = Math.max(0, Math.floor((high - low - c.barWidthM) / c.zebraPeriodM + 1e-9) + 1);
         const first = (low + high - (count - 1) * c.zebraPeriodM) / 2;
-        for (let k = 0; k < count; k += 1) emit([rect(add(f.centre, scale(left(f.forward), first + k * c.zebraPeriodM)),
-          f.forward, left(f.forward), c.widthM / 2, c.barWidthM / 2)], `${id}/crossing/${k}`, "zebra_bar", "white", a);
+        for (let k = 0; k < count; k += 1) { if (c.omittedBars?.includes(k)) continue; emit([rect(add(f.centre, scale(left(f.forward), first + k * c.zebraPeriodM)),
+          f.forward, left(f.forward), c.widthM / 2, c.barWidthM / 2)], `${id}/crossing/${k}`, "zebra_bar", "white", a, `${id}/crossing`); }
       }
       for (const kind of ["arrows", "text"]) {
         a[kind].forEach((mark, i) => {
-          const record = `${id}/${kind}/${i}`;
+          const record = `${id}/${kind}/${mark.id ?? i}`;
           const f = at((a.stopLineSetbackM ?? 0) + mark.atM);
           const lane = f.lanes[mark.lane];
           if (!lane || lane.dir !== (sign === 1 ? "fwd" : "bwd")) throw new RoadMarkingError(record, "lane is missing or outgoing");
           const centre = add(f.centre, scale(left(f.forward), lane.centre));
-          if (kind === "text" && [...mark.text].some(c => !hasGlyph(c))) throw new RoadMarkingError(record, "text contains an unsupported glyph");
-          const polys = kind === "arrows" ? arrowTemplate(`arrow_${mark.type}`, 5, 1)
-            : textBlock(mark.text.split("\n"), Math.min(2.4, lane.widthM - 0.4), 5).polys;
-          for (const rings of polys) emit(rings.map(r => r.map(([x, y]) => add(centre, add(scale(right(f.travel), x), scale(f.travel, y))))),
-            record, kind === "arrows" ? "arrow" : "text", "white", { ...a, estimated: true });
+          if (kind === "text" && [...mark.text].some(c => c !== "\n" && !hasGlyph(c))) throw new RoadMarkingError(record, "text contains an unsupported glyph");
+          const polys = kind === "arrows" ? arrowTemplate(`arrow_${mark.type}`, mark.lengthM ?? 5, mark.widthM ?? 1)
+            : textBlock(mark.text.split("\n"), mark.widthM ?? Math.min(2.4, lane.widthM - 0.4), mark.lengthM ?? 5, { charHeight: mark.charHeightM ?? null }).polys;
+          glyphAt(polys,centre,f.travel,record,kind==="arrows"?"arrow":"text",mark.colour ?? "white",a,mark.centered ?? true);
         });
+      }
+      for (const [i,mark] of (a.symbols ?? []).entries()) {
+        const record = `${id}/symbols/${mark.id ?? i}`, f = at((a.stopLineSetbackM ?? 0)+mark.atM);
+        const lane = f.lanes[mark.lane];
+        if (!lane) throw new RoadMarkingError(record,"missing symbol lane");
+        const centre = add(f.centre,scale(left(f.forward),lane.centre));
+        let polys;
+        switch(mark.type) {
+          case "diamond": polys=diamondTemplate(mark.lengthM,mark.widthM,mark.lineWidthM); break;
+          case "triangle": polys=triangleTemplate(mark.lengthM,mark.widthM,mark.lineWidthM); break;
+          case "chevron": polys=chevronTemplate(mark.lengthM,mark.widthM,mark.lineWidthM); break;
+          case "bicycle": polys=bicycleTemplate(mark.lengthM,mark.widthM); break;
+          default: throw new RoadMarkingError(record,`unknown symbol ${mark.type}`);
+        }
+        glyphAt(polys,centre,f.travel,record,mark.type,mark.colour ?? "white",a);
+      }
+      for (const [i,mark] of (a.areas ?? []).entries()) {
+        const record = `${id}/areas/${mark.id ?? i}`, f = at(mark.atM);
+        const lane = f.lanes[mark.lane];
+        if (!lane) throw new RoadMarkingError(record,"missing area lane");
+        const centre = add(f.centre,scale(left(f.forward),lane.centre));
+        let polys;
+        switch(mark.style) {
+          case "bus_stop_box": polys=busStopBoxTemplate(mark.lengthM,mark.widthM); break;
+          case "hatched_median": polys=hatchedMedianTemplate(mark.lengthM,mark.widthM,mark.pattern); break;
+          case "crossing_frame": {
+            const t=mark.lineWidthM ?? 0.15;
+            polys=[[rect([0,0],[0,1],[1,0],mark.lengthM/2,mark.widthM/2),
+              rect([0,0],[0,1],[1,0],mark.lengthM/2-t,mark.widthM/2-t).reverse()]];
+            break;
+          }
+          case "stripe": case "colour": case "green_band":
+            polys=[[rect([0,0],[0,1],[1,0],mark.lengthM/2,mark.widthM/2)]]; break;
+          default: throw new RoadMarkingError(record,`unknown area ${mark.style}`);
+        }
+        glyphAt(polys,centre,f.travel,record,"area",mark.colour ?? "yellow",a,mark.centered ?? true);
       }
       a.humps.forEach((h, i) => addHump(path.line, station(h.atM), at(h.atM).section, h, `${id}/humps/${i}`, a));
       for (const [i, mark] of a.yieldTriangles.entries()) {
@@ -255,9 +241,10 @@ export function roadMarkingPlan({ sections, junctions, context = roadContext() }
         emit([ring], `${id}/yield/${i}`, "give_way_line", "white", a);
       }
       for (const [i, mark] of a.guideLines.entries()) {
-        const ring = strokePath(mark.points, 0.075);
-        if (!ring) throw new RoadMarkingError(`${id}/guide/${i}`, "guide line has no length");
-        emit([ring], `${id}/guide/${i}`, "guide_line", "white", a);
+        const length=polylineLength(mark.points);
+        if (!length) throw new RoadMarkingError(`${id}/guide/${i}`, "guide line has no length");
+        linePaint(mark.points,0,length,0,(mark.colour==="yellow"?"yellow":"white")+(mark.dashPattern?"_dashed":"_solid"),
+          mark.widthM??0.15,mark.dashPhaseM??0,`${id}/guide/${mark.id??i}`,{...a,dashPattern:mark.dashPattern},"guide_line");
       }
     }
   }

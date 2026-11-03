@@ -85,7 +85,10 @@ export function buildHumps({ features, onRoad, log = console.log }) {
     }
     const v = [-u[1], u[0]];
     const halfWidth = Math.max(...c.ring.map((p) => Math.abs(dot(sub(p, box.centre), v))));
-    humps.push({ id: c.id, centre: box.centre, u, v, halfWidth, widthM: (2 * halfWidth) / UNIT, bands: c.bands.length });
+    const bandStartColour = c.bands.map(f => ({ colour:f.properties.colour,
+      t:dot(sub(orientedBox(toModel(f.geometry.coordinates[0])).centre,box.centre),v) }))
+      .sort((a,b)=>b.t-a.t)[0]?.colour ?? "yellow";
+    humps.push({ id: c.id, centre: box.centre, u, v, halfWidth, widthM: (2 * halfWidth) / UNIT, bands: c.bands.length, bandStartColour });
   }
   // Height (metres) of the hump surface above the road at a model point, 0 off every hump.
   const heightAt = (x, z) => {

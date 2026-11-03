@@ -4,7 +4,8 @@
 overwrites `road-sections.json` or `junctions.json`. Todo 23 owns the generator;
 todo 24 owns campus-wide curation. Photo pixels and chip sheets stay outside Git.
 
-From the repository root, run tests through `frontend/scripts/lab/lab-test.mjs`.
+For this increment, run tests on the Mac through the heavy-command wrapper;
+the lab is reserved for model builds.
 From `frontend/`, run the estimator through the heavy-command wrapper:
 
 ```sh
@@ -169,24 +170,41 @@ the evidence support/fit step; `fit/humpEvidence.mjs` reads hump evidence.
 These modules are seed/QA inputs only. `network/stalls.mjs` is removed.
 All five photographic marking files live under `data/photo/evidence/`.
 
-The migration seed does **not** copy `road-ground.json`'s local `roadSection`,
-its width/fromM, or its nearest-RD associations. Nor does it interpret the
-RD_093 proposal's `centre:none` as absent paint. It retains the accepted
-paint's fitted control curves, rectangle dimensions, crossing grids and
-glyph template parameters as `details`. Clipped bands and shaped colour
-patches have explicit region boundaries. A word/arrow is a glyph record,
-not a bag of saved triangles. Generated mesh polygons are not stored.
+The seed fits semantic axes and grouped crossing grids into
+`road.alignments[id].line` (EPSG:5186), referenced by `section.alignment`
+and `approach.alignment`. `approach.section` identifies its actual section.
+Longitudinal geometry uses `centre.type`, lane separator types, edge types,
+kerb offsets and widths. `dashPattern: {dashM,gapM}` and `dashPhaseM` control
+repeated dashes; there is no list of saved dash rectangles.
 
-Each detail has `atM`, `lateralOffsetM`, `alongOffsetM`, `yawRad`, shape
-parameters, evidence, a stable id and an order. Its frame is resolved from
-the selected network path at build time; moving that path moves its paint.
-The nearest RD/ND is explicitly a **coordinate reference only**, with
-`association.verified:false` and the distance recorded. It does not establish
-road ownership, traffic connectivity, lane assignment or T1 accuracy of that
-association. Todo 24 must curate those associations and section-wide layouts.
-Section headers use `paintSource:"details", absenceAssessed:false`; their
-`none` values disable additional automatic lines, not the recorded paint.
-Their unreviewed lane-width priors are not used to size the detail geometry.
+Crossing bar counts use the section's total lane width. `omittedBars` records
+unobserved slots, not proven absence. Stops, arrows, text, symbols and areas
+use typed junction controls. Arrows/text accept optional `lengthM` and `widthM`;
+symbols and areas carry a known template, dimensions, lane and station.
+No arbitrary polygon/region or `details` renderer remains. Nonempty legacy
+`details` are rejected. Actual published-data mutation tests require width,
+kerb offset, line type and crossing offset changes to change production paint.
+
+Hump paint uses the lane cross-section. Optional `hump.widthM` and
+`hump.lateralOffsetM` describe the raised body separately when it extends
+beyond the paintable carriageway. These preserve the original height field.
+`bandAxis: "travel"`, `bandWidthM` and `bandStartColour` control its stripe
+pattern. The seed derives the paintable cross-section from the parcel map.
+
+Stable ids are `RA_<hash>`, `RS_<hash>` and `JA_<hash>`, derived from semantic
+role, sorted source refs and the component within that source. Geometry,
+global ordering and RD/ND containers are not identity inputs. Curators retain
+these ids when changing widths, positions or road ownership. Each emitted
+piece has `objectId`, `partId`, `ownerId` and the compatible `record`.
+All crossing bars share `JA_<hash>/crossing`; a bar's record adds its grid
+index and its part id adds `/part/0`. Other object ids name the section or
+approach control, with `/part/<localIndex>` for individual polygons.
+`piece.id` remains a source-key compatibility field, not a logical object id.
+
+Every inferred alignment records `association.verified:false` and candidate
+road distance. Nearest RD/ND does not establish road ownership, traffic
+connectivity or accuracy. Todo 24 must curate those associations; unverified
+ownership blocks its acceptance even when geometry-control tests pass.
 
 The build retains the explicit invalid parking divider exclusion and clips
 all paint against that excluded pedestrian parcel, including neighbouring

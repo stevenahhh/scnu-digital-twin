@@ -84,6 +84,7 @@ const furniture = loadFurniture({ anchorFootprints, wallSnapshots });
 const { selectableBuildings, campusBuildings, offCampusLots, contextParts } = await buildBuildings({ glb, inputs, detailedStructures: furniture.detailedStructures });
 const markings = loadRoadMarkings();
 const roadRecords = [...new Set(markings.pieces.map(p => p.record))];
+const roadObjects = [...new Set(markings.pieces.map(p => p.objectId))];
 console.log(describeMarkings(markings));
 // The ground classes come from the one parcel map data/ground/parcels.json (design §5, lib/parcels.mjs).
 const { surface, surfaces, groundInfo, layers, aoTexture, buildTopography } = await buildGround({ glb, inputs });
@@ -123,13 +124,13 @@ const labelAt = ([x, z]) => {
 }
 // markings.report: the symbol pieces that reach the mesh, in the GLB's Road_Markings extras and in .build; the build stops on
 // a symbol without a parking.json record.
-markings.pieceReport = { ...symbolPieceReport(markings.pieces), roadRecords, estimatedValues: estimatedValueReport(parkingDoc), lots: lotReviewReport(parkingDoc) };
+markings.pieceReport = { ...symbolPieceReport(markings.pieces), roadRecords, roadObjects, estimatedValues: estimatedValueReport(parkingDoc), lots: lotReviewReport(parkingDoc) };
 if (markings.pieceReport.unrecorded) throw new Error(`markings.report: ${markings.pieceReport.unrecorded} symbol pieces without a parking.json record`);
 await mkdir(path.dirname(OUTPUT), { recursive: true });
 await Bun.write(path.join(path.dirname(OUTPUT), "markings.report.json"), `${JSON.stringify({
   symbols: markings.pieceReport,
   implausibleStalls: implausibleStalls(parkingDoc),
-  pieces: markings.pieces.map(({ id, record, kind, colour, glyph, estimated, estimatedFields }) => ({ id: id ?? null, record: record ?? null, kind, colour, glyph: glyph ?? null, estimated: Boolean(estimated), ...(estimatedFields ? { estimatedFields } : {}) })),
+  pieces: markings.pieces.map(({ id, record, objectId, partId, kind, colour, glyph, estimated, estimatedFields }) => ({ id: id ?? null, record: record ?? null, objectId: objectId ?? null, partId: partId ?? null, kind, colour, glyph: glyph ?? null, estimated: Boolean(estimated), ...(estimatedFields ? { estimatedFields } : {}) })),
 })}\n`);
 console.log(`markings.report: ${JSON.stringify(markings.pieceReport.byGlyph)} on ${markings.pieceReport.records.length} records, ${markings.pieceReport.unrecorded} without a record`);
 const humps = markings;
