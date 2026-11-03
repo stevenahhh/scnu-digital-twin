@@ -5,6 +5,7 @@
 import { readFileSync } from "node:fs";
 
 import { DESIGN_CLASSES, PAINT_CLASSES } from "./parcels.mjs";
+import { AnchorError, anchorRecordErrors, checkWallMapping, resolveAnchor } from "./anchors.mjs";
 
 const isPair = (value) => Array.isArray(value) && value.length === 2 && value.every(Number.isFinite);
 const isText = (value) => typeof value === "string" && value.length > 0;
@@ -190,11 +191,41 @@ function parcels(doc) {
   return errors;
 }
 
-const KINDS = { bldNodeMap, registration, parcels };
+// Wall/parcel references can be checked against current TM geometry at the build boundary.
+// context.nodeMap is data/bld-node-map.json with each referenced entry's saved `wallsOf()` result in `walls`.
+function anchors(doc, context = {}) {
+  if (!doc || !Array.isArray(doc.anchors)) return ["anchors: anchors must be an array"];
+  const errors = [];
+  const ids = new Set();
+  doc.anchors.forEach((record, index) => {
+    const id = isText(record?.id) ? record.id : `anchors[${index}]`;
+    const structural = anchorRecordErrors(record);
+    errors.push(...structural.map((e) => isText(record?.id) ? e : e.replace(/^anchor:/, `${id}:`)));
+    if (ids.has(id)) errors.push(`${id}: id repeats`);
+    ids.add(id);
+    if (structural.length || (!context.footprints && !context.parcels)) return;
+    try {
+      resolveAnchor(record, context.footprints ?? {}, context.parcels ?? {});
+      if (context.nodeMap && record.anchor.building) {
+        const building = record.anchor.building;
+        const entries = context.nodeMap.entries;
+        const entry = Array.isArray(entries) ? entries.find((e) => e?.nodeId === building) : null;
+        errors.push(...checkWallMapping(building, context.footprints[building], entry?.walls)
+          .map((e) => `${id}: ${building}/${record.anchor.wall}: ${e}`));
+      }
+    } catch (error) {
+      if (!(error instanceof AnchorError)) throw error;
+      errors.push(error.message);
+    }
+  });
+  return errors;
+}
 
-export function validate(kind, doc) {
+const KINDS = { bldNodeMap, registration, parcels, anchors };
+
+export function validate(kind, doc, context) {
   const check = KINDS[kind];
-  const errors = check ? check(doc) : [`${kind}: unknown kind (known: ${Object.keys(KINDS).join(", ")})`];
+  const errors = check ? check(doc, context) : [`${kind}: unknown kind (known: ${Object.keys(KINDS).join(", ")})`];
   return { ok: errors.length === 0, errors };
 }
 
