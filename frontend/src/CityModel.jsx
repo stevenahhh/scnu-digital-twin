@@ -232,6 +232,7 @@ function getSelectableMeta(object) {
     heightLineage: node.userData?.heightLineage ?? null,
     footprintEstimated: node.userData?.footprintEstimated === true,
     formEstimated: isFormEstimated(node.userData?.formEstimated),
+    facadeEstimated: node.userData?.facadeEstimated === true,
   };
 }
 
@@ -245,6 +246,7 @@ function estimateOf(meta) {
     heightLineage: meta.heightLineage,
     footprintEstimated: meta.footprintEstimated,
     formEstimated: meta.formEstimated,
+    facadeEstimated: meta.facadeEstimated,
   };
 }
 

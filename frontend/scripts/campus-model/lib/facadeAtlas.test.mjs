@@ -16,3 +16,23 @@ test("panes, transom, a heavier frame and a lintel each change the tile", () => 
     assert.ok(!plain.equals(colour({ ...base, ...extra })), JSON.stringify(extra));
   }
 });
+
+test("cell tiles draw single-bay doors and distinct blank, glazing, louver, stair and vent patterns", () => {
+  const kinds = ["window", "blank", "door", "glazing", "louver", "stair", "vent"];
+  const tiles = kinds.map(cell => colour({ ...base, cell }));
+  assert.equal(new Set(tiles.map(t => t.toString("base64"))).size, kinds.length);
+  const door = tiles[2], blank = tiles[1];
+  // A cell door opens to the floor in bay zero, unlike the legacy tile's middle-pair entrance.
+  const pixel = (t, x, y) => [...t.subarray((y * 224 + x) * 3, (y * 224 + x) * 3 + 3)];
+  assert.notDeepEqual(pixel(door, 24, 53), pixel(blank, 24, 53));
+});
+
+test("cell accents, piers and bands affect their own regions without changing other cells", () => {
+  const look = { ...base, cell: "window" };
+  const plain = colour(look);
+  for (const extra of [
+    { accent: { colour: "#ef6a22", bays: [0, 1, 2, 3], kind: "frame" } },
+    { piers: { every: 1, width: 0.1, colour: "#ef6a22" } },
+    { band: { height: 0.1, colour: "#ef6a22" } },
+  ]) assert.ok(!plain.equals(colour({ ...look, ...extra })), JSON.stringify(extra));
+});

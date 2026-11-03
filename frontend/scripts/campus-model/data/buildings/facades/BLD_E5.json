@@ -1,0 +1,31 @@
+{
+  "building": "BLD_E5",
+  "estimated": true,
+  "storeys": [
+    { "hM": 4.2, "kind": "ground" },
+    { "hM": 4.2 },
+    { "hM": 4.2 },
+    { "hM": 4.2 }
+  ],
+  "walls": {
+    "W25": {
+      "bays": { "pitchM": 3.45, "count": 10, "offsetM": 1.0 },
+      "default": "window",
+      "cells": [null, null, null, null],
+      "window": { "wM": 2.6, "hM": 1.8, "sillM": 1.0 },
+      "materials": { "wall": "brick:#9e847d", "glass": "#5c7477", "frame": "#eeeeea" },
+      "evidence": {
+        "tier": "T2",
+        "refs": [
+          "LOD4 E5_사범대학3호관_688780.png, perimeter pixels 729.5075..875.0974, upper rows: ten full repeated window openings; edge slivers are not bays",
+          "VR scene_e5 f: ten upper-storey window groups between approximately columns 720 and 1620; ray intersections identify BLD_E5/W25, not BLD_E3",
+          "Pitch, offset, window dimensions, colours and storey heights are eye-read estimates; no survey claim"
+        ],
+        "lod4BayCount": 10,
+        "vrBayCount": 10,
+        "note": "Authoritative curated seed, not estimator output. Lower storeys are obscured by trees; default window cells there remain estimated. Red cladding spans different rows and is not inferred as a uniform band."
+      }
+    }
+  },
+  "fallbackReason": "Other walls have no approved grid yet; retain the existing estimated look. Full facade curation belongs to todo 27."
+}

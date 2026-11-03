@@ -64,6 +64,9 @@ function normalise(look) {
   const wall = hex(look.wall);
   return {
     id: look.id,
+    cell: look.cell ?? null,
+    doorWidth: look.doorWidth ?? 0.72,
+    windowCentre: look.windowCentre ?? 0.5,
     pattern: look.pattern ?? "punched",
     texture: look.texture ?? "render",
     wall,
@@ -239,7 +242,7 @@ function paintStorey(canvas, look, top, rng, { ground = false } = {}) {
       const total = look.windowWidth * BAY_PX;
       const gap = look.windows > 1 ? 3 : 0;
       const width = (total - gap * (look.windows - 1)) / look.windows;
-      const start = bx + (BAY_PX - total) / 2;
+      const start = bx + BAY_PX * look.windowCentre - total / 2;
       if (look.accent?.kind === "frame" && look.accent.bays.includes(b)) {
         canvas.rect(start - 3, winTop - 3, start + total + 3, winBottom + 3, solid(look.accent.colour, look.seed + 16), KIND.SILL);
       }
@@ -279,10 +282,38 @@ function paintEntrance(canvas, look, top, rng) {
 
 function paintTile(canvas, look) {
   const rng = mulberry32(look.seed);
+  if (look.cell) {
+    for (let row = 0; row < 4; row++) paintCellStorey(canvas, look, row * ROW_PX, rng);
+    return;
+  }
   paintStorey(canvas, look, ROWS.UPPER_A * ROW_PX, rng);
   paintStorey(canvas, look, ROWS.UPPER_B * ROW_PX, rng);
   paintStorey(canvas, look, ROWS.GROUND * ROW_PX, rng, { ground: true });
   paintEntrance(canvas, look, ROWS.ENTRANCE * ROW_PX, rng);
+}
+
+// Grid tiles repeat one cell, so a renderer can clip an individual bay without a four-bay entrance motif.
+function paintCellStorey(canvas, look, top, rng) {
+  const cellLook = { ...look, windows: look.cell === "blank" ? 0 : 1 };
+  switch (look.cell) {
+    case "window": case "blank": break;
+    case "glazing": Object.assign(cellLook, { pattern: "curtain" }); break;
+    case "stair": Object.assign(cellLook, { windowWidth: 0.35, windowHeight: 0.94, sill: 0.03, panes: 1 }); break;
+    case "door": Object.assign(cellLook, { windowWidth: look.doorWidth, windowHeight: 0.75, sill: 0, panes: 2 }); break;
+    case "louver": case "vent": Object.assign(cellLook, { windows: 0 }); break;
+    default: throw new Error(`unknown facade cell ${look.cell}`);
+  }
+  paintStorey(canvas, cellLook, top, rng);
+  if (look.cell === "louver" || look.cell === "vent") {
+    const h = look.cell === "vent" ? 0.22 : look.windowHeight;
+    const w = look.cell === "vent" ? 0.3 : look.windowWidth;
+    for (let bay = 0; bay < TILE_BAYS; bay++) {
+      const x0 = (bay + (1 - w) / 2) * BAY_PX, x1 = x0 + w * BAY_PX;
+      const y0 = top + (1 - look.sill - h) * ROW_PX, y1 = y0 + h * ROW_PX;
+      canvas.rect(x0, y0, x1, y1, solid(look.frame, look.seed), KIND.FRAME);
+      for (let y = y0 + 2; y < y1 - 1; y += 3) canvas.rect(x0 + 1, y, x1 - 1, y + 1, solid(look.trim, look.seed), KIND.SILL);
+    }
+  }
 }
 
 // The colour pixels of one look's tile, painted only (no encoding; the window-module tests use it).

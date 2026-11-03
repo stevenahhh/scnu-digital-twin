@@ -348,7 +348,7 @@ function pointInRing([x, y], ring) {
 }
 
 // ---------------------------------------------------------------- main
-export async function writeLod4Facades({ debug = null } = {}) {
+export async function writeLod4Facades({ debug = null, output = OUTPUT } = {}) {
   const source = JSON.parse(await Bun.file(path.join(DATA, "gis-buildings.json")).text());
   const records = source.buildings.filter((b) => b.status === "standing").map((b) => ({
     record: b,
@@ -459,8 +459,8 @@ export async function writeLod4Facades({ debug = null } = {}) {
     models: modelCount,
     buildings: out,
   };
-  await Bun.write(OUTPUT, `${JSON.stringify(file, null, 1)}\n`);
-  console.log(`lod4: ${modelCount} models; ${out.length} footprints matched (${out.filter((b) => b.facadeTexels).length} with facade texels) -> ${path.relative(process.cwd(), OUTPUT)}`);
+  await Bun.write(output, `${JSON.stringify(file, null, 1)}\n`);
+  console.log(`lod4: ${modelCount} models; ${out.length} footprints matched (${out.filter((b) => b.facadeTexels).length} with facade texels) -> ${path.relative(process.cwd(), output)}`);
   return file;
 }
 
@@ -492,6 +492,18 @@ async function writeDebug(dir, record, triangles, ground, top) {
   await mkdir(dir, { recursive: true });
   const name = `${(record.label ?? "unnamed").replace(/[^\p{L}\p{N}]+/gu, "_")}_${record.footprintSource.match(/(\d+)\D*$/)?.[1] ?? "x"}`;
   await Bun.write(path.join(dir, `${name}.png`), encodePng(width, height, 3, pixels));
+  let alongM = 0;
+  const ring = triangles[0].ring;
+  const edges = ring.slice(0, -1).map((a, i) => {
+    const b = ring[i + 1];
+    const lengthM = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    const edge = { index: i, x0: alongM / DEBUG_METRES_PER_PIXEL, x1: (alongM + lengthM) / DEBUG_METRES_PER_PIXEL,
+      a: [LON0 + a[0] / MX, LAT0 + a[1] / MY], b: [LON0 + b[0] / MX, LAT0 + b[1] / MY] };
+    alongM += lengthM;
+    return edge;
+  });
+  await Bun.write(path.join(dir, `${name}.json`), `${JSON.stringify({ footprintSource: record.footprintSource, width, height,
+    metresPerPixel: DEBUG_METRES_PER_PIXEL, ground, top, edges }, null, 2)}\n`);
 }
 
 if (import.meta.main) {
