@@ -2,12 +2,14 @@
 // ground.
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFileSync } from "node:fs";
+import { sceneToTm, tmToScene } from "../../../src/geo/epsg5186.mjs";
+import { wallsOf } from "../lib/anchors.mjs";
 import { metres } from "../lib/frame.mjs";
 import { pointInRing } from "../lib/geometry.mjs";
 import { offsetLine, rgb } from "../lib/solids.mjs";
-import { B, appendWheelStops, hedgeTextStrokes, makeContext, moundAt, onRoof, parasolColour } from "./furniture.mjs";
+import { B, appendWheelStops, hedgeTextStrokes, loadFurniture, makeContext, moundAt, onRoof, parasolColour } from "./furniture.mjs";
 import { buildEntrances } from "./entrances.mjs";
-import { wallsOf } from "../lib/anchors.mjs";
 import { GlbBuilder } from "../lib/glb.mjs";
 
 const M = metres;
@@ -29,6 +31,27 @@ test("a wheel stop stands 0.12 m over the ground and sinks 0.03 m into it, along
   near(Math.min(...ys(ctx)), -0.03, "wheel stop foot");
   const xs = ctx.solid.mesh.positions.filter((_, i) => i % 3 === 0).map((x) => x / M(1));
   near(Math.max(...xs) - Math.min(...xs), 1.6, "length along the row");
+});
+
+test("the anchored F1 LED follows its wall and its screen stands outside, not inside the facade", () => {
+  const saved = JSON.parse(readFileSync(new URL("../data/photo/site-detail-anchors.json", import.meta.url), "utf8"));
+  const record = saved.records.find(r => r.id === "SD-F1-LED1");
+  const original = saved.footprints[record.anchor.building];
+  const shifted = { polygons: original.polygons.map(p => p.map(r => r.map(([e, n]) => [e + 2, n + 3]))) };
+  const wall = wallsOf(record.anchor.building, shifted).find(w => w.wall === record.anchor.wall);
+  const object = loadFurniture({ anchorFootprints: { [record.anchor.building]: shifted } }).objects.find(o => o.id === record.id);
+  const ctx = flatContext();
+  B.led_screen(ctx, object);
+  const [x, , z] = ctx.screens[0].corners[0];
+  const at = sceneToTm(...object.line[0]);
+  near((at[0] - wall.A[0]) * wall.n[0] + (at[1] - wall.A[1]) * wall.n[1], record.anchor.tM, "baseline follows moved wall and fascia offset");
+  // EPSG grid metres differ from the builder's local metres by the projection scale.
+  // Measure the 0.15 local-metre stand-off in scene space, not in TM (which reads 0.1500034977).
+  const a = tmToScene(...wall.A), b = tmToScene(...wall.B);
+  const dx = b[0] - a[0], dz = b[1] - a[1], length = Math.hypot(dx, dz);
+  const outward = ((x - object.line[0][0]) * dz - (z - object.line[0][1]) * dx) / length / M(1);
+  near(outward, 0.15, "screen's 0.15 m stand-off is outside the selected wall");
+  assert.equal(object.p.estimated, true);
 });
 
 test("hedges and shrub masses reach their height", () => {
