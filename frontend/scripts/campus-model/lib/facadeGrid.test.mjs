@@ -93,3 +93,19 @@ test("per-cell window overrides and nonrectangular wall frames keep independent 
   lShape.walls = wallsOf(building, lShape);
   assert.deepEqual(compileFacadeGrid(doc, lShape, entrances).fallbackWalls, ["W01","W02","W03","W04","W05"]);
 });
+
+test("an anchored doorway crossing a bay boundary keeps its entire width and does not stretch neighbouring cells", () => {
+  const doc = record();
+  doc.walls.W00.cells[0] = null;
+  const entry = { ...entrances[0], widthM: 3.6, anchor: { ...entrances[0].anchor, sM: 9.5 } };
+  const grid = compileFacadeGrid(doc, footprint, [entry]);
+  const door = grid.walls.get("W00").cells.find(c => c.storey === 0 && c.kind === "door");
+  assert.ok(Math.abs(door.s0M - 7.7) < 1e-9);
+  assert.ok(Math.abs(door.s1M - 11.3) < 1e-9);
+  assert.equal(door.look.windowCentre, 0.5);
+  assert.equal(door.look.doorWidth, 1);
+  const clipped = gridCellsOnEdge(grid, tmToScene(244000,263800),tmToScene(244000,263820));
+  const neighbour = clipped.find(c => c.storey === 0 && c.bay === 2);
+  assert.ok(Math.abs(neighbour.u0 - 0.325) < 1e-9);
+  assert.equal(neighbour.u1, 1);
+});

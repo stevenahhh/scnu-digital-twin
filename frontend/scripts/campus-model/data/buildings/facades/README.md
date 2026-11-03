@@ -32,8 +32,17 @@ partly cropped rhythms fail rather than inventing bays. The row profile is
 included for inspection; the storey count stays GIS/VR-derived and the proposal
 divides the wall height by that count. Photographs never supply world position.
 
-E3 W16 is not approved: its LOD4 unroll has a large missing centre. The VR count
-cannot be certified against that missing source. Do not substitute scene names
-for building IDs: `scene_e5 r` mostly shows **E3**, while `scene_e5 f` shows E5.
+E3 W16 now has a fourteen-structural-bay pilot, compared with two independent
+VR readings in `../facade-counts.json`. Its LOD4 source exists: the former fixed
+40 m seam cutoff wrongly removed the long wall. The recovered photo supports
+the repetitive layout, but its whole-wall end-group count is still uncertified.
+The Orchestrator decision of 2026-11-03 accepts the independent VR per-wall
+count for E3 only; E5 still requires its LOD4 comparison. `lod4BayCount:null`
+does not misrepresent the substitute as a successful LOD4 comparison. A wide glazing
+group occupies two structural bays, rather than one bay per glass pane.
+Doors crossing a bay boundary retain their full anchored width; neighbouring
+cells are clipped with their original UV range, not squeezed.
+Do not substitute scene names for building IDs: `scene_e5 r` mostly shows
+**E3**, while `scene_e5 f` shows E5.
 Unmatched LOD4 mass edges outside the 0.3 m GIS containment buffer also keep the
 legacy look, without moving the GIS frame to fit a photograph.

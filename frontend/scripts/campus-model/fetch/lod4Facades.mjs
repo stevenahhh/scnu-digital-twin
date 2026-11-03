@@ -464,6 +464,12 @@ export async function writeLod4Facades({ debug = null, output = OUTPUT } = {}) {
   return file;
 }
 
+export function crossesPerimeterSeam(distancesM, perimeterM) {
+  // A straight edge cannot exceed half its closed ring's perimeter. A fixed 40 m
+  // cutoff discarded E3's 48.6 m wall even though none of its vertices crossed the seam.
+  return Math.max(...distancesM) - Math.min(...distancesM) > perimeterM / 2;
+}
+
 // Unrolled facade (perimeter distance x height) of one footprint, painted from the LOD4 textures.
 async function writeDebug(dir, record, triangles, ground, top) {
   const perimeter = Math.max(...triangles.map((t) => ringProjection([t.p[0][0], t.p[0][1]], t.ring).perimeter));
@@ -471,8 +477,9 @@ async function writeDebug(dir, record, triangles, ground, top) {
   const height = Math.max(8, Math.ceil((top - ground + 2) / DEBUG_METRES_PER_PIXEL));
   const pixels = new Uint8Array(width * height * 3).fill(40);
   for (const { p, tx, texture, ring } of triangles) {
-    const s = p.map((q) => ringProjection([q[0], q[1]], ring).along / DEBUG_METRES_PER_PIXEL);
-    if (Math.max(...s) - Math.min(...s) > 40 / DEBUG_METRES_PER_PIXEL) continue; // wraps around the ring start
+    const distances = p.map((q) => ringProjection([q[0], q[1]], ring).along);
+    if (crossesPerimeterSeam(distances, perimeter)) continue;
+    const s = distances.map(v => v / DEBUG_METRES_PER_PIXEL);
     const h = p.map((q) => (top + 1 - q[2]) / DEBUG_METRES_PER_PIXEL);
     const det = (s[1] - s[2]) * (h[0] - h[2]) + (h[2] - h[1]) * (s[0] - s[2]);
     if (Math.abs(det) < 1e-9) continue;

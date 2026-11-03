@@ -60,11 +60,17 @@ export function compileFacadeGrid(doc, footprint, entrances = []) {
       if (bay < 0 || bay >= count || byBay.has(bay)) fail(`${id} entrance ${entry.id} outside grid or shares bay`);
       byBay.set(bay, entry);
     }
+    const crossingDoors = [...byBay].filter(([bay, entry]) =>
+      entry.anchor.sM - entry.widthM / 2 < offsetM + bay * pitchM ||
+      entry.anchor.sM + entry.widthM / 2 > offsetM + (bay + 1) * pitchM);
+    for (const [, entry] of crossingDoors) {
+      if (entry.anchor.sM - entry.widthM / 2 < 0 || entry.anchor.sM + entry.widthM / 2 > frame.lengthM) fail(`${id} entrance ${entry.id} extends beyond wall`);
+    }
     const cells = [];
     let h0M = 0;
     doc.storeys.forEach((storey, s) => {
       const h1M = h0M + storey.hM;
-      const add = (bay, s0M, s1M, kind, entrance = null) => {
+      const add = (bay, s0M, s1M, kind, entrance = null, wholeDoor = false) => {
         if (s1M - s0M <= 1e-8) return;
         const override = overrides.get(`${s}/${bay}`);
         const win = { ...window, ...override?.window };
@@ -76,8 +82,8 @@ export function compileFacadeGrid(doc, footprint, entrances = []) {
           ...(accent?.piers?.bays.includes(bay) ? { piers: { every: 1, width: accent.piers.widthM / pitchM, colour: accent.piers.colour } } : {}),
           ...(accent?.frames?.bays.includes(bay) ? { accent: { kind: "frame", bays: [0, 1, 2, 3], colour: accent.frames.colour } } : {}),
           ...(accent?.band ? { band: { height: accent.band.hM / storey.hM, colour: accent.band.colour } } : {}),
-          ...(entrance ? { doorWidth: Math.min(entrance.widthM / pitchM, 1),
-            windowCentre: (entrance.anchor.sM - s0M) / pitchM, entrance: { doors: spec.materials.glass } } : {}),
+          ...(entrance ? { doorWidth: wholeDoor ? 1 : Math.min(entrance.widthM / pitchM, 1),
+            windowCentre: wholeDoor ? 0.5 : (entrance.anchor.sM - s0M) / pitchM, entrance: { doors: spec.materials.glass } } : {}),
         };
         const key = `grid-${createHash("sha256").update(JSON.stringify(look)).digest("hex").slice(0, 16)}`;
         looks.set(key, { ...look, id: key });
@@ -90,9 +96,24 @@ export function compileFacadeGrid(doc, footprint, entrances = []) {
         const kind = explicit ?? (entrance ? "door" : spec.default);
         if (entrance && kind !== "door") fail(`${id} entrance ${entrance.id} disagrees with cell ${bay}`);
         if (kind === "door" && !entrance) fail(`${id} door ${s}/${bay} has no entrance anchor`);
-        add(bay, offsetM + bay * pitchM, offsetM + (bay + 1) * pitchM, kind, entrance);
+        const crossing = entrance && crossingDoors.some(([, entry]) => entry === entrance);
+        add(bay, offsetM + bay * pitchM, offsetM + (bay + 1) * pitchM, crossing ? spec.default : kind, crossing ? null : entrance);
       }
       add(-1, offsetM + count * pitchM, frame.lengthM, "blank");
+      if (s === 0) for (const [bay, entry] of crossingDoors) {
+        const left = entry.anchor.sM - entry.widthM / 2, right = entry.anchor.sM + entry.widthM / 2;
+        const clipped = cells.flatMap(cell => {
+          if (cell.s1M <= left || cell.s0M >= right) return [cell];
+          const pieces = [];
+          const uv = at => (cell.uv0 ?? 0) + ((cell.uv1 ?? 1) - (cell.uv0 ?? 0)) * (at - cell.s0M) / (cell.s1M - cell.s0M);
+          if (cell.s0M < left) pieces.push({ ...cell, s1M: left, uv1: uv(left) });
+          if (cell.s1M > right) pieces.push({ ...cell, s0M: right, uv0: uv(right) });
+          return pieces;
+        });
+        cells.splice(0, cells.length, ...clipped);
+        add(bay, left, right, "door", entry, true);
+        cells.sort((a, b) => a.s0M - b.s0M);
+      }
       h0M = h1M;
     });
     walls.set(id, { ...frame, cells });
@@ -114,7 +135,8 @@ export function gridCellsOnEdge(grid, aScene, bScene) {
       const tA = (cell.s0M - p.sM) / (q.sM - p.sM), tB = (cell.s1M - p.sM) / (q.sM - p.sM);
       const t0 = Math.max(0, Math.min(tA, tB)), t1 = Math.min(1, Math.max(tA, tB));
       if (t1 - t0 < 1e-8) return [];
-      const u = t => (p.sM + t * (q.sM - p.sM) - cell.s0M) / (cell.s1M - cell.s0M);
+      const u = t => (cell.uv0 ?? 0) + ((cell.uv1 ?? 1) - (cell.uv0 ?? 0)) *
+        (p.sM + t * (q.sM - p.sM) - cell.s0M) / (cell.s1M - cell.s0M);
       return [{ ...cell, wall: wall.wall, t0, t1, u0: u(t0), u1: u(t1) }];
     });
     return cells.sort((c, d) => c.storey - d.storey || c.t0 - d.t0);
