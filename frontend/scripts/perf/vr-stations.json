@@ -5868,23 +5868,151 @@
       "station": true,
       "yaw_deg": true
     },
-    "yaw_refined_deg": 235.8,
-    "refined_residual_deg": 0.12,
+    "yaw_refined_deg": 248.300702,
+    "refined_residual_deg": 0.527964,
     "refined_buildings": [
-      "BLD_E5",
-      "BLD_E3"
+      "BLD_E8",
+      "BLD_SCNU_E2",
+      "BLD_E5"
     ],
-    "refined_by": "manual control-point resection (scripts/perf/vr_control_points.py)",
+    "refined_by": "independent GIS corner / VR bearing least-squares resection, task 18a",
     "refined_confidence": 0.85,
-    "station_refined_x": 169.25,
-    "station_refined_z": -182.64,
-    "station_refined_e": 243704.49,
-    "station_refined_n": 263745.76,
-    "height_refined_m": 9.8,
-    "refined_note": "56 control points on the ground-projected cube and the NGII 2025 sheet (scripts/perf/vr-control-points.json; seeded by old); least squares: residual RMS 0.44 m, max 0.62 m; split-half agreement 0.11 m / 0.12 deg; formal sigma 0.06 m / 0.08 deg; height from the face scale (estimated)",
-    "refined_residual_m": 0.11,
-    "strip_check": "2026-10-27 compare-vr strip: all four faces show the same buildings as the VR",
-    "frame_version": 2
+    "station_refined_x": 169.624027,
+    "station_refined_z": -180.301562,
+    "station_refined_e": 243705.103879,
+    "station_refined_n": 263742.020495,
+    "height_refined_m": 13,
+    "refined_note": "2026-11-03: seven manually read GIS corners on faces f/l at original 2048 px resolution solve E/N/yaw only. All E3 features and both canopies excluded. Bearing RMS 0.306116 deg, max 0.527964 deg; cross-track RMS 0.558758 m is fit scatter, not survey accuracy. Independent face b E1 corner -1.108894 deg. Leave-one-out max 2.031821 deg when the E5 courtyard corner is omitted: position depends on that near control, so this is not survey-grade accuracy. Height separately estimated from ground-projected VR/NGII comparisons at 9.8, 13 and 17 m, about +/-2 m. The old guided-SIFT solution is superseded, not an independent control.",
+    "refined_residual_m": 0.558758,
+    "strip_check": "2026-11-03 task-18a: independently checked E8 f, E2 l and held-out E1 b landmarks; E3 canopy remains a placement error for todo 19",
+    "frame_version": 2,
+    "resection_provenance": {
+      "date": "2026-11-03",
+      "method": "Unweighted nonlinear least squares of wrapped horizontal bearing residuals against independent GIS vertices. Unknowns: EPSG:5186 E, N and yaw. Cube face width 2048, angle atan((col-1024)/1024). No E3 or canopy controls.",
+      "estimated": true,
+      "tolerance_deg": 1.5,
+      "residual_sign": "GIS bearing minus VR bearing",
+      "coordinate_source": "GIS rings resolved by loadSceneBuildings() at bc4e98d2; wall A endpoint in EPSG:5186",
+      "image_source": "SCNU VR cached original 2048x2048 scene_e5 pano_f.jpg and pano_l.jpg; first five attachment readings corrected by 2048/2000, two near E5 controls read directly on original-file crops; all checked on original-scale annotated crops; pixels reference-only",
+      "previous_pose": {
+        "station_refined_x": 169.25,
+        "station_refined_z": -182.64,
+        "station_refined_e": 243704.49,
+        "station_refined_n": 263745.76,
+        "yaw_refined_deg": 235.8,
+        "height_refined_m": 9.8
+      },
+      "landmarks": [
+        {
+          "id": "E8 south outer corner",
+          "wall": "BLD_E8/W06",
+          "face": "f",
+          "col": 862,
+          "point_tm": [
+            243594.434492082,
+            263677.7096649145
+          ],
+          "before_residual_deg": 11.458029,
+          "after_residual_deg": 0.527964
+        },
+        {
+          "id": "E8 north front corner",
+          "wall": "BLD_E8/W17",
+          "face": "f",
+          "col": 1367,
+          "point_tm": [
+            243605.91390844085,
+            263737.0528876398
+          ],
+          "before_residual_deg": 10.630996,
+          "after_residual_deg": 0.313384
+        },
+        {
+          "id": "E8 north rear silhouette",
+          "wall": "BLD_E8/W16",
+          "face": "f",
+          "col": 1439,
+          "point_tm": [
+            243575.82190571396,
+            263742.8114178026
+          ],
+          "before_residual_deg": 10.824066,
+          "after_residual_deg": -0.011587
+        },
+        {
+          "id": "E2 east silhouette",
+          "wall": "BLD_SCNU_E2/W13",
+          "face": "l",
+          "col": 198,
+          "point_tm": [
+            243800.97511190939,
+            263687.9842567277
+          ],
+          "before_residual_deg": 14.005296,
+          "after_residual_deg": -0.00258
+        },
+        {
+          "id": "E2 north front corner",
+          "wall": "BLD_SCNU_E2/W12",
+          "face": "l",
+          "col": 302,
+          "point_tm": [
+            243782.00236389317,
+            263692.6749318973
+          ],
+          "before_residual_deg": 13.793342,
+          "after_residual_deg": -0.425689
+        },
+        {
+          "id": "E5 front north corner",
+          "wall": "BLD_E5/W25",
+          "face": "f",
+          "col": 1664,
+          "point_tm": [
+            243674.94365486258,
+            263747.3456261981
+          ],
+          "before_residual_deg": 5.259323,
+          "after_residual_deg": -0.29306
+        },
+        {
+          "id": "E5 inner courtyard corner",
+          "wall": "BLD_E5/W28",
+          "face": "f",
+          "col": 475,
+          "point_tm": [
+            243666.04097302616,
+            263695.4589668264
+          ],
+          "before_residual_deg": 9.786324,
+          "after_residual_deg": -0.108433
+        }
+      ],
+      "held_out": {
+        "id": "E1 north-west silhouette",
+        "wall": "BLD_E1/W06",
+        "face": "b",
+        "col": 884,
+        "point_tm": [
+          243772.20545068503,
+          263781.6937148948
+        ],
+        "before_residual_deg": 14.035817,
+        "after_residual_deg": -1.108894
+      },
+      "leave_one_out_max_residual_deg": 2.031821,
+      "single_column_4px_sensitivity_max_position_m": 0.24285,
+      "single_column_4px_sensitivity_max_yaw_deg": 0.047361,
+      "height_recheck": {
+        "method": "Fixed E/N/yaw ground-projected cube overlay against NGII 2025 sheet 34702020, comparing 9.8, 13 and 17 m. East kerb and south-east crosswalk align best near 13 m. Roof heights were not used to force a camera fit.",
+        "height_m": 13,
+        "estimated": true,
+        "uncertainty_m": 2,
+        "limitation": "Visual scale estimate, not a surveyed altitude; local terrain slope, foliage and cross-epoch imagery limit vertical accuracy."
+      },
+      "evidence": "task-18a-scene-e5-resection.{md,json}, local uncommitted annotated before/after crops",
+      "leave_one_out_limitation": "Omitting E5 W28 yields 2.031821 deg at that omitted point; the near courtyard control is influential. Do not present leave-one-out as a 1.5 degree pass."
+    }
   },
   {
     "scene": "scene_e6",

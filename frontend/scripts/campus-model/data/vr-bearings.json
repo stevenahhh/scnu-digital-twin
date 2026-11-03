@@ -4,22 +4,35 @@
   "records": [
     {
       "id": "SD-E5-C1",
-      "anchor": { "building": "BLD_E3", "wall": "W17", "sM": 0.9914001967 },
+      "anchor": {
+        "building": "BLD_E3",
+        "wall": "W16",
+        "sM": 44.5070997209
+      },
       "estimated": true,
       "evidence": {
         "tier": "T2",
-        "refs": ["VR scene_e5 r col 610 -> BLD_E3/W17", "VR scene_e3 r col 700 -> BLD_E3/W16"],
-        "note": "Main doorway/canopy axis below the left orange curved bay. scene_e5: visible entrance, original site-detail cols 380-840, independent face inspection agrees with centre 610. scene_e3: axis about col 700, canopy partly hidden by the pine, so this is an estimated reading, not a precise survey. Keep the independent reading even when it disagrees with the e5 wall proposal or current geometry; todo 19 owns the placement."
+        "refs": [
+          "VR scene_e5 r col 610 -> BLD_E3/W16",
+          "VR scene_e3 r col 700 -> BLD_E3/W16"
+        ],
+        "note": "Main doorway/canopy axis below the left orange curved bay. Original independent readings are retained: scene_e5 col 610, scene_e3 col 700 (pine-occluded, estimated). 2026-11-03 task 18a re-derived the e5 wall hit from seven non-E3 GIS landmarks. Both references hit W16, but their s values differ and are not averaged or forced to agree. Neither the canopy nor its readings entered the resection; geometry migration and the remaining discrepancy belong to todo 19."
       }
     },
     {
       "id": "SD-E5-C2",
-      "anchor": { "building": "BLD_E3", "wall": "W16", "sM": 14.2399485687 },
+      "anchor": {
+        "building": "BLD_E3",
+        "wall": "W15",
+        "sM": 13.0718827968
+      },
       "estimated": true,
       "evidence": {
         "tier": "T2",
-        "refs": ["VR scene_e5 r col 1810 -> BLD_E3/W16"],
-        "note": "Side doorway and canopy centre beside the blue accessible bay; original site-detail range cols 1650-1970. Position from the bearing is estimated."
+        "refs": [
+          "VR scene_e5 r col 1810 -> BLD_E3/W15"
+        ],
+        "note": "Side doorway and canopy centre beside the blue accessible bay; original site-detail range cols 1650-1970. 2026-11-03 task 18a re-derived the first forward wall hit from the independent seven-landmark scene_e5 resection. Position remains estimated; the column reading and canopy geometry are unchanged."
       }
     }
   ]
