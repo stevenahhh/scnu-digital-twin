@@ -153,6 +153,8 @@ export function overlapPairs(list) {
   return pairs;
 }
 
+const PARCEL_SURFACES = new Set(["concrete"]); // asphalt or the class's own surface when absent
+
 function parcels(doc) {
   if (!doc || typeof doc !== "object" || !Array.isArray(doc.parcels)) return ["parcels: parcels must be an array"];
   const errors = [];
@@ -167,6 +169,7 @@ function parcels(doc) {
     if (!PARCEL_CLASSES.has(parcel.cls)) fail(`cls must be one of ${[...PARCEL_CLASSES].join(", ")}`);
     if (parcel.class !== undefined && !DESIGN_CLASSES.includes(parcel.class)) fail(`class must be one of ${DESIGN_CLASSES.join(", ")}`);
     if (parcel.class !== undefined && parcel.paintAllowed !== PAINT_CLASSES.has(parcel.class)) fail(`paintAllowed must be ${PAINT_CLASSES.has(parcel.class)} for class ${parcel.class}`);
+    if (parcel.surface !== undefined && !PARCEL_SURFACES.has(parcel.surface)) fail(`surface must be one of ${[...PARCEL_SURFACES].join(", ")}`);
     if (!isRing(parcel.ring)) fail("ring must be at least 3 [E, N] pairs");
     if (!Array.isArray(parcel.holes) || !parcel.holes.every(isRing)) fail("holes must be an array of rings");
     if (!Number.isFinite(parcel.precedence)) fail("precedence must be a number");
@@ -414,7 +417,44 @@ function parkingCuration(doc) {
   return errors;
 }
 
-const KINDS = { bldNodeMap, registration, parcels, parking, parkingCuration };
+// data/ground/parcel-curation.json: reviewed changes on top of the seeded parcels (fit/parcelsSeed.mjs). Every record says why.
+function parcelCuration(doc) {
+  if (!doc || typeof doc !== "object") return ["parcelCuration: must be an object"];
+  const errors = [];
+  for (const key of ["replace", "remove", "add", "notAsphalt", "unreachable"]) if (!Array.isArray(doc[key])) errors.push(`parcelCuration: ${key} must be an array`);
+  if (errors.length) return errors;
+  const reasoned = (record, id) => { if (!isText(record?.reason)) errors.push(`${id}: reason must be a non-empty string`); };
+  const graded = (record, id) => {
+    if (!isRing(record?.ring)) errors.push(`${id}: ring must be at least 3 [E, N] pairs`);
+    if (!TIERS.has(record?.evidence?.tier) || !Array.isArray(record?.evidence?.refs) || !record.evidence.refs.every(isText)) errors.push(`${id}: evidence must have tier T0-T4 and refs`);
+    if (typeof record?.estimated !== "boolean") errors.push(`${id}: estimated must be a boolean`);
+    else if (record.evidence?.tier === "T4" && !record.estimated) errors.push(`${id}: estimated must be true for a T4 parcel`);
+    reasoned(record, id);
+  };
+  const named = (record, index, key) => {
+    const id = isText(record?.id) ? record.id : `${key}[${index}]`;
+    if (!/^PARCEL_[A-Z0-9_]+$/.test(record?.id ?? "")) errors.push(`${id}: id must match PARCEL_[A-Z0-9_]+`);
+    return id;
+  };
+  doc.replace.forEach((r, i) => graded(r, named(r, i, "replace")));
+  doc.remove.forEach((r, i) => reasoned(r, named(r, i, "remove")));
+  doc.add.forEach((r, i) => {
+    const id = named(r, i, "add");
+    graded(r, id);
+    if (r?.class !== "road" && r?.class !== "lot") errors.push(`${id}: class must be road or lot`);
+    if (r?.surface !== undefined && !PARCEL_SURFACES.has(r.surface)) errors.push(`${id}: surface must be one of ${[...PARCEL_SURFACES].join(", ")}`);
+    if (r?.unreadEdgeM !== undefined && !(Number.isFinite(r.unreadEdgeM) && r.unreadEdgeM >= 0)) errors.push(`${id}: unreadEdgeM must be a length in metres, 0 or more`);
+  });
+  doc.notAsphalt.forEach((r, i) => {
+    const id = isText(r?.id) ? r.id : `notAsphalt[${i}]`;
+    if (!isRing(r?.ring)) errors.push(`${id}: ring must be at least 3 [E, N] pairs`);
+    reasoned(r, id);
+  });
+  doc.unreachable.forEach((r, i) => reasoned(r, isText(r?.row) ? r.row : `unreachable[${i}]`));
+  return errors;
+}
+
+const KINDS = { bldNodeMap, registration, parcels, parking, parkingCuration, parcelCuration };
 
 export function validate(kind, doc) {
   const check = KINDS[kind];

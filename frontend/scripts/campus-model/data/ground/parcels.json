@@ -1,5 +1,5 @@
 {
- "note": "Ground parcel map (design §5): the one ground class map stages/ground.mjs, kerbs.mjs, tactile.mjs and surfaces.mjs read (plan campus-ground-truth-redesign todo 9). Seeded by fit/parcelsSeed.mjs from the network/surfaces.mjs layers in draw order (rings EPSG:5186 [E, N] metres, `render` = how the stage draws it, `class` = the design §5 class), then curated: PARCEL_LOT_*_R* records (source parking-record) lie under parking rows of data/ground/parking.json that the seed leaves off road and lot ground, PARCEL_SUPPORT_* records lie under photo-detected paint the seed left on natural ground or estimated paving (paint proves pavement), paintExcluded lists paint the photo shows on surveyed non-road ground (not drawn), kerbLines are the open A003 kerb lines. source_ref names the registration corrections (data/photo/evidence/ground-registration.json, a003-registration.json) applied to that parcel; tier T4 and support parcels are estimates (추정).",
+ "note": "Ground parcel map (design §5): the one ground class map stages/ground.mjs, kerbs.mjs, tactile.mjs and surfaces.mjs read (plan campus-ground-truth-redesign todo 9). Seeded by fit/parcelsSeed.mjs from the network/surfaces.mjs layers in draw order (rings EPSG:5186 [E, N] metres, `render` = how the stage draws it, `class` = the design §5 class), then curated: data/ground/parcel-curation.json replaces or removes seeded parcels and adds source photo-curated road and lot parcels read from the photo, PARCEL_LOT_*_R* records (source parking-record) lie under parking rows of data/ground/parking.json that the seed leaves off road and lot ground, PARCEL_SUPPORT_* records lie under photo-detected paint the seed left on natural ground or estimated paving (paint proves pavement), paintExcluded lists paint the photo shows on surveyed non-road ground (not drawn), kerbLines are the open A003 kerb lines. source_ref names the registration corrections (data/photo/evidence/ground-registration.json, a003-registration.json) applied to that parcel; tier T4 and support parcels are estimates (추정).",
  "parcels": [
   {
    "id": "PARCEL_SPORTS_WAY_367126960",
@@ -9131,28 +9131,40 @@
      263714.1194
     ],
     [
-     243682.4966,
-     263716.7268
+     243682,
+     263716.1
     ],
     [
-     243682.5455,
-     263718.1628
+     243681.7,
+     263720
     ],
     [
-     243688.2165,
-     263746.0204
+     243682.6,
+     263724.4
     ],
     [
-     243688.9034,
-     263747.7288
+     243683.4,
+     263728.9
     ],
     [
-     243689.97,
-     263749.7756
+     243684.2,
+     263733.3
     ],
     [
-     243691.4095,
-     263751.2747
+     243685.9,
+     263740.6
+    ],
+    [
+     243687.6,
+     263748.1
+    ],
+    [
+     243688.4,
+     263750.3
+    ],
+    [
+     243689.5,
+     263751.7
     ],
     [
      243698.8211,
@@ -9188,15 +9200,17 @@
    "mesh": "Ground_Asphalt",
    "label": 2,
    "source": "road-zone-measured",
-   "source_ref": "road zone 50",
+   "source_ref": "road zone 50; east edge moved onto the island kerb the photo shows, 0.6-1.7 m west of the zone outline; shade hides parts of the kerb",
    "evidence": {
-    "tier": "T0",
+    "tier": "T1",
     "refs": [
-     "road zone 50"
+     "road zone 50",
+     "NGII 2025 island kerb, read by eye"
     ]
    },
    "paintAllowed": true,
-   "estimated": false
+   "estimated": true,
+   "curated": "todo 13a"
   },
   {
    "id": "PARCEL_ASPHALT_ROAD_ZONE_51",
@@ -159142,125 +159156,6 @@
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_97",
-   "cls": "PAVING",
-   "class": "plaza",
-   "ring": [
-    [
-     243591.8528,
-     263904.0661
-    ],
-    [
-     243582.0084,
-     263906.7129
-    ],
-    [
-     243580.608,
-     263901.7501
-    ],
-    [
-     243591.4999,
-     263902.0836
-    ]
-   ],
-   "holes": [
-    [
-     [
-      243590.593,
-      263903.2657
-     ],
-     [
-      243582.772,
-      263905.3685
-     ],
-     [
-      243582.0742,
-      263902.8956
-     ],
-     [
-      243590.5735,
-      263903.1558
-     ]
-    ]
-   ],
-   "precedence": 6,
-   "mesh": "Ground_Apron",
-   "label": 1,
-   "source": "project-estimated",
-   "source_ref": "building",
-   "evidence": {
-    "tier": "T4",
-    "refs": [
-     "building"
-    ]
-   },
-   "paintAllowed": false,
-   "estimated": true,
-   "over": [
-    "PARCEL_PAVING_BUILDING_83"
-   ]
-  },
-  {
-   "id": "PARCEL_PAVING_BUILDING_98",
-   "cls": "PAVING",
-   "class": "plaza",
-   "ring": [
-    [
-     243581.2591,
-     263901.975
-    ],
-    [
-     243590.9937,
-     263899.3506
-    ],
-    [
-     243592.4159,
-     263904.3132
-    ],
-    [
-     243581.4326,
-     263903.9769
-    ]
-   ],
-   "holes": [
-    [
-     [
-      243582.4345,
-      263902.7974
-     ],
-     [
-      243590.2345,
-      263900.6946
-     ],
-     [
-      243590.9433,
-      263903.1676
-     ],
-     [
-      243582.444,
-      263902.9073
-     ]
-    ]
-   ],
-   "precedence": 6,
-   "mesh": "Ground_Apron",
-   "label": 1,
-   "source": "project-estimated",
-   "source_ref": "building",
-   "evidence": {
-    "tier": "T4",
-    "refs": [
-     "building"
-    ]
-   },
-   "paintAllowed": false,
-   "estimated": true,
-   "over": [
-    "PARCEL_PAVING_BUILDING_83",
-    "PARCEL_PAVING_BUILDING_97"
-   ]
-  },
-  {
    "id": "PARCEL_PAVING_BUILDING_99",
    "cls": "PAVING",
    "class": "plaza",
@@ -193559,46 +193454,6 @@
    ]
   },
   {
-   "id": "PARCEL_PAVING_EDGE_FB_0037",
-   "cls": "PAVING",
-   "class": "sidewalk",
-   "ring": [
-    [
-     243700.402,
-     263756.979
-    ],
-    [
-     243683.98,
-     263719.026
-    ],
-    [
-     243682.603,
-     263719.621
-    ],
-    [
-     243699.025,
-     263757.575
-    ]
-   ],
-   "holes": [],
-   "precedence": 2,
-   "mesh": "Ground_Walkway",
-   "label": 1,
-   "source": "project-estimated",
-   "source_ref": "EDGE_FB_0037",
-   "evidence": {
-    "tier": "T4",
-    "refs": [
-     "EDGE_FB_0037"
-    ]
-   },
-   "paintAllowed": false,
-   "estimated": true,
-   "render": {
-    "walkwayEstimated": true
-   }
-  },
-  {
    "id": "PARCEL_PAVING_EDGE_FB_0038",
    "cls": "PAVING",
    "class": "sidewalk",
@@ -200349,7 +200204,6 @@
     "walkwayEstimated": true
    },
    "over": [
-    "PARCEL_PAVING_EDGE_FB_0037",
     "PARCEL_PAVING_EDGE_FBJ_FBN_ND_085_1_2",
     "PARCEL_PAVING_EDGE_FBJ_FBN_ND_085_1_3"
    ]
@@ -201292,50 +201146,6 @@
    "render": {
     "walkwayEstimated": true
    }
-  },
-  {
-   "id": "PARCEL_PAVING_EDGE_FBJ_SWN_0012_1_2",
-   "cls": "PAVING",
-   "class": "sidewalk",
-   "ring": [
-    [
-     243702.529,
-     263753.047
-    ],
-    [
-     243698.36,
-     263756.487
-    ],
-    [
-     243699.315,
-     263757.644
-    ],
-    [
-     243703.483,
-     263754.204
-    ]
-   ],
-   "holes": [],
-   "precedence": 2,
-   "mesh": "Ground_Walkway",
-   "label": 1,
-   "source": "project-estimated",
-   "source_ref": "EDGE_FBJ_SWN_0012_1",
-   "evidence": {
-    "tier": "T4",
-    "refs": [
-     "EDGE_FBJ_SWN_0012_1"
-    ]
-   },
-   "paintAllowed": false,
-   "estimated": true,
-   "render": {
-    "walkwayEstimated": true
-   },
-   "over": [
-    "PARCEL_PAVING_EDGE_FB_0037",
-    "PARCEL_PAVING_EDGE_FBJ_SWN_0012_1"
-   ]
   },
   {
    "id": "PARCEL_PAVING_EDGE_FBJ_SWN_0004_1",
@@ -216849,6 +216659,2268 @@
    "curated": "todo 9",
    "over": [
     "PARCEL_SUPPORT_LOT_243983_263565"
+   ]
+  },
+  {
+   "id": "PARCEL_LINK_E243573_N263746_R2",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     243579.7,
+     263748.6
+    ],
+    [
+     243592.7,
+     263746
+    ],
+    [
+     243592,
+     263742.8
+    ],
+    [
+     243579,
+     263745.4
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "mesh": "Ground_Lot",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "join the row's back edge to PARCEL_ROAD_E243570_N263745 across the same paved aisle, not across the building; the leaned roof hides the south edge",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025: the aisle along the north wall of the green-roof building",
+     "LOT_E243573_N263746/R2",
+     "qa/parkingConnectivity.mjs: the existing road pinches before the row after 2 m clearance"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_LOT_E243573_N263746_R2"
+   ]
+  },
+  {
+   "id": "PARCEL_LINK_E243784_N263922_R1",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     243783.8,
+     263923.5
+    ],
+    [
+     243788.3,
+     263922.5
+    ],
+    [
+     243787.6,
+     263919.2
+    ],
+    [
+     243783.1,
+     263920.2
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "mesh": "Ground_Lot",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "paved opening between the blue bay and road zone 71; the photo shows asphalt here, while the lower-precedence T4 walkway strip models no driveway opening",
+   "evidence": {
+    "tier": "T1",
+    "refs": [
+     "NGII 2025: blue bay opens south onto the road beside the zebra",
+     "LOT_E243784_N263922/R1",
+     "qa/parkingConnectivity.mjs: estimated EDGE_FBJ_SWN_0029_1 strip separates the bay from road zone 71"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": false,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_LOT_E243784_N263922_R1"
+   ]
+  },
+  {
+   "id": "PARCEL_LINK_E243927_N263806_R1",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     243928.3,
+     263808
+    ],
+    [
+     243933.5,
+     263806.7
+    ],
+    [
+     243932.2,
+     263801.3
+    ],
+    [
+     243928.5,
+     263801.7
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "mesh": "Ground_Lot",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "join the bay's east side to the existing curved driveway, not through the planted strip to its south; the 3.5 m masked portion of its 7 m free edge is within the scan's 10 m measured allowance",
+   "evidence": {
+    "tier": "T1",
+    "refs": [
+     "NGII 2025: blue bay and the curved drive on its east side",
+     "LOT_E243927_N263806/R1",
+     "qa/parkingConnectivity.mjs: 1.3 m unclassified gap before road zone 62"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": false,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_LOT_E243927_N263806_R1"
+   ]
+  },
+  {
+   "id": "PARCEL_LOT_E243900_N263890",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     243869.4,
+     263928.1
+    ],
+    [
+     243883.1,
+     263927.3
+    ],
+    [
+     243897.5,
+     263920
+    ],
+    [
+     243908.8,
+     263910.6
+    ],
+    [
+     243909,
+     263908.5
+    ],
+    [
+     243894.4,
+     263912.5
+    ],
+    [
+     243887.5,
+     263891
+    ],
+    [
+     243903.1,
+     263886
+    ],
+    [
+     243904.4,
+     263884
+    ],
+    [
+     243918.8,
+     263886.5
+    ],
+    [
+     243930,
+     263883.5
+    ],
+    [
+     243934.8,
+     263881.3
+    ],
+    [
+     243941.9,
+     263879.8
+    ],
+    [
+     243942.8,
+     263877.8
+    ],
+    [
+     243970.6,
+     263870
+    ],
+    [
+     243970.6,
+     263863.8
+    ],
+    [
+     243931.3,
+     263872.8
+    ],
+    [
+     243923.1,
+     263875.6
+    ],
+    [
+     243913.1,
+     263875
+    ],
+    [
+     243896.9,
+     263875
+    ],
+    [
+     243892.3,
+     263881
+    ],
+    [
+     243885,
+     263885.3
+    ],
+    [
+     243878.8,
+     263892.5
+    ],
+    [
+     243873.8,
+     263897.5
+    ],
+    [
+     243872.5,
+     263905
+    ],
+    [
+     243871.5,
+     263918.8
+    ],
+    [
+     243869.8,
+     263922.5
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "mesh": "Ground_Lot",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "asphalt lot and lane around the building north of the road; crowns and shade hide the west edge",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "qa/asphaltScan.mjs"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_LOT_E243873_N263898_R1",
+    "PARCEL_LOT_E243873_N263898_R2",
+    "PARCEL_LOT_E243893_N263868_R1"
+   ]
+  },
+  {
+   "id": "PARCEL_LOT_E244165_N263567",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     244147.8,
+     263571.4
+    ],
+    [
+     244170,
+     263576.9
+    ],
+    [
+     244172.9,
+     263556.8
+    ],
+    [
+     244163.3,
+     263557
+    ],
+    [
+     244162.05,
+     263562.55
+    ],
+    [
+     244158.95,
+     263561.85
+    ],
+    [
+     244159.85,
+     263556.25
+    ],
+    [
+     244161.15,
+     263551.85
+    ],
+    [
+     244162.05,
+     263551.5
+    ],
+    [
+     244148.8,
+     263550
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "mesh": "Ground_Lot",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "asphalt lot north of the road, around the kerbed planted island: the island is cut out on NGII, where the painted bays on its north side stay in the lot; the 12 cm aerial shows the island and lies about 1 m off NGII here",
+   "evidence": {
+    "tier": "T1",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "12 cm aerial: planted island",
+     "qa/asphaltScan.mjs"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_LOT_E244150_N263566_R1",
+    "PARCEL_LOT_E244150_N263566_R2",
+    "PARCEL_LOT_E244150_N263566_R3"
+   ]
+  },
+  {
+   "id": "PARCEL_LOT_E243829_N263490",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     243811,
+     263500
+    ],
+    [
+     243825,
+     263500.5
+    ],
+    [
+     243836.5,
+     263497.8
+    ],
+    [
+     243837.8,
+     263503.2
+    ],
+    [
+     243840.8,
+     263515
+    ],
+    [
+     243850,
+     263515
+    ],
+    [
+     243845,
+     263500
+    ],
+    [
+     243842.5,
+     263496
+    ],
+    [
+     243840.5,
+     263486
+    ],
+    [
+     243844,
+     263482.2
+    ],
+    [
+     243840,
+     263480.2
+    ],
+    [
+     243826.5,
+     263479.5
+    ],
+    [
+     243820,
+     263483
+    ],
+    [
+     243821.2,
+     263491.8
+    ],
+    [
+     243813,
+     263494.5
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "mesh": "Ground_Lot",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "asphalt lot between the blue-roof building and the south road, with its drive north; crowns hide the south edge",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "qa/asphaltScan.mjs"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_LOT_E243825_N263480_R1",
+    "PARCEL_LOT_E243840_N263483_R1"
+   ]
+  },
+  {
+   "id": "PARCEL_LOT_E243834_N263651",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     243825.6,
+     263683.8
+    ],
+    [
+     243840,
+     263684.4
+    ],
+    [
+     243840,
+     263676.9
+    ],
+    [
+     243842.5,
+     263673.8
+    ],
+    [
+     243843.8,
+     263662.5
+    ],
+    [
+     243838.8,
+     263660
+    ],
+    [
+     243840,
+     263648.8
+    ],
+    [
+     243835,
+     263643.8
+    ],
+    [
+     243833.1,
+     263635
+    ],
+    [
+     243830.6,
+     263630
+    ],
+    [
+     243830,
+     263625.6
+    ],
+    [
+     243823.8,
+     263626.3
+    ],
+    [
+     243815,
+     263628.8
+    ],
+    [
+     243821.9,
+     263671.9
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "mesh": "Ground_Lot",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "asphalt lot of the long roof, beside the bus rows; planter crowns hide part of the east edge",
+   "evidence": {
+    "tier": "T1",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "qa/asphaltScan.mjs"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_LOT_E243815_N263630_R1",
+    "PARCEL_LOT_E243815_N263630_R2",
+    "PARCEL_LOT_E243815_N263630_R5",
+    "PARCEL_LOT_E243815_N263630_R6",
+    "PARCEL_LOT_E243815_N263630_R7",
+    "PARCEL_LOT_E243815_N263630_R8",
+    "PARCEL_LOT_E243815_N263630_R9",
+    "PARCEL_LOT_E243815_N263630_R10",
+    "PARCEL_LOT_E243815_N263630_R11",
+    "PARCEL_LOT_E243815_N263630_R12"
+   ]
+  },
+  {
+   "id": "PARCEL_LOT_E243775_N263960",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     243750,
+     263979.5
+    ],
+    [
+     243752.5,
+     263979
+    ],
+    [
+     243760,
+     263974.5
+    ],
+    [
+     243792,
+     263966
+    ],
+    [
+     243804,
+     263962.5
+    ],
+    [
+     243806,
+     263959
+    ],
+    [
+     243800,
+     263950.5
+    ],
+    [
+     243787,
+     263950.5
+    ],
+    [
+     243780,
+     263954
+    ],
+    [
+     243764.5,
+     263956
+    ],
+    [
+     243762.5,
+     263957
+    ],
+    [
+     243757,
+     263956
+    ],
+    [
+     243755,
+     263961
+    ],
+    [
+     243754,
+     263968.5
+    ],
+    [
+     243753,
+     263972
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "mesh": "Ground_Lot",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "asphalt lot north of the solar-roof building; crowns and shade hide the south-west corner",
+   "evidence": {
+    "tier": "T1",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "qa/asphaltScan.mjs"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_LOT_E243759_N263954_R1",
+    "PARCEL_LOT_E243759_N263954_R3",
+    "PARCEL_LOT_E243759_N263954_R2"
+   ]
+  },
+  {
+   "id": "PARCEL_LOT_E243790_N263893",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     243749.8,
+     263905.6
+    ],
+    [
+     243766.3,
+     263905
+    ],
+    [
+     243771.9,
+     263908.8
+    ],
+    [
+     243783.8,
+     263903.8
+    ],
+    [
+     243785,
+     263900
+    ],
+    [
+     243786.9,
+     263899.6
+    ],
+    [
+     243804.8,
+     263896
+    ],
+    [
+     243806.5,
+     263898.8
+    ],
+    [
+     243815.6,
+     263894.8
+    ],
+    [
+     243813.1,
+     263890
+    ],
+    [
+     243811.3,
+     263876.3
+    ],
+    [
+     243793.8,
+     263882.3
+    ],
+    [
+     243740.6,
+     263899.8
+    ],
+    [
+     243745,
+     263901.3
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "mesh": "Ground_Lot",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "asphalt lots on the north side of the big roof; island crowns hide part of the north edge",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "qa/asphaltScan.mjs"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_LOT_E243767_N263899_R1",
+    "PARCEL_LOT_E243767_N263899_R2",
+    "PARCEL_LOT_E243787_N263894_R1",
+    "PARCEL_LOT_E243795_N263876_R1",
+    "PARCEL_LOT_E243795_N263876_R2"
+   ]
+  },
+  {
+   "id": "PARCEL_LOT_E243825_N263930",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     243820.6,
+     263956.9
+    ],
+    [
+     243823.1,
+     263960
+    ],
+    [
+     243836.3,
+     263955.6
+    ],
+    [
+     243838.8,
+     263947.5
+    ],
+    [
+     243845.6,
+     263936.9
+    ],
+    [
+     243832.5,
+     263941.3
+    ],
+    [
+     243825.6,
+     263941.9
+    ],
+    [
+     243823.8,
+     263938.8
+    ],
+    [
+     243820.6,
+     263920
+    ],
+    [
+     243821.3,
+     263916.9
+    ],
+    [
+     243818.8,
+     263914.4
+    ],
+    [
+     243813.1,
+     263914.4
+    ],
+    [
+     243813.5,
+     263921.3
+    ],
+    [
+     243815,
+     263923.8
+    ],
+    [
+     243817.5,
+     263940
+    ],
+    [
+     243818.8,
+     263947.5
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "mesh": "Ground_Lot",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "asphalt lane and lot west of the solar-roof building; shade and crowns hide the north-east edge",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "qa/asphaltScan.mjs"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a"
+  },
+  {
+   "id": "PARCEL_LOT_E243800_N263540",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     243784.3,
+     263541.1
+    ],
+    [
+     243786.4,
+     263546.1
+    ],
+    [
+     243791.4,
+     263546.1
+    ],
+    [
+     243814.3,
+     263541
+    ],
+    [
+     243813.1,
+     263533.6
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "mesh": "Ground_Lot",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "north strip of the lot beside the brown roof, between the row and the seeded lot",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "qa/asphaltScan.mjs"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_LOT_E243796_N263538_R1",
+    "PARCEL_LOT_E243796_N263538_R2",
+    "PARCEL_LOT_E243796_N263538_R3"
+   ]
+  },
+  {
+   "id": "PARCEL_LOT_E243679_N263587",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     243674,
+     263601
+    ],
+    [
+     243686.5,
+     263601.5
+    ],
+    [
+     243685,
+     263599
+    ],
+    [
+     243678,
+     263569.2
+    ],
+    [
+     243672.5,
+     263570.8
+    ],
+    [
+     243679.5,
+     263598.5
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "mesh": "Ground_Lot",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "aisle between the two rows south of the green-roof wing",
+   "evidence": {
+    "tier": "T1",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "qa/asphaltScan.mjs"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": false,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_LOT_E243668_N263569_R2",
+    "PARCEL_LOT_E243668_N263569_R3"
+   ]
+  },
+  {
+   "id": "PARCEL_LOT_E243632_N263887",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     243625,
+     263896.9
+    ],
+    [
+     243640,
+     263895
+    ],
+    [
+     243643.8,
+     263891.3
+    ],
+    [
+     243640.6,
+     263881
+    ],
+    [
+     243636.3,
+     263878.8
+    ],
+    [
+     243627.5,
+     263879.4
+    ],
+    [
+     243623.1,
+     263882.5
+    ],
+    [
+     243623.1,
+     263891.3
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "mesh": "Ground_Lot",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "asphalt lot south of the road, around its three rows; crowns hide the west side",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "qa/asphaltScan.mjs"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_LOT_E243623_N263872_R1",
+    "PARCEL_LOT_E243623_N263872_R2",
+    "PARCEL_LOT_E243623_N263872_R6"
+   ]
+  },
+  {
+   "id": "PARCEL_ROAD_E244173_N263726",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     244161.8,
+     263728
+    ],
+    [
+     244171,
+     263729.8
+    ],
+    [
+     244180,
+     263733.5
+    ],
+    [
+     244184.5,
+     263732
+    ],
+    [
+     244179,
+     263721
+    ],
+    [
+     244160.5,
+     263721
+    ]
+   ],
+   "holes": [],
+   "precedence": 3,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "junction asphalt beside the east road, outside the zones",
+   "evidence": {
+    "tier": "T1",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "qa/asphaltScan.mjs"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": false,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_ASPHALT_WAY_366373738_45",
+    "PARCEL_ASPHALT_WAY_366373738_46",
+    "PARCEL_ASPHALT_WAY_366373738_47",
+    "PARCEL_ASPHALT_WAY_929202517_15",
+    "PARCEL_ASPHALT_WAY_929202517_16",
+    "PARCEL_ASPHALT_WAY_929202517_17",
+    "PARCEL_ASPHALT_WAY_929202517_18",
+    "PARCEL_ASPHALT_WAY_929202517_19",
+    "PARCEL_ASPHALT_WAY_929202517_20",
+    "PARCEL_ASPHALT_WAY_929202517_21",
+    "PARCEL_ASPHALT_WAY_929202517_22",
+    "PARCEL_ASPHALT_WAY_929202517_23",
+    "PARCEL_ASPHALT_WAY_929202517_24",
+    "PARCEL_ASPHALT_WAY_929202517_25",
+    "PARCEL_ASPHALT_WAY_929202517_26",
+    "PARCEL_ASPHALT_WAY_929202517_27",
+    "PARCEL_ASPHALT_WAY_929202517_28",
+    "PARCEL_ASPHALT_WAY_929202517_29",
+    "PARCEL_ASPHALT_WAY_929202517_30",
+    "PARCEL_ASPHALT_WAY_929202517_31",
+    "PARCEL_SUPPORT_ROAD_244169_263722",
+    "PARCEL_SUPPORT_ROAD_244186_263735",
+    "PARCEL_SUPPORT_ROAD_244163_263724"
+   ]
+  },
+  {
+   "id": "PARCEL_LOT_E243914_N263690",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     243893.4,
+     263696.3
+    ],
+    [
+     243914.1,
+     263692.2
+    ],
+    [
+     243920.6,
+     263690.3
+    ],
+    [
+     243935.9,
+     263684.7
+    ],
+    [
+     243926.3,
+     263685.8
+    ],
+    [
+     243915.2,
+     263688.4
+    ],
+    [
+     243914.4,
+     263685.3
+    ],
+    [
+     243890,
+     263692.6
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "mesh": "Ground_Lot",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "strip of asphalt along the seeded road north of the solar-roof building, in front of the row; the kerbed hedge planter east of the row is left out",
+   "evidence": {
+    "tier": "T1",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "qa/asphaltScan.mjs"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_LOT_E243882_N263685_R1"
+   ]
+  },
+  {
+   "id": "PARCEL_ROAD_E3_NW",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243684.3,
+     263819.6
+    ],
+    [
+     243692.9,
+     263821.4
+    ],
+    [
+     243690.4,
+     263809.3
+    ],
+    [
+     243691.4,
+     263801.4
+    ],
+    [
+     243664.6,
+     263784.7
+    ],
+    [
+     243662.9,
+     263778.6
+    ],
+    [
+     243653.6,
+     263770.7
+    ],
+    [
+     243653.1,
+     263763.1
+    ],
+    [
+     243650,
+     263740
+    ],
+    [
+     243650,
+     263721.3
+    ],
+    [
+     243645.6,
+     263698.8
+    ],
+    [
+     243648.8,
+     263695
+    ],
+    [
+     243648.1,
+     263685.6
+    ],
+    [
+     243650,
+     263680.6
+    ],
+    [
+     243665.6,
+     263678.1
+    ],
+    [
+     243702.5,
+     263671.9
+    ],
+    [
+     243700.6,
+     263658.1
+    ],
+    [
+     243658.1,
+     263665
+    ],
+    [
+     243650,
+     263671.3
+    ],
+    [
+     243641.3,
+     263683.1
+    ],
+    [
+     243641.3,
+     263697.5
+    ],
+    [
+     243639.4,
+     263712.5
+    ],
+    [
+     243641.3,
+     263725
+    ],
+    [
+     243640,
+     263737.5
+    ],
+    [
+     243640,
+     263748.8
+    ],
+    [
+     243646.9,
+     263763.1
+    ],
+    [
+     243649.4,
+     263775
+    ],
+    [
+     243653.3,
+     263780.3
+    ],
+    [
+     243660,
+     263782.1
+    ],
+    [
+     243662.1,
+     263793.6
+    ],
+    [
+     243668.6,
+     263798.6
+    ],
+    [
+     243676.4,
+     263809.3
+    ],
+    [
+     243679.7,
+     263819
+    ]
+   ],
+   "holes": [],
+   "precedence": 3,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "north-west access road: from the head by the E3 rows, past the green-roof wing and along its south lot to the road zone. No zone or lot existed. Crowns and building shade hide most of the west edge",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "qa/asphaltScan.mjs"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_ASPHALT_ROAD_ZONE_56"
+   ]
+  },
+  {
+   "id": "PARCEL_LOT_E243719_N263821",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     243714.6,
+     263835.4
+    ],
+    [
+     243720.9,
+     263835
+    ],
+    [
+     243725,
+     263828.8
+    ],
+    [
+     243730,
+     263819.1
+    ],
+    [
+     243734.6,
+     263811.3
+    ],
+    [
+     243735.4,
+     263809.1
+    ],
+    [
+     243734.9,
+     263806.1
+    ],
+    [
+     243721.8,
+     263808.4
+    ],
+    [
+     243721.4,
+     263806.1
+    ],
+    [
+     243714.1,
+     263807.5
+    ],
+    [
+     243710.2,
+     263800.4
+    ],
+    [
+     243706.1,
+     263805.9
+    ],
+    [
+     243706.2,
+     263812.4
+    ],
+    [
+     243712.1,
+     263818.8
+    ],
+    [
+     243710.9,
+     263821.6
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "mesh": "Ground_Lot",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "asphalt lot between the round building and the zone 52 road, with the gap to it at the south-east corner. The photo shows the leaned roof south of it: the south edge is carried to the walls of the GIS footprint as an estimate",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "qa/asphaltScan.mjs"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_LOT_E243714_N263830_R1",
+    "PARCEL_LOT_E243725_N263816_R1",
+    "PARCEL_LOT_E243725_N263816_R2"
+   ]
+  },
+  {
+   "id": "PARCEL_LOT_E243826_N263596",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     243825,
+     263604.4
+    ],
+    [
+     243831.3,
+     263604.4
+    ],
+    [
+     243830.6,
+     263586.9
+    ],
+    [
+     243825.6,
+     263586.3
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "mesh": "Ground_Lot",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "kerbside strip of LOT_E243821_N263586/R1 and the grey margin between it and the road zone",
+   "evidence": {
+    "tier": "T1",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "qa/asphaltScan.mjs"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": false,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_LOT_E243821_N263586_R1"
+   ]
+  },
+  {
+   "id": "PARCEL_ROAD_E244165_N263450",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     244139,
+     263540.3
+    ],
+    [
+     244148.1,
+     263541
+    ],
+    [
+     244151.3,
+     263525
+    ],
+    [
+     244155,
+     263500
+    ],
+    [
+     244163.1,
+     263486.3
+    ],
+    [
+     244170,
+     263457.5
+    ],
+    [
+     244176.3,
+     263427.5
+    ],
+    [
+     244180,
+     263405
+    ],
+    [
+     244181.5,
+     263396.3
+    ],
+    [
+     244185.6,
+     263393.8
+    ],
+    [
+     244218.1,
+     263401.9
+    ],
+    [
+     244219.4,
+     263398.8
+    ],
+    [
+     244186.3,
+     263389.8
+    ],
+    [
+     244179.4,
+     263386.9
+    ],
+    [
+     244175.6,
+     263391.3
+    ],
+    [
+     244176.9,
+     263393.8
+    ],
+    [
+     244140,
+     263530.3
+    ]
+   ],
+   "holes": [],
+   "precedence": 3,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "north-south campus road by the tennis courts and its lane east at the south end; the seeded lot stops at its centre line. Shade and pale patches hide the south edge",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "qa/asphaltScan.mjs"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_SUPPORT_ROAD_244150_263499"
+   ]
+  },
+  {
+   "id": "PARCEL_ROAD_E244080_N263530",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243930,
+     263494.4
+    ],
+    [
+     243948.8,
+     263499.4
+    ],
+    [
+     243971.3,
+     263505
+    ],
+    [
+     243983.8,
+     263510
+    ],
+    [
+     243992.5,
+     263513.8
+    ],
+    [
+     243998.8,
+     263515.6
+    ],
+    [
+     244026.3,
+     263517.5
+    ],
+    [
+     244040,
+     263520.6
+    ],
+    [
+     244100,
+     263535
+    ],
+    [
+     244138.8,
+     263544.4
+    ],
+    [
+     244150,
+     263550
+    ],
+    [
+     244173.8,
+     263553.8
+    ],
+    [
+     244205,
+     263560.6
+    ],
+    [
+     244217.4,
+     263563.7
+    ],
+    [
+     244225,
+     263567.9
+    ],
+    [
+     244232.9,
+     263567.1
+    ],
+    [
+     244232.3,
+     263553.6
+    ],
+    [
+     244220,
+     263556.3
+    ],
+    [
+     244202.5,
+     263552.3
+    ],
+    [
+     244191.3,
+     263546.9
+    ],
+    [
+     244147.5,
+     263539.4
+    ],
+    [
+     244138.1,
+     263534
+    ],
+    [
+     244110,
+     263528.1
+    ],
+    [
+     244079.4,
+     263523.5
+    ],
+    [
+     244043.8,
+     263515
+    ],
+    [
+     244027.5,
+     263511.9
+    ],
+    [
+     244010,
+     263507.5
+    ],
+    [
+     243997.5,
+     263505
+    ],
+    [
+     243980,
+     263503.8
+    ],
+    [
+     243967.5,
+     263499.4
+    ],
+    [
+     243951.3,
+     263494.4
+    ],
+    [
+     243930,
+     263490
+    ]
+   ],
+   "holes": [],
+   "precedence": 3,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "south campus road east from E243930: no road zone, only paint-support slivers. Parked cars and crowns hide part of its edges. It leaves the campus polygon at its west end, where this parcel stops",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "qa/asphaltScan.mjs"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_ASPHALT_WAY_975429314",
+    "PARCEL_ASPHALT_WAY_975429314_2",
+    "PARCEL_SUPPORT_ROAD_244184_263549",
+    "PARCEL_SUPPORT_ROAD_244124_263534",
+    "PARCEL_SUPPORT_ROAD_244092_263526",
+    "PARCEL_SUPPORT_ROAD_244221_263560",
+    "PARCEL_SUPPORT_ROAD_244003_263510",
+    "PARCEL_SUPPORT_ROAD_243968_263501",
+    "PARCEL_SUPPORT_ROAD_243959_263496",
+    "PARCEL_ROAD_E244165_N263450"
+   ]
+  },
+  {
+   "id": "PARCEL_ROAD_E243570_N263745",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243573.6,
+     263756.4
+    ],
+    [
+     243599.3,
+     263755
+    ],
+    [
+     243610,
+     263748.6
+    ],
+    [
+     243610,
+     263741.4
+    ],
+    [
+     243605,
+     263742.9
+    ],
+    [
+     243578.6,
+     263748.6
+    ],
+    [
+     243572.9,
+     263747.1
+    ],
+    [
+     243569.3,
+     263740
+    ],
+    [
+     243561.4,
+     263732.9
+    ],
+    [
+     243557.9,
+     263722.9
+    ],
+    [
+     243556.4,
+     263707.1
+    ],
+    [
+     243548.6,
+     263706.4
+    ],
+    [
+     243552.9,
+     263722.1
+    ],
+    [
+     243557.1,
+     263735
+    ],
+    [
+     243565,
+     263743.6
+    ],
+    [
+     243571.4,
+     263752.9
+    ]
+   ],
+   "holes": [],
+   "precedence": 3,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "lane round the teal-roof building, in its shade: the two rows here have paint on the photo, the lane between them and the road is read from the dark band and is an estimate",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "qa/asphaltScan.mjs"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_ASPHALT_ROAD_ZONE_78"
+   ]
+  },
+  {
+   "id": "PARCEL_ROAD_E243590_N263900",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243589.4,
+     263950
+    ],
+    [
+     243596.9,
+     263957.5
+    ],
+    [
+     243599.4,
+     263950
+    ],
+    [
+     243602.8,
+     263949.4
+    ],
+    [
+     243591.3,
+     263908.1
+    ],
+    [
+     243588.8,
+     263900
+    ],
+    [
+     243586.9,
+     263885
+    ],
+    [
+     243604.4,
+     263878.8
+    ],
+    [
+     243606,
+     263884
+    ],
+    [
+     243612,
+     263884
+    ],
+    [
+     243612,
+     263876.3
+    ],
+    [
+     243617.5,
+     263874.4
+    ],
+    [
+     243623.1,
+     263883.8
+    ],
+    [
+     243630,
+     263883.1
+    ],
+    [
+     243630.6,
+     263877.5
+    ],
+    [
+     243617.5,
+     263869.4
+    ],
+    [
+     243600,
+     263871.9
+    ],
+    [
+     243589.4,
+     263876.9
+    ],
+    [
+     243581,
+     263877.5
+    ],
+    [
+     243577.7,
+     263878
+    ],
+    [
+     243577.6,
+     263886
+    ],
+    [
+     243578.1,
+     263890
+    ],
+    [
+     243579.4,
+     263900
+    ],
+    [
+     243577.5,
+     263909.4
+    ],
+    [
+     243581.3,
+     263915.6
+    ],
+    [
+     243584.4,
+     263915.6
+    ],
+    [
+     243590,
+     263940
+    ]
+   ],
+   "holes": [],
+   "precedence": 3,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "service lane west of the long white building, under the footbridge and round its south side; building shade hides most of its south part; east of the building it takes in the start of the lane north",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "qa/asphaltScan.mjs"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_ASPHALT_ROAD_ZONE_74"
+   ]
+  },
+  {
+   "id": "PARCEL_LOT_E244180_N263505",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     244150.6,
+     263524.4
+    ],
+    [
+     244183.8,
+     263530
+    ],
+    [
+     244191.3,
+     263531.3
+    ],
+    [
+     244191.3,
+     263548.8
+    ],
+    [
+     244196.3,
+     263549.4
+    ],
+    [
+     244199,
+     263531
+    ],
+    [
+     244201.9,
+     263530.6
+    ],
+    [
+     244203.1,
+     263500
+    ],
+    [
+     244200,
+     263481.3
+    ],
+    [
+     244202.5,
+     263455
+    ],
+    [
+     244205,
+     263430
+    ],
+    [
+     244196.3,
+     263431.3
+    ],
+    [
+     244195,
+     263442.5
+    ],
+    [
+     244191.9,
+     263462.5
+    ],
+    [
+     244188.1,
+     263483.1
+    ],
+    [
+     244181.3,
+     263484.4
+    ],
+    [
+     244179.4,
+     263500
+    ],
+    [
+     244176.3,
+     263512.5
+    ],
+    [
+     244167.5,
+     263520.6
+    ],
+    [
+     244159.4,
+     263516.3
+    ],
+    [
+     244152.4,
+     263514.6
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "surface": "concrete",
+   "mesh": "Ground_Apron",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "pale concrete yard carrying the rows of LOT_E244175 and LOT_E244195, and its drive from the road: concrete on NGII, on the 12 cm aerial and in VR scene_f2 with cars parked on it",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "12 cm aerial",
+     "VR scene_f2"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_LOT_E244175_N263499_R2",
+    "PARCEL_LOT_E244175_N263499_R3",
+    "PARCEL_LOT_E244195_N263499_R1",
+    "PARCEL_LOT_E244186_N263524_R1",
+    "PARCEL_LOT_E244185_N263460_R1",
+    "PARCEL_LOT_E244185_N263460_R2"
+   ]
+  },
+  {
+   "id": "PARCEL_LOT_E243880_N263655",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     243862.5,
+     263663.8
+    ],
+    [
+     243918.1,
+     263651.3
+    ],
+    [
+     243951.8,
+     263645.1
+    ],
+    [
+     243951.8,
+     263633
+    ],
+    [
+     243910,
+     263643.3
+    ],
+    [
+     243860.8,
+     263655.6
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "mesh": "Ground_Lot",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "north band of the long lot, with its row; crowns hide the middle of the north edge. The south and east boundary follows the exposed asphalt aisle against todo 14's front rails: the former outline left a 1 m strip of real asphalt and stopped short of the east end",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "qa/asphaltScan.mjs"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_LOT_E243861_N263628_R1",
+    "PARCEL_LOT_E243861_N263628_R8"
+   ]
+  },
+  {
+   "id": "PARCEL_LOT_E244100_N263850",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     244078.9,
+     263883.9
+    ],
+    [
+     244073.3,
+     263890.6
+    ],
+    [
+     244073.3,
+     263897.2
+    ],
+    [
+     244081.7,
+     263896.7
+    ],
+    [
+     244082.8,
+     263893
+    ],
+    [
+     244086.7,
+     263891.7
+    ],
+    [
+     244086.7,
+     263900.8
+    ],
+    [
+     244092.9,
+     263900.4
+    ],
+    [
+     244092.1,
+     263891.7
+    ],
+    [
+     244089.4,
+     263890.6
+    ],
+    [
+     244090,
+     263883.9
+    ],
+    [
+     244088.1,
+     263876.7
+    ],
+    [
+     244085.2,
+     263864.4
+    ],
+    [
+     244087.2,
+     263859.2
+    ],
+    [
+     244110.6,
+     263853
+    ],
+    [
+     244120.6,
+     263850.3
+    ],
+    [
+     244125.2,
+     263849.2
+    ],
+    [
+     244129.4,
+     263846.1
+    ],
+    [
+     244134.4,
+     263842.8
+    ],
+    [
+     244134.4,
+     263838.6
+    ],
+    [
+     244127.8,
+     263837.8
+    ],
+    [
+     244127.2,
+     263833.3
+    ],
+    [
+     244122.2,
+     263833.9
+    ],
+    [
+     244111.1,
+     263835
+    ],
+    [
+     244090,
+     263839.4
+    ],
+    [
+     244084.4,
+     263827.2
+    ],
+    [
+     244077.8,
+     263824.4
+    ],
+    [
+     244074.4,
+     263820
+    ],
+    [
+     244072.2,
+     263820
+    ],
+    [
+     244071.4,
+     263822.8
+    ],
+    [
+     244057.8,
+     263829.4
+    ],
+    [
+     244060.6,
+     263833.9
+    ],
+    [
+     244062.8,
+     263835
+    ],
+    [
+     244061.7,
+     263848.3
+    ],
+    [
+     244060.6,
+     263849.4
+    ],
+    [
+     244071.7,
+     263855
+    ],
+    [
+     244077.2,
+     263871.7
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "mesh": "Ground_Lot",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "asphalt apron and lane between 2공학관 buildings; crowns hide the west side",
+   "evidence": {
+    "tier": "T1",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "qa/asphaltScan.mjs"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_LOT_E244058_N263822_R1",
+    "PARCEL_LOT_E244058_N263822_R2",
+    "PARCEL_LOT_E244058_N263822_R3",
+    "PARCEL_LOT_E244058_N263822_R4",
+    "PARCEL_LOT_E244058_N263822_R5",
+    "PARCEL_LOT_E244058_N263822_R7",
+    "PARCEL_LOT_E244068_N263887_R3",
+    "PARCEL_LOT_E244101_N263838_R1",
+    "PARCEL_LOT_E244121_N263839_R1",
+    "PARCEL_SUPPORT_LOT_244061_263844",
+    "PARCEL_SUPPORT_LOT_244134_263842"
+   ]
+  },
+  {
+   "id": "PARCEL_ROAD_E244179_N263386",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     244175.7,
+     263391.3
+    ],
+    [
+     244179.6,
+     263386.9
+    ],
+    [
+     244182,
+     263388.2
+    ],
+    [
+     244180.4,
+     263383.2
+    ],
+    [
+     244179.3,
+     263380.7
+    ],
+    [
+     244176.8,
+     263380.6
+    ],
+    [
+     244171.8,
+     263381
+    ],
+    [
+     244160,
+     263378.8
+    ],
+    [
+     244154,
+     263377.4
+    ],
+    [
+     244152,
+     263382.2
+    ],
+    [
+     244160,
+     263383.9
+    ],
+    [
+     244169.9,
+     263385.9
+    ],
+    [
+     244171.8,
+     263386.8
+    ]
+   ],
+   "holes": [],
+   "precedence": 3,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "lane running west along the south hedge from the end of the road by the tennis courts; it leaves the campus polygon at its west end, where this parcel stops. Estimated: 17 of its 61 m free edge shows no edge on NGII (5 m cut at the polygon and 4.5 m on the paved corner, where pavement carries on; 7.5 m against a crown no mask knows)",
+   "evidence": {
+    "tier": "T1",
+    "refs": [
+     "NGII 2025 orthophoto, traced by eye",
+     "12 cm aerial: lane continues",
+     "qa/asphaltScan.mjs"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_ROAD_E244165_N263450"
    ]
   }
  ],
