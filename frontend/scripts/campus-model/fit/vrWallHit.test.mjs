@@ -82,7 +82,7 @@ test("malformed, stale or unknown bearing references cannot produce a successful
 test("E3 canopy anchors use only the accepted e5 view while e3 correspondence is unresolved", () => {
   const stations = JSON.parse(readFileSync(new URL("../../perf/vr-stations.json", import.meta.url), "utf8"));
   const document = JSON.parse(readFileSync(new URL("../data/vr-bearings.json", import.meta.url), "utf8"));
-  const observations = bearingObservations(document, stations);
+  const observations = bearingObservations(document, stations).filter(row => row.building === "BLD_E3");
   // Task 18c: e3 col700 is an occluded upper-bay proxy, not a certified canopy point.
   // These are the actual observations consumed by compare-vr, not just a metadata count.
   assert.deepEqual(observations.map(row => [row.id, row.scene, row.col]), [

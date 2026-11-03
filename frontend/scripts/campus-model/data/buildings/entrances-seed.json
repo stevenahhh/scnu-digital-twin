@@ -1,0 +1,515 @@
+{
+  "note": "Reference-only pre-migration canopy polygons and simulation hints. Eye-read values are estimated. entrancesSeed.mjs projects these onto the shared wall frames; no runtime consumes these absolute canopy coordinates.",
+  "canopies": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "SD-E4-C1",
+        "kind": "entrance_canopy",
+        "vr_scene": "scene_e4",
+        "vr_face": "f",
+        "photo_support": "none",
+        "method": "vr+photo",
+        "estimated": true,
+        "note": "VR scene_e4 f (cols 1430-1620, rows 1530-1720): flat entrance canopy with the red 사범대학 fascia on two white piers at the building's north door; front edge at the pier bases, 4 m deep to the wall",
+        "posts": [
+          0,
+          1
+        ],
+        "height_m": 3.4,
+        "height_source": "VR scene_e4 f: canopy fascia at about one storey (estimated)",
+        "colour": "#e6e4de",
+        "postColour": "#eeeeea"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.47865319,
+              34.96978491
+            ],
+            [
+              127.47863404,
+              34.96981471
+            ],
+            [
+              127.47859067,
+              34.9698097
+            ],
+            [
+              127.47860981,
+              34.9697799
+            ],
+            [
+              127.47865319,
+              34.96978491
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "SD-E5-C1",
+        "kind": "entrance_canopy",
+        "vr_scene": "scene_e5",
+        "vr_face": "r",
+        "photo_support": "none",
+        "method": "vr+photo",
+        "estimated": true,
+        "note": "VR scene_e5 r (cols 380-840, rows 1840-1940): orange cantilevered canopy over E5's main entrance and its steps (no posts)",
+        "height_m": 4.4,
+        "height_source": "VR scene_e5 r: the canopy soffit over the ground-storey doors (estimated)",
+        "colour": "#e8641e"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.47834409,
+              34.96895902
+            ],
+            [
+              127.47840889,
+              34.96900305
+            ],
+            [
+              127.478382,
+              34.96901858
+            ],
+            [
+              127.4783172,
+              34.96897455
+            ],
+            [
+              127.47834409,
+              34.96895902
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "SD-E5-C2",
+        "kind": "entrance_canopy",
+        "vr_scene": "scene_e5",
+        "vr_face": "r",
+        "photo_support": "none",
+        "method": "vr+photo",
+        "estimated": true,
+        "note": "VR scene_e5 r (cols 1650-1970, rows 1810-1880): orange cantilevered canopy over the side entrance by the disabled bay",
+        "height_m": 4.4,
+        "height_source": "VR scene_e5 r: the canopy soffit over the ground-storey doors (estimated)",
+        "colour": "#e8641e"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.47855672,
+              34.96913494
+            ],
+            [
+              127.478632,
+              34.96919705
+            ],
+            [
+              127.47863375,
+              34.96921953
+            ],
+            [
+              127.47855847,
+              34.96915743
+            ],
+            [
+              127.47855672,
+              34.96913494
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "SD-E7-C1",
+        "kind": "entrance_canopy",
+        "vr_scene": "scene_e7",
+        "vr_face": "f",
+        "photo_support": "none",
+        "method": "vr+photo",
+        "estimated": true,
+        "note": "VR scene_e7 f (cols 1130-1330, rows 1260-1420): E7's entrance canopy (white frame, glass gables) on two front posts; drawn as a flat slab",
+        "posts": [
+          0,
+          1
+        ],
+        "height_m": 3.6,
+        "height_source": "VR scene_e7 f: canopy eaves at about one storey under the glass gables (estimated)",
+        "colour": "#dde3e6",
+        "postColour": "#eeeeea"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.4776871,
+              34.96755759
+            ],
+            [
+              127.47762913,
+              34.96758112
+            ],
+            [
+              127.47759262,
+              34.96755388
+            ],
+            [
+              127.47765059,
+              34.96753035
+            ],
+            [
+              127.4776871,
+              34.96755759
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "SD-C2-C1",
+        "kind": "entrance_canopy",
+        "vr_scene": "scene_c2",
+        "vr_face": "f",
+        "photo_support": "none",
+        "method": "vr+photo",
+        "estimated": true,
+        "note": "VR scene_c2 f (cols 935-1170, rows 1300-1510): orange box canopy over C2's entrance on a red column at its west corner",
+        "posts": [
+          0
+        ],
+        "height_m": 3.6,
+        "height_source": "VR scene_c2 f: canopy over the ground-storey door (estimated)",
+        "colour": "#e8641e",
+        "postColour": "#b8323a"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.48005585,
+              34.97039394
+            ],
+            [
+              127.48010572,
+              34.97040453
+            ],
+            [
+              127.48009911,
+              34.97043102
+            ],
+            [
+              127.48004924,
+              34.97042042
+            ],
+            [
+              127.48005585,
+              34.97039394
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "SD-C3-C1",
+        "kind": "entrance_canopy",
+        "vr_scene": "scene_c3",
+        "vr_face": "f",
+        "photo_support": "none",
+        "method": "vr+photo",
+        "estimated": true,
+        "note": "VR scene_c3 f (cols 830-1300, rows 1390-1750): stainless porte-cochère over the 공동실험실습관 entrance on two round columns (a slab from the columns back to the wall)",
+        "posts": [
+          0,
+          1
+        ],
+        "postColour": "#8e9396",
+        "height_m": 5.2,
+        "height_source": "VR scene_c3 f: porte-cochère about one and a half storeys (estimated)",
+        "colour": "#c4c8ca"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.47934133,
+              34.97052538
+            ],
+            [
+              127.47943071,
+              34.97051153
+            ],
+            [
+              127.47943843,
+              34.9705743
+            ],
+            [
+              127.47934905,
+              34.97058815
+            ],
+            [
+              127.47934133,
+              34.97052538
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "SD-B3-C1",
+        "kind": "entrance_canopy",
+        "vr_scene": "scene_b3",
+        "vr_face": "r",
+        "photo_support": "none",
+        "method": "vr+photo",
+        "estimated": true,
+        "note": "VR scene_b3 r: white box canopy cantilevered over the side door beside the glass stair tower (no posts)",
+        "height_m": 3.2,
+        "height_source": "VR scene_b3 r: canopy box at about one storey (estimated)",
+        "colour": "#e9ecee"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.48197747,
+              34.96962835
+            ],
+            [
+              127.48195015,
+              34.9696039
+            ],
+            [
+              127.48193172,
+              34.96961932
+            ],
+            [
+              127.48195904,
+              34.96964378
+            ],
+            [
+              127.48197747,
+              34.96962835
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "SD-A1-C1",
+        "kind": "entrance_canopy",
+        "vr_scene": "scene_a1",
+        "vr_face": "r",
+        "photo_support": "none",
+        "method": "vr+photo",
+        "estimated": true,
+        "note": "VR scene_a1 r: white sloping-roof entrance canopy of 약학대학 over the stair, cantilevered between two purple wall piers",
+        "height_m": 3.8,
+        "height_source": "VR scene_a1 r: canopy soffit over the entrance stair (estimated)",
+        "colour": "#e6e8ea"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.48101583,
+              34.96866673
+            ],
+            [
+              127.48103392,
+              34.96871724
+            ],
+            [
+              127.48099704,
+              34.96874413
+            ],
+            [
+              127.48097894,
+              34.96869362
+            ],
+            [
+              127.48101583,
+              34.96866673
+            ]
+          ]
+        ]
+      }
+    }
+  ],
+  "simulation": {
+    "metadata": {
+      "status": "derived; replace with surveyed entrances"
+    },
+    "buildings": [
+      {
+        "building_id": "BLD_D4",
+        "building_name": "공과대학 3호관",
+        "source": "GLB center hint snapped to nearest derived route",
+        "entrances": [
+          {
+            "entrance_id": "ENT_D4_MAIN",
+            "position": [
+              -24.137,
+              0,
+              5.053
+            ],
+            "node_id": "POI_ENT_D4_MAIN",
+            "allowed_types": [
+              "person",
+              "scooter"
+            ]
+          }
+        ]
+      },
+      {
+        "building_id": "BLD_D3",
+        "building_name": "공과대학 2호관",
+        "source": "GLB center hint snapped to nearest derived route",
+        "entrances": [
+          {
+            "entrance_id": "ENT_D3_MAIN",
+            "position": [
+              93.848,
+              0,
+              -50.941
+            ],
+            "node_id": "POI_ENT_D3_MAIN",
+            "allowed_types": [
+              "person",
+              "scooter"
+            ]
+          }
+        ]
+      },
+      {
+        "building_id": "BLD_D2",
+        "building_name": "공과대학 1호관",
+        "source": "GLB center hint snapped to nearest derived route",
+        "entrances": [
+          {
+            "entrance_id": "ENT_D2_MAIN",
+            "position": [
+              130.494,
+              0,
+              43.46
+            ],
+            "node_id": "POI_ENT_D2_MAIN",
+            "allowed_types": [
+              "person",
+              "scooter"
+            ]
+          }
+        ]
+      },
+      {
+        "building_id": "BLD_C1",
+        "building_name": "도서관",
+        "source": "GLB center hint snapped to nearest derived route",
+        "entrances": [
+          {
+            "entrance_id": "ENT_C1_MAIN",
+            "position": [
+              213.914,
+              0,
+              6.114
+            ],
+            "node_id": "POI_ENT_C1_MAIN",
+            "allowed_types": [
+              "person",
+              "scooter"
+            ]
+          }
+        ]
+      },
+      {
+        "building_id": "BLD_E1",
+        "building_name": "학생회관",
+        "source": "GLB center hint snapped to nearest derived route",
+        "entrances": [
+          {
+            "entrance_id": "ENT_E1_MAIN",
+            "position": [
+              289.081,
+              0,
+              -170.624
+            ],
+            "node_id": "POI_ENT_E1_MAIN",
+            "allowed_types": [
+              "person",
+              "scooter"
+            ]
+          }
+        ]
+      },
+      {
+        "building_id": "BLD_A1",
+        "building_name": "대학본부",
+        "source": "GLB center hint snapped to nearest derived route",
+        "entrances": [
+          {
+            "entrance_id": "ENT_A1_MAIN",
+            "position": [
+              406.385,
+              0,
+              -229.926
+            ],
+            "node_id": "POI_ENT_A1_MAIN",
+            "allowed_types": [
+              "person",
+              "scooter"
+            ]
+          }
+        ]
+      },
+      {
+        "building_id": "BLD_E8",
+        "building_name": "인문예술대학",
+        "source": "porch mouth of the E8 entrance passage (the raised porch block of the GIS footprint over the walk to the glass core of data/facade-attachments.json, VR scene_e8 f, PR #58): 1 m outside the footprint in the paved forecourt, reached across the courtyard (estimated)",
+        "entrances": [
+          {
+            "entrance_id": "ENT_E8_MAIN",
+            "position": [
+              75.831,
+              0,
+              -165.761
+            ],
+            "node_id": "POI_ENT_E8_MAIN",
+            "allowed_types": [
+              "person"
+            ]
+          }
+        ],
+        "category": "academic"
+      }
+    ]
+  }
+}

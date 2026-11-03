@@ -38,6 +38,7 @@
 //
 //   bun run model:build      (generator, then pack.mjs)
 import { mkdir } from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { sceneToTm, tmToScene } from "../../src/geo/epsg5186.mjs";
@@ -48,6 +49,8 @@ import { GlbBuilder } from "./lib/glb.mjs";
 import { assertPaintOnParcels, pieceKey } from "./lib/parcels.mjs";
 import { GroundPartition, TinPartition, splitByLine } from "./lib/partition.mjs";
 import { buildBuildings } from "./stages/buildings.mjs";
+import { buildEntrances } from "./stages/entrances.mjs";
+import { loadTmFootprints } from "./lib/footprints.mjs";
 import { buildGround } from "./stages/ground.mjs";
 import { buildFurniture, loadFurniture } from "./stages/furniture.mjs";
 import { buildLights, placeLamps } from "./stages/lights.mjs";
@@ -192,6 +195,8 @@ console.log(`ground partition: ${partition.cells.size} terrain triangles hold gr
 const treeInstances = await buildTrees({ glb, placement: treePlacement });
 // Furniture and lamps stand on the raised walkway slab where there is one (stages/kerbs.mjs).
 const groundAt = kerbs.groundHeightAt;
+buildEntrances({ glb, records: JSON.parse(readFileSync(new URL("./data/buildings/entrances.json", import.meta.url), "utf8")).records,
+  footprints: await loadTmFootprints(), groundAt });
 const { lamps, stats: lampStats, sites } = placeLamps({ inputs, furniture, selectableBuildings, campusBuildings, offCampusLots, groundInfo });
 const { glow } = buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs, groundAt, wheelStops: parking.wheelStops });
 buildLights({ glb, lamps, stats: lampStats, groundAt, glow });
@@ -264,6 +269,7 @@ function writeHeightSidecar(heightAt, terrainAt, slabAt, labelAt) {
 // Order matters: the first match wins. A root no rule takes throws.
 const startsWith = (...prefixes) => (name) => prefixes.some((p) => name.startsWith(p));
 const collections = glb.groupRoots([
+  { path: "Buildings/Entrances", match: startsWith("SD-", "ENT_") },
   // the generator's invisible pick prisms of named campus buildings: their own collection, so one click hides them
   { path: "Pick_Proxies", match: startsWith("BLD_SCNU_") },
   { path: "Buildings", match: (name) => name.startsWith("BLD_") || name === "CampusBuildings" },

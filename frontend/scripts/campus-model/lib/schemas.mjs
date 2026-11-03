@@ -208,14 +208,17 @@ function anchors(doc, context = {}) {
     ids.add(id);
     if (structural.length || (!context.footprints && !context.parcels)) return;
     try {
-      resolveAnchor(record, context.footprints ?? {}, context.parcels ?? {});
+      let footprints = context.footprints ?? {};
       if (context.nodeMap && record.anchor.building) {
         const building = record.anchor.building;
         const entries = context.nodeMap.entries;
         const entry = Array.isArray(entries) ? entries.find((e) => e?.nodeId === building) : null;
-        errors.push(...checkWallMapping(building, context.footprints[building], entry?.walls)
+        const saved = entry?.walls ?? context.nodeMap.additionalWalls?.[building];
+        errors.push(...checkWallMapping(building, context.footprints[building], saved)
           .map((e) => `${id}: ${building}/${record.anchor.wall}: ${e}`));
+        footprints = { ...footprints, [building]: { ...footprints[building], walls: saved } };
       }
+      resolveAnchor(record, footprints, context.parcels ?? {});
     } catch (error) {
       if (!(error instanceof AnchorError)) throw error;
       errors.push(error.message);
