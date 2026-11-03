@@ -38,8 +38,8 @@ const records = seed.canopies.map(feature=>{
     doors:{leaves:2,glazed:true,frame:p.colour},
     canopy:{form:p.posts?.length?"posted":"cantilever",widthM,depthM,heightM:p.height_m,thicknessM:0.25,colour:p.colour,
       postColour:p.postColour??p.colour,posts:(p.posts??[]).map((_,i)=>({sM:(i===0?-1:1)*(widthM/2-0.15),tM:depthM-0.15}))},
-    estimated:true,evidence:{tier:measurement||consistent?"T2":"T4",refs,
-      note:`Dimensions and door leaves estimated from legacy reference. ${p.note}`,
+    estimated:true,evidence:{...measurement?.evidence,tier:measurement||consistent?"T2":"T4",refs,
+      note:`${measurement?.evidence.note ? `${measurement.evidence.note} ` : ""}Dimensions and door leaves estimated from legacy reference. ${p.note}`,
       ...(!measurement&&!consistent&&hit?.point?{mappingDisagreement:{legacyBuilding:legacy.w.id.split("/")[0],firstHitBuilding:hit.building,scene:p.vr_scene,face:p.vr_face,col}}:{})}};
 });
 const simulation=structuredClone(seed.simulation);

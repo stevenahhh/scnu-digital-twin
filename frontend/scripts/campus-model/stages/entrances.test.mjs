@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFileSync } from "node:fs";
 import { entranceGeometry, validateEntrances } from "./entrances.mjs";
 import { wallsOf } from "../lib/anchors.mjs";
 
@@ -8,6 +9,19 @@ const footprints = { BLD_TEST: { ...fp, walls: wallsOf("BLD_TEST", fp) } };
 const entry = () => ({ id:"ENT",anchor:{building:"BLD_TEST",wall:"W00",sM:5,tM:0},widthM:2,type:"main",
   doors:{leaves:2,glazed:true,frame:"#eeeeee"},canopy:{form:"cantilever",widthM:4,depthM:3,heightM:3.2,thicknessM:0.25,colour:"#ee6622",posts:[{sM:-1.5,tM:2.7}]},
   estimated:true,evidence:{tier:"T4",refs:["fixture"]} });
+test("shipped entrances retain curated anchors and accepted/rejected observation lineage", () => {
+  const read = file => JSON.parse(readFileSync(new URL(`../data/${file}`, import.meta.url), "utf8"));
+  const curated = read("vr-bearings.json").records;
+  const shipped = read("buildings/entrances.json").records;
+  for (const source of curated) {
+    const target = shipped.find(r => r.id === source.id);
+    assert.ok(target, source.id);
+    assert.equal(target.anchor.sM, source.anchor.sM, source.id);
+    assert.deepEqual(target.evidence.refs, source.evidence.refs, source.id);
+    assert.deepEqual(target.evidence.rejectedRefs, source.evidence.rejectedRefs, source.id);
+    assert.deepEqual(target.evidence.poseAudit, source.evidence.poseAudit, source.id);
+  }
+});
 test("canopy back edge touches its anchor wall and extends outdoors with its declared dimensions", () => {
   const g = entranceGeometry(entry(), footprints);
   assert.deepEqual(g.ring, [[0,3],[0,7],[-3,7],[-3,3]]);
