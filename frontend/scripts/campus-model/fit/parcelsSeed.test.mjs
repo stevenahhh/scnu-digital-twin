@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { validate } from "../lib/schemas.mjs";
-import { CURATION_FILE, PARCELS_FILE, applyParcelCuration, compareToLayers, layerOver, parkingRowParcels, registrationRefs, seedParcels } from "./parcelsSeed.mjs";
+import { CURATION_FILE, PARCELS_FILE, applyParcelCuration, finishRoadParcels, compareToLayers, layerOver, parkingRowParcels, registrationRefs, seedParcels } from "./parcelsSeed.mjs";
 
 const square = (x, y, s) => [[x, y], [x + s, y], [x + s, y + s], [x, y + s]];
 const layer = (over) => ({ cls: "PAVING", mesh: "Ground_Pavers", label: 2, precedence: 2, source: "OSM-derived", source_ref: "way/1", rings: [square(0, 0, 10)], ...over });
@@ -117,6 +117,26 @@ test("data/ground/parcels.json equals today's ground layers ring for ring", { sk
 });
 
 const emptyCuration = { note: "n", replace: [], remove: [], add: [], notAsphalt: [], unreachable: [] };
+
+test("reviewed road boundary replaces a support hull without painting its island interior", () => {
+  const support = { id: "PARCEL_SUPPORT_ROAD_TEST", cls: "ASPHALT", class: "road", ring: square(0, 0, 10), holes: [], precedence: 3, mesh: "Ground_Asphalt", label: null, source: "photo-paint-support", source_ref: "hull", paintAllowed: true, estimated: true, evidence: { tier: "T1", refs: ["kerb"] } };
+  const curation = { ...emptyCuration, replace: [{ id: support.id, ring: [[8, 0], [10, 0], [10, 10], [8, 10]], evidence: { tier: "T1", refs: ["photo edge"] }, estimated: true, reason: "island is not asphalt" }] };
+  const pieces = [
+    { id: "ISLAND", kind: "lane_line", rings: [square(4, 4, 1)] },
+    { id: "ROAD", kind: "lane_line", rings: [square(8.5, 4, 1)] },
+  ];
+  const result = finishRoadParcels([support], curation, pieces, (p) => p);
+  assert.equal(result.parcels[0].source, "photo-curated");
+  assert.deepEqual(result.rejected.map((r) => r.piece), ["ISLAND@4.50,4.50"]);
+  assert.deepEqual(result.parcels[0].ring, curation.replace[0].ring);
+});
+
+test("a reviewed road parcel restores excluded zebra bars only where asphalt now exists", () => {
+  const curation = { ...emptyCuration, add: [{ id: "PARCEL_ROAD_CROSSING", class: "road", ring: square(0, 0, 10), evidence: { tier: "T1", refs: ["photo crossing"] }, estimated: true, reason: "crossing carriageway" }] };
+  const pieces = [1, 3, 5, 12].map((x) => ({ id: `BAR_${x}`, kind: "zebra_bar", rings: [square(x, 4, 0.5)], estimated: true }));
+  const result = finishRoadParcels([], curation, pieces, (p) => p);
+  assert.deepEqual(result.rejected.map((r) => r.piece), ["BAR_12@12.25,4.25"]);
+});
 
 test("parcel curation replaces a ring in place, removes a parcel and adds new ones after the rest", () => {
   const seeded = seedParcels([layer({}), layer({ source_ref: "way/2", rings: [square(20, 0, 4)] }), layer({ cls: "ASPHALT", source: "road-zone-measured", source_ref: "road zone 3", precedence: 3, rings: [square(50, 0, 5)] })]);

@@ -8152,9 +8152,9 @@
     {
       "id": "OC0103",
       "anchor": {
-        "parcel": "PARCEL_SUPPORT_ROAD_243712_263738",
-        "uM": -4.262046338457082,
-        "vM": 1.8670466705291657,
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_54",
+        "uM": -19.230136010909913,
+        "vM": 6.665565641834027,
         "yawDeg": 0
       },
       "evidence": {
@@ -8163,6 +8163,7 @@
           "survey seed E=243714.37112077008 N=263739.1303834006; position not independently verified",
           "final pole placement: data/free-standing-pole-placements.json, reconciled from packed Furniture.extras.poles after checkPoles; photo bases retain priority",
           "source=survey; kind=street_lamp; method=by-eye-photo",
+          "outside all curated parcels; nearest parcel vertex 3.975 m",
           "retained pole verdict=unresolved; root/seed uncertainty=1.2 m"
         ]
       },
@@ -8171,7 +8172,7 @@
       "crossingDeg": null,
       "bearingChecks": [],
       "vrObservations": [],
-      "parcelRelation": "inside",
+      "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
       "sourceInput": "9994c10170da0b93965d354c5aa7569b3018dcec2375ba2b1cd4cd2193e3d4e8",
       "sourceGeometry": {

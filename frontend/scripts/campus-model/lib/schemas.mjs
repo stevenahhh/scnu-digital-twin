@@ -6,6 +6,7 @@ import { readFileSync } from "node:fs";
 
 import { DESIGN_CLASSES, PAINT_CLASSES } from "./parcels.mjs";
 import { AnchorError, anchorRecordErrors, checkWallMapping, resolveAnchor } from "./anchors.mjs";
+import { roadSections, junctions } from "./roadSections.mjs";
 
 const isPair = (value) => Array.isArray(value) && value.length === 2 && value.every(Number.isFinite);
 const isText = (value) => typeof value === "string" && value.length > 0;
@@ -487,7 +488,7 @@ function parcelCuration(doc) {
   return errors;
 }
 
-const KINDS = { bldNodeMap, registration, parcels, parking, parkingCuration, parcelCuration, anchors };
+const KINDS = { bldNodeMap, registration, parcels, parking, parkingCuration, parcelCuration, anchors, roadSections, junctions };
 
 export function validate(kind, doc, context) {
   const check = KINDS[kind];

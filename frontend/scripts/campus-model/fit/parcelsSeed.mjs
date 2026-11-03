@@ -26,6 +26,7 @@ import { pointInRing } from "../lib/geometry.mjs";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const PARCELS_FILE = path.join(HERE, "..", "data", "ground", "parcels.json");
 export const CURATION_FILE = path.join(HERE, "..", "data", "ground", "parcel-curation.json");
+const ROAD_PARCELS_FILE = path.join(HERE, "..", "data", "ground", "road-parcels.json");
 
 // design §2: T0 survey/cadastre, T1 orthophoto measurement, T4 estimate. OSM gives existence, never geometry: T4.
 const TIER = { "NGII-A003": "T0", "road-zone-measured": "T0", "OSM-derived": "T4", "project-estimated": "T4" };
@@ -220,6 +221,19 @@ export function applyParcelCuration(seeded, curation) {
   return { kept, added };
 }
 
+// Road records replace paint hulls AFTER their stable ids have been allocated.
+// Reclassify rejected paint against the final map, not the pre-curation seed:
+// otherwise even a reviewed road beneath a zebra bar remains excluded forever.
+export function finishRoadParcels(parcels, curation, paint, toTm) {
+  const { kept, added } = applyParcelCuration(parcels, curation);
+  const replaced = new Set(curation.replace.map((r) => r.id));
+  const final = layerOver([
+    ...kept.map((p) => replaced.has(p.id) ? { ...p, source: "photo-curated", curated: "todo 22" } : p),
+    ...added.map((p) => ({ ...p, curated: "todo 22" })),
+  ]);
+  return { parcels: final, rejected: paintViolations(paint, final, toTm) };
+}
+
 // Seed + curation: the seeded parcels, a support parcel under photo-detected paint the seed left on natural ground or on
 // an estimated paving parcel, the paint the photo shows on surveyed non-road ground listed in paintExcluded, and the
 // open A003 kerb lines (outline cuts with no area) in kerbLines.
@@ -230,9 +244,12 @@ export async function curatedDoc(refs) {
   const { doc: parking, paint, parking: parkingPieces } = await currentPaint();
   const toTm = ([x, z]) => sceneToTm(x, z);
   const rowParcels = parkingRowParcels(parking, parkingPieces, seeded, toTm);
-  const { parcels: supports, rejected } = supportParcels([...paint, ...parkingPieces], [...seeded, ...rowParcels], toTm);
+  const { parcels: supports } = supportParcels([...paint, ...parkingPieces], [...seeded, ...rowParcels], toTm);
   // the curated parcels come last and do not feed the supports, so the support ids parking.json names stay what they were
-  const parcels = layerOver([...seeded, ...rowParcels, ...supports, ...added]);
+  const { parcels, rejected } = finishRoadParcels(
+    [...seeded, ...rowParcels, ...supports, ...added],
+    JSON.parse(readFileSync(ROAD_PARCELS_FILE, "utf8")), [...paint, ...parkingPieces], toTm,
+  );
   return {
     note: "Ground parcel map (design §5): the one ground class map stages/ground.mjs, kerbs.mjs, tactile.mjs and surfaces.mjs read (plan campus-ground-truth-redesign todo 9). Seeded by fit/parcelsSeed.mjs from the network/surfaces.mjs layers in draw order (rings EPSG:5186 [E, N] metres, `render` = how the stage draws it, `class` = the design §5 class), then curated: data/ground/parcel-curation.json replaces or removes seeded parcels and adds source photo-curated road and lot parcels read from the photo, PARCEL_LOT_*_R* records (source parking-record) lie under parking rows of data/ground/parking.json that the seed leaves off road and lot ground, PARCEL_SUPPORT_* records lie under photo-detected paint the seed left on natural ground or estimated paving (paint proves pavement), paintExcluded lists paint the photo shows on surveyed non-road ground (not drawn), kerbLines are the open A003 kerb lines. source_ref names the registration corrections (data/photo/evidence/ground-registration.json, a003-registration.json) applied to that parcel; tier T4 and support parcels are estimates (추정).",
     parcels,
