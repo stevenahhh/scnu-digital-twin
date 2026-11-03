@@ -40,12 +40,13 @@ export function compareRoadInventory(reference, generated) {
   const denominator = judged + counts.unknown;
   const accuracy = judged ? (counts.tp + counts.tn) / judged : null;
   const lowerBound = denominator ? (counts.tp + counts.tn) / denominator : null;
+  const unassignedOwners = generated.unassignedOwners ?? [];
   const segments = {
-    rows, counts, denominator, judged, accuracy, lowerBound,
+    rows, counts, denominator, judged, accuracy, lowerBound, unassignedOwners,
     precision: counts.tp + counts.fp ? counts.tp / (counts.tp + counts.fp) : null,
     recall: counts.tp + counts.fn ? counts.tp / (counts.tp + counts.fn) : null,
     threshold: 0.95,
-    pass: counts.unknown === 0 && lowerBound !== null && lowerBound >= 0.95,
+    pass: counts.unknown === 0 && unassignedOwners.length === 0 && lowerBound !== null && lowerBound >= 0.95,
   };
 
   const crossingMap = new Map(generated.crossings.map(r => [r.id, r]));
