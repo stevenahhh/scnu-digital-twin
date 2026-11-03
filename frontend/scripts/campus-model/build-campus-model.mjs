@@ -79,7 +79,9 @@ const metresToUnits = (m) => m * SCENE_UNITS_PER_METRE;
 const inputs = await loadInputs();
 
 const glb = new GlbBuilder();
-const furniture = loadFurniture();
+const anchorFootprints = await loadTmFootprints();
+const wallSnapshots = Object.fromEntries(Object.entries(anchorFootprints).map(([id, fp]) => [id, fp.walls]));
+const furniture = loadFurniture({ anchorFootprints, wallSnapshots });
 const { selectableBuildings, campusBuildings, offCampusLots, contextParts } = await buildBuildings({ glb, inputs, detailedStructures: furniture.detailedStructures });
 const markings = await loadMarkings({ inputs, buildings: [...selectableBuildings, ...campusBuildings] });
 console.log(describeMarkings(markings));
@@ -196,7 +198,7 @@ const treeInstances = await buildTrees({ glb, placement: treePlacement });
 // Furniture and lamps stand on the raised walkway slab where there is one (stages/kerbs.mjs).
 const groundAt = kerbs.groundHeightAt;
 buildEntrances({ glb, records: JSON.parse(readFileSync(new URL("./data/buildings/entrances.json", import.meta.url), "utf8")).records,
-  footprints: await loadTmFootprints(), groundAt });
+  footprints: anchorFootprints, groundAt });
 const { lamps, stats: lampStats, sites } = placeLamps({ inputs, furniture, selectableBuildings, campusBuildings, offCampusLots, groundInfo });
 const { glow } = buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs, groundAt, wheelStops: parking.wheelStops });
 buildLights({ glb, lamps, stats: lampStats, groundAt, glow });

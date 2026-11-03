@@ -6,8 +6,10 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { wgs84ToTm } from "../../../src/geo/epsg5186.mjs";
 import { mapSiteGeometry, seedSiteDetails, isWallSiteDetail } from "../lib/siteDetailAnchors.mjs";
-import { firstBuildingHit, loadSceneBuildings } from "./vrSceneBuildings.mjs";
+import { firstBuildingHit } from "./vrSceneBuildings.mjs";
 import { wallHit } from "./vrWallHit.mjs";
+import { loadTmFootprints } from "../lib/footprints.mjs";
+import { wallsOf } from "../lib/anchors.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const readJson = name => JSON.parse(readFileSync(join(root, name), "utf8"));
@@ -18,23 +20,11 @@ const inputs = Object.fromEntries(inputNames.map(name => [name,
 const survey = readJson("data/photo/site-detail.geojson");
 const parcelList = readJson("data/ground/parcels.json").parcels;
 const stations = readJson("../perf/vr-stations.json");
-const buildings = await loadSceneBuildings();
-// Until todo 19's shared loader lands, reconstruct the exact TM rings returned by todo 18.
-// These are source rings, not fabricated saved wall snapshots. Resolver calls accept snapshots separately.
-const footprints = {};
-for (const building of buildings) {
-  const polygons = [];
-  for (const wall of building.walls) {
-    const local = wall.id.slice(building.id.length + 1);
-    const part = Number(/^P(\d+)\//.exec(local)?.[1] ?? 0);
-    const hole = /H(\d+)\//.exec(local);
-    const ring = hole ? Number(hole[1]) + 1 : 0;
-    polygons[part] ??= [];
-    polygons[part][ring] ??= [];
-    polygons[part][ring].push(wall.a);
-  }
-  footprints[building.id] = { polygons };
-}
+const footprints = await loadTmFootprints();
+const snapshots = Object.fromEntries(Object.entries(footprints).map(([id, fp]) => [id, fp.walls]));
+const buildings = Object.entries(footprints).map(([id, fp]) => ({
+  id, walls: wallsOf(id, fp).map(w => ({ id: w.id, a: w.A, b: w.B })),
+}));
 const parcels = Object.fromEntries(parcelList.map(p => [p.id, p]));
 const context = { footprints, parcels };
 const wallRecords = {};
@@ -73,7 +63,7 @@ const features = survey.features.map(f => ({
     reason: "B3 bed reading spans BLD_B4/W12, BLD_B5_Greenhouse/W03 and BLD_B3/W05; col 1450 gives s=-8.922697 m on B4/W12 (L=18.643487 m). Retain parcel-local T4 estimate; station/footprint discrepancy unresolved, no clamping.",
   } : {}),
 }));
-const result = seedSiteDetails(features, context, wallRecords);
+const result = seedSiteDetails(features, context, wallRecords, snapshots);
 const targetIds = new Set(features.filter(isWallSiteDetail).map(f => f.id));
 const outsideScope = features.filter(f => f.photo_support === "none" && !targetIds.has(f.id)).map(f => ({
   id: f.id, kind: f.kind, observation: f.note,
