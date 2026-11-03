@@ -120,3 +120,60 @@ bun scripts/campus-model/fit/objectAnchorsSeed.mjs --write
 
 Then run the plan's model/AO rebuild chain. The anchor seeds retain original
 world positions while recomputing their coordinates in the changed parcels.
+
+## Record generator and migration status
+
+`stages/roadMarkings.mjs` exports `roadMarkingPlan({sections, junctions, context})`.
+It returns scene-coordinate `pieces` for `buildMarkings`, per-record `humps`
+for `humpLayers`/`buildHumpMeshes`, and a metre-valued `heightAt(x,z)` with
+`heightAt.near` for terrain refinement and height-sidecar sampling.
+`humpProfile` is shared with the existing photo-hump adapter. Ground hump
+layers and walls use each record's length and height when supplied.
+
+The generator validates both documents before producing geometry. It reads no
+photo detections or gate. Section stations belong to the directed reference
+path, including on bends; dashes use phase zero at `fromM`, or the supplied
+`dashPhaseM` as the elapsed distance in their cycle. Yellow dashes use 3/3 m,
+white dashes 3/5 m. Double lines have a 0.15 m clear gap. These inherited shape
+defaults are not new measurements.
+
+Lane indices run right to left along the path, with forward lanes followed by
+backward lanes. Opposing directions meet at the reference centre; one-way
+lanes are centred on it. An optional `line: "white_solid" | "white_dashed"`
+on a lane records its separator from the next same-direction lane. Omitted
+separators produce no paint. Kerb offsets are measured from the shifted
+reference, not inferred from detected fragments.
+
+An approach's `from` end receives backward traffic; `to` receives forward
+traffic. Stop lines span incoming lanes only. Crossing `offsetM` and hump
+`atM` measure inward from that endpoint. Glyph `atM` measures upstream from
+the stop line (or endpoint when no stop line is recorded); `lane` uses the
+section's index. Missing sections, outgoing glyph lanes and unsupported text
+raise record-named errors. Arrow/text template sizes are estimated.
+
+Explicit export, from `frontend/`:
+
+```sh
+bun scripts/campus-model/stages/roadMarkings.mjs \
+  --sections /private/tmp/road-sections.json \
+  --junctions /private/tmp/junctions.json \
+  --out /private/tmp/road-markings.json
+```
+
+**Todo 23 is not complete.** At base `aed3d889`, neither published
+`road-sections.json` nor `junctions.json` exists. The RD_093 proposal records
+no centre/edge paint and no junction elements; it cannot replace the gate's
+current markings. `road-ground.json` describes ground proposals and explicitly
+unverified nearest-segment associations, not an alternative marking inventory.
+The campus build therefore still uses `loadMarkings` and the photo-hump
+adapter. Photo inputs have not yet been moved to evidence, the gate is still
+read by that legacy path, and `network/stalls.mjs` has not been deleted.
+Do not treat the new generator's unit tests or an unchanged campus render
+as proof that this migration has occurred.
+
+Before switching the campus build, seed section/junction records for the
+current accepted road paint, preserve the five restored todo-22 marks and
+the pedestrian-island divider exclusion, then replace the legacy loader,
+move its photo inputs to evidence, and rerun the parcel/height/visual checks.
+The generator does not silently substitute photo fragments or empty records
+when those inputs are missing.

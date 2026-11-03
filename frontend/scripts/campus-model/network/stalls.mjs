@@ -10,6 +10,8 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { geoToModel, SCENE_UNITS_PER_METRE } from "../lib/frame.mjs";
+import { humpProfile } from "../stages/roadMarkings.mjs";
+export { humpProfile } from "../stages/roadMarkings.mjs";
 
 const UNIT = SCENE_UNITS_PER_METRE;
 const PHOTO = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "photo");
@@ -46,8 +48,6 @@ export function orientedBox(ring) {
 }
 
 // ---------------------------------------------------------------- humps
-export const humpProfile = (sM) => (Math.abs(sM) >= HUMP_LENGTH_M / 2 ? 0 : HUMP_HEIGHT_M * (1 - ((2 * sM) / HUMP_LENGTH_M) ** 2));
-
 // features: speed_bump features (GeoJSON, lon/lat); onRoad([x, z]) -> boolean. Returns humps with their frame
 // (model units: centre, travel axis u, across axis v, halfWidth) and the height function above the road.
 export function buildHumps({ features, onRoad, log = console.log }) {
