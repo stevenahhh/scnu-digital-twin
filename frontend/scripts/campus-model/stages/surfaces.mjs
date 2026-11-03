@@ -658,7 +658,10 @@ export const describeSurfaces = (stats) => `surfaces: ${stats.map((s) => `${s.me
 export const HUMP_PRECEDENCE = 6.5;
 export function humpLayers(humps, lengthM) {
   return humps.map((hump) => {
-    const corner = (sM, tM) => sceneToTm(hump.centre[0] + hump.u[0] * sM * UNIT + hump.v[0] * tM * UNIT, hump.centre[1] + hump.u[1] * sM * UNIT + hump.v[1] * tM * UNIT);
+    const corner = (sM, tM) => hump.tm
+      ? [hump.tm.centre[0]+hump.tm.forward[0]*sM+hump.tm.forward[1]*tM,
+        hump.tm.centre[1]+hump.tm.forward[1]*sM-hump.tm.forward[0]*tM]
+      : sceneToTm(hump.centre[0] + hump.u[0] * sM * UNIT + hump.v[0] * tM * UNIT, hump.centre[1] + hump.u[1] * sM * UNIT + hump.v[1] * tM * UNIT);
     const [hl, hw] = [(hump.lengthM ?? lengthM) / 2, hump.widthM / 2];
     return {
       cls: "ASPHALT", mesh: "Ground_Hump", hump: true, precedence: HUMP_PRECEDENCE, estimated: true,
@@ -686,7 +689,10 @@ export async function buildHumpMeshes({ glb, humps, surface, ao = null, profile 
     const indices = [];
     const ns = Math.max(1, Math.round(humpLength / STEP_S));
     const nt = Math.max(1, Math.ceil(hump.widthM / STEP_T));
-    const point = (sM, tM) => [hump.centre[0] + hump.u[0] * sM * UNIT + hump.v[0] * tM * UNIT, hump.centre[1] + hump.u[1] * sM * UNIT + hump.v[1] * tM * UNIT];
+    const point = (sM, tM) => hump.tm
+      ? tmToScene(hump.tm.centre[0]+hump.tm.forward[0]*sM+hump.tm.forward[1]*tM,
+        hump.tm.centre[1]+hump.tm.forward[1]*sM-hump.tm.forward[0]*tM)
+      : [hump.centre[0] + hump.u[0] * sM * UNIT + hump.v[0] * tM * UNIT, hump.centre[1] + hump.u[1] * sM * UNIT + hump.v[1] * tM * UNIT];
     const push = ([x, z], yM, normal) => {
       positions.push(x, surface.height(x, z) + yM * UNIT, z);
       normals.push(...normal);

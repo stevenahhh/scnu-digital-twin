@@ -761,6 +761,7 @@ export async function loadMarkings({ inputs, buildings }) {
     const polys = TEMPLATES_VR[m.kind](m.lengthM, m.widthM, m);
     const construction = { centre, forward: f, shape: { type: "glyph", template: m.kind,
       args: [m.lengthM, m.widthM, m.pattern], centered: false }, refs: [m.id], tier: "T2" };
+    regular.model.symbols.push({ ...construction, kind:m.kind, colour:m.colour, legacyId:m.id });
     for (const rings of polys) {
       pieces.push({ rings: rings.map((ring) => ring.map(([x, y]) => [centre[0] + metres(x) * r[0] + metres(y) * f[0], centre[1] + metres(x) * r[1] + metres(y) * f[1]])), colour: m.colour, kind: m.kind, estimated: true, id: m.id, construction });
     }
@@ -775,7 +776,7 @@ export async function loadMarkings({ inputs, buildings }) {
   const zebraMatch = (inRegion) => zebras.find((z) => z.barCentres.some(inRegion));
   const crossings = [];
   // Bars stacked along `walk` (unit) over +-halfWalk around `centre`, each 2 x halfBar long across it (model units).
-  const addEstimatedBars = (centre, walk, halfWalk, halfBar) => {
+  const addEstimatedBars = (centre, walk, halfWalk, halfBar, sourceRef) => {
     const along = [-walk[1], walk[0]];
     const period = metres(ZEBRA_PERIOD_M);
     const bar = metres(ZEBRA_BAR_M);
@@ -785,8 +786,9 @@ export async function loadMarkings({ inputs, buildings }) {
     const construction = {
       centre: [centre[0] + walk[0] * first, centre[1] + walk[1] * first], forward: [walk[1], -walk[0]],
       shape: { type: "crossing", lengthM: 2 * halfBar / UNIT, widthM: ZEBRA_BAR_M, periodM: ZEBRA_PERIOD_M, count: n, slots: Array.from({ length: n }, (_, k) => k) },
-      refs: ["accepted occluded crossing prior"], tier: "T4",
+      refs: [sourceRef], tier: "T4",
     };
+    regular.model.crossings.push(construction);
     for (let k = 0; k < n; k += 1) {
       const c = [centre[0] + walk[0] * (first + k * period), centre[1] + walk[1] * (first + k * period)];
       pieces.push({ rings: [rect(c, along, walk, halfBar, bar / 2)], colour: "white", kind: "zebra_bar", estimated: true, construction });
@@ -831,7 +833,7 @@ export async function loadMarkings({ inputs, buildings }) {
       crossings.push(`${way.id}: no zebra detected, ${(occluded * 100).toFixed(0)} % under canopy (open asphalt or cast shadow), not drawn`);
       continue;
     }
-    const bars = addEstimatedBars(centre, walk, length / 2 - metres(0.3), metres(crossingPrior.barLengthM) / 2);
+    const bars = addEstimatedBars(centre, walk, length / 2 - metres(0.3), metres(crossingPrior.barLengthM) / 2, "OSM crossing "+way.id);
     crossings.push(`${way.id}: no zebra visible, ${(occluded * 100).toFixed(0)} % under canopy, ${bars} estimated bars`);
   }
 
@@ -859,7 +861,7 @@ export async function loadMarkings({ inputs, buildings }) {
       continue;
     }
     const halfWalk = Math.max(box.halfLong - metres(POLYGON_OVERRUN_M), Math.min(box.halfLong, metres(1.5)));
-    const bars = addEstimatedBars(box.centre, box.long, halfWalk, box.halfShort);
+    const bars = addEstimatedBars(box.centre, box.long, halfWalk, box.halfShort, "CW crossing "+id);
     crossings.push(`${id}: no zebra visible, ${(occluded * 100).toFixed(0)} % under canopy, ${bars} estimated bars`);
   }
 
@@ -868,5 +870,5 @@ export async function loadMarkings({ inputs, buildings }) {
     support: c.support ?? null, recoloured: c.recoloured ?? null, verdict: c.verdict, reason: c.dropped ?? c.review ?? c.duplicateOf ?? null, shapes: c.shapes,
   }));
   // Stall paint comes from data/ground/parking.json (stages/parking.mjs); the detections stay gate evidence in the report.
-  return { pieces: pieces.filter((p) => !PARKING_KINDS.has(p.kind)), zebras, crossings, warnings, log, report, source: "data/photo/evidence/markings.geojson + data/photo/evidence/markings-extra.geojson" };
+  return { pieces: pieces.filter((p) => !PARKING_KINDS.has(p.kind)), zebras, crossings, warnings, log, report, model:regular.model, source: "data/photo/evidence/markings.geojson + data/photo/evidence/markings-extra.geojson" };
 }

@@ -327,6 +327,8 @@ export function regularise(drawn, ctx) {
   const blocked = (p) => ctx.blocked(toScene(p));
   const roadAxes = (ctx.roadAxes ?? []).map((line) => line.map(toM));
   const pieces = [];
+  const model = { lines: [], stops: [], crossings: [], symbols: [], areas: [] };
+  const groupedAreas = new Set();
   const stats = {
     chains: 0, fragments: 0, straightRuns: 0, arcs: 0, straightness: [], residual: [], dashPeriods: [], duplicateLines: 0,
     crossings: 0, crossingGroups: 0, crossingRowsAligned: 0, crossingRowsOwnGrid: 0, crossingPeriods: [], stopInCrossing: [], crossingList: [], blockedIds: [], frameStrokes: 0, barsDrawn: 0, barsDetected: 0, zebraPhaseResidual: [], glyphs: {}, textReadings: [], textMissing: [], arrowAxes: { road: 0, own: 0 }, dropped: { blocked: 0, textTooSmall: 0 },
@@ -341,6 +343,7 @@ export function regularise(drawn, ctx) {
       stats.blockedIds.push(extra?.id ?? kind);
       return;
     }
+    if (extra?.construction) model.symbols.push({ ...extra.construction, colour, kind, legacyId: extra.id });
     for (const rings of polys) emit(rings, colour, kind, extra);
   };
   const glyphCount = (name) => { stats.glyphs[name] = (stats.glyphs[name] ?? 0) + 1; };
@@ -363,6 +366,11 @@ export function regularise(drawn, ctx) {
     if (c.estimated) {
       // estimated pieces are already statute geometry (dashes, bars, stall dividers laid by rule)
       for (const rings of c.shapes) pieces.push({ rings, colour: c.colour, kind: c.kind, estimated: true });
+      if (LINE_KINDS.has(c.kind) && c.kind !== "parking_line" && c.lineModel?.length >= 2) {
+        model.lines.push({ path: c.lineModel, kind: c.kind, colour: c.colour, widthM: ctx.statute.widthFor(c.kind),
+          dashed: Boolean(ctx.statute.dash[c.kind]), pattern: ctx.statute.dash[c.kind] ?? null, phaseM: 0,
+          refs: [c.id], estimated: true });
+      }
       continue;
     }
     if (p.group && !LINE_KINDS.has(c.kind)) {
@@ -377,6 +385,9 @@ export function regularise(drawn, ctx) {
     if (p.dotted && p.dots) {
       // guide dots already laid evenly between the first and the last detected dot (featureShapes)
       for (const rings of c.shapes) pieces.push({ rings, colour: c.colour, kind: c.kind, estimated: false });
+      const width=p.width_m, spacing=polylineLength(c.lineModel.map(toM))/Math.max(1,p.dots-1);
+      model.lines.push({path:c.lineModel,kind:"give_way_line",colour:c.colour,widthM:width,dashed:true,
+        pattern:[width,Math.max(width,spacing-width)],phaseM:0,refs:[c.id]});
       continue;
     }
     if (LINE_KINDS.has(c.kind)) {
@@ -403,6 +414,11 @@ export function regularise(drawn, ctx) {
           }
           const half = ctx.statute.widthFor(c.kind) / 2;
           emitPoly(strokes.map(({ from, to }) => [rect(scale(add(from, to), 0.5), unit(sub(to, from)), perpOf(unit(sub(to, from))), norm(sub(to, from)) / 2 + half, half)]), c.colour, c.kind, { id: c.id });
+          if (c.kind !== "parking_line") for (const {from,to} of strokes) {
+            const u = unit(sub(to,from));
+            model.lines.push({ path: [sub(from,scale(u,half)),add(to,scale(u,half))].map(toScene),
+              kind:c.kind,colour:c.colour,widthM:2*half,dashed:false,refs:[c.id],legacyId:c.id });
+          }
           stats.frameStrokes += strokes.length;
           continue;
         }
@@ -542,6 +558,29 @@ export function regularise(drawn, ctx) {
       }
     }
     const width = ch.dotted ? Math.min(0.6, Math.max(0.1, median(ch.members.map((m) => m.width)))) : ctx.statute.widthFor(ch.double ? "centre_line_yellow" : ch.kind);
+    if (ch.kind !== "parking_line") {
+      const sampled = resample(ch.path, 0.25);
+      const clear = sampled.every(p => !blocked(p));
+      const spans = [];
+      let start = null;
+      sampled.forEach((p,k) => {
+        if (!blocked(p) && start === null) start = k;
+        if ((blocked(p) || k === sampled.length-1) && start !== null) {
+          const end = blocked(p) ? k-1 : k;
+          if (end > start) spans.push([projectArc(ch.path,sampled[start]),projectArc(ch.path,sampled[end])]);
+          start = null;
+        }
+      });
+      const period = stats.dashPeriods.at(-1);
+      const ownPeriod = period?.ids === ch.ids && period.used > 0 && period.dash > 0 ? [period.dash,period.used-period.dash] : null;
+      const pattern = ch.dashed ? ownPeriod ?? (ch.dotted ? ctx.statute.dash.guide_dotted : ctx.statute.dash[ch.kind] ?? [3,5]) : null;
+      const first = intervals[0];
+      const phaseM = pattern && first ? (first[0] > 0 ? (pattern[0]+pattern[1]-first[0]%(pattern[0]+pattern[1]))%(pattern[0]+pattern[1]) : Math.max(0,pattern[0]-first[1])) : 0;
+      model.lines.push({path:ch.path.map(toScene),kind:ch.dotted?"give_way_line":ch.kind,colour:ch.colour,widthM:width,
+        dashed:ch.dashed,double:ch.double,pattern,phaseM,refs:ch.ids,
+        paintRange:intervals.length?[intervals[0][0],intervals.at(-1)[1]]:null,
+        runs:clear?[[0,length]]:spans});
+    }
     const offsets = ch.double ? [ctx.statute.doubleOffsetM, -ctx.statute.doubleOffsetM] : [0];
     for (const [a, b] of intervals) {
       const piece = slicePath(ch.path, a, b);
@@ -619,6 +658,8 @@ export function regularise(drawn, ctx) {
       stats.stopSquared += 1;
     }
     stopPieces.push({ at: pieces.length, centre: box.centre, id: c.id });
+    model.stops.push({ centre:toScene(box.centre),forward:perpOf(unit(along)),lengthM:2*box.halfLong,
+      widthM:width,refs:[c.id],legacyId:c.id });
     emitPoly([[rect(box.centre, unit(along), perpOf(unit(along)), box.halfLong, width / 2)]], c.colour, "stop_line", { id: c.id });
   }
 
@@ -701,6 +742,7 @@ export function regularise(drawn, ctx) {
       kept.push(fit.barCentres[k]);
     });
     stats.barsDrawn += kept.length;
+    if (kept.length) model.crossings.push(seed);
     stats.crossingList.push({ ids: crossing.ids, detected: crossing.bars.length, drawn: kept.length, centre: toScene(fit.rectangle.centre), periodM: +fit.period.toFixed(3), rows: crossing.rows ?? 1, phaseResidualMaxM: +fit.phaseResidual.max.toFixed(3) });
     if (!kept.length) continue;
     zebras.push({
@@ -715,6 +757,7 @@ export function regularise(drawn, ctx) {
   for (const sp of [...stopPieces].reverse()) {
     if (!inCrossing(sp.centre) || pieces[sp.at]?.id !== sp.id) continue;
     pieces.splice(sp.at, 1);
+    model.stops = model.stops.filter(s => s.legacyId !== sp.id);
     stats.stopInCrossing.push(sp.id);
   }
 
@@ -722,6 +765,11 @@ export function regularise(drawn, ctx) {
   for (const members of groups.values()) {
     const all = members.flatMap((c) => shapesM(c).flatMap((rings) => rings[0]));
     const box = orientedBox(all);
+    if (members.every(c => c.kind === "hatch")) {
+      model.areas.push({ centre:toScene(box.centre),forward:box.long,style:"hatched_median",
+        lengthM:2*box.halfLong,widthM:2*box.halfShort,colour:members[0].colour,refs:members.map(c=>c.id) });
+      for (const c of members) groupedAreas.add(c.id);
+    }
     const stripe = median(members.map((c) => {
       const b = orientedBox(shapesM(c)[0][0]);
       return Math.atan2(b.long[1], b.long[0]) % Math.PI;
@@ -743,6 +791,27 @@ export function regularise(drawn, ctx) {
 
   function emitRegularPolygon(c, directions) {
     if (c.kind === "disabled_parking") return; // data/ground/parking.json draws the bays
+    if (c.feature.properties.fused_frame && !groupedAreas.has(c.id)) {
+      // A fused crossing detection may be an open rail, not a closed box.
+      // Fit its supported strokes; do not invent the missing fourth edge.
+      const rings=shapesM(c)[0],dirs=dominantDirections(simplifyRing(rings[0]));
+      const strokes=strokesFromBlob(rings,dirs);
+      if (!strokes.length) throw new Error(c.id+": fused crossing frame has no supported stroke");
+      for(const {from,to} of strokes) model.lines.push({path:[from,to].map(toScene),kind:"give_way_line",
+        colour:c.colour,widthM:0.15,dashed:false,refs:[c.id]});
+      groupedAreas.add(c.id);
+    }
+    if (c.kind !== "speed_bump" && c.kind !== "parking_line" && !groupedAreas.has(c.id)) {
+      const b = orientedBox(shapesM(c).flatMap(r => r[0]));
+      if (LINE_KINDS.has(c.kind)) {
+        model.lines.push({path:[sub(b.centre,scale(b.long,b.halfLong)),add(b.centre,scale(b.long,b.halfLong))].map(toScene),
+          kind:c.kind,colour:c.colour,widthM:ctx.statute.widthFor(c.kind),dashed:c.kind==="lane_line_dashed",
+          pattern:ctx.statute.dash[c.kind]??null,phaseM:0,refs:[c.id],legacyId:c.id});
+      } else model.areas.push({centre:toScene(b.centre),forward:b.long,lengthM:2*b.halfLong,widthM:2*b.halfShort,
+        style:c.kind==="zebra_bar"?"crossing_frame":c.kind==="hatch"?"stripe":c.kind==="bike_lane_blue"?"colour":c.kind,
+        colour:c.colour,refs:[c.id],legacyId:c.id});
+      groupedAreas.add(c.id);
+    }
     for (const rings of shapesM(c)) {
       const box = orientedBox(rings[0]);
       const fill = polygonArea(rings) / Math.max(1e-6, 4 * box.halfLong * box.halfShort);
@@ -956,5 +1025,5 @@ export function regularise(drawn, ctx) {
   }
 
   // stall lines stayed in the chains above so stall text can lie along them; data/ground/parking.json draws them
-  return { pieces: pieces.filter((pc) => pc.kind !== "parking_line"), zebras, stats };
+  return { pieces: pieces.filter((pc) => pc.kind !== "parking_line"), zebras, stats, model };
 }

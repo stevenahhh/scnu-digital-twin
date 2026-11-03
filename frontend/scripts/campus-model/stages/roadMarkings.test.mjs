@@ -142,6 +142,15 @@ test("height sidecar retains first-record priority when two hump outlines overla
   close(result.heightAt(...tmToScene(origin[0] + 15, origin[1])), 0.1);
 });
 
+test("recorded travel-aligned hump bands span the hump length and follow lane width", () => {
+  const s=section({humps:[{atM:15,lengthM:4,heightM:0.1,bands:true,bandAxis:"travel",bandWidthM:0.5}]});
+  const base=plan(s);
+  assert.equal(base.pieces.length,14);
+  for(const p of base.pieces){const b=bounds(p);close(b[1]-b[0],4);close(b[3]-b[2],0.5);}
+  s.lanes.forEach(l=>{l.widthM*=2;});
+  assert.equal(plan(s).pieces.length,28);
+});
+
 test("unrecorded paint is absent and separate sections restart their dash phase", () => {
   assert.deepEqual(plan(section()).pieces, []);
   const result = plan([
@@ -232,8 +241,8 @@ test("record geometry reaches the Road_Markings GLB mesh with hump elevation", a
 test("hump ground layers use each record length rather than the legacy shared length", () => {
   const markings = plan(section({ humps: [{ atM: 15, lengthM: 4, heightM: 0.12, bands: false }] }));
   const layer = humpLayers(markings.humps, 3.6)[0];
-  const [a, b] = layer.rings[0].map(p => tmToScene(...p));
-  close(Math.hypot(...subPair(b, a)) / SCENE_UNITS_PER_METRE, 4);
+  const [a, b] = layer.rings[0];
+  close(Math.hypot(...subPair(b, a)), 4);
   assert.equal(layer.source_ref, "hump RD_TEST/sections/0/humps/0");
 });
 

@@ -1,98 +1,100 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { tmToScene, sceneToTm } from "../../../src/geo/epsg5186.mjs";
-import { evidencePrimitives, seedRoadMarkings } from "./roadMarkingsSeed.mjs";
-import { roadMarkingPlan } from "../stages/roadMarkings.mjs";
-import { SCENE_UNITS_PER_METRE as U } from "../lib/frame.mjs";
-import { validate } from "../lib/schemas.mjs";
+import {tmToScene,sceneToTm} from "../../../src/geo/epsg5186.mjs";
+import {seedRoadMarkings} from "./roadMarkingsSeed.mjs";
+import {roadMarkingPlan} from "../stages/roadMarkings.mjs";
+import {SCENE_UNITS_PER_METRE as U} from "../lib/frame.mjs";
+import {validate} from "../lib/schemas.mjs";
+const context={segments:[{id:"RD_TEST",widthM:7,paths:[{line:[[243800,263800],[243900,263800]],lengthM:100}]}],nodes:["ND_TEST"],junctionPoints:[{id:"ND_TEST",point:[243900,263800]}]};
+const model=()=>({lines:[],crossings:[],stops:[],symbols:[],areas:[]});
+const origin=tmToScene(243820,263802);
+const q=tmToScene(243821,263802),d=Math.hypot(q[0]-origin[0],q[1]-origin[1]);
+const f=[(q[0]-origin[0])/d,(q[1]-origin[1])/d];
+const at=s=>[origin[0]+f[0]*s*U,origin[1]+f[1]*s*U];
+const metresPerModelMetre=Math.hypot(...sceneToTm(U,0).map((v,k)=>v-sceneToTm(0,0)[k]));
+const fixture=()=>{const m=model();m.lines.push({path:[at(-3),at(3)],kind:"centre_line_yellow",colour:"yellow",widthM:0.2,dashed:false,refs:["fixture"],legacyId:"MK_TEST"});return m;};
+const generate=docs=>roadMarkingPlan({...docs,context});
 
-const context = {
-  segments: [{ id: "RD_TEST", paths: [{ line: [[243800, 263800], [243900, 263800]], lengthM: 100 }] }],
-  nodes: ["ND_TEST"], junctionPoints: [{ id: "ND_TEST", point: [243900, 263800] }],
-};
-const origin = tmToScene(243820, 263802);
-const forward = (() => {
-  const p = tmToScene(243821, 263802);
-  const dx = p[0] - origin[0], dz = p[1] - origin[1], d = Math.hypot(dx, dz);
-  return [dx / d, dz / d];
-})();
-const primitive = (shape) => ({
-  centre: origin, forward, shape, kind: "centre_line_yellow", colour: "yellow",
-  refs: ["synthetic accepted paint"], legacyId: "MK_TEST",
+test("seeded centreline is driven by its actual section type and width",()=>{
+  const docs=seedRoadMarkings(fixture(),[],context),s=docs.sections.RD_TEST.sections[0];
+  assert.equal(s.centre.type,"yellow_solid");
+  const base=generate(docs);
+  assert.equal(base.pieces.length,1);assert.equal(base.pieces[0].id,"MK_TEST");
+  const ring=base.pieces[0].rings[0];
+  assert.ok(Math.abs(Math.hypot(ring[2][0]-ring[1][0],ring[2][1]-ring[1][1])/U-0.2)<1e-7);
+  s.centre.type="none";assert.equal(generate(docs).pieces.length,0);
 });
 
-test("seed stores a road-local station and produces its stroke with recorded width", () => {
-  const docs = seedRoadMarkings([primitive({ type: "stroke", path: [[0, -3], [0, 3]], widthM: 0.2 })], [], context);
-  const detail = docs.sections.RD_TEST.sections[0].details[0];
-  assert.ok(Math.abs(detail.atM - 20) < 1e-8);
-  assert.ok(Math.abs(detail.lateralOffsetM - 2) < 1e-8);
-  const result = roadMarkingPlan({ ...docs, context });
-  assert.equal(result.pieces.length, 1);
-  assert.equal(result.pieces[0].record, detail.id);
-  assert.equal(result.pieces[0].id, "MK_TEST");
-  const ring = result.pieces[0].rings[0];
-  assert.ok(Math.abs(Math.hypot(ring[1][0] - ring[0][0], ring[1][1] - ring[0][1]) / U - 6) < 1e-8);
-  assert.ok(Math.abs(Math.hypot(ring[2][0] - ring[1][0], ring[2][1] - ring[1][1]) / U - 0.2) < 1e-8);
+test("moving the canonical alignment moves its paint by the same seven metres",()=>{
+  const docs=seedRoadMarkings(fixture(),[],context);
+  for(const a of Object.values(docs.sections.RD_TEST.alignments)) a.line=a.line.map(([e,n])=>[e,n+7]);
+  const points=generate(docs).pieces[0].rings[0].map(p=>sceneToTm(...p));
+  const c=points.reduce((s,p)=>[s[0]+p[0]/4,s[1]+p[1]/4],[0,0]);
+  assert.ok(Math.abs(c[0]-243820)<1e-7);assert.ok(Math.abs(c[1]-263809)<1e-7);
 });
 
-test("moving the network moves seeded paint rather than replaying absolute polygons", () => {
-  const docs = seedRoadMarkings([primitive({ type: "rectangle", lengthM: 6, widthM: 0.2 })], [], context);
-  const moved = { ...context, segments: [{ id: "RD_TEST", paths: [{
-    line: [[243800, 263807], [243900, 263807]], lengthM: 100,
-  }] }] };
-  const result = roadMarkingPlan({ ...docs, context: moved });
-  const points = result.pieces[0].rings[0].map(([x, z]) => sceneToTm(x, z));
-  const centre = points.reduce((a, p) => [a[0] + p[0] / 4, a[1] + p[1] / 4], [0, 0]);
-  assert.ok(Math.abs(centre[0] - 243820) < 1e-8);
-  assert.ok(Math.abs(centre[1] - 263809) < 1e-8);
+test("crossing omissions remain explicit while lane widths control the bar grid",()=>{
+  const m=model();m.crossings.push({centre:origin,forward:f,refs:["crossing"],shape:{type:"crossing",lengthM:4.57,widthM:0.5,periodM:0.903,count:5,slots:[0,1,3,4]}});
+  const docs=seedRoadMarkings(m,[],context),a=docs.junctions.ND_TEST.approaches[0];
+  assert.equal(generate(docs).pieces.length,4);
+  for(const l of docs.sections.RD_TEST.sections[0].lanes) l.widthM*=2;
+  assert.equal(generate(docs).pieces.length,8);
+  a.crossing=null;assert.equal(generate(docs).pieces.length,0);
 });
 
-test("crossings are records with a bar count and only their explicitly kept slots are drawn", () => {
-  const docs = seedRoadMarkings([{
-    ...primitive({ type: "crossing", lengthM: 4.57, widthM: 0.5, periodM: 0.903, count: 5, slots: [0, 1, 3, 4] }),
-    kind: "zebra_bar", colour: "white",
-  }], [], context);
-  assert.equal(docs.junctions.ND_TEST.approaches[0].details.length, 1);
-  const result = roadMarkingPlan({ ...docs, context });
-  assert.equal(result.pieces.length, 4);
-  assert.ok(result.pieces.every(p => p.kind === "zebra_bar" && p.estimated));
-  docs.junctions.ND_TEST.approaches[0].details = [];
-  assert.equal(roadMarkingPlan({ ...docs, context }).pieces.length, 0);
+test("one fitted dashed run produces a repeated section pattern rather than saved rectangles",()=>{
+  const m=model();m.lines.push({path:[at(0),at(16)],kind:"lane_line_dashed",colour:"white",widthM:0.125,dashed:true,pattern:[3,5],phaseM:0,refs:["dashes"]});
+  const docs=seedRoadMarkings(m,[],context),s=docs.sections.RD_TEST.sections[0];
+  assert.equal(s.lanes[0].line,"white_dashed");
+  const result=generate(docs);
+  assert.equal(result.pieces.length,2);
+  for(const p of result.pieces){const r=p.rings[0];assert.ok(Math.abs(Math.hypot(r[1][0]-r[0][0],r[1][1]-r[0][1])/U-3)<1e-7);}
 });
 
-test("missing road references and unknown primitive types name the offending record", () => {
-  const docs = seedRoadMarkings([primitive({ type: "rectangle", lengthM: 6, widthM: 0.2 })], [], context);
-  const detail = docs.sections.RD_TEST.sections[0].details[0];
-  detail.shape.type = "unknown";
-  assert.throws(() => roadMarkingPlan({ ...docs, context }), /RD_TEST.*unknown/);
-});
-
-test("evidence rectangles become dimensions, and shared glyph constructions become one record", () => {
-  const rectangle = { kind: "hatch", colour: "white", id: "MK_RECT",
-    rings: [[[0, 0], [4 * U, 0], [4 * U, U], [0, U]]] };
-  const construction = { centre: [2 * U, U], forward: [1, 0],
-    shape: { type: "glyph", template: "arrow", args: ["arrow_straight", 5, 1], centered: true }, refs: ["MK_ARROW"] };
-  const glyph = { kind: "arrow", colour: "white", construction };
-  const records = evidencePrimitives([rectangle, glyph, glyph]);
-  assert.equal(records.length, 2);
-  assert.equal(records[0].shape.type, "rectangle");
-  assert.equal(records[0].shape.lengthM, 4);
-  assert.equal(records[0].shape.widthM, 1);
-  assert.equal(records[1].shape.template, "arrow");
-  assert.throws(() => evidencePrimitives([{ ...rectangle, kind: "text" }]), /text.*construction/);
-});
-
-test("published road schema rejects unknown detail primitives and out-of-path anchors by record id", () => {
-  for (const mutate of [
-    d => { d.shape.type = "unknown"; },
-    d => { d.atM = 101; },
-    d => { d.shape.widthM = -1; },
-  ]) {
-    const docs = seedRoadMarkings([primitive({ type: "rectangle", lengthM: 6, widthM: 0.2 })], [], context);
-    const d = docs.sections.RD_TEST.sections[0].details[0];
-    mutate(d);
-    const result = validate("roadSections", docs.sections, context);
-    assert.equal(result.ok, false);
-    assert.ok(result.errors.some(e => e.includes(d.id)));
+test("published schema rejects wrong line kinds, negative widths and missing alignments by section id",()=>{
+  for(const mutate of [s=>{s.centre.type="purple";},s=>{s.lanes[0].widthM=-1;},s=>{s.alignment="MISSING";}]){
+    const docs=seedRoadMarkings(fixture(),[],context),s=docs.sections.RD_TEST.sections[0];mutate(s);
+    const result=validate("roadSections",docs.sections,context);
+    assert.equal(result.ok,false);assert.ok(result.errors.some(e=>e.includes(s.id)));
   }
+});
+
+test("hump seed uses a canonical hump and the cross-section width, preserving its height",()=>{
+  const docs=seedRoadMarkings(model(),[{id:"H_TEST",centre:origin,u:f,widthM:6,bands:0}],context);
+  const s=docs.sections.RD_TEST.sections[0],plan=generate(docs);
+  assert.equal(s.humps.length,1);assert.equal(plan.humps.length,1);
+  assert.ok(Math.abs(plan.heightAt(...origin)-0.1)<1e-8);
+  assert.ok(Math.abs(s.lanes[0].widthM-6*metresPerModelMetre)<1e-8);
+  s.humps[0].heightM=0.2;assert.ok(Math.abs(generate(docs).heightAt(...origin)-0.2)<1e-8);
+});
+
+test("inserting unrelated evidence does not renumber an existing canonical section or alignment",()=>{
+  const original=seedRoadMarkings(fixture(),[],context).sections.RD_TEST.sections[0];
+  const m=fixture();
+  m.lines.unshift({...m.lines[0],refs:["OTHER"],path:[at(10),at(12)]});
+  const result=seedRoadMarkings(m,[],context).sections.RD_TEST.sections.find(s=>s.evidence.refs.includes("fixture"));
+  assert.equal(result.id,original.id);
+  assert.equal(result.alignment,original.alignment);
+});
+
+test("crossing logical object identity survives a bar-count change while part ids are unique",()=>{
+  const m=model();m.crossings.push({centre:origin,forward:f,refs:["crossing"],shape:{type:"crossing",lengthM:4.57,widthM:0.5,periodM:0.903,count:5,slots:[0,1,2,3,4]}});
+  const docs=seedRoadMarkings(m,[],context),a=docs.junctions.ND_TEST.approaches[0];
+  const before=generate(docs).pieces;
+  for(const l of docs.sections.RD_TEST.sections[0].lanes)l.widthM*=2;
+  const after=generate(docs).pieces;
+  assert.deepEqual([...new Set(before.map(p=>p.objectId))],[a.id+"/crossing"]);
+  assert.deepEqual([...new Set(after.map(p=>p.objectId))],[a.id+"/crossing"]);
+  assert.equal(new Set(after.map(p=>p.partId)).size,after.length);
+});
+
+test("hump paint uses the carriageway cross-section without shrinking the preserved raised body",()=>{
+  const ctx={...context,parcels:[{id:"ROAD",ring:[[243810,263801],[243830,263801],[243830,263805],[243810,263805]],
+    holes:[],paintAllowed:true,precedence:3}]};
+  const docs=seedRoadMarkings(model(),[{id:"H_EDGE",centre:origin,u:f,widthM:6,bands:12}],ctx);
+  const s=docs.sections.RD_TEST.sections[0];
+  assert.ok(Math.abs(s.lanes[0].widthM-4)<0.001);
+  const plan=roadMarkingPlan({...docs,context:ctx});
+  assert.ok(Math.abs(plan.heightAt(...tmToScene(243820,263799.5))-0.1)<1e-8);
+  for(const p of plan.pieces) for(const q of p.rings[0]) assert.ok(sceneToTm(...q)[1]>=263801-1e-6);
 });
