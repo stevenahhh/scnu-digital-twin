@@ -13,6 +13,7 @@
 // below MIN_VISIBLE is `occluded: true` and never `over` (the photo cannot judge it). `over` is a warning, not an
 // error: the photo can be wrong (§10.1 step 4).
 import { rowFrame, rowLayout } from "../stages/parking.mjs";
+export { compareRoadInventory } from "./roadInventory.mjs";
 
 export const TOLERANCES = Object.freeze({
   parking_divider: Object.freeze({ residualM: 0.3, support: 0.5 }),
