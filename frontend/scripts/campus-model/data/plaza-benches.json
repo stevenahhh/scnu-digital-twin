@@ -1,0 +1,21 @@
+{
+  "frameVersion": 2,
+  "estimated": true,
+  "ref": "VR scene_c1: dark box benches beside the pond; positions occluded in the aerial. Migrated from furniture estimateBenches at dda4a50e, not newly measured: 4 per side, pitch 7 m, offset 4.5 m outside OC0081 pond sides, length 4 m.",
+  "rows": [
+    {
+      "id": "PB-C1-N",
+      "line": [[243835.5333464191, 263836.64266083855], [243855.79657366226, 263831.1270295676]],
+      "pitchM": 7,
+      "count": 4,
+      "lengthM": 4
+    },
+    {
+      "id": "PB-C1-S",
+      "line": [[243829.6967014456, 263815.20009921497], [243849.95992868874, 263809.684467944]],
+      "pitchM": 7,
+      "count": 4,
+      "lengthM": 4
+    }
+  ]
+}

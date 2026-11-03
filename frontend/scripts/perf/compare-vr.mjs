@@ -13,6 +13,7 @@
 //       [--faces f,r,b,l] [--yaw-offset <deg>] [--out <dir>] [--prefix <label->]
 //       [--url http://127.0.0.1:5182/] [--port 9353] [--clock 2026-10-24T12:00:00+09:00] [--list]
 //       [--bearings] [--bearing-records <file>]
+//       [--free-standing] uses reviewed VR silhouettes and packed _OBJECT_ID masks.
 // --bearings reads records[].evidence.refs ("VR scene_e5 r col 610"), renders the actual object's
 // ID mask, writes bearings.json and returns 1 for missing masks, wrong walls or residuals above 1.5 deg.
 // It does not fabricate readings for an occluded reference. Unrefined scenes are T4 with no residual.
@@ -29,6 +30,7 @@
 // height_m_est in scene units. Face bearings follow lib/vrCamera.mjs.
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { createHash } from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SCENE_UNITS_PER_METRE } from "../campus-model/lib/frame.mjs";
@@ -37,6 +39,7 @@ import { GROUND_MESH_NAME } from "../../src/camera/terrainClearance.mjs";
 import { bearingObservations, bearingResidual, readBearing } from "../campus-model/fit/vrWallHit.mjs";
 import { checkSceneRefs, firstBuildingHit, loadSceneBuildings, SCENE_MAP_FILE, sceneMapInputs } from "../campus-model/fit/vrSceneBuildings.mjs";
 import { geoToModel } from "../campus-model/lib/frame.mjs";
+import { objectObservations } from "../campus-model/fit/vrObjectObservations.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, "../../..");
@@ -63,8 +66,13 @@ const yawOffset = Number(option("yaw-offset", "0"));
 const faces = option("faces", "f,r,b,l").split(",").map((face) => face.trim());
 const listOnly = args.includes("--list");
 const clock = option("clock", "2026-10-24T12:00:00+09:00");
-const bearingsOnly = args.includes("--bearings");
-const bearingFile = resolve(option("bearing-records", join(HERE, "../campus-model/data/buildings/entrances.json")));
+const freeStanding = args.includes("--free-standing");
+const bearingsOnly = args.includes("--bearings") || freeStanding;
+const bearingFile = resolve(option("bearing-records", join(HERE, freeStanding
+  ? "../campus-model/data/free-standing-vr.json" : "../campus-model/data/buildings/entrances.json")));
+const modelBytes = freeStanding ? readFileSync(join(HERE, "../../public/campus-v2.glb")) : null;
+const modelJson = modelBytes ? JSON.parse(modelBytes.subarray(20, 20 + modelBytes.readUInt32LE(12)).toString()) : null;
+const renderObjectIds = modelJson?.nodes.find(n => n.extras?.renderObjectIds)?.extras.renderObjectIds;
 let observations = [], buildings = [], sceneTable = null;
 
 const stations = JSON.parse(readFileSync(stationsFile, "utf8"));
@@ -88,13 +96,16 @@ try {
   if (bearingsOnly) {
     const records = JSON.parse(readFileSync(bearingFile, "utf8"));
     // Explicit T4 entries without a VR observation cannot have a residual; malformed observed refs still fail.
-    observations = bearingObservations({ ...records, records: records.records.filter(r => r.evidence?.tier !== "T4" ||
-      r.evidence.refs.some(ref => typeof ref === "string" && ref.startsWith("VR "))) }, stations)
+    observations = (freeStanding ? objectObservations(records, stations) :
+      bearingObservations({ ...records, records: records.records.filter(r => r.evidence?.tier !== "T4" ||
+        r.evidence.refs.some(ref => typeof ref === "string" && ref.startsWith("VR "))) }, stations))
       .filter(o => selected.some(s => s.scene === o.scene) && faces.includes(o.face));
-    const saved = JSON.parse(readFileSync(SCENE_MAP_FILE, "utf8"));
-    if (JSON.stringify(saved.inputs) !== JSON.stringify(sceneMapInputs())) throw new Error("stale scene-building table; run vrSceneBuildings.mjs --write");
-    buildings = await loadSceneBuildings();
-    sceneTable = saved;
+    if (!freeStanding) {
+      const saved = JSON.parse(readFileSync(SCENE_MAP_FILE, "utf8"));
+      if (JSON.stringify(saved.inputs) !== JSON.stringify(sceneMapInputs())) throw new Error("stale scene-building table; run vrSceneBuildings.mjs --write");
+      buildings = await loadSceneBuildings();
+      sceneTable = saved;
+    }
     if (yawOffset !== 0) throw new Error("--bearings requires the refined yaw without --yaw-offset");
   }
   if (!listOnly) {
@@ -180,7 +191,19 @@ const PAGE_HELPERS = `(() => {
     terrainY(x, z) {
       return terrainHeight(store.getState(), [x, z]);
     },
-    async objectMask({ id, ring, offset, render }) {
+    async referenceMask({ face, polygon, col }) {
+      const canvas = new OffscreenCanvas(2048, 2048);
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(window.__vrFaces[face], 0, 0, 2048, 2048);
+      ctx.beginPath();
+      polygon.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+      ctx.closePath();
+      ctx.fillStyle = "rgba(255,0,0,0.35)"; ctx.fill();
+      ctx.strokeStyle = "#ff0000"; ctx.lineWidth = 3; ctx.stroke();
+      ctx.strokeStyle = "#ffff00"; ctx.beginPath(); ctx.moveTo(col, 0); ctx.lineTo(col, 2048); ctx.stroke();
+      return toBase64(canvas);
+    },
+    async objectMask({ id, objectId, ring, offset, render }) {
       const THREE = await import("/node_modules/three/build/three.module.js");
       const state = store.getState();
       const black = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.DoubleSide });
@@ -206,6 +229,24 @@ const PAGE_HELPERS = `(() => {
           saved.push({ o, material: o.material, geometry: o.geometry });
           o.material = named.has(o) ? red : black;
           if (named.has(o)) triangles += o.geometry.index ? o.geometry.index.count / 3 : o.geometry.attributes.position.count / 3;
+          if (objectId !== undefined) {
+            const attribute = o.geometry.getAttribute("_object_id");
+            if (!attribute) return;
+            const geometry = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone();
+            const ids = geometry.getAttribute("_object_id");
+            const colours = new Float32Array(ids.count * 3);
+            for (let i = 0; i < ids.count; i += 3) {
+              if (ids.getX(i) !== objectId) continue;
+              if (ids.getX(i + 1) !== objectId || ids.getX(i + 2) !== objectId) throw new Error("mixed object IDs in one triangle");
+              for (let k = 0; k < 3; k++) colours[(i + k) * 3] = 1;
+              triangles += 1;
+            }
+            geometry.setAttribute("color", new THREE.BufferAttribute(colours, 3));
+            const material = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide, toneMapped: false });
+            o.geometry = geometry; o.material = material;
+            temporary.push(geometry, material);
+            return;
+          }
           if (object || !ring || !/^Furniture(?:_|$)/.test(o.name)) return;
           const geometry = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone();
           const p = geometry.attributes.position;
@@ -244,12 +285,14 @@ const PAGE_HELPERS = `(() => {
       const ctx = canvas.getContext("2d");
       ctx.drawImage(await bitmap(image), 0, 0);
       const pixels = ctx.getImageData(0, 0, render.size, render.size).data;
-      let min = render.size, max = -1, count = 0;
+      let min = render.size, max = -1, count = 0, columnSum = 0;
       for (let i = 0; i < pixels.length; i += 4) if (pixels[i] > 200 && pixels[i + 1] < 30 && pixels[i + 2] < 30) {
         const x = (i / 4) % render.size;
         min = Math.min(min, x); max = Math.max(max, x); count += 1;
+        columnSum += x + 0.5;
       }
-      return { col: count ? (min + max + 1) / render.size * 1024 : null, pixels: count, triangles, image };
+      return { col: count ? (objectId !== undefined ? columnSum / count / render.size * 2048 : (min + max + 1) / render.size * 1024) : null,
+        pixels: count, triangles, image };
     },
     render({ px, py, pz, dx, dz, size, near, far }) {
       const state = store.getState();
@@ -465,7 +508,7 @@ try {
   } else {
     mkdirSync(outDir, { recursive: true });
     const bearingRows = [];
-    const siteFeatures = bearingsOnly ? JSON.parse(readFileSync(join(HERE, "../campus-model/data/photo/site-detail.geojson"), "utf8")).features : [];
+    const siteFeatures = bearingsOnly && !freeStanding ? JSON.parse(readFileSync(join(HERE, "../campus-model/data/photo/site-detail.geojson"), "utf8")).features : [];
     for (const record of selected) {
       const scene = record.scene;
       const yaw = yawOf(record);
@@ -498,17 +541,44 @@ try {
         if (bearingsOnly) for (const observation of observations.filter(o => o.scene === scene && o.face === face)) {
           const feature = siteFeatures.find(f => f.properties.id === observation.id);
           const ring = feature?.geometry.type === "Polygon" ? feature.geometry.coordinates[0].map(p => geoToModel(...p)) : null;
-          const mask = await evaluate(`window.__compare.objectMask(${JSON.stringify({ id: observation.id, ring, offset,
+          const objectId = freeStanding ? renderObjectIds[observation.id] : undefined;
+          if (freeStanding && objectId === undefined) throw new Error(`${observation.id}: missing packed object ID`);
+          let renderedFace = face;
+          let mask = await evaluate(`window.__compare.objectMask(${JSON.stringify({ id: observation.id, objectId, ring, offset,
             render: { px: world.x, py: y, pz: world.z, dx, dz, size: SIZE, near: NEAR, far: FAR } })})`);
+          // A misplaced object can leave the observed cube face. Measure its bearing on another
+          // face at the SAME station, rather than returning the anchor projection as a render.
+          if (freeStanding && mask.pixels === 0) for (const other of STRIP_ORDER.filter(f => f !== face)) {
+            const [ox, , oz] = bearingToDirection(faceYaw(yaw, other));
+            const candidate = await evaluate(`window.__compare.objectMask(${JSON.stringify({ id: observation.id, objectId, offset,
+              render: { px: world.x, py: y, pz: world.z, dx: ox, dz: oz, size: SIZE, near: NEAR, far: FAR } })})`);
+            if (candidate.pixels) { mask = candidate; renderedFace = other; break; }
+          }
           const maskPath = join(outDir, `${prefix}${scene}-${face}-${observation.id.replaceAll("/", "_")}-id.png`);
           writeFileSync(maskPath, Buffer.from(mask.image.split(",")[1], "base64"));
-          const mappingErrors = checkSceneRefs([observation], stations, buildings);
-          const hit = firstBuildingHit(record, observation, buildings);
-          const residual = bearingResidual(record, observation, mask.col);
-          const row = { ...observation, ...residual, wallHit: hit, renderCol: mask.col,
+          if (freeStanding && observation.referencePolygon) {
+            const reference = await evaluate(`window.__compare.referenceMask(${JSON.stringify({
+              face, polygon: observation.referencePolygon, col: observation.col,
+            })})`);
+            writeFileSync(maskPath.replace("-id.png", "-reference.png"), Buffer.from(reference, "base64"));
+          }
+          const mappingErrors = freeStanding ? [] : checkSceneRefs([observation], stations, buildings);
+          const hit = freeStanding ? null : firstBuildingHit(record, observation, buildings);
+          let residual = observation.col === null
+            ? { residualDeg: null, pass: false, reason: observation.reason }
+            : bearingResidual(record, observation, mask.col);
+          if (observation.col !== null && mask.col !== null && renderedFace !== face) {
+            const observed = readBearing(record, observation);
+            const drawn = readBearing(record, { face: renderedFace, col: mask.col });
+            const residualDeg = ((drawn.bearingDeg - observed.bearingDeg + 540) % 360) - 180;
+            residual = { tier: "T2", estimated: true, observedDeg: observed.bearingDeg,
+              renderedDeg: drawn.bearingDeg, residualDeg, toleranceDeg: 1.5, pass: Math.abs(residualDeg) <= 1.5 };
+          }
+          const row = { ...observation, correspondenceReason: observation.reason, ...residual, wallHit: hit, renderCol: mask.col,
+            renderedFace, method: freeStanding ? "reviewed VR silhouette centroid vs visible packed _OBJECT_ID pixel centroid" : "rendered wall mask",
             maskPixels: mask.pixels, maskTriangles: mask.triangles, mappingErrors, pass: residual.pass && mappingErrors.length === 0 };
           bearingRows.push(row);
-          console.log(`BEARING ${observation.id} ${scene}/${face} residual=${row.residualDeg} pass=${row.pass} wall=${hit.wall}`);
+          console.log(`BEARING ${observation.id} ${scene}/${face} residual=${row.residualDeg} pass=${row.pass} wall=${hit?.wall ?? "free-standing"}`);
         }
       }
       const order = STRIP_ORDER.filter((face) => faces.includes(face));
@@ -519,7 +589,11 @@ try {
       console.log(`STRIP ${scene} -> ${stripPath}`);
     }
     if (bearingsOnly) {
-      const report = { frameVersion: 2, toleranceDeg: 1.5, estimated: true, inputs: sceneTable.inputs,
+      const report = { frameVersion: 2, toleranceDeg: 1.5, estimated: true, inputs: sceneTable?.inputs ?? {
+        modelSha256: createHash("sha256").update(modelBytes).digest("hex"),
+        observationsSha256: createHash("sha256").update(readFileSync(bearingFile)).digest("hex"),
+        stationsSha256: createHash("sha256").update(readFileSync(stationsFile)).digest("hex"),
+      },
         scenes: selected.map(s => ({ scene: s.scene, ...readBearing(s, { face: "f", col: 1024 }), residualDeg: null })),
         rows: bearingRows, pass: bearingRows.filter(r => r.tier !== "T4").length > 0 && bearingRows.every(r => r.tier === "T4" || r.pass) };
       writeFileSync(join(outDir, "bearings.json"), `${JSON.stringify(report, null, 2)}\n`);
