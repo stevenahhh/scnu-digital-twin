@@ -1638,7 +1638,7 @@
      263500
     ],
     [
-     244200,
+     244204.2,
      263481.3
     ],
     [
@@ -1658,11 +1658,11 @@
      263442.5
     ],
     [
-     244191.9,
+     244185.4,
      263462.5
     ],
     [
-     244188.1,
+     244181.6,
      263483.1
     ],
     [
@@ -1699,7 +1699,7 @@
     ]
    },
    "estimated": true,
-   "reason": "pale concrete yard carrying the rows of LOT_E244175 and LOT_E244195, and its drive from the road: concrete on NGII, on the 12 cm aerial and in VR scene_f2 with cars parked on it",
+   "reason": "pale concrete yard carrying LOT_E244175, LOT_E244195 and LOT_E244185/R1, and its drive from the road: concrete on NGII, the 12 cm aerial and VR scene_f2. Todo 13c carries the west edge round the annex's southern three boxes and the east edge past the last LOT_E244195 stalls; roof lean, cars and shade hide parts of these edges, so the outline remains estimated",
    "surface": "concrete"
   },
   {
@@ -1972,6 +1972,33 @@
    "estimated": true,
    "reason": "lane running west along the south hedge from the end of the road by the tennis courts; it leaves the campus polygon at its west end, where this parcel stops. Estimated: 17 of its 61 m free edge shows no edge on NGII (5 m cut at the polygon and 4.5 m on the paved corner, where pavement carries on; 7.5 m against a crown no mask knows)",
    "unreadEdgeM": 17
+  },
+  {
+   "id": "PARCEL_LOT_E243976_N263565_CONCRETE",
+   "class": "lot",
+   "surface": "concrete",
+   "ring": [[243971.4,263564.2],[243990.0,263571.2],[243992.0,263564.8],[243974.0,263557.3]],
+   "evidence": {"tier":"T1","refs":["NGII 2025 orthophoto: pale concrete ladder beside the track","LOT_E243976_N263545/R2"]},
+   "estimated": true,
+   "reason": "pale concrete strip along the track-side ladder, not dark asphalt; todo 13c traces the pavement edge outside the row, with the solar roof and parked cars hiding the southern continuation"
+  },
+  {
+   "id": "PARCEL_LOT_E243761_N263635_CONCRETE",
+   "class": "lot",
+   "surface": "concrete",
+   "ring": [[243724.8,263634.0],[243746.5,263629.5],[243773.7,263650.3],[243789.5,263660.3],[243794.5,263653.2],[243784.5,263637.3],[243756.3,263623.3],[243724.8,263630.3]],
+   "evidence": {"tier":"T4","refs":["NGII 2025 orthophoto: pale courtyard south of the building","LOT_E243761_N263635/R3"]},
+   "estimated": true,
+   "reason": "pale concrete courtyard carrying the ladder and accessible bays, with its west footway; todo 13c replaces the dark row-support appearance. The building roof lean, crowns and cars hide parts of the perimeter, so the ring remains estimated"
+  },
+  {
+   "id": "PARCEL_LOT_E243726_N263569_CONCRETE",
+   "class": "lot",
+   "surface": "concrete",
+   "ring": [[243720.0,263595.8],[243760.8,263586.6],[243769.5,263581.3],[243772.5,263565.5],[243766.8,263556.5],[243761.0,263558.0],[243761.0,263568.0],[243733.0,263574.0],[243720.0,263576.0]],
+   "evidence": {"tier":"T4","refs":["NGII 2025 orthophoto: pale parking pavement around the planted island","LOT_E243726_N263569/R2","LOT_E243726_N263569/R3"]},
+   "estimated": true,
+   "reason": "pale parking pavement and aisle south of the tree-lined footway; todo 13c uses concrete instead of asphalt under both ladders. Crowns hide the north and east limits; the planted island is excluded by the south-edge notch"
   }
  ],
  "notAsphalt": [

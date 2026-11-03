@@ -215670,19 +215670,21 @@
    ],
    "holes": [],
    "precedence": 6.2,
-   "mesh": "Ground_Lot",
+   "mesh": "Ground_Apron",
    "label": null,
    "source": "photo-paint-support",
    "source_ref": "paint support: 1 detected pieces (LOT_E243761_N263635/R2/back@243772.64,263648.95)",
    "evidence": {
     "tier": "T1",
     "refs": [
-     "LOT_E243761_N263635/R2/back@243772.64,263648.95"
+     "LOT_E243761_N263635/R2/back@243772.64,263648.95",
+     "PARCEL_LOT_E243761_N263635_CONCRETE"
     ]
    },
    "paintAllowed": true,
    "estimated": true,
-   "curated": "todo 9"
+   "curated": "todo 9",
+   "surface": "concrete"
   },
   {
    "id": "PARCEL_SUPPORT_LOT_243772_263649",
@@ -215704,19 +215706,21 @@
    ],
    "holes": [],
    "precedence": 6.2,
-   "mesh": "Ground_Lot",
+   "mesh": "Ground_Apron",
    "label": null,
    "source": "photo-paint-support",
    "source_ref": "paint support: 1 detected pieces (LOT_E243761_N263635/R2/S0/aisle9@243772.04,263648.53)",
    "evidence": {
     "tier": "T1",
     "refs": [
-     "LOT_E243761_N263635/R2/S0/aisle9@243772.04,263648.53"
+     "LOT_E243761_N263635/R2/S0/aisle9@243772.04,263648.53",
+     "PARCEL_LOT_E243761_N263635_CONCRETE"
     ]
    },
    "paintAllowed": true,
    "estimated": true,
    "curated": "todo 9",
+   "surface": "concrete",
    "over": [
     "PARCEL_SUPPORT_LOT_243773_263649"
    ]
@@ -216606,19 +216610,21 @@
    ],
    "holes": [],
    "precedence": 6.2,
-   "mesh": "Ground_Lot",
+   "mesh": "Ground_Apron",
    "label": null,
    "source": "photo-paint-support",
    "source_ref": "paint support: 1 detected pieces (LOT_E243976_N263545/R2/D3@243983.18,263564.52)",
    "evidence": {
     "tier": "T1",
     "refs": [
-     "LOT_E243976_N263545/R2/D3@243983.18,263564.52"
+     "LOT_E243976_N263545/R2/D3@243983.18,263564.52",
+     "PARCEL_LOT_E243976_N263565_CONCRETE"
     ]
    },
    "paintAllowed": true,
    "estimated": true,
-   "curated": "todo 9"
+   "curated": "todo 9",
+   "surface": "concrete"
   },
   {
    "id": "PARCEL_SUPPORT_LOT_243984_263562",
@@ -216644,19 +216650,21 @@
    ],
    "holes": [],
    "precedence": 6.2,
-   "mesh": "Ground_Lot",
+   "mesh": "Ground_Apron",
    "label": null,
    "source": "photo-paint-support",
    "source_ref": "paint support: 1 detected pieces (LOT_E243976_N263545/R2/front@243984.17,263562.15)",
    "evidence": {
     "tier": "T1",
     "refs": [
-     "LOT_E243976_N263545/R2/front@243984.17,263562.15"
+     "LOT_E243976_N263545/R2/front@243984.17,263562.15",
+     "PARCEL_LOT_E243976_N263565_CONCRETE"
     ]
    },
    "paintAllowed": true,
    "estimated": true,
    "curated": "todo 9",
+   "surface": "concrete",
    "over": [
     "PARCEL_SUPPORT_LOT_243983_263565"
    ]
@@ -218530,7 +218538,7 @@
      263500
     ],
     [
-     244200,
+     244204.2,
      263481.3
     ],
     [
@@ -218550,11 +218558,11 @@
      263442.5
     ],
     [
-     244191.9,
+     244185.4,
      263462.5
     ],
     [
-     244188.1,
+     244181.6,
      263483.1
     ],
     [
@@ -218588,7 +218596,7 @@
    "mesh": "Ground_Apron",
    "label": null,
    "source": "photo-curated",
-   "source_ref": "pale concrete yard carrying the rows of LOT_E244175 and LOT_E244195, and its drive from the road: concrete on NGII, on the 12 cm aerial and in VR scene_f2 with cars parked on it",
+   "source_ref": "pale concrete yard carrying LOT_E244175, LOT_E244195 and LOT_E244185/R1, and its drive from the road: concrete on NGII, the 12 cm aerial and VR scene_f2. Todo 13c carries the west edge round the annex's southern three boxes and the east edge past the last LOT_E244195 stalls; roof lean, cars and shade hide parts of these edges, so the outline remains estimated",
    "evidence": {
     "tier": "T4",
     "refs": [
@@ -218921,6 +218929,173 @@
    "curated": "todo 13a",
    "over": [
     "PARCEL_ROAD_E244165_N263450"
+   ]
+  },
+  {
+   "id": "PARCEL_LOT_E243976_N263565_CONCRETE",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     243971.4,
+     263564.2
+    ],
+    [
+     243990,
+     263571.2
+    ],
+    [
+     243992,
+     263564.8
+    ],
+    [
+     243974,
+     263557.3
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "surface": "concrete",
+   "mesh": "Ground_Apron",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "pale concrete strip along the track-side ladder, not dark asphalt; todo 13c traces the pavement edge outside the row, with the solar roof and parked cars hiding the southern continuation",
+   "evidence": {
+    "tier": "T1",
+    "refs": [
+     "NGII 2025 orthophoto: pale concrete ladder beside the track",
+     "LOT_E243976_N263545/R2"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_LOT_E243976_N263545_R2"
+   ]
+  },
+  {
+   "id": "PARCEL_LOT_E243761_N263635_CONCRETE",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     243724.8,
+     263634
+    ],
+    [
+     243746.5,
+     263629.5
+    ],
+    [
+     243773.7,
+     263650.3
+    ],
+    [
+     243789.5,
+     263660.3
+    ],
+    [
+     243794.5,
+     263653.2
+    ],
+    [
+     243784.5,
+     263637.3
+    ],
+    [
+     243756.3,
+     263623.3
+    ],
+    [
+     243724.8,
+     263630.3
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "surface": "concrete",
+   "mesh": "Ground_Apron",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "pale concrete courtyard carrying the ladder and accessible bays, with its west footway; todo 13c replaces the dark row-support appearance. The building roof lean, crowns and cars hide parts of the perimeter, so the ring remains estimated",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 orthophoto: pale courtyard south of the building",
+     "LOT_E243761_N263635/R3"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_LOT_E243761_N263635_R2",
+    "PARCEL_LOT_E243761_N263635_R3"
+   ]
+  },
+  {
+   "id": "PARCEL_LOT_E243726_N263569_CONCRETE",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     243720,
+     263595.8
+    ],
+    [
+     243760.8,
+     263586.6
+    ],
+    [
+     243769.5,
+     263581.3
+    ],
+    [
+     243772.5,
+     263565.5
+    ],
+    [
+     243766.8,
+     263556.5
+    ],
+    [
+     243761,
+     263558
+    ],
+    [
+     243761,
+     263568
+    ],
+    [
+     243733,
+     263574
+    ],
+    [
+     243720,
+     263576
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "surface": "concrete",
+   "mesh": "Ground_Apron",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "pale parking pavement and aisle south of the tree-lined footway; todo 13c uses concrete instead of asphalt under both ladders. Crowns hide the north and east limits; the planted island is excluded by the south-edge notch",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 orthophoto: pale parking pavement around the planted island",
+     "LOT_E243726_N263569/R2",
+     "LOT_E243726_N263569/R3"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_LOT_WAY_968040640"
    ]
   }
  ],

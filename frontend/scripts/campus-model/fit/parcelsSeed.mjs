@@ -21,6 +21,7 @@ import { GROUND_REGISTRATION } from "../lib/groundRegistration.mjs";
 import { A003_REGISTRATION } from "../lib/a003.mjs";
 import { PAINT_CLASSES, SUPPORT_PRECEDENCE, designClass, paintViolations, supportParcels } from "../lib/parcels.mjs";
 import { overlapPairs, validate } from "../lib/schemas.mjs";
+import { pointInRing } from "../lib/geometry.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const PARCELS_FILE = path.join(HERE, "..", "data", "ground", "parcels.json");
@@ -86,6 +87,21 @@ export function seedParcels(layers, refs = new Map()) {
 
 // same-precedence overlaps in draw order: the later parcel is drawn over the earlier one (recomputed for the whole list)
 export function layerOver(parcels) {
+  // Raised paint supports keep their ids and height, but do not turn a reviewed concrete yard into asphalt.
+  const concrete = parcels.filter((p) => p.source === "photo-curated" && p.surface === "concrete");
+  const cross = (a, b, c) => (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+  for (const p of parcels.filter((p) => p.source === "photo-paint-support")) {
+    const owner = concrete.find((q) => p.ring.every((v) => pointInRing(v, q.ring)) &&
+      !p.ring.some((a, i) => q.ring.some((c, j) => {
+        const b = p.ring[(i + 1) % p.ring.length], d = q.ring[(j + 1) % q.ring.length];
+        return cross(a, b, c) * cross(a, b, d) < 0 && cross(c, d, a) * cross(c, d, b) < 0;
+      })));
+    if (owner) {
+      p.surface = "concrete";
+      p.mesh = "Ground_Apron";
+      p.evidence = { ...p.evidence, refs: [...new Set([...p.evidence.refs, owner.id])] };
+    }
+  }
   for (const p of parcels) delete p.over;
   for (const [i, j] of overlapPairs(parcels)) (parcels[j].over ??= []).push(parcels[i].id);
   return parcels;

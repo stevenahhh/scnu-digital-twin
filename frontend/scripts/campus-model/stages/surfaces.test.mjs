@@ -4,7 +4,8 @@ import test from "node:test";
 import { sceneToTm } from "../../../src/geo/epsg5186.mjs";
 import { SCENE_UNITS_PER_METRE } from "../lib/frame.mjs";
 import { topographySurface } from "./ground.mjs";
-import { SURFACE_LIFT_M, surfaceGeometry } from "./surfaces.mjs";
+import { GlbBuilder } from "../lib/glb.mjs";
+import { GROUND_MESHES, SURFACE_LIFT_M, buildSurfaceMeshes, surfaceGeometry } from "./surfaces.mjs";
 
 const TERRAIN = 12;
 const surface = topographySurface(() => TERRAIN);
@@ -18,6 +19,26 @@ const layers = [
 ];
 const sizes = { Ground_Asphalt: 3, Ground_Pavers: 0.9, Ground_Apron: 1.1 };
 const primitives = surfaceGeometry({ layers, surface, tileSize: (mesh) => sizes[mesh] });
+
+test("shared paving textures preserve each surface class albedo at equal precedence", async () => {
+  const glb = new GlbBuilder();
+  const meshes = ["Ground_Pavers", "Ground_Walkway"];
+  await buildSurfaceMeshes({
+    glb, surface, decimate: false,
+    layers: meshes.map((mesh, i) => ({
+      mesh, precedence: 5, rings: [tmRect(100 + i * 10, -200, 104 + i * 10, -196)],
+      source: "project-estimated",
+    })),
+  });
+  const materials = meshes.map((name) => {
+    const mesh = glb.json.meshes.find((m) => m.name === name);
+    return glb.json.materials[mesh.primitives[0].material];
+  });
+  for (let i = 0; i < meshes.length; i++) {
+    assert.deepEqual(materials[i].pbrMetallicRoughness.baseColorFactor, GROUND_MESHES[meshes[i]].baseColorFactor);
+  }
+  assert.equal(materials[0].pbrMetallicRoughness.baseColorTexture.index, materials[1].pbrMetallicRoughness.baseColorTexture.index);
+});
 
 test("one primitive per tiled class (the painted surface gets its own) with vertices", () => {
   assert.deepEqual(primitives.map((p) => p.mesh), ["Ground_Sports", "Ground_Asphalt", "Ground_Pavers", "Ground_Apron"]);

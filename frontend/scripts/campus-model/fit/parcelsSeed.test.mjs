@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { validate } from "../lib/schemas.mjs";
-import { CURATION_FILE, PARCELS_FILE, applyParcelCuration, compareToLayers, parkingRowParcels, registrationRefs, seedParcels } from "./parcelsSeed.mjs";
+import { CURATION_FILE, PARCELS_FILE, applyParcelCuration, compareToLayers, layerOver, parkingRowParcels, registrationRefs, seedParcels } from "./parcelsSeed.mjs";
 
 const square = (x, y, s) => [[x, y], [x + s, y], [x + s, y + s], [x, y + s]];
 const layer = (over) => ({ cls: "PAVING", mesh: "Ground_Pavers", label: 2, precedence: 2, source: "OSM-derived", source_ref: "way/1", rings: [square(0, 0, 10)], ...over });
@@ -148,6 +148,28 @@ test("a curated concrete lot is drawn with the concrete mesh and stays a lot", (
   assert.equal(added[1].mesh, "Ground_Lot");
   assert.equal(added[1].surface, undefined);
   assert.ok(validate("parcels", { parcels: added }).ok);
+});
+
+test("raised paint supports inside a concrete yard inherit its surface, not asphalt", () => {
+  const { added: [yard] } = applyParcelCuration([], {
+    ...emptyCuration,
+    add: [{ id: "PARCEL_LOT_YARD", class: "lot", surface: "concrete", ring: square(0, 0, 20), evidence: { tier: "T1", refs: ["photo"] }, estimated: true, reason: "pale yard" }],
+  });
+  const support = (id, ring) => ({
+    ...yard, id, ring, surface: undefined, mesh: "Ground_Lot",
+    source: "photo-paint-support", precedence: 6.2,
+  });
+  const result = layerOver([
+    support("PARCEL_INSIDE", square(2, 2, 2)),
+    support("PARCEL_STRADDLING", square(19, 19, 2)),
+    support("PARCEL_OUTSIDE", square(30, 30, 2)),
+    yard,
+  ]);
+  assert.deepEqual(result.slice(0, 3).map(p => [p.mesh, p.surface]), [
+    ["Ground_Apron", "concrete"], ["Ground_Lot", undefined], ["Ground_Lot", undefined],
+  ]);
+  assert.equal(result[0].precedence, 6.2);
+  assert.deepEqual(result[0].ring, square(2, 2, 2));
 });
 
 test("parcel curation naming a parcel the seed does not have fails by name", () => {
