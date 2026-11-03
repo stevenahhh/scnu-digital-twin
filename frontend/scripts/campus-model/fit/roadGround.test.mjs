@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { groundProposal, groundParcels, migrationErrors, roadParts } from "./roadGround.mjs";
+import { groundProposal, groundParcels, migrationErrors, roadParts, isSurveyedNonRoad } from "./roadGround.mjs";
 import { ringArea } from "../lib/geometry.mjs";
 
 function raster(hidden = false) {
@@ -14,6 +14,12 @@ function raster(hidden = false) {
   return { w, h, origin: [-15, 15], gsdM, rgb, mask };
 }
 const seed = { id: "SECTION_A", parcelId: "PARCEL_A", class: "road", point: [0, 0], axis: [1, 0], lengthM: 12, widthM: 8, road: "RD_A", paint: ["PAINT_A"] };
+
+test("an eye-corrected A003 boundary still blocks road proposals on its sidewalk", () => {
+  assert.equal(isSurveyedNonRoad({ source: "NGII-A003", estimated: true, paintAllowed: false }), true);
+  assert.equal(isSurveyedNonRoad({ source: "project-estimated", estimated: true, paintAllowed: false }), false);
+  assert.equal(isSurveyedNonRoad({ source: "NGII-A003", estimated: true, paintAllowed: true }), false);
+});
 
 test("road ground proposal follows photo asphalt instead of a paint hull", () => {
   const r = groundProposal(seed, raster(), []);

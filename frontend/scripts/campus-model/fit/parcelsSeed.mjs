@@ -215,7 +215,7 @@ export function applyParcelCuration(seeded, curation) {
   const kept = seeded.filter((p) => !removed.has(p.id)).map((p) => {
     const r = replaced.get(p.id);
     if (!r) return p;
-    return { ...p, ring: r.ring, evidence: r.evidence, estimated: r.estimated, source_ref: `${p.source_ref}; ${r.reason}`, curated: "todo 13a" };
+    return { ...p, ring: r.ring, evidence: r.evidence, estimated: r.estimated, source_ref: `${p.source_ref}; ${r.reason}`, curated: r.curated ?? "todo 13a" };
   });
   const added = curation.add.map((r) => ({
     id: r.id, cls: r.class === "lot" ? "LOT" : "ASPHALT", class: r.class, ring: r.ring, holes: [], precedence: SUPPORT_PRECEDENCE[r.class],

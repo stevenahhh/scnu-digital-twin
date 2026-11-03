@@ -143273,16 +143273,16 @@
      263735.7481
     ],
     [
-     243732.0431,
-     263730.7821
+     243732.2931,
+     263731.1021
     ],
     [
-     243734.811,
-     263728.4081
+     243735.061,
+     263728.7281
     ],
     [
-     243737.6441,
-     263726.7541
+     243737.8241,
+     263727.0941
     ],
     [
      243741.3641,
@@ -143291,6 +143291,22 @@
     [
      243751.326,
      263722.1231
+    ],
+    [
+     243770,
+     263717.2874
+    ],
+    [
+     243772,
+     263717.2195
+    ],
+    [
+     243792,
+     263712.0403
+    ],
+    [
+     243794,
+     263711.0724
     ],
     [
      243809.363,
@@ -143306,19 +143322,22 @@
    "mesh": "Ground_Pavers",
    "label": 1,
    "source": "NGII-A003",
-   "source_ref": "100034702020A00310100000000047547",
+   "source_ref": "100034702020A00310100000000047547; Road-side boundary near the 2025 yellow kerb (E243772-243792) moves north 0.45 m; the crossing bend near E243734 moves NE 0.39-0.41 m. Registered 2024 aerial confirms asphalt, but the 2025 paving extent is retained elsewhere. Eye-read boundary, estimated; no global A003 shift.",
    "evidence": {
-    "tier": "T0",
+    "tier": "T1",
     "refs": [
-     "100034702020A00310100000000047547"
+     "NGII 2025 sheet 34702020 actual paint and kerb",
+     "Suncheon 2024_12cm inverse registration: pivot 243735.68,263709.15; dE 1.523 dN 2.266 rot -0.1058 scale 0.999753; RMS 0.419 m",
+     "task-22 attempt3 registered raw/paint/A003 aerial comparison"
     ]
    },
    "paintAllowed": false,
-   "estimated": false,
+   "estimated": true,
    "render": {
     "walkway": true,
     "surface": "blockPaver"
-   }
+   },
+   "curated": "todo 22 aerial boundary review"
   },
   {
    "id": "PARCEL_PAVING_100034702020A00310100000000047554",
@@ -143470,20 +143489,20 @@
      263768.4267
     ],
     [
-     243884.4311,
-     263765.711
+     243885.1111,
+     263765.541
     ],
     [
-     243883.4865,
-     263764.4399
+     243884.9415,
+     263764.0729
     ],
     [
-     243882.537,
-     263762.7386
+     243883.992,
+     263762.3716
     ],
     [
-     243882.1275,
-     263761.6271
+     243883.5825,
+     263761.2601
     ],
     [
      243877.0127,
@@ -143635,19 +143654,22 @@
    "mesh": "Ground_Pavers",
    "label": 1,
    "source": "NGII-A003",
-   "source_ref": "100034702020A00310100000000047555",
+   "source_ref": "100034702020A00310100000000047555; The west/road edge at the shadowed crossing is moved up to 1.501 m toward the visible parking-side kerb. The northern curve blends through a 0.701 m correction, and the straight edge tapers to its existing endpoint at N263741.3413 without artificial notches. The opposite sidewalk edge is unchanged. The 2024 aerial exposes the road zebra; 2025 confirms its epoch and location. Eye-read boundary, estimated, registration RMS 0.419 m; no global A003 shift.",
    "evidence": {
-    "tier": "T0",
+    "tier": "T1",
     "refs": [
-     "100034702020A00310100000000047555"
+     "NGII 2025 sheet 34702020 actual paint and kerb",
+     "Suncheon 2024_12cm inverse registration: pivot 243735.68,263709.15; dE 1.523 dN 2.266 rot -0.1058 scale 0.999753; RMS 0.419 m",
+     "task-22 attempt3 registered raw/paint/A003 aerial comparison"
     ]
    },
    "paintAllowed": false,
-   "estimated": false,
+   "estimated": true,
    "render": {
     "walkway": true,
     "surface": "blockPaver"
-   }
+   },
+   "curated": "todo 22 aerial boundary review"
   },
   {
    "id": "PARCEL_PAVING_100034702020A00310100000000047559",
@@ -144059,55 +144081,55 @@
      263817.4991
     ],
     [
-     243569.394,
+     243569.644,
      263848.954
     ],
     [
-     243569.3461,
+     243569.8461,
      263850.0411
     ],
     [
-     243569.293,
+     243569.893,
      263850.7431
     ],
     [
-     243569.0501,
+     243569.6501,
      263851.51
     ],
     [
-     243558.4671,
+     243561.9671,
      263886.3091
     ],
     [
-     243557.5901,
+     243561.0901,
      263887.472
     ],
     [
-     243556.271,
+     243559.771,
      263888.768
     ],
     [
-     243554.818,
+     243558.318,
      263889.81
     ],
     [
-     243554.3441,
+     243557.8441,
      263890.5489
     ],
     [
-     243555.752,
+     243559.252,
      263884.9271
     ],
     [
-     243566.1851,
+     243566.7851,
      263850.6201
     ],
     [
-     243566.328,
+     243566.828,
      263850.169
     ],
     [
-     243566.3861,
+     243566.6361,
      263849.073
     ],
     [
@@ -144156,20 +144178,22 @@
    "mesh": "Ground_Pavers",
    "label": 1,
    "source": "NGII-A003",
-   "source_ref": "100034702020A00310100000000047655; registration REG001",
+   "source_ref": "100034702020A00310100000000047655; registration REG001; Registered western 2024 tile BBOX 243450,263840,243575,263965 exposes the crossing and stone footway. Move the northern strip east 0.6-3.5 m along its visible kerb, taper to 0.25 m near N263849. The crossing sample maps to aerial pixel 857.829,747.964 on white road paint; the 2025 canopy is not absence evidence. Eye-read boundary, estimated; no global A003 shift.",
    "evidence": {
     "tier": "T1",
     "refs": [
-     "100034702020A00310100000000047655",
-     "REG001"
+     "NGII 2025 sheet 34702020 actual paint and kerb",
+     "Suncheon 2024_12cm inverse registration: pivot 243735.68,263709.15; dE 1.523 dN 2.266 rot -0.1058 scale 0.999753; RMS 0.419 m",
+     "task-22 attempt3 registered raw/paint/A003 aerial comparison"
     ]
    },
    "paintAllowed": false,
-   "estimated": false,
+   "estimated": true,
    "render": {
     "walkway": true,
     "surface": "blockPaver"
-   }
+   },
+   "curated": "todo 22 aerial boundary review"
   },
   {
    "id": "PARCEL_PAVING_100034702020A00310100000000047660",
@@ -144746,7 +144770,7 @@
    "ring": [
     [
      243811.3771,
-     263913.88
+     263914.13
     ],
     [
      243811.8761,
@@ -144766,11 +144790,11 @@
     ],
     [
      243807.835,
-     263912.38
+     263912.63
     ],
     [
      243808.7,
-     263912.617
+     263912.867
     ]
    ],
    "holes": [],
@@ -144778,19 +144802,22 @@
    "mesh": "Ground_Pavers",
    "label": 1,
    "source": "NGII-A003",
-   "source_ref": "100034702020A00310100000000047692",
+   "source_ref": "100034702020A00310100000000047692; The road-side rounded tip is retracted north 0.25 m, within the 0.419 m registration RMS. Both epochs show the kerb on the road side; retain the rest of the sidewalk. Eye-read boundary, estimated; no global A003 shift.",
    "evidence": {
-    "tier": "T0",
+    "tier": "T1",
     "refs": [
-     "100034702020A00310100000000047692"
+     "NGII 2025 sheet 34702020 actual paint and kerb",
+     "Suncheon 2024_12cm inverse registration: pivot 243735.68,263709.15; dE 1.523 dN 2.266 rot -0.1058 scale 0.999753; RMS 0.419 m",
+     "task-22 attempt3 registered raw/paint/A003 aerial comparison"
     ]
    },
    "paintAllowed": false,
-   "estimated": false,
+   "estimated": true,
    "render": {
     "walkway": true,
     "surface": "blockPaver"
-   }
+   },
+   "curated": "todo 22 aerial boundary review"
   },
   {
    "id": "PARCEL_PAVING_100034702020A00310100000000047743",
@@ -228683,12 +228710,8 @@
      263912.3164772274
     ],
     [
-     243808.01098850602,
-     263912.3351217322
-    ],
-    [
-     243808.00181617314,
-     263912.3374607396
+     243808.6946687621,
+     263912.4627668308
     ]
    ],
    "holes": [],
@@ -228711,42 +228734,6 @@
   },
   {
    "id": "PARCEL_JUNCTION_147_PART_8",
-   "cls": "ASPHALT",
-   "class": "road",
-   "ring": [
-    [
-     243808.01098850602,
-     263912.3351217322
-    ],
-    [
-     243808.6946687621,
-     263912.4627668308
-    ],
-    [
-     243808.00181617314,
-     263912.3374607396
-    ]
-   ],
-   "holes": [],
-   "precedence": 6.2,
-   "mesh": "Ground_Asphalt",
-   "label": null,
-   "source": "road-section",
-   "source_ref": "JUNCTION_147; Curved kerb footprint 3.878 m2; vertex mean lies outside the painted band. Preserve the junction kerb contour, not a convex hull or centre-point road patch. Width remains estimated.",
-   "roadRecord": "JUNCTION_147",
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "kerb_no_parking@243807.04,263912.80",
-     "regularized photo kerb contour; the kerb strip is road boundary, never its convex interior"
-    ]
-   },
-   "estimated": true,
-   "paintAllowed": true,
-   "curated": "todo 22"
-  },
-  {
-   "id": "PARCEL_JUNCTION_147_PART_9",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -228782,7 +228769,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_10",
+   "id": "PARCEL_JUNCTION_147_PART_9",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -228818,7 +228805,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_11",
+   "id": "PARCEL_JUNCTION_147_PART_10",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -228854,7 +228841,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_12",
+   "id": "PARCEL_JUNCTION_147_PART_11",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -228890,7 +228877,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_13",
+   "id": "PARCEL_JUNCTION_147_PART_12",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -228899,12 +228886,56 @@
      263912.7038062382
     ],
     [
-     243809.4666689402,
-     263912.82705842645
+     243810.09306728435,
+     263913.24868433113
     ],
     [
-     243809.42393237402,
-     263912.8153491014
+     243809.90413580154,
+     263913.196919289
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_147; Curved kerb footprint 3.878 m2; vertex mean lies outside the painted band. Preserve the junction kerb contour, not a convex hull or centre-point road patch. Width remains estimated.",
+   "roadRecord": "JUNCTION_147",
+   "evidence": {
+    "tier": "T1",
+    "refs": [
+     "kerb_no_parking@243807.04,263912.80",
+     "regularized photo kerb contour; the kerb strip is road boundary, never its convex interior"
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_147_PART_13",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243810.09306728435,
+     263913.24868433113
+    ],
+    [
+     243810.8554652915,
+     263913.7618509966
+    ],
+    [
+     243810.793112504,
+     263913.8544868674
+    ],
+    [
+     243810.6419012437,
+     263913.78314854536
+    ],
+    [
+     243809.90413580154,
+     263913.196919289
     ]
    ],
    "holes": [],
@@ -228927,46 +228958,6 @@
   },
   {
    "id": "PARCEL_JUNCTION_147_PART_14",
-   "cls": "ASPHALT",
-   "class": "road",
-   "ring": [
-    [
-     243809.4666689402,
-     263912.82705842645
-    ],
-    [
-     243810.21991137762,
-     263913.33406251913
-    ],
-    [
-     243809.86748059114,
-     263913.1677930173
-    ],
-    [
-     243809.42393237402,
-     263912.8153491014
-    ]
-   ],
-   "holes": [],
-   "precedence": 6.2,
-   "mesh": "Ground_Asphalt",
-   "label": null,
-   "source": "road-section",
-   "source_ref": "JUNCTION_147; Curved kerb footprint 3.878 m2; vertex mean lies outside the painted band. Preserve the junction kerb contour, not a convex hull or centre-point road patch. Width remains estimated.",
-   "roadRecord": "JUNCTION_147",
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "kerb_no_parking@243807.04,263912.80",
-     "regularized photo kerb contour; the kerb strip is road boundary, never its convex interior"
-    ]
-   },
-   "estimated": true,
-   "paintAllowed": true,
-   "curated": "todo 22"
-  },
-  {
-   "id": "PARCEL_JUNCTION_147_PART_15",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -229002,7 +228993,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_16",
+   "id": "PARCEL_JUNCTION_147_PART_15",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -229042,7 +229033,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_17",
+   "id": "PARCEL_JUNCTION_147_PART_16",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -229078,87 +229069,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_18",
-   "cls": "ASPHALT",
-   "class": "road",
-   "ring": [
-    [
-     243807.38675627956,
-     263912.2571864026
-    ],
-    [
-     243807.69402205254,
-     263912.28179452894
-    ],
-    [
-     243808.00181617314,
-     263912.3374607396
-    ],
-    [
-     243807.94916620973,
-     263912.35088683886
-    ],
-    [
-     243807.4617894503,
-     263912.27774462395
-    ]
-   ],
-   "holes": [],
-   "precedence": 6.2,
-   "mesh": "Ground_Asphalt",
-   "label": null,
-   "source": "road-section",
-   "source_ref": "JUNCTION_147; Curved kerb footprint 3.878 m2; vertex mean lies outside the painted band. Preserve the junction kerb contour, not a convex hull or centre-point road patch. Width remains estimated.",
-   "roadRecord": "JUNCTION_147",
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "kerb_no_parking@243807.04,263912.80",
-     "regularized photo kerb contour; the kerb strip is road boundary, never its convex interior"
-    ]
-   },
-   "estimated": true,
-   "paintAllowed": true,
-   "curated": "todo 22"
-  },
-  {
-   "id": "PARCEL_JUNCTION_147_PART_19",
-   "cls": "ASPHALT",
-   "class": "road",
-   "ring": [
-    [
-     243808.00181617314,
-     263912.3374607396
-    ],
-    [
-     243808.6946687621,
-     263912.4627668308
-    ],
-    [
-     243807.94916620973,
-     263912.35088683886
-    ]
-   ],
-   "holes": [],
-   "precedence": 6.2,
-   "mesh": "Ground_Asphalt",
-   "label": null,
-   "source": "road-section",
-   "source_ref": "JUNCTION_147; Curved kerb footprint 3.878 m2; vertex mean lies outside the painted band. Preserve the junction kerb contour, not a convex hull or centre-point road patch. Width remains estimated.",
-   "roadRecord": "JUNCTION_147",
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "kerb_no_parking@243807.04,263912.80",
-     "regularized photo kerb contour; the kerb strip is road boundary, never its convex interior"
-    ]
-   },
-   "estimated": true,
-   "paintAllowed": true,
-   "curated": "todo 22"
-  },
-  {
-   "id": "PARCEL_JUNCTION_147_PART_20",
+   "id": "PARCEL_JUNCTION_147_PART_17",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -229167,12 +229078,12 @@
      263912.246546635
     ],
     [
-     243807.38675627956,
-     263912.2571864026
+     243807.69402205254,
+     263912.28179452894
     ],
     [
-     243807.4617894503,
-     263912.27774462395
+     243808.6946687621,
+     263912.4627668308
     ]
    ],
    "holes": [],
@@ -229194,7 +229105,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_21",
+   "id": "PARCEL_JUNCTION_147_PART_18",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -229230,7 +229141,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_22",
+   "id": "PARCEL_JUNCTION_147_PART_19",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -229266,7 +229177,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_23",
+   "id": "PARCEL_JUNCTION_147_PART_20",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -229275,56 +229186,16 @@
      263912.7038062382
     ],
     [
-     243809.42393237402,
-     263912.8153491014
+     243809.90413580154,
+     263913.196919289
     ],
     [
-     243809.2429856396,
-     263912.765771788
-    ]
-   ],
-   "holes": [],
-   "precedence": 6.2,
-   "mesh": "Ground_Asphalt",
-   "label": null,
-   "source": "road-section",
-   "source_ref": "JUNCTION_147; Curved kerb footprint 3.878 m2; vertex mean lies outside the painted band. Preserve the junction kerb contour, not a convex hull or centre-point road patch. Width remains estimated.",
-   "roadRecord": "JUNCTION_147",
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "kerb_no_parking@243807.04,263912.80",
-     "regularized photo kerb contour; the kerb strip is road boundary, never its convex interior"
-    ]
-   },
-   "estimated": true,
-   "paintAllowed": true,
-   "curated": "todo 22"
-  },
-  {
-   "id": "PARCEL_JUNCTION_147_PART_24",
-   "cls": "ASPHALT",
-   "class": "road",
-   "ring": [
-    [
-     243809.42393237402,
-     263912.8153491014
-    ],
-    [
-     243809.86748059114,
-     263913.1677930173
-    ],
-    [
-     243809.32173054613,
-     263912.9103195173
+     243809.64000972043,
+     263913.1245517963
     ],
     [
      243809.20138261782,
      263912.8293138687
-    ],
-    [
-     243809.2429856396,
-     263912.765771788
     ]
    ],
    "holes": [],
@@ -229346,7 +229217,47 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_25",
+   "id": "PARCEL_JUNCTION_147_PART_21",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243809.90413580154,
+     263913.196919289
+    ],
+    [
+     243810.6419012437,
+     263913.78314854536
+    ],
+    [
+     243810.56355725977,
+     263913.7461874861
+    ],
+    [
+     243809.64000972043,
+     263913.1245517963
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_147; Curved kerb footprint 3.878 m2; vertex mean lies outside the painted band. Preserve the junction kerb contour, not a convex hull or centre-point road patch. Width remains estimated.",
+   "roadRecord": "JUNCTION_147",
+   "evidence": {
+    "tier": "T1",
+    "refs": [
+     "kerb_no_parking@243807.04,263912.80",
+     "regularized photo kerb contour; the kerb strip is road boundary, never its convex interior"
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_147_PART_22",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -229382,87 +229293,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_26",
-   "cls": "ASPHALT",
-   "class": "road",
-   "ring": [
-    [
-     243807.4617894503,
-     263912.27774462395
-    ],
-    [
-     243807.94916620973,
-     263912.35088683886
-    ],
-    [
-     243807.83499999996,
-     263912.38
-    ]
-   ],
-   "holes": [],
-   "precedence": 6.2,
-   "mesh": "Ground_Asphalt",
-   "label": null,
-   "source": "road-section",
-   "source_ref": "JUNCTION_147; Curved kerb footprint 3.878 m2; vertex mean lies outside the painted band. Preserve the junction kerb contour, not a convex hull or centre-point road patch. Width remains estimated.",
-   "roadRecord": "JUNCTION_147",
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "kerb_no_parking@243807.04,263912.80",
-     "regularized photo kerb contour; the kerb strip is road boundary, never its convex interior"
-    ]
-   },
-   "estimated": true,
-   "paintAllowed": true,
-   "curated": "todo 22"
-  },
-  {
-   "id": "PARCEL_JUNCTION_147_PART_27",
-   "cls": "ASPHALT",
-   "class": "road",
-   "ring": [
-    [
-     243807.94916620973,
-     263912.35088683886
-    ],
-    [
-     243808.6946687621,
-     263912.4627668308
-    ],
-    [
-     243807.96737932914,
-     263912.4162704058
-    ],
-    [
-     243807.83500000005,
-     263912.38
-    ],
-    [
-     243807.835,
-     263912.38
-    ]
-   ],
-   "holes": [],
-   "precedence": 6.2,
-   "mesh": "Ground_Asphalt",
-   "label": null,
-   "source": "road-section",
-   "source_ref": "JUNCTION_147; Curved kerb footprint 3.878 m2; vertex mean lies outside the painted band. Preserve the junction kerb contour, not a convex hull or centre-point road patch. Width remains estimated.",
-   "roadRecord": "JUNCTION_147",
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "kerb_no_parking@243807.04,263912.80",
-     "regularized photo kerb contour; the kerb strip is road boundary, never its convex interior"
-    ]
-   },
-   "estimated": true,
-   "paintAllowed": true,
-   "curated": "todo 22"
-  },
-  {
-   "id": "PARCEL_JUNCTION_147_PART_28",
+   "id": "PARCEL_JUNCTION_147_PART_23",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -229475,16 +229306,8 @@
      263912.246546635
     ],
     [
-     243807.4617894503,
-     263912.27774462395
-    ],
-    [
-     243807.83500000002,
-     263912.38
-    ],
-    [
-     243807.74781297962,
-     263912.4022332841
+     243808.6946687621,
+     263912.4627668308
     ]
    ],
    "holes": [],
@@ -229506,7 +229329,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_29",
+   "id": "PARCEL_JUNCTION_147_PART_24",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -229542,7 +229365,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_30",
+   "id": "PARCEL_JUNCTION_147_PART_25",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -229551,52 +229374,12 @@
      263912.7038062382
     ],
     [
-     243809.2429856396,
-     263912.765771788
-    ],
-    [
-     243809.19953545692,
-     263912.7538669403
-    ]
-   ],
-   "holes": [],
-   "precedence": 6.2,
-   "mesh": "Ground_Asphalt",
-   "label": null,
-   "source": "road-section",
-   "source_ref": "JUNCTION_147; Curved kerb footprint 3.878 m2; vertex mean lies outside the painted band. Preserve the junction kerb contour, not a convex hull or centre-point road patch. Width remains estimated.",
-   "roadRecord": "JUNCTION_147",
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "kerb_no_parking@243807.04,263912.80",
-     "regularized photo kerb contour; the kerb strip is road boundary, never its convex interior"
-    ]
-   },
-   "estimated": true,
-   "paintAllowed": true,
-   "curated": "todo 22"
-  },
-  {
-   "id": "PARCEL_JUNCTION_147_PART_31",
-   "cls": "ASPHALT",
-   "class": "road",
-   "ring": [
-    [
-     243809.2429856396,
-     263912.765771788
-    ],
-    [
      243809.20138261782,
      263912.8293138687
     ],
     [
      243809.13927431015,
      263912.78977124195
-    ],
-    [
-     243809.19953545692,
-     263912.7538669403
     ]
    ],
    "holes": [],
@@ -229618,7 +229401,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_32",
+   "id": "PARCEL_JUNCTION_147_PART_26",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -229654,7 +229437,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_33",
+   "id": "PARCEL_JUNCTION_147_PART_27",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -229667,48 +229450,8 @@
      263912.7038062382
     ],
     [
-     243809.19953545692,
-     263912.7538669403
-    ],
-    [
-     243809.02569986854,
-     263912.7062379987
-    ]
-   ],
-   "holes": [],
-   "precedence": 6.2,
-   "mesh": "Ground_Asphalt",
-   "label": null,
-   "source": "road-section",
-   "source_ref": "JUNCTION_147; Curved kerb footprint 3.878 m2; vertex mean lies outside the painted band. Preserve the junction kerb contour, not a convex hull or centre-point road patch. Width remains estimated.",
-   "roadRecord": "JUNCTION_147",
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "kerb_no_parking@243807.04,263912.80",
-     "regularized photo kerb contour; the kerb strip is road boundary, never its convex interior"
-    ]
-   },
-   "estimated": true,
-   "paintAllowed": true,
-   "curated": "todo 22"
-  },
-  {
-   "id": "PARCEL_JUNCTION_147_PART_34",
-   "cls": "ASPHALT",
-   "class": "road",
-   "ring": [
-    [
-     243809.19953545692,
-     263912.7538669403
-    ],
-    [
      243809.13927431015,
      263912.78977124195
-    ],
-    [
-     243809.02569986854,
-     263912.7062379987
     ]
    ],
    "holes": [],
@@ -229730,7 +229473,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_35",
+   "id": "PARCEL_JUNCTION_147_PART_28",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -229766,7 +229509,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_36",
+   "id": "PARCEL_JUNCTION_147_PART_29",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -229775,52 +229518,12 @@
      263912.4627668308
     ],
     [
-     243809.02569986854,
-     263912.7062379987
-    ],
-    [
-     243809.0068352168,
-     263912.7010693022
-    ]
-   ],
-   "holes": [],
-   "precedence": 6.2,
-   "mesh": "Ground_Asphalt",
-   "label": null,
-   "source": "road-section",
-   "source_ref": "JUNCTION_147; Curved kerb footprint 3.878 m2; vertex mean lies outside the painted band. Preserve the junction kerb contour, not a convex hull or centre-point road patch. Width remains estimated.",
-   "roadRecord": "JUNCTION_147",
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "kerb_no_parking@243807.04,263912.80",
-     "regularized photo kerb contour; the kerb strip is road boundary, never its convex interior"
-    ]
-   },
-   "estimated": true,
-   "paintAllowed": true,
-   "curated": "todo 22"
-  },
-  {
-   "id": "PARCEL_JUNCTION_147_PART_37",
-   "cls": "ASPHALT",
-   "class": "road",
-   "ring": [
-    [
-     243809.02569986854,
-     263912.7062379987
-    ],
-    [
      243809.13927431015,
      263912.78977124195
     ],
     [
      243809.0760633982,
      263912.75391689833
-    ],
-    [
-     243809.0068352168,
-     263912.7010693022
     ]
    ],
    "holes": [],
@@ -229842,7 +229545,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_38",
+   "id": "PARCEL_JUNCTION_147_PART_30",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -229878,7 +229581,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_39",
+   "id": "PARCEL_JUNCTION_147_PART_31",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -229887,52 +229590,12 @@
      263912.4627668308
     ],
     [
-     243809.0068352168,
-     263912.7010693022
-    ],
-    [
-     243808.97595740628,
-     263912.6926091391
-    ]
-   ],
-   "holes": [],
-   "precedence": 6.2,
-   "mesh": "Ground_Asphalt",
-   "label": null,
-   "source": "road-section",
-   "source_ref": "JUNCTION_147; Curved kerb footprint 3.878 m2; vertex mean lies outside the painted band. Preserve the junction kerb contour, not a convex hull or centre-point road patch. Width remains estimated.",
-   "roadRecord": "JUNCTION_147",
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "kerb_no_parking@243807.04,263912.80",
-     "regularized photo kerb contour; the kerb strip is road boundary, never its convex interior"
-    ]
-   },
-   "estimated": true,
-   "paintAllowed": true,
-   "curated": "todo 22"
-  },
-  {
-   "id": "PARCEL_JUNCTION_147_PART_40",
-   "cls": "ASPHALT",
-   "class": "road",
-   "ring": [
-    [
-     243809.0068352168,
-     263912.7010693022
-    ],
-    [
      243809.0760633982,
      263912.75391689833
     ],
     [
      243809.0111074562,
      263912.72133041447
-    ],
-    [
-     243808.97595740628,
-     263912.6926091391
     ]
    ],
    "holes": [],
@@ -229954,7 +229617,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_41",
+   "id": "PARCEL_JUNCTION_147_PART_32",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -229990,7 +229653,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_42",
+   "id": "PARCEL_JUNCTION_147_PART_33",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -229999,52 +229662,12 @@
      263912.4627668308
     ],
     [
-     243808.97595740628,
-     263912.6926091391
-    ],
-    [
-     243808.93201351925,
-     263912.6805690221
-    ]
-   ],
-   "holes": [],
-   "precedence": 6.2,
-   "mesh": "Ground_Asphalt",
-   "label": null,
-   "source": "road-section",
-   "source_ref": "JUNCTION_147; Curved kerb footprint 3.878 m2; vertex mean lies outside the painted band. Preserve the junction kerb contour, not a convex hull or centre-point road patch. Width remains estimated.",
-   "roadRecord": "JUNCTION_147",
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "kerb_no_parking@243807.04,263912.80",
-     "regularized photo kerb contour; the kerb strip is road boundary, never its convex interior"
-    ]
-   },
-   "estimated": true,
-   "paintAllowed": true,
-   "curated": "todo 22"
-  },
-  {
-   "id": "PARCEL_JUNCTION_147_PART_43",
-   "cls": "ASPHALT",
-   "class": "road",
-   "ring": [
-    [
-     243808.97595740628,
-     263912.6926091391
-    ],
-    [
      243809.0111074562,
      263912.72133041447
     ],
     [
      243808.94457528382,
      263912.6920964722
-    ],
-    [
-     243808.93201351925,
-     263912.6805690221
     ]
    ],
    "holes": [],
@@ -230066,7 +229689,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_44",
+   "id": "PARCEL_JUNCTION_147_PART_34",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -230102,49 +229725,13 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_45",
+   "id": "PARCEL_JUNCTION_147_PART_35",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
     [
      243808.6946687621,
      263912.4627668308
-    ],
-    [
-     243808.93201351925,
-     263912.6805690221
-    ],
-    [
-     243808.87558136118,
-     263912.66510726314
-    ]
-   ],
-   "holes": [],
-   "precedence": 6.2,
-   "mesh": "Ground_Asphalt",
-   "label": null,
-   "source": "road-section",
-   "source_ref": "JUNCTION_147; Curved kerb footprint 3.878 m2; vertex mean lies outside the painted band. Preserve the junction kerb contour, not a convex hull or centre-point road patch. Width remains estimated.",
-   "roadRecord": "JUNCTION_147",
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "kerb_no_parking@243807.04,263912.80",
-     "regularized photo kerb contour; the kerb strip is road boundary, never its convex interior"
-    ]
-   },
-   "estimated": true,
-   "paintAllowed": true,
-   "curated": "todo 22"
-  },
-  {
-   "id": "PARCEL_JUNCTION_147_PART_46",
-   "cls": "ASPHALT",
-   "class": "road",
-   "ring": [
-    [
-     243808.93201351925,
-     263912.6805690221
     ],
     [
      243808.94457528382,
@@ -230153,10 +229740,6 @@
     [
      243808.87663977718,
      263912.6662910411
-    ],
-    [
-     243808.87558136118,
-     263912.66510726314
     ]
    ],
    "holes": [],
@@ -230178,43 +229761,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_47",
-   "cls": "ASPHALT",
-   "class": "road",
-   "ring": [
-    [
-     243807.96737932914,
-     263912.4162704058
-    ],
-    [
-     243808.6946687621,
-     263912.4627668308
-    ],
-    [
-     243808.0290880704,
-     263912.4331778875
-    ]
-   ],
-   "holes": [],
-   "precedence": 6.2,
-   "mesh": "Ground_Asphalt",
-   "label": null,
-   "source": "road-section",
-   "source_ref": "JUNCTION_147; Curved kerb footprint 3.878 m2; vertex mean lies outside the painted band. Preserve the junction kerb contour, not a convex hull or centre-point road patch. Width remains estimated.",
-   "roadRecord": "JUNCTION_147",
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "kerb_no_parking@243807.04,263912.80",
-     "regularized photo kerb contour; the kerb strip is road boundary, never its convex interior"
-    ]
-   },
-   "estimated": true,
-   "paintAllowed": true,
-   "curated": "todo 22"
-  },
-  {
-   "id": "PARCEL_JUNCTION_147_PART_48",
+   "id": "PARCEL_JUNCTION_147_PART_36",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -230227,12 +229774,8 @@
      263912.314447198
     ],
     [
-     243807.74781297962,
-     263912.4022332841
-    ],
-    [
-     243807.68623506426,
-     263912.4179360719
+     243808.6946687621,
+     263912.4627668308
     ]
    ],
    "holes": [],
@@ -230254,61 +229797,21 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_49",
+   "id": "PARCEL_JUNCTION_147_PART_37",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
     [
      243808.6946687621,
      263912.4627668308
-    ],
-    [
-     243808.87558136118,
-     263912.66510726314
-    ],
-    [
-     243808.8582431445,
-     263912.6603567922
-    ],
-    [
-     243808.8074774789,
-     263912.6439811815
-    ]
-   ],
-   "holes": [],
-   "precedence": 6.2,
-   "mesh": "Ground_Asphalt",
-   "label": null,
-   "source": "road-section",
-   "source_ref": "JUNCTION_147; Curved kerb footprint 3.878 m2; vertex mean lies outside the painted band. Preserve the junction kerb contour, not a convex hull or centre-point road patch. Width remains estimated.",
-   "roadRecord": "JUNCTION_147",
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "kerb_no_parking@243807.04,263912.80",
-     "regularized photo kerb contour; the kerb strip is road boundary, never its convex interior"
-    ]
-   },
-   "estimated": true,
-   "paintAllowed": true,
-   "curated": "todo 22"
-  },
-  {
-   "id": "PARCEL_JUNCTION_147_PART_50",
-   "cls": "ASPHALT",
-   "class": "road",
-   "ring": [
-    [
-     243808.87558136118,
-     263912.66510726314
     ],
     [
      243808.87663977718,
      263912.6662910411
     ],
     [
-     243808.8582431445,
-     263912.6603567922
+     243808.8074774789,
+     263912.6439811815
     ]
    ],
    "holes": [],
@@ -230330,57 +229833,21 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_51",
+   "id": "PARCEL_JUNCTION_147_PART_38",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
     [
-     243808.0290880704,
-     263912.4331778875
-    ],
-    [
-     243808.6946687621,
-     263912.4627668308
-    ],
-    [
-     243808.06443504334,
-     263912.44286254945
-    ]
-   ],
-   "holes": [],
-   "precedence": 6.2,
-   "mesh": "Ground_Asphalt",
-   "label": null,
-   "source": "road-section",
-   "source_ref": "JUNCTION_147; Curved kerb footprint 3.878 m2; vertex mean lies outside the painted band. Preserve the junction kerb contour, not a convex hull or centre-point road patch. Width remains estimated.",
-   "roadRecord": "JUNCTION_147",
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "kerb_no_parking@243807.04,263912.80",
-     "regularized photo kerb contour; the kerb strip is road boundary, never its convex interior"
-    ]
-   },
-   "estimated": true,
-   "paintAllowed": true,
-   "curated": "todo 22"
-  },
-  {
-   "id": "PARCEL_JUNCTION_147_PART_52",
-   "cls": "ASPHALT",
-   "class": "road",
-   "ring": [
-    [
-     243807.64783611696,
-     263912.42772806506
+     243807.67423548954,
+     263912.43053911853
     ],
     [
      243807.46244530205,
      263912.4079873119
     ],
     [
-     243807.68623506426,
-     263912.4179360719
+     243808.6946687621,
+     263912.4627668308
     ]
    ],
    "holes": [],
@@ -230402,7 +229869,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_53",
+   "id": "PARCEL_JUNCTION_147_PART_39",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -230438,21 +229905,21 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_54",
+   "id": "PARCEL_JUNCTION_147_PART_40",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
     [
-     243808.06443504334,
-     263912.44286254945
+     243807.88552546385,
+     263912.4642929287
+    ],
+    [
+     243807.67423548954,
+     263912.43053911853
     ],
     [
      243808.6946687621,
      263912.4627668308
-    ],
-    [
-     243808.14089351805,
-     263912.4638112876
     ]
    ],
    "holes": [],
@@ -230474,7 +229941,7 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_55",
+   "id": "PARCEL_JUNCTION_147_PART_41",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
@@ -230487,12 +229954,8 @@
      263912.62522486947
     ],
     [
-     243808.7045867638,
-     263912.6182567203
-    ],
-    [
-     243808.6657118882,
-     263912.6076054538
+     243808.66525886286,
+     263912.6098714293
     ]
    ],
    "holes": [],
@@ -230514,57 +229977,21 @@
    "curated": "todo 22"
   },
   {
-   "id": "PARCEL_JUNCTION_147_PART_56",
+   "id": "PARCEL_JUNCTION_147_PART_42",
    "cls": "ASPHALT",
    "class": "road",
    "ring": [
     [
-     243808.7045867638,
-     263912.6182567203
+     243808.66525886286,
+     263912.6098714293
     ],
     [
-     243808.70107808482,
-     263912.617508618
-    ],
-    [
-     243808.70000000013,
-     263912.6170000001
-    ]
-   ],
-   "holes": [],
-   "precedence": 6.2,
-   "mesh": "Ground_Asphalt",
-   "label": null,
-   "source": "road-section",
-   "source_ref": "JUNCTION_147; Curved kerb footprint 3.878 m2; vertex mean lies outside the painted band. Preserve the junction kerb contour, not a convex hull or centre-point road patch. Width remains estimated.",
-   "roadRecord": "JUNCTION_147",
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "kerb_no_parking@243807.04,263912.80",
-     "regularized photo kerb contour; the kerb strip is road boundary, never its convex interior"
-    ]
-   },
-   "estimated": true,
-   "paintAllowed": true,
-   "curated": "todo 22"
-  },
-  {
-   "id": "PARCEL_JUNCTION_147_PART_57",
-   "cls": "ASPHALT",
-   "class": "road",
-   "ring": [
-    [
-     243808.14089351805,
-     263912.4638112876
+     243807.88552546385,
+     263912.4642929287
     ],
     [
      243808.6946687621,
      263912.4627668308
-    ],
-    [
-     243808.6657118882,
-     263912.6076054538
     ]
    ],
    "holes": [],
@@ -230612,7 +230039,7 @@
    "mesh": "Ground_Asphalt",
    "label": null,
    "source": "road-section",
-   "source_ref": "JUNCTION_148; Photo boundary/section proposal; visible=0.716, asphalt=0.394, profiles=3, lateralBoundsM=-5.06,0.25, nearestBoundaryM=1.184, lengthM=5.34, widthPriorM=5.06.",
+   "source_ref": "JUNCTION_148; Photo boundary/section proposal; visible=0.716, asphalt=0.394, profiles=3, lateralBoundsM=-5.06,0.25, nearestBoundaryM=1.173, lengthM=5.34, widthPriorM=5.06.",
    "roadRecord": "JUNCTION_148",
    "evidence": {
     "tier": "T1",
@@ -230634,24 +230061,24 @@
    "class": "road",
    "ring": [
     [
-     243889.837,
-     263762.544
-    ],
-    [
-     243886.248,
-     263767.272
-    ],
-    [
      243873.679,
      263757.73
     ],
     [
      243877.268,
      263753.003
+    ],
+    [
+     243879.8625342078,
+     263754.97248451563
+    ],
+    [
+     243882.94168335287,
+     263760.48965822876
     ]
    ],
    "holes": [],
-   "precedence": 3,
+   "precedence": 6.2,
    "mesh": "Ground_Asphalt",
    "label": null,
    "source": "road-section",
@@ -230667,11 +230094,1422 @@
    },
    "estimated": true,
    "paintAllowed": true,
-   "curated": "todo 22",
-   "over": [
-    "PARCEL_ASPHALT_ROAD_ZONE_81",
-    "PARCEL_ASPHALT_ROAD_ZONE_90"
-   ]
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_1",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243879.8625342078,
+     263754.97248451563
+    ],
+    [
+     243880.9397033326,
+     263755.7901526372
+    ],
+    [
+     243883.25542388207,
+     263760.5831318584
+    ],
+    [
+     243882.94168335287,
+     263760.48965822876
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_2",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243880.9397033326,
+     263755.7901526372
+    ],
+    [
+     243881.8108988408,
+     263756.4514682823
+    ],
+    [
+     243883.3426668925,
+     263760.6091244226
+    ],
+    [
+     243883.25542388207,
+     263760.5831318584
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_3",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243881.8108988408,
+     263756.4514682823
+    ],
+    [
+     243882.05845355123,
+     263756.63938454393
+    ],
+    [
+     243883.37052703864,
+     263760.61742487707
+    ],
+    [
+     243883.3426668925,
+     263760.6091244226
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_4",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243886.4318141951,
+     263759.95915810607
+    ],
+    [
+     243887.1111776338,
+     263760.4748559793
+    ],
+    [
+     243886.74077595747,
+     263761.0891046198
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_5",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243887.1111776338,
+     263760.4748559793
+    ],
+    [
+     243889.837,
+     263762.544
+    ],
+    [
+     243886.89926957863,
+     263761.6687534194
+    ],
+    [
+     243886.74077595747,
+     263761.0891046198
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_6",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243885.99859318137,
+     263759.63030444295
+    ],
+    [
+     243886.4318141951,
+     263759.95915810607
+    ],
+    [
+     243886.74077595747,
+     263761.0891046198
+    ],
+    [
+     243886.4731,
+     263761.533
+    ],
+    [
+     243886.4730999999,
+     263761.53299999953
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_7",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243886.74077595747,
+     263761.0891046198
+    ],
+    [
+     243886.89926957863,
+     263761.6687534194
+    ],
+    [
+     243886.4767590119,
+     263761.5428736157
+    ],
+    [
+     243886.4731,
+     263761.533
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_8",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243885.95966922757,
+     263759.6007576657
+    ],
+    [
+     243885.9596692276,
+     263759.6007576657
+    ],
+    [
+     243886.4730999999,
+     263761.53299999953
+    ],
+    [
+     243886.4731,
+     263761.533
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_9",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243882.82179300234,
+     263764.6709285407
+    ],
+    [
+     243873.679,
+     263757.73
+    ],
+    [
+     243876.73122845334,
+     263758.63935931266
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_10",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243884.02847220117,
+     263765.58700244594
+    ],
+    [
+     243882.82179300234,
+     263764.6709285407
+    ],
+    [
+     243880.54290197886,
+     263762.4141116462
+    ],
+    [
+     243884.36441365906,
+     263765.02990025945
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_11",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243885.33738513928,
+     263766.5806890762
+    ],
+    [
+     243884.02847220117,
+     263765.58700244594
+    ],
+    [
+     243884.36441365906,
+     263765.02990025945
+    ],
+    [
+     243884.96045508594,
+     263765.4378849807
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_12",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243880.54290197886,
+     263762.4141116462
+    ],
+    [
+     243876.73122845334,
+     263758.63935931266
+    ],
+    [
+     243878.2968346922,
+     263759.10580493923
+    ],
+    [
+     243884.43897049472,
+     263764.90626033593
+    ],
+    [
+     243884.36441365906,
+     263765.02990025945
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_13",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243884.43897049472,
+     263764.90626033593
+    ],
+    [
+     243884.94170076645,
+     263765.38102426357
+    ],
+    [
+     243884.96045508594,
+     263765.4378849807
+    ],
+    [
+     243884.36441365906,
+     263765.02990025945
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_14",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243878.2968346922,
+     263759.10580493923
+    ],
+    [
+     243881.19168286846,
+     263759.9682754876
+    ],
+    [
+     243884.54315701794,
+     263764.7334845783
+    ],
+    [
+     243884.43897049472,
+     263764.90626033593
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_15",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243884.54315701794,
+     263764.7334845783
+    ],
+    [
+     243884.89146606482,
+     263765.2287190222
+    ],
+    [
+     243884.94170076645,
+     263765.38102426357
+    ],
+    [
+     243884.43897049472,
+     263764.90626033593
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_16",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243881.19168286846,
+     263759.9682754876
+    ],
+    [
+     243882.39493402964,
+     263760.3267636105
+    ],
+    [
+     243884.79314345823,
+     263764.9306173545
+    ],
+    [
+     243884.89146606482,
+     263765.2287190222
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_17",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243885.85894486713,
+     263766.97664125403
+    ],
+    [
+     243885.33738513928,
+     263766.5806890762
+    ],
+    [
+     243884.96045508594,
+     263765.4378849807
+    ],
+    [
+     243885.1110999999,
+     263765.54099999997
+    ],
+    [
+     243885.11109999998,
+     263765.541
+    ],
+    [
+     243885.11110000013,
+     263765.5410000002
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_18",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243884.96045508594,
+     263765.4378849807
+    ],
+    [
+     243884.94170076645,
+     263765.38102426357
+    ],
+    [
+     243885.1110999999,
+     263765.54099999997
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_19",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243884.94170076645,
+     263765.38102426357
+    ],
+    [
+     243884.89146606482,
+     263765.2287190222
+    ],
+    [
+     243885.11109999995,
+     263765.54099999997
+    ],
+    [
+     243885.11109999992,
+     263765.54099999997
+    ],
+    [
+     243885.1110999998,
+     263765.5409999999
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_20",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243884.89146606482,
+     263765.2287190222
+    ],
+    [
+     243884.79314345823,
+     263764.9306173545
+    ],
+    [
+     243885.1111,
+     263765.541
+    ],
+    [
+     243885.11109999992,
+     263765.54099999997
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_21",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243884.79314345823,
+     263764.9306173546
+    ],
+    [
+     243882.39493402964,
+     263760.3267636105
+    ],
+    [
+     243882.94168335287,
+     263760.48965822876
+    ],
+    [
+     243883.8871267614,
+     263762.18368968845
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_22",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243884.54846013605,
+     263764.188768568
+    ],
+    [
+     243884.36534139534,
+     263763.63357578096
+    ],
+    [
+     243884.9415,
+     263764.0729
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_23",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243884.36534139534,
+     263763.63357578096
+    ],
+    [
+     243883.8871267614,
+     263762.18368968845
+    ],
+    [
+     243884.9415,
+     263764.0729
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_24",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243884.6627241751,
+     263764.5352026362
+    ],
+    [
+     243884.54846013605,
+     263764.188768568
+    ],
+    [
+     243884.9415,
+     263764.0729
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_25",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243885.1111,
+     263765.541
+    ],
+    [
+     243884.79314345823,
+     263764.9306173546
+    ],
+    [
+     243884.6627241751,
+     263764.5352026362
+    ],
+    [
+     243884.9415,
+     263764.0729
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_26",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243883.88712676137,
+     263762.18368968845
+    ],
+    [
+     243882.94168335287,
+     263760.48965822876
+    ],
+    [
+     243883.25542388207,
+     263760.5831318584
+    ],
+    [
+     243883.58250000002,
+     263761.2601000001
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_27",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243883.25542388207,
+     263760.5831318584
+    ],
+    [
+     243883.3426668925,
+     263760.6091244226
+    ],
+    [
+     243883.58249999996,
+     263761.2600999999
+    ],
+    [
+     243883.5825,
+     263761.2601
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_28",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243883.992,
+     263762.3716
+    ],
+    [
+     243883.88712676137,
+     263762.18368968845
+    ],
+    [
+     243883.58250000002,
+     263761.2601000001
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_29",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243883.58249999981,
+     263761.26009999943
+    ],
+    [
+     243883.3426668925,
+     263760.6091244226
+    ],
+    [
+     243883.37052703864,
+     263760.61742487707
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_30",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243883.5824999999,
+     263761.26009999966
+    ],
+    [
+     243883.58249999984,
+     263761.26009999955
+    ],
+    [
+     243883.51436675407,
+     263761.0276094668
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_31",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243889.837,
+     263762.544
+    ],
+    [
+     243889.7531891489,
+     263762.6544089451
+    ],
+    [
+     243887.36156114124,
+     263763.35946341365
+    ],
+    [
+     243886.89926957863,
+     263761.6687534194
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_32",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243889.7531891489,
+     263762.6544089451
+    ],
+    [
+     243888.39489233436,
+     263764.4437729293
+    ],
+    [
+     243887.7452,
+     263764.374
+    ],
+    [
+     243887.54985374003,
+     263764.0480941488
+    ],
+    [
+     243887.36156114124,
+     263763.35946341365
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_33",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243888.39489233436,
+     263764.4437729293
+    ],
+    [
+     243888.20404631965,
+     263764.6951855672
+    ],
+    [
+     243887.7452,
+     263764.374
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_34",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243887.1708,
+     263763.4157
+    ],
+    [
+     243886.4767590119,
+     263761.5428736157
+    ],
+    [
+     243886.89926957863,
+     263761.6687534194
+    ],
+    [
+     243887.36156114124,
+     263763.35946341365
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
+  },
+  {
+   "id": "PARCEL_JUNCTION_149_PART_35",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243887.1708,
+     263763.4157
+    ],
+    [
+     243887.36156114124,
+     263763.35946341365
+    ],
+    [
+     243887.54985374003,
+     263764.0480941488
+    ]
+   ],
+   "holes": [],
+   "precedence": 6.2,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "road-section",
+   "source_ref": "JUNCTION_149; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
+   "roadRecord": "JUNCTION_149",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 masked asphalt boundary/transverse profiles",
+     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
+     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
+    ]
+   },
+   "estimated": true,
+   "paintAllowed": true,
+   "curated": "todo 22"
   },
   {
    "id": "PARCEL_JUNCTION_150",
@@ -230700,7 +231538,7 @@
    "mesh": "Ground_Asphalt",
    "label": null,
    "source": "road-section",
-   "source_ref": "JUNCTION_150; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.354, asphalt=0.047, profiles=0, lateralBoundsM=null, nearestBoundaryM=6.712, lengthM=8.292, widthPriorM=8.62.",
+   "source_ref": "JUNCTION_150; Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.354, asphalt=0.047, profiles=0, lateralBoundsM=null, nearestBoundaryM=2.445, lengthM=8.292, widthPriorM=8.62.",
    "roadRecord": "JUNCTION_150",
    "evidence": {
     "tier": "T4",
@@ -240762,7 +241600,7 @@
     "visibleShare": 0.493,
     "asphaltShare": 0.236,
     "nearestBoundaryM": 0,
-    "blockedCells": 1066,
+    "blockedCells": 1059,
     "cells": 15762,
     "profileCount": 6,
     "lateralBoundsM": [
@@ -242878,7 +243716,7 @@
     "visibleShare": 0.545,
     "asphaltShare": 0.161,
     "nearestBoundaryM": 2.471,
-    "blockedCells": 663,
+    "blockedCells": 407,
     "cells": 19817,
     "profileCount": 2,
     "lateralBoundsM": null,
@@ -248067,7 +248905,7 @@
     "visibleShare": 0.514,
     "asphaltShare": 0.183,
     "nearestBoundaryM": 0.293,
-    "blockedCells": 4437,
+    "blockedCells": 4280,
     "cells": 14553,
     "profileCount": 13,
     "lateralBoundsM": [
@@ -248394,7 +249232,7 @@
     "visibleShare": 0.482,
     "asphaltShare": 0.287,
     "nearestBoundaryM": 5.236,
-    "blockedCells": 3873,
+    "blockedCells": 3797,
     "cells": 91440,
     "profileCount": 28,
     "lateralBoundsM": null,
@@ -248999,7 +249837,7 @@
     "visibleShare": 0.576,
     "asphaltShare": 0.354,
     "nearestBoundaryM": 0.716,
-    "blockedCells": 2428,
+    "blockedCells": 2374,
     "cells": 18000,
     "profileCount": 32,
     "lateralBoundsM": [
@@ -249010,8 +249848,8 @@
     "widthPriorM": 9.11,
     "widthSource": "road_segments",
     "kerbAreaM2": 3.878,
-    "surfaceAreaM2": 3.65,
-    "surveyClippedM2": 0.228
+    "surfaceAreaM2": 3.873,
+    "surveyClippedM2": 0.005
    },
    "reason": "Curved kerb footprint 3.878 m2; vertex mean lies outside the painted band. Preserve the junction kerb contour, not a convex hull or centre-point road patch. Width remains estimated.",
    "replaces": [
@@ -249270,8 +250108,8 @@
    "metrics": {
     "visibleShare": 0.716,
     "asphaltShare": 0.394,
-    "nearestBoundaryM": 1.184,
-    "blockedCells": 2298,
+    "nearestBoundaryM": 1.173,
+    "blockedCells": 2222,
     "cells": 8190,
     "profileCount": 3,
     "lateralBoundsM": [
@@ -249284,7 +250122,7 @@
     "surfaceAreaM2": 28.354,
     "surveyClippedM2": 0
    },
-   "reason": "Photo boundary/section proposal; visible=0.716, asphalt=0.394, profiles=3, lateralBoundsM=-5.06,0.25, nearestBoundaryM=1.184, lengthM=5.34, widthPriorM=5.06.",
+   "reason": "Photo boundary/section proposal; visible=0.716, asphalt=0.394, profiles=3, lateralBoundsM=-5.06,0.25, nearestBoundaryM=1.173, lengthM=5.34, widthPriorM=5.06.",
    "replaces": [
     "zebra_bar@243734.27,263728.93"
    ],
@@ -249361,7 +250199,7 @@
     "widthM": 15.78,
     "lateralOffsetM": 0
    },
-   "precedence": 3,
+   "precedence": 6.2,
    "evidence": {
     "tier": "T4",
     "refs": [
@@ -249375,15 +250213,15 @@
     "visibleShare": 0.386,
     "asphaltShare": 0.209,
     "nearestBoundaryM": 8.102,
-    "blockedCells": 2739,
+    "blockedCells": 2364,
     "cells": 19966,
     "profileCount": 0,
     "lateralBoundsM": null,
     "roadDistanceM": 28.484,
     "widthPriorM": 15.78,
     "widthSource": "road_segments",
-    "surfaceAreaM2": 93.664,
-    "surveyClippedM2": 0
+    "surfaceAreaM2": 70.461,
+    "surveyClippedM2": 23.203
    },
    "reason": "Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78.",
    "replaces": [
@@ -249475,8 +250313,8 @@
    "metrics": {
     "visibleShare": 0.354,
     "asphaltShare": 0.047,
-    "nearestBoundaryM": 6.712,
-    "blockedCells": 1312,
+    "nearestBoundaryM": 2.445,
+    "blockedCells": 1271,
     "cells": 9555,
     "profileCount": 0,
     "lateralBoundsM": null,
@@ -249486,7 +250324,7 @@
     "surfaceAreaM2": 71.476,
     "surveyClippedM2": 0
    },
-   "reason": "Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.354, asphalt=0.047, profiles=0, lateralBoundsM=null, nearestBoundaryM=6.712, lengthM=8.292, widthPriorM=8.62.",
+   "reason": "Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.354, asphalt=0.047, profiles=0, lateralBoundsM=null, nearestBoundaryM=2.445, lengthM=8.292, widthPriorM=8.62.",
    "replaces": [
     "zebra_bar@243559.10,263874.06"
    ],
@@ -250034,7 +250872,7 @@
     "visibleShare": 0.802,
     "asphaltShare": 0.542,
     "nearestBoundaryM": 0,
-    "blockedCells": 550,
+    "blockedCells": 534,
     "cells": 7708,
     "profileCount": 4,
     "lateralBoundsM": [
@@ -250820,108 +251658,6 @@
   }
  ],
  "paintDecisions": [
-  {
-   "piece": "MK01416@243781.87,263714.44",
-   "kind": "kerb_no_parking",
-   "parcel": "PARCEL_PAVING_100034702020A00310100000000047547",
-   "cls": "sidewalk",
-   "metrics": {
-    "outsideSamples": 1,
-    "sampleCount": 1
-   },
-   "record": "JUNCTION_144",
-   "estimated": true,
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "NGII 2025 masked asphalt boundary/transverse profiles",
-     "road_segments RD_033; 19.385 m section, 9.4 m width prior"
-    ]
-   },
-   "reason": "Design §5 forbids paint on non-road ground: 1/1 samples outside road/lot; top=PARCEL_PAVING_100034702020A00310100000000047547, class=sidewalk. Photo boundary/section proposal; visible=0.514, asphalt=0.183, profiles=13, lateralBoundsM=-0.25,5.1, nearestBoundaryM=0.293, lengthM=19.385, widthPriorM=9.4."
-  },
-  {
-   "piece": "kerb_no_parking@243807.04,263912.80",
-   "kind": "kerb_no_parking",
-   "parcel": "PARCEL_PAVING_100034702020A00310100000000047692",
-   "cls": "sidewalk",
-   "metrics": {
-    "outsideSamples": 4,
-    "sampleCount": 38
-   },
-   "record": "JUNCTION_147",
-   "estimated": true,
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "kerb_no_parking@243807.04,263912.80",
-     "regularized photo kerb contour; the kerb strip is road boundary, never its convex interior"
-    ]
-   },
-   "reason": "Design §5 forbids paint on non-road ground: 4/38 samples outside road/lot; top=PARCEL_PAVING_100034702020A00310100000000047692, class=sidewalk. Curved kerb footprint 3.878 m2; vertex mean lies outside the painted band. Preserve the junction kerb contour, not a convex hull or centre-point road patch. Width remains estimated."
-  },
-  {
-   "piece": "zebra_bar@243734.27,263728.93",
-   "kind": "zebra_bar",
-   "parcel": "PARCEL_PAVING_100034702020A00310100000000047547",
-   "cls": "sidewalk",
-   "metrics": {
-    "outsideSamples": 1,
-    "sampleCount": 1
-   },
-   "record": "JUNCTION_148",
-   "estimated": true,
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "NGII 2025 masked asphalt boundary/transverse profiles",
-     "road_segments RD_039; 5.34 m section, 5.06 m width prior"
-    ]
-   },
-   "reason": "Design §5 forbids paint on non-road ground: 1/1 samples outside road/lot; top=PARCEL_PAVING_100034702020A00310100000000047547, class=sidewalk. Photo boundary/section proposal; visible=0.716, asphalt=0.394, profiles=3, lateralBoundsM=-5.06,0.25, nearestBoundaryM=1.184, lengthM=5.34, widthPriorM=5.06."
-  },
-  {
-   "piece": "zebra_bar@243881.76,263760.14",
-   "kind": "zebra_bar",
-   "parcel": "PARCEL_PAVING_100034702020A00310100000000047555",
-   "cls": "sidewalk",
-   "metrics": {
-    "outsideSamples": 1,
-    "sampleCount": 1
-   },
-   "record": "JUNCTION_149",
-   "estimated": true,
-   "evidence": {
-    "tier": "T4",
-    "refs": [
-     "NGII 2025 masked asphalt boundary/transverse profiles",
-     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
-     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
-    ]
-   },
-   "reason": "Design §5 forbids paint on non-road ground: 1/1 samples outside road/lot; top=PARCEL_PAVING_100034702020A00310100000000047555, class=sidewalk. Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78."
-  },
-  {
-   "piece": "zebra_bar@243559.10,263874.06",
-   "kind": "zebra_bar",
-   "parcel": "PARCEL_PAVING_100034702020A00310100000000047655",
-   "cls": "sidewalk",
-   "metrics": {
-    "outsideSamples": 1,
-    "sampleCount": 1
-   },
-   "record": "JUNCTION_150",
-   "estimated": true,
-   "evidence": {
-    "tier": "T4",
-    "refs": [
-     "NGII 2025 masked asphalt boundary/transverse profiles",
-     "road_segments RD_066; 8.292 m section, 8.62 m width prior",
-     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
-    ]
-   },
-   "reason": "Design §5 forbids paint on non-road ground: 1/1 samples outside road/lot; top=PARCEL_PAVING_100034702020A00310100000000047655, class=sidewalk. Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.354, asphalt=0.047, profiles=0, lateralBoundsM=null, nearestBoundaryM=6.712, lengthM=8.292, widthPriorM=8.62."
-  },
   {
    "piece": "LOT_E244011_N263891/R12/D2@244076.30,263925.10",
    "kind": "parking_line",
@@ -253082,116 +253818,9 @@
   }
  ],
  "paintExcluded": [
-  "MK01416@243781.87,263714.44",
-  "kerb_no_parking@243807.04,263912.80",
-  "zebra_bar@243734.27,263728.93",
-  "zebra_bar@243881.76,263760.14",
-  "zebra_bar@243559.10,263874.06",
   "LOT_E244011_N263891/R12/D2@244076.30,263925.10"
  ],
  "paintExcludedDetail": [
-  {
-   "piece": "MK01416@243781.87,263714.44",
-   "kind": "kerb_no_parking",
-   "parcel": "PARCEL_PAVING_100034702020A00310100000000047547",
-   "cls": "sidewalk",
-   "metrics": {
-    "outsideSamples": 1,
-    "sampleCount": 1
-   },
-   "record": "JUNCTION_144",
-   "estimated": true,
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "NGII 2025 masked asphalt boundary/transverse profiles",
-     "road_segments RD_033; 19.385 m section, 9.4 m width prior"
-    ]
-   },
-   "reason": "Design §5 forbids paint on non-road ground: 1/1 samples outside road/lot; top=PARCEL_PAVING_100034702020A00310100000000047547, class=sidewalk. Photo boundary/section proposal; visible=0.514, asphalt=0.183, profiles=13, lateralBoundsM=-0.25,5.1, nearestBoundaryM=0.293, lengthM=19.385, widthPriorM=9.4."
-  },
-  {
-   "piece": "kerb_no_parking@243807.04,263912.80",
-   "kind": "kerb_no_parking",
-   "parcel": "PARCEL_PAVING_100034702020A00310100000000047692",
-   "cls": "sidewalk",
-   "metrics": {
-    "outsideSamples": 4,
-    "sampleCount": 38
-   },
-   "record": "JUNCTION_147",
-   "estimated": true,
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "kerb_no_parking@243807.04,263912.80",
-     "regularized photo kerb contour; the kerb strip is road boundary, never its convex interior"
-    ]
-   },
-   "reason": "Design §5 forbids paint on non-road ground: 4/38 samples outside road/lot; top=PARCEL_PAVING_100034702020A00310100000000047692, class=sidewalk. Curved kerb footprint 3.878 m2; vertex mean lies outside the painted band. Preserve the junction kerb contour, not a convex hull or centre-point road patch. Width remains estimated."
-  },
-  {
-   "piece": "zebra_bar@243734.27,263728.93",
-   "kind": "zebra_bar",
-   "parcel": "PARCEL_PAVING_100034702020A00310100000000047547",
-   "cls": "sidewalk",
-   "metrics": {
-    "outsideSamples": 1,
-    "sampleCount": 1
-   },
-   "record": "JUNCTION_148",
-   "estimated": true,
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "NGII 2025 masked asphalt boundary/transverse profiles",
-     "road_segments RD_039; 5.34 m section, 5.06 m width prior"
-    ]
-   },
-   "reason": "Design §5 forbids paint on non-road ground: 1/1 samples outside road/lot; top=PARCEL_PAVING_100034702020A00310100000000047547, class=sidewalk. Photo boundary/section proposal; visible=0.716, asphalt=0.394, profiles=3, lateralBoundsM=-5.06,0.25, nearestBoundaryM=1.184, lengthM=5.34, widthPriorM=5.06."
-  },
-  {
-   "piece": "zebra_bar@243881.76,263760.14",
-   "kind": "zebra_bar",
-   "parcel": "PARCEL_PAVING_100034702020A00310100000000047555",
-   "cls": "sidewalk",
-   "metrics": {
-    "outsideSamples": 1,
-    "sampleCount": 1
-   },
-   "record": "JUNCTION_149",
-   "estimated": true,
-   "evidence": {
-    "tier": "T4",
-    "refs": [
-     "NGII 2025 masked asphalt boundary/transverse profiles",
-     "road_segments RD_035; 5.935 m section, 15.78 m width prior",
-     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
-    ]
-   },
-   "reason": "Design §5 forbids paint on non-road ground: 1/1 samples outside road/lot; top=PARCEL_PAVING_100034702020A00310100000000047555, class=sidewalk. Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.386, asphalt=0.209, profiles=0, lateralBoundsM=null, nearestBoundaryM=8.102, lengthM=5.935, widthPriorM=15.78."
-  },
-  {
-   "piece": "zebra_bar@243559.10,263874.06",
-   "kind": "zebra_bar",
-   "parcel": "PARCEL_PAVING_100034702020A00310100000000047655",
-   "cls": "sidewalk",
-   "metrics": {
-    "outsideSamples": 1,
-    "sampleCount": 1
-   },
-   "record": "JUNCTION_150",
-   "estimated": true,
-   "evidence": {
-    "tier": "T4",
-    "refs": [
-     "NGII 2025 masked asphalt boundary/transverse profiles",
-     "road_segments RD_066; 8.292 m section, 8.62 m width prior",
-     "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다."
-    ]
-   },
-   "reason": "Design §5 forbids paint on non-road ground: 1/1 samples outside road/lot; top=PARCEL_PAVING_100034702020A00310100000000047655, class=sidewalk. Photo boundaries/profiles do not constrain the complete requested section; dimensioned prior, not an absence inference; visible=0.354, asphalt=0.047, profiles=0, lateralBoundsM=null, nearestBoundaryM=6.712, lengthM=8.292, widthPriorM=8.62."
-  },
   {
    "piece": "LOT_E244011_N263891/R12/D2@244076.30,263925.10",
    "kind": "parking_line",

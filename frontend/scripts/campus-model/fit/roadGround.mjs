@@ -11,6 +11,10 @@ const centre = ring => ring.reduce((a, p) => a.map((v, i) => v + p[i] / ring.len
 const distance = (p, ring) => Math.min(...ring.map((q, i) => segmentDistance(p, q, ring[(i + 1) % ring.length])));
 export const ESTIMATE_RULE = "설계 §2: T4 추정: 위 어느 것도 없을 때. 반드시 estimated: true와 이유. §21: 승인 없는 제안은 estimated: true로 빌드에 들어간다.";
 
+// A local eye-read correction changes uncertainty, not the A003 sidewalk's
+// provenance. It must not turn the entire corrected parcel into a soft apron.
+export const isSurveyedNonRoad = p => Boolean(p && !p.paintAllowed && (!p.estimated || p.source === "NGII-A003"));
+
 export function roadParts(record, blocked) {
   if (record.precedence < 5 || !blocked.length) return [{ ring: record.rings[0], holes: record.rings.slice(1) }];
   const triangles = rings => {
@@ -189,9 +193,9 @@ if (import.meta.main) {
       const window = { w: raw.w, h: raw.h, origin: [sheet.tfw.c - gsdM / 2 + raw.col0 * gsdM, sheet.tfw.f + gsdM / 2 - raw.row0 * gsdM], gsdM, rgb: raw.rgb };
       const near = ([e, n], margin) => e > e0 - margin && e < e0 + wM + margin && n < n0 + margin && n > n0 - hM - margin;
       window.mask = occlusionMask(window, { buildings: buildings.filter(b => b.rings[0].some(p => near(p, 60))), trees: trees.filter(t => near([t.east, t.north], 30)) }).any;
-      const blocked = base.filter(p => !p.paintAllowed && !p.estimated && p.ring.some(q => near(q, 10)));
+      const blocked = base.filter(p => isSurveyedNonRoad(p) && p.ring.some(q => near(q, 10)));
       const owner = at(point);
-      const seed = { ...group, point, axis, lengthM, widthM, road: nearest.road.id, precedence: owner?.estimated && !owner.paintAllowed ? 6.2 : group.precedence,
+      const seed = { ...group, point, axis, lengthM, widthM, road: nearest.road.id, precedence: owner?.estimated && !owner.paintAllowed && !isSurveyedNonRoad(owner) ? 6.2 : group.precedence,
         paint: group.pieces.map(p => p.key), samples: group.pieces.flatMap(p => paintSamples(p, q => q)) };
       const record = groundProposal(seed, window, blocked);
       record.replaces = group.replaces;

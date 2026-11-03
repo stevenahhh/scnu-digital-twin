@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { validate } from "../lib/schemas.mjs";
+import { topParcelAt } from "../lib/parcels.mjs";
 import { CURATION_FILE, PARCELS_FILE, applyParcelCuration, finishRoadParcels, compareToLayers, layerOver, parkingRowParcels, registrationRefs, seedParcels } from "./parcelsSeed.mjs";
 
 const square = (x, y, s) => [[x, y], [x + s, y], [x + s, y + s], [x, y + s]];
@@ -101,6 +102,38 @@ test("compareToLayers names a parcel whose ring moved", () => {
 test("data/ground/parcels.json is valid", () => {
   const { ok, errors } = validate("parcels", JSON.parse(readFileSync(PARCELS_FILE, "utf8")));
   assert.ok(ok, errors.slice(0, 10).join("\n"));
+});
+
+test("the western crossing visible on the registered 12 cm aerial stays on road and is drawn", () => {
+  // task-22 gate review 2: inverse-registered source pixel 857.829,747.964
+  // on the western 2024 tile, BBOX 243450,263840,243575,263965.
+  const doc = JSON.parse(readFileSync(PARCELS_FILE, "utf8"));
+  const id = "zebra_bar@243559.10,263874.06";
+  assert.equal(doc.paintExcluded.includes(id), false, `${id}: real roadway paint was excluded`);
+  const ground = topParcelAt(doc.parcels)([243559.09575399774, 263874.05960518925]);
+  assert.equal(ground?.paintAllowed, true, ground?.id);
+});
+
+test("the divider on the photographed pedestrian island remains excluded", () => {
+  const doc = JSON.parse(readFileSync(PARCELS_FILE, "utf8"));
+  const id = "LOT_E244011_N263891/R12/D2@244076.30,263925.10";
+  assert.equal(doc.paintExcluded.includes(id), true);
+  const ground = topParcelAt(doc.parcels)([244076.30, 263925.10]);
+  assert.equal(ground?.class, "sidewalk");
+  assert.equal(ground?.paintAllowed, false);
+});
+
+for (const [id, samples] of [
+  ["MK01416@243781.87,263714.44", [[243781.873156, 263714.443895]]],
+  ["kerb_no_parking@243807.04,263912.80", [[243810.303576, 263913.450649], [243809.752215, 263913.139804], [243807.943783, 263912.433764], [243808.084810, 263912.452533]]],
+  ["zebra_bar@243734.27,263728.93", [[243734.270414, 263728.927836]]],
+  ["zebra_bar@243881.76,263760.14", [[243881.758147, 263760.137427]]],
+]) test(`aerial-reviewed road paint ${id} is not hidden by the A003 boundary`, () => {
+  // Registered 2024 cross-check plus the actual 2025 paint: attempt-3 aerial index.
+  const doc = JSON.parse(readFileSync(PARCELS_FILE, "utf8"));
+  assert.equal(doc.paintExcluded.includes(id), false, id);
+  const at = topParcelAt(doc.parcels);
+  for (const point of samples) assert.equal(at(point)?.paintAllowed, true, `${id} at ${point}`);
 });
 
 test("every remaining support hull and excluded paint has a generated road record or a quantified decision", () => {
