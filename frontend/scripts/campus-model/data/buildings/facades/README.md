@@ -46,3 +46,24 @@ Do not substitute scene names for building IDs: `scene_e5 r` mostly shows
 **E3**, while `scene_e5 f` shows E5.
 Unmatched LOD4 mass edges outside the 0.3 m GIS containment buffer also keep the
 legacy look, without moving the GIS frame to fit a photograph.
+
+`../facade-review.json` is the authoritative building-by-building review ledger.
+It records the observed scenes, the LOD4 record (including explicit absences),
+and a specific reason for the remaining ungridded walls. The build copies that
+reason to `facadeFallbackReason` on both selectable meshes and pick proxies.
+Missing review records fail the build rather than receiving a generic reason.
+The two approved grids are not evidence that the other 48 buildings match VR.
+Five additional anonymous GIS campus footprints have no BLD ID or saved wall
+frames. They are reviewed by their full source ID, reported separately, and
+their reasons also ship in `CampusBuildings.extras.facadeReviews`. A record
+being reviewed does not imply it passes the generator's minimum-area selection.
+
+Run `bun scripts/campus-model/qa/facadeCoverage.mjs --out /private/tmp/facades.json`
+to report coverage and every entrance. The door's texture centre is compared
+with the canopy anchor, not the enclosing structural bay's centre. A door on an
+ungridded wall is explicitly `ungridded`, with no numerical alignment claim.
+This checks compiled cells, not mass exposure in the final mesh. The E3 W16
+texture centre agrees with its anchor, but the merged model clips 1.560 m from
+the doorway's left side: the exposed cell centre differs by 0.780 m, exceeding
+0.3 m. That is a named task-27 gap, separate from the existing E3 C2 bearing
+gap of +2.120 degrees. Do not report the CLI's `aligned` as a rendered pass.

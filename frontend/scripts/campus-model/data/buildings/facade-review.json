@@ -1,0 +1,335 @@
+{
+  "description": "Authoritative per-building curation decisions. LOD4 unfolded images were inspected locally at 0.25 m/px and all 42 exterior VR strips were reviewed. A fallback is an unresolved pattern or correspondence, not a claim that the existing look matches the photograph. Images are not shipped. The scene-building ray table identifies candidates, not guaranteed visible surfaces.",
+  "records": {
+    "BLD_E3": {
+      "estimated": true,
+      "scenes": ["scene_e3", "scene_e5", "scene_e4", "scene_d3"],
+      "lod4Record": "70991",
+      "fallbackReason": "W16 keeps the independently counted 14-bay VR grid. W15 canopy C2 has a known +2.120 degree residual; its door is not certified by a grid. The orange cladding and end wings are not a uniform per-storey band. The recovered LOD4 wall cannot certify the complete end-group count; other walls retain the estimated look."
+    },
+    "BLD_E5": {
+      "estimated": true,
+      "scenes": ["scene_e5", "scene_e3", "scene_e7", "scene_e8"],
+      "lod4Record": "688780",
+      "fallbackReason": "W25 keeps the 10-bay LOD4/VR grid. W19 unroll x565..646 is a partial, blurred opening/stair pattern, not an independently certified full-wall count. The foreground of scene_e2/f is labelled E2 although horizontal first-hit rays return E3/E5, so those rays cannot certify E5 cells. Remaining narrow returns and rear walls stay estimated."
+    },
+    "BLD_A1": {
+      "estimated": true,
+      "scenes": ["scene_a1", "scene_a2", "scene_a5"],
+      "lod4Record": "443468 / 366373751",
+      "fallbackReason": "The saved wall map uses GIS 443468, while the building generator selects OSM 366373751 for BLD_A1. Their LOD4 images cover different office-tower/podium extents and contain missing or diagonally projected roof/ground. This source-to-wall disagreement must be resolved before the low ribbon facade and upper tower receive per-wall cells."
+    },
+    "BLD_SCNU_A1": {
+      "estimated": true,
+      "scenes": ["scene_a1", "scene_a2"],
+      "lod4Record": "443468",
+      "fallbackReason": "This additional office footprint uses GIS 443468 in the generator alongside the legacy BLD_A1 OSM part. The GIS LOD4 strip is largely missing or roof/ground projection; the OSM strip interleaves upper tower and podium. The two office nodes cannot share a count until the exposed wall-to-source correspondence is certified."
+    },
+    "BLD_SCNU_R688057": {
+      "estimated": true,
+      "scenes": ["scene_a1", "scene_a5"],
+      "lod4Record": "688057",
+      "fallbackReason": "The office annex LOD4 image contains only one narrow vertical strip with vegetation. In the office VR views it is merged behind the main low wing; no independently countable full annex wall is visible."
+    },
+    "BLD_SCNU_A2": {
+      "estimated": true,
+      "scenes": ["scene_a2", "scene_b4"],
+      "lod4Record": "301524",
+      "fallbackReason": "The pharmacy VR facade has a long glazed ribbon plus stepped ends. LOD4 shows that ribbon but also blank gaps, roof projection and a distinct rear punched-window wing. A complete structural-bay count with the same two endpoints has not been certified for either facade; glass panes are not substituted for structural bays."
+    },
+    "BLD_SCNU_A3": {
+      "estimated": true,
+      "scenes": ["scene_a3", "scene_e1"],
+      "lod4Record": null,
+      "fallbackReason": "No A3 record exists in the 44-footprint LOD4 facade inventory. VR scene_a3/f shows the five-storey natural-products institute on open pilotis, with a recessed balcony column between unequal window runs. The current mass fills parts of that open base; assigning one uniform wall grid would preserve that error and erase the recessed balcony break. Independent wall intervals are not certified."
+    },
+    "BLD_A4": {
+      "estimated": true,
+      "scenes": ["scene_a4", "scene_a13", "scene_a15"],
+      "lod4Record": "682275",
+      "fallbackReason": "The A4/A5 GIS record combines a low entrance wing with tall dormitory blocks. LOD4 unfolds multiple heights onto the same perimeter and leaves long gaps; VR shows distinct tower grids and low links. One building-wide storey array would put tall-block cells on the low connector unless those wall/mass intervals are separately certified."
+    },
+    "BLD_SCNU_A6": {
+      "estimated": true,
+      "scenes": ["scene_a6", "scene_e6", "scene_a4"],
+      "lod4Record": "767513",
+      "fallbackReason": "The creative dormitory's LOD4 unroll retains one tower face and a thin edge; most perimeter is empty. VR has three tall stepped blocks with different visible heights. The visible face has not been matched to one complete GIS edge rather than overlapping blocks, so its windows are not copied to all wings."
+    },
+    "BLD_SCNU_A7": {
+      "estimated": true,
+      "scenes": ["scene_a9", "scene_a10", "scene_a6"],
+      "lod4Record": "443112",
+      "fallbackReason": "The dormitory administration complex has low links and separate higher parts. Its LOD4 wall image is largely roof/ground projection with narrow vertical fragments. VR views are oblique from inside the courtyard; the height-varying wall extents and opening groups cannot be assigned as one uniform grid."
+    },
+    "BLD_Dormitory_Building.001": {
+      "estimated": true,
+      "scenes": ["scene_a8", "scene_a9", "scene_a13"],
+      "lod4Record": "688902",
+      "fallbackReason": "The tall Hyangrim dormitory has alternating balcony/window stacks, not one window per repeated dark stripe. LOD4 merges balcony recesses and windows; scene_a8 has no refined station and scene_a9 is oblique/partly screened. The independent count of complete stacks per saved wall is unresolved."
+    },
+    "BLD_Dormitory_Building.002": {
+      "estimated": true,
+      "scenes": ["scene_a8", "scene_f3"],
+      "lod4Record": "85389",
+      "fallbackReason": "The four-storey Hyangrim block has several stepped balcony runs in LOD4. It is not the tall A8 tower; the available VR strips do not isolate this block's complete endpoints with a refined pose. Applying the tower's count here would be a building-identity error."
+    },
+    "BLD_Dormitory_Building.003": {
+      "estimated": true,
+      "scenes": ["scene_a8", "scene_a9"],
+      "lod4Record": "688840",
+      "fallbackReason": "This seven-storey Hyangrim annex is a separate saved footprint. LOD4 has punched windows, blank side wall and overlapping height sections, but the exterior station table has no first-hit wall for this node. A count from the adjacent tall dormitory cannot certify this annex."
+    },
+    "BLD_Dormitory_Building": {
+      "estimated": true,
+      "scenes": ["scene_a9", "scene_a10", "scene_a6"],
+      "lod4Record": "301234",
+      "fallbackReason": "Cheongun's LOD4 repeats narrow openings beside blank stair ends, while VR shows wider grouped openings and orange vertical features. The visible courtyard wall is partly screened and its count has not been reconciled with the opposite unrolled face; no facade-wide count is inferred from a single window stack."
+    },
+    "BLD_Dormitory_Building.004": {
+      "estimated": true,
+      "scenes": ["scene_a13", "scene_a15", "scene_a16"],
+      "lod4Record": null,
+      "fallbackReason": "This legacy-only dormitory node has no independently matched GIS/LOD4 record in bld-node-map. VR shows the long block near the sports field but does not establish a full legacy-ring wall correspondence. Reusing nearby A4/A5 counts would silently join different footprints."
+    },
+    "BLD_A10": {
+      "estimated": true,
+      "scenes": ["scene_a10", "scene_a9", "scene_a12"],
+      "lod4Record": "301200",
+      "fallbackReason": "A10/A11 share a footprint. The long LOD4 wall has two bright end groups and a dark centre; the VR foreground combines a low white wing with a tall dormitory background. The ground-wall ray table alone does not separate those visible heights, so a certified common endpoint/count is absent."
+    },
+    "BLD_SCNU_A12": {
+      "estimated": true,
+      "scenes": ["scene_a12"],
+      "lod4Record": "85379",
+      "fallbackReason": "Ujeongwon's unroll has several window-stack wings separated by blank stair strips. VR shows a blank end with a narrow vertical strip and long receding side, not the same full unfolded side in one view. The single refined exterior scene cannot independently certify each recessed wing's count."
+    },
+    "BLD_SCNU_R69065": {
+      "estimated": true,
+      "scenes": ["scene_a15", "scene_a16", "scene_a19"],
+      "lod4Record": "69065",
+      "fallbackReason": "The stadium headquarters is a low stand with a long canopy and open seating. LOD4 contains mostly canopy/roof projection and a short shaded rear strip. Those edges are not repeated enclosed window bays, so the existing estimated stand facade is retained."
+    },
+    "BLD_SCNU_R688980": {
+      "estimated": true,
+      "scenes": ["scene_a16"],
+      "lod4Record": "688980",
+      "fallbackReason": "The staff-tennis hut occupies only a tiny fragment in the LOD4 unroll and is partly behind court fencing/vegetation in scene_a16. The source cannot resolve both hut-wall ends and a count of openings; no ordinary classroom grid is assigned."
+    },
+    "BLD_A12": {
+      "estimated": true,
+      "scenes": ["scene_a17", "scene_a19", "scene_001"],
+      "lod4Record": "768553",
+      "fallbackReason": "This legacy ID is A17/A18 gym, not A12 Ujeongwon. VR shows large blank volumes and high-level louver/window strips; LOD4 folds roof and gable surfaces into the perimeter. The high strips do not repeat on every storey and their exposed mass boundaries are not certified."
+    },
+    "BLD_A12.001": {
+      "estimated": true,
+      "scenes": ["scene_a17", "scene_f2", "scene_001"],
+      "lod4Record": null,
+      "fallbackReason": "The gym appendage is a curated legacy split with no separate matched LOD4 footprint. VR views show the gym roof/ends but do not independently isolate this split node's opening count. It must not inherit Ujeongwon or the main gym's full-perimeter grid."
+    },
+    "BLD_B1": {
+      "estimated": true,
+      "scenes": ["scene_b1", "scene_b2", "scene_a19"],
+      "lod4Record": "768406",
+      "fallbackReason": "The museum has large blank exhibition walls, small irregular openings and a glass entrance volume. LOD4 has roof triangles and disconnected facade pieces; a repeated bay estimator would count roof features or glass mullions. No full-wall structural rhythm is certified for the irregular exhibition facade."
+    },
+    "BLD_B2": {
+      "estimated": true,
+      "scenes": ["scene_b2", "scene_b3", "scene_b4"],
+      "lod4Record": "768585",
+      "fallbackReason": "The anniversary hall combines a tall blank auditorium wall, low red inset panels and a glass lobby. VR scene_b4/r clearly contradicts a uniform glazed facade. LOD4 folds roof/blank walls into the same footprint perimeter; storey-wide blank or window grids would erase the lower panels/lobby without a height-specific correspondence."
+    },
+    "BLD_B3": {
+      "estimated": true,
+      "scenes": ["scene_b3", "scene_b7", "scene_002"],
+      "lod4Record": "135996",
+      "fallbackReason": "VR front W03 contains long ribbon groups separated by structural piers; LOD4 shows similar repetition but incomplete dark returns and a different end treatment. B3's entrance-wall correspondence is already unresolved in task 20. No complete wall count and door-cell correspondence is certified, so ribbon panes are not counted as bays."
+    },
+    "BLD_B4": {
+      "estimated": true,
+      "scenes": ["scene_b4", "scene_b3"],
+      "lod4Record": "72362",
+      "fallbackReason": "VR W00 has nine upper opening groups, but the corresponding LOD4 interval x0..131 is almost entirely empty. W13 x805..1006 has a blurred repeated band: facadeBays on crop 805,8,201,16 rejects ambiguous opening rhythm. Its full count cannot be certified against the VR face seam and tree-screened end, so neither proposal is installed."
+    },
+    "BLD_B5_Greenhouse": {
+      "estimated": true,
+      "scenes": ["scene_002", "scene_c1"],
+      "lod4Record": "67931",
+      "fallbackReason": "The greenhouse has translucent roof/wall framing, not ordinary storey windows. LOD4 unroll blends roof framing and wall glass; in VR it is distant and screened by trees/adjacent B6. A complete wall framing count is not independently readable."
+    },
+    "BLD_SCNU_B6": {
+      "estimated": true,
+      "scenes": ["scene_002", "scene_c2", "scene_c1"],
+      "lod4Record": "52856",
+      "fallbackReason": "The central plant has low industrial walls plus a tall stack. LOD4 contains a thin stack strip and dark low walls; the VR views do not isolate the utility-wall louver count behind trees and adjacent buildings. A regular classroom window grid would invent openings."
+    },
+    "BLD_B7": {
+      "estimated": true,
+      "scenes": ["scene_b7", "scene_f1"],
+      "lod4Record": "1486502962",
+      "fallbackReason": "VR shows the modern cantilevered glass building, while the matched LOD4 record reports only 4.5 m wall height and an almost empty unfolded image. That source cannot supply the current building's multi-storey mullion/bay pattern. The glass corners and sloping supports are not replaced by guessed regular cells."
+    },
+    "BLD_C1": {
+      "estimated": true,
+      "scenes": ["scene_c1", "scene_c3", "scene_d1"],
+      "lod4Record": "300791 (shared split)",
+      "fallbackReason": "The rear library legacy node is a split of the C1 GIS footprint rather than an independent LOD4 perimeter. LOD4's shared unroll mixes sloping roof, tall glazing and low wings. VR rear/end views do not resolve the split's exact full-wall endpoint/count, so the other library node's cells are not reused."
+    },
+    "BLD_C1.001": {
+      "estimated": true,
+      "scenes": ["scene_c1", "scene_c2", "scene_e1"],
+      "lod4Record": "300791",
+      "fallbackReason": "The library frontage combines large continuous glazing, recessed entrances and lower wings. LOD4 has substantial roof/ground projection in the same strip. VR confirms that these are different facade zones, not one repeated bay/storey rhythm; the full split-wall mullion count is not certified."
+    },
+    "BLD_SCNU_C2": {
+      "estimated": true,
+      "scenes": ["scene_c2", "scene_c1"],
+      "lod4Record": "443467",
+      "fallbackReason": "The agriculture centre has two glazed/windowed wings separated by a recessed stair/entrance volume. LOD4 side strips are dark and the middle is fragmented; VR front lower rows are screened. Whole-wall endpoint and door-bay counts for the recessed parts remain unresolved."
+    },
+    "BLD_Training Lab Building": {
+      "estimated": true,
+      "scenes": ["scene_c3", "scene_d1", "scene_c5"],
+      "lod4Record": "443508",
+      "fallbackReason": "C3 has a tall blank stair end with a narrow vertical slit and long ribbon-window wings. LOD4 unfolds distinct heights and overlapping returns. VR scene_d1 shows the blank end, but the footprint-wall interval also receives lower wing geometry; one wall-wide grid would put slit windows on those lower masses."
+    },
+    "BLD_SCNU_C4": {
+      "estimated": true,
+      "scenes": ["scene_c3", "scene_002"],
+      "lod4Record": "443147",
+      "fallbackReason": "The small materials factory is not a first-hit building in any of the 42 exterior scene rows. Its short LOD4 unroll contains roof/industrial wall fragments, with no independent VR count for a complete wall. A repeated glazed facade would be unsupported."
+    },
+    "BLD_SCNU_C5": {
+      "estimated": true,
+      "scenes": ["scene_c5", "scene_d1"],
+      "lod4Record": null,
+      "fallbackReason": "The VR-added C5 daycare has no record in the 44-building LOD4 facade output. scene_c5/f shows a two-storey brick entrance corner and a lower right wing with irregularly spaced openings. The shared wall grid cannot copy the corner's two storeys onto that lower wing; independent full-wall endpoints/counts across the height break are not certified."
+    },
+    "BLD_D1": {
+      "estimated": true,
+      "scenes": ["scene_d1", "scene_c3", "scene_c5"],
+      "lod4Record": "69208",
+      "fallbackReason": "The 23.636 m front W03 is visible in VR with an offset entrance and mixed window groups, but LOD4 x214..308 contains only a partial dark wall patch and blank regions. The front full-bay count cannot be independently recovered there; side-wall repetition is not copied to the entrance facade."
+    },
+    "BLD_D2": {
+      "estimated": true,
+      "scenes": ["scene_d2", "scene_d1", "scene_d3", "scene_d5"],
+      "lod4Record": "44099",
+      "fallbackReason": "The 41-edge D2 footprint includes several classroom wings and recessed stair ends. LOD4 overlaps height sections and obscures some ends; VR exposes different wings across four scenes but no independently certified wall-by-wall count table exists. Using one long-wing count on returns would repeat windows through stair/blank zones."
+    },
+    "BLD_D3": {
+      "estimated": true,
+      "scenes": ["scene_d3", "scene_d2", "scene_e2"],
+      "lod4Record": "312548",
+      "fallbackReason": "The VR end facade has a few small openings on a large brick wall, while the long sides have bands. LOD4's corresponding end is fragmented by roof/return projection and the long faces have dark patches. Neither the small end openings nor full ribbon group counts are certified on the exact saved wall intervals."
+    },
+    "BLD_D4": {
+      "estimated": true,
+      "scenes": ["scene_d4", "scene_e2", "scene_d3"],
+      "lod4Record": "133154",
+      "fallbackReason": "D4 LOD4 clearly shows long horizontal glazed rows and blank stair ends, but scene_d4 lacks a refined pose. The distant e2/d3 views cannot independently certify complete bay endpoints/counts on the long wall. The existing D4 look remains estimated rather than using the unrefined station as a measured wall anchor."
+    },
+    "BLD_SCNU_D5": {
+      "estimated": true,
+      "scenes": ["scene_d5"],
+      "lod4Record": null,
+      "fallbackReason": "D5 is a four-storey VR-added building absent from the 44-footprint LOD4 facade inventory. scene_d5/f shows three window columns in each red/yellow end block, six in the recessed white middle, an open ground portico and a top balcony. A uniform W01 grid cannot preserve those setbacks, different cladding and open base; the W00 side is severely foreshortened across the f/r seam. No generic D2 rhythm is reused."
+    },
+    "BLD_E1": {
+      "estimated": true,
+      "scenes": ["scene_e1", "scene_c1", "scene_a3", "scene_e3"],
+      "lod4Record": "53819",
+      "fallbackReason": "The student centre combines low glazed frontage and taller orange/grey wings. LOD4 mixes roof slopes and several separate wall heights in the unroll. VR confirms those zones, but the central/front recessed wall split and entrance count are not certified; scene_e3's known pose disagreement cannot supply a numerical count check."
+    },
+    "BLD_SCNU_E2": {
+      "estimated": true,
+      "scenes": ["scene_e2", "scene_e3", "scene_e6"],
+      "lod4Record": "85392",
+      "fallbackReason": "The facade labelled E2 in scene_e2/f has irregular narrow stair slots, paired window groups and an orange entrance frame. The first-hit table instead returns E3/E5 on that face. LOD4 shows a different mix of shaded wall runs. Visible-height-to-wall correspondence must be resolved before installing a grid from those rays."
+    },
+    "BLD_SCNU_E4": {
+      "estimated": true,
+      "scenes": ["scene_e4", "scene_d1", "scene_d3"],
+      "lod4Record": "137033",
+      "fallbackReason": "E4's LOD4 strip has a dark long wall and incomplete bright end with roof projection. Its entrance SD-E4-C1 already records a scene_e4 first-hit disagreement with D3. No certified door/wall or complete full-wall bay count can be inferred from that disputed correspondence."
+    },
+    "BLD_E6": {
+      "estimated": true,
+      "scenes": ["scene_e6", "scene_e7", "scene_a12"],
+      "lod4Record": "137008",
+      "fallbackReason": "The 51.790 m W08 front in scene_e6 is dark and partly missing in LOD4 x574..781; the bright repeated LOD4 face is opposite W00, not the front. W06's blank side/slit pattern also lies in a dark fragment. The opposite wall's window count is not copied onto W08."
+    },
+    "BLD_E7": {
+      "estimated": true,
+      "scenes": ["scene_e7", "scene_e8", "scene_e6"],
+      "lod4Record": "367126939",
+      "fallbackReason": "The social-science building's long window bands, glazed stair and exposed ends have different patterns. LOD4 has a clear repeated rear strip but dark/missing front sections. The anchored entrance is on W02; a certified count including its recessed stair/door bay is missing, so the rear's repeat count is not assigned to the front."
+    },
+    "BLD_E8": {
+      "estimated": true,
+      "scenes": ["scene_e8", "scene_e7", "scene_d3"],
+      "lod4Record": "301217",
+      "fallbackReason": "The humanities building has tall strips, shorter wings and circular stair openings. Its LOD4 unroll overlaps multiple wall heights and the VR tower obscures some returns. A single storey grid would repeat tower cells on low wings; independent wall/mass interval counts are not certified."
+    },
+    "BLD_SCNU_E8": {
+      "estimated": true,
+      "scenes": ["scene_e8"],
+      "lod4Record": "685767",
+      "fallbackReason": "The separate E8 appendage has only one thin vertical textured strip and almost no wall in the LOD4 unroll. The adjacent tall E8 tower dominates the VR view. No independent complete appendage opening count is readable, so the main tower's grid is not reused."
+    },
+    "BLD_SCNU_F1": {
+      "estimated": true,
+      "scenes": ["scene_f1", "scene_f2", "scene_f3"],
+      "lod4Record": "838573769",
+      "fallbackReason": "The convention hall mixes curved blank cladding, tall tower strips, lower curtain wall and sparse upper openings. LOD4 projection contains large roof/blank gaps and a different tower treatment. Those facade zones cannot be represented honestly by one repeated wall-wide grid without exposed-height correspondence."
+    },
+    "BLD_SCNU_F2": {
+      "estimated": true,
+      "scenes": ["scene_f2", "scene_f3"],
+      "lod4Record": "138316",
+      "fallbackReason": "The continuing-education building has repeated horizontal groups plus a narrow stair/entrance break. LOD4 covers only the first part of the perimeter and thin far-end strips; VR front is readable but the full same-wall LOD4 endpoints/count are not certified. No mirrored back-wall grid is inferred."
+    },
+    "BLD_SCNU_R138317": {
+      "estimated": true,
+      "scenes": ["scene_f3"],
+      "lod4Record": "138317",
+      "fallbackReason": "The student-tennis hut is only a few pixels high in the LOD4 wall strip. VR shows one low doorway/window run under a red roof, partly behind fencing. The opening count is not independently resolvable in LOD4, so no multi-bay classroom grid is fitted."
+    },
+    "GIS건물통합정보 AL_D010_12_20261009.shp record 688089": {
+      "estimated": true,
+      "scenes": [],
+      "lod4Record": null,
+      "fallbackReason": "Anonymous campus footprint 688089 has no canonical BLD id, saved wall snapshot or identified scene-building correspondence. It is outside the 44 labelled LOD4 facade records; its assumed-height mass must not receive an invented window count."
+    },
+    "GIS건물통합정보 AL_D010_12_20261009.shp record 688060": {
+      "estimated": true,
+      "scenes": [],
+      "lod4Record": null,
+      "fallbackReason": "Anonymous campus footprint 688060 has no floor data or canonical wall IDs. None of the 42 scene-building rows identifies this record, and the labelled LOD4 facade inventory does not include it. The existing assumed-height facade remains an explicit unresolved fallback."
+    },
+    "GIS건물통합정보 AL_D010_12_20261009.shp record 689515": {
+      "estimated": true,
+      "scenes": [],
+      "lod4Record": null,
+      "fallbackReason": "Anonymous campus footprint 689515 is still selected as a mass but has no named BLD node or wall snapshot. No source-to-visible-facade match exists in the reviewed VR/LOD4 tables; a nearby building's window count is not assigned to it."
+    },
+    "GIS건물통합정보 AL_D010_12_20261009.shp record 688859": {
+      "estimated": true,
+      "scenes": [],
+      "lod4Record": null,
+      "fallbackReason": "Anonymous campus footprint 688859 has an assumed three-storey height and no named facade source. The 44 labelled LOD4 records and 42 scene rows do not identify its walls; the facade remains estimated rather than treating that assumed height as a counted elevation."
+    },
+    "GIS건물통합정보 AL_D010_12_20261009.shp record 690066": {
+      "estimated": true,
+      "scenes": [],
+      "lod4Record": null,
+      "fallbackReason": "Anonymous campus footprint 690066 lacks a canonical BLD id, saved wall frame and independent VR match. Its generic mass is retained under the no-building-removal scope, with no evidence-backed bay count claimed."
+    },
+    "BLD_SCNU_F4": {
+      "estimated": true,
+      "scenes": ["scene_f3", "scene_a12"],
+      "lod4Record": "684234",
+      "fallbackReason": "Faculty housing has balcony/door stacks separated by blank end walls in LOD4. VR scene_f3 shows the long front but trees hide end stacks and the ground level; the stair/balcony groups cannot be independently counted on the same complete saved wall. Generic window cells would erase balconies."
+    }
+  }
+}

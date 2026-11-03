@@ -1909,8 +1909,15 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
   // ---- materials
   const entrances = JSON.parse(readFileSync(new URL("../data/buildings/entrances.json", import.meta.url), "utf8")).records;
   const anchoredCanopies = new Set(entrances.filter(r => r.canopy).map(r => r.anchor.building));
+  const facadeReviews = JSON.parse(readFileSync(path.join(DATA, "buildings/facade-review.json"), "utf8")).records;
   for (const building of [...selectableBuildings, ...campusBuildings]) {
     building.anchoredCanopies = anchoredCanopies.has(building.nodeName ?? building.nodeId ?? building.detachedFrom);
+    const id = building.nodeName ?? building.nodeId ?? building.detachedFrom ?? building.footprintSource;
+    const review = facadeReviews[id];
+    if (!review || review.estimated !== true || !review.fallbackReason?.trim()) {
+      throw new Error(`${id}: missing reviewed facade fallback in buildings/facade-review.json`);
+    }
+    building.facadeFallbackReason = review.fallbackReason;
   }
   const gridLooks = new Map();
   const gridDir = path.join(DATA, "buildings/facades");
@@ -2210,7 +2217,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
         facadeEstimated: true,
         facadeGridWalls: building.facadeGrid ? [...building.facadeGrid.walls.keys()] : [],
         facadeGridAppliedWalls: building.facadeGrid ? [...building.facadeGrid.appliedWalls] : [],
-        facadeFallbackReason: building.facadeGrid ? "Walls without a grid or outside the GIS wall buffer retain the estimated look" : "No wall grid; legacy look retained",
+        facadeFallbackReason: building.facadeFallbackReason,
         facadeClass: catalogue.looks.get(building.look).class,
         facadeSource: `${catalogue.looks.get(building.look).sources} (colours and window layout estimated)`,
         ...(building.parts.some((p) => p.tower) ? {
@@ -2233,7 +2240,13 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
 
   {
     const mesh = addAoMesh("CampusBuildings", campusPrimitives);
-    glb.addNode({ name: "CampusBuildings", mesh, extras: { buildings: campusBuildings.map((b) => b.displayName).filter(Boolean) } }, { root: true });
+    glb.addNode({ name: "CampusBuildings", mesh, extras: {
+      buildings: campusBuildings.map((b) => b.displayName).filter(Boolean),
+      facadeReviews: [...new Map(campusBuildings.map(b => {
+        const building = b.nodeId ?? b.detachedFrom ?? b.footprintSource;
+        return [building, { building, estimated: true, fallbackReason: b.facadeFallbackReason }];
+      })).values()],
+    } }, { root: true });
     for (const building of campusBuildings) {
       const kit = frontKits.get(building);
       if (kit?.length && !building.drawnByFurniture) addKitNode(building.nodeName ?? building.displayName ?? "CampusBuilding", kit, true);
@@ -2294,7 +2307,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
         facadeEstimated: true,
         facadeGridWalls: first.facadeGrid ? [...first.facadeGrid.walls.keys()] : [],
         facadeGridAppliedWalls: first.facadeGrid ? [...first.facadeGrid.appliedWalls] : [],
-        facadeFallbackReason: first.facadeGrid ? "Walls without a grid or outside the GIS wall buffer retain the estimated look" : "No wall grid; legacy look retained",
+        facadeFallbackReason: first.facadeFallbackReason,
         ...(first.roofFormSource ? { roofFormSource: first.roofFormSource } : {}),
       },
     }, { root: true });
