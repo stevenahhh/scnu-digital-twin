@@ -73,7 +73,8 @@ describe("VWorldLabelLayer", () => {
     const { Cesium, scene } = fakeMap();
     const { container } = render(<VWorldLabelLayer Cesium={Cesium} scene={scene} getModelMatrix={() => "m"} loadGlb={loadGlb} />);
     await waitFor(() => expect(container.querySelector('[data-qa="campus-label-layer"]')).not.toBeNull());
-    expect(scene.postRender.size).toBe(1);
+    // The layer DOM can appear before the passive effect subscribes to postRender, so wait for the registration itself.
+    await waitFor(() => expect(scene.postRender.size).toBe(1));
     act(() => scene.postRender.raise());
     const shown = visibleChips(container);
     expect(shown.length).toBeGreaterThan(0);

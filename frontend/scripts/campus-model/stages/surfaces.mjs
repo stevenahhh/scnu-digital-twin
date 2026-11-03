@@ -42,16 +42,17 @@ export const SURFACE_LIFT_M = (precedence) => Math.min(0.036, 0.006 * precedence
 // extras.polygonOffsetRank (CityModel), so the polygon offset and the lift agree.
 export const GROUND_MESHES = Object.freeze({
   Ground_Sports: {},
-  Ground_Asphalt: { tile: "asphalt" },
+  // Todo 13c: clear-sky NGII comparison, class-wide estimated albedo (no photo pixels or baked shade).
+  Ground_Asphalt: { tile: "asphalt", baseColorFactor: [0.72, 0.90, 0.94, 1] },
   Ground_Lot: { tile: "lot" },
   // VR scenes a2-e5: light grey pavers with scattered dark squares (data/paving-patterns.json campus-speckle, 추정)
-  Ground_Pavers: { pattern: "campus-speckle" },
+  Ground_Pavers: { pattern: "campus-speckle", baseColorFactor: [0.26, 0.30, 0.22, 1] },
   Ground_Bicycle: { tile: "asphalt-red" },
   // catalogue paving supplements: one primitive per pattern, laid along each supplement's axis (layer.pattern, uvFrame)
-  Ground_Plaza: { patterned: true },
-  Ground_Apron: { tile: "concrete" },
+  Ground_Plaza: { patterned: true, baseColorFactor: [0.50, 0.54, 0.42, 1] },
+  Ground_Apron: { tile: "concrete", baseColorFactor: [0.49, 0.54, 0.39, 1] },
   // network/walkways.mjs: estimated walkway strips beside the carriageway where NGII A003 has no sidewalk (추정)
-  Ground_Walkway: { pattern: "campus-speckle" },
+  Ground_Walkway: { pattern: "campus-speckle", baseColorFactor: [0.22, 0.25, 0.18, 1] },
   // stages/kerbs.mjs: the gutter band on the road side of the kerbs (asphalt darkened 0.72, estimated)
   Ground_Gutter: { tile: "asphalt", baseColorFactor: [0.72, 0.72, 0.72, 1] },
   // network/stalls.mjs: the circular-arc speed humps (buildHumpMeshes), asphalt
@@ -457,7 +458,7 @@ export async function tileMaterial(glb, { name, cls, rank, ao = null, baseColorF
 // Paving pattern material (lib/pavingPatterns.mjs): colour and joint relief tiles drawn from the VR-read catalogue; the
 // textures are shared by every primitive of the pattern.
 const patternCache = new WeakMap();
-async function patternMaterial(glb, { name, id, rank, ao }) {
+async function patternMaterial(glb, { name, id, rank, ao, baseColorFactor }) {
   let byId = patternCache.get(glb);
   if (!byId) patternCache.set(glb, (byId = new Map()));
   if (!byId.has(id)) {
@@ -468,7 +469,7 @@ async function patternMaterial(glb, { name, id, rank, ao }) {
   const p = pavingPattern(id);
   return glb.addMaterial({
     name,
-    pbrMetallicRoughness: { baseColorTexture: { index: col }, metallicFactor: 0, roughnessFactor: 0.82 },
+    pbrMetallicRoughness: { baseColorTexture: { index: col }, baseColorFactor, metallicFactor: 0, roughnessFactor: 0.82 },
     normalTexture: { index: nor },
     ...(ao !== null ? { occlusionTexture: { index: ao, texCoord: 1 } } : {}),
     extras: { estimated: true, polygonOffsetRank: rank, paving: id, label: `${p.label} (추정)`, repeatM: tile.repeatM, source: p.source, note: "pattern, module size and colours read from the SCNU 360 VR tour: estimated, not measured; no photo pixels" },
@@ -591,8 +592,8 @@ export async function buildSurfaceMeshes({ glb, layers, surface, ao = null, heig
       if (!materials.has(mesh)) materials.set(mesh, await tactileMaterial(glb, { rank: primitive.rank, ao }));
       material = materials.get(mesh);
     } else if (primitive.pattern) {
-      const key = `${primitive.pattern}@${primitive.rank}`;
-      if (!materials.has(key)) materials.set(key, await patternMaterial(glb, { name: mesh, id: primitive.pattern, rank: primitive.rank, ao }));
+      const key = `${mesh}:${primitive.pattern}@${primitive.rank}`;
+      if (!materials.has(key)) materials.set(key, await patternMaterial(glb, { name: mesh, id: primitive.pattern, rank: primitive.rank, ao, baseColorFactor: GROUND_MESHES[mesh].baseColorFactor }));
       material = materials.get(key);
     } else if (GROUND_MESHES[mesh].tile) {
       const key = `${mesh}@${primitive.rank}`;

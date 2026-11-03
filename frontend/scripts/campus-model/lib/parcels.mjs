@@ -115,7 +115,7 @@ export function pieceKey(piece, toTm) {
   return `${piece.id ?? piece.kind}@${E.toFixed(2)},${N.toFixed(2)}`;
 }
 
-function topParcelAt(parcels, boxes) {
+export function topParcelAt(parcels, boxes = parcels.map((p) => bbox(p.ring))) {
   return (point) => {
     let top = null;
     parcels.forEach((p, i) => {

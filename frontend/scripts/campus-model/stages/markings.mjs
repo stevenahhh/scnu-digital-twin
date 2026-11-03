@@ -49,11 +49,13 @@
 //     two lines DOUBLE_OFFSET_M either side of the fitted centreline (ASSUMED layout: the photo blurs the gap), or one
 //     line when only that reading is on paint; stop lines straight, square to their lane, at their detected width
 //     clamped into STOP_LINE_M (STOP_LINE_DEFAULT_M without one); `dotted` guide lines as `dots` squares;
-//   - arrows, text, diamonds, give-way triangles, chevrons, wheelchair and bicycle symbols: statute templates
+//   - arrows, text, diamonds, give-way triangles, chevrons and bicycle symbols: statute templates
 //     (lib/markingGlyphs.mjs) at the detected centre and size, oriented to their lane's travel direction; road text is
 //     one block per lane read for the approaching driver, its words read in the SCNU VR tour or on the photo
 //     (data/photo/markings-text.json), else the most likely statute text, logged 추정;
-//   - other painted areas (hatch stripes, hump bands, blue bays, stall frames): rectangles, or outlines with their edges
+//   - stall lines, blue bays and their symbols: never from these detections; data/ground/parking.json draws them
+//     (stages/parking.mjs joins markings.pieces in the build);
+//   - other painted areas (hatch stripes, hump bands): rectangles, or outlines with their edges
 //     snapped to their dominant directions.
 // All of it lies flush on the ground it is painted on, cut out of the surfaces under it (lib/partition.mjs).
 //
@@ -95,7 +97,6 @@ export const inMarkingExtent = ([x, z]) => x >= EXTENT.minX && x <= EXTENT.maxX 
 const MARKINGS_VR = path.join(HERE, "..", "data", "photo", "markings-vr.json");
 const MARKINGS_GATE = path.join(HERE, "..", "data", "photo", "markings-gate.json");
 const MARKINGS_TEXT = path.join(HERE, "..", "data", "photo", "markings-text.json");
-const MARKINGS_BAYS = path.join(HERE, "..", "data", "photo", "markings-bays.json");
 const GROUND_FEATURES = path.join(HERE, "..", "data", "osm-ground.json");
 const CROSSWALKS = path.resolve(HERE, "../../../..", "docs", "assets", "data", "crosswalks_wgs84.geojson");
 
@@ -126,6 +127,7 @@ const FIXED_COLOUR_KINDS = new Set(["kerb_no_parking", "centre_line_yellow", "ze
 const STROKED_KINDS = new Set(["lane_line_dashed", "lane_line_solid", "edge_line", "centre_line_yellow", "parking_line", "kerb_no_parking", "give_way_line"]);
 // Above the Ground_* layers (at most 0.036 m, stages/surfaces.mjs); pack.mjs keeps positions as float.
 const ON_FILL_KINDS = new Set(["disabled_parking", "bike_lane_blue"]);
+const PARKING_KINDS = new Set(["parking_line", "disabled_parking"]);
 // A point is on a building or a sidewalk for the regular geometry only when it and four points BLOCK_PROBE_M around it
 // are: the A003 outlines and the building footprints are not exact to the kerb, so an edge line beside one stays.
 const BLOCK_PROBE_M = 0.3;
@@ -738,7 +740,6 @@ export async function loadMarkings({ inputs, buildings }) {
     }),
     roadAxes: truth.roadLines,
     textMarkings,
-    baySymbols: JSON.parse(await Bun.file(MARKINGS_BAYS).text()).bays,
     statute: {
       widthFor: lineWidthFor, stopLineWidth, dash: DASH_BY_KIND, doubleOffsetM: DOUBLE_OFFSET_M, zebraPeriodM: ZEBRA_PERIOD_M, zebraBarM: ZEBRA_BAR_M,
     },
@@ -857,7 +858,8 @@ export async function loadMarkings({ inputs, buildings }) {
     id: c.id, file: c.file, kind: c.kind, colour: c.colour, method: c.feature.properties.method ?? "detect", estimated: c.estimated, fingerprint: c.fingerprint,
     support: c.support ?? null, recoloured: c.recoloured ?? null, verdict: c.verdict, reason: c.dropped ?? c.review ?? c.duplicateOf ?? null, shapes: c.shapes,
   }));
-  return { pieces, zebras, crossings, warnings, log, report, source: "data/photo/markings.geojson + data/photo/markings-extra.geojson" };
+  // Stall paint comes from data/ground/parking.json (stages/parking.mjs); the detections stay gate evidence in the report.
+  return { pieces: pieces.filter((p) => !PARKING_KINDS.has(p.kind)), zebras, crossings, warnings, log, report, source: "data/photo/markings.geojson + data/photo/markings-extra.geojson" };
 }
 
 // ---------------------------------------------------------------- mesh
@@ -965,6 +967,7 @@ export async function buildMarkings({ glb, markings, surface, extraHeight = () =
         crossings: markings.log.regular.crossings, templates: markings.log.regular.glyphs,
       } : null,
       estimatedStallDividers: markings.pieces.filter((p) => p.estimated && p.kind === "parking_line").length,
+      report: markings.pieceReport ?? null,
       zebra: { periodM: ZEBRA_PERIOD_M, periodSource: "measured", barM: ZEBRA_BAR_M, gapM: Number((ZEBRA_PERIOD_M - ZEBRA_BAR_M).toFixed(3)), barSource: "assumed" },
       statute: {
         source: STATUTE_SOURCE,
@@ -1023,7 +1026,6 @@ function describeRegular(r) {
     `dashed lines by statute ${dashes.statute ?? 0}, by the photo's period ${dashes.photo ?? 0}, as detected ${dashes["detected dashes"] ?? 0}; ` +
     `${r.crossingGroups} bar groups -> ${r.crossings} crossings (${r.crossingRowsAligned} rows on a shared bar grid, ${r.crossingRowsOwnGrid} rows on their own period and phase), ${r.barsDetected} detected bars -> ${r.barsDrawn} equal bars, ` +
     `${r.stopInCrossing.length} stop lines inside a crossing left out (${r.stopInCrossing.join(", ") || "none"}); ` +
-    `bay symbols: ${r.baySymbols.wheelchair} wheelchairs, ${r.baySymbols.p} P, ${r.baySymbols.scooters} scooters, ${r.baySymbols.aisles} hatched aisles (${r.baySymbols.existing} replacing a traced figure, ${r.baySymbols.orientationGuessed} upright direction 추정); ` +
     `${r.stopSquared} stop lines squared to their lane; ${r.rectangles} rectangles, ${r.outlines} snapped outlines; templates: ${glyphs}; ` +
     `left out: ${r.dropped.blocked} on buildings or sidewalks, ${r.dropped.textTooSmall} text blobs too small for a character`;
 }

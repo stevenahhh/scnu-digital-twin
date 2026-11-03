@@ -17,7 +17,7 @@ import { geoToModel, metres } from "../lib/frame.mjs";
 import { MeshData } from "../lib/meshData.mjs";
 import { mulberry32 } from "../lib/raster.mjs";
 import { EQUIPMENT_MODULE_UV, EQUIPMENT_PLAIN_UV, ROOF_METRES, equipmentAtlas, roofTexture } from "../lib/textures.mjs";
-import { MODULE_DEPTH_M, MODULE_TILT_DEGREES, panelModules, sampleRoofPhoto } from "../lib/roofPhoto.mjs";
+import { MODULE_DEPTH_M, MODULE_TILT_DEGREES, leanParts, panelModules, roofLean, sampleRoofPhoto } from "../lib/roofPhoto.mjs";
 import { cleanRing, pointInRing, ringArea, ringCentroid, segmentDistance } from "../lib/geometry.mjs";
 import { addBalconies, addFins, addMast, addSolar, attachmentsByNode } from "../lib/attachments.mjs";
 import { frontKit, kitInstances } from "../lib/frontKit.mjs";
@@ -342,6 +342,7 @@ function partMasses(part) {
 // nodes and the merged CampusBuildings roof alike, carries its colour as COLOR_0 on the one Roof_Membrane
 // material, so no roof adds a draw call or a material and all of them take the dashboard's tints the same way.
 const ROOF_TAGS = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "osm-roof-tags.json");
+const BUILDING_LEAN = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "photo", "building-lean.json");
 const NAMED_COLOURS = {
   white: [255, 255, 255], whitesmoke: [245, 245, 245], silver: [192, 192, 192], lightgrey: [211, 211, 211],
   lightgray: [211, 211, 211], grey: [128, 128, 128], gray: [128, 128, 128], darkgrey: [169, 169, 169],
@@ -1931,18 +1932,24 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
     const photoLog = [];
     const panelLog = [];
     const surfaces = {};
+    const leanLog = [];
+    const leanFile = JSON.parse(readFileSync(BUILDING_LEAN, "utf8"));
+    const leanRecords = new Map(leanFile.buildings.map((r) => [r.id, r]));
     for (const building of [...selectableBuildings, ...campusBuildings]) {
       const label = building.nodeName ?? (building.displayName || "(unnamed)");
-      // A mass form knows its roof's relief lean in the photo (building-forms.json `lean`, metres per metre of height):
-      // its roofs are sampled where the photo shows them, and the modules found there are moved back onto the roof.
-      const lean = building.massForm ? building.form?.lean : null;
-      const shiftOf = (part) => (lean ? [metres(lean[0] * (part.heightMetres + (part.parapetMetres ?? 0))), -metres(lean[1] * (part.heightMetres + (part.parapetMetres ?? 0)))] : [0, 0]);
-      const shifted = (part) => {
-        const [dx, dz] = shiftOf(part);
-        const move = (ring) => ring.map(([x, z]) => [x + dx, z + dz]);
-        return { ...part, outer: move(part.outer), holes: part.holes.map(move) };
+      // Every roof is sampled where the photo shows it: the parts move by height x the building's relief lean
+      // (data/photo/building-lean.json, m per m of height; a roof-edge fit far from the prior falls back to the prior),
+      // and the modules found there are moved back onto the roof.
+      const chosen = roofLean(leanRecords.get(formKey(building)), building.form?.leanPrior ?? null);
+      const lean = chosen?.lean ?? null;
+      if (!chosen) leanLog.push(`${label}: no lean record or prior, footprint sampled`);
+      else if (chosen.method !== "roof-edge") leanLog.push(`${label}: ${chosen.method} [${chosen.lean}]${chosen.deviation != null ? ` (fit deviates ${chosen.deviation} m/m from the prior)` : ""}`);
+      const shifted = (part) => leanParts([part], lean)[0];
+      const shiftOf = (part) => {
+        const moved = shifted(part);
+        return [moved.outer[0][0] - part.outer[0][0], moved.outer[0][1] - part.outer[0][1]];
       };
-      const roofParts = building.massForm ? building.parts.filter((p) => p.kind !== "canopy").map(shifted) : building.parts;
+      const roofParts = (building.massForm ? building.parts.filter((p) => p.kind !== "canopy") : building.parts).map(shifted);
       const photo = sampleRoofPhoto(inputs.ortho, inputs.orthoCalibration, roofParts.length ? roofParts : building.parts);
       const review = PANEL_REVIEW.get(building.nodeName);
       const panelsOn = (part) => !building.massForm || (!part.triangles && !PLAIN_KINDS.has(part.kind) && part.kind !== "annex" && Math.abs(ringArea(part.outer)) / UNIT_AREA >= 40);
@@ -2030,6 +2037,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
       `${applied.length} from OSM tags${applied.length ? ` (${applied.join("; ")})` : ""}, all as COLOR_0 on Roof_Membrane; no photo colour: ${photoLog.join("; ") || "none"}`,
     );
     console.log(`solar panels (estimated from the orthophoto): ${panelLog.join("; ") || "none"}`);
+    console.log(`roof sampling lean (building-lean.json, not roof-edge): ${leanLog.join("; ") || "none"}`);
   }
   // ---- meshes and nodes
   // All primitives are built first so the AO charts can be packed before any TEXCOORD_1 is written.
