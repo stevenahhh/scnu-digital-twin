@@ -66,7 +66,7 @@ export function ridgeAt(win, f, s, t0, t1, { reach = 0.4, side = 0.55 } = {}) {
   }
   return { contrast: round(best.contrast, 1), o: round(best.o), cover: round(on / ts.length), rel: base ? round(best.contrast / base, 3) : null };
 }
-const isLine = (r) => r.contrast !== null && r.cover >= 0.5 && (r.contrast >= 6 || (r.contrast >= 3 && r.rel >= 0.1));
+export const isLine = (r) => r.contrast !== null && r.cover >= 0.5 && (r.contrast >= 6 || (r.contrast >= 3 && r.rel >= 0.1));
 
 // The rail nearest T over a span of the row: its offset from T and its prominence, or null.
 export function railAt(win, f, s0, s1, T, { reach = 0.8, minProm = 4 } = {}) {
@@ -78,18 +78,21 @@ export function railAt(win, f, s0, s1, T, { reach = 0.8, minProm = 4 } = {}) {
 
 // One pitch at a time from a known line. A line or both rails over the stall is paint. Anything else is unknown (a car, a crown,
 // shade): it stays pending and joins the row only if paint resumes within maxUnknown pitches. stop(P) -> reason ends the walk at a
-// place the row may not enter (another row, the model extent).
+// place the row may not enter (another row, the model extent). A row with rails is bounded by them: where both stop, a line alone
+// does not carry it, because a truck's flank reads as a line (E243647/R1 crossed one and merged two rows).
 export function walkRow(win, f, { from, dir, pitch, depth, stop = () => null, maxUnknown = 2, maxSteps = 40 }) {
   const trim = Math.min(0.5, depth * 0.15);
   const added = [];
   let pending = [];
   let at = from;
+  const railOver = (s0, s1) => Boolean(railAt(win, f, s0, s1, 0, { reach: 0.4, minProm: 8 }) || railAt(win, f, s0, s1, depth, { reach: 0.4, minProm: 8 }));
+  const railed = railOver(from - dir * pitch, from);
   for (let k = 0; k < maxSteps; k += 1) {
     const guess = at + dir * pitch;
     const reason = stop(f.at(guess, depth / 2));
     if (reason) return { added, stop: reason };
     const line = ridgeAt(win, f, guess, trim, depth - trim);
-    if (isLine(line)) {
+    if (isLine(line) && (!railed || railOver(at, guess))) {
       added.push(...pending, { s: round(guess + line.o), read: "line", contrast: line.contrast, cover: line.cover });
       pending = [];
       at = guess + line.o;

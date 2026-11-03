@@ -579,3 +579,32 @@ test("a curated lot marked added stands on no seeded lot and joins the document"
   input.lots.at(-1).added = "yes";
   assert.match(validate("parkingCuration", input).errors.join("\n"), /LOT_NEW: added must be true/);
 });
+
+// Two rows 10 m long and 5 m deep along +E, each with four stalls; d is the bearing of the dividers.
+const overlapRow = (id, x0, x1 = x0 + 10, bearing) => { const count = Math.round((x1 - x0) / 2.5) + 1; const [base] = curation().lots[0].rows; const row = { ...structuredClone(base), id, backLine: { abs: [[x0, 0], [x1, 0]] }, side: 1, depthM: 5, pitchM: 2.5, count, stalls: [] }; delete row.dividerBearingDeg; if (bearing !== undefined) row.dividerBearingDeg = bearing; return row; };
+const overlapErrors = (rows) => { const doc = curation(); doc.lots[0].rows = rows; return validate("parkingCuration", doc).errors.filter((e) => /overlap/.test(e)); };
+
+test("the overlap rule refuses a third of a row and passes a quarter", () => {
+  assert.deepEqual(overlapErrors([overlapRow("LOT_KEEP/R7", 0), overlapRow("LOT_KEEP/R8", 7.5)]), [], "25 % passes");
+  assert.equal(overlapErrors([overlapRow("LOT_KEEP/R7", 0), overlapRow("LOT_KEEP/R8", 6.5)]).length, 1, "35 % is refused");
+});
+
+test("a short row inside a long one is refused in either order", () => {
+  const [long, short] = [overlapRow("LOT_KEEP/R7", 0, 40), overlapRow("LOT_KEEP/R8", 10, 20)];
+  assert.equal(overlapErrors([long, short]).length, 1);
+  assert.equal(overlapErrors([short, long]).length, 1);
+});
+
+test("the overlap rule measures skewed rows along their own dividers", () => {
+  // back lines end to end, dividers leaning towards each other: about 36 % of each lies on the other; as square boxes they would touch only
+  assert.equal(overlapErrors([overlapRow("LOT_KEEP/R7", 0, 10, 45), overlapRow("LOT_KEEP/R8", 10, 20, 315)]).length, 1);
+});
+
+test("an added lot's T1 row on no paint is refused, as any curated row is", () => {
+  const input = curation();
+  const [row] = input.lots[0].rows;
+  const [[px, py], [qx, qy]] = row.backLine.abs;
+  input.lots.push({ id: "LOT_NEW", anchor: [px + 500, py + 500], curated: "todo 14", added: true, retired: [], lines: [], rows: [{ ...structuredClone(row), id: "LOT_NEW/R1", backLine: { abs: [[px + 500, py + 500], [qx + 500, qy + 500]] } }] });
+  const photo = { line: ({ from }) => ({ visible: 1, contrast: from[0] > px + 400 ? 2 : 40, offsetM: 0 }), blue: () => ({ visible: 1, share: 0 }) };
+  assert.throws(() => applyCuration(twoLots(), input, { photo }), /LOT_NEW\/R1: curated T1/);
+});

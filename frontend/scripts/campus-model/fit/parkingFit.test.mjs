@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { blueBlob, fitBox, isBlue, measureBay, measureLadder, oriented, peaks, placesToRow, railAt, ridgeAt, walkRow } from "./parkingFit.mjs";
+import { blueBlob, fitBox, isBlue, isLine, measureBay, measureLadder, oriented, peaks, placesToRow, railAt, ridgeAt, walkRow } from "./parkingFit.mjs";
 
 // A 60 x 20 m raster at 0.25 m per pixel, origin (0, 20), dark asphalt; paint(x, y) in metres may recolour a pixel.
 const raster = (paint) => {
@@ -145,4 +145,98 @@ test("fitBox moves a rough box onto the paint: place, angle and size", () => {
   assert.ok(Math.hypot(box.c[0] - 30, box.c[1] - 10) <= 0.2, JSON.stringify(box));
   assert.ok(Math.abs(box.w - 3) <= 0.3 && Math.abs(box.d - 5) <= 0.3, JSON.stringify(box));
   assert.ok(box.iou >= 0.85, JSON.stringify(box));
+});
+
+const within = (list, want) => { assert.deepEqual(list.map((p) => p.read), want.map((w) => w[1]), JSON.stringify(list)); want.forEach(([s], i) => assert.ok(Math.abs(list[i].s - s) <= 0.13, JSON.stringify(list))); }; // one 0.25 m pixel of paint reads within half a pixel
+
+test("paint three unknown pitches away is another row: the walk bridges two and no more", () => {
+  const win = raster(ladder([2.6, 5.2, 15.6, 18.2]));
+  const { added, stop } = walkRow(win, frame, { from: 5.2, dir: 1, pitch: 2.6, depth: 5 });
+  assert.deepEqual(added, []);
+  assert.match(stop, /no paint for 3 pitches/);
+});
+
+test("one rail is a kerb: it does not carry the row, both rails do", () => {
+  const back = (x, y) => (Math.abs(y - 15) <= 0.13 && x <= 13 ? WHITE : null);
+  const win = raster((x, y) => ladder([2.6, 5.2])(x, y) ?? back(x, y));
+  assert.deepEqual(walkRow(win, frame, { from: 5.2, dir: 1, pitch: 2.6, depth: 5 }).added, []);
+});
+
+test("a ladder whose pitch is longer than the guess is followed line by line", () => {
+  const win = raster(ladder([0.5, 3.4, 6.3, 9.2, 12.1]));
+  const { added } = walkRow(win, frame, { from: 0.5, dir: 1, pitch: 2.6, depth: 5 });
+  assert.equal(added.length, 4, JSON.stringify(added));
+  [3.4, 6.3, 9.2, 12.1].forEach((s, i) => { assert.equal(added[i].read, "line"); assert.ok(Math.abs(added[i].s - s) <= 0.13, JSON.stringify(added)); });
+});
+
+test("a truck is not a stall: where both rails stop, marks on its flanks do not carry the row, even when rails and lines resume past it", () => {
+  const rails = (x, y) => ((Math.abs(y - 15) <= 0.13 || Math.abs(y - 10) <= 0.13) && (x <= 5.2 || x >= 15.6) ? WHITE : null);
+  const win = raster((x, y) => ladder([2.6, 5.2, 7.8, 10.4, 13, 15.6, 18.2])(x, y) ?? rails(x, y));
+  const { added, stop } = walkRow(win, frame, { from: 5.2, dir: 1, pitch: 2.6, depth: 5 });
+  assert.deepEqual(added, []);
+  assert.match(stop, /no paint for 3 pitches/);
+});
+
+test("a car on one rail does not end a row: the other rail still runs and the line reads", () => {
+  const rails = (x, y) => (Math.abs(y - 10) <= 0.13 || (Math.abs(y - 15) <= 0.13 && (x <= 5.2 || x >= 7.8)) ? WHITE : null);
+  const win = raster((x, y) => ladder([2.6, 5.2, 7.8, 10.4])(x, y) ?? (x <= 10.4 ? rails(x, y) : null));
+  within(walkRow(win, frame, { from: 5.2, dir: 1, pitch: 2.6, depth: 5 }).added, [[7.8, "line"], [10.4, "line"]]);
+});
+
+test("a rail gone for one stall joins again when it resumes, and the stall in between stays a place nobody read", () => {
+  const rails = (x, y) => ((Math.abs(y - 15) <= 0.13 || Math.abs(y - 10) <= 0.13) && (x <= 5.2 || x >= 7.8) ? WHITE : null);
+  const win = raster((x, y) => ladder([2.6, 5.2, 7.8, 10.4])(x, y) ?? (x <= 10.4 ? rails(x, y) : null));
+  within(walkRow(win, frame, { from: 5.2, dir: 1, pitch: 2.6, depth: 5 }).added, [[7.8, "unknown"], [10.4, "line"]]);
+});
+
+test("isLine wants most of the depth and real contrast", () => {
+  assert.equal(isLine({ contrast: 40, cover: 0.5, rel: 0.5 }), true);
+  assert.equal(isLine({ contrast: 40, cover: 0.3, rel: 0.5 }), false, "a short mark");
+  assert.equal(isLine({ contrast: 6, cover: 1, rel: 0.05 }), true);
+  assert.equal(isLine({ contrast: 3, cover: 1, rel: 0.1 }), true, "shade lowers contrast, not its share of the ground");
+  assert.equal(isLine({ contrast: 3, cover: 1, rel: 0.05 }), false);
+  assert.equal(isLine({ contrast: 1, cover: 1, rel: 0.5 }), false, "one level is no line");
+  assert.equal(isLine({ contrast: null, cover: 1, rel: null }), false);
+});
+
+test("measureLadder leaves a gap off the pitch as one wide stall", () => {
+  const win = raster(ladder([2, 4.6, 7.2, 11.2, 13.8]));
+  const row = measureLadder(win, { p: [2, 15], q: [13.8, 15], side: -1, depth: 5, pitch: 2.6, bearingDeg: 180 });
+  assert.deepEqual(row.places.map((p) => p.read), ["line", "line", "line", "line", "line"]);
+});
+
+const blueBay = (x0, x1, y0, y1) => (x, y) => (x >= x0 && x <= x1 && y >= y0 && y <= y1 ? [40, 110, 170] : null);
+test("measureBay on a plain bay: blue plus a 0.12 m border, no aisle, width the short way", () => {
+  const bay = measureBay(raster(blueBay(28, 31, 6, 11)), [29.5, 8.5]);
+  assert.ok(Math.abs(bay.widthM - 3) <= 0.1, JSON.stringify(bay));
+  assert.ok(Math.abs(bay.depthM - 5) <= 0.1, JSON.stringify(bay));
+  assert.equal(bay.aisleWidthM, 0);
+  assert.equal(bay.aisleDir, null);
+  assert.ok(Math.abs(bay.widthDir[0]) > 0.9 && Math.abs(bay.depthDir[1]) > 0.9, JSON.stringify(bay));
+});
+
+test("measureBay centres a hatched bay between the blue and the hatch's far edge", () => {
+  const win = raster((x, y) => {
+    if (x > 31 && x <= 32.2 && y >= 6 && y <= 11) return Math.floor((x + y) * 2) % 2 ? WHITE : null;
+    return blueBay(28, 31, 6, 11)(x, y);
+  });
+  const bay = measureBay(win, [29.5, 8.5]);
+  const blueCentre = 29.5;
+  assert.ok(Math.abs(bay.centre[0] - (blueCentre + bay.aisleWidthM / 2)) <= 0.15, JSON.stringify(bay));
+  assert.ok(bay.centre[0] > blueCentre + 0.3, JSON.stringify(bay));
+});
+
+const box = (cx, cy, w, d, deg = 0) => { const th = (deg * Math.PI) / 180; const u = [Math.cos(th), Math.sin(th)]; return ([x, y]) => { const [dx, dy] = [x - cx, y - cy]; return Math.abs(dx * u[0] + dy * u[1]) <= w / 2 && Math.abs(-dx * u[1] + dy * u[0]) <= d / 2; }; };
+test("fitBox turns to the paint's angle", () => {
+  const fit = fitBox(box(30, 10, 3, 5, 15), { c: [30, 10], th: 0.1, w: 3, d: 5 }, { gsdM: 0.1 });
+  assert.ok(Math.abs(fit.th - (15 * Math.PI) / 180) <= 0.03, JSON.stringify(fit));
+});
+test("fitBox stays within its reach: paint further away does not pull it", () => {
+  const fit = fitBox(box(32, 10, 3, 5), { c: [30, 10], th: 0, w: 3, d: 5 }, { gsdM: 0.1 });
+  assert.ok(Math.hypot(fit.c[0] - 30, fit.c[1] - 10) <= 0.7 + 1e-9, JSON.stringify(fit));
+});
+test("fitBox ends on its finest step, closer than the coarse 0.2 m", () => {
+  const fit = fitBox(box(30, 10, 3, 5), { c: [30.1, 10], th: 0, w: 3.1, d: 5.1 }, { gsdM: 0.05 });
+  assert.ok(Math.abs(fit.c[0] - 30) <= 0.06, JSON.stringify(fit));
+  assert.ok(Math.abs(fit.w - 3) <= 0.06 && Math.abs(fit.d - 5) <= 0.06, JSON.stringify(fit));
 });
