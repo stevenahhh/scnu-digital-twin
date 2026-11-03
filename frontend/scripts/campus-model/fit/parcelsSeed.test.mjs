@@ -103,6 +103,23 @@ test("data/ground/parcels.json is valid", () => {
   assert.ok(ok, errors.slice(0, 10).join("\n"));
 });
 
+test("every remaining support hull and excluded paint has a generated road record or a quantified decision", () => {
+  const doc = JSON.parse(readFileSync(PARCELS_FILE, "utf8"));
+  const records = new Map((doc.roadRecords ?? []).map((r) => [r.id, r]));
+  const unresolved = doc.parcels.filter((p) => p.source === "photo-paint-support" && !records.has(p.roadRecord)).map((p) => p.id);
+  const historical = JSON.parse(readFileSync(new URL("../data/ground/road-support-evidence.json", import.meta.url), "utf8"));
+  const owned = new Set([...records.values()].flatMap(r => r.replaces ?? []));
+  for (const id of [...historical.supports.map(p => p.id), ...historical.excluded.map(p => p.piece)]) {
+    if (!owned.has(id)) unresolved.push(id);
+  }
+  for (const id of doc.paintExcluded) {
+    const decision = doc.paintDecisions?.find((r) => r.piece === id);
+    if (!decision || !records.has(decision.record) || !decision.reason ||
+        !Number.isFinite(decision.metrics?.outsideSamples) || !decision.evidence?.refs?.length) unresolved.push(id);
+  }
+  assert.deepEqual(unresolved, [], "unowned support hulls or paint exclusions");
+});
+
 // The full ground pipeline runs under Bun (stages/sources.mjs reads uni.glb with Bun.file), so the no-op proof runs the
 // CLI: parcels.json equals today's buildSurfaces layers, every ring within 0.1 m2 (W1 is a visual no-op).
 const noBun = spawnSync("bun", ["--version"]).error ? "bun is not installed" : false;

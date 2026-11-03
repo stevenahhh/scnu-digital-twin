@@ -1,73 +1,212 @@
 {
   "note": "Todo 22 road-boundary curation, applied after support ids are allocated by fit/parcelsSeed.mjs. The retained support id is a compatibility key, not a hull-generation instruction. All eye-read edges are estimated:true. Coordinates are EPSG:5186 metres; image pixels stay local.",
-  "replace": [
+  "replace": [],
+  "remove": [],
+  "add": [
     {
       "id": "PARCEL_SUPPORT_ROAD_243712_263738",
       "ring": [
-        [243702.243, 263760.088],
-        [243704.786, 263759.58],
-        [243707.074, 263758.308],
-        [243708.854, 263756.528],
-        [243710.634, 263754.07],
-        [243713.262, 263750.087],
-        [243715.974, 263746.442],
-        [243718.517, 263742.797],
-        [243719.364, 263741.102],
-        [243719.364, 263738.559],
-        [243718.517, 263734.491],
-        [243717.5, 263730.338],
-        [243716.313, 263725.93],
-        [243714.787, 263720.251],
-        [243713.347, 263714.996],
-        [243711.821, 263710.25],
-        [243710.634, 263708.046],
-        [243709.617, 263707.029],
-        [243712.668, 263706.435],
-        [243714.787, 263707.792],
-        [243716.228, 263710.928],
-        [243717.5, 263715.25],
-        [243719.534, 263719.488],
-        [243722.585, 263722.285],
-        [243725.637, 263724.15],
-        [243728.519, 263726.1],
-        [243730.468, 263727.625],
-        [243734.706, 263728.642],
-        [243731.316, 263733.05],
-        [243728.264, 263737.118],
-        [243725.043, 263741.356],
-        [243721.653, 263745.679],
-        [243718.771, 263749.324],
-        [243716.059, 263753.053],
-        [243713.94, 263756.189],
-        [243712.838, 263758.817],
-        [243712.414, 263761.36]
+        [
+          243702.243,
+          263760.088
+        ],
+        [
+          243704.786,
+          263759.58
+        ],
+        [
+          243707.074,
+          263758.308
+        ],
+        [
+          243708.854,
+          263756.528
+        ],
+        [
+          243710.634,
+          263754.07
+        ],
+        [
+          243713.262,
+          263750.087
+        ],
+        [
+          243715.974,
+          263746.442
+        ],
+        [
+          243718.517,
+          263742.797
+        ],
+        [
+          243719.364,
+          263741.102
+        ],
+        [
+          243719.364,
+          263738.559
+        ],
+        [
+          243718.517,
+          263734.491
+        ],
+        [
+          243717.5,
+          263730.338
+        ],
+        [
+          243716.313,
+          263725.93
+        ],
+        [
+          243714.787,
+          263720.251
+        ],
+        [
+          243713.347,
+          263714.996
+        ],
+        [
+          243711.821,
+          263710.25
+        ],
+        [
+          243710.634,
+          263708.046
+        ],
+        [
+          243709.617,
+          263707.029
+        ],
+        [
+          243712.668,
+          263706.435
+        ],
+        [
+          243714.787,
+          263707.792
+        ],
+        [
+          243716.228,
+          263710.928
+        ],
+        [
+          243717.5,
+          263715.25
+        ],
+        [
+          243719.534,
+          263719.488
+        ],
+        [
+          243722.585,
+          263722.285
+        ],
+        [
+          243725.637,
+          263724.15
+        ],
+        [
+          243728.519,
+          263726.1
+        ],
+        [
+          243730.468,
+          263727.625
+        ],
+        [
+          243734.706,
+          263728.642
+        ],
+        [
+          243731.316,
+          263733.05
+        ],
+        [
+          243728.264,
+          263737.118
+        ],
+        [
+          243725.043,
+          263741.356
+        ],
+        [
+          243721.653,
+          263745.679
+        ],
+        [
+          243718.771,
+          263749.324
+        ],
+        [
+          243716.059,
+          263753.053
+        ],
+        [
+          243713.94,
+          263756.189
+        ],
+        [
+          243712.838,
+          263758.817
+        ],
+        [
+          243712.414,
+          263761.36
+        ]
       ],
       "evidence": {
         "tier": "T1",
-        "refs": ["NGII 2025 34702020: E3 arc island east kerb and opposite sidewalk edge, task-22 island photo chip"]
+        "refs": [
+          "NGII 2025 34702020: E3 arc island east kerb and opposite sidewalk edge, task-22 island photo chip"
+        ]
       },
       "estimated": true,
-      "reason": "The convex hull of a curved yellow kerb covered the island lawn. Replace it with the carriageway outside that kerb and inside the opposite sidewalk. Eye-read edges, with the southern outer edge partly under crowns, remain estimated."
-    }
-  ],
-  "remove": [],
-  "add": [
+      "reason": "The convex hull of a curved yellow kerb covered the island lawn. Replace it with the carriageway outside that kerb and inside the opposite sidewalk. Eye-read edges, with the southern outer edge partly under crowns, remain estimated.",
+      "class": "road"
+    },
     {
       "id": "PARCEL_ROAD_CROSSING_244084_263874",
       "class": "road",
       "ring": [
-        [244084.5, 263884],
-        [244089.1, 263883.8],
-        [244088.2, 263879],
-        [244086.6, 263874],
-        [244085.3, 263869.5],
-        [244080.1, 263870.5],
-        [244081.7, 263875.5],
-        [244083, 263880]
+        [
+          244084.5,
+          263884
+        ],
+        [
+          244089.1,
+          263883.8
+        ],
+        [
+          244088.2,
+          263879
+        ],
+        [
+          244086.6,
+          263874
+        ],
+        [
+          244085.3,
+          263869.5
+        ],
+        [
+          244080.1,
+          263870.5
+        ],
+        [
+          244081.7,
+          263875.5
+        ],
+        [
+          244083,
+          263880
+        ]
       ],
       "evidence": {
         "tier": "T1",
-        "refs": ["NGII 2025 34702020: narrow carriageway linking road zones 41/58/65 near TM 244084,263874; task-22 crossing photo"]
+        "refs": [
+          "NGII 2025 34702020: narrow carriageway linking road zones 41/58/65 near TM 244084,263874; task-22 crossing photo"
+        ]
       },
       "estimated": true,
       "reason": "Missing carriageway between existing road-zone polygons. Visible north and south asphalt establish continuity; trees and shade obscure the middle and zebra paint. Eye-read road edges are estimated; this restores the three existing zebra records without inventing new bars."

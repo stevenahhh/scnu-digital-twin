@@ -1192,38 +1192,11 @@
       ]
     },
     {
-      "id": "SD-E3-02",
-      "anchor": {
-        "parcel": "PARCEL_SUPPORT_ROAD_243712_263738",
-        "uM": -11.245661078400255,
-        "vM": 1.2210355093964296
-      },
-      "estimated": true,
-      "evidence": {
-        "tier": "T4",
-        "refs": [
-          "VR scene_e3 d (turned north-up on the footway and junction kerbs): large clipped topiary mass on the west lawn; position from the station (about 3 m)"
-        ]
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          0,
-          0
-        ]
-      },
-      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
-      "centreTM": [
-        243712.7574098763,
-        263745.95564108127
-      ]
-    },
-    {
       "id": "SD-E3-03",
       "anchor": {
-        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_54",
-        "uM": -12.291567809857318,
-        "vM": 5.986461438823038
+        "parcel": "PARCEL_SUPPORT_ROAD_243712_263738",
+        "uM": -1.9844690323985414,
+        "vM": 1.5657223662475896
       },
       "estimated": true,
       "evidence": {
@@ -1248,9 +1221,9 @@
     {
       "id": "SD-E3-04",
       "anchor": {
-        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_54",
-        "uM": -12.33094490853968,
-        "vM": 0.8881367999443257
+        "parcel": "PARCEL_SUPPORT_ROAD_243712_263738",
+        "uM": 2.8297896076469833,
+        "vM": -0.11278245234704348
       },
       "estimated": true,
       "evidence": {
@@ -1297,33 +1270,6 @@
       "centreTM": [
         243739.25768078776,
         263751.0550725414
-      ]
-    },
-    {
-      "id": "SD-E5-02",
-      "anchor": {
-        "parcel": "PARCEL_SUPPORT_ROAD_243712_263738",
-        "uM": -7.371232123364414,
-        "vM": -4.2430547189192165
-      },
-      "estimated": true,
-      "evidence": {
-        "tier": "T4",
-        "refs": [
-          "VR scene_e5 d (turned north-up on the road edge): clipped topiary cluster, 4 m across; position from the station (about 3 m)"
-        ]
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          0,
-          0
-        ]
-      },
-      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
-      "centreTM": [
-        243707.88709665055,
-        263741.35699662514
       ]
     },
     {
@@ -1624,6 +1570,39 @@
       ]
     },
     {
+      "id": "SD-E1-S1",
+      "anchor": {
+        "parcel": "PARCEL_SUPPORT_ROAD_243857_263766",
+        "uM": -0.5036800586927803,
+        "vM": 2.9869504121924058
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "VR scene_e1 f (cols 600-860, rows 1480-1530): long campus notice board in a dark frame along the path at the plaza's west edge (about 9 m)"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            2.4349683501474715,
+            -3.3343782556531116
+          ],
+          [
+            -2.434968350135459,
+            3.3343782557170716
+          ]
+        ]
+      },
+      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
+      "centreTM": [
+        243854.9841270513,
+        263768.33394708904
+      ]
+    },
+    {
       "id": "SD-E2-H1",
       "anchor": {
         "parcel": "PARCEL_ROAD_E243570_N263745",
@@ -1785,9 +1764,9 @@
     {
       "id": "SD-E5-H1",
       "anchor": {
-        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_55",
-        "uM": -6.689917978069358,
-        "vM": 10.141713911121428
+        "parcel": "PARCEL_LOT_E3_S_R6",
+        "uM": 10.657182727221755,
+        "vM": 0.7592373893526467
       },
       "estimated": true,
       "evidence": {
@@ -1800,12 +1779,12 @@
         "type": "LineString",
         "coordinates": [
           [
-            -0.7959531385931423,
-            1.3690465984892146
+            -0.74256728289295,
+            1.3987222090351408
           ],
           [
-            0.7959531385931423,
-            -1.3690465984892146
+            0.74256728289295,
+            -1.3987222090351408
           ]
         ]
       },
@@ -1873,33 +1852,6 @@
       "centreTM": [
         243729.54474283126,
         263736.27352996194
-      ]
-    },
-    {
-      "id": "SD-E5-S3",
-      "anchor": {
-        "parcel": "PARCEL_SUPPORT_ROAD_243712_263738",
-        "uM": -5.5594843060120605,
-        "vM": 1.8847532389374415
-      },
-      "estimated": true,
-      "evidence": {
-        "tier": "T4",
-        "refs": [
-          "VR scene_e5 l (cols 450-560, rows 1830-2048): blue direction sign (arrow blades) on a post at the lawn corner"
-        ]
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          0,
-          0
-        ]
-      },
-      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
-      "centreTM": [
-        243714.20769892674,
-        263740.41760991653
       ]
     },
     {
@@ -2583,9 +2535,9 @@
     {
       "id": "SD-B7-PL3",
       "anchor": {
-        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_60",
-        "uM": -29.69695000854508,
-        "vM": -18.688729886133686
+        "parcel": "PARCEL_SUPPORT_LOT_244055_263889_PART_42",
+        "uM": 15.927847054595372,
+        "vM": 0.475784041590642
       },
       "estimated": true,
       "evidence": {
@@ -2599,48 +2551,48 @@
         "coordinates": [
           [
             [
-              0.5940899961644296,
-              -2.531506636579881
+              2.5711209731309133,
+              0.38833711658426534
             ],
             [
-              1.5108190402115724,
-              -1.8063163808406413
+              1.9220955038160763,
+              1.3604785607164394
             ],
             [
-              1.8499766217862506,
-              -0.39042290310534544
+              0.5381061158881175,
+              1.8125356141242241
             ],
             [
-              1.482781594785912,
-              1.1734435341928482
+              -1.0502477616626469,
+              1.5724473361284488
             ],
             [
-              0.5498166320375473,
-              2.289781700997552
+              -2.2380792462868886,
+              0.732393237563175
             ],
             [
-              -0.5941775713738499,
-              2.530922127770892
+              -2.570545413099945,
+              -0.38847146916459907
             ],
             [
-              -1.5109069712357017,
-              1.805732295748594
+              -1.9215203947748116,
+              -1.3606132338407497
             ],
             [
-              -1.8502779604028754,
-              0.39072658703631036
+              -0.5384330761404306,
+              -1.8128115233216118
             ],
             [
-              -1.4830828012485884,
-              -1.173140438035611
+              1.0499213979161637,
+              -1.5727231609255057
             ],
             [
-              -0.5490385805911704,
-              -2.2892198867348297
+              2.237581900775775,
+              -0.7315724776947712
             ],
             [
-              0.5940899961644296,
-              -2.531506636579881
+              2.5711209731309133,
+              0.38833711658426534
             ]
           ]
         ]
@@ -3246,7 +3198,7 @@
         263905.7983289881
       ],
       "nearestParcel": "PARCEL_SUPPORT_ROAD_243619_263902",
-      "nearestParcelDistanceM": 1.8133765565360727,
+      "nearestParcelDistanceM": 2.473654583310114,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
       "observation": "VR scene_d2 f: clipped bed north of the entrance stair; photo outline"
@@ -3258,11 +3210,24 @@
         243622.65040408523,
         263896.04553517734
       ],
-      "nearestParcel": "PARCEL_LOT_E243623_N263872_R2",
-      "nearestParcelDistanceM": 1.4698510358577113,
+      "nearestParcel": "PARCEL_SUPPORT_ROAD_243619_263902",
+      "nearestParcelDistanceM": 0.5230501688697217,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
       "observation": "VR scene_d2 f: clipped bed south of the entrance stair; photo outline"
+    },
+    {
+      "id": "SD-E3-02",
+      "kind": "hedge",
+      "centreTM": [
+        243712.7574098763,
+        263745.95564108127
+      ],
+      "nearestParcel": "PARCEL_ASPHALT_ROAD_ZONE_53",
+      "nearestParcelDistanceM": 1.757201442688097,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_e3 d (turned north-up on the footway and junction kerbs): large clipped topiary mass on the west lawn; position from the station (about 3 m)"
     },
     {
       "id": "SD-E3-05",
@@ -3310,11 +3275,24 @@
         243701.48670389154,
         263742.5578333085
       ],
-      "nearestParcel": "PARCEL_SUPPORT_ROAD_243712_263738",
-      "nearestParcelDistanceM": 3.1491956405564854,
+      "nearestParcel": "PARCEL_PAVING_EDGE_FBJ_SWN_0012_1",
+      "nearestParcelDistanceM": 10.73724992016414,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
       "observation": "VR scene_e5 d (turned north-up on the road edge): clipped topiary mass, two lobes, 3.4 m across; position from the station (about 3 m)"
+    },
+    {
+      "id": "SD-E5-02",
+      "kind": "hedge",
+      "centreTM": [
+        243707.88709665055,
+        263741.35699662514
+      ],
+      "nearestParcel": "PARCEL_ASPHALT_ROAD_ZONE_53",
+      "nearestParcelDistanceM": 8.369320677948023,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_e5 d (turned north-up on the road edge): clipped topiary cluster, 4 m across; position from the station (about 3 m)"
     },
     {
       "id": "SD-E5-04",
@@ -3323,24 +3301,11 @@
         243696.08668581618,
         263744.25716282014
       ],
-      "nearestParcel": "PARCEL_SUPPORT_ROAD_243712_263738",
-      "nearestParcelDistanceM": 8.259426877095551,
+      "nearestParcel": "PARCEL_ASPHALT_ROAD_ZONE_50",
+      "nearestParcelDistanceM": 9.126222714363108,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
       "observation": "VR scene_e5 d (turned north-up on the road edge): clipped mass at the lawn's west side; position from the station (about 3 m)"
-    },
-    {
-      "id": "SD-E1-S1",
-      "kind": "signboard",
-      "centreTM": [
-        243854.9841270513,
-        263768.33394708904
-      ],
-      "nearestParcel": "PARCEL_SUPPORT_ROAD_243857_263766",
-      "nearestParcelDistanceM": 1.1558581339339302,
-      "estimated": true,
-      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
-      "observation": "VR scene_e1 f (cols 600-860, rows 1480-1530): long campus notice board in a dark frame along the path at the plaza's west edge (about 9 m)"
     },
     {
       "id": "SD-E1-S2",
@@ -3354,6 +3319,19 @@
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
       "observation": "VR scene_e1 l (cols 1790-2048, rows 1880-2040): campus banner boards on the lawn by the roundabout (white and blue panels)"
+    },
+    {
+      "id": "SD-E5-S3",
+      "kind": "signboard",
+      "centreTM": [
+        243714.20769892674,
+        263740.41760991653
+      ],
+      "nearestParcel": "PARCEL_ASPHALT_ROAD_ZONE_53",
+      "nearestParcelDistanceM": 3.666269273335915,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_e5 l (cols 450-560, rows 1830-2048): blue direction sign (arrow blades) on a post at the lawn corner"
     },
     {
       "id": "SD-E8-S3",
@@ -3479,8 +3457,8 @@
         243772.9885450739,
         263996.24933449575
       ],
-      "nearestParcel": "PARCEL_LOT_E243769_N263982_R2",
-      "nearestParcelDistanceM": 0.14984935985611975,
+      "nearestParcel": "PARCEL_SUPPORT_LOT_243778_263993",
+      "nearestParcelDistanceM": 0.0026589502342888186,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
       "observation": "VR scene_c5 f (cols 130-380, rows 1370-2048): white decorative railing (yellow figures) along the path above the forecourt"
