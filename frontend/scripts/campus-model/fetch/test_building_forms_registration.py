@@ -56,3 +56,9 @@ def test_main_masses_clip_to_footprint_buffer_cores_kept():
     mains = [m for m in out if m["kind"] == "main"]
     assert mains and all(zone.contains(m["poly"]) for m in mains)
     assert [m for m in out if m["kind"] == "core"][0]["poly"].equals(big)
+
+
+@pytest.mark.parametrize("score,accepted", [(None, False), (0.0, False), (0.685, False), (0.6999, False), (0.7, True), (0.95, True)])
+def test_lod4_requires_seventy_percent_photo_iou(score, accepted):
+    # Todo 25's failure contract is absolute: a worse footprint does not rescue an unsupported LOD4 roof.
+    assert bf.accept_lod4(score) is accepted

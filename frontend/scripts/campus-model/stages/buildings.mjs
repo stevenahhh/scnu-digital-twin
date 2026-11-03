@@ -23,6 +23,9 @@ import { addBalconies, addFins, addMast, addSolar, attachmentsByNode } from "../
 import { frontKit, kitInstances } from "../lib/frontKit.mjs";
 import { meshFootprint, toModelRing } from "./sources.mjs";
 import { validate } from "../lib/schemas.mjs";
+import { loadTmFootprints } from "../lib/footprints.mjs";
+import { mapRoofGeometry, resolveRoofGeometry } from "../lib/roofRelative.mjs";
+import { sceneToTm, tmToWgs84 } from "../../../src/geo/epsg5186.mjs";
 
 const UNIT_AREA = metres(1) ** 2;
 const PARAPET = metres(0.9);
@@ -1741,6 +1744,17 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
   console.log(`small footprints included by their scnu-facades.json entry (minAreaMetres): ${smallIncluded.join("; ") || "none"}`);
   if (selectOnly) return { selectableBuildings, campusBuildings, offCampusLots, contextParts };
 
+  const roofFootprints = await loadTmFootprints();
+  for (const building of [...selectableBuildings, ...campusBuildings]) {
+    const key = formKey(building);
+    roofFootprints[key] ??= { polygons: building.parts.map(p => [p.outer, ...p.holes].map(r => r.map(q => sceneToTm(...q)))) };
+  }
+  const roofGeometry = (id, record, footprint) => {
+    if (!record.roofRelative) return record;
+    const resolved = resolveRoofGeometry(id, record, footprint);
+    return { ...resolved, ...mapRoofGeometry(resolved, p => tmToWgs84(...p).map(v => Number(v.toFixed(8)))) };
+  };
+
   // ---- building forms (data/building-forms.json): masses replace the footprint parts of the buildings whose form
   // comes from the VWorld LOD4 mesh or a photo-traced outline; the rest keep their footprint (and the form record).
   {
@@ -1750,8 +1764,10 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
     const detachedLog = [];
     let formOriginals = [];
     for (const building of [...selectableBuildings, ...campusBuildings]) {
-      const form = forms.get(formKey(building));
-      if (!form) continue;
+      const savedForm = forms.get(formKey(building));
+      if (!savedForm) continue;
+      const form = { ...savedForm, masses: savedForm.masses.map((m, i) =>
+        roofGeometry(`${formKey(building)}/mass/${i}`, m, roofFootprints[formKey(building)])) };
       building.form = form;
       if (form.masses.every((m) => m.fromFootprint)) continue;
       formOriginals = building.parts;
@@ -1826,7 +1842,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
       // a uni.glb BLD_* node, or a campus building drawn in CampusBuildings with its BLD_SCNU_* pick proxy
       const building = selectableBuildings.find((b) => b.nodeName === node) ?? campusBuildings.find((b) => b.nodeId === node);
       if (!building) throw new Error(`facade-attachments.json: no building node ${node}`);
-      building.attachments = list.map((a) => ({
+      building.attachments = list.map(a => roofGeometry(a.id, a, roofFootprints[node])).map((a) => ({
         ...a,
         ...(a.plan ? { plan: a.plan.map(toModel) } : {}),
         ...(a.wall ? { wall: a.wall.map(toModel) } : {}),

@@ -44,7 +44,7 @@ Method, per building:
      sheet: roof seeds where both candidates (LOD4 masses and the current footprint) agree, 2 m inside their outline;
      background seeds 5 m outside and on textured vegetation. IoU is counted outside cast shadows. LOD4 masses whose
      own photo support is under 25 % are dropped when small (they are not on the 2025 photo).
-  8. Source: LOD4 masses when their IoU is at least 0.70 or within 0.05 of the current footprint's; for a building
+  8. Source: LOD4 masses when their IoU is at least 0.70; for a building
      LOD4 does not show, the curated form of its data/scnu-facades.json entry (masses traced on the NGII sheet, heights
      from storey counts; its photo IoU is reported, not used to reject it: roof gardens read as vegetation and courts
      sit in cast shadow); else a photo-traced outline or the current footprint (flagged).
@@ -1034,6 +1034,11 @@ def curated_masses(curated):
              "columns": [Polygon(c) for c in m.get("columns") or []], "heightSource": m.get("heightSource")} for m in curated["masses"]]
 
 
+def accept_lod4(photo_iou: float | None) -> bool:
+    """Todo 25: unsupported LOD4 roofs fall back to the ground footprint, not another photo trace."""
+    return photo_iou is not None and photo_iou >= 0.70
+
+
 def main():
     data = json.load(open(sys.argv[1]))
     sheet = Sheet(data["photo"])
@@ -1116,13 +1121,14 @@ def main():
                 frame = result["frame"]
                 iou_lod4 = iou(frame.raster([(m["poly"], m["top"] + m.get("parapet", 0.0)) for m in masses], lean), result["roof"], frame.shadow)
         record["iou"] = {"lod4": None if iou_lod4 is None else round(iou_lod4, 3), "footprint": None if iou_footprint is None else round(iou_footprint, 3)}
-        use_lod4 = bool(masses) and iou_lod4 is not None and (iou_lod4 >= 0.70 or (iou_footprint is not None and iou_lod4 >= iou_footprint - 0.05))
+        use_lod4 = bool(masses) and accept_lod4(iou_lod4)
+        rejected_lod4 = bool(masses) and not use_lod4
         # A photo-traced outline for a simple footprint the photo disagrees with: it replaces the footprint when it beats it
         # by 0.05, and marginal LOD4 masses (photo IoU under 0.8) that are only one flat prism when it beats them by 0.05
         # too (LOD4 steps, raised parts and pitched roofs are kept).
         prism = bool(masses) and all(m["type"] == "flat" and m["base"] == 0 for m in masses) and max(m["top"] for m in masses) - min(m["top"] for m in masses) < 1.5
         traced = None
-        if not curated and len(b["parts"]) == 1 and not b["parts"][0]["holes"] and (iou_footprint or 0) < 0.8 and (not use_lod4 or (iou_lod4 < 0.8 and prism)):
+        if not rejected_lod4 and not curated and len(b["parts"]) == 1 and not b["parts"][0]["holes"] and (iou_footprint or 0) < 0.8 and (not use_lod4 or (iou_lod4 < 0.8 and prism)):
             h = b["parts"][0]["heightMetres"] + DEFAULT_PARAPET
             outline = traced_outline(result["frame"], result["roof"], result["frame"].raster(footprint, result["leans"][-1]), h, result["leans"][-1])
             if outline is not None and 0.5 <= outline.area / footprint[0][0].area <= 2.0:
@@ -1139,6 +1145,13 @@ def main():
                         use_lod4 = False
         if masses and not use_lod4 and traced is None:
             record["flags"].append(f"LOD4 masses rejected: photo IoU {iou_lod4} against {iou_footprint} for the current footprint")
+        # Keep the fit diagnostic even when the photo rejects the LOD4 geometry.
+        if registration is not None:
+            record["registration"] = {"dx": round(registration["dx"], 3), "dy": round(registration["dy"], 3), "rotDeg": round(registration["rotDeg"], 3),
+                                      "pivot": [round(v, 3) for v in registration["pivot"]], "residual_m": round(registration["residual_m"], 3),
+                                      "hausdorff_m": round(registration["hausdorff_m"], 3), "planIou": round(registration["iou"], 3),
+                                      "planIouBefore": round(registration["iouBefore"], 3), "atRotationBound": registration["atRotationBound"]}
+            record["lod4Residual_m"] = round(registration["residual_m"], 3)
         if use_lod4:
             storey = classify(masses, b.get("floors") or 0, label, b.get("tower"))
             masses, clipped = clip_to_footprint(masses, foot[j])
@@ -1149,12 +1162,6 @@ def main():
             if registration is not None and registration["atRotationBound"]:
                 record["flags"].append(f"registration rotation at the {registration['rotDeg']:+.1f} deg bound; the fit may need more rotation or a review")
                 print(f"WARN {b['key']}: registration rotation at the bound ({registration['rotDeg']:+.2f} deg)", file=sys.stderr)
-            if registration is not None:
-                record["registration"] = {"dx": round(registration["dx"], 3), "dy": round(registration["dy"], 3), "rotDeg": round(registration["rotDeg"], 3),
-                                          "pivot": [round(v, 3) for v in registration["pivot"]], "residual_m": round(registration["residual_m"], 3),
-                                          "hausdorff_m": round(registration["hausdorff_m"], 3), "planIou": round(registration["iou"], 3),
-                                          "planIouBefore": round(registration["iouBefore"], 3), "atRotationBound": registration["atRotationBound"]}
-                record["lod4Residual_m"] = round(registration["residual_m"], 3)
             record["source"] = "VWorld LOD4 mesh (slices and roof pieces)"
             record["storeyMetres"] = round(storey, 2)
             record["masses"] = [mass_out(m) for m in sorted(masses, key=lambda m: (m["base"] > 0, -m["poly"].area))]

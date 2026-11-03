@@ -100,6 +100,10 @@
   {
    "id": "PARCEL_PAVING_BUILDING_98",
    "reason": "estimated apron strip under the BLD_D2 footbridge; NGII shows the lane running on either side of the bridge, so it wrongly cuts the lane"
+  },
+  {
+   "id": "PARCEL_PAVING_BUILDING_340",
+   "reason": "F2 footprint-prism fallback apron crosses the asphalt approach of LOT_E244150_N263449/R2 near TM 244153,263496. NGII 2025 and Suncheon 2024 12cm show continuous asphalt west of F2, not an apron enclosing the road. Remove only this generated estimated strip; retain the existing road/lot parcels and the 2 m connectivity clearance (todo 25 photo check, estimated)."
   }
  ],
  "add": [
