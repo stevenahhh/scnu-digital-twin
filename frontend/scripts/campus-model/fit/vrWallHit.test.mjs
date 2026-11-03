@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { bearingObservations, bearingResidual, readBearing, triangulate, wallHit } from "./vrWallHit.mjs";
@@ -76,4 +77,28 @@ test("malformed, stale or unknown bearing references cannot produce a successful
   }
   assert.throws(() => bearingObservations({ ...make("VR synthetic f col 12"), frameVersion: 1 }, [station()]), /stale/);
   assert.throws(() => bearingObservations(make("VR synthetic f col 12"), [{ ...station(), frame_version: 1 }]), /stale/);
+});
+
+test("E3 canopy anchors use only the accepted e5 view while e3 correspondence is unresolved", () => {
+  const stations = JSON.parse(readFileSync(new URL("../../perf/vr-stations.json", import.meta.url), "utf8"));
+  const document = JSON.parse(readFileSync(new URL("../data/vr-bearings.json", import.meta.url), "utf8"));
+  const observations = bearingObservations(document, stations);
+  // Task 18c: e3 col700 is an occluded upper-bay proxy, not a certified canopy point.
+  // These are the actual observations consumed by compare-vr, not just a metadata count.
+  assert.deepEqual(observations.map(row => [row.id, row.scene, row.col]), [
+    ["SD-E5-C1", "scene_e5", 610],
+    ["SD-E5-C2", "scene_e5", 1810],
+  ]);
+  const c1 = document.records.find(record => record.id === "SD-E5-C1");
+  assert.equal(c1.estimated, true);
+  assert.deepEqual([c1.anchor.building, c1.anchor.wall], ["BLD_E3", "W16"]);
+  // Independent GIS W16 endpoints, task-18b/18c: a single ray constrained to the wall.
+  const hit = wallHit(stations.find(row => row.scene === "scene_e5"), { face: "r", col: 610 }, {
+    id: "BLD_E3/W16",
+    a: [243718.61595434824, 263791.15560998383],
+    b: [243677.80121413054, 263764.7220150316],
+  });
+  assert.ok(Math.abs(c1.anchor.sM - hit.sM) < 1e-6);
+  assert.ok(Math.hypot(hit.point[0] - 243681.259168, hit.point[1] - 263766.961553) < 0.001);
+  assert.equal(document.records.find(record => record.id === "SD-E5-C2").estimated, true);
 });

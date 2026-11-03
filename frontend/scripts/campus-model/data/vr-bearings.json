@@ -13,10 +13,12 @@
       "evidence": {
         "tier": "T2",
         "refs": [
-          "VR scene_e5 r col 610 -> BLD_E3/W16",
+          "VR scene_e5 r col 610 -> BLD_E3/W16"
+        ],
+        "rejectedRefs": [
           "VR scene_e3 r col 700 -> BLD_E3/W16"
         ],
-        "note": "Main doorway/canopy axis below the left orange curved bay. Original independent readings are retained: scene_e5 col 610, scene_e3 col 700 (pine-occluded, estimated). 2026-11-03 task 18a re-derived the e5 wall hit from seven non-E3 GIS landmarks. Both references hit W16, but their s values differ and are not averaged or forced to agree. Neither the canopy nor its readings entered the resection; geometry migration and the remaining discrepancy belong to todo 19."
+        "note": "2026-11-03 task 18c: user-approved failure branch. Anchor is the scene_e5 col610 ray constrained to GIS W16, s=44.5070997209 m, EPSG:5186 (243681.259168,263766.961553); estimated, not triangulated. scene_e3 stays unchanged. Its col700 is a pine-occluded upper-bay proxy, not a certified matching canopy point, retained in rejectedRefs but excluded from accepted bearing observations. The seven-bearing candidate passes the original eight landmarks (max 1.413267 deg), but its C1 intersection lies 4.338914 m in front of W16 on asphalt rather than the canopy. Joint E/N/yaw/height fitting with corrected ground-centre readings gives E1 -0.332831 deg and held-out E5 +1.023565 deg, but E5 W28 fails at -1.535145 deg, the extra held-out E3 W18 pier fails at +1.560189 deg, and the C1 point is 5.073755 m in front. This is a named unresolved E3 bearing/correspondence gap, not proof that no alternative pose can pass. E1 col1093 and every GIS vertex were retained; ground-reading corrections are documented in task-18c-scene-e3-resection evidence. Geometry migration remains todo 19."
       }
     },
     {
@@ -32,7 +34,7 @@
         "refs": [
           "VR scene_e5 r col 1810 -> BLD_E3/W15"
         ],
-        "note": "Side doorway and canopy centre beside the blue accessible bay; original site-detail range cols 1650-1970. 2026-11-03 task 18a re-derived the first forward wall hit from the independent seven-landmark scene_e5 resection. Position remains estimated; the column reading and canopy geometry are unchanged."
+        "note": "Side doorway and canopy centre beside the blue accessible bay; original site-detail range cols 1650-1970. 2026-11-03 task 18a re-derived the first forward wall hit from the independent seven-landmark scene_e5 resection. Task 18c retains the plan's estimated-failure rule: no usable second canopy-centre observation is visible through the scene_e3 foliage, so this is a single-view wall estimate, not a triangulated point. The column reading and canopy geometry are unchanged."
       }
     }
   ]
