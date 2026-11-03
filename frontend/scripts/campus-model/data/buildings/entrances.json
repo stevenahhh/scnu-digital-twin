@@ -1,0 +1,478 @@
+{
+  "frameVersion": 2,
+  "records": [
+    {
+      "id": "SD-E4-C1",
+      "anchor": {
+        "building": "BLD_SCNU_E4",
+        "wall": "W01",
+        "sM": 1.4079626586258625,
+        "tM": 0
+      },
+      "widthM": 3.6,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#e6e4de"
+      },
+      "canopy": {
+        "form": "posted",
+        "widthM": 4.00043067124835,
+        "depthM": 3.7397223323605298,
+        "heightM": 3.4,
+        "thicknessM": 0.25,
+        "colour": "#e6e4de",
+        "postColour": "#eeeeea",
+        "posts": [
+          {
+            "sM": -1.850215335624175,
+            "tM": 3.58972233236053
+          },
+          {
+            "sM": 1.850215335624175,
+            "tM": 3.58972233236053
+          }
+        ]
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "Legacy canopy SD-E4-C1: nearest wall projection; no corroborated column reading"
+        ],
+        "note": "Dimensions and door leaves estimated from legacy reference. VR scene_e4 f (cols 1430-1620, rows 1530-1720): flat entrance canopy with the red 사범대학 fascia on two white piers at the building's north door; front edge at the pier bases, 4 m deep to the wall",
+        "mappingDisagreement": {
+          "legacyBuilding": "BLD_SCNU_E4",
+          "firstHitBuilding": "BLD_D3",
+          "scene": "scene_e4",
+          "face": "f",
+          "col": 1525
+        }
+      }
+    },
+    {
+      "id": "SD-E5-C1",
+      "anchor": {
+        "building": "BLD_E3",
+        "wall": "W16",
+        "sM": 44.5070997209,
+        "tM": 0
+      },
+      "widthM": 3.6,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#e8641e"
+      },
+      "canopy": {
+        "form": "cantilever",
+        "widthM": 7.673472576134779,
+        "depthM": 2.999847894823629,
+        "heightM": 4.4,
+        "thicknessM": 0.25,
+        "colour": "#e8641e",
+        "postColour": "#e8641e",
+        "posts": []
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T2",
+        "refs": [
+          "VR scene_e5 r col 610 -> BLD_E3/W16",
+          "VR scene_e3 r col 700 -> BLD_E3/W16"
+        ],
+        "note": "Dimensions and door leaves estimated from legacy reference. VR scene_e5 r (cols 380-840, rows 1840-1940): orange cantilevered canopy over E5's main entrance and its steps (no posts)"
+      }
+    },
+    {
+      "id": "SD-E5-C2",
+      "anchor": {
+        "building": "BLD_E3",
+        "wall": "W15",
+        "sM": 13.0718827968,
+        "tM": 0
+      },
+      "widthM": 3.6,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#e8641e"
+      },
+      "canopy": {
+        "form": "cantilever",
+        "widthM": 9.733725973858887,
+        "depthM": 2.499105555166537,
+        "heightM": 4.4,
+        "thicknessM": 0.25,
+        "colour": "#e8641e",
+        "postColour": "#e8641e",
+        "posts": []
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T2",
+        "refs": [
+          "VR scene_e5 r col 1810 -> BLD_E3/W15"
+        ],
+        "note": "Dimensions and door leaves estimated from legacy reference. VR scene_e5 r (cols 1650-1970, rows 1810-1880): orange cantilevered canopy over the side entrance by the disabled bay"
+      }
+    },
+    {
+      "id": "SD-E7-C1",
+      "anchor": {
+        "building": "BLD_E7",
+        "wall": "W02",
+        "sM": 4.609565702447235,
+        "tM": 0
+      },
+      "widthM": 3.6,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#dde3e6"
+      },
+      "canopy": {
+        "form": "posted",
+        "widthM": 5.902798326409727,
+        "depthM": 4.500073079013932,
+        "heightM": 3.6,
+        "thicknessM": 0.25,
+        "colour": "#dde3e6",
+        "postColour": "#eeeeea",
+        "posts": [
+          {
+            "sM": -2.8013991632048634,
+            "tM": 4.3500730790139315
+          },
+          {
+            "sM": 2.8013991632048634,
+            "tM": 4.3500730790139315
+          }
+        ]
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T2",
+        "refs": [
+          "VR scene_e7 f col 1230 -> BLD_E7/W02"
+        ],
+        "note": "Dimensions and door leaves estimated from legacy reference. VR scene_e7 f (cols 1130-1330, rows 1260-1420): E7's entrance canopy (white frame, glass gables) on two front posts; drawn as a flat slab"
+      }
+    },
+    {
+      "id": "SD-C2-C1",
+      "anchor": {
+        "building": "BLD_SCNU_C2",
+        "wall": "W02",
+        "sM": 26.33076791813141,
+        "tM": 0
+      },
+      "widthM": 3.6,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#e8641e"
+      },
+      "canopy": {
+        "form": "posted",
+        "widthM": 4.703666742665051,
+        "depthM": 2.9991385657798553,
+        "heightM": 3.6,
+        "thicknessM": 0.25,
+        "colour": "#e8641e",
+        "postColour": "#b8323a",
+        "posts": [
+          {
+            "sM": -2.2018333713325258,
+            "tM": 2.8491385657798554
+          }
+        ]
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T2",
+        "refs": [
+          "VR scene_c2 f col 1052.5 -> BLD_SCNU_C2/W02"
+        ],
+        "note": "Dimensions and door leaves estimated from legacy reference. VR scene_c2 f (cols 935-1170, rows 1300-1510): orange box canopy over C2's entrance on a red column at its west corner"
+      }
+    },
+    {
+      "id": "SD-C3-C1",
+      "anchor": {
+        "building": "BLD_Training Lab Building",
+        "wall": "W02",
+        "sM": 5.609958300552339,
+        "tM": 0
+      },
+      "widthM": 3.6,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#c4c8ca"
+      },
+      "canopy": {
+        "form": "posted",
+        "widthM": 8.30582151445664,
+        "depthM": 6.999466795456618,
+        "heightM": 5.2,
+        "thicknessM": 0.25,
+        "colour": "#c4c8ca",
+        "postColour": "#8e9396",
+        "posts": [
+          {
+            "sM": -4.00291075722832,
+            "tM": 6.8494667954566175
+          },
+          {
+            "sM": 4.00291075722832,
+            "tM": 6.8494667954566175
+          }
+        ]
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T2",
+        "refs": [
+          "VR scene_c3 f col 1065 -> BLD_Training Lab Building/W02"
+        ],
+        "note": "Dimensions and door leaves estimated from legacy reference. VR scene_c3 f (cols 830-1300, rows 1390-1750): stainless porte-cochère over the 공동실험실습관 entrance on two round columns (a slab from the columns back to the wall)"
+      }
+    },
+    {
+      "id": "SD-B3-C1",
+      "anchor": {
+        "building": "BLD_B2",
+        "wall": "W02",
+        "sM": 1.8495132227177984,
+        "tM": 0
+      },
+      "widthM": 3.6,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#e9ecee"
+      },
+      "canopy": {
+        "form": "cantilever",
+        "widthM": 3.6863030204009926,
+        "depthM": 2.3998859723943893,
+        "heightM": 3.2,
+        "thicknessM": 0.25,
+        "colour": "#e9ecee",
+        "postColour": "#e9ecee",
+        "posts": []
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "Legacy canopy SD-B3-C1: nearest wall projection; no corroborated column reading"
+        ],
+        "note": "Dimensions and door leaves estimated from legacy reference. VR scene_b3 r: white box canopy cantilevered over the side door beside the glass stair tower (no posts)"
+      }
+    },
+    {
+      "id": "SD-A1-C1",
+      "anchor": {
+        "building": "BLD_SCNU_A2",
+        "wall": "W04",
+        "sM": 27.834543059158612,
+        "tM": 0
+      },
+      "widthM": 3.6,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#e6e8ea"
+      },
+      "canopy": {
+        "form": "cantilever",
+        "widthM": 5.842426813023945,
+        "depthM": 4.49929419600161,
+        "heightM": 3.8,
+        "thicknessM": 0.25,
+        "colour": "#e6e8ea",
+        "postColour": "#e6e8ea",
+        "posts": []
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "Legacy canopy SD-A1-C1: nearest wall projection; no corroborated column reading"
+        ],
+        "note": "Dimensions and door leaves estimated from legacy reference. VR scene_a1 r: white sloping-roof entrance canopy of 약학대학 over the stair, cantilevered between two purple wall piers"
+      }
+    },
+    {
+      "id": "ENT_D4_MAIN",
+      "anchor": {
+        "building": "BLD_D4",
+        "wall": "W02",
+        "sM": 41.906349367471336,
+        "tM": 0
+      },
+      "widthM": 2,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#eeeeea"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "Legacy simulation hint projected to BLD_D4/W02; not surveyed"
+        ]
+      }
+    },
+    {
+      "id": "ENT_D3_MAIN",
+      "anchor": {
+        "building": "BLD_D3",
+        "wall": "W06",
+        "sM": 44.07650677816313,
+        "tM": 0
+      },
+      "widthM": 2,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#eeeeea"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "Legacy simulation hint projected to BLD_D3/W06; not surveyed"
+        ]
+      }
+    },
+    {
+      "id": "ENT_D2_MAIN",
+      "anchor": {
+        "building": "BLD_D2",
+        "wall": "W15",
+        "sM": 17.79393245313649,
+        "tM": 0
+      },
+      "widthM": 2,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#eeeeea"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "Legacy simulation hint projected to BLD_D2/W15; not surveyed"
+        ]
+      }
+    },
+    {
+      "id": "ENT_C1_MAIN",
+      "anchor": {
+        "building": "BLD_C1",
+        "wall": "W02",
+        "sM": 19.157411681062104,
+        "tM": 0
+      },
+      "widthM": 2,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#eeeeea"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "Legacy simulation hint projected to BLD_C1/W02; not surveyed"
+        ]
+      }
+    },
+    {
+      "id": "ENT_E1_MAIN",
+      "anchor": {
+        "building": "BLD_E1",
+        "wall": "W27",
+        "sM": 15.005272167031864,
+        "tM": 0
+      },
+      "widthM": 2,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#eeeeea"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "Legacy simulation hint projected to BLD_E1/W27; not surveyed"
+        ]
+      }
+    },
+    {
+      "id": "ENT_A1_MAIN",
+      "anchor": {
+        "building": "BLD_A1",
+        "wall": "W01",
+        "sM": 55.499227333612396,
+        "tM": 0
+      },
+      "widthM": 2,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#eeeeea"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "Legacy simulation hint projected to BLD_A1/W01; not surveyed"
+        ]
+      }
+    },
+    {
+      "id": "ENT_E8_MAIN",
+      "anchor": {
+        "building": "BLD_E8",
+        "wall": "W00",
+        "sM": 14.322942764599633,
+        "tM": 0
+      },
+      "widthM": 2,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#eeeeea"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "Legacy simulation hint projected to BLD_E8/W00; not surveyed"
+        ]
+      }
+    }
+  ]
+}

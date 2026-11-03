@@ -62,11 +62,11 @@ test("yaw rotates the object axes about its wall-local origin; absent offsets de
 });
 
 test("a wall span resolves both endpoints without clamping offsets or rounding TM coordinates", () => {
-  const r = { id: "TEST/HEDGE", anchor: { building: "BLD_TEST", wall: "W01", s0M: -0.25, s1M: 20.5, tM: 0.125 } };
+  const r = { id: "TEST/HEDGE", anchor: { building: "BLD_TEST", wall: "W01", s0M: 0.25, s1M: 19.5, tM: 0.125 } };
   const result = resolveAnchor(r, footprints());
-  near(result.origin, [242999.75, 263010.125], "span start");
-  near(result.end, [243020.5, 263010.125], "span end");
-  assert.equal(result.lengthM, 20.75);
+  near(result.origin, [243000.25, 263010.125], "span start");
+  near(result.end, [243019.5, 263010.125], "span end");
+  assert.equal(result.lengthM, 19.25);
   assert.equal(validate("anchors", { anchors: [r] }).ok, true);
   assert.equal(validate("anchors", { anchors: [{ ...r, anchor: { ...r.anchor, sM: 2 } }] }).ok, false);
   assert.equal(validate("anchors", { anchors: [{ ...r, anchor: { ...r.anchor, s1M: -1 } }] }).ok, false);

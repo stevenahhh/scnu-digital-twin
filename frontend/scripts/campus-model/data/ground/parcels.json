@@ -191181,46 +191181,6 @@
    ]
   },
   {
-   "id": "PARCEL_PAVING_EDGE_FB_0006",
-   "cls": "PAVING",
-   "class": "sidewalk",
-   "ring": [
-    [
-     243636.96,
-     263941.809
-    ],
-    [
-     243625.731,
-     263902.313
-    ],
-    [
-     243624.288,
-     263902.724
-    ],
-    [
-     243635.517,
-     263942.219
-    ]
-   ],
-   "holes": [],
-   "precedence": 2,
-   "mesh": "Ground_Walkway",
-   "label": 1,
-   "source": "project-estimated",
-   "source_ref": "EDGE_FB_0006",
-   "evidence": {
-    "tier": "T4",
-    "refs": [
-     "EDGE_FB_0006"
-    ]
-   },
-   "paintAllowed": false,
-   "estimated": true,
-   "render": {
-    "walkwayEstimated": true
-   }
-  },
-  {
    "id": "PARCEL_PAVING_EDGE_FB_0008",
    "cls": "PAVING",
    "class": "sidewalk",
@@ -197662,6 +197622,134 @@
    ]
   },
   {
+   "id": "PARCEL_PAVING_EDGE_FB_0096",
+   "cls": "PAVING",
+   "class": "sidewalk",
+   "ring": [
+    [
+     243629.984,
+     263939.335
+    ],
+    [
+     243635.092,
+     263943.846
+    ],
+    [
+     243636.085,
+     263942.722
+    ],
+    [
+     243630.977,
+     263938.211
+    ]
+   ],
+   "holes": [],
+   "precedence": 2,
+   "mesh": "Ground_Walkway",
+   "label": 1,
+   "source": "project-estimated",
+   "source_ref": "EDGE_FB_0096",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "EDGE_FB_0096"
+    ]
+   },
+   "paintAllowed": false,
+   "estimated": true,
+   "render": {
+    "walkwayEstimated": true
+   }
+  },
+  {
+   "id": "PARCEL_PAVING_EDGE_FB_0096_2",
+   "cls": "PAVING",
+   "class": "sidewalk",
+   "ring": [
+    [
+     243634.102,
+     263942.269
+    ],
+    [
+     243635.49,
+     263947.217
+    ],
+    [
+     243636.934,
+     263946.812
+    ],
+    [
+     243635.546,
+     263941.864
+    ]
+   ],
+   "holes": [],
+   "precedence": 2,
+   "mesh": "Ground_Walkway",
+   "label": 1,
+   "source": "project-estimated",
+   "source_ref": "EDGE_FB_0096",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "EDGE_FB_0096"
+    ]
+   },
+   "paintAllowed": false,
+   "estimated": true,
+   "render": {
+    "walkwayEstimated": true
+   },
+   "over": [
+    "PARCEL_PAVING_EDGE_FB_0004",
+    "PARCEL_PAVING_EDGE_FB_0096"
+   ]
+  },
+  {
+   "id": "PARCEL_PAVING_EDGE_FB_0096_3",
+   "cls": "PAVING",
+   "class": "sidewalk",
+   "ring": [
+    [
+     243635.058,
+     263946.762
+    ],
+    [
+     243637.977,
+     263947.751
+    ],
+    [
+     243638.458,
+     263946.331
+    ],
+    [
+     243635.54,
+     263945.342
+    ]
+   ],
+   "holes": [],
+   "precedence": 2,
+   "mesh": "Ground_Walkway",
+   "label": 1,
+   "source": "project-estimated",
+   "source_ref": "EDGE_FB_0096",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "EDGE_FB_0096"
+    ]
+   },
+   "paintAllowed": false,
+   "estimated": true,
+   "render": {
+    "walkwayEstimated": true
+   },
+   "over": [
+    "PARCEL_PAVING_EDGE_FB_0004",
+    "PARCEL_PAVING_EDGE_FB_0096_2"
+   ]
+  },
+  {
    "id": "PARCEL_PAVING_EDGE_FB_0098",
    "cls": "PAVING",
    "class": "sidewalk",
@@ -201790,50 +201878,6 @@
    ]
   },
   {
-   "id": "PARCEL_PAVING_EDGE_FBJ_FBN_ROAD_END_022_1",
-   "cls": "PAVING",
-   "class": "sidewalk",
-   "ring": [
-    [
-     243635.115,
-     263940.762
-    ],
-    [
-     243636.977,
-     263947.719
-    ],
-    [
-     243638.426,
-     263947.33
-    ],
-    [
-     243636.564,
-     263940.374
-    ]
-   ],
-   "holes": [],
-   "precedence": 2,
-   "mesh": "Ground_Walkway",
-   "label": 1,
-   "source": "project-estimated",
-   "source_ref": "EDGE_FBJ_FBN_ROAD_END_022_1",
-   "evidence": {
-    "tier": "T4",
-    "refs": [
-     "EDGE_FBJ_FBN_ROAD_END_022_1"
-    ]
-   },
-   "paintAllowed": false,
-   "estimated": true,
-   "render": {
-    "walkwayEstimated": true
-   },
-   "over": [
-    "PARCEL_PAVING_EDGE_FB_0004",
-    "PARCEL_PAVING_EDGE_FB_0006"
-   ]
-  },
-  {
    "id": "PARCEL_PAVING_EDGE_FBJ_FBN_0025_2",
    "cls": "PAVING",
    "class": "sidewalk",
@@ -203257,20 +203301,20 @@
    "class": "sidewalk",
    "ring": [
     [
-     243734.421,
-     263879.358
+     243734.24,
+     263879.28
     ],
     [
-     243724.825,
-     263883.143
+     243724.805,
+     263883.115
     ],
     [
-     243725.375,
-     263884.539
+     243725.37,
+     263884.505
     ],
     [
-     243734.971,
-     263880.753
+     243734.805,
+     263880.669
     ]
    ],
    "holes": [],
@@ -203297,20 +203341,20 @@
    "class": "sidewalk",
    "ring": [
     [
-     243625.595,
-     263923.954
+     243625.683,
+     263923.74
     ],
     [
-     243635.739,
-     263942.313
+     243630.535,
+     263940.201
     ],
     [
-     243637.053,
-     263941.587
+     243631.974,
+     263939.776
     ],
     [
-     243626.908,
-     263923.228
+     243627.122,
+     263923.316
     ]
    ],
    "holes": [],
@@ -203331,8 +203375,7 @@
     "walkwayEstimated": true
    },
    "over": [
-    "PARCEL_PAVING_EDGE_FB_0006",
-    "PARCEL_PAVING_EDGE_FBJ_FBN_ROAD_END_022_1"
+    "PARCEL_PAVING_EDGE_FB_0096"
    ]
   },
   {
@@ -203385,20 +203428,20 @@
    "class": "sidewalk",
    "ring": [
     [
-     243593.301,
-     263878.02
+     243593.362,
+     263877.847
     ],
     [
-     243586.354,
-     263859.585
+     243566.197,
+     263831.834
     ],
     [
-     243584.95,
-     263860.114
+     243564.905,
+     263832.596
     ],
     [
-     243591.898,
-     263878.548
+     243592.071,
+     263878.609
     ]
    ],
    "holes": [],
@@ -203423,99 +203466,6 @@
     "PARCEL_PAVING_EDGE_FBJ_FBN_0025_1_4",
     "PARCEL_PAVING_EDGE_FBJ_FBN_0025_2_3",
     "PARCEL_PAVING_EDGE_FBJ_FBN_0025_2_4"
-   ]
-  },
-  {
-   "id": "PARCEL_PAVING_EDGE_POI_POI_ENT_D3_MAIN_3",
-   "cls": "PAVING",
-   "class": "sidewalk",
-   "ring": [
-    [
-     243578.412,
-     263826.669
-    ],
-    [
-     243576.799,
-     263812.672
-    ],
-    [
-     243575.309,
-     263812.844
-    ],
-    [
-     243576.922,
-     263826.841
-    ]
-   ],
-   "holes": [],
-   "precedence": 2,
-   "mesh": "Ground_Walkway",
-   "label": 1,
-   "source": "project-estimated",
-   "source_ref": "EDGE_POI_POI_ENT_D3_MAIN",
-   "evidence": {
-    "tier": "T4",
-    "refs": [
-     "EDGE_POI_POI_ENT_D3_MAIN"
-    ]
-   },
-   "paintAllowed": false,
-   "estimated": true,
-   "render": {
-    "walkwayEstimated": true
-   },
-   "over": [
-    "PARCEL_PAVING_EDGE_FBJ_FBN_0025_1_5",
-    "PARCEL_PAVING_EDGE_FBJ_FBN_0025_1_6",
-    "PARCEL_PAVING_EDGE_FBJ_FBN_0025_2_5",
-    "PARCEL_PAVING_EDGE_FBJ_FBN_0025_2_6"
-   ]
-  },
-  {
-   "id": "PARCEL_PAVING_EDGE_POI_POI_ENT_D3_MAIN_4",
-   "cls": "PAVING",
-   "class": "sidewalk",
-   "ring": [
-    [
-     243576.351,
-     263814.542
-    ],
-    [
-     243590.462,
-     263793.225
-    ],
-    [
-     243589.211,
-     263792.397
-    ],
-    [
-     243575.101,
-     263813.714
-    ]
-   ],
-   "holes": [],
-   "precedence": 2,
-   "mesh": "Ground_Walkway",
-   "label": 1,
-   "source": "project-estimated",
-   "source_ref": "EDGE_POI_POI_ENT_D3_MAIN",
-   "evidence": {
-    "tier": "T4",
-    "refs": [
-     "EDGE_POI_POI_ENT_D3_MAIN"
-    ]
-   },
-   "paintAllowed": false,
-   "estimated": true,
-   "render": {
-    "walkwayEstimated": true
-   },
-   "over": [
-    "PARCEL_PAVING_EDGE_FBJ_FBN_0025_1_5",
-    "PARCEL_PAVING_EDGE_FBJ_FBN_0025_1_6",
-    "PARCEL_PAVING_EDGE_FBJ_FBN_0025_2_5",
-    "PARCEL_PAVING_EDGE_FBJ_FBN_0025_2_6",
-    "PARCEL_PAVING_EDGE_POI_POI_ENT_D3_MAIN_3"
    ]
   },
   {
@@ -203567,20 +203517,20 @@
    "class": "sidewalk",
    "ring": [
     [
-     243818.288,
-     263718.641
+     243822.591,
+     263714.749
     ],
     [
-     243808.019,
-     263708.489
+     243809.718,
+     263709.641
     ],
     [
-     243806.964,
-     263709.556
+     243809.165,
+     263711.035
     ],
     [
-     243817.234,
-     263719.708
+     243822.038,
+     263716.143
     ]
    ],
    "holes": [],
@@ -210529,6 +210479,44 @@
    "curated": "todo 9"
   },
   {
+   "id": "PARCEL_SUPPORT_ROAD_243637_263944",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     243636.4138,
+     263941.3925
+    ],
+    [
+     243636.585,
+     263941.3444
+    ],
+    [
+     243638.3142,
+     263947.4959
+    ],
+    [
+     243638.143,
+     263947.544
+    ]
+   ],
+   "holes": [],
+   "precedence": 3,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "photo-paint-support",
+   "source_ref": "paint support: 1 detected pieces (kerb_no_parking@243637.36,263944.44)",
+   "evidence": {
+    "tier": "T1",
+    "refs": [
+     "kerb_no_parking@243637.36,263944.44"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 9"
+  },
+  {
    "id": "PARCEL_SUPPORT_ROAD_243812_264041",
    "cls": "ASPHALT",
    "class": "road",
@@ -215083,44 +215071,6 @@
     "tier": "T1",
     "refs": [
      "edge_line@243987.25,263527.31"
-    ]
-   },
-   "paintAllowed": true,
-   "estimated": true,
-   "curated": "todo 9"
-  },
-  {
-   "id": "PARCEL_SUPPORT_ROAD_243637_263944",
-   "cls": "ASPHALT",
-   "class": "road",
-   "ring": [
-    [
-     243636.4138,
-     263941.3925
-    ],
-    [
-     243636.585,
-     263941.3444
-    ],
-    [
-     243638.3142,
-     263947.4959
-    ],
-    [
-     243638.143,
-     263947.544
-    ]
-   ],
-   "holes": [],
-   "precedence": 6.2,
-   "mesh": "Ground_Asphalt",
-   "label": null,
-   "source": "photo-paint-support",
-   "source_ref": "paint support: 1 detected pieces (kerb_no_parking@243637.36,263944.44)",
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "kerb_no_parking@243637.36,263944.44"
     ]
    },
    "paintAllowed": true,

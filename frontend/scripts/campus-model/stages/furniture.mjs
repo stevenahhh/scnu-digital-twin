@@ -1741,15 +1741,6 @@ B.paving_path = (ctx, o) => {
 // by the trees stage (stages/trees.mjs) with the campus tree species.
 B.site_tree = () => false;
 B.handrail = (ctx, o) => railing(ctx, o.line, o.p.height_m ?? STREET.railM, paintOf(o.p.colour, C.galvanised, o.id), { stepM: 1.5, rails: [1, 0.5], postM: 0.05, railM: 0.05 });
-// Entrance canopy: a flat slab (0.25 m) at height_m over the Polygon, on round columns at the ring corners named in
-// posts (vertex indices; none: cantilevered from the building).
-B.entrance_canopy = (ctx, o) => {
-  const g = ctx.medianGround(o.ring);
-  const h = M(o.heightM);
-  const paint = paintOf(o.p.colour, C.white, o.id);
-  ctx.solid.prism(o.ring, g + h - M(0.25), g + h, paint);
-  for (const i of o.p.posts ?? []) ctx.solid.pole(o.ring[i], ctx.groundAt(...o.ring[i]) - M(0.05), g + h - M(0.25), 0.15, 0.15, paintOf(o.p.postColour, C.white, o.id));
-};
 // Clipped-hedge lettering (VR scene_a16: \uC9C4\uB9AC \uC815\uC758 \uCC3D\uC870 on the slope): the road-marking Hangul strokes
 // (lib/markingGlyphs.mjs) as hedges stroke_m wide and height_m tall. The LineString is the baseline of the text from its
 // first character to its last; the tops of the letters lie to its left. char_height_m tall, char_width_m wide, gap_m

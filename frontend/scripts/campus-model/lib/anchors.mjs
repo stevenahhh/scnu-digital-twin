@@ -187,6 +187,10 @@ export function resolveAnchor(record, footprints, parcels = {}) {
       }
       frame = wallsOf(anchor.building, source).find((w) => w.wall === anchor.wall);
       if (!frame) throw new AnchorError(record.id, reference, "missing wall");
+      const offsets = anchor.sM === undefined ? [anchor.s0M, anchor.s1M] : [anchor.sM];
+      if (offsets.some(s => s < 0 || s > frame.lengthM)) {
+        throw new AnchorError(record.id, reference, `offset outside [0, ${frame.lengthM}] wall interval`);
+      }
     }
   } catch (error) {
     if (!(error instanceof AnchorError)) throw error;

@@ -64,7 +64,7 @@ const faces = option("faces", "f,r,b,l").split(",").map((face) => face.trim());
 const listOnly = args.includes("--list");
 const clock = option("clock", "2026-10-24T12:00:00+09:00");
 const bearingsOnly = args.includes("--bearings");
-const bearingFile = resolve(option("bearing-records", join(HERE, "../campus-model/data/vr-bearings.json")));
+const bearingFile = resolve(option("bearing-records", join(HERE, "../campus-model/data/buildings/entrances.json")));
 let observations = [], buildings = [], sceneTable = null;
 
 const stations = JSON.parse(readFileSync(stationsFile, "utf8"));
@@ -87,7 +87,9 @@ try {
   selected = selectScenes();
   if (bearingsOnly) {
     const records = JSON.parse(readFileSync(bearingFile, "utf8"));
-    observations = bearingObservations(records, stations)
+    // Explicit T4 entries without a VR observation cannot have a residual; malformed observed refs still fail.
+    observations = bearingObservations({ ...records, records: records.records.filter(r => r.evidence?.tier !== "T4" ||
+      r.evidence.refs.some(ref => typeof ref === "string" && ref.startsWith("VR "))) }, stations)
       .filter(o => selected.some(s => s.scene === o.scene) && faces.includes(o.face));
     const saved = JSON.parse(readFileSync(SCENE_MAP_FILE, "utf8"));
     if (JSON.stringify(saved.inputs) !== JSON.stringify(sceneMapInputs())) throw new Error("stale scene-building table; run vrSceneBuildings.mjs --write");

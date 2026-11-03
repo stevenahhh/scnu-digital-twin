@@ -4,9 +4,8 @@ import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { sceneToTm, tmToScene, wgs84ToTm } from "../../../src/geo/epsg5186.mjs";
+import { loadTmFootprints } from "../lib/footprints.mjs";
 import { wallsOf } from "../lib/anchors.mjs";
-import { ringCentroid } from "../lib/geometry.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const SCENE_MAP_FILE = join(HERE, "../data/vr-scene-buildings.json");
@@ -64,31 +63,8 @@ export function checkSceneRefs(records, stations, buildings) {
 // Reuse the building stage's shared-record split, including C1/C1.001, but retain every GIS ring vertex
 // for wallsOf(). Source geometry is used only for the split and the explicitly estimated no-GIS nodes.
 export async function loadSceneBuildings() {
-  const { loadSourceModel, meshFootprint } = await import("../stages/sources.mjs");
-  const { nodeFootprints } = await import("../stages/buildings.mjs");
-  const source = await loadSourceModel();
-  const nodeMap = JSON.parse(readFileSync(join(HERE, "../data/bld-node-map.json"), "utf8"));
-  const records = ["gis-buildings", "vr-buildings"].flatMap(name =>
-    JSON.parse(readFileSync(join(HERE, `../data/${name}.json`), "utf8")).buildings)
-    .filter(b => b.status !== "demolished" && b.status !== "removed");
-  const parts = records.flatMap(record => record.polygons.map(polygon => {
-    const [outer, ...holes] = polygon.map(r => r.map(p => tmToScene(...wgs84ToTm(...p))));
-    return { outer, holes, centroid: ringCentroid(outer), footprintSource: record.footprintSource, footprintEstimated: record.estimated === true };
-  }));
-  const nodes = source.scene.children.flatMap((object, i) => object.isMesh && source.rawNames[i].startsWith("BLD_")
-    ? [{ rawName: source.rawNames[i], footprint: meshFootprint(object) }] : []);
-  const footprints = nodeFootprints({ bldNodes: nodes, footprintParts: parts, nodeMap });
-  const consumed = new Set([...footprints.values()].map(fp => fp.footprintSource));
-  const output = [...footprints].map(([id, fp]) => {
-    const selected = fp.parts.length ? fp.parts : [nodes.find(n => n.rawName === id).footprint];
-    return { id, polygons: selected.map(p => [p.outer, ...p.holes].map(r => r.map(q => sceneToTm(...q)))) };
-  });
-  // GIS records already owned by a uni node must not acquire a second BLD_SCNU_* identity.
-  for (const record of records) {
-    if (!record.nodeId || consumed.has(record.footprintSource)) continue;
-    output.push({ id: record.nodeId, polygons: record.polygons.map(p => p.map(r => r.map(q => wgs84ToTm(...q)))) });
-  }
-  return output.map(b => ({ id: b.id, walls: wallsOf(b.id, b).map(w => ({ id: w.id, a: w.A, b: w.B })) }));
+  const footprints = await loadTmFootprints();
+  return Object.entries(footprints).map(([id, fp]) => ({ id, walls: wallsOf(id, fp).map(w => ({ id: w.id, a: w.A, b: w.B })) }));
 }
 
 // bun scripts/campus-model/fit/vrSceneBuildings.mjs [--write|--check]

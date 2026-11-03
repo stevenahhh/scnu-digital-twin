@@ -6,6 +6,9 @@ import { metres } from "../lib/frame.mjs";
 import { pointInRing } from "../lib/geometry.mjs";
 import { offsetLine, rgb } from "../lib/solids.mjs";
 import { B, hedgeTextStrokes, makeContext, moundAt, onRoof, parasolColour, stallRow } from "./furniture.mjs";
+import { buildEntrances } from "./entrances.mjs";
+import { wallsOf } from "../lib/anchors.mjs";
+import { GlbBuilder } from "../lib/glb.mjs";
 
 const M = metres;
 const sites = { inArea: () => false, labelAt: () => null, classes: { PAVING: 1, ASPHALT: 2 } };
@@ -47,11 +50,17 @@ test("street furniture reaches its standard height; bollards and stands repeat a
   near(Math.max(...ys(build("bike_stands", { line: line(4.5) }, {}))), 0.775, "stand top (0.75 m plus half the tube)");
   near(Math.max(...ys(build("bin", { point: [0, 0] }, { count: 2 }))), 0.95, "bin");
   near(Math.max(...ys(build("handrail", { line: line(6) }, {}))), 0.9 + 0.025, "rail top");
-  const ring = [[0, 0], [M(4), 0], [M(4), M(3)], [0, M(3)]];
-  const ctx = flatContext();
-  B.entrance_canopy(ctx, { id: "SD-T2", kind: "entrance_canopy", heightM: 3.2, ring, p: { posts: [2, 3] } });
-  near(Math.max(...ys(ctx)), 3.2, "canopy top");
-  near(Math.min(...ys(ctx)), -0.05, "posts reach into the ground");
+  const fp = {polygons:[[[[0,0],[0,10],[20,10],[20,0]]]]};
+  const glb = new GlbBuilder();
+  buildEntrances({glb,groundAt:()=>0,footprints:{BLD_TEST:{...fp,walls:wallsOf("BLD_TEST",fp)}},records:[
+    {id:"SD-T2",anchor:{building:"BLD_TEST",wall:"W00",sM:5},widthM:2,type:"main",doors:{leaves:2,glazed:true,frame:"#eeeeee"},
+      canopy:{form:"posted",widthM:4,depthM:3,heightM:3.2,thicknessM:0.25,colour:"#eeeeee",posts:[{sM:-1.5,tM:2.8},{sM:1.5,tM:2.8}]},
+      estimated:true,evidence:{tier:"T4",refs:["fixture"]}}
+  ]});
+  const primitive = glb.json.meshes[0].primitives[0];
+  const position = glb.json.accessors[primitive.attributes.POSITION];
+  near(position.max[1]/M(1),3.2,"canopy top");
+  near(position.min[1]/M(1),-0.05,"posts reach into the ground");
 });
 
 test("hedge lettering: one stroke set per character, tops to the left of the baseline; LED screen panel", () => {

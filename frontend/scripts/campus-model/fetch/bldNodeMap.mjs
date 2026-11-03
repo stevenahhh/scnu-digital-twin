@@ -62,7 +62,8 @@ const records = JSON.parse(readFileSync(path.join(DATA, "gis-buildings.json"), "
     });
     return { record: b, shape, box: bboxOf(shape.map((s) => s.outer)) };
   });
-const previous = existsSync(OUTPUT) ? new Map(JSON.parse(readFileSync(OUTPUT, "utf8")).entries.map((e) => [e.nodeId, e])) : new Map();
+const previousDocument = existsSync(OUTPUT) ? JSON.parse(readFileSync(OUTPUT, "utf8")) : { entries: [] };
+const previous = new Map(previousDocument.entries.map((e) => [e.nodeId, e]));
 
 const entries = nodes.map(({ nodeId, footprint }) => {
   if (previous.get(nodeId)?.curated) return previous.get(nodeId);
@@ -82,6 +83,9 @@ const entries = nodes.map(({ nodeId, footprint }) => {
     iou: best ? round(best.iou, 3) : null,
     ...(matched ? {} : { bestCandidate: best ? { footprintSource: best.record.footprintSource, name: best.record.name || null } : null }),
     curated: false,
+    // Keep the baseline through refetches so consumers can detect moved/reordered walls.
+    // Only the explicit wallSnapshots.mjs command accepts a new baseline.
+    ...(previous.get(nodeId)?.walls ? { walls: previous.get(nodeId).walls } : {}),
   };
 });
 
@@ -90,6 +94,7 @@ writeFileSync(OUTPUT, `${JSON.stringify({
     "gis:null entries are curated by hand (curated:true, reason). Written by fetch/bldNodeMap.mjs.",
   inputs: hashInputs(),
   entries,
+  ...(previousDocument.additionalWalls ? { additionalWalls: previousDocument.additionalWalls } : {}),
 }, null, 2)}\n`);
 for (const e of entries) console.log(`${e.nodeId}\t${e.gis?.footprintSource.replace(/^.* record /, "record ") ?? "null"}\t${e.iou}`);
 const { ok, errors } = validate("bldNodeMap", { inputs: hashInputs(), entries });

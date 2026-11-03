@@ -933,7 +933,7 @@ function buildingPrimitives(building, seed, { heightAt, facadeMaterial, tiles, l
       const floors = Math.max(1, mass.floors || Math.round(mass.heightMetres / 3.6));
       const facade = { base, ground, bottom: ground + metres(mass.fromMetres), top, floors, look, tile, zones: zonesOf(look, tiles), seed: seed * 31 + partIndex * 7 + massIndex, charts };
       const onEntrance = massIndex === 0 && entrance?.part === part;
-      addFacade(walls, orderedRing(mass.outer, true), { ...facade, entranceEdge: onEntrance ? entrance.edge : -1, canopy: onEntrance && Boolean(building.entry) && !greenhouse, front: onEntrance ? front : null });
+      addFacade(walls, orderedRing(mass.outer, true), { ...facade, entranceEdge: onEntrance ? entrance.edge : -1, canopy: onEntrance && Boolean(building.entry) && !greenhouse && !building.anchoredCanopies, front: onEntrance ? front : null });
       mass.holes.forEach((hole) => addFacade(walls, orderedRing(hole, false), facade));
       const roofFrom = roof.vertexCount;
       roof.horizontalPolygon(mass.outer, mass.holes, top, { uvScale: 1 / metres(ROOF_METRES), color: building.roofColour });
@@ -1441,7 +1441,7 @@ function massPrimitives(building, seed, { heightAt, facadeMaterial, tiles, looks
     const orderedOuter = orderedRing(part.outer, true);
     const roundBays = part.round ? roundBaysOf(part.round, orderedOuter) : null;
     const wallsFrom = walls.vertexCount;
-    addMassRing(coreCtx, shape, orderedOuter, { roundBays, facade, cellsOnGround: part.kind === "core", entranceEdge: onEntrance ? entrance.edge : -1, canopy: onEntrance && Boolean(building.entry) && !greenhouse && !lod4Canopy, front: onEntrance ? front : null, seed: seed * 31 + index * 7 });
+    addMassRing(coreCtx, shape, orderedOuter, { roundBays, facade, cellsOnGround: part.kind === "core", entranceEdge: onEntrance ? entrance.edge : -1, canopy: onEntrance && Boolean(building.entry) && !greenhouse && !lod4Canopy && !building.anchoredCanopies, front: onEntrance ? front : null, seed: seed * 31 + index * 7 });
     if (part.round) smoothRound(walls, wallsFrom, part.round.centre);
     part.holes.forEach((hole, k) => addMassRing(ctx, shape, orderedRing(hole, false), { facade, seed: seed * 31 + index * 7 + k + 1 }));
     const colour = part.roofColour ?? roofFallback;
@@ -1857,6 +1857,11 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
     console.log(`curated pitched roofs (scnu-facades.json roof): ${pitched.join("; ") || "none"}`);
   }
   // ---- materials
+  const anchoredCanopies = new Set(JSON.parse(readFileSync(new URL("../data/buildings/entrances.json", import.meta.url), "utf8")).records
+    .filter(r => r.canopy).map(r => r.anchor.building));
+  for (const building of [...selectableBuildings, ...campusBuildings]) {
+    building.anchoredCanopies = anchoredCanopies.has(building.nodeName ?? building.nodeId ?? building.detachedFrom);
+  }
   // Detail maps (U42) ship as PNG in the raw GLB; the pack step re-encodes every texture as WebP.
   // Roughness and metal come from the packed map (G, B), so both factors are 1.
   const detailTextures = (textures) => ({

@@ -2,7 +2,7 @@
   "inputs": {
     "data/gis-buildings.json": "3807d90af530a0265be0f77e9f05ee97eb80d66150f322429b5788c9fc0dad3c",
     "data/vr-buildings.json": "7ab28c3f543f9f6f1d7fa6d6c30e8cc0e8a9657d20eb6c61a568d706ff3dc53f",
-    "data/bld-node-map.json": "8c1cb819f1ce153d80487b86b8f477abe96d2aaeccdb826a4eb45d191ee45d4d",
+    "data/bld-node-map.json": "ff2bdac1127ccc1215dad2f5aaface382d221b1955b838e7d40a0995ed08fc29",
     "../../public/uni.glb": "61c7b000ea2780886dce5804f8ead042ec5b8d3515d8bed96ce1204b16f12a12",
     "../perf/vr-stations.json": "f4086e84e322153bbe90fbeaf574bb9259773a36a7a9818c1924b2c69b1d9fe5"
   },
