@@ -2,10 +2,15 @@
 // ground.
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFileSync } from "node:fs";
+import { sceneToTm, tmToScene } from "../../../src/geo/epsg5186.mjs";
+import { wallsOf } from "../lib/anchors.mjs";
 import { metres } from "../lib/frame.mjs";
 import { pointInRing } from "../lib/geometry.mjs";
 import { offsetLine, rgb } from "../lib/solids.mjs";
-import { B, appendWheelStops, hedgeTextStrokes, makeContext, moundAt, onRoof, parasolColour } from "./furniture.mjs";
+import { B, appendWheelStops, hedgeTextStrokes, loadFurniture, makeContext, moundAt, onRoof, parasolColour } from "./furniture.mjs";
+import { buildEntrances } from "./entrances.mjs";
+import { GlbBuilder } from "../lib/glb.mjs";
 
 const M = metres;
 const sites = { inArea: () => false, labelAt: () => null, classes: { PAVING: 1, ASPHALT: 2 } };
@@ -28,6 +33,27 @@ test("a wheel stop stands 0.12 m over the ground and sinks 0.03 m into it, along
   near(Math.max(...xs) - Math.min(...xs), 1.6, "length along the row");
 });
 
+test("the anchored F1 LED follows its wall and its screen stands outside, not inside the facade", () => {
+  const saved = JSON.parse(readFileSync(new URL("../data/photo/site-detail-anchors.json", import.meta.url), "utf8"));
+  const record = saved.records.find(r => r.id === "SD-F1-LED1");
+  const original = saved.footprints[record.anchor.building];
+  const shifted = { polygons: original.polygons.map(p => p.map(r => r.map(([e, n]) => [e + 2, n + 3]))) };
+  const wall = wallsOf(record.anchor.building, shifted).find(w => w.wall === record.anchor.wall);
+  const object = loadFurniture({ anchorFootprints: { [record.anchor.building]: shifted } }).objects.find(o => o.id === record.id);
+  const ctx = flatContext();
+  B.led_screen(ctx, object);
+  const [x, , z] = ctx.screens[0].corners[0];
+  const at = sceneToTm(...object.line[0]);
+  near((at[0] - wall.A[0]) * wall.n[0] + (at[1] - wall.A[1]) * wall.n[1], record.anchor.tM, "baseline follows moved wall and fascia offset");
+  // EPSG grid metres differ from the builder's local metres by the projection scale.
+  // Measure the 0.15 local-metre stand-off in scene space, not in TM (which reads 0.1500034977).
+  const a = tmToScene(...wall.A), b = tmToScene(...wall.B);
+  const dx = b[0] - a[0], dz = b[1] - a[1], length = Math.hypot(dx, dz);
+  const outward = ((x - object.line[0][0]) * dz - (z - object.line[0][1]) * dx) / length / M(1);
+  near(outward, 0.15, "screen's 0.15 m stand-off is outside the selected wall");
+  assert.equal(object.p.estimated, true);
+});
+
 test("hedges and shrub masses reach their height", () => {
   near(Math.max(...ys(build("hedge", { line: line(6) }, { height_m: 1.2 }))), 1.2, "hedge");
   near(Math.max(...ys(build("hedge", { point: [0, 0] }, { radius_m: 0.7, height_m: 0.9 }))), 0.9, "round shrub");
@@ -41,11 +67,17 @@ test("street furniture reaches its standard height; bollards and stands repeat a
   near(Math.max(...ys(build("bike_stands", { line: line(4.5) }, {}))), 0.775, "stand top (0.75 m plus half the tube)");
   near(Math.max(...ys(build("bin", { point: [0, 0] }, { count: 2 }))), 0.95, "bin");
   near(Math.max(...ys(build("handrail", { line: line(6) }, {}))), 0.9 + 0.025, "rail top");
-  const ring = [[0, 0], [M(4), 0], [M(4), M(3)], [0, M(3)]];
-  const ctx = flatContext();
-  B.entrance_canopy(ctx, { id: "SD-T2", kind: "entrance_canopy", heightM: 3.2, ring, p: { posts: [2, 3] } });
-  near(Math.max(...ys(ctx)), 3.2, "canopy top");
-  near(Math.min(...ys(ctx)), -0.05, "posts reach into the ground");
+  const fp = {polygons:[[[[0,0],[0,10],[20,10],[20,0]]]]};
+  const glb = new GlbBuilder();
+  buildEntrances({glb,groundAt:()=>0,footprints:{BLD_TEST:{...fp,walls:wallsOf("BLD_TEST",fp)}},records:[
+    {id:"SD-T2",anchor:{building:"BLD_TEST",wall:"W00",sM:5},widthM:2,type:"main",doors:{leaves:2,glazed:true,frame:"#eeeeee"},
+      canopy:{form:"posted",widthM:4,depthM:3,heightM:3.2,thicknessM:0.25,colour:"#eeeeee",posts:[{sM:-1.5,tM:2.8},{sM:1.5,tM:2.8}]},
+      estimated:true,evidence:{tier:"T4",refs:["fixture"]}}
+  ]});
+  const primitive = glb.json.meshes[0].primitives[0];
+  const position = glb.json.accessors[primitive.attributes.POSITION];
+  near(position.max[1]/M(1),3.2,"canopy top");
+  near(position.min[1]/M(1),-0.05,"posts reach into the ground");
 });
 
 test("hedge lettering: one stroke set per character, tops to the left of the baseline; LED screen panel", () => {
