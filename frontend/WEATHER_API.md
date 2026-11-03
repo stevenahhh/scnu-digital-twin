@@ -2,7 +2,7 @@
 
 > **담당**: weather 팀  
 > **기준 서버**: `http://localhost:8000` (개발) / 배포 주소는 별도 공유  
-> **최종 수정**: 2026-04-29
+> **최종 수정**: 2026-10-16
 
 ---
 
@@ -18,14 +18,14 @@ GET /microclimate/elements/{element_id}/popup
 ### 예시 요청
 
 ```
-GET http://localhost:8000/microclimate/elements/BLD_E1/popup
+GET http://localhost:8000/microclimate/elements/BLD_D2/popup
 ```
 
 ### 응답 예시
 
 ```json
 {
-  "element_id": "BLD_E1",
+  "element_id": "BLD_D2",
   "name": "공과대학 1호관",
   "zone_id": "zone_D",
   "element_type": "building",
@@ -72,16 +72,28 @@ GET http://localhost:8000/microclimate/elements/BLD_E1/popup
   },
 
   "reasons": [
-    "기온 34.8°C — 높은 기온",
-    "복사열 과부하 (+18°C) — 직달 일사가 매우 강함",
-    "습도 65% — 높아 체감 더위 증가",
-    "WBGT 32.7°C — 야외 격렬한 활동 자제 권고"
+    "기온 34.8°C, 높은 기온 (추정)",
+    "복사열 과부하 (+18°C), 직달 일사가 매우 강함 (추정)",
+    "습도 65%, 높아 체감 더위 증가 (추정)",
+    "WBGT 32.7°C, 야외 격렬한 활동 자제 권고 (추정)"
   ],
 
   "base_weather": {
     "temperature": 32.0,
     "humidity": 65.0,
     "wind_speed": 2.0
+  },
+
+  "freshness": {
+    "weather": {
+      "source": "live",
+      "observed_at": "2026-04-29T12:00:00+09:00",
+      "fetched_at": "2026-04-29T12:04:10+09:00",
+      "age_seconds": 35,
+      "stale": false
+    },
+    "forecast": null,
+    "air_quality": null
   }
 }
 ```
@@ -150,7 +162,29 @@ GET http://localhost:8000/microclimate/elements/BLD_E1/popup
 ### `reasons` — 원인 설명 배열
 
 팝업 하단에 그대로 출력하면 됩니다.  
-최소 1개, 보통 2~4개의 문자열 배열입니다.
+최소 1개, 보통 2~4개의 문자열 배열입니다.  
+모든 문자열은 시뮬레이션 추정이라는 표시로 ` (추정)` 으로 끝납니다. 접미사는 한 번만 붙으니 프런트에서 다시 붙이지 마세요.
+
+---
+
+### `freshness` — 기상 입력의 신선도
+
+`/microclimate/*`, `/environment/*` 의 모든 200 응답에 붙는 추가 필드입니다. 기존 필드는 그대로입니다.
+
+```text
+freshness = {
+  "weather":     F,
+  "forecast":    F | null,
+  "air_quality": F | {"stale": true, "error": <kind>} | null
+}
+F = {"source": "live" | "cache", "observed_at": ISO8601 | null,
+     "fetched_at": ISO8601, "age_seconds": int, "stale": bool}
+```
+
+- `forecast`, `air_quality` 는 그 경로가 해당 데이터를 쓰지 않으면 `null` 입니다.
+- `age_seconds` 는 `observed_at` 이 아니라 `fetched_at` 기준으로 잽니다.
+- `source: "cache"` 나 `stale: true` 이면 `저장된 기상 데이터 표시 중` 상태로 보고 `마지막 정상 수신 HH:mm` 을 값 옆에 보여 줍니다.
+- 샘플 피처로 만든 응답(개발용 fallback)에는 `"sample_data": true` 가 붙습니다. 이때는 `샘플 데이터` 라벨을 표시하고 관측값처럼 다루지 마세요.
 
 ---
 
@@ -176,7 +210,7 @@ GET /microclimate/heatmap
 {
   "timestamp": "20260429T1200",
   "heatmap": [
-    { "element_id": "BLD_E1", "zone_id": "zone_D", "utci": 41.3, "wbgt": 32.7, "risk_level": "매우 높음" },
+    { "element_id": "BLD_D2", "zone_id": "zone_D", "utci": 41.3, "wbgt": 32.7, "risk_level": "매우 높음" },
     { "element_id": "BLD_B5", "zone_id": "zone_B", "utci": 29.6, "wbgt": 24.1, "risk_level": "주의" },
     ...
   ]
@@ -199,7 +233,7 @@ zone 단위로 평균 기온·UTCI·WBGT, 최고 위험도를 반환합니다.
 
 | 접두사 | 의미                  | 예시               |
 | ------ | --------------------- | ------------------ |
-| `BLD_` | 건물 (building)       | `BLD_E1`, `BLD_B5` |
+| `BLD_` | 건물 (building)       | `BLD_E1` (학생회관), `BLD_D2` (공과대학 1호관) |
 | `RD_`  | 도로 (road)           | `RD_011`           |
 | `ND_`  | 교차로/노드 (node)    | `ND_006`           |
 | `CW_`  | 인도/보도 (crosswalk) | `CW_003`           |
@@ -211,10 +245,58 @@ RD/ND/CW 는 null이므로 클릭 시 팝업 처리 예외 처리 필요합니�
 
 ## 5. 에러 처리
 
-| HTTP 코드 | 의미                             | 대응                                   |
-| --------- | -------------------------------- | -------------------------------------- |
-| `404`     | element_id 없음                  | 팝업 미표시 또는 "데이터 없음" 메시지  |
-| `500`     | 서버 내부 오류 (KMA API 실패 등) | 재시도 또는 "잠시 후 다시 시도" 메시지 |
+| HTTP 코드 | 의미 | 대응 |
+| --------- | ---- | ---- |
+| `404` | element_id 없음 | 팝업 미표시 또는 "데이터 없음" 메시지 |
+| `503` | 쓸 수 있는 기상 데이터가 없음 (아래 본문) | `Retry-After` 이후 재시도, `다시 시도` 버튼 |
+| `500` | 예상하지 못한 서버 오류 | `서버 내부 오류가 발생했습니다` 표시 |
+
+### 503 응답 형식
+
+`/microclimate/*`, `/environment/*` 경로는 실시간 데이터도 쓸 만한 캐시도 없을 때 HTTP 503 과 `Retry-After: 60` 헤더를 돌려줍니다.
+
+```json
+{
+  "detail": {
+    "code": "weather_upstream_unavailable",
+    "source": "kma_current",
+    "reason": "timeout",
+    "message_ko": "기상청 응답 지연으로 최신 기상 데이터를 가져오지 못했습니다",
+    "message_en": "Weather upstream unavailable",
+    "retry_after_s": 60
+  }
+}
+```
+
+| 필드 | 값 |
+|---|---|
+| `code` | `weather_upstream_unavailable` (기상청/에어코리아 응답 실패) 또는 `weather_api_key_missing` (`KMA_SERVICE_KEY` 미설정) |
+| `source` | `kma_current`, `kma_forecast`, `airkorea` 중 하나 |
+| `reason` | 실패 종류 (UpstreamError.kind) |
+| `message_ko` | unavailable: `기상청 응답 지연으로 최신 기상 데이터를 가져오지 못했습니다` / key missing: `기상 API 키가 설정되지 않았습니다 (KMA_SERVICE_KEY)` |
+| `retry_after_s` | 60 |
+
+`message_en` 은 영어 안내 문구이고 예시의 값은 설명용입니다. 알 수 없는 element_id 는 여전히 404 입니다. 에너지 경로는 이 형식을 쓰지 않습니다.
+
+### 500 응답 형식
+
+원본 예외 문자열은 내려가지 않습니다.
+
+```json
+{"detail": {"code": "internal_error", "message_ko": "서버 내부 오류가 발생했습니다", "message_en": "Internal server error"}}
+```
+
+### 대표 설치 계획 경로
+
+에너지 패널의 대표 설치 계획은 `/docs` 에 나오는 정식 경로를 씁니다.
+
+```text
+GET    /energy/buildings/{building_id}/representative-plan
+PUT    /energy/buildings/{building_id}/representative-plan
+DELETE /energy/buildings/{building_id}/representative-plan
+```
+
+대표 계획이 아직 없으면 GET 이 404 와 `representative_installation_plan_not_found` 코드를 돌려줍니다. 이건 오류가 아니라 "계획 없음" 신호이니 빈 상태로 처리하세요. 숨김 별칭 `/representative-installation-plan` 은 쓰지 않습니다.
 
 ---
 
@@ -230,7 +312,7 @@ async function fetchBuildingPopup(elementId) {
 }
 
 // 사용 예
-const data = await fetchBuildingPopup("BLD_E1");
+const data = await fetchBuildingPopup("BLD_D2");
 
 // 색상 직접 사용
 buildingMesh.material.color.set(data.thermal.risk_color);

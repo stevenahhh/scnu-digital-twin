@@ -1,15 +1,16 @@
 import React from "react";
+import { RISK_COLORS } from "../utils/riskColors.mjs";
 
 export const ScooterEntity = React.memo(function ScooterEntity({ riskLevel = "normal", state = "moving" }) {
   const risky = riskLevel === "danger" || String(state).toLowerCase() === "wrong_way";
-  const color = risky ? "#dc2626" : riskLevel === "warning" ? "#f59e0b" : "#16866f";
+  const color = risky ? RISK_COLORS.danger : RISK_COLORS[riskLevel] ?? "#16866f";
   return (
     <group>
-      <mesh castShadow position={[0, 0.18, 0]}>
+      <mesh position={[0, 0.18, 0]}>
         <boxGeometry args={[0.28, 0.12, 1.25]} />
         <meshStandardMaterial color={color} />
       </mesh>
-      <mesh castShadow position={[0, 0.75, -0.48]}>
+      <mesh position={[0, 0.75, -0.48]}>
         <cylinderGeometry args={[0.045, 0.045, 1.2, 8]} />
         <meshStandardMaterial color="#263238" />
       </mesh>

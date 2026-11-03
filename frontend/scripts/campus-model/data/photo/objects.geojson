@@ -1,0 +1,1474 @@
+{
+"type": "FeatureCollection",
+"name": "scnu-photo-objects",
+"crs": {
+"type": "name",
+"properties": {
+"name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+}
+},
+"properties": {
+"source": "NGII 2025 orthophoto sheet 34702020 (0.25 m GSD, EPSG:5186), 국토지리정보원",
+"generated": "2026-10-24",
+"sun_estimate": {
+"azimuth_deg": 92.5,
+"elevation_deg": 62.0,
+"elevation_iqr_deg": [
+59.3,
+67.4
+],
+"tan_elevation": 1.879,
+"n_building_rays": 100,
+"estimated": true
+},
+"survey_windows": [
+{
+"name": "main_gate",
+"polygon": [
+[
+127.48357809,
+34.9688272
+],
+[
+127.48445407,
+34.96882371
+],
+[
+127.48445009,
+34.96814769
+],
+[
+127.48357411,
+34.96815118
+],
+[
+127.48357809,
+34.9688272
+]
+]
+},
+{
+"name": "central_roundabout",
+"polygon": [
+[
+127.48040673,
+34.96953835
+],
+[
+127.48122797,
+34.9695351
+],
+[
+127.48122454,
+34.96894922
+],
+[
+127.48040331,
+34.96895247
+],
+[
+127.48040673,
+34.96953835
+]
+]
+},
+{
+"name": "central_plaza",
+"polygon": [
+[
+127.47996978,
+34.96972035
+],
+[
+127.48051728,
+34.96971819
+],
+[
+127.48051425,
+34.96919991
+],
+[
+127.47996676,
+34.96920207
+],
+[
+127.47996978,
+34.96972035
+]
+]
+},
+{
+"name": "sports_field_stands",
+"polygon": [
+[
+127.48149565,
+34.96849745
+],
+[
+127.48193364,
+34.96849572
+],
+[
+127.48192678,
+34.96732395
+],
+[
+127.48148879,
+34.96732569
+],
+[
+127.48149565,
+34.96849745
+]
+]
+},
+{
+"name": "random_1",
+"polygon": [
+[
+127.48235515,
+34.96988667
+],
+[
+127.48290265,
+34.9698845
+],
+[
+127.48290053,
+34.96952395
+],
+[
+127.48235304,
+34.96952613
+],
+[
+127.48235515,
+34.96988667
+]
+]
+},
+{
+"name": "random_2",
+"polygon": [
+[
+127.48389916,
+34.97082247
+],
+[
+127.48444666,
+34.97082028
+],
+[
+127.48444454,
+34.97045974
+],
+[
+127.48389704,
+34.97046192
+],
+[
+127.48389916,
+34.97082247
+]
+]
+},
+{
+"name": "random_3",
+"polygon": [
+[
+127.47921827,
+34.97135481
+],
+[
+127.47976577,
+34.97135265
+],
+[
+127.47976367,
+34.97099211
+],
+[
+127.47921617,
+34.97099427
+],
+[
+127.47921827,
+34.97135481
+]
+]
+},
+{
+"name": "random_4",
+"polygon": [
+[
+127.47788253,
+34.96667742
+],
+[
+127.47843001,
+34.96667527
+],
+[
+127.47842791,
+34.96631472
+],
+[
+127.47788044,
+34.96631688
+],
+[
+127.47788253,
+34.96667742
+]
+]
+}
+],
+"coverage_note": "Small objects (poles, signals, benches, bollards, walls) were placed only inside survey_windows; outside them this file has no small objects. Large structures were placed where looked at."
+},
+"features": [
+{
+"type": "Feature",
+"properties": {
+"id": "OB0000",
+"kind": "traffic_signal_pole",
+"confidence": 0.6,
+"method": "by-eye",
+"source": "ngii-2025-ortho",
+"survey_window": "main_gate",
+"note": "pole base at the sun-side root of a long shadow with a mast-arm shadow across the east crossing"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+127.48416935,
+34.96849584
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0001",
+"kind": "traffic_signal_pole",
+"confidence": 0.5,
+"method": "by-eye",
+"source": "ngii-2025-ortho",
+"survey_window": "main_gate",
+"note": "shadow root at the west tip of the north channel island"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+127.4838507,
+34.96863457
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0002",
+"kind": "traffic_signal_pole",
+"confidence": 0.5,
+"method": "by-eye",
+"source": "ngii-2025-ortho",
+"survey_window": "main_gate",
+"note": "dark root on the south channel island beside the main crossing"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+127.48392714,
+34.96845782
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0003",
+"kind": "traffic_signal_pole",
+"confidence": 0.4,
+"method": "by-eye",
+"source": "ngii-2025-ortho",
+"survey_window": "main_gate",
+"note": "shadow root beside the north crossing"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+127.48400649,
+34.96873152
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0004",
+"kind": "street_lamp",
+"confidence": 0.4,
+"method": "by-eye",
+"source": "ngii-2025-ortho",
+"survey_window": "main_gate",
+"note": "thin westward shadow on the east footway"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+127.48410206,
+34.9686899
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0005",
+"kind": "street_lamp",
+"confidence": 0.4,
+"method": "by-eye",
+"source": "ngii-2025-ortho",
+"survey_window": "main_gate",
+"note": "thin westward shadow at the NE corner of the main crossing"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+127.48411475,
+34.96852084
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0006",
+"kind": "sign_pole",
+"confidence": 0.4,
+"method": "by-eye",
+"source": "ngii-2025-ortho",
+"survey_window": "main_gate",
+"note": "short shadow root at the island corner"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+127.48392148,
+34.96856668
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0007",
+"kind": "sign_pole",
+"confidence": 0.4,
+"method": "by-eye",
+"source": "ngii-2025-ortho",
+"survey_window": "main_gate",
+"note": "short shadow root south of the main crossing"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+127.48403186,
+34.96839115
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0008",
+"kind": "sign_pole",
+"confidence": 0.35,
+"method": "by-eye",
+"source": "ngii-2025-ortho",
+"survey_window": "main_gate",
+"note": "dark root at the south island tip"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+127.48394503,
+34.96838248
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0009",
+"kind": "bus_stop_shelter",
+"confidence": 0.5,
+"method": "roof-blob",
+"source": "ngii-2025-ortho",
+"survey_window": "main_gate",
+"note": "blue roof on the east footway of the arterial; outline by eye, roof position includes relief lean (<0.5 m at this height)",
+"area_m2": 14.4
+},
+"geometry": {
+"type": "Polygon",
+"coordinates": [
+[
+[
+127.48412445,
+34.96863348
+],
+[
+127.48415182,
+34.96863337
+],
+[
+127.48415152,
+34.96858154
+],
+[
+127.48412414,
+34.96858165
+],
+[
+127.48412445,
+34.96863348
+]
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0010",
+"kind": "pergola",
+"confidence": 0.5,
+"method": "roof-blob",
+"source": "ngii-2025-ortho",
+"survey_window": "main_gate",
+"note": "curved white roofed structure bordering the plaza under construction SW of the gate; centreline by eye buffered 1 m",
+"area_m2": 49.4
+},
+"geometry": {
+"type": "Polygon",
+"coordinates": [
+[
+[
+127.48362736,
+34.96852001
+],
+[
+127.48369125,
+34.96853846
+],
+[
+127.4836985,
+34.96852145
+],
+[
+127.48363837,
+34.96850409
+],
+[
+127.48360945,
+34.96846383
+],
+[
+127.483605,
+34.96840736
+],
+[
+127.48362226,
+34.96835625
+],
+[
+127.48360116,
+34.96835143
+],
+[
+127.4835834,
+34.968404
+],
+[
+127.48358314,
+34.96840499
+],
+[
+127.48358302,
+34.96840599
+],
+[
+127.48358303,
+34.968407
+],
+[
+127.48358776,
+34.96846715
+],
+[
+127.48358788,
+34.96846799
+],
+[
+127.48358808,
+34.96846882
+],
+[
+127.48358839,
+34.96846962
+],
+[
+127.48358878,
+34.96847041
+],
+[
+127.48358926,
+34.96847115
+],
+[
+127.48362156,
+34.96851609
+],
+[
+127.48362216,
+34.96851684
+],
+[
+127.48362285,
+34.96851754
+],
+[
+127.48362362,
+34.96851818
+],
+[
+127.48362447,
+34.96851875
+],
+[
+127.48362538,
+34.96851925
+],
+[
+127.48362634,
+34.96851967
+],
+[
+127.48362736,
+34.96852001
+]
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0011",
+"kind": "plaza_structure",
+"confidence": 0.7,
+"method": "roof-blob",
+"source": "ngii-2025-ortho",
+"survey_window": "central_roundabout",
+"note": "fountain on the roundabout central island (inner ring); OSM supplement carries the 10.7 m outer radius",
+"subtype": "fountain",
+"area_m2": 91.0
+},
+"geometry": {
+"type": "Polygon",
+"coordinates": [
+[
+[
+127.48069692,
+34.96925935
+],
+[
+127.48069573,
+34.96924986
+],
+[
+127.48069231,
+34.96924074
+],
+[
+127.48068679,
+34.96923235
+],
+[
+127.4806794,
+34.969225
+],
+[
+127.4806704,
+34.96921899
+],
+[
+127.48066015,
+34.96921453
+],
+[
+127.48064905,
+34.9692118
+],
+[
+127.4806375,
+34.96921091
+],
+[
+127.48062597,
+34.96921189
+],
+[
+127.4806149,
+34.96921471
+],
+[
+127.4806047,
+34.96921925
+],
+[
+127.48059578,
+34.96922534
+],
+[
+127.48058847,
+34.96923274
+],
+[
+127.48058305,
+34.96924118
+],
+[
+127.48057974,
+34.96925032
+],
+[
+127.48057866,
+34.96925982
+],
+[
+127.48057985,
+34.96926931
+],
+[
+127.48058327,
+34.96927843
+],
+[
+127.48058878,
+34.96928682
+],
+[
+127.48059618,
+34.96929417
+],
+[
+127.48060517,
+34.96930019
+],
+[
+127.48061542,
+34.96930464
+],
+[
+127.48062653,
+34.96930737
+],
+[
+127.48063807,
+34.96930826
+],
+[
+127.4806496,
+34.96930728
+],
+[
+127.48066068,
+34.96930447
+],
+[
+127.48067088,
+34.96929993
+],
+[
+127.4806798,
+34.96929384
+],
+[
+127.48068711,
+34.96928643
+],
+[
+127.48069253,
+34.969278
+],
+[
+127.48069584,
+34.96926885
+],
+[
+127.48069692,
+34.96925935
+]
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0012",
+"kind": "street_lamp",
+"confidence": 0.4,
+"method": "by-eye",
+"source": "ngii-2025-ortho",
+"survey_window": "central_roundabout",
+"note": "dark pole root with westward shadow on the north approach"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+127.48069631,
+34.9694358
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0013",
+"kind": "street_lamp",
+"confidence": 0.4,
+"method": "by-eye",
+"source": "ngii-2025-ortho",
+"survey_window": "central_roundabout",
+"note": "dark pole root with westward shadow on the north approach"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+127.48069604,
+34.96939073
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0014",
+"kind": "street_lamp",
+"confidence": 0.3,
+"method": "by-eye",
+"source": "ngii-2025-ortho",
+"survey_window": "central_roundabout",
+"note": "dark root on the west footway"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+127.48048767,
+34.96933522
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0015",
+"kind": "plaza_structure",
+"confidence": 0.7,
+"method": "roof-blob",
+"source": "ngii-2025-ortho",
+"survey_window": "central_plaza",
+"note": "square lawn planter on the plaza grid (9 in a 3x3 grid, rotated ~14 deg)",
+"subtype": "planter",
+"area_m2": 8.4
+},
+"geometry": {
+"type": "Polygon",
+"coordinates": [
+[
+[
+127.48026319,
+34.96958113
+],
+[
+127.48029396,
+34.96957468
+],
+[
+127.48028613,
+34.96954935
+],
+[
+127.48025536,
+34.96955579
+],
+[
+127.48026319,
+34.96958113
+]
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0016",
+"kind": "plaza_structure",
+"confidence": 0.7,
+"method": "roof-blob",
+"source": "ngii-2025-ortho",
+"survey_window": "central_plaza",
+"note": "square lawn planter on the plaza grid (9 in a 3x3 grid, rotated ~14 deg)",
+"subtype": "planter",
+"area_m2": 8.4
+},
+"geometry": {
+"type": "Polygon",
+"coordinates": [
+[
+[
+127.48031787,
+34.96956964
+],
+[
+127.48034865,
+34.9695632
+],
+[
+127.48034082,
+34.96953787
+],
+[
+127.48031004,
+34.96954431
+],
+[
+127.48031787,
+34.96956964
+]
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0017",
+"kind": "plaza_structure",
+"confidence": 0.7,
+"method": "roof-blob",
+"source": "ngii-2025-ortho",
+"survey_window": "central_plaza",
+"note": "square lawn planter on the plaza grid (9 in a 3x3 grid, rotated ~14 deg)",
+"subtype": "planter",
+"area_m2": 8.4
+},
+"geometry": {
+"type": "Polygon",
+"coordinates": [
+[
+[
+127.48037257,
+34.96956041
+],
+[
+127.48040334,
+34.96955397
+],
+[
+127.48039551,
+34.96952864
+],
+[
+127.48036474,
+34.96953508
+],
+[
+127.48037257,
+34.96956041
+]
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0018",
+"kind": "plaza_structure",
+"confidence": 0.7,
+"method": "roof-blob",
+"source": "ngii-2025-ortho",
+"survey_window": "central_plaza",
+"note": "square lawn planter on the plaza grid (9 in a 3x3 grid, rotated ~14 deg)",
+"subtype": "planter",
+"area_m2": 8.4
+},
+"geometry": {
+"type": "Polygon",
+"coordinates": [
+[
+[
+127.48024924,
+34.96953611
+],
+[
+127.48028001,
+34.96952967
+],
+[
+127.48027218,
+34.96950434
+],
+[
+127.48024141,
+34.96951078
+],
+[
+127.48024924,
+34.96953611
+]
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0019",
+"kind": "plaza_structure",
+"confidence": 0.7,
+"method": "roof-blob",
+"source": "ngii-2025-ortho",
+"survey_window": "central_plaza",
+"note": "square lawn planter on the plaza grid (9 in a 3x3 grid, rotated ~14 deg)",
+"subtype": "planter",
+"area_m2": 8.4
+},
+"geometry": {
+"type": "Polygon",
+"coordinates": [
+[
+[
+127.48030201,
+34.96952464
+],
+[
+127.48033278,
+34.96951819
+],
+[
+127.48032495,
+34.96949286
+],
+[
+127.48029418,
+34.96949931
+],
+[
+127.48030201,
+34.96952464
+]
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0020",
+"kind": "plaza_structure",
+"confidence": 0.7,
+"method": "roof-blob",
+"source": "ngii-2025-ortho",
+"survey_window": "central_plaza",
+"note": "square lawn planter on the plaza grid (9 in a 3x3 grid, rotated ~14 deg)",
+"subtype": "planter",
+"area_m2": 8.4
+},
+"geometry": {
+"type": "Polygon",
+"coordinates": [
+[
+[
+127.48035669,
+34.96951315
+],
+[
+127.48038746,
+34.96950671
+],
+[
+127.48037963,
+34.96948138
+],
+[
+127.48034886,
+34.96948782
+],
+[
+127.48035669,
+34.96951315
+]
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0021",
+"kind": "plaza_structure",
+"confidence": 0.7,
+"method": "roof-blob",
+"source": "ngii-2025-ortho",
+"survey_window": "central_plaza",
+"note": "square lawn planter on the plaza grid (9 in a 3x3 grid, rotated ~14 deg)",
+"subtype": "planter",
+"area_m2": 8.4
+},
+"geometry": {
+"type": "Polygon",
+"coordinates": [
+[
+[
+127.4802353,
+34.96949335
+],
+[
+127.48026608,
+34.96948691
+],
+[
+127.48025825,
+34.96946158
+],
+[
+127.48022747,
+34.96946802
+],
+[
+127.4802353,
+34.96949335
+]
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0022",
+"kind": "plaza_structure",
+"confidence": 0.7,
+"method": "roof-blob",
+"source": "ngii-2025-ortho",
+"survey_window": "central_plaza",
+"note": "square lawn planter on the plaza grid (9 in a 3x3 grid, rotated ~14 deg)",
+"subtype": "planter",
+"area_m2": 8.4
+},
+"geometry": {
+"type": "Polygon",
+"coordinates": [
+[
+[
+127.48028725,
+34.96948188
+],
+[
+127.48031802,
+34.96947544
+],
+[
+127.48031019,
+34.9694501
+],
+[
+127.48027942,
+34.96945655
+],
+[
+127.48028725,
+34.96948188
+]
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0023",
+"kind": "plaza_structure",
+"confidence": 0.7,
+"method": "roof-blob",
+"source": "ngii-2025-ortho",
+"survey_window": "central_plaza",
+"note": "square lawn planter on the plaza grid (9 in a 3x3 grid, rotated ~14 deg)",
+"subtype": "planter",
+"area_m2": 8.4
+},
+"geometry": {
+"type": "Polygon",
+"coordinates": [
+[
+[
+127.48034193,
+34.9694704
+],
+[
+127.48037271,
+34.96946395
+],
+[
+127.48036488,
+34.96943862
+],
+[
+127.4803341,
+34.96944506
+],
+[
+127.48034193,
+34.9694704
+]
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0024",
+"kind": "low_wall",
+"confidence": 0.6,
+"method": "shadow-root",
+"source": "ngii-2025-ortho",
+"survey_window": "central_plaza",
+"note": "curved retaining edge of the plaza; shadow ~1-2 px wide",
+"height_m_estimate": 0.7,
+"height_source": "shadow width x tan(sun elevation)",
+"estimated": true
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+127.48045284,
+34.96960577
+],
+[
+127.48047977,
+34.96953063
+],
+[
+127.48047933,
+34.96945536
+],
+[
+127.48045165,
+34.96940297
+],
+[
+127.48039673,
+34.96937321
+],
+[
+127.4803146,
+34.96937354
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0025",
+"kind": "low_wall",
+"confidence": 0.4,
+"method": "by-eye",
+"source": "ngii-2025-ortho",
+"survey_window": "central_plaza",
+"note": "planter edge south of the plaza",
+"height_m_estimate": 0.5,
+"height_source": "shadow width x tan(sun elevation)",
+"estimated": true
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+127.48023222,
+34.96932879
+],
+[
+127.48018639,
+34.96931005
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0026",
+"kind": "stadium_seating",
+"confidence": 0.7,
+"method": "roof-blob",
+"source": "ngii-2025-ortho",
+"survey_window": "sports_field_stands",
+"note": "orange/blue seat rows north of the reviewing stand; the NE end runs past the survey window and is approximate",
+"area_m2": 419.2
+},
+"geometry": {
+"type": "Polygon",
+"coordinates": [
+[
+[
+127.48189189,
+34.9683787
+],
+[
+127.48190554,
+34.96837189
+],
+[
+127.48190479,
+34.96824345
+],
+[
+127.48184921,
+34.9681017
+],
+[
+127.48181322,
+34.96803424
+],
+[
+127.48178552,
+34.96797801
+],
+[
+127.48171164,
+34.96798281
+],
+[
+127.4816762,
+34.96800774
+],
+[
+127.48168461,
+34.96804151
+],
+[
+127.48173978,
+34.9681134
+],
+[
+127.48176741,
+34.96815836
+],
+[
+127.48178143,
+34.96821464
+],
+[
+127.48181487,
+34.96831591
+],
+[
+127.48185072,
+34.96836084
+],
+[
+127.48189189,
+34.9683787
+]
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0027",
+"kind": "reviewing_stand",
+"confidence": 0.7,
+"method": "roof-blob",
+"source": "ngii-2025-ortho",
+"survey_window": "sports_field_stands",
+"note": "구령대/main stand under the green roof; roof outline, so it includes relief lean (~0.2 m per m height toward campus centre)",
+"area_m2": 284.8
+},
+"geometry": {
+"type": "Polygon",
+"coordinates": [
+[
+[
+127.48165699,
+34.96800106
+],
+[
+127.48177193,
+34.96799384
+],
+[
+127.48171577,
+34.96775295
+],
+[
+127.48159258,
+34.96775343
+],
+[
+127.48163157,
+34.96786595
+],
+[
+127.48165699,
+34.96800106
+]
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0028",
+"kind": "stadium_seating",
+"confidence": 0.7,
+"method": "roof-blob",
+"source": "ngii-2025-ortho",
+"survey_window": "sports_field_stands",
+"note": "orange/blue seat rows south of the reviewing stand",
+"area_m2": 328.6
+},
+"geometry": {
+"type": "Polygon",
+"coordinates": [
+[
+[
+127.48162801,
+34.96772625
+],
+[
+127.48170192,
+34.96772596
+],
+[
+127.48168773,
+34.96764038
+],
+[
+127.48166791,
+34.96752779
+],
+[
+127.48165917,
+34.96743769
+],
+[
+127.4816531,
+34.96733631
+],
+[
+127.48159288,
+34.96733655
+],
+[
+127.48157705,
+34.96743801
+],
+[
+127.48157208,
+34.96752366
+],
+[
+127.48160014,
+34.96764073
+],
+[
+127.48162801,
+34.96772625
+]
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0029",
+"kind": "fence",
+"confidence": 0.5,
+"method": "by-eye",
+"source": "ngii-2025-ortho",
+"survey_window": "sports_field_stands",
+"note": "white railing along the front of the stands, between seating and the track apron"
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+127.48190479,
+34.96824345
+],
+[
+127.48184921,
+34.9681017
+],
+[
+127.48178552,
+34.96797801
+],
+[
+127.48173852,
+34.96789933
+],
+[
+127.48172952,
+34.96776416
+],
+[
+127.48168823,
+34.96772601
+],
+[
+127.48165878,
+34.96737009
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "OB0030",
+"kind": "low_wall",
+"confidence": 0.3,
+"method": "by-eye",
+"source": "ngii-2025-ortho",
+"survey_window": "random_1",
+"note": "planter strip kerb between parking rows"
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+127.48246115,
+34.96975555
+],
+[
+127.48244693,
+34.96966547
+]
+]
+}
+}
+]
+}

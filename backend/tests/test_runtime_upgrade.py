@@ -1,3 +1,5 @@
+import shutil
+import statistics
 from pathlib import Path
 
 import pytest
@@ -20,20 +22,32 @@ def test_transport_source_of_truth_is_the_default_runtime(monkeypatch):
     assert all(entity["route_geometry"] == "derived_offset" for entity in engine.entities.values())
 
 
-def test_research_runtime_rejects_derived_only_network():
+def test_research_runtime_rejects_derived_only_network(tmp_path):
+    # The shipped network now has measured (authoritative) edges, so the derived-only case is the derived-v1 baseline.
+    data = tmp_path / "data"
+    data.mkdir()
+    (tmp_path / "config").mkdir()
+    shutil.copy(DATA / "campus_transport_network.derived-v1.geojson", data / "campus_transport_network.geojson")
+    shutil.copy(DATA.parent / "config" / "mobility_policy.json", tmp_path / "config" / "mobility_policy.json")
+    for name in ("walkable_polygons.geojson", "road_polygons.geojson"):
+        shutil.copy(DATA / name, data / name)
     with pytest.raises(ValueError, match="승인된"):
-        load_runtime_graph(DATA, mode="research")
+        load_runtime_graph(data, mode="research")
 
 
 def test_derived_shared_path_has_agent_specific_lateral_offset():
+    # the generator draws every estimated person edge where people walk (placed): no centreline offset on the real
+    # data; the 2.8 m policy offset for an unplaced centreline copy is covered in test_walkway_routing.py
     payload, _ = load_runtime_graph(DATA, mode="transport-derived")
     graph = MobilityGraph(payload)
     path = graph.shortest_path("BLD_D4", "BLD_C1", "person")
-    segment = next(index for index, kind in enumerate(path.edge_kinds) if kind == "shared_path")
+    kinds = path.edge_kinds
+    segment = next(index for index in range(len(kinds)) if kinds[index] == "shared_path")
+    assert not path.edge_derived[segment]
     distance = (path.cumulative_lengths[segment] + path.cumulative_lengths[segment + 1]) / 2
     raw_x, raw_z, _, _ = graph.interpolate(path, distance)
     person_x, person_z, _, _ = graph.interpolate(path, distance, "person")
-    assert ((raw_x - person_x) ** 2 + (raw_z - person_z) ** 2) ** 0.5 == pytest.approx(2.8)
+    assert ((raw_x - person_x) ** 2 + (raw_z - person_z) ** 2) ** 0.5 == pytest.approx(0.0)
 
 
 def test_spatial_grid_reduces_pair_candidates():
@@ -84,12 +98,32 @@ def test_agent_dimensions_change_collision_clearance():
 def test_default_population_is_distributed_across_campus_extent():
     engine = SimulationEngine(seed=42)
     positions = [(entity["x"], entity["z"]) for entity in engine.entities.values()]
-    assert max(x for x, _ in positions) - min(x for x, _ in positions) > 600
+    # East-west spread is a property of the distribution, not of one draw: a single seed moved across 600 m whenever the
+    # network gained or lost edges (seed 42: 688 -> 591 -> 681 -> 582 m over W5/W6 network changes), so the check is the
+    # median over eight fixed seeds (641 m when written; seed 42 alone 582 m).
+    spreads = []
+    for seed in (42, 1, 2, 3, 7, 11, 13, 21):
+        xs = [entity["x"] for entity in (engine if seed == 42 else SimulationEngine(seed=seed)).entities.values()]
+        spreads.append(max(xs) - min(xs))
+    assert statistics.median(spreads) > 600
     assert max(z for _, z in positions) - min(z for _, z in positions) > 400
     assert len({(int(x // 100), int(z // 100)) for x, z in positions}) >= 22
     coverage = engine.statistics()["network_coverage"]
     assert coverage["car"]["planned_percent"] > 30
-    assert coverage["person"]["planned_percent"] > 60
+    # 341 person edges now include the A003 sidewalk strips away from the demo OD corridors (was 182 derived copies)
+    assert coverage["person"]["planned_percent"] > 35
     # Scooter has access to both derived road and shared-path duplicates, so
     # its denominator is 360 edges; 20% still represents broad campus routes.
     assert coverage["scooter"]["planned_percent"] > 18
+
+
+def test_trip_cost_factors_do_not_depend_on_unrelated_edges():
+    from simulation.trip_manager import edge_uniform
+
+    key = (12345).to_bytes(8, "little")
+    a = edge_uniform(key, "EDGE_A", 1.0, 1.4)
+    assert 1.0 <= a < 1.4
+    # the same trip key and edge always give the same factor, whatever else is in the graph
+    assert edge_uniform(key, "EDGE_A", 1.0, 1.4) == a
+    assert edge_uniform(key, "EDGE_B", 1.0, 1.4) != a
+    assert edge_uniform((12346).to_bytes(8, "little"), "EDGE_A", 1.0, 1.4) != a

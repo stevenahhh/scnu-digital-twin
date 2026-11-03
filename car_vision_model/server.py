@@ -1,8 +1,12 @@
 import asyncio
+import argparse
 import base64
 import json
 import cv2
 import numpy as np
+import os
+from pathlib import Path
+import sys
 from collections import defaultdict, deque
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -25,7 +29,11 @@ app.add_middleware(
 )
 
 # Load YOLO model
-model = YOLO("yolov8s.pt")
+model_path = Path(__file__).with_name("yolov8s.pt")
+if not model_path.is_file():
+    print(f"모델 파일이 없습니다: {model_path} (car_vision_model/yolov8s.pt 를 준비하세요)")
+    sys.exit(2)
+model = YOLO(str(model_path))
 
 # Global states (Supports single active session well)
 current_cars = 0
@@ -187,4 +195,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", type=int, default=int(os.environ.get("CAR_DEMO_PORT", 8003)))
+    args = parser.parse_args()
+    uvicorn.run(app, host="0.0.0.0", port=args.port)

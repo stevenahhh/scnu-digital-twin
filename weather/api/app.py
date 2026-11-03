@@ -20,10 +20,15 @@ Campus Digital Twin — Weather & Microclimate API
 
 from __future__ import annotations
 
+import copy
 import json
+import logging
 import os
 import sqlite3
 import sys
+import time
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -31,13 +36,16 @@ from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from requests import RequestException
 
 _WEATHER_ROOT = str(Path(__file__).parent.parent)
 if _WEATHER_ROOT not in sys.path:
     sys.path.insert(0, _WEATHER_ROOT)
 
+import config
+
 # 기존 collectors / domain (zone 기반)
+from weather.collectors.cache import CacheResult, TTLCache
+from weather.collectors.upstream import UpstreamError
 from weather.collectors.kma_current import fetch_kma_current
 from weather.collectors.air_quality import fetch_air_quality
 from weather.collectors.kma_forecast import fetch_kma_forecast
@@ -71,7 +79,10 @@ app.add_middleware(
         "http://localhost:5173", "http://127.0.0.1:5173",
         "http://localhost:4173", "http://127.0.0.1:4173",
     ],
-    allow_origin_regex=r"^http://(localhost|127\.0\.0\.1):\d+$",
+    allow_origin_regex=(
+        r"^http://(localhost|127\.0\.0\.1|10(\.\d{1,3}){3}|192\.168(\.\d{1,3}){2}"
+        r"|172\.(1[6-9]|2\d|3[01])(\.\d{1,3}){2}):\d+$"
+    ),
     allow_credentials=False,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Accept"],
@@ -137,7 +148,10 @@ def _load_element_features(path: Optional[Path] = None) -> List[Dict[str, Any]]:
             return payload
 
     # --- fallback: 샘플 데이터 ---
-    return [
+    return _SAMPLE_FEATURES
+
+
+_SAMPLE_FEATURES: List[Dict[str, Any]] = [
         {
             "element_id": "RD_011",
             "zone_id":    "zone_central",
@@ -168,19 +182,161 @@ def _load_element_features(path: Optional[Path] = None) -> List[Dict[str, Any]]:
                 "sky_view_factor": 0.90, "orientation": 0.0,
             },
         },
-    ]
+]
 
 
-def _fetch_weather_for_microclimate() -> Dict[str, Any]:
+def _is_sample(features: List[Dict[str, Any]]) -> bool:
+    return features is _SAMPLE_FEATURES
+
+
+# =========================================================
+# 기상 upstream 캐시 / 오류 매핑
+# =========================================================
+
+logger = logging.getLogger(__name__)
+
+KST = timezone(timedelta(hours=9))
+
+WEATHER_CACHE = TTLCache(persist_path=config.WEATHER_CACHE_FILE or None)
+
+_AIR_QUALITY_FIELDS = ("pm10", "pm25", "o3", "khai_value", "khai_grade")
+_UPSTREAM_SOURCES = {"kma_current", "kma_forecast", "airkorea"}
+_INTERNAL_ERROR_DETAIL = {
+    "code": "internal_error",
+    "message_ko": "서버 내부 오류가 발생했습니다",
+    "message_en": "Internal server error",
+}
+
+
+def _cached_upstream(key: str, fetch, ttl_s: float) -> CacheResult:
+    """Fetch through WEATHER_CACHE; UpstreamError is relabelled with the C1 source name."""
+    try:
+        result = WEATHER_CACHE.get_or_fetch(
+            key,
+            fetch,
+            ttl_s=ttl_s,
+            max_stale_s=config.WEATHER_CACHE_MAX_STALE_S,
+            retry_after_s=config.WEATHER_UPSTREAM_RETRY_AFTER_S,
+        )
+    except UpstreamError as exc:
+        raise UpstreamError(key, exc.kind, exc.detail) from None
+    # 캐시 값이 route 에서 변형되지 않도록 복사본을 돌려준다.
+    return CacheResult(copy.deepcopy(result.value), result.fetched_at, result.source, result.stale, result.error)
+
+
+def _freshness_entry(result: CacheResult, observed_at: Optional[str]) -> Dict[str, Any]:
+    return {
+        "source": result.source,
+        "observed_at": observed_at,
+        "fetched_at": datetime.fromtimestamp(result.fetched_at, tz=KST).isoformat(),
+        "age_seconds": max(0, int(time.time() - result.fetched_at)),
+        "stale": result.stale,
+    }
+
+
+def _get_current_weather() -> tuple[Dict[str, Any], Dict[str, Any]]:
+    result = _cached_upstream(
+        "kma_current", lambda: fetch_kma_current(), config.WEATHER_CACHE_TTL_KMA_CURRENT_S
+    )
+    weather = result.value
+    return weather, _freshness_entry(result, weather.get("observed_at"))
+
+
+def _get_forecast() -> tuple[List[Dict[str, Any]], Dict[str, Any]]:
+    result = _cached_upstream(
+        "kma_forecast", lambda: fetch_kma_forecast(limit=None), config.WEATHER_CACHE_TTL_KMA_FORECAST_S
+    )
+    rows = result.value
+    observed_at = rows[0].get("observed_at") if rows else None
+    return rows, _freshness_entry(result, observed_at)
+
+
+def _get_air_quality() -> tuple[Dict[str, Any], Dict[str, Any]]:
+    """AirKorea 단독 장애는 오류 대신 null 필드 + stale 표시로 저하한다."""
+    try:
+        result = _cached_upstream(
+            "airkorea", lambda: fetch_air_quality(), config.WEATHER_CACHE_TTL_AIRKOREA_S
+        )
+    except UpstreamError as exc:
+        return {**{field: None for field in _AIR_QUALITY_FIELDS}, "air_quality_source": "unavailable"}, {"stale": True, "error": exc.kind}
+    air_quality = {**result.value, "air_quality_source": "airkorea"}
+    return air_quality, _freshness_entry(result, air_quality.get("observed_at"))
+
+
+def _gather_upstreams(**fetchers):
+    """Run upstream helpers concurrently; re-raise the first failure in argument order."""
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        futures = {name: executor.submit(fetch) for name, fetch in fetchers.items()}
+        errors = {}
+        results = {}
+        for name, future in futures.items():
+            try:
+                results[name] = future.result()
+            except Exception as exc:
+                errors[name] = exc
+    for name in fetchers:
+        if name in errors:
+            raise errors[name]
+    return results
+
+
+def _upstream_unavailable(source: str, reason: str) -> HTTPException:
+    retry_after = int(config.WEATHER_UPSTREAM_RETRY_AFTER_S)
+    if reason == "missing_key":
+        code = "weather_api_key_missing"
+        message_ko = "기상 API 키가 설정되지 않았습니다 (KMA_SERVICE_KEY)"
+        message_en = "Weather API key is not configured (KMA_SERVICE_KEY)"
+    else:
+        code = "weather_upstream_unavailable"
+        message_ko = "기상청 응답 지연으로 최신 기상 데이터를 가져오지 못했습니다"
+        message_en = "Latest weather data is temporarily unavailable from the upstream service"
+    return HTTPException(
+        status_code=503,
+        detail={
+            "code": code,
+            "source": source,
+            "reason": reason,
+            "message_ko": message_ko,
+            "message_en": message_en,
+            "retry_after_s": retry_after,
+        },
+        headers={"Retry-After": str(retry_after)},
+    )
+
+
+def _weather_http_error(exc: Exception) -> HTTPException:
+    """Map a route failure to C1 503, the existing HTTPException, or an opaque 500."""
+    if isinstance(exc, HTTPException):
+        return exc
+    if isinstance(exc, UpstreamError):
+        source = exc.source if exc.source in _UPSTREAM_SOURCES else (
+            "airkorea" if str(exc.source).lower() == "airkorea" else "kma_current"
+        )
+        return _upstream_unavailable(source, exc.kind)
+    if getattr(exc, "code", None) == "weather_input_missing":
+        return _upstream_unavailable("kma_current", "weather_input_missing")
+    logger.error("Unexpected weather route failure", exc_info=exc)
+    return HTTPException(status_code=500, detail=dict(_INTERNAL_ERROR_DETAIL))
+
+
+def _fetch_weather_for_microclimate() -> tuple[Dict[str, Any], Dict[str, Any]]:
     """
     KMA 기상 데이터를 microclimate 파이프라인용으로 정규화.
+    (weather, freshness) 를 반환한다.
     """
-    weather = fetch_kma_current()
+    weather, weather_freshness = _get_current_weather()
     # 필수 키 보정 (kma_current 에 없을 수 있는 필드)
     weather.setdefault("solar_radiation", 0.0)
     weather.setdefault("cloud_cover", 0.0)
     weather.setdefault("solar_altitude", 45.0)
-    return weather
+    return weather, {"weather": weather_freshness, "forecast": None, "air_quality": None}
+
+
+def _with_provenance(content: Dict[str, Any], freshness: Dict[str, Any], features) -> Dict[str, Any]:
+    content["freshness"] = freshness
+    if _is_sample(features):
+        content["sample_data"] = True
+    return content
 
 
 # =========================================================
@@ -231,11 +387,11 @@ def get_all_elements(
     detail: bool = Query(False, description="True이면 미기후 세부 계산값 포함"),
 ):
     try:
-        weather  = _fetch_weather_for_microclimate()
+        weather, freshness = _fetch_weather_for_microclimate()
         features = _load_element_features()
         results  = run_pipeline_all(weather, features, include_detail=detail)
 
-        return JSONResponse(content={
+        return JSONResponse(content=_with_provenance({
             "timestamp":       weather.get("timestamp"),
             "base_weather":    {
                 "temperature":  weather.get("temperature"),
@@ -244,9 +400,9 @@ def get_all_elements(
             },
             "element_count":   len(results),
             "elements":        results,
-        })
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        }, freshness, features))
+    except Exception as exc:
+        raise _weather_http_error(exc) from None
 
 
 @app.get(
@@ -258,7 +414,7 @@ def get_element(
     detail: bool = Query(False, description="True이면 세부 계산값 포함"),
 ):
     try:
-        weather  = _fetch_weather_for_microclimate()
+        weather, freshness = _fetch_weather_for_microclimate()
         features = _load_element_features()
 
         feature = next(
@@ -271,7 +427,7 @@ def get_element(
             )
 
         result = run_pipeline_for_element(weather, feature, include_detail=detail)
-        return JSONResponse(content={
+        return JSONResponse(content=_with_provenance({
             "timestamp":    weather.get("timestamp"),
             "base_weather": {
                 "temperature": weather.get("temperature"),
@@ -279,11 +435,9 @@ def get_element(
                 "wind_speed":  weather.get("wind_speed"),
             },
             "element": result,
-        })
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        }, freshness, features))
+    except Exception as exc:
+        raise _weather_http_error(exc) from None
 
 
 @app.get(
@@ -303,7 +457,7 @@ def get_element(
 )
 def get_element_popup(element_id: str):
     try:
-        weather  = _fetch_weather_for_microclimate()
+        weather, freshness = _fetch_weather_for_microclimate()
         features = _load_element_features()
         meta     = _load_element_meta()
 
@@ -316,11 +470,7 @@ def get_element_popup(element_id: str):
                 detail=f"element_id '{element_id}' 를 찾을 수 없습니다.",
             )
 
-        try:
-            pipeline_result = run_pipeline_for_element(weather, feature, include_detail=False)
-        except Exception as e:
-            print(f"❌ pipeline error for {element_id}: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Pipeline error: {str(e)}")
+        pipeline_result = run_pipeline_for_element(weather, feature, include_detail=False)
 
         # 건물 메타 (없으면 element_id 를 이름으로 사용)
         m = meta.get(element_id, {})
@@ -338,15 +488,15 @@ def get_element_popup(element_id: str):
             microclimate    = microclimate,
             weather         = weather,
             timestamp       = weather.get("timestamp"),
+            freshness       = freshness,
         )
+        if _is_sample(features):
+            popup["sample_data"] = True
 
         return JSONResponse(content=popup)
 
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"❌ popup endpoint error for {element_id}: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as exc:
+        raise _weather_http_error(exc) from None
 
 
 @app.get(
@@ -359,18 +509,18 @@ def get_element_popup(element_id: str):
 )
 def get_zone_aggregates():
     try:
-        weather  = _fetch_weather_for_microclimate()
+        weather, freshness = _fetch_weather_for_microclimate()
         features = _load_element_features()
         elements = run_pipeline_all(weather, features)
         zones    = aggregate_by_zone(elements)
 
-        return JSONResponse(content={
+        return JSONResponse(content=_with_provenance({
             "timestamp":   weather.get("timestamp"),
             "zone_count":  len(zones),
             "zones":       zones,
-        })
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        }, freshness, features))
+    except Exception as exc:
+        raise _weather_http_error(exc) from None
 
 
 @app.get(
@@ -383,7 +533,7 @@ def get_zone_aggregates():
 )
 def get_heatmap():
     try:
-        weather  = _fetch_weather_for_microclimate()
+        weather, freshness = _fetch_weather_for_microclimate()
         features = _load_element_features()
         results  = run_pipeline_all(weather, features)
 
@@ -398,44 +548,32 @@ def get_heatmap():
             for r in results
         ]
 
-        return JSONResponse(content={
+        return JSONResponse(content=_with_provenance({
             "timestamp": weather.get("timestamp"),
             "heatmap":   heatmap,
-        })
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        }, freshness, features))
+    except Exception as exc:
+        raise _weather_http_error(exc) from None
 
 
 # =========================================================
 # 기존: zone 기반 엔드포인트 (하위 호환)
 # =========================================================
 
-def _build_zone_environment(weather: Optional[Dict[str, Any]] = None):
-    weather = dict(weather or fetch_kma_current())
-    try:
-        air_quality = {
-            **fetch_air_quality(),
-            "air_quality_source": "airkorea",
-        }
-    except (RequestException, ValueError):
-        air_quality = {
-            "pm10": None,
-            "pm25": None,
-            "o3": None,
-            "khai_value": None,
-            "khai_grade": "",
-            "air_quality_source": "unavailable",
-        }
+def _build_zone_environment(weather: Dict[str, Any], air_quality: Dict[str, Any]):
+    weather = dict(weather)
     weather.update(air_quality)
     return build_environment_result(weather, ZONES)
 
 
 def _build_environment_timeline_bundle(element_id: Optional[str] = None) -> Dict[str, Any]:
-    current_weather = fetch_kma_current()
-    forecast_rows = fetch_kma_forecast(limit=None)
+    upstreams = _gather_upstreams(current=_get_current_weather, forecast=_get_forecast)
+    current_weather, weather_freshness = upstreams["current"]
+    forecast_rows, forecast_freshness = upstreams["forecast"]
     weather_timeline = build_weather_timeline(forecast_rows, current_weather)
 
     features = _load_element_features()
+    sample_data = _is_sample(features)
     if element_id is not None:
         features = [feature for feature in features if feature.get("element_id") == element_id]
         if not features:
@@ -451,50 +589,80 @@ def _build_environment_timeline_bundle(element_id: Optional[str] = None) -> Dict
         "element_environment": element_environment,
         "element_summary": summarize_element_environment(element_environment),
         "element_count": len(features),
+        "freshness": {
+            "weather": weather_freshness,
+            "forecast": forecast_freshness,
+            "air_quality": None,
+        },
+        "sample_data": sample_data,
     }
+
+
+def _timeline_content(content: Dict[str, Any], payload: Dict[str, Any]) -> Dict[str, Any]:
+    content["freshness"] = payload["freshness"]
+    if payload["sample_data"]:
+        content["sample_data"] = True
+    return content
 
 
 @app.get("/environment/current", summary="[기존] zone 기반 현재 환경")
 def get_environment_current():
     try:
-        result = _build_zone_environment()
+        upstreams = _gather_upstreams(current=_get_current_weather, air=_get_air_quality)
+        current_weather, weather_freshness = upstreams["current"]
+        air_quality, air_freshness = upstreams["air"]
+        result = _build_zone_environment(current_weather, air_quality)
+        result["freshness"] = {
+            "weather": weather_freshness,
+            "forecast": None,
+            "air_quality": air_freshness,
+        }
         return JSONResponse(content=result)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as exc:
+        raise _weather_http_error(exc) from None
 
 
 @app.get("/environment/full", summary="[기존] zone 기반 환경 + 예보")
 def get_environment_full():
     try:
-        current_weather = fetch_kma_current()
-        result = _build_zone_environment(current_weather)
-        forecast = fetch_kma_forecast()
+        upstreams = _gather_upstreams(
+            current=_get_current_weather, forecast=_get_forecast, air=_get_air_quality
+        )
+        current_weather, weather_freshness = upstreams["current"]
+        forecast_rows, forecast_freshness = upstreams["forecast"]
+        air_quality, air_freshness = upstreams["air"]
+        result = _build_zone_environment(current_weather, air_quality)
+        forecast = forecast_rows[:12]
         weather_timeline = build_weather_timeline(forecast, current_weather)
-        element_environment = build_element_environment_timeline(weather_timeline, _load_element_features())
-        return JSONResponse(content={
+        features = _load_element_features()
+        element_environment = build_element_environment_timeline(weather_timeline, features)
+        content = {
             **result,
             "forecast": forecast,
             "weather_timeline": weather_timeline,
             "element_environment": summarize_element_environment(element_environment),
-        })
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        }
+        return JSONResponse(content=_with_provenance(content, {
+            "weather": weather_freshness,
+            "forecast": forecast_freshness,
+            "air_quality": air_freshness,
+        }, features))
+    except Exception as exc:
+        raise _weather_http_error(exc) from None
 
 
 @app.get("/environment/elements/timeline", summary="element 단위 시간별 local environment")
 def get_environment_elements_timeline():
     try:
         payload = _build_environment_timeline_bundle()
-        return JSONResponse(content={
+        return JSONResponse(content=_timeline_content({
             "generated_at": payload["generated_at"],
             "element_count": payload["element_count"],
             "weather_timeline": payload["weather_timeline"],
             "element_environment": payload["element_environment"],
-        })
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        }, payload))
+    except Exception as exc:
+        raise _weather_http_error(exc) from None
 
 
 @app.get("/environment/elements/{element_id}/timeline", summary="단일 element 시간별 local environment")
@@ -502,7 +670,7 @@ def get_environment_element_timeline(element_id: str):
     try:
         payload = _build_environment_timeline_bundle(element_id=element_id)
         element_rows = payload["element_environment"]
-        return JSONResponse(content={
+        return JSONResponse(content=_timeline_content({
             "generated_at": payload["generated_at"],
             "weather_timeline": payload["weather_timeline"],
             "element": {
@@ -511,11 +679,9 @@ def get_environment_element_timeline(element_id: str):
                 "element_type": element_rows[0].get("element_type") if element_rows else None,
                 "timeline": element_rows,
             },
-        })
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        }, payload))
+    except Exception as exc:
+        raise _weather_http_error(exc) from None
 
 
 from weather.api.energy import router as energy_router

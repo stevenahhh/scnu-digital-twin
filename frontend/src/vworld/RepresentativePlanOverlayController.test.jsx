@@ -84,7 +84,28 @@ describe("RepresentativePlanOverlayController", () => {
   it("reports loading failures without publishing stale data", async () => {
     const onOverlayDataChange = vi.fn();
     render(<RepresentativePlanOverlayController buildingIds={["D4"]} loadOverlays={vi.fn().mockRejectedValue(new Error("대표안 조회 실패"))} onOverlayDataChange={onOverlayDataChange} />);
-    expect((await screen.findByRole("alert")).textContent).toContain("대표안 조회 실패");
+    expect((await screen.findByRole("alert")).textContent).toContain("요청을 처리하지 못했습니다");
     expect(onOverlayDataChange).toHaveBeenCalledWith([]);
+  });
+  it("leaves the alert and retry to the energy feed row while that feed is down, and reloads when it comes back", async () => {
+    const loadOverlays = vi.fn(() => Promise.reject(new TypeError("Failed to fetch")));
+    const view = render(<RepresentativePlanOverlayController buildingIds={["D4"]} loadOverlays={loadOverlays} feedDown />);
+    await waitFor(() => expect(document.querySelector('[data-qa="overlay-feed-deferred"]')).not.toBeNull());
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.queryByRole("button", { name: "다시 시도" })).toBeNull();
+    const calls = loadOverlays.mock.calls.length;
+    view.rerender(<RepresentativePlanOverlayController buildingIds={["D4"]} loadOverlays={loadOverlays} feedDown={false} />);
+    await waitFor(() => expect(loadOverlays.mock.calls.length).toBe(calls + 1));
+    await waitFor(() => expect(screen.getByRole("button", { name: "다시 시도" })).toBeTruthy());
+  });
+
+  it("lets only the plan list scroll inside a height-bounded column (phone), so the card shrinks instead of covering the HUD", async () => {
+    const view = render(<RepresentativePlanOverlayController buildingIds={["D4"]} loadOverlays={vi.fn().mockResolvedValue([overlay])} onOverlayDataChange={vi.fn()} fitHeight />);
+    const list = await screen.findByRole("list", { name: "건물별 대표 설치 계획 상태" });
+    expect(list.className).toMatch(/\boverflow-y-auto\b/);
+    expect(list.closest("aside").className).toMatch(/\bmin-h-0\b/);
+    view.unmount();
+    render(<RepresentativePlanOverlayController buildingIds={["D4"]} loadOverlays={vi.fn().mockResolvedValue([overlay])} onOverlayDataChange={vi.fn()} />);
+    expect((await screen.findByRole("list", { name: "건물별 대표 설치 계획 상태" })).className).not.toMatch(/overflow-y-auto/);
   });
 });

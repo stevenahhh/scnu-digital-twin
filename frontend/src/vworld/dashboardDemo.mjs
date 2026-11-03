@@ -7,7 +7,7 @@ export const DASHBOARD_DEMO_STATES = Object.freeze([
   Object.freeze({ at: 2_400, tab: "environment", temperature: 22, hour: 9, minute: 30 }),
   Object.freeze({ at: 4_000, tab: "environment", temperature: 27, hour: 11, minute: 0 }),
   Object.freeze({ at: 5_600, tab: "environment", temperature: 33, hour: 14, minute: 30 }),
-  Object.freeze({ at: 7_300, tab: "safety", temperature: 33, hour: 14, minute: 30 }),
+  Object.freeze({ at: 7_300, tab: "parking_safety", temperature: 33, hour: 14, minute: 30 }),
   Object.freeze({ at: 9_300, tab: "energy", temperature: 33, hour: 14, minute: 30, selectBuilding: true }),
 ]);
 
@@ -56,7 +56,7 @@ function applyCamera({ viewer, Cesium }, progress) {
   viewer.render();
 }
 
-export function useDashboardDemo({ selectBuilding, setActiveTab, setMode, setSimTemp, setSunMonth, setSunDay, setSunHour, setSunMinute }) {
+export function useDashboardDemo({ selectBuilding, setActiveTab, setPanelOpen, setMode, setSimTemp, setSunMonth, setSunDay, setSunHour, setSunMinute }) {
   useEffect(() => {
     const search = new URLSearchParams(globalThis.window.location.search);
     if (search.get("dashboardDemo") !== "1") return undefined;
@@ -65,6 +65,7 @@ export function useDashboardDemo({ selectBuilding, setActiveTab, setMode, setSim
     let animationFrame = 0;
     let previousState = null;
     document.documentElement.dataset.dashboardDemo = "loading";
+    setPanelOpen(true);
     setMode("simulation");
     setSunMonth(5);
     setSunDay(18);
@@ -106,5 +107,5 @@ export function useDashboardDemo({ selectBuilding, setActiveTab, setMode, setSim
       cancelAnimationFrame(animationFrame);
       delete document.documentElement.dataset.dashboardDemo;
     };
-  }, [selectBuilding, setActiveTab, setMode, setSimTemp, setSunDay, setSunHour, setSunMinute, setSunMonth]);
+  }, [selectBuilding, setActiveTab, setPanelOpen, setMode, setSimTemp, setSunDay, setSunHour, setSunMinute, setSunMonth]);
 }

@@ -81,7 +81,7 @@ export default function SolarPresentationPage({ initialDate = defaultPresentatio
   };
 
   return <main className="grid min-h-[100dvh] bg-[var(--colors-canvas)] text-[var(--colors-ink)] xl:h-[100dvh] xl:grid-cols-[minmax(0,1fr)_460px] xl:overflow-hidden">
-    <section id="vworld-available-area" className="relative min-h-[72dvh] overflow-hidden border-b border-[var(--colors-hairline)] xl:min-h-0 xl:border-b-0 xl:border-r" aria-labelledby="solar-title">
+    <section id="vworld-available-area" className="relative min-h-[96dvh] overflow-hidden border-b border-[var(--colors-hairline)] xl:min-h-0 xl:border-b-0 xl:border-r" aria-labelledby="solar-title">
       <div className="absolute inset-0">
         <VWorldRenderer onSelection={() => {}} simulationDate={simulationDate} presentationMode />
       </div>

@@ -1,145 +1,118 @@
 import { useState } from "react";
-import { ArrowLeft, ChevronLeft, ChevronDown } from "lucide-react";
+import { ArrowLeft, Check } from "lucide-react";
 import { D4RoomGridScene } from "./D4RoomGridScene";
+import { D4SampleBadge } from "./D4SampleBadge";
+import { D4ScrollRoot } from "./D4ScrollRoot";
+import { D4_CARD, floorLabel, floorLevels } from "./d4Shared.mjs";
 import { getFloorMajor, formatRoomNumber } from "../utils/d4BuildingData.mjs";
+import { describeTodaySchedule, formatEquipmentLabel } from "../utils/d4RoomStatus.mjs";
+import { Button } from "../ui/Button.jsx";
+import { MetricList } from "../ui/MetricList.jsx";
+import { Segmented } from "../ui/Segmented.jsx";
+import { StatusBadge } from "../ui/StatusBadge.jsx";
+import { COARSE_TARGET, FOCUS_RING } from "../ui/Button.jsx";
+
+const FLOOR_SELECT = `min-h-10 rounded-control border border-hairline-strong bg-surface-1 px-3 text-body text-ink ${COARSE_TARGET} ${FOCUS_RING}`;
+const value = (text) => <span className="text-body font-medium text-ink">{text}</span>;
 
 function ScheduleList({ timetable }) {
   if (timetable.length === 0) {
-    return (
-      <div className="rounded-lg bg-[var(--colors-surface-2)] p-4 text-sm font-[700] text-[var(--colors-ink-muted)]">
-        등록된 강의 시간이 없습니다.
-      </div>
-    );
+    return <p className="rounded-control bg-surface-2 p-4 text-body text-ink-muted">등록된 강의 시간이 없습니다.</p>;
   }
-
   return (
-    <div className="space-y-2">
+    <ul className="flex flex-col gap-2">
       {timetable.map((item) => (
-        <div
-          key={`${item.day}-${item.startHour}-${item.subject}`}
-          className="rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] p-3"
-        >
-          <div className="text-[13px] font-[900] text-[var(--colors-ink)]">{item.subject}</div>
-          <div className="mt-1 text-[12px] font-[700] text-[var(--colors-ink-muted)]">
-            {item.day}요일 {item.startHour}:00-{item.startHour + item.durationHours}:00 · {item.professorId}
-          </div>
-        </div>
+        <li key={`${item.day}-${item.startHour}-${item.subject}`} className="rounded-control border border-hairline bg-surface-2 p-3">
+          <p className="text-body font-semibold text-ink">{item.subject}</p>
+          <p className="mt-1 text-caption text-ink-muted">
+            {`${item.day}요일 ${item.startHour}:00-${item.startHour + item.durationHours}:00 · ${item.professorId}`}
+          </p>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }
 
-function RoomDetailCard({ room, status, onBack }) {
+function RoomDetailCard({ room, status }) {
   const [view, setView] = useState("detail");
 
   if (!room) {
-    return (
-      <div className="rounded-[16px] border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] p-5 text-[13px] font-[700] text-[var(--colors-ink-subtle)] shadow-lg">
-        강의실을 선택하면 상세 정보가 표시됩니다.
-      </div>
-    );
+    return <p className={`${D4_CARD} text-body text-ink-muted`}>강의실을 선택하면 상세 정보가 표시됩니다.</p>;
   }
 
-  const scheduleLine = status.currentClass
-    ? `${status.currentClass.startHour}:00 - ${status.currentClass.startHour + status.currentClass.durationHours}:00 ${status.currentClass.subject}`
-    : status.nextClass
-      ? `${status.nextClass.startHour}:00 예정 · ${status.nextClass.subject}`
-      : "오늘 예정 없음";
-  const hvacTemp = status.hvacRunning ? 24 : null;
+  const details = [
+    { id: "name", label: "실 이름", value: value(room.specialLabel) },
+    { id: "size", label: "규모", value: value(room.sizeLabel) },
+    { id: "status", label: "현재 상태", value: value(status.statusText) },
+    { id: "hvac", label: "냉난방 상태", value: value(status.hvacRunning ? "냉방 중 (24°C)" : status.hvacText) },
+    { id: "equipment", label: "특수 설비", value: value(formatEquipmentLabel(room)) },
+    { id: "schedule", label: "오늘 일정", value: value(describeTodaySchedule(status)) },
+    {
+      id: "saving",
+      label: "주간 에너지 절감 (추정)",
+      value: value(`${room.savingRate.toFixed(1)}% (${room.weeklySavingsKwh.toFixed(1)} kWh)`),
+    },
+  ];
 
   return (
-    <div className="rounded-[16px] border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] p-5 shadow-lg">
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
-          <div className="text-[12px] font-[900] uppercase tracking-[0.08em] text-[var(--colors-primary)]">
-            {view === "schedule" ? "Room Schedule" : "Room Detail"}
-          </div>
-          <div className="mt-1 flex items-center gap-2 text-xl font-[900] text-[var(--colors-ink)]">
+    <section className={`${D4_CARD} flex flex-col gap-4`} aria-labelledby="d4-room-title">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-col gap-1">
+          <p className="text-caption text-ink-muted">{view === "schedule" ? "강의실 시간표" : "강의실 상세"}</p>
+          <h3 id="d4-room-title" className="flex flex-wrap items-center gap-2 text-title text-ink">
             D4 {formatRoomNumber(room.roomNumber)}
-            <span
-              className={`rounded-full px-2 py-0.5 text-[11px] font-[800] ${status.isInUse ? "bg-[var(--colors-primary)] text-white" : "bg-[var(--colors-surface-2)] text-[var(--colors-ink-subtle)]"}`}
-            >
-              {status.isInUse ? "사용 중" : "미사용"}
-            </span>
-          </div>
+            <StatusBadge tone={status.isInUse ? "success" : "neutral"}>{status.isInUse ? "사용 중" : "미사용"}</StatusBadge>
+            <D4SampleBadge />
+          </h3>
         </div>
-        {view === "schedule" ? (
-          <button
-            type="button"
+        {view === "schedule" && (
+          <Button
+            variant="ghost"
+            iconOnly
+            label="상세 정보로 돌아가기"
+            icon={<ArrowLeft aria-hidden="true" className="h-4 w-4" />}
             onClick={() => setView("detail")}
-            className="rounded-md border border-[var(--colors-hairline)] p-2 text-[var(--colors-ink-muted)] hover:text-[var(--colors-ink)]"
-          >
-            <ArrowLeft size={16} />
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={onBack}
-            className="rounded-md border border-[var(--colors-hairline)] p-2 text-[var(--colors-ink-muted)] hover:text-[var(--colors-ink)]"
-          >
-            <ChevronLeft size={16} />
-          </button>
+          />
         )}
       </div>
-
       {view === "schedule" ? (
         <ScheduleList timetable={room.timetable} />
       ) : (
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-lg bg-[var(--colors-surface-2)] p-3">
-              <div className="text-[12px] font-[700] text-[var(--colors-ink-muted)]">실 이름</div>
-              <div className="mt-1 text-[13px] font-[900] text-[var(--colors-ink)]">{room.specialLabel}</div>
-            </div>
-            <div className="rounded-lg bg-[var(--colors-surface-2)] p-3">
-              <div className="text-[12px] font-[700] text-[var(--colors-ink-muted)]">규모</div>
-              <div className="mt-1 text-[13px] font-[900] text-[var(--colors-ink)]">{room.sizeLabel}</div>
-            </div>
-            <div className="rounded-lg bg-[var(--colors-surface-2)] p-3">
-              <div className="text-[12px] font-[700] text-[var(--colors-ink-muted)]">현재 상태</div>
-              <div className="mt-1 flex items-center gap-1.5 text-[13px] font-[900] text-[var(--colors-ink)]">
-                <span className={`h-2 w-2 rounded-full ${status.isInUse ? "bg-[var(--colors-primary)]" : "bg-[var(--colors-ink-tertiary)]"}`} />
-                {status.statusText}
-              </div>
-            </div>
-            <div className="rounded-lg bg-[var(--colors-surface-2)] p-3">
-              <div className="text-[12px] font-[700] text-[var(--colors-ink-muted)]">냉난방 상태</div>
-              <div className="mt-1 text-[13px] font-[900] text-[var(--colors-ink)]">
-                {status.hvacRunning ? `냉방 중 (${hvacTemp}°C)` : status.hvacText}
-              </div>
-            </div>
-          </div>
-          <div className="rounded-lg bg-[var(--colors-surface-2)] p-3">
-            <div className="text-[12px] font-[700] text-[var(--colors-ink-muted)]">특수 설비</div>
-            <div className="mt-1 text-[13px] font-[900] text-[var(--colors-ink)]">
-              {room.hasLargeScreen ? "대형 스크린, 빔프로젝터" : room.computerCount ? `PC ${room.computerCount}대` : "없음"}
-            </div>
-          </div>
-          <div className="rounded-lg bg-[var(--colors-surface-2)] p-3">
-            <div className="text-[12px] font-[700] text-[var(--colors-ink-muted)]">오늘 일정</div>
-            <div className="mt-1 text-[13px] font-[900] text-[var(--colors-ink)]">{scheduleLine}</div>
-          </div>
-          <div className="rounded-lg bg-[var(--colors-surface-2)] p-3">
-            <div className="flex items-center justify-between text-[13px] font-[900] text-[var(--colors-ink)]">
-              <span>주간 에너지 절감</span>
-              <span className="text-[var(--colors-primary)]">
-                {room.savingRate.toFixed(1)}% ({room.weeklySavingsKwh.toFixed(1)} kWh)
-              </span>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setView("schedule")}
-            className="w-full rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] px-4 py-3 text-sm font-[900] text-[var(--colors-ink)] hover:bg-[var(--colors-surface-3)]"
-          >
-            강의실 시간표 보기
-          </button>
-        </div>
+        <>
+          <MetricList items={details} />
+          <Button onClick={() => setView("schedule")} className="w-full">강의실 시간표 보기</Button>
+        </>
       )}
-    </div>
+    </section>
   );
 }
 
+// 폰에서 3D 장면 이름표는 장면 비율(distanceFactor) 때문에 44px보다 작아진다. 폰에서는 같은 강의실을 44px 버튼 목록으로 고른다.
+function RoomButtonList({ rooms, roomUsageById, selectedRoomId, onSelectRoom }) {
+  return (
+    <ul data-qa="d4-room-list" aria-label="강의실 목록" className="grid w-full grid-cols-3 gap-2 sm:hidden">
+      {rooms.filter((room) => room.isSelectable !== false).map((room) => (
+        <li key={room.id}>
+          <button
+            type="button"
+            aria-pressed={selectedRoomId === room.id}
+            onClick={() => onSelectRoom(room.id)}
+            className={`flex min-h-11 w-full flex-col items-center justify-center rounded-control border border-hairline bg-surface-2 px-2 py-1 text-body font-semibold text-ink aria-pressed:ring-2 aria-pressed:ring-primary ${COARSE_TARGET} ${FOCUS_RING}`}
+          >
+            <span className="inline-flex items-center gap-1">
+              {selectedRoomId === room.id && <Check aria-hidden="true" className="h-4 w-4" />}
+              {formatRoomNumber(room.roomNumber)}
+            </span>
+            {roomUsageById.get(room.id) && <span className="text-micro text-ink-muted">사용 중</span>}
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// D4 층의 강의실 고르기(패인의 층 단계): 동·층 선택 -> 강의실(장면 또는 폰의 버튼 목록) -> 고른 강의실 상세.
+// 제목과 돌아가기는 패인 머리(브레드크럼·상위로) 하나뿐이다.
 export function D4RoomGridSelect({
   building,
   wing,
@@ -151,86 +124,45 @@ export function D4RoomGridSelect({
   onSelectRoom,
   onChangeWing,
   onChangeFloor,
-  onBack,
 }) {
+  const major = getFloorMajor(wing.id, floor);
   return (
-    <div className="flex h-full w-full items-center justify-center gap-6 px-4">
-      <div className="w-[20vw] min-w-[320px] max-w-[400px] shrink-0">
-        <RoomDetailCard room={selectedRoom} status={selectedRoomStatus} onBack={onBack} />
+    <D4ScrollRoot>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="w-56">
+          <Segmented
+            kind="radio"
+            label="동 선택"
+            size="sm"
+            options={building.wings.map((item) => ({ value: item.id, label: item.label }))}
+            value={wing.id}
+            onChange={onChangeWing}
+          />
+        </div>
+        <label className="flex items-center gap-2 text-caption text-ink-muted">
+          층
+          <select value={floor} onChange={(event) => onChangeFloor(Number(event.target.value))} className={FLOOR_SELECT}>
+            {floorLevels(wing).map((level) => <option key={level} value={level}>{`${wing.label} ${floorLabel(level)}`}</option>)}
+          </select>
+        </label>
       </div>
 
-      <div className="flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-5">
-        <div className="flex w-full items-center justify-between gap-4">
-          <button
-            type="button"
-            onClick={onBack}
-            className="flex items-center gap-1.5 rounded-md border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] px-3 py-2 text-[13px] font-[700] text-[var(--colors-ink-muted)] transition hover:text-[var(--colors-ink)] hover:bg-[var(--colors-surface-2)]"
-          >
-            <ChevronLeft size={16} />
-            D4 건물 내부 보기
-          </button>
-          <div className="text-lg font-[900] text-[var(--colors-ink)]">{building.displayName}</div>
-          <div className="w-[140px]" />
-        </div>
+      {major && <p className="text-caption text-ink-muted">{`${wing.label} ${floorLabel(floor)} · ${major}`}</p>}
 
-        <div className="flex items-center gap-3">
-          <div className="flex rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] p-1">
-            {building.wings.map((w) => (
-              <button
-                key={w.id}
-                type="button"
-                onClick={() => onChangeWing(w.id)}
-                className={`rounded-md px-4 py-1.5 text-[13px] font-[800] transition-colors ${
-                  wing.id === w.id
-                    ? "bg-[var(--colors-primary)] text-white shadow-sm"
-                    : "text-[var(--colors-ink-subtle)] hover:text-[var(--colors-ink)]"
-                }`}
-              >
-                {w.label}
-              </button>
-            ))}
+      {rooms.length === 0 ? (
+        <p className="w-full rounded-card border border-hairline px-6 py-8 text-center text-body text-ink-muted">
+          이 층에는 등록된 강의실이 없습니다.
+        </p>
+      ) : (
+        <>
+          <div data-qa="d4-room-grid" className="h-[40vh] min-h-[220px] w-full max-sm:hidden">
+            <D4RoomGridScene rooms={rooms} roomUsageById={roomUsageById} selectedRoomId={selectedRoom?.id} onSelectRoom={onSelectRoom} />
           </div>
+          <RoomButtonList rooms={rooms} roomUsageById={roomUsageById} selectedRoomId={selectedRoom?.id} onSelectRoom={onSelectRoom} />
+        </>
+      )}
 
-          <div className="relative">
-            <select
-              value={floor}
-              onChange={(event) => onChangeFloor(Number(event.target.value))}
-              className="appearance-none rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] px-4 py-2 pr-8 text-[13px] font-[800] text-[var(--colors-ink)]"
-            >
-              {(wing.hasBasement
-                ? [0, ...Array.from({ length: wing.floors }, (_, i) => i + 1)]
-                : Array.from({ length: wing.floors }, (_, i) => i + 1)
-              ).map((f) => (
-                <option key={f} value={f}>
-                  {wing.label} {f === 0 ? "B1" : `${f}층`}
-                </option>
-              ))}
-            </select>
-            <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--colors-ink-subtle)]" />
-          </div>
-        </div>
-
-        {getFloorMajor(wing.id, floor) && (
-          <div className="text-[12px] font-[700] text-[var(--colors-ink-subtle)]">
-            {wing.label} {floor === 0 ? "B1" : `${floor}층`} · {getFloorMajor(wing.id, floor)}
-          </div>
-        )}
-
-        {rooms.length === 0 ? (
-          <div className="w-full max-w-[700px] rounded-lg border border-dashed border-[var(--colors-hairline)] px-6 py-8 text-center text-[13px] font-[700] text-[var(--colors-ink-subtle)]">
-            이 층에는 등록된 강의실이 없습니다.
-          </div>
-        ) : (
-          <div className="h-[56vh] w-full min-w-[500px] max-w-[900px]">
-            <D4RoomGridScene
-              rooms={rooms}
-              roomUsageById={roomUsageById}
-              selectedRoomId={selectedRoom?.id}
-              onSelectRoom={onSelectRoom}
-            />
-          </div>
-        )}
-      </div>
-    </div>
+      <RoomDetailCard room={selectedRoom} status={selectedRoomStatus} />
+    </D4ScrollRoot>
   );
 }

@@ -11,9 +11,11 @@ try:
     from .conflict_area import ConflictAreaManager
     from .behavior_manager import BehaviorManager
     from .mobility_graph import GraphPath, MobilityGraph
+    from .network_provenance import network_provenance
     from .od_manager import ODManager
     from .risk_engine import RiskEngine
-    from .runtime_network import load_runtime_graph
+    from .polygon_index import PolygonIndex
+    from .runtime_network import load_polygon_indexes, load_runtime_graph
     from .scenario_manager import ScenarioManager
     from .statistics_manager import StatisticsManager
     from .trip_manager import TripManager
@@ -23,9 +25,11 @@ except ImportError:
     from conflict_area import ConflictAreaManager
     from behavior_manager import BehaviorManager
     from mobility_graph import GraphPath, MobilityGraph
+    from network_provenance import network_provenance
     from od_manager import ODManager
     from risk_engine import RiskEngine
-    from runtime_network import load_runtime_graph
+    from polygon_index import PolygonIndex
+    from runtime_network import load_polygon_indexes, load_runtime_graph
     from scenario_manager import ScenarioManager
     from statistics_manager import StatisticsManager
     from trip_manager import TripManager
@@ -47,7 +51,12 @@ class SimulationEngine:
         self.random = random.Random(seed)
         self.seed = seed
         graph_payload, self.network_runtime = load_runtime_graph(self.data_dir)
+        # measured vs estimated make-up of the network and the committed 60 s separation trace (dashboard, 추정 labels)
+        self.network_provenance = network_provenance(self.data_dir) if (self.data_dir / "campus_transport_network.geojson").exists() else None
         self.graph = MobilityGraph(graph_payload)
+        walkable, roads = load_polygon_indexes(self.data_dir)
+        # surface under each agent (crossing over road over the rest where they overlap); None without polygon files
+        self.surface_index = PolygonIndex.merge(*(index for index in (walkable, roads) if index is not None), priority=("crossing", "crossing_estimated", "sidewalk", "island", "walkway_estimated", "plaza", "road", "lot")) if (walkable or roads) else None
         self.routes = self.graph  # compatibility for callers that inspect route_id
         self.scenarios = ScenarioManager(self.data_dir / "sample_scenario.json")
         self.risk_engine = RiskEngine(self.data_dir / "risk_config.json")
@@ -231,7 +240,13 @@ class SimulationEngine:
         entity["current_edge"] = path.segment_edge_ids[min(segment, len(path.segment_edge_ids) - 1)] if path.segment_edge_ids else None
         if entity.get("current_edge") and hasattr(self, "visited_edges"):
             self.visited_edges[entity["type"]].add(entity["current_edge"])
-        entity["in_crosswalk"] = entity["edge_kind"] == "crosswalk" or str(entity.get("road_id")).startswith("CW_")
+        index = getattr(self, "surface_index", None)
+        entity["surface_class"] = index.classify(entity["x"], entity["z"]) if index is not None else None
+        # a person on an estimated crossing (no CW polygon, no paint) is crossing too: cars yield as at a crosswalk
+        entity["in_crosswalk"] = (
+            entity["edge_kind"] == "crosswalk" or str(entity.get("road_id")).startswith("CW_")
+            or (entity["type"] == "person" and entity["surface_class"] == "crossing_estimated")
+        )
         entity["in_risk_zone"] = entity.get("road_id") in self.risk_zone_ids
         entity["current_position"] = [round(entity["x"], 3), 0.0, round(entity["z"], 3)]
         entity["previous_position"] = [round(entity["previous_x"], 3), 0.0, round(entity["previous_z"], 3)]
@@ -420,6 +435,7 @@ class SimulationEngine:
             "current_risks": len(self.last_step_events),
             "network_runtime": dict(self.network_runtime),
             "network_coverage": coverage,
+            "network_provenance": self.network_provenance,
             "spatial_broad_phase": {
                 "interaction_candidates": self.interactions.spatial_index.last_candidate_count,
                 "interaction_pairs": self.interactions.spatial_index.last_pair_count,

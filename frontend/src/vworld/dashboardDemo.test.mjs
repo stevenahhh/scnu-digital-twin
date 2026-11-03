@@ -10,7 +10,7 @@ import {
 test("walks the dashboard through simulation and safety before selecting a building for energy", () => {
   assert.equal(dashboardDemoStateAt(0).tab, "dashboard");
   assert.equal(dashboardDemoStateAt(3_000).tab, "environment");
-  assert.equal(dashboardDemoStateAt(8_000).tab, "safety");
+  assert.equal(dashboardDemoStateAt(8_000).tab, "parking_safety");
   assert.equal(dashboardDemoStateAt(10_000).tab, "energy");
   assert.deepEqual(dashboardDemoStateAt(DASHBOARD_DEMO_DURATION_MS), {
     at: 9_300,

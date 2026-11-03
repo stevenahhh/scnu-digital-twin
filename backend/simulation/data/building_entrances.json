@@ -122,6 +122,26 @@
           ]
         }
       ]
+    },
+    {
+      "building_id": "BLD_E8",
+      "building_name": "인문예술대학",
+      "source": "porch mouth of the E8 entrance passage (the raised porch block of the GIS footprint over the walk to the glass core of data/facade-attachments.json, VR scene_e8 f, PR #58): 1 m outside the footprint in the paved forecourt, reached across the courtyard (estimated)",
+      "entrances": [
+        {
+          "entrance_id": "ENT_E8_MAIN",
+          "position": [
+            75.831,
+            0,
+            -165.761
+          ],
+          "node_id": "POI_ENT_E8_MAIN",
+          "allowed_types": [
+            "person"
+          ]
+        }
+      ],
+      "category": "academic"
     }
   ]
 }

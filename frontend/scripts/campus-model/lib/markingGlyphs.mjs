@@ -1,0 +1,488 @@
+// Clean templates for the symbol road markings (stages/markings.mjs): arrows, road text, the diamond, give-way
+// triangle, chevrons, wheelchair and bicycle symbols. The photo (0.25 m) shows where such a marking is painted, how
+// big it is and which way it points, but not its outline: a detected arrow or text is a blob of paint pixels. So the
+// stage draws these templates at the detected centre, orientation and size instead of the blob.
+//
+// Shapes follow the drawings of 도로교통법 시행규칙 별표 6 (노면표시: 진행방향 5xx, 문자 5xx) as far as their proportions go;
+// the proportions below are approximations (추정), the sizes come from the photo. Every template is built in a local
+// frame in metres: x to the right of travel, y forward (towards the arrow head / the top of the text), and returned as
+// polygons ([outer ring] lists; a ring is [x, y] points, counter-clockwise or not: the stage triangulates either).
+
+const TAU = 2 * Math.PI;
+
+// One straight stroke from a to b, `w` wide, as a rectangle.
+export function bar(a, b, w) {
+  const dx = b[0] - a[0];
+  const dy = b[1] - a[1];
+  const l = Math.hypot(dx, dy) || 1;
+  const n = [(-dy / l) * (w / 2), (dx / l) * (w / 2)];
+  return [[a[0] + n[0], a[1] + n[1]], [b[0] + n[0], b[1] + n[1]], [b[0] - n[0], b[1] - n[1]], [a[0] - n[0], a[1] - n[1]]];
+}
+
+// A polyline stroked `w` wide: one rectangle per segment plus a square joint at each inner vertex (same colour, so
+// the overlaps are invisible).
+export function strokes(points, w) {
+  const out = [];
+  for (let i = 1; i < points.length; i += 1) out.push([bar(points[i - 1], points[i], w)]);
+  for (let i = 1; i + 1 < points.length; i += 1) out.push([ring(points[i], w / 2, w / 2, 8)]);
+  return out;
+}
+
+// Ellipse (n vertices) and elliptic ring `w` wide as a polygon with a hole.
+export function ring(c, rx, ry, n = 24) {
+  return Array.from({ length: n }, (_, k) => [c[0] + rx * Math.cos((k / n) * TAU), c[1] + ry * Math.sin((k / n) * TAU)]);
+}
+export function ellipseRing(c, rx, ry, w, n = 28) {
+  return [[ring(c, rx + w / 2, ry + w / 2, n), ring(c, Math.max(0.01, rx - w / 2), Math.max(0.01, ry - w / 2), n).reverse()]];
+}
+
+// ---------------------------------------------------------------- arrows
+// Proportions of a straight arrow `length` long: head HEAD_SHARE of the length, shaft SHAFT_SHARE of the head width.
+const HEAD_SHARE = 0.3;
+const SHAFT_SHARE = 0.3;
+export const ARROW_KINDS = Object.freeze(["arrow_straight", "arrow_left", "arrow_right", "arrow_straight_left", "arrow_straight_right", "arrow_uturn"]);
+
+function head(tip, dir, length, width) {
+  const n = [-dir[1], dir[0]];
+  const base = [tip[0] - dir[0] * length, tip[1] - dir[1] * length];
+  return [tip, [base[0] + (n[0] * width) / 2, base[1] + (n[1] * width) / 2], [base[0] - (n[0] * width) / 2, base[1] - (n[1] * width) / 2]];
+}
+
+// Arrow polygons in the local frame, tail at y = -length / 2, the straight head at y = +length / 2. `width` is the
+// painted width of the head (photo), clamped to 18-32 % of the length.
+export function arrowTemplate(kind, length, width) {
+  const headWidth = Math.min(0.32 * length, Math.max(0.18 * length, width));
+  const headLength = HEAD_SHARE * length;
+  const shaft = SHAFT_SHARE * headWidth;
+  const tail = -length / 2;
+  const top = length / 2;
+  const out = [];
+  const straight = () => {
+    out.push([bar([0, tail], [0, top - headLength + 0.01], shaft)]);
+    out.push([head([0, top], [0, 1], headLength, headWidth)]);
+  };
+  // a turn branch leaving the shaft at y = from, running sideways (side -1 left, +1 right) with its own head
+  const branch = (side, from, reach) => {
+    const turnHead = 0.8 * headLength;
+    out.push([bar([0, from], [side * (reach - turnHead + 0.01), from], shaft)]);
+    out.push([head([side * reach, from], [side, 0], turnHead, 0.85 * headWidth)]);
+  };
+  const reach = Math.max(headWidth * 1.4, 0.32 * length);
+  switch (kind) {
+    case "arrow_straight":
+      straight();
+      break;
+    case "arrow_left":
+    case "arrow_right": {
+      const side = kind === "arrow_left" ? -1 : 1;
+      const from = top - 0.35 * length;
+      out.push([bar([0, tail], [0, from + shaft / 2], shaft)]);
+      branch(side, from, reach);
+      break;
+    }
+    case "arrow_straight_left":
+    case "arrow_straight_right":
+      straight();
+      branch(kind === "arrow_straight_left" ? -1 : 1, tail + 0.45 * length, reach);
+      break;
+    case "arrow_uturn": {
+      // up the shaft, a half turn to the left, back down with the head
+      const r = Math.max(0.5 * headWidth, 0.12 * length);
+      const yTurn = top - r - shaft / 2;
+      out.push([bar([0, tail], [0, yTurn], shaft)]);
+      const n = 12;
+      const arc = Array.from({ length: n + 1 }, (_, k) => [-r + r * Math.cos((k / n) * Math.PI), yTurn + r * Math.sin((k / n) * Math.PI)]);
+      out.push(...strokes(arc, shaft));
+      const downTip = [-2 * r, yTurn - 0.45 * length];
+      out.push([bar([-2 * r, yTurn], [-2 * r, downTip[1] + 0.8 * headLength - 0.01], shaft)]);
+      out.push([head(downTip, [0, -1], 0.8 * headLength, 0.85 * headWidth)]);
+      break;
+    }
+    default:
+      throw new Error(`no arrow template for ${kind}`);
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------- road text
+// Road text is a narrow gothic stretched along the road: each syllable about TEXT_STRETCH times as long (along
+// travel) as it is wide (도로교통법 시행규칙 별표 6 문자 표시, proportions approximated, 추정). A syllable is composed from its
+// jamo (initial, medial, optional final) in the usual block layouts: a vertical vowel beside the initial, a horizontal
+// vowel under it, a compound vowel around it, the final at the bottom. Jamo are polylines and ellipses on unit boxes
+// (x 0..1 left to right, y 0..1 top to bottom), stroked STROKE of the syllable width after the syllable is stretched,
+// so every stroke has one width in metres.
+export const TEXT_STRETCH = 2.5;
+const STROKE = 0.17;
+const E = (cx, cy, rx, ry) => ({ ellipse: [cx, cy, rx, ry] });
+const CONSONANT = {
+  ㄱ: [[[0, 0.08], [0.92, 0.08], [0.92, 1]]],
+  ㄴ: [[[0.08, 0], [0.08, 0.92], [1, 0.92]]],
+  ㄷ: [[[1, 0.08], [0.08, 0.08], [0.08, 0.92], [1, 0.92]]],
+  ㄹ: [[[0, 0.08], [0.92, 0.08], [0.92, 0.5], [0.08, 0.5], [0.08, 0.92], [1, 0.92]]],
+  ㅁ: [[[0.08, 0.08], [0.92, 0.08], [0.92, 0.92], [0.08, 0.92], [0.08, 0.08]]],
+  ㅂ: [[[0.08, 0], [0.08, 0.92], [0.92, 0.92], [0.92, 0]], [[0.08, 0.46], [0.92, 0.46]]],
+  ㅅ: [[[0.5, 0], [0.5, 0.25], [0.02, 1]], [[0.5, 0.25], [0.98, 1]]],
+  ㅇ: [E(0.5, 0.5, 0.42, 0.42)],
+  ㅈ: [[[0.02, 0.08], [0.98, 0.08]], [[0.5, 0.08], [0.5, 0.3], [0.02, 1]], [[0.5, 0.3], [0.98, 1]]],
+  ㅊ: [[[0.5, 0], [0.5, 0.12]], [[0.02, 0.2], [0.98, 0.2]], [[0.5, 0.2], [0.5, 0.4], [0.02, 1]], [[0.5, 0.4], [0.98, 1]]],
+  ㅋ: [[[0, 0.08], [0.92, 0.08], [0.92, 1]], [[0, 0.5], [0.92, 0.5]]],
+  ㅌ: [[[1, 0.08], [0.08, 0.08], [0.08, 0.92], [1, 0.92]], [[0.08, 0.5], [0.9, 0.5]]],
+  ㅍ: [[[0, 0.08], [1, 0.08]], [[0, 0.92], [1, 0.92]], [[0.3, 0.08], [0.3, 0.92]], [[0.7, 0.08], [0.7, 0.92]]],
+  ㅎ: [[[0.5, 0], [0.5, 0.1]], [[0.05, 0.2], [0.95, 0.2]], E(0.5, 0.66, 0.34, 0.26)],
+};
+// doubled and compound consonants: two consonants side by side
+const PAIRS = { ㄲ: "ㄱㄱ", ㄸ: "ㄷㄷ", ㅃ: "ㅂㅂ", ㅆ: "ㅅㅅ", ㅉ: "ㅈㅈ", ㄳ: "ㄱㅅ", ㄵ: "ㄴㅈ", ㄶ: "ㄴㅎ", ㄺ: "ㄹㄱ", ㄻ: "ㄹㅁ", ㄼ: "ㄹㅂ", ㄽ: "ㄹㅅ", ㄾ: "ㄹㅌ", ㄿ: "ㄹㅍ", ㅀ: "ㄹㅎ", ㅄ: "ㅂㅅ" };
+const VOWEL = {
+  ㅏ: [[[0.3, 0], [0.3, 1]], [[0.3, 0.5], [1, 0.5]]],
+  ㅑ: [[[0.3, 0], [0.3, 1]], [[0.3, 0.36], [1, 0.36]], [[0.3, 0.64], [1, 0.64]]],
+  ㅓ: [[[0.7, 0], [0.7, 1]], [[0, 0.5], [0.7, 0.5]]],
+  ㅕ: [[[0.7, 0], [0.7, 1]], [[0, 0.36], [0.7, 0.36]], [[0, 0.64], [0.7, 0.64]]],
+  ㅣ: [[[0.5, 0], [0.5, 1]]],
+  ㅐ: [[[0.15, 0], [0.15, 1]], [[0.15, 0.5], [0.5, 0.5]], [[0.85, 0], [0.85, 1]]],
+  ㅒ: [[[0.15, 0], [0.15, 1]], [[0.15, 0.38], [0.5, 0.38]], [[0.15, 0.62], [0.5, 0.62]], [[0.85, 0], [0.85, 1]]],
+  ㅔ: [[[0, 0.5], [0.42, 0.5]], [[0.42, 0], [0.42, 1]], [[0.85, 0], [0.85, 1]]],
+  ㅖ: [[[0, 0.38], [0.42, 0.38]], [[0, 0.62], [0.42, 0.62]], [[0.42, 0], [0.42, 1]], [[0.85, 0], [0.85, 1]]],
+  ㅗ: [[[0.5, 0.1], [0.5, 0.62]], [[0, 0.66], [1, 0.66]]],
+  ㅛ: [[[0.32, 0.1], [0.32, 0.62]], [[0.68, 0.1], [0.68, 0.62]], [[0, 0.66], [1, 0.66]]],
+  ㅜ: [[[0, 0.3], [1, 0.3]], [[0.5, 0.3], [0.5, 0.95]]],
+  ㅠ: [[[0, 0.3], [1, 0.3]], [[0.32, 0.3], [0.32, 0.95]], [[0.68, 0.3], [0.68, 0.95]]],
+  ㅡ: [[[0, 0.5], [1, 0.5]]],
+};
+const INITIALS = [..."ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ"];
+const MEDIALS = [..."ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ"];
+const FINALS = ["", ..."ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ"];
+const COMPOUND = { ㅘ: "ㅗㅏ", ㅙ: "ㅗㅐ", ㅚ: "ㅗㅣ", ㅝ: "ㅜㅓ", ㅞ: "ㅜㅔ", ㅟ: "ㅜㅣ", ㅢ: "ㅡㅣ" };
+const HORIZONTAL = new Set([..."ㅗㅛㅜㅠㅡ"]);
+// boxes [x0, y0, x1, y1] on the unit syllable
+const LAYOUT = {
+  V: { initial: [0.1, 0.04, 0.52, 0.96], vowel: [0.62, 0.04, 0.9, 0.96] },
+  VF: { initial: [0.1, 0.04, 0.52, 0.55], vowel: [0.62, 0.04, 0.9, 0.6], final: [0.1, 0.68, 0.9, 0.96] },
+  H: { initial: [0.18, 0.04, 0.82, 0.5], vowel: [0.1, 0.55, 0.9, 0.96] },
+  HF: { initial: [0.18, 0.04, 0.82, 0.33], vowel: [0.1, 0.37, 0.9, 0.62], final: [0.1, 0.7, 0.9, 0.96] },
+  C: { initial: [0.1, 0.04, 0.55, 0.45], vowel: [0.1, 0.5, 0.62, 0.9], side: [0.68, 0.04, 0.9, 0.96] },
+  CF: { initial: [0.1, 0.04, 0.55, 0.3], vowel: [0.1, 0.33, 0.62, 0.6], side: [0.68, 0.04, 0.9, 0.62], final: [0.1, 0.7, 0.9, 0.96] },
+};
+const inBox = ([x0, y0, x1, y1], element) => (element.ellipse
+  ? E(x0 + element.ellipse[0] * (x1 - x0), y0 + element.ellipse[1] * (y1 - y0), element.ellipse[2] * (x1 - x0), element.ellipse[3] * (y1 - y0))
+  : element.map(([x, y]) => [x0 + x * (x1 - x0), y0 + y * (y1 - y0)]));
+function consonant(char, box) {
+  if (PAIRS[char]) {
+    const [x0, y0, x1, y1] = box;
+    const mid = (x0 + x1) / 2;
+    const gap = 0.06 * (x1 - x0);
+    return [...consonant(PAIRS[char][0], [x0, y0, mid - gap, y1]), ...consonant(PAIRS[char][1], [mid + gap, y0, x1, y1])];
+  }
+  return CONSONANT[char].map((e) => inBox(box, e));
+}
+// Stroke elements of one Hangul syllable (or null for any other character).
+export function hangulElements(char) {
+  const code = char.codePointAt(0) - 0xac00;
+  if (code < 0 || code >= 11172) return null;
+  const initial = INITIALS[Math.floor(code / 588)];
+  const medial = MEDIALS[Math.floor((code % 588) / 28)];
+  const final = FINALS[code % 28];
+  const type = COMPOUND[medial] ? "C" : HORIZONTAL.has(medial) ? "H" : "V";
+  const layout = LAYOUT[type + (final ? "F" : "")];
+  const out = consonant(initial, layout.initial);
+  if (type === "C") {
+    out.push(...VOWEL[COMPOUND[medial][0]].map((e) => inBox(layout.vowel, e)), ...VOWEL[COMPOUND[medial][1]].map((e) => inBox(layout.side, e)));
+  } else out.push(...VOWEL[medial].map((e) => inBox(layout.vowel, e)));
+  if (final) out.push(...consonant(final, layout.final));
+  return out;
+}
+const DIGITS = {
+  0: [E(0.5, 0.5, 0.36, 0.44)],
+  1: [[[0.55, 0.04], [0.55, 0.96]], [[0.3, 0.2], [0.55, 0.04]]],
+  2: [[[0.12, 0.2], [0.3, 0.05], [0.7, 0.05], [0.88, 0.22], [0.88, 0.38], [0.12, 0.95], [0.9, 0.95]]],
+  3: [[[0.12, 0.06], [0.86, 0.06], [0.45, 0.43], [0.72, 0.48], [0.88, 0.68], [0.76, 0.9], [0.32, 0.95], [0.1, 0.85]]],
+  4: [[[0.7, 0.96], [0.7, 0.04], [0.1, 0.68], [0.92, 0.68]]],
+  5: [[[0.86, 0.06], [0.2, 0.06], [0.15, 0.45], [0.6, 0.42], [0.86, 0.6], [0.86, 0.8], [0.66, 0.95], [0.26, 0.95], [0.1, 0.85]]],
+  6: [[[0.8, 0.06], [0.42, 0.1], [0.16, 0.45], [0.16, 0.72]], E(0.5, 0.72, 0.34, 0.23)],
+  7: [[[0.1, 0.06], [0.9, 0.06], [0.42, 0.96]]],
+  8: [E(0.5, 0.27, 0.3, 0.21), E(0.5, 0.72, 0.36, 0.24)],
+  9: [E(0.5, 0.3, 0.34, 0.24), [[0.84, 0.3], [0.6, 0.96]]],
+  // the P of a parking (PM) bay
+  P: [[[0.18, 0.97], [0.18, 0.04], [0.58, 0.04], [0.8, 0.12], [0.88, 0.28], [0.8, 0.44], [0.58, 0.52], [0.18, 0.52]]],
+};
+// Latin capitals A-Z (hedge lettering, e.g. VR scene_e7 "SSC"; road text keeps Hangul and digits): block letters on the
+// unit box in the same polyline/ellipse form, simplified (curves as polylines), proportions estimated.
+const LATIN = {
+  A: [[[0.06, 0.96], [0.5, 0.04], [0.94, 0.96]], [[0.25, 0.62], [0.75, 0.62]]],
+  B: [[[0.12, 0.04], [0.12, 0.96], [0.66, 0.96], [0.88, 0.84], [0.88, 0.62], [0.66, 0.5], [0.12, 0.5]], [[0.12, 0.04], [0.62, 0.04], [0.82, 0.15], [0.82, 0.38], [0.62, 0.5]]],
+  C: [[[0.9, 0.18], [0.72, 0.04], [0.32, 0.04], [0.1, 0.25], [0.1, 0.75], [0.32, 0.96], [0.72, 0.96], [0.9, 0.82]]],
+  D: [[[0.12, 0.04], [0.12, 0.96], [0.6, 0.96], [0.88, 0.75], [0.88, 0.25], [0.6, 0.04], [0.12, 0.04]]],
+  E: [[[0.88, 0.04], [0.12, 0.04], [0.12, 0.96], [0.88, 0.96]], [[0.12, 0.5], [0.72, 0.5]]],
+  F: [[[0.88, 0.04], [0.12, 0.04], [0.12, 0.96]], [[0.12, 0.5], [0.72, 0.5]]],
+  G: [[[0.9, 0.18], [0.72, 0.04], [0.32, 0.04], [0.1, 0.25], [0.1, 0.75], [0.32, 0.96], [0.72, 0.96], [0.9, 0.8], [0.9, 0.55], [0.55, 0.55]]],
+  H: [[[0.12, 0.04], [0.12, 0.96]], [[0.88, 0.04], [0.88, 0.96]], [[0.12, 0.5], [0.88, 0.5]]],
+  I: [[[0.5, 0.04], [0.5, 0.96]], [[0.25, 0.04], [0.75, 0.04]], [[0.25, 0.96], [0.75, 0.96]]],
+  J: [[[0.82, 0.04], [0.82, 0.75], [0.62, 0.96], [0.32, 0.96], [0.12, 0.78]]],
+  K: [[[0.12, 0.04], [0.12, 0.96]], [[0.88, 0.04], [0.12, 0.6]], [[0.36, 0.42], [0.9, 0.96]]],
+  L: [[[0.12, 0.04], [0.12, 0.96], [0.88, 0.96]]],
+  M: [[[0.08, 0.96], [0.08, 0.04], [0.5, 0.6], [0.92, 0.04], [0.92, 0.96]]],
+  N: [[[0.12, 0.96], [0.12, 0.04], [0.88, 0.96], [0.88, 0.04]]],
+  O: [E(0.5, 0.5, 0.4, 0.46)],
+  P: [[[0.12, 0.96], [0.12, 0.04], [0.62, 0.04], [0.86, 0.14], [0.88, 0.3], [0.8, 0.44], [0.6, 0.52], [0.12, 0.52]]],
+  Q: [E(0.5, 0.48, 0.4, 0.44), [[0.58, 0.7], [0.92, 0.98]]],
+  R: [[[0.12, 0.96], [0.12, 0.04], [0.62, 0.04], [0.86, 0.14], [0.88, 0.3], [0.8, 0.44], [0.6, 0.52], [0.12, 0.52]], [[0.5, 0.52], [0.9, 0.96]]],
+  S: [[[0.88, 0.15], [0.68, 0.04], [0.3, 0.04], [0.12, 0.17], [0.12, 0.36], [0.3, 0.48], [0.7, 0.52], [0.88, 0.64], [0.88, 0.83], [0.7, 0.96], [0.3, 0.96], [0.1, 0.85]]],
+  T: [[[0.06, 0.04], [0.94, 0.04]], [[0.5, 0.04], [0.5, 0.96]]],
+  U: [[[0.12, 0.04], [0.12, 0.75], [0.32, 0.96], [0.68, 0.96], [0.88, 0.75], [0.88, 0.04]]],
+  V: [[[0.06, 0.04], [0.5, 0.96], [0.94, 0.04]]],
+  W: [[[0.04, 0.04], [0.26, 0.96], [0.5, 0.4], [0.74, 0.96], [0.96, 0.04]]],
+  X: [[[0.1, 0.04], [0.9, 0.96]], [[0.9, 0.04], [0.1, 0.96]]],
+  Y: [[[0.08, 0.04], [0.5, 0.5], [0.92, 0.04]], [[0.5, 0.5], [0.5, 0.96]]],
+  Z: [[[0.1, 0.04], [0.9, 0.04], [0.1, 0.96], [0.9, 0.96]]],
+};
+// Stroke elements of any supported character: digits and the bay P, Latin capitals, Hangul syllables (null otherwise).
+export const glyphElements = (char) => DIGITS[char] ?? LATIN[char] ?? hangulElements(char);
+export const GLYPH_CHARACTERS = Object.freeze([...new Set([...Object.keys(DIGITS), ...Object.keys(LATIN)])]);
+export const hasGlyph = (char) => char === " " || Boolean(glyphElements(char));
+
+// One character `width` x `height` metres, centred at the local origin, its top towards +y.
+export function glyph(char, width, height) {
+  const elements = glyphElements(char);
+  if (!elements) throw new Error(`no road-marking glyph for ${char}`);
+  const w = STROKE * width;
+  const map = ([x, y]) => [(x - 0.5) * width, (0.5 - y) * height];
+  const out = [];
+  for (const s of elements) {
+    if (s.ellipse) {
+      const [cx, cy, rx, ry] = s.ellipse;
+      out.push(...ellipseRing(map([cx, cy]), rx * width, ry * height, w));
+    } else {
+      out.push(...strokes(s.map(map), w));
+    }
+  }
+  return out;
+}
+
+// A word written across the road (left to right as the approaching driver reads it), characters `pitch` apart.
+export function textTemplate(text, charWidth, charHeight, pitch = charWidth * 1.25) {
+  const chars = [...text];
+  const out = [];
+  chars.forEach((char, i) => {
+    const x = (i - (chars.length - 1) / 2) * pitch;
+    for (const poly of glyph(char, charWidth, charHeight)) out.push(poly.map((r) => r.map(([px, py]) => [px + x, py])));
+  });
+  return out;
+}
+
+// A block of lines (top line first = farthest from the approaching driver), `width` x `height` metres, centred at the
+// origin with its top towards +y. Every syllable has one width: the longest line fills the block width with
+// LETTER_GAP between syllables, shorter lines are spread over the same width (as painted: "국 립" over "순천대학교");
+// syllables are TEXT_STRETCH times as long as wide unless the block is shorter (or `charHeight` fixes their length),
+// LINE_GAP of a syllable between lines.
+const LETTER_GAP = 0.3;
+const LINE_GAP = 0.25;
+export function textBlock(lines, width, height, { charHeight: fixed = null } = {}) {
+  const longest = Math.max(...lines.map((l) => [...l].length));
+  const charWidth = width / (longest + LETTER_GAP * (longest - 1));
+  const charHeight = fixed ?? Math.min(TEXT_STRETCH * charWidth, height / (lines.length + LINE_GAP * (lines.length - 1)));
+  const total = charHeight * (lines.length + LINE_GAP * (lines.length - 1));
+  const out = [];
+  lines.forEach((line, k) => {
+    const chars = [...line];
+    const y = total / 2 - charHeight / 2 - k * charHeight * (1 + LINE_GAP);
+    const pitch = chars.length > 1 ? (width - charWidth) / (chars.length - 1) : 0;
+    chars.forEach((char, i) => {
+      if (char === " ") return;
+      const x = chars.length > 1 ? -width / 2 + charWidth / 2 + i * pitch : 0;
+      for (const poly of glyph(char, charWidth, charHeight)) out.push(poly.map((r) => r.map(([px, py]) => [px + x, py + y])));
+    });
+  });
+  return { polys: out, charWidth, charHeight };
+}
+
+// ---------------------------------------------------------------- outlines and symbols
+// Closed outline (rhombus, triangle) stroked `w` wide as one polygon with a hole: inner ring offset by w.
+function outline(points, w) {
+  const n = points.length;
+  const inner = points.map((p, i) => {
+    const a = points[(i + n - 1) % n];
+    const b = points[(i + 1) % n];
+    const c = [points.reduce((s, q) => s + q[0], 0) / n, points.reduce((s, q) => s + q[1], 0) / n];
+    // move towards the centroid so the edge offset is w (exact for the symmetric shapes used here)
+    const ea = Math.hypot(p[0] - a[0], p[1] - a[1]);
+    const eb = Math.hypot(b[0] - p[0], b[1] - p[1]);
+    const ua = [(p[0] - a[0]) / ea, (p[1] - a[1]) / ea];
+    const ub = [(b[0] - p[0]) / eb, (b[1] - p[1]) / eb];
+    const sinTurn = Math.abs(ua[0] * ub[1] - ua[1] * ub[0]);
+    const half = Math.acos(Math.max(-1, Math.min(1, -(ua[0] * ub[0] + ua[1] * ub[1])))) / 2;
+    const d = w / Math.max(0.2, Math.sin(half));
+    const toC = [c[0] - p[0], c[1] - p[1]];
+    const l = Math.hypot(...toC) || 1;
+    return sinTurn < 1e-6 ? p : [p[0] + (toC[0] / l) * d, p[1] + (toC[1] / l) * d];
+  });
+  return [[points, inner.reverse()]];
+}
+// Diamond (횡단보도 예고), `length` along the road, `width` across, outline `w` wide.
+export const diamondTemplate = (length, width, w) => outline([[0, length / 2], [-width / 2, 0], [0, -length / 2], [width / 2, 0]], w);
+// Inverted give-way triangle: base at +y (towards the oncoming driver), apex at -y.
+export const triangleTemplate = (length, width, w) => outline([[-width / 2, length / 2], [0, -length / 2], [width / 2, length / 2]], w);
+// Chevron: two arms of width w from the apex (0, -depth / 2) to the open ends (+-span / 2, depth / 2).
+export const chevronTemplate = (depth, span, w) => [[bar([0, -depth / 2], [-span / 2, depth / 2], w)], [bar([0, -depth / 2], [span / 2, depth / 2], w)]];
+
+// Wheelchair symbol (장애인 전용) in a size x size box: head, back and seat, leg, wheel ring.
+// A polyline stroked `w` wide as ONE ring, mitred at every joint (limit 3): one solid band with crisp edges, no
+// joint pieces or overlaps.
+export function band(points, w) {
+  const h = w / 2;
+  const left = [];
+  const right = [];
+  for (let i = 0; i < points.length; i += 1) {
+    const p = points[i];
+    const dir = (a, b) => { const l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1; return [(b[0] - a[0]) / l, (b[1] - a[1]) / l]; };
+    const before = i > 0 ? dir(points[i - 1], p) : null;
+    const after = i + 1 < points.length ? dir(p, points[i + 1]) : null;
+    let t = before && after ? [before[0] + after[0], before[1] + after[1]] : before ?? after;
+    const tl = Math.hypot(t[0], t[1]) || 1;
+    t = [t[0] / tl, t[1] / tl];
+    const n = [-t[1], t[0]];
+    const ref = after ?? before;
+    const k = h / Math.max(1 / 3, n[0] * -ref[1] + n[1] * ref[0]);
+    left.push([p[0] + n[0] * k, p[1] + n[1] * k]);
+    right.push([p[0] - n[0] * k, p[1] - n[1] * k]);
+  }
+  return [...left, ...right.reverse()];
+}
+// An arc band (centre c, radius r, from a0 to a1 degrees counter-clockwise, `w` wide) as one ring.
+export function arcBand(c, r, a0, a1, w, step = 6) {
+  const n = Math.max(2, Math.ceil(Math.abs(a1 - a0) / step));
+  const at = (rad, k) => { const a = ((a0 + ((a1 - a0) * k) / n) * Math.PI) / 180; return [c[0] + rad * Math.cos(a), c[1] + rad * Math.sin(a)]; };
+  const outer = Array.from({ length: n + 1 }, (_, k) => at(r + w / 2, k));
+  const inner = Array.from({ length: n + 1 }, (_, k) => at(r - w / 2, n - k));
+  return [...outer, ...inner];
+}
+
+// Wheelchair: the international symbol of access (ISO 7001 PI PF 006, the figure KS and 도로교통공단 paint in 장애인
+// 전용주차구역), `size` tall, facing +x, top +y; proportions approximated (추정). A solid head disc, the back-seat-shin-
+// foot as one band, the arm as one band, the wheel as an open arc band; strokes 0.11 of the size, so a 1.5 m symbol
+// has 0.16 m strokes (crisp at 0.1 m/px).
+export function wheelchairTemplate(size) {
+  const s = size;
+  const P = (x, y) => [x * s, y * s];
+  const w = 0.11 * s;
+  return [
+    [ring(P(-0.13, 0.4), 0.09 * s, 0.09 * s, 28)],
+    [band([P(-0.17, 0.27), P(-0.17, -0.04), P(0.18, -0.04), P(0.27, -0.37), P(0.42, -0.37)], w)],
+    [band([P(-0.17, 0.12), P(0.1, 0.12)], 0.09 * s)],
+    [arcBand(P(-0.1, -0.19), 0.26 * s, 75, 345, 0.1 * s)],
+  ];
+}
+
+// P of a parking or PM bay: stem and bowl as ONE polygon with the counter as its hole, `height` tall (width 0.62 of
+// it, stroke 0.17), top +y, centred on its box.
+export function parkingPTemplate(height) {
+  const H = height;
+  const w = 0.17 * H;
+  const R = 0.29 * H;
+  const W = 0.62 * H;
+  const x1 = W - R;
+  const arc = (r, sign) => Array.from({ length: 13 }, (_, k) => {
+    const a = Math.PI / 2 - (Math.PI * k) / 12;
+    return [x1 + r * Math.cos(a), H - R + r * Math.sin(a)];
+  });
+  const outer = [[0, 0], [0, H], ...arc(R), [w, H - 2 * R], [w, 0]];
+  const hole = [[w, H - w], ...arc(R - w), [w, H - 2 * R + w]].reverse();
+  const shift = ([x, y]) => [x - W / 2, y - H / 2];
+  return [[outer.map(shift), hole.map(shift)]];
+}
+// Kick scooter (PM, 개인형 이동장치) in side view, as painted in a PM bay: `length` long, front +x, top +y; two wheels
+// (rings), deck, stem and handlebar, each one solid ring; proportions approximated (추정).
+export function scooterTemplate(length) {
+  const s = length;
+  const P = (x, y) => [x * s, y * s];
+  const wheel = (x) => [ring(P(x, 0.12), 0.12 * s, 0.12 * s, 28), ring(P(x, 0.12), 0.055 * s, 0.055 * s, 28).reverse()];
+  return [
+    wheel(-0.38),
+    wheel(0.38),
+    [band([P(-0.27, 0.25), P(0.3, 0.25)], 0.09 * s)],
+    [band([P(0.36, 0.22), P(0.28, 0.74)], 0.085 * s)],
+    [band([P(0.14, 0.74), P(0.42, 0.74)], 0.085 * s)],
+  ];
+}
+
+// A convex ring clipped to the box [x0, x1] x [y0, y1] (Sutherland-Hodgman).
+function clipToBox(poly, x0, y0, x1, y1) {
+  const edges = [[(p) => p[0] >= x0, (a, b) => [x0, a[1] + ((b[1] - a[1]) * (x0 - a[0])) / (b[0] - a[0])]],
+    [(p) => p[0] <= x1, (a, b) => [x1, a[1] + ((b[1] - a[1]) * (x1 - a[0])) / (b[0] - a[0])]],
+    [(p) => p[1] >= y0, (a, b) => [a[0] + ((b[0] - a[0]) * (y0 - a[1])) / (b[1] - a[1]), y0]],
+    [(p) => p[1] <= y1, (a, b) => [a[0] + ((b[0] - a[0]) * (y1 - a[1])) / (b[1] - a[1]), y1]]];
+  let out = poly;
+  for (const [inside, cut] of edges) {
+    const src = out;
+    out = [];
+    for (let i = 0; i < src.length; i += 1) {
+      const a = src[(i + src.length - 1) % src.length];
+      const b = src[i];
+      if (inside(b)) {
+        if (!inside(a)) out.push(cut(a, b));
+        out.push(b);
+      } else if (inside(a)) out.push(cut(a, b));
+    }
+    if (!out.length) return out;
+  }
+  return out;
+}
+
+// Hatched access aisle (보행안전통로) beside or behind a disabled bay: a `length` x `width` strip centred on the origin,
+// x along the strip, y across it with -y the edge it shares with the bay (a `line`-wide divider there) and +y its
+// outer edge; 45-degree stripes `stripe` wide every `pitch` along x, clipped to the strip. Sizes 추정.
+export function hatchTemplate(length, width, { stripe = 0.25, pitch = 0.8, line = 0.12 } = {}) {
+  const [x0, x1, y0, y1] = [-length / 2, length / 2, -width / 2, width / 2];
+  const polys = [[[[x0, y0], [x1, y0], [x1, y0 + line], [x0, y0 + line]]]];
+  const d = stripe * Math.SQRT2;
+  const span = x1 - (x0 - width - d);
+  for (let t = x0 - width - d + (span % pitch) / 2; t < x1; t += pitch) {
+    const c = clipToBox([[t, y0], [t + d, y0], [t + d + width, y1], [t + width, y1]], x0, y0 + line, x1, y1);
+    if (c.length >= 3 && Math.abs(c.reduce((a, q, i) => a + q[0] * c[(i + 1) % c.length][1] - c[(i + 1) % c.length][0] * q[1], 0)) / 2 > 0.005) polys.push([c]);
+  }
+  return polys;
+}
+
+// Bus-stop box (버스정류소, light blue): a `length` x `width` outline (0.15 m stroke) as one polygon with its inside as the
+// hole, front +y, plus two forward chevrons in the front third; centred on the origin. Sizes 추정.
+export function busStopBoxTemplate(length, width) {
+  const w = 0.15;
+  const [hx, hy] = [width / 2, length / 2];
+  const outer = [[-hx, -hy], [hx, -hy], [hx, hy], [-hx, hy]];
+  const inner = [[-hx + w, -hy + w], [-hx + w, hy - w], [hx - w, hy - w], [hx - w, -hy + w]];
+  const chevron = (y) => [band([[-0.3 * width, y - 0.25 * width], [0, y], [0.3 * width, y - 0.25 * width]], w)];
+  return [[outer, inner], chevron(0.3 * length), chevron(0.3 * length - 0.45 * width)];
+}
+
+// Hatched median (yellow 안전지대 band): a `length` x `width` band centred on the origin, y along it, x across; a `line`
+// wide boundary line on both long edges and stripes `stripe` wide every `pitch` along y between them, each leaning
+// `lean` metres along y per metre across x (+x moves the stripe towards +y), clipped to the band. Sizes 추정.
+export function hatchedMedianTemplate(length, width, { pitch = 1.6, stripe = 0.18, line = 0.15, lean = 0.6 } = {}) {
+  const [hx, hy] = [width / 2, length / 2];
+  const polys = [-1, 1].map((side) => [[[side * hx, -hy], [side * (hx - line), -hy], [side * (hx - line), hy], [side * hx, hy]]]);
+  const x0 = -hx + line, x1 = hx - line;
+  const d = (stripe * Math.hypot(1, lean)) / 2; // half the stripe's extent along y
+  const reach = Math.abs(lean) * hx + d;
+  for (let c = -hy - reach + pitch / 2; c < hy + reach; c += pitch) {
+    const quad = [[x0, c + lean * x0 - d], [x1, c + lean * x1 - d], [x1, c + lean * x1 + d], [x0, c + lean * x0 + d]];
+    const k = clipToBox(quad, x0, -hy, x1, hy);
+    if (k.length >= 3 && Math.abs(k.reduce((a, q, i) => a + q[0] * k[(i + 1) % k.length][1] - k[(i + 1) % k.length][0] * q[1], 0)) / 2 > 0.005) polys.push([k]);
+  }
+  return polys;
+}
+
+// Bicycle symbol in a length (along) x width (across) box: two wheels and the frame.
+export function bicycleTemplate(length, width) {
+  // painted in side view, flat on the lane: wheels behind and ahead, the frame between them
+  const r = Math.min(0.2 * length, 0.45 * width);
+  const w = 0.14 * r + 0.03;
+  const back = [0, -length / 2 + r];
+  const front = [0, length / 2 - r];
+  const seat = [0.9 * r, -0.15 * r];
+  const bars = [0.9 * r, front[1] - 0.3 * r];
+  return [
+    ...ellipseRing(back, r, r, w),
+    ...ellipseRing(front, r, r, w),
+    ...strokes([back, seat, [0, 0.2 * r], back], w),
+    ...strokes([seat, bars, front], w),
+    [bar([0, 0.2 * r], bars, w)],
+  ];
+}

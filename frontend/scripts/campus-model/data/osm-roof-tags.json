@@ -1,0 +1,20 @@
+{
+  "source": "© OpenStreetMap contributors (ODbL 1.0), Overpass API building ways/relations in bbox",
+  "fetched": "2026-10-24",
+  "bbox": {
+    "west": 127.4715,
+    "south": 34.964,
+    "east": 127.488,
+    "north": 34.9765
+  },
+  "keys": [
+    "roof:colour",
+    "roof:color",
+    "roof:material",
+    "building:colour",
+    "building:color",
+    "roof:garden"
+  ],
+  "scanned": 120,
+  "buildings": []
+}

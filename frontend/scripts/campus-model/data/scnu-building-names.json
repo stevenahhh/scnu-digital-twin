@@ -1,0 +1,1157 @@
+{
+  "description": "Curated names of SCNU campus buildings in gis-buildings.json, keyed by footprintSource. Applied by fetch/scnuNames.mjs (also run from fetch/buildings.mjs). status: standing (modelled; nodeId is its selectable node unless an existing BLD_* node already covers the footprint), unresolved (modelled, no name found), demolished (not on current imagery; not modelled), removed (not in the official VR tour; dropped from gis-buildings.json and not modelled). Names marked estimated are labelled (추정).",
+  "sources": [
+    "SCNU campus registry: POST https://w1.scnu.ac.kr/SCNU/campus/list.do (code, name, point), read 2026-10-24",
+    "SCNU 360 VR tour scene list: https://vr.scnu.ac.kr/360vr/tour.xml (scene_<code> titles), read 2026-10-24; panoramas used as visual reference only",
+    "SCNU entrance-number map https://www.scnu.ac.kr/images/web/SCNU/sub/door_2022.png (B9 학군단 철거예정)",
+    "OpenStreetMap building names (ODbL 1.0, © OpenStreetMap contributors), Overpass query of the bbox, 2026-10-24",
+    "VWorld 2D data API LT_C_BLDGINFO (bld_nm, dong_nm, grnd_flr) and LT_C_SPBD (buld_nm_dc), 2026-10-24, stored with SPACEN consent of 2026-10-24 (docs/data-licences.md D1)",
+    "VWorld z19 satellite imagery (local QA cache) for demolished/standing checks and the function of unnamed small structures"
+  ],
+  "records": [
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 133154",
+      "status": "standing",
+      "name": "순천대학교 D4 공학 3호관(우주항공첨단소재스쿨)",
+      "nameSource": "SCNU registry D4 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_d4 \"공과대학3호관\"; OSM way/367126927 \"D4 공과대학 3호관\"",
+      "label": "D4 공학 3호관(우주항공첨단소재스쿨)",
+      "nodeId": "BLD_SCNU_D4",
+      "registerName": "순천대학교 D4 21동 공대3호관",
+      "centroid": [
+        127.47649,
+        34.970297
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 685767",
+      "status": "standing",
+      "name": "순천대학교 E8 인문예술관(애니메이션문화콘텐츠스쿨)",
+      "nameSource": "SCNU registry E8 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_e8 \"인문예술대학\"",
+      "label": "E8 인문예술관(애니메이션문화콘텐츠스쿨)",
+      "nodeId": "BLD_SCNU_E8",
+      "registerName": "순천대학교 E8 인문예술관(애니메이션문화콘텐츠스쿨)",
+      "centroid": [
+        127.477163,
+        34.968572
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 312548",
+      "status": "standing",
+      "name": "순천대학교 D3 공학 2호관(우주항공첨단소재스쿨)",
+      "nameSource": "SCNU registry D3 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_d3 \"공과대학2호관\"; OSM way/367126928 \"D3 공과대학 2호관\"",
+      "label": "D3 공학 2호관(우주항공첨단소재스쿨)",
+      "nodeId": "BLD_SCNU_D3",
+      "registerName": "순천대학교 D3 공대2호관 제20동",
+      "centroid": [
+        127.477373,
+        34.969724
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 301217",
+      "status": "standing",
+      "name": "순천대학교 E8 인문예술관(애니메이션문화콘텐츠스쿨)",
+      "nameSource": "SCNU registry E8 (point 0.2 m away, inside the adjoining E8 footprint, same BLD_E8 outline); VR tour scene_e8 \"인문예술대학\"; register name \"15동 기초교육관\" conflicts with registry E2 (record 325)",
+      "label": "E8 인문예술관(애니메이션문화콘텐츠스쿨)",
+      "nodeId": "BLD_SCNU_R301217",
+      "registerName": "순천대학교 15동 기초교육관",
+      "centroid": [
+        127.477202,
+        34.968559
+      ]
+    },
+    {
+      "footprintSource": "OSM way/367126939 (not in GIS건물통합정보)",
+      "status": "standing",
+      "name": "순천대학교 E7 사회과학관(애니메이션문화콘텐츠스쿨)",
+      "nameSource": "SCNU registry E7 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_e7 \"사회과학대학\"",
+      "label": "E7 사회과학관(애니메이션문화콘텐츠스쿨)",
+      "nodeId": "BLD_SCNU_E7",
+      "registerName": "순천대학교 E7 사회과학관(애니메이션문화콘텐츠스쿨)",
+      "centroid": [
+        127.477567,
+        34.967452
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 70991",
+      "status": "standing",
+      "name": "순천대학교 E3 사범대학1호관",
+      "nameSource": "SCNU registry E3 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_e3 \"사범대학1호관\"; OSM way/367126963 \"E3 사범대학 1호관\"",
+      "label": "E3 사범대학1호관",
+      "nodeId": "BLD_SCNU_E3",
+      "registerName": "순천대학교 E3 사범대1호관 제22동",
+      "centroid": [
+        127.478506,
+        34.969244
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 44099",
+      "status": "standing",
+      "name": "순천대학교 D2 공학 1호관(우주항공첨단소재스쿨)",
+      "nameSource": "SCNU registry D2 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_d2 \"공과대학1호관\"",
+      "label": "D2 공학 1호관(우주항공첨단소재스쿨)",
+      "nodeId": "BLD_SCNU_D2",
+      "registerName": "순천대학교 D2 공대 제1호관 제19동호",
+      "centroid": [
+        127.478063,
+        34.970465
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 137033",
+      "status": "standing",
+      "name": "순천대학교 E4 사범대학2호관",
+      "nameSource": "SCNU registry E4 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_e4 \"사범대학2호관\"; OSM way/367126964 \"E4 사범대학 2호관\"",
+      "label": "E4 사범대학2호관",
+      "nodeId": "BLD_SCNU_E4",
+      "registerName": "순천대학교 E4 사범대2호관 제23동",
+      "centroid": [
+        127.478553,
+        34.969625
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688780",
+      "status": "standing",
+      "name": "순천대학교 E5 사범대학3호관",
+      "nameSource": "SCNU registry E5 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_e5 \"사범대학3호관\"",
+      "label": "E5 사범대학3호관",
+      "nodeId": "BLD_SCNU_E5",
+      "registerName": "순천대학교 E5 사범대학3호관",
+      "centroid": [
+        127.478199,
+        34.968527
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 69208",
+      "status": "standing",
+      "name": "순천대학교 D1 창업보육센터",
+      "nameSource": "SCNU registry D1 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_d1 \"창업보육센터\"; OSM way/367126966 \"D1 창업보육센터\"",
+      "label": "D1 창업보육센터",
+      "nodeId": "BLD_SCNU_D1",
+      "registerName": "순천대학교 D1 25동 창업보육센터",
+      "centroid": [
+        127.478817,
+        34.970751
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 85392",
+      "status": "standing",
+      "name": "순천대학교 E2 기초교육관",
+      "nameSource": "SCNU registry E2 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_e2 \"기초교육관\"",
+      "label": "E2 기초교육관",
+      "nodeId": "BLD_SCNU_E2",
+      "registerName": "순천대학교 E2 18동 미래창조관",
+      "centroid": [
+        127.479148,
+        34.968026
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 137008",
+      "status": "standing",
+      "name": "순천대학교 E6 미래창조관",
+      "nameSource": "SCNU registry E6 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_e6 \"미래창조관\"; OSM way/367126940 \"E6 미래창조관\"",
+      "label": "E6 미래창조관",
+      "nodeId": "BLD_SCNU_E6",
+      "registerName": "순천대학교 E6 16동 인문예술대학",
+      "centroid": [
+        127.478783,
+        34.967161
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 53819",
+      "status": "standing",
+      "name": "순천대학교 E1 학생회관",
+      "nameSource": "SCNU registry E1 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_e1 \"학생회관\"",
+      "label": "E1 학생회관",
+      "nodeId": "BLD_SCNU_E1",
+      "registerName": "순천대학교 E1 실내체육관 제7동",
+      "centroid": [
+        127.479752,
+        34.968889
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 300791",
+      "status": "standing",
+      "name": "순천대학교 C1 도서관",
+      "nameSource": "SCNU registry C1 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_c1 \"도서관\"; OSM way/366373759 \"정보전산원\"",
+      "label": "C1 도서관",
+      "nodeId": "BLD_SCNU_C1",
+      "registerName": "순천대학교 C1 도서관 제3동호",
+      "centroid": [
+        127.479297,
+        34.969846
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 301200",
+      "status": "standing",
+      "name": "순천대학교 A10 인재관 · A11 제2중앙공급실",
+      "nameSource": "SCNU registry A10+A11 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint, point inside footprint); VR tour scene_a10 \"인재관\"; OSM way/367126943 \"A10 인재관\"",
+      "label": "A10 인재관 · A11 제2중앙공급실",
+      "nodeId": "BLD_SCNU_A10",
+      "registerName": "순천대학교 A10 28동 인재관",
+      "centroid": [
+        127.47964,
+        34.966791
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 690076",
+      "status": "removed",
+      "name": "순천대학교 C3 공동실험실습관 부속 시설",
+      "nameSource": "estimated: 부속 시설 of C3 공동실험실습관 (footprint 2.6 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.479613,
+        34.970751
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 443508",
+      "status": "standing",
+      "name": "순천대학교 C3 공동실험실습관",
+      "nameSource": "SCNU registry C3 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_c3 \"공동실험실습관\"; OSM way/367126970 \"C3 공동실험실습관\"",
+      "label": "C3 공동실험실습관",
+      "nodeId": "BLD_SCNU_C3",
+      "registerName": "순천대학교 C3 40동 학생생활관(창조관)",
+      "centroid": [
+        127.479536,
+        34.970648
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688059",
+      "status": "removed",
+      "name": "순천대학교 E1 학생회관 부속 시설",
+      "nameSource": "estimated: 부속 시설 of E1 학생회관 (footprint 12.6 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.479657,
+        34.968802
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688089",
+      "status": "unresolved",
+      "name": "순천대학교",
+      "nameSource": "unresolved: no registry point, OSM name, VWorld LT_C_BLDGINFO/LT_C_SPBD name or identifiable function",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.479739,
+        34.96781
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 767513",
+      "status": "standing",
+      "name": "순천대학교 A6 학생생활관 창조관",
+      "nameSource": "SCNU registry A6 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_a6 \"창조관\"; OSM way/367126941 \"A6 창조관\"",
+      "label": "A6 학생생활관 창조관",
+      "nodeId": "BLD_SCNU_A6",
+      "registerName": "순천대학교 A6 4동 정보전산원",
+      "centroid": [
+        127.479631,
+        34.967358
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688060",
+      "status": "unresolved",
+      "name": "순천대학교",
+      "nameSource": "unresolved: no registry point, OSM name, VWorld LT_C_BLDGINFO/LT_C_SPBD name or identifiable function",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.479716,
+        34.970854
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 85379",
+      "status": "standing",
+      "name": "순천대학교 A12 우정원",
+      "nameSource": "SCNU registry A12 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_a12 \"우정원\"; OSM way/367126944 \"A12 우정원\"",
+      "label": "A12 우정원",
+      "nodeId": "BLD_SCNU_A12",
+      "registerName": "순천대학교 A12 30동 고시원(우정원)",
+      "centroid": [
+        127.479624,
+        34.966516
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 443147",
+      "status": "standing",
+      "name": "순천대학교 C4 환경친화형물질공장 기술혁신센터",
+      "nameSource": "SCNU registry C4 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint)",
+      "label": "C4 환경친화형물질공장 기술혁신센터",
+      "nodeId": "BLD_SCNU_C4",
+      "registerName": "순천대학교 C4 39동 환경친화형물질공장기술혁신센터",
+      "centroid": [
+        127.479754,
+        34.970725
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 689515",
+      "status": "unresolved",
+      "name": "순천대학교",
+      "nameSource": "unresolved: no registry point, OSM name, VWorld LT_C_BLDGINFO/LT_C_SPBD name or identifiable function",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.480054,
+        34.970962
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687571",
+      "status": "removed",
+      "name": "순천대학교",
+      "nameSource": "unresolved: no registry point, OSM name, VWorld LT_C_BLDGINFO/LT_C_SPBD name or identifiable function; removed 2026-10-29 (user): the two small buildings between E1 학생회관 and the C1 도서관 plaza fountain are not needed; not modelled",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.480007,
+        34.969198
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688859",
+      "status": "unresolved",
+      "name": "순천대학교",
+      "nameSource": "unresolved: no registry point, OSM name, VWorld LT_C_BLDGINFO/LT_C_SPBD name or identifiable function",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.480134,
+        34.970868
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687692",
+      "status": "removed",
+      "name": "순천대학교",
+      "nameSource": "unresolved: no registry point, OSM name, VWorld LT_C_BLDGINFO/LT_C_SPBD name or identifiable function; removed 2026-10-29 (user): the two small buildings between E1 학생회관 and the C1 도서관 plaza fountain are not needed; not modelled",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.480173,
+        34.969162
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 443112",
+      "status": "standing",
+      "name": "순천대학교 A7 학생생활관 관리동",
+      "nameSource": "SCNU registry A7 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); OSM way/367126942 \"A7 학생생활관 관리동\"",
+      "label": "A7 학생생활관 관리동",
+      "nodeId": "BLD_SCNU_A7",
+      "registerName": "순천대학교 A7 26동 생활관관리동",
+      "centroid": [
+        127.480338,
+        34.967241
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 443467",
+      "status": "standing",
+      "name": "순천대학교 C2 친환경농업센터",
+      "nameSource": "SCNU registry C2 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_c2 \"친환경농업센터\"; OSM way/367126971 \"C2 친환경농업센터\"",
+      "label": "C2 친환경농업센터",
+      "nodeId": "BLD_SCNU_C2",
+      "registerName": "순천대학교 C2 41동 학생생활관(진리관)",
+      "centroid": [
+        127.480215,
+        34.970467
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688403",
+      "status": "removed",
+      "name": "순천대학교 C2 친환경농업센터 부속 시설",
+      "nameSource": "estimated: 부속 시설 of C2 친환경농업센터 (footprint 19.6 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.480439,
+        34.970711
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 690033",
+      "status": "removed",
+      "name": "순천대학교 C2 친환경농업센터 부속 시설",
+      "nameSource": "estimated: 부속 시설 of C2 친환경농업센터 (footprint 14.6 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.480337,
+        34.970676
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 301234",
+      "status": "standing",
+      "name": "순천대학교 A9 학생생활관 청운관",
+      "nameSource": "SCNU registry A9 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_a9 \"청운관\"",
+      "label": "A9 학생생활관 청운관",
+      "nodeId": "BLD_SCNU_A9",
+      "registerName": "순천대학교 A9 29동 학생생활관(청운관)",
+      "centroid": [
+        127.480378,
+        34.9667
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687777",
+      "status": "removed",
+      "name": "순천대학교 C2 친환경농업센터 부속 시설",
+      "nameSource": "estimated: 부속 시설 of C2 친환경농업센터 (footprint 16.0 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.480465,
+        34.970629
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688401",
+      "status": "removed",
+      "name": "순천대학교 B6 제1중앙공급실 부속 시설",
+      "nameSource": "estimated: 부속 시설 of B6 제1중앙공급실 (footprint 13.1 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.480619,
+        34.970536
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 690066",
+      "status": "unresolved",
+      "name": "순천대학교",
+      "nameSource": "unresolved: no registry point, OSM name, VWorld LT_C_BLDGINFO/LT_C_SPBD name or identifiable function",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.48057,
+        34.969649
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 443468",
+      "status": "standing",
+      "name": "순천대학교 A1 대학본부",
+      "nameSource": "SCNU registry A1 (point 1.3 m away; footprint overlaps OSM way/366373751 \"A1 대학본부\"); VR tour scene_a1 \"대학본부\"",
+      "label": "A1 대학본부",
+      "nodeId": "BLD_SCNU_A1",
+      "registerName": "순천대학교 41동 여자생활관 부속동",
+      "centroid": [
+        127.48084,
+        34.968287
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 768570",
+      "status": "removed",
+      "name": "순천대학교 11동 생명대온실",
+      "nameSource": "VWorld LT_C_BLDGINFO dong_nm; removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
+      "registerName": "순천대학교 11동 생명대온실",
+      "centroid": [
+        127.480662,
+        34.967281
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 301524",
+      "status": "standing",
+      "name": "순천대학교 A2 약학대학",
+      "nameSource": "SCNU registry A2 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_a2 \"약학대학\"; OSM way/366373752 \"A2 약학대학\"",
+      "label": "A2 약학대학",
+      "nodeId": "BLD_SCNU_A2",
+      "registerName": "순천대학교 A2 37동 공동실험실습관",
+      "centroid": [
+        127.480841,
+        34.968769
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687750",
+      "status": "removed",
+      "name": "순천대학교 B6 제1중앙공급실 부속 시설",
+      "nameSource": "estimated: 부속 시설 of B6 제1중앙공급실 (footprint 7.2 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.480841,
+        34.970429
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688902",
+      "status": "standing",
+      "name": "순천대학교 A8 학생생활관 향림관",
+      "nameSource": "SCNU registry A8 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_a8 \"향림관\"",
+      "label": "A8 학생생활관 향림관",
+      "nodeId": "BLD_SCNU_A8",
+      "registerName": "순천대학교 A8 학생생활관 향림관",
+      "centroid": [
+        127.481107,
+        34.967028
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 690034",
+      "status": "removed",
+      "name": "순천대학교 B6 제1중앙공급실 부속 시설",
+      "nameSource": "estimated: 부속 시설 of B6 제1중앙공급실 (footprint 2.2 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.480952,
+        34.970332
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687828",
+      "status": "removed",
+      "name": "순천대학교 B6 제1중앙공급실 부속 시설",
+      "nameSource": "estimated: 부속 시설 of B6 제1중앙공급실 (footprint 1.5 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.481048,
+        34.9703
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 52856",
+      "status": "standing",
+      "name": "순천대학교 B6 제1중앙공급실",
+      "nameSource": "SCNU registry B6 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); OSM way/367126958 \"B6 제1중앙공급실\"",
+      "label": "B6 제1중앙공급실",
+      "nodeId": "BLD_SCNU_B6",
+      "registerName": "순천대학교 B6 24동 제1중앙공급실",
+      "centroid": [
+        127.480814,
+        34.970218
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 72362",
+      "status": "standing",
+      "name": "순천대학교 B4 생명산업과학 2호관(그린스마트팜스쿨)",
+      "nameSource": "SCNU registry B4 (w1.scnu.ac.kr/SCNU/campus/list.do, point 0.8 m from footprint); VR tour scene_b4 \"생명산업과학대 2호관\"",
+      "label": "B4 생명산업과학 2호관(그린스마트팜스쿨)",
+      "nodeId": "BLD_SCNU_B4",
+      "registerName": "순천대학교 17동 사범대학3호관",
+      "centroid": [
+        127.481075,
+        34.969725
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 85389",
+      "status": "standing",
+      "name": "순천대학교 27동 학생생활관(향림관)",
+      "nameSource": "VWorld LT_C_BLDGINFO dong_nm",
+      "label": "27동 학생생활관(향림관)",
+      "nodeId": "BLD_SCNU_R85389",
+      "registerName": "순천대학교 27동 학생생활관(향림관)",
+      "centroid": [
+        127.480932,
+        34.966768
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687746",
+      "status": "removed",
+      "name": "순천대학교 조미채소기술센터유리온실",
+      "nameSource": "VWorld LT_C_SPBD buld_nm_dc; removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.481162,
+        34.970207
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 136029",
+      "status": "demolished",
+      "name": "순천대학교 13동 조미채소온실",
+      "nameSource": "VWorld LT_C_BLDGINFO dong_nm; demolished: lawn with footpaths on VWorld z19 imagery (no greenhouse)",
+      "registerName": "순천대학교 13동 조미채소온실",
+      "centroid": [
+        127.481008,
+        34.967285
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 682275",
+      "status": "standing",
+      "name": "순천대학교 A4 학생생활관 부속동 · A5 학생생활관 진리관",
+      "nameSource": "SCNU registry A4+A5 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint, point inside footprint); VR tour scene_a4 \"부속동\"; VR tour scene_a5 \"진리관\"; OSM way/367126932 \"A4 기숙사부속동\", way/367126933 \"A5 진리관\"",
+      "label": "A4 학생생활관 부속동 · A5 학생생활관 진리관",
+      "nodeId": "BLD_SCNU_A4",
+      "registerName": "순천대학교 A4 생명대2호관 제9동",
+      "centroid": [
+        127.480797,
+        34.967656
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688057",
+      "status": "standing",
+      "name": "순천대학교 A1 대학본부 부속동",
+      "nameSource": "estimated: 부속동 of A1 대학본부 (footprint 0.0 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name)",
+      "label": "A1 대학본부 부속동 (추정)",
+      "nodeId": "BLD_SCNU_R688057",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.481375,
+        34.96818
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688840",
+      "status": "standing",
+      "name": "순천대학교 A8 학생생활관 향림관 부속동",
+      "nameSource": "estimated: 부속동 of A8 학생생활관 향림관 (footprint 2.4 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name); VWorld LT_C_BLDGINFO grnd_flr 7, same PNU as A8",
+      "label": "A8 학생생활관 향림관 부속동 (추정)",
+      "nodeId": "BLD_SCNU_R688840",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.481362,
+        34.966824
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687709",
+      "status": "removed",
+      "name": "순천대학교 B5 생명산업과학대학온실 부속 시설",
+      "nameSource": "estimated: 부속 시설 of B5 생명산업과학대학온실 (footprint 0.1 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.481468,
+        34.97024
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 67931",
+      "status": "standing",
+      "name": "순천대학교 B5 생명산업과학대학온실",
+      "nameSource": "SCNU registry B5 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); OSM way/367126972 \"B5 생명산업과학대학 온실\"",
+      "label": "B5 생명산업과학대학온실",
+      "nodeId": "BLD_SCNU_B5",
+      "registerName": "순천대학교 B5 1동 약학대학",
+      "centroid": [
+        127.481372,
+        34.970139
+      ]
+    },
+    {
+      "footprintSource": "OSM way/366373751 (not in GIS건물통합정보)",
+      "status": "standing",
+      "name": "순천대학교 A1 대학본부",
+      "nameSource": "SCNU registry A1 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_a1 \"대학본부\"; OSM way/366373751 \"A1 대학본부\"",
+      "label": "A1 대학본부",
+      "nodeId": "BLD_SCNU_W366373751",
+      "registerName": "순천대학교 A1 대학본부",
+      "centroid": [
+        127.480816,
+        34.968219
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 69065",
+      "status": "standing",
+      "name": "순천대학교 A15 운동장 본부석",
+      "nameSource": "estimated: west grandstand building of A15 운동장 (registry A15 point 53.9 m away; VWorld z19 imagery, VR tour scene_001 and scene_a15); register name \"5동 학생회관\" kept as registerName (E1 학생회관 is record 346)",
+      "label": "A15 운동장 본부석 (추정)",
+      "nodeId": "BLD_SCNU_R69065",
+      "registerName": "순천대학교 5동 학생회관",
+      "centroid": [
+        127.481685,
+        34.967873
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687557",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: tree belt along the stream on current imagery, no roof",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.481906,
+        34.970412
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 768585",
+      "status": "standing",
+      "name": "순천대학교 B2 70주년기념관",
+      "nameSource": "SCNU registry B2 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_b2 \"70주년기념관\"; OSM way/367126959 \"70주년기념관\", way/1511609223 \"70주년기념관\"",
+      "label": "B2 70주년기념관",
+      "nodeId": "BLD_SCNU_B2",
+      "registerName": "순천대학교 B2 10동 70주년기념관",
+      "centroid": [
+        127.481912,
+        34.969471
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 66447",
+      "status": "demolished",
+      "name": "순천대학교 35동 운동장본부석",
+      "nameSource": "VWorld LT_C_BLDGINFO dong_nm; demolished: surface car park west of B7 on VWorld z19 imagery and in VR tour scene_b7",
+      "registerName": "순천대학교 35동 운동장본부석",
+      "centroid": [
+        127.482196,
+        34.970397
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687934",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: tree belt along the stream on current imagery, no roof",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.482008,
+        34.970487
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687855",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: surface car park west of B7 on VWorld z19 imagery and in VR tour scene_b7",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.482285,
+        34.970772
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 301525",
+      "status": "demolished",
+      "name": "순천대학교 14동 친환경농업센터",
+      "nameSource": "VWorld LT_C_BLDGINFO dong_nm; demolished: surface car park west of B7 on VWorld z19 imagery and in VR tour scene_b7",
+      "registerName": "순천대학교 14동 친환경농업센터",
+      "centroid": [
+        127.482228,
+        34.970502
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687853",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: surface car park west of B7 on VWorld z19 imagery and in VR tour scene_b7",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.482417,
+        34.970312
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 768527",
+      "status": "demolished",
+      "name": "순천대학교 32동 토양학온실",
+      "nameSource": "VWorld LT_C_BLDGINFO dong_nm; demolished: surface car park west of B7 on VWorld z19 imagery and in VR tour scene_b7",
+      "registerName": "순천대학교 32동 토양학온실",
+      "centroid": [
+        127.482465,
+        34.970379
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687605",
+      "status": "demolished",
+      "name": "순천대학교 2동 대학원및어학원",
+      "nameSource": "VWorld LT_C_BLDGINFO dong_nm; demolished: surface car park west of B7 on VWorld z19 imagery and in VR tour scene_b7",
+      "registerName": "순천대학교 2동 대학원및어학원",
+      "centroid": [
+        127.482297,
+        34.97063
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 66446",
+      "status": "demolished",
+      "name": "순천대학교 33동 제2중앙공급실",
+      "nameSource": "VWorld LT_C_BLDGINFO dong_nm; demolished: surface car park west of B7 on VWorld z19 imagery and in VR tour scene_b7",
+      "registerName": "순천대학교 33동 제2중앙공급실",
+      "centroid": [
+        127.482614,
+        34.970582
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687640",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: surface car park west of B7 on VWorld z19 imagery and in VR tour scene_b7",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.482409,
+        34.97075
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687636",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: surface car park west of B7 on VWorld z19 imagery and in VR tour scene_b7",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.482614,
+        34.97071
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688033",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: surface car park west of B7 on VWorld z19 imagery and in VR tour scene_b7",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.482597,
+        34.970305
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687700",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: surface car park west of B7 on VWorld z19 imagery and in VR tour scene_b7",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.482562,
+        34.970794
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688321",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: surface car park west of B7 on VWorld z19 imagery and in VR tour scene_b7",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.48262,
+        34.970383
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688198",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: surface car park west of B7 on VWorld z19 imagery and in VR tour scene_b7",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.482635,
+        34.970462
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 135996",
+      "status": "standing",
+      "name": "순천대학교 B3 생명산업과학 1호관(그린스마트팜스쿨)",
+      "nameSource": "SCNU registry B3 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_b3 \"생명산업과학대 1호관\"; OSM way/367126957 \"B3 생명산업과학대학 1호관\"",
+      "label": "B3 생명산업과학 1호관(그린스마트팜스쿨)",
+      "nodeId": "BLD_SCNU_B3",
+      "registerName": "순천대학교 B3 8동 생명대1호관",
+      "centroid": [
+        127.482188,
+        34.970076
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 685766",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: surface car park west of B7 on VWorld z19 imagery and in VR tour scene_b7",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.482678,
+        34.970803
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 768588",
+      "status": "demolished",
+      "name": "순천대학교 학군단",
+      "nameSource": "OSM way/367126951 name; demolished: site is an empty landscaped lot on current imagery; SCNU entrance map lists B9 학군단 as 철거예정",
+      "registerName": "순천대학교 31동 학군단",
+      "centroid": [
+        127.482933,
+        34.97092
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688228",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: site now covered by B7 산학협력관 (OSM way/1486502962) and its forecourt on VWorld z19 imagery and VR tour scene_b7",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.482801,
+        34.970188
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688045",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: site now covered by B7 산학협력관 (OSM way/1486502962) and its forecourt on VWorld z19 imagery and VR tour scene_b7",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.482861,
+        34.970163
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687801",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: site now covered by B7 산학협력관 (OSM way/1486502962) and its forecourt on VWorld z19 imagery and VR tour scene_b7",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.48288,
+        34.970239
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687726",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: site now covered by B7 산학협력관 (OSM way/1486502962) and its forecourt on VWorld z19 imagery and VR tour scene_b7",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.482953,
+        34.970229
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687741",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: site now covered by B7 산학협력관 (OSM way/1486502962) and its forecourt on VWorld z19 imagery and VR tour scene_b7",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.482902,
+        34.970318
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688041",
+      "status": "removed",
+      "name": "순천대학교 A16 교직원테니스장 부속 시설",
+      "nameSource": "estimated: court-side structure of A16 교직원테니스장 (registry A16 point 17.9 m away; VWorld z19 imagery); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.482982,
+        34.967162
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687638",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: site now covered by B7 산학협력관 (OSM way/1486502962) and its forecourt on VWorld z19 imagery and VR tour scene_b7",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.482934,
+        34.970146
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688080",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: site now covered by B7 산학협력관 (OSM way/1486502962) and its forecourt on VWorld z19 imagery and VR tour scene_b7",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.482941,
+        34.970433
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687892",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: bare lot on current imagery",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.483026,
+        34.971031
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688980",
+      "status": "standing",
+      "name": "순천대학교 A16 교직원테니스장 부속 시설",
+      "nameSource": "estimated: court-side structure of A16 교직원테니스장 (registry A16 point 20.7 m away; VWorld z19 imagery)",
+      "label": "A16 교직원테니스장 부속 시설 (추정)",
+      "nodeId": "BLD_SCNU_R688980",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.483012,
+        34.967071
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 768406",
+      "status": "standing",
+      "name": "순천대학교 B1 박물관",
+      "nameSource": "SCNU registry B1 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_b1 \"박물관\"; OSM way/367126981 \"국립순천대학교 박물관\"",
+      "label": "B1 박물관",
+      "nodeId": "BLD_SCNU_B1",
+      "registerName": "순천대학교 B1 6동 박물관",
+      "centroid": [
+        127.482888,
+        34.969413
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687976",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: site now covered by B7 산학협력관 (OSM way/1486502962) and its forecourt on VWorld z19 imagery and VR tour scene_b7",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.48317,
+        34.970155
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 138317",
+      "status": "standing",
+      "name": "순천대학교 F3 학생테니스장 부속 시설(마동)",
+      "nameSource": "estimated: court-side structure of F3 학생테니스장 (registry F3 point 19.5 m away; VWorld z19 imagery); register 동명 \"마동\" (GIS건물통합정보 A25 / VWorld LT_C_BLDGINFO dong_nm)",
+      "label": "F3 학생테니스장 부속 시설(마동) (추정)",
+      "nodeId": "BLD_SCNU_R138317",
+      "registerName": "순천대학교 마동",
+      "centroid": [
+        127.483074,
+        34.966249
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687633",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: site now covered by B7 산학협력관 (OSM way/1486502962) and its forecourt on VWorld z19 imagery and VR tour scene_b7",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.483051,
+        34.970435
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687583",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: site now covered by B7 산학협력관 (OSM way/1486502962) and its forecourt on VWorld z19 imagery and VR tour scene_b7",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.483105,
+        34.970425
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 684234",
+      "status": "standing",
+      "name": "순천대학교 F4 연립관사",
+      "nameSource": "SCNU registry F4 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint)",
+      "label": "F4 연립관사",
+      "nodeId": "BLD_SCNU_F4",
+      "registerName": "교직원관사동",
+      "centroid": [
+        127.483289,
+        34.965622
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687965",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: site now covered by B7 산학협력관 (OSM way/1486502962) and its forecourt on VWorld z19 imagery and VR tour scene_b7",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.483287,
+        34.970372
+      ]
+    },
+    {
+      "footprintSource": "OSM way/1486502962 (not in GIS건물통합정보)",
+      "status": "standing",
+      "name": "순천대학교 B7 산학협력관",
+      "nameSource": "SCNU registry B7 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_b7 \"산학협력관\"; OSM way/1486502962 \"산학협력관\"",
+      "label": "B7 산학협력관",
+      "nodeId": "BLD_SCNU_B7",
+      "registerName": "순천대학교 B7 산학협력관",
+      "centroid": [
+        127.483108,
+        34.970432
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 138316",
+      "status": "standing",
+      "name": "순천대학교 F2 평생교육원",
+      "nameSource": "SCNU registry F2 (w1.scnu.ac.kr/SCNU/campus/list.do, point 0.9 m from footprint); VR tour scene_f2 \"평생교육원\"",
+      "label": "F2 평생교육원",
+      "nodeId": "BLD_SCNU_F2",
+      "registerName": "순천대학교 라동",
+      "centroid": [
+        127.483587,
+        34.966683
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 687595",
+      "status": "demolished",
+      "name": "순천대학교",
+      "nameSource": "demolished: car park beside F1 국제문화컨벤션관 on VWorld z19 imagery",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.483697,
+        34.965878
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 768553",
+      "status": "standing",
+      "name": "순천대학교 A17 체육관 · A18 체육관 증축동",
+      "nameSource": "SCNU registry A17+A18 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint, point inside footprint); VR tour scene_a17 \"체육관\"",
+      "label": "A17 체육관 · A18 체육관 증축동",
+      "nodeId": "BLD_SCNU_A17",
+      "registerName": "순천대학교 A17 12동 농기계창고",
+      "centroid": [
+        127.483671,
+        34.967629
+      ]
+    },
+    {
+      "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 688981",
+      "status": "removed",
+      "name": "순천대학교 F1 국제문화컨벤션관 부속 시설",
+      "nameSource": "estimated: 부속 시설 of F1 국제문화컨벤션관 (footprint 8.2 m from it; structure visible on VWorld z19 imagery; no registry, OSM or VWorld name); removed 2026-10-29 (user): not seen in the official SCNU VR tour; not modelled",
+      "registerName": "순천대학교",
+      "centroid": [
+        127.483863,
+        34.965671
+      ]
+    },
+    {
+      "footprintSource": "OSM way/838573769 (not in GIS건물통합정보)",
+      "status": "standing",
+      "name": "순천대학교 F1 국제문화컨벤션관",
+      "nameSource": "SCNU registry F1 (w1.scnu.ac.kr/SCNU/campus/list.do, point inside footprint); VR tour scene_f1 \"국제문화 컨벤션관\"; OSM way/838573769 \"컨벤션관\"",
+      "label": "F1 국제문화컨벤션관",
+      "nodeId": "BLD_SCNU_F1",
+      "registerName": "순천대학교 F1 국제문화컨벤션관",
+      "centroid": [
+        127.484165,
+        34.966276
+      ]
+    }
+  ]
+}

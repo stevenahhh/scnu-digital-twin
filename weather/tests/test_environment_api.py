@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import requests
-
 from weather.api import app as weather_app
+from weather.collectors.upstream import UpstreamError
+from weather.collectors.cache import TTLCache
 
 
 def test_zone_environment_keeps_weather_when_air_quality_is_unavailable(monkeypatch) -> None:
@@ -14,12 +14,15 @@ def test_zone_environment_keeps_weather_when_air_quality_is_unavailable(monkeypa
     }
 
     def fail_air_quality() -> dict:
-        raise requests.HTTPError("429 Too Many Requests")
+        raise UpstreamError("airkorea", "http_error", "429 Too Many Requests")
 
     monkeypatch.setattr(weather_app, "fetch_air_quality", fail_air_quality)
+    monkeypatch.setattr(weather_app, "WEATHER_CACHE", TTLCache())
 
-    result = weather_app._build_zone_environment(weather)
+    air_quality, freshness = weather_app._get_air_quality()
+    result = weather_app._build_zone_environment(weather, air_quality)
 
+    assert freshness == {"stale": True, "error": "http_error"}
     assert result["base_weather"]["temperature"] == 31.2
     assert result["base_weather"]["air_quality_source"] == "unavailable"
     assert result["base_weather"]["pm10"] is None

@@ -1,0 +1,1326 @@
+{
+  "description": "VR rest-space reconciliation (2026-10-25): every outdoor rest-space sighting (#1-17 of the VR station survey) and every garden/plaza landscape item seen in the SCNU 360 VR exterior scenes, cast as a ray from the VR station (face bearing + column angle, 10-120 m; nadir sightings as a strip under the station) against the photo survey objects-campus.geojson (8 m rule). decision: match (an object of a kind that stands for it exists), retype (an object exists under a kind the VR corrects), missing (none within 8 m; instanceId is the id stages will create), not_rest_space (a re-read of the VR shows the sighting is not a rest space or only a planting; nothing is placed), deferred (the VR station could not be registered on the photo; nothing is placed yet). applied records what todo 25 did; vr_confirmed names the existing object the VR confirms. typeId names data/rest-space-catalogue.json. photo_blob: whether the NGII 2025 photo shows a roof, wall or planter at the ray. landscape lists steps, sculptures and other items that no catalogue type models (kept for reference, same rule). Stations from scripts/perf/vr-stations.json (refined yaw where present). Applied by a later stage; this file changes no geometry.",
+  "sources": [
+    "SCNU 360 VR tour exterior scenes (visual reference only, nothing copied)",
+    "data/photo/objects-campus.geojson (NGII 2025 photo survey, 175 objects)",
+    "NGII 2025 orthophoto sheet 34702020 (read, not copied)"
+  ],
+  "summary": {
+    "sightings": 24,
+    "restSightings": 17,
+    "match": 8,
+    "retype": 5,
+    "missing": 8,
+    "ambiguous": 1,
+    "landscape": 28,
+    "notRestSpace": 3,
+    "deferred": 0,
+    "appliedBy": "todo 25 (data/photo/rest-spaces.geojson, stages/furniture.mjs RETYPED), 2026-10-26",
+    "landscapeApplied": {
+      "rows": 12,
+      "built": 9,
+      "mapped": 1,
+      "notOnCampus": 1,
+      "by": "landscape-vr (data/photo/rest-spaces.geojson RS-LS-*, data/osm-ground.json supplements), 2026-10-26",
+      "markingsLane": 1
+    }
+  },
+  "sightings": [
+    {
+      "restSighting": 1,
+      "scene": "scene_a2",
+      "face": "d",
+      "cols": [
+        0,
+        700
+      ],
+      "kindSeen": "bench",
+      "note": "benches on paved path",
+      "bearingDeg": null,
+      "geometry": "nadir strip 28 m along f at -9.2 m right of the station",
+      "yawUsed": 20.2,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "typeId": "bench",
+      "photo_blob": "no",
+      "photo_note": "paved bus bays; benches cannot be resolved on the photo",
+      "instanceId": "RS0001",
+      "applied": "RS0001: three timber benches along the tiled plaza edge east of A2, placed from VR face d after the scene_a2 station was resected (A2 entrance and its two disabled bays; the ortho-match pin stood 155 m west)",
+      "reason_applied": "the station is now registered on the photo; the plaza edge is visible there, the benches themselves are under tree shade (photo_support none, confidence 0.4)"
+    },
+    {
+      "restSighting": 2,
+      "scene": "scene_a4",
+      "face": "r",
+      "cols": [
+        1100,
+        2048
+      ],
+      "kindSeen": "shelter",
+      "note": "long bus-terminal shelter (continues into b col 0-900)",
+      "bearingDeg": 253.2,
+      "geometry": "ray 10-120 m at 253.2 deg",
+      "yawUsed": 135,
+      "candidates": [
+        "OC0139 fence 0.1 m"
+      ],
+      "decision": "retype",
+      "ref": "OC0119",
+      "reason": "only fence within 8 m, none of a kind that stands for a terminal_shelter",
+      "typeId": "terminal_shelter",
+      "photo_blob": "yes",
+      "photo_note": "a long white striped canopy roof stands 15-20 m north of the ray start (ortho-match station, nominal 40 m error)",
+      "instanceId": null,
+      "applied": "RETYPED OC0119 bus_stop_shelter -> terminal_shelter",
+      "reason_applied": "the first pass tested ray distance to polygon vertices only; OC0119 (the long school-bus canopy polygon the ray crosses) is the terminal roof the VR shows; drawn by the terminal_shelter builder"
+    },
+    {
+      "restSighting": 3,
+      "scene": "scene_a5",
+      "face": "r",
+      "cols": [
+        1450,
+        1650
+      ],
+      "kindSeen": "pavilion",
+      "note": "green octagonal gazebo/umbrella in garden",
+      "bearingDeg": 345.2,
+      "geometry": "ray 10-120 m at 345.2 deg",
+      "yawUsed": 228,
+      "candidates": [
+        "OC0120 gazebo 1.1 m"
+      ],
+      "decision": "retype",
+      "ref": "OC0121",
+      "reason": "the survey's round dark-green roofed gazebo OC0121 (style matches the green octagonal roof) lies in the same walled garden; the ray passes 1.1 m from OC0120 (blue pyramid roof, claimed by sighting 4) and OC0121 sits 2.4 m from the garden ray at 329 deg: the ortho-match station (nominal 40 m error) cannot separate the two, the roof styles do",
+      "ambiguous": true,
+      "typeId": "pavilion_octagon",
+      "photo_blob": "yes",
+      "photo_note": "the matched object was traced on the 2025 photo by the survey",
+      "applied": "RETYPED OC0121 gazebo -> pavilion_octagon (cantilever, 3 tiers, deck and bench)",
+      "vr_confirmed": "OC0121"
+    },
+    {
+      "restSighting": 4,
+      "scene": "scene_a5",
+      "face": "d",
+      "cols": [
+        1300,
+        1900
+      ],
+      "kindSeen": "pavilion",
+      "note": "blue square hip-roof 정자 next to garden",
+      "bearingDeg": null,
+      "geometry": "nadir strip 48 m along f at 13.4 m right of the station",
+      "yawUsed": 228,
+      "candidates": [
+        "OC0120 gazebo 0.8 m"
+      ],
+      "decision": "retype",
+      "ref": "OC0120",
+      "reason": "blue pyramid-roof gazebo OC0120 ('blue pyramid-roof gazebo in the walled garden') lies 0.8 m from the nadir strip; same object and roof colour",
+      "typeId": "pavilion_hip",
+      "photo_blob": "yes",
+      "photo_note": "the matched object was traced on the 2025 photo by the survey",
+      "applied": "RETYPED OC0120 gazebo -> pavilion_hip (grey panels, blue trim)",
+      "vr_confirmed": "OC0120"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a5",
+      "face": "r",
+      "cols": [
+        400,
+        2048
+      ],
+      "kindSeen": "garden",
+      "note": "walled garden with lawn",
+      "bearingDeg": 329.1,
+      "geometry": "ray 10-120 m at 329.1 deg",
+      "yawUsed": 228,
+      "candidates": [
+        "OC0120 gazebo 0.1 m",
+        "OC0121 gazebo 2.4 m"
+      ],
+      "decision": "missing",
+      "ref": null,
+      "reason": "only gazebo within 8 m, none of a kind that stands for a garden_wall",
+      "typeId": "garden_wall",
+      "photo_blob": "yes",
+      "photo_note": "walled garden with lawn and the gazebo roofs at the ray end",
+      "instanceId": "RS0003",
+      "applied": "RS0003 garden_wall traced on the photo (white coping line)"
+    },
+    {
+      "restSighting": 5,
+      "scene": "scene_a6",
+      "face": "l",
+      "cols": [
+        500,
+        1550
+      ],
+      "kindSeen": "shelter",
+      "note": "row of blue-canopy covered shelters (bike/walkway)",
+      "bearingDeg": 177.2,
+      "geometry": "ray 10-120 m at 177.2 deg",
+      "yawUsed": 267.1,
+      "candidates": [],
+      "decision": "retype",
+      "ref": "OC0153",
+      "reason": "no surveyed object within 8 m of the ray",
+      "typeId": "canopy_shelter_row",
+      "photo_blob": "yes",
+      "photo_note": "light-blue canopy roofs along the plaza edge 5-10 m beside the ray",
+      "instanceId": null,
+      "applied": "RETYPED OC0153 bike_rack -> canopy_shelter_row",
+      "reason_applied": "the first pass did not test kind bike_rack: OC0153 'row of blue canopies along the plaza edge (bicycle shelter)' is the row the VR shows"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a6",
+      "face": "l",
+      "cols": [
+        600,
+        1500
+      ],
+      "kindSeen": "garden",
+      "note": "tree plaza",
+      "bearingDeg": 178.6,
+      "geometry": "ray 10-120 m at 178.6 deg",
+      "yawUsed": 267.1,
+      "candidates": [],
+      "decision": "match",
+      "ref": "RS0007",
+      "reason": "no surveyed object within 8 m of the ray",
+      "typeId": "planter",
+      "photo_blob": "yes",
+      "photo_note": "tree-planter plaza grid beside the ray",
+      "instanceId": null,
+      "applied": "the scene_a6 'tree plaza' is the scene_a9 plaza; covered by RS0007",
+      "vr_confirmed": "RS0007"
+    },
+    {
+      "restSighting": 6,
+      "scene": "scene_a9",
+      "face": "f",
+      "cols": [
+        600,
+        2048
+      ],
+      "kindSeen": "bench",
+      "note": "paved plaza with tree planters and benches (also r, d)",
+      "bearingDeg": 164.7,
+      "geometry": "ray 10-120 m at 164.7 deg",
+      "yawUsed": 148.4,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "typeId": "bench",
+      "photo_blob": "no",
+      "photo_note": "the plaza is visible but benches are not resolvable under the tree crowns",
+      "instanceId": "RS0006",
+      "applied": "RS0006 bench + RS0007 tree pit + RS0007W planter wall in data/photo/rest-spaces.geojson"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a9",
+      "face": "r",
+      "cols": [
+        0,
+        2048
+      ],
+      "kindSeen": "garden",
+      "note": "tree-planter plaza",
+      "bearingDeg": 238.4,
+      "geometry": "ray 10-120 m at 238.4 deg",
+      "yawUsed": 148.4,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "typeId": "planter",
+      "photo_blob": "yes",
+      "photo_note": "tree-planter plaza near the ray start",
+      "instanceId": "RS0007",
+      "applied": "RS0007 gravel tree pit and RS0007W brick planter wall"
+    },
+    {
+      "restSighting": 7,
+      "scene": "scene_a10",
+      "face": "f",
+      "cols": [
+        0,
+        1500
+      ],
+      "kindSeen": "bench",
+      "note": "tree-planter plaza with benches",
+      "bearingDeg": 222,
+      "geometry": "ray 10-120 m at 222.0 deg",
+      "yawUsed": 237,
+      "candidates": [
+        "OC0169 plaza_structure 0.1 m"
+      ],
+      "decision": "match",
+      "ref": "RS0006",
+      "reason": "only plaza_structure within 8 m, none of a kind that stands for a bench",
+      "typeId": "bench",
+      "photo_blob": "no",
+      "photo_note": "plaza visible; benches not resolvable",
+      "instanceId": null,
+      "applied": "same plaza as scene_a9 (the scene_a10 station stands 8 m from its north-east corner); covered by RS0006/RS0007",
+      "vr_confirmed": "RS0006"
+    },
+    {
+      "restSighting": 8,
+      "scene": "scene_a10",
+      "face": "f",
+      "cols": [
+        1700,
+        2048
+      ],
+      "kindSeen": "shelter",
+      "note": "blue-white striped awning (also d)",
+      "bearingDeg": 276.7,
+      "geometry": "ray 10-120 m at 276.7 deg",
+      "yawUsed": 237,
+      "candidates": [],
+      "decision": "match",
+      "ref": "OC0153",
+      "reason": "no surveyed object within 8 m of the ray",
+      "typeId": "canopy_shelter_row",
+      "photo_blob": "yes",
+      "photo_note": "light-blue roof strip against a facade on the ray at about one third",
+      "instanceId": null,
+      "applied": "the 'striped awning' of scene_a10 d/f is the bike-shelter row OC0153 seen from above (the station stands 8 m from it); no awning instance",
+      "vr_confirmed": "OC0153"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a16",
+      "face": "f",
+      "cols": [
+        1280,
+        2048
+      ],
+      "kindSeen": "garden",
+      "note": "hedge lettering 진리 정의 창조 on slope (into r col 0-400)",
+      "bearingDeg": 149,
+      "geometry": "ray 10-120 m at 149.0 deg",
+      "yawUsed": 117,
+      "candidates": [
+        "OC0158 fence 5.1 m",
+        "OC0173 fence 6.9 m",
+        "OC0161 fence 7.7 m"
+      ],
+      "decision": "not_rest_space",
+      "ref": null,
+      "reason": "only fence within 8 m, none of a kind that stands for a planter",
+      "typeId": null,
+      "photo_blob": "yes",
+      "photo_note": "the yellow hedge lettering on the slope at the ray start",
+      "instanceId": null,
+      "applied": "not placed",
+      "reason_applied": "the hedge lettering is a planting (yellow shrubs on the slope), no constructed planter: left to the trees and ground stages"
+    },
+    {
+      "restSighting": 9,
+      "scene": "scene_f3",
+      "face": "f",
+      "cols": [
+        1950,
+        2048
+      ],
+      "kindSeen": "shelter",
+      "note": "red-roof tennis-court hut (into r col 0-500)",
+      "bearingDeg": 271.6,
+      "geometry": "ray 10-120 m at 271.6 deg",
+      "yawUsed": 228,
+      "candidates": [],
+      "decision": "match",
+      "ref": "BLD_SCNU_R138317",
+      "reason": "no surveyed object within 8 m of the ray",
+      "typeId": "hut",
+      "photo_blob": "yes",
+      "photo_note": "no hut roof distinguishable on the ray; a small red patch 20 m off it",
+      "instanceId": null,
+      "applied": "no rest-space feature: the hut is the registered building BLD_SCNU_R138317 (F3 학생테니스장 부속 시설(마동), 46 m2, 1 floor, GIS standing) whose footprint lies 1.7 m from the roof traced on the photo; drawing it as a hut too drew it twice",
+      "vr_confirmed": "BLD_SCNU_R138317",
+      "reason_applied": "found by the grounding probe after the rebase onto the modelled ground: the building's mass hid the hut. Follow-up for the building-look lane: give BLD_SCNU_R138317 the VR look (yellow timber walls, red low gable roof, scene_f3 r)"
+    },
+    {
+      "restSighting": 10,
+      "scene": "scene_a19",
+      "face": "b",
+      "cols": [
+        250,
+        500
+      ],
+      "kindSeen": "shelter",
+      "note": "bus stop shelter",
+      "bearingDeg": 71.6,
+      "geometry": "ray 10-120 m at 71.6 deg",
+      "yawUsed": 284,
+      "candidates": [
+        "OB0009 bus_stop_shelter 1.6 m"
+      ],
+      "decision": "match",
+      "ref": "OB0009",
+      "reason": "bus_stop_shelter OB0009 lies 1.6 m from the ray (17 m out)",
+      "typeId": "bus_stop_shelter",
+      "photo_blob": "yes",
+      "photo_note": "the matched object was traced on the 2025 photo by the survey",
+      "vr_confirmed": "OB0009",
+      "applied": "no new feature"
+    },
+    {
+      "restSighting": 11,
+      "scene": "scene_c1",
+      "face": "l",
+      "cols": [
+        200,
+        900
+      ],
+      "kindSeen": "bench",
+      "note": "bench rows under trees on library plaza",
+      "bearingDeg": 173.8,
+      "geometry": "ray 10-120 m at 173.8 deg",
+      "yawUsed": 288.6,
+      "candidates": [
+        "OC0081 plaza_structure 0.6 m"
+      ],
+      "decision": "match",
+      "ref": "estimateBenches",
+      "reason": "only plaza_structure within 8 m, none of a kind that stands for a bench",
+      "typeId": "bench",
+      "photo_blob": "no",
+      "photo_note": "the ray crosses the library roof; the plaza benches are under trees",
+      "instanceId": null,
+      "applied": "the long dark box benches beside the square tree pits are the 8 plaza benches estimateBenches draws from VR scene_c1; the face l reading lands 5.8 m from one of them, inside the station and depression-angle error, so nothing is added",
+      "vr_confirmed": "estimateBenches"
+    },
+    {
+      "restSighting": 12,
+      "scene": "scene_c1",
+      "face": "b",
+      "cols": [
+        1000,
+        1900
+      ],
+      "kindSeen": "bench",
+      "note": "benches around pond plaza",
+      "bearingDeg": 131.2,
+      "geometry": "ray 10-120 m at 131.2 deg",
+      "yawUsed": 288.6,
+      "candidates": [
+        "OC0094 low_wall 0.6 m",
+        "OB0024 low_wall 0.7 m",
+        "OC0081 plaza_structure 1.7 m",
+        "OB0021 plaza_structure 3.3 m",
+        "OB0011 plaza_structure 5.2 m"
+      ],
+      "decision": "match",
+      "ref": "estimateBenches (stages/furniture.mjs, 8 plaza benches beside the pond, VR scene_c1)",
+      "reason": "the build already places estimated box benches (4 per long side) beside the oval pond OC0081 from VR scene_c1; the ray at 131 deg crosses the pond's south-east side where they stand. No surveyed bench is needed",
+      "typeId": "bench",
+      "photo_blob": "yes",
+      "photo_note": "the matched object was traced on the 2025 photo by the survey",
+      "vr_confirmed": "estimateBenches",
+      "applied": "no new feature"
+    },
+    {
+      "restSighting": 13,
+      "scene": "scene_d2",
+      "face": "r",
+      "cols": [
+        1050,
+        1300
+      ],
+      "kindSeen": "shelter",
+      "note": "small roofed shelter/pergola with bench on central planted island",
+      "bearingDeg": 142.7,
+      "geometry": "ray 10-120 m at 142.7 deg",
+      "yawUsed": 44.3,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "typeId": "bus_stop_shelter",
+      "photo_blob": "yes",
+      "photo_note": "no roof on the planted island along the ray",
+      "instanceId": "RS0013",
+      "applied": "RS0013 open shelter, grey panel roof traced on the photo in the planted courtyard after the scene_d2 station was resected (yaw 309, not 44.3)"
+    },
+    {
+      "restSighting": 14,
+      "scene": "scene_d4",
+      "face": "l",
+      "cols": [
+        1250,
+        1450
+      ],
+      "kindSeen": "pavilion",
+      "note": "정자 (brown hip roof) beside path, left of D4 plaza",
+      "bearingDeg": 218.6,
+      "geometry": "ray 10-120 m at 218.6 deg",
+      "yawUsed": 290.9,
+      "candidates": [
+        "OC0078 gazebo 0.1 m"
+      ],
+      "decision": "retype",
+      "ref": "OC0078",
+      "reason": "gazebo OC0078 lies 0.1 m from the ray (29 m out)",
+      "typeId": "pavilion_hip",
+      "photo_blob": "yes",
+      "photo_note": "the matched object was traced on the 2025 photo by the survey",
+      "applied": "RETYPED OC0078 gazebo -> pavilion_hip (brown roof)",
+      "vr_confirmed": "OC0078"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_e5",
+      "face": "b",
+      "cols": [
+        1000,
+        1900
+      ],
+      "kindSeen": "garden",
+      "note": "lawn garden with topiary shrubs",
+      "bearingDeg": 78.1,
+      "geometry": "ray 10-120 m at 78.1 deg",
+      "yawUsed": 235.5,
+      "candidates": [],
+      "decision": "not_rest_space",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "typeId": null,
+      "photo_blob": "yes",
+      "photo_note": "lawn garden with shrubs on the ray",
+      "instanceId": null,
+      "applied": "not placed",
+      "reason_applied": "a lawn garden with topiary shrubs is a planting, no constructed planter: left to the trees and ground stages"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_e7",
+      "face": "f",
+      "cols": [
+        400,
+        1400
+      ],
+      "kindSeen": "garden",
+      "note": "paved plaza with tree planter",
+      "bearingDeg": 207.6,
+      "geometry": "ray 10-120 m at 207.6 deg",
+      "yawUsed": 214.5,
+      "candidates": [
+        "OC0137 planter 0.1 m",
+        "OC0138 pergola 0.9 m"
+      ],
+      "decision": "match",
+      "ref": "OC0137",
+      "reason": "planter OC0137 lies 0.1 m from the ray (25 m out)",
+      "typeId": "planter",
+      "photo_blob": "yes",
+      "photo_note": "the matched object was traced on the 2025 photo by the survey"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_e8",
+      "face": "f",
+      "cols": [
+        500,
+        1600
+      ],
+      "kindSeen": "garden",
+      "note": "courtyard plaza with planters",
+      "bearingDeg": 273.8,
+      "geometry": "ray 10-120 m at 273.8 deg",
+      "yawUsed": 272.3,
+      "candidates": [
+        "OC0102 planter 1.1 m"
+      ],
+      "decision": "missing",
+      "ref": null,
+      "reason": "planter OC0102 lies 1.1 m from the ray, but the survey drew it as one 7.7 x 8.8 m soil bed over the entrance walk and its steps; the VR and a closer read of the photo show two L-shaped brick hedge beds beside the walk and two hedge strips at the wing walls, so OC0102 is left out and the beds are placed",
+      "typeId": "planter",
+      "photo_blob": "yes",
+      "photo_note": "the matched object was traced on the 2025 photo by the survey",
+      "instanceId": "RS0018",
+      "applied": "RS0018, RS0018A-C (four planters traced on the NGII 2025 sheet, VR scene_e8 f); OC0102 excluded in stages/furniture.mjs; the courtyard paving between them is a tiles supplement of data/osm-ground.json (W3c)"
+    },
+    {
+      "restSighting": 15,
+      "scene": "scene_f1",
+      "face": "l",
+      "cols": [
+        550,
+        800
+      ],
+      "kindSeen": "shelter",
+      "note": "bus stop shelter",
+      "bearingDeg": 146.2,
+      "geometry": "ray 10-120 m at 146.2 deg",
+      "yawUsed": 255,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "typeId": "bus_stop_shelter",
+      "photo_blob": "yes",
+      "photo_note": "no shelter roof on the footway along the ray",
+      "instanceId": "RS0015",
+      "applied": "RS0015 shelter roof traced on the photo at the east bus bay",
+      "reason_applied": "the first pass looked along the ray only; the roof stands at the bus bay 30 m south of the pin"
+    },
+    {
+      "restSighting": 16,
+      "scene": "scene_f1",
+      "face": "d",
+      "cols": [
+        500,
+        1400
+      ],
+      "kindSeen": "bench",
+      "note": "two benches on sidewalk",
+      "bearingDeg": null,
+      "geometry": "nadir strip 42 m along f at -1.5 m right of the station",
+      "yawUsed": 255,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "typeId": "bench",
+      "photo_blob": "no",
+      "photo_note": "sidewalk visible; benches not resolvable",
+      "instanceId": "RS0016",
+      "applied": "RS0016 and RS0016B, face d registered on the lane diamonds and the footway kerb"
+    },
+    {
+      "restSighting": 17,
+      "scene": "scene_f2",
+      "face": "d",
+      "cols": [
+        1400,
+        1900
+      ],
+      "kindSeen": "not a rest space (EV charging bays)",
+      "note": "small green-roof hut/booth",
+      "bearingDeg": null,
+      "geometry": "nadir strip 28 m along f at 8.6 m right of the station",
+      "yawUsed": 129,
+      "candidates": [],
+      "decision": "not_rest_space",
+      "ref": null,
+      "reason": "re-read on the VR face d (cols 1400-1900): the green patch is two green-painted EV charging bays (전기차 충전 구역 marking, wheel stops) with a charger cabinet, not a roofed hut or booth; nothing to place",
+      "typeId": null,
+      "photo_blob": "no",
+      "photo_note": "the station lands on the track (ortho-match position off); no hut under it",
+      "instanceId": null
+    }
+  ],
+  "landscape": [
+    {
+      "restSighting": null,
+      "scene": "scene_a1",
+      "face": "l",
+      "cols": [
+        300,
+        1000
+      ],
+      "kindSeen": "sculpture",
+      "note": "fountain pond",
+      "bearingDeg": 90.8,
+      "geometry": "ray 10-120 m at 90.8 deg",
+      "yawUsed": 200.9,
+      "candidates": [
+        "OC0107 bench 5.4 m"
+      ],
+      "decision": "missing",
+      "ref": null,
+      "reason": "only bench within 8 m, none of a kind that stands for a sculpture",
+      "applied": {
+        "verdict": "built",
+        "features": [
+          "RS-LS-A1POND"
+        ],
+        "supplements": [],
+        "nodes": [
+          "Furniture#RS-LS-A1POND",
+          "Ground_Sports (OSM water way/367126960)"
+        ],
+        "evidence": "the OSM pond outline way/367126960 holds a dark water surface with two white spray spots on the NGII 2025 sheet; VR scene_a1 l shows the water, jets, rock and stone coping, so the supplement reclass of this pond to a sunken lawn is withdrawn and the coping, jets and rock are built",
+        "by": "landscape-vr (2026-10-26)"
+      }
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a3",
+      "face": "l",
+      "cols": [
+        1200,
+        1500
+      ],
+      "kindSeen": "sculpture",
+      "note": "rock in central roundabout (red ring)",
+      "bearingDeg": 85.2,
+      "geometry": "ray 10-120 m at 85.2 deg",
+      "yawUsed": 157.5,
+      "candidates": [
+        "OB0011 plaza_structure 0.8 m"
+      ],
+      "decision": "match",
+      "ref": "OB0011",
+      "reason": "plaza_structure OB0011 lies 0.8 m from the ray (23 m out)"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a3",
+      "face": "r",
+      "cols": [
+        1200,
+        2048
+      ],
+      "kindSeen": "stairs",
+      "note": "terraced stone plaza",
+      "bearingDeg": 277.9,
+      "geometry": "ray 10-120 m at 277.9 deg",
+      "yawUsed": 157.5,
+      "candidates": [
+        "OC0094 low_wall 4.6 m"
+      ],
+      "decision": "match",
+      "ref": "OC0094",
+      "reason": "low_wall OC0094 lies 4.6 m from the ray (12 m out)"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a4",
+      "face": "f",
+      "cols": [
+        1300,
+        1700
+      ],
+      "kindSeen": "other",
+      "note": "round one-storey building with blue band (rotunda)",
+      "bearingDeg": 159.9,
+      "geometry": "ray 10-120 m at 159.9 deg",
+      "yawUsed": 135,
+      "candidates": [
+        "OC0140 pergola 0.6 m",
+        "OC0155 planter 4.3 m",
+        "OC0154 planter 5.8 m"
+      ],
+      "decision": "match",
+      "ref": "OC0155",
+      "reason": "planter OC0155 lies 4.3 m from the ray (98 m out)",
+      "ambiguous": true
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a15",
+      "face": "f",
+      "cols": [
+        700,
+        1500
+      ],
+      "kindSeen": "other",
+      "note": "grandstand with blue seats and roof",
+      "bearingDeg": 273.2,
+      "geometry": "ray 10-120 m at 273.2 deg",
+      "yawUsed": 269,
+      "candidates": [
+        "OB0029 fence 0.1 m"
+      ],
+      "decision": "match",
+      "ref": "OB0029",
+      "reason": "fence OB0029 lies 0.1 m from the ray (67 m out)"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a17",
+      "face": "f",
+      "cols": [
+        900,
+        1500
+      ],
+      "kindSeen": "stairs",
+      "note": "grand stairs to gym (also r col 300-700)",
+      "bearingDeg": 36.8,
+      "geometry": "ray 10-120 m at 36.8 deg",
+      "yawUsed": 27,
+      "candidates": [
+        "OC0161 fence 1.9 m"
+      ],
+      "decision": "match",
+      "ref": "OC0161",
+      "reason": "fence OC0161 lies 1.9 m from the ray (10 m out)"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a19",
+      "face": "l",
+      "cols": [
+        600,
+        900
+      ],
+      "kindSeen": "sign",
+      "note": "SCNU gate sign sculpture",
+      "bearingDeg": 179,
+      "geometry": "ray 10-120 m at 179.0 deg",
+      "yawUsed": 284,
+      "candidates": [
+        "OC0129 low_wall 1.6 m"
+      ],
+      "decision": "match",
+      "ref": "OC0129",
+      "reason": "low_wall OC0129 lies 1.6 m from the ray (52 m out)"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a19",
+      "face": "l",
+      "cols": [
+        1000,
+        2048
+      ],
+      "kindSeen": "stairs",
+      "note": "gate plaza with stepped lawn edge",
+      "bearingDeg": 220,
+      "geometry": "ray 10-120 m at 220.0 deg",
+      "yawUsed": 284,
+      "candidates": [
+        "OC0111 plaza_structure 2.7 m",
+        "OB0010 pergola 5.1 m",
+        "OC0150 fence 6 m"
+      ],
+      "decision": "match",
+      "ref": "OC0111",
+      "reason": "plaza_structure OC0111 lies 2.7 m from the ray (22 m out)"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_a19",
+      "face": "f",
+      "cols": [
+        1450,
+        1650
+      ],
+      "kindSeen": "sign",
+      "note": "large billboard",
+      "bearingDeg": 311.2,
+      "geometry": "ray 10-120 m at 311.2 deg",
+      "yawUsed": 284,
+      "candidates": [
+        "OC0096 plaza_structure 0 m"
+      ],
+      "decision": "match",
+      "ref": "OC0096",
+      "reason": "plaza_structure OC0096 lies 0 m from the ray (58 m out)"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_b1",
+      "face": "f",
+      "cols": [
+        300,
+        1900
+      ],
+      "kindSeen": "stairs",
+      "note": "stepped plaza in front of museum",
+      "bearingDeg": 12.2,
+      "geometry": "ray 10-120 m at 12.2 deg",
+      "yawUsed": 8,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "applied": {
+        "verdict": "mapped",
+        "features": [],
+        "supplements": [],
+        "nodes": [
+          "Furniture#OC0096"
+        ],
+        "evidence": "the survey's tan/brown striped stepped_terrace OC0096 is this plaza (L-shaped, south and east of B1); the ortho-match station (nominal 40 m error) put the ray past it, and it is built on the terrain (compare-vr scene_b1 f shows the striped terraces)",
+        "by": "landscape-vr (2026-10-26)"
+      }
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_b4",
+      "face": "f",
+      "cols": [
+        700,
+        1100
+      ],
+      "kindSeen": "other",
+      "note": "straight paved path across lawn",
+      "bearingDeg": 306.5,
+      "geometry": "ray 10-120 m at 306.5 deg",
+      "yawUsed": 313.4,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "applied": {
+        "verdict": "built",
+        "features": [],
+        "supplements": [
+          "VR scene_b4 f cols 700-1100",
+          "VR scene_b4 f: the 8 x 8 m",
+          "VR scene_b4 f: the lawn path south"
+        ],
+        "nodes": [
+          "Ground_Pavers"
+        ],
+        "evidence": "the light 2.6 m paver path with an 8 x 8 m square across the B4 lawn is plain on the NGII 2025 sheet and absent from the model's ground (only land-cover lawn); traced as three plain paving supplements",
+        "by": "landscape-vr (2026-10-26)"
+      }
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_c1",
+      "face": "f",
+      "cols": [
+        900,
+        1500
+      ],
+      "kindSeen": "stairs",
+      "note": "stepped approach to library",
+      "bearingDeg": 298.4,
+      "geometry": "ray 10-120 m at 298.4 deg",
+      "yawUsed": 288.6,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "applied": {
+        "verdict": "built",
+        "features": [
+          "RS-LS-C1STEPS"
+        ],
+        "supplements": [],
+        "nodes": [
+          "Furniture#RS-LS-C1STEPS"
+        ],
+        "evidence": "VR scene_c1 f counts 14 + 5 risers between hedge strips and a tile landing; the bottom edge is the brick walk edge on the NGII 2025 sheet; the model terrain rises only 1 m there, so the flights carry their own rises",
+        "by": "landscape-vr (2026-10-26)"
+      }
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_c1",
+      "face": "b",
+      "cols": [
+        600,
+        1000
+      ],
+      "kindSeen": "sculpture",
+      "note": "fountain pond with sculpture",
+      "bearingDeg": 96.3,
+      "geometry": "ray 10-120 m at 96.3 deg",
+      "yawUsed": 288.6,
+      "candidates": [
+        "OC0081 plaza_structure 0.6 m",
+        "OB0015 plaza_structure 2.1 m",
+        "OB0024 low_wall 2.5 m",
+        "OB0016 plaza_structure 2.8 m",
+        "OB0017 plaza_structure 3.3 m"
+      ],
+      "decision": "match",
+      "ref": "OC0081",
+      "reason": "plaza_structure OC0081 lies 0.6 m from the ray (26 m out)",
+      "ambiguous": true
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_c3",
+      "face": "d",
+      "cols": [
+        0,
+        2048
+      ],
+      "kindSeen": "other",
+      "note": "crosswalk and disabled bay",
+      "bearingDeg": null,
+      "geometry": "nadir strip 38 m along f at 0.0 m right of the station",
+      "yawUsed": 12.6,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "applied": {
+        "verdict": "markings_lane",
+        "features": [],
+        "supplements": [],
+        "nodes": [],
+        "by": "landscape-vr (2026-10-26)",
+        "evidence": "road paint, not landscape: the crossing and the blue disabled bay right under the scene_c3 station (about 3-8 m) are traced in markings.geojson / markings-extra.geojson (MK00796, MK00797; MX00231, MX01310, MX01311) but the markings paint gate does not draw them (top-down qa/landscape-vr/topdown/c3-crosswalk-bay-topdown.png: only the zebra MK00135-MK00153 and the bay about 17 m north are drawn). Left to the markings lane (stages/markings.mjs is out of this lane's scope)"
+      }
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_d1",
+      "face": "l",
+      "cols": [
+        1500,
+        2048
+      ],
+      "kindSeen": "stairs",
+      "note": "outdoor stair",
+      "bearingDeg": 273.2,
+      "geometry": "ray 10-120 m at 273.2 deg",
+      "yawUsed": 327,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "applied": {
+        "verdict": "built",
+        "features": [
+          "RS-LS-D1STAIR"
+        ],
+        "supplements": [],
+        "nodes": [
+          "Furniture#RS-LS-D1STAIR"
+        ],
+        "evidence": "the stair is the 5 x 14 m strip south of D1 on the NGII 2025 sheet (the scene_d1 station of vr-stations.json is about 150 m off D1, so the first-pass ray missed it); two flights of about 9 risers in VR l/f",
+        "by": "landscape-vr (2026-10-26)"
+      }
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_d2",
+      "face": "f",
+      "cols": [
+        700,
+        1100
+      ],
+      "kindSeen": "stairs",
+      "note": "outdoor stair up to D2",
+      "bearingDeg": 37.4,
+      "geometry": "ray 10-120 m at 37.4 deg",
+      "yawUsed": 44.3,
+      "candidates": [
+        "OC0072 low_wall 2.6 m"
+      ],
+      "decision": "match",
+      "ref": "OC0072",
+      "reason": "low_wall OC0072 lies 2.6 m from the ray (10 m out)"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_d2",
+      "face": "l",
+      "cols": [
+        1300,
+        1700
+      ],
+      "kindSeen": "stairs",
+      "note": "hillside stair",
+      "bearingDeg": 339.2,
+      "geometry": "ray 10-120 m at 339.2 deg",
+      "yawUsed": 44.3,
+      "candidates": [
+        "OC0072 low_wall 7.1 m"
+      ],
+      "decision": "match",
+      "ref": "OC0072",
+      "reason": "low_wall OC0072 lies 7.1 m from the ray (10 m out)"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_d3",
+      "face": "d",
+      "cols": [
+        0,
+        900
+      ],
+      "kindSeen": "other",
+      "note": "personal-mobility parking bay (blue)",
+      "bearingDeg": null,
+      "geometry": "nadir strip 20 m along f at -5.6 m right of the station",
+      "yawUsed": 288,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "applied": {
+        "verdict": "built",
+        "features": [
+          "RS-LS-D3PMRACK"
+        ],
+        "supplements": [],
+        "nodes": [
+          "Furniture#RS-LS-D3PMRACK"
+        ],
+        "evidence": "the blue kick-scooter rack along the back of the bay in VR scene_d3 d was missing and is built (RS-LS-D3PMRACK); the bay paint MX00361 of markings-extra.geojson is rejected by the markings paint gate (blue support 0.579 < 0.6, markings-gate.json), so the blue fill is not drawn: a markings-lane follow-up",
+        "by": "landscape-vr (2026-10-26)"
+      }
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_d4",
+      "face": "f",
+      "cols": [
+        700,
+        1400
+      ],
+      "kindSeen": "stairs",
+      "note": "long stepped entrance plaza to D4",
+      "bearingDeg": 292.4,
+      "geometry": "ray 10-120 m at 292.4 deg",
+      "yawUsed": 290.9,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "applied": {
+        "verdict": "built",
+        "features": [
+          "RS-LS-D4STEPS"
+        ],
+        "supplements": [],
+        "nodes": [
+          "Furniture#RS-LS-D4STEPS"
+        ],
+        "evidence": "VR scene_d4 f: the striped paver plaza ends in 4 steps across the passage between the D4 wings; the step edge is the light-to-shade line on the NGII 2025 sheet north of the PM bay MX00293; the model terrain is flat there",
+        "by": "landscape-vr (2026-10-26)"
+      }
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_d4",
+      "face": "l",
+      "cols": [
+        0,
+        300
+      ],
+      "kindSeen": "sign",
+      "note": "road text 어린이보호 at road",
+      "bearingDeg": 160.4,
+      "geometry": "ray 10-120 m at 160.4 deg",
+      "yawUsed": 290.9,
+      "candidates": [
+        "OC0079 fence 0.4 m"
+      ],
+      "decision": "match",
+      "ref": "OC0079",
+      "reason": "fence OC0079 lies 0.4 m from the ray (19 m out)"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_d5",
+      "face": "r",
+      "cols": [
+        1150,
+        1400
+      ],
+      "kindSeen": "other",
+      "note": "small yellow-wall green tiled-roof building",
+      "bearingDeg": 223.8,
+      "geometry": "ray 10-120 m at 223.8 deg",
+      "yawUsed": 120,
+      "candidates": [
+        "OC0055 fence 5 m"
+      ],
+      "decision": "match",
+      "ref": "OC0055",
+      "reason": "fence OC0055 lies 5 m from the ray (120 m out)"
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_e1",
+      "face": "d",
+      "cols": [
+        0,
+        2048
+      ],
+      "kindSeen": "stairs",
+      "note": "round stage with stepped seating, paved plaza with tree squares",
+      "bearingDeg": null,
+      "geometry": "nadir strip 32 m along f at 0.0 m right of the station",
+      "yawUsed": 207,
+      "candidates": [
+        "OB0020 plaza_structure 0.2 m",
+        "OB0023 plaza_structure 0.2 m",
+        "OC0094 low_wall 0.3 m",
+        "OB0024 low_wall 1 m",
+        "OB0017 plaza_structure 2.4 m"
+      ],
+      "decision": "match",
+      "ref": "OB0020",
+      "reason": "plaza_structure OB0020 lies 0.2 m from the nadir strip (-16 m out)",
+      "ambiguous": true
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_e1",
+      "face": "r",
+      "cols": [
+        1000,
+        1300
+      ],
+      "kindSeen": "sculpture",
+      "note": "sculpture in pond",
+      "bearingDeg": 304,
+      "geometry": "ray 10-120 m at 304.0 deg",
+      "yawUsed": 207,
+      "candidates": [
+        "OC0081 plaza_structure 0.9 m",
+        "OB0021 plaza_structure 4.1 m",
+        "OB0022 plaza_structure 6.6 m"
+      ],
+      "decision": "match",
+      "ref": "OC0081",
+      "reason": "plaza_structure OC0081 lies 0.9 m from the ray (37 m out)",
+      "ambiguous": true
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_e1",
+      "face": "l",
+      "cols": [
+        500,
+        900
+      ],
+      "kindSeen": "sculpture",
+      "note": "central roundabout",
+      "bearingDeg": 99.4,
+      "geometry": "ray 10-120 m at 99.4 deg",
+      "yawUsed": 207,
+      "candidates": [
+        "OB0024 low_wall 1.8 m",
+        "OB0011 plaza_structure 2.8 m",
+        "OC0094 low_wall 4.7 m"
+      ],
+      "decision": "match",
+      "ref": "OB0024",
+      "reason": "low_wall OB0024 lies 1.8 m from the ray (10 m out)",
+      "ambiguous": true
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_e4",
+      "face": "r",
+      "cols": [
+        700,
+        1000
+      ],
+      "kindSeen": "sculpture",
+      "note": "round planter/sculpture on red-paved plaza",
+      "bearingDeg": 316.7,
+      "geometry": "ray 10-120 m at 316.7 deg",
+      "yawUsed": 236.3,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "applied": {
+        "verdict": "built",
+        "features": [
+          "RS-LS-E4STONE"
+        ],
+        "supplements": [
+          "VR scene_e4 r: red non-slip surfacing"
+        ],
+        "nodes": [
+          "Furniture#RS-LS-E4STONE",
+          "Ground_Bicycle (red surfacing)"
+        ],
+        "evidence": "VR scene_e4 r: the 공과대학 sign stone on the round lawn corner of a red-paved junction; the red surfacing is plain on the NGII 2025 sheet and was grey asphalt in the model; the lawn corner is the natural ground inside the A003 kerb",
+        "by": "landscape-vr (2026-10-26)"
+      }
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_e7",
+      "face": "d",
+      "cols": [
+        800,
+        1400
+      ],
+      "kindSeen": "stairs",
+      "note": "outdoor stair",
+      "bearingDeg": null,
+      "geometry": "nadir strip 23 m along f at 0.9 m right of the station",
+      "yawUsed": 214.5,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "applied": {
+        "verdict": "built",
+        "features": [
+          "RS-LS-E7STAIR"
+        ],
+        "supplements": [],
+        "nodes": [
+          "Furniture#RS-LS-E7STAIR"
+        ],
+        "evidence": "VR scene_e7 d (registered on the raised yellow crosswalk) shows three flights (6 + 7 + 6 risers) from the road walk to the E7 plaza; the grey stair area on the NGII 2025 sheet",
+        "by": "landscape-vr (2026-10-26)"
+      }
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_e7",
+      "face": "r",
+      "cols": [
+        100,
+        700
+      ],
+      "kindSeen": "other",
+      "note": "red cycle/footpath with crosswalk",
+      "bearingDeg": 273.1,
+      "geometry": "ray 10-120 m at 273.1 deg",
+      "yawUsed": 214.5,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "applied": {
+        "verdict": "built",
+        "features": [],
+        "supplements": [
+          "VR scene_e7 r/d: red surfacing"
+        ],
+        "nodes": [
+          "Ground_Bicycle (red surfacing)",
+          "Road_Markings (zebra MX00668-MX00671)"
+        ],
+        "evidence": "the red band is the red-surfaced carriageway past E7 (arrow and centre line on it, VR scene_e7 r/d), traced on the NGII 2025 sheet from the triangle island to the crosswalk south-east of the station; the crossings are markings of the other lane (the raised yellow crosswalk below the station is not in the markings data: a markings follow-up)",
+        "by": "landscape-vr (2026-10-26)"
+      }
+    },
+    {
+      "restSighting": null,
+      "scene": "scene_f1",
+      "face": "b",
+      "cols": [
+        900,
+        1200
+      ],
+      "kindSeen": "sculpture",
+      "note": "statue in plaza by glass building",
+      "bearingDeg": 76.5,
+      "geometry": "ray 10-120 m at 76.5 deg",
+      "yawUsed": 255,
+      "candidates": [],
+      "decision": "missing",
+      "ref": null,
+      "reason": "no surveyed object within 8 m of the ray",
+      "applied": {
+        "verdict": "not_on_campus",
+        "features": [],
+        "supplements": [],
+        "nodes": [],
+        "evidence": "the statue stands at about E 244297, N 263468 on the NGII 2025 sheet, in the plaza of the 순천시문화건강센터 east of the arterial road: outside the OSM campus outline (data/osm-campus.json) and the model EXTENT (x > 502)",
+        "by": "landscape-vr (2026-10-26)"
+      }
+    }
+  ]
+}

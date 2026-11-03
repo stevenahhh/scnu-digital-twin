@@ -1,0 +1,87 @@
+import { useEffect, useMemo, useRef } from "react";
+import { useThree } from "@react-three/fiber";
+import * as THREE from "three";
+// Same Preetham class as drei's visible <Sky>. three's own examples Sky changed in r18x (procedural clouds
+// on by default, no final gamma curve), so it would light the scene with a different sky than the dome shows.
+import { Sky } from "three-stdlib";
+import { NIGHT_SKY_SRGB } from "./atmosphere.mjs";
+import { applySkyNightFade } from "./skyNightFade.mjs";
+
+// The copy renders to a linear target, so it fades to the linear night fog colour.
+const NIGHT_SKY_LINEAR = new THREE.Color().setRGB(...NIGHT_SKY_SRGB, THREE.SRGBColorSpace).toArray();
+
+// Image-based fill light that follows the sun: an offscreen copy of the visible Sky is prefiltered
+// with PMREMGenerator into scene.environment. Re-rendered at most every throttleMs while the sun moves.
+// The copy drops the sun disc: the shadow-casting directional light already is the sun, and the
+// disc's ~19000x radiance would come back as unshadowed diffuse light and wash out every shadow.
+// nightMix fades the copy like the visible dome (getSkyNightMix), so the night environment light is the
+// dark night sky instead of a purple-brown twilight glow that tinted the whole scene.
+export function SkyEnvironment({ sunPosition, turbidity = 8, rayleigh = 0.7, intensity = 0.9, nightMix = 0, throttleMs = 250 }) {
+  const gl = useThree((state) => state.gl);
+  const scene = useThree((state) => state.scene);
+  const invalidate = useThree((state) => state.invalidate);
+  const targetRef = useRef(null);
+  const lastRenderRef = useRef(-Infinity);
+
+  const pmrem = useMemo(() => new THREE.PMREMGenerator(gl), [gl]);
+  const sky = useMemo(() => {
+    const object = new Sky();
+    // three-stdlib's Sky shares one ShaderMaterial between all instances, drei's visible dome included.
+    // The copy gets its own, so its night fade, sun-disc removal and uniforms don't leak into the dome.
+    object.material = object.material.clone();
+    object.scale.setScalar(450000);
+    applySkyNightFade(object.material, NIGHT_SKY_LINEAR);
+    if (object.material.uniforms.showSunDisc) {
+      object.material.uniforms.showSunDisc.value = false;
+    } else {
+      object.material.fragmentShader = object.material.fragmentShader.replace(
+        "L0 += ( vSunE * 19000.0 * Fex ) * sundisk;",
+        "",
+      );
+    }
+    return object;
+  }, []);
+  const envScene = useMemo(() => new THREE.Scene().add(sky), [sky]);
+
+  useEffect(() => {
+    pmrem.compileCubemapShader();
+    return () => {
+      if (scene.environment === targetRef.current?.texture) scene.environment = null;
+      targetRef.current?.dispose();
+      targetRef.current = null;
+      pmrem.dispose();
+    };
+  }, [pmrem, scene]);
+
+  useEffect(() => () => {
+    sky.geometry.dispose();
+    sky.material.dispose();
+  }, [sky]);
+
+  const [sunX, sunY, sunZ] = sunPosition;
+  useEffect(() => {
+    const render = () => {
+      lastRenderRef.current = performance.now();
+      const uniforms = sky.material.uniforms;
+      uniforms.sunPosition.value.set(sunX, sunY, sunZ);
+      uniforms.turbidity.value = turbidity;
+      uniforms.rayleigh.value = rayleigh;
+      uniforms.skyNightMix.value = nightMix;
+      const previous = targetRef.current;
+      targetRef.current = pmrem.fromScene(envScene, 0, 0.1, 1e6);
+      scene.environment = targetRef.current.texture;
+      scene.environmentIntensity = intensity;
+      previous?.dispose();
+      invalidate();
+    };
+    const wait = throttleMs - (performance.now() - lastRenderRef.current);
+    if (wait <= 0) {
+      render();
+      return undefined;
+    }
+    const timer = setTimeout(render, wait);
+    return () => clearTimeout(timer);
+  }, [envScene, intensity, invalidate, nightMix, pmrem, rayleigh, scene, sky, sunX, sunY, sunZ, throttleMs, turbidity]);
+
+  return null;
+}

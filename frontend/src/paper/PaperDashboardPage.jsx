@@ -21,7 +21,7 @@ function Card({ title, description, action, children, className = "" }) {
       className={`rounded-xl border border-[var(--pd-border)] bg-[var(--pd-card)] shadow-[0_1px_2px_0_rgb(0_0_0/0.04)] ${className}`}
     >
       {title ? (
-        <header className="flex items-start justify-between gap-4 border-b border-[var(--pd-border)] px-5 py-4">
+        <header className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--pd-border)] px-5 py-4">
           <div className="min-w-0">
             <h3 className="text-sm font-semibold leading-none tracking-tight">{title}</h3>
             {description ? (
@@ -55,7 +55,7 @@ function Metric({ label, value, unit, hint, accent }) {
   return (
     <div className="rounded-lg border border-[var(--pd-border)] bg-[var(--pd-card)] px-4 py-3">
       <p className="text-[11px] font-medium text-[var(--pd-muted-foreground)]">{label}</p>
-      <p className="pd-num mt-1 flex items-baseline gap-1">
+      <p className="pd-num mt-1 flex flex-wrap items-baseline gap-1">
         <span className="text-2xl font-semibold tracking-tight" style={accent ? { color: accent } : undefined}>
           {value}
         </span>
@@ -155,7 +155,7 @@ export default function PaperDashboardPage() {
               <Badge>예측값 · 실측 검교정 전</Badge>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <Metric
                 label="일 총 전력수요"
                 value={number(data.demandTotalKwh)}
@@ -233,7 +233,7 @@ export default function PaperDashboardPage() {
               description={`${data.moduleWp} Wp 모듈 ${data.moduleCount}장 · 방위각 ${data.azimuthDeg}° · 경사각 ${data.tiltDeg}°`}
               action={<Tabs value={presetId} onChange={setPresetId} />}
             >
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <Metric label="정격 용량" value={number(data.capacityKwp, 3)} unit="kWp" />
                 <Metric
                   label="일 발전량"

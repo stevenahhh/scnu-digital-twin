@@ -21,6 +21,7 @@ class CoordinateTransform:
         invert_z: bool = False,
         wgs84_reference: Dict[str, float] | None = None,
         sumo_origin: Dict[str, float] | None = None,
+        local_to_grid: Iterable[float] | None = None,
     ) -> None:
         self.origin = {"x": 0.0, "y": 0.0, "z": 0.0, **(origin or {})}
         self.scale = float(scale)
@@ -30,6 +31,13 @@ class CoordinateTransform:
         self.invert_z = bool(invert_z)
         self.wgs84_reference = dict(wgs84_reference or {})
         self.sumo_origin = {"x": 0.0, "z": 0.0, **(sumo_origin or {})}
+        # simulation (true east/north) -> EPSG:5186 grid offsets: [dE, dN] = M [dx, dz] (meridian convergence and scale)
+        self.local_to_grid = tuple(float(v) for v in (local_to_grid or (1.0, 0.0, 0.0, 1.0)))
+        a, b, c, d = self.local_to_grid
+        det = a * d - b * c
+        if len(self.local_to_grid) != 4 or not math.isfinite(det) or det == 0:
+            raise ValueError("epsg5186_local_to_grid는 가역 2x2 행렬 [a, b, c, d]여야 합니다.")
+        self._grid_to_local = (d / det, -b / det, -c / det, a / det)
 
     @classmethod
     def from_file(cls, path: str | Path) -> "CoordinateTransform":
@@ -41,6 +49,7 @@ class CoordinateTransform:
             invert_z=config.get("invert_z", False),
             wgs84_reference=config.get("wgs84_reference"),
             sumo_origin=config.get("sumo_origin"),
+            local_to_grid=config.get("epsg5186_local_to_grid"),
         )
 
     @classmethod
@@ -128,17 +137,26 @@ class CoordinateTransform:
         latitude = reference_lat + math.degrees(float(z) / radius)
         return longitude, latitude
 
+    # SUMO files from prepare_sumo are in absolute EPSG:5186 metres: sumo_origin E/N (the D4 anchor, absent = 0) plus
+    # epsg5186_local_to_grid (absent = identity) times the simulation offset from sumo_origin x/z.
     def sumo_to_simulation(self, x: float, z: float) -> Tuple[float, float]:
-        return float(x) + self.sumo_origin["x"], float(z) + self.sumo_origin["z"]
+        origin = self.sumo_origin
+        dE, dN = float(x) - float(origin.get("E", 0.0)), float(z) - float(origin.get("N", 0.0))
+        a, b, c, d = self._grid_to_local
+        return a * dE + b * dN + origin["x"], c * dE + d * dN + origin["z"]
 
     def simulation_to_sumo(self, x: float, z: float) -> Tuple[float, float]:
-        return float(x) - self.sumo_origin["x"], float(z) - self.sumo_origin["z"]
+        origin = self.sumo_origin
+        dx, dz = float(x) - origin["x"], float(z) - origin["z"]
+        a, b, c, d = self.local_to_grid
+        return a * dx + b * dz + float(origin.get("E", 0.0)), c * dx + d * dz + float(origin.get("N", 0.0))
 
     def as_dict(self) -> Dict:
         return {
             "origin": dict(self.origin), "scale": self.scale,
             "rotation_degrees": self.rotation_degrees, "invert_z": self.invert_z,
             "wgs84_reference": dict(self.wgs84_reference), "sumo_origin": dict(self.sumo_origin),
+            "epsg5186_local_to_grid": list(self.local_to_grid),
         }
 
     @staticmethod

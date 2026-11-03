@@ -1,18 +1,10 @@
-const D4_VWORLD_ANCHOR = Object.freeze({
-  longitude: 127.4764043,
-  latitude: 34.9700548,
-});
+import { simulationToWgs84 } from "../geo/epsg5186.mjs";
 
-const EARTH_RADIUS_METERS = 6_378_137;
-
+// Simulation metres (true east/north of the D4 anchor) to WGS84 through the shared EPSG:5186 module, the same frame
+// the Legacy scene and the network generator use; the D4 anchor maps to (127.4764043, 34.9700548).
 export function simulationPointToVWorld(position) {
-  const latitudeRadians = D4_VWORLD_ANCHOR.latitude * Math.PI / 180;
-  return {
-    longitude: D4_VWORLD_ANCHOR.longitude
-      + (Number(position.x) / (EARTH_RADIUS_METERS * Math.cos(latitudeRadians))) * 180 / Math.PI,
-    latitude: D4_VWORLD_ANCHOR.latitude
-      + (Number(position.z) / EARTH_RADIUS_METERS) * 180 / Math.PI,
-  };
+  const [longitude, latitude] = simulationToWgs84({ x: Number(position.x), z: Number(position.z) });
+  return { longitude, latitude };
 }
 
 export function trafficModelUri(entity) {
@@ -37,6 +29,7 @@ function entityModel(entity, Cesium) {
 export function createVWorldTrafficSimulation({
   map,
   Cesium = globalThis.window?.Cesium,
+  onStatus,
   websocketUrl = import.meta.env.VITE_SIMULATION_WS_URL || "ws://127.0.0.1:8002/ws/simulation",
 }) {
   const viewer = map?._wsViewer;
@@ -46,6 +39,16 @@ export function createVWorldTrafficSimulation({
   let disposed = false;
   let reconnectTimer = null;
   let socket = null;
+  let retryInMs = 1500;
+  let disconnectWarned = false;
+
+  const reportStatus = (state, delay = retryInMs) => {
+    try {
+      onStatus?.({ state, retryInMs: delay });
+    } catch {
+      // Status observers must not interrupt the simulation overlay.
+    }
+  };
 
   const clear = () => {
     for (const id of objectIds) viewer.entities.removeById(id);
@@ -84,7 +87,14 @@ export function createVWorldTrafficSimulation({
 
   const connect = () => {
     if (disposed) return;
+    reportStatus("connecting", retryInMs);
     socket = new WebSocket(websocketUrl);
+    socket.onopen = () => {
+      if (disposed) return;
+      retryInMs = 1500;
+      disconnectWarned = false;
+      reportStatus("live", 0);
+    };
     socket.onmessage = (event) => {
       try {
         const payload = JSON.parse(event.data);
@@ -95,9 +105,29 @@ export function createVWorldTrafficSimulation({
         // Ignore malformed simulation frames and keep the last valid positions.
       }
     };
-    socket.onclose = () => {
-      if (!disposed) reconnectTimer = setTimeout(connect, 1500);
+    const disconnect = () => {
+      if (disposed || reconnectTimer !== null) return;
+      if (!disconnectWarned) {
+        console.warn("Traffic simulation WebSocket disconnected");
+        disconnectWarned = true;
+      }
+      const delay = retryInMs;
+      retryInMs = Math.min(retryInMs * 2, 30000);
+      reportStatus("disconnected", delay);
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        connect();
+      }, delay);
     };
+    socket.onerror = () => {
+      disconnect();
+      try {
+        socket.close();
+      } catch {
+        // A failed socket may already be closed.
+      }
+    };
+    socket.onclose = disconnect;
   };
 
   connect();
@@ -106,7 +136,9 @@ export function createVWorldTrafficSimulation({
     dispose() {
       disposed = true;
       clearTimeout(reconnectTimer);
+      reconnectTimer = null;
       socket?.close();
+      reportStatus("disconnected", 0);
       clear();
     },
   };

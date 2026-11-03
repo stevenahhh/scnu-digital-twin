@@ -1,6 +1,6 @@
 /* @vitest-environment jsdom */
 import React from "react";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CampusComparison, createCampusComparisonClient } from "./CampusComparisonPanel.jsx";
@@ -54,15 +54,27 @@ describe("CampusComparison", () => {
     const client = { load: vi.fn().mockResolvedValue(parsed), recommend: vi.fn().mockResolvedValue({ id: "new-s", buildingId: "D4" }) };
     const open = vi.fn();
     render(<CampusComparison client={client} initialDate="2026-05-18" onOpenRecommendation={open} />);
-    expect(await screen.findByText("D4 / 공대 3호관")).toBeTruthy();
-    expect(screen.getAllByText(/연환산 발전량/)).toHaveLength(2);
-    expect(screen.getAllByText(/옥상 활용/)).toHaveLength(2);
-    expect(screen.getAllByText(/제약 위반/)).toHaveLength(2);
+    // The ranking is an ordered list (rank order), the comparison a table with the same buildings.
+    const ranking = await screen.findByRole("list", { name: "추천 순위" });
+    expect(ranking.tagName).toBe("OL");
+    expect(within(ranking).getByText("D4 / 공대 3호관")).toBeTruthy();
+    expect(within(screen.getByRole("table")).getByText("D4 / 공대 3호관")).toBeTruthy();
+    expect(screen.getByText("추정 · 시뮬레이션 기준일 5월 18일")).toBeTruthy();
+    expect(screen.getAllByText(/연환산 발전량/)).toHaveLength(1);
+    expect(screen.getAllByText(/옥상 활용/)).toHaveLength(1);
+    expect(screen.getAllByText(/제약 위반/)).toHaveLength(1);
     expect(screen.getByText(/옥상 메타데이터/)).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "D1 / 창업보육센터 배치 편집" }));
     expect(open).toHaveBeenCalledWith({ scenarioId: "D1-s", buildingId: "D1" });
     await user.click(screen.getByRole("button", { name: "1위 추천을 새 편집 시나리오로 열기" }));
     expect(client.recommend).toHaveBeenCalledWith({ sourceScenarioId: "D4-s", date: "2026-05-18" });
     expect(open).toHaveBeenCalledWith({ scenarioId: "new-s", buildingId: "D4" });
+  });
+
+  it("shows the base date and an empty state when no rankings exist", async () => {
+    const client = { load: vi.fn().mockResolvedValue({ ...parsed, ranked: [] }) };
+    render(<CampusComparison client={client} initialDate="2026-05-18" />);
+    expect(await screen.findByText("비교할 대표 설치안이 없습니다")).toBeTruthy();
+    expect(screen.getByText("추정 · 시뮬레이션 기준일 5월 18일")).toBeTruthy();
   });
 });

@@ -1,0 +1,178 @@
+{
+  "description": "Parametric rest-space types for the campus model: pavilions (정자, 가제보), pergolas, shelters, awnings, huts, benches, walls and planters. Each type names the stages/furniture.mjs builder that draws it, its default dimensions in metres with the allowed range, and the colours it takes unless an instance sets its own. Instances live in data/photo/rest-spaces.geojson; every instance dimension stays inside its type's range.",
+  "sources": [
+    "KDS 34 50 15 조경시설물 설계기준 (via RESEARCH/waves/uhf-h3/REDUCE-uhf-h3.md a25): pergola 2.2-2.6 m standard, up to 3.0 m; 그늘막/원두막 eave 2.5-3.0 m; 원두막 floor 0.34-0.46 m; 정자 has no numeric size",
+    "vendor example HD-S101 전통한식 팔각정 (hyundai-industry, 조달 물품식별 24357563): 7,000 x 7,000 x H5,300 mm",
+    "vendor example Q22 Q-GP pergola series: 4.0x4.0x3.15 ... 4.0x2.9x2.5 m (W x D x H)",
+    "RESEARCH/waves/uhf-h3/REDUCE-uhf-h3.md a26: bench 1.8 x 0.6 x 0.45 m, placeholder (no statute)",
+    "SCNU 360 VR tour, read by eye (visual reference only, nothing copied)"
+  ],
+  "lineageNote": "every dimension is an estimate (추정): KDS 34 50 15 ranges, vendor envelopes, VR reading",
+  "types": {
+    "pavilion_hip": {
+      "builder": "pavilion_hip",
+      "label": "정자 (사모 지붕)",
+      "dims": {
+        "planWidthM": { "default": 4.1, "range": [3.0, 7.0] },
+        "planDepthM": { "default": 4.1, "range": [3.0, 7.0] },
+        "eaveHeightM": { "default": 2.5, "range": [2.4, 3.0] },
+        "ridgeHeightM": { "default": 3.4, "range": [2.9, 4.2] },
+        "floorHeightM": { "default": 0.45, "range": [0.34, 0.46] },
+        "columnCount": { "default": 4, "range": [4, 4] },
+        "columnSizeM": { "default": 0.18, "range": [0.15, 0.24] },
+        "roofOverhangM": { "default": 0.6, "range": [0.4, 0.9] },
+        "railingHeightM": { "default": 0.9, "range": [0.6, 1.0] },
+        "railingSides": { "default": 3, "range": [0, 4] }
+      },
+      "dimsSource": "KDS 34 50 15 원두막 floor 0.34-0.46 m and 그늘막 eave 2.5-3.0 m (REDUCE-uhf-h3 a25); plan 4.1 m and ridge 3.4 m from the DOSSIER 5.2 square 정자 default and VR reading (estimated)",
+      "materials": { "posts": "timber", "floor": "timber", "railing": "timber", "roof": "instance roofColour" },
+      "colourSource": "VR reading: timber posts; roof colour per instance (blue in scene_a5, brown in scene_d4) (estimated)",
+      "estimated": true
+    },
+    "pavilion_octagon": {
+      "builder": "pavilion_octagon",
+      "label": "팔각 가제보",
+      "dims": {
+        "circumscribedM": { "default": 7.0, "range": [4.0, 7.0] },
+        "eaveHeightM": { "default": 2.6, "range": [2.4, 3.0] },
+        "apexHeightM": { "default": 5.3, "range": [3.5, 5.3] },
+        "floorHeightM": { "default": 0.45, "range": [0.0, 0.46] },
+        "columnCount": { "default": 8, "range": [8, 8] },
+        "columnSizeM": { "default": 0.2, "range": [0.15, 0.3] }
+      },
+      "dimsSource": "vendor example (hyundai-industry HD-S101 7,000 x 7,000 x H5,300 mm) for plan and apex; eave from KDS 34 50 15 그늘막 2.5-3.0 m; floor 0 when an instance sets floor: false (estimated)",
+      "materials": { "posts": "timber", "roof": "instance roofColour" },
+      "colourSource": "VR reading: green octagonal roof in scene_a5 (estimated)",
+      "estimated": true
+    },
+    "pergola": {
+      "builder": "pergola",
+      "label": "퍼걸러",
+      "dims": {
+        "heightM": { "default": 2.6, "range": [2.2, 3.0] },
+        "widthM": { "default": 3.0, "range": [2.0, 4.0] },
+        "postSpacingM": { "default": 3.0, "range": [2.5, 3.5] },
+        "slatSpacingM": { "default": 0.55, "range": [0.4, 0.7] }
+      },
+      "dimsSource": "KDS 34 50 15 pergola 2.2-2.6 m standard, up to 3.0 m (REDUCE-uhf-h3 a25); posts every 3 m and slats 0.55 m as stages/furniture.mjs pergolaAlong (estimated)",
+      "materials": { "posts": "timber", "slats": "timber" },
+      "colourSource": "survey style colour of the matched object, else timber (estimated)",
+      "estimated": true
+    },
+    "canopy_shelter_row": {
+      "builder": "canopy_shelter_row",
+      "label": "자전거·보행 캐노피 열",
+      "dims": {
+        "heightM": { "default": 2.5, "range": [2.3, 3.0] },
+        "moduleWidthM": { "default": 2.0, "range": [1.5, 3.0] },
+        "moduleLengthM": { "default": 4.0, "range": [3.0, 5.0] },
+        "roofPitchDeg": { "default": 10, "range": [5, 15] }
+      },
+      "dimsSource": "KDS 34 50 15 그늘막 eave 2.5-3.0 m (REDUCE-uhf-h3 a25), lowered to 2.3 m for bike canopies; module 2.0 x 4.0 m and 10 degree mono-pitch from VR reading (estimated)",
+      "materials": { "posts": "galvanised", "roof": "instance roofColour" },
+      "colourSource": "VR reading: blue canopies in scene_a6 (estimated)",
+      "estimated": true
+    },
+    "bus_stop_shelter": {
+      "builder": "bus_stop_shelter",
+      "label": "버스 정류장 쉘터",
+      "dims": {
+        "heightM": { "default": 2.8, "range": [2.5, 3.0] },
+        "depthM": { "default": 1.5, "range": [1.2, 2.0] },
+        "lengthM": { "default": 4.0, "range": [3.0, 6.0] }
+      },
+      "dimsSource": "KDS 34 50 15 그늘막 eave 2.5-3.0 m (REDUCE-uhf-h3 a25); 1.5 x 4.0 m plan as the surveyed shelters (data/photo/objects-campus.geojson OB0009, height 2.8 m by eye / VR) (estimated)",
+      "materials": { "frame": "metal", "back": "glass", "seat": "bench" },
+      "colourSource": "survey style colour of the matched object (estimated)",
+      "estimated": true
+    },
+    "terminal_shelter": {
+      "builder": "terminal_shelter",
+      "label": "버스 터미널 쉼터",
+      "dims": {
+        "heightM": { "default": 3.0, "range": [2.6, 3.2] },
+        "widthM": { "default": 3.5, "range": [3.0, 8.0], "rangeSource": "upper bound 8.0 m from the school-bus terminal roof (VR scene_a4 r; survey outline OC0119 on the NGII 2025 sheet 8.1 m across) (estimated, 추정)" },
+        "postSpacingM": { "default": 4.0, "range": [3.0, 5.0] }
+      },
+      "dimsSource": "vendor example (Q22 Q-GP 2.5-3.5 m shelter heights) and KDS 34 50 15 그늘막 2.5-3.0 m; width and post spacing from VR reading of scene_a4 (estimated)",
+      "materials": { "posts": "metal", "roof": "instance roofColour", "backWall": "optional" },
+      "colourSource": "VR reading of the long shelter in scene_a4 (estimated)",
+      "estimated": true
+    },
+    "awning": {
+      "builder": "awning",
+      "label": "줄무늬 차양",
+      "dims": {
+        "frontHeightM": { "default": 2.4, "range": [2.2, 2.8] },
+        "depthM": { "default": 2.5, "range": [2.0, 3.0] },
+        "stripeWidthM": { "default": 0.5, "range": [0.3, 1.6], "rangeSource": "upper bound 1.6 m from VR scene_a10 face d: the striped tent's stripes read about 1.5 m (estimated, 추정)" }
+      },
+      "dimsSource": "VR reading of the blue-white striped awning in scene_a10, front edge kept inside the KDS 34 50 15 그늘막 band minus 0.3 m for a facade-hung awning (estimated)",
+      "materials": { "fabric": "instance colours [a, b]", "frame": "metal" },
+      "colourSource": "VR reading: blue and white stripes in scene_a10 (estimated)",
+      "estimated": true
+    },
+    "hut": {
+      "builder": "hut",
+      "label": "소형 부스",
+      "dims": {
+        "planWidthM": { "default": 2.4, "range": [2.0, 10.5], "rangeSource": "upper bound 10.5 m from the tennis-court hut (VR scene_f3 face r reads about 9 m; its roof traced on the NGII 2025 sheet is 11.0 x 4.3 m, 10.4 m without the eaves) (estimated, 추정)" },
+        "planDepthM": { "default": 2.4, "range": [2.0, 4.0] },
+        "heightM": { "default": 2.6, "range": [2.3, 3.2] },
+        "roofRiseM": { "default": 0.6, "range": [0.3, 1.0] }
+      },
+      "dimsSource": "VR reading of the tennis-court hut (scene_f3; the scene_f2 sighting is EV charging bays, not a booth); hip or gable roof per instance (estimated)",
+      "materials": { "walls": "instance wallColour", "roof": "instance roofColour" },
+      "colourSource": "VR reading: red roof in scene_f3 (estimated)",
+      "estimated": true
+    },
+    "bench": {
+      "builder": "bench",
+      "label": "벤치",
+      "dims": {
+        "lengthM": { "default": 1.8, "range": [1.2, 6.0], "rangeSource": "upper bound 6.0 m from VR scene_c1 face l: the dark box benches beside the 3 m tree pits read about 5-6 m long (estimated, 추정)" },
+        "depthM": { "default": 0.6, "range": [0.4, 0.7] },
+        "seatHeightM": { "default": 0.45, "range": [0.4, 0.48] }
+      },
+      "dimsSource": "REDUCE-uhf-h3 a26 placeholder 1.8 x 0.6 x 0.45 m (no statute) and VR reading (estimated)",
+      "materials": { "seat": "timber", "frame": "metal" },
+      "colourSource": "VR reading per scene (estimated)",
+      "estimated": true
+    },
+    "low_wall": {
+      "builder": "low_wall",
+      "label": "낮은 담",
+      "dims": {
+        "thicknessM": { "default": 0.3, "range": [0.2, 0.4] },
+        "heightM": { "default": 0.6, "range": [0.4, 0.9] }
+      },
+      "dimsSource": "stages/furniture.mjs low_wall 0.3 m thickness; 0.4-0.9 m height from VR reading (estimated)",
+      "materials": { "wall": "stone or concrete" },
+      "colourSource": "survey style colour, else concrete (estimated)",
+      "estimated": true
+    },
+    "planter": {
+      "builder": "planter",
+      "label": "화단",
+      "dims": {
+        "kerbHeightM": { "default": 0.45, "range": [0.15, 0.6] }
+      },
+      "dimsSource": "stages/furniture.mjs planter kerb, 0.15 m flush kerb (scene_c1 lawn squares) to 0.6 m raised bed from VR reading (estimated)",
+      "materials": { "kerb": "stone" },
+      "colourSource": "survey style colour, else stone (estimated)",
+      "estimated": true
+    },
+    "garden_wall": {
+      "builder": "low_wall",
+      "label": "정원 담장",
+      "dims": {
+        "thicknessM": { "default": 0.3, "range": [0.2, 0.5] },
+        "heightM": { "default": 1.2, "range": [0.9, 1.8] }
+      },
+      "dimsSource": "VR reading of walled gardens (0.9-1.8 m), drawn by the low_wall builder at garden height (estimated)",
+      "materials": { "wall": "brick or stone" },
+      "colourSource": "VR reading per scene (estimated)",
+      "estimated": true
+    }
+  }
+}

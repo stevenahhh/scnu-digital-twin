@@ -26,7 +26,7 @@ describe("EnergyDashboard", () => {
     expect(screen.getByText("44.0 kWh")).toBeTruthy();
     expect(screen.getByText("4.8%")).toBeTruthy();
     expect(screen.getByRole("img", { name: /96개 15분 구간/ })).toBeTruthy();
-    expect(screen.getByText("시스템 손실 10.0%")).toBeTruthy();
+    expect(screen.getByText("10.0%")).toBeTruthy();
     expect(screen.getByText("강의실")).toBeTruthy();
   });
 
@@ -53,9 +53,9 @@ describe("EnergyDashboard", () => {
   it("renders recoverable error without zero metrics and retries", async () => {
     const client = { load: vi.fn().mockRejectedValueOnce(new Error("API offline")).mockResolvedValueOnce(dashboardPayload()) };
     render(<EnergyDashboard client={client} initialDate="2026-05-18" />);
-    expect((await screen.findByRole("alert")).textContent).toContain("API offline");
+    expect((await screen.findByRole("alert")).textContent).toContain("요청을 처리하지 못했습니다");
     expect(screen.queryByText("0.0 kWh")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "에너지 데이터 다시 시도" }));
+    fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
     expect(await screen.findByRole("heading", { name: "D4 / 공대 3호관" })).toBeTruthy();
   });
 

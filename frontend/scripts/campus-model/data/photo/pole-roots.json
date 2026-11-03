@@ -1,0 +1,4356 @@
+{
+ "note": "Standing-pole bases read from the NGII 2025 orthophoto (sheet 34702020, 0.25 m GSD). verdict shadow-root: by-eye base confirmed by the shadow detector (lib/poleShadow.mjs) within 0.5 m, placed at the detected root; by-eye-root: base by eye (data/photo/pole-review.json); head-lean: floodlight head minus the relief lean; vr-root: base hidden on the photo, read on the VR tour against photo features (pole-review verdict vr); epoch-root: base read by eye on other-year aerials (순천시 airmap 2013-2024) registered to the sheet, at least two independent epochs within 0.5 m (data/photo/pole-sources.json resolved); unresolved: no base visible, survey and data.go.kr poles stay at their seed (metre-level; site 'median' when the photo shows the seed on a median or island); rejected: no pole there (not drawn). Positions WGS84; residualM per pole; heights stay estimates (추정). Unresolved poles carry estimated: true, attempts (every other source tried in round 2: data/photo/pole-sources.json), seedUncertaintyM and confidence; placed poles carry confidence by method.",
+ "generator": "scripts/campus-model/fetch/poleRoots.mjs",
+ "sun": {
+  "azimuthDeg": 92.5,
+  "elevationDeg": 62,
+  "note": "sun of the photo as estimated in data/photo/README.md (shadows fall west)"
+ },
+ "counts": {
+  "traffic_signal_pole/by-eye-photo": {
+   "unresolved": 2,
+   "shadow-root": 1,
+   "by-eye-root": 1,
+   "vr-root": 1
+  },
+  "street_lamp/by-eye-photo": {
+   "unresolved": 6,
+   "rejected": 3,
+   "by-eye-root": 3
+  },
+  "sign_pole/by-eye-photo": {
+   "by-eye-root": 1,
+   "unresolved": 2
+  },
+  "street_lamp/data.go.kr": {
+   "unresolved": 35,
+   "epoch-root": 2,
+   "shadow-root": 2,
+   "by-eye-root": 1,
+   "rejected": 2
+  },
+  "traffic_signal_pole/shadow": {
+   "unresolved": 1
+  },
+  "floodlight_pole/by-eye-photo": {
+   "head-lean": 6
+  },
+  "street_lamp/rule": {
+   "rejected": 67
+  }
+ },
+ "residualStats": {
+  "resolved": 18,
+  "unresolved": 46,
+  "maxM": 0.5,
+  "medianM": 0.29,
+  "p95M": 0.5
+ },
+ "poles": [
+  {
+   "id": "OB0000",
+   "kind": "traffic_signal_pole",
+   "source": "by-eye-photo",
+   "heightM": 6.5,
+   "seed": [
+    127.48416935,
+    34.96849584
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 18.74,
+     "fromSeedM": 2.33,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: crossing bars"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "dark marks within 1.2 m of the seed on 2018-2024 scatter by 1.2 m (pedestrians, signal heads); no base two epochs agree on",
+     "registeredEpochs": 10
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  {
+   "id": "OB0001",
+   "kind": "traffic_signal_pole",
+   "source": "by-eye-photo",
+   "heightM": 6.5,
+   "seed": [
+    127.4838507,
+    34.96863457
+   ],
+   "verdict": "shadow-root",
+   "root": [
+    127.48385259,
+    34.96863328
+   ],
+   "shiftM": 0.22,
+   "residualM": 0.22,
+   "residualKind": "agreement of the by-eye base and the detected shadow root (max with the line-fit sigma)",
+   "confidence": 0.9,
+   "byEye": [
+    127.4838507,
+    34.96863457
+   ],
+   "detectedRoot": [
+    127.48385259,
+    34.96863328
+   ],
+   "detectedAgreeM": 0.22,
+   "detectedScore": 8.96,
+   "note": "signal: thin pole shadow runs west from the seed at the island tip"
+  },
+  {
+   "id": "OB0002",
+   "kind": "traffic_signal_pole",
+   "source": "by-eye-photo",
+   "heightM": 6.5,
+   "seed": [
+    127.48392714,
+    34.96845782
+   ],
+   "verdict": "by-eye-root",
+   "root": [
+    127.48392714,
+    34.96845782
+   ],
+   "shiftM": 0,
+   "residualM": 0.25,
+   "residualKind": "by-eye uncertainty (estimate)",
+   "confidence": 0.7,
+   "byEye": [
+    127.48392714,
+    34.96845782
+   ],
+   "detectedRoot": [
+    127.48392962,
+    34.96845239
+   ],
+   "detectedAgreeM": 0.64,
+   "detectedScore": 10.44,
+   "note": "signal: shadow and pole image meet at the seed inside the island"
+  },
+  {
+   "id": "OB0003",
+   "kind": "traffic_signal_pole",
+   "source": "by-eye-photo",
+   "heightM": 6.5,
+   "seed": [
+    127.48400649,
+    34.96873152
+   ],
+   "verdict": "vr-root",
+   "root": [
+    127.48409793,
+    34.96873206
+   ],
+   "shiftM": 8.35,
+   "residualM": 0.47,
+   "residualKind": "spread of the VR and photo constraints (estimate)",
+   "confidence": 0.6,
+   "note": "signal: the base is in building shadow on the photo; VR scene_a19 shows the pole on the east footway just behind the kerb, south of the crossing (8.35 m east of the median seed). Base = mean of the a19 ray cut with the photo-registered kerb (0.17 m inside the footway) and the a19 position moved by the a19-vs-photo offset of the crossing's south-east bar end (0.93 m apart, residual half of that); the scene_a17 line of sight (86 m, base hidden by a tree) passes 1.4 m west"
+  },
+  {
+   "id": "OB0004",
+   "kind": "street_lamp",
+   "source": "by-eye-photo",
+   "heightM": 8,
+   "seed": [
+    127.48410206,
+    34.9686899
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 4.68,
+     "fromSeedM": 3.13,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: kerb and structure edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 8
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  {
+   "id": "OB0005",
+   "kind": "street_lamp",
+   "source": "by-eye-photo",
+   "heightM": 8,
+   "seed": [
+    127.48411475,
+    34.96852084
+   ],
+   "verdict": "rejected",
+   "note": "by-eye lamp on the open carriageway: no pole image, base or shadow at or near the seed"
+  },
+  {
+   "id": "OB0006",
+   "kind": "sign_pole",
+   "source": "by-eye-photo",
+   "heightM": 3,
+   "seed": [
+    127.48392148,
+    34.96856668
+   ],
+   "verdict": "by-eye-root",
+   "root": [
+    127.48391568,
+    34.9685667
+   ],
+   "shiftM": 0.53,
+   "residualM": 0.25,
+   "residualKind": "by-eye uncertainty (estimate)",
+   "confidence": 0.7,
+   "byEye": [
+    127.48391568,
+    34.9685667
+   ],
+   "detectedRoot": [
+    127.48391564,
+    34.96856034
+   ],
+   "detectedAgreeM": 0.71,
+   "detectedScore": 0.21,
+   "note": "sign post: small square base 0.5 m west of the seed on the median"
+  },
+  {
+   "id": "OB0007",
+   "kind": "sign_pole",
+   "source": "by-eye-photo",
+   "heightM": 3,
+   "seed": [
+    127.48403186,
+    34.96839115
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 14.09,
+     "fromSeedM": 0.85,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: V-shaped sign-plate shadows (the tip); root not visible"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "tip visible, root hidden: tip + h / tan 62 deg back to the root with h 3.0 m 추정 (+-1 m) gives about 0.6 m along the shadow, over 0.5 m",
+     "residualM": 0.6
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 10
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  {
+   "id": "OB0008",
+   "kind": "sign_pole",
+   "source": "by-eye-photo",
+   "heightM": 3,
+   "seed": [
+    127.48394503,
+    34.96838248
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 14.12,
+     "fromSeedM": 3.64,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: crossing and kerb edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole at the island tip on 2013-2019; a signal pole with a mast arm stands there from 2020, its arm root within 0.3 m of the seed on 2021 and 2024, but the foot itself is not separable from the island kerb on the registered epochs",
+     "registeredEpochs": 10
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  {
+   "id": "OB0012",
+   "kind": "street_lamp",
+   "source": "by-eye-photo",
+   "heightM": 8,
+   "seed": [
+    127.48069631,
+    34.9694358
+   ],
+   "verdict": "by-eye-root",
+   "root": [
+    127.48069497,
+    34.96943076
+   ],
+   "shiftM": 0.57,
+   "residualM": 0.25,
+   "residualKind": "by-eye uncertainty (estimate)",
+   "confidence": 0.7,
+   "byEye": [
+    127.48069497,
+    34.96943076
+   ],
+   "detectedRoot": [
+    127.48069889,
+    34.96942415
+   ],
+   "detectedAgreeM": 0.82,
+   "detectedScore": 0.09,
+   "note": "lamp: bright pole image runs north from the base, its shadow runs west-south-west from the same point"
+  },
+  {
+   "id": "OB0013",
+   "kind": "street_lamp",
+   "source": "by-eye-photo",
+   "heightM": 8,
+   "seed": [
+    127.48069604,
+    34.96939073
+   ],
+   "verdict": "by-eye-root",
+   "root": [
+    127.4806982,
+    34.96938531
+   ],
+   "shiftM": 0.63,
+   "residualM": 0.25,
+   "residualKind": "by-eye uncertainty (estimate)",
+   "confidence": 0.7,
+   "byEye": [
+    127.4806982,
+    34.96938531
+   ],
+   "detectedRoot": [
+    127.48069844,
+    34.96938025
+   ],
+   "detectedAgreeM": 0.56,
+   "detectedScore": 4.88,
+   "note": "lamp: bright pole image north of the base, shadow leaves the base toward the west"
+  },
+  {
+   "id": "OB0014",
+   "kind": "street_lamp",
+   "source": "by-eye-photo",
+   "heightM": 8,
+   "seed": [
+    127.48048767,
+    34.96933522
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 8.88,
+     "fromSeedM": 2.67,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: square dark blob, no pole line"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 2
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  {
+   "id": "OC0031",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.47874061,
+    34.97160007
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 7.86,
+     "fromSeedM": 4.43,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: kerb edge under canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 3
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0032",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.47926843,
+    34.97150785
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 21.88,
+     "fromSeedM": 1.14,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: structure edge"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "a post-top lamp shows at the planter's north-west kerb corner on 2013-2021 (head and leaning pole image, about 3.5 m west and 1 m south of the seed), but on the 6 m zooms the foot blurs into the kerb corner and the registered epochs (2015, 2017, 2020, 2022) do not pin it to 0.5 m",
+     "registeredEpochs": 4
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0035",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.47960486,
+    34.97145695
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 27.43,
+     "fromSeedM": 3.09,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: kerb shadow"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "a lamp head shows on 2013 and 2019 near the kerb, but the utility-pole shadows cross the spot; no foot agreed by two epochs",
+     "registeredEpochs": 6
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0036",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.47991928,
+    34.9713881
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 26.4,
+     "fromSeedM": 1.09,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: kerb shadow"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "a lamp head and pole image show on 2013-2022 beside the kerb, but the pole image and the utility-pole shadows cross there; the foot is not pinned to 0.5 m on two registered epochs",
+     "registeredEpochs": 6
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0038",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48023027,
+    34.97119984
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 6.15,
+     "fromSeedM": 2.72,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "a pole image reaches the kerb near the seed on 2013-2019, but those epochs do not register (rip-rap and water); the registered 2015, 2021, 2022 show no foot",
+     "registeredEpochs": 3
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0041",
+   "kind": "street_lamp",
+   "source": "by-eye-photo",
+   "heightM": 8,
+   "seed": [
+    127.48183629,
+    34.9715067
+   ],
+   "verdict": "rejected",
+   "note": "by-eye lamp on a parking/drive surface: no pole visible within 3 m"
+  },
+  {
+   "id": "OC0042",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48258928,
+    34.97153075
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 0.01,
+     "fromSeedM": 2.86,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: lane paint, no shadow line"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 3
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0043",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48237982,
+    34.97129272
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 4.67,
+     "fromSeedM": 1.87,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: crossing and kerb edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "a lamp head shows on 2020 about 3 m west and 3 m south of the seed, a single epoch",
+     "registeredEpochs": 5
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0045",
+   "kind": "traffic_signal_pole",
+   "source": "shadow",
+   "heightM": 6.5,
+   "seed": [
+    127.48344164,
+    34.97122991
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 18.85,
+     "fromSeedM": 1.7,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: broad shadow of a structure, no pole line"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 3
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  {
+   "id": "OC0046",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48307228,
+    34.97126743
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 2.44,
+     "fromSeedM": 3.19,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy and kerb"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 6
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0047",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48293149,
+    34.9715339
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 1.96,
+     "fromSeedM": 2.44,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy and wire shadows"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 6
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0048",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48329552,
+    34.97152118
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 9.34,
+     "fromSeedM": 2.86,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: kerb and ground texture"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 2
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0049",
+   "kind": "street_lamp",
+   "source": "by-eye-photo",
+   "heightM": 8,
+   "seed": [
+    127.4776086,
+    34.97089019
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 12.98,
+     "fromSeedM": 3.55,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: building shadow"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 0
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  {
+   "id": "OC0052",
+   "kind": "street_lamp",
+   "source": "by-eye-photo",
+   "heightM": 8,
+   "seed": [
+    127.47895913,
+    34.97104486
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 9.41,
+     "fromSeedM": 2.56,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 2
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  {
+   "id": "OC0053",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48048343,
+    34.97095321
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 8.09,
+     "fromSeedM": 2.77,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy and kerb"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "a lamp head and arm show on 2013-2019 about 5 m north of the seed at the kerb; 2013-2019 do not register (rip-rap and water), 2020-2023 register but show no pole",
+     "registeredEpochs": 3
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0054",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48073986,
+    34.97079896
+   ],
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 20.84,
+     "fromSeedM": 2.6,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: vehicle edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "resolved",
+     "residualM": 0.32,
+     "why": "base read on 3 independent registered epochs within 0.51 m of each other, matching the dark base dot on the NGII 2025 sheet"
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.6,
+   "verdict": "epoch-root",
+   "root": [
+    127.48076987,
+    34.97078072
+   ],
+   "shiftM": 3.41,
+   "residualM": 0.32,
+   "residualKind": "largest distance of an epoch's base from the mean of the agreeing epochs, combined with the epoch-to-sheet registration sigma",
+   "epochRoot": {
+    "method": "epoch-root",
+    "source": "suncheon-airmap",
+    "offsetTmM": [
+     2.75,
+     -2.01
+    ],
+    "independentEpochs": [
+     "2019_12cm",
+     "2021_12cm",
+     "2023_12cm"
+    ],
+    "picksTmM": {
+     "2019_12cm": [
+      2.97,
+      -1.87
+     ],
+     "2021_12cm": [
+      2.8,
+      -2.24
+     ],
+     "2023_12cm": [
+      2.7,
+      -1.8
+     ],
+     "2025_25cm": [
+      2.53,
+      -2.12
+     ]
+    },
+    "excludedPicks": {
+     "2020_12cm": {
+      "offsetTmM": [
+       3.53,
+       -0.82
+      ],
+      "why": "pole image above the base (lean), not the base"
+     },
+     "2024_12cm": {
+      "offsetTmM": [
+       3.01,
+       -1.07
+      ],
+      "why": "pole image above the base (lean), not the base"
+     }
+    },
+    "registration": {
+     "2019_12cm": {
+      "shiftM": [
+       0.03,
+       0.31
+      ],
+      "windows": 3,
+      "sigmaM": 0.02
+     },
+     "2021_12cm": {
+      "shiftM": [
+       -0.23,
+       0.18
+      ],
+      "windows": 7,
+      "sigmaM": 0.19
+     },
+     "2023_12cm": {
+      "shiftM": [
+       0.16,
+       0.74
+      ],
+      "windows": 4,
+      "sigmaM": 0.03
+     },
+     "2025_25cm": {
+      "shiftM": [
+       0,
+       0
+      ],
+      "windows": 9,
+      "sigmaM": 0
+     }
+    },
+    "maxPairM": 0.51,
+    "maxDevM": 0.26,
+    "residualM": 0.32
+   },
+   "note": "base read on other-year aerials (2019_12cm, 2021_12cm, 2023_12cm) registered to the sheet"
+  },
+  {
+   "id": "OC0058",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48117126,
+    34.97060571
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 17.27,
+     "fromSeedM": 3.46,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: vehicle edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "the pole on 2013-2022 is a utility pole with a transformer frame, not a lamp",
+     "registeredEpochs": 3
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0060",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.4815905,
+    34.97067165
+   ],
+   "verdict": "shadow-root",
+   "root": [
+    127.48161153,
+    34.97068514
+   ],
+   "shiftM": 2.43,
+   "residualM": 0.16,
+   "residualKind": "agreement of the by-eye base and the detected shadow root (max with the line-fit sigma)",
+   "confidence": 0.9,
+   "byEye": [
+    127.48160974,
+    34.97068509
+   ],
+   "detectedRoot": [
+    127.48161153,
+    34.97068514
+   ],
+   "detectedAgreeM": 0.16,
+   "detectedScore": 17.44,
+   "note": "stream-road lamp: long west shadow and the south-leaning pole image meet at the base on the footway by the kerb"
+  },
+  {
+   "id": "OC0061",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48186527,
+    34.97084408
+   ],
+   "verdict": "shadow-root",
+   "root": [
+    127.48181862,
+    34.97082062
+   ],
+   "shiftM": 4.99,
+   "residualM": 0.25,
+   "residualKind": "agreement of the by-eye base and the detected shadow root (max with the line-fit sigma)",
+   "confidence": 0.9,
+   "byEye": [
+    127.48182133,
+    34.97082037
+   ],
+   "detectedRoot": [
+    127.48181862,
+    34.97082062
+   ],
+   "detectedAgreeM": 0.25,
+   "detectedScore": 19.66,
+   "note": "stream-road lamp: west shadow and south-leaning pole image meet 4.8 m from the data.go.kr point"
+  },
+  {
+   "id": "OC0062",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48208536,
+    34.97103024
+   ],
+   "verdict": "by-eye-root",
+   "root": [
+    127.48201671,
+    34.97099401
+   ],
+   "shiftM": 7.45,
+   "residualM": 0.25,
+   "residualKind": "by-eye uncertainty (estimate)",
+   "confidence": 0.7,
+   "byEye": [
+    127.48201671,
+    34.97099401
+   ],
+   "detectedRoot": [
+    127.48202938,
+    34.97099277
+   ],
+   "detectedAgreeM": 1.16,
+   "detectedScore": 6.88,
+   "note": "stream-road lamp: west shadow and south-leaning pole image meet 7.4 m from the data.go.kr point (no other pole within 8 m)"
+  },
+  {
+   "id": "OC0066",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48316915,
+    34.97098086
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 2.1,
+     "fromSeedM": 2.4,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "canopy or building shade over the seed in every epoch",
+     "registeredEpochs": 5
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0067",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48327422,
+    34.970692
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 8.17,
+     "fromSeedM": 2.11,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "dark dots near the seed on 2013, 2015 and 2024 do not agree within 0.5 m and show no pole image",
+     "registeredEpochs": 7
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0068",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48360854,
+    34.97074926
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 12.98,
+     "fromSeedM": 2.46,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: building and kerb edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "the pole on 2013-2019 is a utility pole (wires, long shadow), not a lamp",
+     "registeredEpochs": 9
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0069",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48378801,
+    34.97054348
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 7.86,
+     "fromSeedM": 2.44,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: building shade"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "canopy or building shade over the seed in every epoch",
+     "registeredEpochs": 2
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0076",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48359148,
+    34.9701747
+   ],
+   "verdict": "rejected",
+   "note": "data.go.kr point under continuous crowns on a carriageway: no base visible and no footway, verge or median within 8 m in the ground raster, so no evidence-backed site for the pole"
+  },
+  {
+   "id": "OC0077",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48378264,
+    34.97009507
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 14.87,
+     "fromSeedM": 1.43,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: building edge"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 1
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0084",
+   "kind": "street_lamp",
+   "source": "by-eye-photo",
+   "heightM": 8,
+   "seed": [
+    127.48229292,
+    34.96954439
+   ],
+   "verdict": "rejected",
+   "note": "the white head and line read as a lamp lie inside the B2 70주년기념관 footprint (GIS record 768585): a rooftop fitting, not a ground pole; no pole at the footway within 3 m"
+  },
+  {
+   "id": "OC0086",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48353407,
+    34.96972199
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 5.89,
+     "fromSeedM": 2.36,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "canopy or building shade over the seed in every epoch",
+     "registeredEpochs": 0
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0087",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48366928,
+    34.96990398
+   ],
+   "verdict": "rejected",
+   "note": "data.go.kr point under continuous crowns on a carriageway: no base visible and no footway, verge or median within 8 m in the ground raster, so no evidence-backed site for the pole"
+  },
+  {
+   "id": "OC0097",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48400286,
+    34.96937084
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 12.49,
+     "fromSeedM": 3.24,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: building shade"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "canopy or building shade over the seed in every epoch",
+     "registeredEpochs": 3
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0098",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48387072,
+    34.96924517
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 4.24,
+     "fromSeedM": 3.29,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "the seed lies on the carriageway beside the median; dark dots near it on 2017 and 2020 are road paint and vehicles, no pole",
+     "registeredEpochs": 2
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0099",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48406414,
+    34.96908441
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 6.68,
+     "fromSeedM": 3.66,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: building shade"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 4
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0100",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48393204,
+    34.9689655
+   ],
+   "verdict": "unresolved",
+   "site": "median",
+   "note": "lamp at the planted median edge of the arterial (chip: median kerb and planting at the seed); base not resolvable",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 3.66,
+     "fromSeedM": 3.16,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy and kerb"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "median lamp: the two lantern heads show either side of the median (2018, 2024) but not the base; the head midpoints differ by 1.3 m between epochs (relief lean of 8 m heads)",
+     "registeredEpochs": 5
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0103",
+   "kind": "street_lamp",
+   "source": "by-eye-photo",
+   "heightM": 8,
+   "seed": [
+    127.47867783,
+    34.9688083
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 1.06,
+     "fromSeedM": 3.7,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "a white object about 1.9 m east of the seed recurs on 2015-2020 and 2025 (garden lantern top or a stone); no pole image or shadow, so not a base",
+     "registeredEpochs": 5
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  {
+   "id": "OC0110",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48378576,
+    34.96876327
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 3.75,
+     "fromSeedM": 3.3,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: crossing and kerb edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "a lamp shows on 2013-2017, but the corner was rebuilt by 2020 and no pole shows from 2021: the old base is not the current one",
+     "registeredEpochs": 7
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0113",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48415321,
+    34.96886997
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 11.53,
+     "fromSeedM": 3.42,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: plaza structure edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 1,
+     "why": "1 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "intersection corner: vehicles, cabinets and canopy change every epoch; no pole image or root agreed by two epochs",
+     "registeredEpochs": 1
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0114",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48429543,
+    34.96884687
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 6.66,
+     "fromSeedM": 3.71,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: kerb in shade"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 1
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0115",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48436667,
+    34.96885786
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 7.85,
+     "fromSeedM": 2.95,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: vehicle shade"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 1
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0116",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.4844352,
+    34.96887336
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 9.07,
+     "fromSeedM": 1.68,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: vehicle edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 1
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0130",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48390907,
+    34.96831885
+   ],
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 0.2,
+     "fromSeedM": 3.41,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: roof and kerb edges"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "resolved",
+     "residualM": 0.33,
+     "why": "base read on 4 independent registered epochs within 0.55 m of each other, matching the dark base dot on the NGII 2025 sheet"
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.6,
+   "verdict": "epoch-root",
+   "root": [
+    127.48395608,
+    34.96826819
+   ],
+   "shiftM": 7.07,
+   "residualM": 0.33,
+   "residualKind": "largest distance of an epoch's base from the mean of the agreeing epochs, combined with the epoch-to-sheet registration sigma",
+   "epochRoot": {
+    "method": "epoch-root",
+    "source": "suncheon-airmap",
+    "offsetTmM": [
+     4.32,
+     -5.6
+    ],
+    "independentEpochs": [
+     "2018_12cm",
+     "2019_12cm",
+     "2020_12cm",
+     "2021_12cm"
+    ],
+    "picksTmM": {
+     "2018_12cm": [
+      4.43,
+      -5.65
+     ],
+     "2019_12cm": [
+      4.01,
+      -5.65
+     ],
+     "2020_12cm": [
+      4.4,
+      -5.54
+     ],
+     "2021_12cm": [
+      4.55,
+      -5.54
+     ],
+     "ngii": [
+      4.22,
+      -5.6
+     ]
+    },
+    "excludedPicks": {},
+    "registration": {
+     "2018_12cm": {
+      "shiftM": [
+       0.18,
+       0.04
+      ],
+      "windows": 4,
+      "sigmaM": 0.07
+     },
+     "2019_12cm": {
+      "shiftM": [
+       0.21,
+       -0.21
+      ],
+      "windows": 4,
+      "sigmaM": 0.08
+     },
+     "2020_12cm": {
+      "shiftM": [
+       0.04,
+       0
+      ],
+      "windows": 3,
+      "sigmaM": 0.02
+     },
+     "2021_12cm": {
+      "shiftM": [
+       0.08,
+       0.11
+      ],
+      "windows": 6,
+      "sigmaM": 0.1
+     }
+    },
+    "maxPairM": 0.55,
+    "maxDevM": 0.32,
+    "residualM": 0.33
+   },
+   "note": "base read on other-year aerials (2018_12cm, 2019_12cm, 2020_12cm, 2021_12cm) registered to the sheet"
+  },
+  {
+   "id": "OC0131",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48427867,
+    34.96832414
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 2.03,
+     "fromSeedM": 1.47,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "canopy or building shade over the seed in every epoch",
+     "registeredEpochs": 9
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0132",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.4843509,
+    34.96803992
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 3.41,
+     "fromSeedM": 3.61,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "canopy or building shade over the seed in every epoch",
+     "registeredEpochs": 5
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0133",
+   "kind": "traffic_signal_pole",
+   "source": "by-eye-photo",
+   "heightM": 6.5,
+   "seed": [
+    127.48434511,
+    34.96798586
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 11.16,
+     "fromSeedM": 2.49,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: crossing bars"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "intersection corner under canopy: no pole image or root agreed by two epochs",
+     "registeredEpochs": 5
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  {
+   "id": "OC0142",
+   "kind": "floodlight_pole",
+   "source": "by-eye-photo",
+   "heightM": 8,
+   "seed": [
+    127.48295575,
+    34.96773675
+   ],
+   "verdict": "head-lean",
+   "root": [
+    127.48292586,
+    34.96773583
+   ],
+   "shiftM": 2.73,
+   "residualM": 0.5,
+   "residualKind": "by-eye uncertainty (estimate)",
+   "confidence": 0.6,
+   "byEye": [
+    127.48292586,
+    34.96773583
+   ],
+   "detectedRoot": [
+    127.48292873,
+    34.96774403
+   ],
+   "detectedAgreeM": 0.95,
+   "detectedScore": 2.01,
+   "note": "floodlight: bright lamp head at the pitch edge (sheet pixel); base = head minus the photo relief lean for the estimated height"
+  },
+  {
+   "id": "OC0143",
+   "kind": "floodlight_pole",
+   "source": "by-eye-photo",
+   "heightM": 8,
+   "seed": [
+    127.48291943,
+    34.96761296
+   ],
+   "verdict": "head-lean",
+   "root": [
+    127.48289009,
+    34.96762135
+   ],
+   "shiftM": 2.84,
+   "residualM": 0.5,
+   "residualKind": "by-eye uncertainty (estimate)",
+   "confidence": 0.6,
+   "byEye": [
+    127.48289009,
+    34.96762135
+   ],
+   "note": "floodlight: bright lamp head at the pitch edge (sheet pixel); base = head minus the photo relief lean for the estimated height"
+  },
+  {
+   "id": "OC0144",
+   "kind": "floodlight_pole",
+   "source": "by-eye-photo",
+   "heightM": 8,
+   "seed": [
+    127.48287496,
+    34.96749821
+   ],
+   "verdict": "head-lean",
+   "root": [
+    127.48285324,
+    34.96750732
+   ],
+   "shiftM": 2.23,
+   "residualM": 0.5,
+   "residualKind": "by-eye uncertainty (estimate)",
+   "confidence": 0.6,
+   "byEye": [
+    127.48285324,
+    34.96750732
+   ],
+   "detectedRoot": [
+    127.48285739,
+    34.96751636
+   ],
+   "detectedAgreeM": 1.07,
+   "detectedScore": 0.22,
+   "note": "floodlight: bright lamp head at the pitch edge (sheet pixel); base = head minus the photo relief lean for the estimated height"
+  },
+  {
+   "id": "OC0145",
+   "kind": "floodlight_pole",
+   "source": "by-eye-photo",
+   "heightM": 8,
+   "seed": [
+    127.48313615,
+    34.96769097
+   ],
+   "verdict": "head-lean",
+   "root": [
+    127.48314535,
+    34.96768938
+   ],
+   "shiftM": 0.86,
+   "residualM": 0.5,
+   "residualKind": "by-eye uncertainty (estimate)",
+   "confidence": 0.6,
+   "byEye": [
+    127.48314535,
+    34.96768938
+   ],
+   "detectedRoot": [
+    127.48315095,
+    34.96768184
+   ],
+   "detectedAgreeM": 0.98,
+   "detectedScore": 3.06,
+   "note": "floodlight: bright lamp head at the pitch edge (sheet pixel); base = head minus the photo relief lean for the estimated height"
+  },
+  {
+   "id": "OC0146",
+   "kind": "floodlight_pole",
+   "source": "by-eye-photo",
+   "heightM": 8,
+   "seed": [
+    127.48312172,
+    34.96756483
+   ],
+   "verdict": "head-lean",
+   "root": [
+    127.48311014,
+    34.96757534
+   ],
+   "shiftM": 1.57,
+   "residualM": 0.5,
+   "residualKind": "by-eye uncertainty (estimate)",
+   "confidence": 0.6,
+   "byEye": [
+    127.48311014,
+    34.96757534
+   ],
+   "detectedRoot": [
+    127.48310195,
+    34.96757336
+   ],
+   "detectedAgreeM": 0.78,
+   "detectedScore": 3.81,
+   "note": "floodlight: bright lamp head at the pitch edge (sheet pixel); base = head minus the photo relief lean for the estimated height"
+  },
+  {
+   "id": "OC0147",
+   "kind": "floodlight_pole",
+   "source": "by-eye-photo",
+   "heightM": 8,
+   "seed": [
+    127.48310187,
+    34.96744773
+   ],
+   "verdict": "head-lean",
+   "root": [
+    127.48307437,
+    34.96746086
+   ],
+   "shiftM": 2.9,
+   "residualM": 0.5,
+   "residualKind": "by-eye uncertainty (estimate)",
+   "confidence": 0.6,
+   "byEye": [
+    127.48307437,
+    34.96746086
+   ],
+   "detectedRoot": [
+    127.48308227,
+    34.96746609
+   ],
+   "detectedAgreeM": 0.93,
+   "detectedScore": 3.41,
+   "note": "floodlight: bright lamp head at the pitch edge (sheet pixel); base = head minus the photo relief lean for the estimated height"
+  },
+  {
+   "id": "OC0151",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48425619,
+    34.96776087
+   ],
+   "verdict": "unresolved",
+   "site": "median",
+   "note": "lamp on the planted median of the four-lane road (tree pits either side of the seed); base hidden by crowns",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 4.71,
+     "fromSeedM": 2.13,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: median tree crowns"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 1,
+     "why": "1 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "no pole image, shadow or base within 6 m of the seed on any registered epoch (12 m chips reviewed by eye)",
+     "registeredEpochs": 3
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0152",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48436362,
+    34.9674089
+   ],
+   "verdict": "unresolved",
+   "site": "median",
+   "note": "lamp on the planted median of the four-lane road (tree pits either side of the seed); base hidden by crowns",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 2.75,
+     "fromSeedM": 1.06,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: median tree crowns"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "median lamp: lantern heads show beside the median on 2018 and 2023-2024, the base under the median planting does not",
+     "registeredEpochs": 3
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0167",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48420676,
+    34.96726982
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 10.56,
+     "fromSeedM": 3.32,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: building edge"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 1,
+     "why": "1 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "a pole stands at the corner on 2013-2017 and 2021 (wires: a utility pole), and the site was rebuilt in 2020",
+     "registeredEpochs": 2
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0168",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48435197,
+    34.96682531
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 1.89,
+     "fromSeedM": 2.61,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 1,
+     "baseRays": 1,
+     "why": "1 base-checked ray(s) of 1"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "canopy or building shade over the seed in every epoch",
+     "registeredEpochs": 5
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0170",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48065341,
+    34.96631044
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 8.32,
+     "fromSeedM": 3.04,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy and wire shadows"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "a lamp with a white arm shows on every epoch about 1.3 m west and 3.4 m south of the seed; the verge is under canopy, so only 2013 registers to the sheet (the 24 m-grid registration of 2021-2023 scatters 1-2 m): no two registered epochs",
+     "registeredEpochs": 2
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "OC0171",
+   "kind": "street_lamp",
+   "source": "by-eye-photo",
+   "heightM": 8,
+   "seed": [
+    127.48063546,
+    34.96651783
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 8.31,
+     "fromSeedM": 2.5,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy and wall"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "the thick pole on 2018-2020 is a utility pole (wires, long shadow), and the verge does not register (canopy)",
+     "registeredEpochs": 0
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 1.2,
+   "confidence": 0.3
+  },
+  {
+   "id": "OC0172",
+   "kind": "street_lamp",
+   "source": "by-eye-photo",
+   "heightM": 8,
+   "seed": [
+    127.4810901,
+    34.96655659
+   ],
+   "verdict": "by-eye-root",
+   "root": [
+    127.48112225,
+    34.96654853
+   ],
+   "shiftM": 3.07,
+   "residualM": 0.25,
+   "residualKind": "by-eye uncertainty (estimate)",
+   "confidence": 0.7,
+   "byEye": [
+    127.48112225,
+    34.96654853
+   ],
+   "detectedRoot": [
+    127.48111506,
+    34.96654108
+   ],
+   "detectedAgreeM": 1.05,
+   "detectedScore": 1.43,
+   "note": "lamp: pale head and pole image east of the seed, base at the south end on the path edge"
+  },
+  {
+   "id": "OC0174",
+   "kind": "street_lamp",
+   "source": "data.go.kr",
+   "heightM": 8,
+   "seed": [
+    127.48438659,
+    34.96666067
+   ],
+   "verdict": "unresolved",
+   "note": "no pole base resolvable on the photo (crown, deep shadow or no clear pole image)",
+   "estimated": true,
+   "attempts": [
+    {
+     "method": "ngii-wide-search",
+     "result": "rejected",
+     "score": 5.02,
+     "fromSeedM": 2.44,
+     "why": "best detector candidate within 3.5 m of the seed is not a pole shadow on review: canopy"
+    },
+    {
+     "method": "vworld-z19",
+     "result": "not-independent",
+     "why": "the VWorld z19 mosaic is the NGII 2025 photo (see sources)"
+    },
+    {
+     "method": "esri-z18",
+     "result": "unregistered",
+     "why": "cannot be registered to the sheet to 0.5 m (see sources)"
+    },
+    {
+     "method": "vr-two-ray",
+     "result": "unresolved",
+     "rays": 0,
+     "baseRays": 0,
+     "why": "0 base-checked ray(s) of 0"
+    },
+    {
+     "method": "shadow-tip",
+     "result": "unresolved",
+     "why": "no shadow tip identifiable"
+    },
+    {
+     "method": "suncheon-airmap",
+     "result": "unresolved",
+     "why": "canopy or building shade over the seed in every epoch",
+     "registeredEpochs": 6
+    },
+    {
+     "method": "kakao-skyview-hd",
+     "result": "not-independent",
+     "why": "Kakao skyview HD is the NGII 2025 photo (see sources)"
+    }
+   ],
+   "seedUncertaintyM": 5,
+   "confidence": 0.2
+  },
+  {
+   "id": "EL000",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.48317157,
+    34.96651833
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL001",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.48343699,
+    34.96658821
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL002",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.48221503,
+    34.96655852
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL003",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.48250534,
+    34.96660472
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL004",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.48191734,
+    34.96656532
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL005",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.48160021,
+    34.9668475
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL006",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.48318652,
+    34.96692396
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL007",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.4828983,
+    34.96686968
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL008",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.4799648,
+    34.96726748
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL009",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.48003796,
+    34.96745015
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL010",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.4782778,
+    34.96769004
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL011",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.47972713,
+    34.96772712
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL012",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.47997552,
+    34.96783354
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL013",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.47947891,
+    34.96784597
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL014",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.47793504,
+    34.96782564
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL015",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.47770664,
+    34.9679777
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL016",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.48008131,
+    34.96800957
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL017",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.48013553,
+    34.96828711
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL018",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.47988503,
+    34.96839498
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL019",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.47959875,
+    34.9684555
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL020",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.47931281,
+    34.96851745
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL021",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.47905512,
+    34.96860222
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL022",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.47879409,
+    34.96862923
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL023",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.48315525,
+    34.96859441
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL024",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.4828688,
+    34.96865479
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL025",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.48258304,
+    34.96871718
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL026",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.48229745,
+    34.96877987
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL027",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.48201257,
+    34.96884501
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL028",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.48171489,
+    34.96890885
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL029",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.47867131,
+    34.9690041
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL030",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.4775814,
+    34.96899242
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL031",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.48116003,
+    34.96907522
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL032",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.48082831,
+    34.96910368
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL033",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.48041236,
+    34.96855886
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL034",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.48049535,
+    34.96892175
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL035",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.48227256,
+    34.96896268
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL036",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.4819882,
+    34.96902956
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL037",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.48170402,
+    34.96909643
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL038",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.48164773,
+    34.96947144
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL039",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.48123109,
+    34.96924807
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL040",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.48087428,
+    34.96928115
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL041",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.48075238,
+    34.96970469
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL042",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.48083362,
+    34.96993862
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL043",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.48317607,
+    34.96995107
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL044",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.4828903,
+    34.97001347
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL045",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.47742669,
+    34.96926202
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL046",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.47714618,
+    34.96933928
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL047",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.47702725,
+    34.96954419
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL048",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.47706497,
+    34.96978549
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL049",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.47698182,
+    34.97011805
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL050",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.48062785,
+    34.97001588
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL051",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.48042261,
+    34.97018686
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL052",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.48297733,
+    34.9701804
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL053",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.48326309,
+    34.97011785
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL054",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.4801814,
+    34.97025676
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL055",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.47955443,
+    34.97027006
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL056",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.4827691,
+    34.97024481
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL057",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.47924499,
+    34.9703778
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL058",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.47888097,
+    34.97025448
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL059",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.47878501,
+    34.9700246
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL060",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.47884517,
+    34.96979225
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL061",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.47894621,
+    34.96956351
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL062",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 4,
+   "seed": [
+    127.47902006,
+    34.96933492
+   ],
+   "ruleType": "path",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL063",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.48263018,
+    34.9704298
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL064",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.48269634,
+    34.97078127
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL065",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.47901887,
+    34.97069852
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  },
+  {
+   "id": "EL066",
+   "kind": "street_lamp",
+   "source": "rule",
+   "heightM": 6,
+   "seed": [
+    127.4789866,
+    34.97091686
+   ],
+   "ruleType": "campusRoad",
+   "verdict": "rejected",
+   "note": "rule seed: no pole image, base or shadow within 8 m on the photo (crown, carriageway, parking or open paving)"
+  }
+ ]
+}

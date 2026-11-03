@@ -8,6 +8,14 @@ from processors.radiation import calculate_radiation_from_dict
 from processors.wind import calculate_wind_from_dict
 
 
+class WeatherInputMissing(ValueError):
+    code = "weather_input_missing"
+
+    def __init__(self, field: str):
+        self.field = field
+        super().__init__(f"Required weather input is missing: {field}")
+
+
 def safe_float(value, default=0.0):
     if value is None:
         return default
@@ -49,6 +57,10 @@ def calculate_microclimate_for_element(
     element_id = element_feature["element_id"]
     micro = element_feature.get("microclimate", {})
     material = resolve_material_properties(micro)
+
+    for field in ("temperature", "humidity", "wind_speed"):
+        if weather.get(field) is None:
+            raise WeatherInputMissing(field)
 
     base_temp = safe_float(weather.get("temperature"), 25.0)
     humidity = safe_float(weather.get("humidity"), 50.0)

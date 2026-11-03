@@ -25,15 +25,15 @@ car_vision_model/
 | Gate-crossing math | `parking_counter.py` | ROI, smoothing, direction checks |
 | Streaming API | `server.py` | `/ws/stream` and `/api/stats` |
 | Vision demo UI | `car-frontend/src/App.jsx` | Captures and sends frames |
-| WebSocket proxy | `car-frontend/vite.config.js` | `/ws` -> `127.0.0.1:8000` |
+| WebSocket proxy | `car-frontend/vite.config.js` | `/ws` -> `127.0.0.1:8003` (override with `CAR_DEMO_PORT`) |
 
 ## CONVENTIONS
 
 - Model files (`*.pt`) are intentionally gitignored; provision `yolov8s.pt`
   locally before starting either vision path.
 - `vision_api.py` is the SCNU dashboard integration and defaults to port 8001.
-- `server.py` is the streaming demo and defaults to port 8000; do not run it
-  beside the weather API on the same port.
+- `server.py` is the streaming demo and defaults to port 8003; override with
+  `CAR_DEMO_PORT` or `--port`. Keep the Vite proxy on the same port.
 - Gate coordinates are resolution-relative; crossing uses recent trajectory
   smoothing, minimum movement, and direction dot-product checks.
 - Server counters are process-global and designed for one active session.
@@ -43,12 +43,8 @@ car_vision_model/
 ## ANTI-PATTERNS
 
 - Do not commit downloaded weights, camera recordings, or generated frame dumps.
-- Do not treat root `parking_counter.py`/`server.py` snapshots as automatically
-  synchronized with this directory.
 - Do not claim multi-user isolation: connecting the WebSocket resets global
   counting state.
-- Do not start the streaming server on `8000` while the weather service is using
-  that port.
 - Do not validate vision behavior with source inspection alone; use a real
   camera or deterministic sample video and inspect counts.
 
@@ -62,7 +58,7 @@ python server.py
 
 # Independent demo client
 cd car-frontend
-npm install
+npm ci
 npm run lint
 npm run build
 npm run dev

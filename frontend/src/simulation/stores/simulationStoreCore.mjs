@@ -14,6 +14,20 @@ const EMPTY_STATS = {
   current_risks: 0,
 };
 
+const finiteOrNull = (value) => (value === null || value === undefined || value === "" || !Number.isFinite(Number(value)) ? null : Number(value));
+
+// statistics.network_provenance (backend network_provenance.py): every number finite or null, separation optional.
+export function normalizeNetworkProvenance(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const out = {};
+  for (const key of ["sidewalk_measured_m", "crossing_count", "crossing_connected", "shared_estimated_m", "road_measured_m", "perimeter_osm_m", "person_measured_share", "person_estimated_share"]) out[key] = finiteOrNull(raw[key]);
+  const separation = raw.separation && typeof raw.separation === "object" ? raw.separation : null;
+  out.separation = separation
+    ? { person_on_walkable: finiteOrNull(separation.person_on_walkable), car_on_road: finiteOrNull(separation.car_on_road), seed: finiteOrNull(separation.seed), seconds: finiteOrNull(separation.seconds), generatedAt: typeof separation.generatedAt === "string" ? separation.generatedAt : null }
+    : null;
+  return out;
+}
+
 function validEntity(entity) {
   return Boolean(
     entity &&
@@ -42,12 +56,30 @@ export function parseSimulationMessage(raw) {
     status: ["running", "paused", "stopped"].includes(payload.status) ? payload.status : "stopped",
     entities,
     riskEvents: Array.isArray(payload.risk_events) ? payload.risk_events.filter((event) => event?.event_id) : [],
-    statistics: { ...EMPTY_STATS, ...(payload.statistics || {}) },
+    statistics: { ...EMPTY_STATS, ...(payload.statistics || {}), network_provenance: normalizeNetworkProvenance(payload.statistics?.network_provenance) },
     trafficLights: Array.isArray(payload.traffic_lights) ? payload.traffic_lights : [],
     weather: payload.weather || {},
     demandProfile: payload.demand_profile || "daytime",
     timeline: Array.isArray(payload.timeline) ? payload.timeline : [],
   };
+}
+
+// 같은 에이전트(아이디와 모든 필드가 같음)면 true. 일시 정지·정지한 서버도 매 틱 같은 스냅숏을 보내므로,
+// 이때 이전 Map을 그대로 두어 캔버스가 다시 그리지 않게 한다(TrafficSimulationLayer는 Map이 바뀔 때만 invalidate한다).
+export function sameEntities(previous, next) {
+  if (previous.size !== next.size) return false;
+  for (const [id, entity] of next) {
+    const before = previous.get(id);
+    if (!before) return false;
+    const keys = Object.keys(entity);
+    if (keys.length !== Object.keys(before).length) return false;
+    for (const key of keys) {
+      const a = entity[key];
+      const b = before[key];
+      if (a !== b && JSON.stringify(a) !== JSON.stringify(b)) return false;
+    }
+  }
+  return true;
 }
 
 export function createSimulationStore() {
@@ -66,6 +98,8 @@ export function createSimulationStore() {
     selectedAgentId: null,
     selectedAgentDetails: null,
     selectionError: null,
+    // 교통망 디버그 층이 망·검증 자료를 받지 못했을 때의 한국어 문구(없으면 null).
+    networkError: null,
   };
   const listeners = new Set();
   const emit = () => listeners.forEach((listener) => listener());
@@ -89,6 +123,7 @@ export function createSimulationStore() {
         (timelineRestarted ? [] : state.riskEvents).map((event) => [event.event_id, event]),
       );
       parsed.riskEvents.forEach((event) => byId.set(event.event_id, event));
+      if (sameEntities(state.entities, parsed.entities)) parsed.entities = state.entities;
       state = { ...state, ...parsed, riskEvents: Array.from(byId.values()).slice(-100).reverse() };
       emit();
       return true;
@@ -104,6 +139,11 @@ export function createSimulationStore() {
     },
     setSelectedAgentDetails(selectedAgentDetails, selectionError = null) {
       state = { ...state, selectedAgentDetails, selectionError };
+      emit();
+    },
+    setNetworkError(networkError) {
+      if (state.networkError === networkError) return;
+      state = { ...state, networkError };
       emit();
     },
     reset() {

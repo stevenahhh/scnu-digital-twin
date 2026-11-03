@@ -27,6 +27,7 @@
     "person": {"shared_path": 2.8, "sidewalk": 2.8},
     "scooter": {"shared_path": 1.4, "sidewalk": 1.4, "bike_lane": 1.4, "scooter_lane": 1.4, "allowed_road": -1.0}
   },
+  "route_cost_multipliers": {"person": {"shared_path_estimated": 4.0}, "car": {"parking_connection": 2.0}},
   "offset_note": "Development-only visual/movement separation for routes derived from a vehicle centerline; not surveyed geometry.",
   "source": "implementation_specific_policy",
   "confidence": null

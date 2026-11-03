@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sqlite3
 
+import pytest
 
 from fastapi.testclient import TestClient
 from weather.api.app import create_app
@@ -9,10 +10,13 @@ from weather.api.energy import _ready_paths
 from weather.energy.persistence import Database
 
 
-def payload(origin_x: float = 15.0, count: int = 2) -> dict:
+def payload(origin_x: float = 24.5, count: int = 2, origin_y: float = 63.0) -> dict:
+    # Arrays are centred on (origin_x, origin_y) and stacked 5 m apart along y so
+    # 2x2 portrait footprints (2.12 m x 3.85 m) stay inside D4-roof-west-main
+    # (x 21..28 m, y 59..76.5 m) with its 0.5 m edge margin and never overlap.
     arrays = [{
         "id": f"array-{i + 1}", "roof_id": "D4-roof-west", "roof_zone_id": "D4-roof-west-main",
-        "module_id": "module-default-441wp", "origin_x_m": origin_x + i * 5, "origin_y_m": 10.0,
+        "module_id": "module-default-441wp", "origin_x_m": origin_x, "origin_y_m": origin_y + i * 5,
         "rows": 2, "columns": 2, "azimuth_deg": 180, "tilt_deg": 25, "orientation": "portrait",
         "module_width_m": 1.05, "module_length_m": 2.1, "module_efficiency_percent": 20,
         "module_nominal_power_wp": 441, "inter_panel_gap_m": 0.02,
@@ -48,7 +52,7 @@ def test_buildings_demand_and_weather_have_96_slots(tmp_path, monkeypatch) -> No
         assert demand.status_code == 200
         body = demand.json()
         assert len(body["intervals"]) == 96
-        assert body["total_energy_kwh"] == 921.7000000000002
+        assert body["total_energy_kwh"] == pytest.approx(921.7, rel=1e-9)
         assert body["quality"] == "predicted"
         assert body["assumption"]["calibration"] == "not-engineering-calibrated"
         weather = api.get("/energy/weather/scenarios", params={"date": "2026-05-18"})
@@ -68,7 +72,7 @@ def test_create_reload_simulate_and_recommend_without_mutation(tmp_path, monkeyp
         result = simulated.json()
         assert len(result["intervals"]) == 96 and len(result["arrays"]) == 2
         assert result["arrays"][0]["intervals"][20]["timestamp"] == result["intervals"][20]["timestamp"]
-        assert result["totals"]["demand_energy_kwh"] == 921.7000000000002
+        assert result["totals"]["demand_energy_kwh"] == pytest.approx(921.7, rel=1e-9)
         assert len(api.get(f"/energy/scenarios/{source['id']}").json()["intervals"]) == 96
         recommended = api.post(f"/energy/scenarios/{source['id']}/recommend", json={"date": "2026-05-18"})
         assert recommended.status_code == 201, recommended.text
@@ -109,7 +113,8 @@ def test_recommendation_uses_the_valid_source_footprint_for_wide_modules(
     with client(tmp_path, monkeypatch) as api:
         source_payload = payload(count=1)
         source_payload["arrays"][0].update({
-            "rows": 1, "columns": 1, "origin_x_m": 15.5, "module_width_m": 20.0,
+            # 5.9 m modules fill the 6 m usable zone width, so only one column fits.
+            "rows": 1, "columns": 1, "origin_x_m": 24.5, "module_width_m": 5.9,
         })
         source = api.post("/energy/scenarios", json=source_payload)
         assert source.status_code == 201, source.text
@@ -253,10 +258,11 @@ def test_literal_layout_and_nonfinite_validation_are_structured_422_without_writ
         assert api.get("/energy/buildings").status_code == 200
         overlapping = payload()
         overlapping["arrays"][1]["origin_x_m"] = overlapping["arrays"][0]["origin_x_m"]
+        overlapping["arrays"][1]["origin_y_m"] = overlapping["arrays"][0]["origin_y_m"]
         response = api.post("/energy/scenarios", json=overlapping)
         assert response.status_code == 422
         assert any(item["code"] == "ARRAY_OVERLAP" for item in response.json()["detail"]["violations"])
-        raw = __import__("json").dumps(payload(count=1)).replace('"origin_x_m": 15.0', '"origin_x_m": NaN')
+        raw = __import__("json").dumps(payload(count=1)).replace('"origin_x_m": 24.5', '"origin_x_m": NaN')
         nonfinite = api.post("/energy/scenarios", content=raw, headers={"Content-Type": "application/json"})
         assert nonfinite.status_code == 422
         detail = nonfinite.json()["detail"]
@@ -342,7 +348,9 @@ def test_campus_seeds_and_explainable_comparable_rankings(tmp_path, monkeypatch)
         buildings = api.get("/energy/buildings").json()
         by_id = {item["id"]: item for item in buildings}
         assert {"D2", "D3", "D4", "D1", "C1"} <= set(by_id)
-        assert all(by_id[item]["roof_zone_count"] == 1 for item in ("D2", "D3", "D4"))
+        assert all(by_id[item]["roof_zone_count"] == 1 for item in ("D2", "D3"))
+        # D4 seeds the measured west main zone plus three north cement zones.
+        assert by_id["D4"]["roof_zone_count"] == 4
         assert by_id["C1"]["roof_zone_count"] == 0
         d3_roof = api.get("/energy/buildings/D3").json()["roofs"][0]
         assert d3_roof == {"id": "D3-roof-main", "zones": [{
@@ -403,7 +411,7 @@ def test_installation_plan_representative_and_analysis_run_contract(tmp_path, mo
         plan_payload.pop("weather_preset")
         first_response = api.post("/energy/installation-plans", json=plan_payload)
         second_payload = {**plan_payload, "name": "Alternative plan"}
-        second_payload["arrays"] = [{**item, "origin_x_m": 20.0} for item in plan_payload["arrays"]]
+        second_payload["arrays"] = [{**item, "origin_y_m": 72.0} for item in plan_payload["arrays"]]
         second_response = api.post("/energy/installation-plans", json=second_payload)
         assert first_response.status_code == 201, first_response.text
         assert second_response.status_code == 201, second_response.text

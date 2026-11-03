@@ -1,0 +1,271 @@
+#!/usr/bin/env bun
+// Builds the Legacy dashboard campus model from:
+//   - public/uni.glb               terrain heights, the original BLD_* ids and their footprints
+//   - data/gis-buildings.json      building footprints, floor counts and heights (fetch-sources.mjs)
+//   - data/landcover.png           MCEE land-cover classes and CHMv2 canopy (fetch-sources.mjs)
+//   - data/ortho/                  VWorld z19 orthophoto mosaic: roof colours and the markings paint gate only (fetch/ortho.mjs)
+//   - data/materials/ground-*.webp CC0 ground material tiles (fetch/groundMaterials.mjs, ground-materials.json)
+//   - data/cop30.png               Copernicus GLO-30 heights for the outer terrain ring (fetch/terrain.mjs)
+//   - docs/assets/data/*.geojson   road zones, walkways and crosswalks
+//   - data/photo/markings.geojson  road markings traced from the NGII 2025 orthophoto
+//   - data/photo/objects-campus.geojson  street furniture and lamps surveyed on the NGII 2025 orthophoto
+// Everything stays in uni.glb's scene frame (see lib/frame.mjs), so CityModel's recentering,
+// the traffic simulation and the BLD_* selection contract keep working unchanged.
+//
+// This file only sequences the stages (scripts/campus-model/stages/):
+//   sources.mjs   loads the inputs and builds the terrain heightfield
+//   buildings.mjs selects BLD_*/CampusBuildings, their materials, meshes and nodes
+//   markings.mjs  road markings from the photo detection (loadMarkings) and their decal mesh on the Topography
+//                 triangles (buildMarkings)
+//   ground.mjs    the Topography chunks (natural ground) and the class polygons of the modelled ground (network/surfaces.mjs)
+//   kerbs.mjs     kerb ribbons on the A003 outlines, the raised walkway slab, dropped kerbs at crossings, gutter bands
+//   tactile.mjs   tactile paving bands and guidance strips at every dropped kerb
+//   network/stalls.mjs  estimated stall dividers in the gaps of detected rows, and the circular-arc speed humps
+//   surfaces.mjs  the Ground_* decal meshes (asphalt, pavers, lots, aprons, painted surfaces) with CC0 tiles; no photo pixels
+//   outerTerrain.mjs  the OuterTerrain hill ring around EXTENT, feathered onto Topography's edge
+//   context.mjs / contextGround.mjs  off-campus building masses and the streets around the campus beyond EXTENT
+//   trees.mjs     tree inventory and hedges (placeTrees, after the ground), species geometry and instanced Trees_* nodes (buildTrees)
+//   furniture.mjs the surveyed outdoor objects (loadFurniture, before the trees: footprints trees keep out of) and the
+//                 merged Furniture / Furniture_Glass nodes
+//                 (buildFurniture, after the ground, on the drawn terrain)
+//   lights.mjs    lamp positions (placeLamps: surveyed lamps at their photo pole bases, pole placement contract), the
+//                 merged Lamps_heads and the instanced Lamps_pools
+// Plan-view ring helpers live in lib/geometry.mjs.
+//
+// Outputs: the uncompressed scripts/campus-model/.build/campus-v2.raw.glb, which pack.mjs turns into
+// the shipped public/campus-v2.glb, and the terrain height sidecar public/campus-v2-height.bin/.json.
+//
+//   bun run model:build      (generator, then pack.mjs)
+import { mkdir } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { tmToScene } from "../../src/geo/epsg5186.mjs";
+import { EXTENT, SCENE_UNITS_PER_METRE } from "./lib/frame.mjs";
+import { SURFACE_CLASS } from "./lib/surfaceClass.mjs";
+import { HUMP_LENGTH_M, buildHumps, buildStalls, humpProfile, loadSpeedBumps } from "./network/stalls.mjs";
+import { GlbBuilder } from "./lib/glb.mjs";
+import { GroundPartition, TinPartition, splitByLine } from "./lib/partition.mjs";
+import { buildBuildings } from "./stages/buildings.mjs";
+import { buildGround } from "./stages/ground.mjs";
+import { buildFurniture, loadFurniture } from "./stages/furniture.mjs";
+import { buildLights, placeLamps } from "./stages/lights.mjs";
+import { buildContext, meshHeightAt } from "./stages/context.mjs";
+import { buildContextGround } from "./stages/contextGround.mjs";
+import { buildMasts } from "./stages/masts.mjs";
+import { buildMarkings, describeMarkings, loadMarkings } from "./stages/markings.mjs";
+import { buildOuterTerrain } from "./stages/outerTerrain.mjs";
+import { KERB_EXPOSED_M, SLAB_DECAL_DROP_M, buildKerbs } from "./stages/kerbs.mjs";
+import { loadInputs } from "./stages/sources.mjs";
+import { planTactile } from "./stages/tactile.mjs";
+import { buildHumpMeshes, buildSurfaceMeshes, describeSurfaces, humpLayers } from "./stages/surfaces.mjs";
+import { buildTrees, placeTrees } from "./stages/trees.mjs";
+
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const FRONTEND = path.resolve(HERE, "../..");
+const OUTPUT = path.join(HERE, ".build", "campus-v2.raw.glb");
+const HEIGHT_BIN = path.join(FRONTEND, "public", "campus-v2-height.bin");
+const HEIGHT_JSON = path.join(FRONTEND, "public", "campus-v2-height.json");
+// 0.25 scene units (about 0.40 m): sub-metre sampling so the 0.15 m walkway slab (stages/kerbs.mjs) shows in the sidecar.
+const HEIGHT_STEP = 0.25;
+const PROBES_PER_KIND = 12;
+const metresToUnits = (m) => m * SCENE_UNITS_PER_METRE;
+
+const inputs = await loadInputs();
+
+const glb = new GlbBuilder();
+const furniture = loadFurniture();
+const { selectableBuildings, campusBuildings, offCampusLots, contextParts } = await buildBuildings({ glb, inputs, detailedStructures: furniture.detailedStructures });
+const markings = await loadMarkings({ inputs, buildings: [...selectableBuildings, ...campusBuildings] });
+console.log(describeMarkings(markings));
+const { surface, surfaces, groundInfo, layers, aoTexture, buildTopography } = await buildGround({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots });
+// Trees after the ground: a trunk stands on open ground, in a planter or a street-tree pit (the surface-class raster).
+const treePlacement = placeTrees({ inputs, selectableBuildings, campusBuildings, offCampusLots, blockedRings: furniture.treeBlock, furnitureObjects: furniture.objects, groundInfo });
+const kerbs = await buildKerbs({ glb, surfaces, groundInfo, surface });
+const tactile = planTactile(kerbs.plan);
+console.log(`tactile: ${tactile.bands} bands at ${tactile.dropped} dropped kerbs (${tactile.layers.length - tactile.bands} guidance strips; 0.3 m modules, yellow, estimated placement)`);
+// Stall gaps (estimated dividers between detected ones) and the speed humps (network/stalls.mjs).
+const labelAt = ([x, z]) => {
+  const i = Math.floor((x - EXTENT.minX) * groundInfo.px);
+  const j = Math.floor((z - EXTENT.minZ) * groundInfo.px);
+  return i < 0 || j < 0 || i >= groundInfo.width || j >= groundInfo.height ? SURFACE_CLASS.NATURAL : groundInfo.labels[j * groundInfo.width + i];
+};
+const detectedStallPaint = markings.pieces.filter((piece) => piece.kind === "parking_line" && !piece.estimated);
+const parkingLots = layers.filter((l) => l.mesh === "Ground_Lot" && !l.source_ref.startsWith("off-campus"))
+  .map((l) => ({ id: l.source_ref, ring: l.rings[0].map(([E, N]) => tmToScene(E, N)) }));
+const stalls = buildStalls({ lots: parkingLots, markingsParkingLines: detectedStallPaint });
+markings.pieces.push(...stalls.pieces);
+const speedBumps = await loadSpeedBumps();
+const humps = buildHumps({ features: speedBumps, onRoad: (p) => [SURFACE_CLASS.ASPHALT, SURFACE_CLASS.LOT].includes(labelAt(p)) });
+const humpNodes = await buildHumpMeshes({ glb, humps: humps.humps, surface, ao: aoTexture, profile: humpProfile, lengthM: HUMP_LENGTH_M });
+
+// ---------------------------------------------------------------- ground partition (lib/partition.mjs)
+// The ground has no stacked layers: road markings claim their area first, then the ground classes by precedence (hump
+// tops, aprons, tiles, walkways, roads, lots, sports), then the natural Topography takes what is left. Every piece lies
+// on the terrain (plus the walkway slab or a hump's arc), so no two ground triangles share area.
+const outerTerrain = await buildOuterTerrain({ glb, inputs });
+const outerHeightAt = meshHeightAt(outerTerrain.positions, outerTerrain.indices);
+// The hill ring is partitioned too: ground pieces beyond EXTENT (off-campus lots and courts) and the context streets
+// claim their ground on it, and the OuterTerrain takes the rest (stages/outerTerrain.mjs emit, at the end).
+const tin = new TinPartition(outerTerrain.positions, outerTerrain.indices);
+const partition = new GroundPartition(surface.grid);
+const inExtentXZ = (x, z) => x >= EXTENT.minX && x <= EXTENT.maxX && z >= EXTENT.minZ && z <= EXTENT.maxZ;
+// pieces are cut along the EXTENT edges first, so each part goes to the Topography grid or to the hill ring
+const extentCuts = [(p) => p[0] - EXTENT.minX, (p) => EXTENT.maxX - p[0], (p) => p[1] - EXTENT.minZ, (p) => EXTENT.maxZ - p[1]];
+const claim = (piece) => {
+  const out = [];
+  let rest = piece;
+  for (const f of extentCuts) {
+    if (!rest) break;
+    const { inside, outside } = splitByLine(rest, f);
+    if (outside) out.push(...tin.claimOnTin(outside).map((part) => part.poly));
+    rest = inside;
+  }
+  if (rest) out.push(...partition.claim(rest));
+  return out;
+};
+// the ground under a piece: the Topography inside EXTENT, the hill ring beyond it
+const groundSurface = {
+  grid: surface.grid,
+  height: (x, z) => (inExtentXZ(x, z) ? surface.height(x, z) : outerHeightAt(x, z) ?? surface.height(x, z)),
+  normal: (x, z) => surface.normal(x, z),
+};
+// metres of the walkway slab under a ground piece, the walkway decal just under the kerb top (stages/kerbs.mjs)
+const slabDecal = (x, z) => {
+  const slab = kerbs.plan.slabHeight(x, z);
+  return slab - SLAB_DECAL_DROP_M * Math.min(1, slab / 0.03);
+};
+
+console.log(
+  `stalls: ${detectedStallPaint.length} detected (markings), ${stalls.pieces.length} estimated gaps in ${stalls.rows.filter((r) => r.filled).length} of ${stalls.rows.length} rows ` +
+  `(${stalls.rows.map((r) => `${r.bay} ${r.pitchM} m`).join(", ")}); humps: ${humpNodes} (${speedBumps.length} speed_bump features: ` +
+  `${humps.candidates} hump outlines or band groups, ${humps.candidates - humpNodes} off road)`,
+);
+let stageStart = performance.now();
+const stageTime = (label) => { console.log(`ground partition: ${label} in ${((performance.now() - stageStart) / 1000).toFixed(1)} s, ${partition.cells.size} cells`); stageStart = performance.now(); };
+const markingMesh = await buildMarkings({ glb, markings, surface: groundSurface, extraHeight: humps.heightAt, claim, baseOffset: slabDecal });
+stageTime("road markings");
+const groundLayers = [...layers, ...kerbs.gutters, ...tactile.layers, ...humpLayers(humps.humps, HUMP_LENGTH_M)]
+  .map((layer, order) => ({ layer, order }))
+  .sort((a, b) => b.layer.precedence - a.layer.precedence || b.order - a.order)
+  .map(({ layer }) => layer);
+console.log(describeSurfaces(await buildSurfaceMeshes({
+  glb, layers: groundLayers, surface: groundSurface, ao: aoTexture, claim,
+  heightOffset: (layer, x, z) => (layer.hump ? humps.heightAt(x, z) : layer.walkway || layer.tactile ? slabDecal(x, z) : 0),
+  refine: { maxEdgeM: 0.25, needsFine: (layer, p, reach) => layer.hump || ((layer.walkway || layer.tactile) && kerbs.plan.nearSlabChange(p, reach / SCENE_UNITS_PER_METRE)) },
+})));
+stageTime("ground surfaces");
+const topography = buildTopography(claim);
+stageTime("natural Topography");
+console.log(`ground partition: ${partition.cells.size} terrain triangles hold ground; Topography ${topography.triangles} natural triangles in ${topography.chunks} chunks`);
+const treeInstances = await buildTrees({ glb, placement: treePlacement });
+// Furniture and lamps stand on the raised walkway slab where there is one (stages/kerbs.mjs).
+const groundAt = kerbs.groundHeightAt;
+const { lamps, stats: lampStats, sites } = placeLamps({ inputs, furniture, selectableBuildings, campusBuildings, offCampusLots, groundInfo });
+const { glow } = buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs, groundAt });
+buildLights({ glb, lamps, stats: lampStats, groundAt, glow });
+// Off-campus context masses on the drawn terrain (stages/context.mjs): merged per tile, not selectable, heights 추정.
+const inExtent = (x, z) => x >= EXTENT.minX && x <= EXTENT.maxX && z >= EXTENT.minZ && z <= EXTENT.maxZ;
+const contextGround = (x, z) => (inExtent(x, z) ? groundAt(x, z) : outerHeightAt(x, z) ?? groundAt(Math.min(Math.max(x, EXTENT.minX), EXTENT.maxX), Math.min(Math.max(z, EXTENT.minZ), EXTENT.maxZ)));
+buildContext({ glb, parts: contextParts, groundAt: contextGround });
+// The streets around the campus beyond EXTENT (stages/contextGround.mjs): OSM centrelines on the OuterTerrain ring, merged
+// per tile, not part of the road network; widths and lanes 추정. Added last, so nothing above changes.
+await buildContextGround({
+  glb, tin, layers, paint: markings.pieces, heightAt: outerHeightAt,
+  footprints: [...contextParts.map((p) => p.outer), ...[...selectableBuildings, ...campusBuildings].flatMap((b) => b.parts.map((p) => p.outer))],
+});
+// Free-standing lattice telecom masts off campus (stages/masts.mjs), on the context roofs they stand on; heights 추정.
+buildMasts({ glb, parts: contextParts, groundAt: contextGround });
+const outerEmitted = outerTerrain.emit(tin);
+console.log(`OuterTerrain: ${outerEmitted.cut} triangles cut around the context streets, ${outerEmitted.triangles} triangles drawn`);
+
+// ---------------------------------------------------------------- height sidecar
+// The ground the traffic agents stand on (scene units): the drawn Topography plus the raised walkway slab
+// (kerbs.groundHeightAt), sampled every HEIGHT_STEP units over EXTENT, row-major with x fastest and rows running south
+// from originZ: little-endian u16 centimetres above minY, so a sample's scene-unit height is minY + value * scale.
+// meta.probes lists grid points on full-height slab ("walkway") and on bare road ("road") with the generator's own
+// ground and terrain heights, so src/terrain/heightfield.test.mjs can check the shipped file against the generator.
+function writeHeightSidecar(heightAt, terrainAt, slabAt, labelAt) {
+  for (const span of [EXTENT.maxX - EXTENT.minX, EXTENT.maxZ - EXTENT.minZ]) {
+    if (!Number.isInteger(span / HEIGHT_STEP)) throw new Error(`EXTENT span ${span} is not a whole number of ${HEIGHT_STEP} steps`);
+  }
+  const width = (EXTENT.maxX - EXTENT.minX) / HEIGHT_STEP + 1;
+  const height = (EXTENT.maxZ - EXTENT.minZ) / HEIGHT_STEP + 1;
+  const samples = new Float64Array(width * height);
+  const candidates = { walkway: [], road: [] };
+  for (let j = 0; j < height; j += 1) {
+    for (let i = 0; i < width; i += 1) {
+      const x = EXTENT.minX + i * HEIGHT_STEP;
+      const z = EXTENT.minZ + j * HEIGHT_STEP;
+      samples[j * width + i] = heightAt(x, z);
+      if (i % 8 || j % 8) continue;
+      const slab = slabAt(x, z);
+      if (slab >= KERB_EXPOSED_M - 1e-9) candidates.walkway.push([x, z]);
+      else if (slab === 0 && labelAt([x, z]) === SURFACE_CLASS.ASPHALT) candidates.road.push([x, z]);
+    }
+  }
+  const probes = Object.entries(candidates).flatMap(([kind, points]) => Array.from({ length: Math.min(PROBES_PER_KIND, points.length) }, (_, k) => {
+    const [x, z] = points[Math.floor(((k + 0.5) * points.length) / Math.min(PROBES_PER_KIND, points.length))];
+    return { kind, x, z, groundY: heightAt(x, z), terrainY: terrainAt(x, z) };
+  }));
+  const minY = samples.reduce((min, y) => Math.min(min, y), Infinity);
+  const scale = SCENE_UNITS_PER_METRE / 100;
+  const view = new DataView(new ArrayBuffer(samples.length * 2));
+  samples.forEach((y, k) => {
+    const value = Math.round((y - minY) / scale);
+    if (!(value >= 0 && value <= 0xffff)) throw new Error(`height ${y} at sample ${k} does not fit the u16 sidecar`);
+    view.setUint16(k * 2, value, true);
+  });
+  return {
+    bytes: new Uint8Array(view.buffer),
+    meta: {
+      width, height, originX: EXTENT.minX, originZ: EXTENT.minZ, step: HEIGHT_STEP, minY, scale,
+      includesKerbSlab: true,
+      includesHumps: true,
+      note: "생성기 지형 + 인도 단차 + 과속방지턱(추정), 측량값 아님",
+      probes,
+    },
+  };
+}
+
+// ---------------------------------------------------------------- collections
+// Every root node goes under a collection node (lib/glb.mjs groupRoots), so a DCC tool's outliner reads as layers.
+// Order matters: the first match wins. A root no rule takes throws.
+const startsWith = (...prefixes) => (name) => prefixes.some((p) => name.startsWith(p));
+const collections = glb.groupRoots([
+  // the generator's invisible pick prisms of named campus buildings: their own collection, so one click hides them
+  { path: "Pick_Proxies", match: startsWith("BLD_SCNU_") },
+  { path: "Buildings", match: (name) => name.startsWith("BLD_") || name === "CampusBuildings" },
+  { path: "Context/Ground", match: startsWith("Context_Far_Ground_", "Ground_Context_", "OuterTerrain") },
+  { path: "Context/Buildings", match: startsWith("Context_Buildings_", "Context_Far_", "Context_Mast_") },
+  { path: "Ground/Terrain", match: (name) => name === "Topography" },
+  { path: "Ground/Surfaces", match: startsWith("Ground_") },
+  { path: "Ground/Kerbs", match: (name) => name === "Kerbs" },
+  { path: "Ground/Markings", match: (name) => name === "Road_Markings" },
+  { path: "Vegetation", match: startsWith("Trees_") },
+  { path: "Furniture", match: startsWith("Furniture") },
+  { path: "Lighting", match: startsWith("Lamps_") },
+]);
+console.log(`collections: ${[...collections.keys()].join(", ")}`);
+
+// ---------------------------------------------------------------- write
+const bytes = glb.toBuffer();
+await mkdir(path.dirname(OUTPUT), { recursive: true });
+await Bun.write(OUTPUT, bytes);
+// The speed humps raise the drawn road (network/stalls.mjs humpProfile); the agents must climb them too.
+const sidecar = writeHeightSidecar((x, z) => kerbs.groundHeightAt(x, z) + metresToUnits(humps.heightAt(x, z)), (x, z) => surface.height(x, z), kerbs.plan.slabHeight, labelAt);
+await Bun.write(HEIGHT_BIN, sidecar.bytes);
+await Bun.write(HEIGHT_JSON, `${JSON.stringify(sidecar.meta, null, 2)}\n`);
+const treeCount = Object.values(treeInstances).reduce((sum, list) => sum + list.length, 0);
+console.log(
+  `campus-v2.glb: ${(bytes.length / 1048576).toFixed(2)} MiB, ${selectableBuildings.length} BLD nodes, ` +
+  `${campusBuildings.length} other campus buildings, ${treeCount} trees ` +
+  `(${Object.entries(treeInstances).map(([k, v]) => `${k} ${v.length}`).join(", ")}), ${markings.pieces.length} road-marking pieces ` +
+  `(${markingMesh.triangles} triangles, ${markingMesh.vertices} vertices from ${markingMesh.sourceTriangles} before conforming to the terrain)`,
+);
+console.log(
+  `OuterTerrain: ${outerTerrain.vertexCount} vertices, ${outerTerrain.triangleCount} triangles ` +
+  `(${outerTerrain.vertexCountBefore} / ${outerTerrain.triangleCountBefore} before simplify), ` +
+  `COP30 vertical offset ${outerTerrain.offsetMetres.toFixed(2)} m; ${outerTerrain.attribution}`,
+);
+console.log(`raw model written to ${path.relative(FRONTEND, OUTPUT)}; bun run model:pack ships it`);
+console.log(`campus-v2-height.bin: ${sidecar.meta.width} x ${sidecar.meta.height} u16, ${sidecar.bytes.length} B`);

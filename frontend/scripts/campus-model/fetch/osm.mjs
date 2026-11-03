@@ -1,0 +1,288 @@
+#!/usr/bin/env bun
+// Ground features for the campus bbox -> data/osm-ground.json. stages/ground.mjs paints them into
+// the ground texture.
+//
+//   bun scripts/campus-model/fetch/osm.mjs
+//
+// The file has three sections, each with its own licence:
+//   osm          OpenStreetMap closed ways / multipolygons (ODbL 1.0, © OpenStreetMap contributors),
+//                buildings excluded. kind:
+//                  stadium  leisure=stadium
+//                  track    leisure=track
+//                  pitch    leisure=pitch / sports_centre / playground, or any area with sport=*
+//                  parking  amenity=parking (surface lots only)
+//                  plaza    area:highway=pedestrian|footway, highway=pedestrian + area=yes, place=square
+//                  water    natural=water, landuse=basin
+//                The section also carries `lines` (open ways) for the arterial road east of the campus:
+//                  arterial   highway=trunk|primary|secondary (and _link)
+//                  connector  other carriageways (tertiary .. service, not parking aisles or
+//                             driveways) that share a node with an arterial (junction mouths)
+//                  crossing   footway=crossing ways that are marked (crossing:markings on the way,
+//                             or a member highway=crossing node with markings)
+//   facilities   MCEE level-3 land cover (lv3_2025y, KOGL Type 1) polygons of class 141
+//                (문화·체육·휴양시설). They outline the running track, the courts and the plaza's
+//                oval lawn far more closely than OSM, which maps only the stadium and two loose
+//                pitch polygons there. Same WFS and cache as fetch/landcover.mjs.
+//   supplements  project-authored entries (not OSM, not MCEE), see SUPPLEMENTS.
+import { mkdir } from "node:fs/promises";
+import path from "node:path";
+import { pointInRing } from "../lib/geometry.mjs";
+import { BBOX, CACHE, DATA, TIMEOUT_MS, USER_AGENT } from "./common.mjs";
+
+const API = "https://api.openstreetmap.org/api/0.6/map.json";
+const MAX_SPLIT_DEPTH = 3;
+const KEEP_TAGS = ["name", "leisure", "sport", "surface", "amenity", "parking", "area:highway", "highway", "place", "natural", "water", "landuse"];
+const LINE_KEEP_TAGS = ["name", "ref", "highway", "service", "lanes", "oneway", "width", "surface", "footway", "crossing", "crossing:markings"];
+const ARTERIAL = /^(trunk|primary|secondary)(_link)?$/;
+const CARRIAGEWAY = /^(tertiary|tertiary_link|unclassified|residential|living_street|service)$/;
+
+const MCEE_WFS = "https://api.mcee.go.kr/geoserver/wfs";
+const MCEE_LAYER = "lv3_2025y";
+const MCEE_FACILITY_CODE = "141";
+const MCEE_PAGE_SIZE = 1000;
+const MCEE_MAX_PAGES = 20;
+const MCEE_CACHE = path.join(CACHE, "mcee");
+
+// Project-authored entries (checked 2026-10-24):
+//   surface     labels a court or lawn inside an MCEE facility polygon. Each facility pixel takes the
+//               surface of the nearest label inside the same polygon (one MCEE polygon holds the
+//               basketball, futsal and multi courts). Neither source says which court is which: class
+//               141 is generic, and OSM's 농구장 polygon (way 366373756) lies over the futsal/multi
+//               courts, not over the blue basketball courts. headingDegrees is the court's long axis
+//               in the scene frame (degrees from +x toward +z); court markings are drawn around `at`.
+//   roundabout  the red-paved roundabout of the central intersection. OSM maps only its two oneway
+//               carriageways (ways 1364521191/1364521192), MCEE folds it into class 154 (road).
+//   fountain    the fountain at the west end of the plaza's oval lawn; mapped by neither source.
+//   reclass     an OSM area painted as another surface: OSM way 367126960 (natural=water, pond, west of
+//               the stadium) is a sunken lawn on current imagery, not open water; OSM way 366373760
+//               (leisure=pitch, sport=tennis, F3 학생테니스장) is a clay court, not the green hard court.
+//   parking     surface car-park bays OSM does not map (no amenity=parking / parking_space there):
+//               a single row of bays along `axis`, `depthMetres` deep, `bayMetres` per bay (2.5 m
+//               perpendicular, 6 m parallel). The three rows line the access road west of the stadium.
+// Positions and radii are estimates, not survey values; replace them once OSM maps the features.
+const SUPPLEMENTS = [
+  { kind: "surface", note: "blue basketball court (full court)", at: [127.4831566,34.9679874], surface: "basketball", headingDegrees: 12 },
+  { kind: "surface", note: "blue basketball court (half court)", at: [127.4831955,34.9678223], surface: "basketball", lines: false },
+  { kind: "surface", note: "futsal pitch west of the multi court", at: [127.4829982,34.9675956], surface: "futsal", headingDegrees: 102 },
+  { kind: "surface", note: "multi court (green apron, red court)", at: [127.483195,34.9675667], surface: "multi", headingDegrees: 102 },
+  { kind: "surface", note: "tennis courts (테니스장)", at: [127.4831938,34.9671985], surface: "tennis", headingDegrees: 102 },
+  { kind: "surface", note: "oval lawn in the central plaza", at: [127.4800853,34.9695595], surface: "lawn" },
+  { kind: "roundabout", note: "central intersection roundabout (centre estimated; radius 10.7 m fitted to the painted rim on the NGII 2025 orthophoto, 2026-10-24)", centre: [127.4806378, 34.9692591], radiusMetres: 10.7 },
+  { kind: "fountain", note: "central plaza fountain (estimate)", centre: [127.4799993, 34.9695797], radiusMetres: 3.6 },
+  { kind: "reclass", note: "OSM pond west of the stadium is a sunken lawn (estimate)", osm: "way/367126960", surface: "lawn" },
+  { kind: "reclass", note: "OSM tennis pitch south of F1 (F3 학생테니스장) is clay: orange-tan on the NGII 2025 orthophoto inside the traced court fence (objects-campus OC0173, which the OSM outline matches within about 3 m) and in SCNU 360 VR scene_f3 f/r (estimate)", osm: "way/366373760", surface: "clay" },
+  { kind: "parking", note: "bays along the building west of the access road (estimate)", axis: [[127.4810799, 34.9688447], [127.4809641, 34.9684043]], depthMetres: 5, bayMetres: 2.5 },
+  { kind: "parking", note: "parallel bays on the north kerb of the access road (estimate)", axis: [[127.4812904, 34.9684072], [127.4817167, 34.9683451]], depthMetres: 2.5, bayMetres: 6 },
+  { kind: "parking", note: "bays south of the access road (estimate)", axis: [[127.4812887, 34.9683155], [127.4815764, 34.9682772]], depthMetres: 5, bayMetres: 2.5 },
+  { kind: "paving", note: "E8 front courtyard: grey pavers with staggered blue-grey square tiles and terracotta centres (VR scene_e8 f cols 300-1750 of 2048; outline traced on the NGII 2025 sheet between the hedge beds and the parking bays; pattern pitch from the photo's dark squares; estimate)", ring: [[127.47734561,34.96862084],[127.47739522,34.96862065],[127.4774312,34.96862783],[127.47743516,34.96860303],[127.47740545,34.96843752],[127.47737256,34.96843004],[127.47735754,34.96843573],[127.47735769,34.96846249],[127.47732252,34.96847531],[127.47732646,34.96856402],[127.4773446,34.96856536]], pattern: "tiles", axis: [[127.47711662, 34.96868188], [127.47740644, 34.9686335]], walkable: true },
+  { kind: "paving", note: "E8 entrance forecourt: plain grey pavers of the walk and steps between the hedge beds and the porch, and under the raised porch (the passage of the LOD4 form) (VR scene_e8 f cols 850-1250 of 2048; outline traced on the NGII 2025 sheet; estimate)", ring: [[127.47711001, 34.9686554], [127.47723824, 34.96863413], [127.47734485, 34.96860761], [127.4773446, 34.96856536], [127.47732646, 34.96856402], [127.47732356, 34.96847671], [127.47726607, 34.96847694], [127.47726628, 34.96851355], [127.47719937, 34.96847512], [127.47706775, 34.96849721], [127.4770776, 34.96852578], [127.47709655, 34.96860123]], pattern: "plain", walkable: true },
+];
+
+const round7 = ([lon, lat]) => [Number(lon.toFixed(7)), Number(lat.toFixed(7))];
+const BOX_RING = [[BBOX.west, BBOX.south], [BBOX.east, BBOX.south], [BBOX.east, BBOX.north], [BBOX.west, BBOX.north]];
+
+// ---------------------------------------------------------------- OpenStreetMap
+async function fetchBox(box, depth = 0) {
+  const url = `${API}?bbox=${box.west},${box.south},${box.east},${box.north}`;
+  const response = await fetch(url, { headers: { "User-Agent": USER_AGENT }, signal: AbortSignal.timeout(TIMEOUT_MS * 2) });
+  // 400: too many nodes / area too large -> split into quadrants
+  if (response.status === 400 && depth < MAX_SPLIT_DEPTH) {
+    const midLon = (box.west + box.east) / 2;
+    const midLat = (box.south + box.north) / 2;
+    const quads = [
+      { west: box.west, south: box.south, east: midLon, north: midLat },
+      { west: midLon, south: box.south, east: box.east, north: midLat },
+      { west: box.west, south: midLat, east: midLon, north: box.north },
+      { west: midLon, south: midLat, east: box.east, north: box.north },
+    ];
+    return (await Promise.all(quads.map((quad) => fetchBox(quad, depth + 1)))).flat();
+  }
+  if (!response.ok) throw new Error(`OSM map ${url}: HTTP ${response.status}`);
+  return (await response.json()).elements;
+}
+
+// Joins open member ways of a multipolygon into closed rings (node id lists).
+function joinWays(wayNodeLists) {
+  const pending = wayNodeLists.map((list) => [...list]);
+  const rings = [];
+  while (pending.length) {
+    const ring = pending.shift();
+    for (let guard = 0; ring[0] !== ring.at(-1) && guard < 1000; guard += 1) {
+      const i = pending.findIndex((list) => list[0] === ring.at(-1) || list.at(-1) === ring.at(-1));
+      if (i < 0) break;
+      const [next] = pending.splice(i, 1);
+      ring.push(...(next[0] === ring.at(-1) ? next : next.reverse()).slice(1));
+    }
+    if (ring.length >= 4 && ring[0] === ring.at(-1)) rings.push(ring);
+  }
+  return rings;
+}
+
+export function groundKind(tags) {
+  if (!tags || (tags.building && tags.building !== "no")) return null;
+  if (tags.leisure === "stadium") return "stadium";
+  if (tags.leisure === "track") return "track";
+  if (["pitch", "sports_centre", "playground"].includes(tags.leisure) || tags.sport) return "pitch";
+  if (tags.amenity === "parking") return ["underground", "multi-storey", "rooftop"].includes(tags.parking) ? null : "parking";
+  if (["pedestrian", "footway"].includes(tags["area:highway"])) return "plaza";
+  if (tags.highway === "pedestrian" && tags.area === "yes") return "plaza";
+  if (tags.place === "square") return "plaza";
+  if (tags.natural === "water" || tags.landuse === "basin") return "water";
+  return null;
+}
+
+// Open road ways for the arterial east of the campus (see the header): node lists -> coordinates.
+function roadLines(ways, nodeOf, crossingNodes) {
+  const inBox = (coords) => coords.some((p) => pointInRing(p, BOX_RING));
+  const coordsOf = (way) => way.nodes.map((id) => nodeOf.get(id));
+  const all = [...ways.values()].filter((w) => w.tags?.highway && w.nodes.every((id) => nodeOf.has(id)) && inBox(coordsOf(w)));
+  const arterials = all.filter((w) => ARTERIAL.test(w.tags.highway));
+  const arterialNodes = new Set(arterials.flatMap((w) => w.nodes));
+  const marked = (value) => value !== undefined && value !== "no";
+  const kindOf = (w) => {
+    if (ARTERIAL.test(w.tags.highway)) return "arterial";
+    if (CARRIAGEWAY.test(w.tags.highway) && !["parking_aisle", "driveway"].includes(w.tags.service) && w.nodes.some((id) => arterialNodes.has(id))) return "connector";
+    if (w.tags.footway === "crossing" && (marked(w.tags["crossing:markings"]) || w.nodes.some((id) => crossingNodes.has(id)))) return "crossing";
+    return null;
+  };
+  return all.flatMap((w) => {
+    const kind = kindOf(w);
+    if (!kind) return [];
+    const tags = Object.fromEntries(LINE_KEEP_TAGS.filter((k) => w.tags[k] !== undefined).map((k) => [k, w.tags[k]]));
+    return [{ id: `way/${w.id}`, kind, tags, line: coordsOf(w).map(round7) }];
+  }).sort((a, b) => a.id.localeCompare(b.id, "en", { numeric: true }));
+}
+
+async function fetchOsmFeatures() {
+  const elements = await fetchBox(BBOX);
+  const nodeOf = new Map();
+  const ways = new Map();
+  const relations = new Map();
+  for (const element of elements) {
+    if (element.type === "node") nodeOf.set(element.id, [element.lon, element.lat]);
+    if (element.type === "way") ways.set(element.id, element);
+    if (element.type === "relation") relations.set(element.id, element);
+  }
+  const crossingNodes = new Set(
+    elements.filter((e) => e.type === "node" && e.tags?.highway === "crossing" && e.tags["crossing:markings"] !== undefined && e.tags["crossing:markings"] !== "no").map((e) => e.id),
+  );
+  const features = [];
+  for (const element of [...ways.values(), ...relations.values()]) {
+    const kind = groundKind(element.tags);
+    if (!kind) continue;
+    let rings;
+    if (element.type === "way") {
+      if (element.nodes[0] !== element.nodes.at(-1)) continue;
+      rings = [element.nodes];
+    } else if (element.tags.type === "multipolygon") {
+      const member = (role) => element.members.filter((m) => m.type === "way" && (m.role || "outer") === role && ways.has(m.ref)).map((m) => ways.get(m.ref).nodes);
+      rings = [...joinWays(member("outer")), ...joinWays(member("inner"))];
+    } else continue;
+    const coords = rings.map((ring) => ring.map((id) => nodeOf.get(id)));
+    if (!coords.length || coords.flat().some((p) => !p)) continue;
+    if (!coords[0].some((p) => pointInRing(p, BOX_RING))) continue;
+    const tags = Object.fromEntries(KEEP_TAGS.filter((k) => element.tags[k] !== undefined).map((k) => [k, element.tags[k]]));
+    features.push({ id: `${element.type}/${element.id}`, kind, tags, rings: coords.map((ring) => ring.map(round7)) });
+  }
+  return { features: features.sort((a, b) => a.id.localeCompare(b.id, "en", { numeric: true })), lines: roadLines(ways, nodeOf, crossingNodes) };
+}
+
+// ---------------------------------------------------------------- MCEE facilities
+const EARTH_RADIUS = 6378137;
+const mercatorToGeo = ([x, y]) => [
+  (x / EARTH_RADIUS) * (180 / Math.PI),
+  (2 * Math.atan(Math.exp(y / EARTH_RADIUS)) - Math.PI / 2) * (180 / Math.PI),
+];
+
+// Same request and cache file names as fetch/landcover.mjs, so a fetched cache is reused.
+async function fetchMceePage(startIndex) {
+  const file = Bun.file(path.join(MCEE_CACHE, `${MCEE_LAYER}-${startIndex}.json`));
+  if (await file.exists()) return file.json();
+  const params = new URLSearchParams({
+    service: "WFS",
+    version: "2.0.0",
+    request: "GetFeature",
+    typeNames: MCEE_LAYER,
+    bbox: `${BBOX.south},${BBOX.west},${BBOX.north},${BBOX.east},urn:ogc:def:crs:EPSG::4326`,
+    outputFormat: "application/json",
+    count: String(MCEE_PAGE_SIZE),
+    startIndex: String(startIndex),
+  });
+  const response = await fetch(`${MCEE_WFS}?${params}`, { headers: { "User-Agent": USER_AGENT }, signal: AbortSignal.timeout(TIMEOUT_MS * 4) });
+  if (!response.ok) throw new Error(`MCEE WFS ${MCEE_LAYER} startIndex ${startIndex}: HTTP ${response.status}`);
+  const text = await response.text();
+  const page = JSON.parse(text);
+  if (!Array.isArray(page.features)) throw new Error(`MCEE WFS ${MCEE_LAYER} startIndex ${startIndex}: no features array`);
+  await Bun.write(file, text);
+  return page;
+}
+
+async function fetchMceeFacilities() {
+  await mkdir(MCEE_CACHE, { recursive: true });
+  const facilities = [];
+  for (let page = 0; ; page += 1) {
+    if (page === MCEE_MAX_PAGES) throw new Error(`MCEE WFS ${MCEE_LAYER}: more than ${MCEE_MAX_PAGES * MCEE_PAGE_SIZE} features in the bbox`);
+    const { features } = await fetchMceePage(page * MCEE_PAGE_SIZE);
+    for (const { geometry, properties } of features) {
+      if (String(properties.l3_code) !== MCEE_FACILITY_CODE || !geometry) continue;
+      const polygons = geometry.type === "MultiPolygon" ? geometry.coordinates : geometry.type === "Polygon" ? [geometry.coordinates] : [];
+      for (const rings of polygons) {
+        const geo = rings.map((ring) => ring.map((p) => round7(mercatorToGeo(p))));
+        if (geo[0].some((p) => pointInRing(p, BOX_RING))) facilities.push({ l3Code: MCEE_FACILITY_CODE, rings: geo });
+      }
+    }
+    if (features.length < MCEE_PAGE_SIZE) return facilities;
+  }
+}
+
+// ---------------------------------------------------------------- output
+export async function fetchGroundFeatures() {
+  const [{ features: osm, lines }, facilities] = await Promise.all([fetchOsmFeatures(), fetchMceeFacilities()]);
+  return {
+    fetched: new Date().toISOString().slice(0, 10),
+    bbox: BBOX,
+    osm: {
+      source: "OpenStreetMap API 0.6 map call for the bbox",
+      licence: "ODbL 1.0",
+      attribution: "© OpenStreetMap contributors",
+      features: osm,
+      lines,
+    },
+    facilities: {
+      source: `MCEE level-3 land cover WFS (${MCEE_WFS}), layer ${MCEE_LAYER}, l3_code ${MCEE_FACILITY_CODE}`,
+      licence: "KOGL Type 1",
+      attribution: "본 저작물은 기후에너지환경부에서 작성하여 공공누리 제1유형으로 개방한 '세분류 토지피복지도(2025)'를 이용하였습니다.",
+      features: facilities,
+    },
+    supplements: {
+      source: "project-authored labels and estimated shapes (not OSM, not MCEE)",
+      features: SUPPLEMENTS,
+    },
+  };
+}
+
+export async function writeGroundFeatures() {
+  const ground = await fetchGroundFeatures();
+  await Bun.write(path.join(DATA, "osm-ground.json"), `${JSON.stringify(ground)}\n`);
+  const counts = ground.osm.features.reduce((acc, f) => ({ ...acc, [f.kind]: (acc[f.kind] ?? 0) + 1 }), {});
+  console.log(
+    `osm-ground.json: ${ground.osm.features.length} OSM features ${JSON.stringify(counts)}, ` +
+    `${ground.osm.lines.length} OSM road lines ${JSON.stringify(ground.osm.lines.reduce((acc, l) => ({ ...acc, [l.kind]: (acc[l.kind] ?? 0) + 1 }), {}))}, ` +
+    `${ground.facilities.features.length} MCEE facility polygons, ${ground.supplements.features.length} project supplements`,
+  );
+}
+
+// Campus boundary (OSM way 366373736, 국립순천대학교) -> data/osm-campus.json, read by scripts/perf/overhead-blend.mjs
+// --campus-only. Run with --campus; it leaves osm-ground.json untouched.
+export async function writeCampusBoundary(wayId = 366373736) {
+  const response = await fetch(`https://api.openstreetmap.org/api/0.6/way/${wayId}/full.json`, { headers: { "User-Agent": USER_AGENT }, signal: AbortSignal.timeout(TIMEOUT_MS) });
+  if (!response.ok) throw new Error(`OSM way ${wayId}: HTTP ${response.status}`);
+  const { elements } = await response.json();
+  const nodes = new Map(elements.filter((e) => e.type === "node").map((e) => [e.id, [e.lon, e.lat]]));
+  const way = elements.find((e) => e.type === "way" && e.id === wayId);
+  const ring = way.nodes.map((id) => nodes.get(id));
+  await Bun.write(path.join(DATA, "osm-campus.json"), `${JSON.stringify({ fetched: new Date().toISOString().slice(0, 10), source: `OpenStreetMap API 0.6 way/${wayId}/full`, licence: "ODbL 1.0", attribution: "© OpenStreetMap contributors", id: `way/${wayId}`, tags: { name: way.tags?.name, amenity: way.tags?.amenity }, ring })}\n`);
+  console.log(`osm-campus.json: way/${wayId} ${way.tags?.name ?? ""}, ${ring.length} ring points`);
+}
+
+if (import.meta.main) await (process.argv.includes("--campus") ? writeCampusBoundary() : writeGroundFeatures());

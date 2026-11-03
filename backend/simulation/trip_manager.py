@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import random
 from collections import Counter
 from typing import Dict, Tuple
@@ -15,6 +16,12 @@ except ImportError:
 BASE_SPEEDS = {"car": (4.0, 7.5), "person": (0.9, 1.7), "scooter": (2.5, 5.5)}
 
 
+def edge_uniform(trip_key: bytes, edge_id: str, low: float, high: float) -> float:
+    """Uniform in [low, high) from (trip key, edge id) alone: independent of how many other edges the graph has."""
+    digest = hashlib.blake2b(str(edge_id).encode("utf-8"), digest_size=8, key=trip_key).digest()
+    return low + (high - low) * (int.from_bytes(digest, "little") / 2.0**64)
+
+
 class TripManager:
     def __init__(self, graph: MobilityGraph, od: ODManager, random_source: random.Random) -> None:
         self.graph = graph
@@ -28,8 +35,11 @@ class TripManager:
         low, high = diversity.get("random_cost_range", [1.0, 1.0])
         per_trip = float(diversity.get("usage_penalty_per_trip", 0.0))
         maximum = float(diversity.get("maximum_usage_penalty", 0.0))
+        # One draw from the main stream per trip keys every per-edge cost factor (a hash of the trip key and the edge id),
+        # so adding or removing an edge elsewhere changes only that edge's factor, not every later trip, spawn or OD draw.
+        trip_key = self.random.getrandbits(64).to_bytes(8, "little")
         factors = {
-            edge_id: self.random.uniform(float(low), float(high)) + min(maximum, self.edge_usage[edge_id] * per_trip)
+            edge_id: edge_uniform(trip_key, edge_id, float(low), float(high)) + min(maximum, self.edge_usage[edge_id] * per_trip)
             for edge_id in self.graph.edges
         }
         path = self.graph.shortest_path(origin, destination, agent_type, factors)

@@ -1,0 +1,145 @@
+{
+ "type": "FeatureCollection",
+ "name": "gate-structures",
+ "properties": {
+  "note": "Main-gate entrance structures traced on the NGII 2025 orthophoto (sheet 34702020; 4x chip with 1 m grid): three yellow-kerbed islands across the approach (LineString = island axis, width_m = island width, rounded ends) and the blue canopy over the lanes between them (Polygon = roof outline on the photo; the furniture stage removes the relief lean). Heights are estimates (추정): kerb 0.15 m; canopy 7.5 m from its west-cast shadow (about 4 m long at sun elevation 62 deg), minus the lean."
+ },
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "GT0001",
+    "kind": "traffic_island",
+    "width_m": 1.4,
+    "kerb_height_m": 0.15,
+    "colour": "#e2b23a",
+    "fill": "#8e8b84",
+    "method": "by-eye-photo",
+    "source": "ngii-2025-ortho",
+    "confidence": 0.6,
+    "estimated": true,
+    "height_m": 0.15,
+    "height_source": "kerb default (estimated)",
+    "note": "north island: yellow kerb ring with rounded ends, on the photo between the inbound lanes"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      127.48298434,
+      34.96878449
+     ],
+     [
+      127.48309044,
+      34.96876424
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "GT0002",
+    "kind": "traffic_island",
+    "width_m": 1.6,
+    "kerb_height_m": 0.15,
+    "colour": "#e2b23a",
+    "fill": "#8e8b84",
+    "method": "by-eye-photo",
+    "source": "ngii-2025-ortho",
+    "confidence": 0.6,
+    "estimated": true,
+    "height_m": 0.15,
+    "height_source": "kerb default (estimated)",
+    "note": "middle island: yellow kerb ring; the canopy starts at its south side"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      127.48297402,
+      34.96875208
+     ],
+     [
+      127.48307654,
+      34.96872779
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "GT0003",
+    "kind": "traffic_island",
+    "width_m": 1.6,
+    "kerb_height_m": 0.15,
+    "colour": "#e2b23a",
+    "fill": "#8e8b84",
+    "method": "by-eye-photo",
+    "source": "ngii-2025-ortho",
+    "confidence": 0.6,
+    "estimated": true,
+    "height_m": 0.15,
+    "height_source": "kerb default (estimated)",
+    "note": "south island: yellow kerb ring under the canopy"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      127.48296009,
+      34.96871
+     ],
+     [
+      127.4830659,
+      34.96868704
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "GT0004",
+    "kind": "gate_canopy",
+    "colour": "#3f72b0",
+    "postColour": "#d9d7d0",
+    "method": "by-eye-photo",
+    "source": "ngii-2025-ortho",
+    "confidence": 0.5,
+    "estimated": true,
+    "height_m": 7.5,
+    "height_source": "west-cast shadow on the photo, about 4 m at sun elevation 62 deg (estimated)",
+    "note": "blue panelled canopy over the two lanes between the middle and south islands and the south lane, posts on the islands"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       127.4829961,
+       34.96873509
+      ],
+      [
+       127.48305942,
+       34.9687265
+      ],
+      [
+       127.48305399,
+       34.96866456
+      ],
+      [
+       127.48299935,
+       34.96868303
+      ],
+      [
+       127.4829961,
+       34.96873509
+      ]
+     ]
+    ]
+   }
+  }
+ ]
+}

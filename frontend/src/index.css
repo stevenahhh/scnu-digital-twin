@@ -1,55 +1,14 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "./ui/tokens.css";
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+/* 이전 클래스는 Tailwind 유틸리티 뒤에 와야 예전과 같은 우선순위로 겹친다. */
+@import "./ui/legacy-classes.css";
 
-:root {
-  color-scheme: dark;
-  --colors-primary: #3b82f6;
-  --colors-on-primary: #ffffff;
-  --colors-primary-hover: #60a5fa;
-  --colors-primary-focus: #2563eb;
-  --colors-ink: #f7f8f8;
-  --colors-ink-muted: #d0d6e0;
-  --colors-ink-subtle: #8a8f98;
-  --colors-ink-tertiary: #62666d;
-  --colors-canvas: #010102;
-  --colors-surface-1: #0f1011;
-  --colors-surface-2: #141516;
-  --colors-surface-3: #18191a;
-  --colors-surface-4: #191a1b;
-  --colors-hairline: #23252a;
-  --colors-hairline-strong: #34343a;
-  --colors-hairline-tertiary: #3e3e44;
-  --colors-inverse-canvas: #ffffff;
-  --colors-inverse-surface-1: #f5f6f6;
-  --colors-inverse-surface-2: #f6f7f7;
-  --colors-inverse-ink: #000000;
-  --colors-brand-secure: #7a7fad;
-  --colors-semantic-success: #27a644;
-  --colors-semantic-danger: #d45555;
-  --colors-semantic-danger-border: rgba(212, 85, 85, 0.4);
-  --colors-semantic-danger-surface: rgba(212, 85, 85, 0.1);
-  --colors-chart-demand: #828fff;
-  --colors-semantic-overlay: #000000;
-  --dashboard-panel-width: 440px;
-
-  --rounded-xs: 4px;
-  --rounded-sm: 6px;
-  --rounded-md: 8px;
-  --rounded-lg: 12px;
-  --rounded-xl: 16px;
-  --rounded-xxl: 24px;
-  --rounded-pill: 9999px;
-  --rounded-full: 9999px;
-
-  --spacing-xxs: 4px;
-  --spacing-xs: 8px;
-  --spacing-sm: 12px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
-  --spacing-xxl: 48px;
-  --spacing-section: 96px;
+@media (min-width: 1024px) {
+  .dashboard-root--building-focus {
+    --dashboard-panel-width: min(680px, max(440px, 58vw));
+  }
 }
 
 html,
@@ -61,214 +20,31 @@ body,
   font-family: "Wanted Sans Variable", "Wanted Sans", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
   background: var(--colors-canvas);
   color: var(--colors-ink);
-  letter-spacing: -0.05px;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-input, textarea {
-  -webkit-user-select: auto;
-  user-select: auto;
-}
-
-[data-theme="light"] {
-  --colors-canvas: #ffffff;
-  --colors-surface-1: #f7f8f8;
-  --colors-surface-2: #f0f2f4;
-  --colors-surface-3: #e5e8eb;
-  --colors-surface-4: #dce0e5;
-  --colors-hairline: #e0e2e5;
-  --colors-hairline-strong: #c8ccd2;
-  --colors-hairline-tertiary: #b0b5be;
-  --colors-ink: #111213;
-  --colors-ink-muted: #4f5358;
-  --colors-ink-subtle: #737880;
-  --colors-ink-tertiary: #9298a1;
-  --colors-chart-demand: #5e6ad2;
 }
 
 body {
   font-feature-settings: "tnum" 1;
+  word-break: keep-all;
 }
 
-.dashboard-root {
-  background: var(--colors-canvas);
-  color: var(--colors-ink);
+/* 장면을 끌어 돌릴 때 글자가 선택되지 않게 하는 곳은 지도와 라벨 층뿐이다. 값·오류 문구는 복사할 수 있어야 한다. */
+[data-qa="campus-map-layer"],
+[data-qa="campus-label-layer"] {
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-.dashboard-root--building-focus {
-  --dashboard-panel-width: min(680px, max(440px, 58vw));
+/* VWorld SDK는 navigation: false여도 키보드 이동 컨트롤(좌로·우로·위로·아래로 이동, 닫기)을 지도 바로 아래
+   보이지 않는 곳에 포커스 가능한 채로 남긴다. Tab이 여기에 닿으면 브라우저가 뷰어를 스크롤해 지도가 밀리고
+   아래에 빈 띠가 남는다. 이 컨트롤을 여는 SDK 도구 모음은 이미 꺼져 있고 Legacy에도 키보드 지도 이동이 없으므로
+   숨긴다. 뷰어도 포커스로 스크롤되지 않게 clip으로 자른다. #vmap은 VWorldRenderer의 VWORLD_MAP_ID다. */
+#vmap .dt-api-map--move {
+  display: none;
 }
 
-@media (max-width: 439px) {
-  :root { --dashboard-panel-width: 100vw; }
-  .dashboard-root--building-focus { --dashboard-panel-width: 100vw; }
-  .dashboard-root select,
-  .dashboard-root input,
-  .dashboard-root button { min-width: 0; }
+#vmap .cesium-viewer {
+  overflow: clip;
 }
-
-
-.dashboard-top-shell,
-.dashboard-side-panel,
-.dashboard-right-panel,
-.dashboard-notice-bar,
-.dashboard-popup,
-.dashboard-rail {
-  background: var(--colors-surface-1);
-  border: 1px solid var(--colors-hairline);
-  box-shadow: none;
-  border-radius: var(--rounded-lg);
-}
-
-.dashboard-rail {
-  border-radius: 0;
-  border-right: 1px solid var(--colors-hairline);
-  border-top: none;
-  border-left: none;
-  border-bottom: none;
-}
-
-.dashboard-top-shell {
-  border-radius: 0;
-  border-bottom: 1px solid var(--colors-hairline);
-}
-
-.dashboard-card {
-  background: var(--colors-surface-1);
-  border: 1px solid var(--colors-hairline);
-  border-radius: var(--rounded-lg);
-  padding: var(--spacing-lg);
-}
-
-.dashboard-card-muted {
-  background: var(--colors-surface-2);
-  border: 1px solid var(--colors-hairline-strong);
-  border-radius: var(--rounded-lg);
-  padding: var(--spacing-lg);
-}
-
-.dashboard-card-strong {
-  background: var(--colors-surface-3);
-  border: 1px solid var(--colors-hairline-tertiary);
-  border-radius: var(--rounded-lg);
-  color: var(--colors-ink);
-  padding: var(--spacing-lg);
-}
-
-.dashboard-soft-surface {
-  background: var(--colors-surface-2);
-  border-radius: var(--rounded-md);
-  padding: var(--spacing-sm);
-}
-
-
-.dashboard-pill,
-.dashboard-segment {
-  border: 1px solid var(--colors-hairline);
-  background: var(--colors-surface-1);
-  color: var(--colors-ink-subtle);
-  border-radius: var(--rounded-pill);
-}
-
-.dashboard-segment[data-active="true"] {
-  background: var(--colors-surface-2);
-  border-color: var(--colors-hairline-strong);
-  color: var(--colors-ink);
-}
-
-.dashboard-tab[data-active="true"] {
-  background: var(--colors-surface-2);
-  color: var(--colors-ink);
-  border-radius: var(--rounded-pill);
-  padding: 6px 14px;
-}
-
-.dashboard-tab[data-active="false"] {
-  background: var(--colors-canvas);
-  color: var(--colors-ink-subtle);
-  border-radius: var(--rounded-pill);
-  padding: 6px 14px;
-}
-
-
-.dashboard-rail-item {
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--colors-ink-subtle);
-  border-radius: var(--rounded-xs);
-}
-
-.dashboard-rail-item[data-active="true"] {
-  background: var(--colors-surface-2);
-  border-color: var(--colors-hairline-strong);
-  color: var(--colors-ink);
-}
-
-
-.dashboard-label {
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.30;
-  letter-spacing: 0.4px;
-  color: var(--colors-ink-muted);
-}
-
-.dashboard-tactical-title {
-  font-size: 20px;
-  font-weight: 400;
-  line-height: 1.40;
-  letter-spacing: -0.2px;
-  color: var(--colors-ink);
-}
-
-.dashboard-meta {
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 1.40;
-  color: var(--colors-ink-subtle);
-}
-
-
-.dashboard-muted { color: var(--colors-ink-muted); }
-.dashboard-text-primary { color: var(--colors-ink); }
-.dashboard-subtle { color: var(--colors-ink-subtle); }
-.dashboard-accent-primary { color: var(--colors-primary); }
-.dashboard-accent-success { color: var(--colors-semantic-success); }
-
-
-.dashboard-ghost-button {
-  background: var(--colors-surface-1);
-  color: var(--colors-ink);
-  border: 1px solid var(--colors-hairline);
-  border-radius: var(--rounded-md);
-}
-
-.dashboard-ghost-button:hover {
-  background: var(--colors-surface-2);
-}
-
-.dashboard-outline-button {
-  background: var(--colors-surface-1);
-  color: var(--colors-ink);
-  border: 1px solid var(--colors-hairline);
-  border-radius: var(--rounded-md);
-}
-
-
-.dashboard-status-badge {
-  background: var(--colors-surface-2);
-  color: var(--colors-ink-muted);
-  border-radius: var(--rounded-pill);
-  padding: 2px 8px;
-  font-size: 12px;
-}
-
-.dashboard-status-badge[data-tone="success"] {
-  background: var(--colors-semantic-success);
-  color: var(--colors-on-primary);
-}
-
 
 input[type="range"] {
   -webkit-appearance: none;
@@ -280,6 +56,11 @@ input[type="range"] {
   cursor: pointer;
   padding: 0;
   margin: 0;
+}
+
+input[type="range"]:focus-visible {
+  outline: 2px solid var(--colors-primary);
+  outline-offset: 2px;
 }
 
 input[type="range"]::-webkit-slider-runnable-track {
@@ -300,46 +81,52 @@ input[type="range"]::-webkit-slider-thumb {
   border: 2px solid var(--colors-surface-1);
 }
 
+/* 손가락으로 다루는 화면에서는 손잡이를 24px로 키우고 트랙 높이를 그만큼 늘린다. */
+@media (pointer: coarse) {
+  input[type="range"] {
+    height: 28px;
+  }
 
-.bg-white, .bg-slate-50, .bg-slate-100 { background-color: var(--colors-surface-1) !important; }
-.text-gray-800, .text-slate-900, .text-slate-800 { color: var(--colors-ink) !important; }
-.text-gray-500, .text-slate-500, .text-slate-400 { color: var(--colors-ink-subtle) !important; }
-.border-gray-100, .border-slate-100, .border-slate-200 { border-color: var(--colors-hairline) !important; }
-.shadow-sm, .shadow-md, .shadow-xl { box-shadow: none !important; }
-
-
-.linear-card {
-  background: var(--colors-surface-1);
-  color: var(--colors-ink);
-  border-radius: var(--rounded-lg);
-  padding: var(--spacing-lg);
-  border: 1px solid var(--colors-hairline);
+  input[type="range"]::-webkit-slider-thumb {
+    width: 24px;
+    height: 24px;
+    margin-top: -10px;
+  }
 }
 
-.linear-card-featured {
-  background: var(--colors-surface-2);
-  border: 1px solid var(--colors-hairline-strong);
+/* 발표 모드의 캠퍼스 칩: 라벨 층이 정한 크기(labelBands chipPx, 보통의 1.5배)로 글자를 키운다. */
+[data-qa="campus-label-layer"][data-presentation="true"] [data-qa="label-chip"] {
+  font-size: var(--label-chip-px);
 }
 
-.linear-btn-primary {
-  background: var(--colors-primary);
-  color: var(--colors-on-primary);
-  font-weight: 500;
-  font-size: 14px;
-  border-radius: var(--rounded-md);
-  padding: 8px 14px;
-  border: none;
-}
-.linear-btn-primary:hover {
-  background: var(--colors-primary-hover);
-}
-.linear-btn-secondary {
-  background: var(--colors-surface-1);
-  color: var(--colors-ink);
-  font-weight: 500;
-  font-size: 14px;
-  border-radius: var(--rounded-md);
-  padding: 8px 14px;
-  border: 1px solid var(--colors-hairline);
+/* 움직임을 줄이도록 설정한 사용자에게는 전환과 애니메이션을 사실상 끈다. 이 파일에서 허용하는 유일한 !important다. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }
 
+/* 시간 슬라이더: 굵은 포인터(터치)와 폰 폭(640px 미만, 다른 폰 규칙과 같은 문턱)에서 손잡이 24px, 누를 수 있는 높이 44px.
+   input.time-range로 써야 위의 input[type="range"](28px)보다 앞선다(같은 특이도, 뒤에 온 규칙). */
+@media (pointer: coarse), (max-width: 639px) {
+  input.time-range { height: 44px; -webkit-appearance: none; appearance: none; background: transparent; }
+  input.time-range::-webkit-slider-runnable-track { height: 4px; border-radius: 9999px; background: var(--colors-hairline-strong); }
+  input.time-range::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 24px; height: 24px; margin-top: -10px;
+    border: 2px solid var(--colors-surface-1); border-radius: 9999px; background: var(--colors-primary);
+  }
+  input.time-range::-moz-range-thumb { width: 24px; height: 24px; border: 2px solid var(--colors-surface-1); border-radius: 9999px; background: var(--colors-primary); }
+}
+
+/* 노치·홈 표시줄이 있는 폰(viewport-fit=cover): 지도 위 HUD는 위쪽, 바텀 시트는 아래쪽 안전 영역만큼 비킨다. */
+[data-qa="campus-hud"] {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+[data-qa="dashboard-panel"][data-detent] {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}

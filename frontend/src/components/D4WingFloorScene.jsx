@@ -1,9 +1,13 @@
 import { Canvas, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import { useEffect, useMemo } from "react";
+import { ACCENT_HEX, D4_SCENE } from "../ui/sceneTokens.mjs";
+import { D4_SCENE_LABEL } from "./d4Shared.mjs";
+import { cx } from "../ui/cx.mjs";
+import { SceneLabel } from "../ui/SceneLabel.jsx";
 
-const ACTIVE_COLOR = "#3b82f6";
-const IDLE_COLOR = "#c7cdd6";
+const ACTIVE_COLOR = ACCENT_HEX;
+const IDLE_COLOR = D4_SCENE.floorIdle;
 const FLOOR_STEP = 1.0;
 const BOX_HEIGHT = 0.82;
 const BOX_WIDTH = 2.1;
@@ -17,11 +21,9 @@ function Tower({ wing, x, isActive, onSelectFloor }) {
 
   return (
     <group position={[x, 0, 0]}>
-      <Html position={[0, (levels[levels.length - 1] + 1) * FLOOR_STEP + 0.15, 0]} center distanceFactor={11} style={{ pointerEvents: "none" }}>
+      <Html position={[0, (levels[levels.length - 1] + 1) * FLOOR_STEP + 0.15, 0]} center style={{ pointerEvents: "none" }}>
         <div
-          className={`pointer-events-none whitespace-nowrap rounded-md px-2 py-1 text-[15px] font-[800] ${
-            isActive ? "text-[var(--colors-primary)]" : "text-[var(--colors-ink-subtle)]"
-          }`}
+          className={cx("pointer-events-none whitespace-nowrap", D4_SCENE_LABEL, "text-body", isActive && "ring-2 ring-primary")}
         >
           {wing.label}
         </div>
@@ -41,14 +43,20 @@ function Tower({ wing, x, isActive, onSelectFloor }) {
               <boxGeometry args={[BOX_WIDTH, BOX_HEIGHT, BOX_DEPTH]} />
               <meshStandardMaterial color={isActive ? ACTIVE_COLOR : IDLE_COLOR} transparent opacity={0.88} />
             </mesh>
-            <Html position={[0, 0, BOX_DEPTH / 2 + 0.02]} center distanceFactor={11} style={{ pointerEvents: "none" }}>
-              <div
-                className={`pointer-events-none min-w-[40px] rounded-[4px] px-2 py-1 text-center text-[13px] font-[800] ${
-                  isActive ? "bg-black/15 text-white" : "bg-white/60 text-slate-600"
-                }`}
-              >
-                {floor === 0 ? "B1" : `${floor}F`}
-              </div>
+            <Html position={[0, 0, BOX_DEPTH / 2 + 0.02]} center>
+              {/* 캠퍼스 이름표와 같은 장면 라벨(SceneLabel, 작은 단계). */}
+              <SceneLabel
+                size="sm"
+                tier={3}
+                name={floor === 0 ? "B1" : `${floor}F`}
+                data-qa="d4-floor-label"
+                aria-label={`${floor === 0 ? "지하 1" : floor}층 선택`}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onSelectFloor(wing.id, floor);
+                }}
+                className="pointer-events-auto min-w-10"
+              />
             </Html>
           </group>
         );
@@ -65,8 +73,8 @@ function BridgeConnector({ floor }) {
         <boxGeometry args={[2.6, 0.16, 0.7]} />
         <meshStandardMaterial color={ACTIVE_COLOR} transparent opacity={0.75} />
       </mesh>
-      <Html position={[0, 0.42, 0]} center distanceFactor={11} style={{ pointerEvents: "none" }}>
-        <div className="pointer-events-none whitespace-nowrap rounded-md border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] px-2 py-1 text-[12px] font-[800] text-[var(--colors-ink)] shadow">
+      <Html position={[0, 0.42, 0]} center style={{ pointerEvents: "none" }}>
+        <div className={cx("pointer-events-none whitespace-nowrap border border-hairline", D4_SCENE_LABEL)}>
           구름다리 ({floor}F)
         </div>
       </Html>
@@ -77,7 +85,7 @@ function BridgeConnector({ floor }) {
 // 콘텐츠 크기(층 수 · 타워 폭)와 캔버스 비율에 맞춰 카메라 거리를 매번 다시 계산해서
 // 층이 많은 동도 화면 밖으로 잘리지 않도록 한다.
 function FitCamera({ contentWidth, contentHeight, centerY }) {
-  const { camera, size } = useThree();
+  const { camera, size, invalidate } = useThree();
 
   useEffect(() => {
     const aspect = size.width / Math.max(1, size.height);
@@ -91,7 +99,8 @@ function FitCamera({ contentWidth, contentHeight, centerY }) {
     camera.position.set(0, centerY + distance * 0.56, distance * 0.86);
     camera.lookAt(0, centerY, 0);
     camera.updateProjectionMatrix();
-  }, [camera, size, contentWidth, contentHeight, centerY]);
+    invalidate();
+  }, [camera, size, contentWidth, contentHeight, centerY, invalidate]);
 
   return null;
 }
@@ -107,7 +116,7 @@ export function D4WingFloorScene({ building, activeWingId, onSelectFloor }) {
   const centerY = GROUP_Y_OFFSET + ((maxFloors - 1) * FLOOR_STEP) / 2;
 
   return (
-    <Canvas camera={{ fov: 24 }} shadows>
+    <Canvas camera={{ fov: 24 }} shadows="percentage" gl={{ alpha: true }} frameloop="demand">
       <FitCamera contentWidth={contentWidth} contentHeight={contentHeight} centerY={centerY} />
       <ambientLight intensity={1.15} />
       <directionalLight position={[6, 9, 6]} intensity={1.35} castShadow />

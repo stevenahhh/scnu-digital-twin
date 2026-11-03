@@ -72,17 +72,34 @@ test("night sun is not visible", () => {
   assert.equal(night.visible, false);
 });
 
-test("keeps the VWorld sun-vector axis convention", () => {
+test("places the sun in the campus scene frame (+x east, +z south)", () => {
   const distance = 10;
   const southHorizon = getSunVector({ altitude: 0, azimuth: 0, distance });
   const westHorizon = getSunVector({ altitude: 0, azimuth: Math.PI / 2, distance });
   const zenith = getSunVector({ altitude: Math.PI / 2, azimuth: 0, distance });
 
-  assert.deepEqual(southHorizon, [0, 0, 10]);
-  assert.ok(Math.abs(westHorizon[0] - 10) < 1e-12);
+  assert.ok(Math.abs(southHorizon[0]) < 1e-12);
+  assert.deepEqual(southHorizon.slice(1), [0, 10]);
+  assert.ok(Math.abs(westHorizon[0] + 10) < 1e-12);
   assert.ok(Math.abs(westHorizon[1]) < 1e-12);
   assert.ok(Math.abs(westHorizon[2]) < 1e-12);
   assert.ok(Math.abs(zenith[0]) < 1e-12);
   assert.ok(Math.abs(zenith[1] - 10) < 1e-12);
   assert.ok(Math.abs(zenith[2]) < 1e-12);
+});
+
+test("morning sun is in the east and afternoon sun in the west of the campus scene", () => {
+  const vectorAt = (hour) =>
+    getSunVector(
+      getSunState({
+        date: createSimulationDate({ month: 10, day: 24, hour, minute: 0 }, 2026),
+        ...CAMPUS_LOCATION,
+      }),
+    );
+  const [morningX, , morningZ] = vectorAt(9);
+  const [afternoonX, , afternoonZ] = vectorAt(15);
+
+  assert.ok(morningX > 0, "09:00 KST sun should be east (+x)");
+  assert.ok(afternoonX < 0, "15:00 KST sun should be west (-x)");
+  assert.ok(morningZ > 0 && afternoonZ > 0, "October sun stays in the south (+z)");
 });

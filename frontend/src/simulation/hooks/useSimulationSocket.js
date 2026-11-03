@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 import { simulationStore } from "../stores/simulationStore";
 import { SIMULATION_WS_URL } from "../utils/apiConfig";
-
-const MAX_RETRIES = 8;
+import { connectionLabel, reconnectDelayMs } from "./simulationSocketCore.mjs";
 
 export function useSimulationSocket(url = SIMULATION_WS_URL) {
   useEffect(() => {
@@ -43,13 +42,12 @@ export function useSimulationSocket(url = SIMULATION_WS_URL) {
 
     const scheduleReconnect = (error) => {
       if (disposed) return;
-      if (retryCount >= MAX_RETRIES) {
-        simulationStore.setConnectionStatus("연결 끊김", error?.message || "재연결 횟수를 초과했습니다.");
-        return;
-      }
       retryCount += 1;
-      simulationStore.setConnectionStatus("재연결 중", error?.message || null);
-      const delay = Math.min(10000, 500 * 2 ** (retryCount - 1));
+      simulationStore.setConnectionStatus(
+        connectionLabel(retryCount),
+        error?.message || null,
+      );
+      const delay = reconnectDelayMs(retryCount);
       clearTimeout(retryTimer);
       retryTimer = setTimeout(connect, delay);
     };

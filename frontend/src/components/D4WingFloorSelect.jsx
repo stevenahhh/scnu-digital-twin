@@ -1,91 +1,69 @@
-import { ChevronLeft } from "lucide-react";
 import { D4WingFloorScene } from "./D4WingFloorScene";
+import { D4SampleBadge } from "./D4SampleBadge";
+import { D4ScrollRoot } from "./D4ScrollRoot";
+import { D4_CARD, floorLabel } from "./d4Shared.mjs";
 import { formatRoomNumber, getWingById } from "../utils/d4BuildingData.mjs";
+import { Segmented } from "../ui/Segmented.jsx";
+import { StatusBadge } from "../ui/StatusBadge.jsx";
+import { COARSE_TARGET, FOCUS_RING } from "../ui/Button.jsx";
+
+// 안내 문장은 보이는 글로 두지 않고 title·aria-description으로만 준다.
+const HINT = "층을 선택하면 해당 층의 강의실 목록으로 이동합니다.";
 
 function InUseRoomList({ rooms, onSelectRoom }) {
   return (
-    <div className="flex h-[64vh] w-[340px] shrink-0 flex-col rounded-[16px] border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] p-4 shadow-lg">
-      <div className="flex items-center justify-between">
-        <div className="text-[13px] font-[900] text-[var(--colors-ink)]">사용 중인 강의실</div>
-        <span className="rounded-full bg-[var(--colors-primary)] px-2 py-0.5 text-[11px] font-[800] text-white">{rooms.length}</span>
+    <section className={`${D4_CARD} flex w-full shrink-0 flex-col gap-3`} aria-labelledby="d4-in-use-title">
+      <div className="flex items-center justify-between gap-2">
+        <h3 id="d4-in-use-title" className="flex items-center gap-2 text-body font-semibold text-ink">
+          사용 중인 강의실
+          <D4SampleBadge />
+        </h3>
+        <StatusBadge tone="neutral">{`${rooms.length}개`}</StatusBadge>
       </div>
-      <div className="mt-3 flex-1 overflow-y-auto">
-        {rooms.length === 0 ? (
-          <div className="rounded-lg bg-[var(--colors-surface-2)] p-3 text-[12px] font-[700] text-[var(--colors-ink-subtle)]">
-            현재 사용 중인 강의실이 없습니다.
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-2">
-            {rooms.map((room) => (
+      {rooms.length === 0 ? (
+        <p className="rounded-control bg-surface-2 p-3 text-caption text-ink-muted">현재 사용 중인 강의실이 없습니다.</p>
+      ) : (
+        <ul className="grid grid-cols-2 gap-2">
+          {rooms.map((room) => (
+            <li key={room.id}>
               <button
-                key={room.id}
                 type="button"
                 onClick={() => onSelectRoom(room)}
-                className="flex w-full min-w-0 flex-col items-start gap-1 rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-2)] px-3 py-2.5 text-left transition hover:bg-[var(--colors-surface-3)]"
+                className={`flex min-h-11 w-full min-w-0 flex-col items-start gap-1 rounded-control border border-hairline bg-surface-2 px-3 py-2 text-left hover:bg-surface-3 ${COARSE_TARGET} ${FOCUS_RING}`}
               >
-                <div className="flex items-center gap-1.5 text-[13px] font-[900] text-[var(--colors-ink)]">
-                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--colors-primary)]" />
-                  D4 {formatRoomNumber(room.roomNumber)}
-                </div>
-                <div className="w-full truncate text-[11px] font-[700] text-[var(--colors-ink-subtle)]">{room.specialLabel}</div>
-                <div className="text-[11px] font-[800] text-[var(--colors-ink-muted)]">
-                  {getWingById(room.wing).label} {room.floor === 0 ? "B1" : `${room.floor}층`}
-                </div>
+                <span className="text-body font-semibold text-ink">D4 {formatRoomNumber(room.roomNumber)}</span>
+                <span className="w-full truncate text-caption text-ink-muted">{room.specialLabel}</span>
+                <span className="text-caption text-ink-muted">{`${getWingById(room.wing).label} ${floorLabel(room.floor)}`}</span>
               </button>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 
-export function D4WingFloorSelect({ building, activeWingId, onSelectWing, onSelectFloor, onBack, inUseRooms = [], onSelectInUseRoom }) {
+// D4 날개·층 고르기(패인의 건물 단계). 장면이 맨 위, 그 아래 동 선택, beforeList(폰의 캠퍼스 시점 줄), 사용 중인 강의실 목록.
+// 제목과 돌아가기는 패인 머리(브레드크럼·상위로) 하나뿐이다.
+export function D4WingFloorSelect({ building, activeWingId, onSelectWing, onSelectFloor, inUseRooms = [], onSelectInUseRoom, beforeList = null }) {
   return (
-    <div className="flex h-full w-full items-center justify-center gap-6 overflow-x-auto px-4">
-      <div className="w-[340px] shrink-0" aria-hidden="true" />
-
-      <div className="flex shrink-0 flex-col items-center justify-center gap-6">
-        <div className="flex w-full max-w-[560px] items-center justify-between">
-          <button
-            type="button"
-            onClick={onBack}
-            className="flex items-center gap-1.5 rounded-md border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] px-3 py-2 text-[13px] font-[700] text-[var(--colors-ink-muted)] transition hover:text-[var(--colors-ink)] hover:bg-[var(--colors-surface-2)]"
-          >
-            <ChevronLeft size={16} />
-            캠퍼스 전체 보기
-          </button>
-          <div className="text-lg font-[900] text-[var(--colors-ink)]">{building.displayName}</div>
-          <div className="w-[132px]" />
-        </div>
-
-        <div className="flex rounded-lg border border-[var(--colors-hairline)] bg-[var(--colors-surface-1)] p-1">
-          {building.wings.map((wing) => (
-            <button
-              key={wing.id}
-              type="button"
-              onClick={() => onSelectWing(wing.id)}
-              className={`rounded-md px-5 py-2 text-[13px] font-[800] transition-colors ${
-                activeWingId === wing.id
-                  ? "bg-[var(--colors-primary)] text-white shadow-sm"
-                  : "text-[var(--colors-ink-subtle)] hover:text-[var(--colors-ink)]"
-              }`}
-            >
-              {wing.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="h-[64vh] w-[560px]">
+    <D4ScrollRoot>
+      <div className="flex w-full shrink-0 flex-col items-center gap-4">
+        <div className="h-[32vh] min-h-[240px] w-full sm:h-[40vh]" title={HINT} aria-description={HINT}>
           <D4WingFloorScene building={building} activeWingId={activeWingId} onSelectFloor={onSelectFloor} />
         </div>
-
-        <div className="text-center text-[12px] font-[600] text-[var(--colors-ink-subtle)]">
-          층을 클릭하면 해당 층의 강의실 목록으로 이동합니다.
+        <div className="w-full max-w-xs">
+          <Segmented
+            kind="radio"
+            label="동 선택"
+            options={building.wings.map((wing) => ({ value: wing.id, label: wing.label }))}
+            value={activeWingId}
+            onChange={onSelectWing}
+          />
         </div>
       </div>
-
+      {beforeList}
       <InUseRoomList rooms={inUseRooms} onSelectRoom={onSelectInUseRoom} />
-    </div>
+    </D4ScrollRoot>
   );
 }
