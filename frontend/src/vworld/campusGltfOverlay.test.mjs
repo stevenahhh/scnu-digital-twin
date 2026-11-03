@@ -379,3 +379,31 @@ test("keeps sampling while the viewer still holds the ellipsoid provider and anc
   assert.equal(model.anchorSource, "terrain-sample");
   assert.equal(model.modelMatrix.left.left.left.origin.height, 65.28 + CAMPUS_GLTF_OVERLAY_CONFIG.terrainOffsetMeters);
 });
+
+test("waits for the resolved D4 terrain height instead of burying the model at fallback altitude", { timeout: 1000 }, async () => {
+  const Cesium = fakeCesium();
+  Cesium.sampleTerrain = async (_terrainProvider, _level, positions) => positions.map(
+    (position) => ({ ...position, height: 85.59891678969467 }),
+  );
+  const viewer = {
+    terrainProvider: { id: "vworld-terrain" },
+    scene: {
+      globe: { getHeight: () => 40 },
+      primitives: {
+        length: 0,
+        get: () => null,
+        add: (model) => model,
+        remove: () => false,
+      },
+    },
+  };
+
+  let anchored;
+  const ready = new Promise((resolve) => { anchored = resolve; });
+  const model = await createCampusGltfOverlay({ _wsViewer: viewer }, Cesium, {
+    onStatus: ({ state }) => { if (state === "anchored") anchored(); },
+  });
+  await ready;
+
+  assert.equal(model.modelMatrix.left.left.left.origin.height, 86.09891678969467);
+});

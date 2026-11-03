@@ -109,6 +109,80 @@ test("switches the car model when proximity risk changes", () => {
   assert.equal(trafficModelUri({ type: "person", risk_level: "danger" }), "/traffic/person.glb");
 });
 
+test("clamps traffic models to the terrain instead of freezing a fallback altitude", () => {
+  class FakeWebSocket {
+    static latest = null;
+
+    constructor() {
+      FakeWebSocket.latest = this;
+    }
+
+    close() {}
+  }
+
+  const previousWebSocket = globalThis.WebSocket;
+  globalThis.WebSocket = FakeWebSocket;
+  try {
+    const added = [];
+    const viewer = {
+      entities: {
+        add(value) {
+          added.push(value);
+        },
+        getById() {
+          return null;
+        },
+        removeById() {},
+      },
+      scene: {
+        globe: {
+          getHeight() {
+            return undefined;
+          },
+        },
+      },
+    };
+    const Cesium = {
+      Cartographic: {
+        fromDegrees(longitude, latitude) {
+          return { longitude, latitude };
+        },
+      },
+      Cartesian3: {
+        fromDegrees(longitude, latitude, height) {
+          return { longitude, latitude, height };
+        },
+      },
+      HeadingPitchRoll: class HeadingPitchRoll {},
+      HeightReference: { CLAMP_TO_GROUND: "clamp-to-ground" },
+      Math: { toRadians: (value) => value },
+      Transforms: {
+        headingPitchRollQuaternion() {
+          return "orientation";
+        },
+      },
+    };
+
+    const simulation = createVWorldTrafficSimulation({
+      map: { _wsViewer: viewer },
+      Cesium,
+      websocketUrl: "ws://test.invalid/ws/simulation",
+    });
+    FakeWebSocket.latest.onmessage({
+      data: JSON.stringify({
+        type: "simulation_update",
+        entities: [{ id: "car_001", type: "car", x: 0, z: 0, heading: 0 }],
+      }),
+    });
+
+    assert.equal(added[0].position.height, 0.08);
+    assert.equal(added[0].model.heightReference, "clamp-to-ground");
+    simulation.dispose();
+  } finally {
+    globalThis.WebSocket = previousWebSocket;
+  }
+});
+
 test("reconnects with bounded exponential backoff and reports status", (context) => {
   const originalWebSocket = globalThis.WebSocket;
   const originalSetTimeout = globalThis.setTimeout;

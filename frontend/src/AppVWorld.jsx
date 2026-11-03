@@ -41,6 +41,7 @@ import { urlSelectionTarget, useDashboardUrlState } from "./hooks/useDashboardUr
 import { CompareButton, ComparisonPane } from "./panel/ComparisonPane";
 import { useComparisonSet } from "./state/useComparisonSet.mjs";
 import { summarizeWeather } from "./panel/weatherSummary.mjs";
+import { useDashboardDemo } from "./vworld/dashboardDemo.mjs";
 
 export default function App() {
   useSimulationSocket();
@@ -88,6 +89,17 @@ export default function App() {
       loadPopup(target.elementId);
     } else clearPopup();
   }, [clearPopup, loadPopup, revealOnPhone, selectBuilding]);
+  useDashboardDemo({
+    selectBuilding: handleVWorldSelection,
+    setActiveTab,
+    setPanelOpen: panelState.setProgrammaticOpen,
+    setMode: clock.setMode,
+    setSimTemp: clock.setSimTemp,
+    setSunMonth: clock.setSunMonth,
+    setSunDay: clock.setSunDay,
+    setSunHour: clock.setSunHour,
+    setSunMinute: clock.setSunMinute,
+  });
   // 공유 링크: 건물·장면 시각·패널·탭·카메라 시점(아래 cameraPose).
   // 렌더링 품질: Legacy와 같은 설정(같은 저장 값)을 Cesium의 해상도·보정·그림자로 옮긴다. 고른 값이 없으면 높음.
   const rendering = useQualityPreset();
@@ -145,7 +157,7 @@ export default function App() {
 
   // 루트는 overflow: clip으로 자른다. hidden은 스크롤 컨테이너라서 Tab 포커스가 화면 밖 요소로 가면 대시보드가 밀려 남는다.
   return (
-    <div className={`dashboard-root relative h-dvh w-screen overflow-clip bg-canvas text-ink ${presentation.cursorHidden ? "cursor-none" : ""}`}>
+    <div className={`dashboard-root relative h-dvh w-screen overflow-clip bg-canvas text-ink ${activeTab === "energy" ? "dashboard-root--building-focus" : ""} ${presentation.cursorHidden ? "cursor-none" : ""}`}>
       <div className="absolute inset-0" style={{ background: sceneBackgroundFor(clock.sunState.visible) }} />
 
       <div

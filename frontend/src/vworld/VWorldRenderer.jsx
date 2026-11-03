@@ -3,7 +3,7 @@ import { Button } from "../ui/Button.jsx";
 import { CAMERA_PRESETS, D4_CAMERA_OFFSET, OVERVIEW_PRESET_ID } from "../camera/cameraPresets.mjs";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { MapPin, X } from "lucide-react";
-import { createBuildingCameraController } from "./cameraFocus.mjs";
+import { createBuildingCameraController, focusMapAt } from "./cameraFocus.mjs";
 import { D4_COORDINATE_HIT_TOLERANCE_DEGREES, isCoordinateMarkerHit } from "./coordinateMarkerHit.mjs";
 import { D4_COORDINATE_MARKER } from "./d4CoordinateMarker.mjs";
 import { createD4VWorldModel, removeD4VWorldModel } from "./d4VWorldModel.mjs";
@@ -109,6 +109,7 @@ export default function VWorldRenderer({
   onInstallationPlansChange,
   onRepresentativeInstallationPlanChange,
   representativeRefreshKey,
+  presentationMode = false,
   onD4SectionChange,
   d4PaneHost = null,
   d4CloseKey = 0,
@@ -393,6 +394,14 @@ export default function VWorldRenderer({
           viewport: document.getElementById(VWORLD_MAP_ID),
           availableArea: document.getElementById(VWORLD_AVAILABLE_AREA_ID),
         });
+        if (presentationMode) {
+          focusMapAt(map, vw, {
+            longitude: D4_COORDINATE_MARKER.longitude,
+            latitude: D4_COORDINATE_MARKER.latitude,
+            altitude: 140,
+            heading: -15,
+          });
+        }
         applyVWorldSunSimulation(simulationDateRef.current);
 
         const poiLayer = map.getLayerElement("POI_GROUP");
@@ -436,7 +445,7 @@ export default function VWorldRenderer({
         applyCampusZoomLimits(labelViewerScene);
         if (labelViewerScene && window.Cesium) setLabelScene({ Cesium: window.Cesium, scene: labelViewerScene });
         trafficSimulationRef.current?.dispose();
-        trafficSimulationRef.current = createVWorldTrafficSimulation({
+        trafficSimulationRef.current = presentationMode ? null : createVWorldTrafficSimulation({
           map,
           // 끊긴 뒤 재시도하는 동안에는 "연결 끊김"을 유지해 배지가 깜빡이지 않게 한다.
           onStatus: (status) =>
@@ -557,7 +566,7 @@ export default function VWorldRenderer({
       cameraControllerRef.current?.dispose();
       cameraControllerRef.current = null;
     };
-  }, [handleOverlayDataChange, loadAttempt]);
+  }, [handleOverlayDataChange, loadAttempt, presentationMode]);
 
   // 지도(캔버스)에 포커스가 있을 때 방향키로 땅 위를 옮긴다(Legacy 장면과 같은 키보드 조작). 한 번에 화면 가운데까지 거리의 10%.
   const handleMapKey = (event) => {
@@ -580,6 +589,7 @@ export default function VWorldRenderer({
             <RepresentativePlanOverlayController
               buildingIds={CAMPUS_REPRESENTATIVE_BUILDING_IDS}
               refreshKey={representativeRefreshKey}
+              renderPanel={!presentationMode}
               onOverlayDataChange={handleOverlayDataChange}
               onBuildingSelect={(buildingId) => onSelectionRef.current({
                 elementId: `BLD_${buildingId}`,
@@ -611,9 +621,9 @@ export default function VWorldRenderer({
               data-qa="vworld-left-stack"
               data-label-chrome-layer=""
               className="pointer-events-none absolute left-4 z-20 flex max-w-[calc(100%-2rem)] flex-col items-start gap-3"
-              style={{ top: "var(--vworld-hud-bottom, 4.5rem)" }}
+              style={{ top: presentationMode ? "12rem" : "var(--vworld-hud-bottom, 4.5rem)" }}
             >
-              {labelEntries && <SearchField registry={labelEntries} onPick={handleSearchPick} />}
+              {!presentationMode && labelEntries && <SearchField registry={labelEntries} onPick={handleSearchPick} />}
               {isLoading && !hasLoadError && (
                 <Spinner
                   delayMs={0}
@@ -638,7 +648,7 @@ export default function VWorldRenderer({
               {!phone && mapStatusCards}
             </div>
           )}
-          {!isD4SectionOpen && (
+          {!presentationMode && !isD4SectionOpen && (
             <div
               ref={bottomStackRef}
               data-qa="vworld-bottom-stack"
@@ -708,7 +718,7 @@ export default function VWorldRenderer({
           getModelMatrix={getLabelModelMatrix}
           selectedId={selectedLabelId}
           hoveredId={hoveredLabelId}
-          hidden={isD4SectionOpen}
+          hidden={isD4SectionOpen || presentationMode}
           presentation={presentation}
           presetFromGround={labelPresetFromGround}
           occluderRef={labelOccluderRef}

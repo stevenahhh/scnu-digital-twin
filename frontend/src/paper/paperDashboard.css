@@ -1,0 +1,34 @@
+/* Paper-figure dashboard tokens (shadcn/ui neutral, light).
+   Scoped to .pd-root so the existing dashboards keep their own theme. */
+
+.pd-root {
+  --pd-background: hsl(240 5% 96%);
+  --pd-card: hsl(0 0% 100%);
+  --pd-foreground: hsl(240 10% 3.9%);
+  --pd-muted: hsl(240 5% 96%);
+  --pd-muted-foreground: hsl(240 4% 46%);
+  --pd-border: hsl(240 6% 90%);
+  --pd-border-strong: hsl(240 6% 84%);
+  --pd-ring: hsl(240 5% 65%);
+
+  --pd-demand: hsl(221 83% 53%);
+  --pd-demand-soft: hsl(221 83% 53% / 0.14);
+  --pd-solar: hsl(38 92% 50%);
+  --pd-solar-soft: hsl(38 92% 50% / 0.18);
+  --pd-grid: hsl(240 4% 64%);
+  --pd-success: hsl(142 66% 36%);
+  --pd-success-soft: hsl(142 66% 36% / 0.12);
+
+  background: var(--pd-background);
+  color: var(--pd-foreground);
+  min-height: 100%;
+  overflow: auto;
+  -webkit-user-select: text;
+  user-select: text;
+  font-feature-settings: "tnum" 0;
+}
+
+.pd-num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}

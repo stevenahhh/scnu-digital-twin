@@ -172,7 +172,7 @@ function Dashboard() {
 
   // 루트는 overflow: clip으로 자른다. hidden은 스크롤 컨테이너라서 Tab 포커스가 화면 밖 요소로 가면 대시보드가 밀려 남는다.
   return (
-    <div className={cx(ROOT_CLASS, presentation.cursorHidden && "cursor-none")}>
+    <div className={cx(ROOT_CLASS, activeTab === "energy" && "dashboard-root--building-focus", presentation.cursorHidden && "cursor-none")}>
       <div className="absolute inset-0" style={{ background: getClearColor(clock.sunState.altitude) }} />
       {/* HUD는 D4 패인이 열려도 남는다: 시각·시점 메뉴가 패인 왼쪽 장면 위에 그대로 있다. */}
       <CampusHud

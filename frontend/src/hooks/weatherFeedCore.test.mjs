@@ -41,6 +41,22 @@ test("200 response with stale weather is stale", async () => {
   assert.deepEqual(result.data, data);
 });
 
+test("current-weather fallback preserves cached freshness and missing air quality", async () => {
+  const weather = { source: "cache", stale: true, age_seconds: 1200 };
+  const result = await fetchEnvironment(async (url, options) => {
+    assert.ok(options.signal instanceof AbortSignal);
+    return url.endsWith("/environment/full")
+      ? response(503, C1_UNAVAILABLE)
+      : response(200, { base_weather: { temperature: 23 }, freshness: { weather }, sample_data: true });
+  }, "http://api.test");
+  assert.equal(result.state, "stale");
+  assert.equal(result.data.base_weather.temperature, 23);
+  assert.deepEqual(result.freshness.weather, weather);
+  assert.deepEqual(result.freshness.air_quality, { stale: true, error: "unavailable" });
+  assert.equal(result.data.sample_data, true);
+  assert.deepEqual(result.data.weather_timeline, []);
+});
+
 test("C1 upstream unavailable returns its typed Korean message", async () => {
   const result = await fetchEnvironment(async () => response(503, C1_UNAVAILABLE), "http://api.test");
   assert.equal(result.state, "error");

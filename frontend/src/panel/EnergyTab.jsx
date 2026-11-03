@@ -5,7 +5,7 @@ import { BuildingAnalysis } from "../features/energy/analysis";
 import { CampusComparison } from "../features/energy/campus/CampusComparisonPanel";
 import { EnergyDashboard } from "../features/energy/dashboard/EnergyDashboard";
 
-// 에너지 탭: 탭 제목 하나(h2) 아래에 건물 분석, 캠퍼스 비교, 건물 시뮬레이션. 설치 계획을 못 받으면 맨 위에 알림 하나와 다시 시도.
+// 에너지 탭: 건물 전력 현황, 건물 분석, 캠퍼스 비교 순서. 설치 계획을 못 받으면 맨 위에 알림 하나와 다시 시도.
 // Legacy는 3D 지도에 없는 캠퍼스 설치 현황·대표 계획 목록을 campusOverview로 함께 넣는다.
 export function EnergyTab({ buildingId, plans, feedStatus, onRetry, campusOverview, onOpenRecommendation }) {
   return (
@@ -14,6 +14,9 @@ export function EnergyTab({ buildingId, plans, feedStatus, onRetry, campusOvervi
       <SectionHeader level={3} title="에너지" />
       {isFeedDown(feedStatus) && <FeedAlert feed="energy" status={feedStatus} onRetry={onRetry} />}
       {campusOverview}
+      <section role="region" aria-label={`${buildingId} 건물 전력 현황`}>
+        <EnergyDashboard key={buildingId} buildingId={buildingId} />
+      </section>
       <BuildingAnalysis
         key={`${buildingId}:${plans.representativePlanId ?? "none"}`}
         buildingId={buildingId}
@@ -22,7 +25,6 @@ export function EnergyTab({ buildingId, plans, feedStatus, onRetry, campusOvervi
         representativePlanId={plans.representativePlanId}
       />
       <CampusComparison onOpenRecommendation={onOpenRecommendation} />
-      <EnergyDashboard key={buildingId} buildingId={buildingId} />
     </>
   );
 }

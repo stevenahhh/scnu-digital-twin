@@ -258,8 +258,8 @@ def _get_air_quality() -> tuple[Dict[str, Any], Dict[str, Any]]:
             "airkorea", lambda: fetch_air_quality(), config.WEATHER_CACHE_TTL_AIRKOREA_S
         )
     except UpstreamError as exc:
-        return {field: None for field in _AIR_QUALITY_FIELDS}, {"stale": True, "error": exc.kind}
-    air_quality = result.value
+        return {**{field: None for field in _AIR_QUALITY_FIELDS}, "air_quality_source": "unavailable"}, {"stale": True, "error": exc.kind}
+    air_quality = {**result.value, "air_quality_source": "airkorea"}
     return air_quality, _freshness_entry(result, air_quality.get("observed_at"))
 
 

@@ -177,6 +177,13 @@ Shared primitives live in `frontend/src/ui/` and both entries use them (Legacy `
 - **Interaction**: array drag and field edits commit only after geometry validation; the latest valid edit has one-step undo. Colour transitions use `--motion-settle` and no decorative motion.
 - **Accessibility**: mode tabs, array list, numeric fields, orientation controls, undo/delete/reload/save are keyboard reachable; errors use an assertive alert and do not rely on red alone.
 
+### Solar presentation page
+- **Structure**: a full-height split shell with the VWorld campus map as the primary region and one independently scrolling energy evidence rail. Solar controls remain inside the spatial region and never compete with the evidence rail for scroll ownership.
+- **Responsive scroll ownership**: at `xl` and above the evidence rail owns vertical scroll inside a fixed `100dvh` shell; below `xl` the map and evidence rail form one document flow so touch users scroll the page once without nested scrollbars.
+- **States**: daylight, night, API loading, API error, API empty, and calculated energy results.
+- **Interaction**: month, day, hour, and minute controls update the sun position; month and day also synchronize the energy simulation date.
+- **Accessibility**: every range control exposes a Korean accessible name and visible value; headings preserve natural Korean phrase wrapping at desktop, tablet, and mobile widths.
+
 ## 6. Motion & Interaction
 
 | Token | Value | Usage |
@@ -217,3 +224,9 @@ Transitional radius aliases: `--rounded-xs` (4px), `--rounded-md` (8px) and `--r
 - Selection: values, ids and error text are selectable. Only the map layer and the label layer disable text selection.
 - Estimates: every estimated value carries `추정` and a source. Measurements look different.
 - Accepted debt: both root dashboards remain large components until the W2 decomposition. VWorld map navigation depends on the SDK's own accessibility surface.
+
+### PR #125 integration
+
+The energy tab presents the selected building energy summary before analysis and campus comparison. Desktop energy panels may grow to 680px; the shared phone sheet and tablet drawer keep their existing layout. Building selection retains the current tab and inspector behavior.
+
+Solar presentation uses the explicit `presentationMode` renderer prop to hide dashboard controls while keeping representative solar arrays. The separate `cinematic=1` capture and `dashboardDemo=1` modes remain opt-in. Terrain anchoring uses the current fixed-level provider sample and bounded fallback rather than the older most-detailed startup sample. Weather retains cache freshness and upstream error contracts.

@@ -1,3 +1,5 @@
+import { requestEnvironment } from "../utils/weatherApi.mjs";
+
 const NETWORK_MESSAGE = "기상 서버에 연결할 수 없습니다";
 const TIMEOUT_MESSAGE = "기상 서버 응답이 지연되고 있습니다";
 const UPSTREAM_MESSAGE = "기상청 응답 지연으로 최신 기상 데이터를 가져오지 못했습니다";
@@ -7,7 +9,7 @@ export async function fetchEnvironment(fetchImpl, baseUrl, { timeoutMs = 20000 }
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const response = await fetchImpl(`${baseUrl}/environment/full`, { signal: controller.signal });
+    const response = await requestEnvironment(baseUrl, fetchImpl, { signal: controller.signal });
     const body = await response.json();
 
     if (response.ok) {

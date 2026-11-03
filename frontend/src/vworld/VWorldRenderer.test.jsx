@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   createdIds: [],
   receivedBuildingIds: [],
+  receivedRenderPanel: [],
   vw: null,
   loaderError: null,
   trafficOnStatus: null,
@@ -57,9 +58,10 @@ vi.mock("./roadZones.mjs", async (importOriginal) => ({
   clearRoadZoneOverlays: vi.fn(),
 }));
 vi.mock("./RepresentativePlanOverlayController", () => ({
-  RepresentativePlanOverlayController: ({ buildingIds, onOverlayDataChange, className }) => {
+  RepresentativePlanOverlayController: ({ buildingIds, onOverlayDataChange, className, renderPanel }) => {
     useEffect(() => {
       mocks.receivedBuildingIds.push(...buildingIds);
+      mocks.receivedRenderPanel.push(renderPanel);
       onOverlayDataChange([{
         buildingId: "D4",
         installationPlanId: "strict-plan",
@@ -78,7 +80,7 @@ vi.mock("./RepresentativePlanOverlayController", () => ({
       }]);
       return () => onOverlayDataChange([]);
     }, [onOverlayDataChange]);
-    return <aside aria-label="대표 설치 계획 지도 레이어" className={className} />;
+    return renderPanel ? <aside aria-label="대표 설치 계획 지도 레이어" className={className} /> : null;
   },
 }));
 
@@ -131,6 +133,7 @@ afterEach(() => {
   delete window.__scnuVWorldMapInstance;
   mocks.createdIds.length = 0;
   mocks.receivedBuildingIds.length = 0;
+  mocks.receivedRenderPanel.length = 0;
   mocks.loaderError = null;
   mocks.trafficOnStatus = null;
 });
@@ -154,6 +157,20 @@ const paneHost = () => {
 afterEach(() => paneHosts.splice(0).forEach((host) => host.remove()));
 
 describe("VWorldRenderer retained map integration", () => {
+  it("keeps solar arrays but hides dashboard controls and traffic in solar presentation", async () => {
+    const { createVWorldTrafficSimulation } = await import("./trafficSimulationOverlay.mjs");
+    createVWorldTrafficSimulation.mockClear();
+    mocks.vw = createVw();
+    window.__scnuVWorldMapInstance = retainedMap();
+    render(<VWorldRenderer presentationMode onSelection={vi.fn()} simulationDate={new Date("2026-05-18T12:00:00+09:00")} />);
+
+    await waitFor(() => expect(mocks.createdIds).toContain("SCNU_REPRESENTATIVE_PANEL_strict-plan_array-1"));
+    expect(screen.queryByLabelText("대표 설치 계획 지도 레이어")).toBeNull();
+    expect(screen.queryByRole("button", { name: "D4 공과대학 3호관 상세 보기" })).toBeNull();
+    expect(screen.queryByTestId("campus-status")).toBeNull();
+    expect(createVWorldTrafficSimulation).not.toHaveBeenCalled();
+  });
+
   it("rebinds a reused global map under StrictMode and renders the D4 representative polygon", async () => {
     mocks.vw = createVw();
     window.__scnuVWorldMapInstance = retainedMap();
@@ -162,6 +179,7 @@ describe("VWorldRenderer retained map integration", () => {
     await waitFor(() => expect(mocks.createdIds).toContain("SCNU_REPRESENTATIVE_PANEL_strict-plan_array-1"));
     expect(mocks.vw.Map).not.toHaveBeenCalled();
     expect(new Set(mocks.receivedBuildingIds)).toEqual(new Set(["C1", "D1", "D2", "D3", "D4"]));
+    expect(new Set(mocks.receivedRenderPanel)).toEqual(new Set([true]));
   });
 
   it("passes Cesium before the status options when creating the campus GLB overlay", async () => {

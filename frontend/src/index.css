@@ -5,6 +5,12 @@
 /* 이전 클래스는 Tailwind 유틸리티 뒤에 와야 예전과 같은 우선순위로 겹친다. */
 @import "./ui/legacy-classes.css";
 
+@media (min-width: 1024px) {
+  .dashboard-root--building-focus {
+    --dashboard-panel-width: min(680px, max(440px, 58vw));
+  }
+}
+
 html,
 body,
 #root {

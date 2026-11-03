@@ -24,8 +24,12 @@ vi.mock("./vworld/VWorldRenderer", () => ({
   </div>,
 }));
 vi.mock("./features/energy/analysis", () => ({ BuildingAnalysis: ({ representativePlanId }) => <div data-testid="app-representative">{representativePlanId ?? "none"}</div> }));
-vi.mock("./features/energy/dashboard/EnergyDashboard", () => ({ EnergyDashboard: () => null }));
-vi.mock("./features/energy/campus/CampusComparisonPanel", () => ({ CampusComparison: () => null }));
+vi.mock("./features/energy/dashboard/EnergyDashboard", () => ({
+  EnergyDashboard: ({ buildingId }) => <div data-testid="building-energy-dashboard">{buildingId} 전력 현황</div>,
+}));
+vi.mock("./features/energy/campus/CampusComparisonPanel", () => ({
+  CampusComparison: () => <div data-testid="campus-comparison">캠퍼스 비교</div>,
+}));
 
 import App from "./AppVWorld.jsx";
 
@@ -47,6 +51,32 @@ afterEach(() => {
 const phoneMatchMedia = vi.fn((query) => ({ matches: query === "(max-width: 639px)" || query === "(max-width: 1023px)", addEventListener() {}, removeEventListener() {} }));
 
 describe("AppVWorld installation selection lifecycle", () => {
+  it("shows selected building energy before analysis when the energy tab opens", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "패널 닫기" }));
+    expect(screen.getByRole("button", { name: "패널 열기" })).toBeTruthy();
+
+    await user.click(screen.getByRole("button", { name: "D4 선택" }));
+    await user.click(screen.getByRole("button", { name: "패널 열기" }));
+    expect(screen.getByRole("tab", { name: "기본 현황" }).getAttribute("aria-selected")).toBe("true");
+    await user.click(screen.getByRole("tab", { name: "에너지" }));
+
+    expect(screen.getByRole("button", { name: "패널 닫기" })).toBeTruthy();
+    expect(document.querySelector(".dashboard-root")?.classList.contains("dashboard-root--building-focus")).toBe(true);
+    const region = screen.getByRole("region", { name: "D4 건물 전력 현황" });
+    const dashboard = screen.getByTestId("building-energy-dashboard");
+    const analysis = screen.getByTestId("app-representative");
+    const comparison = screen.getByTestId("campus-comparison");
+    expect(region.contains(dashboard)).toBe(true);
+    expect(region.compareDocumentPosition(analysis) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(analysis.compareDocumentPosition(comparison) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    await user.click(screen.getByRole("button", { name: "닫기", exact: true }));
+    expect(document.querySelector(".dashboard-root")?.classList.contains("dashboard-root--building-focus")).toBe(true);
+  });
+
   it("does not let an older same-building representative load overwrite a newer selection", async () => {
     const user = userEvent.setup();
     render(<App />);
