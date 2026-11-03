@@ -2,7 +2,7 @@ import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 
-// @vitest-environment jsdom
+// @vitest-environment happy-dom
 
 const panelState = vi.hoisted(() => ({ current: null }));
 
