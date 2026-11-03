@@ -1,7 +1,7 @@
 {
   "frameVersion": 2,
   "generator": "scripts/campus-model/fit/objectAnchorsSeed.mjs",
-  "note": "Proposal only, not connected to the model generator. Visual values are estimated. Existing visible pole-base reviews retain T1; all other unverified positions remain T4. Site-detail is owned by todo 20. Source geometry is checked before applying anchors.",
+  "note": "Production parcel anchors. Visual values are estimated. Existing visible pole-base reviews retain T1 even if a single VR bearing conflicts; both numbers are recorded, never fitted by moving the base. Site-detail is owned by todo 20. Source geometry is checked before applying anchors.",
   "records": [
     {
       "id": "OB0000",
@@ -22,8 +22,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "traffic_signal_pole",
+      "sourceInput": "94bf58759389fe8ba0bb0f6e3ffbf668db941cce2367ef447643f693f392d11a",
       "sourceGeometry": {
         "point": [
           488.4495087179627,
@@ -57,8 +59,10 @@
       "estimated": true,
       "reason": "visible_ground_base",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "traffic_signal_pole",
+      "sourceInput": "2b872a8becd81e1c3e9c962c7f1bc368c1372047b3765d2614edf3f36b08e7b5",
       "sourceGeometry": {
         "point": [
           470.3917340405788,
@@ -92,8 +96,10 @@
       "estimated": true,
       "reason": "visible_ground_base",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "traffic_signal_pole",
+      "sourceInput": "8ba7199c9fbb4cb26ea89785e0221a6208a8e3b1bd912603d71852e77a732f61",
       "sourceGeometry": {
         "point": [
           474.6424003122673,
@@ -126,8 +132,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "traffic_signal_pole",
+      "sourceInput": "1d8db2b9362baee82a61435046ee0f716ba794a2c95d7b8853a26b0adc4ebaa9",
       "sourceGeometry": {
         "point": [
           484.3769185403983,
@@ -160,8 +168,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
+      "sourceInput": "f9b5dc85912bf922e6674ad25946d777ff35ec28053a2a6a8d8dca2bd881e22d",
       "sourceGeometry": {
         "point": [
           484.61257500267203,
@@ -194,8 +204,10 @@
       "estimated": true,
       "reason": "visible_ground_base",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "sign_pole",
+      "sourceInput": "37d440f26a289f29913e86ef82292fee19fb9db9ae3c67428960b08fc8d8bf19",
       "sourceGeometry": {
         "point": [
           473.9885516341298,
@@ -228,8 +240,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "sign_pole",
+      "sourceInput": "5374a08eec782664d5bc92bb0bdac2f95f4961ab0127af651e800c4aba3ccbda",
       "sourceGeometry": {
         "point": [
           480.6123720578971,
@@ -262,8 +276,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "sign_pole",
+      "sourceInput": "3cbee7a09cb51c883ee0e2757b2a9480a96194634032d03da1ae3b936b959a4a",
       "sourceGeometry": {
         "point": [
           475.6626219999312,
@@ -295,8 +311,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "bus_stop_shelter",
+      "sourceInput": "3dd4d73f4c7f45b75946fbe26f75ecd6b451dd875f479bfadb3dd977d25ba203",
       "sourceGeometry": {
         "ring": [
           [
@@ -428,8 +446,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "stepped_arc",
+      "sourceInput": "a97c1bdea841051dd72390784e8c619f026278cb1c53d43501935c5dfec7ab82",
       "sourceGeometry": {
         "ring": [
           [
@@ -657,8 +677,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
+      "sourceInput": "fabe8acf824219b936a2a4cc9c544bf2fb46fffd89ab390c7e59dfdd84b65659",
       "sourceGeometry": {
         "ring": [
           [
@@ -943,8 +965,10 @@
       "estimated": true,
       "reason": "visible_ground_base",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
+      "sourceInput": "98a6f381b82e4cdf4828758a1b7ba4aabc395de85880afad13d7a694bacd9957",
       "sourceGeometry": {
         "point": [
           290.3879448036562,
@@ -977,8 +1001,10 @@
       "estimated": true,
       "reason": "visible_ground_base",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
+      "sourceInput": "d15e76e1f3150872575e58ebcb2c9f0748bec4241111057bd5c392d4d7553f78",
       "sourceGeometry": {
         "point": [
           290.5722054232062,
@@ -1011,8 +1037,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
+      "sourceInput": "2c7c2e05c57acf652354440bec47d871e8e2cb5288b572da6621bd5ff1932c9c",
       "sourceGeometry": {
         "point": [
           278.57110934081976,
@@ -1044,8 +1072,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
+      "sourceInput": "ff3c479a8c290422213ee813d805165ea8f57c756ac4dc60d52a061092ed4840",
       "sourceGeometry": {
         "ring": [
           [
@@ -1105,8 +1135,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
+      "sourceInput": "11ca84bed2d9b16900663de5193320f03c169373e11586e3524a8def6eb68788",
       "sourceGeometry": {
         "ring": [
           [
@@ -1166,8 +1198,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
+      "sourceInput": "23557604979d0f08f4a7899cca3790df5c97058b6a79c6f0f969cc676ead72a8",
       "sourceGeometry": {
         "ring": [
           [
@@ -1227,8 +1261,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
+      "sourceInput": "d9409989ae10a2da9b35a0ccbce3536b13fab69a431acd77f0cd08803c9898ab",
       "sourceGeometry": {
         "ring": [
           [
@@ -1288,8 +1324,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
+      "sourceInput": "7f0efc4f14c38beea7d846fcd5cc43961cef1ac258d8169ed7fe1ea0c84fdf06",
       "sourceGeometry": {
         "ring": [
           [
@@ -1349,8 +1387,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
+      "sourceInput": "24a9adb7fba8b04aa7f61f473577a842d16c7c4ee8dd6ee2c6312be402fb0b91",
       "sourceGeometry": {
         "ring": [
           [
@@ -1410,8 +1450,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
+      "sourceInput": "ed61d321e76fcc3310562f1b8dcc3bf4f07ee8577d1983e9e2b8006401dfd74e",
       "sourceGeometry": {
         "ring": [
           [
@@ -1471,8 +1513,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
+      "sourceInput": "4ed1e088c120bba5aeb1100349702c6125a3799ead5084f894f49773c3476cbf",
       "sourceGeometry": {
         "ring": [
           [
@@ -1532,8 +1576,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
+      "sourceInput": "7be05f69eede9779baa957271f878360115bd674ebb040a54efa0d88071493a2",
       "sourceGeometry": {
         "ring": [
           [
@@ -1593,8 +1639,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "low_wall",
+      "sourceInput": "0f622b12c7f6d58921774367823aed82410b0e0d8e876e2da62f026d9cb8283c",
       "sourceGeometry": {
         "line": [
           [
@@ -1670,8 +1718,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "low_wall",
+      "sourceInput": "4816d4c248a30b4d99cd1487c162879131663f9df29f9e82358ae5e906f37523",
       "sourceGeometry": {
         "line": [
           [
@@ -1716,6 +1766,7 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "rows": {
         "count": 12,
@@ -1723,6 +1774,7 @@
         "ref": "VR count, +-1"
       },
       "kind": "stadium_seating",
+      "sourceInput": "2cb65cbd77b5c443bff4e4dad435a1d784c19a627cbc77f8eaa6cbdb71987636",
       "sourceGeometry": {
         "ring": [
           [
@@ -2095,8 +2147,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "reviewing_stand",
+      "sourceInput": "645b3262ec8c9231d06a132ae7163214f853a69950a6d3799ce05d778851330a",
       "sourceGeometry": {
         "ring": [
           [
@@ -2253,6 +2307,7 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "rows": {
         "count": 12,
@@ -2260,6 +2315,7 @@
         "ref": "VR count, +-1"
       },
       "kind": "stadium_seating",
+      "sourceInput": "284c326d85b73e4fb23ff8619f7f8195085b8941668b773c61a5385104272ae4",
       "sourceGeometry": {
         "ring": [
           [
@@ -2536,8 +2592,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "fence",
+      "sourceInput": "a00214963f1f89015d4fc133d8237a234c864c3381278b52354a4bb8f3d2bdf0",
       "sourceGeometry": {
         "line": [
           [
@@ -2621,8 +2679,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "low_wall",
+      "sourceInput": "d99e3c6ccd3483e38de0f80148f59a5635b2002b9f047fdfdbad648ff5dd2c1b",
       "sourceGeometry": {
         "line": [
           [
@@ -2668,8 +2728,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "ac9764fcbe921a1ac498d5d6ae774983bb7a90bacb75e806eaabc570978e8c17",
       "sourceGeometry": {
         "point": [
           178.97643833295996,
@@ -2703,8 +2765,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "e523aca79cbacfded44a8525baec14561079061375abbc113783f182ad6c0078",
       "sourceGeometry": {
         "point": [
           209.06412393110818,
@@ -2736,8 +2800,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "fence",
+      "sourceInput": "396dc71a221dd04e52f4beaa8144622bbeed2ab327d0ea6b47a37e5b10b9a059",
       "sourceGeometry": {
         "line": [
           [
@@ -2782,8 +2848,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "fence",
+      "sourceInput": "35b1fdbd2ab5bb436ee5241ef4c0c10e8fb598d361fc152d6b997272ec23e835",
       "sourceGeometry": {
         "line": [
           [
@@ -2829,8 +2897,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "3391442571bfc4a184f91c53a525e52b33dfb304fb03f8297293c42e0f75fdb6",
       "sourceGeometry": {
         "point": [
           228.2418924526936,
@@ -2864,8 +2934,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "654131b38ac49aea7a56cd3d3ad431603c73a8324bb8714d4138d70f2fed6fc9",
       "sourceGeometry": {
         "point": [
           246.16508269867268,
@@ -2898,8 +2970,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "fence",
+      "sourceInput": "ff7032da11daf052ebc8dc1b82a01e6576dff709fe1a65bdb614c95bf55fc255",
       "sourceGeometry": {
         "line": [
           [
@@ -2969,8 +3043,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "a16c8934bd03fa226c0824d64a0a74fc455ea03c5932abc5fee1f808ecce12e6",
       "sourceGeometry": {
         "point": [
           263.89309900845205,
@@ -3003,8 +3079,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "fence",
+      "sourceInput": "e5fd503ccfb0d65ebb8f8f69b3c9587ce09b27b17567bf2c281d672dbc5f1509",
       "sourceGeometry": {
         "line": [
           [
@@ -3048,8 +3126,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "pergola",
+      "sourceInput": "3a10babb51d0c96bdb43246e8138214761445523f7c2b033d1a47373cfe303f3",
       "sourceGeometry": {
         "ring": [
           [
@@ -3183,8 +3263,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "821b0c8c2dcbf5a08f6d888b1ca8bd427ff3be0fd4d78e0f0781d3bdc38ce839",
       "sourceGeometry": {
         "point": [
           398.3638060322169,
@@ -3217,8 +3299,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
+      "sourceInput": "0d53bdacd04b445ebe05a790088042db77b6c8d2c38dcf3891a9eba2ea74842b",
       "sourceGeometry": {
         "point": [
           386.4248609224838,
@@ -3251,8 +3335,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "fence",
+      "sourceInput": "b0a60820ceb8b1310ada86a1c476c243980f1e09ecf4ecf1abf0a22f7d336c76",
       "sourceGeometry": {
         "line": [
           [
@@ -3314,8 +3400,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "traffic_signal_pole",
+      "sourceInput": "1eb67f34b0c7b5ce425b1f09b02c1f5ef3bde47c41c94fbd7fd47b3e0e7fbdf3",
       "sourceGeometry": {
         "point": [
           446.9527006879553,
@@ -3349,8 +3437,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "7f52fb36d13e15a570fb84c1ef0ce8133594663f1faf89f4f76371465bee98c4",
       "sourceGeometry": {
         "point": [
           425.8976708166091,
@@ -3384,8 +3474,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "607990399f037b54fbfb381a367f9a5ce5380cc4459f922c35ee9aa94bd41a27",
       "sourceGeometry": {
         "point": [
           417.870927433125,
@@ -3418,8 +3510,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
+      "sourceInput": "55449705fb3193901440a3f2b61903821deec60351946a8361662a45aa1aed6c",
       "sourceGeometry": {
         "point": [
           438.6219382531853,
@@ -3453,8 +3547,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "a2a4df7bd94e46a3110b23ac4b22989b7c96df901918bcc316e63d95585c2591",
       "sourceGeometry": {
         "point": [
           114.44869500873148,
@@ -3487,8 +3583,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "plaza_structure",
+      "sourceInput": "dbf3f0bb384b0c2852d2bb08cc803f811d3a8960b64ee475cc7a2a001ef7d45b",
       "sourceGeometry": {
         "ring": [
           [
@@ -3909,8 +4007,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "plaza_structure",
+      "sourceInput": "4caa8ed1d8c02753b1dd6999d7823f07cea42013c78f9aad71ca96edc3ce72bf",
       "sourceGeometry": {
         "ring": [
           [
@@ -4332,8 +4432,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "4870e1a19985784b9f894c59b0746579d13f3d30b58474c22732d8cb7995f48a",
       "sourceGeometry": {
         "point": [
           191.4337959001924,
@@ -4367,8 +4469,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "42a8d42d74cd5c5390b8c79992a8031eeaf9d2e9ef3504894056bdbbc05908fd",
       "sourceGeometry": {
         "point": [
           278.32483502545307,
@@ -4402,8 +4506,10 @@
       "estimated": true,
       "reason": "visible_ground_base",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "76a5f4025ef7ff39fa948c69300a46b50187f10d5c9ce72afee443e8362f4a9c",
       "sourceGeometry": {
         "point": [
           294.65352474847504,
@@ -4436,8 +4542,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "fence",
+      "sourceInput": "e20990c443381fcdbcdb3cc9c0cad20ff7adee4f6b52be3214ca325e26ed418c",
       "sourceGeometry": {
         "line": [
           [
@@ -4490,8 +4598,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "footbridge",
+      "sourceInput": "ed62c6dd41840fb8a7d4a69d4e03e3c661505b4958d12b41236940c08bce00cf",
       "sourceGeometry": {
         "line": [
           [
@@ -4537,8 +4647,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "58c82661f9f115358395f528642ca287e1da817da59061d4961661abe4e3853d",
       "sourceGeometry": {
         "point": [
           317.5349054379705,
@@ -4570,8 +4682,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "fence",
+      "sourceInput": "9206e53df33b0c63572d8f68d6bd0000b5489c928d3e076aa78de3dfc14e4d34",
       "sourceGeometry": {
         "line": [
           [
@@ -4625,8 +4739,10 @@
       "estimated": true,
       "reason": "visible_ground_base",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "3e420042d0fd6459a74b61c18fd858e0a5c113ed7b7de42707ae258ffcb21774",
       "sourceGeometry": {
         "point": [
           342.63178698628127,
@@ -4660,8 +4776,10 @@
       "estimated": true,
       "reason": "visible_ground_base",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "146d23865dc7e61405c55a33b92fd89760602056887aad5e9a60b13bc3e404a2",
       "sourceGeometry": {
         "point": [
           354.43623355250537,
@@ -4695,8 +4813,10 @@
       "estimated": true,
       "reason": "visible_ground_base",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "a82d4a303e20513bd49d01bb0353788ff1741e43cdf2b8c5cca4eacc8b8c01b8",
       "sourceGeometry": {
         "point": [
           365.7274594402186,
@@ -4729,8 +4849,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "fence",
+      "sourceInput": "4ad5b39761455e69075661a7568478688fde48cb157eac83b4ed892cf24439dd",
       "sourceGeometry": {
         "line": [
           [
@@ -4783,8 +4905,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "pergola",
+      "sourceInput": "e7385da8bf0e31f7385ac08c2d85a476d2f3c068e73bf8cf6f5ba37805cbad26",
       "sourceGeometry": {
         "line": [
           [
@@ -4921,8 +5045,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "pergola",
+      "sourceInput": "31d5aeb56f6081d7a934825b122e7b3d1bc1545f01f1541cea0f3d89caa0ea8a",
       "sourceGeometry": {
         "line": [
           [
@@ -5060,8 +5186,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "6945502ccbd50fdb3af1b9499d12d6d9b0e0c4db57b0161c7e8b29e2c3ae2ebf",
       "sourceGeometry": {
         "point": [
           431.42095422260195,
@@ -5095,8 +5223,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "8c2db3b6618b21de7c6ffba4aa96b2ad5599ee59771ba69f7f42ca44f6bf979d",
       "sourceGeometry": {
         "point": [
           437.41171907788146,
@@ -5129,8 +5259,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
+      "sourceInput": "3a2897db86df209db6be04346a784570359704bba489c459279e0f13aef02e6e",
       "sourceGeometry": {
         "point": [
           456.46900733439486,
@@ -5164,8 +5296,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "24a49626fc1868c9e363008a66cfb870c4d7242ac5535c982d1f34cef29fd428",
       "sourceGeometry": {
         "point": [
           466.70056040981984,
@@ -5197,8 +5331,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "gazebo",
+      "sourceInput": "c3ad74978e6947e31604e8f1d3417b00b1da7b5efa003a13d448bfee4b16154e",
       "sourceGeometry": {
         "ring": [
           [
@@ -5619,8 +5755,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "plaza_structure",
+      "sourceInput": "28f2b3079e1d334dc7ec83005a910f1327623dfb7fd23c8c170a491355a7bd33",
       "sourceGeometry": {
         "ring": [
           [
@@ -5680,8 +5818,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "low_wall",
+      "sourceInput": "585ddd0f69b118ce1429236c5246d5594ecc31affe6f83fb85bad44ffa24e781",
       "sourceGeometry": {
         "line": [
           [
@@ -5733,8 +5873,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "planter",
+      "sourceInput": "d5df73060126ceff74530de613ef955d37da05f3a48247a8572d1db3a641a4eb",
       "sourceGeometry": {
         "ring": [
           [
@@ -5811,8 +5953,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "bike_rack",
+      "sourceInput": "35e059d9434d869c3c3f1a77c0c226a8f783c10c1567994fb224da8e6bd9afba",
       "sourceGeometry": {
         "ring": [
           [
@@ -5945,8 +6089,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "plaza_structure",
+      "sourceInput": "09e1fc1f904ee390f762a6cc975ca2102c84e1239f2e87af94db13e5b2e6953a",
       "sourceGeometry": {
         "ring": [
           [
@@ -6080,8 +6226,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "8a8f28e9f14fe72e5be731bcf526ed6948ecff5c192cd1addb91854d4f0a195e",
       "sourceGeometry": {
         "point": [
           466.3967414518616,
@@ -6114,8 +6262,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "pavilion_hip",
+      "sourceInput": "4475a0fea68aa39b2ad3580b9194b9ec4a3c43d8627522b3be755c6a34704644",
       "sourceGeometry": {
         "ring": [
           [
@@ -6247,8 +6397,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "fence",
+      "sourceInput": "0ca3d14045ef7240c29cb7a709abdf31772fbd0d5f38da639fa8df0cfffab981",
       "sourceGeometry": {
         "line": [
           [
@@ -6292,8 +6444,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "gazebo",
+      "sourceInput": "97c1418b86139a3957372fdf0063a618d986c83c6d079877316f4631866b890d",
       "sourceGeometry": {
         "ring": [
           [
@@ -6425,8 +6579,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
+      "sourceInput": "660c84d036cbd573fc316f338c6660f628ffd2c055a720bb87befe62d20eaf02",
       "sourceGeometry": {
         "ring": [
           [
@@ -6662,8 +6818,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "fence",
+      "sourceInput": "5b1665001f654d0fdf747df0320999c6fba3dc6f37eefe9c515216f7571a3842",
       "sourceGeometry": {
         "line": [
           [
@@ -6707,8 +6865,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "fence",
+      "sourceInput": "e7f876cba2224319a8b4846e7464c6f39356ca89b5b230066f8c6d1cdb6a8f94",
       "sourceGeometry": {
         "line": [
           [
@@ -6753,8 +6913,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "plaza_structure",
+      "sourceInput": "07231949720344a258e6daca1c4d61195803f8fad65508c8a4161f69329a172c",
       "sourceGeometry": {
         "ring": [
           [
@@ -6816,8 +6978,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "2cd33ca915ed21ef2dcdd3169696cf54f8a41b491fd10ee3475fbdf5d3c5137b",
       "sourceGeometry": {
         "point": [
           452.2289985471281,
@@ -6849,8 +7013,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "pergola",
+      "sourceInput": "c6b0cc1f6edb8c401fbcf1b56e88c2b31c4227b2d0bdd9c0b57b1f457571fcb0",
       "sourceGeometry": {
         "ring": [
           [
@@ -7127,8 +7293,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "planter",
+      "sourceInput": "844cb8ba8894041eee93a956970768369d007a3dfe775e2173f61b6f67216078",
       "sourceGeometry": {
         "line": [
           [
@@ -7172,8 +7340,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "planter",
+      "sourceInput": "8296b80b84677c87136839f9b80f1d083ed2960ac7f10bb6121db0abce569294",
       "sourceGeometry": {
         "line": [
           [
@@ -7218,8 +7388,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "planter",
+      "sourceInput": "0f968c7cfa74169404abba183f3fe8055ca023e06a28d4f351132c27d8daab32",
       "sourceGeometry": {
         "line": [
           [
@@ -7263,8 +7435,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "planter",
+      "sourceInput": "f512513461481b2a2b8c5cfda039ed01106ab390c5b7dd1a735e3efd96aa57a6",
       "sourceGeometry": {
         "line": [
           [
@@ -7309,8 +7483,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "planter",
+      "sourceInput": "126d2029bb852e095c98b7b9968f1b582dc3e5ec979f0c021b4d2127e469f303",
       "sourceGeometry": {
         "line": [
           [
@@ -7355,8 +7531,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "low_wall",
+      "sourceInput": "103b3adcfd57e7179e58ba0ffc391f466f032fc3cdf0cdcf8661cb32beae064e",
       "sourceGeometry": {
         "line": [
           [
@@ -7425,8 +7603,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "planter",
+      "sourceInput": "ebea3eaffd963fb31dd9f102c9ebf50859d571dae91cd5bcb7379644661c77cf",
       "sourceGeometry": {
         "ring": [
           [
@@ -7487,8 +7667,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "plaza_structure",
+      "sourceInput": "d01cfc9b529f22e2dc47d12abb83b90f40833921acf801e44dce2126f910a619",
       "sourceGeometry": {
         "ring": [
           [
@@ -7566,8 +7748,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "9fdd4fdc676307abbb6a5c95bc3f3472c5a17bdc31cafaab64f4929d02cbe8c0",
       "sourceGeometry": {
         "point": [
           478.9540624709821,
@@ -7600,8 +7784,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
+      "sourceInput": "83d29993a3396a572498b0c3182b793a78d0207626d27336d06f5fd6aaeb5754",
       "sourceGeometry": {
         "point": [
           471.42208300174445,
@@ -7634,8 +7820,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
+      "sourceInput": "ceddd91bdf59db64386189ec038a07db11c845b1b1a09367b6f508fe247c6a4a",
       "sourceGeometry": {
         "point": [
           482.4488413068025,
@@ -7668,8 +7856,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
+      "sourceInput": "e2774b797e46592f90f9807f9cfaeac9db79994693909e54c5911ebfddfe2cb0",
       "sourceGeometry": {
         "point": [
           474.9190856221682,
@@ -7702,8 +7892,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "bus_stop_shelter",
+      "sourceInput": "61f7592082cc2b41b6fa83666ee7419e20a75b0c854dd8900f4a16e04cc43f39",
       "sourceGeometry": {
         "ring": [
           [
@@ -7836,8 +8028,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
+      "sourceInput": "60bff1e4c819f640085675e45fff1fed1b4485456168fc0e12568a437401cbd6",
       "sourceGeometry": {
         "point": [
           175.4021695033719,
@@ -7869,8 +8063,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "bench",
+      "sourceInput": "33b4324ffe54f37d2ec5d03c25119eba2c5a750c0b80446e71e7e38c8de7eb5b",
       "sourceGeometry": {
         "line": [
           [
@@ -7915,8 +8111,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "plaza_structure",
+      "sourceInput": "a77bf23cd69639de873e802952f47f94d93d7330bf332f86337e7ec47e44f34f",
       "sourceGeometry": {
         "ring": [
           [
@@ -7976,8 +8174,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
+      "sourceInput": "69a7ae0196717b93b37b0eb08b1ee144a5f3926fc89678d3d68bdf71c07356c8",
       "sourceGeometry": {
         "ring": [
           [
@@ -8397,8 +8597,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "bench",
+      "sourceInput": "8228ba1c7e891b5b42b31bee20705684d83d239cd4618ea48089ac331146ceb7",
       "sourceGeometry": {
         "line": [
           [
@@ -8443,8 +8645,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "plaza_structure",
+      "sourceInput": "a76e01f20dbf9b96afcb99829da1312768ef9c403757ca16e3c9d711aee98251",
       "sourceGeometry": {
         "ring": [
           [
@@ -8506,8 +8710,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "8c29a3706d52f4be1d8513804375f6aa545e6fce47e7d0fca2b693cf3fe45c17",
       "sourceGeometry": {
         "point": [
           466.58139860102307,
@@ -8540,8 +8746,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "sign_pole",
+      "sourceInput": "ba8bc9139d25a824f850060450b0de867f6b0e51a16b721edcea4287b8824ebe",
       "sourceGeometry": {
         "line": [
           [
@@ -8587,8 +8795,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "55012a106c0b72ee21c42ae6d4e548b022b6f8740e80555ac284c0edf0512219",
       "sourceGeometry": {
         "point": [
           487.5274355636001,
@@ -8621,8 +8831,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
+      "sourceInput": "8a74715a67c0225ef0d54a147fa5fe97dd9570e902fd51a3daead296ffff2c4b",
       "sourceGeometry": {
         "point": [
           495.6348493911586,
@@ -8655,8 +8867,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
+      "sourceInput": "31976d9c7a41d957c9e8dbe2a73a605ccacb20ee601caafddde84d1b65429107",
       "sourceGeometry": {
         "point": [
           499.69584463468203,
@@ -8690,8 +8904,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "1740e938f52ad3fa3caccc19a094446736afe26d4eda6fc9c30359b46e03f7fa",
       "sourceGeometry": {
         "point": [
           503.60232951954924,
@@ -8724,8 +8940,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "planter",
+      "sourceInput": "0aab82a66b011bea44cb9d49081853f92b3878ada6b6c9b2e541db707b3fd4fd",
       "sourceGeometry": {
         "ring": [
           [
@@ -8809,8 +9027,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "trash_station",
+      "sourceInput": "404013605ec3274e6398345ff88e88d31006172eed1ee28cb34841dcf7e615dc",
       "sourceGeometry": {
         "ring": [
           [
@@ -8943,8 +9163,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "terminal_shelter",
+      "sourceInput": "c4c8db77796ae24b8444263e43529622ea5a84bc60df95f258835bf76b320cf4",
       "sourceGeometry": {
         "ring": [
           [
@@ -9077,8 +9299,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "pavilion_hip",
+      "sourceInput": "80c023bb9b1b305d2a41cde6502c3c082979fc7da550a996af21b6d4ca18a864",
       "sourceGeometry": {
         "ring": [
           [
@@ -9211,8 +9435,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "pavilion_octagon",
+      "sourceInput": "170728137b7b1d01bea18a06d2f11d4d994f874d7499615fad5166114ca01e6f",
       "sourceGeometry": {
         "ring": [
           [
@@ -9632,8 +9858,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "pergola",
+      "sourceInput": "561068a2840c3e8ced87d840b8cf3612163b528b70a8a0d8ae7249a85b402b8f",
       "sourceGeometry": {
         "line": [
           [
@@ -9770,8 +9998,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "pergola",
+      "sourceInput": "ed839fefc35633603f4e27f21acd3a0f9c97df2ac4889efde4b45242d6255da2",
       "sourceGeometry": {
         "line": [
           [
@@ -9907,8 +10137,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "sports_goal",
+      "sourceInput": "c03cabef196dbc2b625075c47bf814d15dad78d9a8276308b74dd642d417ae6d",
       "sourceGeometry": {
         "ring": [
           [
@@ -9968,8 +10200,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "sports_hoop",
+      "sourceInput": "150718d1c48c543408e61861136a6744dab4b9db204ce5e0c856b837f8e3b380",
       "sourceGeometry": {
         "point": [
           424.50586884196906,
@@ -10001,8 +10235,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "sports_hoop",
+      "sourceInput": "58a93705d2f0e020b43c46b6f4ae8cd437cf26999a412c9579f7dcd5bd931e8f",
       "sourceGeometry": {
         "point": [
           438.05091461515514,
@@ -10035,8 +10271,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "planter",
+      "sourceInput": "534bff4898cf6c06b3d6f6af535bbdfbcab168f506fc0dd8d6a7c6c68ff5c9e0",
       "sourceGeometry": {
         "ring": [
           [
@@ -10192,8 +10430,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "retaining_wall",
+      "sourceInput": "e726ab2ad3ddc7e3c0df36a39061d44209f8d1345c9ebe06ad2d35076a59074c",
       "sourceGeometry": {
         "line": [
           [
@@ -10253,8 +10493,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "low_wall",
+      "sourceInput": "6139ecdc1efc166cb44f53ce3d2bece9055f7b256eb38dd0af5cc216361b844e",
       "sourceGeometry": {
         "line": [
           [
@@ -10299,8 +10541,10 @@
       "estimated": true,
       "reason": "visible_ground_base",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
+      "sourceInput": "02f9aac2f2c4c750fc681eaeae14a69a2d6d16787ec889dec164b506432df3b0",
       "sourceGeometry": {
         "point": [
           476.2931300856536,
@@ -10333,8 +10577,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
+      "sourceInput": "32046a4e3f39faecbcd5649fd94fc3a162f7db1ca00f30ddbf820ba3be660a0c",
       "sourceGeometry": {
         "point": [
           494.6822861248177,
@@ -10367,8 +10613,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
+      "sourceInput": "747c8fca79b4016fcf9874fa842c4e272923a651a2b7010f34691f7eb156e602",
       "sourceGeometry": {
         "point": [
           498.8013634731533,
@@ -10401,8 +10649,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "traffic_signal_pole",
+      "sourceInput": "97c67f78cda12fbbff35b8d67dd8b0df8e943e2317c35d6c2ce2732a181b7125",
       "sourceGeometry": {
         "point": [
           498.47159616559907,
@@ -10435,8 +10685,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "plaza_structure",
+      "sourceInput": "ba0ce2ca1421243fc4994ca0aa9419ddc448d3757406e531aa89980c4c361e74",
       "sourceGeometry": {
         "ring": [
           [
@@ -10856,8 +11108,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
+      "sourceInput": "e3061124a94c32c2640cb86ae56996d77c5bbc15eada32a5936696d9ced396dc",
       "sourceGeometry": {
         "ring": [
           [
@@ -11278,8 +11532,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "retaining_wall",
+      "sourceInput": "41539dca30452bf2f0e8135e2484667a3eed0b5a0317fd490ee2b8dbda665a73",
       "sourceGeometry": {
         "line": [
           [
@@ -11331,8 +11587,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "planter",
+      "sourceInput": "6b3c32fbbfb177e17aa721639a45bec63375fd315b8b9dd0600989eb3f9013a1",
       "sourceGeometry": {
         "ring": [
           [
@@ -11489,8 +11747,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "pergola",
+      "sourceInput": "237677574a56ae88ccf170afe90854c36efa29a007ebb0e87215bcfa43fab385",
       "sourceGeometry": {
         "line": [
           [
@@ -11626,8 +11886,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "fence",
+      "sourceInput": "5b27cfda270822bdb7d7340e134ffb43cb9c319f9accf87582e213f107b33fc6",
       "sourceGeometry": {
         "line": [
           [
@@ -11679,8 +11941,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "pergola",
+      "sourceInput": "a90922c61be23fba40513b1d2971831d4e35e24e9ac804145043b14bead4f703",
       "sourceGeometry": {
         "line": [
           [
@@ -11913,8 +12177,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "planter",
+      "sourceInput": "7c0c221b421921b140251bc2c361763e8186b8943d630488f9dd6d6d964d8725",
       "sourceGeometry": {
         "ring": [
           [
@@ -12071,8 +12337,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "floodlight_pole",
+      "sourceInput": "992955f5c40fb57d63d3eeedff883e318bf6c5c785c49917e8a22f9e0ebb7da8",
       "sourceGeometry": {
         "point": [
           417.567144410973,
@@ -12105,8 +12373,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "floodlight_pole",
+      "sourceInput": "ec3afc4a667a7955c7de46cee9e00c4836d27d0183e96115fd468361fb86c283",
       "sourceGeometry": {
         "point": [
           415.5285506043081,
@@ -12139,8 +12409,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "floodlight_pole",
+      "sourceInput": "c8a98da3801a031bab0f66f98ba0ed37e213c9bf0dc41a297689c9ccf285ca32",
       "sourceGeometry": {
         "point": [
           413.42838233092783,
@@ -12173,8 +12445,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "floodlight_pole",
+      "sourceInput": "b37bf72467ddf71055084561e556c8ce8779e22195e8f32c430978e4789cb19a",
       "sourceGeometry": {
         "point": [
           430.0796154566992,
@@ -12207,8 +12481,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "floodlight_pole",
+      "sourceInput": "fd70f2f2903805679a6b0dde710dd28508002434295a027b20209541d855301a",
       "sourceGeometry": {
         "point": [
           428.07295922463584,
@@ -12241,8 +12517,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "floodlight_pole",
+      "sourceInput": "9a81d668937260a9b775df61128917f71b04b457c8f2e2cb96a65e078e411218",
       "sourceGeometry": {
         "point": [
           426.03437586479595,
@@ -12274,8 +12552,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "sports_goal",
+      "sourceInput": "f0aee61b23810c30caf745a837c58ad6937f209f8fbe9c2cc957c03c9d13a491",
       "sourceGeometry": {
         "ring": [
           [
@@ -12336,8 +12616,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "sports_goal",
+      "sourceInput": "8b4f6b7a41da08752af90d5f10e9487dbceefe87bf552d599b450a90dcb6e1ce",
       "sourceGeometry": {
         "ring": [
           [
@@ -12397,8 +12679,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "fence",
+      "sourceInput": "626f112b35b66f41beddcc937027e0504549fc76244d6f9823e45f3263268aa7",
       "sourceGeometry": {
         "line": [
           [
@@ -12467,8 +12751,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
+      "sourceInput": "0ef851f876a9433eeb4b69df60da81fd9f9a24bd3ac6f23f09909993e2ee48c5",
       "sourceGeometry": {
         "point": [
           493.4038538722973,
@@ -12501,8 +12787,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
+      "sourceInput": "220cd593b2f17ec19e6ad963511dc1671dd8257a8c5f9968589847677d173852",
       "sourceGeometry": {
         "point": [
           499.5299447963809,
@@ -12535,8 +12823,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "canopy_shelter_row",
+      "sourceInput": "82def3cf45de4de87981f36955f03d130ebca95c48b38534e9c7cc648e8cff81",
       "sourceGeometry": {
         "ring": [
           [
@@ -12669,8 +12959,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "planter",
+      "sourceInput": "8773f6cdabb849231d53fc9ad6383f451a68744c9db08376358d0a5824f683a8",
       "sourceGeometry": {
         "ring": [
           [
@@ -12730,8 +13022,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "sports_goal",
+      "sourceInput": "5c8b90391fafb6c65a4777b104aed376113d5a9eb8567da1a332b553df268ff7",
       "sourceGeometry": {
         "ring": [
           [
@@ -12792,8 +13086,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "fence",
+      "sourceInput": "b9b7c9df2187e0b112f9829ea1ce9b182ce580b30d930cacaa7e0029bf6a42bb",
       "sourceGeometry": {
         "line": [
           [
@@ -12854,8 +13150,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "gazebo",
+      "sourceInput": "ef69b1591fb01b256e8b9065de1bf3b0199b0d960c3ce1765b053530ef308d77",
       "sourceGeometry": {
         "ring": [
           [
@@ -12988,8 +13286,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "gazebo",
+      "sourceInput": "16d3df2ace944a3648bf682e702c1afcfa71280df97170be6d321a9059f9ca59",
       "sourceGeometry": {
         "ring": [
           [
@@ -13121,8 +13421,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "fence",
+      "sourceInput": "3984663343203aa37aa3d1a7b291c90c9f36bfde12f7469654892060ad6a7b36",
       "sourceGeometry": {
         "line": [
           [
@@ -13190,8 +13492,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "bench",
+      "sourceInput": "884df5955b4b6f54e8440371392fa39f0a0d53681923ef4395aae7c6f10ef45a",
       "sourceGeometry": {
         "line": [
           [
@@ -13235,8 +13539,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "bus_stop_shelter",
+      "sourceInput": "64d8102b514de7b0de060efc3aee2441e84b902394a263b6ad1bae210b630ff1",
       "sourceGeometry": {
         "ring": [
           [
@@ -13369,8 +13675,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "bus_stop_shelter",
+      "sourceInput": "e8a0544438da2a6905591a0f563cf07b758aa5b904de2edcf5685baaedb0d0ee",
       "sourceGeometry": {
         "ring": [
           [
@@ -13503,8 +13811,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "gazebo",
+      "sourceInput": "7a3c6c78447947577a9708b942576a9c6e515b627804fe6d39b45a5479cfdf50",
       "sourceGeometry": {
         "ring": [
           [
@@ -13637,8 +13947,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "plaza_structure",
+      "sourceInput": "de41a9f97220a42f2bbf71e0552d7e4db283435b72ae4f8d52b6d3988659922c",
       "sourceGeometry": {
         "ring": [
           [
@@ -13796,8 +14108,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "d3fbefa62dc2cb53b31f290266e297517453a60150ebee63ad571a1ac154c143",
       "sourceGeometry": {
         "point": [
           490.5886898360265,
@@ -13831,8 +14145,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "429fe43aea89b2c666c5598fa55963393f6dde87ddeaf0980f8e884931ee23da",
       "sourceGeometry": {
         "point": [
           498.86902058129243,
@@ -13865,8 +14181,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "plaza_structure",
+      "sourceInput": "0f87af659386655dd54ed9d9a594d62a36653ea36114491e720f277fac985799",
       "sourceGeometry": {
         "ring": [
           [
@@ -13928,8 +14246,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "cf4b61ff5587bea55ab368249c5a65088804796f67126de0116158577f222549",
       "sourceGeometry": {
         "point": [
           288.0279517773353,
@@ -13963,8 +14283,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "27ec0274ee51c2d18f0bf3f01f626ebc70b4e5b211a3d8a154c20a37daefa011",
       "sourceGeometry": {
         "point": [
           287.0040743005253,
@@ -13998,8 +14320,10 @@
       "estimated": true,
       "reason": "visible_ground_base",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "576b1c1a63eb61df37fcc33fb6a3bcbf9475e157bf39fdac423fc4d0a1cd2cfb",
       "sourceGeometry": {
         "point": [
           314.75434837241505,
@@ -14031,8 +14355,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "fence",
+      "sourceInput": "935d67f49f567360c7183122ebedb8b50aa975854de312ffbb794b4c0ac1de16",
       "sourceGeometry": {
         "line": [
           [
@@ -14102,8 +14428,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
+      "sourceInput": "ce8e34d5ce7d554dc4e3e3035e6aaf46b4db9a06b81ee20417fbb27657347cf7",
       "sourceGeometry": {
         "point": [
           500.84349754905185,
@@ -14130,6 +14458,7 @@
         "refs": [
           "survey seed E=244178.00020428406 N=263691.69971568935; position not independently verified",
           "VR scene_a19 l col 837",
+          "bearing conflict (estimated): observed=183.97084506600004 deg, predicted=216.2250625412517 deg, residual=32.25421747525161 deg > 1.5 deg; photo residual=unverified m, tolerance=0.5 m; one_station",
           "source=rest-spaces; kind=gate_sign; method=vr-resection",
           "outside all curated parcels; nearest parcel vertex 2.154 m"
         ]
@@ -14137,8 +14466,24 @@
       "estimated": true,
       "reason": "one_station",
       "crossingDeg": null,
+      "bearingChecks": [
+        {
+          "ref": "VR scene_a19 l col 837",
+          "observedDeg": 183.97084506600004,
+          "predictedDeg": 216.2250625412517,
+          "residualDeg": 32.25421747525161,
+          "toleranceDeg": 1.5,
+          "pass": false,
+          "estimated": true,
+          "photoResidualM": null,
+          "photoToleranceM": 0.5,
+          "decision": "one_station",
+          "method": "anchor-centre projection, not rendered ID mask"
+        }
+      ],
       "parcelRelation": "nearest_boundary",
       "kind": "gate_sign",
+      "sourceInput": "32a8203eef67fee6f83df09f720fa8ae58ffe74c151647faa182cdc3ca995fe7",
       "sourceGeometry": {
         "line": [
           [
@@ -14177,14 +14522,31 @@
         "refs": [
           "survey seed E=243954.7500803031 N=263671.9985434193; position not independently verified",
           "VR scene_a5 r col 1224",
+          "bearing conflict (estimated): observed=325.9014570270001 deg, predicted=332.1380899824608 deg, residual=6.236632955460664 deg > 1.5 deg; photo residual=unverified m, tolerance=0.5 m; one_station",
           "source=rest-spaces; kind=garden_wall; method=photo: white coping line traced on the NGII 2025 sheet (task-25/ortho/a5-wall-zoom.png)"
         ]
       },
       "estimated": true,
       "reason": "one_station",
       "crossingDeg": null,
+      "bearingChecks": [
+        {
+          "ref": "VR scene_a5 r col 1224",
+          "observedDeg": 325.9014570270001,
+          "predictedDeg": 332.1380899824608,
+          "residualDeg": 6.236632955460664,
+          "toleranceDeg": 1.5,
+          "pass": false,
+          "estimated": true,
+          "photoResidualM": null,
+          "photoToleranceM": 0.5,
+          "decision": "one_station",
+          "method": "anchor-centre projection, not rendered ID mask"
+        }
+      ],
       "parcelRelation": "inside",
       "kind": "garden_wall",
+      "sourceInput": "88ee911f8aa845220fd38fd93c90120f6d161608dde245364e453d8a33167575",
       "sourceGeometry": {
         "line": [
           [
@@ -14223,6 +14585,7 @@
         "refs": [
           "survey seed E=244287.24377380454 N=263435.4575662277; position not independently verified",
           "VR scene_f1 l col 675",
+          "bearing conflict (estimated): observed=143.84984712200003 deg, predicted=141.76114728706966 deg, residual=-2.0886998349303667 deg > 1.5 deg; photo residual=unverified m, tolerance=0.5 m; one_station",
           "source=rest-spaces; kind=bus_stop_shelter; method=photo: shelter roof traced on the NGII 2025 sheet beside the bus bay (task-25/ortho/f1-stop-zoom.png)",
           "outside all curated parcels; nearest parcel vertex 4.297 m"
         ]
@@ -14230,8 +14593,24 @@
       "estimated": true,
       "reason": "one_station",
       "crossingDeg": null,
+      "bearingChecks": [
+        {
+          "ref": "VR scene_f1 l col 675",
+          "observedDeg": 143.84984712200003,
+          "predictedDeg": 141.76114728706966,
+          "residualDeg": -2.0886998349303667,
+          "toleranceDeg": 1.5,
+          "pass": false,
+          "estimated": true,
+          "photoResidualM": null,
+          "photoToleranceM": 0.5,
+          "decision": "one_station",
+          "method": "anchor-centre projection, not rendered ID mask"
+        }
+      ],
       "parcelRelation": "nearest_boundary",
       "kind": "bus_stop_shelter",
+      "sourceInput": "5e93c22054c5d41e4c57c83c9b984566199d5fe8d6b3e8c7fe4a9e12d1267eef",
       "sourceGeometry": {
         "ring": [
           [
@@ -14365,8 +14744,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "bench",
+      "sourceInput": "9a50f524a74038b5b20e6d6e2549b17fc22c0f0f28762360697683bd950098f1",
       "sourceGeometry": {
         "line": [
           [
@@ -14411,8 +14792,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "bench",
+      "sourceInput": "c0732411ed0e2ae0cf57c889966fac8c2af34562301f99428efdd52462bc56cf",
       "sourceGeometry": {
         "line": [
           [
@@ -14451,14 +14834,31 @@
         "refs": [
           "survey seed E=243857.51813891708 N=263528.1858650206; position not independently verified",
           "VR scene_a9 f col 1324",
+          "bearing conflict (estimated): observed=123.67893555500001 deg, predicted=134.9004886682693 deg, residual=11.221553113269238 deg > 1.5 deg; photo residual=unverified m, tolerance=0.5 m; one_station",
           "source=rest-spaces; kind=planter; method=vr: scene_a9 station + face f col 1067 row 1822 (bearing 150.8, 37.9 deg down, 12.9 m); the photo shows the tree crown"
         ]
       },
       "estimated": true,
       "reason": "one_station",
       "crossingDeg": null,
+      "bearingChecks": [
+        {
+          "ref": "VR scene_a9 f col 1324",
+          "observedDeg": 123.67893555500001,
+          "predictedDeg": 134.9004886682693,
+          "residualDeg": 11.221553113269238,
+          "toleranceDeg": 1.5,
+          "pass": false,
+          "estimated": true,
+          "photoResidualM": null,
+          "photoToleranceM": 0.5,
+          "decision": "one_station",
+          "method": "anchor-centre projection, not rendered ID mask"
+        }
+      ],
       "parcelRelation": "inside",
       "kind": "planter",
+      "sourceInput": "7743016d66e43e72472f969e10c24510960e8eef09338baa74282ce59601ab8e",
       "sourceGeometry": {
         "ring": [
           [
@@ -14513,14 +14913,31 @@
         "refs": [
           "survey seed E=243855.65123616316 N=263523.7502364606; position not independently verified",
           "VR scene_a9 f col 1324",
+          "bearing conflict (estimated): observed=123.67893555500001 deg, predicted=152.73389882221466 deg, residual=29.05496326721459 deg > 1.5 deg; photo residual=unverified m, tolerance=0.5 m; one_station",
           "source=rest-spaces; kind=bench; method=vr + photo: 1.1 m in front of the planter wall, where the scene_a9 face f reading (bearing 162.3, 16 m) meets it; under tree crowns on the photo"
         ]
       },
       "estimated": true,
       "reason": "one_station",
       "crossingDeg": null,
+      "bearingChecks": [
+        {
+          "ref": "VR scene_a9 f col 1324",
+          "observedDeg": 123.67893555500001,
+          "predictedDeg": 152.73389882221466,
+          "residualDeg": 29.05496326721459,
+          "toleranceDeg": 1.5,
+          "pass": false,
+          "estimated": true,
+          "photoResidualM": null,
+          "photoToleranceM": 0.5,
+          "decision": "one_station",
+          "method": "anchor-centre projection, not rendered ID mask"
+        }
+      ],
       "parcelRelation": "inside",
       "kind": "bench",
+      "sourceInput": "fa0e55d57b2d4b444e14accd8f6771bce6dd5b434c7f0a44ddb7eeacc3608595",
       "sourceGeometry": {
         "line": [
           [
@@ -14559,14 +14976,31 @@
         "refs": [
           "survey seed E=243849.49835241126 N=263522.2506803027; position not independently verified",
           "VR scene_a9 f col 1200",
+          "bearing conflict (estimated): observed=117.10242494199997 deg, predicted=177.9442902268761 deg, residual=60.84186528487612 deg > 1.5 deg; photo residual=unverified m, tolerance=0.5 m; one_station",
           "source=rest-spaces; kind=low_wall; method=photo: the south edge of the paved plaza (brick-red edge visible at its west end, task-25/ortho/a9-edge-zoom.png), 15.5 m as the VR wall across cols 700-1700"
         ]
       },
       "estimated": true,
       "reason": "one_station",
       "crossingDeg": null,
+      "bearingChecks": [
+        {
+          "ref": "VR scene_a9 f col 1200",
+          "observedDeg": 117.10242494199997,
+          "predictedDeg": 177.9442902268761,
+          "residualDeg": 60.84186528487612,
+          "toleranceDeg": 1.5,
+          "pass": false,
+          "estimated": true,
+          "photoResidualM": null,
+          "photoToleranceM": 0.5,
+          "decision": "one_station",
+          "method": "anchor-centre projection, not rendered ID mask"
+        }
+      ],
       "parcelRelation": "inside",
       "kind": "low_wall",
+      "sourceInput": "92428c54007ad3fc50ba84c5c9e59ecae48023762d353ffd4128d6013d8d421e",
       "sourceGeometry": {
         "line": [
           [
@@ -14611,8 +15045,24 @@
       "estimated": true,
       "reason": "one_station",
       "crossingDeg": null,
+      "bearingChecks": [
+        {
+          "ref": "VR scene_d2 r col 1175",
+          "observedDeg": 33.618436540999994,
+          "predictedDeg": 33.38789238065226,
+          "residualDeg": -0.23054416034779024,
+          "toleranceDeg": 1.5,
+          "pass": true,
+          "estimated": true,
+          "photoResidualM": null,
+          "photoToleranceM": 0.5,
+          "decision": "one_station",
+          "method": "anchor-centre projection, not rendered ID mask"
+        }
+      ],
       "parcelRelation": "inside",
       "kind": "bus_stop_shelter",
+      "sourceInput": "da65f028ba29ad495827ccb0772f466b08df744e7096638f19a46ff417fa0cea",
       "sourceGeometry": {
         "ring": [
           [
@@ -14746,8 +15196,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "nearest_boundary",
       "kind": "bench",
+      "sourceInput": "29e6be65aed35f820fb348fb6aef9ddadfcf0fbf71368cb743673bd43635f4e5",
       "sourceGeometry": {
         "line": [
           [
@@ -14786,14 +15238,31 @@
         "refs": [
           "survey seed E=243589.77448359333 N=263714.92714669526; position not independently verified",
           "VR scene_e8 f col 500",
+          "bearing conflict (estimated): observed=250.65032253999993 deg, predicted=290.2542275173907 deg, residual=39.60390497739081 deg > 1.5 deg; photo residual=unverified m, tolerance=0.5 m; one_station",
           "source=rest-spaces; kind=planter; method=photo: dark hedge outline traced on the NGII 2025 sheet 34702020 (0.25 m, crop of the E8 courtyard), matched to the beds the VR shows on face f"
         ]
       },
       "estimated": true,
       "reason": "one_station",
       "crossingDeg": null,
+      "bearingChecks": [
+        {
+          "ref": "VR scene_e8 f col 500",
+          "observedDeg": 250.65032253999993,
+          "predictedDeg": 290.2542275173907,
+          "residualDeg": 39.60390497739081,
+          "toleranceDeg": 1.5,
+          "pass": false,
+          "estimated": true,
+          "photoResidualM": null,
+          "photoToleranceM": 0.5,
+          "decision": "one_station",
+          "method": "anchor-centre projection, not rendered ID mask"
+        }
+      ],
       "parcelRelation": "inside",
       "kind": "planter",
+      "sourceInput": "c6fc22f37a28bbbe7c6437d6ea4d3e0139884769582ad0d3287f10d6e570b368",
       "sourceGeometry": {
         "ring": [
           [
@@ -14872,14 +15341,31 @@
         "refs": [
           "survey seed E=243588.01087082524 N=263704.5923887269; position not independently verified",
           "VR scene_e8 f col 1550",
+          "bearing conflict (estimated): observed=304.93829070800007 deg, predicted=263.2272474723793 deg, residual=-41.711043235620764 deg > 1.5 deg; photo residual=unverified m, tolerance=0.5 m; one_station",
           "source=rest-spaces; kind=planter; method=photo: dark hedge outline traced on the NGII 2025 sheet 34702020 (0.25 m, crop of the E8 courtyard), matched to the beds the VR shows on face f"
         ]
       },
       "estimated": true,
       "reason": "one_station",
       "crossingDeg": null,
+      "bearingChecks": [
+        {
+          "ref": "VR scene_e8 f col 1550",
+          "observedDeg": 304.93829070800007,
+          "predictedDeg": 263.2272474723793,
+          "residualDeg": -41.711043235620764,
+          "toleranceDeg": 1.5,
+          "pass": false,
+          "estimated": true,
+          "photoResidualM": null,
+          "photoToleranceM": 0.5,
+          "decision": "one_station",
+          "method": "anchor-centre projection, not rendered ID mask"
+        }
+      ],
       "parcelRelation": "inside",
       "kind": "planter",
+      "sourceInput": "2f0f75324a4e0c6046ff4ba83407536e9196055e22d34f2191bcf15f95d96cd1",
       "sourceGeometry": {
         "ring": [
           [
@@ -14958,6 +15444,7 @@
         "refs": [
           "survey seed E=243594.71660462723 N=263718.65595292556; position not independently verified",
           "VR scene_e8 f col 285",
+          "bearing conflict (estimated): observed=241.93278136100002 deg, predicted=305.75608491172585 deg, residual=63.82330355072577 deg > 1.5 deg; photo residual=unverified m, tolerance=0.5 m; one_station",
           "source=rest-spaces; kind=planter; method=photo: dark hedge outline traced on the NGII 2025 sheet 34702020 (0.25 m, crop of the E8 courtyard), matched to the beds the VR shows on face f",
           "outside all curated parcels; nearest parcel vertex 2.112 m"
         ]
@@ -14965,8 +15452,24 @@
       "estimated": true,
       "reason": "one_station",
       "crossingDeg": null,
+      "bearingChecks": [
+        {
+          "ref": "VR scene_e8 f col 285",
+          "observedDeg": 241.93278136100002,
+          "predictedDeg": 305.75608491172585,
+          "residualDeg": 63.82330355072577,
+          "toleranceDeg": 1.5,
+          "pass": false,
+          "estimated": true,
+          "photoResidualM": null,
+          "photoToleranceM": 0.5,
+          "decision": "one_station",
+          "method": "anchor-centre projection, not rendered ID mask"
+        }
+      ],
       "parcelRelation": "nearest_boundary",
       "kind": "planter",
+      "sourceInput": "15657ebfb0d8af20abad33329337a3e9a39256425ad33e0e528d52f7192ea6d9",
       "sourceGeometry": {
         "ring": [
           [
@@ -15029,14 +15532,31 @@
         "refs": [
           "survey seed E=243594.53518082178 N=263698.6996141185; position not independently verified",
           "VR scene_e8 f col 1800",
+          "bearing conflict (estimated): observed=314.90530390000004 deg, predicted=241.82919112051036 deg, residual=-73.07611277948968 deg > 1.5 deg; photo residual=unverified m, tolerance=0.5 m; one_station",
           "source=rest-spaces; kind=planter; method=photo: dark hedge outline traced on the NGII 2025 sheet 34702020 (0.25 m, crop of the E8 courtyard), matched to the beds the VR shows on face f"
         ]
       },
       "estimated": true,
       "reason": "one_station",
       "crossingDeg": null,
+      "bearingChecks": [
+        {
+          "ref": "VR scene_e8 f col 1800",
+          "observedDeg": 314.90530390000004,
+          "predictedDeg": 241.82919112051036,
+          "residualDeg": -73.07611277948968,
+          "toleranceDeg": 1.5,
+          "pass": false,
+          "estimated": true,
+          "photoResidualM": null,
+          "photoToleranceM": 0.5,
+          "decision": "one_station",
+          "method": "anchor-centre projection, not rendered ID mask"
+        }
+      ],
       "parcelRelation": "inside",
       "kind": "planter",
+      "sourceInput": "2feb05d9e1c6b29d92c7f494964d784ee84782b10b320f5969469e5b566e13ed",
       "sourceGeometry": {
         "ring": [
           [
@@ -15105,8 +15625,24 @@
       "estimated": true,
       "reason": "one_station",
       "crossingDeg": null,
+      "bearingChecks": [
+        {
+          "ref": "VR scene_a1 l col 650",
+          "observedDeg": 96.346068764,
+          "predictedDeg": 97.31478888593949,
+          "residualDeg": 0.968720121939441,
+          "toleranceDeg": 1.5,
+          "pass": true,
+          "estimated": true,
+          "photoResidualM": null,
+          "photoToleranceM": 0.5,
+          "decision": "one_station",
+          "method": "anchor-centre projection, not rendered ID mask"
+        }
+      ],
       "parcelRelation": "inside",
       "kind": "pond_basin",
+      "sourceInput": "c0b3b824dd85a1202f98887f1f75298504f975dc7b50b1c37b5e6b792b70b448",
       "sourceGeometry": {
         "ring": [
           [
@@ -15161,6 +15697,7 @@
         "refs": [
           "survey seed E=243813.65004411474 N=263829.99947113876; position not independently verified",
           "VR scene_c1 f col 1030",
+          "bearing conflict (estimated): observed=286.79571361600006 deg, predicted=283.44456227019384 deg, residual=-3.3511513458062154 deg > 1.5 deg; photo residual=unverified m, tolerance=0.5 m; one_station",
           "source=rest-spaces; kind=terraced_steps; method=photo: bottom edge on the brick walk edge west of the pond plaza traced on the NGII 2025 sheet (bearing 195.5 deg), lower flight between the two outer hedge strips (15.5 m); depth to the library facade 15.5 m",
           "outside all curated parcels; nearest parcel vertex 0.050 m"
         ]
@@ -15168,8 +15705,24 @@
       "estimated": true,
       "reason": "one_station",
       "crossingDeg": null,
+      "bearingChecks": [
+        {
+          "ref": "VR scene_c1 f col 1030",
+          "observedDeg": 286.79571361600006,
+          "predictedDeg": 283.44456227019384,
+          "residualDeg": -3.3511513458062154,
+          "toleranceDeg": 1.5,
+          "pass": false,
+          "estimated": true,
+          "photoResidualM": null,
+          "photoToleranceM": 0.5,
+          "decision": "one_station",
+          "method": "anchor-centre projection, not rendered ID mask"
+        }
+      ],
       "parcelRelation": "nearest_boundary",
       "kind": "terraced_steps",
+      "sourceInput": "fc877131da7f8e40c3d3c2db3693eb23fc2a37c1e479ff0d93962391e49d1c78",
       "sourceGeometry": {
         "line": [
           [
@@ -15214,8 +15767,17 @@
       "estimated": true,
       "reason": "one_station",
       "crossingDeg": null,
+      "bearingChecks": [
+        {
+          "ref": "VR scene_d4 f col 1050",
+          "residualDeg": null,
+          "reason": "unrefined_station",
+          "estimated": true
+        }
+      ],
       "parcelRelation": "inside",
       "kind": "terraced_steps",
+      "sourceInput": "ace96ae493516d1083d440496cbd6464a3f55ae02c7ea57d58352e6fed08bc7f",
       "sourceGeometry": {
         "line": [
           [
@@ -15260,8 +15822,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "terraced_steps",
+      "sourceInput": "ccae697c0052e0a2bba6f88d866af6fcb68c044611cd1939081a854b370735ec",
       "sourceGeometry": {
         "line": [
           [
@@ -15300,6 +15864,7 @@
         "refs": [
           "survey seed E=243727.40027944391 N=263932.3000286736; position not independently verified",
           "VR scene_d1 l col 1774",
+          "bearing conflict (estimated): observed=240.08986311600006 deg, predicted=246.11695496345803 deg, residual=6.027091847457996 deg > 1.5 deg; photo residual=unverified m, tolerance=0.5 m; one_station",
           "source=rest-spaces; kind=terraced_steps; method=photo: the light 5 x 14 m stair strip south of D1 on the NGII 2025 sheet (the scene_d1 station of vr-stations.json is about 150 m off: D1 stands at E 243727, N 263952; the stair is the one beside it in VR f and l)",
           "outside all curated parcels; nearest parcel vertex 3.434 m"
         ]
@@ -15307,8 +15872,24 @@
       "estimated": true,
       "reason": "one_station",
       "crossingDeg": null,
+      "bearingChecks": [
+        {
+          "ref": "VR scene_d1 l col 1774",
+          "observedDeg": 240.08986311600006,
+          "predictedDeg": 246.11695496345803,
+          "residualDeg": 6.027091847457996,
+          "toleranceDeg": 1.5,
+          "pass": false,
+          "estimated": true,
+          "photoResidualM": null,
+          "photoToleranceM": 0.5,
+          "decision": "one_station",
+          "method": "anchor-centre projection, not rendered ID mask"
+        }
+      ],
       "parcelRelation": "nearest_boundary",
       "kind": "terraced_steps",
+      "sourceInput": "cdc43dd836122e5521eaabe07f4b9490de836b7c07a2b3ffe559756357749e96",
       "sourceGeometry": {
         "line": [
           [
@@ -15347,14 +15928,31 @@
         "refs": [
           "survey seed E=243701.7999461496 N=263865.7999724235; position not independently verified",
           "VR scene_e4 r col 850",
+          "bearing conflict (estimated): observed=316.4563052430001 deg, predicted=289.1600631415326 deg, residual=-27.296242101467442 deg > 1.5 deg; photo residual=unverified m, tolerance=0.5 m; one_station",
           "source=rest-spaces; kind=plaza_structure; method=photo: the light stone on the lawn corner inside the yellow kerb at the north-west corner of the red junction, NGII 2025 sheet; facing the junction as in VR scene_e4 r"
         ]
       },
       "estimated": true,
       "reason": "one_station",
       "crossingDeg": null,
+      "bearingChecks": [
+        {
+          "ref": "VR scene_e4 r col 850",
+          "observedDeg": 316.4563052430001,
+          "predictedDeg": 289.1600631415326,
+          "residualDeg": -27.296242101467442,
+          "toleranceDeg": 1.5,
+          "pass": false,
+          "estimated": true,
+          "photoResidualM": null,
+          "photoToleranceM": 0.5,
+          "decision": "one_station",
+          "method": "anchor-centre projection, not rendered ID mask"
+        }
+      ],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
+      "sourceInput": "00f5f3033644522c0d7859eba480f566de7ec8af147be450a81d9f444ca473c9",
       "sourceGeometry": {
         "ring": [
           [
@@ -15415,8 +16013,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "bike_rack",
+      "sourceInput": "d9cba75676037a86f2ffc41de6e2f793fe214a1373fb3d5f572fc9d6e2a9df26",
       "sourceGeometry": {
         "ring": [
           [
@@ -15543,14 +16143,31 @@
         "refs": [
           "survey seed E=244236.23642538977 N=263454.5181322365; position not independently verified",
           "VR scene_f1 f col 1000",
+          "bearing conflict (estimated): observed=251.32737597300002 deg, predicted=260.0879331272139 deg, residual=8.76055715421387 deg > 1.5 deg; photo residual=unverified m, tolerance=0.5 m; one_station",
           "source=rest-spaces; kind=planter; method=photo: the leaf-shaped lawn island with shrubs in the F1 forecourt traced on the NGII 2025 sheet"
         ]
       },
       "estimated": true,
       "reason": "one_station",
       "crossingDeg": null,
+      "bearingChecks": [
+        {
+          "ref": "VR scene_f1 f col 1000",
+          "observedDeg": 251.32737597300002,
+          "predictedDeg": 260.0879331272139,
+          "residualDeg": 8.76055715421387,
+          "toleranceDeg": 1.5,
+          "pass": false,
+          "estimated": true,
+          "photoResidualM": null,
+          "photoToleranceM": 0.5,
+          "decision": "one_station",
+          "method": "anchor-centre projection, not rendered ID mask"
+        }
+      ],
       "parcelRelation": "inside",
       "kind": "planter",
+      "sourceInput": "474443513f4a21eedb7599c2800d7451d371d3803aed21129c5594f2ca362af9",
       "sourceGeometry": {
         "ring": [
           [
@@ -15666,8 +16283,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "traffic_island",
+      "sourceInput": "7f53e1e6286abee7c2ff6032b3b3e851b6e8a6cf2fcf54ad1225934d76355a1d",
       "sourceGeometry": {
         "line": [
           [
@@ -15711,8 +16330,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "traffic_island",
+      "sourceInput": "892446e570f2cfa1fc04dddc5b9134b2ae485db0746fc6ce9fe6e7ed0637830a",
       "sourceGeometry": {
         "line": [
           [
@@ -15756,8 +16377,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "traffic_island",
+      "sourceInput": "0d9b83587b11ee128b28588ba95202535479d953782801a70557a96875ddddc7",
       "sourceGeometry": {
         "line": [
           [
@@ -15801,8 +16424,10 @@
       "estimated": true,
       "reason": "no_verified_ground_base_or_two_station_fix",
       "crossingDeg": null,
+      "bearingChecks": [],
       "parcelRelation": "inside",
       "kind": "gate_canopy",
+      "sourceInput": "4e9e37b6decfc38bb03046cddbf91d33452a284a105a48b8ca75fc7bc9c5ce7d",
       "sourceGeometry": {
         "ring": [
           [
@@ -15925,18 +16550,36 @@
         "yawDeg": 0
       },
       "evidence": {
-        "tier": "T4",
+        "tier": "T1",
         "refs": [
           "survey seed E=244081.7752333889 N=263894.47449248994; position not independently verified",
           "VR scene_b7 l col 1633",
+          "data/photo/vr-lamps.geojson VRL001; SCNU 360 VR scene_b7 l col 1633 (white post-top lamp at the parking-island corner) + NGII 2025 pole-shadow root; second ray (scene_d5) 168 px from its prediction: likely another object, so the fix is not used; base residual=0.25 m",
+          "bearing conflict (estimated): observed=338.86107360999995 deg, predicted=357.57894060086807 deg, residual=18.71786699086806 deg > 1.5 deg; photo residual=0.25 m, tolerance=0.5 m; retain_photo_base",
           "source=survey; kind=street_lamp; method=vr+photo"
         ]
       },
       "estimated": true,
-      "reason": "one_station",
+      "reason": "visible_ground_base",
       "crossingDeg": null,
+      "bearingChecks": [
+        {
+          "ref": "VR scene_b7 l col 1633",
+          "observedDeg": 338.86107360999995,
+          "predictedDeg": 357.57894060086807,
+          "residualDeg": 18.71786699086806,
+          "toleranceDeg": 1.5,
+          "pass": false,
+          "estimated": true,
+          "photoResidualM": 0.25,
+          "photoToleranceM": 0.5,
+          "decision": "retain_photo_base",
+          "method": "anchor-centre projection, not rendered ID mask"
+        }
+      ],
       "parcelRelation": "inside",
       "kind": "street_lamp",
+      "sourceInput": "25b47c9310652c86adc8a6073786cd28ea84d4963252cb7fdb8ebc3429f66084",
       "sourceGeometry": {
         "point": [
           405.19410729327217,
@@ -15947,6 +16590,112 @@
         "point": [
           0,
           0
+        ]
+      }
+    },
+    {
+      "id": "PB-C1-N",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_C1_",
+        "uM": -7.31662098283651,
+        "vM": 10.99290663566406,
+        "yawDeg": 0
+      },
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "survey seed E=243845.66496004068 N=263833.8848452031; position not independently verified",
+          "source=plaza-benches; kind=bench; method=VR scene_c1: dark box benches beside the pond; positions occluded in the aerial. Migrated from furniture estimateBenches at dda4a50e, not newly measured: 4 per side, pitch 7 m, offset 4.5 m outside OC0081 pond sides, length 4 m."
+        ]
+      },
+      "estimated": true,
+      "reason": "no_verified_ground_base_or_two_station_fix",
+      "crossingDeg": null,
+      "bearingChecks": [],
+      "row": {
+        "count": 4,
+        "pitchM": 7,
+        "estimated": true,
+        "ref": "VR scene_c1: dark box benches beside the pond; positions occluded in the aerial. Migrated from furniture estimateBenches at dda4a50e, not newly measured: 4 per side, pitch 7 m, offset 4.5 m outside OC0081 pond sides, length 4 m."
+      },
+      "parcelRelation": "inside",
+      "kind": "bench",
+      "sourceInput": "bda2769b55121806382e29d6b78dbf6647feb66247620ac42e84d54fbfbd718c",
+      "sourceGeometry": {
+        "line": [
+          [
+            251.31899194773933,
+            -238.97629810532578
+          ],
+          [
+            263.95079975861626,
+            -235.47318776351372
+          ]
+        ]
+      },
+      "geometry": {
+        "line": [
+          [
+            -10.497827721403594,
+            0.22528823289097533
+          ],
+          [
+            10.497827721403594,
+            -0.22528823289097533
+          ]
+        ]
+      }
+    },
+    {
+      "id": "PB-C1-S",
+      "anchor": {
+        "parcel": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_C1_",
+        "uM": -7.793421323329481,
+        "vM": -11.2247110350792,
+        "yawDeg": 0
+      },
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "survey seed E=243839.82831506716 N=263812.4422835795; position not independently verified",
+          "source=plaza-benches; kind=bench; method=VR scene_c1: dark box benches beside the pond; positions occluded in the aerial. Migrated from furniture estimateBenches at dda4a50e, not newly measured: 4 per side, pitch 7 m, offset 4.5 m outside OC0081 pond sides, length 4 m."
+        ]
+      },
+      "estimated": true,
+      "reason": "no_verified_ground_base_or_two_station_fix",
+      "crossingDeg": null,
+      "bearingChecks": [],
+      "row": {
+        "count": 4,
+        "pitchM": 7,
+        "estimated": true,
+        "ref": "VR scene_c1: dark box benches beside the pond; positions occluded in the aerial. Migrated from furniture estimateBenches at dda4a50e, not newly measured: 4 per side, pitch 7 m, offset 4.5 m outside OC0081 pond sides, length 4 m."
+      },
+      "parcelRelation": "inside",
+      "kind": "bench",
+      "sourceInput": "54f392560bb24c6bd7edf41eecfd818c5cd941cf6509f102733312f5388846ca",
+      "sourceGeometry": {
+        "line": [
+          [
+            247.6119980677857,
+            -225.60931000655495
+          ],
+          [
+            260.2438058786626,
+            -222.10619966474286
+          ]
+        ]
+      },
+      "geometry": {
+        "line": [
+          [
+            -10.497827721403594,
+            0.22528823289097533
+          ],
+          [
+            10.497827721403594,
+            -0.22528823289097533
+          ]
         ]
       }
     }

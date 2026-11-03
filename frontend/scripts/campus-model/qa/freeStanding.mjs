@@ -1,16 +1,14 @@
-// Audit the anchor proposal against the existing loader. This is not a GLB-render acceptance check.
+// Audit the production parcel placement. This is not a GLB-render acceptance check.
 // Usage: bun scripts/campus-model/qa/freeStanding.mjs --out <evidence-prefix>
 import { readFileSync, writeFileSync } from "node:fs";
 import { sceneToTm, wgs84ToTm } from "../../../src/geo/epsg5186.mjs";
 import { loadFurniture } from "../stages/furniture.mjs";
-import { resolveObject } from "../fit/objectPlacement.mjs";
 import { readBearing } from "../fit/vrWallHit.mjs";
 import { scoreObjects } from "./mapCompare.mjs";
 
 const readJson = (relative) => JSON.parse(readFileSync(new URL(relative, import.meta.url), "utf8"));
 const document = readJson("../data/free-standing-anchors.json");
 if (document.frameVersion !== 2) throw new Error("stale free-standing anchor frame");
-const parcels = Object.fromEntries(readJson("../data/ground/parcels.json").parcels.map(p => [p.id, p]));
 const roots = new Map(readJson("../data/photo/pole-roots.json").poles.map(p => [p.id, p]));
 const stations = new Map(readJson("../../perf/vr-stations.json").map(s => [s.scene, s]));
 const objects = loadFurniture().objects.filter(o => o.source !== "site-detail");
@@ -21,7 +19,7 @@ const rows = document.records.map(record => {
   ids.add(record.id);
   const source = byId.get(record.id);
   if (!source) throw new Error(`${record.id}: unknown anchor source`);
-  const placed = resolveObject(source, record, parcels);
+  const placed = source;
   const shape = placed.point ? [placed.point] : placed.footprint ?? placed.ring ?? placed.line;
   const centre = shape.reduce((sum, p) => sum.map((v, i) => v + p[i] / shape.length), [0, 0]);
   const point = sceneToTm(...centre);
@@ -49,9 +47,9 @@ const rows = document.records.map(record => {
 for (const id of byId.keys()) if (!ids.has(id)) throw new Error(`${id}: missing anchor`);
 const conflicts = rows.flatMap(r => r.bearings.filter(b => b.pass === false).map(b => ({ id: r.id, ...b })));
 const report = {
-  status: conflicts.length ? "BLOCKED" : "UNVERIFIED",
-  scope: "non-site-detail loader objects; implicit plaza benches are not migrated",
-  renderedModelChanged: false,
+  status: conflicts.length ? "CONFLICTS_ESTIMATED" : "UNVERIFIED",
+  scope: "resolved non-site-detail loader objects, including two recorded plaza bench rows",
+  renderedModelChanged: true,
   referenceReuseExcluded: true,
   records: rows.length,
   tiers: Object.fromEntries(["T1", "T2", "T4"].map(t => [t, rows.filter(r => r.evidenceTier === t).length])),

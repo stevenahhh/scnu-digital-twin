@@ -13,6 +13,7 @@
 // Every height is an ESTIMATE (height_source per object in the GeoJSON, or the defaults below); the node extras list
 // each object with its height and source.
 import { existsSync, readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { simulationToTm, tmToScene } from "../../../src/geo/epsg5186.mjs";
@@ -23,6 +24,7 @@ import { encodePng } from "../lib/png.mjs";
 import { mulberry32 } from "../lib/raster.mjs";
 import { Kit, along, bufferLine, frame, lineLength, local, localPlan, offsetLine, orientedRect, rgb, sub, toLocal } from "../lib/solids.mjs";
 import { GLOW_UV, POLE_KINDS, appendLampSolids, objectDistance, roadNetwork, towardRoad } from "./lights.mjs";
+import { resolveObject, ObjectPlacementError } from "../fit/objectPlacement.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const OBJECTS = path.join(HERE, "..", "data", "photo", "objects-campus.geojson");
@@ -141,7 +143,15 @@ function heightOf(p) {
 }
 
 // ---------------------------------------------------------------- load (before the trees and the ground)
-export function loadFurniture() {
+export function loadFurnitureSurvey() {
+  // Hash the exact inputs and transform implementation. Math trig differs in the last bits across
+  // Bun/JSC and Node/V8; comparing their computed floats would reject an unchanged source on the lab.
+  const transformHash = createHash("sha256");
+  for (const relative of ["./furniture.mjs", "../lib/frame.mjs", "../lib/solids.mjs",
+    "../lib/geometry.mjs", "../../../src/geo/epsg5186.mjs"]) {
+    transformHash.update(readFileSync(new URL(relative, import.meta.url)));
+  }
+  const transform = transformHash.digest("hex");
   const data = JSON.parse(readFileSync(OBJECTS, "utf8"));
   const rest = existsSync(REST_SPACES) ? JSON.parse(readFileSync(REST_SPACES, "utf8")) : { features: [] };
   const objects = [];
@@ -190,6 +200,7 @@ export function loadFurniture() {
       if (pole.root) object.point = geoToModel(...pole.root);
       object.pole = { verdict: pole.verdict, shiftM: pole.shiftM ?? 0, residualM: pole.residualM ?? null, site: pole.site ?? null };
     }
+    object.sourceInput = createHash("sha256").update(JSON.stringify({ transform, g, p, outline, pole })).digest("hex");
     // Roofs were outlined on the photo, so they include the relief lean; the footprint is the outline moved back. A rest
     // space placed from the VR alone (photo_support "none") has no photo outline: its outline is the footprint.
     if ((ROOFED.has(object.kind) || ROOFED_SUBTYPES.has(object.subtype)) && (object.ring || object.line) && p.photo_support === "none") {
@@ -206,6 +217,21 @@ export function loadFurniture() {
     }
     objects.push(object);
   }
+  const plaza = JSON.parse(readFileSync(path.join(HERE, "..", "data", "plaza-benches.json"), "utf8"));
+  if (plaza.frameVersion !== 2) throw new ObjectPlacementError("plaza-benches", "stale frame");
+  for (const row of plaza.rows) {
+    const line = row.line.map(p => tmToScene(...p));
+    const length = Math.hypot(line[1][0] - line[0][0], line[1][1] - line[0][1]) / M(1);
+    if (!Number.isInteger(row.count) || row.count < 2 || !(row.pitchM > 0) ||
+        Math.abs(length - (row.count - 1) * row.pitchM) > 1e-6) {
+      throw new ObjectPlacementError(row.id, "bench row line must span (count - 1) * pitchM");
+    }
+    objects.push({ id: row.id, kind: "bench", surveyKind: "bench", source: "plaza-benches",
+      sourceInput: createHash("sha256").update(JSON.stringify({ transform, row, ref: plaza.ref })).digest("hex"),
+      line, heightM: 0.45, heightSource: "VR catalogue (estimated)",
+      p: { count: row.count, spacing_m: row.pitchM, style: "box",
+        dims: { lengthM: row.lengthM, depthM: 0.5 }, position_method: plaza.ref, estimated: true } });
+  }
 
   const sun = data.properties.sun_estimate;
   const treeBlock = [
@@ -217,6 +243,31 @@ export function loadFurniture() {
   // The 구령대 is also a GIS building record (운동장 본부석); the buildings stage leaves its generic mass out for it.
   const detailedStructures = objects.filter((o) => o.kind === "reviewing_stand").map((o) => o.footprint);
   return { objects, excluded, retyped: RETYPED, treeBlock, detailedStructures, fieldCentre, sun };
+}
+
+// The seed reads the survey above; production consumers only receive resolved parcel-local inputs.
+export function loadFurniture() {
+  const survey = loadFurnitureSurvey();
+  const document = JSON.parse(readFileSync(path.join(HERE, "..", "data", "free-standing-anchors.json"), "utf8"));
+  if (document.frameVersion !== 2) throw new ObjectPlacementError("free-standing-anchors", "stale frame");
+  const parcels = Object.fromEntries(JSON.parse(readFileSync(path.join(HERE, "..", "data", "ground", "parcels.json"), "utf8")).parcels.map(p => [p.id, p]));
+  const records = new Map();
+  for (const record of document.records) {
+    if (records.has(record.id)) throw new ObjectPlacementError(record.id, "duplicate anchor");
+    records.set(record.id, record);
+  }
+  const objects = survey.objects.map(o => {
+    if (o.source === "site-detail") return o;
+    const record = records.get(o.id);
+    if (!record) throw new ObjectPlacementError(o.id, "missing anchor; review and reseed");
+    records.delete(o.id);
+    return resolveObject(o, record, parcels);
+  });
+  if (records.size) throw new ObjectPlacementError(records.keys().next().value, "unknown anchor source");
+  return { ...survey, objects,
+    treeBlock: [...objects.filter(o => o.footprint).map(o => o.footprint),
+      ...objects.filter(o => ["pond", "fountain"].includes(o.subtype)).map(o => o.ring)],
+    detailedStructures: objects.filter(o => o.kind === "reviewing_stand").map(o => o.footprint) };
 }
 
 // ---------------------------------------------------------------- building helpers
@@ -2172,31 +2223,6 @@ function stepsOnTerrain(ctx, o) {
 }
 
 // ---------------------------------------------------------------- plaza benches (VR)
-// VR scene_c1 shows long dark-blue box benches beside the square tree pits on both long sides of the central pond;
-// the photo cannot resolve them (tree crowns), so they are placed from VR: PLAZA_BENCHES per side, PLAZA_BENCH_SPACING_M
-// apart, PLAZA_BENCH_OFFSET_M outside the pond's long sides (ESTIMATED positions). The benches the old walkway rule put
-// every 54 m along the A003 outlines are gone: neither the photo nor the VR shows a bench at those spots.
-const PLAZA_BENCHES = 4;
-const PLAZA_BENCH_SPACING_M = 7;
-const PLAZA_BENCH_OFFSET_M = 4.5;
-
-function estimateBenches(ctx) {
-  const benches = [];
-  const pond = ctx.objects.find((o) => o.subtype === "pond");
-  if (pond) {
-    const r = orientedRect(pond.ring);
-    const f = frame([r.centre[0], 0, r.centre[1]], r.u);
-    for (const side of [-1, 1]) {
-      for (let k = 0; k < PLAZA_BENCHES; k += 1) {
-        const s = (k - (PLAZA_BENCHES - 1) / 2) * PLAZA_BENCH_SPACING_M;
-        const at = localPlan(f, s, side * (r.halfWidth + PLAZA_BENCH_OFFSET_M));
-        benches.push({ at, u: r.u, faces: localPlan(f, s, 0), lengthM: 4, plaza: true });
-      }
-    }
-  }
-  return benches;
-}
-
 // ---------------------------------------------------------------- build (after the ground)
 // An object on a roof (site-detail `roof_m`, e.g. the A1 roof garden of VR scene_a5): built as on the terrain raised by
 // roof_m metres, into the same kits.
@@ -2225,20 +2251,19 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     if (builder(o.p.roof_m ? onRoof(ctx, o.p.roof_m) : ctx, o) === false) continue;
     const kind = o.kind === "plaza_structure" ? `plaza_structure/${o.subtype}` : o.kind;
     // Objects of rest-spaces.geojson and site-detail.geojson are placed from the VR, not surveyed on the photo: counted as estimated.
-    tally(kind, o.source === "rest-spaces" || o.source === "site-detail");
+    tally(kind, o.estimated === true || o.source === "rest-spaces" || o.source === "site-detail");
     built.push([o.id, kind, Number(o.heightM.toFixed(2)), o.heightSource, 1, ctx.solid.triangleCount + ctx.glass.triangleCount - before]);
     // rest-space instances: catalogue kinds given dims, or survey objects retyped to a catalogue kind
     if (REST_TYPES[o.kind] && (o.source === "rest-spaces" || o.p.dims !== undefined || o.surveyKind !== o.kind)) restSpaces.push([o.id, o.kind, REST_TYPES[o.kind].dimsSource, o.p.vr_scene ?? null, o.p.photo_support ?? null, true]);
   }
   appendLampSolids(ctx.solid, lamps, groundAt);
   for (const lamp of lamps) tally(`street_lamp/${lamp.type}`, false);
-  const benches = estimateBenches(ctx);
-  for (const bench of benches) {
-    const f = facingFrame(ctx, bench.at, bench.u, bench.faces);
-    if (bench.plaza) benchAt(ctx, f, bench.lengthM, { back: false, seat: C.plazaBench, legs: C.plazaBench, depthM: 0.5 });
-    else benchAt(ctx, f, bench.lengthM);
-    tally(bench.plaza ? "bench/plaza (VR)" : "bench", true);
-  }
+  // Already built through B.bench above. Keep the existing extras field and duplicate audit input.
+  const benches = furniture.objects.filter(o => o.source === "plaza-benches").flatMap(o =>
+    Array.from({ length: o.p.count }, (_, k) => ({
+      at: o.line[0].map((v, i) => v + (o.line[1][i] - v) * k / (o.p.count - 1)),
+      lengthM: o.p.dims.lengthM, plaza: true,
+    })));
 
   // per-kind provenance of the rest spaces (VR-located features and survey objects retyped to a catalogue kind)
   const restSpaceKinds = {};
@@ -2252,13 +2277,17 @@ export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs
     const key = support ?? (o.source === "survey" ? "survey outline" : "none");
     entry.photoSupport[key] = (entry.photoSupport[key] ?? 0) + 1;
   }
-  const duplicates = auditDuplicates(furniture.objects, lamps, benches);
+  const duplicates = auditDuplicates(furniture.objects.filter(o => o.source !== "plaza-benches"), lamps, benches);
   const furnitureMaterial = glb.addMaterial({ name: "Furniture", pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1], metallicFactor: 0, roughnessFactor: 0.82 } });
   const glassMaterial = glb.addMaterial({ name: "Furniture_Glass", pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1], metallicFactor: 0, roughnessFactor: 0.35 }, alphaMode: "BLEND", doubleSided: true });
   const extras = {
     source: "data/photo/objects-campus.geojson (NGII 2025 orthophoto survey, 175 objects; positions from the photo) and data/photo/rest-spaces.geojson (VR-located rest spaces, the A19 gate sign and the RS-LS VR landscape items: steps, the A1 pond, a sign stone, a PM rack; positions estimated) and data/photo/site-detail.geojson (VR station site detail within about 40 m: clipped hedges and shrub masses, lawn islands, tree pits, car-park stall rows and wheel stops, an entrance stair; positions on the photo or registered VR nadir faces, standard dimensions estimated); shapes, colours and heights estimated from the SCNU 360 VR tour (visual reference only)",
     heightsNote: "every height is an estimate, not a measurement; objects lists [id, kind, height m, height source, estimated]",
     counts,
+    placementEvidence: furniture.objects.filter(o => o.anchor?.parcel).map(o => ({
+      id: o.id, anchor: o.anchor, evidence: o.evidence, estimated: true,
+      bearingChecks: o.bearingChecks, parcelRelation: o.parcelRelation,
+    })),
     excluded: furniture.excluded,
     retyped: Object.fromEntries(Object.entries(furniture.retyped).map(([id, r]) => [id, `${r.kind}: ${r.reason}`])),
     photoOnly: ctx.skipped,

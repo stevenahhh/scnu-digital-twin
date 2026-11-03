@@ -20,6 +20,17 @@ export function positionObject(seed, parcels) {
   let crossingDeg = null;
   const refs = [`survey seed E=${point[0]} N=${point[1]}; position not independently verified`];
   const photo = seed.photo;
+  const observations = seed.observations ?? [];
+  if (!Array.isArray(observations) || observations.some(o =>
+    !o?.station || typeof o.station.scene !== "string" || !o.reading)) fail("malformed station observation");
+  let rays;
+  try {
+    rays = observations.map(o => readBearing(o.station, o.reading));
+  } catch (error) {
+    if (!(error instanceof RangeError)) throw error;
+    fail(error.message);
+  }
+  for (const o of observations) refs.push(`VR ${o.station.scene} ${o.reading.face} col ${o.reading.col}`);
   if (photo && (!Array.isArray(photo.point) || photo.point.length !== 2 || !photo.point.every(Number.isFinite) ||
       typeof photo.ref !== "string" || !photo.ref || !Number.isFinite(photo.residualM) || photo.residualM < 0)) fail("malformed photo base evidence");
   if (photo?.base === true && photo.occluded === false && photo.residualM <= 0.5) {
@@ -28,17 +39,6 @@ export function positionObject(seed, parcels) {
     reason = "visible_ground_base";
     refs.push(`${photo.ref}; base residual=${photo.residualM} m`);
   } else {
-    const observations = seed.observations ?? [];
-    if (!Array.isArray(observations) || observations.some(o =>
-      !o?.station || typeof o.station.scene !== "string" || !o.reading)) fail("malformed station observation");
-    let rays;
-    try {
-      rays = observations.map(o => readBearing(o.station, o.reading));
-    } catch (error) {
-      if (!(error instanceof RangeError)) throw error;
-      fail(error.message);
-    }
-    for (const o of observations) refs.push(`VR ${o.station.scene} ${o.reading.face} col ${o.reading.col}`);
     if (observations.length === 1) reason = "one_station";
     if (observations.length === 2) {
       if (observations[0].station.scene === observations[1].station.scene) {
@@ -63,11 +63,25 @@ export function positionObject(seed, parcels) {
   const zero = { id: seed.id, anchor: { parcel: seed.parcel, uM: 0, vM: 0 } };
   const frame = resolveAnchor(zero, {}, parcels);
   const d = point.map((v, i) => v - frame.origin[i]);
+  const bearingChecks = rays.map((ray, i) => {
+    const ref = `VR ${observations[i].station.scene} ${observations[i].reading.face} col ${observations[i].reading.col}`;
+    if (ray.tier === "T4") return { ref, residualDeg: null, reason: ray.reason, estimated: true };
+    const predictedDeg = (Math.atan2(point[0] - ray.origin[0], point[1] - ray.origin[1]) * 180 / Math.PI + 360) % 360;
+    const residualDeg = ((predictedDeg - ray.bearingDeg + 540) % 360) - 180;
+    return { ref, observedDeg: ray.bearingDeg, predictedDeg, residualDeg,
+      toleranceDeg: 1.5, pass: Math.abs(residualDeg) <= 1.5, estimated: true,
+      photoResidualM: tier === "T1" ? photo.residualM : null, photoToleranceM: 0.5,
+      decision: tier === "T1" ? "retain_photo_base" : reason,
+      method: "anchor-centre projection, not rendered ID mask" };
+  });
+  for (const check of bearingChecks.filter(b => b.pass === false)) {
+    refs.push(`bearing conflict (estimated): observed=${check.observedDeg} deg, predicted=${check.predictedDeg} deg, residual=${check.residualDeg} deg > 1.5 deg; photo residual=${check.photoResidualM ?? "unverified"} m, tolerance=0.5 m; ${check.decision}`);
+  }
   return {
     id: seed.id,
     anchor: { parcel: seed.parcel, uM: d[0] * frame.a[0] + d[1] * frame.a[1],
       vM: d[0] * frame.n[0] + d[1] * frame.n[1], yawDeg: 0 },
-    evidence: { tier, refs }, estimated: true, reason, crossingDeg,
+    evidence: { tier, refs }, estimated: true, reason, crossingDeg, bearingChecks,
   };
 }
 
@@ -88,12 +102,15 @@ export function anchorObject(object, placement, parcels) {
   };
   const geometry = Object.fromEntries(Object.entries(sourceGeometry).map(([key, value]) =>
     [key, key === "point" ? toLocal(value) : value.map(toLocal)]));
-  return { ...placement, kind: object.kind, sourceGeometry, geometry };
+  return { ...placement, kind: object.kind, sourceInput: object.sourceInput, sourceGeometry, geometry };
 }
 
 export function resolveObject(object, record, parcels) {
-  if (object.id !== record.id || object.kind !== record.kind ||
-      JSON.stringify(geometryOf(object)) !== JSON.stringify(record.sourceGeometry)) {
+  // Production records compare exact source inputs + transform code, not runtime-dependent trig bits.
+  const stale = object.sourceInput !== undefined || record.sourceInput !== undefined
+    ? object.sourceInput !== record.sourceInput
+    : JSON.stringify(geometryOf(object)) !== JSON.stringify(record.sourceGeometry);
+  if (object.id !== record.id || object.kind !== record.kind || stale) {
     throw new ObjectPlacementError(object.id, "stale source geometry; review and reseed object anchors");
   }
   if (!["T1", "T2", "T4"].includes(record.evidence?.tier) || !Array.isArray(record.evidence?.refs) ||
@@ -112,5 +129,6 @@ export function resolveObject(object, record, parcels) {
     if (!geometryKeys.includes(key)) throw new ObjectPlacementError(object.id, `unknown geometry ${key}`);
     return [key, key === "point" ? toScene(value) : value.map(toScene)];
   }));
-  return { ...object, ...geometry, anchor: record.anchor, evidence: record.evidence, estimated: true };
+  return { ...object, ...geometry, anchor: record.anchor, evidence: record.evidence,
+    bearingChecks: record.bearingChecks, parcelRelation: record.parcelRelation, estimated: true };
 }

@@ -3,7 +3,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { sceneToTm, wgs84ToTm } from "../../../src/geo/epsg5186.mjs";
-import { loadFurniture } from "../stages/furniture.mjs";
+import { loadFurnitureSurvey } from "../stages/furniture.mjs";
 import { pointInRing } from "../lib/geometry.mjs";
 import { positionObject, anchorObject } from "./objectPlacement.mjs";
 
@@ -12,7 +12,7 @@ const parcelList = readJson("../data/ground/parcels.json").parcels;
 const parcels = Object.fromEntries(parcelList.map(p => [p.id, p]));
 const roots = new Map(readJson("../data/photo/pole-roots.json").poles.map(p => [p.id, p]));
 const stations = new Map(readJson("../../perf/vr-stations.json").map(s => [s.scene, s]));
-const furniture = loadFurniture();
+const furniture = loadFurnitureSurvey();
 const records = [];
 for (const object of furniture.objects.filter(o => o.source !== "site-detail")) {
   const shape = object.point ? [object.point] : object.footprint ?? object.ring ?? object.line;
@@ -29,6 +29,9 @@ for (const object of furniture.objects.filter(o => o.source !== "site-detail")) 
   if (root?.root && ["shadow-root", "by-eye-root", "epoch-root"].includes(root.verdict)) {
     seed.photo = { point: wgs84ToTm(...root.root), base: true, occluded: false,
       residualM: root.residualM, ref: `data/photo/pole-roots.json ${root.id} ${root.verdict}; ${root.note}` };
+  } else if (object.p.method === "vr+photo" && object.p.pole_verdict === "by-eye-root") {
+    seed.photo = { point, base: true, occluded: false, residualM: object.p.residual_m,
+      ref: `data/photo/vr-lamps.geojson ${object.id}; ${object.p.source}; ${object.p.vrFix?.note ?? ""}` };
   }
   if (object.p.vr_scene && ["f", "r", "b", "l"].includes(object.p.vr_face) && Array.isArray(object.p.vr_cols)) {
     const col = (object.p.vr_cols[0] + object.p.vr_cols[1]) / 2;
@@ -42,6 +45,9 @@ for (const object of furniture.objects.filter(o => o.source !== "site-detail")) 
   const placement = positionObject(seed, parcels);
   if (object.p.vr_face === "d") placement.evidence.refs.push(`nadir face ${object.p.vr_scene}/d is not a horizontal column bearing`);
   placement.evidence.refs.push(`source=${object.source}; kind=${object.kind}; method=${object.p.method ?? object.p.position_method ?? "unrecorded"}`);
+  if (object.source === "plaza-benches") placement.row = {
+    count: object.p.count, pitchM: object.p.spacing_m, estimated: true, ref: object.p.position_method,
+  };
   if (!containing.length) {
     placement.parcelRelation = "nearest_boundary";
     placement.evidence.refs.push(`outside all curated parcels; nearest parcel vertex ${distance(parcel).toFixed(3)} m`);
@@ -57,7 +63,7 @@ for (const object of furniture.objects.filter(o => o.source !== "site-detail")) 
 const document = {
   frameVersion: 2,
   generator: "scripts/campus-model/fit/objectAnchorsSeed.mjs",
-  note: "Proposal only, not connected to the model generator. Visual values are estimated. Existing visible pole-base reviews retain T1; all other unverified positions remain T4. Site-detail is owned by todo 20. Source geometry is checked before applying anchors.",
+  note: "Production parcel anchors. Visual values are estimated. Existing visible pole-base reviews retain T1 even if a single VR bearing conflicts; both numbers are recorded, never fitted by moving the base. Site-detail is owned by todo 20. Source geometry is checked before applying anchors.",
   records,
 };
 const output = new URL("../data/free-standing-anchors.json", import.meta.url);

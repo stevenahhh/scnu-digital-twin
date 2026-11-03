@@ -22,6 +22,20 @@ test("visible ground base wins over survey and conflicting VR positions", () => 
   assert.ok(Math.hypot(...resolveAnchor(result, {}, parcels).origin.map((v, i) => v - origin[i])) < 1e-6);
 });
 
+test("a conflicting single bearing is recorded without moving a photo base", () => {
+  const result = positionObject({ ...seed,
+    photo: { point: origin, base: true, occluded: false, ref: "independent base pick", residualM: 0.25 },
+    observations: [observation("a", [0, -10], 45)] }, parcels);
+  assert.deepEqual(resolveAnchor(result, {}, parcels).origin, origin);
+  assert.equal(result.evidence.tier, "T1");
+  assert.equal(result.bearingChecks[0].observedDeg, 45);
+  assert.ok(Math.abs(result.bearingChecks[0].residualDeg + 45) < 1e-8);
+  assert.equal(result.bearingChecks[0].pass, false);
+  assert.equal(result.bearingChecks[0].photoResidualM, 0.25);
+  assert.equal(result.bearingChecks[0].photoToleranceM, 0.5);
+  assert.equal(result.bearingChecks[0].estimated, true);
+});
+
 test("two refined stations with a wide crossing recover the free point", () => {
   const result = positionObject({ ...seed, observations: [observation("a", [-10, -10], 45), observation("b", [10, -10], 315)] }, parcels);
   assert.equal(result.evidence.tier, "T2");
@@ -87,6 +101,12 @@ test("changed source geometry is rejected rather than silently overwritten by an
   const record = anchorObject(object, positionObject(seed, parcels), parcels);
   const changed = { ...object, point: [object.point[0] + 1, object.point[1]] };
   assert.throws(() => resolveObject(changed, record, parcels), /BENCH.*stale/);
+});
+
+test("source input changes invalidate the anchor even when projected geometry is unchanged", () => {
+  const object = { id: seed.id, kind: "bench", point: tmToScene(...seed.point), sourceInput: "survey-v1", p: {} };
+  const record = anchorObject(object, positionObject(seed, parcels), parcels);
+  assert.throws(() => resolveObject({ ...object, sourceInput: "survey-v2" }, record, parcels), /BENCH.*stale/);
 });
 
 test("malformed station evidence reports the object instead of a TypeError", () => {
