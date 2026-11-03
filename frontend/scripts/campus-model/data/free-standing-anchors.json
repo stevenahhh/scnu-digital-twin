@@ -14308,9 +14308,9 @@
     {
       "id": "OC0167",
       "anchor": {
-        "parcel": "PARCEL_PAVING_BUILDING_130",
-        "uM": 24.235540877989422,
-        "vM": -19.753782452384865,
+        "parcel": "PARCEL_PAVING_100034702020A00310100000000047532",
+        "uM": 133.7529643176904,
+        "vM": -33.3426054248149,
         "yawDeg": 0
       },
       "evidence": {
@@ -14319,7 +14319,7 @@
           "survey seed E=244220.12696064662 N=263570.87300193816; position not independently verified",
           "final pole placement: data/free-standing-pole-placements.json, reconciled from packed Furniture.extras.poles after checkPoles; photo bases retain priority",
           "source=survey; kind=street_lamp; method=data.go.kr",
-          "outside all curated parcels; nearest parcel vertex 0.949 m",
+          "outside all curated parcels; nearest parcel vertex 2.727 m",
           "retained pole verdict=unresolved; root/seed uncertainty=5 m"
         ]
       },

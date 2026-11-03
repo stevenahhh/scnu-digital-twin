@@ -798,8 +798,8 @@ def transform_soup(soup, tf):
     return out
 
 
-# Main, wing, podium and tower masses are cut to the footprint buffered 0.3 m (after classify); cores and canopies
-# keep their LOD4 outline.
+# Main, wing, podium and tower masses are cut to the footprint buffered 0.3 m, regardless of source.
+# Cores and canopies keep their outline.
 CLIPPED_KINDS = ("main", "wing", "podium", "tower")
 
 
@@ -1152,13 +1152,10 @@ def main():
                                       "hausdorff_m": round(registration["hausdorff_m"], 3), "planIou": round(registration["iou"], 3),
                                       "planIouBefore": round(registration["iouBefore"], 3), "atRotationBound": registration["atRotationBound"]}
             record["lod4Residual_m"] = round(registration["residual_m"], 3)
+        clipped = []
         if use_lod4:
             storey = classify(masses, b.get("floors") or 0, label, b.get("tower"))
             masses, clipped = clip_to_footprint(masses, foot[j])
-            for d in clipped:
-                record.setdefault("clippedMasses", []).append(d)
-                record["flags"].append(f"clip: {d['kind']} {d['areaSquareMetres']} m2 at {d['topMetres']} m dropped ({d['reason']})")
-                print(f"WARN {b['key']}: clip dropped {d['kind']} {d['areaSquareMetres']} m2 ({d['reason']})", file=sys.stderr)
             if registration is not None and registration["atRotationBound"]:
                 record["flags"].append(f"registration rotation at the {registration['rotDeg']:+.1f} deg bound; the fit may need more rotation or a review")
                 print(f"WARN {b['key']}: registration rotation at the bound ({registration['rotDeg']:+.2f} deg)", file=sys.stderr)
@@ -1170,20 +1167,37 @@ def main():
         elif curated:
             iou_curated = result["ious"][0]
             record["iou"]["curated"] = None if iou_curated is None else round(iou_curated, 3)
+            bounded_curated = []
+            zone = foot[j].buffer(0.3, join_style="mitre")
+            for mass in curated:
+                kept, dropped = clip_to_footprint([mass], foot[j]) if mass["kind"] in CLIPPED_KINDS and not zone.covers(mass["poly"]) else ([mass], [])
+                bounded_curated.extend(kept)
+                clipped.extend(dropped)
+            curated = bounded_curated
             main_mass = max((m for m in curated if m["kind"] == "main"), key=lambda m: m["poly"].area, default=curated[0])
             record["source"] = b["curated"]["source"]
             record["storeyMetres"] = round(main_mass["top"] / main_mass["floors"], 2)
             record["masses"] = [mass_out(m) for m in sorted(curated, key=lambda m: (m["base"] > 0, -m["poly"].area))]
             record["voids"] = voids_of(curated)
             record["iou"]["final"] = record["iou"]["curated"]
+            if clipped:
+                final_iou = iou(result["frame"].raster([(m["poly"], m["top"] + m.get("parapet", 0.0)) for m in curated], result["lean"]),
+                                result["roof"], result["frame"].shadow)
+                record["iou"]["final"] = None if final_iou is None else round(final_iou, 3)
             record["flags"].append(f"curated form (data/scnu-facades.json): photo IoU {record['iou']['curated']} against {record['iou']['footprint']} for the current footprint")
         elif traced is not None:
             part = b["parts"][0]
+            traced_masses, clipped = clip_to_footprint(
+                [{"poly": traced, "kind": "main", "top": part["heightMetres"]}], foot[j])
             record["source"] = "NGII 2025 orthophoto roof outline (lean-corrected)"
             record["iou"]["final"] = record["iou"]["traced"]
-            record["masses"] = [{"outer": ring_out(shapely.set_precision(traced, GRID).exterior.coords), "holes": [], "baseMetres": 0.0, "topMetres": round(part["heightMetres"], 2),
+            record["masses"] = [{"outer": ring_out(m["poly"].exterior.coords), "holes": [ring_out(h.coords) for h in m["poly"].interiors], "baseMetres": 0.0, "topMetres": round(part["heightMetres"], 2),
                                  "kind": "main", "floors": part.get("floors") or None, "roof": "flat", "parapetMetres": DEFAULT_PARAPET, "parapetEstimated": True,
-                                 "areaSquareMetres": round(traced.area, 1), "heightFromFootprint": True}]
+                                 "areaSquareMetres": round(m["poly"].area, 1), "heightFromFootprint": True} for m in traced_masses]
+            if clipped:
+                final_iou = iou(check["frame"].raster([(m["poly"], part["heightMetres"] + DEFAULT_PARAPET) for m in traced_masses], check["lean"]),
+                                check["roof"], check["frame"].shadow)
+                record["iou"]["final"] = None if final_iou is None else round(final_iou, 3)
             record["voids"] = []
         else:
             record["source"] = b["footprintSource"]
@@ -1196,6 +1210,10 @@ def main():
             record["voids"] = [{"kind": "courtyard", "area": round(Polygon(h).area, 1), "ring": ring_out(Polygon(h).exterior.coords)} for p in b["parts"] for h in p["holes"] if Polygon(h).area >= 10]
             if not owners.get(j):
                 record["flags"].append("no VWorld LOD4 model over this footprint")
+        for d in clipped:
+            record.setdefault("clippedMasses", []).append(d)
+            record["flags"].append(f"clip: {d['kind']} {d['areaSquareMetres']} m2 at {d['topMetres']} m dropped ({d['reason']})")
+            print(f"WARN {b['key']}: clip dropped {d['kind']} {d['areaSquareMetres']} m2 ({d['reason']})", file=sys.stderr)
         record.setdefault("lod4Residual_m", None)
         out.append(record)
         print(f"{b['key']}: {record['source'][:24]} masses {len(record['masses'])} voids {len(record['voids'])} IoU lod4 {record['iou']['lod4']} footprint {record['iou']['footprint']} lean {record['lean']}", file=sys.stderr)
