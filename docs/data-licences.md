@@ -79,6 +79,36 @@ Notes:
   of works fully owned by MOLIT **and** marked KOGL Type 1. Unmarked material needs prior
   consultation. No KOGL mark was found on LT_C_BLDGINFO responses, WMTS tiles or LOD4 tiles.
 
+## Ground-truth record and evidence handling (2026-11-04)
+
+D3 records the owner's 2026-11-02 consent to use the Suncheon 12 cm aerial for
+cross-checks. It is not a newly verified public licence or permission to
+redistribute pixels. Source tiles and crops stay local under the gitignored
+`frontend/scripts/campus-model/.cache/suncheon-12cm/<epoch>/`. Only derived
+numbers and vectors are committed. Do not bake, ship or link those pixels.
+This decision leaves the separate NGII D2 question unchanged.
+
+The redesign's record files include `data/bld-node-map.json`,
+`data/ground/parcels.json`, `parking.json`, W4's `road-sections.json` and
+`junctions.json`, `data/buildings/entrances.json`, `data/buildings/facades/*.json`,
+`data/photo/building-lean.json` and `data/registration.json`, all relative to
+`frontend/scripts/campus-model/`. They retain source references, evidence tiers,
+residuals and estimation flags. Derived records inherit the source decision;
+moving or renaming a file does not change its licence.
+
+Superseded photo registration tables and migration records stay in
+`data/photo/evidence/`. W4 also moves `markings*.geojson` and `markings-gate.json`
+there as estimator/comparison evidence, removing their role as final geometry
+inputs. Historical survey counts in the input table below predate these
+migrations. Keep the source attribution with the archived vectors.
+
+Todo 28's build reports are `.build/qa/map-compare.json`, `vr-bearings.json` and
+`invariants.json`; `.build/markings.report.json` records generated paint pieces.
+Reports contain derived numbers, IDs and reasons, not source imagery or
+credentials. Photo/VR comparison images remain local. `qa/coverage.mjs` checks
+the design's 18 generator/report mappings and reports missing files explicitly;
+its success is neither an accuracy certificate nor a licence decision.
+
 ## Inputs
 
 "Ships" means committed to git or contained in a built asset served to users. "Local" means

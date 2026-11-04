@@ -3,7 +3,7 @@
 These are vector features read directly from the NGII 2025 orthophoto, sheet 34702020 (순천020, 0.25 m GSD,
 EPSG:5186, georeferenced by the world file `0.25 / 0 / 0 / -0.25 / 243324.125 / 264485.875`).
 The covered area is the model `EXTENT` from `lib/frame.mjs` (scene x -2..502, z -376..2, about 807 x 605 m).
-Two generator units consume them:
+The original survey consumers were:
 
 - `markings.geojson`: painted road markings, used by M1 (markings).
 - `objects.geojson`: street furniture and structures, used by S1 (furniture). Superseded by `objects-campus.geojson`.
@@ -13,6 +13,42 @@ Two generator units consume them:
 
 Both files are WGS84 (CRS84) GeoJSON with 8-decimal coordinates. Every feature carries `source: "ngii-2025-ortho"`.
 Generated 2026-10-24.
+
+## Record inputs and retained evidence (2026-11-04)
+
+The counts and methods below describe the historical photo survey. They are not
+the current generated-object counts or a claim that all placements passed QA.
+The ground-truth redesign stores geometry decisions in `../ground/parcels.json`,
+`../ground/parking.json`, `../buildings/entrances.json` and
+`../buildings/facades/*.json`. W4 adds `../ground/road-sections.json` and
+`../ground/junctions.json`; its `stages/roadMarkings.mjs` generates road geometry
+from those records, rather than replaying photo fragments.
+
+`evidence/ground-registration.json`, `evidence/a003-registration.json` and
+`evidence/parking-migration.json` preserve earlier decisions. W4 moves
+`markings*.geojson` and `markings-gate.json` into `evidence/` too. Moving them
+demotes their role to estimator/QA evidence; it does not erase the source
+observations or permit using their old shifts in generation. On a pre-W4
+checkout those marking files have not moved yet.
+
+`building-lean.json` supplies height-dependent lean and occlusion comparisons;
+`../registration.json` holds source transforms and residuals. Keep
+`evidence.refs`, tiers and `estimated` on curated records. Missing or occluded
+evidence must remain an explicit uncertainty. A T4 placement is an estimate.
+The object surveys remain source observations for the furniture/anchor pipeline.
+
+After Todo 28 integration, every build writes `../../.build/qa/map-compare.json`,
+`vr-bearings.json` and `invariants.json`. Read object residuals, support, occlusion
+and reasons there; `../../.build/markings.report.json` lists generated paint and
+parking symbols. From `frontend/`, run `bun scripts/campus-model/qa/coverage.mjs`
+to check the 18 design §20 generator/report mappings. Missing dependencies fail
+with row names; this structural check does not certify visual accuracy.
+
+Suncheon city 12 cm aerial pixels may be used for cross-checks under the owner's
+2026-11-02 consent (D3 in `docs/data-licences.md`). Keep them only in
+`../../.cache/suncheon-12cm/<epoch>/`, gitignored. Commit derived vectors/numbers,
+never pixels, crops, contact sheets or textures made from those pixels. This
+consent does not settle the separate NGII D2 question below.
 
 ## Counts
 

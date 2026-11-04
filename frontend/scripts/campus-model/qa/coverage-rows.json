@@ -1,0 +1,74 @@
+{
+  "BLD_* 위치·발자국": {
+    "generators": ["stages/buildings.mjs"],
+    "reports": [".build/qa/invariants.json"]
+  },
+  "BLD_* 매스·날개·코어": {
+    "generators": ["fetch/buildingForms.mjs", "stages/buildings.mjs"],
+    "reports": [".build/qa/invariants.json"]
+  },
+  "지붕 색·태양광": {
+    "generators": ["lib/roofPhoto.mjs", "stages/buildings.mjs"],
+    "reports": [".build/qa/invariants.json"]
+  },
+  "입면(창·출입구·악센트)": {
+    "generators": ["stages/buildings.mjs"],
+    "reports": [".build/qa/invariants.json", ".build/qa/vr-bearings.json"]
+  },
+  "출입구·캐노피": {
+    "generators": ["stages/entrances.mjs"],
+    "reports": [".build/qa/vr-bearings.json", ".build/qa/invariants.json"]
+  },
+  "Topography": {
+    "generators": ["stages/sources.mjs", "stages/ground.mjs"],
+    "reports": [".build/qa/invariants.json"]
+  },
+  "Ground_* 지면 클래스": {
+    "generators": ["stages/ground.mjs", "stages/surfaces.mjs"],
+    "reports": [".build/qa/invariants.json"]
+  },
+  "Kerbs, 촉지, 단차": {
+    "generators": ["stages/kerbs.mjs", "stages/tactile.mjs"],
+    "reports": [".build/qa/map-compare.json", ".build/qa/invariants.json"]
+  },
+  "주차 디바이더·장애인 구역·휠스톱": {
+    "generators": ["stages/parking.mjs"],
+    "reports": [".build/markings.report.json", ".build/qa/map-compare.json", ".build/qa/vr-bearings.json"]
+  },
+  "차선·중앙선·가장자리선·연석선": {
+    "generators": ["fit/roadSections.mjs", "stages/roadMarkings.mjs"],
+    "reports": [".build/qa/map-compare.json"]
+  },
+  "정지선·횡단보도·화살표·글자·과속방지턱": {
+    "generators": ["stages/roadMarkings.mjs"],
+    "reports": [".build/qa/map-compare.json"]
+  },
+  "광장 가구·쉼터·정자·정문 구조물·관람석": {
+    "generators": ["stages/furniture.mjs"],
+    "reports": [".build/qa/vr-bearings.json", ".build/qa/invariants.json"]
+  },
+  "가로등·신호등": {
+    "generators": ["stages/lights.mjs", "stages/furniture.mjs"],
+    "reports": [".build/qa/vr-bearings.json"]
+  },
+  "수목": {
+    "generators": ["fit/treePosition.mjs", "stages/trees.mjs"],
+    "reports": [".build/qa/invariants.json"]
+  },
+  "생울타리·화단": {
+    "generators": ["stages/trees.mjs", "stages/furniture.mjs"],
+    "reports": [".build/qa/invariants.json", ".build/qa/vr-bearings.json"]
+  },
+  "간판·현판·LED": {
+    "generators": ["stages/furniture.mjs"],
+    "reports": [".build/qa/invariants.json", ".build/qa/vr-bearings.json"]
+  },
+  "캠퍼스 밖 건물·도로·외곽 지형": {
+    "generators": ["stages/context.mjs", "stages/contextGround.mjs", "stages/outerTerrain.mjs"],
+    "reports": [".build/qa/invariants.json"]
+  },
+  "교통 네트워크 좌표": {
+    "generators": ["network/buildNetwork.mjs"],
+    "reports": [".build/qa/invariants.json"]
+  }
+}

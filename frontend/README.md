@@ -67,6 +67,40 @@ cd frontend; bun run test; bun run build; bun run build:vworld
 
 `build` 는 `dist/`, `build:vworld` 는 `dist-vworld/` 에 결과물을 만듭니다. 빌드 결과는 `bun run preview` 로 확인할 수 있습니다.
 
+### 캠퍼스 모델 생성과 커버리지
+
+저장소 루트에서 `bun run --cwd frontend model:build`로 모델을 생성합니다.
+웹 앱의 `build`와 별개이며, 생성기는 `scripts/campus-model/.build/campus-v2.raw.glb`를
+만들고 pack 단계가 `public/campus-v2.glb`로 내보냅니다. GLB는 커밋하지 않습니다.
+Mac의 무거운 명령은 `/Users/gahn/.cache/scnu-heavy/scnu-heavy`로 실행합니다.
+
+모델의 기준 입력은 건물 매핑 `data/bld-node-map.json`, 지면 `data/ground/parcels.json`,
+주차 `data/ground/parking.json`, 출입구 `data/buildings/entrances.json`,
+입면 `data/buildings/facades/*.json`입니다. 도로는 W4 통합 후
+`data/ground/road-sections.json`과 `junctions.json`을 사용합니다.
+각 경로는 `scripts/campus-model/` 기준입니다. 사진 조각과 옛 보정표는
+`data/photo/evidence/`의 비교 증거로 보관하며 생성 입력과 구분합니다.
+
+Todo 28의 빌드 QA 연결이 통합되면 매 빌드마다 `.build/qa/map-compare.json`,
+`vr-bearings.json`, `invariants.json`을 기록합니다. 잔차 초과 항목의 사유와
+추정 표시는 보고서에서 확인해야 합니다. 보고서가 있다는 사실만으로 정확도가 보장되지는 않습니다.
+
+```bash
+cd frontend
+bun scripts/campus-model/qa/coverage.mjs
+```
+
+§20의 18행을 `qa/coverage-rows.json`에 대응시켰습니다. 생성기와 보고서 파일이 모두 있으면
+`COVERAGE OK: 18 rows`와 종료 코드 0을 출력합니다. 누락되면 해당 행과 경로를 출력하고
+1로 종료합니다. W4 생성기나 Todo 28 보고서가 없는 체크아웃에서도 실패를 그대로 표시합니다.
+커버리지 검사는 보고서 매핑과 파일 존재·JSON 형식을 검사하며, 개별 객체의 잔차 수락을 대신하지 않습니다.
+
+순천시 12 cm 항공사진은 2026-11-02 소유자 동의에 따라 교차 확인에 사용합니다.
+픽셀은 로컬 `.cache/suncheon-12cm/<epoch>/`에만 두고, 파생 수치·벡터만 커밋합니다.
+사진, VR 얼굴, 비교 이미지는 배포물에 넣지 않습니다. 입력 기록과 증거의 구분은
+[모델 생성기 README](./scripts/campus-model/README.md), 사용 동의는
+[data-licences.md](../docs/data-licences.md)의 D3을 따릅니다.
+
 ### 점검 체크리스트
 
 - 건물을 클릭하면 오른쪽 패널이나 팝업이 뜨는지

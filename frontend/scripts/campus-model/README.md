@@ -15,7 +15,64 @@ bun scripts/campus-model/fetch/buildingForms.mjs [--keep <dir>] # refresh data/b
 node --test src/campusModelAsset.test.mjs
 ```
 
-## Layout
+## Ground-truth records and QA (2026-11-04)
+
+The ground-truth redesign uses curated records as geometry inputs. Paths below are
+relative to `scripts/campus-model/`. Fix a record at its curation seed so reseeding
+reproduces the change; do not patch generated JSON alone.
+
+| Record | Generator / meaning |
+|---|---|
+| `data/bld-node-map.json` | `stages/buildings.mjs`: GIS footprint ownership and saved wall snapshots in Frame v2 |
+| `data/building-forms.json` | `fetch/buildingForms.mjs`, `stages/buildings.mjs`: GIS-registered masses and footprint-relative roof parts; residuals remain estimates |
+| `data/ground/parcels.json` | `stages/ground.mjs`, `surfaces.mjs`, `kerbs.mjs`, `tactile.mjs`: one ground partition and derived boundaries |
+| `data/ground/parking.json` | `stages/parking.mjs`: parametric rows, accessible bays, symbols and wheel stops |
+| `data/ground/road-sections.json`, `data/ground/junctions.json` | W4 integration: `fit/roadSections.mjs` proposes records; `stages/roadMarkings.mjs` generates section offsets and junction markings |
+| `data/buildings/entrances.json`, `data/buildings/facades/*.json` | `stages/entrances.mjs`, `stages/buildings.mjs`: wall anchors and facade cells |
+| `data/free-standing-anchors.json`, `data/photo/site-detail.geojson` | `stages/furniture.mjs`, `trees.mjs`, `lights.mjs`: parcel/wall placement with evidence and reasoned exceptions |
+| `data/photo/building-lean.json`, `data/registration.json` | Lean/occlusion and per-source registration for comparisons; these are not per-object visual nudges |
+
+`data/photo/evidence/` holds superseded registration tables and parking migration
+evidence. W4 also moves `markings*.geojson` and `markings-gate.json` there: detections
+remain estimator/QA evidence, not polygons to replay as the final road geometry.
+The detailed survey sections below retain historical counts and methods; they do
+not override these record contracts. W4 is a dependency of this documentation
+update, so a pre-W4 checkout still has the older markings path.
+
+Todo 28 wires QA into each build at `.build/qa/map-compare.json`,
+`.build/qa/vr-bearings.json` and `.build/qa/invariants.json`. This build-output
+location is the plan's concrete location for the design's `qa/report/` reports.
+Map comparisons record visible-ground support/residuals and occlusion; VR reports
+record same-object bearing residuals; invariants cover frame/anchor/evidence/paint
+constraints and deterministic generation. These reports must retain unexplained
+or over-tolerance objects rather than turning them into accuracy passes.
+The existing `.build/markings.report.json` records generated paint pieces and
+parking symbols. No source pixels belong in these JSON reports.
+
+```bash
+cd frontend
+bun scripts/campus-model/qa/coverage.mjs
+# Audit another model directory or a temporary mapping table:
+bun scripts/campus-model/qa/coverage.mjs --root /path/to/scripts/campus-model --table /path/to/rows.json
+```
+
+`qa/coverage-rows.json` maps all 18 design §20 row names to generator and report
+paths. `qa/coverage.mjs` keeps the required row inventory independently, so removing
+`Ground_* 지면 클래스` from a copy of the table fails with that row's name and exit 1.
+Every listed generator and report must be a regular file; reports must parse as
+nonempty JSON objects or arrays. Success is `COVERAGE OK: 18 rows`, exit 0.
+Missing W4 generators and Todo 28 reports are failures, never fabricated artifacts.
+The mapping is a structural audit, not a per-object residual or report freshness
+gate. For unchanged Topography/context and shared geometry, the invariant report
+is the common build audit; it does not imply new photo-accuracy work under §19.
+
+The Suncheon 12 cm aerial is a cross-check source under owner consent dated
+2026-11-02 (D3 in `docs/data-licences.md`). Keep pixels only in the gitignored
+`.cache/suncheon-12cm/<epoch>/`; commit derived numbers and vectors only.
+Do not bake, ship or link aerial pixels, VR faces or comparison images.
+Evidence tiers and `estimated` flags describe confidence, not measured accuracy.
+
+## Layout (legacy stage inventory; record migrations above take precedence)
 
 `build-campus-model.mjs` only sequences the stages, in this order:
 
