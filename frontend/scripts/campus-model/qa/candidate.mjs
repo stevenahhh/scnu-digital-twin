@@ -91,12 +91,57 @@ export async function publishCandidate(candidate, {
     };
     // A JSON clone prevents callbacks from mutating the expected identity.
     await runChecks({ candidate: paths, identity: structuredClone(identity) });
+    return publishCheckedSnapshot(paths, bytes, identity, { publicDir, precompress });
+  } finally {
+    rmSync(lock, { recursive: true, force: true });
+  }
+}
+
+/** Publish an explicitly selected, already checked candidate; never rerun or rewrite its QA. */
+export async function publishReviewedCandidate(candidate, {
+  publicDir = PUBLIC_DIR, precompress = false, exception = null,
+} = {}) {
+  if (exception !== null && exception !== "F3-paint-2026-11-04") {
+    throw new CandidateGateError("CANDIDATE_EXCEPTION", `unknown publication exception: ${exception}`);
+  }
+  const paths = candidatePaths(candidate.dir, candidate.buildDir);
+  const lock = path.join(paths.dir, ".gate-lock");
+  mkdirSync(lock);
+  try {
+    const bytes = snapshot(paths);
+    assertRawDeterminism(bytes.raw, bytes.repeatRaw);
+    const { runId, hashes, inputHashes } = JSON.parse(readFileSync(path.join(paths.qaDir, REPORTS[0]), "utf8"));
+    if (!runId || !hashes || !inputHashes
+      || Object.keys(ARTIFACTS).some(key => hashes[key] !== sha256(bytes[key]))) {
+      throw new CandidateGateError("CANDIDATE_QA", "reviewed candidate bytes do not match QA identity");
+    }
+    return publishCheckedSnapshot(paths, bytes, { runId, hashes, inputHashes }, {
+      publicDir, precompress, exception: exception ? {
+        id: exception,
+        decisionDate: "2026-11-04",
+        decision: "F3 GLB 도색: 이 두 곳만 고쳐 공개",
+        scope: "E3 south yellow line and parking P; known map/VR/overhead blockers and seven sub-mm paint findings remain rejected.",
+      } : null,
+    });
+  } finally {
+    rmSync(lock, { recursive: true, force: true });
+  }
+}
+
+function publishCheckedSnapshot(paths, bytes, identity, { publicDir, precompress, exception = null }) {
+    const rejectedReports = [];
     for (const name of REPORTS) {
       const report = JSON.parse(readFileSync(path.join(paths.qaDir, name), "utf8"));
-      if (report.accepted !== true || report.runId !== identity.runId
+      if (report.runId !== identity.runId
         || !isDeepStrictEqual(report.hashes, identity.hashes)
         || !isDeepStrictEqual(report.inputHashes, identity.inputHashes)) {
         throw new CandidateGateError("CANDIDATE_QA", `candidate gate rejected ${name}: failed or stale identity`);
+      }
+      if (report.accepted !== true) {
+        if (report.accepted !== false || !exception) {
+          throw new CandidateGateError("CANDIDATE_QA", `candidate gate rejected ${name}: failed QA`);
+        }
+        rejectedReports.push(name);
       }
     }
     const after = snapshot(candidatePaths(paths.dir, paths.buildDir));
@@ -108,11 +153,13 @@ export async function publishCandidate(candidate, {
     outputs.set("campus-v2.glb.br", precompress
       ? brotliCompressSync(bytes.packed, { params: { [zlib.BROTLI_PARAM_QUALITY]: 11 } }) : null);
     outputs.set("campus-v2.glb.gz", precompress ? gzipSync(bytes.packed, { level: 9 }) : null);
+    outputs.set("campus-v2-publication.json", Buffer.from(JSON.stringify({
+      ...identity, candidate: paths.dir, publishedAt: new Date().toISOString(),
+      strictGateAccepted: rejectedReports.length === 0, rejectedReports, exception,
+    }, null, 2) + "\n"));
     publishFiles(publicDir, outputs);
+    if (exception) console.log(`MODEL_PUBLISH_EXCEPTION ${exception.id}: ${exception.decision}; rejected=${rejectedReports.join(",")}`);
     return identity;
-  } finally {
-    rmSync(lock, { recursive: true, force: true });
-  }
 }
 
 // Rename staged siblings only after all QA and preparation succeeds. A caught filesystem

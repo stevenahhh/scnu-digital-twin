@@ -15,12 +15,14 @@ import { loadFacadeCoverage, unappliedFacadeWalls } from "./qa/facadeCoverage.mj
 import { inspectDoor } from "./qa/facadeMesh.mjs";
 import { DEFAULT_SHEET, openSheet } from "./lib/ngiiSheet.mjs";
 import { withKnownRoadGaps } from "./qa/roadInventory.mjs";
+import { renderPorts } from "./qa/renderPorts.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FRONTEND = resolve(HERE, "../..");
 const BUILD = join(HERE, ".build");
 const QA = join(BUILD, "qa");
 const args = process.argv.slice(2);
+const ports = renderPorts();
 const parcelsArg = args.indexOf("--parcels");
 const parcelsPath = parcelsArg < 0 ? join(HERE, "data/ground/parcels.json") : resolve(args[parcelsArg + 1]);
 const json = file => JSON.parse(readFileSync(file, "utf8"));
@@ -72,7 +74,7 @@ async function render(candidate, identity) {
     ["/campus-v2-height.json", candidate.heightJson],
   ]);
   const server = await createServer({
-    root: FRONTEND, server: { host: "127.0.0.1", port: 5242, strictPort: true, hmr: false },
+    root: FRONTEND, server: { host: "127.0.0.1", port: ports.server, strictPort: true, hmr: false },
     plugins: [{
       name: "qa-candidate",
       configureServer(server) {
@@ -87,7 +89,7 @@ async function render(candidate, identity) {
   });
   try {
     await server.listen();
-    const common = ["--url", "http://127.0.0.1:5242/", "--model", candidate.packed, "--run-id", identity.runId];
+    const common = ["--url", `http://127.0.0.1:${ports.server}/`, "--model", candidate.packed, "--run-id", identity.runId];
     for (const [kind, file, flag] of [
       ["entrances", "data/buildings/entrances.json", "--bearings"],
       ["site-detail", "data/photo/site-detail-anchors.json", "--bearings"],
@@ -105,7 +107,7 @@ async function render(candidate, identity) {
         reason: r.reason ?? "source has no numerical VR column observation", evidence: r.evidence,
       })));
       if (!scenes.length) continue;
-      await command("../perf/compare-vr.mjs", [...common, flag, ...scenes.flatMap(s => ["--scene", s]), "--port", "9382",
+      await command("../perf/compare-vr.mjs", [...common, flag, ...scenes.flatMap(s => ["--scene", s]), "--port", String(ports.devtools),
         "--bearing-records", recordsPath, "--out", join(candidate.qaDir, "vr", kind)], true);
     }
     await command("../perf/overhead-blend.mjs", [...common, "--visible-ground",
