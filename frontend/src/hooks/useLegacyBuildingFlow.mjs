@@ -3,6 +3,7 @@ import commonElements from "../../../common/data/common_elemetns.json";
 import { isProximitySuspended, resolveSelectionTitle, useSelectionState as useLabelSelection } from "../labels/useSelectionState.mjs";
 import { isD4ElementId } from "../utils/d4BuildingData.mjs";
 import { usePanelViewMemory } from "../panel/usePanelViewMemory.mjs";
+import { useD4SelectionExit } from "../panel/useD4SelectionExit.mjs";
 
 const buildingCodeOf = (elementId) => elementId.slice("BLD_".length);
 const ELEMENT_NAMES = new Map(commonElements.elements.map((element) => [element.element_id, element.name]));
@@ -59,6 +60,8 @@ export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef
     viewMemory.restore();
     onSectionExit();
   }, [onSectionExit, viewMemory.restore]);
+
+  useD4SelectionExit(label.selection.elementId, buildingViewMode === "section", exitD4Section);
 
   // 고른 건물은 선택 인스펙터가 보여 준다. 탭은 바꾸지 않는다(폰에서는 시트를 half로 올린다).
   const showMicroclimate = useCallback((elementId) => {
