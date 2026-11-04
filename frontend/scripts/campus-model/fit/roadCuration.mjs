@@ -21,6 +21,7 @@ export function applyRoadCuration(docs, curation, context) {
     if (reviews.has(r.id)) throw new Error(`duplicate owner review ${r.id}`);
     if (typeof r.verified !== "boolean" || !r.reason?.trim()) throw new Error(`owner review ${r.id} needs status and reason`);
     if (r.verified && !r.refs?.some(ref => typeof ref === "string" && ref.trim())) throw new Error(`${r.id}: verified review needs refs`);
+    if (r.geometry && (!r.geometry.refs?.length || !r.geometry.reason?.trim())) throw new Error(`${r.id}: geometry edit needs evidence`);
     reviews.set(r.id, r);
   }
   for (const id of owners) if (!reviews.has(id)) throw new Error(`missing owner review ${id}`);
@@ -34,6 +35,13 @@ export function applyRoadCuration(docs, curation, context) {
     alignment.association = { ...alignment.association, verified: review.verified, refs: review.refs ?? [],
       method: review.method ?? "reviewed evidence", candidates: review.candidates ?? [] };
     section.curation = { verified: review.verified, refs: review.refs ?? [], reason: review.reason, dimensionsVerified: false };
+    if (review.geometry) {
+      const { line, lateralOffsetM, lanes } = review.geometry;
+      if (line) alignment.line = structuredClone(line);
+      if (lateralOffsetM !== undefined) section.lateralOffsetM = lateralOffsetM;
+      if (lanes) section.lanes = structuredClone(lanes);
+      section.curation.geometry = structuredClone(review.geometry);
+    }
     if (target !== segment) {
       result.sections[target] ??= { alignments: {}, sections: [] };
       if (result.sections[target].alignments[section.alignment]) throw new Error(`duplicate alignment ${section.alignment}`);
@@ -55,6 +63,12 @@ export function applyRoadCuration(docs, curation, context) {
     approach.segment = section.segment;
     approach.pathIndex = section.pathIndex;
     approach.curation = { verified: review.verified, refs: review.refs ?? [], reason: review.reason, dimensionsVerified: false };
+    if (review.geometry) {
+      for (const key of ["crossing", "guideLines"]) {
+        if (key in review.geometry) approach[key] = structuredClone(review.geometry[key]);
+      }
+      approach.curation.geometry = structuredClone(review.geometry);
+    }
     if (review.suppressCrossing) {
       const proof = review.suppressCrossing;
       const retained = approaches.find(r => r.approach.id === proof.duplicateOf)?.approach;
@@ -69,6 +83,20 @@ export function applyRoadCuration(docs, curation, context) {
       result.junctions[target].approaches.push(approach);
       junction.approaches = junction.approaches.filter(a => a.id !== approach.id);
       if (!junction.approaches.length) delete result.junctions[node];
+    }
+  }
+  return result;
+}
+
+// Reviews amend the frozen candidate corpus; they never declare it exhaustive
+// or derive presence from the current output. The same reviews reapply at seed.
+export function applyRoadReferenceReviews(reference, reviews) {
+  const result = structuredClone(reference);
+  for (const kind of ["segments", "crossings", "physicalCrossings"]) {
+    for (const review of reviews[kind] ?? []) {
+      const row = result[kind]?.find(r => r.id === review.id);
+      if (!row || !review.refs?.length || !review.reason?.trim()) throw new Error(`${review.id}: reference review needs an existing id and evidence`);
+      Object.assign(row, structuredClone(review));
     }
   }
   return result;

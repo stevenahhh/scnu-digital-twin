@@ -36,6 +36,48 @@ test("unresolved reviews preserve original containers and remain explicitly unve
   assert.equal(result.sections.RD_001.sections[0].curation.dimensionsVerified, false);
 });
 
+test("photo control edits survive reseeding without approving ownership or mutating inputs", () => {
+  const owners = reviews.map(r => ({ ...r, verified: false }));
+  owners[0].geometry = { refs: ["independent photo profiles"], reason: "signed ridge offset",
+    lateralOffsetM: -0.4, line: [[11, 21], [31, 21]] };
+  owners[1].geometry = { refs: ["visible stripe slots"], reason: "partial detection missed visible bars",
+    crossing: { offsetM: 10, widthM: 4, barWidthM: 0.5, zebraPeriodM: 0.9, omittedBars: [0, 7] } };
+  const result = curation.applyRoadCuration(original, { owners }, context);
+  assert.equal(result.sections.RD_001.sections[0].lateralOffsetM, -0.4);
+  assert.deepEqual(result.sections.RD_001.alignments[RA].line, [[11, 21], [31, 21]]);
+  assert.deepEqual(result.junctions.ND_001.approaches[0].crossing.omittedBars, [0, 7]);
+  assert.equal(result.sections.RD_001.sections[0].curation.verified, false);
+  assert.equal(original.sections.RD_001.sections[0].lateralOffsetM, undefined);
+  assert.deepEqual(original.sections.RD_001.alignments[RA].line, [[10, 20], [30, 20]]);
+});
+
+test("geometry edits cannot bypass their independent evidence requirement", () => {
+  assert.throws(() => curation.applyRoadCuration(original, { owners: [
+    { ...reviews[0], geometry: { lateralOffsetM: 0.4, refs: [], reason: "unsupported" } }, reviews[1],
+  ] }, context), /geometry.*evidence/);
+});
+
+test("reference review repairs membership but preserves the frozen universe and unknown labels", () => {
+  const reference = { complete: false, segments: [{ id: "line", expected: null }],
+    physicalCrossings: [{ id: "CW", expected: true, objectIds: [], boundsTm: [1, 2, 3, 4] }] };
+  const result = curation.applyRoadReferenceReviews(reference, { physicalCrossings: [
+    { id: "CW", objectIds: [JA + "/crossing"], refs: ["photo + emitted catalogue"], reason: "same crossing" },
+  ] });
+  assert.deepEqual(result.physicalCrossings[0].objectIds, [JA + "/crossing"]);
+  assert.deepEqual(result.physicalCrossings[0].boundsTm, [1, 2, 3, 4]);
+  assert.deepEqual(result.segments, reference.segments);
+  assert.equal(result.complete, false);
+  assert.deepEqual(reference.physicalCrossings[0].objectIds, []);
+});
+
+test("reference review rejects invented ids and unsupported positive or negative labels", () => {
+  const reference = { segments: [{ id: "line", expected: null }] };
+  for (const row of [
+    { id: "absent", expected: true, refs: ["photo"], reason: "visible" },
+    { id: "line", expected: false, refs: [], reason: "unsupported absence" },
+  ]) assert.throws(() => curation.applyRoadReferenceReviews(reference, { segments: [row] }), /reference/);
+});
+
 test("missing, unknown and duplicate owner reviews fail by id", () => {
   for (const owners of [reviews.slice(1), [...reviews, { ...reviews[0], id: "RS_unknown" }], [...reviews, reviews[0]]]) {
     assert.throws(() => curation.applyRoadCuration(original, { owners }, context), /owner|review/);

@@ -6,7 +6,7 @@ import { add, dot, norm, offsetPath, polylineLength, projectArc, scale, slicePat
 import { frameAt } from "../stages/roadMarkings.mjs";
 import { createHash } from "node:crypto";
 import { topParcelAt } from "../lib/parcels.mjs";
-import { applyRoadCuration } from "./roadCuration.mjs";
+import { applyRoadCuration, applyRoadReferenceReviews } from "./roadCuration.mjs";
 
 const tm = p => sceneToTm(...p);
 const K = norm(sub(tm([U,0]),tm([0,0])));
@@ -206,8 +206,10 @@ if(import.meta.main) {
   const context=roadContext();
   const curation=JSON.parse(readFileSync(new URL("../data/ground/road-curation.json",import.meta.url),"utf8"));
   const docs=applyRoadCuration(seedRoadMarkings(evidence.model,humps.humps,{...context,parcels:surfaces.parcels}),curation,context);
-  for(const [name,doc] of [["road-sections",docs.sections],["junctions",docs.junctions]]) {
-    const file=new URL("../data/ground/"+name+".json",import.meta.url),text=JSON.stringify(doc,null,2)+"\n";
+  const referencePath=new URL("../data/photo/evidence/road-reference.json",import.meta.url);
+  const reference=applyRoadReferenceReviews(JSON.parse(readFileSync(referencePath,"utf8")),curation.referenceReviews??{});
+  for(const [name,doc] of [["ground/road-sections",docs.sections],["ground/junctions",docs.junctions],["photo/evidence/road-reference",reference]]) {
+    const file=new URL("../data/"+name+".json",import.meta.url),text=JSON.stringify(doc,null,2)+"\n";
     if(process.argv.includes("--check")) {if(readFileSync(file,"utf8")!==text) throw new Error(name+": seed is stale");}
     else if(process.argv.includes("--write")) writeFileSync(file,text);
     else throw new Error("pass --write or --check");

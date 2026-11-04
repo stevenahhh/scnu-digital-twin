@@ -40,12 +40,16 @@
     },
     {
       "id": "JA_18354e8a246f26d5/guide/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": false,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U00-photo.png",
+        "photo/evidence/markings.geojson#MK01412"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": 0.083,
       "photoResidualM": 0.425,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "False white stroke on the red west border of ZC024; the fused MK01412 polygon is not evidence for a white longitudinal guide."
     },
     {
       "id": "JA_363c8ed64950e00a/guide/0",
@@ -105,12 +109,16 @@
     },
     {
       "id": "JA_545a15b1e15bb4ab/guide/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": false,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U01-photo.png",
+        "photo/evidence/markings.geojson#MK01412"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": 0.143,
       "photoResidualM": 0.675,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Second false white stroke on the same red border of ZC024; no white guide follows this short projected axis."
     },
     {
       "id": "JA_715142b6f6683d87/guide/0",
@@ -126,12 +134,16 @@
     },
     {
       "id": "JA_7ed1b685709aeb7d/guide/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U02-photo.png",
+        "photo/evidence/markings.geojson#MK01441"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The dotted white guide is visible between the through lanes; surviving emitted squares are clipped but the photo establishes presence."
     },
     {
       "id": "JA_91503d44557631d7/guide/0",
@@ -196,21 +208,32 @@
     },
     {
       "id": "JA_afecdbea4a11580f/guide/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": false,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U03-photo.png",
+        "photo/evidence/markings.geojson#MK01412"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Third projected MK01412 stroke lies on red crossing framing, not white paint; its clipped output is not an independent guide."
     },
     {
       "id": "JA_b16e05c64b640ea2/guide/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U04-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00126",
+        "photo/evidence/markings-extra.geojson#MX00127",
+        "photo/evidence/markings-extra.geojson#MX00128",
+        "photo/evidence/markings-extra.geojson#MX00129"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": 0.533,
       "photoResidualM": 0.05,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Faint repeated white guide dashes run beside the bus bay and parked vehicles."
     },
     {
       "id": "JA_b979a4a02d0f09ea/guide/0",
@@ -397,12 +420,17 @@
     },
     {
       "id": "RS_072148faff50bcab/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U05-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00809",
+        "photo/evidence/markings-extra.geojson#MX00810"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": 0.5,
       "photoResidualM": 0.025,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "A short diagonal white guide dash is visible at the joining turn; presence does not approve the fitted straight connection."
     },
     {
       "id": "RS_08ae22d827134599/centre",
@@ -493,11 +521,20 @@
     {
       "id": "RS_0d09a04a6965132f/lanes/0",
       "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U06-photo.png",
+        "photo/evidence/markings.geojson#MK01193",
+        "suncheon-12cm/2018_12cm/t-5-4.jpg",
+        "suncheon-12cm/2023_12cm/t-5-4.jpg",
+        "suncheon-12cm/2024_12cm/t-5-4.jpg",
+        "VR scene_f1 f/r/b/l/d",
+        "VR scene_f2 f/r/b/l/d"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The candidate is beneath the tree crown beside a parked car; this chip does not distinguish the dash boundary from foliage and road glare. Cross-check: scene_f1 at 51.7 m; scene_f2 at 57.5 m. The 2018/2023/2024 views show the surrounding corridor, but their local alignment and epoch differ: the candidate is beside a tree/parked vehicle at the arterial edge, so the historical dash cannot be tied to this 2025 short fragment."
     },
     {
       "id": "RS_0d57ac4b3ed5315e/kerb/left",
@@ -513,12 +550,19 @@
     },
     {
       "id": "RS_1056c2c6b8e3031d/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U07-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01834",
+        "photo/evidence/markings-extra.geojson#MX01841",
+        "photo/evidence/markings-extra.geojson#MX01845",
+        "photo/evidence/markings-extra.geojson#MX01850"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Five long white dashes are visible along the western carriageway beside the painted 50."
     },
     {
       "id": "RS_105ed63dfc5ad0e3/lanes/0",
@@ -539,12 +583,20 @@
     },
     {
       "id": "RS_10d4558c6741886c/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U08-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01833",
+        "photo/evidence/markings-extra.geojson#MX01836",
+        "photo/evidence/markings-extra.geojson#MX01839",
+        "photo/evidence/markings-extra.geojson#MX01849",
+        "photo/evidence/markings-extra.geojson#MX01852"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "White dashed lane separator is visible on the opposite carriageway beside the yellow centre divider."
     },
     {
       "id": "RS_128eba3116578889/kerb/left",
@@ -723,11 +775,20 @@
     {
       "id": "RS_1a0408d2b1ecbe89/kerb/left",
       "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U09-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01590",
+        "suncheon-12cm/2018_12cm/t-2-2.jpg",
+        "suncheon-12cm/2023_12cm/t-2-2.jpg",
+        "suncheon-12cm/2024_12cm/t-2-2.jpg",
+        "VR scene_a3 f/r/b/l/d",
+        "VR scene_e1 f/r/b/l/d"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The proposed yellow kerb run disappears beneath foliage; adjacent yellow paint cannot establish this hidden short segment. Cross-check: scene_a3 at 14.2 m; scene_e1 at 37.6 m. The 2018/2023/2024 views show the surrounding corridor, but their local alignment and epoch differ: the campus corner and tree canopy obscure the proposed yellow run; the older visible edge is not a calibrated 2025 endpoint."
     },
     {
       "id": "RS_1a289b87b5c2ab9e/centre",
@@ -773,30 +834,42 @@
     },
     {
       "id": "RS_1c6ff191c49741c4/kerb/left",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U10-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00829"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "A faint yellow edge is visible along the triangular paved shoulder beside the canopy."
     },
     {
       "id": "RS_1d773c68248a398a/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U11-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01843"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The short white dash is visible in the middle of the longitudinal dash row."
     },
     {
       "id": "RS_1dd290f1010a0e13/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U12-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01846"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The next short white dash is visible above the painted median cap."
     },
     {
       "id": "RS_1e470d13b2f7227e/lanes/0",
@@ -1008,12 +1081,16 @@
     },
     {
       "id": "RS_28bc38d3aee7ec62/centre",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U13-photo.png",
+        "photo/evidence/markings.geojson#MK01386"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": 0.111,
       "photoResidualM": 0.25,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The transverse yellow cap of the hatched median is visible below the crossing; the source-derived short stroke exists."
     },
     {
       "id": "RS_2a5f3a6dec2e80a1/kerb/left",
@@ -1128,21 +1205,30 @@
     },
     {
       "id": "RS_3075f1d3fe7dc1f4/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U14-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00286",
+        "photo/evidence/markings-extra.geojson#MX00287"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": 0.5,
       "photoResidualM": 0.038,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Faint diagonal white guide dashes are visible at the edge of the building shadow."
     },
     {
       "id": "RS_31c2b0049fe052a2/kerb/left",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U15-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00122"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "A continuous yellow road-edge stroke is visible parallel to the retaining edge."
     },
     {
       "id": "RS_32f724337fd60f2d/kerb/left",
@@ -1170,12 +1256,16 @@
     },
     {
       "id": "RS_34367cd69b885453/centre",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U16-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00509"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The yellow line continues through the cast utility shadow beside the green-tinted transverse strip."
     },
     {
       "id": "RS_35925d28fb9c90dc/centre",
@@ -1191,12 +1281,18 @@
     },
     {
       "id": "RS_35d4e31b5928fa65/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U17-photo.png",
+        "photo/evidence/markings.geojson#MK00904",
+        "photo/evidence/markings.geojson#MK00905",
+        "photo/evidence/markings.geojson#MK00906"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": 0.583,
       "photoResidualM": 0.025,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The visible end of a white dash extends beyond the tree shadow; the hidden end length remains estimated."
     },
     {
       "id": "RS_3650faa1e0ac2328/kerb/left",
@@ -1273,11 +1369,20 @@
     {
       "id": "RS_38114a0129ffb697/lanes/0",
       "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U18-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01874",
+        "suncheon-12cm/2018_12cm/t-5-5.jpg",
+        "suncheon-12cm/2023_12cm/t-5-5.jpg",
+        "suncheon-12cm/2024_12cm/t-5-5.jpg",
+        "VR scene_f1 f/r/b/l/d",
+        "VR scene_f2 f/r/b/l/d"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The very short proposed white stroke sits at the dark carriageway/sidewalk boundary; the chip does not separate paint from a bright kerb stone. Cross-check: scene_f1 at 20.0 m; scene_f2 at 111.9 m. The 2018/2023/2024 views show the surrounding corridor, but their local alignment and epoch differ: the short stroke is at the f1 sidewalk/kerb boundary; historic lane paint is farther inside the carriageway."
     },
     {
       "id": "RS_38e5a5bb67afe602/kerb/left",
@@ -1317,12 +1422,18 @@
     },
     {
       "id": "RS_3ae9013c62ce98c0/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U19-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01867",
+        "photo/evidence/markings-extra.geojson#MX01869",
+        "photo/evidence/markings-extra.geojson#MX01873"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Three white dashed lane marks are visible beside the eastern sidewalk and diamond symbol."
     },
     {
       "id": "RS_3df7c62d32629556/lanes/0",
@@ -1341,12 +1452,16 @@
     },
     {
       "id": "RS_3e20f62821f13352/kerb/left",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U20-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00729"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Yellow edge paint is visible beside the striped hump on the red road; the canopy hides its northern continuation."
     },
     {
       "id": "RS_41ed1a6e896a556a/lanes/0",
@@ -1440,12 +1555,16 @@
     },
     {
       "id": "RS_471b0aec92ca9eaa/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U21-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01843"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "White dash visible in the same arterial dash row; existence is independent of the generated segment length."
     },
     {
       "id": "RS_473fa05180093350/centre",
@@ -1461,12 +1580,16 @@
     },
     {
       "id": "RS_474af2b596890c08/kerb/left",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U22-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00097"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Yellow kerb paint follows the bend beside the white rectangular road marking."
     },
     {
       "id": "RS_4896751925417fc7/lanes/0",
@@ -1525,20 +1648,34 @@
     {
       "id": "RS_4b2ad0afdf6fdcb9/lanes/0",
       "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U23-photo.png",
+        "photo/evidence/markings.geojson#MK01204",
+        "suncheon-12cm/2018_12cm/t-4-4.jpg",
+        "suncheon-12cm/2023_12cm/t-4-4.jpg",
+        "suncheon-12cm/2024_12cm/t-4-4.jpg",
+        "VR scene_f3 f/r/b/l/d",
+        "VR scene_f2 f/r/b/l/d"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The proposed dash is under dense tree crown along the south sidewalk; no independent visible endpoint establishes this particular short fragment. Cross-check: scene_f3 at 11.9 m; scene_f2 at 77.2 m. The 2018/2023/2024 views show the surrounding corridor, but their local alignment and epoch differ: the tennis-court fence and shadow cover the candidate strip; the older views show the adjacent access road but not an unambiguous matching dash."
     },
     {
       "id": "RS_4b3b69d0d0fe6d21/kerb/left",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U24-photo.png",
+        "photo/evidence/markings.geojson#MK01165",
+        "photo/evidence/markings-extra.geojson#MX00828"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The exposed portions of the yellow edge line follow the western sidewalk; intervening foliage remains unmeasured."
     },
     {
       "id": "RS_4b697406de2abdde/lanes/0",
@@ -1594,12 +1731,18 @@
     },
     {
       "id": "RS_4fe547b62e948f33/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U25-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01866",
+        "photo/evidence/markings-extra.geojson#MX01868",
+        "photo/evidence/markings-extra.geojson#MX01872"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Three white lane dashes are visible on the western carriageway beside the yellow hatched median."
     },
     {
       "id": "RS_5174d11278b09676/lanes/0",
@@ -1675,12 +1818,17 @@
     },
     {
       "id": "RS_551cf2fcd1f53e8f/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U26-photo.png",
+        "photo/evidence/markings.geojson#MK00898",
+        "photo/evidence/markings.geojson#MK00899"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "A white dash is plainly visible south of the tree crown despite the conservative crown mask."
     },
     {
       "id": "RS_5570e774d9b60fa9/kerb/left",
@@ -1696,12 +1844,16 @@
     },
     {
       "id": "RS_568e991a83075ae0/kerb/left",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U27-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00249"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Yellow paint follows the curved traffic-island kerb beside the parked car."
     },
     {
       "id": "RS_5727f2992db3e79c/centre",
@@ -1767,12 +1919,16 @@
     },
     {
       "id": "RS_5952e41899793e3f/kerb/left",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U28-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00914"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Faint yellow paint is visible on the shadowed kerb beside the north-south road."
     },
     {
       "id": "RS_59592a57713c7d07/lanes/0",
@@ -1788,12 +1944,17 @@
     },
     {
       "id": "RS_598776b6d6b7d82d/centre",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U29-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01015",
+        "photo/evidence/markings-extra.geojson#MX01014"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": 0.583,
       "photoResidualM": 0.05,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "A broken yellow roadside line is visible beside the paved footway and white car."
     },
     {
       "id": "RS_59f1702057786e65/centre",
@@ -1809,21 +1970,36 @@
     },
     {
       "id": "RS_59fa5f6b95125642/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U30-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01577",
+        "photo/evidence/markings-extra.geojson#MX01578",
+        "photo/evidence/markings-extra.geojson#MX01579",
+        "photo/evidence/markings-extra.geojson#MX01580",
+        "photo/evidence/markings-extra.geojson#MX01581",
+        "photo/evidence/markings-extra.geojson#MX01582"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": 0.357,
       "photoResidualM": 0.2,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Faint white turning-guide dashes are visible diagonally across the intersection beside the crossing."
     },
     {
       "id": "RS_5a173796fa6993c8/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U31-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00415",
+        "photo/evidence/markings-extra.geojson#MX00416",
+        "photo/evidence/markings-extra.geojson#MX00418"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Two white edge dashes are visible at the transition between red and black pavement."
     },
     {
       "id": "RS_5a637eee27e9ca6e/centre",
@@ -1839,12 +2015,16 @@
     },
     {
       "id": "RS_5ae48669826646a1/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U32-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01838"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "A white lane dash is visible immediately above the start of the yellow median."
     },
     {
       "id": "RS_5b0f97262c7bda50/kerb/left",
@@ -2092,12 +2272,16 @@
     },
     {
       "id": "RS_6903d79db7f327e0/kerb/left",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U33-photo.png",
+        "photo/evidence/markings.geojson#MK00945"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "A long yellow kerb line is visible along the north edge of the road opposite the buses."
     },
     {
       "id": "RS_695a52ca65d0d279/lanes/0",
@@ -2165,29 +2349,51 @@
     {
       "id": "RS_6f38ed6b269b37bd/edges/left",
       "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U34-photo.png",
+        "photo/evidence/markings.geojson#MK01026",
+        "suncheon-12cm/2018_12cm/t-1-3.jpg",
+        "suncheon-12cm/2018_12cm/t-2-3.jpg",
+        "suncheon-12cm/2023_12cm/t-1-3.jpg",
+        "suncheon-12cm/2023_12cm/t-2-3.jpg",
+        "suncheon-12cm/2024_12cm/t-1-3.jpg",
+        "suncheon-12cm/2024_12cm/t-2-3.jpg",
+        "VR scene_a4 f/r/b/l/d",
+        "VR scene_a3 f/r/b/l/d"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The proposed white edge crosses pale sidewalk paving beneath canopy. The photo cannot distinguish painted edge from pale kerb/slab texture. Cross-check: scene_a4 at 50.5 m; scene_a3 at 82.0 m. The 2018/2023/2024 views show the surrounding corridor, but their local alignment and epoch differ: the road-edge/sidewalk boundary remains visible but no corresponding independent white paint strip can be isolated."
     },
     {
       "id": "RS_6fe82b6d5a4e8ff6/centre",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U35-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00503",
+        "photo/evidence/markings-extra.geojson#MX00504",
+        "photo/evidence/markings-extra.geojson#MX00505"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": 0,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The southern yellow dash is visible beside the bus bay; the northern continuation is shadowed and is not dimensionally approved."
     },
     {
       "id": "RS_6ff78ce376439121/kerb/right",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U36-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00380"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Yellow kerb paint is visible along the building-side bend above the striped hump."
     },
     {
       "id": "RS_7011518b5ddea645/centre",
@@ -2203,12 +2409,16 @@
     },
     {
       "id": "RS_704784fba03c5609/edges/left",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U37-photo.png",
+        "photo/evidence/markings.geojson#MK01183"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "A white road-edge stroke is visible along the diagonal building-side frontage despite its shadow."
     },
     {
       "id": "RS_712de8e06547f2a4/centre",
@@ -2225,11 +2435,23 @@
     {
       "id": "RS_733a2c02560960f8/centre",
       "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U38-photo.png",
+        "photo/evidence/markings.geojson#MK01014",
+        "suncheon-12cm/2018_12cm/t-1-2.jpg",
+        "suncheon-12cm/2018_12cm/t-1-3.jpg",
+        "suncheon-12cm/2023_12cm/t-1-2.jpg",
+        "suncheon-12cm/2023_12cm/t-1-3.jpg",
+        "suncheon-12cm/2024_12cm/t-1-2.jpg",
+        "suncheon-12cm/2024_12cm/t-1-3.jpg",
+        "VR scene_a4 f/r/b/l/d",
+        "VR scene_e3 f/r/b/l/d"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The bent yellow proposal overlaps the vegetated median tip. Some yellow is visible, but the doubled turn cannot be identified as one independent centre-line segment. Cross-check: scene_a4 at 70.0 m; scene_e3 at 85.2 m. The 2018/2023/2024 views show the surrounding corridor, but their local alignment and epoch differ: the vegetated median separates two yellow border runs; none of these views supports the inherited doubled bend as a single centre line."
     },
     {
       "id": "RS_73ab2d43e54100b7/kerb/left",
@@ -2365,12 +2587,17 @@
     },
     {
       "id": "RS_7ce79e99f2021c41/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U39-photo.png",
+        "photo/evidence/markings.geojson#MK00786",
+        "photo/evidence/markings.geojson#MK00785"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": 0.587,
       "photoResidualM": 0.05,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "White dashes at both ends establish this lane-marking run; the fitted connection across their gap is not approved as solid paint."
     },
     {
       "id": "RS_7d492f127ce1ab10/lanes/0",
@@ -2405,21 +2632,49 @@
     },
     {
       "id": "RS_7e456a6a7de0f525/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U40-photo.png",
+        "photo/evidence/markings.geojson#MK00953",
+        "photo/evidence/markings.geojson#MK00954"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": 0.48,
       "photoResidualM": 0.025,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The two white end dashes are visible; existence does not approve the long connecting fitted run."
     },
     {
       "id": "RS_7f1ec2cf5f2e8436/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U41-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00856",
+        "photo/evidence/markings.geojson#MK01172",
+        "photo/evidence/markings-extra.geojson#MX00854",
+        "photo/evidence/markings.geojson#MK01155",
+        "photo/evidence/markings-extra.geojson#MX00851",
+        "photo/evidence/markings-extra.geojson#MX00780",
+        "photo/evidence/markings.geojson#MK01044",
+        "photo/evidence/markings.geojson#MK01043",
+        "photo/evidence/markings.geojson#MK01042",
+        "photo/evidence/markings.geojson#MK01041",
+        "photo/evidence/markings.geojson#MK01040",
+        "photo/evidence/markings.geojson#MK01039",
+        "photo/evidence/markings.geojson#MK01038",
+        "photo/evidence/markings.geojson#MK01037",
+        "photo/evidence/markings.geojson#MK01036",
+        "photo/evidence/markings.geojson#MK01035",
+        "photo/evidence/markings.geojson#MK01034",
+        "photo/evidence/markings.geojson#MK01033",
+        "photo/evidence/markings.geojson#MK01032",
+        "photo/evidence/markings.geojson#MK01031"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": 0.552,
       "photoResidualM": 0.025,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The long arterial lane-marking corridor is visible in several separated dashes; its position and clipping remain separate checks."
     },
     {
       "id": "RS_8031600cb9377c70/lanes/0",
@@ -2672,12 +2927,16 @@
     },
     {
       "id": "RS_8baa7749db3c8c7b/kerb/left",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U42-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00352"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Yellow edge paint is visible at both exposed ends of the canopy-covered southern kerb."
     },
     {
       "id": "RS_8c85a465a276da0f/lanes/0",
@@ -2743,47 +3002,74 @@
     {
       "id": "RS_90ea54911142479a/lanes/0",
       "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U43-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01877",
+        "suncheon-12cm/2018_12cm/t-5-5.jpg",
+        "suncheon-12cm/2023_12cm/t-5-5.jpg",
+        "suncheon-12cm/2024_12cm/t-5-5.jpg",
+        "VR scene_f1 f/r/b/l/d",
+        "VR scene_f2 f/r/b/l/d"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The very short candidate lies on the shadowed sidewalk edge and has no separable white-paint boundary in this view. Cross-check: scene_f1 at 20.6 m; scene_f2 at 112.9 m. The 2018/2023/2024 views show the surrounding corridor, but their local alignment and epoch differ: same f1 sidewalk shadow as U18; an epoch-dependent longitudinal lane cannot establish this tiny edge fragment."
     },
     {
       "id": "RS_91823afa25bf46ec/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U44-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01846"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "White dash visible in the arterial longitudinal row below the preceding dash."
     },
     {
       "id": "RS_922252acbff0a2ac/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U45-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00123",
+        "photo/evidence/markings-extra.geojson#MX00124"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": 0.417,
       "photoResidualM": 0.05,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Faint white turn-guide dashes are visible beside the bus bay and bend."
     },
     {
       "id": "RS_936ee332a3e80be9/kerb/left",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U46-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00221"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Yellow paint is visible along the western edge of the raised/paved rectangular area."
     },
     {
       "id": "RS_939d99566b3b9789/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U47-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01840",
+        "photo/evidence/markings-extra.geojson#MX01842"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Two adjacent white dashes are visible in this lane row; their inherited merged span is not a width or continuity approval."
     },
     {
       "id": "RS_94b2687c313a982a/centre",
@@ -2799,21 +3085,32 @@
     },
     {
       "id": "RS_94d831ee49ccde0c/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U48-photo.png",
+        "photo/evidence/markings.geojson#MK00915",
+        "photo/evidence/markings.geojson#MK00897",
+        "photo/evidence/markings.geojson#MK00896",
+        "photo/evidence/markings-extra.geojson#MX00985"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": 0.545,
       "photoResidualM": 0.063,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "White lane dashes are visible around the red junction apron, including the southern isolated dash."
     },
     {
       "id": "RS_96763d2731ae3488/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U49-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01865"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "A white lane dash is visible immediately behind the dark car beside the yellow median."
     },
     {
       "id": "RS_9754c0440bf41db5/lanes/0",
@@ -2843,12 +3140,17 @@
     },
     {
       "id": "RS_988b11425a345cf5/kerb/right",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U50-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00580",
+        "photo/evidence/markings-extra.geojson#MX00582"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": 0.524,
       "photoResidualM": 0.075,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Yellow kerb paint is visible on the south edge of the east-west road; the eastern tree hides only its continuation."
     },
     {
       "id": "RS_9b25d7d6c0da4e27/lanes/0",
@@ -2900,12 +3202,16 @@
     },
     {
       "id": "RS_9e7f4d30a0895126/kerb/right",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U51-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00252"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Yellow kerb paint is visible around the small island beside parked vehicles."
     },
     {
       "id": "RS_9f2f2147a53eaba0/kerb/right",
@@ -2998,12 +3304,16 @@
     },
     {
       "id": "RS_a680e2d495818674/kerb/right",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U52-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01831"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": 0.568,
       "photoResidualM": 0.075,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The yellow line follows the curved planted island; its lower end is under the tree crown."
     },
     {
       "id": "RS_a7bc4fa16b9fff3a/kerb/left",
@@ -3020,12 +3330,16 @@
     },
     {
       "id": "RS_a8cf34c43ed6abaa/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U53-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01848"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "White lane dash visible above the yellow median start."
     },
     {
       "id": "RS_a9060d7110ff4582/kerb/right",
@@ -3044,12 +3358,16 @@
     },
     {
       "id": "RS_a9dd75c249c64351/kerb/left",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U54-photo.png",
+        "photo/evidence/markings.geojson#MK01417"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": 0.571,
       "photoResidualM": 0.025,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Yellow roadside paint is visible below the rectangular stop marking; the tree masks part of the edge."
     },
     {
       "id": "RS_ab266adc6e8bf259/lanes/0",
@@ -3161,12 +3479,17 @@
     },
     {
       "id": "RS_b1fd52768d11d893/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U55-photo.png",
+        "photo/evidence/markings.geojson#MK00680",
+        "photo/evidence/markings.geojson#MK00681"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": 0.569,
       "photoResidualM": 0.05,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The two white dashes alongside the yellow median are visible; the intervening road is unpainted."
     },
     {
       "id": "RS_b289669faeedadc3/lanes/0",
@@ -3248,12 +3571,17 @@
     },
     {
       "id": "RS_b5da477664e2afd4/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U56-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01847",
+        "photo/evidence/markings-gate.json#/review/MX01847"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Existing NGII chip review explicitly identifies MX01847 as a lane dash on the f1 arterial; its wide proposal box lowered mask support to 0.596. Current view has vehicle/shadow interference."
     },
     {
       "id": "RS_b6167eef2068f10c/lanes/0",
@@ -3269,12 +3597,16 @@
     },
     {
       "id": "RS_b638380e8d3605cd/kerb/left",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U57-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00537"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Yellow kerb paint is visible along the building-side road beside white rectangular markings."
     },
     {
       "id": "RS_b664de62ef62a8ab/kerb/left",
@@ -3439,11 +3771,20 @@
     {
       "id": "RS_c08f91445b1e5236/edges/left",
       "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U58-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00912",
+        "suncheon-12cm/2018_12cm/t-2-5.jpg",
+        "suncheon-12cm/2023_12cm/t-2-5.jpg",
+        "suncheon-12cm/2024_12cm/t-2-5.jpg",
+        "VR scene_a12 f/r/b/l/d",
+        "VR scene_a8 f/r/b/l/d"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The short white candidate lies along a shadowed carriageway edge beside foliage; the apparent bright strip could be the kerb rather than paint. Cross-check: scene_a12 at 75.0 m; scene_a8 at 84.3 m. The 2018/2023/2024 views show the surrounding corridor, but their local alignment and epoch differ: parked vehicles cover the curb-side strip in the later images; the 2018 bright boundary cannot distinguish coating from kerb material."
     },
     {
       "id": "RS_c1b796d684251475/centre",
@@ -3484,12 +3825,16 @@
     },
     {
       "id": "RS_c41a625cbedcfde7/kerb/left",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U59-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00221"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Yellow border paint is visible along the western side of the pale rectangular paved area."
     },
     {
       "id": "RS_c52be95236fea725/centre",
@@ -3541,21 +3886,29 @@
     },
     {
       "id": "RS_ca9e41eb5226ed32/kerb/left",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U60-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00559"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Yellow edge paint is visible along the curved island just above the crossing."
     },
     {
       "id": "RS_caae1800b1bad86c/kerb/left",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U61-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00221"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The short yellow corner of the paved rectangle is visible beside the tree canopy."
     },
     {
       "id": "RS_cb1c06f6eb8a4f3c/lanes/0",
@@ -3634,12 +3987,16 @@
     },
     {
       "id": "RS_d1ebaec72494d1d3/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U62-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01848"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "White lane dash visible in the arterial dash row."
     },
     {
       "id": "RS_d23cd1586f6aad92/edges/left",
@@ -3667,12 +4024,21 @@
     },
     {
       "id": "RS_d51828ed6e69335a/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U63-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01583",
+        "photo/evidence/markings-extra.geojson#MX01584",
+        "photo/evidence/markings-extra.geojson#MX01585",
+        "photo/evidence/markings-extra.geojson#MX01586",
+        "photo/evidence/markings-extra.geojson#MX01587",
+        "photo/evidence/markings-extra.geojson#MX01588"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": 0.458,
       "photoResidualM": 0.15,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The faint white guide dashes are visible between two perpendicular crossings."
     },
     {
       "id": "RS_d695c020d13f8c6c/centre",
@@ -3689,12 +4055,17 @@
     },
     {
       "id": "RS_d714c747b04b94c4/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U64-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01883",
+        "photo/evidence/markings-extra.geojson#MX01887"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Two white lane dashes are visible to the west of the 50 speed legend."
     },
     {
       "id": "RS_d75a80bcf0ecd409/lanes/0",
@@ -3750,12 +4121,20 @@
     },
     {
       "id": "RS_d9a756103ffef76c/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U65-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01832",
+        "photo/evidence/markings-extra.geojson#MX01835",
+        "photo/evidence/markings-extra.geojson#MX01837",
+        "photo/evidence/markings-extra.geojson#MX01844",
+        "photo/evidence/markings-extra.geojson#MX01851"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The arterial dashed lane separator is visible through the long corridor beside the central yellow line."
     },
     {
       "id": "RS_d9d62b073fbf3b8b/kerb/left",
@@ -3819,21 +4198,30 @@
     },
     {
       "id": "RS_dcb7a3d6e047a004/kerb/left",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U66-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00549"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Yellow kerb paint is visible along the southern edge of the landscaped island."
     },
     {
       "id": "RS_dcbc0e7b44bc383c/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U67-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01882",
+        "photo/evidence/markings-extra.geojson#MX01885"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Two white lane dashes are visible beside the paired 50 legends."
     },
     {
       "id": "RS_de9d012c9ed70ced/kerb/left",
@@ -3849,12 +4237,16 @@
     },
     {
       "id": "RS_dfc29ff6284032e4/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U68-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01862"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "White approach paint is visible immediately to the west of the crossing and stop line."
     },
     {
       "id": "RS_e03f811864905557/kerb/right",
@@ -3919,12 +4311,18 @@
     },
     {
       "id": "RS_e2b9eecedbe6f2ed/kerb/right",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U69-photo.png",
+        "photo/evidence/markings.geojson#MK00955",
+        "photo/evidence/markings.geojson#MK00956",
+        "photo/evidence/markings.geojson#MK00957"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The yellow southern road edge is visible from the crossing to the eastern bend."
     },
     {
       "id": "RS_e3762ce87d0bb63e/kerb/left",
@@ -4024,21 +4422,29 @@
     },
     {
       "id": "RS_e680dae4a4f3587f/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U70-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01864"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "A white longitudinal dash is visible beside the car and arrow before the transverse stop line."
     },
     {
       "id": "RS_e6d9761da88d2356/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U71-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00947"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "A white approach lane stroke is visible between the triangular painted island and the yellow hatched median."
     },
     {
       "id": "RS_e96dddcb66b03d14/lanes/0",
@@ -4136,12 +4542,16 @@
     },
     {
       "id": "RS_ec686566e6c2cbb0/kerb/left",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U72-photo.png",
+        "photo/evidence/markings-extra.geojson#MX01830"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Exposed yellow edge paint is visible beside the green-roofed building; the lower building shadow prevents full length approval."
     },
     {
       "id": "RS_ef58b880043fc4e2/kerb/left",
@@ -4169,21 +4579,31 @@
     },
     {
       "id": "RS_f023b13b6ecb87da/kerb/right",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U73-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00257"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "Yellow kerb paint is visible around the paved corner beneath the northern canopy."
     },
     {
       "id": "RS_f04e964420b6934c/lanes/0",
-      "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "expected": true,
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U74-photo.png",
+        "photo/evidence/markings-extra.geojson#MX00421",
+        "photo/evidence/markings.geojson#MK00880",
+        "photo/evidence/markings-extra.geojson#MX00419"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": 0.438,
       "photoResidualM": 0.075,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "A white curved edge dash is visible where the red junction pavement meets the asphalt."
     },
     {
       "id": "RS_f0cc03750d0badbd/kerb/left",
@@ -4290,11 +4710,20 @@
     {
       "id": "RS_f6e60032600e38e9/edges/left",
       "expected": null,
-      "refs": [],
-      "labelBasis": "photo paint support at a frozen pre-curation evidence proposal, not positional acceptance",
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/chips/U75-photo.png",
+        "photo/evidence/markings.geojson#MK01028",
+        "suncheon-12cm/2018_12cm/t-1-3.jpg",
+        "suncheon-12cm/2023_12cm/t-1-3.jpg",
+        "suncheon-12cm/2024_12cm/t-1-3.jpg",
+        "VR scene_e3 f/r/b/l/d",
+        "VR scene_e5 f/r/b/l/d"
+      ],
+      "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Occluded, clipped, outside the comparison window, or insufficient photographic support; absence is not established."
+      "reason": "The bright boundary of the planted island is visible, but the photo cannot establish whether this particular white strip is paint or the kerb material. Cross-check: scene_e3 at 64.9 m; scene_e5 at 78.0 m. The 2018/2023/2024 views show the surrounding corridor, but their local alignment and epoch differ: tree crown and parked vehicle obscure the planted-island edge in the later aerials; the older white boundary may be stone rather than paint."
     },
     {
       "id": "RS_f80af603a5d70ba9/lanes/0",
@@ -4477,14 +4906,20 @@
         "JA_0acfadcb56f69f33/crossing/2",
         "JA_0acfadcb56f69f33/crossing/3",
         "JA_0acfadcb56f69f33/crossing/4",
-        "JA_0acfadcb56f69f33/crossing/5"
+        "JA_0acfadcb56f69f33/crossing/5",
+        "JA_0acfadcb56f69f33/crossing/6",
+        "JA_0acfadcb56f69f33/crossing/7",
+        "JA_0acfadcb56f69f33/crossing/8",
+        "JA_0acfadcb56f69f33/crossing/9",
+        "JA_0acfadcb56f69f33/crossing/10"
       ],
       "unobservedBarIds": [],
       "refs": [
-        "task-24-canonical-crossing-chips/X003-photo.png",
-        "ZC033"
+        "NGII 2025 34702020",
+        "task-24-attempt-2/crossing-profiles.json",
+        "task-24-attempt-2/control-preview/JA_0acfadcb56f69f33_crossing-photo.png"
       ],
-      "reason": "Crossing paint directly seen in the photo sheet. Only photo-supported slots are positive; hidden or omitted slots remain unknown."
+      "reason": "11 distinct stripe ridges visible in the fixed reference photo. No other slot inferred. Membership and inventory corrected from the photo, not from output counts."
     },
     {
       "id": "JA_0ee5f9fb3232e0a0/crossing",
@@ -4846,23 +5281,24 @@
       "id": "JA_503328b72495f5d9/crossing",
       "expected": true,
       "barIds": [
-        "JA_503328b72495f5d9/crossing/4"
-      ],
-      "unobservedBarIds": [
-        "JA_503328b72495f5d9/crossing/0",
         "JA_503328b72495f5d9/crossing/1",
         "JA_503328b72495f5d9/crossing/2",
         "JA_503328b72495f5d9/crossing/3",
+        "JA_503328b72495f5d9/crossing/4",
         "JA_503328b72495f5d9/crossing/5",
         "JA_503328b72495f5d9/crossing/6",
         "JA_503328b72495f5d9/crossing/7",
         "JA_503328b72495f5d9/crossing/8"
       ],
-      "refs": [
-        "task-24-canonical-crossing-chips/X020-photo.png",
-        "MX00764 group"
+      "unobservedBarIds": [
+        "JA_503328b72495f5d9/crossing/0"
       ],
-      "reason": "Crossing paint directly seen in the photo sheet. Only photo-supported slots are positive; hidden or omitted slots remain unknown."
+      "refs": [
+        "NGII 2025 34702020",
+        "task-24-attempt-2/crossing-profiles.json",
+        "task-24-attempt-2/control-preview/JA_503328b72495f5d9_crossing-photo.png"
+      ],
+      "reason": "8 distinct stripe ridges visible in the fixed reference photo. One northern slot stays hidden and unobserved. Membership and inventory corrected from the photo, not from output counts."
     },
     {
       "id": "JA_566928e48f78f3ee/crossing",
@@ -5506,19 +5942,22 @@
         "JA_95b33c17b8999417/crossing/3",
         "JA_95b33c17b8999417/crossing/4",
         "JA_95b33c17b8999417/crossing/5",
-        "JA_95b33c17b8999417/crossing/6"
-      ],
-      "unobservedBarIds": [
-        "JA_95b33c17b8999417/crossing/10",
+        "JA_95b33c17b8999417/crossing/6",
         "JA_95b33c17b8999417/crossing/7",
         "JA_95b33c17b8999417/crossing/8",
-        "JA_95b33c17b8999417/crossing/9"
+        "JA_95b33c17b8999417/crossing/9",
+        "JA_95b33c17b8999417/crossing/10",
+        "JA_95b33c17b8999417/crossing/11",
+        "JA_95b33c17b8999417/crossing/12",
+        "JA_95b33c17b8999417/crossing/13"
       ],
+      "unobservedBarIds": [],
       "refs": [
-        "task-24-canonical-crossing-chips/X051-photo.png",
-        "ZC049"
+        "NGII 2025 34702020",
+        "task-24-attempt-2/crossing-profiles.json",
+        "task-24-attempt-2/control-preview/JA_95b33c17b8999417_crossing-photo.png"
       ],
-      "reason": "Crossing paint directly seen in the photo sheet. Only photo-supported slots are positive; hidden or omitted slots remain unknown."
+      "reason": "14 distinct stripe ridges visible in the fixed reference photo. No other slot inferred. Membership and inventory corrected from the photo, not from output counts."
     },
     {
       "id": "JA_966ca0da14066f9c/crossing",
@@ -6563,7 +7002,9 @@
     {
       "id": "CW_009",
       "expected": true,
-      "objectIds": [],
+      "objectIds": [
+        "JA_0acfadcb56f69f33/crossing"
+      ],
       "boundsTm": [
         244002.8415733731,
         263747.3757682233,
@@ -6573,14 +7014,18 @@
       "refs": [
         "docs/assets/data/crosswalks_wgs84.geojson#CW_009",
         "task-24-crossing-chips/CW_009-photo.png",
-        "task-24-crossing-chips/CW_009-paths.png"
+        "task-24-crossing-chips/CW_009-paths.png",
+        "task-24-crossing-catalogue.geojson#JA_0acfadcb56f69f33/crossing"
       ],
-      "observation": "NGII 사진에서 실제 횡단보도 바가 보인다. 경계·막대 개수는 정량 승인하지 않았다."
+      "observation": "NGII 사진에서 실제 횡단보도 바가 보인다. 경계·막대 개수는 정량 승인하지 않았다.",
+      "reason": "East side of the main-gate throat: short north-south stripes, beside CW_008 and southeast island. Six emitted bars cover only part of the visible crossing; geometry still requires repair. Subsequent photo profiles support 11 bars; restore five omitted slots."
     },
     {
       "id": "CW_010",
       "expected": true,
-      "objectIds": [],
+      "objectIds": [
+        "JA_f7293f750cdfb134/crossing"
+      ],
       "boundsTm": [
         243951.6304188145,
         263756.23990098434,
@@ -6590,14 +7035,18 @@
       "refs": [
         "docs/assets/data/crosswalks_wgs84.geojson#CW_010",
         "task-24-crossing-chips/CW_010-photo.png",
-        "task-24-crossing-chips/CW_010-paths.png"
+        "task-24-crossing-chips/CW_010-paths.png",
+        "task-24-crossing-catalogue.geojson#JA_f7293f750cdfb134/crossing"
       ],
-      "observation": "NGII 사진에서 실제 횡단보도 바가 보인다. 경계·막대 개수는 정량 승인하지 않았다."
+      "observation": "NGII 사진에서 실제 횡단보도 바가 보인다. 경계·막대 개수는 정량 승인하지 않았다.",
+      "reason": "Long transverse row across the main-gate carriageway, south of the median; catalogue geometry follows the same 33-bar row."
     },
     {
       "id": "CW_011",
       "expected": true,
-      "objectIds": [],
+      "objectIds": [
+        "JA_0ee5f9fb3232e0a0/crossing"
+      ],
       "boundsTm": [
         243965.57006650706,
         263777.5164474418,
@@ -6607,9 +7056,11 @@
       "refs": [
         "docs/assets/data/crosswalks_wgs84.geojson#CW_011",
         "task-24-crossing-chips/CW_011-photo.png",
-        "task-24-crossing-chips/CW_011-paths.png"
+        "task-24-crossing-chips/CW_011-paths.png",
+        "task-24-crossing-catalogue.geojson#JA_0ee5f9fb3232e0a0/crossing"
       ],
-      "observation": "NGII 사진에서 실제 횡단보도 바가 보인다. 경계·막대 개수는 정량 승인하지 않았다."
+      "observation": "NGII 사진에서 실제 횡단보도 바가 보인다. 경계·막대 개수는 정량 승인하지 않았다.",
+      "reason": "Short transverse row north of the main-gate approach beside the building; ten matching emitted bars."
     },
     {
       "id": "CW_012",
@@ -6727,7 +7178,9 @@
     {
       "id": "CW_018",
       "expected": true,
-      "objectIds": [],
+      "objectIds": [
+        "JA_a5f33d920b8e056b/crossing"
+      ],
       "boundsTm": [
         243872.26589901364,
         263757.7382979457,
@@ -6737,9 +7190,11 @@
       "refs": [
         "docs/assets/data/crosswalks_wgs84.geojson#CW_018",
         "task-24-crossing-chips/CW_018-photo.png",
-        "task-24-crossing-chips/CW_018-paths.png"
+        "task-24-crossing-chips/CW_018-paths.png",
+        "task-24-crossing-catalogue.geojson#JA_a5f33d920b8e056b/crossing"
       ],
-      "observation": "건물 그림자 아래 실제 바가 보인다."
+      "observation": "건물 그림자 아래 실제 바가 보인다.",
+      "reason": "Crossing spans the road under the building shadow; ten-bar row is visible dimly, but masked pixels cannot yield a reliable IoU."
     },
     {
       "id": "CW_019",
@@ -6763,7 +7218,9 @@
     {
       "id": "CW_020",
       "expected": true,
-      "objectIds": [],
+      "objectIds": [
+        "JA_d4c8675a55b9d1b2/crossing"
+      ],
       "boundsTm": [
         243850.5542143745,
         263680.3607531364,
@@ -6773,9 +7230,11 @@
       "refs": [
         "docs/assets/data/crosswalks_wgs84.geojson#CW_020",
         "task-24-crossing-chips/CW_020-photo.png",
-        "task-24-crossing-chips/CW_020-paths.png"
+        "task-24-crossing-chips/CW_020-paths.png",
+        "task-24-crossing-catalogue.geojson#JA_d4c8675a55b9d1b2/crossing"
       ],
-      "observation": "NGII 사진에서 실제 횡단보도 바가 보인다. 경계·막대 개수는 정량 승인하지 않았다."
+      "observation": "NGII 사진에서 실제 횡단보도 바가 보인다. 경계·막대 개수는 정량 승인하지 않았다.",
+      "reason": "Crossing north of the yellow hump beside the eastern building; the emitted 12 bars follow the same row."
     },
     {
       "id": "CW_021",
@@ -6854,7 +7313,9 @@
     {
       "id": "CW_026",
       "expected": true,
-      "objectIds": [],
+      "objectIds": [
+        "JA_95b33c17b8999417/crossing"
+      ],
       "boundsTm": [
         243600.63404395647,
         263689.86122696305,
@@ -6864,14 +7325,18 @@
       "refs": [
         "docs/assets/data/crosswalks_wgs84.geojson#CW_026",
         "task-24-crossing-chips/CW_026-photo.png",
-        "task-24-crossing-chips/CW_026-paths.png"
+        "task-24-crossing-chips/CW_026-paths.png",
+        "task-24-crossing-catalogue.geojson#JA_95b33c17b8999417/crossing"
       ],
-      "observation": "서측 바가 보이고 동측은 수관으로 가려진다."
+      "observation": "서측 바가 보이고 동측은 수관으로 가려진다.",
+      "reason": "Crossing beside accessible parking and canopy: eleven emitted bars match the western row; eastern canopy limits the boundary and count assessment. Subsequent photo profiles support 14 bars: restore three visible western bars; do not infer any beyond the exposed run."
     },
     {
       "id": "CW_027",
       "expected": true,
-      "objectIds": [],
+      "objectIds": [
+        "JA_6eff3cc0aa06bfc1/crossing"
+      ],
       "boundsTm": [
         243684.72468303755,
         263611.76324782916,
@@ -6881,9 +7346,11 @@
       "refs": [
         "docs/assets/data/crosswalks_wgs84.geojson#CW_027",
         "task-24-crossing-chips/CW_027-photo.png",
-        "task-24-crossing-chips/CW_027-paths.png"
+        "task-24-crossing-chips/CW_027-paths.png",
+        "task-24-crossing-catalogue.geojson#JA_6eff3cc0aa06bfc1/crossing"
       ],
-      "observation": "NGII 사진에서 실제 횡단보도 바가 보인다. 경계·막대 개수는 정량 승인하지 않았다."
+      "observation": "NGII 사진에서 실제 횡단보도 바가 보인다. 경계·막대 개수는 정량 승인하지 않았다.",
+      "reason": "Red-road crossing on the west approach of the curved junction, eight visible bars."
     },
     {
       "id": "CW_029",
@@ -6907,7 +7374,9 @@
     {
       "id": "CW_030",
       "expected": true,
-      "objectIds": [],
+      "objectIds": [
+        "JA_e04e8e07b440c6b5/crossing"
+      ],
       "boundsTm": [
         243833.4887322762,
         263631.2508494705,
@@ -6917,9 +7386,11 @@
       "refs": [
         "docs/assets/data/crosswalks_wgs84.geojson#CW_030",
         "task-24-crossing-chips/CW_030-photo.png",
-        "task-24-crossing-chips/CW_030-paths.png"
+        "task-24-crossing-chips/CW_030-paths.png",
+        "task-24-crossing-catalogue.geojson#JA_e04e8e07b440c6b5/crossing"
       ],
-      "observation": "NGII 사진에서 실제 횡단보도 바가 보인다. 경계·막대 개수는 정량 승인하지 않았다."
+      "observation": "NGII 사진에서 실제 횡단보도 바가 보인다. 경계·막대 개수는 정량 승인하지 않았다.",
+      "reason": "Crossing between two islands at the upper end of the north-south road, eight matching bars."
     },
     {
       "id": "CW_031",
