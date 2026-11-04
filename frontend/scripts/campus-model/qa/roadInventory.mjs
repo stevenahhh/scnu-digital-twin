@@ -106,7 +106,7 @@ export function roadAcceptance(report) {
     crossingInventory: report.roadExistence?.crossings.pass === true,
     lateral: lines.length > 0 && lines.every(o => measurable(o) && Number.isFinite(o.residual_m) && o.residual_m <= .25 && o.support >= .6),
     crossingBars: bars.length > 0 && bars.every(o => measurable(o) && Number.isFinite(o.iou) && o.iou >= .6 && Number.isFinite(o.residual_m) && o.residual_m <= .2),
-    physicalCrossings: report.physicalCrossings.length > 0 && report.physicalCrossings.every(o => measurable(o) && Number.isFinite(o.iou) && o.iou >= .6),
+    physicalCrossings: report.physicalCrossings.length > 0 && report.physicalCrossings.every(o => measurable(o) && !(o.missingMemberIds?.length) && Number.isFinite(o.iou) && o.iou >= .6),
   };
   return { accepted: Object.values(checks).every(Boolean), checks };
 }
