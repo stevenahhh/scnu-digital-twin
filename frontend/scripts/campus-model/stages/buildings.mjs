@@ -1803,6 +1803,12 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
   // fetch/buildingForms.mjs derives data/building-forms.json from this selection (the footprints before any form).
   console.log(`small footprints included by their scnu-facades.json entry (minAreaMetres): ${smallIncluded.join("; ") || "none"}`);
   if (selectOnly) return { selectableBuildings, campusBuildings, offCampusLots, contextParts };
+  // QA compares the selected GIS ground parts, before LOD4 masses replace building.parts.
+  // A mass bbox includes wings/canopies and is not the todo-5 footprint contract.
+  const groundFootprints = selectableBuildings.map(b => ({
+    id: b.nodeName, actualParts: b.parts.map(p => p.outer.map(q => sceneToTm(...q))),
+    estimated: b.footprintEstimated, source: b.footprintSource,
+  }));
 
   const roofFootprints = await loadTmFootprints();
   for (const building of [...selectableBuildings, ...campusBuildings]) {
@@ -2343,5 +2349,5 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
   }
   console.log(`SCNU pick proxies: ${proxies.size} (${[...proxies].map(([id, [b]]) => `${id} ${b.label}`).join("; ")})`);
 
-  return { selectableBuildings, campusBuildings, offCampusLots, contextParts };
+  return { selectableBuildings, campusBuildings, offCampusLots, contextParts, groundFootprints };
 }

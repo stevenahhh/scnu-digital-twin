@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "test": "node scripts/run-tests.mjs",
     "model:fetch": "bun scripts/campus-model/fetch-sources.mjs",
-    "model:build": "bun scripts/campus-model/build-campus-model.mjs && bun scripts/campus-model/pack.mjs",
+    "model:build": "bun scripts/campus-model/build.mjs",
     "model:pack": "bun scripts/campus-model/pack.mjs",
     "model:precompress": "bun scripts/campus-model/pack.mjs --precompress",
     "network:build": "bun scripts/campus-model/network/buildNetwork.mjs"

@@ -332,7 +332,7 @@ export function gutterLayers(plan) {
 
 // ---------------------------------------------------------------- stage
 // surfaces: stages/ground.mjs parcelSurfaces() (layers + outlines from data/ground/parcels.json); groundInfo: the label raster; surface: topographySurface().
-export async function buildKerbs({ glb, surfaces, groundInfo, surface, crossings }) {
+export async function prepareKerbs({ surfaces, groundInfo, surface, crossings }) {
   const { width, height, px, labels } = groundInfo;
   const { minX, minZ } = EXTENT;
   const labelAt = ([x, z]) => {
@@ -351,6 +351,12 @@ export async function buildKerbs({ glb, surfaces, groundInfo, surface, crossings
     warn: (message) => warnings.push(message),
   });
   for (const message of warnings) console.warn(message);
+  return { plan, warnings, groundHeightAt: plan.groundHeightAt, gutters: gutterLayers(plan) };
+}
+
+export async function buildKerbs({ glb, surfaces, groundInfo, surface, crossings, prepared }) {
+  const { plan, warnings } = prepared ?? await prepareKerbs({ surfaces, groundInfo, surface, crossings });
+  const terrainAt = (x, z) => surface.height(x, z);
   const { kit, maxHeight } = kerbSolids(plan, terrainAt);
   if (maxHeight > KERB_LEGAL_CAP_M) throw new Error(`kerb height ${maxHeight} m exceeds the legal cap ${KERB_LEGAL_CAP_M} m`);
   const material = glb.addMaterial({

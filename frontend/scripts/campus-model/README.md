@@ -6,7 +6,7 @@ with `?model=uni` to compare.
 
 ```bash
 cd frontend
-bun run model:build   # regenerate public/campus-v2.glb from committed inputs (no network)
+bun run model:build   # two raw builds, one pack/render, publish only after QA accepts
 bun run model:fetch   # refresh data/ (network; the land cover step needs VITE_VWORLD_API_KEY in the env or frontend/.env)
 bun scripts/campus-model/fetch/osm.mjs   # refresh data/osm-ground.json (network, no key)
 bun scripts/campus-model/fetch/ortho.mjs # refresh data/ortho/ (VWorld z19 mosaic; the key is needed only for tiles missing from .cache/)
@@ -48,6 +48,35 @@ constraints and deterministic generation. These reports must retain unexplained
 or over-tolerance objects rather than turning them into accuracy passes.
 The existing `.build/markings.report.json` records generated paint pieces and
 parking symbols. No source pixels belong in these JSON reports.
+
+`build.mjs` owns a fresh `.build/candidate-*` transaction. It compares two raw
+outputs with identical input/AO hashes, packs once, and serves that candidate
+without replacing public files during QA. Render QA owns Vite port 5242 and
+Chrome port 9382; both close on success or failure. The NGII sheet and required
+VR faces must already exist in `.cache`; their absence is a failed check.
+`candidate.json` identifies the inspected artifact, and `policy.json` distinguishes
+raw accuracy from publication acceptance. Historical gaps in `qa/known-gaps.json`
+are evidence, never automatic waivers. Failed QA leaves the previous public GLB
+and both height sidecars unchanged.
+
+`bun run model:build --parcels /absolute/path/to/parcels-copy.json` selects an
+isolated parcel input. It never edits the canonical source. Direct `model:pack`
+requires `--candidate-dir` and only writes inside that candidate; direct
+`model:precompress` refuses publication. To precompress a passing full build use
+`bun run model:build --precompress`.
+
+For AO bootstrap only, `bun scripts/campus-model/build-campus-model.mjs` writes
+raw GLB and height files under `.build`, never public. Bake the building and planar
+AO from that raw output, then run the full build. The mesh sequence prepares
+terrain and kerb heights first, then emits buildings, entrances, parking/road
+paint, kerbs/tactile, surfaces, furniture, trees and lights. Paint claims precede
+surface claims; entrance heights use the same prepared kerb plan.
+
+For a rejected candidate, inspect its geometry without publishing it:
+`CAMPUS_MODEL_FILE=/absolute/candidate/campus-v2.glb node --test
+scripts/campus-model/qa/facadeApplied.test.mjs scripts/campus-model/qa/facadeMesh.test.mjs`.
+The two facade CLIs also accept `--model`. Their thresholds are unchanged.
+This explicit artifact selection does not make the overall candidate acceptable.
 
 ```bash
 cd frontend

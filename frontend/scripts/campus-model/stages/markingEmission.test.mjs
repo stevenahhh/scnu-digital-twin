@@ -25,3 +25,19 @@ test("mesh inventory records emitted crossing parts, not excluded or out-of-exte
   assert.deepEqual(report.emittedRoadObjects, [pieces[0].objectId]);
   assert.deepEqual(report.roadObjects, pieces.map(p => p.objectId), "legacy planned inventory remains additive");
 });
+
+test("paint invariant receipt includes parking without road ownership and excludes clipped paint", async () => {
+  const pieces = [200, 210].map((x, i) => ({
+    id: `stall-${i}`, kind: "parking_line", colour: "white", estimated: true,
+    rings: [[[x, -200], [x + 4, -200], [x + 4, -198], [x, -198]]],
+  }));
+  const result = await buildMarkings({
+    glb: new GlbBuilder(), markings: { pieces, source: "test" }, decimate: false,
+    exclusions: [[[[209, -201], [215, -201], [215, -197], [209, -197]]]],
+    surface: { grid: { step: 20, x0: 0, z0: 0 }, height: () => 0, normal: () => [0, 1, 0] },
+  });
+  assert.deepEqual(result.paintEmission.map(p => p.id), ["stall-0"]);
+  const area = result.paintEmission[0].triangles.reduce((sum, [a, b, c]) =>
+    sum + Math.abs((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])) / 2, 0);
+  assert.equal(area, 8);
+});

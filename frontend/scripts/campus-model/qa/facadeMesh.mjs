@@ -79,7 +79,8 @@ export async function inspectDoor(model) {
 
 if (import.meta.main) {
   const arg = process.argv.indexOf("--model");
-  const model = arg >= 0 ? process.argv[arg + 1] : fileURLToPath(new URL("../../../public/campus-v2.glb", import.meta.url));
+  const model = arg >= 0 ? process.argv[arg + 1]
+    : process.env.CAMPUS_MODEL_FILE ?? fileURLToPath(new URL("../../../public/campus-v2.glb", import.meta.url));
   const report = await inspectDoor(model);
   console.log(JSON.stringify(report, null, 2));
   if (!report.pass) process.exitCode = 1;
