@@ -7164,9 +7164,18 @@
       "refs": [
         "docs/assets/data/crosswalks_wgs84.geojson#CW_003",
         "task-24-crossing-chips/CW_003-photo.png",
-        "task-24-crossing-chips/CW_003-paths.png"
+        "task-24-crossing-chips/CW_003-paths.png",
+        ".omo/evidence/campus-ground-truth-redesign/task-24b-lane-A-crossings.json#CW_003"
       ],
-      "observation": "건물 그림자 아래 바가 보인다. 전체 개수·폭은 미측정."
+      "observation": "건물 그림자 아래 바가 보인다. 전체 개수·폭은 미측정.",
+      "adjudication": {
+        "refs": [
+          ".omo/evidence/campus-ground-truth-redesign/task-24b-lane-A-crossings.json#CW_003"
+        ],
+        "reason": "The NGII chip, also viewed at brightness x2 without changing pixels used by scoring, resolves the stripe bands in building shadow. 2021/2023/2024 aerials and B7 front face corroborate this crossing beside the building. Keep the existing owner JA_8dfc0dda33a936f7/crossing and expected true. Visibility under the fixed scoring mask remains a separate limitation.",
+        "decision": "confirm"
+      },
+      "reason": "The NGII chip, also viewed at brightness x2 without changing pixels used by scoring, resolves the stripe bands in building shadow. 2021/2023/2024 aerials and B7 front face corroborate this crossing beside the building. Keep the existing owner JA_8dfc0dda33a936f7/crossing and expected true. Visibility under the fixed scoring mask remains a separate limitation."
     },
     {
       "id": "CW_004",
@@ -7189,7 +7198,7 @@
     },
     {
       "id": "CW_005",
-      "expected": null,
+      "expected": false,
       "objectIds": [],
       "boundsTm": [
         244086.36218068318,
@@ -7200,9 +7209,32 @@
       "refs": [
         "docs/assets/data/crosswalks_wgs84.geojson#CW_005",
         "task-24-crossing-chips/CW_005-photo.png",
-        "task-24-crossing-chips/CW_005-paths.png"
+        "task-24-crossing-chips/CW_005-paths.png",
+        ".omo/evidence/campus-ground-truth-redesign/task-24b-lane-A-crossings.json#CW_005"
       ],
-      "observation": "원본 경계 안에서 바가 확인되지 않는다. 다른 시기 VR 대조 전 삭제/부재로 확정하지 않음."
+      "observation": "원본 경계 안에서 바가 확인되지 않는다. 다른 시기 VR 대조 전 삭제/부재로 확정하지 않음.",
+      "adjudication": {
+        "refs": [
+          ".omo/evidence/campus-ground-truth-redesign/task-24b-lane-A-crossings.json#CW_005"
+        ],
+        "reason": "The 2021/2023/2024 aerials show a former zebra at this location. The fixed NGII 2025 polygon is on visible unstriped pavement; scene_b7 down/front faces show the repaved approach without that zebra. Confirm absence only in the 2025 reference window, not permanent absence and not a surveyed removal date. Preserve the record and its exact bounds.",
+        "decision": "confirm",
+        "imageEvidence": {
+          "path": "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-crossing-chips/CW_005-photo.png",
+          "index": "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-crossing-chips/index.json",
+          "boundsTm": [
+            244086.36218068318,
+            263890.9432627538,
+            244091.49591620668,
+            263894.5984863226
+          ],
+          "crs": "EPSG:5186",
+          "source": "NGII 2025 34702020; 0.25 m/px; original and existing fixed polygon inspected",
+          "epoch": 2025,
+          "observation": "No zebra paint in the unchanged reference bounds; nearby paint outside that window is not evidence of presence."
+        }
+      },
+      "reason": "The 2021/2023/2024 aerials show a former zebra at this location. The fixed NGII 2025 polygon is on visible unstriped pavement; scene_b7 down/front faces show the repaved approach without that zebra. Confirm absence only in the 2025 reference window, not permanent absence and not a surveyed removal date. Preserve the record and its exact bounds."
     },
     {
       "id": "CW_006",
@@ -7217,9 +7249,18 @@
       "refs": [
         "docs/assets/data/crosswalks_wgs84.geojson#CW_006",
         "task-24-crossing-chips/CW_006-photo.png",
-        "task-24-crossing-chips/CW_006-paths.png"
+        "task-24-crossing-chips/CW_006-paths.png",
+        ".omo/evidence/campus-ground-truth-redesign/task-24b-lane-A-crossings.json#CW_006"
       ],
-      "observation": "경계가 수관에 가려져 있음. 바의 존재 및 개수 미확정."
+      "observation": "경계가 수관에 가려져 있음. 바의 존재 및 개수 미확정.",
+      "adjudication": {
+        "refs": [
+          ".omo/evidence/campus-ground-truth-redesign/task-24b-lane-A-crossings.json#CW_006"
+        ],
+        "reason": "2021/2023/2024 aerials show the historical crossing. NGII 2025 is obscured by canopy, and even brightness-only inspection does not resolve the bars. B7 down view has foliage/vehicles near the old crossing. The previously preserved three source bars at (244085.34,263874.06), (244084.47,263874.27), (244083.59,263874.49) are source-history evidence, not an independently verified current canonical membership. Keep expected null and objectIds empty; do not duplicate or delete the preserved paint.",
+        "decision": "evidence-limited"
+      },
+      "reason": "2021/2023/2024 aerials show the historical crossing. NGII 2025 is obscured by canopy, and even brightness-only inspection does not resolve the bars. B7 down view has foliage/vehicles near the old crossing. The previously preserved three source bars at (244085.34,263874.06), (244084.47,263874.27), (244083.59,263874.49) are source-history evidence, not an independently verified current canonical membership. Keep expected null and objectIds empty; do not duplicate or delete the preserved paint."
     },
     {
       "id": "CW_007",
@@ -7239,10 +7280,18 @@
         "task-24-crossing-chips/CW_007-paths.png",
         "NGII 2025 34702020",
         "task-24-attempt-3/CW_007-fit.png",
-        "task-24-attempt-3/crossing-fit.json"
+        "task-24-attempt-3/crossing-fit.json",
+        ".omo/evidence/campus-ground-truth-redesign/task-24b-lane-A-crossings.json#CW_007"
       ],
       "observation": "수관 틈으로 바 3개가 보인다. 가려진 칸과 수관 밖 바 개수는 미확정.",
-      "reason": "Visible bars under the canopy are restored as an added crossing owner; hidden extent remains unobserved."
+      "reason": "Visible bars under the canopy are restored as an added crossing owner; hidden extent remains unobserved.",
+      "adjudication": {
+        "refs": [
+          ".omo/evidence/campus-ground-truth-redesign/task-24b-lane-A-crossings.json#CW_007"
+        ],
+        "reason": "NGII canopy gaps and the retained fit chip support the already drawn three bars of JA_c12765b5e6ef6ad7/crossing, slots 0/2/3; slot 1 stays unobserved. 2021/2023/2024 show the same corridor with changing canopy/shadow. The B7 five-face view does not establish the distant hidden extent or an authoritative RD/ND association. Confirm only the observed subset, not a complete four-bar crossing.",
+        "decision": "confirm"
+      }
     },
     {
       "id": "CW_008",
@@ -7401,16 +7450,19 @@
       "refs": [
         "docs/assets/data/crosswalks_wgs84.geojson#CW_015",
         "task-24-crossing-chips/CW_015-photo.png",
-        "task-24-crossing-chips/CW_015-paths.png"
+        "task-24-crossing-chips/CW_015-paths.png",
+        ".omo/evidence/campus-ground-truth-redesign/task-24b-lane-A-crossings.json#CW_015"
       ],
       "observation": "NGII 사진에서 실제 횡단보도 바가 보인다. 경계·막대 개수는 정량 승인하지 않았다.",
       "reason": "retained",
       "adjudication": {
         "refs": [
           "task-24-attempt-3/CW_015-fit.png",
-          "task-24-attempt-3/crossing-fit.json"
+          "task-24-attempt-3/crossing-fit.json",
+          ".omo/evidence/campus-ground-truth-redesign/task-24b-lane-A-crossings.json#CW_015"
         ],
-        "reason": "Bars are visible and refit, but their ends step progressively across the carriageway (a skewed, parallelogram outline). The canonical crossing draws rectangular bars with a common end line, so the photo outline cannot be reproduced without a skew control; remaining IoU shortfall is that model limit, not missing paint."
+        "reason": "NGII 2025 and scene_d1/pano_d.jpg confirm the crossing and progressively stepped bar ends. The current common-offset rectangular grid has no skew or per-bar endpoint control (stages/roadMarkings.mjs:179-187). Rotating/translating the whole grid cannot independently repair bar 3. 2024 registration RMS 0.419 m and the D1 pose do not establish a 0.2 m correction. Keep the 15 slots and the failure; no numeric geometry edit is approved.",
+        "decision": "evidence-limited"
       }
     },
     {
@@ -7428,13 +7480,22 @@
       "refs": [
         "docs/assets/data/crosswalks_wgs84.geojson#CW_016",
         "task-24-crossing-chips/CW_016-photo.png",
-        "task-24-crossing-chips/CW_016-paths.png"
+        "task-24-crossing-chips/CW_016-paths.png",
+        ".omo/evidence/campus-ground-truth-redesign/task-24b-lane-A-crossings.json#CW_016"
       ],
-      "observation": "서쪽 바가 보이고 동쪽은 수관으로 가려진다."
+      "observation": "서쪽 바가 보이고 동쪽은 수관으로 가려진다.",
+      "adjudication": {
+        "refs": [
+          ".omo/evidence/campus-ground-truth-redesign/task-24b-lane-A-crossings.json#CW_016"
+        ],
+        "reason": "NGII shows western stripe fragments while canopy obscures the east. 2021/2023/2024 aerials confirm the continuous crossing corridor. E4 five-face inspection supplies road context but foliage prevents an independent full endpoint measurement. Keep JA_efcfe4bc4cbe5afd/crossing and expected true; no full-count or width approval follows from presence.",
+        "decision": "confirm"
+      },
+      "reason": "NGII shows western stripe fragments while canopy obscures the east. 2021/2023/2024 aerials confirm the continuous crossing corridor. E4 five-face inspection supplies road context but foliage prevents an independent full endpoint measurement. Keep JA_efcfe4bc4cbe5afd/crossing and expected true; no full-count or width approval follows from presence."
     },
     {
       "id": "CW_017",
-      "expected": null,
+      "expected": false,
       "objectIds": [],
       "boundsTm": [
         243735.58592065825,
@@ -7445,9 +7506,32 @@
       "refs": [
         "docs/assets/data/crosswalks_wgs84.geojson#CW_017",
         "task-24-crossing-chips/CW_017-photo.png",
-        "task-24-crossing-chips/CW_017-paths.png"
+        "task-24-crossing-chips/CW_017-paths.png",
+        ".omo/evidence/campus-ground-truth-redesign/task-24b-lane-A-crossings.json#CW_017"
       ],
-      "observation": "경계 안에는 바가 보이지 않고 남측에 황백 방지턱이 보인다. 위치·시기 불일치를 재검토."
+      "observation": "경계 안에는 바가 보이지 않고 남측에 황백 방지턱이 보인다. 위치·시기 불일치를 재검토.",
+      "adjudication": {
+        "refs": [
+          ".omo/evidence/campus-ground-truth-redesign/task-24b-lane-A-crossings.json#CW_017"
+        ],
+        "reason": "2021/2023/2024 aerials show an older white zebra north of a yellow/white speed hump. In NGII 2025 the fixed polygon contains unstriped pavement and the yellow/white hump lies south of it. Do not count the hump as the missing zebra or shift the reference window onto it. E3 five-face inspection does not give an unobstructed metric view of this northern target; the negative decision rests on the clear NGII window and the epoch comparison.",
+        "decision": "confirm",
+        "imageEvidence": {
+          "path": "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-crossing-chips/CW_017-photo.png",
+          "index": "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-crossing-chips/index.json",
+          "boundsTm": [
+            243735.58592065825,
+            263786.9964873072,
+            243742.40500410006,
+            263792.8272381252
+          ],
+          "crs": "EPSG:5186",
+          "source": "NGII 2025 34702020; 0.25 m/px; original and existing fixed polygon inspected",
+          "epoch": 2025,
+          "observation": "No zebra paint in the unchanged reference bounds; nearby paint outside that window is not evidence of presence."
+        }
+      },
+      "reason": "2021/2023/2024 aerials show an older white zebra north of a yellow/white speed hump. In NGII 2025 the fixed polygon contains unstriped pavement and the yellow/white hump lies south of it. Do not count the hump as the missing zebra or shift the reference window onto it. E3 five-face inspection does not give an unobstructed metric view of this northern target; the negative decision rests on the clear NGII window and the epoch comparison."
     },
     {
       "id": "CW_018",
@@ -7465,10 +7549,18 @@
         "docs/assets/data/crosswalks_wgs84.geojson#CW_018",
         "task-24-crossing-chips/CW_018-photo.png",
         "task-24-crossing-chips/CW_018-paths.png",
-        "task-24-crossing-catalogue.geojson#JA_a5f33d920b8e056b/crossing"
+        "task-24-crossing-catalogue.geojson#JA_a5f33d920b8e056b/crossing",
+        ".omo/evidence/campus-ground-truth-redesign/task-24b-lane-A-crossings.json#CW_018"
       ],
       "observation": "건물 그림자 아래 실제 바가 보인다.",
-      "reason": "Crossing spans the road under the building shadow; ten-bar row is visible dimly, but masked pixels cannot yield a reliable IoU."
+      "reason": "Crossing spans the road under the building shadow; ten-bar row is visible dimly, but masked pixels cannot yield a reliable IoU.",
+      "adjudication": {
+        "refs": [
+          ".omo/evidence/campus-ground-truth-redesign/task-24b-lane-A-crossings.json#CW_018"
+        ],
+        "reason": "The NGII 2025 chip, with brightness x2 as a visual aid only, clearly shows the striped crossing under building shadow. 2021/2023/2024 corroborate its location. A3 five-face inspection is contextual and does not resolve the full shaded crossing at metric accuracy. Keep JA_a5f33d920b8e056b/crossing, expected true and the unchanged bounds/mask.",
+        "decision": "confirm"
+      }
     },
     {
       "id": "CW_019",
@@ -7531,7 +7623,7 @@
     },
     {
       "id": "CW_022",
-      "expected": null,
+      "expected": false,
       "objectIds": [],
       "boundsTm": [
         243894.28744857688,
@@ -7542,9 +7634,32 @@
       "refs": [
         "docs/assets/data/crosswalks_wgs84.geojson#CW_022",
         "task-24-crossing-chips/CW_022-photo.png",
-        "task-24-crossing-chips/CW_022-paths.png"
+        "task-24-crossing-chips/CW_022-paths.png",
+        ".omo/evidence/campus-ground-truth-redesign/task-24b-lane-A-crossings.json#CW_022"
       ],
-      "observation": "경계 안에는 바가 보이지 않는다. 인접 주차 통로와 구분, VR 대조 전 부재로 확정하지 않음."
+      "observation": "경계 안에는 바가 보이지 않는다. 인접 주차 통로와 구분, VR 대조 전 부재로 확정하지 않음.",
+      "adjudication": {
+        "refs": [
+          ".omo/evidence/campus-ground-truth-redesign/task-24b-lane-A-crossings.json#CW_022"
+        ],
+        "reason": "2021/2023/2024 aerials show an older short zebra in the parking access. The fixed NGII 2025 polygon is visible unstriped access pavement, with parking lines outside the polygon. A4 five-face inspection is a context check only; trees/buildings do not provide a precise view of this window. Record the 2025 negative without removing the physical record or moving it onto adjacent parking stripes.",
+        "decision": "confirm",
+        "imageEvidence": {
+          "path": "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-crossing-chips/CW_022-photo.png",
+          "index": "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-crossing-chips/index.json",
+          "boundsTm": [
+            243894.28744857688,
+            263648.80793558527,
+            243899.04939714604,
+            263654.57809959014
+          ],
+          "crs": "EPSG:5186",
+          "source": "NGII 2025 34702020; 0.25 m/px; original and existing fixed polygon inspected",
+          "epoch": 2025,
+          "observation": "No zebra paint in the unchanged reference bounds; nearby paint outside that window is not evidence of presence."
+        }
+      },
+      "reason": "2021/2023/2024 aerials show an older short zebra in the parking access. The fixed NGII 2025 polygon is visible unstriped access pavement, with parking lines outside the polygon. A4 five-face inspection is a context check only; trees/buildings do not provide a precise view of this window. Record the 2025 negative without removing the physical record or moving it onto adjacent parking stripes."
     },
     {
       "id": "CW_023",
@@ -7580,7 +7695,8 @@
       "refs": [
         "docs/assets/data/crosswalks_wgs84.geojson#CW_025",
         "task-24-crossing-chips/CW_025-photo.png",
-        "task-24-crossing-chips/CW_025-paths.png"
+        "task-24-crossing-chips/CW_025-paths.png",
+        ".omo/evidence/campus-ground-truth-redesign/task-24b-lane-A-crossings.json#CW_025"
       ],
       "observation": "서측 바가 보이고 동쪽은 수관으로 가려진다. CW_024의 정상 사각형 대안이나 정량 경계는 아직 미승인.",
       "reason": "retained",
@@ -7588,9 +7704,11 @@
         "refs": [
           "task-24-attempt-3/CW_025-fit.png",
           "task-24-attempt-3/crossing-fit.json",
-          "task-24-crossing-chips/CW_025-photo.png"
+          "task-24-crossing-chips/CW_025-photo.png",
+          ".omo/evidence/campus-ground-truth-redesign/task-24b-lane-A-crossings.json#CW_025"
         ],
-        "reason": "Canopy and its shade cover most of the window; per-slot paint shares of a refit grid are .12-.92 with no consistent bar pattern, so no refit was applied. Geometry stays as seeded; boundary and visibility remain unadjudicated from the 2025 sheet."
+        "reason": "The 2024 extended aerial and 2023/2021 WMS chips show a real road crossing west of the stone footway. The D4 down face shows two half-length stripe bands separated by an unpainted centre gap, a different paint arrangement from a single long-bar grid. The NGII 2025 target is mostly canopy/shade. Neither the 0.419 m cross-epoch registration nor the uncalibrated D4 down face establishes which 2025 endpoints are valid. Do not transfer the later-looking split pattern into the frozen 2025 window or change its mask.",
+        "decision": "evidence-limited"
       }
     },
     {
