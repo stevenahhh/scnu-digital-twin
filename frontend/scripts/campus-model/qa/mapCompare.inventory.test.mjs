@@ -58,17 +58,18 @@ test("unknown labels and missing reference evidence cannot become acceptance", (
   assert.equal(result.crossings.pass, false);
 });
 
-test("a documented out-of-scope candidate leaves the acceptance denominator but stays reported with the frozen score", () => {
+test("a documented out-of-scope candidate stays in the frozen acceptance denominator and the in-scope figure is a side metric", () => {
   const result = compare.compareRoadInventory({ ...reference, segments: [
     ...reference.segments.filter(r => r.id !== "RD_B"),
     { id: "RD_X", expected: true, refs: ["aerial X"], scope: { inScope: false, refs: ["design: context ground"], reason: "outside the export extent" } },
   ] }, generated);
-  assert.deepEqual(result.segments.counts, { tp: 2, tn: 0, fp: 0, fn: 0, unknown: 0 });
-  assert.equal(result.segments.denominator, 2);
-  assert.equal(result.segments.lowerBound, 1);
-  assert.equal(result.segments.pass, true);
+  assert.deepEqual(result.segments.counts, { tp: 2, tn: 0, fp: 0, fn: 1, unknown: 0 });
+  assert.equal(result.segments.denominator, 3);
+  assert.equal(result.segments.lowerBound, 2 / 3);
+  assert.equal(result.segments.pass, false);
+  assert.equal(result.segments.frozen, undefined);
   assert.deepEqual(result.segments.outOfScope, ["RD_X"]);
-  assert.deepEqual(result.segments.frozen, { denominator: 3, counts: { tp: 2, tn: 0, fp: 0, fn: 1, unknown: 0 }, lowerBound: 2 / 3 });
+  assert.deepEqual(result.segments.inScope, { denominator: 2, counts: { tp: 2, tn: 0, fp: 0, fn: 0, unknown: 0 }, lowerBound: 1 });
   assert.deepEqual(result.segments.rows.find(r => r.id === "RD_X"), { id: "RD_X", status: "out-of-scope", frozenStatus: "fn", over: false });
 });
 
