@@ -21,13 +21,20 @@ export function compareRoadInventory(reference, generated) {
   const drawn = new Set(generated.segmentIds);
   const expectedIds = new Set(reference.segments.map(r => r.id));
   const counts = { tp: 0, tn: 0, fp: 0, fn: 0, unknown: 0 };
+  // A design scope exclusion (for example paint on the off-campus context
+  // ground) leaves the acceptance denominator only with its own evidence; the
+  // frozen-corpus score stays reported beside it.
+  const frozenCounts = { tp: 0, tn: 0, fp: 0, fn: 0, unknown: 0 }, outOfScope = [];
   const rows = reference.segments.map(r => {
-    if (!supported(r)) {
-      counts.unknown += 1;
-      return { id: r.id, status: "unknown", over: false };
-    }
+    const excluded = r.scope?.inScope === false;
+    if (excluded && !(r.scope.reason?.trim() && supported({ expected: false, refs: r.scope.refs }))) throw new RangeError(`${r.id}: scope exclusion needs refs and reason`);
     const exists = drawn.has(r.id);
-    const status = r.expected ? (exists ? "tp" : "fn") : (exists ? "fp" : "tn");
+    const status = !supported(r) ? "unknown" : r.expected ? (exists ? "tp" : "fn") : (exists ? "fp" : "tn");
+    frozenCounts[status] += 1;
+    if (excluded) {
+      outOfScope.push(r.id);
+      return { id: r.id, status: "out-of-scope", frozenStatus: status, over: false };
+    }
     counts[status] += 1;
     return { id: r.id, status, over: status === "fp" || status === "fn" };
   });
@@ -41,8 +48,11 @@ export function compareRoadInventory(reference, generated) {
   const accuracy = judged ? (counts.tp + counts.tn) / judged : null;
   const lowerBound = denominator ? (counts.tp + counts.tn) / denominator : null;
   const unassignedOwners = generated.unassignedOwners ?? [];
+  const frozenDenominator = reference.segments.length;
   const segments = {
-    rows, counts, denominator, judged, accuracy, lowerBound, unassignedOwners,
+    rows, counts, denominator, judged, accuracy, lowerBound, unassignedOwners, outOfScope,
+    frozen: { denominator: frozenDenominator, counts: frozenCounts,
+      lowerBound: frozenDenominator ? (frozenCounts.tp + frozenCounts.tn) / frozenDenominator : null },
     precision: counts.tp + counts.fp ? counts.tp / (counts.tp + counts.fp) : null,
     recall: counts.tp + counts.fn ? counts.tp / (counts.tp + counts.fn) : null,
     threshold: 0.95,

@@ -58,6 +58,26 @@ test("unknown labels and missing reference evidence cannot become acceptance", (
   assert.equal(result.crossings.pass, false);
 });
 
+test("a documented out-of-scope candidate leaves the acceptance denominator but stays reported with the frozen score", () => {
+  const result = compare.compareRoadInventory({ ...reference, segments: [
+    ...reference.segments.filter(r => r.id !== "RD_B"),
+    { id: "RD_X", expected: true, refs: ["aerial X"], scope: { inScope: false, refs: ["design: context ground"], reason: "outside the export extent" } },
+  ] }, generated);
+  assert.deepEqual(result.segments.counts, { tp: 2, tn: 0, fp: 0, fn: 0, unknown: 0 });
+  assert.equal(result.segments.denominator, 2);
+  assert.equal(result.segments.lowerBound, 1);
+  assert.equal(result.segments.pass, true);
+  assert.deepEqual(result.segments.outOfScope, ["RD_X"]);
+  assert.deepEqual(result.segments.frozen, { denominator: 3, counts: { tp: 2, tn: 0, fp: 0, fn: 1, unknown: 0 }, lowerBound: 2 / 3 });
+  assert.deepEqual(result.segments.rows.find(r => r.id === "RD_X"), { id: "RD_X", status: "out-of-scope", frozenStatus: "fn", over: false });
+});
+
+test("a scope exclusion without its own evidence is rejected", () => {
+  assert.throws(() => compare.compareRoadInventory({ ...reference, segments: [
+    { id: "RD_X", expected: true, refs: ["aerial X"], scope: { inScope: false, refs: [], reason: "" } },
+  ] }, generated), /scope/);
+});
+
 test("dropping an entire crossing reports its independent id over tolerance", () => {
   const result = compare.compareRoadInventory(reference, { ...generated, crossings: [] });
   assert.deepEqual(result.crossings.rows.map(r => [r.id, r.status, r.over, r.missingBarIds]),

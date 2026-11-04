@@ -1239,12 +1239,12 @@
       "RA_825fe015055d6ae7": {
         "line": [
           [
-            243914.64670839589,
-            263783.66292649956
+            243914.58088150164,
+            263783.38306511915
           ],
           [
-            243943.7735074519,
-            263776.47463397187
+            243943.82832733987,
+            263776.70572193933
           ]
         ],
         "evidence": {
@@ -1276,12 +1276,12 @@
       "RA_86f2e603e023b575": {
         "line": [
           [
-            243912.17538122105,
-            263785.806655556
+            243911.50737023327,
+            263784.244813467
           ],
           [
-            243940.43435875175,
-            263775.7333164061
+            243940.7007066003,
+            263777.33474025736
           ]
         ],
         "evidence": {
@@ -1315,12 +1315,12 @@
       "RA_d9d670e776cd1879": {
         "line": [
           [
-            244010.5204857165,
-            263763.5762856611
+            244010.11249036263,
+            263761.95556589414
           ],
           [
-            243981.37326292347,
-            263770.6813103736
+            243981.1138640281,
+            263769.641896014
           ]
         ],
         "evidence": {
@@ -1352,12 +1352,12 @@
       "RA_316d3f27d4193a26": {
         "line": [
           [
-            244012.45218806184,
-            263758.92140619375
+            244012.5379074723,
+            263759.1784032505
           ],
           [
-            243983.3049652684,
-            263766.02643090463
+            243983.67822535016,
+            263767.3710064881
           ]
         ],
         "evidence": {
@@ -1424,12 +1424,12 @@
       "RA_6525b2129582d4e5": {
         "line": [
           [
-            244008.0894229975,
-            263754.98960147117
+            244008.18484161817,
+            263755.4639969597
           ],
           [
-            243978.942200204,
-            263762.0946261818
+            243979.42981900286,
+            263764.0166967904
           ]
         ],
         "evidence": {
@@ -3447,11 +3447,11 @@
         "lanes": [
           {
             "dir": "fwd",
-            "widthM": 6.0611413297987795
+            "widthM": 6.145641329798781
           },
           {
             "dir": "bwd",
-            "widthM": 6.0611413297987795
+            "widthM": 6.145641329798781
           }
         ],
         "centre": {
@@ -3485,7 +3485,38 @@
           "verified": false,
           "refs": [],
           "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "line": [
+              [
+                243914.58088150164,
+                263783.38306511915
+              ],
+              [
+                243943.82832733987,
+                263776.70572193933
+              ]
+            ],
+            "lateralOffsetM": 0,
+            "lanes": [
+              {
+                "dir": "fwd",
+                "widthM": 6.145641329798781
+              },
+              {
+                "dir": "bwd",
+                "widthM": 6.145641329798781
+              }
+            ],
+            "refs": [
+              "NGII 2025 34702020",
+              "task-24-attempt-3/crossing-fit.json",
+              "lib/paintMasks.mjs white mask + lib/occlusion.mjs",
+              "task-24-attempt-3/CW_012-fit.png",
+              "task-24-crossing-chips/CW_012-photo.png"
+            ],
+            "reason": "CW_012: grid refit to the visible NGII 2025 bars inside the frozen photo window (offset, bar length, period, bar width, count, rotation). Slots with neither an unoccluded view nor painted pixels stay omitted as unobserved. Fitted physical IoU 0.729 on planned bars; emitted triangles are scored separately."
+          }
         }
       },
       {
@@ -3497,11 +3528,11 @@
         "lanes": [
           {
             "dir": "fwd",
-            "widthM": 6.59915387482959
+            "widthM": 6.59302887482959
           },
           {
             "dir": "bwd",
-            "widthM": 6.59915387482959
+            "widthM": 6.59302887482959
           }
         ],
         "centre": {
@@ -3536,7 +3567,38 @@
           "verified": false,
           "refs": [],
           "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "line": [
+              [
+                243911.50737023327,
+                263784.244813467
+              ],
+              [
+                243940.7007066003,
+                263777.33474025736
+              ]
+            ],
+            "lateralOffsetM": 0,
+            "lanes": [
+              {
+                "dir": "fwd",
+                "widthM": 6.59302887482959
+              },
+              {
+                "dir": "bwd",
+                "widthM": 6.59302887482959
+              }
+            ],
+            "refs": [
+              "NGII 2025 34702020",
+              "task-24-attempt-3/crossing-fit.json",
+              "lib/paintMasks.mjs white mask + lib/occlusion.mjs",
+              "task-24-attempt-3/CW_012-fit.png",
+              "task-24-crossing-chips/CW_012-photo.png"
+            ],
+            "reason": "CW_012: grid refit to the visible NGII 2025 bars inside the frozen photo window (offset, bar length, period, bar width, count, rotation). Slots with neither an unoccluded view nor painted pixels stay omitted as unobserved. Fitted physical IoU 0.729 on planned bars; emitted triangles are scored separately."
+          }
         }
       },
       {
@@ -3548,11 +3610,11 @@
         "lanes": [
           {
             "dir": "fwd",
-            "widthM": 2.5275589359951187
+            "widthM": 3.8548407999070196
           },
           {
             "dir": "bwd",
-            "widthM": 2.5275589359951187
+            "widthM": 3.8548407999070196
           }
         ],
         "centre": {
@@ -3586,7 +3648,38 @@
           "verified": false,
           "refs": [],
           "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "line": [
+              [
+                244010.11249036263,
+                263761.95556589414
+              ],
+              [
+                243981.1138640281,
+                263769.641896014
+              ]
+            ],
+            "lateralOffsetM": 0,
+            "lanes": [
+              {
+                "dir": "fwd",
+                "widthM": 3.8548407999070196
+              },
+              {
+                "dir": "bwd",
+                "widthM": 3.8548407999070196
+              }
+            ],
+            "refs": [
+              "NGII 2025 34702020",
+              "task-24-attempt-3/crossing-fit.json",
+              "lib/paintMasks.mjs white mask + lib/occlusion.mjs",
+              "task-24-attempt-3/CW_008-fit.png",
+              "task-24-crossing-chips/CW_008-photo.png"
+            ],
+            "reason": "CW_008: grid refit to the visible NGII 2025 bars inside the frozen photo window (offset, bar length, period, bar width, count, rotation). Slots with neither an unoccluded view nor painted pixels stay omitted as unobserved. Fitted physical IoU 0.728 on planned bars; emitted triangles are scored separately."
+          }
         }
       },
       {
@@ -3598,11 +3691,11 @@
         "lanes": [
           {
             "dir": "fwd",
-            "widthM": 6.152143451727783
+            "widthM": 6.990914624382015
           },
           {
             "dir": "bwd",
-            "widthM": 6.152143451727783
+            "widthM": 6.990914624382015
           }
         ],
         "centre": {
@@ -3636,7 +3729,38 @@
           "verified": false,
           "refs": [],
           "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "line": [
+              [
+                244012.5379074723,
+                263759.1784032505
+              ],
+              [
+                243983.67822535016,
+                263767.3710064881
+              ]
+            ],
+            "lateralOffsetM": 0,
+            "lanes": [
+              {
+                "dir": "fwd",
+                "widthM": 6.990914624382015
+              },
+              {
+                "dir": "bwd",
+                "widthM": 6.990914624382015
+              }
+            ],
+            "refs": [
+              "NGII 2025 34702020",
+              "task-24-attempt-3/crossing-fit.json",
+              "lib/paintMasks.mjs white mask + lib/occlusion.mjs",
+              "task-24-attempt-3/CW_008-fit.png",
+              "task-24-crossing-chips/CW_008-photo.png"
+            ],
+            "reason": "CW_008: grid refit to the visible NGII 2025 bars inside the frozen photo window (offset, bar length, period, bar width, count, rotation). Slots with neither an unoccluded view nor painted pixels stay omitted as unobserved. Fitted physical IoU 0.728 on planned bars; emitted triangles are scored separately."
+          }
         }
       },
       {
@@ -3697,11 +3821,11 @@
         "lanes": [
           {
             "dir": "fwd",
-            "widthM": 3.410579525701821
+            "widthM": 2.0630479416047334
           },
           {
             "dir": "bwd",
-            "widthM": 3.410579525701821
+            "widthM": 2.0630479416047334
           }
         ],
         "centre": {
@@ -3734,7 +3858,38 @@
           "verified": false,
           "refs": [],
           "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "line": [
+              [
+                244008.18484161817,
+                263755.4639969597
+              ],
+              [
+                243979.42981900286,
+                263764.0166967904
+              ]
+            ],
+            "lateralOffsetM": 0,
+            "lanes": [
+              {
+                "dir": "fwd",
+                "widthM": 2.0630479416047334
+              },
+              {
+                "dir": "bwd",
+                "widthM": 2.0630479416047334
+              }
+            ],
+            "refs": [
+              "NGII 2025 34702020",
+              "task-24-attempt-3/crossing-fit.json",
+              "lib/paintMasks.mjs white mask + lib/occlusion.mjs",
+              "task-24-attempt-3/CW_008-fit.png",
+              "task-24-crossing-chips/CW_008-photo.png"
+            ],
+            "reason": "CW_008: grid refit to the visible NGII 2025 bars inside the frozen photo window (offset, bar length, period, bar width, count, rotation). Slots with neither an unoccluded view nor painted pixels stay omitted as unobserved. Fitted physical IoU 0.728 on planned bars; emitted triangles are scored separately."
+          }
         }
       },
       {
@@ -30669,8 +30824,8 @@
             263728.3092645712
           ],
           [
-            244196.19062329084,
-            263722.02152085095
+            244196.0743101457,
+            263722.50199959154
           ]
         ],
         "evidence": {
@@ -30744,7 +30899,7 @@
         "alignment": "RA_e6d9761da88d2356",
         "pathIndex": 0,
         "fromM": 0,
-        "toM": 6.469356721302336,
+        "toM": 5.975000000005626,
         "lanes": [
           {
             "dir": "fwd",
@@ -30794,7 +30949,26 @@
             "VR scene_a19 f/r/b/l/d"
           ],
           "reason": "RS_e6d9761da88d2356 at TM 244195.43, 263725.165 from MX00947. Named-road vertex shares: none; junction shares: none. This is on the 순천대2길 perimeter corridor from way/481311655. The OSM polyline has no surveyed carriageway boundary here (none); adjacent parallel or split ways cannot be separated by the inherited nearest-road label. Nearest inspected VR sheet: scene_a19, 13.3 m away; the image does not supply a unique RD/ND identity or metric boundary for this record. This is an open curation decision, not a claim that the source is unfixable.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "line": [
+              [
+                244194.6685013193,
+                263728.3092645712
+              ],
+              [
+                244196.0743101457,
+                263722.50199959154
+              ]
+            ],
+            "toM": 5.975000000005626,
+            "refs": [
+              "NGII 2025 34702020",
+              "task-24-attempt-3/RS_e6d9761da88d2356-trim.png",
+              "task-24-attempt-2/objects-verified/objects.json#RS_e6d9761da88d2356/lanes/0"
+            ],
+            "reason": "The white lane line ends at the transverse white line in the photo. The seeded line ran 0.49 m across that line (RS_1f8189bdd418474c / RS_5fd4618ec3d7ff6f lane records, drawn earlier), which clipped it. The line now stops 0.02 m short of the transverse line."
+          }
         }
       },
       {
@@ -46549,12 +46723,12 @@
       "RA_6a301d7293478e2c": {
         "line": [
           [
-            243735.0008760398,
-            263929.6255201151
+            243734.8181621721,
+            263928.9079180625
           ],
           [
-            243764.0401870823,
-            263922.091571158
+            243764.00165398233,
+            263921.95638544287
           ]
         ],
         "evidence": {
@@ -47304,11 +47478,11 @@
         "lanes": [
           {
             "dir": "fwd",
-            "widthM": 2.452557187152534
+            "widthM": 2.9350674586879837
           },
           {
             "dir": "bwd",
-            "widthM": 2.452557187152534
+            "widthM": 2.9350674586879837
           }
         ],
         "centre": {
@@ -47347,7 +47521,38 @@
             "VR scene_d1 f/r/b/l/d"
           ],
           "reason": "Within RZ-091, photo inspection confirms a continuous paved approach to RD_086 along the source-marking direction (6 m to RZ-069). This establishes the road owner, not the source centreline or lane dimensions.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "line": [
+              [
+                243734.8181621721,
+                263928.9079180625
+              ],
+              [
+                243764.00165398233,
+                263921.95638544287
+              ]
+            ],
+            "lateralOffsetM": 0,
+            "lanes": [
+              {
+                "dir": "fwd",
+                "widthM": 2.9350674586879837
+              },
+              {
+                "dir": "bwd",
+                "widthM": 2.9350674586879837
+              }
+            ],
+            "refs": [
+              "NGII 2025 34702020",
+              "task-24-attempt-3/crossing-fit.json",
+              "lib/paintMasks.mjs white mask + lib/occlusion.mjs",
+              "task-24-attempt-3/CW_014-fit.png",
+              "task-24-crossing-chips/CW_014-photo.png"
+            ],
+            "reason": "CW_014: grid refit to the visible NGII 2025 bars inside the frozen photo window (offset, bar length, period, bar width, count, rotation). Slots with neither an unoccluded view nor painted pixels stay omitted as unobserved. Fitted physical IoU 0.655 on planned bars; emitted triangles are scored separately."
+          }
         }
       },
       {
@@ -54712,12 +54917,12 @@
       "RA_01131ea2e182c3b7": {
         "line": [
           [
-            243742.12733000392,
-            263951.45395001216
+            243742.27960952476,
+            263951.42111269175
           ],
           [
-            243734.78546116882,
-            263922.36548262864
+            243733.78058313788,
+            263922.6501803037
           ]
         ],
         "evidence": {
@@ -55203,11 +55408,11 @@
         "lanes": [
           {
             "dir": "fwd",
-            "widthM": 6.028640571966993
+            "widthM": 6.490150936774047
           },
           {
             "dir": "bwd",
-            "widthM": 6.028640571966993
+            "widthM": 6.490150936774047
           }
         ],
         "centre": {
@@ -55240,7 +55445,38 @@
           "verified": false,
           "refs": [],
           "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "line": [
+              [
+                243742.27960952476,
+                263951.42111269175
+              ],
+              [
+                243733.78058313788,
+                263922.6501803037
+              ]
+            ],
+            "lateralOffsetM": 0,
+            "lanes": [
+              {
+                "dir": "fwd",
+                "widthM": 6.490150936774047
+              },
+              {
+                "dir": "bwd",
+                "widthM": 6.490150936774047
+              }
+            ],
+            "refs": [
+              "NGII 2025 34702020",
+              "task-24-attempt-3/crossing-fit.json",
+              "lib/paintMasks.mjs white mask + lib/occlusion.mjs",
+              "task-24-attempt-3/CW_015-fit.png",
+              "task-24-crossing-chips/CW_015-photo.png"
+            ],
+            "reason": "CW_015: grid refit to the visible NGII 2025 bars inside the frozen photo window (offset, bar length, period, bar width, count, rotation). Slots with neither an unoccluded view nor painted pixels stay omitted as unobserved. Fitted physical IoU 0.595 on planned bars; emitted triangles are scored separately."
+          }
         }
       },
       {
@@ -58816,12 +59052,12 @@
       "RA_9310165f30be40ca": {
         "line": [
           [
-            243844.37933525443,
-            263664.81582982844
+            243844.27777222585,
+            263664.2966601936
           ],
           [
-            243873.8160823378,
-            263659.02619306435
+            243873.74241236033,
+            263658.6544104875
           ]
         ],
         "evidence": {
@@ -59643,11 +59879,11 @@
         "lanes": [
           {
             "dir": "fwd",
-            "widthM": 2.0660481747837447
+            "widthM": 2.54080876111086
           },
           {
             "dir": "bwd",
-            "widthM": 2.0660481747837447
+            "widthM": 2.54080876111086
           }
         ],
         "centre": {
@@ -59680,7 +59916,38 @@
           "verified": false,
           "refs": [],
           "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "line": [
+              [
+                243844.27777222585,
+                263664.2966601936
+              ],
+              [
+                243873.74241236033,
+                263658.6544104875
+              ]
+            ],
+            "lateralOffsetM": 0,
+            "lanes": [
+              {
+                "dir": "fwd",
+                "widthM": 2.54080876111086
+              },
+              {
+                "dir": "bwd",
+                "widthM": 2.54080876111086
+              }
+            ],
+            "refs": [
+              "NGII 2025 34702020",
+              "task-24-attempt-3/crossing-fit.json",
+              "lib/paintMasks.mjs white mask + lib/occlusion.mjs",
+              "task-24-attempt-3/CW_021-fit.png",
+              "task-24-crossing-chips/CW_021-photo.png"
+            ],
+            "reason": "CW_021: grid refit to the visible NGII 2025 bars inside the frozen photo window (offset, bar length, period, bar width, count, rotation). Slots with neither an unoccluded view nor painted pixels stay omitted as unobserved. Fitted physical IoU 0.792 on planned bars; emitted triangles are scored separately."
+          }
         }
       },
       {
@@ -61752,12 +62019,12 @@
       "RA_7b69b8f085fe97db": {
         "line": [
           [
-            244083.82655625496,
-            263913.09667401714
+            244083.879232798,
+            263913.2892497081
           ],
           [
-            244075.9110475865,
-            263884.1590394346
+            244075.96390869818,
+            263884.35228987475
           ]
         ],
         "evidence": {
@@ -61896,11 +62163,11 @@
         "lanes": [
           {
             "dir": "fwd",
-            "widthM": 2.5050584113423433
+            "widthM": 2.497058411342343
           },
           {
             "dir": "bwd",
-            "widthM": 2.5050584113423433
+            "widthM": 2.497058411342343
           }
         ],
         "centre": {
@@ -61933,7 +62200,38 @@
           "verified": false,
           "refs": [],
           "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "line": [
+              [
+                244083.879232798,
+                263913.2892497081
+              ],
+              [
+                244075.96390869818,
+                263884.35228987475
+              ]
+            ],
+            "lateralOffsetM": 0,
+            "lanes": [
+              {
+                "dir": "fwd",
+                "widthM": 2.497058411342343
+              },
+              {
+                "dir": "bwd",
+                "widthM": 2.497058411342343
+              }
+            ],
+            "refs": [
+              "NGII 2025 34702020",
+              "task-24-attempt-3/crossing-fit.json",
+              "lib/paintMasks.mjs white mask + lib/occlusion.mjs",
+              "task-24-attempt-3/CW_004-fit.png",
+              "task-24-crossing-chips/CW_004-photo.png"
+            ],
+            "reason": "CW_004: grid refit to the visible NGII 2025 bars inside the frozen photo window (offset, bar length, period, bar width, count, rotation). Slots with neither an unoccluded view nor painted pixels stay omitted as unobserved. Fitted physical IoU 0.621 on planned bars; emitted triangles are scored separately."
+          }
         }
       },
       {
@@ -63903,32 +64201,8 @@
             263785.8960948431
           ],
           [
-            243741.1196844966,
-            263785.8074760802
-          ],
-          [
-            243741.0629727374,
-            263785.7158166946
-          ],
-          [
-            243741.01105412943,
-            263785.6213596951
-          ],
-          [
-            243740.9640663202,
-            263785.5243555077
-          ],
-          [
-            243740.92213388448,
-            263785.4250613112
-          ],
-          [
-            243740.88536799423,
-            263785.3237403563
-          ],
-          [
-            243740.72888658108,
-            263784.8552204061
+            243741.14450700235,
+            263785.84332899674
           ]
         ],
         "evidence": {
@@ -64159,7 +64433,7 @@
         "alignment": "RA_473fa05180093350",
         "pathIndex": 0,
         "fromM": 0,
-        "toM": 3.856494512152519,
+        "toM": 2.7799999999939637,
         "lanes": [
           {
             "dir": "fwd",
@@ -64207,7 +64481,78 @@
             "VR scene_e3 f/r/b/l/d"
           ],
           "reason": "Within RZ-055, photo inspection confirms a continuous paved approach to RD_078 along the source-marking direction (3 m to RZ-052). This establishes the road owner, not the source centreline or lane dimensions.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "line": [
+              [
+                243742.73287589045,
+                263788.07080713444
+              ],
+              [
+                243742.34537922015,
+                263787.14558628784
+              ],
+              [
+                243742.33581787322,
+                263787.1242299717
+              ],
+              [
+                243742.32522930953,
+                263787.103363877
+              ],
+              [
+                243742.31363858317,
+                263787.0830373757
+              ],
+              [
+                243742.3010731194,
+                263787.0632985634
+              ],
+              [
+                243742.28756265,
+                263787.04419414495
+              ],
+              [
+                243742.27313914258,
+                263787.02576932404
+              ],
+              [
+                243742.2578367253,
+                263787.00806769653
+              ],
+              [
+                243742.24169160592,
+                263786.99113114696
+              ],
+              [
+                243741.39127392694,
+                263786.141401942
+              ],
+              [
+                243741.31701401662,
+                263786.06327939517
+              ],
+              [
+                243741.2468737393,
+                263785.98143803584
+              ],
+              [
+                243741.18103905197,
+                263785.8960948431
+              ],
+              [
+                243741.14450700235,
+                263785.84332899674
+              ]
+            ],
+            "toM": 2.7799999999939637,
+            "refs": [
+              "NGII 2025 34702020",
+              "task-24-attempt-3/RS_473fa05180093350-trim.png",
+              "task-24-attempt-2/objects-verified/objects.json#RS_473fa05180093350/centre"
+            ],
+            "reason": "The yellow line ends at the north-east edge of the MX00381 speed-hump bands in the photo. The seeded line ran 1.08 m into the hump, and after the RD_039 -> RD_078 move the earlier-drawn hump band RS_0ff0c86f14688563/humps/0/part/9 claimed that overlap, leaving the line clipped and unmeasurable. The line now stops 0.02 m short of the hump body; the hump keeps its paint."
+          }
         }
       },
       {
@@ -64300,6 +64645,43 @@
           "method": "unique reviewed road-zone containment",
           "candidates": []
         }
+      },
+      "RA_c12765b5e6ef6ad7": {
+        "line": [
+          [
+            244069.98834538896,
+            263958.7101917253
+          ],
+          [
+            244040.65871844714,
+            263965.01677427476
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "NGII 2025 34702020",
+            "task-24-crossing-chips/CW_007-photo.png",
+            "docs/assets/data/crosswalks_wgs84.geojson#CW_007",
+            "task-24-attempt-3/CW_007-fit.png",
+            "task-24-attempt-3/crossing-fit.json"
+          ]
+        },
+        "estimated": true,
+        "reason": "CW_007: three bars are visible through canopy gaps on the NGII 2025 sheet (paint share .52/.52/.56 per slot); no evidence fit seeded an owner. One slot between them (paint .08) and any bars beyond the canopy stay unobserved, so the full bar count is not established. Container RD_002/ND_178 is the nearest network element (32.7 m / 25.4 m), not a verified road or junction identity.",
+        "role": "curated-crossing-station",
+        "association": {
+          "verified": false,
+          "refs": [
+            "NGII 2025 34702020",
+            "task-24-crossing-chips/CW_007-photo.png",
+            "docs/assets/data/crosswalks_wgs84.geojson#CW_007",
+            "task-24-attempt-3/CW_007-fit.png",
+            "task-24-attempt-3/crossing-fit.json"
+          ],
+          "method": "added crossing",
+          "candidates": []
+        }
       }
     },
     "sections": [
@@ -64345,6 +64727,65 @@
           "verified": false,
           "refs": [],
           "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "RS_c12765b5e6ef6ad7",
+        "alignment": "RA_c12765b5e6ef6ad7",
+        "pathIndex": 0,
+        "fromM": 0,
+        "toM": 29.999999999994245,
+        "lanes": [
+          {
+            "dir": "fwd",
+            "widthM": 1.6340000000000001
+          },
+          {
+            "dir": "bwd",
+            "widthM": 1.6340000000000001
+          }
+        ],
+        "centre": {
+          "type": "none",
+          "widthM": 0.15
+        },
+        "edges": {
+          "left": "none",
+          "right": "none"
+        },
+        "lateralOffsetM": 0,
+        "kerbOffsetsM": {
+          "left": 1.6340000000000001,
+          "right": 1.6340000000000001
+        },
+        "kerbNoParking": {
+          "left": false,
+          "right": false
+        },
+        "humps": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "NGII 2025 34702020",
+            "task-24-crossing-chips/CW_007-photo.png",
+            "docs/assets/data/crosswalks_wgs84.geojson#CW_007",
+            "task-24-attempt-3/CW_007-fit.png",
+            "task-24-attempt-3/crossing-fit.json"
+          ]
+        },
+        "estimated": true,
+        "reason": "CW_007: three bars are visible through canopy gaps on the NGII 2025 sheet (paint share .52/.52/.56 per slot); no evidence fit seeded an owner. One slot between them (paint .08) and any bars beyond the canopy stay unobserved, so the full bar count is not established. Container RD_002/ND_178 is the nearest network element (32.7 m / 25.4 m), not a verified road or junction identity.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "NGII 2025 34702020",
+            "task-24-crossing-chips/CW_007-photo.png",
+            "docs/assets/data/crosswalks_wgs84.geojson#CW_007",
+            "task-24-attempt-3/CW_007-fit.png",
+            "task-24-attempt-3/crossing-fit.json"
+          ],
+          "reason": "CW_007: three bars are visible through canopy gaps on the NGII 2025 sheet (paint share .52/.52/.56 per slot); no evidence fit seeded an owner. One slot between them (paint .08) and any bars beyond the canopy stay unobserved, so the full bar count is not established. Container RD_002/ND_178 is the nearest network element (32.7 m / 25.4 m), not a verified road or junction identity.",
           "dimensionsVerified": false
         }
       }
@@ -64795,12 +65236,12 @@
       "RA_de1c1186de3c5f45": {
         "line": [
           [
-            243983.4547831087,
-            263629.9397509201
+            243983.4544444459,
+            263629.93983835884
           ],
           [
-            243954.4066565004,
-            263637.4396384699
+            243954.40699516318,
+            263637.43955103116
           ]
         ],
         "evidence": {
@@ -64844,11 +65285,11 @@
         "lanes": [
           {
             "dir": "fwd",
-            "widthM": 2.5200587611108602
+            "widthM": 2.49955876111086
           },
           {
             "dir": "bwd",
-            "widthM": 2.5200587611108602
+            "widthM": 2.49955876111086
           }
         ],
         "centre": {
@@ -64887,7 +65328,38 @@
             "VR scene_a5 f/r/b/l/d"
           ],
           "reason": "Within RZ-023, photo inspection confirms a continuous paved approach to RD_026 along the source-marking direction (8 m to RZ-034). This establishes the road owner, not the source centreline or lane dimensions.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "line": [
+              [
+                243983.4544444459,
+                263629.93983835884
+              ],
+              [
+                243954.40699516318,
+                263637.43955103116
+              ]
+            ],
+            "lateralOffsetM": 0,
+            "lanes": [
+              {
+                "dir": "fwd",
+                "widthM": 2.49955876111086
+              },
+              {
+                "dir": "bwd",
+                "widthM": 2.49955876111086
+              }
+            ],
+            "refs": [
+              "NGII 2025 34702020",
+              "task-24-attempt-3/crossing-fit.json",
+              "lib/paintMasks.mjs white mask + lib/occlusion.mjs",
+              "task-24-attempt-3/CW_023-fit.png",
+              "task-24-crossing-chips/CW_023-photo.png"
+            ],
+            "reason": "CW_023: grid refit to the visible NGII 2025 bars inside the frozen photo window (offset, bar length, period, bar width, count, rotation). Slots with neither an unoccluded view nor painted pixels stay omitted as unobserved. Fitted physical IoU 0.687 on planned bars; emitted triangles are scored separately."
+          }
         }
       }
     ]

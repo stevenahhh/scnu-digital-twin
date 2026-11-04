@@ -36,8 +36,10 @@ export function applyRoadCuration(docs, curation, context) {
       method: review.method ?? "reviewed evidence", candidates: review.candidates ?? [] };
     section.curation = { verified: review.verified, refs: review.refs ?? [], reason: review.reason, dimensionsVerified: false };
     if (review.geometry) {
-      const { line, lateralOffsetM, lanes } = review.geometry;
+      const { line, lateralOffsetM, lanes, fromM, toM } = review.geometry;
       if (line) alignment.line = structuredClone(line);
+      if (fromM !== undefined) section.fromM = fromM;
+      if (toM !== undefined) section.toM = toM;
       if (lateralOffsetM !== undefined) section.lateralOffsetM = lateralOffsetM;
       if (lanes) section.lanes = structuredClone(lanes);
       section.curation.geometry = structuredClone(review.geometry);
@@ -84,6 +86,29 @@ export function applyRoadCuration(docs, curation, context) {
       junction.approaches = junction.approaches.filter(a => a.id !== approach.id);
       if (!junction.approaches.length) delete result.junctions[node];
     }
+  }
+  // A visible crossing no evidence fit seeded gets its own station owner. Its
+  // road and junction identity stay unverified until separately reviewed.
+  for (const add of curation.addedCrossings ?? []) {
+    const where = `added crossing ${add.approachId}`;
+    if (!add.refs?.some(ref => typeof ref === "string" && ref.trim()) || !add.reason?.trim()) throw new Error(`${where}: needs refs and reason`);
+    if (!roadIds.has(add.segmentId) || !nodeIds.has(add.nodeId)) throw new Error(`${where}: unknown segment or junction`);
+    if (owners.has(add.sectionId) || owners.has(add.approachId) || !/^RS_/.test(add.sectionId) || !/^JA_/.test(add.approachId)) throw new Error(`${where}: owner ids must be new RS_/JA_ ids`);
+    owners.add(add.sectionId); owners.add(add.approachId);
+    const alignment = "RA_" + add.sectionId.slice(3), lengthM = add.line.slice(1).reduce((n, p, i) => n + Math.hypot(p[0] - add.line[i][0], p[1] - add.line[i][1]), 0);
+    const curated = { verified: false, refs: add.refs, reason: add.reason, dimensionsVerified: false };
+    const evidence = { tier: "T1", refs: add.refs };
+    result.sections[add.segmentId] ??= { alignments: {}, sections: [] };
+    result.sections[add.segmentId].alignments[alignment] = { line: structuredClone(add.line), evidence, estimated: true, reason: add.reason,
+      role: "curated-crossing-station", association: { verified: false, refs: add.refs, method: "added crossing", candidates: [] } };
+    result.sections[add.segmentId].sections.push({ id: add.sectionId, alignment, pathIndex: 0, fromM: 0, toM: lengthM,
+      lanes: [{ dir: "fwd", widthM: add.widthM / 2 }, { dir: "bwd", widthM: add.widthM / 2 }], centre: { type: "none", widthM: 0.15 },
+      edges: { left: "none", right: "none" }, lateralOffsetM: 0, kerbOffsetsM: { left: add.widthM / 2, right: add.widthM / 2 },
+      kerbNoParking: { left: false, right: false }, humps: [], evidence, estimated: true, reason: add.reason, curation: curated });
+    result.junctions[add.nodeId] ??= { approaches: [] };
+    result.junctions[add.nodeId].approaches.push({ id: add.approachId, segment: add.segmentId, section: add.sectionId, alignment, pathIndex: 0, end: "to",
+      stopLineSetbackM: null, crossing: structuredClone(add.crossing), arrows: [], text: [], humps: [], signalArms: [], yieldTriangles: [], guideLines: [],
+      symbols: [], areas: [], evidence, estimated: true, reason: add.reason, curation: structuredClone(curated) });
   }
   return result;
 }

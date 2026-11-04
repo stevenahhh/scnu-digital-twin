@@ -4519,9 +4519,9 @@
         "end": "to",
         "stopLineSetbackM": null,
         "crossing": {
-          "offsetM": 15.000349768561879,
+          "offsetM": 15,
           "widthM": 4.379797857251659,
-          "barWidthM": 0.5000116589505675,
+          "barWidthM": 0.5300116589505676,
           "zebraPeriodM": 0.889020729614109,
           "omittedBars": []
         },
@@ -4551,7 +4551,24 @@
             "VR scene_d1 f/r/b/l/d"
           ],
           "reason": "JA_01131ea2e182c3b7 at TM 243738.456, 263936.91 from ZC013. Named-road vertex shares: none; junction shares: RZ-091=1.000. The physical junction is localized to RZ-091=1.000, but its connecting road arm is not uniquely supported by the named road polygons and the source-marking direction. Nearest inspected VR sheet: scene_d1, 9.2 m away; the image does not supply a unique RD/ND identity or metric boundary for this record. This is an open curation decision, not a claim that the source is unfixable.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "crossing": {
+              "offsetM": 15,
+              "widthM": 4.379797857251659,
+              "barWidthM": 0.5300116589505676,
+              "zebraPeriodM": 0.889020729614109,
+              "omittedBars": []
+            },
+            "refs": [
+              "NGII 2025 34702020",
+              "task-24-attempt-3/crossing-fit.json",
+              "lib/paintMasks.mjs white mask + lib/occlusion.mjs",
+              "task-24-attempt-3/CW_015-fit.png",
+              "task-24-crossing-chips/CW_015-photo.png"
+            ],
+            "reason": "CW_015: grid refit to the visible NGII 2025 bars inside the frozen photo window (offset, bar length, period, bar width, count, rotation). Slots with neither an unoccluded view nor painted pixels stay omitted as unobserved. Fitted physical IoU 0.595 on planned bars; emitted triangles are scored separately."
+          }
         }
       },
       {
@@ -4563,10 +4580,10 @@
         "end": "to",
         "stopLineSetbackM": null,
         "crossing": {
-          "offsetM": 15.000349768536385,
-          "widthM": 4.206479586733724,
-          "barWidthM": 0.5000116589505675,
-          "zebraPeriodM": 0.8810205430709,
+          "offsetM": 15,
+          "widthM": 3.406479586733724,
+          "barWidthM": 0.5200116589505676,
+          "zebraPeriodM": 0.8910205430709001,
           "omittedBars": []
         },
         "arrows": [],
@@ -4595,7 +4612,24 @@
             "VR scene_d1 f/r/b/l/d"
           ],
           "reason": "Photo crossing/approach lies inside named junction RZ-091 (ND_022) and joins the independently named RD_086 corridor. Dimensions remain estimated.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "crossing": {
+              "offsetM": 15,
+              "widthM": 3.406479586733724,
+              "barWidthM": 0.5200116589505676,
+              "zebraPeriodM": 0.8910205430709001,
+              "omittedBars": []
+            },
+            "refs": [
+              "NGII 2025 34702020",
+              "task-24-attempt-3/crossing-fit.json",
+              "lib/paintMasks.mjs white mask + lib/occlusion.mjs",
+              "task-24-attempt-3/CW_014-fit.png",
+              "task-24-crossing-chips/CW_014-photo.png"
+            ],
+            "reason": "CW_014: grid refit to the visible NGII 2025 bars inside the frozen photo window (offset, bar length, period, bar width, count, rotation). Slots with neither an unoccluded view nor painted pixels stay omitted as unobserved. Fitted physical IoU 0.655 on planned bars; emitted triangles are scored separately."
+          }
         }
       },
       {
@@ -6139,10 +6173,10 @@
         "end": "to",
         "stopLineSetbackM": null,
         "crossing": {
-          "offsetM": 15.00034976854566,
-          "widthM": 2.6605945699391778,
-          "barWidthM": 0.5000116589505675,
-          "zebraPeriodM": 0.8940208462036148,
+          "offsetM": 15,
+          "widthM": 2.6855945699391777,
+          "barWidthM": 0.4700116589505675,
+          "zebraPeriodM": 0.9090208462036149,
           "omittedBars": []
         },
         "arrows": [],
@@ -6173,7 +6207,24 @@
             "VR scene_b4 f/r/b/l/d"
           ],
           "reason": "JA_825fe015055d6ae7 at TM 243929.21, 263780.069 from ZC024, MX00463 group. Named-road vertex shares: none; junction shares: RZ-070=1.000. The physical junction is localized to RZ-070=1.000, but its connecting road arm is not uniquely supported by the named road polygons and the source-marking direction. Nearest inspected VR sheet: scene_b4, 44.8 m away; the image does not supply a unique RD/ND identity or metric boundary for this record. This is an open curation decision, not a claim that the source is unfixable.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "crossing": {
+              "offsetM": 15,
+              "widthM": 2.6855945699391777,
+              "barWidthM": 0.4700116589505675,
+              "zebraPeriodM": 0.9090208462036149,
+              "omittedBars": []
+            },
+            "refs": [
+              "NGII 2025 34702020",
+              "task-24-attempt-3/crossing-fit.json",
+              "lib/paintMasks.mjs white mask + lib/occlusion.mjs",
+              "task-24-attempt-3/CW_012-fit.png",
+              "task-24-crossing-chips/CW_012-photo.png"
+            ],
+            "reason": "CW_012: grid refit to the visible NGII 2025 bars inside the frozen photo window (offset, bar length, period, bar width, count, rotation). Slots with neither an unoccluded view nor painted pixels stay omitted as unobserved. Fitted physical IoU 0.729 on planned bars; emitted triangles are scored separately."
+          }
         }
       },
       {
@@ -6185,10 +6236,10 @@
         "end": "to",
         "stopLineSetbackM": null,
         "crossing": {
-          "offsetM": 15.000349768497276,
-          "widthM": 3.027680597714705,
-          "barWidthM": 0.5000116589505675,
-          "zebraPeriodM": 0.9070211493363295,
+          "offsetM": 15,
+          "widthM": 2.727680597714705,
+          "barWidthM": 0.5187616589505676,
+          "zebraPeriodM": 0.9045211493363294,
           "omittedBars": []
         },
         "arrows": [],
@@ -6222,7 +6273,24 @@
             "VR scene_b4 f/r/b/l/d"
           ],
           "reason": "JA_86f2e603e023b575 at TM 243926.305, 263780.77 from ZC026, MX00450 group, MX00455 group. Named-road vertex shares: none; junction shares: RZ-070=0.500, RZ-079=0.500. The painted owner overlaps multiple named junction polygons; assigning the entire owner to one arm would hide the shared-boundary ambiguity. Nearest inspected VR sheet: scene_b4, 46.9 m away; the image does not supply a unique RD/ND identity or metric boundary for this record. This is an open curation decision, not a claim that the source is unfixable.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "crossing": {
+              "offsetM": 15,
+              "widthM": 2.727680597714705,
+              "barWidthM": 0.5187616589505676,
+              "zebraPeriodM": 0.9045211493363294,
+              "omittedBars": []
+            },
+            "refs": [
+              "NGII 2025 34702020",
+              "task-24-attempt-3/crossing-fit.json",
+              "lib/paintMasks.mjs white mask + lib/occlusion.mjs",
+              "task-24-attempt-3/CW_012-fit.png",
+              "task-24-crossing-chips/CW_012-photo.png"
+            ],
+            "reason": "CW_012: grid refit to the visible NGII 2025 bars inside the frozen photo window (offset, bar length, period, bar width, count, rotation). Slots with neither an unoccluded view nor painted pixels stay omitted as unobserved. Fitted physical IoU 0.729 on planned bars; emitted triangles are scored separately."
+          }
         }
       },
       {
@@ -8137,6 +8205,56 @@
           "reason": "JA_505a283a7d6ce2f2 at TM 244052.207, 264016.708 from MX00043. Named-road vertex shares: none; junction shares: none. This is on the 조비길 perimeter corridor from way/474098943. The OSM polyline has no surveyed carriageway boundary here (none); adjacent parallel or split ways cannot be separated by the inherited nearest-road label. Nearest inspected VR sheet: scene_002, 111.5 m away; the image does not supply a unique RD/ND identity or metric boundary for this record. This is an open curation decision, not a claim that the source is unfixable.",
           "dimensionsVerified": false
         }
+      },
+      {
+        "id": "JA_c12765b5e6ef6ad7",
+        "segment": "RD_002",
+        "section": "RS_c12765b5e6ef6ad7",
+        "alignment": "RA_c12765b5e6ef6ad7",
+        "pathIndex": 0,
+        "end": "to",
+        "stopLineSetbackM": null,
+        "crossing": {
+          "offsetM": 15,
+          "widthM": 2.45,
+          "barWidthM": 0.48,
+          "zebraPeriodM": 0.928,
+          "omittedBars": [
+            1
+          ]
+        },
+        "arrows": [],
+        "text": [],
+        "humps": [],
+        "signalArms": [],
+        "yieldTriangles": [],
+        "guideLines": [],
+        "symbols": [],
+        "areas": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "NGII 2025 34702020",
+            "task-24-crossing-chips/CW_007-photo.png",
+            "docs/assets/data/crosswalks_wgs84.geojson#CW_007",
+            "task-24-attempt-3/CW_007-fit.png",
+            "task-24-attempt-3/crossing-fit.json"
+          ]
+        },
+        "estimated": true,
+        "reason": "CW_007: three bars are visible through canopy gaps on the NGII 2025 sheet (paint share .52/.52/.56 per slot); no evidence fit seeded an owner. One slot between them (paint .08) and any bars beyond the canopy stay unobserved, so the full bar count is not established. Container RD_002/ND_178 is the nearest network element (32.7 m / 25.4 m), not a verified road or junction identity.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "NGII 2025 34702020",
+            "task-24-crossing-chips/CW_007-photo.png",
+            "docs/assets/data/crosswalks_wgs84.geojson#CW_007",
+            "task-24-attempt-3/CW_007-fit.png",
+            "task-24-attempt-3/crossing-fit.json"
+          ],
+          "reason": "CW_007: three bars are visible through canopy gaps on the NGII 2025 sheet (paint share .52/.52/.56 per slot); no evidence fit seeded an owner. One slot between them (paint .08) and any bars beyond the canopy stay unobserved, so the full bar count is not established. Container RD_002/ND_178 is the nearest network element (32.7 m / 25.4 m), not a verified road or junction identity.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -8745,9 +8863,9 @@
         "end": "to",
         "stopLineSetbackM": null,
         "crossing": {
-          "offsetM": 15.000349768521478,
-          "widthM": 2.600568569534423,
-          "barWidthM": 0.5000116589505675,
+          "offsetM": 15,
+          "widthM": 2.300568569534423,
+          "barWidthM": 0.4800116589505675,
           "zebraPeriodM": 0.9020210327468239,
           "omittedBars": []
         },
@@ -8777,7 +8895,24 @@
             "VR scene_b7 f/r/b/l/d"
           ],
           "reason": "JA_7b69b8f085fe97db at TM 244079.869, 263898.628 from ZC017. Named-road vertex shares: RD_006=0.042; junction shares: none. The inherited RD_003 (생명대1호관2길) path is an estimated network connection, while the paint sits outside a uniquely supported named road polygon. 동측 도로와 남측 진입로가 실제로 존재한다. 청록 대각선은 건물 지붕을 통과하므로 기준 축 승인 불가. Nearest inspected VR sheet: scene_b7, 17.8 m away; the image does not supply a unique RD/ND identity or metric boundary for this record. This is an open curation decision, not a claim that the source is unfixable.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "crossing": {
+              "offsetM": 15,
+              "widthM": 2.300568569534423,
+              "barWidthM": 0.4800116589505675,
+              "zebraPeriodM": 0.9020210327468239,
+              "omittedBars": []
+            },
+            "refs": [
+              "NGII 2025 34702020",
+              "task-24-attempt-3/crossing-fit.json",
+              "lib/paintMasks.mjs white mask + lib/occlusion.mjs",
+              "task-24-attempt-3/CW_004-fit.png",
+              "task-24-crossing-chips/CW_004-photo.png"
+            ],
+            "reason": "CW_004: grid refit to the visible NGII 2025 bars inside the frozen photo window (offset, bar length, period, bar width, count, rotation). Slots with neither an unoccluded view nor painted pixels stay omitted as unobserved. Fitted physical IoU 0.621 on planned bars; emitted triangles are scored separately."
+          }
         }
       }
     ]
@@ -9872,10 +10007,10 @@
         "end": "to",
         "stopLineSetbackM": null,
         "crossing": {
-          "offsetM": 15.00034976851644,
-          "widthM": 3.1477341885868415,
-          "barWidthM": 0.5000116589505675,
-          "zebraPeriodM": 0.911021242607934,
+          "offsetM": 15,
+          "widthM": 2.7477341885868416,
+          "barWidthM": 0.49751165895056754,
+          "zebraPeriodM": 0.901021242607934,
           "omittedBars": []
         },
         "arrows": [],
@@ -9906,7 +10041,24 @@
             "VR scene_b2 f/r/b/l/d"
           ],
           "reason": "JA_d9d670e776cd1879 at TM 243995.947, 263767.129 from ZC027, MX00490 group. Named-road vertex shares: none; junction shares: RZ-070=1.000. The physical junction is localized to RZ-070=1.000, but its connecting road arm is not uniquely supported by the named road polygons and the source-marking direction. Nearest inspected VR sheet: scene_b2, 39.4 m away; the image does not supply a unique RD/ND identity or metric boundary for this record. This is an open curation decision, not a claim that the source is unfixable.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "crossing": {
+              "offsetM": 15,
+              "widthM": 2.7477341885868416,
+              "barWidthM": 0.49751165895056754,
+              "zebraPeriodM": 0.901021242607934,
+              "omittedBars": []
+            },
+            "refs": [
+              "NGII 2025 34702020",
+              "task-24-attempt-3/crossing-fit.json",
+              "lib/paintMasks.mjs white mask + lib/occlusion.mjs",
+              "task-24-attempt-3/CW_008-fit.png",
+              "task-24-crossing-chips/CW_008-photo.png"
+            ],
+            "reason": "CW_008: grid refit to the visible NGII 2025 bars inside the frozen photo window (offset, bar length, period, bar width, count, rotation). Slots with neither an unoccluded view nor painted pixels stay omitted as unobserved. Fitted physical IoU 0.728 on planned bars; emitted triangles are scored separately."
+          }
         }
       },
       {
@@ -9918,11 +10070,14 @@
         "end": "to",
         "stopLineSetbackM": null,
         "crossing": {
-          "offsetM": 15.000349768526316,
-          "widthM": 2.964712747023085,
-          "barWidthM": 0.5000116589505675,
-          "zebraPeriodM": 0.9080211726542307,
-          "omittedBars": []
+          "offsetM": 15,
+          "widthM": 2.4147127470230854,
+          "barWidthM": 0.4700116589505675,
+          "zebraPeriodM": 0.9005211726542307,
+          "omittedBars": [
+            0,
+            1
+          ]
         },
         "arrows": [],
         "text": [],
@@ -9952,7 +10107,27 @@
             "VR scene_b2 f/r/b/l/d"
           ],
           "reason": "JA_316d3f27d4193a26 at TM 243997.879, 263762.474 from ZC030, MX00500 group. Named-road vertex shares: none; junction shares: RZ-070=1.000. The physical junction is localized to RZ-070=1.000, but its connecting road arm is not uniquely supported by the named road polygons and the source-marking direction. Nearest inspected VR sheet: scene_b2, 35.9 m away; the image does not supply a unique RD/ND identity or metric boundary for this record. This is an open curation decision, not a claim that the source is unfixable.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "crossing": {
+              "offsetM": 15,
+              "widthM": 2.4147127470230854,
+              "barWidthM": 0.4700116589505675,
+              "zebraPeriodM": 0.9005211726542307,
+              "omittedBars": [
+                0,
+                1
+              ]
+            },
+            "refs": [
+              "NGII 2025 34702020",
+              "task-24-attempt-3/crossing-fit.json",
+              "lib/paintMasks.mjs white mask + lib/occlusion.mjs",
+              "task-24-attempt-3/CW_008-fit.png",
+              "task-24-crossing-chips/CW_008-photo.png"
+            ],
+            "reason": "CW_008: grid refit to the visible NGII 2025 bars inside the frozen photo window (offset, bar length, period, bar width, count, rotation). Slots with neither an unoccluded view nor painted pixels stay omitted as unobserved. Fitted physical IoU 0.728 on planned bars; emitted triangles are scored separately. Slots whose bar centre lies on the surveyed plaza parcel PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_B2_ (paintAllowed false, design §10.3) are omitted, not drawn."
+          }
         }
       },
       {
@@ -9964,18 +10139,11 @@
         "end": "to",
         "stopLineSetbackM": null,
         "crossing": {
-          "offsetM": 15.000349768527727,
+          "offsetM": 15,
           "widthM": 2.7842342255288655,
-          "barWidthM": 0.5000116589505675,
-          "zebraPeriodM": 0.903021056064725,
-          "omittedBars": [
-            0,
-            1,
-            2,
-            5,
-            6,
-            7
-          ]
+          "barWidthM": 0.4800116589505675,
+          "zebraPeriodM": 0.910521056064725,
+          "omittedBars": []
         },
         "arrows": [],
         "text": [],
@@ -10003,7 +10171,24 @@
             "VR scene_b2 f/r/b/l/d"
           ],
           "reason": "JA_6525b2129582d4e5 at TM 243993.516, 263758.542 from MX00502 group. Named-road vertex shares: none; junction shares: RZ-070=1.000. The physical junction is localized to RZ-070=1.000, but its connecting road arm is not uniquely supported by the named road polygons and the source-marking direction. Nearest inspected VR sheet: scene_b2, 39.3 m away; the image does not supply a unique RD/ND identity or metric boundary for this record. This is an open curation decision, not a claim that the source is unfixable.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "crossing": {
+              "offsetM": 15,
+              "widthM": 2.7842342255288655,
+              "barWidthM": 0.4800116589505675,
+              "zebraPeriodM": 0.910521056064725,
+              "omittedBars": []
+            },
+            "refs": [
+              "NGII 2025 34702020",
+              "task-24-attempt-3/crossing-fit.json",
+              "lib/paintMasks.mjs white mask + lib/occlusion.mjs",
+              "task-24-attempt-3/CW_008-fit.png",
+              "task-24-crossing-chips/CW_008-photo.png"
+            ],
+            "reason": "CW_008: grid refit to the visible NGII 2025 bars inside the frozen photo window (offset, bar length, period, bar width, count, rotation). Slots with neither an unoccluded view nor painted pixels stay omitted as unobserved. Fitted physical IoU 0.728 on planned bars; emitted triangles are scored separately."
+          }
         }
       },
       {
@@ -10770,9 +10955,9 @@
         "end": "to",
         "stopLineSetbackM": null,
         "crossing": {
-          "offsetM": 15.000349768512976,
-          "widthM": 3.2055190263469333,
-          "barWidthM": 0.5000116589505675,
+          "offsetM": 15,
+          "widthM": 2.8055190263469334,
+          "barWidthM": 0.5375116589505676,
           "zebraPeriodM": 0.9080211726542307,
           "omittedBars": []
         },
@@ -10803,7 +10988,24 @@
             "VR scene_a4 f/r/b/l/d"
           ],
           "reason": "JA_9310165f30be40ca at TM 243859.098, 263661.921 from ZC052. Named-road vertex shares: RD_026=0.500, RD_028=0.500; junction shares: none. The owner spans multiple independently named road polygons; it needs an evidence-backed split or explicit boundary adjudication. Nearest inspected VR sheet: scene_a4, 7.7 m away; the image does not supply a unique RD/ND identity or metric boundary for this record. This is an open curation decision, not a claim that the source is unfixable.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "crossing": {
+              "offsetM": 15,
+              "widthM": 2.8055190263469334,
+              "barWidthM": 0.5375116589505676,
+              "zebraPeriodM": 0.9080211726542307,
+              "omittedBars": []
+            },
+            "refs": [
+              "NGII 2025 34702020",
+              "task-24-attempt-3/crossing-fit.json",
+              "lib/paintMasks.mjs white mask + lib/occlusion.mjs",
+              "task-24-attempt-3/CW_021-fit.png",
+              "task-24-crossing-chips/CW_021-photo.png"
+            ],
+            "reason": "CW_021: grid refit to the visible NGII 2025 bars inside the frozen photo window (offset, bar length, period, bar width, count, rotation). Slots with neither an unoccluded view nor painted pixels stay omitted as unobserved. Fitted physical IoU 0.792 on planned bars; emitted triangles are scored separately."
+          }
         }
       },
       {
@@ -10860,10 +11062,10 @@
         "end": "to",
         "stopLineSetbackM": null,
         "crossing": {
-          "offsetM": 15.000349768521993,
-          "widthM": 3.406521584537584,
-          "barWidthM": 0.5000116589505675,
-          "zebraPeriodM": 0.9080211726542307,
+          "offsetM": 15,
+          "widthM": 3.006521584537584,
+          "barWidthM": 0.4800116589505675,
+          "zebraPeriodM": 0.9030211726542307,
           "omittedBars": []
         },
         "arrows": [],
@@ -10892,7 +11094,24 @@
             "VR scene_a5 f/r/b/l/d"
           ],
           "reason": "Photo crossing/approach lies inside named junction RZ-023 (ND_030) and joins the independently named RD_026 corridor. Dimensions remain estimated.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "crossing": {
+              "offsetM": 15,
+              "widthM": 3.006521584537584,
+              "barWidthM": 0.4800116589505675,
+              "zebraPeriodM": 0.9030211726542307,
+              "omittedBars": []
+            },
+            "refs": [
+              "NGII 2025 34702020",
+              "task-24-attempt-3/crossing-fit.json",
+              "lib/paintMasks.mjs white mask + lib/occlusion.mjs",
+              "task-24-attempt-3/CW_023-fit.png",
+              "task-24-crossing-chips/CW_023-photo.png"
+            ],
+            "reason": "CW_023: grid refit to the visible NGII 2025 bars inside the frozen photo window (offset, bar length, period, bar width, count, rotation). Slots with neither an unoccluded view nor painted pixels stay omitted as unobserved. Fitted physical IoU 0.687 on planned bars; emitted triangles are scored separately."
+          }
         }
       },
       {

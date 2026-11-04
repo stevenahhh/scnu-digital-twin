@@ -534,7 +534,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "The candidate is beneath the tree crown beside a parked car; this chip does not distinguish the dash boundary from foliage and road glare. Cross-check: scene_f1 at 51.7 m; scene_f2 at 57.5 m. The 2018/2023/2024 views show the surrounding corridor, but their local alignment and epoch differ: the candidate is beside a tree/parked vehicle at the arterial edge, so the historical dash cannot be tied to this 2025 short fragment."
+      "reason": "The candidate is beneath the tree crown beside a parked car; this chip does not distinguish the dash boundary from foliage and road glare. Cross-check: scene_f1 at 51.7 m; scene_f2 at 57.5 m. The 2018/2023/2024 views show the surrounding corridor, but their local alignment and epoch differ: the candidate is beside a tree/parked vehicle at the arterial edge, so the historical dash cannot be tied to this 2025 short fragment.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_0d57ac4b3ed5315e/kerb/left",
@@ -562,7 +572,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Five long white dashes are visible along the western carriageway beside the painted 50."
+      "reason": "Five long white dashes are visible along the western carriageway beside the painted 50.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_105ed63dfc5ad0e3/lanes/0",
@@ -596,7 +616,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "White dashed lane separator is visible on the opposite carriageway beside the yellow centre divider."
+      "reason": "White dashed lane separator is visible on the opposite carriageway beside the yellow centre divider.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_128eba3116578889/kerb/left",
@@ -856,7 +886,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "The short white dash is visible in the middle of the longitudinal dash row."
+      "reason": "The short white dash is visible in the middle of the longitudinal dash row.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_1dd290f1010a0e13/lanes/0",
@@ -869,7 +909,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "The next short white dash is visible above the painted median cap."
+      "reason": "The next short white dash is visible above the painted median cap.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_1e470d13b2f7227e/lanes/0",
@@ -1382,7 +1432,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "The very short proposed white stroke sits at the dark carriageway/sidewalk boundary; the chip does not separate paint from a bright kerb stone. Cross-check: scene_f1 at 20.0 m; scene_f2 at 111.9 m. The 2018/2023/2024 views show the surrounding corridor, but their local alignment and epoch differ: the short stroke is at the f1 sidewalk/kerb boundary; historic lane paint is farther inside the carriageway."
+      "reason": "The very short proposed white stroke sits at the dark carriageway/sidewalk boundary; the chip does not separate paint from a bright kerb stone. Cross-check: scene_f1 at 20.0 m; scene_f2 at 111.9 m. The 2018/2023/2024 views show the surrounding corridor, but their local alignment and epoch differ: the short stroke is at the f1 sidewalk/kerb boundary; historic lane paint is farther inside the carriageway.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_38e5a5bb67afe602/kerb/left",
@@ -1433,7 +1493,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Three white dashed lane marks are visible beside the eastern sidewalk and diamond symbol."
+      "reason": "Three white dashed lane marks are visible beside the eastern sidewalk and diamond symbol.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_3df7c62d32629556/lanes/0",
@@ -1564,7 +1634,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "White dash visible in the same arterial dash row; existence is independent of the generated segment length."
+      "reason": "White dash visible in the same arterial dash row; existence is independent of the generated segment length.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_473fa05180093350/centre",
@@ -1742,7 +1822,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Three white lane dashes are visible on the western carriageway beside the yellow hatched median."
+      "reason": "Three white lane dashes are visible on the western carriageway beside the yellow hatched median.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_5174d11278b09676/lanes/0",
@@ -1928,7 +2018,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Faint yellow paint is visible on the shadowed kerb beside the north-south road."
+      "reason": "Faint yellow paint is visible on the shadowed kerb beside the north-south road.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_59592a57713c7d07/lanes/0",
@@ -2024,7 +2124,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "A white lane dash is visible immediately above the start of the yellow median."
+      "reason": "A white lane dash is visible immediately above the start of the yellow median.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_5b0f97262c7bda50/kerb/left",
@@ -3015,7 +3125,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "The very short candidate lies on the shadowed sidewalk edge and has no separable white-paint boundary in this view. Cross-check: scene_f1 at 20.6 m; scene_f2 at 112.9 m. The 2018/2023/2024 views show the surrounding corridor, but their local alignment and epoch differ: same f1 sidewalk shadow as U18; an epoch-dependent longitudinal lane cannot establish this tiny edge fragment."
+      "reason": "The very short candidate lies on the shadowed sidewalk edge and has no separable white-paint boundary in this view. Cross-check: scene_f1 at 20.6 m; scene_f2 at 112.9 m. The 2018/2023/2024 views show the surrounding corridor, but their local alignment and epoch differ: same f1 sidewalk shadow as U18; an epoch-dependent longitudinal lane cannot establish this tiny edge fragment.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_91823afa25bf46ec/lanes/0",
@@ -3028,7 +3148,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "White dash visible in the arterial longitudinal row below the preceding dash."
+      "reason": "White dash visible in the arterial longitudinal row below the preceding dash.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_922252acbff0a2ac/lanes/0",
@@ -3069,7 +3199,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Two adjacent white dashes are visible in this lane row; their inherited merged span is not a width or continuity approval."
+      "reason": "Two adjacent white dashes are visible in this lane row; their inherited merged span is not a width or continuity approval.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_94b2687c313a982a/centre",
@@ -3110,7 +3250,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "A white lane dash is visible immediately behind the dark car beside the yellow median."
+      "reason": "A white lane dash is visible immediately behind the dark car beside the yellow median.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_9754c0440bf41db5/lanes/0",
@@ -3339,7 +3489,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "White lane dash visible above the yellow median start."
+      "reason": "White lane dash visible above the yellow median start.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_a9060d7110ff4582/kerb/right",
@@ -3581,7 +3741,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Existing NGII chip review explicitly identifies MX01847 as a lane dash on the f1 arterial; its wide proposal box lowered mask support to 0.596. Current view has vehicle/shadow interference."
+      "reason": "Existing NGII chip review explicitly identifies MX01847 as a lane dash on the f1 arterial; its wide proposal box lowered mask support to 0.596. Current view has vehicle/shadow interference.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_b6167eef2068f10c/lanes/0",
@@ -3784,7 +3954,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "The short white candidate lies along a shadowed carriageway edge beside foliage; the apparent bright strip could be the kerb rather than paint. Cross-check: scene_a12 at 75.0 m; scene_a8 at 84.3 m. The 2018/2023/2024 views show the surrounding corridor, but their local alignment and epoch differ: parked vehicles cover the curb-side strip in the later images; the 2018 bright boundary cannot distinguish coating from kerb material."
+      "reason": "The short white candidate lies along a shadowed carriageway edge beside foliage; the apparent bright strip could be the kerb rather than paint. Cross-check: scene_a12 at 75.0 m; scene_a8 at 84.3 m. The 2018/2023/2024 views show the surrounding corridor, but their local alignment and epoch differ: parked vehicles cover the curb-side strip in the later images; the 2018 bright boundary cannot distinguish coating from kerb material.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_c1b796d684251475/centre",
@@ -3996,7 +4176,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "White lane dash visible in the arterial dash row."
+      "reason": "White lane dash visible in the arterial dash row.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_d23cd1586f6aad92/edges/left",
@@ -4065,7 +4255,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Two white lane dashes are visible to the west of the 50 speed legend."
+      "reason": "Two white lane dashes are visible to the west of the 50 speed legend.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_d75a80bcf0ecd409/lanes/0",
@@ -4134,7 +4334,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "The arterial dashed lane separator is visible through the long corridor beside the central yellow line."
+      "reason": "The arterial dashed lane separator is visible through the long corridor beside the central yellow line.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_d9d62b073fbf3b8b/kerb/left",
@@ -4221,7 +4431,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "Two white lane dashes are visible beside the paired 50 legends."
+      "reason": "Two white lane dashes are visible beside the paired 50 legends.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_de9d012c9ed70ced/kerb/left",
@@ -4246,7 +4466,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "White approach paint is visible immediately to the west of the crossing and stop line."
+      "reason": "White approach paint is visible immediately to the west of the crossing and stop line.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_e03f811864905557/kerb/right",
@@ -4431,7 +4661,17 @@
       "labelBasis": "Record-level inspection of the frozen candidate photo window, independent of current output presence; only existence, not dimensions.",
       "photoSupport": null,
       "photoResidualM": null,
-      "reason": "A white longitudinal dash is visible beside the car and arrow before the transverse stop line."
+      "reason": "A white longitudinal dash is visible beside the car and arrow before the transverse stop line.",
+      "scope": {
+        "inScope": false,
+        "refs": [
+          "docs/CAMPUS-MODEL-GROUND-TRUTH-REDESIGN.md §1 (캠퍼스 안의 모든 지상 요소), §19 (캠퍼스 밖 컨텍스트 범위 밖)",
+          ".omo/plans/campus-ground-truth-redesign.md:71 (no off-campus context redesign)",
+          "frontend/scripts/campus-model/lib/frame.mjs EXTENT; stages/markings.mjs inMarkingExtent (paint beyond EXTENT lies on the context ground)",
+          "task-24-attempt-3/scope.json"
+        ],
+        "reason": "Every candidate part of this record lies outside the campus terrain EXTENT, on the off-campus context ground (Ground_Context_*), which the design excludes from positional acceptance. Kept in the frozen corpus and reported separately."
+      }
     },
     {
       "id": "RS_e6d9761da88d2356/lanes/0",
@@ -4851,10 +5091,13 @@
       "id": "JA_01131ea2e182c3b7/crossing",
       "expected": true,
       "barIds": [
+        "JA_01131ea2e182c3b7/crossing/0",
         "JA_01131ea2e182c3b7/crossing/1",
         "JA_01131ea2e182c3b7/crossing/10",
         "JA_01131ea2e182c3b7/crossing/11",
         "JA_01131ea2e182c3b7/crossing/12",
+        "JA_01131ea2e182c3b7/crossing/13",
+        "JA_01131ea2e182c3b7/crossing/14",
         "JA_01131ea2e182c3b7/crossing/2",
         "JA_01131ea2e182c3b7/crossing/3",
         "JA_01131ea2e182c3b7/crossing/4",
@@ -4864,15 +5107,14 @@
         "JA_01131ea2e182c3b7/crossing/8",
         "JA_01131ea2e182c3b7/crossing/9"
       ],
-      "unobservedBarIds": [
-        "JA_01131ea2e182c3b7/crossing/0",
-        "JA_01131ea2e182c3b7/crossing/13"
-      ],
+      "unobservedBarIds": [],
       "refs": [
         "task-24-canonical-crossing-chips/X001-photo.png",
-        "ZC013"
+        "ZC013",
+        "task-24-attempt-3/crossing-fit.json#CW_015",
+        "task-24-attempt-3/CW_015-fit.png"
       ],
-      "reason": "Crossing paint directly seen in the photo sheet. Only photo-supported slots are positive; hidden or omitted slots remain unknown."
+      "reason": "Refit grid of CW_015: slot k is a bar where the NGII 2025 white-paint share inside its rectangle is >= 0.5 or the slot is unoccluded and fitted (0.48/0.6/0.8/0.64/0.92/0.72/0.76/1/0.84/1/0.68/0.56/0.88/0.76/0.8 paint, 1/1/1/1/1/1/1/1/1/1/1/1/1/0.44/0.2 visible). Slots without either stay unobserved. Slot numbering follows the refit grid."
     },
     {
       "id": "JA_013a3a1e9a553a4e/crossing",
@@ -5101,29 +5343,32 @@
       "id": "JA_316d3f27d4193a26/crossing",
       "expected": true,
       "barIds": [
+        "JA_316d3f27d4193a26/crossing/0",
         "JA_316d3f27d4193a26/crossing/1",
         "JA_316d3f27d4193a26/crossing/10",
         "JA_316d3f27d4193a26/crossing/11",
         "JA_316d3f27d4193a26/crossing/12",
         "JA_316d3f27d4193a26/crossing/13",
+        "JA_316d3f27d4193a26/crossing/14",
+        "JA_316d3f27d4193a26/crossing/15",
+        "JA_316d3f27d4193a26/crossing/2",
         "JA_316d3f27d4193a26/crossing/3",
+        "JA_316d3f27d4193a26/crossing/4",
         "JA_316d3f27d4193a26/crossing/5",
         "JA_316d3f27d4193a26/crossing/6",
         "JA_316d3f27d4193a26/crossing/7",
         "JA_316d3f27d4193a26/crossing/8",
         "JA_316d3f27d4193a26/crossing/9"
       ],
-      "unobservedBarIds": [
-        "JA_316d3f27d4193a26/crossing/0",
-        "JA_316d3f27d4193a26/crossing/2",
-        "JA_316d3f27d4193a26/crossing/4"
-      ],
+      "unobservedBarIds": [],
       "refs": [
         "task-24-canonical-crossing-chips/X012-photo.png",
         "ZC030",
-        "MX00500 group"
+        "MX00500 group",
+        "task-24-attempt-3/crossing-fit.json#CW_008",
+        "task-24-attempt-3/CW_008-fit.png"
       ],
-      "reason": "Crossing paint directly seen in the photo sheet. Only photo-supported slots are positive; hidden or omitted slots remain unknown."
+      "reason": "Refit grid of CW_008: slot k is a bar where the NGII 2025 white-paint share inside its rectangle is >= 0.5 or the slot is unoccluded and fitted (0.48/0.8/0.8/0.88/0.84/0.92/0.68/0.88/0.88/0.84/0.8/0.84/0.8/0.84/0.72/0.8 paint, 1/1/1/1/1/1/1/1/1/1/1/1/1/1/1/1 visible). Slots without either stay unobserved. Slot numbering follows the refit grid."
     },
     {
       "id": "JA_3b0aeedf9be86f2d/crossing",
@@ -5431,22 +5676,20 @@
       "id": "JA_6525b2129582d4e5/crossing",
       "expected": true,
       "barIds": [
-        "JA_6525b2129582d4e5/crossing/3",
-        "JA_6525b2129582d4e5/crossing/4"
-      ],
-      "unobservedBarIds": [
         "JA_6525b2129582d4e5/crossing/0",
         "JA_6525b2129582d4e5/crossing/1",
         "JA_6525b2129582d4e5/crossing/2",
-        "JA_6525b2129582d4e5/crossing/5",
-        "JA_6525b2129582d4e5/crossing/6",
-        "JA_6525b2129582d4e5/crossing/7"
+        "JA_6525b2129582d4e5/crossing/3",
+        "JA_6525b2129582d4e5/crossing/4"
       ],
+      "unobservedBarIds": [],
       "refs": [
         "task-24-canonical-crossing-chips/X029-photo.png",
-        "MX00502 group"
+        "MX00502 group",
+        "task-24-attempt-3/crossing-fit.json#CW_008",
+        "task-24-attempt-3/CW_008-fit.png"
       ],
-      "reason": "Crossing paint directly seen in the photo sheet. Only photo-supported slots are positive; hidden or omitted slots remain unknown."
+      "reason": "Refit grid of CW_008: slot k is a bar where the NGII 2025 white-paint share inside its rectangle is >= 0.5 or the slot is unoccluded and fitted (0.76/0.88/0.68/0.92/0.76 paint, 1/1/1/1/1 visible). Slots without either stay unobserved. Slot numbering follows the refit grid."
     },
     {
       "id": "JA_66754b14cfa67838/crossing",
@@ -5514,14 +5757,17 @@
         "JA_6a301d7293478e2c/crossing/2",
         "JA_6a301d7293478e2c/crossing/3",
         "JA_6a301d7293478e2c/crossing/4",
-        "JA_6a301d7293478e2c/crossing/5"
+        "JA_6a301d7293478e2c/crossing/5",
+        "JA_6a301d7293478e2c/crossing/6"
       ],
       "unobservedBarIds": [],
       "refs": [
         "task-24-canonical-crossing-chips/X032-photo.png",
-        "ZC014"
+        "ZC014",
+        "task-24-attempt-3/crossing-fit.json#CW_014",
+        "task-24-attempt-3/CW_014-fit.png"
       ],
-      "reason": "Crossing paint directly seen in the photo sheet. Only photo-supported slots are positive; hidden or omitted slots remain unknown."
+      "reason": "Refit grid of CW_014: slot k is a bar where the NGII 2025 white-paint share inside its rectangle is >= 0.5 or the slot is unoccluded and fitted (0.64/0.88/0.92/0.76/0.84/0.92/0.88 paint, 1/1/1/1/1/1/1 visible). Slots without either stay unobserved. Slot numbering follows the refit grid."
     },
     {
       "id": "JA_6b2eddd5fbf40437/crossing",
@@ -5708,16 +5954,17 @@
         "JA_7b69b8f085fe97db/crossing/1",
         "JA_7b69b8f085fe97db/crossing/2",
         "JA_7b69b8f085fe97db/crossing/3",
-        "JA_7b69b8f085fe97db/crossing/4"
-      ],
-      "unobservedBarIds": [
+        "JA_7b69b8f085fe97db/crossing/4",
         "JA_7b69b8f085fe97db/crossing/5"
       ],
+      "unobservedBarIds": [],
       "refs": [
         "task-24-canonical-crossing-chips/X041-photo.png",
-        "ZC017"
+        "ZC017",
+        "task-24-attempt-3/crossing-fit.json#CW_004",
+        "task-24-attempt-3/CW_004-fit.png"
       ],
-      "reason": "Crossing paint directly seen in the photo sheet. Only photo-supported slots are positive; hidden or omitted slots remain unknown."
+      "reason": "Refit grid of CW_004: slot k is a bar where the NGII 2025 white-paint share inside its rectangle is >= 0.5 or the slot is unoccluded and fitted (0.8/0.8/0.84/0.84/0.88/0.64 paint, 1/1/1/1/1/1 visible). Slots without either stay unobserved. Slot numbering follows the refit grid."
     },
     {
       "id": "JA_825fe015055d6ae7/crossing",
@@ -5742,9 +5989,11 @@
       "refs": [
         "task-24-canonical-crossing-chips/X042-photo.png",
         "ZC024",
-        "MX00463 group"
+        "MX00463 group",
+        "task-24-attempt-3/crossing-fit.json#CW_012",
+        "task-24-attempt-3/CW_012-fit.png"
       ],
-      "reason": "Crossing paint directly seen in the photo sheet. Only photo-supported slots are positive; hidden or omitted slots remain unknown."
+      "reason": "Refit grid of CW_012: slot k is a bar where the NGII 2025 white-paint share inside its rectangle is >= 0.5 or the slot is unoccluded and fitted (0.84/0.8/0.76/0.92/0.8/0.8/0.76/0.72/0.84/0.88/0.84/0.84/0.72/0.8 paint, 1/1/1/1/1/1/1/1/1/1/1/0.72/0.4/0.32 visible). Slots without either stay unobserved. Slot numbering follows the refit grid."
     },
     {
       "id": "JA_86f2e603e023b575/crossing",
@@ -5754,6 +6003,9 @@
         "JA_86f2e603e023b575/crossing/1",
         "JA_86f2e603e023b575/crossing/10",
         "JA_86f2e603e023b575/crossing/11",
+        "JA_86f2e603e023b575/crossing/12",
+        "JA_86f2e603e023b575/crossing/13",
+        "JA_86f2e603e023b575/crossing/14",
         "JA_86f2e603e023b575/crossing/2",
         "JA_86f2e603e023b575/crossing/3",
         "JA_86f2e603e023b575/crossing/4",
@@ -5763,18 +6015,16 @@
         "JA_86f2e603e023b575/crossing/8",
         "JA_86f2e603e023b575/crossing/9"
       ],
-      "unobservedBarIds": [
-        "JA_86f2e603e023b575/crossing/12",
-        "JA_86f2e603e023b575/crossing/13",
-        "JA_86f2e603e023b575/crossing/14"
-      ],
+      "unobservedBarIds": [],
       "refs": [
         "task-24-canonical-crossing-chips/X043-photo.png",
         "ZC026",
         "MX00450 group",
-        "MX00455 group"
+        "MX00455 group",
+        "task-24-attempt-3/crossing-fit.json#CW_012",
+        "task-24-attempt-3/CW_012-fit.png"
       ],
-      "reason": "Crossing paint directly seen in the photo sheet. Only photo-supported slots are positive; hidden or omitted slots remain unknown."
+      "reason": "Refit grid of CW_012: slot k is a bar where the NGII 2025 white-paint share inside its rectangle is >= 0.5 or the slot is unoccluded and fitted (0.92/0.88/0.8/0.84/0.76/0.88/0.84/0.88/0.8/0.8/0.8/0.8/0.76/0.68/0.64 paint, 1/1/1/1/1/1/1/1/1/1/1/1/1/1/1 visible). Slots without either stay unobserved. Slot numbering follows the refit grid."
     },
     {
       "id": "JA_887ddeca3f137ae3/crossing",
@@ -5923,14 +6173,17 @@
         "JA_9310165f30be40ca/crossing/1",
         "JA_9310165f30be40ca/crossing/2",
         "JA_9310165f30be40ca/crossing/3",
-        "JA_9310165f30be40ca/crossing/4"
+        "JA_9310165f30be40ca/crossing/4",
+        "JA_9310165f30be40ca/crossing/5"
       ],
       "unobservedBarIds": [],
       "refs": [
         "task-24-canonical-crossing-chips/X050-photo.png",
-        "ZC052"
+        "ZC052",
+        "task-24-attempt-3/crossing-fit.json#CW_021",
+        "task-24-attempt-3/CW_021-fit.png"
       ],
-      "reason": "Crossing paint directly seen in the photo sheet. Only photo-supported slots are positive; hidden or omitted slots remain unknown."
+      "reason": "Refit grid of CW_021: slot k is a bar where the NGII 2025 white-paint share inside its rectangle is >= 0.5 or the slot is unoccluded and fitted (0.92/0.92/0.92/0.84/0.84/0.88 paint, 1/1/1/1/1/1 visible). Slots without either stay unobserved. Slot numbering follows the refit grid."
     },
     {
       "id": "JA_95b33c17b8999417/crossing",
@@ -6451,15 +6704,20 @@
         "JA_d9d670e776cd1879/crossing/2",
         "JA_d9d670e776cd1879/crossing/3",
         "JA_d9d670e776cd1879/crossing/4",
-        "JA_d9d670e776cd1879/crossing/5"
+        "JA_d9d670e776cd1879/crossing/5",
+        "JA_d9d670e776cd1879/crossing/6",
+        "JA_d9d670e776cd1879/crossing/7",
+        "JA_d9d670e776cd1879/crossing/8"
       ],
       "unobservedBarIds": [],
       "refs": [
         "task-24-canonical-crossing-chips/X074-photo.png",
         "ZC027",
-        "MX00490 group"
+        "MX00490 group",
+        "task-24-attempt-3/crossing-fit.json#CW_008",
+        "task-24-attempt-3/CW_008-fit.png"
       ],
-      "reason": "Crossing paint directly seen in the photo sheet. Only photo-supported slots are positive; hidden or omitted slots remain unknown."
+      "reason": "Refit grid of CW_008: slot k is a bar where the NGII 2025 white-paint share inside its rectangle is >= 0.5 or the slot is unoccluded and fitted (0.88/0.88/0.88/0.84/0.8/0.88/0.84/0.72/0.84 paint, 1/1/1/1/1/1/1/1/1 visible). Slots without either stay unobserved. Slot numbering follows the refit grid."
     },
     {
       "id": "JA_de1c1186de3c5f45/crossing",
@@ -6475,9 +6733,11 @@
       "unobservedBarIds": [],
       "refs": [
         "task-24-canonical-crossing-chips/X075-photo.png",
-        "ZC055"
+        "ZC055",
+        "task-24-attempt-3/crossing-fit.json#CW_023",
+        "task-24-attempt-3/CW_023-fit.png"
       ],
-      "reason": "Crossing paint directly seen in the photo sheet. Only photo-supported slots are positive; hidden or omitted slots remain unknown."
+      "reason": "Refit grid of CW_023: slot k is a bar where the NGII 2025 white-paint share inside its rectangle is >= 0.5 or the slot is unoccluded and fitted (0.84/0.92/0.84/0.92/0.92/0.88 paint, 1/1/1/1/1/1 visible). Slots without either stay unobserved. Slot numbering follows the refit grid."
     },
     {
       "id": "JA_e04e8e07b440c6b5/crossing",
@@ -6964,7 +7224,9 @@
     {
       "id": "CW_007",
       "expected": true,
-      "objectIds": [],
+      "objectIds": [
+        "JA_c12765b5e6ef6ad7/crossing"
+      ],
       "boundsTm": [
         244053.31028436215,
         263959.8674217738,
@@ -6974,9 +7236,13 @@
       "refs": [
         "docs/assets/data/crosswalks_wgs84.geojson#CW_007",
         "task-24-crossing-chips/CW_007-photo.png",
-        "task-24-crossing-chips/CW_007-paths.png"
+        "task-24-crossing-chips/CW_007-paths.png",
+        "NGII 2025 34702020",
+        "task-24-attempt-3/CW_007-fit.png",
+        "task-24-attempt-3/crossing-fit.json"
       ],
-      "observation": "수관 아래 일부 바가 보인다. 가려진 끝의 바 개수 미확정."
+      "observation": "수관 틈으로 바 3개가 보인다. 가려진 칸과 수관 밖 바 개수는 미확정.",
+      "reason": "Visible bars under the canopy are restored as an added crossing owner; hidden extent remains unobserved."
     },
     {
       "id": "CW_008",
@@ -7137,7 +7403,15 @@
         "task-24-crossing-chips/CW_015-photo.png",
         "task-24-crossing-chips/CW_015-paths.png"
       ],
-      "observation": "NGII 사진에서 실제 횡단보도 바가 보인다. 경계·막대 개수는 정량 승인하지 않았다."
+      "observation": "NGII 사진에서 실제 횡단보도 바가 보인다. 경계·막대 개수는 정량 승인하지 않았다.",
+      "reason": "retained",
+      "adjudication": {
+        "refs": [
+          "task-24-attempt-3/CW_015-fit.png",
+          "task-24-attempt-3/crossing-fit.json"
+        ],
+        "reason": "Bars are visible and refit, but their ends step progressively across the carriageway (a skewed, parallelogram outline). The canonical crossing draws rectangular bars with a common end line, so the photo outline cannot be reproduced without a skew control; remaining IoU shortfall is that model limit, not missing paint."
+      }
     },
     {
       "id": "CW_016",
@@ -7308,7 +7582,16 @@
         "task-24-crossing-chips/CW_025-photo.png",
         "task-24-crossing-chips/CW_025-paths.png"
       ],
-      "observation": "서측 바가 보이고 동쪽은 수관으로 가려진다. CW_024의 정상 사각형 대안이나 정량 경계는 아직 미승인."
+      "observation": "서측 바가 보이고 동쪽은 수관으로 가려진다. CW_024의 정상 사각형 대안이나 정량 경계는 아직 미승인.",
+      "reason": "retained",
+      "adjudication": {
+        "refs": [
+          "task-24-attempt-3/CW_025-fit.png",
+          "task-24-attempt-3/crossing-fit.json",
+          "task-24-crossing-chips/CW_025-photo.png"
+        ],
+        "reason": "Canopy and its shade cover most of the window; per-slot paint shares of a refit grid are .12-.92 with no consistent bar pattern, so no refit was applied. Geometry stays as seeded; boundary and visibility remain unadjudicated from the 2025 sheet."
+      }
     },
     {
       "id": "CW_026",

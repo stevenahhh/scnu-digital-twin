@@ -51,6 +51,15 @@ test("photo control edits survive reseeding without approving ownership or mutat
   assert.deepEqual(original.sections.RD_001.alignments[RA].line, [[10, 20], [30, 20]]);
 });
 
+test("a shortened photo line carries its own painted interval", () => {
+  const owners = reviews.map(r => ({ ...r, verified: false }));
+  owners[0].geometry = { refs: ["line ends at the hump edge"], reason: "trim", line: [[10, 20], [25, 20]], toM: 15 };
+  const result = curation.applyRoadCuration(original, { owners }, context);
+  assert.equal(result.sections.RD_001.sections[0].toM, 15);
+  assert.deepEqual(result.sections.RD_001.alignments[RA].line, [[10, 20], [25, 20]]);
+  assert.equal(original.sections.RD_001.sections[0].toM, undefined);
+});
+
 test("geometry edits cannot bypass their independent evidence requirement", () => {
   assert.throws(() => curation.applyRoadCuration(original, { owners: [
     { ...reviews[0], geometry: { lateralOffsetM: 0.4, refs: [], reason: "unsupported" } }, reviews[1],
@@ -76,6 +85,34 @@ test("reference review rejects invented ids and unsupported positive or negative
     { id: "absent", expected: true, refs: ["photo"], reason: "visible" },
     { id: "line", expected: false, refs: [], reason: "unsupported absence" },
   ]) assert.throws(() => curation.applyRoadReferenceReviews(reference, { segments: [row] }), /reference/);
+});
+
+const RS3 = "RS_3333333333333333", JA3 = "JA_3333333333333333";
+const addedCrossing = { sectionId: RS3, approachId: JA3, segmentId: "RD_001", nodeId: "ND_001",
+  line: [[40, 10], [40, 40]], widthM: 3.2, refs: ["photo: three bars under canopy"], reason: "visible bars with no seeded owner",
+  crossing: { offsetM: 15, widthM: 2.4, barWidthM: 0.5, zebraPeriodM: 0.9, omittedBars: [1] } };
+
+test("an evidence-backed added crossing gets its own unverified station owner and keeps unobserved slots", () => {
+  const owners = reviews.map(r => ({ ...r, verified: false }));
+  const result = curation.applyRoadCuration(original, { owners, addedCrossings: [addedCrossing] }, context);
+  const section = result.sections.RD_001.sections.find(s => s.id === RS3);
+  assert.deepEqual(result.sections.RD_001.alignments[section.alignment].line, [[40, 10], [40, 40]]);
+  assert.equal(section.toM, 30);
+  assert.deepEqual(section.lanes.map(l => [l.dir, l.widthM]), [["fwd", 1.6], ["bwd", 1.6]]);
+  assert.equal(section.curation.verified, false);
+  const approach = result.junctions.ND_001.approaches.find(a => a.id === JA3);
+  assert.equal(approach.section, RS3);
+  assert.equal(approach.end, "to");
+  assert.deepEqual(approach.crossing.omittedBars, [1]);
+  assert.equal(approach.curation.verified, false);
+  assert.equal(original.sections.RD_001.sections.length, 1);
+});
+
+test("an added crossing needs evidence, authoritative containers and unused owner ids", () => {
+  const owners = reviews.map(r => ({ ...r, verified: false }));
+  for (const patch of [{ refs: [] }, { segmentId: "RD_999" }, { nodeId: "ND_999" }, { approachId: JA }, { sectionId: RS }]) {
+    assert.throws(() => curation.applyRoadCuration(original, { owners, addedCrossings: [{ ...addedCrossing, ...patch }] }, context), /added crossing/);
+  }
 });
 
 test("missing, unknown and duplicate owner reviews fail by id", () => {
