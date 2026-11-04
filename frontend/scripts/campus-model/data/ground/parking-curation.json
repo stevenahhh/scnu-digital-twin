@@ -390,7 +390,8 @@
       "tier": "T1",
       "refs": [
        "NGII 2025: near line, kerb and blue fill read, far line not visible; box 5.0 m deep; the 3.1 m width comes from the blue fill ending at 2.96 m plus a border (estimate, see the widthM flag), 12 cm aerial far peak 3.15 m is older paint",
-       "blue MX01340; VR scene_e5 b, scene_e5 r: a P and a wheelchair read from the road, tops towards the kerb, the P at the north-east end; the box runs along the kerb, so the width is across it"
+          "blue MX01340; VR scene_e5 b, scene_e5 r: a P and a wheelchair read from the road, tops towards the kerb, the P at the north-east end; the box runs along the kerb, so the width is across it",
+          "F3 2026-11-04 photo recheck: NGII 2025 and Suncheon 2024_12cm t-1-2.jpg both show this standalone P/wheelchair bay against the island kerb, across the aisle from R6. Its separation from R6 is real; retain the photo-fitted coordinates rather than moving it into the opposite parking row. F3-paint.md."
       ]
      },
      "estimatedDividers": [

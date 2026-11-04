@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { gunzipSync, brotliDecompressSync } from "node:zlib";
 import test from "node:test";
 import { createCandidate, candidatePaths, publishCandidate } from "./candidate.mjs";
+import * as candidateGate from "./candidate.mjs";
 
 const names = ["campus-v2.glb", "campus-v2-height.bin", "campus-v2-height.json"];
 const reports = ["map-compare.json", "vr-bearings.json", "invariants.json"];
@@ -57,6 +58,54 @@ test("a passing candidate publishes the GLB and both height files with matching 
     assert.equal(decode(readFileSync(path.join(publicDir, `campus-v2.glb.${suffix}`))).toString(), "new:campus-v2.glb");
   }
 });
+
+test("reviewed rejected candidates still refuse publication without the named exception", async (t) => {
+  const { candidate, publicDir } = fixture(t);
+  await assert.rejects(publishCandidate(candidate, {
+    publicDir, inputHashes, runChecks: context => checks(context, "fail"),
+  }), { code: "CANDIDATE_QA" });
+  await assert.rejects(candidateGate.publishReviewedCandidate(candidate, { publicDir }), { code: "CANDIDATE_QA" });
+  for (const name of names) assert.equal(readFileSync(path.join(publicDir, name), "utf8"), `old:${name}`);
+});
+
+test("F3 exception publishes checked bytes and records rejection without rewriting QA", async (t) => {
+  const { candidate, publicDir } = fixture(t);
+  await assert.rejects(publishCandidate(candidate, {
+    publicDir, inputHashes, runChecks: context => checks(context, "fail"),
+  }), { code: "CANDIDATE_QA" });
+  const before = reports.map(name => readFileSync(path.join(candidate.qaDir, name), "utf8"));
+  const identity = await candidateGate.publishReviewedCandidate(candidate, {
+    publicDir, exception: "F3-paint-2026-11-04", precompress: true,
+  });
+  const audit = JSON.parse(readFileSync(path.join(publicDir, "campus-v2-publication.json"), "utf8"));
+  assert.equal(audit.exception.id, "F3-paint-2026-11-04");
+  assert.deepEqual(audit.hashes, identity.hashes);
+  assert.equal(audit.strictGateAccepted, false);
+  assert.deepEqual(audit.rejectedReports, reports);
+  assert.deepEqual(reports.map(name => readFileSync(path.join(candidate.qaDir, name), "utf8")), before);
+  for (const name of names) assert.equal(readFileSync(path.join(publicDir, name), "utf8"), `new:${name}`);
+  assert.equal(gunzipSync(readFileSync(path.join(publicDir, "campus-v2.glb.gz"))).toString(), "new:campus-v2.glb");
+});
+
+for (const mode of ["changed-bytes", "stale-report", "unknown-exception"]) {
+  test(`F3 exception still rejects ${mode}`, async (t) => {
+    const { candidate, publicDir } = fixture(t);
+    await assert.rejects(publishCandidate(candidate, {
+      publicDir, inputHashes, runChecks: context => checks(context, "fail"),
+    }), { code: "CANDIDATE_QA" });
+    if (mode === "changed-bytes") writeFileSync(candidate.packed, "unreviewed");
+    if (mode === "stale-report") {
+      const file = path.join(candidate.qaDir, reports[1]);
+      const report = JSON.parse(readFileSync(file, "utf8"));
+      report.runId = "different-run";
+      writeFileSync(file, JSON.stringify(report));
+    }
+    await assert.rejects(candidateGate.publishReviewedCandidate(candidate, {
+      publicDir, exception: mode === "unknown-exception" ? "allow-all" : "F3-paint-2026-11-04",
+    }), { code: mode === "unknown-exception" ? "CANDIDATE_EXCEPTION" : "CANDIDATE_QA" });
+    for (const name of names) assert.equal(readFileSync(path.join(publicDir, name), "utf8"), `old:${name}`);
+  });
+}
 
 for (const mode of ["fail", "stale", "wrong-hash", "wrong-input", "mutate", "crash", "missing", "malformed", "different-raw", "missing-sidecar"]) {
   test(`${mode} keeps the previous public GLB and height pair`, async (t) => {
