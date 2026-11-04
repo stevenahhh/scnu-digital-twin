@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import { wallsOf } from '../lib/anchors.mjs';
 import { assertBuildInvariants, BuildInvariantError } from './invariants.mjs';
 
@@ -52,6 +53,9 @@ const cases = [
   ['different second raw hash', 'raw', 'determinism', f => { f.determinism.secondHash = 'different'; }],
   ['missing emitted geometry', 'paint-A', 'paint', f => { f.paintPieces[0].triangles = []; }],
   ['zero area emitted triangle', 'paint-A', 'paint', f => { f.paintPieces[0].triangles = [[[0, 0], [1, 0], [2, 0]]]; }],
+  ['final triangle below the existing 1e-8 m2 floor', 'paint-A', 'paint', f => {
+    f.paintPieces[0].triangles = [[[0, 0], [0.0001, 0], [0, 0.0001]]];
+  }],
 ];
 for (const [name, id, check, mutate] of cases) {
   test(`rejects ${name} with the original id`, () => {
@@ -105,4 +109,42 @@ test('small lawn island at campus TM coordinates cannot disappear through cancel
   input.paintPieces[0].triangles = input.paintPieces[0].triangles.map(t => t.map(translate));
   assert.throws(() => assertBuildInvariants(input), error =>
     error instanceof BuildInvariantError && error.report.findings.some(f => f.id === 'paint-A' && f.check === 'paint'));
+});
+
+test('recorded kerb boundary passes at campus coordinates without cancellation cells', () => {
+  const input = fixture();
+  const recorded = JSON.parse(readFileSync(new URL('./paint-numerics.fixture.json', import.meta.url), 'utf8'));
+  input.parcels = recorded.parcels;
+  input.paintPieces = [{ id: 'RS_0a9368cf73fee103/kerb/left/part/0', triangles: [recorded.triangle] }];
+  assert.equal(assertBuildInvariants(input).pass, true);
+});
+
+test('a real lawn strip across the recorded kerb remains forbidden', () => {
+  const input = fixture();
+  const recorded = JSON.parse(readFileSync(new URL('./paint-numerics.fixture.json', import.meta.url), 'utf8'));
+  input.parcels = [...recorded.parcels, {
+    id: 'lawn-strip', ring: rect(243989.9, 263956.2, 243990, 263956.7),
+    holes: [], precedence: 10, paintAllowed: false,
+  }];
+  input.paintPieces = [{ id: 'kerb', triangles: [recorded.triangle] }];
+  assert.throws(() => assertBuildInvariants(input), error =>
+    error instanceof BuildInvariantError && error.report.findings.some(f =>
+      f.id === 'kerb' && f.reason.includes('lawn-strip')));
+});
+
+test('ground centre is weighted by area rather than a matching bounding box', () => {
+  const input = fixture();
+  // Same [0,0,10,10] bbox, but a 64 m2 L has centroid (6.125, 3.875).
+  input.groundFootprints[0].actualParts = [[[0, 0], [10, 0], [10, 10], [6, 10], [6, 4], [0, 4]]];
+  assert.throws(() => assertBuildInvariants(input), error =>
+    error instanceof BuildInvariantError && error.report.findings.some(f => f.check === 'groundFootprint'));
+});
+
+test('area-weighted ground acceptance still rejects paint on lawn', () => {
+  const input = fixture();
+  input.groundFootprints[0].actualParts = [rect(0, 0, 4, 10), rect(6, 0, 10, 10).reverse()];
+  input.paintPieces[0].triangles = [[[6, 0], [7, 0], [6, 1]]];
+  assert.throws(() => assertBuildInvariants(input), error =>
+    error instanceof BuildInvariantError &&
+      error.report.findings.length === 1 && error.report.findings[0].check === 'paint');
 });
