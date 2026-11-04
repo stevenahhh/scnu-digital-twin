@@ -8,6 +8,7 @@ import { createCandidate, publishCandidate } from "./qa/candidate.mjs";
 import { assertRawDeterminism } from "./qa/determinism.mjs";
 import { assertBuildInvariants, BuildInvariantError } from "./qa/invariants.mjs";
 import { reduceQaReport } from "./qa/reportPolicy.mjs";
+import { buildCategoryReport } from "./qa/categoryReport.mjs";
 import { runMapComparison } from "./qa/mapReport.mjs";
 import { collectVrBearings, writeOverheadReports } from "./qa/renderReports.mjs";
 import { loadFacadeCoverage, unappliedFacadeWalls } from "./qa/facadeCoverage.mjs";
@@ -40,6 +41,9 @@ hashTree(join(HERE, "data"));
 inputHashes["data/ground/parcels.json"] = hash(parcelsPath);
 inputHashes["public/uni.glb"] = hash(join(FRONTEND, "public/uni.glb"));
 inputHashes["perf/vr-stations.json"] = hash(join(HERE, "../perf/vr-stations.json"));
+const networkPath = resolve(FRONTEND, "../backend/simulation/data/campus_transport_network.geojson");
+const transformPath = resolve(FRONTEND, "../backend/simulation/data/coordinate_transform.json");
+for (const file of [networkPath, transformPath]) inputHashes[file] = hash(file);
 const source = Bun.spawn(["git", "rev-parse", "HEAD"], {
   cwd: FRONTEND, env: { ...process.env, GIT_MASTER: "1" }, stdin: "ignore", stdout: "pipe", stderr: "inherit",
 });
@@ -144,6 +148,14 @@ try {
     async runChecks({ identity }) {
       const run = { runHash: identity.runId, sourceRevision, inputHashes,
         rawHash: identity.hashes.raw, packedHash: identity.hashes.packed };
+      const raw = readFileSync(candidate.raw);
+      save(join(candidate.qaDir, "categories.json"), buildCategoryReport(run, {
+        gltf: JSON.parse(raw.subarray(20, 20 + raw.readUInt32LE(12)).toString()),
+        network: json(networkPath), transform: json(transformPath),
+        rawPath: candidate.raw, networkPath, transformPath,
+        markings: json(join(candidate.dir, "markings.report.json")),
+        markingsPath: join(candidate.dir, "markings.report.json"),
+      }));
       const renderIdentity = { runId: identity.runId, rawGlbSha256: identity.hashes.raw, packedGlbSha256: identity.hashes.packed };
       const results = [];
       const complete = (id, kind, entries, rest = {}) => ({ ...run, id, kind, status: "complete", entries, ...rest });

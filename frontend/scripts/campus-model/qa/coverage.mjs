@@ -28,11 +28,12 @@ export const REQUIRED_ROWS = Object.freeze([
 ]);
 
 /**
- * Pure row-table check. availableFiles is a snapshot of regular files, not I/O.
+ * Pure row-table check. Files and parsed reports are snapshots, not I/O.
  * @param {Record<string, {generators?: readonly string[], reports?: readonly string[]}>} table
  * @param {ReadonlySet<string>} availableFiles
+ * @param {ReadonlyMap<string, object>} reports
  */
-export function checkCoverage(table, availableFiles) {
+export function checkCoverage(table, availableFiles, reports = new Map()) {
   if (!table || typeof table !== 'object' || Array.isArray(table)) {
     throw new TypeError('row table must be an object');
   }
@@ -54,7 +55,30 @@ export function checkCoverage(table, availableFiles) {
         throw new TypeError(`${row}: ${field} must contain relative paths`);
       }
       for (const path of paths) {
-        if (!availableFiles.has(path)) issues.push({ row, reason: `file missing: ${path}` });
+        if (!availableFiles.has(path)) {
+          issues.push({ row, reason: `file missing: ${path}` });
+          continue;
+        }
+        if (field !== 'reports') continue;
+        const checks = reports.get(path)?.checks;
+        const matches = Array.isArray(checks) ? checks.filter(check => check.id === row) : [];
+        if (matches.length !== 1) {
+          issues.push({ row, reason: `category entry missing or duplicate: ${path}` });
+          continue;
+        }
+        const check = matches[0];
+        // Coverage includes explicit failures and unknowns, but not empty/notRun
+        // receipts or an unrelated report that merely exists.
+        if (!['pass', 'fail', 'error', 'unverified', 'warning'].includes(check.status) ||
+            !Number.isInteger(check.checked) || !Number.isInteger(check.unknown) ||
+            check.checked < 0 || check.unknown < 0 || check.checked + check.unknown === 0 ||
+            !Array.isArray(check.findings) || check.findings.length === 0 ||
+            check.findings.some(f => typeof f.metric !== 'string' || !f.metric.trim() ||
+              typeof f.evidence !== 'string' || !f.evidence.trim() ||
+              !['pass', 'fail', 'error', 'unverified', 'warning'].includes(f.status) ||
+              !Object.hasOwn(f, 'value') || !Object.hasOwn(f, 'threshold'))) {
+          issues.push({ row, reason: `invalid category entry: ${path}` });
+        }
       }
     }
   }
@@ -74,6 +98,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
     // Validate the external table before inspecting any paths.
     checkCoverage(table, new Set());
     const files = new Set();
+    const reports = new Map();
     const reportErrors = new Map();
     for (const entry of Object.values(table)) {
       for (const field of ['generators', 'reports']) {
@@ -82,11 +107,13 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
           if (!statSync(absolute, { throwIfNoEntry: false })?.isFile()) continue;
           files.add(path);
           if (field === 'reports') {
+            if (reports.has(path) || reportErrors.has(path)) continue;
             try {
               const report = JSON.parse(readFileSync(absolute, 'utf8'));
               if (!report || typeof report !== 'object' || Object.keys(report).length === 0) {
                 reportErrors.set(path, 'expected a nonempty JSON report');
               }
+              reports.set(path, report);
             } catch (error) {
               if (!(error instanceof SyntaxError)) throw error;
               reportErrors.set(path, error.message);
@@ -95,7 +122,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
         }
       }
     }
-    const result = checkCoverage(table, files);
+    const result = checkCoverage(table, files, reports);
     for (const [row, entry] of Object.entries(table)) {
       for (const path of entry?.reports ?? []) {
         if (reportErrors.has(path)) result.issues.push({

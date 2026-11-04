@@ -88,12 +88,29 @@ bun scripts/campus-model/qa/coverage.mjs --root /path/to/scripts/campus-model --
 `qa/coverage-rows.json` maps all 18 design §20 row names to generator and report
 paths. `qa/coverage.mjs` keeps the required row inventory independently, so removing
 `Ground_* 지면 클래스` from a copy of the table fails with that row's name and exit 1.
-Every listed generator and report must be a regular file; reports must parse as
-nonempty JSON objects or arrays. Success is `COVERAGE OK: 18 rows`, exit 0.
-Missing W4 generators and Todo 28 reports are failures, never fabricated artifacts.
-The mapping is a structural audit, not a per-object residual or report freshness
-gate. For unchanged Topography/context and shared geometry, the invariant report
-is the common build audit; it does not imply new photo-accuracy work under §19.
+Every listed generator and report must be a regular file. Each mapped report must
+contain exactly one `checks` entry whose `id` is the design row, with status,
+checked/unknown counts and nonempty findings containing metrics and evidence
+pointers. An existing unrelated JSON file fails. Success is
+`COVERAGE OK: 18 rows`, exit 0.
+
+The build writes `.build/qa/categories.json` from the actual raw candidate's mesh
+accessors, building metadata, tree instance receipts, furniture counts and emitted
+paint report. It checks terrain/context mesh counts, tactile geometry, wheel stops,
+roof colour/solar receipts and signal counts explicitly. The traffic category
+compares every saved network coordinate through `coordinate_transform.json`
+against the shared simulation-to-TM transform, with a 1 mm consistency threshold.
+Both traffic inputs are hashed with the build inputs.
+
+Category entries use `reduceQaReport` fields and retain zero counts as failed
+inventory checks. Their photographic accuracy remains explicitly unknown;
+generation counts are not surveyed position, shape or colour accuracy.
+Coverage tests whether an actual check is recorded, so a failed or unknown
+category is covered, while a missing, empty or `notRun` entry is not. Inspect the
+category findings and the existing map/VR/invariant policy separately for quality
+and publication acceptance. Coverage never changes the todo 28 paint gate.
+Rejected builds still copy category reports to `.build/qa`; their evidence
+pointers identify the retained candidate and their hashes identify the run.
 
 The Suncheon 12 cm aerial is a cross-check source under owner consent dated
 2026-11-02 (D3 in `docs/data-licences.md`). Keep pixels only in the gitignored
