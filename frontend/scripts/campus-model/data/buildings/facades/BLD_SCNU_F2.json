@@ -1,0 +1,94 @@
+{
+  "estimated": true,
+  "building": "BLD_SCNU_F2",
+  "storeys": [
+    {
+      "hM": 4.1
+    },
+    {
+      "hM": 4.1
+    },
+    {
+      "hM": 4.1
+    },
+    {
+      "hM": 4.1
+    }
+  ],
+  "walls": {
+    "W03": {
+      "bays": {
+        "pitchM": 4.8546336,
+        "count": 7,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 4.3692,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 F2_평생교육원_138316 W03",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 7,
+        "openingGroups": 7,
+        "notes": [
+          "LOD4 x58..197: seven broad repeated opening groups across the three structural sections; thin pane mullions are not bays."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 7,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "glazing",
+      "materials": {
+        "wall": "render:#dccba8",
+        "glass": "#5d7c8a",
+        "frame": "#3b3f42"
+      }
+    }
+  }
+}

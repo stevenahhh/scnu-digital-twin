@@ -1,0 +1,96 @@
+{
+  "estimated": true,
+  "building": "BLD_B3",
+  "storeys": [
+    {
+      "hM": 3.07
+    },
+    {
+      "hM": 3.07
+    },
+    {
+      "hM": 3.07
+    },
+    {
+      "hM": 3.07
+    },
+    {
+      "hM": 3.07
+    }
+  ],
+  "walls": {
+    "W05": {
+      "bays": {
+        "pitchM": 6.02783636,
+        "count": 2,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 5.4251,
+        "hM": 1.6885,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 B3_생명산업과학_1호관_그린스마트팜스쿨__135996 W05",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated",
+          "Exact registered source edge correspondence in surfaceEdges; automatic 0.3 m matching remains unchanged. Endpoints are checked within 1 mm, not moved."
+        ],
+        "independentCount": 2,
+        "openingGroups": 2,
+        "notes": [
+          "LOD4 x372..423: two wide repeated opening groups split by one thick central pier; pane subdivisions are not extra bays.",
+          "Vertical allocation follows the registered main source: 5 levels over 15.350 m. The independent image count is horizontal; heights remain estimates."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 2,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "glazing",
+      "materials": {
+        "wall": "render:#eaeceb",
+        "glass": "#4f6f78",
+        "frame": "#f2f2ef"
+      },
+      "surfaceEdges": [
+        {
+          "A": [
+            243996.8898,
+            263871.2216
+          ],
+          "B": [
+            243984.8736,
+            263874.3645
+          ],
+          "source": "building-forms.json BLD_B3/mass/0/edge/17; resolved source geometry, estimated"
+        }
+      ]
+    }
+  }
+}

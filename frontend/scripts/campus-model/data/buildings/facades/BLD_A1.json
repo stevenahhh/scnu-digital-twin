@@ -1,0 +1,96 @@
+{
+  "estimated": true,
+  "building": "BLD_A1",
+  "storeys": [
+    {
+      "hM": 4.12
+    },
+    {
+      "hM": 4.12
+    },
+    {
+      "hM": 4.12
+    },
+    {
+      "hM": 4.12
+    },
+    {
+      "hM": 4.12
+    },
+    {
+      "hM": 4.12
+    },
+    {
+      "hM": 4.12
+    },
+    {
+      "hM": 4.12
+    }
+  ],
+  "walls": {
+    "W04": {
+      "bays": {
+        "pitchM": 2.6,
+        "count": 1,
+        "offsetM": 5.4
+      },
+      "cells": [
+        [
+          "window"
+        ],
+        [
+          "window"
+        ],
+        [
+          "window"
+        ],
+        [
+          "window"
+        ],
+        [
+          "window"
+        ],
+        [
+          "window"
+        ],
+        [
+          "window"
+        ],
+        [
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 1.1,
+        "hM": 1.6,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 A1_대학본부_366373751 W04",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated",
+          "Only the counted interval is curated; unobserved prefix/suffix retain the legacy material rather than becoming invented blank walls."
+        ],
+        "independentCount": 1,
+        "openingGroups": 1,
+        "notes": [
+          "LOD4 source OSM 366373751 edge1 x352..385 is reversed relative to canonical W04. After reversal, one narrow window stack is visible at the far end, about s5.4..8.0 m. The blank prefix and mixed-height long wall are not assigned a repeated tower grid."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 1,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "panel:#e8eaea",
+        "glass": "#3f74a8",
+        "frame": "#a7b0b8"
+      },
+      "outside": "legacy"
+    }
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "estimated": true,
+  "building": "BLD_SCNU_C4",
+  "storeys": [
+    {
+      "hM": 3.88
+    },
+    {
+      "hM": 3.88
+    }
+  ],
+  "walls": {
+    "W05": {
+      "bays": {
+        "pitchM": 3.46585548,
+        "count": 3,
+        "offsetM": 1.4452
+      },
+      "cells": [
+        [
+          "vent",
+          "window",
+          "window"
+        ],
+        [
+          "vent",
+          "window",
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 2.6743,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 C4_환경친화형물질공장_기술혁신센터_443147 W05",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated",
+          "Exact registered source edge correspondence in surfaceEdges; automatic 0.3 m matching remains unchanged. Endpoints are checked within 1 mm, not moved."
+        ],
+        "independentCount": 3,
+        "openingGroups": 3,
+        "notes": [
+          "LOD4 x157..204: three industrial wall groups, a taller dark louver group then two lower windowed groups. Existing stepped masses clip the upper cells.",
+          "Three industrial groups are fitted between the registered body start and a 0.3 m end margin; the narrow return is not counted as another opening.",
+          "Vertical allocation follows the registered core source: 2 levels over 7.760 m. The independent image count is horizontal; heights remain estimates."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 3,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "panel:#e6e4de",
+        "glass": "#425c6c",
+        "frame": "#d6d8d6"
+      },
+      "surfaceEdges": [
+        {
+          "A": [
+            243809.1298,
+            263960.1
+          ],
+          "B": [
+            243813.0661,
+            263958.7177
+          ],
+          "source": "building-forms.json BLD_SCNU_C4/mass/1/edge/0; resolved source geometry, estimated"
+        },
+        {
+          "A": [
+            243813.0561,
+            263958.6977
+          ],
+          "B": [
+            243819.7775,
+            263956.4201
+          ],
+          "source": "building-forms.json BLD_SCNU_C4/mass/0/edge/0; resolved source geometry, estimated"
+        }
+      ]
+    }
+  }
+}

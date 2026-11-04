@@ -1,0 +1,66 @@
+{
+  "estimated": true,
+  "building": "BLD_SCNU_B6",
+  "storeys": [
+    {
+      "hM": 3.54
+    },
+    {
+      "hM": 3.54
+    }
+  ],
+  "walls": {
+    "W01": {
+      "bays": {
+        "pitchM": 4.33878489,
+        "count": 5,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 3.1239,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 B6_제1중앙공급실_52856 W01",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 5,
+        "openingGroups": 5,
+        "notes": [
+          "LOD4 x59..149: five low industrial opening groups visible at the bottom of the unroll. The tall chimney makes the upper image empty; that is not missing evidence for the low plant wall."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 5,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "brick:#8e4a3a",
+        "glass": "#5a6a6e",
+        "frame": "#d6d8d6"
+      }
+    }
+  }
+}

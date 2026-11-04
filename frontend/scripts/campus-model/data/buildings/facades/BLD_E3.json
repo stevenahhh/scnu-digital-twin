@@ -1,0 +1,44 @@
+{
+  "building": "BLD_E3",
+  "estimated": true,
+  "storeys": [
+    { "hM": 4.0, "kind": "ground" },
+    { "hM": 4.0 },
+    { "hM": 4.0 },
+    { "hM": 4.0 }
+  ],
+  "walls": {
+    "W16": {
+      "estimated": true,
+      "bays": { "pitchM": 3.4, "count": 14, "offsetM": 0.5 },
+      "recesses": [
+        { "entrance": "SD-E5-C1", "backM": 0.3, "depthM": 2.0, "hM": 4.0 }
+      ],
+      "default": "window",
+      "cells": [
+        null,
+        ["glazing", "glazing", "window", "window", "window", "window", "window", "window", "window", "window", "window", "window", "glazing", "glazing"],
+        ["glazing", "glazing", "window", "window", "window", "window", "window", "window", "window", "window", "window", "window", "glazing", "glazing"],
+        ["glazing", "glazing", "window", "window", "window", "window", "window", "window", "window", "window", "window", "window", "glazing", "glazing"]
+      ],
+      "window": { "wM": 2.55, "hM": 1.8, "sillM": 1.0 },
+      "materials": { "wall": "brick:#9b7070", "glass": "#5d7276", "frame": "#e8e8e4" },
+      "evidence": {
+        "tier": "T2",
+        "refs": [
+          "Independent VR counts in buildings/facade-counts.json: scene_e3/r and scene_e5/r, eight central ordinary groups, two flanking ordinary groups and two double-width glazing groups = fourteen structural bays",
+          "LOD4 B_2_43_6.b3dm SC090093 triangles 228/229: long-wall photograph recovered by removing the erroneous fixed 40 m seam cutoff; repetitive openings and four levels visible, total end-group count not certified",
+          "Shared loadTmFootprints and bld-node-map.json snapshot: W16 length 48.626926 m; 12 cm aerial cross-check confirms long wall and canopy relation, not window count",
+          "Four storeys across the existing 16 m GIS height; all pitch, offset, window dimensions and colours are estimates, not measurements",
+          "VR scene_e5 r columns approximately 490..700, rows 1320..1460: wide glazed entrance recessed below the canopy, not a narrow door in solid brick. The 3.6 m doorway and s=44.5070997209 anchor stay unchanged. Open only the projecting masonry from wall t=0.3 to 2.0 m over the ground storey; depth and height are estimated from the existing projection and the VR recess."
+        ],
+        "vrBayCount": 14,
+        "acceptedComparison": "independent VR per-wall count, Orchestrator decision 2026-11-03",
+        "lod4BayCount": null,
+        "lod4Comparison": "unresolved: source exists but the complete count is not readable at its effective approximately 184x114 pixel resolution",
+        "note": "Authoritative curated seed. The ground row is estimated under tree occlusion; SD-E5-C1 supplies the exact stored entrance anchor without changing it. Decorative orange cladding and other walls remain todo 27 curation."
+      }
+    }
+  },
+  "fallbackReason": "Only W16 is approved as the E3 pilot. Other walls retain the estimated legacy look pending independent per-wall curation."
+}

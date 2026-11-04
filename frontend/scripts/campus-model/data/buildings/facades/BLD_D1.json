@@ -1,0 +1,157 @@
+{
+  "estimated": true,
+  "building": "BLD_D1",
+  "storeys": [
+    {
+      "hM": 3.77
+    },
+    {
+      "hM": 3.77
+    },
+    {
+      "hM": 3.77
+    }
+  ],
+  "walls": {
+    "W01": {
+      "bays": {
+        "pitchM": 3.25795454,
+        "count": 7,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "blank",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "blank",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "blank",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 2.3457,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 D1_창업보육센터_69208 W01",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 7,
+        "openingGroups": 6,
+        "notes": [
+          "LOD4 x60..154: one wide dark end group, then six paired opening groups. Three storeys from the current mass; obscured lower rows are estimated.",
+          "Vertical allocation follows the registered main source: 3 levels over 11.310 m. The independent image count is horizontal; heights remain estimates."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 7,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "brick:#a8553f",
+        "glass": "#3f6f8c",
+        "frame": "#d9dcdc"
+      }
+    },
+    "W02": {
+      "bays": {
+        "pitchM": 2.78378704,
+        "count": 5,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 2.0043,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 D1_창업보육센터_69208 W02",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated",
+          "Exact registered source edge correspondence in surfaceEdges; automatic 0.3 m matching remains unchanged. Endpoints are checked within 1 mm, not moved."
+        ],
+        "independentCount": 5,
+        "openingGroups": 5,
+        "notes": [
+          "LOD4 x155..214: five narrow upper opening groups; the lower trees do not change the counted top row.",
+          "Vertical allocation follows the registered main source: 3 levels over 11.310 m. The independent image count is horizontal; heights remain estimates."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 5,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "brick:#a8553f",
+        "glass": "#3f6f8c",
+        "frame": "#d9dcdc"
+      },
+      "surfaceEdges": [
+        {
+          "A": [
+            243722.0492,
+            263967.8447
+          ],
+          "B": [
+            243736.0788,
+            263963.9412
+          ],
+          "source": "building-forms.json BLD_D1/mass/0/edge/7; resolved source geometry, estimated"
+        }
+      ]
+    }
+  }
+}

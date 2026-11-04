@@ -1,0 +1,655 @@
+{
+  "description": "Building-by-building facade curation and retained wall-specific limitations. Each installed grid records an independent LOD4 or VR count. Canonical EPSG:5186 lengths are preserved; dimensions, colours and height allocation remain estimates. Source panoramas and unfolded imagery are not shipped.",
+  "records": {
+    "BLD_E3": {
+      "estimated": true,
+      "scenes": [
+        "scene_e3",
+        "scene_e5",
+        "scene_e4",
+        "scene_d3"
+      ],
+      "lod4Record": "70991",
+      "fallbackReason": "W16 retains fourteen independently counted VR bays; its unchanged 3.6 m entrance is exposed through the VR-observed ground recess, without moving SD-E5-C1. W15 and other end returns remain ungridded; SD-E5-C2 retains its named +2.120 degree bearing gap.",
+      "curatedWalls": [
+        "W16"
+      ]
+    },
+    "BLD_E5": {
+      "estimated": true,
+      "scenes": [
+        "scene_e5",
+        "scene_e3",
+        "scene_e7",
+        "scene_e8"
+      ],
+      "lod4Record": "688780",
+      "fallbackReason": "Remaining W00, W01, W02, W03, W04, W05, W07, W08, W09, W10, W11, W12, W13, W14, W15, W16, W17, W18, W19, W20, W21, W22, W23, W24, W26, W27, W28, W29, W30: The existing W25 ten-bay grid and added W06 four-group grid are certified; W19 stair returns and remaining narrow wings remain partial in LOD4.",
+      "curatedWalls": [
+        "W25",
+        "W06"
+      ]
+    },
+    "BLD_A1": {
+      "estimated": true,
+      "scenes": [
+        "scene_a1",
+        "scene_a2",
+        "scene_a5"
+      ],
+      "lod4Record": "443468 / 366373751",
+      "fallbackReason": "Remaining W00, W01, W02, W03, W05: The OSM LOD4 ring is reversed relative to the canonical wall order, not a different building. W04’s narrow end stack is certified after reversing it; W05 mixes tower and low podium intervals, and the other unfolded walls are mostly missing.",
+      "curatedWalls": [
+        "W04"
+      ]
+    },
+    "BLD_SCNU_A1": {
+      "estimated": true,
+      "scenes": [
+        "scene_a1",
+        "scene_a2"
+      ],
+      "lod4Record": "443468",
+      "fallbackReason": "Remaining W00, W01, W02, W03, W04, W06, W07: Only W05’s tall glazed end is readable; its long missing prefix and tower/podium transitions are not assigned a fabricated rhythm.",
+      "curatedWalls": [
+        "W05"
+      ]
+    },
+    "BLD_SCNU_R688057": {
+      "estimated": true,
+      "scenes": [
+        "scene_a1",
+        "scene_a5"
+      ],
+      "lod4Record": "688057",
+      "fallbackReason": "The office annex LOD4 image contains only one narrow vertical strip with vegetation. In the office VR views it is merged behind the main low wing; no independently countable full annex wall is visible."
+    },
+    "BLD_SCNU_A2": {
+      "estimated": true,
+      "scenes": [
+        "scene_a2",
+        "scene_b4"
+      ],
+      "lod4Record": "301524",
+      "fallbackReason": "Remaining W00, W01, W02, W03, W04, W06, W07, W08, W09, W10, W11, W12, W13: The remaining pharmacy faces include stepped blank ends and punched rear windows; the ten W05 glazing groups do not define those other patterns.",
+      "curatedWalls": [
+        "W05"
+      ]
+    },
+    "BLD_SCNU_A3": {
+      "estimated": true,
+      "scenes": [
+        "scene_a3",
+        "scene_e1"
+      ],
+      "lod4Record": null,
+      "fallbackReason": "Remaining W00, W01, W02, W03, W04, W05, W06: The five-storey A3 has an open pilotis base, balconies and unequal side walls. W07 records the thirteen observed upper columns but does not invent doors in the open base or mirror the front onto its sides.",
+      "curatedWalls": [
+        "W07"
+      ]
+    },
+    "BLD_A4": {
+      "estimated": true,
+      "scenes": [
+        "scene_a4",
+        "scene_a13",
+        "scene_a15"
+      ],
+      "lod4Record": "682275",
+      "fallbackReason": "Remaining W00, W01, W02, W03, W04, W05, W06, W07, W08, W09, W10, W11, W12, W13, W14, W15, W16, W17, W18, W19, W20, W21, W22, W23, W24, W25, W26, W27, W28, W29, W30, W31, W32, W33, W35, W36, W37, W38: The A4/A5 lower links and other stepped wings are not the six complete W34 columns. Their distinct heights remain supplied by the mass source rather than a copied tall grid.",
+      "curatedWalls": [
+        "W34"
+      ]
+    },
+    "BLD_SCNU_A6": {
+      "estimated": true,
+      "scenes": [
+        "scene_a6",
+        "scene_e6",
+        "scene_a4"
+      ],
+      "lod4Record": "767513",
+      "fallbackReason": "Remaining W00, W01, W02, W03, W04, W06, W07, W08, W09, W10, W11, W12, W13, W14, W15, W16, W17, W18, W19, W20, W21, W22, W23, W24, W25, W26, W27, W28, W29, W30, W31, W32, W33, W34, W35, W36, W37, W38, W39, W40, W41, W42, W43: Most LOD4 perimeter is missing. Only the six complete W05 stacks after its missing prefix are certified; adjacent tower wings are not inferred.",
+      "curatedWalls": [
+        "W05"
+      ]
+    },
+    "BLD_SCNU_A7": {
+      "estimated": true,
+      "scenes": [
+        "scene_a9",
+        "scene_a10",
+        "scene_a6"
+      ],
+      "lod4Record": "443112",
+      "fallbackReason": "W14 now has the four opening groups independently counted across scene_a9 l/f. Arched heads remain approximate in the existing rectangular atlas glyph. Other administration wings still have fragmented LOD4 or obscured/uneven windows; their rhythm is not copied from W14.",
+      "curatedWalls": [
+        "W14"
+      ]
+    },
+    "BLD_Dormitory_Building.001": {
+      "estimated": true,
+      "scenes": [
+        "scene_a8",
+        "scene_a9",
+        "scene_a13"
+      ],
+      "lod4Record": "688902",
+      "fallbackReason": "Remaining W00, W01: The remaining tower returns and rear balcony wings are stepped; W02’s three-stair sequence and W03’s blank end are the only certified patterns here.",
+      "curatedWalls": [
+        "W02",
+        "W03"
+      ]
+    },
+    "BLD_Dormitory_Building.002": {
+      "estimated": true,
+      "scenes": [
+        "scene_a8",
+        "scene_f3"
+      ],
+      "lod4Record": "85389",
+      "fallbackReason": "Remaining W02, W03: This four-storey Hyangrim footprint remains separate from the tall tower. Its rear stepped returns are not covered by the W00 fifteen-column front and W01 blank end.",
+      "curatedWalls": [
+        "W00",
+        "W01"
+      ]
+    },
+    "BLD_Dormitory_Building.003": {
+      "estimated": true,
+      "scenes": [
+        "scene_a8",
+        "scene_a9"
+      ],
+      "lod4Record": "688840",
+      "fallbackReason": "Remaining W00, W03: The seven-storey annex’s remaining returns are only fragmented in LOD4; W02’s five-column stack is not used as a template for those edges.",
+      "curatedWalls": [
+        "W02",
+        "W01"
+      ]
+    },
+    "BLD_Dormitory_Building": {
+      "estimated": true,
+      "scenes": [
+        "scene_a9",
+        "scene_a10",
+        "scene_a6"
+      ],
+      "lod4Record": "301234",
+      "fallbackReason": "Remaining W00, W01, W02, W03, W05, W06, W08, W09: The remaining Cheongun stair ends and courtyard returns have blank areas and orange features that differ from W04/W07.",
+      "curatedWalls": [
+        "W04",
+        "W07"
+      ]
+    },
+    "BLD_Dormitory_Building.004": {
+      "estimated": true,
+      "scenes": [
+        "scene_a13",
+        "scene_a15",
+        "scene_a16"
+      ],
+      "lod4Record": null,
+      "fallbackReason": "Remaining W00, W01, W02, W03, W04, W05, W06, W07, W08, W09, W10, W11, W12, W13: The legacy node is A13 Ungji. Its registered source allocates eight levels; the cropped VR view certifies the single-window stack, not total height. Only its single W14 end-window stack is certified; the two inward curtain walls and open base require distinct panel and opening treatment.",
+      "curatedWalls": [
+        "W14"
+      ]
+    },
+    "BLD_A10": {
+      "estimated": true,
+      "scenes": [
+        "scene_a10",
+        "scene_a9",
+        "scene_a12"
+      ],
+      "lod4Record": "301200",
+      "fallbackReason": "Remaining W00, W01, W02, W03, W05, W07, W08, W09: Other A10/A11 wings have different heights and dark end strips. The long W04 run and seven complete W06 openings are not mirrored onto the low supply link.",
+      "curatedWalls": [
+        "W06",
+        "W04"
+      ]
+    },
+    "BLD_SCNU_A12": {
+      "estimated": true,
+      "scenes": [
+        "scene_a12"
+      ],
+      "lod4Record": "85379",
+      "fallbackReason": "Remaining W00, W02, W03, W04, W05, W06, W07, W08, W09: The long Ujeongwon front has uneven balcony/stair widths. Its three-stack W01 side is certified without imposing equal-width bays on that irregular front.",
+      "curatedWalls": [
+        "W01"
+      ]
+    },
+    "BLD_SCNU_R69065": {
+      "estimated": true,
+      "scenes": [
+        "scene_a15",
+        "scene_a16",
+        "scene_a19"
+      ],
+      "lod4Record": "69065",
+      "fallbackReason": "The stadium headquarters is a low stand with a long canopy and open seating. LOD4 contains mostly canopy/roof projection and a short shaded rear strip. Those edges are not repeated enclosed window bays, so the existing estimated stand facade is retained."
+    },
+    "BLD_SCNU_R688980": {
+      "estimated": true,
+      "scenes": [
+        "scene_a16"
+      ],
+      "lod4Record": "688980",
+      "fallbackReason": "The staff-tennis hut occupies only a tiny fragment in the LOD4 unroll and is partly behind court fencing/vegetation in scene_a16. The source cannot resolve both hut-wall ends and a count of openings; no ordinary classroom grid is assigned."
+    },
+    "BLD_A12": {
+      "estimated": true,
+      "scenes": [
+        "scene_a17",
+        "scene_a19",
+        "scene_001"
+      ],
+      "lod4Record": "768553",
+      "fallbackReason": "Remaining W00, W01, W02, W03, W04, W05, W06, W07, W08, W09, W10, W11, W12, W13, W14, W15, W16, W17, W18, W19, W20, W21, W22, W23, W24, W25, W26, W27, W29, W30, W31, W32, W33, W34, W35, W36, W37, W38, W39, W40, W41, W42, W43, W44, W45, W46, W47, W48: This is the A17/A18 gym, not Ujeongwon. Other curved/gabled volumes have high louvers and blank walls, unlike the eight W28 openings on the lower wing.",
+      "curatedWalls": [
+        "W28"
+      ]
+    },
+    "BLD_A12.001": {
+      "estimated": true,
+      "scenes": [
+        "scene_a17",
+        "scene_f2",
+        "scene_001"
+      ],
+      "lod4Record": null,
+      "fallbackReason": "The gym appendage is a curated legacy split with no separate matched LOD4 footprint. VR views show the gym roof/ends but do not independently isolate this split node's opening count. It must not inherit Ujeongwon or the main gym's full-perimeter grid."
+    },
+    "BLD_B1": {
+      "estimated": true,
+      "scenes": [
+        "scene_b1",
+        "scene_b2",
+        "scene_a19"
+      ],
+      "lod4Record": "768406",
+      "fallbackReason": "Remaining W00, W01, W02, W03, W04, W05, W06, W07, W08, W09, W10, W11, W12, W13, W14, W15, W16, W17, W19, W20, W21, W22, W23, W24: The museum’s irregular exhibition walls and entrance glazing are not a repeated classroom rhythm. Only the two small W18 opening stacks have a complete readable correspondence.",
+      "curatedWalls": [
+        "W18"
+      ]
+    },
+    "BLD_B2": {
+      "estimated": true,
+      "scenes": [
+        "scene_b2",
+        "scene_b3",
+        "scene_b4"
+      ],
+      "lod4Record": "768585",
+      "fallbackReason": "Remaining W00, W01, W02, W03, W04, W05, W06, W07, W08, W09, W11, W12, W13: The tall W10 auditorium end is blank. Red low panels and the glazed lobby occupy different wall/height zones and are not converted into repeated windows.",
+      "curatedWalls": [
+        "W10"
+      ]
+    },
+    "BLD_B3": {
+      "estimated": true,
+      "scenes": [
+        "scene_b3",
+        "scene_b7",
+        "scene_002"
+      ],
+      "lod4Record": "135996",
+      "fallbackReason": "Remaining W00, W01, W02, W03, W04, W06, W07, W08, W09, W10, W11, W12, W13, W14, W15: The front entrance-wall correspondence remains disputed in task 20; the two wide W05 groups do not certify the front door or long ribbon count.",
+      "curatedWalls": [
+        "W05"
+      ]
+    },
+    "BLD_B4": {
+      "estimated": true,
+      "scenes": [
+        "scene_b4",
+        "scene_b3"
+      ],
+      "lod4Record": "72362",
+      "fallbackReason": "Remaining W00, W01, W02, W03, W04, W05, W06, W07, W08, W09, W10, W11, W12, W14, W15: W00 has nine visible VR groups but an empty LOD4 interval; stair returns and the tree-screened rear need separate endpoint checks, not a copy of W13.",
+      "curatedWalls": [
+        "W13"
+      ]
+    },
+    "BLD_B5_Greenhouse": {
+      "estimated": true,
+      "scenes": [
+        "scene_002",
+        "scene_c1"
+      ],
+      "lod4Record": "67931",
+      "fallbackReason": "The greenhouse has translucent roof/wall framing, not ordinary storey windows. LOD4 unroll blends roof framing and wall glass; in VR it is distant and screened by trees/adjacent B6. A complete wall framing count is not independently readable."
+    },
+    "BLD_SCNU_B6": {
+      "estimated": true,
+      "scenes": [
+        "scene_002",
+        "scene_c2",
+        "scene_c1"
+      ],
+      "lod4Record": "52856",
+      "fallbackReason": "Remaining W00, W02, W03, W04, W05, W06, W07, W08, W09: The chimney and the other low utility walls remain separate from W01’s five visible plant-wall groups; empty space above the low wall is not counted as floors.",
+      "curatedWalls": [
+        "W01"
+      ]
+    },
+    "BLD_B7": {
+      "estimated": true,
+      "scenes": [
+        "scene_b7",
+        "scene_f1"
+      ],
+      "lod4Record": "1486502962",
+      "fallbackReason": "Remaining W00, W01, W03, W04, W05, W06, W07, W08: The old LOD4 is a 4.5 m predecessor. Only the current left tower’s seventeen independently counted VR panels are curated; the stepped right block, base and angled supports are not inferred from the obsolete model.",
+      "curatedWalls": [
+        "W02"
+      ]
+    },
+    "BLD_C1": {
+      "estimated": true,
+      "scenes": [
+        "scene_c1",
+        "scene_c3",
+        "scene_d1"
+      ],
+      "lod4Record": "300791 (shared split)",
+      "fallbackReason": "The rear library legacy node is a split of the C1 GIS footprint rather than an independent LOD4 perimeter. LOD4's shared unroll mixes sloping roof, tall glazing and low wings. VR rear/end views do not resolve the split's exact full-wall endpoint/count, so the other library node's cells are not reused."
+    },
+    "BLD_C1.001": {
+      "estimated": true,
+      "scenes": [
+        "scene_c1",
+        "scene_c2",
+        "scene_e1"
+      ],
+      "lod4Record": "300791",
+      "fallbackReason": "Remaining W00, W02, W03, W04, W05, W06, W07, W08, W09, W10, W11, W12, W13, W14, W15: Only the two complete tall glazed panels on W01 are certified; the long front mixes recessed glazing, low wings and roof projection, requiring separate intervals.",
+      "curatedWalls": [
+        "W01"
+      ]
+    },
+    "BLD_SCNU_C2": {
+      "estimated": true,
+      "scenes": [
+        "scene_c2",
+        "scene_c1"
+      ],
+      "lod4Record": "443467",
+      "fallbackReason": "Remaining W00, W01, W03, W04, W05, W07, W08, W09, W10, W11, W12, W13, W14, W15: The remaining recessed stair/entrance returns are not straight copies of W02/W06; their lower rows are screened in the close VR scene.",
+      "curatedWalls": [
+        "W02",
+        "W06"
+      ]
+    },
+    "BLD_Training Lab Building": {
+      "estimated": true,
+      "scenes": [
+        "scene_c3",
+        "scene_d1",
+        "scene_c5"
+      ],
+      "lod4Record": "443508",
+      "fallbackReason": "Remaining W00, W01, W02, W03, W06, W07, W08, W09, W10, W11, W12, W13, W14, W15, W16, W17, W18, W19, W20, W21, W22: The laboratory’s remaining high/low returns mix ribbon glazing and stairs; the four W04 groups and one W05 vent stack do not certify those transitions.",
+      "curatedWalls": [
+        "W04",
+        "W05"
+      ]
+    },
+    "BLD_SCNU_C4": {
+      "estimated": true,
+      "scenes": [
+        "scene_c3",
+        "scene_002"
+      ],
+      "lod4Record": "443147",
+      "fallbackReason": "Remaining W00, W01, W02, W03, W04: The remaining factory faces are dark or roof-projected, unlike W05’s three industrial opening/louver groups. No campus classroom rhythm is copied to them.",
+      "curatedWalls": [
+        "W05"
+      ]
+    },
+    "BLD_SCNU_C5": {
+      "estimated": true,
+      "scenes": [
+        "scene_c5",
+        "scene_d1"
+      ],
+      "lod4Record": null,
+      "fallbackReason": "Remaining W00, W01, W02, W03, W04, W05, W06, W07, W08, W09: The daycare’s lower right wing and irregular entrance have different heights from the single W10 window stack; those surfaces are not repeated from the two-storey brick end.",
+      "curatedWalls": [
+        "W10"
+      ]
+    },
+    "BLD_D1": {
+      "estimated": true,
+      "scenes": [
+        "scene_d1",
+        "scene_c3",
+        "scene_c5"
+      ],
+      "lod4Record": "69208",
+      "fallbackReason": "Remaining W00, W03: The front W03 still has an offset entrance and a partial LOD4 patch; its door and full count are not inferred from the two clearer sides.",
+      "curatedWalls": [
+        "W01",
+        "W02"
+      ]
+    },
+    "BLD_D2": {
+      "estimated": true,
+      "scenes": [
+        "scene_d2",
+        "scene_d1",
+        "scene_d3",
+        "scene_d5"
+      ],
+      "lod4Record": "44099",
+      "fallbackReason": "Remaining W00, W01, W02, W03, W04, W05, W06, W07, W08, W09, W10, W11, W12, W13, W14, W15, W16, W17, W18, W20, W22, W23, W24, W25, W26, W27, W28, W29, W30, W31, W32, W33, W34, W35, W36, W37, W38, W39, W40: The remaining 39-edge complex includes recessed stair ends and differently exposed wings. W19/W21 counts are local, not a whole-building repeat.",
+      "curatedWalls": [
+        "W19",
+        "W21"
+      ]
+    },
+    "BLD_D3": {
+      "estimated": true,
+      "scenes": [
+        "scene_d3",
+        "scene_d2",
+        "scene_e2"
+      ],
+      "lod4Record": "312548",
+      "fallbackReason": "Remaining W00, W01, W02, W03, W04, W05, W06, W07, W08, W09, W10, W12, W13, W14, W15, W16: The short brick ends have isolated small vents, unlike the seven repeated groups on W11. Their positions are not inferred by mirroring the regular side.",
+      "curatedWalls": [
+        "W11"
+      ]
+    },
+    "BLD_D4": {
+      "estimated": true,
+      "scenes": [
+        "scene_d4",
+        "scene_e2",
+        "scene_d3"
+      ],
+      "lod4Record": "133154",
+      "fallbackReason": "Remaining W00, W02, W03, W04, W05, W06, W07: The long ribbon fronts need their own structural-group count; the single narrow W01 opening stack only corrects the otherwise blank stair end.",
+      "curatedWalls": [
+        "W01"
+      ]
+    },
+    "BLD_SCNU_D5": {
+      "estimated": true,
+      "scenes": [
+        "scene_d5"
+      ],
+      "lod4Record": null,
+      "fallbackReason": "Remaining W00, W02, W03, W04, W05, W06, W07: The side beyond the f/r seam is severely foreshortened. W01 records the 3+6+3 front columns, omitting windows in the open portico and top middle balcony.",
+      "curatedWalls": [
+        "W01"
+      ]
+    },
+    "BLD_E1": {
+      "estimated": true,
+      "scenes": [
+        "scene_e1",
+        "scene_c1",
+        "scene_a3",
+        "scene_e3"
+      ],
+      "lod4Record": "53819",
+      "fallbackReason": "Remaining W00, W01, W02, W03, W04, W05, W06, W07, W08, W09, W10, W11, W12, W14, W15, W16, W17, W18, W19, W20, W21, W22, W23, W24, W25, W26, W27, W28, W29, W30, W31, W32, W33, W34: Recessed entrances and low links have different exposed heights from W13; the same seven-group rhythm is not copied onto those returns.",
+      "curatedWalls": [
+        "W13"
+      ]
+    },
+    "BLD_SCNU_E2": {
+      "estimated": true,
+      "scenes": [
+        "scene_e2",
+        "scene_e3",
+        "scene_e6"
+      ],
+      "lod4Record": "85392",
+      "fallbackReason": "Remaining W01, W02, W03, W04, W05, W06, W07, W08, W09, W10, W11, W12, W13, W14, W15, W16, W17, W18, W19, W20, W21, W22, W23, W24, W25, W26, W27, W28, W29: The scene_e2 first-hit identity disagrees with the facade label. W00 is matched directly to LOD4; the other recessed stair and orange entrance walls are not inferred from the disputed rays.",
+      "curatedWalls": [
+        "W00"
+      ]
+    },
+    "BLD_SCNU_E4": {
+      "estimated": true,
+      "scenes": [
+        "scene_e4",
+        "scene_d1",
+        "scene_d3"
+      ],
+      "lod4Record": "137033",
+      "fallbackReason": "Remaining W00, W01, W02, W03, W04, W05, W06, W07, W09, W10, W11, W12, W13, W14, W15, W16, W17, W18, W19, W20, W21, W22: The W16 stair/roof collage and the entrance’s existing first-hit disagreement remain unresolved; W08’s six rear groups do not certify that entrance.",
+      "curatedWalls": [
+        "W08"
+      ]
+    },
+    "BLD_E6": {
+      "estimated": true,
+      "scenes": [
+        "scene_e6",
+        "scene_e7",
+        "scene_a12"
+      ],
+      "lod4Record": "137008",
+      "fallbackReason": "Remaining W00, W01, W03, W04, W05, W06, W07, W08, W09, W10, W11: The long W08 front remains dark/partial in LOD4 and must not inherit W02’s three-group side pattern. The opposite W00 is a different face.",
+      "curatedWalls": [
+        "W02"
+      ]
+    },
+    "BLD_E7": {
+      "estimated": true,
+      "scenes": [
+        "scene_e7",
+        "scene_e8",
+        "scene_e6"
+      ],
+      "lod4Record": "367126939",
+      "fallbackReason": "Remaining W00, W01, W02, W03, W04, W05, W06, W07, W08, W09, W10, W11, W12, W13, W14: The stair and entrance on W02 are not the seven-group W15 rear run. The uncurated recessed glazed core and blank returns retain their own estimated look.",
+      "curatedWalls": [
+        "W15"
+      ]
+    },
+    "BLD_E8": {
+      "estimated": true,
+      "scenes": [
+        "scene_e8",
+        "scene_e7",
+        "scene_d3"
+      ],
+      "lod4Record": "301217",
+      "fallbackReason": "Remaining W00, W01, W02, W03, W04, W05, W06, W07, W08, W09, W10, W11, W12, W13, W14, W15, W17, W18, W19: Round stair openings and lower stepped wings remain distinct from W16’s ten rectangular groups; round windows are not approximated as a repeated rectangular grid.",
+      "curatedWalls": [
+        "W16"
+      ]
+    },
+    "BLD_SCNU_E8": {
+      "estimated": true,
+      "scenes": [
+        "scene_e8"
+      ],
+      "lod4Record": "685767",
+      "fallbackReason": "The separate E8 appendage has only one thin vertical textured strip and almost no wall in the LOD4 unroll. The adjacent tall E8 tower dominates the VR view. No independent complete appendage opening count is readable, so the main tower's grid is not reused."
+    },
+    "BLD_SCNU_F1": {
+      "estimated": true,
+      "scenes": [
+        "scene_f1",
+        "scene_f2",
+        "scene_f3"
+      ],
+      "lod4Record": "838573769",
+      "fallbackReason": "Remaining W00, W01, W02, W03, W04, W05, W06, W07, W08, W10, W11, W12, W13, W14, W15, W16, W17, W18, W19, W20, W21, W22, W23, W24, W25, W26, W27: Curved cladding, low curtain walls and roof projection remain different surfaces; only the two complete tall W09 glazed slots are certified.",
+      "curatedWalls": [
+        "W09"
+      ]
+    },
+    "BLD_SCNU_F2": {
+      "estimated": true,
+      "scenes": [
+        "scene_f2",
+        "scene_f3"
+      ],
+      "lod4Record": "138316",
+      "fallbackReason": "Remaining W00, W01, W02, W04, W05, W06, W07, W08, W09: The LOD4 back half is missing except for thin end strips; the seven W03 groups cannot certify the rear facade or the separate entrance break.",
+      "curatedWalls": [
+        "W03"
+      ]
+    },
+    "BLD_SCNU_R138317": {
+      "estimated": true,
+      "scenes": [
+        "scene_f3"
+      ],
+      "lod4Record": "138317",
+      "fallbackReason": "The clear right-side broad four-pane window is curated as one opening group on W01. The left door area and the other hut faces retain the legacy look; no unanchored door or pane-as-bay count is invented. Local footprint/view endpoint discrepancy remains an estimated placement limitation.",
+      "curatedWalls": [
+        "W01"
+      ]
+    },
+    "GIS건물통합정보 AL_D010_12_20261009.shp record 688089": {
+      "estimated": true,
+      "scenes": [],
+      "lod4Record": null,
+      "fallbackReason": "Anonymous campus footprint 688089 has no canonical BLD id, saved wall snapshot or identified scene-building correspondence. It is outside the 44 labelled LOD4 facade records; its assumed-height mass must not receive an invented window count."
+    },
+    "GIS건물통합정보 AL_D010_12_20261009.shp record 688060": {
+      "estimated": true,
+      "scenes": [],
+      "lod4Record": null,
+      "fallbackReason": "Anonymous campus footprint 688060 has no floor data or canonical wall IDs. None of the 42 scene-building rows identifies this record, and the labelled LOD4 facade inventory does not include it. The existing assumed-height facade remains an explicit unresolved fallback."
+    },
+    "GIS건물통합정보 AL_D010_12_20261009.shp record 689515": {
+      "estimated": true,
+      "scenes": [],
+      "lod4Record": null,
+      "fallbackReason": "Anonymous campus footprint 689515 is still selected as a mass but has no named BLD node or wall snapshot. No source-to-visible-facade match exists in the reviewed VR/LOD4 tables; a nearby building's window count is not assigned to it."
+    },
+    "GIS건물통합정보 AL_D010_12_20261009.shp record 688859": {
+      "estimated": true,
+      "scenes": [],
+      "lod4Record": null,
+      "fallbackReason": "Anonymous campus footprint 688859 has an assumed three-storey height and no named facade source. The 44 labelled LOD4 records and 42 scene rows do not identify its walls; the facade remains estimated rather than treating that assumed height as a counted elevation."
+    },
+    "GIS건물통합정보 AL_D010_12_20261009.shp record 690066": {
+      "estimated": true,
+      "scenes": [],
+      "lod4Record": null,
+      "fallbackReason": "Anonymous campus footprint 690066 lacks a canonical BLD id, saved wall frame and independent VR match. Its generic mass is retained under the no-building-removal scope, with no evidence-backed bay count claimed."
+    },
+    "BLD_SCNU_F4": {
+      "estimated": true,
+      "scenes": [
+        "scene_f3",
+        "scene_a12"
+      ],
+      "lod4Record": "684234",
+      "fallbackReason": "Remaining W00, W03: The remaining housing faces are screened by trees and include balcony doors; the five-column front and blank end are not mirrored around the building.",
+      "curatedWalls": [
+        "W02",
+        "W01"
+      ]
+    }
+  }
+}

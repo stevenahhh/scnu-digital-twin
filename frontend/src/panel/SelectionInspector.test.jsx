@@ -196,4 +196,10 @@ describe("SelectionInspector 추정 caption", () => {
     render(<SelectionInspector popup={popupOf()} onClose={() => {}} title="BLD_D4" />);
     expect(caption()).toBeNull();
   });
+
+  it("shows an estimate caption when only the facade is estimated", () => {
+    render(<SelectionInspector popup={popupOf()} onClose={() => {}} title="사범대학" estimate={{ heightLineage: "gis-height", facadeEstimated: true }} />);
+    expect(caption()).not.toBeNull();
+    expect(describeEstimate({ heightLineage: "gis-height", facadeEstimated: true })).not.toBe(describeEstimate({ heightLineage: "gis-height" }));
+  });
 });
