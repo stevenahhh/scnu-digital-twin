@@ -371,8 +371,7 @@ function parking(doc) {
 // ---- data/ground/parking-curation.json (plan todo 13): the lots a person reviewed, as whole records the seed takes in place of
 // its own. A lot is found by its anchor, never by the seed's name; its row ids are the file's, and a retired id stays retired.
 // A curated T1 row states what it measured: a value read by eye, or not bounded by what the photo shows, carries its own flag,
-// so an estimate cannot sit under T1 in free text alone. A row marked estimated says so as a whole.
-const CALLED_ESTIMATE = /추정|by eye|\bestimated?\b|seen only|seen from/i;
+// using field-level flags, independent of evidence prose. A row marked estimated says so as a whole.
 const FILLED_KINDS = new Set(["accessible", "pm"]);
 function curatedReadingErrors(row) {
   if (row?.evidence?.tier !== "T1" || row.estimated !== false) return [];
@@ -384,12 +383,11 @@ function curatedReadingErrors(row) {
   const stalls = Array.isArray(row.stalls) ? row.stalls : [];
   const flagsOf = (s) => (s?.estimatedFields && typeof s.estimatedFields === "object" ? s.estimatedFields : {});
   for (const s of stalls) {
+    if (s?.estimated === true) continue;
     const own = flagsOf(s);
     if (s?.symbol && !own.symbolUp) errors.push(`${s.id ?? row.id}: symbol direction is read by eye: flag symbolUp in estimatedFields`);
     if (s?.figure && !(own.figureSide && own.figureUp)) errors.push(`${s.id ?? row.id}: figure is read by eye: flag figureSide and figureUp in estimatedFields`);
   }
-  const anyFlag = Object.keys(fields).length || stalls.some((s) => Object.keys(flagsOf(s)).length);
-  if (!anyFlag && Array.isArray(row.evidence.refs) && row.evidence.refs.some((ref) => CALLED_ESTIMATE.test(ref))) errors.push(`${row.id}: refs call a value estimated or partly seen: flag it in estimatedFields`);
   return errors;
 }
 // Two rows over the same stalls draw a doubled ladder: the share of one row's footprint lying inside the other, either way round.

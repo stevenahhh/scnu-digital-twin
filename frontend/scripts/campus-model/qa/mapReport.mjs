@@ -9,10 +9,11 @@ import { tmToPixel, wgs84ToTm } from "../../../src/geo/epsg5186.mjs";
 import { paintMasks } from "../lib/paintMasks.mjs";
 import { occlusionMask } from "../lib/occlusion.mjs";
 import { roadMarkingPlan } from "../stages/roadMarkings.mjs";
-import { TOLERANCES, compareRoadInventory, lotSummary, missingDividers, parkingObjects, physicalRoadCrossings, roadAcceptance, roadMapObjects, roadObjectInventory, rowSummary, scoreObjects } from "./mapCompare.mjs";
+import { TOLERANCES, compareRoadInventory, lotSummary, missingDividers, physicalRoadCrossings, roadAcceptance, roadMapObjects, roadObjectInventory, rowSummary, scoreObjects } from "./mapCompare.mjs";
+import { parkingMapObjects } from "./parkingMapObjects.mjs";
 
 export function createMapComparison({ sheet, masks = {}, pieces, meshReport, rawGlbSha256, roadSourceHashes,
-  bindings, reference, parkingDoc, nodes = [], identity = null, sheetName = null, maskSources = {}, optionalAerial }) {
+  bindings, reference, parkingDoc, paintSuppressed = [], nodes = [], identity = null, sheetName = null, maskSources = {}, optionalAerial }) {
   if (!sheet) throw new TypeError("mandatory sheet unavailable");
   if (!rawGlbSha256 || meshReport.rawGlbSha256 !== rawGlbSha256) throw new RangeError("stale mesh report: raw GLB hash mismatch; rebuild the GLB");
   if (identity && identity.rawGlbSha256 !== rawGlbSha256) throw new RangeError("map identity mismatch: rawGlbSha256");
@@ -28,8 +29,8 @@ export function createMapComparison({ sheet, masks = {}, pieces, meshReport, raw
     segmentIds: inventory.objects.filter(o => o.pieces.some(p => /^(centre_line|lane_line|edge_line|guide_|kerb)/.test(p.kind))).map(o => o.id),
   }) : null;
   const objects = roadMapObjects(pieces, meshReport.emission);
-  const parkingScored = parkingObjects(parkingDoc);
-  objects.push(...parkingScored.map((o) => (o.geometry.type === "line" ? { ...o, geometry: { type: "line", parts: [o.geometry.coords] } } : o)));
+  const parking = parkingMapObjects(parkingDoc, meshReport.paintEmission ?? [], paintSuppressed);
+  objects.push(...parking.objects);
   const scored = scoreObjects(objects, sheet, masks);
   const physicalObjects = physicalRoadCrossings(objects, reference?.physicalCrossings ?? []);
   const physicalScores = scoreObjects(physicalObjects, sheet, masks).map((score, i) => ({
@@ -46,7 +47,7 @@ export function createMapComparison({ sheet, masks = {}, pieces, meshReport, raw
       const d = Math.hypot(n.gisCentreTm[0] - c[0], n.gisCentreTm[1] - c[1]);
       if (!best || d < best.d) best = { id: n.nodeId, d };
     }
-    r.centreTm = c.map((v) => Math.round(v * 100) / 100);
+    r.centreTm = c.every(Number.isFinite) ? c.map((v) => Math.round(v * 100) / 100) : null;
     r.near = best && best.d <= 80 ? best.id : null;
     r.objectId = objects[i].objectId ?? null;
     r.ownerId = objects[i].ownerId ?? null;
@@ -64,8 +65,8 @@ export function createMapComparison({ sheet, masks = {}, pieces, meshReport, raw
       missing: r.status === "missing" || r.status === "fn", referenceStatus: r.status,
     });
   }
-  const missing = missingDividers(parkingDoc, parkingScored, sheet, masks);
-  scored.push(...missing);
+  const missing = missingDividers(parkingDoc, parking.objects, sheet, masks);
+  scored.push(...parking.gaps, ...missing);
   const rows = rowSummary(parkingDoc, scored);
   const lots = lotSummary(parkingDoc, scored);
   const overList = scored.filter((r) => r.over);
@@ -85,7 +86,7 @@ export function createMapComparison({ sheet, masks = {}, pieces, meshReport, raw
   }
   const report = {
     schemaVersion: 1, identity, sheet: sheetName, metresPerPixel: sheet.gsdM,
-    source: "Road_Markings emitted triangle union and triangle cross-section centrelines, EPSG:5186",
+    source: "Road_Markings road emission and final Float32 parking paint triangle unions/cross-section centrelines, EPSG:5186; parking records define expected inventory only",
     roadSourceHashes: meshReport.symbols.roadSourceHashes, roadExistence: existence,
     rawGlbSha256: meshReport.rawGlbSha256,
     referenceEvidenceAvailable: Boolean(reference), roadOwnership: { assignedSegments: inventory.segmentIds, unassignedOwners: inventory.unassignedOwners },
@@ -162,6 +163,7 @@ export async function runMapComparison({ sheetPath = DEFAULT_SHEET,
   return createMapComparison({ sheet, masks: occlusionMask(sheet, { buildings, trees }),
     pieces: roadMarkingPlan({ sections, junctions }).pieces, meshReport, rawGlbSha256, roadSourceHashes, bindings,
     reference: existsSync(referencePath) ? json(referencePath) : null, parkingDoc: json(parkingPath),
+    paintSuppressed: json(join(dataDir, "ground/parcels.json")).paintSuppressed ?? [],
     nodes: json(join(dataDir, "bld-node-map.json")).entries.filter(e => e.gisCentreTm), identity, sheetName: basename(sheetPath), optionalAerial,
     maskSources: { leans: existsSync(leanPath) ? "data/photo/building-lean.json" : "building-forms.json leanPrior (data/photo/building-lean.json missing)", trees: "data/trees.json", shadows: "lib/poleShadow.mjs SUN" },
   });

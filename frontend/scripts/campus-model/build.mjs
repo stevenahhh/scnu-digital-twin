@@ -207,6 +207,10 @@ try {
         const entries = [];
         for (const row of [...map.objects, ...map.physicalCrossings]) {
           const evidence = `map-compare.json#${row.id}`;
+          if (row.error) {
+            entries.push({ ...unavailable(row.id, row.reason, evidence), status: "error" });
+            continue;
+          }
           if (row.unmeasurable || row.occluded) {
             entries.push(unavailable(row.id, row.reason ?? row.unmeasurableReason ?? "occluded or unmeasurable map correspondence", evidence));
             continue;
