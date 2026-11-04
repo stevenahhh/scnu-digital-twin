@@ -1,0 +1,108 @@
+{
+  "estimated": true,
+  "building": "BLD_E7",
+  "storeys": [
+    {
+      "hM": 3.93
+    },
+    {
+      "hM": 3.93
+    },
+    {
+      "hM": 3.93
+    },
+    {
+      "hM": 3.93
+    },
+    {
+      "hM": 3.93
+    }
+  ],
+  "walls": {
+    "W15": {
+      "bays": {
+        "pitchM": 3.5,
+        "count": 7,
+        "offsetM": 10.4
+      },
+      "cells": [
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 2.52,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 E7_사회과학관_애니메이션문화콘텐츠스쿨__367126939 W15",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated",
+          "Only the counted interval is curated; unobserved prefix/suffix retain the legacy material rather than becoming invented blank walls."
+        ],
+        "independentCount": 7,
+        "openingGroups": 7,
+        "notes": [
+          "LOD4 x871..1013: after the blank green stair end (about first 10.4 m), seven full repeated window groups. The row endpoints are read independently from the grid."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 7,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "brick:#eef0ef",
+        "glass": "#5fb6bc",
+        "frame": "#eef0ef"
+      },
+      "outside": "legacy"
+    }
+  }
+}

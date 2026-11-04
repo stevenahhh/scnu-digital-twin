@@ -1,0 +1,177 @@
+{
+  "estimated": true,
+  "building": "BLD_Training Lab Building",
+  "storeys": [
+    {
+      "hM": 4.063333
+    },
+    {
+      "hM": 4.063333
+    },
+    {
+      "hM": 4.063333
+    },
+    {
+      "hM": 4.063333
+    },
+    {
+      "hM": 4.063333
+    },
+    {
+      "hM": 4.063333
+    }
+  ],
+  "walls": {
+    "W04": {
+      "bays": {
+        "pitchM": 3.81670869,
+        "count": 4,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 2.748,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 C3_공동실험실습관_443508 W04",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated",
+          "Exact registered source edge correspondence in surfaceEdges; automatic 0.3 m matching remains unchanged. Endpoints are checked within 1 mm, not moved."
+        ],
+        "independentCount": 4,
+        "openingGroups": 4,
+        "notes": [
+          "LOD4 x147..211: four window groups repeated across the laboratory floors; dark glass panes inside a group are not additional bays.",
+          "Vertical allocation follows the registered main source: 6 levels over 24.380 m. The independent image count is horizontal; heights remain estimates."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 4,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "brick:#a6846c",
+        "glass": "#3f8f86",
+        "frame": "#e9ebe8"
+      },
+      "surfaceEdges": [
+        {
+          "A": [
+            243776.8046,
+            263933.6745
+          ],
+          "B": [
+            243761.6459,
+            263937.4427
+          ],
+          "source": "building-forms.json BLD_Training Lab Building/mass/0/edge/20; resolved source geometry, estimated"
+        }
+      ]
+    },
+    "W05": {
+      "bays": {
+        "pitchM": 18.6013632,
+        "count": 1,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "blank"
+        ],
+        [
+          "vent"
+        ],
+        [
+          "vent"
+        ],
+        [
+          "vent"
+        ],
+        [
+          "vent"
+        ],
+        [
+          "vent"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 0.9,
+        "hM": 0.5,
+        "sillM": 0.9
+      },
+      "accents": {
+        "band": {
+          "colour": "#e6e0d5",
+          "hM": 0.12
+        }
+      },
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 C3_공동실험실습관_443508 W05",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 1,
+        "openingGroups": 1,
+        "notes": [
+          "LOD4 x212..289: broad blank brick end with one narrow central vent stack and thin horizontal white floor bands. The ground entrance is not invented.",
+          "Vertical allocation follows the registered main source: 6 levels over 24.380 m. The independent image count is horizontal; heights remain estimates."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 1,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "vent",
+      "materials": {
+        "wall": "brick:#a6846c",
+        "glass": "#3f8f86",
+        "frame": "#e9ebe8"
+      }
+    }
+  }
+}

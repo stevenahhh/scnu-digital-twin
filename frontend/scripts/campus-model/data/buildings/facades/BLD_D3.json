@@ -1,0 +1,97 @@
+{
+  "estimated": true,
+  "building": "BLD_D3",
+  "storeys": [
+    {
+      "hM": 4.966667
+    },
+    {
+      "hM": 4.966667
+    },
+    {
+      "hM": 4.966667
+    }
+  ],
+  "walls": {
+    "W11": {
+      "bays": {
+        "pitchM": 3.50991488,
+        "count": 7,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 2.5271,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 D3_공학_2호관_우주항공첨단소재스쿨__312548 W11",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated",
+          "Exact registered source edge correspondence in surfaceEdges; automatic 0.3 m matching remains unchanged. Endpoints are checked within 1 mm, not moved."
+        ],
+        "independentCount": 7,
+        "openingGroups": 7,
+        "notes": [
+          "LOD4 x537..638: seven repeated upper openings, confirmed across the three rows below the rooftop structure.",
+          "Vertical allocation follows the registered main source: 3 levels over 14.900 m. The independent image count is horizontal; heights remain estimates."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 7,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "brick:#d08c8f",
+        "glass": "#6d8288",
+        "frame": "#f0f0ec"
+      },
+      "surfaceEdges": [
+        {
+          "A": [
+            243610.7424,
+            263798.5888
+          ],
+          "B": [
+            243586.0998,
+            263805.151
+          ],
+          "source": "building-forms.json BLD_D3/mass/0/edge/8; resolved source geometry, estimated"
+        }
+      ]
+    }
+  }
+}

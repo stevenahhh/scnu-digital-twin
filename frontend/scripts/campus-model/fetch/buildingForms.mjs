@@ -23,6 +23,9 @@ import { loadFurniture } from "../stages/furniture.mjs";
 import { loadInputs } from "../stages/sources.mjs";
 import { openSheet } from "../lib/ngiiSheet.mjs";
 import { DATA } from "./common.mjs";
+import { loadTmFootprints } from "../lib/footprints.mjs";
+import { encodeRoofGeometry, mapRoofGeometry } from "../lib/roofRelative.mjs";
+import { wgs84ToTm } from "../../../src/geo/epsg5186.mjs";
 import { cached, LAT0, LON0, leafTiles, MX, MY, parseB3dm, tileModels } from "./lod4Facades.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -247,6 +250,19 @@ export async function writeBuildingForms() {
       ...(r.clippedMasses ? { clippedMasses: r.clippedMasses } : {}),
     }));
     carryCurated(records);
+    const footprints = await loadTmFootprints();
+    for (const record of records) {
+      const selected = named.get(record.key);
+      const footprint = footprints[record.key] ?? {
+        polygons: selected.parts.map(p => [p.outer, ...p.holes].map(r => r.map(q => wgs84ToTm(...toGeo(q))))),
+      };
+      for (const [index, mass] of record.masses.entries()) {
+        if (mass.kind !== "core") continue;
+        mass.roofRelative = encodeRoofGeometry(`${record.key}/mass/${index}`,
+          mapRoofGeometry(mass, p => wgs84ToTm(...p)), footprint);
+        mass.estimated = true;
+      }
+    }
     const file = {
       description: "Building forms of the modelled campus buildings: per building a list of masses (outer ring, courtyard rings, base and top in metres above the building's lowest ground, parapet, roof type, pitched-roof triangles, columns under raised parts), the voids they leave (courtyards open to the sky, light wells, passages under raised masses), the relief lean of its roof in the NGII 2025 orthophoto and the photo IoU of the roof outline (lean-corrected). source: the VWorld LOD4 mesh, or the current footprint when LOD4 has no model or its outline disagrees with the photo. Rings are lon/lat (EPSG:4326). Estimates derived from VWorld's LOD4 models and the photo, not survey data.",
       sources: [

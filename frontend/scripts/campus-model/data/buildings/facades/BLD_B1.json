@@ -1,0 +1,89 @@
+{
+  "estimated": true,
+  "building": "BLD_B1",
+  "storeys": [
+    {
+      "hM": 4.6125
+    },
+    {
+      "hM": 4.6125
+    },
+    {
+      "hM": 4.6125
+    },
+    {
+      "hM": 4.6125
+    }
+  ],
+  "walls": {
+    "W18": {
+      "bays": {
+        "pitchM": 4,
+        "count": 2,
+        "offsetM": 6.2
+      },
+      "cells": [
+        [
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 1.1,
+        "hM": 0.9,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 B1_박물관_768406 W18",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated",
+          "Exact registered source edge correspondence in surfaceEdges; automatic 0.3 m matching remains unchanged. Endpoints are checked within 1 mm, not moved."
+        ],
+        "independentCount": 2,
+        "openingGroups": 2,
+        "notes": [
+          "LOD4 x587..673: two small square opening stacks centered in a mostly blank exhibition wall; three rows, not full-width glazing.",
+          "Vertical allocation follows the registered core source: 4 levels over 18.450 m. The independent image count is horizontal; heights remain estimates."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 2,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "stone:#dcdcd6",
+        "glass": "#4e6f7c",
+        "frame": "#d6d8d6"
+      },
+      "surfaceEdges": [
+        {
+          "A": [
+            244131.7453,
+            263828.9128
+          ],
+          "B": [
+            244127.318,
+            263811.6907
+          ],
+          "source": "building-forms.json BLD_B1/mass/3/edge/9; resolved source geometry, estimated"
+        }
+      ]
+    }
+  }
+}

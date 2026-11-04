@@ -1,0 +1,261 @@
+{
+  "estimated": true,
+  "building": "BLD_Dormitory_Building.002",
+  "storeys": [
+    {
+      "hM": 4.11
+    },
+    {
+      "hM": 4.11
+    },
+    {
+      "hM": 4.11
+    },
+    {
+      "hM": 4.11
+    }
+  ],
+  "walls": {
+    "W00": {
+      "bays": {
+        "pitchM": 3.08514663,
+        "count": 15,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ],
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ],
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ],
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ]
+      ],
+      "overrides": [
+        {
+          "storey": 0,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 0,
+          "bay": 7,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 0,
+          "bay": 12,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 1,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 1,
+          "bay": 7,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 1,
+          "bay": 12,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 2,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 2,
+          "bay": 7,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 2,
+          "bay": 12,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 3,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 3,
+          "bay": 7,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 3,
+          "bay": 12,
+          "window": {
+            "wM": 1.1
+          }
+        }
+      ],
+      "window": {
+        "wM": 2.2213,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 27동_학생생활관_향림관__85389 W00",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 15,
+        "openingGroups": 15,
+        "notes": [
+          "LOD4 x0..188: fifteen window/balcony/stair columns on the distinct four-storey Hyangrim footprint; counted separately from the ten-storey tower."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 15,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "render:#e6dcc4",
+        "glass": "#6f8790",
+        "frame": "#e2ddd0"
+      }
+    },
+    "W01": {
+      "bays": {
+        "pitchM": 10.73588816,
+        "count": 1,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 3.2,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 27동_학생생활관_향림관__85389 W01",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 1,
+        "openingGroups": 0,
+        "notes": [
+          "LOD4 x189..235: blank short end above the screened ground level, not a continuation of the front balcony pattern."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 1,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "blank",
+      "materials": {
+        "wall": "render:#e6dcc4",
+        "glass": "#6f8790",
+        "frame": "#e2ddd0"
+      }
+    }
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "estimated": true,
+  "building": "BLD_SCNU_F1",
+  "storeys": [
+    {
+      "hM": 4.047143
+    },
+    {
+      "hM": 4.047143
+    },
+    {
+      "hM": 4.047143
+    },
+    {
+      "hM": 4.047143
+    },
+    {
+      "hM": 4.047143
+    },
+    {
+      "hM": 4.047143
+    },
+    {
+      "hM": 4.047143
+    }
+  ],
+  "walls": {
+    "W09": {
+      "bays": {
+        "pitchM": 4.9,
+        "count": 2,
+        "offsetM": 3.3
+      },
+      "cells": [
+        [
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 4.41,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 F1_국제문화컨벤션관_838573769 W09",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated",
+          "Exact registered source edge correspondence in surfaceEdges; automatic 0.3 m matching remains unchanged. Endpoints are checked within 1 mm, not moved."
+        ],
+        "independentCount": 2,
+        "openingGroups": 2,
+        "notes": [
+          "LOD4 x293..347: two distinct tall glazed slots after the left blank return. The curved cladding and unrelated roof projections are not used as bays.",
+          "Vertical allocation follows the registered wing source: 7 levels over 28.330 m. The independent image count is horizontal; heights remain estimates."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 2,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "glazing",
+      "materials": {
+        "wall": "metal:#d3d9dd",
+        "glass": "#2f5d9a",
+        "frame": "#2b4566"
+      },
+      "surfaceEdges": [
+        {
+          "A": [
+            244190.8768,
+            263405.2798
+          ],
+          "B": [
+            244182.82,
+            263417.1118
+          ],
+          "source": "building-forms.json BLD_SCNU_F1/mass/4/edge/4; resolved source geometry, estimated"
+        }
+      ]
+    }
+  }
+}

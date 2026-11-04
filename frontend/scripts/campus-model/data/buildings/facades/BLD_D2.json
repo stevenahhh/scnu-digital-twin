@@ -1,0 +1,246 @@
+{
+  "estimated": true,
+  "building": "BLD_D2",
+  "storeys": [
+    {
+      "hM": 3.018
+    },
+    {
+      "hM": 3.018
+    },
+    {
+      "hM": 3.018
+    },
+    {
+      "hM": 3.018
+    },
+    {
+      "hM": 3.018
+    }
+  ],
+  "walls": {
+    "W19": {
+      "bays": {
+        "pitchM": 3.6392623,
+        "count": 17,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 2.6203,
+        "hM": 1.6775,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 D2_공학_1호관_우주항공첨단소재스쿨__44099 W19",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated",
+          "Exact registered source edge correspondence in surfaceEdges; automatic 0.3 m matching remains unchanged. Endpoints are checked within 1 mm, not moved."
+        ],
+        "independentCount": 17,
+        "openingGroups": 17,
+        "notes": [
+          "LOD4 x1222..1472: seventeen repeated upper openings on the long wing. The green foreground contamination is below the counted row.",
+          "Vertical allocation follows the registered wing source: 5 levels over 15.090 m. The independent image count is horizontal; heights remain estimates."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 17,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "stone:#eceeed",
+        "glass": "#3b7c8a",
+        "frame": "#8fa0a6"
+      },
+      "surfaceEdges": [
+        {
+          "A": [
+            243587.4338,
+            263886.3006
+          ],
+          "B": [
+            243600.998,
+            263940.0767
+          ],
+          "source": "building-forms.json BLD_D2/mass/1/edge/17; resolved source geometry, estimated"
+        },
+        {
+          "A": [
+            243600.998,
+            263940.0767
+          ],
+          "B": [
+            243602.9927,
+            263947.5072
+          ],
+          "source": "building-forms.json BLD_D2/mass/1/edge/18; resolved source geometry, estimated"
+        }
+      ]
+    },
+    "W21": {
+      "bays": {
+        "pitchM": 3.47965271,
+        "count": 3,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 2.5053,
+        "hM": 1.6775,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 D2_공학_1호관_우주항공첨단소재스쿨__44099 W21",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 3,
+        "openingGroups": 3,
+        "notes": [
+          "LOD4 x1476..1520: three repeated upper openings on the short return.",
+          "Vertical allocation follows the registered wing source: 5 levels over 15.090 m. The independent image count is horizontal; heights remain estimates."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 3,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "stone:#eceeed",
+        "glass": "#3b7c8a",
+        "frame": "#8fa0a6"
+      }
+    }
+  }
+}

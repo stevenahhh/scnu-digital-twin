@@ -1,0 +1,17 @@
+{
+  "estimated": true,
+  "convention": "One ordinary opening group is one structural bay; a double-width continuous glazing group occupies two bays. Mullions are not bays.",
+  "records": [
+    {
+      "building": "BLD_E3", "wall": "W16", "estimated": true,
+      "observations": [
+        { "scene": "scene_e5", "face": "r", "estimated": true, "centralOrdinaryGroups": 8, "flankingOrdinaryGroups": 2, "doubleWidthGlazingGroups": 2,
+          "note": "Independent upper-storey reading before the grid was authored; refined e5 pose 248.300702 degrees. Trees obscure ground-floor cells." },
+        { "scene": "scene_e3", "face": "r", "estimated": true, "centralOrdinaryGroups": 8, "flankingOrdinaryGroups": 2, "doubleWidthGlazingGroups": 2,
+          "note": "Independent architectural group count; do not use this scene's uncertain endpoint bearings as a new registration." }
+      ],
+      "lod4": { "model": "SC090093", "tile": "B_2_43_6.b3dm", "triangles": [228, 229], "estimated": true, "totalBayCount": null,
+        "reason": "Raw data exists. The old 40 m seam cutoff discarded the long wall; its recovered approximately 184x114 pixel source photograph does not certify both end glazing groups." }
+    }
+  ]
+}

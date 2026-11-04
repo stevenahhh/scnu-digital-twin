@@ -2912,39 +2912,6 @@
       ]
     },
     {
-      "id": "SD-A13-H1",
-      "anchor": {
-        "parcel": "PARCEL_PAVING_BUILDING_259",
-        "uM": -24.558314797209352,
-        "vM": -1.509019577331129
-      },
-      "estimated": true,
-      "evidence": {
-        "tier": "T4",
-        "refs": [
-          "VR scene_a13 f: dark rail along the raised planter's edge by the stalls"
-        ]
-      },
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          [
-            1.6228510041170088,
-            2.2267528913538848
-          ],
-          [
-            -1.622851004142008,
-            -2.2267528913687875
-          ]
-        ]
-      },
-      "reason": "No verified wall reading or two-station intersection; prior position retained as a T4 parcel estimate, not a measured wall attachment.",
-      "centreTM": [
-        243981.113401894,
-        263546.7710760487
-      ]
-    },
-    {
       "id": "SD-A17-H1",
       "anchor": {
         "parcel": "PARCEL_PAVING_100034702020A00310100000000047532",
@@ -3470,7 +3437,7 @@
         243766.53158120217,
         263984.9035698668
       ],
-      "nearestParcel": "PARCEL_PAVING_BUILDING_369",
+      "nearestParcel": "PARCEL_PAVING_BUILDING_363",
       "nearestParcelDistanceM": 2.048722931027428,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
@@ -3756,11 +3723,24 @@
         243981.31326027177,
         263543.1053424921
       ],
-      "nearestParcel": "PARCEL_PAVING_BUILDING_259",
-      "nearestParcelDistanceM": 0.09405447449252036,
+      "nearestParcel": "PARCEL_ASPHALT_ROAD_ZONE_75",
+      "nearestParcelDistanceM": 1.4462466598278763,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
       "observation": "VR scene_a13 f: blue sign on a post in the planter by the road"
+    },
+    {
+      "id": "SD-A13-H1",
+      "kind": "handrail",
+      "centreTM": [
+        243981.113401894,
+        263546.7710760487
+      ],
+      "nearestParcel": "PARCEL_PAVING_EDGE_FB_0058_7",
+      "nearestParcelDistanceM": 2.1469636513771637,
+      "estimated": true,
+      "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
+      "observation": "VR scene_a13 f: dark rail along the raised planter's edge by the stalls"
     },
     {
       "id": "SD-A17-S2",
@@ -3886,8 +3866,8 @@
         243959.67422301153,
         263654.96710544464
       ],
-      "nearestParcel": "PARCEL_PAVING_BUILDING_336",
-      "nearestParcelDistanceM": 0.6592797981331838,
+      "nearestParcel": "PARCEL_PAVING_BUILDING_335",
+      "nearestParcelDistanceM": 0.9463367711888226,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
       "observation": "VR scene_a5 r: square timber tree box in the A1 roof garden (the walled garden is A1's roof, 12.98 m; positions from the face-r rays scaled to the camera's height above the roof, set by the teal parasol's photo disc; about 1.5 m)"
@@ -3912,8 +3892,8 @@
         243949.2292176493,
         263663.90635065443
       ],
-      "nearestParcel": "PARCEL_PAVING_BUILDING_335",
-      "nearestParcelDistanceM": 2.9049416634859586,
+      "nearestParcel": "PARCEL_PAVING_BUILDING_214",
+      "nearestParcelDistanceM": 3.0711512983744242,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
       "observation": "VR scene_a5 r/d: the lawn of the A1 roof garden (the 12.98 m wing roof), inside the parapets and the lattice wall RS0003; outline traced on the NGII 2025 photo (the green inside the parapets), the teal-roofed room stands in it; patchy autumn turf, a smooth tone map (no cell edges): four tones blended by low-frequency noise, each an equal sRGB mix of a VR scene_a5 r lawn quartile (the autumn hue) and the NGII 2025 photo's lawn quartile (its value), worn within 0.8 m of the stepping stones, fading out to 1.6 m (estimated)"
