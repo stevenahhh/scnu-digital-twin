@@ -62,6 +62,13 @@ export function finalPaintReceipt({ primitive, sourcePositions, sourcePieces }) 
     const triangle = Array.from(primitive.indices.slice(i, i + 3), v => point(primitive.positions, v));
     const candidates = new Set(keys(triangle).flatMap(key => grid.get(key) ?? []));
     const ids = new Set([...candidates].filter(row => intersects(triangle, row.triangle)).map(row => row.id));
+    // Collapse can join nearly collinear Float32 boundary vertices into a
+    // positive-area face outside the old faces. Their common source still owns
+    // that final geometry; keep it for the invariant without changing any area.
+    const vertexSources = triangle.map(p => vertices.get(p.join(',')) ?? new Set());
+    for (const id of vertexSources[0]) {
+      if (vertexSources.every(sources => sources.has(id))) ids.add(id);
+    }
     // A real zero-area final face must reach the invariant, not disappear from
     // the receipt. Its surviving vertices retain exact source provenance.
     if (cross(...triangle) === 0) {

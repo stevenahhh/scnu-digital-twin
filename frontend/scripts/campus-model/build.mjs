@@ -14,6 +14,7 @@ import { collectVrBearings, writeOverheadReports } from "./qa/renderReports.mjs"
 import { loadFacadeCoverage, unappliedFacadeWalls } from "./qa/facadeCoverage.mjs";
 import { inspectDoor } from "./qa/facadeMesh.mjs";
 import { DEFAULT_SHEET, openSheet } from "./lib/ngiiSheet.mjs";
+import { withKnownRoadGaps } from "./qa/roadInventory.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FRONTEND = resolve(HERE, "../..");
@@ -215,7 +216,7 @@ try {
           if (Number.isFinite(row.iou) && Number.isFinite(t?.iou)) entries.push(measured(row.id, "iou", row.iou, t.iou, "gte", evidence, row.reason));
           if (Number.isFinite(row.support) && Number.isFinite(t?.support)) entries.push(measured(row.id, "support", row.support, t.support, "gte", evidence, row.reason));
         }
-        results.push(complete("map", "map", entries, { acceptance: map.roadAcceptance }));
+        results.push(complete("map", "map", entries, { acceptance: withKnownRoadGaps(map.roadAcceptance) }));
       } catch (error) {
         map = { identity: renderIdentity, status: "notRun", reason: error.message, overToleranceList: [] };
         results.push({ ...run, id: "map", kind: "map", status: "notRun", reason: error.message, entries: [] });

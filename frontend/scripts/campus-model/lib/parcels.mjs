@@ -117,6 +117,15 @@ export function pieceKey(piece, toTm) {
   return `${piece.id ?? piece.kind}@${E.toFixed(2)},${N.toFixed(2)}`;
 }
 
+// Historical exclusions use centroid keys; reviewed gaps use the exact emitted
+// identity, including a legacy id when present. Neither excludes sibling parts.
+export function retainPaint(pieces, surfaces, toTm) {
+  const excluded = new Set(surfaces.paintExcluded);
+  const suppressed = new Set(surfaces.paintSuppressed.map(p => p.id));
+  return pieces.filter(p => !excluded.has(pieceKey(p, toTm)) &&
+    !suppressed.has(p.id ?? p.partId ?? p.record ?? pieceKey(p, toTm)));
+}
+
 export function topParcelAt(parcels, boxes = parcels.map((p) => bbox(p.ring))) {
   return (point) => {
     let top = null;

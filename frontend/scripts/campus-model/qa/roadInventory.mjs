@@ -109,3 +109,14 @@ export function roadAcceptance(report) {
   };
   return { accepted: Object.values(checks).every(Boolean), checks };
 }
+
+// Todo 24 closed [~] with these flags unmet; the user decided (2026-11-04) that recorded gaps do not block publishing.
+export const TODO24_ROAD_GAPS = ["referenceComplete", "ownership", "segmentExistence", "crossingInventory", "lateral", "crossingBars", "physicalCrossings"];
+
+export function withKnownRoadGaps(acceptance) {
+  if (acceptance.accepted) return acceptance;
+  const failing = Object.entries(acceptance.checks).filter(([, ok]) => !ok).map(([name]) => name);
+  if (!failing.every((name) => TODO24_ROAD_GAPS.includes(name))) return acceptance;
+  return { ...acceptance, reason: `todo 24 road acceptance gaps: ${failing.join(", ")}`,
+    knownGap: "plan todo 24 [~]; user decision 2026-11-04 (gate publishes reasoned known gaps)" };
+}

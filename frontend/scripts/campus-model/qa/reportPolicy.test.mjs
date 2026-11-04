@@ -92,6 +92,18 @@ test('unknown and road non-acceptance cannot become pass with an empty over list
   assert.equal(report.checks[0].acceptance.reason, 'Physical crossings missing');
 });
 
+test('a recorded known gap lets the report pass the gate while raw pass stays false', () => {
+  const gap = { accepted: false, reason: 'Physical crossings missing', knownGap: 'plan todo 24 [~], user decision 2026-11-04' };
+  const report = reduceQaReport(run, [check('map', [entry()], { acceptance: gap })]);
+  assert.deepEqual([report.pass, report.accepted, report.status], [false, true, 'warning']);
+  assert.equal(report.checks[0].acceptance.knownGap, gap.knownGap);
+});
+
+test('a known gap without a reason still blocks', () => {
+  const report = reduceQaReport(run, [check('map', [entry()], { acceptance: { accepted: false, knownGap: 'plan todo 24' } })]);
+  assert.equal(report.accepted, false);
+});
+
 for (const [label, results] of [
   ['no checks', []],
   ['empty completed check', [check('vr', [])]],

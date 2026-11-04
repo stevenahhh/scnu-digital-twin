@@ -4,6 +4,7 @@
 import { AnchorError, resolveAnchor } from '../lib/anchors.mjs';
 import { topParcelAt } from '../lib/parcels.mjs';
 import { splitByLine } from '../lib/partition.mjs';
+import { PAINT_FACE_AREA2_FLOOR_M2 } from '../lib/decimate.mjs';
 
 const text = value => typeof value === 'string' && value.trim().length > 0;
 const pair = point => Array.isArray(point) && point.length === 2 && point.every(Number.isFinite);
@@ -54,7 +55,7 @@ function forbiddenPaint(pieces, parcels) {
     if (!Array.isArray(piece.triangles) || piece.triangles.length === 0 ||
         piece.triangles.some(t => t.length !== 3 || !t.every(pair) ||
           Math.abs((t[1][0] - t[0][0]) * (t[2][1] - t[0][1]) -
-            (t[2][0] - t[0][0]) * (t[1][1] - t[0][1])) <= 2e-8)) {
+            (t[2][0] - t[0][0]) * (t[1][1] - t[0][1])) <= PAINT_FACE_AREA2_FLOOR_M2)) {
       violations.push({ id: piece.id, reason: 'Missing or malformed emitted TM triangles', parcel: null });
       continue;
     }
@@ -88,7 +89,12 @@ function forbiddenPaint(pieces, parcels) {
         const sample = cell.reduce((s, p) => [s[0] + p[0] / cell.length, s[1] + p[1] / cell.length], [0, 0]);
         const parcel = at(sample);
         if (parcel?.paintAllowed === true) continue;
-        bad = { id: piece.id, parcel: parcel?.id ?? null, reason: `Paint area on ${parcel?.id ?? 'unassigned ground'} does not allow paint` };
+        const areaM2 = Math.abs(cell.reduce((s, p, i) => {
+          const q = cell[(i + 1) % cell.length];
+          return s + p[0] * q[1] - q[0] * p[1];
+        }, 0)) / 2;
+        bad = { id: piece.id, parcel: parcel?.id ?? null, reason: `Paint area on ${parcel?.id ?? 'unassigned ground'} does not allow paint`,
+          areaM2, pointTM: [sample[0] + origin[0], sample[1] + origin[1]] };
         break;
       }
       if (bad) break;
@@ -146,7 +152,9 @@ export function assertBuildInvariants(input) {
     }
   }
   for (const violation of forbiddenPaint(paintPieces, parcels)) {
-    fail(violation.id, 'paint', 'paintAllowed', false, true, violation.reason);
+    const where = violation.areaM2 === undefined ? ''
+      : ` (${violation.areaM2.toPrecision(3)} m2 near EPSG:5186 ${violation.pointTM.map(v => v.toFixed(3)).join(', ')})`;
+    fail(violation.id, 'paint', 'paintAllowed', false, true, violation.reason + where);
   }
   for (const record of packApplications) {
     const missing = record.requested.filter(id => !record.applied.includes(id));

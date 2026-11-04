@@ -46,7 +46,7 @@ import { EXTENT, SCENE_UNITS_PER_METRE, frameAssetExtras } from "./lib/frame.mjs
 import { SURFACE_CLASS } from "./lib/surfaceClass.mjs";
 import { loadRoadMarkings } from "./stages/roadMarkings.mjs";
 import { GlbBuilder } from "./lib/glb.mjs";
-import { assertPaintOnParcels, pieceKey, loadParcels, PARCELS_PATH } from "./lib/parcels.mjs";
+import { assertPaintOnParcels, pieceKey, retainPaint, loadParcels, PARCELS_PATH } from "./lib/parcels.mjs";
 import { candidatePaths } from "./qa/candidate.mjs";
 import { GroundPartition, TinPartition, splitByLine } from "./lib/partition.mjs";
 import { buildBuildings } from "./stages/buildings.mjs";
@@ -128,10 +128,9 @@ const labelAt = ([x, z]) => {
 // on surveyed non-road ground (A003 sidewalks), which is left undrawn; any other piece on such ground throws by id.
 {
   const toTm = ([x, z]) => sceneToTm(x, z);
-  const excluded = new Set(surfaces.paintExcluded);
   const centre = (r) => r.reduce((a, q) => [a[0] + q[0] / r.length, a[1] + q[1] / r.length], [0, 0]);
   const drawn = markings.pieces.filter((p) => inMarkingExtent(centre(p.rings[0])));
-  const kept = markings.pieces.filter((p) => !inMarkingExtent(centre(p.rings[0])) || !excluded.has(pieceKey(p, toTm)));
+  const kept = retainPaint(markings.pieces, surfaces, toTm);
   const check = assertPaintOnParcels(kept.filter((p) => inMarkingExtent(centre(p.rings[0]))), surfaces.parcels, toTm);
   console.log(`paint invariant (§10.3): ${check.checked} pieces inside EXTENT on road/lot parcels, 0 on other ground; ${drawn.length - check.checked} excluded (parcels.json paintExcluded)`);
   markings.pieces.splice(0, markings.pieces.length, ...kept);

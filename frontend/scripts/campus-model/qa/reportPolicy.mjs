@@ -94,9 +94,10 @@ function reduceCheck(result) {
   if (acceptance !== undefined) {
     requireField(typeof acceptance.accepted === 'boolean', id, 'acceptance', 'Explicit acceptance boolean required');
     if (!acceptance.accepted) {
-      reduced.accepted = false;
+      const knownGap = text(acceptance.knownGap) && text(acceptance.reason);
       reduced.pass = false;
-      if (reduced.status !== 'error') reduced.status = 'fail';
+      if (!knownGap) reduced.accepted = false;
+      if (reduced.status !== 'error') reduced.status = knownGap && reduced.accepted ? 'warning' : 'fail';
     }
   }
   return {

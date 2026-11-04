@@ -65,3 +65,11 @@ test("attributes ride along with the kept vertices", async () => {
     assert.equal(out.attributes[0].array[v * 2 + 1], 0.5);
   }
 });
+test("faces at or below the paint invariant's 2e-8 m2 twice-area floor are dropped, larger faces kept", async () => {
+  const { dropSliverFaces, PAINT_FACE_AREA2_FLOOR_M2 } = await import("./decimate.mjs");
+  assert.equal(PAINT_FACE_AREA2_FLOOR_M2, 2e-8);
+  // twice area 1e-8 m2 (between meshopt's old 1e-9 guard and the invariant floor) and 1 m2, at 2 scene units per metre.
+  const k = 2;
+  const positions = Float32Array.from([0, 0, 0, k, 0, 0, 0, 0, 1e-8 * k, 0, 0, k]);
+  assert.deepEqual(dropSliverFaces(Uint32Array.from([0, 1, 2, 0, 1, 3]), positions, k), [0, 1, 3]);
+});
