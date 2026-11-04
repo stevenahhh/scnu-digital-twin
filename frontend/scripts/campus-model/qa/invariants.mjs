@@ -10,8 +10,31 @@ const pair = point => Array.isArray(point) && point.length === 2 && point.every(
 const box = points => points.reduce((b, [x, y]) =>
   [Math.min(b[0], x), Math.min(b[1], y), Math.max(b[2], x), Math.max(b[3], y)],
 [Infinity, Infinity, -Infinity, -Infinity]);
-const centre = bounds => [(bounds[0] + bounds[2]) / 2, (bounds[1] + bounds[3]) / 2];
 const overlaps = (a, b) => a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b[1];
+
+function areaCentre(parts) {
+  if (!parts.length || parts.some(r => r.length < 3 || !r.every(pair))) return [NaN, NaN];
+  const origin = parts[0][0];
+  let area = 0, east = 0, north = 0;
+  for (const ring of parts) {
+    let twiceArea = 0, momentX = 0, momentY = 0;
+    for (let i = 0; i < ring.length; i += 1) {
+      const a = ring[i].map((v, k) => v - origin[k]);
+      const b = ring[(i + 1) % ring.length].map((v, k) => v - origin[k]);
+      const cross = a[0] * b[1] - b[0] * a[1];
+      twiceArea += cross;
+      momentX += (a[0] + b[0]) * cross;
+      momentY += (a[1] + b[1]) * cross;
+    }
+    if (twiceArea === 0) return [NaN, NaN];
+    // Ground parts are separate outer rings; winding must not subtract a part.
+    const weight = Math.abs(twiceArea);
+    area += weight;
+    east += momentX / (3 * twiceArea) * weight;
+    north += momentY / (3 * twiceArea) * weight;
+  }
+  return [origin[0] + east / area, origin[1] + north / area];
+}
 
 export class BuildInvariantError extends Error {
   constructor(report) {
@@ -25,7 +48,6 @@ export class BuildInvariantError extends Error {
 // parcel membership is constant, so its interior point classifies the WHOLE cell, including islands
 // and holes. Uses the ground partition's existing 1e-8 m2 numerical area floor, not a sampling grid.
 function forbiddenPaint(pieces, parcels) {
-  const at = topParcelAt(parcels);
   const parcelBounds = parcels.map(p => box(p.ring));
   const violations = [];
   for (const piece of pieces) {
@@ -39,8 +61,16 @@ function forbiddenPaint(pieces, parcels) {
     let bad = null;
     for (const triangle of piece.triangles) {
       const bounds = box(triangle);
-      const relevant = parcels.filter((p, i) => overlaps(bounds, parcelBounds[i]));
-      let cells = [triangle];
+      // A triangle-local origin keeps splitByLine's 1e-8 m2 area test away
+      // from the cancellation of ~243000 * 263000 absolute-coordinate terms.
+      // Translate classification too, including holes, so boundary samples agree.
+      const origin = triangle[0];
+      const local = p => [p[0] - origin[0], p[1] - origin[1]];
+      const relevant = parcels.filter((p, i) => overlaps(bounds, parcelBounds[i])).map(p => ({
+        ...p, ring: p.ring.map(local), holes: p.holes.map(r => r.map(local)),
+      }));
+      const at = topParcelAt(relevant);
+      let cells = [triangle.map(local)];
       for (const parcel of relevant) {
         for (const ring of [parcel.ring, ...parcel.holes]) {
           for (let i = 0; i < ring.length; i += 1) {
@@ -84,10 +114,8 @@ export function assertBuildInvariants(input) {
   const fail = (id, check, metric, value, threshold, reason) =>
     findings.push({ id, check, metric, value, threshold, reason, evidence: `invariants/${check}/${id}`, severity: 'error' });
   for (const record of groundFootprints) {
-    const actual = record.actualParts.flat(), expected = record.expectedParts.flat();
-    const valid = actual.length > 0 && expected.length > 0 && [...actual, ...expected].every(pair);
-    const a = valid ? centre(box(actual)) : [NaN, NaN];
-    const b = valid ? centre(box(expected)) : [NaN, NaN];
+    const a = areaCentre(record.actualParts);
+    const b = areaCentre(record.expectedParts);
     const shift = Math.hypot(a[0] - b[0], a[1] - b[1]);
     if (!Number.isFinite(shift) || shift > 0.05 + 1e-9) {
       fail(record.id, 'groundFootprint', 'centreShiftM', Number.isFinite(shift) ? shift : null, 0.05, 'Generated GIS ground footprint centre exceeds 0.05 m or is missing');
