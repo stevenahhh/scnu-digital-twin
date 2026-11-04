@@ -1,11 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { wallsOf, wallCoordinates, resolveAnchor, checkWallMapping } from "./anchors.mjs";
+import { AnchorError, wallsOf, wallCoordinates, resolveAnchor, checkWallMapping } from "./anchors.mjs";
 import { validate } from "./schemas.mjs";
 
 // EPSG:5186 metres. The first vertex stays fixed when the ring is made clockwise.
 const rectangle = [[243000, 263000], [243000, 263010], [243020, 263010], [243020, 263000]];
-const footprint = () => ({ polygons: [[rectangle.map((p) => [...p])]] });
+const savedRectangle = () => [
+  { wall: "W00", A: [243000, 263000], lengthM: 10, bearingDeg: 0 },
+  { wall: "W01", A: [243000, 263010], lengthM: 20, bearingDeg: 90 },
+  { wall: "W02", A: [243020, 263010], lengthM: 10, bearingDeg: 180 },
+  { wall: "W03", A: [243020, 263000], lengthM: 20, bearingDeg: 270 },
+];
+const footprint = () => ({ polygons: [[rectangle.map((p) => [...p])]], walls: savedRectangle() });
 const footprints = () => ({ BLD_TEST: footprint() });
 const record = (wall = "W00", extra = {}) => ({
   id: "TEST/ENT1", anchor: { building: "BLD_TEST", wall, sM: 3, tM: 2, hM: 4, ...extra },
@@ -45,6 +51,7 @@ test("courtyard normals point into the hole and additional polygons have distinc
   const second = rectangle.map(([e, n]) => [e + 30, n]);
   const fp = { polygons: [[rectangle, hole], [second]] };
   const walls = wallsOf("BLD_TEST", fp);
+  fp.walls = walls;
   assert.equal(walls.length, 12);
   const result = resolveAnchor(record("H0/W00", { sM: 1, tM: 0.5 }), { BLD_TEST: fp });
   near(result.origin, [243004.5, 263004], "courtyard");
@@ -185,4 +192,124 @@ test("anchor validation resolves real references and propagates estimated footpr
   assert.equal(resolveAnchor(record(), fs).estimated, true);
   assert.equal(validate("anchors", { anchors: [record("W99")] }, { footprints: fs }).ok, false);
   assert.equal(validate("anchors", { anchors: [record()] }, { footprints: fs }).ok, true);
+});
+
+test("resolveAnchor rejects a saved snapshot after a refetch translates the footprint", () => {
+  const fp = footprint();
+  fp.polygons = [[rectangle.map(([e, n]) => [e + 0.6, n])]];
+  assert.throws(() => resolveAnchor(record(), { BLD_TEST: fp }), (error) =>
+    error instanceof AnchorError && error.recordId === "TEST/ENT1" &&
+    error.reference === "BLD_TEST/W00" && /stale wall/.test(error.message));
+});
+
+test("fresh nodeMap snapshots resolve through both entries and additionalWalls", () => {
+  for (const nodeMap of [
+    { entries: [{ nodeId: "BLD_TEST", walls: savedRectangle() }] },
+    { entries: [], additionalWalls: { BLD_TEST: savedRectangle() } },
+  ]) {
+    // The persisted node map must replace the stale in-memory snapshot.
+    const fp = footprint();
+    fp.walls[0].lengthM = 99;
+    assert.deepEqual(validate("anchors", { anchors: [record()] }, {
+      footprints: { BLD_TEST: fp }, nodeMap,
+    }), { ok: true, errors: [] });
+  }
+});
+
+test("non-rectangular parcels use the bounding box centre rather than the vertex mean", () => {
+  // A trapezoid with box [0,20] x [0,8]: centre (10,4), not vertex mean (8.5,4).
+  const ring = [[0, 0], [0, 8], [14, 8], [20, 0]].map(([e, n]) => [243000 + e, 263000 + n]);
+  const result = resolveAnchor({ id: "TRAPEZOID", anchor: { parcel: "LOT", uM: 3, vM: -2 } },
+    {}, { LOT: { ring } });
+  near(result.origin, [243013, 263002], "trapezoid origin");
+  near(result.a, [1, 0], "trapezoid long axis");
+  near(result.n, [0, 1], "trapezoid short axis");
+});
+
+test("a flipped parcel starting toward negative E keeps the positive-E long axis", () => {
+  // Same 10 x 4 rotated box as above, starting with (-8,-6).
+  const ring = [[8, 6], [0, 0], [-2.4, 3.2], [5.6, 9.2]]
+    .map(([e, n]) => [e + 243000, n + 263000]);
+  const result = resolveAnchor({ id: "FLIPPED", anchor: { parcel: "LOT", uM: 2, vM: 1 } },
+    {}, { LOT: { ring } });
+  near(result.origin, [243003.8, 263006.6], "flipped parcel origin");
+  near(result.a, [0.8, 0.6], "flipped long axis");
+  near(result.n, [-0.6, 0.8], "flipped short axis");
+});
+
+test("the same wall id resolves against the selected building rather than the first building", () => {
+  const fs = footprints();
+  fs.BLD_OTHER = {
+    polygons: [[[[244000, 264000], [244008, 264000], [244008, 263988], [244000, 263988]]]],
+    walls: [
+      { wall: "W00", A: [244000, 264000], lengthM: 8, bearingDeg: 90 },
+      { wall: "W01", A: [244008, 264000], lengthM: 12, bearingDeg: 180 },
+      { wall: "W02", A: [244008, 263988], lengthM: 8, bearingDeg: 270 },
+      { wall: "W03", A: [244000, 263988], lengthM: 12, bearingDeg: 0 },
+    ],
+  };
+  near(resolveAnchor(record(), fs).origin, [242998, 263003], "first building");
+  const result = resolveAnchor(record("W00", { building: "BLD_OTHER" }), fs);
+  near(result.origin, [244003, 264002], "second building");
+  near(result.a, [1, 0], "second building tangent");
+  near(result.n, [0, 1], "second building normal");
+});
+
+test("saved wall bearings accept the 359/1 wrap at two degrees in both directions", () => {
+  for (const sign of [-1, 1]) {
+    // Unit north wall at +/-1 degree; the remaining three walls use the same rotation.
+    const sin = sign * Math.sin(Math.PI / 180), cos = Math.cos(Math.PI / 180);
+    const fp = {
+      polygons: [[[[0, 0], [sin, cos], [sin + cos, cos - sin], [cos, -sin]]]],
+      walls: [
+        { wall: "W00", A: [0, 0], lengthM: 1, bearingDeg: sign === 1 ? 359 : 1 },
+        { wall: "W01", A: [sin, cos], lengthM: 1, bearingDeg: 90 + sign },
+        { wall: "W02", A: [sin + cos, cos - sin], lengthM: 1, bearingDeg: 180 + sign },
+        { wall: "W03", A: [cos, -sin], lengthM: 1, bearingDeg: 270 + sign },
+      ],
+    };
+    const result = resolveAnchor(record("W00", { sM: 0.5, tM: 0 }), { BLD_TEST: fp });
+    near(result.origin, [sin / 2, cos / 2], "wrapped wall midpoint");
+    fp.walls[0].bearingDeg = sign === 1 ? 358.9 : 1.1;
+    assert.throws(() => resolveAnchor(record("W00", { sM: 0.5 }), { BLD_TEST: fp }), /stale wall/);
+  }
+});
+
+test("L-shaped footprints resolve every actual wall including the two reentrant walls", () => {
+  // Clockwise L: the notch is bounded by x=4 (W02) and y=4 (W03), not bbox x/y=10.
+  const fp = {
+    polygons: [[[[0, 0], [0, 10], [4, 10], [4, 4], [10, 4], [10, 0]]]],
+    walls: [
+      { wall: "W00", A: [0, 0], lengthM: 10, bearingDeg: 0 },
+      { wall: "W01", A: [0, 10], lengthM: 4, bearingDeg: 90 },
+      { wall: "W02", A: [4, 10], lengthM: 6, bearingDeg: 180 },
+      { wall: "W03", A: [4, 4], lengthM: 6, bearingDeg: 90 },
+      { wall: "W04", A: [10, 4], lengthM: 4, bearingDeg: 180 },
+      { wall: "W05", A: [10, 0], lengthM: 10, bearingDeg: 270 },
+    ],
+  };
+  const expected = [
+    { origin: [-0.5, 2], a: [0, 1], n: [-1, 0] },
+    { origin: [2, 10.5], a: [1, 0], n: [0, 1] },
+    { origin: [4.5, 8], a: [0, -1], n: [1, 0] },
+    { origin: [6, 4.5], a: [1, 0], n: [0, 1] },
+    { origin: [10.5, 2], a: [0, -1], n: [1, 0] },
+    { origin: [8, -0.5], a: [-1, 0], n: [0, -1] },
+  ];
+  expected.forEach((want, i) => {
+    const result = resolveAnchor(record(`W0${i}`, { sM: 2, tM: 0.5 }), { BLD_TEST: fp });
+    near(result.origin, want.origin, `L W0${i} origin`);
+    near(result.a, want.a, `L W0${i} tangent`);
+    near(result.n, want.n, `L W0${i} normal`);
+  });
+});
+
+test("a missing wall snapshot is an error for direct resolution and geometry validation", () => {
+  const fs = { BLD_TEST: { polygons: footprint().polygons } };
+  assert.throws(() => resolveAnchor(record(), fs), (error) =>
+    error instanceof AnchorError && error.recordId === "TEST/ENT1" &&
+    error.reference === "BLD_TEST/W00" && /wall.*(?:snapshot|mapping).*missing/.test(error.message));
+  const result = validate("anchors", { anchors: [record()] }, { footprints: fs });
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /TEST\/ENT1.*BLD_TEST\/W00.*wall.*(?:snapshot|mapping).*missing/);
 });
