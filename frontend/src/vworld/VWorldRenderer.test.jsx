@@ -306,6 +306,26 @@ describe("VWorldRenderer retained map integration", () => {
     expect(returnFocusRef.current).toBe(opener);
   });
 
+  it("closes D4 details without clearing the new native building selection (F3)", async () => {
+    mocks.vw = createVw();
+    const map = retainedMap();
+    window.__scnuVWorldMapInstance = map;
+    const onSelection = vi.fn();
+    const onClearSelection = vi.fn();
+    const onD4SectionChange = vi.fn();
+    render(<VWorldRenderer d4PaneHost={paneHost()} onSelection={onSelection} onClearSelection={onClearSelection} onD4SectionChange={onD4SectionChange} />);
+    fireEvent.click(await screen.findByRole("button", { name: "D4 공과대학 3호관 상세 보기" }));
+    expect(await screen.findByText("D4 상세 화면")).toBeTruthy();
+
+    const pick = map.onClick.addEventListener.mock.calls.at(-1)[0];
+    act(() => pick(null, null, null, { attributes: { MODEL_NAME: "SC090091" } }));
+
+    expect(screen.queryByText("D4 상세 화면")).toBeNull();
+    expect(onD4SectionChange).toHaveBeenLastCalledWith(false);
+    expect(onSelection).toHaveBeenLastCalledWith({ elementId: "BLD_E3", buildingId: "E3", displayName: "사범대학" });
+    expect(onClearSelection).not.toHaveBeenCalled();
+  });
+
   it("keeps the map overlays focusable (the phone sheet leaves the map usable) and never puts the D4 detail inside them", async () => {
     mocks.vw = createVw();
     window.__scnuVWorldMapInstance = retainedMap();
