@@ -398,10 +398,12 @@ test("a curated T1 row must flag its wheel stops: they are read on the VR, not m
   assert.equal(curationErrors({ ...bothLines, wheelStops, estimatedFields: { wheelStops: why } }), "");
 });
 
-test("a ref that calls a value an estimate, read by eye or seen in part needs a flag", () => {
-  for (const ref of ["depth is an estimate", "depth from R1 (추정)", "stops read by eye", "the back rail seen only at 5.7-7.5 m", "the back rail seen from 5 m on"]) {
-    assert.match(curationErrors({ ...bothLines, evidence: { tier: "T1", refs: [ref] } }), /refs call a value estimated or partly seen: flag it in estimatedFields/, ref);
-    assert.equal(curationErrors({ ...bothLines, evidence: { tier: "T1", refs: [ref] }, estimatedFields: { paintBack: why } }), "", ref);
+test("curation validity uses structured field flags regardless of evidence prose", () => {
+  for (const ref of ["surveyed corners", "not estimated: surveyed corners", "depth is an estimate", "read by eye", "추정"]) {
+    const evidence = { tier: "T1", refs: [ref] };
+    assert.equal(curationErrors({ ...bothLines, evidence }), "", ref);
+    assert.match(curationErrors({ paintBack: true, evidence, estimatedFields: { paintBack: why } }), /depthM is not bounded/, ref);
+    assert.equal(curationErrors({ paintBack: true, evidence, estimatedFields: { depthM: why } }), "", ref);
   }
 });
 
@@ -456,10 +458,11 @@ test("a curated T1 row must flag which way a symbol reads, and where a second fi
   assert.equal(curationErrors({ estimated: true, evidence: { tier: "T2", refs: ["t"] }, stalls: [bay()] }), "", "a row marked estimated says so as a whole");
 });
 
-test("a stall flag on its own satisfies a ref that calls a value an estimate", () => {
-  const evidence = { tier: "T1", refs: ["width read by eye"] };
-  assert.match(curationErrors({ ...bothLines, evidence }), /refs call a value estimated/);
-  assert.equal(curationErrors({ evidence, stalls: [bay({ estimatedFields: { symbolUp: why, widthM: why } })] }), "");
+test("each estimated stall value needs its own flag or the whole stall's estimated mark", () => {
+  assert.match(curationErrors({ stalls: [bay({ estimatedFields: { widthM: why } })] }), /flag symbolUp/);
+  assert.match(curationErrors({ stalls: [bay({ figure: P, estimatedFields: { symbolUp: why, figureSide: why } })] }), /figureSide and figureUp/);
+  assert.equal(curationErrors({ stalls: [bay({ estimated: true, figure: P })] }), "");
+  assert.equal(curationErrors({ stalls: [bay({ figure: P, estimatedFields: { symbolUp: why, figureSide: why, figureUp: why } })] }), "");
 });
 
 test("a stall's estimatedFields names real values of the stall, each with its reason", () => {

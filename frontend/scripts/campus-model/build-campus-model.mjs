@@ -191,6 +191,7 @@ const markingMesh = await buildMarkings({ glb, markings, surface: groundSurface,
 const markingReport = {
   symbols: { ...markings.pieceReport, ...markingMesh.roadEmission.summary },
   emission: markingMesh.roadEmission,
+  paintEmission: markingMesh.paintEmission,
   implausibleStalls: implausibleStalls(parkingDoc),
   pieces: markings.pieces.map(({ id, record, objectId, partId, ownerId, kind, colour, glyph, estimated, estimatedFields }) => ({ id: id ?? null, record: record ?? null, objectId: objectId ?? null, partId: partId ?? null, ownerId: ownerId ?? null, kind, colour, glyph: glyph ?? null, estimated: Boolean(estimated), ...(estimatedFields ? { estimatedFields } : {}) })),
 };

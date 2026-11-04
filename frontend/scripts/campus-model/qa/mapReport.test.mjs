@@ -11,6 +11,92 @@ import { createMapComparison, readMapWindow, runMapComparison } from "./mapRepor
 
 const owner = "JA_2222222222222222", crossing = `${owner}/crossing`;
 const hashes = { "road-sections": "sections", junctions: "junctions", parcels: "parcels" };
+function parkingFixture() {
+  const input = fixture();
+  const white = new Uint8Array(160 * 160);
+  for (let y = 0; y < 160; y++) for (let x = 0; x < 160; x++) {
+    const E = (x + .5) / 8, N = 20 - (y + .5) / 8;
+    if ([5, 7.5, 10].some(e => Math.abs(E - e) < .13) && N >= 5 && N <= 10) white[y * 160 + x] = 1;
+  }
+  input.sheet = { w: 160, h: 160, origin: [0, 20], gsdM: .125, paint: { white } };
+  input.pieces = [];
+  input.reference = null;
+  input.meshReport.emission = { parts: [], summary: { pieces: 0 } };
+  input.meshReport.paintEmission = [];
+  input.parkingDoc = { lots: [{ id: "LOT_TEST", rows: [{
+    id: "LOT_TEST/R1", backLine: { abs: [[5, 5], [10, 5]] }, side: 1,
+    pitchM: 2.5, depthM: 5, count: 3, stalls: [], estimated: false,
+    divider: { style: "single", widthM: .1, colour: "white" },
+    evidence: { tier: "T1", refs: ["synthetic independent mask"] },
+  }] }] };
+  return input;
+}
+
+function emittedDivider(id, east, end = 10) {
+  const ring = [[east - .05, 5], [east + .05, 5], [east + .05, end], [east - .05, end]].map(p => tmToScene(...p));
+  return { id, triangles: [[ring[0], ring[1], ring[2]], [ring[0], ring[2], ring[3]]] };
+}
+
+test("F2 empty emission cannot pass parking records even with perfect photo support", () => {
+  const report = createMapComparison(parkingFixture());
+  const dividers = report.objects.filter(o => /\/D\d+$/.test(o.id));
+  assert.equal(dividers.length, 3);
+  for (const row of dividers) {
+    assert.equal(row.notEmitted, true);
+    assert.equal(row.error, true);
+    assert.equal(row.over, true);
+    assert.equal(row.residual_m, null);
+    assert.equal(row.support, null);
+  }
+  assert.equal(report.objects.filter(o => o.id.includes("/missing@")).length, 3);
+  assert.equal(report.parkingRows[0].visibleDividers, 0);
+});
+
+test("F2 suppressed parking is a reasoned not-emitted gap, never measured", () => {
+  const input = parkingFixture();
+  input.paintSuppressed = [{ id: "LOT_TEST/R1/D0", reason: "aerial and VR cannot establish this paint" }];
+  const report = createMapComparison(input);
+  const row = report.objects.find(o => o.id === "LOT_TEST/R1/D0");
+  assert.equal(row.notEmitted, true);
+  assert.equal(row.suppressed, true);
+  assert.equal(row.error, false);
+  assert.equal(row.reason, input.paintSuppressed[0].reason);
+  assert.equal(row.residual_m, null);
+  assert.equal(row.support, null);
+});
+
+test("F2 partial parking emission measures only present geometry and exposes clipped lines", () => {
+  const input = parkingFixture();
+  input.meshReport.paintEmission = [
+    emittedDivider("LOT_TEST/R1/D0", 5.5),
+    emittedDivider("LOT_TEST/R1/D1", 7.5, 6),
+  ];
+  const report = createMapComparison(input);
+  const get = id => report.objects.find(o => o.id === `LOT_TEST/R1/${id}`);
+  assert.ok(get("D0").residual_m > .3, "displaced emission must not inherit the planned line's zero residual");
+  assert.equal(get("D0").over, true);
+  assert.equal(get("D1").unmeasurable, true);
+  assert.equal(get("D1").support, null);
+  assert.equal(get("D2").notEmitted, true);
+  assert.ok(report.objects.some(o => o.id.includes("/missing@")), "unemitted lines cannot explain photo ridges");
+});
+
+test("parking line clipping within the scoring trim remains a gap", () => {
+  const input = parkingFixture();
+  input.meshReport.paintEmission = [
+    emittedDivider("LOT_TEST/R1/D0", 5),
+    emittedDivider("LOT_TEST/R1/D1", 7.5, 9.8),
+    emittedDivider("LOT_TEST/R1/D2", 10),
+  ];
+  const report = createMapComparison(input);
+  const lines = report.objects.filter(o => /\/D\d+$/.test(o.id));
+  assert.equal(lines[0].over, false);
+  assert.ok(lines[0].residual_m <= .05);
+  assert.equal(lines[1].unmeasurable, true);
+  assert.equal(lines[1].support, null);
+  assert.equal(lines[2].over, false);
+});
+
 function fixture() {
   const ring = [[1010, 2010], [1013, 2010], [1013, 2011], [1010, 2011]].map(p => tmToScene(...p));
   const piece = { objectId: crossing, ownerId: owner, partId: `${crossing}/0/part/0`,

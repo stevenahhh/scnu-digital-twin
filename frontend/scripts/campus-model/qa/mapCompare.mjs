@@ -238,7 +238,7 @@ export function scoreObjects(objects, sheet, masks = {}) {
 }
 
 // ---------------------------------------------------------------- generated parking rows (plan todo 13)
-// The rows of data/ground/parking.json as objects to score. Dividers stop short of the rails: within a scan's reach of a rail
+// The rows of data/ground/parking.json as expected objects. Dividers stop short of the rails: within a scan's reach of a rail
 // the rail's paint would read as the divider's. A row's stalls never draw an end line the record does not name.
 const DIVIDER_TRIM_M = 0.4;
 const trimOf = (row) => Math.min(DIVIDER_TRIM_M, row.depthM * 0.15);
@@ -295,15 +295,17 @@ function drawnNear(objects, from, to, tolerance) {
   const dir = [u[0] / length, u[1] / length];
   const mid = [(from[0] + to[0]) / 2, (from[1] + to[1]) / 2];
   return objects.some((o) => {
-    if (o.geometry.type !== "line") return false;
-    const [a, b] = o.geometry.coords;
-    const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
-    if (!len) return false;
-    const e = [(b[0] - a[0]) / len, (b[1] - a[1]) / len];
-    if (Math.abs(dir[0] * e[0] + dir[1] * e[1]) < DRAWN_COS) return false;
-    const v = [mid[0] - a[0], mid[1] - a[1]];
-    const along = v[0] * e[0] + v[1] * e[1];
-    return along >= -1 && along <= len + 1 && Math.abs(v[0] * e[1] - v[1] * e[0]) <= tolerance;
+    if (o.geometry.type !== "line" || o.unmeasurableReason) return false;
+    return (o.geometry.parts ?? [o.geometry.coords]).some(coords => {
+      const [a, b] = [coords[0], coords.at(-1)];
+      const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      if (!len) return false;
+      const e = [(b[0] - a[0]) / len, (b[1] - a[1]) / len];
+      if (Math.abs(dir[0] * e[0] + dir[1] * e[1]) < DRAWN_COS) return false;
+      const v = [mid[0] - a[0], mid[1] - a[1]];
+      const along = v[0] * e[0] + v[1] * e[1];
+      return along >= -1 && along <= len + 1 && Math.abs(v[0] * e[1] - v[1] * e[0]) <= tolerance;
+    });
   });
 }
 export function missingDividers(doc, objects, sheet, masks = {}, { resolveAnchor = null } = {}) {
@@ -358,14 +360,14 @@ export const LOT_SUPPORT = 0.7;
 export function lotSummary(doc, results) {
   return doc.lots.map((lot) => {
     const own = results.filter((r) => r.id.startsWith(`${lot.id}/`));
-    const judged = own.filter((r) => /\/(D\d+|L\d+)$/.test(r.id) && !r.occluded);
+    const judged = own.filter((r) => /\/(D\d+|L\d+)$/.test(r.id) && !r.occluded && !r.unmeasurable);
     const support = judged.length ? round(judged.reduce((n, r) => n + r.support, 0) / judged.length) : null;
     const estimated = Boolean(lot.estimated);
     return {
       lot: lot.id, curated: lot.curated ?? null, unreviewed: Boolean(lot.unreviewed), estimated, estimatedReason: lot.estimatedReason ?? null,
       rows: lot.rows.length, lines: (lot.lines ?? []).length, visible: judged.length, support,
       over: own.filter((r) => r.over).map((r) => r.id), missing: own.filter((r) => r.missing).length,
-      accepted: !lot.unreviewed && (estimated || (support !== null && support >= LOT_SUPPORT)),
+      accepted: !lot.unreviewed && !own.some(r => r.notEmitted || r.unmeasurable) && (estimated || (support !== null && support >= LOT_SUPPORT)),
     };
   });
 }
@@ -377,7 +379,7 @@ export function rowSummary(doc, results) {
     for (const row of lot.rows) {
       const own = (test) => results.filter((r) => r.id.startsWith(`${row.id}/`) && test(r));
       const dividers = own((r) => /\/D\d+$/.test(r.id));
-      const seen = dividers.filter((r) => !r.occluded);
+      const seen = dividers.filter((r) => !r.occluded && !r.unmeasurable);
       const end = (name) => { const [r] = own((x) => x.id === `${row.id}/${name}`); return r ? { support: r.support, residualM: r.residual_m, over: r.over, occluded: r.occluded } : null; };
       const residuals = seen.map((r) => r.residual_m).filter((v) => v !== null);
       out.push({

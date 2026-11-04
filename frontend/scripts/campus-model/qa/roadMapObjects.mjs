@@ -4,7 +4,7 @@ import { roadObjectInventory } from "./roadObjects.mjs";
 // The planned ring supplies station directions only. Cross-section endpoints
 // and their midpoint come from the emitted triangles, so displaced output
 // cannot silently inherit an unchanged planned centreline.
-function emittedCentreline(piece, triangles) {
+export function emittedCentreline(piece, triangles) {
   const ring = piece.rings[0], n = ring.length / 2;
   if (piece.rings.length !== 1 || !Number.isInteger(n) || n < 2) throw new TypeError(`${piece.partId}: expected canonical stroke ring`);
   return ring.slice(0, n).map((left, i) => {
