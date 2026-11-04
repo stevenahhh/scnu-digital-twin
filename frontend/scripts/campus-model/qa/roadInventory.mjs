@@ -21,27 +21,26 @@ export function compareRoadInventory(reference, generated) {
   const drawn = new Set(generated.segmentIds);
   const expectedIds = new Set(reference.segments.map(r => r.id));
   const counts = { tp: 0, tn: 0, fp: 0, fn: 0, unknown: 0 };
-  // Acceptance always scores the full frozen corpus. A documented scope
-  // exclusion (for example paint on the off-campus context ground) only feeds
-  // the separately named inScope side metric.
-  const inScopeCounts = { tp: 0, tn: 0, fp: 0, fn: 0, unknown: 0 }, outOfScope = [];
+  // Todo 24 user decision, 2026-11-04: exclude the 24 outside-EXTENT
+  // candidates from acceptance (373 -> 349), retain the frozen side metric.
+  const frozenCounts = { tp: 0, tn: 0, fp: 0, fn: 0, unknown: 0 }, outOfScope = [];
   const rows = reference.segments.map(r => {
     const excluded = r.scope?.inScope === false;
     if (excluded && !(r.scope.reason?.trim() && supported({ expected: false, refs: r.scope.refs }))) throw new RangeError(`${r.id}: scope exclusion needs refs and reason`);
     const exists = drawn.has(r.id);
     const status = !supported(r) ? "unknown" : r.expected ? (exists ? "tp" : "fn") : (exists ? "fp" : "tn");
-    counts[status] += 1;
+    frozenCounts[status] += 1;
     if (excluded) {
       outOfScope.push(r.id);
-      return { id: r.id, status: "out-of-scope", frozenStatus: status, over: false };
+      return { id: r.id, status: "out-of-scope", frozenStatus: status, over: false, scope: r.scope };
     }
-    inScopeCounts[status] += 1;
+    counts[status] += 1;
     return { id: r.id, status, over: status === "fp" || status === "fn" };
   });
   for (const id of drawn) {
     if (expectedIds.has(id)) continue;
     counts.unknown += 1;
-    inScopeCounts.unknown += 1;
+    frozenCounts.unknown += 1;
     rows.push({ id, status: "unreferenced", over: true });
   }
   const judged = counts.tp + counts.tn + counts.fp + counts.fn;
@@ -49,11 +48,11 @@ export function compareRoadInventory(reference, generated) {
   const accuracy = judged ? (counts.tp + counts.tn) / judged : null;
   const lowerBound = denominator ? (counts.tp + counts.tn) / denominator : null;
   const unassignedOwners = generated.unassignedOwners ?? [];
-  const inScopeDenominator = Object.values(inScopeCounts).reduce((a, b) => a + b, 0);
+  const frozenDenominator = Object.values(frozenCounts).reduce((a, b) => a + b, 0);
   const segments = {
     rows, counts, denominator, judged, accuracy, lowerBound, unassignedOwners, outOfScope,
-    inScope: { denominator: inScopeDenominator, counts: inScopeCounts,
-      lowerBound: inScopeDenominator ? (inScopeCounts.tp + inScopeCounts.tn) / inScopeDenominator : null },
+    frozen: { denominator: frozenDenominator, counts: frozenCounts,
+      lowerBound: frozenDenominator ? (frozenCounts.tp + frozenCounts.tn) / frozenDenominator : null },
     precision: counts.tp + counts.fp ? counts.tp / (counts.tp + counts.fp) : null,
     recall: counts.tp + counts.fn ? counts.tp / (counts.tp + counts.fn) : null,
     threshold: 0.95,
