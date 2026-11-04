@@ -82,6 +82,542 @@
    },
    "estimated": true,
    "reason": "east edge moved onto the island kerb the photo shows, 0.6-1.7 m west of the zone outline; shade hides parts of the kerb"
+  },
+  {
+   "id": "PARCEL_PAVING_100034702020A00310100000000047547",
+   "ring": [
+    [
+     243756.4271,
+     263725.1411
+    ],
+    [
+     243753.174,
+     263725.6881
+    ],
+    [
+     243742.953,
+     263728.7051
+    ],
+    [
+     243739.682,
+     263730.4281
+    ],
+    [
+     243737.2571,
+     263731.844
+    ],
+    [
+     243735.121,
+     263733.6761
+    ],
+    [
+     243731.6791,
+     263738.2321
+    ],
+    [
+     243720.3221,
+     263754.2031
+    ],
+    [
+     243715,
+     263763.3601
+    ],
+    [
+     243714.8809,
+     263764.3209
+    ],
+    [
+     243713.5881,
+     263762.6081
+    ],
+    [
+     243713.1881,
+     263761.1781
+    ],
+    [
+     243713.519,
+     263757.5499
+    ],
+    [
+     243716.7881,
+     263751.926
+    ],
+    [
+     243728.291,
+     263735.7481
+    ],
+    [
+     243732.2931,
+     263731.1021
+    ],
+    [
+     243735.061,
+     263728.7281
+    ],
+    [
+     243737.8241,
+     263727.0941
+    ],
+    [
+     243741.3641,
+     263724.7941
+    ],
+    [
+     243751.326,
+     263722.1231
+    ],
+    [
+     243770,
+     263717.2874
+    ],
+    [
+     243772,
+     263717.2195
+    ],
+    [
+     243792,
+     263712.0403
+    ],
+    [
+     243794,
+     263711.0724
+    ],
+    [
+     243809.363,
+     263707.0941
+    ],
+    [
+     243811.0971,
+     263710.9841
+    ]
+   ],
+   "evidence": {
+    "tier": "T1",
+    "refs": [
+     "NGII 2025 sheet 34702020 actual paint and kerb",
+     "Suncheon 2024_12cm inverse registration: pivot 243735.68,263709.15; dE 1.523 dN 2.266 rot -0.1058 scale 0.999753; RMS 0.419 m",
+     "task-22 attempt3 registered raw/paint/A003 aerial comparison"
+    ]
+   },
+   "estimated": true,
+   "curated": "todo 22 aerial boundary review",
+   "reason": "Road-side boundary near the 2025 yellow kerb (E243772-243792) moves north 0.45 m; the crossing bend near E243734 moves NE 0.39-0.41 m. Registered 2024 aerial confirms asphalt, but the 2025 paving extent is retained elsewhere. Eye-read boundary, estimated; no global A003 shift."
+  },
+  {
+   "id": "PARCEL_PAVING_100034702020A00310100000000047692",
+   "ring": [
+    [
+     243811.3771,
+     263914.13
+    ],
+    [
+     243811.8761,
+     263914.4461
+    ],
+    [
+     243787.996,
+     263920.5354
+    ],
+    [
+     243787.3601,
+     263919.301
+    ],
+    [
+     243787.2081,
+     263917.64
+    ],
+    [
+     243807.835,
+     263912.63
+    ],
+    [
+     243808.7,
+     263912.867
+    ]
+   ],
+   "evidence": {
+    "tier": "T1",
+    "refs": [
+     "NGII 2025 sheet 34702020 actual paint and kerb",
+     "Suncheon 2024_12cm inverse registration: pivot 243735.68,263709.15; dE 1.523 dN 2.266 rot -0.1058 scale 0.999753; RMS 0.419 m",
+     "task-22 attempt3 registered raw/paint/A003 aerial comparison"
+    ]
+   },
+   "estimated": true,
+   "curated": "todo 22 aerial boundary review",
+   "reason": "The road-side rounded tip is retracted north 0.25 m, within the 0.419 m registration RMS. Both epochs show the kerb on the road side; retain the rest of the sidewalk. Eye-read boundary, estimated; no global A003 shift."
+  },
+  {
+   "id": "PARCEL_PAVING_100034702020A00310100000000047555",
+   "ring": [
+    [
+     243922.8666,
+     263774.4479
+    ],
+    [
+     243911.9389,
+     263777.3254
+    ],
+    [
+     243909.676,
+     263777.741
+    ],
+    [
+     243908.2368,
+     263777.8187
+    ],
+    [
+     243906.2374,
+     263777.7674
+    ],
+    [
+     243903.5966,
+     263777.5636
+    ],
+    [
+     243902.2716,
+     263777.2872
+    ],
+    [
+     243900.1234,
+     263776.6602
+    ],
+    [
+     243898.9766,
+     263776.2423
+    ],
+    [
+     243897.576,
+     263775.7203
+    ],
+    [
+     243894.3491,
+     263774.2651
+    ],
+    [
+     243891.1675,
+     263772.3916
+    ],
+    [
+     243888.3487,
+     263770.1443
+    ],
+    [
+     243886.6143,
+     263768.4267
+    ],
+    [
+     243885.1111,
+     263765.541
+    ],
+    [
+     243884.9415,
+     263764.0729
+    ],
+    [
+     243883.992,
+     263762.3716
+    ],
+    [
+     243883.5825,
+     263761.2601
+    ],
+    [
+     243877.0127,
+     263741.3413
+    ],
+    [
+     243872.2939,
+     263722.7401
+    ],
+    [
+     243869.361,
+     263710.8517
+    ],
+    [
+     243869.3177,
+     263710.0781
+    ],
+    [
+     243869.4005,
+     263709.4845
+    ],
+    [
+     243869.7846,
+     263708.8139
+    ],
+    [
+     243870.7906,
+     263708.0258
+    ],
+    [
+     243873.24,
+     263707.3876
+    ],
+    [
+     243873.4161,
+     263708.1774
+    ],
+    [
+     243873.0592,
+     263708.4992
+    ],
+    [
+     243872.8464,
+     263708.9201
+    ],
+    [
+     243872.8598,
+     263709.2481
+    ],
+    [
+     243873.0698,
+     263711.0911
+    ],
+    [
+     243875.3639,
+     263719.3278
+    ],
+    [
+     243875.8852,
+     263719.2178
+    ],
+    [
+     243882.4378,
+     263745.3521
+    ],
+    [
+     243886.4731,
+     263761.533
+    ],
+    [
+     243887.1708,
+     263763.4157
+    ],
+    [
+     243887.7452,
+     263764.374
+    ],
+    [
+     243895.1065,
+     263769.5268
+    ],
+    [
+     243895.8003,
+     263769.9843
+    ],
+    [
+     243896.4767,
+     263770.1285
+    ],
+    [
+     243897.0941,
+     263770.0962
+    ],
+    [
+     243903.3121,
+     263768.6402
+    ],
+    [
+     243903.5989,
+     263769.4242
+    ],
+    [
+     243904.0406,
+     263770.0827
+    ],
+    [
+     243904.5979,
+     263770.5119
+    ],
+    [
+     243906.5201,
+     263771.4837
+    ],
+    [
+     243907.3561,
+     263771.756
+    ],
+    [
+     243908.9006,
+     263772.2379
+    ],
+    [
+     243910.3607,
+     263772.3861
+    ],
+    [
+     243913.2074,
+     263772.3315
+    ],
+    [
+     243950.7119,
+     263763.586
+    ],
+    [
+     243948.1664,
+     263768.4064
+    ],
+    [
+     243947.595,
+     263768.8001
+    ],
+    [
+     243927.8366,
+     263773.199
+    ]
+   ],
+   "evidence": {
+    "tier": "T1",
+    "refs": [
+     "NGII 2025 sheet 34702020 actual paint and kerb",
+     "Suncheon 2024_12cm inverse registration: pivot 243735.68,263709.15; dE 1.523 dN 2.266 rot -0.1058 scale 0.999753; RMS 0.419 m",
+     "task-22 attempt3 registered raw/paint/A003 aerial comparison"
+    ]
+   },
+   "estimated": true,
+   "curated": "todo 22 aerial boundary review",
+   "reason": "The west/road edge at the shadowed crossing is moved up to 1.501 m toward the visible parking-side kerb. The northern curve blends through a 0.701 m correction, and the straight edge tapers to its existing endpoint at N263741.3413 without artificial notches. The opposite sidewalk edge is unchanged. The 2024 aerial exposes the road zebra; 2025 confirms its epoch and location. Eye-read boundary, estimated, registration RMS 0.419 m; no global A003 shift."
+  },
+  {
+   "id": "PARCEL_PAVING_100034702020A00310100000000047655",
+   "ring": [
+    [
+     243609.371,
+     263788.4681
+    ],
+    [
+     243574.331,
+     263800.014
+    ],
+    [
+     243573.447,
+     263800.666
+    ],
+    [
+     243572.8811,
+     263801.184
+    ],
+    [
+     243566.4121,
+     263814.1051
+    ],
+    [
+     243565.792,
+     263815.39
+    ],
+    [
+     243565.555,
+     263816.5411
+    ],
+    [
+     243565.506,
+     263817.4991
+    ],
+    [
+     243569.644,
+     263848.954
+    ],
+    [
+     243569.8461,
+     263850.0411
+    ],
+    [
+     243569.893,
+     263850.7431
+    ],
+    [
+     243569.6501,
+     263851.51
+    ],
+    [
+     243561.9671,
+     263886.3091
+    ],
+    [
+     243561.0901,
+     263887.472
+    ],
+    [
+     243559.771,
+     263888.768
+    ],
+    [
+     243558.318,
+     263889.81
+    ],
+    [
+     243557.8441,
+     263890.5489
+    ],
+    [
+     243559.252,
+     263884.9271
+    ],
+    [
+     243566.7851,
+     263850.6201
+    ],
+    [
+     243566.828,
+     263850.169
+    ],
+    [
+     243566.6361,
+     263849.073
+    ],
+    [
+     243562.4971,
+     263817.6071
+    ],
+    [
+     243562.571,
+     263816.16
+    ],
+    [
+     243562.929,
+     263814.4211
+    ],
+    [
+     243563.7202,
+     263812.7821
+    ],
+    [
+     243570.4471,
+     263799.3451
+    ],
+    [
+     243571.5391,
+     263798.3461
+    ],
+    [
+     243572.9361,
+     263797.315
+    ],
+    [
+     243608.771,
+     263785.507
+    ],
+    [
+     243610.43,
+     263785.384
+    ],
+    [
+     243611.031,
+     263788.3451
+    ]
+   ],
+   "evidence": {
+    "tier": "T1",
+    "refs": [
+     "NGII 2025 sheet 34702020 actual paint and kerb",
+     "Suncheon 2024_12cm inverse registration: pivot 243735.68,263709.15; dE 1.523 dN 2.266 rot -0.1058 scale 0.999753; RMS 0.419 m",
+     "task-22 attempt3 registered raw/paint/A003 aerial comparison"
+    ]
+   },
+   "estimated": true,
+   "curated": "todo 22 aerial boundary review",
+   "reason": "Registered western 2024 tile BBOX 243450,263840,243575,263965 exposes the crossing and stone footway. Move the northern strip east 0.6-3.5 m along its visible kerb, taper to 0.25 m near N263849. The crossing sample maps to aerial pixel 857.829,747.964 on white road paint; the 2025 canopy is not absence evidence. Eye-read boundary, estimated; no global A003 shift."
   }
  ],
  "remove": [
@@ -111,10 +647,22 @@
    "id": "PARCEL_LINK_E243573_N263746_R2",
    "class": "lot",
    "ring": [
-    [243579.7, 263748.6],
-    [243592.7, 263746],
-    [243592, 263742.8],
-    [243579, 263745.4]
+    [
+     243579.7,
+     263748.6
+    ],
+    [
+     243592.7,
+     263746
+    ],
+    [
+     243592,
+     263742.8
+    ],
+    [
+     243579,
+     263745.4
+    ]
    ],
    "evidence": {
     "tier": "T4",
@@ -131,10 +679,22 @@
    "id": "PARCEL_LINK_E243784_N263922_R1",
    "class": "lot",
    "ring": [
-    [243783.8, 263923.5],
-    [243788.3, 263922.5],
-    [243787.6, 263919.2],
-    [243783.1, 263920.2]
+    [
+     243783.8,
+     263923.5
+    ],
+    [
+     243788.3,
+     263922.5
+    ],
+    [
+     243787.6,
+     263919.2
+    ],
+    [
+     243783.1,
+     263920.2
+    ]
    ],
    "evidence": {
     "tier": "T1",
@@ -151,10 +711,22 @@
    "id": "PARCEL_LINK_E243927_N263806_R1",
    "class": "lot",
    "ring": [
-    [243928.3, 263808],
-    [243933.5, 263806.7],
-    [243932.2, 263801.3],
-    [243928.5, 263801.7]
+    [
+     243928.3,
+     263808
+    ],
+    [
+     243933.5,
+     263806.7
+    ],
+    [
+     243932.2,
+     263801.3
+    ],
+    [
+     243928.5,
+     263801.7
+    ]
    ],
    "evidence": {
     "tier": "T1",
@@ -1981,8 +2553,31 @@
    "id": "PARCEL_LOT_E243976_N263565_CONCRETE",
    "class": "lot",
    "surface": "concrete",
-   "ring": [[243971.4,263564.2],[243990.0,263571.2],[243992.0,263564.8],[243974.0,263557.3]],
-   "evidence": {"tier":"T1","refs":["NGII 2025 orthophoto: pale concrete ladder beside the track","LOT_E243976_N263545/R2"]},
+   "ring": [
+    [
+     243971.4,
+     263564.2
+    ],
+    [
+     243990,
+     263571.2
+    ],
+    [
+     243992,
+     263564.8
+    ],
+    [
+     243974,
+     263557.3
+    ]
+   ],
+   "evidence": {
+    "tier": "T1",
+    "refs": [
+     "NGII 2025 orthophoto: pale concrete ladder beside the track",
+     "LOT_E243976_N263545/R2"
+    ]
+   },
    "estimated": true,
    "reason": "pale concrete strip along the track-side ladder, not dark asphalt; todo 13c traces the pavement edge outside the row, with the solar roof and parked cars hiding the southern continuation"
   },
@@ -1990,8 +2585,47 @@
    "id": "PARCEL_LOT_E243761_N263635_CONCRETE",
    "class": "lot",
    "surface": "concrete",
-   "ring": [[243724.8,263634.0],[243746.5,263629.5],[243773.7,263650.3],[243789.5,263660.3],[243794.5,263653.2],[243784.5,263637.3],[243756.3,263623.3],[243724.8,263630.3]],
-   "evidence": {"tier":"T4","refs":["NGII 2025 orthophoto: pale courtyard south of the building","LOT_E243761_N263635/R3"]},
+   "ring": [
+    [
+     243724.8,
+     263634
+    ],
+    [
+     243746.5,
+     263629.5
+    ],
+    [
+     243773.7,
+     263650.3
+    ],
+    [
+     243789.5,
+     263660.3
+    ],
+    [
+     243794.5,
+     263653.2
+    ],
+    [
+     243784.5,
+     263637.3
+    ],
+    [
+     243756.3,
+     263623.3
+    ],
+    [
+     243724.8,
+     263630.3
+    ]
+   ],
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 orthophoto: pale courtyard south of the building",
+     "LOT_E243761_N263635/R3"
+    ]
+   },
    "estimated": true,
    "reason": "pale concrete courtyard carrying the ladder and accessible bays, with its west footway; todo 13c replaces the dark row-support appearance. The building roof lean, crowns and cars hide parts of the perimeter, so the ring remains estimated"
   },
@@ -1999,8 +2633,52 @@
    "id": "PARCEL_LOT_E243726_N263569_CONCRETE",
    "class": "lot",
    "surface": "concrete",
-   "ring": [[243720.0,263595.8],[243760.8,263586.6],[243769.5,263581.3],[243772.5,263565.5],[243766.8,263556.5],[243761.0,263558.0],[243761.0,263568.0],[243733.0,263574.0],[243720.0,263576.0]],
-   "evidence": {"tier":"T4","refs":["NGII 2025 orthophoto: pale parking pavement around the planted island","LOT_E243726_N263569/R2","LOT_E243726_N263569/R3"]},
+   "ring": [
+    [
+     243720,
+     263595.8
+    ],
+    [
+     243760.8,
+     263586.6
+    ],
+    [
+     243769.5,
+     263581.3
+    ],
+    [
+     243772.5,
+     263565.5
+    ],
+    [
+     243766.8,
+     263556.5
+    ],
+    [
+     243761,
+     263558
+    ],
+    [
+     243761,
+     263568
+    ],
+    [
+     243733,
+     263574
+    ],
+    [
+     243720,
+     263576
+    ]
+   ],
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 orthophoto: pale parking pavement around the planted island",
+     "LOT_E243726_N263569/R2",
+     "LOT_E243726_N263569/R3"
+    ]
+   },
    "estimated": true,
    "reason": "pale parking pavement and aisle south of the tree-lined footway; todo 13c uses concrete instead of asphalt under both ladders. Crowns hide the north and east limits; the planted island is excluded by the south-edge notch"
   }

@@ -7,7 +7,7 @@
 //   - data/materials/ground-*.webp CC0 ground material tiles (fetch/groundMaterials.mjs, ground-materials.json)
 //   - data/cop30.png               Copernicus GLO-30 heights for the outer terrain ring (fetch/terrain.mjs)
 //   - docs/assets/data/*.geojson   road zones, walkways and crosswalks
-//   - data/photo/markings.geojson  road markings traced from the NGII 2025 orthophoto
+//   - data/ground/road-sections.json + junctions.json  recorded road paint and speed humps
 //   - data/photo/objects-campus.geojson  street furniture and lamps surveyed on the NGII 2025 orthophoto
 // Everything stays in uni.glb's scene frame (see lib/frame.mjs), so CityModel's recentering,
 // the traffic simulation and the BLD_* selection contract keep working unchanged.
@@ -15,13 +15,12 @@
 // This file only sequences the stages (scripts/campus-model/stages/):
 //   sources.mjs   loads the inputs and builds the terrain heightfield
 //   buildings.mjs selects BLD_*/CampusBuildings, their materials, meshes and nodes
-//   markings.mjs  road markings from the photo detection (loadMarkings) and their decal mesh on the Topography
-//                 triangles (buildMarkings)
+//   roadMarkings.mjs  road-section/junction records; markings.mjs assembles their terrain-conformed mesh
 //   ground.mjs    the Topography chunks (natural ground) and the class polygons of the modelled ground (network/surfaces.mjs)
 //   kerbs.mjs     kerb ribbons on the A003 outlines, the raised walkway slab, dropped kerbs at crossings, gutter bands
 //   tactile.mjs   tactile paving bands and guidance strips at every dropped kerb
 //   parking.mjs   stall rows, accessible bays, their symbols and the wheel stops from data/ground/parking.json
-//   network/stalls.mjs  the circular-arc speed humps
+//   roadMarkings.mjs  the record-defined circular-arc speed humps and sidecar height function
 //   surfaces.mjs  the Ground_* decal meshes (asphalt, pavers, lots, aprons, painted surfaces) with CC0 tiles; no photo pixels
 //   outerTerrain.mjs  the OuterTerrain hill ring around EXTENT, feathered onto Topography's edge
 //   context.mjs / contextGround.mjs  off-campus building masses and the streets around the campus beyond EXTENT
@@ -39,12 +38,13 @@
 //   bun run model:build      (generator, then pack.mjs)
 import { mkdir } from "node:fs/promises";
 import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { sceneToTm, tmToScene } from "../../src/geo/epsg5186.mjs";
 import { EXTENT, SCENE_UNITS_PER_METRE, frameAssetExtras } from "./lib/frame.mjs";
 import { SURFACE_CLASS } from "./lib/surfaceClass.mjs";
-import { HUMP_LENGTH_M, buildHumps, humpProfile, loadSpeedBumps } from "./network/stalls.mjs";
+import { loadRoadMarkings } from "./stages/roadMarkings.mjs";
 import { GlbBuilder } from "./lib/glb.mjs";
 import { assertPaintOnParcels, pieceKey } from "./lib/parcels.mjs";
 import { GroundPartition, TinPartition, splitByLine } from "./lib/partition.mjs";
@@ -57,7 +57,7 @@ import { buildLights, placeLamps } from "./stages/lights.mjs";
 import { buildContext, meshHeightAt } from "./stages/context.mjs";
 import { buildContextGround } from "./stages/contextGround.mjs";
 import { buildMasts } from "./stages/masts.mjs";
-import { buildMarkings, describeMarkings, inMarkingExtent, loadMarkings } from "./stages/markings.mjs";
+import { buildMarkings, describeMarkings, inMarkingExtent } from "./stages/markings.mjs";
 import { assertLotsOnParcels, describeParking, estimatedValueReport, implausibleStalls, loadParking, lotReviewReport, parkingPlan, symbolPieceReport } from "./stages/parking.mjs";
 import { buildOuterTerrain } from "./stages/outerTerrain.mjs";
 import { KERB_EXPOSED_M, SLAB_DECAL_DROP_M, buildKerbs } from "./stages/kerbs.mjs";
@@ -83,7 +83,12 @@ const anchorFootprints = await loadTmFootprints();
 const wallSnapshots = Object.fromEntries(Object.entries(anchorFootprints).map(([id, fp]) => [id, fp.walls]));
 const furniture = loadFurniture({ anchorFootprints, wallSnapshots });
 const { selectableBuildings, campusBuildings, offCampusLots, contextParts } = await buildBuildings({ glb, inputs, detailedStructures: furniture.detailedStructures });
-const markings = await loadMarkings({ inputs, buildings: [...selectableBuildings, ...campusBuildings] });
+const markings = loadRoadMarkings();
+const roadRecords = [...new Set(markings.pieces.map(p => p.record))];
+const roadObjects = [...new Set(markings.pieces.map(p => p.objectId))];
+const roadSourceHashes = Object.fromEntries(["road-sections", "junctions", "parcels"].map(name => [
+  name, createHash("sha256").update(readFileSync(new URL(`./data/ground/${name}.json`, import.meta.url))).digest("hex"),
+]));
 console.log(describeMarkings(markings));
 // The ground classes come from the one parcel map data/ground/parcels.json (design §5, lib/parcels.mjs).
 const { surface, surfaces, groundInfo, layers, aoTexture, buildTopography } = await buildGround({ glb, inputs });
@@ -103,7 +108,7 @@ console.log(describeParking(parking));
   const rows = [...new Set(odd.map((x) => x.row))];
   console.log(`parking: ${odd.length} stalls of implausible width in ${rows.length} rows (markings.report): ${rows.join(", ") || "none"}`);
 }
-// The speed humps (network/stalls.mjs) stand on road or lot ground.
+// The sidecar's road/lot samples use the same ground-class raster.
 const labelAt = ([x, z]) => {
   const i = Math.floor((x - EXTENT.minX) * groundInfo.px);
   const j = Math.floor((z - EXTENT.minZ) * groundInfo.px);
@@ -123,18 +128,12 @@ const labelAt = ([x, z]) => {
 }
 // markings.report: the symbol pieces that reach the mesh, in the GLB's Road_Markings extras and in .build; the build stops on
 // a symbol without a parking.json record.
-markings.pieceReport = { ...symbolPieceReport(markings.pieces), estimatedValues: estimatedValueReport(parkingDoc), lots: lotReviewReport(parkingDoc) };
+markings.pieceReport = { ...symbolPieceReport(markings.pieces), roadRecords, roadObjects, roadSourceHashes, estimatedValues: estimatedValueReport(parkingDoc), lots: lotReviewReport(parkingDoc) };
 if (markings.pieceReport.unrecorded) throw new Error(`markings.report: ${markings.pieceReport.unrecorded} symbol pieces without a parking.json record`);
 await mkdir(path.dirname(OUTPUT), { recursive: true });
-await Bun.write(path.join(path.dirname(OUTPUT), "markings.report.json"), `${JSON.stringify({
-  symbols: markings.pieceReport,
-  implausibleStalls: implausibleStalls(parkingDoc),
-  pieces: markings.pieces.map(({ id, record, kind, colour, glyph, estimated, estimatedFields }) => ({ id: id ?? null, record: record ?? null, kind, colour, glyph: glyph ?? null, estimated: Boolean(estimated), ...(estimatedFields ? { estimatedFields } : {}) })),
-})}\n`);
 console.log(`markings.report: ${JSON.stringify(markings.pieceReport.byGlyph)} on ${markings.pieceReport.records.length} records, ${markings.pieceReport.unrecorded} without a record`);
-const speedBumps = await loadSpeedBumps();
-const humps = buildHumps({ features: speedBumps, onRoad: (p) => [SURFACE_CLASS.ASPHALT, SURFACE_CLASS.LOT].includes(labelAt(p)) });
-const humpNodes = await buildHumpMeshes({ glb, humps: humps.humps, surface, ao: aoTexture, profile: humpProfile, lengthM: HUMP_LENGTH_M });
+const humps = markings;
+const humpNodes = await buildHumpMeshes({ glb, humps: humps.humps, surface, ao: aoTexture });
 
 // ---------------------------------------------------------------- ground partition (lib/partition.mjs)
 // The ground has no stacked layers: road markings claim their area first, then the ground classes by precedence (hump
@@ -173,15 +172,21 @@ const slabDecal = (x, z) => {
   return slab - SLAB_DECAL_DROP_M * Math.min(1, slab / 0.03);
 };
 
-console.log(
-  `humps: ${humpNodes} (${speedBumps.length} speed_bump features: ` +
-  `${humps.candidates} hump outlines or band groups, ${humps.candidates - humpNodes} off road)`,
-);
+console.log(`humps: ${humpNodes} from road-section records`);
 let stageStart = performance.now();
 const stageTime = (label) => { console.log(`ground partition: ${label} in ${((performance.now() - stageStart) / 1000).toFixed(1)} s, ${partition.cells.size} cells`); stageStart = performance.now(); };
-const markingMesh = await buildMarkings({ glb, markings, surface: groundSurface, extraHeight: humps.heightAt, claim, baseOffset: slabDecal });
+const excludedParcelIds = new Set(surfaces.paintExcludedDetail.map(p => p.parcel));
+const paintExclusions = surfaces.parcels.filter(p => excludedParcelIds.has(p.id) && !p.paintAllowed)
+  .map(p => [p.ring, ...p.holes].map(r => r.map(([e,n]) => tmToScene(e,n))));
+const markingMesh = await buildMarkings({ glb, markings, surface: groundSurface, extraHeight: humps.heightAt, claim, baseOffset: slabDecal, exclusions: paintExclusions });
+const markingReport = {
+  symbols: { ...markings.pieceReport, ...markingMesh.roadEmission.summary },
+  emission: markingMesh.roadEmission,
+  implausibleStalls: implausibleStalls(parkingDoc),
+  pieces: markings.pieces.map(({ id, record, objectId, partId, ownerId, kind, colour, glyph, estimated, estimatedFields }) => ({ id: id ?? null, record: record ?? null, objectId: objectId ?? null, partId: partId ?? null, ownerId: ownerId ?? null, kind, colour, glyph: glyph ?? null, estimated: Boolean(estimated), ...(estimatedFields ? { estimatedFields } : {}) })),
+};
 stageTime("road markings");
-const groundLayers = [...layers, ...kerbs.gutters, ...tactile.layers, ...humpLayers(humps.humps, HUMP_LENGTH_M)]
+const groundLayers = [...layers, ...kerbs.gutters, ...tactile.layers, ...humpLayers(humps.humps)]
   .map((layer, order) => ({ layer, order }))
   .sort((a, b) => b.layer.precedence - a.layer.precedence || b.order - a.order)
   .map(({ layer }) => layer);
@@ -293,7 +298,10 @@ glb.json.asset.extras = { ...glb.json.asset.extras, ...frameAssetExtras() };
 const bytes = glb.toBuffer();
 await mkdir(path.dirname(OUTPUT), { recursive: true });
 await Bun.write(OUTPUT, bytes);
-// The speed humps raise the drawn road (network/stalls.mjs humpProfile); the agents must climb them too.
+await Bun.write(path.join(path.dirname(OUTPUT), "markings.report.json"), `${JSON.stringify({
+  ...markingReport, rawGlbSha256: createHash("sha256").update(bytes).digest("hex"),
+})}\n`);
+// Record-defined humps raise the drawn road; the agents must climb them too.
 const sidecar = writeHeightSidecar((x, z) => kerbs.groundHeightAt(x, z) + metresToUnits(humps.heightAt(x, z)), (x, z) => surface.height(x, z), kerbs.plan.slabHeight, labelAt);
 await Bun.write(HEIGHT_BIN, sidecar.bytes);
 await Bun.write(HEIGHT_JSON, `${JSON.stringify(sidecar.meta, null, 2)}\n`);

@@ -93,6 +93,19 @@ test('blue zones read the blue mask and are judged by IoU only', () => {
   assert.equal(r.over, false);
 });
 
+test('a rotated crossing bar matches its photo component, not disconnected neighbouring stripes', () => {
+  const u = Math.SQRT1_2;
+  const at = (s, t) => [1020 + u * (s - t), 2020 + u * (s + t)];
+  const obj = { id: 'rotated-bar', kind: 'zebra_bar', colour: 'white',
+    geometry: { type: 'area', rings: [[at(-2, -.25), at(2, -.25), at(2, .25), at(-2, .25)]] } };
+  const white = paintWhere((E, N) => {
+    const s = u * (E - 1020 + N - 2020), t = u * (N - 2020 - E + 1020);
+    return Math.abs(s) < 2 && [-.9, 0, .9].some(centre => Math.abs(t - centre) < .25);
+  });
+  const [result] = scoreObjects([obj], sheetWith(white));
+  assert.equal(result.over, false, `exact middle stripe should pass; IoU=${result.iou}`);
+});
+
 test('points are scored by the distance to the nearest reference of their kind', () => {
   const obj = { id: 'P1', kind: 'lamp', geometry: { type: 'point', coords: [1010, 2010] } };
   const sheet = { ...WIN, paint: { white: blank(), yellow: blank(), blue: blank() }, points: { lamp: [[1010.3, 2010.4], [1030, 2030]] } };

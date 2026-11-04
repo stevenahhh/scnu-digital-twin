@@ -6,8 +6,9 @@
 //   markings) is allowed on road and lot only.
 // - parcelLayers: parcels -> the layer records the stages draw (rings = [ring, ...holes], the non-geometric layer
 //   properties restored from `render`).
-// - paintViolations: the §10.3 build invariant. A marking piece lies at its centroid; the topmost parcel there (highest
-//   precedence, later record on a tie, as drawn) must allow paint. Pieces on no parcel (natural ground) violate too.
+// - paintViolations: the §10.3 build invariant. The topmost parcel at the marking sample must allow paint.
+//   If its vertex mean falls outside the painted band, every triangle interior is checked instead.
+//   Precedence and tie order match drawing; pieces on no parcel (natural ground) violate too.
 // - supportParcels: the curation step run by fit/parcelsSeed.mjs. Photo-detected paint on natural ground or on an
 //   estimated (T4) paving parcel gets a road/lot parcel under it (paint proves pavement, the T4 class was a guess); paint
 //   on a surveyed (T0/T1) non-road parcel is rejected and listed for exclusion, never painted over the survey.
@@ -15,6 +16,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { ShapeUtils, Vector2 } from "three";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const PARCELS_PATH = path.join(HERE, "..", "data", "ground", "parcels.json");
@@ -129,13 +131,30 @@ export function topParcelAt(parcels, boxes = parcels.map((p) => bbox(p.ring))) {
 }
 
 // Returns [{ piece: key, kind, parcel: id | null, cls: design class | null }] for every piece not on a paint parcel.
+export function paintSamples(piece, toTm) {
+  const rings = piece.rings.map(r => r.map(toTm));
+  const c = centroid(rings[0]);
+  if (inRing(c, rings[0]) && !rings.slice(1).some(h => inRing(c, h))) return [c];
+  // A curved stripe's vertex mean may lie in the lawn it surrounds. Require
+  // every triangle's interior sample, never pave that false centroid.
+  const contour = rings[0].map(p => new Vector2(...p));
+  const holes = rings.slice(1).map(r => r.map(p => new Vector2(...p)));
+  const points = [...contour, ...holes.flat()];
+  const samples = ShapeUtils.triangulateShape(contour, holes).map(face => [
+    face.reduce((s, i) => s + points[i].x / 3, 0), face.reduce((s, i) => s + points[i].y / 3, 0),
+  ]);
+  return samples.length ? samples : [c];
+}
+
 export function paintViolations(pieces, parcels, toTm) {
   const at = topParcelAt(parcels, parcels.map((p) => bbox(p.ring)));
   const out = [];
   for (const piece of pieces) {
-    const top = at(toTm(centroid(piece.rings[0])));
-    if (top && top.paintAllowed) continue;
-    out.push({ piece: pieceKey(piece, toTm), kind: piece.kind, parcel: top?.id ?? null, cls: top ? top.class ?? designClass(top) : null });
+    const samples = paintSamples(piece, toTm);
+    const outside = samples.map(at).filter(p => !p?.paintAllowed);
+    if (!outside.length) continue;
+    const top = outside[0];
+    out.push({ piece: pieceKey(piece, toTm), kind: piece.kind, parcel: top?.id ?? null, cls: top ? top.class ?? designClass(top) : null, metrics: { outsideSamples: outside.length, sampleCount: samples.length } });
   }
   return out;
 }

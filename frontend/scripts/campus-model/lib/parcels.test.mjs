@@ -63,6 +63,13 @@ test("paint on a paintAllowed:false parcel or on no parcel is named by piece id"
   assert.match(bad[1].piece, /^parking_line@50\.05,52\.5/);
 });
 
+test("a curved band is checked on its painted area, not its vertex mean in the island", () => {
+  const band = [[0, 0], [10, 0], [10, 10], [9, 10], [9, 1], [0, 1]];
+  const road = parcel({ ring: band });
+  const piece = { id: "CURVED_KERB", kind: "kerb_no_parking", rings: [band] };
+  assert.deepEqual(paintViolations([piece], [road], same), []);
+});
+
 test("a stall line on a lawn parcel makes the build invariant throw with the piece id; an excluded key passes", () => {
   const parcels = [parcel({ id: "PARCEL_LAWN_F", cls: "PAVING", class: "lawn", paintAllowed: false, estimated: true, evidence: { tier: "T4", refs: ["x"] } })];
   const piece = stripe(2, 2, { id: "MX_STALL_ON_LAWN" });

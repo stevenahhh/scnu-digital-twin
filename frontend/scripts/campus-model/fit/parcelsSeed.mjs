@@ -19,13 +19,16 @@ import { fileURLToPath } from "node:url";
 
 import { GROUND_REGISTRATION } from "../lib/groundRegistration.mjs";
 import { A003_REGISTRATION } from "../lib/a003.mjs";
-import { PAINT_CLASSES, SUPPORT_PRECEDENCE, designClass, paintViolations, supportParcels } from "../lib/parcels.mjs";
+import { PAINT_CLASSES, SUPPORT_PRECEDENCE, designClass, paintViolations } from "../lib/parcels.mjs";
+import { groundParcels, migrationErrors } from "./roadGround.mjs";
 import { overlapPairs, validate } from "../lib/schemas.mjs";
 import { pointInRing } from "../lib/geometry.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const PARCELS_FILE = path.join(HERE, "..", "data", "ground", "parcels.json");
 export const CURATION_FILE = path.join(HERE, "..", "data", "ground", "parcel-curation.json");
+const ROAD_PARCELS_FILE = path.join(HERE, "..", "data", "ground", "road-parcels.json");
+const ROAD_GROUND_FILE = path.join(HERE, "..", "data", "ground", "road-ground.json");
 
 // design §2: T0 survey/cadastre, T1 orthophoto measurement, T4 estimate. OSM gives existence, never geometry: T4.
 const TIER = { "NGII-A003": "T0", "road-zone-measured": "T0", "OSM-derived": "T4", "project-estimated": "T4" };
@@ -134,11 +137,13 @@ export async function currentLayers() {
 export async function currentSurfaces() {
   const { buildSurfaces, loadEstimatedWalkways, loadGroundFeatures, loadWalkways } = await import("../network/surfaces.mjs");
   const { loadInputs } = await import("../stages/sources.mjs");
-  const { loadFurniture } = await import("../stages/furniture.mjs");
+  const { loadFurnitureSurvey } = await import("../stages/furniture.mjs");
   const { buildBuildings } = await import("../stages/buildings.mjs");
   const { GlbBuilder } = await import("../lib/glb.mjs");
   const inputs = await loadInputs();
-  const { selectableBuildings, campusBuildings, offCampusLots } = await buildBuildings({ glb: new GlbBuilder(), inputs, detailedStructures: loadFurniture().detailedStructures });
+  // A ground seed cannot resolve furniture against the parcel map it replaces.
+  // Only the surveyed reviewing-stand footprint is needed to suppress its GIS duplicate.
+  const { selectableBuildings, campusBuildings, offCampusLots } = await buildBuildings({ glb: new GlbBuilder(), inputs, detailedStructures: loadFurnitureSurvey().detailedStructures });
   return buildSurfaces({
     inputs,
     walkways: await loadWalkways(),
@@ -155,15 +160,10 @@ export async function currentSurfaces() {
 // need: the input of the paint curation. Returns the parking plan too, for the row parcels. Row and line records prove
 // the pavement under them, so their pieces count as detected paint here even where the divider itself is estimated.
 export async function currentPaint() {
-  const { loadInputs } = await import("../stages/sources.mjs");
-  const { loadFurniture } = await import("../stages/furniture.mjs");
-  const { buildBuildings } = await import("../stages/buildings.mjs");
-  const { loadMarkings, inMarkingExtent } = await import("../stages/markings.mjs");
+  const { loadRoadMarkings } = await import("../stages/roadMarkings.mjs");
+  const { inMarkingExtent } = await import("../stages/markings.mjs");
   const { loadParking, parkingPlan } = await import("../stages/parking.mjs");
-  const { GlbBuilder } = await import("../lib/glb.mjs");
-  const inputs = await loadInputs();
-  const { selectableBuildings, campusBuildings } = await buildBuildings({ glb: new GlbBuilder(), inputs, detailedStructures: loadFurniture().detailedStructures });
-  const markings = await loadMarkings({ inputs, buildings: [...selectableBuildings, ...campusBuildings] });
+  const markings = loadRoadMarkings();
   const centre = (r) => r.reduce((a, q) => [a[0] + q[0] / r.length, a[1] + q[1] / r.length], [0, 0]);
   const doc = loadParking();
   const plan = parkingPlan(doc);
@@ -210,7 +210,7 @@ export function applyParcelCuration(seeded, curation) {
   const kept = seeded.filter((p) => !removed.has(p.id)).map((p) => {
     const r = replaced.get(p.id);
     if (!r) return p;
-    return { ...p, ring: r.ring, evidence: r.evidence, estimated: r.estimated, source_ref: `${p.source_ref}; ${r.reason}`, curated: "todo 13a" };
+    return { ...p, ring: r.ring, evidence: r.evidence, estimated: r.estimated, source_ref: `${p.source_ref}; ${r.reason}`, curated: r.curated ?? "todo 13a" };
   });
   const added = curation.add.map((r) => ({
     id: r.id, cls: r.class === "lot" ? "LOT" : "ASPHALT", class: r.class, ring: r.ring, holes: [], precedence: SUPPORT_PRECEDENCE[r.class],
@@ -220,25 +220,53 @@ export function applyParcelCuration(seeded, curation) {
   return { kept, added };
 }
 
-// Seed + curation: the seeded parcels, a support parcel under photo-detected paint the seed left on natural ground or on
-// an estimated paving parcel, the paint the photo shows on surveyed non-road ground listed in paintExcluded, and the
-// open A003 kerb lines (outline cuts with no area) in kerbLines.
+// Road records replace paint hulls AFTER their stable ids have been allocated.
+// Reclassify rejected paint against the final map, not the pre-curation seed:
+// otherwise even a reviewed road beneath a zebra bar remains excluded forever.
+export function finishRoadParcels(parcels, curation, paint, toTm) {
+  const { kept, added } = applyParcelCuration(parcels, curation);
+  const replaced = new Set(curation.replace.map((r) => r.id));
+  const final = layerOver([
+    ...kept.map((p) => replaced.has(p.id) ? { ...p, source: "photo-curated", curated: "todo 22" } : p),
+    ...added.map((p) => ({ ...p, curated: "todo 22" })),
+  ]);
+  return { parcels: final, rejected: paintViolations(paint, final, toTm) };
+}
+
+// Seed + reviewed curation + road-section/junction proposals. Every excluded
+// paint piece has a quantified class-conflict decision; no paint hull is built.
+// Open A003 kerb lines (outline cuts with no area) remain in kerbLines.
 export async function curatedDoc(refs) {
+  const { applyRoadSurfaceReviews } = await import("./roadCuration.mjs");
   const { sceneToTm } = await import("../../../src/geo/epsg5186.mjs");
   const surfaces = await currentSurfaces();
   const { kept: seeded, added } = applyParcelCuration(seedParcels(surfaces.layers, refs), JSON.parse(readFileSync(CURATION_FILE, "utf8")));
   const { doc: parking, paint, parking: parkingPieces } = await currentPaint();
   const toTm = ([x, z]) => sceneToTm(x, z);
   const rowParcels = parkingRowParcels(parking, parkingPieces, seeded, toTm);
-  const { parcels: supports, rejected } = supportParcels([...paint, ...parkingPieces], [...seeded, ...rowParcels], toTm);
-  // the curated parcels come last and do not feed the supports, so the support ids parking.json names stay what they were
-  const parcels = layerOver([...seeded, ...rowParcels, ...supports, ...added]);
+  const roadGround = JSON.parse(readFileSync(ROAD_GROUND_FILE, "utf8"));
+  const { parcels, rejected } = finishRoadParcels(
+    [...seeded, ...rowParcels, ...added, ...groundParcels(roadGround)],
+    JSON.parse(readFileSync(ROAD_PARCELS_FILE, "utf8")), [...paint, ...parkingPieces], toTm,
+  );
+  const paintDecisions = rejected.map(v => {
+    const record = roadGround.records.find(r => r.paint.includes(v.piece));
+    if (!record) throw new Error(`${v.piece}: rejected paint has no road/junction record; rerun the road-ground estimator`);
+    return {
+      ...v, record: record.id, estimated: true, evidence: record.evidence,
+      reason: `Design §5 forbids paint on non-road ground: ${v.metrics.outsideSamples}/${v.metrics.sampleCount} samples outside road/lot; top=${v.parcel ?? "natural ground"}, class=${v.cls ?? "none"}. ${record.reason}`,
+    };
+  });
+  const migration = migrationErrors(roadGround, parcels, paintDecisions);
+  if (migration.length) throw new Error(migration.join("\n"));
   return {
-    note: "Ground parcel map (design §5): the one ground class map stages/ground.mjs, kerbs.mjs, tactile.mjs and surfaces.mjs read (plan campus-ground-truth-redesign todo 9). Seeded by fit/parcelsSeed.mjs from the network/surfaces.mjs layers in draw order (rings EPSG:5186 [E, N] metres, `render` = how the stage draws it, `class` = the design §5 class), then curated: data/ground/parcel-curation.json replaces or removes seeded parcels and adds source photo-curated road and lot parcels read from the photo, PARCEL_LOT_*_R* records (source parking-record) lie under parking rows of data/ground/parking.json that the seed leaves off road and lot ground, PARCEL_SUPPORT_* records lie under photo-detected paint the seed left on natural ground or estimated paving (paint proves pavement), paintExcluded lists paint the photo shows on surveyed non-road ground (not drawn), kerbLines are the open A003 kerb lines. source_ref names the registration corrections (data/photo/evidence/ground-registration.json, a003-registration.json) applied to that parcel; tier T4 and support parcels are estimates (추정).",
-    parcels,
+    note: "Ground parcel map (design §5). Generated by fit/parcelsSeed.mjs from surveyed/base layers, parking rows, reviewed parcel-curation.json and road-parcels.json, and the dimensioned/photo-boundary records in road-ground.json. Legacy support hulls are evidence only and are not generated or rendered. roadRecords owns every migrated item; paintDecisions names each class conflict with sample counts. All visual proposals remain estimated.",
+    parcels: applyRoadSurfaceReviews(parcels, JSON.parse(readFileSync(new URL("../data/ground/road-curation.json", import.meta.url), "utf8")).surfaceReviews),
+    roadRecords: roadGround.records.map(({ rings, parts, ...record }) => record),
+    paintDecisions,
     kerbLines: surfaces.outlines.filter((o) => !o.closed).map((o) => ({ ufid: o.ufid, surface: o.surface, line: o.line.map(([E, N]) => [mm(E), mm(N)]) })),
     paintExcluded: rejected.map((r) => r.piece),
-    paintExcludedDetail: rejected,
+    paintExcludedDetail: paintDecisions,
   };
 }
 
@@ -246,7 +274,7 @@ if (import.meta.main) {
   const args = process.argv.slice(2);
   const refs = registrationRefs(JSON.parse(readFileSync(GROUND_REGISTRATION, "utf8")), JSON.parse(readFileSync(A003_REGISTRATION, "utf8")));
   // --check compares the seeded parcels with today's layers (no markings needed, runs on the lab); --write and
-  // --check-curation also rebuild the paint curation, which needs the photo markings gate (Mac caches)
+  // --check-curation also rebuild the paint curation from generated road and parking records.
   const curate = args.includes("--write") || args.includes("--check-curation");
   const doc = curate ? await curatedDoc(refs) : { ...JSON.parse(readFileSync(PARCELS_FILE, "utf8")), parcels: seedParcels(await currentLayers(), refs) };
   const { parcels } = doc;
@@ -261,8 +289,9 @@ if (import.meta.main) {
     const committed = JSON.parse(readFileSync(PARCELS_FILE, "utf8"));
     const fileCheck = validate("parcels", committed);
     const curation = JSON.parse(readFileSync(CURATION_FILE, "utf8"));
-    const touched = new Set([...curation.replace, ...curation.remove].map((r) => r.id));
-    const curated = (p) => p.source === "photo-paint-support" || p.source === "parking-record" || p.source === "photo-curated" || touched.has(p.id);
+    const roadCuration = JSON.parse(readFileSync(new URL("../data/ground/road-curation.json", import.meta.url), "utf8"));
+    const touched = new Set([...curation.replace, ...curation.remove].map((r) => r.id).concat(roadCuration.surfaceReviews.map(r => r.parcelId)));
+    const curated = (p) => p.source === "photo-paint-support" || p.source === "road-section" || p.source === "parking-record" || p.source === "photo-curated" || touched.has(p.id);
     const seededOnly = (list) => list.filter((p) => !curated(p));
     const stale = curation.remove.filter((r) => committed.parcels.some((p) => p.id === r.id)).map((r) => `${r.id}: removed by the curation but still in parcels.json`);
     const { errors: diffs, worst } = compareToLayers(seededOnly(committed.parcels), seededOnly(parcels).map((p) => ({ cls: p.cls, precedence: p.precedence, rings: [p.ring, ...p.holes] })));

@@ -3,9 +3,16 @@
 These are vector features read directly from the NGII 2025 orthophoto, sheet 34702020 (순천020, 0.25 m GSD,
 EPSG:5186, georeferenced by the world file `0.25 / 0 / 0 / -0.25 / 243324.125 / 264485.875`).
 The covered area is the model `EXTENT` from `lib/frame.mjs` (scene x -2..502, z -376..2, about 807 x 605 m).
-Two generator units consume them:
+Marking files have moved to `evidence/`. `fit/roadMarkingsSeed.mjs` uses them
+to propose explicit road-local records. The campus build reads
+`data/ground/road-sections.json` and `junctions.json`, not photo markings or
+the paint gate. Evidence files remain available to fit/QA and network-source
+preparation tools; their detection counts below are historical source counts,
+not counts of the generated mesh.
 
-- `markings.geojson`: painted road markings, used by M1 (markings).
+The source inventories are:
+
+- `evidence/markings.geojson`: painted road-marking evidence.
 - `objects.geojson`: street furniture and structures, used by S1 (furniture). Superseded by `objects-campus.geojson`.
 - `objects-campus.geojson`: campus-wide survey of outdoor objects over every tile of `EXTENT`, used by S1. It
   contains the 31 `objects.geojson` features unchanged in position and id (`from_objects_geojson: true`), plus the

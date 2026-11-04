@@ -25,6 +25,7 @@ import { encodePng } from "../lib/png.mjs";
 import { hashNoise, smoothNoise } from "../lib/raster.mjs";
 import { orientedFrame } from "../network/surfaces.mjs";
 import { pavingPattern, pavingTile } from "../lib/pavingPatterns.mjs";
+import { humpProfile } from "./roadMarkings.mjs";
 
 // Statute basis of the tactile paving tile (stages/tactile.mjs, bake/tactile-tile.mjs).
 export const TACTILE_BASIS = "장애인등편의법 시행규칙 별표 1 제16호: 0.3 m 모듈, 36 돌출, 6±1 mm";
@@ -44,6 +45,9 @@ export const GROUND_MESHES = Object.freeze({
   Ground_Sports: {},
   // Todo 13c: clear-sky NGII comparison, class-wide estimated albedo (no photo pixels or baked shade).
   Ground_Asphalt: { tile: "asphalt", baseColorFactor: [0.72, 0.90, 0.94, 1] },
+  // ZONE17: observed red paving, substrate/use unknown. This CC0 tile is a
+  // visual estimate, not a claim that the underlying material is asphalt.
+  Ground_RedRoad: { tile: "asphalt-red" },
   Ground_Lot: { tile: "lot" },
   // VR scenes a2-e5: light grey pavers with scattered dark squares (data/paving-patterns.json campus-speckle, 추정)
   Ground_Pavers: { pattern: "campus-speckle", baseColorFactor: [0.26, 0.30, 0.22, 1] },
@@ -55,7 +59,7 @@ export const GROUND_MESHES = Object.freeze({
   Ground_Walkway: { pattern: "campus-speckle", baseColorFactor: [0.22, 0.25, 0.18, 1] },
   // stages/kerbs.mjs: the gutter band on the road side of the kerbs (asphalt darkened 0.72, estimated)
   Ground_Gutter: { tile: "asphalt", baseColorFactor: [0.72, 0.72, 0.72, 1] },
-  // network/stalls.mjs: the circular-arc speed humps (buildHumpMeshes), asphalt
+  // roadMarkings.mjs: record-defined circular-arc speed humps, asphalt
   Ground_Hump: { tile: "asphalt" },
   // stages/tactile.mjs: generated tactile tile (bake/tactile-tile.mjs), band-aligned UVs
   Ground_Tactile: { generated: "tactile" },
@@ -657,8 +661,11 @@ export const describeSurfaces = (stats) => `surfaces: ${stats.map((s) => `${s.me
 export const HUMP_PRECEDENCE = 6.5;
 export function humpLayers(humps, lengthM) {
   return humps.map((hump) => {
-    const corner = (sM, tM) => sceneToTm(hump.centre[0] + hump.u[0] * sM * UNIT + hump.v[0] * tM * UNIT, hump.centre[1] + hump.u[1] * sM * UNIT + hump.v[1] * tM * UNIT);
-    const [hl, hw] = [lengthM / 2, hump.widthM / 2];
+    const corner = (sM, tM) => hump.tm
+      ? [hump.tm.centre[0]+hump.tm.forward[0]*sM+hump.tm.forward[1]*tM,
+        hump.tm.centre[1]+hump.tm.forward[1]*sM-hump.tm.forward[0]*tM]
+      : sceneToTm(hump.centre[0] + hump.u[0] * sM * UNIT + hump.v[0] * tM * UNIT, hump.centre[1] + hump.u[1] * sM * UNIT + hump.v[1] * tM * UNIT);
+    const [hl, hw] = [(hump.lengthM ?? lengthM) / 2, hump.widthM / 2];
     return {
       cls: "ASPHALT", mesh: "Ground_Hump", hump: true, precedence: HUMP_PRECEDENCE, estimated: true,
       source: "project-estimated", source_ref: `hump ${hump.id}`,
@@ -666,24 +673,29 @@ export function humpLayers(humps, lengthM) {
     };
   });
 }
-export async function buildHumpMeshes({ glb, humps, surface, ao = null, profile, lengthM }) {
+export async function buildHumpMeshes({ glb, humps, surface, ao = null, profile = humpProfile, lengthM }) {
   if (!humps.length) return 0;
   const cls = GROUND_MESHES.Ground_Hump.tile;
   const size = groundTile(cls).entry.physicalSizeM;
-  const material = await tileMaterial(glb, { name: "Ground_Hump", cls, rank: 3.6, ao, extras: { profile: `circular arc ${lengthM} m x ${profile(0)} m (estimated)` } });
+  const material = await tileMaterial(glb, { name: "Ground_Hump", cls, rank: 3.6, ao, extras: { profile: "record-defined circular arc (estimated)" } });
   // the top is a ground class of the partition (humpLayers); the walls stand on the terrain
   const base = 0;
   const STEP_S = 0.2;
   const STEP_T = 0.5;
   for (const hump of humps) {
+    const humpLength = hump.lengthM ?? lengthM;
+    const height = hump.heightM === undefined ? profile : s => humpProfile(s, humpLength, hump.heightM);
     const positions = [];
     const normals = [];
     const uvs = [];
     const uv1 = [];
     const indices = [];
-    const ns = Math.round(lengthM / STEP_S);
+    const ns = Math.max(1, Math.round(humpLength / STEP_S));
     const nt = Math.max(1, Math.ceil(hump.widthM / STEP_T));
-    const point = (sM, tM) => [hump.centre[0] + hump.u[0] * sM * UNIT + hump.v[0] * tM * UNIT, hump.centre[1] + hump.u[1] * sM * UNIT + hump.v[1] * tM * UNIT];
+    const point = (sM, tM) => hump.tm
+      ? tmToScene(hump.tm.centre[0]+hump.tm.forward[0]*sM+hump.tm.forward[1]*tM,
+        hump.tm.centre[1]+hump.tm.forward[1]*sM-hump.tm.forward[0]*tM)
+      : [hump.centre[0] + hump.u[0] * sM * UNIT + hump.v[0] * tM * UNIT, hump.centre[1] + hump.u[1] * sM * UNIT + hump.v[1] * tM * UNIT];
     const push = ([x, z], yM, normal) => {
       positions.push(x, surface.height(x, z) + yM * UNIT, z);
       normals.push(...normal);
@@ -695,11 +707,11 @@ export async function buildHumpMeshes({ glb, humps, surface, ao = null, profile,
     for (const [j, side] of [[0, -1], [nt, 1]]) {
       const outward = [hump.v[0] * side, 0, hump.v[1] * side];
       for (let i = 0; i < ns; i += 1) {
-        const p0 = point(-lengthM / 2 + (i * lengthM) / ns, side * hump.widthM / 2);
-        const p1 = point(-lengthM / 2 + ((i + 1) * lengthM) / ns, side * hump.widthM / 2);
-        const s0 = -lengthM / 2 + (i * lengthM) / ns;
-        const s1 = s0 + lengthM / ns;
-        const q = [push(p0, base, outward), push(p1, base, outward), push(p1, base + profile(s1), outward), push(p0, base + profile(s0), outward)];
+        const p0 = point(-humpLength / 2 + (i * humpLength) / ns, side * hump.widthM / 2);
+        const p1 = point(-humpLength / 2 + ((i + 1) * humpLength) / ns, side * hump.widthM / 2);
+        const s0 = -humpLength / 2 + (i * humpLength) / ns;
+        const s1 = s0 + humpLength / ns;
+        const q = [push(p0, base, outward), push(p1, base, outward), push(p1, base + height(s1), outward), push(p0, base + height(s0), outward)];
         // counter-clockwise seen from outside: the face normal (p1 - p0) x (p3 - p0) points outward
         const P = (k) => [positions[k * 3], positions[k * 3 + 1], positions[k * 3 + 2]];
         const [v0, v1, v3] = [P(q[0]), P(q[1]), P(q[3])];
@@ -712,7 +724,7 @@ export async function buildHumpMeshes({ glb, humps, surface, ao = null, profile,
     }
     const mesh = glb.addMesh(`Ground_Hump_${hump.id}`, [{ positions: Float32Array.from(positions), normals: Float32Array.from(normals), uvs: Float32Array.from(uvs), indices, material }]);
     glb.json.meshes[mesh].primitives[0].attributes.TEXCOORD_1 = glb.addAccessor(Float32Array.from(uv1), "VEC2");
-    glb.addNode({ name: `Ground_Hump_${hump.id}`, mesh, extras: { estimated: true, lengthM, heightM: profile(0), widthM: Number(hump.widthM.toFixed(2)), source: `data/photo/markings-extra.geojson ${hump.id}` } }, { root: true });
+    glb.addNode({ name: `Ground_Hump_${hump.id}`, mesh, extras: { estimated: true, lengthM: humpLength, heightM: height(0), widthM: Number(hump.widthM.toFixed(2)), source: hump.record } }, { root: true });
   }
   return humps.length;
 }

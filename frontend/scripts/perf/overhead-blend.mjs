@@ -43,7 +43,8 @@
 // Exit 0 PASS, 1 FAIL, 2 missing sheet or unreachable server (NGII_SHEET overrides the sheet path).
 // Chrome is driven over --remote-debugging-pipe, so no TCP port is opened besides the dev server's.
 import { spawn } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -53,9 +54,8 @@ import { decodePng, encodePng } from "../campus-model/lib/png.mjs";
 import { GRID_CONVERGENCE_DEG, sceneToTm, tmToPixel, tmToScene, wgs84ToTm } from "../../src/geo/epsg5186.mjs";
 import { occlusionMask } from "../campus-model/lib/occlusion.mjs";
 import { modelToGeo } from "../campus-model/lib/frame.mjs";
-import { orientedBox } from "../campus-model/lib/markingFit.mjs";
 import { paintMasks } from "../campus-model/lib/paintMasks.mjs";
-import { TOLERANCES, lotSummary, missingDividers, parkingObjects, rowSummary, scoreObjects } from "../campus-model/qa/mapCompare.mjs";
+import { TOLERANCES, compareRoadInventory, lotSummary, missingDividers, parkingObjects, physicalRoadCrossings, roadAcceptance, roadMapObjects, roadObjectInventory, rowSummary, scoreObjects } from "../campus-model/qa/mapCompare.mjs";
 import { EDGE_THRESHOLD, VISIBLE, aggregate, aggregateVisible, canopyMask, footprintMask, measureTile, measureVisible, pointInRing, renderHalf, residualsMarkdown, sideBySide, tileGrid } from "./overheadBlendCore.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -142,7 +142,7 @@ try {
   console.error(`sheet missing: ${DEFAULT_SHEET} (${error.message})`);
   process.exit(2);
 }
-try {
+if (!args.includes("--objects")) try {
   await fetch(url, { signal: AbortSignal.timeout(5000) });
 } catch (error) {
   console.error(`server unreachable: ${url} (${error.cause?.code ?? error.message})`);
@@ -152,7 +152,7 @@ try {
 
 // ---------------------------------------------------------------- --objects (per-object map-space comparison)
 if (args.includes("--objects")) {
-  const { markingCandidates } = await import("../campus-model/stages/markings.mjs");
+  const { loadRoadMarkings } = await import("../campus-model/stages/roadMarkings.mjs");
   const data = join(HERE, "..", "campus-model", "data");
   const toTm = ([x, z]) => wgs84ToTm(...modelToGeo(x, z));
   // sheet window over EXTENT (+10 m), origin = top-left pixel corner
@@ -185,28 +185,47 @@ if (args.includes("--objects")) {
   const trees = JSON.parse(readFileSync(join(data, "trees.json"), "utf8")).trees.map(([east, north, crownDiameterM, heightM]) => ({ east, north, crownDiameterM, heightM }));
   const win = { w, h, origin, gsdM: gsd };
   const masks = occlusionMask(win, { buildings, trees });
-  // drawn pieces -> objects: line kinds become the long-axis centreline of each piece, the rest stay areas
-  const LINE = /^(centre_line|lane_line|edge_line|guide_|parking_line|kerb|stop_line)/;
-  const { candidates } = await markingCandidates();
+  const meshReportPath = resolve(option("mesh-report", join(data, "..", ".build", "markings.report.json")));
+  const meshReport = JSON.parse(readFileSync(meshReportPath, "utf8"));
+  const rawHash = createHash("sha256").update(readFileSync(join(data, "..", ".build", "campus-v2.raw.glb"))).digest("hex");
+  if (meshReport.rawGlbSha256 !== rawHash) throw new Error("stale mesh report: raw GLB hash mismatch; rebuild the GLB");
+  for (const name of ["road-sections", "junctions", "parcels"]) {
+    const hash = createHash("sha256").update(readFileSync(join(data, "ground", `${name}.json`))).digest("hex");
+    if (meshReport.symbols.roadSourceHashes?.[name] !== hash) throw new Error(`stale mesh report: ${name}; rebuild the GLB`);
+  }
+  const generated = loadRoadMarkings();
+  const objects = roadMapObjects(generated.pieces, meshReport.emission);
+  const sections = JSON.parse(readFileSync(join(data, "ground", "road-sections.json"), "utf8"));
+  const junctions = JSON.parse(readFileSync(join(data, "ground", "junctions.json"), "utf8"));
+  const bindings = [];
+  for (const [segmentId, road] of Object.entries(sections)) for (const section of road.sections) {
+    const association = road.alignments[section.alignment].association;
+    bindings.push({ ownerId: section.id, segmentId, verified: association.verified, refs: association.refs ?? [] });
+  }
+  for (const junction of Object.values(junctions)) for (const approach of junction.approaches) {
+    const association = sections[approach.segment].alignments[approach.alignment].association;
+    bindings.push({ ownerId: approach.id, segmentId: approach.segment, verified: association.verified && approach.curation?.verified === true, refs: association.refs ?? [] });
+  }
+  const emittedIds = new Set(meshReport.emission.parts.map(p => p.partId));
+  const inventory = roadObjectInventory(generated.pieces.filter(p => emittedIds.has(p.partId)), bindings);
+  const referencePath = resolve(option("road-reference", join(data, "photo", "evidence", "road-reference.json")));
+  const reference = existsSync(referencePath) ? JSON.parse(readFileSync(referencePath, "utf8")) : null;
+  const existence = reference ? compareRoadInventory(reference, {
+    ...inventory,
+    // Presence labels name logical paint segments, not the fraction of RD
+    // containers which happen to have a marking.
+    segmentIds: inventory.objects.filter(o => o.pieces.some(p => /^(centre_line|lane_line|edge_line|guide_|kerb)/.test(p.kind))).map(o => o.id),
+  }) : null;
   const parkingDoc = JSON.parse(readFileSync(resolve(option("parking", join(data, "ground", "parking.json"))), "utf8"));
-  const objects = candidates.filter((c) => c.kind !== "parking_line" && c.kind !== "disabled_parking").map((c) => {
-    const rings = c.shapes.map((shape) => shape.map((ring) => ring.map(toTm)));
-    if (LINE.test(c.kind) && c.kind !== "stop_line") {
-      const parts = rings.map((shape) => {
-        const b = orientedBox(shape[0]);
-        return [[b.centre[0] - b.long[0] * b.halfLong, b.centre[1] - b.long[1] * b.halfLong], [b.centre[0] + b.long[0] * b.halfLong, b.centre[1] + b.long[1] * b.halfLong]];
-      });
-      return { id: c.id, kind: c.kind, colour: c.colour, geometry: { type: "line", parts } };
-    }
-    return rings.map((shape, i) => ({ id: rings.length > 1 ? `${c.id}#${i}` : c.id, kind: c.kind, colour: c.colour, geometry: { type: "area", rings: shape } }));
-  }).flat();
   const parkingScored = parkingObjects(parkingDoc);
   objects.push(...parkingScored.map((o) => (o.geometry.type === "line" ? { ...o, geometry: { type: "line", parts: [o.geometry.coords] } } : o)));
   const scored = scoreObjects(objects, { ...win, paint }, masks);
+  const physicalObjects = physicalRoadCrossings(objects, reference?.physicalCrossings ?? []);
+  const physicalScores = scoreObjects(physicalObjects, { ...win, paint }, masks);
   // nearest BLD_* node (GIS footprint centre) for each object, so a reader can find "E3 parking rows"
   const nodes = JSON.parse(readFileSync(join(data, "bld-node-map.json"), "utf8")).entries.filter((e) => e.gisCentreTm);
   const centreOf = (o) => {
-    const pts = o.geometry.type === "line" ? o.geometry.parts.flat() : o.geometry.rings[0];
+    const pts = o.geometry.type === "line" ? o.geometry.parts.flat() : (o.geometry.polygons ?? [o.geometry.rings]).flat(2);
     return [pts.reduce((s, p) => s + p[0], 0) / pts.length, pts.reduce((s, p) => s + p[1], 0) / pts.length];
   };
   scored.forEach((r, i) => {
@@ -218,7 +237,22 @@ if (args.includes("--objects")) {
     }
     r.centreTm = c.map((v) => Math.round(v * 100) / 100);
     r.near = best && best.d <= 80 ? best.id : null;
+    r.objectId = objects[i].objectId ?? null;
+    r.ownerId = objects[i].ownerId ?? null;
+    r.evidence = objects[i].evidence ?? null;
   });
+  if (existence) for (const r of [...existence.segments.rows, ...existence.crossings.rows]) {
+    const existing = scored.find(s => s.id === r.id);
+    if (existing) {
+      existing.referenceStatus = r.status;
+      if (r.over) existing.over = true;
+    } else if (r.over) scored.push({
+      id: r.id, kind: r.id.endsWith("/crossing") ? "crossing" : "road_segment",
+      tier: r.id.endsWith("/crossing") ? "crossing" : "lane",
+      residual_m: null, iou: null, support: 0, occluded: false, over: true,
+      missing: r.status === "missing" || r.status === "fn", referenceStatus: r.status,
+    });
+  }
   const missing = missingDividers(parkingDoc, parkingScored, { ...win, paint }, masks);
   scored.push(...missing);
   const rows = rowSummary(parkingDoc, scored);
@@ -226,9 +260,10 @@ if (args.includes("--objects")) {
   const overList = scored.filter((r) => r.over);
   const byTier = {};
   for (const r of scored) {
-    const t = (byTier[r.tier] ??= { objects: 0, occluded: 0, over: 0, residuals: [] });
+    const t = (byTier[r.tier] ??= { objects: 0, occluded: 0, unmeasurable: 0, over: 0, residuals: [] });
     t.objects += 1;
     if (r.occluded) t.occluded += 1;
+    if (r.unmeasurable) t.unmeasurable += 1;
     if (r.over) t.over += 1;
     if (r.residual_m !== null && r.residual_m !== undefined) t.residuals.push(r.residual_m);
   }
@@ -240,17 +275,24 @@ if (args.includes("--objects")) {
   mkdirSync(outDir, { recursive: true });
   const report = {
     generatedAt: new Date().toISOString(), sheet: DEFAULT_SHEET.split("/").pop(), metresPerPixel: gsd,
-    source: "stages/markings.mjs markingCandidates (drawn pieces), EPSG:5186", masks: { leans: leanSource, trees: "data/trees.json", shadows: "lib/poleShadow.mjs SUN" },
+    source: "Road_Markings emitted triangle union and triangle cross-section centrelines, EPSG:5186",
+    roadSourceHashes: meshReport.symbols.roadSourceHashes, roadExistence: existence,
+    rawGlbSha256: meshReport.rawGlbSha256,
+    referenceEvidenceAvailable: Boolean(reference), roadOwnership: { assignedSegments: inventory.segmentIds, unassignedOwners: inventory.unassignedOwners },
+    referenceComplete: reference?.complete === true, physicalCrossings: physicalScores,
+    crossingGridUnit: "canonical grid; a physical crossing may contain multiple grids",
+    emission: meshReport.emission.summary, masks: { leans: leanSource, trees: "data/trees.json", shadows: "lib/poleShadow.mjs SUN" },
     tolerances: TOLERANCES, byTier, overTolerance: overList.length, parkingLots: lots, parkingRows: rows, objects: scored,
   };
+  report.roadAcceptance = roadAcceptance(report);
   writeFileSync(join(outDir, "objects.json"), `${JSON.stringify(report, null, 1)}\n`);
   const row = (r) => `| ${r.id} | ${r.kind} | ${r.tier} | ${r.near ?? ""} | ${r.residual_m ?? ""} | ${r.iou ?? ""} | ${r.support ?? ""} | ${r.occluded ? "yes" : ""} | ${r.over ? "OVER" : ""} |`;
   const head = "| id | kind | tier | near | residual m | IoU | support | occluded | over |\n|---|---|---|---|---|---|---|---|---|";
   const md = [
     "# Map-space per-object comparison (design §10.1)", "",
     `Sheet ${report.sheet}, ${scored.length} objects from markingCandidates; occlusion leans: ${leanSource}. Values are photo residuals (추정), warnings only.`, "",
-    "## By tier", "", "| tier | objects | occluded | over | median residual m |", "|---|---|---|---|---|",
-    ...Object.entries(byTier).map(([k, t]) => `| ${k} | ${t.objects} | ${t.occluded} | ${t.over} | ${t.medianResidualM ?? ""} |`), "",
+    "## By tier", "", "| tier | objects | occluded | unmeasurable | over | median residual m |", "|---|---|---|---|---|---|",
+    ...Object.entries(byTier).map(([k, t]) => `| ${k} | ${t.objects} | ${t.occluded} | ${t.unmeasurable} | ${t.over} | ${t.medianResidualM ?? ""} |`), "",
     "## Parking lots (one line per lot; a reviewed lot holds support >= 0.7 or is marked estimated with a reason)", "", "| lot | reviewed | 추정 | support | visible | over | missing | accepted | reason |", "|---|---|---|---|---|---|---|---|---|",
     ...lots.map((l) => `| ${l.lot} | ${l.curated ?? (l.unreviewed ? "UNREVIEWED" : "")} | ${l.estimated ? "추정" : ""} | ${l.support ?? ""} | ${l.visible} | ${l.over.length} | ${l.missing} | ${l.accepted ? "yes" : "NO"} | ${l.estimatedReason ?? ""} |`), "",
     "## Parking rows (generated from parking.json)", "", "| row | tier | dividers | visible | support | median residual m | max residual m | over | missing | back | front | 추정 dividers | 추정 values |", "|---|---|---|---|---|---|---|---|---|---|---|---|---|",

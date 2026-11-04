@@ -6,7 +6,8 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { validate } from "../lib/schemas.mjs";
-import { CURATION_FILE, PARCELS_FILE, applyParcelCuration, compareToLayers, layerOver, parkingRowParcels, registrationRefs, seedParcels } from "./parcelsSeed.mjs";
+import { topParcelAt } from "../lib/parcels.mjs";
+import { CURATION_FILE, PARCELS_FILE, applyParcelCuration, finishRoadParcels, compareToLayers, layerOver, parkingRowParcels, registrationRefs, seedParcels } from "./parcelsSeed.mjs";
 
 const square = (x, y, s) => [[x, y], [x + s, y], [x + s, y + s], [x, y + s]];
 const layer = (over) => ({ cls: "PAVING", mesh: "Ground_Pavers", label: 2, precedence: 2, source: "OSM-derived", source_ref: "way/1", rings: [square(0, 0, 10)], ...over });
@@ -103,6 +104,55 @@ test("data/ground/parcels.json is valid", () => {
   assert.ok(ok, errors.slice(0, 10).join("\n"));
 });
 
+test("the western crossing visible on the registered 12 cm aerial stays on road and is drawn", () => {
+  // task-22 gate review 2: inverse-registered source pixel 857.829,747.964
+  // on the western 2024 tile, BBOX 243450,263840,243575,263965.
+  const doc = JSON.parse(readFileSync(PARCELS_FILE, "utf8"));
+  const id = "zebra_bar@243559.10,263874.06";
+  assert.equal(doc.paintExcluded.includes(id), false, `${id}: real roadway paint was excluded`);
+  const ground = topParcelAt(doc.parcels)([243559.09575399774, 263874.05960518925]);
+  assert.equal(ground?.paintAllowed, true, ground?.id);
+});
+
+test("the divider on the photographed pedestrian island remains excluded", () => {
+  const doc = JSON.parse(readFileSync(PARCELS_FILE, "utf8"));
+  const id = "LOT_E244011_N263891/R12/D2@244076.30,263925.10";
+  assert.equal(doc.paintExcluded.includes(id), true);
+  const ground = topParcelAt(doc.parcels)([244076.30, 263925.10]);
+  assert.equal(ground?.class, "sidewalk");
+  assert.equal(ground?.paintAllowed, false);
+});
+
+for (const [id, samples] of [
+  ["MK01416@243781.87,263714.44", [[243781.873156, 263714.443895]]],
+  ["kerb_no_parking@243807.04,263912.80", [[243810.303576, 263913.450649], [243809.752215, 263913.139804], [243807.943783, 263912.433764], [243808.084810, 263912.452533]]],
+  ["zebra_bar@243734.27,263728.93", [[243734.270414, 263728.927836]]],
+  ["zebra_bar@243881.76,263760.14", [[243881.758147, 263760.137427]]],
+]) test(`aerial-reviewed road paint ${id} is not hidden by the A003 boundary`, () => {
+  // Registered 2024 cross-check plus the actual 2025 paint: attempt-3 aerial index.
+  const doc = JSON.parse(readFileSync(PARCELS_FILE, "utf8"));
+  assert.equal(doc.paintExcluded.includes(id), false, id);
+  const at = topParcelAt(doc.parcels);
+  for (const point of samples) assert.equal(at(point)?.paintAllowed, true, `${id} at ${point}`);
+});
+
+test("every remaining support hull and excluded paint has a generated road record or a quantified decision", () => {
+  const doc = JSON.parse(readFileSync(PARCELS_FILE, "utf8"));
+  const records = new Map((doc.roadRecords ?? []).map((r) => [r.id, r]));
+  const unresolved = doc.parcels.filter((p) => p.source === "photo-paint-support" && !records.has(p.roadRecord)).map((p) => p.id);
+  const historical = JSON.parse(readFileSync(new URL("../data/ground/road-support-evidence.json", import.meta.url), "utf8"));
+  const owned = new Set([...records.values()].flatMap(r => r.replaces ?? []));
+  for (const id of [...historical.supports.map(p => p.id), ...historical.excluded.map(p => p.piece)]) {
+    if (!owned.has(id)) unresolved.push(id);
+  }
+  for (const id of doc.paintExcluded) {
+    const decision = doc.paintDecisions?.find((r) => r.piece === id);
+    if (!decision || !records.has(decision.record) || !decision.reason ||
+        !Number.isFinite(decision.metrics?.outsideSamples) || !decision.evidence?.refs?.length) unresolved.push(id);
+  }
+  assert.deepEqual(unresolved, [], "unowned support hulls or paint exclusions");
+});
+
 // The full ground pipeline runs under Bun (stages/sources.mjs reads uni.glb with Bun.file), so the no-op proof runs the
 // CLI: parcels.json equals today's buildSurfaces layers, every ring within 0.1 m2 (W1 is a visual no-op).
 const noBun = spawnSync("bun", ["--version"]).error ? "bun is not installed" : false;
@@ -117,6 +167,26 @@ test("data/ground/parcels.json equals today's ground layers ring for ring", { sk
 });
 
 const emptyCuration = { note: "n", replace: [], remove: [], add: [], notAsphalt: [], unreachable: [] };
+
+test("reviewed road boundary replaces a support hull without painting its island interior", () => {
+  const support = { id: "PARCEL_SUPPORT_ROAD_TEST", cls: "ASPHALT", class: "road", ring: square(0, 0, 10), holes: [], precedence: 3, mesh: "Ground_Asphalt", label: null, source: "photo-paint-support", source_ref: "hull", paintAllowed: true, estimated: true, evidence: { tier: "T1", refs: ["kerb"] } };
+  const curation = { ...emptyCuration, replace: [{ id: support.id, ring: [[8, 0], [10, 0], [10, 10], [8, 10]], evidence: { tier: "T1", refs: ["photo edge"] }, estimated: true, reason: "island is not asphalt" }] };
+  const pieces = [
+    { id: "ISLAND", kind: "lane_line", rings: [square(4, 4, 1)] },
+    { id: "ROAD", kind: "lane_line", rings: [square(8.5, 4, 1)] },
+  ];
+  const result = finishRoadParcels([support], curation, pieces, (p) => p);
+  assert.equal(result.parcels[0].source, "photo-curated");
+  assert.deepEqual(result.rejected.map((r) => r.piece), ["ISLAND@4.50,4.50"]);
+  assert.deepEqual(result.parcels[0].ring, curation.replace[0].ring);
+});
+
+test("a reviewed road parcel restores excluded zebra bars only where asphalt now exists", () => {
+  const curation = { ...emptyCuration, add: [{ id: "PARCEL_ROAD_CROSSING", class: "road", ring: square(0, 0, 10), evidence: { tier: "T1", refs: ["photo crossing"] }, estimated: true, reason: "crossing carriageway" }] };
+  const pieces = [1, 3, 5, 12].map((x) => ({ id: `BAR_${x}`, kind: "zebra_bar", rings: [square(x, 4, 0.5)], estimated: true }));
+  const result = finishRoadParcels([], curation, pieces, (p) => p);
+  assert.deepEqual(result.rejected.map((r) => r.piece), ["BAR_12@12.25,4.25"]);
+});
 
 test("parcel curation replaces a ring in place, removes a parcel and adds new ones after the rest", () => {
   const seeded = seedParcels([layer({}), layer({ source_ref: "way/2", rings: [square(20, 0, 4)] }), layer({ cls: "ASPHALT", source: "road-zone-measured", source_ref: "road zone 3", precedence: 3, rings: [square(50, 0, 5)] })]);

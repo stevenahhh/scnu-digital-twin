@@ -13,11 +13,15 @@
 // below MIN_VISIBLE is `occluded: true` and never `over` (the photo cannot judge it). `over` is a warning, not an
 // error: the photo can be wrong (§10.1 step 4).
 import { rowFrame, rowLayout } from "../stages/parking.mjs";
+export { compareRoadInventory, roadAcceptance } from "./roadInventory.mjs";
+export { roadObjectInventory } from "./roadObjects.mjs";
+export { physicalRoadCrossings, roadMapObjects } from "./roadMapObjects.mjs";
 
 export const TOLERANCES = Object.freeze({
   parking_divider: Object.freeze({ residualM: 0.3, support: 0.5 }),
   lane: Object.freeze({ residualM: 0.25, support: 0.6 }),
   crossing_bar: Object.freeze({ residualM: 0.2, iou: 0.6 }),
+  crossing: Object.freeze({ iou: 0.6 }),
   blue_zone: Object.freeze({ iou: 0.6 }),
   kerb: Object.freeze({ residualM: 0.3 }),
 });
@@ -40,6 +44,7 @@ export function classify(kind, type, colour = null) {
     return "other";
   }
   if (kind === "zebra_bar") return "crossing_bar";
+  if (kind === "crossing") return "crossing";
   if (colour === "blue" || kind === "bike_lane_blue" || kind === "disabled_parking") return "blue_zone";
   return "other";
 }
@@ -131,15 +136,43 @@ function scoreParts(parts, paint, sheet, any) {
   return { total, visible, support: visible ? offsets.length / visible : 0, residual: offsets.length ? median(offsets) : null };
 }
 
-function scoreArea(rings, paint, sheet, any) {
-  const xs = rings[0].map((p) => p[0]);
-  const ys = rings[0].map((p) => p[1]);
+function scoreArea(polygons, paint, sheet, any, region) {
+  const { tier, referenceBounds } = region;
+  const bounded = polygons.map(rings => {
+    const xs = rings[0].map(p => p[0]), ys = rings[0].map(p => p[1]);
+    return { rings, x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) };
+  });
+  const outer = polygons.flatMap(rings => rings[0]);
+  const xs = outer.map((p) => p[0]);
+  const ys = outer.map((p) => p[1]);
+  if (referenceBounds) { xs.push(referenceBounds[0], referenceBounds[2]); ys.push(referenceBounds[1], referenceBounds[3]); }
   const lo = [Math.min(...xs) - AREA_MARGIN_M, Math.min(...ys) - AREA_MARGIN_M];
   const hi = [Math.max(...xs) + AREA_MARGIN_M, Math.max(...ys) + AREA_MARGIN_M];
   const i0 = Math.max(0, Math.floor((lo[0] - sheet.origin[0]) / sheet.gsdM));
   const i1 = Math.min(sheet.w - 1, Math.floor((hi[0] - sheet.origin[0]) / sheet.gsdM));
   const j0 = Math.max(0, Math.floor((sheet.origin[1] - hi[1]) / sheet.gsdM));
   const j1 = Math.min(sheet.h - 1, Math.floor((sheet.origin[1] - lo[1]) / sheet.gsdM));
+  const roiWidth = Math.max(0, i1 - i0 + 1);
+  const drawnMask = new Uint8Array(roiWidth * Math.max(0, j1 - j0 + 1));
+  const selected = tier === "crossing_bar" ? new Set() : null, queue = [];
+  for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
+    const E = sheet.origin[0] + (i + .5) * sheet.gsdM, N = sheet.origin[1] - (j + .5) * sheet.gsdM;
+    const d = bounded.some(b => E >= b.x0 && E <= b.x1 && N >= b.y0 && N <= b.y1 && insideRings(b.rings, E, N));
+    drawnMask[(j - j0) * roiWidth + i - i0] = d ? 1 : 0;
+    const k = j * sheet.w + i;
+    if (selected && d && paint[k] && !at_(any, k)) { selected.add(k); queue.push(k); }
+  }
+  // A single bar is matched to the photo components intersecting it, not to
+  // disconnected neighbouring bars in its rotated bounding box. Whole-crossing
+  // IoU still compares the full emitted stripe union with all nearby paint.
+  for (let head = 0; head < queue.length; head++) {
+    const k = queue[head], x = k % sheet.w, y = Math.floor(k / sheet.w);
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      const i = x + dx, j = y + dy, next = j * sheet.w + i;
+      if (i < i0 || i > i1 || j < j0 || j > j1 || selected.has(next) || !paint[next] || at_(any, next)) continue;
+      selected.add(next); queue.push(next);
+    }
+  }
   let drawn = 0;
   let drawnVisible = 0;
   let both = 0;
@@ -152,10 +185,10 @@ function scoreArea(rings, paint, sheet, any) {
       const k = j * sheet.w + i;
       const E = sheet.origin[0] + (i + 0.5) * sheet.gsdM;
       const N = sheet.origin[1] - (j + 0.5) * sheet.gsdM;
-      const d = insideRings(rings, E, N);
+      const d = Boolean(drawnMask[(j - j0) * roiWidth + i - i0]);
       if (d) drawn += 1;
       if (at_(any, k)) continue;
-      const p = Boolean(paint[k]);
+      const p = Boolean(paint[k]) && (!selected || selected.has(k));
       if (d) { drawnVisible += 1; cd[0] += E; cd[1] += N; }
       if (p) { photo += 1; cp[0] += E; cp[1] += N; }
       if (d && p) both += 1;
@@ -180,9 +213,13 @@ export function scoreObjects(objects, sheet, masks = {}) {
   return objects.map((obj) => {
     const { type } = obj.geometry;
     const tier = classify(obj.kind, type, obj.colour ?? null);
+    if (obj.unmeasurableReason) return {
+      id: obj.id, kind: obj.kind, tier, residual_m: null, iou: null, support: null,
+      occluded: false, unmeasurable: true, reason: obj.unmeasurableReason, over: false,
+    };
     const paint = sheet.paint?.[obj.colour ?? "white"] ?? sheet.paint?.white;
     const r = type === "line" ? scoreParts(obj.geometry.parts ?? [obj.geometry.coords], paint, sheet, any)
-      : type === "area" ? scoreArea(obj.geometry.rings, paint, sheet, any)
+      : type === "area" ? scoreArea(obj.geometry.polygons ?? [obj.geometry.rings], paint, sheet, any, { tier, referenceBounds: obj.geometry.referenceBounds })
         : scorePoint(obj, sheet, any);
     const occluded = r.total > 0 && r.visible / r.total < MIN_VISIBLE;
     const iou = type === "area" && !occluded ? r.iou : null;

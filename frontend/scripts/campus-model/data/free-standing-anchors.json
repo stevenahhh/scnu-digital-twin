@@ -44,9 +44,9 @@
     {
       "id": "OB0001",
       "anchor": {
-        "parcel": "PARCEL_ASPHALT_WAY_929202517_19",
-        "uM": 4.871355900591548,
-        "vM": -0.7388459634250601,
+        "parcel": "PARCEL_SUPPORT_ROAD_244191_263717",
+        "uM": -4.92786445553516,
+        "vM": 3.6448917640527343,
         "yawDeg": 0
       },
       "evidence": {
@@ -55,8 +55,7 @@
           "survey seed E=244187.04515916258 N=263721.98205106467; position not independently verified",
           "data/photo/pole-roots.json OB0001 shadow-root; signal: thin pole shadow runs west from the seed at the island tip; base residual=0.22 m",
           "final pole placement: data/free-standing-pole-placements.json, reconciled from packed Furniture.extras.poles after checkPoles; photo bases retain priority",
-          "source=survey; kind=traffic_signal_pole; method=by-eye-photo",
-          "outside all curated parcels; nearest parcel vertex 0.903 m"
+          "source=survey; kind=traffic_signal_pole; method=by-eye-photo"
         ]
       },
       "estimated": true,
@@ -64,7 +63,7 @@
       "crossingDeg": null,
       "bearingChecks": [],
       "vrObservations": [],
-      "parcelRelation": "nearest_boundary",
+      "parcelRelation": "inside",
       "kind": "traffic_signal_pole",
       "sourceInput": "fa84b412ec36a7615afa3163f459e247ebd361864a340808a98aa7b2ad9b7b73",
       "sourceGeometry": {
@@ -199,8 +198,8 @@
       "id": "OB0006",
       "anchor": {
         "parcel": "PARCEL_SUPPORT_ROAD_244191_263717",
-        "uM": 2.159079242945837,
-        "vM": 1.4301966430929034,
+        "uM": 2.6746374649078746,
+        "vM": -1.8287322984570507,
         "yawDeg": 0
       },
       "evidence": {
@@ -275,9 +274,9 @@
     {
       "id": "OB0008",
       "anchor": {
-        "parcel": "PARCEL_ASPHALT_WAY_929202517_97",
-        "uM": 3.9125166718292723,
-        "vM": 0.20412333546411787,
+        "parcel": "PARCEL_SUPPORT_ROAD_244198_263700",
+        "uM": -4.5968391273789635,
+        "vM": 0.18286392490838632,
         "yawDeg": 0
       },
       "evidence": {
@@ -286,7 +285,6 @@
           "survey seed E=244196.20633019495 N=263695.63974717155; position not independently verified",
           "final pole placement: data/free-standing-pole-placements.json, reconciled from packed Furniture.extras.poles after checkPoles; photo bases retain priority",
           "source=survey; kind=sign_pole; method=by-eye-photo",
-          "outside all curated parcels; nearest parcel vertex 0.430 m",
           "retained pole verdict=unresolved; root/seed uncertainty=1.2 m"
         ]
       },
@@ -295,7 +293,7 @@
       "crossingDeg": null,
       "bearingChecks": [],
       "vrObservations": [],
-      "parcelRelation": "nearest_boundary",
+      "parcelRelation": "inside",
       "kind": "sign_pole",
       "sourceInput": "fba9c0f99e7a726cf86f20525a42f5c105e6a4a133aa8b7911be0682055c30f4",
       "sourceGeometry": {
@@ -2708,16 +2706,15 @@
       "id": "OB0030",
       "anchor": {
         "parcel": "PARCEL_SUPPORT_LOT_244061_263844",
-        "uM": -2.7495780154527116,
-        "vM": 2.06925019190822,
+        "uM": 2.57077174501878,
+        "vM": -2.7836112974886666,
         "yawDeg": 0
       },
       "evidence": {
         "tier": "T4",
         "refs": [
           "survey seed E=244058.74982017925 N=263840.87502928014; position not independently verified",
-          "source=survey; kind=low_wall; method=by-eye-photo",
-          "outside all curated parcels; nearest parcel vertex 1.872 m"
+          "source=survey; kind=low_wall; method=by-eye-photo"
         ]
       },
       "estimated": true,
@@ -2725,7 +2722,7 @@
       "crossingDeg": null,
       "bearingChecks": [],
       "vrObservations": [],
-      "parcelRelation": "nearest_boundary",
+      "parcelRelation": "inside",
       "kind": "low_wall",
       "sourceInput": "a9e4a782939a903e8dbe8bff10b456ed26f234139d469671a2981f2c9cc7f1f0",
       "sourceGeometry": {
@@ -2743,12 +2740,12 @@
       "geometry": {
         "line": [
           [
-            5.032268394410568,
-            -0.2578228434958657
+            -4.613886014574491,
+            2.0254020974921847
           ],
           [
-            -5.03226839447075,
-            0.25782284352063417
+            4.613886014621979,
+            -2.0254020975366824
           ]
         ]
       }
@@ -2757,8 +2754,8 @@
       "id": "OC0031",
       "anchor": {
         "parcel": "PARCEL_SUPPORT_ROAD_243741_264050",
-        "uM": -22.99342182284875,
-        "vM": 6.133796937013329,
+        "uM": -21.56502417715859,
+        "vM": -4.919467964989745,
         "yawDeg": 0
       },
       "evidence": {
@@ -2767,7 +2764,7 @@
           "survey seed E=243718.63033056248 N=264048.87735734007; position not independently verified",
           "final pole placement: data/free-standing-pole-placements.json, reconciled from packed Furniture.extras.poles after checkPoles; photo bases retain priority",
           "source=survey; kind=street_lamp; method=data.go.kr",
-          "outside all curated parcels; nearest parcel vertex 15.117 m",
+          "outside all curated parcels; nearest parcel vertex 9.009 m",
           "retained pole verdict=unresolved; root/seed uncertainty=5 m"
         ]
       },
@@ -2882,9 +2879,9 @@
     {
       "id": "OC0034",
       "anchor": {
-        "parcel": "PARCEL_PAVING_EDGE_FBJ_SWN_0023_1",
-        "uM": 17.872537315917135,
-        "vM": -3.6733163440140975,
+        "parcel": "PARCEL_SUPPORT_ROAD_243797_264045",
+        "uM": -19.419139806620947,
+        "vM": -12.455330837936316,
         "yawDeg": 0
       },
       "evidence": {
@@ -2892,7 +2889,7 @@
         "refs": [
           "survey seed E=243774.99999213323 N=264035.3748692494; position not independently verified",
           "source=survey; kind=fence; method=by-eye-photo",
-          "outside all curated parcels; nearest parcel vertex 12.760 m"
+          "outside all curated parcels; nearest parcel vertex 11.687 m"
         ]
       },
       "estimated": true,
@@ -2918,12 +2915,12 @@
       "geometry": {
         "line": [
           [
-            -16.852274023427242,
-            1.3275691937646057
+            -16.72054987918854,
+            -2.4869240966466304
           ],
           [
-            16.852274023427242,
-            -1.3275691937646057
+            16.72054987918854,
+            2.4869240966466304
           ]
         ]
       }
@@ -2931,9 +2928,9 @@
     {
       "id": "OC0035",
       "anchor": {
-        "parcel": "PARCEL_SUPPORT_ROAD_243797_264045",
-        "uM": 2.155998351750486,
-        "vM": -11.164820806095591,
+        "parcel": "PARCEL_SUPPORT_ROAD_243812_264041",
+        "uM": -11.738916863211045,
+        "vM": -9.904452701429635,
         "yawDeg": 0
       },
       "evidence": {
@@ -2942,7 +2939,7 @@
           "survey seed E=243797.62178097357 N=264033.3773739276; position not independently verified",
           "final pole placement: data/free-standing-pole-placements.json, reconciled from packed Furniture.extras.poles after checkPoles; photo bases retain priority",
           "source=survey; kind=street_lamp; method=data.go.kr",
-          "outside all curated parcels; nearest parcel vertex 11.561 m",
+          "outside all curated parcels; nearest parcel vertex 11.401 m",
           "retained pole verdict=unresolved; root/seed uncertainty=5 m"
         ]
       },
@@ -3009,9 +3006,9 @@
     {
       "id": "OC0037",
       "anchor": {
-        "parcel": "PARCEL_SPORTS_WAY_1360645377",
-        "uM": 25.074848900507824,
-        "vM": -28.230541121044606,
+        "parcel": "PARCEL_SUPPORT_ROAD_243812_264041",
+        "uM": 16.055510249672267,
+        "vM": -11.864889147068254,
         "yawDeg": 0
       },
       "evidence": {
@@ -3019,7 +3016,7 @@
         "refs": [
           "survey seed E=243824.0248695857 N=264024.4751044793; position not independently verified",
           "source=survey; kind=fence; method=by-eye-photo",
-          "outside all curated parcels; nearest parcel vertex 17.127 m"
+          "outside all curated parcels; nearest parcel vertex 15.905 m"
         ]
       },
       "estimated": true,
@@ -3057,24 +3054,24 @@
       "geometry": {
         "line": [
           [
-            -34.144373726339474,
-            2.8906073311747953
+            -34.21731047262409,
+            1.835628482845065
           ],
           [
-            -13.267760431481397,
-            3.542678715030015
+            -13.370759748622088,
+            3.131584756914221
           ],
           [
-            2.468180171114633,
-            1.9979594137524463
+            2.405353242040733,
+            2.0731693025630125
           ],
           [
-            14.436405309696918,
-            0.10811695865894899
+            14.426194511630849,
+            0.553533608001358
           ],
           [
-            30.50754867699387,
-            -8.539362418679424
+            30.75652246756111,
+            -7.59391615038732
           ]
         ]
       }
@@ -3083,8 +3080,8 @@
       "id": "OC0038",
       "anchor": {
         "parcel": "PARCEL_SUPPORT_ROAD_243862_264007",
-        "uM": -5.309966368927841,
-        "vM": 3.3056989233216747,
+        "uM": -5.952489138061807,
+        "vM": 3.330980142728109,
         "yawDeg": 0
       },
       "evidence": {
@@ -3093,7 +3090,7 @@
           "survey seed E=243854.86997590493 N=264005.1174768774; position not independently verified",
           "final pole placement: data/free-standing-pole-placements.json, reconciled from packed Furniture.extras.poles after checkPoles; photo bases retain priority",
           "source=survey; kind=street_lamp; method=data.go.kr",
-          "outside all curated parcels; nearest parcel vertex 3.801 m",
+          "outside all curated parcels; nearest parcel vertex 1.426 m",
           "retained pole verdict=unresolved; root/seed uncertainty=5 m"
         ]
       },
@@ -3122,8 +3119,8 @@
       "id": "OC0039",
       "anchor": {
         "parcel": "PARCEL_SUPPORT_ROAD_243862_264007",
-        "uM": -2.773289622401744,
-        "vM": -3.3942916311138083,
+        "uM": -3.6360319827382215,
+        "vM": -3.4482992137699746,
         "yawDeg": 0
       },
       "evidence": {
@@ -3131,7 +3128,7 @@
         "refs": [
           "survey seed E=243861.12500745524 N=264001.6247440433; position not independently verified",
           "source=survey; kind=fence; method=by-eye-photo",
-          "outside all curated parcels; nearest parcel vertex 2.245 m"
+          "outside all curated parcels; nearest parcel vertex 1.282 m"
         ]
       },
       "estimated": true,
@@ -3157,12 +3154,12 @@
       "geometry": {
         "line": [
           [
-            -1.0606578597662084,
-            12.328753068364549
+            -0.657353590303658,
+            12.356821337767531
           ],
           [
-            1.060657859743941,
-            -12.328753068345808
+            0.6573535902820149,
+            -12.356821337748075
           ]
         ]
       }
@@ -3307,8 +3304,8 @@
       "id": "OC0042",
       "anchor": {
         "parcel": "PARCEL_SUPPORT_ROAD_244066_264045",
-        "uM": -0.14839214741773832,
-        "vM": -4.607847422642136,
+        "uM": 4.274136548486664,
+        "vM": -6.057730341399385,
         "yawDeg": 0
       },
       "evidence": {
@@ -3317,7 +3314,7 @@
           "survey seed E=244070.11931384393 N=264042.87858380796; position not independently verified",
           "final pole placement: data/free-standing-pole-placements.json, reconciled from packed Furniture.extras.poles after checkPoles; photo bases retain priority",
           "source=survey; kind=street_lamp; method=data.go.kr",
-          "outside all curated parcels; nearest parcel vertex 4.889 m",
+          "outside all curated parcels; nearest parcel vertex 1.069 m",
           "retained pole verdict=unresolved; root/seed uncertainty=5 m"
         ]
       },
@@ -3346,8 +3343,8 @@
       "id": "OC0043",
       "anchor": {
         "parcel": "PARCEL_SUPPORT_ROAD_244046_264016",
-        "uM": 4.401179278407365,
-        "vM": -4.2537342743642546,
+        "uM": 3.6022630204411135,
+        "vM": -4.158138685995327,
         "yawDeg": 0
       },
       "evidence": {
@@ -3383,9 +3380,9 @@
     {
       "id": "OC0044",
       "anchor": {
-        "parcel": "PARCEL_SUPPORT_ROAD_244059_264046",
-        "uM": -4.466830961414324,
-        "vM": -11.446063984630605,
+        "parcel": "PARCEL_SUPPORT_ROAD_244066_264045",
+        "uM": -2.6676442091827504,
+        "vM": -8.304576966531048,
         "yawDeg": 0
       },
       "evidence": {
@@ -3393,7 +3390,7 @@
         "refs": [
           "survey seed E=244068.56233036294 N=264035.7502991416; position not independently verified",
           "source=survey; kind=fence; method=by-eye-photo",
-          "outside all curated parcels; nearest parcel vertex 6.348 m"
+          "outside all curated parcels; nearest parcel vertex 3.250 m"
         ]
       },
       "estimated": true,
@@ -3427,20 +3424,20 @@
       "geometry": {
         "line": [
           [
-            -29.748286830056575,
-            4.732693523475984
+            -29.82281567037768,
+            4.237761531887394
           ],
           [
-            -9.704219517657274,
-            2.221972375032253
+            -9.739798785258417,
+            2.06042648618326
           ],
           [
-            13.987829891764676,
-            -1.6811493000431863
+            14.013831856340406,
+            -1.4485043155613457
           ],
           [
-            25.464676455861902,
-            -5.27351659854741
+            25.548782599209794,
+            -4.849683702593108
           ]
         ]
       }
@@ -4532,8 +4529,8 @@
       "id": "OC0053",
       "anchor": {
         "parcel": "PARCEL_SUPPORT_ROAD_243887_263979",
-        "uM": -7.050356894183481,
-        "vM": 4.600878938658344,
+        "uM": -6.870858768729799,
+        "vM": 5.134441546175147,
         "yawDeg": 0
       },
       "evidence": {
@@ -4542,7 +4539,7 @@
           "survey seed E=243878.1175343161 N=263977.88106771593; position not independently verified",
           "final pole placement: data/free-standing-pole-placements.json, reconciled from packed Furniture.extras.poles after checkPoles; photo bases retain priority",
           "source=survey; kind=street_lamp; method=data.go.kr",
-          "outside all curated parcels; nearest parcel vertex 4.801 m",
+          "outside all curated parcels; nearest parcel vertex 2.697 m",
           "retained pole verdict=unresolved; root/seed uncertainty=5 m"
         ]
       },
@@ -4570,9 +4567,9 @@
     {
       "id": "OC0054",
       "anchor": {
-        "parcel": "PARCEL_SUPPORT_ROAD_243915_263959",
-        "uM": -6.682951541270543,
-        "vM": 8.200085702423515,
+        "parcel": "PARCEL_SUPPORT_ROAD_243897_263971",
+        "uM": 12.777571552134182,
+        "vM": -5.841449656380742,
         "yawDeg": 0
       },
       "evidence": {
@@ -4582,7 +4579,7 @@
           "data/photo/pole-roots.json OC0054 epoch-root; base read on other-year aerials (2019_12cm, 2021_12cm, 2023_12cm) registered to the sheet; base residual=0.32 m",
           "final pole placement: data/free-standing-pole-placements.json, reconciled from packed Furniture.extras.poles after checkPoles; photo bases retain priority",
           "source=survey; kind=street_lamp; method=data.go.kr",
-          "outside all curated parcels; nearest parcel vertex 4.818 m"
+          "outside all curated parcels; nearest parcel vertex 1.424 m"
         ]
       },
       "estimated": true,
@@ -4610,8 +4607,8 @@
       "id": "OC0055",
       "anchor": {
         "parcel": "PARCEL_SUPPORT_ROAD_243897_263971",
-        "uM": 3.2461950436746947,
-        "vM": -10.23521416287057,
+        "uM": 1.7857594798215466,
+        "vM": -10.260114496614671,
         "yawDeg": 0
       },
       "evidence": {
@@ -4619,7 +4616,7 @@
         "refs": [
           "survey seed E=243892.8751336175 N=263961.70828649425; position not independently verified",
           "source=survey; kind=fence; method=by-eye-photo",
-          "outside all curated parcels; nearest parcel vertex 4.024 m"
+          "outside all curated parcels; nearest parcel vertex 10.510 m"
         ]
       },
       "estimated": true,
@@ -4649,16 +4646,16 @@
       "geometry": {
         "line": [
           [
-            -26.61021439359729,
-            9.236974068361508
+            -27.271586350764395,
+            7.04881393750726
           ],
           [
-            -4.949343155083984,
-            6.259049857401484
+            -5.440572802158442,
+            5.8371114747474255
           ],
           [
-            31.55955754869165,
-            -15.496023925892734
+            32.7121591529437,
+            -12.885925412383157
           ]
         ]
       }
@@ -4666,9 +4663,9 @@
     {
       "id": "OC0056",
       "anchor": {
-        "parcel": "PARCEL_SUPPORT_ROAD_243897_263971",
-        "uM": 0.3957310256408393,
-        "vM": -17.604240944949325,
+        "parcel": "PARCEL_SUPPORT_ROAD_243887_263979",
+        "uM": -14.761132211578422,
+        "vM": -16.111186308465868,
         "yawDeg": 0
       },
       "evidence": {
@@ -4676,7 +4673,7 @@
         "refs": [
           "survey seed E=243886.62484275323 N=263956.8749062128; position not independently verified",
           "source=survey; kind=footbridge; method=by-eye-photo",
-          "outside all curated parcels; nearest parcel vertex 11.615 m"
+          "outside all curated parcels; nearest parcel vertex 16.095 m"
         ]
       },
       "estimated": true,
@@ -4702,12 +4699,12 @@
       "geometry": {
         "line": [
           [
-            -0.07117074034193749,
-            9.303902859686337
+            8.903357672197577,
+            2.7014618001520847
           ],
           [
-            0.07117074034193749,
-            -9.303902859686337
+            -8.903357672197577,
+            -2.7014618001520847
           ]
         ]
       }
@@ -4716,8 +4713,8 @@
       "id": "OC0058",
       "anchor": {
         "parcel": "PARCEL_SUPPORT_ROAD_243946_263944",
-        "uM": -4.3201215114995035,
-        "vM": -6.85795295793048,
+        "uM": -4.475146704265107,
+        "vM": -6.328111272931764,
         "yawDeg": 0
       },
       "evidence": {
@@ -4726,7 +4723,7 @@
           "survey seed E=243941.11673503305 N=263939.61966938304; position not independently verified",
           "final pole placement: data/free-standing-pole-placements.json, reconciled from packed Furniture.extras.poles after checkPoles; photo bases retain priority",
           "source=survey; kind=street_lamp; method=data.go.kr",
-          "outside all curated parcels; nearest parcel vertex 4.894 m",
+          "outside all curated parcels; nearest parcel vertex 9.786 m",
           "retained pole verdict=unresolved; root/seed uncertainty=5 m"
         ]
       },
@@ -4755,8 +4752,8 @@
       "id": "OC0059",
       "anchor": {
         "parcel": "PARCEL_SUPPORT_ROAD_243946_263944",
-        "uM": -7.509335015088957,
-        "vM": -1.5072518803801105,
+        "uM": -7.608139316355687,
+        "vM": -0.9442983039141889,
         "yawDeg": 0
       },
       "evidence": {
@@ -4793,16 +4790,16 @@
       "geometry": {
         "line": [
           [
-            -27.67779248324196,
-            7.555281400170429
+            -27.597136287046784,
+            7.8447780424516775
           ],
           [
-            -6.078908219145643,
-            -5.626849627048392
+            -6.137513188519871,
+            -5.562867401166033
           ],
           [
-            33.75670070235221,
-            -1.9284317730674232
+            33.73464947553184,
+            -2.281910641230663
           ]
         ]
       }
@@ -4811,8 +4808,8 @@
       "id": "OC0060",
       "anchor": {
         "parcel": "PARCEL_SUPPORT_ROAD_243980_263950",
-        "uM": -0.04468763174117396,
-        "vM": -1.69920405421443,
+        "uM": -0.045050949287792075,
+        "vM": -1.9263700592467614,
         "yawDeg": 0
       },
       "evidence": {
@@ -4822,7 +4819,7 @@
           "data/photo/pole-roots.json OC0060 shadow-root; stream-road lamp: long west shadow and the south-leaning pole image meet at the base on the footway by the kerb; base residual=0.16 m",
           "final pole placement: data/free-standing-pole-placements.json, reconciled from packed Furniture.extras.poles after checkPoles; photo bases retain priority",
           "source=survey; kind=street_lamp; method=data.go.kr",
-          "outside all curated parcels; nearest parcel vertex 0.813 m"
+          "outside all curated parcels; nearest parcel vertex 1.286 m"
         ]
       },
       "estimated": true,
@@ -4849,9 +4846,9 @@
     {
       "id": "OC0061",
       "anchor": {
-        "parcel": "PARCEL_SUPPORT_ROAD_244006_263971",
-        "uM": -8.685183804420753,
-        "vM": -1.1274766149593627,
+        "parcel": "PARCEL_SUPPORT_LOT_244001_263977",
+        "uM": -9.568934883725662,
+        "vM": -6.184793881121829,
         "yawDeg": 0
       },
       "evidence": {
@@ -4861,7 +4858,7 @@
           "data/photo/pole-roots.json OC0061 shadow-root; stream-road lamp: west shadow and south-leaning pole image meet 4.8 m from the data.go.kr point; base residual=0.25 m",
           "final pole placement: data/free-standing-pole-placements.json, reconciled from packed Furniture.extras.poles after checkPoles; photo bases retain priority",
           "source=survey; kind=street_lamp; method=data.go.kr",
-          "outside all curated parcels; nearest parcel vertex 2.090 m"
+          "outside all curated parcels; nearest parcel vertex 4.827 m"
         ]
       },
       "estimated": true,
@@ -4889,8 +4886,8 @@
       "id": "OC0062",
       "anchor": {
         "parcel": "PARCEL_SUPPORT_LOT_244009_263979",
-        "uM": 15.384628568774389,
-        "vM": -3.2145936738398078,
+        "uM": 9.467140731983536,
+        "vM": -3.427780607416085,
         "yawDeg": 0
       },
       "evidence": {
@@ -4899,8 +4896,7 @@
           "survey seed E=244018.12899989495 N=263983.08216147264; position not independently verified",
           "data/photo/pole-roots.json OC0062 by-eye-root; stream-road lamp: west shadow and south-leaning pole image meet 7.4 m from the data.go.kr point (no other pole within 8 m); base residual=0.25 m",
           "final pole placement: data/free-standing-pole-placements.json, reconciled from packed Furniture.extras.poles after checkPoles; photo bases retain priority",
-          "source=survey; kind=street_lamp; method=data.go.kr",
-          "outside all curated parcels; nearest parcel vertex 0.464 m"
+          "source=survey; kind=street_lamp; method=data.go.kr"
         ]
       },
       "estimated": true,
@@ -4908,7 +4904,7 @@
       "crossingDeg": null,
       "bearingChecks": [],
       "vrObservations": [],
-      "parcelRelation": "nearest_boundary",
+      "parcelRelation": "inside",
       "kind": "street_lamp",
       "sourceInput": "eb7f6aefed7e9638824ee8ca3c11815b462cde1778b0225459772cb062fb10be",
       "sourceGeometry": {
@@ -4927,9 +4923,9 @@
     {
       "id": "OC0063",
       "anchor": {
-        "parcel": "PARCEL_SUPPORT_ROAD_244006_263971",
-        "uM": -8.010634427091908,
-        "vM": -1.1349194828078333,
+        "parcel": "PARCEL_SUPPORT_LOT_244001_263977",
+        "uM": -8.894539489944329,
+        "vM": -6.168573166493162,
         "yawDeg": 0
       },
       "evidence": {
@@ -4937,7 +4933,7 @@
         "refs": [
           "survey seed E=244000.6250973559 N=263964.20812055573; position not independently verified",
           "source=survey; kind=fence; method=by-eye-photo",
-          "outside all curated parcels; nearest parcel vertex 2.711 m"
+          "outside all curated parcels; nearest parcel vertex 5.392 m"
         ]
       },
       "estimated": true,
@@ -4967,16 +4963,16 @@
       "geometry": {
         "line": [
           [
-            -34.31197769194732,
-            3.6030552854856044
+            -34.41723920570573,
+            2.397387323773396
           ],
           [
-            -6.7250620709109645,
-            -1.6923566772301175
+            -6.661566948358599,
+            -1.92718882653126
           ],
           [
-            41.03703976279725,
-            -1.9106986082780608
+            41.07880615400411,
+            -0.4701984972668356
           ]
         ]
       }
@@ -7399,9 +7395,9 @@
     {
       "id": "OC0089",
       "anchor": {
-        "parcel": "PARCEL_PAVING_BUILDING_77",
-        "uM": 2.0813234067380004,
-        "vM": -0.3577244220301713,
+        "parcel": "PARCEL_LOT_E3_S_R6",
+        "uM": -18.533451752112214,
+        "vM": 3.843199053488152,
         "yawDeg": 0
       },
       "evidence": {
@@ -7409,7 +7405,7 @@
         "refs": [
           "survey seed E=243683.37530657617 N=263766.62474726414; position not independently verified",
           "source=survey; kind=planter; method=by-eye-photo",
-          "outside all curated parcels; nearest parcel vertex 3.801 m"
+          "outside all curated parcels; nearest parcel vertex 2.317 m"
         ]
       },
       "estimated": true,
@@ -7435,12 +7431,12 @@
       "geometry": {
         "line": [
           [
-            -5.406040537022361,
-            -0.9154430868992476
+            -5.404909179820544,
+            -0.922099284877854
           ],
           [
-            5.406040536990197,
-            0.9154430868507331
+            5.40490917978844,
+            0.9220992848292999
           ]
         ]
       }
@@ -8152,9 +8148,9 @@
     {
       "id": "OC0103",
       "anchor": {
-        "parcel": "PARCEL_SUPPORT_ROAD_243712_263738",
-        "uM": -4.262046338457082,
-        "vM": 1.8670466705291657,
+        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_54",
+        "uM": -19.230136010909913,
+        "vM": 6.665565641834027,
         "yawDeg": 0
       },
       "evidence": {
@@ -8163,6 +8159,7 @@
           "survey seed E=243714.37112077008 N=263739.1303834006; position not independently verified",
           "final pole placement: data/free-standing-pole-placements.json, reconciled from packed Furniture.extras.poles after checkPoles; photo bases retain priority",
           "source=survey; kind=street_lamp; method=by-eye-photo",
+          "outside all curated parcels; nearest parcel vertex 3.975 m",
           "retained pole verdict=unresolved; root/seed uncertainty=1.2 m"
         ]
       },
@@ -8171,7 +8168,7 @@
       "crossingDeg": null,
       "bearingChecks": [],
       "vrObservations": [],
-      "parcelRelation": "inside",
+      "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
       "sourceInput": "9994c10170da0b93965d354c5aa7569b3018dcec2375ba2b1cd4cd2193e3d4e8",
       "sourceGeometry": {
@@ -8191,8 +8188,8 @@
       "id": "OC0104",
       "anchor": {
         "parcel": "PARCEL_PAVING_100034702020A00310100000000047547",
-        "uM": 30.04365141114163,
-        "vM": 4.113092429103469,
+        "uM": 30.04365141113761,
+        "vM": 4.0684188792007205,
         "yawDeg": 0
       },
       "evidence": {
@@ -8840,9 +8837,9 @@
     {
       "id": "OC0110",
       "anchor": {
-        "parcel": "PARCEL_SUPPORT_ROAD_244186_263735",
-        "uM": -2.072707884412168,
-        "vM": -4.289048793614498,
+        "parcel": "PARCEL_ROAD_E244173_N263726",
+        "uM": 8.372727490612306,
+        "vM": 9.121194236096926,
         "yawDeg": 0
       },
       "evidence": {
@@ -8851,7 +8848,7 @@
           "survey seed E=244180.8727274906 N=263736.3711942361; position not independently verified",
           "final pole placement: data/free-standing-pole-placements.json, reconciled from packed Furniture.extras.poles after checkPoles; photo bases retain priority",
           "source=survey; kind=street_lamp; method=data.go.kr",
-          "outside all curated parcels; nearest parcel vertex 1.164 m",
+          "outside all curated parcels; nearest parcel vertex 3.001 m",
           "retained pole verdict=unresolved; root/seed uncertainty=5 m"
         ]
       },
@@ -14010,9 +14007,9 @@
     {
       "id": "OC0165",
       "anchor": {
-        "parcel": "PARCEL_SUPPORT_ROAD_244184_263549",
-        "uM": -15.581338403377746,
-        "vM": -10.299350929182188,
+        "parcel": "PARCEL_LOT_E244186_N263524_R1",
+        "uM": -11.158351653342079,
+        "vM": 11.655691633505107,
         "yawDeg": 0
       },
       "evidence": {
@@ -14020,7 +14017,7 @@
         "refs": [
           "survey seed E=244172.8073265746 N=263535.98142966186; position not independently verified",
           "source=survey; kind=gazebo; method=by-eye-photo",
-          "outside all curated parcels; nearest parcel vertex 9.086 m"
+          "outside all curated parcels; nearest parcel vertex 12.267 m"
         ]
       },
       "estimated": true,
@@ -14090,56 +14087,56 @@
       "geometry": {
         "ring": [
           [
-            -1.559066832318031,
-            2.8393942724927714
+            -1.639892718901471,
+            2.7934926333879737
           ],
           [
-            2.328318821373675,
-            1.9000780884664836
+            2.2728433141870266,
+            1.9660998309823134
           ],
           [
-            1.272844551270709,
-            -2.4742693343181714
+            1.3433121295115094,
+            -2.436730291426212
           ],
           [
-            -2.6156869823542994,
-            -1.535822281819081
+            -2.570544374676592,
+            -1.6102391402547145
           ]
         ],
         "footprint": [
           [
-            -1.4156692218007974,
-            2.6570490863297067
+            -1.491322306422564,
+            2.6153368752583463
           ],
           [
-            2.4717164318909086,
-            1.717732902303419
+            2.421413726665933,
+            1.787944072852686
           ],
           [
-            1.41624216177428,
-            -2.656614520537817
+            1.4918825419783825,
+            -2.6148860496127897
           ],
           [
-            -2.472289371837066,
-            -1.7181674679821457
+            -2.421973962197685,
+            -1.7883948983843418
           ]
         ],
         "photoRing": [
           [
-            -1.559066832318031,
-            2.8393942724927714
+            -1.639892718901471,
+            2.7934926333879737
           ],
           [
-            2.328318821373675,
-            1.9000780884664836
+            2.2728433141870266,
+            1.9660998309823134
           ],
           [
-            1.272844551270709,
-            -2.4742693343181714
+            1.3433121295115094,
+            -2.436730291426212
           ],
           [
-            -2.6156869823542994,
-            -1.535822281819081
+            -2.570544374676592,
+            -1.6102391402547145
           ]
         ]
       }
@@ -14452,8 +14449,8 @@
       "id": "OC0170",
       "anchor": {
         "parcel": "PARCEL_SUPPORT_ROAD_243887_263464",
-        "uM": 7.845590260615551,
-        "vM": -1.4717230029816304,
+        "uM": 8.772685795962056,
+        "vM": 0.1636548020281281,
         "yawDeg": 0
       },
       "evidence": {
@@ -14462,7 +14459,7 @@
           "survey seed E=243896.127956311 N=263462.8718778478; position not independently verified",
           "final pole placement: data/free-standing-pole-placements.json, reconciled from packed Furniture.extras.poles after checkPoles; photo bases retain priority",
           "source=survey; kind=street_lamp; method=data.go.kr",
-          "outside all curated parcels; nearest parcel vertex 3.164 m",
+          "outside all curated parcels; nearest parcel vertex 5.758 m",
           "retained pole verdict=unresolved; root/seed uncertainty=5 m"
         ]
       },
@@ -16012,9 +16009,9 @@
     {
       "id": "RS0018C",
       "anchor": {
-        "parcel": "PARCEL_PAVING_PAVING_E8_FRONT_COURTYARD_GREY_PAVERS_WITH_STAGG",
-        "uM": -9.27540132373161,
-        "vM": -0.6162941962461215,
+        "parcel": "PARCEL_SUPPORT_LOT_243598_263698",
+        "uM": -3.3488702589073016,
+        "vM": -1.8919479758693454,
         "yawDeg": 0
       },
       "evidence": {
@@ -16116,24 +16113,24 @@
       "geometry": {
         "ring": [
           [
-            -0.06722180054717568,
-            0.47011521465407224
+            -0.39394727968501503,
+            -0.26520299083310744
           ],
           [
-            1.2474315225619375,
-            0.6579075705784277
+            -1.1354029341684309,
+            0.8365332940100596
           ],
           [
-            1.4154859994377447,
-            -0.5173802995835468
+            -0.1505348741575513,
+            1.499540676561927
           ],
           [
-            -1.2138205991584368,
-            -0.892965349659411
+            1.3323767185596278,
+            -0.7039317029897003
           ],
           [
-            -1.381875122240564,
-            0.2823228640475025
+            0.34750836939472424,
+            -1.3669392767171402
           ]
         ]
       }
@@ -16312,9 +16309,9 @@
     {
       "id": "RS-LS-D4STEPS",
       "anchor": {
-        "parcel": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_D4_",
-        "uM": -15.746825551967442,
-        "vM": -2.644528350842144,
+        "parcel": "PARCEL_SUPPORT_LOT_243524_263874",
+        "uM": 5.949059749601601,
+        "vM": 0.694159081184687,
         "yawDeg": 0
       },
       "evidence": {
@@ -16348,12 +16345,12 @@
       "geometry": {
         "line": [
           [
-            -0.2850285803306948,
-            5.565721839015511
+            5.504508962777943,
+            -0.8711383125525102
           ],
           [
-            0.2850285803306948,
-            -5.565721839015511
+            -5.504508962777943,
+            0.8711383125525102
           ]
         ]
       }

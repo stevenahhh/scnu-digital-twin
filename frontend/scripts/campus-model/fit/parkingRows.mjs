@@ -512,7 +512,7 @@ async function cli(args) {
   const chips = opt("--chips", null);
 
   const read = (f) => JSON.parse(readFileSync(path.join(data, f), "utf8"));
-  const features = [...read("photo/markings.geojson").features, ...read("photo/markings-extra.geojson").features]
+  const features = [...read("photo/evidence/markings.geojson").features, ...read("photo/evidence/markings-extra.geojson").features]
     .filter((f) => ["parking_line", "disabled_parking"].includes(f.properties.kind) && f.geometry.type === "Polygon");
   const pieces = features.map((f) => ({ id: f.properties.id, kind: f.properties.kind, ring: f.geometry.coordinates[0].map(([lon, lat]) => wgs84ToTm(lon, lat)) }));
   const forms = read("building-forms.json");

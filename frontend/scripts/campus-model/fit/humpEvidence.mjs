@@ -10,9 +10,11 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { geoToModel, SCENE_UNITS_PER_METRE } from "../lib/frame.mjs";
+import { humpProfile } from "../stages/roadMarkings.mjs";
+export { humpProfile } from "../stages/roadMarkings.mjs";
 
 const UNIT = SCENE_UNITS_PER_METRE;
-const PHOTO = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "photo");
+const PHOTO = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "data", "photo", "evidence");
 
 // Every speed_bump feature of both marking files.
 export async function loadSpeedBumps() {
@@ -46,8 +48,6 @@ export function orientedBox(ring) {
 }
 
 // ---------------------------------------------------------------- humps
-export const humpProfile = (sM) => (Math.abs(sM) >= HUMP_LENGTH_M / 2 ? 0 : HUMP_HEIGHT_M * (1 - ((2 * sM) / HUMP_LENGTH_M) ** 2));
-
 // features: speed_bump features (GeoJSON, lon/lat); onRoad([x, z]) -> boolean. Returns humps with their frame
 // (model units: centre, travel axis u, across axis v, halfWidth) and the height function above the road.
 export function buildHumps({ features, onRoad, log = console.log }) {
@@ -85,7 +85,10 @@ export function buildHumps({ features, onRoad, log = console.log }) {
     }
     const v = [-u[1], u[0]];
     const halfWidth = Math.max(...c.ring.map((p) => Math.abs(dot(sub(p, box.centre), v))));
-    humps.push({ id: c.id, centre: box.centre, u, v, halfWidth, widthM: (2 * halfWidth) / UNIT, bands: c.bands.length });
+    const bandStartColour = c.bands.map(f => ({ colour:f.properties.colour,
+      t:dot(sub(orientedBox(toModel(f.geometry.coordinates[0])).centre,box.centre),v) }))
+      .sort((a,b)=>b.t-a.t)[0]?.colour ?? "yellow";
+    humps.push({ id: c.id, centre: box.centre, u, v, halfWidth, widthM: (2 * halfWidth) / UNIT, bands: c.bands.length, bandStartColour });
   }
   // Height (metres) of the hump surface above the road at a model point, 0 off every hump.
   const heightAt = (x, z) => {
