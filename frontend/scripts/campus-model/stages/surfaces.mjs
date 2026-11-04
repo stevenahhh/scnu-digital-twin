@@ -45,6 +45,9 @@ export const GROUND_MESHES = Object.freeze({
   Ground_Sports: {},
   // Todo 13c: clear-sky NGII comparison, class-wide estimated albedo (no photo pixels or baked shade).
   Ground_Asphalt: { tile: "asphalt", baseColorFactor: [0.72, 0.90, 0.94, 1] },
+  // ZONE17: observed red paving, substrate/use unknown. This CC0 tile is a
+  // visual estimate, not a claim that the underlying material is asphalt.
+  Ground_RedRoad: { tile: "asphalt-red" },
   Ground_Lot: { tile: "lot" },
   // VR scenes a2-e5: light grey pavers with scattered dark squares (data/paving-patterns.json campus-speckle, 추정)
   Ground_Pavers: { pattern: "campus-speckle", baseColorFactor: [0.26, 0.30, 0.22, 1] },

@@ -38,6 +38,7 @@
 //   bun run model:build      (generator, then pack.mjs)
 import { mkdir } from "node:fs/promises";
 import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { sceneToTm, tmToScene } from "../../src/geo/epsg5186.mjs";
@@ -85,6 +86,9 @@ const { selectableBuildings, campusBuildings, offCampusLots, contextParts } = aw
 const markings = loadRoadMarkings();
 const roadRecords = [...new Set(markings.pieces.map(p => p.record))];
 const roadObjects = [...new Set(markings.pieces.map(p => p.objectId))];
+const roadSourceHashes = Object.fromEntries(["road-sections", "junctions", "parcels"].map(name => [
+  name, createHash("sha256").update(readFileSync(new URL(`./data/ground/${name}.json`, import.meta.url))).digest("hex"),
+]));
 console.log(describeMarkings(markings));
 // The ground classes come from the one parcel map data/ground/parcels.json (design §5, lib/parcels.mjs).
 const { surface, surfaces, groundInfo, layers, aoTexture, buildTopography } = await buildGround({ glb, inputs });
@@ -124,14 +128,9 @@ const labelAt = ([x, z]) => {
 }
 // markings.report: the symbol pieces that reach the mesh, in the GLB's Road_Markings extras and in .build; the build stops on
 // a symbol without a parking.json record.
-markings.pieceReport = { ...symbolPieceReport(markings.pieces), roadRecords, roadObjects, estimatedValues: estimatedValueReport(parkingDoc), lots: lotReviewReport(parkingDoc) };
+markings.pieceReport = { ...symbolPieceReport(markings.pieces), roadRecords, roadObjects, roadSourceHashes, estimatedValues: estimatedValueReport(parkingDoc), lots: lotReviewReport(parkingDoc) };
 if (markings.pieceReport.unrecorded) throw new Error(`markings.report: ${markings.pieceReport.unrecorded} symbol pieces without a parking.json record`);
 await mkdir(path.dirname(OUTPUT), { recursive: true });
-await Bun.write(path.join(path.dirname(OUTPUT), "markings.report.json"), `${JSON.stringify({
-  symbols: markings.pieceReport,
-  implausibleStalls: implausibleStalls(parkingDoc),
-  pieces: markings.pieces.map(({ id, record, objectId, partId, kind, colour, glyph, estimated, estimatedFields }) => ({ id: id ?? null, record: record ?? null, objectId: objectId ?? null, partId: partId ?? null, kind, colour, glyph: glyph ?? null, estimated: Boolean(estimated), ...(estimatedFields ? { estimatedFields } : {}) })),
-})}\n`);
 console.log(`markings.report: ${JSON.stringify(markings.pieceReport.byGlyph)} on ${markings.pieceReport.records.length} records, ${markings.pieceReport.unrecorded} without a record`);
 const humps = markings;
 const humpNodes = await buildHumpMeshes({ glb, humps: humps.humps, surface, ao: aoTexture });
@@ -180,6 +179,12 @@ const excludedParcelIds = new Set(surfaces.paintExcludedDetail.map(p => p.parcel
 const paintExclusions = surfaces.parcels.filter(p => excludedParcelIds.has(p.id) && !p.paintAllowed)
   .map(p => [p.ring, ...p.holes].map(r => r.map(([e,n]) => tmToScene(e,n))));
 const markingMesh = await buildMarkings({ glb, markings, surface: groundSurface, extraHeight: humps.heightAt, claim, baseOffset: slabDecal, exclusions: paintExclusions });
+const markingReport = {
+  symbols: { ...markings.pieceReport, ...markingMesh.roadEmission.summary },
+  emission: markingMesh.roadEmission,
+  implausibleStalls: implausibleStalls(parkingDoc),
+  pieces: markings.pieces.map(({ id, record, objectId, partId, ownerId, kind, colour, glyph, estimated, estimatedFields }) => ({ id: id ?? null, record: record ?? null, objectId: objectId ?? null, partId: partId ?? null, ownerId: ownerId ?? null, kind, colour, glyph: glyph ?? null, estimated: Boolean(estimated), ...(estimatedFields ? { estimatedFields } : {}) })),
+};
 stageTime("road markings");
 const groundLayers = [...layers, ...kerbs.gutters, ...tactile.layers, ...humpLayers(humps.humps)]
   .map((layer, order) => ({ layer, order }))
@@ -293,6 +298,9 @@ glb.json.asset.extras = { ...glb.json.asset.extras, ...frameAssetExtras() };
 const bytes = glb.toBuffer();
 await mkdir(path.dirname(OUTPUT), { recursive: true });
 await Bun.write(OUTPUT, bytes);
+await Bun.write(path.join(path.dirname(OUTPUT), "markings.report.json"), `${JSON.stringify({
+  ...markingReport, rawGlbSha256: createHash("sha256").update(bytes).digest("hex"),
+})}\n`);
 // Record-defined humps raise the drawn road; the agents must climb them too.
 const sidecar = writeHeightSidecar((x, z) => kerbs.groundHeightAt(x, z) + metresToUnits(humps.heightAt(x, z)), (x, z) => surface.height(x, z), kerbs.plan.slabHeight, labelAt);
 await Bun.write(HEIGHT_BIN, sidecar.bytes);

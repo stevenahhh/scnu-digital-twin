@@ -6,6 +6,7 @@ import { add, dot, norm, offsetPath, polylineLength, projectArc, scale, slicePat
 import { frameAt } from "../stages/roadMarkings.mjs";
 import { createHash } from "node:crypto";
 import { topParcelAt } from "../lib/parcels.mjs";
+import { applyRoadCuration } from "./roadCuration.mjs";
 
 const tm = p => sceneToTm(...p);
 const K = norm(sub(tm([U,0]),tm([0,0])));
@@ -202,7 +203,9 @@ if(import.meta.main) {
     const i=Math.floor((x-EXTENT.minX)*groundInfo.px),j=Math.floor((z-EXTENT.minZ)*groundInfo.px);
     return i>=0&&j>=0&&i<groundInfo.width&&j<groundInfo.height&&[SURFACE_CLASS.ASPHALT,SURFACE_CLASS.LOT].includes(groundInfo.labels[j*groundInfo.width+i]);
   }});
-  const docs=seedRoadMarkings(evidence.model,humps.humps,{...roadContext(),parcels:surfaces.parcels});
+  const context=roadContext();
+  const curation=JSON.parse(readFileSync(new URL("../data/ground/road-curation.json",import.meta.url),"utf8"));
+  const docs=applyRoadCuration(seedRoadMarkings(evidence.model,humps.humps,{...context,parcels:surfaces.parcels}),curation,context);
   for(const [name,doc] of [["road-sections",docs.sections],["junctions",docs.junctions]]) {
     const file=new URL("../data/ground/"+name+".json",import.meta.url),text=JSON.stringify(doc,null,2)+"\n";
     if(process.argv.includes("--check")) {if(readFileSync(file,"utf8")!==text) throw new Error(name+": seed is stale");}

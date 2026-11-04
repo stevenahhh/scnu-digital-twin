@@ -73,6 +73,7 @@ export async function buildMarkings({ glb, markings, surface, extraHeight = () =
   const uvs = [];
   const indices = [];
   const index = new Map();
+  const roadParts = [], droppedRoadParts = [];
   // A documented non-paint parcel excludes its whole surface, not only the
   // centre of the originally rejected marking. This also clips nearby stripes
   // that would otherwise protrude across the pedestrian island's boundary.
@@ -103,8 +104,14 @@ export async function buildMarkings({ glb, markings, surface, extraHeight = () =
   const onFill = (piece) => piece.colour === "white" && ON_FILL_KINDS.has(piece.kind);
   const drawOrder = [...markings.pieces.filter(onFill), ...markings.pieces.filter((piece) => !onFill(piece))];
   for (const piece of drawOrder) {
+    const identity = piece.partId ? { objectId: piece.objectId, partId: piece.partId, ownerId: piece.ownerId } : null;
     // paint beyond EXTENT lies on the context ground, drawn there
-    if (!inMarkingExtent(piece.rings[0].reduce((a, q) => [a[0] + q[0] / piece.rings[0].length, a[1] + q[1] / piece.rings[0].length], [0, 0]))) continue;
+    if (!inMarkingExtent(piece.rings[0].reduce((a, q) => [a[0] + q[0] / piece.rings[0].length, a[1] + q[1] / piece.rings[0].length], [0, 0]))) {
+      if (identity) droppedRoadParts.push({ ...identity, reason: "outside-extent" });
+      continue;
+    }
+    const triangles = [];
+    let sourceAreaScene = 0, emittedAreaScene = 0;
     const [outer, ...holes] = piece.rings;
     const contour = outer.map(([x, z]) => new Vector2(x, z));
     const holeVectors = holes.map((ring) => ring.map(([x, z]) => new Vector2(x, z)));
@@ -112,6 +119,7 @@ export async function buildMarkings({ glb, markings, surface, extraHeight = () =
     for (const [a, b, c] of ShapeUtils.triangulateShape(contour, holeVectors)) {
       source += 1;
       const flat = [all[a], all[b], all[c]];
+      sourceAreaScene += Math.abs((flat[1][0]-flat[0][0])*(flat[2][1]-flat[0][1])-(flat[1][1]-flat[0][1])*(flat[2][0]-flat[0][0]))/2;
       const clipped = cuts.reduce((parts, {triangle, bounds: b}) => parts.flatMap(part =>
         part.every(p => p[0] <= b[0]) || part.every(p => p[1] <= b[1]) || part.every(p => p[0] >= b[2]) || part.every(p => p[1] >= b[3])
           ? [part] : subtractConvex(part, triangle)), [flat]).flatMap(fan);
@@ -122,9 +130,26 @@ export async function buildMarkings({ glb, markings, surface, extraHeight = () =
         if (Math.abs(cross) < 1e-10) continue;
         const ordered = cross < 0 ? tri : [tri[0], tri[2], tri[1]];
         indices.push(...ordered.map((p) => vertex(p, piece.colour)));
+        if (identity) {
+          triangles.push(ordered.map(p => [...p]));
+          emittedAreaScene += Math.abs(cross) / 2;
+        }
       }
     }
+    if (identity) {
+      if (triangles.length) roadParts.push({ ...identity, sourceAreaScene, emittedAreaScene, triangles });
+      else droppedRoadParts.push({ ...identity, reason: "no-emitted-triangles" });
+    }
   }
+  const roadEmission = {
+    source: "Road_Markings after extent, exclusion and ground claims; before outline-preserving decimation",
+    parts: roadParts, dropped: droppedRoadParts,
+    summary: {
+      emittedRoadObjects: [...new Set(roadParts.map(p => p.objectId))],
+      emittedRoadParts: roadParts.map(p => p.partId),
+      droppedRoadParts: droppedRoadParts.map(p => p.partId),
+    },
+  };
 
   const bands = PALETTE_COLOURS.length;
   const palette = new Uint8Array(16 * bands * 16 * 3);
@@ -168,7 +193,7 @@ export async function buildMarkings({ glb, markings, surface, extraHeight = () =
         crossings: markings.log.regular.crossings, templates: markings.log.regular.glyphs,
       } : null,
       estimatedStallDividers: markings.pieces.filter((p) => p.estimated && p.kind === "parking_line").length,
-      report: markings.pieceReport ?? null,
+      report: { ...markings.pieceReport, ...roadEmission.summary },
       zebra: { periodM: ZEBRA_PERIOD_M, periodSource: "measured", barM: ZEBRA_BAR_M, gapM: Number((ZEBRA_PERIOD_M - ZEBRA_BAR_M).toFixed(3)), barSource: "assumed" },
       statute: {
         source: STATUTE_SOURCE,
@@ -183,7 +208,7 @@ export async function buildMarkings({ glb, markings, surface, extraHeight = () =
       warnings: markings.warnings,
     },
   }, { root: true });
-  return { vertices: primitive.positions.length / 3, triangles: primitive.indices.length / 3, sourceTriangles: source, conformedTriangles: sourceTriangles };
+  return { vertices: primitive.positions.length / 3, triangles: primitive.indices.length / 3, sourceTriangles: source, conformedTriangles: sourceTriangles, roadEmission };
 }
 
 export const describeMarkings = ({pieces, humps=[]}) => `road records: ${pieces.length} paint pieces, ${humps.length} humps`;

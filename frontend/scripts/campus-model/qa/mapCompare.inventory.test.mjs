@@ -138,3 +138,40 @@ test("a retained crossing with unmeasured bars is incomplete evidence, never a p
   assert.equal(result.crossings.rows[0].status, "unknown");
   assert.equal(result.crossings.pass, false);
 });
+
+test("unobserved crossing slots are neither proved absent nor accepted as measured bars", () => {
+  const partial = { segments: [], crossings: [{
+    id: "CW_A", expected: true, barIds: ["A/0"], unobservedBarIds: ["A/1"], refs: ["one visible bar; one hidden slot"],
+  }] };
+  for (const [barIds, status, over] of [
+    [["A/0"], "unknown", false],
+    [["A/0", "A/1"], "unknown", false],
+    [["A/1"], "incomplete", true],
+  ]) {
+    const result = compare.compareRoadInventory(partial, { segmentIds: [], crossings: [{ id: "CW_A", barIds }] });
+    assert.equal(result.crossings.rows[0].status, status);
+    assert.equal(result.crossings.rows[0].over, over);
+    assert.equal(result.crossings.pass, false);
+  }
+});
+
+test("road acceptance requires complete references, ownership and measurable geometry, not only over=false", () => {
+  const good = {
+    referenceComplete: true, roadOwnership: { unassignedOwners: [] },
+    roadExistence: { segments: { pass: true }, crossings: { pass: true } },
+    objects: [
+      { tier: "lane", residual_m: .1, support: 1, over: false, occluded: false },
+      { tier: "crossing_bar", residual_m: .1, iou: .8, over: false, occluded: false },
+    ],
+    physicalCrossings: [{ iou: .8, over: false, occluded: false }],
+  };
+  assert.equal(compare.roadAcceptance(good).accepted, true);
+  for (const patch of [
+    { referenceComplete: false },
+    { roadOwnership: { unassignedOwners: ["JA_unknown"] } },
+    { physicalCrossings: [] },
+    { physicalCrossings: [{ iou: null, over: false, occluded: true }] },
+    { objects: good.objects.map(o => ({ ...o, unmeasurable: true })) },
+    { roadExistence: { segments: { pass: true }, crossings: { pass: false } } },
+  ]) assert.equal(compare.roadAcceptance({ ...good, ...patch }).accepted, false);
+});

@@ -6235,18 +6235,35 @@
    ],
    "holes": [],
    "precedence": 3,
-   "mesh": "Ground_Asphalt",
+   "mesh": "Ground_RedRoad",
    "label": 2,
-   "source": "road-zone-measured",
-   "source_ref": "road zone 17",
+   "source": "photo-curated",
+   "source_ref": "road zone 17; Genuine paving retained. Red visual surface is estimated; substrate and 2025 traffic use are unknown. Historical centreline, hump and vehicle do not prove current use.",
    "evidence": {
-    "tier": "T0",
+    "tier": "T1",
     "refs": [
-     "road zone 17"
+     "suncheon-12cm/2018_12cm/t-0-2.jpg",
+     "suncheon-12cm/2023_12cm/t-0-2.jpg",
+     "suncheon-12cm/2025_25cm/t-0-2.jpg",
+     "NGII 2025 34702020",
+     "VR scene_d3 b: occluded"
     ]
    },
    "paintAllowed": true,
-   "estimated": false
+   "estimated": true,
+   "curated": "todo 24",
+   "surfaceReview": {
+    "observedSurface": "red surface visible through canopy in the 2025 aerial layer",
+    "use": "unknown",
+    "reason": "Genuine paving retained. Red visual surface is estimated; substrate and 2025 traffic use are unknown. Historical centreline, hump and vehicle do not prove current use.",
+    "refs": [
+     "suncheon-12cm/2018_12cm/t-0-2.jpg",
+     "suncheon-12cm/2023_12cm/t-0-2.jpg",
+     "suncheon-12cm/2025_25cm/t-0-2.jpg",
+     "NGII 2025 34702020",
+     "VR scene_d3 b: occluded"
+    ]
+   }
   },
   {
    "id": "PARCEL_ASPHALT_ROAD_ZONE_18",
@@ -6479,22 +6496,35 @@
    "precedence": 3,
    "mesh": "Ground_Asphalt",
    "label": 2,
-   "source": "road-zone-measured",
-   "source_ref": "road zone 20",
+   "source": "photo-curated",
+   "source_ref": "road zone 20; Genuine crossroads observed in aerial and VR; preserve the full paved footprint. Approach dimensions remain estimates.",
    "evidence": {
-    "tier": "T0",
+    "tier": "T1",
     "refs": [
-     "road zone 20"
+     "task-24-junction-chips/RZ-020-photo.png",
+     "VR scene_e2 d",
+     "campus_transport_network.geojson#ND_058"
     ]
    },
    "paintAllowed": true,
-   "estimated": false,
+   "estimated": true,
    "over": [
     "PARCEL_ASPHALT_ROAD_ZONE_6",
     "PARCEL_ASPHALT_ROAD_ZONE_17",
     "PARCEL_ASPHALT_ROAD_ZONE_18",
     "PARCEL_ASPHALT_ROAD_ZONE_19"
-   ]
+   ],
+   "curated": "todo 24",
+   "surfaceReview": {
+    "observedSurface": "paved crossroads",
+    "use": "junction",
+    "reason": "Genuine crossroads observed in aerial and VR; preserve the full paved footprint. Approach dimensions remain estimates.",
+    "refs": [
+     "task-24-junction-chips/RZ-020-photo.png",
+     "VR scene_e2 d",
+     "campus_transport_network.geojson#ND_058"
+    ]
+   }
   },
   {
    "id": "PARCEL_ASPHALT_ROAD_ZONE_21",

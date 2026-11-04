@@ -45,7 +45,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_3b0aeedf9be86f2d",
@@ -77,7 +83,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_b6b5553a334e7821",
@@ -110,7 +122,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_ea714981f78109d3",
@@ -142,7 +160,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_a9155da131254b8c",
@@ -176,7 +200,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_bc4195022faeb877",
@@ -208,7 +238,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_a722e59669b1b1cc",
@@ -240,7 +276,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_e711acd09f8e82e7",
@@ -272,7 +314,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_f4ad97c27b185d1f",
@@ -304,7 +352,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_a1d573741fe5bffb",
@@ -336,7 +390,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_3d7002ec2bd0a17f",
@@ -368,7 +428,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_28459f209fedcc6a",
@@ -400,7 +466,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_2fe4895a90167f93",
@@ -432,7 +504,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_00a9e77431054a46",
@@ -460,7 +538,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.30000699537034053,
-        "legacyId": "MX00654"
+        "legacyId": "MX00654",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_f39023157109549c",
@@ -488,7 +572,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.4500104930555108,
-        "legacyId": "MX00655"
+        "legacyId": "MX00655",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_1093a3a19bc02cb5",
@@ -516,7 +606,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.4500104930555108,
-        "legacyId": "MX00718"
+        "legacyId": "MX00718",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_2f8b7ebd8192bb89",
@@ -544,7 +640,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.44901046973760966,
-        "legacyId": "MX00948"
+        "legacyId": "MX00948",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_6f256064404f47c0",
@@ -572,7 +674,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.4500104930555108,
-        "legacyId": "MX00949"
+        "legacyId": "MX00949",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_ca6bc2d674b07c05",
@@ -600,7 +708,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.4500104930555108,
-        "legacyId": "MX00950"
+        "legacyId": "MX00950",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_f35df034e669a7ca",
@@ -628,7 +742,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.4500104930555108,
-        "legacyId": "MX00961"
+        "legacyId": "MX00961",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_a68cdd428f17b86a",
@@ -656,7 +776,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.4500104930555108,
-        "legacyId": "MX00980"
+        "legacyId": "MX00980",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_ffae78dfcad56184",
@@ -684,7 +810,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.4500104930555108,
-        "legacyId": "MX00981"
+        "legacyId": "MX00981",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_cd75f92f57ebdbb1",
@@ -712,7 +844,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.30000699537034053,
-        "legacyId": "MX00982"
+        "legacyId": "MX00982",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_7e21e59cfc56b39b",
@@ -740,7 +878,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.4500104930555108,
-        "legacyId": "MX01853"
+        "legacyId": "MX01853",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_f9c78930087b1eb3",
@@ -768,7 +912,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.4500104930555108,
-        "legacyId": "MX01863"
+        "legacyId": "MX01863",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_d3f1dd0ae22f585c",
@@ -804,7 +954,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_eec81074013aa5f6",
@@ -840,7 +996,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_45d1fbc7c23c1f01",
@@ -876,7 +1038,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_3add1a7a25a93a1c",
@@ -912,7 +1080,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_7bfb92b4d95acce4",
@@ -948,7 +1122,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_2df52c2fa0b2bb6c",
@@ -984,7 +1164,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_0cc74ea6e4b8ae11",
@@ -1021,7 +1207,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_bf16cb57d223a18a",
@@ -1057,7 +1249,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_fc06b01c498f19cc",
@@ -1093,7 +1291,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_7653c0abd9deb427",
@@ -1129,7 +1333,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_23222c1cd1ab8716",
@@ -1165,7 +1375,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_fea87fde06d8a1ee",
@@ -1209,7 +1425,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_c6f7524a5f1ff59e",
@@ -1251,11 +1473,17 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_85d8a63992089709",
-        "segment": "RD_109",
+        "segment": "RD_093",
         "section": "RS_85d8a63992089709",
         "alignment": "RA_85d8a63992089709",
         "pathIndex": 0,
@@ -1293,11 +1521,17 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_eb0dde3239a3587d",
-        "segment": "RD_109",
+        "segment": "RD_093",
         "section": "RS_eb0dde3239a3587d",
         "alignment": "RA_eb0dde3239a3587d",
         "pathIndex": 0,
@@ -1334,7 +1568,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_06a7c6bae6584f66",
@@ -1371,7 +1611,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_b015697049a19675",
@@ -1409,7 +1655,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_53a3a7ea164823df",
@@ -1447,7 +1699,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_772faa5c23eb01ba",
@@ -1483,7 +1741,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_75bc4646ea03cb29",
@@ -1523,7 +1787,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_4332e28f6d898e59",
@@ -1561,7 +1831,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_6f344fc40aa8c1fd",
@@ -1597,7 +1873,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_d62c6e67fcf07678",
@@ -1637,7 +1919,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_2120de361b6503f6",
@@ -1673,7 +1961,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_8e58f20c75bc8b50",
@@ -1709,7 +2003,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_d5ac28895a964c32",
@@ -1749,7 +2049,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_294e00e15d09a1d8",
@@ -1784,7 +2090,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_2e0c91a9ce3655b6",
@@ -1819,7 +2131,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_a4d4c4059b6b7358",
@@ -1854,7 +2172,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_b648ebdd2492bad9",
@@ -1889,7 +2213,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -1986,7 +2316,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_b979a4a02d0f09ea",
@@ -2065,7 +2401,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_d8d159debc88fad1",
@@ -2115,7 +2457,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_a058542ddff83281",
@@ -2161,7 +2509,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_cabd3499248ea1a2",
@@ -2207,7 +2561,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_6855c82fbaab60da",
@@ -2239,7 +2599,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_966ca0da14066f9c",
@@ -2271,7 +2637,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_b5ac477bd54f3958",
@@ -2305,7 +2677,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_961b3b466a725d93",
@@ -2333,7 +2711,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.30000699537034053,
-        "legacyId": "MX00167"
+        "legacyId": "MX00167",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_acbad73dd0e710a1",
@@ -2361,7 +2745,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.30000699537034053,
-        "legacyId": "MX00168"
+        "legacyId": "MX00168",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_9ec52616f53731ad",
@@ -2389,7 +2779,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.30000699537034053,
-        "legacyId": "MX00201"
+        "legacyId": "MX00201",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_ba479be45b641f30",
@@ -2426,7 +2822,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_6b11616304a712a3",
@@ -2462,7 +2864,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_073f58cffa8b5adf",
@@ -2498,7 +2906,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_5399ad1f3e20a4e5",
@@ -2534,7 +2948,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_67d896d53c6acceb",
@@ -2570,7 +2990,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_eed55a2f7fd7532d",
@@ -2606,7 +3032,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_43b267d5a6690690",
@@ -2642,7 +3074,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -2707,7 +3145,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_f391657da2203b47",
@@ -2744,7 +3188,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_24790615c426b1ad",
@@ -2779,7 +3229,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -2829,7 +3285,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_a8aa157bcf0b5c5f",
@@ -2866,7 +3328,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_4bf2eb898557695f",
@@ -2903,7 +3371,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_98013072f48fe56f",
@@ -2939,7 +3413,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_eeb47569452309c2",
@@ -2975,7 +3455,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_10dd9405b695511c",
@@ -3012,7 +3498,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_1e2d1c0166c299b3",
@@ -3049,7 +3541,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -3101,7 +3599,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_e04e8e07b440c6b5",
@@ -3133,7 +3637,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_887ddeca3f137ae3",
@@ -3165,7 +3675,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_a405acfb50054a9f",
@@ -3204,7 +3720,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_0d1a0bc8d08c77af",
@@ -3244,7 +3766,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -3295,7 +3823,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_a2c18dd4d1ec0e62",
@@ -3342,7 +3876,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_a5392906a5a86ff8",
@@ -3388,7 +3928,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_09b8e8e565ce3b70",
@@ -3434,7 +3980,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_01131ea2e182c3b7",
@@ -3466,7 +4018,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_6a301d7293478e2c",
@@ -3498,7 +4056,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_f94d22e86e700c03",
@@ -3526,7 +4090,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.4500104930555108,
-        "legacyId": "MX00245"
+        "legacyId": "MX00245",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_a8a2a90e0aeaaa82",
@@ -3563,7 +4133,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -3608,14 +4184,20 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_a5f33d920b8e056b",
-        "segment": "RD_035",
+        "segment": "RD_033",
         "section": "RS_a5f33d920b8e056b",
         "alignment": "RA_a5f33d920b8e056b",
-        "pathIndex": 1,
+        "pathIndex": 0,
         "end": "to",
         "stopLineSetbackM": null,
         "crossing": {
@@ -3640,7 +4222,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_bdf19eb6c5ff8450",
@@ -3677,7 +4265,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_55f96654f2887c53",
@@ -3714,7 +4308,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_cf1155f1588aba9b",
@@ -3751,7 +4351,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_752f8a63ca14219f",
@@ -3788,7 +4394,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_9169c3eb26e376c8",
@@ -3825,7 +4437,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_6e2eddf5e1b179de",
@@ -3862,7 +4480,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_b05917c96713b890",
@@ -3899,7 +4523,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_a8f36b9da1027218",
@@ -3936,7 +4566,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_e3f71fa643ba5e39",
@@ -3973,7 +4609,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_fd70e78dc1d17f8b",
@@ -4010,7 +4652,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_265983e51698ac73",
@@ -4047,7 +4695,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_8444a6a03aadf605",
@@ -4084,7 +4738,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_4e43a374acc9b522",
@@ -4121,7 +4781,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_c2c80753c81f7a4c",
@@ -4158,7 +4824,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_66fcac442192639a",
@@ -4195,7 +4867,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_e0302f9f255a77e1",
@@ -4262,7 +4940,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_d18fc9482abce445",
@@ -4297,7 +4981,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_63d9b8a0f36cffc7",
@@ -4332,7 +5022,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -4377,7 +5073,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_92412394f98ca91d",
@@ -4409,14 +5111,20 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_f22ed9f976662caa",
-        "segment": "RD_076",
+        "segment": "RD_086",
         "section": "RS_f22ed9f976662caa",
         "alignment": "RA_f22ed9f976662caa",
-        "pathIndex": 1,
+        "pathIndex": 0,
         "end": "to",
         "stopLineSetbackM": null,
         "crossing": {
@@ -4441,7 +5149,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_e2c8df04db109ae6",
@@ -4469,7 +5183,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.4500104930555108,
-        "legacyId": "MX00246"
+        "legacyId": "MX00246",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -4514,7 +5234,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_0f62099e59e86170",
@@ -4555,7 +5281,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_afecdbea4a11580f",
@@ -4596,7 +5328,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_18354e8a246f26d5",
@@ -4637,7 +5375,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_545a15b1e15bb4ab",
@@ -4678,7 +5422,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_825fe015055d6ae7",
@@ -4711,7 +5461,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_86f2e603e023b575",
@@ -4745,7 +5501,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_947d91f60d64f23e",
@@ -4782,7 +5544,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -4827,7 +5595,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_43b25e8c37a3669e",
@@ -4868,7 +5642,57 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "JA_d4c8675a55b9d1b2",
+        "segment": "RD_028",
+        "section": "RS_d4c8675a55b9d1b2",
+        "alignment": "RA_d4c8675a55b9d1b2",
+        "pathIndex": 1,
+        "end": "to",
+        "stopLineSetbackM": null,
+        "crossing": {
+          "offsetM": 15.000349768545068,
+          "widthM": 4.285974887407814,
+          "barWidthM": 0.5000116589505675,
+          "zebraPeriodM": 0.9020210327468239,
+          "omittedBars": []
+        },
+        "arrows": [],
+        "text": [],
+        "humps": [],
+        "signalArms": [],
+        "yieldTriangles": [],
+        "guideLines": [],
+        "symbols": [],
+        "areas": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "ZC050"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": true,
+          "refs": [
+            "docs/assets/data/road_zones_wgs84.geojson#RZ-035",
+            "task-24-network-chips/RD_028-photo.png",
+            "task-24-junction-chips/RZ-035-photo.png",
+            "campus_transport_network.geojson#EDGE_ROAD_0335",
+            "campus_transport_network.geojson#ND_008"
+          ],
+          "reason": "Named junction polygon, photo and connected road direction support this owner; dimensions remain estimated.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -4904,7 +5728,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_e09e0cc026a9087e",
@@ -4945,7 +5775,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_f5d5bd62d9b652ff",
@@ -4973,7 +5809,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.30000699537034053,
-        "legacyId": "MK00790"
+        "legacyId": "MK00790",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_1edc5f97a1dc5a1d",
@@ -5010,7 +5852,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_d226b6c21ffb49c4",
@@ -5047,7 +5895,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_43a1f398c71bd96b",
@@ -5084,7 +5938,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_2f5a57239a6d982c",
@@ -5120,7 +5980,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_ed174b266c9332b2",
@@ -5157,7 +6023,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_68588369dca3fd8b",
@@ -5193,7 +6065,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -5229,7 +6107,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_99d311e239f68201",
@@ -5262,7 +6146,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_ce6ed7e47ba25f60",
@@ -5294,7 +6184,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_0f32f00fb266aca8",
@@ -5322,7 +6218,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.32300753168206664,
-        "legacyId": "MX00142"
+        "legacyId": "MX00142",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_74e3eaf93adc4be4",
@@ -5350,7 +6252,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.30000699537034053,
-        "legacyId": "MX00144"
+        "legacyId": "MX00144",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_2eaa591b42d1165a",
@@ -5386,7 +6294,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_7d752502877e14d7",
@@ -5422,7 +6336,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_e835cef522201f98",
@@ -5459,7 +6379,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_c1883202da3dd840",
@@ -5495,7 +6421,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_d5375533b3d634dd",
@@ -5531,7 +6463,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_b018b7ef8a29acd8",
@@ -5567,7 +6505,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_2810260bcbd51b5b",
@@ -5603,7 +6547,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_5758e752b50bcd66",
@@ -5639,7 +6589,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_e2bf4fa256a936d0",
@@ -5675,7 +6631,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_08a335247a4ee54f",
@@ -5711,7 +6673,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_1535586f749424ab",
@@ -5747,7 +6715,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_e418a9520a1b1c8e",
@@ -5784,7 +6758,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_fc64306c38440646",
@@ -5820,7 +6800,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_99952594aa77db32",
@@ -5856,7 +6842,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_128a56f7a47755a3",
@@ -5892,7 +6884,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_b22bb2b9a3bd98af",
@@ -5928,7 +6926,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_d4c6b01e355b64e6",
@@ -5963,7 +6967,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_b3418a9133cb6f22",
@@ -5998,7 +7008,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_045cf6bf45ca62f9",
@@ -6033,7 +7049,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_505a283a7d6ce2f2",
@@ -6068,7 +7090,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -6104,7 +7132,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_ee2c59442a0c4671",
@@ -6136,7 +7170,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_0eccec6d33537186",
@@ -6164,7 +7204,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.44301032983020283,
-        "legacyId": "MX00004"
+        "legacyId": "MX00004",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_7a2b12699e972a44",
@@ -6201,7 +7247,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_0261e2d267782f39",
@@ -6238,7 +7290,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_716f9f161abfc32e",
@@ -6275,7 +7333,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -6312,7 +7376,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_1f1ee063beb94699",
@@ -6344,7 +7414,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_4a82441eea4d57b3",
@@ -6376,7 +7452,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_013a3a1e9a553a4e",
@@ -6408,7 +7490,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_fa03d107044956a8",
@@ -6436,7 +7524,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.30000699537034053,
-        "legacyId": "MK00749"
+        "legacyId": "MK00749",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_8fa3968e3e237583",
@@ -6476,7 +7570,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -6512,7 +7612,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -6548,7 +7654,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -6586,7 +7698,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_566928e48f78f3ee",
@@ -6629,7 +7747,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_efcfe4bc4cbe5afd",
@@ -6668,7 +7792,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_1d2ec70868d3dd45",
@@ -6707,7 +7837,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_bf35438fe83f69ba",
@@ -6748,7 +7884,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_66754b14cfa67838",
@@ -6791,7 +7933,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_bf6c243a8faf322e",
@@ -6823,7 +7971,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_f2cfb9a1089f1f99",
@@ -6859,7 +8013,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -6895,7 +8055,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_d2b579870ebd8216",
@@ -6923,7 +8089,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.33100771822527575,
-        "legacyId": "MX00332"
+        "legacyId": "MX00332",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_c14207a50826bd7a",
@@ -6951,7 +8123,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.34700809131169386,
-        "legacyId": "MX00333"
+        "legacyId": "MX00333",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -6987,7 +8165,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_909d3e514f76e1b7",
@@ -7021,7 +8205,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -7057,7 +8247,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -7093,7 +8289,19 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": true,
+          "refs": [
+            "docs/assets/data/road_zones_wgs84.geojson#RZ-070",
+            "task-24-network-chips/RD_091-photo.png",
+            "task-24-junction-chips/RZ-070-photo.png",
+            "campus_transport_network.geojson#EDGE_ROAD_0295",
+            "campus_transport_network.geojson#ND_007"
+          ],
+          "reason": "Named junction polygon, photo and connected road direction support this owner; dimensions remain estimated.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_f7293f750cdfb134",
@@ -7125,7 +8333,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_58a74e2d7cf9064c",
@@ -7153,7 +8367,19 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.30000699537034053,
-        "legacyId": "MX00448"
+        "legacyId": "MX00448",
+        "curation": {
+          "verified": true,
+          "refs": [
+            "docs/assets/data/road_zones_wgs84.geojson#RZ-070",
+            "task-24-network-chips/RD_091-photo.png",
+            "task-24-junction-chips/RZ-070-photo.png",
+            "campus_transport_network.geojson#EDGE_ROAD_0295",
+            "campus_transport_network.geojson#ND_007"
+          ],
+          "reason": "Named junction polygon, photo and connected road direction support this owner; dimensions remain estimated.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_9f27ae125d9cabbe",
@@ -7181,7 +8407,19 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.32000746172836325,
-        "legacyId": "MX00449"
+        "legacyId": "MX00449",
+        "curation": {
+          "verified": true,
+          "refs": [
+            "docs/assets/data/road_zones_wgs84.geojson#RZ-070",
+            "task-24-network-chips/RD_091-photo.png",
+            "task-24-junction-chips/RZ-070-photo.png",
+            "campus_transport_network.geojson#EDGE_ROAD_0295",
+            "campus_transport_network.geojson#ND_007"
+          ],
+          "reason": "Named junction polygon, photo and connected road direction support this owner; dimensions remain estimated.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_7233388e11b4e2f1",
@@ -7209,7 +8447,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.4500104930555108,
-        "legacyId": "MX00482"
+        "legacyId": "MX00482",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_6b9389c401ed4ab9",
@@ -7237,7 +8481,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.4500104930555108,
-        "legacyId": "MX00483"
+        "legacyId": "MX00483",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_891bf09f03228c38",
@@ -7273,7 +8523,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_278f77864508bc5d",
@@ -7309,7 +8565,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_5694ef6bf3642ebb",
@@ -7346,7 +8608,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -7383,7 +8651,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_316d3f27d4193a26",
@@ -7416,7 +8690,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_6525b2129582d4e5",
@@ -7455,7 +8735,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_8b761f77d96dc762",
@@ -7496,7 +8782,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_12b07b817fc22785",
@@ -7551,7 +8843,57 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "JA_0acfadcb56f69f33",
+        "segment": "RD_032",
+        "section": "RS_0acfadcb56f69f33",
+        "alignment": "RA_0acfadcb56f69f33",
+        "pathIndex": 0,
+        "end": "to",
+        "stopLineSetbackM": null,
+        "crossing": {
+          "offsetM": 15.00034976851639,
+          "widthM": 3.374942747366491,
+          "barWidthM": 0.5000116589505675,
+          "zebraPeriodM": 0.9040210793826261,
+          "omittedBars": []
+        },
+        "arrows": [],
+        "text": [],
+        "humps": [],
+        "signalArms": [],
+        "yieldTriangles": [],
+        "guideLines": [],
+        "symbols": [],
+        "areas": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "ZC033"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": true,
+          "refs": [
+            "docs/assets/data/road_zones_wgs84.geojson#RZ-032",
+            "task-24-network-chips/RD_032-photo.png",
+            "task-24-junction-chips/RZ-032-photo.png",
+            "campus_transport_network.geojson#EDGE_ROAD_0323",
+            "campus_transport_network.geojson#ND_011"
+          ],
+          "reason": "Named junction polygon, photo and connected road direction support this owner; dimensions remain estimated.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -7587,43 +8929,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
-      }
-    ]
-  },
-  "ND_172": {
-    "approaches": [
-      {
-        "id": "JA_0acfadcb56f69f33",
-        "segment": "RD_032",
-        "section": "RS_0acfadcb56f69f33",
-        "alignment": "RA_0acfadcb56f69f33",
-        "pathIndex": 0,
-        "end": "to",
-        "stopLineSetbackM": null,
-        "crossing": {
-          "offsetM": 15.00034976851639,
-          "widthM": 3.374942747366491,
-          "barWidthM": 0.5000116589505675,
-          "zebraPeriodM": 0.9040210793826261,
-          "omittedBars": []
-        },
-        "arrows": [],
-        "text": [],
-        "humps": [],
-        "signalArms": [],
-        "yieldTriangles": [],
-        "guideLines": [],
-        "symbols": [],
-        "areas": [],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "ZC033"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -7659,7 +8971,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_479474e8ac5bd65a",
@@ -7692,7 +9010,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_e6962c4c8410927e",
@@ -7720,7 +9044,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.4500104930555108,
-        "legacyId": "MX01742"
+        "legacyId": "MX01742",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_87bf0ce35af47a7a",
@@ -7748,7 +9078,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.4500104930555108,
-        "legacyId": "MX01744"
+        "legacyId": "MX01744",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -7784,7 +9120,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_1c5c6a2970329bbc",
@@ -7812,7 +9154,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.4500104930555108,
-        "legacyId": "MX00558"
+        "legacyId": "MX00558",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -7848,7 +9196,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_f2703d19afa8d962",
@@ -7881,7 +9235,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -7917,7 +9277,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -7953,7 +9319,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -7989,7 +9361,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_7989de61901fef06",
@@ -8038,44 +9416,18 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
   "ND_121": {
     "approaches": [
-      {
-        "id": "JA_d4c8675a55b9d1b2",
-        "segment": "RD_028",
-        "section": "RS_d4c8675a55b9d1b2",
-        "alignment": "RA_d4c8675a55b9d1b2",
-        "pathIndex": 1,
-        "end": "to",
-        "stopLineSetbackM": null,
-        "crossing": {
-          "offsetM": 15.000349768545068,
-          "widthM": 4.285974887407814,
-          "barWidthM": 0.5000116589505675,
-          "zebraPeriodM": 0.9020210327468239,
-          "omittedBars": []
-        },
-        "arrows": [],
-        "text": [],
-        "humps": [],
-        "signalArms": [],
-        "yieldTriangles": [],
-        "guideLines": [],
-        "symbols": [],
-        "areas": [],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "ZC050"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
-      },
       {
         "id": "JA_569c8e6cdca4e1a1",
         "segment": "RD_028",
@@ -8110,7 +9462,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -8146,7 +9504,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -8182,7 +9546,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_72484d138092fb40",
@@ -8210,7 +9580,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.4500104930555108,
-        "legacyId": "MX00694"
+        "legacyId": "MX00694",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -8246,7 +9622,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_7c20789a9de8e947",
@@ -8274,7 +9656,53 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.4500104930555108,
-        "legacyId": "MX01820"
+        "legacyId": "MX01820",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "JA_ca4b85a2acfa876c",
+        "segment": "RD_025",
+        "section": "RS_ca4b85a2acfa876c",
+        "alignment": "RA_ca4b85a2acfa876c",
+        "pathIndex": 0,
+        "end": "to",
+        "stopLineSetbackM": 15.000349768543558,
+        "crossing": null,
+        "arrows": [],
+        "text": [],
+        "humps": [],
+        "signalArms": [],
+        "yieldTriangles": [],
+        "guideLines": [],
+        "symbols": [],
+        "areas": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01819"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "stopLineWidthM": 0.4500104930555108,
+        "legacyId": "MX01819",
+        "curation": {
+          "verified": true,
+          "refs": [
+            "docs/assets/data/road_zones_wgs84.geojson#RZ-023",
+            "task-24-network-chips/RD_025-photo.png",
+            "task-24-junction-chips/RZ-023-photo.png",
+            "campus_transport_network.geojson#EDGE_ROAD_0320",
+            "campus_transport_network.geojson#ND_030"
+          ],
+          "reason": "Named junction polygon, photo and connected road direction support this owner; dimensions remain estimated.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -8310,7 +9738,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_6eff3cc0aa06bfc1",
@@ -8342,7 +9776,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -8379,7 +9819,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_5f108b344d114a61",
@@ -8411,7 +9857,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_63fbc25d95894eac",
@@ -8443,7 +9895,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_d2b42dd6a3c5c58e",
@@ -8475,7 +9933,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_6b2eddd5fbf40437",
@@ -8507,7 +9971,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_6088d45a9925f6d9",
@@ -8548,12 +10018,14 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent."
-      }
-    ]
-  },
-  "ND_105": {
-    "approaches": [
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
+      },
       {
         "id": "JA_7a2cb84a79b0f588",
         "segment": "RD_023",
@@ -8584,8 +10056,24 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
-      },
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": true,
+          "refs": [
+            "docs/assets/data/road_zones_wgs84.geojson#RZ-039",
+            "task-24-network-chips/RD_023-photo.png",
+            "task-24-junction-chips/RZ-039-photo.png",
+            "campus_transport_network.geojson#EDGE_ROAD_0342",
+            "campus_transport_network.geojson#ND_019"
+          ],
+          "reason": "Named junction polygon, photo and connected road direction support this owner; dimensions remain estimated.",
+          "dimensionsVerified": false
+        }
+      }
+    ]
+  },
+  "ND_105": {
+    "approaches": [
       {
         "id": "JA_d3829c0960dd2aca",
         "segment": "RD_023",
@@ -8624,7 +10112,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -8660,7 +10154,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_4d6a1048592733af",
@@ -8693,7 +10193,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_1b7875193516c9a8",
@@ -8736,7 +10242,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -8772,7 +10284,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_59db50a2cb1c9f19",
@@ -8800,7 +10318,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.30000699537034053,
-        "legacyId": "MK01191"
+        "legacyId": "MK01191",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_92f1206b66fbcfa2",
@@ -8836,7 +10360,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_b4ff074606a532a5",
@@ -8873,7 +10403,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_4210cf2aa1a33c4e",
@@ -8910,7 +10446,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_3d6b2d124c6ab7ff",
@@ -8946,7 +10488,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_3dc683471be05c1d",
@@ -8982,7 +10530,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_2b16faedeaac6cd9",
@@ -9021,7 +10575,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_e8ecaa0d0c18fead",
@@ -9058,7 +10618,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_6835eabd212f85d4",
@@ -9095,7 +10661,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_84b0c8b1abc424d6",
@@ -9131,7 +10703,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_ad3a54f2cbdbd592",
@@ -9173,7 +10751,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -9210,7 +10794,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -9218,7 +10808,7 @@
     "approaches": [
       {
         "id": "JA_8bc45762a9c166c0",
-        "segment": "RD_039",
+        "segment": "RD_078",
         "section": "RS_8bc45762a9c166c0",
         "alignment": "RA_8bc45762a9c166c0",
         "pathIndex": 0,
@@ -9251,7 +10841,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -9304,7 +10900,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -9351,7 +10953,19 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent.",
+        "curation": {
+          "verified": true,
+          "refs": [
+            "docs/assets/data/road_zones_wgs84.geojson#RZ-074",
+            "task-24-network-chips/RD_046-photo.png",
+            "task-24-junction-chips/RZ-074-photo.png",
+            "campus_transport_network.geojson#EDGE_ROAD_0283",
+            "campus_transport_network.geojson#ND_017"
+          ],
+          "reason": "Named junction polygon, photo and connected road direction support this owner; dimensions remain estimated.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_f3a47bedb83a671f",
@@ -9388,7 +11002,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_2c8f6bc4ad7c78cd",
@@ -9425,7 +11045,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_780615bf1cea0d8a",
@@ -9462,7 +11088,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_fae85a3408a114b1",
@@ -9499,7 +11131,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_bbda0163454d8b71",
@@ -9534,7 +11172,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -9579,7 +11223,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_c279858d156d79db",
@@ -9615,7 +11265,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -9651,7 +11307,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -9694,7 +11356,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation. Partial observed crossing; omitted slots are unobserved, not proved absent.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -9730,7 +11398,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_58b968468fbae28f",
@@ -9740,13 +11414,7 @@
         "pathIndex": 1,
         "end": "to",
         "stopLineSetbackM": null,
-        "crossing": {
-          "offsetM": 15.00034976854062,
-          "widthM": 6.3141459849415265,
-          "barWidthM": 0.5000116589505675,
-          "zebraPeriodM": 0.903021056064725,
-          "omittedBars": []
-        },
+        "crossing": null,
         "arrows": [],
         "text": [],
         "humps": [],
@@ -9762,7 +11430,23 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false,
+          "suppressedCrossing": {
+            "duplicateOf": "JA_577db52b7ee9c7e9",
+            "refs": [
+              "task-24-canonical-crossing-chips/X022-photo.png",
+              "task-24-canonical-crossing-chips/X023-photo.png",
+              "task-24-crossing-overlap.json",
+              "approved restored bar TM 243559.10,263874.06"
+            ],
+            "reason": "CW_025 and rectified CW_024 describe the same physical crossing; their grids overlap 86 percent of the smaller area. Keep the seven-bar grid, including the independently approved eastern bar, and suppress only the redundant six-bar control."
+          }
+        }
       }
     ]
   },
@@ -9794,7 +11478,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.30000699537034053,
-        "legacyId": "MK01438"
+        "legacyId": "MK01438",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_cc879f4d9093d3fc",
@@ -9830,7 +11520,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -9862,7 +11558,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.363008464398112,
-        "legacyId": "MX00817"
+        "legacyId": "MX00817",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_ed012b27c83280a2",
@@ -9890,7 +11592,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.4500104930555108,
-        "legacyId": "MX00818"
+        "legacyId": "MX00818",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -9922,7 +11630,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.4500104930555108,
-        "legacyId": "MX01815"
+        "legacyId": "MX01815",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_a25f5b28ab63e9d9",
@@ -9950,7 +11664,13 @@
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "stopLineWidthM": 0.4500104930555108,
-        "legacyId": "MX01816"
+        "legacyId": "MX01816",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_bd867973c1592f1b",
@@ -9985,7 +11705,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_3e72ea28bbc8aca2",
@@ -10020,39 +11746,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
-      }
-    ]
-  },
-  "ND_155": {
-    "approaches": [
-      {
-        "id": "JA_ca4b85a2acfa876c",
-        "segment": "RD_025",
-        "section": "RS_ca4b85a2acfa876c",
-        "alignment": "RA_ca4b85a2acfa876c",
-        "pathIndex": 0,
-        "end": "to",
-        "stopLineSetbackM": 15.000349768543558,
-        "crossing": null,
-        "arrows": [],
-        "text": [],
-        "humps": [],
-        "signalArms": [],
-        "yieldTriangles": [],
-        "guideLines": [],
-        "symbols": [],
-        "areas": [],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX01819"
-          ]
-        },
-        "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "stopLineWidthM": 0.4500104930555108,
-        "legacyId": "MX01819"
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -10060,10 +11760,10 @@
     "approaches": [
       {
         "id": "JA_d436c66c5506b3c5",
-        "segment": "RD_063",
+        "segment": "RD_064",
         "section": "RS_d436c66c5506b3c5",
         "alignment": "RA_d436c66c5506b3c5",
-        "pathIndex": 1,
+        "pathIndex": 0,
         "end": "to",
         "stopLineSetbackM": null,
         "crossing": null,
@@ -10092,7 +11792,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -10132,7 +11838,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -10172,7 +11884,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_b67ce75ea12ec680",
@@ -10208,7 +11926,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -10249,7 +11973,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_7cf02b0962f888bc",
@@ -10286,7 +12016,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_bd9fbb9f80ee89b2",
@@ -10323,7 +12059,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_3d0ff30ef872303b",
@@ -10360,7 +12102,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -10400,7 +12148,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_875776a7cb622f2d",
@@ -10436,7 +12190,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -10476,7 +12236,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -10517,7 +12283,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_ab526f48a2c22039",
@@ -10554,7 +12326,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -10598,7 +12376,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -10642,7 +12426,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_485657d82883bd9b",
@@ -10682,7 +12472,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       },
       {
         "id": "JA_2900d8c77ddbf3a2",
@@ -10722,7 +12518,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -10762,7 +12564,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -10802,7 +12610,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -10878,7 +12692,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   },
@@ -10917,7 +12737,13 @@
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation."
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [],
+          "reason": "Road or named-junction ownership is unresolved; a nearby graph node alone is not evidence.",
+          "dimensionsVerified": false
+        }
       }
     ]
   }
