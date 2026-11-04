@@ -37,7 +37,13 @@ test("the anchored F1 LED follows its wall and its screen stands outside, not in
   const saved = JSON.parse(readFileSync(new URL("../data/photo/site-detail-anchors.json", import.meta.url), "utf8"));
   const record = saved.records.find(r => r.id === "SD-F1-LED1");
   const original = saved.footprints[record.anchor.building];
-  const shifted = { polygons: original.polygons.map(p => p.map(r => r.map(([e, n]) => [e + 2, n + 3]))) };
+  const shifted = {
+    polygons: original.polygons.map(p => p.map(r => r.map(([e, n]) => [e + 2, n + 3]))),
+    // This fixture intentionally moves the whole approved frame, including its saved snapshot.
+    walls: original.walls.map(w => ({
+      ...w, A: [w.A[0] + 2, w.A[1] + 3], B: [w.B[0] + 2, w.B[1] + 3],
+    })),
+  };
   const wall = wallsOf(record.anchor.building, shifted).find(w => w.wall === record.anchor.wall);
   const object = loadFurniture({ anchorFootprints: { [record.anchor.building]: shifted } }).objects.find(o => o.id === record.id);
   const ctx = flatContext();
