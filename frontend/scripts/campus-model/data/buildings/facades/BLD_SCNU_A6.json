@@ -1,0 +1,196 @@
+{
+  "estimated": true,
+  "building": "BLD_SCNU_A6",
+  "storeys": [
+    {
+      "hM": 2.963333
+    },
+    {
+      "hM": 2.963333
+    },
+    {
+      "hM": 2.963333
+    },
+    {
+      "hM": 2.963333
+    },
+    {
+      "hM": 2.963333
+    },
+    {
+      "hM": 2.963333
+    },
+    {
+      "hM": 2.963333
+    },
+    {
+      "hM": 2.963333
+    },
+    {
+      "hM": 2.963333
+    },
+    {
+      "hM": 2.963333
+    },
+    {
+      "hM": 2.963333
+    },
+    {
+      "hM": 2.963333
+    }
+  ],
+  "walls": {
+    "W05": {
+      "bays": {
+        "pitchM": 2.56373058,
+        "count": 6,
+        "offsetM": 5.8
+      },
+      "cells": [
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 1.944,
+        "hM": 1.5675,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 A6_학생생활관_창조관_767513 W05",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated",
+          "Exact registered source edge correspondence in surfaceEdges; automatic 0.3 m matching remains unchanged. Endpoints are checked within 1 mm, not moved.",
+          "Only the counted interval is curated; unobserved prefix/suffix retain the legacy material rather than becoming invented blank walls."
+        ],
+        "independentCount": 6,
+        "openingGroups": 6,
+        "notes": [
+          "LOD4 x68..157: six small window stacks on the readable tower face, starting after about 5.8 m of missing left texture. The other wings do not inherit this grid.",
+          "Last observed bay is kept inside the registered recessed face; its end is s=21.1824 m, with a 0.15 m margin.",
+          "Vertical allocation follows the registered core source: 12 levels over 35.560 m. The independent image count is horizontal; heights remain estimates."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 6,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "stone:#c9cdd6",
+        "glass": "#4f9ea4",
+        "frame": "#f4f4f2"
+      },
+      "surfaceEdges": [
+        {
+          "A": [
+            243813.6075,
+            263542.9469
+          ],
+          "B": [
+            243796.1294,
+            263546.7128
+          ],
+          "source": "building-forms.json BLD_SCNU_A6/mass/7/edge/1; resolved source geometry, estimated"
+        }
+      ],
+      "outside": "legacy"
+    }
+  }
+}

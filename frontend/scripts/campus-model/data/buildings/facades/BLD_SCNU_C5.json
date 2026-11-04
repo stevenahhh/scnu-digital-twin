@@ -1,0 +1,58 @@
+{
+  "estimated": true,
+  "building": "BLD_SCNU_C5",
+  "storeys": [
+    {
+      "hM": 4
+    },
+    {
+      "hM": 4
+    }
+  ],
+  "walls": {
+    "W10": {
+      "bays": {
+        "pitchM": 3,
+        "count": 1,
+        "offsetM": 3.64630723
+      },
+      "cells": [
+        [
+          "window"
+        ],
+        [
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 1.7,
+        "hM": 2,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "VR scene_c5/f",
+        "refs": [
+          "VR scene_c5/f",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 1,
+        "openingGroups": 1,
+        "notes": [
+          "No LOD4 facade record. Independent VR scene_c5/f: one window stack on the two-storey front brick end. Column about 610 projects to this wall; the nearby doors and lower right wing are not treated as repeated windows."
+        ],
+        "tier": "T2",
+        "lod4BayCount": null,
+        "vrBayCount": 1
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "brick:#d6a25c",
+        "glass": "#4f7f8a",
+        "frame": "#ecebe5"
+      }
+    }
+  }
+}

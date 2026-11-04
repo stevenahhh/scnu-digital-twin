@@ -9,7 +9,10 @@ export function facadeCoverage({ buildings, reviews, grids, entrances }) {
     const reason = review?.estimated === true ? review.fallbackReason?.trim() : null;
     return {
       building, gridCount, estimated: true,
-      status: gridCount ? "grid" : reason ? "fallback" : "missing",
+      requestedWalls: [...(grids.get(building)?.walls.keys() ?? [])],
+      requestedSurfaceEdges: [...(grids.get(building)?.walls.values() ?? [])].flatMap(w =>
+        (w.surfaceEdges ?? []).map((_, i) => `${w.wall}#${i}`)),
+      status: reason ? (gridCount ? "grid" : "fallback") : "missing",
       fallbackReason: reason || null,
       scenes: review?.scenes ?? [],
       lod4Record: review?.lod4Record ?? null,
@@ -32,6 +35,15 @@ export function facadeCoverage({ buildings, reviews, grids, entrances }) {
   };
 }
 
+export function unappliedFacadeWalls(rows, nodes) {
+  const built = new Map(nodes.map(n => [n.name, n.extras?.facadeGridAppliedWalls ?? []]));
+  const edges = new Map(nodes.map(n => [n.name, n.extras?.facadeGridAppliedSurfaceEdges ?? []]));
+  return rows.flatMap(row => [
+    ...row.requestedWalls.filter(w => !built.get(row.building)?.includes(w)),
+    ...(row.requestedSurfaceEdges ?? []).filter(e => !edges.get(row.building)?.includes(e)),
+  ].map(w => `${row.building}/${w}`));
+}
+
 export async function loadFacadeCoverage() {
   const { loadTmFootprints } = await import("../lib/footprints.mjs");
   const footprints = await loadTmFootprints();
@@ -48,12 +60,18 @@ export async function loadFacadeCoverage() {
   return facadeCoverage({ buildings: [...Object.keys(footprints), ...anonymous].sort(), reviews, grids, entrances });
 }
 
-// bun scripts/campus-model/qa/facadeCoverage.mjs [--out /path/report.json]
+// bun scripts/campus-model/qa/facadeCoverage.mjs [--built] [--out /path/report.json]
 // Ungridded entrances remain named gaps; missing coverage or a shifted gridded door fails.
 if (import.meta.main) {
   const report = await loadFacadeCoverage();
+  if (process.argv.includes("--built")) {
+    const bytes = readFileSync(new URL("../../../public/campus-v2.glb", import.meta.url));
+    const model = JSON.parse(bytes.subarray(20, 20 + bytes.readUInt32LE(12)).toString());
+    report.unappliedWalls = unappliedFacadeWalls(report.buildings, model.nodes);
+  }
   const arg = process.argv.indexOf("--out");
   if (arg >= 0) writeFileSync(process.argv[arg + 1], `${JSON.stringify(report, null, 2)}\n`);
   console.log(JSON.stringify(report, null, 2));
-  if (report.missingBuildings.length || report.entrances.some(e => e.status === "mismatch")) process.exitCode = 1;
+  if (report.missingBuildings.length || report.entrances.some(e => e.status === "mismatch") ||
+      report.unappliedWalls?.length) process.exitCode = 1;
 }

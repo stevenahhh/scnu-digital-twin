@@ -29,6 +29,19 @@ test("coverage requires an explicit estimated fallback, not an empty reason", ()
   assert.equal(report.buildings[1].status, "fallback");
 });
 
+test("a partial grid cannot hide a blank or unmarked fallback reason", () => {
+  const report = facadeCoverage({
+    buildings: ["BLD_A", "BLD_B"],
+    reviews: {
+      BLD_A: { estimated: true, fallbackReason: " " },
+      BLD_B: { estimated: false, fallbackReason: "Rear wall is not observed" },
+    },
+    grids: new Map(["BLD_A", "BLD_B"].map(id => [id, { walls: new Map([["W00", { cells: [] }]]) }])),
+    entrances: [],
+  });
+  assert.deepEqual(report.missingBuildings, ["BLD_A", "BLD_B"]);
+});
+
 test("entrance report names shifted and ungridded doors without treating them as aligned", () => {
   const entry = { id: "CANOPY-A", anchor: { building: "BLD_A", wall: "W00", sM: 5 }, widthM: 2 };
   const report = facadeCoverage({

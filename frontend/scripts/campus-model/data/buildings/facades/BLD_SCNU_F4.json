@@ -1,0 +1,165 @@
+{
+  "estimated": true,
+  "building": "BLD_SCNU_F4",
+  "storeys": [
+    {
+      "hM": 4.06
+    },
+    {
+      "hM": 4.06
+    },
+    {
+      "hM": 4.06
+    },
+    {
+      "hM": 4.06
+    }
+  ],
+  "walls": {
+    "W02": {
+      "bays": {
+        "pitchM": 3.68373039,
+        "count": 5,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ],
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ],
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ],
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ]
+      ],
+      "overrides": [
+        {
+          "storey": 0,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 1,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 2,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 3,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        }
+      ],
+      "window": {
+        "wM": 2.6523,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 F4_연립관사_684234 W02",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 5,
+        "openingGroups": 5,
+        "notes": [
+          "LOD4 x129..206: symmetric window / balcony / narrow stair / balcony / window columns. Balcony glazing is represented by glazing cells, not ordinary punched windows."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 5,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "render:#e6e3da",
+        "glass": "#6f8790",
+        "frame": "#d6d8d6"
+      }
+    },
+    "W01": {
+      "bays": {
+        "pitchM": 11.64786456,
+        "count": 1,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 3.2,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 F4_연립관사_684234 W01",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 1,
+        "openingGroups": 0,
+        "notes": [
+          "LOD4 x79..128 shows one blank gable end with no upper openings; the existing pitched roof is unchanged."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 1,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "blank",
+      "materials": {
+        "wall": "render:#e6e3da",
+        "glass": "#6f8790",
+        "frame": "#d6d8d6"
+      }
+    }
+  }
+}

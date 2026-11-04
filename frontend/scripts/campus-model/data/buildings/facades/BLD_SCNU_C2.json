@@ -1,0 +1,149 @@
+{
+  "estimated": true,
+  "building": "BLD_SCNU_C2",
+  "storeys": [
+    {
+      "hM": 5.35
+    },
+    {
+      "hM": 5.35
+    },
+    {
+      "hM": 5.35
+    }
+  ],
+  "walls": {
+    "W02": {
+      "bays": {
+        "pitchM": 3.85001402,
+        "count": 7,
+        "offsetM": 0.5
+      },
+      "cells": [
+        null,
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "blank"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "blank"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 2.772,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 C2_친환경농업센터_443467 W02",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 7,
+        "openingGroups": 6,
+        "notes": [
+          "LOD4 x39..149: six broad opening groups followed by a blank end/entrance bay. Existing SD-C2-C1 supplies the ground entrance, not an invented door.",
+          "Vertical allocation follows the registered main source: 3 levels over 16.050 m. The independent image count is horizontal; heights remain estimates."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 7,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "brick:#a16954",
+        "glass": "#5a6f72",
+        "frame": "#efeee8"
+      }
+    },
+    "W06": {
+      "bays": {
+        "pitchM": 3.89928041,
+        "count": 5,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 2.8075,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 C2_친환경농업센터_443467 W06",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated",
+          "Exact registered source edge correspondence in surfaceEdges; automatic 0.3 m matching remains unchanged. Endpoints are checked within 1 mm, not moved."
+        ],
+        "independentCount": 5,
+        "openingGroups": 5,
+        "notes": [
+          "LOD4 x318..399: five repeated upper opening groups; three rows visible.",
+          "Vertical allocation follows the registered main source: 3 levels over 16.050 m. The independent image count is horizontal; heights remain estimates."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 5,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "brick:#a16954",
+        "glass": "#5a6f72",
+        "frame": "#efeee8"
+      },
+      "surfaceEdges": [
+        {
+          "A": [
+            243825.7269,
+            263939.7483
+          ],
+          "B": [
+            243845.2312,
+            263934.7607
+          ],
+          "source": "building-forms.json BLD_SCNU_C2/mass/0/edge/1; resolved source geometry, estimated"
+        }
+      ]
+    }
+  }
+}

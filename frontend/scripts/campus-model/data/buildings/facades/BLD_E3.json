@@ -11,6 +11,9 @@
     "W16": {
       "estimated": true,
       "bays": { "pitchM": 3.4, "count": 14, "offsetM": 0.5 },
+      "recesses": [
+        { "entrance": "SD-E5-C1", "backM": 0.3, "depthM": 2.0, "hM": 4.0 }
+      ],
       "default": "window",
       "cells": [
         null,
@@ -26,7 +29,8 @@
           "Independent VR counts in buildings/facade-counts.json: scene_e3/r and scene_e5/r, eight central ordinary groups, two flanking ordinary groups and two double-width glazing groups = fourteen structural bays",
           "LOD4 B_2_43_6.b3dm SC090093 triangles 228/229: long-wall photograph recovered by removing the erroneous fixed 40 m seam cutoff; repetitive openings and four levels visible, total end-group count not certified",
           "Shared loadTmFootprints and bld-node-map.json snapshot: W16 length 48.626926 m; 12 cm aerial cross-check confirms long wall and canopy relation, not window count",
-          "Four storeys across the existing 16 m GIS height; all pitch, offset, window dimensions and colours are estimates, not measurements"
+          "Four storeys across the existing 16 m GIS height; all pitch, offset, window dimensions and colours are estimates, not measurements",
+          "VR scene_e5 r columns approximately 490..700, rows 1320..1460: wide glazed entrance recessed below the canopy, not a narrow door in solid brick. The 3.6 m doorway and s=44.5070997209 anchor stay unchanged. Open only the projecting masonry from wall t=0.3 to 2.0 m over the ground storey; depth and height are estimated from the existing projection and the VR recess."
         ],
         "vrBayCount": 14,
         "acceptedComparison": "independent VR per-wall count, Orchestrator decision 2026-11-03",

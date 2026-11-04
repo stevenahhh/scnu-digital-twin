@@ -23,7 +23,7 @@ import { addBalconies, addFins, addMast, addSolar, attachmentsByNode } from "../
 import { frontKit, kitInstances } from "../lib/frontKit.mjs";
 import { meshFootprint, toModelRing } from "./sources.mjs";
 import { validate } from "../lib/schemas.mjs";
-import { compileFacadeGrid, gridCellsOnEdge } from "../lib/facadeGrid.mjs";
+import { compileFacadeGrid, gridCellsOnEdge, recessCutsOnEdge, clipFacadeQuad } from "../lib/facadeGrid.mjs";
 import { loadTmFootprints } from "../lib/footprints.mjs";
 import { mapRoofGeometry, resolveRoofGeometry } from "../lib/roofRelative.mjs";
 import { sceneToTm, tmToWgs84 } from "../../../src/geo/epsg5186.mjs";
@@ -675,8 +675,10 @@ function addFacade(mesh, ordered, { base, ground, bottom, top, floors, look, til
       const sliver = length < bay * 0.45;
       const gridCells = gridCellsOnEdge(grid, a, b);
       if (gridCells) {
-        drawGridCells(gridCells, { ground, lo: Math.max(bottom, ground), hi: top, tiles, tile }, cell);
-        grid.appliedWalls.add(gridCells[0].wall);
+        if (drawGridCells(gridCells, { ground, lo: Math.max(bottom, ground), hi: top, tiles, tile }, cell)) {
+          grid.appliedWalls.add(gridCells[0].wall);
+          if (gridCells[0].surfaceEdge !== undefined) grid.appliedSurfaceEdges.add(`${gridCells[0].wall}#${gridCells[0].surfaceEdge}`);
+        }
         distance += length;
         continue;
       }
@@ -729,6 +731,7 @@ function addFacade(mesh, ordered, { base, ground, bottom, top, floors, look, til
 
 // Shared by prism and exposed mass walls. Clipping preserves the source cell UVs and the AO chart.
 function drawGridCells(cells, { ground, lo, hi, tiles, tile, t0 = 0, t1 = 1 }, emit) {
+  let painted = false;
   for (const cell of cells) {
     const a = Math.max(t0, cell.t0), b = Math.min(t1, cell.t1);
     const floor = ground + metres(cell.h0M), ceiling = ground + metres(cell.h1M);
@@ -736,15 +739,18 @@ function drawGridCells(cells, { ground, lo, hi, tiles, tile, t0 = 0, t1 = 1 }, e
     if (b - a < 1e-8 || y1 - y0 < 1e-8) continue;
     const u = t => cell.u0 + (cell.u1 - cell.u0) * (t - cell.t0) / (cell.t1 - cell.t0);
     const v = y => (y - floor) / (ceiling - floor);
-    const target = tiles.get(cell.tileId);
-    emit(a, b, y0, y1, [tileUv(target, 0, u(a), v(y0)), tileUv(target, 0, u(b), v(y0)),
-      tileUv(target, 0, u(b), v(y1)), tileUv(target, 0, u(a), v(y1))]);
+    const target = cell.legacy ? tile : tiles.get(cell.tileId);
+    const row = cell.legacy ? (cell.storey === 0 ? ROWS.GROUND : ROWS.UPPER_A) : 0;
+    emit(a, b, y0, y1, [tileUv(target, row, u(a), v(y0)), tileUv(target, row, u(b), v(y0)),
+      tileUv(target, row, u(b), v(y1)), tileUv(target, row, u(a), v(y1))]);
+    if (!cell.legacy && cell.bay >= 0) painted = true;
   }
   const gridTop = ground + metres(Math.max(...cells.map(c => c.h1M)));
   if (hi > gridTop) {
     const uv = plinthUv(tile, 0);
     emit(t0, t1, Math.max(lo, gridTop), hi, [uv, uv, uv, uv]);
   }
+  return painted;
 }
 
 // Canopy slab over the doors: top, underside, front and both ends, all on the canopy fascia colour of the tile and
@@ -1133,7 +1139,7 @@ function subtractRanges([lo, hi], covers) {
 // Exposed stretches of edge a -> b of an ordered ring (outside on its right, the side its quads face): the edge offset
 // EXPOSURE_EPS outwards is cut where it crosses another solid's ring, and each stretch keeps the part of [lo, hi] that
 // no solid around its midpoint covers. Stretches with the same exposure are merged.
-function exposureRuns(a, b, self, solids, lo, hi) {
+function exposureRuns(a, b, self, solids, lo, hi, grid, ground) {
   const length = Math.hypot(b[0] - a[0], b[1] - a[1]);
   const nx = -(b[1] - a[1]) / length;
   const nz = (b[0] - a[0]) / length;
@@ -1142,6 +1148,8 @@ function exposureRuns(a, b, self, solids, lo, hi) {
   const box = [Math.min(p[0], q[0]) - EXPOSURE_EPS, Math.min(p[1], q[1]) - EXPOSURE_EPS, Math.max(p[0], q[0]) + EXPOSURE_EPS, Math.max(p[1], q[1]) + EXPOSURE_EPS];
   const near = solids.filter((s) => s.part !== self.part && s.box[0] <= box[2] && s.box[2] >= box[0] && s.box[1] <= box[3] && s.box[3] >= box[1] && s.top > lo && s.bottom < hi);
   const ts = [0, 1];
+  const recesses = recessCutsOnEdge(grid, p, q);
+  for (const recess of recesses) ts.push(recess.t0, recess.t1);
   for (const s of near) {
     for (const ring of [s.outer, ...s.holes]) {
       for (let i = 0; i < ring.length; i += 1) {
@@ -1157,7 +1165,9 @@ function exposureRuns(a, b, self, solids, lo, hi) {
     if ((t1 - t0) * length < 1e-4) continue;
     const m = (t0 + t1) / 2;
     const point = [p[0] + (q[0] - p[0]) * m, p[1] + (q[1] - p[1]) * m];
-    const ranges = subtractRanges([lo, hi], near.filter((s) => insideSolid(point, s)).map((s) => [s.bottom, s.top]));
+    const openings = recesses.filter(r => m > r.t0 && m < r.t1).map(r => [ground, ground + metres(r.hM)]);
+    const ranges = subtractRanges([lo, hi], near.filter((s) => insideSolid(point, s))
+      .flatMap(s => subtractRanges([s.bottom, s.top], openings)));
     const last = runs.at(-1);
     if (last && JSON.stringify(last.ranges) === JSON.stringify(ranges)) last.t1 = t1;
     else runs.push({ t0, t1, ranges });
@@ -1225,9 +1235,24 @@ function addMassRing(ctx, solid, ordered, { roundBays = null, facade, cellsOnGro
     if (length < 1e-6) continue;
     const point = (t, y, out = 0) => [a[0] + (b[0] - a[0]) * t + ((a[1] - b[1]) / length) * out, y, a[1] + (b[1] - a[1]) * t + ((b[0] - a[0]) / length) * out];
     const ao = (t, y) => [s0 + t * length, peak - y, chart];
+    const cuts = recessCutsOnEdge(ctx.grid, a, b).map(r => ({ ...r, y0: ground, y1: ground + metres(r.hM) }));
     const quad = (mesh, t0, t1, y00, y10, y11, y01, uv, colour) => {
-      mesh.quad(point(t0, y00), point(t1, y10), point(t1, y11), point(t0, y01), uv, colour);
-      if (charts) mesh.ao.push(...ao(t0, y00), ...ao(t1, y10), ...ao(t1, y11), ...ao(t0, y01));
+      // Ground-storey doorway cuts affect vertical rectangles, never the sloping roof profile.
+      const pieces = y00 === y10 && y11 === y01
+        ? clipFacadeQuad({ t0, t1, y0: y00, y1: y11 }, cuts) : [{ t0, t1, y0: y00, y1: y11 }];
+      for (const p of pieces) {
+        const u = t => (t - t0) / (t1 - t0);
+        const v = y => (y - y00) / (y11 - y00);
+        const at = (t, y) => uv[0].map((_, k) =>
+          (1 - v(y)) * (uv[0][k] + u(t) * (uv[1][k] - uv[0][k])) +
+          v(y) * (uv[3][k] + u(t) * (uv[2][k] - uv[3][k])));
+        const bottomRight = y00 === y10 ? p.y0 : y10;
+        const topLeft = y11 === y01 ? p.y1 : y01;
+        const clippedUv = cuts.length && y00 === y10 && y11 === y01
+          ? [at(p.t0, p.y0), at(p.t1, p.y0), at(p.t1, p.y1), at(p.t0, p.y1)] : uv;
+        mesh.quad(point(p.t0, p.y0), point(p.t1, bottomRight), point(p.t1, p.y1), point(p.t0, topLeft), clippedUv, colour);
+        if (charts) mesh.ao.push(...ao(p.t0, p.y0), ...ao(p.t1, bottomRight), ...ao(p.t1, p.y1), ...ao(p.t0, topLeft));
+      }
     };
     // Wall-top profile: the slab height, or the roof surface along the edge (sampled just inside the mass).
     let profile = [[0, solid.top], [1, solid.top]];
@@ -1249,7 +1274,7 @@ function addMassRing(ctx, solid, ordered, { roundBays = null, facade, cellsOnGro
     const gridCells = gridCellsOnEdge(ctx.grid, a, b);
     let canopyDone = !canopy;
     let frontDone = !front;
-    for (const run of exposureRuns(a, b, solid, solids, solid.bottom, top)) {
+    for (const run of exposureRuns(a, b, solid, solids, solid.bottom, top, ctx.grid, ground)) {
       for (const [lo, hi] of run.ranges) {
         const cellsTop = Math.min(hi, eave);
         // A core's wall that stands on the ground is part of the facade (a stair or lift core flush with it): cells.
@@ -1267,9 +1292,11 @@ function addMassRing(ctx, solid, ordered, { roundBays = null, facade, cellsOnGro
           if (!cells) {
             quad(plain, run.t0, run.t1, lo, lo, cellsTop, cellsTop, PLAIN_UV, plainColour);
           } else if (gridCells) {
-            drawGridCells(gridCells, { ground, lo, hi: cellsTop, tiles: ctx.tiles, tile, t0: run.t0, t1: run.t1 },
-              (t0, t1, y0, y1, uv) => quad(walls, t0, t1, y0, y0, y1, y1, uv));
-            ctx.grid.appliedWalls.add(gridCells[0].wall);
+            if (drawGridCells(gridCells, { ground, lo, hi: cellsTop, tiles: ctx.tiles, tile, t0: run.t0, t1: run.t1 },
+              (t0, t1, y0, y1, uv) => quad(walls, t0, t1, y0, y0, y1, y1, uv))) {
+              ctx.grid.appliedWalls.add(gridCells[0].wall);
+              if (gridCells[0].surfaceEdge !== undefined) ctx.grid.appliedSurfaceEdges.add(`${gridCells[0].wall}#${gridCells[0].surfaceEdge}`);
+            }
           } else {
             const k0 = Math.max(0, Math.floor((lo - ground) / storey + 1e-6));
             const k1 = Math.ceil((cellsTop - ground) / storey - 1e-6);
@@ -1929,7 +1956,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
       const record = JSON.parse(readFileSync(path.join(gridDir, file), "utf8"));
       const building = [...selectableBuildings, ...campusBuildings].find(b => (b.nodeName ?? b.nodeId) === record.building);
       if (!building) throw new Error(`${file}: facade grid has no building`);
-      building.facadeGrid = { ...compileFacadeGrid(record, footprints[record.building], entrances), appliedWalls: new Set() };
+      building.facadeGrid = { ...compileFacadeGrid(record, footprints[record.building], entrances), appliedWalls: new Set(), appliedSurfaceEdges: new Set() };
       for (const [id, look] of building.facadeGrid.looks) gridLooks.set(id, look);
     }
   }
@@ -2217,6 +2244,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
         facadeEstimated: true,
         facadeGridWalls: building.facadeGrid ? [...building.facadeGrid.walls.keys()] : [],
         facadeGridAppliedWalls: building.facadeGrid ? [...building.facadeGrid.appliedWalls] : [],
+        facadeGridAppliedSurfaceEdges: building.facadeGrid ? [...building.facadeGrid.appliedSurfaceEdges] : [],
         facadeFallbackReason: building.facadeFallbackReason,
         facadeClass: catalogue.looks.get(building.look).class,
         facadeSource: `${catalogue.looks.get(building.look).sources} (colours and window layout estimated)`,
@@ -2307,6 +2335,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
         facadeEstimated: true,
         facadeGridWalls: first.facadeGrid ? [...first.facadeGrid.walls.keys()] : [],
         facadeGridAppliedWalls: first.facadeGrid ? [...first.facadeGrid.appliedWalls] : [],
+        facadeGridAppliedSurfaceEdges: first.facadeGrid ? [...first.facadeGrid.appliedSurfaceEdges] : [],
         facadeFallbackReason: first.facadeFallbackReason,
         ...(first.roofFormSource ? { roofFormSource: first.roofFormSource } : {}),
       },

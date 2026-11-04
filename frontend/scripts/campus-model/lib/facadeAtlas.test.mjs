@@ -1,10 +1,33 @@
 // Checks for the window-module parameters of the facade atlas (lib/facadeAtlas.mjs): panes, transom, framePx, lintel.
 import assert from "node:assert/strict";
 import test from "node:test";
-import { paintedTile } from "./facadeAtlas.mjs";
+import { buildFacadeAtlas, paintedTile } from "./facadeAtlas.mjs";
+import { decodePng } from "./png.mjs";
 
 const base = { id: "T", pattern: "punched", texture: "brick", wall: "#a77b7a", glass: "#5c7579", frame: "#f2f2ef", windows: 1, windowWidth: 0.79, windowHeight: 0.47, sill: 0.06 };
 const colour = (look) => Buffer.from(paintedTile(look));
+
+test("more than eighty curated looks fit without exceeding a 4096 pixel texture edge", async () => {
+  const looks = Array.from({ length: 81 }, (_, i) => ({ ...base, id: `curated-${i}`, texture: "metal" }));
+  const atlas = await buildFacadeAtlas(looks);
+  assert.equal(atlas.width, 4096);
+  assert.equal(atlas.height, 1200);
+  assert.equal(atlas.tiles.size, 81);
+  const image = decodePng(atlas.color), normal = decodePng(atlas.normal);
+  assert.equal(image.width, atlas.width);
+  assert.equal(image.height, atlas.height);
+  assert.equal(normal.width, atlas.width / 2);
+  assert.equal(normal.height, atlas.height / 2);
+  const last = atlas.tiles.get("curated-80");
+  const at = ((last.y + 20) * image.width + last.x + 28) * 3;
+  const expected = colour(looks[80]), tileAt = (20 * 224 + 28) * 3;
+  assert.deepEqual([...image.pixels.subarray(at, at + 3)], [...expected.subarray(tileAt, tileAt + 3)]);
+});
+
+test("an atlas that cannot fit inside 4096 by 4096 still fails before allocation", async () => {
+  const looks = Array.from({ length: 290 }, (_, i) => ({ ...base, id: `too-many-${i}` }));
+  await assert.rejects(() => buildFacadeAtlas(looks), Error);
+});
 
 test("explicit defaults draw the same tile as no parameters", () => {
   assert.ok(colour(base).equals(colour({ ...base, framePx: 1 })));

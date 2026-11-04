@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { wallsOf } from "./anchors.mjs";
-import { compileFacadeGrid, gridCellsOnEdge } from "./facadeGrid.mjs";
+import { compileFacadeGrid, gridCellsOnEdge, recessCutsOnEdge, clipFacadeQuad } from "./facadeGrid.mjs";
 import { tmToScene } from "../../../src/geo/epsg5186.mjs";
 
 const building = "BLD_TEST";
@@ -22,6 +22,81 @@ const record = () => ({
   },
 });
 const entrances = [{ id: "entry", anchor: { building, wall: "W00", sM: 8 }, widthM: 2 }];
+
+test("a recorded entrance recess cuts its front volume but leaves the anchored rear door plane", () => {
+  const doc = record();
+  doc.walls.W00.recesses = [{ entrance: "entry", backM: 0.3, depthM: 2, hM: 3 }];
+  const grid = compileFacadeGrid(doc, footprint, entrances);
+  assert.deepEqual(recessCutsOnEdge(grid, tmToScene(243999, 263800), tmToScene(243999, 263820)),
+    [{ t0: 0.35, t1: 0.45, hM: 3 }]);
+  assert.deepEqual(recessCutsOnEdge(grid, tmToScene(244000, 263800), tmToScene(244000, 263820)), []);
+  assert.deepEqual(recessCutsOnEdge(grid, tmToScene(243997, 263800), tmToScene(243997, 263820)), []);
+});
+
+test("a recess cannot invent an entrance or invert its depth or exceed the ground storey", () => {
+  for (const recess of [
+    { entrance: "unknown", backM: 0.3, depthM: 2, hM: 3 },
+    { entrance: "entry", backM: 2, depthM: 0.3, hM: 3 },
+    { entrance: "entry", backM: 0.3, depthM: 2, hM: 5 },
+  ]) {
+    const doc = record(); doc.walls.W00.recesses = [recess];
+    assert.throws(() => compileFacadeGrid(doc, footprint, entrances), /recess/);
+  }
+});
+
+test("the recess removes only its ground rectangle and keeps both piers and the lintel", () => {
+  const pieces = clipFacadeQuad({ t0: 0, t1: 1, y0: 10, y1: 18 }, [{ t0: 0.3, t1: 0.6, y0: 10, y1: 13 }]);
+  assert.deepEqual(pieces, [
+    { t0: 0, t1: 0.3, y0: 10, y1: 18 },
+    { t0: 0.6, t1: 1, y0: 10, y1: 18 },
+    { t0: 0.3, t1: 0.6, y0: 13, y1: 18 },
+  ]);
+});
+
+test("a reviewed source edge can bind a displaced mass without moving GIS bays or leaving end strips", () => {
+  const doc = record();
+  doc.walls.W00.cells = [null, null];
+  doc.walls.W00.surfaceEdges = [{ A: [243999, 263799], B: [243999, 263821], source: "test source mass 0 edge 0" }];
+  const grid = compileFacadeGrid(doc, footprint);
+  const cells = gridCellsOnEdge(grid, tmToScene(243999, 263799), tmToScene(243999, 263821));
+  assert.ok(cells, "the exact reviewed edge must bind");
+  const ground = cells.filter(c => c.storey === 0);
+  assert.equal(ground[0].t0, 0);
+  assert.equal(ground.at(-1).t1, 1);
+  assert.equal(ground[0].kind, "blank");
+  assert.equal(ground.at(-1).kind, "blank");
+  assert.equal(ground.find(c => c.kind === "window").s0M, 2);
+  assert.equal(ground.find(c => c.kind === "window").s1M, 6);
+  for (let i = 1; i < ground.length; i++) assert.equal(ground[i - 1].t1, ground[i].t0);
+  assert.equal(gridCellsOnEdge(grid, tmToScene(243998.98, 263799), tmToScene(243998.98, 263821)), null);
+  const unbound = record();
+  unbound.walls.W00.cells = [null, null];
+  assert.equal(gridCellsOnEdge(compileFacadeGrid(unbound, footprint), tmToScene(243999, 263799), tmToScene(243999, 263821)), null);
+});
+
+test("a surface correspondence needs finite source endpoints, a source identity and nonzero wall span", () => {
+  for (const edge of [
+    { A: [NaN, 263800], B: [243999, 263820], source: "source" },
+    { A: [243999, 263800], B: [243999, 263820], source: "" },
+    { A: [243999, 263800], B: [243999, 263800], source: "source" },
+  ]) {
+    const doc = record(); doc.walls.W00.cells = [null, null]; doc.walls.W00.surfaceEdges = [edge];
+    assert.throws(() => compileFacadeGrid(doc, footprint), /surface edge/);
+  }
+});
+
+test("an explicitly partial observation retains the legacy look outside its counted bays", () => {
+  const doc = record();
+  doc.walls.W00.cells = [null, null];
+  doc.walls.W00.outside = "legacy";
+  const grid = compileFacadeGrid(doc, footprint);
+  const cells = grid.walls.get("W00").cells;
+  assert.ok(cells.filter(c => c.bay === -1).every(c => c.legacy));
+  assert.ok(cells.filter(c => c.bay >= 0).every(c => !c.legacy));
+  assert.ok([...grid.looks.values()].every(l => l.cell !== "blank"));
+  doc.walls.W00.outside = "guess";
+  assert.throws(() => compileFacadeGrid(doc, footprint), /outside/);
+});
 
 test("wall cells retain metre offsets, storey heights, sparse defaults and anchored doors", () => {
   const grid = compileFacadeGrid(record(), footprint, entrances);

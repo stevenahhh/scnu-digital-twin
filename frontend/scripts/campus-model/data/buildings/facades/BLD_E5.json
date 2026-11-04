@@ -2,18 +2,44 @@
   "building": "BLD_E5",
   "estimated": true,
   "storeys": [
-    { "hM": 4.2, "kind": "ground" },
-    { "hM": 4.2 },
-    { "hM": 4.2 },
-    { "hM": 4.2 }
+    {
+      "hM": 4.2,
+      "kind": "ground"
+    },
+    {
+      "hM": 4.2
+    },
+    {
+      "hM": 4.2
+    },
+    {
+      "hM": 4.2
+    }
   ],
   "walls": {
     "W25": {
-      "bays": { "pitchM": 3.45, "count": 10, "offsetM": 1.0 },
+      "bays": {
+        "pitchM": 3.45,
+        "count": 10,
+        "offsetM": 1
+      },
       "default": "window",
-      "cells": [null, null, null, null],
-      "window": { "wM": 2.6, "hM": 1.8, "sillM": 1.0 },
-      "materials": { "wall": "brick:#9e847d", "glass": "#5c7477", "frame": "#eeeeea" },
+      "cells": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "window": {
+        "wM": 2.6,
+        "hM": 1.8,
+        "sillM": 1
+      },
+      "materials": {
+        "wall": "brick:#9e847d",
+        "glass": "#5c7477",
+        "frame": "#eeeeea"
+      },
       "evidence": {
         "tier": "T2",
         "refs": [
@@ -24,6 +50,68 @@
         "lod4BayCount": 10,
         "vrBayCount": 10,
         "note": "Authoritative curated seed, not estimator output. Lower storeys are obscured by trees; default window cells there remain estimated. Red cladding spans different rows and is not inferred as a uniform band."
+      }
+    },
+    "W06": {
+      "bays": {
+        "pitchM": 5.64205943,
+        "count": 4,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 5.0779,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 E5_사범대학3호관_688780 W06",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 4,
+        "openingGroups": 4,
+        "notes": [
+          "LOD4 x102..195: four wide upper opening groups separated by piers. Lower vegetation is not counted as openings."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 4,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "glazing",
+      "materials": {
+        "wall": "brick:#9e847d",
+        "glass": "#5c7477",
+        "frame": "#eeeeea"
       }
     }
   },

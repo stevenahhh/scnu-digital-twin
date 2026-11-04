@@ -1,0 +1,85 @@
+{
+  "estimated": true,
+  "building": "BLD_B2",
+  "storeys": [
+    {
+      "hM": 5.635
+    },
+    {
+      "hM": 5.635
+    },
+    {
+      "hM": 5.635
+    },
+    {
+      "hM": 5.635
+    }
+  ],
+  "walls": {
+    "W10": {
+      "bays": {
+        "pitchM": 18.01528345,
+        "count": 1,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 3.2,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 B2_70주년기념관_768585 W10",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated",
+          "Exact registered source edge correspondence in surfaceEdges; automatic 0.3 m matching remains unchanged. Endpoints are checked within 1 mm, not moved."
+        ],
+        "independentCount": 1,
+        "openingGroups": 0,
+        "notes": [
+          "LOD4 x736..811: blank auditorium end, with no classroom-style openings. VR scene_b4/r confirms the large unglazed auditorium volume.",
+          "Vertical allocation follows the registered wing source: 4 levels over 22.540 m. The independent image count is horizontal; heights remain estimates."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 1,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "blank",
+      "materials": {
+        "wall": "panel:#dcddd8",
+        "glass": "#425c6c",
+        "frame": "#d6d8d6"
+      },
+      "surfaceEdges": [
+        {
+          "A": [
+            243986.9261,
+            263806.8117
+          ],
+          "B": [
+            243991.7797,
+            263824.8857
+          ],
+          "source": "building-forms.json BLD_B2/mass/1/edge/0; resolved source geometry, estimated"
+        }
+      ]
+    }
+  }
+}

@@ -11,7 +11,7 @@
 // first mip levels never read a neighbouring look.
 //
 // Texel size: a bay of 3-4 m and a storey of 3-5 m on 56 px, about 6-9 cm per texel. The colour atlas is 2048 px
-// wide and as tall as its rows of tiles need (up to MAX_ROWS); emissive, normal and metallic-roughness maps are half that (window
+// wide for the original compact set, or 4096 px for campus-wide grids; emissive, normal and metallic-roughness maps are half that (window
 // glow and relief are soft anyway).
 // Colours are sRGB estimates: the SCNU 360 VR tour panoramas (visual reference only) and the VWorld LOD4 facade
 // photos (data/lod4-facades.json). They are not measurements.
@@ -30,10 +30,11 @@ const TILE_H = 4 * ROW_PX;
 const GUTTER = 8;
 const SLOT = TILE_W + 2 * GUTTER;
 const SLOTS_PER_SIDE = Math.floor(ATLAS_SIZE / SLOT);
-// Rows of tiles: the atlas is as tall as the rows in use (240 px each, so both the full and the half maps stay multiples of
-// 4 for KTX2), up to MAX_ROWS (2400 px, well inside WebGL's 4096 px minimum texture size); eight rows were the square.
-const MAX_ROWS = 10;
-export const MAX_LOOKS = SLOTS_PER_SIDE * MAX_ROWS;
+// Keep compact atlases byte-compatible. Wider atlases retain the same 56 px cells and 8 px gutters,
+// and neither edge may exceed the configured 4096 px limit (17 * 240 = 4080).
+const COMPACT_LOOKS = SLOTS_PER_SIDE * 10;
+const MAX_ATLAS_SIZE = 4096;
+export const MAX_LOOKS = Math.floor(MAX_ATLAS_SIZE / SLOT) ** 2;
 const NOMINAL_STOREY_METRES = 4.0;
 
 // CC0 relief per wall texture (data/materials, Poly Haven); at 6-9 cm per texel it only adds a soft grain.
@@ -369,14 +370,16 @@ function half(pixels, width, height, normal) {
 // looks: [{ id, ... }] (data/scnu-facades.json look fields). Returns the encoded maps and each look's tile origin.
 export async function buildFacadeAtlas(looks) {
   if (looks.length > MAX_LOOKS) throw new Error(`facade atlas: ${looks.length} looks, room for ${MAX_LOOKS}`);
+  const width = looks.length <= COMPACT_LOOKS ? ATLAS_SIZE : MAX_ATLAS_SIZE;
+  const slotsPerRow = Math.floor(width / SLOT);
   // Rows of tiles in use only; even so the half-resolution maps line up.
-  const height = Math.ceil(Math.ceil(looks.length / SLOTS_PER_SIDE) * SLOT / 2) * 2;
-  const color = new Raster(ATLAS_SIZE, height);
-  const emissive = new Raster(ATLAS_SIZE, height);
-  const kinds = new Uint8Array(ATLAS_SIZE * height);
-  const normal = new Uint8Array(ATLAS_SIZE * height * 3).fill(128);
-  const arm = new Uint8Array(ATLAS_SIZE * height * 3);
-  for (let i = 0; i < ATLAS_SIZE * height; i += 1) {
+  const height = Math.ceil(Math.ceil(looks.length / slotsPerRow) * SLOT / 2) * 2;
+  const color = new Raster(width, height);
+  const emissive = new Raster(width, height);
+  const kinds = new Uint8Array(width * height);
+  const normal = new Uint8Array(width * height * 3).fill(128);
+  const arm = new Uint8Array(width * height * 3);
+  for (let i = 0; i < width * height; i += 1) {
     normal[i * 3 + 2] = 255;
     arm[i * 3] = 255;
     arm[i * 3 + 1] = 230;
@@ -384,19 +387,19 @@ export async function buildFacadeAtlas(looks) {
   const tiles = new Map();
   for (const [index, raw] of looks.entries()) {
     const look = normalise(raw);
-    const sx = (index % SLOTS_PER_SIDE) * SLOT;
-    const sy = Math.floor(index / SLOTS_PER_SIDE) * SLOT;
+    const sx = (index % slotsPerRow) * SLOT;
+    const sy = Math.floor(index / slotsPerRow) * SLOT;
     const ox = sx + GUTTER;
     const oy = sy + GUTTER;
     paintTile(new TileCanvas(color, emissive, kinds, ox, oy), look);
     fillGutters([
-      { data: color.data, channels: 3, width: ATLAS_SIZE },
-      { data: emissive.data, channels: 3, width: ATLAS_SIZE },
-      { data: kinds, channels: 1, width: ATLAS_SIZE },
+      { data: color.data, channels: 3, width },
+      { data: emissive.data, channels: 3, width },
+      { data: kinds, channels: 1, width },
     ], ox, oy);
     // Relief and roughness per slot: painted layout (recessed glass, proud sills and piers) plus the texture's CC0 grain.
     const slotKinds = new Uint8Array(SLOT * SLOT);
-    for (let y = 0; y < SLOT; y += 1) slotKinds.set(kinds.subarray((sy + y) * ATLAS_SIZE + sx, (sy + y) * ATLAS_SIZE + sx + SLOT), y * SLOT);
+    for (let y = 0; y < SLOT; y += 1) slotKinds.set(kinds.subarray((sy + y) * width + sx, (sy + y) * width + sx + SLOT), y * SLOT);
     const metresX = (SLOT / BAY_PX) * (raw.bay ?? 3.6);
     const metresY = (SLOT / ROW_PX) * NOMINAL_STOREY_METRES;
     const wallKind = look.pattern === "curtain" || look.pattern === "greenhouse" ? KIND.FRAME : KIND.WALL;
@@ -411,19 +414,19 @@ export async function buildFacadeAtlas(looks) {
       encoded: false,
     });
     for (let y = 0; y < SLOT; y += 1) {
-      normal.set(maps.normal.subarray(y * SLOT * 3, (y + 1) * SLOT * 3), ((sy + y) * ATLAS_SIZE + sx) * 3);
-      arm.set(maps.arm.subarray(y * SLOT * 3, (y + 1) * SLOT * 3), ((sy + y) * ATLAS_SIZE + sx) * 3);
+      normal.set(maps.normal.subarray(y * SLOT * 3, (y + 1) * SLOT * 3), ((sy + y) * width + sx) * 3);
+      arm.set(maps.arm.subarray(y * SLOT * 3, (y + 1) * SLOT * 3), ((sy + y) * width + sx) * 3);
     }
-    tiles.set(look.id, { x: ox, y: oy, slot: index, width: ATLAS_SIZE, height });
+    tiles.set(look.id, { x: ox, y: oy, slot: index, width, height });
   }
   return {
-    width: ATLAS_SIZE,
+    width,
     height,
     tiles,
-    color: encodePng(ATLAS_SIZE, height, 3, color.data),
-    emissive: encodePng(ATLAS_SIZE / 2, height / 2, 3, half(emissive.data, ATLAS_SIZE, height, false)),
-    normal: encodePng(ATLAS_SIZE / 2, height / 2, 3, half(normal, ATLAS_SIZE, height, true)),
-    arm: encodePng(ATLAS_SIZE / 2, height / 2, 3, half(arm, ATLAS_SIZE, height, false)),
+    color: encodePng(width, height, 3, color.data),
+    emissive: encodePng(width / 2, height / 2, 3, half(emissive.data, width, height, false)),
+    normal: encodePng(width / 2, height / 2, 3, half(normal, width, height, true)),
+    arm: encodePng(width / 2, height / 2, 3, half(arm, width, height, false)),
   };
 }
 

@@ -1,0 +1,101 @@
+{
+  "estimated": true,
+  "building": "BLD_SCNU_E4",
+  "storeys": [
+    {
+      "hM": 3.3
+    },
+    {
+      "hM": 3.3
+    },
+    {
+      "hM": 3.3
+    },
+    {
+      "hM": 3.3
+    },
+    {
+      "hM": 3.3
+    }
+  ],
+  "walls": {
+    "W08": {
+      "bays": {
+        "pitchM": 3.21943982,
+        "count": 6,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 2.318,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 E4_사범대학2호관_137033 W08",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 6,
+        "openingGroups": 6,
+        "notes": [
+          "LOD4 x69..149: six narrow upper opening groups on the regular rear wing; the separate stair/roof collage on W16 is not extrapolated."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 6,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "brick:#c08072",
+        "glass": "#64787c",
+        "frame": "#eef0ef"
+      }
+    }
+  }
+}
