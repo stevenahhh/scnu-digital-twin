@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 // Packs the generator's raw GLB (scripts/campus-model/.build/campus-v2.raw.glb) into the shipped
-// public/campus-v2.glb in four steps:
+// a .build candidate in four steps (only the QA gate publishes to public):
 //   1. Terrain join: the Topography_* chunk primitives (one shared Ground material, identity transforms,
 //      one attribute layout) are merged into a single Topography_joined primitive under the Topography
 //      parent, which takes ~107 draw calls back. Nothing else is joined: BLD_* nodes, trees, crosswalks
@@ -19,24 +19,29 @@
 //      The dashboard decodes them with three's KTX2Loader and the transcoder in public/basis/.
 // gltfpack is not used: its default quantization inserts dequantization parent nodes.
 //
-//   bun run model:pack                  raw -> public/campus-v2.glb, then verify names and counts
-//   bun run model:precompress           also write public/campus-v2.glb.br (q11) and .glb.gz
+//   bun run model:pack --candidate-dir <.build/candidate-...>
+//   Public files and precompression are owned by qa/candidate.mjs after QA passes.
 import { spawnSync } from "node:child_process";
-import { readFileSync, statSync, writeFileSync } from "node:fs";
+import { statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { brotliCompressSync, constants as zlib, gzipSync } from "node:zlib";
 import { NodeIO } from "@gltf-transform/core";
 import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
 import { MeshoptDecoder } from "meshoptimizer";
 import { compressFile } from "./compress.mjs";
 import { compressTexturesFile } from "./ktx2.mjs";
+import { candidatePaths, CandidateGateError } from "./qa/candidate.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FRONTEND = path.resolve(HERE, "../..");
-export const RAW_OUTPUT = path.join(HERE, ".build", "campus-v2.raw.glb");
-export const PACKED_OUTPUT = path.join(FRONTEND, "public", "campus-v2.glb");
-const JOINED_OUTPUT = path.join(HERE, ".build", "campus-v2.joined.glb");
+const args = process.argv.slice(2);
+if (args.length !== 2 || args[0] !== "--candidate-dir") {
+  throw new CandidateGateError("CANDIDATE_REQUIRED", "pack requires --candidate-dir; publishing and precompression require the candidate QA gate");
+}
+const candidate = candidatePaths(args[1]);
+export const RAW_OUTPUT = candidate.raw;
+export const PACKED_OUTPUT = candidate.packed;
+const JOINED_OUTPUT = candidate.joined;
 const EXPECTED_BUILDINGS = 29;
 const TERRAIN_PARENT = "Topography";
 const TERRAIN_CHUNK = /^Topography_/;
@@ -211,15 +216,6 @@ function optimize(rawFile, packedFile) {
   if (result.status !== 0) throw new Error(`gltf-transform optimize exited with ${result.status}`);
 }
 
-function precompress(file) {
-  const bytes = readFileSync(file);
-  const br = brotliCompressSync(bytes, { params: { [zlib.BROTLI_PARAM_QUALITY]: 11, [zlib.BROTLI_PARAM_SIZE_HINT]: bytes.length } });
-  const gz = gzipSync(bytes, { level: 9 });
-  writeFileSync(`${file}.br`, br);
-  writeFileSync(`${file}.gz`, gz);
-  return { br: br.length, gz: gz.length };
-}
-
 const rawBytes = statSync(RAW_OUTPUT, { throwIfNoEntry: false })?.size;
 if (!rawBytes) throw new Error(`${path.relative(FRONTEND, RAW_OUTPUT)} is missing; run bun run model:build`);
 const terrain = await writeJoinedTerrain(RAW_OUTPUT, JOINED_OUTPUT);
@@ -238,7 +234,3 @@ console.log(
   `campus-v2.glb packed: ${rawBytes} B raw -> ${optimizedBytes} B optimized -> ${meshoptBytes} B meshopt -> ${packedBytes} B KTX2 (${ktx2.length} textures, ${ktx2.filter((row) => row.mode === "UASTC").length} UASTC), ${counts.nodes} nodes, ${counts.buildings} BLD nodes, ${counts.proxies} BLD_SCNU pick proxies, ` +
   `${counts.meshes} meshes, ${counts.textures} ktx2 textures`,
 );
-if (process.argv.includes("--precompress")) {
-  const sizes = precompress(PACKED_OUTPUT);
-  console.log(`campus-v2.glb precompressed: ${sizes.br} B .br (q11), ${sizes.gz} B .gz`);
-}

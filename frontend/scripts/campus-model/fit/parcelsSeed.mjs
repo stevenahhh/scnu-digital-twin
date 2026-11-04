@@ -267,6 +267,7 @@ export async function curatedDoc(refs) {
     kerbLines: surfaces.outlines.filter((o) => !o.closed).map((o) => ({ ufid: o.ufid, surface: o.surface, line: o.line.map(([E, N]) => [mm(E), mm(N)]) })),
     paintExcluded: rejected.map((r) => r.piece),
     paintExcludedDetail: paintDecisions,
+    paintSuppressed: JSON.parse(readFileSync(CURATION_FILE, "utf8")).paintSuppressed ?? [],
   };
 }
 

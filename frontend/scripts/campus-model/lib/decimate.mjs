@@ -13,8 +13,6 @@
 // Works on one indexed primitive at a time (positions xyz, Float32Array or array; indices Uint32/array).
 import { MeshoptSimplifier } from "meshoptimizer";
 
-const MIN_FACE_AREA = 1e-9;
-
 function boundaryVertices(indices, vertexCount) {
   const edgeUse = new Map();
   const key = (a, b) => (a < b ? a * vertexCount + b : b * vertexCount + a);
@@ -36,6 +34,22 @@ function boundaryVertices(indices, vertexCount) {
 // Simplifies with every boundary vertex locked. attributes: [{ array, size }] riding along; the collapse keeps the
 // surviving vertex's values (meshopt keeps original vertices, never averages), so no attribute is interpolated.
 // Returns { positions, indices, attributes, before, after } with unused vertices dropped.
+// The paint invariant (qa/invariants.mjs) rejects emitted faces whose plan twice-area is at or below this floor.
+export const PAINT_FACE_AREA2_FLOOR_M2 = 2e-8;
+
+// Drops faces the collapse made degenerate in plan: they cover no visible area, and the invariant would reject them.
+export function dropSliverFaces(indices, pos32, unitsPerMetre) {
+  const floor = PAINT_FACE_AREA2_FLOOR_M2 * unitsPerMetre * unitsPerMetre;
+  const kept = [];
+  for (let t = 0; t < indices.length; t += 3) {
+    const [a, b, c] = [indices[t], indices[t + 1], indices[t + 2]];
+    const area2 = (pos32[b * 3] - pos32[a * 3]) * (pos32[c * 3 + 2] - pos32[a * 3 + 2]) - (pos32[b * 3 + 2] - pos32[a * 3 + 2]) * (pos32[c * 3] - pos32[a * 3]);
+    if (Math.abs(area2) <= floor) continue;
+    kept.push(a, b, c);
+  }
+  return kept;
+}
+
 export async function decimateDecal({ positions, indices, attributes = [], toleranceM, unitsPerMetre }) {
   await MeshoptSimplifier.ready;
   const vertexCount = positions.length / 3;
@@ -49,14 +63,7 @@ export async function decimateDecal({ positions, indices, attributes = [], toler
   const [simplified] = MeshoptSimplifier.simplifyWithAttributes(
     index32, pos32, 3, new Float32Array(0), 0, [], lock, 0, targetError, ["LockBorder"],
   );
-  // Drop faces the collapse made degenerate in plan (safety: meshopt should not emit them, this guards the partition).
-  const kept = [];
-  for (let t = 0; t < simplified.length; t += 3) {
-    const [a, b, c] = [simplified[t], simplified[t + 1], simplified[t + 2]];
-    const area2 = (pos32[b * 3] - pos32[a * 3]) * (pos32[c * 3 + 2] - pos32[a * 3 + 2]) - (pos32[b * 3 + 2] - pos32[a * 3 + 2]) * (pos32[c * 3] - pos32[a * 3]);
-    if (Math.abs(area2) < MIN_FACE_AREA) continue;
-    kept.push(a, b, c);
-  }
+  const kept = dropSliverFaces(simplified, pos32, unitsPerMetre);
   const remap = new Int32Array(vertexCount).fill(-1);
   const order = [];
   const outIndices = new Uint32Array(kept.length);

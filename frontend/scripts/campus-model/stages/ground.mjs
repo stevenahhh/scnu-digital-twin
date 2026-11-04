@@ -103,6 +103,7 @@ export function parcelSurfaces(doc) {
   return {
     parcels: doc.parcels,
     paintExcluded: doc.paintExcluded ?? [],
+    paintSuppressed: doc.paintSuppressed ?? [],
     paintExcludedDetail: doc.paintExcludedDetail ?? [],
     layers,
     outlines,

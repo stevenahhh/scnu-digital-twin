@@ -65,7 +65,10 @@ export async function loadFacadeCoverage() {
 if (import.meta.main) {
   const report = await loadFacadeCoverage();
   if (process.argv.includes("--built")) {
-    const bytes = readFileSync(new URL("../../../public/campus-v2.glb", import.meta.url));
+    const modelArg = process.argv.indexOf("--model");
+    const modelPath = modelArg >= 0 ? process.argv[modelArg + 1]
+      : process.env.CAMPUS_MODEL_FILE ?? new URL("../../../public/campus-v2.glb", import.meta.url);
+    const bytes = readFileSync(modelPath);
     const model = JSON.parse(bytes.subarray(20, 20 + bytes.readUInt32LE(12)).toString());
     report.unappliedWalls = unappliedFacadeWalls(report.buildings, model.nodes);
   }

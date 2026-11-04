@@ -6,6 +6,9 @@ import { decimateDecal } from "../lib/decimate.mjs";
 import { DECIMATE_TOLERANCE_M } from "./surfaces.mjs";
 import { encodePng } from "../lib/png.mjs";
 import { subtractConvex } from "../lib/partition.mjs";
+import { pieceKey } from "../lib/parcels.mjs";
+import { sceneToTm } from "../../../src/geo/epsg5186.mjs";
+import { finalPaintReceipt } from "../qa/paintReceipt.mjs";
 export const PAINT_BEYOND_EXTENT = Object.freeze({ minX: 502, maxX: 540, minZ: -45, maxZ: 20 });
 export const inMarkingExtent = ([x,z]) => x >= EXTENT.minX && x <= EXTENT.maxX && z >= EXTENT.minZ && z <= EXTENT.maxZ;
 const ZEBRA_PERIOD_M = 0.903, ZEBRA_BAR_M = 0.5;
@@ -74,6 +77,7 @@ export async function buildMarkings({ glb, markings, surface, extraHeight = () =
   const indices = [];
   const index = new Map();
   const roadParts = [], droppedRoadParts = [];
+  const paintSources = [];
   // A documented non-paint parcel excludes its whole surface, not only the
   // centre of the originally rejected marking. This also clips nearby stripes
   // that would otherwise protrude across the pedestrian island's boundary.
@@ -111,6 +115,7 @@ export async function buildMarkings({ glb, markings, surface, extraHeight = () =
       continue;
     }
     const triangles = [];
+    const faces = [];
     let sourceAreaScene = 0, emittedAreaScene = 0;
     const [outer, ...holes] = piece.rings;
     const contour = outer.map(([x, z]) => new Vector2(x, z));
@@ -129,13 +134,14 @@ export async function buildMarkings({ glb, markings, surface, extraHeight = () =
         const cross = (tri[1][0] - tri[0][0]) * (tri[2][1] - tri[0][1]) - (tri[1][1] - tri[0][1]) * (tri[2][0] - tri[0][0]);
         if (Math.abs(cross) < 1e-10) continue;
         const ordered = cross < 0 ? tri : [tri[0], tri[2], tri[1]];
-        indices.push(...ordered.map((p) => vertex(p, piece.colour)));
-        if (identity) {
-          triangles.push(ordered.map(p => [...p]));
-          emittedAreaScene += Math.abs(cross) / 2;
-        }
+        const face = ordered.map((p) => vertex(p, piece.colour));
+        indices.push(...face);
+        faces.push(face);
+        triangles.push(ordered.map(p => [...p]));
+        emittedAreaScene += Math.abs(cross) / 2;
       }
     }
+    if (faces.length) paintSources.push({ id: piece.id ?? piece.partId ?? piece.record ?? pieceKey(piece, p => sceneToTm(...p)), faces });
     if (identity) {
       if (triangles.length) roadParts.push({ ...identity, sourceAreaScene, emittedAreaScene, triangles });
       else droppedRoadParts.push({ ...identity, reason: "no-emitted-triangles" });
@@ -169,6 +175,7 @@ export async function buildMarkings({ glb, markings, surface, extraHeight = () =
   // Decimation (lib/decimate.mjs): every outline vertex of the paint stays, so each dash, bar and line keeps its plan
   // geometry; only the partition's interior slivers collapse where the terrain is flat within DECIMATE_TOLERANCE_M.
   let primitive = { positions: Float32Array.from(positions), normals: Float32Array.from(normals), uvs: Float32Array.from(uvs), indices };
+  const sourcePositions = primitive.positions;
   const sourceTriangles = indices.length / 3;
   if (decimate) {
     const out = await decimateDecal({
@@ -178,6 +185,7 @@ export async function buildMarkings({ glb, markings, surface, extraHeight = () =
     primitive = { positions: out.positions, normals: out.attributes[0].array, uvs: out.attributes[1].array, indices: Array.from(out.indices) };
     console.log(`markings: decimated ${out.before} -> ${out.after} triangles (paint outlines locked)`);
   }
+  const paintEmission = finalPaintReceipt({ primitive, sourcePositions, sourcePieces: paintSources });
   const mesh = glb.addMesh("Road_Markings", [{ ...primitive, material }]);
   const detected = markings.pieces.filter((p) => !p.estimated).length;
   glb.addNode({
@@ -208,7 +216,7 @@ export async function buildMarkings({ glb, markings, surface, extraHeight = () =
       warnings: markings.warnings,
     },
   }, { root: true });
-  return { vertices: primitive.positions.length / 3, triangles: primitive.indices.length / 3, sourceTriangles: source, conformedTriangles: sourceTriangles, roadEmission };
+  return { vertices: primitive.positions.length / 3, triangles: primitive.indices.length / 3, sourceTriangles: source, conformedTriangles: sourceTriangles, roadEmission, paintEmission };
 }
 
 export const describeMarkings = ({pieces, humps=[]}) => `road records: ${pieces.length} paint pieces, ${humps.length} humps`;

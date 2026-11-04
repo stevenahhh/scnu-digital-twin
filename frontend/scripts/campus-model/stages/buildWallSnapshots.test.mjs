@@ -6,9 +6,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
-test("model:build rejects a stale saved wall snapshot for the todo-20 F1 LED", { timeout: 180000 }, () => {
+for (const defect of ["stale", "missing"]) test(`model:build rejects a ${defect} saved wall snapshot for the todo-20 F1 LED`, { timeout: 180000 }, () => {
   const directory = mkdtempSync(path.join(realpathSync(tmpdir()), "wall-snapshot-"));
-  const preload = path.join(directory, "stale.mjs");
+  const preload = path.join(directory, `${defect}.mjs`);
   try {
     // Change only the parsed snapshot, not the source bytes or their hash.
     // The real loader, resolver, and model:build command remain in the path.
@@ -18,8 +18,8 @@ JSON.parse = function (...args) {
   const doc = parse(...args);
   const wall = doc?.additionalWalls?.BLD_SCNU_F1?.find(w => w.wall === "W25");
   if (wall) {
-    wall.lengthM += 2;
-    console.error("INJECTED_STALE_F1_W25");
+    ${defect === "stale" ? "wall.lengthM += 2;" : "delete doc.additionalWalls.BLD_SCNU_F1;"}
+    console.error("INJECTED_${defect.toUpperCase()}_F1_W25");
   }
   return doc;
 };
@@ -31,9 +31,11 @@ JSON.parse = function (...args) {
     });
     const output = `${run.stdout ?? ""}\n${run.stderr ?? ""}`;
     assert.ifError(run.error);
-    assert.match(output, /INJECTED_STALE_F1_W25/);
+    assert.ok(output.includes(`INJECTED_${defect.toUpperCase()}_F1_W25`), output);
     assert.equal(run.status, 1, output);
-    assert.match(run.stderr, /AnchorError: SD-F1-LED1: BLD_SCNU_F1\/W25:.*stale wall/);
+    assert.match(run.stderr, defect === "stale"
+      ? /AnchorError: SD-F1-LED1: BLD_SCNU_F1\/W25:.*stale wall/
+      : /AnchorError: SD-F1-LED1: BLD_SCNU_F1.*saved wall mapping required/);
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }

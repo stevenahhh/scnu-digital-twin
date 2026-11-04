@@ -5,6 +5,7 @@ import { anchorSiteDetail, resolveSiteDetail, seedSiteDetails } from "./siteDeta
 
 const polygon = [[[100, 100], [100, 110], [120, 110], [120, 100]]];
 const footprint = { polygons: [polygon] };
+footprint.walls = wallsOf("BLD_TEST", footprint);
 const context = {
   footprints: { BLD_TEST: footprint },
   parcels: { PARCEL_TEST: { ring: polygon[0] } },

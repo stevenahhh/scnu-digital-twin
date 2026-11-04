@@ -6,7 +6,7 @@ with `?model=uni` to compare.
 
 ```bash
 cd frontend
-bun run model:build   # regenerate public/campus-v2.glb from committed inputs (no network)
+bun run model:build   # two raw builds, one pack/render, publish only after QA accepts
 bun run model:fetch   # refresh data/ (network; the land cover step needs VITE_VWORLD_API_KEY in the env or frontend/.env)
 bun scripts/campus-model/fetch/osm.mjs   # refresh data/osm-ground.json (network, no key)
 bun scripts/campus-model/fetch/ortho.mjs # refresh data/ortho/ (VWorld z19 mosaic; the key is needed only for tiles missing from .cache/)
@@ -15,7 +15,110 @@ bun scripts/campus-model/fetch/buildingForms.mjs [--keep <dir>] # refresh data/b
 node --test src/campusModelAsset.test.mjs
 ```
 
-## Layout
+## Ground-truth records and QA (2026-11-04)
+
+The ground-truth redesign uses curated records as geometry inputs. Paths below are
+relative to `scripts/campus-model/`. Fix a record at its curation seed so reseeding
+reproduces the change; do not patch generated JSON alone.
+
+| Record | Generator / meaning |
+|---|---|
+| `data/bld-node-map.json` | `stages/buildings.mjs`: GIS footprint ownership and saved wall snapshots in Frame v2 |
+| `data/building-forms.json` | `fetch/buildingForms.mjs`, `stages/buildings.mjs`: GIS-registered masses and footprint-relative roof parts; residuals remain estimates |
+| `data/ground/parcels.json` | `stages/ground.mjs`, `surfaces.mjs`, `kerbs.mjs`, `tactile.mjs`: one ground partition and derived boundaries |
+| `data/ground/parking.json` | `stages/parking.mjs`: parametric rows, accessible bays, symbols and wheel stops |
+| `data/ground/road-sections.json`, `data/ground/junctions.json` | W4 integration: `fit/roadSections.mjs` proposes records; `stages/roadMarkings.mjs` generates section offsets and junction markings |
+| `data/buildings/entrances.json`, `data/buildings/facades/*.json` | `stages/entrances.mjs`, `stages/buildings.mjs`: wall anchors and facade cells |
+| `data/free-standing-anchors.json`, `data/photo/site-detail.geojson` | `stages/furniture.mjs`, `trees.mjs`, `lights.mjs`: parcel/wall placement with evidence and reasoned exceptions |
+| `data/photo/building-lean.json`, `data/registration.json` | Lean/occlusion and per-source registration for comparisons; these are not per-object visual nudges |
+
+`data/photo/evidence/` holds superseded registration tables and parking migration
+evidence. W4 also moves `markings*.geojson` and `markings-gate.json` there: detections
+remain estimator/QA evidence, not polygons to replay as the final road geometry.
+The detailed survey sections below retain historical counts and methods; they do
+not override these record contracts. W4 is a dependency of this documentation
+update, so a pre-W4 checkout still has the older markings path.
+
+Todo 28 wires QA into each build at `.build/qa/map-compare.json`,
+`.build/qa/vr-bearings.json` and `.build/qa/invariants.json`. This build-output
+location is the plan's concrete location for the design's `qa/report/` reports.
+Map comparisons record visible-ground support/residuals and occlusion; VR reports
+record same-object bearing residuals; invariants cover frame/anchor/evidence/paint
+constraints and deterministic generation. These reports must retain unexplained
+or over-tolerance objects rather than turning them into accuracy passes.
+The existing `.build/markings.report.json` records generated paint pieces and
+parking symbols. No source pixels belong in these JSON reports.
+
+`build.mjs` owns a fresh `.build/candidate-*` transaction. It compares two raw
+outputs with identical input/AO hashes, packs once, and serves that candidate
+without replacing public files during QA. Render QA owns Vite port 5242 and
+Chrome port 9382; both close on success or failure. The NGII sheet and required
+VR faces must already exist in `.cache`; their absence is a failed check.
+`candidate.json` identifies the inspected artifact, and `policy.json` distinguishes
+raw accuracy from publication acceptance. Historical gaps in `qa/known-gaps.json`
+are evidence, never automatic waivers. Failed QA leaves the previous public GLB
+and both height sidecars unchanged.
+
+`bun run model:build --parcels /absolute/path/to/parcels-copy.json` selects an
+isolated parcel input. It never edits the canonical source. Direct `model:pack`
+requires `--candidate-dir` and only writes inside that candidate; direct
+`model:precompress` refuses publication. To precompress a passing full build use
+`bun run model:build --precompress`.
+
+For AO bootstrap only, `bun scripts/campus-model/build-campus-model.mjs` writes
+raw GLB and height files under `.build`, never public. Bake the building and planar
+AO from that raw output, then run the full build. The mesh sequence prepares
+terrain and kerb heights first, then emits buildings, entrances, parking/road
+paint, kerbs/tactile, surfaces, furniture, trees and lights. Paint claims precede
+surface claims; entrance heights use the same prepared kerb plan.
+
+For a rejected candidate, inspect its geometry without publishing it:
+`CAMPUS_MODEL_FILE=/absolute/candidate/campus-v2.glb node --test
+scripts/campus-model/qa/facadeApplied.test.mjs scripts/campus-model/qa/facadeMesh.test.mjs`.
+The two facade CLIs also accept `--model`. Their thresholds are unchanged.
+This explicit artifact selection does not make the overall candidate acceptable.
+
+```bash
+cd frontend
+bun scripts/campus-model/qa/coverage.mjs
+# Audit another model directory or a temporary mapping table:
+bun scripts/campus-model/qa/coverage.mjs --root /path/to/scripts/campus-model --table /path/to/rows.json
+```
+
+`qa/coverage-rows.json` maps all 18 design §20 row names to generator and report
+paths. `qa/coverage.mjs` keeps the required row inventory independently, so removing
+`Ground_* 지면 클래스` from a copy of the table fails with that row's name and exit 1.
+Every listed generator and report must be a regular file. Each mapped report must
+contain exactly one `checks` entry whose `id` is the design row, with status,
+checked/unknown counts and nonempty findings containing metrics and evidence
+pointers. An existing unrelated JSON file fails. Success is
+`COVERAGE OK: 18 rows`, exit 0.
+
+The build writes `.build/qa/categories.json` from the actual raw candidate's mesh
+accessors, building metadata, tree instance receipts, furniture counts and emitted
+paint report. It checks terrain/context mesh counts, tactile geometry, wheel stops,
+roof colour/solar receipts and signal counts explicitly. The traffic category
+compares every saved network coordinate through `coordinate_transform.json`
+against the shared simulation-to-TM transform, with a 1 mm consistency threshold.
+Both traffic inputs are hashed with the build inputs.
+
+Category entries use `reduceQaReport` fields and retain zero counts as failed
+inventory checks. Their photographic accuracy remains explicitly unknown;
+generation counts are not surveyed position, shape or colour accuracy.
+Coverage tests whether an actual check is recorded, so a failed or unknown
+category is covered, while a missing, empty or `notRun` entry is not. Inspect the
+category findings and the existing map/VR/invariant policy separately for quality
+and publication acceptance. Coverage never changes the todo 28 paint gate.
+Rejected builds still copy category reports to `.build/qa`; their evidence
+pointers identify the retained candidate and their hashes identify the run.
+
+The Suncheon 12 cm aerial is a cross-check source under owner consent dated
+2026-11-02 (D3 in `docs/data-licences.md`). Keep pixels only in the gitignored
+`.cache/suncheon-12cm/<epoch>/`; commit derived numbers and vectors only.
+Do not bake, ship or link aerial pixels, VR faces or comparison images.
+Evidence tiers and `estimated` flags describe confidence, not measured accuracy.
+
+## Layout (legacy stage inventory; record migrations above take precedence)
 
 `build-campus-model.mjs` only sequences the stages, in this order:
 

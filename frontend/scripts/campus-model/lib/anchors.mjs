@@ -1,7 +1,7 @@
 // Wall-local anchors, design §7.1-7.2. All points and offsets are EPSG:5186 metres, never scene units.
 // footprints: { BLD_*: { polygons: [[outer, ...holes], ...], estimated?, walls? } }.
 // Convert GIS lon/lat to TM before calling. `walls` is the saved wallsOf() result from the node-map entry;
-// resolveAnchor refuses a changed mapping rather than quietly reattaching an object after a refetch.
+// resolveAnchor requires that snapshot and refuses a changed mapping after a refetch.
 // Polygon zero uses W00 / H0/W00; additional polygons use P1/W00 / P1/H0/W00.
 // parcels: { PARCEL_*: { ring: [[E,N], ...], estimated? } }. u/v start at the oriented box centre;
 // u follows its long axis toward positive E (positive N when vertical), v is the left normal.
@@ -181,10 +181,8 @@ export function resolveAnchor(record, footprints, parcels = {}) {
     } else {
       source = footprints[anchor.building];
       if (!source) throw new AnchorError(record.id, reference, "missing building footprint");
-      if (source.walls !== undefined) {
-        const stale = checkWallMapping(anchor.building, source, source.walls);
-        if (stale.length) throw new AnchorError(record.id, reference, stale.join("; "));
-      }
+      const stale = checkWallMapping(anchor.building, source, source.walls);
+      if (stale.length) throw new AnchorError(record.id, reference, stale.join("; "));
       frame = wallsOf(anchor.building, source).find((w) => w.wall === anchor.wall);
       if (!frame) throw new AnchorError(record.id, reference, "missing wall");
       const offsets = anchor.sM === undefined ? [anchor.s0M, anchor.s1M] : [anchor.sM];

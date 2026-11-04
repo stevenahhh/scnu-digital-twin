@@ -14,6 +14,8 @@
 //       [--url http://127.0.0.1:5182/] [--port 9353] [--clock 2026-10-24T12:00:00+09:00] [--list]
 //       [--bearings] [--bearing-records <file>]
 //       [--free-standing] uses reviewed VR silhouettes and packed _OBJECT_ID masks.
+//       [--model <candidate.glb>] [--run-id <id>] verifies the served model hash.
+// Build runs use distinct --out <qa>/vr/{entrances,site-detail,free-standing} directories.
 // --bearings reads records[].evidence.refs ("VR scene_e5 r col 610"), renders the actual object's
 // ID mask, writes bearings.json and returns 1 for missing masks, wrong walls or residuals above 1.5 deg.
 // It does not fabricate readings for an occluded reference. Unrefined scenes are T4 with no residual.
@@ -30,7 +32,7 @@
 // height_m_est in scene units. Face bearings follow lib/vrCamera.mjs.
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SCENE_UNITS_PER_METRE } from "../campus-model/lib/frame.mjs";
@@ -40,6 +42,8 @@ import { bearingObservations, bearingResidual, readBearing } from "../campus-mod
 import { checkSceneRefs, firstBuildingHit, loadSceneBuildings, SCENE_MAP_FILE, sceneMapInputs } from "../campus-model/fit/vrSceneBuildings.mjs";
 import { geoToModel } from "../campus-model/lib/frame.mjs";
 import { objectObservations } from "../campus-model/fit/vrObjectObservations.mjs";
+import { readRenderIdentity } from "../campus-model/qa/renderReports.mjs";
+import { resolveCampusModelUrl } from "../../src/campusModelAsset.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, "../../..");
@@ -70,10 +74,12 @@ const freeStanding = args.includes("--free-standing");
 const bearingsOnly = args.includes("--bearings") || freeStanding;
 const bearingFile = resolve(option("bearing-records", join(HERE, freeStanding
   ? "../campus-model/data/free-standing-vr.json" : "../campus-model/data/buildings/entrances.json")));
-const modelBytes = freeStanding ? readFileSync(join(HERE, "../../public/campus-v2.glb")) : null;
+const modelPath = resolve(option("model", join(HERE, "../../public/campus-v2.glb")));
+const runId = option("run-id", randomUUID());
+const modelBytes = freeStanding ? readFileSync(modelPath) : null;
 const modelJson = modelBytes ? JSON.parse(modelBytes.subarray(20, 20 + modelBytes.readUInt32LE(12)).toString()) : null;
 const renderObjectIds = modelJson?.nodes.find(n => n.extras?.renderObjectIds)?.extras.renderObjectIds;
-let observations = [], buildings = [], sceneTable = null;
+let observations = [], buildings = [], sceneTable = null, identity = null;
 
 const stations = JSON.parse(readFileSync(stationsFile, "utf8"));
 const byScene = new Map(stations.map((record) => [record.scene, record]));
@@ -94,6 +100,7 @@ try {
   for (const face of faces) if (!STRIP_ORDER.includes(face)) throw new Error(`unsupported face ${face} (f, r, b, l only)`);
   selected = selectScenes();
   if (bearingsOnly) {
+    identity = await readRenderIdentity({ modelPath, modelUrl: new URL(resolveCampusModelUrl(new URL(url).search), url), runId });
     const records = JSON.parse(readFileSync(bearingFile, "utf8"));
     // Explicit T4 entries without a VR observation cannot have a residual; malformed observed refs still fail.
     observations = (freeStanding ? objectObservations(records, stations) :
@@ -589,8 +596,9 @@ try {
       console.log(`STRIP ${scene} -> ${stripPath}`);
     }
     if (bearingsOnly) {
-      const report = { frameVersion: 2, toleranceDeg: 1.5, estimated: true, inputs: sceneTable?.inputs ?? {
-        modelSha256: createHash("sha256").update(modelBytes).digest("hex"),
+      const report = { frameVersion: 2, identity, toleranceDeg: 1.5, estimated: true, inputs: {
+        ...sceneTable?.inputs,
+        modelSha256: identity.packedGlbSha256,
         observationsSha256: createHash("sha256").update(readFileSync(bearingFile)).digest("hex"),
         stationsSha256: createHash("sha256").update(readFileSync(stationsFile)).digest("hex"),
       },

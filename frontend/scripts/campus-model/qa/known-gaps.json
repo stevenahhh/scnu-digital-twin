@@ -1,0 +1,15 @@
+{
+  "note": "Historical gaps retained from plan closures, not approvals of new residuals or waivers of hard invariants.",
+  "19": {
+    "evidence": "task-19-gate-review-3.md; d43a29c1; 2026-11-03",
+    "reason": "SD-E5-C1 is a scene_e5-only estimated anchor at BLD_E3/W16 s=44.507 m. SD-E5-C2 retained +2.120 degrees. scene_e3's stored pose fails independent landmarks and no re-resection met the user's rule. E4/B3/A1 lack numerical VR checks; their aerial and landmark checks are approximate."
+  },
+  "21": {
+    "evidence": "task-21-gate-review-3.md; 151207fe; 2026-11-03",
+    "reason": "Eight of twelve measured rendered residuals exceed 1.5 degrees, including RS-GATE-A19, RS0006, RS0007 and RS-LS-E4STONE. Five comparisons are null, including PB-C1-N/S. There is no independent photo residual for 190 records; 95 positions lie outside parcels. Placement, correspondence and station-pose cause labels are estimates, not proof."
+  },
+  "24": {
+    "evidence": "task-24-gate-review-3.md; 3f169027; 2026-11-04",
+    "reason": "The retained frozen corpus has existence 344/373 and an in-scope side metric 344/349 with five unknowns. Nineteen of twenty-nine physical crossings pass; CW_015 and CW_025 fail, CW_003/007/016/018 are occluded and CW_005/006/017/022 unconfirmed. Fifteen lanes have support below 0.6, two are clipped, seven occluded. Four bars regressed beyond 0.2 m. Canonical inventory retains unknown, missing, incomplete and unreferenced entries; 499/961 owners are unverified and reference.complete is false. RD_074/ZONE_17 use and material are unresolved. The later outside-EXTENT scope decision is not implemented in this W4 base; this integration does not change its denominator."
+  }
+}

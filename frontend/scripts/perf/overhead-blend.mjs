@@ -39,12 +39,14 @@
 // over-tolerance list; over-tolerance is a warning (exit 0), as §10.1 says the photo can be wrong. Stall paint comes from the
 // generated rows of data/ground/parking.json (--parking <file> reads another record), not from the photo detections, which are
 // no longer drawn; missingDividers lists the paint no record explains, and the report gives a table per row. No new renderer:
-// the drawn geometry is read from the generator's own records, the dev server is only checked like the other modes.
+// Road geometry is read from emitted triangles; object mode needs no dev server.
+// --data, --mesh-report and --raw-glb select a source directory and its matching raw candidate.
+// Render modes accept --model <candidate.glb> --run-id <id> and verify the served bytes.
 // Exit 0 PASS, 1 FAIL, 2 missing sheet or unreachable server (NGII_SHEET overrides the sheet path).
 // Chrome is driven over --remote-debugging-pipe, so no TCP port is opened besides the dev server's.
 import { spawn } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { createHash } from "node:crypto";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { randomUUID } from "node:crypto";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -53,9 +55,9 @@ import { DEFAULT_SHEET, openSheet } from "../campus-model/lib/ngiiSheet.mjs";
 import { decodePng, encodePng } from "../campus-model/lib/png.mjs";
 import { GRID_CONVERGENCE_DEG, sceneToTm, tmToPixel, tmToScene, wgs84ToTm } from "../../src/geo/epsg5186.mjs";
 import { occlusionMask } from "../campus-model/lib/occlusion.mjs";
-import { modelToGeo } from "../campus-model/lib/frame.mjs";
-import { paintMasks } from "../campus-model/lib/paintMasks.mjs";
-import { TOLERANCES, compareRoadInventory, lotSummary, missingDividers, parkingObjects, physicalRoadCrossings, roadAcceptance, roadMapObjects, roadObjectInventory, rowSummary, scoreObjects } from "../campus-model/qa/mapCompare.mjs";
+import { runMapComparison } from "../campus-model/qa/mapReport.mjs";
+import { readRenderIdentity } from "../campus-model/qa/renderReports.mjs";
+import { resolveCampusModelUrl } from "../../src/campusModelAsset.mjs";
 import { EDGE_THRESHOLD, VISIBLE, aggregate, aggregateVisible, canopyMask, footprintMask, measureTile, measureVisible, pointInRing, renderHalf, residualsMarkdown, sideBySide, tileGrid } from "./overheadBlendCore.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -75,6 +77,7 @@ const WINDOWS = [
   { name: "east-woodland", x: 355, z: -185, widthM: 200, heightM: 150 },
 ];
 
+async function main() {
 const args = process.argv.slice(2);
 const option = (name, fallback) => {
   const index = args.indexOf(`--${name}`);
@@ -90,6 +93,8 @@ const edgeFloor = Number(option("edge-floor", "0.02"));
 const jsonPath = resolve(option("json", join(outDir, `${prefix}overhead-blend.json`)));
 const clock = option("clock", "2026-10-24T12:00:00+09:00");
 const visibleGround = args.includes("--visible-ground");
+const modelPath = resolve(option("model", join(HERE, "../../public/campus-v2.glb")));
+const runId = option("run-id", randomUUID());
 // --occlusion: each window is also measured with leaned roofs (data/photo/building-lean.json), tree crowns
 // (data/trees.json) and their cast shadows (lib/occlusion.mjs) removed from both edge maps (result field `occluded`).
 const occlusion = args.includes("--occlusion");
@@ -135,7 +140,7 @@ if (args.includes("--compare")) {
 }
 
 // ---------------------------------------------------------------- preconditions (exit 2)
-let sheet;
+let sheet, identity;
 try {
   sheet = openSheet(DEFAULT_SHEET);
 } catch (error) {
@@ -144,6 +149,7 @@ try {
 }
 if (!args.includes("--objects")) try {
   await fetch(url, { signal: AbortSignal.timeout(5000) });
+  identity = await readRenderIdentity({ modelPath, modelUrl: new URL(resolveCampusModelUrl(new URL(url).search), url), runId });
 } catch (error) {
   console.error(`server unreachable: ${url} (${error.cause?.code ?? error.message})`);
   sheet.close();
@@ -152,139 +158,20 @@ if (!args.includes("--objects")) try {
 
 // ---------------------------------------------------------------- --objects (per-object map-space comparison)
 if (args.includes("--objects")) {
-  const { loadRoadMarkings } = await import("../campus-model/stages/roadMarkings.mjs");
-  const data = join(HERE, "..", "campus-model", "data");
-  const toTm = ([x, z]) => wgs84ToTm(...modelToGeo(x, z));
-  // sheet window over EXTENT (+10 m), origin = top-left pixel corner
-  const gsd = sheet.tfw.a;
-  const cornersTm = [[EXTENT.minX, EXTENT.minZ], [EXTENT.maxX, EXTENT.minZ], [EXTENT.minX, EXTENT.maxZ], [EXTENT.maxX, EXTENT.maxZ]].map(toTm);
-  const E0 = Math.min(...cornersTm.map((p) => p[0])) - 10;
-  const N1 = Math.max(...cornersTm.map((p) => p[1])) + 10;
-  const [colF, rowF] = tmToPixel(E0, N1, sheet.tfw);
-  const col0 = Math.max(0, Math.round(colF));
-  const row0 = Math.max(0, Math.round(rowF));
-  const w = Math.min(sheet.width - col0, Math.ceil((Math.max(...cornersTm.map((p) => p[0])) + 10 - E0) / gsd));
-  const h = Math.min(sheet.height - row0, Math.ceil((N1 - Math.min(...cornersTm.map((p) => p[1])) + 10) / gsd));
-  const rgb = sheet.readWindow(col0, row0, w, h);
   sheet.close();
-  const origin = [sheet.tfw.c + col0 * gsd - gsd / 2, sheet.tfw.f + row0 * sheet.tfw.d - sheet.tfw.d / 2];
-  const paint = paintMasks({ rgb, width: w, height: h, metresPerPixel: gsd });
-  // occluders: leaned building masses (todo 6 leans when present), tree crowns, their shadows
-  const forms = JSON.parse(readFileSync(join(data, "building-forms.json"), "utf8"));
-  let leanSource = "data/photo/building-lean.json";
-  let leans = new Map();
-  try {
-    leans = new Map(JSON.parse(readFileSync(join(data, "photo", "building-lean.json"), "utf8")).buildings.map((b) => [b.id, b.lean]));
-  } catch {
-    leanSource = "building-forms.json leanPrior (data/photo/building-lean.json missing)";
-  }
-  const buildings = forms.buildings.flatMap((b) => b.masses.map((m) => ({
-    rings: [m.outer, ...(m.holes ?? [])].map((r) => r.map(([lon, lat]) => wgs84ToTm(lon, lat))),
-    heightM: m.topMetres, lean: leans.get(b.key) ?? b.leanPrior ?? [0, 0],
-  })));
-  const trees = JSON.parse(readFileSync(join(data, "trees.json"), "utf8")).trees.map(([east, north, crownDiameterM, heightM]) => ({ east, north, crownDiameterM, heightM }));
-  const win = { w, h, origin, gsdM: gsd };
-  const masks = occlusionMask(win, { buildings, trees });
-  const meshReportPath = resolve(option("mesh-report", join(data, "..", ".build", "markings.report.json")));
-  const meshReport = JSON.parse(readFileSync(meshReportPath, "utf8"));
-  const rawHash = createHash("sha256").update(readFileSync(join(data, "..", ".build", "campus-v2.raw.glb"))).digest("hex");
-  if (meshReport.rawGlbSha256 !== rawHash) throw new Error("stale mesh report: raw GLB hash mismatch; rebuild the GLB");
-  for (const name of ["road-sections", "junctions", "parcels"]) {
-    const hash = createHash("sha256").update(readFileSync(join(data, "ground", `${name}.json`))).digest("hex");
-    if (meshReport.symbols.roadSourceHashes?.[name] !== hash) throw new Error(`stale mesh report: ${name}; rebuild the GLB`);
-  }
-  const generated = loadRoadMarkings();
-  const objects = roadMapObjects(generated.pieces, meshReport.emission);
-  const sections = JSON.parse(readFileSync(join(data, "ground", "road-sections.json"), "utf8"));
-  const junctions = JSON.parse(readFileSync(join(data, "ground", "junctions.json"), "utf8"));
-  const bindings = [];
-  for (const [segmentId, road] of Object.entries(sections)) for (const section of road.sections) {
-    const association = road.alignments[section.alignment].association;
-    bindings.push({ ownerId: section.id, segmentId, verified: association.verified, refs: association.refs ?? [] });
-  }
-  for (const junction of Object.values(junctions)) for (const approach of junction.approaches) {
-    const association = sections[approach.segment].alignments[approach.alignment].association;
-    bindings.push({ ownerId: approach.id, segmentId: approach.segment, verified: association.verified && approach.curation?.verified === true, refs: association.refs ?? [] });
-  }
-  const emittedIds = new Set(meshReport.emission.parts.map(p => p.partId));
-  const inventory = roadObjectInventory(generated.pieces.filter(p => emittedIds.has(p.partId)), bindings);
-  const referencePath = resolve(option("road-reference", join(data, "photo", "evidence", "road-reference.json")));
-  const reference = existsSync(referencePath) ? JSON.parse(readFileSync(referencePath, "utf8")) : null;
-  const existence = reference ? compareRoadInventory(reference, {
-    ...inventory,
-    // Presence labels name logical paint segments, not the fraction of RD
-    // containers which happen to have a marking.
-    segmentIds: inventory.objects.filter(o => o.pieces.some(p => /^(centre_line|lane_line|edge_line|guide_|kerb)/.test(p.kind))).map(o => o.id),
-  }) : null;
-  const parkingDoc = JSON.parse(readFileSync(resolve(option("parking", join(data, "ground", "parking.json"))), "utf8"));
-  const parkingScored = parkingObjects(parkingDoc);
-  objects.push(...parkingScored.map((o) => (o.geometry.type === "line" ? { ...o, geometry: { type: "line", parts: [o.geometry.coords] } } : o)));
-  const scored = scoreObjects(objects, { ...win, paint }, masks);
-  const physicalObjects = physicalRoadCrossings(objects, reference?.physicalCrossings ?? []);
-  const physicalScores = scoreObjects(physicalObjects, { ...win, paint }, masks);
-  // nearest BLD_* node (GIS footprint centre) for each object, so a reader can find "E3 parking rows"
-  const nodes = JSON.parse(readFileSync(join(data, "bld-node-map.json"), "utf8")).entries.filter((e) => e.gisCentreTm);
-  const centreOf = (o) => {
-    const pts = o.geometry.type === "line" ? o.geometry.parts.flat() : (o.geometry.polygons ?? [o.geometry.rings]).flat(2);
-    return [pts.reduce((s, p) => s + p[0], 0) / pts.length, pts.reduce((s, p) => s + p[1], 0) / pts.length];
-  };
-  scored.forEach((r, i) => {
-    const c = centreOf(objects[i]);
-    let best = null;
-    for (const n of nodes) {
-      const d = Math.hypot(n.gisCentreTm[0] - c[0], n.gisCentreTm[1] - c[1]);
-      if (!best || d < best.d) best = { id: n.nodeId, d };
-    }
-    r.centreTm = c.map((v) => Math.round(v * 100) / 100);
-    r.near = best && best.d <= 80 ? best.id : null;
-    r.objectId = objects[i].objectId ?? null;
-    r.ownerId = objects[i].ownerId ?? null;
-    r.evidence = objects[i].evidence ?? null;
+  const data = resolve(option("data", join(HERE, "..", "campus-model", "data")));
+  const report = await runMapComparison({
+    dataDir: data,
+    meshReportPath: resolve(option("mesh-report", join(data, "..", ".build", "markings.report.json"))),
+    rawGlbPath: resolve(option("raw-glb", join(data, "..", ".build", "campus-v2.raw.glb"))),
+    parkingPath: resolve(option("parking", join(data, "ground", "parking.json"))),
+    referencePath: resolve(option("road-reference", join(data, "photo", "evidence", "road-reference.json"))),
   });
-  if (existence) for (const r of [...existence.segments.rows, ...existence.crossings.rows]) {
-    const existing = scored.find(s => s.id === r.id);
-    if (existing) {
-      existing.referenceStatus = r.status;
-      if (r.over) existing.over = true;
-    } else if (r.over) scored.push({
-      id: r.id, kind: r.id.endsWith("/crossing") ? "crossing" : "road_segment",
-      tier: r.id.endsWith("/crossing") ? "crossing" : "lane",
-      residual_m: null, iou: null, support: 0, occluded: false, over: true,
-      missing: r.status === "missing" || r.status === "fn", referenceStatus: r.status,
-    });
-  }
-  const missing = missingDividers(parkingDoc, parkingScored, { ...win, paint }, masks);
-  scored.push(...missing);
-  const rows = rowSummary(parkingDoc, scored);
-  const lots = lotSummary(parkingDoc, scored);
-  const overList = scored.filter((r) => r.over);
-  const byTier = {};
-  for (const r of scored) {
-    const t = (byTier[r.tier] ??= { objects: 0, occluded: 0, unmeasurable: 0, over: 0, residuals: [] });
-    t.objects += 1;
-    if (r.occluded) t.occluded += 1;
-    if (r.unmeasurable) t.unmeasurable += 1;
-    if (r.over) t.over += 1;
-    if (r.residual_m !== null && r.residual_m !== undefined) t.residuals.push(r.residual_m);
-  }
-  for (const t of Object.values(byTier)) {
-    const s = t.residuals.sort((a, b) => a - b);
-    t.medianResidualM = s.length ? s[s.length >> 1] : null;
-    delete t.residuals;
-  }
+  report.generatedAt = new Date().toISOString();
+  const { objects: scored, byTier, parkingRows: rows, parkingLots: lots } = report;
+  const overList = scored.filter(r => r.over);
+  const leanSource = report.masks.leans;
   mkdirSync(outDir, { recursive: true });
-  const report = {
-    generatedAt: new Date().toISOString(), sheet: DEFAULT_SHEET.split("/").pop(), metresPerPixel: gsd,
-    source: "Road_Markings emitted triangle union and triangle cross-section centrelines, EPSG:5186",
-    roadSourceHashes: meshReport.symbols.roadSourceHashes, roadExistence: existence,
-    rawGlbSha256: meshReport.rawGlbSha256,
-    referenceEvidenceAvailable: Boolean(reference), roadOwnership: { assignedSegments: inventory.segmentIds, unassignedOwners: inventory.unassignedOwners },
-    referenceComplete: reference?.complete === true, physicalCrossings: physicalScores,
-    crossingGridUnit: "canonical grid; a physical crossing may contain multiple grids",
-    emission: meshReport.emission.summary, masks: { leans: leanSource, trees: "data/trees.json", shadows: "lib/poleShadow.mjs SUN" },
-    tolerances: TOLERANCES, byTier, overTolerance: overList.length, parkingLots: lots, parkingRows: rows, objects: scored,
-  };
-  report.roadAcceptance = roadAcceptance(report);
   writeFileSync(join(outDir, "objects.json"), `${JSON.stringify(report, null, 1)}\n`);
   const row = (r) => `| ${r.id} | ${r.kind} | ${r.tier} | ${r.near ?? ""} | ${r.residual_m ?? ""} | ${r.iou ?? ""} | ${r.support ?? ""} | ${r.occluded ? "yes" : ""} | ${r.over ? "OVER" : ""} |`;
   const head = "| id | kind | tier | near | residual m | IoU | support | occluded | over |\n|---|---|---|---|---|---|---|---|---|";
@@ -618,6 +505,7 @@ try {
   const visibleSummary = visibleGround ? aggregateVisible(visibleResults) : null;
   const report = {
     generatedAt: new Date().toISOString(),
+    identity,
     url,
     sheet: DEFAULT_SHEET.split("/").pop(),
     clock,
@@ -654,3 +542,6 @@ try {
   rmSync(profile, { recursive: true, force: true });
 }
 process.exit(exitCode);
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await main();

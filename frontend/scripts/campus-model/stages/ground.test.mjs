@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { sceneToTm, tmToScene } from "../../../src/geo/epsg5186.mjs";
-import { loadParcels } from "../lib/parcels.mjs";
+import { loadParcels, retainPaint } from "../lib/parcels.mjs";
 import { SURFACE_CLASS } from "../lib/surfaceClass.mjs";
 import { validate } from "../lib/schemas.mjs";
 import { planKerbs } from "./kerbs.mjs";
@@ -23,6 +23,20 @@ const doc = {
   kerbLines: [{ ufid: "U2", surface: "existing", line: tm([[125, -215], [125, -175]]) }],
   paintExcluded: [],
 };
+
+test("reviewed paint suppression excludes only the named pieces without excluding their ground parcel", () => {
+  const suppressed = { id: "row/back", reason: "edge hidden by canopy", refs: ["review/row"] };
+  const s = parcelSurfaces({ ...doc, paintExcluded: ["old"], paintSuppressed: [suppressed] });
+  const ring = [[[0, 0], [1, 0], [0, 1]]];
+  const pieces = [
+    { partId: "row/back", kind: "line", rings: ring },
+    { partId: "row/front", kind: "line", rings: ring },
+    { id: "legacy", partId: "row/back", kind: "line", rings: ring },
+  ];
+  assert.deepEqual(retainPaint(pieces, s, p => p), pieces.slice(1));
+  assert.deepEqual(s.paintExcludedDetail, []);
+  assert.deepEqual(s.parcels, doc.parcels);
+});
 
 test("parcelSurfaces: layers in file order, the walkway parcel ring closed as a kerb line, open kerbLines kept", () => {
   const s = parcelSurfaces(doc);
