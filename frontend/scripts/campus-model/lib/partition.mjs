@@ -4,6 +4,8 @@
 // its piece that no earlier claim in the same terrain triangle covers (convex difference), so no two ground triangles
 // share area and every surface lies on the terrain with no stacking lift.
 import { ringArea } from "./geometry.mjs";
+import { EXTENT } from "./frame.mjs";
+import { tmToScene } from "../../../src/geo/epsg5186.mjs";
 
 const MIN_AREA = 1e-8;
 
@@ -212,6 +214,19 @@ export class TinPartition extends GroundPartition {
         }
       }
     }
+    // The D4 repair box is the user-supplied EPSG:5186 scope, not a survey
+    // estimate. Inner ground already owns EXTENT; reserve that footprint in
+    // the outer TIN too, so its inward crack-covering skirt cannot draw a
+    // second surface there. Outside D4 the existing ring is untouched.
+    let inner = [
+      [243422.55, 263767.58], [243591.87, 263767.58],
+      [243591.87, 263991.06], [243422.55, 263991.06],
+    ].map(([e, n]) => tmToScene(e, n));
+    for (const f of [
+      p => p[0] - EXTENT.minX, p => EXTENT.maxX - p[0],
+      p => p[1] - EXTENT.minZ, p => EXTENT.maxZ - p[1],
+    ]) inner = splitByLine(inner, f).inside;
+    this.claimOnTin(inner);
   }
 
   // The TIN triangles whose box meets `box`.

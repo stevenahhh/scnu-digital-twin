@@ -1334,11 +1334,12 @@ B.bike_rack = (ctx, o) => {
   const hw = r.halfWidth;
   const h = o.heightM;
   const translucent = /translucent/.test(o.p.note ?? "");
+  const postColour = paintOf(o.p.postColour, C.metal, o.id);
   const n = Math.max(1, Math.round((2 * hl - 0.4) / 3));
   for (let k = 0; k <= n; k += 1) {
     const s = -hl + 0.2 + ((2 * hl - 0.4) * k) / n;
-    ctx.solid.box(f, [s - 0.05, s + 0.05], [-hw + 0.15, -hw + 0.25], [-0.1, h], C.metal);
-    ctx.solid.box(f, [s - 0.05, s + 0.05], [hw - 0.25, hw - 0.15], [-0.1, h - 0.4], C.metal);
+    ctx.solid.box(f, [s - 0.05, s + 0.05], [-hw + 0.15, -hw + 0.25], [-0.1, h], postColour);
+    ctx.solid.box(f, [s - 0.05, s + 0.05], [hw - 0.25, hw - 0.15], [-0.1, h - 0.4], postColour);
   }
   const roof = [local(f, -hl, -hw, h + 0.05), local(f, hl, -hw, h + 0.05), local(f, hl, hw, h - 0.35), local(f, -hl, hw, h - 0.35)];
   if (translucent) ctx.glass.face(roof, [0, 1, 0], GLASS.canopy);
@@ -1732,12 +1733,27 @@ const STREET = { bollardM: 0.9, standM: 0.75, standSpacingM: 0.9, railM: 0.9 };
 const rowPoints = (o, spacingM) => (o.point ? [o.point] : along(o.line, M(o.p.spacing_m ?? spacingM)).map(({ p }) => p));
 B.bollard = (ctx, o) => {
   const h = o.p.height_m ?? STREET.bollardM;
+  const radius = (o.p.diameter_m ?? 0.18) / 2;
   const paint = paintOf(o.p.colour, C.concreteDark, o.id);
   for (const p of rowPoints(o, 1.5)) {
     const g = ctx.groundAt(...p);
-    ctx.solid.pole(p, g - M(0.05), g + M(h), 0.09, 0.09, paint, { sides: 8 });
-    if (o.p.band) ctx.solid.pole(p, g + M(h - 0.2), g + M(h - 0.1), 0.095, 0.095, paintOf(o.p.band, C.white, o.id), { sides: 8, cap: false });
+    ctx.solid.pole(p, g - M(0.05), g + M(h), radius, radius, paint, { sides: 8 });
+    if (o.p.band) ctx.solid.pole(p, g + M(h - 0.2), g + M(h - 0.1), radius + 0.005, radius + 0.005, paintOf(o.p.band, C.white, o.id), { sides: 8, cap: false });
   }
+};
+B.manhole = (ctx, o) => {
+  const ring = disc(o.point, M(o.p.diameter_m / 2), 16);
+  ctx.solid.prism(ring, (x, z) => ctx.groundAt(x, z),
+    (x, z) => ctx.groundAt(x, z) + M(o.p.height_m), rgb(o.p.colour));
+};
+B.storm_grate = (ctx, o) => {
+  // The seed leaves bearing unresolved. Keep that uncertainty; this is the
+  // recorded flush rectangular cover, not an invented kerb-aligned drain.
+  const [x, z] = o.point;
+  const l = M(o.p.length_m) / 2, w = M(o.p.width_m) / 2;
+  const ring = [[x-l,z-w],[x+l,z-w],[x+l,z+w],[x-l,z+w]];
+  ctx.solid.prism(ring, (px, pz) => ctx.groundAt(px, pz),
+    (px, pz) => ctx.groundAt(px, pz) + M(o.p.height_m), rgb(o.p.colour));
 };
 // Open bike or PM stands (no roof): an inverted U across the line every spacing_m.
 B.bike_stands = (ctx, o) => {

@@ -18,7 +18,9 @@ import { MeshData } from "../lib/meshData.mjs";
 import { SURFACE_CLASS } from "../lib/surfaceClass.mjs";
 import { loadParcels, parcelLayers, parcelOutlines } from "../lib/parcels.mjs";
 import { EDGE_STONE_M, PRECEDENCE, PX, labelRaster } from "../network/surfaces.mjs";
-import { GRASS_TILE, naturalGroundMaterial, planarTileUv } from "./surfaces.mjs";
+import { GRASS_TILE, groundTile, naturalGroundMaterial, planarTileUv, tileMaterial } from "./surfaces.mjs";
+import { d4NaturalTile, splitD4GroundPolygon } from "../lib/landcover.mjs";
+import { splitByLine } from "../lib/partition.mjs";
 
 const WIDTH = EXTENT.maxX - EXTENT.minX;
 const DEPTH = EXTENT.maxZ - EXTENT.minZ;
@@ -141,6 +143,13 @@ export async function buildGround({ glb, inputs, parcelsDoc = loadParcels() }) {
   }
   const natural = await naturalGroundMaterial(glb, landcoverAt, aoTexture);
   const groundMaterial = natural.material;
+  const d4Materials = new Map();
+  for (const [cls, name] of [["d4-grass", "Ground_Grass_D4"], ["d4-soil", "Ground_Soil_D4"]]) {
+    d4Materials.set(cls, {
+      material: await tileMaterial(glb, { name, cls, rank: 0, ao: aoTexture }),
+      size: groundTile(cls).entry.physicalSizeM,
+    });
+  }
   console.log(`ground: natural Topography ground, ${natural.width}x${natural.height} land-cover colour map (0.5 m/texel) under the ${GRASS_TILE} CC0 relief tile (${natural.tileSize} m); no photo pixels in the ground material`);
   glb.json.asset.extras = {
     ...glb.json.asset.extras,
@@ -159,16 +168,20 @@ export async function buildGround({ glb, inputs, parcelsDoc = loadParcels() }) {
   const surface = topographySurface(heightAt);
   const buildTopography = (claim) => {
     const topographyChildren = [];
+    const d4NaturalChildren = [];
     let triangles = 0;
     for (let cz = EXTENT.minZ; cz < EXTENT.maxZ; cz += CHUNK) {
       for (let cx = EXTENT.minX; cx < EXTENT.maxX; cx += CHUNK) {
-        const data = new MeshData();
-        const vertexOf = new Map();
-        const vertex = ([x, z]) => {
+        const groups = new Map([
+          ["outside", { data: new MeshData(), vertexOf: new Map(), material: groundMaterial, size: natural.tileSize }],
+          ...[...d4Materials].map(([cls, tile]) => [cls, { data: new MeshData(), vertexOf: new Map(), ...tile }]),
+        ]);
+        const vertex = ([x, z], group) => {
+          const { data, vertexOf, size } = group;
           const key = `${Math.round(x * 1e5)},${Math.round(z * 1e5)}`;
           let i = vertexOf.get(key);
           if (i === undefined) {
-            i = data.vertex([x, surface.height(x, z), z], surface.normal(x, z), planarTileUv(x, z, natural.tileSize));
+            i = data.vertex([x, surface.height(x, z), z], surface.normal(x, z), planarTileUv(x, z, size));
             vertexOf.set(key, i);
           }
           return i;
@@ -179,31 +192,60 @@ export async function buildGround({ glb, inputs, parcelsDoc = loadParcels() }) {
             // the two triangles of the cell, as topographySurface splits it (a c b and b c d)
             for (const tri of [[[x, z], [x, z1], [x1, z]], [[x1, z], [x, z1], [x1, z1]]]) {
               for (const part of claim(tri)) {
-                for (let k = 1; k + 1 < part.length; k += 1) {
-                  const tri = [vertex(part[0]), vertex(part[k]), vertex(part[k + 1])];
-                  if (tri[0] === tri[1] || tri[1] === tri[2] || tri[0] === tri[2]) continue;
-                  data.indices.push(...tri);
-                  triangles += 1;
+                const { inside, outside } = splitD4GroundPolygon(part);
+                const pieces = outside.map(polygon => ({ polygon, cls: "outside" }));
+                if (inside) {
+                  // landcoverAt reads one class per scene-unit cell. Split at
+                  // those same boundaries before assigning a tiled material.
+                  let cells = [inside];
+                  for (const [axis, origin] of [[0, EXTENT.minX], [1, EXTENT.minZ]]) {
+                    const low = Math.min(...inside.map(p => p[axis]));
+                    const high = Math.max(...inside.map(p => p[axis]));
+                    for (let edge = origin + Math.floor(low - origin) + 1; edge < high; edge++) {
+                      cells = cells.flatMap(polygon => {
+                        const halves = splitByLine(polygon, p => p[axis] - edge);
+                        return [halves.inside, halves.outside].filter(Boolean);
+                      });
+                    }
+                  }
+                  for (const polygon of cells) {
+                    const centre = [0, 1].map(axis => polygon.reduce((sum, p) => sum + p[axis], 0) / polygon.length);
+                    pieces.push({ polygon, cls: d4NaturalTile(landcoverAt(...centre)) });
+                  }
+                }
+                for (const { polygon, cls } of pieces) {
+                  const group = groups.get(cls);
+                  for (let k = 1; k + 1 < polygon.length; k += 1) {
+                    const tri = [vertex(polygon[0], group), vertex(polygon[k], group), vertex(polygon[k + 1], group)];
+                    if (tri[0] === tri[1] || tri[1] === tri[2] || tri[0] === tri[2]) continue;
+                    group.data.indices.push(...tri);
+                    triangles += 1;
+                  }
                 }
               }
             }
           }
         }
-        if (!data.indices.length) continue;
-        const name = `Topography_${topographyChildren.length}`;
-        const primitive = data.toPrimitive(groundMaterial);
-        const mesh = glb.addMesh(name, [primitive]);
-        // GlbBuilder.addMesh writes TEXCOORD_0 only; the planar AO coordinate is added here.
-        const uv1 = new Float32Array((primitive.positions.length / 3) * 2);
-        for (let v = 0; v < uv1.length / 2; v += 1) {
-          uv1[v * 2] = (primitive.positions[v * 3] - EXTENT.minX) / WIDTH;
-          uv1[v * 2 + 1] = (primitive.positions[v * 3 + 2] - EXTENT.minZ) / DEPTH;
+        // Topography_* chunks hold exactly one primitive in the shared Ground material (pack.mjs joins them);
+        // the D4 tiled natural ground gets its own Ground_D4Natural_* nodes instead.
+        for (const [cls, group] of groups) {
+          if (!group.data.indices.length) continue;
+          const primitive = group.data.toPrimitive(group.material);
+          const name = cls === "outside" ? `Topography_${topographyChildren.length}` : `Ground_D4Natural_${cls}_${d4NaturalChildren.length}`;
+          const mesh = glb.addMesh(name, [primitive]);
+          // GlbBuilder.addMesh writes TEXCOORD_0 only; the planar AO coordinate is added here.
+          const uv1 = new Float32Array((primitive.positions.length / 3) * 2);
+          for (let v = 0; v < uv1.length / 2; v += 1) {
+            uv1[v * 2] = (primitive.positions[v * 3] - EXTENT.minX) / WIDTH;
+            uv1[v * 2 + 1] = (primitive.positions[v * 3 + 2] - EXTENT.minZ) / DEPTH;
+          }
+          glb.json.meshes[mesh].primitives[0].attributes.TEXCOORD_1 = glb.addAccessor(uv1, "VEC2");
+          (cls === "outside" ? topographyChildren : d4NaturalChildren).push(glb.addNode({ name, mesh }));
         }
-        glb.json.meshes[mesh].primitives[0].attributes.TEXCOORD_1 = glb.addAccessor(uv1, "VEC2");
-        topographyChildren.push(glb.addNode({ name, mesh }));
       }
     }
     glb.addNode({ name: "Topography", children: topographyChildren, extras: { naturalGround: true, note: "natural ground only: roads, walkways, lots and markings are cut out of it (Ground_*, Road_Markings)" } }, { root: true });
+    if (d4NaturalChildren.length) glb.addNode({ name: "Ground_D4Natural", children: d4NaturalChildren, extras: { naturalGround: true, scope: { buildingId: "BLD_D4" }, note: "D4 natural ground in tiled CC0 grass/soil materials (estimated), cut from the same partition as Topography" } }, { root: true });
     return { chunks: topographyChildren.length, triangles };
   };
   return {

@@ -9,6 +9,8 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { EXTENT } from "./lib/frame.mjs";
+import { sceneToTm } from "../../src/geo/epsg5186.mjs";
+import { D4_MATERIAL_SCOPE } from "./lib/landcover.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FILE = process.argv[2] && !process.argv[2].startsWith("--") ? process.argv[2] : path.join(HERE, ".build", "campus-v2.raw.glb");
@@ -94,6 +96,7 @@ const inside = ([ax, az, bx, bz, cx, cz], x, z) => {
 let samples = 0;
 let gaps = 0;
 let overlaps = 0;
+const d4 = { samples: 0, overlaps: 0, gaps: 0 };
 const overlapAt = [];
 const gapAt = [];
 const pairs = {};
@@ -108,6 +111,13 @@ for (let z = BOUNDS[1] + STEP / 2; z < BOUNDS[3]; z += STEP) {
     const owners = [];
     for (const k of cell) if (inside(triangles[k], sx, sz)) { hits += 1; owners.push(meshOf[k]); }
     samples += 1;
+    const [east, north] = sceneToTm(sx, sz);
+    const [west, south, eastMax, northMax] = D4_MATERIAL_SCOPE.bbox;
+    if (east >= west && east <= eastMax && north >= south && north <= northMax) {
+      d4.samples++;
+      if (hits > 1) d4.overlaps++;
+      if (hits === 0) d4.gaps++;
+    }
     const inExtent = sx >= EXTENT.minX && sx <= EXTENT.maxX && sz >= EXTENT.minZ && sz <= EXTENT.maxZ;
     if (hits === 0 && (!ALL || inExtent)) {
       gaps += 1;
@@ -129,6 +139,8 @@ console.log(`samples ${samples}: overlap ${overlaps} (${(share(overlaps) * 100).
 console.log(`overlap pairs: ${JSON.stringify(Object.entries(pairs).sort((a, b) => b[1] - a[1]).slice(0, 12))}`);
 if (gapAt.length) console.log(`first gaps [x, z]: ${JSON.stringify(gapAt)}`);
 if (overlapAt.length) console.log(`first overlaps [x, z, triangles]: ${JSON.stringify(overlapAt)}`);
-const ok = share(overlaps) <= MAX_SHARE && share(gaps) <= MAX_SHARE;
+console.log(`D4 GROUND ${JSON.stringify(d4)}`);
+const ok = share(overlaps) <= MAX_SHARE && share(gaps) <= MAX_SHARE &&
+  d4.samples > 0 && d4.overlaps === 0 && d4.gaps === 0;
 console.log(ok ? "GROUND PARTITION OK" : "GROUND PARTITION FAIL");
 process.exit(ok ? 0 : 1);

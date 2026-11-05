@@ -13,6 +13,11 @@ export function validateEntrances(records, footprints) {
     if (!Number.isInteger(r.doors?.leaves) || r.doors.leaves < 1) fail("positive door count required");
     if (!/^#[0-9a-f]{6}$/i.test(r.doors.frame)) fail("door frame colour required");
     if (typeof r.doors.glazed !== "boolean") fail("door glazing must be boolean");
+    for (const key of ["heightM", "frameWidthM"]) {
+      if (r.doors[key] !== undefined && (!Number.isFinite(r.doors[key]) || r.doors[key] <= 0)) fail(`invalid doors.${key}`);
+    }
+    if (r.doors.glass !== undefined && !/^#[0-9a-f]{6}$/i.test(r.doors.glass)) fail("invalid door glass colour");
+    if (r.bankHeightM !== undefined && (!Number.isFinite(r.bankHeightM) || r.bankHeightM < (r.doors.heightM ?? 2.2))) fail("bank below door leaves");
     if (!Array.isArray(r.evidence?.refs) || !r.evidence.refs.length || !/^T[0-4]$/.test(r.evidence.tier)) fail("evidence required");
     if (typeof r.estimated !== "boolean" || (r.evidence.tier === "T4" && !r.estimated)) fail("T4 requires estimated:true");
     if (!r.estimated && !["T0","T1","T2"].includes(r.evidence.tier)) fail("estimated:false requires T0-T2 evidence");
@@ -67,12 +72,18 @@ export function buildEntrances({ glb, records, footprints, groundAt }) {
       }
     }
     const doorBase=y+metres(r.steps ? r.steps.risers*(r.steps.riseM??0.15) : 0);
+    const leafHeight = r.doors.heightM ?? 2.2;
+    const frameWidth = r.doors.frameWidthM ?? 0.06;
     for(let i=0;i<r.doors.leaves;i++) {
       const a=-r.widthM/2+r.widthM*i/r.doors.leaves, b=-r.widthM/2+r.widthM*(i+1)/r.doors.leaves;
       const ring=[[a,0.02],[b,0.02],[b,0.07],[a,0.07]].map(([s,t])=>point(s,t));
-      doors.prism(ring,doorBase,doorBase+metres(2.2),rgb(r.doors.frame));
-      const pane=[[a+0.06,0.071],[b-0.06,0.071],[b-0.06,0.08],[a+0.06,0.08]].map(([s,t])=>point(s,t));
-      if(r.doors.glazed) doors.prism(pane,doorBase+metres(0.12),doorBase+metres(2.12),rgb("#52636a"));
+      doors.prism(ring,doorBase,doorBase+metres(leafHeight),rgb(r.doors.frame));
+      const pane=[[a+frameWidth,0.071],[b-frameWidth,0.071],[b-frameWidth,0.08],[a+frameWidth,0.08]].map(([s,t])=>point(s,t));
+      if(r.doors.glazed) doors.prism(pane,doorBase+metres(0.12),doorBase+metres(leafHeight-0.08),rgb(r.doors.glass ?? "#52636a"));
+      if (r.bankHeightM > leafHeight) {
+        doors.prism(ring, doorBase+metres(leafHeight), doorBase+metres(r.bankHeightM), rgb(r.doors.frame));
+        if (r.doors.glazed) doors.prism(pane, doorBase+metres(leafHeight+frameWidth), doorBase+metres(r.bankHeightM-frameWidth), rgb(r.doors.glass ?? "#52636a"));
+      }
     }
     glb.addNode({name:`${r.id}/doors`,mesh:glb.addMesh(`${r.id}/doors`,[doors.toPrimitive(material)]),extras:{estimated:true}}, {root:true});
   }

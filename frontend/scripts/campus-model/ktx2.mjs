@@ -28,9 +28,15 @@ export function textureSlots(document, texture) {
 }
 
 // basisu arguments for a texture used in `slots` (pure; ktx2.test.mjs checks it).
-export function basisuArgs(slots, { normals = KTX2_DEFAULTS.normals } = {}) {
+export function basisuArgs(slots, { normals = KTX2_DEFAULTS.normals, d4 = false } = {}) {
   const args = ["-ktx2", "-mipmap"];
   const normal = slots.includes("normalTexture");
+  // D-04/D-49: the D4 atlas and CC0 tiles keep their native detail. Scope is
+  // resolved from material ownership, never from a campus-wide option. Normal maps
+  // stay UASTC; the rest is max-quality ETC1S, since all-UASTC D4 maps pushed
+  // campus-v2.glb to 162 MB, past GitHub's 100 MB file limit.
+  if (d4 && normal) return [...args, "-uastc", "-uastc_rdo_l", "2", "-linear", "-normal_map"];
+  if (d4) return [...args, "-etc1s", "-q", "255", ...(!slots.every(slot => COLOUR_SLOTS.has(slot)) ? ["-linear"] : [])];
   if (normal && normals === "uastc") return [...args, "-uastc", "-uastc_rdo_l", "2", "-linear", "-normal_map"];
   args.push("-etc1s");
   if (!slots.every((slot) => COLOUR_SLOTS.has(slot))) args.push("-linear");
@@ -54,7 +60,11 @@ export async function compressTextures(document, options = {}) {
       const png = path.join(work, `t${index}.png`);
       const ktx = path.join(work, `t${index}.ktx2`);
       writeFileSync(png, await sharp(Buffer.from(texture.getImage())).png().toBuffer());
-      const args = basisuArgs(slots, options);
+      const owners = document.getGraph().listParentEdges(texture)
+        .map(edge => edge.getParent()).filter(parent => parent.propertyType === "Material");
+      const d4 = owners.length > 0 && owners.every(material =>
+        material.getExtras().scope?.buildingId === "BLD_D4" || material.getName().endsWith("_D4"));
+      const args = basisuArgs(slots, { ...options, d4 });
       const result = spawnSync("basisu", [...args, "-file", png, "-output_file", ktx], { encoding: "utf8" });
       if (result.status !== 0) throw new Error(`ktx2: basisu failed on texture ${index} (${slots.join(",")}): ${(result.stdout ?? "").slice(-300)}`);
       const bytes = new Uint8Array(readFileSync(ktx));

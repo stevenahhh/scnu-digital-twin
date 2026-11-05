@@ -85,6 +85,18 @@ test("street furniture reaches its standard height; bollards and stands repeat a
   near(position.max[1]/M(1),3.2,"canopy top");
   near(position.min[1]/M(1),-0.05,"posts reach into the ground");
 });
+test("D4 flush covers conform to grade and a stub uses its recorded diameter", () => {
+  const cover = build("manhole", { point: [0, 0] }, { diameter_m: 0.45, height_m: 0.01, colour: "#444a48" });
+  near(Math.max(...ys(cover)), 0.01, "cover top");
+  const grate = build("storm_grate", { point: [0, 0] }, { length_m: 0.5, width_m: 0.3, height_m: 0.01, colour: "#444a48" });
+  near(Math.max(...ys(grate)), 0.01, "grate top");
+  const stub = build("bollard", { point: [0, 0] }, { diameter_m: 0.15, height_m: 0.3 });
+  // Kit.pole rotates its octagon by half a segment; the seed gives the
+  // circumscribed diameter, not the smaller axis-aligned bounding box.
+  const p = stub.solid.mesh.positions;
+  const radii = p.filter((_, i) => i % 3 === 0).map((x, i) => Math.hypot(x, p[i * 3 + 2]));
+  near(2 * Math.max(...radii) / M(1), 0.15, "stub diameter");
+});
 
 test("hedge lettering: one stroke set per character, tops to the left of the baseline; LED screen panel", () => {
   const strokes = hedgeTextStrokes(line(20), "진리 정의", { heightM: 3, widthM: 3, gapM: 0.5 });

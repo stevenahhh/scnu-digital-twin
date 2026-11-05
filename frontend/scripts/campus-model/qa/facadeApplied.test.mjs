@@ -31,5 +31,12 @@ test("every curated wall is actually applied in the generated GLB", () => {
     { encoding: "utf8", timeout: 30000, maxBuffer: 8 * 1024 * 1024 });
   assert.ifError(run.error);
   assert.equal(run.status, 0, `${run.stdout}\n${run.stderr}`);
-  assert.deepEqual(JSON.parse(run.stdout).unappliedWalls, []);
+  const report = JSON.parse(run.stdout);
+  assert.deepEqual(report.unappliedWalls, []);
+  // SYNTHESIS section 3 and l2-facade.md: only E3 lies on an exterior atlas plane.
+  assert.deepEqual(report.entrances.filter(e => e.building === "BLD_D4")
+    .map(e => [e.id, e.status]).sort(), [
+    ["ENT_D4_E1", "ungridded"], ["ENT_D4_E2", "ungridded"],
+    ["ENT_D4_E3", "aligned"], ["ENT_D4_E4", "ungridded"],
+  ]);
 });

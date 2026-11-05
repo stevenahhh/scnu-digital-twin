@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
-import { entranceGeometry, validateEntrances } from "./entrances.mjs";
+import { buildEntrances, entranceGeometry, validateEntrances } from "./entrances.mjs";
+import { GlbBuilder } from "../lib/glb.mjs";
+import { metres } from "../lib/frame.mjs";
 import { wallsOf } from "../lib/anchors.mjs";
 
 const fp = { polygons: [[[[0,0],[0,10],[20,10],[20,0]]]] };
@@ -31,6 +33,17 @@ test("an entrance on a wall facing away from every station stays estimated", () 
   const r = {...entry(),estimated:false,evidence:{tier:"T2",refs:["fixture"]}};
   assert.equal(entranceGeometry(r, footprints, [[10,5]]).estimated,true);
   assert.equal(entranceGeometry(r, footprints, [[-10,5]]).estimated,false);
+});
+test("a curated door bank reaches its transom height without generating separate steps", () => {
+  const r = { ...entry(), canopy: null, bankHeightM: 4.2,
+    doors: { ...entry().doors, heightM: 2.2, frameWidthM: 0.06, glass: "#5aa9ab" },
+    stepsRef: "shared-passage" };
+  const glb = new GlbBuilder();
+  buildEntrances({ glb, records: [r], footprints, groundAt: () => 7 });
+  const node = glb.json.nodes.find(n => n.name === "ENT/doors");
+  const position = glb.json.accessors[glb.json.meshes[node.mesh].primitives[0].attributes.POSITION];
+  assert.ok(Math.abs(position.max[1] - (7 + metres(4.2))) < 1e-5);
+  assert.equal(position.min[1], 7);
 });
 test("orphan canopy, invalid door count, missing snapshot and out-of-wall anchors fail", () => {
   const invalid = [
