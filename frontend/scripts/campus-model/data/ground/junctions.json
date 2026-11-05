@@ -15629,7 +15629,13 @@
             "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0030"
           ],
           "reason": "JA_577db52b7ee9c7e9: CW crossing CW_024; EPSG:5186 (243556.58, 263873.055). 사진의 CW crossing CW_024 표식은 RD_066 그룹에 놓였으나 독립 교차로 폴리곤 대응은 없다. 부모 RS_577db52b7ee9c7e9의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_039는 사진 중심에서 16.681 m, 연결 도로는 RD_066이며 대안 노드는 ND_039 16.681 m, ND_020 43.422 m, ND_037 45.542 m이다. 동일 RD만 연결하는 그래프 분할점이므로 실제 교차로 경계와 일치한다고 할 수 없다.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "crossingReview": {
+            "retainedId": "CW_024",
+            "duplicateId": "CW_025",
+            "barCount": null,
+            "source": "ISSUES.md D-52; existing CW_025 suppression retained; cited h-ortho crop shows junction, not the full CW_024 crossing, so seven-bar seed is retained without confirming count (estimated)"
+          }
         }
       },
       {
@@ -16374,28 +16380,43 @@
         "humps": [],
         "signalArms": [],
         "yieldTriangles": [],
-        "guideLines": [],
-        "symbols": [
+        "guideLines": [
           {
-            "atM": 15.000349768521478,
-            "lane": 0,
+            "id": "RZ-015-outer",
+            "points": [
+              [
+                243558.139,
+                263834.207
+              ],
+              [
+                243552.06,
+                263828.9
+              ],
+              [
+                243556.89,
+                263826.12
+              ],
+              [
+                243558.139,
+                263834.207
+              ]
+            ],
             "colour": "yellow",
-            "centered": true,
-            "type": "chevron",
-            "lengthM": 0.2391895111303982,
-            "widthM": 8.317786561398878,
-            "lineWidthM": 0.35420718084454617
+            "widthM": 0.4,
+            "source": "NGII 2025 25 cm; .omo/ulw-research/d4-gt/waves/l-ortho-hires.md #15-20; SYNTHESIS.md section 5.1 (estimated)"
           }
         ],
+        "symbols": [],
         "areas": [],
         "evidence": {
           "tier": "T1",
           "refs": [
-            "MX00297"
+            "MX00297",
+            "NGII 2025 25 cm; .omo/ulw-research/d4-gt/waves/l-ortho-hires.md #15-20; SYNTHESIS.md section 5.1 (estimated)"
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "reason": "RZ-015: replace evidence-fragment glyphs with georeferenced closed safety-zone outlines; no observed stop line, yield marking, hump or junction-interior hatching. NGII 2025 25 cm; .omo/ulw-research/d4-gt/waves/l-ortho-hires.md #15-20; SYNTHESIS.md section 5.1 (estimated)",
         "curation": {
           "verified": false,
           "refs": [
@@ -16416,7 +16437,40 @@
             "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00297"
           ],
           "reason": "JA_11b1ebebbfd17284: MX00297; EPSG:5186 (243557.456, 263830.18). 사진의 MX00297 표식은 RD_066 그룹에 놓였으나 RZ-015(공대3호관삼거리) 영역 지분 1과 ND 후보 ND_020까지는 지지된다. 부모 RS_11b1ebebbfd17284의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_020는 사진 중심에서 1.495 m, 연결 도로는 RD_069/RD_075이며 대안 노드는 ND_020 1.495 m, ND_039 27.797 m, ND_046 45.011 m이다. 이 연결 목록만으로 해당 표식이 어느 진입부 ND에 속하는지 결정되지 않는다.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "symbols": [],
+            "guideLines": [
+              {
+                "id": "RZ-015-outer",
+                "points": [
+                  [
+                    243558.139,
+                    263834.207
+                  ],
+                  [
+                    243552.06,
+                    263828.9
+                  ],
+                  [
+                    243556.89,
+                    263826.12
+                  ],
+                  [
+                    243558.139,
+                    263834.207
+                  ]
+                ],
+                "colour": "yellow",
+                "widthM": 0.4,
+                "source": "NGII 2025 25 cm; .omo/ulw-research/d4-gt/waves/l-ortho-hires.md #15-20; SYNTHESIS.md section 5.1 (estimated)"
+              }
+            ],
+            "refs": [
+              "NGII 2025 25 cm; .omo/ulw-research/d4-gt/waves/l-ortho-hires.md #15-20; SYNTHESIS.md section 5.1 (estimated)"
+            ],
+            "reason": "D4 ground-truth control edit; replay through fit/roadCuration.mjs after integration; ownership flags remain false (estimated)"
+          }
         }
       },
       {
@@ -16433,28 +16487,35 @@
         "humps": [],
         "signalArms": [],
         "yieldTriangles": [],
-        "guideLines": [],
-        "symbols": [
+        "guideLines": [
           {
-            "atM": 15.000349768472905,
-            "lane": 0,
+            "id": "RZ-015-nw-arm",
+            "points": [
+              [
+                243555.364,
+                263839.204
+              ],
+              [
+                243547.55,
+                263831.719
+              ]
+            ],
             "colour": "yellow",
-            "centered": true,
-            "type": "chevron",
-            "lengthM": 0.2534779672765178,
-            "widthM": 7.855383676383748,
-            "lineWidthM": 0.3186290564026348
+            "widthM": 0.15,
+            "source": "SYNTHESIS.md C6; l-ortho-hires.md #17 fitted endpoints; 0.15 m nominal stripe width from unresolved subpixel paint width (estimated)"
           }
         ],
+        "symbols": [],
         "areas": [],
         "evidence": {
           "tier": "T1",
           "refs": [
-            "MX00298"
+            "MX00298",
+            "NGII 2025 25 cm; .omo/ulw-research/d4-gt/waves/l-ortho-hires.md #15-20; SYNTHESIS.md section 5.1 (estimated)"
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "reason": "RZ-015: replace evidence-fragment glyphs with georeferenced closed safety-zone outlines; no observed stop line, yield marking, hump or junction-interior hatching. NGII 2025 25 cm; .omo/ulw-research/d4-gt/waves/l-ortho-hires.md #15-20; SYNTHESIS.md section 5.1 (estimated)",
         "curation": {
           "verified": false,
           "refs": [
@@ -16475,7 +16536,32 @@
             "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00298"
           ],
           "reason": "JA_7cf02b0962f888bc: MX00298; EPSG:5186 (243554.959, 263831.375). 사진의 MX00298 표식은 RD_066 그룹에 놓였으나 RZ-015(공대3호관삼거리) 영역 지분 1과 ND 후보 ND_020까지는 지지된다. 부모 RS_7cf02b0962f888bc의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_020는 사진 중심에서 2.06 m, 연결 도로는 RD_069/RD_075이며 대안 노드는 ND_020 2.06 m, ND_039 27.216 m, ND_046 47.651 m이다. 이 연결 목록만으로 해당 표식이 어느 진입부 ND에 속하는지 결정되지 않는다.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "symbols": [],
+            "guideLines": [
+              {
+                "id": "RZ-015-nw-arm",
+                "points": [
+                  [
+                    243555.364,
+                    263839.204
+                  ],
+                  [
+                    243547.55,
+                    263831.719
+                  ]
+                ],
+                "colour": "yellow",
+                "widthM": 0.15,
+                "source": "SYNTHESIS.md C6; l-ortho-hires.md #17 fitted endpoints; 0.15 m nominal stripe width from unresolved subpixel paint width (estimated)"
+              }
+            ],
+            "refs": [
+              "NGII 2025 25 cm; .omo/ulw-research/d4-gt/waves/l-ortho-hires.md #15-20; SYNTHESIS.md section 5.1 (estimated)"
+            ],
+            "reason": "D4 ground-truth control edit; replay through fit/roadCuration.mjs after integration; ownership flags remain false (estimated)"
+          }
         }
       },
       {
@@ -16493,27 +16579,17 @@
         "signalArms": [],
         "yieldTriangles": [],
         "guideLines": [],
-        "symbols": [
-          {
-            "atM": 15.000349768515026,
-            "lane": 0,
-            "colour": "yellow",
-            "centered": true,
-            "type": "chevron",
-            "lengthM": 0.25704170797578535,
-            "widthM": 4.456383804816259,
-            "lineWidthM": 0.30366954090666726
-          }
-        ],
+        "symbols": [],
         "areas": [],
         "evidence": {
           "tier": "T1",
           "refs": [
-            "MX00299"
+            "MX00299",
+            "NGII 2025 25 cm; .omo/ulw-research/d4-gt/waves/l-ortho-hires.md #15-20; SYNTHESIS.md section 5.1 (estimated)"
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "reason": "RZ-015: replace evidence-fragment glyphs with georeferenced closed safety-zone outlines; no observed stop line, yield marking, hump or junction-interior hatching. NGII 2025 25 cm; .omo/ulw-research/d4-gt/waves/l-ortho-hires.md #15-20; SYNTHESIS.md section 5.1 (estimated)",
         "curation": {
           "verified": false,
           "refs": [
@@ -16534,7 +16610,116 @@
             "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00299"
           ],
           "reason": "JA_bd9fbb9f80ee89b2: MX00299; EPSG:5186 (243554.608, 263827.647). 사진의 MX00299 표식은 RD_066 그룹에 놓였으나 RZ-015(공대3호관삼거리) 영역 지분 1과 ND 후보 ND_020까지는 지지된다. 부모 RS_bd9fbb9f80ee89b2의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_020는 사진 중심에서 2.465 m, 연결 도로는 RD_069/RD_075이며 대안 노드는 ND_020 2.465 m, ND_039 30.901 m, ND_046 47.591 m이다. 이 연결 목록만으로 해당 표식이 어느 진입부 ND에 속하는지 결정되지 않는다.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "symbols": [],
+            "guideLines": [],
+            "refs": [
+              "NGII 2025 25 cm; .omo/ulw-research/d4-gt/waves/l-ortho-hires.md #15-20; SYNTHESIS.md section 5.1 (estimated)"
+            ],
+            "reason": "D4 ground-truth control edit; replay through fit/roadCuration.mjs after integration; ownership flags remain false (estimated)",
+            "groundFeatures": [
+              {
+                "id": "RZ-015-nw-kerb",
+                "kind": "kerb",
+                "referenceLine": [
+                  [
+                    243555.364,
+                    263839.204
+                  ],
+                  [
+                    243547.55,
+                    263831.719
+                  ]
+                ],
+                "lateralOffsetM": 0.4,
+                "widthM": 0.2,
+                "heightM": 0.15,
+                "side": "northwest",
+                "source": "l-ortho-hires.md #17; z_junction_plain.png grey line on NW side; offset and section dimensions nominal from existing kerb stage (estimated)"
+              },
+              {
+                "id": "RZ-015-road-edge-kerb",
+                "kind": "kerb",
+                "points": [
+                  [
+                    243508.541,
+                    263822.708
+                  ],
+                  [
+                    243515,
+                    263821.042
+                  ],
+                  [
+                    243521.667,
+                    263820.334
+                  ],
+                  [
+                    243526.667,
+                    263821.667
+                  ],
+                  [
+                    243529.167,
+                    263822.917
+                  ],
+                  [
+                    243536.25,
+                    263824.792
+                  ],
+                  [
+                    243540.416,
+                    263825.625
+                  ]
+                ],
+                "widthM": 0.2,
+                "heightM": 0.15,
+                "source": "SYNTHESIS.md section 4 KB-S1; h-ortho yellow kerb trace; section dimensions nominal from existing kerb stage (estimated)"
+              },
+              {
+                "id": "RZ-015-RP-1",
+                "kind": "steps",
+                "outline": [
+                  [
+                    243543.75,
+                    263829.643
+                  ],
+                  [
+                    243547.143,
+                    263829.642
+                  ],
+                  [
+                    243547.429,
+                    263826.786
+                  ],
+                  [
+                    243544.108,
+                    263826.785
+                  ]
+                ],
+                "downDirection": "southwest",
+                "riserCount": null,
+                "riseM": null,
+                "treadM": null,
+                "nosingColour": "yellow",
+                "source": "SYNTHESIS.md section 4 RP-1; l-ortho-hires.md #19; footprint estimated, riser dimensions unresolved (estimated)"
+              },
+              {
+                "id": "RZ-015-west-hatched-block",
+                "kind": "hatched_block",
+                "boundsTm": [
+                  243543.83,
+                  263827.7,
+                  243547.17,
+                  263830.83
+                ],
+                "paintMaskAreaM2": 4.411,
+                "colour": "yellow",
+                "stripeWidthM": null,
+                "stripePitchM": null,
+                "source": "refs/l-ortho-hires/yellow_components.json component 36; l-ortho-hires.md #18; mask area is not a rectangular footprint; stripe pattern unresolved (estimated)"
+              }
+            ]
+          }
         }
       },
       {
@@ -16551,28 +16736,43 @@
         "humps": [],
         "signalArms": [],
         "yieldTriangles": [],
-        "guideLines": [],
-        "symbols": [
+        "guideLines": [
           {
-            "atM": 15.00034976849114,
-            "lane": 0,
+            "id": "RZ-015-inner",
+            "points": [
+              [
+                243556.406,
+                263830.999
+              ],
+              [
+                243554.247,
+                263829.295
+              ],
+              [
+                243555.96,
+                263828.225
+              ],
+              [
+                243556.406,
+                263830.999
+              ]
+            ],
             "colour": "yellow",
-            "centered": true,
-            "type": "triangle",
-            "lengthM": 3.126218387392857,
-            "widthM": 2.1298115790969243,
-            "lineWidthM": 0.2618595055619217
+            "widthM": 0.4,
+            "source": "NGII 2025 25 cm; .omo/ulw-research/d4-gt/waves/l-ortho-hires.md #15-20; SYNTHESIS.md section 5.1 (estimated)"
           }
         ],
+        "symbols": [],
         "areas": [],
         "evidence": {
           "tier": "T1",
           "refs": [
-            "MX00300"
+            "MX00300",
+            "NGII 2025 25 cm; .omo/ulw-research/d4-gt/waves/l-ortho-hires.md #15-20; SYNTHESIS.md section 5.1 (estimated)"
           ]
         },
         "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "reason": "RZ-015: replace evidence-fragment glyphs with georeferenced closed safety-zone outlines; no observed stop line, yield marking, hump or junction-interior hatching. NGII 2025 25 cm; .omo/ulw-research/d4-gt/waves/l-ortho-hires.md #15-20; SYNTHESIS.md section 5.1 (estimated)",
         "curation": {
           "verified": false,
           "refs": [
@@ -16593,7 +16793,40 @@
             "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00300"
           ],
           "reason": "JA_3d0ff30ef872303b: MX00300; EPSG:5186 (243555.527, 263829.182). 사진의 MX00300 표식은 RD_066 그룹에 놓였으나 RZ-015(공대3호관삼거리) 영역 지분 1과 ND 후보 ND_020까지는 지지된다. 부모 RS_3d0ff30ef872303b의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_020는 사진 중심에서 0.703 m, 연결 도로는 RD_069/RD_075이며 대안 노드는 ND_020 0.703 m, ND_039 29.184 m, ND_046 46.81 m이다. 이 연결 목록만으로 해당 표식이 어느 진입부 ND에 속하는지 결정되지 않는다.",
-          "dimensionsVerified": false
+          "dimensionsVerified": false,
+          "geometry": {
+            "symbols": [],
+            "guideLines": [
+              {
+                "id": "RZ-015-inner",
+                "points": [
+                  [
+                    243556.406,
+                    263830.999
+                  ],
+                  [
+                    243554.247,
+                    263829.295
+                  ],
+                  [
+                    243555.96,
+                    263828.225
+                  ],
+                  [
+                    243556.406,
+                    263830.999
+                  ]
+                ],
+                "colour": "yellow",
+                "widthM": 0.4,
+                "source": "NGII 2025 25 cm; .omo/ulw-research/d4-gt/waves/l-ortho-hires.md #15-20; SYNTHESIS.md section 5.1 (estimated)"
+              }
+            ],
+            "refs": [
+              "NGII 2025 25 cm; .omo/ulw-research/d4-gt/waves/l-ortho-hires.md #15-20; SYNTHESIS.md section 5.1 (estimated)"
+            ],
+            "reason": "D4 ground-truth control edit; replay through fit/roadCuration.mjs after integration; ownership flags remain false (estimated)"
+          }
         }
       }
     ]

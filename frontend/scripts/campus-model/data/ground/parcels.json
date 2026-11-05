@@ -5485,7 +5485,7 @@
     ],
     [
      243507.364,
-     263933.4398
+     263932.5068
     ]
    ],
    "holes": [],
@@ -5493,15 +5493,16 @@
    "mesh": "Ground_Asphalt",
    "label": 2,
    "source": "road-zone-measured",
-   "source_ref": "road zone 11",
+   "source_ref": "road zone 11; D4 candidate-SZm5X0 paint failures LOT_D4_NORTH_ROADSIDE/R1/D0 and RS_862123dc2482b743/kerb/right/part/0; refs/l-ortho-hires/z_north_end_grid5m.png shows continuous pavement through the north-west bay and yellow kerb. Place the road shoulder and building apron at row-local depth 2.65 m (2.0 m bay plus 0.65 m kerb/shoulder allowance), retaining all other road vertices and the building hole; the prior 2.15 m apron edge left emitted kerb triangles on its boundary (estimated)",
    "evidence": {
-    "tier": "T0",
+    "tier": "T4",
     "refs": [
-     "road zone 11"
+     "D4 candidate-SZm5X0 paint failures LOT_D4_NORTH_ROADSIDE/R1/D0 and RS_862123dc2482b743/kerb/right/part/0; refs/l-ortho-hires/z_north_end_grid5m.png shows continuous pavement through the north-west bay and yellow kerb. Place the road shoulder and building apron at row-local depth 2.65 m (2.0 m bay plus 0.65 m kerb/shoulder allowance), retaining all other road vertices and the building hole; the prior 2.15 m apron edge left emitted kerb triangles on its boundary (estimated)"
     ]
    },
    "paintAllowed": true,
-   "estimated": false,
+   "estimated": true,
+   "curated": "todo 13a",
    "over": [
     "PARCEL_ASPHALT_ROAD_ZONE_10"
    ]
@@ -146829,36 +146830,60 @@
    "class": "plaza",
    "ring": [
     [
-     243523.7499,
-     263883.7502
+     243535,
+     263924
     ],
     [
-     243521.2501,
-     263872.4996
+     243542,
+     263924
     ],
     [
-     243525.6,
-     263871.9002
+     243542,
+     263910
     ],
     [
-     243542.5001,
-     263868.7501
-    ],
-    [
-     243553.0996,
-     263865.6
-    ],
-    [
-     243549.7497,
-     263877.5005
+     243538,
+     263896
     ],
     [
      243548.1003,
      263886.5001
     ],
     [
+     243549.7497,
+     263877.5005
+    ],
+    [
+     243553.0996,
+     263865.6
+    ],
+    [
+     243542.5001,
+     263868.7501
+    ],
+    [
+     243525.6,
+     263871.9002
+    ],
+    [
+     243521.2501,
+     263872.4996
+    ],
+    [
+     243523.7499,
+     263883.7502
+    ],
+    [
      243524.9996,
      263891.9005
+    ],
+    [
+     243531,
+     263910
+    ],
+    [
+     243535,
+     263910
     ]
    ],
    "holes": [],
@@ -146866,11 +146891,11 @@
    "mesh": "Ground_Plaza",
    "label": 1,
    "source": "project-estimated",
-   "source_ref": "paving: VR plaza paving (plaza-paving-vr): scene_d4 f/d: D4 entrance plaza, white speckled pavers with dark grey stripes along the plaza from the road to the steps; outline traced on the NGII 2025 sheet",
+   "source_ref": "paving: VR plaza paving (plaza-paving-vr): scene_d4 f/d: D4 entrance plaza, white speckled pavers with dark grey stripes along the plaza from the road to the steps; outline traced on the NGII 2025 sheet; NGII 2025 sheet 34702020 refs/h-ortho/measurements.json PW-N and refs/h-ortho/ngii2025_25cm_243495_263960_x5_grid.png; refs/h-ortho/ngii2025_25cm_243515_263900_x6_grid.png; SYNTHESIS section 4/C11: flat east plaza, north strip and transition traced at 0.6-1.0 m uncertainty (estimated)",
    "evidence": {
     "tier": "T4",
     "refs": [
-     "paving: VR plaza paving (plaza-paving-vr): scene_d4 f/d: D4 entrance plaza, white speckled pavers with dark grey stripes along the plaza from the road to the steps; outline traced on the NGII 2025 sheet"
+     "NGII 2025 sheet 34702020 refs/h-ortho/measurements.json PW-N and refs/h-ortho/ngii2025_25cm_243495_263960_x5_grid.png; refs/h-ortho/ngii2025_25cm_243515_263900_x6_grid.png; SYNTHESIS section 4/C11: flat east plaza, north strip and transition traced at 0.6-1.0 m uncertainty (estimated)"
     ]
    },
    "paintAllowed": false,
@@ -146895,7 +146920,8 @@
      "sizeM": 7.2
     },
     "walkablePlaza": true
-   }
+   },
+   "curated": "todo 13a"
   },
   {
    "id": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_E7_",
@@ -164229,12 +164255,12 @@
      263922.0831
     ],
     [
-     243527.0312,
-     263928.7408
+     243526.742,
+     263927.6054
     ],
     [
-     243514.3668,
-     263931.9751
+     243514.0698,
+     263930.8107
     ],
     [
      243512.6619,
@@ -164265,15 +164291,16 @@
    "mesh": "Ground_Apron",
    "label": 1,
    "source": "project-estimated",
-   "source_ref": "building",
+   "source_ref": "building; D4 candidate-SZm5X0 paint failures LOT_D4_NORTH_ROADSIDE/R1/D0 and RS_862123dc2482b743/kerb/right/part/0; refs/l-ortho-hires/z_north_end_grid5m.png shows continuous pavement through the north-west bay and yellow kerb. Place the road shoulder and building apron at row-local depth 2.65 m (2.0 m bay plus 0.65 m kerb/shoulder allowance), retaining all other road vertices and the building hole; the prior 2.15 m apron edge left emitted kerb triangles on its boundary (estimated)",
    "evidence": {
     "tier": "T4",
     "refs": [
-     "building"
+     "D4 candidate-SZm5X0 paint failures LOT_D4_NORTH_ROADSIDE/R1/D0 and RS_862123dc2482b743/kerb/right/part/0; refs/l-ortho-hires/z_north_end_grid5m.png shows continuous pavement through the north-west bay and yellow kerb. Place the road shoulder and building apron at row-local depth 2.65 m (2.0 m bay plus 0.65 m kerb/shoulder allowance), retaining all other road vertices and the building hole; the prior 2.15 m apron edge left emitted kerb triangles on its boundary (estimated)"
     ]
    },
    "paintAllowed": false,
    "estimated": true,
+   "curated": "todo 13a",
    "over": [
     "PARCEL_PAVING_BUILDING_145"
    ]
@@ -164376,65 +164403,6 @@
    "class": "plaza",
    "ring": [
     [
-     243523.5159,
-     263876.085
-    ],
-    [
-     243519.2388,
-     263877.2026
-    ],
-    [
-     243516.5929,
-     263866.8616
-    ],
-    [
-     243520.8193,
-     263865.7559
-    ]
-   ],
-   "holes": [
-    [
-     [
-      243522.1738,
-      263875.2987
-     ],
-     [
-      243520.0304,
-      263875.8588
-     ],
-     [
-      243517.9298,
-      263867.6489
-     ],
-     [
-      243520.0329,
-      263867.0986
-     ]
-    ]
-   ],
-   "precedence": 6,
-   "mesh": "Ground_Apron",
-   "label": 1,
-   "source": "project-estimated",
-   "source_ref": "building",
-   "evidence": {
-    "tier": "T4",
-    "refs": [
-     "building"
-    ]
-   },
-   "paintAllowed": false,
-   "estimated": true,
-   "over": [
-    "PARCEL_PAVING_BUILDING_144"
-   ]
-  },
-  {
-   "id": "PARCEL_PAVING_BUILDING_152",
-   "cls": "PAVING",
-   "class": "plaza",
-   "ring": [
-    [
      243522.9282,
      263923.1648
     ],
@@ -164490,66 +164458,7 @@
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_153",
-   "cls": "PAVING",
-   "class": "plaza",
-   "ring": [
-    [
-     243486.6572,
-     263859.9971
-    ],
-    [
-     243484.0484,
-     263849.7743
-    ],
-    [
-     243486.8773,
-     263849.093
-    ],
-    [
-     243489.4925,
-     263859.283
-    ]
-   ],
-   "holes": [
-    [
-     [
-      243487.4519,
-      263858.6625
-     ],
-     [
-      243485.39,
-      263850.5827
-     ],
-     [
-      243486.0812,
-      263850.4162
-     ],
-     [
-      243488.1523,
-      263858.4861
-     ]
-    ]
-   ],
-   "precedence": 6,
-   "mesh": "Ground_Apron",
-   "label": 1,
-   "source": "project-estimated",
-   "source_ref": "building",
-   "evidence": {
-    "tier": "T4",
-    "refs": [
-     "building"
-    ]
-   },
-   "paintAllowed": false,
-   "estimated": true,
-   "over": [
-    "PARCEL_PAVING_BUILDING_144"
-   ]
-  },
-  {
-   "id": "PARCEL_PAVING_BUILDING_154",
+   "id": "PARCEL_PAVING_BUILDING_152",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -164626,7 +164535,85 @@
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_155",
+   "id": "PARCEL_PAVING_BUILDING_153",
+   "cls": "PAVING",
+   "class": "plaza",
+   "ring": [
+    [
+     243515.2437,
+     263895.0086
+    ],
+    [
+     243501.8001,
+     263898.4464
+    ],
+    [
+     243497.3041,
+     263880.5032
+    ],
+    [
+     243516.4107,
+     263875.4176
+    ],
+    [
+     243521.9236,
+     263897.3261
+    ],
+    [
+     243516.2283,
+     263898.8439
+    ]
+   ],
+   "holes": [
+    [
+     [
+      243516.0359,
+      263893.6706
+     ],
+     [
+      243502.5985,
+      263897.1069
+     ],
+     [
+      243498.6346,
+      263881.2873
+     ],
+     [
+      243515.616,
+      263876.7674
+     ],
+     [
+      243520.5921,
+      263896.5425
+     ],
+     [
+      243517.0177,
+      263897.4951
+     ]
+    ]
+   ],
+   "precedence": 6,
+   "mesh": "Ground_Apron",
+   "label": 1,
+   "source": "project-estimated",
+   "source_ref": "building",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "building"
+    ]
+   },
+   "paintAllowed": false,
+   "estimated": true,
+   "over": [
+    "PARCEL_PAVING_BUILDING_144",
+    "PARCEL_PAVING_BUILDING_145",
+    "PARCEL_PAVING_BUILDING_150",
+    "PARCEL_PAVING_BUILDING_152"
+   ]
+  },
+  {
+   "id": "PARCEL_PAVING_BUILDING_154",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -164814,7 +164801,7 @@
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_156",
+   "id": "PARCEL_PAVING_BUILDING_155",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -164871,12 +164858,12 @@
    "over": [
     "PARCEL_PAVING_BUILDING_144",
     "PARCEL_PAVING_BUILDING_145",
-    "PARCEL_PAVING_BUILDING_151",
-    "PARCEL_PAVING_BUILDING_154"
+    "PARCEL_PAVING_BUILDING_152",
+    "PARCEL_PAVING_BUILDING_153"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_157",
+   "id": "PARCEL_PAVING_BUILDING_156",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -164949,11 +164936,12 @@
    "over": [
     "PARCEL_PAVING_BUILDING_144",
     "PARCEL_PAVING_BUILDING_145",
-    "PARCEL_PAVING_BUILDING_154"
+    "PARCEL_PAVING_BUILDING_152",
+    "PARCEL_PAVING_BUILDING_153"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_158",
+   "id": "PARCEL_PAVING_BUILDING_157",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -165026,12 +165014,13 @@
    "over": [
     "PARCEL_PAVING_BUILDING_145",
     "PARCEL_PAVING_BUILDING_150",
-    "PARCEL_PAVING_BUILDING_154",
-    "PARCEL_PAVING_BUILDING_157"
+    "PARCEL_PAVING_BUILDING_152",
+    "PARCEL_PAVING_BUILDING_153",
+    "PARCEL_PAVING_BUILDING_156"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_159",
+   "id": "PARCEL_PAVING_BUILDING_158",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -165087,13 +165076,14 @@
    "estimated": true,
    "over": [
     "PARCEL_PAVING_BUILDING_145",
-    "PARCEL_PAVING_BUILDING_154",
-    "PARCEL_PAVING_BUILDING_157",
-    "PARCEL_PAVING_BUILDING_158"
+    "PARCEL_PAVING_BUILDING_152",
+    "PARCEL_PAVING_BUILDING_153",
+    "PARCEL_PAVING_BUILDING_156",
+    "PARCEL_PAVING_BUILDING_157"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_160",
+   "id": "PARCEL_PAVING_BUILDING_159",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -165237,7 +165227,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_161",
+   "id": "PARCEL_PAVING_BUILDING_160",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -165357,7 +165347,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_162",
+   "id": "PARCEL_PAVING_BUILDING_161",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -165492,12 +165482,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_160",
-    "PARCEL_PAVING_BUILDING_161"
+    "PARCEL_PAVING_BUILDING_159",
+    "PARCEL_PAVING_BUILDING_160"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_163",
+   "id": "PARCEL_PAVING_BUILDING_162",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -165552,11 +165542,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_160"
+    "PARCEL_PAVING_BUILDING_159"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_164",
+   "id": "PARCEL_PAVING_BUILDING_163",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -165683,11 +165673,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_162"
+    "PARCEL_PAVING_BUILDING_161"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_165",
+   "id": "PARCEL_PAVING_BUILDING_164",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -165766,12 +165756,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_161",
-    "PARCEL_PAVING_BUILDING_162"
+    "PARCEL_PAVING_BUILDING_160",
+    "PARCEL_PAVING_BUILDING_161"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_166",
+   "id": "PARCEL_PAVING_BUILDING_165",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -166079,7 +166069,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_167",
+   "id": "PARCEL_PAVING_BUILDING_166",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -166134,11 +166124,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_166"
+    "PARCEL_PAVING_BUILDING_165"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_168",
+   "id": "PARCEL_PAVING_BUILDING_167",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -166193,11 +166183,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_166"
+    "PARCEL_PAVING_BUILDING_165"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_169",
+   "id": "PARCEL_PAVING_BUILDING_168",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -166252,12 +166242,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_166",
-    "PARCEL_PAVING_BUILDING_168"
+    "PARCEL_PAVING_BUILDING_165",
+    "PARCEL_PAVING_BUILDING_167"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_170",
+   "id": "PARCEL_PAVING_BUILDING_169",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -166312,11 +166302,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_166"
+    "PARCEL_PAVING_BUILDING_165"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_171",
+   "id": "PARCEL_PAVING_BUILDING_170",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -166371,12 +166361,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_166",
-    "PARCEL_PAVING_BUILDING_170"
+    "PARCEL_PAVING_BUILDING_165",
+    "PARCEL_PAVING_BUILDING_169"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_172",
+   "id": "PARCEL_PAVING_BUILDING_171",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -166688,7 +166678,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_173",
+   "id": "PARCEL_PAVING_BUILDING_172",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -166839,11 +166829,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_172"
+    "PARCEL_PAVING_BUILDING_171"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_174",
+   "id": "PARCEL_PAVING_BUILDING_173",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -167042,11 +167032,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_172"
+    "PARCEL_PAVING_BUILDING_171"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_175",
+   "id": "PARCEL_PAVING_BUILDING_174",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -167109,12 +167099,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_172",
-    "PARCEL_PAVING_BUILDING_173"
+    "PARCEL_PAVING_BUILDING_171",
+    "PARCEL_PAVING_BUILDING_172"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_176",
+   "id": "PARCEL_PAVING_BUILDING_175",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -167169,13 +167159,13 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_171",
     "PARCEL_PAVING_BUILDING_172",
-    "PARCEL_PAVING_BUILDING_173",
-    "PARCEL_PAVING_BUILDING_174"
+    "PARCEL_PAVING_BUILDING_173"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_177",
+   "id": "PARCEL_PAVING_BUILDING_176",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -167246,14 +167236,14 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_171",
     "PARCEL_PAVING_BUILDING_172",
     "PARCEL_PAVING_BUILDING_173",
-    "PARCEL_PAVING_BUILDING_174",
-    "PARCEL_PAVING_BUILDING_175"
+    "PARCEL_PAVING_BUILDING_174"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_178",
+   "id": "PARCEL_PAVING_BUILDING_177",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -167324,14 +167314,14 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_171",
     "PARCEL_PAVING_BUILDING_172",
     "PARCEL_PAVING_BUILDING_173",
-    "PARCEL_PAVING_BUILDING_174",
-    "PARCEL_PAVING_BUILDING_176"
+    "PARCEL_PAVING_BUILDING_175"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_179",
+   "id": "PARCEL_PAVING_BUILDING_178",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -167402,15 +167392,15 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_171",
     "PARCEL_PAVING_BUILDING_172",
     "PARCEL_PAVING_BUILDING_173",
-    "PARCEL_PAVING_BUILDING_174",
-    "PARCEL_PAVING_BUILDING_176",
-    "PARCEL_PAVING_BUILDING_178"
+    "PARCEL_PAVING_BUILDING_175",
+    "PARCEL_PAVING_BUILDING_177"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_180",
+   "id": "PARCEL_PAVING_BUILDING_179",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -167465,16 +167455,16 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_171",
     "PARCEL_PAVING_BUILDING_172",
     "PARCEL_PAVING_BUILDING_173",
-    "PARCEL_PAVING_BUILDING_174",
-    "PARCEL_PAVING_BUILDING_176",
-    "PARCEL_PAVING_BUILDING_178",
-    "PARCEL_PAVING_BUILDING_179"
+    "PARCEL_PAVING_BUILDING_175",
+    "PARCEL_PAVING_BUILDING_177",
+    "PARCEL_PAVING_BUILDING_178"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_181",
+   "id": "PARCEL_PAVING_BUILDING_180",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -167521,11 +167511,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_172"
+    "PARCEL_PAVING_BUILDING_171"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_182",
+   "id": "PARCEL_PAVING_BUILDING_181",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -167581,7 +167571,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_183",
+   "id": "PARCEL_PAVING_BUILDING_182",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -167684,11 +167674,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_182"
+    "PARCEL_PAVING_BUILDING_181"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_184",
+   "id": "PARCEL_PAVING_BUILDING_183",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -167783,11 +167773,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_183"
+    "PARCEL_PAVING_BUILDING_182"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_185",
+   "id": "PARCEL_PAVING_BUILDING_184",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -167843,7 +167833,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_186",
+   "id": "PARCEL_PAVING_BUILDING_185",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -167950,13 +167940,13 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_181",
     "PARCEL_PAVING_BUILDING_182",
-    "PARCEL_PAVING_BUILDING_183",
-    "PARCEL_PAVING_BUILDING_184"
+    "PARCEL_PAVING_BUILDING_183"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_187",
+   "id": "PARCEL_PAVING_BUILDING_186",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -168051,12 +168041,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_182",
-    "PARCEL_PAVING_BUILDING_185"
+    "PARCEL_PAVING_BUILDING_181",
+    "PARCEL_PAVING_BUILDING_184"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_188",
+   "id": "PARCEL_PAVING_BUILDING_187",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -168127,12 +168117,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_184",
-    "PARCEL_PAVING_BUILDING_185"
+    "PARCEL_PAVING_BUILDING_183",
+    "PARCEL_PAVING_BUILDING_184"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_189",
+   "id": "PARCEL_PAVING_BUILDING_188",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -168219,14 +168209,14 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_181",
     "PARCEL_PAVING_BUILDING_182",
-    "PARCEL_PAVING_BUILDING_183",
-    "PARCEL_PAVING_BUILDING_185",
-    "PARCEL_PAVING_BUILDING_187"
+    "PARCEL_PAVING_BUILDING_184",
+    "PARCEL_PAVING_BUILDING_186"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_190",
+   "id": "PARCEL_PAVING_BUILDING_189",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -168281,13 +168271,13 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_181",
     "PARCEL_PAVING_BUILDING_182",
-    "PARCEL_PAVING_BUILDING_183",
-    "PARCEL_PAVING_BUILDING_189"
+    "PARCEL_PAVING_BUILDING_188"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_191",
+   "id": "PARCEL_PAVING_BUILDING_190",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -168342,13 +168332,13 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_183",
     "PARCEL_PAVING_BUILDING_184",
-    "PARCEL_PAVING_BUILDING_185",
-    "PARCEL_PAVING_BUILDING_188"
+    "PARCEL_PAVING_BUILDING_187"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_192",
+   "id": "PARCEL_PAVING_BUILDING_191",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -168403,14 +168393,14 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_182",
-    "PARCEL_PAVING_BUILDING_185",
-    "PARCEL_PAVING_BUILDING_187",
-    "PARCEL_PAVING_BUILDING_189"
+    "PARCEL_PAVING_BUILDING_181",
+    "PARCEL_PAVING_BUILDING_184",
+    "PARCEL_PAVING_BUILDING_186",
+    "PARCEL_PAVING_BUILDING_188"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_193",
+   "id": "PARCEL_PAVING_BUILDING_192",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -168798,7 +168788,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_194",
+   "id": "PARCEL_PAVING_BUILDING_193",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -168997,11 +168987,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_193"
+    "PARCEL_PAVING_BUILDING_192"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_195",
+   "id": "PARCEL_PAVING_BUILDING_194",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -169056,11 +169046,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_193"
+    "PARCEL_PAVING_BUILDING_192"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_196",
+   "id": "PARCEL_PAVING_BUILDING_195",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -169115,12 +169105,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_193",
-    "PARCEL_PAVING_BUILDING_194"
+    "PARCEL_PAVING_BUILDING_192",
+    "PARCEL_PAVING_BUILDING_193"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_197",
+   "id": "PARCEL_PAVING_BUILDING_196",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -169175,12 +169165,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_193",
-    "PARCEL_PAVING_BUILDING_196"
+    "PARCEL_PAVING_BUILDING_192",
+    "PARCEL_PAVING_BUILDING_195"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_198",
+   "id": "PARCEL_PAVING_BUILDING_197",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -169243,11 +169233,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_193"
+    "PARCEL_PAVING_BUILDING_192"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_199",
+   "id": "PARCEL_PAVING_BUILDING_198",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -169302,13 +169292,13 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_193",
-    "PARCEL_PAVING_BUILDING_196",
-    "PARCEL_PAVING_BUILDING_197"
+    "PARCEL_PAVING_BUILDING_192",
+    "PARCEL_PAVING_BUILDING_195",
+    "PARCEL_PAVING_BUILDING_196"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_200",
+   "id": "PARCEL_PAVING_BUILDING_199",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -169379,12 +169369,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_193",
-    "PARCEL_PAVING_BUILDING_195"
+    "PARCEL_PAVING_BUILDING_192",
+    "PARCEL_PAVING_BUILDING_194"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_201",
+   "id": "PARCEL_PAVING_BUILDING_200",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -169439,14 +169429,14 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_193",
+    "PARCEL_PAVING_BUILDING_192",
+    "PARCEL_PAVING_BUILDING_196",
     "PARCEL_PAVING_BUILDING_197",
-    "PARCEL_PAVING_BUILDING_198",
-    "PARCEL_PAVING_BUILDING_199"
+    "PARCEL_PAVING_BUILDING_198"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_202",
+   "id": "PARCEL_PAVING_BUILDING_201",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -169541,11 +169531,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_193"
+    "PARCEL_PAVING_BUILDING_192"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_203",
+   "id": "PARCEL_PAVING_BUILDING_202",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -169600,12 +169590,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_193",
-    "PARCEL_PAVING_BUILDING_198"
+    "PARCEL_PAVING_BUILDING_192",
+    "PARCEL_PAVING_BUILDING_197"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_204",
+   "id": "PARCEL_PAVING_BUILDING_203",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -169933,7 +169923,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_205",
+   "id": "PARCEL_PAVING_BUILDING_204",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -170020,11 +170010,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_204"
+    "PARCEL_PAVING_BUILDING_203"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_206",
+   "id": "PARCEL_PAVING_BUILDING_205",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -170111,11 +170101,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_204"
+    "PARCEL_PAVING_BUILDING_203"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_207",
+   "id": "PARCEL_PAVING_BUILDING_206",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -170170,11 +170160,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_204"
+    "PARCEL_PAVING_BUILDING_203"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_208",
+   "id": "PARCEL_PAVING_BUILDING_207",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -170229,11 +170219,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_204"
+    "PARCEL_PAVING_BUILDING_203"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_209",
+   "id": "PARCEL_PAVING_BUILDING_208",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -170288,11 +170278,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_204"
+    "PARCEL_PAVING_BUILDING_203"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_210",
+   "id": "PARCEL_PAVING_BUILDING_209",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -170648,7 +170638,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_211",
+   "id": "PARCEL_PAVING_BUILDING_210",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -170971,11 +170961,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_210"
+    "PARCEL_PAVING_BUILDING_209"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_212",
+   "id": "PARCEL_PAVING_BUILDING_211",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -171126,12 +171116,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_210",
-    "PARCEL_PAVING_BUILDING_211"
+    "PARCEL_PAVING_BUILDING_209",
+    "PARCEL_PAVING_BUILDING_210"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_213",
+   "id": "PARCEL_PAVING_BUILDING_212",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -171186,12 +171176,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_210",
-    "PARCEL_PAVING_BUILDING_211"
+    "PARCEL_PAVING_BUILDING_209",
+    "PARCEL_PAVING_BUILDING_210"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_214",
+   "id": "PARCEL_PAVING_BUILDING_213",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -171246,11 +171236,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_210"
+    "PARCEL_PAVING_BUILDING_209"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_215",
+   "id": "PARCEL_PAVING_BUILDING_214",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -171305,12 +171295,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_210",
-    "PARCEL_PAVING_BUILDING_211"
+    "PARCEL_PAVING_BUILDING_209",
+    "PARCEL_PAVING_BUILDING_210"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_216",
+   "id": "PARCEL_PAVING_BUILDING_215",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -171373,13 +171363,13 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_209",
     "PARCEL_PAVING_BUILDING_210",
-    "PARCEL_PAVING_BUILDING_211",
-    "PARCEL_PAVING_BUILDING_212"
+    "PARCEL_PAVING_BUILDING_211"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_217",
+   "id": "PARCEL_PAVING_BUILDING_216",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -171434,12 +171424,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_211",
-    "PARCEL_PAVING_BUILDING_212"
+    "PARCEL_PAVING_BUILDING_210",
+    "PARCEL_PAVING_BUILDING_211"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_218",
+   "id": "PARCEL_PAVING_BUILDING_217",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -171494,11 +171484,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_211"
+    "PARCEL_PAVING_BUILDING_210"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_219",
+   "id": "PARCEL_PAVING_BUILDING_218",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -171553,13 +171543,13 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_209",
     "PARCEL_PAVING_BUILDING_210",
-    "PARCEL_PAVING_BUILDING_211",
-    "PARCEL_PAVING_BUILDING_213"
+    "PARCEL_PAVING_BUILDING_212"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_220",
+   "id": "PARCEL_PAVING_BUILDING_219",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -171614,12 +171604,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_211",
-    "PARCEL_PAVING_BUILDING_212"
+    "PARCEL_PAVING_BUILDING_210",
+    "PARCEL_PAVING_BUILDING_211"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_221",
+   "id": "PARCEL_PAVING_BUILDING_220",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -171674,14 +171664,14 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_209",
     "PARCEL_PAVING_BUILDING_210",
-    "PARCEL_PAVING_BUILDING_211",
-    "PARCEL_PAVING_BUILDING_215",
-    "PARCEL_PAVING_BUILDING_220"
+    "PARCEL_PAVING_BUILDING_214",
+    "PARCEL_PAVING_BUILDING_219"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_222",
+   "id": "PARCEL_PAVING_BUILDING_221",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -171736,13 +171726,13 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_211",
-    "PARCEL_PAVING_BUILDING_213",
-    "PARCEL_PAVING_BUILDING_218"
+    "PARCEL_PAVING_BUILDING_210",
+    "PARCEL_PAVING_BUILDING_212",
+    "PARCEL_PAVING_BUILDING_217"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_223",
+   "id": "PARCEL_PAVING_BUILDING_222",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -171797,13 +171787,13 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_209",
     "PARCEL_PAVING_BUILDING_210",
-    "PARCEL_PAVING_BUILDING_211",
-    "PARCEL_PAVING_BUILDING_215"
+    "PARCEL_PAVING_BUILDING_214"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_224",
+   "id": "PARCEL_PAVING_BUILDING_223",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -171874,12 +171864,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_210",
-    "PARCEL_PAVING_BUILDING_214"
+    "PARCEL_PAVING_BUILDING_209",
+    "PARCEL_PAVING_BUILDING_213"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_225",
+   "id": "PARCEL_PAVING_BUILDING_224",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -171950,12 +171940,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_211",
-    "PARCEL_PAVING_BUILDING_213"
+    "PARCEL_PAVING_BUILDING_210",
+    "PARCEL_PAVING_BUILDING_212"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_226",
+   "id": "PARCEL_PAVING_BUILDING_225",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -172010,14 +172000,14 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_209",
     "PARCEL_PAVING_BUILDING_210",
     "PARCEL_PAVING_BUILDING_211",
-    "PARCEL_PAVING_BUILDING_212",
-    "PARCEL_PAVING_BUILDING_216"
+    "PARCEL_PAVING_BUILDING_215"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_227",
+   "id": "PARCEL_PAVING_BUILDING_226",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -172201,7 +172191,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_228",
+   "id": "PARCEL_PAVING_BUILDING_227",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -172272,11 +172262,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_227"
+    "PARCEL_PAVING_BUILDING_226"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_229",
+   "id": "PARCEL_PAVING_BUILDING_228",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -172331,11 +172321,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_227"
+    "PARCEL_PAVING_BUILDING_226"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_230",
+   "id": "PARCEL_PAVING_BUILDING_229",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -172390,12 +172380,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_227",
-    "PARCEL_PAVING_BUILDING_228"
+    "PARCEL_PAVING_BUILDING_226",
+    "PARCEL_PAVING_BUILDING_227"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_231",
+   "id": "PARCEL_PAVING_BUILDING_230",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -172571,7 +172561,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_232",
+   "id": "PARCEL_PAVING_BUILDING_231",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -172642,11 +172632,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_231"
+    "PARCEL_PAVING_BUILDING_230"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_233",
+   "id": "PARCEL_PAVING_BUILDING_232",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -172741,11 +172731,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_231"
+    "PARCEL_PAVING_BUILDING_230"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_234",
+   "id": "PARCEL_PAVING_BUILDING_233",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -172808,11 +172798,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_231"
+    "PARCEL_PAVING_BUILDING_230"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_235",
+   "id": "PARCEL_PAVING_BUILDING_234",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -172883,12 +172873,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_231",
-    "PARCEL_PAVING_BUILDING_232"
+    "PARCEL_PAVING_BUILDING_230",
+    "PARCEL_PAVING_BUILDING_231"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_236",
+   "id": "PARCEL_PAVING_BUILDING_235",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -172959,12 +172949,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_231",
-    "PARCEL_PAVING_BUILDING_233"
+    "PARCEL_PAVING_BUILDING_230",
+    "PARCEL_PAVING_BUILDING_232"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_237",
+   "id": "PARCEL_PAVING_BUILDING_236",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -173019,11 +173009,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_233"
+    "PARCEL_PAVING_BUILDING_232"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_238",
+   "id": "PARCEL_PAVING_BUILDING_237",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -173191,7 +173181,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_239",
+   "id": "PARCEL_PAVING_BUILDING_238",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -173286,11 +173276,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_238"
+    "PARCEL_PAVING_BUILDING_237"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_240",
+   "id": "PARCEL_PAVING_BUILDING_239",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -173397,11 +173387,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_238"
+    "PARCEL_PAVING_BUILDING_237"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_241",
+   "id": "PARCEL_PAVING_BUILDING_240",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -173456,11 +173446,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_238"
+    "PARCEL_PAVING_BUILDING_237"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_242",
+   "id": "PARCEL_PAVING_BUILDING_241",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -173531,12 +173521,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_238",
-    "PARCEL_PAVING_BUILDING_239"
+    "PARCEL_PAVING_BUILDING_237",
+    "PARCEL_PAVING_BUILDING_238"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_243",
+   "id": "PARCEL_PAVING_BUILDING_242",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -173599,12 +173589,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_238",
-    "PARCEL_PAVING_BUILDING_240"
+    "PARCEL_PAVING_BUILDING_237",
+    "PARCEL_PAVING_BUILDING_239"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_244",
+   "id": "PARCEL_PAVING_BUILDING_243",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -173659,11 +173649,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_239"
+    "PARCEL_PAVING_BUILDING_238"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_245",
+   "id": "PARCEL_PAVING_BUILDING_244",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -173718,11 +173708,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_240"
+    "PARCEL_PAVING_BUILDING_239"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_246",
+   "id": "PARCEL_PAVING_BUILDING_245",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -173778,7 +173768,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_247",
+   "id": "PARCEL_PAVING_BUILDING_246",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -173913,11 +173903,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_246"
+    "PARCEL_PAVING_BUILDING_245"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_248",
+   "id": "PARCEL_PAVING_BUILDING_247",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -173972,11 +173962,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_232"
+    "PARCEL_PAVING_BUILDING_231"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_249",
+   "id": "PARCEL_PAVING_BUILDING_248",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -174204,7 +174194,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_250",
+   "id": "PARCEL_PAVING_BUILDING_249",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -174259,11 +174249,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_249"
+    "PARCEL_PAVING_BUILDING_248"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_251",
+   "id": "PARCEL_PAVING_BUILDING_250",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -174350,11 +174340,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_249"
+    "PARCEL_PAVING_BUILDING_248"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_252",
+   "id": "PARCEL_PAVING_BUILDING_251",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -174457,11 +174447,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_249"
+    "PARCEL_PAVING_BUILDING_248"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_253",
+   "id": "PARCEL_PAVING_BUILDING_252",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -174548,13 +174538,13 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_248",
     "PARCEL_PAVING_BUILDING_249",
-    "PARCEL_PAVING_BUILDING_250",
-    "PARCEL_PAVING_BUILDING_251"
+    "PARCEL_PAVING_BUILDING_250"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_254",
+   "id": "PARCEL_PAVING_BUILDING_253",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -174649,12 +174639,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_249",
-    "PARCEL_PAVING_BUILDING_250"
+    "PARCEL_PAVING_BUILDING_248",
+    "PARCEL_PAVING_BUILDING_249"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_255",
+   "id": "PARCEL_PAVING_BUILDING_254",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -174717,12 +174707,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_249",
-    "PARCEL_PAVING_BUILDING_251"
+    "PARCEL_PAVING_BUILDING_248",
+    "PARCEL_PAVING_BUILDING_250"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_256",
+   "id": "PARCEL_PAVING_BUILDING_255",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -174825,12 +174815,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_249",
-    "PARCEL_PAVING_BUILDING_251"
+    "PARCEL_PAVING_BUILDING_248",
+    "PARCEL_PAVING_BUILDING_250"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_257",
+   "id": "PARCEL_PAVING_BUILDING_256",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -174933,11 +174923,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_249"
+    "PARCEL_PAVING_BUILDING_248"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_258",
+   "id": "PARCEL_PAVING_BUILDING_257",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -174992,13 +174982,13 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_248",
     "PARCEL_PAVING_BUILDING_249",
-    "PARCEL_PAVING_BUILDING_250",
-    "PARCEL_PAVING_BUILDING_254"
+    "PARCEL_PAVING_BUILDING_253"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_259",
+   "id": "PARCEL_PAVING_BUILDING_258",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -175374,7 +175364,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_260",
+   "id": "PARCEL_PAVING_BUILDING_259",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -175637,14 +175627,14 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_160",
     "PARCEL_PAVING_BUILDING_161",
-    "PARCEL_PAVING_BUILDING_162",
-    "PARCEL_PAVING_BUILDING_164",
-    "PARCEL_PAVING_BUILDING_165"
+    "PARCEL_PAVING_BUILDING_163",
+    "PARCEL_PAVING_BUILDING_164"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_261",
+   "id": "PARCEL_PAVING_BUILDING_260",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -175868,7 +175858,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_262",
+   "id": "PARCEL_PAVING_BUILDING_261",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -175939,11 +175929,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_261"
+    "PARCEL_PAVING_BUILDING_260"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_263",
+   "id": "PARCEL_PAVING_BUILDING_262",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -176158,11 +176148,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_261"
+    "PARCEL_PAVING_BUILDING_260"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_264",
+   "id": "PARCEL_PAVING_BUILDING_263",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -176225,11 +176215,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_261"
+    "PARCEL_PAVING_BUILDING_260"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_265",
+   "id": "PARCEL_PAVING_BUILDING_264",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -176284,12 +176274,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_261",
-    "PARCEL_PAVING_BUILDING_262"
+    "PARCEL_PAVING_BUILDING_260",
+    "PARCEL_PAVING_BUILDING_261"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_266",
+   "id": "PARCEL_PAVING_BUILDING_265",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -176376,11 +176366,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_261"
+    "PARCEL_PAVING_BUILDING_260"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_267",
+   "id": "PARCEL_PAVING_BUILDING_266",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -176459,12 +176449,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_261",
-    "PARCEL_PAVING_BUILDING_263"
+    "PARCEL_PAVING_BUILDING_260",
+    "PARCEL_PAVING_BUILDING_262"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_268",
+   "id": "PARCEL_PAVING_BUILDING_267",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -176720,7 +176710,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_269",
+   "id": "PARCEL_PAVING_BUILDING_268",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -176791,11 +176781,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_268"
+    "PARCEL_PAVING_BUILDING_267"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_270",
+   "id": "PARCEL_PAVING_BUILDING_269",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -176866,11 +176856,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_268"
+    "PARCEL_PAVING_BUILDING_267"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_271",
+   "id": "PARCEL_PAVING_BUILDING_270",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -176925,11 +176915,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_268"
+    "PARCEL_PAVING_BUILDING_267"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_272",
+   "id": "PARCEL_PAVING_BUILDING_271",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -176984,11 +176974,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_268"
+    "PARCEL_PAVING_BUILDING_267"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_273",
+   "id": "PARCEL_PAVING_BUILDING_272",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -177043,12 +177033,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_268",
-    "PARCEL_PAVING_BUILDING_272"
+    "PARCEL_PAVING_BUILDING_267",
+    "PARCEL_PAVING_BUILDING_271"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_274",
+   "id": "PARCEL_PAVING_BUILDING_273",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -177104,7 +177094,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_275",
+   "id": "PARCEL_PAVING_BUILDING_274",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -177344,7 +177334,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_276",
+   "id": "PARCEL_PAVING_BUILDING_275",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -177432,7 +177422,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_277",
+   "id": "PARCEL_PAVING_BUILDING_276",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -177535,12 +177525,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_275",
-    "PARCEL_PAVING_BUILDING_276"
+    "PARCEL_PAVING_BUILDING_274",
+    "PARCEL_PAVING_BUILDING_275"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_278",
+   "id": "PARCEL_PAVING_BUILDING_277",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -177596,7 +177586,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_279",
+   "id": "PARCEL_PAVING_BUILDING_278",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -177715,12 +177705,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_276",
-    "PARCEL_PAVING_BUILDING_278"
+    "PARCEL_PAVING_BUILDING_275",
+    "PARCEL_PAVING_BUILDING_277"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_280",
+   "id": "PARCEL_PAVING_BUILDING_279",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -177791,12 +177781,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_276",
-    "PARCEL_PAVING_BUILDING_279"
+    "PARCEL_PAVING_BUILDING_275",
+    "PARCEL_PAVING_BUILDING_278"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_281",
+   "id": "PARCEL_PAVING_BUILDING_280",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -177851,12 +177841,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_275",
-    "PARCEL_PAVING_BUILDING_277"
+    "PARCEL_PAVING_BUILDING_274",
+    "PARCEL_PAVING_BUILDING_276"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_282",
+   "id": "PARCEL_PAVING_BUILDING_281",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -177911,11 +177901,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_275"
+    "PARCEL_PAVING_BUILDING_274"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_283",
+   "id": "PARCEL_PAVING_BUILDING_282",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -177970,13 +177960,13 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_275",
-    "PARCEL_PAVING_BUILDING_277",
-    "PARCEL_PAVING_BUILDING_281"
+    "PARCEL_PAVING_BUILDING_274",
+    "PARCEL_PAVING_BUILDING_276",
+    "PARCEL_PAVING_BUILDING_280"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_284",
+   "id": "PARCEL_PAVING_BUILDING_283",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -178031,14 +178021,14 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_275",
-    "PARCEL_PAVING_BUILDING_277",
-    "PARCEL_PAVING_BUILDING_281",
-    "PARCEL_PAVING_BUILDING_283"
+    "PARCEL_PAVING_BUILDING_274",
+    "PARCEL_PAVING_BUILDING_276",
+    "PARCEL_PAVING_BUILDING_280",
+    "PARCEL_PAVING_BUILDING_282"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_285",
+   "id": "PARCEL_PAVING_BUILDING_284",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -178094,7 +178084,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_286",
+   "id": "PARCEL_PAVING_BUILDING_285",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -178254,7 +178244,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_287",
+   "id": "PARCEL_PAVING_BUILDING_286",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -178397,11 +178387,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_286"
+    "PARCEL_PAVING_BUILDING_285"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_288",
+   "id": "PARCEL_PAVING_BUILDING_287",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -178456,12 +178446,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_286",
-    "PARCEL_PAVING_BUILDING_287"
+    "PARCEL_PAVING_BUILDING_285",
+    "PARCEL_PAVING_BUILDING_286"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_289",
+   "id": "PARCEL_PAVING_BUILDING_288",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -178516,12 +178506,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_286",
-    "PARCEL_PAVING_BUILDING_287"
+    "PARCEL_PAVING_BUILDING_285",
+    "PARCEL_PAVING_BUILDING_286"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_290",
+   "id": "PARCEL_PAVING_BUILDING_289",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -178648,14 +178638,14 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_285",
     "PARCEL_PAVING_BUILDING_286",
     "PARCEL_PAVING_BUILDING_287",
-    "PARCEL_PAVING_BUILDING_288",
-    "PARCEL_PAVING_BUILDING_289"
+    "PARCEL_PAVING_BUILDING_288"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_291",
+   "id": "PARCEL_PAVING_BUILDING_290",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -178710,14 +178700,14 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_285",
     "PARCEL_PAVING_BUILDING_286",
     "PARCEL_PAVING_BUILDING_287",
-    "PARCEL_PAVING_BUILDING_288",
-    "PARCEL_PAVING_BUILDING_290"
+    "PARCEL_PAVING_BUILDING_289"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_292",
+   "id": "PARCEL_PAVING_BUILDING_291",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -178772,12 +178762,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_286",
-    "PARCEL_PAVING_BUILDING_287"
+    "PARCEL_PAVING_BUILDING_285",
+    "PARCEL_PAVING_BUILDING_286"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_293",
+   "id": "PARCEL_PAVING_BUILDING_292",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -178832,13 +178822,13 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_285",
     "PARCEL_PAVING_BUILDING_286",
-    "PARCEL_PAVING_BUILDING_287",
-    "PARCEL_PAVING_BUILDING_292"
+    "PARCEL_PAVING_BUILDING_291"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_294",
+   "id": "PARCEL_PAVING_BUILDING_293",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -178930,7 +178920,7 @@
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_295",
+   "id": "PARCEL_PAVING_BUILDING_294",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -178985,11 +178975,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_294"
+    "PARCEL_PAVING_BUILDING_293"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_296",
+   "id": "PARCEL_PAVING_BUILDING_295",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -179044,11 +179034,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_295"
+    "PARCEL_PAVING_BUILDING_294"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_297",
+   "id": "PARCEL_PAVING_BUILDING_296",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -179103,12 +179093,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_295",
-    "PARCEL_PAVING_BUILDING_296"
+    "PARCEL_PAVING_BUILDING_294",
+    "PARCEL_PAVING_BUILDING_295"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_298",
+   "id": "PARCEL_PAVING_BUILDING_297",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -179197,13 +179187,13 @@
    "over": [
     "PARCEL_PAVING_BUILDING_53",
     "PARCEL_PAVING_BUILDING_55",
+    "PARCEL_PAVING_BUILDING_293",
     "PARCEL_PAVING_BUILDING_294",
-    "PARCEL_PAVING_BUILDING_295",
-    "PARCEL_PAVING_BUILDING_296"
+    "PARCEL_PAVING_BUILDING_295"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_299",
+   "id": "PARCEL_PAVING_BUILDING_298",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -179258,12 +179248,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_285",
-    "PARCEL_PAVING_BUILDING_294"
+    "PARCEL_PAVING_BUILDING_284",
+    "PARCEL_PAVING_BUILDING_293"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_300",
+   "id": "PARCEL_PAVING_BUILDING_299",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -179319,11 +179309,11 @@
    "estimated": true,
    "over": [
     "PARCEL_PAVING_BUILDING_55",
-    "PARCEL_PAVING_BUILDING_294"
+    "PARCEL_PAVING_BUILDING_293"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_301",
+   "id": "PARCEL_PAVING_BUILDING_300",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -179555,7 +179545,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_302",
+   "id": "PARCEL_PAVING_BUILDING_301",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -179659,7 +179649,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_303",
+   "id": "PARCEL_PAVING_BUILDING_302",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -179851,7 +179841,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_304",
+   "id": "PARCEL_PAVING_BUILDING_303",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -179946,11 +179936,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_303"
+    "PARCEL_PAVING_BUILDING_302"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_305",
+   "id": "PARCEL_PAVING_BUILDING_304",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -180141,11 +180131,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_303"
+    "PARCEL_PAVING_BUILDING_302"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_306",
+   "id": "PARCEL_PAVING_BUILDING_305",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -180216,13 +180206,13 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_302",
     "PARCEL_PAVING_BUILDING_303",
-    "PARCEL_PAVING_BUILDING_304",
-    "PARCEL_PAVING_BUILDING_305"
+    "PARCEL_PAVING_BUILDING_304"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_307",
+   "id": "PARCEL_PAVING_BUILDING_306",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -180277,13 +180267,13 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_302",
     "PARCEL_PAVING_BUILDING_303",
-    "PARCEL_PAVING_BUILDING_304",
-    "PARCEL_PAVING_BUILDING_305"
+    "PARCEL_PAVING_BUILDING_304"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_308",
+   "id": "PARCEL_PAVING_BUILDING_307",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -180338,12 +180328,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_303",
-    "PARCEL_PAVING_BUILDING_305"
+    "PARCEL_PAVING_BUILDING_302",
+    "PARCEL_PAVING_BUILDING_304"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_309",
+   "id": "PARCEL_PAVING_BUILDING_308",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -180398,12 +180388,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_303",
-    "PARCEL_PAVING_BUILDING_305"
+    "PARCEL_PAVING_BUILDING_302",
+    "PARCEL_PAVING_BUILDING_304"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_310",
+   "id": "PARCEL_PAVING_BUILDING_309",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -180679,7 +180669,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_311",
+   "id": "PARCEL_PAVING_BUILDING_310",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -180734,11 +180724,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_310"
+    "PARCEL_PAVING_BUILDING_309"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_312",
+   "id": "PARCEL_PAVING_BUILDING_311",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -180825,11 +180815,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_310"
+    "PARCEL_PAVING_BUILDING_309"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_313",
+   "id": "PARCEL_PAVING_BUILDING_312",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -180980,11 +180970,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_310"
+    "PARCEL_PAVING_BUILDING_309"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_314",
+   "id": "PARCEL_PAVING_BUILDING_313",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -181087,12 +181077,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_310",
-    "PARCEL_PAVING_BUILDING_313"
+    "PARCEL_PAVING_BUILDING_309",
+    "PARCEL_PAVING_BUILDING_312"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_315",
+   "id": "PARCEL_PAVING_BUILDING_314",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -181148,7 +181138,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_316",
+   "id": "PARCEL_PAVING_BUILDING_315",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -181675,16 +181665,16 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_209",
     "PARCEL_PAVING_BUILDING_210",
-    "PARCEL_PAVING_BUILDING_211",
-    "PARCEL_PAVING_BUILDING_213",
-    "PARCEL_PAVING_BUILDING_216",
-    "PARCEL_PAVING_BUILDING_219",
-    "PARCEL_PAVING_BUILDING_225"
+    "PARCEL_PAVING_BUILDING_212",
+    "PARCEL_PAVING_BUILDING_215",
+    "PARCEL_PAVING_BUILDING_218",
+    "PARCEL_PAVING_BUILDING_224"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_317",
+   "id": "PARCEL_PAVING_BUILDING_316",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -181739,16 +181729,16 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_209",
     "PARCEL_PAVING_BUILDING_210",
-    "PARCEL_PAVING_BUILDING_211",
-    "PARCEL_PAVING_BUILDING_213",
-    "PARCEL_PAVING_BUILDING_219",
-    "PARCEL_PAVING_BUILDING_225",
-    "PARCEL_PAVING_BUILDING_316"
+    "PARCEL_PAVING_BUILDING_212",
+    "PARCEL_PAVING_BUILDING_218",
+    "PARCEL_PAVING_BUILDING_224",
+    "PARCEL_PAVING_BUILDING_315"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_318",
+   "id": "PARCEL_PAVING_BUILDING_317",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -181803,12 +181793,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_216",
-    "PARCEL_PAVING_BUILDING_316"
+    "PARCEL_PAVING_BUILDING_215",
+    "PARCEL_PAVING_BUILDING_315"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_319",
+   "id": "PARCEL_PAVING_BUILDING_318",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -181887,13 +181877,13 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_315",
     "PARCEL_PAVING_BUILDING_316",
-    "PARCEL_PAVING_BUILDING_317",
-    "PARCEL_PAVING_BUILDING_318"
+    "PARCEL_PAVING_BUILDING_317"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_320",
+   "id": "PARCEL_PAVING_BUILDING_319",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -182036,15 +182026,15 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_210",
+    "PARCEL_PAVING_BUILDING_209",
+    "PARCEL_PAVING_BUILDING_315",
     "PARCEL_PAVING_BUILDING_316",
     "PARCEL_PAVING_BUILDING_317",
-    "PARCEL_PAVING_BUILDING_318",
-    "PARCEL_PAVING_BUILDING_319"
+    "PARCEL_PAVING_BUILDING_318"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_321",
+   "id": "PARCEL_PAVING_BUILDING_320",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -182143,17 +182133,17 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_209",
     "PARCEL_PAVING_BUILDING_210",
-    "PARCEL_PAVING_BUILDING_211",
-    "PARCEL_PAVING_BUILDING_216",
+    "PARCEL_PAVING_BUILDING_215",
+    "PARCEL_PAVING_BUILDING_315",
     "PARCEL_PAVING_BUILDING_316",
     "PARCEL_PAVING_BUILDING_317",
-    "PARCEL_PAVING_BUILDING_318",
-    "PARCEL_PAVING_BUILDING_319"
+    "PARCEL_PAVING_BUILDING_318"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_322",
+   "id": "PARCEL_PAVING_BUILDING_321",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -182224,14 +182214,14 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_209",
     "PARCEL_PAVING_BUILDING_210",
-    "PARCEL_PAVING_BUILDING_211",
-    "PARCEL_PAVING_BUILDING_213",
-    "PARCEL_PAVING_BUILDING_316"
+    "PARCEL_PAVING_BUILDING_212",
+    "PARCEL_PAVING_BUILDING_315"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_323",
+   "id": "PARCEL_PAVING_BUILDING_322",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -182310,15 +182300,15 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_209",
     "PARCEL_PAVING_BUILDING_210",
-    "PARCEL_PAVING_BUILDING_211",
-    "PARCEL_PAVING_BUILDING_219",
-    "PARCEL_PAVING_BUILDING_316",
-    "PARCEL_PAVING_BUILDING_317"
+    "PARCEL_PAVING_BUILDING_218",
+    "PARCEL_PAVING_BUILDING_315",
+    "PARCEL_PAVING_BUILDING_316"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_324",
+   "id": "PARCEL_PAVING_BUILDING_323",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -182373,16 +182363,16 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_209",
     "PARCEL_PAVING_BUILDING_210",
-    "PARCEL_PAVING_BUILDING_211",
-    "PARCEL_PAVING_BUILDING_216",
-    "PARCEL_PAVING_BUILDING_316",
-    "PARCEL_PAVING_BUILDING_318",
-    "PARCEL_PAVING_BUILDING_321"
+    "PARCEL_PAVING_BUILDING_215",
+    "PARCEL_PAVING_BUILDING_315",
+    "PARCEL_PAVING_BUILDING_317",
+    "PARCEL_PAVING_BUILDING_320"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_325",
+   "id": "PARCEL_PAVING_BUILDING_324",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -182566,7 +182556,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_326",
+   "id": "PARCEL_PAVING_BUILDING_325",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -182621,11 +182611,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_325"
+    "PARCEL_PAVING_BUILDING_324"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_327",
+   "id": "PARCEL_PAVING_BUILDING_326",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -182680,12 +182670,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_325",
-    "PARCEL_PAVING_BUILDING_326"
+    "PARCEL_PAVING_BUILDING_324",
+    "PARCEL_PAVING_BUILDING_325"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_328",
+   "id": "PARCEL_PAVING_BUILDING_327",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -182740,11 +182730,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_325"
+    "PARCEL_PAVING_BUILDING_324"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_329",
+   "id": "PARCEL_PAVING_BUILDING_328",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -182800,7 +182790,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_330",
+   "id": "PARCEL_PAVING_BUILDING_329",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -183016,7 +183006,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_331",
+   "id": "PARCEL_PAVING_BUILDING_330",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -183079,11 +183069,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_330"
+    "PARCEL_PAVING_BUILDING_329"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_332",
+   "id": "PARCEL_PAVING_BUILDING_331",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -183170,11 +183160,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_330"
+    "PARCEL_PAVING_BUILDING_329"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_333",
+   "id": "PARCEL_PAVING_BUILDING_332",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -183229,11 +183219,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_330"
+    "PARCEL_PAVING_BUILDING_329"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_334",
+   "id": "PARCEL_PAVING_BUILDING_333",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -183304,12 +183294,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_330",
-    "PARCEL_PAVING_BUILDING_332"
+    "PARCEL_PAVING_BUILDING_329",
+    "PARCEL_PAVING_BUILDING_331"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_335",
+   "id": "PARCEL_PAVING_BUILDING_334",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -183396,13 +183386,13 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_210",
-    "PARCEL_PAVING_BUILDING_214",
-    "PARCEL_PAVING_BUILDING_224"
+    "PARCEL_PAVING_BUILDING_209",
+    "PARCEL_PAVING_BUILDING_213",
+    "PARCEL_PAVING_BUILDING_223"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_336",
+   "id": "PARCEL_PAVING_BUILDING_335",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -183482,7 +183472,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_337",
+   "id": "PARCEL_PAVING_BUILDING_336",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -183553,11 +183543,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_336"
+    "PARCEL_PAVING_BUILDING_335"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_338",
+   "id": "PARCEL_PAVING_BUILDING_337",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -183653,7 +183643,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_339",
+   "id": "PARCEL_PAVING_BUILDING_338",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -183781,7 +183771,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_341",
+   "id": "PARCEL_PAVING_BUILDING_340",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -184037,7 +184027,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_342",
+   "id": "PARCEL_PAVING_BUILDING_341",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -184317,7 +184307,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_343",
+   "id": "PARCEL_PAVING_BUILDING_342",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -184716,12 +184706,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_341",
-    "PARCEL_PAVING_BUILDING_342"
+    "PARCEL_PAVING_BUILDING_340",
+    "PARCEL_PAVING_BUILDING_341"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_344",
+   "id": "PARCEL_PAVING_BUILDING_343",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -184904,11 +184894,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_341"
+    "PARCEL_PAVING_BUILDING_340"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_345",
+   "id": "PARCEL_PAVING_BUILDING_344",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -185019,11 +185009,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_343"
+    "PARCEL_PAVING_BUILDING_342"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_346",
+   "id": "PARCEL_PAVING_BUILDING_345",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -185078,11 +185068,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_341"
+    "PARCEL_PAVING_BUILDING_340"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_347",
+   "id": "PARCEL_PAVING_BUILDING_346",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -185145,11 +185135,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_345"
+    "PARCEL_PAVING_BUILDING_344"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_348",
+   "id": "PARCEL_PAVING_BUILDING_347",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -185252,12 +185242,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_341",
-    "PARCEL_PAVING_BUILDING_344"
+    "PARCEL_PAVING_BUILDING_340",
+    "PARCEL_PAVING_BUILDING_343"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_349",
+   "id": "PARCEL_PAVING_BUILDING_348",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -185552,12 +185542,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_342",
-    "PARCEL_PAVING_BUILDING_343"
+    "PARCEL_PAVING_BUILDING_341",
+    "PARCEL_PAVING_BUILDING_342"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_350",
+   "id": "PARCEL_PAVING_BUILDING_349",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -185612,13 +185602,13 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_343",
-    "PARCEL_PAVING_BUILDING_345",
-    "PARCEL_PAVING_BUILDING_349"
+    "PARCEL_PAVING_BUILDING_342",
+    "PARCEL_PAVING_BUILDING_344",
+    "PARCEL_PAVING_BUILDING_348"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_351",
+   "id": "PARCEL_PAVING_BUILDING_350",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -185681,13 +185671,13 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_343",
-    "PARCEL_PAVING_BUILDING_345",
-    "PARCEL_PAVING_BUILDING_347"
+    "PARCEL_PAVING_BUILDING_342",
+    "PARCEL_PAVING_BUILDING_344",
+    "PARCEL_PAVING_BUILDING_346"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_352",
+   "id": "PARCEL_PAVING_BUILDING_351",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -185806,14 +185796,14 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_343",
-    "PARCEL_PAVING_BUILDING_345",
-    "PARCEL_PAVING_BUILDING_350",
-    "PARCEL_PAVING_BUILDING_351"
+    "PARCEL_PAVING_BUILDING_342",
+    "PARCEL_PAVING_BUILDING_344",
+    "PARCEL_PAVING_BUILDING_349",
+    "PARCEL_PAVING_BUILDING_350"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_353",
+   "id": "PARCEL_PAVING_BUILDING_352",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -185868,13 +185858,13 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_341",
-    "PARCEL_PAVING_BUILDING_344",
-    "PARCEL_PAVING_BUILDING_348"
+    "PARCEL_PAVING_BUILDING_340",
+    "PARCEL_PAVING_BUILDING_343",
+    "PARCEL_PAVING_BUILDING_347"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_354",
+   "id": "PARCEL_PAVING_BUILDING_353",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -185945,12 +185935,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_345",
-    "PARCEL_PAVING_BUILDING_352"
+    "PARCEL_PAVING_BUILDING_344",
+    "PARCEL_PAVING_BUILDING_351"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_355",
+   "id": "PARCEL_PAVING_BUILDING_354",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -186005,13 +185995,13 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
+    "PARCEL_PAVING_BUILDING_349",
     "PARCEL_PAVING_BUILDING_350",
-    "PARCEL_PAVING_BUILDING_351",
-    "PARCEL_PAVING_BUILDING_352"
+    "PARCEL_PAVING_BUILDING_351"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_356",
+   "id": "PARCEL_PAVING_BUILDING_355",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -186066,11 +186056,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_345"
+    "PARCEL_PAVING_BUILDING_344"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_357",
+   "id": "PARCEL_PAVING_BUILDING_356",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -186125,16 +186115,16 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_343",
-    "PARCEL_PAVING_BUILDING_345",
+    "PARCEL_PAVING_BUILDING_342",
+    "PARCEL_PAVING_BUILDING_344",
+    "PARCEL_PAVING_BUILDING_349",
     "PARCEL_PAVING_BUILDING_350",
     "PARCEL_PAVING_BUILDING_351",
-    "PARCEL_PAVING_BUILDING_352",
-    "PARCEL_PAVING_BUILDING_355"
+    "PARCEL_PAVING_BUILDING_354"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_358",
+   "id": "PARCEL_PAVING_BUILDING_357",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -186189,12 +186179,12 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_341",
-    "PARCEL_PAVING_BUILDING_343"
+    "PARCEL_PAVING_BUILDING_340",
+    "PARCEL_PAVING_BUILDING_342"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_359",
+   "id": "PARCEL_PAVING_BUILDING_358",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -186249,11 +186239,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_346"
+    "PARCEL_PAVING_BUILDING_345"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_360",
+   "id": "PARCEL_PAVING_BUILDING_359",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -186308,17 +186298,17 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_343",
-    "PARCEL_PAVING_BUILDING_345",
-    "PARCEL_PAVING_BUILDING_347",
+    "PARCEL_PAVING_BUILDING_342",
+    "PARCEL_PAVING_BUILDING_344",
+    "PARCEL_PAVING_BUILDING_346",
+    "PARCEL_PAVING_BUILDING_350",
     "PARCEL_PAVING_BUILDING_351",
-    "PARCEL_PAVING_BUILDING_352",
-    "PARCEL_PAVING_BUILDING_354",
-    "PARCEL_PAVING_BUILDING_357"
+    "PARCEL_PAVING_BUILDING_353",
+    "PARCEL_PAVING_BUILDING_356"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_361",
+   "id": "PARCEL_PAVING_BUILDING_360",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -186406,7 +186396,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_362",
+   "id": "PARCEL_PAVING_BUILDING_361",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -186494,7 +186484,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_363",
+   "id": "PARCEL_PAVING_BUILDING_362",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -186606,7 +186596,7 @@
    "estimated": true
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_364",
+   "id": "PARCEL_PAVING_BUILDING_363",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -186661,11 +186651,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_363"
+    "PARCEL_PAVING_BUILDING_362"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_365",
+   "id": "PARCEL_PAVING_BUILDING_364",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -186724,7 +186714,7 @@
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_366",
+   "id": "PARCEL_PAVING_BUILDING_365",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -186795,11 +186785,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_204"
+    "PARCEL_PAVING_BUILDING_203"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_367",
+   "id": "PARCEL_PAVING_BUILDING_366",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -186854,11 +186844,11 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_204"
+    "PARCEL_PAVING_BUILDING_203"
    ]
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_368",
+   "id": "PARCEL_PAVING_BUILDING_367",
    "cls": "PAVING",
    "class": "plaza",
    "ring": [
@@ -186921,8 +186911,8 @@
    "paintAllowed": false,
    "estimated": true,
    "over": [
-    "PARCEL_PAVING_BUILDING_366",
-    "PARCEL_PAVING_BUILDING_367"
+    "PARCEL_PAVING_BUILDING_365",
+    "PARCEL_PAVING_BUILDING_366"
    ]
   },
   {
@@ -201519,49 +201509,6 @@
    ]
   },
   {
-   "id": "PARCEL_PAVING_EDGE_POI_POI_ENT_D4_MAIN",
-   "cls": "PAVING",
-   "class": "sidewalk",
-   "ring": [
-    [
-     243492.12,
-     263877.976
-    ],
-    [
-     243489.385,
-     263904.265
-    ],
-    [
-     243490.876,
-     263904.42
-    ],
-    [
-     243493.612,
-     263878.131
-    ]
-   ],
-   "holes": [],
-   "precedence": 2,
-   "mesh": "Ground_Walkway",
-   "label": 1,
-   "source": "project-estimated",
-   "source_ref": "EDGE_POI_POI_ENT_D4_MAIN",
-   "evidence": {
-    "tier": "T4",
-    "refs": [
-     "EDGE_POI_POI_ENT_D4_MAIN"
-    ]
-   },
-   "paintAllowed": false,
-   "estimated": true,
-   "render": {
-    "walkwayEstimated": true
-   },
-   "over": [
-    "PARCEL_PAVING_EDGE_FB_0017_2"
-   ]
-  },
-  {
    "id": "PARCEL_PAVING_EDGE_POI_POI_ENT_E1_MAIN",
    "cls": "PAVING",
    "class": "sidewalk",
@@ -202465,120 +202412,6 @@
    ]
   },
   {
-   "id": "PARCEL_LOT_E243476_N263851_R3",
-   "cls": "LOT",
-   "class": "lot",
-   "ring": [
-    [
-     243489.6559,
-     263926.6693
-    ],
-    [
-     243482.0685,
-     263898.1825
-    ],
-    [
-     243476.1971,
-     263895.2122
-    ],
-    [
-     243483.7845,
-     263923.699
-    ]
-   ],
-   "holes": [],
-   "precedence": 4,
-   "mesh": "Ground_Lot",
-   "label": null,
-   "source": "parking-record",
-   "source_ref": "parking row LOT_E243476_N263851/R3",
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "LOT_E243476_N263851/R3"
-    ]
-   },
-   "paintAllowed": true,
-   "estimated": true,
-   "curated": "todo 12"
-  },
-  {
-   "id": "PARCEL_LOT_E243489_N263815_R1",
-   "cls": "LOT",
-   "class": "lot",
-   "ring": [
-    [
-     243485.1724,
-     263824.4554
-    ],
-    [
-     243500.6854,
-     263820.2421
-    ],
-    [
-     243499.2504,
-     263815.3794
-    ],
-    [
-     243483.7374,
-     263819.5927
-    ]
-   ],
-   "holes": [],
-   "precedence": 4,
-   "mesh": "Ground_Lot",
-   "label": null,
-   "source": "parking-record",
-   "source_ref": "parking row LOT_E243489_N263815/R1",
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "LOT_E243489_N263815/R1"
-    ]
-   },
-   "paintAllowed": true,
-   "estimated": true,
-   "curated": "todo 12"
-  },
-  {
-   "id": "PARCEL_LOT_E243489_N263815_R2",
-   "cls": "LOT",
-   "class": "lot",
-   "ring": [
-    [
-     243502.6204,
-     263819.7163
-    ],
-    [
-     243508.1014,
-     263818.2281
-    ],
-    [
-     243506.6664,
-     263813.3655
-    ],
-    [
-     243501.1854,
-     263814.8537
-    ]
-   ],
-   "holes": [],
-   "precedence": 4,
-   "mesh": "Ground_Lot",
-   "label": null,
-   "source": "parking-record",
-   "source_ref": "parking row LOT_E243489_N263815/R2",
-   "evidence": {
-    "tier": "T1",
-    "refs": [
-     "LOT_E243489_N263815/R2"
-    ]
-   },
-   "paintAllowed": true,
-   "estimated": true,
-   "curated": "todo 12"
-  },
-  {
    "id": "PARCEL_LOT_E243521_N263869_R1",
    "cls": "LOT",
    "class": "lot",
@@ -202607,7 +202440,7 @@
    "source": "parking-record",
    "source_ref": "parking row LOT_E243521_N263869/R1",
    "evidence": {
-    "tier": "T1",
+    "tier": "T2",
     "refs": [
      "LOT_E243521_N263869/R1"
     ]
@@ -209430,6 +209263,127 @@
    "over": [
     "PARCEL_ASPHALT_ROAD_ZONE_33"
    ]
+  },
+  {
+   "id": "PARCEL_D4_WEST_ACCESSIBLE_R5",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     243486.1051,
+     263876.4568
+    ],
+    [
+     243485.5498,
+     263870.4595
+    ],
+    [
+     243481.9424,
+     263875.3785
+    ],
+    [
+     243482.4977,
+     263881.3759
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "mesh": "Ground_Lot",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "D4 gate R5/S0/fill; refs/l-ortho-hires/z_west_lot_south_grid5m.png, SYNTHESIS section 6 and parking-curation LOT_E243476_N263851/R5 show blue paint on continuous west-lot asphalt. Support the recorded row footprint with the existing parkingRowParcels 0.30 m margin; this is an internal pavement ownership boundary, not a surveyed kerb (estimated)",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "D4 gate R5/S0/fill; refs/l-ortho-hires/z_west_lot_south_grid5m.png, SYNTHESIS section 6 and parking-curation LOT_E243476_N263851/R5 show blue paint on continuous west-lot asphalt. Support the recorded row footprint with the existing parkingRowParcels 0.30 m margin; this is an internal pavement ownership boundary, not a surveyed kerb (estimated)"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_LOT_T28_LOT_E243476_N263851_R1"
+   ]
+  },
+  {
+   "id": "PARCEL_LOT_E243489_N263815_R1",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     243485.1724,
+     263824.4554
+    ],
+    [
+     243500.6854,
+     263820.2421
+    ],
+    [
+     243499.2504,
+     263815.3794
+    ],
+    [
+     243483.7374,
+     263819.5927
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "mesh": "Ground_Lot",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "keep the LOT_E243489_N263815/R1 stall paint on lot ground: the row's front ends sit up to 0.5 m south of PARCEL_ASPHALT_ROAD_ZONE_13 after the D4 reseed; ring is the row footprint plus the generator's row margin (estimated)",
+   "evidence": {
+    "tier": "T2",
+    "refs": [
+     "LOT_E243489_N263815/R1",
+     ".omo/ulw-research/d4-gt/waves/l-ortho-hires.md (D4 south lot, continuous pavement under the row)",
+     "previous parking-record row parcel from fit/parcelsSeed.mjs parkingRowParcels (ROW_PARCEL_M margin)"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a"
+  },
+  {
+   "id": "PARCEL_LOT_E243489_N263815_R2",
+   "cls": "LOT",
+   "class": "lot",
+   "ring": [
+    [
+     243502.6204,
+     263819.7163
+    ],
+    [
+     243508.1014,
+     263818.2281
+    ],
+    [
+     243506.6664,
+     263813.3655
+    ],
+    [
+     243501.1854,
+     263814.8537
+    ]
+   ],
+   "holes": [],
+   "precedence": 4,
+   "mesh": "Ground_Lot",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "keep the LOT_E243489_N263815/R2 stall paint on lot ground: the row's front ends sit up to 0.5 m south of PARCEL_ASPHALT_ROAD_ZONE_13 after the D4 reseed; ring is the row footprint plus the generator's row margin (estimated)",
+   "evidence": {
+    "tier": "T2",
+    "refs": [
+     "LOT_E243489_N263815/R2",
+     ".omo/ulw-research/d4-gt/waves/l-ortho-hires.md (D4 south lot, continuous pavement under the row)",
+     "previous parking-record row parcel from fit/parcelsSeed.mjs parkingRowParcels (ROW_PARCEL_M margin)"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a"
   },
   {
    "id": "PARCEL_SUPPORT_ROAD_244046_264016",

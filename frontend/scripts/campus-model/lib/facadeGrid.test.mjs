@@ -3,6 +3,7 @@ import test from "node:test";
 import { wallsOf } from "./anchors.mjs";
 import { compileFacadeGrid, gridCellsOnEdge, recessCutsOnEdge, clipFacadeQuad } from "./facadeGrid.mjs";
 import { tmToScene } from "../../../src/geo/epsg5186.mjs";
+import { readFileSync } from "node:fs";
 
 const building = "BLD_TEST";
 const footprint = { polygons: [[[[244000, 263800], [244000, 263820], [244010, 263820], [244010, 263800]]]] };
@@ -22,6 +23,16 @@ const record = () => ({
   },
 });
 const entrances = [{ id: "entry", anchor: { building, wall: "W00", sM: 8 }, widthM: 2 }];
+
+test("D4 passage and recessed tower banks do not become duplicate exterior atlas doors", () => {
+  const read = name => JSON.parse(readFileSync(new URL(`../data/${name}`, import.meta.url), "utf8"));
+  const doc = read("buildings/facades/BLD_D4.json");
+  const node = read("bld-node-map.json").entries.find(e => e.nodeId === "BLD_D4");
+  const fp = { polygons: [[node.walls.map(w => w.A)]], walls: node.walls };
+  const grid = compileFacadeGrid(doc, fp, read("buildings/entrances.json").records);
+  const ids = [...grid.walls.values()].flatMap(w => w.cells.filter(c => c.entrance).map(c => c.entrance.id));
+  assert.deepEqual([...new Set(ids)], ["ENT_D4_E3"]);
+});
 
 test("a recorded entrance recess cuts its front volume but leaves the anchored rear door plane", () => {
   const doc = record();
@@ -79,9 +90,33 @@ test("a surface correspondence needs finite source endpoints, a source identity 
     { A: [NaN, 263800], B: [243999, 263820], source: "source" },
     { A: [243999, 263800], B: [243999, 263820], source: "" },
     { A: [243999, 263800], B: [243999, 263800], source: "source" },
+    { A: [243999, 263800], B: [243999, 263820], range: [0.7, 0.2], source: "source" },
+    { A: [243999, 263800], B: [243999, 263820], range: [-0.1, 1], source: "source" },
   ]) {
     const doc = record(); doc.walls.W00.cells = [null, null]; doc.walls.W00.surfaceEdges = [edge];
     assert.throws(() => compileFacadeGrid(doc, footprint), /surface edge/);
+  }
+});
+
+test("two reviewed walls partition one source edge in both directions without stretching GIS bays", () => {
+  const fp = { polygons: [[[[244000,263800],[244000,263810],[244000,263820],[244010,263820],[244010,263800]]]] };
+  fp.walls = wallsOf(building, fp);
+  const doc = record();
+  const spec = { ...doc.walls.W00, cells: undefined, accents: {}, bays: { pitchM: 4, count: 2, offsetM: 1 } };
+  const edge = { A: [243999,263799], B: [243999,263821], source: "synthetic shared source edge (estimated)" };
+  doc.walls = {
+    W00: { ...spec, surfaceEdges: [{ ...edge, range: [0, 0.5] }] },
+    W01: { ...spec, surfaceEdges: [{ ...edge, range: [0.5, 1] }] },
+  };
+  const grid = compileFacadeGrid(doc, fp);
+  for (const reverse of [false, true]) {
+    const [a, b] = reverse ? [edge.B, edge.A] : [edge.A, edge.B];
+    const cells = gridCellsOnEdge(grid, tmToScene(...a), tmToScene(...b)).filter(c => c.storey === 0);
+    assert.deepEqual([...new Set(cells.map(c => c.wall))], reverse ? ["W01","W00"] : ["W00","W01"]);
+    assert.equal(cells[0].t0, 0);
+    assert.equal(cells.at(-1).t1, 1);
+    for (let i = 1; i < cells.length; i++) assert.ok(Math.abs(cells[i-1].t1 - cells[i].t0) < 1e-9);
+    assert.ok(cells.filter(c => c.bay >= 0).every(c => c.s1M - c.s0M === 4));
   }
 });
 

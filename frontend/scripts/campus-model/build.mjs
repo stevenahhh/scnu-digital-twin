@@ -144,6 +144,8 @@ try {
   assertRawDeterminism(firstHeight[0], readFileSync(candidate.heightBin));
   assertRawDeterminism(firstHeight[1], readFileSync(candidate.heightJson));
   console.log(`RAW_DETERMINISM OK ${determinism.firstSha256}`);
+  await command("qa/d4Integration.mjs", [candidate.raw]);
+  await command("check-ground-overlap.mjs", [candidate.raw]);
   cpSync(join(candidate.dir, "markings.report.json"), join(BUILD, "markings.report.json"));
   await command("pack.mjs", ["--candidate-dir", candidate.dir]);
   await publishCandidate(candidate, {

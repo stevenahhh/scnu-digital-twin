@@ -25,6 +25,8 @@ import { ringArea } from "../lib/geometry.mjs";
 import { EXTENT, SCENE_UNITS_PER_METRE, geoToModel, metres, modelToGeo } from "../lib/frame.mjs";
 import { decodePng } from "../lib/png.mjs";
 import { readTerrain } from "../fetch/terrain.mjs";
+import { splitD4GroundPolygon } from "../lib/landcover.mjs";
+import { groundTile, planarTileUv, tileMaterial } from "./surfaces.mjs";
 
 const SIGMA_PX = 1.5;
 const FEATHER_M = 45;
@@ -387,6 +389,8 @@ export async function buildOuterTerrain({ glb, inputs }) {
   const finalPositions = pick(positions, 3, Float32Array);
   const finalNormals = pick(normals, 3, Float32Array);
   const finalColours = pick(colours, 4, Uint8Array);
+  const d4Material = await tileMaterial(glb, { name: "Ground_Outer_D4", cls: "d4-soil", rank: 0 });
+  const d4RepeatM = groundTile("d4-soil").entry.physicalSizeM;
   // Emitted last (build-campus-model.mjs), after the context streets claimed their ground (lib/partition.mjs
   // TinPartition): a triangle no street touches keeps its vertices; a cut one is rebuilt from the convex parts left,
   // each vertex interpolated (height, normal, colour) inside its triangle.
@@ -395,45 +399,53 @@ export async function buildOuterTerrain({ glb, inputs }) {
     const outNormals = Array.from(finalNormals);
     const outColours = Array.from(finalColours);
     const indices = [];
+    const d4Positions = [], d4Normals = [], d4Uvs = [], d4Indices = [];
     let cut = 0;
     for (let t = 0; t < outIndices.length; t += 3) {
       const [ia, ib, ic] = [outIndices[t], outIndices[t + 1], outIndices[t + 2]];
       const cell = tin.triangles[t];
-      if (!cell) {
-        indices.push(ia, ib, ic);
-        continue;
-      }
-      const parts = tin.claimInCell(cell.tri, t, cell.area);
-      if (parts.length === 1 && Math.abs(Math.abs(ringArea(parts[0])) - cell.area) < 1e-9) {
+      const P = (k) => [finalPositions[k * 3], finalPositions[k * 3 + 2]];
+      const [A, B, C] = [P(ia), P(ib), P(ic)];
+      const parts = cell ? tin.claimInCell(cell.tri, t, cell.area) : [[A, B, C]];
+      const split = parts.map(splitD4GroundPolygon);
+      if (!split.some(p => p.inside) &&
+          (!cell || (parts.length === 1 && Math.abs(Math.abs(ringArea(parts[0])) - cell.area) < 1e-9))) {
         indices.push(ia, ib, ic);
         continue;
       }
       cut += 1;
-      const P = (k) => [finalPositions[k * 3], finalPositions[k * 3 + 2]];
-      const [A, B, C] = [P(ia), P(ib), P(ic)];
       const det = (B[1] - C[1]) * (A[0] - C[0]) + (C[0] - B[0]) * (A[1] - C[1]);
-      const vertex = ([x, z]) => {
+      const vertex = ([x, z], d4) => {
         const l1 = ((B[1] - C[1]) * (x - C[0]) + (C[0] - B[0]) * (z - C[1])) / det;
         const l2 = ((C[1] - A[1]) * (x - C[0]) + (A[0] - C[0]) * (z - C[1])) / det;
         const w = [l1, l2, 1 - l1 - l2];
         const mix = (source, size, c) => w.reduce((s, wk, k) => s + wk * source[[ia, ib, ic][k] * size + c], 0);
-        outPositions.push(x, mix(finalPositions, 3, 1), z);
+        const positions = d4 ? d4Positions : outPositions;
+        const normals = d4 ? d4Normals : outNormals;
+        positions.push(x, mix(finalPositions, 3, 1), z);
         const n = [0, 1, 2].map((c) => mix(finalNormals, 3, c));
         const l = Math.hypot(...n) || 1;
-        outNormals.push(n[0] / l, n[1] / l, n[2] / l);
-        for (let c = 0; c < 4; c += 1) outColours.push(Math.round(mix(finalColours, 4, c)));
-        return outPositions.length / 3 - 1;
+        normals.push(n[0] / l, n[1] / l, n[2] / l);
+        if (d4) d4Uvs.push(...planarTileUv(x, z, d4RepeatM));
+        else for (let c = 0; c < 4; c += 1) outColours.push(Math.round(mix(finalColours, 4, c)));
+        return positions.length / 3 - 1;
       };
-      for (const part of parts) {
-        const ids = part.map(vertex);
+      const pieces = split.flatMap(({ inside, outside }) => [
+        ...outside.map(part => ({ part, d4: false })),
+        ...(inside ? [{ part: inside, d4: true }] : []),
+      ]);
+      for (const { part, d4 } of pieces) {
+        const positions = d4 ? d4Positions : outPositions;
+        const target = d4 ? d4Indices : indices;
+        const ids = part.map(p => vertex(p, d4));
         for (let k = 1; k + 1 < ids.length; k += 1) {
           const tri = [ids[0], ids[k], ids[k + 1]];
-          const ux = outPositions[tri[1] * 3] - outPositions[tri[0] * 3];
-          const uz = outPositions[tri[1] * 3 + 2] - outPositions[tri[0] * 3 + 2];
-          const vx = outPositions[tri[2] * 3] - outPositions[tri[0] * 3];
-          const vz = outPositions[tri[2] * 3 + 2] - outPositions[tri[0] * 3 + 2];
-          if (uz * vx - ux * vz >= 0) indices.push(...tri);
-          else indices.push(tri[0], tri[2], tri[1]);
+          const ux = positions[tri[1] * 3] - positions[tri[0] * 3];
+          const uz = positions[tri[1] * 3 + 2] - positions[tri[0] * 3 + 2];
+          const vx = positions[tri[2] * 3] - positions[tri[0] * 3];
+          const vz = positions[tri[2] * 3 + 2] - positions[tri[0] * 3 + 2];
+          if (uz * vx - ux * vz >= 0) target.push(...tri);
+          else target.push(tri[0], tri[2], tri[1]);
         }
       }
     }
@@ -445,9 +457,16 @@ export async function buildOuterTerrain({ glb, inputs }) {
         indices,
         material,
       },
+      ...(d4Indices.length ? [{
+        positions: Float32Array.from(d4Positions),
+        normals: Float32Array.from(d4Normals),
+        uvs: Float32Array.from(d4Uvs),
+        indices: d4Indices,
+        material: d4Material,
+      }] : []),
     ]);
     glb.addNode({ name: "OuterTerrain", mesh, extras: { note: "natural ground of the hill ring only: the context streets are cut out of it (Ground_Context_*, Context_Far_Ground_*)" } }, { root: true });
-    return { triangles: indices.length / 3, cut };
+    return { triangles: (indices.length + d4Indices.length) / 3, cut };
   };
   return {
     offsetMetres,

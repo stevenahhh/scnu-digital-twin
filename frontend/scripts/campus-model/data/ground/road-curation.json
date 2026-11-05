@@ -40428,7 +40428,143 @@
         "status": "unresolved",
         "unresolvedQuestion": "The inherited RD_066 (공대3호관1로) path is an estimated network connection, while the paint sits outside a uniquely supported named road polygon. 서측 횡단보도와 건물 앞 차도가 보인다. 청록 가지가 건물 지붕을 관통한다."
       },
-      "method": "lane C aerial corridor and authoritative network connectivity review"
+      "method": "lane C aerial corridor and authoritative network connectivity review",
+      "geometry": {
+        "guideLines": [
+          {
+            "id": "D4_EAST_EDGE_W_0",
+            "points": [
+              [
+                243549.019,
+                263886.187
+              ],
+              [
+                243553.293,
+                263875.488
+              ]
+            ],
+            "widthM": 0.15,
+            "colour": "yellow",
+            "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 5; .omo/ulw-research/d4-gt/refs/h-scnu-vr/d4_l_road_children_zone_text.jpg; CW_024 inferred axis retained locally, 4.3 m edge spacing from waves/h-objects.md EXPAND 1; line width 0.15 m and dash/gap 3/5 m from existing generator defaults, not measured on this road (estimated)"
+          },
+          {
+            "id": "D4_EAST_EDGE_E_0",
+            "points": [
+              [
+                243553.012,
+                263887.782
+              ],
+              [
+                243557.286,
+                263877.083
+              ]
+            ],
+            "widthM": 0.15,
+            "colour": "yellow",
+            "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 5; .omo/ulw-research/d4-gt/refs/h-scnu-vr/d4_l_road_children_zone_text.jpg; CW_024 inferred axis retained locally, 4.3 m edge spacing from waves/h-objects.md EXPAND 1; line width 0.15 m and dash/gap 3/5 m from existing generator defaults, not measured on this road (estimated)"
+          },
+          {
+            "id": "D4_EAST_WHITE_DASH_0",
+            "points": [
+              [
+                243551.016,
+                263886.985
+              ],
+              [
+                243555.29,
+                263876.285
+              ]
+            ],
+            "widthM": 0.15,
+            "colour": "white",
+            "dashPattern": {
+              "dashM": 3,
+              "gapM": 5
+            },
+            "dashPhaseM": 0,
+            "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 5; .omo/ulw-research/d4-gt/refs/h-scnu-vr/d4_l_road_children_zone_text.jpg; CW_024 inferred axis retained locally, 4.3 m edge spacing from waves/h-objects.md EXPAND 1; line width 0.15 m and dash/gap 3/5 m from existing generator defaults, not measured on this road (estimated)"
+          },
+          {
+            "id": "D4_EAST_EDGE_W_1",
+            "points": [
+              [
+                243555.874,
+                263869.027
+              ],
+              [
+                243560.147,
+                263858.327
+              ]
+            ],
+            "widthM": 0.15,
+            "colour": "yellow",
+            "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 5; .omo/ulw-research/d4-gt/refs/h-scnu-vr/d4_l_road_children_zone_text.jpg; CW_024 inferred axis retained locally, 4.3 m edge spacing from waves/h-objects.md EXPAND 1; line width 0.15 m and dash/gap 3/5 m from existing generator defaults, not measured on this road (estimated)"
+          },
+          {
+            "id": "D4_EAST_EDGE_E_1",
+            "points": [
+              [
+                243559.867,
+                263870.622
+              ],
+              [
+                243564.141,
+                263859.922
+              ]
+            ],
+            "widthM": 0.15,
+            "colour": "yellow",
+            "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 5; .omo/ulw-research/d4-gt/refs/h-scnu-vr/d4_l_road_children_zone_text.jpg; CW_024 inferred axis retained locally, 4.3 m edge spacing from waves/h-objects.md EXPAND 1; line width 0.15 m and dash/gap 3/5 m from existing generator defaults, not measured on this road (estimated)"
+          },
+          {
+            "id": "D4_EAST_WHITE_DASH_1",
+            "points": [
+              [
+                243557.87,
+                263869.824
+              ],
+              [
+                243562.144,
+                263859.124
+              ]
+            ],
+            "widthM": 0.15,
+            "colour": "white",
+            "dashPattern": {
+              "dashM": 3,
+              "gapM": 5
+            },
+            "dashPhaseM": 2.4788497685191544,
+            "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 5; .omo/ulw-research/d4-gt/refs/h-scnu-vr/d4_l_road_children_zone_text.jpg; CW_024 inferred axis retained locally, 4.3 m edge spacing from waves/h-objects.md EXPAND 1; line width 0.15 m and dash/gap 3/5 m from existing generator defaults, not measured on this road (estimated)"
+          }
+        ],
+        "refs": [
+          ".omo/ulw-research/d4-gt/SYNTHESIS.md#5-roads-markings-and-the-공대3호관삼거리-junction",
+          ".omo/ulw-research/d4-gt/refs/h-scnu-vr/d4_l_road_children_zone_text.jpg",
+          ".omo/ulw-research/d4-gt/waves/h-objects.md#EXPAND-1"
+        ],
+        "reason": "D-50: local east-road yellow edges and white dashed separator, clipped around CW_024 by its 6.457 m crossing length plus 0.25 m clearance. This is an estimated 30 m local corridor, not approval of the coarse RD_066 network path or its two-way lane classification. Text placement and arrow handedness remain unresolved (estimated)"
+      },
+      "markingReview": {
+        "issue": "D-50",
+        "text": {
+          "reportedText": "어린이보호",
+          "charHeightM": 0.8,
+          "placement": null,
+          "status": "gap",
+          "source": ".omo/ulw-research/d4-gt/waves/h-objects.md O08 gives no projected position; rotated refs/h-scnu-vr/d4_l_road_children_zone_text.jpg does not securely confirm the reported lettering; do not emit unverified text (estimated)"
+        },
+        "arrow": {
+          "centreTm": [
+            243558.296,
+            263865.009
+          ],
+          "lengthM": 1.5,
+          "type": null,
+          "status": "gap",
+          "source": ".omo/ulw-research/d4-gt/waves/h-objects.md O09 identifies a straight/turn arrow but does not resolve handedness; VR station absolute error is stated as +/-20 m, so this is not an NGII-registered placement (estimated)"
+        }
+      }
     },
     {
       "id": "RS_58b968468fbae28f",
@@ -40531,7 +40667,73 @@
         "status": "unresolved",
         "unresolvedQuestion": "The physical junction is localized to RZ-015=1.000, but its connecting road arm is not uniquely supported by the named road polygons and the source-marking direction."
       },
-      "method": "lane C aerial corridor and authoritative network connectivity review"
+      "method": "lane C aerial corridor and authoritative network connectivity review",
+      "geometry": {
+        "guideLines": [
+          {
+            "id": "D4_LN_N_W",
+            "points": [
+              [
+                243554.857,
+                263859.956
+              ],
+              [
+                243556.286,
+                263855.312
+              ],
+              [
+                243557.893,
+                263850.312
+              ]
+            ],
+            "widthM": 0.15,
+            "colour": "yellow",
+            "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 5.1; .omo/ulw-research/d4-gt/waves/h-ortho.md LN-N/LN-S; widths 0.15 m and clear gap 0.15 m use existing roadMarkings convention, not a surveyed width (estimated)"
+          },
+          {
+            "id": "D4_LN_N_E",
+            "points": [
+              [
+                243555.144,
+                263860.044
+              ],
+              [
+                243556.572,
+                263855.402
+              ],
+              [
+                243558.178,
+                263850.404
+              ]
+            ],
+            "widthM": 0.15,
+            "colour": "yellow",
+            "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 5.1; .omo/ulw-research/d4-gt/waves/h-ortho.md LN-N/LN-S; widths 0.15 m and clear gap 0.15 m use existing roadMarkings convention, not a surveyed width (estimated)"
+          },
+          {
+            "id": "D4_LN_S",
+            "points": [
+              [
+                243554,
+                263822.143
+              ],
+              [
+                243555,
+                263821
+              ]
+            ],
+            "widthM": 0.15,
+            "colour": "yellow",
+            "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 5.1; .omo/ulw-research/d4-gt/waves/h-ortho.md LN-N/LN-S; widths 0.15 m and clear gap 0.15 m use existing roadMarkings convention, not a surveyed width (estimated)"
+          }
+        ],
+        "refs": [
+          ".omo/ulw-research/d4-gt/waves/h-ortho.md#LN-N",
+          ".omo/ulw-research/d4-gt/waves/h-ortho.md#LN-S",
+          ".omo/ulw-research/d4-gt/refs/l-ortho-hires/z_junction_plain.png"
+        ],
+        "reason": "D-22: restore only the observed double north-leg paint and isolated south dash. Do not bridge the unobserved 16.15 m interval to the outer triangle: l-ortho-hires row 20 and the plain crop show no centreline inside the junction (estimated)"
+      }
     },
     {
       "id": "RS_7cf02b0962f888bc",

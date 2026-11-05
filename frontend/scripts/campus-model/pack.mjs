@@ -48,7 +48,7 @@ const TERRAIN_CHUNK = /^Topography_/;
 const TERRAIN_JOINED = "Topography_joined";
 const TRIANGLES = 4;
 // Materials that must carry the baked AO (building atlas: stages/buildings.mjs; ground: stages/ground.mjs).
-const AO_MATERIALS = ["Facade_Atlas", "Roof_Membrane", "Roof_Parapet", "Roof_Equipment", "Ground_Asphalt"];
+const AO_MATERIALS = ["Facade_Atlas", "Facade_Atlas_D4", "Roof_Membrane", "Roof_Parapet", "Roof_Equipment", "Ground_Asphalt"];
 
 const OPTIMIZE_ARGS = [
   "--flatten", "false",

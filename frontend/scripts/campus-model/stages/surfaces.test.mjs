@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { decodePng } from "../lib/png.mjs";
 
 import { sceneToTm } from "../../../src/geo/epsg5186.mjs";
 import { SCENE_UNITS_PER_METRE } from "../lib/frame.mjs";
 import { topographySurface } from "./ground.mjs";
 import { GlbBuilder } from "../lib/glb.mjs";
-import { GROUND_MESHES, SURFACE_LIFT_M, buildSurfaceMeshes, surfaceGeometry } from "./surfaces.mjs";
+import { GROUND_MESHES, SURFACE_LIFT_M, buildSurfaceMeshes, surfaceGeometry, groundTile } from "./surfaces.mjs";
 
 const TERRAIN = 12;
 const surface = topographySurface(() => TERRAIN);
@@ -80,5 +81,57 @@ test("every triangle faces up", () => {
       const cross = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
       assert.ok(cross < 0, `${p.mesh} triangle ${t / 3} faces down`);
     }
+  }
+});
+
+test("D4 material boundary splits crossing asphalt without changing outside UVs or losing area", () => {
+  const ring = [[243420, 263850], [243430, 263850], [243430, 263860], [243420, 263860]];
+  const result = surfaceGeometry({
+    layers: [{ mesh: "Ground_Asphalt", precedence: 3, rings: [ring] }],
+    surface, tileSize: () => 3,
+  });
+  assert.equal(result.length, 2);
+  let area = 0;
+  for (const p of result) {
+    const inside = p.tile === "d4-asphalt";
+    assert.equal(p.tile ?? null, inside ? "d4-asphalt" : null);
+    for (let i = 0; i < p.positions.length; i += 3) {
+      const [e, n] = sceneToTm(p.positions[i], p.positions[i + 2]);
+      assert.ok(inside ? e >= 243422.55 - 1e-7 : e <= 243422.55 + 1e-7);
+      const u = p.uvs[i / 3 * 2], v = p.uvs[i / 3 * 2 + 1];
+      assert.ok(Math.abs(u - e / 3 - Math.round(u - e / 3)) < 1e-6);
+      assert.ok(Math.abs(v + n / 3 - Math.round(v + n / 3)) < 1e-6);
+    }
+    for (let i = 0; i < p.indices.length; i += 3) {
+      const [a,b,c] = p.indices.slice(i,i+3).map(k => sceneToTm(p.positions[k*3], p.positions[k*3+2]));
+      area += Math.abs((b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0])) / 2;
+    }
+  }
+  assert.ok(Math.abs(area - 100) < 1e-6);
+});
+
+test("D4 building tiles retain physical size and at least 200 texels per metre", () => {
+  const { entry } = groundTile("d4-roof-south");
+  assert.equal(entry.physicalSizeM, 20);
+  assert.equal(entry.size / entry.physicalSizeM, 204.8);
+});
+
+test("D4 pavement emits native detail maps and preserves the curated plaza repeat", async () => {
+  const glb = new GlbBuilder();
+  await buildSurfaceMeshes({
+    glb, surface, decimate:false,
+    layers:[{ mesh:"Ground_Plaza", pattern:"d4-stripes", precedence:5,
+      rings:[[[243520,263880],[243524,263880],[243524,263884],[243520,263884]]] }],
+  });
+  const mat=glb.json.materials.find(m=>m.name==="Ground_Plaza_D4");
+  assert.equal(mat.extras.paving,"d4-stripes");
+  assert.equal(mat.extras.repeatM,7.2);
+  const bytes=Buffer.concat(glb.chunks);
+  for(const texture of [mat.pbrMetallicRoughness.baseColorTexture,mat.normalTexture,mat.pbrMetallicRoughness.metallicRoughnessTexture]) {
+    const image=glb.json.images[glb.json.textures[texture.index].source];
+    const view=glb.json.bufferViews[image.bufferView];
+    const png=decodePng(bytes.subarray(view.byteOffset,view.byteOffset+view.byteLength));
+    assert.ok(png.width/mat.extras.repeatM>=200);
+    assert.ok(png.height/mat.extras.repeatM>=200);
   }
 });

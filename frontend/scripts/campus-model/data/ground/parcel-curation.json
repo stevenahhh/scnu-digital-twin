@@ -2,6 +2,181 @@
  "note": "Reviewed changes on top of the seeded ground parcels (plan campus-ground-truth-redesign todo 13a, design section 5). fit/parcelsSeed.mjs applies them, so they survive a reseed: edit here, never in parcels.json. replace: a seeded parcel's ring read again from the photo. remove: a seeded parcel the photo contradicts. add: road or lot parcels for pavement with none; rings EPSG:5186 [E, N], traced from the NGII 2025 orthophoto, surface concrete where the photo shows concrete. Tier and estimated are what qa/asphaltScan.mjs measures outside the occlusion masks (gradeParcel; it fails when a record differs), estimated true is 추정. unreadEdgeM: free edge in metres the masks cannot see but the photo does not show either; it counts as lost in that grade. notAsphalt: areas qa/asphaltScan.mjs reads as asphalt that are not, each with its reason. unreachable: parking rows qa/parkingConnectivity.mjs finds no road for, each with its reason.",
  "replace": [
   {
+   "id": "PARCEL_ASPHALT_ROAD_ZONE_11",
+   "ring": [
+    [
+     243548.8464,
+     263921.2526
+    ],
+    [
+     243549.3671,
+     263920.8542
+    ],
+    [
+     243559.3011,
+     263920.0177
+    ],
+    [
+     243559.2058,
+     263923.3823
+    ],
+    [
+     243558.6791,
+     263925.5221
+    ],
+    [
+     243557.6518,
+     263926.8238
+    ],
+    [
+     243556.5942,
+     263927.4747
+    ],
+    [
+     243502.6342,
+     263941.1138
+    ],
+    [
+     243500.5199,
+     263941.0864
+    ],
+    [
+     243499.479,
+     263940.6381
+    ],
+    [
+     243498.4522,
+     263939.6122
+    ],
+    [
+     243496.8968,
+     263936.6095
+    ],
+    [
+     243495.8077,
+     263934.5794
+    ],
+    [
+     243503.4758,
+     263932.6268
+    ],
+    [
+     243504.3221,
+     263932.7516
+    ],
+    [
+     243507.364,
+     263932.5068
+    ]
+   ],
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "D4 candidate-SZm5X0 paint failures LOT_D4_NORTH_ROADSIDE/R1/D0 and RS_862123dc2482b743/kerb/right/part/0; refs/l-ortho-hires/z_north_end_grid5m.png shows continuous pavement through the north-west bay and yellow kerb. Place the road shoulder and building apron at row-local depth 2.65 m (2.0 m bay plus 0.65 m kerb/shoulder allowance), retaining all other road vertices and the building hole; the prior 2.15 m apron edge left emitted kerb triangles on its boundary (estimated)"
+    ]
+   },
+   "estimated": true,
+   "reason": "D4 candidate-SZm5X0 paint failures LOT_D4_NORTH_ROADSIDE/R1/D0 and RS_862123dc2482b743/kerb/right/part/0; refs/l-ortho-hires/z_north_end_grid5m.png shows continuous pavement through the north-west bay and yellow kerb. Place the road shoulder and building apron at row-local depth 2.65 m (2.0 m bay plus 0.65 m kerb/shoulder allowance), retaining all other road vertices and the building hole; the prior 2.15 m apron edge left emitted kerb triangles on its boundary (estimated)"
+  },
+  {
+   "id": "PARCEL_PAVING_BUILDING_149",
+   "ring": [
+    [
+     243525.3271,
+     263922.0831
+    ],
+    [
+     243526.742,
+     263927.6054
+    ],
+    [
+     243514.0698,
+     263930.8107
+    ],
+    [
+     243512.6619,
+     263925.3296
+    ]
+   ],
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "D4 candidate-SZm5X0 paint failures LOT_D4_NORTH_ROADSIDE/R1/D0 and RS_862123dc2482b743/kerb/right/part/0; refs/l-ortho-hires/z_north_end_grid5m.png shows continuous pavement through the north-west bay and yellow kerb. Place the road shoulder and building apron at row-local depth 2.65 m (2.0 m bay plus 0.65 m kerb/shoulder allowance), retaining all other road vertices and the building hole; the prior 2.15 m apron edge left emitted kerb triangles on its boundary (estimated)"
+    ]
+   },
+   "estimated": true,
+   "reason": "D4 candidate-SZm5X0 paint failures LOT_D4_NORTH_ROADSIDE/R1/D0 and RS_862123dc2482b743/kerb/right/part/0; refs/l-ortho-hires/z_north_end_grid5m.png shows continuous pavement through the north-west bay and yellow kerb. Place the road shoulder and building apron at row-local depth 2.65 m (2.0 m bay plus 0.65 m kerb/shoulder allowance), retaining all other road vertices and the building hole; the prior 2.15 m apron edge left emitted kerb triangles on its boundary (estimated)"
+  },
+  {
+   "id": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_D4_",
+   "ring": [
+    [
+     243535,
+     263924
+    ],
+    [
+     243542,
+     263924
+    ],
+    [
+     243542,
+     263910
+    ],
+    [
+     243538,
+     263896
+    ],
+    [
+     243548.1003,
+     263886.5001
+    ],
+    [
+     243549.7497,
+     263877.5005
+    ],
+    [
+     243553.0996,
+     263865.6
+    ],
+    [
+     243542.5001,
+     263868.7501
+    ],
+    [
+     243525.6,
+     263871.9002
+    ],
+    [
+     243521.2501,
+     263872.4996
+    ],
+    [
+     243523.7499,
+     263883.7502
+    ],
+    [
+     243524.9996,
+     263891.9005
+    ],
+    [
+     243531,
+     263910
+    ],
+    [
+     243535,
+     263910
+    ]
+   ],
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "NGII 2025 sheet 34702020 refs/h-ortho/measurements.json PW-N and refs/h-ortho/ngii2025_25cm_243495_263960_x5_grid.png; refs/h-ortho/ngii2025_25cm_243515_263900_x6_grid.png; SYNTHESIS section 4/C11: flat east plaza, north strip and transition traced at 0.6-1.0 m uncertainty (estimated)"
+    ]
+   },
+   "estimated": true,
+   "reason": "NGII 2025 sheet 34702020 refs/h-ortho/measurements.json PW-N and refs/h-ortho/ngii2025_25cm_243495_263960_x5_grid.png; refs/h-ortho/ngii2025_25cm_243515_263900_x6_grid.png; SYNTHESIS section 4/C11: flat east plaza, north strip and transition traced at 0.6-1.0 m uncertainty (estimated)"
+  },
+  {
    "id": "PARCEL_ASPHALT_ROAD_ZONE_50",
    "ring": [
     [
@@ -1835,6 +2010,10 @@
  ],
  "remove": [
   {
+   "id": "PARCEL_PAVING_EDGE_POI_POI_ENT_D4_MAIN",
+   "reason": "ISSUES D-18/D-48 and SYNTHESIS C5; refs/c-bridge/src-08-west-road-looking-south.png: estimated connector to the nonexistent west main door is not a verified garden path; remove its paving only, preserve road and parking parcels (estimated)"
+  },
+  {
    "id": "PARCEL_PAVING_EDGE_FB_0037",
    "reason": "estimated strip of network edge EDGE_FB_0037 drawn across the E3 island lawn; the photo shows no path. The network edge itself stays"
   },
@@ -1851,7 +2030,7 @@
    "reason": "estimated apron strip under the BLD_D2 footbridge; NGII shows the lane running on either side of the bridge, so it wrongly cuts the lane"
   },
   {
-   "id": "PARCEL_PAVING_BUILDING_340",
+   "id": "PARCEL_PAVING_BUILDING_339",
    "reason": "F2 footprint-prism fallback apron crosses the asphalt approach of LOT_E244150_N263449/R2 near TM 244153,263496. NGII 2025 and Suncheon 2024 12cm show continuous asphalt west of F2, not an apron enclosing the road. Remove only this generated estimated strip; retain the existing road/lot parcels and the 2 m connectivity clearance (todo 25 photo check, estimated)."
   }
  ],
@@ -3992,6 +4171,101 @@
    },
    "estimated": true,
    "reason": "ZC051 중앙 횡단보도 구간의 실제 연속 아스팔트 내부에 있는 ROAD_ZONE_33 지면 공백을 보완한다. 경계는 추정 내부 분할선이며 도색 hull이나 buffer에서 생성하지 않았다. 기존 비도색 구획과 겹치지 않고, 남북 교통섬·수관 경계는 포함하지 않는다."
+  },
+  {
+   "id": "PARCEL_D4_WEST_ACCESSIBLE_R5",
+   "class": "lot",
+   "ring": [
+    [
+     243486.1051,
+     263876.4568
+    ],
+    [
+     243485.5498,
+     263870.4595
+    ],
+    [
+     243481.9424,
+     263875.3785
+    ],
+    [
+     243482.4977,
+     263881.3759
+    ]
+   ],
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "D4 gate R5/S0/fill; refs/l-ortho-hires/z_west_lot_south_grid5m.png, SYNTHESIS section 6 and parking-curation LOT_E243476_N263851/R5 show blue paint on continuous west-lot asphalt. Support the recorded row footprint with the existing parkingRowParcels 0.30 m margin; this is an internal pavement ownership boundary, not a surveyed kerb (estimated)"
+    ]
+   },
+   "estimated": true,
+   "unreadEdgeM": 0,
+   "reason": "D4 gate R5/S0/fill; refs/l-ortho-hires/z_west_lot_south_grid5m.png, SYNTHESIS section 6 and parking-curation LOT_E243476_N263851/R5 show blue paint on continuous west-lot asphalt. Support the recorded row footprint with the existing parkingRowParcels 0.30 m margin; this is an internal pavement ownership boundary, not a surveyed kerb (estimated)"
+  },
+  {
+   "id": "PARCEL_LOT_E243489_N263815_R1",
+   "class": "lot",
+   "ring": [
+    [
+     243485.1724,
+     263824.4554
+    ],
+    [
+     243500.6854,
+     263820.2421
+    ],
+    [
+     243499.2504,
+     263815.3794
+    ],
+    [
+     243483.7374,
+     263819.5927
+    ]
+   ],
+   "evidence": {
+    "tier": "T2",
+    "refs": [
+     "LOT_E243489_N263815/R1",
+     ".omo/ulw-research/d4-gt/waves/l-ortho-hires.md (D4 south lot, continuous pavement under the row)",
+     "previous parking-record row parcel from fit/parcelsSeed.mjs parkingRowParcels (ROW_PARCEL_M margin)"
+    ]
+   },
+   "estimated": true,
+   "reason": "keep the LOT_E243489_N263815/R1 stall paint on lot ground: the row's front ends sit up to 0.5 m south of PARCEL_ASPHALT_ROAD_ZONE_13 after the D4 reseed; ring is the row footprint plus the generator's row margin (estimated)"
+  },
+  {
+   "id": "PARCEL_LOT_E243489_N263815_R2",
+   "class": "lot",
+   "ring": [
+    [
+     243502.6204,
+     263819.7163
+    ],
+    [
+     243508.1014,
+     263818.2281
+    ],
+    [
+     243506.6664,
+     263813.3655
+    ],
+    [
+     243501.1854,
+     263814.8537
+    ]
+   ],
+   "evidence": {
+    "tier": "T2",
+    "refs": [
+     "LOT_E243489_N263815/R2",
+     ".omo/ulw-research/d4-gt/waves/l-ortho-hires.md (D4 south lot, continuous pavement under the row)",
+     "previous parking-record row parcel from fit/parcelsSeed.mjs parkingRowParcels (ROW_PARCEL_M margin)"
+    ]
+   },
+   "estimated": true,
+   "reason": "keep the LOT_E243489_N263815/R2 stall paint on lot ground: the row's front ends sit up to 0.5 m south of PARCEL_ASPHALT_ROAD_ZONE_13 after the D4 reseed; ring is the row footprint plus the generator's row margin (estimated)"
   }
  ],
  "notAsphalt": [
@@ -4364,6 +4638,445 @@
    "reason": "reached only across the surveyed A003 sidewalk 047743, a driveway crossing the sidewalk parcel does not model; the survey keeps its class"
   }
  ],
+ "d4GroundTruth": {
+  "building": "BLD_D4",
+  "crs": "EPSG:5186",
+  "integrationRequired": true,
+  "source": "ISSUES D-06/D-13/D-15/D-18/D-35/D-42/D-53/D-54/D-57/D-65; SYNTHESIS sections 4/7/8 and C11; only the D4 surroundings bbox (estimated)",
+  "contract": "Pending integrator support: existing applyParcelCuration consumes replace/remove/add only. These records are canonical seed inputs, not a claim that current stages emit them. Material and geometry values below are estimates.",
+  "heightPolicy": {
+   "id": "D4_FINISHED_PLAZA",
+   "parcel": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_D4_",
+   "apronOwner": "BLD_D4",
+   "referenceTm": [
+    243523.1,
+    263879.5
+   ],
+   "relativeApronRiseM": 0,
+   "mode": "shared-finished-grade",
+   "exclude": [
+    "D4_PASSAGE_STEPS",
+    "D4_NE_STAIR_RECESS",
+    "D4_NORTH_STAIR_RECESS"
+   ],
+   "source": "ISSUES D-06; SYNTHESIS section 7; no photographed south-wall ledge; use one finished-grade datum per connected side, no inferred absolute elevation (estimated)"
+  },
+  "surfaces": [
+   {
+    "id": "PARCEL_D4_PASSAGE",
+    "class": "plaza",
+    "mesh": "Ground_Plaza",
+    "pattern": "d4-passage-stone",
+    "rings": [
+     [
+      [
+       243508.296,
+       263899.8333
+      ],
+      [
+       243517.0177,
+       263897.4951
+      ],
+      [
+       243516.0359,
+       263893.6706
+      ],
+      [
+       243502.5985,
+       263897.1069
+      ],
+      [
+       243503.5415,
+       263900.8313
+      ],
+      [
+       243508.2468,
+       263899.6234
+      ]
+     ],
+     [
+      [
+       243499.5354,
+       263897.8922
+      ],
+      [
+       243500.4976,
+       263901.6167
+      ],
+      [
+       243503.5415,
+       263900.8313
+      ],
+      [
+       243502.5985,
+       263897.1069
+      ]
+     ],
+     [
+      [
+       243517.0177,
+       263897.4951
+      ],
+      [
+       243520.5921,
+       263896.5425
+      ],
+      [
+       243515.616,
+       263876.7674
+      ],
+      [
+       243498.6346,
+       263881.2873
+      ],
+      [
+       243502.5985,
+       263897.1069
+      ],
+      [
+       243516.0359,
+       263893.6706
+      ]
+     ]
+    ],
+    "paintAllowed": false,
+    "source": "SYNTHESIS section 4 passage floor; refs/c-bridge/src-03-passage-eye-level-through.jpg; plan follows BLD_D4 passage void rings, trim against final wall footprints and join mouth landing (estimated)",
+    "whiteGrid": {
+     "colour": "#eeeeea",
+     "widthM": 0.1,
+     "layout": null,
+     "source": "VR scene_d4 f and ISSUES D-42: white rectangular lines exist but endpoints and spacing are unmeasured; width is a visual estimate; do not generate parking bays from a guessed repeat (estimated)"
+    }
+   },
+   {
+    "id": "PARCEL_D4_GARDEN_PATH",
+    "class": "sidewalk",
+    "mesh": "Ground_Plaza",
+    "pattern": "d4-stripes",
+    "ring": [
+     [
+      243535.2083,
+      263852.9167
+     ],
+     [
+      243537.2083,
+      263852.9167
+     ],
+     [
+      243537.4167,
+      263845.8333
+     ],
+     [
+      243537.4167,
+      263840
+     ],
+     [
+      243535.4167,
+      263840
+     ],
+     [
+      243535.4167,
+      263845.8333
+     ]
+    ],
+    "edgeBands": [
+     {
+      "colour": "#526d87",
+      "widthM": 0.3
+     },
+     {
+      "colour": "#b58e7d",
+      "widthM": 0.3
+     }
+    ],
+    "source": "refs/h-ortho/measurements.json PT-S west edge; refs/h-ortho/ngii2025_25cm_243515_263900_x6_grid.png: about 2 m path width; SYNTHESIS section 4 garden path; width and edge bands by eye (estimated)"
+   }
+  ],
+  "bands": [
+   {
+    "id": "PV-B1",
+    "line": [
+     [
+      243525.8333,
+      263890.4167
+     ],
+     [
+      243547.0833,
+      263884.5833
+     ]
+    ],
+    "widthM": 0.6,
+    "colour": "#526d87",
+    "companion": {
+     "offsetM": 0.9,
+     "widthM": 0.6,
+     "colour": "#b58e7d"
+    },
+    "positionErrorM": 0.7,
+    "source": "refs/h-ortho/measurements.json PV-B1; refs/h-scnu-vr/d4_f_plaza_paving_trees.jpg: paired navy and salmon bands separated by a pale paver row; 0.6 m widths and signed 0.9 m companion offset toward increasing northing are visual estimates, clip to plaza (estimated)"
+   },
+   {
+    "id": "PV-B2",
+    "line": [
+     [
+      243525.2083,
+      263886.6667
+     ],
+     [
+      243548.3333,
+      263880.4167
+     ]
+    ],
+    "widthM": 0.6,
+    "colour": "#526d87",
+    "companion": {
+     "offsetM": 0.9,
+     "widthM": 0.6,
+     "colour": "#b58e7d"
+    },
+    "positionErrorM": 0.7,
+    "source": "refs/h-ortho/measurements.json PV-B2; refs/h-scnu-vr/d4_f_plaza_paving_trees.jpg: paired navy and salmon bands separated by a pale paver row; 0.6 m widths and signed 0.9 m companion offset toward increasing northing are visual estimates, clip to plaza (estimated)"
+   },
+   {
+    "id": "PV-B3",
+    "line": [
+     [
+      243523.9583,
+      263882.2917
+     ],
+     [
+      243550,
+      263875.4167
+     ]
+    ],
+    "widthM": 0.6,
+    "colour": "#526d87",
+    "companion": {
+     "offsetM": 0.9,
+     "widthM": 0.6,
+     "colour": "#b58e7d"
+    },
+    "positionErrorM": 0.7,
+    "source": "refs/h-ortho/measurements.json PV-B3; refs/h-scnu-vr/d4_f_plaza_paving_trees.jpg: paired navy and salmon bands separated by a pale paver row; 0.6 m widths and signed 0.9 m companion offset toward increasing northing are visual estimates, clip to plaza (estimated)"
+   },
+   {
+    "id": "PV-B4",
+    "line": [
+     [
+      243522.9167,
+      263878.5417
+     ],
+     [
+      243550.8333,
+      263871.25
+     ]
+    ],
+    "widthM": 0.6,
+    "colour": "#526d87",
+    "companion": {
+     "offsetM": 0.9,
+     "widthM": 0.6,
+     "colour": "#b58e7d"
+    },
+    "positionErrorM": 0.7,
+    "source": "refs/h-ortho/measurements.json PV-B4; refs/h-scnu-vr/d4_f_plaza_paving_trees.jpg: paired navy and salmon bands separated by a pale paver row; 0.6 m widths and signed 0.9 m companion offset toward increasing northing are visual estimates, clip to plaza (estimated)"
+   },
+   {
+    "id": "PV-B5",
+    "line": [
+     [
+      243522.0833,
+      263875
+     ],
+     [
+      243550.4167,
+      263866.6667
+     ]
+    ],
+    "widthM": 0.6,
+    "colour": "#526d87",
+    "companion": {
+     "offsetM": 0.9,
+     "widthM": 0.6,
+     "colour": "#b58e7d"
+    },
+    "positionErrorM": 0.7,
+    "source": "refs/h-ortho/measurements.json PV-B5; refs/h-scnu-vr/d4_f_plaza_paving_trees.jpg: paired navy and salmon bands separated by a pale paver row; 0.6 m widths and signed 0.9 m companion offset toward increasing northing are visual estimates, clip to plaza (estimated)"
+   }
+  ],
+  "steps": [
+   {
+    "id": "D4_PASSAGE_STEPS",
+    "replaces": "RS-LS-D4STEPS",
+    "line": [
+     [
+      243523.9997,
+      263884.9995
+     ],
+     [
+      243522.2,
+      263873.9997
+     ]
+    ],
+    "span": "between-final-passage-side-walls",
+    "upBearingDeg": 279.3,
+    "risers": 4,
+    "riseM": 0.15,
+    "treadM": 0.35,
+    "landingM": 12,
+    "landingToGround": true,
+    "handrail": false,
+    "colour": "#7f8392",
+    "source": "ISSUES D-15; SYNTHESIS section 4; refs/l-vr-cache/d4_f_steps_paving_c740-1640_r1420-1720.jpg; existing 11.15 m seed edge supplies orientation only, extend to both final passage walls; total rise 0.6 m is a lower bound (estimated)"
+   },
+   {
+    "id": "D4_NE_STAIR_RECESS",
+    "ring": [
+     [
+      243525.5,
+      263916
+     ],
+     [
+      243531.5,
+      263916
+     ],
+     [
+      243531.5,
+      263922.3
+     ],
+     [
+      243525.5,
+      263922.3
+     ]
+    ],
+    "depthM": null,
+    "railEdges": [
+     "north",
+     "east"
+    ],
+    "source": "ISSUES D-61; refs/l-ortho-hires/z_north_end_plain.png: 6 x 6.3 m plan, +/-0.5 m; tread count and depth unresolved (estimated)"
+   },
+   {
+    "id": "D4_NORTH_STAIR_RECESS",
+    "ring": [
+     [
+      243509.7,
+      263921.2
+     ],
+     [
+      243514.6,
+      263921.2
+     ],
+     [
+      243514.6,
+      263926.2
+     ],
+     [
+      243509.7,
+      263926.2
+     ]
+    ],
+    "depthM": null,
+    "source": "ISSUES D-61; refs/l-ortho-hires/z_north_end_plain.png: second stair block 4.9 x 5.0 m plan, +/-0.5 m; tread count and depth unresolved (estimated)"
+   }
+  ],
+  "kerbs": [
+   {
+    "id": "RL-E",
+    "line": [
+     [
+      243547.1667,
+      263889.6667
+     ],
+     [
+      243548.6667,
+      263882.5
+     ],
+     [
+      243550.4167,
+      263875
+     ],
+     [
+      243552.5,
+      263869.1667
+     ],
+     [
+      243553.9583,
+      263865.4167
+     ],
+     [
+      243556.6667,
+      263858.3333
+     ],
+     [
+      243558.125,
+      263850.4167
+     ]
+    ],
+    "widthM": 0.2,
+    "exposedM": 0.15,
+    "gutterWidthM": 0.35,
+    "colour": "#b9bdc3",
+    "railHeightM": 1.1,
+    "source": "refs/h-ortho/measurements.json RL-E; SYNTHESIS section 4: pale stone plaza edge, 0.7 m position uncertainty; width/gutter use existing kerbs.mjs priors, height 0.15 m assumed; rail 1.0-1.1 m in VR (estimated)"
+   }
+  ],
+  "tactile": [
+   {
+    "id": "D4_TACTILE_BRANCH",
+    "line": [
+     [
+      243553.3977,
+      263877.5733
+     ],
+     [
+      243548.5621,
+      263876.2278
+     ]
+    ],
+    "widthM": 0.3,
+    "moduleM": 0.3,
+    "ridgeHeightM": 0.005,
+    "colour": "#ab992f",
+    "source": "SYNTHESIS section 4 / O24 and refs/h-scnu-vr/d4_d_charging_post_paving.jpg; two projected endpoints give about 5 m, conflicting with prose about 11 m; retain endpoints, do not stretch them (estimated)"
+   },
+   {
+    "id": "D4_TACTILE_AXIS",
+    "line": null,
+    "termination": "T-bar at passage step foot, branch to east crossing",
+    "widthM": 0.3,
+    "moduleM": 0.3,
+    "ridgeHeightM": 0.005,
+    "colour": "#ab992f",
+    "source": "refs/h-scnu-vr/d4_f_plaza_paving_trees.jpg and ISSUES D-54: axis and T exist but no registered endpoints in SYNTHESIS; integrator must register on the finite band geometry (estimated)"
+   }
+  ],
+  "unresolved": [
+   {
+    "id": "D4_SUNKEN_STRIP",
+    "bboxTm": [
+     243520,
+     263894,
+     243532,
+     263925
+    ],
+    "candidateDepthM": 3,
+    "emit": false,
+    "source": "ISSUES D-68; SYNTHESIS section 7; waves/l-lod4.md F9: 191 m2 candidate may be clipping artefact; VR confirmation lacking, no 3 m excavation authorised by evidence (estimated)"
+   },
+   {
+    "id": "D4_REAR_DRIVE",
+    "surface": "asphalt",
+    "ring": null,
+    "source": "ISSUES D-42; refs/c-bridge/src-09-bridge-back-from-west.png: rear asphalt and yellow text visible, outer boundary and lettering not traced; retain existing road-zone-12 until registered (estimated)"
+   },
+   {
+    "id": "D4_NORTH_SERVICE_ROAD",
+    "parcel": "PARCEL_ASPHALT_ROAD_ZONE_11",
+    "source": "ISSUES D-35: existing parcel is already asphalt; blue-grey plane cannot be identified from capture alone; inspect final material/height and mask canopy aprons rather than reclassifying the service road blindly (estimated)"
+   }
+  ]
+ },
  "paintSuppressed": [
   {
    "id": "LOT_E3_S/R7/S0/border",

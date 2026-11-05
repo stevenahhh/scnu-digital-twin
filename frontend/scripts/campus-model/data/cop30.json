@@ -13,5 +13,181 @@
     "offset": -100,
     "scale": 0.1,
     "note": "metres = offset + value * scale"
+  },
+  "curatedLocalTerrain": {
+    "id": "D4_GT_TERRAIN",
+    "buildingId": "BLD_D4",
+    "crs": "EPSG:5186",
+    "bbox": [
+      243422.55,
+      263767.58,
+      243591.87,
+      263991.06
+    ],
+    "datum": "uni.glb model datum; not orthometric or COP30 EGM2008",
+    "source": "SYNTHESIS.md sections 2 and 7; waves/h-terrain.md; refs/h-terrain/crop-d4-west-retaining-wall.jpg (estimated)",
+    "preserveRaster": true,
+    "levels": [
+      {
+        "id": "D4_PAD",
+        "selector": {
+          "buildingId": "BLD_D4",
+          "surface": "footprint and east plaza; exclude explicit stair treads and sunken strips"
+        },
+        "sceneY": 36.86,
+        "heightM": 59.05158603011855,
+        "apronLiftM": 0,
+        "southLipM": 0,
+        "source": "D-05/D-06; c-capture rays 36.86 scene units; SYNTHESIS section 7 flat plaza; no visible south lip (estimated)"
+      },
+      {
+        "id": "D4_WEST_LOT",
+        "rings": [
+          [
+            [
+              243489.86,
+              263924.97
+            ],
+            [
+              243473.4,
+              263866.4
+            ],
+            [
+              243478.5,
+              263850.5
+            ],
+            [
+              243486,
+              263876
+            ],
+            [
+              243497,
+              263925
+            ]
+          ]
+        ],
+        "sceneY": 39.6,
+        "heightM": 63.44120474206986,
+        "transition": "retaining breakline, never feather through the terrace",
+        "source": "D-56; SYNTHESIS section 7: scene y 39.6, +4.4 m over pad; section 6 NGII outer parking spine; terrace boundary inferred between spine and drive (estimated)"
+      },
+      {
+        "id": "D4_SOUTH_LOT",
+        "rings": [
+          [
+            [
+              243485.1724,
+              263824.4554
+            ],
+            [
+              243500.6854,
+              263820.2421
+            ],
+            [
+              243499.2504,
+              263815.3794
+            ],
+            [
+              243483.7374,
+              263819.5927
+            ]
+          ],
+          [
+            [
+              243502.6204,
+              263819.7163
+            ],
+            [
+              243508.1014,
+              263818.2281
+            ],
+            [
+              243506.6664,
+              263813.3655
+            ],
+            [
+              243501.1854,
+              263814.8537
+            ]
+          ]
+        ],
+        "heightMode": "sample-reference-once",
+        "referenceTm": [
+          243495,
+          263820
+        ],
+        "transition": "retain level across both lot polygons; slope resumes behind retaining wall",
+        "source": "D-69; SYNTHESIS sections 6 and 7; existing south lot parcel polygons, absolute height unresolved so retain sampled drive level (estimated)"
+      }
+    ],
+    "slopeConstraints": [
+      {
+        "id": "D4_WEST_SLOPE",
+        "bbox": [
+          243422.55,
+          263837.78,
+          243473.4,
+          263931.06
+        ],
+        "risePerMetre": [
+          0.3,
+          0.6
+        ],
+        "direction": "west",
+        "source": "SYNTHESIS section 7; h-terrain section 3 west profiles; preserve regional trend outside terraces (estimated)"
+      },
+      {
+        "id": "D4_SOUTH_SLOPE",
+        "bbox": [
+          243473.4,
+          263767.58,
+          243537.48,
+          263813.36
+        ],
+        "risePerMetre": [
+          0.3,
+          0.4
+        ],
+        "direction": "south",
+        "source": "SYNTHESIS section 7; h-terrain section 3 south profiles (estimated)"
+      }
+    ],
+    "retainingBreaklines": [
+      {
+        "id": "D4_WEST_RETAINING",
+        "line": [
+          [
+            243489.86,
+            263924.97
+          ],
+          [
+            243473.4,
+            263866.4
+          ]
+        ],
+        "nominalExposedHeightM": 3.5,
+        "source": "D-56/D-47; SYNTHESIS C12; west parking outer spine as provisional wall alignment; height 3.5 m, not equal to full 4.4 m pad difference (estimated)"
+      },
+      {
+        "id": "D4_SOUTH_RETAINING",
+        "line": [
+          [
+            243483.7374,
+            263819.5927
+          ],
+          [
+            243499.2504,
+            263815.3794
+          ],
+          [
+            243506.6664,
+            263813.3655
+          ]
+        ],
+        "heightMode": "difference-to-adjacent-slope",
+        "source": "D-69; south parcel rear edge, height not resolved by imagery (estimated)"
+      }
+    ],
+    "integrationRequired": true
   }
 }

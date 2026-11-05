@@ -3,81 +3,86 @@
   "building": "BLD_D4",
   "storeys": [
     {
-      "hM": 4.721667
+      "hM": 4.216666666666667,
+      "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2.1: 25.3 m above facade foot / six storeys (estimated)"
     },
     {
-      "hM": 4.721667
+      "hM": 4.216666666666667,
+      "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2.1: 25.3 m above facade foot / six storeys (estimated)"
     },
     {
-      "hM": 4.721667
+      "hM": 4.216666666666667,
+      "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2.1: 25.3 m above facade foot / six storeys (estimated)"
     },
     {
-      "hM": 4.721667
+      "hM": 4.216666666666667,
+      "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2.1: 25.3 m above facade foot / six storeys (estimated)"
     },
     {
-      "hM": 4.721667
+      "hM": 4.216666666666667,
+      "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2.1: 25.3 m above facade foot / six storeys (estimated)"
     },
     {
-      "hM": 4.721667
+      "hM": 4.216666666666667,
+      "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2.1: 25.3 m above facade foot / six storeys (estimated)"
     }
   ],
   "walls": {
     "W01": {
       "bays": {
-        "pitchM": 4,
-        "count": 1,
-        "offsetM": 8.5
+        "pitchM": 3,
+        "count": 9,
+        "offsetM": 0.05
       },
-      "cells": [
-        [
-          "window"
-        ],
-        [
-          "window"
-        ],
-        [
-          "window"
-        ],
-        [
-          "window"
-        ],
-        [
-          "window"
-        ],
-        [
-          "window"
-        ]
-      ],
-      "overrides": [],
+      "default": "blank",
+      "outside": "blank",
       "window": {
         "wM": 1.7,
         "hM": 1.7,
         "sillM": 0.9
       },
+      "overrides": [
+        {
+          "storey": 1,
+          "bay": 3,
+          "cell": "window"
+        },
+        {
+          "storey": 2,
+          "bay": 3,
+          "cell": "window"
+        },
+        {
+          "storey": 3,
+          "bay": 3,
+          "cell": "window"
+        },
+        {
+          "storey": 4,
+          "bay": 3,
+          "cell": "window"
+        },
+        {
+          "storey": 5,
+          "bay": 3,
+          "cell": "window"
+        }
+      ],
       "accents": {},
-      "evidence": {
-        "source": "LOD4",
-        "refs": [
-          "LOD4 D4_공학_3호관_우주항공첨단소재스쿨__133154 W01",
-          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated",
-          "Exact registered source edge correspondence in surfaceEdges; automatic 0.3 m matching remains unchanged. Endpoints are checked within 1 mm, not moved."
-        ],
-        "independentCount": 1,
-        "openingGroups": 1,
-        "notes": [
-          "LOD4 x390..497: one narrow vertical opening stack on the otherwise blank end wall. Its approximate local centre is 10.5 m; broad ordinary window repetition is removed.",
-          "Vertical allocation follows the registered main source: 6 levels over 28.330 m. The independent image count is horizontal; heights remain estimates."
-        ],
-        "tier": "T2",
-        "lod4BayCount": 1,
-        "vrBayCount": null
-      },
-      "estimated": true,
-      "default": "window",
       "materials": {
-        "wall": "stone:#e4e5e1",
+        "wall": "stone:#d4c4bf",
         "glass": "#5aa9ab",
         "frame": "#cbd3d3"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T3",
+        "refs": [
+          ".omo/ulw-research/d4-gt/LOD4 D4 W01 x390..497 and prior BLD_D4.json: one opening stack at s=10.5 m; new three-metre cells retain centre at 10.55 m; E3 reserved at s=13.55 m (estimated)"
+        ],
+        "notes": [
+          "South-end appearance remains provisional; do not repeat windows across the blank end."
+        ]
       },
       "surfaceEdges": [
         {
@@ -92,6 +97,271 @@
           "source": "building-forms.json BLD_D4/mass/0/edge/14; resolved source geometry, estimated"
         }
       ]
+    },
+    "W00": {
+      "bays": {
+        "pitchM": 3.4868776932589447,
+        "count": 28,
+        "offsetM": 0
+      },
+      "default": "glazing",
+      "outside": "blank",
+      "window": {
+        "wM": 3.25,
+        "hM": 4,
+        "sillM": 0
+      },
+      "overrides": [],
+      "accents": {
+        "band": {
+          "hM": 0.2,
+          "colour": "#d3d9d6"
+        }
+      },
+      "materials": {
+        "wall": "stone:#d4c4bf",
+        "glass": "#5aa9ab",
+        "frame": "#cbd3d3"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T3",
+        "refs": [
+          ".omo/ulw-research/d4-gt/refs/h-scnu-vr/d4_f_west_wing_facade.jpg; SYNTHESIS.md 2.4: curtain glazing and six sill bands; 3.4 m pitch is approximate, not an independent bay count (estimated)"
+        ],
+        "notes": [
+          "Wall endpoints remain the Frame v2 GIS snapshot. Mass-edge correspondence and recess cuts require integration; no independent whole-wall bay count is claimed."
+        ]
+      }
+    },
+    "W02": {
+      "bays": {
+        "pitchM": 3.490628697312822,
+        "count": 27,
+        "offsetM": 0
+      },
+      "default": "glazing",
+      "outside": "blank",
+      "window": {
+        "wM": 3.25,
+        "hM": 4,
+        "sillM": 0
+      },
+      "overrides": [],
+      "accents": {
+        "band": {
+          "hM": 0.2,
+          "colour": "#d3d9d6"
+        }
+      },
+      "materials": {
+        "wall": "stone:#d4c4bf",
+        "glass": "#5aa9ab",
+        "frame": "#cbd3d3"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T3",
+        "refs": [
+          ".omo/ulw-research/d4-gt/refs/h-scnu-vr/d4_f_west_wing_facade.jpg; SYNTHESIS.md 2.4: curtain glazing and six sill bands; 3.4 m pitch is approximate, not an independent bay count (estimated)"
+        ],
+        "notes": [
+          "Wall endpoints remain the Frame v2 GIS snapshot. Mass-edge correspondence and recess cuts require integration; no independent whole-wall bay count is claimed."
+        ]
+      }
+    },
+    "W03": {
+      "surfaceEdges": [
+        {
+          "A": [243507.13228065614, 263927.86879132834],
+          "B": [243530.57175920636, 263921.8808376034],
+          "range": [0, 0.5],
+          "source": "building-forms.json BLD_D4/mass/1/edge/0; SYNTHESIS 2.3 and refs/c-bridge/src-05-north-end-e4-oblique-ne.jpg: west half of continuous north wing stone face behind mass 5 stair tower; midpoint divides W03/W07 treatments without moving GIS bays (estimated)"
+        }
+      ],
+      "bays": {
+        "pitchM": 6.995261572146116,
+        "count": 1,
+        "offsetM": 0
+      },
+      "default": "blank",
+      "outside": "blank",
+      "window": {
+        "wM": 1.7,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "overrides": [],
+      "accents": {},
+      "materials": {
+        "wall": "stone:#d4c4bf",
+        "glass": "#5aa9ab",
+        "frame": "#cbd3d3"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          ".omo/ulw-research/d4-gt/refs/c-bridge/src-05-north-end-e4-oblique-ne.jpg; SYNTHESIS.md 2.3: stone stair ends; south end unphotographed (estimated)"
+        ],
+        "notes": [
+          "Wall endpoints remain the Frame v2 GIS snapshot. Mass-edge correspondence and recess cuts require integration; no independent whole-wall bay count is claimed."
+        ]
+      }
+    },
+    "W04": {
+      "surfaceEdges": [
+        {
+          "A": [243514.0008710345, 263926.1219892763],
+          "B": [243515.15925418545, 263930.6373798511],
+          "source": "building-forms.json BLD_D4/mass/5/edge/0; SYNTHESIS 2.3 and refs/c-bridge/src-05-north-end-e4-oblique-ne.jpg: stair tower west return (estimated)"
+        }
+      ],
+      "bays": {
+        "pitchM": 4.156412620838385,
+        "count": 1,
+        "offsetM": 0
+      },
+      "default": "blank",
+      "outside": "blank",
+      "window": {
+        "wM": 1.7,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "overrides": [],
+      "accents": {},
+      "materials": {
+        "wall": "stone:#d4c4bf",
+        "glass": "#5aa9ab",
+        "frame": "#cbd3d3"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          ".omo/ulw-research/d4-gt/refs/c-bridge/src-05-north-end-e4-oblique-ne.jpg; SYNTHESIS.md 2.3: stone stair ends; south end unphotographed (estimated)"
+        ],
+        "notes": [
+          "Wall endpoints remain the Frame v2 GIS snapshot. Mass-edge correspondence and recess cuts require integration; no independent whole-wall bay count is claimed."
+        ]
+      }
+    },
+    "W05": {
+      "surfaceEdges": [
+        {
+          "A": [243515.15925418545, 263930.6373798511],
+          "B": [243525.6926100498, 263927.9472825472],
+          "source": "building-forms.json BLD_D4/mass/5/edge/1; SYNTHESIS 2.3 and refs/c-bridge/src-05-north-end-e4-oblique-ne.jpg: stair tower north face; E4 remains recessed behind this face (estimated)"
+        }
+      ],
+      "bays": {
+        "pitchM": 11.651488700842668,
+        "count": 1,
+        "offsetM": 0
+      },
+      "default": "blank",
+      "outside": "blank",
+      "window": {
+        "wM": 1.7,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "overrides": [],
+      "accents": {},
+      "materials": {
+        "wall": "stone:#d4c4bf",
+        "glass": "#5aa9ab",
+        "frame": "#cbd3d3"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          ".omo/ulw-research/d4-gt/refs/c-bridge/src-05-north-end-e4-oblique-ne.jpg; SYNTHESIS.md 2.3: stone stair ends; south end unphotographed (estimated)"
+        ],
+        "notes": [
+          "Wall endpoints remain the Frame v2 GIS snapshot. Mass-edge correspondence and recess cuts require integration; no independent whole-wall bay count is claimed."
+        ]
+      }
+    },
+    "W06": {
+      "surfaceEdges": [
+        {
+          "A": [243525.6926100498, 263927.9472825472],
+          "B": [243524.5342793262, 263923.4219058854],
+          "source": "building-forms.json BLD_D4/mass/5/edge/2; SYNTHESIS 2.3 and refs/c-bridge/src-05-north-end-e4-oblique-ne.jpg: stair tower east return (estimated)"
+        }
+      ],
+      "bays": {
+        "pitchM": 3.870732666367433,
+        "count": 1,
+        "offsetM": 0
+      },
+      "default": "blank",
+      "outside": "blank",
+      "window": {
+        "wM": 1.7,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "overrides": [],
+      "accents": {},
+      "materials": {
+        "wall": "stone:#d4c4bf",
+        "glass": "#5aa9ab",
+        "frame": "#cbd3d3"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          ".omo/ulw-research/d4-gt/refs/c-bridge/src-05-north-end-e4-oblique-ne.jpg; SYNTHESIS.md 2.3: stone stair ends; south end unphotographed (estimated)"
+        ],
+        "notes": [
+          "Wall endpoints remain the Frame v2 GIS snapshot. Mass-edge correspondence and recess cuts require integration; no independent whole-wall bay count is claimed."
+        ]
+      }
+    },
+    "W07": {
+      "surfaceEdges": [
+        {
+          "A": [243507.13228065614, 263927.86879132834],
+          "B": [243530.57175920636, 263921.8808376034],
+          "range": [0.5, 1],
+          "source": "building-forms.json BLD_D4/mass/1/edge/0; SYNTHESIS 2.3 and refs/c-bridge/src-05-north-end-e4-oblique-ne.jpg: east half of continuous north wing stone face behind mass 5 stair tower; midpoint divides W03/W07 treatments without moving GIS bays (estimated)"
+        }
+      ],
+      "bays": {
+        "pitchM": 6.882152370812858,
+        "count": 1,
+        "offsetM": 0
+      },
+      "default": "blank",
+      "outside": "blank",
+      "window": {
+        "wM": 1.7,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "overrides": [],
+      "accents": {},
+      "materials": {
+        "wall": "stone:#d4c4bf",
+        "glass": "#5aa9ab",
+        "frame": "#cbd3d3"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          ".omo/ulw-research/d4-gt/refs/c-bridge/src-05-north-end-e4-oblique-ne.jpg; SYNTHESIS.md 2.3: stone stair ends; south end unphotographed (estimated)"
+        ],
+        "notes": [
+          "Wall endpoints remain the Frame v2 GIS snapshot. Mass-edge correspondence and recess cuts require integration; no independent whole-wall bay count is claimed."
+        ]
+      }
     }
-  }
+  },
+  "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2.3, 2.4 and 3; ISSUES D-03/D-44/D-63/D-70 (estimated)"
 }

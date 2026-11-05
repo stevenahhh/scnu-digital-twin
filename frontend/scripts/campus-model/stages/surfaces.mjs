@@ -15,12 +15,13 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import sharp from "sharp";
 import { ShapeUtils, Vector2 } from "three";
 import { sceneToTm, tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { conform } from "../lib/conform.mjs";
 import { decimateDecal } from "../lib/decimate.mjs";
 import { EXTENT, SCENE_UNITS_PER_METRE } from "../lib/frame.mjs";
-import { LANDCOVER } from "../lib/landcover.mjs";
+import { LANDCOVER, D4_MATERIAL_SCOPE, splitD4GroundPolygon } from "../lib/landcover.mjs";
 import { encodePng } from "../lib/png.mjs";
 import { hashNoise, smoothNoise } from "../lib/raster.mjs";
 import { orientedFrame } from "../network/surfaces.mjs";
@@ -33,6 +34,7 @@ export const TACTILE_BASIS = "장애인등편의법 시행규칙 별표 1 제16�
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const MATERIALS = path.join(HERE, "..", "data", "materials");
 const MANIFEST = path.join(MATERIALS, "ground-materials.json");
+const D4_MATERIALS = JSON.parse(readFileSync(path.join(MATERIALS, "d4-materials.json"), "utf8"));
 const UNIT = SCENE_UNITS_PER_METRE;
 const WIDTH = EXTENT.maxX - EXTENT.minX;
 const DEPTH = EXTENT.maxZ - EXTENT.minZ;
@@ -114,25 +116,42 @@ function refineTriangle(tri, maxEdge, needsFine) {
 // the order given, so the caller passes them highest precedence first.
 export function surfaceGeometry({ layers, surface, tileSize, heightOffset = (layer) => SURFACE_LIFT_M(layer.precedence), refine = null, claim = (piece) => [piece] }) {
   const primitives = new Map();
-  layers.forEach((layer, index) => {
-    const spec = GROUND_MESHES[layer.mesh] ?? {};
+  const scopedLayers = layers.flatMap(layer => {
+    const tile = D4_MATERIAL_SCOPE.patternClasses?.[layer.pattern] ?? D4_MATERIAL_SCOPE.surfaceClasses[layer.mesh];
+    if (!tile) return [layer];
+    const [w,s,e,n] = D4_MATERIAL_SCOPE.bbox;
+    const ring = layer.rings[0];
+    if (ring.every(p => p[0] < w) || ring.every(p => p[0] > e) ||
+        ring.every(p => p[1] < s) || ring.every(p => p[1] > n)) return [layer];
+    const local = { ...layer, d4Tile: tile };
+    if (ring.every(p => p[0] >= w && p[0] <= e && p[1] >= s && p[1] <= n)) return [local];
+    return triangulate(layer.rings).flatMap(triangle => {
+      const { inside, outside } = splitD4GroundPolygon(triangle);
+      return [...outside.map(poly => ({ ...layer, rings: [poly.map(p => sceneToTm(...p))] })),
+        ...(inside ? [{ ...local, rings: [inside.map(p => sceneToTm(...p))] }] : [])];
+    });
+  });
+  scopedLayers.forEach((layer, index) => {
+    const d4Pattern = layer.d4Tile && D4_MATERIAL_SCOPE.patternClasses?.[layer.pattern] ? layer.pattern : null;
+    const spec = layer.d4Tile ? { tile: layer.d4Tile } : GROUND_MESHES[layer.mesh] ?? {};
     const painted = !spec.tile && !spec.generated && !spec.pattern && !spec.patterned;
     const pattern = spec.patterned ? layer.pattern : spec.pattern ?? null;
     if (spec.patterned && !pattern) throw new Error(`surfaces: ${layer.mesh} layer ${layer.source_ref} has no pattern`);
     // One primitive per class and precedence (its material carries that precedence as the polygon-offset rank, so the
     // offset never contradicts the lift), per catalogue pattern, and one per painted surface (its own texture).
-    const key = painted ? `${layer.mesh}#${index}` : `${layer.mesh}@${layer.precedence}${spec.patterned ? `#${pattern}` : ""}`;
+    const key = painted ? `${layer.mesh}#${index}` : `${layer.mesh}@${layer.precedence}${spec.patterned ? `#${pattern}` : ""}${layer.d4Tile ? `#${layer.d4Tile}:${d4Pattern}` : ""}`;
     let primitive = primitives.get(key);
     if (!primitive) {
       const frame = painted ? orientedFrame(layer.rings[0].map(([E, N]) => tmToScene(E, N))) : null;
-      primitive = { mesh: layer.mesh, rank: layer.precedence, layer: painted ? layer : null, pattern, frame, positions: [], normals: [], uvs: [], uv1: [], indices: [], vertexOf: new Map(), sourceTriangles: 0, precedence: [] };
+      primitive = { mesh: layer.mesh, tile: layer.d4Tile, d4Pattern, rank: layer.precedence, layer: painted ? layer : null, pattern, frame, positions: [], normals: [], uvs: [], uv1: [], indices: [], vertexOf: new Map(), sourceTriangles: 0, precedence: [] };
       primitives.set(key, primitive);
     }
     if (!primitive.precedence.includes(layer.precedence)) primitive.precedence.push(layer.precedence);
-    const size = painted || layer.uvFrame ? null : tileSize(layer.mesh);
+    const size = d4Pattern ? pavingPattern(d4Pattern).repeatM : layer.d4Tile ? groundTile(layer.d4Tile).entry.physicalSizeM : painted || layer.uvFrame ? null : tileSize(layer.mesh);
     // uvFrame: { origin, u, v (model units, unit vectors), sizeM }: one tile per sizeM along u and v (tactile bands)
     const frameUv = layer.uvFrame ? ([x, z]) => {
-      const { origin, u, v, sizeM } = layer.uvFrame;
+      const { origin, u, v } = layer.uvFrame;
+      const sizeM = layer.d4Tile ? size : layer.uvFrame.sizeM;
       const d = [x - origin[0], z - origin[1]];
       return [(d[0] * u[0] + d[1] * u[1]) / (sizeM * UNIT), (d[0] * v[0] + d[1] * v[1]) / (sizeM * UNIT)];
     } : null;
@@ -404,7 +423,7 @@ function paintedNormalMap(size = 256) {
 let manifest = null;
 export function groundTile(cls) {
   manifest ??= JSON.parse(readFileSync(MANIFEST, "utf8"));
-  const entry = manifest.materials.find((m) => m.cls === cls);
+  const entry = [...D4_MATERIALS.materials, ...D4_MATERIALS.buildingMaterials, ...manifest.materials].find((m) => m.cls === cls);
   if (!entry) throw new Error(`data/materials/ground-materials.json has no ${cls} tile`);
   const files = {};
   for (const map of ["col", "nor", "arm"]) {
@@ -415,7 +434,7 @@ export function groundTile(cls) {
   return { entry, files };
 }
 
-const pngOf = async (file) => new Bun.Image(readFileSync(file)).png().toBuffer();
+const pngOf = async (file) => sharp(readFileSync(file)).png().toBuffer();
 
 // Texture indices of one tile class (added once per GLB).
 const tileCache = new WeakMap();
@@ -437,6 +456,7 @@ export async function tileTextures(glb, cls) {
 
 export async function tileMaterial(glb, { name, cls, rank, ao = null, baseColorFactor = null, extras = {} }) {
   const tile = await tileTextures(glb, cls);
+  if (cls === "d4-grass") glb.extensionsUsed.add("KHR_materials_specular");
   return glb.addMaterial({
     name,
     pbrMetallicRoughness: {
@@ -447,15 +467,68 @@ export async function tileMaterial(glb, { name, cls, rank, ao = null, baseColorF
       roughnessFactor: 1,
     },
     normalTexture: { index: tile.nor },
+    ...(cls === "d4-grass" ? { extensions: { KHR_materials_specular: { specularFactor: D4_MATERIAL_SCOPE.grassSpecularFactor } } } : {}),
     ...(ao !== null ? { occlusionTexture: { index: ao, texCoord: 1 } } : {}),
     extras: {
       estimated: true,
       polygonOffsetRank: rank,
       tile: `${tile.entry.provider} ${tile.entry.asset} (${tile.entry.licence})`,
       physicalSizeM: tile.entry.physicalSizeM,
+      ...(tile.entry.scope ? {
+        scope: tile.entry.scope, source: tile.entry.source,
+        texelsPerMetre: tile.entry.size / tile.entry.physicalSizeM,
+        normalEncoding: D4_MATERIAL_SCOPE.normalEncoding,
+      } : {}),
       note: "albedo, relief and roughness from a CC0 tile: estimated, not measured",
       ...extras,
     },
+  });
+}
+
+// Native metric rasterisation of the two D4 pattern seeds, with CC0 grain at
+// its original physical repeat. The pattern is not enlarged from the 80 px/m
+// campus tile; its joints and bands are evaluated at every final pixel.
+async function d4PatternMaterial(glb, { name, id, cls, rank, ao }) {
+  const p = pavingPattern(id), { entry, files } = groundTile(cls);
+  const density = D4_MATERIAL_SCOPE.minimumTexelsPerMetre;
+  const size = Math.ceil(p.repeatM*density), pxPerM = size/p.repeatM;
+  const source = {};
+  for (const map of ["col","nor","arm"]) source[map] = await sharp(readFileSync(files[map])).removeAlpha().raw().toBuffer({ resolveWithObject:true });
+  const maps = Object.fromEntries(["col","nor","arm"].map(map=>[map,new Uint8Array(size*size*3)]));
+  const hex = c => [1,3,5].map(i=>parseInt(c.slice(i,i+2),16));
+  const joint = hex(p.joint), base = p.base.map(([c,w])=>[hex(c),w]);
+  const accents = (p.accents ?? []).map(([c,w])=>[hex(c),w]);
+  const [a,b] = p.moduleM;
+  for (let y=0;y<size;y++) for(let x=0;x<size;x++) {
+    const s=(x+0.5)/pxPerM, t=(y+0.5)/pxPerM;
+    const row=Math.floor(t/b), shift=p.bond==="running" && row%2 ? a/2 : 0;
+    const col=Math.floor((s-shift)/a), u=s-shift-col*a, v=t-row*b;
+    const edge=Math.min(u,a-u,v,b-v), isJoint=edge < p.jointM/2;
+    const r=hashNoise(col,row,73);
+    let colour=base[0][0], sum=0;
+    for(const [c,share] of [...accents,...base.map(([c,w])=>[c,w*(1-accents.reduce((n,q)=>n+q[1],0))])]) {
+      sum+=share;
+      if(r<sum) { colour=c; break; }
+    }
+    if(p.stripes && t%p.stripes.pitchM < p.stripes.widthM) colour=hex(p.stripes.colour);
+    const tx=Math.floor((s/entry.physicalSizeM%1)*source.col.info.width);
+    const ty=Math.floor((t/entry.physicalSizeM%1)*source.col.info.height);
+    const from=(ty*source.col.info.width+tx)*3, to=(y*size+x)*3;
+    for(let c=0;c<3;c++) {
+      maps.col[to+c]=isJoint ? joint[c] : Math.min(255,colour[c]*(0.85+source.col.data[from+c]/255*0.3));
+      maps.nor[to+c]=source.nor.data[from+c];
+      maps.arm[to+c]=source.arm.data[from+c];
+    }
+    if(isJoint) { maps.nor.set([128,128,255],to); maps.arm[to+1]=245; maps.arm[to+2]=0; }
+  }
+  const textures=Object.fromEntries(Object.entries(maps).map(([map,pixels])=>[map,glb.addTexture(encodePng(size,size,3,pixels),"image/png")]));
+  return glb.addMaterial({
+    name,
+    pbrMetallicRoughness:{baseColorTexture:{index:textures.col},metallicRoughnessTexture:{index:textures.arm},metallicFactor:1,roughnessFactor:1},
+    normalTexture:{index:textures.nor},
+    ...(ao!==null ? {occlusionTexture:{index:ao,texCoord:1}} : {}),
+    extras:{estimated:true,scope:entry.scope,source:`${p.source}; ${D4_MATERIAL_SCOPE.patternSource}`,
+      polygonOffsetRank:rank,paving:id,tile:cls,repeatM:p.repeatM,texelsPerMetre:pxPerM,normalEncoding:"UASTC"},
   });
 }
 
@@ -592,7 +665,17 @@ export async function buildSurfaceMeshes({ glb, layers, surface, ao = null, heig
     if (!primitive.indices.length) continue;
     const { mesh } = primitive;
     let material;
-    if (GROUND_MESHES[mesh].generated === "tactile") {
+    if (primitive.tile) {
+      const key = `${mesh}@${primitive.rank}#${primitive.tile}:${primitive.d4Pattern}`;
+      const factor = mesh === "Ground_Lot" ? D4_MATERIAL_SCOPE.lotBrightnessFactor : 1;
+      if (!materials.has(key)) materials.set(key, primitive.d4Pattern
+        ? await d4PatternMaterial(glb, { name:`${mesh}_D4`, id:primitive.d4Pattern, cls:primitive.tile, rank:primitive.rank, ao })
+        : await tileMaterial(glb, {
+        name: `${mesh}_D4`, cls: primitive.tile, rank: primitive.rank, ao,
+        baseColorFactor: [factor, factor, factor, 1],
+      }));
+      material = materials.get(key);
+    } else if (GROUND_MESHES[mesh].generated === "tactile") {
       if (!materials.has(mesh)) materials.set(mesh, await tactileMaterial(glb, { rank: primitive.rank, ao }));
       material = materials.get(mesh);
     } else if (primitive.pattern) {

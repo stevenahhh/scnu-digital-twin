@@ -96,6 +96,478 @@
     {"kind":"block","id":"D2 portal lintel","plan":[[127.47758186,34.97027549],[127.47759468,34.97031372],[127.47757569,34.97031804],[127.47756286,34.97027981]],"look":"D2-frame","bottomMetres":13,"topMetres":15.8,"floors":1,"bandMetres":0.6,"source":"VR scene_d2 f (cols 330-470 of 1024) at the re-surveyed pose of PR #74: the entrance portal just north of the step in the west wing's east face, a deep light grey frame (0.8 m piers, lintel from 13 m) round teal curtain glass set 0.4 m behind it; 6 m of the face from 0.4 m north of the step (estimated)"},
     {"kind":"block","id":"D2 portal glass","plan":[[127.47757764,34.97027645],[127.47759046,34.97031468],[127.47757569,34.97031804],[127.47756286,34.97027981]],"look":"D2-portal","topMetres":13,"floors":4,"bandMetres":0,"source":"VR scene_d2 f (cols 330-470 of 1024) at the re-surveyed pose of PR #74: the entrance portal just north of the step in the west wing's east face, a deep light grey frame (0.8 m piers, lintel from 13 m) round teal curtain glass set 0.4 m behind it; 6 m of the face from 0.4 m north of the step (estimated)"}
    ]
+  },
+  {
+    "node": "BLD_D4",
+    "attachments": [
+      {
+        "kind": "fins",
+        "id": "D4-north-sill-bands",
+        "wall": [
+          [
+            127.476689,
+            34.970466
+          ],
+          [
+            127.4766117045207,
+            34.97022223487066
+          ]
+        ],
+        "offsets": [
+          0
+        ],
+        "width": 27.95,
+        "depth": 0.18,
+        "levels": [
+          0,
+          4.216666666666667,
+          8.433333333333334,
+          12.65,
+          16.866666666666667,
+          21.083333333333332
+        ],
+        "thickness": 0.2,
+        "colour": "#d3d9d6",
+        "estimated": true,
+        "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; refs/h-scnu-vr/d4_f_west_wing_facade.jpg: six sill bands on each block, 0.2 m thickness and 0.18 m projection; excluded passage interval 27.95..48.35 m (estimated)"
+      },
+      {
+        "kind": "fins",
+        "id": "D4-south-sill-bands",
+        "wall": [
+          [
+            127.47655528879422,
+            34.97004431681182
+          ],
+          [
+            127.476419,
+            34.9696145
+          ]
+        ],
+        "offsets": [
+          0
+        ],
+        "width": 49.282575411250455,
+        "depth": 0.18,
+        "levels": [
+          0,
+          4.216666666666667,
+          8.433333333333334,
+          12.65,
+          16.866666666666667,
+          21.083333333333332
+        ],
+        "thickness": 0.2,
+        "colour": "#d3d9d6",
+        "estimated": true,
+        "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; refs/h-scnu-vr/d4_f_west_wing_facade.jpg: six sill bands on each block, 0.2 m thickness and 0.18 m projection; excluded passage interval 27.95..48.35 m (estimated)"
+      },
+      {
+        "id": "D4-passage-stone-pier",
+        "kind": "fins",
+        "wall": [
+          [
+            127.47661778858448,
+            34.97024142211029
+          ],
+          [
+            127.4766117045207,
+            34.97022223487066
+          ]
+        ],
+        "offsets": [
+          0
+        ],
+        "width": 2.2,
+        "depth": 0.12,
+        "bottomMetres": 0,
+        "topMetres": 25.3,
+        "colour": "#d4c4bf",
+        "estimated": true,
+        "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; refs/l-vr-cache/d4_f_plinth_rail_c1240-1800_r1230-1590.jpg; D-43/D-70: north passage-edge pier, width 2.2 m approximate (estimated)",
+        "materialAsset": "polyhaven/concrete_tile_facade"
+      },
+      {
+        "id": "D4-AC-platform-plinth",
+        "kind": "fins",
+        "wall": [
+          [
+            127.47669308908988,
+            34.970220135190985
+          ],
+          [
+            127.47670763091402,
+            34.970263584808464
+          ]
+        ],
+        "offsets": [
+          0
+        ],
+        "width": 5,
+        "depth": 1.5,
+        "bottomMetres": 0,
+        "topMetres": 1.2,
+        "colour": "#d4c4bf",
+        "estimated": true,
+        "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; refs/l-vr-cache/d4_f_plinth_rail_c1240-1800_r1230-1590.jpg: platform centre 127.47670036,34.97024186, 5 x 1.5 m, stone plinth 1.2 m; position uncertainty 3 m (estimated)",
+        "grating": {
+          "material": "galvanised-steel",
+          "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; D-43: grated platform deck (estimated)"
+        },
+        "railing": {
+          "heightM": 1,
+          "postPitchM": 1.5,
+          "edges": [
+            "front",
+            "left",
+            "right"
+          ],
+          "diagonalBracedEnd": true,
+          "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; D-43: three open steel rails and diagonal-braced end bay (estimated)"
+        },
+        "sideSteps": {
+          "risers": 4,
+          "riseM": 0.15,
+          "treadM": 0.35,
+          "widthM": 1.2,
+          "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; D-43: 4-5 side risers; choose lower bound 4, width/rise/tread provisional; no independent canopy (estimated)"
+        },
+        "integrationRequired": [
+          "open railing",
+          "grating",
+          "sideSteps"
+        ]
+      },
+      {
+        "id": "D4-platform-condenser-large-1",
+        "kind": "fins",
+        "wall": [
+          [
+            127.47669308908988,
+            34.970220135190985
+          ],
+          [
+            127.47670763091402,
+            34.970263584808464
+          ]
+        ],
+        "offsets": [
+          0.3
+        ],
+        "width": 0.7,
+        "depth": 0.45,
+        "bottomMetres": 1.2,
+        "topMetres": 2.4,
+        "colour": "#d7dddc",
+        "estimated": true,
+        "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; refs/l-vr-cache/d4_f_plinth_rail_c1240-1800_r1230-1590.jpg: three tall and two short units, relative order left to right; unit dimensions approximate (estimated)",
+        "detail": {
+          "kind": "ac-condenser",
+          "fanCount": 2,
+          "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; same close-up: circular fan grilles on unit faces; approximate diameter requires integrator (estimated)"
+        }
+      },
+      {
+        "id": "D4-platform-condenser-small-1",
+        "kind": "fins",
+        "wall": [
+          [
+            127.47669308908988,
+            34.970220135190985
+          ],
+          [
+            127.47670763091402,
+            34.970263584808464
+          ]
+        ],
+        "offsets": [
+          1.15
+        ],
+        "width": 0.65,
+        "depth": 0.45,
+        "bottomMetres": 1.2,
+        "topMetres": 1.75,
+        "colour": "#d7dddc",
+        "estimated": true,
+        "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; refs/l-vr-cache/d4_f_plinth_rail_c1240-1800_r1230-1590.jpg: three tall and two short units, relative order left to right; unit dimensions approximate (estimated)",
+        "detail": {
+          "kind": "ac-condenser",
+          "fanCount": 1,
+          "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; same close-up: circular fan grilles on unit faces; approximate diameter requires integrator (estimated)"
+        }
+      },
+      {
+        "id": "D4-platform-condenser-small-2",
+        "kind": "fins",
+        "wall": [
+          [
+            127.47669308908988,
+            34.970220135190985
+          ],
+          [
+            127.47670763091402,
+            34.970263584808464
+          ]
+        ],
+        "offsets": [
+          1.9
+        ],
+        "width": 0.65,
+        "depth": 0.45,
+        "bottomMetres": 1.2,
+        "topMetres": 1.75,
+        "colour": "#d7dddc",
+        "estimated": true,
+        "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; refs/l-vr-cache/d4_f_plinth_rail_c1240-1800_r1230-1590.jpg: three tall and two short units, relative order left to right; unit dimensions approximate (estimated)",
+        "detail": {
+          "kind": "ac-condenser",
+          "fanCount": 1,
+          "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; same close-up: circular fan grilles on unit faces; approximate diameter requires integrator (estimated)"
+        }
+      },
+      {
+        "id": "D4-platform-condenser-large-2",
+        "kind": "fins",
+        "wall": [
+          [
+            127.47669308908988,
+            34.970220135190985
+          ],
+          [
+            127.47670763091402,
+            34.970263584808464
+          ]
+        ],
+        "offsets": [
+          2.75
+        ],
+        "width": 0.7,
+        "depth": 0.45,
+        "bottomMetres": 1.2,
+        "topMetres": 2.4,
+        "colour": "#d7dddc",
+        "estimated": true,
+        "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; refs/l-vr-cache/d4_f_plinth_rail_c1240-1800_r1230-1590.jpg: three tall and two short units, relative order left to right; unit dimensions approximate (estimated)",
+        "detail": {
+          "kind": "ac-condenser",
+          "fanCount": 2,
+          "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; same close-up: circular fan grilles on unit faces; approximate diameter requires integrator (estimated)"
+        }
+      },
+      {
+        "id": "D4-platform-condenser-large-3",
+        "kind": "fins",
+        "wall": [
+          [
+            127.47669308908988,
+            34.970220135190985
+          ],
+          [
+            127.47670763091402,
+            34.970263584808464
+          ]
+        ],
+        "offsets": [
+          3.6
+        ],
+        "width": 0.7,
+        "depth": 0.45,
+        "bottomMetres": 1.2,
+        "topMetres": 2.4,
+        "colour": "#d7dddc",
+        "estimated": true,
+        "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; refs/l-vr-cache/d4_f_plinth_rail_c1240-1800_r1230-1590.jpg: three tall and two short units, relative order left to right; unit dimensions approximate (estimated)",
+        "detail": {
+          "kind": "ac-condenser",
+          "fanCount": 2,
+          "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; same close-up: circular fan grilles on unit faces; approximate diameter requires integrator (estimated)"
+        }
+      },
+      {
+        "kind": "balconies",
+        "id": "D4-north-stair-balconies",
+        "plan": [
+          [
+            127.47651040362791,
+            34.970547284207825
+          ],
+          [
+            127.47662908442574,
+            34.97052005232417
+          ],
+          [
+            127.47661555920514,
+            34.97048011214207
+          ],
+          [
+            127.47649687846015,
+            34.97050734401227
+          ]
+        ],
+        "open": [
+          0,
+          1,
+          3
+        ],
+        "column": 0,
+        "storeyMetres": 4.216666666666667,
+        "fromStorey": 2,
+        "toStorey": 7,
+        "roofMetres": 26.5,
+        "colour": "#687a74",
+        "slabColour": "#b88e89",
+        "estimated": true,
+        "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; refs/c-bridge/src-05-north-end-e4-oblique-ne.jpg: six balcony levels, pink-brown slabs, open steel rail and flat top canopy; 4.5 m depth and W05 span estimated from CAD/LOD4 (estimated)",
+        "railing": {
+          "heightM": 1,
+          "open": true,
+          "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; D-44: approximately one-metre open steel balcony rails; never solid parapet panels (estimated)"
+        },
+        "canopy": {
+          "thicknessM": 0.25,
+          "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; D-44: thin flat canopy; existing addBalconies 0.9 m roof frame must be replaced (estimated)"
+        },
+        "integrationRequired": [
+          "open rails instead of solid panels",
+          "thin canopy",
+          "ground-storey opening E4"
+        ]
+      },
+      {
+        "id": "D4-pier-name",
+        "kind": "fins",
+        "wall": [
+          [
+            127.47661775088692,
+            34.97023630660004
+          ],
+          [
+            127.47661498540322,
+            34.970227585127525
+          ]
+        ],
+        "offsets": [
+          0
+        ],
+        "width": 1,
+        "depth": 0.03,
+        "bottomMetres": 1.8,
+        "topMetres": 4.8,
+        "colour": "#d4c4bf",
+        "estimated": true,
+        "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; D-43: vertical lettering and circular plaque on stone pier; no opaque sign background (estimated)",
+        "text": "공과대학 3호관",
+        "layout": "vertical",
+        "textColour": "#454d4d",
+        "plaque": {
+          "shape": "circle",
+          "diameterM": 0.3,
+          "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; refs/l-vr-cache/d4_f_plinth_rail_c1240-1800_r1230-1590.jpg: round emblem; lettering unreadable (estimated)"
+        },
+        "integrationRequired": [
+          "letter glyphs on stone",
+          "round emblem without invented lettering"
+        ]
+      },
+      {
+        "id": "D4-roof-name",
+        "kind": "fins",
+        "wall": [
+          [
+            127.47663793893604,
+            34.97029997334708
+          ],
+          [
+            127.47662715353597,
+            34.970265959606046
+          ]
+        ],
+        "offsets": [
+          0
+        ],
+        "width": 3.9,
+        "depth": 0.08,
+        "bottomMetres": 25.55,
+        "topMetres": 26.25,
+        "colour": "#d4c4bf",
+        "estimated": true,
+        "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; SYNTHESIS.md 2.1 and refs/c-bridge/src-05-north-end-e4-oblique-ne.jpg: D4 공대3 blue letters, 3.9 x 0.7 m; roof-sign horizontal placement approximate (estimated)",
+        "text": "D4 공대3",
+        "textColour": "#3169a8",
+        "layout": "horizontal",
+        "integrationRequired": [
+          "individual blue channel letters; no solid sign board"
+        ]
+      },
+      {
+        "kind": "fins",
+        "id": "D4-north-wall-condensers",
+        "wall": [
+          [
+            127.476689,
+            34.970466
+          ],
+          [
+            127.47661156624656,
+            34.97022179879702
+          ]
+        ],
+        "offsets": [
+          9,
+          15
+        ],
+        "width": 0.7,
+        "depth": 0.45,
+        "levels": [
+          4.22,
+          8.43
+        ],
+        "thickness": 0.55,
+        "colour": "#d7dddc",
+        "estimated": true,
+        "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; ISSUES D-63; refs/c-bridge/src-05-north-end-e4-oblique-ne.jpg and scene_d4: wall units on both blocks; bay and storey placements are low-confidence approximations, not a counted full inventory (estimated)",
+        "detail": {
+          "kind": "ac-condenser",
+          "fanCount": 1,
+          "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; D-63: generic small condenser outline; grille diameter unknown (estimated)"
+        },
+        "confidence": 0.25
+      },
+      {
+        "kind": "fins",
+        "id": "D4-south-wall-condensers",
+        "wall": [
+          [
+            127.47655528879422,
+            34.97004431681182
+          ],
+          [
+            127.4764778558483,
+            34.96980011550024
+          ]
+        ],
+        "offsets": [
+          10,
+          22
+        ],
+        "width": 0.7,
+        "depth": 0.45,
+        "levels": [
+          4.22,
+          8.43
+        ],
+        "thickness": 0.55,
+        "colour": "#d7dddc",
+        "estimated": true,
+        "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; ISSUES D-63; refs/c-bridge/src-05-north-end-e4-oblique-ne.jpg and scene_d4: wall units on both blocks; bay and storey placements are low-confidence approximations, not a counted full inventory (estimated)",
+        "detail": {
+          "kind": "ac-condenser",
+          "fanCount": 1,
+          "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2-4; D-63: generic small condenser outline; grille diameter unknown (estimated)"
+        },
+        "confidence": 0.25
+      }
+    ]
   }
  ]
 }

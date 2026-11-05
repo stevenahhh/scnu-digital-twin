@@ -17710,11 +17710,11 @@
    "key": "BLD_D4",
    "label": "순천대학교 D4 공학 3호관(우주항공첨단소재스쿨)",
    "footprintSource": "GIS건물통합정보 AL_D010_12_20261009.shp record 133154",
-   "source": "VWorld LOD4 mesh (slices and roof pieces)",
+   "source": "VWorld LOD4 mesh with D4 ground-truth curation; SYNTHESIS section 2 (estimated)",
    "lod4Models": [
     "SC090095"
    ],
-   "storeyMetres": 4.72,
+   "storeyMetres": 4.22,
    "lean": [
     0.011,
     -0.159
@@ -17901,13 +17901,23 @@
       ]
      ],
      "baseMetres": 0,
-     "topMetres": 28.33,
+     "topMetres": 25.33,
      "kind": "main",
      "floors": 6,
      "roof": "flat",
      "areaSquareMetres": 523.8,
      "parapetMetres": 1.24,
-     "photoSupport": 0.98
+     "photoSupport": 0.98,
+     "id": "BLD_D4/mass/0",
+     "estimated": true,
+     "lod4Datum": {
+      "baseMetres": 0,
+      "topMetres": 28.33,
+      "source": ".omo/ulw-research/d4-gt/waves/l-lod4.md F18: original registered seed heights above G, retained for datum audit (estimated)"
+     },
+     "heightSource": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2; LOD4 G minus 3.0 m: mass 0 top 25.33 m above finished facade foot; main eaves 25.33 m, stair-core top 32.58 m, parapets additional (estimated)",
+     "roofColour": "#3a5857",
+     "roofColourSource": ".omo/ulw-research/d4-gt/ISSUES.md D-01; refs/c-capture/before-ref-ortho-d4-crop.png; south dark membrane; existing research sample adopted, no new per-mass shadow-rejected sampling (estimated)"
     },
     {
      "outer": [
@@ -18019,13 +18029,23 @@
       ]
      ],
      "baseMetres": 0,
-     "topMetres": 28.33,
+     "topMetres": 25.33,
      "kind": "wing",
      "floors": 6,
      "roof": "flat",
      "areaSquareMetres": 503.5,
      "parapetMetres": 1.24,
-     "photoSupport": 0.9
+     "photoSupport": 0.9,
+     "id": "BLD_D4/mass/1",
+     "estimated": true,
+     "lod4Datum": {
+      "baseMetres": 0,
+      "topMetres": 28.33,
+      "source": ".omo/ulw-research/d4-gt/waves/l-lod4.md F18: original registered seed heights above G, retained for datum audit (estimated)"
+     },
+     "heightSource": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2; LOD4 G minus 3.0 m: mass 1 top 25.33 m above finished facade foot; main eaves 25.33 m, stair-core top 32.58 m, parapets additional (estimated)",
+     "roofColour": "#838a81",
+     "roofColourSource": ".omo/ulw-research/d4-gt/ISSUES.md D-01; refs/c-capture/before-ref-ortho-d4-crop.png; north beige-grey roof; existing research sample adopted, no new per-mass shadow-rejected sampling (estimated)"
     },
     {
      "outer": [
@@ -18084,14 +18104,24 @@
      ],
      "holes": [],
      "baseMetres": 0,
-     "topMetres": 20.24,
+     "topMetres": 17.24,
      "kind": "wing",
      "floors": 4,
      "roof": "flat",
      "areaSquareMetres": 334.2,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 1
+     "photoSupport": 1,
+     "id": "BLD_D4/mass/2",
+     "estimated": true,
+     "lod4Datum": {
+      "baseMetres": 0,
+      "topMetres": 20.24,
+      "source": ".omo/ulw-research/d4-gt/waves/l-lod4.md F18: original registered seed heights above G, retained for datum audit (estimated)"
+     },
+     "heightSource": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2; LOD4 G minus 3.0 m: mass 2 top 17.24 m above finished facade foot; main eaves 25.33 m, stair-core top 32.58 m, parapets additional (estimated)",
+     "roofColour": "#3a5857",
+     "roofColourSource": ".omo/ulw-research/d4-gt/ISSUES.md D-01; refs/c-capture/before-ref-ortho-d4-crop.png; south dark membrane; existing research sample adopted, no new per-mass shadow-rejected sampling (estimated)"
     },
     {
      "outer": [
@@ -18134,14 +18164,24 @@
      ],
      "holes": [],
      "baseMetres": 0,
-     "topMetres": 27.73,
+     "topMetres": 24.73,
      "kind": "wing",
      "floors": 6,
      "roof": "flat",
      "areaSquareMetres": 260.6,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 1
+     "photoSupport": 1,
+     "id": "BLD_D4/mass/3",
+     "estimated": true,
+     "lod4Datum": {
+      "baseMetres": 0,
+      "topMetres": 27.73,
+      "source": ".omo/ulw-research/d4-gt/waves/l-lod4.md F18: original registered seed heights above G, retained for datum audit (estimated)"
+     },
+     "heightSource": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2; LOD4 G minus 3.0 m: mass 3 top 24.73 m above finished facade foot; main eaves 25.33 m, stair-core top 32.58 m, parapets additional (estimated)",
+     "roofColour": "#3a5857",
+     "roofColourSource": ".omo/ulw-research/d4-gt/ISSUES.md D-01; refs/c-capture/before-ref-ortho-d4-crop.png; south dark membrane; existing research sample adopted, no new per-mass shadow-rejected sampling (estimated)"
     },
     {
      "outer": [
@@ -18168,164 +18208,164 @@
      ],
      "holes": [],
      "baseMetres": 0,
-     "topMetres": 30.74,
+     "topMetres": 27.74,
      "kind": "core",
      "floors": 7,
      "roof": "gable",
      "areaSquareMetres": 103.1,
-     "eaveMetres": 29.99,
+     "eaveMetres": 26.99,
      "triangles": [
       [
        [
         127.47654849,
         34.97038713,
-        29.987
+        26.987
        ],
        [
         127.47651763,
         34.97029043,
-        29.987
+        26.987
        ],
        [
         127.47651591,
         34.9702908,
-        30.035
+        27.035
        ]
       ],
       [
        [
         127.47654849,
         34.97038713,
-        29.987
+        26.987
        ],
        [
         127.47654575,
         34.97046989,
-        30.74
+        27.74
        ],
        [
         127.4765562,
         34.9704674,
-        30.449
+        27.449
        ]
       ],
       [
        [
         127.4765562,
         34.9704674,
-        30.449
+        27.449
        ],
        [
         127.47657278,
         34.97046342,
-        29.987
+        26.987
        ],
        [
         127.47654849,
         34.97038713,
-        29.987
+        26.987
        ]
       ],
       [
        [
         127.47654575,
         34.97046989,
-        30.74
+        27.74
        ],
        [
         127.47654849,
         34.97038713,
-        29.987
+        26.987
        ],
        [
         127.47651591,
         34.9702908,
-        30.035
+        27.035
        ]
       ],
       [
        [
         127.47654575,
         34.97046989,
-        30.74
+        27.74
        ],
        [
         127.47651591,
         34.9702908,
-        30.035
+        27.035
        ],
        [
         127.47649033,
         34.97029626,
-        30.741
+        27.741
        ]
       ],
       [
        [
         127.47651785,
         34.97047549,
-        29.989
+        26.989
        ],
        [
         127.47646453,
         34.97030177,
-        30.037
+        27.037
        ],
        [
         127.47646277,
         34.97030215,
-        29.989
+        26.989
        ]
       ],
       [
        [
         127.47646453,
         34.97030177,
-        30.037
+        27.037
        ],
        [
         127.47651785,
         34.97047549,
-        29.989
+        26.989
        ],
        [
         127.47652386,
         34.97047429,
-        30.151
+        27.151
        ]
       ],
       [
        [
         127.47646453,
         34.97030177,
-        30.037
+        27.037
        ],
        [
         127.47652386,
         34.97047429,
-        30.151
+        27.151
        ],
        [
         127.47654575,
         34.97046989,
-        30.74
+        27.74
        ]
       ],
       [
        [
         127.47654575,
         34.97046989,
-        30.74
+        27.74
        ],
        [
         127.47649033,
         34.97029626,
-        30.741
+        27.741
        ],
        [
         127.47646453,
         34.97030177,
-        30.037
+        27.037
        ]
       ]
      ],
@@ -18362,158 +18402,168 @@
         [
          34.83659470542976,
          -2.0840237566385564,
-         29.987
+         26.987
         ],
         [
          23.74523981176328,
          -2.216407353206302,
-         29.987
+         26.987
         ],
         [
          23.743094878263282,
          -2.0540704031841894,
-         30.035
+         27.035
         ]
        ],
        [
         [
          34.83659470542976,
          -2.0840237566385564,
-         29.987
+         26.987
         ],
         [
          43.62197280500558,
          0.5958515197054286,
-         30.74
+         27.74
         ],
         [
          43.609116786887284,
          -0.39756973269790485,
-         30.449
+         27.449
         ]
        ],
        [
         [
          43.609116786887284,
          -0.39756973269790485,
-         30.449
+         27.449
         ],
         [
          43.58557945447336,
          -1.9745999049718623,
-         29.987
+         26.987
         ],
         [
          34.83659470542976,
          -2.0840237566385564,
-         29.987
+         26.987
         ]
        ],
        [
         [
          43.62197280500558,
          0.5958515197054286,
-         30.74
+         27.74
         ],
         [
          34.83659470542976,
          -2.0840237566385564,
-         29.987
+         26.987
         ],
         [
          23.743094878263282,
          -2.0540704031841894,
-         30.035
+         27.035
         ]
        ],
        [
         [
          43.62197280500558,
          0.5958515197054286,
-         30.74
+         27.74
         ],
         [
          23.743094878263282,
          -2.0540704031841894,
-         30.035
+         27.035
         ],
         [
          23.706631190936797,
          0.3589622753497199,
-         30.741
+         27.741
         ]
        ],
        [
         [
          43.54421130431025,
          3.217264483536301,
-         29.989
+         26.989
         ],
         [
          23.670179872196776,
          2.7928376395866654,
-         30.037
+         27.037
         ],
         [
          23.668134393114045,
          2.9589909622116743,
-         29.989
+         26.989
         ]
        ],
        [
         [
          23.670179872196776,
          2.7928376395866654,
-         30.037
+         27.037
         ],
         [
          43.54421130431025,
          3.217264483536301,
-         29.989
+         26.989
         ],
         [
          43.56163673007732,
          2.652766078817466,
-         30.151
+         27.151
         ]
        ],
        [
         [
          23.670179872196776,
          2.7928376395866654,
-         30.037
+         27.037
         ],
         [
          43.56163673007732,
          2.652766078817466,
-         30.151
+         27.151
         ],
         [
          43.62197280500558,
          0.5958515197054286,
-         30.74
+         27.74
         ]
        ],
        [
         [
          43.62197280500558,
          0.5958515197054286,
-         30.74
+         27.74
         ],
         [
          23.706631190936797,
          0.3589622753497199,
-         30.741
+         27.741
         ],
         [
          23.670179872196776,
          2.7928376395866654,
-         30.037
+         27.037
         ]
        ]
       ]
      },
-     "estimated": true
+     "estimated": true,
+     "id": "BLD_D4/mass/4",
+     "lod4Datum": {
+      "baseMetres": 0,
+      "topMetres": 30.74,
+      "eaveMetres": 29.99,
+      "source": ".omo/ulw-research/d4-gt/waves/l-lod4.md F18: original registered seed heights above G, retained for datum audit (estimated)"
+     },
+     "heightSource": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2; LOD4 G minus 3.0 m: mass 4 top 27.74 m above finished facade foot; main eaves 25.33 m, stair-core top 32.58 m, parapets additional (estimated)",
+     "roofColour": "#838a81",
+     "roofColourSource": ".omo/ulw-research/d4-gt/ISSUES.md D-01; refs/c-capture/before-ref-ortho-d4-crop.png; north beige-grey roof; existing research sample adopted, no new per-mass shadow-rejected sampling (estimated)"
     },
     {
      "outer": [
@@ -18536,14 +18586,24 @@
      ],
      "holes": [],
      "baseMetres": 0,
-     "topMetres": 27.73,
+     "topMetres": 24.73,
      "kind": "wing",
      "floors": 6,
      "roof": "flat",
      "areaSquareMetres": 50.7,
      "parapetMetres": 0.9,
      "parapetEstimated": true,
-     "photoSupport": 0.67
+     "photoSupport": 0.67,
+     "id": "BLD_D4/mass/5",
+     "estimated": true,
+     "lod4Datum": {
+      "baseMetres": 0,
+      "topMetres": 27.73,
+      "source": ".omo/ulw-research/d4-gt/waves/l-lod4.md F18: original registered seed heights above G, retained for datum audit (estimated)"
+     },
+     "heightSource": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2; LOD4 G minus 3.0 m: mass 5 top 24.73 m above finished facade foot; main eaves 25.33 m, stair-core top 32.58 m, parapets additional (estimated)",
+     "roofColour": "#838a81",
+     "roofColourSource": ".omo/ulw-research/d4-gt/ISSUES.md D-01; refs/c-capture/before-ref-ortho-d4-crop.png; north beige-grey roof; existing research sample adopted, no new per-mass shadow-rejected sampling (estimated)"
     },
     {
      "outer": [
@@ -18582,7 +18642,7 @@
      ],
      "holes": [],
      "baseMetres": 0,
-     "topMetres": 35.58,
+     "topMetres": 32.58,
      "kind": "core",
      "floors": 8,
      "roof": "flat",
@@ -18629,7 +18689,16 @@
       ],
       "holes": []
      },
-     "estimated": true
+     "estimated": true,
+     "id": "BLD_D4/mass/6",
+     "lod4Datum": {
+      "baseMetres": 0,
+      "topMetres": 35.58,
+      "source": ".omo/ulw-research/d4-gt/waves/l-lod4.md F18: original registered seed heights above G, retained for datum audit (estimated)"
+     },
+     "heightSource": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2; LOD4 G minus 3.0 m: mass 6 top 32.58 m above finished facade foot; main eaves 25.33 m, stair-core top 32.58 m, parapets additional (estimated)",
+     "roofColour": "#838a81",
+     "roofColourSource": ".omo/ulw-research/d4-gt/ISSUES.md D-01; refs/c-capture/before-ref-ortho-d4-crop.png; north beige-grey roof; existing research sample adopted, no new per-mass shadow-rejected sampling (estimated)"
     },
     {
      "outer": [
@@ -18652,14 +18721,24 @@
      ],
      "holes": [],
      "baseMetres": 0,
-     "topMetres": 3.91,
+     "topMetres": 1.2,
      "kind": "annex",
      "floors": 1,
      "roof": "flat",
      "areaSquareMetres": 18.6,
-     "parapetMetres": 0.9,
+     "parapetMetres": 0,
      "parapetEstimated": true,
-     "photoSupport": 0.68
+     "photoSupport": 0.68,
+     "id": "BLD_D4/mass/7",
+     "estimated": true,
+     "lod4Datum": {
+      "baseMetres": 0,
+      "topMetres": 3.91,
+      "source": ".omo/ulw-research/d4-gt/waves/l-lod4.md F18: original registered seed heights above G, retained for datum audit (estimated)"
+     },
+     "drawnBy": "D4_PLANTER_MASS_7",
+     "drawnBySource": ".omo/ulw-research/d4-gt/ISSUES.md D-60; waves/l-lod4.md F19: planter 1.0-1.4 m, midpoint 1.2 m; furniture emission pending lane 3/integrator (estimated)",
+     "heightSource": ".omo/ulw-research/d4-gt/ISSUES.md D-60; waves/l-lod4.md F19: planter 1.0-1.4 m, midpoint 1.2 m; furniture emission pending lane 3/integrator (estimated)"
     },
     {
      "outer": [
@@ -18682,113 +18761,113 @@
      ],
      "holes": [],
      "baseMetres": 0,
-     "topMetres": 30.01,
+     "topMetres": 27.01,
      "kind": "core",
      "floors": 6,
      "roof": "mono-pitch",
      "areaSquareMetres": 7.4,
-     "eaveMetres": 28.56,
+     "eaveMetres": 25.56,
      "triangles": [
       [
        [
         127.47659987,
         34.97045154,
-        29.194
+        26.194
        ],
        [
         127.47660173,
         34.97046458,
-        30.008
+        27.008
        ],
        [
         127.4766328,
         34.97046206,
-        30.007
+        27.007
        ]
       ],
       [
        [
         127.47659987,
         34.97045154,
-        29.194
+        26.194
        ],
        [
         127.47659849,
         34.9704415,
-        28.567
+        25.567
        ],
        [
         127.47659847,
         34.9704415,
-        28.567
+        25.567
        ]
       ],
       [
        [
         127.47659849,
         34.9704415,
-        28.567
+        25.567
        ],
        [
         127.47659987,
         34.97045154,
-        29.194
+        26.194
        ],
        [
         127.4766328,
         34.97046206,
-        30.007
+        27.007
        ]
       ],
       [
        [
         127.4766328,
         34.97046206,
-        30.007
+        27.007
        ],
        [
         127.47663283,
         34.97046206,
-        30.007
+        27.007
        ],
        [
         127.4766324,
         34.97045896,
-        29.814
+        26.814
        ]
       ],
       [
        [
         127.4766324,
         34.97045896,
-        29.814
+        26.814
        ],
        [
         127.47662962,
         34.97043898,
-        28.564
+        25.564
        ],
        [
         127.47659849,
         34.9704415,
-        28.567
+        25.567
        ]
       ],
       [
        [
         127.47659849,
         34.9704415,
-        28.567
+        25.567
        ],
        [
         127.4766328,
         34.97046206,
-        30.007
+        27.007
        ],
        [
         127.4766324,
         34.97045896,
-        29.814
+        26.814
        ]
       ]
      ],
@@ -18821,107 +18900,117 @@
         [
          42.97199987445968,
          -4.709747513341139,
-         29.194
+         26.194
         ],
         [
          44.411846223656106,
          -4.489265318000793,
-         30.008
+         27.008
         ],
         [
          44.895930291008156,
          -7.299018314790569,
-         30.007
+         27.007
         ]
        ],
        [
         [
          42.97199987445968,
          -4.709747513341139,
-         29.194
+         26.194
         ],
         [
          41.86466988217661,
          -4.884091040925853,
-         28.567
+         25.567
         ],
         [
          41.864184771918524,
          -4.882330179441588,
-         28.567
+         25.567
         ]
        ],
        [
         [
          41.86466988217661,
          -4.884091040925853,
-         28.567
+         25.567
         ],
         [
          42.97199987445968,
          -4.709747513341139,
-         29.194
+         26.194
         ],
         [
          44.895930291008156,
          -7.299018314790569,
-         30.007
+         27.007
         ]
        ],
        [
         [
          44.895930291008156,
          -7.299018314790569,
-         30.007
+         27.007
         ],
         [
          44.89665795633061,
          -7.301659605662678,
-         30.007
+         27.007
         ],
         [
          44.55465859238872,
          -7.355147142580947,
-         29.814
+         26.814
         ]
        ],
        [
         [
          44.55465859238872,
          -7.355147142580947,
-         29.814
+         26.814
         ],
         [
          42.350209391507775,
          -7.699127404793645,
-         28.564
+         25.564
         ],
         [
          41.86466988217661,
          -4.884091040925853,
-         28.567
+         25.567
         ]
        ],
        [
         [
          41.86466988217661,
          -4.884091040925853,
-         28.567
+         25.567
         ],
         [
          44.895930291008156,
          -7.299018314790569,
-         30.007
+         27.007
         ],
         [
          44.55465859238872,
          -7.355147142580947,
-         29.814
+         26.814
         ]
        ]
       ]
      },
-     "estimated": true
+     "estimated": true,
+     "id": "BLD_D4/mass/8",
+     "lod4Datum": {
+      "baseMetres": 0,
+      "topMetres": 30.01,
+      "eaveMetres": 28.56,
+      "source": ".omo/ulw-research/d4-gt/waves/l-lod4.md F18: original registered seed heights above G, retained for datum audit (estimated)"
+     },
+     "heightSource": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2; LOD4 G minus 3.0 m: mass 8 top 27.01 m above finished facade foot; main eaves 25.33 m, stair-core top 32.58 m, parapets additional (estimated)",
+     "roofColour": "#838a81",
+     "roofColourSource": ".omo/ulw-research/d4-gt/ISSUES.md D-01; refs/c-capture/before-ref-ortho-d4-crop.png; north beige-grey roof; existing research sample adopted, no new per-mass shadow-rejected sampling (estimated)"
     },
     {
      "outer": [
@@ -18944,13 +19033,23 @@
      ],
      "holes": [],
      "baseMetres": 0,
-     "topMetres": 3.91,
+     "topMetres": 1.2,
      "kind": "annex",
      "floors": 1,
      "roof": "flat",
      "areaSquareMetres": 6,
-     "parapetMetres": 0.9,
-     "parapetEstimated": true
+     "parapetMetres": 0,
+     "parapetEstimated": true,
+     "id": "BLD_D4/mass/9",
+     "estimated": true,
+     "lod4Datum": {
+      "baseMetres": 0,
+      "topMetres": 3.91,
+      "source": ".omo/ulw-research/d4-gt/waves/l-lod4.md F18: original registered seed heights above G, retained for datum audit (estimated)"
+     },
+     "drawnBy": "D4_PLANTER_MASS_9",
+     "drawnBySource": ".omo/ulw-research/d4-gt/ISSUES.md D-60; waves/l-lod4.md F19: planter 1.0-1.4 m, midpoint 1.2 m; furniture emission pending lane 3/integrator (estimated)",
+     "heightSource": ".omo/ulw-research/d4-gt/ISSUES.md D-60; waves/l-lod4.md F19: planter 1.0-1.4 m, midpoint 1.2 m; furniture emission pending lane 3/integrator (estimated)"
     },
     {
      "outer": [
@@ -18980,14 +19079,22 @@
       ]
      ],
      "holes": [],
-     "baseMetres": 22.74,
-     "topMetres": 28.33,
+     "baseMetres": 9,
+     "topMetres": 25.33,
      "kind": "raised",
      "floors": 1,
      "roof": "flat",
      "areaSquareMetres": 302.8,
      "parapetMetres": 1.24,
-     "photoSupport": 1
+     "photoSupport": 1,
+     "id": "BLD_D4/mass/10",
+     "estimated": true,
+     "lod4Datum": {
+      "baseMetres": 22.74,
+      "topMetres": 28.33,
+      "source": ".omo/ulw-research/d4-gt/waves/l-lod4.md F18: original registered seed heights above G, retained for datum audit (estimated)"
+     },
+     "heightSource": ".omo/ulw-research/d4-gt/SYNTHESIS.md 2.2 and C1; refs/c-bridge pairs 01b/06: soffit 8.8-9.1 m, adopted 9 m; upper roof retains facade-foot LOD4 25.33 m; replay seed bld-node-map.json BLD_D4.d4Geometry (estimated)"
     },
     {
      "outer": [
@@ -19073,14 +19180,22 @@
       ]
      ],
      "holes": [],
-     "baseMetres": 27.74,
-     "topMetres": 28.33,
+     "baseMetres": 24.74,
+     "topMetres": 25.33,
      "kind": "canopy",
      "floors": 1,
      "roof": "flat",
      "areaSquareMetres": 129.4,
      "parapetMetres": 1.24,
-     "photoSupport": 0.99
+     "photoSupport": 0.99,
+     "id": "BLD_D4/mass/11",
+     "estimated": true,
+     "lod4Datum": {
+      "baseMetres": 27.74,
+      "topMetres": 28.33,
+      "source": ".omo/ulw-research/d4-gt/waves/l-lod4.md F18: original registered seed heights above G, retained for datum audit (estimated)"
+     },
+     "heightSource": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2; LOD4 G minus 3.0 m: mass 11 top 25.33 m above finished facade foot; main eaves 25.33 m, stair-core top 32.58 m, parapets additional (estimated)"
     },
     {
      "outer": [
@@ -19102,14 +19217,22 @@
       ]
      ],
      "holes": [],
-     "baseMetres": 27.74,
-     "topMetres": 28.33,
+     "baseMetres": 24.74,
+     "topMetres": 25.33,
      "kind": "canopy",
      "floors": 1,
      "roof": "flat",
      "areaSquareMetres": 91.8,
      "parapetMetres": 1.24,
-     "photoSupport": 0.88
+     "photoSupport": 0.88,
+     "id": "BLD_D4/mass/12",
+     "estimated": true,
+     "lod4Datum": {
+      "baseMetres": 27.74,
+      "topMetres": 28.33,
+      "source": ".omo/ulw-research/d4-gt/waves/l-lod4.md F18: original registered seed heights above G, retained for datum audit (estimated)"
+     },
+     "heightSource": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2; LOD4 G minus 3.0 m: mass 12 top 25.33 m above finished facade foot; main eaves 25.33 m, stair-core top 32.58 m, parapets additional (estimated)"
     },
     {
      "outer": [
@@ -19139,14 +19262,22 @@
       ]
      ],
      "holes": [],
-     "baseMetres": 27.74,
-     "topMetres": 28.33,
+     "baseMetres": 24.74,
+     "topMetres": 25.33,
      "kind": "canopy",
      "floors": 1,
      "roof": "flat",
      "areaSquareMetres": 78.6,
      "parapetMetres": 1.24,
-     "photoSupport": 0.93
+     "photoSupport": 0.93,
+     "id": "BLD_D4/mass/13",
+     "estimated": true,
+     "lod4Datum": {
+      "baseMetres": 27.74,
+      "topMetres": 28.33,
+      "source": ".omo/ulw-research/d4-gt/waves/l-lod4.md F18: original registered seed heights above G, retained for datum audit (estimated)"
+     },
+     "heightSource": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2; LOD4 G minus 3.0 m: mass 13 top 25.33 m above finished facade foot; main eaves 25.33 m, stair-core top 32.58 m, parapets additional (estimated)"
     },
     {
      "outer": [
@@ -19176,14 +19307,22 @@
       ]
      ],
      "holes": [],
-     "baseMetres": 22.74,
-     "topMetres": 35.58,
+     "baseMetres": 9,
+     "topMetres": 32.58,
      "kind": "raised",
      "floors": 3,
      "roof": "flat",
      "areaSquareMetres": 54.7,
      "parapetMetres": 1,
-     "photoSupport": 1
+     "photoSupport": 1,
+     "id": "BLD_D4/mass/14",
+     "estimated": true,
+     "lod4Datum": {
+      "baseMetres": 22.74,
+      "topMetres": 35.58,
+      "source": ".omo/ulw-research/d4-gt/waves/l-lod4.md F18: original registered seed heights above G, retained for datum audit (estimated)"
+     },
+     "heightSource": ".omo/ulw-research/d4-gt/SYNTHESIS.md 2.2 and C1; refs/c-bridge pairs 01b/06: bridge-side raised core underside follows 9 m soffit; LOD4 core top retained; replay seed bld-node-map.json BLD_D4.d4Geometry (estimated)"
     },
     {
      "outer": [
@@ -19205,21 +19344,29 @@
       ]
      ],
      "holes": [],
-     "baseMetres": 27.74,
-     "topMetres": 35.58,
+     "baseMetres": 24.74,
+     "topMetres": 32.58,
      "kind": "raised",
      "floors": 2,
      "roof": "flat",
      "areaSquareMetres": 12.1,
      "parapetMetres": 1,
-     "photoSupport": 0.72
+     "photoSupport": 0.72,
+     "id": "BLD_D4/mass/15",
+     "estimated": true,
+     "lod4Datum": {
+      "baseMetres": 27.74,
+      "topMetres": 35.58,
+      "source": ".omo/ulw-research/d4-gt/waves/l-lod4.md F18: original registered seed heights above G, retained for datum audit (estimated)"
+     },
+     "heightSource": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2; LOD4 G minus 3.0 m: mass 15 top 32.58 m above finished facade foot; main eaves 25.33 m, stair-core top 32.58 m, parapets additional (estimated)"
     }
    ],
    "voids": [
     {
      "kind": "light well",
      "area": 334.2,
-     "floor": 20.24,
+     "floor": 17.24,
      "depth": 7.49,
      "ring": [
       [
@@ -19274,12 +19421,13 @@
        127.47637166,
        34.97000866
       ]
-     ]
+     ],
+     "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2; facade-foot datum; bridge clearance follows photo pairs 01b/06 through bld-node-map.json BLD_D4.d4Geometry; other void heights retain the LOD4 datum correction (estimated)"
     },
     {
      "kind": "passage",
      "area": 54.7,
-     "clearance": 22.74,
+     "clearance": 9,
      "ring": [
       [
        127.4764297,
@@ -19305,12 +19453,13 @@
        127.47642915,
        34.97026384
       ]
-     ]
+     ],
+     "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2; facade-foot datum; bridge clearance follows photo pairs 01b/06 through bld-node-map.json BLD_D4.d4Geometry; other void heights retain the LOD4 datum correction (estimated)"
     },
     {
      "kind": "passage",
      "area": 12.1,
-     "clearance": 27.74,
+     "clearance": 24.74,
      "ring": [
       [
        127.47633367,
@@ -19328,12 +19477,13 @@
        127.47636717,
        34.9702414
       ]
-     ]
+     ],
+     "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2; facade-foot datum; bridge clearance follows photo pairs 01b/06 through bld-node-map.json BLD_D4.d4Geometry; other void heights retain the LOD4 datum correction (estimated)"
     },
     {
      "kind": "passage",
      "area": 302.8,
-     "clearance": 22.74,
+     "clearance": 9,
      "ring": [
       [
        127.47652508,
@@ -19359,7 +19509,8 @@
        127.47651413,
        34.97020985
       ]
-     ]
+     ],
+     "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2; facade-foot datum; bridge clearance follows photo pairs 01b/06 through bld-node-map.json BLD_D4.d4Geometry; other void heights retain the LOD4 datum correction (estimated)"
     }
    ],
    "droppedMasses": [
@@ -19372,6 +19523,204 @@
      "areaSquareMetres": 21.9,
      "topMetres": 3.51,
      "photoSupport": 0.14
+    }
+   ],
+   "storeySource": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2.1: facade-foot eave 25.33 m / 6 floors, rounded (estimated)",
+   "curation": {
+    "version": 1,
+    "mode": "replace-building-record",
+    "source": ".omo/ulw-research/d4-gt/ISSUES.md D-01,D-02,D-05,D-07,D-12,D-37,D-38,D-39,D-40,D-59,D-60,D-61,D-68; SYNTHESIS.md section 2 (estimated)",
+    "reseedPolicy": "The bridge and bbox recipe lives in curated bld-node-map.json BLD_D4.d4Geometry and stages/buildings.mjs replays it after a reseed. Preserve the other complete-record lane curation separately.",
+    "heightDatum": {
+     "name": "facade-foot",
+     "lod4FootOffsetMetres": 3,
+     "finishedGroundScene": 36.86,
+     "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2; waves/l-lod4.md F2,F4; waves/c-capture.md D-05; scene height is the current model pad, not sea level (estimated)"
+    },
+    "bridgeConflict": {
+     "massIndices": [
+      10,
+      14
+     ],
+     "requestedClearanceMetres": 9,
+     "researchClearanceMetres": 9,
+     "researchUncertaintyMetres": 1.5,
+     "decision": "Resolved by the 2026-11-05 repair request: use the photographic 9 m soffit, emit lower glazing, an open X-braced storey and upper glazing; retain the LOD4 roof top.",
+     "source": ".omo/ulw-research/d4-gt/ISSUES.md D-37; SYNTHESIS.md 2.2 and C1; refs/c-bridge pairs 01b/06 (estimated)"
+    },
+    "sunkenStrip": {
+     "model": false,
+     "axisBoundsMetres": [
+      19.1,
+      49.3,
+      8,
+      15.9
+     ],
+     "depthMetres": 3,
+     "source": ".omo/ulw-research/d4-gt/waves/l-lod4.md F9; SYNTHESIS.md section 2: possible mesh artefact, no confirmed VR recess (estimated)"
+    },
+    "wingHeightDecision": {
+     "northSouthEavesEqual": true,
+     "source": ".omo/ulw-research/d4-gt/ISSUES.md D-40; SYNTHESIS.md C3; LOD4 equal eaves retained over low-confidence apparent 4 m photo difference (estimated)"
+    }
+   },
+   "roofParts": [
+    {
+     "id": "D4_NORTH_TANKS",
+     "kind": "cylinders",
+     "massIndex": 1,
+     "count": 2,
+     "colour": "#eeeeea",
+     "placement": "north roof; individual centres, radii and heights unresolved",
+     "source": ".omo/ulw-research/d4-gt/ISSUES.md D-02; refs/c-capture/before-ref-ortho-d4-crop.png; two white round tanks, no dimensioned centres (estimated)",
+     "status": "gap"
+    },
+    {
+     "id": "D4_ORANGE_DISC",
+     "kind": "painted-disc",
+     "centre": [
+      127.47642937,
+      34.97009689
+     ],
+     "diameterMetres": 4,
+     "colour": "#ad6c49",
+     "placement": "photo roof-level coordinate; remove relief lean before attachment to south roof",
+     "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2.1; waves/h-ortho-public.md Orange roof circle; diameter +/-0.5 m (estimated)",
+     "status": "requires-stage"
+    },
+    {
+     "id": "D4_SKYLIGHT_PITS",
+     "kind": "glazed-pits",
+     "count": 2,
+     "boundsTm": [
+      243489,
+      263835,
+      243506,
+      263862
+     ],
+     "railColour": "#9b6246",
+     "placement": "south roof; bounding region only, individual outlines and depth unresolved",
+     "source": ".omo/ulw-research/d4-gt/ISSUES.md D-02; waves/l-ortho-hires.md #27; rust rail colour is a visual approximation (estimated)",
+     "status": "gap"
+    },
+    {
+     "id": "D4_BRIDGE_FRAME",
+     "kind": "bridge-zones",
+     "massIndex": 10,
+     "enabled": true,
+     "zonesBottomToTop": [
+      {
+       "kind": "glazed",
+       "heightMetres": 8
+      },
+      {
+       "kind": "open-x-braced",
+       "heightMetres": 3.5
+      },
+      {
+       "kind": "glazed",
+       "heightMetres": 4.83
+      }
+     ],
+     "columns": {
+      "count": 5,
+      "spacingMetres": 3,
+      "colour": "#eeeeea"
+     },
+     "mullionSpacingMetres": 4,
+     "source": ".omo/ulw-research/d4-gt/ISSUES.md D-38; SYNTHESIS.md section 2.2; refs/c-bridge/src-01b-bridge-front-close.jpg; 9+8+3.5 m leaves 4.83 m upper glazing below the retained 25.33 m roof, within the photo 6 +/-1.5 m interval (estimated)",
+     "status": "emitted"
+    },
+    {
+     "id": "D4_BRIDGE_TRUSS",
+     "kind": "space-truss",
+     "massIndices": [
+      12,
+      13
+     ],
+     "colour": "#9c8247",
+     "opening": {
+      "kind": "oval",
+      "majorMetres": 7,
+      "minorMetres": 3.5
+     },
+     "placement": "bridge canopy masses 12/13, centred oval opening in front canopy 12; lattice and sections are estimated in bld-node-map.json BLD_D4.d4Geometry",
+     "source": ".omo/ulw-research/d4-gt/ISSUES.md D-39; SYNTHESIS.md section 2.2; refs/c-bridge/src-01-bridge-front-n-shape.jpg; gold-brown colour visual approximation (estimated)",
+     "status": "emitted"
+    },
+    {
+     "id": "D4_SOUTH_RAFTERS",
+     "kind": "rafter-frame",
+     "massIndex": 11,
+     "colour": "#ad6c49",
+     "placement": "south roof edge; exact member spacing and cross-sections unresolved",
+     "source": ".omo/ulw-research/d4-gt/ISSUES.md D-39; refs/c-bridge/src-01-bridge-front-n-shape.jpg; rust-orange visual colour approximation (estimated)",
+     "status": "gap"
+    },
+    {
+     "id": "D4_ROOF_SIGN",
+     "kind": "channel-letters",
+     "text": "D4 공대3",
+     "wallBase": [
+      127.4767073,
+      34.97024739
+     ],
+     "widthMetres": 3.9,
+     "heightMetres": 0.7,
+     "colour": "#298ac2",
+     "emissive": true,
+     "placement": "project approximate wall base onto north-wing east parapet; do not use the photo coordinate as a floating sign centre",
+     "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2.1; waves/h-objects.md O06; refs/c-bridge/src-01-bridge-front-n-shape.jpg; blue visual colour approximation (estimated)",
+     "status": "requires-stage"
+    },
+    {
+     "id": "D4_ROOF_MAST",
+     "kind": "mast",
+     "massIndex": 6,
+     "heightMetres": 3,
+     "colour": "#585858",
+     "placement": "on stair-core roof; exact centre and diameter unresolved",
+     "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 2.1; waves/h-objects.md O29; refs/c-bridge/src-01-bridge-front-n-shape.jpg; dark visual colour approximation (estimated)",
+     "status": "gap"
+    },
+    {
+     "id": "D4_CORE_GLAZING",
+     "kind": "glazed-strip",
+     "massIndices": [
+      6,
+      14,
+      15
+     ],
+     "placement": "east face above north roof; use lane 2 facade material, exact strip extent unresolved",
+     "source": ".omo/ulw-research/d4-gt/ISSUES.md D-59; SYNTHESIS.md section 2.3; refs/c-bridge/src-01-bridge-front-n-shape.jpg (estimated)",
+     "status": "requires-stage"
+    }
+   ],
+   "stairRecesses": [
+    {
+     "id": "D4_NE_STAIR_RECESS",
+     "boundsTm": [
+      243525.5,
+      263916,
+      243531.5,
+      263922.3
+     ],
+     "railSides": [
+      "north",
+      "east"
+     ],
+     "railColour": "#a18a70",
+     "source": ".omo/ulw-research/d4-gt/ISSUES.md D-61; waves/l-ortho-hires.md #26; bounds +/-0.5 m, tan rail colour visual approximation (estimated)"
+    },
+    {
+     "id": "D4_NORTH_ROAD_STAIRS",
+     "boundsTm": [
+      243509.7,
+      263921.2,
+      243514.6,
+      263926.2
+     ],
+     "source": ".omo/ulw-research/d4-gt/ISSUES.md D-61; waves/l-ortho-hires.md #26; bounds +/-0.5 m; rise and tread unresolved (estimated)"
     }
    ]
   },

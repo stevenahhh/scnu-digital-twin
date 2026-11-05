@@ -40,7 +40,11 @@ export function compileFacadeGrid(doc, footprint, entrances = []) {
     for (const edge of surfaceEdges) {
       if (![edge.A, edge.B].every(p => Array.isArray(p) && p.length === 2 && p.every(Number.isFinite)) ||
           typeof edge.source !== "string" || !edge.source.trim()) fail(`${id} invalid surface edge`);
-      const a = wallCoordinates(edge.A, frame), b = wallCoordinates(edge.B, frame);
+      const range = edge.range ?? [0, 1];
+      if (!Array.isArray(range) || range.length !== 2 || !range.every(Number.isFinite) ||
+          range[0] < 0 || range[1] > 1 || range[0] >= range[1]) fail(`${id} invalid surface edge range`);
+      const at = t => edge.A.map((v, k) => v + t * (edge.B[k] - v));
+      const a = wallCoordinates(at(range[0]), frame), b = wallCoordinates(at(range[1]), frame);
       if (Math.abs(a.sM - b.sM) < 1e-8 || Math.max(a.sM, b.sM) <= 0 || Math.min(a.sM, b.sM) >= frame.lengthM) {
         fail(`${id} surface edge has no wall span`);
       }
@@ -69,6 +73,9 @@ export function compileFacadeGrid(doc, footprint, entrances = []) {
     }
     const byBay = new Map();
     for (const entry of entrances.filter(e => e.anchor.building === doc.building && e.anchor.wall === id)) {
+      // D4's passage banks use W00 as a coordinate frame, not as their
+      // supporting exterior wall; the tower bank is recessed behind W05.
+      if (doc.building === "BLD_D4" && ((entry.anchor.tM ?? 0) !== 0 || (entry.anchor.yawDeg ?? 0) !== 0)) continue;
       const bay = Math.floor((entry.anchor.sM - offsetM) / pitchM);
       if (bay < 0 || bay >= count || byBay.has(bay)) fail(`${id} entrance ${entry.id} outside grid or shares bay`);
       byBay.set(bay, entry);
@@ -191,6 +198,7 @@ export function clipFacadeQuad(rect, cuts) {
 export function gridCellsOnEdge(grid, aScene, bScene) {
   if (!grid) return null;
   const a = sceneToTm(...aScene), b = sceneToTm(...bScene);
+  const matched = [];
   for (const wall of grid.walls.values()) {
     const p = wallCoordinates(a, wall), q = wallCoordinates(b, wall);
     if (Math.abs(p.sM - q.sM) < 1e-8) continue;
@@ -202,15 +210,18 @@ export function gridCellsOnEdge(grid, aScene, bScene) {
     // Lateral mass tolerance must not permit uncovered strips beyond the ends of the GIS wall.
     // Explicit snapshots include end caps; unbound overhangs still fall back.
     if (surfaceEdge < 0 && (Math.min(p.sM, q.sM) < -1e-6 || Math.max(p.sM, q.sM) > wall.lengthM + 1e-6)) continue;
+    const edge = wall.surfaceEdges[surfaceEdge];
+    const range = edge?.range ?? [0, 1];
+    const [start, end] = edge && near(a, edge.B) ? [1 - range[1], 1 - range[0]] : range;
     const cells = wall.cells.flatMap(cell => {
       const tA = (cell.s0M - p.sM) / (q.sM - p.sM), tB = (cell.s1M - p.sM) / (q.sM - p.sM);
-      const t0 = Math.max(0, Math.min(tA, tB)), t1 = Math.min(1, Math.max(tA, tB));
+      const t0 = Math.max(start, Math.min(tA, tB)), t1 = Math.min(end, Math.max(tA, tB));
       if (t1 - t0 < 1e-8) return [];
       const u = t => (cell.uv0 ?? 0) + ((cell.uv1 ?? 1) - (cell.uv0 ?? 0)) *
         (p.sM + t * (q.sM - p.sM) - cell.s0M) / (cell.s1M - cell.s0M);
       return [{ ...cell, wall: wall.wall, ...(surfaceEdge >= 0 ? { surfaceEdge } : {}), t0, t1, u0: u(t0), u1: u(t1) }];
     });
-    return cells.sort((c, d) => c.storey - d.storey || c.t0 - d.t0);
+    matched.push(...cells);
   }
-  return null;
+  return matched.length ? matched.sort((c, d) => c.storey - d.storey || c.t0 - d.t0) : null;
 }

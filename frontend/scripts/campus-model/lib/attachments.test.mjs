@@ -14,7 +14,11 @@ const file = JSON.parse(readFileSync(path.join(DATA, "facade-attachments.json"),
 
 test("facade-attachments.json records are valid and name the W3 follow-up details", () => {
   const byNode = attachmentsByNode(file, looks);
-  assert.deepEqual([...byNode.keys()].sort(), ["BLD_B2", "BLD_D2", "BLD_Dormitory_Building.004", "BLD_E6", "BLD_E7", "BLD_E8", "BLD_SCNU_A3", "BLD_SCNU_E4", "BLD_SCNU_E8", "BLD_SCNU_F1", "BLD_Training Lab Building"]);
+  // D4's fourteen sourced records were added by l2-facade.md (D-43/44/63/70).
+  assert.deepEqual([...byNode.keys()].sort(), ["BLD_B2", "BLD_D2", "BLD_D4", "BLD_Dormitory_Building.004", "BLD_E6", "BLD_E7", "BLD_E8", "BLD_SCNU_A3", "BLD_SCNU_E4", "BLD_SCNU_E8", "BLD_SCNU_F1", "BLD_Training Lab Building"]);
+  assert.equal(byNode.get("BLD_D4").length, 14);
+  assert.equal(byNode.get("BLD_D4").filter(a => a.kind === "balconies").length, 1);
+  assert.equal(byNode.get("BLD_D4").filter(a => a.id.startsWith("D4-platform-condenser-")).length, 5);
   assert.deepEqual(byNode.get("BLD_SCNU_F1").map((a) => [a.kind, a.colour]), [["roof", "#94604a"], ["roof", "#94604a"], ["roof", "#94604a"]]);
   assert.deepEqual(byNode.get("BLD_SCNU_A3").map((a) => [a.kind, a.look ?? a.form]), [["block", "A3-orange"], ["block", "A3-orange"], ["solar", "gable"], ["solar", "gable"], ["solar", "gable"]]);
   assert.deepEqual(byNode.get("BLD_SCNU_E4").map((a) => [a.kind, a.look ?? a.form]), [["block", "E4-glass"], ["solar", "rows"], ["solar", "rows"], ["roof", undefined]]);

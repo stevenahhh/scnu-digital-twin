@@ -6,7 +6,40 @@
   "VWorld 2D data API LT_C_BLDGINFO (building register: dong_nm, grnd_flr, height), queried 2026-10-24 under consent D1; the register records are attached to the wrong footprints on campus, so they are matched here by building name (dong_nm)"
  ],
  "looks": [
-  { "id": "D4", "class": "glass curtain wall", "pattern": "curtain", "texture": "stone", "wall": "#e4e5e1", "trim": "#d3d9d6", "spandrel": "#d6dcda", "glass": "#5aa9ab", "frame": "#cbd3d3", "bay": 3.4, "mullions": 2, "spandrelHeight": 0.2, "piers": { "every": 4, "width": 0.34, "colour": "#e8e8e3" }, "ground": "glazed", "plinth": "#8e918e", "entrance": { "canopy": "#7c6a58", "sign": "#2c4f78" }, "parapet": "#e4e5e1", "sources": "VR scene_d4 (teal curtain wall, white stone piers, glazed atrium with timber-soffit canopy); LOD4 SC090095; re-checked 2026-10-26 against VR scene_d4 f (cols 330-830): lighter cyan glass (estimated); outline, position and height unchanged" },
+  {
+      "id": "D4",
+      "class": "glass curtain wall",
+      "pattern": "curtain",
+      "texture": "stone",
+      "wall": "#d4c4bf",
+      "trim": "#d3d9d6",
+      "spandrel": "#d6dcda",
+      "glass": "#5aa9ab",
+      "frame": "#cbd3d3",
+      "bay": 3.4,
+      "mullions": 2,
+      "spandrelHeight": 0.2,
+      "piers": {
+        "every": 4,
+        "width": 0.34,
+        "colour": "#d4c4bf"
+      },
+      "ground": "glazed",
+      "plinth": "#d4c4bf",
+      "entrance": {
+        "doors": "#5aa9ab"
+      },
+      "parapet": "#e4e5e1",
+      "sources": ".omo/ulw-research/d4-gt/refs/h-scnu-vr/d4_f_west_wing_facade.jpg; refs/l-vr-cache/d4_f_plinth_rail_c1240-1800_r1230-1590.jpg: teal glazing, silver frames and neutralised pink-beige stone; SYNTHESIS.md 2.4, D-70 (estimated)",
+      "band": {
+        "height": 0.04743,
+        "colour": "#d3d9d6"
+      },
+      "stoneMaterial": {
+        "asset": "polyhaven/concrete_tile_facade",
+        "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 8 / ISSUES D-70: CC0 stone-like cladding candidate; binding requires integrator and material lane (estimated)"
+      }
+    },
   { "id": "C1", "class": "white panel with teal ribbon windows and silver fins", "pattern": "ribbon", "texture": "panel", "wall": "#e4e8e9", "trim": "#c9cdcd", "glass": "#5f9ea6", "frame": "#e9eded", "mullions": 4, "ground": "glazed", "plinth": "#8f8e89", "entrance": { "canopy": "#4b4f53", "sign": "#d6dada" }, "parapet": "#dde1e1", "windowHeight": 0.5, "sill": 0.28, "sources": "VR scene_c1 (close vertical silver fins over teal glass, metal fascia, grey stone podium, charcoal entrance cube); LOD4 SC030409; re-checked 2026-10-26 against VR scene_c1 f (cols 120-800) silver fins over light glass, scene_e4 b (cols 0-1024) and scene_c3 b (cols 0-1024): the side and rear walls are white panel with teal ribbon windows (estimated)" },
   {"id": "C1F", "class": "dark glass curtain wall (C1 library front; fins, columns, fascia and blocks are front-kit geometry)", "pattern": "curtain", "texture": "panel", "wall": "#e8ecec", "trim": "#dfe3e3", "glass": "#4f7a80", "frame": "#8d969a", "mullions": 1, "ground": "glazed", "plinth": "#7d8082", "entrance": {"canopy": "#e9ecec", "sign": "#d6dada"}, "parapet": "#e9ecec", "sources": "VR scene_c1 face f (2026-10-27): two storeys of light glass behind slim silver vertical fins (about 0.6 m apart) in bays between white columns (about 10-11 m), a deep flat white fascia overhanging the glass at the top, a thin flat canopy over the central doors, a grey metal box block at the south (left) end; front of BLD_C1.001 only (estimated) r2 (2026-10-27): darker glass reflection; the fins, white columns, thin fascia band, rooftop block and stone side block are geometry (front kit), not painted.", "spandrelHeight": 0.02, "spandrel": "#d3d8d9"},
   { "id": "A1", "class": "white panel, punched", "pattern": "punched", "texture": "panel", "wall": "#e8eaea", "trim": "#dfa13e", "glass": "#3f74a8", "frame": "#a7b0b8", "windows": 2, "windowWidth": 0.62, "windowHeight": 0.4, "sill": 0.3, "ground": "glazed", "plinth": "#e0a245", "entrance": { "canopy": "#d9772f", "sign": "#2d5b8c" }, "parapet": "#e8eaea", "sources": "VR scene_a1 (white panel tower, blue punched windows, teal glazed core and lobby wing, orange accent block); LOD4 SC030493; re-checked 2026-10-26 against VR scene_a1 f (cols 200-430), scene_a4 l (cols 380-800): paired blue windows per bay, yellow-orange podium trim (estimated); re-checked 2026-10-27 against the facades-r2 compare-vr strips: VR scene_a1 f (cols 900-1700) shows an orange-yellow band along the glazed ground storey (estimated); facades-flags 2026-10-27: VR scene_a4 l: orange-yellow two-storey podium (zone A1-podium) and a glazed third storey (band zone A1-band) under four white panel storeys; height checked against VR scene_a4 l: the roof edge at the west corner reads within about 1.2 m of the render's LOD4 roof (32.9 m), so the height stays (estimated)", "zones": { "base": { "storeys": 2, "look": "A1-podium" }, "band": { "from": 2, "storeys": 1, "look": "A1-band" } } },
@@ -81,7 +114,12 @@
   { "id": "F1-curtain", "class": "blue glass curtain wall, two lower storeys (F1 plaza corner)", "pattern": "curtain", "texture": "metal", "wall": "#2f4f70", "spandrel": "#2f4f70", "glass": "#2f6ea8", "frame": "#2b4566", "bay": 2.6, "mullions": 3, "spandrelHeight": 0.06, "ground": "same", "plinth": "#5e6870", "parapet": "#2f4f70", "sources": "facades-flags 2026-10-27: VR scene_f1 f (cols 1410-2048, rows 1250-1600): the two-storey strip along the right block's east face at the plaza corner (form mass 5) is a blue glass curtain wall; the LED screen on it is not drawn here (mass look; estimated)" }
  ],
  "buildings": [
-  { "node": "BLD_D4", "look": "D4", "entranceBearing": 180 },
+  {
+      "node": "BLD_D4",
+      "look": "D4",
+      "entranceMode": "records-only",
+      "source": ".omo/ulw-research/d4-gt/ISSUES D-08/D-45/D-48: explicit entrances.json is sole entrance inventory; disable atlas entrance and automatic canopy (estimated)"
+    },
   { "node": "BLD_C1", "look": "C1", "floors": 4, "heightMetres": 17.6, "floorsSource": "SCNU 360 VR scene list (학습관 4층) and the VWorld LOD4 roof level", "heightSource": "estimated: 4 floors x 4.4 m (VWorld LOD4 roof level 18 m)" },
   {"node": "BLD_C1.001", "look": "C1", "floors": 3, "heightMetres": 13.2, "floorsSource": "VWorld LT_C_BLDGINFO 도서관 제3동호 grnd_flr 3", "heightSource": "estimated: 3 floors x 4.4 m (VWorld LOD4 roof level 14 m)", "entranceBearing": 115, "entranceSource": "VR scene_c1 face f: the doors are in the middle of the glass front facing the plaza pool (east-south-east, bearing about 115)", "front": {"look": "C1F", "fascia": {"height": 3.6, "overhang": 0.6, "rise": 0.3, "colour": "#b4c3cb"}, "columns": {"every": 5.5, "width": 0.6, "depth": 0.45, "colour": "#eef1f1"}, "fins": {"spacing": 0.55, "width": 0.06, "depth": 0.35, "colour": "#a7afb3"}, "entrance": {"width": 8, "storeys": 1}, "block": {"end": "south", "share": 0.13, "storeys": 2, "depth": 1.5, "colour": "#55595b", "window": {"width": 1.2, "colour": "#26343a"}}, "roof": {"width": 3, "depth": 3, "height": 5, "setback": 3, "offset": -6, "colour": "#d3d7d8"}, "source": "VR scene_c1 face f, r2: a thin white fascia band (about 1.4 m) over two storeys of glass, dense silver-grey fins about 0.55 m apart between white columns, a small rooftop block over the entrance, a dark grey stone side block with one tall window at the south end (all 추정); r3: the top band is a light blue-grey metal/glass panel about one storey high with the blue \"C1 도서관\" sign at its right end, columns about 5.5 m apart, a 3 x 3 x 5 m rooftop block left of the entrance (추정)", "sign": {"text": "C1 도서관", "charWidth": 1.0, "charHeight": 1.2, "margin": 2.5, "colour": "#2f78c4"}}},
   { "code": "A1", "look": "A1", "floors": 3, "heightMetres": 13.2, "floorsSource": "VWorld LOD4 podium roof level (13 m)", "heightSource": "estimated: 3 floors x 4.4 m (VWorld LOD4 podium roof 13 m)", "tower": { "floors": 8, "heightMetres": 35.2, "floorsSource": "SCNU registry A1 (8 floors)", "lod4": "OSM way/366373751 (not in GIS건물통합정보)", "levels": [0] }, "entranceBearing": 180 },

@@ -1,10 +1,10 @@
 {
   "frameVersion": 2,
   "inputs": {
-    "data/photo/site-detail.geojson": "fcac93007330585e0ee5ca111d3de3c663ddaf452b90943dfd6fe04a80febf15",
+    "data/photo/site-detail.geojson": "6a1038d8e7c3d601a6c22fe4fe2638c4856d336ef3d67cf4264566614371d763",
     "data/gis-buildings.json": "3807d90af530a0265be0f77e9f05ee97eb80d66150f322429b5788c9fc0dad3c",
     "data/vr-buildings.json": "7ab28c3f543f9f6f1d7fa6d6c30e8cc0e8a9657d20eb6c61a568d706ff3dc53f",
-    "data/bld-node-map.json": "ff2bdac1127ccc1215dad2f5aaface382d221b1955b838e7d40a0995ed08fc29",
+    "data/bld-node-map.json": "fff5e838b1b2bdcab2c75387423c205df902ab5c52654e844154880904fc9d00",
     "../../public/uni.glb": "61c7b000ea2780886dce5804f8ead042ec5b8d3515d8bed96ce1204b16f12a12",
     "../perf/vr-stations.json": "f4086e84e322153bbe90fbeaf574bb9259773a36a7a9818c1924b2c69b1d9fe5"
   },
@@ -2044,14 +2044,14 @@
       "id": "SD-D4-T1",
       "anchor": {
         "parcel": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_D4_",
-        "uM": -5.501467411459758,
-        "vM": -5.886851650237984
+        "uM": -23.13310929986762,
+        "vM": 5.632082045960562
       },
       "estimated": true,
       "evidence": {
         "tier": "T4",
         "refs": [
-          "VR scene_d4 f (cols 700-820, rows 1880-2000): square kerbed tree pit on the forecourt paving (the D4 planter of the first pass, placed now on the registered face)"
+          "Brick-red kerbed square soil tree pit; retain existing T4 polygon until VR camera height is pinned; do not promote V1 projection to verified placement (estimated)"
         ]
       },
       "geometry": {
@@ -2059,24 +2059,24 @@
         "coordinates": [
           [
             [
-              0.743343318325617,
-              -0.4829712598582516
+              -0.49951743092612955,
+              -0.7323270191310477
             ],
             [
-              0.7583532764253825,
-              0.7112467478157878
+              0.6940637716359187,
+              -0.7741105276678331
             ],
             [
-              -0.744097209219428,
-              0.4293958576352031
+              0.44597240247970893,
+              0.734282013635694
             ],
             [
-              -0.757599385527775,
-              -0.6576713454728011
+              -0.6405187430696753,
+              0.7721555331567018
             ],
             [
-              0.743343318325617,
-              -0.4829712598582516
+              -0.49951743092612955,
+              -0.7323270191310477
             ]
           ]
         ]
@@ -2091,14 +2091,14 @@
       "id": "SD-D4-T2",
       "anchor": {
         "parcel": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_D4_",
-        "uM": -5.584729658767457,
-        "vM": 1.1710101768951016
+        "uM": -16.07515498155307,
+        "vM": 5.5570686250673
       },
       "estimated": true,
       "evidence": {
         "tier": "T4",
         "refs": [
-          "VR scene_d4 f (cols 1335-1435, rows 1870-1970): second square kerbed tree pit on the forecourt (registered face)"
+          "Brick-red kerbed square soil tree pit; retain existing T4 polygon until VR camera height is pinned; do not promote V1 projection to verified placement (estimated)"
         ]
       },
       "geometry": {
@@ -2106,24 +2106,24 @@
         "coordinates": [
           [
             [
-              0.618493532527989,
-              -0.549561376542639
+              -0.5632913645565167,
+              -0.6060155072128504
             ],
             [
-              0.6282936167739257,
-              0.30941607433411855
+              0.2952503840867543,
+              -0.6350735285239195
             ],
             [
-              -0.6173795594772354,
-              0.6162845369819361
+              0.6299727717380716,
+              0.6034057157932766
             ],
             [
-              -0.6294075897554674,
-              -0.37613923481798006
+              -0.36193179131441416,
+              0.6376833198752981
             ],
             [
-              0.618493532527989,
-              -0.549561376542639
+              -0.5632913645565167,
+              -0.6060155072128504
             ]
           ]
         ]
@@ -2145,7 +2145,7 @@
       "evidence": {
         "tier": "T4",
         "refs": [
-          "VR scene_d4 b (cols 1380-2048, rows 1700-2040): guard rail along the raised footway edge at the bend south of D4 (registered pose)"
+          "East-side raised footway edge near D4; keep T4 geometry, no verified ortho base; light-grey guardrail and blue-grey/yellow mosaic paving (estimated)"
         ]
       },
       "geometry": {
@@ -2174,7 +2174,7 @@
     {
       "id": "SD-C2-B1",
       "anchor": {
-        "parcel": "PARCEL_PAVING_BUILDING_310",
+        "parcel": "PARCEL_PAVING_BUILDING_309",
         "uM": -10.787300434230541,
         "vM": -7.956957857446566
       },
@@ -2394,7 +2394,7 @@
     {
       "id": "SD-B3-T1",
       "anchor": {
-        "parcel": "PARCEL_PAVING_BUILDING_204",
+        "parcel": "PARCEL_PAVING_BUILDING_203",
         "uM": 33.19919640808287,
         "vM": 22.7212716821928
       },
@@ -2633,7 +2633,7 @@
     {
       "id": "SD-A1-S2",
       "anchor": {
-        "parcel": "PARCEL_PAVING_BUILDING_319",
+        "parcel": "PARCEL_PAVING_BUILDING_318",
         "uM": -1.3871069099529798,
         "vM": 0.713714955677525
       },
@@ -2844,7 +2844,7 @@
     {
       "id": "SD-A12-HG1",
       "anchor": {
-        "parcel": "PARCEL_PAVING_BUILDING_287",
+        "parcel": "PARCEL_PAVING_BUILDING_286",
         "uM": 4.892160844336123,
         "vM": -8.864001130636296
       },
@@ -3139,7 +3139,7 @@
         263801.57382096327
       ],
       "nearestParcel": "PARCEL_ASPHALT_ROAD_ZONE_68",
-      "nearestParcelDistanceM": 3.8518460583530993,
+      "nearestParcelDistanceM": 3.8699144170934456,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
       "observation": "VR scene_b4 d (turned to the path and road of the photo): clipped mound under the tree by the path; about 4 m"
@@ -3152,7 +3152,7 @@
         263798.3742424356
       ],
       "nearestParcel": "PARCEL_ASPHALT_ROAD_ZONE_68",
-      "nearestParcelDistanceM": 2.3538206416809717,
+      "nearestParcelDistanceM": 2.3743138033913214,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
       "observation": "VR scene_b4 d (turned to the path and road of the photo): clipped mound; about 4 m"
@@ -3282,7 +3282,7 @@
         263780.8488882948
       ],
       "nearestParcel": "PARCEL_ASPHALT_ROAD_ZONE_81",
-      "nearestParcelDistanceM": 1.7684914842020136,
+      "nearestParcelDistanceM": 1.7623379479780457,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
       "observation": "VR scene_e1 l (cols 1790-2048, rows 1880-2040): campus banner boards on the lawn by the roundabout (white and blue panels)"
@@ -3359,7 +3359,7 @@
         243611.56944319565,
         263808.61096593854
       ],
-      "nearestParcel": "PARCEL_PAVING_BUILDING_166",
+      "nearestParcel": "PARCEL_PAVING_BUILDING_165",
       "nearestParcelDistanceM": 2.9005418275558514,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
@@ -3376,7 +3376,7 @@
       "nearestParcelDistanceM": 2.1577960641728144,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
-      "observation": "VR scene_d4 l (cols 10-440, rows 1500-1830): guard rail along the footway on the retaining edge of the road west of the forecourt (registered pose)"
+      "observation": "East-side raised footway edge near D4; keep T4 geometry, no verified ortho base; dark guardrail and blue-grey block paving with yellow line (estimated)"
     },
     {
       "id": "SD-D5-S1",
@@ -3398,7 +3398,7 @@
         243837.02494934876,
         263916.7666614604
       ],
-      "nearestParcel": "PARCEL_PAVING_BUILDING_310",
+      "nearestParcel": "PARCEL_PAVING_BUILDING_309",
       "nearestParcelDistanceM": 0.4529405766237323,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
@@ -3437,7 +3437,7 @@
         243766.53158120217,
         263984.9035698668
       ],
-      "nearestParcel": "PARCEL_PAVING_BUILDING_363",
+      "nearestParcel": "PARCEL_PAVING_BUILDING_362",
       "nearestParcelDistanceM": 2.048722931027428,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
@@ -3645,7 +3645,7 @@
         243811.6707948292,
         263554.7703396708
       ],
-      "nearestParcel": "PARCEL_PAVING_BUILDING_275",
+      "nearestParcel": "PARCEL_PAVING_BUILDING_274",
       "nearestParcelDistanceM": 0.7179525226613792,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
@@ -3658,7 +3658,7 @@
         243811.26508992037,
         263556.5268532599
       ],
-      "nearestParcel": "PARCEL_PAVING_BUILDING_277",
+      "nearestParcel": "PARCEL_PAVING_BUILDING_276",
       "nearestParcelDistanceM": 0.7143648404214187,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
@@ -3710,7 +3710,7 @@
         243809.23080376332,
         263495.1362859927
       ],
-      "nearestParcel": "PARCEL_PAVING_BUILDING_292",
+      "nearestParcel": "PARCEL_PAVING_BUILDING_291",
       "nearestParcelDistanceM": 0.28062142677215507,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
@@ -3736,8 +3736,8 @@
         243981.113401894,
         263546.7710760487
       ],
-      "nearestParcel": "PARCEL_PAVING_EDGE_FB_0058_7",
-      "nearestParcelDistanceM": 2.1469636513771637,
+      "nearestParcel": "PARCEL_SUPPORT_LOT_243985_263550_PART_1",
+      "nearestParcelDistanceM": 1.5586612294888553,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
       "observation": "VR scene_a13 f: dark rail along the raised planter's edge by the stalls"
@@ -3853,7 +3853,7 @@
         243956.10017955216,
         263652.25701069523
       ],
-      "nearestParcel": "PARCEL_PAVING_BUILDING_224",
+      "nearestParcel": "PARCEL_PAVING_BUILDING_223",
       "nearestParcelDistanceM": 3.3350708192726333,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
@@ -3866,7 +3866,7 @@
         243959.67422301153,
         263654.96710544464
       ],
-      "nearestParcel": "PARCEL_PAVING_BUILDING_335",
+      "nearestParcel": "PARCEL_PAVING_BUILDING_334",
       "nearestParcelDistanceM": 0.9463367711888226,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
@@ -3879,7 +3879,7 @@
         243944.736858605,
         263655.09683382034
       ],
-      "nearestParcel": "PARCEL_PAVING_BUILDING_214",
+      "nearestParcel": "PARCEL_PAVING_BUILDING_213",
       "nearestParcelDistanceM": 4.301521212207729,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
@@ -3892,7 +3892,7 @@
         243949.2292176493,
         263663.90635065443
       ],
-      "nearestParcel": "PARCEL_PAVING_BUILDING_214",
+      "nearestParcel": "PARCEL_PAVING_BUILDING_213",
       "nearestParcelDistanceM": 3.0711512983744242,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
@@ -3905,7 +3905,7 @@
         243945.57771012734,
         263662.220152225
       ],
-      "nearestParcel": "PARCEL_PAVING_BUILDING_214",
+      "nearestParcel": "PARCEL_PAVING_BUILDING_213",
       "nearestParcelDistanceM": 0.03993216983926878,
       "estimated": true,
       "reason": "No containing parcel and no verified finite wall reading; original estimate retained.",
@@ -4166,7 +4166,7 @@
     {
       "id": "SD-D4-PM1",
       "kind": "bike_rack",
-      "observation": "VR scene_d4 f (cols 560-730, rows 1460-1530): PM (kickboard) shelter, a steel frame with a dark roof over a row of stands, beside the kickboard bay",
+      "observation": "Open PM scooter shelter, dark roof and teal-blue steel frame; retain repo position as T4 while V1 projection differs (estimated)",
       "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
     },
     {
@@ -4551,6 +4551,52 @@
       "id": "SD-A1RG-S6",
       "kind": "site_tree",
       "observation": "VR scene_a5 r: a clipped shrub mass by the room's east side on the A1 roof garden lawn; drawn as the trees stage's rounded shrub (dark green)",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-D4-MH1",
+      "kind": "manhole",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-D4-MH2",
+      "kind": "manhole",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-D4-MH3",
+      "kind": "manhole",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-D4-DRAIN1",
+      "kind": "storm_grate",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-D4-DRAIN2",
+      "kind": "storm_grate",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-D4-BOLLARD-STUB1",
+      "kind": "bollard",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-D4-BOLLARD-Y1",
+      "kind": "bollard",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-D4-BOLLARD-Y2",
+      "kind": "bollard",
+      "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
+    },
+    {
+      "id": "SD-D4-WALL-W",
+      "kind": "retaining_wall",
+      "observation": "West lot retaining wall provisional axis follows l-ortho-hires #28 asphalt/canopy boundary; crown-obscured wall toe and individual top steps remain untraced (estimated)",
       "reason": "outside the five todo 20 classes; retained for todo 21 free-standing objects or the owning later stage"
     }
   ]
