@@ -465,14 +465,21 @@
       "estimated": true,
       "scenes": [
         "scene_d4",
-        "scene_e2",
         "scene_d3"
       ],
       "lod4Record": "133154",
-      "fallbackReason": "Remaining W00, W02, W03, W04, W05, W06, W07: The long ribbon fronts need their own structural-group count; the single narrow W01 opening stack only corrects the otherwise blank stair end.",
+      "fallbackReason": ".omo/ulw-research/d4-gt/ISSUES D-03/D-44 and waves/g-facade.md: eight GIS walls have explicit treatments; W03/W07 partition mass 1 north edge and W04-W06 bind mass 5 tower edges. Balcony openings/rails, internal passage door cuts and texture asset binding remain separate integration work. Counts, stone neutralisation and hidden south-end finish remain estimates (estimated)",
       "curatedWalls": [
-        "W01"
-      ]
+        "W00",
+        "W01",
+        "W02",
+        "W03",
+        "W04",
+        "W05",
+        "W06",
+        "W07"
+      ],
+      "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md sections 2.3, 2.4; scene_e2 rejected as a false D4 match (estimated)"
     },
     "BLD_SCNU_D5": {
       "estimated": true,

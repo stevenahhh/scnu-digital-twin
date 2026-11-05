@@ -540,12 +540,15 @@
     243478.977,
     263857.146
    ],
-   "curated": "todo 14",
+   "curated": "d4-ground-truth lane 4, 2026-11-05",
    "retired": [
     "LOT_E243476_N263851/R2",
     "LOT_E243476_N263851/L1",
     "LOT_E243476_N263851/L2",
-    "LOT_E243476_N263851/L3"
+    "LOT_E243476_N263851/L3",
+    "LOT_E243476_N263851/L4",
+    "LOT_E243476_N263851/L5",
+    "LOT_E243476_N263851/F1"
    ],
    "rows": [
     {
@@ -559,12 +562,12 @@
      "startOffsetM": 0,
      "entryFrom": "aisle",
      "wheelStops": null,
-     "estimated": false,
+     "estimated": true,
      "backLine": {
       "abs": [
        [
-        243485.168,
-        263877.701
+        243484.129,
+        263872.504
        ],
        [
         243479.857,
@@ -574,60 +577,35 @@
      },
      "side": -1,
      "pitchM": 3.7,
-     "depthM": 5.28,
-     "count": 8,
+     "depthM": 5,
+     "count": 7,
      "dividerBearingDeg": 326.06,
      "paintFront": false,
      "stalls": [
       {
-       "kind": "accessible",
-       "aisle": {
-        "side": "start",
-        "widthM": 1.65
-       },
-       "symbol": "wheelchair",
-       "estimatedFields": {
-        "symbolUp": {
-         "reason": "the bay lies in the building shade, its symbol is not readable on NGII: direction assumed towards the back"
-        },
-        "widthM": {
-         "reason": "edges of the blue fill read in shade at 0.25 m per pixel"
-        }
-       },
        "id": "LOT_E243476_N263851/R1/S0",
        "index": 0,
-       "widthM": 5.3
-      },
-      {
-       "id": "LOT_E243476_N263851/R1/S1",
-       "index": 1,
        "kind": "general",
        "widthM": 3.35
       }
      ],
      "evidence": {
-      "tier": "T1",
+      "tier": "T2",
       "refs": [
-       "NGII 2025 peaks along the row axis (todo 14): 7 lines bounding 6 stalls, pitch 3.7 m; 7 of 7 open on the photo, 4 with paint contrast",
-       "depth 5.28 m via front+run, front rail painted",
-       "seed: photo dividers 3/3: MX00291 MX00291 MX00291; not T1: no paint under most dividers (1/3 visible ones)",
-       "ladder in the building shade, shade is why the mask hides it",
-       "one more box in shade: line 27.08 at 10 levels, both rails, read at gain 3",
-       "hatch of S0 read at gain 3.6: side start, inner line at 1.65"
+       ".omo/ulw-research/d4-gt/D-25: refs/l-ortho-hires/z_west_lot_south_grid5m.png; inner south row keeps 3.70 m pitch and 326.06 deg axis; first 5.30 m special cell is split into R5, remaining six cells retain their old divider origins; depth 5.0 m uses general-bay reference because the shade obscures the far ends; SYNTHESIS.md section 6; waves/l-ortho-hires.md: image-derived positions, not survey; white paint 0.10 m retained as rendering estimate, line width not resolved at 0.25 m GSD (estimated)"
       ],
       "photoSupport": null
      },
      "estimatedDividers": [
       0,
       1,
-      6,
-      7
+      2,
+      3,
+      4,
+      5,
+      6
      ],
-     "estimatedFields": {
-      "depthM": {
-       "reason": "the front rail is not parallel to the back rail (-1.08 to 1.02 m): lines share one depth, the rail is a free line"
-      }
-     }
+     "paintBack": true
     },
     {
      "id": "LOT_E243476_N263851/R3",
@@ -640,38 +618,44 @@
      "startOffsetM": 0,
      "entryFrom": "aisle",
      "wheelStops": null,
-     "estimated": false,
+     "estimated": true,
      "backLine": {
       "abs": [
        [
-        243489.311,
-        263926.244
+        243489.86,
+        263924.97
        ],
        [
-        243481.878,
-        263898.337
+        243483.042,
+        263900.71
        ]
       ]
      },
      "side": -1,
-     "pitchM": 3.61,
-     "depthM": 5.98,
-     "count": 9,
-     "dividerBearingDeg": 243.165,
+     "pitchM": 3.6,
+     "depthM": 5,
+     "count": 8,
+     "dividerBearingDeg": 243.097,
      "paintBack": true,
      "stalls": [],
      "evidence": {
-      "tier": "T1",
+      "tier": "T2",
       "refs": [
-       "NGII 2025 peaks along the row axis (todo 14): 19 lines bounding 18 stalls, pitch 3.6 m; 2 of 19 open on the photo, 2 with paint contrast",
-       "depth 6.1 m via back+run, back rail painted",
-       "long ladder along the west kerb in the building shade: not in the seed, read here",
-       "review B5: the first lines at 0 and 2.8 m stood on no paint; the real line is at 1.65 m on the 3.6 m pitch"
+       ".omo/ulw-research/d4-gt/D-25: waves/l-ortho-hires.md facts 1-3 and refs/l-ortho-hires/stall_profiles_rows1_west_south.json rowA_west_spine; one common spine and divider angle; 17 observed peaks bound 16 intervals, one 4.5 m interval is an unparked break, leaving 7+8 stalls; regularised phase and 5.0 m hidden depth use the general-bay reference; 2.38 m at spine south end remains unpainted; SYNTHESIS.md section 6; waves/l-ortho-hires.md: image-derived positions, not survey; white paint 0.10 m retained as rendering estimate, line width not resolved at 0.25 m GSD (estimated)"
       ],
       "photoSupport": null
      },
-     "estimatedDividers": [],
-     "paintFront": true
+     "estimatedDividers": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "paintFront": false
     },
     {
      "id": "LOT_E243476_N263851/R4",
@@ -684,113 +668,135 @@
      "startOffsetM": 0,
      "entryFrom": "aisle",
      "wheelStops": null,
-     "estimated": false,
+     "estimated": true,
      "backLine": {
       "abs": [
        [
-        243481.739,
-        263897.556
+        243481.825,
+        263896.378
        ],
        [
-        243473.42,
-        263866.325
+        243474.033,
+        263868.652
        ]
       ]
      },
      "side": -1,
      "pitchM": 3.6,
-     "depthM": 6.17,
-     "count": 10,
-     "dividerBearingDeg": 243.165,
+     "depthM": 5,
+     "count": 9,
+     "dividerBearingDeg": 243.097,
      "paintBack": true,
      "stalls": [],
      "evidence": {
-      "tier": "T1",
+      "tier": "T2",
       "refs": [
-       "NGII 2025 peaks along the row axis (todo 14): 19 lines bounding 18 stalls, pitch 3.6 m; 2 of 19 open on the photo, 2 with paint contrast",
-       "depth 6.1 m via back+run, back rail painted",
-       "long ladder along the west kerb in the building shade: not in the seed, read here",
-       "the north part of R3: its lines at 31.38 and 30.53 m are two ladders 0.9 m apart"
+       ".omo/ulw-research/d4-gt/D-25: waves/l-ortho-hires.md facts 1-3 and refs/l-ortho-hires/stall_profiles_rows1_west_south.json rowA_west_spine; one common spine and divider angle; 17 observed peaks bound 16 intervals, one 4.5 m interval is an unparked break, leaving 7+8 stalls; regularised phase and 5.0 m hidden depth use the general-bay reference; 2.38 m at spine south end remains unpainted; SYNTHESIS.md section 6; waves/l-ortho-hires.md: image-derived positions, not survey; white paint 0.10 m retained as rendering estimate, line width not resolved at 0.25 m GSD (estimated)"
       ],
       "photoSupport": null
      },
-     "estimatedDividers": [],
-     "estimatedFields": {
-      "depthM": {
-       "reason": "read from the ends of the painted dividers on NGII (0.25 m per pixel), back rail painted, no front rail"
+     "estimatedDividers": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "paintFront": false
+    },
+    {
+     "id": "LOT_E243476_N263851/R5",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": true,
+     "backLine": {
+      "abs": [
+       [
+        243485.9,
+        263876.4
+       ],
+       [
+        243485.4,
+        263871
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 5.423,
+     "depthM": 5.5,
+     "count": 2,
+     "dividerBearingDeg": 323.746,
+     "paintBack": true,
+     "paintFront": true,
+     "stalls": [
+      {
+       "id": "LOT_E243476_N263851/R5/S0",
+       "index": 0,
+       "kind": "accessible",
+       "widthM": 5.423,
+       "symbol": "wheelchair",
+       "upBearingDeg": 143.746,
+       "aisle": {
+        "side": "front",
+        "widthM": 1.2
+       },
+       "outlineAbs": [
+        [
+         243482.6,
+         263880.9
+        ],
+        [
+         243485.9,
+         263876.4
+        ],
+        [
+         243485.4,
+         263871
+        ],
+        [
+         243481.6,
+         263876.2
+        ]
+       ],
+       "estimated": true,
+       "source": ".omo/ulw-research/d4-gt/D-26: waves/l-ortho-hires.md fact 12; refs/l-ortho-hires/z_west_lot_south_grid5m.png; outlineAbs is the four hand-read corners for integrator quad support; hatch width 1.2 m is an unresolved image estimate (estimated)",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 6: symbol follows the bay divider; not a surveyed orientation (estimated)"
+        },
+        "aisleWidthM": {
+         "reason": ".omo/ulw-research/d4-gt/waves/l-ortho-hires.md facts 11-12: hatch side at aisle end; 1.2 m width unresolved in shade (estimated)"
+        }
+       }
       }
+     ],
+     "estimatedDividers": [
+      0,
+      1
+     ],
+     "evidence": {
+      "tier": "T2",
+      "refs": [
+       ".omo/ulw-research/d4-gt/D-26: waves/l-ortho-hires.md fact 12; refs/l-ortho-hires/z_west_lot_south_grid5m.png; bay split from the general ladder to stop its exceptional width shifting the rest; rear line follows the east pair of source corners, symbol follows divider axis, hatch faces aisle; current row approximates the non-parallelogram quad; SYNTHESIS.md section 6; waves/l-ortho-hires.md: image-derived positions, not survey; white paint 0.10 m retained as rendering estimate, line width not resolved at 0.25 m GSD (estimated)"
+      ],
+      "photoSupport": null
      }
     }
    ],
-   "lines": [
-    {
-     "id": "LOT_E243476_N263851/L4",
-     "abs": [
-      [
-       243481.826,
-       263857.827
-      ],
-      [
-       243482.681,
-       263860.311
-      ]
-     ],
-     "widthM": 0.1,
-     "colour": "white",
-     "evidence": {
-      "tier": "T2",
-      "refs": [
-       "MX00291",
-       "T2: hidden on the photo by the occlusion mask"
-      ]
-     },
-     "estimated": true
-    },
-    {
-     "id": "LOT_E243476_N263851/L5",
-     "abs": [
-      [
-       243482.788,
-       263860.965
-      ],
-      [
-       243483.969,
-       263866.084
-      ]
-     ],
-     "widthM": 0.1,
-     "colour": "white",
-     "evidence": {
-      "tier": "T2",
-      "refs": [
-       "MX00291",
-       "T2: hidden on the photo by the occlusion mask"
-      ]
-     },
-     "estimated": true
-    },
-    {
-     "id": "LOT_E243476_N263851/F1",
-     "abs": [
-      [
-       243482.823,
-       263881.185
-      ],
-      [
-       243476.324,
-       263856.308
-      ]
-     ],
-     "widthM": 0.1,
-     "colour": "white",
-     "evidence": {
-      "tier": "T1",
-      "refs": [
-       "front rail of R1: read over every stall on NGII 2025, -1.08 to 1.02 m off the row square; the row fans out under the shade"
-      ]
-     }
-    }
-   ]
+   "lines": [],
+   "estimated": true,
+   "estimatedReason": "SYNTHESIS.md section 6; waves/l-ortho-hires.md: image-derived positions, not survey; white paint 0.10 m retained as rendering estimate, line width not resolved at 0.25 m GSD; wheel stops remain null because no D4 stop position is resolved (estimated)"
   },
   {
    "id": "LOT_E243489_N263815",
@@ -798,7 +804,7 @@
     243495.884,
     263818.967
    ],
-   "curated": "todo 14",
+   "curated": "d4-ground-truth lane 4, 2026-11-05",
    "retired": [
     "LOT_E243489_N263815/L1",
     "LOT_E243489_N263815/L2",
@@ -816,45 +822,40 @@
      "startOffsetM": 0,
      "entryFrom": "aisle",
      "wheelStops": null,
-     "estimated": false,
+     "estimated": true,
      "backLine": {
       "abs": [
        [
-        243485.377,
-        263824.089
+        243487.8,
+        263823.55
        ],
        [
-        243500.311,
-        263820.033
+        243500.2,
+        263820.1
        ]
       ]
      },
      "side": -1,
-     "pitchM": 2.605,
+     "pitchM": 2.574,
      "depthM": 4.47,
-     "count": 7,
-     "dividerBearingDeg": 196.442,
+     "count": 6,
+     "dividerBearingDeg": 195.548,
      "paintBack": true,
-     "stalls": [
-      {
-       "id": "LOT_E243489_N263815/R1/S0",
-       "index": 0,
-       "kind": "general",
-       "widthM": 2.45
-      }
-     ],
+     "stalls": [],
      "evidence": {
-      "tier": "T1",
+      "tier": "T2",
       "refs": [
-       "NGII 2025 peaks along the row axis (todo 14): 9 lines bounding 8 stalls, pitch 2.605 m; 9 of 9 open on the photo, 9 with paint contrast",
-       "depth 4.5 m via back+run, back rail painted",
-       "seed: photo dividers 6/6: MX00294 MX00294 MX00294 MX00294 MX00294 MX00294 MX00294 MX00294 MK01295 MK01295; front line MX00294",
-       "split: no rail from 15.48 to 18.08 on the photo, a planted gap"
+       ".omo/ulw-research/d4-gt/D-28: waves/l-ortho-hires.md fact 7; refs/l-ortho-hires/z_south_stalls_grid5m.png; five closed cells between six measured dividers, depth 4.47 m retained from visible rails; the speculative west end cell is not drawn; SYNTHESIS.md section 6; waves/l-ortho-hires.md: image-derived positions, not survey; white paint 0.10 m retained as rendering estimate, line width not resolved at 0.25 m GSD (estimated)"
       ],
       "photoSupport": null
      },
      "estimatedDividers": [
-      0
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
      ],
      "paintFront": true
     },
@@ -865,11 +866,11 @@
       "widthM": 0.1,
       "colour": "white"
      },
-     "endCaps": true,
+     "endCaps": false,
      "startOffsetM": 0,
      "entryFrom": "aisle",
      "wheelStops": null,
-     "estimated": false,
+     "estimated": true,
      "backLine": {
       "abs": [
        [
@@ -877,39 +878,60 @@
         263819.35
        ],
        [
-        243507.727,
-        263818.019
+        243507.16,
+        263818.144
        ]
       ]
      },
      "side": -1,
-     "pitchM": 2.54,
+     "pitchM": 2.25,
      "depthM": 4.47,
      "count": 3,
-     "dividerBearingDeg": 196.442,
+     "dividerBearingDeg": 195.548,
      "paintBack": true,
      "stalls": [],
      "evidence": {
-      "tier": "T1",
+      "tier": "T2",
       "refs": [
-       "NGII 2025 peaks along the row axis (todo 14): 9 lines bounding 8 stalls, pitch 2.605 m; 9 of 9 open on the photo, 9 with paint contrast",
-       "depth 4.5 m via back+run, back rail painted",
-       "seed: photo dividers 6/6: MX00294 MX00294 MX00294 MX00294 MX00294 MX00294 MX00294 MX00294 MK01295 MK01295; front line MX00294",
-       "split: no rail from 15.48 to 18.08 on the photo, a planted gap",
-       "a planted border meets the front: what reads there is -0.7 and 0.1 m off, grass edge, no steady rail"
+       ".omo/ulw-research/d4-gt/D-28: waves/l-ortho-hires.md fact 8; refs/l-ortho-hires/z_south_stalls_grid5m.png; one closed cell plus one open end; pitch 2.25 m from the 2.2-2.3 m photo reading; final cap omitted rather than invented; SYNTHESIS.md section 6; waves/l-ortho-hires.md: image-derived positions, not survey; white paint 0.10 m retained as rendering estimate, line width not resolved at 0.25 m GSD (estimated)"
       ],
       "photoSupport": null
      },
-     "estimatedDividers": [],
-     "paintFront": true,
-     "estimatedFields": {
-      "paintFront": {
-       "reason": "a planted border meets the front: what reads there is -0.7 and 0.1 m off, grass edge, no steady rail"
-      }
+     "estimatedDividers": [
+      0,
+      1,
+      2
+     ],
+     "paintFront": false
+    }
+   ],
+   "lines": [
+    {
+     "id": "LOT_E243489_N263815/F1",
+     "abs": [
+      [
+       243502.825,
+       263819.35
+      ],
+      [
+       243501.627,
+       263815.044
+      ]
+     ],
+     "widthM": 0.1,
+     "colour": "white",
+     "estimated": true,
+     "evidence": {
+      "tier": "T2",
+      "refs": [
+       ".omo/ulw-research/d4-gt/D-28: refs/l-ortho-hires/z_south_stalls_grid5m.png; first cap of group 2, middle divider is drawn by R2; open end has no last cap; paint width 0.10 m is unresolved (estimated)"
+      ],
+      "photoSupport": null
      }
     }
    ],
-   "lines": []
+   "estimated": true,
+   "estimatedReason": "SYNTHESIS.md section 6; waves/l-ortho-hires.md: image-derived positions, not survey; white paint 0.10 m retained as rendering estimate, line width not resolved at 0.25 m GSD; wheel stops remain null because no D4 stop position is resolved (estimated)"
   },
   {
    "id": "LOT_E243491_N263912",
@@ -917,13 +939,14 @@
     243496.314,
     263922.907
    ],
-   "curated": "todo 14",
+   "curated": "d4-ground-truth lane 4, 2026-11-05",
    "retired": [
     "LOT_E243491_N263912/L1",
     "LOT_E243491_N263912/L2",
     "LOT_E243491_N263912/L3",
     "LOT_E243491_N263912/L4",
-    "LOT_E243491_N263912/L5"
+    "LOT_E243491_N263912/L5",
+    "LOT_E243491_N263912/L6"
    ],
    "rows": [
     {
@@ -937,7 +960,7 @@
      "startOffsetM": 0,
      "entryFrom": "aisle",
      "wheelStops": null,
-     "estimated": false,
+     "estimated": true,
      "backLine": {
       "abs": [
        [
@@ -951,84 +974,117 @@
       ]
      },
      "side": 1,
-     "pitchM": 3.46,
-     "depthM": 6.799,
-     "count": 6,
+     "pitchM": 3.43,
+     "depthM": 5,
+     "count": 5,
      "dividerBearingDeg": 146.383,
      "paintBack": true,
-     "stalls": [
-      {
-       "id": "LOT_E243491_N263912/R1/S3",
-       "index": 3,
-       "kind": "general",
-       "widthM": 3.15
-      },
-      {
-       "kind": "accessible",
-       "aisle": {
-        "side": "start",
-        "widthM": 1.6
-       },
-       "symbol": "wheelchair",
-       "estimatedFields": {
-        "symbolUp": {
-         "reason": "the bay lies in the building shade, its symbol is not readable on NGII: direction assumed towards the back"
-        },
-        "widthM": {
-         "reason": "edges of the blue fill read in shade at 0.25 m per pixel"
-        }
-       },
-       "id": "LOT_E243491_N263912/R1/S4",
-       "index": 4,
-       "widthM": 5.1
-      }
-     ],
+     "stalls": [],
      "evidence": {
-      "tier": "T1",
+      "tier": "T2",
       "refs": [
-       "NGII 2025 peaks along the row axis (todo 14): 6 lines bounding 5 stalls, pitch 3.46 m; 6 of 6 open on the photo, 4 with paint contrast",
-       "depth 6.06 m via back+run, back rail painted",
-       "seed: photo dividers 2/2: MX01644 MX01644",
-       "ladder in the building shade west of the block, read with the shade lifted; VR not covering",
-       "hatch of S4 read at gain 3.6: side start, inner line at 15.13, 1.6 m wide",
-       "read at gain 3 in shade: front rail read 0.74 m past the old depth"
+       ".omo/ulw-research/d4-gt/D-25/D-26: waves/l-ortho-hires.md fact 4; refs/l-ortho-hires/z_west_lot_north_grid5m.png; four general stalls at 3.43 m pitch, original 146.383 deg axis; the blue cell is now R2; 5.0 m depth uses general-bay reference under shade; SYNTHESIS.md section 6; waves/l-ortho-hires.md: image-derived positions, not survey; white paint 0.10 m retained as rendering estimate, line width not resolved at 0.25 m GSD (estimated)"
       ],
       "photoSupport": null
      },
      "estimatedDividers": [
-      4,
-      5
+      0,
+      1,
+      2,
+      3,
+      4
      ],
-     "paintFront": true
-    }
-   ],
-   "lines": [
+     "paintFront": false
+    },
     {
-     "id": "LOT_E243491_N263912/L6",
-     "abs": [
-      [
-       243496.422,
-       263913.2
-      ],
-      [
-       243497.378,
-       263916.83
+     "id": "LOT_E243491_N263912/R2",
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "startOffsetM": 0,
+     "entryFrom": "aisle",
+     "wheelStops": null,
+     "estimated": true,
+     "backLine": {
+      "abs": [
+       [
+        243495,
+        263908.3
+       ],
+       [
+        243494.3,
+        263904.9
+       ]
       ]
+     },
+     "side": -1,
+     "pitchM": 3.471,
+     "depthM": 6.3,
+     "count": 2,
+     "dividerBearingDeg": 325.305,
+     "paintBack": true,
+     "paintFront": true,
+     "stalls": [
+      {
+       "id": "LOT_E243491_N263912/R2/S0",
+       "index": 0,
+       "kind": "accessible",
+       "widthM": 3.471,
+       "symbol": "wheelchair",
+       "upBearingDeg": 145.305,
+       "aisle": {
+        "side": "front",
+        "widthM": 1.2
+       },
+       "outlineAbs": [
+        [
+         243491.4,
+         263913.5
+        ],
+        [
+         243495,
+         263908.3
+        ],
+        [
+         243494.3,
+         263904.9
+        ],
+        [
+         243490.3,
+         263909.9
+        ]
+       ],
+       "estimated": true,
+       "source": ".omo/ulw-research/d4-gt/D-26: waves/l-ortho-hires.md fact 11; refs/l-ortho-hires/z_west_lot_north_grid5m.png; outlineAbs is the four hand-read corners for integrator quad support; hatch width 1.2 m is an unresolved image estimate (estimated)",
+       "estimatedFields": {
+        "symbolUp": {
+         "reason": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 6: symbol follows the bay divider; not a surveyed orientation (estimated)"
+        },
+        "aisleWidthM": {
+         "reason": ".omo/ulw-research/d4-gt/waves/l-ortho-hires.md facts 11-12: hatch side at aisle end; 1.2 m width unresolved in shade (estimated)"
+        }
+       }
+      }
      ],
-     "widthM": 0.1,
-     "colour": "white",
+     "estimatedDividers": [
+      0,
+      1
+     ],
      "evidence": {
       "tier": "T2",
       "refs": [
-       "MX01644",
-       "T2: hidden on the photo by the occlusion mask"
-      ]
-     },
-     "estimated": true
+       ".omo/ulw-research/d4-gt/D-26: waves/l-ortho-hires.md fact 11; refs/l-ortho-hires/z_west_lot_north_grid5m.png; bay split from the general ladder to stop its exceptional width shifting the rest; rear line follows the east pair of source corners, symbol follows divider axis, hatch faces aisle; current row approximates the non-parallelogram quad; SYNTHESIS.md section 6; waves/l-ortho-hires.md: image-derived positions, not survey; white paint 0.10 m retained as rendering estimate, line width not resolved at 0.25 m GSD (estimated)"
+      ],
+      "photoSupport": null
+     }
     }
    ],
+   "lines": [],
    "estimated": true,
-   "estimatedReason": "the occlusion mask hides every line here (building shade or crowns), read on the photo with the shade lifted"
+   "estimatedReason": "SYNTHESIS.md section 6; waves/l-ortho-hires.md: image-derived positions, not survey; white paint 0.10 m retained as rendering estimate, line width not resolved at 0.25 m GSD; wheel stops remain null because no D4 stop position is resolved (estimated)"
   },
   {
    "id": "LOT_E243521_N263869",
@@ -1036,7 +1092,7 @@
     243523.833,
     263871.582
    ],
-   "curated": "todo 14",
+   "curated": "d4-ground-truth lane 4, 2026-11-05",
    "retired": [],
    "rows": [
     {
@@ -1050,13 +1106,11 @@
      "startOffsetM": 0,
      "entryFrom": "aisle",
      "wheelStops": null,
-     "estimated": false,
+     "estimated": true,
      "evidence": {
-      "tier": "T1",
+      "tier": "T2",
       "refs": [
-       "bay read on NGII 2025: corners by eye, then fitted to the blue fill by fit/parkingFit.mjs fitBox, IoU 0.66",
-       "blue MX00293 cell 0",
-       "paint 0 to 4.72 by 0.1 to 4.53 on white concrete; hatch read at 0.67, the faintest of these bays"
+       ".omo/ulw-research/d4-gt/D-10/D-46: refs/h-scnu-vr/d4_f_scooter_shelter_bay.jpg and SYNTHESIS.md C8; one PM bay, dimensions 4.72 x 4.43 m and position retained from ortho fit; count 2 means two boundary dividers, not two stalls; lettering awaits integrator; SYNTHESIS.md section 6; waves/l-ortho-hires.md: image-derived positions, not survey; white paint 0.10 m retained as rendering estimate, line width not resolved at 0.25 m GSD (estimated)"
       ],
       "photoSupport": null
      },
@@ -1064,17 +1118,27 @@
       {
        "id": "LOT_E243521_N263869/R1/S0",
        "index": 0,
-       "kind": "accessible",
+       "kind": "pm",
        "widthM": 4.72,
-       "symbol": "wheelchair",
+       "symbol": "P",
+       "upBearingDeg": 1.846,
+       "figure": {
+        "symbol": "scooter",
+        "side": "end",
+        "frontBearingDeg": 91.846
+       },
+       "estimated": true,
+       "source": ".omo/ulw-research/d4-gt/refs/h-scnu-vr/d4_f_scooter_shelter_bay.jpg: blue PM box with P on left and scooter on right, no wheelchair or accessible hatch; symbol orientation follows the existing ortho box (estimated)",
        "estimatedFields": {
         "symbolUp": {
-         "reason": "symbol about 1 m at 0.25 m per pixel: its top taken towards the back line"
+         "reason": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 6: symbol follows the bay divider; not a surveyed orientation (estimated)"
+        },
+        "figureSide": {
+         "reason": ".omo/ulw-research/d4-gt/refs/h-scnu-vr/d4_f_scooter_shelter_bay.jpg: scooter right of P (estimated)"
+        },
+        "figureUp": {
+         "reason": ".omo/ulw-research/d4-gt/refs/h-scnu-vr/d4_f_scooter_shelter_bay.jpg: front and up directions transferred to the ortho bay (estimated)"
         }
-       },
-       "aisle": {
-        "side": "end",
-        "widthM": 0.67
        }
       }
      ],
@@ -1104,7 +1168,7 @@
    ],
    "lines": [],
    "estimated": true,
-   "estimatedReason": "the bay lies against white concrete: the line scan takes the concrete beside its near line, support 0.59"
+   "estimatedReason": "SYNTHESIS.md section 6; waves/l-ortho-hires.md: image-derived positions, not survey; white paint 0.10 m retained as rendering estimate, line width not resolved at 0.25 m GSD; wheel stops remain null because no D4 stop position is resolved (estimated)"
   },
   {
    "id": "LOT_E243549_N263706",
@@ -12358,6 +12422,106 @@
    "lines": [],
    "estimated": true,
    "estimatedReason": "the leaned roof covers the back of the first bay and all of the second on NGII; the second comes from the 12 cm aerial, T2"
+  },
+  {
+   "id": "LOT_D4_NORTH_ROADSIDE",
+   "anchor": [
+    243509.5,
+    263934.7
+   ],
+   "curated": "d4-ground-truth lane 4, 2026-11-05",
+   "added": true,
+   "retired": [],
+   "rows": [
+    {
+     "id": "LOT_D4_NORTH_ROADSIDE/R1",
+     "backLine": {
+      "abs": [
+       [
+        243509.5,
+        263934.7
+       ],
+       [
+        243543.5,
+        263926.1
+       ]
+      ]
+     },
+     "side": -1,
+     "pitchM": 6,
+     "depthM": 2,
+     "startOffsetM": 0,
+     "count": 7,
+     "divider": {
+      "style": "single",
+      "widthM": 0.1,
+      "colour": "white"
+     },
+     "endCaps": true,
+     "paintBack": true,
+     "paintFront": false,
+     "wheelStops": null,
+     "entryFrom": "aisle",
+     "stalls": [
+      {
+       "id": "LOT_D4_NORTH_ROADSIDE/R1/S0",
+       "index": 0,
+       "kind": "parallel",
+       "widthM": 5.1
+      },
+      {
+       "id": "LOT_D4_NORTH_ROADSIDE/R1/S1",
+       "index": 1,
+       "kind": "parallel",
+       "widthM": 6
+      },
+      {
+       "id": "LOT_D4_NORTH_ROADSIDE/R1/S2",
+       "index": 2,
+       "kind": "parallel",
+       "widthM": 6
+      },
+      {
+       "id": "LOT_D4_NORTH_ROADSIDE/R1/S3",
+       "index": 3,
+       "kind": "parallel",
+       "widthM": 6
+      },
+      {
+       "id": "LOT_D4_NORTH_ROADSIDE/R1/S4",
+       "index": 4,
+       "kind": "parallel",
+       "widthM": 6
+      },
+      {
+       "id": "LOT_D4_NORTH_ROADSIDE/R1/S5",
+       "index": 5,
+       "kind": "parallel",
+       "widthM": 5.75
+      }
+     ],
+     "estimated": true,
+     "estimatedDividers": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "evidence": {
+      "tier": "T2",
+      "refs": [
+       ".omo/ulw-research/d4-gt/D-29: waves/l-ortho-hires.md facts 9 and 22; refs/l-ortho-hires/stall_profiles_rows2.json north_bays_ticks and z_north_end_grid5m.png; 6.0 m internal pitch, photo end bays 5.1/5.75 m, 2.0 m estimated depth; rear white rail and white ticks only, no duplicate yellow kerb paint; SYNTHESIS.md section 6; waves/l-ortho-hires.md: image-derived positions, not survey; white paint 0.10 m retained as rendering estimate, line width not resolved at 0.25 m GSD (estimated)"
+      ],
+      "photoSupport": null
+     }
+    }
+   ],
+   "lines": [],
+   "estimated": true,
+   "estimatedReason": ".omo/ulw-research/d4-gt/waves/l-ortho-hires.md fact 9; seven ticks define six parallel bays, with shorter end bays; no wheel stops observed (estimated)"
   }
  ]
 }

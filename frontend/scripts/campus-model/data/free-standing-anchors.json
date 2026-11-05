@@ -27,7 +27,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "traffic_signal_pole",
-      "sourceInput": "607f378ebff1cf92b33fedb92c0d89b869701a4d05b87635f7416149ff65fd22",
+      "sourceInput": "ae92667fbca5a1dc2ab22d87d54ee2e9ff9edabdf1fdc26283c04ada2a125ab1",
       "sourceGeometry": {
         "point": [
           488.4495087179627,
@@ -65,7 +65,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "traffic_signal_pole",
-      "sourceInput": "fa84b412ec36a7615afa3163f459e247ebd361864a340808a98aa7b2ad9b7b73",
+      "sourceInput": "98bbbcc23d4e917b444f6de3937dd1f9df178ab7e8390c4afe205f8fe9e7b7c4",
       "sourceGeometry": {
         "point": [
           470.3917340405788,
@@ -104,7 +104,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "traffic_signal_pole",
-      "sourceInput": "2c297d9ae2c40460d766864aaa70d64910d3b6d841b7b4a822bfe24a0ad98615",
+      "sourceInput": "b21507eacac4ddcb6d435afc5f8ffae08c3981e62985572a10da7b28c669e634",
       "sourceGeometry": {
         "point": [
           474.6424003122673,
@@ -142,7 +142,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "traffic_signal_pole",
-      "sourceInput": "73286e73132861d5009c69d946febcff2bce36e6d0b219bc1730a4401f4cfa9c",
+      "sourceInput": "b7ee9de8d1617f70b4bbb66876d3c79eabb48a7e18a7076ceab46775108eed5a",
       "sourceGeometry": {
         "point": [
           484.3769185403983,
@@ -180,7 +180,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
-      "sourceInput": "d0d68cd5509a151d2614c23c9facf3fc20c802833620514c2f87d2c79613fa68",
+      "sourceInput": "99415f6c493652fa768f4178bdea8f9882be38d1e92b256545021c1fb0aceda6",
       "sourceGeometry": {
         "point": [
           484.61257500267203,
@@ -218,7 +218,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "sign_pole",
-      "sourceInput": "a26b0a339aab79fd8481f694467038367307924655b2f6e5e4b1347082eda054",
+      "sourceInput": "53322a3781977d7f4055ce4f522d7562899fd68f5a457198344cf12f0c6afc76",
       "sourceGeometry": {
         "point": [
           473.9885516341298,
@@ -257,7 +257,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "sign_pole",
-      "sourceInput": "e328e5384fac846d97b0a0c8930a8549751c7e3a7c6c414f11de390775b38b89",
+      "sourceInput": "a46c8cca8e605d70e808b9de2e61d2f782d0f1a223aedabe18930071b95c855b",
       "sourceGeometry": {
         "point": [
           480.6123720578971,
@@ -295,7 +295,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "sign_pole",
-      "sourceInput": "fba9c0f99e7a726cf86f20525a42f5c105e6a4a133aa8b7911be0682055c30f4",
+      "sourceInput": "562f41f9ddc01ab31b57e7925542b2894f2db666513c3db6ecd17aa47789ec8f",
       "sourceGeometry": {
         "point": [
           475.6626219999312,
@@ -331,7 +331,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "bus_stop_shelter",
-      "sourceInput": "c8092596a23e6fdfe59e9f62fa4f97a24f81aa91a19a7280e1a3d7607348757f",
+      "sourceInput": "498becc1f6e0d2d6072e88b30d937f2e5dc9e03f3429f152f01bf4fc6b1c0f97",
       "sourceGeometry": {
         "ring": [
           [
@@ -467,7 +467,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "stepped_arc",
-      "sourceInput": "7600b2fcc905855a57655b0e7f0c9bfdf74581d2119a3d5f4e192cd1b602e1cd",
+      "sourceInput": "e515e4ee6282bfe3fdbe94ed8bd9c2a8861dbcca880a8db389e111edf7747a6e",
       "sourceGeometry": {
         "ring": [
           [
@@ -699,7 +699,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
-      "sourceInput": "2da43d41c3dabb02014afd9788b9703f4563ef8bce1725b1b58764944dc08350",
+      "sourceInput": "48d942a4ebc22f6cb2d168cb6b98f47792c16fa55cdf05d5a551f885e5f58f09",
       "sourceGeometry": {
         "ring": [
           [
@@ -989,7 +989,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
-      "sourceInput": "66f664b2a3fd7480341adb9e87a4095c0902394698df116f099a3579bfd1063a",
+      "sourceInput": "17c72851d9afa7000bdca60f10948e45bf5e081571c5ee902574196a4d3506f1",
       "sourceGeometry": {
         "point": [
           290.3879448036562,
@@ -1027,7 +1027,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
-      "sourceInput": "7c6e3c647b5ccd183b3e2c9ade79d8551454dfb5bccb2368e67d1229ec48d316",
+      "sourceInput": "e3e58ccec3b3180e022607a6748415a8f8267d7512301a2ca43ef096eaaad88d",
       "sourceGeometry": {
         "point": [
           290.5722054232062,
@@ -1066,7 +1066,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "775fa467004aaa44891107f0e664b2ada19bbb24a1e53aa394077acee3540042",
+      "sourceInput": "9bcebfa19d9dd9679d197c63ea65ba478b95157295567043a2de10f43aa80d66",
       "sourceGeometry": {
         "point": [
           278.57110934081976,
@@ -1102,7 +1102,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
-      "sourceInput": "df011faa18232bc0a6d9aa92fb4193b7a8fc4368d53ed7337037d3852e409fdc",
+      "sourceInput": "d58a349a2bd89713d6d3672ab9682844cf9e49356423a707d119fc9c2fc02289",
       "sourceGeometry": {
         "ring": [
           [
@@ -1166,7 +1166,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
-      "sourceInput": "10441e4a9800d1fd08868668a19fa77e09b6396df8408b445ba11a21d2a82a92",
+      "sourceInput": "eecab932f37bde116d271c7d43aa164523273f02068a6f05ab22c59f24bdbabb",
       "sourceGeometry": {
         "ring": [
           [
@@ -1230,7 +1230,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
-      "sourceInput": "d3b3a2e30929185ffcc9146e326521f944f20d4120e6fba5dd6549ea11b4c995",
+      "sourceInput": "321b5fa40334ee5a7fb5c2fd813621afa776a8d85cd98d7f03febbba5d48be10",
       "sourceGeometry": {
         "ring": [
           [
@@ -1294,7 +1294,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
-      "sourceInput": "99fbe10ce03320659e65b4ad96bd1e38677dc0abd8a1c500fa57dec58b2c65e8",
+      "sourceInput": "8ed48fd4a146728c5fe3850ca37c64b140710da31e678f63fe04514bb573fb4f",
       "sourceGeometry": {
         "ring": [
           [
@@ -1358,7 +1358,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
-      "sourceInput": "d421eda115984926651aa317eee8ee7c660f82715540351a9319da0297065a7a",
+      "sourceInput": "b4bb505ba447d6612cd363dc8b9f7f027e66326eb24e5d25fe62b1f6f9c06007",
       "sourceGeometry": {
         "ring": [
           [
@@ -1422,7 +1422,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
-      "sourceInput": "c80e8b74116076f325a3e3ed8ea2598c8e76ffbff830cb29d92315f9ce2605b5",
+      "sourceInput": "4b9e29a2fb2fe5712f1847bc1d50f774096a0ca8f9aba989db22de038617856f",
       "sourceGeometry": {
         "ring": [
           [
@@ -1486,7 +1486,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
-      "sourceInput": "ad741aa087029d2a052b7c130145d254c3d5df9fa733b581b137354085d0eb9d",
+      "sourceInput": "ebdeb486f35fb8064ccd7303f631d258cf61a6fe5767c4c234aea790ce039824",
       "sourceGeometry": {
         "ring": [
           [
@@ -1550,7 +1550,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
-      "sourceInput": "75d2d7e9a019804919216d59d90351a0a039a105e7dc2c06b97fa7b00c52b325",
+      "sourceInput": "e1e1679419d926cea82b1aea15300a2de06d91b986147ed1a47eb4ee5e8a8c06",
       "sourceGeometry": {
         "ring": [
           [
@@ -1614,7 +1614,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
-      "sourceInput": "fd94a1512bbbfc4056a050d60bdbadf8fc8cbe2b1daf060d565241b83fbbdc18",
+      "sourceInput": "36c51e866ed06a7cb6e8bc513a69331448e7aa048cc17503ed109a2f3aab597d",
       "sourceGeometry": {
         "ring": [
           [
@@ -1678,7 +1678,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "low_wall",
-      "sourceInput": "049a64a6df866cf546f7c11149e94882ff53f873b8630c84577720030816dcba",
+      "sourceInput": "59ab41d89e4ad7208136ced309818c74243203588bd09d72c0ad7e18103a7cab",
       "sourceGeometry": {
         "line": [
           [
@@ -1758,7 +1758,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "low_wall",
-      "sourceInput": "d894adb39a09c3242bd5e2814024f69d7951c26107011c420134534f5b37c644",
+      "sourceInput": "53cb2d83c0f402b9996ddeea147f1fefd42a9a8e1ccf420734eec8d5b85e6d65",
       "sourceGeometry": {
         "line": [
           [
@@ -1812,7 +1812,7 @@
         "ref": "VR count, +-1"
       },
       "kind": "stadium_seating",
-      "sourceInput": "b2ee31fda3e562b853209e8602a11c9b9703839614eeeeca4e6b62e8e086386b",
+      "sourceInput": "05855a6c15cea69b6802e1899404cb3b67d257ba489b2265400c92d52bb52239",
       "sourceGeometry": {
         "ring": [
           [
@@ -2189,7 +2189,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "reviewing_stand",
-      "sourceInput": "5ca652ac8acc9ba910ed6e978bc2d3d14c7be69813306736253ddab3dd3af83b",
+      "sourceInput": "613adedd8a308d929aabf23afd9ec22c7f1ecb103e2a8d6b198058b99972b1c2",
       "sourceGeometry": {
         "ring": [
           [
@@ -2355,7 +2355,7 @@
         "ref": "VR count, +-1"
       },
       "kind": "stadium_seating",
-      "sourceInput": "00115b664f3b70e5f881a3873b3a7fd0d8594d87541e65b53430994ddd03289b",
+      "sourceInput": "ac3ffce2924dc815911eea4f0b881e0f7a7123ccd665fc2e585eb2610eade181",
       "sourceGeometry": {
         "ring": [
           [
@@ -2616,7 +2616,7 @@
     {
       "id": "OB0029",
       "anchor": {
-        "parcel": "PARCEL_PAVING_BUILDING_336",
+        "parcel": "PARCEL_PAVING_BUILDING_335",
         "uM": 1.2082538574556985,
         "vM": -7.291689504651723,
         "yawDeg": 0
@@ -2636,7 +2636,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "fence",
-      "sourceInput": "4fefddb8836714d87d97330ff13ac521ac4913990344300e85b67a843f4083d0",
+      "sourceInput": "3c428b3a4d8323cc35109e9728ac9e927ca95a744fadfc0dbc565a1e7364eef9",
       "sourceGeometry": {
         "line": [
           [
@@ -2724,7 +2724,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "low_wall",
-      "sourceInput": "a9e4a782939a903e8dbe8bff10b456ed26f234139d469671a2981f2c9cc7f1f0",
+      "sourceInput": "f8b87ab699afaa1df409ea9b488ea7e6279463f9f8747b21db738297f30a411d",
       "sourceGeometry": {
         "line": [
           [
@@ -2775,7 +2775,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "650a0f78c75b35a613be64809a1ddac8f456e33f8e6968d36a969305014a53e0",
+      "sourceInput": "87a55d43343780255338b08b4022109265f0a85dea4e92be665084b180cdb123",
       "sourceGeometry": {
         "point": [
           178.97643833295996,
@@ -2814,7 +2814,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "a36c38d1207f6b6996931e84f35e8a5f06e9889a02909423e3877652fe8b1505",
+      "sourceInput": "3812e892dfad10b9954ba218bfb899fbac68c5cc3570858f4f3b3d6aabccd892",
       "sourceGeometry": {
         "point": [
           209.06412393110818,
@@ -2850,7 +2850,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "fence",
-      "sourceInput": "a1b8320657bd57bc6d10bbdaebcea166ab0cc87af6b896dce99146a883d59580",
+      "sourceInput": "f56d898ec88b3b001a55611fb9c2ffd7e467a0c5fcb0457dfb3bf3a58736659c",
       "sourceGeometry": {
         "line": [
           [
@@ -2899,7 +2899,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "fence",
-      "sourceInput": "2a958aeadb150f2e946a0ccede754a3a5667b1b9827035a7ba46462134f6d0b6",
+      "sourceInput": "97a5cdd1a6d9770b488fee54f724c67fe48ef5c682beeabd70b31e2feb340359",
       "sourceGeometry": {
         "line": [
           [
@@ -2950,7 +2950,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "d52f5e702394a760d92b33b44af046b438f744b4094651b97b57539f96171c1b",
+      "sourceInput": "f739eb87e8598ce5857829cf20f756e1bde5f7ac783b720ecd086d9a74fa55fa",
       "sourceGeometry": {
         "point": [
           228.2418924526936,
@@ -2989,7 +2989,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "63024fb91d51944a1af4f4d9f0428608e5e0c6ca747d905e77ffe8d89d13b2d5",
+      "sourceInput": "18161ac2946abaee62e125bf4e1fabc33afa6e435dc1e819acc77749bd7179e0",
       "sourceGeometry": {
         "point": [
           246.16508269867268,
@@ -3026,7 +3026,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "fence",
-      "sourceInput": "01c300933f05a3bb9b8074140cb1c459f89c2fd874282fd505f0e71d716271d0",
+      "sourceInput": "e641158240f5301ee06b8e3690cc29fc57e76502525a648808411131eae16ddb",
       "sourceGeometry": {
         "line": [
           [
@@ -3101,7 +3101,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "1eaa05c0f9188e2b8d1db33d78e3d13e2426205ddee28376412c27e1a27eeea6",
+      "sourceInput": "83d5e1c062f0fd3845f75e90f85c6b1ee9750d162bd4bd5b386292190ee8ed8f",
       "sourceGeometry": {
         "point": [
           263.89309900845205,
@@ -3138,7 +3138,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "fence",
-      "sourceInput": "e30a450c4d9a403ecbcd9defb3b978528d53835303c6cf7b342798eb3465e1fd",
+      "sourceInput": "012c38e79f1719bff0a50a541951c4966f58f40b094b230cbd66a43b5cf6c81a",
       "sourceGeometry": {
         "line": [
           [
@@ -3186,7 +3186,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "pergola",
-      "sourceInput": "33509b398a4d228cf89605dcca1f62079a69469add8f1962b68648aeb5c7a329",
+      "sourceInput": "cba13a7ab16c8423d26b7c6c24f4fd7d9bafdb62abfe35cf7e04d57371566bda",
       "sourceGeometry": {
         "ring": [
           [
@@ -3325,7 +3325,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "84fdaa6d49ebd6e763fbd123982cf1983692568c90c81a9ec9400256d124ed2e",
+      "sourceInput": "c14553289837de96a81f8132770dc874810c9eca9f8b8995f657ca793f72ce27",
       "sourceGeometry": {
         "point": [
           398.3638060322169,
@@ -3363,7 +3363,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
-      "sourceInput": "d2396728143d07670a67a680bef26790d205b7fe68e996e52eeab2f523208af8",
+      "sourceInput": "c62901af6ae208dc0c8869a234be8bbf4c591094b80565e3df28c2dad7634751",
       "sourceGeometry": {
         "point": [
           386.4248609224838,
@@ -3400,7 +3400,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "fence",
-      "sourceInput": "41cba2c6a9cbbeb6f92204360f33e5bbf1eea09827dd9dd3e55f2d1359feb7d6",
+      "sourceInput": "e429fa8062e869bc87e7b80007994d84465f3110ea71a131a7b296aedb3e9933",
       "sourceGeometry": {
         "line": [
           [
@@ -3467,7 +3467,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "traffic_signal_pole",
-      "sourceInput": "c94ab8035be04b3b0228787d8b90aa46cfd02e66be452a70b5ec645d90a63477",
+      "sourceInput": "a48acec098020a84177cc8d15866a3c7e10ebe696c5a30b484a505e41fbd2783",
       "sourceGeometry": {
         "point": [
           446.9527006879553,
@@ -3506,7 +3506,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "d335547681a9fef57d92819f235d68688fdf9da29f5b684c4f0b824393d6fc0f",
+      "sourceInput": "f29290d167cef6ce178be7a9a1625abaa89f6177bc3b79de34c691edb0789d66",
       "sourceGeometry": {
         "point": [
           425.8976708166091,
@@ -3545,7 +3545,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "691bdd12d6c25925683deed8fd1676875bfc1d52357974c1949f11a94e3fdd94",
+      "sourceInput": "bc3a589a6319c17beea7faeba6f07e6101a15d6d0a12f79ab027a289c5e68e3a",
       "sourceGeometry": {
         "point": [
           417.870927433125,
@@ -3583,7 +3583,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
-      "sourceInput": "49b9562fef6f2def5c158bb41cc73b0b3238f5a8c40c9be5ef3f7e6c7d0be8a9",
+      "sourceInput": "76f087a42477c1f610071d94f976ba1f9d0b8376d1d511f08deb14d58f526962",
       "sourceGeometry": {
         "point": [
           438.6219382531853,
@@ -3622,7 +3622,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "e3406aefe136341bbecd2697cee080a1556792e1d1012fb439a04aa2f300ae2e",
+      "sourceInput": "8954231abdadd9e1f522db0bee40c801a0c007ace98ba00b0ada525df0776f98",
       "sourceGeometry": {
         "point": [
           114.44869500873148,
@@ -3639,7 +3639,7 @@
     {
       "id": "OC0050",
       "anchor": {
-        "parcel": "PARCEL_PAVING_BUILDING_363",
+        "parcel": "PARCEL_PAVING_BUILDING_362",
         "uM": 3.0900027520795716,
         "vM": -3.117496061527673,
         "yawDeg": 0
@@ -3659,7 +3659,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "plaza_structure",
-      "sourceInput": "783240a6807d45cd43b36d50186fc6f53e03262b76388ba20fdc5418d0ac82d6",
+      "sourceInput": "9599df278b4ce41ff2ffd5baacdd60f1ea588a41b8fea39fa21fdc7f9c590f24",
       "sourceGeometry": {
         "ring": [
           [
@@ -4064,7 +4064,7 @@
     {
       "id": "OC0051",
       "anchor": {
-        "parcel": "PARCEL_PAVING_BUILDING_363",
+        "parcel": "PARCEL_PAVING_BUILDING_362",
         "uM": 1.0801367834599027,
         "vM": -12.501234331802252,
         "yawDeg": 0
@@ -4084,7 +4084,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "plaza_structure",
-      "sourceInput": "e706b0cef5a24a1994ac2841a479c9ad61c3a428f4e0b3d5e134b2985f938eb8",
+      "sourceInput": "bbe174866db4f391420fc9ad8fe6cf30df0ae57fd4e0231cea6ba711282027b8",
       "sourceGeometry": {
         "ring": [
           [
@@ -4511,7 +4511,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "4dc3d719283bceb9ee1395fb494946ef0d7a2b7b3d7ce7b12e49fee420f1faa6",
+      "sourceInput": "c722a70baa7ffd0389a34d3551163939a5973dc57686d98d856eb6b0fb71968b",
       "sourceGeometry": {
         "point": [
           191.4337959001924,
@@ -4550,7 +4550,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "0b8aa899b3e16ac727d489ccaac5f6a60b2fbaafc12f1c1aa4121060e55826ea",
+      "sourceInput": "a542e3920387c16973ea300101c55bbf3fab9caf66c173d8fdf4a6bf9b0fe98d",
       "sourceGeometry": {
         "point": [
           278.32483502545307,
@@ -4589,7 +4589,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "35a2dbeeced8292721a4b2a9e2b0337b87b6a59096254330c28722b2a710e3f3",
+      "sourceInput": "ffdcd90f69619fd600c9afbb83211c6668c955713721353b831128eb63df5a47",
       "sourceGeometry": {
         "point": [
           294.65352474847504,
@@ -4626,7 +4626,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "fence",
-      "sourceInput": "70cab2a6c9b7402e77e579b4b2ce71cc7adedfe250cfaa3eaa8380a295a65b9c",
+      "sourceInput": "c6b555826b9736ac907971eb3b56b84da939624f0855e7fe5a3cdd9b4da0948e",
       "sourceGeometry": {
         "line": [
           [
@@ -4683,7 +4683,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "footbridge",
-      "sourceInput": "922180b365d73ddab3d5eaad450bbc835dad1aedb9ad78b6e2c7983203229df0",
+      "sourceInput": "10680412543e5840837b9957d058aed60e86e1ec47a04d164e5fbed552ce723f",
       "sourceGeometry": {
         "line": [
           [
@@ -4734,7 +4734,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "65c19038ff92d8b8d1ea19dacd81a03db0d540d11619c8768d4fd01494d0175a",
+      "sourceInput": "c195b966f9a43ae973e958d188a9ca3a2fcc2eb6e1fc0312232b31ad266ee89b",
       "sourceGeometry": {
         "point": [
           317.5349054379705,
@@ -4770,7 +4770,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "fence",
-      "sourceInput": "9ccb0afd8a03d147bc2b60d59d7434d302e89a76f8bfa3566804a2b2069fe631",
+      "sourceInput": "f3e7cd23ef9856fc05ec17854098f12eb4ed92fb6ecd01f5baf67417bede0abf",
       "sourceGeometry": {
         "line": [
           [
@@ -4829,7 +4829,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "b5b37ed8966e0c1fb0ffe1558c917b1e55d3a1f9deaa85c7aa5883cc0664a3bf",
+      "sourceInput": "683a86416d48966c5be0221376b5a2d112bfba66565ddc7eac73c7fb84dbbc43",
       "sourceGeometry": {
         "point": [
           342.63178698628127,
@@ -4868,7 +4868,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "bf1feecf4875a57fe9bf97d36de0643015f23dc06e151dbbb990cce3c17808e2",
+      "sourceInput": "e0054b6372b9aa3d08b180ed7853e06d30aa2b298bb53ebbd36354a1ae8bdc4c",
       "sourceGeometry": {
         "point": [
           354.43623355250537,
@@ -4906,7 +4906,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
-      "sourceInput": "eb7f6aefed7e9638824ee8ca3c11815b462cde1778b0225459772cb062fb10be",
+      "sourceInput": "8fe4245c37cbbbbb10ab293dec2287538994cf488ad42c4cb9da83e86a20bb77",
       "sourceGeometry": {
         "point": [
           365.7274594402186,
@@ -4943,7 +4943,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "fence",
-      "sourceInput": "eac9da8a5c51a81aa23daf5e9d83ba48d59d2c4056b92731d461a66ab77c8f0a",
+      "sourceInput": "7fd1e540ca4f6858a0603f8daccdf2e69ab84701d00c7b02f1a0a29a20631c38",
       "sourceGeometry": {
         "line": [
           [
@@ -5000,7 +5000,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "pergola",
-      "sourceInput": "f49597a0c25656b8152b8b6ab3ea71f3c42a03f9b68a5a599a1326664b11e817",
+      "sourceInput": "e2ed58bc4262ceef4302df3770174a4313a00d87c769d8d85570b04be95cba2d",
       "sourceGeometry": {
         "line": [
           [
@@ -5141,7 +5141,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "pergola",
-      "sourceInput": "e84f7725927ac86363aaa58fc0f2721c2570c94e197ea12ac024b09c7ecd3f34",
+      "sourceInput": "7bdd0aee52a10fc0ebf1e888170554195a45cd99f9937676e479b87cd3595307",
       "sourceGeometry": {
         "line": [
           [
@@ -5284,7 +5284,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "56d0ebe6421071fc9ff884d135f8aa7dafd9d296752fcf95ef950f75fddd499b",
+      "sourceInput": "8277b2f6d5c27e7c97eb86845e6534960c1bca131ff11da023f3c39c7b944cbc",
       "sourceGeometry": {
         "point": [
           431.42095422260195,
@@ -5323,7 +5323,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "2a1fdc64e5ccddcfb81ed245346dc73481f075d20a3f9818ef5663b3d6853f7d",
+      "sourceInput": "9dfeea80cb7935411956feeb61746cf8679adb7f5d659554b971586b2d1e9710",
       "sourceGeometry": {
         "point": [
           437.41171907788146,
@@ -5361,7 +5361,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
-      "sourceInput": "c8f016d389e4edba3024d005c038ec38d1d8221b1d330e8a72b6f7fa32e98c04",
+      "sourceInput": "52eb5cb9edcc65342d916265f8e13b0878e875b032986a957dbcb700bdb2a64e",
       "sourceGeometry": {
         "point": [
           456.46900733439486,
@@ -5400,7 +5400,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "4d0c9145e0570096d1eeb411df3a1b61ffc4d76df7a27cba2fdd5e9c5093ce3e",
+      "sourceInput": "6a1c28609c3be469fb1b71ab19deaba545cc48079d3574468014e06fbad963af",
       "sourceGeometry": {
         "point": [
           466.70056040981984,
@@ -5415,18 +5415,18 @@
       }
     },
     {
-      "id": "OC0070",
+      "id": "OC0071",
       "anchor": {
-        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_12",
-        "uM": 4.839050930649385,
-        "vM": 1.592556739487406,
+        "parcel": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_D4_",
+        "uM": 2.181414591906989,
+        "vM": 5.548164483160931,
         "yawDeg": 0
       },
       "evidence": {
         "tier": "T4",
         "refs": [
-          "survey seed E=243482.54070734867 N=263889.9579325073; position not independently verified",
-          "source=survey; kind=gazebo; method=by-eye-photo"
+          "survey seed E=243537.3123821222 N=263899.00030688266; position not independently verified",
+          "source=survey; kind=plaza_structure; method=by-eye-photo"
         ]
       },
       "estimated": true,
@@ -5435,433 +5435,8 @@
       "bearingChecks": [],
       "vrObservations": [],
       "parcelRelation": "inside",
-      "kind": "gazebo",
-      "sourceInput": "5729110d751c645142a8eab08f0b9a2954c4d5ebc4c09b0ed0af5de24a9d3666",
-      "sourceGeometry": {
-        "ring": [
-          [
-            32.441180089331205,
-            -273.09124807917397
-          ],
-          [
-            32.34370160073285,
-            -272.6141112116132
-          ],
-          [
-            32.07122001440104,
-            -272.21038046927174
-          ],
-          [
-            31.664778566587735,
-            -271.94168887090456
-          ],
-          [
-            31.187082126013138,
-            -271.84889417655086
-          ],
-          [
-            30.70938617228969,
-            -271.94653885616714
-          ],
-          [
-            30.305796322108982,
-            -272.2186950539278
-          ],
-          [
-            30.037307106370626,
-            -272.6251972003003
-          ],
-          [
-            29.94439140050943,
-            -273.1037195630062
-          ],
-          [
-            30.041870080824893,
-            -273.58085638903214
-          ],
-          [
-            30.314351743503998,
-            -273.9845870343619
-          ],
-          [
-            30.720793107398706,
-            -274.25327854004183
-          ],
-          [
-            31.198489353227274,
-            -274.34607319691884
-          ],
-          [
-            31.676185115003506,
-            -274.2484285601102
-          ],
-          [
-            32.07977488876651,
-            -273.9762724598339
-          ],
-          [
-            32.34826418840945,
-            -273.5697704070207
-          ]
-        ],
-        "footprint": [
-          [
-            32.389565943200566,
-            -273.29928107660004
-          ],
-          [
-            32.29208745460221,
-            -272.82214420903927
-          ],
-          [
-            32.0196058682704,
-            -272.4184134666978
-          ],
-          [
-            31.613164420457096,
-            -272.14972186833063
-          ],
-          [
-            31.1354679798825,
-            -272.05692717397693
-          ],
-          [
-            30.65777202615905,
-            -272.1545718535932
-          ],
-          [
-            30.254182175978343,
-            -272.42672805135385
-          ],
-          [
-            29.985692960239987,
-            -272.8332301977264
-          ],
-          [
-            29.892777254378792,
-            -273.3117525604323
-          ],
-          [
-            29.990255934694254,
-            -273.7888893864582
-          ],
-          [
-            30.26273759737336,
-            -274.19262003178795
-          ],
-          [
-            30.669178961268067,
-            -274.4613115374679
-          ],
-          [
-            31.146875207096635,
-            -274.5541061943449
-          ],
-          [
-            31.624570968872867,
-            -274.4564615575363
-          ],
-          [
-            32.02816074263587,
-            -274.18430545726
-          ],
-          [
-            32.29665004227881,
-            -273.7778034044468
-          ]
-        ],
-        "photoRing": [
-          [
-            32.441180089331205,
-            -273.09124807917397
-          ],
-          [
-            32.34370160073285,
-            -272.6141112116132
-          ],
-          [
-            32.07122001440104,
-            -272.21038046927174
-          ],
-          [
-            31.664778566587735,
-            -271.94168887090456
-          ],
-          [
-            31.187082126013138,
-            -271.84889417655086
-          ],
-          [
-            30.70938617228969,
-            -271.94653885616714
-          ],
-          [
-            30.305796322108982,
-            -272.2186950539278
-          ],
-          [
-            30.037307106370626,
-            -272.6251972003003
-          ],
-          [
-            29.94439140050943,
-            -273.1037195630062
-          ],
-          [
-            30.041870080824893,
-            -273.58085638903214
-          ],
-          [
-            30.314351743503998,
-            -273.9845870343619
-          ],
-          [
-            30.720793107398706,
-            -274.25327854004183
-          ],
-          [
-            31.198489353227274,
-            -274.34607319691884
-          ],
-          [
-            31.676185115003506,
-            -274.2484285601102
-          ],
-          [
-            32.07977488876651,
-            -273.9762724598339
-          ],
-          [
-            32.34826418840945,
-            -273.5697704070207
-          ]
-        ]
-      },
-      "geometry": {
-        "ring": [
-          [
-            0.12663627877697764,
-            -2.1069678496283935
-          ],
-          [
-            -0.653360663756792,
-            -2.1240198192029784
-          ],
-          [
-            -1.3807885963990656,
-            -1.841623228992525
-          ],
-          [
-            -1.9447957231149318,
-            -1.302023753691606
-          ],
-          [
-            -2.2592984127708737,
-            -0.5886808806174486
-          ],
-          [
-            -2.276289172906467,
-            0.19224846939960577
-          ],
-          [
-            -1.9943509144797105,
-            0.9193408139210786
-          ],
-          [
-            -1.4545847876400373,
-            1.4830533126586165
-          ],
-          [
-            -0.7399945742467793,
-            1.7980381722273533
-          ],
-          [
-            0.0400023714403564,
-            1.8150898275532665
-          ],
-          [
-            0.7674301796229417,
-            1.5326930836405077
-          ],
-          [
-            1.331437131756396,
-            0.993093706545621
-          ],
-          [
-            1.6459396937491073,
-            0.2797511244106982
-          ],
-          [
-            1.6629304526380553,
-            -0.501177910546496
-          ],
-          [
-            1.3809923193844271,
-            -1.2282701010879054
-          ],
-          [
-            0.8412263684845867,
-            -1.7919826977000857
-          ]
-        ],
-        "footprint": [
-          [
-            0.4333155318916224,
-            -1.9525029914213494
-          ],
-          [
-            -0.3466814106421472,
-            -1.9695549609959344
-          ],
-          [
-            -1.0741093433475553,
-            -1.687158370769694
-          ],
-          [
-            -1.638116470006599,
-            -1.1475588954561509
-          ],
-          [
-            -1.952619159656229,
-            -0.43421602241040447
-          ],
-          [
-            -1.9696099198549568,
-            0.34671332762243684
-          ],
-          [
-            -1.6876716613650657,
-            1.0738056721281226
-          ],
-          [
-            -1.1479055345822144,
-            1.6375181708530364
-          ],
-          [
-            -0.4333153211321345,
-            1.952503030434397
-          ],
-          [
-            0.34668162455500123,
-            1.9695546857603106
-          ],
-          [
-            1.0741094327375866,
-            1.6871579418475515
-          ],
-          [
-            1.6381163848710407,
-            1.1475585647526652
-          ],
-          [
-            1.952618946863752,
-            0.43421598261774225
-          ],
-          [
-            1.969609705746388,
-            -0.3467130523110407
-          ],
-          [
-            1.687671572499072,
-            -1.0738052428808613
-          ],
-          [
-            1.1479056215992314,
-            -1.6375178394930416
-          ]
-        ],
-        "photoRing": [
-          [
-            0.12663627877697764,
-            -2.1069678496283935
-          ],
-          [
-            -0.653360663756792,
-            -2.1240198192029784
-          ],
-          [
-            -1.3807885963990656,
-            -1.841623228992525
-          ],
-          [
-            -1.9447957231149318,
-            -1.302023753691606
-          ],
-          [
-            -2.2592984127708737,
-            -0.5886808806174486
-          ],
-          [
-            -2.276289172906467,
-            0.19224846939960577
-          ],
-          [
-            -1.9943509144797105,
-            0.9193408139210786
-          ],
-          [
-            -1.4545847876400373,
-            1.4830533126586165
-          ],
-          [
-            -0.7399945742467793,
-            1.7980381722273533
-          ],
-          [
-            0.0400023714403564,
-            1.8150898275532665
-          ],
-          [
-            0.7674301796229417,
-            1.5326930836405077
-          ],
-          [
-            1.331437131756396,
-            0.993093706545621
-          ],
-          [
-            1.6459396937491073,
-            0.2797511244106982
-          ],
-          [
-            1.6629304526380553,
-            -0.501177910546496
-          ],
-          [
-            1.3809923193844271,
-            -1.2282701010879054
-          ],
-          [
-            0.8412263684845867,
-            -1.7919826977000857
-          ]
-        ]
-      }
-    },
-    {
-      "id": "OC0071",
-      "anchor": {
-        "parcel": "PARCEL_ASPHALT_ROAD_ZONE_10",
-        "uM": -12.597322573180453,
-        "vM": -15.747779419650938,
-        "yawDeg": 0
-      },
-      "evidence": {
-        "tier": "T4",
-        "refs": [
-          "survey seed E=243537.3123821222 N=263899.00030688266; position not independently verified",
-          "source=survey; kind=plaza_structure; method=by-eye-photo",
-          "outside all curated parcels; nearest parcel vertex 8.707 m"
-        ]
-      },
-      "estimated": true,
-      "reason": "no_verified_ground_base_or_two_station_fix",
-      "crossingDeg": null,
-      "bearingChecks": [],
-      "vrObservations": [],
-      "parcelRelation": "nearest_boundary",
       "kind": "plaza_structure",
-      "sourceInput": "750b54b21324f6c230c922032b582bf38c7fac7de1c25053168bdcd6572b83e1",
+      "sourceInput": "fa294b1378625275588483bafaf4463e744792cd42717865c756ca39da8c99c4",
       "sourceGeometry": {
         "ring": [
           [
@@ -5885,20 +5460,20 @@
       "geometry": {
         "ring": [
           [
-            -23.890839326055442,
-            -8.539670653714051
+            20.724016519410217,
+            14.636028077334181
           ],
           [
-            -22.17828931361844,
-            12.641419825408585
+            24.756688742004517,
+            -6.228031359290173
           ],
           [
-            24.263763393265755,
-            13.149342223835859
+            -19.846591464226666,
+            -19.176762557220677
           ],
           [
-            21.80536524646849,
-            -17.251091395506073
+            -25.634113797239692,
+            10.768765839137046
           ]
         ]
       }
@@ -5925,7 +5500,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "low_wall",
-      "sourceInput": "6c487ddab45871980898bd82cbda7c629c364d69cbb5e483b9ab00a24ea2dbaf",
+      "sourceInput": "9c397a923771544763dcc67d9967717ae74df4e4d01fc9efa5350e1771fb38af",
       "sourceGeometry": {
         "line": [
           [
@@ -5981,7 +5556,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "planter",
-      "sourceInput": "dff81e7bb0e8708685c1dee80a1877856116f3bf581445aaf27252b2d071aa0c",
+      "sourceInput": "e72181f468230335653a89e2374b05149756f991b14d7769a43c55b9cb0be375",
       "sourceGeometry": {
         "ring": [
           [
@@ -6061,7 +5636,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "bike_rack",
-      "sourceInput": "ccbdb0f3f297825f49c9d4b859899fa099892c76f447f64945d09f774d6f7d04",
+      "sourceInput": "05389b50851de7afb517ce81fe5d15f0ffbb410cd70442ccbaaf760887f27830",
       "sourceGeometry": {
         "ring": [
           [
@@ -6198,7 +5773,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "plaza_structure",
-      "sourceInput": "883d790a70b351a23b7d7a7d5d54264aa80be76996ce1b7be76c4497da24be5e",
+      "sourceInput": "8d84b137aa4078dd06cf6f670e453aade249a5fd62d60425aa48832dadf32fc0",
       "sourceGeometry": {
         "ring": [
           [
@@ -6337,7 +5912,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "163ced99d7adec902c63de06df4d9186a9a4d80de2c4cb1f68a5875385530b36",
+      "sourceInput": "8e6b25585938ff93130d2b7e352858c523f16118ed9f7b78790c940a6693e748",
       "sourceGeometry": {
         "point": [
           466.3967414518616,
@@ -6355,16 +5930,16 @@
       "id": "OC0078",
       "anchor": {
         "parcel": "PARCEL_PAVING_PAVING_VR_PLAZA_PAVING_PLAZA_PAVING_VR_SCENE_D4_",
-        "uM": 2.7784893382612874,
-        "vM": -24.568126688044945,
+        "uM": -37.22253726551002,
+        "vM": -6.637824154258841,
         "yawDeg": 0
       },
       "evidence": {
         "tier": "T4",
         "refs": [
-          "survey seed E=243536.56352882244 N=263854.1508129726; position not independently verified",
+          "survey seed E=243541.79995679864 N=263857.99992377986; position not independently verified",
           "source=survey; kind=pavilion_hip; method=by-eye-photo",
-          "outside all curated parcels; nearest parcel vertex 15.760 m"
+          "outside all curated parcels; nearest parcel vertex 10.773 m"
         ]
       },
       "estimated": true,
@@ -6374,116 +5949,80 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "pavilion_hip",
-      "sourceInput": "3498d3850cdfb33df8060d7490f8d43f1a05422b207e34cce5056ecaebd2d791",
+      "sourceInput": "80331eec543fb3b90d59eb09282a30b0e4a56754b0f664388c9df908a3aca82c",
       "sourceGeometry": {
         "ring": [
           [
-            63.395725185943235,
-            -252.189330592559
+            66.31093896200404,
+            -251.4725958673067
           ],
           [
-            66.20490803695708,
-            -252.1754897662891
+            69.74375174212867,
+            -251.45668152573273
           ],
           [
-            66.19009795460514,
-            -249.05436213231454
+            69.76026868948284,
+            -254.8894372207126
           ],
           [
-            63.38091356509739,
-            -249.06820298266638
+            66.32688792921499,
+            -254.906044036114
           ]
         ],
         "footprint": [
           [
-            63.35827085514841,
-            -252.36165328040522
+            66.31093896200404,
+            -251.4725958673067
           ],
           [
-            66.16745370616226,
-            -252.34781245413532
+            69.74375174212867,
+            -251.45668152573273
           ],
           [
-            66.15264362381032,
-            -249.22668482016076
+            69.76026868948284,
+            -254.8894372207126
           ],
           [
-            63.343459234302564,
-            -249.2405256705126
-          ]
-        ],
-        "photoRing": [
-          [
-            63.395725185943235,
-            -252.189330592559
-          ],
-          [
-            66.20490803695708,
-            -252.1754897662891
-          ],
-          [
-            66.19009795460514,
-            -249.05436213231454
-          ],
-          [
-            63.38091356509739,
-            -249.06820298266638
+            66.32688792921499,
+            -254.906044036114
           ]
         ]
       },
       "geometry": {
         "ring": [
           [
-            -2.6103685416729565,
-            1.7108189814550248
+            -3.2221694540040633,
+            2.1778362131422346
           ],
           [
-            1.7882492786580069,
-            2.662954923986676
+            -2.177907717485432,
+            -3.2216873205754006
           ],
           [
-            2.8470027680566834,
-            -2.2239091738626877
+            3.22171381139091,
+            -2.1783903430670986
           ],
           [
-            -1.551617466967867,
-            -3.1760456120365017
+            2.1783633600985857,
+            3.2222414505002646
           ]
         ],
         "footprint": [
           [
-            -2.7286850511670093,
-            1.9673642015597967
+            -3.2221694540040633,
+            2.1778362131422346
           ],
           [
-            1.669932769163954,
-            2.919500144091448
+            -2.177907717485432,
+            -3.2216873205754006
           ],
           [
-            2.7286862585749545,
-            -1.9673639538148044
+            3.22171381139091,
+            -2.1783903430670986
           ],
           [
-            -1.669933976490364,
-            -2.919500391937892
-          ]
-        ],
-        "photoRing": [
-          [
-            -2.6103685416729565,
-            1.7108189814550248
-          ],
-          [
-            1.7882492786580069,
-            2.662954923986676
-          ],
-          [
-            2.8470027680566834,
-            -2.2239091738626877
-          ],
-          [
-            -1.551617466967867,
-            -3.1760456120365017
+            2.1783633600985857,
+            3.2222414505002646
           ]
         ]
       }
@@ -6510,7 +6049,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "fence",
-      "sourceInput": "0c7eb91f52e62b6e4822101083cc2f1fb1dc4b1f236c0f4c519a15a1de19ba8a",
+      "sourceInput": "e9a7d1c140b7497142c3125a56c7648c85f03d63cea2b54d8f5e7f7637b24e5d",
       "sourceGeometry": {
         "line": [
           [
@@ -6558,7 +6097,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "gazebo",
-      "sourceInput": "9c161d773e781ed0e0c607cf001943e0ba456eae97f2d0bf3ae66bb602f15ff4",
+      "sourceInput": "7e28945bd2c44486b0614412bc771eff37db514f1957273e2ff78c13cd2ec1eb",
       "sourceGeometry": {
         "ring": [
           [
@@ -6694,7 +6233,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
-      "sourceInput": "8e188911f11708615267161db0aa83786ad3bc3baebc3e14633edc38c357706e",
+      "sourceInput": "cf44caccb82f151b66e098226e6596f5308ca2a510bb1bec2b16eb5ef63b87bc",
       "sourceGeometry": {
         "ring": [
           [
@@ -6934,7 +6473,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "fence",
-      "sourceInput": "9aa3906dcf8dbf95a5eefe2f138e9bdd0259ca7c70f70ea80d4005905d0f0e6d",
+      "sourceInput": "64ac5bc6496e6e54c8dec849da5faa354e5afac1c697cf48585a0b9934d2d683",
       "sourceGeometry": {
         "line": [
           [
@@ -6982,7 +6521,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "fence",
-      "sourceInput": "7cc6704ee9773198ba55299e09f270bca5457c352389bd4061a0edf2f86564b6",
+      "sourceInput": "cea5da52e56f63d7b5da562094e842c7466a921e020e84c4a24bd50dbfc75302",
       "sourceGeometry": {
         "line": [
           [
@@ -7031,7 +6570,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "plaza_structure",
-      "sourceInput": "38b379639476b438de4a86f2aeb4f2794512bf0ef5609db2824161235f15c37b",
+      "sourceInput": "eafd27f9bd207c76712ccc10b10e7835de81132a4c7b289d8ad7695b571642d0",
       "sourceGeometry": {
         "ring": [
           [
@@ -7098,7 +6637,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "436c5592c61387acd2e0fcca47475cc128e1952f642304da308fdc80a4c6a212",
+      "sourceInput": "2cddc613fdd8d4885d6b66586179c55bb0b5a1910011837f75c37d7ca0db417b",
       "sourceGeometry": {
         "point": [
           452.2289985471281,
@@ -7134,7 +6673,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "pergola",
-      "sourceInput": "8ae5c3691941eff34c412b8001b191af1beae459c15c6648bd3215d064d2a3aa",
+      "sourceInput": "e6d9083731eca0dbaf045319548cee0d4403e0a3235551f79a88c58704d1e3ef",
       "sourceGeometry": {
         "ring": [
           [
@@ -7415,7 +6954,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "planter",
-      "sourceInput": "dcf4caa49f68b873edd84f54e9e4bf448c827d03aa1fb538606c56dcc3c241c7",
+      "sourceInput": "bf6fb57c9b19891c2d36d76728fd0472c388c5c8cb9247058f66717370faeaaf",
       "sourceGeometry": {
         "line": [
           [
@@ -7463,7 +7002,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "planter",
-      "sourceInput": "63c24451684fcbdf1e614d74aae9f178e42c6dee14e063638673edfac26825ef",
+      "sourceInput": "b7c2d799acb300bcbef94050e8bfcae5d4382ee29794fa552061c21836e1414a",
       "sourceGeometry": {
         "line": [
           [
@@ -7512,7 +7051,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "planter",
-      "sourceInput": "288085580e058504252dad34485cd49fe3b963fd3687a639d73eb1d7b4d05aa2",
+      "sourceInput": "442d8f60c2074cee9455edadf46dd1ccc505fd8b42469e6718e2b411c6bccd0b",
       "sourceGeometry": {
         "line": [
           [
@@ -7560,7 +7099,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "planter",
-      "sourceInput": "980e99fb203972af0080bac1062c0a71ed69db7d37dfcfa22749efc3f29aabeb",
+      "sourceInput": "6685772c4705757311b1302cadd76ef229f3f58b733ed19b0c217f5c24eeb8c6",
       "sourceGeometry": {
         "line": [
           [
@@ -7609,7 +7148,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "planter",
-      "sourceInput": "3593e0dbb66f4e710e0eeda32096efb6692d9bb0aff11b074d736351298b1b1d",
+      "sourceInput": "859f386f6ad4ed0eeb936221df4a1398b0e125653748fe681ac642b63db57d40",
       "sourceGeometry": {
         "line": [
           [
@@ -7658,7 +7197,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "low_wall",
-      "sourceInput": "c1efe22ed764a150c85b7f172ef2e48acee196d0db992b8cff4640c5d6009cf8",
+      "sourceInput": "0c3fb449b7c6c0b0de6a37885c3310721d4b3ccb25ea435561b94d0732fe6456",
       "sourceGeometry": {
         "line": [
           [
@@ -7731,7 +7270,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "planter",
-      "sourceInput": "1675a6ed7c10c8068b555bf044243827600f608c3ea45cea6c6c667e369b9b72",
+      "sourceInput": "a4c374750147faeac6ac0c381dad611490a903a1118de6250cedb5270322134c",
       "sourceGeometry": {
         "ring": [
           [
@@ -7796,7 +7335,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "plaza_structure",
-      "sourceInput": "dc1a5ea0fa90ee15b46e933e93ee1e416668f0195e2099192bda76f526a516b4",
+      "sourceInput": "51dbf6339eeaa8bd0bb4aa20170854d96d1d274daa8670227e48034bb8bb3117",
       "sourceGeometry": {
         "ring": [
           [
@@ -7879,7 +7418,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "10b12baa2729640b455c641aa8708a24b601f524dc6ffdd5d9cb413b55c6e78b",
+      "sourceInput": "eeee18e2866bc00609654dcb1b4dbb15d1365fd6709ab01d7abf651cf278f6df",
       "sourceGeometry": {
         "point": [
           478.9540624709821,
@@ -7918,7 +7457,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "d832a1671916cc36cc0bab70f82ced5bf228387b558e05ed23893ee2201fd30e",
+      "sourceInput": "88044f5f95ff595502dda742ad1cbd8f03277592c9dd9be2cb42bc10e2f751a9",
       "sourceGeometry": {
         "point": [
           471.42208300174445,
@@ -7956,7 +7495,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
-      "sourceInput": "2d96e074ace7eb08de71f78dc0c81024b5aad8cfddc72793f2ba74caea6ddf37",
+      "sourceInput": "bf1db8dd7bda6bcac0876860b5b3dfebb3d61164380f0bdcbbb2bcd230a327d3",
       "sourceGeometry": {
         "point": [
           482.4488413068025,
@@ -7994,7 +7533,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
-      "sourceInput": "1be3016a971e499afe6dc8921f66be0bc86bd1b4e502eefca62aa4a92aaad793",
+      "sourceInput": "19cfde264d981f9e3e588d6de840117b1c4c6bacc753921c0724e19cc1e05b07",
       "sourceGeometry": {
         "point": [
           474.9190856221682,
@@ -8031,7 +7570,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "bus_stop_shelter",
-      "sourceInput": "6b2b775baca65a9c071f5a89ca7b62e6afd06e89b403d3edb68b0554ff7b3ab9",
+      "sourceInput": "1550787714bf27005c252667fb04ed8c0df9c21a01916e85038a003d74c7bff7",
       "sourceGeometry": {
         "ring": [
           [
@@ -8170,7 +7709,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "9994c10170da0b93965d354c5aa7569b3018dcec2375ba2b1cd4cd2193e3d4e8",
+      "sourceInput": "beddc16cae672e4ed418b9468faa0f2bf79f6cd08141cb3cd7dfa69160cc5d70",
       "sourceGeometry": {
         "point": [
           175.4021695033719,
@@ -8206,7 +7745,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "bench",
-      "sourceInput": "2c582e122cdd8f90ac6ddb77b65497133a3bbf3ba1b91c3460322fc4940449ca",
+      "sourceInput": "59e089242179bfdc0926d6926b23730a7c82172665c302605250142badc085f7",
       "sourceGeometry": {
         "line": [
           [
@@ -8255,7 +7794,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "plaza_structure",
-      "sourceInput": "a21c918439a4e50bf26a6114850122884854eec115c426d30858f7aac2906f95",
+      "sourceInput": "f8ba54175c25501676205ac9b7714bfdf5699ad92b4f2ece1e0d016a33b2a219",
       "sourceGeometry": {
         "ring": [
           [
@@ -8300,7 +7839,7 @@
     {
       "id": "OC0106",
       "anchor": {
-        "parcel": "PARCEL_PAVING_BUILDING_212",
+        "parcel": "PARCEL_PAVING_BUILDING_211",
         "uM": 14.0374400699996,
         "vM": 6.12153324277,
         "yawDeg": 0
@@ -8319,7 +7858,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
-      "sourceInput": "aed4ea2c695b2d62f09bd62c87ce19c5fd98002abb47395376fc92ff9f3a068f",
+      "sourceInput": "a227e1e8462300753650225fbdc32ce485d541cbede487b3d4b8980504069431",
       "sourceGeometry": {
         "ring": [
           [
@@ -8743,7 +8282,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "bench",
-      "sourceInput": "7a15ae831239e73346826d60346e70cbb6b17689e625c8f54747a48b1583ec96",
+      "sourceInput": "5fa992adc707cdf1fa4cd44cd638948bae230c2165cbb56401b4b7f8fa1675b5",
       "sourceGeometry": {
         "line": [
           [
@@ -8792,7 +8331,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "plaza_structure",
-      "sourceInput": "8934e800669ca280c6c7ab4894d4bd5abfaf1058bcfa033e4a6a8fb03fe8f806",
+      "sourceInput": "28fa0920dc6c395b88871bd95068de59d8c691f30c57e428183dd455f89ce625",
       "sourceGeometry": {
         "ring": [
           [
@@ -8859,7 +8398,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "aafa408699292cbb137ff3d942e876ce67f52b0310d11e5b2ce4520380ef1ed5",
+      "sourceInput": "bb1dae7faaca26032101c143fc67ae25757a5445c80d158d38b14a01c49a59de",
       "sourceGeometry": {
         "point": [
           466.58139860102307,
@@ -8896,7 +8435,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "sign_pole",
-      "sourceInput": "892282b52f9d2a6015cdb844be2f89a9c8b741853b2c76b210ad6e004def8c0d",
+      "sourceInput": "d90e2c49d33f5cc24f4d8fa32cb64eeec7b1e464a7b19d05b279dbfd1cbfb7c4",
       "sourceGeometry": {
         "line": [
           [
@@ -8947,7 +8486,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "0a37948d5ebb53839ff32ed3a40310341a1402724ea6fef5b2008338988adcab",
+      "sourceInput": "0b41fbb56a72e975f2f08bcdde72c4009e007c811dd1c166ae97b797828692a0",
       "sourceGeometry": {
         "point": [
           487.5274355636001,
@@ -8985,7 +8524,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
-      "sourceInput": "8c098689a3f30f0296428da73bbd1e98ddddd792bc7bac2ced4e1220f0ac3b2d",
+      "sourceInput": "4ae0de7c10be4a84356a0cec5afe4c90089aab6a42c5247ec69d4a7435a8707e",
       "sourceGeometry": {
         "point": [
           495.6348493911586,
@@ -9023,7 +8562,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
-      "sourceInput": "c59dc647a0263d5c73db1dc193d2028d0ea38b390ce282a216966a0bb688ccc7",
+      "sourceInput": "6ddf354255c42f57c4e2cd32c3e32eccc0c7dda229ac9386d335e556a9cee7a9",
       "sourceGeometry": {
         "point": [
           499.69584463468203,
@@ -9062,7 +8601,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "f9cb62d326a673f8532655264a879747f1f61695d5e54d2d70b97468ac3ee9ce",
+      "sourceInput": "aba3ee2c615c5012bbc4b0515f1d88b0f9f8a9795ed3ae8abbb378737a8e7086",
       "sourceGeometry": {
         "point": [
           503.60232951954924,
@@ -9099,7 +8638,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "planter",
-      "sourceInput": "ca5f267b566146c05364d410354692def531a33b7e04e99613ce2ce814da222d",
+      "sourceInput": "2cf539a3cb5c60e424b8dd19428e2c510648d74663f1efa67e14546d0835d434",
       "sourceGeometry": {
         "ring": [
           [
@@ -9187,7 +8726,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "trash_station",
-      "sourceInput": "4debd6e20320b024cfed89091b13df54fe126cf10a41a34ef983bf6371873436",
+      "sourceInput": "07c46d6edf2013ef93ae6d0dce7feae2c534bc7ab1fb9f33f32a7a7e2a0670f0",
       "sourceGeometry": {
         "ring": [
           [
@@ -9324,7 +8863,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "terminal_shelter",
-      "sourceInput": "f7b96faebb8b6e6c325fec0235d0b5e555eac849c38a9de1c8876bf899c5795b",
+      "sourceInput": "0dd5b95b6e8186dddcfb49de248a7b1fb9e4ed86c04f6cbb3e84426153116531",
       "sourceGeometry": {
         "ring": [
           [
@@ -9461,7 +9000,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "pavilion_hip",
-      "sourceInput": "b4a4516576d92bf01f34f0acf4b27d4981e0e9a9eb3a6d85c7d5b3bce9347e3b",
+      "sourceInput": "81c7b5b30f986cf878394ea8b3eeb5b0d9bf23ca0effd61e99db98cff92c6e87",
       "sourceGeometry": {
         "ring": [
           [
@@ -9578,7 +9117,7 @@
     {
       "id": "OC0121",
       "anchor": {
-        "parcel": "PARCEL_PAVING_BUILDING_214",
+        "parcel": "PARCEL_PAVING_BUILDING_213",
         "uM": 10.940032643879158,
         "vM": 3.877535478384914,
         "yawDeg": 0
@@ -9598,7 +9137,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "pavilion_octagon",
-      "sourceInput": "9087ccd153010dba6893b71fc303c4b641998e0041ed97b243207a42c1d6dc8b",
+      "sourceInput": "03b77bd18b03d043d36068a4281df6e279ed426f376dfeba9e40112dea9faa83",
       "sourceGeometry": {
         "ring": [
           [
@@ -10003,7 +9542,7 @@
     {
       "id": "OC0122",
       "anchor": {
-        "parcel": "PARCEL_PAVING_BUILDING_320",
+        "parcel": "PARCEL_PAVING_BUILDING_319",
         "uM": 1.7295749350023297,
         "vM": 4.415959983574301,
         "yawDeg": 0
@@ -10022,7 +9561,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "pergola",
-      "sourceInput": "7634a57a85928f4020875eb32787bbfd6bb580d0bf15c53ff93823d2db6310a2",
+      "sourceInput": "f31d212af68b49ae8a7de79171f6162364df579dc6ae93fcb4206988c9ff9be2",
       "sourceGeometry": {
         "line": [
           [
@@ -10143,7 +9682,7 @@
     {
       "id": "OC0123",
       "anchor": {
-        "parcel": "PARCEL_PAVING_BUILDING_223",
+        "parcel": "PARCEL_PAVING_BUILDING_222",
         "uM": -2.3080989377185688,
         "vM": -2.055845895546463,
         "yawDeg": 0
@@ -10163,7 +9702,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "pergola",
-      "sourceInput": "598140ccd6943f8cbd2feca7c1f25b431dc4a118c9968b996bd6304fbc70810c",
+      "sourceInput": "1866b6eac6314675e2ce67e07b02ae7816cce270c0f499a0f3e2fc88e668fa4e",
       "sourceGeometry": {
         "line": [
           [
@@ -10303,7 +9842,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "sports_goal",
-      "sourceInput": "c6c7b914344b35fd76e39e667c11f858b53918f8b007f0aaf5d034fc6cd294f0",
+      "sourceInput": "4e793707067c5b30c88c34b160844b42285c2adc74a7338caad9f5c4a485b5af",
       "sourceGeometry": {
         "ring": [
           [
@@ -10367,7 +9906,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "sports_hoop",
-      "sourceInput": "4f49ec97d8e01c75c88381a30036e262b0a2ccb9f22fd7b67e95ac293a95fd9c",
+      "sourceInput": "05982ca96386f09a3a392ac19c12200802581ec05da9c7384d925a31640312dc",
       "sourceGeometry": {
         "point": [
           424.50586884196906,
@@ -10403,7 +9942,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "sports_hoop",
-      "sourceInput": "ea33b2bac4d0d3d32383878ba037e59f90221f8b2928e1aaae7d59ea2e4b8a64",
+      "sourceInput": "df9a432ea037edc88bdb38b62d39da84fce96b30b35d32e32cbeadda41b25304",
       "sourceGeometry": {
         "point": [
           438.05091461515514,
@@ -10440,7 +9979,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "planter",
-      "sourceInput": "be5870506f96ee7766a99882d8f9010948d3b7250523388c2009ba0431cff28a",
+      "sourceInput": "d953b25f7f72e3896a54301eb298f3e9a641a32eaa3766fc4225b3e9652be334",
       "sourceGeometry": {
         "ring": [
           [
@@ -10600,7 +10139,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "retaining_wall",
-      "sourceInput": "a35108381c3e3965c214212c9e77fd49dac1996f769e1517cb78fc691f2fcf50",
+      "sourceInput": "1fd1051bed3b66b3e62dd60af58d5914b8de021b3f0370e012af1696e2889c5e",
       "sourceGeometry": {
         "line": [
           [
@@ -10664,7 +10203,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "low_wall",
-      "sourceInput": "f9dbab6f28b8ec155d8628fb0533535b5bae4a9f961b72206509e8dc7d477f68",
+      "sourceInput": "fd5d3234c7bade9becfad599d2456bf5c22c50c1d348b8c45d8830d9ab2855fb",
       "sourceGeometry": {
         "line": [
           [
@@ -10714,7 +10253,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
-      "sourceInput": "2ee7f2774b2f5bd2d6bb43aeb96ca36450fa8e2d939f98fb8a2ea26fe1eca982",
+      "sourceInput": "19e289ad8273d7f28d78b7771fc8edac8b71189a737166d89f61209cfee2c128",
       "sourceGeometry": {
         "point": [
           476.2931300856536,
@@ -10752,7 +10291,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
-      "sourceInput": "f78a14946560c01c308fa13c77d479c2454c16c6b81fabc2ce29307027252bfe",
+      "sourceInput": "dbe32c81a95bd9052b7328da8e6e4ceaecb288c841bff71dafcd3941362486e1",
       "sourceGeometry": {
         "point": [
           494.6822861248177,
@@ -10790,7 +10329,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
-      "sourceInput": "2696ab8e8902935e17ade1c75ececde4e244ee6537057253efbbb3f0b891c359",
+      "sourceInput": "2960fb44fd37b284d7bbf612891c7374c6d74423de1b29864ac7a037599ea305",
       "sourceGeometry": {
         "point": [
           498.8013634731533,
@@ -10828,7 +10367,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "traffic_signal_pole",
-      "sourceInput": "928d6217d08cccffeaa08b59a6efa7bf1bf9a757def2fc60e8f2fe08df053a0c",
+      "sourceInput": "fad2e768101cf66610a3a838c4f33f73a59f2fcee8d9034a2744d4619ed978a8",
       "sourceGeometry": {
         "point": [
           498.47159616559907,
@@ -10865,7 +10404,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "plaza_structure",
-      "sourceInput": "71ed749921f4a1046aea66d22ce05716ad5b1cdd806e85d169fb94a2fdd68224",
+      "sourceInput": "5449f9fc6a5f8db6538863dc2b062daae1df8bdf7ad2ba4eecb1336238ef946d",
       "sourceGeometry": {
         "ring": [
           [
@@ -11270,7 +10809,7 @@
     {
       "id": "OC0135",
       "anchor": {
-        "parcel": "PARCEL_PAVING_BUILDING_193",
+        "parcel": "PARCEL_PAVING_BUILDING_192",
         "uM": -22.62389244307291,
         "vM": -17.531465671950166,
         "yawDeg": 0
@@ -11289,7 +10828,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
-      "sourceInput": "b8b273cedc213a48014cb53b9a33356d73274802cb49d6f60517841305e3e634",
+      "sourceInput": "7690c7c9230a19d1c8513a113dbdfa862e0ed61d7871663ca423596b6003ddaa",
       "sourceGeometry": {
         "ring": [
           [
@@ -11714,7 +11253,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "retaining_wall",
-      "sourceInput": "4d160b6fa397fa3bfb63b616702c2bac67c782941772a2dd2c71bb95b29ffa54",
+      "sourceInput": "4eab001d20b698f2476c0bae19281b58197138bc2c2f5ebffa289b104c5cc2e8",
       "sourceGeometry": {
         "line": [
           [
@@ -11770,7 +11309,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "planter",
-      "sourceInput": "185f743a6f23c960e21496ff7b5b66420acb69d99efd948c2b52a6503e83e619",
+      "sourceInput": "1a829edada55c40c71036e9cebf9189c9a7cf59734bcbcab52c5d20c50971069",
       "sourceGeometry": {
         "ring": [
           [
@@ -11931,7 +11470,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "pergola",
-      "sourceInput": "e1f50c60e465a7d427acaacb6a913843e9f74de032dba7e1412fc1b825506f5d",
+      "sourceInput": "079dce3af5fa4f3062c0a832d4029730bfa2f4a986056ded599d8558ec67cd2e",
       "sourceGeometry": {
         "line": [
           [
@@ -12071,7 +11610,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "fence",
-      "sourceInput": "dc86ceecf6677844ed156301352faf9925940427f0519cdd78b5280e2a6c86fa",
+      "sourceInput": "7daead298b7dc16c2e1c86b496fbb9920cbd257f4159dca42b516e99088f8c0c",
       "sourceGeometry": {
         "line": [
           [
@@ -12127,7 +11666,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "pergola",
-      "sourceInput": "87f1ef3c0cbb4ce8858537243a79adf39b1bec8307052611482653d027afaa9c",
+      "sourceInput": "59034b6be044c0414e9de38d4c744c2c2efadeca93e50f69a80bfbe726464596",
       "sourceGeometry": {
         "line": [
           [
@@ -12364,7 +11903,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "planter",
-      "sourceInput": "19242a5c9744f8e2d59cf7bfa7bffc51ef6e4ab6f0fc3748869e8a65ed282ca0",
+      "sourceInput": "a4b8c924eca9a1547644622f8b1ebe0e744821d71e7c7f4d42a8dfe9157392fd",
       "sourceGeometry": {
         "ring": [
           [
@@ -12526,7 +12065,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "floodlight_pole",
-      "sourceInput": "0e65bc2160e5a5460b03a36be1d2a944de077e2612ba99d0fc735eeba9820d34",
+      "sourceInput": "34ec44d3dbffe9b5c494303c4799e87ec2a630a344cd84e3ac4d9ecefb96c276",
       "sourceGeometry": {
         "point": [
           417.567144410973,
@@ -12564,7 +12103,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "floodlight_pole",
-      "sourceInput": "6f0e8c7b99d4ffb935a1b04be48eb42072390fcd3b0dd76b5eb4d7ff15944bf1",
+      "sourceInput": "5c2c63220a41042dc029e1031e06030eebbb2385a6262d6ccecca6c68cd273f6",
       "sourceGeometry": {
         "point": [
           415.5285506043081,
@@ -12602,7 +12141,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "floodlight_pole",
-      "sourceInput": "9600d93a671c5891dcf2e2a1f151dd5d1e2f04cff4eee508e4e19ea3eb3e1a82",
+      "sourceInput": "81aa284f0d5200f8979aaad136831378a6ccb629b1083399ebe6921e6af682ed",
       "sourceGeometry": {
         "point": [
           413.42838233092783,
@@ -12640,7 +12179,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "floodlight_pole",
-      "sourceInput": "6ba8efd5c55965fe91cd582df7101f685e8ce09349069da84d5a9f86d00cfb7e",
+      "sourceInput": "904e1adb52a98241aa9f2ae7fba276d394139d4b4738e2b88c509ccd39a11024",
       "sourceGeometry": {
         "point": [
           430.0796154566992,
@@ -12678,7 +12217,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "floodlight_pole",
-      "sourceInput": "b6d3c1ce6930e23893691fa11d4490b47a35645450f4083e5a8019bb7ef1f93f",
+      "sourceInput": "338ebdc4bd3f72520a45ae7176e8c15156529b0a94e526f5b79a5236a135da1c",
       "sourceGeometry": {
         "point": [
           428.07295922463584,
@@ -12716,7 +12255,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "floodlight_pole",
-      "sourceInput": "d9cfec0b0621c68ecf1e574b2c57bee90495e3fa5919360f5b30de8233581e12",
+      "sourceInput": "0d30fba30db7fef9c15c90a4c34a8a49582ba2ad13918de478e2fe2fa0fb1b21",
       "sourceGeometry": {
         "point": [
           426.03437586479595,
@@ -12752,7 +12291,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "sports_goal",
-      "sourceInput": "a7c201c7f47d4aad608f97ad8dd8d1e29d2a76075a5ab0e50c10c96fb00b7d2e",
+      "sourceInput": "6d0fe14327077193b98d3fc1a043c9622f228698e8702746328a0542ef67a6df",
       "sourceGeometry": {
         "ring": [
           [
@@ -12817,7 +12356,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "sports_goal",
-      "sourceInput": "c5ab058feb5174eb0c119ec6834dd92f2e680668f4497bb0ba9e2b68f42ed5d8",
+      "sourceInput": "824490881d889ca1cf7d27dbee2b397ed32754de9082dc6815912e519132c8fe",
       "sourceGeometry": {
         "ring": [
           [
@@ -12881,7 +12420,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "fence",
-      "sourceInput": "3699cf9c9704b25816a92dadd2df8957514408ceef3ec6a5e0720ce99099c40e",
+      "sourceInput": "29d1f6d06141828d90b95f4157dcfc1029d4e088db4c8ad9548bfcd1457c2f56",
       "sourceGeometry": {
         "line": [
           [
@@ -12955,7 +12494,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
-      "sourceInput": "2f60064278ef6ce6fed7c7f8216e39f89f9cf1a0912367179cdbb95430ef4529",
+      "sourceInput": "bb9af113838662c19dade969535ced455d6ddbf4541507ecbd431a63ec35c932",
       "sourceGeometry": {
         "point": [
           493.4038538722973,
@@ -12993,7 +12532,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "street_lamp",
-      "sourceInput": "6a86c52450f7c82a32b0d904aa985b0b4d7e47217ce974b8515e21658121b678",
+      "sourceInput": "0c0ee2d68f7c23824c00a2c0a30c7157d150374207503f48dcf3da8218195570",
       "sourceGeometry": {
         "point": [
           499.5299447963809,
@@ -13030,7 +12569,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "canopy_shelter_row",
-      "sourceInput": "2d80672bc60e82d35ad10d5ff63d7b892d9ecf9c7b17f1e8cc0cb6ed29a02b0b",
+      "sourceInput": "b3c714ef4cd930fd7ff30b57a3da8f5e4821b1dd2ea4ef0c77f46859fcf6a7c0",
       "sourceGeometry": {
         "ring": [
           [
@@ -13147,7 +12686,7 @@
     {
       "id": "OC0156",
       "anchor": {
-        "parcel": "PARCEL_PAVING_BUILDING_309",
+        "parcel": "PARCEL_PAVING_BUILDING_308",
         "uM": 7.040264234911417,
         "vM": 1.8101772483052385,
         "yawDeg": 0
@@ -13167,7 +12706,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "planter",
-      "sourceInput": "45880707aae198f53ce1e984e275b82d7febdc39fdfcbbdefc39775d7c94d24d",
+      "sourceInput": "5e88dace8f3bf586e1ff7816c7976e49b38e377bdbb9b540fb94e049936a424c",
       "sourceGeometry": {
         "ring": [
           [
@@ -13231,7 +12770,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "sports_goal",
-      "sourceInput": "7aebc2156a1172230c6b257afd39dda6b3dc25918ea61ad52200b0ea111dc429",
+      "sourceInput": "7f85a8412969264ccbf378152a137fe65ec6e9c3f7184c867eef8165cad72214",
       "sourceGeometry": {
         "ring": [
           [
@@ -13296,7 +12835,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "fence",
-      "sourceInput": "f4f7bba356b0b1c3e76e74b1d00543edd369ae107de4425f88379e464db79001",
+      "sourceInput": "2065a0eebdcc89f1f480e61ad5f49585721714f1a4d49cd28ae6b4dbaae774d9",
       "sourceGeometry": {
         "line": [
           [
@@ -13361,7 +12900,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "gazebo",
-      "sourceInput": "215bb4a63cd890ba36d1724c1946bcaec1c54e911e6289a180f1266570186b2a",
+      "sourceInput": "3b90247de5ffbf7c2ae59789b2d0b47304eb7111bfe1970364eb0973ab9bb178",
       "sourceGeometry": {
         "ring": [
           [
@@ -13478,7 +13017,7 @@
     {
       "id": "OC0160",
       "anchor": {
-        "parcel": "PARCEL_PAVING_BUILDING_234",
+        "parcel": "PARCEL_PAVING_BUILDING_233",
         "uM": 21.682077038524657,
         "vM": 4.197455549325269,
         "yawDeg": 0
@@ -13498,7 +13037,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "gazebo",
-      "sourceInput": "d93cab3f969617745da8aefefc164b26166a1b2fe8da059d998f75c323cde601",
+      "sourceInput": "e303df23c4e9a7af305102ff4f754bfe493f482f03e4385184c3ffd672b99294",
       "sourceGeometry": {
         "ring": [
           [
@@ -13634,7 +13173,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "fence",
-      "sourceInput": "58a4a6103fffeed52b5c5d33c69c08587f2f54f9d50157bf955a5cf2c16be72d",
+      "sourceInput": "7a9e6b7e5e8d35844156c7b4fe2739a0ef2e23c132654035ed4d454c6d3cf1ba",
       "sourceGeometry": {
         "line": [
           [
@@ -13706,7 +13245,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "bench",
-      "sourceInput": "db8ce87a81fb5db18168e2f64122fa81ddbab38e1542b94ef6e5d599b63f41dd",
+      "sourceInput": "d8b61ce54f7678a32f5253839362349af19c61f0aa2b98ddf046a89bdd3d7663",
       "sourceGeometry": {
         "line": [
           [
@@ -13754,7 +13293,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "bus_stop_shelter",
-      "sourceInput": "2980b1d913fc1bb699287fb3a29c56dfef2a2c2e69d370ab1a639b60b69dcb3b",
+      "sourceInput": "7c1e1f38608a52311249342a5fcbf7e1e39b5c9d89a326abb28e4e998afbb7b8",
       "sourceGeometry": {
         "ring": [
           [
@@ -13890,7 +13429,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "bus_stop_shelter",
-      "sourceInput": "1a56648420d403e2b4443421c1cf2a64b1c82c1c5bee0242c4796f5028c4bcf6",
+      "sourceInput": "c1f7d6ba048e56cb4e22f4cf522ed5b4377625d53458389eaf36d1554d1f4cfc",
       "sourceGeometry": {
         "ring": [
           [
@@ -14027,7 +13566,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "gazebo",
-      "sourceInput": "479341de783f09c78f513dcb3d4da811b0c871171ce78d5f7326adf18b0da4a4",
+      "sourceInput": "028260f386d3e717d63d0668a34757388cd92042d2efc77d07cc00ff6b328577",
       "sourceGeometry": {
         "ring": [
           [
@@ -14164,7 +13703,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "plaza_structure",
-      "sourceInput": "92786b3f5afde0cf4f5086c5dae57e1a357893aca3a253da1667d23b5e8d3080",
+      "sourceInput": "70b66020a734c6450f100cf64a93a321cffd57ab460586bd972575a596c310d6",
       "sourceGeometry": {
         "ring": [
           [
@@ -14327,7 +13866,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "1fbfdf7d8322ca304383049b4a201b8f636d47b1af65de40bf9ca3eb7768e7c6",
+      "sourceInput": "4d14137c911e422c5f129c05dc2281ac57651f96df3669a5171934acd5364d57",
       "sourceGeometry": {
         "point": [
           490.5886898360265,
@@ -14344,7 +13883,7 @@
     {
       "id": "OC0168",
       "anchor": {
-        "parcel": "PARCEL_PAVING_BUILDING_353",
+        "parcel": "PARCEL_PAVING_BUILDING_352",
         "uM": 18.1132957405937,
         "vM": -1.747163858698444,
         "yawDeg": 0
@@ -14366,7 +13905,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "14fbc7715dd638c42abf7c6cfd2cd65150ab834d890e78eaf3dd95261f77d4d4",
+      "sourceInput": "319fb18f2860ca6c9d00c27e1b64e5bd04278836bda4472ea36cf22c331c6377",
       "sourceGeometry": {
         "point": [
           498.86902058129243,
@@ -14383,7 +13922,7 @@
     {
       "id": "OC0169",
       "anchor": {
-        "parcel": "PARCEL_PAVING_BUILDING_291",
+        "parcel": "PARCEL_PAVING_BUILDING_290",
         "uM": 5.248144003545379,
         "vM": -5.911456394292885,
         "yawDeg": 0
@@ -14403,7 +13942,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "plaza_structure",
-      "sourceInput": "2e8aff5ff044233d67e664a52b1594c1c00ea68678de1967f6d7213f8f24d58e",
+      "sourceInput": "bb4466d1757586686cacc2c8b52addb12044877aa254cd72b4e28d03ec6be74f",
       "sourceGeometry": {
         "ring": [
           [
@@ -14470,7 +14009,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "727ce6f11a808d03efa628fff935d1d600644f5f79bf76669f39048ebe61e25f",
+      "sourceInput": "79cd09a1939cf9ed755ff187de27117eb22c41b3e73dd6948a1e1ff971559df9",
       "sourceGeometry": {
         "point": [
           288.0279517773353,
@@ -14509,7 +14048,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "83d1c76becc40f969f5cfef0c1ab666ba48f05a3f8f8a3a973c50867c130c988",
+      "sourceInput": "d9192e0f99fce436cb71129ecc51b8efba852a25257bd33b441f0ebd3a283c3b",
       "sourceGeometry": {
         "point": [
           287.0040743005253,
@@ -14548,7 +14087,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "6f83bd7c892e4601298e72c9b1ea214bdaabd1fc6ac16dbeb556496ca7b89812",
+      "sourceInput": "572d7cb5ff4ec693448be0f9648b19fd21d208ca43525d5e814c59cd440b952e",
       "sourceGeometry": {
         "point": [
           314.75434837241505,
@@ -14584,7 +14123,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "fence",
-      "sourceInput": "46d1e1a20302e43c8f152f7a6c163818651924d52b211d215e37d2c4d7672246",
+      "sourceInput": "aa82dbda9a4e2ef0140f13e02c205869646c34f4ebacc094a28ab40b32fcf96c",
       "sourceGeometry": {
         "line": [
           [
@@ -14659,7 +14198,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "street_lamp",
-      "sourceInput": "db371b16962fec8ab2789472dab86d5972cf3d3773d47f39a7bf65d935c33023",
+      "sourceInput": "75cc63ea80445dd9aa4799697b094da06902c253d9495ae7565c1eecb9e4f0a7",
       "sourceGeometry": {
         "point": [
           500.84349754905185,
@@ -14745,7 +14284,7 @@
       ],
       "parcelRelation": "nearest_boundary",
       "kind": "gate_sign",
-      "sourceInput": "ccdf07691e49afa4c36f33d7ffc165f88e731cdd4633f410c8b8fd31cbc423dd",
+      "sourceInput": "5850de269e538123a0b282fffc2228e24b041449e02e6e7e1488f67b4bf06a9e",
       "sourceGeometry": {
         "line": [
           [
@@ -14774,7 +14313,7 @@
     {
       "id": "RS0003",
       "anchor": {
-        "parcel": "PARCEL_PAVING_BUILDING_335",
+        "parcel": "PARCEL_PAVING_BUILDING_334",
         "uM": 2.591244063656944,
         "vM": 6.412593203480554,
         "yawDeg": 0
@@ -14807,7 +14346,7 @@
       ],
       "parcelRelation": "inside",
       "kind": "garden_wall",
-      "sourceInput": "c87cb3606339bccbe7f8702a9f61d2cc7efacfb2e6b0acb8a0c42d89c7ff2a9f",
+      "sourceInput": "4a47a92569a4f017b6d8ed3f812cb7f068dbcaedeba18e35a919d50152e4620e",
       "sourceGeometry": {
         "line": [
           [
@@ -14916,7 +14455,7 @@
       ],
       "parcelRelation": "nearest_boundary",
       "kind": "bus_stop_shelter",
-      "sourceInput": "f7f3279e2ef33b497f47247b4b081ac456782e919acdd30212904e3f938f9226",
+      "sourceInput": "c9e66c2fcb5984a1e4da8747cab83c5583c33df667b7b534be013697f9523a93",
       "sourceGeometry": {
         "ring": [
           [
@@ -15055,7 +14594,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "bench",
-      "sourceInput": "5c796b01532f9f88ad57e59b55690189d5ee64502c6254dd53219b92d3756bf1",
+      "sourceInput": "2dad86521ac8e0cdbf920db05e23da19109b07b8d7a737f4eceb8ec425183bbd",
       "sourceGeometry": {
         "line": [
           [
@@ -15105,7 +14644,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "bench",
-      "sourceInput": "12ddfd892da7280d36df308bd602d3bc930f1df54e7713328b3fcf01ee087d53",
+      "sourceInput": "ac95f72db11c20ac6b6d0946c116747db6f9a0dfbcd16717046bbded5a9ca645",
       "sourceGeometry": {
         "line": [
           [
@@ -15202,7 +14741,7 @@
       ],
       "parcelRelation": "inside",
       "kind": "planter",
-      "sourceInput": "4941806c4a128a67a52ea21e5152e6f143ded9f2c8f95eef5771e9c60c56f145",
+      "sourceInput": "d61eebc0c563c851e4cea68670959eb5cf30a861728780ebf43dbc35a197d863",
       "sourceGeometry": {
         "ring": [
           [
@@ -15315,7 +14854,7 @@
       ],
       "parcelRelation": "inside",
       "kind": "bench",
-      "sourceInput": "8d2ffa1f82f15cac4bbdcce6f4d71158358c815e629008b2d8a5a6d8faefab9a",
+      "sourceInput": "4eef4cac7dc375f1f5392dd0c76967798c4cb9d3212ebdc3efce1d5cb1adfe27",
       "sourceGeometry": {
         "line": [
           [
@@ -15377,7 +14916,7 @@
       ],
       "parcelRelation": "inside",
       "kind": "low_wall",
-      "sourceInput": "90f6b32253407ffcf4d5bfa1411db488115340e4aeb144b000bb7b7e7707720d",
+      "sourceInput": "628dc47191fb1a58a6a5ce0b8e3ed06802c6757ec216a88068b3d901f8bfed11",
       "sourceGeometry": {
         "line": [
           [
@@ -15426,7 +14965,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "bus_stop_shelter",
-      "sourceInput": "42968df082d558d684811e5237bf9e59353d650f42435beb94849c6db21ccd33",
+      "sourceInput": "0856d45999dd072ffbd45c612345971b9144ba806f24f4680d44f6edd7d8de1e",
       "sourceGeometry": {
         "ring": [
           [
@@ -15565,7 +15104,7 @@
       "vrObservations": [],
       "parcelRelation": "nearest_boundary",
       "kind": "bench",
-      "sourceInput": "509425dae57a79467acb836ca94a38c87983f2e9b38e828bc7f2c7f22c960365",
+      "sourceInput": "1e1ee520cb296afc9a451a2d6bcb89aaedda333c27b7b4008baf3e4c5edcb3a9",
       "sourceGeometry": {
         "line": [
           [
@@ -15670,7 +15209,7 @@
       ],
       "parcelRelation": "inside",
       "kind": "planter",
-      "sourceInput": "350ea7323b6016d80b314e456b46381699ff042401455938a631b97ae411308e",
+      "sourceInput": "2ec2bbbebfc77c4d9b7f1de19f566c16313f9ddbc9ce666766aca29fce5ad43f",
       "sourceGeometry": {
         "ring": [
           [
@@ -15815,7 +15354,7 @@
       ],
       "parcelRelation": "inside",
       "kind": "planter",
-      "sourceInput": "697027e4b245591a81549b67a194e957a038903931dda144a78c485782001ec8",
+      "sourceInput": "5b110a6bc6e2f904117c50b82e948962608b1c3a567be99e39606f811074220c",
       "sourceGeometry": {
         "ring": [
           [
@@ -15956,7 +15495,7 @@
       ],
       "parcelRelation": "nearest_boundary",
       "kind": "planter",
-      "sourceInput": "c2090d8995199866024d9c41be8b15b89128229c5f1bcc778fe17c4d8c71a48f",
+      "sourceInput": "aaacf3780939886191e4feaaf97391a335bb5db8d01f86b0eafc3321d3758e7a",
       "sourceGeometry": {
         "ring": [
           [
@@ -16085,7 +15624,7 @@
       ],
       "parcelRelation": "inside",
       "kind": "planter",
-      "sourceInput": "03d45998abe32d71f4903eb7a2b4ee582d5e24e9ebf353d31a0f03e69684d999",
+      "sourceInput": "eeacd18644eeab5b4f0e33dd39c881126815a3a916093828ce9c27444ccb65a5",
       "sourceGeometry": {
         "ring": [
           [
@@ -16158,7 +15697,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "pond_basin",
-      "sourceInput": "0d015e399dda9ec465f5ae7a3d9fd4dae8a0d822e7b3c1287ba86ec079b9f0be",
+      "sourceInput": "c2fd183720b36528ec563926c8cb4f42688f1d7a850db497ff0040e30fabefca",
       "sourceGeometry": {
         "ring": [
           [
@@ -16280,7 +15819,7 @@
       ],
       "parcelRelation": "nearest_boundary",
       "kind": "terraced_steps",
-      "sourceInput": "4ca3e684689ec23951fd5b8c7589bd47b1595fdc32bc3ff52729ad025d490ef8",
+      "sourceInput": "76bc99f3db037108364dd0762ab258fe6f545f7e4bcd426c80cb82548def94e8",
       "sourceGeometry": {
         "line": [
           [
@@ -16329,7 +15868,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "terraced_steps",
-      "sourceInput": "dfdf8cc9f18297cfd9257d9b207ad108900ff5d8f74a1cccaa8b6afca90f2d16",
+      "sourceInput": "4d827bd94265919b18275e758605860d0e4bce221e56668a5110b1ebdc932e5c",
       "sourceGeometry": {
         "line": [
           [
@@ -16379,7 +15918,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "terraced_steps",
-      "sourceInput": "9c05c6b684ec0dbe33c153347aface9a99c9c1b2ff3afbd7d66771297e74f683",
+      "sourceInput": "b6f8e1ba9880f64dac0d13a71c0204460fe20ef62d14791ad575beae2b4e0808",
       "sourceGeometry": {
         "line": [
           [
@@ -16476,7 +16015,7 @@
       ],
       "parcelRelation": "nearest_boundary",
       "kind": "terraced_steps",
-      "sourceInput": "fda4bb033a37129c08a11722c4382e0eb55f116d99572c905e1bbaabcda552b2",
+      "sourceInput": "0a1e255a7d27744dcecfc040ae8afbb4dfacf6703bccc82fc2bfb9a6d13bae7f",
       "sourceGeometry": {
         "line": [
           [
@@ -16585,7 +16124,7 @@
       ],
       "parcelRelation": "inside",
       "kind": "plaza_structure",
-      "sourceInput": "e7901221c98f2df9b3a185c1d23a0b18d1c4fcd17eb47e14d4d09368b33269e5",
+      "sourceInput": "1c228ebc1b98fc23f0f6291b48aa51afbb83eb7e0c10a513beb7d20cca964cb0",
       "sourceGeometry": {
         "ring": [
           [
@@ -16651,7 +16190,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "bike_rack",
-      "sourceInput": "90266509e4579975f7877ff3d200a8be2a6718bc489f161d9db33972005afddd",
+      "sourceInput": "0cba1c348835d5fcd4ece3ad970cb369d6f57b596915e1ff6c26434fa99e940e",
       "sourceGeometry": {
         "ring": [
           [
@@ -16872,7 +16411,7 @@
       ],
       "parcelRelation": "inside",
       "kind": "planter",
-      "sourceInput": "d2a79429fa8aa207cc4da21fa00ad4b6edb54d4d054e35fb39e39466dcadbf38",
+      "sourceInput": "835f4fca05476304bdc280ab5632683cf498d5c7dfee7c820be7bc8af1b94173",
       "sourceGeometry": {
         "ring": [
           [
@@ -16992,7 +16531,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "traffic_island",
-      "sourceInput": "ce9d5c46681577e43e32032373be5996c2e3576df4037973b2a2b13a293d71a1",
+      "sourceInput": "80d97208a4c4f21776a9cc1602d73df2ad95c6744a67819ac9d88ded324e2e7e",
       "sourceGeometry": {
         "line": [
           [
@@ -17040,7 +16579,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "traffic_island",
-      "sourceInput": "272143c97ada351c745612bd85e4c24d29d2d527c705a42c1c2d0c66cbe6120e",
+      "sourceInput": "dc4ae52c558bd6c136d6ab8de72d7d1175c3bfa0838e54a8bed74a42f8ee2be4",
       "sourceGeometry": {
         "line": [
           [
@@ -17088,7 +16627,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "traffic_island",
-      "sourceInput": "1b5a08489affe62981bc75568a57f649edaa57d3e37e82277504f50cf7864c7f",
+      "sourceInput": "99c651a7088a3d74268541982e61027c4f7362851b3484f221d53265d804697a",
       "sourceGeometry": {
         "line": [
           [
@@ -17136,7 +16675,7 @@
       "vrObservations": [],
       "parcelRelation": "inside",
       "kind": "gate_canopy",
-      "sourceInput": "6e30b3ee398d6f0bfdb4ef40828c019a1978f48461d97ad5761278a23662f33c",
+      "sourceInput": "ed7ba3356afccd18da9f05d1406c72042a9896e8b5616ab1abccf15e9c56f380",
       "sourceGeometry": {
         "ring": [
           [
@@ -17323,7 +16862,7 @@
       ],
       "parcelRelation": "inside",
       "kind": "street_lamp",
-      "sourceInput": "f80dc8ce592c89723755c66bb7efabf0297657c85580d506c9e4163196170d14",
+      "sourceInput": "37d39776b8191c85b5a6e4f12e141b6505ec7ce09fc12dd6939bb79c9d5a7827",
       "sourceGeometry": {
         "point": [
           405.19410729327217,
@@ -17378,7 +16917,7 @@
       },
       "parcelRelation": "inside",
       "kind": "bench",
-      "sourceInput": "1a9cf6a398c2e61a3476384b1c9a86817a8528d48241570ee84ab01ab4278aa4",
+      "sourceInput": "659f6482bfe5ad0a140a01667a0d67e74081cd6da12964d363eb0abfe06d9672",
       "sourceGeometry": {
         "line": [
           [
@@ -17445,7 +16984,7 @@
       },
       "parcelRelation": "inside",
       "kind": "bench",
-      "sourceInput": "47ee8642af7a433c9098dcbb67552a43d340d1bc1a81c60f2ef58508a8fee905",
+      "sourceInput": "cc46d9d408033187124285ee16f0dedbc921a87309e0299754ac00cf2f8b9618",
       "sourceGeometry": {
         "line": [
           [

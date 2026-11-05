@@ -433,27 +433,159 @@
       }
     },
     {
-      "id": "ENT_D4_MAIN",
+      "id": "ENT_D4_E1",
       "anchor": {
         "building": "BLD_D4",
-        "wall": "W02",
-        "sM": 41.906349367471336,
-        "tM": 0
+        "wall": "W00",
+        "sM": 27.949697401792225,
+        "tM": -3.0585136699985735,
+        "yawDeg": -90
       },
-      "widthM": 2,
+      "widthM": 3,
       "type": "main",
       "doors": {
         "leaves": 2,
         "glazed": true,
-        "frame": "#eeeeea"
+        "frame": "#cbd3d3",
+        "heightM": 2.2,
+        "glass": "#5aa9ab",
+        "frameWidthM": 0.06,
+        "swing": "unknown",
+        "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 3: glazed banks; leaf count, 2.2 m leaf height and 0.06 m frame are provisional, swing unknown (estimated)"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T3",
+        "refs": [
+          ".omo/ulw-research/d4-gt/SYNTHESIS.md section 3 E1; refs/h-floorplan/door_2022.png; refs/l-vr-cache/d4_f_entrance_c720-1420_r1200-1620.jpg (estimated)"
+        ]
+      },
+      "officialEntrance": "E1",
+      "sourcePosition": [
+        127.4765793,
+        34.9702292
+      ],
+      "provisional": false,
+      "bankHeightM": 4.2,
+      "coveredBy": "BLD_D4 passage bridge",
+      "stepsRef": "RS-LS-D4STEPS",
+      "placement": "passage-side-wall",
+      "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md 3: about 4 m setback; use side-wall coordinates, not CAD circle centres; shared four-riser mouth steps are owned by lane 3; no individual canopy (estimated)",
+      "sign": {
+        "colour": "#2c4f78",
+        "text": null,
+        "source": ".omo/ulw-research/d4-gt/refs/l-vr-cache/d4_f_entrance_c720-1420_r1200-1620.jpg: blue sign above north bank, lettering unreadable (estimated)"
+      }
+    },
+    {
+      "id": "ENT_D4_E2",
+      "anchor": {
+        "building": "BLD_D4",
+        "wall": "W00",
+        "sM": 48.347345307157,
+        "tM": -3.334192021722668,
+        "yawDeg": 90
+      },
+      "widthM": 3,
+      "type": "side",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#cbd3d3",
+        "heightM": 2.2,
+        "glass": "#5aa9ab",
+        "frameWidthM": 0.06,
+        "swing": "unknown",
+        "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 3: glazed banks; leaf count, 2.2 m leaf height and 0.06 m frame are provisional, swing unknown (estimated)"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T3",
+        "refs": [
+          ".omo/ulw-research/d4-gt/SYNTHESIS.md section 3 E2; refs/h-floorplan/door_2022.png; refs/l-vr-cache/d4_f_entrance_c720-1420_r1200-1620.jpg (estimated)"
+        ]
+      },
+      "officialEntrance": "E2",
+      "sourcePosition": [
+        127.47651997,
+        34.97005193
+      ],
+      "provisional": false,
+      "bankHeightM": 4.2,
+      "coveredBy": "BLD_D4 passage bridge",
+      "stepsRef": "RS-LS-D4STEPS",
+      "placement": "passage-side-wall",
+      "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md 3: about 4 m setback; use side-wall coordinates, not CAD circle centres; shared four-riser mouth steps are owned by lane 3; no individual canopy (estimated)"
+    },
+    {
+      "id": "ENT_D4_E3",
+      "anchor": {
+        "building": "BLD_D4",
+        "wall": "W01",
+        "sM": 13.550120267357363,
+        "tM": 0
+      },
+      "widthM": 2,
+      "type": "service",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#cbd3d3",
+        "heightM": 2.2,
+        "glass": "#5aa9ab",
+        "frameWidthM": 0.06,
+        "swing": "unknown",
+        "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 3: glazed banks; leaf count, 2.2 m leaf height and 0.06 m frame are provisional, swing unknown (estimated)"
       },
       "estimated": true,
       "evidence": {
         "tier": "T4",
         "refs": [
-          "Legacy simulation hint projected to BLD_D4/W02; not surveyed"
+          ".omo/ulw-research/d4-gt/SYNTHESIS.md section 3 E3; refs/h-floorplan/door_2022.png; no ground photograph; provisional width and door type (estimated)"
         ]
-      }
+      },
+      "officialEntrance": "E3",
+      "sourcePosition": [
+        127.4762818,
+        34.969661
+      ],
+      "provisional": true,
+      "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 3: E3 CAD centre; provisional 2 m door, no verified canopy, step or ramp (estimated)"
+    },
+    {
+      "id": "ENT_D4_E4",
+      "anchor": {
+        "building": "BLD_D4",
+        "wall": "W05",
+        "sM": 5.557614972433132,
+        "tM": -4.24512879543425
+      },
+      "widthM": 2,
+      "type": "stair",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#cbd3d3",
+        "heightM": 2.2,
+        "glass": "#5aa9ab",
+        "frameWidthM": 0.06,
+        "swing": "unknown",
+        "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 3: glazed banks; leaf count, 2.2 m leaf height and 0.06 m frame are provisional, swing unknown (estimated)"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          ".omo/ulw-research/d4-gt/SYNTHESIS.md section 3 E4; refs/h-floorplan/door_2022.png; refs/c-bridge/src-05-north-end-e4-oblique-ne.jpg (estimated)"
+        ]
+      },
+      "officialEntrance": "E4",
+      "sourcePosition": [
+        127.47655414,
+        34.97049659
+      ],
+      "provisional": true,
+      "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 3: E4 CAD centre; door recessed 4.245 m from W05 under open balcony tower; 2 m width provisional (estimated)"
     },
     {
       "id": "ENT_D3_MAIN",
