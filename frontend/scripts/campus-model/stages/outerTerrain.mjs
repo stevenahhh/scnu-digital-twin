@@ -389,8 +389,10 @@ export async function buildOuterTerrain({ glb, inputs }) {
   const finalPositions = pick(positions, 3, Float32Array);
   const finalNormals = pick(normals, 3, Float32Array);
   const finalColours = pick(colours, 4, Uint8Array);
-  const d4Material = await tileMaterial(glb, { name: "Ground_Outer_D4", cls: "d4-soil", rank: 0 });
-  const d4RepeatM = groundTile("d4-soil").entry.physicalSizeM;
+  // Grass, not soil: the strip west of D4 is woodland in the orthophoto, and soil read as a brown band against the
+  // green outer terrain (refs/compare/compare-02-topdown-d4.png, estimated).
+  const d4Material = await tileMaterial(glb, { name: "Ground_Outer_D4", cls: "d4-grass", rank: 0 });
+  const d4RepeatM = groundTile("d4-grass").entry.physicalSizeM;
   // Emitted last (build-campus-model.mjs), after the context streets claimed their ground (lib/partition.mjs
   // TinPartition): a triangle no street touches keeps its vertices; a cut one is rebuilt from the convex parts left,
   // each vertex interpolated (height, normal, colour) inside its triangle.
