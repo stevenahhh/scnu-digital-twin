@@ -15,6 +15,17 @@ bun scripts/campus-model/fetch/buildingForms.mjs [--keep <dir>] # refresh data/b
 node --test src/campusModelAsset.test.mjs
 ```
 
+## Editing in Blender (`bun run model:blend`)
+
+glTF keeps one vertex per normal and UV seam, so `public/campus-v2.glb` opened in Blender is a face soup
+(BLD_D4: 2840 islands for 6660 triangles with the default importer). `bun run model:blend [in.glb]` writes the file
+to edit, `scripts/campus-model/.build/campus-v2.blend` (gitignored): vertices welded by position, Tris to Quads,
+coplanar faces of one material and continuous UVs dissolved into n-gons, sharp edges marked at 30 deg. Facades come
+out as a bay-by-storey quad grid and flat roofs as single n-gons (BLD_D4: 271 islands, 6 triangles left). It needs
+Blender (`$BLENDER` or `/Applications/Blender.app`) and fails when the topology misses `qa/topology/limits.json`;
+`campus-v2.topology.json` beside the .blend holds the per-root counts. Textures are left out (Blender cannot read
+KTX2). Terrain (TIN) and the low-poly tree crowns stay triangles by design.
+
 ## Ground-truth records and QA (2026-11-04)
 
 The ground-truth redesign uses curated records as geometry inputs. Paths below are
