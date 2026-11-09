@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import {
-  BookOpen, Building, Check, ChevronDown, DoorOpen, Eye, GraduationCap, Home, Landmark, Pause, Play, Sprout, Wrench,
+  BookOpen, Building, Check, ChevronDown, DoorOpen, Eye, GraduationCap, Landmark, Sprout, Wrench,
 } from "lucide-react";
 import { OVERVIEW_PRESET_ID } from "../camera/cameraPresets.mjs";
 import { Button, COARSE_TARGET, FOCUS_RING } from "../ui/Button.jsx";
@@ -16,10 +16,10 @@ const PRESET_ICONS = {
   headquarters: Landmark,
   humanities: GraduationCap,
 };
-const icon = (Icon) => <Icon aria-hidden="true" className="h-4 w-4" />;
-// 눌린(지금 보고 있는) 시점의 모양 하나: surface-2 바탕 + ink 글자 + 확인 표시. 강조색 테두리는 쓰지 않는다.
-// 눌린 단추: 공통 선택 표시(surface-2 바탕, ink 글자). ghost 변형의 bg-transparent·text-ink-muted보다 앞서야 해서 !로 둔다.
-const PRESSED = "!bg-surface-2 !text-ink";
+// 지금 보고 있는 시점의 모양 하나: surface-2 바탕 + ink 글자 + 확인 표시. 강조색 테두리는 쓰지 않는다.
+const ACTIVE_ITEM = "bg-surface-2 text-ink";
+// 트리거는 data-active일 때 같은 바탕을 쓴다(속성 선택자라 변형의 바탕보다 앞선다).
+const ACTIVE_TRIGGER = "data-[active=true]:bg-surface-2 data-[active=true]:text-ink";
 
 // 시점 메뉴: 위아래 화살표로 항목을 옮기고 Enter로 고른다. Esc는 Popover가 닫고 포커스를 트리거로 돌린다.
 function PresetMenu({ presets, activeId, onSelect, close }) {
@@ -56,7 +56,7 @@ function PresetMenu({ presets, activeId, onSelect, close }) {
                 "flex min-h-10 w-full items-start gap-2 rounded-control px-2 py-1.5 text-left hover:bg-surface-2",
                 COARSE_TARGET,
                 FOCUS_RING,
-                active && PRESSED,
+                active && ACTIVE_ITEM,
               )}
             >
               <Icon aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-ink-muted" />
@@ -73,47 +73,30 @@ function PresetMenu({ presets, activeId, onSelect, close }) {
   );
 }
 
-// 폰·굵은 포인터에서는 도구 모음 단추도 44 px 높이로 누른다(데스크톱은 작은 단추 그대로).
-const TOUCH_TARGET = "max-[639px]:min-h-11 [@media(pointer:coarse)]:min-h-11";
-
-// 지도 왼쪽 위 카메라 도구 모음: 전체 · 시점 메뉴 · 투어, 세 묶음. presets는 cameraPresets.mjs의 CAMERA_PRESETS다.
-export function HudToolbar({ presets, activeId, onSelect, touring = false, onToggleTour, className = "" }) {
-  const overview = presets.find((preset) => preset.id === OVERVIEW_PRESET_ID);
+// HUD의 시점 메뉴 하나. presets는 cameraPresets.mjs의 CAMERA_PRESETS다. 전체 시점은 카메라 묶음의 `전체 보기`가 맡는다.
+// compact(폰): 글자 없이 아이콘 단추(44 px)로 놓고, 단추가 줄 오른쪽 끝에 있으므로 메뉴를 오른쪽에 맞춰 연다.
+export function HudToolbar({ presets, activeId, onSelect, compact = false, className = "" }) {
   const named = presets.filter((preset) => preset.id !== OVERVIEW_PRESET_ID);
   const activeNamed = named.find((preset) => preset.id === activeId);
-  const overviewActive = activeId === OVERVIEW_PRESET_ID;
+  const title = activeNamed ? `시점: ${activeNamed.title}` : "건물·장소 시점 고르기";
   return (
-    <div
-      role="toolbar"
-      aria-label="카메라 시점"
-      data-qa="camera-preset-bar"
-      className={cx("pointer-events-auto inline-flex w-max items-center gap-1 rounded-card border border-hairline bg-surface-1 p-1", className)}
-    >
-      <Button
-        size="sm"
-        variant="ghost"
-        data-qa="camera-preset-overview"
-        aria-pressed={overviewActive}
-        title={overview.description}
-        onClick={() => onSelect(overview)}
-        icon={overviewActive ? icon(Check) : icon(Home)}
-        className={cx(TOUCH_TARGET, overviewActive && PRESSED)}
-      >
-        {overview.title}
-      </Button>
+    <div data-qa="camera-preset-bar" className={cx("pointer-events-auto shrink-0", className)}>
       <Popover
         label="시점"
         role="menu"
+        align={compact ? "end" : "start"}
         qa="camera-view-menu-list"
         renderTrigger={(props) => (
           <Button
             {...props}
             size="sm"
-            variant="ghost"
+            iconOnly={compact}
+            label={compact ? (activeNamed ? title : "시점") : undefined}
             data-qa="camera-view-menu"
-            title={activeNamed ? `시점: ${activeNamed.title}` : "건물·장소 시점 고르기"}
-            icon={icon(Eye)}
-            className={cx(TOUCH_TARGET, activeNamed && PRESSED)}
+            data-active={activeNamed ? "true" : undefined}
+            title={title}
+            icon={<Eye aria-hidden="true" className="h-4 w-4" />}
+            className={cx(ACTIVE_TRIGGER, "whitespace-nowrap")}
           >
             시점
             {activeNamed && <span className="text-ink-muted">{activeNamed.shortName ?? activeNamed.title}</span>}
@@ -123,19 +106,6 @@ export function HudToolbar({ presets, activeId, onSelect, touring = false, onTog
       >
         {({ close }) => <PresetMenu presets={named} activeId={activeId} onSelect={onSelect} close={close} />}
       </Popover>
-      <span aria-hidden="true" className="mx-0.5 h-5 w-px shrink-0 bg-hairline-strong" />
-      <Button
-        size="sm"
-        variant="ghost"
-        data-qa="camera-tour-toggle"
-        aria-pressed={touring}
-        title={touring ? "투어를 멈춥니다" : "시점을 6초마다 차례로 보여 줍니다"}
-        onClick={onToggleTour}
-        icon={touring ? icon(Pause) : icon(Play)}
-        className={cx(TOUCH_TARGET, touring && PRESSED)}
-      >
-        {touring ? "투어 멈춤" : "투어 시작"}
-      </Button>
     </div>
   );
 }
