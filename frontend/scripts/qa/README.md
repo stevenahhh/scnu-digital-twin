@@ -108,7 +108,9 @@ page back. IS-31 reads the camera, not a dHash: the S04 scenario records the pos
 taps the chip farthest from the map centre from the 전체 preset (S04's central 도서관 chip never focuses the VWorld camera).
 VWorld is judged on the Cesium camera (`window.ws3d.viewer.camera`) and on the pose the app sends to
 `map.lookat.moveTo` (the cameraFocus.mjs orbit; headless SwiftShader does not apply it); Legacy on the OrbitControls
-that AppLegacy passes as `controlsRef`. More than 0.5 deg or 1 m between the two reads fails.
+that AppLegacy passes as `controlsRef`. More than 0.5 deg or 1 m between the two reads fails. IS-38 D uses the same
+off-centre chip and readings under `prefers-reduced-motion: reduce`: the pose ~100 ms after the tap must already equal the
+pose at 1500 ms (`cameraVerdict` in checks/ideal-eval.mjs combines the rendered and commanded readings for both rows).
 IS-34..IS-37 sample the DOM every 50 ms in the page; IS-38 switches to reduced motion itself; IS-39 makes its own
 3000 ms delayed request, so a plain run evaluates all 40 ids. Tablet policy: on `T` only IS-07, IS-17, IS-18 (44 px),
 IS-25, IS-27 and IS-33 evaluate; every other requested IS row reports `n/a` (never FAIL). Owners are in
