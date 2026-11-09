@@ -1,5 +1,6 @@
 // Child-process ownership for the harness: one Vite dev server per run, killed as a process group.
 import { spawn } from "node:child_process";
+import net from "node:net";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -60,8 +61,22 @@ async function waitForHttp(url, child, timeoutMs) {
   throw new Error(`vite did not answer 200 on ${url} within ${timeoutMs} ms`);
 }
 
+// True when something already accepts TCP connections on host:port.
+export function portInUse(host, port) {
+  return new Promise((resolve) => {
+    const socket = net.connect({ host, port });
+    socket.once("connect", () => { socket.destroy(); resolve(true); });
+    socket.once("error", () => resolve(false));
+  });
+}
+
 // Starts Vite on host:port with the fixture plugin and the service URLs pointed at it.
+// A port that is already taken is an error: --strictPort makes our Vite exit, and the readiness probe
+// would otherwise get 200 from the other server and measure another run's page.
 export async function startVite({ port, host = "127.0.0.1", extraEnv = {}, log = () => {} }) {
+  if (await portInUse(host, port)) {
+    throw new Error(`port ${port} is already in use on ${host}; another harness run or dev server holds it (run one harness at a time, or pass a free --port)`);
+  }
   installExitHooks();
   const baseUrl = `http://${host}:${port}`;
   const child = spawn("node",
