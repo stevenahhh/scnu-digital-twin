@@ -19,6 +19,9 @@ const FETCH_RECORDER = `(() => {
 export const VIEWPORTS = Object.freeze({
   D: Object.freeze({ id: "D", width: 1440, height: 900, scale: 1, mobile: false }),
   P: Object.freeze({ id: "P", width: 390, height: 844, scale: 2, mobile: true }),
+  // Tablet: a touch device in portrait. `mobile` stays false (the phone sheet steps do not apply); `touch` turns on CDP
+  // mobile metrics and touch emulation so `(pointer: coarse)` matches as on an iPad.
+  T: Object.freeze({ id: "T", width: 834, height: 1194, scale: 2, mobile: false, touch: true }),
 });
 
 export const CHROME_ARGS = Object.freeze([
@@ -104,12 +107,13 @@ export class Browser {
         browser.logs.push({ t: `log-${entry.level}`, msg: `${entry.text} ${entry.url || ""}`.slice(0, 240) });
       }
     });
+    const touch = Boolean(viewport.mobile || viewport.touch);
     await view.cdp("Emulation.setDeviceMetricsOverride", {
-      width: viewport.width, height: viewport.height, deviceScaleFactor: viewport.scale, mobile: viewport.mobile,
+      width: viewport.width, height: viewport.height, deviceScaleFactor: viewport.scale, mobile: touch,
     });
     // Phone = a touch device: without this `(pointer: coarse)` never matches, so every 44 px touch-target rule the app
     // ships under that query is invisible to the 44 px rows (V-Q-17, V-F-73, GAP-33). Mouse input stays mouse input.
-    await view.cdp("Emulation.setTouchEmulationEnabled", viewport.mobile ? { enabled: true, maxTouchPoints: 5 } : { enabled: false });
+    await view.cdp("Emulation.setTouchEmulationEnabled", touch ? { enabled: true, maxTouchPoints: 5 } : { enabled: false });
     await view.cdp("Emulation.setTimezoneOverride", { timezoneId: "Asia/Seoul" });
     await browser.setMedia({ reducedMotion, colorScheme });
     if (clock) await view.cdp("Page.addScriptToEvaluateOnNewDocument", { source: clockScript(clock) });
@@ -117,7 +121,9 @@ export class Browser {
     return browser;
   }
 
+  // The emulated media in effect; a check that switches it (IS-38) puts this back afterwards.
   async setMedia({ reducedMotion = false, colorScheme = "dark" }) {
+    this.media = { reducedMotion, colorScheme };
     await this.view.cdp("Emulation.setEmulatedMedia", {
       features: [
         { name: "prefers-reduced-motion", value: reducedMotion ? "reduce" : "no-preference" },

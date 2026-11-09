@@ -7,7 +7,11 @@ import { SLOP_UX_CHECKS } from "./slop-ux.mjs";
 import { FRONTEND_CHECKS } from "./frontend.mjs";
 import { VISUALQA_CHECKS } from "./visualqa.mjs";
 import { REQUIRED_HOOKS } from "./common.mjs";
+import { IDEAL_CHECKS } from "./ideal.mjs";
 
 export { REQUIRED_HOOKS };
+// The ideal-state rows IS-01..IS-40 (.omo/ui-hig-2026-11-09/audit/ideal-state.md section 6.2). Kept apart from CHECKS,
+// which holds exactly the audit rows; lib/registry.mjs loads both.
+export { IDEAL_CHECKS };
 
 export const CHECKS = new Map([...GAP_CHECKS, ...SLOP_UX_CHECKS, ...FRONTEND_CHECKS, ...VISUALQA_CHECKS].map((check) => [check.id, check]));

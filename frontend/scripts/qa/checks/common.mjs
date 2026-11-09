@@ -2,6 +2,7 @@
 // product hook is a FAIL with the hook named in `measured`, never a skip.
 import { contrastAgainst, pixelDiff, parseCssColor, hueOf, hueDistance, luminanceStep, meanLuminance } from "../lib/probe.mjs";
 import { ROWS } from "./rows.mjs";
+import { openPanel, panelState, pickTabValue, tabSelector } from "../lib/tabs.mjs";
 
 export { contrastAgainst, pixelDiff, parseCssColor, hueOf, hueDistance, luminanceStep, meanLuminance };
 
@@ -28,11 +29,10 @@ export async function sheetSettle(ctx, timeoutMs = 4000) {
 
 export async function openPanelSection(ctx, tab = "dashboard") {
   const actions = [];
-  if (await ctx.b.center('[aria-label="패널 열기"]')) {
-    await ctx.b.tap('[aria-label="패널 열기"]');
-    actions.push("패널 열기");
-    await ctx.sleep(1200);
-  }
+  // Hook-based: the current tab's [data-qa^=dashboard-tab-] opens the panel (lib/tabs.mjs); 패널 열기 is only the fallback.
+  // The action keeps its old name so the cleanup below closes what it opened.
+  const opened = await openPanel(ctx);
+  if (!/^(NOT FOUND|panel already open)/.test(opened)) actions.push("패널 열기");
   // Phone: 패널 열기 raises the sheet to half, where the section's cards sit below the fold; raise it to full with the
   // sheet handle's own keyboard step (ArrowUp), as a user would drag it.
   for (let step = 0; ctx.viewport === "P" && step < 2; step += 1) {
@@ -42,7 +42,9 @@ export async function openPanelSection(ctx, tab = "dashboard") {
     actions.push("sheet handle ArrowUp");
     await ctx.sleep(800);
   }
-  const selector = `[data-qa=dashboard-tab-${tab}]`;
+  // A dev-era tab id resolves through lib/tabs.mjs to the value the page carries (contract C4 values first).
+  const value = tab ? pickTabValue(tab, (await panelState(ctx.b)).values) ?? tab : tab;
+  const selector = tabSelector(value);
   if (tab && await ctx.inPage((qa, a) => Boolean(qa.one(a.sel)) && qa.one(a.sel).getAttribute("aria-selected") !== "true", { sel: selector })) {
     await ctx.b.tap(selector);
     actions.push(`tab ${tab}`);

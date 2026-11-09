@@ -1,4 +1,5 @@
 // GAP-01..GAP-37 (DESIGN-AUDIT section 3 rows as section-7 checks). Each `doc` holds the literal row.
+import { openPanel } from "../lib/tabs.mjs";
 import {
   sheetSettle,
   HOOKS, canvasRect, chipByText, chips, contrasts, defineCheck, exists, hasUpperEyebrow, hudRects, intersection,
@@ -108,12 +109,12 @@ export const GAP_CHECKS = [
           await ctx.sleep(150);
           return panelInfo(ctx);
         };
-        if (!startedOpen) await ctx.b.tap('[aria-label="패널 열기"]');
+        if (!startedOpen) await openPanel(ctx);
         const opened = await settle(true);
         await ctx.b.tap('[aria-label="패널 닫기"]');
         const collapsed = await settle(false);
         if (startedOpen) {
-          await ctx.b.tap('[aria-label="패널 열기"]');
+          await openPanel(ctx);
           await settle(true);
         }
         return result(collapsed.visibleWidth <= 72, { openWidth: opened.visibleWidth, collapsedVisibleWidth: collapsed.visibleWidth, toggle: panel.toggle, startedOpen }, "the collapse control reduces the panel to <= 72 px");

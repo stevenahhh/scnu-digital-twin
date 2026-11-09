@@ -85,8 +85,10 @@ export function scenarioKey({ entry, state, viewport, theme, variant = "" }) {
 }
 
 // The variant of a run from its flags: "" for a plain run, else e.g. "delay3000", "fail=/api/traffic", "model=uni".
-export function scenarioVariant({ delayMs = 0, fail = [], urlSuffix = "" } = {}) {
+// A --reduced-motion run renders the same states under `prefers-reduced-motion: reduce` and is keyed "reduced-motion".
+export function scenarioVariant({ delayMs = 0, fail = [], urlSuffix = "", reducedMotion = false } = {}) {
   const parts = [];
+  if (reducedMotion) parts.push("reduced-motion");
   if (delayMs) parts.push(`delay${delayMs}`);
   if (fail?.length) parts.push(`fail=${[...fail].sort().join("+")}`);
   const query = String(urlSuffix ?? "").replace(/^[?&#]+/, "");

@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-// Visual QA harness: replays S01..S17 in Legacy/VWorld at D (1440x900 @1x) and P (390x844 @2x),
+// Visual QA harness: replays S01..S18 in Legacy/VWorld at D (1440x900 @1x), P (390x844 @2x) and T (834x1194 @2x touch),
 // runs the requested checks, compares each scenario with baselines.json and exits non-zero on any
 // regression. See scripts/qa/README.md for the CLI and the exit-code contract.
 import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -11,8 +11,9 @@ import { setFixtures, readFixtureRequests, waitFixturesAnswered } from "./lib/fi
 import { inPage, decode } from "./lib/probe.mjs";
 import { KEY_RECTS, compareScenario, dHashPng, loadBaselines, roundRect, saveBaselines, scenarioKey, scenarioVariant } from "./lib/baseline.mjs";
 import { EXIT, exitCodeFor, rollupChecks, writeReport } from "./lib/report.mjs";
-import { STATES, CHAIN_IDS, S17_SUBSTATES, VWORLD_STATE_IDS, parseStateList, stateById, loadAndSettle, applyTheme, settleTiles } from "./lib/states.mjs";
-import { appliesTo, defaultRequestedIds, loadChecks, loadOwners, makeImageCache, plannedScenarios } from "./lib/registry.mjs";
+import { STATES, CHAIN_IDS, S17_SUBSTATES, S17_SKIPPED_IDS, VWORLD_STATE_IDS, parseStateList, stateById, loadAndSettle, applyTheme, settleTiles } from "./lib/states.mjs";
+import { appliesTo, defaultRequestedIds, expandParts, listCheckLines, loadChecks, loadOwners, makeImageCache, plannedScenarios, unknownCheckIds } from "./lib/registry.mjs";
+import { openTab } from "./lib/tabs.mjs";
 
 const QA_DIR = path.dirname(fileURLToPath(import.meta.url));
 const BASELINE_FILE = path.join(QA_DIR, "baselines.json");
@@ -21,8 +22,19 @@ const FLAGS = {
   "--entry": "value", "--viewport": "value", "--theme": "value", "--states": "value", "--only": "value",
   "--out": "value", "--update-baseline": "bool", "--script": "value", "--url-suffix": "value", "--fail": "list",
   "--delay-ms": "value", "--hold-ms": "value", "--quality": "value", "--after-dir": "value", "--port": "value",
-  "--clock": "value", "--sample-ms": "value", "--help": "bool",
+  "--clock": "value", "--sample-ms": "value", "--help": "bool", "--reduced-motion": "bool", "--list-checks": "bool",
 };
+
+// --viewport: D, P, T, a comma list (D,P,T), "both" (D and P, as before T existed) or "all".
+export function parseViewports(value) {
+  const chosen = value ?? "both";
+  if (chosen === "both") return ["D", "P"];
+  if (chosen === "all") return ["D", "P", "T"];
+  const list = chosen.split(",").map((item) => item.trim()).filter(Boolean);
+  const bad = list.filter((item) => !["D", "P", "T"].includes(item));
+  if (!list.length || bad.length) throw new UsageError(`invalid --viewport ${chosen}`);
+  return ["D", "P", "T"].filter((id) => list.includes(id));
+}
 
 class UsageError extends Error {}
 
@@ -50,7 +62,8 @@ export function parseArgs(argv) {
     return [chosen];
   };
   args.entries = pick(args.entry, ["legacy", "vworld"], "legacy", "--entry");
-  args.viewports = pick(args.viewport, ["D", "P"], "both", "--viewport");
+  args.viewports = parseViewports(args.viewport);
+  args.reducedMotion = Boolean(args.reducedMotion);
   args.themes = pick(args.theme, ["dark", "light"], "dark", "--theme");
   try {
     args.stateIds = parseStateList(args.states);
@@ -106,8 +119,8 @@ async function runScript(ctx, stateId, baseUrl) {
 }
 
 async function applyQuality(ctx) {
-  const mobileOpen = ctx.mobile && (await ctx.b.center('[aria-label="패널 열기"]'));
-  if (mobileOpen) await ctx.b.tap('[aria-label="패널 열기"]');
+  // 설정 lives on the home tab: open it through the tab hook (lib/tabs.mjs) on every viewport.
+  if (ctx.mobile) ctx.actions.push(`quality: tab home: ${(await openTab(ctx, "home")).action}`);
   const opened = await ctx.b.tap('[aria-label="설정"]');
   await sleep(800);
   const picked = await ctx.b.tap(`[data-qa=render-quality-${ctx.args.quality}]`);
@@ -124,7 +137,7 @@ async function main() {
     checks = await loadChecks();
     const plan = plannedScenarios({ ...args, fixtureLabel: args.delayMs ? "delay" : args.fail?.length ? "up" : "down" }, { chainIds: CHAIN_IDS, vworldStateIds: VWORLD_STATE_IDS, s17SubStates: S17_SUBSTATES });
     args.onlyIds = args.only ? args.only.split(",").map((id) => id.trim()).filter(Boolean) : defaultRequestedIds(checks, plan);
-    const unknown = args.onlyIds.filter((id) => !checks.has(id));
+    const unknown = unknownCheckIds(args.onlyIds, checks);
     if (unknown.length) throw new UsageError(`unknown check id ${unknown.join(", ")}`);
   } catch (error) {
     if (error instanceof UsageError || error instanceof SyntaxError) {
@@ -137,10 +150,14 @@ async function main() {
     log(readFileSync(path.join(QA_DIR, "README.md"), "utf8"));
     process.exit(EXIT.OK);
   }
+  if (args.listChecks) {
+    for (const line of listCheckLines(checks)) log(line);
+    process.exit(EXIT.OK);
+  }
 
   mkdirSync(args.out, { recursive: true });
   const owners = await loadOwners();
-  const selected = args.onlyIds.map((id) => checks.get(id));
+  const selected = args.onlyIds.flatMap((id) => expandParts(checks.get(id)));
   const baselines = loadBaselines(BASELINE_FILE);
   const entries = [];
   const scenarios = [];
@@ -185,7 +202,7 @@ async function main() {
     killAll();
   }
 
-  for (const check of selected.filter((item) => item.aggregate)) {
+  for (const check of selected.filter((item) => item.aggregate && !item.part)) {
     entries.push(await evaluate(check, { entry: "all", state: "aggregate", viewport: "all", theme: "all", scenarioKey: null }, {
       args, entries, scenarios, outDir: args.out, unavailableEntries, runMemo,
     }));
@@ -219,7 +236,13 @@ async function evaluate(check, scenario, ctx) {
 
 async function runPass({ args, entry, viewport, theme, baseUrl, selected, baselines, entries, scenarios, fixtureMode, fixtureLabel, runMemo, mode }) {
   log(`pass: ${entry} ${viewport.id} ${theme}${mode === "probe" ? " (probe replay for page-mutating checks)" : ""}`);
-  const b = await Browser.open({ viewport, clock: args.clock, colorScheme: theme });
+  const b = await Browser.open({ viewport, clock: args.clock, colorScheme: theme, reducedMotion: args.reducedMotion });
+  // Tablet policy: on T only the viewport-agnostic IS rows evaluate; every other requested IS row reports n/a, never FAIL.
+  if (viewport.id === "T" && mode === "capture") {
+    for (const check of selected.filter((item) => item.naOnTablet && !item.part)) {
+      entries.push({ id: check.id, entry, state: "-", viewport: "T", theme, scenarioKey: null, pass: true, na: true, measured: "n/a on T (tablet policy: the row names D/P states)", expected: null });
+    }
+  }
   // Every pass is a first visit: Legacy and VWorld share the origin, and a choice an earlier pass stored (the panel
   // opened from the rail at S08 writes scnu.panelOpen=true) must not decide how the next pass starts.
   await b.view.cdp("Storage.clearDataForOrigin", { origin: new URL(baseUrl).origin, storageTypes: "local_storage,session_storage,indexeddb" });
@@ -320,6 +343,16 @@ async function runPass({ args, entry, viewport, theme, baseUrl, selected, baseli
       entries.push(result);
       if (result.pass !== true) log(`    FAIL ${check.id}: ${JSON.stringify(result.measured).slice(0, 160)}`);
     }
+    // Cross-entry rows (IS-03) collect per-scenario facts here and are judged once at the end (aggregate).
+    if (mode === "capture" && !ctx.unresponsive) {
+      for (const check of selected.filter((item) => item.collect && appliesTo({ scenarios: item.collect.scenarios }, { ...scenarioInfo, fixtures }))) {
+        try {
+          await check.collect.run(checkCtx);
+        } catch (error) {
+          runMemo.set(`${check.id}:error:${entry}:${viewport.id}:${themeLabel}`, String(error?.message ?? error).slice(0, 200));
+        }
+      }
+    }
     if (ctx.unresponsive) throw new BrowserTimeoutError(ctx.unresponsive);
     ctx.actions = [];
   };
@@ -354,15 +387,19 @@ async function runPass({ args, entry, viewport, theme, baseUrl, selected, baseli
     const chainWanted = args.stateIds.filter((id) => available.includes(id) && wanted(id));
     if (chainWanted.length) {
       const last = Math.max(...chainWanted.map((id) => available.indexOf(id)));
-      for (const id of available.slice(0, last + 1)) await runState(stateById(id), id, fixtureLabel, chainWanted.includes(id));
+      for (const id of available.slice(0, last + 1)) {
+        const state = stateById(id);
+        if (state.optional && !chainWanted.includes(id)) continue;
+        await runState(state, id, fixtureLabel, chainWanted.includes(id));
+      }
     }
     const s16Pass = args.themes.includes("light") ? theme === "light" : theme === args.themes[0];
     if (entry === "legacy" && args.stateIds.includes("S16") && s16Pass && (mode === "capture" || probeNeeds("S16", fixtureLabel))) await runState(stateById("S16"), "S16", fixtureLabel, true);
-    if (entry === "legacy" && args.stateIds.includes("S17") && (mode === "capture" || S17_SUBSTATES.some((id) => probeNeeds(id, "up")))) {
+    if (args.stateIds.includes("S17") && (mode === "capture" || S17_SUBSTATES.some((id) => probeNeeds(id, "up")))) {
       await setFixtures(baseUrl, { mode: "up" });
-      const lastSub = CHAIN_IDS.indexOf("S13");
-      for (const id of CHAIN_IDS.slice(0, lastSub + 1)) {
-        if (["S09", "S10", "S11", "S12"].includes(id)) continue;
+      const lastSub = available.indexOf("S13");
+      for (const id of available.slice(0, lastSub + 1)) {
+        if (S17_SKIPPED_IDS.includes(id)) continue;
         await runState(stateById(id), `S17.${id}`, "up", S17_SUBSTATES.includes(id));
       }
       await setFixtures(baseUrl, { mode: fixtureMode, fail: args.fail, delayMs: args.delayMs });

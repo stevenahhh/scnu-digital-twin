@@ -3,15 +3,25 @@
 // `after` runs once the screenshot and checks are done (e.g. releasing the S11 drag).
 import { sleep } from "./browser.mjs";
 import { decode, inPage, pixelDiff } from "./probe.mjs";
+import { openPanel, openTab } from "./tabs.mjs";
 
-export const STATE_IDS = Object.freeze(["S01", "S02", "S03", "S04", "S05", "S06", "S07", "S08", "S09", "S10", "S11", "S12", "S13", "S14", "S15", "S16", "S17"]);
-export const CHAIN_IDS = Object.freeze(STATE_IDS.slice(0, 15));
+// S01..S17 are the audit states; S09E, S12E and S18 are the ideal-state additions (ideal-state.md section 6.1).
+export const STATE_IDS = Object.freeze(["S01", "S02", "S03", "S04", "S05", "S06", "S07", "S08", "S09", "S10", "S11", "S12", "S13", "S14", "S15", "S16", "S17", "S09E", "S12E", "S18"]);
+// Replay order. S18 forks from S01 and S09E/S12E from S09/S12; each undoes itself in `after`, and an optional state is
+// replayed only when it is requested, so a run without them replays the audit chain unchanged.
+export const CHAIN_IDS = Object.freeze(["S01", "S18", "S02", "S03", "S04", "S05", "S06", "S07", "S08", "S09", "S09E", "S10", "S11", "S12", "S12E", "S13", "S14", "S15"]);
 export const S17_SUBSTATES = Object.freeze(["S01", "S04", "S06", "S08", "S13"]);
-export const VWORLD_STATE_IDS = Object.freeze(STATE_IDS.slice(0, 12));
+// Legacy-only states: S15 is the D4 roof editor (Legacy GLB roof planning only) and S16 the light-theme reload.
+export const LEGACY_ONLY_STATE_IDS = Object.freeze(["S15", "S16"]);
+// VWorld replays every chained state that exists there (all but the Legacy-only roof editor) and the S17 sub-states.
+export const VWORLD_STATE_IDS = Object.freeze(CHAIN_IDS.filter((id) => !LEGACY_ONLY_STATE_IDS.includes(id)));
+// S17 replays the chain with the fixtures up but skips the states between S08 and S13.
+export const S17_SKIPPED_IDS = Object.freeze(["S09", "S09E", "S10", "S11", "S12", "S12E", "S18"]);
 export const SAMPLE_OFFSETS_MS = Object.freeze([500, 2000, 2500]);
+// Screenshots after the S04 chip tap (IS-31: the camera is still between 1500 and 3500 ms).
+export const SHOT_OFFSETS_MS = Object.freeze([1500, 3500]);
 
 const PANEL_CLOSE = '[aria-label="패널 닫기"]';
-const PANEL_OPEN = '[aria-label="패널 열기"]';
 const CHIP = "button[data-qa=campus-label]";
 
 async function act(ctx, selector, text, options) {
@@ -57,7 +67,13 @@ async function closePanelOnMobile(ctx) {
 }
 
 async function openPanelOnMobile(ctx) {
-  if (ctx.mobile && (await tapIfVisible(ctx, PANEL_OPEN))) await sleep(1200);
+  if (ctx.mobile) ctx.actions.push(await openPanel(ctx));
+}
+
+async function pickTab(ctx, role) {
+  const result = await openTab(ctx, role);
+  ctx.actions.push(`tab ${role}: ${result.action}`);
+  return result.ok;
 }
 
 async function setTime(ctx, minutes) {
@@ -83,19 +99,68 @@ async function domSample(ctx) {
   });
 }
 
-// Samples the DOM (and optionally screenshots) at fixed offsets after a trigger action.
-async function samplesAfterTrigger(ctx, label) {
+// In-page, self-contained: the live camera pose { source, heading (deg), position [x, y, z] (m) }, or null.
+// VWorld: the Cesium camera of window.ws3d.viewer (the same handle checks/common.mjs saveCamera uses).
+// Legacy: the OrbitControls instance AppLegacy hands its DOM-side components as `controlsRef`, found through React props;
+// heading is the camera's azimuth around the controls target.
+export function readCameraPose() {
+  const cam = window.ws3d?.viewer?.camera;
+  if (cam?.positionWC && Number.isFinite(cam.heading)) {
+    const p = cam.positionWC;
+    return { source: "ws3d.viewer.camera", heading: (cam.heading * 180) / Math.PI, position: [p.x, p.y, p.z] };
+  }
+  const host = document.getElementById("root");
+  const key = host && Object.keys(host).find((k) => k.startsWith("__reactContainer$"));
+  if (!key) return null;
+  const isControls = (c) => Boolean(c?.object?.isCamera && c.target?.isVector3);
+  const fromProps = (props) => {
+    if (!props || typeof props !== "object") return null;
+    for (const value of Object.values(props)) {
+      if (!value || typeof value !== "object") continue;
+      if (isControls(value.current)) return value.current;
+      if (isControls(value.controlsRef?.current)) return value.controlsRef.current;
+    }
+    return null;
+  };
+  const stack = [host[key]];
+  let controls = null;
+  for (let visited = 0; stack.length && !controls && visited < 50000; visited += 1) {
+    const fiber = stack.pop();
+    controls = fromProps(fiber.memoizedProps);
+    if (fiber.sibling) stack.push(fiber.sibling);
+    if (fiber.child) stack.push(fiber.child);
+  }
+  if (!controls) return null;
+  const c = controls.object.position;
+  const t = controls.target;
+  return { source: "OrbitControls (controlsRef) via React props", heading: (Math.atan2(c.x - t.x, c.z - t.z) * 180) / Math.PI, position: [c.x, c.y, c.z] };
+}
+
+// Samples the DOM (and optionally screenshots) at fixed offsets after a trigger action. With `shots`, the page is also
+// captured at SHOT_OFFSETS_MS (memo `<state>:shots`: { [offset]: png, actualMs: { [offset]: ms }, pose: { [offset]: pose } }).
+async function samplesAfterTrigger(ctx, label, { shots = false } = {}) {
   const start = Date.now();
   const samples = [];
-  for (const offset of SAMPLE_OFFSETS_MS) {
-    const remaining = offset - (Date.now() - start);
+  const captured = { actualMs: {}, pose: {} };
+  const schedule = [...SAMPLE_OFFSETS_MS.map((offset) => ({ offset, dom: true })), ...(shots ? SHOT_OFFSETS_MS.map((offset) => ({ offset, shot: true })) : [])]
+    .sort((a, b) => a.offset - b.offset);
+  for (const step of schedule) {
+    const remaining = step.offset - (Date.now() - start);
     if (remaining > 0) await sleep(remaining);
-    const sample = { offsetMs: offset, ...(await domSample(ctx)) };
-    if (ctx.sampleShots?.includes(offset)) sample.file = await ctx.saveSample(label, offset);
+    if (step.shot) {
+      captured.actualMs[step.offset] = Date.now() - start;
+      captured.pose[step.offset] = await ctx.b.run(readCameraPose);
+      captured[step.offset] = await ctx.b.screenshot();
+      continue;
+    }
+    const sample = { offsetMs: step.offset, ...(await domSample(ctx)) };
+    if (ctx.sampleShots?.includes(step.offset)) sample.file = await ctx.saveSample(label, step.offset);
     samples.push(sample);
   }
   ctx.memo.set(`${ctx.stateLabel}:samples`, samples);
-  ctx.actions.push(`sampled DOM at ${SAMPLE_OFFSETS_MS.join("/")} ms after the tap`);
+  if (shots) ctx.memo.set(`${ctx.stateLabel}:shots`, captured);
+  ctx.actions.push(`sampled DOM at ${SAMPLE_OFFSETS_MS.join("/")} ms${shots ? ` and screenshots at ${SHOT_OFFSETS_MS.join("/")} ms` : ""} after the tap`);
+  return Date.now() - start;
 }
 
 async function waitForReady(ctx) {
@@ -208,14 +273,14 @@ async function enterD4(ctx, beforeLabelTap) {
   await wait(ctx, 4000);
 }
 
-async function selectLibrary(ctx, waitAfterMs, { beforeClick } = {}) {
+async function selectLibrary(ctx, waitAfterMs, { beforeClick, shots = false } = {}) {
   await act(ctx, "[data-qa=camera-preset-library]");
   await settleCamera(ctx);
   // The idle frame right before the chip tap (after the preset flight): "before" and "after" show the same view.
   if (beforeClick) await beforeClick();
   await act(ctx, CHIP, "도서관");
-  await samplesAfterTrigger(ctx, ctx.stateLabel);
-  const extra = waitAfterMs - SAMPLE_OFFSETS_MS[SAMPLE_OFFSETS_MS.length - 1];
+  const elapsed = await samplesAfterTrigger(ctx, ctx.stateLabel, { shots });
+  const extra = waitAfterMs - elapsed;
   if (extra > 0) await wait(ctx, extra);
 }
 
@@ -274,7 +339,7 @@ export const STATES = Object.freeze([
   {
     id: "S04", name: "building-selected-library",
     steps: async (ctx) => {
-      await selectLibrary(ctx, 3500, { beforeClick: () => ctx.snapshot("S04:before-click") });
+      await selectLibrary(ctx, 3500, { beforeClick: () => ctx.snapshot("S04:before-click"), shots: true });
     },
   },
   {
@@ -313,14 +378,14 @@ export const STATES = Object.freeze([
     id: "S08", name: "panel-environment-tab",
     steps: async (ctx) => {
       await openPanelOnMobile(ctx);
-      await act(ctx, "[data-qa=dashboard-tab-environment]");
+      await pickTab(ctx, "environment");
       await wait(ctx, 3000);
     },
   },
   {
     id: "S09", name: "camera-preset-gate",
     steps: async (ctx) => {
-      await act(ctx, "[data-qa=dashboard-tab-dashboard]");
+      await pickTab(ctx, "home");
       await sleep(600);
       await closePanelOnMobile(ctx);
       await act(ctx, "[data-qa=camera-preset-gate]");
@@ -377,14 +442,16 @@ export const STATES = Object.freeze([
     id: "S12", name: "panel-open-overlap",
     steps: async (ctx) => {
       await selectLibrary(ctx, 2500);
-      if (await tapIfVisible(ctx, PANEL_OPEN)) await wait(ctx, 1500);
+      const opened = await openPanel(ctx);
+      ctx.actions.push(opened);
+      if (!/^(NOT FOUND|panel already open)/.test(opened)) await wait(ctx, 300);
     },
   },
   {
     id: "S13", name: "parking-safety-tab",
     steps: async (ctx) => {
       await openPanelOnMobile(ctx);
-      await act(ctx, "[data-qa=dashboard-tab-parking_safety]");
+      await pickTab(ctx, "parking");
       await wait(ctx, 3000);
     },
   },
@@ -435,6 +502,48 @@ export const STATES = Object.freeze([
   {
     id: "S17", name: "fixtures-up",
     steps: async () => {},
+  },
+  {
+    id: "S09E", name: "energy-tab-after-gate", optional: true,
+    steps: async (ctx) => {
+      await openPanelOnMobile(ctx);
+      await pickTab(ctx, "energy");
+      await wait(ctx, 3000);
+    },
+    // S10 opens 설정, which lives on the home tab.
+    after: async (ctx) => {
+      await pickTab(ctx, "home");
+      await sleep(600);
+    },
+  },
+  {
+    id: "S12E", name: "energy-tab-with-selection", optional: true,
+    steps: async (ctx) => {
+      await openPanelOnMobile(ctx);
+      await pickTab(ctx, "energy");
+      await wait(ctx, 3000);
+    },
+    after: async (ctx) => {
+      await pickTab(ctx, "home");
+      await sleep(600);
+    },
+  },
+  {
+    id: "S18", name: "presentation-mode", optional: true,
+    steps: async (ctx) => {
+      await ctx.b.key("p");
+      ctx.actions.push("press p");
+      await sleep(1500);
+      const on = await ctx.b.run(() => Boolean(document.querySelector("[data-qa=campus-hud][data-presenting=true]"))
+        || document.querySelector("[data-qa=presentation-toggle]")?.getAttribute("aria-pressed") === "true");
+      ctx.actions.push(on ? "presentation mode on" : "presentation mode NOT on after p");
+    },
+    after: async (ctx) => {
+      const on = await ctx.b.run(() => document.querySelector("[data-qa=presentation-toggle]")?.getAttribute("aria-pressed") === "true"
+        || Boolean(document.querySelector("[data-qa=campus-hud][data-presenting=true]")));
+      if (on) await ctx.b.key("p");
+      await sleep(1500);
+    },
   },
 ]);
 

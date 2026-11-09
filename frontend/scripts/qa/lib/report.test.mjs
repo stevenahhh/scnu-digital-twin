@@ -31,6 +31,19 @@ test("a requested id that was never evaluated rolls up as FAIL, never as skipped
   assert.equal(rows[1].measured, "not evaluated");
 });
 
+test("tablet n/a rows are counted apart: they never fail an id and an id with only n/a rows reports n/a", () => {
+  const na = { id: "IS-01", pass: true, na: true, measured: "n/a on T" };
+  const [mixed] = rollupChecks(["IS-01"], [na, { id: "IS-01", pass: false, measured: { count: 24 } }]);
+  assert.equal(mixed.pass, false);
+  assert.equal(mixed.evaluations, 1);
+  assert.equal(mixed.na, 1);
+  assert.deepEqual(mixed.measured, { count: 24 });
+  const [onlyNa] = rollupChecks(["IS-01"], [na]);
+  assert.equal(onlyNa.pass, true);
+  assert.equal(onlyNa.measured, "n/a on T");
+  assert.equal(exitCodeFor({ entries: [na], scenarios: [matched], checks: [onlyNa] }), EXIT.OK);
+});
+
 test("writeReport emits report.json and summary.md with the failing rect and dHash distance", () => {
   const dir = mkdtempSync(path.join(tmpdir(), "qa-report-"));
   try {
