@@ -49,32 +49,56 @@ describe("CampusComparison", () => {
       .rejects.toBeInstanceOf(CampusComparisonContractError);
   });
 
-  it("shows statuses, assumptions and every component, then opens a new recommendation", async () => {
+  it("shows one sortable 캠퍼스 비교 table with rank, score, yield, roof use, violations and 배치 편집", async () => {
     const user = userEvent.setup();
-    const client = { load: vi.fn().mockResolvedValue(parsed), recommend: vi.fn().mockResolvedValue({ id: "new-s", buildingId: "D4" }) };
+    const client = { load: vi.fn().mockResolvedValue(parsed) };
     const open = vi.fn();
-    render(<CampusComparison client={client} initialDate="2026-05-18" onOpenRecommendation={open} />);
-    // The ranking is an ordered list (rank order), the comparison a table with the same buildings.
-    const ranking = await screen.findByRole("list", { name: "추천 순위" });
-    expect(ranking.tagName).toBe("OL");
-    expect(within(ranking).getByText("D4 / 공대 3호관")).toBeTruthy();
-    expect(within(screen.getByRole("table")).getByText("D4 / 공대 3호관")).toBeTruthy();
-    expect(screen.getByText("추정 · 시뮬레이션 기준일 5월 18일")).toBeTruthy();
-    expect(screen.getAllByText(/연환산 발전량/)).toHaveLength(1);
-    expect(screen.getAllByText(/옥상 활용/)).toHaveLength(1);
-    expect(screen.getAllByText(/제약 위반/)).toHaveLength(1);
+    render(<CampusComparison client={client} date="2026-05-18" weatherPreset="clear" onOpenRecommendation={open} />);
+    expect(client.load).toHaveBeenCalledWith(expect.objectContaining({ date: "2026-05-18", weatherPreset: "clear" }));
+    const table = await screen.findByRole("table", { name: /캠퍼스 비교/ });
+    expect(screen.getAllByRole("table")).toHaveLength(1);
+    expect(document.querySelector("ol")).toBeNull();
+    expect(screen.queryByRole("button", { name: /1위 추천/ })).toBeNull();
+    expect(screen.queryByLabelText("캠퍼스 비교 날짜")).toBeNull();
+    const headers = within(table).getAllByRole("columnheader").map((cell) => cell.textContent.trim());
+    expect(headers).toEqual(["건물", "순위", "점수", "kWh/kWp", "옥상 사용률", "위반", "배치"]);
+    const buildings = () => within(table).getAllByRole("rowheader").map((cell) => cell.textContent);
+    expect(buildings()).toEqual(["D4 / 공대 3호관", "D1 / 창업보육센터"]);
+    expect(screen.getByText(/추정 · 시뮬레이션 기준일 5월 18일/)).toBeTruthy();
+    // 정렬: 순위 머리글을 누르면 내림차순으로 뒤집힌다.
+    await user.click(within(table).getByRole("button", { name: "순위" }));
+    expect(buildings()).toEqual(["D1 / 창업보육센터", "D4 / 공대 3호관"]);
+    expect(within(table).getByRole("columnheader", { name: "순위" }).getAttribute("aria-sort")).toBe("descending");
+    // 제외 건물은 펼침 안에 이유와 함께 있다.
+    expect(screen.getByRole("button", { name: "비교 제외 건물 1곳" })).toBeTruthy();
     expect(screen.getByText(/옥상 메타데이터/)).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "D1 / 창업보육센터 배치 편집" }));
     expect(open).toHaveBeenCalledWith({ scenarioId: "D1-s", buildingId: "D1" });
-    await user.click(screen.getByRole("button", { name: "1위 추천을 새 편집 시나리오로 열기" }));
-    expect(client.recommend).toHaveBeenCalledWith({ sourceScenarioId: "D4-s", date: "2026-05-18" });
-    expect(open).toHaveBeenCalledWith({ scenarioId: "new-s", buildingId: "D4" });
   });
 
-  it("shows the base date and an empty state when no rankings exist", async () => {
+  it("keeps the table frame with an empty-state row when no rankings exist", async () => {
     const client = { load: vi.fn().mockResolvedValue({ ...parsed, ranked: [] }) };
-    render(<CampusComparison client={client} initialDate="2026-05-18" />);
+    render(<CampusComparison client={client} date="2026-05-18" />);
     expect(await screen.findByText("비교할 대표 설치안이 없습니다")).toBeTruthy();
-    expect(screen.getByText("추정 · 시뮬레이션 기준일 5월 18일")).toBeTruthy();
+    expect(screen.getByRole("table", { name: /캠퍼스 비교/ })).toBeTruthy();
+    expect(screen.getByText(/추정 · 시뮬레이션 기준일 5월 18일/)).toBeTruthy();
+  });
+
+  it("shows a skeleton without a spinner while loading", () => {
+    const client = { load: vi.fn(() => new Promise(() => {})) };
+    render(<CampusComparison client={client} date="2026-05-18" />);
+    expect(document.querySelector('[data-qa="skeleton"]')).not.toBeNull();
+    expect(document.querySelector(".animate-spin")).toBeNull();
+    expect(screen.getByRole("status").textContent).toContain("비교 중");
+  });
+
+  it("waits quietly while the energy feed is down and offers 다시 시도 only when the feed is up", async () => {
+    const failing = { load: vi.fn().mockRejectedValue(new TypeError("Failed to fetch")) };
+    const view = render(<CampusComparison client={failing} date="2026-05-18" feedDown />);
+    expect((await screen.findByText(/에너지 연결을 기다리는 중/)).getAttribute("role")).toBe("status");
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.getByRole("table", { name: /캠퍼스 비교/ })).toBeTruthy();
+    view.rerender(<CampusComparison client={failing} date="2026-05-18" feedDown={false} />);
+    expect(await screen.findByRole("button", { name: "다시 시도" })).toBeTruthy();
   });
 });

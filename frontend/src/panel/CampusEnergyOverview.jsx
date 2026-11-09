@@ -1,20 +1,15 @@
-import { VWorldCampusStatus } from "../vworld/VWorldCampusStatus";
 import { RepresentativePlanOverlayController } from "../vworld/RepresentativePlanOverlayController";
 import { CAMPUS_REPRESENTATIVE_BUILDING_IDS } from "../vworld/representativePlanOverlay.mjs";
 
-// Legacy 에너지 탭 머리: 3D 지도에는 없는 캠퍼스 건물별 태양광 상태와 대표 설치 계획 목록(VWorld는 지도 위에 띄운다).
-export function CampusEnergyOverview({ onSelection, onBuildingSelect, refreshKey, selectedBuildingId }) {
+// 에너지 탭의 대표 설치 계획 지도 레이어 토글(두 진입점 공용). 건물별 상태와 계획은 캠퍼스 비교 표 한 곳에 있다.
+// onOverlayDataChange는 지도가 그릴 오버레이를 받는다(VWorld). 받을 쪽이 없으면(Legacy) 넘기지 않는다.
+export function CampusEnergyOverview({ refreshKey, onOverlayDataChange, feedDown }) {
   return (
-    <>
-      <VWorldCampusStatus onSelection={onSelection} selectedBuildingId={selectedBuildingId} className="w-full" />
-      <RepresentativePlanOverlayController
-        buildingIds={CAMPUS_REPRESENTATIVE_BUILDING_IDS}
-        refreshKey={refreshKey}
-        onOverlayDataChange={() => {}}
-        onBuildingSelect={onBuildingSelect}
-        className="w-full"
-        widthClassName="max-w-none"
-      />
-    </>
+    <RepresentativePlanOverlayController
+      buildingIds={CAMPUS_REPRESENTATIVE_BUILDING_IDS}
+      refreshKey={refreshKey}
+      onOverlayDataChange={onOverlayDataChange}
+      feedDown={feedDown}
+    />
   );
 }

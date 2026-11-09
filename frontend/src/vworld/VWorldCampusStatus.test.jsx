@@ -22,7 +22,7 @@ describe("VWorldCampusStatus", () => {
 
   it("shows status as text badges and the selected building with the selection style", async () => {
     const onSelection = vi.fn();
-    render(<VWorldCampusStatus client={client} onSelection={onSelection} selectedBuildingId="D4" />);
+    render(<VWorldCampusStatus client={client} onSelection={onSelection} selectedBuildingId="D4" date="2026-05-18" />);
     const selected = await screen.findByRole("button", { name: "D4 / 공대 3호관 완료 시나리오 열기" });
     expect(selected.getAttribute("aria-pressed")).toBe("true");
     expect(selected.className).toMatch(/\bbg-surface-2\b/);
