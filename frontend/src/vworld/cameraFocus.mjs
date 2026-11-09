@@ -1,22 +1,5 @@
-const DEFAULT_FOCUS_ALTITUDE = 120;
-const USER_INPUT_EVENTS = ["pointerdown", "wheel", "touchstart", "keydown"];
-
-export function calculateFocusAltitude({
-  viewportWidth,
-  availableWidth,
-  baseAltitude = DEFAULT_FOCUS_ALTITUDE,
-}) {
-  if (
-    !Number.isFinite(viewportWidth) ||
-    !Number.isFinite(availableWidth) ||
-    viewportWidth <= 0 ||
-    availableWidth <= 0
-  ) {
-    return baseAltitude;
-  }
-  return baseAltitude * (viewportWidth / availableWidth);
-}
-
+// 지도 카메라를 한 자리로 바로 옮긴다(발표 모드의 첫 시점). 선택 뒤 카메라는 campusCamera.flyTo 한 길로만 움직인다.
+// 선택 뒤 자동 회전과 화면 크기 변화에 따른 재정렬은 없다(사람의 원인 없는 카메라 움직임 금지).
 export function focusMapAt(
   map,
   vw,
@@ -39,82 +22,4 @@ export function focusMapAt(
     ),
   );
   return true;
-}
-
-export function createBuildingCameraController({
-  map,
-  vw,
-  viewport,
-  availableArea,
-  ResizeObserverClass = globalThis.ResizeObserver,
-  requestFrame = globalThis.requestAnimationFrame,
-  cancelFrame = globalThis.cancelAnimationFrame,
-  now = () => globalThis.performance.now(),
-}) {
-  let target = null;
-  let frameId = null;
-  let orbitStartedAt = 0;
-  let isAutomatic = false;
-
-  const getAltitude = () =>
-    calculateFocusAltitude({
-      viewportWidth: viewport?.clientWidth,
-      availableWidth: availableArea?.clientWidth,
-    });
-
-  const move = (heading = 0) => {
-    if (!target) return false;
-    return focusMapAt(map, vw, {
-      ...target,
-      altitude: getAltitude(),
-      heading,
-    });
-  };
-
-  const orbit = (timestamp) => {
-    if (!isAutomatic || !target) return;
-    const elapsedSeconds = Math.max(0, timestamp - orbitStartedAt) / 1000;
-    move((elapsedSeconds * 4) % 360);
-    frameId = requestFrame(orbit);
-  };
-
-  const cancelAutomaticMotion = () => {
-    isAutomatic = false;
-    if (frameId !== null) {
-      cancelFrame(frameId);
-      frameId = null;
-    }
-  };
-
-  const resizeObserver = new ResizeObserverClass(() => {
-    move();
-  });
-  resizeObserver.observe(availableArea);
-
-  for (const eventName of USER_INPUT_EVENTS) {
-    viewport.addEventListener(eventName, cancelAutomaticMotion, {
-      passive: true,
-      capture: true,
-    });
-  }
-
-  return {
-    focus(nextTarget) {
-      cancelAutomaticMotion();
-      target = nextTarget;
-      isAutomatic = true;
-      move();
-      orbitStartedAt = now();
-      frameId = requestFrame(orbit);
-    },
-    dispose() {
-      cancelAutomaticMotion();
-      resizeObserver.disconnect();
-      for (const eventName of USER_INPUT_EVENTS) {
-        viewport.removeEventListener(eventName, cancelAutomaticMotion, {
-          capture: true,
-        });
-      }
-    },
-  };
 }

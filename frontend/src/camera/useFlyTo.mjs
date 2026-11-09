@@ -96,7 +96,7 @@ export function createSceneLookups(scene) {
 // OrbitControls(controlsRef.current)의 camera.position/target을 시점으로 비행시킨다.
 // - 비행 직전에 controls에 FLY_TO_START_EVENT를 보낸다. CityModel의 클릭 포커스 비행이 끊기고 조작 중 해상도가
 //   낮아진다. 정상 종료 때만 end를 보낸다(사용자가 끊은 비행은 OrbitControls가 스스로 end를 낸다).
-// - 사용자 조작(비행 표식이 없는 start)은 비행을 끊는다.
+// - 다른 start(사용자 조작, 단추 한 단계, 다른 엔진의 비행)는 이 비행을 끊는다.
 // - prefers-reduced-motion: reduce 이면 바로 점프한다.
 // getScene()이 장면을 주면 BLD_* 경계 상자와 지형 높이로 시점을 풀고, 없으면 고정 좌표를 쓴다.
 export function useFlyTo({ controlsRef, getScene }) {
@@ -118,7 +118,7 @@ export function useFlyTo({ controlsRef, getScene }) {
     if (engine.cancel()) setIsFlying(false);
   }, [engine]);
 
-  const flyTo = useCallback((preset, { onFinish } = {}) => {
+  const flyTo = useCallback((preset, { onFinish, onCancel } = {}) => {
     const controls = controlsRef.current;
     if (!controls?.object) return false;
     const camera = controls.object;
@@ -128,13 +128,15 @@ export function useFlyTo({ controlsRef, getScene }) {
 
     if (listenerRef.current?.controls !== controls) {
       detachListener();
+      // 다른 비행(시점 버튼과 클릭 포커스는 엔진이 따로다)이나 사람의 조작이 시작되면 이 비행을 끊는다. 카메라를 쓰는 비행은 늘 하나다.
       const handler = (event) => {
-        if (!isFlyToEvent(event) && engine.cancel()) setIsFlying(false);
+        if (event?.source === engine) return;
+        if (engine.cancel()) setIsFlying(false);
       };
       controls.addEventListener("start", handler);
       listenerRef.current = { controls, handler };
     }
-    controls.dispatchEvent({ ...FLY_TO_START_EVENT });
+    controls.dispatchEvent({ ...FLY_TO_START_EVENT, source: engine });
 
     const apply = (view) => {
       camera.position.set(view.position[0], view.position[1], view.position[2]);
@@ -152,7 +154,10 @@ export function useFlyTo({ controlsRef, getScene }) {
         controls.dispatchEvent({ type: "end" });
         onFinish?.();
       },
-      onCancel: () => setIsFlying(false),
+      onCancel: () => {
+        setIsFlying(false);
+        onCancel?.();
+      },
     });
     return true;
   }, [controlsRef, detachListener, engine, getScene]);

@@ -3,6 +3,7 @@ import commonElements from "../../../common/data/common_elemetns.json";
 import { CAMERA_PRESETS } from "../camera/cameraPresets.mjs";
 import { CampusLabelLayer } from "../labels/CampusLabelLayer.jsx";
 import { resolveLabelBand } from "../labels/labelBands.mjs";
+import { SETTLE_MS } from "../labels/motionSettle.mjs";
 import { CAMPUS_GLTF_OVERLAY_CONFIG } from "./campusGltfOverlay.mjs";
 import { buildVWorldLabelEntries, glbNodeBoxes, readGlbJson } from "./labelAnchors.mjs";
 import { createVWorldLabelProjector } from "./labelProjection.mjs";
@@ -11,8 +12,9 @@ import { createVWorldLabelProjector } from "./labelProjection.mjs";
 const MODEL_UNITS_PER_METER = 0.62421715;
 const FOOTPRINT_CLEARANCE_METERS = 60;
 
-// 카메라가 멈춘 뒤 한 번 더 배치하기까지 기다리는 시간(tokens.css --motion-settle, Legacy와 같다).
-const MOTION_SETTLE_MS = 150;
+// 앞 렌더에서도 카메라가 움직였고 그 간격이 이보다 짧으면 이어지는 움직임(끌기·휠·비행)으로 본다. 단추·키 한 단계 이동은
+// 한 프레임만 바뀌므로 라벨 층을 흐리지 않는다.
+const CONTINUOUS_MOVE_GAP_MS = 100;
 // 이보다 멀리서 보면(지구본·시군 단위 시점, 장면 단위 약 6.4 km) 캠퍼스가 점 하나라 라벨을 모두 숨긴다.
 export const VWORLD_MAX_LABEL_DISTANCE = 4000;
 
@@ -112,15 +114,9 @@ export function VWorldLabelLayer({
     const projector = createVWorldLabelProjector({ Cesium, scene, getModelMatrix });
     const touch = globalThis.matchMedia?.("(pointer: coarse)")?.matches ?? false;
     const requestRender = () => scene.requestRender?.();
-    const onMoveStart = () => {
-      clearTimeout(settleTimerRef.current);
-      motionRef.current = true;
-      controllerRef.current?.setMotion(true);
-    };
-    // 지도를 누르고 있는 동안(끌기)은 카메라가 멈춰 있어도 움직이는 중이다(Legacy의 드래그와 같다). 손을 떼면 150 ms 뒤 재배치.
-    let held = false;
-    const onMoveEnd = () => {
-      if (held) return;
+    // 카메라가 이어서 움직이는 동안 라벨 층을 흐리고 배치를 멈춘다. 마지막 움직임에서 정착 시간(--motion-settle)이 지나면 한 번 다시 배치한다.
+    let lastMoveAt = -Infinity;
+    const scheduleSettle = () => {
       clearTimeout(settleTimerRef.current);
       settleTimerRef.current = setTimeout(() => {
         motionRef.current = false;
@@ -128,20 +124,42 @@ export function VWorldLabelLayer({
         passesRef.current = 2;
         frameKeyRef.current = "";
         requestRender();
-      }, MOTION_SETTLE_MS);
+      }, SETTLE_MS);
+    };
+    const noteCameraMove = (now) => {
+      if (!motionRef.current && now - lastMoveAt < CONTINUOUS_MOVE_GAP_MS) {
+        motionRef.current = true;
+        controllerRef.current?.setMotion(true);
+      }
+      lastMoveAt = now;
+      if (motionRef.current) scheduleSettle();
+    };
+    // 화면 사각형(지도 캔버스, 패널, 크롬)은 크기·전환이 바뀌었을 때와 카메라가 멈춰 있을 때만 다시 잰다.
+    // 비행·끌기 중 매 프레임 강제 레이아웃을 하지 않는다.
+    let rects = null;
+    const markRectsDirty = () => {
+      rects = null;
+      requestRender();
+    };
+    const measureRects = () => {
+      const { occluderRef: occluderSource, chromeRefs: chromeSources } = state.current;
+      const area = scene.canvas.getBoundingClientRect();
+      const panelRect = occluderSource?.current?.getBoundingClientRect() ?? null;
+      const chrome = [];
+      for (const ref of chromeSources ?? []) if (ref?.current) collectChromeRects(ref.current, chrome);
+      return { area, panelRect, chrome };
     };
     const onPostRender = () => {
       const controller = controllerRef.current;
       if (!controller) return;
-      const { selectedId: selected, hidden: isHidden, presentation: presenting, occluderRef: occluderSource, chromeRefs: chromeSources } = state.current;
-      const area = scene.canvas.getBoundingClientRect();
-      const panelRect = occluderSource?.current?.getBoundingClientRect() ?? null;
+      const { selectedId: selected, hidden: isHidden, presentation: presenting } = state.current;
+      if (!rects || !motionRef.current) rects = measureRects();
+      const { area, panelRect } = rects;
+      const chrome = [...rects.chrome];
       const occluder =
         panelRect && panelRect.left < area.right && panelRect.right > area.left && panelRect.top < area.bottom && panelRect.bottom > area.top
           ? panelRect
           : null;
-      const chrome = [];
-      for (const ref of chromeSources ?? []) if (ref?.current) collectChromeRects(ref.current, chrome);
       // 지도 영역 바로 옆(12 px 안)에 붙은 패널·레일은 가리개는 아니지만 칩이 12 px 떨어져야 하는 경계다(HUD와 같은 여백).
       if (panelRect && !occluder && panelRect.width > 0 && panelRect.height > 0 && panelRect.top < area.bottom && panelRect.bottom > area.top
         && panelRect.left < area.right + 12 && panelRect.right > area.left - 12) chrome.push(panelRect);
@@ -149,11 +167,8 @@ export function VWorldLabelLayer({
       const p = camera.positionWC;
       const d = camera.directionWC;
       const pose = [p.x, p.y, p.z, d.x, d.y, d.z].map((v) => v.toFixed(3)).join(",");
-      // VWorld SDK의 끌기·휠은 camera.moveStart를 내지 않을 때가 있다. 카메라 자세가 프레임 사이에 바뀌면 움직이는 중으로 본다.
-      if (lastPoseRef.current !== null && pose !== lastPoseRef.current) {
-        onMoveStart();
-        onMoveEnd();
-      }
+      // SDK의 moveStart는 한 번에 옮긴 단계에도 나므로 쓰지 않는다. 렌더 사이에 카메라 자세가 바뀌었는지로 움직임을 본다.
+      if (lastPoseRef.current !== null && pose !== lastPoseRef.current) noteCameraMove(performance.now());
       lastPoseRef.current = pose;
       const key = pose
         + `|${rectKey(area)}|${occluder ? rectKey(occluder) : ""}|${chrome.map(rectKey).join(";")}|${isHidden}|${presenting}|${selected}|${state.current.presetFromGround}`;
@@ -182,30 +197,18 @@ export function VWorldLabelLayer({
       const band = resolveLabelBand({ distance, pitchDegrees, presetFromGround: state.current.presetFromGround, presentation: presenting, touch });
       controller.update({ points, area, chrome, occluder, focusBoxes: [], band, now: performance.now(), motion });
     };
-    const onPointerDown = () => {
-      held = true;
-      onMoveStart();
-    };
-    const onPointerUp = () => {
-      if (!held) return;
-      held = false;
-      onMoveEnd();
-    };
-    scene.canvas.addEventListener?.("pointerdown", onPointerDown);
-    globalThis.addEventListener?.("pointerup", onPointerUp);
-    globalThis.addEventListener?.("pointercancel", onPointerUp);
+    const resizeObserver = typeof ResizeObserver === "function" ? new ResizeObserver(markRectsDirty) : null;
+    resizeObserver?.observe(scene.canvas);
+    globalThis.addEventListener?.("resize", markRectsDirty);
+    globalThis.document?.addEventListener("transitionend", markRectsDirty, true);
     scene.postRender.addEventListener(onPostRender);
-    scene.camera.moveStart?.addEventListener(onMoveStart);
-    scene.camera.moveEnd?.addEventListener(onMoveEnd);
     passesRef.current = 2;
     requestRender();
     return () => {
-      scene.canvas.removeEventListener?.("pointerdown", onPointerDown);
-      globalThis.removeEventListener?.("pointerup", onPointerUp);
-      globalThis.removeEventListener?.("pointercancel", onPointerUp);
+      resizeObserver?.disconnect();
+      globalThis.removeEventListener?.("resize", markRectsDirty);
+      globalThis.document?.removeEventListener("transitionend", markRectsDirty, true);
       scene.postRender.removeEventListener(onPostRender);
-      scene.camera.moveStart?.removeEventListener(onMoveStart);
-      scene.camera.moveEnd?.removeEventListener(onMoveEnd);
       clearTimeout(settleTimerRef.current);
       motionRef.current = false;
       lastPoseRef.current = null;

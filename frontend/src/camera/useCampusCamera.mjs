@@ -3,6 +3,7 @@ import { CAMERA_PRESETS, D4_CAMERA_OFFSET, OVERVIEW_PRESET_ID } from "./cameraPr
 
 const OVERVIEW_PRESET = CAMERA_PRESETS.find((preset) => preset.id === OVERVIEW_PRESET_ID);
 import { isFlyToEvent, useFlyTo } from "./useFlyTo.mjs";
+import { isCameraStepEvent } from "./cameraCommands.mjs";
 import { useCameraTour } from "./useCameraTour.mjs";
 
 // Legacy 3D 캠퍼스의 시점 버튼·투어·궤도 조작. 눌린 시점(activePresetId)은 사용자가 직접 궤도 조작을 시작하면 지운다.
@@ -37,16 +38,20 @@ export function useCampusCamera({ controlsRef, getScene, onOrbitStart, onOrbitEn
   // 처음 시점(카메라 단추·H 키): 전체 시점으로 돌아간다.
   const goHome = useCallback(() => selectPreset(OVERVIEW_PRESET), [selectPreset]);
 
-  // 시점 비행이 보낸 start는 사용자 조작이 아니므로 투어와 눌린 표시를 그대로 둔다.
+  // 시점 비행이 보낸 start는 사용자 조작이 아니므로 투어와 눌린 표시를 그대로 둔다. 단추·키 한 단계 이동은 해상도를 낮추지 않는다
+  // (연속 제스처와 비행만 낮춘다). 카메라가 시점에서 벗어나므로 눌린 표시와 투어는 풀린다.
   const handleOrbitStart = useCallback((event) => {
-    onOrbitStart();
+    if (!isCameraStepEvent(event)) onOrbitStart();
     if (isFlyToEvent(event)) return;
     stopTour();
     setActivePresetId(null);
   }, [onOrbitStart, stopTour]);
+  const handleOrbitEnd = useCallback((event) => {
+    if (!isCameraStepEvent(event)) onOrbitEnd();
+  }, [onOrbitEnd]);
 
   return {
     controlsRef, activePresetId, activePresetRef, selectPreset, goHome, flyToBuilding, touring, toggleTour, stopTour,
-    handleOrbitStart, handleOrbitEnd: onOrbitEnd,
+    handleOrbitStart, handleOrbitEnd,
   };
 }

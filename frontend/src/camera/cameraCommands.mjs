@@ -63,14 +63,20 @@ export function clearOrbitInertia(controls) {
   return true;
 }
 
-// 사용자 궤도 조작처럼 start/end를 보내 눌린 시점 표시와 투어가 풀리게 한다. 공유 링크의 카메라도 이 길로 놓는다(비행 없음).
+// 단추·키 한 단계 이동이 보내는 start/end 표식. 눌린 시점 표시와 투어, 진행 중인 비행은 사용자 조작처럼 풀리지만,
+// 한 번에 끝나는 이동이라 라벨 층 흐림과 조작 중 해상도 낮춤은 일어나지 않는다.
+export const CAMERA_STEP_START_EVENT = Object.freeze({ type: "start", step: true });
+export const CAMERA_STEP_END_EVENT = Object.freeze({ type: "end", step: true });
+export const isCameraStepEvent = (event) => Boolean(event?.step);
+
+// 한 번에 옮기는 이동. 공유 링크의 카메라도 이 길로 놓는다(비행 없음).
 export function applyMove(controls, { position, target }) {
   if (!controls) return false;
-  controls.dispatchEvent?.({ type: "start" });
+  controls.dispatchEvent?.({ ...CAMERA_STEP_START_EVENT });
   controls.object.position.set(...position);
   if (target) controls.target.set(...target);
   controls.update();
-  controls.dispatchEvent?.({ type: "end" });
+  controls.dispatchEvent?.({ ...CAMERA_STEP_END_EVENT });
   return true;
 }
 

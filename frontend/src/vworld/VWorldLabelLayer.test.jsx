@@ -106,7 +106,11 @@ describe("VWorldLabelLayer", () => {
     const view = render(<VWorldLabelLayer {...props} />);
     await waitFor(() => expect(view.container.querySelector('[data-qa="campus-label-layer"]')).not.toBeNull());
     act(() => scene.postRender.raise());
-    act(() => scene.camera.moveStart.raise());
+    // 이어지는 움직임(렌더마다 자세가 바뀐다)에서 흐린다.
+    scene.camera.positionWC = new Cesium.Cartesian3(5, 0, 400);
+    act(() => scene.postRender.raise());
+    scene.camera.positionWC = new Cesium.Cartesian3(10, 0, 400);
+    act(() => scene.postRender.raise());
     expect(view.container.querySelector('[data-qa="campus-label-layer"]').dataset.motion).toBe("true");
     view.rerender(<VWorldLabelLayer {...props} hidden />);
     act(() => scene.postRender.raise());
@@ -116,7 +120,7 @@ describe("VWorldLabelLayer", () => {
     expect(scene.camera.moveStart.size).toBe(0);
   });
 
-  it("fades while the camera pose changes between renders even without camera.moveStart, and settles 150 ms after it stops", async () => {
+  it("fades only while the pose keeps changing between renders, not for one instant step, and settles 150 ms after it stops", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     try {
       const { Cesium, scene } = fakeMap();
@@ -125,8 +129,19 @@ describe("VWorldLabelLayer", () => {
       const layer = () => container.querySelector('[data-qa="campus-label-layer"]');
       act(() => scene.postRender.raise());
       expect(layer().dataset.motion).toBe("false");
-      // The SDK drags the camera: only the pose changes.
+      // 단추·키 한 단계 이동: 자세가 한 번만 바뀐다. 흐리지 않고 다시 배치만 한다.
       scene.camera.positionWC = new Cesium.Cartesian3(5, 0, 400);
+      act(() => scene.postRender.raise());
+      expect(layer().dataset.motion).toBe("false");
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+      act(() => scene.postRender.raise());
+      expect(layer().dataset.motion).toBe("false");
+      // 끌기: 렌더마다 자세가 바뀐다.
+      scene.camera.positionWC = new Cesium.Cartesian3(10, 0, 400);
+      act(() => scene.postRender.raise());
+      scene.camera.positionWC = new Cesium.Cartesian3(15, 0, 400);
       act(() => scene.postRender.raise());
       expect(layer().dataset.motion).toBe("true");
       act(() => {
@@ -138,34 +153,19 @@ describe("VWorldLabelLayer", () => {
     }
   });
 
-  it("stays faded while the pointer is held on the map, even when the camera has stopped, and settles 150 ms after release", async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true });
-    try {
-      const { Cesium, scene } = fakeMap();
-      const canvas = document.createElement("canvas");
-      canvas.getBoundingClientRect = scene.canvas.getBoundingClientRect;
-      scene.canvas = canvas;
-      const { container } = render(<VWorldLabelLayer Cesium={Cesium} scene={scene} getModelMatrix={() => "m"} loadGlb={loadGlb} />);
-      await waitFor(() => expect(container.querySelector('[data-qa="campus-label-layer"]')).not.toBeNull());
-      const layer = () => container.querySelector('[data-qa="campus-label-layer"]');
-      act(() => scene.postRender.raise());
-      fireEvent.pointerDown(canvas);
-      expect(layer().dataset.motion).toBe("true");
-      // The SDK reports the end of the camera move while the button is still down: the fade stays.
-      act(() => {
-        scene.camera.moveEnd.raise();
-        vi.advanceTimersByTime(400);
-        scene.postRender.raise();
-      });
-      expect(layer().dataset.motion).toBe("true");
-      fireEvent.pointerUp(window);
-      act(() => {
-        vi.advanceTimersByTime(160);
-      });
-      expect(layer().dataset.motion).toBe("false");
-    } finally {
-      vi.useRealTimers();
-    }
+  it("does not fade when the map is only pressed and the camera does not move", async () => {
+    const { Cesium, scene } = fakeMap();
+    const canvas = document.createElement("canvas");
+    canvas.getBoundingClientRect = scene.canvas.getBoundingClientRect;
+    scene.canvas = canvas;
+    const { container } = render(<VWorldLabelLayer Cesium={Cesium} scene={scene} getModelMatrix={() => "m"} loadGlb={loadGlb} />);
+    await waitFor(() => expect(container.querySelector('[data-qa="campus-label-layer"]')).not.toBeNull());
+    const layer = () => container.querySelector('[data-qa="campus-label-layer"]');
+    act(() => scene.postRender.raise());
+    fireEvent.pointerDown(canvas);
+    act(() => scene.camera.moveStart.raise());
+    act(() => scene.postRender.raise());
+    expect(layer().dataset.motion).toBe("false");
   });
 
   it("hides every chip while the camera is at globe distance (before the map flies to the campus)", async () => {

@@ -3,10 +3,12 @@ import { useDemandLoop } from "./useDemandLoop.mjs";
 import { attachCanvasLifecycle } from "./canvasLifecycle.mjs";
 import { useLiveTraffic } from "./useLiveTraffic";
 import { QUALITY_RENDERER, capCanvasDpr, useQualityPreset } from "../settings/qualityPreset.mjs";
+import { FLY_DURATION_MS } from "../camera/cameraPresets.mjs";
+import { SETTLE_MS } from "../labels/motionSettle.mjs";
 
-// CityModel의 선택 색 전환(약 0.9초)과 포커스 카메라 비행은 스스로 invalidate하지 않으므로 그동안 루프를 always로 돌린다.
+// 선택 뒤에는 클릭 포커스 비행(useFlyTo, FLY_DURATION_MS)과 정착 시간만큼 루프를 always로 돌린다. 재질 색 전환은 스스로 invalidate한다.
 // 교통 시뮬레이션이 멈춘 뒤에는 보간이 끝날 때까지, 패널을 여닫은 뒤에는 전환이 끝난 화면으로 라벨 가림을 다시 판정할 때까지.
-const SELECTION_ANIMATION_MS = 3000;
+const SELECTION_ANIMATION_MS = FLY_DURATION_MS + SETTLE_MS;
 const TRAFFIC_SETTLE_MS = 1500;
 const PANEL_TRANSITION_MS = 450;
 

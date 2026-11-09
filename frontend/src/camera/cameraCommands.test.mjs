@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { ORBIT_LIMITS, TILT_LIMITS, clearOrbitInertia, panPositions, rotatePosition, tiltPosition, zoomBy, zoomPosition } from "./cameraCommands.mjs";
+import { ORBIT_LIMITS, TILT_LIMITS, clearOrbitInertia, isCameraStepEvent, panPositions, rotatePosition, tiltPosition, zoomBy, zoomPosition } from "./cameraCommands.mjs";
 
 const close = (actual, expected) => actual.forEach((value, index) => assert.ok(Math.abs(value - expected[index]) < 1e-9, `${actual} vs ${expected}`));
 
@@ -55,4 +55,13 @@ test("clearOrbitInertia spends leftover damping once with damping off and restor
   assert.deepEqual(seen, [false]);
   assert.equal(controls.enableDamping, true);
   assert.equal(clearOrbitInertia({ enableDamping: false, update() { throw new Error("no update without damping"); } }), false);
+});
+
+test("button and key steps tag their start/end so labels and resolution are left alone", () => {
+  const events = [];
+  const vector = (x, y, z) => ({ x, y, z, set(nx, ny, nz) { Object.assign(this, { x: nx, y: ny, z: nz }); } });
+  const controls = { object: { position: vector(0, 0, 100) }, target: vector(0, 0, 0), update: () => {}, dispatchEvent: (event) => events.push(event) };
+  zoomBy(controls, 0.8);
+  assert.deepEqual(events.map((event) => [event.type, isCameraStepEvent(event)]), [["start", true], ["end", true]]);
+  assert.equal(isCameraStepEvent({ type: "start" }), false);
 });

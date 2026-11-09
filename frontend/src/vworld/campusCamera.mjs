@@ -1,4 +1,4 @@
-import { FLY_DURATION_MS, resolveCameraPreset } from "../camera/cameraPresets.mjs";
+import { FLY_DURATION_MS, focusViewFrom, resolveCameraPreset } from "../camera/cameraPresets.mjs";
 import { sceneToModelLocal } from "./labelProjection.mjs";
 import { TILT_LIMITS } from "../camera/cameraCommands.mjs";
 
@@ -43,15 +43,26 @@ export function createVWorldCampusCamera({ Cesium, scene, getModelMatrix, boxes,
     return { destination, orientation: { direction, up } };
   };
 
+  const heightOf = (position) => (position && Cesium.Cartographic?.fromCartesian ? Cesium.Cartographic.fromCartesian(position)?.height : undefined);
   // 비행이 끝나면 onFinish. 움직임 줄이기에서는 바로 옮긴다. 시점을 못 풀면(오버레이 전) false.
+  // Legacy useFlyTo와 같은 시간·곡선(800ms, 2차 가감속)이고, 출발·도착 중 높은 쪽보다 위로 솟지 않는다(SDK 기본 비행의 고도 호 없음).
+  // 새 비행은 SDK가 앞 비행을 끊고 시작한다.
   const flyTo = (preset, { onFinish, reducedMotion = false } = {}) => {
     const view = viewOf(preset);
     if (!view) return false;
     if (reducedMotion) {
+      scene.camera.cancelFlight?.();
       scene.camera.setView(view);
       onFinish?.();
     } else {
-      scene.camera.flyTo({ ...view, duration: FLY_DURATION_MS / 1000, complete: onFinish });
+      const heights = [heightOf(scene.camera.positionWC), heightOf(view.destination)].filter(Number.isFinite);
+      scene.camera.flyTo({
+        ...view,
+        duration: FLY_DURATION_MS / 1000,
+        easingFunction: Cesium.EasingFunction?.QUADRATIC_IN_OUT,
+        ...(heights.length === 2 ? { maximumHeight: Math.max(...heights) } : {}),
+        complete: onFinish,
+      });
     }
     scene.requestRender?.();
     return true;
@@ -66,9 +77,13 @@ export function createVWorldCampusCamera({ Cesium, scene, getModelMatrix, boxes,
   };
 
   // 카메라 단추(Legacy CameraControls와 같은 단계): factor < 1이면 가운데 지표점으로 그만큼 다가가고, > 1이면 물러난다.
+  // 사람의 조작(단추·키 한 단계, 끌기·휠)이 시작되면 진행 중인 비행을 그 자리에서 끊는다.
+  const cancelFlight = () => scene.camera.cancelFlight?.();
+
   const zoomBy = (factor) => {
     const pivot = viewCenter();
     if (!pivot) return false;
+    cancelFlight();
     const distance = Cesium.Cartesian3.distance(scene.camera.positionWC, pivot);
     // 휠 확대와 같은 범위(cameraLimits.mjs) 안에 머문다. 트랙패드 핀치는 이 길로 연속해서 들어온다.
     const controller = scene.screenSpaceCameraController;
@@ -83,6 +98,7 @@ export function createVWorldCampusCamera({ Cesium, scene, getModelMatrix, boxes,
   const tiltBy = (angle) => {
     const pivot = viewCenter();
     if (!pivot) return false;
+    cancelFlight();
     const camera = scene.camera;
     const normal = Cesium.Ellipsoid.WGS84.geodeticSurfaceNormal(pivot, new Cesium.Cartesian3());
     const offset = { x: camera.positionWC.x - pivot.x, y: camera.positionWC.y - pivot.y, z: camera.positionWC.z - pivot.z };
@@ -109,6 +125,7 @@ export function createVWorldCampusCamera({ Cesium, scene, getModelMatrix, boxes,
   const rotateBy = (angle) => {
     const pivot = viewCenter();
     if (!pivot) return false;
+    cancelFlight();
     const axis = Cesium.Ellipsoid.WGS84.geodeticSurfaceNormal(pivot, new Cesium.Cartesian3());
     const turn = (v) => rotateAbout(v, axis, angle);
     const camera = scene.camera;
@@ -128,6 +145,7 @@ export function createVWorldCampusCamera({ Cesium, scene, getModelMatrix, boxes,
   const panBy = (right, forward) => {
     const pivot = viewCenter();
     if (!pivot) return false;
+    cancelFlight();
     const camera = scene.camera;
     const distance = Cesium.Cartesian3.distance(camera.positionWC, pivot);
     const up = Cesium.Ellipsoid.WGS84.geodeticSurfaceNormal(pivot, new Cesium.Cartesian3());
@@ -170,7 +188,20 @@ export function createVWorldCampusCamera({ Cesium, scene, getModelMatrix, boxes,
     return true;
   };
 
-  return { viewOf, flyTo, zoomBy, rotateBy, tiltBy, panBy, poseOf, applyPose };
+  // 고른 건물(GLB 노드 경계 상자의 가운데) 또는 경위도 한 점(SDK 건물·D4 표지)의 장면 좌표. 둘 다 못 풀면 null.
+  const focusTarget = ({ focus = null, lonLat = null } = {}) => {
+    if (focus?.length) {
+      const resolved = resolveCameraPreset({ focus, offset: [0, 0, 0], position: [0, 0, 0], target: [Number.NaN, 0, 0] }, lookups);
+      if (Number.isFinite(resolved.target[0])) return resolved.target;
+    }
+    const matrix = getModelMatrix();
+    if (!matrix || !Number.isFinite(lonLat?.longitude) || !Number.isFinite(lonLat?.latitude) || !Cesium.Cartesian3.fromDegrees) return null;
+    return toScene(Cesium.Cartesian3.fromDegrees(lonLat.longitude, lonLat.latitude, lonLat.height ?? 0), matrix);
+  };
+  // 건물을 고르면 그 건물로 비행한다(Legacy 클릭 비행과 같은 거리, 지금 카메라가 있는 방위에서 다가간다).
+  const flyToFocus = (target, options) => (target ? flyTo({ id: "focus", ...focusViewFrom(poseOf(), target) }, options) : false);
+
+  return { viewOf, flyTo, focusTarget, flyToFocus, cancelFlight, zoomBy, rotateBy, tiltBy, panBy, poseOf, applyPose };
 }
 
 // Rodrigues: v rotated by angle (radians) about the unit axis.

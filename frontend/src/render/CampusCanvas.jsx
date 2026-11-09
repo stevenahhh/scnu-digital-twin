@@ -31,7 +31,7 @@ export const CampusCanvas = forwardRef(function CampusCanvas(
     <div
       ref={mapLayerRef}
       data-qa="campus-map-layer"
-      // 탭 순서는 HUD -> 칩 -> 패널(AUDIT GAP-32). 지도 영역은 탭 정지가 아니고, 화살표 키는 칩(지도 영역 안)에서 올라와 카메라를 움직인다.
+      // 탭 순서는 HUD -> 칩 -> 패널. 지도 영역은 탭 정지가 아니고, 화살표 키는 칩(지도 영역 안)에서 올라와 카메라를 움직인다.
       tabIndex={-1}
       aria-label="순천대 캠퍼스 3D 지도"
       aria-describedby="campus-map-keys"
@@ -41,7 +41,7 @@ export const CampusCanvas = forwardRef(function CampusCanvas(
       <PanelErrorBoundary
         label="3D 캠퍼스"
         message="3D 캠퍼스 모델을 불러오지 못했습니다"
-        fallbackClassName="absolute inset-y-0 left-0 flex items-center justify-center px-10 transition-[right] duration-300"
+        fallbackClassName="absolute inset-y-0 left-0 flex items-center justify-center px-10"
         fallbackStyle={{ right: insetRight }}
       >
         {/* R3F 래퍼의 기본 overflow: hidden은 스크롤 컨테이너라 포커스 이동에 밀린다. clip은 똑같이 자르되 스크롤되지 않는다. */}

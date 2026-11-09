@@ -19,10 +19,12 @@ import {
   sampleGroundGrid,
 } from "./camera/terrainClearance.mjs";
 import { isAnchorOccludedByTerrain } from "./utils/campusLabelVisibility.mjs";
-import { CAMERA_PRESETS } from "./camera/cameraPresets.mjs";
+import { CAMERA_PRESETS, D4_CAMERA_OFFSET, focusViewFrom } from "./camera/cameraPresets.mjs";
+import { useFlyTo } from "./camera/useFlyTo.mjs";
+import { isCameraStepEvent } from "./camera/cameraCommands.mjs";
 import { CampusLabelLayer } from "./labels/CampusLabelLayer.jsx";
 import { resolveLabelBand } from "./labels/labelBands.mjs";
-import { createMotionSettle } from "./labels/motionSettle.mjs";
+import { SETTLE_MS, createMotionSettle } from "./labels/motionSettle.mjs";
 import { ZONES, buildLabelRegistry } from "./labels/labelRegistry.mjs";
 import { campusModelCenter } from "./simulation/utils/campusTrafficCoordinates.mjs";
 import { CAMPUS_MODEL_URL, CAMPUS_MODEL_URLS } from "./campusModelAsset.mjs";
@@ -52,10 +54,10 @@ import { clipPolygonAhead } from "./render/clipPolygon.mjs";
 import { POINTER_EXCLUDED_LAYER } from "./render/canvasLifecycle.mjs";
 
 // 클릭하지 않아도 카메라가 이 거리 안으로 들어오면 "가까이 간" 것으로 본다.
-// 클릭 시 자동으로 붙는 카메라 거리(FOCUS_CAMERA_OFFSET 기준 약 94유닛)보다 살짝
+// 클릭 시 자동으로 붙는 카메라 거리(D4_CAMERA_OFFSET 기준 약 94유닛)보다 살짝
 // 넉넉하게 잡아서, 자동 포커스로 도착했을 때도 자연스럽게 이 범위 안에 들어오게 한다.
 // 빠져나갈 때는 더 넉넉한 거리(EXIT)를 써서 경계선에서 들어왔다 나갔다 깜빡이지
-// 않게 한다 — 진입은 ENTER, 이미 가까운 상태를 유지하는 건 EXIT 기준으로 판단.
+// 않게 한다. 진입은 ENTER, 이미 가까운 상태를 유지하는 건 EXIT 기준으로 판단한다.
 const PROXIMITY_ENTER_DISTANCE = 120;
 const PROXIMITY_EXIT_DISTANCE = 170;
 
@@ -67,9 +69,6 @@ const D4_ELEMENT_ID = "BLD_D4";
 const LABEL_HEIGHTFIELD_URLS = CAMPUS_MODEL_URL === CAMPUS_MODEL_URLS.detailed ? CAMPUS_HEIGHTFIELD_URLS : null;
 
 
-const FOCUS_CAMERA_OFFSET = new THREE.Vector3(60, 50, 60);
-// 라벨 층: 카메라가 멈춘 뒤 이만큼 더 기다렸다가 한 번 다시 배치한다(tokens.css --motion-settle).
-const MOTION_SETTLE_FALLBACK_MS = 150;
 // 정문 구역은 건물이 아니라 정문 시점의 목표점(재중심화 뒤 장면 좌표)에 놓인다.
 const SYNTHETIC_ZONE_IDS = new Set(ZONES.filter((zone) => zone.synthetic).map((zone) => zone.id));
 const LABEL_HOST_STYLE = "position:absolute;inset:0;pointer-events:none;z-index:var(--layer-labels)";
@@ -187,7 +186,6 @@ const scratchColor = new THREE.Color();
 const scratchHoverColor = new THREE.Color();
 const scratchBaseColor = new THREE.Color();
 const scratchEmissive = new THREE.Color();
-const scratchCamPos = new THREE.Vector3();
 const scratchProject = new THREE.Vector3();
 const ELEMENT_NAME_MAP = new Map(
   commonElements.elements.map((element) => [element.element_id, element.name]),
@@ -337,7 +335,10 @@ export function CityModel({
 }) {
   const { scene } = useGLTF(CAMPUS_MODEL_URL, true, true, extendCampusLoader);
   const { camera, gl, scene: rootScene, invalidate } = useThree();
-  const [targetPos, setTargetPos] = useState(null);
+  // 건물·묶음 클릭 비행. 시점 버튼과 같은 시간 기반 비행(useFlyTo)이고, 사람의 조작이나 다른 비행이 끊는다.
+  // focusFlightRef는 비행 중인지(근접 자동 열기 보류)를 렌더 없이 읽는다. 도착하거나 끊기면 내린다.
+  const { flyTo: flyFocus } = useFlyTo({ controlsRef });
+  const focusFlightRef = useRef(false);
   const tintedMeshesRef = useRef([]);
   const lampPoolsRef = useRef([]);
   const pickProxiesRef = useRef([]);
@@ -373,11 +374,12 @@ export function CityModel({
     createMotionSettle({
       settleMs: () => {
         const token = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--motion-settle"));
-        return Number.isFinite(token) ? token : MOTION_SETTLE_FALLBACK_MS;
+        return Number.isFinite(token) ? token : SETTLE_MS;
       },
     }),
   );
-  const motionRef = useRef({ timer: null, awaitingFrames: false, checkSettle: null });
+  // dimPending: 조작이 시작됐지만 카메라가 아직 움직이지 않았다. 처음 움직인 프레임에서 라벨 층을 흐린다(누르기만 해서는 흐리지 않는다).
+  const motionRef = useRef({ timer: null, awaitingFrames: false, checkSettle: null, dimPending: false });
   const touchRef = useRef(typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)")?.matches === true);
   // 클릭/드래그 판별(메시와 라벨이 공유). 직전 프레임 카메라 자세로 카메라가 움직이는 중인지 알려 준다.
   const [pointerGuard] = useState(() => createPointerGuard());
@@ -433,19 +435,6 @@ export function CityModel({
   }, [labelsHidden, selectedId, invalidate]);
 
   useEffect(() => {
-    const controls = controlsRef?.current;
-    if (!controls) return;
-
-    // 사용자가 직접 조작을 시작하면 자동 포커스 비행을 즉시 취소한다.
-    const handleInteraction = () => {
-      setTargetPos(null);
-    };
-
-    controls.addEventListener("start", handleInteraction);
-    return () => controls.removeEventListener("start", handleInteraction);
-  }, [controlsRef]);
-
-  useEffect(() => {
     materialTransitionRef.current = true;
   }, [selectedId, selectedElementId, selectionOutline, isNight]);
 
@@ -467,6 +456,7 @@ export function CityModel({
   }, [scene]);
 
   // 카메라가 바뀌면 라벨 패스를 다시 연다. 조작·시점 비행의 start/end로 라벨 층의 움직임 상태(흐림, 배치 멈춤)를 켜고 끈다.
+  // 흐림은 카메라가 실제로 움직인 첫 프레임부터다. 단추·키 한 단계 이동(step 표식)은 움직임 상태를 만들지 않고 한 번 다시 배치만 한다.
   useEffect(() => {
     const controls = controlsRef?.current;
     if (!controls) return undefined;
@@ -478,6 +468,7 @@ export function CityModel({
       if (!motionSettle.isActive()) return;
       const result = motionSettle.poll();
       if (result.settled) {
+        motion.dimPending = false;
         labelControllerRef.current?.setMotion(false);
         labelPassFramesRef.current = 2;
         invalidate();
@@ -497,15 +488,16 @@ export function CityModel({
     const handleChange = () => {
       labelPassFramesRef.current = 2;
     };
-    const handleStart = () => {
+    const handleStart = (event) => {
+      if (isCameraStepEvent(event)) return;
       motionSettle.start();
       if (motion.timer) clearTimeout(motion.timer);
       motion.timer = null;
       motion.awaitingFrames = false;
-      labelControllerRef.current?.setMotion(true);
+      motion.dimPending = true;
     };
-    const handleEnd = () => {
-      if (!motionSettle.isActive()) return;
+    const handleEnd = (event) => {
+      if (isCameraStepEvent(event) || !motionSettle.isActive()) return;
       motionSettle.end();
       if (!motion.timer && !motion.awaitingFrames) settle();
     };
@@ -779,13 +771,15 @@ export function CityModel({
   }, [scene, center, invalidate]);
 
   useFrame((_, delta) => {
-    const controls = controlsRef?.current;
-
     // 카메라가 이번 프레임에 움직였는지(시점 비행, OrbitControls 감쇠, 클릭 포커스) 기록해 그동안의 클릭을 무시한다.
     const pose = cameraPoseRef.current;
     const cameraMoved = hasCameraMoved(pose, camera);
     pointerGuard.noteCameraFrame(cameraMoved);
     motionSettle.noteFrame(cameraMoved);
+    if (cameraMoved && motionRef.current.dimPending && motionSettle.isActive()) {
+      motionRef.current.dimPending = false;
+      labelControllerRef.current?.setMotion(true);
+    }
     // 움직임 끝을 기다리며 프레임을 요청해 둔 상태면 이 프레임으로 다시 본다(그 안에서 다음 프레임을 또 요청한다).
     if (motionRef.current.awaitingFrames) motionRef.current.checkSettle?.();
     if (pose) {
@@ -941,18 +935,11 @@ export function CityModel({
       }
     }
 
-    if (targetPos && controls) {
-      controls.target.lerp(targetPos, 0.08);
-      const desiredCamPos = scratchCamPos.copy(targetPos).add(FOCUS_CAMERA_OFFSET);
-      camera.position.lerp(desiredCamPos, 0.04);
-      controls.update();
-    }
-
     const stats = traverseStatsRef.current;
     if (stats) {
       const callsThisFrame = stats.calls - stats.lastCalls;
       stats.lastCalls = stats.calls;
-      if (!transitioning && !targetPos) {
+      if (!transitioning && !focusFlightRef.current) {
         stats.idleFrames += 1;
         stats.idleMax = Math.max(stats.idleMax, callsThisFrame);
         if (!stats.logged && stats.idleFrames >= 120) {
@@ -964,9 +951,9 @@ export function CityModel({
       }
     }
 
-    // 드래그가 움직인 카메라와 클릭 포커스 비행(targetPos) 중에는 근접만으로 건물·D4를 열지 않는다. 비행이 지나가는
+    // 드래그가 움직인 카메라와 클릭 포커스 비행(focusFlightRef) 중에는 근접만으로 건물·D4를 열지 않는다. 비행이 지나가는
     // 이웃 건물이 방금 클릭한 건물의 패널을 빼앗거나 D4 상세를 여는 일을 막는다. 상태는 계속 따라가서 이후 휠 줌은 그대로 동작한다.
-    const autoOpenBlocked = dragDriven || targetPos !== null;
+    const autoOpenBlocked = dragDriven || focusFlightRef.current;
     if ((onBuildingProximity || onD4Enter) && labelAnchors.length > 0) {
       let nearest = null;
       let nearestDistance = Infinity;
@@ -1167,6 +1154,17 @@ export function CityModel({
     }
   });
 
+  // 고른 건물·묶음 쪽으로 800ms 비행한다. 지금 카메라가 있는 방위에서 D4 시점과 같은 거리로 다가간다.
+  const flyToFocus = (point) => {
+    const view = focusViewFrom({ position: camera.position.toArray() }, point.toArray(), D4_CAMERA_OFFSET);
+    focusFlightRef.current = true;
+    const flown = flyFocus({ id: "focus", ...view }, {
+      onFinish: () => { focusFlightRef.current = false; },
+      onCancel: () => { focusFlightRef.current = false; },
+    });
+    if (!flown) focusFlightRef.current = false;
+  };
+
   // R3F는 pointerup에 delta를 계산하지 않는다(항상 0). 클릭 여부는 pointerGuard가 누른 위치·시간으로 판단한다.
   // 캔버스에서 시작한 누르기만 받는다. 라벨을 누른 pointerup도 R3F 래퍼로 올라와 뒤 건물을 한 번 더 선택하기 때문이다.
   const handleClick = (e) => {
@@ -1179,7 +1177,7 @@ export function CityModel({
 
     const box = new THREE.Box3().setFromObject(root);
     const center = box.getCenter(new THREE.Vector3());
-    setTargetPos(center);
+    flyToFocus(center);
 
     const size = new THREE.Vector3();
     box.getSize(size);
@@ -1260,7 +1258,7 @@ export function CityModel({
     if (members.length === 0) return;
     const sum = members.reduce((acc, anchor) => acc.add(new THREE.Vector3(...anchor.position)), new THREE.Vector3());
     sum.divideScalar(members.length);
-    setTargetPos(new THREE.Vector3(sum.x - center.x, sum.y - 6, sum.z - center.z));
+    flyToFocus(new THREE.Vector3(sum.x - center.x, sum.y - 6, sum.z - center.z));
   };
 
   // 라벨 층 콜백은 한 번만 만들고 최신 핸들러를 ref로 부른다(층의 노드 풀이 콜백 때문에 다시 그려지지 않게).
