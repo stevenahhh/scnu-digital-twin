@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { cloneElement, isValidElement, useState } from "react";
 import { isFeedDown } from "../hooks/feedStatusModel.mjs";
 import { FeedAlert } from "./FeedStatus.jsx";
 import { BuildingAnalysis } from "../features/energy/analysis";
@@ -14,6 +14,8 @@ export function EnergyTab({ buildingId, plans, feedStatus, onRetry, campusOvervi
   const date = sceneDate ?? kstToday();
   const [weatherPreset, setWeatherPreset] = useState("clear");
   const feedDown = isFeedDown(feedStatus);
+  // 레이어 토글도 피드가 끊긴 동안은 알림을 맨 위 하나에 맡긴다.
+  const layerToggle = isValidElement(campusOverview) ? cloneElement(campusOverview, { feedDown }) : campusOverview;
   return (
     <>
       <div data-qa="energy-context" className="flex flex-wrap items-center justify-between gap-2">
@@ -52,7 +54,7 @@ export function EnergyTab({ buildingId, plans, feedStatus, onRetry, campusOvervi
         weatherPreset={weatherPreset}
         feedDown={feedDown}
         onOpenRecommendation={onOpenRecommendation}
-        layerToggle={campusOverview}
+        layerToggle={layerToggle}
       />
     </>
   );

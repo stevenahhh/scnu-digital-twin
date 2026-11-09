@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createInstallationPlanClient } from "../features/energy/installations/installationPlanApi.mjs";
 import { loadRepresentativePlanOverlays } from "./representativePlanOverlay.mjs";
 import { toKoreanEnergyError } from "../features/energy/shared/energyErrorMessages.mjs";
-import { Alert } from "../ui/Alert.jsx";
 import { Button } from "../ui/Button.jsx";
 import { cx } from "../ui/cx.mjs";
 
@@ -98,13 +97,12 @@ export function RepresentativePlanOverlayController({
       </p>
     )}
     {state.status === "error" && !feedDown && (
-      <Alert
-        tone="danger"
-        source="representative-plans"
-        title="대표 설치 계획을 불러오지 못했습니다"
-        message={state.message}
-        actions={[{ label: "다시 시도", onClick: () => setAttempt((value) => value + 1) }]}
-      />
+      <div className="flex items-center gap-2">
+        <p role="alert" data-source="representative-plans" className="break-keep text-caption text-ink-muted">
+          {`대표 설치 계획을 불러오지 못했습니다 · ${state.message}`}
+        </p>
+        <Button size="sm" variant="ghost" onClick={() => setAttempt((value) => value + 1)}>다시 시도</Button>
+      </div>
     )}
   </div>;
 }
