@@ -1,5 +1,5 @@
-import { forwardRef, useCallback, useEffect, useRef } from "react";
-import { Car, ChevronLeft, ChevronRight, ChevronUp, LayoutDashboard, Leaf, Zap } from "lucide-react";
+import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
+import { Building2, ChevronRight, ChevronUp, FlaskConical, LayoutDashboard, Zap } from "lucide-react";
 import { Button } from "../ui/Button.jsx";
 import { Sheet } from "../ui/Sheet.jsx";
 import { cx } from "../ui/cx.mjs";
@@ -7,28 +7,48 @@ import { useInert } from "../hooks/useInert.mjs";
 import { DASHBOARD_TABS, DashboardPanel, dashboardTitle } from "./DashboardPanel.jsx";
 import { Wordmark } from "./Wordmark.jsx";
 
-const TAB_ICONS = { dashboard: LayoutDashboard, parking_safety: Car, energy: Zap, environment: Leaf };
+const TAB_ICONS = { building: Building2, status: LayoutDashboard, energy: Zap, simulation: FlaskConical };
 const TARGET_44 = "h-11 min-h-11 w-11 min-w-11";
-// 폰 시트 peek: 손잡이(48) + 머리 두 줄(시각·워드마크·여닫기 44, 갱신 표시·검색 44) + 사이 4 + 아래 8. 화면의 25 % 미만.
-export const SHELL_PEEK_HEIGHT = 148;
+// 폰 시트 peek: 손잡이(48) + 머리 한 줄(탭 이름·여닫기 44) + 아래 8.
+export const SHELL_PEEK_HEIGHT = 100;
+// --motion-surface와 같은 값. 레일과 HUD 자리는 슬라이드가 시작 프레임까지 포함해 다 끝난 뒤(SETTLE_MS)에 바꾼다.
+export const SURFACE_MS = 300;
+export const SETTLE_MS = SURFACE_MS + 50;
 const SURFACE_MOTION = "transition-transform duration-surface ease-[var(--motion-ease-standard)] motion-reduce:transition-none";
+const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
 
-// 패널이 차지하는 오른쪽 폭: 지도와 HUD는 이만큼 비켜 선다. 태블릿 서랍과 폰 시트는 장면 위에 겹친다.
-// D4 패인이 열리면(데스크톱·태블릿) 패널 자리가 레일 + 패인 너비(--dashboard-pane-width)로 넓어진다.
+// D4 패인이 열리면(데스크톱·태블릿) 패널 자리가 레일 + 패인 너비로 넓어진다.
 export const PANE_SHELL_WIDTH = "calc(var(--dashboard-pane-width) + var(--dashboard-rail-width))";
 
-// card: 레일 옆에 인스펙터 카드(--dashboard-inspector-width + 사이 0.5rem)가 떠 있으면 HUD도 그만큼 비킨다.
-export function shellInsetRight(mode, open, pane = false, card = false) {
+// 패널이 차지하는 오른쪽 폭: 지도와 HUD는 이만큼 비켜 선다. 태블릿 서랍과 폰 시트는 장면 위에 겹친다.
+export function shellInsetRight(mode, open, pane = false) {
   if (mode === "phone") return "0px";
   if (pane) return PANE_SHELL_WIDTH;
-  if (!open && card) return "calc(var(--dashboard-rail-width) + var(--dashboard-inspector-width) + 0.5rem)";
   if (mode === "desktop" && open) return "var(--dashboard-panel-width)";
   return "var(--dashboard-rail-width)";
 }
 
-// 56px 레일: 패널 열기 + 탭 아이콘 넷(모두 44x44). onOpen(tab?)은 그 탭으로(없으면 지금 탭으로) 패널을 연다.
-// 레일은 보이는 제목을 둘 폭이 없어 지금 화면 이름을 화면 읽기용 제목(h2)으로 둔다.
-const Rail = forwardRef(function Rail({ activeTab, onOpen, className }, toggleRef) {
+// 닫히는 동안에도 열린 것으로 본다: 내용은 패널과 함께 미끄러져 나가고 레일은 다 닫힌 뒤에 나타난다.
+export function useSettledOpen(open) {
+  const [settled, setSettled] = useState(open);
+  useEffect(() => {
+    if (open) {
+      setSettled(true);
+      return undefined;
+    }
+    if (window.matchMedia?.(REDUCED_MOTION).matches) {
+      setSettled(false);
+      return undefined;
+    }
+    const timer = window.setTimeout(() => setSettled(false), SETTLE_MS);
+    return () => window.clearTimeout(timer);
+  }, [open]);
+  return open || settled;
+}
+
+// 56px 레일: 탭 아이콘만 둔다(건물은 고른 것이 있을 때만). 아이콘을 누르면 그 탭으로 패널을 연다.
+// 레일은 보이는 제목을 둘 폭이 없어 지금 탭 이름을 화면 읽기용 제목(h2)으로 둔다.
+const Rail = forwardRef(function Rail({ activeTab, tabs, onOpen, className }, activeRef) {
   return (
     <nav
       aria-label="대시보드 레일"
@@ -36,29 +56,21 @@ const Rail = forwardRef(function Rail({ activeTab, onOpen, className }, toggleRe
       className={cx("pointer-events-auto absolute inset-y-0 flex w-[var(--dashboard-rail-width)] flex-col items-center gap-2 border-l border-hairline bg-surface-1 py-4", className)}
     >
       <h2 className="sr-only text-body">{dashboardTitle(activeTab)}</h2>
-      <Button
-        ref={toggleRef}
-        variant="ghost"
-        iconOnly
-        label="패널 열기"
-        icon={<ChevronLeft aria-hidden="true" className="h-5 w-5" />}
-        onClick={() => onOpen(null)}
-        className={TARGET_44}
-      />
-      <span aria-hidden="true" className="h-px w-8 bg-hairline" />
-      {DASHBOARD_TABS.map((tab) => {
+      {tabs.map((tab) => {
         const Icon = TAB_ICONS[tab.value];
+        const active = tab.value === activeTab;
         return (
           <Button
             key={tab.value}
+            ref={active ? activeRef : undefined}
             variant="ghost"
             iconOnly
             label={tab.label}
             data-qa={`dashboard-tab-${tab.value}`}
-            aria-current={tab.value === activeTab ? "page" : undefined}
+            aria-current={active ? "page" : undefined}
             icon={<Icon aria-hidden="true" className="h-5 w-5" />}
             onClick={() => onOpen(tab.value)}
-            className={cx(TARGET_44, tab.value === activeTab && "!bg-surface-2 !text-ink")}
+            className={cx(TARGET_44, "aria-[current=page]:bg-surface-2 aria-[current=page]:text-ink")}
           />
         );
       })}
@@ -67,48 +79,41 @@ const Rail = forwardRef(function Rail({ activeTab, onOpen, className }, toggleRe
 });
 
 // 화면 폭에 따라 패널 그릇을 고른다(useViewportMode).
-// desktop: 오른쪽 붙박이 패널, 닫으면 56px 레일(탭 아이콘 넷 + 패널 열기). transform으로 밀려난다.
-// tablet: 오른쪽에서 겹쳐 나오는 서랍(--dashboard-drawer-width), 가림막 없음, Esc로 닫고 포커스는 패널 열기로 돌아간다.
-// phone: 바텀 시트. 처음에는 peek, 탭을 누르면 full. 시트 머리에 시각과 두 칸(freshnessSlot, searchSlot)이 있다.
+// desktop: 오른쪽 붙박이 패널, 닫으면 56px 레일. transform으로 밀려난다.
+// tablet: 오른쪽에서 겹쳐 나오는 서랍(--dashboard-drawer-width), 가림막 없음, Esc로 닫고 포커스는 레일의 지금 탭으로 간다.
+// phone: 바텀 시트. 처음에는 peek(탭 이름과 여닫기), 탭을 누르면 half.
 export const DashboardShell = forwardRef(function DashboardShell(
-  {
-    mode, open, onOpenChange, detent, onDetentChange, hidden = false,
-    activeTab, onTabChange, extraTabs = [], timeReadout = null, freshnessSlot = null, searchSlot = null, footer, scrollRef,
-    inspector = null, inspectorRef, pane = null, onPaneExit, children,
-  },
+  { mode, open, onOpenChange, detent, onDetentChange, hidden = false, activeTab, onTabChange, hasSelection = false, scrollRef, pane = null, onPaneExit, children },
   panelRef,
 ) {
-  const toggleRef = useRef(null);
+  const railTabRef = useRef(null);
   const contentRef = useRef(null);
   const shellRef = useRef(null);
-  const wasOpen = useRef(open);
+  const focusRailRef = useRef(false);
+  const shown = useSettledOpen(open);
+  const railTabs = DASHBOARD_TABS.filter((tab) => tab.value !== "building" || hasSelection);
   const attachShell = useCallback((node) => {
     shellRef.current = node;
     if (typeof panelRef === "function") panelRef(node);
     else if (panelRef) panelRef.current = node;
   }, [panelRef]);
 
-  // D4 상세가 열린 동안(hidden)에는 셸 전체를, 데스크톱·태블릿에서 레일로 접힌 동안에는 패널 내용만 포커스에서 뺀다.
   useInert([shellRef], hidden, [mode]);
-  useInert([contentRef], mode !== "phone" && !open, [mode]);
-  // 서랍·패널을 닫으면(Esc 포함) 포커스를 레일의 패널 열기로 돌려준다.
+  useInert([contentRef], mode !== "phone" && !shown, [mode]);
+  // 패널을 닫을 때(Esc 포함) 포커스가 안에 있었으면, 레일이 나타난 뒤 지금 탭 아이콘으로 옮긴다.
   useEffect(() => {
-    if (wasOpen.current && !open && contentRef.current?.contains(document.activeElement)) toggleRef.current?.focus();
-    wasOpen.current = open;
+    if (!open && contentRef.current?.contains(document.activeElement)) focusRailRef.current = true;
   }, [open]);
+  useEffect(() => {
+    if (shown || !focusRailRef.current) return;
+    focusRailRef.current = false;
+    (railTabRef.current ?? shellRef.current?.querySelector("[data-qa=dashboard-rail] button"))?.focus();
+  }, [shown]);
 
-  // D4 패인(폰): 시트가 full로 올라가 패인만 담는다. 머리(시각·갱신 표시)는 접고, Esc는 패인이 단계별로 쓴다.
+  // D4 패인(폰): 시트가 full로 올라가 패인만 담는다. Esc는 패인이 단계별로 쓴다.
   if (pane && mode === "phone") {
     return (
-      <Sheet
-        ref={attachShell}
-        label="D4 상세"
-        data-qa="dashboard-panel"
-        data-pane="d4"
-        detent="full"
-        onDetentChange={() => {}}
-        escapeCollapses={false}
-      >
+      <Sheet ref={attachShell} label="D4 상세" data-qa="dashboard-panel" data-pane="d4" detent="full" escapeCollapses={false}>
         {pane}
       </Sheet>
     );
@@ -122,15 +127,15 @@ export const DashboardShell = forwardRef(function DashboardShell(
         data-qa="dashboard-panel"
         data-mode={mode}
         data-pane="d4"
-        className={cx("pointer-events-none absolute inset-y-0 right-0 z-10", SURFACE_MOTION)}
+        className="pointer-events-none absolute inset-y-0 right-0 z-10"
         style={{ width: PANE_SHELL_WIDTH }}
       >
         <div className="pointer-events-auto absolute inset-y-0 left-0 border-l border-hairline" style={{ right: "var(--dashboard-rail-width)" }}>
           {pane}
         </div>
-        <Rail ref={toggleRef} activeTab={activeTab} className="right-0" onOpen={(tab) => {
+        <Rail ref={railTabRef} activeTab={activeTab} tabs={railTabs} className="right-0" onOpen={(tab) => {
           onPaneExit?.();
-          if (tab) onTabChange(tab);
+          onTabChange(tab);
           onOpenChange(true);
         }} />
       </div>
@@ -141,7 +146,7 @@ export const DashboardShell = forwardRef(function DashboardShell(
     const expanded = detent !== "peek";
     const selectTab = (tab) => {
       onTabChange(tab);
-      // 탭을 고르면 시트를 반만 올린다(peek일 때만). 전체 높이는 사용자가 끌어 올린다(AUDIT V-S-92: 지도 절반은 남는다).
+      // 탭을 고르면 시트를 반만 올린다(peek일 때만). 전체 높이는 사용자가 끌어 올린다.
       if (detent === "peek") onDetentChange("half");
     };
     return (
@@ -155,29 +160,21 @@ export const DashboardShell = forwardRef(function DashboardShell(
         peekHeight={SHELL_PEEK_HEIGHT}
         className={hidden ? "invisible" : undefined}
         header={(
-          <div className="flex flex-col gap-1">
-            <div className="flex h-11 items-center gap-2">
-              {timeReadout && <p data-qa="sheet-time" className="shrink-0 text-body font-semibold tabular-nums text-ink">{timeReadout}</p>}
-              <Wordmark className="ml-auto shrink-0 text-ink-muted" />
-              <Button
-                variant="ghost"
-                iconOnly
-                label={expanded ? "패널 닫기" : "패널 열기"}
-                icon={<ChevronUp aria-hidden="true" className={cx("h-5 w-5", expanded && "rotate-180")} />}
-                onClick={() => onDetentChange(expanded ? "peek" : "half")}
-                className={TARGET_44}
-              />
-            </div>
-            <div className="flex min-h-11 items-center gap-2 overflow-x-auto">
-              {freshnessSlot}
-              {searchSlot && <div className="min-w-0 flex-1">{searchSlot}</div>}
-            </div>
+          <div className="flex h-11 items-center gap-2">
+            <Wordmark className="sr-only" />
+            <h2 className="min-w-0 flex-1 truncate text-title text-ink">{dashboardTitle(activeTab)}</h2>
+            <Button
+              variant="ghost"
+              iconOnly
+              label={expanded ? "패널 닫기" : "패널 열기"}
+              icon={<ChevronUp aria-hidden="true" className={cx("h-5 w-5 transition-transform duration-micro motion-reduce:transition-none", expanded && "rotate-180")} />}
+              onClick={() => onDetentChange(expanded ? "peek" : "half")}
+              className={TARGET_44}
+            />
           </div>
         )}
       >
-        {/* 고른 건물은 시트 맨 위(half 단계에서 보이는 자리)에 나온다. */}
-        {inspector && <div ref={inspectorRef} className="pb-3">{inspector}</div>}
-        <DashboardPanel activeTab={activeTab} onTabChange={selectTab} extraTabs={extraTabs} footer={footer} scrollRef={scrollRef}>
+        <DashboardPanel activeTab={activeTab} onTabChange={selectTab} showTitle={false} scrollRef={scrollRef}>
           {children}
         </DashboardPanel>
       </Sheet>
@@ -204,22 +201,19 @@ export const DashboardShell = forwardRef(function DashboardShell(
         transform: open ? "translateX(0)" : "translateX(calc(100% - var(--dashboard-rail-width)))",
       }}
     >
-      {!open && (
-        <Rail ref={toggleRef} activeTab={activeTab} className="left-0" onOpen={(tab) => {
-          if (tab) onTabChange(tab);
+      {!shown && (
+        <Rail ref={railTabRef} activeTab={activeTab} tabs={railTabs} className="left-0" onOpen={(tab) => {
+          onTabChange(tab);
           onOpenChange(true);
         }} />
       )}
-      {/* 레일로 접힌 동안 내용은 레일 밑에 남지만 보이지도, 닿지도 않는다(스크롤 위치는 그대로 지킨다). */}
-      <div ref={contentRef} aria-hidden={open ? undefined : "true"} className={cx("pointer-events-auto h-full border-l border-hairline", !open && "invisible")}>
+      {/* 레일로 접힌 동안 내용은 레일 밑에 남지만 보이지도, 닿지도 않는다(스크롤 위치와 인스펙터 펼침은 그대로 지킨다). */}
+      <div ref={contentRef} aria-hidden={shown ? undefined : "true"} className={cx("pointer-events-auto h-full border-l border-hairline", !shown && "invisible")}>
         <DashboardPanel
           activeTab={activeTab}
           onTabChange={onTabChange}
-          extraTabs={extraTabs}
-          footer={footer}
           scrollRef={scrollRef}
-          inspector={open && inspector}
-          headerAction={open && (
+          headerAction={(
             <Button
               variant="ghost"
               iconOnly
@@ -233,16 +227,6 @@ export const DashboardShell = forwardRef(function DashboardShell(
           {children}
         </DashboardPanel>
       </div>
-      {!open && inspector && (
-        // 레일로 접힌 동안 인스펙터는 레일 왼쪽의 360px 카드다(패널을 열지 않는다).
-        <div
-          ref={inspectorRef}
-          data-qa="inspector-card"
-          className="pointer-events-auto absolute right-[calc(100%+0.5rem)] top-4 max-h-[calc(100%-2rem)] w-[var(--dashboard-inspector-width)] overflow-y-auto"
-        >
-          {inspector}
-        </div>
-      )}
     </div>
   );
 });

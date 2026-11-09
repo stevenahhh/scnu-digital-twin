@@ -21,6 +21,13 @@ test("invalid fields are dropped and only valid ones come back", () => {
   assert.deepEqual(decodeViewState("?cam=1,2,,4,5,6", {}), {});
 });
 
+test("pre-redesign tab values open the tab their content moved to", () => {
+  assert.deepEqual(decodeViewState("?tab=dashboard"), { tab: "status" });
+  assert.deepEqual(decodeViewState("?tab=parking_safety"), { tab: "status" });
+  assert.deepEqual(decodeViewState("?tab=environment"), { tab: "simulation" });
+  assert.deepEqual(decodeViewState("?tab=constructor"), {});
+});
+
 test("unrelated params such as model=uni are preserved untouched", () => {
   const next = encodeViewState({ building: "BLD_C1", minute: 60 }, "?model=uni&ui=gallery&sheet=half&b=BLD_D4");
   const params = new URLSearchParams(next);

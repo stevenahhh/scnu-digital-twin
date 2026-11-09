@@ -108,7 +108,7 @@ vi.mock("./features/energy/installations/installationPlanApi.mjs", async (import
 import App from "./AppLegacy.jsx";
 import { CAMERA_PRESETS } from "./camera/cameraPresets.mjs";
 
-const C5_TABS = ["기본 현황", "주차·안전", "에너지", "환경 시뮬"];
+const C5_TABS = ["건물", "현황", "에너지", "시뮬레이션"];
 const TRAFFIC_OFFLINE = "영상 분석 서버 연결 없음";
 const TRAFFIC_LIVE = "실시간 영상 분석 중";
 const WEATHER_NETWORK = "기상 서버에 연결할 수 없습니다";
@@ -179,7 +179,7 @@ describe("Legacy and VWorld feature parity", () => {
     expect(screen.getByText("건물 에너지 시뮬레이션")).toBeTruthy();
   });
 
-  it("renders exactly the four C5 dashboard tabs in order", () => {
+  it("renders exactly the four dashboard tabs in order", () => {
     const { container } = render(<App />);
 
     const labels = [...container.querySelectorAll('[data-qa^="dashboard-tab-"]')].map((tab) => tab.textContent.trim());
@@ -211,7 +211,7 @@ describe("Legacy and VWorld feature parity", () => {
     const fetchMock = stubFetch({ traffic: rejectNetwork });
     render(<App />);
 
-    fireEvent.click(screen.getByRole("tab", { name: "주차·안전" }));
+    fireEvent.click(screen.getByRole("tab", { name: "현황" }));
     await waitFor(() => expect(countCalls(fetchMock, "/api/traffic")).toBeGreaterThan(0));
     await settlePendingFetches();
 
@@ -220,13 +220,17 @@ describe("Legacy and VWorld feature parity", () => {
     expect(screen.queryByText(TRAFFIC_LIVE)).toBeNull();
   });
 
-  it("opens 설정 as a non-blocking surface from its labelled button and closes it on Escape with focus back on 설정", async () => {
+  it("opens 설정 from the 더보기 menu as a non-blocking surface on every tab and closes it on Escape with focus back on 더보기", async () => {
     const user = userEvent.setup();
     const { container } = render(<App />);
 
     expect(screen.queryByRole("dialog")).toBeNull();
-    const trigger = screen.getByRole("button", { name: "설정" });
+    fireEvent.click(screen.getByRole("tab", { name: "시뮬레이션" }));
+    expect(screen.queryByRole("button", { name: "설정" })).toBeNull();
+    const trigger = screen.getByRole("button", { name: "더보기" });
     await user.click(trigger);
+    expect(screen.getAllByRole("menuitem").map((item) => item.textContent)).toEqual(["설정", "발표 모드P", "링크 복사"]);
+    await user.click(screen.getByRole("menuitem", { name: "설정" }));
     const dialog = screen.getByRole("dialog", { name: "설정" });
     expect(dialog.getAttribute("aria-modal")).not.toBe("true");
     expect(container.querySelector(".bg-\\[var\\(--colors-dim\\)\\], .backdrop-blur")).toBeNull();
@@ -399,7 +403,7 @@ describe("Legacy and VWorld feature parity", () => {
     expect(sceneMock.cityModelProps.selectedId).toBe("");
   });
 
-  it("centres the 3D loading notice in the map area left of the open panel, clear of the panel toggle", () => {
+  it("centres the 3D loading notice in the map area left of the open panel, clear of the panel toggle", async () => {
     sceneMock.suspend = true;
     try {
       render(<App />);
@@ -408,10 +412,12 @@ describe("Legacy and VWorld feature parity", () => {
       expect(notice.className).toMatch(/\binset-y-0\b/);
       expect(notice.className).toMatch(/\bpx-10\b/);
 
+      // 닫히는 패널은 다 닫힌 뒤(300 ms)에 자리를 내준다. 다시 열 때는 레일의 탭 아이콘을 누른다.
       fireEvent.click(screen.getByRole("button", { name: "패널 닫기" }));
-      expect(notice.style.right).toBe("var(--dashboard-rail-width)");
+      expect(notice.style.right).toBe("var(--dashboard-panel-width)");
+      await waitFor(() => expect(notice.style.right).toBe("var(--dashboard-rail-width)"));
 
-      fireEvent.click(screen.getByRole("button", { name: "패널 열기" }));
+      fireEvent.click(screen.getByRole("button", { name: "현황" }));
       expect(notice.style.right).toBe("var(--dashboard-panel-width)");
     } finally {
       sceneMock.suspend = false;
@@ -426,8 +432,9 @@ describe("Legacy and VWorld feature parity", () => {
     const menu = container.querySelector('[data-qa="camera-view-menu"]');
     const tour = container.querySelector('[data-qa="camera-tour-toggle"]');
     const presentationToggle = container.querySelector('[data-qa="presentation-toggle"]');
-    // 비교 단추는 흐려 있어도(aria-disabled) 포커스가 닿아 까닭을 읽을 수 있다.
-    const compare = container.querySelector('[data-qa="compare-open"]');
+    // 더보기(설정·발표 모드·링크 복사)는 HUD 줄 끝에 온다. 비교 열기는 HUD가 아니라 인스펙터 안에 있다.
+    const more = container.querySelector('[data-qa="more-menu"]');
+    expect(container.querySelector('[data-qa="compare-open"]')).toBeNull();
     // 건물 검색칸은 카메라 도구 모음 바로 뒤에 온다.
     const search = screen.getByRole("combobox", { name: "건물 검색" });
     const now = screen.getByRole("button", { name: "지금" });
@@ -437,10 +444,9 @@ describe("Legacy and VWorld feature parity", () => {
     const slider = screen.getByRole("slider", { name: "시각 (KST)" });
     const cameraButtons = ["확대", "축소", "왼쪽으로 회전", "오른쪽으로 회전", "처음 시점"].map((name) => screen.getByRole("button", { name }));
     const mapLayer = container.querySelector('[data-qa="campus-map-layer"]');
-    // HUD는 장면 시각과 그 옆 갱신 표시 셋(기상·교통·에너지, 새로 고침 단추)으로 시작한다.
-    const stamps = [...container.querySelectorAll('[data-qa="campus-hud"] [data-qa="freshness-stamp"] button')];
-    expect(stamps.map((button) => button.getAttribute("aria-label"))).toEqual(["기상 새로고침", "교통 새로고침", "에너지 새로고침"]);
-    const expected = [...stamps, overview, menu, tour, search, presentationToggle, compare, now, play, date, typedTime, slider, ...cameraButtons];
+    // 피드 갱신 표시와 새로 고침 단추는 HUD에 없다(현황 탭 묶음 안에 있다).
+    expect(container.querySelectorAll('[data-qa="campus-hud"] [data-qa="freshness-stamp"]')).toHaveLength(0);
+    const expected = [overview, menu, tour, search, presentationToggle, more, now, play, date, typedTime, slider, ...cameraButtons];
 
     const reached = [];
     for (let i = 0; i < expected.length; i += 1) {
@@ -566,11 +572,11 @@ describe("Legacy and VWorld feature parity", () => {
     fireEvent.change(slider, { target: { value: String(13 * 60 + 37) } });
     expect(slider.getAttribute("aria-valuetext")).toBe("13:37");
     expect(within(timeCard).getByText("13:37")).toBeTruthy();
-    // 패널 시계는 같은 장면 시각을 `장면`으로, 현재 시각은 `현재`로 붙여 보인다.
-    expect(document.querySelector('[data-qa="panel-clock"]').textContent).toMatch(/장면\s*13:37/);
+    // 장면 시각은 시간 카드 한 곳에만 보인다(패널 시계 없음).
+    expect(document.querySelector('[data-qa="panel-clock"]')).toBeNull();
 
-    // 환경 시뮬 탭에는 두 번째 시간 슬라이더(월·일·시·분)가 없다.
-    fireEvent.click(screen.getByRole("tab", { name: "환경 시뮬" }));
+    // 시뮬레이션 탭에는 두 번째 시간 슬라이더(월·일·시·분)가 없다.
+    fireEvent.click(screen.getByRole("tab", { name: "시뮬레이션" }));
     for (const name of ["월", "일", "시", "분"]) expect(screen.queryByRole("slider", { name })).toBeNull();
 
     fireEvent.click(screen.getByRole("radio", { name: "실측" }));
@@ -644,7 +650,7 @@ describe("Legacy and VWorld feature parity", () => {
     }
   });
 
-  it("frames the 3D failure notice the same way", () => {
+  it("frames the 3D failure notice the same way", async () => {
     sceneMock.fail = true;
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
@@ -655,13 +661,13 @@ describe("Legacy and VWorld feature parity", () => {
       expect(frame.className).toMatch(/\bpx-10\b/);
 
       fireEvent.click(screen.getByRole("button", { name: "패널 닫기" }));
-      expect(frame.style.right).toBe("var(--dashboard-rail-width)");
+      await waitFor(() => expect(frame.style.right).toBe("var(--dashboard-rail-width)"));
     } finally {
       sceneMock.fail = false;
       errorSpy.mockRestore();
     }
   });
-  it("shows exactly 3 alerts and 3 다시 시도 buttons when weather, traffic and energy are down", async () => {
+  it("shows one alert and one 다시 시도 per down feed in its own group (현황: weather, traffic; 에너지: energy) and none in the HUD", async () => {
     const offline = async () => {
       throw new TypeError("Failed to fetch");
     };
@@ -669,14 +675,16 @@ describe("Legacy and VWorld feature parity", () => {
     installationClient.listDetails.mockRejectedValueOnce(new TypeError("Failed to fetch"));
     const { container } = render(<App />);
     const panel = container.querySelector('[data-qa="dashboard-panel"]');
-    await waitFor(() => expect(within(panel).getAllByRole("alert")).toHaveLength(3));
-    expect(within(panel).getAllByRole("alert").map((alert) => alert.dataset.source)).toEqual(["weather", "traffic", "energy"]);
-    expect(within(panel).getAllByRole("button", { name: "다시 시도" })).toHaveLength(3);
-    // 패널이 그 피드를 보여 주는 동안 HUD 갱신 표시는 다시 시도를 되풀이하지 않는다(새로 고침 아이콘만).
-    expect(screen.getAllByRole("button", { name: /다시 시도/ })).toHaveLength(3);
+    await waitFor(() => expect(within(panel).getAllByRole("alert")).toHaveLength(2));
+    expect(within(panel).getAllByRole("alert").map((alert) => alert.dataset.source)).toEqual(["weather", "traffic"]);
+    expect(screen.getAllByRole("button", { name: /다시 시도/ })).toHaveLength(2);
+    expect(within(container.querySelector('[data-qa="campus-hud"]')).queryAllByRole("button", { name: /다시 시도|새로고침/ })).toHaveLength(0);
+    fireEvent.click(screen.getByRole("tab", { name: "에너지" }));
+    await waitFor(() => expect(within(panel).getAllByRole("alert").map((alert) => alert.dataset.source)).toEqual(["energy"]));
+    expect(screen.getAllByRole("button", { name: /다시 시도/ })).toHaveLength(1);
     expect(container.querySelector('[data-qa="weather-error-banner"]')).toBeNull();
   });
-  it("keeps the 기본 현황 tab and its scrollTop when returning from the D4 section", async () => {
+  it("keeps the 현황 tab and its scrollTop when returning from the D4 section", async () => {
     const { container } = render(<App />);
     const scroller = () => container.querySelector('[data-qa="panel-scroll"]');
     scroller().scrollTop = 300;
@@ -685,24 +693,31 @@ describe("Legacy and VWorld feature parity", () => {
     });
     expect(container.querySelector('[data-qa="dashboard-panel"]').dataset.pane).toBe("d4");
     fireEvent.click(screen.getByRole("button", { name: "D4 상세 닫기" }));
-    expect(screen.getByRole("tab", { name: "기본 현황" }).getAttribute("aria-selected")).toBe("true");
+    expect(screen.getByRole("tab", { name: "현황" }).getAttribute("aria-selected")).toBe("true");
     await waitFor(() => expect(Math.abs(scroller().scrollTop - 300)).toBeLessThanOrEqual(8));
     expect(container.querySelector('[data-qa="dashboard-panel"]').dataset.open).toBe("true");
   });
-  it("opens the selection inspector above the four tabs without changing the tab or adding a 미기후 tab", async () => {
+  it("opens the selection inspector as the content of the 건물 tab, and keeps the 에너지 tab when a building is picked there", async () => {
     stubFetch();
     const { container } = render(<App />);
-    await act(async () => {
+    const pick = () => act(async () => {
       sceneMock.cityModelProps.onSelect("BLD_C1", 1200, [0, 0, 0], "BLD_C1");
       await sceneMock.cityModelProps.onBuildingClick({ name: "BLD_C1", parent: { name: "BLD_C1" }, userData: { buildingLabel: "도서관" } });
     });
+    await pick();
     const inspector = container.querySelector('[data-qa="selection-inspector"]');
     expect(inspector).not.toBeNull();
-    expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual(["기본 현황", "주차·안전", "에너지", "환경 시뮬"]);
-    expect(screen.getByRole("tab", { name: "기본 현황" }).getAttribute("aria-selected")).toBe("true");
-    expect(inspector.compareDocumentPosition(screen.getByRole("tablist")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual(C5_TABS);
+    expect(screen.getByRole("tab", { name: "건물" }).getAttribute("aria-selected")).toBe("true");
+    expect(inspector.closest('[role="tabpanel"]')).not.toBeNull();
+    expect(container.querySelector('[data-qa="inspector-card"]')).toBeNull();
     fireEvent.click(within(inspector).getByRole("button", { name: "닫기" }));
     expect(container.querySelector('[data-qa="selection-inspector"]')).toBeNull();
+    expect(screen.getByText("지도에서 건물을 누르거나 검색하세요")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("tab", { name: "에너지" }));
+    await pick();
+    expect(screen.getByRole("tab", { name: "에너지" }).getAttribute("aria-selected")).toBe("true");
   });
   it("enters 발표 모드 with P (panel and HUD tools hidden, time kept) and Escape restores the layout", async () => {
     const user = userEvent.setup();

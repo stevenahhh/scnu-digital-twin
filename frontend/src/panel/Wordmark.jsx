@@ -5,7 +5,7 @@ export function Wordmark({ className }) {
   return (
     <h1 className={className ? `m-0 flex leading-none ${className}` : "m-0 flex leading-none"}>
       <svg role="img" aria-label="순천대학교" data-qa="wordmark" viewBox="0 0 92 22" width="92" height="22">
-        <text x="0" y="17" fill="currentColor" fontWeight="700" letterSpacing="-0.3" style={{ fontSize: "var(--text-body)" }} aria-hidden="true">순천대학교</text>
+        <text x="0" y="17" fill="currentColor" fontWeight="600" style={{ fontSize: "var(--text-body)" }} aria-hidden="true">순천대학교</text>
       </svg>
     </h1>
   );

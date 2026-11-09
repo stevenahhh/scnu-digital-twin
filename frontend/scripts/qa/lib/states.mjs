@@ -35,6 +35,18 @@ async function tapIfVisible(ctx, selector, text) {
   return false;
 }
 
+// 설정은 HUD의 `더보기` 메뉴 안에 있다(todo 4): 폰 시트를 열지 않고 연다. 메뉴가 없는 화면에서는 예전처럼
+// 패널(폰은 시트)을 열고 `설정` 단추를 누른다.
+async function openSettings(ctx) {
+  if (await ctx.b.center("[data-qa=more-menu]")) {
+    await act(ctx, "[data-qa=more-menu]");
+    await sleep(400);
+    return act(ctx, "[role=menuitem]", "설정");
+  }
+  await openPanelOnMobile(ctx);
+  return act(ctx, '[aria-label="설정"]');
+}
+
 async function wait(ctx, ms) {
   ctx.actions.push(`wait ${ms / 1000} s`);
   await sleep(ms);
@@ -194,8 +206,7 @@ export async function applyTheme(ctx, theme) {
     ctx.actions.push("theme 시스템 (prefers-color-scheme: dark emulated)");
     return true;
   }
-  await openPanelOnMobile(ctx);
-  await act(ctx, '[aria-label="설정"]');
+  await openSettings(ctx);
   await sleep(800);
   await act(ctx, "[role=dialog] button", "라이트");
   await sleep(500);
@@ -395,8 +406,7 @@ export const STATES = Object.freeze([
   {
     id: "S10", name: "settings-render-quality",
     steps: async (ctx) => {
-      await openPanelOnMobile(ctx);
-      await act(ctx, '[aria-label="설정"]');
+      await openSettings(ctx);
       await wait(ctx, 1500);
     },
     after: async (ctx) => {

@@ -60,7 +60,7 @@ export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef
     onSectionExit();
   }, [onSectionExit, viewMemory.restore]);
 
-  // 고른 건물은 선택 인스펙터가 보여 준다. 탭은 바꾸지 않는다(폰에서는 시트를 half로 올린다).
+  // 고른 건물은 건물 탭의 선택 인스펙터가 보여 준다(onSelectionShown이 그 탭으로 패널을 연다).
   const showMicroclimate = useCallback((elementId) => {
     onSelectionShown?.();
     return popup.load(elementId);
@@ -94,7 +94,7 @@ export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef
     if (buildingViewMode === "campus") openD4Section();
   }, [buildingViewMode, openD4Section]);
 
-  // 카메라가 건물에 가까이 가면(자유 줌·궤도) 그 건물을 인스펙터로 연다. 기본 현황 탭에서만 그렇게 하고,
+  // 카메라가 건물에 가까이 가면(자유 줌·궤도) 그 건물을 고른다(패널과 탭은 그대로, 레일에 건물 탭이 나타난다). 현황·건물 탭에서만 그렇게 하고,
   // 시점 버튼으로 간 자리나 사용자가 직접 고른 건물이 있는 동안에는 열거나 닫지 않는다. 모든 건물에서 멀어지면 닫는다.
   const handleBuildingProximity = useCallback((anchor) => {
     if (anchor && activePresetRef.current) return;
@@ -109,7 +109,7 @@ export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef
     }
     const { elementId } = anchor;
     if (!elementId?.startsWith("BLD_") || isD4ElementId(elementId) || buildingViewMode !== "campus") return;
-    if (activeTab !== "dashboard") return;
+    if (activeTab !== "status" && activeTab !== "building") return;
     const buildingId = buildingCodeOf(elementId);
     if (selection.selectedId && selectedBuildingId === buildingId) return;
     selectBuilding({
@@ -119,9 +119,9 @@ export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef
       estimate: anchor.estimate ?? null,
       selectionSource: "proximity",
     });
-    showMicroclimate(elementId);
-  }, [activePresetRef, activeTab, buildingViewMode, clearAll, popup.clear, selectBuilding,
-    selectedBuildingId, selection.selectedId, selectionRef, showMicroclimate]);
+    popup.load(elementId);
+  }, [activePresetRef, activeTab, buildingViewMode, clearAll, popup.clear, popup.load, selectBuilding,
+    selectedBuildingId, selection.selectedId, selectionRef]);
 
   // 공유 링크로 연 건물: 평소 고르기와 같은 길(인스펙터, D4는 패인)로 연다.
   const selectFromUrl = useCallback((elementId) => {

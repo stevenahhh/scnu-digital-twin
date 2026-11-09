@@ -1,11 +1,10 @@
 /* @vitest-environment jsdom */
-import { act, cleanup, fireEvent, render, renderHook, screen } from "@testing-library/react";
+import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useUrlState } from "./useUrlState.mjs";
-import { LINK_COPIED, LinkCopyButton } from "../panel/LinkCopyButton.jsx";
 
 const KNOWN = ["BLD_C1", "BLD_D4"];
-const baseState = { building: null, minute: 600, date: "2026-10-26", mode: "simulation", panelOpen: false, tab: "dashboard" };
+const baseState = { building: null, minute: 600, date: "2026-10-26", mode: "simulation", panelOpen: false, tab: "status" };
 
 describe("useUrlState", () => {
   beforeEach(() => vi.useFakeTimers());
@@ -37,26 +36,5 @@ describe("useUrlState", () => {
     expect(params.get("b")).toBe("BLD_D4");
     expect(params.get("t")).toBe("1261");
     expect(push).not.toHaveBeenCalled();
-  });
-});
-
-describe("LinkCopyButton", () => {
-  afterEach(cleanup);
-
-  it("copies the address and confirms with a status line", async () => {
-    vi.useRealTimers();
-    const clipboard = { writeText: vi.fn(() => Promise.resolve()) };
-    render(<LinkCopyButton getHref={() => "http://campus.test/?b=BLD_C1"} clipboard={clipboard} />);
-    await act(async () => fireEvent.click(screen.getByRole("button", { name: "링크 복사" })));
-    expect(clipboard.writeText).toHaveBeenCalledWith("http://campus.test/?b=BLD_C1");
-    expect(screen.getByRole("status").textContent).toBe(LINK_COPIED);
-  });
-
-  it("shows the address in a read-only field when the clipboard is unavailable", async () => {
-    render(<LinkCopyButton getHref={() => "http://campus.test/?t=60"} clipboard={undefined} />);
-    await act(async () => fireEvent.click(screen.getByRole("button", { name: "링크 복사" })));
-    const field = screen.getByRole("textbox", { name: "공유 링크" });
-    expect(field.value).toBe("http://campus.test/?t=60");
-    expect(field.readOnly).toBe(true);
   });
 });

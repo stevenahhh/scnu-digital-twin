@@ -31,6 +31,8 @@ vi.mock("./features/energy/campus/CampusComparisonPanel", () => ({
   CampusComparison: () => <div data-testid="campus-comparison">캠퍼스 비교</div>,
 }));
 
+vi.mock("./vworld/VWorldCampusStatus", () => ({ VWorldCampusStatus: () => <div>캠퍼스 설치 현황</div> }));
+
 import App from "./AppVWorld.jsx";
 
 beforeEach(() => {
@@ -56,15 +58,17 @@ describe("AppVWorld installation selection lifecycle", () => {
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "패널 닫기" }));
-    expect(screen.getByRole("button", { name: "패널 열기" })).toBeTruthy();
+    expect(await screen.findByRole("navigation", { name: "대시보드 레일" })).toBeTruthy();
 
+    // D4는 D4 상세(패인)로 열리므로 고르기만 해서는 패널을 열지 않는다. 레일의 현황 아이콘으로 연다.
     await user.click(screen.getByRole("button", { name: "D4 선택" }));
-    await user.click(screen.getByRole("button", { name: "패널 열기" }));
-    expect(screen.getByRole("tab", { name: "기본 현황" }).getAttribute("aria-selected")).toBe("true");
+    await user.click(screen.getByRole("button", { name: "현황" }));
+    expect(screen.getByRole("tab", { name: "현황" }).getAttribute("aria-selected")).toBe("true");
     await user.click(screen.getByRole("tab", { name: "에너지" }));
 
     expect(screen.getByRole("button", { name: "패널 닫기" })).toBeTruthy();
-    expect(document.querySelector(".dashboard-root")?.classList.contains("dashboard-root--building-focus")).toBe(true);
+    // 탭을 바꿔도 패널 폭은 같다.
+    expect(document.querySelector(".dashboard-root")?.classList.contains("dashboard-root--building-focus")).toBe(false);
     const region = screen.getByRole("region", { name: "D4 건물 전력 현황" });
     const dashboard = screen.getByTestId("building-energy-dashboard");
     const analysis = screen.getByTestId("app-representative");
@@ -73,16 +77,17 @@ describe("AppVWorld installation selection lifecycle", () => {
     expect(region.compareDocumentPosition(analysis) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(analysis.compareDocumentPosition(comparison) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
+    await user.click(screen.getByRole("tab", { name: "건물" }));
     await user.click(screen.getByRole("button", { name: "닫기", exact: true }));
-    expect(document.querySelector(".dashboard-root")?.classList.contains("dashboard-root--building-focus")).toBe(true);
+    expect(document.querySelector(".dashboard-root")?.classList.contains("dashboard-root--building-focus")).toBe(false);
   });
 
   it("does not let an older same-building representative load overwrite a newer selection", async () => {
     const user = userEvent.setup();
     render(<App />);
     await user.click(screen.getByRole("button", { name: "D4 선택" }));
-    // 선택은 탭을 바꾸지 않는다. 사용자가 에너지 탭을 연다.
-    expect(screen.getByRole("tab", { name: "기본 현황" }).getAttribute("aria-selected")).toBe("true");
+    // D4 선택은 탭을 바꾸지 않는다(D4 상세가 따로 열린다). 사용자가 에너지 탭을 연다.
+    expect(screen.getByRole("tab", { name: "현황" }).getAttribute("aria-selected")).toBe("true");
     await user.click(screen.getByRole("tab", { name: "에너지" }));
     await user.click(screen.getByRole("button", { name: "새 대표 선택" }));
     expect((await screen.findByTestId("app-representative")).textContent).toBe("plan-new");
@@ -99,18 +104,21 @@ describe("AppVWorld installation selection lifecycle", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
 
     await user.click(screen.getByRole("button", { name: "D4 상세 닫기" }));
+    // 나오면 들어가기 전 탭으로 돌아오고, 고른 D4는 건물 탭의 인스펙터에 `실내 보기`와 함께 있다.
+    await user.click(screen.getByRole("tab", { name: "건물" }));
     expect(await screen.findByRole("region", { name: "선택한 건물 D4" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "실내 보기" })).toBeTruthy();
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("keeps the 기본 현황 tab and its scrollTop when returning from the D4 section (VWorld)", async () => {
+  it("keeps the 현황 tab and its scrollTop when returning from the D4 section (VWorld)", async () => {
     const user = userEvent.setup();
     const { container } = render(<App />);
     const scroller = () => container.querySelector('[data-qa="panel-scroll"]');
     scroller().scrollTop = 300;
     await user.click(screen.getByRole("button", { name: "D4 상세 열기" }));
     await user.click(screen.getByRole("button", { name: "D4 상세 닫기" }));
-    expect(screen.getByRole("tab", { name: "기본 현황" }).getAttribute("aria-selected")).toBe("true");
+    expect(screen.getByRole("tab", { name: "현황" }).getAttribute("aria-selected")).toBe("true");
     // 패널 내용은 다시 그려지고, 스크롤은 다음 화면 갱신에서 되돌린다.
     await waitFor(() => expect(Math.abs(scroller().scrollTop - 300)).toBeLessThanOrEqual(8));
   });
@@ -136,10 +144,11 @@ describe("AppVWorld installation selection lifecycle", () => {
     const renderer = screen.getByTestId("vworld-renderer");
     expect(renderer.dataset.overlayInsetRight).toBe("var(--dashboard-panel-width)");
 
+    // 닫히는 패널은 다 닫힌 뒤(300 ms)에 자리를 내준다.
     await user.click(screen.getByRole("button", { name: "패널 닫기" }));
-    expect(renderer.dataset.overlayInsetRight).toBe("var(--dashboard-rail-width)");
+    await waitFor(() => expect(renderer.dataset.overlayInsetRight).toBe("var(--dashboard-rail-width)"));
 
-    await user.click(screen.getByRole("button", { name: "패널 열기" }));
+    await user.click(screen.getByRole("button", { name: "현황" }));
     expect(renderer.dataset.overlayInsetRight).toBe("var(--dashboard-panel-width)");
 
     // 폰 폭에서는 패널이 바텀 시트라 지도 오버레이가 화면 폭 전체를 쓴다.
@@ -159,7 +168,7 @@ describe("AppVWorld installation selection lifecycle", () => {
     expect(tint.style.right).toBe("var(--dashboard-panel-width)");
 
     await user.click(screen.getByRole("button", { name: "패널 닫기" }));
-    expect(tint.style.right).toBe("var(--dashboard-rail-width)");
+    await waitFor(() => expect(tint.style.right).toBe("var(--dashboard-rail-width)"));
   });
 
   it("turns the panel into the D4 pane beside the rail while the D4 detail is open and restores the panel after it closes", async () => {
@@ -173,7 +182,7 @@ describe("AppVWorld installation selection lifecycle", () => {
 
     await user.click(screen.getByRole("button", { name: "D4 상세 열기" }));
     expect(screen.queryByRole("button", { name: "패널 닫기" })).toBeNull();
-    // 패널 자리는 D4 패인(레일 왼쪽)이 되고, 레일의 탭 넷은 그대로 보인다.
+    // 패널 자리는 D4 패인(레일 왼쪽)이 되고, 레일의 탭 아이콘은 그대로 보인다.
     expect(panel().dataset.pane).toBe("d4");
     expect(screen.getByRole("navigation", { name: "대시보드 레일" })).toBeTruthy();
     expect(screen.getByTestId("vworld-renderer").dataset.overlayInsetRight).toBe("calc(var(--dashboard-pane-width) + var(--dashboard-rail-width))");
