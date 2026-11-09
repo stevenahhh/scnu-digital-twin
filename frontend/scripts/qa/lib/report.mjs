@@ -16,17 +16,22 @@ export function exitCodeFor({ usageError = false, entries = [], scenarios = [], 
   return EXIT.OK;
 }
 
-// One row per check id: FAIL when any evaluation failed or it was never evaluated.
+// One row per check id: FAIL when any evaluation failed or it was never evaluated. An `na` evaluation (a row that does not
+// apply to the tablet viewport T) is neither a pass nor a fail: it is counted apart, and an id with only n/a rows reports
+// pass with measured "n/a".
 export function rollupChecks(requestedIds, entries) {
   return requestedIds.map((id) => {
-    const rows = entries.filter((entry) => entry.id === id);
+    const all = entries.filter((entry) => entry.id === id);
+    const rows = all.filter((entry) => !entry.na);
     const failures = rows.filter((entry) => entry.pass !== true);
+    const onlyNa = rows.length === 0 && all.length > 0;
     return {
       id,
-      pass: rows.length > 0 && failures.length === 0,
+      pass: onlyNa || (rows.length > 0 && failures.length === 0),
       evaluations: rows.length,
       failures: failures.length,
-      measured: (failures[0] ?? rows[0])?.measured ?? "not evaluated",
+      na: all.length - rows.length,
+      measured: onlyNa ? all[0].measured : (failures[0] ?? rows[0])?.measured ?? "not evaluated",
       expected: (failures[0] ?? rows[0])?.expected ?? null,
     };
   });
@@ -102,8 +107,8 @@ export function renderIndex(scenarios) {
   for (const s of scenarios) {
     const [entry, keyRest] = s.key.split("/");
     const rest = keyRest.split("@")[0];
-    const m = rest.match(/^(.*)-(D|P)-(dark|light)$/);
-    lines.push(`| \`${s.file}\` | ${m?.[1] ?? rest} | ${m?.[2] === "P" ? "390x844 @2x" : "1440x900"} | ${m?.[3] ?? "-"} | ${entry} | ${fmt(describe(s.visible))} | ${fmt((s.console ?? []).join("<br>") || "none new")} |`);
+    const m = rest.match(/^(.*)-(D|P|T)-(dark|light)$/);
+    lines.push(`| \`${s.file}\` | ${m?.[1] ?? rest} | ${{ P: "390x844 @2x", T: "834x1194 @2x" }[m?.[2]] ?? "1440x900"} | ${m?.[3] ?? "-"} | ${entry} | ${fmt(describe(s.visible))} | ${fmt((s.console ?? []).join("<br>") || "none new")} |`);
   }
   return `${lines.join("\n")}\n`;
 }
@@ -115,7 +120,7 @@ export function writeReport({ outDir, afterDir, args, entries, scenarios, unavai
     generatedAt: new Date().toISOString(),
     command: args.command,
     exitCode,
-    entries: entries.map(({ id, entry, state, viewport, theme, pass, measured, expected }) => ({ id, entry, state, viewport, theme, pass, measured, expected })),
+    entries: entries.map(({ id, entry, state, viewport, theme, pass, na, measured, expected }) => ({ id, entry, state, viewport, theme, pass, ...(na ? { na: true } : {}), measured, expected })),
     checks,
     scenarios: scenarios.map(({ key, file, dhash, rects, baseline, actions, console }) => ({ key, file, dhash, rects, baseline, actions, console })),
     unavailableEntries,
