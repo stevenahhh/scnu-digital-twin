@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { ORBIT_LIMITS, TILT_LIMITS, clearOrbitInertia, isCameraStepEvent, panPositions, rotatePosition, tiltPosition, zoomBy, zoomPosition } from "./cameraCommands.mjs";
+import { ORBIT_DAMPING_FACTOR, ORBIT_LIMITS, TILT_LIMITS, clearOrbitInertia, frameDampingFactor, isCameraStepEvent, panPositions, rotatePosition, tiltPosition, zoomBy, zoomPosition } from "./cameraCommands.mjs";
 
 const close = (actual, expected) => actual.forEach((value, index) => assert.ok(Math.abs(value - expected[index]) < 1e-9, `${actual} vs ${expected}`));
 
@@ -64,4 +64,12 @@ test("button and key steps tag their start/end so labels and resolution are left
   zoomBy(controls, 0.8);
   assert.deepEqual(events.map((event) => [event.type, isCameraStepEvent(event)]), [["start", true], ["end", true]]);
   assert.equal(isCameraStepEvent({ type: "start" }), false);
+});
+
+test("orbit damping decays by time: one 100 ms frame removes what six 60 fps frames remove", () => {
+  assert.ok(Math.abs(frameDampingFactor(1 / 60) - ORBIT_DAMPING_FACTOR) < 1e-12);
+  assert.ok(Math.abs((1 - frameDampingFactor(0.1)) - (1 - ORBIT_DAMPING_FACTOR) ** 6) < 1e-12);
+  // 오래 멈췄다 그린 첫 프레임은 500 ms로 자른다. 시간을 모르면 기준값을 쓴다.
+  assert.equal(frameDampingFactor(5), frameDampingFactor(0.5));
+  assert.equal(frameDampingFactor(Number.NaN), ORBIT_DAMPING_FACTOR);
 });

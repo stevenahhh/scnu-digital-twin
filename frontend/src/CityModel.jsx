@@ -21,7 +21,7 @@ import {
 import { isAnchorOccludedByTerrain } from "./utils/campusLabelVisibility.mjs";
 import { CAMERA_PRESETS, D4_CAMERA_OFFSET, focusViewFrom } from "./camera/cameraPresets.mjs";
 import { useFlyTo } from "./camera/useFlyTo.mjs";
-import { isCameraStepEvent } from "./camera/cameraCommands.mjs";
+import { frameDampingFactor, isCameraStepEvent } from "./camera/cameraCommands.mjs";
 import { CampusLabelLayer } from "./labels/CampusLabelLayer.jsx";
 import { resolveLabelBand } from "./labels/labelBands.mjs";
 import { SETTLE_MS, createMotionSettle } from "./labels/motionSettle.mjs";
@@ -771,6 +771,9 @@ export function CityModel({
   }, [scene, center, invalidate]);
 
   useFrame((_, delta) => {
+    // 끌기 뒤 관성은 프레임 수가 아니라 시간으로 줄어든다(느린 화면에서도 60fps와 같은 시간 안에 멈춘다).
+    const controls = controlsRef?.current;
+    if (controls?.enableDamping) controls.dampingFactor = frameDampingFactor(delta);
     // 카메라가 이번 프레임에 움직였는지(시점 비행, OrbitControls 감쇠, 클릭 포커스) 기록해 그동안의 클릭을 무시한다.
     const pose = cameraPoseRef.current;
     const cameraMoved = hasCameraMoved(pose, camera);
