@@ -23,7 +23,7 @@ function Tower({ wing, x, isActive, onSelectFloor }) {
     <group position={[x, 0, 0]}>
       <Html position={[0, (levels[levels.length - 1] + 1) * FLOOR_STEP + 0.15, 0]} center style={{ pointerEvents: "none" }}>
         <div
-          className={cx("pointer-events-none whitespace-nowrap", D4_SCENE_LABEL, "text-body", isActive && "ring-2 ring-primary")}
+          className={cx("pointer-events-none whitespace-nowrap", D4_SCENE_LABEL, "text-body", isActive && "text-primary")}
         >
           {wing.label}
         </div>

@@ -1,7 +1,6 @@
 import { D4WingFloorScene } from "./D4WingFloorScene";
 import { D4SampleBadge } from "./D4SampleBadge";
-import { D4ScrollRoot } from "./D4ScrollRoot";
-import { D4_CARD, floorLabel } from "./d4Shared.mjs";
+import { D4_CARD, D4_COLUMN, floorLabel } from "./d4Shared.mjs";
 import { formatRoomNumber, getWingById } from "../utils/d4BuildingData.mjs";
 import { Segmented } from "../ui/Segmented.jsx";
 import { StatusBadge } from "../ui/StatusBadge.jsx";
@@ -43,16 +42,16 @@ function InUseRoomList({ rooms, onSelectRoom }) {
   );
 }
 
-// D4 날개·층 고르기(패인의 건물 단계). 장면이 맨 위, 그 아래 동 선택, beforeList(폰의 캠퍼스 시점 줄), 사용 중인 강의실 목록.
+// D4 날개·층 고르기(패인의 건물 단계). 장면이 맨 위, 그 아래 동 선택, 사용 중인 강의실 목록.
 // 제목과 돌아가기는 패인 머리(브레드크럼·상위로) 하나뿐이다.
-export function D4WingFloorSelect({ building, activeWingId, onSelectWing, onSelectFloor, inUseRooms = [], onSelectInUseRoom, beforeList = null }) {
+export function D4WingFloorSelect({ building, activeWingId, onSelectWing, onSelectFloor, inUseRooms = [], onSelectInUseRoom }) {
   return (
-    <D4ScrollRoot>
+    <div className={D4_COLUMN}>
       <div className="flex w-full shrink-0 flex-col items-center gap-4">
         <div className="h-[32vh] min-h-[240px] w-full sm:h-[40vh]" title={HINT} aria-description={HINT}>
           <D4WingFloorScene building={building} activeWingId={activeWingId} onSelectFloor={onSelectFloor} />
         </div>
-        <div className="w-full max-w-xs">
+        <div className="w-full">
           <Segmented
             kind="radio"
             label="동 선택"
@@ -62,8 +61,7 @@ export function D4WingFloorSelect({ building, activeWingId, onSelectWing, onSele
           />
         </div>
       </div>
-      {beforeList}
       <InUseRoomList rooms={inUseRooms} onSelectRoom={onSelectInUseRoom} />
-    </D4ScrollRoot>
+    </div>
   );
 }
