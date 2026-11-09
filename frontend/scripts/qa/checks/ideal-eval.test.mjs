@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  IS_IDS, compareNameSets, controlBudgetLimit, countAtMost, cropImage, duplicateValues, hookMissing, hudPanelViolations, isLayoutTransition,
+  CAMERA_STILL_MAX_DEG, CAMERA_STILL_MAX_M, IS_IDS, cameraMotion, compareNameSets, controlBudgetLimit, countAtMost, cropImage, duplicateValues, hookMissing, hudPanelViolations, isLayoutTransition,
   kstDate, lineCount, loadingProblems, minimum, nearestSample, overlappingPairs, presentationExtras, rectsOverlap, regionDistance,
   stoppedAfterD4, tabsMatch, undersized,
 } from "./ideal-eval.mjs";
@@ -138,6 +138,26 @@ test("IS-38 minimum ignores missing readings; IS-40 needs a still slider and the
   assert.equal(stoppedAfterD4({ before: 1140, after: 1150, tourPressed: "false" }), false);
   assert.equal(stoppedAfterD4({ before: 1140, after: 1140, tourPressed: "true" }), false);
   assert.equal(stoppedAfterD4({ before: null, after: null, tourPressed: "false" }), false);
+});
+
+test("cameraMotion flags an orbit (4 deg/s for 2 s) and accepts a still camera", () => {
+  assert.equal(CAMERA_STILL_MAX_DEG, 0.5);
+  assert.equal(CAMERA_STILL_MAX_M, 1);
+  const at1500 = { heading: 6, position: [0, 0, 0] };
+  const orbit = cameraMotion(at1500, { heading: 14, position: [0.3, 0, 0] });
+  assert.equal(orbit.still, false);
+  assert.equal(orbit.headingDeltaDeg, 8);
+  assert.equal(orbit.positionDeltaM, 0.3);
+  const still = cameraMotion(at1500, { heading: 6.2, position: [0.4, 0.3, 0] });
+  assert.equal(still.still, true);
+  assert.equal(still.positionDeltaM, 0.5);
+  // Heading wraps: 359 -> 1 is a 2 degree turn, not 358.
+  assert.equal(cameraMotion({ heading: 359, position: [0, 0, 0] }, { heading: 1, position: [0, 0, 0] }).headingDeltaDeg, 2);
+  // A position move alone (pan or dolly) is motion too.
+  assert.equal(cameraMotion({ heading: 0, position: [0, 0, 0] }, { heading: 0, position: [0, 0, 1.5] }).still, false);
+  // A missing pose is never "still".
+  assert.equal(cameraMotion(null, at1500).still, false);
+  assert.equal(cameraMotion(at1500, { heading: Number.NaN, position: [0, 0, 0] }).still, false);
 });
 
 test("kstDate gives the scene date in KST", () => {

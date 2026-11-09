@@ -99,12 +99,49 @@ async function domSample(ctx) {
   });
 }
 
+// In-page, self-contained: the live camera pose { source, heading (deg), position [x, y, z] (m) }, or null.
+// VWorld: the Cesium camera of window.ws3d.viewer (the same handle checks/common.mjs saveCamera uses).
+// Legacy: the OrbitControls instance AppLegacy hands its DOM-side components as `controlsRef`, found through React props;
+// heading is the camera's azimuth around the controls target.
+export function readCameraPose() {
+  const cam = window.ws3d?.viewer?.camera;
+  if (cam?.positionWC && Number.isFinite(cam.heading)) {
+    const p = cam.positionWC;
+    return { source: "ws3d.viewer.camera", heading: (cam.heading * 180) / Math.PI, position: [p.x, p.y, p.z] };
+  }
+  const host = document.getElementById("root");
+  const key = host && Object.keys(host).find((k) => k.startsWith("__reactContainer$"));
+  if (!key) return null;
+  const isControls = (c) => Boolean(c?.object?.isCamera && c.target?.isVector3);
+  const fromProps = (props) => {
+    if (!props || typeof props !== "object") return null;
+    for (const value of Object.values(props)) {
+      if (!value || typeof value !== "object") continue;
+      if (isControls(value.current)) return value.current;
+      if (isControls(value.controlsRef?.current)) return value.controlsRef.current;
+    }
+    return null;
+  };
+  const stack = [host[key]];
+  let controls = null;
+  for (let visited = 0; stack.length && !controls && visited < 50000; visited += 1) {
+    const fiber = stack.pop();
+    controls = fromProps(fiber.memoizedProps);
+    if (fiber.sibling) stack.push(fiber.sibling);
+    if (fiber.child) stack.push(fiber.child);
+  }
+  if (!controls) return null;
+  const c = controls.object.position;
+  const t = controls.target;
+  return { source: "OrbitControls (controlsRef) via React props", heading: (Math.atan2(c.x - t.x, c.z - t.z) * 180) / Math.PI, position: [c.x, c.y, c.z] };
+}
+
 // Samples the DOM (and optionally screenshots) at fixed offsets after a trigger action. With `shots`, the page is also
-// captured at SHOT_OFFSETS_MS (memo `<state>:shots`: { [offset]: png, actualMs: { [offset]: ms } }).
+// captured at SHOT_OFFSETS_MS (memo `<state>:shots`: { [offset]: png, actualMs: { [offset]: ms }, pose: { [offset]: pose } }).
 async function samplesAfterTrigger(ctx, label, { shots = false } = {}) {
   const start = Date.now();
   const samples = [];
-  const captured = { actualMs: {} };
+  const captured = { actualMs: {}, pose: {} };
   const schedule = [...SAMPLE_OFFSETS_MS.map((offset) => ({ offset, dom: true })), ...(shots ? SHOT_OFFSETS_MS.map((offset) => ({ offset, shot: true })) : [])]
     .sort((a, b) => a.offset - b.offset);
   for (const step of schedule) {
@@ -112,6 +149,7 @@ async function samplesAfterTrigger(ctx, label, { shots = false } = {}) {
     if (remaining > 0) await sleep(remaining);
     if (step.shot) {
       captured.actualMs[step.offset] = Date.now() - start;
+      captured.pose[step.offset] = await ctx.b.run(readCameraPose);
       captured[step.offset] = await ctx.b.screenshot();
       continue;
     }

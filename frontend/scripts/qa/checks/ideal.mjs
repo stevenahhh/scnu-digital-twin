@@ -10,10 +10,11 @@ import { decode } from "../lib/probe.mjs";
 import { sleep } from "../lib/browser.mjs";
 import { readFixtureRequests, waitFixturesAnswered } from "../lib/fixtures.mjs";
 import { openPanel, openTab, panelState, pickTabValue, TAB_ROLES, tabSelector } from "../lib/tabs.mjs";
+import { readCameraPose } from "../lib/states.mjs";
 import { restoreCamera, saveCamera } from "./common.mjs";
 import { IDEAL_ROWS } from "./ideal-rows.mjs";
 import {
-  STILL_MAX_BITS, compareNameSets, controlBudgetLimit, countAtMost, countExactly, duplicateValues, hookMissing, hudPanelViolations,
+  CAMERA_STILL_MAX_DEG, CAMERA_STILL_MAX_M, STILL_MAX_BITS, cameraMotion, compareNameSets, controlBudgetLimit, countAtMost, countExactly, duplicateValues, hookMissing, hudPanelViolations,
   isLayoutTransition, kstDate, lineCount, loadingProblems, minimum, nearestSample, overlappingPairs, presentationExtras,
   regionDistance, stoppedAfterD4, tabsMatch, undersized, verdict,
 } from "./ideal-eval.mjs";
@@ -704,13 +705,129 @@ export const IDEAL_CHECKS_LIST = [
     scenarios: [sc(["S04"], ["D"])],
     async run(ctx) {
       const shots = ctx.memo.get(`${ctx.stateLabel}:shots`);
-      const expected = `map dHash distance between 1500 and 3500 ms after the chip tap <= ${STILL_MAX_BITS} bits`;
+      // The verdict reads the camera itself: VWorld's post-selection orbit (4 deg/s) moves the view about 8 deg in these
+      // 2 s, which a 9x8 dHash of the map scored as 0 bits on origin/dev. The dHash stays in `measured` for reference.
+      const expected = `camera heading change <= ${CAMERA_STILL_MAX_DEG} deg and position change <= ${CAMERA_STILL_MAX_M} m between 1500 and 3500 ms after the chip tap`;
       if (!shots?.[1500] || !shots?.[3500]) return verdict(false, "no S04 screenshots at 1500/3500 ms", expected);
       const region = await mapRegion(ctx);
-      if (!region) return hookMissing("canvas", expected);
-      const distance = regionDistance(decode(shots[1500]), decode(shots[3500]), region, ctx.scale);
-      return verdict(distance <= STILL_MAX_BITS, { distance, region, actualMs: shots.actualMs }, expected);
+      const dHashDistance = region ? regionDistance(decode(shots[1500]), decode(shots[3500]), region, ctx.scale) : null;
+      const from = shots.pose?.[1500];
+      const to = shots.pose?.[3500];
+      if (!from || !to) {
+        return hookMissing(ctx.entry === "vworld" ? "window.ws3d.viewer.camera" : "OrbitControls (controlsRef) via React props", expected, { dHashDistance, actualMs: shots.actualMs });
+      }
+      const motion = cameraMotion(from, to);
+      return verdict(motion.still, {
+        headingDeltaDeg: motion.headingDeltaDeg, positionDeltaM: motion.positionDeltaM, source: from.source,
+        heading: { 1500: Math.round(from.heading * 1000) / 1000, 3500: Math.round(to.heading * 1000) / 1000 },
+        position: { 1500: from.position.map((v) => Math.round(v * 10) / 10), 3500: to.position.map((v) => Math.round(v * 10) / 10) },
+        dHashDistance, actualMs: shots.actualMs,
+      }, expected);
     },
+    // S04 taps 도서관 right after the 도서관 preset, so the building is already central and VWorld's focusLabelPosition
+    // skips focus() (no flight, no orbit). This part taps the visible chip farthest from the map centre, which does
+    // focus the camera, reads the pose at 1500 and 3500 ms, then stops any orbit and replays S04's preset + chip.
+    // VWorld is judged twice: the rendered Cesium camera, and the pose the app commands through map.lookat.moveTo
+    // (cameraFocus.mjs orbit). Under headless SwiftShader the SDK does not apply the per-frame moveTo calls, so on
+    // origin/dev the rendered camera stays put while the commanded heading climbs 4 deg/s; either moving is a FAIL.
+    parts: [{
+      scenarios: [sc(["S04"], ["D"])],
+      mutates: true,
+      async run(ctx) {
+        const expected = `off-centre chip tap: camera heading change <= ${CAMERA_STILL_MAX_DEG} deg and position change <= ${CAMERA_STILL_MAX_M} m between 1500 and 3500 ms`;
+        // The 도서관 preset is too close for a chip outside the central band; the 전체 preset shows the whole campus.
+        await ctx.b.tap("[data-qa=camera-preset-overview]", null, { timeoutMs: 4000 });
+        await ctx.b.cameraSettle();
+        await sleepMs(ctx.entry === "vworld" ? 1500 : 300);
+        const region = await mapRegion(ctx);
+        if (!region) return hookMissing("canvas", expected);
+        const chip = await ip(ctx, (I, r) => {
+          // Off-centre the way VWorldRenderer focusLabelPosition decides it: outside the central 60% of the canvas.
+          const canvas = [...document.querySelectorAll("canvas")].sort((a, b) => b.clientWidth * b.clientHeight - a.clientWidth * a.clientHeight)[0];
+          const c = canvas.getBoundingClientRect();
+          const cx = c.left + c.width / 2;
+          const cy = c.top + c.height / 2;
+          const chips = [...document.querySelectorAll("button[data-qa=campus-label]")].filter(I.isVisible)
+            .filter((el) => el.getAttribute("data-state") !== "selected")
+            .map((el) => { const b = el.getBoundingClientRect(); return { el, name: el.textContent.trim(), x: b.left + b.width / 2, y: b.top + b.height / 2 }; })
+            .filter((c) => c.x > r.x + 40 && c.x < r.x + r.w - 40 && c.y > r.y + 80 && c.y < r.y + r.h - 80)
+            .filter((p) => Math.abs(p.x - cx) > c.width * 0.3 + 20 || Math.abs(p.y - cy) > c.height * 0.3 + 20)
+            .filter((c) => document.elementFromPoint(c.x, c.y)?.closest("button[data-qa=campus-label]") === c.el)
+            .sort((p, q) => Math.hypot(q.x - cx, q.y - cy) - Math.hypot(p.x - cx, p.y - cy));
+          return chips[0] ? { name: chips[0].name, x: Math.round(chips[0].x), y: Math.round(chips[0].y) } : null;
+        }, region);
+        if (!chip) return verdict(false, { measured: "no off-centre chip in the map area", region }, expected);
+        const round = (pose) => pose && { heading: Math.round(pose.heading * 1000) / 1000, position: pose.position.map((v) => Math.round(v * 10) / 10) };
+        // Latest pose the app sent to map.lookat.moveTo: heading in deg, position in metres east/north/up of the first call.
+        const commandedPose = () => ctx.b.run(() => {
+          const calls = window.__qaMoveTo ?? [];
+          const first = calls[0]?.arg?.location;
+          const last = calls.at(-1)?.arg;
+          if (!first || !last?.location || !Number.isFinite(last.direction?.heading)) return null;
+          const k = Math.cos((first.y * Math.PI) / 180);
+          return { source: "map.lookat.moveTo (commanded)", heading: last.direction.heading, calls: calls.length,
+            position: [(last.location.x - first.x) * 111320 * k, (last.location.y - first.y) * 110574, last.location.z - first.z] };
+        });
+        let result;
+        try {
+          const wrapped = await ctx.b.run(() => {
+            const lookat = window.__scnuVWorldMapInstance?.lookat;
+            window.__qaMoveTo = [];
+            if (!lookat || typeof lookat.moveTo !== "function") return false;
+            if (lookat.__qaWrapped) return true;
+            const original = lookat.moveTo.bind(lookat);
+            lookat.moveTo = (...args) => {
+              const a = args[0];
+              window.__qaMoveTo.push({ t: performance.now(), arg: { location: a?.location ? { x: a.location.x, y: a.location.y, z: a.location.z } : null, direction: a?.direction ? { heading: a.direction.heading, tilt: a.direction.tilt } : null } });
+              return original(...args);
+            };
+            lookat.__qaWrapped = true;
+            return true;
+          });
+          if (ctx.entry === "vworld" && !wrapped) return hookMissing("window.__scnuVWorldMapInstance.lookat.moveTo", expected, { chip: chip.name });
+          await ctx.b.view.click(chip.x, chip.y);
+          const t0 = Date.now();
+          await sleepMs(1500 - (Date.now() - t0));
+          const from = await ctx.b.run(readCameraPose);
+          const fromCommand = await commandedPose();
+          const fromMs = Date.now() - t0;
+          await sleepMs(3500 - (Date.now() - t0));
+          const to = await ctx.b.run(readCameraPose);
+          const toCommand = await commandedPose();
+          const toMs = Date.now() - t0;
+          if (!from || !to) return hookMissing(ctx.entry === "vworld" ? "window.ws3d.viewer.camera" : "OrbitControls (controlsRef) via React props", expected, { chip: chip.name });
+          const rendered = cameraMotion(from, to);
+          // No moveTo between the two reads means nothing was commanded in that window (still); a stream of calls is judged on its poses.
+          const commanded = fromCommand && toCommand ? cameraMotion(fromCommand, toCommand) : null;
+          const commandedMoved = Boolean(commanded && !commanded.still);
+          result = verdict(rendered.still && !commandedMoved, {
+            chip: chip.name,
+            headingDeltaDeg: commandedMoved ? commanded.headingDeltaDeg : rendered.headingDeltaDeg,
+            positionDeltaM: commandedMoved ? commanded.positionDeltaM : rendered.positionDeltaM,
+            rendered: { source: from.source, headingDeltaDeg: rendered.headingDeltaDeg, positionDeltaM: rendered.positionDeltaM, 1500: round(from), 3500: round(to) },
+            commanded: commanded ? { headingDeltaDeg: commanded.headingDeltaDeg, positionDeltaM: commanded.positionDeltaM, calls: toCommand.calls, 1500: round(fromCommand), 3500: round(toCommand) } : { calls: (await ctx.b.run(() => window.__qaMoveTo?.length ?? 0)) },
+            actualMs: { 1500: fromMs, 3500: toMs },
+          }, expected);
+        } finally {
+          // The orbit stops only on user input on the map viewport (pointerdown, wheel, touchstart, keydown).
+          await ctx.b.run(() => {
+            const canvas = [...document.querySelectorAll("canvas")].sort((a, b) => b.clientWidth * b.clientHeight - a.clientWidth * a.clientHeight)[0];
+            canvas?.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, isPrimary: true }));
+            canvas?.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, isPrimary: true }));
+            return true;
+          });
+          const before = await ctx.b.run(() => window.__qaMoveTo?.length ?? 0);
+          await sleepMs(500);
+          const after = await ctx.b.run(() => window.__qaMoveTo?.length ?? 0);
+          await ctx.b.tap("[data-qa=camera-preset-library]", null, { timeoutMs: 4000 });
+          await ctx.b.cameraSettle();
+          await ctx.b.tap(CHIP, "도서관", { timeoutMs: 4000 });
+          await ctx.b.cameraSettle();
+          if (result?.measured && typeof result.measured === "object") result.measured.orbitStoppedByCleanup = after === before;
+        }
+        return result;
+      },
+    }],
   }),
   defineIdeal("IS-32", {
     ...actingOnly,

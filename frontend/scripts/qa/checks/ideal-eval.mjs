@@ -111,6 +111,20 @@ export function regionDistance(a, b, region, scale = 1) {
 
 export const STILL_MAX_BITS = 2;
 
+// IS-31: camera pose change between two samples. A pose is { heading (deg), position [x, y, z] (m) }. A slow orbit
+// (VWorld cameraFocus.mjs turns 4 deg/s) is invisible to a 9x8 dHash, so the camera itself is read.
+export const CAMERA_STILL_MAX_DEG = 0.5;
+export const CAMERA_STILL_MAX_M = 1;
+const round3 = (value) => Math.round(value * 1000) / 1000;
+export function cameraMotion(a, b) {
+  const ok = (p) => p && Number.isFinite(p.heading) && Array.isArray(p.position) && p.position.length === 3 && p.position.every(Number.isFinite);
+  if (!ok(a) || !ok(b)) return { still: false, headingDeltaDeg: null, positionDeltaM: null };
+  const turn = Math.abs(b.heading - a.heading) % 360;
+  const headingDeltaDeg = round3(Math.min(turn, 360 - turn));
+  const positionDeltaM = round3(Math.hypot(...a.position.map((v, i) => b.position[i] - v)));
+  return { still: headingDeltaDeg <= CAMERA_STILL_MAX_DEG && positionDeltaM <= CAMERA_STILL_MAX_M, headingDeltaDeg, positionDeltaM };
+}
+
 // IS-34: samples [{ t, hudRight, panelLeft }]; the HUD's right edge never passes the panel's left edge.
 export function hudPanelViolations(samples) {
   return samples.filter((sample) => sample.hudRight == null || sample.panelLeft == null || sample.hudRight > sample.panelLeft + 0.5);
