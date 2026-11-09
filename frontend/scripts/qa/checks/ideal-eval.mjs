@@ -125,6 +125,24 @@ export function cameraMotion(a, b) {
   return { still: headingDeltaDeg <= CAMERA_STILL_MAX_DEG && positionDeltaM <= CAMERA_STILL_MAX_M, headingDeltaDeg, positionDeltaM };
 }
 
+// IS-31/IS-38: two reads of { rendered, commanded } poses. rendered = the live camera; commanded = the latest pose the
+// app sent to VWorld map.lookat.moveTo (null when there is no such stream, as in Legacy). Either moving is motion;
+// a missing rendered pose is never still. `by` names the reading that decided the deltas.
+export function cameraVerdict(from, to) {
+  const rendered = cameraMotion(from?.rendered, to?.rendered);
+  const commanded = from?.commanded && to?.commanded ? cameraMotion(from.commanded, to.commanded) : null;
+  const commandedMoved = Boolean(commanded && !commanded.still);
+  const pick = commandedMoved ? commanded : rendered;
+  return {
+    still: rendered.still && !commandedMoved,
+    by: commandedMoved ? "commanded" : "rendered",
+    headingDeltaDeg: pick.headingDeltaDeg,
+    positionDeltaM: pick.positionDeltaM,
+    rendered,
+    commanded,
+  };
+}
+
 // IS-34: samples [{ t, hudRight, panelLeft }]; the HUD's right edge never passes the panel's left edge.
 export function hudPanelViolations(samples) {
   return samples.filter((sample) => sample.hudRight == null || sample.panelLeft == null || sample.hudRight > sample.panelLeft + 0.5);

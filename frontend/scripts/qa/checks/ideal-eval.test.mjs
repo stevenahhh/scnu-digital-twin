@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  CAMERA_STILL_MAX_DEG, CAMERA_STILL_MAX_M, IS_IDS, cameraMotion, compareNameSets, controlBudgetLimit, countAtMost, cropImage, duplicateValues, hookMissing, hudPanelViolations, isLayoutTransition,
+  CAMERA_STILL_MAX_DEG, CAMERA_STILL_MAX_M, IS_IDS, cameraMotion, cameraVerdict, compareNameSets, controlBudgetLimit, countAtMost, cropImage, duplicateValues, hookMissing, hudPanelViolations, isLayoutTransition,
   kstDate, lineCount, loadingProblems, minimum, nearestSample, overlappingPairs, presentationExtras, rectsOverlap, regionDistance,
   stoppedAfterD4, tabsMatch, undersized,
 } from "./ideal-eval.mjs";
@@ -158,6 +158,26 @@ test("cameraMotion flags an orbit (4 deg/s for 2 s) and accepts a still camera",
   // A missing pose is never "still".
   assert.equal(cameraMotion(null, at1500).still, false);
   assert.equal(cameraMotion(at1500, { heading: Number.NaN, position: [0, 0, 0] }).still, false);
+});
+
+test("cameraVerdict fails when either the rendered camera or the commanded pose moves", () => {
+  const at = (heading, position = [0, 0, 0]) => ({ heading, position });
+  // VWorld on origin/dev: the SDK does not apply the orbit, but the app keeps commanding it.
+  const orbit = cameraVerdict({ rendered: at(0.005), commanded: at(5.99) }, { rendered: at(0.005), commanded: at(13.989) });
+  assert.equal(orbit.still, false);
+  assert.equal(orbit.by, "commanded");
+  assert.equal(orbit.headingDeltaDeg, 7.999);
+  // Reduced-motion flight that animates on the rendered camera while the command stays put.
+  const flight = cameraVerdict({ rendered: at(10, [0, 0, 0]), commanded: at(0) }, { rendered: at(10, [0, 0, 40]), commanded: at(0) });
+  assert.equal(flight.still, false);
+  assert.equal(flight.by, "rendered");
+  assert.equal(flight.positionDeltaM, 40);
+  // Legacy: no moveTo stream at all, camera still.
+  assert.equal(cameraVerdict({ rendered: at(45), commanded: null }, { rendered: at(45), commanded: null }).still, true);
+  // Both still.
+  assert.equal(cameraVerdict({ rendered: at(1), commanded: at(2) }, { rendered: at(1.2), commanded: at(2.3) }).still, true);
+  // No rendered pose is never still, whatever the command says.
+  assert.equal(cameraVerdict({ rendered: null, commanded: at(2) }, { rendered: null, commanded: at(2) }).still, false);
 });
 
 test("kstDate gives the scene date in KST", () => {
