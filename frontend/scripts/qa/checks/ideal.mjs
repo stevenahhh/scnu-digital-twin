@@ -224,30 +224,38 @@ async function restoreTab(ctx, start) {
   await sleepMs(600);
 }
 
-// IS-31/IS-38 camera reads. A chip tap focuses the VWorld camera only when the building lies outside the central 60% of
-// the canvas (VWorldRenderer focusLabelPosition), so the checks tap the visible chip farthest from the centre, from the
-// 전체 preset (the 도서관 preset is too close for one). Returns { region, chip } with chip null when none qualifies.
+// IS-31/IS-32/IS-38 camera reads. A chip tap focuses the VWorld camera only when the building lies outside the central
+// 60% of the canvas (VWorldRenderer focusBuilding), so the checks tap the visible chip farthest from the centre. The 전체
+// preset is tried first (the 도서관 preset is too close for one); when HUD chrome hides every off-centre chip there (an open
+// inspector narrows the map area), the next named presets are tried. Returns { region, chip, preset } with chip null when
+// no preset yields one.
+const OFF_CENTRE_PRESETS = ["overview", "gate", "engineering", "humanities"];
 async function offCentreChip(ctx) {
-  await ctx.b.tap("[data-qa=camera-preset-overview]", null, { timeoutMs: 4000 });
-  await ctx.b.cameraSettle();
-  await sleepMs(ctx.entry === "vworld" ? 1500 : 300);
-  const region = await mapRegion(ctx);
-  if (!region) return { region: null, chip: null };
-  const chip = await ip(ctx, (I, r) => {
-    const canvas = [...document.querySelectorAll("canvas")].sort((a, b) => b.clientWidth * b.clientHeight - a.clientWidth * a.clientHeight)[0];
-    const c = canvas.getBoundingClientRect();
-    const cx = c.left + c.width / 2;
-    const cy = c.top + c.height / 2;
-    const chips = [...document.querySelectorAll("button[data-qa=campus-label]")].filter(I.isVisible)
-      .filter((el) => el.getAttribute("data-state") !== "selected")
-      .map((el) => { const b = el.getBoundingClientRect(); return { el, name: el.textContent.trim(), x: b.left + b.width / 2, y: b.top + b.height / 2 }; })
-      .filter((p) => p.x > r.x + 40 && p.x < r.x + r.w - 40 && p.y > r.y + 80 && p.y < r.y + r.h - 80)
-      .filter((p) => Math.abs(p.x - cx) > c.width * 0.3 + 20 || Math.abs(p.y - cy) > c.height * 0.3 + 20)
-      .filter((p) => document.elementFromPoint(p.x, p.y)?.closest("button[data-qa=campus-label]") === p.el)
-      .sort((p, q) => Math.hypot(q.x - cx, q.y - cy) - Math.hypot(p.x - cx, p.y - cy));
-    return chips[0] ? { name: chips[0].name, x: Math.round(chips[0].x), y: Math.round(chips[0].y) } : null;
-  }, region);
-  return { region, chip };
+  let last = { region: null, chip: null, preset: null };
+  for (const preset of OFF_CENTRE_PRESETS) {
+    await ctx.b.tap(`[data-qa=camera-preset-${preset}]`, null, { timeoutMs: 4000 });
+    await ctx.b.cameraSettle();
+    await sleepMs(ctx.entry === "vworld" ? 1500 : 300);
+    const region = await mapRegion(ctx);
+    if (!region) return { region: null, chip: null, preset };
+    const chip = await ip(ctx, (I, r) => {
+      const canvas = [...document.querySelectorAll("canvas")].sort((a, b) => b.clientWidth * b.clientHeight - a.clientWidth * a.clientHeight)[0];
+      const c = canvas.getBoundingClientRect();
+      const cx = c.left + c.width / 2;
+      const cy = c.top + c.height / 2;
+      const chips = [...document.querySelectorAll("button[data-qa=campus-label]")].filter(I.isVisible)
+        .filter((el) => el.getAttribute("data-state") !== "selected")
+        .map((el) => { const b = el.getBoundingClientRect(); return { el, name: el.textContent.trim(), x: b.left + b.width / 2, y: b.top + b.height / 2 }; })
+        .filter((p) => p.x > r.x + 40 && p.x < r.x + r.w - 40 && p.y > r.y + 80 && p.y < r.y + r.h - 80)
+        .filter((p) => Math.abs(p.x - cx) > c.width * 0.3 + 20 || Math.abs(p.y - cy) > c.height * 0.3 + 20)
+        .filter((p) => document.elementFromPoint(p.x, p.y)?.closest("button[data-qa=campus-label]") === p.el)
+        .sort((p, q) => Math.hypot(q.x - cx, q.y - cy) - Math.hypot(p.x - cx, p.y - cy));
+      return chips[0] ? { name: chips[0].name, x: Math.round(chips[0].x), y: Math.round(chips[0].y) } : null;
+    }, region);
+    last = { region, chip, preset };
+    if (chip) return last;
+  }
+  return last;
 }
 
 // Records every pose the app sends to VWorld map.lookat.moveTo (cameraFocus.mjs focus + orbit) into window.__qaMoveTo.
