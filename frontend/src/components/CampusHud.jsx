@@ -48,7 +48,7 @@ export const CampusHud = forwardRef(function CampusHud(
   // 발표 모드: 읽기 전용 장면 시각, 투어 시작/멈춤, 발표 모드 끝내기만 남기고 투어 중이면 아래 가운데에 점 표시를 둔다.
   if (presenting) {
     return (
-      <div ref={setRoot} data-qa="campus-hud" data-label-chrome-layer="" data-presenting="true" className="pointer-events-none absolute inset-0 z-[6]">
+      <div ref={setRoot} data-qa="campus-hud" data-label-chrome-layer="" data-presenting="true" className="pointer-events-none absolute inset-0 z-[6] transition-none">
         <div data-qa="hud-bar" className="absolute left-4 right-4 top-4 flex items-center gap-2">
           <p data-qa="hud-time-readout" className="rounded-control border border-hairline bg-surface-1 px-3 py-2 text-body font-semibold tabular-nums text-ink">
             {sceneTimeReadout(clock.sceneMinuteOfDay)}
@@ -68,7 +68,7 @@ export const CampusHud = forwardRef(function CampusHud(
       data-qa="campus-hud"
       data-label-chrome-layer=""
       aria-hidden={sheetFull ? "true" : undefined}
-      className={cx("pointer-events-none absolute left-0 top-0 z-[6]", FOLLOW_ROOT, sheetFull && "invisible")}
+      className={cx("pointer-events-none absolute left-0 top-0 z-[6] transition-none", FOLLOW_ROOT, sheetFull && "invisible")}
       style={{ right: follow.right, bottom: phone ? `${SHELL_PEEK_HEIGHT}px` : "0px" }}
     >
       <div data-qa="hud-bar" className="absolute left-4 right-4 top-4 flex min-w-0 flex-nowrap items-center gap-2">
