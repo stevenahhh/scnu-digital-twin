@@ -34,6 +34,10 @@ const FIELD = cx(
   "focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary",
 );
 const ICON = "h-3.5 w-3.5";
+// 갱신 강조(ideal-state MOT-09): 사람이 시각을 한 번에 바꾼 때(슬라이더를 놓거나 키로 옮김, 날짜, `지금`)만 시각 값에 1초 wash.
+// 끌고 있는 동안(input)과 재생 중에는 강조하지 않는다.
+const UPDATED_MS = 1000;
+const UPDATED_WASH = "rounded-control bg-surface-3";
 const READOUT = "text-body font-semibold tabular-nums text-ink";
 // 시간 카드는 화면 아래에 붙어 있으므로 편집 팝오버를 트리거 위로 연다. Popover는 트리거 아래(top-full + 0.5rem)에
 // 놓이므로 자기 높이 + 트리거 높이(2rem, 굵은 포인터 2.75rem) + 두 간격(1rem)만큼 올린다.
@@ -66,10 +70,28 @@ export function TimeSlider({
   const collapsed = collapsible && !expanded;
   const minuteRef = useRef(minuteOfDay);
   const [typed, setTyped] = useState(null);
+  const [updated, setUpdated] = useState(false);
+  const updatedTimer = useRef(null);
+  const rangeRef = useRef(null);
   const timeLabel = formatMinuteOfDay(minuteOfDay);
   useEffect(() => {
     minuteRef.current = minuteOfDay;
   }, [minuteOfDay]);
+
+  const markUpdated = () => {
+    window.clearTimeout(updatedTimer.current);
+    setUpdated(true);
+    updatedTimer.current = window.setTimeout(() => setUpdated(false), UPDATED_MS);
+  };
+  useEffect(() => () => window.clearTimeout(updatedTimer.current), []);
+  // React의 onChange는 끌 때마다(input) 불린다. 놓거나 키로 확정한 값은 브라우저의 change 이벤트에서만 알 수 있다.
+  useEffect(() => {
+    const range = rangeRef.current;
+    if (!range) return undefined;
+    range.addEventListener("change", markUpdated);
+    return () => range.removeEventListener("change", markUpdated);
+  }, []);
+  const updatedProps = updated ? { "data-updated": "true" } : {};
 
   useEffect(() => {
     if (!playing) return undefined;
@@ -84,6 +106,7 @@ export function TimeSlider({
     if (next === null) return;
     event.preventDefault();
     onMinuteChange(next);
+    markUpdated();
   };
 
   // 잘못된 시각(예: 25:99)은 슬라이더를 움직이지 않고 입력 칸만 aria-invalid로 표시한다.
@@ -104,7 +127,10 @@ export function TimeSlider({
         value={dateValue}
         onChange={(event) => {
           const parts = parseSceneDate(event.target.value);
-          if (parts) onDateChange(parts);
+          if (parts) {
+            onDateChange(parts);
+            markUpdated();
+          }
         }}
         className={FIELD}
       />
@@ -134,7 +160,7 @@ export function TimeSlider({
           data-qa="time-value"
           aria-label={`장면 시각 ${timeLabel}, 날짜와 시각 바꾸기`}
         >
-          <span data-qa={valueQa} className={READOUT}>{timeLabel}</span>
+          <span data-qa={valueQa} {...updatedProps} className={cx(READOUT, updated && UPDATED_WASH)}>{timeLabel}</span>
           <ChevronDown aria-hidden="true" className={cx(ICON, "text-ink")} />
         </Button>
       )}
@@ -142,7 +168,7 @@ export function TimeSlider({
       {fields}
     </Popover>
   ) : (
-    <span data-qa={valueQa} className={cx(READOUT, "px-1")}>{timeLabel}</span>
+    <span data-qa={valueQa} {...updatedProps} className={cx(READOUT, "px-1", updated && UPDATED_WASH)}>{timeLabel}</span>
   );
 
   return (
@@ -164,7 +190,7 @@ export function TimeSlider({
         >
           <Clock3 aria-hidden="true" className={cx(ICON, "shrink-0")} />
           <span>장면</span>
-          <span data-qa="time-slider-value" className={READOUT}>{timeLabel}</span>
+          <span data-qa="time-slider-value" {...updatedProps} className={cx(READOUT, updated && UPDATED_WASH)}>{timeLabel}</span>
           {playing && <Play aria-label="재생 중" className={ICON} />}
           <ChevronUp aria-hidden="true" className={ICON} />
           <span className="sr-only">시간 조작 펼치기</span>
@@ -178,7 +204,10 @@ export function TimeSlider({
               <Button
                 size="sm"
                 data-qa="time-now"
-                onClick={onNow}
+                onClick={() => {
+                  onNow();
+                  markUpdated();
+                }}
                 aria-pressed={live}
                 icon={live ? <Check aria-hidden="true" className={ICON} /> : undefined}
                 className="shrink-0"
@@ -215,6 +244,7 @@ export function TimeSlider({
         </div>
         {fields && collapsible && <div className="mt-2">{fields}</div>}
         <input
+          ref={rangeRef}
           type="range"
           min={0}
           max={MINUTES_PER_DAY - 1}

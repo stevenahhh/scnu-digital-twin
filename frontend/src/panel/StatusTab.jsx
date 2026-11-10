@@ -43,7 +43,9 @@ function WeatherSection({ summary, status, onRetry }) {
     <section className="flex flex-col gap-3">
       <SectionHeader title="현재 기상" />
       <FeedStatusRow feed="weather" status={status} onRetry={onRetry} liveText={summary.status} liveTone={summary.statusTone} />
-      {weather && <MetricList items={items} caption={weatherCaption(summary)} />}
+      {/* 피드가 끊겨 받은 값이 없어도 다섯 줄은 알림 바로 아래에 `데이터 없음`으로 둔다. 알림이 어느 묶음의 실패인지 보이고, 복구되면 값만 채워진다.
+          출처 줄은 값이 있을 때만 단다. */}
+      {(weather || isFeedDown(status)) && <MetricList items={items} caption={weather ? weatherCaption(summary) : null} />}
       {summary.alerts.length > 0 && (
         <Alert
           tone="warning"

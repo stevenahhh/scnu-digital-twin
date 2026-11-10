@@ -292,13 +292,15 @@ export const VISUALQA_CHECKS = [
     },
   }),
   defineCheck("V-Q-15", {
-    states: ["S04", "S06"], viewports: DP,
+    states: ["S04", "S06"], viewports: DP, mutates: true,
     async run(ctx) {
-      const m = await ctx.inPage((qa) => {
+      // S06 returns to the campus map with the panel on its rail: the feed alerts live in its 현황 tab (ideal-state INV-084,
+      // INV-092). S04 measures the selection inspector where it already is.
+      const m = await withPanelOpen(ctx, ctx.state === "S06" ? "home" : null, () => ctx.inPage((qa) => {
         const errors = qa.all("[role=alert],[data-qa$=-error],[data-qa=weather-error-banner]").filter(qa.visible);
         const textErrors = qa.textNodesShown().filter((i) => /불러오지 못했|연결할 수 없|완료하지 못했/.test(i.value) && !i.el.closest("[role=alert],[data-qa$=-error],[data-qa=weather-error-banner]")).map((i) => i.el);
         return [...errors, ...textErrors].map((el) => ({ text: qa.txt(el).slice(0, 50), action: Boolean(el.querySelector("button,a") || el.parentElement?.querySelector("button")) }));
-      });
+      }));
       const bad = m.filter((e) => !e.action);
       return result(m.length > 0 && bad.length === 0, { errors: m.length, withoutNextAction: bad.slice(0, 5) }, "every error names the cause and offers a next action at the point of failure");
     },

@@ -25,6 +25,8 @@ export function useTrafficFeed() {
     let failures = 0;
     // 앞 요청 시작에서 이번 시작까지(장애 중 간격이 줄지 않게: nextPollWait).
     let previousGap = 0;
+    // 앞 요청이 실제로 시작한 시각(타이머가 늦게 울린 만큼 간격을 넓힌다).
+    let previousStartedAt = null;
 
     const poll = async () => {
       clearTimeout(timer);
@@ -35,8 +37,9 @@ export function useTrafficFeed() {
       setResult({ ...next, lastUpdatedAt: new Date() });
       failures = next.state === "offline" ? failures + 1 : 0;
       clearTimeout(timer);
-      const { wait, gap } = nextPollWait({ failures, startedAt, completedAt: Date.now(), previousGap, backoff: TRAFFIC_FEED_BACKOFF });
+      const { wait, gap } = nextPollWait({ failures, startedAt, completedAt: Date.now(), previousGap, previousStartedAt, backoff: TRAFFIC_FEED_BACKOFF });
       previousGap = failures > 0 ? gap : 0;
+      previousStartedAt = failures > 0 ? startedAt : null;
       if (!isBrowserOffline()) timer = setTimeout(poll, wait);
     };
     const goOffline = () => {
@@ -47,12 +50,14 @@ export function useTrafficFeed() {
       setPaused(false);
       failures = 0;
       previousGap = 0;
+      previousStartedAt = null;
       poll();
     };
 
     pollNowRef.current = () => {
       failures = 0;
       previousGap = 0;
+      previousStartedAt = null;
       poll();
     };
     window.addEventListener("offline", goOffline);

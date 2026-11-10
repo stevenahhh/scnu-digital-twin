@@ -590,13 +590,16 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-45", {
-    states: ["S06"], viewports: D,
+    states: ["S06"], viewports: D, mutates: true,
     async run(ctx) {
+      // The feed alerts live in the 현황 tab of the rail-first shell (ideal-state INV-084, INV-092): open it first.
+      return withPanelOpen(ctx, "home", async () => {
       const errors = await errorElements(ctx);
       const styles = new Set(errors.map((e) => e.style));
       const qas = new Set(errors.map((e) => e.qa));
       const bareRed = await ctx.inPage((qa) => qa.textNodesShown().filter((i) => /못했습니다|없습니다|실패/.test(i.value) && !i.el.closest("[role=alert],[data-qa$=-error],[data-qa=weather-error-banner]")).length);
       return result(errors.length > 0 && styles.size === 1 && qas.size === 1 && bareRed === 0, { errorElements: errors.length, distinctStyles: styles.size, distinctDataQa: [...qas], bareErrorTexts: bareRed }, "one Alert component for every error; 0 bare red errors");
+      });
     },
   }),
   defineCheck("V-F-46", {
@@ -659,13 +662,14 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-50", {
-    states: ["S05", "S06"], viewports: D,
+    states: ["S05", "S06"], viewports: D, mutates: true,
     async run(ctx) {
       if (ctx.state === "S05") {
         const backs = await backControls(ctx);
         return result(backs.length === 1, { backControls: backs }, "exactly one back control in the D4 header");
       }
-      const errors = await errorElements(ctx);
+      // The feed alerts live in the 현황 tab of the rail-first shell (ideal-state INV-084, INV-092): open it first.
+      const errors = await withPanelOpen(ctx, "home", () => errorElements(ctx));
       const sourceOf = (text) => (/기상/.test(text) ? "weather" : /에너지|설치 계획|분석|상태 API/.test(text) ? "energy" : /영상|교통|주차/.test(text) ? "traffic" : "other");
       const perSource = {};
       for (const error of errors) {
@@ -915,19 +919,30 @@ export const FRONTEND_CHECKS = [
       return withPanelOpen(ctx, null, async () => {
       const count = () => ctx.inPage((qa) => qa.all(".animate-spin,[role=status],[aria-busy=true]").filter(qa.visible).length);
       const base = await count();
-      const tapped = await ctx.b.tap('[aria-label="기상 데이터 새로고침"]', null, { timeoutMs: 2000 });
+      // The manual weather refresh was removed on purpose (ideal-state INV-082: the feed refreshes itself, a failure offers
+      // 다시 시도 only). Measure it while the control still exists; with it gone only the analysis action remains.
+      const hasRefresh = await ctx.inPage(() => Boolean(document.querySelector('[aria-label="기상 데이터 새로고침"]')));
+      const tapped = hasRefresh ? await ctx.b.tap('[aria-label="기상 데이터 새로고침"]', null, { timeoutMs: 2000 }) : { ok: false };
       await ctx.sleep(150);
-      const weather = (await count()) - base;
+      const weather = hasRefresh ? (await count()) - base : null;
+      const startTab = await ctx.inPage((qa) => qa.all("[data-qa^=dashboard-tab-]").find((el) => el.getAttribute("aria-selected") === "true")?.getAttribute("data-qa") ?? null);
       const toEnergy = await ctx.b.tap("[data-qa=dashboard-tab-energy]", null, { timeoutMs: 2000 });
       await ctx.sleep(800);
-      const base2 = await count();
+      // 분석 실행 sits in the collapsed 분석 조건과 결과 disclosure of 건물 분석 (ideal-state INV-122, INV-131): expand it as a user would.
+      await ctx.inPage(() => {
+        const toggle = document.querySelector("[data-qa=building-analysis] button[aria-expanded=false]");
+        if (toggle && toggle.textContent.includes("분석 조건과 결과")) toggle.click();
+        return true;
+      });
+      await ctx.sleep(300);
       await ctx.inPage(() => { [...document.querySelectorAll("button")].find((b) => b.textContent.trim() === "분석 실행")?.scrollIntoView({ block: "center" }); return true; });
       await ctx.sleep(300);
+      const base2 = await count();
       const run = await ctx.b.tap("button", "분석 실행", { timeoutMs: 2000 });
       await ctx.sleep(150);
       const analysis = run.ok ? (await count()) - base2 : null;
-      if (toEnergy.ok) await ctx.b.tap("[data-qa=dashboard-tab-dashboard]", null, { timeoutMs: 2000 });
-      return result(tapped.ok && run.ok && weather <= 1 && analysis <= 1, { refreshTapped: tapped.ok, weatherIndicators: weather, analysisRunFound: run.ok, analysisIndicators: analysis }, "one progress indicator per action");
+      if (toEnergy.ok && startTab && startTab !== "dashboard-tab-energy") await ctx.b.tap(`[data-qa=${startTab}]`, null, { timeoutMs: 2000 });
+      return result((hasRefresh ? tapped.ok && weather <= 1 : true) && run.ok && analysis <= 1, { weatherRefreshControl: hasRefresh, refreshTapped: tapped.ok, weatherIndicators: weather, analysisRunFound: run.ok, analysisIndicators: analysis }, "one progress indicator per action");
       });
     },
   }),

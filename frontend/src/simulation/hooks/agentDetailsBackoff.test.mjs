@@ -44,6 +44,14 @@ test("while the traffic feed is down the gap between request starts never shrink
   assert.ok(starts.filter((value) => value <= 60000).length <= 4);
 });
 
+test("a late timer (a busy main thread) widens the gap and the next gap never shrinks below it", () => {
+  // The first retry was due 5 s after the first start but its timer fired at 14.4 s while the model loaded.
+  const next = nextPollWait({ failures: 2, startedAt: 14400, completedAt: 14450, previousGap: 5000, previousStartedAt: 0, backoff: TRAFFIC_FEED_BACKOFF });
+  assert.deepEqual(next, { wait: 14350, gap: 14400 });
+  // Without a previous start the observed gap is unknown and the computed one stands.
+  assert.deepEqual(nextPollWait({ failures: 2, startedAt: 14400, completedAt: 14450, previousGap: 5000, backoff: TRAFFIC_FEED_BACKOFF }), { wait: 9950, gap: 10000 });
+});
+
 test("a success polls again after the normal delay from its completion", () => {
   assert.deepEqual(nextPollWait({ failures: 0, startedAt: 0, completedAt: 300, previousGap: 9000, backoff: TRAFFIC_FEED_BACKOFF }), { wait: 2000, gap: 2300 });
 });
