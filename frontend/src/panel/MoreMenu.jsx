@@ -17,7 +17,7 @@ function MenuItem({ icon: Icon, shortcut, onSelect, children }) {
       onClick={onSelect}
       className={cx(
         "flex min-h-10 w-full items-center gap-2 rounded-control px-2 text-left text-body text-ink hover:bg-surface-2",
-        "transition-colors duration-micro",
+        "transition-[color] duration-micro",
         COARSE_TARGET,
         FOCUS_RING,
       )}

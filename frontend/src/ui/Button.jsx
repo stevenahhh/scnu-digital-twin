@@ -61,9 +61,9 @@ export const Button = forwardRef(function Button(
       data-size={size}
       onClick={handleClick}
       className={cx(
-        // 누르는 동안 1px 내려앉는다(바탕색 전환과 달리 바로 보이는 눌림 표시).
+        // 누르는 동안 1px 내려앉는다. 바탕색은 전환 없이 바로 바뀌고 글자색과 밝기만 짧게 전환한다(DESIGN 6절).
         "relative inline-flex select-none items-center justify-center gap-2 rounded-control font-medium active:translate-y-px",
-        "transition-[background-color,color,filter] duration-micro",
+        "transition-[color,filter] duration-micro",
         BUTTON_VARIANTS[variant],
         iconOnly ? (size === "sm" ? "min-h-8 min-w-8 px-0 text-caption" : "min-h-10 min-w-10 px-0 text-body") : BUTTON_SIZES[size],
         COARSE_TARGET,
