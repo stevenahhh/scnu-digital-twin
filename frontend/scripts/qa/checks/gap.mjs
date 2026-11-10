@@ -51,14 +51,26 @@ export const GAP_CHECKS = [
   }),
   defineCheck("GAP-02", {
     states: ["S01", "S06"], viewports: D,
+    mutates: true,
     async run(ctx) {
-      const m = await ctx.inPage((qa) => {
+      // Since the rail-first shell (#139-#149) the feed rows live in the panel: weather and traffic in 현황, energy at the top
+      // of 에너지 (ideal-state INV-084, INV-092, INV-110). Open each tab as a user would and add the two up.
+      const measure = () => ctx.inPage((qa) => {
         const statusRows = qa.all("[role=alert],[data-qa=weather-error-banner]").filter(qa.visible).length;
         const retries = qa.all("button").filter((el) => qa.visible(el) && qa.txt(el).includes("다시 시도")).length;
         const dashes = qa.textNodesShown(qa.one("[data-qa=dashboard-panel]") ?? document.body).filter((item) => /^-(\s|°|m\/s|%|$)/.test(item.value)).map((item) => item.value).slice(0, 8);
         const modals = qa.all("[aria-modal=true]").filter(qa.visible).length;
         return { statusRows, retries, bareDashValues: dashes, modals };
       });
+      const status = await withPanelOpen(ctx, "home", measure);
+      const energy = await withPanelOpen(ctx, "energy", measure);
+      const m = {
+        statusRows: status.statusRows + energy.statusRows,
+        retries: status.retries + energy.retries,
+        bareDashValues: [...status.bareDashValues, ...energy.bareDashValues],
+        modals: Math.max(status.modals, energy.modals),
+        perTab: { status, energy },
+      };
       return result(m.statusRows <= 3 && m.retries === 3 && m.bareDashValues.length === 0 && m.modals === 0, m,
         "<= 1 status row and exactly 1 retry per failed feed; no bare '-' metric value; no modal");
     },
@@ -66,13 +78,14 @@ export const GAP_CHECKS = [
   defineCheck("GAP-03", {
     states: ["S01"], viewports: D,
     async run(ctx) {
-      const m = await ctx.inPage((qa) => {
+      // The weather status row sits in the 현황 tab of the rail-first shell (ideal-state INV-084): open it first.
+      const m = await withPanelOpen(ctx, "home", () => ctx.inPage((qa) => {
         const status = qa.one("[data-qa=weather-status]");
         const statusText = qa.txt(status);
         const hasRetry = Boolean(status && status.querySelector("button"));
         const simActive = qa.all("button").some((el) => qa.txt(el) === "시뮬레이션" && (el.getAttribute("aria-pressed") === "true" || el.getAttribute("aria-selected") === "true"));
         return { statusText: statusText.slice(0, 120), hasRetry, simulationSegmentActive: simActive, mentionsSimMode: document.body.innerText.includes("시뮬레이션 모드") };
-      });
+      }));
       const causeTimeRetry = /\d{1,2}:\d{2}/.test(m.statusText) && m.hasRetry && m.statusText.length > 8;
       return result(causeTimeRetry && (!m.mentionsSimMode || m.simulationSegmentActive), m,
         "status names cause + HH:mm + retry in one element; 시뮬레이션 모드 only while the simulation segment is active");
@@ -371,12 +384,19 @@ export const GAP_CHECKS = [
     },
   }),
   defineCheck("GAP-18", {
-    states: ["S04"], viewports: D,
+    states: ["S04"], viewports: D, mutates: true,
     async run(ctx) {
+      // 링크 복사 moved into the HUD 더보기 menu (ideal-state INV-161, IS-28): open the menu, read its items, close it.
+      const opened = await ctx.b.tap("[data-qa=more-menu]", null, { timeoutMs: 2000 });
+      await ctx.sleep(300);
       const m = await ctx.inPage((qa) => ({
         href: location.href,
-        copyLink: qa.all("button").some((el) => qa.visible(el) && /링크 복사/.test(qa.txt(el) + (el.getAttribute("aria-label") ?? ""))),
+        copyLink: qa.all("button,[role=menuitem]").some((el) => qa.visible(el) && /링크 복사/.test(qa.txt(el) + (el.getAttribute("aria-label") ?? ""))),
       }));
+      if (opened.ok) {
+        await ctx.b.key("Escape");
+        await ctx.sleep(300);
+      }
       const url = new URL(m.href);
       const params = [...url.searchParams.keys()];
       return result(params.some((k) => /building|b$/.test(k)) && params.some((k) => /time|t$/.test(k)) && params.some((k) => /cam|pose/.test(k)) && m.copyLink,
@@ -502,11 +522,12 @@ export const GAP_CHECKS = [
     },
   }),
   defineCheck("GAP-27", {
-    states: ["S13"], viewports: D, mutates: true,
+    // The S13 안전 모니터링 sample group was removed (ideal-state INV-108, IS-27); the sample-sourced values left are the D4
+    // room-use list and room states (INV-184), shown at S05.
+    states: ["S05"], viewports: D, mutates: true,
     async run(ctx) {
       return withPanelOpen(ctx, null, async () => {
-      // The sample group sits below the live values in the panel's scroll body: scroll it into view, as a user would.
-      await ctx.inPage((qa) => { qa.one("[data-qa=dashboard-panel] [data-qa=sample-group]")?.scrollIntoView({ block: "center" }); return true; });
+      await ctx.inPage((qa) => { qa.one("[data-qa=sample-badge]")?.scrollIntoView({ block: "center" }); return true; });
       await ctx.sleep(300);
       const m = await ctx.inPage((qa) => ({
         badges: qa.all("[data-qa=sample-badge]").filter(qa.visible).length,

@@ -1,6 +1,6 @@
 /* @vitest-environment happy-dom */
 import { useState } from "react";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { TimeSlider } from "./TimeSlider.jsx";
 import { dateToDayOfYear } from "./timeControl.mjs";
@@ -106,5 +106,38 @@ describe("TimeSlider (one time control)", () => {
     expect(screen.getByLabelText("장면 날짜").closest("[hidden]")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "시간 조작 접기" }));
     expect(screen.getByRole("button", { name: /시간 조작 펼치기/ })).toBeTruthy();
+  });
+});
+
+describe("TimeSlider updated cue (one 1 s wash on a discrete change)", () => {
+  const readout = () => document.querySelector('[data-qa="time-slider-value"]');
+  const range = () => screen.getByRole("slider", { name: "시각 (KST)" });
+
+  it("marks the time readout for 1 s when a slider change is committed", () => {
+    vi.useFakeTimers();
+    try {
+      render(<Harness />);
+      expect(readout().getAttribute("data-updated")).toBeNull();
+      fireEvent.change(range(), { target: { value: String(21 * 60) } });
+      expect(readout().textContent).toBe("21:00");
+      expect(readout().getAttribute("data-updated")).toBe("true");
+      act(() => vi.advanceTimersByTime(1000));
+      expect(readout().getAttribute("data-updated")).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("does not mark the readout while the slider is dragged (input events only)", () => {
+    render(<Harness />);
+    fireEvent.input(range(), { target: { value: String(20 * 60) } });
+    expect(readout().textContent).toBe("20:00");
+    expect(readout().getAttribute("data-updated")).toBeNull();
+  });
+
+  it("marks the readout when 지금 is pressed", () => {
+    render(<Harness />);
+    fireEvent.click(screen.getByRole("button", { name: /지금/ }));
+    expect(readout().getAttribute("data-updated")).toBe("true");
   });
 });
