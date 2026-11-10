@@ -16,7 +16,7 @@ function describeState({ isSimulationMode, state, message, observedClock }) {
   return "기상 데이터 갱신 중";
 }
 
-// 기본 현황 탭이 보여 줄 기상 요약. 두 대시보드가 같은 문구(frontend/AGENTS.md 공용 상태 어휘)를 쓰도록 여기서만 만든다.
+// 현황 탭이 보여 줄 기상 요약. 두 대시보드가 같은 문구(frontend/AGENTS.md 공용 상태 어휘)를 쓰도록 여기서만 만든다.
 // 시뮬레이션 모드의 기온은 사용자가 고른 값(simTemp)으로 바꾼다.
 export function summarizeWeather({ feed, mode, simTemp }) {
   const { data, state, message, lastUpdatedAt, isRefreshing } = feed;

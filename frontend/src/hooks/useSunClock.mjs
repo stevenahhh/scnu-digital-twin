@@ -5,7 +5,7 @@ import { CAMPUS_LOCATION, createSimulationDate, getSunState } from "../utils/sun
 
 const RAD_TO_DEG = 180 / Math.PI;
 
-// 분이 바뀔 때만 다시 그리는 현재 시각. 초 단위 시계는 패널의 PanelClock이 따로 돌려 대시보드 전체가 매초 다시 그려지지 않게 한다.
+// 분이 바뀔 때만 다시 그리는 현재 시각. 분 단위로만 갱신해 대시보드 전체가 매초 다시 그려지지 않게 한다.
 function useMinuteClock() {
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {

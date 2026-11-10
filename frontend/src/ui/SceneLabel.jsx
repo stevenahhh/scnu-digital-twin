@@ -11,7 +11,7 @@ export const LABEL_TEXT = "text-caption [@media(pointer:coarse)_and_(min-width:6
 // 버튼(누르는 영역)은 포인터 40x40px, 굵은 포인터·폰 44px. 보이는 칩과 글자는 그대로이고 투명한 영역만 커진다.
 export const LABEL_HIT = "min-h-10 min-w-10 [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:min-w-11 max-[639px]:min-h-11 max-[639px]:min-w-11";
 // 촘촘한 장면(D4 층 이름표)의 포인터 전용 영역: 24px 높이라 이웃 층의 영역과 겹치지 않는다. 터치·폰에서는 따로 버튼 목록을 둔다.
-export const LABEL_HIT_COMPACT = "min-h-6 min-w-10";
+const LABEL_HIT_COMPACT = "min-h-6 min-w-10";
 
 // 선택: 강조색 테두리와 강조색 글자. 글자는 강조색을 ink 쪽으로 섞어 두 테마 모두 4.5:1을 넘긴다.
 const SELECTED_INK = "text-[color:color-mix(in_srgb,var(--colors-primary)_75%,var(--colors-ink))]";

@@ -69,7 +69,7 @@ function path(values, max, width = 640, height = 180) {
 }
 
 // 15분 구간 96개를 시각별 합계 24행으로 묶는다(표 보기).
-export function hourlyRows(chart) {
+function hourlyRows(chart) {
   const rows = Array.from({ length: 24 }, (_, hour) => ({ hour, demand: 0, generation: 0 }));
   chart.forEach((item, index) => {
     const row = rows[Math.floor(index / 4)];
