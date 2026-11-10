@@ -4,14 +4,15 @@ import { capturePresentationLayout, isTypingTarget, restorePresentationLayout } 
 const CURSOR_IDLE_MS = 3000;
 
 // 발표 모드: 패널·레일·시트, HUD 도구, 카메라 단추와 상태 줄을 숨기고 장면 시각만 남긴다.
-// P로 켜고 끈다(글자 입력 중에는 아니다). Esc는 다른 Esc 동작(선택 풀기 등)보다 먼저 발표 모드만 끝낸다.
+// P로 켜고 끈다(글자 입력 중에는 아니다). Esc는 다른 Esc 동작(선택 풀기 등)보다 먼저 처리한다.
+// 투어 중이면 첫 Esc는 투어만 멈추고, 다음 Esc가 발표 모드를 끝낸다. 어떤 길로 나가든 투어는 멈춘다(stopTour).
 // 3초 동안 포인터가 움직이지 않으면 커서를 숨긴다. 나가면 들어가기 전의 패널·시트 단계·탭으로 돌아간다.
-export function usePresentationMode({ panelState, activeTab, setActiveTab }) {
+export function usePresentationMode({ panelState, activeTab, setActiveTab, touring = false, stopTour = null }) {
   const [presenting, setPresenting] = useState(false);
   const [cursorHidden, setCursorHidden] = useState(false);
   const snapshotRef = useRef(null);
   const latest = useRef({});
-  latest.current = { panelState, activeTab, setActiveTab, presenting };
+  latest.current = { panelState, activeTab, setActiveTab, presenting, touring, stopTour };
 
   const enter = useCallback(() => {
     const { panelState: panel, activeTab: tab } = latest.current;
@@ -20,7 +21,8 @@ export function usePresentationMode({ panelState, activeTab, setActiveTab }) {
   }, []);
 
   const exit = useCallback(() => {
-    const { panelState: panel, setActiveTab: setTab } = latest.current;
+    const { panelState: panel, setActiveTab: setTab, stopTour: stop } = latest.current;
+    stop?.();
     restorePresentationLayout(snapshotRef.current, { setPanelOpen: panel.setOpen, setDetent: panel.setDetent, setActiveTab: setTab });
     snapshotRef.current = null;
     setPresenting(false);
@@ -34,7 +36,8 @@ export function usePresentationMode({ panelState, activeTab, setActiveTab }) {
       if (event.key === "Escape" && latest.current.presenting) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        exit();
+        if (latest.current.touring && latest.current.stopTour) latest.current.stopTour();
+        else exit();
         return;
       }
       if ((event.key === "p" || event.key === "P") && !event.ctrlKey && !event.metaKey && !event.altKey && !isTypingTarget(event.target)) {
