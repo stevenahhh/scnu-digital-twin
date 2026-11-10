@@ -7,6 +7,7 @@ import {
   OVERVIEW_PRESET_ID,
   easeInOutQuad,
   findCameraPreset,
+  focusViewFrom,
   lerpView,
   nextPresetId,
   resolveCameraPreset,
@@ -85,4 +86,16 @@ test("lerpView interpolates position and target together", () => {
   const to = { position: [100, 50, -100], target: [20, 0, 0] };
   assert.deepEqual(lerpView(from, to, 0.5), { position: [50, 25, -50], target: [15, 5, 5] });
   assert.deepEqual(lerpView(from, to, 1), to);
+});
+
+test("focus view keeps the D4 distance and approaches from the side the camera is on", () => {
+  const horizontal = Math.hypot(D4_CAMERA_OFFSET[0], D4_CAMERA_OFFSET[2]);
+  const view = focusViewFrom({ position: [-500, 300, 0] }, [10, 5, 20]);
+  assert.deepEqual(view.target, [10, 5, 20]);
+  assert.ok(Math.abs(view.position[1] - (5 + D4_CAMERA_OFFSET[1])) < 1e-9);
+  assert.ok(Math.abs(Math.hypot(view.position[0] - 10, view.position[2] - 20) - horizontal) < 1e-9);
+  // 카메라가 -x 쪽에 있으므로 -x 쪽에서 다가간다(고정 방위 +x+z가 아니다).
+  assert.ok(view.position[0] < 10);
+  // 카메라가 목표 바로 위거나 자세를 모르면 D4 시점의 방위를 쓴다.
+  assert.deepEqual(focusViewFrom(null, [0, 0, 0]).position, [...D4_CAMERA_OFFSET]);
 });

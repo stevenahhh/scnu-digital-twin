@@ -5,6 +5,15 @@ import { cx } from "./cx.mjs";
 
 const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
 const DRAG_THRESHOLD_PX = 4;
+// 움직임 줄이기의 교차 페이드: 지금 높이에서 이만큼 흐려졌다가 새 높이에서 돌아온다. 시트가 사라지지 않게 0까지 내리지 않는다.
+export const REDUCED_MOTION_DIM_OPACITY = 0.4;
+const SURFACE_FALLBACK_MS = 300;
+
+// 교차 페이드 한쪽(나가기 또는 들어오기)의 시간: --motion-surface의 절반. 두 쪽을 합쳐 패널·시트와 같은 300ms다.
+function halfSurfaceMs() {
+  const token = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--motion-surface"));
+  return (Number.isFinite(token) ? token : SURFACE_FALLBACK_MS) / 2;
+}
 
 // 단계마다 화면에 보이는 높이. 시트 요소는 full 높이로 깔려 있고 translateY로 아래로 내린다.
 const detentOffset = (detent, peekHeight) => ({
@@ -34,8 +43,9 @@ export const Sheet = forwardRef(function Sheet(
 ) {
   const [detentState, setDetentState] = useState(defaultDetent);
   const detent = detentProp ?? detentState;
-  const [dragHeight, setDragHeight] = useState(null);
-  const [fading, setFading] = useState(false);
+  // 움직임 줄이기에서 화면에 놓인 단계(detent는 바로 바뀌고, 위치는 흐려진 뒤에 옮긴다).
+  const [shownDetent, setShownDetent] = useState(detent);
+  const [dimmed, setDimmed] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
   const sheetRef = useRef(null);
   const attachRef = useCallback((node) => {
@@ -53,16 +63,21 @@ export const Sheet = forwardRef(function Sheet(
     onDetentChange?.(next);
   };
 
-  // 움직임 줄이기: 미끄러지는 대신 잠깐 흐려졌다가 새 높이로 나타난다.
+  // 움직임 줄이기: 미끄러지는 대신 지금 높이에서 흐려졌다가(150ms) 새 높이에서 다시 또렷해진다(150ms).
+  // 처음 그릴 때와 움직임 줄이기가 아닐 때는 위치를 바로 맞춘다.
   useEffect(() => {
-    if (firstRender.current) {
+    if (firstRender.current || !reducedMotion) {
       firstRender.current = false;
+      setShownDetent(detent);
+      setDimmed(false);
       return undefined;
     }
-    if (!reducedMotion) return undefined;
-    setFading(true);
-    const frame = window.requestAnimationFrame(() => setFading(false));
-    return () => window.cancelAnimationFrame(frame);
+    setDimmed(true);
+    const timer = window.setTimeout(() => {
+      setShownDetent(detent);
+      setDimmed(false);
+    }, halfSurfaceMs());
+    return () => window.clearTimeout(timer);
   }, [detent, reducedMotion]);
 
   const heights = () => detentHeights(window.innerHeight, sheetRef.current?.offsetHeight || window.innerHeight, peekHeight);
@@ -74,6 +89,7 @@ export const Sheet = forwardRef(function Sheet(
     dragRef.current = { startY: event.clientY, startHeight: heights()[detent], samples: [{ y: event.clientY, t: now }] };
   };
 
+  // 끄는 동안에는 시트 요소의 transform만 직접 바꾼다(포인터가 움직일 때마다 시트 안 내용을 다시 그리지 않는다). 놓을 때 단계를 기록한다.
   const handlePointerMove = (event) => {
     const drag = dragRef.current;
     if (!drag) return;
@@ -81,7 +97,10 @@ export const Sheet = forwardRef(function Sheet(
     if (!draggedRef.current && Math.abs(delta) < DRAG_THRESHOLD_PX) return;
     draggedRef.current = true;
     drag.samples = [...drag.samples.slice(-4), { y: event.clientY, t: performance.now() }];
-    setDragHeight(clampHeight(drag.startHeight + delta, heights()));
+    const node = sheetRef.current;
+    if (!node) return;
+    node.style.transitionDuration = "0ms";
+    node.style.transform = `translateY(calc(100% - ${clampHeight(drag.startHeight + delta, heights())}px))`;
   };
 
   const handlePointerUp = (event) => {
@@ -93,8 +112,14 @@ export const Sheet = forwardRef(function Sheet(
     const elapsed = Math.max(last.t - first.t, 1);
     const velocity = (first.y - last.y) / elapsed;
     const height = clampHeight(drag.startHeight + (drag.startY - event.clientY), heights());
-    setDragHeight(null);
-    setDetent(nearestDetent(height, heights(), velocity));
+    const next = nearestDetent(height, heights(), velocity);
+    // 끄는 동안 직접 쓴 값을 되돌린다. 같은 단계로 돌아가면 React가 style을 다시 쓰지 않으므로 여기서 놓는다.
+    const node = sheetRef.current;
+    if (node) {
+      node.style.transitionDuration = "var(--motion-surface)";
+      node.style.transform = detentOffset(next, peekHeight);
+    }
+    setDetent(next);
   };
 
   const handleClick = () => {
@@ -118,7 +143,6 @@ export const Sheet = forwardRef(function Sheet(
     setDetent("peek");
   };
 
-  const dragging = dragHeight !== null;
   const transitionProperty = reducedMotion ? "opacity" : "transform";
 
   return (
@@ -132,11 +156,11 @@ export const Sheet = forwardRef(function Sheet(
       onKeyDown={handleKeyDown}
       style={{
         height: "calc(100dvh - env(safe-area-inset-top))",
-        transform: dragging ? `translateY(calc(100% - ${dragHeight}px))` : detentOffset(detent, peekHeight),
+        transform: detentOffset(reducedMotion ? shownDetent : detent, peekHeight),
         transitionProperty,
-        transitionDuration: dragging ? "0ms" : "var(--motion-surface)",
+        transitionDuration: reducedMotion ? "calc(var(--motion-surface) / 2)" : "var(--motion-surface)",
         transitionTimingFunction: "var(--motion-ease-standard)",
-        opacity: fading ? 0 : 1,
+        opacity: dimmed ? REDUCED_MOTION_DIM_OPACITY : 1,
       }}
       className={cx(
         "fixed inset-x-0 bottom-0 z-rail flex flex-col rounded-t-card border border-b-0 border-hairline bg-surface-1 text-ink shadow-popover",

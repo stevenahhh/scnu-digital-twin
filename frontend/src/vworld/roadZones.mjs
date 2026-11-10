@@ -1,7 +1,7 @@
 import roadZonesGeoJson from "./data/roadZones.json";
 
 const ROAD_ZONE_ID_PREFIX = "SCNU_ROAD_ZONE_";
-// Soft app-blue highlight for the clicked zone only — nothing is drawn until a road is clicked.
+// 누른 도로 구역에만 옅은 파란 강조를 그린다. 도로를 누르기 전에는 아무것도 그리지 않는다.
 const HIGHLIGHT_FILL_COLOR = [96, 165, 250, 90];
 const HIGHLIGHT_OUTLINE_COLOR = [59, 130, 246, 210];
 

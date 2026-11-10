@@ -1,8 +1,8 @@
 /* @vitest-environment jsdom */
-import { cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Sheet } from "./Sheet.jsx";
+import { REDUCED_MOTION_DIM_OPACITY, Sheet } from "./Sheet.jsx";
 
 afterEach(cleanup);
 
@@ -79,5 +79,44 @@ describe("Sheet", () => {
     } finally {
       window.matchMedia = original;
     }
+  });
+
+  it("dims at the old height, then moves and brightens under reduced motion (never vanishes)", () => {
+    const original = window.matchMedia;
+    window.matchMedia = (query) => ({ matches: query.includes("reduce"), addEventListener() {}, removeEventListener() {} });
+    vi.useFakeTimers();
+    try {
+      renderSheet();
+      const sheet = screen.getByRole("region");
+      fireEvent.keyDown(screen.getByRole("button", { name: "패널 크기 조절" }), { key: "ArrowUp" });
+      expect(sheet.dataset.detent).toBe("half");
+      expect(sheet.style.opacity).toBe(String(REDUCED_MOTION_DIM_OPACITY));
+      expect(sheet.style.transform).toBe("translateY(calc(100% - 96px))");
+      act(() => {
+        vi.advanceTimersByTime(150);
+      });
+      expect(sheet.style.transform).toBe("translateY(calc(100% - 50dvh))");
+      expect(sheet.style.opacity).toBe("1");
+    } finally {
+      vi.useRealTimers();
+      window.matchMedia = original;
+    }
+  });
+
+  it("follows a drag with the element transform and settles on the nearest detent on release", () => {
+    renderSheet();
+    const sheet = screen.getByRole("region");
+    const handle = screen.getByRole("button", { name: "패널 크기 조절" });
+    // jsdom에는 PointerEvent가 없어 fireEvent.pointer*가 clientY를 싣지 못한다. 같은 이름의 MouseEvent로 보낸다.
+    const pointer = (type, clientY) => fireEvent(handle, new MouseEvent(type, { bubbles: true, clientY }));
+    pointer("pointerdown", 800);
+    pointer("pointermove", 790);
+    expect(sheet.style.transitionDuration).toBe("0ms");
+    expect(sheet.style.transform).toMatch(/^translateY\(calc\(100% - \d+px\)\)$/);
+    pointer("pointerup", 790);
+    expect(sheet.style.transitionDuration).toBe("var(--motion-surface)");
+    // 빠르게 위로 민 짧은 끌기라 속도로 투영한 단계로 간다. 어느 단계든 끄는 동안 쓴 transform이 그 단계 자리로 돌아와야 한다.
+    const offsets = { peek: "translateY(calc(100% - 96px))", half: "translateY(calc(100% - 50dvh))", full: "translateY(0px)" };
+    expect(sheet.style.transform).toBe(offsets[sheet.dataset.detent]);
   });
 });

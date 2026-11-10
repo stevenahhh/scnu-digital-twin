@@ -28,7 +28,7 @@ export const CAMERA_PRESETS = Object.freeze([
     description: "정문에서 캠퍼스 안쪽을 바라보는 시점",
     fromGround: true,
     position: [240, 38, 15],
-    // 목표점은 정문에서 도서관 쪽으로 약 150 units 들어간 중심축 위: 세로 폰 화면에서도 먼 도서관이 HUD 아래에 든다(GAP-37).
+    // 목표점은 정문에서 도서관 쪽으로 약 150 units 들어간 중심축 위: 세로 폰 화면에서도 먼 도서관이 HUD 아래에 든다.
     target: [100, 4, -38],
   },
   {
@@ -133,6 +133,17 @@ export function resolveCameraPreset(preset, { boundsOf = () => null, groundAt = 
     }
   }
   return { position: [...preset.position], target: [...preset.target] };
+}
+
+// 건물·묶음을 골랐을 때의 시점: 목표점에서 offset(기본 D4 시점 거리)만큼 떨어진 자리. 방위는 지금 카메라가 있는 쪽을 따른다
+// (고정 방위면 건물 반대편으로 최대 180도 돌아간다). 수평 거리와 높이는 offset 그대로다. 지금 카메라가 목표 바로 위면 offset 방위를 쓴다.
+export function focusViewFrom(current, target, offset = D4_CAMERA_OFFSET) {
+  const horizontal = Math.hypot(offset[0], offset[2]);
+  const dx = (current?.position?.[0] ?? NaN) - target[0];
+  const dz = (current?.position?.[2] ?? NaN) - target[2];
+  const flat = Math.hypot(dx, dz);
+  const [ux, uz] = Number.isFinite(flat) && flat > 1e-6 ? [dx / flat, dz / flat] : [offset[0] / horizontal, offset[2] / horizontal];
+  return { position: [target[0] + ux * horizontal, target[1] + offset[1], target[2] + uz * horizontal], target: [...target] };
 }
 
 // 2차 가감속(quadratic in-out). 0..1 밖은 양 끝으로 고정한다.

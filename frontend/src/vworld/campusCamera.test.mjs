@@ -182,3 +182,28 @@ test("arrow-key pans move the camera along the ground, keeping its height and vi
   assert.ok(Math.abs(views[1].destination.y - (-100 + d)) < 1e-9 && views[1].destination.z === 100);
   assert.equal(views[1].orientation.direction, scene.camera.directionWC);
 });
+
+test("flies with the Legacy easing and no altitude arc, and focus flights come from the camera's side", () => {
+  const Cesium = fakeCesium();
+  Cesium.EasingFunction = { QUADRATIC_IN_OUT: "quad" };
+  Cesium.Cartographic = { fromCartesian: (point) => ({ height: point.z }) };
+  Cesium.Cartesian2 = class { constructor(x, y) { Object.assign(this, { x, y }); } };
+  Cesium.Matrix4 = Object.assign(class {}, { multiplyByPoint: (_m, point, out) => Object.assign(out, point), inverse: () => "inverse" });
+  const calls = [];
+  const scene = {
+    canvas: { clientWidth: 800, clientHeight: 600 },
+    camera: { positionWC: new Cesium.Cartesian3(0, 0, 500), flyTo: (o) => calls.push(o), setView: () => {}, cancelFlight: () => calls.push("cancel"), pickEllipsoid: () => new Cesium.Cartesian3(0, 0, 0) },
+    requestRender: () => {},
+  };
+  const camera = createVWorldCampusCamera({ Cesium, scene, getModelMatrix: () => "m", boxes, center });
+  camera.flyTo(CAMERA_PRESETS.find((p) => p.id === "overview"));
+  assert.equal(calls[0].easingFunction, "quad");
+  // overview destination local z = 260, start height 500: the flight never climbs above the higher end.
+  assert.equal(calls[0].maximumHeight, 500);
+  const target = camera.focusTarget({ focus: ["BLD_D4"] });
+  assert.deepEqual(target, [0, 15, 25]);
+  assert.equal(camera.flyToFocus(target), true);
+  assert.equal(calls.length, 2);
+  camera.cancelFlight();
+  assert.equal(calls.at(-1), "cancel");
+});
