@@ -60,6 +60,12 @@ const TEXT_LONG_WORD_M = 2.6;
 // stand for the same word in each lane, not for one word stretched across the carriageway.
 const TEXT_LANE_M = 3;
 export const guessedTextLanes = (widthM) => Math.max(1, Math.round(widthM / TEXT_LANE_M));
+// Dashes all shorter than this share of the statute dash, on a chain too short to measure a period, are not pieces of
+// statute dashes: the statute pattern (3 m / 5 m) would draw long paint the photo does not show (the dashed ring of a
+// roundabout, a short guide). They are drawn as detected.
+const STATUTE_DASH_SHARE = 0.6;
+export const keepsDetectedDashes = (lengthsM, statuteDashM, periodM) =>
+  !periodM && lengthsM.length > 0 && Math.max(...lengthsM) <= statuteDashM * STATUTE_DASH_SHARE;
 const TEXT_STALL_REACH_M = 3;
 // Text and crossings take the road's direction from a road line at least TEXT_ROAD_MIN_M long; a crossing's bars are
 // set parallel to it only when they already lie within ZEBRA_ROAD_SNAP_DEG (crossings may be skewed to the road).
@@ -550,7 +556,7 @@ export function regularise(drawn, ctx) {
         const statutePeriod = nominal ? nominal[0] + nominal[1] : null;
         const period = measuredPeriod(detected, statutePeriod ?? median(detected.map(([a, b]) => b - a)) * 2);
         const usePhoto = Boolean(period) && (!nominal || (detected.length >= 4 && Math.abs(period - statutePeriod) / statutePeriod > 0.15));
-        if (!nominal && !period) {
+        if ((!nominal && !period) || (nominal && keepsDetectedDashes(detected.map(([a, b]) => b - a), nominal[0], period))) {
           intervals = detected;
           stats.dashPeriods.push({ kind: ch.kind, colour: ch.colour, dotted: ch.dotted, dashes: detected.length, measured: null, used: null, dash: null, source: "detected dashes", ids: ch.ids });
         } else {
