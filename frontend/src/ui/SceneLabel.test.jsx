@@ -146,3 +146,13 @@ describe("ZoneLabel", () => {
     expect(screen.queryByRole("button")).toBeNull();
   });
 });
+
+describe("SceneLabel pressed state", () => {
+  it("settles 1px while pressed, from idle, hover and selected alike (V-F-36)", () => {
+    for (const state of ["idle", "hover", "selected"]) {
+      const { unmount } = render(<SceneLabel name="학생회관" elementId="BLD_E1" state={state} />);
+      expect(screen.getByRole("button").className.split(/\s+/)).toContain("active:translate-y-px");
+      unmount();
+    }
+  });
+});

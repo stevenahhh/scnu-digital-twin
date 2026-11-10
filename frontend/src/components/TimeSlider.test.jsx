@@ -107,6 +107,14 @@ describe("TimeSlider (one time control)", () => {
     fireEvent.click(screen.getByRole("button", { name: "시간 조작 접기" }));
     expect(screen.getByRole("button", { name: /시간 조작 펼치기/ })).toBeTruthy();
   });
+
+  it("opens the editor from the shared ghost sm Button, not a one-off button style (V-F-35)", () => {
+    render(<Harness />);
+    const trigger = screen.getByRole("button", { name: /날짜와 시각 바꾸기/ });
+    expect(trigger.dataset.variant).toBe("ghost");
+    expect(trigger.dataset.size).toBe("sm");
+    expect(trigger.querySelector("[data-qa=time-slider-value]").textContent).toContain("19:00");
+  });
 });
 
 describe("TimeSlider updated cue (one 1 s wash on a discrete change)", () => {

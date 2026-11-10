@@ -8,11 +8,12 @@ import { SettingsSheet } from "./SettingsSheet.jsx";
 export const LINK_COPIED = "링크를 복사했습니다";
 const COPIED_MS = 2000;
 
-function MenuItem({ icon: Icon, shortcut, onSelect, children }) {
+function MenuItem({ icon: Icon, shortcut, onSelect, qa, children }) {
   return (
     <button
       type="button"
       role="menuitem"
+      data-qa={qa}
       aria-keyshortcuts={shortcut}
       onClick={onSelect}
       className={cx(
@@ -94,7 +95,7 @@ export function MoreMenu({ mode, onTogglePresentation, themeMode, onThemeChange,
         {({ close }) => (
           <div className="flex flex-col" onKeyDown={moveFocus}>
             <MenuItem icon={Settings} onSelect={() => { close(); setSettingsOpen(true); }}>설정</MenuItem>
-            <MenuItem icon={Presentation} shortcut="P" onSelect={() => { close(); onTogglePresentation(); }}>발표 모드</MenuItem>
+            <MenuItem icon={Presentation} shortcut="P" qa="presentation-toggle" onSelect={() => { close(); onTogglePresentation(); }}>발표 모드</MenuItem>
             <MenuItem icon={Link} onSelect={() => { close(); copyLink(); }}>링크 복사</MenuItem>
           </div>
         )}
