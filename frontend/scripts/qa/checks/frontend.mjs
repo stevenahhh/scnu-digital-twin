@@ -386,8 +386,17 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-33", {
-    states: ["S01", "S04", "S15"], viewports: D,
+    states: ["S01", "S04", "S15"], viewports: D, mutates: true,
     async run(ctx) {
+      // S01 "active preset": since the HUD redesign (#139-#149) the presets are items of the 시점 menu and the overview is the
+      // camera group's 전체 보기 (no selected state). Pick a named preset, then read its checked item in the reopened menu.
+      const viewMenu = ctx.state === "S01";
+      if (viewMenu) {
+        await ctx.b.tap("[data-qa=camera-preset-gate]", null, { timeoutMs: 3000 });
+        await ctx.b.cameraSettle?.();
+        await ctx.b.tap("[data-qa=camera-view-menu]", null, { timeoutMs: 3000 });
+        await ctx.sleep(300);
+      }
       const m = await ctx.inPage((qa) => {
         const probe = document.createElement("span");
         probe.style.color = "var(--colors-primary)";
@@ -398,6 +407,11 @@ export const FRONTEND_CHECKS = [
         const active = qa.all("[aria-pressed=true],[aria-selected=true],[aria-checked=true]").filter(qa.visible);
         return active.map((el) => ({ text: qa.txt(el).slice(0, 20), border: getComputedStyle(el).borderTopColor, accentBorder: getComputedStyle(el).borderTopColor === primary, glyph: Boolean(el.querySelector("svg")) }));
       });
+      if (viewMenu) {
+        await ctx.b.key("Escape");
+        await ctx.b.tap("[data-qa=camera-preset-overview]", null, { timeoutMs: 3000 });
+        await ctx.b.cameraSettle?.();
+      }
       const bad = m.filter((a) => a.accentBorder || !a.glyph);
       return result(m.length > 0 && bad.length === 0, { activeElements: m.length, offenders: bad.slice(0, 5) }, "selected = wash + ink text + glyph; border not the accent");
     },
@@ -406,7 +420,8 @@ export const FRONTEND_CHECKS = [
     states: ["S01", "S05", "S08", "S10"], viewports: D, mutates: true,
     async run(ctx) {
       return withPanelOpen(ctx, null, async () => {
-      const styles = await ctx.inPage((qa) => qa.all("[aria-pressed=true],[aria-selected=true]").filter((el) => qa.visible(el) && el.tagName === "BUTTON" && !el.closest("[data-qa=campus-label]")).map((el) => { const s = getComputedStyle(el); return [s.backgroundColor, s.color, s.fontWeight, s.borderTopLeftRadius].join("|"); }));
+      // Segmented radiogroups (D4 동 선택, 실측/시뮬레이션) mark the chosen option with aria-checked since the redesign (#139-#149).
+      const styles = await ctx.inPage((qa) => qa.all("[aria-pressed=true],[aria-selected=true],[role=radio][aria-checked=true]").filter((el) => qa.visible(el) && el.tagName === "BUTTON" && !el.closest("[data-qa=campus-label]")).map((el) => { const s = getComputedStyle(el); return [s.backgroundColor, s.color, s.fontWeight, s.borderTopLeftRadius].join("|"); }));
       const seen = ctx.memo.get("V-F-34:styles") ?? [];
       const all = [...new Set([...seen, ...styles])];
       ctx.memo.set("V-F-34:styles", all);

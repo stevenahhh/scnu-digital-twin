@@ -288,7 +288,8 @@ export const GAP_CHECKS = [
       const rows = contrasts(ctx, sliderLabels);
       const worst = worstContrast(rows);
       const m = await ctx.inPage((qa) => ({
-        segments: qa.all("[data-qa=dashboard-panel] button").filter(qa.visible).map((el) => qa.txt(el)).filter((t) => /^(Live|Sim|실측|시뮬레이션|실시간)$/.test(t)),
+        // The panel's tab bar has a 시뮬레이션 tab since the tab redesign (#139-#149); only the mode control's options count.
+        segments: qa.all("[data-qa=dashboard-panel] button:not([role=tab])").filter(qa.visible).map((el) => qa.txt(el)).filter((t) => /^(Live|Sim|실측|시뮬레이션|실시간)$/.test(t)),
         timeSliders: qa.all("[data-qa=dashboard-panel] input[type=range]").filter((el) => /(월|일|시|분)/.test(qa.txt(el.parentElement?.parentElement))).length,
       }));
       return result(worst && worst.ratio >= 4.5 && m.segments.join("/") === "실측/시뮬레이션" && m.timeSliders === 0,
@@ -548,9 +549,19 @@ export const GAP_CHECKS = [
   defineCheck("GAP-29", {
     states: ["S01"], viewports: D, mutates: true,
     async run(ctx) {
-      if (!(await exists(ctx, HOOKS.presentation))) return missingHook(HOOKS.presentation, "HUD and panel hidden, time visible, chips 1.5x, dot pager, Esc restores");
-      // Row: activate 발표 모드, start 투어, press Esc. The tour is started first (its button lives in the toolbar that
-      // presentation hides); P is the documented key.
+      // Since the HUD redesign (#139-#149) the 발표 모드 control is an item of the 더보기 menu (key P), and 투어 시작 exists only
+      // inside presentation mode. Open the menu to find the control, then close it again without choosing.
+      if (!(await exists(ctx, HOOKS.presentation)) && (await exists(ctx, "[data-qa=more-menu]"))) {
+        await ctx.b.tap("[data-qa=more-menu]", null, { timeoutMs: 3000 });
+        await ctx.sleep(150);
+      }
+      const control = await exists(ctx, HOOKS.presentation);
+      if (await ctx.inPage((qa) => qa.one("[data-qa=more-menu]")?.getAttribute("aria-expanded") === "true")) {
+        await ctx.b.key("Escape");
+        await ctx.sleep(150);
+      }
+      if (!control) return missingHook(HOOKS.presentation, "HUD and panel hidden, time visible, chips 1.5x, dot pager, Esc restores");
+      // Row: activate 발표 모드 (P, the documented key), start 투어, press Esc.
       const layout = () => ctx.inPage((qa) => {
         const sizes = qa.all("button[data-qa=campus-label]").filter(qa.visible).map((el) => parseFloat(getComputedStyle(el.querySelector("[data-qa=label-chip]") ?? el).fontSize));
         const panel = qa.one("[data-qa=dashboard-panel]");
@@ -578,10 +589,9 @@ export const GAP_CHECKS = [
         }
         return last;
       };
-      const tour = (await ctx.b.tap("[data-qa=camera-tour-toggle]", null, { timeoutMs: 4000 })).ok;
-      const deadline = Date.now() + 4000;
-      while (Date.now() < deadline && !(await ctx.inPage((qa) => qa.one("[data-qa=camera-tour-toggle]")?.getAttribute("aria-pressed") === "true"))) await ctx.sleep(150);
       await ctx.b.key("p");
+      await until((m) => m.presenting);
+      const tour = (await ctx.b.tap("[data-qa=camera-tour-toggle]", null, { timeoutMs: 4000 })).ok;
       let on = await until((m) => m.presenting && m.pager !== null);
       // Chip text scales with a transition: read it once two samples agree.
       for (let i = 0; i < 20; i += 1) {
@@ -591,7 +601,10 @@ export const GAP_CHECKS = [
         on = next;
         if (stable) break;
       }
+      // While the tour runs the first Esc stops the tour and the next one leaves presentation (usePresentationMode).
       await ctx.b.key("Escape");
+      await until((m) => !m.presenting || m.pager === null);
+      if ((await layout()).presenting) await ctx.b.key("Escape");
       const after = await until((m) => !m.presenting && m.toolbar === before.toolbar && m.panelVisible === before.panelVisible);
       // Stop the tour only if it still runs (Esc may already have ended it; a second tap would restart it and keep the
       // camera touring through the probe replay's later S01 checks), then return to the overview.
