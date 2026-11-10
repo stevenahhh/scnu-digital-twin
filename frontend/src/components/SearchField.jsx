@@ -108,7 +108,7 @@ export function SearchField({ registry, onPick, className = "", storage = global
           onFocus={() => setOpen(true)}
           onBlur={() => setOpen(false)}
           onKeyDown={handleKeyDown}
-          className="h-11 min-w-0 flex-1 rounded-control bg-transparent text-body active:bg-surface-2 sm:h-9 text-ink placeholder:text-ink-muted focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+          className="h-11 min-w-0 flex-1 rounded-control bg-transparent text-body transition-none active:bg-surface-2 sm:h-9 text-ink placeholder:text-ink-muted focus:outline-none [&::-webkit-search-cancel-button]:hidden"
         />
         {query && (
           <button

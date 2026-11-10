@@ -149,3 +149,16 @@ describe("TimeSlider updated cue (one 1 s wash on a discrete change)", () => {
     expect(readout().getAttribute("data-updated")).toBe("true");
   });
 });
+
+describe("TimeSlider pressed state (V-F-36)", () => {
+  const range = () => screen.getByRole("slider", { name: "시각 (KST)" });
+
+  it("marks the range pressed from pointer down until the pointer is released anywhere", () => {
+    render(<Harness />);
+    expect(range().getAttribute("data-pressed")).toBeNull();
+    fireEvent.pointerDown(range());
+    expect(range().getAttribute("data-pressed")).toBe("true");
+    act(() => { window.dispatchEvent(new Event("pointerup")); });
+    expect(range().getAttribute("data-pressed")).toBeNull();
+  });
+});

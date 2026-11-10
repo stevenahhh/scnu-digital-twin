@@ -71,6 +71,8 @@ export function TimeSlider({
   const minuteRef = useRef(minuteOfDay);
   const [typed, setTyped] = useState(null);
   const [updated, setUpdated] = useState(false);
+  // 누르고 있는 동안 data-pressed를 단다(index.css가 바탕을 짙게 칠한다). 범위 입력은 :active를 믿을 수 없고, 놓는 위치는 슬라이더 밖일 수 있다.
+  const [pressed, setPressed] = useState(false);
   const updatedTimer = useRef(null);
   const rangeRef = useRef(null);
   const timeLabel = formatMinuteOfDay(minuteOfDay);
@@ -84,6 +86,16 @@ export function TimeSlider({
     updatedTimer.current = window.setTimeout(() => setUpdated(false), UPDATED_MS);
   };
   useEffect(() => () => window.clearTimeout(updatedTimer.current), []);
+  useEffect(() => {
+    if (!pressed) return undefined;
+    const release = () => setPressed(false);
+    window.addEventListener("pointerup", release);
+    window.addEventListener("pointercancel", release);
+    return () => {
+      window.removeEventListener("pointerup", release);
+      window.removeEventListener("pointercancel", release);
+    };
+  }, [pressed]);
   // React의 onChange는 끌 때마다(input) 불린다. 놓거나 키로 확정한 값은 브라우저의 change 이벤트에서만 알 수 있다.
   useEffect(() => {
     const range = rangeRef.current;
@@ -254,6 +266,8 @@ export function TimeSlider({
           aria-valuetext={timeLabel}
           onChange={(event) => onMinuteChange(Number(event.target.value))}
           onKeyDown={handleKeyDown}
+          onPointerDown={() => setPressed(true)}
+          data-pressed={pressed ? "true" : undefined}
           className={RANGE}
         />
         <div className={TICKS} aria-hidden="true">
