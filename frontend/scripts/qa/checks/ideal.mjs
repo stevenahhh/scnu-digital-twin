@@ -878,16 +878,19 @@ export const IDEAL_CHECKS_LIST = [
       mutates: true,
       async run(ctx) {
         const expected = `camera at rest after the drag, then map dHash distance before opening and after closing the panel <= ${STILL_MAX_BITS} bits and no commanded camera move`;
+        // 100 ms마다 자세를 읽어 정지할 때까지 기다린다. 반환: { restAt (정지가 시작된 ms, 못 멈추면 null), steps (읽기 사이 이동량) }.
         const waitForRest = async () => {
           const started = Date.now();
           const samples = [];
           while (Date.now() - started < CAMERA_REST_TIMEOUT_MS) {
             samples.push({ t: Date.now() - started, pose: await ctx.b.run(readCameraPose) });
             const restAt = cameraRestAt(samples);
-            if (restAt !== null) return restAt;
+            if (restAt !== null) break;
             await sleepMs(100);
           }
-          return null;
+          const steps = samples.slice(1).map((s, i) => ({ t: s.t, ...cameraMotion(samples[i].pose, s.pose) }))
+            .map(({ t, headingDeltaDeg, positionDeltaM }) => ({ t, headingDeltaDeg, positionDeltaM }));
+          return { restAt: cameraRestAt(samples), steps };
         };
         let result;
         const saved = await saveCamera(ctx);
@@ -901,7 +904,7 @@ export const IDEAL_CHECKS_LIST = [
             if (!focus.chip) return verdict(false, { measured: "no off-centre chip in the map area", region: focus.region }, expected);
             chip = focus.chip;
             await ctx.b.view.click(chip.x, chip.y);
-            if (await waitForRest() === null) return verdict(false, { measured: `camera not at rest within ${CAMERA_REST_TIMEOUT_MS} ms of the chip tap`, chip: chip.name }, expected);
+            if ((await waitForRest()).restAt === null) return verdict(false, { measured: `camera not at rest within ${CAMERA_REST_TIMEOUT_MS} ms of the chip tap`, chip: chip.name }, expected);
           }
           const { x, y } = ctx.map;
           await ctx.b.mouse("mouseMoved", x, y, 0);
@@ -911,12 +914,14 @@ export const IDEAL_CHECKS_LIST = [
             await sleepMs(40);
           }
           await ctx.b.mouse("mouseReleased", x - 160, y, 0);
-          const settleMs = await waitForRest();
-          if (settleMs === null) return verdict(false, { measured: `camera not at rest within ${CAMERA_REST_TIMEOUT_MS} ms of the drag`, chip: chip?.name ?? null }, expected);
+          const settle = await waitForRest();
+          const settleMs = settle.restAt;
+          if (settleMs === null) return verdict(false, { measured: `camera not at rest within ${CAMERA_REST_TIMEOUT_MS} ms of the drag`, chip: chip?.name ?? null, inertia: settle.steps }, expected);
           await ctx.b.cameraSettle();
           const region = await mapRegion(ctx);
           if (!region) return hookMissing("canvas", expected);
           await recordMoveTo(ctx);
+          const poseBefore = await ctx.b.run(readCameraPose);
           const before = decode(await ctx.b.screenshot());
           const opened = await openPanel(ctx);
           await sleepMs(1000);
@@ -924,9 +929,19 @@ export const IDEAL_CHECKS_LIST = [
           await sleepMs(1500);
           await ctx.b.cameraSettle();
           const after = decode(await ctx.b.screenshot());
+          const poseAfter = await ctx.b.run(readCameraPose);
           const { calls } = await cameraPoses(ctx);
+          // VWorld가 패널 여닫기 동안 지시한 마지막 방위(origin/dev는 마지막 건물을 방위 0으로 다시 겨눈다).
+          const commandedHeading = await ctx.b.run(() => window.__qaMoveTo?.at(-1)?.arg?.direction?.heading ?? null);
+          const rendered = cameraMotion(poseBefore, poseAfter);
+          const turn = Number.isFinite(commandedHeading) && Number.isFinite(poseBefore?.heading) ? Math.abs(commandedHeading - poseBefore.heading) % 360 : null;
           const distance = regionDistance(before, after, region, ctx.scale);
-          result = verdict(distance <= STILL_MAX_BITS && calls === 0 && closed, { distance, moveToCalls: calls, settleMs, chip: chip?.name ?? null, region, opened, closed }, expected);
+          result = verdict(distance <= STILL_MAX_BITS && calls === 0 && closed, {
+            distance, moveToCalls: calls,
+            poseDelta: { rendered: { headingDeltaDeg: rendered.headingDeltaDeg, positionDeltaM: rendered.positionDeltaM },
+              commanded: turn === null ? null : { heading: Math.round(commandedHeading * 1000) / 1000, headingDeltaDeg: Math.round(Math.min(turn, 360 - turn) * 1000) / 1000 } },
+            settleMs, inertia: settle.steps, chip: chip?.name ?? null, region, opened, closed,
+          }, expected);
         } finally {
           if (ctx.entry === "vworld") await stopOrbitAndReplayS04(ctx);
           else await restoreCamera(ctx, saved);
