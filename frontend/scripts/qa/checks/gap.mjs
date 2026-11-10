@@ -724,15 +724,76 @@ export const GAP_CHECKS = [
     },
   }),
   defineCheck("GAP-35", {
-    states: ["S03"], viewports: D,
+    // Since the redesign the comparison is built in the inspector: `비교에 추가` collects buildings and `비교 열기 (n)` is the
+    // 비교 control (ideal-state J2-2/J2-3). Shift-click 학생회관 (adds it without selecting), select 도서관, read 비교 열기 before the
+    // second pick, add 도서관, open the pane, then empty the comparison and close the inspector again.
+    states: ["S03"], viewports: D, mutates: true,
     async run(ctx) {
-      const m = await ctx.inPage((qa) => ({ compare: qa.all("button,[role=menuitem]").filter((el) => /^비교/.test(qa.txt(el))).map((el) => ({ text: qa.txt(el), disabled: el.disabled || el.getAttribute("aria-disabled") === "true", reason: el.title || el.getAttribute("aria-description") || "" })) }));
-      return result(m.compare.length > 0 && m.compare.every((c) => c.disabled && c.reason), m, "비교 control dimmed with a reason until two buildings are picked; comparison pane after two");
+      const CHIP = "button[data-qa=campus-label]";
+      const compareControls = () => ctx.inPage((qa) => qa.all("button,[role=menuitem]").filter((el) => qa.visible(el) && /^비교 열기/.test(qa.txt(el))).map((el) => ({ text: qa.txt(el), disabled: el.disabled || el.getAttribute("aria-disabled") === "true", reason: el.title || el.getAttribute("aria-description") || "" })));
+      const actions = [];
+      const first = await ctx.b.center(CHIP, "학생회관");
+      if (first) {
+        await ctx.b.mouse("mousePressed", first[0], first[1], 1, 8);
+        await ctx.b.mouse("mouseReleased", first[0], first[1], 0, 8);
+        actions.push("shift-click 학생회관");
+        await ctx.sleep(400);
+      }
+      const picked = await ctx.b.tap(CHIP, "도서관");
+      actions.push(picked.action);
+      await ctx.sleep(2500);
+      const beforeSecond = await compareControls();
+      const added = await ctx.b.tap("[data-qa=compare-add]");
+      actions.push(added.action);
+      await ctx.sleep(400);
+      const afterSecond = await compareControls();
+      if (afterSecond.some((c) => !c.disabled)) {
+        actions.push((await ctx.b.tap("[data-qa=compare-open]")).action);
+        await ctx.sleep(1200);
+      }
+      const pane = await ctx.inPage((qa) => {
+        const el = qa.all("[data-qa=comparison-pane]").find(qa.visible);
+        return el ? { columns: [...el.querySelectorAll("thead th")].slice(1).map((th) => qa.txt(th)) } : null;
+      });
+      // Put the page back: empty the comparison, close the inspector (no selection at S03) and the panel it opened.
+      for (let step = 0; step < 3; step += 1) {
+        const removed = await ctx.b.tap('[aria-label$=" 비교에서 빼기"]', null, { timeoutMs: 500 });
+        if (!removed.ok) break;
+        await ctx.sleep(300);
+      }
+      if (await ctx.b.center('[data-qa=selection-inspector] [aria-label="닫기"]')) await ctx.b.tap('[data-qa=selection-inspector] [aria-label="닫기"]');
+      await ctx.sleep(300);
+      if (await ctx.b.center('[aria-label="패널 닫기"]')) await ctx.b.tap('[aria-label="패널 닫기"]');
+      await ctx.sleep(600);
+      const m = { beforeSecondPick: beforeSecond, afterSecondPick: afterSecond, pane, actions };
+      const dimmed = beforeSecond.length > 0 && beforeSecond.every((c) => c.disabled && c.reason);
+      const paneOk = Boolean(pane) && pane.columns.length === 2 && pane.columns.some((t) => t.includes("학생회관")) && pane.columns.some((t) => t.includes("도서관"));
+      return result(dimmed && paneOk, m, "비교 control dimmed with a reason until two buildings are picked; comparison pane after two");
     },
   }),
   defineCheck("GAP-36", {
-    states: ["S04"], viewports: D, fixtures: "up",
+    // There is no command menu since the redesign: the export sits under the table it exports (ExportActions `표로 복사` /
+    // `CSV 저장`, ideal-state J2-3, INV-177). At S04 (도서관 selected) Shift-click another building chip into the comparison,
+    // add 도서관 with `비교에 추가`, open the comparison table, measure, then empty the comparison again.
+    states: ["S04"], viewports: D, fixtures: "up", mutates: true,
     async run(ctx) {
+      return withPanelOpen(ctx, null, async (actions) => {
+      const others = await ctx.inPage((qa) => qa.all("button[data-qa=campus-label]").filter(qa.visible)
+        .map((el) => { const r = el.getBoundingClientRect(); return { text: qa.txt(el), x: r.x + r.width / 2, y: r.y + r.height / 2 }; })
+        .filter((chip) => !/도서관/.test(chip.text) && chip.x < (qa.one("[data-qa=dashboard-panel]")?.getBoundingClientRect().left ?? innerWidth) && chip.y < innerHeight));
+      for (const chip of others.slice(0, 4)) {
+        await ctx.b.mouse("mousePressed", chip.x, chip.y, 1, 8);
+        await ctx.b.mouse("mouseReleased", chip.x, chip.y, 0, 8);
+        await ctx.sleep(400);
+        if (await ctx.inPage((qa) => Boolean(qa.one("[data-qa=compare-open]")))) {
+          actions.push(`shift-click ${chip.text}`);
+          break;
+        }
+      }
+      actions.push((await ctx.b.tap("[data-qa=compare-add]")).action);
+      await ctx.sleep(400);
+      actions.push((await ctx.b.tap("[data-qa=compare-open]")).action);
+      await ctx.sleep(1500);
       const m = await ctx.inPage((qa) => {
         const panel = qa.one("[data-qa=dashboard-panel]");
         const value = panel ? qa.textNodesShown(panel).find((item) => /\d/.test(item.value)) : null;
@@ -741,7 +802,15 @@ export const GAP_CHECKS = [
           exportAction: qa.all("button,[role=menuitem]").some((el) => /내보내기|CSV|표 복사|표로/.test(qa.txt(el) + (el.getAttribute("aria-label") ?? ""))),
         };
       });
+      // Put the page back: empty the comparison so the inspector of the selected 도서관 returns.
+      for (let step = 0; step < 3; step += 1) {
+        const removed = await ctx.b.tap('[aria-label$=" 비교에서 빼기"]', null, { timeoutMs: 500 });
+        if (!removed.ok) break;
+        await ctx.sleep(300);
+      }
+      m.actions = actions;
       return result(m.userSelect && m.userSelect !== "none" && m.exportAction, m, "panel text selectable and a table/export action exists");
+      });
     },
   }),
   defineCheck("GAP-37", {

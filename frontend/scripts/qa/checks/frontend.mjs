@@ -14,6 +14,30 @@ const SRC = fileURLToPath(new URL("../../../src/", import.meta.url));
 const ROOT = fileURLToPath(new URL("../../../../", import.meta.url));
 const readSrc = (rel) => (existsSync(SRC + rel) ? readFileSync(SRC + rel, "utf8") : "");
 
+// Risk fixture for V-F-06 / V-F-41: one simulation_update with a danger event, applied to the app's own simulation store
+// (the Vite dev server serves the same module instance the app imported). The fixture WebSocket only reports idle.
+const SIMULATION_STORE = "/src/simulation/stores/simulationStore.js";
+const RISK_FIXTURE = Object.freeze({
+  type: "simulation_update", status: "running", simulation_time: 12, entities: [],
+  risk_events: [{ event_id: "qa-risk-1", risk_level: "danger", risk_score: 87, location_id: "CW_QA_01", object_ids: ["car_qa", "person_qa"], ttc: 1.4, pet: 0.9, minimum_distance: 2.2 }],
+  statistics: { danger_count: 1, current_risks: 1 },
+});
+
+// Opens the 시뮬레이션 tab, applies the risk fixture, measures, then resets the store so later states see the idle simulation.
+async function withRiskFixture(ctx, measure) {
+  return withPanelOpen(ctx, "simulation", async (actions) => {
+    const applied = await ctx.b.evaluate(`import(${JSON.stringify(SIMULATION_STORE)}).then(({ simulationStore }) => simulationStore.applyMessage(${JSON.stringify(RISK_FIXTURE)}))`);
+    actions.push(applied ? "risk fixture applied" : "risk fixture NOT applied");
+    await ctx.sleep(400);
+    try {
+      return await measure(actions);
+    } finally {
+      await ctx.b.evaluate(`import(${JSON.stringify(SIMULATION_STORE)}).then(({ simulationStore }) => { simulationStore.reset(); return true; })`);
+      await ctx.sleep(200);
+    }
+  });
+}
+
 // Computed custom property values from :root (as rgb strings via a probe element).
 async function tokenColors(ctx, names) {
   return ctx.inPage((qa, a) => {
@@ -75,13 +99,17 @@ async function errorElements(ctx) {
 
 export const FRONTEND_CHECKS = [
   defineCheck("V-F-06", {
-    states: ["S13"], viewports: D, fixtures: "up",
+    // The risk metrics moved with the traffic simulation into the 시뮬레이션 tab (ideal-state 탭: 시뮬레이션); they render only
+    // while the simulation reports risk events, so the row's risk fixture is one simulation_update with a danger event.
+    states: ["S13"], viewports: D, fixtures: "up", mutates: true,
     async run(ctx) {
-      const m = await ctx.inPage((qa) => {
+      const m = await withRiskFixture(ctx, () => ctx.inPage((qa) => {
+        const panel = qa.one("[data-qa=traffic-simulation-panel]") ?? qa.one("[data-qa=dashboard-panel]") ?? document.body;
         const ink = getComputedStyle(qa.one("[data-qa=dashboard-panel]") ?? document.body).color;
-        const risk = qa.textNodesShown(qa.one("[data-qa=dashboard-panel]") ?? document.body).filter((item) => /위험/.test(item.value)).map((item) => getComputedStyle(item.el).color);
+        // The risk metric values: tone badges whose text names a risk level (headings and field labels stay in ink).
+        const risk = qa.textNodesShown(panel).filter((item) => /위험|경고|주의/.test(item.value) && item.el.closest("[data-qa=status-badge]")).map((item) => getComputedStyle(item.el).color);
         return { ink, riskColors: risk.slice(0, 5) };
-      });
+      }));
       const css = ["index.css", "ui/tokens.css"].map(readSrc).join("\n");
       const declared = new Set([...css.matchAll(/(--colors-[\w-]+)\s*:/g)].map((x) => x[1]));
       const jsx = readSrc("AppLegacy.jsx") + readSrc("AppVWorld.jsx") + readSrc("simulation/components/TrafficSafetyPanel.jsx");
@@ -141,7 +169,9 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-13", {
-    states: ["S01"], viewports: D, themes: ["dark", "light"], mutates: true,
+    // With every feed down the 현황 tab shows one Alert per feed and no tone badge (ideal-state 탭: 현황); the badges render
+    // when the feeds answer, so S01 is measured with the fixtures up.
+    states: ["S01"], viewports: D, themes: ["dark", "light"], mutates: true, fixtures: "up",
     async run(ctx) {
       return withPanelOpen(ctx, null, async () => {
       // Tone badges: short labels (<= 12 chars, <= 12 px) on their own bordered or filled pill.
@@ -305,7 +335,9 @@ export const FRONTEND_CHECKS = [
       const m = await ctx.inPage((qa) => {
         const h1 = qa.all("h1").filter((el) => qa.visible(el) || el.classList.contains("sr-only")).length;
         const visibleH1 = qa.all("h1").filter(qa.visible).length;
-        const cards = qa.all(".rounded-xl,.rounded-lg,.rounded-2xl,article,section").filter(qa.visible);
+        // The D4 pane (todo 34) is a <section role=dialog> that replaces the panel: its breadcrumb h2 is the panel title, not a
+        // card heading. Cards are the blocks inside it and inside the panel.
+        const cards = qa.all(".rounded-xl,.rounded-lg,.rounded-2xl,article,section").filter((el) => qa.visible(el) && !el.matches("[data-qa=d4-pane]"));
         const h2InCard = cards.filter((card) => card.querySelector("h2")).length;
         const outline = qa.all("h1,h2,h3,h4").filter(qa.visible).map((el) => el.tagName).slice(0, 12);
         return { visibleH1, h1, h2InsideCards: h2InCard, outline };
@@ -369,10 +401,14 @@ export const FRONTEND_CHECKS = [
   defineCheck("V-F-32", {
     states: ["S01", "S06"], viewports: D, mutates: true,
     async run(ctx) {
-      return withPanelOpen(ctx, null, async () => {
+      // S06 now lands on the 건물 tab with no selection, whose empty state is a single block (no gap to compare); the other tab
+      // is read on 에너지, the tab with the longest card stack.
+      return withPanelOpen(ctx, ctx.state === "S06" ? "energy" : null, async () => {
       // The panel scroll body's direct children are the card/header stack of the active tab.
       const gaps = await ctx.inPage((qa) => {
-        const body = qa.one("[data-qa=dashboard-panel] .overflow-y-auto");
+        // Since the tabs became a tablist the scroll body holds one [role=tabpanel] that carries the stack.
+        const scroller = qa.one("[data-qa=dashboard-panel] .overflow-y-auto");
+        const body = scroller?.querySelector(":scope > [role=tabpanel]") ?? scroller;
         if (!body) return null;
         const kids = [...body.children].filter(qa.visible).map((el) => el.getBoundingClientRect());
         return kids.slice(1).map((r, i) => Math.round(r.top - kids[i].bottom));
@@ -488,11 +524,12 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-41", {
+    // Risk rows are the traffic simulation's risk-event list in the 시뮬레이션 tab; the risk fixture puts one event in it.
     states: ["S13"], viewports: D, fixtures: "up", mutates: true,
     async run(ctx) {
-      return withPanelOpen(ctx, null, async () => {
+      return withRiskFixture(ctx, async () => {
       // The risk rows sit below the live values in the panel's scroll body: scroll them into view, as a user would.
-      await ctx.inPage((qa) => { qa.one("[data-qa=dashboard-panel] [data-risk]")?.scrollIntoView({ block: "center" }); return true; });
+      await ctx.inPage((qa) => { (qa.one("[data-qa=traffic-simulation-panel] li") ?? qa.one("[data-qa=dashboard-panel] [data-risk]"))?.scrollIntoView({ block: "center" }); return true; });
       await ctx.sleep(300);
       const m = await ctx.inPage((qa) => {
         const rows = qa.all("[data-qa=dashboard-panel] li, [data-qa=dashboard-panel] article, [data-qa=dashboard-panel] [data-risk]").filter((el) => qa.visible(el) && /위험|주의|risk/i.test(qa.txt(el)));
@@ -504,7 +541,8 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-42", {
-    states: ["S01"], viewports: D,
+    // Current conditions render only when the weather feed answers (a down feed shows one Alert instead): fixtures up.
+    states: ["S01"], viewports: D, fixtures: "up",
     async run(ctx) {
       const m = await ctx.inPage((qa) => {
         const panel = qa.one("[data-qa=dashboard-panel]");
@@ -793,7 +831,8 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-64", {
-    states: ["S13"], viewports: D,
+    // The parking values render only while the vision feed answers (a down feed shows one Alert instead): fixtures up.
+    states: ["S13"], viewports: D, fixtures: "up",
     async run(ctx) {
       const tiles = await ctx.inPage((qa) => {
         const grid = qa.all("[data-qa=dashboard-panel] .grid-cols-3").find(qa.visible);
@@ -817,13 +856,17 @@ export const FRONTEND_CHECKS = [
     },
   }),
   defineCheck("V-F-67", {
-    states: ["S06"], viewports: D,
+    // Desktop starts on the rail since the redesign, and the feed errors live in the 현황 tab (ideal-state 탭: 현황): S06 lands
+    // on the 건물 tab's empty state, so the error message is read with the panel open on 현황.
+    states: ["S06"], viewports: D, mutates: true,
     async run(ctx) {
+      return withPanelOpen(ctx, "status", async () => {
       const m = await ctx.inPage((qa) => {
-        const error = qa.all("[role=alert],[data-qa$=-error]").find(qa.visible);
+        const error = qa.all("[data-qa=dashboard-panel] [role=alert],[data-qa=dashboard-panel] [data-qa=alert],[data-qa$=-error]").find(qa.visible);
         return { errorUserSelect: error ? getComputedStyle(error).userSelect : null };
       });
       return result(m.errorUserSelect && m.errorUserSelect !== "none", m, "!= none for panel content");
+      });
     },
   }),
   defineCheck("V-F-68", {
