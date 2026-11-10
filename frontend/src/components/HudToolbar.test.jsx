@@ -8,17 +8,16 @@ import { HudToolbar } from "./HudToolbar.jsx";
 afterEach(cleanup);
 
 const renderBar = (props = {}) => render(
-  <HudToolbar presets={CAMERA_PRESETS} activeId="overview" onSelect={vi.fn()} onToggleTour={vi.fn()} {...props} />,
+  <HudToolbar presets={CAMERA_PRESETS} activeId="overview" onSelect={vi.fn()} {...props} />,
 );
 
 describe("HudToolbar", () => {
-  it("has exactly three groups: 전체, the 시점 menu and the tour toggle with verb labels", () => {
+  it("is the 시점 menu alone: 전체 and the tour toggle are not in the HUD bar", () => {
     renderBar();
-    const bar = screen.getByRole("toolbar", { name: "카메라 시점" });
-    const buttons = within(bar).getAllByRole("button");
-    expect(buttons.map((button) => button.dataset.qa)).toEqual(["camera-preset-overview", "camera-view-menu", "camera-tour-toggle"]);
-    expect(screen.getByRole("button", { name: "투어 시작" }).getAttribute("aria-pressed")).toBe("false");
-    expect(screen.getByRole("button", { name: "전체" }).getAttribute("aria-pressed")).toBe("true");
+    const buttons = screen.getAllByRole("button");
+    expect(buttons.map((button) => button.dataset.qa)).toEqual(["camera-view-menu"]);
+    expect(screen.queryByRole("button", { name: "전체" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /투어/ })).toBeNull();
   });
 
   it("opens the menu, moves with arrow keys, selects a preset and returns focus to the trigger", async () => {
@@ -40,15 +39,20 @@ describe("HudToolbar", () => {
 
   it("closes on Escape, and names the active preset on the trigger with one pressed style", async () => {
     const user = userEvent.setup();
-    renderBar({ activeId: "library", touring: true });
+    renderBar({ activeId: "library" });
     const trigger = screen.getByRole("button", { name: /도서관/ });
-    expect(trigger.className).toMatch(/\bbg-surface-2\b/);
-    expect(trigger.className).not.toMatch(/border-primary|text-primary/);
-    expect(screen.getByRole("button", { name: "투어 멈춤" }).getAttribute("aria-pressed")).toBe("true");
+    expect(trigger.dataset.active).toBe("true");
+    expect(trigger.className).not.toMatch(/border-primary|text-primary|!/);
     await user.click(trigger);
     expect(screen.getByRole("menuitemradio", { name: /도서관/ }).getAttribute("aria-checked")).toBe("true");
     await user.keyboard("{Escape}");
     expect(screen.queryByRole("menu")).toBeNull();
     expect(document.activeElement).toBe(trigger);
+  });
+
+  it("is an icon button named by the active preset in compact (phone) mode", () => {
+    renderBar({ activeId: "library", compact: true });
+    const trigger = screen.getByRole("button", { name: "시점: 도서관" });
+    expect(trigger.textContent).toBe("");
   });
 });

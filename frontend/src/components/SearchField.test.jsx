@@ -1,9 +1,12 @@
 /* @vitest-environment jsdom */
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { RECENT_SEARCHES_KEY, SearchField } from "./SearchField.jsx";
+import { SearchField } from "./SearchField.jsx";
 
 afterEach(cleanup);
+
+// 최근 검색을 브라우저에 남기는 저장 키(바뀌면 사용자의 기존 기록이 사라진다).
+const RECENT_SEARCHES_KEY = "scnu.recentSearches";
 
 const REGISTRY = new Map([
   ["BLD_C1", { elementId: "BLD_C1", displayName: "도서관", code: "C1", tier: 1, aliases: ["도서관", "C1"] }],
