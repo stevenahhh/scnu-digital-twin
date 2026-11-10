@@ -70,4 +70,10 @@ describe("SearchField", () => {
     fireEvent.keyDown(input, { key: "Escape" });
     expect(input.value).toBe("");
   });
+
+  it("gives the search input a pressed style (V-F-36: every control changes while pressed)", () => {
+    render(<SearchField registry={REGISTRY} onPick={vi.fn()} storage={memoryStorage()} />);
+    const input = screen.getByRole("combobox", { name: "건물 검색" });
+    expect(input.className.split(/\s+/)).toContain("active:bg-surface-2");
+  });
 });

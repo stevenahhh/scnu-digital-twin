@@ -12,6 +12,8 @@ export const LABEL_TEXT = "text-caption [@media(pointer:coarse)_and_(min-width:6
 export const LABEL_HIT = "min-h-10 min-w-10 [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:min-w-11 max-[639px]:min-h-11 max-[639px]:min-w-11";
 // 촘촘한 장면(D4 층 이름표)의 포인터 전용 영역: 24px 높이라 이웃 층의 영역과 겹치지 않는다. 터치·폰에서는 따로 버튼 목록을 둔다.
 const LABEL_HIT_COMPACT = "min-h-6 min-w-10";
+// 마우스를 올린 칩이 떠오르는 높이(-translate-y-0.5). 라벨 배치는 이만큼 HUD에서 더 띄운다.
+export const LABEL_HOVER_LIFT_PX = 2;
 
 // 선택: 강조색 테두리와 강조색 글자. 글자는 강조색을 ink 쪽으로 섞어 두 테마 모두 4.5:1을 넘긴다.
 const SELECTED_INK = "text-[color:color-mix(in_srgb,var(--colors-primary)_75%,var(--colors-ink))]";
@@ -83,6 +85,8 @@ export function SceneLabel({
         state === "hover" && "-translate-y-0.5",
         // 포인터를 칩 위에 올렸을 때도 같은 단계로 떠오른다(마우스오버 표시).
         state !== "selected" && "hover:-translate-y-0.5",
+        // 누르는 동안은 어느 상태에서든 1 px 내려앉는다(Button과 같은 눌림 표시).
+        "active:translate-y-px",
         className,
       )}
       {...rest}

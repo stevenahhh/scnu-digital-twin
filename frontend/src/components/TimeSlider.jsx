@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Check, ChevronDown, ChevronUp, Clock3, Pause, Play } from "lucide-react";
-import { Button, COARSE_TARGET, FOCUS_RING } from "../ui/Button.jsx";
+import { Button } from "../ui/Button.jsx";
 import { Popover } from "../ui/Popover.jsx";
 import { cx } from "../ui/cx.mjs";
 import {
@@ -35,12 +35,6 @@ const FIELD = cx(
 );
 const ICON = "h-3.5 w-3.5";
 const READOUT = "text-body font-semibold tabular-nums text-ink";
-const VALUE_BUTTON = cx(
-  "inline-flex min-h-8 items-center gap-1 rounded-control px-2 hover:bg-surface-2",
-  COARSE_TARGET,
-  FOCUS_RING,
-  READOUT,
-);
 // 시간 카드는 화면 아래에 붙어 있으므로 편집 팝오버를 트리거 위로 연다. Popover는 트리거 아래(top-full + 0.5rem)에
 // 놓이므로 자기 높이 + 트리거 높이(2rem, 굵은 포인터 2.75rem) + 두 간격(1rem)만큼 올린다.
 const POPOVER_ABOVE = "-translate-y-[calc(100%_+_3rem)] [@media(pointer:coarse)]:-translate-y-[calc(100%_+_3.75rem)]";
@@ -133,16 +127,16 @@ export function TimeSlider({
       qa="time-edit-popover"
       className={POPOVER_ABOVE}
       renderTrigger={(props) => (
-        <button
+        <Button
           {...props}
-          type="button"
+          variant="ghost"
+          size="sm"
           data-qa="time-value"
           aria-label={`장면 시각 ${timeLabel}, 날짜와 시각 바꾸기`}
-          className={VALUE_BUTTON}
         >
-          <span data-qa={valueQa}>{timeLabel}</span>
-          <ChevronDown aria-hidden="true" className={ICON} />
-        </button>
+          <span data-qa={valueQa} className={READOUT}>{timeLabel}</span>
+          <ChevronDown aria-hidden="true" className={cx(ICON, "text-ink")} />
+        </Button>
       )}
     >
       {fields}
