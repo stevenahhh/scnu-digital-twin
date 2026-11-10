@@ -65,7 +65,7 @@ export const SceneLoadingNotice = forwardRef(function SceneLoadingNotice({ inset
     <div
       ref={ref}
       role="status"
-      className="pointer-events-none absolute inset-y-0 left-0 z-[5] flex items-center justify-center px-10 transition-[right] duration-300"
+      className="pointer-events-none absolute inset-y-0 left-0 z-[5] flex items-center justify-center px-10"
       style={{ right: insetRight }}
     >
       <div className="flex items-center gap-3 rounded-card border border-hairline bg-surface-1 px-4 py-3 text-body text-ink-muted shadow-popover">

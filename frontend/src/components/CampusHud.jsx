@@ -1,36 +1,56 @@
-import { forwardRef } from "react";
-import { CloudSun, Presentation } from "lucide-react";
+import { forwardRef, useCallback, useRef } from "react";
+import { CloudSun, Pause, Play, Presentation } from "lucide-react";
 import { Button } from "../ui/Button.jsx";
+import { cx } from "../ui/cx.mjs";
 import { CAMERA_PRESETS } from "../camera/cameraPresets.mjs";
 import { Wordmark } from "../panel/Wordmark";
 import { SHELL_PEEK_HEIGHT } from "../panel/DashboardShell";
 import { CameraControls } from "./CameraControls";
-import { HudTimeReadout } from "./HudTimeReadout";
+import { sceneTimeReadout } from "./HudTimeReadout";
 import { HudToolbar } from "./HudToolbar";
 import { SearchField } from "./SearchField";
 import { TimeSlider } from "./TimeSlider";
+import { FeedStatusChip } from "./hud/FeedStatusChip";
+import { FOLLOW_MOTION, usePanelFollow } from "./hud/usePanelFollow.mjs";
 
-// 지도 위 조작. 첫 글자는 장면 시각이고(왼쪽 위), 그 옆에 카메라 도구 모음, 아래에 시간 슬라이더, 오른쪽에 확대·회전 단추.
-// 지도보다 앞에 두어 Tab이 라벨보다 먼저 닿는다. 오른쪽은 패널(레일)이 차지한 폭만큼 비킨다(insetRight).
-// 폰에서는 바텀 시트의 peek 높이만큼 아래를 비워 슬라이더가 시트에 가리지 않게 하고, 워드마크는 시트 머리에 있다.
+const PRESSED = "aria-pressed:bg-surface-2 aria-pressed:text-ink";
+
+// 두 대시보드가 같이 쓰는 지도 위 조작. 위쪽 한 줄(hud-bar)은 검색, 시점 메뉴, 끊긴 피드가 있을 때만 상태 칩 하나,
+// 오른쪽 끝의 워드마크와 moreMenu다. 시간 카드는 왼쪽 아래, 카메라 묶음은 오른쪽 아래(폰은 토글 하나)에 놓인다.
+// 장면 시각은 시간 카드에만 보인다. 오른쪽은 패널(레일)이 차지한 폭만큼 비키고, 패널이 미끄러지는 동안 오른쪽 묶음이
+// 패널과 같은 transform으로 따라간다(usePanelFollow). camera는 덕 타이핑이다: Legacy는 controlsRef, VWorld는
+// zoomBy·rotateBy를 준다. statusSlot·compareSlot은 받아도 쓰지 않는다(피드 상태는 feedIssueCount 칩, 비교는
+// 인스펙터가 맡는다). 지도보다 앞에 두어 Tab이 라벨보다 먼저 닿는다.
 export const CampusHud = forwardRef(function CampusHud(
   {
-    mode = "desktop", insetRight, camera, clock, playing, onPlayingChange, sceneWeather, statusSlot = null, presenting = false,
-    onTogglePresentation, tour = null, compareSlot = null, search = null,
+    mode = "desktop", insetRight, camera, clock, playing, onPlayingChange, presenting = false, onTogglePresentation,
+    tour = null, search = null, moreMenu = null, feedIssueCount = 0, onOpenStatus, sceneWeather = null,
   },
   ref,
 ) {
+  const rootRef = useRef(null);
+  const setRoot = useCallback((node) => {
+    rootRef.current = node;
+    if (typeof ref === "function") ref(node);
+    else if (ref) ref.current = node;
+  }, [ref]);
+  const follow = usePanelFollow(rootRef, insetRight);
   const phone = mode === "phone";
-  const toggle = onTogglePresentation && (
-    <PresentationToggle presenting={presenting} onToggle={onTogglePresentation} className={presenting ? "ml-auto" : "mt-1"} />
-  );
-  // 발표 모드: 장면 시각과 나가기 단추만 남기고, 투어 중이면 아래 가운데에 점 표시를 둔다.
+  const cameraReady = camera.ready !== false;
+  const toggle = onTogglePresentation && <PresentationToggle presenting={presenting} onToggle={onTogglePresentation} />;
+
+  // 발표 모드: 읽기 전용 장면 시각, 투어 시작/멈춤, 발표 모드 끝내기만 남기고 투어 중이면 아래 가운데에 점 표시를 둔다.
   if (presenting) {
     return (
-      <div ref={ref} data-qa="campus-hud" data-label-chrome-layer="" data-presenting="true" className="pointer-events-none absolute inset-0 z-[6]">
-        <div className="absolute left-4 right-4 top-4 flex items-start gap-2">
-          <HudTimeReadout minuteOfDay={clock.sceneMinuteOfDay} />
-          {toggle}
+      <div ref={setRoot} data-qa="campus-hud" data-label-chrome-layer="" data-presenting="true" className="pointer-events-none absolute inset-0 z-[6]">
+        <div data-qa="hud-bar" className="absolute left-4 right-4 top-4 flex items-center gap-2">
+          <p data-qa="hud-time-readout" className="rounded-control border border-hairline bg-surface-1 px-3 py-2 text-body font-semibold tabular-nums text-ink">
+            {sceneTimeReadout(clock.sceneMinuteOfDay)}
+          </p>
+          <div className="ml-auto flex items-center gap-2">
+            {camera.toggleTour && <TourToggle touring={camera.touring} onToggle={camera.toggleTour} />}
+            {toggle}
+          </div>
         </div>
         {tour && <TourPager current={tour.current} total={tour.total} />}
       </div>
@@ -38,26 +58,22 @@ export const CampusHud = forwardRef(function CampusHud(
   }
   return (
     <div
-      ref={ref}
+      ref={setRoot}
       data-qa="campus-hud"
       data-label-chrome-layer=""
-      className="pointer-events-none absolute left-0 top-0 z-[6] transition-none"
-      style={{ right: insetRight, bottom: phone ? `${SHELL_PEEK_HEIGHT}px` : "0px" }}
+      className="pointer-events-none absolute left-0 top-0 z-[6]"
+      style={{ right: follow.right, bottom: phone ? `${SHELL_PEEK_HEIGHT}px` : "0px" }}
     >
-      <div className="absolute left-4 right-4 top-4 flex flex-wrap items-start gap-2">
-        <HudTimeReadout minuteOfDay={clock.sceneMinuteOfDay} statusSlot={statusSlot} />
-        <HudToolbar
-          presets={CAMERA_PRESETS}
-          activeId={camera.activePresetId}
-          onSelect={camera.selectPreset}
-          touring={camera.touring}
-          onToggleTour={camera.toggleTour}
-        />
-        {search && <SearchField registry={search.registry} onPick={search.onPick} />}
-        {toggle}
-        {compareSlot}
-        {/* 장면 위에 바로 놓이므로 칩과 같은 반투명 바탕(label-bg) 위에 둔다: 라이트 테마·밤 장면에서도 읽힌다(V-F-17). */}
-        {!phone && <Wordmark className="ml-auto mt-1.5 rounded-control bg-[var(--colors-label-bg)] px-2 py-1 text-ink-muted" />}
+      <div data-qa="hud-bar" className="absolute left-4 right-4 top-4 flex min-w-0 flex-nowrap items-center gap-2">
+        {search && <SearchField registry={search.registry} onPick={search.onPick} className="min-w-0 shrink" />}
+        {cameraReady && (
+          <HudToolbar presets={CAMERA_PRESETS} activeId={camera.activePresetId} onSelect={camera.selectPreset} compact={phone} />
+        )}
+        <FeedStatusChip count={feedIssueCount} onOpen={onOpenStatus} />
+        <div className={cx("ml-auto flex shrink-0 items-center gap-2", FOLLOW_MOTION)} style={follow.style}>
+          {!phone && <Wordmark className="rounded-control bg-[var(--colors-label-bg)] px-2 py-1 text-ink-muted" />}
+          {moreMenu}
+        </div>
       </div>
       <TimeSlider
         minuteOfDay={clock.sceneMinuteOfDay}
@@ -70,7 +86,7 @@ export const CampusHud = forwardRef(function CampusHud(
         live={clock.isLiveMode}
         collapsible={phone}
         className="absolute bottom-4 left-4 w-[min(24rem,calc(100%-2rem))]"
-        caption={(
+        caption={sceneWeather && (
           <p
             data-qa="scene-weather"
             data-estimated={sceneWeather.label.estimated ? "true" : "false"}
@@ -81,7 +97,17 @@ export const CampusHud = forwardRef(function CampusHud(
           </p>
         )}
       />
-      <CameraControls controlsRef={camera.controlsRef} onHome={camera.goHome} className="absolute right-4 top-1/2 -translate-y-1/2 sm:bottom-4 sm:top-auto sm:translate-y-0" />
+      {cameraReady && (
+        <CameraControls
+          controlsRef={camera.controlsRef}
+          onZoom={camera.zoomBy}
+          onRotate={camera.rotateBy}
+          onHome={camera.goHome}
+          collapsible={phone}
+          className={cx(phone ? "absolute right-4 top-20" : "absolute bottom-4 right-4", FOLLOW_MOTION)}
+          style={follow.style}
+        />
+      )}
     </div>
   );
 });
@@ -95,9 +121,26 @@ export function PresentationToggle({ presenting, onToggle, className }) {
       aria-keyshortcuts="P"
       icon={<Presentation aria-hidden="true" className="h-4 w-4" />}
       onClick={onToggle}
-      className={`pointer-events-auto ${className ?? ""}`}
+      className={cx("pointer-events-auto", className)}
     >
       {presenting ? "발표 모드 끝내기" : "발표 모드"}
+    </Button>
+  );
+}
+
+// 투어는 발표 모드 안에서만 켠다. 시점을 6초마다 차례로 보여 준다.
+function TourToggle({ touring, onToggle }) {
+  return (
+    <Button
+      size="sm"
+      data-qa="camera-tour-toggle"
+      aria-pressed={touring}
+      title={touring ? "투어를 멈춥니다" : "시점을 6초마다 차례로 보여 줍니다"}
+      icon={touring ? <Pause aria-hidden="true" className="h-4 w-4" /> : <Play aria-hidden="true" className="h-4 w-4" />}
+      onClick={onToggle}
+      className={cx("pointer-events-auto", PRESSED)}
+    >
+      {touring ? "투어 멈춤" : "투어 시작"}
     </Button>
   );
 }

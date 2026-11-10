@@ -65,20 +65,19 @@ describe("RepresentativePlanOverlayController", () => {
     await waitFor(() => expect(onOverlayDataChange).toHaveBeenLastCalledWith([]));
   });
 
-  it("shows each representative plan name and installed kWp while preserving status-only non-D4 buildings", async () => {
-    const user = userEvent.setup();
-    const d3Overlay = { ...overlay, buildingId: "D3", installationPlanId: "plan-d3", name: "D3 남측 대표안", installedCapacityKwp: 7.056, arrays: [{ id: "array-d3" }] };
-    const d4Overlay = { ...overlay, name: "D4 기준 대표안", installedCapacityKwp: 13.056, arrays: [{ id: "array-d4" }, { id: "array-d4-east" }] };
-    const onBuildingSelect = vi.fn();
-    render(<RepresentativePlanOverlayController buildingIds={["D3", "D4", "D2"]} loadOverlays={vi.fn().mockResolvedValue([d3Overlay, d4Overlay])} onOverlayDataChange={vi.fn()} onBuildingSelect={onBuildingSelect} />);
+  it("renders only the layer toggle: building plans live in the 캠퍼스 비교 table", async () => {
+    const onOverlayDataChange = vi.fn();
+    render(<RepresentativePlanOverlayController buildingIds={["D3", "D4"]} loadOverlays={vi.fn().mockResolvedValue([overlay])} onOverlayDataChange={onOverlayDataChange} />);
+    await waitFor(() => expect(onOverlayDataChange).toHaveBeenCalledWith([overlay]));
+    expect(screen.getByRole("group", { name: "대표 설치 계획 지도 레이어" })).toBeTruthy();
+    expect(screen.queryByRole("list")).toBeNull();
+    expect(screen.queryByRole("button", { name: /상세 분석/ })).toBeNull();
+  });
 
-    expect(await screen.findByText("D3 남측 대표안")).toBeTruthy();
-    expect(screen.getByText("7.056 kWp · 1개 배열 · 검증된 지도 좌표 없음")).toBeTruthy();
-    expect(screen.getByText("D4 기준 대표안")).toBeTruthy();
-    expect(screen.getByText("13.056 kWp · 2개 배열 · 지도 표시 가능")).toBeTruthy();
-    expect(screen.getByText("대표 설치안 미지정")).toBeTruthy();
-    await user.click(screen.getByRole("button", { name: "D3 상세 분석 보기" }));
-    expect(onBuildingSelect).toHaveBeenCalledWith("D3");
+  it("shows no spinner while loading (MOT-12)", () => {
+    render(<RepresentativePlanOverlayController buildingIds={["D4"]} loadOverlays={() => new Promise(() => {})} onOverlayDataChange={vi.fn()} />);
+    expect(screen.getByRole("status").textContent).toContain("불러오는 중");
+    expect(document.querySelector(".animate-spin")).toBeNull();
   });
 
   it("reports loading failures without publishing stale data", async () => {
@@ -99,13 +98,4 @@ describe("RepresentativePlanOverlayController", () => {
     await waitFor(() => expect(screen.getByRole("button", { name: "다시 시도" })).toBeTruthy());
   });
 
-  it("lets only the plan list scroll inside a height-bounded column (phone), so the card shrinks instead of covering the HUD", async () => {
-    const view = render(<RepresentativePlanOverlayController buildingIds={["D4"]} loadOverlays={vi.fn().mockResolvedValue([overlay])} onOverlayDataChange={vi.fn()} fitHeight />);
-    const list = await screen.findByRole("list", { name: "건물별 대표 설치 계획 상태" });
-    expect(list.className).toMatch(/\boverflow-y-auto\b/);
-    expect(list.closest("aside").className).toMatch(/\bmin-h-0\b/);
-    view.unmount();
-    render(<RepresentativePlanOverlayController buildingIds={["D4"]} loadOverlays={vi.fn().mockResolvedValue([overlay])} onOverlayDataChange={vi.fn()} />);
-    expect((await screen.findByRole("list", { name: "건물별 대표 설치 계획 상태" })).className).not.toMatch(/overflow-y-auto/);
-  });
 });

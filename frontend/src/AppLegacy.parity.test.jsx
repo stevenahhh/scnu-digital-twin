@@ -151,7 +151,7 @@ beforeEach(() => {
   fileLoaderMock.loads.length = 0;
 });
 
-// 전체 시점은 도구 모음에 있고, 나머지 시점은 `시점` 메뉴 안에 있다. 메뉴 항목은 메뉴를 연 뒤에만 DOM에 있다.
+// 전체 시점은 카메라 묶음의 `전체 보기`에 있고, 나머지 시점은 `시점` 메뉴 안에 있다. 메뉴 항목은 메뉴를 연 뒤에만 DOM에 있다.
 const presetButton = (container, id) => {
   if (id !== "overview" && !container.querySelector(`[data-qa="camera-preset-${id}"]`)) {
     fireEvent.click(container.querySelector('[data-qa="camera-view-menu"]'));
@@ -169,11 +169,11 @@ afterEach(() => {
 const phoneMatchMedia = vi.fn((query) => ({ matches: query === "(max-width: 639px)" || query === "(max-width: 1023px)", addEventListener() {}, removeEventListener() {} }));
 
 describe("Legacy and VWorld feature parity", () => {
-  it("renders the VWorld campus status and full energy surfaces inside the energy tab", () => {
+  it("renders the full energy surfaces inside the energy tab, with campus status folded into the comparison table", () => {
     render(<App />);
 
     fireEvent.click(screen.getByRole("tab", { name: "에너지" }));
-    expect(screen.getByText("캠퍼스 설치 현황")).toBeTruthy();
+    expect(screen.queryByText("캠퍼스 설치 현황")).toBeNull();
     expect(screen.getByText("건물 에너지 분석")).toBeTruthy();
     expect(screen.getByText("캠퍼스 태양광 비교")).toBeTruthy();
     expect(screen.getByText("건물 에너지 시뮬레이션")).toBeTruthy();
@@ -418,29 +418,22 @@ describe("Legacy and VWorld feature parity", () => {
     }
   });
 
-  it("puts the freshness stamps, the three camera groups, the time controls and the camera buttons in tab order; the map region is not a tab stop (HUD -> chips -> panel)", async () => {
+  it("puts the search, the 시점 menu, the time controls and the camera buttons in tab order; the map region is not a tab stop (HUD -> chips -> panel)", async () => {
     const user = userEvent.setup();
     const { container } = render(<App />);
 
-    const overview = container.querySelector('[data-qa="camera-preset-overview"]');
     const menu = container.querySelector('[data-qa="camera-view-menu"]');
-    const tour = container.querySelector('[data-qa="camera-tour-toggle"]');
-    const presentationToggle = container.querySelector('[data-qa="presentation-toggle"]');
-    // 비교 단추는 흐려 있어도(aria-disabled) 포커스가 닿아 까닭을 읽을 수 있다.
-    const compare = container.querySelector('[data-qa="compare-open"]');
-    // 건물 검색칸은 카메라 도구 모음 바로 뒤에 온다.
     const search = screen.getByRole("combobox", { name: "건물 검색" });
+    const timeValue = container.querySelector('[data-qa="time-value"]');
     const now = screen.getByRole("button", { name: "지금" });
     const play = screen.getByRole("button", { name: "시간 재생" });
-    const date = screen.getByLabelText("장면 날짜");
-    const typedTime = screen.getByLabelText("장면 시각 입력");
     const slider = screen.getByRole("slider", { name: "시각 (KST)" });
-    const cameraButtons = ["확대", "축소", "왼쪽으로 회전", "오른쪽으로 회전", "처음 시점"].map((name) => screen.getByRole("button", { name }));
+    const cameraButtons = ["확대", "축소", "왼쪽으로 회전", "오른쪽으로 회전", "전체 보기"].map((name) => screen.getByRole("button", { name }));
     const mapLayer = container.querySelector('[data-qa="campus-map-layer"]');
-    // HUD는 장면 시각과 그 옆 갱신 표시 셋(기상·교통·에너지, 새로 고침 단추)으로 시작한다.
-    const stamps = [...container.querySelectorAll('[data-qa="campus-hud"] [data-qa="freshness-stamp"] button')];
-    expect(stamps.map((button) => button.getAttribute("aria-label"))).toEqual(["기상 새로고침", "교통 새로고침", "에너지 새로고침"]);
-    const expected = [...stamps, overview, menu, tour, search, presentationToggle, compare, now, play, date, typedTime, slider, ...cameraButtons];
+    // HUD에는 피드 갱신 표시와 새로 고침 단추가 없다. 날짜·시각 입력은 시각 값 단추의 팝오버 안에 있다.
+    expect(container.querySelector('[data-qa="campus-hud"] [data-qa="freshness-stamp"]')).toBeNull();
+    expect(screen.queryByLabelText("장면 날짜")).toBeNull();
+    const expected = [search, menu, timeValue, now, play, slider, ...cameraButtons];
 
     const reached = [];
     for (let i = 0; i < expected.length; i += 1) {
@@ -450,7 +443,7 @@ describe("Legacy and VWorld feature parity", () => {
     expect(reached).toEqual(expected);
     // Arrow keys reach the camera from the chips inside the map region; the region itself leaves the tab order.
     expect(mapLayer.getAttribute("tabindex")).toBe("-1");
-    for (const button of [overview, menu, tour, play, ...cameraButtons]) {
+    for (const button of [menu, timeValue, play, ...cameraButtons]) {
       expect(button.getAttribute("type")).toBe("button");
     }
   });
@@ -473,13 +466,13 @@ describe("Legacy and VWorld feature parity", () => {
     try {
       const { container } = render(<App />);
       const controls = controlsMock.current;
-      const overview = presetButton(container, "overview");
-      expect(overview.getAttribute("aria-pressed")).toBe("true");
+      const menu = container.querySelector('[data-qa="camera-view-menu"]');
+      expect(menu.dataset.active).toBeUndefined();
       const gate = presetButton(container, "gate");
       expect(gate.getAttribute("aria-checked")).toBe("false");
 
       fireEvent.click(gate);
-      expect(overview.getAttribute("aria-pressed")).toBe("false");
+      expect(menu.dataset.active).toBe("true");
       expect(presetButton(container, "gate").getAttribute("aria-checked")).toBe("true");
       expect(controls.events).toEqual(["start:flyTo"]);
 
@@ -510,13 +503,11 @@ describe("Legacy and VWorld feature parity", () => {
   it("moves the camera from the on-screen buttons and the keyboard, and clears the pressed preset like a user orbit", () => {
     const { container } = render(<App />);
     const controls = controlsMock.current;
-    const overview = presetButton(container, "overview");
     const distance = () => controls.object.position.distanceTo(controls.target);
     const before = distance();
 
     fireEvent.click(screen.getByRole("button", { name: "확대" }));
     expect(distance()).toBeLessThan(before);
-    expect(overview.getAttribute("aria-pressed")).toBe("false");
 
     const zoomed = distance();
     const mapLayer = container.querySelector('[data-qa="campus-map-layer"]');
@@ -574,9 +565,9 @@ describe("Legacy and VWorld feature parity", () => {
     for (const name of ["월", "일", "시", "분"]) expect(screen.queryByRole("slider", { name })).toBeNull();
 
     fireEvent.click(screen.getByRole("radio", { name: "실측" }));
-    expect(within(timeCard).getByText("실측")).toBeTruthy();
+    expect(within(timeCard).getByText("실시간")).toBeTruthy();
     fireEvent.change(slider, { target: { value: "600" } });
-    expect(within(timeCard).queryByText("실측")).toBeNull();
+    expect(within(timeCard).queryByText("실시간")).toBeNull();
     expect(slider.getAttribute("aria-valuetext")).toBe("10:00");
   });
 

@@ -3,7 +3,7 @@ import { Search, X } from "lucide-react";
 import { cx } from "../ui/cx.mjs";
 import { SEARCH_GROUPS, groupOf, searchBuildings, suggestBuilding } from "../labels/searchIndex.mjs";
 
-export const RECENT_SEARCHES_KEY = "scnu.recentSearches";
+const RECENT_SEARCHES_KEY = "scnu.recentSearches";
 const RECENT_LIMIT = 5;
 
 function readRecents(storage) {
@@ -86,7 +86,7 @@ export function SearchField({ registry, onPick, className = "", storage = global
   let index = -1;
   return (
     <div data-qa="search-field" className={cx("pointer-events-auto relative w-[min(18rem,calc(100vw-2rem))]", className)}>
-      <div className="flex h-11 items-center gap-2 rounded-control border border-hairline bg-surface-1 px-3 shadow-popover sm:h-9">
+      <div className="flex items-center gap-2 rounded-control border border-hairline bg-surface-1 px-3">
         <Search aria-hidden="true" className="h-4 w-4 shrink-0 text-ink-muted" />
         <input
           ref={inputRef}
@@ -108,7 +108,7 @@ export function SearchField({ registry, onPick, className = "", storage = global
           onFocus={() => setOpen(true)}
           onBlur={() => setOpen(false)}
           onKeyDown={handleKeyDown}
-          className="min-w-0 flex-1 bg-transparent text-body text-ink placeholder:text-ink-muted focus:outline-none active:translate-y-px [&::-webkit-search-cancel-button]:hidden"
+          className="h-11 min-w-0 flex-1 bg-transparent text-body sm:h-9 text-ink placeholder:text-ink-muted focus:outline-none [&::-webkit-search-cancel-button]:hidden"
         />
         {query && (
           <button
