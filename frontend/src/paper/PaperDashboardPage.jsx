@@ -74,7 +74,7 @@ function Tabs({ value, onChange }) {
           key={preset.id}
           type="button"
           onClick={() => onChange(preset.id)}
-          className={`rounded-[6px] px-3 py-1 text-xs font-medium transition-colors ${
+          className={`rounded-[6px] px-3 py-1 text-xs font-medium transition-[color,border-color] ${
             value === preset.id
               ? "bg-[var(--pd-card)] text-[var(--pd-foreground)] shadow-[0_1px_2px_0_rgb(0_0_0/0.06)]"
               : "text-[var(--pd-muted-foreground)]"

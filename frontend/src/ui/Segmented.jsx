@@ -63,7 +63,7 @@ export function Segmented({ kind = "tabs", label, options, value, onChange, size
             onKeyDown={(event) => handleKeyDown(event, option.value)}
             className={cx(
               "inline-flex flex-1 basis-0 items-center justify-center gap-2 rounded-control border font-medium",
-              "transition-colors duration-micro",
+              "transition-[color,border-color] duration-micro",
               size === "sm" ? "min-h-8 px-2 text-caption" : "min-h-10 px-3 text-body",
               COARSE_TARGET,
               FOCUS_RING,

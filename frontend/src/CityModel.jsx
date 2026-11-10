@@ -480,6 +480,18 @@ export function CityModel({
     };
   }, [invalidate]);
 
+  // HUD 묶음이 패널을 따라 미끄러지는 동안(인라인 transform) 라벨은 그 자리를 피하지 않는다. 피하면 도중 자리에서 밀린 칩이
+  // 배치 유지 규칙 때문에 묶음이 멈춘 뒤에도 그 자리에 남는다. 장면이 멈춰 있어도 HUD 스타일이 바뀌면 프레임을 열어
+  // 멈춘 묶음 자리로 다시 배치한다.
+  useEffect(() => {
+    if (typeof MutationObserver !== "function") return undefined;
+    const observer = new MutationObserver(() => invalidate());
+    for (const ref of chromeRefs ?? []) {
+      if (ref?.current) observer.observe(ref.current, { attributes: true, attributeFilter: ["style"], subtree: true });
+    }
+    return () => observer.disconnect();
+  }, [chromeRefs, invalidate]);
+
   useLayoutEffect(() => {
     labelsHiddenRef.current = labelsHidden;
     labelPassFramesRef.current = 2;
@@ -1110,6 +1122,7 @@ export function CityModel({
       if (!element) continue;
       const parts = element.hasAttribute("data-label-chrome-layer") ? element.children : [element];
       for (const part of parts) {
+        if (part.style?.transform) continue;
         const rect = part.getBoundingClientRect();
         if (rect.right > rect.left && rect.bottom > rect.top) chrome.push(rect);
       }

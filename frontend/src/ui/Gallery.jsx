@@ -6,7 +6,6 @@ import { Breadcrumb } from "./Breadcrumb.jsx";
 import { Button } from "./Button.jsx";
 import { Disclosure } from "./Disclosure.jsx";
 import { EstimateValue } from "./EstimateValue.jsx";
-import { FreshnessStamp } from "./FreshnessStamp.jsx";
 import { MetricList } from "./MetricList.jsx";
 import { Popover } from "./Popover.jsx";
 import { DotMarker, SCENE_LABEL_STATES, SceneLabel, ZoneLabel } from "./SceneLabel.jsx";
@@ -268,22 +267,6 @@ function EstimateGallery() {
   );
 }
 
-function FreshnessGallery() {
-  return (
-    <GallerySection id="freshness" title="갱신 시각">
-      <Row label="기상">
-        <FreshnessStamp at={SAMPLE_AT} feed="weather" feedLabel="기상 데이터" onRefresh={() => {}} />
-      </Row>
-      <Row label="교통">
-        <FreshnessStamp at={null} feed="traffic" feedLabel="교통" onRefresh={() => {}} />
-      </Row>
-      <Row label="에너지">
-        <FreshnessStamp at={SAMPLE_AT} feed="energy" feedLabel="에너지" onRefresh={() => {}} refreshing />
-      </Row>
-    </GallerySection>
-  );
-}
-
 function LoadingGallery() {
   return (
     <GallerySection id="loading" title="불러오는 중">
@@ -469,7 +452,6 @@ export default function Gallery() {
         <PopoverGallery />
         <MetricGallery />
         <EstimateGallery />
-        <FreshnessGallery />
         <LoadingGallery />
         <SheetGallery />
         <SceneLabelGallery />
