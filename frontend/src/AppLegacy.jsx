@@ -119,7 +119,9 @@ function Dashboard() {
   });
 
   // 지도·HUD·안내는 패널(또는 레일)이 차지한 오른쪽 폭만큼 비켜 선다. 닫히는 패널은 다 닫힌 뒤에 자리를 내준다.
-  const presentation = usePresentationMode({ panelState, activeTab, setActiveTab });
+  const presentation = usePresentationMode({
+    panelState, activeTab, setActiveTab, touring: camera.touring, stopTour: camera.stopTour,
+  });
   const qualitySetting = {
     tiers: QUALITY_TIERS, labels: QUALITY_LABELS, value: rendering.quality,
     onChange: rendering.setQuality, source: rendering.qualitySource,
@@ -247,6 +249,7 @@ function Dashboard() {
           trafficFeed={trafficFeed}
           plans={plans}
           buildingId={selection.selectedBuildingId}
+          hasSelection={Boolean(selection.selectedId)}
           onOpenRecommendation={openRecommendation}
           campusOverview={(
             <CampusEnergyOverview refreshKey={plans.overlayRefreshKey} />

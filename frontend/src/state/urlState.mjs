@@ -3,7 +3,7 @@
 // 다른 쿼리(model=uni, ui=gallery, sheet= 등)는 손대지 않는다. 비밀 값(API 키)은 담지 않는다.
 
 export const VIEW_PARAM_KEYS = Object.freeze(["b", "f", "r", "t", "d", "m", "cam", "p", "tab"]);
-export const VIEW_TABS = Object.freeze(["building", "status", "energy", "simulation"]);
+const VIEW_TABS = Object.freeze(["building", "status", "energy", "simulation"]);
 // 탭을 넷(건물·현황·에너지·시뮬레이션)으로 바꾸기 전의 공유 링크는 그 내용이 옮겨 간 탭으로 연다.
 const LEGACY_VIEW_TABS = Object.freeze({ dashboard: "status", parking_safety: "status", environment: "simulation" });
 const MODES = Object.freeze({ live: "live", sim: "simulation" });

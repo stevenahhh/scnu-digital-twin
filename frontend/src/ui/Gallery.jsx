@@ -80,7 +80,7 @@ function ButtonGallery() {
 }
 
 function SegmentedGallery() {
-  const [tab, setTab] = useState("basic");
+  const [tab, setTab] = useState("status");
   const [mode, setMode] = useState("measured");
   const [wing, setWing] = useState("lab");
   return (
@@ -92,10 +92,10 @@ function SegmentedGallery() {
         value={tab}
         onChange={setTab}
         options={[
-          { value: "basic", label: "기본 현황" },
-          { value: "parking", label: "주차·안전" },
+          { value: "building", label: "건물" },
+          { value: "status", label: "현황" },
           { value: "energy", label: "에너지" },
-          { value: "environment", label: "환경 시뮬" },
+          { value: "simulation", label: "시뮬레이션" },
         ]}
       />
       <Segmented

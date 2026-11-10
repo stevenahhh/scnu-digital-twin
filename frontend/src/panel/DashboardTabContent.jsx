@@ -21,7 +21,7 @@ function BuildingEmptyState() {
 // 두 대시보드가 같이 쓰는 네 탭의 내용. building은 선택 인스펙터(또는 비교)이고, 없으면 빈 상태와 검색 바로가기다.
 // 피드 상태(feeds)는 useFeedStatus 결과이고, 끊긴 피드마다 그 묶음 안에 알림 하나·다시 시도 하나다.
 export function DashboardTabContent({
-  activeTab, building = null, summary, feeds, clock, trafficFeed, plans, buildingId, onOpenRecommendation, campusOverview = null,
+  activeTab, building = null, summary, feeds, clock, trafficFeed, plans, buildingId, hasSelection = true, onOpenRecommendation, campusOverview = null,
 }) {
   return (
     <>
@@ -37,6 +37,7 @@ export function DashboardTabContent({
         <PanelErrorBoundary label="에너지">
           <EnergyTab
             buildingId={buildingId}
+            hasSelection={hasSelection}
             plans={plans}
             feedStatus={feeds.energy}
             onRetry={feeds.retry.energy}

@@ -73,7 +73,7 @@ const EXPORT_ROWS = [
 const cell = "border-b border-hairline px-2 py-2 text-right tabular-nums";
 const headCell = "border-b border-hairline px-1 py-1 text-right font-medium text-ink-muted";
 
-export function sortRanked(ranked, { key, direction }) {
+function sortRanked(ranked, { key, direction }) {
   const column = COLUMNS.find(([id]) => id === key) ?? COLUMNS[0];
   const sign = direction === "desc" ? -1 : 1;
   return [...ranked].sort((first, second) => sign * (column[2](first) - column[2](second)) || first.rank - second.rank);

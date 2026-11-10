@@ -3,17 +3,18 @@ import { CloudSun, Pause, Play, Presentation } from "lucide-react";
 import { Button } from "../ui/Button.jsx";
 import { cx } from "../ui/cx.mjs";
 import { CAMERA_PRESETS } from "../camera/cameraPresets.mjs";
+import { formatMinuteOfDay } from "../weather/sceneClock.mjs";
 import { Wordmark } from "../panel/Wordmark";
 import { SHELL_PEEK_HEIGHT } from "../panel/DashboardShell";
 import { CameraControls } from "./CameraControls";
-import { sceneTimeReadout } from "./HudTimeReadout";
 import { HudToolbar } from "./HudToolbar";
 import { SearchField } from "./SearchField";
 import { TimeSlider } from "./TimeSlider";
 import { FeedStatusChip } from "./hud/FeedStatusChip";
-import { FOLLOW_MOTION, usePanelFollow } from "./hud/usePanelFollow.mjs";
+import { FOLLOW_MOTION, FOLLOW_ROOT, usePanelFollow } from "./hud/usePanelFollow.mjs";
 
 const PRESSED = "aria-pressed:bg-surface-2 aria-pressed:text-ink";
+const sceneTimeReadout = (minuteOfDay) => `장면 ${formatMinuteOfDay(minuteOfDay)}`;
 
 // 두 대시보드가 같이 쓰는 지도 위 조작. 위쪽 한 줄(hud-bar)은 검색, 시점 메뉴, 끊긴 피드가 있을 때만 상태 칩 하나,
 // 오른쪽 끝의 워드마크와 moreMenu다. 시간 카드는 왼쪽 아래, 카메라 묶음은 오른쪽 아래(폰은 토글 하나)에 놓인다.
@@ -67,7 +68,7 @@ export const CampusHud = forwardRef(function CampusHud(
       data-qa="campus-hud"
       data-label-chrome-layer=""
       aria-hidden={sheetFull ? "true" : undefined}
-      className={cx("pointer-events-none absolute left-0 top-0 z-[6]", sheetFull && "invisible")}
+      className={cx("pointer-events-none absolute left-0 top-0 z-[6]", FOLLOW_ROOT, sheetFull && "invisible")}
       style={{ right: follow.right, bottom: phone ? `${SHELL_PEEK_HEIGHT}px` : "0px" }}
     >
       <div data-qa="hud-bar" className="absolute left-4 right-4 top-4 flex min-w-0 flex-nowrap items-center gap-2">
