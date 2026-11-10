@@ -66,6 +66,16 @@ input[type="range"] {
   --range-thumb: 16px;
 }
 
+/* 누르는 동안 바탕이 한 단계 짙어진다(다른 컨트롤과 같은 눌림 표시). 위 규칙이 레이어 밖에 있어 Tailwind active: 유틸리티로는 덮을 수 없다.
+   슬라이더는 끌기 중 :active가 풀릴 수 있어 컴포넌트가 단 data-pressed도 같이 본다. */
+input[type="range"]:active,
+input[type="range"][data-pressed] {
+  /* 눌림 표시는 누르는 즉시 보여야 하므로 전환 없이 바뀐다(움직임 줄이기의 0.01ms 전환도 한 프레임 늦다). */
+  transition: none;
+  background: var(--colors-surface-2);
+  border-radius: var(--rounded-control);
+}
+
 input[type="range"]:focus-visible {
   outline: 2px solid var(--colors-primary);
   outline-offset: 2px;
