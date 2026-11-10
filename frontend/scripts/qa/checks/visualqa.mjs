@@ -122,13 +122,14 @@ export const VISUALQA_CHECKS = [
         return result(ok, bc, "banner and card edges within 1 px");
       }
       // D4 is a pane beside the map since todo 34 (no dialog; the pane replaces the panel): the 사용 중인 강의실 card must
-      // share the edges of the pane's content column - the floor scene above it and the 설치 계획 row below it.
+      // share the edges of the pane's content column - the floor scene and the 동 선택 row above it. The 설치 계획 row that
+      // used to sit below it left the pane on purpose (ideal-state "D4 실내 탐색": 설치 계획 펼침은 D4 창에 없다, INV-190).
       const m = await ctx.inPage((qa) => {
         const pane = qa.one("[data-qa=d4-pane]");
         const room = pane?.querySelector("section[aria-labelledby=d4-in-use-title]") ?? null;
         const scene = pane?.querySelector("[aria-description]") ?? null;
-        const plan = pane?.querySelector("[data-qa=d4-plan-disclosure]") ?? null;
-        const cards = [scene, plan].filter((el) => el && qa.visible(el));
+        const wings = pane?.querySelector('[aria-label="동 선택"]')?.parentElement ?? null;
+        const cards = [scene, wings].filter((el) => el && qa.visible(el));
         if (cards.length < 2) return { roomCard: room ? qa.r(room) : null, panelCardsLeft: null, panelCardsRight: null, references: cards.length };
         // Content box (border box minus padding): the column a card in that block would occupy.
         const box = (el) => { const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return { left: r.left + parseFloat(s.paddingLeft), right: r.right - parseFloat(s.paddingRight) }; };
