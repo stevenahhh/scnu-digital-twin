@@ -75,7 +75,7 @@ describe("SelectionInspector", () => {
     expect(onClose).toHaveBeenCalledTimes(2);
   });
 
-  it("shows one 국지 기온 headline estimate with the risk badge and the sections as disclosures", () => {
+  it("shows one 국지 기온 headline estimate with the risk badge, 열환경 open and one 요인 disclosure", () => {
     show({ data: payload() });
     const headline = document.querySelector('[data-qa="inspector-headline"]');
     const value = within(headline).getByText((_, el) => el?.dataset?.qa === "estimate-value");
@@ -84,15 +84,17 @@ describe("SelectionInspector", () => {
     expect(within(headline).getByText("낮음").dataset.tone).toBe("success");
     expect(estimates().map((el) => el.querySelector(".tabular-nums").textContent)).toEqual(["22", "21.8", "23.9", "18"]);
     const toggles = screen.getAllByRole("button", { expanded: false }).concat(screen.getAllByRole("button", { expanded: true }));
-    expect(toggles.map((b) => b.textContent).sort()).toEqual(["바람", "열환경", "일사", "재질"].sort());
+    expect(toggles.map((b) => b.textContent).sort()).toEqual(["열환경", "요인"].sort());
     expect(screen.getByRole("button", { name: "열환경" }).getAttribute("aria-expanded")).toBe("true");
     expect(screen.getByText("zone_D")).toBeTruthy();
     expect(screen.getByText("열 스트레스 없음")).toBeTruthy();
     for (const factor of ["그늘", "복사", "통풍", "녹지", "재질열"]) expect(screen.getByText(factor)).toBeTruthy();
     expect(screen.getByText(/기준 기온 대비 \+1\.9°C/)).toBeTruthy();
     for (const reason of POPUP_BASELINE.reasons) expect(screen.getByText(reason)).toBeTruthy();
-    const measured = screen.getAllByText((_, el) => el?.dataset?.qa === "measured-value").map((el) => el.textContent);
-    expect(measured).toEqual(["20.1°C", "45%", "0.8m/s"]);
+    // 기준 기상(INV-170)은 현황 탭 현재 기상과 같은 값이라 인스펙터에 다시 두지 않는다.
+    expect(screen.queryAllByText((_, el) => el?.dataset?.qa === "measured-value")).toHaveLength(0);
+    expect(screen.queryByText("기준 기상")).toBeNull();
+    expect(screen.queryByRole("button", { name: "링크 복사" })).toBeNull();
   });
 
   it("renders a payload without thermal (and a bare one) as 기상 데이터 없음 instead of throwing", () => {
@@ -163,6 +165,16 @@ describe("SelectionInspector", () => {
     expect(screen.getByText("이 건물의 미기후 추정 데이터가 없습니다")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "전체 보기" }));
     expect(onShowAll).toHaveBeenCalledTimes(1);
+  });
+
+  it("offers 실내 보기 and the comparison button only when the caller passes them", () => {
+    const onOpenIndoor = vi.fn();
+    const view = show({ data: payload() });
+    expect(document.querySelector('[data-qa="d4-open"]')).toBeNull();
+    view.rerender(<SelectionInspector popup={popupOf({ data: payload() })} onClose={() => {}} onOpenIndoor={onOpenIndoor} compare={<button type="button">비교 열기 (1)</button>} />);
+    fireEvent.click(screen.getByRole("button", { name: "실내 보기" }));
+    expect(onOpenIndoor).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("button", { name: "비교 열기 (1)" })).toBeTruthy();
   });
 
   it("shows the gate distance line when given", () => {

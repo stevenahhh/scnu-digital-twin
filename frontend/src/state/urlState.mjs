@@ -3,7 +3,9 @@
 // 다른 쿼리(model=uni, ui=gallery, sheet= 등)는 손대지 않는다. 비밀 값(API 키)은 담지 않는다.
 
 export const VIEW_PARAM_KEYS = Object.freeze(["b", "f", "r", "t", "d", "m", "cam", "p", "tab"]);
-export const VIEW_TABS = Object.freeze(["dashboard", "parking_safety", "energy", "environment"]);
+export const VIEW_TABS = Object.freeze(["building", "status", "energy", "simulation"]);
+// 탭을 넷(건물·현황·에너지·시뮬레이션)으로 바꾸기 전의 공유 링크는 그 내용이 옮겨 간 탭으로 연다.
+const LEGACY_VIEW_TABS = Object.freeze({ dashboard: "status", parking_safety: "status", environment: "simulation" });
 const MODES = Object.freeze({ live: "live", sim: "simulation" });
 const PANEL = Object.freeze({ open: true, rail: false });
 const MAX_FLOOR = 30;
@@ -46,7 +48,8 @@ export function decodeViewState(search, { knownIds = null } = {}) {
   const panel = params.get("p");
   if (panel && Object.hasOwn(PANEL, panel)) state.panelOpen = PANEL[panel];
   const tab = params.get("tab");
-  if (tab && VIEW_TABS.includes(tab)) state.tab = tab;
+  const viewTab = tab && Object.hasOwn(LEGACY_VIEW_TABS, tab) ? LEGACY_VIEW_TABS[tab] : tab;
+  if (viewTab && VIEW_TABS.includes(viewTab)) state.tab = viewTab;
   return state;
 }
 

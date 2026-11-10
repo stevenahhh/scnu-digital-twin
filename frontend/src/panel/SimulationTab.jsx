@@ -4,6 +4,7 @@ import { SectionHeader } from "../ui/SectionHeader.jsx";
 import { Segmented } from "../ui/Segmented.jsx";
 import { SliderRow } from "../ui/SliderRow.jsx";
 import { formatNumber } from "../ui/format.mjs";
+import { TrafficSafetyPanel } from "../simulation";
 
 const MODE_OPTIONS = [
   { value: "live", label: "실측" },
@@ -13,8 +14,9 @@ const MODE_OPTIONS = [
 const COMPASS = ["북", "북동", "동", "남동", "남", "남서", "서", "북서"];
 const compassDirection = (degrees) => COMPASS[Math.round(degrees / 45) % COMPASS.length];
 
-// 환경 시뮬 탭: 실측/시뮬레이션 전환과 가상 기온. 날짜·시각은 지도 위 시간 조작 하나가 정한다(이 탭에 두 번째 슬라이더는 없다).
-export function EnvironmentTab({ clock }) {
+// 시뮬레이션 탭: 위는 환경 가정(실측/시뮬레이션, 가상 기온, 태양 위치 추정) 한 묶음, 아래는 교통 시뮬레이션.
+// 날짜·시각은 지도 위 시간 조작 하나가 정한다(이 탭에 두 번째 슬라이더는 없다).
+export function SimulationTab({ clock }) {
   const bearing = clock.sunBearingDegrees;
   const sunItems = [
     {
@@ -27,11 +29,10 @@ export function EnvironmentTab({ clock }) {
 
   return (
     <>
-      <SectionHeader level={2} title="환경 시뮬레이션" />
-      <Segmented kind="radio" label="기상 값 출처" options={MODE_OPTIONS} value={clock.mode} onChange={clock.setMode} />
       <section className="flex flex-col gap-4">
-        <SectionHeader title="시뮬레이션" />
-        {/* 감싸는 칸: 위 제목(시뮬레이션)이 이 슬라이더의 라벨로 읽히지 않게 슬라이더와 라벨만 한 묶음으로 둔다. */}
+        <SectionHeader title="환경 가정" />
+        <Segmented kind="radio" label="기상 값 출처" options={MODE_OPTIONS} value={clock.mode} onChange={clock.setMode} />
+        {/* 감싸는 칸: 위 제목이 이 슬라이더의 라벨로 읽히지 않게 슬라이더와 라벨만 한 묶음으로 둔다. */}
         <div>
           <SliderRow
             label="온도 조절"
@@ -42,8 +43,9 @@ export function EnvironmentTab({ clock }) {
             onValueChange={clock.setSimTemp}
           />
         </div>
+        <MetricList items={sunItems} caption={`천문 계산 추정 · 장면 ${clock.sceneDate} 기준`} />
       </section>
-      <MetricList items={sunItems} caption={`천문 계산 추정 · 장면 ${clock.sceneDate} 기준`} />
+      <TrafficSafetyPanel />
     </>
   );
 }

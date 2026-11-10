@@ -1,7 +1,7 @@
 // 발표 모드에 들어가기 직전의 화면 배치(패널 열림, 시트 단계, 탭)를 기억했다가 나올 때 그대로 되돌린다.
 // 발표 모드 자체는 저장하지 않는다(새로 고치면 늘 일반 화면이다).
 export function capturePresentationLayout({ panelOpen, detent, activeTab }) {
-  return Object.freeze({ panelOpen: Boolean(panelOpen), detent: detent ?? "peek", activeTab: activeTab ?? "dashboard" });
+  return Object.freeze({ panelOpen: Boolean(panelOpen), detent: detent ?? "peek", activeTab: activeTab ?? "status" });
 }
 
 export function restorePresentationLayout(snapshot, { setPanelOpen, setDetent, setActiveTab }) {

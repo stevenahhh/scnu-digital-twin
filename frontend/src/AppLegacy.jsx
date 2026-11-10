@@ -11,13 +11,11 @@ import { CAMERA_PRESETS, D4_PRESET_ID } from "./camera/cameraPresets.mjs";
 import { useSceneWeather } from "./weather/useSceneWeather.mjs";
 import { isD4ElementId } from "./utils/d4BuildingData.mjs";
 import { CampusHud } from "./components/CampusHud";
-import { sceneTimeReadout } from "./components/HudTimeReadout";
 import { SceneLoadingNotice } from "./components/SceneLoadingNotice";
 import { SelectionInspector } from "./panel/SelectionInspector";
 import { CompareButton, ComparisonPane } from "./panel/ComparisonPane";
 import { useComparisonSet } from "./state/useComparisonSet.mjs";
 import { gateTextFor } from "./labels/gateDistance.mjs";
-import { PanelErrorBoundary } from "./components/PanelErrorBoundary";
 import { useSimulationSocket } from "./simulation";
 import { LegacyD4Pane } from "./panel/LegacyD4Pane";
 import { useViewportMode } from "./hooks/useViewportMode.mjs";
@@ -30,14 +28,16 @@ import { useSunClock } from "./hooks/useSunClock.mjs";
 import { useThemeMode } from "./hooks/useThemeMode.mjs";
 import { useLegacyBuildingFlow } from "./hooks/useLegacyBuildingFlow.mjs";
 import { useDashboardUrlState } from "./hooks/useDashboardUrlState.mjs";
-import { DashboardShell, shellInsetRight } from "./panel/DashboardShell";
+import { DashboardShell, shellInsetRight, useSettledOpen } from "./panel/DashboardShell";
+import { DEFAULT_TAB } from "./panel/DashboardPanel";
 import { usePanelState } from "./panel/usePanelState.mjs";
+import { useDashboardNavigation } from "./panel/useDashboardNavigation.mjs";
 import { CampusEnergyOverview } from "./panel/CampusEnergyOverview";
 import { DashboardTabContent } from "./panel/DashboardTabContent";
-import { SettingsSheet } from "./panel/SettingsSheet";
+import { MoreMenu } from "./panel/MoreMenu";
 import { usePresentationMode } from "./panel/usePresentationMode.mjs";
 import { tourPosition } from "./panel/presentationLayout.mjs";
-import { FeedStamps, sheetPlacement } from "./panel/FeedStatus";
+import { feedIssueCount } from "./panel/FeedStatus";
 import { useFeedStatus } from "./hooks/useFeedStatus.mjs";
 import { summarizeWeather } from "./panel/weatherSummary.mjs";
 
@@ -64,12 +64,12 @@ function Dashboard() {
   const panelRef = useRef(null);
   const mapLayerRef = useRef(null);
   const hudRef = useRef(null);
-  const inspectorRef = useRef(null);
   // 캠퍼스 라벨은 이 조작 UI 밑에 그려지므로, 겹치는 라벨은 CityModel이 숨긴다.
-  const labelChromeRefs = useMemo(() => [hudRef, inspectorRef], []);
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const labelChromeRefs = useMemo(() => [hudRef], []);
+  const [activeTab, setActiveTab] = useState(DEFAULT_TAB);
   const viewportMode = useViewportMode();
   const panelState = usePanelState(viewportMode);
+  const navigation = useDashboardNavigation({ panelState, activeTab, setActiveTab });
   const [isTimePlaying, setIsTimePlaying] = useState(false);
   const [isSceneLoading, setIsSceneLoading] = useState(false);
   const [sceneAttempt, setSceneAttempt] = useState(0);
@@ -99,7 +99,7 @@ function Dashboard() {
   const flow = useLegacyBuildingFlow({
     selection,
     popup,
-    panel: { activeTab, setActiveTab, scrollRef: panelScrollRef, onSelectionShown: panelState.revealOnPhone },
+    panel: { activeTab, setActiveTab, scrollRef: panelScrollRef, onSelectionShown: navigation.showSelection },
     activePresetRef: camera.activePresetRef,
     onSectionEnter: useCallback(() => camera.selectPreset(D4_PRESET), [camera.selectPreset]),
     onSectionExit: plans.refreshAll,
@@ -118,13 +118,14 @@ function Dashboard() {
     panelKey: `${panelState.open}|${panelState.detent}|${activeTab}|${flow.buildingViewMode}`,
   });
 
-  // 지도·HUD·안내는 패널(또는 레일)이 차지한 오른쪽 폭만큼 비켜 선다. 폰 시트 위 장면은 계속 조작할 수 있다.
+  // 지도·HUD·안내는 패널(또는 레일)이 차지한 오른쪽 폭만큼 비켜 선다. 닫히는 패널은 다 닫힌 뒤에 자리를 내준다.
   const presentation = usePresentationMode({ panelState, activeTab, setActiveTab });
-  const qualitySetting = { tiers: QUALITY_TIERS, labels: QUALITY_LABELS, value: rendering.quality };
-  qualitySetting.onChange = rendering.setQuality;
-  qualitySetting.source = rendering.qualitySource;
-  const mapInsetRight = presentation.presenting
-    ? "0px" : shellInsetRight(viewportMode, panelState.open, !isCampus, Boolean(selection.selectedId));
+  const qualitySetting = {
+    tiers: QUALITY_TIERS, labels: QUALITY_LABELS, value: rendering.quality,
+    onChange: rendering.setQuality, source: rendering.qualitySource,
+  };
+  const panelShown = useSettledOpen(panelState.open);
+  const mapInsetRight = presentation.presenting ? "0px" : shellInsetRight(viewportMode, panelShown, !isCampus);
 
   const summary = summarizeWeather({ feed: weatherFeed, mode: clock.mode, simTemp: clock.simTemp });
   const sceneWeather = useSceneWeather({ weatherData: weatherFeed.data, weatherState: weatherFeed.state });
@@ -137,10 +138,6 @@ function Dashboard() {
     setIsTimePlaying(false);
   }, [isCampus, stopTour]);
 
-  const selectFromEnergy = (buildingId) => {
-    const elementId = flow.selectBuilding({ elementId: `BLD_${buildingId}`, buildingId, displayName: buildingId });
-    if (isD4ElementId(elementId)) flow.openD4Section();
-  };
   const openRecommendation = (request) => {
     selection.setSelectedBuildingId(request.buildingId);
     flow.openD4Section(request);
@@ -162,6 +159,8 @@ function Dashboard() {
       estimate={selection.selectedEstimate}
       gateText={gateTextFor(flow.selectionPosition)}
       onCompare={() => comparison.add(selection.selectedId)}
+      compare={comparison.ids.length > 0 && <CompareButton comparison={comparison} />}
+      onOpenIndoor={isD4ElementId(`BLD_${selection.selectedBuildingId}`) ? () => flow.openD4Section() : null}
       onClose={flow.closeMicroclimate}
       onShowAll={() => {
         flow.closeMicroclimate();
@@ -170,9 +169,14 @@ function Dashboard() {
     />
   ) : null;
 
+  const moreMenu = (
+    <MoreMenu mode={viewportMode} onTogglePresentation={presentation.toggle} quality={qualitySetting}
+      themeMode={themeMode} onThemeChange={setThemeMode} />
+  );
+
   // 루트는 overflow: clip으로 자른다. hidden은 스크롤 컨테이너라서 Tab 포커스가 화면 밖 요소로 가면 대시보드가 밀려 남는다.
   return (
-    <div className={cx(ROOT_CLASS, activeTab === "energy" && "dashboard-root--building-focus", presentation.cursorHidden && "cursor-none")}>
+    <div className={cx(ROOT_CLASS, presentation.cursorHidden && "cursor-none")}>
       <div className="absolute inset-0" style={{ background: getClearColor(clock.sunState.altitude) }} />
       {/* HUD는 D4 패인이 열려도 남는다: 시각·시점 메뉴가 패인 왼쪽 장면 위에 그대로 있다. */}
       <CampusHud
@@ -182,15 +186,14 @@ function Dashboard() {
         presenting={presentation.presenting}
         onTogglePresentation={presentation.toggle}
         tour={camera.touring ? tourPosition(CAMERA_PRESETS, camera.activePresetId) : null}
-        statusSlot={viewportMode !== "phone" && (
-          <FeedStamps feeds={feeds} retry={feeds.retry} placement={{ expanded: panelState.open, activeTab }} />
-        )}
+        moreMenu={moreMenu}
+        feedIssueCount={feedIssueCount(feeds)}
+        onOpenStatus={() => navigation.openTab("status")}
         camera={camera}
         clock={clock}
         playing={isTimePlaying}
         onPlayingChange={setIsTimePlaying}
         sceneWeather={sceneWeather}
-        compareSlot={<CompareButton comparison={comparison} className="mt-1" />}
         search={{ registry: flow.labelRegistry, onPick: handleSearchPick }}
       />
       <CampusCanvas
@@ -223,48 +226,29 @@ function Dashboard() {
         detent={panelState.detent}
         onDetentChange={panelState.setDetent}
         hidden={presentation.presenting}
+        hasSelection={isCampus && Boolean(selection.selectedId)}
         onPaneExit={flow.exitD4Section}
         pane={!isCampus && (
           <LegacyD4Pane
             flow={flow} selection={selection} plans={plans} camera={camera} phone={viewportMode === "phone"}
           />
         )}
-        timeReadout={sceneTimeReadout(clock.sceneMinuteOfDay)}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        inspector={inspector}
-        inspectorRef={inspectorRef}
         scrollRef={panelScrollRef}
-        freshnessSlot={(
-          <FeedStamps feeds={feeds} retry={feeds.retry} placement={sheetPlacement(panelState, activeTab)} compact />
-        )}
       >
         <DashboardTabContent
           activeTab={activeTab}
+          building={inspector}
           summary={summary}
           feeds={feeds}
           clock={clock}
           trafficFeed={trafficFeed}
           plans={plans}
           buildingId={selection.selectedBuildingId}
-          settings={(
-            <SettingsSheet
-              mode={viewportMode}
-              themeMode={themeMode}
-              onThemeChange={setThemeMode}
-              quality={qualitySetting}
-              onOpenChange={(open) => open && panelState.setDetent("peek")}
-            />
-          )}
-          onRefreshWeather={weatherFeed.refresh}
           onOpenRecommendation={openRecommendation}
           campusOverview={(
-            <CampusEnergyOverview
-              onSelection={flow.selectBuilding}
-              onBuildingSelect={selectFromEnergy}
-              refreshKey={plans.overlayRefreshKey}
-              selectedBuildingId={selection.selectedBuildingId}
-            />
+            <CampusEnergyOverview refreshKey={plans.overlayRefreshKey} />
           )}
         />
       </DashboardShell>

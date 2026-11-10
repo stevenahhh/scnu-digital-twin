@@ -1,37 +1,36 @@
+import { Search } from "lucide-react";
 import { PanelErrorBoundary } from "../components/PanelErrorBoundary";
-import { BasicStatusTab } from "./BasicStatusTab";
+import { Button } from "../ui/Button.jsx";
 import { EnergyTab } from "./EnergyTab";
-import { EnvironmentTab } from "./EnvironmentTab";
-import { PanelClock } from "./PanelClock.jsx";
-import { ParkingSafetyTab } from "./ParkingSafetyTab";
+import { SimulationTab } from "./SimulationTab";
+import { StatusTab } from "./StatusTab";
 
-// 두 대시보드가 같이 쓰는 네 탭의 내용. 피드 상태(feeds)는 useFeedStatus 결과이고, 끊긴 피드마다 알림 하나·다시 시도 하나다.
-// campusOverview는 Legacy만 넣는 캠퍼스 설치 현황, children은 그 밖의 탭(부르는 쪽이 activeTab을 보고 넣는다)이다.
+const focusSearch = () => document.querySelector("[data-qa=search-field] input")?.focus();
+
+function BuildingEmptyState() {
+  return (
+    <div data-qa="building-empty" className="flex flex-col items-start gap-3 py-2">
+      <p className="break-keep text-body text-ink-muted">지도에서 건물을 누르거나 검색하세요</p>
+      <Button size="sm" variant="secondary" icon={<Search aria-hidden="true" className="h-4 w-4" />} onClick={focusSearch}>
+        건물 검색
+      </Button>
+    </div>
+  );
+}
+
+// 두 대시보드가 같이 쓰는 네 탭의 내용. building은 선택 인스펙터(또는 비교)이고, 없으면 빈 상태와 검색 바로가기다.
+// 피드 상태(feeds)는 useFeedStatus 결과이고, 끊긴 피드마다 그 묶음 안에 알림 하나·다시 시도 하나다.
 export function DashboardTabContent({
-  activeTab, summary, feeds, clock, trafficFeed, plans, buildingId,
-  settings, onRefreshWeather, onOpenRecommendation, campusOverview = null, children,
+  activeTab, building = null, summary, feeds, clock, trafficFeed, plans, buildingId, onOpenRecommendation, campusOverview = null,
 }) {
   return (
     <>
-      {/* 패널 시계(장면·현재)는 탭과 상관없이 늘 보인다. 기본 현황은 새로 고침·설정과 한 줄에 같은 시계를 둔다. */}
-      {activeTab !== "dashboard" && <PanelClock sceneMinuteOfDay={clock.sceneMinuteOfDay} sceneDate={clock.sceneDate} />}
-      {activeTab === "dashboard" && (
-        <PanelErrorBoundary label="기본 현황">
-          <BasicStatusTab
-            summary={summary}
-            feeds={feeds}
-            retry={feeds.retry}
-            clock={clock}
-            sunAltitudeDegrees={clock.sunAltitudeDegrees}
-            settings={settings}
-            onRefreshWeather={onRefreshWeather}
-          />
-        </PanelErrorBoundary>
+      {activeTab === "building" && (
+        <PanelErrorBoundary label="건물">{building ?? <BuildingEmptyState />}</PanelErrorBoundary>
       )}
-      {children}
-      {activeTab === "parking_safety" && (
-        <PanelErrorBoundary label="주차·안전">
-          <ParkingSafetyTab trafficFeed={trafficFeed} feedStatus={feeds.traffic} onRetry={feeds.retry.traffic} />
+      {activeTab === "status" && (
+        <PanelErrorBoundary label="현황">
+          <StatusTab summary={summary} feeds={feeds} retry={feeds.retry} trafficFeed={trafficFeed} />
         </PanelErrorBoundary>
       )}
       {activeTab === "energy" && (
@@ -43,12 +42,13 @@ export function DashboardTabContent({
             onRetry={feeds.retry.energy}
             onOpenRecommendation={onOpenRecommendation}
             campusOverview={campusOverview}
+            sceneDate={clock.sceneDate}
           />
         </PanelErrorBoundary>
       )}
-      {activeTab === "environment" && (
-        <PanelErrorBoundary label="환경 시뮬">
-          <EnvironmentTab clock={clock} />
+      {activeTab === "simulation" && (
+        <PanelErrorBoundary label="시뮬레이션">
+          <SimulationTab clock={clock} />
         </PanelErrorBoundary>
       )}
     </>

@@ -24,7 +24,7 @@ test("restore without a snapshot changes nothing", () => {
 });
 
 test("defaults fill a partial layout", () => {
-  assert.deepEqual(capturePresentationLayout({}), { panelOpen: false, detent: "peek", activeTab: "dashboard" });
+  assert.deepEqual(capturePresentationLayout({}), { panelOpen: false, detent: "peek", activeTab: "status" });
 });
 
 test("typing targets do not trigger the P key", () => {

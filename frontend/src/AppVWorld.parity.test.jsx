@@ -28,9 +28,11 @@ vi.mock("./features/energy/installations/installationPlanApi.mjs", async (import
   return { ...actual, createInstallationPlanClient: () => installationClient };
 });
 
+vi.mock("./vworld/VWorldCampusStatus", () => ({ VWorldCampusStatus: () => <div>캠퍼스 설치 현황</div> }));
+
 import App from "./AppVWorld.jsx";
 
-const C5_TABS = ["기본 현황", "주차·안전", "에너지", "환경 시뮬"];
+const C5_TABS = ["건물", "현황", "에너지", "시뮬레이션"];
 const TRAFFIC_OFFLINE = "영상 분석 서버 연결 없음";
 const TRAFFIC_LIVE = "실시간 영상 분석 중";
 const WEATHER_NETWORK = "기상 서버에 연결할 수 없습니다";
@@ -84,7 +86,7 @@ describe("VWorld and Legacy feature parity", () => {
     expect(screen.getByText("건물 에너지 시뮬레이션")).toBeTruthy();
   });
 
-  it("renders exactly the four C5 dashboard tabs in order", () => {
+  it("renders exactly the four dashboard tabs in order", () => {
     const { container } = render(<App />);
 
     const labels = [...container.querySelectorAll('[data-qa^="dashboard-tab-"]')].map((tab) => tab.textContent.trim());
@@ -94,14 +96,16 @@ describe("VWorld and Legacy feature parity", () => {
     }
   });
 
-  it("names the panel toggle with the shared C5 vocabulary and a matching title", async () => {
+  it("names the panel toggle with the shared vocabulary and reopens the closed panel from the rail's tab icons alone", async () => {
     const user = userEvent.setup();
     render(<App />);
 
     const toggle = screen.getByRole("button", { name: "패널 닫기" });
     expect(toggle.getAttribute("title")).toBe("패널 닫기");
     await user.click(toggle);
-    expect(screen.getByRole("button", { name: "패널 열기" }).getAttribute("title")).toBe("패널 열기");
+    const rail = await screen.findByRole("navigation", { name: "대시보드 레일" });
+    expect(within(rail).getAllByRole("button").map((button) => button.getAttribute("title"))).toEqual(["현황", "에너지", "시뮬레이션"]);
+    expect(screen.queryByRole("button", { name: "패널 열기" })).toBeNull();
   });
 
   it("tells the energy analysis whether installation plans are loading, failed or ready", async () => {
@@ -126,7 +130,7 @@ describe("VWorld and Legacy feature parity", () => {
     const fetchMock = stubFetch({ traffic: rejectNetwork });
     render(<App />);
 
-    fireEvent.click(screen.getByRole("tab", { name: "주차·안전" }));
+    fireEvent.click(screen.getByRole("tab", { name: "현황" }));
     await waitFor(() => expect(countCalls(fetchMock, "/api/traffic")).toBeGreaterThan(0));
     await settlePendingFetches();
 
@@ -135,13 +139,15 @@ describe("VWorld and Legacy feature parity", () => {
     expect(screen.queryByText(TRAFFIC_LIVE)).toBeNull();
   });
 
-  it("opens 설정 as a non-blocking surface from its labelled button and closes it on Escape with focus back on 설정", async () => {
+  it("opens 설정 from the 더보기 menu as a non-blocking surface and closes it on Escape with focus back on 더보기", async () => {
     const user = userEvent.setup();
     const { container } = render(<App />);
 
     expect(screen.queryByRole("dialog")).toBeNull();
-    const trigger = screen.getByRole("button", { name: "설정" });
+    expect(screen.queryByRole("button", { name: "설정" })).toBeNull();
+    const trigger = screen.getByRole("button", { name: "더보기" });
     await user.click(trigger);
+    await user.click(screen.getByRole("menuitem", { name: "설정" }));
     const dialog = screen.getByRole("dialog", { name: "설정" });
     expect(dialog.getAttribute("aria-modal")).not.toBe("true");
     expect(container.querySelector(".bg-\\[var\\(--colors-dim\\)\\], .backdrop-blur")).toBeNull();
@@ -165,7 +171,7 @@ describe("VWorld and Legacy feature parity", () => {
     await waitFor(() => expect(countCalls(fetchMock, "/environment/full")).toBe(weatherCallsBefore + 1));
     expect(await screen.findByText(WEATHER_NETWORK)).toBeTruthy();
   });
-  it("shows exactly 3 alerts and 3 다시 시도 buttons when weather, traffic and energy are down", async () => {
+  it("shows one alert and one 다시 시도 per down feed in its own group (현황: weather, traffic; 에너지: energy) and none in the HUD", async () => {
     const offline = async () => {
       throw new TypeError("Failed to fetch");
     };
@@ -173,11 +179,12 @@ describe("VWorld and Legacy feature parity", () => {
     installationClient.listDetails.mockRejectedValueOnce(new TypeError("Failed to fetch"));
     const { container } = render(<App />);
     const panel = container.querySelector('[data-qa="dashboard-panel"]');
-    await waitFor(() => expect(within(panel).getAllByRole("alert")).toHaveLength(3));
-    expect(within(panel).getAllByRole("alert").map((alert) => alert.dataset.source)).toEqual(["weather", "traffic", "energy"]);
-    expect(within(panel).getAllByRole("button", { name: "다시 시도" })).toHaveLength(3);
-    // 패널이 그 피드를 보여 주는 동안 HUD 갱신 표시는 다시 시도를 되풀이하지 않는다(새로 고침 아이콘만).
-    expect(screen.getAllByRole("button", { name: /다시 시도/ })).toHaveLength(3);
+    await waitFor(() => expect(within(panel).getAllByRole("alert")).toHaveLength(2));
+    expect(within(panel).getAllByRole("alert").map((alert) => alert.dataset.source)).toEqual(["weather", "traffic"]);
+    expect(screen.getAllByRole("button", { name: /다시 시도/ })).toHaveLength(2);
+    expect(within(container.querySelector('[data-qa="campus-hud"]')).queryAllByRole("button", { name: /다시 시도|새로고침/ })).toHaveLength(0);
+    fireEvent.click(screen.getByRole("tab", { name: "에너지" }));
+    await waitFor(() => expect(within(panel).getAllByRole("alert").map((alert) => alert.dataset.source)).toEqual(["energy"]));
     expect(container.querySelector('[data-qa="weather-error-banner"]')).toBeNull();
   });
 });

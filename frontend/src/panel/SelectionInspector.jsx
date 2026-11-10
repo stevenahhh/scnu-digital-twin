@@ -1,4 +1,4 @@
-import { Clock, CircleAlert, Droplets, Gauge, GitCompare, MapPin, Sun, Thermometer, TreePine, Wind, X } from "lucide-react";
+import { Clock, CircleAlert, DoorOpen, Gauge, GitCompare, MapPin, Sun, Thermometer, TreePine, Wind, X } from "lucide-react";
 import { Alert } from "../ui/Alert.jsx";
 import { Button } from "../ui/Button.jsx";
 import { Disclosure } from "../ui/Disclosure.jsx";
@@ -9,13 +9,10 @@ import { Skeleton } from "../ui/Skeleton.jsx";
 import { Spinner } from "../ui/Spinner.jsx";
 import { StatusBadge } from "../ui/StatusBadge.jsx";
 import { formatHHmm } from "../ui/format.mjs";
-import { ExportActions } from "../ui/ExportActions.jsx";
-import { COMPARISON_METRICS } from "./ComparisonPane.jsx";
-import { LinkCopyButton } from "./LinkCopyButton.jsx";
 
 // 고른 건물 하나의 인스펙터(두 대시보드 공용). 데이터는 `/microclimate/elements/{id}/popup` 한 번의 응답(usePopupData)이다.
 // 머리: 레지스트리 이름(title) + 코드 배지 + 닫기(Esc도 같다). 대표값: 국지 기온 추정 하나와 위험도.
-// 본문: 열환경 / 일사 / 바람 / 재질 펼침. 로딩은 바로 뼈대, 1초 뒤 이름 붙은 스피너 하나. 실패는 알림 하나(다시 시도·자세히)이고
+// 본문: 열환경(기본 열림)과 요인(일사·바람·재질) 펼침. 로딩은 바로 뼈대, 1초 뒤 이름 붙은 스피너 하나. 실패는 알림 하나(다시 시도·자세히)이고
 // 마지막으로 받은 값은 `저장된 값` 배지와 함께 그대로 둔다. 404는 빈 상태와 `전체 보기`.
 
 export const INSPECTOR_STRINGS = Object.freeze({
@@ -33,24 +30,25 @@ export const INSPECTOR_STRINGS = Object.freeze({
   risk: "위험도",
   reasons: "원인 분석",
   source: "미기후 모델",
-  baseWeather: "기준 기상",
+  openIndoor: "실내 보기",
   heightFormEstimate: "높이·형태 추정",
   formEstimate: "높이 GIS, 형태 추정",
 });
 
 const SECTIONS = Object.freeze([
   { id: "thermal", title: "열환경" },
-  { id: "solar", title: "일사" },
-  { id: "wind", title: "바람" },
-  { id: "material", title: "재질" },
+  { id: "factors", title: "요인" },
 ]);
+// 요인 펼침 안의 순서: 일사(그늘·복사), 바람(통풍), 재질(녹지·재질열). 모르는 요인은 뒤에 붙는다.
 const FACTOR_META = {
-  shade: { Icon: Sun, label: "그늘", section: "solar" },
-  radiation: { Icon: Thermometer, label: "복사", section: "solar" },
-  wind: { Icon: Wind, label: "통풍", section: "wind" },
-  vegetation: { Icon: TreePine, label: "녹지", section: "material" },
-  material_heat: { Icon: Gauge, label: "재질열", section: "material" },
+  shade: { Icon: Sun, label: "그늘" },
+  radiation: { Icon: Thermometer, label: "복사" },
+  wind: { Icon: Wind, label: "통풍" },
+  vegetation: { Icon: TreePine, label: "녹지" },
+  material_heat: { Icon: Gauge, label: "재질열" },
 };
+const FACTOR_ORDER = Object.keys(FACTOR_META);
+const factorRank = (key) => (FACTOR_ORDER.includes(key) ? FACTOR_ORDER.indexOf(key) : FACTOR_ORDER.length);
 // 서버의 risk_level 문구를 배지 톤으로. 모르는 값은 중립이다.
 const RISK_TONES = { 낮음: "success", 보통: "warning", 높음: "danger", "매우 높음": "danger" };
 
@@ -64,7 +62,7 @@ const iconLabel = (Icon, label) => (
 );
 const plain = (text) => <span className="text-body text-ink">{text}</span>;
 
-/** GLB extras → the building's 추정 caption, or null when nothing is flagged. */
+/** GLB extras to the building's 추정 caption, or null when nothing is flagged. */
 export function describeEstimate(estimate) {
   if (!isObject(estimate)) return null;
   const heightEstimated = isText(estimate.heightLineage) && estimate.heightLineage !== "gis-height";
@@ -73,7 +71,7 @@ export function describeEstimate(estimate) {
   return null;
 }
 
-/** `data.freshness.weather` → `{ text, stale }` (`관측 HH:mm` | `저장된 기상 데이터 표시 중 · N분 전`) or null. */
+/** `data.freshness.weather` to `{ text, stale }` (`관측 HH:mm` or `저장된 기상 데이터 표시 중 · N분 전`), or null. */
 export function describeFreshness(weather) {
   if (!isObject(weather)) return null;
   if (weather.stale === true) {
@@ -84,10 +82,11 @@ export function describeFreshness(weather) {
   return clock ? { stale: false, text: `${INSPECTOR_STRINGS.observed} ${clock}` } : null;
 }
 
-function factorItems(payload, section) {
+function factorItems(payload) {
   const factors = isObject(payload.factors) ? payload.factors : {};
   return Object.entries(factors)
-    .filter(([key, value]) => isObject(value) && (FACTOR_META[key]?.section ?? "material") === section)
+    .filter(([, value]) => isObject(value))
+    .sort(([a], [b]) => factorRank(a) - factorRank(b))
     .map(([key, value]) => {
       const meta = FACTOR_META[key] ?? { label: key };
       return {
@@ -102,7 +101,6 @@ function Sections({ payload, estimate }) {
   const thermal = isObject(payload.thermal) ? payload.thermal : null;
   const delta = isObject(payload.delta) ? payload.delta : null;
   const reasons = Array.isArray(payload.reasons) ? payload.reasons.filter(isText) : [];
-  const base = isObject(payload.base_weather) ? payload.base_weather : null;
   const material = isObject(payload.material) ? payload.material : null;
   const meta = [
     isText(payload.zone_id) && { id: "zone", label: "구역", value: plain(payload.zone_id) },
@@ -140,28 +138,12 @@ function Sections({ payload, estimate }) {
         )}
       </div>
     ),
-    solar: <MetricList columns={2} items={factorItems(payload, "solar")} />,
-    wind: (
-      <div className="flex flex-col gap-3">
-        <MetricList columns={2} items={factorItems(payload, "wind")} />
-        {base && (
-          <MetricList
-            caption={INSPECTOR_STRINGS.baseWeather}
-            items={[
-              { id: "temperature", label: iconLabel(Thermometer, "기온"), value: <EstimateValue value={base.temperature} unit="°C" estimated={false} /> },
-              { id: "humidity", label: iconLabel(Droplets, "습도"), value: <EstimateValue value={base.humidity} unit="%" estimated={false} /> },
-              { id: "wind", label: iconLabel(Wind, "풍속"), value: <EstimateValue value={base.wind_speed} unit="m/s" estimated={false} /> },
-            ]}
-          />
-        )}
-      </div>
-    ),
-    material: (
+    factors: (
       <MetricList
         columns={2}
         caption={material ? "재질은 추정 표면 자료" : null}
         items={[
-          ...factorItems(payload, "material"),
+          ...factorItems(payload),
           ...(isText(material?.surface_type) ? [{ id: "surface", label: "표면", value: plain(material.surface_type) }] : []),
         ]}
       />
@@ -178,8 +160,9 @@ function Sections({ payload, estimate }) {
   );
 }
 
+// compare는 비교 대상이 있을 때 부르는 쪽이 넘기는 `비교 열기` 단추, onOpenIndoor는 D4를 골랐을 때의 `실내 보기`다.
 export function SelectionInspector({
-  title, popup, estimate: glbEstimate = null, gateText = null, onClose, onShowAll, onCompare = null, className,
+  title, popup, estimate: glbEstimate = null, gateText = null, onClose, onShowAll, onCompare = null, compare = null, onOpenIndoor = null, className,
 }) {
   const { data, loading = false, error = null, errorStatus = null, errorDetail, retry, lastData } = popup;
   const payload = isObject(data) ? data : null;
@@ -223,9 +206,9 @@ export function SelectionInspector({
       data-testid="microclimate-panel"
       aria-label={`선택한 건물 ${heading}`}
       onKeyDown={handleKeyDown}
-      className={`flex flex-col gap-3 rounded-card border border-hairline bg-surface-1 p-4 ${className ?? ""}`}
+      className={`flex flex-col gap-3 ${className ?? ""}`}
     >
-      <div className="flex items-start justify-between gap-3 rounded-card bg-surface-2 px-3 py-2">
+      <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-1">
           <SectionHeader level={3} title={heading} badge={badges} />
           {estimateCaption && <p data-qa="estimate-caption" className="text-caption text-ink-muted">{estimateCaption}</p>}
@@ -236,10 +219,7 @@ export function SelectionInspector({
             </p>
           )}
         </div>
-        <div className="flex shrink-0 items-start gap-1">
-          <LinkCopyButton />
-          <Button variant="ghost" iconOnly label={INSPECTOR_STRINGS.close} icon={<X aria-hidden="true" className="h-4 w-4" />} onClick={onClose} />
-        </div>
+        <Button variant="ghost" iconOnly label={INSPECTOR_STRINGS.close} icon={<X aria-hidden="true" className="h-4 w-4" />} onClick={onClose} className="shrink-0" />
       </div>
 
       {shown && !loading && (
@@ -291,20 +271,19 @@ export function SelectionInspector({
           <span>{freshness.text}</span>
         </p>
       )}
-      {(onCompare || (shown && !loading)) && (
+      {(onOpenIndoor || onCompare || compare) && (
         <div className="flex flex-wrap items-center gap-2 border-t border-hairline pt-3">
+          {onOpenIndoor && (
+            <Button size="sm" variant="secondary" data-qa="d4-open" icon={<DoorOpen aria-hidden="true" className="h-4 w-4" />} onClick={onOpenIndoor}>
+              {INSPECTOR_STRINGS.openIndoor}
+            </Button>
+          )}
           {onCompare && (
             <Button size="sm" variant="secondary" data-qa="compare-add" icon={<GitCompare aria-hidden="true" className="h-4 w-4" />} onClick={onCompare}>
               비교에 추가
             </Button>
           )}
-          {shown && !loading && (
-            <ExportActions
-              kind="inspector"
-              columns={[{ key: "name", label: "건물" }, ...COMPARISON_METRICS.map((metric) => ({ key: metric.key, label: metric.unit ? `${metric.label}(${metric.unit})` : metric.label, estimated: true }))]}
-              rows={[{ name: heading, ...Object.fromEntries(COMPARISON_METRICS.map((metric) => [metric.key, metric.read(shown) ?? null])) }]}
-            />
-          )}
+          {compare}
         </div>
       )}
     </section>

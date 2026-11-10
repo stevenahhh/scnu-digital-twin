@@ -13,7 +13,7 @@ describe("CompareButton", () => {
 
   it("stays dimmed with its reason in title and aria-describedby until two buildings are chosen", () => {
     render(<CompareButton comparison={comparison(["BLD_C1"])} />);
-    const button = screen.getByRole("button", { name: /비교 1\/3/ });
+    const button = screen.getByRole("button", { name: /비교 열기 \(1\)/ });
     expect(button.getAttribute("aria-disabled")).toBe("true");
     expect(button.getAttribute("title")).toBe(COMPARISON_NEEDS_TWO);
     expect(document.getElementById(button.getAttribute("aria-describedby")).textContent).toBe(COMPARISON_NEEDS_TWO);
@@ -22,7 +22,7 @@ describe("CompareButton", () => {
   it("opens once two buildings are chosen", () => {
     const value = comparison(["BLD_C1", "BLD_E1"]);
     render(<CompareButton comparison={value} />);
-    const button = screen.getByRole("button", { name: /비교 2\/3/ });
+    const button = screen.getByRole("button", { name: /비교 열기 \(2\)/ });
     expect(button.getAttribute("aria-disabled")).toBeNull();
     button.click();
     expect(value.setOpen).toHaveBeenCalledWith(true);

@@ -343,6 +343,23 @@ async function enterD4(ctx) {
   return "S05 entry: D4 preset + 공과대학 3호관 chip (until [data-qa=d4-open] exists)";
 }
 
+// IS-40 navigation: the tour toggle sits in the normal HUD on older builds and only in the presentation HUD since todo 3.
+// Runs fn where the toggle is visible: directly, or inside presentation mode entered and left with the documented P key.
+const TOUR_TOGGLE = "[data-qa=camera-tour-toggle]";
+const isPresenting = (ctx) => ctx.b.run(() => Boolean(document.querySelector("[data-qa=campus-hud][data-presenting=true]")));
+async function withTourToggle(ctx, fn) {
+  if (await ctx.b.center(TOUR_TOGGLE)) return { via: "HUD", value: await fn() };
+  await ctx.b.key("p");
+  await sleepMs(800);
+  if (!(await isPresenting(ctx))) return { via: "presentation mode did not open", value: null };
+  try {
+    return { via: "presentation HUD", value: await fn() };
+  } finally {
+    await ctx.b.key("p");
+    await sleepMs(800);
+  }
+}
+
 async function waitD4Open(ctx, timeoutMs = 10000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
@@ -1150,23 +1167,27 @@ export const IDEAL_CHECKS_LIST = [
         const expected = "after D4 실내 보기 the slider stays still for 1 s and the tour toggle has aria-pressed=false";
         const minutes = await sliderMinutes(ctx);
         const saved = await saveCamera(ctx);
+        const readTour = () => ctx.b.run((sel) => document.querySelector(sel)?.getAttribute("aria-pressed") ?? null, TOUR_TOGGLE);
         try {
           const played = await tapVisible(ctx, PLAY);
-          const toured = await tapVisible(ctx, "[data-qa=camera-tour-toggle]");
+          const tourOn = await withTourToggle(ctx, () => tapVisible(ctx, TOUR_TOGGLE));
+          const toured = tourOn.value;
           await sleepMs(800);
           const via = await enterD4(ctx);
           const open = await waitD4Open(ctx);
-          if (!open) return verdict(false, { played, toured, via, measured: "D4 window did not open" }, expected);
+          if (!open) return verdict(false, { played, toured, tourVia: tourOn.via, via, measured: "D4 window did not open" }, expected);
           const before = await sliderMinutes(ctx);
-          const tourPressed = await ctx.b.run(() => document.querySelector("[data-qa=camera-tour-toggle]")?.getAttribute("aria-pressed") ?? null);
           await sleepMs(1000);
           const after = await sliderMinutes(ctx);
-          return verdict(played && toured && stoppedAfterD4({ before, after, tourPressed }), { played, toured, via, before, after, tourPressed }, expected);
+          // The tour toggle is read after the slider samples: with the toggle only in presentation mode, reading it hides the time card.
+          const tourRead = await withTourToggle(ctx, readTour);
+          const tourPressed = tourRead.value;
+          return verdict(played && toured && stoppedAfterD4({ before, after, tourPressed }),
+            { played, toured, tourVia: tourOn.via, via, before, after, tourPressed }, expected);
         } finally {
           if (await tapVisible(ctx, BACK_TO_CAMPUS)) await sleepMs(2500);
           if (await tapVisible(ctx, PAUSE)) await sleepMs(300);
-          const touring = await ctx.b.run(() => document.querySelector("[data-qa=camera-tour-toggle]")?.getAttribute("aria-pressed") === "true");
-          if (touring) await tapVisible(ctx, "[data-qa=camera-tour-toggle]");
+          await withTourToggle(ctx, async () => (await readTour()) === "true" && tapVisible(ctx, TOUR_TOGGLE));
           if (minutes != null) await ctx.b.setTimeMinutes(minutes);
           await restoreCamera(ctx, saved);
           await sleepMs(500);

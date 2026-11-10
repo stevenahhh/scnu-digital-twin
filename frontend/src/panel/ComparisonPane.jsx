@@ -50,7 +50,7 @@ export function ComparisonPane({ ids, nameOf = registryName, onRemove, onClose }
   const rows = ids.map((id) => ({ name: `${nameOf(id)} (${codeOf(id)})`, ...Object.fromEntries(COMPARISON_METRICS.map((metric) => [metric.key, metric.read(popups[id]) ?? null])) }));
 
   return (
-    <section data-qa="comparison-pane" aria-label="건물 비교" className="flex flex-col gap-3 rounded-card border border-hairline bg-surface-1 p-4 select-text">
+    <section data-qa="comparison-pane" aria-label="건물 비교" className="flex flex-col gap-3 select-text">
       <div className="flex items-start justify-between gap-2">
         <SectionHeader level={3} title="건물 비교" badge={<StatusBadge tone="estimate">추정</StatusBadge>} />
         <Button variant="ghost" iconOnly label="비교 닫기" icon={<X aria-hidden="true" className="h-4 w-4" />} onClick={onClose} />
@@ -92,12 +92,13 @@ export function ComparisonPane({ ids, nameOf = registryName, onRemove, onClose }
   );
 }
 
-// 비교 열기 단추: 건물 2개 이상이 모이기 전에는 흐리게 두고 까닭을 title과 aria-describedby로 알린다. 넷째 추가 거절도 여기 알린다.
+// 인스펙터 안의 비교 열기 단추(비교 대상이 하나 이상일 때만 부르는 쪽이 그린다): 건물 2개 이상이 모이기 전에는 흐리게 두고
+// 까닭을 title과 aria-describedby로 알린다. 넷째 추가 거절도 여기 알린다.
 export function CompareButton({ comparison, className = "" }) {
   const reasonId = "comparison-reason";
   const disabled = !comparison.canCompare;
   return (
-    <span className={`pointer-events-auto inline-flex items-center gap-2 ${className}`}>
+    <span className={`inline-flex items-center gap-2 ${className}`}>
       <Button
         size="sm"
         data-qa="compare-open"
@@ -107,7 +108,7 @@ export function CompareButton({ comparison, className = "" }) {
         aria-describedby={disabled ? reasonId : undefined}
         onClick={() => comparison.setOpen(true)}
       >
-        {`비교 ${comparison.ids.length}/3`}
+        {`비교 열기 (${comparison.ids.length})`}
       </Button>
       <span id={reasonId} className="sr-only text-caption">{disabled ? COMPARISON_NEEDS_TWO : ""}</span>
       <span role="status" className="text-caption text-ink-muted">{comparison.status}</span>
