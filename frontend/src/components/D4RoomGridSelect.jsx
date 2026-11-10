@@ -2,8 +2,7 @@ import { useState } from "react";
 import { ArrowLeft, Check } from "lucide-react";
 import { D4RoomGridScene } from "./D4RoomGridScene";
 import { D4SampleBadge } from "./D4SampleBadge";
-import { D4ScrollRoot } from "./D4ScrollRoot";
-import { D4_CARD, floorLabel, floorLevels } from "./d4Shared.mjs";
+import { D4_CARD, D4_COLUMN, floorLabel, floorLevels } from "./d4Shared.mjs";
 import { getFloorMajor, formatRoomNumber } from "../utils/d4BuildingData.mjs";
 import { describeTodaySchedule, formatEquipmentLabel } from "../utils/d4RoomStatus.mjs";
 import { Button } from "../ui/Button.jsx";
@@ -12,7 +11,7 @@ import { Segmented } from "../ui/Segmented.jsx";
 import { StatusBadge } from "../ui/StatusBadge.jsx";
 import { COARSE_TARGET, FOCUS_RING } from "../ui/Button.jsx";
 
-const FLOOR_SELECT = `min-h-10 rounded-control border border-hairline-strong bg-surface-1 px-3 text-body text-ink ${COARSE_TARGET} ${FOCUS_RING}`;
+const FLOOR_SELECT = `min-h-10 w-full rounded-control border border-hairline-strong bg-surface-1 px-3 text-body text-ink ${COARSE_TARGET} ${FOCUS_RING}`;
 const value = (text) => <span className="text-body font-medium text-ink">{text}</span>;
 
 function ScheduleList({ timetable }) {
@@ -127,19 +126,18 @@ export function D4RoomGridSelect({
 }) {
   const major = getFloorMajor(wing.id, floor);
   return (
-    <D4ScrollRoot>
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="w-56">
+    <div className={D4_COLUMN}>
+      <div className="flex w-full flex-col gap-3">
+        <div className="w-full">
           <Segmented
             kind="radio"
             label="동 선택"
-            size="sm"
             options={building.wings.map((item) => ({ value: item.id, label: item.label }))}
             value={wing.id}
             onChange={onChangeWing}
           />
         </div>
-        <label className="flex items-center gap-2 text-caption text-ink-muted">
+        <label className="flex w-full flex-col gap-1 text-caption text-ink-muted">
           층
           <select value={floor} onChange={(event) => onChangeFloor(Number(event.target.value))} className={FLOOR_SELECT}>
             {floorLevels(wing).map((level) => <option key={level} value={level}>{`${wing.label} ${floorLabel(level)}`}</option>)}
@@ -163,6 +161,6 @@ export function D4RoomGridSelect({
       )}
 
       <RoomDetailCard room={selectedRoom} status={selectedRoomStatus} />
-    </D4ScrollRoot>
+    </div>
   );
 }

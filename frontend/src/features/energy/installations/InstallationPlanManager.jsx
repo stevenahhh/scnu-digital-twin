@@ -1,14 +1,13 @@
-import { Copy, Edit3, Plus, Save, Star, Trash2 } from "lucide-react";
+import { Copy, Edit3, MoreHorizontal, Plus, Star, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createInstallationPlanClient, InstallationPlanContractError } from "./installationPlanApi.mjs";
 import { toKoreanEnergyError } from "../shared/energyErrorMessages.mjs";
 import { FIELD_INPUT } from "../shared/fieldStyles.mjs";
 import { Alert } from "../../../ui/Alert.jsx";
 import { Button } from "../../../ui/Button.jsx";
+import { Popover } from "../../../ui/Popover.jsx";
 import { SectionHeader } from "../../../ui/SectionHeader.jsx";
 import { StatusBadge } from "../../../ui/StatusBadge.jsx";
-
-const NOOP = () => {};
 
 function validateLoadedContext(buildingId, plans, representative) {
   if (!Array.isArray(plans)) throw new InstallationPlanContractError("plans", "array required");
@@ -33,6 +32,8 @@ function RepresentativeToggle({ representative, displayName, disabled, onSet, on
   return (
     <Button
       size="sm"
+      variant="ghost"
+      className="w-full justify-start"
       onClick={representative ? onClear : onSet}
       disabled={disabled}
       aria-label={`${displayName} ${representative ? "대표 해제" : "대표로 지정"}`}
@@ -43,17 +44,15 @@ function RepresentativeToggle({ representative, displayName, disabled, onSet, on
   );
 }
 
-/**
- * Building-detail plan management leaf.
- * createPlanDraft must return { name, arrays } where arrays remain in roof-local meters.
- */
+// 건물별 설치 계획 관리. createPlanDraft는 옥상 로컬 미터 좌표의 { name, arrays }를 돌려준다.
+// 계획 행에는 편집 단추 하나만 보이고 복사·대표 지정·삭제는 행 메뉴 안에 있다. 이름은 칸을 벗어날 때 저장한다.
 export function InstallationPlanManager({
   buildingId,
   client,
   createPlanDraft,
-  onEditPlan = NOOP,
-  onPlansChange = NOOP,
-  onRepresentativeChange = NOOP,
+  onEditPlan,
+  onPlansChange,
+  onRepresentativeChange,
   refreshKey,
   className = "",
 }) {
@@ -86,7 +85,7 @@ export function InstallationPlanManager({
       }
       setPlans(nextPlans);
       setNames(Object.fromEntries(nextPlans.map((plan) => [plan.id, plan.name])));
-      callbacksRef.current.onPlansChange(nextPlans);
+      callbacksRef.current.onPlansChange?.(nextPlans);
     },
     [buildingId],
   );
@@ -99,7 +98,7 @@ export function InstallationPlanManager({
     let active = true;
     publishPlans([]);
     setRepresentativeId(null);
-    callbacksRef.current.onRepresentativeChange(null);
+    callbacksRef.current.onRepresentativeChange?.(null);
     setBusyAction("");
     setState({ status: "loading", message: "설치 계획을 불러오는 중입니다." });
     Promise.all([
@@ -111,14 +110,14 @@ export function InstallationPlanManager({
         validateLoadedContext(buildingId, nextPlans, representative);
         publishPlans(nextPlans);
         setRepresentativeId(representative?.installationPlanId ?? null);
-        callbacksRef.current.onRepresentativeChange(representative);
+        callbacksRef.current.onRepresentativeChange?.(representative);
         setState({ status: "ready", message: "" });
       })
       .catch((error) => {
         if (active && error?.name !== "AbortError") {
           publishPlans([]);
           setRepresentativeId(null);
-          callbacksRef.current.onRepresentativeChange(null);
+          callbacksRef.current.onRepresentativeChange?.(null);
           setState({ status: "error", message: toKoreanEnergyError(error) });
         }
       });
@@ -165,7 +164,7 @@ export function InstallationPlanManager({
       if (created.buildingId !== buildingId)
         throw new InstallationPlanContractError("plan.buildingId", "created plan must match the requested building");
       publishPlans([...plans, created]);
-      callbacksRef.current.onEditPlan(created);
+      callbacksRef.current.onEditPlan?.(created);
     });
 
   const rename = (plan) =>
@@ -198,7 +197,7 @@ export function InstallationPlanManager({
         );
       }
       setRepresentativeId(representative.installationPlanId);
-      callbacksRef.current.onRepresentativeChange(representative);
+      callbacksRef.current.onRepresentativeChange?.(representative);
     });
 
   const clearRepresentative = (plan) =>
@@ -206,7 +205,7 @@ export function InstallationPlanManager({
       await api.unsetRepresentative(buildingId, { signal });
       if (!isFresh()) return;
       setRepresentativeId(null);
-      callbacksRef.current.onRepresentativeChange(null);
+      callbacksRef.current.onRepresentativeChange?.(null);
     });
 
   const remove = (plan) =>
@@ -218,13 +217,12 @@ export function InstallationPlanManager({
 
   return (
     <section
-      className={`flex flex-col gap-4 rounded-card border border-hairline-strong bg-surface-1 p-4 ${className}`}
+      className={`flex flex-col gap-4 ${className}`}
       aria-labelledby="installation-plan-title"
     >
       <SectionHeader
         id="installation-plan-title"
         title="설치 계획"
-        subtitle="옥상 로컬 좌표를 유지하며 건물별 대안을 관리합니다."
         actions={
           <Button
             size="sm"
@@ -233,10 +231,9 @@ export function InstallationPlanManager({
             disabledReason={
               !createPlanDraft ? "새 계획 초안을 만들 수 없습니다" : "다른 작업이 끝날 때까지 기다려 주세요"
             }
-            aria-label="새 설치 계획"
             icon={icon(Plus)}
           >
-            새 계획
+            새 설치 계획
           </Button>
         }
       />
@@ -255,18 +252,18 @@ export function InstallationPlanManager({
         />
       )}
       {state.status === "ready" && plans.length === 0 && (
-        <p className="rounded-control border border-hairline p-4 text-center text-caption text-ink-muted">
+        <p className="py-4 text-center text-caption text-ink-muted">
           저장된 설치 계획이 없습니다.
         </p>
       )}
 
-      <ul className="flex flex-col gap-3">
+      <ul className="flex flex-col">
         {plans.map((plan) => {
           const representative = representativeId === plan.id;
           const displayName = names[plan.id] || plan.name;
           const busy = Boolean(busyAction);
           return (
-            <li key={plan.id} className="flex flex-col gap-3 rounded-card border border-hairline bg-surface-2 p-3">
+            <li key={plan.id} className="flex flex-col gap-2 border-b border-hairline py-3 last:border-b-0">
               <div className="flex items-center justify-between gap-2">
                 <label className="min-w-0 flex-1">
                   <span className="sr-only">{plan.name} 계획 이름</span>
@@ -274,6 +271,7 @@ export function InstallationPlanManager({
                     aria-label={`${plan.name} 계획 이름`}
                     value={names[plan.id] ?? plan.name}
                     onChange={(event) => setNames((current) => ({ ...current, [plan.id]: event.target.value }))}
+                    onBlur={() => { if (displayName.trim() && displayName !== plan.name && !busy) rename(plan); }}
                     className={`${FIELD_INPUT} font-medium`}
                   />
                 </label>
@@ -287,52 +285,59 @@ export function InstallationPlanManager({
                 {`배열 ${plan.arrays.length}개`}
                 <span className="sr-only">{` ${plan.id}`}</span>
               </p>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+              <div className="flex items-center gap-2">
                 <Button
                   size="sm"
-                  onClick={() => onEditPlan(plan)}
+                  onClick={() => onEditPlan?.(plan)}
                   aria-label={`${displayName} 편집`}
                   icon={icon(Edit3)}
                 >
                   편집
                 </Button>
-                <Button
-                  size="sm"
-                  onClick={() => rename(plan)}
-                  disabled={!displayName.trim() || displayName === plan.name || busy}
-                  aria-label={`${plan.name} 이름 저장`}
-                  icon={icon(Save)}
+                <Popover
+                  label={`${displayName} 작업`}
+                  align="end"
+                  renderTrigger={(props) => (
+                    <Button {...props} size="sm" variant="ghost" iconOnly label={`${displayName} 작업 더 보기`} icon={icon(MoreHorizontal)} />
+                  )}
                 >
-                  이름 저장
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => copy(plan)}
-                  disabled={busy}
-                  aria-label={`${displayName} 복사`}
-                  icon={icon(Copy)}
-                >
-                  복사
-                </Button>
-                <RepresentativeToggle
-                  representative={representative}
-                  displayName={displayName}
-                  disabled={busy}
-                  onSet={() => makeRepresentative(plan)}
-                  onClear={() => clearRepresentative(plan)}
-                />
-                <Button
-                  size="sm"
-                  onClick={() => remove(plan)}
-                  disabled={representative || busy}
-                  disabledReason={
-                    representative ? "대표 계획은 다른 계획을 대표로 지정한 뒤 삭제할 수 있습니다." : undefined
-                  }
-                  aria-label={`${displayName} 삭제`}
-                  icon={icon(Trash2)}
-                >
-                  삭제
-                </Button>
+                  {({ close }) => (
+                    <div className="flex flex-col gap-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="w-full justify-start"
+                        onClick={() => { close(); copy(plan); }}
+                        disabled={busy}
+                        aria-label={`${displayName} 복사`}
+                        icon={icon(Copy)}
+                      >
+                        복사
+                      </Button>
+                      <RepresentativeToggle
+                        representative={representative}
+                        displayName={displayName}
+                        disabled={busy}
+                        onSet={() => { close(); makeRepresentative(plan); }}
+                        onClear={() => { close(); clearRepresentative(plan); }}
+                      />
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="w-full justify-start"
+                        onClick={() => { close(); remove(plan); }}
+                        disabled={representative || busy}
+                        disabledReason={
+                          representative ? "대표 계획은 다른 계획을 대표로 지정한 뒤 삭제할 수 있습니다." : undefined
+                        }
+                        aria-label={`${displayName} 삭제`}
+                        icon={icon(Trash2)}
+                      >
+                        삭제
+                      </Button>
+                    </div>
+                  )}
+                </Popover>
               </div>
             </li>
           );

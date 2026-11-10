@@ -1,9 +1,8 @@
-import { Lightbulb, TrendingDown } from "lucide-react";
 import { formatEnergy, formatPercent } from "../dashboard/dashboardFormatting.mjs";
 import { simulationCaption } from "../dashboard/EnergyDashboardPanels.jsx";
 import { buildAnalysisInsights } from "./analysisContracts.mjs";
-import { CARD } from "../shared/fieldStyles.mjs";
 import { ChartLegend, SERIES_COLORS } from "../shared/ChartLegend.jsx";
+import { Disclosure } from "../../../ui/Disclosure.jsx";
 import { EstimateValue } from "../../../ui/EstimateValue.jsx";
 import { MetricList } from "../../../ui/MetricList.jsx";
 import { SectionHeader } from "../../../ui/SectionHeader.jsx";
@@ -17,29 +16,33 @@ function line(values, max, width = 640, height = 170) {
     .join(" ");
 }
 
+// 분석 결과 지표: 헤드라인 4개가 먼저 보이고 나머지는 펼침 안에 있다.
 export function AnalysisKpis({ run }) {
-  const values = [
-    ["무태양광 기준 수요", formatEnergy(run.kpis.baseline.demandEnergyKwh)],
+  const headline = [
     ["대표 계획 발전", formatEnergy(run.kpis.proposed.generationEnergyKwh)],
+    ["계통전력 절감", formatEnergy(run.deltas.gridImportReductionEnergyKwh)],
+    ["비용 절감", `${Math.round(run.deltas.costSavingsKrw).toLocaleString("ko-KR")} KRW`],
+    ["대표 계획 자급률", formatPercent(run.deltas.selfSufficiencyRatio)],
+  ];
+  const details = [
+    ["무태양광 기준 수요", formatEnergy(run.kpis.baseline.demandEnergyKwh)],
     ...(run.kpis.alternative
       ? [
           ["대안 계획 발전", formatEnergy(run.kpis.alternative.generationEnergyKwh)],
           ["대표 대비 발전 차이", formatEnergy(run.deltas.alternativeGenerationDifferenceEnergyKwh)],
         ]
       : []),
-    ["계통전력 절감", formatEnergy(run.deltas.gridImportReductionEnergyKwh)],
     ["계통전력 절감률", formatPercent(run.deltas.gridImportReductionRatio)],
-    ["비용 절감", `${Math.round(run.deltas.costSavingsKrw).toLocaleString("ko-KR")} KRW`],
     ["탄소 감축", `${run.deltas.carbonReductionKgCo2e.toFixed(1)} kgCO2`],
-    ["대표 계획 자급률", formatPercent(run.deltas.selfSufficiencyRatio)],
     ["잉여 발전", formatEnergy(run.kpis.proposed.surplusEnergyKwh)],
   ];
+  const items = (rows) => rows.map(([label, value]) => ({ id: label, label, value: <EstimateValue value={value} /> }));
   return (
-    <section aria-label="단일 건물 분석 KPI" className={`${CARD} p-4`}>
-      <MetricList
-        items={values.map(([label, value]) => ({ id: label, label, value: <EstimateValue value={value} /> }))}
-        caption={simulationCaption(run.date)}
-      />
+    <section aria-label="단일 건물 분석 KPI" className="flex flex-col gap-2">
+      <MetricList columns={2} items={items(headline)} caption={simulationCaption(run.date)} />
+      <Disclosure summary="지표 더 보기">
+        <MetricList items={items(details)} />
+      </Disclosure>
     </section>
   );
 }
@@ -58,8 +61,8 @@ export function AnalysisSeriesChart({ run }) {
     ...(run.kpis.alternative ? [{ label: "대안 계획", color: SERIES_COLORS.alternative, dashed: true }] : []),
   ];
   return (
-    <section className={`${CARD} overflow-hidden p-4`}>
-      <SectionHeader title="수요·기준선·설치 계획" subtitle="96개 15분 구간 · 실행 스냅샷" />
+    <section className="overflow-hidden" aria-labelledby="analysis-series-title">
+      <SectionHeader id="analysis-series-title" title="수요·기준선·설치 계획" />
       <svg
         role="img"
         aria-label="96개 15분 구간의 수요, 계통 인입과 대표 및 대안 설치 계획 발전량"
@@ -92,17 +95,14 @@ export function AnalysisSeriesChart({ run }) {
   );
 }
 
+// 규칙 기반 해석은 결과의 맨 위에 둔다. 목록 기호는 ul 구조가 맡고 항목마다 아이콘을 달지 않는다.
 export function AnalysisInsights({ run }) {
   return (
-    <section className={`${CARD} flex flex-col gap-3 p-4`} aria-labelledby="analysis-insights-title">
-      <h3 id="analysis-insights-title" className="flex items-center gap-2 text-body font-semibold text-ink">
-        <Lightbulb aria-hidden="true" className="h-4 w-4" />
-        규칙 기반 해석
-      </h3>
-      <ul className="flex flex-col gap-2">
+    <section className="flex flex-col gap-2" aria-labelledby="analysis-insights-title">
+      <SectionHeader id="analysis-insights-title" title="규칙 기반 해석" />
+      <ul className="flex list-disc flex-col gap-2 pl-5">
         {buildAnalysisInsights(run).map((item) => (
-          <li key={item.id} className="flex gap-2 break-keep text-body text-ink-muted">
-            <TrendingDown aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
+          <li key={item.id} className="break-keep text-body text-ink-muted">
             {item.message}
           </li>
         ))}

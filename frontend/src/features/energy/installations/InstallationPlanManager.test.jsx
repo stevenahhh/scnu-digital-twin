@@ -22,6 +22,10 @@ function client() {
   };
 }
 afterEach(cleanup);
+// 계획 행에는 편집만 보이고 복사·대표 지정·삭제는 행 메뉴 안에 있다.
+async function menu(user, planName) {
+  await user.click(screen.getByRole("button", { name: `${planName} 작업 더 보기` }));
+}
 
 describe("InstallationPlanManager", () => {
   it("lists, selects for editing, renames, copies, marks representative, and deletes non-representative plans", async () => {
@@ -38,14 +42,20 @@ describe("InstallationPlanManager", () => {
 
     await user.clear(screen.getByLabelText("대안 계획 이름"));
     await user.type(screen.getByLabelText("대안 계획 이름"), "동측 대안");
-    await user.click(screen.getByRole("button", { name: "대안 이름 저장" }));
+    expect(screen.queryByRole("button", { name: /이름 저장/ })).toBeNull();
+    // 이름은 칸을 벗어날 때 저장한다.
+    await user.tab();
     expect(api.update).toHaveBeenCalledWith("plan-2", expect.objectContaining({ name: "동측 대안" }), expect.objectContaining({ signal: expect.any(AbortSignal) }));
 
+    expect(screen.queryByRole("button", { name: "동측 대안 복사" })).toBeNull();
+    await menu(user, "동측 대안");
     await user.click(screen.getByRole("button", { name: "동측 대안 복사" }));
     expect(api.copy).toHaveBeenCalledWith(expect.objectContaining({ id: "plan-2" }), "동측 대안 복사본", expect.objectContaining({ signal: expect.any(AbortSignal) }));
+    await menu(user, "동측 대안");
     await user.click(screen.getByRole("button", { name: "동측 대안 대표로 지정" }));
     expect(api.setRepresentative).toHaveBeenCalledWith("D4", "plan-2", expect.objectContaining({ signal: expect.any(AbortSignal) }));
 
+    await menu(user, "기준안");
     await user.click(screen.getByRole("button", { name: "기준안 삭제" }));
     expect(api.remove).toHaveBeenCalledWith("plan-1", expect.objectContaining({ signal: expect.any(AbortSignal) }));
     expect(onPlansChange).toHaveBeenCalled();
@@ -72,11 +82,12 @@ describe("InstallationPlanManager", () => {
 
     await user.clear(screen.getByLabelText("대안 계획 이름"));
     await user.type(screen.getByLabelText("대안 계획 이름"), "동측 대안");
-    await user.click(screen.getByRole("button", { name: "대안 이름 저장" }));
+    await user.tab();
     expect((await screen.findByRole("alert")).textContent).toContain("서버 응답 형식이 올바르지 않습니다");
     expect(onPlansChange).not.toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({ id: "plan-other" })]));
 
     api.copy.mockResolvedValueOnce({ ...plans[0], id: "plan-copy", buildingId: "D5", name: "기준안 복사본" });
+    await menu(user, "기준안");
     await user.click(screen.getByRole("button", { name: "기준안 복사" }));
     expect((await screen.findByRole("alert")).textContent).toContain("서버 응답 형식이 올바르지 않습니다");
     expect(onPlansChange).not.toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({ id: "plan-copy" })]));
@@ -88,6 +99,7 @@ describe("InstallationPlanManager", () => {
     api.remove.mockRejectedValueOnce(new Error("삭제 실패"));
     render(<InstallationPlanManager buildingId="D4" client={api} createPlanDraft={() => ({ name: "신규안", arrays })} />);
     await screen.findByLabelText("기준안 계획 이름");
+    await menu(user, "대안");
     await user.click(screen.getByRole("button", { name: "대안 삭제" }));
     expect((await screen.findByRole("alert")).textContent).toContain("요청을 처리하지 못했습니다");
   });
@@ -100,11 +112,14 @@ describe("InstallationPlanManager", () => {
     render(<InstallationPlanManager buildingId="D4" client={api} onRepresentativeChange={onRepresentativeChange} />);
 
     expect(await screen.findByText("대표 계획")).toBeTruthy();
+    await menu(user, "대안");
     expect(screen.getByRole("button", { name: "대안 대표 해제" })).toBeTruthy();
     expect(onRepresentativeChange).toHaveBeenCalledWith(expect.objectContaining({ installationPlanId: "plan-2" }));
 
+    await menu(user, "기준안");
     await user.click(screen.getByRole("button", { name: "기준안 대표로 지정" }));
     expect(onRepresentativeChange).toHaveBeenLastCalledWith(expect.objectContaining({ installationPlanId: "plan-1" }));
+    await menu(user, "기준안");
     expect(screen.getByRole("button", { name: "기준안 대표 해제" })).toBeTruthy();
   });
 
@@ -113,9 +128,12 @@ describe("InstallationPlanManager", () => {
     const api = client();
     const onRepresentativeChange = vi.fn();
     render(<InstallationPlanManager buildingId="D4" client={api} onRepresentativeChange={onRepresentativeChange} />);
-    await user.click(await screen.findByRole("button", { name: "기준안 대표 해제" }));
+    await screen.findByText("대표 계획");
+    await menu(user, "기준안");
+    await user.click(screen.getByRole("button", { name: "기준안 대표 해제" }));
     expect(api.unsetRepresentative).toHaveBeenCalledWith("D4", expect.objectContaining({ signal: expect.any(AbortSignal) }));
     expect(onRepresentativeChange).toHaveBeenCalledWith(null);
+    await menu(user, "기준안");
     expect(screen.getByRole("button", { name: "기준안 삭제" }).getAttribute("aria-disabled")).toBeNull();
   });
 
@@ -171,7 +189,7 @@ describe("InstallationPlanManager", () => {
 
   it.each([
     ["create", "새 설치 계획", "create"],
-    ["rename", "대안 이름 저장", "update"],
+    ["rename", null, "update"],
     ["copy", "대안 복사", "copy"],
     ["representative", "대안 대표로 지정", "setRepresentative"],
     ["clear representative", "기준안 대표 해제", "unsetRepresentative"],
@@ -194,8 +212,11 @@ describe("InstallationPlanManager", () => {
     if (method === "update") {
       await user.clear(screen.getByLabelText("대안 계획 이름"));
       await user.type(screen.getByLabelText("대안 계획 이름"), "변경안");
+      await user.tab();
+    } else {
+      if (method !== "create") await menu(user, buttonName.startsWith("기준안") ? "기준안" : "대안");
+      await user.click(screen.getByRole("button", { name: buttonName }));
     }
-    await user.click(screen.getByRole("button", { name: buttonName }));
     const options = api[method].mock.calls[0].at(-1);
     expect(options.signal.aborted).toBe(false);
 
@@ -219,7 +240,9 @@ describe("InstallationPlanManager", () => {
     const api = client();
     api.remove.mockReturnValue(new Promise(() => {}));
     const view = render(<InstallationPlanManager buildingId="D4" client={api} />);
-    await user.click(await screen.findByRole("button", { name: "대안 삭제" }));
+    await screen.findByLabelText("대안 계획 이름");
+    await menu(user, "대안");
+    await user.click(screen.getByRole("button", { name: "대안 삭제" }));
     const options = api.remove.mock.calls[0][1];
     view.unmount();
     expect(options.signal.aborted).toBe(true);

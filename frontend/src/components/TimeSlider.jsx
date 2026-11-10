@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Check, ChevronDown, ChevronUp, Clock3, Pause, Play } from "lucide-react";
-import { Button } from "../ui/Button.jsx";
-import { StatusBadge } from "../ui/StatusBadge.jsx";
+import { Button, COARSE_TARGET, FOCUS_RING } from "../ui/Button.jsx";
+import { Popover } from "../ui/Popover.jsx";
 import { cx } from "../ui/cx.mjs";
 import {
   MINUTES_PER_DAY,
@@ -14,7 +14,10 @@ import {
 } from "../weather/sceneClock.mjs";
 import { parseSceneDate, parseTypedTime } from "./timeControl.mjs";
 
-export const TIME_SLIDER_LABEL = "시각 (KST)";
+const RANGE_LABEL = "시각 (KST)";
+// 정밀 포인터에서는 슬라이더 히트 영역을 24px로 둔다. index.css의 input[type="range"](18px)보다 앞서야 해서 클래스 둘을
+// 묶은 선택자를 쓰고, 굵은 포인터·폰 폭에서는 index.css의 44px 규칙이 그대로 남는다.
+const RANGE = "time-range mt-2 w-full accent-[var(--colors-primary)] [@media(pointer:fine)]:[&.time-range]:h-6";
 
 const SURFACE = "pointer-events-auto rounded-card border border-hairline bg-surface-1 px-3 py-2.5";
 // 폰에서 접힌 시간 카드: 장면 시각 칩 하나(누르면 펼친다). 지도를 가리지 않는다.
@@ -26,22 +29,30 @@ const CHIP = cx(
 const FIELD = cx(
   "min-h-8 rounded-control border border-hairline-strong bg-surface-1 px-2 text-caption tabular-nums text-ink",
   "[@media(pointer:coarse)]:min-h-11 aria-[invalid=true]:border-danger",
-  // 날짜·시각 칸에 들어오면 다른 조작과 같은 포커스 테두리(V-F-36). 기본 날짜·시각 입력은 안쪽(그림자 DOM)의 칸과 달력
-  // 단추가 따로 포커스를 받아 입력 요소에는 :focus가 걸리지 않을 때가 있으므로 :focus-within으로 그린다.
+  // 기본 날짜·시각 입력은 안쪽(그림자 DOM)의 칸과 달력 단추가 따로 포커스를 받아 입력 요소에 :focus가 걸리지 않을 때가
+  // 있으므로 다른 조작과 같은 포커스 테두리를 :focus-within으로 그린다.
   "focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary",
 );
-const HEADING = "flex min-w-0 items-center gap-1.5 text-caption font-medium text-ink-muted";
 const ICON = "h-3.5 w-3.5";
 const READOUT = "text-body font-semibold tabular-nums text-ink";
+const VALUE_BUTTON = cx(
+  "inline-flex min-h-8 items-center gap-1 rounded-control px-2 hover:bg-surface-2",
+  COARSE_TARGET,
+  FOCUS_RING,
+  READOUT,
+);
+// 시간 카드는 화면 아래에 붙어 있으므로 편집 팝오버를 트리거 위로 연다. Popover는 트리거 아래(top-full + 0.5rem)에
+// 놓이므로 자기 높이 + 트리거 높이(2rem, 굵은 포인터 2.75rem) + 두 간격(1rem)만큼 올린다.
+const POPOVER_ABOVE = "-translate-y-[calc(100%_+_3rem)] [@media(pointer:coarse)]:-translate-y-[calc(100%_+_3.75rem)]";
 // 눈금: 0..24시 25개의 짧은 금. 글자는 데스크톱에서 3시간마다, 폰에서 6시간마다(25개 글자는 24rem에 붙어 읽히지 않는다).
-// 12px, 4.5:1 이상(ink-muted).
 const HOURS = Array.from({ length: 25 }, (_, hour) => hour);
-const TICKS = "mt-1 flex justify-between text-[12px] font-medium tabular-nums text-ink-muted";
+const TICKS = "mt-1 flex justify-between text-caption font-medium tabular-nums text-ink-muted";
 const tickLabelClass = (hour) => (hour % 6 === 0 ? "" : hour % 3 === 0 ? "hidden sm:inline" : "invisible");
 
-// 장면 시각을 정하는 하나뿐인 조작: 날짜, 직접 입력한 시각, `지금`(실측으로 돌아감), 0..1439분 슬라이더와 시간 눈금.
+// 장면 시각을 정하고 보여 주는 하나뿐인 조작: 시각 값, `지금`(실시간으로 돌아감), 재생, 0..1439분 슬라이더와 시간 눈금.
+// 시각 값 단추를 누르면 날짜와 정확한 시각을 넣는 팝오버가 열린다(첫 화면에는 입력 칸이 없다).
 // 키보드: 화살표 ±1분, Shift+화살표 ±10분, PageUp/PageDown ±60분, Home/End 0시/23:59(sceneClock.minuteForKey).
-// collapsible(폰): 처음에는 장면 시각 칩만 보이고, 누르면 카드 전체가 펼쳐진다(접기 단추로 다시 접는다).
+// collapsible(폰): 처음에는 장면 시각 칩만 보이고, 누르면 카드가 펼쳐지며 날짜·시각 입력도 카드 안에 함께 놓인다.
 // 접혀 있어도 조작은 그대로 붙어 있고 보이지만 않는다(재생은 계속된다).
 export function TimeSlider({
   minuteOfDay,
@@ -89,6 +100,56 @@ export function TimeSlider({
     if (minute !== null) onMinuteChange(minute);
   };
   const typedInvalid = Boolean(typed?.invalid);
+  const valueQa = collapsed ? undefined : "time-slider-value";
+
+  const fields = onDateChange && (
+    <div className="flex flex-wrap items-center gap-2">
+      <input
+        type="date"
+        aria-label="장면 날짜"
+        value={dateValue}
+        onChange={(event) => {
+          const parts = parseSceneDate(event.target.value);
+          if (parts) onDateChange(parts);
+        }}
+        className={FIELD}
+      />
+      <input
+        type="time"
+        step={60}
+        aria-label="장면 시각 입력"
+        aria-invalid={typedInvalid ? "true" : "false"}
+        value={typedInvalid ? typed.text : timeLabel}
+        onChange={handleTyped}
+        onBlur={() => setTyped(null)}
+        className={FIELD}
+      />
+    </div>
+  );
+
+  const value = fields && !collapsible ? (
+    <Popover
+      label="장면 날짜와 시각"
+      qa="time-edit-popover"
+      className={POPOVER_ABOVE}
+      renderTrigger={(props) => (
+        <button
+          {...props}
+          type="button"
+          data-qa="time-value"
+          aria-label={`장면 시각 ${timeLabel}, 날짜와 시각 바꾸기`}
+          className={VALUE_BUTTON}
+        >
+          <span data-qa={valueQa}>{timeLabel}</span>
+          <ChevronDown aria-hidden="true" className={ICON} />
+        </button>
+      )}
+    >
+      {fields}
+    </Popover>
+  ) : (
+    <span data-qa={valueQa} className={cx(READOUT, "px-1")}>{timeLabel}</span>
+  );
 
   return (
     <section
@@ -107,7 +168,7 @@ export function TimeSlider({
           onClick={() => setExpanded(true)}
           className={CHIP}
         >
-          <Clock3 aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
+          <Clock3 aria-hidden="true" className={cx(ICON, "shrink-0")} />
           <span>장면</span>
           <span data-qa="time-slider-value" className={READOUT}>{timeLabel}</span>
           {playing && <Play aria-label="재생 중" className={ICON} />}
@@ -116,17 +177,20 @@ export function TimeSlider({
         </button>
       )}
       <div id={bodyId} hidden={collapsed}>
-        <div className="flex items-center justify-between gap-3">
-          <div className={HEADING}>
-            <Clock3 aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{TIME_SLIDER_LABEL}</span>
-            {live && <StatusBadge tone="success">실측</StatusBadge>}
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <span data-qa={collapsed ? undefined : "time-slider-value"} className={READOUT}>{timeLabel}</span>
+        <div className="flex items-center gap-2">
+          {value}
+          <div className="ml-auto flex shrink-0 items-center gap-2">
             {onNow && (
-              <Button size="sm" data-qa="time-now" onClick={onNow} aria-pressed={live} icon={live ? <Check aria-hidden="true" className={ICON} /> : undefined} className="shrink-0">
+              <Button
+                size="sm"
+                data-qa="time-now"
+                onClick={onNow}
+                aria-pressed={live}
+                icon={live ? <Check aria-hidden="true" className={ICON} /> : undefined}
+                className="shrink-0"
+              >
                 지금
+                {live && <> <span className="text-ink-muted">실시간</span></>}
               </Button>
             )}
             <Button
@@ -155,41 +219,18 @@ export function TimeSlider({
             )}
           </div>
         </div>
-        {onDateChange && (
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <input
-              type="date"
-              aria-label="장면 날짜"
-              value={dateValue}
-              onChange={(event) => {
-                const parts = parseSceneDate(event.target.value);
-                if (parts) onDateChange(parts);
-              }}
-              className={FIELD}
-            />
-            <input
-              type="time"
-              step={60}
-              aria-label="장면 시각 입력"
-              aria-invalid={typedInvalid ? "true" : "false"}
-              value={typedInvalid ? typed.text : timeLabel}
-              onChange={handleTyped}
-              onBlur={() => setTyped(null)}
-              className={FIELD}
-            />
-          </div>
-        )}
+        {fields && collapsible && <div className="mt-2">{fields}</div>}
         <input
           type="range"
           min={0}
           max={MINUTES_PER_DAY - 1}
           step={1}
           value={wrapMinuteOfDay(minuteOfDay)}
-          aria-label={TIME_SLIDER_LABEL}
+          aria-label={RANGE_LABEL}
           aria-valuetext={timeLabel}
           onChange={(event) => onMinuteChange(Number(event.target.value))}
           onKeyDown={handleKeyDown}
-          className="time-range mt-2 w-full accent-[var(--colors-primary)]"
+          className={RANGE}
         />
         <div className={TICKS} aria-hidden="true">
           {HOURS.map((hour) => (
