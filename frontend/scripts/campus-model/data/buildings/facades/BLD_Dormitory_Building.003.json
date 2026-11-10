@@ -1,0 +1,225 @@
+{
+  "estimated": true,
+  "building": "BLD_Dormitory_Building.003",
+  "storeys": [
+    {
+      "hM": 3.2143
+    },
+    {
+      "hM": 3.2143
+    },
+    {
+      "hM": 3.2143
+    },
+    {
+      "hM": 3.2143
+    },
+    {
+      "hM": 3.2143
+    },
+    {
+      "hM": 3.2143
+    },
+    {
+      "hM": 3.2143
+    }
+  ],
+  "walls": {
+    "W02": {
+      "bays": {
+        "pitchM": 2.964018,
+        "count": 5,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ],
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ],
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ],
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ],
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ],
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ],
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ]
+      ],
+      "overrides": [
+        {
+          "storey": 0,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 1,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 2,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 3,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 4,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 5,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 6,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        }
+      ],
+      "window": {
+        "wM": 2.1341,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 A8_학생생활관_향림관_부속동_추정__688840 W02",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 5,
+        "openingGroups": 5,
+        "notes": [
+          "LOD4 x109..171: five columns, with a narrow central stair stack between two balcony stacks and two outer window stacks."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 5,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "panel:#c6ccd6",
+        "glass": "#7e98a2",
+        "frame": "#b88a5a"
+      }
+    },
+    "W01": {
+      "bays": {
+        "pitchM": 10.61126325,
+        "count": 1,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 3.2,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 A8_학생생활관_향림관_부속동_추정__688840 W01",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 1,
+        "openingGroups": 0,
+        "notes": [
+          "LOD4 x63..108: plain white end wall above a small ground opening; upper window count zero. The undocumented ground doorway remains estimated, not invented."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 1,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "blank",
+      "materials": {
+        "wall": "panel:#c6ccd6",
+        "glass": "#7e98a2",
+        "frame": "#b88a5a"
+      }
+    }
+  }
+}

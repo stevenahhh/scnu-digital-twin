@@ -26,6 +26,7 @@ import { campusCenterOf, glbLabelAnchors, glbNodeBoxes } from "./labelAnchors.mj
 import commonElements from "../../../common/data/common_elemetns.json";
 import { VWorldLabelLayer, centroidOf } from "./VWorldLabelLayer";
 import { SearchField } from "../components/SearchField";
+import { useD4SelectionExit } from "../panel/useD4SelectionExit.mjs";
 import { createVWorldTrafficSimulation } from "./trafficSimulationOverlay.mjs";
 import { Alert } from "../ui/Alert.jsx";
 import { Spinner } from "../ui/Spinner.jsx";
@@ -184,12 +185,16 @@ export default function VWorldRenderer({
   const onClearSelectionRef = useRef(onClearSelection);
   onClearSelectionRef.current = onClearSelection;
   // D4 상세에서 돌아오면 Legacy처럼 선택이 풀린 캠퍼스 지도로 돌아간다(D4 인스펙터가 남지 않는다).
-  const closeD4Section = useCallback(() => {
+  const dismissD4Section = useCallback(() => {
     setIsD4SectionOpen(false);
     setDetailRequest(null);
-    onClearSelectionRef.current?.();
     onEditorClose?.();
   }, [onEditorClose]);
+  const closeD4Section = useCallback(() => {
+    onClearSelectionRef.current?.();
+    dismissD4Section();
+  }, [dismissD4Section]);
+  useD4SelectionExit(selectedLabelId, isD4SectionOpen, dismissD4Section);
   // 대시보드 레일에서 다른 탭을 고르면(d4CloseKey가 바뀌면) D4 패인을 닫는다.
   const closeKeyRef = useRef(d4CloseKey);
   useEffect(() => {
@@ -277,7 +282,7 @@ export default function VWorldRenderer({
   useEffect(() => {
     if (!labelScene || !campusGlb) return undefined;
     const elementNames = new Map(commonElements.elements.map(({ element_id: id, name }) => [id, name]));
-    const center = campusCenterOf(glbLabelAnchors(campusGlb, { elementNames }));
+    const center = campusCenterOf(glbLabelAnchors(campusGlb, { elementNames }), campusGlb.asset?.extras?.frameVersion);
     campusCameraRef.current = createVWorldCampusCamera({ ...labelScene, getModelMatrix: getLabelModelMatrix, boxes: glbNodeBoxes(campusGlb), center });
     onCampusCameraRef.current?.(campusCameraRef.current);
     return () => {

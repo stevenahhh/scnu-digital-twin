@@ -6389,98 +6389,6 @@
   {
    "type": "Feature",
    "properties": {
-    "id": "OC0070",
-    "kind": "gazebo",
-    "confidence": 0.3,
-    "method": "by-eye-photo",
-    "source": "ngii-2025-ortho",
-    "tile": "T0200",
-    "height_m": 3.5,
-    "height_source": "kind default",
-    "estimated": true,
-    "note": "round dark roofed object at the edge of the parking lot, in building shadow",
-    "area_m2": 12.2,
-    "from_objects_geojson": false
-   },
-   "geometry": {
-    "type": "Polygon",
-    "coordinates": [
-     [
-      [
-       127.47616997,
-       34.97017473
-      ],
-      [
-       127.47616826,
-       34.97016784
-      ],
-      [
-       127.47616348,
-       34.97016201
-      ],
-      [
-       127.47615635,
-       34.97015813
-      ],
-      [
-       127.47614797,
-       34.97015679
-      ],
-      [
-       127.47613959,
-       34.9701582
-      ],
-      [
-       127.47613251,
-       34.97016213
-      ],
-      [
-       127.4761278,
-       34.970168
-      ],
-      [
-       127.47612617,
-       34.97017491
-      ],
-      [
-       127.47612788,
-       34.9701818
-      ],
-      [
-       127.47613266,
-       34.97018763
-      ],
-      [
-       127.47613979,
-       34.97019151
-      ],
-      [
-       127.47614817,
-       34.97019285
-      ],
-      [
-       127.47615655,
-       34.97019144
-      ],
-      [
-       127.47616363,
-       34.97018751
-      ],
-      [
-       127.47616834,
-       34.97018164
-      ],
-      [
-       127.47616997,
-       34.97017473
-      ]
-     ]
-    ]
-   }
-  },
-  {
-   "type": "Feature",
-   "properties": {
     "id": "OC0071",
     "kind": "plaza_structure",
     "subtype": "outdoor_steps",
@@ -6754,41 +6662,65 @@
    "type": "Feature",
    "properties": {
     "id": "OC0078",
-    "kind": "gazebo",
+    "kind": "pavilion_hip",
     "confidence": 0.55,
     "method": "by-eye-photo",
-    "source": "ngii-2025-ortho",
+    "source": "ISSUES D-27/D-62; SYNTHESIS O30; LOD4 SC090096 E243539..243544.6 N263855..263861 (estimated)",
     "tile": "T0301",
-    "height_m": 3.5,
-    "height_source": "by eye / VR",
+    "height_m": 3.4,
+    "height_source": "ISSUES D-62; LOD4 SC090096 ridge approximately 3.4 m (estimated)",
     "estimated": true,
-    "note": "small brown-roofed pavilion (jeongja) in the garden east of the dormitory",
-    "area_m2": 22.5,
-    "from_objects_geojson": false
+    "note": "D4 east garden square hip-roof pavilion on four timber posts; SYNTHESIS O30 and refs/h-scnu-vr/d4_l_pavilion_winding_path.jpg; VR roof-size reading 3.2 m conflicts with LOD4 5.5 m envelope, retain LOD4 plan pending matched-pose review (estimated)",
+    "area_m2": 30.25,
+    "from_objects_geojson": false,
+    "photo_support": "none",
+    "dims": {
+     "planWidthM": 4.3,
+     "planDepthM": 4.3,
+     "roofOverhangM": 0.6,
+     "eaveHeightM": 2.5,
+     "ridgeHeightM": 3.4,
+     "columnCount": 4,
+     "railingSides": 0
+    },
+    "dimsSource": "LOD4 SC090096 roof envelope 5.5 m; subtract 0.6 m overhang each side; VR four posts and open sides; eave 2.5 m catalogue estimate (estimated)",
+    "roofColour": "#6c4b37",
+    "bench": {
+     "lengthM": 1.6,
+     "widthM": 0.45,
+     "heightM": 0.45,
+     "source": "VR d4_l_pavilion_winding_path.jpg visible freestanding timber bench; dimensions relative to posts (estimated)"
+    },
+    "evidence": {
+     "tier": "T4",
+     "refs": [
+      "ISSUES D-27/D-62; LOD4 SC090096 bounds; VR pavilion crop (estimated)"
+     ]
+    }
    },
    "geometry": {
     "type": "Polygon",
     "coordinates": [
      [
       [
-       127.47671299,
-       34.9698729
+       127.47676413,
+       34.96986255
       ],
       [
-       127.47676227,
-       34.9698727
+       127.47682435,
+       34.96986232
       ],
       [
-       127.47676201,
-       34.96982763
+       127.47682464,
+       34.96991189
       ],
       [
-       127.47671273,
-       34.96982783
+       127.47676441,
+       34.96991213
       ],
       [
-       127.47671299,
-       34.9698729
+       127.47676413,
+       34.96986255
       ]
      ]
     ]
@@ -6804,11 +6736,17 @@
     "method": "by-eye-photo",
     "source": "ngii-2025-ortho",
     "tile": "T0302",
-    "height_m": 1.5,
-    "height_source": "kind default",
+    "height_m": 1.1,
+    "height_source": "SYNTHESIS C18 and section 4 east-side guard rails about 1.1 m (estimated)",
     "estimated": true,
-    "note": "railing of an outdoor stair/ramp west of the building",
-    "from_objects_geojson": false
+    "note": "East of BLD_D4, never west; original T4 line retained pending reconciliation with SD-D4-H1/H2 and RL-E (estimated)",
+    "from_objects_geojson": false,
+    "evidence": {
+     "tier": "T4",
+     "refs": [
+      "ISSUES D-36; SYNTHESIS C18; existing line E243560 N263859 (estimated)"
+     ]
+    }
    },
    "geometry": {
     "type": "LineString",

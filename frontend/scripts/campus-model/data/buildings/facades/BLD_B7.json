@@ -1,0 +1,228 @@
+{
+  "estimated": true,
+  "building": "BLD_B7",
+  "storeys": [
+    {
+      "hM": 4.4
+    },
+    {
+      "hM": 4.4
+    },
+    {
+      "hM": 4.4
+    },
+    {
+      "hM": 4.4
+    },
+    {
+      "hM": 4.4
+    },
+    {
+      "hM": 4.4
+    },
+    {
+      "hM": 4.4
+    }
+  ],
+  "walls": {
+    "W02": {
+      "bays": {
+        "pitchM": 1.28085068,
+        "count": 17,
+        "offsetM": 15.44413984
+      },
+      "cells": [
+        [
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 1.1528,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "VR scene_b7/f",
+        "refs": [
+          "VR scene_b7/f",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated",
+          "Exact registered source edge correspondence in surfaceEdges; automatic 0.3 m matching remains unchanged. Endpoints are checked within 1 mm, not moved.",
+          "Only the counted interval is curated; unobserved prefix/suffix retain the legacy material rather than becoming invented blank walls."
+        ],
+        "independentCount": 17,
+        "openingGroups": 17,
+        "notes": [
+          "The LOD4 record is an obsolete 4.5 m structure and has no usable facade for the current tower. Independent VR scene_b7/f: seventeen curtain-wall panel groups on the left tall block, columns about 550..1185; the stepped right block is not extrapolated. Source heights/offsets remain estimates.",
+          "Vertical allocation follows the registered main source: 7 levels over 30.800 m. The independent image count is horizontal; heights remain estimates."
+        ],
+        "tier": "T2",
+        "lod4BayCount": null,
+        "vrBayCount": 17
+      },
+      "estimated": true,
+      "default": "glazing",
+      "materials": {
+        "wall": "panel:#f0f2f3",
+        "glass": "#3e78b0",
+        "frame": "#dfe5ea"
+      },
+      "surfaceEdges": [
+        {
+          "A": [
+            244132.8121,
+            263903.1395
+          ],
+          "B": [
+            244094.5445,
+            263912.7576
+          ],
+          "source": "building-forms.json BLD_B7/mass/0/edge/1; resolved source geometry, estimated"
+        },
+        {
+          "A": [
+            244094.5445,
+            263912.762
+          ],
+          "B": [
+            244087.7563,
+            263914.4689
+          ],
+          "source": "building-forms.json BLD_B7/mass/3/edge/1; resolved source geometry, estimated"
+        }
+      ],
+      "outside": "legacy"
+    }
+  }
+}

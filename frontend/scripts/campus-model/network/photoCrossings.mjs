@@ -1,4 +1,4 @@
-// Painted zebra crossings traced from the NGII 2025 orthophoto (data/photo/markings.geojson, `kind: zebra_bar`,
+// Painted zebra crossings traced from the NGII 2025 orthophoto (data/photo/evidence/markings.geojson, `kind: zebra_bar`,
 // grouped by `crossing_id`) that no digitised CW polygon covers (plan uhf-ground-roads-routing W4 (c): people cross
 // only at crossing polygons, so every crossing the paint shows is one). Each group on a road polygon becomes a
 // crossing polygon: the bar-aligned rectangle around its bars (ortho-traced paint, estimated: false) plus a kerb
@@ -53,7 +53,7 @@ export function photoCrossings({ groups, crossings = [], roadPolygons = [] }) {
     };
     const r0 = reach(a[0], -1);
     const r1 = reach(a[1], 1);
-    const source_ref = `data/photo/markings.geojson ${id} (${bars.length} painted zebra bars, NGII 2025 orthophoto)`;
+    const source_ref = `data/photo/evidence/markings.geojson ${id} (${bars.length} painted zebra bars, NGII 2025 orthophoto)`;
     out.push({ class: "crossing", id: `PZC_${id}`, source_ref, estimated: false, rings: [rectRing(c, u, v, a, b)] });
     out.push({ class: "crossing", id: `PZC_${id}_A0`, source_ref: `${source_ref} kerb approach`, estimated: true, rings: [rectRing(c, u, v, [a[0] - r0, a[0]], b)] });
     out.push({ class: "crossing", id: `PZC_${id}_A1`, source_ref: `${source_ref} kerb approach`, estimated: true, rings: [rectRing(c, u, v, [a[1], a[1] + r1], b)] });
@@ -61,7 +61,7 @@ export function photoCrossings({ groups, crossings = [], roadPolygons = [] }) {
   return { polygons: out, stats: { crossings: out.length / 3, ...skipped } };
 }
 
-// data/photo/markings.geojson features -> Map crossing_id -> bar rings, via toSim([lon, lat]).
+// data/photo/evidence/markings.geojson features -> Map crossing_id -> bar rings, via toSim([lon, lat]).
 export function zebraGroups(markings, toSim) {
   const groups = new Map();
   for (const f of markings.features) {

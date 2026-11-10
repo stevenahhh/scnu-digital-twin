@@ -1,0 +1,90 @@
+{
+  "estimated": true,
+  "building": "BLD_SCNU_E2",
+  "storeys": [
+    {
+      "hM": 3.76
+    },
+    {
+      "hM": 3.76
+    },
+    {
+      "hM": 3.76
+    },
+    {
+      "hM": 3.76
+    }
+  ],
+  "walls": {
+    "W00": {
+      "bays": {
+        "pitchM": 3.5291341,
+        "count": 6,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 2.541,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 E2_기초교육관_85392 W00",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 6,
+        "openingGroups": 6,
+        "notes": [
+          "LOD4 x0..88: six wide repeated opening groups across all four visible rows; direct LOD4 wall matching avoids the ambiguous scene_e2 first-hit identity."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 6,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "render:#fb9071",
+        "glass": "#5f7f88",
+        "frame": "#eceeee"
+      }
+    }
+  }
+}

@@ -1,0 +1,178 @@
+{
+  "estimated": true,
+  "building": "BLD_A4",
+  "storeys": [
+    {
+      "hM": 2.89
+    },
+    {
+      "hM": 2.89
+    },
+    {
+      "hM": 2.89
+    },
+    {
+      "hM": 2.89
+    },
+    {
+      "hM": 2.89
+    },
+    {
+      "hM": 2.89
+    },
+    {
+      "hM": 2.89
+    },
+    {
+      "hM": 2.89
+    },
+    {
+      "hM": 2.89
+    },
+    {
+      "hM": 2.89
+    },
+    {
+      "hM": 2.89
+    },
+    {
+      "hM": 2.89
+    }
+  ],
+  "walls": {
+    "W34": {
+      "bays": {
+        "pitchM": 3.3,
+        "count": 6,
+        "offsetM": 4
+      },
+      "cells": [
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "glazing"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "glazing"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "glazing"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "glazing"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "glazing"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "glazing"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "glazing"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "glazing"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "glazing"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "glazing"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "glazing"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "glazing"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 2.376,
+        "hM": 1.5895,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 A4_학생생활관_부속동_A5_학생생활관_진리관_682275 W34",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 6,
+        "openingGroups": 6,
+        "notes": [
+          "LOD4 x995..1091: after about 4 m of missing end texture, five complete punched-window stacks and one glazed stair stack. Count six, not the pane count."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 6,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "panel:#ebe8e0",
+        "glass": "#5aa1a6",
+        "frame": "#e3e6e5"
+      }
+    }
+  }
+}

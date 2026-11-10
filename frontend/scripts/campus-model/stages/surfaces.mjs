@@ -15,16 +15,18 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import sharp from "sharp";
 import { ShapeUtils, Vector2 } from "three";
 import { sceneToTm, tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { conform } from "../lib/conform.mjs";
 import { decimateDecal } from "../lib/decimate.mjs";
 import { EXTENT, SCENE_UNITS_PER_METRE } from "../lib/frame.mjs";
-import { LANDCOVER } from "../lib/landcover.mjs";
+import { LANDCOVER, D4_MATERIAL_SCOPE, splitD4GroundPolygon } from "../lib/landcover.mjs";
 import { encodePng } from "../lib/png.mjs";
 import { hashNoise, smoothNoise } from "../lib/raster.mjs";
 import { orientedFrame } from "../network/surfaces.mjs";
 import { pavingPattern, pavingTile } from "../lib/pavingPatterns.mjs";
+import { humpProfile } from "./roadMarkings.mjs";
 
 // Statute basis of the tactile paving tile (stages/tactile.mjs, bake/tactile-tile.mjs).
 export const TACTILE_BASIS = "장애인등편의법 시행규칙 별표 1 제16호: 0.3 m 모듈, 36 돌출, 6±1 mm";
@@ -32,6 +34,7 @@ export const TACTILE_BASIS = "장애인등편의법 시행규칙 별표 1 제16�
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const MATERIALS = path.join(HERE, "..", "data", "materials");
 const MANIFEST = path.join(MATERIALS, "ground-materials.json");
+const D4_MATERIALS = JSON.parse(readFileSync(path.join(MATERIALS, "d4-materials.json"), "utf8"));
 const UNIT = SCENE_UNITS_PER_METRE;
 const WIDTH = EXTENT.maxX - EXTENT.minX;
 const DEPTH = EXTENT.maxZ - EXTENT.minZ;
@@ -42,19 +45,23 @@ export const SURFACE_LIFT_M = (precedence) => Math.min(0.036, 0.006 * precedence
 // extras.polygonOffsetRank (CityModel), so the polygon offset and the lift agree.
 export const GROUND_MESHES = Object.freeze({
   Ground_Sports: {},
-  Ground_Asphalt: { tile: "asphalt" },
+  // Todo 13c: clear-sky NGII comparison, class-wide estimated albedo (no photo pixels or baked shade).
+  Ground_Asphalt: { tile: "asphalt", baseColorFactor: [0.72, 0.90, 0.94, 1] },
+  // ZONE17: observed red paving, substrate/use unknown. This CC0 tile is a
+  // visual estimate, not a claim that the underlying material is asphalt.
+  Ground_RedRoad: { tile: "asphalt-red" },
   Ground_Lot: { tile: "lot" },
   // VR scenes a2-e5: light grey pavers with scattered dark squares (data/paving-patterns.json campus-speckle, 추정)
-  Ground_Pavers: { pattern: "campus-speckle" },
+  Ground_Pavers: { pattern: "campus-speckle", baseColorFactor: [0.26, 0.30, 0.22, 1] },
   Ground_Bicycle: { tile: "asphalt-red" },
   // catalogue paving supplements: one primitive per pattern, laid along each supplement's axis (layer.pattern, uvFrame)
-  Ground_Plaza: { patterned: true },
-  Ground_Apron: { tile: "concrete" },
+  Ground_Plaza: { patterned: true, baseColorFactor: [0.50, 0.54, 0.42, 1] },
+  Ground_Apron: { tile: "concrete", baseColorFactor: [0.49, 0.54, 0.39, 1] },
   // network/walkways.mjs: estimated walkway strips beside the carriageway where NGII A003 has no sidewalk (추정)
-  Ground_Walkway: { pattern: "campus-speckle" },
+  Ground_Walkway: { pattern: "campus-speckle", baseColorFactor: [0.22, 0.25, 0.18, 1] },
   // stages/kerbs.mjs: the gutter band on the road side of the kerbs (asphalt darkened 0.72, estimated)
   Ground_Gutter: { tile: "asphalt", baseColorFactor: [0.72, 0.72, 0.72, 1] },
-  // network/stalls.mjs: the circular-arc speed humps (buildHumpMeshes), asphalt
+  // roadMarkings.mjs: record-defined circular-arc speed humps, asphalt
   Ground_Hump: { tile: "asphalt" },
   // stages/tactile.mjs: generated tactile tile (bake/tactile-tile.mjs), band-aligned UVs
   Ground_Tactile: { generated: "tactile" },
@@ -109,25 +116,42 @@ function refineTriangle(tri, maxEdge, needsFine) {
 // the order given, so the caller passes them highest precedence first.
 export function surfaceGeometry({ layers, surface, tileSize, heightOffset = (layer) => SURFACE_LIFT_M(layer.precedence), refine = null, claim = (piece) => [piece] }) {
   const primitives = new Map();
-  layers.forEach((layer, index) => {
-    const spec = GROUND_MESHES[layer.mesh] ?? {};
+  const scopedLayers = layers.flatMap(layer => {
+    const tile = D4_MATERIAL_SCOPE.patternClasses?.[layer.pattern] ?? D4_MATERIAL_SCOPE.surfaceClasses[layer.mesh];
+    if (!tile) return [layer];
+    const [w,s,e,n] = D4_MATERIAL_SCOPE.bbox;
+    const ring = layer.rings[0];
+    if (ring.every(p => p[0] < w) || ring.every(p => p[0] > e) ||
+        ring.every(p => p[1] < s) || ring.every(p => p[1] > n)) return [layer];
+    const local = { ...layer, d4Tile: tile };
+    if (ring.every(p => p[0] >= w && p[0] <= e && p[1] >= s && p[1] <= n)) return [local];
+    return triangulate(layer.rings).flatMap(triangle => {
+      const { inside, outside } = splitD4GroundPolygon(triangle);
+      return [...outside.map(poly => ({ ...layer, rings: [poly.map(p => sceneToTm(...p))] })),
+        ...(inside ? [{ ...local, rings: [inside.map(p => sceneToTm(...p))] }] : [])];
+    });
+  });
+  scopedLayers.forEach((layer, index) => {
+    const d4Pattern = layer.d4Tile && D4_MATERIAL_SCOPE.patternClasses?.[layer.pattern] ? layer.pattern : null;
+    const spec = layer.d4Tile ? { tile: layer.d4Tile } : GROUND_MESHES[layer.mesh] ?? {};
     const painted = !spec.tile && !spec.generated && !spec.pattern && !spec.patterned;
     const pattern = spec.patterned ? layer.pattern : spec.pattern ?? null;
     if (spec.patterned && !pattern) throw new Error(`surfaces: ${layer.mesh} layer ${layer.source_ref} has no pattern`);
     // One primitive per class and precedence (its material carries that precedence as the polygon-offset rank, so the
     // offset never contradicts the lift), per catalogue pattern, and one per painted surface (its own texture).
-    const key = painted ? `${layer.mesh}#${index}` : `${layer.mesh}@${layer.precedence}${spec.patterned ? `#${pattern}` : ""}`;
+    const key = painted ? `${layer.mesh}#${index}` : `${layer.mesh}@${layer.precedence}${spec.patterned ? `#${pattern}` : ""}${layer.d4Tile ? `#${layer.d4Tile}:${d4Pattern}` : ""}`;
     let primitive = primitives.get(key);
     if (!primitive) {
       const frame = painted ? orientedFrame(layer.rings[0].map(([E, N]) => tmToScene(E, N))) : null;
-      primitive = { mesh: layer.mesh, rank: layer.precedence, layer: painted ? layer : null, pattern, frame, positions: [], normals: [], uvs: [], uv1: [], indices: [], vertexOf: new Map(), sourceTriangles: 0, precedence: [] };
+      primitive = { mesh: layer.mesh, tile: layer.d4Tile, d4Pattern, rank: layer.precedence, layer: painted ? layer : null, pattern, frame, positions: [], normals: [], uvs: [], uv1: [], indices: [], vertexOf: new Map(), sourceTriangles: 0, precedence: [] };
       primitives.set(key, primitive);
     }
     if (!primitive.precedence.includes(layer.precedence)) primitive.precedence.push(layer.precedence);
-    const size = painted || layer.uvFrame ? null : tileSize(layer.mesh);
+    const size = d4Pattern ? pavingPattern(d4Pattern).repeatM : layer.d4Tile ? groundTile(layer.d4Tile).entry.physicalSizeM : painted || layer.uvFrame ? null : tileSize(layer.mesh);
     // uvFrame: { origin, u, v (model units, unit vectors), sizeM }: one tile per sizeM along u and v (tactile bands)
     const frameUv = layer.uvFrame ? ([x, z]) => {
-      const { origin, u, v, sizeM } = layer.uvFrame;
+      const { origin, u, v } = layer.uvFrame;
+      const sizeM = layer.d4Tile ? size : layer.uvFrame.sizeM;
       const d = [x - origin[0], z - origin[1]];
       return [(d[0] * u[0] + d[1] * u[1]) / (sizeM * UNIT), (d[0] * v[0] + d[1] * v[1]) / (sizeM * UNIT)];
     } : null;
@@ -399,7 +423,7 @@ function paintedNormalMap(size = 256) {
 let manifest = null;
 export function groundTile(cls) {
   manifest ??= JSON.parse(readFileSync(MANIFEST, "utf8"));
-  const entry = manifest.materials.find((m) => m.cls === cls);
+  const entry = [...D4_MATERIALS.materials, ...D4_MATERIALS.buildingMaterials, ...manifest.materials].find((m) => m.cls === cls);
   if (!entry) throw new Error(`data/materials/ground-materials.json has no ${cls} tile`);
   const files = {};
   for (const map of ["col", "nor", "arm"]) {
@@ -410,7 +434,7 @@ export function groundTile(cls) {
   return { entry, files };
 }
 
-const pngOf = async (file) => new Bun.Image(readFileSync(file)).png().toBuffer();
+const pngOf = async (file) => sharp(readFileSync(file)).png().toBuffer();
 
 // Texture indices of one tile class (added once per GLB).
 const tileCache = new WeakMap();
@@ -432,6 +456,7 @@ export async function tileTextures(glb, cls) {
 
 export async function tileMaterial(glb, { name, cls, rank, ao = null, baseColorFactor = null, extras = {} }) {
   const tile = await tileTextures(glb, cls);
+  if (cls === "d4-grass") glb.extensionsUsed.add("KHR_materials_specular");
   return glb.addMaterial({
     name,
     pbrMetallicRoughness: {
@@ -442,22 +467,75 @@ export async function tileMaterial(glb, { name, cls, rank, ao = null, baseColorF
       roughnessFactor: 1,
     },
     normalTexture: { index: tile.nor },
+    ...(cls === "d4-grass" ? { extensions: { KHR_materials_specular: { specularFactor: D4_MATERIAL_SCOPE.grassSpecularFactor } } } : {}),
     ...(ao !== null ? { occlusionTexture: { index: ao, texCoord: 1 } } : {}),
     extras: {
       estimated: true,
       polygonOffsetRank: rank,
       tile: `${tile.entry.provider} ${tile.entry.asset} (${tile.entry.licence})`,
       physicalSizeM: tile.entry.physicalSizeM,
+      ...(tile.entry.scope ? {
+        scope: tile.entry.scope, source: tile.entry.source,
+        texelsPerMetre: tile.entry.size / tile.entry.physicalSizeM,
+        normalEncoding: D4_MATERIAL_SCOPE.normalEncoding,
+      } : {}),
       note: "albedo, relief and roughness from a CC0 tile: estimated, not measured",
       ...extras,
     },
   });
 }
 
+// Native metric rasterisation of the two D4 pattern seeds, with CC0 grain at
+// its original physical repeat. The pattern is not enlarged from the 80 px/m
+// campus tile; its joints and bands are evaluated at every final pixel.
+async function d4PatternMaterial(glb, { name, id, cls, rank, ao }) {
+  const p = pavingPattern(id), { entry, files } = groundTile(cls);
+  const density = D4_MATERIAL_SCOPE.minimumTexelsPerMetre;
+  const size = Math.ceil(p.repeatM*density), pxPerM = size/p.repeatM;
+  const source = {};
+  for (const map of ["col","nor","arm"]) source[map] = await sharp(readFileSync(files[map])).removeAlpha().raw().toBuffer({ resolveWithObject:true });
+  const maps = Object.fromEntries(["col","nor","arm"].map(map=>[map,new Uint8Array(size*size*3)]));
+  const hex = c => [1,3,5].map(i=>parseInt(c.slice(i,i+2),16));
+  const joint = hex(p.joint), base = p.base.map(([c,w])=>[hex(c),w]);
+  const accents = (p.accents ?? []).map(([c,w])=>[hex(c),w]);
+  const [a,b] = p.moduleM;
+  for (let y=0;y<size;y++) for(let x=0;x<size;x++) {
+    const s=(x+0.5)/pxPerM, t=(y+0.5)/pxPerM;
+    const row=Math.floor(t/b), shift=p.bond==="running" && row%2 ? a/2 : 0;
+    const col=Math.floor((s-shift)/a), u=s-shift-col*a, v=t-row*b;
+    const edge=Math.min(u,a-u,v,b-v), isJoint=edge < p.jointM/2;
+    const r=hashNoise(col,row,73);
+    let colour=base[0][0], sum=0;
+    for(const [c,share] of [...accents,...base.map(([c,w])=>[c,w*(1-accents.reduce((n,q)=>n+q[1],0))])]) {
+      sum+=share;
+      if(r<sum) { colour=c; break; }
+    }
+    if(p.stripes && t%p.stripes.pitchM < p.stripes.widthM) colour=hex(p.stripes.colour);
+    const tx=Math.floor((s/entry.physicalSizeM%1)*source.col.info.width);
+    const ty=Math.floor((t/entry.physicalSizeM%1)*source.col.info.height);
+    const from=(ty*source.col.info.width+tx)*3, to=(y*size+x)*3;
+    for(let c=0;c<3;c++) {
+      maps.col[to+c]=isJoint ? joint[c] : Math.min(255,colour[c]*(0.85+source.col.data[from+c]/255*0.3));
+      maps.nor[to+c]=source.nor.data[from+c];
+      maps.arm[to+c]=source.arm.data[from+c];
+    }
+    if(isJoint) { maps.nor.set([128,128,255],to); maps.arm[to+1]=245; maps.arm[to+2]=0; }
+  }
+  const textures=Object.fromEntries(Object.entries(maps).map(([map,pixels])=>[map,glb.addTexture(encodePng(size,size,3,pixels),"image/png")]));
+  return glb.addMaterial({
+    name,
+    pbrMetallicRoughness:{baseColorTexture:{index:textures.col},metallicRoughnessTexture:{index:textures.arm},metallicFactor:1,roughnessFactor:1},
+    normalTexture:{index:textures.nor},
+    ...(ao!==null ? {occlusionTexture:{index:ao,texCoord:1}} : {}),
+    extras:{estimated:true,scope:entry.scope,source:`${p.source}; ${D4_MATERIAL_SCOPE.patternSource}`,
+      polygonOffsetRank:rank,paving:id,tile:cls,repeatM:p.repeatM,texelsPerMetre:pxPerM,normalEncoding:"UASTC"},
+  });
+}
+
 // Paving pattern material (lib/pavingPatterns.mjs): colour and joint relief tiles drawn from the VR-read catalogue; the
 // textures are shared by every primitive of the pattern.
 const patternCache = new WeakMap();
-async function patternMaterial(glb, { name, id, rank, ao }) {
+async function patternMaterial(glb, { name, id, rank, ao, baseColorFactor }) {
   let byId = patternCache.get(glb);
   if (!byId) patternCache.set(glb, (byId = new Map()));
   if (!byId.has(id)) {
@@ -468,7 +546,7 @@ async function patternMaterial(glb, { name, id, rank, ao }) {
   const p = pavingPattern(id);
   return glb.addMaterial({
     name,
-    pbrMetallicRoughness: { baseColorTexture: { index: col }, metallicFactor: 0, roughnessFactor: 0.82 },
+    pbrMetallicRoughness: { baseColorTexture: { index: col }, baseColorFactor, metallicFactor: 0, roughnessFactor: 0.82 },
     normalTexture: { index: nor },
     ...(ao !== null ? { occlusionTexture: { index: ao, texCoord: 1 } } : {}),
     extras: { estimated: true, polygonOffsetRank: rank, paving: id, label: `${p.label} (추정)`, repeatM: tile.repeatM, source: p.source, note: "pattern, module size and colours read from the SCNU 360 VR tour: estimated, not measured; no photo pixels" },
@@ -587,12 +665,22 @@ export async function buildSurfaceMeshes({ glb, layers, surface, ao = null, heig
     if (!primitive.indices.length) continue;
     const { mesh } = primitive;
     let material;
-    if (GROUND_MESHES[mesh].generated === "tactile") {
+    if (primitive.tile) {
+      const key = `${mesh}@${primitive.rank}#${primitive.tile}:${primitive.d4Pattern}`;
+      const factor = mesh === "Ground_Lot" ? D4_MATERIAL_SCOPE.lotBrightnessFactor : 1;
+      if (!materials.has(key)) materials.set(key, primitive.d4Pattern
+        ? await d4PatternMaterial(glb, { name:`${mesh}_D4`, id:primitive.d4Pattern, cls:primitive.tile, rank:primitive.rank, ao })
+        : await tileMaterial(glb, {
+        name: `${mesh}_D4`, cls: primitive.tile, rank: primitive.rank, ao,
+        baseColorFactor: [factor, factor, factor, 1],
+      }));
+      material = materials.get(key);
+    } else if (GROUND_MESHES[mesh].generated === "tactile") {
       if (!materials.has(mesh)) materials.set(mesh, await tactileMaterial(glb, { rank: primitive.rank, ao }));
       material = materials.get(mesh);
     } else if (primitive.pattern) {
-      const key = `${primitive.pattern}@${primitive.rank}`;
-      if (!materials.has(key)) materials.set(key, await patternMaterial(glb, { name: mesh, id: primitive.pattern, rank: primitive.rank, ao }));
+      const key = `${mesh}:${primitive.pattern}@${primitive.rank}`;
+      if (!materials.has(key)) materials.set(key, await patternMaterial(glb, { name: mesh, id: primitive.pattern, rank: primitive.rank, ao, baseColorFactor: GROUND_MESHES[mesh].baseColorFactor }));
       material = materials.get(key);
     } else if (GROUND_MESHES[mesh].tile) {
       const key = `${mesh}@${primitive.rank}`;
@@ -656,8 +744,11 @@ export const describeSurfaces = (stats) => `surfaces: ${stats.map((s) => `${s.me
 export const HUMP_PRECEDENCE = 6.5;
 export function humpLayers(humps, lengthM) {
   return humps.map((hump) => {
-    const corner = (sM, tM) => sceneToTm(hump.centre[0] + hump.u[0] * sM * UNIT + hump.v[0] * tM * UNIT, hump.centre[1] + hump.u[1] * sM * UNIT + hump.v[1] * tM * UNIT);
-    const [hl, hw] = [lengthM / 2, hump.widthM / 2];
+    const corner = (sM, tM) => hump.tm
+      ? [hump.tm.centre[0]+hump.tm.forward[0]*sM+hump.tm.forward[1]*tM,
+        hump.tm.centre[1]+hump.tm.forward[1]*sM-hump.tm.forward[0]*tM]
+      : sceneToTm(hump.centre[0] + hump.u[0] * sM * UNIT + hump.v[0] * tM * UNIT, hump.centre[1] + hump.u[1] * sM * UNIT + hump.v[1] * tM * UNIT);
+    const [hl, hw] = [(hump.lengthM ?? lengthM) / 2, hump.widthM / 2];
     return {
       cls: "ASPHALT", mesh: "Ground_Hump", hump: true, precedence: HUMP_PRECEDENCE, estimated: true,
       source: "project-estimated", source_ref: `hump ${hump.id}`,
@@ -665,24 +756,29 @@ export function humpLayers(humps, lengthM) {
     };
   });
 }
-export async function buildHumpMeshes({ glb, humps, surface, ao = null, profile, lengthM }) {
+export async function buildHumpMeshes({ glb, humps, surface, ao = null, profile = humpProfile, lengthM }) {
   if (!humps.length) return 0;
   const cls = GROUND_MESHES.Ground_Hump.tile;
   const size = groundTile(cls).entry.physicalSizeM;
-  const material = await tileMaterial(glb, { name: "Ground_Hump", cls, rank: 3.6, ao, extras: { profile: `circular arc ${lengthM} m x ${profile(0)} m (estimated)` } });
+  const material = await tileMaterial(glb, { name: "Ground_Hump", cls, rank: 3.6, ao, extras: { profile: "record-defined circular arc (estimated)" } });
   // the top is a ground class of the partition (humpLayers); the walls stand on the terrain
   const base = 0;
   const STEP_S = 0.2;
   const STEP_T = 0.5;
   for (const hump of humps) {
+    const humpLength = hump.lengthM ?? lengthM;
+    const height = hump.heightM === undefined ? profile : s => humpProfile(s, humpLength, hump.heightM);
     const positions = [];
     const normals = [];
     const uvs = [];
     const uv1 = [];
     const indices = [];
-    const ns = Math.round(lengthM / STEP_S);
+    const ns = Math.max(1, Math.round(humpLength / STEP_S));
     const nt = Math.max(1, Math.ceil(hump.widthM / STEP_T));
-    const point = (sM, tM) => [hump.centre[0] + hump.u[0] * sM * UNIT + hump.v[0] * tM * UNIT, hump.centre[1] + hump.u[1] * sM * UNIT + hump.v[1] * tM * UNIT];
+    const point = (sM, tM) => hump.tm
+      ? tmToScene(hump.tm.centre[0]+hump.tm.forward[0]*sM+hump.tm.forward[1]*tM,
+        hump.tm.centre[1]+hump.tm.forward[1]*sM-hump.tm.forward[0]*tM)
+      : [hump.centre[0] + hump.u[0] * sM * UNIT + hump.v[0] * tM * UNIT, hump.centre[1] + hump.u[1] * sM * UNIT + hump.v[1] * tM * UNIT];
     const push = ([x, z], yM, normal) => {
       positions.push(x, surface.height(x, z) + yM * UNIT, z);
       normals.push(...normal);
@@ -694,11 +790,11 @@ export async function buildHumpMeshes({ glb, humps, surface, ao = null, profile,
     for (const [j, side] of [[0, -1], [nt, 1]]) {
       const outward = [hump.v[0] * side, 0, hump.v[1] * side];
       for (let i = 0; i < ns; i += 1) {
-        const p0 = point(-lengthM / 2 + (i * lengthM) / ns, side * hump.widthM / 2);
-        const p1 = point(-lengthM / 2 + ((i + 1) * lengthM) / ns, side * hump.widthM / 2);
-        const s0 = -lengthM / 2 + (i * lengthM) / ns;
-        const s1 = s0 + lengthM / ns;
-        const q = [push(p0, base, outward), push(p1, base, outward), push(p1, base + profile(s1), outward), push(p0, base + profile(s0), outward)];
+        const p0 = point(-humpLength / 2 + (i * humpLength) / ns, side * hump.widthM / 2);
+        const p1 = point(-humpLength / 2 + ((i + 1) * humpLength) / ns, side * hump.widthM / 2);
+        const s0 = -humpLength / 2 + (i * humpLength) / ns;
+        const s1 = s0 + humpLength / ns;
+        const q = [push(p0, base, outward), push(p1, base, outward), push(p1, base + height(s1), outward), push(p0, base + height(s0), outward)];
         // counter-clockwise seen from outside: the face normal (p1 - p0) x (p3 - p0) points outward
         const P = (k) => [positions[k * 3], positions[k * 3 + 1], positions[k * 3 + 2]];
         const [v0, v1, v3] = [P(q[0]), P(q[1]), P(q[3])];
@@ -711,7 +807,7 @@ export async function buildHumpMeshes({ glb, humps, surface, ao = null, profile,
     }
     const mesh = glb.addMesh(`Ground_Hump_${hump.id}`, [{ positions: Float32Array.from(positions), normals: Float32Array.from(normals), uvs: Float32Array.from(uvs), indices, material }]);
     glb.json.meshes[mesh].primitives[0].attributes.TEXCOORD_1 = glb.addAccessor(Float32Array.from(uv1), "VEC2");
-    glb.addNode({ name: `Ground_Hump_${hump.id}`, mesh, extras: { estimated: true, lengthM, heightM: profile(0), widthM: Number(hump.widthM.toFixed(2)), source: `data/photo/markings-extra.geojson ${hump.id}` } }, { root: true });
+    glb.addNode({ name: `Ground_Hump_${hump.id}`, mesh, extras: { estimated: true, lengthM: humpLength, heightM: height(0), widthM: Number(hump.widthM.toFixed(2)), source: hump.record } }, { root: true });
   }
   return humps.length;
 }

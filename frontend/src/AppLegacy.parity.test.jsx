@@ -1,4 +1,4 @@
-/* @vitest-environment jsdom */
+/* @vitest-environment happy-dom */
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -169,6 +169,25 @@ afterEach(() => {
 const phoneMatchMedia = vi.fn((query) => ({ matches: query === "(max-width: 639px)" || query === "(max-width: 1023px)", addEventListener() {}, removeEventListener() {} }));
 
 describe("Legacy and VWorld feature parity", () => {
+  it("replaces D4 details with the E3 inspector when another search result is selected (F3)", async () => {
+    render(<App />);
+    const entries = [
+      { elementId: "BLD_D4", code: "D4", displayName: "공과대학 3호관", tier: 1 },
+      { elementId: "BLD_E3", code: "E3", displayName: "사범대학 1호관", tier: 2 },
+    ];
+    act(() => sceneMock.cityModelProps.onLabelRegistry(new Map(entries.map((entry) => [entry.elementId, entry]))));
+    fireEvent.change(screen.getByRole("combobox", { name: "건물 검색" }), { target: { value: "D4" } });
+    fireEvent.click(screen.getByRole("option", { name: /공과대학 3호관/ }));
+    expect(screen.getByRole("button", { name: "D4 상세 닫기" })).toBeTruthy();
+
+    fireEvent.change(screen.getByRole("combobox", { name: "건물 검색" }), { target: { value: "E3" } });
+    fireEvent.click(screen.getByRole("option", { name: /사범대학 1호관/ }));
+
+    expect(screen.queryByRole("button", { name: "D4 상세 닫기" })).toBeNull();
+    expect(await screen.findByRole("region", { name: "선택한 건물 사범대학 1호관" })).toBeTruthy();
+    expect(screen.getByRole("tab", { name: "건물" }).getAttribute("aria-selected")).toBe("true");
+  });
+
   it("renders the full energy surfaces inside the energy tab, with campus status folded into the comparison table", () => {
     render(<App />);
 

@@ -513,7 +513,7 @@ if (import.meta.main) {
   // painted zebras of the orthophoto that no CW polygon covers are crossings too (people cross only at crossings)
   const { photoCrossings, zebraGroups } = await import("./photoCrossings.mjs");
   const { lonLatToSim } = await import("./context.mjs");
-  const painted = photoCrossings({ groups: zebraGroups(await readJson(path.join(REPO, "frontend/scripts/campus-model/data/photo/markings.geojson")), lonLatToSim), crossings: ctx.crossings, roadPolygons: ctx.roads.polygons });
+  const painted = photoCrossings({ groups: zebraGroups(await readJson(path.join(REPO, "frontend/scripts/campus-model/data/photo/evidence/markings.geojson")), lonLatToSim), crossings: ctx.crossings, roadPolygons: ctx.roads.polygons });
   walkable.push(...painted.polygons);
   console.log(`painted zebra crossings without a CW polygon: ${painted.stats.crossings} added (skipped: ${painted.stats.fewBars} < 4 bars, ${painted.stats.inCw} in a CW polygon, ${painted.stats.offRoad} off the road)`);
   const entrancesJson = await readJson(PATHS.entrances);

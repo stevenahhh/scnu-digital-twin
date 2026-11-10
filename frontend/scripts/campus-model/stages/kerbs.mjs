@@ -1,7 +1,8 @@
 // Kerb stage (plan uhf-ground-roads-routing todo 11): 3D kerb ribbons on the A003 walkway outlines, the gutter band on
 // their road side, the raised sidewalk slab inside the A003 rings and dropped kerbs at every crossing that touches one.
 //
-// Kerb lines are the A003 outlines (closed rings and open lines; network/surfaces.mjs `outlines`), cut into pieces of
+// Kerb lines are the parcel boundaries of the walkway parcels (data/ground/parcels.json, the A003 sidewalks: every ring
+// closed) plus the open A003 lines the parcel map keeps (`kerbLines`; stages/ground.mjs parcelSurfaces `outlines`), cut into pieces of
 // at most PIECE_M. A piece gets a kerb when exactly one side of it is walkway (inside an A003 ring: the slab side) or,
 // on an open line, when one side is road (ASPHALT/LOT in the label raster) and the other not; no kerb between two
 // paved areas (both sides walkway, or the far side PAVING/BICYCLE/KERB: a plaza, a building apron, another walkway).
@@ -330,8 +331,8 @@ export function gutterLayers(plan) {
 }
 
 // ---------------------------------------------------------------- stage
-// surfaces: buildSurfaces() result; groundInfo: the label raster; surface: topographySurface().
-export async function buildKerbs({ glb, surfaces, groundInfo, surface, crossings }) {
+// surfaces: stages/ground.mjs parcelSurfaces() (layers + outlines from data/ground/parcels.json); groundInfo: the label raster; surface: topographySurface().
+export async function prepareKerbs({ surfaces, groundInfo, surface, crossings }) {
   const { width, height, px, labels } = groundInfo;
   const { minX, minZ } = EXTENT;
   const labelAt = ([x, z]) => {
@@ -350,6 +351,12 @@ export async function buildKerbs({ glb, surfaces, groundInfo, surface, crossings
     warn: (message) => warnings.push(message),
   });
   for (const message of warnings) console.warn(message);
+  return { plan, warnings, groundHeightAt: plan.groundHeightAt, gutters: gutterLayers(plan) };
+}
+
+export async function buildKerbs({ glb, surfaces, groundInfo, surface, crossings, prepared }) {
+  const { plan, warnings } = prepared ?? await prepareKerbs({ surfaces, groundInfo, surface, crossings });
+  const terrainAt = (x, z) => surface.height(x, z);
   const { kit, maxHeight } = kerbSolids(plan, terrainAt);
   if (maxHeight > KERB_LEGAL_CAP_M) throw new Error(`kerb height ${maxHeight} m exceeds the legal cap ${KERB_LEGAL_CAP_M} m`);
   const material = glb.addMaterial({

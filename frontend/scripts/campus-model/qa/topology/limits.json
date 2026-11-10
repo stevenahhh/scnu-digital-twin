@@ -1,0 +1,11 @@
+{
+ "note": "Maxima for campus-v2.blend (bun run model:blend). Measured 2026-11-06 on campus-v2.glb sha256 721c3431 (dev-next 6c7379b4): Buildings triFaceShare 0.015 / islandsPerThousandTriangles 13.01, Context 0.1736 / 9.73, Furniture 0.03 / 54.05, BLD_D4 islands 271, triFaceShare 0.0022. The same GLB opened with Blender's default glTF import gives Buildings 0.1075 / 417.58 and BLD_D4 2840 islands. Ground (terrain TIN) and Vegetation (low-poly crowns) are triangles by design and carry no limit. Limits sit about 1.5 x above the measured values.",
+ "roots": {
+  "Buildings": { "triFaceShare": 0.03, "islandsPerThousandTriangles": 20 },
+  "Context": { "triFaceShare": 0.25, "islandsPerThousandTriangles": 15 },
+  "Furniture": { "triFaceShare": 0.05, "islandsPerThousandTriangles": 80 }
+ },
+ "meshes": {
+  "BLD_D4": { "triFaceShare": 0.01, "islands": 400 }
+ }
+}

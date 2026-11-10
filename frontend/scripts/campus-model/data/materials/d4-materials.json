@@ -1,0 +1,889 @@
+{
+  "source": "Lane 8 curated CC0 material records; authoritative D4 input independent of fetch/groundMaterials.mjs generated campus manifest (estimated)",
+  "materials": [
+    {
+      "cls": "d4-pavers",
+      "asset": "square_concrete_pavers",
+      "provider": "Poly Haven",
+      "page": "https://polyhaven.com/a/square_concrete_pavers",
+      "authors": "Amal Kumar",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/square_concrete_pavers/square_concrete_pavers_diff_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/square_concrete_pavers/square_concrete_pavers_nor_gl_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/square_concrete_pavers/square_concrete_pavers_arm_2k.jpg",
+      "md5": "9e7a895136230f19d1e1541d24c5a117,8d09ab59f4e8038717801ef498b23a3d,dadddcbfc3492c35e555b3ab08166cd9",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://polyhaven.com/license",
+      "physicalSizeM": 1.8,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 1,
+      "size": 2048,
+      "texelsPerMetre": 1137.7777777777778,
+      "files": {
+        "col": "ground-d4-pavers-col.webp",
+        "nor": "ground-d4-pavers-nor.webp",
+        "arm": "ground-d4-pavers-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection; mean colour retinted to #ced6cb (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      },
+      "colourTarget": "#ced6cb"
+    },
+    {
+      "cls": "d4-asphalt",
+      "asset": "asphalt_02",
+      "provider": "Poly Haven",
+      "page": "https://polyhaven.com/a/asphalt_02",
+      "authors": "Rob Tuytel",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/asphalt_02/asphalt_02_diff_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/asphalt_02/asphalt_02_nor_gl_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/asphalt_02/asphalt_02_arm_2k.jpg",
+      "md5": "336af399fd98a39ab986d8b3bf73b4ff,77ebd1cc0b020ccaa1c6b58f103d1f75,152c0fb79ad6f33040b79779fea98664",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://polyhaven.com/license",
+      "physicalSizeM": 3,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 1.0000000794728596,
+      "size": 2048,
+      "texelsPerMetre": 682.6666666666666,
+      "files": {
+        "col": "ground-d4-asphalt-col.webp",
+        "nor": "ground-d4-asphalt-nor.webp",
+        "arm": "ground-d4-asphalt-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection; mean colour retinted to #3b4e52 (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      },
+      "colourTarget": "#3b4e52"
+    },
+    {
+      "cls": "d4-soil",
+      "asset": "sparse_grass",
+      "provider": "Poly Haven",
+      "page": "https://polyhaven.com/a/sparse_grass",
+      "authors": "Amal Kumar",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/sparse_grass/sparse_grass_diff_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/sparse_grass/sparse_grass_nor_gl_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/sparse_grass/sparse_grass_arm_2k.jpg",
+      "md5": "b181e9c61bae87c1bb9b14eecd767d65,8ec54ff3b639e6e044ea83792d7c49b0,d30e667f7d576bc19fface66e98f7ce2",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://polyhaven.com/license",
+      "physicalSizeM": 2,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 1,
+      "size": 2048,
+      "texelsPerMetre": 1024,
+      "files": {
+        "col": "ground-d4-soil-col.webp",
+        "nor": "ground-d4-soil-nor.webp",
+        "arm": "ground-d4-soil-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      }
+    },
+    {
+      "cls": "d4-passage",
+      "asset": "large_grey_tiles",
+      "provider": "Poly Haven",
+      "page": "https://polyhaven.com/a/large_grey_tiles",
+      "authors": "Rob Tuytel",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/large_grey_tiles/large_grey_tiles_diff_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/large_grey_tiles/large_grey_tiles_nor_gl_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/large_grey_tiles/large_grey_tiles_arm_2k.jpg",
+      "md5": "f292051b23077e1a55f758076f2ad599,0f92d894ef1890cb7c55aadb1d6064f6,b457bfe788007ab77a6559fa892052e9",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://polyhaven.com/license",
+      "physicalSizeM": 3,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 1,
+      "size": 2048,
+      "texelsPerMetre": 682.6666666666666,
+      "files": {
+        "col": "ground-d4-passage-col.webp",
+        "nor": "ground-d4-passage-nor.webp",
+        "arm": "ground-d4-passage-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      }
+    },
+    {
+      "cls": "d4-granite",
+      "asset": "granite_tile",
+      "provider": "Poly Haven",
+      "page": "https://polyhaven.com/a/granite_tile",
+      "authors": "Charlotte Baglioni",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/granite_tile/granite_tile_diff_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/granite_tile/granite_tile_nor_gl_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/granite_tile/granite_tile_arm_2k.jpg",
+      "md5": "79a1eaac48a3d6720a88c216997dbd67,da6b09b4f8bff2e4d28cd29294b1b10f,d754c592f16e84b59d178ffd99ecf480",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://polyhaven.com/license",
+      "physicalSizeM": 2.3,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 1,
+      "size": 2048,
+      "texelsPerMetre": 890.4347826086957,
+      "files": {
+        "col": "ground-d4-granite-col.webp",
+        "nor": "ground-d4-granite-nor.webp",
+        "arm": "ground-d4-granite-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      }
+    },
+    {
+      "cls": "d4-slate",
+      "asset": "stone_tiles_02",
+      "provider": "Poly Haven",
+      "page": "https://polyhaven.com/a/stone_tiles_02",
+      "authors": "Charlotte Baglioni",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/stone_tiles_02/stone_tiles_02_diff_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/stone_tiles_02/stone_tiles_02_nor_gl_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/stone_tiles_02/stone_tiles_02_arm_2k.jpg",
+      "md5": "2e724b32ab8dd4db86f829cda244e567,d0de6ee2144cc77331623c1a0aae4e51,d20692ad610a07c029c496fe18803e30",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://polyhaven.com/license",
+      "physicalSizeM": 2,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 1,
+      "size": 2048,
+      "texelsPerMetre": 1024,
+      "files": {
+        "col": "ground-d4-slate-col.webp",
+        "nor": "ground-d4-slate-nor.webp",
+        "arm": "ground-d4-slate-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      }
+    },
+    {
+      "cls": "d4-terracotta",
+      "asset": "red_brick_pavers",
+      "provider": "Poly Haven",
+      "page": "https://polyhaven.com/a/red_brick_pavers",
+      "authors": "Amal Kumar",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/red_brick_pavers/red_brick_pavers_diff_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/red_brick_pavers/red_brick_pavers_nor_gl_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/red_brick_pavers/red_brick_pavers_arm_2k.jpg",
+      "md5": "8fc979be00333613e84255d7e9aec0ab,cb8d0ff55c90bf74a9bf36d041c44da8,796268567246d50856356d587fcecd13",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://polyhaven.com/license",
+      "physicalSizeM": 1.8,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 1,
+      "size": 2048,
+      "texelsPerMetre": 1137.7777777777778,
+      "files": {
+        "col": "ground-d4-terracotta-col.webp",
+        "nor": "ground-d4-terracotta-nor.webp",
+        "arm": "ground-d4-terracotta-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      }
+    },
+    {
+      "cls": "d4-tactile-base",
+      "asset": "concrete_pavers_02",
+      "provider": "Poly Haven",
+      "page": "https://polyhaven.com/a/concrete_pavers_02",
+      "authors": "Amal Kumar",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_pavers_02/concrete_pavers_02_diff_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_pavers_02/concrete_pavers_02_nor_gl_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_pavers_02/concrete_pavers_02_arm_2k.jpg",
+      "md5": "6d09ccc09effb4ca561bb37324c49b15,a6f2eb3ed2b606481a643e2c8f3bfb0c,99e36a044c5e0e26626e2fecbd1444c1",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://polyhaven.com/license",
+      "physicalSizeM": 2,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 1,
+      "size": 2048,
+      "texelsPerMetre": 1024,
+      "files": {
+        "col": "ground-d4-tactile-base-col.webp",
+        "nor": "ground-d4-tactile-base-nor.webp",
+        "arm": "ground-d4-tactile-base-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      }
+    },
+    {
+      "cls": "d4-retaining-rock",
+      "asset": "rock_embedded_concrete_wall",
+      "provider": "Poly Haven",
+      "page": "https://polyhaven.com/a/rock_embedded_concrete_wall",
+      "authors": "Dimitrios Savva",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_embedded_concrete_wall/rock_embedded_concrete_wall_diff_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_embedded_concrete_wall/rock_embedded_concrete_wall_nor_gl_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_embedded_concrete_wall/rock_embedded_concrete_wall_arm_2k.jpg",
+      "md5": "d877755a967d21b72cd14b26a3f2eafc,02afd7543caa6f42b42ab0b2cb7cd7fa,4acc57fde583815f42da926f5b1ceac1",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://polyhaven.com/license",
+      "physicalSizeM": 1.76,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 0.9999999322674488,
+      "size": 2048,
+      "texelsPerMetre": 1163.6363636363637,
+      "files": {
+        "col": "ground-d4-retaining-rock-col.webp",
+        "nor": "ground-d4-retaining-rock-nor.webp",
+        "arm": "ground-d4-retaining-rock-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      }
+    },
+    {
+      "cls": "d4-retaining-concrete",
+      "asset": "concrete_slab_wall",
+      "provider": "Poly Haven",
+      "page": "https://polyhaven.com/a/concrete_slab_wall",
+      "authors": "Dimitrios Savva",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_slab_wall/concrete_slab_wall_diff_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_slab_wall/concrete_slab_wall_nor_gl_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_slab_wall/concrete_slab_wall_arm_2k.jpg",
+      "md5": "c7a28caa508136ab687028bd5322287c,02944efcef3b8e33c21ff61ab81d4a02,a8cf0a9e42021e3a08bde1ebd96eb80c",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://polyhaven.com/license",
+      "physicalSizeM": 2.3,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 1,
+      "size": 2048,
+      "texelsPerMetre": 890.4347826086957,
+      "files": {
+        "col": "ground-d4-retaining-concrete-col.webp",
+        "nor": "ground-d4-retaining-concrete-nor.webp",
+        "arm": "ground-d4-retaining-concrete-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      }
+    },
+    {
+      "cls": "d4-footway",
+      "asset": "patterned_paving",
+      "provider": "Poly Haven",
+      "page": "https://polyhaven.com/a/patterned_paving",
+      "authors": "Charlotte Baglioni",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/patterned_paving/patterned_paving_diff_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/patterned_paving/patterned_paving_nor_gl_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/patterned_paving/patterned_paving_arm_2k.jpg",
+      "md5": "34872cab63e57619f68924a39d61cb81,6ae694457d98bf8d00cc0636c13726ce,bc24589af12013c3379de37dcc168de9",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://polyhaven.com/license",
+      "physicalSizeM": 2,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 1,
+      "size": 2048,
+      "texelsPerMetre": 1024,
+      "files": {
+        "col": "ground-d4-footway-col.webp",
+        "nor": "ground-d4-footway-nor.webp",
+        "arm": "ground-d4-footway-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      }
+    },
+    {
+      "cls": "d4-concrete",
+      "asset": "Concrete034",
+      "provider": "ambientCG",
+      "page": "https://ambientcg.com/view?id=Concrete034",
+      "authors": "ambientCG",
+      "source_url": "https://ambientcg.com/get?file=Concrete034_2K-JPG.zip",
+      "md5": "40c98d740f6010218011da79b76e3e28",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://docs.ambientcg.com/license/",
+      "physicalSizeM": 1.1,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 2,
+      "size": 2048,
+      "texelsPerMetre": 1861.8181818181818,
+      "files": {
+        "col": "ground-d4-concrete-col.webp",
+        "nor": "ground-d4-concrete-nor.webp",
+        "arm": "ground-d4-concrete-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      }
+    },
+    {
+      "cls": "d4-grass",
+      "asset": "Grass004",
+      "provider": "ambientCG",
+      "page": "https://ambientcg.com/view?id=Grass004",
+      "authors": "ambientCG",
+      "source_url": "https://ambientcg.com/get?file=Grass004_2K-JPG.zip",
+      "md5": "993b8a03c77c3d0b6a7f08d59bd367a5",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://docs.ambientcg.com/license/",
+      "physicalSizeM": 1.4,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 1,
+      "size": 2048,
+      "texelsPerMetre": 1462.857142857143,
+      "files": {
+        "col": "ground-d4-grass-col.webp",
+        "nor": "ground-d4-grass-nor.webp",
+        "arm": "ground-d4-grass-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection; mean colour retinted to #315235 (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      },
+      "colourTarget": "#315235"
+    },
+    {
+      "cls": "d4-treepit",
+      "asset": "Bricks105",
+      "provider": "ambientCG",
+      "page": "https://ambientcg.com/view?id=Bricks105",
+      "authors": "ambientCG",
+      "source_url": "https://ambientcg.com/get?file=Bricks105_2K-JPG.zip",
+      "md5": "547a2a0ec481af80c6b416ba7e0baf72",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://docs.ambientcg.com/license/",
+      "physicalSizeM": 2.4,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 2,
+      "size": 2048,
+      "texelsPerMetre": 853.3333333333334,
+      "files": {
+        "col": "ground-d4-treepit-col.webp",
+        "nor": "ground-d4-treepit-nor.webp",
+        "arm": "ground-d4-treepit-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      }
+    }
+  ],
+  "buildingMaterials": [
+    {
+      "cls": "d4-trim",
+      "asset": "white_plaster_02",
+      "provider": "Poly Haven",
+      "page": "https://polyhaven.com/a/white_plaster_02",
+      "authors": "Rob Tuytel",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/white_plaster_02/white_plaster_02_diff_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/white_plaster_02/white_plaster_02_nor_gl_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/white_plaster_02/white_plaster_02_arm_2k.jpg",
+      "md5": "35f9c96c16aa0d934da7884b232f6d07,a9fa643c4a200686ad89598b545b2adc,8037fca09e797a6664834a00adbe05aa",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://polyhaven.com/license",
+      "physicalSizeM": 1,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 1,
+      "size": 2048,
+      "texelsPerMetre": 2048,
+      "files": {
+        "col": "ground-d4-trim-col.webp",
+        "nor": "ground-d4-trim-nor.webp",
+        "arm": "ground-d4-trim-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      }
+    },
+    {
+      "cls": "d4-pier",
+      "asset": "concrete_tile_facade",
+      "provider": "Poly Haven",
+      "page": "https://polyhaven.com/a/concrete_tile_facade",
+      "authors": "Charlotte Baglioni",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_tile_facade/concrete_tile_facade_diff_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_tile_facade/concrete_tile_facade_nor_gl_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_tile_facade/concrete_tile_facade_arm_2k.jpg",
+      "md5": "e9e4b8274d56c3ab2368ecf0a2e70bf8,f6267ee56dbd4e861b8c383eddeca380,cc4c333003e81a9c5d0bae50d2275e35",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://polyhaven.com/license",
+      "physicalSizeM": 2.09,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 1,
+      "size": 2048,
+      "texelsPerMetre": 979.9043062200958,
+      "files": {
+        "col": "ground-d4-pier-col.webp",
+        "nor": "ground-d4-pier-nor.webp",
+        "arm": "ground-d4-pier-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      }
+    },
+    {
+      "cls": "d4-endwall",
+      "asset": "granite_tile_04",
+      "provider": "Poly Haven",
+      "page": "https://polyhaven.com/a/granite_tile_04",
+      "authors": "Amal Kumar",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/granite_tile_04/granite_tile_04_diff_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/granite_tile_04/granite_tile_04_nor_gl_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/granite_tile_04/granite_tile_04_arm_2k.jpg",
+      "md5": "697337cdfe1302253da449acb2984db1,b2d432f809dc9a4351c46fa1c09dbdd5,acb78046ab00e70c34184095bde80395",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://polyhaven.com/license",
+      "physicalSizeM": 2,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 1,
+      "size": 2048,
+      "texelsPerMetre": 1024,
+      "files": {
+        "col": "ground-d4-endwall-col.webp",
+        "nor": "ground-d4-endwall-nor.webp",
+        "arm": "ground-d4-endwall-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      }
+    },
+    {
+      "cls": "d4-steel",
+      "asset": "metal_plate_02",
+      "provider": "Poly Haven",
+      "page": "https://polyhaven.com/a/metal_plate_02",
+      "authors": "Rob Tuytel",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate_02/metal_plate_02_diff_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate_02/metal_plate_02_nor_gl_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate_02/metal_plate_02_arm_2k.jpg",
+      "md5": "519b43cf88b4b6ea74bd259e976f2170,59a2c571e7dd601276f0efbd9c75bb3a,4034385b453f33877eb7619bb834a8ea",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://polyhaven.com/license",
+      "physicalSizeM": 2,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 1,
+      "size": 2048,
+      "texelsPerMetre": 1024,
+      "files": {
+        "col": "ground-d4-steel-col.webp",
+        "nor": "ground-d4-steel-nor.webp",
+        "arm": "ground-d4-steel-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      }
+    },
+    {
+      "cls": "d4-soffit",
+      "asset": "painted_metal_shutter",
+      "provider": "Poly Haven",
+      "page": "https://polyhaven.com/a/painted_metal_shutter",
+      "authors": "Dario Barresi, Rico Cilliers, Charlotte Baglioni",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/painted_metal_shutter/painted_metal_shutter_diff_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/painted_metal_shutter/painted_metal_shutter_nor_gl_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/painted_metal_shutter/painted_metal_shutter_arm_2k.jpg",
+      "md5": "71f3093741ac82b1e4ab10fd25bc367d,702bd74c66505f8beb45a9a1171cade6,3cf687653a871b93b7cb2502ce1bf047",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://polyhaven.com/license",
+      "physicalSizeM": 2,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 1,
+      "size": 2048,
+      "texelsPerMetre": 1024,
+      "files": {
+        "col": "ground-d4-soffit-col.webp",
+        "nor": "ground-d4-soffit-nor.webp",
+        "arm": "ground-d4-soffit-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      }
+    },
+    {
+      "cls": "d4-roof-south",
+      "asset": "bitumen",
+      "provider": "Poly Haven",
+      "page": "https://polyhaven.com/a/bitumen",
+      "authors": "Rob Tuytel",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/bitumen/bitumen_diff_4k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/bitumen/bitumen_nor_gl_4k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/bitumen/bitumen_arm_4k.jpg",
+      "md5": "d3a3f3353edc3c69b5ea18df8e94c73b,cb5d003a91a4ba12fe4092d3aefc1cd8,6d2226a5502834b578bf30099fdc966e",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://polyhaven.com/license",
+      "physicalSizeM": 20,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 1,
+      "size": 4096,
+      "texelsPerMetre": 204.8,
+      "files": {
+        "col": "ground-d4-roof-south-col.webp",
+        "nor": "ground-d4-roof-south-nor.webp",
+        "arm": "ground-d4-roof-south-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      }
+    },
+    {
+      "cls": "d4-roof-north",
+      "asset": "grey_roof_01",
+      "provider": "Poly Haven",
+      "page": "https://polyhaven.com/a/grey_roof_01",
+      "authors": "Rob Tuytel",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/grey_roof_01/grey_roof_01_diff_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/grey_roof_01/grey_roof_01_nor_gl_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/grey_roof_01/grey_roof_01_arm_2k.jpg",
+      "md5": "6781d56da21588281c19ec145410932d,355b32ebefa90ab26fec732498edbfd5,1f1073387ee4895a7ac5cb0f0a10ab1c",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://polyhaven.com/license",
+      "physicalSizeM": 8,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 1,
+      "size": 2048,
+      "texelsPerMetre": 256,
+      "files": {
+        "col": "ground-d4-roof-north-col.webp",
+        "nor": "ground-d4-roof-north-nor.webp",
+        "arm": "ground-d4-roof-north-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      }
+    },
+    {
+      "cls": "d4-painted",
+      "asset": "concrete_floor_painted",
+      "provider": "Poly Haven",
+      "page": "https://polyhaven.com/a/concrete_floor_painted",
+      "authors": "Rob Tuytel",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_floor_painted/concrete_floor_painted_diff_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_floor_painted/concrete_floor_painted_nor_gl_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_floor_painted/concrete_floor_painted_arm_2k.jpg",
+      "md5": "e4105c6c47c60e9ce98535d4963f8214,f405faaf7e3937f74ae4135dc9f95fe8,62d20a9745894f0785b349b9c2866d6e",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://polyhaven.com/license",
+      "physicalSizeM": 2,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 1,
+      "size": 2048,
+      "texelsPerMetre": 1024,
+      "files": {
+        "col": "ground-d4-painted-col.webp",
+        "nor": "ground-d4-painted-nor.webp",
+        "arm": "ground-d4-painted-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      }
+    },
+    {
+      "cls": "d4-penthouse",
+      "asset": "concrete_wall_008",
+      "provider": "Poly Haven",
+      "page": "https://polyhaven.com/a/concrete_wall_008",
+      "authors": "Dario Barresi, Charlotte Baglioni",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_wall_008/concrete_wall_008_diff_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_wall_008/concrete_wall_008_nor_gl_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_wall_008/concrete_wall_008_arm_2k.jpg",
+      "md5": "9e834dad5c07a3ba452a2ad0f1454c9f,deca87f9fa074c7f041d23178f74ec95,b2f992f83c82627c5e4a05ac0caff50d",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://polyhaven.com/license",
+      "physicalSizeM": 2.71,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 1,
+      "size": 2048,
+      "texelsPerMetre": 755.719557195572,
+      "files": {
+        "col": "ground-d4-penthouse-col.webp",
+        "nor": "ground-d4-penthouse-nor.webp",
+        "arm": "ground-d4-penthouse-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      }
+    },
+    {
+      "cls": "d4-grating",
+      "asset": "rusty_metal_grid",
+      "provider": "Poly Haven",
+      "page": "https://polyhaven.com/a/rusty_metal_grid",
+      "authors": "Amal Kumar",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rusty_metal_grid/rusty_metal_grid_diff_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rusty_metal_grid/rusty_metal_grid_nor_gl_2k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rusty_metal_grid/rusty_metal_grid_arm_2k.jpg",
+      "md5": "038e80726f7b1b7142bffd4f02e65693,594d1f7a7fb22e462a0fc00d30f16f4b,d0982a048894ce4396ac8e7cf6b90eaa",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://polyhaven.com/license",
+      "physicalSizeM": 1.8,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 1,
+      "size": 2048,
+      "texelsPerMetre": 1137.7777777777778,
+      "files": {
+        "col": "ground-d4-grating-col.webp",
+        "nor": "ground-d4-grating-nor.webp",
+        "arm": "ground-d4-grating-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      }
+    },
+    {
+      "cls": "d4-facade",
+      "asset": "Facade018A",
+      "provider": "ambientCG",
+      "page": "https://ambientcg.com/view?id=Facade018A",
+      "authors": "ambientCG",
+      "source_url": "https://ambientcg.com/get?file=Facade018A_4K-JPG.zip",
+      "md5": "1b37a028b1084b3272277ddb4aab1af0",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://docs.ambientcg.com/license/",
+      "physicalSizeM": 13,
+      "physicalSizeSource": "SYNTHESIS.md section 8, provider physical dimensions rounded to two decimals",
+      "sourceAspect": 1,
+      "size": 4096,
+      "texelsPerMetre": 315.0769230769231,
+      "files": {
+        "col": "ground-d4-facade-col.webp",
+        "nor": "ground-d4-facade-nor.webp",
+        "arm": "ground-d4-facade-arm.webp"
+      },
+      "estimated": true,
+      "source": "SYNTHESIS.md section 8; D4-specific material selection (estimated)",
+      "scope": {
+        "buildingId": "BLD_D4",
+        "crs": "EPSG:5186",
+        "bbox": [
+          243422.55,
+          263767.58,
+          243591.87,
+          263991.06
+        ]
+      }
+    }
+  ],
+  "scopedBindings": {
+    "id": "D4_GT_MATERIALS",
+    "buildingId": "BLD_D4",
+    "crs": "EPSG:5186",
+    "bbox": [
+      243422.55,
+      263767.58,
+      243591.87,
+      263991.06
+    ],
+    "source": "SYNTHESIS section 8; D-14/D-16/D-17/D-19/D-20/D-31/D-49; material substitution only inside D4 scope (estimated)",
+    "surfaceClasses": {
+      "Ground_Asphalt": "d4-asphalt",
+      "Ground_Lot": "d4-asphalt",
+      "Ground_Pavers": "d4-pavers",
+      "Ground_Plaza": "d4-pavers",
+      "Ground_Walkway": "d4-pavers",
+      "Ground_Apron": "d4-concrete",
+      "Ground_Gutter": "d4-concrete",
+      "Ground_Grass": "d4-grass",
+      "Ground_Soil": "d4-soil",
+      "OuterTerrain": "d4-soil"
+    },
+    "patternClasses": {
+      "d4-stripes": "d4-pavers",
+      "d4-passage-stone": "d4-passage"
+    },
+    "patternSource": "SYNTHESIS section 8 rows 12/14-16; paving-patterns.json keeps the curated joints and bands over D4 CC0 detail (estimated)",
+    "lotBrightnessFactor": 1.03,
+    "disableCrackDecal": true,
+    "landcoverUsage": "classification only, not colour texture",
+    "grassSpecularFactor": 0,
+    "normalEncoding": "UASTC",
+    "minimumTexelsPerMetre": 200,
+    "tactile": {
+      "baseMaterial": "d4-tactile-base",
+      "moduleM": 0.3,
+      "texturePixels": 512,
+      "layout": "D-54 plaza axis only; preserve procedural 4 ridges / 36 dots geometry"
+    },
+    "sourceRules": "Split materials at bbox/BLD_D4 boundary; never replace campus-wide aliases or stretch roof bitumen from 20 m to 2 m (estimated)",
+    "buildingFaces": {
+      "roofByMass": {
+        "0": "d4-roof-south", "2": "d4-roof-south", "3": "d4-roof-south",
+        "1": "d4-roof-north", "4": "d4-roof-north", "5": "d4-roof-north",
+        "6": "d4-roof-north", "8": "d4-roof-north"
+      },
+      "plinth": "d4-granite",
+      "soffit": "d4-soffit",
+      "frame": "d4-steel",
+      "source": "g-materials INTEGRATOR HOOKUP REQUIRED; SYNTHESIS section 8; building-forms BLD_D4 roofColourSource distinguishes south masses 0/2/3 and north masses 1/4/5/6/8; granite plinth, soffit and bridge frame follow the curated material classes (estimated)"
+    },
+    "integrationRequired": true
+  }
+}

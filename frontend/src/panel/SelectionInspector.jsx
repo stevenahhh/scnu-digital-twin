@@ -33,6 +33,7 @@ export const INSPECTOR_STRINGS = Object.freeze({
   openIndoor: "실내 보기",
   heightFormEstimate: "높이·형태 추정",
   formEstimate: "높이 GIS, 형태 추정",
+  facadeEstimate: "입면 추정",
 });
 
 const SECTIONS = Object.freeze([
@@ -66,9 +67,9 @@ const plain = (text) => <span className="text-body text-ink">{text}</span>;
 export function describeEstimate(estimate) {
   if (!isObject(estimate)) return null;
   const heightEstimated = isText(estimate.heightLineage) && estimate.heightLineage !== "gis-height";
-  if (heightEstimated) return INSPECTOR_STRINGS.heightFormEstimate;
-  if (estimate.formEstimated === true || estimate.footprintEstimated === true) return INSPECTOR_STRINGS.formEstimate;
-  return null;
+  const form = heightEstimated ? INSPECTOR_STRINGS.heightFormEstimate :
+    estimate.formEstimated === true || estimate.footprintEstimated === true ? INSPECTOR_STRINGS.formEstimate : null;
+  return [form, estimate.facadeEstimated === true ? INSPECTOR_STRINGS.facadeEstimate : null].filter(Boolean).join(" · ") || null;
 }
 
 /** `data.freshness.weather` to `{ text, stale }` (`관측 HH:mm` or `저장된 기상 데이터 표시 중 · N분 전`), or null. */

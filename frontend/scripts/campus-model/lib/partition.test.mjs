@@ -77,3 +77,14 @@ test("on an irregular terrain mesh, a road cut by the mesh triangles leaves the 
   assert.ok(Math.abs(area(terrain) - 40) < 1e-9, `terrain area ${area(terrain)}`);
   for (const g of terrain) for (const r of road) assert.ok(convexOverlapArea(g, r.poly) < 1e-9);
 });
+
+test("the D4 inner terrain owns its seam footprint instead of the outer TIN skirt", () => {
+  // Actual west EXTENT seam, inside the requested D4 TM box. The third
+  // vertex is the 0.25-unit inward skirt from stages/outerTerrain.mjs.
+  const positions = [-2, 0, -250, -2, 0, -252, -1.75, -0.5, -250,
+    -2, 0, -180, -2, 0, -182, -1.75, -0.5, -180];
+  const tin = new TinPartition(positions, [0, 1, 2, 3, 4, 5]);
+  assert.deepEqual(tin.claimInCell(tin.triangles[0].tri, 0, tin.triangles[0].area), []);
+  assert.equal(area(tin.claimInCell(tin.triangles[3].tri, 3, tin.triangles[3].area)), 0.25,
+    "the same seam outside D4 is unchanged");
+});

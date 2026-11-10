@@ -1,0 +1,96 @@
+{
+  "estimated": true,
+  "building": "BLD_SCNU_A1",
+  "storeys": [
+    {
+      "hM": 4.11
+    },
+    {
+      "hM": 4.11
+    },
+    {
+      "hM": 4.11
+    },
+    {
+      "hM": 4.11
+    },
+    {
+      "hM": 4.11
+    },
+    {
+      "hM": 4.11
+    },
+    {
+      "hM": 4.11
+    },
+    {
+      "hM": 4.11
+    }
+  ],
+  "walls": {
+    "W05": {
+      "bays": {
+        "pitchM": 16,
+        "count": 1,
+        "offsetM": 31.5
+      },
+      "cells": [
+        [
+          "glazing"
+        ],
+        [
+          "glazing"
+        ],
+        [
+          "glazing"
+        ],
+        [
+          "glazing"
+        ],
+        [
+          "glazing"
+        ],
+        [
+          "glazing"
+        ],
+        [
+          "glazing"
+        ],
+        [
+          "glazing"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 14,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 A1_대학본부_443468 W05",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated",
+          "Only the counted interval is curated; unobserved prefix/suffix retain the legacy material rather than becoming invented blank walls."
+        ],
+        "independentCount": 1,
+        "openingGroups": 1,
+        "notes": [
+          "LOD4 x332..530: only the last tall curtain-wall end bay is readable, from about s31.5 m onward. One broad glazed structural bay is curated; the long missing prefix is not assigned a rhythm."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 1,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "glazing",
+      "materials": {
+        "wall": "panel:#e8eaea",
+        "glass": "#3f74a8",
+        "frame": "#a7b0b8"
+      },
+      "outside": "legacy"
+    }
+  }
+}

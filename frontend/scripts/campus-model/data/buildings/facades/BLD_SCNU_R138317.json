@@ -1,0 +1,45 @@
+{
+  "building": "BLD_SCNU_R138317",
+  "estimated": true,
+  "storeys": [
+    {
+      "hM": 3.4,
+      "kind": "ground"
+    }
+  ],
+  "walls": {
+    "W01": {
+      "estimated": true,
+      "bays": {
+        "pitchM": 3.2,
+        "count": 1,
+        "offsetM": 1
+      },
+      "default": "glazing",
+      "outside": "legacy",
+      "window": {
+        "wM": 3.1,
+        "hM": 1.1,
+        "sillM": 0.9
+      },
+      "materials": {
+        "wall": "panel:#e2c36a",
+        "glass": "#5f7d84",
+        "frame": "#efe8d2"
+      },
+      "evidence": {
+        "tier": "T2",
+        "refs": [
+          "Independent VR scene_f3 r: one broad four-pane window is a single opening group, not four structural bays; the canopy and two nearby doors are not counted as windows",
+          "The complete hut front crosses the f/r cube seam. Only the clear right-side glazing interval is curated; the left-side door area retains the legacy look",
+          "The 0.25 m/px LOD4 strip is too short vertically to certify the group; this is a VR-only count. Canonical wall coordinates and estimated dimensions are retained"
+        ],
+        "vrBayCount": 1,
+        "lod4BayCount": null,
+        "notes": [
+          "A magnified VR check resolves the previously ambiguous right window. The registered front edge spans s=0.35..6.66 m; the window occupies about half its width with a wood margin at the right corner. Its cell is estimated at s=1.0..4.2 m; geometry/pose are not claimed pixel-perfect."
+        ]
+      }
+    }
+  }
+}

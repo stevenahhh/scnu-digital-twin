@@ -1,6 +1,40 @@
 // Land-cover classes stored in data/landcover.png (one byte per scene unit). Classes come from the
 // MCEE level-3 land-cover map (fetch/landcover.mjs), with CHMv2 canopy height marking extra TREE
 // cells (fetch/canopy.mjs).
+import { readFileSync } from "node:fs";
+import { sceneToTm } from "../../../src/geo/epsg5186.mjs";
+import { splitByLine } from "./partition.mjs";
+
+// The lane 8 curation manifest is the authoritative selection seed.
+export const D4_MATERIAL_SCOPE = JSON.parse(readFileSync(new URL("../data/materials/d4-materials.json", import.meta.url), "utf8")).scopedBindings;
+
+// Convex scene-space polygon, split exactly at the EPSG:5186 scope. Outside
+// pieces retain their caller's material; no centroid-only boundary assignment.
+export function splitD4GroundPolygon(polygon) {
+  const [west, south, east, north] = D4_MATERIAL_SCOPE.bbox;
+  const tm = polygon.map(p => sceneToTm(...p));
+  if (tm.every(([e,n]) => e < west) || tm.every(([e,n]) => e > east) ||
+      tm.every(([e,n]) => n < south) || tm.every(([e,n]) => n > north)) {
+    return { inside: null, outside: [polygon] };
+  }
+  const outside = [];
+  let inside = polygon;
+  for (const line of [
+    p => sceneToTm(...p)[0] - west, p => east - sceneToTm(...p)[0],
+    p => sceneToTm(...p)[1] - south, p => north - sceneToTm(...p)[1],
+  ]) {
+    if (!inside) break;
+    const parts = splitByLine(inside, line);
+    if (parts.outside) outside.push(parts.outside);
+    inside = parts.inside;
+  }
+  return { inside, outside };
+}
+
+export function d4NaturalTile(landcover) {
+  return landcover === LANDCOVER.SOIL ? "d4-soil" : "d4-grass";
+}
+
 export const LANDCOVER = Object.freeze({
   PAVED: 0,
   GRASS: 1,

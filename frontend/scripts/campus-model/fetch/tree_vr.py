@@ -169,6 +169,8 @@ def main():
 # crown centre at mid-crown height (searched within 2.2 x the model crown; a run that reaches the search edge is a
 # merged row, width unknown) and the top of the foliage contiguous above the centre (within 0.35 x the crown width
 # of the centre column; a top at the image edge, or one without sky directly above it, is unknown). Widths and tops are turned into metres at the tree's depth.
+# Each reading also carries the bearing of the foliage run's centre (-1 when the run is unknown), used by
+# fit/treePosition.mjs to intersect two refined stations.
 FIT_RANGE_M = 80.0
 FIT_NEAR_M = 40.0
 FIT_FAR_VISIBLE = 0.75
@@ -296,6 +298,7 @@ def fit_main():
                 band = close_runs(mask[rows, :].any(axis=0), 4)
                 ci = int(cc)
                 width_m = -1.0
+                bearing = -1.0
                 if band[ci]:
                     a = ci
                     while a > lo and band[a - 1]:
@@ -307,6 +310,8 @@ def fit_main():
                         ua = (a / R - 0.5) * 2
                         ub = ((b + 1) / R - 0.5) * 2
                         width_m = (ub - ua) * zf / U
+                        # bearing of the foliage run centre (degrees clockwise from north): the VR's own crown direction
+                        bearing = round((st["yaw"] + off + math.degrees(math.atan((ua + ub) / 2))) % 360, 3)
                 # top: foliage contiguous above the centre within 0.35 x crown width of the centre column
                 cl = max(0, int(cc - 0.35 * half * 2))
                 cr = min(R, int(cc + 0.35 * half * 2) + 1)
@@ -326,7 +331,7 @@ def fit_main():
                 if j > 0 and above.size and above.mean() >= 0.6:
                     v = (0.5 - last / R) * 2
                     top_y = (cy + v * zf - gy) / U
-                obs[k].append([st["scene"], face, round(float(dist[k]), 1), int(med[0]), int(med[1]), int(med[2]), round(width_m, 2), round(top_y, 2), round(own / area, 2)])
+                obs[k].append([st["scene"], face, round(float(dist[k]), 1), int(med[0]), int(med[1]), int(med[2]), round(width_m, 2), round(top_y, 2), round(own / area, 2), bearing])
     json.dump(obs, open(sys.argv[2], "w"))
 
 

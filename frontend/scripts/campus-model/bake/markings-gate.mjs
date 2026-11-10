@@ -3,7 +3,7 @@
 //
 // For every marking candidate the stage would draw (markingCandidates(): markings.geojson with the corrections of
 // markings-extra.geojson applied, plus markings-extra.geojson), this measures the share of its drawn area that the
-// NGII 2025 orthophoto shows as white, yellow and blue paint, and writes data/photo/markings-gate.json:
+// NGII 2025 orthophoto shows as white, yellow and blue paint, and writes data/photo/evidence/markings-gate.json:
 // `supports: { id: [white, yellow, blue, fingerprint] }`, followed for a `double` line by the three shares of its single-line
 // reading. The stage draws a candidate in its own colour when that
 // share reaches GATE_SUPPORT, in the colour the photo shows when only that one does, and refuses to build when an
@@ -42,37 +42,24 @@
 // Run from frontend/ after editing either markings file:
 //   bun scripts/campus-model/bake/markings-gate.mjs [--masks out.png]
 // `--masks` also writes the three masks over the sheet window (red white, green yellow, blue blue) for inspection.
+// `--rebase-review <old-candidates.json>` (a JSON array of [id, fingerprint, colour, shapes] from markingCandidates()
+// before a frame move) re-stamps a review entry with the current fingerprint only when its candidate is the one it
+// was judged at (old fingerprint equal) and every vertex moved by one and the same vector (a pure frame translation,
+// e.g. Frame v2); any other change keeps the old fingerprint, so the stage still asks for a new review.
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { EXTENT, metres, modelToGeo } from "../lib/frame.mjs";
 import { segmentDistance } from "../lib/geometry.mjs";
 import { openSheet } from "../lib/ngiiSheet.mjs";
 import { encodePng } from "../lib/png.mjs";
-import { PAINT_BEYOND_EXTENT, SUPPORT_STEP_M, gridPoints, markingCandidates } from "../stages/markings.mjs";
+import { BLUE_AREA, BLUE_BR, BLUE_GREY, BLUE_TOPHAT, HALF_MAX, PAINT_OPEN_M, PEAK_REACH_M, SHADOW_GAIN, SHADOW_RED, SHADOW_REFERENCE, SHADOW_SURFACE, WHITE_SPREAD, WHITE_TOPHAT, WHITE_TOPHAT_RAW, YELLOW_CHROMA, YELLOW_GR, YELLOW_MIN, YELLOW_RB, YELLOW_TOPHAT, paintMasks } from "../lib/paintMasks.mjs";
+import { PAINT_BEYOND_EXTENT, SUPPORT_STEP_M, gridPoints, markingCandidates } from "../fit/markingEvidence.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const OUTPUT = path.join(HERE, "..", "data", "photo", "markings-gate.json");
+const OUTPUT = path.join(HERE, "..", "data", "photo", "evidence", "markings-gate.json");
 const MARGIN_M = 10;
 
-const PAINT_OPEN_M = 1.5;
-const WHITE_TOPHAT = 20;
-const WHITE_SPREAD = 60;
-const YELLOW_TOPHAT = 12;
-const YELLOW_MIN = 14;
-const YELLOW_CHROMA = 0.12;
-const YELLOW_RB = 14;
-const YELLOW_GR = 0.72;
-const BLUE_TOPHAT = 15;
-const BLUE_AREA = 30;
-const BLUE_BR = 45;
-const BLUE_GREY = 80;
-const WHITE_TOPHAT_RAW = 8;
-const SHADOW_SURFACE = 68;
-const SHADOW_RED = 30;
-const SHADOW_REFERENCE = 105;
-const SHADOW_GAIN = 2;
-const HALF_MAX = 0.5;
-const PEAK_REACH_M = 0.5;
 const CORE_M = 0.1;
 
 // ---------------------------------------------------------------- EPSG:5186 (Korea 2000 / Central Belt 2010)
@@ -130,90 +117,6 @@ async function readSheet() {
   return { rgb, width: w, height: h, toPixel: (x, z) => { const [u, v] = toPixel(x, z); return [u - col0, v - row0]; }, metresPerPixel: a };
 }
 
-// ---------------------------------------------------------------- paint masks
-// Running minimum or maximum over 2r + 1 samples along `count` lines of `length` samples (van Herk / Gil-Werman).
-function runningExtreme(src, dst, length, count, stride, lineStep, r, min) {
-  const span = 2 * r + 1;
-  const padded = length + 2 * r;
-  const ext = new Float32Array(padded);
-  const forward = new Float32Array(padded);
-  const backward = new Float32Array(padded);
-  const pick = min ? Math.min : Math.max;
-  for (let line = 0; line < count; line += 1) {
-    const base = line * lineStep;
-    for (let i = 0; i < padded; i += 1) {
-      const j = i - r;
-      ext[i] = j < 0 || j >= length ? (min ? Infinity : -Infinity) : src[base + j * stride];
-    }
-    for (let i = 0; i < padded; i += 1) forward[i] = i % span === 0 ? ext[i] : pick(forward[i - 1], ext[i]);
-    for (let i = padded - 1; i >= 0; i -= 1) backward[i] = i % span === span - 1 || i === padded - 1 ? ext[i] : pick(backward[i + 1], ext[i]);
-    for (let j = 0; j < length; j += 1) dst[base + j * stride] = pick(backward[j], forward[j + 2 * r]);
-  }
-}
-
-// Grey opening (erosion, then dilation) with a square of half size r.
-function opening(values, width, height, r) {
-  const a = new Float32Array(values.length);
-  const b = new Float32Array(values.length);
-  runningExtreme(values, a, width, height, 1, width, r, true);
-  runningExtreme(a, b, height, width, width, 1, r, true);
-  runningExtreme(b, a, width, height, 1, width, r, false);
-  runningExtreme(a, b, height, width, width, 1, r, false);
-  return b;
-}
-
-function paintMasks({ rgb, width, height, metresPerPixel }) {
-  const size = width * height;
-  const grey = new Float32Array(size);
-  const red = new Float32Array(size);
-  const yellowness = new Float32Array(size);
-  const blueness = new Float32Array(size);
-  for (let p = 0; p < size; p += 1) {
-    const r = rgb[p * 3];
-    const g = rgb[p * 3 + 1];
-    const b = rgb[p * 3 + 2];
-    grey[p] = (r + g + b) / 3;
-    red[p] = r;
-    yellowness[p] = (r + g) / 2 - b;
-    blueness[p] = b - (r + g) / 2;
-  }
-  const radius = Math.round(PAINT_OPEN_M / metresPerPixel);
-  const surface = opening(grey, width, height, radius);
-  const surfaceRed = opening(red, width, height, radius);
-  const surfaceYellow = opening(yellowness, width, height, radius);
-  const surfaceBlue = opening(blueness, width, height, radius);
-  const masks = { white: new Uint8Array(size), yellow: new Uint8Array(size), blue: new Uint8Array(size) };
-  // colour strengths (0 where the colour's conditions fail) and their local peaks
-  const strength = { white: new Float32Array(size), yellow: new Float32Array(size), blue: new Float32Array(size) };
-  for (let p = 0; p < size; p += 1) {
-    const r = rgb[p * 3];
-    const g = rgb[p * 3 + 1];
-    const b = rgb[p * 3 + 2];
-    const shadow = surface[p] < SHADOW_SURFACE && surfaceRed[p] < SHADOW_RED;
-    const scale = shadow ? Math.min(SHADOW_GAIN, SHADOW_REFERENCE / Math.max(surface[p], 30)) : 1;
-    const white = (grey[p] - surface[p]) * scale;
-    const blueTop = blueness[p] - surfaceBlue[p];
-    const isBlue = b - r >= BLUE_BR && grey[p] >= BLUE_GREY && (blueTop >= BLUE_TOPHAT || blueness[p] >= BLUE_AREA);
-    const yellowTop = (yellowness[p] - surfaceYellow[p]) * scale;
-    const isYellow = !isBlue && yellowness[p] >= Math.max(YELLOW_MIN, YELLOW_CHROMA * grey[p]) && yellowTop >= YELLOW_TOPHAT && r - b >= YELLOW_RB && g >= YELLOW_GR * r && white >= 0;
-    const isWhite = !isBlue && !isYellow && white >= WHITE_TOPHAT && grey[p] - surface[p] >= WHITE_TOPHAT_RAW && Math.max(r, g, b) - Math.min(r, g, b) <= WHITE_SPREAD;
-    strength.blue[p] = isBlue ? Math.max(blueTop, blueness[p]) : 0;
-    strength.yellow[p] = isYellow ? yellowTop : 0;
-    strength.white[p] = isWhite ? white : 0;
-  }
-  const reach = Math.max(1, Math.round(PEAK_REACH_M / metresPerPixel));
-  for (const colour of ["white", "yellow", "blue"]) {
-    const peak = new Float32Array(size);
-    const tmp = new Float32Array(size);
-    runningExtreme(strength[colour], tmp, width, height, 1, width, reach, false);
-    runningExtreme(tmp, peak, height, width, width, 1, reach, false);
-    const s = strength[colour];
-    const mask = masks[colour];
-    for (let p = 0; p < size; p += 1) mask[p] = s[p] > 0 && s[p] >= HALF_MAX * peak[p] ? 1 : 0;
-  }
-  return masks;
-}
-
 // ---------------------------------------------------------------- bake
 const started = performance.now();
 const sheet = await readSheet();
@@ -264,13 +167,39 @@ for (const c of candidates) {
     supports[c.id].push(...single.map((sum) => Math.round((sum / m) * 1000) / 1000));
   }
 }
+function rebaseReview(review) {
+  const at = process.argv.indexOf("--rebase-review");
+  if (at < 0) return review;
+  const old = new Map(JSON.parse(readFileSync(process.argv[at + 1], "utf8")).map((c) => [c[0], c]));
+  const now = new Map(candidates.map((c) => [c.id, c]));
+  let moved = 0;
+  let shift = null;
+  const out = {};
+  for (const [id, entry] of Object.entries(review)) {
+    out[id] = entry;
+    const before = old.get(id);
+    const after = now.get(id);
+    if (!before || !after || before[1] !== entry.fingerprint || before[2] !== after.colour) continue;
+    const a = before[3].flat(2);
+    const b = after.shapes.flat(2);
+    if (a.length !== b.length || !a.length) continue;
+    const d = [b[0][0] - a[0][0], b[0][1] - a[0][1]];
+    if (!a.every((p, i) => Math.abs(b[i][0] - p[0] - d[0]) < 1e-6 && Math.abs(b[i][1] - p[1] - d[1]) < 1e-6)) continue;
+    if (shift && (Math.abs(shift[0] - d[0]) > 1e-6 || Math.abs(shift[1] - d[1]) > 1e-6)) throw new Error(`--rebase-review: ${id} moved by ${d}, not the common shift ${shift}`);
+    shift = d;
+    out[id] = { ...entry, fingerprint: after.fingerprint };
+    moved += 1;
+  }
+  console.log(`markings gate: ${moved} of ${Object.keys(review).length} review entries re-stamped after a pure translation by ${shift ? shift.map((v) => v.toFixed(3)).join(", ") : "-"} model units`);
+  return out;
+}
 const previous = await Bun.file(OUTPUT).exists() ? JSON.parse(await Bun.file(OUTPUT).text()) : {};
 const gate = {
   source: "NGII 2025 orthophoto sheet 34702020 (0.25 m GSD, EPSG:5186), 국토지리정보원; bake/markings-gate.mjs",
   generated: new Date().toISOString().slice(0, 10),
   method: "share of each candidate's drawn area on white, yellow and blue photo paint (top-hat masks): [white, yellow, blue, geometry fingerprint(, single-line white, yellow, blue)]",
   thresholds: { PAINT_OPEN_M, WHITE_TOPHAT, WHITE_TOPHAT_RAW, WHITE_SPREAD, YELLOW_TOPHAT, YELLOW_MIN, YELLOW_CHROMA, YELLOW_RB, YELLOW_GR, BLUE_TOPHAT, BLUE_AREA, BLUE_BR, BLUE_GREY, SHADOW_SURFACE, SHADOW_RED, SHADOW_REFERENCE, SHADOW_GAIN, HALF_MAX, PEAK_REACH_M, CORE_M, SUPPORT_STEP_M },
-  review: previous.review ?? {},
+  review: rebaseReview(previous.review ?? {}),
   supports,
 };
 await Bun.write(OUTPUT, `${JSON.stringify(gate, null, 0).replace(/\],"/g, '],\n"')}\n`);

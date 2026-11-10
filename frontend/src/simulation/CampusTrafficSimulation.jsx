@@ -23,22 +23,23 @@ const raycastCounter = import.meta.env?.DEV ? (globalThis.__trafficHeightRaycast
 
 // CityModel draws the model shifted by -campusModelCenter(D4 anchor); the sidecar is in the unshifted model frame.
 // Same rule as CityModel (bounding box of BLD_D4 before recentering), computed in the gltf scene's own frame.
-function modelCenterOf(scene) {
+function modelCenterOf(scene, frameVersion) {
   const d4 = scene.getObjectByName("BLD_D4");
   if (!d4) return null;
   scene.updateWorldMatrix(true, true);
   const center = new THREE.Box3().setFromObject(d4).getCenter(new THREE.Vector3());
   const sceneOrigin = scene.getWorldPosition(new THREE.Vector3());
-  return campusModelCenter([center.x - sceneOrigin.x, 0, center.z - sceneOrigin.z]);
+  return campusModelCenter([center.x - sceneOrigin.x, 0, center.z - sceneOrigin.z], { frameVersion });
 }
 
 // contactShadows: blob shadows under agents (high tier). Agents never cast into the on-demand sun shadow maps.
 export function CampusTrafficSimulation({ contactShadows = false } = {}) {
-  const { scene } = useGLTF(CAMPUS_MODEL_URL, true, true, extendCampusLoader);
+  const { scene, asset } = useGLTF(CAMPUS_MODEL_URL, true, true, extendCampusLoader);
+  const frameVersion = asset?.extras?.frameVersion;
   const raycaster = useMemo(() => new THREE.Raycaster(), []);
   const cache = useRef(new Map());
   const [heightfield, setHeightfield] = useState(null);
-  const modelCenter = useMemo(() => modelCenterOf(scene), [scene]);
+  const modelCenter = useMemo(() => modelCenterOf(scene, frameVersion), [scene, frameVersion]);
 
   useEffect(() => {
     if (!HEIGHTFIELD_URLS) return undefined;

@@ -1,4 +1,4 @@
-/* @vitest-environment jsdom */
+/* @vitest-environment happy-dom */
 import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { SelectionInspector, describeEstimate, describeFreshness } from "./SelectionInspector.jsx";
@@ -207,5 +207,11 @@ describe("SelectionInspector 추정 caption", () => {
   it("has no caption without GLB extras (VWorld or ?model=uni)", () => {
     render(<SelectionInspector popup={popupOf()} onClose={() => {}} title="BLD_D4" />);
     expect(caption()).toBeNull();
+  });
+
+  it("shows an estimate caption when only the facade is estimated", () => {
+    render(<SelectionInspector popup={popupOf()} onClose={() => {}} title="사범대학" estimate={{ heightLineage: "gis-height", facadeEstimated: true }} />);
+    expect(caption()).not.toBeNull();
+    expect(describeEstimate({ heightLineage: "gis-height", facadeEstimated: true })).not.toBe(describeEstimate({ heightLineage: "gis-height" }));
   });
 });

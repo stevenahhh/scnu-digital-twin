@@ -1,0 +1,72 @@
+{
+  "building": "BLD_SCNU_A7",
+  "estimated": true,
+  "storeys": [
+    {
+      "hM": 4.62,
+      "kind": "ground"
+    },
+    {
+      "hM": 4.62
+    }
+  ],
+  "walls": {
+    "W14": {
+      "estimated": true,
+      "bays": {
+        "pitchM": 3.51719194,
+        "count": 4,
+        "offsetM": 0.5
+      },
+      "default": "window",
+      "window": {
+        "wM": 1.6,
+        "hM": 2.2,
+        "sillM": 1.1
+      },
+      "materials": {
+        "wall": "brick:#825044",
+        "glass": "#58706f",
+        "frame": "#f0f0ec"
+      },
+      "evidence": {
+        "tier": "T2",
+        "refs": [
+          "Independent VR scene_a9 l columns 1574..2048 plus f columns 0..225: complete W14 spans the cube seam; four arched opening groups on each of two levels",
+          "LOD4 443112 W14 x572..631 is roof-projected/coarse and does not supply a reliable opening-group count",
+          "Canonical W14 length and current two-level registered mass height are retained; dimensions and colours are estimates",
+          "Registered front wing eave is 9.24 m for two levels; grid height follows the eave, not the pitched roof peak. The two source edges are matched within 1 mm."
+        ],
+        "vrBayCount": 4,
+        "lod4BayCount": null,
+        "notes": [
+          "The seam-spanning VR check replaces the attempt-1 fallback. Arched heads remain approximated by the existing rectangular window glyph; this record certifies the group count, not exact arch geometry."
+        ]
+      },
+      "surfaceEdges": [
+        {
+          "A": [
+            243878.5376,
+            263547.6055
+          ],
+          "B": [
+            243871.1594,
+            263549.2808
+          ],
+          "source": "building-forms.json BLD_SCNU_A7/mass/2/edge/1; registered two-level front wing, estimated"
+        },
+        {
+          "A": [
+            243871.1594,
+            263549.2808
+          ],
+          "B": [
+            243863.7702,
+            263551.1458
+          ],
+          "source": "building-forms.json BLD_SCNU_A7/mass/2/edge/2; registered two-level front wing, estimated"
+        }
+      ]
+    }
+  }
+}

@@ -32,7 +32,7 @@ const PATHS = {
   elements: path.join(REPO, "common/data/common_elemetns.json"),
   elementsCopy: path.join(REPO, "backend/simulation/data/source/common_elemetns.json"),
   osmGround: path.join(HERE, "../data/osm-ground.json"),
-  markings: path.join(HERE, "../data/photo/markings.geojson"),
+  markings: path.join(HERE, "../data/photo/evidence/markings.geojson"),
   output: path.join(REPO, "backend/simulation/data/road_segments.geojson"),
 };
 

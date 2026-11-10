@@ -1,0 +1,18 @@
+{
+  "buildingId": "BLD_D4",
+  "texelsPerMetre": 200,
+  "gutterPx": 8,
+  "maximumEdgePx": 4096,
+  "layoutSource": "pack.mjs caps textures at 4096 px; identical unadorned blank cells share a metric chart; D4 record-only entrances use the ground row, upper rows share one chart (estimated)",
+  "source": "ISSUES D-04 and D-49: at least 200 px/m; native rasterisation with per-cell metric UVs; eight-pixel filtering gutter (estimated)",
+  "detailClasses": {
+    "brick": "d4-pier",
+    "render": "d4-trim",
+    "concrete": "d4-penthouse",
+    "panel": "d4-pier",
+    "stone": "d4-endwall",
+    "metal": "d4-steel",
+    "glass": "d4-facade"
+  },
+  "detailSource": "SYNTHESIS section 8 rows 1-11 and lane 8 ground-materials.json, retain curated geometry rather than substitute stock windows (estimated)"
+}

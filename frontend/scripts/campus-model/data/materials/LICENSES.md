@@ -51,3 +51,39 @@ against its files API) or of the ambientCG 1K-JPG zip. Tile sizes come from the 
 | `ground-lot-col.webp`, `ground-lot-nor.webp`, `ground-lot-arm.webp` | [concrete_floor_worn_001](https://polyhaven.com/a/concrete_floor_worn_001) (Poly Haven) | Dimitrios Savva, Rico Cilliers | 3.00 m | https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_floor_worn_001/concrete_floor_worn_001_diff_1k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_floor_worn_001/concrete_floor_worn_001_nor_gl_1k.jpg , https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_floor_worn_001/concrete_floor_worn_001_arm_1k.jpg | `e35597cca586150b1ab2aa9a331a39c5`, `9de6626758f8793b71182b892c110827`, `8174fe8a5c982edef079c3c3775e5377` |
 
 <!-- ground-materials:end -->
+
+<!-- d4-materials:begin -->
+
+## D4 (BLD_D4 and its surroundings)
+
+Records: `d4-materials.json` (`materials` for ground, `buildingMaterials` for the D4 facade, roof, soffit, pier and trim sets; download URLs and md5 per map). `d4-atlas.json` maps the D4 facade detail classes onto these sets.
+
+| Files | Source | Authors | Licence | Tile size |
+|---|---|---|---|---|
+| `ground-d4-pavers-col.webp`, `ground-d4-pavers-nor.webp`, `ground-d4-pavers-arm.webp` | [square_concrete_pavers](https://polyhaven.com/a/square_concrete_pavers) (Poly Haven) | Amal Kumar | CC0 1.0 | 1.8 m (estimated) |
+| `ground-d4-asphalt-col.webp`, `ground-d4-asphalt-nor.webp`, `ground-d4-asphalt-arm.webp` | [asphalt_02](https://polyhaven.com/a/asphalt_02) (Poly Haven) | Rob Tuytel | CC0 1.0 | 3 m (estimated) |
+| `ground-d4-soil-col.webp`, `ground-d4-soil-nor.webp`, `ground-d4-soil-arm.webp` | [sparse_grass](https://polyhaven.com/a/sparse_grass) (Poly Haven) | Amal Kumar | CC0 1.0 | 2 m (estimated) |
+| `ground-d4-passage-col.webp`, `ground-d4-passage-nor.webp`, `ground-d4-passage-arm.webp` | [large_grey_tiles](https://polyhaven.com/a/large_grey_tiles) (Poly Haven) | Rob Tuytel | CC0 1.0 | 3 m (estimated) |
+| `ground-d4-granite-col.webp`, `ground-d4-granite-nor.webp`, `ground-d4-granite-arm.webp` | [granite_tile](https://polyhaven.com/a/granite_tile) (Poly Haven) | Charlotte Baglioni | CC0 1.0 | 2.3 m (estimated) |
+| `ground-d4-slate-col.webp`, `ground-d4-slate-nor.webp`, `ground-d4-slate-arm.webp` | [stone_tiles_02](https://polyhaven.com/a/stone_tiles_02) (Poly Haven) | Charlotte Baglioni | CC0 1.0 | 2 m (estimated) |
+| `ground-d4-terracotta-col.webp`, `ground-d4-terracotta-nor.webp`, `ground-d4-terracotta-arm.webp` | [red_brick_pavers](https://polyhaven.com/a/red_brick_pavers) (Poly Haven) | Amal Kumar | CC0 1.0 | 1.8 m (estimated) |
+| `ground-d4-tactile-base-col.webp`, `ground-d4-tactile-base-nor.webp`, `ground-d4-tactile-base-arm.webp` | [concrete_pavers_02](https://polyhaven.com/a/concrete_pavers_02) (Poly Haven) | Amal Kumar | CC0 1.0 | 2 m (estimated) |
+| `ground-d4-retaining-rock-col.webp`, `ground-d4-retaining-rock-nor.webp`, `ground-d4-retaining-rock-arm.webp` | [rock_embedded_concrete_wall](https://polyhaven.com/a/rock_embedded_concrete_wall) (Poly Haven) | Dimitrios Savva | CC0 1.0 | 1.76 m (estimated) |
+| `ground-d4-retaining-concrete-col.webp`, `ground-d4-retaining-concrete-nor.webp`, `ground-d4-retaining-concrete-arm.webp` | [concrete_slab_wall](https://polyhaven.com/a/concrete_slab_wall) (Poly Haven) | Dimitrios Savva | CC0 1.0 | 2.3 m (estimated) |
+| `ground-d4-footway-col.webp`, `ground-d4-footway-nor.webp`, `ground-d4-footway-arm.webp` | [patterned_paving](https://polyhaven.com/a/patterned_paving) (Poly Haven) | Charlotte Baglioni | CC0 1.0 | 2 m (estimated) |
+| `ground-d4-concrete-col.webp`, `ground-d4-concrete-nor.webp`, `ground-d4-concrete-arm.webp` | [Concrete034](https://ambientcg.com/view?id=Concrete034) (ambientCG) | ambientCG | CC0 1.0 | 1.1 m (estimated) |
+| `ground-d4-grass-col.webp`, `ground-d4-grass-nor.webp`, `ground-d4-grass-arm.webp` | [Grass004](https://ambientcg.com/view?id=Grass004) (ambientCG) | ambientCG | CC0 1.0 | 1.4 m (estimated) |
+| `ground-d4-treepit-col.webp`, `ground-d4-treepit-nor.webp`, `ground-d4-treepit-arm.webp` | [Bricks105](https://ambientcg.com/view?id=Bricks105) (ambientCG) | ambientCG | CC0 1.0 | 2.4 m (estimated) |
+| `ground-d4-trim-col.webp`, `ground-d4-trim-nor.webp`, `ground-d4-trim-arm.webp` | [white_plaster_02](https://polyhaven.com/a/white_plaster_02) (Poly Haven) | Rob Tuytel | CC0 1.0 | 1 m (estimated) |
+| `ground-d4-pier-col.webp`, `ground-d4-pier-nor.webp`, `ground-d4-pier-arm.webp` | [concrete_tile_facade](https://polyhaven.com/a/concrete_tile_facade) (Poly Haven) | Charlotte Baglioni | CC0 1.0 | 2.09 m (estimated) |
+| `ground-d4-endwall-col.webp`, `ground-d4-endwall-nor.webp`, `ground-d4-endwall-arm.webp` | [granite_tile_04](https://polyhaven.com/a/granite_tile_04) (Poly Haven) | Amal Kumar | CC0 1.0 | 2 m (estimated) |
+| `ground-d4-steel-col.webp`, `ground-d4-steel-nor.webp`, `ground-d4-steel-arm.webp` | [metal_plate_02](https://polyhaven.com/a/metal_plate_02) (Poly Haven) | Rob Tuytel | CC0 1.0 | 2 m (estimated) |
+| `ground-d4-soffit-col.webp`, `ground-d4-soffit-nor.webp`, `ground-d4-soffit-arm.webp` | [painted_metal_shutter](https://polyhaven.com/a/painted_metal_shutter) (Poly Haven) | Dario Barresi, Rico Cilliers, Charlotte Baglioni | CC0 1.0 | 2 m (estimated) |
+| `ground-d4-roof-south-col.webp`, `ground-d4-roof-south-nor.webp`, `ground-d4-roof-south-arm.webp` | [bitumen](https://polyhaven.com/a/bitumen) (Poly Haven) | Rob Tuytel | CC0 1.0 | 20 m (estimated) |
+| `ground-d4-roof-north-col.webp`, `ground-d4-roof-north-nor.webp`, `ground-d4-roof-north-arm.webp` | [grey_roof_01](https://polyhaven.com/a/grey_roof_01) (Poly Haven) | Rob Tuytel | CC0 1.0 | 8 m (estimated) |
+| `ground-d4-painted-col.webp`, `ground-d4-painted-nor.webp`, `ground-d4-painted-arm.webp` | [concrete_floor_painted](https://polyhaven.com/a/concrete_floor_painted) (Poly Haven) | Rob Tuytel | CC0 1.0 | 2 m (estimated) |
+| `ground-d4-penthouse-col.webp`, `ground-d4-penthouse-nor.webp`, `ground-d4-penthouse-arm.webp` | [concrete_wall_008](https://polyhaven.com/a/concrete_wall_008) (Poly Haven) | Dario Barresi, Charlotte Baglioni | CC0 1.0 | 2.71 m (estimated) |
+| `ground-d4-grating-col.webp`, `ground-d4-grating-nor.webp`, `ground-d4-grating-arm.webp` | [rusty_metal_grid](https://polyhaven.com/a/rusty_metal_grid) (Poly Haven) | Amal Kumar | CC0 1.0 | 1.8 m (estimated) |
+| `ground-d4-facade-col.webp`, `ground-d4-facade-nor.webp`, `ground-d4-facade-arm.webp` | [Facade018A](https://ambientcg.com/view?id=Facade018A) (ambientCG) | ambientCG | CC0 1.0 | 13 m (estimated) |
+
+<!-- d4-materials:end -->

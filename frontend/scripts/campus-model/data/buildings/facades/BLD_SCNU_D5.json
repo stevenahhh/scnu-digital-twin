@@ -1,0 +1,114 @@
+{
+  "estimated": true,
+  "building": "BLD_SCNU_D5",
+  "storeys": [
+    {
+      "hM": 4.075
+    },
+    {
+      "hM": 4.075
+    },
+    {
+      "hM": 4.075
+    },
+    {
+      "hM": 4.075
+    }
+  ],
+  "walls": {
+    "W01": {
+      "bays": {
+        "pitchM": 2.168769,
+        "count": 12,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "window",
+          "window",
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 1.1,
+        "hM": 1.6,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "VR scene_d5/f",
+        "refs": [
+          "VR scene_d5/f",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 12,
+        "openingGroups": 12,
+        "notes": [
+          "No LOD4 facade record. Independent VR scene_d5/f: three narrow columns on each coloured end block and six on the recessed white middle = twelve. The open portico is not filled with ground windows and the top middle balcony has no punched-window row."
+        ],
+        "tier": "T2",
+        "lod4BayCount": null,
+        "vrBayCount": 12
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "panel:#dc7a76",
+        "glass": "#4c9fae",
+        "frame": "#dcbb5e"
+      }
+    }
+  }
+}

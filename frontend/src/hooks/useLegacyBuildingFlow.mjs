@@ -3,6 +3,7 @@ import commonElements from "../../../common/data/common_elemetns.json";
 import { isProximitySuspended, resolveSelectionTitle, useSelectionState as useLabelSelection } from "../labels/useSelectionState.mjs";
 import { isD4ElementId } from "../utils/d4BuildingData.mjs";
 import { usePanelViewMemory } from "../panel/usePanelViewMemory.mjs";
+import { useD4SelectionExit } from "../panel/useD4SelectionExit.mjs";
 
 const buildingCodeOf = (elementId) => elementId.slice("BLD_".length);
 const ELEMENT_NAMES = new Map(commonElements.elements.map((element) => [element.element_id, element.name]));
@@ -59,6 +60,15 @@ export function useLegacyBuildingFlow({ selection, popup, panel, activePresetRef
     viewMemory.restore();
     onSectionExit();
   }, [onSectionExit, viewMemory.restore]);
+
+  // 다른 건물을 골라 D4 상세를 나올 때는 들어가기 전 탭으로 되돌리지 않는다. 새 선택이 건물 탭을 연다.
+  const leaveD4ForSelection = useCallback(() => {
+    setBuildingViewMode("campus");
+    setEditorRequest(null);
+    onSectionExit();
+  }, [onSectionExit]);
+
+  useD4SelectionExit(label.selection.elementId, buildingViewMode === "section", leaveD4ForSelection);
 
   // 고른 건물은 건물 탭의 선택 인스펙터가 보여 준다(onSelectionShown이 그 탭으로 패널을 연다).
   const showMicroclimate = useCallback((elementId) => {

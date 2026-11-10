@@ -19,14 +19,15 @@ Point = tuple[float, float]
 # documented coordinateConfig. They are target hints only; entrances are snapped
 # to the nearest accessible route segment and never placed at the building center.
 BUILDING_TARGETS = {
-    "BLD_D4": {"name": "공과대학 3호관", "display": (-214.35, -93.25), "category": "academic"},
-    "BLD_D3": {"name": "공과대학 2호관", "display": (-161.23, -68.59), "category": "academic"},
-    "BLD_D2": {"name": "공과대학 1호관", "display": (-129.92, -119.53), "category": "academic"},
-    "BLD_C1": {"name": "도서관", "display": (-61.76, -92.11), "category": "library"},
-    "BLD_E1": {"name": "학생회관", "display": (-29.27, -11.69), "category": "student_center"},
-    "BLD_A1": {"name": "대학본부", "display": (42.21, 38.64), "category": "administration"},
+    "BLD_D4": {"name": "공과대학 3호관", "display": (-215.27, -91.24), "category": "academic"},
+    "BLD_D3": {"name": "공과대학 2호관", "display": (-162.15, -66.58), "category": "academic"},
+    "BLD_D2": {"name": "공과대학 1호관", "display": (-130.84, -117.52), "category": "academic"},
+    "BLD_C1": {"name": "도서관", "display": (-62.68, -90.10), "category": "library"},
+    "BLD_E1": {"name": "학생회관", "display": (-30.19, -9.68), "category": "student_center"},
+    "BLD_A1": {"name": "대학본부", "display": (41.29, 40.65), "category": "administration"},
 }
-DISPLAY_ORIGIN = (-214.35, -93.251)
+# Frame v2 traffic origin; must equal CAMPUS_TRAFFIC_COORDINATE_CONFIG.origin (backend/tests/test_frame_origin_copies.py).
+DISPLAY_ORIGIN = (-215.272, -91.24)
 DISPLAY_SCALE = 0.6242171526
 
 

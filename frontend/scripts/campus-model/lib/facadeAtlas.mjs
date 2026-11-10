@@ -11,13 +11,15 @@
 // first mip levels never read a neighbouring look.
 //
 // Texel size: a bay of 3-4 m and a storey of 3-5 m on 56 px, about 6-9 cm per texel. The colour atlas is 2048 px
-// wide and as tall as its rows of tiles need (up to MAX_ROWS); emissive, normal and metallic-roughness maps are half that (window
+// wide for the original compact set, or 4096 px for campus-wide grids; emissive, normal and metallic-roughness maps are half that (window
 // glow and relief are soft anyway).
 // Colours are sRGB estimates: the SCNU 360 VR tour panoramas (visual reference only) and the VWorld LOD4 facade
 // photos (data/lod4-facades.json). They are not measurements.
 import { encodePng } from "./png.mjs";
 import { Raster, hashNoise, mulberry32, smoothNoise } from "./raster.mjs";
 import { KIND, detailMaps, facadeClasses } from "./textures.mjs";
+import { readFileSync } from "node:fs";
+import sharp from "sharp";
 
 export const ATLAS_SIZE = 2048;
 export const TILE_BAYS = 4;
@@ -30,10 +32,11 @@ const TILE_H = 4 * ROW_PX;
 const GUTTER = 8;
 const SLOT = TILE_W + 2 * GUTTER;
 const SLOTS_PER_SIDE = Math.floor(ATLAS_SIZE / SLOT);
-// Rows of tiles: the atlas is as tall as the rows in use (240 px each, so both the full and the half maps stay multiples of
-// 4 for KTX2), up to MAX_ROWS (2400 px, well inside WebGL's 4096 px minimum texture size); eight rows were the square.
-const MAX_ROWS = 10;
-export const MAX_LOOKS = SLOTS_PER_SIDE * MAX_ROWS;
+// Keep compact atlases byte-compatible. Wider atlases retain the same 56 px cells and 8 px gutters,
+// and neither edge may exceed the configured 4096 px limit (17 * 240 = 4080).
+const COMPACT_LOOKS = SLOTS_PER_SIDE * 10;
+const MAX_ATLAS_SIZE = 4096;
+export const MAX_LOOKS = Math.floor(MAX_ATLAS_SIZE / SLOT) ** 2;
 const NOMINAL_STOREY_METRES = 4.0;
 
 // CC0 relief per wall texture (data/materials, Poly Haven); at 6-9 cm per texel it only adds a soft grain.
@@ -64,6 +67,9 @@ function normalise(look) {
   const wall = hex(look.wall);
   return {
     id: look.id,
+    cell: look.cell ?? null,
+    doorWidth: look.doorWidth ?? 0.72,
+    windowCentre: look.windowCentre ?? 0.5,
     pattern: look.pattern ?? "punched",
     texture: look.texture ?? "render",
     wall,
@@ -239,7 +245,7 @@ function paintStorey(canvas, look, top, rng, { ground = false } = {}) {
       const total = look.windowWidth * BAY_PX;
       const gap = look.windows > 1 ? 3 : 0;
       const width = (total - gap * (look.windows - 1)) / look.windows;
-      const start = bx + (BAY_PX - total) / 2;
+      const start = bx + BAY_PX * look.windowCentre - total / 2;
       if (look.accent?.kind === "frame" && look.accent.bays.includes(b)) {
         canvas.rect(start - 3, winTop - 3, start + total + 3, winBottom + 3, solid(look.accent.colour, look.seed + 16), KIND.SILL);
       }
@@ -279,10 +285,38 @@ function paintEntrance(canvas, look, top, rng) {
 
 function paintTile(canvas, look) {
   const rng = mulberry32(look.seed);
+  if (look.cell) {
+    for (let row = 0; row < 4; row++) paintCellStorey(canvas, look, row * ROW_PX, rng);
+    return;
+  }
   paintStorey(canvas, look, ROWS.UPPER_A * ROW_PX, rng);
   paintStorey(canvas, look, ROWS.UPPER_B * ROW_PX, rng);
   paintStorey(canvas, look, ROWS.GROUND * ROW_PX, rng, { ground: true });
   paintEntrance(canvas, look, ROWS.ENTRANCE * ROW_PX, rng);
+}
+
+// Grid tiles repeat one cell, so a renderer can clip an individual bay without a four-bay entrance motif.
+function paintCellStorey(canvas, look, top, rng) {
+  const cellLook = { ...look, windows: look.cell === "blank" ? 0 : 1 };
+  switch (look.cell) {
+    case "window": case "blank": break;
+    case "glazing": Object.assign(cellLook, { pattern: "curtain" }); break;
+    case "stair": Object.assign(cellLook, { windowWidth: 0.35, windowHeight: 0.94, sill: 0.03, panes: 1 }); break;
+    case "door": Object.assign(cellLook, { windowWidth: look.doorWidth, windowHeight: 0.75, sill: 0, panes: 2 }); break;
+    case "louver": case "vent": Object.assign(cellLook, { windows: 0 }); break;
+    default: throw new Error(`unknown facade cell ${look.cell}`);
+  }
+  paintStorey(canvas, cellLook, top, rng);
+  if (look.cell === "louver" || look.cell === "vent") {
+    const h = look.cell === "vent" ? 0.22 : look.windowHeight;
+    const w = look.cell === "vent" ? 0.3 : look.windowWidth;
+    for (let bay = 0; bay < TILE_BAYS; bay++) {
+      const x0 = (bay + (1 - w) / 2) * BAY_PX, x1 = x0 + w * BAY_PX;
+      const y0 = top + (1 - look.sill - h) * ROW_PX, y1 = y0 + h * ROW_PX;
+      canvas.rect(x0, y0, x1, y1, solid(look.frame, look.seed), KIND.FRAME);
+      for (let y = y0 + 2; y < y1 - 1; y += 3) canvas.rect(x0 + 1, y, x1 - 1, y + 1, solid(look.trim, look.seed), KIND.SILL);
+    }
+  }
 }
 
 // The colour pixels of one look's tile, painted only (no encoding; the window-module tests use it).
@@ -338,14 +372,16 @@ function half(pixels, width, height, normal) {
 // looks: [{ id, ... }] (data/scnu-facades.json look fields). Returns the encoded maps and each look's tile origin.
 export async function buildFacadeAtlas(looks) {
   if (looks.length > MAX_LOOKS) throw new Error(`facade atlas: ${looks.length} looks, room for ${MAX_LOOKS}`);
+  const width = looks.length <= COMPACT_LOOKS ? ATLAS_SIZE : MAX_ATLAS_SIZE;
+  const slotsPerRow = Math.floor(width / SLOT);
   // Rows of tiles in use only; even so the half-resolution maps line up.
-  const height = Math.ceil(Math.ceil(looks.length / SLOTS_PER_SIDE) * SLOT / 2) * 2;
-  const color = new Raster(ATLAS_SIZE, height);
-  const emissive = new Raster(ATLAS_SIZE, height);
-  const kinds = new Uint8Array(ATLAS_SIZE * height);
-  const normal = new Uint8Array(ATLAS_SIZE * height * 3).fill(128);
-  const arm = new Uint8Array(ATLAS_SIZE * height * 3);
-  for (let i = 0; i < ATLAS_SIZE * height; i += 1) {
+  const height = Math.ceil(Math.ceil(looks.length / slotsPerRow) * SLOT / 2) * 2;
+  const color = new Raster(width, height);
+  const emissive = new Raster(width, height);
+  const kinds = new Uint8Array(width * height);
+  const normal = new Uint8Array(width * height * 3).fill(128);
+  const arm = new Uint8Array(width * height * 3);
+  for (let i = 0; i < width * height; i += 1) {
     normal[i * 3 + 2] = 255;
     arm[i * 3] = 255;
     arm[i * 3 + 1] = 230;
@@ -353,19 +389,19 @@ export async function buildFacadeAtlas(looks) {
   const tiles = new Map();
   for (const [index, raw] of looks.entries()) {
     const look = normalise(raw);
-    const sx = (index % SLOTS_PER_SIDE) * SLOT;
-    const sy = Math.floor(index / SLOTS_PER_SIDE) * SLOT;
+    const sx = (index % slotsPerRow) * SLOT;
+    const sy = Math.floor(index / slotsPerRow) * SLOT;
     const ox = sx + GUTTER;
     const oy = sy + GUTTER;
     paintTile(new TileCanvas(color, emissive, kinds, ox, oy), look);
     fillGutters([
-      { data: color.data, channels: 3, width: ATLAS_SIZE },
-      { data: emissive.data, channels: 3, width: ATLAS_SIZE },
-      { data: kinds, channels: 1, width: ATLAS_SIZE },
+      { data: color.data, channels: 3, width },
+      { data: emissive.data, channels: 3, width },
+      { data: kinds, channels: 1, width },
     ], ox, oy);
     // Relief and roughness per slot: painted layout (recessed glass, proud sills and piers) plus the texture's CC0 grain.
     const slotKinds = new Uint8Array(SLOT * SLOT);
-    for (let y = 0; y < SLOT; y += 1) slotKinds.set(kinds.subarray((sy + y) * ATLAS_SIZE + sx, (sy + y) * ATLAS_SIZE + sx + SLOT), y * SLOT);
+    for (let y = 0; y < SLOT; y += 1) slotKinds.set(kinds.subarray((sy + y) * width + sx, (sy + y) * width + sx + SLOT), y * SLOT);
     const metresX = (SLOT / BAY_PX) * (raw.bay ?? 3.6);
     const metresY = (SLOT / ROW_PX) * NOMINAL_STOREY_METRES;
     const wallKind = look.pattern === "curtain" || look.pattern === "greenhouse" ? KIND.FRAME : KIND.WALL;
@@ -380,32 +416,155 @@ export async function buildFacadeAtlas(looks) {
       encoded: false,
     });
     for (let y = 0; y < SLOT; y += 1) {
-      normal.set(maps.normal.subarray(y * SLOT * 3, (y + 1) * SLOT * 3), ((sy + y) * ATLAS_SIZE + sx) * 3);
-      arm.set(maps.arm.subarray(y * SLOT * 3, (y + 1) * SLOT * 3), ((sy + y) * ATLAS_SIZE + sx) * 3);
+      normal.set(maps.normal.subarray(y * SLOT * 3, (y + 1) * SLOT * 3), ((sy + y) * width + sx) * 3);
+      arm.set(maps.arm.subarray(y * SLOT * 3, (y + 1) * SLOT * 3), ((sy + y) * width + sx) * 3);
     }
-    tiles.set(look.id, { x: ox, y: oy, slot: index, width: ATLAS_SIZE, height });
+    tiles.set(look.id, { x: ox, y: oy, slot: index, width, height });
   }
   return {
-    width: ATLAS_SIZE,
+    width,
     height,
     tiles,
-    color: encodePng(ATLAS_SIZE, height, 3, color.data),
-    emissive: encodePng(ATLAS_SIZE / 2, height / 2, 3, half(emissive.data, ATLAS_SIZE, height, false)),
-    normal: encodePng(ATLAS_SIZE / 2, height / 2, 3, half(normal, ATLAS_SIZE, height, true)),
-    arm: encodePng(ATLAS_SIZE / 2, height / 2, 3, half(arm, ATLAS_SIZE, height, false)),
+    color: encodePng(width, height, 3, color.data),
+    emissive: encodePng(width / 2, height / 2, 3, half(emissive.data, width, height, false)),
+    normal: encodePng(width / 2, height / 2, 3, half(normal, width, height, true)),
+    arm: encodePng(width / 2, height / 2, 3, half(arm, width, height, false)),
   };
 }
 
 // UV of a point in a look's tile: bay position b (0..TILE_BAYS, may be fractional), storey row, and f, the height
 // fraction within the storey (0 = floor, 1 = ceiling).
 export function tileUv(tile, row, b, f) {
-  return [(tile.x + b * BAY_PX) / tile.width, (tile.y + (row + 1 - f) * ROW_PX) / tile.height];
+  return [(tile.x + b * (tile.bayPx ?? BAY_PX)) / tile.width, (tile.y + ((tile.singleCell ? 0 : tile.rowMap?.[row] ?? row) + 1 - f) * (tile.rowPx ?? ROW_PX)) / tile.height];
 }
 
 // A point inside the plinth band (below-grade wall strips) and inside the canopy fascia (canopy slabs).
 export function plinthUv(tile, b) {
-  return [(tile.x + b * BAY_PX) / tile.width, (tile.y + (ROWS.GROUND + 1) * ROW_PX - PLINTH_PX / 2) / tile.height];
+  const rowPx = tile.rowPx ?? ROW_PX;
+  return [(tile.x + b * (tile.bayPx ?? BAY_PX)) / tile.width, (tile.y + ((tile.rowMap?.[ROWS.GROUND] ?? ROWS.GROUND) + 1) * rowPx - PLINTH_PX / ROW_PX * rowPx / 2) / tile.height];
 }
 export function canopyUv(tile) {
-  return [(tile.x + 2 * BAY_PX) / tile.width, (tile.y + (ROWS.ENTRANCE + 0.235) * ROW_PX) / tile.height];
+  return [(tile.x + 2 * (tile.bayPx ?? BAY_PX)) / tile.width, (tile.y + ((tile.rowMap?.[ROWS.ENTRANCE] ?? ROWS.ENTRANCE) + 0.235) * (tile.rowPx ?? ROW_PX)) / tile.height];
+}
+
+const D4_ATLAS = JSON.parse(readFileSync(new URL("../data/materials/d4-atlas.json", import.meta.url), "utf8"));
+const D4_TILES = JSON.parse(readFileSync(new URL("../data/materials/d4-materials.json", import.meta.url), "utf8"));
+
+// Re-evaluate the vector-like paint operations at the final pixel centres.
+// This never magnifies the old 56-pixel raster. Grid looks need one bay/row;
+// D4's record-only doors are separate geometry, so legacy looks need just the
+// upper and ground rows, with no inferred atlas entrance.
+class D4Canvas {
+  constructor(width, height, bayPx, rowPx) {
+    this.color = new Raster(width, height);
+    this.emissive = new Raster(width, height);
+    this.kinds = new Uint8Array(width * height);
+    this.sx = bayPx / BAY_PX;
+    this.sy = rowPx / ROW_PX;
+  }
+  rect(x0, y0, x1, y1, shade, kind) {
+    const { width, height } = this.color;
+    for (let y = Math.max(0, Math.round(y0*this.sy)); y < Math.min(height, Math.round(y1*this.sy)); y++) {
+      for (let x = Math.max(0, Math.round(x0*this.sx)); x < Math.min(width, Math.round(x1*this.sx)); x++) {
+        this.color.set(x, y, shade((x+0.5)/this.sx, (y+0.5)/this.sy));
+        this.kinds[y*width+x] = kind;
+      }
+    }
+  }
+  glow(x0, y0, x1, y1, colour) {
+    const { width, height } = this.color;
+    for (let y = Math.max(0, Math.round(y0*this.sy)); y < Math.min(height, Math.round(y1*this.sy)); y++) {
+      for (let x = Math.max(0, Math.round(x0*this.sx)); x < Math.min(width, Math.round(x1*this.sx)); x++) this.emissive.set(x,y,colour);
+    }
+  }
+}
+
+// D4-only caller supplies the largest actually rendered storey and legacy bay.
+// Other buildings continue to call buildFacadeAtlas with its unchanged layout.
+export async function buildD4FacadeAtlas(looks, { maxStoreyM, maxBayM }) {
+  if (!(maxStoreyM > 0) || !(maxBayM > 0) || !looks.length) throw new Error("D4 atlas needs positive rendered cell dimensions and looks");
+  const density = D4_ATLAS.texelsPerMetre, gutter = D4_ATLAS.gutterPx;
+  const unique = new Map();
+  for (const raw of looks) {
+    const plain = raw.cell === "blank" && !raw.accent && !raw.piers && !raw.band && !raw.lintel;
+    const key = plain ? JSON.stringify([raw.texture,raw.wall,raw.trim,raw.plinth]) : raw.id;
+    const previous = unique.get(key);
+    if (previous) {
+      previous.aliases.push(raw);
+      if (raw.bay > previous.raw.bay) previous.raw = raw;
+    } else unique.set(key,{raw,aliases:[raw]});
+  }
+  const slots = [...unique.values()].map(({ raw, aliases }) => {
+    const bayM = raw.cell ? raw.bay : Math.max(raw.bay ?? maxBayM, maxBayM);
+    if (!(bayM > 0)) throw new Error(`D4 atlas: missing bay metres for ${raw.id}`);
+    const bayPx = Math.ceil(bayM*density), rowPx = Math.ceil(maxStoreyM*density);
+    return { raw, aliases, bayM, bayPx, rowPx, w: bayPx*(raw.cell ? 1 : TILE_BAYS), h: rowPx*(raw.cell ? 1 : 2) };
+  }).sort((a,b)=>b.h-a.h || b.w-a.w);
+  const area = slots.reduce((n,s) => n+(s.w+2*gutter)*(s.h+2*gutter),0);
+  const width = Math.min(D4_ATLAS.maximumEdgePx, Math.max(...slots.map(s=>s.w+2*gutter), Math.ceil(Math.sqrt(area)*1.5/4)*4));
+  const shelves = [];
+  let height = 0;
+  for (const slot of slots) {
+    if(slot.w+2*gutter > width) throw new Error(`D4 atlas cell ${slot.raw.id} exceeds packing edge`);
+    let shelf = shelves.find(s=>s.h>=slot.h+2*gutter && s.x+slot.w+2*gutter<=width);
+    if(!shelf) {
+      shelf={x:0,y:height,h:slot.h+2*gutter};
+      shelves.push(shelf);
+      height+=shelf.h;
+    }
+    Object.assign(slot,{x:shelf.x+gutter,y:shelf.y+gutter});
+    shelf.x+=slot.w+2*gutter;
+  }
+  if (width > D4_ATLAS.maximumEdgePx || height > D4_ATLAS.maximumEdgePx) throw new Error(`D4 atlas exceeds ${D4_ATLAS.maximumEdgePx}px`);
+  const maps = Object.fromEntries(["color","emissive","normal","arm"].map(name=>[name,new Uint8Array(width*height*3)]));
+  const tiles = new Map(), details = new Map();
+  for (const slot of slots) {
+    const { raw, bayM, bayPx, rowPx, w, h } = slot;
+    const look = normalise(raw), canvas = new D4Canvas(w,h,bayPx,rowPx);
+    if(raw.cell) paintTile(canvas,look);
+    else {
+      const rng=mulberry32(look.seed);
+      paintStorey(canvas,look,0,rng);
+      paintStorey(canvas,look,ROW_PX,rng,{ground:true});
+    }
+    const classes = facadeClasses(ROUGHNESS[look.texture] ?? 0.85, look.pattern === "curtain" ? KIND.FRAME : KIND.WALL);
+    const relief = await detailMaps({ width:w, height:h, metresX:w/bayPx*bayM, metresY:h/rowPx*maxStoreyM, kinds:canvas.kinds, classes, tile:null, encoded:false });
+    const cls = D4_ATLAS.detailClasses[look.texture];
+    if (!details.has(cls)) {
+      const entry = [...D4_TILES.materials,...D4_TILES.buildingMaterials].find(t=>t.cls===cls);
+      const decoded = {};
+      for (const map of ["col","nor","arm"]) decoded[map] = await sharp(readFileSync(new URL(`../data/materials/${entry.files[map]}`,import.meta.url))).removeAlpha().raw().toBuffer({ resolveWithObject:true });
+      details.set(cls,{ entry,decoded });
+    }
+    const { entry,decoded } = details.get(cls);
+    for (let j=0;j<h;j++) for(let i=0;i<w;i++) {
+      const k=j*w+i, o=k*3;
+      if (!classes[canvas.kinds[k]].detail) continue;
+      const tx=Math.floor((i/bayPx*bayM/entry.physicalSizeM%1)*decoded.col.info.width);
+      const ty=Math.floor((j/rowPx*maxStoreyM/entry.physicalSizeM%1)*decoded.col.info.height);
+      const t=(ty*decoded.col.info.width+tx)*3;
+      const grain=(decoded.col.data[t]+decoded.col.data[t+1]+decoded.col.data[t+2])/3/128;
+      for(let c=0;c<3;c++) canvas.color.data[o+c]=clamp(canvas.color.data[o+c]*(0.85+0.15*grain));
+      const z=Math.max(0.2,decoded.nor.data[t+2]/127.5-1);
+      const nx=(relief.normal[o]/127.5-1)+(decoded.nor.data[t]/127.5-1)/z;
+      const ny=(relief.normal[o+1]/127.5-1)+(decoded.nor.data[t+1]/127.5-1)/z;
+      const length=Math.hypot(nx,ny,1);
+      relief.normal.set([clamp((nx/length+1)*127.5),clamp((ny/length+1)*127.5),clamp((1/length+1)*127.5)],o);
+      relief.arm[o+1]=decoded.arm.data[t+1];
+      relief.arm[o+2]=decoded.arm.data[t+2];
+    }
+    const local = { color:canvas.color.data, emissive:canvas.emissive.data, ...relief };
+    for(const name of Object.keys(maps)) for(let j=-gutter;j<h+gutter;j++) for(let i=-gutter;i<w+gutter;i++) {
+      const source=(Math.max(0,Math.min(h-1,j))*w+Math.max(0,Math.min(w-1,i)))*3;
+      maps[name].set(local[name].subarray(source,source+3),((slot.y+j)*width+slot.x+i)*3);
+    }
+    for(const alias of slot.aliases) {
+      const aliasBayPx=raw.cell ? bayPx*alias.bay/bayM : bayPx;
+      tiles.set(alias.id,{ x:slot.x,y:slot.y,width,height,bayPx:aliasBayPx,rowPx,singleCell:!!raw.cell,
+        ...(!raw.cell ? {rowMap:[0,0,1,1]} : {}),
+        texelsPerMetre:[bayPx/bayM,rowPx/maxStoreyM],source:D4_ATLAS.source });
+    }
+  }
+  return { width,height,tiles,source:D4_ATLAS.source,
+    ...Object.fromEntries(Object.entries(maps).map(([name,pixels])=>[name,encodePng(width,height,3,pixels)])) };
 }

@@ -1,0 +1,109 @@
+{
+  "estimated": true,
+  "building": "BLD_Dormitory_Building.004",
+  "storeys": [
+    {
+      "hM": 3.3
+    },
+    {
+      "hM": 3.3
+    },
+    {
+      "hM": 3.3
+    },
+    {
+      "hM": 3.3
+    },
+    {
+      "hM": 3.3
+    },
+    {
+      "hM": 3.3
+    },
+    {
+      "hM": 3.3
+    },
+    {
+      "hM": 3.3
+    }
+  ],
+  "walls": {
+    "W14": {
+      "bays": {
+        "pitchM": 2,
+        "count": 1,
+        "offsetM": 0.00781796
+      },
+      "cells": [
+        [
+          "window"
+        ],
+        [
+          "window"
+        ],
+        [
+          "window"
+        ],
+        [
+          "window"
+        ],
+        [
+          "window"
+        ],
+        [
+          "window"
+        ],
+        [
+          "window"
+        ],
+        [
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 1.3,
+        "hM": 1.5,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "VR scene_a13/f",
+        "refs": [
+          "VR scene_a13/f",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated",
+          "Exact registered source edge correspondence in surfaceEdges; automatic 0.3 m matching remains unchanged. Endpoints are checked within 1 mm, not moved."
+        ],
+        "independentCount": 1,
+        "openingGroups": 1,
+        "notes": [
+          "No independently matched LOD4 record for the legacy A13 node. Independent VR scene_a13/f: one window stack near the inward edge of the brick end. The cropped view is not used to infer total height; the registered source supplies eight levels.",
+          "Vertical allocation follows the registered main source: 8 levels over 26.400 m. The independent image count is horizontal; heights remain estimates."
+        ],
+        "tier": "T2",
+        "lod4BayCount": null,
+        "vrBayCount": 1
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "brick:#c98a5c",
+        "glass": "#5f8f95",
+        "frame": "#ebebe6"
+      },
+      "surfaceEdges": [
+        {
+          "A": [
+            243980.4402,
+            263554.0923
+          ],
+          "B": [
+            243984.647,
+            263558.972
+          ],
+          "source": "building-forms.json BLD_Dormitory_Building.004/mass/0/edge/7; resolved source geometry, estimated"
+        }
+      ]
+    }
+  }
+}

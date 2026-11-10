@@ -1,0 +1,101 @@
+{
+  "estimated": true,
+  "building": "BLD_SCNU_A12",
+  "storeys": [
+    {
+      "hM": 4.156
+    },
+    {
+      "hM": 4.156
+    },
+    {
+      "hM": 4.156
+    },
+    {
+      "hM": 4.156
+    },
+    {
+      "hM": 4.156
+    }
+  ],
+  "walls": {
+    "W01": {
+      "bays": {
+        "pitchM": 3.69756096,
+        "count": 3,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 2.6622,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 A12_우정원_85379 W01",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated",
+          "Exact registered source edge correspondence in surfaceEdges; automatic 0.3 m matching remains unchanged. Endpoints are checked within 1 mm, not moved."
+        ],
+        "independentCount": 3,
+        "openingGroups": 3,
+        "notes": [
+          "LOD4 x76..123: three window stacks on this short Ujeongwon side, counted independently of the irregular long front.",
+          "Vertical allocation follows the registered main source: 5 levels over 20.780 m. The independent image count is horizontal; heights remain estimates."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 3,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "brick:#9a4b3c",
+        "glass": "#5f7c86",
+        "frame": "#e6e6e0"
+      },
+      "surfaceEdges": [
+        {
+          "A": [
+            243799.9238,
+            263484.8887
+          ],
+          "B": [
+            243797.2043,
+            263474.1762
+          ],
+          "source": "building-forms.json BLD_SCNU_A12/mass/0/edge/13; resolved source geometry, estimated"
+        }
+      ]
+    }
+  }
+}
