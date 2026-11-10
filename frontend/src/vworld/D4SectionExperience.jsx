@@ -7,7 +7,6 @@ import { RoofEditor } from "../features/energy/editor/RoofEditor";
 import { InstallationPlanManager } from "../features/energy/installations/InstallationPlanManager";
 import { Breadcrumb } from "../ui/Breadcrumb.jsx";
 import { Button } from "../ui/Button.jsx";
-import { Disclosure } from "../ui/Disclosure.jsx";
 import { StatusBadge } from "../ui/StatusBadge.jsx";
 import { D4_BUILDING_DATA, D4_ROOMS, formatRoomNumber, getWingById } from "../utils/d4BuildingData.mjs";
 import { getCurrentRoomStatus, isRoomInUse } from "../utils/d4RoomStatus.mjs";
@@ -16,10 +15,11 @@ const DEFAULT_WING_ID = D4_BUILDING_DATA.wings[0].id;
 const PANE_TITLE_ID = "d4-pane-title";
 
 // D4 건물 상세: 지도 옆 패인(데스크톱·태블릿) 또는 full 단계 바텀 시트(폰)의 내용. 캔버스는 그대로 뒤에 남는다.
-// 머리 하나: `상위로` 버튼과 브레드크럼(캠퍼스 › 공과대학 3호관 [D4] › 층 › 호실, 현재 위치가 제목).
-// 내용 순서: 건물 단계는 동·층 장면과 사용 중인 강의실, 층 단계는 층 고르기 -> 강의실 -> 상세. 설치 계획은 접힌 펼침 안에 있다.
+// 머리 하나: `상위로` 버튼과 브레드크럼(캠퍼스 › 공과대학 3호관 [D4] › 층 › 호실, 현재 위치가 제목). 캠퍼스 단계가 지도로 돌아가는 길이라
+// 폰에도 캠퍼스 시점 버튼 줄을 따로 두지 않는다.
+// 내용 순서: 건물 단계는 동·층 장면과 사용 중인 강의실, 층 단계는 층 고르기 -> 강의실 -> 상세.
+// 설치 계획은 에너지 탭의 `배치 편집`으로 들어온 요청(scenarioId·installationPlanId)이 있을 때만 `배치 편집` 단계로 연다.
 // 나가기는 Esc(한 번에 한 단계)나 브레드크럼·상위로뿐이다. 휠로 나가는 동작은 없다.
-// presets/onSelectPreset(폰): 시트가 지도를 가리는 동안 캠퍼스 시점으로 바로 가는 버튼 줄.
 export function D4SectionExperience({
   onClose,
   buildingId = "D4",
@@ -32,8 +32,6 @@ export function D4SectionExperience({
   planRefreshKey,
   startInstallation = false,
   returnFocusRef,
-  presets = null,
-  onSelectPreset,
 }) {
   const [isPlanOpen, setIsPlanOpen] = useState(startInstallation);
   const [isPlanEditorOpen, setIsPlanEditorOpen] = useState(Boolean(scenarioId || installationPlanId));
@@ -55,7 +53,9 @@ export function D4SectionExperience({
   const roomUsageById = useMemo(() => new Map(D4_ROOMS.map((room) => [room.id, isRoomInUse(room, currentTime)])), [currentTime]);
   const selectedRoomStatus = selectedRoom ? getCurrentRoomStatus(selectedRoom, currentTime) : null;
   const inUseRooms = useMemo(() => D4_ROOMS.filter((room) => room.isSelectable && roomUsageById.get(room.id)), [roomUsageById]);
-  const level = selectedRoom ? "room" : d4View === "grid" ? "floor" : "building";
+  const isD4 = buildingId === "D4";
+  const roomLevel = selectedRoom ? "room" : d4View === "grid" ? "floor" : "building";
+  const level = isPlanOpen ? "plan" : roomLevel;
 
   useEffect(() => {
     if (!scenarioId && !installationPlanId) return;
@@ -65,13 +65,17 @@ export function D4SectionExperience({
   }, [installationPlanId, scenarioId]);
 
   const toBuilding = () => {
+    setIsPlanOpen(false);
     setSelectedRoomId(null);
     setD4View("wings");
   };
   const toFloor = () => setSelectedRoomId(null);
-  // 상위로: 호실 -> 층 -> 건물 -> 캠퍼스.
+  // 상위로: 호실 -> 층 -> 건물 -> 캠퍼스. 배치 편집은 D4면 건물 단계로, 다른 건물이면 캠퍼스로 오른다.
   const goUp = () => {
-    if (level === "room") toFloor();
+    if (level === "plan") {
+      if (isD4) toBuilding();
+      else onClose?.();
+    } else if (level === "room") toFloor();
     else if (level === "floor") toBuilding();
     else onClose?.();
   };
@@ -141,7 +145,7 @@ export function D4SectionExperience({
 
   const crumbs = [
     { id: "campus", label: "캠퍼스", ariaLabel: "캠퍼스 지도로 돌아가기", onSelect: () => onClose?.() },
-    {
+    isD4 || level !== "plan" ? {
       id: "building",
       label: (
         <>
@@ -150,20 +154,11 @@ export function D4SectionExperience({
         </>
       ),
       onSelect: toBuilding,
-    },
-    level !== "building" && { id: "floor", label: `${activeWing.label} ${floorLabel(d4SelectedFloor)}`, onSelect: toFloor },
+    } : null,
+    (level === "floor" || level === "room") && { id: "floor", label: `${activeWing.label} ${floorLabel(d4SelectedFloor)}`, onSelect: toFloor },
     level === "room" && { id: "room", label: `D4 ${formatRoomNumber(selectedRoom.roomNumber)}` },
+    level === "plan" && { id: "plan", label: isD4 ? "배치 편집" : `${buildingId} 배치 편집` },
   ].filter(Boolean);
-
-  const presetRow = presets && (
-    <nav aria-label="캠퍼스 시점" className="flex flex-wrap gap-2">
-      {presets.map((preset) => (
-        <Button key={preset.id} size="sm" data-qa={`camera-preset-${preset.id}`} onClick={() => onSelectPreset?.(preset)}>
-          {preset.shortName ?? preset.title}
-        </Button>
-      ))}
-    </nav>
-  );
 
   return (
     <section
@@ -181,34 +176,10 @@ export function D4SectionExperience({
         </Button>
         <Breadcrumb id={PANE_TITLE_ID} items={crumbs} currentHeading={2} />
       </header>
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain pb-6">
-        {d4View === "wings" ? (
-          <D4WingFloorSelect
-            building={building}
-            activeWingId={d4ActiveWingId}
-            onSelectWing={changeWing}
-            onSelectFloor={selectFloorFromWings}
-            inUseRooms={inUseRooms}
-            onSelectInUseRoom={jumpToInUseRoom}
-            beforeList={presetRow}
-          />
-        ) : (
-          <D4RoomGridSelect
-            building={building}
-            wing={activeWing}
-            floor={d4SelectedFloor}
-            rooms={floorRooms}
-            roomUsageById={roomUsageById}
-            selectedRoom={selectedRoom}
-            selectedRoomStatus={selectedRoomStatus}
-            onSelectRoom={setSelectedRoomId}
-            onChangeWing={changeWing}
-            onChangeFloor={changeFloor}
-          />
-        )}
-        <Disclosure summary="설치 계획" open={isPlanOpen} onOpenChange={setIsPlanOpen} data-qa="d4-plan-disclosure" className="px-4">
-          {isPlanOpen && (isPlanEditorOpen ? (
-            <div className="relative h-[70vh] min-h-[420px] overflow-hidden rounded-card border border-hairline">
+      {level === "plan" ? (
+        <div data-qa="d4-plan" className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-4 py-4">
+          {isPlanEditorOpen ? (
+            <div className="relative min-h-0 flex-1 overflow-hidden rounded-card border border-hairline">
               <RoofEditor
                 key={activeInstallationPlanId ?? scenarioId ?? "default-scenario"}
                 buildingId={buildingId}
@@ -233,9 +204,35 @@ export function D4SectionExperience({
               onPlansChange={onPlansChange}
               onRepresentativeChange={onRepresentativeChange}
             />
-          ))}
-        </Disclosure>
-      </div>
+          )}
+        </div>
+      ) : (
+        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain pb-6">
+          {d4View === "wings" ? (
+            <D4WingFloorSelect
+              building={building}
+              activeWingId={d4ActiveWingId}
+              onSelectWing={changeWing}
+              onSelectFloor={selectFloorFromWings}
+              inUseRooms={inUseRooms}
+              onSelectInUseRoom={jumpToInUseRoom}
+            />
+          ) : (
+            <D4RoomGridSelect
+              building={building}
+              wing={activeWing}
+              floor={d4SelectedFloor}
+              rooms={floorRooms}
+              roomUsageById={roomUsageById}
+              selectedRoom={selectedRoom}
+              selectedRoomStatus={selectedRoomStatus}
+              onSelectRoom={setSelectedRoomId}
+              onChangeWing={changeWing}
+              onChangeFloor={changeFloor}
+            />
+          )}
+        </div>
+      )}
     </section>
   );
 }

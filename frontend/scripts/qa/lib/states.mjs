@@ -480,9 +480,26 @@ export const STATES = Object.freeze([
         await ctx.fixtureControl.up();
         ctx.actions.push("fixtures up for S15 (the plan list needs a plan for 편집)");
       }
-      // Planning sits behind the D4 pane's 설치 계획 disclosure (todo 34); the old installation tab is the fallback.
+      // Planning opens from the 에너지 tab's 배치 편집 (ui-simplify todo 7 removed the D4 pane's 설치 계획 disclosure); the
+      // disclosure and the old installation tab stay as fallbacks for older builds.
       if (await ctx.b.run(() => Boolean(document.querySelector("#d4-installation-tab")))) await act(ctx, "#d4-installation-tab");
-      else await act(ctx, "[data-qa=d4-plan-disclosure] button");
+      else if (await ctx.b.run(() => Boolean(document.querySelector("[data-qa=d4-plan-disclosure]")))) await act(ctx, "[data-qa=d4-plan-disclosure] button");
+      else {
+        await tapIfVisible(ctx, '[aria-label="캠퍼스 지도로 돌아가기"]');
+        await sleep(1500);
+        await pickTab(ctx, "energy");
+        await wait(ctx, 3000);
+        const placement = '[aria-label^="D4"][aria-label$="배치 편집"]';
+        await ctx.b.run((sel) => { document.querySelector(sel)?.scrollIntoView({ block: "center" }); return true; }, placement);
+        // The phone sheet can keep the comparison table below its visible detent, where a tap cannot reach it.
+        if (!(await tapIfVisible(ctx, placement))) {
+          const clicked = await ctx.b.run((sel) => { const el = document.querySelector(sel); el?.click(); return Boolean(el); }, placement);
+          ctx.actions.push(clicked ? `element.click() ${placement} (not tappable in the viewport)` : `NOT FOUND ${placement}`);
+        }
+        await wait(ctx, 3000);
+        // The request opens the roof editor on the scenario; its plan list (and 편집) sits one step back.
+        await tapIfVisible(ctx, '[aria-label="설치 계획 목록으로 돌아가기"]');
+      }
       await wait(ctx, 3000);
       await ctx.b.run(() => { [...document.querySelectorAll("button")].find((b) => b.textContent.trim() === "편집")?.scrollIntoView({ block: "center" }); return true; });
       await act(ctx, "button", "편집");
