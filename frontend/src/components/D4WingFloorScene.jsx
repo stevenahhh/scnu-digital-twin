@@ -1,6 +1,7 @@
 import { Canvas, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import { useEffect, useMemo } from "react";
+import { Check } from "lucide-react";
 import { ACCENT_HEX, D4_SCENE } from "../ui/sceneTokens.mjs";
 import { D4_SCENE_LABEL } from "./d4Shared.mjs";
 import { cx } from "../ui/cx.mjs";
@@ -23,8 +24,10 @@ function Tower({ wing, x, isActive, onSelectFloor }) {
     <group position={[x, 0, 0]}>
       <Html position={[0, (levels[levels.length - 1] + 1) * FLOOR_STEP + 0.15, 0]} center style={{ pointerEvents: "none" }}>
         <div
-          className={cx("pointer-events-none whitespace-nowrap", D4_SCENE_LABEL, "text-body", isActive && "text-primary")}
+          // 고른 동은 강조색 글자 대신 체크 표시로 알린다(강조색은 선택 표시와 주 동작에만 쓴다, V-Q-21).
+          className={cx("pointer-events-none inline-flex items-center gap-1 whitespace-nowrap", D4_SCENE_LABEL, "text-body")}
         >
+          {isActive && <Check aria-hidden="true" className="h-3 w-3 shrink-0" />}
           {wing.label}
         </div>
       </Html>
@@ -55,8 +58,16 @@ function Tower({ wing, x, isActive, onSelectFloor }) {
                   event.stopPropagation();
                   onSelectFloor(wing.id, floor);
                 }}
-                className="pointer-events-auto min-w-10"
+                hit="compact"
+                className="pointer-events-auto [@media(pointer:coarse)]:hidden max-[639px]:hidden"
               />
+              {/* 터치·폰: 층 간격이 44px 누름 영역보다 좁아 이름표는 보이기만 하고, 층은 장면 아래 버튼 목록으로 고른다. */}
+              <span
+                aria-hidden="true"
+                className={cx("pointer-events-none hidden whitespace-nowrap border border-hairline [@media(pointer:coarse)]:inline-block max-[639px]:inline-block", D4_SCENE_LABEL)}
+              >
+                {floor === 0 ? "B1" : `${floor}F`}
+              </span>
             </Html>
           </group>
         );

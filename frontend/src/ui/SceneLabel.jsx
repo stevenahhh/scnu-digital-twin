@@ -10,6 +10,8 @@ export const SCENE_LABEL_STATES = ["idle", "hover", "focus", "selected", "dimmed
 export const LABEL_TEXT = "text-caption [@media(pointer:coarse)_and_(min-width:640px)]:text-body";
 // 버튼(누르는 영역)은 포인터 40x40px, 굵은 포인터·폰 44px. 보이는 칩과 글자는 그대로이고 투명한 영역만 커진다.
 export const LABEL_HIT = "min-h-10 min-w-10 [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:min-w-11 max-[639px]:min-h-11 max-[639px]:min-w-11";
+// 촘촘한 장면(D4 층 이름표)의 포인터 전용 영역: 24px 높이라 이웃 층의 영역과 겹치지 않는다. 터치·폰에서는 따로 버튼 목록을 둔다.
+export const LABEL_HIT_COMPACT = "min-h-6 min-w-10";
 
 // 선택: 강조색 테두리와 강조색 글자. 글자는 강조색을 ink 쪽으로 섞어 두 테마 모두 4.5:1을 넘긴다.
 const SELECTED_INK = "text-[color:color-mix(in_srgb,var(--colors-primary)_75%,var(--colors-ink))]";
@@ -54,6 +56,7 @@ export function SceneLabel({
   estimatedName = state === "estimated",
   leader = null,
   size = "md",
+  hit = "scene",
   onSelect,
   className,
   ...rest
@@ -74,7 +77,7 @@ export function SceneLabel({
         "group relative inline-flex items-center justify-center bg-transparent p-0 outline-none",
         // 버튼도 칩 글자 크기를 가진다(브라우저 기본 16 px가 아니라). 칩의 글자 크기를 재는 쪽이 버튼을 읽어도 같은 값이다.
         LABEL_TEXT,
-        LABEL_HIT,
+        hit === "compact" ? LABEL_HIT_COMPACT : LABEL_HIT,
         // 마우스를 올린 건물(칩이나 그 메시)의 칩은 한 단계 떠오른다(그림자와 함께 2 px 위로). 2 px는 전환 없이 바로 옮긴다:
         // 멈춘 화면(frameloop demand)에서는 그릴 프레임이 거의 없어 CSS 전환이 끝나지 않은 채 남았다.
         state === "hover" && "-translate-y-0.5",
@@ -88,7 +91,7 @@ export function SceneLabel({
         data-qa="label-chip"
         className={cx(
           "inline-flex max-w-40 items-center gap-1 rounded-control border border-hairline bg-[var(--colors-label-bg)] font-medium text-ink",
-          "transition-[opacity,background-color,box-shadow] duration-state motion-reduce:transition-none",
+          "transition-[opacity,box-shadow] duration-state motion-reduce:transition-none",
           size === "sm" ? "px-2 py-1" : "px-2 py-1",
           LABEL_TEXT,
           HALO,

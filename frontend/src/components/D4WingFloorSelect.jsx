@@ -1,6 +1,6 @@
 import { D4WingFloorScene } from "./D4WingFloorScene";
 import { D4SampleBadge } from "./D4SampleBadge";
-import { D4_CARD, D4_COLUMN, floorLabel } from "./d4Shared.mjs";
+import { D4_CARD, D4_COLUMN, floorLabel, floorLevels } from "./d4Shared.mjs";
 import { formatRoomNumber, getWingById } from "../utils/d4BuildingData.mjs";
 import { Segmented } from "../ui/Segmented.jsx";
 import { StatusBadge } from "../ui/StatusBadge.jsx";
@@ -8,6 +8,27 @@ import { COARSE_TARGET, FOCUS_RING } from "../ui/Button.jsx";
 
 // 안내 문장은 보이는 글로 두지 않고 title·aria-description으로만 준다.
 const HINT = "층을 선택하면 해당 층의 강의실 목록으로 이동합니다.";
+
+// 터치·폰에서 층을 고르는 44px 버튼 목록(지금 고른 동). 데스크톱 포인터에서는 장면 이름표가 같은 일을 한다.
+function FloorButtonList({ wing, onSelectFloor }) {
+  if (!wing) return null;
+  return (
+    <ul data-qa="d4-floor-list" aria-label={`${wing.label} 층 목록`} className="hidden w-full grid-cols-4 gap-2 [@media(pointer:coarse)]:grid max-[639px]:grid">
+      {floorLevels(wing).map((level) => (
+        <li key={level}>
+          <button
+            type="button"
+            aria-label={`${level === 0 ? "지하 1" : level}층 선택`}
+            onClick={() => onSelectFloor(wing.id, level)}
+            className={`flex min-h-11 w-full items-center justify-center rounded-control border border-hairline bg-surface-2 px-2 text-body font-semibold text-ink hover:bg-surface-3 ${COARSE_TARGET} ${FOCUS_RING}`}
+          >
+            {floorLabel(level)}
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 function InUseRoomList({ rooms, onSelectRoom }) {
   return (
@@ -60,6 +81,7 @@ export function D4WingFloorSelect({ building, activeWingId, onSelectWing, onSele
             onChange={onSelectWing}
           />
         </div>
+        <FloorButtonList wing={building.wings.find((wing) => wing.id === activeWingId) ?? building.wings[0]} onSelectFloor={onSelectFloor} />
       </div>
       <InUseRoomList rooms={inUseRooms} onSelectRoom={onSelectInUseRoom} />
     </div>
