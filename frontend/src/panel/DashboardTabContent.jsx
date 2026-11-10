@@ -42,6 +42,7 @@ export function DashboardTabContent({
             onRetry={feeds.retry.energy}
             onOpenRecommendation={onOpenRecommendation}
             campusOverview={campusOverview}
+            sceneDate={clock.sceneDate}
           />
         </PanelErrorBoundary>
       )}

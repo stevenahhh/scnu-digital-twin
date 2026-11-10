@@ -138,10 +138,6 @@ function Dashboard() {
     setIsTimePlaying(false);
   }, [isCampus, stopTour]);
 
-  const selectFromEnergy = (buildingId) => {
-    const elementId = flow.selectBuilding({ elementId: `BLD_${buildingId}`, buildingId, displayName: buildingId });
-    if (isD4ElementId(elementId)) flow.openD4Section();
-  };
   const openRecommendation = (request) => {
     selection.setSelectedBuildingId(request.buildingId);
     flow.openD4Section(request);
@@ -198,8 +194,6 @@ function Dashboard() {
         playing={isTimePlaying}
         onPlayingChange={setIsTimePlaying}
         sceneWeather={sceneWeather}
-        // 계약 C1의 moreMenu를 아직 모르는 CampusHud는 같은 메뉴를 compareSlot 자리에 그린다(새 HUD는 compareSlot을 무시한다).
-        compareSlot={moreMenu}
         search={{ registry: flow.labelRegistry, onPick: handleSearchPick }}
       />
       <CampusCanvas
@@ -254,12 +248,7 @@ function Dashboard() {
           buildingId={selection.selectedBuildingId}
           onOpenRecommendation={openRecommendation}
           campusOverview={(
-            <CampusEnergyOverview
-              onSelection={flow.selectBuilding}
-              onBuildingSelect={selectFromEnergy}
-              refreshKey={plans.overlayRefreshKey}
-              selectedBuildingId={selection.selectedBuildingId}
-            />
+            <CampusEnergyOverview refreshKey={plans.overlayRefreshKey} />
           )}
         />
       </DashboardShell>

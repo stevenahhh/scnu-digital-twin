@@ -41,9 +41,6 @@ import { useComparisonSet } from "./state/useComparisonSet.mjs";
 import { summarizeWeather } from "./panel/weatherSummary.mjs";
 import { useDashboardDemo } from "./vworld/dashboardDemo.mjs";
 
-// VWorld 카메라에는 OrbitControls가 없다. 계약 C1의 CampusHud는 zoomBy/rotateBy를 쓰고, 그 전 HUD에는 빈 controlsRef가 닿는다.
-const NO_ORBIT_CONTROLS = Object.freeze({ current: null });
-
 export default function App() {
   useSimulationSocket();
   const panelRef = useRef(null);
@@ -142,11 +139,6 @@ export default function App() {
     plans.refreshAll();
   };
   const openD4 = () => setD4OpenKey((value) => value + 1);
-  const selectFromEnergy = (buildingId) => {
-    const elementId = `BLD_${buildingId}`;
-    handleVWorldSelection(urlSelectionTarget(elementId));
-    if (isD4ElementId(elementId)) openD4();
-  };
 
   const [isTimePlaying, setIsTimePlaying] = useState(false);
   // D4 상세가 열리면 캠퍼스 카메라 투어와 시간 재생을 멈춘다(Legacy와 같은 규칙). 뒤에 가려진 장면을 계속 움직일 이유가 없다.
@@ -222,13 +214,11 @@ export default function App() {
         moreMenu={moreMenu}
         feedIssueCount={feedIssueCount(feeds)}
         onOpenStatus={() => navigation.openTab("status")}
-        camera={{ ...camera, controlsRef: NO_ORBIT_CONTROLS }}
+        camera={camera}
         clock={clock}
         playing={isTimePlaying}
         onPlayingChange={setIsTimePlaying}
         sceneWeather={sceneWeather}
-        // 계약 C1의 moreMenu를 아직 모르는 CampusHud는 같은 메뉴를 compareSlot 자리에 그린다(새 HUD는 compareSlot을 무시한다).
-        compareSlot={moreMenu}
       />
       <div ref={attachOverlayHost} data-label-chrome-layer="" className="pointer-events-none fixed inset-0 z-[6]" />
 
@@ -313,13 +303,7 @@ export default function App() {
           buildingId={selection.selectedBuildingId}
           onOpenRecommendation={setEditorRequest}
           campusOverview={(
-            <CampusEnergyOverview
-              onSelection={handleVWorldSelection}
-              onBuildingSelect={selectFromEnergy}
-              refreshKey={plans.overlayRefreshKey}
-              selectedBuildingId={selection.selectedBuildingId}
-              onOverlayDataChange={setRepresentativeOverlays}
-            />
+            <CampusEnergyOverview refreshKey={plans.overlayRefreshKey} onOverlayDataChange={setRepresentativeOverlays} />
           )}
         />
       </DashboardShell>
