@@ -1,21 +1,44 @@
+import { cloneElement, isValidElement, useState } from "react";
 import { isFeedDown } from "../hooks/feedStatusModel.mjs";
 import { FeedAlert } from "./FeedStatus.jsx";
-import { SectionHeader } from "../ui/SectionHeader.jsx";
 import { BuildingAnalysis } from "../features/energy/analysis";
 import { CampusComparison } from "../features/energy/campus/CampusComparisonPanel";
 import { EnergyDashboard } from "../features/energy/dashboard/EnergyDashboard";
+import { FIELD_INPUT } from "../features/energy/shared/fieldStyles.mjs";
+import { kstToday, WEATHER_PRESETS } from "../features/energy/shared/energyContext.mjs";
 
-// 에너지 탭: 건물 전력 현황, 건물 분석, 캠퍼스 비교 순서. 설치 계획을 못 받으면 맨 위에 알림 하나와 다시 시도.
-// Legacy는 3D 지도에 없는 캠퍼스 설치 현황·대표 계획 목록을 campusOverview로 함께 넣는다.
-export function EnergyTab({ buildingId, plans, feedStatus, onRetry, campusOverview, onOpenRecommendation }) {
+// 에너지 탭: 맨 위 한 줄에 기준일(장면 날짜)과 기상 프리셋 하나, 그 아래 선택 건물 요약, 접힌 건물 분석, 캠퍼스 비교 표.
+// 에너지 피드가 끊기면 알림과 다시 시도는 맨 위 하나뿐이고, 아래 묶음은 기다린다는 한 줄만 적는다.
+// campusOverview는 대표 설치 계획 지도 레이어 토글이다(부르는 쪽이 넣는다).
+export function EnergyTab({ buildingId, plans, feedStatus, onRetry, campusOverview, onOpenRecommendation, sceneDate }) {
+  const date = sceneDate ?? kstToday();
+  const [weatherPreset, setWeatherPreset] = useState("clear");
+  const feedDown = isFeedDown(feedStatus);
+  // 레이어 토글도 피드가 끊긴 동안은 알림을 맨 위 하나에 맡긴다.
+  const layerToggle = isValidElement(campusOverview) ? cloneElement(campusOverview, { feedDown }) : campusOverview;
   return (
     <>
-      {/* 탭 제목(h2)은 패널 머리에 있다. 이 머리글은 그 아래 묶음이다. */}
-      <SectionHeader level={3} title="에너지" />
-      {isFeedDown(feedStatus) && <FeedAlert feed="energy" status={feedStatus} onRetry={onRetry} />}
-      {campusOverview}
+      <div data-qa="energy-context" className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-caption text-ink-muted">
+          기준일 (장면 날짜) <time dateTime={date} className="font-semibold tabular-nums text-ink">{date}</time>
+        </p>
+        <label className="flex items-center gap-2 text-caption text-ink-muted">
+          기상 프리셋
+          <span className="w-32">
+            <select
+              data-qa="energy-weather-preset"
+              value={weatherPreset}
+              onChange={(event) => setWeatherPreset(event.target.value)}
+              className={FIELD_INPUT}
+            >
+              {WEATHER_PRESETS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+            </select>
+          </span>
+        </label>
+      </div>
+      {feedDown && <FeedAlert feed="energy" status={feedStatus} onRetry={onRetry} />}
       <section role="region" aria-label={`${buildingId} 건물 전력 현황`}>
-        <EnergyDashboard key={buildingId} buildingId={buildingId} />
+        <EnergyDashboard key={buildingId} buildingId={buildingId} date={date} feedDown={feedDown} />
       </section>
       <BuildingAnalysis
         key={`${buildingId}:${plans.representativePlanId ?? "none"}`}
@@ -23,8 +46,16 @@ export function EnergyTab({ buildingId, plans, feedStatus, onRetry, campusOvervi
         plans={plans.plans}
         plansStatus={plans.status}
         representativePlanId={plans.representativePlanId}
+        date={date}
+        weatherPreset={weatherPreset}
       />
-      <CampusComparison onOpenRecommendation={onOpenRecommendation} />
+      <CampusComparison
+        date={date}
+        weatherPreset={weatherPreset}
+        feedDown={feedDown}
+        onOpenRecommendation={onOpenRecommendation}
+        layerToggle={layerToggle}
+      />
     </>
   );
 }

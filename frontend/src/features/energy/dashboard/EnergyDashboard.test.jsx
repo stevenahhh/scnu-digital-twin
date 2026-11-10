@@ -16,7 +16,7 @@ describe("EnergyDashboard", () => {
   it("renders loading, then exact KPI labels, units, provenance, aligned chart and breakdowns", async () => {
     const request = deferred();
     const client = { load: vi.fn(() => request.promise) };
-    render(<EnergyDashboard client={client} initialDate="2026-05-18" />);
+    render(<EnergyDashboard client={client} date="2026-05-18" />);
     expect(screen.getByRole("status").textContent).toContain("불러오는 중");
     request.resolve(dashboardPayload());
     expect(await screen.findByRole("heading", { name: "D4 / 공대 3호관" })).toBeTruthy();
@@ -26,7 +26,10 @@ describe("EnergyDashboard", () => {
     expect(screen.getByText("44.0 kWh")).toBeTruthy();
     expect(screen.getByText("4.8%")).toBeTruthy();
     expect(screen.getByRole("img", { name: /96개 15분 구간/ })).toBeTruthy();
+    // 나머지 지표·손실 계수·공간별 수요는 펼침 안에 있다.
     expect(screen.getByText("10.0%")).toBeTruthy();
+    expect(screen.queryByLabelText("시뮬레이션 날짜")).toBeNull();
+    expect(screen.getByRole("button", { name: /지표 더 보기/ }).getAttribute("aria-expanded")).toBe("false");
     expect(screen.getByText("강의실")).toBeTruthy();
   });
 
@@ -37,7 +40,7 @@ describe("EnergyDashboard", () => {
     value.scenario = { ...value.scenario, id: "D3-scenario-campus-baseline", building_id: "D3", name: "D3 campus baseline" };
     value.demand = { ...value.demand, building_id: "D3", total_energy_kwh: total, intervals: value.demand.intervals.map((item) => ({ ...item, predicted_demand_kw: 1, predicted_demand_energy_kwh: .25 })) };
     value.simulation = { ...value.simulation, scenario_id: value.scenario.id, intervals: value.simulation.intervals.map((item) => ({ ...item, predicted_demand_energy_kwh: .25 })), totals: { ...value.simulation.totals, demand_energy_kwh: total } };
-    render(<EnergyDashboard buildingId="D3" client={readyClient(value)} initialDate="2026-05-18" scenarios={[{ id: value.scenario.id, label: value.scenario.name }]} />);
+    render(<EnergyDashboard buildingId="D3" client={readyClient(value)} date="2026-05-18" scenarios={[{ id: value.scenario.id, label: value.scenario.name }]} />);
     expect(await screen.findByRole("heading", { name: "D3 / 공대 2호관" })).toBeTruthy();
     expect(screen.getByText("24.0 kWh")).toBeTruthy();
     expect(screen.getAllByText("가상 예측").length).toBeGreaterThan(0);
@@ -46,13 +49,13 @@ describe("EnergyDashboard", () => {
 
   it("renders a truthful empty state", async () => {
     const client = readyClient(null);
-    render(<EnergyDashboard client={client} initialDate="2026-05-18" />);
+    render(<EnergyDashboard client={client} date="2026-05-18" />);
     expect(await screen.findByText("표시할 에너지 시나리오가 없습니다.")).toBeTruthy();
   });
 
   it("renders recoverable error without zero metrics and retries", async () => {
     const client = { load: vi.fn().mockRejectedValueOnce(new Error("API offline")).mockResolvedValueOnce(dashboardPayload()) };
-    render(<EnergyDashboard client={client} initialDate="2026-05-18" />);
+    render(<EnergyDashboard client={client} date="2026-05-18" />);
     expect((await screen.findByRole("alert")).textContent).toContain("요청을 처리하지 못했습니다");
     expect(screen.queryByText("0.0 kWh")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
@@ -62,8 +65,11 @@ describe("EnergyDashboard", () => {
   it("ignores stale date and scenario responses", async () => {
     const first = deferred(); const second = deferred(); const third = deferred();
     const client = { load: vi.fn().mockReturnValueOnce(first.promise).mockReturnValueOnce(second.promise).mockReturnValueOnce(third.promise) };
-    render(<EnergyDashboard client={client} initialDate="2026-05-18" scenarios={[{ id: "scenario-a", label: "A" }, { id: "scenario-b", label: "B" }]} />);
-    fireEvent.change(screen.getByLabelText("시뮬레이션 날짜"), { target: { value: "2026-05-19" } });
+    const scenarios = [{ id: "scenario-a", label: "A" }, { id: "scenario-b", label: "B" }];
+    const view = render(<EnergyDashboard client={client} date="2026-05-18" scenarios={scenarios} />);
+    // 날짜는 에너지 탭의 기준일(장면 날짜)을 따른다.
+    view.rerender(<EnergyDashboard client={client} date="2026-05-19" scenarios={scenarios} />);
+    expect(client.load).toHaveBeenLastCalledWith(expect.objectContaining({ date: "2026-05-19" }));
     second.resolve(dashboardPayload());
     await nextTick(); await nextTick();
     fireEvent.change(screen.getByLabelText("설치 시나리오"), { target: { value: "scenario-b" } });
@@ -73,5 +79,13 @@ describe("EnergyDashboard", () => {
     await nextTick(); await nextTick();
     expect(screen.queryByText(/오래된 A/)).toBeNull();
     expect(screen.getByText(/선택 B/)).toBeTruthy();
+  });
+
+  it("leaves the failure alert to the energy feed row while that feed is down", async () => {
+    const client = { load: vi.fn().mockRejectedValue(new TypeError("Failed to fetch")) };
+    render(<EnergyDashboard client={client} date="2026-05-18" feedDown />);
+    expect((await screen.findByText(/에너지 연결을 기다리는 중/)).getAttribute("role")).toBe("status");
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.queryByRole("button", { name: "다시 시도" })).toBeNull();
   });
 });

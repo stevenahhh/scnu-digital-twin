@@ -5,50 +5,14 @@ import { buildAnalysisReport, parseAnalysisRun } from "./analysisContracts.mjs";
 import { analysisReducer, createAnalysisState } from "./analysisState.mjs";
 import { AnalysisInsights, AnalysisKpis, AnalysisSeriesChart } from "./BuildingAnalysisPanels.jsx";
 import { toKoreanEnergyError } from "../shared/energyErrorMessages.mjs";
-import { CARD, FIELD_INPUT, FIELD_LABEL } from "../shared/fieldStyles.mjs";
+import { kstToday } from "../shared/energyContext.mjs";
+import { FIELD_INPUT, FIELD_LABEL } from "../shared/fieldStyles.mjs";
 import { Alert } from "../../../ui/Alert.jsx";
 import { Button } from "../../../ui/Button.jsx";
-import { MetricList } from "../../../ui/MetricList.jsx";
+import { Disclosure } from "../../../ui/Disclosure.jsx";
 import { SectionHeader } from "../../../ui/SectionHeader.jsx";
 import { StatusBadge } from "../../../ui/StatusBadge.jsx";
-import { formatDayLabel } from "../../../ui/format.mjs";
 
-function localDate() {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Seoul",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
-}
-
-const STATIC_FIELD = "flex min-h-10 items-center rounded-control border border-hairline px-2 text-body text-ink";
-const WEATHER_OPTIONS = [
-  ["clear", "맑음"],
-  ["partly_cloudy", "부분 흐림"],
-  ["overcast", "흐림"],
-];
-const snapshotText = (value) => <span className="text-body text-ink">{value}</span>;
-
-// 실행 스냅샷의 조건. `·`로 잇던 한 줄을 이름·값 목록으로 편다.
-function SnapshotConditions({ report }) {
-  const { conditions } = report;
-  const items = [
-    ["plan", "대표 계획", report.plans.representative.name],
-    ["weather", "기상 프리셋", conditions.weatherPreset],
-    ["demand", "수요", `예측 수요 · ${conditions.intervalMinutes}분`],
-    ["price", "전기요금", `${conditions.electricityPriceKrwPerKwh.toLocaleString("ko-KR")} KRW/kWh`],
-    ["carbon", "탄소배출계수", `${conditions.carbonIntensityKgCo2ePerKwh} kgCO2/kWh`],
-    ["model", "발전 모델", conditions.generationModel],
-    ["timezone", "시간대", conditions.timezone],
-  ];
-  return (
-    <div className={`${CARD} flex flex-col gap-2 p-3`}>
-      <SectionHeader level={4} title={`실행 스냅샷 · ${formatDayLabel(report.date)}`} />
-      <MetricList items={items.map(([id, label, value]) => ({ id, label, value: snapshotText(value) }))} />
-    </div>
-  );
-}
 const EMPTY_PLANS_MESSAGES = Object.freeze({
   loading: "설치 계획을 불러오는 중입니다.",
   error: "설치 계획을 불러오지 못해 분석할 수 없습니다.",
@@ -61,14 +25,15 @@ export function BuildingAnalysis({
   plans = [],
   plansStatus = "ready",
   representativePlanId,
-  initialDate = localDate(),
+  date = kstToday(),
+  weatherPreset = "clear",
   client,
-  onRun = () => {},
+  onRun,
 }) {
   const api = useMemo(() => client ?? createBuildingAnalysisClient(), [client]);
   const [state, dispatch] = useReducer(
     analysisReducer,
-    { buildingId, plans, representativePlanId, date: initialDate },
+    { buildingId, plans, representativePlanId, date },
     createAnalysisState,
   );
   const requestId = useRef(0);
@@ -85,6 +50,18 @@ export function BuildingAnalysis({
       execution.current?.abort();
     };
   }, [buildingId, planKey, representativePlanId]);
+
+  // 날짜와 기상 프리셋은 에너지 탭 맨 위 한 줄을 따른다. 저장된 정의를 불러와도 탭의 값으로 다시 맞추고,
+  // 이전 결과와 조건이 달라지면 조건 변경 경고가 붙는다.
+  const draftDate = state.draft.date;
+  const draftWeather = state.draft.conditions.weatherPreset;
+  useEffect(() => {
+    if (draftDate !== date) dispatch({ type: "draft", field: "date", value: date });
+  }, [date, draftDate]);
+  useEffect(() => {
+    if (draftWeather !== weatherPreset)
+      dispatch({ type: "draft", condition: true, field: "weatherPreset", value: weatherPreset });
+  }, [weatherPreset, draftWeather]);
 
   useEffect(() => {
     const id = requestId.current;
@@ -151,7 +128,7 @@ export function BuildingAnalysis({
       );
       if (controller.signal.aborted || id !== requestId.current) return;
       dispatch({ type: "report", requestId: id, report: buildAnalysisReport(report), scenarioId: definition.id });
-      onRun(report);
+      onRun?.(report);
     } catch (error) {
       if (error?.name !== "AbortError" && id === requestId.current)
         dispatch({ type: "failure", requestId: id, error: toKoreanEnergyError(error) });
@@ -173,170 +150,140 @@ export function BuildingAnalysis({
 
   const canRun = Boolean(state.draft.representativePlanId && state.draft.date && costConditionsValid);
   return (
-    <section data-qa="building-analysis" className="flex flex-col gap-4 pb-4" aria-labelledby="building-analysis-title">
+    <section data-qa="building-analysis" className="flex flex-col gap-3 pb-4" aria-labelledby="building-analysis-title">
       <SectionHeader
         id="building-analysis-title"
         title="건물 분석"
         badge={<StatusBadge tone="neutral">{buildingName}</StatusBadge>}
-        subtitle="대표 설치 계획을 무태양광 기준선 및 선택 대안과 동일 조건으로 비교합니다."
       />
+      <Disclosure summary="분석 조건과 결과">
+        <div className="flex flex-col gap-4">
+          {plans.length === 0 ? (
+            <p className="py-4 text-center text-body text-ink-muted">
+              {EMPTY_PLANS_MESSAGES[plansStatus] ?? EMPTY_PLANS_MESSAGES.ready}
+            </p>
+          ) : (
+            <>
+              <p className="break-keep text-caption text-ink-muted">무태양광 기준선과 비교 · 예측 수요 15분 간격</p>
+              <div className="grid grid-cols-2 gap-2">
+                <label className={FIELD_LABEL}>
+                  대표 설치 계획
+                  <select
+                    aria-label="대표 설치 계획"
+                    value={state.draft.representativePlanId}
+                    onChange={change("representativePlanId")}
+                    className={FIELD_INPUT}
+                  >
+                    {plans.map((plan) => (
+                      <option key={plan.id} value={plan.id}>
+                        {plan.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className={FIELD_LABEL}>
+                  대안 설치 계획
+                  <select
+                    aria-label="대안 설치 계획"
+                    value={state.draft.alternativePlanId ?? ""}
+                    onChange={change("alternativePlanId")}
+                    className={FIELD_INPUT}
+                  >
+                    <option value="">대안 없음</option>
+                    {plans
+                      .filter((plan) => plan.id !== state.draft.representativePlanId)
+                      .map((plan) => (
+                        <option key={plan.id} value={plan.id}>
+                          {plan.name}
+                        </option>
+                      ))}
+                  </select>
+                </label>
+              </div>
+              <Disclosure summary="고급 · 요금·탄소 계수와 이전 실행">
+                <div className="flex flex-col gap-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <label className={FIELD_LABEL}>
+                      전기요금 (KRW/kWh)
+                      <input
+                        aria-label="전기요금 (KRW/kWh)"
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={state.draft.conditions.electricityPriceKrwPerKwh}
+                        onChange={condition("electricityPriceKrwPerKwh")}
+                        className={FIELD_INPUT}
+                      />
+                    </label>
+                    <label className={FIELD_LABEL}>
+                      탄소배출계수 (kgCO2/kWh)
+                      <input
+                        aria-label="탄소배출계수 (kgCO2/kWh)"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={state.draft.conditions.carbonIntensityKgCo2ePerKwh}
+                        onChange={condition("carbonIntensityKgCo2ePerKwh")}
+                        className={FIELD_INPUT}
+                      />
+                    </label>
+                  </div>
+                  {state.runs.length > 0 && (
+                    <label className={FIELD_LABEL}>
+                      이전 실행 스냅샷
+                      <select
+                        aria-label="이전 실행 스냅샷"
+                        value={state.report?.id ?? ""}
+                        onChange={selectRun}
+                        className={FIELD_INPUT}
+                      >
+                        <option value="" disabled>
+                          실행 선택
+                        </option>
+                        {state.runs.map((run) => (
+                          <option key={run.id} value={run.id}>
+                            {run.date} · {run.plans.representative.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
+                </div>
+              </Disclosure>
+              <Button
+                variant="primary"
+                onClick={execute}
+                loading={state.status === "loading"}
+                disabled={!canRun}
+                disabledReason="대표 설치 계획, 날짜, 0 이상의 요금·배출계수가 필요합니다"
+                icon={<Play aria-hidden="true" className="h-4 w-4" />}
+                className="w-full"
+              >
+                분석 실행
+              </Button>
+            </>
+          )}
 
-      {plans.length === 0 ? (
-        <p className={`${CARD} p-6 text-center text-body text-ink-muted`}>
-          {EMPTY_PLANS_MESSAGES[plansStatus] ?? EMPTY_PLANS_MESSAGES.ready}
-        </p>
-      ) : (
-        <>
-          <div className="grid grid-cols-2 gap-2">
-            <label className={FIELD_LABEL}>
-              분석 날짜
-              <input
-                aria-label="분석 날짜"
-                type="date"
-                value={state.draft.date}
-                onChange={change("date")}
-                className={FIELD_INPUT}
-              />
-            </label>
-            <label className={FIELD_LABEL}>
-              기상 프리셋
-              <select
-                aria-label="기상 프리셋"
-                value={state.draft.conditions.weatherPreset}
-                onChange={condition("weatherPreset")}
-                className={FIELD_INPUT}
-              >
-                {WEATHER_OPTIONS.map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className={FIELD_LABEL}>
-              대표 설치 계획
-              <select
-                aria-label="대표 설치 계획"
-                value={state.draft.representativePlanId}
-                onChange={change("representativePlanId")}
-                className={FIELD_INPUT}
-              >
-                {plans.map((plan) => (
-                  <option key={plan.id} value={plan.id}>
-                    {plan.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className={FIELD_LABEL}>
-              대안 설치 계획
-              <select
-                aria-label="대안 설치 계획"
-                value={state.draft.alternativePlanId ?? ""}
-                onChange={change("alternativePlanId")}
-                className={FIELD_INPUT}
-              >
-                <option value="">대안 없음</option>
-                {plans
-                  .filter((plan) => plan.id !== state.draft.representativePlanId)
-                  .map((plan) => (
-                    <option key={plan.id} value={plan.id}>
-                      {plan.name}
-                    </option>
-                  ))}
-              </select>
-            </label>
-            <label className={FIELD_LABEL}>
-              기준선
-              <select aria-label="기준선" value="no_solar" disabled className={FIELD_INPUT}>
-                <option value="no_solar">무태양광 기준선</option>
-              </select>
-            </label>
-            <div className={FIELD_LABEL}>
-              수요 조건
-              <span className={STATIC_FIELD}>
-                예측 수요 · 15분 간격
-              </span>
+          {state.error && (
+            <Alert tone="danger" source="building-analysis" title="분석을 완료하지 못했습니다." message={state.error} />
+          )}
+          {state.dirty && state.report && (
+            <Alert
+              tone="warning"
+              source="building-analysis"
+              title="조건이 변경되었습니다"
+              message="다시 실행하기 전까지 아래 결과는 이전 실행 스냅샷입니다."
+            />
+          )}
+          {state.report && (
+            <div data-qa="analysis-report" className="flex flex-col gap-4">
+              <AnalysisInsights run={state.report} />
+              <AnalysisKpis run={state.report} />
+              <AnalysisSeriesChart run={state.report} />
             </div>
-            <label className={FIELD_LABEL}>
-              전기요금 (KRW/kWh)
-              <input
-                aria-label="전기요금 (KRW/kWh)"
-                type="number"
-                min="0"
-                step="1"
-                value={state.draft.conditions.electricityPriceKrwPerKwh}
-                onChange={condition("electricityPriceKrwPerKwh")}
-                className={FIELD_INPUT}
-              />
-            </label>
-            <label className={FIELD_LABEL}>
-              탄소배출계수 (kgCO2/kWh)
-              <input
-                aria-label="탄소배출계수 (kgCO2/kWh)"
-                type="number"
-                min="0"
-                step="0.01"
-                value={state.draft.conditions.carbonIntensityKgCo2ePerKwh}
-                onChange={condition("carbonIntensityKgCo2ePerKwh")}
-                className={FIELD_INPUT}
-              />
-            </label>
-          </div>
-          <Button
-            variant="primary"
-            aria-label="분석 실행"
-            onClick={execute}
-            loading={state.status === "loading"}
-            disabled={!canRun}
-            disabledReason="대표 설치 계획, 날짜, 0 이상의 요금·배출계수가 필요합니다"
-            icon={<Play aria-hidden="true" className="h-4 w-4" />}
-            className="w-full"
-          >
-            분석 실행
-          </Button>
-        </>
-      )}
-
-      {state.error && (
-        <Alert tone="danger" source="building-analysis" title="분석을 완료하지 못했습니다." message={state.error} />
-      )}
-      {state.runs.length > 0 && (
-        <label className={FIELD_LABEL}>
-          이전 실행 스냅샷
-          <select
-            aria-label="이전 실행 스냅샷"
-            value={state.report?.id ?? ""}
-            onChange={selectRun}
-            className={FIELD_INPUT}
-          >
-            <option value="" disabled>
-              실행 선택
-            </option>
-            {state.runs.map((run) => (
-              <option key={run.id} value={run.id}>
-                {run.date} · {run.plans.representative.name}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
-      {state.dirty && state.report && (
-        <Alert
-          tone="warning"
-          source="building-analysis"
-          title="조건이 변경되었습니다"
-          message="다시 실행하기 전까지 아래 결과는 이전 실행 스냅샷입니다."
-        />
-      )}
-      {state.report && (
-        <div data-qa="analysis-report" className="flex flex-col gap-3">
-          <SnapshotConditions report={state.report} />
-          <AnalysisKpis run={state.report} />
-          <AnalysisSeriesChart run={state.report} />
-          <AnalysisInsights run={state.report} />
+          )}
         </div>
-      )}
+      </Disclosure>
     </section>
   );
 }

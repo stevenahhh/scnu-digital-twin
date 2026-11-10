@@ -169,11 +169,11 @@ afterEach(() => {
 const phoneMatchMedia = vi.fn((query) => ({ matches: query === "(max-width: 639px)" || query === "(max-width: 1023px)", addEventListener() {}, removeEventListener() {} }));
 
 describe("Legacy and VWorld feature parity", () => {
-  it("renders the VWorld campus status and full energy surfaces inside the energy tab", () => {
+  it("renders the full energy surfaces inside the energy tab, with campus status folded into the comparison table", () => {
     render(<App />);
 
     fireEvent.click(screen.getByRole("tab", { name: "에너지" }));
-    expect(screen.getByText("캠퍼스 설치 현황")).toBeTruthy();
+    expect(screen.queryByText("캠퍼스 설치 현황")).toBeNull();
     expect(screen.getByText("건물 에너지 분석")).toBeTruthy();
     expect(screen.getByText("캠퍼스 태양광 비교")).toBeTruthy();
     expect(screen.getByText("건물 에너지 시뮬레이션")).toBeTruthy();
