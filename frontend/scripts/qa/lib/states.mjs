@@ -398,7 +398,7 @@ export const STATES = Object.freeze([
     steps: async (ctx) => {
       await pickTab(ctx, "home");
       await sleep(600);
-      await closePanelOnMobile(ctx);
+      // 폰 시트는 half에 둔다(todo 4). peek에는 탭이 없어 IS-11·IS-12가 S09-P에서 잴 탭을 볼 수 없다. 시점 메뉴는 HUD에 있다.
       await act(ctx, "[data-qa=camera-preset-gate]");
       await settleCamera(ctx);
     },
