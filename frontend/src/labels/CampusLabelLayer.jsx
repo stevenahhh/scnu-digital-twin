@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { DotMarker, SceneLabel, ZoneLabel } from "../ui/SceneLabel.jsx";
+import { DotMarker, LABEL_HOVER_LIFT_PX, SceneLabel, ZoneLabel } from "../ui/SceneLabel.jsx";
 import { HOLD_MS, clusterGroups, rankLabelCandidates } from "./labelBands.mjs";
 import { layoutLabels } from "./labelLayout.mjs";
 import { clusterLabelFor } from "./labelRegistry.mjs";
@@ -78,6 +78,8 @@ const MOTION_EDGE_PX = 8;
 // 움직이는 동안 칩 자리 하나를 가리개(HUD·지도 위 카드·패널)에서 12 px 떼어 놓는다. 걸린 가리개마다 위·아래·왼쪽·오른쪽
 // 바깥 자리를 후보로 두고, 화면 여백 안이면서 어떤 가리개에도 걸리지 않는 가장 가까운 곳을 고른다(없으면 처음 자리).
 const MOTION_CHROME_MARGIN = 12;
+// 멈춘 배치의 HUD·패널 여백: 12 px에 호버 상승분을 더한다. 마우스를 올려 칩이 떠올라도 HUD와 12 px 넘게 떨어져 있다.
+const SETTLED_CHROME_MARGIN = 12 + LABEL_HOVER_LIFT_PX;
 export function clearOfChrome(point, size, rects, area) {
   const hits = (p) => rects.filter((r) => p.x < r.right + MOTION_CHROME_MARGIN && p.x + size.hitWidth > r.left - MOTION_CHROME_MARGIN
     && p.y < r.bottom + MOTION_CHROME_MARGIN && p.y + size.hitHeight > r.top - MOTION_CHROME_MARGIN);
@@ -307,6 +309,7 @@ export function CampusLabelLayer({
         chrome: frame.chrome ?? [],
         occluder: frame.occluder ?? null,
         focusBoxes: frame.focusBoxes ?? [],
+        chromeMargin: SETTLED_CHROME_MARGIN,
         band,
         previous: lastRef.current.layout,
         now: frame.now,

@@ -38,6 +38,8 @@ describe("CampusHud", () => {
     );
     const chip = document.querySelector('[data-qa="feed-status-chip"]');
     expect(chip.textContent).toContain("3");
+    // A status element: its warning hue is status colour, not a second accent (V-Q-10).
+    expect(chip.dataset.status).toBe("warning");
     expect(screen.queryByRole("button", { name: /새로고침|다시 시도/ })).toBeNull();
     fireEvent.click(chip);
     expect(onOpenStatus).toHaveBeenCalledTimes(1);
@@ -70,5 +72,15 @@ describe("CampusHud", () => {
     renderHud();
     const hud = document.querySelector('[data-qa="campus-hud"]');
     expect(hud.className.split(/\s+/)).toContain("motion-reduce:transition-none");
+  });
+
+  it("never transitions the HUD root (no default transition-property all) in either layout", () => {
+    // The root only changes right/bottom, which must not animate (V-F-68); the right-hand group moves by transform.
+    for (const presenting of [false, true]) {
+      const { unmount } = renderHud({ presenting });
+      const hud = document.querySelector('[data-qa="campus-hud"]');
+      expect(hud.className.split(/\s+/)).toContain("transition-none");
+      unmount();
+    }
   });
 });

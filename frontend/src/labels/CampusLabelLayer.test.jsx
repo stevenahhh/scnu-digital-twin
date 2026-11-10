@@ -177,6 +177,19 @@ describe("CampusLabelLayer", () => {
     expect(visibleSlots().map((slot) => slot.dataset.labelSlot)).toContain("BLD_PICK");
   });
 
+  it("keeps a settled chip 12 px clear of the HUD even while it is lifted 2 px on hover", () => {
+    const { container, update, visibleSlots } = mount([entry("BLD_A")]);
+    // The anchor (120, 150) sits just under a HUD bar whose bottom is 130.
+    const hud = { left: 0, top: 90, right: 400, bottom: 130, width: 400, height: 40 };
+    update({ chrome: [hud] });
+    expect(visibleSlots()).toHaveLength(1);
+    const y = Number(/translate3d\([^,]+,\s*(-?[\d.]+)px/.exec(visibleSlots()[0].style.transform)[1]);
+    const hoverLift = 2;
+    const gap = y >= hud.bottom ? y - hoverLift - hud.bottom : hud.top - (y + 32);
+    expect(gap).toBeGreaterThanOrEqual(12);
+    expect(container.querySelector('[data-element-id="BLD_A"]')).not.toBeNull();
+  });
+
   it("keeps a moving chip 12 px clear of the HUD", () => {
     const entries = [entry("BLD_TOP")];
     const { update, visibleSlots } = mount(entries);
