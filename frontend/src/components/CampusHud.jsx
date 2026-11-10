@@ -36,7 +36,9 @@ export const CampusHud = forwardRef(function CampusHud(
   }, [ref]);
   const follow = usePanelFollow(rootRef, insetRight);
   const phone = mode === "phone";
-  // 폰 바텀 시트가 올라오면 그 아래 깔린 조작은 보이지도 닿지도 않게 감춘다: half는 아래쪽 시간 카드, full은 HUD 전체.
+  // 폰 바텀 시트가 half면 시간 칩을 시트 밑 대신 위쪽(검색 줄 아래 왼쪽, 카메라 토글과 같은 높이)으로 올린다.
+  // 지도 가운데의 선택 칩을 가리지 않고 시트에 깔리지도 않는다.
+  // full이면 시트가 HUD를 다 덮으므로 HUD 전체를 보이지도 닿지도 않게 감춘다.
   const sheetHalf = phone && sheetDetent === "half";
   const sheetFull = phone && sheetDetent === "full";
   const cameraReady = camera.ready !== false;
@@ -89,7 +91,7 @@ export const CampusHud = forwardRef(function CampusHud(
         onPlayingChange={onPlayingChange}
         live={clock.isLiveMode}
         collapsible={phone}
-        className={cx("absolute bottom-4 left-4 w-[min(24rem,calc(100%-2rem))]", sheetHalf && "invisible")}
+        className={cx("absolute left-4 w-[min(24rem,calc(100%-2rem))]", sheetHalf ? "top-20" : "bottom-4")}
         caption={sceneWeather && (
           <p
             data-qa="scene-weather"
