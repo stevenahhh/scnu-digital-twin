@@ -14,7 +14,7 @@ import { readCameraPose } from "../lib/states.mjs";
 import { restoreCamera, saveCamera } from "./common.mjs";
 import { IDEAL_ROWS } from "./ideal-rows.mjs";
 import {
-  CAMERA_STILL_MAX_DEG, CAMERA_STILL_MAX_M, STILL_MAX_BITS, cameraMotion, cameraVerdict, compareNameSets, controlBudgetLimit, countAtMost, countExactly, duplicateValues, hookMissing, hudPanelViolations,
+  CAMERA_REST_TIMEOUT_MS, CAMERA_STILL_MAX_DEG, CAMERA_STILL_MAX_M, STILL_MAX_BITS, cameraMotion, cameraRestAt, cameraVerdict, compareNameSets, controlBudgetLimit, countAtMost, countExactly, duplicateValues, hookMissing, hudPanelViolations,
   isLayoutTransition, kstDate, lineCount, loadingProblems, minimum, nearestSample, overlappingPairs, presentationExtras,
   regionDistance, stoppedAfterD4, tabsMatch, undersized, verdict,
 } from "./ideal-eval.mjs";
@@ -314,6 +314,8 @@ async function stopOrbitAndReplayS04(ctx) {
   const before = await ctx.b.run(() => window.__qaMoveTo?.length ?? 0);
   await sleepMs(500);
   const after = await ctx.b.run(() => window.__qaMoveTo?.length ?? 0);
+  // Legacy D4 칩 선택은 D4 실내 패인을 연다. 열린 채로 두면 다음 검사(IS-32)의 HUD 배치가 패널 여닫기에 따라 바뀐다.
+  if (await tapVisible(ctx, BACK_TO_CAMPUS)) await sleepMs(600);
   await ctx.b.tap("[data-qa=camera-preset-library]", null, { timeoutMs: 4000 });
   await ctx.b.cameraSettle();
   await ctx.b.tap(CHIP, "도서관", { timeoutMs: 4000 });
@@ -858,13 +860,41 @@ export const IDEAL_CHECKS_LIST = [
   }),
   defineIdeal("IS-32", {
     ...actingOnly,
+    // The part focuses the camera on the off-centre chip (as IS-31 does), drags the map away and waits until the camera
+    // is at rest (pose within the still limits for CAMERA_REST_HOLD_MS, CAMERA_REST_TIMEOUT_MS = FAIL). Only then is the
+    // baseline taken, so post-drag inertia is not read as a panel effect. Opening and closing the panel must move neither
+    // the map (dHash) nor the commanded VWorld camera (no map.lookat.moveTo call; headless SwiftShader does not apply
+    // them, so origin/dev's resize re-centre in cameraFocus.mjs shows only as commanded calls).
     parts: [{
       scenarios: [sc(["S04"], ["D"])],
       mutates: true,
       async run(ctx) {
-        const expected = `map dHash distance before opening and after closing the panel <= ${STILL_MAX_BITS} bits`;
+        const expected = `camera at rest after the drag, then map dHash distance before opening and after closing the panel <= ${STILL_MAX_BITS} bits and no commanded camera move`;
+        const waitForRest = async () => {
+          const started = Date.now();
+          const samples = [];
+          while (Date.now() - started < CAMERA_REST_TIMEOUT_MS) {
+            samples.push({ t: Date.now() - started, pose: await ctx.b.run(readCameraPose) });
+            const restAt = cameraRestAt(samples);
+            if (restAt !== null) return restAt;
+            await sleepMs(100);
+          }
+          return null;
+        };
+        let result;
         const saved = await saveCamera(ctx);
         try {
+          // VWorld: 칩 선택이 카메라를 그 건물에 맞추게 한다(origin/dev는 여기서 재정렬 대상이 생긴다). Legacy 칩 선택은
+          // 카메라를 움직이지 않고, 근접 자동 진입(D4 실내 패인)이 HUD 배치를 바꾸므로 S04 선택 그대로 시작한다.
+          let chip = null;
+          if (ctx.entry === "vworld") {
+            const focus = await offCentreChip(ctx);
+            if (!focus.region) return hookMissing("canvas", expected);
+            if (!focus.chip) return verdict(false, { measured: "no off-centre chip in the map area", region: focus.region }, expected);
+            chip = focus.chip;
+            await ctx.b.view.click(chip.x, chip.y);
+            if (await waitForRest() === null) return verdict(false, { measured: `camera not at rest within ${CAMERA_REST_TIMEOUT_MS} ms of the chip tap`, chip: chip.name }, expected);
+          }
           const { x, y } = ctx.map;
           await ctx.b.mouse("mouseMoved", x, y, 0);
           await ctx.b.mouse("mousePressed", x, y, 1);
@@ -873,10 +903,12 @@ export const IDEAL_CHECKS_LIST = [
             await sleepMs(40);
           }
           await ctx.b.mouse("mouseReleased", x - 160, y, 0);
+          const settleMs = await waitForRest();
+          if (settleMs === null) return verdict(false, { measured: `camera not at rest within ${CAMERA_REST_TIMEOUT_MS} ms of the drag`, chip: chip?.name ?? null }, expected);
           await ctx.b.cameraSettle();
-          await sleepMs(ctx.entry === "vworld" ? 2500 : 800);
           const region = await mapRegion(ctx);
           if (!region) return hookMissing("canvas", expected);
+          await recordMoveTo(ctx);
           const before = decode(await ctx.b.screenshot());
           const opened = await openPanel(ctx);
           await sleepMs(1000);
@@ -884,11 +916,14 @@ export const IDEAL_CHECKS_LIST = [
           await sleepMs(1500);
           await ctx.b.cameraSettle();
           const after = decode(await ctx.b.screenshot());
+          const { calls } = await cameraPoses(ctx);
           const distance = regionDistance(before, after, region, ctx.scale);
-          return verdict(distance <= STILL_MAX_BITS && closed, { distance, region, opened, closed }, expected);
+          result = verdict(distance <= STILL_MAX_BITS && calls === 0 && closed, { distance, moveToCalls: calls, settleMs, chip: chip?.name ?? null, region, opened, closed }, expected);
         } finally {
-          await restoreCamera(ctx, saved);
+          if (ctx.entry === "vworld") await stopOrbitAndReplayS04(ctx);
+          else await restoreCamera(ctx, saved);
         }
+        return result;
       },
     }],
   }),

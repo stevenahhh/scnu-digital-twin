@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  CAMERA_STILL_MAX_DEG, CAMERA_STILL_MAX_M, IS_IDS, cameraMotion, cameraVerdict, compareNameSets, controlBudgetLimit, countAtMost, cropImage, duplicateValues, hookMissing, hudPanelViolations, isLayoutTransition,
+  CAMERA_REST_HOLD_MS, CAMERA_STILL_MAX_DEG, CAMERA_STILL_MAX_M, IS_IDS, cameraMotion, cameraRestAt, cameraVerdict, compareNameSets, controlBudgetLimit, countAtMost, cropImage, duplicateValues, hookMissing, hudPanelViolations, isLayoutTransition,
   kstDate, lineCount, loadingProblems, minimum, nearestSample, overlappingPairs, presentationExtras, rectsOverlap, regionDistance,
   stoppedAfterD4, tabsMatch, undersized,
 } from "./ideal-eval.mjs";
@@ -185,4 +185,17 @@ test("kstDate gives the scene date in KST", () => {
   assert.equal(kstDate("2026-10-25T23:30:00+09:00"), "2026-10-25");
   assert.equal(kstDate("2026-10-25T16:00:00Z"), "2026-10-26");
   assert.equal(kstDate("not a date"), null);
+});
+
+test("cameraRestAt waits until the pose holds still for 500 ms after a drag", () => {
+  const pose = (heading, x = 0) => ({ heading, position: [x, 0, 0] });
+  // 관성으로 0..400 ms 동안 돌다가 400 ms부터 멈춘다.
+  const coasting = [0, 100, 200, 300, 400, 500, 600, 700, 800, 900].map((t) => ({ t, pose: pose(Math.min(t, 400) / 20) }));
+  assert.equal(cameraRestAt(coasting.slice(0, 8)), null);
+  assert.equal(cameraRestAt(coasting), 400);
+  assert.equal(cameraRestAt(coasting, CAMERA_REST_HOLD_MS + 100), null);
+  // 정지 한계 안의 작은 흔들림은 정지다. 비어 있거나 자세를 못 읽으면 정지가 아니다.
+  assert.equal(cameraRestAt([{ t: 0, pose: pose(1, 0.2) }, { t: 600, pose: pose(1.3, 0.5) }]), 0);
+  assert.equal(cameraRestAt([]), null);
+  assert.equal(cameraRestAt([{ t: 0, pose: null }, { t: 600, pose: null }]), null);
 });
