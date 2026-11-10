@@ -1,8 +1,25 @@
 import { createWriteStream } from 'node:fs';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { pipeline } from 'node:stream/promises';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { precompressedAssetMiddleware } from './scripts/campus-model/serveCompressed.mjs';
+
+// campus-v2.glb from its .br/.gz copy when the publish gate (bun run model:build --precompress) wrote one that is still fresh.
+// The dev server reads public/, the preview server the build output it serves.
+function precompressedModelPlugin() {
+  const names = ['campus-v2.glb'];
+  return {
+    name: 'scnu-precompressed-model',
+    configureServer(server) {
+      server.middlewares.use(precompressedAssetMiddleware(fileURLToPath(new URL('./public', import.meta.url)), names));
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use(precompressedAssetMiddleware(resolve(server.config.root, server.config.build.outDir), names));
+    },
+  };
+}
 
 function cinematicCapturePlugin() {
   return {
@@ -33,7 +50,7 @@ function cinematicCapturePlugin() {
 }
 
 export default defineConfig(({ mode }) => ({
-  plugins: [react(), cinematicCapturePlugin()],
+  plugins: [react(), cinematicCapturePlugin(), precompressedModelPlugin()],
   test: {
     pool: 'threads',
     isolate: true,

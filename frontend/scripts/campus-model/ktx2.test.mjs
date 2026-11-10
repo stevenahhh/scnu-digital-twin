@@ -14,11 +14,13 @@ test("normal maps are ETC1S by default and UASTC on request", () => {
   assert.deepEqual(basisuArgs(["normalTexture"], { normals: "uastc" }), ["-ktx2", "-mipmap", "-uastc", "-uastc_rdo_l", "2", "-linear", "-normal_map"]);
 });
 
-// All-UASTC D4 maps made campus-v2.glb 162 MB, over GitHub's 100 MB file limit: colour and data maps are
-// max-quality ETC1S, normal maps (where ETC1S blocks show as facets) stay UASTC.
-test("D4 normal maps use UASTC and other D4 maps max-quality ETC1S without changing campus defaults", () => {
+// All-UASTC D4 maps made campus-v2.glb 162 MB, over GitHub's 100 MB file limit. With only the 12 D4 normal maps in
+// UASTC they were still 52.7 MB of the 93.4 MB file, so they are max-quality ETC1S like the other D4 maps
+// (user decision 2026-11-10: "D4 노멀맵: ETC1S로 통일").
+test("D4 maps are max-quality ETC1S, normal maps included, without changing campus defaults", () => {
   assert.deepEqual(basisuArgs(["baseColorTexture"], { d4: true }), ["-ktx2", "-mipmap", "-etc1s", "-q", "255"]);
   assert.deepEqual(basisuArgs(["metallicRoughnessTexture"], { d4: true }), ["-ktx2", "-mipmap", "-etc1s", "-q", "255", "-linear"]);
   assert.deepEqual(basisuArgs(["baseColorTexture"]), ["-ktx2", "-mipmap", "-etc1s"]);
-  assert.deepEqual(basisuArgs(["normalTexture"], { d4: true }), ["-ktx2", "-mipmap", "-uastc", "-uastc_rdo_l", "2", "-linear", "-normal_map"]);
+  assert.deepEqual(basisuArgs(["normalTexture"], { d4: true }), ["-ktx2", "-mipmap", "-etc1s", "-q", "255", "-linear", "-normal_map"]);
+  assert.deepEqual(basisuArgs(["normalTexture"], { d4: true, normals: "uastc" }), ["-ktx2", "-mipmap", "-etc1s", "-q", "255", "-linear", "-normal_map"]);
 });
