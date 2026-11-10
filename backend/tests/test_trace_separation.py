@@ -67,7 +67,7 @@ def test_car_edge_outside_its_road_polygon_fails_and_is_listed(data_dir, tmp_pat
 
 def test_missing_polygons_or_network_exit_2(data_dir, tmp_path, capsys):
     assert run(data_dir, tmp_path / "out", "--network", "/nonexistent.geojson") == 2
-    assert "/nonexistent.geojson" in capsys.readouterr().err
+    assert str(Path("/nonexistent.geojson")) in capsys.readouterr().err
     (data_dir / "walkable_polygons.geojson").unlink()
     assert run(data_dir, tmp_path / "out") == 2
 

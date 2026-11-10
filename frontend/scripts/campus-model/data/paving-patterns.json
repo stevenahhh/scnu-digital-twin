@@ -164,41 +164,68 @@
       "source": "VR scene_a9 d/b, scene_a10 d/l (the A9 tree plaza)"
     },
     "d4-stripes": {
-      "label": "D4 plaza: white speckled 0.3 m pavers with 0.6 m dark grey stripes every 3.6 m along the plaza",
+      "label": "D4 plaza: light grey running-bond pavers, navy and salmon accents; five surveyed band axes in parcel-curation.json d4GroundTruth",
       "moduleM": [
         0.3,
-        0.3
+        0.15
       ],
-      "bond": "stack",
+      "bond": "running",
       "repeatM": 7.2,
       "base": [
         [
-          "#d8d8d3",
+          "#ced6d6",
           0.55
         ],
         [
-          "#cfd0cb",
+          "#bfc7d0",
           0.45
         ]
       ],
       "accents": [
         [
-          "#6f7378",
-          0.06
+          "#526d87",
+          0.05
         ],
         [
-          "#8aa0b4",
+          "#b58e7d",
           0.04
+        ],
+        [
+          "#99877b",
+          0.02
         ]
       ],
       "stripes": {
         "pitchM": 3.6,
         "widthM": 0.6,
-        "colour": "#5d6166"
+        "colour": "#526d87"
       },
-      "joint": "#b2b2ad",
+      "joint": "#a5a8b0",
       "jointM": 0.008,
-      "source": "VR scene_d4 f/d (the long entrance plaza east of D4)"
+      "source": "VR scene_d4 f/d; refs/h-scnu-vr/d4_f_plaza_paving_trees.jpg; SYNTHESIS section 4 and material rows 14-16: rectangular 2:1 stretcher pavers read against 0.3 m tactile modules, daylight-neutral light grey / navy / salmon palette and accent shares by eye; 3.6 m periodic navy stripe retained only until finite PV-B1..B5 pairs are consumed from parcel-curation.json d4GroundTruth (estimated)"
+    },
+    "d4-passage-stone": {
+      "label": "D4 passage: grey stone slabs; white painted grid is separate finite geometry",
+      "moduleM": [
+        0.6,
+        0.6
+      ],
+      "bond": "stack",
+      "repeatM": 3,
+      "base": [
+        [
+          "#838699",
+          0.65
+        ],
+        [
+          "#92939f",
+          0.35
+        ]
+      ],
+      "accents": [],
+      "joint": "#696e7c",
+      "jointM": 0.008,
+      "source": "VR scene_d4 f; SYNTHESIS section 8 row 12, refs/c-bridge/src-03-passage-eye-level-through.jpg: large grey slabs; nominal 0.6 m module and 8 mm joints by comparison with plaza modules, not a measured slab grid (estimated)"
     },
     "e7-white": {
       "label": "near-white 0.3 m pavers with scattered dark grey, blue and terracotta squares",

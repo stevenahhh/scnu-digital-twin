@@ -1,0 +1,729 @@
+{
+  "frameVersion": 2,
+  "records": [
+    {
+      "id": "SD-E4-C1",
+      "anchor": {
+        "building": "BLD_SCNU_E4",
+        "wall": "W01",
+        "sM": 1.4079626586258625,
+        "tM": 0
+      },
+      "widthM": 3.6,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#e6e4de"
+      },
+      "canopy": {
+        "form": "posted",
+        "widthM": 4.00043067124835,
+        "depthM": 3.7397223323605298,
+        "heightM": 3.4,
+        "thicknessM": 0.25,
+        "colour": "#e6e4de",
+        "postColour": "#eeeeea",
+        "posts": [
+          {
+            "sM": -1.850215335624175,
+            "tM": 3.58972233236053
+          },
+          {
+            "sM": 1.850215335624175,
+            "tM": 3.58972233236053
+          }
+        ]
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "Legacy canopy SD-E4-C1: nearest wall projection; no corroborated column reading"
+        ],
+        "note": "Dimensions and door leaves estimated from legacy reference. VR scene_e4 f (cols 1430-1620, rows 1530-1720): flat entrance canopy with the red 사범대학 fascia on two white piers at the building's north door; front edge at the pier bases, 4 m deep to the wall",
+        "mappingDisagreement": {
+          "legacyBuilding": "BLD_SCNU_E4",
+          "firstHitBuilding": "BLD_D3",
+          "scene": "scene_e4",
+          "face": "f",
+          "col": 1525
+        }
+      }
+    },
+    {
+      "id": "SD-E5-C1",
+      "anchor": {
+        "building": "BLD_E3",
+        "wall": "W16",
+        "sM": 44.5070997209,
+        "tM": 0
+      },
+      "widthM": 3.6,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#e8641e"
+      },
+      "canopy": {
+        "form": "cantilever",
+        "widthM": 7.673472576134779,
+        "depthM": 2.999847894823629,
+        "heightM": 4.4,
+        "thicknessM": 0.25,
+        "colour": "#e8641e",
+        "postColour": "#e8641e",
+        "posts": []
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T2",
+        "refs": [
+          "VR scene_e5 r col 610 -> BLD_E3/W16"
+        ],
+        "rejectedRefs": [
+          "VR scene_e3 r col 700 -> BLD_E3/W16"
+        ],
+        "note": "2026-11-03 task 18c: user-approved failure branch. Anchor is the scene_e5 col610 ray constrained to GIS W16, s=44.5070997209 m, EPSG:5186 (243681.259168,263766.961553); estimated, not triangulated. scene_e3 stays unchanged. Its col700 is a pine-occluded upper-bay proxy, not a certified matching canopy point, retained in rejectedRefs but excluded from accepted bearing observations. The seven-bearing candidate passes the original eight landmarks (max 1.413267 deg), but its C1 intersection lies 4.338914 m in front of W16 on asphalt rather than the canopy. Joint E/N/yaw/height fitting with corrected ground-centre readings gives E1 -0.332831 deg and held-out E5 +1.023565 deg, but E5 W28 fails at -1.535145 deg, the extra held-out E3 W18 pier fails at +1.560189 deg, and the C1 point is 5.073755 m in front. This is a named unresolved E3 bearing/correspondence gap, not proof that no alternative pose can pass. E1 col1093 and every GIS vertex were retained; ground-reading corrections are documented in task-18c-scene-e3-resection evidence. Geometry migration remains todo 19. Dimensions and door leaves estimated from legacy reference. VR scene_e5 r (cols 380-840, rows 1840-1940): orange cantilevered canopy over E5's main entrance and its steps (no posts)"
+      }
+    },
+    {
+      "id": "SD-E5-C2",
+      "anchor": {
+        "building": "BLD_E3",
+        "wall": "W15",
+        "sM": 13.0718827968,
+        "tM": 0
+      },
+      "widthM": 3.6,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#e8641e"
+      },
+      "canopy": {
+        "form": "cantilever",
+        "widthM": 9.733725973858887,
+        "depthM": 2.499105555166537,
+        "heightM": 4.4,
+        "thicknessM": 0.25,
+        "colour": "#e8641e",
+        "postColour": "#e8641e",
+        "posts": []
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T2",
+        "refs": [
+          "VR scene_e5 r col 1810 -> BLD_E3/W15"
+        ],
+        "note": "Side doorway and canopy centre beside the blue accessible bay; original site-detail range cols 1650-1970. 2026-11-03 task 18a re-derived the first forward wall hit from the independent seven-landmark scene_e5 resection. Task 18c retains the plan's estimated-failure rule: no usable second canopy-centre observation is visible through the scene_e3 foliage, so this is a single-view wall estimate, not a triangulated point. The column reading and canopy geometry are unchanged. Dimensions and door leaves estimated from legacy reference. VR scene_e5 r (cols 1650-1970, rows 1810-1880): orange cantilevered canopy over the side entrance by the disabled bay"
+      }
+    },
+    {
+      "id": "SD-E7-C1",
+      "anchor": {
+        "building": "BLD_E7",
+        "wall": "W02",
+        "sM": 6.226911225,
+        "tM": 0
+      },
+      "widthM": 3.6,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#dde3e6"
+      },
+      "canopy": {
+        "form": "posted",
+        "widthM": 5.902798326409727,
+        "depthM": 4.500073079013932,
+        "heightM": 3.6,
+        "thicknessM": 0.25,
+        "colour": "#dde3e6",
+        "postColour": "#eeeeea",
+        "posts": [
+          {
+            "sM": -2.8013991632048634,
+            "tM": 4.3500730790139315
+          },
+          {
+            "sM": 2.8013991632048634,
+            "tM": 4.3500730790139315
+          }
+        ]
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T2",
+        "refs": [
+          "VR scene_e7 f col 1230 -> BLD_E7/W02"
+        ],
+        "poseAudit": {
+          "estimated": true,
+          "scene": "scene_e7",
+          "face": "f",
+          "columnUncertaintyPx": 16,
+          "landmarks": [
+            {
+              "name": "left stair shaft right vertical edge",
+              "renderCol": 128,
+              "vrCol": 134,
+              "residualDeg": -0.19069388863067388
+            },
+            {
+              "name": "central glass shaft left front edge",
+              "renderCol": 1008,
+              "vrCol": 1016,
+              "residualDeg": -0.4475595393505213
+            },
+            {
+              "name": "central glass shaft right front edge",
+              "renderCol": 1148,
+              "vrCol": 1128,
+              "residualDeg": 1.1053254279508615
+            }
+          ],
+          "medianResidualDeg": -0.19069388863067388,
+          "canopyResidualBeforeDeg": 2.977295681,
+          "stationChanged": false
+        },
+        "placement": {
+          "estimated": true,
+          "method": "same-wall projected canopy corner-bounds midpoint; original dimensions and column retained",
+          "previousSM": 4.609565702447235,
+          "deltaSM": 1.6173455226,
+          "tM": 0,
+          "referenceColumn": 1230,
+          "aerialSource": "suncheon-12cm 2024, registration.json similarity inverted",
+          "aerialLimitation": "Roof relief lean and tree/shadow occlusion: side/orientation/scale cross-check only, not a surveyed canopy centre"
+        },
+        "note": "Task 19 attempt 3: three independent same-face facade/tower edges do not share the signed canopy residual. Station unchanged. Original VR column retained; only wall s adjusted to account for the projected canopy centre rather than its back-wall intersection. 12cm aerial cross-check retains the same facade side and estimated dimensions. Dimensions and door leaves estimated from legacy reference. VR scene_e7 f (cols 1130-1330, rows 1260-1420): E7's entrance canopy (white frame, glass gables) on two front posts; drawn as a flat slab"
+      }
+    },
+    {
+      "id": "SD-C2-C1",
+      "anchor": {
+        "building": "BLD_SCNU_C2",
+        "wall": "W02",
+        "sM": 25.5781648033,
+        "tM": 0
+      },
+      "widthM": 3.6,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#e8641e"
+      },
+      "canopy": {
+        "form": "posted",
+        "widthM": 4.703666742665051,
+        "depthM": 2.9991385657798553,
+        "heightM": 3.6,
+        "thicknessM": 0.25,
+        "colour": "#e8641e",
+        "postColour": "#b8323a",
+        "posts": [
+          {
+            "sM": -2.2018333713325258,
+            "tM": 2.8491385657798554
+          }
+        ]
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T2",
+        "refs": [
+          "VR scene_c2 f col 1052.5 -> BLD_SCNU_C2/W02"
+        ],
+        "poseAudit": {
+          "estimated": true,
+          "scene": "scene_c2",
+          "face": "f",
+          "columnUncertaintyPx": 16,
+          "landmarks": [
+            {
+              "name": "background laboratory tower right silhouette",
+              "renderCol": 744,
+              "vrCol": 706,
+              "residualDeg": 1.9590305517399609
+            },
+            {
+              "name": "foreground stair shaft left front edge",
+              "renderCol": 996,
+              "vrCol": 990,
+              "residualDeg": 0.3354091059092729
+            },
+            {
+              "name": "foreground stair shaft right front edge",
+              "renderCol": 1140,
+              "vrCol": 1134,
+              "residualDeg": 0.3316775621332202
+            }
+          ],
+          "medianResidualDeg": 0.3354091059092729,
+          "canopyResidualBeforeDeg": -1.594246365,
+          "stationChanged": false
+        },
+        "placement": {
+          "estimated": true,
+          "method": "same-wall projected canopy corner-bounds midpoint; original dimensions and column retained",
+          "previousSM": 26.33076791813141,
+          "deltaSM": -0.7526031149,
+          "tM": 0,
+          "referenceColumn": 1052.5,
+          "aerialSource": "suncheon-12cm 2024, registration.json similarity inverted",
+          "aerialLimitation": "Roof relief lean and tree/shadow occlusion: side/orientation/scale cross-check only, not a surveyed canopy centre"
+        },
+        "note": "Task 19 attempt 3: three independent same-face facade/tower edges do not share the signed canopy residual. Station unchanged. Original VR column retained; only wall s adjusted to account for the projected canopy centre rather than its back-wall intersection. 12cm aerial cross-check retains the same facade side and estimated dimensions. Dimensions and door leaves estimated from legacy reference. VR scene_c2 f (cols 935-1170, rows 1300-1510): orange box canopy over C2's entrance on a red column at its west corner"
+      }
+    },
+    {
+      "id": "SD-C3-C1",
+      "anchor": {
+        "building": "BLD_Training Lab Building",
+        "wall": "W02",
+        "sM": 4.6316816974,
+        "tM": 0
+      },
+      "widthM": 3.6,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#c4c8ca"
+      },
+      "canopy": {
+        "form": "posted",
+        "widthM": 8.30582151445664,
+        "depthM": 6.999466795456618,
+        "heightM": 5.2,
+        "thicknessM": 0.25,
+        "colour": "#c4c8ca",
+        "postColour": "#8e9396",
+        "posts": [
+          {
+            "sM": -4.00291075722832,
+            "tM": 6.8494667954566175
+          },
+          {
+            "sM": 4.00291075722832,
+            "tM": 6.8494667954566175
+          }
+        ]
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T2",
+        "refs": [
+          "VR scene_c3 f col 1065 -> BLD_Training Lab Building/W02"
+        ],
+        "poseAudit": {
+          "estimated": true,
+          "scene": "scene_c3",
+          "face": "f",
+          "columnUncertaintyPx": 16,
+          "landmarks": [
+            {
+              "name": "left brick wing outer roof corner",
+              "renderCol": 540,
+              "vrCol": 462,
+              "residualDeg": 3.461166026365923
+            },
+            {
+              "name": "central glass shaft left front edge",
+              "renderCol": 1024,
+              "vrCol": 985,
+              "residualDeg": 2.181109290736062
+            },
+            {
+              "name": "central glass shaft right front edge",
+              "renderCol": 1236,
+              "vrCol": 1196,
+              "residualDeg": 2.161875414388842
+            }
+          ],
+          "medianResidualDeg": 2.181109290736062,
+          "canopyResidualBeforeDeg": -1.677386246,
+          "stationChanged": false
+        },
+        "placement": {
+          "estimated": true,
+          "method": "same-wall projected canopy corner-bounds midpoint; original dimensions and column retained",
+          "previousSM": 5.609958300552339,
+          "deltaSM": -0.9782766031,
+          "tM": 0,
+          "referenceColumn": 1065,
+          "aerialSource": "suncheon-12cm 2024, registration.json similarity inverted",
+          "aerialLimitation": "Roof relief lean and tree/shadow occlusion: side/orientation/scale cross-check only, not a surveyed canopy centre"
+        },
+        "note": "Task 19 attempt 3: three independent same-face facade/tower edges do not share the signed canopy residual. Station unchanged. Original VR column retained; only wall s adjusted to account for the projected canopy centre rather than its back-wall intersection. 12cm aerial cross-check retains the same facade side and estimated dimensions. Dimensions and door leaves estimated from legacy reference. VR scene_c3 f (cols 830-1300, rows 1390-1750): stainless porte-cochère over the 공동실험실습관 entrance on two round columns (a slab from the columns back to the wall)"
+      }
+    },
+    {
+      "id": "SD-B3-C1",
+      "anchor": {
+        "building": "BLD_B2",
+        "wall": "W02",
+        "sM": 1.8495132227177984,
+        "tM": 0
+      },
+      "widthM": 3.6,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#e9ecee"
+      },
+      "canopy": {
+        "form": "cantilever",
+        "widthM": 3.6863030204009926,
+        "depthM": 2.3998859723943893,
+        "heightM": 3.2,
+        "thicknessM": 0.25,
+        "colour": "#e9ecee",
+        "postColour": "#e9ecee",
+        "posts": []
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "Legacy canopy SD-B3-C1: nearest wall projection; no corroborated column reading"
+        ],
+        "note": "Dimensions and door leaves estimated from legacy reference. VR scene_b3 r: white box canopy cantilevered over the side door beside the glass stair tower (no posts)"
+      }
+    },
+    {
+      "id": "SD-A1-C1",
+      "anchor": {
+        "building": "BLD_SCNU_A2",
+        "wall": "W04",
+        "sM": 27.834543059158612,
+        "tM": 0
+      },
+      "widthM": 3.6,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#e6e8ea"
+      },
+      "canopy": {
+        "form": "cantilever",
+        "widthM": 5.842426813023945,
+        "depthM": 4.49929419600161,
+        "heightM": 3.8,
+        "thicknessM": 0.25,
+        "colour": "#e6e8ea",
+        "postColour": "#e6e8ea",
+        "posts": []
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "Legacy canopy SD-A1-C1: nearest wall projection; no corroborated column reading"
+        ],
+        "note": "Dimensions and door leaves estimated from legacy reference. VR scene_a1 r: white sloping-roof entrance canopy of 약학대학 over the stair, cantilevered between two purple wall piers"
+      }
+    },
+    {
+      "id": "ENT_D4_E1",
+      "anchor": {
+        "building": "BLD_D4",
+        "wall": "W00",
+        "sM": 27.949697401792225,
+        "tM": -3.0585136699985735,
+        "yawDeg": -90
+      },
+      "widthM": 3,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#cbd3d3",
+        "heightM": 2.2,
+        "glass": "#5aa9ab",
+        "frameWidthM": 0.06,
+        "swing": "unknown",
+        "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 3: glazed banks; leaf count, 2.2 m leaf height and 0.06 m frame are provisional, swing unknown (estimated)"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T3",
+        "refs": [
+          ".omo/ulw-research/d4-gt/SYNTHESIS.md section 3 E1; refs/h-floorplan/door_2022.png; refs/l-vr-cache/d4_f_entrance_c720-1420_r1200-1620.jpg (estimated)"
+        ]
+      },
+      "officialEntrance": "E1",
+      "sourcePosition": [
+        127.4765793,
+        34.9702292
+      ],
+      "provisional": false,
+      "bankHeightM": 4.2,
+      "coveredBy": "BLD_D4 passage bridge",
+      "stepsRef": "RS-LS-D4STEPS",
+      "placement": "passage-side-wall",
+      "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md 3: about 4 m setback; use side-wall coordinates, not CAD circle centres; shared four-riser mouth steps are owned by lane 3; no individual canopy (estimated)",
+      "sign": {
+        "colour": "#2c4f78",
+        "text": null,
+        "source": ".omo/ulw-research/d4-gt/refs/l-vr-cache/d4_f_entrance_c720-1420_r1200-1620.jpg: blue sign above north bank, lettering unreadable (estimated)"
+      }
+    },
+    {
+      "id": "ENT_D4_E2",
+      "anchor": {
+        "building": "BLD_D4",
+        "wall": "W00",
+        "sM": 48.347345307157,
+        "tM": -3.334192021722668,
+        "yawDeg": 90
+      },
+      "widthM": 3,
+      "type": "side",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#cbd3d3",
+        "heightM": 2.2,
+        "glass": "#5aa9ab",
+        "frameWidthM": 0.06,
+        "swing": "unknown",
+        "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 3: glazed banks; leaf count, 2.2 m leaf height and 0.06 m frame are provisional, swing unknown (estimated)"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T3",
+        "refs": [
+          ".omo/ulw-research/d4-gt/SYNTHESIS.md section 3 E2; refs/h-floorplan/door_2022.png; refs/l-vr-cache/d4_f_entrance_c720-1420_r1200-1620.jpg (estimated)"
+        ]
+      },
+      "officialEntrance": "E2",
+      "sourcePosition": [
+        127.47651997,
+        34.97005193
+      ],
+      "provisional": false,
+      "bankHeightM": 4.2,
+      "coveredBy": "BLD_D4 passage bridge",
+      "stepsRef": "RS-LS-D4STEPS",
+      "placement": "passage-side-wall",
+      "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md 3: about 4 m setback; use side-wall coordinates, not CAD circle centres; shared four-riser mouth steps are owned by lane 3; no individual canopy (estimated)"
+    },
+    {
+      "id": "ENT_D4_E3",
+      "anchor": {
+        "building": "BLD_D4",
+        "wall": "W01",
+        "sM": 13.550120267357363,
+        "tM": 0
+      },
+      "widthM": 2,
+      "type": "service",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#cbd3d3",
+        "heightM": 2.2,
+        "glass": "#5aa9ab",
+        "frameWidthM": 0.06,
+        "swing": "unknown",
+        "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 3: glazed banks; leaf count, 2.2 m leaf height and 0.06 m frame are provisional, swing unknown (estimated)"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          ".omo/ulw-research/d4-gt/SYNTHESIS.md section 3 E3; refs/h-floorplan/door_2022.png; no ground photograph; provisional width and door type (estimated)"
+        ]
+      },
+      "officialEntrance": "E3",
+      "sourcePosition": [
+        127.4762818,
+        34.969661
+      ],
+      "provisional": true,
+      "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 3: E3 CAD centre; provisional 2 m door, no verified canopy, step or ramp (estimated)"
+    },
+    {
+      "id": "ENT_D4_E4",
+      "anchor": {
+        "building": "BLD_D4",
+        "wall": "W05",
+        "sM": 5.557614972433132,
+        "tM": -4.24512879543425
+      },
+      "widthM": 2,
+      "type": "stair",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#cbd3d3",
+        "heightM": 2.2,
+        "glass": "#5aa9ab",
+        "frameWidthM": 0.06,
+        "swing": "unknown",
+        "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 3: glazed banks; leaf count, 2.2 m leaf height and 0.06 m frame are provisional, swing unknown (estimated)"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          ".omo/ulw-research/d4-gt/SYNTHESIS.md section 3 E4; refs/h-floorplan/door_2022.png; refs/c-bridge/src-05-north-end-e4-oblique-ne.jpg (estimated)"
+        ]
+      },
+      "officialEntrance": "E4",
+      "sourcePosition": [
+        127.47655414,
+        34.97049659
+      ],
+      "provisional": true,
+      "source": ".omo/ulw-research/d4-gt/SYNTHESIS.md section 3: E4 CAD centre; door recessed 4.245 m from W05 under open balcony tower; 2 m width provisional (estimated)"
+    },
+    {
+      "id": "ENT_D3_MAIN",
+      "anchor": {
+        "building": "BLD_D3",
+        "wall": "W06",
+        "sM": 44.07650677816313,
+        "tM": 0
+      },
+      "widthM": 2,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#eeeeea"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "Legacy simulation hint projected to BLD_D3/W06; not surveyed"
+        ]
+      }
+    },
+    {
+      "id": "ENT_D2_MAIN",
+      "anchor": {
+        "building": "BLD_D2",
+        "wall": "W15",
+        "sM": 17.79393245313649,
+        "tM": 0
+      },
+      "widthM": 2,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#eeeeea"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "Legacy simulation hint projected to BLD_D2/W15; not surveyed"
+        ]
+      }
+    },
+    {
+      "id": "ENT_C1_MAIN",
+      "anchor": {
+        "building": "BLD_C1",
+        "wall": "W02",
+        "sM": 19.157411681062104,
+        "tM": 0
+      },
+      "widthM": 2,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#eeeeea"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "Legacy simulation hint projected to BLD_C1/W02; not surveyed"
+        ]
+      }
+    },
+    {
+      "id": "ENT_E1_MAIN",
+      "anchor": {
+        "building": "BLD_E1",
+        "wall": "W27",
+        "sM": 15.005272167031864,
+        "tM": 0
+      },
+      "widthM": 2,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#eeeeea"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "Legacy simulation hint projected to BLD_E1/W27; not surveyed"
+        ]
+      }
+    },
+    {
+      "id": "ENT_A1_MAIN",
+      "anchor": {
+        "building": "BLD_A1",
+        "wall": "W01",
+        "sM": 55.499227333612396,
+        "tM": 0
+      },
+      "widthM": 2,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#eeeeea"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "Legacy simulation hint projected to BLD_A1/W01; not surveyed"
+        ]
+      }
+    },
+    {
+      "id": "ENT_E8_MAIN",
+      "anchor": {
+        "building": "BLD_E8",
+        "wall": "W00",
+        "sM": 14.322942764599633,
+        "tM": 0
+      },
+      "widthM": 2,
+      "type": "main",
+      "doors": {
+        "leaves": 2,
+        "glazed": true,
+        "frame": "#eeeeea"
+      },
+      "estimated": true,
+      "evidence": {
+        "tier": "T4",
+        "refs": [
+          "Legacy simulation hint projected to BLD_E8/W00; not surveyed"
+        ]
+      }
+    }
+  ]
+}

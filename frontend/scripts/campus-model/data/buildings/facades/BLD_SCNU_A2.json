@@ -1,0 +1,106 @@
+{
+  "estimated": true,
+  "building": "BLD_SCNU_A2",
+  "storeys": [
+    {
+      "hM": 3.756667
+    },
+    {
+      "hM": 3.756667
+    },
+    {
+      "hM": 3.756667
+    }
+  ],
+  "walls": {
+    "W05": {
+      "bays": {
+        "pitchM": 2.08815576,
+        "count": 10,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing",
+          "glazing"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 1.8793,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 A2_약학대학_301524 W05",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated",
+          "Exact registered source edge correspondence in surfaceEdges; automatic 0.3 m matching remains unchanged. Endpoints are checked within 1 mm, not moved."
+        ],
+        "independentCount": 10,
+        "openingGroups": 10,
+        "notes": [
+          "LOD4 x388..475: ten narrow upper glazing groups between the two end returns; the thicker floor piers are retained by cell frames.",
+          "Vertical allocation follows the registered main source: 3 levels over 11.270 m. The independent image count is horizontal; heights remain estimates."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 10,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "glazing",
+      "materials": {
+        "wall": "render:#eceeed",
+        "glass": "#4a78a8",
+        "frame": "#4a7fc0"
+      },
+      "surfaceEdges": [
+        {
+          "A": [
+            243917.9517,
+            263700.1188
+          ],
+          "B": [
+            243896.9678,
+            263705.0092
+          ],
+          "source": "building-forms.json BLD_SCNU_A2/mass/0/edge/12; resolved source geometry, estimated"
+        }
+      ]
+    }
+  }
+}

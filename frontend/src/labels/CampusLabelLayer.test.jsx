@@ -1,4 +1,4 @@
-/* @vitest-environment jsdom */
+/* @vitest-environment happy-dom */
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { createRef } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";

@@ -1,0 +1,525 @@
+{
+  "estimated": true,
+  "building": "BLD_Dormitory_Building.001",
+  "storeys": [
+    {
+      "hM": 3.06
+    },
+    {
+      "hM": 3.06
+    },
+    {
+      "hM": 3.06
+    },
+    {
+      "hM": 3.06
+    },
+    {
+      "hM": 3.06
+    },
+    {
+      "hM": 3.06
+    },
+    {
+      "hM": 3.06
+    },
+    {
+      "hM": 3.06
+    },
+    {
+      "hM": 3.06
+    },
+    {
+      "hM": 3.06
+    }
+  ],
+  "walls": {
+    "W02": {
+      "bays": {
+        "pitchM": 3.06724693,
+        "count": 15,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ],
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ],
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ],
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ],
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ],
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ],
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ],
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ],
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ],
+        [
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window",
+          "window",
+          "glazing",
+          "stair",
+          "glazing",
+          "window"
+        ]
+      ],
+      "overrides": [
+        {
+          "storey": 0,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 0,
+          "bay": 7,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 0,
+          "bay": 12,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 1,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 1,
+          "bay": 7,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 1,
+          "bay": 12,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 2,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 2,
+          "bay": 7,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 2,
+          "bay": 12,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 3,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 3,
+          "bay": 7,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 3,
+          "bay": 12,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 4,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 4,
+          "bay": 7,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 4,
+          "bay": 12,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 5,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 5,
+          "bay": 7,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 5,
+          "bay": 12,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 6,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 6,
+          "bay": 7,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 6,
+          "bay": 12,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 7,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 7,
+          "bay": 7,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 7,
+          "bay": 12,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 8,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 8,
+          "bay": 7,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 8,
+          "bay": 12,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 9,
+          "bay": 2,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 9,
+          "bay": 7,
+          "window": {
+            "wM": 1.1
+          }
+        },
+        {
+          "storey": 9,
+          "bay": 12,
+          "window": {
+            "wM": 1.1
+          }
+        }
+      ],
+      "window": {
+        "wM": 2.2084,
+        "hM": 1.683,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 A8_학생생활관_향림관_688902 W02",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 15,
+        "openingGroups": 15,
+        "notes": [
+          "LOD4 x232..419: three stair stacks with four intervening window/balcony columns per group, fifteen columns total. The stepped height is supplied by the existing masses."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 15,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "panel:#c6ccd6",
+        "glass": "#7e98a2",
+        "frame": "#b88a5a"
+      }
+    },
+    "W03": {
+      "bays": {
+        "pitchM": 10.32405686,
+        "count": 1,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ],
+        [
+          "blank"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 3.2,
+        "hM": 1.683,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 A8_학생생활관_향림관_688902 W03",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 1,
+        "openingGroups": 0,
+        "notes": [
+          "LOD4 x420..464: blank gable end; no upper window rows."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 1,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "blank",
+      "materials": {
+        "wall": "panel:#c6ccd6",
+        "glass": "#7e98a2",
+        "frame": "#b88a5a"
+      }
+    }
+  }
+}

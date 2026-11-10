@@ -56,7 +56,7 @@ async function readCampusMeshCentres() {
   };
   const nodeBox = (node) => json.meshes[node.mesh].primitives.reduce((box, primitive) => box.union(boxOf(node, primitive)), new THREE.Box3());
   const d4 = nodeBox(json.nodes.find((node) => node.name === "BLD_D4")).getCenter(new THREE.Vector3());
-  const center = campusModelCenter([d4.x, d4.y, d4.z]);
+  const center = campusModelCenter([d4.x, d4.y, d4.z], { frameVersion: json.asset?.extras?.frameVersion });
   // The Ground_* decal layers (stages/surfaces.mjs) never cast shadows (CityModel GROUND_LAYER_PATTERN), so the shadow
   // camera need not contain them; some painted surfaces lie at the far edge of the terrain extent.
   return json.nodes

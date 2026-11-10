@@ -1,4 +1,4 @@
-/* @vitest-environment jsdom */
+/* @vitest-environment happy-dom */
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CONTINUOUS_GAP_MS, UPDATED_CUE_MS, isDiscreteJump, useUpdatedCue } from "./useUpdatedCue.mjs";

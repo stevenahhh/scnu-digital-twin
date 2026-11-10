@@ -1,0 +1,98 @@
+{
+  "estimated": true,
+  "building": "BLD_A12",
+  "storeys": [
+    {
+      "hM": 4
+    },
+    {
+      "hM": 4
+    },
+    {
+      "hM": 4
+    },
+    {
+      "hM": 4
+    }
+  ],
+  "walls": {
+    "W28": {
+      "bays": {
+        "pitchM": 3.1500395,
+        "count": 8,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 2.268,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 A17_체육관_A18_체육관_증축동_768553 W28",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 8,
+        "openingGroups": 8,
+        "notes": [
+          "LOD4 x444..547: eight upper openings on the lower gym wing, including the two narrow end openings. Existing mass height controls which rows are exposed."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 8,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "panel:#d9d6cc",
+        "glass": "#6c8a98",
+        "frame": "#c8cccc"
+      }
+    }
+  }
+}

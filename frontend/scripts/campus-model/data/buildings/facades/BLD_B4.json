@@ -1,0 +1,122 @@
+{
+  "estimated": true,
+  "building": "BLD_B4",
+  "storeys": [
+    {
+      "hM": 3.85
+    },
+    {
+      "hM": 3.85
+    },
+    {
+      "hM": 3.85
+    },
+    {
+      "hM": 3.85
+    }
+  ],
+  "walls": {
+    "W13": {
+      "bays": {
+        "pitchM": 3.52167486,
+        "count": 14,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 2.5356,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 B4_생명산업과학_2호관_그린스마트팜스쿨__72362 W13",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 14,
+        "openingGroups": 14,
+        "notes": [
+          "Manual LOD4 x806..1006 count: fourteen upper openings. The previous autocorrelation rejection came from irregular reflected light, not absence of readable groups; scene_b4 f/r corroborates the long facade rhythm."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 14,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "brick:#ab736f",
+        "glass": "#6a828a",
+        "frame": "#efede8"
+      }
+    }
+  }
+}

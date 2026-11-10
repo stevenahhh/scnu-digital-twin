@@ -17,6 +17,7 @@ import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
 import { MeshoptDecoder } from "meshoptimizer";
 import { decodePng } from "../campus-model/lib/png.mjs";
 import { sceneToTm, tmToScene } from "../../src/geo/epsg5186.mjs";
+import { photoPositions } from "./lib/canopyPhotoGeometry.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const WINDOWS = [
@@ -144,8 +145,14 @@ function modelCover(cells, list) {
 }
 
 const models = [];
-// --inventory: the crowns of a data/trees.json as drawn before the build's placement rules (a quick check).
-const inventoryDiscs = (file) => JSON.parse(readFileSync(file, "utf8")).trees.map(([e, n, d]) => [...tmToScene(e, n), (d / 2) * 0.6242171526, (d / 2) * 0.6242171526, 0]);
+// --inventory: the crowns of a data/trees.json as drawn before the build's placement rules (a quick check), in photo geometry.
+// Crowns are drawn in photo geometry (lib/canopyPhotoGeometry.mjs): each trunk moved forward by the lean its revert
+// removed, so they compare like with like with the photo canopy mask.
+const inventoryDiscs = (file) => {
+  const inv = JSON.parse(readFileSync(file, "utf8"));
+  const at = photoPositions(inv);
+  return inv.trees.map(([, , d], k) => [...tmToScene(...at[k]), (d / 2) * 0.6242171526, (d / 2) * 0.6242171526, 0]);
+};
 for (const g of glbs) models.push({ ...g, discs: g.kind === "inventory" ? inventoryDiscs(g.file) : await discs(g.file) });
 const rows = WINDOWS.map((w) => {
   const cells = windowCells(w);

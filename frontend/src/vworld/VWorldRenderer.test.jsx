@@ -1,4 +1,4 @@
-/* @vitest-environment jsdom */
+/* @vitest-environment happy-dom */
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { StrictMode, useEffect } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -347,6 +347,29 @@ describe("VWorldRenderer retained map integration", () => {
     view.rerender(<VWorldRenderer {...props} d4OpenKey={4} />);
     expect(await screen.findByText("D4 상세 화면")).toBeTruthy();
     expect(onSelection).toHaveBeenLastCalledWith(expect.objectContaining({ elementId: "BLD_D4", buildingId: "D4" }));
+  });
+
+  it("closes D4 details without clearing the new native building selection (F3)", async () => {
+    mocks.vw = createVw();
+    const map = retainedMap();
+    window.__scnuVWorldMapInstance = map;
+    const onSelection = vi.fn();
+    const onClearSelection = vi.fn();
+    const onD4SectionChange = vi.fn();
+    const props = { d4PaneHost: paneHost(), onSelection, onClearSelection, onD4SectionChange };
+    const view = render(<VWorldRenderer {...props} />);
+    // 지도 위 D4 단추는 없다. 인스펙터의 실내 보기가 d4OpenKey를 올려 D4 상세를 연다.
+    await waitFor(() => expect(mocks.createdIds).toContain("SCNU_CAMPUS_AREA"));
+    view.rerender(<VWorldRenderer {...props} d4OpenKey={1} />);
+    expect(await screen.findByText("D4 상세 화면")).toBeTruthy();
+
+    const pick = map.onClick.addEventListener.mock.calls.at(-1)[0];
+    act(() => pick(null, null, null, { attributes: { MODEL_NAME: "SC090091" } }));
+
+    expect(screen.queryByText("D4 상세 화면")).toBeNull();
+    expect(onD4SectionChange).toHaveBeenLastCalledWith(false);
+    expect(onSelection).toHaveBeenLastCalledWith({ elementId: "BLD_E3", buildingId: "E3", displayName: "사범대학" });
+    expect(onClearSelection).not.toHaveBeenCalled();
   });
 
   it("keeps the map overlays focusable (the phone sheet leaves the map usable) and never puts the D4 detail inside them", async () => {

@@ -1,0 +1,91 @@
+{
+  "estimated": true,
+  "building": "BLD_C1.001",
+  "storeys": [
+    {
+      "hM": 4.63
+    },
+    {
+      "hM": 4.63
+    },
+    {
+      "hM": 4.63
+    },
+    {
+      "hM": 4.63
+    }
+  ],
+  "walls": {
+    "W01": {
+      "bays": {
+        "pitchM": 5.5,
+        "count": 2,
+        "offsetM": 5
+      },
+      "cells": [
+        [
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing"
+        ],
+        [
+          "glazing",
+          "glazing"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 4.95,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 C1_도서관_300791 W01",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated",
+          "Exact registered source edge correspondence in surfaceEdges; automatic 0.3 m matching remains unchanged. Endpoints are checked within 1 mm, not moved.",
+          "Only the counted interval is curated; unobserved prefix/suffix retain the legacy material rather than becoming invented blank walls."
+        ],
+        "independentCount": 2,
+        "openingGroups": 2,
+        "notes": [
+          "LOD4 x7..72: blank left masonry return followed by two tall glazed structural panels, not a regular punched-window wall. Three levels follow the current library mass.",
+          "Vertical allocation follows the registered core source: 4 levels over 18.520 m. The independent image count is horizontal; heights remain estimates."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 2,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "glazing",
+      "materials": {
+        "wall": "panel:#e8ecec",
+        "glass": "#4f7a80",
+        "frame": "#8d969a"
+      },
+      "surfaceEdges": [
+        {
+          "A": [
+            243795.5027,
+            263885.812
+          ],
+          "B": [
+            243790.9159,
+            263868.3796
+          ],
+          "source": "building-forms.json BLD_C1.001/mass/3/edge/14; resolved source geometry, estimated"
+        }
+      ],
+      "outside": "legacy"
+    }
+  }
+}

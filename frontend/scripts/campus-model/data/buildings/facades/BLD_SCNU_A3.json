@@ -1,0 +1,375 @@
+{
+  "estimated": true,
+  "building": "BLD_SCNU_A3",
+  "storeys": [
+    {
+      "hM": 3.68
+    },
+    {
+      "hM": 3.68
+    },
+    {
+      "hM": 3.68
+    },
+    {
+      "hM": 3.68
+    },
+    {
+      "hM": 3.68
+    }
+  ],
+  "walls": {
+    "W07": {
+      "bays": {
+        "pitchM": 3.65862164,
+        "count": 13,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank"
+        ],
+        [
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "glazing",
+          "glazing",
+          "stair",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank",
+          "blank"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "glazing",
+          "glazing",
+          "stair",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "glazing",
+          "glazing",
+          "stair",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "glazing",
+          "glazing",
+          "stair",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ]
+      ],
+      "overrides": [
+        {
+          "storey": 1,
+          "bay": 6,
+          "window": {
+            "wM": 1.2
+          }
+        },
+        {
+          "storey": 2,
+          "bay": 0,
+          "window": {
+            "wM": 2.4
+          }
+        },
+        {
+          "storey": 2,
+          "bay": 1,
+          "window": {
+            "wM": 1.5
+          }
+        },
+        {
+          "storey": 2,
+          "bay": 2,
+          "window": {
+            "wM": 0.7
+          }
+        },
+        {
+          "storey": 2,
+          "bay": 3,
+          "window": {
+            "wM": 1.2
+          }
+        },
+        {
+          "storey": 2,
+          "bay": 6,
+          "window": {
+            "wM": 1.2
+          }
+        },
+        {
+          "storey": 2,
+          "bay": 7,
+          "window": {
+            "wM": 2.4
+          }
+        },
+        {
+          "storey": 2,
+          "bay": 8,
+          "window": {
+            "wM": 0.7
+          }
+        },
+        {
+          "storey": 2,
+          "bay": 9,
+          "window": {
+            "wM": 1.5
+          }
+        },
+        {
+          "storey": 2,
+          "bay": 10,
+          "window": {
+            "wM": 0.7
+          }
+        },
+        {
+          "storey": 2,
+          "bay": 11,
+          "window": {
+            "wM": 1.5
+          }
+        },
+        {
+          "storey": 2,
+          "bay": 12,
+          "window": {
+            "wM": 2.4
+          }
+        },
+        {
+          "storey": 3,
+          "bay": 0,
+          "window": {
+            "wM": 2.4
+          }
+        },
+        {
+          "storey": 3,
+          "bay": 1,
+          "window": {
+            "wM": 1.5
+          }
+        },
+        {
+          "storey": 3,
+          "bay": 2,
+          "window": {
+            "wM": 0.7
+          }
+        },
+        {
+          "storey": 3,
+          "bay": 3,
+          "window": {
+            "wM": 1.2
+          }
+        },
+        {
+          "storey": 3,
+          "bay": 6,
+          "window": {
+            "wM": 1.2
+          }
+        },
+        {
+          "storey": 3,
+          "bay": 7,
+          "window": {
+            "wM": 2.4
+          }
+        },
+        {
+          "storey": 3,
+          "bay": 8,
+          "window": {
+            "wM": 0.7
+          }
+        },
+        {
+          "storey": 3,
+          "bay": 9,
+          "window": {
+            "wM": 1.5
+          }
+        },
+        {
+          "storey": 3,
+          "bay": 10,
+          "window": {
+            "wM": 0.7
+          }
+        },
+        {
+          "storey": 3,
+          "bay": 11,
+          "window": {
+            "wM": 1.5
+          }
+        },
+        {
+          "storey": 3,
+          "bay": 12,
+          "window": {
+            "wM": 2.4
+          }
+        },
+        {
+          "storey": 4,
+          "bay": 0,
+          "window": {
+            "wM": 2.4
+          }
+        },
+        {
+          "storey": 4,
+          "bay": 1,
+          "window": {
+            "wM": 1.5
+          }
+        },
+        {
+          "storey": 4,
+          "bay": 2,
+          "window": {
+            "wM": 0.7
+          }
+        },
+        {
+          "storey": 4,
+          "bay": 3,
+          "window": {
+            "wM": 1.2
+          }
+        },
+        {
+          "storey": 4,
+          "bay": 6,
+          "window": {
+            "wM": 1.2
+          }
+        },
+        {
+          "storey": 4,
+          "bay": 7,
+          "window": {
+            "wM": 2.4
+          }
+        },
+        {
+          "storey": 4,
+          "bay": 8,
+          "window": {
+            "wM": 0.7
+          }
+        },
+        {
+          "storey": 4,
+          "bay": 9,
+          "window": {
+            "wM": 1.5
+          }
+        },
+        {
+          "storey": 4,
+          "bay": 10,
+          "window": {
+            "wM": 0.7
+          }
+        },
+        {
+          "storey": 4,
+          "bay": 11,
+          "window": {
+            "wM": 1.5
+          }
+        },
+        {
+          "storey": 4,
+          "bay": 12,
+          "window": {
+            "wM": 2.4
+          }
+        }
+      ],
+      "window": {
+        "wM": 2.6342,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "VR scene_a3/f",
+        "refs": [
+          "VR scene_a3/f",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 13,
+        "openingGroups": 13,
+        "notes": [
+          "No LOD4 facade record. Independent VR scene_a3/f upper row count: six left opening columns, one vertical glazed stair slot, two balcony columns, four right openings = thirteen. Positive wall s runs right-to-left, so the seed reverses the image order. Open pilotis and lower solid parts are not filled with repeated window cells."
+        ],
+        "tier": "T2",
+        "lod4BayCount": null,
+        "vrBayCount": 13
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "panel:#ecedea",
+        "glass": "#4f8c9c",
+        "frame": "#c9ced1"
+      }
+    }
+  }
+}

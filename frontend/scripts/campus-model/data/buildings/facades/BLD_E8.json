@@ -1,0 +1,166 @@
+{
+  "estimated": true,
+  "building": "BLD_E8",
+  "storeys": [
+    {
+      "hM": 3.781429
+    },
+    {
+      "hM": 3.781429
+    },
+    {
+      "hM": 3.781429
+    },
+    {
+      "hM": 3.781429
+    },
+    {
+      "hM": 3.781429
+    },
+    {
+      "hM": 3.781429
+    },
+    {
+      "hM": 3.781429
+    }
+  ],
+  "walls": {
+    "W16": {
+      "bays": {
+        "pitchM": 2.96380368,
+        "count": 10,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 2.1339,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 E8_인문예술관_애니메이션문화콘텐츠스쿨__301217 W16",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated",
+          "Exact registered source edge correspondence in surfaceEdges; automatic 0.3 m matching remains unchanged. Endpoints are checked within 1 mm, not moved."
+        ],
+        "independentCount": 10,
+        "openingGroups": 10,
+        "notes": [
+          "LOD4 x822..943 enlarged mid-storey strip: ten repeated dark window groups across the long wall. Round stair openings on W17 are not replaced by rectangles.",
+          "Vertical allocation follows the registered main source: 7 levels over 26.470 m. The independent image count is horizontal; heights remain estimates."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 10,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "brick:#b07a70",
+        "glass": "#6c8790",
+        "frame": "#f0efea"
+      },
+      "surfaceEdges": [
+        {
+          "A": [
+            243575.6671,
+            263742.7097
+          ],
+          "B": [
+            243605.6966,
+            263736.8522
+          ],
+          "source": "building-forms.json BLD_E8/mass/0/edge/1; resolved source geometry, estimated"
+        }
+      ]
+    }
+  }
+}

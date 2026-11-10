@@ -6,7 +6,7 @@ with `?model=uni` to compare.
 
 ```bash
 cd frontend
-bun run model:build   # regenerate public/campus-v2.glb from committed inputs (no network)
+bun run model:build   # two raw builds, one pack/render, publish only after QA accepts
 bun run model:fetch   # refresh data/ (network; the land cover step needs VITE_VWORLD_API_KEY in the env or frontend/.env)
 bun scripts/campus-model/fetch/osm.mjs   # refresh data/osm-ground.json (network, no key)
 bun scripts/campus-model/fetch/ortho.mjs # refresh data/ortho/ (VWorld z19 mosaic; the key is needed only for tiles missing from .cache/)
@@ -15,7 +15,121 @@ bun scripts/campus-model/fetch/buildingForms.mjs [--keep <dir>] # refresh data/b
 node --test src/campusModelAsset.test.mjs
 ```
 
-## Layout
+## Editing in Blender (`bun run model:blend`)
+
+glTF keeps one vertex per normal and UV seam, so `public/campus-v2.glb` opened in Blender is a face soup
+(BLD_D4: 2840 islands for 6660 triangles with the default importer). `bun run model:blend [in.glb]` writes the file
+to edit, `scripts/campus-model/.build/campus-v2.blend` (gitignored): vertices welded by position, Tris to Quads,
+coplanar faces of one material and continuous UVs dissolved into n-gons, sharp edges marked at 30 deg. Facades come
+out as a bay-by-storey quad grid and flat roofs as single n-gons (BLD_D4: 271 islands, 6 triangles left). It needs
+Blender (`$BLENDER` or `/Applications/Blender.app`) and fails when the topology misses `qa/topology/limits.json`;
+`campus-v2.topology.json` beside the .blend holds the per-root counts. Textures are left out (Blender cannot read
+KTX2). Terrain (TIN) and the low-poly tree crowns stay triangles by design.
+
+## Ground-truth records and QA (2026-11-04)
+
+The ground-truth redesign uses curated records as geometry inputs. Paths below are
+relative to `scripts/campus-model/`. Fix a record at its curation seed so reseeding
+reproduces the change; do not patch generated JSON alone.
+
+| Record | Generator / meaning |
+|---|---|
+| `data/bld-node-map.json` | `stages/buildings.mjs`: GIS footprint ownership and saved wall snapshots in Frame v2 |
+| `data/building-forms.json` | `fetch/buildingForms.mjs`, `stages/buildings.mjs`: GIS-registered masses and footprint-relative roof parts; residuals remain estimates |
+| `data/ground/parcels.json` | `stages/ground.mjs`, `surfaces.mjs`, `kerbs.mjs`, `tactile.mjs`: one ground partition and derived boundaries |
+| `data/ground/parking.json` | `stages/parking.mjs`: parametric rows, accessible bays, symbols and wheel stops |
+| `data/ground/road-sections.json`, `data/ground/junctions.json` | W4 integration: `fit/roadSections.mjs` proposes records; `stages/roadMarkings.mjs` generates section offsets and junction markings |
+| `data/buildings/entrances.json`, `data/buildings/facades/*.json` | `stages/entrances.mjs`, `stages/buildings.mjs`: wall anchors and facade cells |
+| `data/free-standing-anchors.json`, `data/photo/site-detail.geojson` | `stages/furniture.mjs`, `trees.mjs`, `lights.mjs`: parcel/wall placement with evidence and reasoned exceptions |
+| `data/photo/building-lean.json`, `data/registration.json` | Lean/occlusion and per-source registration for comparisons; these are not per-object visual nudges |
+
+`data/photo/evidence/` holds superseded registration tables and parking migration
+evidence. W4 also moves `markings*.geojson` and `markings-gate.json` there: detections
+remain estimator/QA evidence, not polygons to replay as the final road geometry.
+The detailed survey sections below retain historical counts and methods; they do
+not override these record contracts. W4 is a dependency of this documentation
+update, so a pre-W4 checkout still has the older markings path.
+
+Todo 28 wires QA into each build at `.build/qa/map-compare.json`,
+`.build/qa/vr-bearings.json` and `.build/qa/invariants.json`. This build-output
+location is the plan's concrete location for the design's `qa/report/` reports.
+Map comparisons record visible-ground support/residuals and occlusion; VR reports
+record same-object bearing residuals; invariants cover frame/anchor/evidence/paint
+constraints and deterministic generation. These reports must retain unexplained
+or over-tolerance objects rather than turning them into accuracy passes.
+The existing `.build/markings.report.json` records generated paint pieces and
+parking symbols. No source pixels belong in these JSON reports.
+
+`build.mjs` owns a fresh `.build/candidate-*` transaction. It compares two raw
+outputs with identical input/AO hashes, packs once, and serves that candidate
+without replacing public files during QA. Render QA owns Vite port 5242 and
+Chrome port 9382; both close on success or failure. The NGII sheet and required
+VR faces must already exist in `.cache`; their absence is a failed check.
+`candidate.json` identifies the inspected artifact, and `policy.json` distinguishes
+raw accuracy from publication acceptance. Historical gaps in `qa/known-gaps.json`
+are evidence, never automatic waivers. Failed QA leaves the previous public GLB
+and both height sidecars unchanged.
+
+`bun run model:build --parcels /absolute/path/to/parcels-copy.json` selects an
+isolated parcel input. It never edits the canonical source. Direct `model:pack`
+requires `--candidate-dir` and only writes inside that candidate; direct
+`model:precompress` refuses publication. To precompress a passing full build use
+`bun run model:build --precompress`.
+
+For AO bootstrap only, `bun scripts/campus-model/build-campus-model.mjs` writes
+raw GLB and height files under `.build`, never public. Bake the building and planar
+AO from that raw output, then run the full build. The mesh sequence prepares
+terrain and kerb heights first, then emits buildings, entrances, parking/road
+paint, kerbs/tactile, surfaces, furniture, trees and lights. Paint claims precede
+surface claims; entrance heights use the same prepared kerb plan.
+
+For a rejected candidate, inspect its geometry without publishing it:
+`CAMPUS_MODEL_FILE=/absolute/candidate/campus-v2.glb node --test
+scripts/campus-model/qa/facadeApplied.test.mjs scripts/campus-model/qa/facadeMesh.test.mjs`.
+The two facade CLIs also accept `--model`. Their thresholds are unchanged.
+This explicit artifact selection does not make the overall candidate acceptable.
+
+```bash
+cd frontend
+bun scripts/campus-model/qa/coverage.mjs
+# Audit another model directory or a temporary mapping table:
+bun scripts/campus-model/qa/coverage.mjs --root /path/to/scripts/campus-model --table /path/to/rows.json
+```
+
+`qa/coverage-rows.json` maps all 18 design §20 row names to generator and report
+paths. `qa/coverage.mjs` keeps the required row inventory independently, so removing
+`Ground_* 지면 클래스` from a copy of the table fails with that row's name and exit 1.
+Every listed generator and report must be a regular file. Each mapped report must
+contain exactly one `checks` entry whose `id` is the design row, with status,
+checked/unknown counts and nonempty findings containing metrics and evidence
+pointers. An existing unrelated JSON file fails. Success is
+`COVERAGE OK: 18 rows`, exit 0.
+
+The build writes `.build/qa/categories.json` from the actual raw candidate's mesh
+accessors, building metadata, tree instance receipts, furniture counts and emitted
+paint report. It checks terrain/context mesh counts, tactile geometry, wheel stops,
+roof colour/solar receipts and signal counts explicitly. The traffic category
+compares every saved network coordinate through `coordinate_transform.json`
+against the shared simulation-to-TM transform, with a 1 mm consistency threshold.
+Both traffic inputs are hashed with the build inputs.
+
+Category entries use `reduceQaReport` fields and retain zero counts as failed
+inventory checks. Their photographic accuracy remains explicitly unknown;
+generation counts are not surveyed position, shape or colour accuracy.
+Coverage tests whether an actual check is recorded, so a failed or unknown
+category is covered, while a missing, empty or `notRun` entry is not. Inspect the
+category findings and the existing map/VR/invariant policy separately for quality
+and publication acceptance. Coverage never changes the todo 28 paint gate.
+Rejected builds still copy category reports to `.build/qa`; their evidence
+pointers identify the retained candidate and their hashes identify the run.
+
+The Suncheon 12 cm aerial is a cross-check source under owner consent dated
+2026-11-02 (D3 in `docs/data-licences.md`). Keep pixels only in the gitignored
+`.cache/suncheon-12cm/<epoch>/`; commit derived numbers and vectors only.
+Do not bake, ship or link aerial pixels, VR faces or comparison images.
+Evidence tiers and `estimated` flags describe confidence, not measured accuracy.
+
+## Layout (legacy stage inventory; record migrations above take precedence)
 
 `build-campus-model.mjs` only sequences the stages, in this order:
 
@@ -363,8 +477,7 @@ Height rule (`heightOf` in `stages/buildings.mjs`), giving the roof-slab height 
 - An entry's `tower` adds a taller mass on the part: the convex hull of the named VWorld LOD4 roof levels,
   clipped to the footprint, standing on the part's roof (A1 대학본부, 8 floors on a 3-floor podium; A5 진리관, 12
   floors on the 2-floor A4 annex; A6 창조관, 11 floors on 6). The podium's parapet leaves out the stretches under
-  the tower. `useRecordFootprint` lets a `uni.glb` node take the register footprint around it when its own outline
-  leaves most of the building out (BLD_A4, whose outline missed the 진리관 tower).
+  the tower.
 
 All of these heights are estimates, not measurements. Node extras carry `heightSource` (the human-readable
 reason) and, on every `BLD_*` node and `BLD_SCNU_*` proxy, `heightLineage` with `storeyMetresUsed` (the
@@ -696,9 +809,9 @@ what is drawn is regular geometry fitted to the accepted pieces (`stages/marking
 | `zebra_bar` | per crossing ONE oriented rectangle: bar groups whose rectangles overlap at the same axis, or that lie in one row less than 3 m apart along the walk (a median or a car splits the detected bars), are one crossing; every crossing row has its own bar grid, period (0.88-0.93 m) and phase fitted to its own detected bars (the main-gate west row repeats at 0.914 m, its east neighbour at 0.900 m); adjacent rows share one grid only where their own grids agree (period within 5 mm, bars within 0.1 m); a "stop line" inside a crossing rectangle is a bar read twice and is left out; equal 0.50 m bars at the measured 0.903 m period along the walk axis, phase from the detected bars, length the median detected bar, axis set to the road line's when within 5°. A crossing fused to a painted frame (`fused_frame`) is its outline with straightened edges |
 | arrows, diamond, give-way triangle, chevrons, wheelchair and bicycle symbols | templates at the detected centre and size. An arrow lies along its lane (the road direction where the blob's axis is within 25° of it) and points the way that lane's traffic goes (the centre line, else the OSM road axis, on the driver's left); a generic `arrow` takes the best of straight / left / right (추정). A wheelchair symbol stands upright along one of its bay's directions, the one that covers the painted symbol best |
 | `text` | one marking per lane block, read for the approaching driver: lines across the lane, the first line farthest, syllables upright to the driver and 2.5 times as long as wide (statute road-marking font proportions, 추정), composed from their jamo (`lib/markingGlyphs.mjs`). `data/photo/markings-text.json` lists the read markings with their blobs and source: at the main gate the SCNU VR tour (scene_b1 face r, scene_a19 face f) shows 국립/순천대학교 and 환영/합니다 on the inbound carriageway and 안녕히/가세요 and 국립/순천대학교 on the outbound one; by A10 인재관 (scene_a10 faces d and b) the yellow 주차금지; on the photo the speed numbers 30 and 50. Every other block (blobs of one lane within 1.5 m) is the most likely statute text for its size, 서행 or 천천히 (경차 in a parking stall), logged 추정 |
-| stall frames and other line-kind outlines (a rail with its dividers, an L) | straight strokes at the statute width: along each dominant direction of the outline, every band of at least 1 m of paint becomes one stroke over its longest run |
-| hatch stripes, hump bands, blue bays, other painted areas | their rectangle when they fill it (72 %), else their outline with the edges snapped to its dominant directions and to its group's (bands of one hump, fill and frame of one bay) |
-| bay symbols | every blue bay gets its white symbol unless a wheelchair template is already drawn there: a wheelchair (장애인 전용), or the P of a parking or PM bay named in `data/photo/markings-bays.json`; a blue piece longer than 6.5 m is a row of 3.4 m bays (or the file's `cells`); upright for the driver entering from the aisle: the file's bearing (read on the 4x chip or the VR view), else the end that meets a kerb, sidewalk or building is the back, else 추정. Small white blobs of a painted symbol inside the bay give way to the template |
+| line-kind outlines other than stall paint (an L) | straight strokes at the statute width: along each dominant direction of the outline, every band of at least 1 m of paint becomes one stroke over its longest run |
+| hatch stripes, hump bands, other painted areas | their rectangle when they fill it (72 %), else their outline with the edges snapped to its dominant directions and to its group's (bands of one hump) |
+| stall rows, accessible and PM bays, wheel stops | not from the detections: `data/ground/parking.json` (rows with a back line, pitch, depth and exception stalls; free lines), drawn by `stages/parking.mjs`. A symbol, fill or hatched aisle exists only on its stall record, and the build stops on any symbol piece without one (`.build/markings.report.json`, `Road_Markings` extras `report`). Reviewed lots live in `data/ground/parking-curation.json`, which the seed takes in place of its own records: a lot is found by its anchor point, its ids are the file's and never renumber, and a removed id goes to `retired`. A value that is an estimate in a measured row carries its own flag in `estimatedFields` (`depthM`, `wheelStops`, `paintBack`, `paintFront`, with a reason and for an end line the part seen; on a stall `widthM`, `aisleWidthM`, `symbolUp`, `figureSide`, `figureUp`), which reaches `parking.json`, `markings.report`, the `Road_Markings` extras `report.estimatedValues` and the mapCompare table. The validator's reach has limits: for a curated T1 row it refuses a depth no pair of painted lines or filled bay bounds, wheel stops, a symbol direction and a second figure when unflagged, but it accepts a removed `widthM` or `aisleWidthM` flag, because nothing structural marks a width as read by eye, and its rule on a partly seen end line reads the refs and fires only on a row with no flag at all; a row at tier T2 skips these rules. Curators' rule: a value the photo measures is corrected, and a flag is only for what the photo cannot read. A lot marked `estimated` needs an `estimatedReason`. A free line may carry `estimated`. A lot nobody reviewed builds with every row `estimated` and `unreviewed: true`, and is named in the seed log, `markings.report` (`lots`) and the mapCompare lot table; `--link` logs each OSM or supplement lot parcel with no record as `UNMARKED`. A lot with paint and no seeded record is entered with `added: true`; the validator refuses two rows whose footprints overlap by 30 % or more, and the seed refuses a curated row of blue bays standing on a line the photo sees without paint. `fit/parkingFit.mjs` holds the row measurer: `walkRow` runs a row on across cars and crowns while paint resumes at its pitch, and stops a railed row where both rails stop, however many lines a truck's flank shows, `measureLadder` reads a ladder from a rough axis, `fitBox` fits a bay's box to the blue, and `--ends`, `--rails` and `--measure` print what it reads; it writes nothing. `fit/parkingSeed.mjs` made the first file from the gate-accepted pieces and `data/photo/evidence/parking-migration.json`; `fit/parkingRows.mjs` proposes new rows. `evidence.photoSupport` is measured on the photo, never a count of detections: the share of a row's visible dividers with a line over the ground beside them, or for a row of blue cells the mean share of its fills on blue; `stalls[].paintSupport` is one fill's share. A row with no such evidence is not T1 and says why in `evidence.refs`; stalls of implausible width are named in the build log and `.build/markings.report.json` |
 | VR-only templates | `data/photo/markings-vr.json`: markings the VR shows that the photo predates (the light-blue bus-stop box at the main gate, VR scene_a19 face b; the hatched median of the f1 arterial): a template at the read centre and bearing, a fifth palette colour `light_blue`, estimated (추정), no paint gate |
 | green bands | the green bands across the E7 red carriageway (`green_band`, a fourth palette colour); the gate measures no green, so they are drawn on the chip review |
 | `dotted` guide lines | their `dots` squares |

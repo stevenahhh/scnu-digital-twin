@@ -34,6 +34,21 @@ function cinematicCapturePlugin() {
 
 export default defineConfig(({ mode }) => ({
   plugins: [react(), cinematicCapturePlugin()],
+  test: {
+    pool: 'threads',
+    isolate: true,
+    // Leave capacity for the node:test suite running alongside Vitest.
+    maxWorkers: '50%',
+    minWorkers: 1,
+    deps: {
+      optimizer: {
+        web: {
+          enabled: true,
+          include: ['three', 'lucide-react'],
+        },
+      },
+    },
+  },
   build: {
     rollupOptions: {
       input: mode === 'vworld'

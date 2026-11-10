@@ -143,23 +143,25 @@ const SYNTHETIC_ZONE_IDS = new Set(ZONES.filter((zone) => zone.synthetic).map((z
 export function buildVWorldLabelEntries({ json, elements, presets }) {
   const elementNames = new Map(elements.map(({ element_id: id, name }) => [id, name]));
   const anchors = glbLabelAnchors(json, { elementNames });
-  const center = campusCenterOf(anchors);
+  const frameVersion = json.asset?.extras?.frameVersion;
+  const center = campusCenterOf(anchors, frameVersion);
   const registry = buildLabelRegistry({ elements, anchors, presets });
   return [...registry.values()]
     .filter((entry) => entry.displayName && entry.position)
     .map((entry) => ({
       ...entry,
       hasData: elementNames.has(entry.dataElementId),
+      frameVersion,
       position: SYNTHETIC_ZONE_IDS.has(entry.elementId)
         ? [entry.position[0] + center.x, entry.position[1], entry.position[2] + center.z]
         : entry.position,
     }));
 }
 
-// Legacy CityModel의 재중심화 값: BLD_D4 라벨 앵커가 교통 좌표 원점에 오게 하는 x, z.
-export function campusCenterOf(anchors) {
+// Legacy CityModel의 재중심화 값: D4 앵커가 교통 좌표 원점에 오게 하는 x, z. frameVersion은 GLB asset.extras 값이다.
+export function campusCenterOf(anchors, frameVersion) {
   const d4 = anchors.find((anchor) => anchor.elementId === "BLD_D4");
-  return d4 ? campusModelCenter(d4.position) : { x: 0, z: 0 };
+  return d4 ? campusModelCenter(d4.position, { frameVersion }) : { x: 0, z: 0 };
 }
 
 // 라벨 항목의 앵커를 Legacy 장면 좌표(재중심화 뒤)로 되돌린다: 정문 거리·방위(gateDistance.mjs)처럼 장면 좌표를 쓰는 값에 쓴다.
@@ -167,6 +169,6 @@ export function campusCenterOf(anchors) {
 export function gateScenePositionOf(entries, elementId) {
   const entry = entries?.find((item) => item.elementId === elementId);
   if (!entry?.position) return null;
-  const center = campusCenterOf(entries);
+  const center = campusCenterOf(entries, entry.frameVersion);
   return [entry.position[0] - center.x, entry.position[1], entry.position[2] - center.z];
 }

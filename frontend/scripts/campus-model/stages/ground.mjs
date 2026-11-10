@@ -1,6 +1,7 @@
-// Ground stage: the Topography terrain (chunked, natural ground material) and the class polygons of the modelled ground
-// (network/surfaces.mjs: road zones, A003 walkways, lots, plazas, painted surfaces, building aprons), which
-// stages/surfaces.mjs lays on it as Ground_* decal meshes. No photo pixel is baked into the ground (plan
+// Ground stage: the Topography terrain (chunked, natural ground material) and the class polygons of the modelled ground,
+// read from the one parcel map data/ground/parcels.json (design §5, lib/parcels.mjs; seeded from network/surfaces.mjs:
+// road zones, A003 walkways, lots, plazas, painted surfaces, building aprons, then curated), which
+// stages/surfaces.mjs lays on it as Ground_* decal meshes. The kerb lines are the walkway parcel boundaries. No photo pixel is baked into the ground (plan
 // uhf-ground-roads-routing todo 10: the orthophoto ground composite and its module are gone; the VWorld z19 mosaic is read
 // only for the roof colours and the road-marking photo checks). The surface-class label raster (groundInfo) the lamp
 // rule reads is rasterised from the same polygons. Road markings are geometry (stages/markings.mjs), laid on the
@@ -15,8 +16,11 @@ import { tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { EXTENT } from "../lib/frame.mjs";
 import { MeshData } from "../lib/meshData.mjs";
 import { SURFACE_CLASS } from "../lib/surfaceClass.mjs";
-import { PX, buildSurfaces, loadEstimatedWalkways, loadGroundFeatures, loadWalkways } from "../network/surfaces.mjs";
-import { GRASS_TILE, naturalGroundMaterial, planarTileUv } from "./surfaces.mjs";
+import { loadParcels, parcelLayers, parcelOutlines } from "../lib/parcels.mjs";
+import { EDGE_STONE_M, PRECEDENCE, PX, labelRaster } from "../network/surfaces.mjs";
+import { GRASS_TILE, groundTile, naturalGroundMaterial, planarTileUv, tileMaterial } from "./surfaces.mjs";
+import { d4NaturalTile, splitD4GroundPolygon } from "../lib/landcover.mjs";
+import { splitByLine } from "../lib/partition.mjs";
 
 const WIDTH = EXTENT.maxX - EXTENT.minX;
 const DEPTH = EXTENT.maxZ - EXTENT.minZ;
@@ -91,28 +95,37 @@ export function topographySurface(heightAt) {
   };
 }
 
+// The ground surfaces of a parcel map doc: { layers (stage layer records, file order), outlines (kerb lines: walkway
+// parcel rings closed, then the open A003 kerbLines), strokes (the edge stone along every outline, label KERB),
+// labelRaster }. The label raster keeps network/surfaces.mjs labelRaster semantics (lamps, kerbs, trees read it).
+export function parcelSurfaces(doc) {
+  const layers = parcelLayers(doc.parcels);
+  const outlines = parcelOutlines(doc.parcels, doc.kerbLines ?? []);
+  const strokes = outlines.map((o) => ({ line: o.line, widthM: EDGE_STONE_M, label: SURFACE_CLASS.KERB, precedence: PRECEDENCE.A003 + 0.6 }));
+  return {
+    parcels: doc.parcels,
+    paintExcluded: doc.paintExcluded ?? [],
+    paintSuppressed: doc.paintSuppressed ?? [],
+    paintExcludedDetail: doc.paintExcludedDetail ?? [],
+    layers,
+    outlines,
+    strokes,
+    labelRaster: (width, height, toPixel) => labelRaster({ layers, strokes }, width, height, toPixel),
+  };
+}
+
 // Returns the Topography surface the decals and markings are laid on, the class polygons (layers) and the
 // surface-class raster (groundInfo) the lamp rule reads.
-export async function buildGround({ glb, inputs, selectableBuildings, campusBuildings, offCampusLots }) {
+export async function buildGround({ glb, inputs, parcelsDoc = loadParcels() }) {
   const { heightAt, landcoverAt } = inputs;
-  const surfaces = buildSurfaces({
-    inputs,
-    walkways: await loadWalkways(),
-    groundFeatures: await loadGroundFeatures(),
-    offCampusLots,
-    buildings: [...selectableBuildings, ...campusBuildings],
-    crosswalks: inputs.crosswalks,
-    // estimated crossings (walkways.json `crossings`) are routing / walkable polygons only: nothing is drawn for them,
-    // the photo shows plain asphalt there
-    estimatedWalkways: (await loadEstimatedWalkways()).strips,
-  });
+  const surfaces = parcelSurfaces(parcelsDoc);
   const width = Math.round(WIDTH * PX);
   const height = Math.round(DEPTH * PX);
   const labels = surfaces.labelRaster(width, height, ([E, N]) => {
     const [x, z] = tmToScene(E, N);
     return [(x - EXTENT.minX) * PX, (z - EXTENT.minZ) * PX];
   });
-  console.log(`ground: ${surfaces.layers.length} class polygons, arterial ${surfaces.arterial.strips} traced strips (${surfaces.arterial.quads} quads); label raster ${width}x${height}`);
+  console.log(`ground: ${surfaces.layers.length} class polygons from data/ground/parcels.json (${surfaces.parcels.filter((p) => p.source === "photo-paint-support").length} paint supports), ${surfaces.outlines.length} kerb lines; label raster ${width}x${height}`);
 
   // Ground AO first: the natural Ground material and the Ground_* decals (stages/surfaces.mjs) share it.
   let aoTexture = null;
@@ -130,6 +143,13 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
   }
   const natural = await naturalGroundMaterial(glb, landcoverAt, aoTexture);
   const groundMaterial = natural.material;
+  const d4Materials = new Map();
+  for (const [cls, name] of [["d4-grass", "Ground_Grass_D4"], ["d4-soil", "Ground_Soil_D4"]]) {
+    d4Materials.set(cls, {
+      material: await tileMaterial(glb, { name, cls, rank: 0, ao: aoTexture }),
+      size: groundTile(cls).entry.physicalSizeM,
+    });
+  }
   console.log(`ground: natural Topography ground, ${natural.width}x${natural.height} land-cover colour map (0.5 m/texel) under the ${GRASS_TILE} CC0 relief tile (${natural.tileSize} m); no photo pixels in the ground material`);
   glb.json.asset.extras = {
     ...glb.json.asset.extras,
@@ -148,16 +168,20 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
   const surface = topographySurface(heightAt);
   const buildTopography = (claim) => {
     const topographyChildren = [];
+    const d4NaturalChildren = [];
     let triangles = 0;
     for (let cz = EXTENT.minZ; cz < EXTENT.maxZ; cz += CHUNK) {
       for (let cx = EXTENT.minX; cx < EXTENT.maxX; cx += CHUNK) {
-        const data = new MeshData();
-        const vertexOf = new Map();
-        const vertex = ([x, z]) => {
+        const groups = new Map([
+          ["outside", { data: new MeshData(), vertexOf: new Map(), material: groundMaterial, size: natural.tileSize }],
+          ...[...d4Materials].map(([cls, tile]) => [cls, { data: new MeshData(), vertexOf: new Map(), ...tile }]),
+        ]);
+        const vertex = ([x, z], group) => {
+          const { data, vertexOf, size } = group;
           const key = `${Math.round(x * 1e5)},${Math.round(z * 1e5)}`;
           let i = vertexOf.get(key);
           if (i === undefined) {
-            i = data.vertex([x, surface.height(x, z), z], surface.normal(x, z), planarTileUv(x, z, natural.tileSize));
+            i = data.vertex([x, surface.height(x, z), z], surface.normal(x, z), planarTileUv(x, z, size));
             vertexOf.set(key, i);
           }
           return i;
@@ -168,31 +192,60 @@ export async function buildGround({ glb, inputs, selectableBuildings, campusBuil
             // the two triangles of the cell, as topographySurface splits it (a c b and b c d)
             for (const tri of [[[x, z], [x, z1], [x1, z]], [[x1, z], [x, z1], [x1, z1]]]) {
               for (const part of claim(tri)) {
-                for (let k = 1; k + 1 < part.length; k += 1) {
-                  const tri = [vertex(part[0]), vertex(part[k]), vertex(part[k + 1])];
-                  if (tri[0] === tri[1] || tri[1] === tri[2] || tri[0] === tri[2]) continue;
-                  data.indices.push(...tri);
-                  triangles += 1;
+                const { inside, outside } = splitD4GroundPolygon(part);
+                const pieces = outside.map(polygon => ({ polygon, cls: "outside" }));
+                if (inside) {
+                  // landcoverAt reads one class per scene-unit cell. Split at
+                  // those same boundaries before assigning a tiled material.
+                  let cells = [inside];
+                  for (const [axis, origin] of [[0, EXTENT.minX], [1, EXTENT.minZ]]) {
+                    const low = Math.min(...inside.map(p => p[axis]));
+                    const high = Math.max(...inside.map(p => p[axis]));
+                    for (let edge = origin + Math.floor(low - origin) + 1; edge < high; edge++) {
+                      cells = cells.flatMap(polygon => {
+                        const halves = splitByLine(polygon, p => p[axis] - edge);
+                        return [halves.inside, halves.outside].filter(Boolean);
+                      });
+                    }
+                  }
+                  for (const polygon of cells) {
+                    const centre = [0, 1].map(axis => polygon.reduce((sum, p) => sum + p[axis], 0) / polygon.length);
+                    pieces.push({ polygon, cls: d4NaturalTile(landcoverAt(...centre)) });
+                  }
+                }
+                for (const { polygon, cls } of pieces) {
+                  const group = groups.get(cls);
+                  for (let k = 1; k + 1 < polygon.length; k += 1) {
+                    const tri = [vertex(polygon[0], group), vertex(polygon[k], group), vertex(polygon[k + 1], group)];
+                    if (tri[0] === tri[1] || tri[1] === tri[2] || tri[0] === tri[2]) continue;
+                    group.data.indices.push(...tri);
+                    triangles += 1;
+                  }
                 }
               }
             }
           }
         }
-        if (!data.indices.length) continue;
-        const name = `Topography_${topographyChildren.length}`;
-        const primitive = data.toPrimitive(groundMaterial);
-        const mesh = glb.addMesh(name, [primitive]);
-        // GlbBuilder.addMesh writes TEXCOORD_0 only; the planar AO coordinate is added here.
-        const uv1 = new Float32Array((primitive.positions.length / 3) * 2);
-        for (let v = 0; v < uv1.length / 2; v += 1) {
-          uv1[v * 2] = (primitive.positions[v * 3] - EXTENT.minX) / WIDTH;
-          uv1[v * 2 + 1] = (primitive.positions[v * 3 + 2] - EXTENT.minZ) / DEPTH;
+        // Topography_* chunks hold exactly one primitive in the shared Ground material (pack.mjs joins them);
+        // the D4 tiled natural ground gets its own Ground_D4Natural_* nodes instead.
+        for (const [cls, group] of groups) {
+          if (!group.data.indices.length) continue;
+          const primitive = group.data.toPrimitive(group.material);
+          const name = cls === "outside" ? `Topography_${topographyChildren.length}` : `Ground_D4Natural_${cls}_${d4NaturalChildren.length}`;
+          const mesh = glb.addMesh(name, [primitive]);
+          // GlbBuilder.addMesh writes TEXCOORD_0 only; the planar AO coordinate is added here.
+          const uv1 = new Float32Array((primitive.positions.length / 3) * 2);
+          for (let v = 0; v < uv1.length / 2; v += 1) {
+            uv1[v * 2] = (primitive.positions[v * 3] - EXTENT.minX) / WIDTH;
+            uv1[v * 2 + 1] = (primitive.positions[v * 3 + 2] - EXTENT.minZ) / DEPTH;
+          }
+          glb.json.meshes[mesh].primitives[0].attributes.TEXCOORD_1 = glb.addAccessor(uv1, "VEC2");
+          (cls === "outside" ? topographyChildren : d4NaturalChildren).push(glb.addNode({ name, mesh }));
         }
-        glb.json.meshes[mesh].primitives[0].attributes.TEXCOORD_1 = glb.addAccessor(uv1, "VEC2");
-        topographyChildren.push(glb.addNode({ name, mesh }));
       }
     }
     glb.addNode({ name: "Topography", children: topographyChildren, extras: { naturalGround: true, note: "natural ground only: roads, walkways, lots and markings are cut out of it (Ground_*, Road_Markings)" } }, { root: true });
+    if (d4NaturalChildren.length) glb.addNode({ name: "Ground_D4Natural", children: d4NaturalChildren, extras: { naturalGround: true, scope: { buildingId: "BLD_D4" }, note: "D4 natural ground in tiled CC0 grass/soil materials (estimated), cut from the same partition as Topography" } }, { root: true });
     return { chunks: topographyChildren.length, triangles };
   };
   return {

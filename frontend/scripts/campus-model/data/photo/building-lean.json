@@ -1,0 +1,546 @@
+{
+  "description": "Per-building relief lean of the NGII 2025 orthophoto (sheet 34702020): the roof of a mass of height h appears at footprint + h * lean (m per m of height, [east, north]). method roof-edge: mass outlines slid over the photo's Sobel edges around the prior; method prior: no roof edge visible, so the registration lean field value (building-forms leanPrior) is kept and marked estimated. residual_m: RMS outline-to-edge distance. Estimates (추정), not survey data. Written by fit/buildingLeanFit.mjs.",
+  "sheet": "(B060)정사영상_2025_34702020.tif",
+  "buildings": [
+    {
+      "id": "BLD_E5",
+      "lean": [
+        -0.116,
+        -0.08
+      ],
+      "residual_m": 0.685,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_E1",
+      "lean": [
+        -0.016,
+        -0.043
+      ],
+      "residual_m": null,
+      "method": "prior",
+      "estimated": true
+    },
+    {
+      "id": "BLD_A4",
+      "lean": [
+        -0.117,
+        0.173
+      ],
+      "residual_m": 0.634,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_C1.001",
+      "lean": [
+        -0.092,
+        -0.256
+      ],
+      "residual_m": 0.637,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_Training Lab Building",
+      "lean": [
+        -0.047,
+        -0.211
+      ],
+      "residual_m": 0.603,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_C1",
+      "lean": [
+        -0.117,
+        -0.191
+      ],
+      "residual_m": 0.493,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_Dormitory_Building",
+      "lean": [
+        -0.126,
+        0.104
+      ],
+      "residual_m": 0.411,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_E3",
+      "lean": [
+        -0.028,
+        0.107
+      ],
+      "residual_m": 0.671,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_D2",
+      "lean": [
+        0.002,
+        -0.137
+      ],
+      "residual_m": null,
+      "method": "prior",
+      "estimated": true
+    },
+    {
+      "id": "BLD_D1",
+      "lean": [
+        0.092,
+        -0.247
+      ],
+      "residual_m": 0.531,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_B7",
+      "lean": [
+        0.026,
+        -0.139
+      ],
+      "residual_m": 0.625,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_B1",
+      "lean": [
+        0.019,
+        -0.276
+      ],
+      "residual_m": 0.6,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_A12.001",
+      "lean": [
+        0.067,
+        -0.124
+      ],
+      "residual_m": 0.511,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_A12",
+      "lean": [
+        -0.061,
+        0.004
+      ],
+      "residual_m": null,
+      "method": "prior",
+      "estimated": true
+    },
+    {
+      "id": "BLD_D4",
+      "lean": [
+        0.021,
+        -0.089
+      ],
+      "residual_m": null,
+      "method": "prior",
+      "estimated": true
+    },
+    {
+      "id": "BLD_E8",
+      "lean": [
+        -0.057,
+        0.129
+      ],
+      "residual_m": 0.709,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_D3",
+      "lean": [
+        -0.014,
+        -0.237
+      ],
+      "residual_m": 0.496,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_E6",
+      "lean": [
+        -0.003,
+        0.124
+      ],
+      "residual_m": 0.623,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_A10",
+      "lean": [
+        -0.013,
+        0.104
+      ],
+      "residual_m": null,
+      "method": "prior",
+      "estimated": true
+    },
+    {
+      "id": "BLD_E7",
+      "lean": [
+        -0.049,
+        0.241
+      ],
+      "residual_m": 0.698,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_B4",
+      "lean": [
+        0.004,
+        -0.267
+      ],
+      "residual_m": 0.554,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_A1",
+      "lean": [
+        -0.028,
+        -0.007
+      ],
+      "residual_m": null,
+      "method": "prior",
+      "estimated": true
+    },
+    {
+      "id": "BLD_B3",
+      "lean": [
+        0.037,
+        -0.308
+      ],
+      "residual_m": 0.589,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_Dormitory_Building.001",
+      "lean": [
+        -0.079,
+        0.113
+      ],
+      "residual_m": 0.547,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_Dormitory_Building.002",
+      "lean": [
+        -0.113,
+        0.035
+      ],
+      "residual_m": 0.5,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_B5_Greenhouse",
+      "lean": [
+        -0.038,
+        -0.151
+      ],
+      "residual_m": null,
+      "method": "prior",
+      "estimated": true
+    },
+    {
+      "id": "BLD_Dormitory_Building.003",
+      "lean": [
+        -0.081,
+        0.123
+      ],
+      "residual_m": 0.409,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_B2",
+      "lean": [
+        0.075,
+        -0.244
+      ],
+      "residual_m": 0.731,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_Dormitory_Building.004",
+      "lean": [
+        -0.052,
+        0.095
+      ],
+      "residual_m": 0.463,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_SCNU_E8",
+      "lean": [
+        -0.139,
+        0.14
+      ],
+      "residual_m": 0.591,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_SCNU_E4",
+      "lean": [
+        -0.004,
+        -0.083
+      ],
+      "residual_m": null,
+      "method": "prior",
+      "estimated": true
+    },
+    {
+      "id": "BLD_SCNU_E2",
+      "lean": [
+        0.072,
+        0.18
+      ],
+      "residual_m": 0.492,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "GIS건물통합정보 AL_D010_12_20261009.shp record 688089",
+      "lean": [
+        -0.016,
+        0.032
+      ],
+      "residual_m": null,
+      "method": "prior",
+      "estimated": true
+    },
+    {
+      "id": "BLD_SCNU_A6",
+      "lean": [
+        -0.014,
+        0.069
+      ],
+      "residual_m": null,
+      "method": "prior",
+      "estimated": true
+    },
+    {
+      "id": "GIS건물통합정보 AL_D010_12_20261009.shp record 688060",
+      "lean": [
+        -0.019,
+        -0.18
+      ],
+      "residual_m": null,
+      "method": "prior",
+      "estimated": true
+    },
+    {
+      "id": "BLD_SCNU_A12",
+      "lean": [
+        0.084,
+        0.119
+      ],
+      "residual_m": 0.669,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_SCNU_C4",
+      "lean": [
+        -0.019,
+        -0.174
+      ],
+      "residual_m": null,
+      "method": "prior",
+      "estimated": true
+    },
+    {
+      "id": "GIS건물통합정보 AL_D010_12_20261009.shp record 689515",
+      "lean": [
+        -0.023,
+        -0.193
+      ],
+      "residual_m": null,
+      "method": "prior",
+      "estimated": true
+    },
+    {
+      "id": "GIS건물통합정보 AL_D010_12_20261009.shp record 688859",
+      "lean": [
+        -0.024,
+        -0.187
+      ],
+      "residual_m": null,
+      "method": "prior",
+      "estimated": true
+    },
+    {
+      "id": "BLD_SCNU_A7",
+      "lean": [
+        -0.124,
+        0.135
+      ],
+      "residual_m": 0.447,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_SCNU_C2",
+      "lean": [
+        -0.045,
+        -0.222
+      ],
+      "residual_m": 0.541,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "GIS건물통합정보 AL_D010_12_20261009.shp record 690066",
+      "lean": [
+        -0.166,
+        0.017
+      ],
+      "residual_m": 0.378,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_SCNU_A1",
+      "lean": [
+        -0.029,
+        -0.012
+      ],
+      "residual_m": null,
+      "method": "prior",
+      "estimated": true
+    },
+    {
+      "id": "BLD_SCNU_A2",
+      "lean": [
+        -0.144,
+        0.118
+      ],
+      "residual_m": 0.699,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_SCNU_B6",
+      "lean": [
+        -0.097,
+        -0.248
+      ],
+      "residual_m": 0.461,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_SCNU_R688057",
+      "lean": [
+        0.04,
+        0.104
+      ],
+      "residual_m": 0.562,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_SCNU_R69065",
+      "lean": [
+        -0.048,
+        0.08
+      ],
+      "residual_m": 0.486,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_SCNU_R138317",
+      "lean": [
+        -0.215,
+        -0.027
+      ],
+      "residual_m": 0.393,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_SCNU_F4",
+      "lean": [
+        -0.096,
+        0.084
+      ],
+      "residual_m": 0.596,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_SCNU_F2",
+      "lean": [
+        -0.06,
+        0.072
+      ],
+      "residual_m": null,
+      "method": "prior",
+      "estimated": true
+    },
+    {
+      "id": "BLD_SCNU_F1",
+      "lean": [
+        -0.065,
+        0.098
+      ],
+      "residual_m": null,
+      "method": "prior",
+      "estimated": true
+    },
+    {
+      "id": "BLD_SCNU_D5",
+      "lean": [
+        -0.016,
+        -0.148
+      ],
+      "residual_m": 0.572,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_SCNU_A3",
+      "lean": [
+        -0.019,
+        -0.093
+      ],
+      "residual_m": 0.453,
+      "method": "roof-edge",
+      "estimated": false
+    },
+    {
+      "id": "BLD_SCNU_C5",
+      "lean": [
+        -0.016,
+        -0.191
+      ],
+      "residual_m": null,
+      "method": "prior",
+      "estimated": true
+    }
+  ]
+}

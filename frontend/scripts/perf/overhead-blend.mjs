@@ -31,17 +31,33 @@
 // VISIBLE.minRatio (X); otherwise PASS or FAIL. N, X and the edge floor are justified in overheadBlendCore.mjs VISIBLE.
 // JSON: `visibleGround` { thresholds, tiles, summary }; images <prefix>tile-<E0>-<N0>-visible-blend.png (excluded
 // ground darkened). The run passes only when every reported mode passes.
+// Objects mode (--objects; plan campus-ground-truth-redesign todo 10, design §10.1): instead of the tile capture, every
+// road-marking piece the markings stage draws (stages/markings.mjs markingCandidates, the same pieces the paint gate
+// measures) is scored against the photo's paint masks (lib/paintMasks.mjs) with leaned roofs, crowns and cast shadows
+// masked out (lib/occlusion.mjs, leans from data/photo/building-lean.json or the leanPrior of building-forms.json) by
+// qa/mapCompare.mjs: lateral residual for lines, IoU for areas. Writes <out>/objects.json and <out>/objects.md with the
+// over-tolerance list; over-tolerance is a warning (exit 0), as §10.1 says the photo can be wrong. Stall paint comes from the
+// generated rows of data/ground/parking.json (--parking <file> reads another record), not from the photo detections, which are
+// no longer drawn; missingDividers lists the paint no record explains, and the report gives a table per row. No new renderer:
+// Road geometry is read from emitted triangles; object mode needs no dev server.
+// --data, --mesh-report and --raw-glb select a source directory and its matching raw candidate.
+// Render modes accept --model <candidate.glb> --run-id <id> and verify the served bytes.
 // Exit 0 PASS, 1 FAIL, 2 missing sheet or unreachable server (NGII_SHEET overrides the sheet path).
 // Chrome is driven over --remote-debugging-pipe, so no TCP port is opened besides the dev server's.
 import { spawn } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { randomUUID } from "node:crypto";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { D4_SCENE, EXTENT } from "../campus-model/lib/frame.mjs";
+import { D4_SCENE_ANCHOR, EXTENT } from "../campus-model/lib/frame.mjs";
 import { DEFAULT_SHEET, openSheet } from "../campus-model/lib/ngiiSheet.mjs";
 import { decodePng, encodePng } from "../campus-model/lib/png.mjs";
 import { GRID_CONVERGENCE_DEG, sceneToTm, tmToPixel, tmToScene, wgs84ToTm } from "../../src/geo/epsg5186.mjs";
+import { occlusionMask } from "../campus-model/lib/occlusion.mjs";
+import { runMapComparison } from "../campus-model/qa/mapReport.mjs";
+import { readRenderIdentity } from "../campus-model/qa/renderReports.mjs";
+import { resolveCampusModelUrl } from "../../src/campusModelAsset.mjs";
 import { EDGE_THRESHOLD, VISIBLE, aggregate, aggregateVisible, canopyMask, footprintMask, measureTile, measureVisible, pointInRing, renderHalf, residualsMarkdown, sideBySide, tileGrid } from "./overheadBlendCore.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -61,6 +77,7 @@ const WINDOWS = [
   { name: "east-woodland", x: 355, z: -185, widthM: 200, heightM: 150 },
 ];
 
+async function main() {
 const args = process.argv.slice(2);
 const option = (name, fallback) => {
   const index = args.indexOf(`--${name}`);
@@ -76,6 +93,22 @@ const edgeFloor = Number(option("edge-floor", "0.02"));
 const jsonPath = resolve(option("json", join(outDir, `${prefix}overhead-blend.json`)));
 const clock = option("clock", "2026-10-24T12:00:00+09:00");
 const visibleGround = args.includes("--visible-ground");
+const modelPath = resolve(option("model", join(HERE, "../../public/campus-v2.glb")));
+const runId = option("run-id", randomUUID());
+// --occlusion: each window is also measured with leaned roofs (data/photo/building-lean.json), tree crowns
+// (data/trees.json) and their cast shadows (lib/occlusion.mjs) removed from both edge maps (result field `occluded`).
+const occlusion = args.includes("--occlusion");
+const OCCLUDERS = occlusion ? (() => {
+  const data = join(dirname(fileURLToPath(import.meta.url)), "..", "campus-model", "data");
+  const forms = JSON.parse(readFileSync(join(data, "building-forms.json"), "utf8"));
+  const leans = new Map(JSON.parse(readFileSync(join(data, "photo", "building-lean.json"), "utf8")).buildings.map((b) => [b.id, b.lean]));
+  const buildings = forms.buildings.flatMap((b) => b.masses.map((m) => ({
+    rings: [m.outer, ...(m.holes ?? [])].map((r) => r.map(([lon, lat]) => wgs84ToTm(lon, lat))),
+    heightM: m.topMetres, lean: leans.get(b.key) ?? b.leanPrior,
+  })));
+  const trees = JSON.parse(readFileSync(join(data, "trees.json"), "utf8")).trees.map(([east, north, crownDiameterM, heightM]) => ({ east, north, crownDiameterM, heightM }));
+  return { buildings, trees };
+})() : null;
 if (Number.isNaN(Date.parse(clock))) throw new Error(`--clock is not a date: ${clock}`);
 
 // ---------------------------------------------------------------- --compare <before.json> <after.json> --out <dir>
@@ -107,19 +140,55 @@ if (args.includes("--compare")) {
 }
 
 // ---------------------------------------------------------------- preconditions (exit 2)
-let sheet;
+let sheet, identity;
 try {
   sheet = openSheet(DEFAULT_SHEET);
 } catch (error) {
   console.error(`sheet missing: ${DEFAULT_SHEET} (${error.message})`);
   process.exit(2);
 }
-try {
+if (!args.includes("--objects")) try {
   await fetch(url, { signal: AbortSignal.timeout(5000) });
+  identity = await readRenderIdentity({ modelPath, modelUrl: new URL(resolveCampusModelUrl(new URL(url).search), url), runId });
 } catch (error) {
   console.error(`server unreachable: ${url} (${error.cause?.code ?? error.message})`);
   sheet.close();
   process.exit(2);
+}
+
+// ---------------------------------------------------------------- --objects (per-object map-space comparison)
+if (args.includes("--objects")) {
+  sheet.close();
+  const data = resolve(option("data", join(HERE, "..", "campus-model", "data")));
+  const report = await runMapComparison({
+    dataDir: data,
+    meshReportPath: resolve(option("mesh-report", join(data, "..", ".build", "markings.report.json"))),
+    rawGlbPath: resolve(option("raw-glb", join(data, "..", ".build", "campus-v2.raw.glb"))),
+    parkingPath: resolve(option("parking", join(data, "ground", "parking.json"))),
+    referencePath: resolve(option("road-reference", join(data, "photo", "evidence", "road-reference.json"))),
+  });
+  report.generatedAt = new Date().toISOString();
+  const { objects: scored, byTier, parkingRows: rows, parkingLots: lots } = report;
+  const overList = scored.filter(r => r.over);
+  const leanSource = report.masks.leans;
+  mkdirSync(outDir, { recursive: true });
+  writeFileSync(join(outDir, "objects.json"), `${JSON.stringify(report, null, 1)}\n`);
+  const row = (r) => `| ${r.id} | ${r.kind} | ${r.tier} | ${r.near ?? ""} | ${r.residual_m ?? ""} | ${r.iou ?? ""} | ${r.support ?? ""} | ${r.occluded ? "yes" : ""} | ${r.over ? "OVER" : ""} |`;
+  const head = "| id | kind | tier | near | residual m | IoU | support | occluded | over |\n|---|---|---|---|---|---|---|---|---|";
+  const md = [
+    "# Map-space per-object comparison (design §10.1)", "",
+    `Sheet ${report.sheet}, ${scored.length} objects from markingCandidates; occlusion leans: ${leanSource}. Values are photo residuals (추정), warnings only.`, "",
+    "## By tier", "", "| tier | objects | occluded | unmeasurable | over | median residual m |", "|---|---|---|---|---|---|",
+    ...Object.entries(byTier).map(([k, t]) => `| ${k} | ${t.objects} | ${t.occluded} | ${t.unmeasurable} | ${t.over} | ${t.medianResidualM ?? ""} |`), "",
+    "## Parking lots (one line per lot; a reviewed lot holds support >= 0.7 or is marked estimated with a reason)", "", "| lot | reviewed | 추정 | support | visible | over | missing | accepted | reason |", "|---|---|---|---|---|---|---|---|---|",
+    ...lots.map((l) => `| ${l.lot} | ${l.curated ?? (l.unreviewed ? "UNREVIEWED" : "")} | ${l.estimated ? "추정" : ""} | ${l.support ?? ""} | ${l.visible} | ${l.over.length} | ${l.missing} | ${l.accepted ? "yes" : "NO"} | ${l.estimatedReason ?? ""} |`), "",
+    "## Parking rows (generated from parking.json)", "", "| row | tier | dividers | visible | support | median residual m | max residual m | over | missing | back | front | 추정 dividers | 추정 values |", "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+    ...rows.map((r) => `| ${r.row} | ${r.tier}${r.estimated ? " 추정" : ""} | ${r.dividers} | ${r.visibleDividers} | ${r.support ?? ""} | ${r.medianResidualM ?? ""} | ${r.maxResidualM ?? ""} | ${r.over.length} | ${r.missing} | ${r.endLines.back?.support ?? ""} | ${r.endLines.front?.support ?? ""} | ${r.estimatedDividers.join(" ")} | ${r.estimatedValues.join(", ")} |`), "",
+    `## Over tolerance (${overList.length})`, "", head, ...overList.map(row), "",
+  ].join("\n");
+  writeFileSync(join(outDir, "objects.md"), md);
+  console.log(`OBJECTS ${scored.length} scored, ${scored.filter((r) => r.occluded).length} occluded, ${overList.length} over tolerance; ${join(outDir, "objects.json")}`);
+  process.exit(0);
 }
 
 // ---------------------------------------------------------------- grid-aligned views
@@ -307,6 +376,34 @@ const evaluate = async (expression) => {
   return reply.result.result.value;
 };
 
+// BLD_D4's bbox centre in public/campus-v2.glb (scene frame): POSITION min/max of its primitives, dequantised and mapped
+// through the node's translation/scale, as src/campusModelAsset.test.mjs nodeBox reads it.
+function d4SceneCentre() {
+  return nodeSceneCentre("BLD_D4") ?? { x: D4_SCENE_ANCHOR.x, z: D4_SCENE_ANCHOR.z };
+}
+function nodeSceneCentre(name) {
+  const file = readFileSync(join(HERE, "..", "..", "public", "campus-v2.glb"));
+  const gltf = JSON.parse(file.subarray(20, 20 + file.readUInt32LE(12)).toString("utf8"));
+  const node = gltf.nodes.find((n) => n.name === name);
+  if (!node?.mesh && node?.mesh !== 0) {
+    if (name === "BLD_D4") return null;
+    throw new Error(`--buildings: no mesh node ${name} in public/campus-v2.glb`);
+  }
+  const norm = { 5120: (v) => Math.max(v / 127, -1), 5121: (v) => v / 255, 5122: (v) => Math.max(v / 32767, -1), 5123: (v) => v / 65535 };
+  const t = node.translation ?? [0, 0, 0];
+  const s = node.scale ?? [1, 1, 1];
+  const lo = [Infinity, Infinity];
+  const hi = [-Infinity, -Infinity];
+  for (const p of gltf.meshes[node.mesh].primitives) {
+    const a = gltf.accessors[p.attributes.POSITION];
+    const d = a.normalized ? norm[a.componentType] : (v) => v;
+    for (const c of [a.min, a.max]) {
+      [0, 2].forEach((k, i) => { const w = d(c[k]) * s[k] + t[k]; lo[i] = Math.min(lo[i], w); hi[i] = Math.max(hi[i], w); });
+    }
+  }
+  return { x: (lo[0] + hi[0]) / 2, z: (lo[1] + hi[1]) / 2 };
+}
+
 let exitCode = 1;
 try {
   const { result: { targetInfos } } = await cdp("Target.getTargets", {}, null);
@@ -327,7 +424,11 @@ try {
   await Bun.sleep(3000); // let textures finish uploading (same settle as compare-satellite.mjs)
   await evaluate(PAGE_HELPERS);
   const d4World = await evaluate("window.__blend.d4Centre()");
-  const offset = { x: d4World.x - D4_SCENE.x, z: d4World.z - D4_SCENE.z };
+  // world minus scene: BLD_D4's bbox centre in the page against the same centre in the GLB's scene frame. In Frame v2
+  // the bbox centre is not D4_SCENE_ANCHOR (the anchor is the GIS footprint centroid, the node bbox spans its LOD4
+  // masses), so the scene-frame centre is read from the GLB the page loads rather than assumed to be the anchor.
+  const d4Scene = d4SceneCentre();
+  const offset = { x: d4World.x - d4Scene.x, z: d4World.z - d4Scene.z };
   console.log(`FRAME world-minus-scene offset x=${offset.x.toFixed(3)} z=${offset.z.toFixed(3)}; grid convergence ${GRID_CONVERGENCE_DEG.toFixed(4)} deg`);
 
   mkdirSync(outDir, { recursive: true });
@@ -342,6 +443,16 @@ try {
     writeFileSync(join(outDir, `${prefix}${label}-side.png`), composeSide(render, photo, view.width, view.height));
     writeFileSync(join(outDir, `${prefix}${label}-blend.png`), composeBlend(render, photo, result.renderEdges, result.photoEdges, view.width, view.height));
     const { renderEdges, photoEdges, ...rest } = result;
+    if (occlusion) {
+      const win = { w: view.width, h: view.height, gsdM: METRES_PER_PIXEL, origin: [view.E0, view.N0 + view.height * METRES_PER_PIXEL] };
+      const near = (x0, x1, y0, y1) => ({
+        buildings: OCCLUDERS.buildings.filter((b) => b.rings[0].some(([E, N]) => E > x0 - 60 && E < x1 + 60 && N > y0 - 60 && N < y1 + 60)),
+        trees: OCCLUDERS.trees.filter((t) => t.east > x0 - 30 && t.east < x1 + 30 && t.north > y0 - 30 && t.north < y1 + 30),
+      });
+      const { any } = occlusionMask(win, near(view.E0, view.E0 + view.width * METRES_PER_PIXEL, view.N0, win.origin[1]));
+      const o = measureVisible({ render, photo, width: view.width, height: view.height, channels: 4, excluded: any, maxShift, passPx: PASS_PX });
+      rest.occluded = { dx: o.dx, dy: o.dy, ratio: o.ratio, verdict: o.verdict, visibleShare: o.visibleShare, reason: o.reason };
+    }
     return rest;
   };
 
@@ -371,26 +482,30 @@ try {
   for (const t of tiles) {
     const r = await measure(viewFor(t.E0, t.N0, tileM, tileM), `tile-${t.E0}-${t.N0}`);
     tileResults.push({ E0: t.E0, N0: t.N0, ...r });
-    console.log(`TILE ${t.E0} ${t.N0} dx=${r.dx} dy=${r.dy} ratio=${r.ratio} edgeShare=${r.edgeShare} signal=${r.signal} pass=${r.pass}`);
+    console.log(`TILE ${t.E0} ${t.N0} dx=${r.dx} dy=${r.dy} ratio=${r.ratio} edgeShare=${r.edgeShare} signal=${r.signal} pass=${r.pass}${r.occluded ? ` occ=${r.occluded.verdict}:${r.occluded.dx},${r.occluded.dy}:vis=${r.occluded.visibleShare}` : ""}`);
     if (visibleGround) {
       const v = await measureVisibleTile(viewFor(t.E0, t.N0, tileM, tileM), `tile-${t.E0}-${t.N0}`);
       visibleResults.push({ E0: t.E0, N0: t.N0, ...v });
       console.log(`VISIBLE ${t.E0} ${t.N0} ${v.verdict} dx=${v.dx} dy=${v.dy} ratio=${v.ratio} visible=${v.visibleShare} edgeShare=${v.edgeShare}${v.reason ? ` (${v.reason})` : ""}`);
     }
   }
+  // --buildings A,B,...: one 60 x 60 m window per named BLD_* node, centred on its bbox in the GLB scene frame (local QA
+  // only; the windows are measured and saved like the fixed ones).
+  const named = option("buildings", "").split(",").filter(Boolean).map((id) => ({ name: `bld-${id.replace(/^BLD_/, "")}`, ...nodeSceneCentre(`BLD_${id.replace(/^BLD_/, "")}`), widthM: 60, heightM: 60 }));
   const windows = [];
-  for (const w of WINDOWS) {
+  for (const w of [...WINDOWS, ...named]) {
     const [Ec, Nc] = sceneToTm(w.x, w.z);
     const view = viewFor(snap(Ec - w.widthM / 2), snap(Nc - w.heightM / 2), w.widthM, w.heightM);
     const r = await measure(view, w.name);
     windows.push({ name: w.name, E0: view.E0, N0: view.N0, ...r });
-    console.log(`WINDOW ${w.name} E0=${view.E0} N0=${view.N0} dx=${r.dx} dy=${r.dy} ratio=${r.ratio} edgeShare=${r.edgeShare}`);
+    console.log(`WINDOW ${w.name} E0=${view.E0} N0=${view.N0} dx=${r.dx} dy=${r.dy} ratio=${r.ratio} edgeShare=${r.edgeShare}${r.occluded ? ` occ=${r.occluded.verdict}:${r.occluded.dx},${r.occluded.dy}:vis=${r.occluded.visibleShare}` : ""}`);
   }
 
   const summary = aggregate(tileResults);
   const visibleSummary = visibleGround ? aggregateVisible(visibleResults) : null;
   const report = {
     generatedAt: new Date().toISOString(),
+    identity,
     url,
     sheet: DEFAULT_SHEET.split("/").pop(),
     clock,
@@ -427,3 +542,6 @@ try {
   rmSync(profile, { recursive: true, force: true });
 }
 process.exit(exitCode);
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await main();

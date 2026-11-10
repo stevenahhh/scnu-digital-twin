@@ -14,9 +14,10 @@
     "preview": "vite preview",
     "test": "node scripts/run-tests.mjs",
     "model:fetch": "bun scripts/campus-model/fetch-sources.mjs",
-    "model:build": "bun scripts/campus-model/build-campus-model.mjs && bun scripts/campus-model/pack.mjs",
+    "model:build": "bun scripts/campus-model/build.mjs",
+    "model:blend": "bun scripts/campus-model/qa/topology/blend.mjs",
     "model:pack": "bun scripts/campus-model/pack.mjs",
-    "model:precompress": "bun scripts/campus-model/pack.mjs --precompress",
+    "model:precompress": "bun scripts/campus-model/publish.mjs",
     "network:build": "bun scripts/campus-model/network/buildNetwork.mjs"
   },
   "dependencies": {
@@ -45,6 +46,7 @@
     "@types/react-dom": "^18.2.22",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.19",
+    "happy-dom": "^21.0.4",
     "jsdom": "^26.1.0",
     "meshoptimizer": "^1.3.0",
     "postcss": "^8.4.38",

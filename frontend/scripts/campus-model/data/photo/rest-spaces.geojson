@@ -443,9 +443,10 @@
         "vr_scene": "scene_e8",
         "vr_face": "f",
         "vr_cols": [
-          300,
-          700
+          1148,
+          1464
         ],
+        "vr_correspondence": "free-standing-vr.json RS0018: north bed is right when looking west; silhouette estimated",
         "photo_support": "wall",
         "confidence": 0.5,
         "position_method": "photo: dark hedge outline traced on the NGII 2025 sheet 34702020 (0.25 m, crop of the E8 courtyard), matched to the beds the VR shows on face f",
@@ -506,9 +507,10 @@
         "vr_scene": "scene_e8",
         "vr_face": "f",
         "vr_cols": [
-          1350,
-          1750
+          531,
+          839
         ],
+        "vr_correspondence": "free-standing-vr.json RS0018A: south bed is left when looking west; silhouette estimated",
         "photo_support": "wall",
         "confidence": 0.5,
         "position_method": "photo: dark hedge outline traced on the NGII 2025 sheet 34702020 (0.25 m, crop of the E8 courtyard), matched to the beds the VR shows on face f",
@@ -569,9 +571,10 @@
         "vr_scene": "scene_e8",
         "vr_face": "f",
         "vr_cols": [
-          150,
-          420
+          1434,
+          1728
         ],
+        "vr_correspondence": "free-standing-vr.json RS0018B: north-wing strip is right; silhouette estimated",
         "photo_support": "wall",
         "confidence": 0.5,
         "position_method": "photo: dark hedge outline traced on the NGII 2025 sheet 34702020 (0.25 m, crop of the E8 courtyard), matched to the beds the VR shows on face f",
@@ -624,9 +627,10 @@
         "vr_scene": "scene_e8",
         "vr_face": "f",
         "vr_cols": [
-          1700,
-          1900
+          161,
+          551
         ],
+        "vr_correspondence": "free-standing-vr.json RS0018C: south-wing east corner is left; silhouette estimated",
         "photo_support": "wall",
         "confidence": 0.5,
         "position_method": "photo: dark hedge outline traced on the NGII 2025 sheet 34702020 (0.25 m, crop of the E8 courtyard), matched to the beds the VR shows on face f",

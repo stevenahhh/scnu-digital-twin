@@ -1,0 +1,200 @@
+{
+  "estimated": true,
+  "building": "BLD_Dormitory_Building",
+  "storeys": [
+    {
+      "hM": 3.4275
+    },
+    {
+      "hM": 3.4275
+    },
+    {
+      "hM": 3.4275
+    },
+    {
+      "hM": 3.4275
+    }
+  ],
+  "walls": {
+    "W04": {
+      "bays": {
+        "pitchM": 3.48159593,
+        "count": 8,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 2.5067,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 A9_학생생활관_청운관_301234 W04",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated",
+          "Exact registered source edge correspondence in surfaceEdges; automatic 0.3 m matching remains unchanged. Endpoints are checked within 1 mm, not moved."
+        ],
+        "independentCount": 8,
+        "openingGroups": 8,
+        "notes": [
+          "LOD4 x117..231: eight repeated vertical window stacks between the two wall ends.",
+          "Vertical allocation follows the registered wing source: 4 levels over 13.710 m. The independent image count is horizontal; heights remain estimates."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 8,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "brick:#947a7e",
+        "glass": "#5d7680",
+        "frame": "#f2f2ee"
+      },
+      "surfaceEdges": [
+        {
+          "A": [
+            243872.007,
+            263486.9222
+          ],
+          "B": [
+            243843.9111,
+            263494.0596
+          ],
+          "source": "building-forms.json BLD_Dormitory_Building/mass/1/edge/7; resolved source geometry, estimated"
+        }
+      ]
+    },
+    "W07": {
+      "bays": {
+        "pitchM": 3.44323158,
+        "count": 10,
+        "offsetM": 0.5
+      },
+      "cells": [
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ],
+        [
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window",
+          "window"
+        ]
+      ],
+      "overrides": [],
+      "window": {
+        "wM": 2.4791,
+        "hM": 1.7,
+        "sillM": 0.9
+      },
+      "accents": {},
+      "evidence": {
+        "source": "LOD4",
+        "refs": [
+          "LOD4 A9_학생생활관_청운관_301234 W07",
+          "Canonical EPSG:5186 wall length and endpoints; dimensions and colour are estimated"
+        ],
+        "independentCount": 10,
+        "openingGroups": 10,
+        "notes": [
+          "LOD4 x360..500: ten upper window stacks, including the first shaded stack but excluding the right return.",
+          "Vertical allocation follows the registered wing source: 4 levels over 13.710 m. The independent image count is horizontal; heights remain estimates."
+        ],
+        "tier": "T2",
+        "lod4BayCount": 10,
+        "vrBayCount": null
+      },
+      "estimated": true,
+      "default": "window",
+      "materials": {
+        "wall": "brick:#947a7e",
+        "glass": "#5d7680",
+        "frame": "#f2f2ee"
+      }
+    }
+  }
+}
