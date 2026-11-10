@@ -4,10 +4,9 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../components/D4WingFloorSelect", () => ({
-  D4WingFloorSelect: ({ onSelectFloor, beforeList }) => (
+  D4WingFloorSelect: ({ onSelectFloor }) => (
     <div>
       <button onClick={() => onSelectFloor("left", 2)}>2층 선택</button>
-      {beforeList}
       <div>사용 중인 강의실</div>
     </div>
   ),
@@ -54,17 +53,38 @@ describe("D4SectionExperience pane", () => {
     expect(screen.getAllByRole("button", { name: /^(상위로|캠퍼스 지도로 돌아가기)$/ })).toHaveLength(2);
     expect(crumbs()).toEqual(["캠퍼스", "공과대학 3호관D4"]);
     expect(screen.getByRole("heading", { level: 2 }).textContent).toBe("공과대학 3호관D4");
-    expect(container.textContent.indexOf("사용 중인 강의실")).toBeLessThan(container.textContent.indexOf("설치 계획"));
+    expect(container.textContent).toContain("사용 중인 강의실");
   });
 
-  it("keeps the plan tools in a collapsed 설치 계획 disclosure after the room list", async () => {
-    const user = userEvent.setup();
-    render(<D4SectionExperience onClose={vi.fn()} />);
-    const toggle = screen.getByRole("button", { name: "설치 계획" });
-    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+  it("has no installation plan tools and no campus preset row without an editor request", () => {
+    const { container } = render(<D4SectionExperience onClose={vi.fn()} />);
+    expect(screen.queryByRole("button", { name: "설치 계획" })).toBeNull();
     expect(screen.queryByText("설치 계획 관리자")).toBeNull();
-    await user.click(toggle);
+    expect(screen.queryByRole("navigation", { name: "캠퍼스 시점" })).toBeNull();
+    expect(container.querySelector("[data-qa^=camera-preset-]")).toBeNull();
+  });
+
+  it("opens an editor request as the 배치 편집 step, and 상위로 returns to the building", async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    render(<D4SectionExperience onClose={onClose} startInstallation />);
+    expect(crumbs()).toEqual(["캠퍼스", "공과대학 3호관D4", "배치 편집"]);
     expect(screen.getByText("설치 계획 관리자")).toBeTruthy();
+    expect(screen.queryByText("사용 중인 강의실")).toBeNull();
+    await user.click(screen.getByRole("button", { name: "상위로" }));
+    expect(crumbs()).toEqual(["캠퍼스", "공과대학 3호관D4"]);
+    expect(screen.queryByText("설치 계획 관리자")).toBeNull();
+    expect(screen.getByText("사용 중인 강의실")).toBeTruthy();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it("steps straight back to the campus from another building's 배치 편집", async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    render(<D4SectionExperience onClose={onClose} buildingId="D1" startInstallation />);
+    expect(crumbs()).toEqual(["캠퍼스", "D1 배치 편집"]);
+    await user.click(screen.getByRole("button", { name: "상위로" }));
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   it("walks room -> floor -> building -> campus with Escape and the breadcrumb", async () => {
@@ -108,17 +128,6 @@ describe("D4SectionExperience pane", () => {
     expect(screen.getByText(/옥상 설치 편집기 plan-2/)).toBeTruthy();
     await user.keyboard("{Escape}");
     expect(onClose).not.toHaveBeenCalled();
-  });
-
-  it("offers every campus preset from the pane when presets are given (phone)", async () => {
-    const user = userEvent.setup();
-    const onSelectPreset = vi.fn();
-    const presets = [{ id: "overview", title: "전체" }, { id: "library", title: "도서관", shortName: "도서관" }];
-    render(<D4SectionExperience onClose={vi.fn()} presets={presets} onSelectPreset={onSelectPreset} />);
-    const nav = screen.getByRole("navigation", { name: "캠퍼스 시점" });
-    expect([...nav.querySelectorAll("button")].map((b) => b.dataset.qa)).toEqual(["camera-preset-overview", "camera-preset-library"]);
-    await user.click(screen.getByRole("button", { name: "도서관" }));
-    expect(onSelectPreset).toHaveBeenCalledWith(presets[1]);
   });
 
   it("publishes plan list, representative, and editor save changes from building detail", async () => {
