@@ -75,16 +75,19 @@ export function RepresentativePlanOverlayController({
 
   const label = visible ? "대표 설치 계획 숨기기" : "대표 설치 계획 표시하기";
   return <div
-    className={cx("pointer-events-auto flex flex-col items-end gap-1 text-ink", widthClassName, className)}
+    // 지도 위에 놓여도 글자가 읽히도록 면을 깐다(패널 안에서는 같은 면이라 드러나지 않는다).
+    className={cx("pointer-events-auto flex flex-col items-end gap-1 rounded-control bg-surface-1 text-ink", widthClassName, className)}
     role="group"
     aria-label="대표 설치 계획 지도 레이어"
   >
     <Button
       size="sm"
-      variant={visible ? "secondary" : "ghost"}
+      variant="ghost"
       aria-label={label}
       aria-pressed={visible}
       onClick={toggle}
+      // 눌린 모양은 다른 토글과 같다(surface-2 바탕 + ink 글자, V-F-34). 눈 글리프가 상태를 함께 알린다.
+      className={cx(visible && "!bg-surface-2 !text-ink")}
       icon={visible ? <Eye aria-hidden="true" className="h-4 w-4" /> : <EyeOff aria-hidden="true" className="h-4 w-4" />}
     >
       대표 설치 계획
