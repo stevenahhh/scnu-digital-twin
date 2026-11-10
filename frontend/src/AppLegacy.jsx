@@ -247,6 +247,7 @@ function Dashboard() {
           trafficFeed={trafficFeed}
           plans={plans}
           buildingId={selection.selectedBuildingId}
+          hasSelection={Boolean(selection.selectedId)}
           onOpenRecommendation={openRecommendation}
           campusOverview={(
             <CampusEnergyOverview refreshKey={plans.overlayRefreshKey} />
