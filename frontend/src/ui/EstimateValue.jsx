@@ -62,7 +62,7 @@ export function EstimateValue({
       <span className="inline-flex flex-wrap items-baseline gap-1">
         <span
           className={cx(
-            "rounded-control text-body font-semibold tabular-nums text-ink transition-colors duration-state motion-reduce:transition-none",
+            "rounded-control text-body font-semibold tabular-nums text-ink",
             highlight && "bg-surface-3",
           )}
         >

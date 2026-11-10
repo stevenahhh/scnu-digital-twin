@@ -24,7 +24,7 @@ const PRESSED = "aria-pressed:bg-surface-2 aria-pressed:text-ink";
 export const CampusHud = forwardRef(function CampusHud(
   {
     mode = "desktop", insetRight, camera, clock, playing, onPlayingChange, presenting = false, onTogglePresentation,
-    tour = null, search = null, moreMenu = null, feedIssueCount = 0, onOpenStatus, sceneWeather = null,
+    tour = null, search = null, moreMenu = null, feedIssueCount = 0, onOpenStatus, sceneWeather = null, sheetDetent = null,
   },
   ref,
 ) {
@@ -36,6 +36,11 @@ export const CampusHud = forwardRef(function CampusHud(
   }, [ref]);
   const follow = usePanelFollow(rootRef, insetRight);
   const phone = mode === "phone";
+  // 폰 바텀 시트가 half면 시간 칩을 시트 밑 대신 위쪽(검색 줄 아래 왼쪽, 카메라 토글과 같은 높이)으로 올린다.
+  // 지도 가운데의 선택 칩을 가리지 않고 시트에 깔리지도 않는다.
+  // full이면 시트가 HUD를 다 덮으므로 HUD 전체를 보이지도 닿지도 않게 감춘다.
+  const sheetHalf = phone && sheetDetent === "half";
+  const sheetFull = phone && sheetDetent === "full";
   const cameraReady = camera.ready !== false;
   const toggle = onTogglePresentation && <PresentationToggle presenting={presenting} onToggle={onTogglePresentation} />;
 
@@ -61,7 +66,8 @@ export const CampusHud = forwardRef(function CampusHud(
       ref={setRoot}
       data-qa="campus-hud"
       data-label-chrome-layer=""
-      className="pointer-events-none absolute left-0 top-0 z-[6]"
+      aria-hidden={sheetFull ? "true" : undefined}
+      className={cx("pointer-events-none absolute left-0 top-0 z-[6]", sheetFull && "invisible")}
       style={{ right: follow.right, bottom: phone ? `${SHELL_PEEK_HEIGHT}px` : "0px" }}
     >
       <div data-qa="hud-bar" className="absolute left-4 right-4 top-4 flex min-w-0 flex-nowrap items-center gap-2">
@@ -85,7 +91,7 @@ export const CampusHud = forwardRef(function CampusHud(
         onPlayingChange={onPlayingChange}
         live={clock.isLiveMode}
         collapsible={phone}
-        className="absolute bottom-4 left-4 w-[min(24rem,calc(100%-2rem))]"
+        className={cx("absolute left-4 w-[min(24rem,calc(100%-2rem))]", sheetHalf ? "top-20" : "bottom-4")}
         caption={sceneWeather && (
           <p
             data-qa="scene-weather"

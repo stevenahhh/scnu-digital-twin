@@ -3,7 +3,7 @@
   "hash": "dhash-64",
   "scenarios": {
     "legacy/S01-D-dark": {
-      "dhash": "b133532d463683c3",
+      "dhash": "2733532f561693d3",
       "rects": {
         "panel": {
           "x": 1384,
@@ -19,15 +19,15 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 773,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -92,8 +92,8 @@
         "selectedChip": null
       }
     },
-    "legacy/S01-D-light": {
-      "dhash": "f672521442366262",
+    "legacy/S01-D-dark@reduced-motion": {
+      "dhash": "2733532f561693d3",
       "rects": {
         "panel": {
           "x": 1384,
@@ -109,15 +109,75 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 773,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S01-D-light": {
+      "dhash": "7472521652167272",
+      "rects": {
+        "panel": {
+          "x": 1384,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1384,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S01-D-light@reduced-motion": {
+      "dhash": "7472521652167272",
+      "rects": {
+        "panel": {
+          "x": 1384,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1384,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -243,7 +303,7 @@
       }
     },
     "legacy/S02-D-dark": {
-      "dhash": "bd36371d2d55c1c9",
+      "dhash": "a537371d0555a1c9",
       "rects": {
         "panel": {
           "x": 1384,
@@ -259,15 +319,15 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 773,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -302,8 +362,8 @@
         "selectedChip": null
       }
     },
-    "legacy/S02-D-light": {
-      "dhash": "f436361e24546068",
+    "legacy/S02-D-dark@reduced-motion": {
+      "dhash": "a537371d0555a1c9",
       "rects": {
         "panel": {
           "x": 1384,
@@ -319,15 +379,75 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 773,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S02-D-light": {
+      "dhash": "7436361e04546068",
+      "rects": {
+        "panel": {
+          "x": 1384,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1384,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S02-D-light@reduced-motion": {
+      "dhash": "7436361e04546068",
+      "rects": {
+        "panel": {
+          "x": 1384,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1384,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -423,7 +543,7 @@
       }
     },
     "legacy/S03-D-dark": {
-      "dhash": "f591514717d3cf99",
+      "dhash": "b591514555d34399",
       "rects": {
         "panel": {
           "x": 1384,
@@ -439,15 +559,15 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 773,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -482,8 +602,8 @@
         "selectedChip": null
       }
     },
-    "legacy/S03-D-light": {
-      "dhash": "f4b2542616926e78",
+    "legacy/S03-D-dark@reduced-motion": {
+      "dhash": "b591514555d34399",
       "rects": {
         "panel": {
           "x": 1384,
@@ -499,15 +619,75 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 773,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S03-D-light": {
+      "dhash": "74b2542636926e78",
+      "rects": {
+        "panel": {
+          "x": 1384,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1384,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S03-D-light@reduced-motion": {
+      "dhash": "74b2542636926e78",
+      "rects": {
+        "panel": {
+          "x": 1384,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1384,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -603,10 +783,10 @@
       }
     },
     "legacy/S04-D-dark": {
-      "dhash": "bb312bcb4d89e7c5",
+      "dhash": "b23329cb4e0e26ce",
       "rects": {
         "panel": {
-          "x": 1384,
+          "x": 1000,
           "y": 0,
           "w": 440,
           "h": 900
@@ -614,24 +794,24 @@
         "hud": {
           "x": 0,
           "y": 0,
-          "w": 1016,
+          "w": 1000,
           "h": 900
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 16,
-          "y": 64,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": {
-          "x": 628,
-          "y": 393,
+          "x": 635,
+          "y": 385,
           "w": 106,
           "h": 40
         }
@@ -672,11 +852,11 @@
         }
       }
     },
-    "legacy/S04-D-light": {
-      "dhash": "783829c88ca86262",
+    "legacy/S04-D-dark@reduced-motion": {
+      "dhash": "b23329cb4e0e26ce",
       "rects": {
         "panel": {
-          "x": 1384,
+          "x": 1000,
           "y": 0,
           "w": 440,
           "h": 900
@@ -684,24 +864,94 @@
         "hud": {
           "x": 0,
           "y": 0,
-          "w": 1016,
+          "w": 1000,
           "h": 900
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 16,
-          "y": 64,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": {
-          "x": 628,
-          "y": 393,
+          "x": 635,
+          "y": 385,
+          "w": 106,
+          "h": 40
+        }
+      }
+    },
+    "legacy/S04-D-light": {
+      "dhash": "713028c888286060",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": {
+          "x": 635,
+          "y": 385,
+          "w": 106,
+          "h": 40
+        }
+      }
+    },
+    "legacy/S04-D-light@reduced-motion": {
+      "dhash": "713028c888286060",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": {
+          "x": 635,
+          "y": 385,
           "w": 106,
           "h": 40
         }
@@ -813,7 +1063,7 @@
       }
     },
     "legacy/S05-D-dark": {
-      "dhash": "65f511191e1ed8f0",
+      "dhash": "258511199d9ed8e0",
       "rects": {
         "panel": {
           "x": 664,
@@ -829,15 +1079,15 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 16,
-          "y": 94,
-          "w": 337,
-          "h": 42
+          "x": 220,
+          "y": 20,
+          "w": 151,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -872,8 +1122,8 @@
         "selectedChip": null
       }
     },
-    "legacy/S05-D-light": {
-      "dhash": "6268080601006061",
+    "legacy/S05-D-dark@reduced-motion": {
+      "dhash": "258511199d9ed8e0",
       "rects": {
         "panel": {
           "x": 664,
@@ -889,15 +1139,75 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
+          "x": 220,
+          "y": 20,
+          "w": 151,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S05-D-light": {
+      "dhash": "e288080682816161",
+      "rects": {
+        "panel": {
+          "x": 664,
+          "y": 0,
+          "w": 776,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 664,
+          "h": 900
+        },
+        "timeSlider": {
           "x": 16,
-          "y": 94,
-          "w": 337,
-          "h": 42
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 220,
+          "y": 20,
+          "w": 151,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S05-D-light@reduced-motion": {
+      "dhash": "e288080682816161",
+      "rects": {
+        "panel": {
+          "x": 664,
+          "y": 0,
+          "w": 776,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 664,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 220,
+          "y": 20,
+          "w": 151,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -993,10 +1303,10 @@
       }
     },
     "legacy/S06-D-dark": {
-      "dhash": "b172523d4636e3c7",
+      "dhash": "b273562e561696d6",
       "rects": {
         "panel": {
-          "x": 1384,
+          "x": 1000,
           "y": 0,
           "w": 440,
           "h": 900
@@ -1004,20 +1314,20 @@
         "hud": {
           "x": 0,
           "y": 0,
-          "w": 1384,
+          "w": 1000,
           "h": 900
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 773,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -1052,11 +1362,11 @@
         "selectedChip": null
       }
     },
-    "legacy/S06-D-light": {
-      "dhash": "f452521442366266",
+    "legacy/S06-D-dark@reduced-motion": {
+      "dhash": "b273562e561696d6",
       "rects": {
         "panel": {
-          "x": 1384,
+          "x": 1000,
           "y": 0,
           "w": 440,
           "h": 900
@@ -1064,20 +1374,80 @@
         "hud": {
           "x": 0,
           "y": 0,
-          "w": 1384,
+          "w": 1000,
           "h": 900
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 773,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S06-D-light": {
+      "dhash": "7178581050107070",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S06-D-light@reduced-motion": {
+      "dhash": "7178581050107070",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -1173,10 +1543,10 @@
       }
     },
     "legacy/S07-D-dark": {
-      "dhash": "3325176b0d37938b",
+      "dhash": "0e27166e0616968e",
       "rects": {
         "panel": {
-          "x": 1384,
+          "x": 1000,
           "y": 0,
           "w": 440,
           "h": 900
@@ -1184,20 +1554,20 @@
         "hud": {
           "x": 0,
           "y": 0,
-          "w": 1384,
+          "w": 1000,
           "h": 900
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 773,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -1232,11 +1602,11 @@
         "selectedChip": null
       }
     },
-    "legacy/S07-D-light": {
-      "dhash": "3634121e0636726a",
+    "legacy/S07-D-dark@reduced-motion": {
+      "dhash": "0e27166e0616968e",
       "rects": {
         "panel": {
-          "x": 1384,
+          "x": 1000,
           "y": 0,
           "w": 440,
           "h": 900
@@ -1244,20 +1614,80 @@
         "hud": {
           "x": 0,
           "y": 0,
-          "w": 1384,
+          "w": 1000,
           "h": 900
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 773,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S07-D-light": {
+      "dhash": "2130101800107068",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S07-D-light@reduced-motion": {
+      "dhash": "2130101800107068",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -1353,7 +1783,7 @@
       }
     },
     "legacy/S08-D-dark": {
-      "dhash": "2727166e0636968e",
+      "dhash": "0e26166e0617978e",
       "rects": {
         "panel": {
           "x": 1000,
@@ -1369,15 +1799,15 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 16,
-          "y": 64,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -1412,8 +1842,8 @@
         "selectedChip": null
       }
     },
-    "legacy/S08-D-light": {
-      "dhash": "7830111901307068",
+    "legacy/S08-D-dark@reduced-motion": {
+      "dhash": "0e26166e0617978e",
       "rects": {
         "panel": {
           "x": 1000,
@@ -1429,15 +1859,75 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S08-D-light": {
+      "dhash": "2131111900107068",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
           "x": 16,
-          "y": 64,
-          "w": 277,
-          "h": 42
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S08-D-light@reduced-motion": {
+      "dhash": "2131111900107068",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -1533,7 +2023,7 @@
       }
     },
     "legacy/S09-D-dark": {
-      "dhash": "8707574666478f9e",
+      "dhash": "0f0747676666a68e",
       "rects": {
         "panel": {
           "x": 1000,
@@ -1549,15 +2039,15 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 473,
-          "y": 16,
-          "w": 306,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 120,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -1592,8 +2082,8 @@
         "selectedChip": null
       }
     },
-    "legacy/S09-D-light": {
-      "dhash": "3800484161406071",
+    "legacy/S09-D-dark@reduced-motion": {
+      "dhash": "0f0747676666a68e",
       "rects": {
         "panel": {
           "x": 1000,
@@ -1609,15 +2099,75 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 473,
-          "y": 16,
-          "w": 306,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 120,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S09-D-light": {
+      "dhash": "100040606060e060",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 120,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S09-D-light@reduced-motion": {
+      "dhash": "100040606060e060",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 120,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -1712,8 +2262,8 @@
         "selectedChip": null
       }
     },
-    "legacy/S10-D-dark": {
-      "dhash": "8707564766478f9e",
+    "legacy/S09E-D-dark": {
+      "dhash": "0e0747676766a78f",
       "rects": {
         "panel": {
           "x": 1000,
@@ -1729,15 +2279,135 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 473,
-          "y": 16,
-          "w": 306,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 120,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S09E-D-dark@reduced-motion": {
+      "dhash": "0e0747676766a78f",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 120,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S09E-D-light": {
+      "dhash": "110040606061e060",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 120,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S09E-D-light@reduced-motion": {
+      "dhash": "110040606061e060",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 120,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S10-D-dark": {
+      "dhash": "1f1b5b676666a68e",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 120,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -1772,8 +2442,8 @@
         "selectedChip": null
       }
     },
-    "legacy/S10-D-light": {
-      "dhash": "3800494061406071",
+    "legacy/S10-D-dark@reduced-motion": {
+      "dhash": "1f1b5b676666a68e",
       "rects": {
         "panel": {
           "x": 1000,
@@ -1789,15 +2459,75 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 473,
-          "y": 16,
-          "w": 306,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 120,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S10-D-light": {
+      "dhash": "000644606060e060",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 120,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S10-D-light@reduced-motion": {
+      "dhash": "000644606060e060",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 120,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -1893,7 +2623,7 @@
       }
     },
     "legacy/S11-D-dark": {
-      "dhash": "1767c74646af8f8e",
+      "dhash": "8fcf97af66568e9e",
       "rects": {
         "panel": {
           "x": 1000,
@@ -1909,15 +2639,15 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 473,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -1952,8 +2682,8 @@
         "selectedChip": null
       }
     },
-    "legacy/S11-D-light": {
-      "dhash": "7868c8c141a8e061",
+    "legacy/S11-D-dark@reduced-motion": {
+      "dhash": "8fcf97af66568e9e",
       "rects": {
         "panel": {
           "x": 1000,
@@ -1969,15 +2699,75 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 473,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S11-D-light": {
+      "dhash": "e8c880a86050e070",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S11-D-light@reduced-motion": {
+      "dhash": "e8c880a86050e070",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -2073,7 +2863,7 @@
       }
     },
     "legacy/S12-D-dark": {
-      "dhash": "873f3f7f2fcf8e8e",
+      "dhash": "363f3f6f2e8e2e8e",
       "rects": {
         "panel": {
           "x": 1000,
@@ -2089,19 +2879,19 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 473,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": {
-          "x": 628,
-          "y": 393,
+          "x": 635,
+          "y": 385,
           "w": 106,
           "h": 40
         }
@@ -2142,8 +2932,8 @@
         }
       }
     },
-    "legacy/S12-D-light": {
-      "dhash": "70382868a8886161",
+    "legacy/S12-D-dark@reduced-motion": {
+      "dhash": "363f3f6f2e8e2e8e",
       "rects": {
         "panel": {
           "x": 1000,
@@ -2159,19 +2949,89 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 473,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": {
-          "x": 628,
-          "y": 393,
+          "x": 635,
+          "y": 385,
+          "w": 106,
+          "h": 40
+        }
+      }
+    },
+    "legacy/S12-D-light": {
+      "dhash": "7138286828886060",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": {
+          "x": 635,
+          "y": 385,
+          "w": 106,
+          "h": 40
+        }
+      }
+    },
+    "legacy/S12-D-light@reduced-motion": {
+      "dhash": "7138286828886060",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": {
+          "x": 635,
+          "y": 385,
           "w": 106,
           "h": 40
         }
@@ -2282,8 +3142,8 @@
         }
       }
     },
-    "legacy/S13-D-dark": {
-      "dhash": "973f3f7f2fcf8f8f",
+    "legacy/S12E-D-dark": {
+      "dhash": "363f3f6f2f8e2f8f",
       "rects": {
         "panel": {
           "x": 1000,
@@ -2299,19 +3159,159 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 673,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": {
-          "x": 628,
-          "y": 393,
+          "x": 635,
+          "y": 385,
+          "w": 106,
+          "h": 40
+        }
+      }
+    },
+    "legacy/S12E-D-dark@reduced-motion": {
+      "dhash": "363f3f6f2f8e2f8f",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": {
+          "x": 635,
+          "y": 385,
+          "w": 106,
+          "h": 40
+        }
+      }
+    },
+    "legacy/S12E-D-light": {
+      "dhash": "7138286828896060",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": {
+          "x": 635,
+          "y": 385,
+          "w": 106,
+          "h": 40
+        }
+      }
+    },
+    "legacy/S12E-D-light@reduced-motion": {
+      "dhash": "7138286828896060",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": {
+          "x": 635,
+          "y": 385,
+          "w": 106,
+          "h": 40
+        }
+      }
+    },
+    "legacy/S13-D-dark": {
+      "dhash": "373f3f6f2e8e2e8e",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": {
+          "x": 635,
+          "y": 385,
           "w": 106,
           "h": 40
         }
@@ -2352,8 +3352,8 @@
         }
       }
     },
-    "legacy/S13-D-light": {
-      "dhash": "70382868a8886060",
+    "legacy/S13-D-dark@reduced-motion": {
+      "dhash": "373f3f6f2e8e2e8e",
       "rects": {
         "panel": {
           "x": 1000,
@@ -2369,19 +3369,89 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 673,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": {
-          "x": 628,
-          "y": 393,
+          "x": 635,
+          "y": 385,
+          "w": 106,
+          "h": 40
+        }
+      }
+    },
+    "legacy/S13-D-light": {
+      "dhash": "7038286828886060",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": {
+          "x": 635,
+          "y": 385,
+          "w": 106,
+          "h": 40
+        }
+      }
+    },
+    "legacy/S13-D-light@reduced-motion": {
+      "dhash": "7038286828886060",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": {
+          "x": 635,
+          "y": 385,
           "w": 106,
           "h": 40
         }
@@ -2493,7 +3563,7 @@
       }
     },
     "legacy/S14-D-dark": {
-      "dhash": "be9c91139c189898",
+      "dhash": "1c1c9893959cd8b8",
       "rects": {
         "panel": {
           "x": 664,
@@ -2509,15 +3579,15 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 16,
-          "y": 94,
-          "w": 337,
-          "h": 42
+          "x": 220,
+          "y": 20,
+          "w": 151,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -2552,8 +3622,8 @@
         "selectedChip": null
       }
     },
-    "legacy/S14-D-light": {
-      "dhash": "6161860a81006161",
+    "legacy/S14-D-dark@reduced-motion": {
+      "dhash": "1c1c9893959cd8b8",
       "rects": {
         "panel": {
           "x": 664,
@@ -2569,15 +3639,75 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
+          "x": 220,
+          "y": 20,
+          "w": 151,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S14-D-light": {
+      "dhash": "a301818682814161",
+      "rects": {
+        "panel": {
+          "x": 664,
+          "y": 0,
+          "w": 776,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 664,
+          "h": 900
+        },
+        "timeSlider": {
           "x": 16,
-          "y": 94,
-          "w": 337,
-          "h": 42
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 220,
+          "y": 20,
+          "w": 151,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S14-D-light@reduced-motion": {
+      "dhash": "a301818682814161",
+      "rects": {
+        "panel": {
+          "x": 664,
+          "y": 0,
+          "w": 776,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 664,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 220,
+          "y": 20,
+          "w": 151,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -2673,31 +3803,31 @@
       }
     },
     "legacy/S15-D-dark": {
-      "dhash": "9e9c91139c1b9997",
+      "dhash": "860797879796d785",
       "rects": {
         "panel": {
-          "x": 664,
+          "x": 1000,
           "y": 0,
-          "w": 776,
+          "w": 440,
           "h": 900
         },
         "hud": {
           "x": 0,
           "y": 0,
-          "w": 664,
+          "w": 1000,
           "h": 900
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 16,
-          "y": 64,
-          "w": 337,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 151,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -2732,32 +3862,92 @@
         "selectedChip": null
       }
     },
-    "legacy/S15-D-light": {
-      "dhash": "6161860a81046260",
+    "legacy/S15-D-dark@reduced-motion": {
+      "dhash": "860797879796d785",
       "rects": {
         "panel": {
-          "x": 664,
+          "x": 1000,
           "y": 0,
-          "w": 776,
+          "w": 440,
           "h": 900
         },
         "hud": {
           "x": 0,
           "y": 0,
-          "w": 664,
+          "w": 1000,
           "h": 900
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 151,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S15-D-light": {
+      "dhash": "6100888090917060",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
           "x": 16,
-          "y": 64,
-          "w": 337,
-          "h": 42
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 151,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S15-D-light@reduced-motion": {
+      "dhash": "6100888090917060",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 151,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -2853,10 +4043,10 @@
       }
     },
     "legacy/S16-D-light": {
-      "dhash": "7871581141306061",
+      "dhash": "7472521652167272",
       "rects": {
         "panel": {
-          "x": 1000,
+          "x": 1384,
           "y": 0,
           "w": 440,
           "h": 900
@@ -2864,20 +4054,20 @@
         "hud": {
           "x": 0,
           "y": 0,
-          "w": 1000,
+          "w": 1384,
           "h": 900
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 473,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -2908,6 +4098,36 @@
           "y": 16,
           "w": 277,
           "h": 42
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S16-D-light@reduced-motion": {
+      "dhash": "7472521652167272",
+      "rects": {
+        "panel": {
+          "x": 1384,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1384,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -2973,10 +4193,10 @@
       }
     },
     "legacy/S17-S01-D-dark": {
-      "dhash": "b333562e46368ec6",
+      "dhash": "2733532f561693d3",
       "rects": {
         "panel": {
-          "x": 1000,
+          "x": 1384,
           "y": 0,
           "w": 440,
           "h": 900
@@ -2984,20 +4204,20 @@
         "hud": {
           "x": 0,
           "y": 0,
-          "w": 1000,
+          "w": 1384,
           "h": 900
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 512,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -3032,11 +4252,11 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S01-D-light": {
-      "dhash": "7871591141316161",
+    "legacy/S17-S01-D-dark@reduced-motion": {
+      "dhash": "2733532f561693d3",
       "rects": {
         "panel": {
-          "x": 1000,
+          "x": 1384,
           "y": 0,
           "w": 440,
           "h": 900
@@ -3044,20 +4264,80 @@
         "hud": {
           "x": 0,
           "y": 0,
-          "w": 1000,
+          "w": 1384,
           "h": 900
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 512,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S01-D-light": {
+      "dhash": "6472521652167272",
+      "rects": {
+        "panel": {
+          "x": 1384,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1384,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S01-D-light@reduced-motion": {
+      "dhash": "6472521652167272",
+      "rects": {
+        "panel": {
+          "x": 1384,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1384,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -3153,7 +4433,7 @@
       }
     },
     "legacy/S17-S04-D-dark": {
-      "dhash": "b3312ac94b8be3c3",
+      "dhash": "f2332ec84b0b27ce",
       "rects": {
         "panel": {
           "x": 1000,
@@ -3169,19 +4449,19 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 512,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": {
-          "x": 601,
-          "y": 393,
+          "x": 608,
+          "y": 385,
           "w": 160,
           "h": 40
         }
@@ -3222,8 +4502,8 @@
         }
       }
     },
-    "legacy/S17-S04-D-light": {
-      "dhash": "783029c888a86060",
+    "legacy/S17-S04-D-dark@reduced-motion": {
+      "dhash": "f2332ec84b0b27ce",
       "rects": {
         "panel": {
           "x": 1000,
@@ -3239,19 +4519,89 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 512,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": {
-          "x": 601,
-          "y": 393,
+          "x": 608,
+          "y": 385,
+          "w": 160,
+          "h": 40
+        }
+      }
+    },
+    "legacy/S17-S04-D-light": {
+      "dhash": "713029c988286060",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": {
+          "x": 608,
+          "y": 385,
+          "w": 160,
+          "h": 40
+        }
+      }
+    },
+    "legacy/S17-S04-D-light@reduced-motion": {
+      "dhash": "713029c988286060",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": {
+          "x": 608,
+          "y": 385,
           "w": 160,
           "h": 40
         }
@@ -3363,7 +4713,7 @@
       }
     },
     "legacy/S17-S06-D-dark": {
-      "dhash": "b373523e4236e2c2",
+      "dhash": "a273562e561696d6",
       "rects": {
         "panel": {
           "x": 1000,
@@ -3379,15 +4729,15 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 512,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -3422,8 +4772,8 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S06-D-light": {
-      "dhash": "7850591141316161",
+    "legacy/S17-S06-D-dark@reduced-motion": {
+      "dhash": "a273562e561696d6",
       "rects": {
         "panel": {
           "x": 1000,
@@ -3439,15 +4789,75 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 512,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S06-D-light": {
+      "dhash": "6178581050107070",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S06-D-light@reduced-motion": {
+      "dhash": "6178581050107070",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -3543,7 +4953,7 @@
       }
     },
     "legacy/S17-S08-D-dark": {
-      "dhash": "0727166e0e36968e",
+      "dhash": "2e26166f0617978e",
       "rects": {
         "panel": {
           "x": 1000,
@@ -3559,15 +4969,15 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 512,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -3602,8 +5012,8 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S08-D-light": {
-      "dhash": "7030111909307068",
+    "legacy/S17-S08-D-dark@reduced-motion": {
+      "dhash": "2e26166f0617978e",
       "rects": {
         "panel": {
           "x": 1000,
@@ -3619,15 +5029,75 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 512,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S08-D-light": {
+      "dhash": "2131111900107068",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S08-D-light@reduced-motion": {
+      "dhash": "2131111900107068",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -3723,7 +5193,7 @@
       }
     },
     "legacy/S17-S13-D-dark": {
-      "dhash": "0727176e0f37968f",
+      "dhash": "2f26166f0716968e",
       "rects": {
         "panel": {
           "x": 1000,
@@ -3739,15 +5209,15 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 512,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -3782,8 +5252,8 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S13-D-light": {
-      "dhash": "7030101908307168",
+    "legacy/S17-S13-D-dark@reduced-motion": {
+      "dhash": "2f26166f0716968e",
       "rects": {
         "panel": {
           "x": 1000,
@@ -3799,15 +5269,75 @@
         },
         "timeSlider": {
           "x": 16,
-          "y": 704,
+          "y": 740,
           "w": 384,
-          "h": 180
+          "h": 144
         },
         "presetBar": {
-          "x": 512,
-          "y": 16,
-          "w": 277,
-          "h": 42
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S13-D-light": {
+      "dhash": "2031111800117168",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
+        },
+        "selectedChip": null
+      }
+    },
+    "legacy/S17-S13-D-light@reduced-motion": {
+      "dhash": "2031111800117168",
+      "rects": {
+        "panel": {
+          "x": 1000,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1000,
+          "h": 900
+        },
+        "timeSlider": {
+          "x": 16,
+          "y": 740,
+          "w": 384,
+          "h": 144
+        },
+        "presetBar": {
+          "x": 312,
+          "y": 20,
+          "w": 91,
+          "h": 32
         },
         "selectedChip": null
       }
@@ -3899,6 +5429,86 @@
           "w": 299,
           "h": 54
         },
+        "selectedChip": null
+      }
+    },
+    "legacy/S18-D-dark": {
+      "dhash": "a637522656169313",
+      "rects": {
+        "panel": {
+          "x": 1384,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1440,
+          "h": 900
+        },
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "legacy/S18-D-dark@reduced-motion": {
+      "dhash": "a637522e56169313",
+      "rects": {
+        "panel": {
+          "x": 1384,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1440,
+          "h": 900
+        },
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "legacy/S18-D-light": {
+      "dhash": "a437521652169313",
+      "rects": {
+        "panel": {
+          "x": 1384,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1440,
+          "h": 900
+        },
+        "timeSlider": null,
+        "presetBar": null,
+        "selectedChip": null
+      }
+    },
+    "legacy/S18-D-light@reduced-motion": {
+      "dhash": "a437521652169313",
+      "rects": {
+        "panel": {
+          "x": 1384,
+          "y": 0,
+          "w": 440,
+          "h": 900
+        },
+        "hud": {
+          "x": 0,
+          "y": 0,
+          "w": 1440,
+          "h": 900
+        },
+        "timeSlider": null,
+        "presetBar": null,
         "selectedChip": null
       }
     },

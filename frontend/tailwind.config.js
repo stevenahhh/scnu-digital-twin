@@ -62,7 +62,12 @@ module.exports = {
         rail: "var(--layer-rail)",
         modal: "var(--layer-modal)",
       },
+      // 이름 없는 transition 유틸리티도 토큰 시간과 곡선을 쓴다(MOT-17).
+      transitionTimingFunction: {
+        DEFAULT: "var(--motion-ease-standard)",
+      },
       transitionDuration: {
+        DEFAULT: "var(--motion-micro)",
         micro: "var(--motion-micro)",
         state: "var(--motion-state)",
         surface: "var(--motion-surface)",

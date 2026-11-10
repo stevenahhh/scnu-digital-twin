@@ -83,7 +83,7 @@ Every dashboard fix lands in both entries unless it's listed as intentional belo
 
 | Area | Legacy | VWorld |
 |---|---|---|
-| Tabs | 기본 현황, `parking_safety` 주차·안전, 에너지, 환경 시뮬 | same tab set |
+| Tabs | 건물 (`building`, only with a selection), 현황 (`status`), 에너지 (`energy`), 시뮬레이션 (`simulation`) | same tab set |
 | Feeds | weather, traffic, simulation hooks | same hooks |
 | `SelectionInspector` (`src/panel/`) | shared component | shared component |
 | Dialogs and error boundary | shared | shared |
@@ -131,6 +131,6 @@ bun run dev:vworld
 - VWorld renders at `http://127.0.0.1:5173/index-vworld.html`.
 - A native VWorld building opens the matching `BLD_*` detail.
 - The D4 coordinate marker opens the same detail path.
-- Traffic failures are visible: the 주차·안전 card shows `영상 분석 서버 연결 없음`, or
+- Traffic failures are visible: the 현황 tab's parking and safety card shows `영상 분석 서버 연결 없음`, or
   `카메라·모델 미작동` with the server's reason. `GET :8001/api/traffic` shows the raw state.
 

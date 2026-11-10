@@ -215,12 +215,36 @@ async function findTrafficPanel(ctx) {
     await openTab(ctx, value);
     await sleepMs(1500);
     if (await visible()) return { found: true, value, tried, start };
+    // The panel can sit below the fold of its tab (the phone sheet scrolls its body only at full): raise the sheet to
+    // full with its handle's ArrowUp, the way a keyboard user would, then scroll the panel into view.
+    if (await revealTrafficPanel(ctx)) return { found: true, value, tried, start };
   }
   return { found: false, value: null, tried, start };
 }
 
+const SHEET_HANDLE = '[aria-label="패널 크기 조절"]';
+async function revealTrafficPanel(ctx) {
+  const present = await ctx.b.run(() => Boolean(document.querySelector("[data-qa=traffic-simulation-panel]")));
+  if (!present) return false;
+  for (let step = 0; step < 2 && (await panelState(ctx.b)).detent && (await panelState(ctx.b)).detent !== "full"; step += 1) {
+    if (!(await ctx.b.run((sel) => { const handle = document.querySelector(sel); if (!handle) return false; handle.focus(); return true; }, SHEET_HANDLE))) break;
+    await ctx.b.key("ArrowUp");
+    await sleepMs(700);
+  }
+  await ctx.b.run(() => document.querySelector("[data-qa=traffic-simulation-panel]")?.scrollIntoView({ block: "start" }));
+  await sleepMs(400);
+  return ip(ctx, (I) => { const el = document.querySelector("[data-qa=traffic-simulation-panel]"); return Boolean(el && I.isVisible(el)); });
+}
+
 async function restoreTab(ctx, start) {
   if (start?.active) await openTab(ctx, start.active);
+  // Put the phone sheet back on the detent the state left it at (revealTrafficPanel may have raised it).
+  for (let step = 0; step < 2 && start?.detent && (await panelState(ctx.b)).detent === "full" && start.detent !== "full"; step += 1) {
+    if (!(await ctx.b.run((sel) => { const handle = document.querySelector(sel); if (!handle) return false; handle.focus(); return true; }, SHEET_HANDLE))) break;
+    await ctx.b.key("ArrowDown");
+    await sleepMs(700);
+    if ((await panelState(ctx.b)).detent === start.detent) break;
+  }
   await sleepMs(600);
 }
 
@@ -993,6 +1017,8 @@ export const IDEAL_CHECKS_LIST = [
         const offsets = [0, 50, 100, 150, 200, 250, 300, 350, 400];
         let selector;
         if (ctx.state === "S01") {
+          // The row starts from the rail: an earlier part in the probe replay may have left the panel open.
+          if ((await panelState(ctx.b)).open && await tapVisible(ctx, PANEL_CLOSE)) await sleepMs(800);
           const value = pickTabValue("home", (await panelState(ctx.b)).values);
           if (!value) return hookMissing("[data-qa=dashboard-rail] 현황 tab", expected);
           selector = `[data-qa=dashboard-rail] ${tabSelector(value)}`;
