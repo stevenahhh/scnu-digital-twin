@@ -71,7 +71,7 @@ The phone step is larger than the audit's 13/16 px proposal on purpose, because 
 
 Layout lines (one per screen). The visual QA harness records every element that owns vertical scroll in each captured state (`scroll-owners.json` next to the frames), so these lines can be checked against the product:
 
-Layout: dashboard - fixed: scene canvas, HUD toolbar, time card (phone: time chip, hidden while the sheet is at half; the whole HUD is hidden at full), panel rail (desktop) / drawer (tablet) / bottom sheet (phone); scroll owner: the panel body; overlay stack: canvas < labels < hud < rail < modal
+Layout: dashboard - fixed: scene canvas, HUD toolbar, time card (phone: time chip, moved to the top left while the sheet is at half; the whole HUD is hidden at full), panel rail (desktop) / drawer (tablet) / bottom sheet (phone); scroll owner: the panel body; overlay stack: canvas < labels < hud < rail < modal
 Layout: inspector - fixed: inspector header (name, code badge, close) pinned above the tabs (desktop) or at the sheet's half detent (phone); scroll owner: the panel body that contains it; overlay stack: canvas < labels < hud < rail < modal
 Layout: D4 pane - fixed: breadcrumb, floor picker (scene floor labels on a fine pointer, a 44px floor button list on touch and phone) and the scene beside the pane; scroll owner: the room list; overlay stack: canvas < labels < hud < rail < modal
 Layout: settings sheet - fixed: sheet header with close; scroll owner: the sheet body; overlay stack: canvas < labels < hud < rail < modal
