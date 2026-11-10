@@ -125,6 +125,21 @@ export function cameraMotion(a, b) {
   return { still: headingDeltaDeg <= CAMERA_STILL_MAX_DEG && positionDeltaM <= CAMERA_STILL_MAX_M, headingDeltaDeg, positionDeltaM };
 }
 
+// IS-32: the camera is at rest once every pose read in the last holdMs stays within the still limits of the newest
+// read. samples: [{ t (ms), pose }] in time order. Returns the t at which the rest began, or null (not yet at rest).
+export const CAMERA_REST_HOLD_MS = 500;
+export const CAMERA_REST_TIMEOUT_MS = 10000;
+export function cameraRestAt(samples, holdMs = CAMERA_REST_HOLD_MS) {
+  const last = samples?.at?.(-1);
+  if (!last) return null;
+  let start = null;
+  for (let i = samples.length - 1; i >= 0; i -= 1) {
+    if (!cameraMotion(samples[i].pose, last.pose).still) break;
+    start = samples[i].t;
+  }
+  return start !== null && last.t - start >= holdMs ? start : null;
+}
+
 // IS-31/IS-38: two reads of { rendered, commanded } poses. rendered = the live camera; commanded = the latest pose the
 // app sent to VWorld map.lookat.moveTo (null when there is no such stream, as in Legacy). Either moving is motion;
 // a missing rendered pose is never still. `by` names the reading that decided the deltas.

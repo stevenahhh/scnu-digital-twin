@@ -43,9 +43,6 @@ vi.mock("./D4SectionExperience", () => ({
     return <div>D4 상세 화면<button type="button" onClick={props.onClose}>D4 상세 닫기</button></div>;
   },
 }));
-vi.mock("./VWorldCampusStatus", () => ({
-  VWorldCampusStatus: ({ className }) => <aside data-testid="campus-status" className={className} />,
-}));
 vi.mock("./trafficSimulationOverlay.mjs", () => ({
   createVWorldTrafficSimulation: vi.fn((options) => {
     mocks.trafficOnStatus = options.onStatus;
@@ -179,7 +176,32 @@ describe("VWorldRenderer retained map integration", () => {
     await waitFor(() => expect(mocks.createdIds).toContain("SCNU_REPRESENTATIVE_PANEL_strict-plan_array-1"));
     expect(mocks.vw.Map).not.toHaveBeenCalled();
     expect(new Set(mocks.receivedBuildingIds)).toEqual(new Set(["C1", "D1", "D2", "D3", "D4"]));
-    expect(new Set(mocks.receivedRenderPanel)).toEqual(new Set([true]));
+    // 지도 위 대표 설치 계획 카드는 없다(에너지 탭 몫). 렌더러 안의 컨트롤러는 지붕 위 배열만 그린다.
+    expect(new Set(mocks.receivedRenderPanel)).toEqual(new Set([false]));
+    expect(screen.queryByLabelText("대표 설치 계획 지도 레이어")).toBeNull();
+  });
+
+  it("draws the representative overlays the app passes and skips its own controller; [] hides them", async () => {
+    mocks.vw = createVw();
+    const map = retainedMap();
+    window.__scnuVWorldMapInstance = map;
+    const overlays = [{
+      buildingId: "D4",
+      installationPlanId: "app-plan",
+      name: "App plan",
+      arrays: [{ id: "array-9", roofId: "D4-roof-west", roofZoneId: "D4-roof-west-main", footprintMeters: [
+        { xMeters: 10, yMeters: 10 }, { xMeters: 12, yMeters: 10 }, { xMeters: 12, yMeters: 14 }, { xMeters: 10, yMeters: 14 },
+      ] }],
+    }];
+    const props = { onSelection: vi.fn(), simulationDate: new Date("2026-05-18T12:00:00+09:00") };
+    const view = render(<VWorldRenderer {...props} representativeOverlays={overlays} />);
+
+    await waitFor(() => expect(mocks.createdIds).toContain("SCNU_REPRESENTATIVE_PANEL_app-plan_array-9"));
+    expect(mocks.receivedBuildingIds).toEqual([]);
+    const created = mocks.createdIds.length;
+    view.rerender(<VWorldRenderer {...props} representativeOverlays={[]} />);
+    expect(mocks.createdIds.length).toBe(created);
+    expect(map.removeObjectById).toHaveBeenCalledWith("SCNU_REPRESENTATIVE_PANEL_app-plan_array-9");
   });
 
   it("passes Cesium before the status options when creating the campus GLB overlay", async () => {
@@ -218,11 +240,12 @@ describe("VWorldRenderer retained map integration", () => {
     const layer = await screen.findByTestId("vworld-label-layer");
     expect(mocks.labelProps.scene).toBe(scene);
     expect(mocks.labelProps.getModelMatrix()).toEqual({ id: "campus" });
-    expect(mocks.labelProps.chromeRefs.map((ref) => ref.current?.dataset.qa)).toEqual(["vworld-left-stack", "vworld-bottom-stack"]);
+    expect(mocks.labelProps.chromeRefs.map((ref) => ref.current?.dataset.qa)).toEqual(["vworld-left-stack"]);
 
+    // 칩 선택은 캠퍼스 카메라의 비행 한 번으로만 카메라를 옮긴다. 지도 lookat으로 뛰거나 그 뒤에 돌지 않는다.
     act(() => mocks.labelProps.onSelectEntry({ elementId: "BLD_C1", dataElementId: "BLD_C1", displayName: "도서관", position: [2, 1, 0] }));
     expect(onSelection).toHaveBeenCalledWith({ elementId: "BLD_C1", buildingId: "C1", displayName: "도서관" });
-    expect(map.lookat.moveTo).toHaveBeenCalledTimes(1);
+    expect(map.lookat.moveTo).not.toHaveBeenCalled();
     view.rerender(<VWorldRenderer {...props} selectedId="도서관" />);
     expect(layer.dataset.selected).toBe("BLD_C1");
     expect(screen.getByRole("region", { name: "순천대 캠퍼스 3D 지도" }).dataset.selectedId).toBe("BLD_C1");
@@ -301,40 +324,43 @@ describe("VWorldRenderer retained map integration", () => {
     const onD4SectionChange = vi.fn();
     mocks.vw = createVw();
     window.__scnuVWorldMapInstance = retainedMap();
-    render(<VWorldRenderer d4PaneHost={paneHost()} onSelection={vi.fn()} onD4SectionChange={onD4SectionChange} simulationDate={new Date("2026-05-18T12:00:00+09:00")} />);
+    const props = { d4PaneHost: paneHost(), onSelection: vi.fn(), onD4SectionChange, simulationDate: new Date("2026-05-18T12:00:00+09:00") };
+    const view = render(<VWorldRenderer {...props} />);
 
     await waitFor(() => expect(onD4SectionChange).toHaveBeenCalledWith(false));
-    fireEvent.click(await screen.findByRole("button", { name: "D4 공과대학 3호관 상세 보기" }));
+    // 지도 위 D4 단추는 없다. 인스펙터의 실내 보기가 d4OpenKey를 올린다.
+    expect(screen.queryByRole("button", { name: "D4 공과대학 3호관 상세 보기" })).toBeNull();
+    view.rerender(<VWorldRenderer {...props} d4OpenKey={1} />);
     await waitFor(() => expect(onD4SectionChange).toHaveBeenLastCalledWith(true));
     expect(await screen.findByText("D4 상세 화면")).toBeTruthy();
   });
 
-  it("hands the re-rendered D4 opener to the detail experience as its focus return target", async () => {
+  it("opens D4 through the coordinate-marker selection when d4OpenKey changes, not on mount", async () => {
     mocks.vw = createVw();
     window.__scnuVWorldMapInstance = retainedMap();
-    render(<VWorldRenderer d4PaneHost={paneHost()} onSelection={vi.fn()} simulationDate={new Date("2026-05-18T12:00:00+09:00")} />);
+    const onSelection = vi.fn();
+    const props = { d4PaneHost: paneHost(), onSelection, simulationDate: new Date("2026-05-18T12:00:00+09:00") };
+    const view = render(<VWorldRenderer {...props} d4OpenKey={3} />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "D4 공과대학 3호관 상세 보기" }));
+    await waitFor(() => expect(mocks.createdIds).toContain("SCNU_CAMPUS_AREA"));
+    expect(screen.queryByText("D4 상세 화면")).toBeNull();
+    view.rerender(<VWorldRenderer {...props} d4OpenKey={4} />);
     expect(await screen.findByText("D4 상세 화면")).toBeTruthy();
-    const { returnFocusRef } = mocks.d4Props;
-    expect(screen.queryByRole("button", { name: "D4 공과대학 3호관 상세 보기" })).toBeNull();
-
-    fireEvent.click(screen.getByRole("button", { name: "D4 상세 닫기" }));
-    const opener = await screen.findByRole("button", { name: "D4 공과대학 3호관 상세 보기" });
-    expect(returnFocusRef.current).toBe(opener);
+    expect(onSelection).toHaveBeenLastCalledWith(expect.objectContaining({ elementId: "BLD_D4", buildingId: "D4" }));
   });
 
   it("keeps the map overlays focusable (the phone sheet leaves the map usable) and never puts the D4 detail inside them", async () => {
     mocks.vw = createVw();
     window.__scnuVWorldMapInstance = retainedMap();
     const simulationDate = new Date("2026-05-18T12:00:00+09:00");
-    render(<VWorldRenderer d4PaneHost={paneHost()} onSelection={vi.fn()} simulationDate={simulationDate} overlayInsetRight="0px" />);
+    const props = { d4PaneHost: paneHost(), onSelection: vi.fn(), simulationDate, overlayInsetRight: "0px" };
+    const view = render(<VWorldRenderer {...props} />);
 
-    const opener = await screen.findByRole("button", { name: "D4 공과대학 3호관 상세 보기" });
-    const overlays = opener.closest('[data-qa="vworld-map-overlays"]');
+    await waitFor(() => expect(mocks.createdIds).toContain("SCNU_CAMPUS_AREA"));
+    const overlays = document.querySelector('[data-qa="vworld-map-overlays"]');
     expect(overlays.hasAttribute("inert")).toBe(false);
 
-    fireEvent.click(opener);
+    view.rerender(<VWorldRenderer {...props} d4OpenKey={1} />);
     const detail = await screen.findByText("D4 상세 화면");
     expect(detail.closest('[data-qa="vworld-map-overlays"]')).toBeNull();
   });
@@ -360,7 +386,7 @@ describe("VWorldRenderer left overlay stack", () => {
   it.each([
     { state: "terrain-timeout", message: "지형 높이를 확인하지 못해 건물 높이가 부정확할 수 있습니다" },
     { state: "error", message: "캠퍼스 3D 모델을 불러오지 못했습니다" },
-  ])("stacks the $state chip above the representative plan card instead of under it", async (status) => {
+  ])("shows the $state chip in the top-left column and no plan card on the map", async (status) => {
     const { createCampusGltfOverlay } = await import("./campusGltfOverlay.mjs");
     let reportStatus = null;
     createCampusGltfOverlay.mockImplementationOnce(async (_map, _cesium, options) => {
@@ -377,16 +403,12 @@ describe("VWorldRenderer left overlay stack", () => {
     act(() => reportStatus(status));
 
     const chip = screen.getByText(status.message);
-    const card = screen.getByLabelText("대표 설치 계획 지도 레이어");
     const stack = chip.parentElement;
     expect(chip.getAttribute("role")).toBe("status");
-    expect(card.parentElement).toBe(stack);
     expect(stack.getAttribute("data-qa")).toBe("vworld-left-stack");
     expect(stack.className).toContain("flex-col");
-    const children = Array.from(stack.children);
-    expect(children.indexOf(chip)).toBeLessThan(children.indexOf(card));
     expect(chip.className).not.toContain("absolute");
-    expect(chip.className).not.toContain("top-16");
+    expect(screen.queryByLabelText("대표 설치 계획 지도 레이어")).toBeNull();
   });
 });
 
@@ -411,33 +433,16 @@ describe("VWorldRenderer map control layout", () => {
     throw new Error("no road-zone interior point");
   }
 
-  it("stacks the terrain chip, the traffic badge and the plan card in that order in the top-left column", async () => {
-    const { createCampusGltfOverlay } = await import("./campusGltfOverlay.mjs");
-    let reportStatus = null;
-    createCampusGltfOverlay.mockImplementationOnce(async (_map, _cesium, options) => {
-      reportStatus = options.onStatus;
-      return null;
-    });
+  it("puts no traffic simulation badge on the map (the simulation tab header reports the connection)", async () => {
+    const { createVWorldTrafficSimulation } = await import("./trafficSimulationOverlay.mjs");
+    createVWorldTrafficSimulation.mockClear();
     mocks.vw = createVw();
     window.__scnuVWorldMapInstance = retainedMap();
     render(<VWorldRenderer d4PaneHost={paneHost()} onSelection={vi.fn()} simulationDate={simulationDate} />);
 
-    await waitFor(() => expect(mocks.trafficOnStatus).toBeTypeOf("function"));
-    act(() => {
-      reportStatus({ state: "terrain-timeout", message: terrainMessage });
-      mocks.trafficOnStatus({ state: "live" });
-    });
-
-    const column = document.querySelector('[data-qa="vworld-left-stack"]');
-    const chip = screen.getByText(terrainMessage);
-    const traffic = screen.getByText("교통 시뮬레이션 연결됨");
-    const card = screen.getByLabelText("대표 설치 계획 지도 레이어");
-    for (const element of [chip, traffic, card]) expect(element.parentElement).toBe(column);
-    const children = Array.from(column.children);
-    expect(children.indexOf(chip)).toBeLessThan(children.indexOf(traffic));
-    expect(children.indexOf(traffic)).toBeLessThan(children.indexOf(card));
-    expect(traffic.getAttribute("role")).toBe("status");
-    expect(traffic.className).not.toMatch(/\babsolute\b/);
+    await waitFor(() => expect(createVWorldTrafficSimulation).toHaveBeenCalled());
+    expect(mocks.trafficOnStatus).toBeUndefined();
+    expect(screen.queryByText(/교통 시뮬레이션 연결/)).toBeNull();
   });
 
   it("puts a map load failure and its retry first in the top-left column", async () => {
@@ -464,7 +469,9 @@ describe("VWorldRenderer map control layout", () => {
     expect(column.firstElementChild).toBe(loading);
   });
 
-  it("keeps the SOLAR card, a selected road-zone chip and the D4 opener in one bottom-left column", async () => {
+  it("highlights a clicked road zone on the map without a chip, a SOLAR card or a D4 opener over the map", async () => {
+    const { setRoadZoneHighlighted } = await import("./roadZones.mjs");
+    setRoadZoneHighlighted.mockClear();
     const map = retainedMap();
     mocks.vw = createVw();
     window.__scnuVWorldMapInstance = map;
@@ -475,18 +482,11 @@ describe("VWorldRenderer map control layout", () => {
     const { zone, longitude, latitude } = roadZonePoint();
     act(() => handleMapClick(null, null, { longitudeDD: longitude, latitudeDD: latitude }, null));
 
-    const chip = (await screen.findByRole("button", { name: "도로 구역 정보 닫기" })).closest('[role="status"]');
-    expect(chip.textContent).toContain(zone.name);
-    const opener = screen.getByRole("button", { name: "D4 공과대학 3호관 상세 보기" });
-    const campus = screen.getByTestId("campus-status");
-    const column = opener.parentElement;
-    expect(column.getAttribute("data-qa")).toBe("vworld-bottom-stack");
-    for (const element of [campus, chip]) expect(element.parentElement).toBe(column);
-    const children = Array.from(column.children);
-    expect(children.indexOf(campus)).toBeLessThan(children.indexOf(chip));
-    expect(children.indexOf(chip)).toBeLessThan(children.indexOf(opener));
-    for (const element of [campus, chip, opener]) expect(element.className).not.toMatch(/\babsolute\b/);
-    expect(campus.className).toBe("hidden max-w-[280px] lg:block");
+    expect(setRoadZoneHighlighted).toHaveBeenCalledWith(map, zone);
+    expect(screen.queryByRole("button", { name: "도로 구역 정보 닫기" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "D4 공과대학 3호관 상세 보기" })).toBeNull();
+    expect(screen.queryByTestId("campus-status")).toBeNull();
+    expect(document.querySelector('[data-qa="vworld-bottom-stack"]')).toBeNull();
   });
 
   it("lays the map overlays out inside the visible map area", async () => {
@@ -494,8 +494,11 @@ describe("VWorldRenderer map control layout", () => {
     window.__scnuVWorldMapInstance = retainedMap();
     const { rerender } = render(<VWorldRenderer d4PaneHost={paneHost()} onSelection={vi.fn()} simulationDate={simulationDate} overlayInsetRight="var(--dashboard-panel-width)" />);
 
-    const overlays = (await screen.findByRole("button", { name: "D4 공과대학 3호관 상세 보기" })).closest('[data-qa="vworld-map-overlays"]');
+    await waitFor(() => expect(mocks.createdIds).toContain("SCNU_CAMPUS_AREA"));
+    const overlays = document.querySelector('[data-qa="vworld-map-overlays"]');
     expect(overlays.className).toMatch(/\babsolute\b/);
+    // 패널이 여닫혀도 지도 위 열은 right를 애니메이션하지 않고 바로 자리 잡는다(레이아웃 속성 전환 금지).
+    expect(overlays.className).not.toMatch(/transition/);
     expect(overlays.style.right).toBe("var(--dashboard-panel-width)");
 
     rerender(<VWorldRenderer d4PaneHost={paneHost()} onSelection={vi.fn()} simulationDate={simulationDate} overlayInsetRight="0px" />);
@@ -508,7 +511,8 @@ describe("VWorldRenderer map control layout", () => {
     render(<VWorldRenderer d4PaneHost={paneHost()} onSelection={vi.fn()} simulationDate={simulationDate} mapBackdrop={<div data-testid="map-backdrop" />} />);
 
     const backdrop = screen.getByTestId("map-backdrop");
-    const overlays = (await screen.findByRole("button", { name: "D4 공과대학 3호관 상세 보기" })).closest('[data-qa="vworld-map-overlays"]');
+    await waitFor(() => expect(mocks.createdIds).toContain("SCNU_CAMPUS_AREA"));
+    const overlays = document.querySelector('[data-qa="vworld-map-overlays"]');
     expect(backdrop.previousElementSibling.id).toBe("vmap");
     expect(backdrop.nextElementSibling).toBe(overlays);
     expect(overlays.contains(backdrop)).toBe(false);

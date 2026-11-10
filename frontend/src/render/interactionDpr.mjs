@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
+import { SETTLE_MS } from "../labels/motionSettle.mjs";
 
 export const CANVAS_DPR = [1, 2];
 export const INTERACTION_DPR_FACTOR = 0.75;
-export const INTERACTION_RESTORE_MS = 350;
+// 조작이 끝나고 해상도를 되돌리기까지: 라벨 층·클릭 가드와 같은 정착 시간(--motion-settle).
+export const INTERACTION_RESTORE_MS = SETTLE_MS;
 
 // R3F의 [min, max] dpr 해석(calculateDpr)과 같은 규칙으로 기준 픽셀 비율을 정한 뒤 조작 중에는 factor를 곱한다.
 // Canvas가 다시 렌더될 때마다 dpr prop으로 재설정하므로 setDpr로 낮추면 대시보드의 1초 시계 갱신에 되돌려진다.

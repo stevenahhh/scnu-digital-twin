@@ -1,10 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {
-  calculateFocusAltitude,
-  createBuildingCameraController,
-  focusMapAt,
-} from "./cameraFocus.mjs";
+import * as cameraFocus from "./cameraFocus.mjs";
+
+const { focusMapAt } = cameraFocus;
 
 test("focusMapAt moves VWorld exactly once with documented camera arguments", () => {
   const movedTo = [];
@@ -105,82 +103,6 @@ test("focusMapAt leaves VWorld unchanged without a lookat moveTo API", () => {
   assert.deepEqual(directMoveToCalls, []);
 });
 
-test("calculateFocusAltitude increases zoom when UI reduces the available map width", () => {
-  assert.equal(
-    calculateFocusAltitude({ viewportWidth: 1440, availableWidth: 1440 }),
-    120,
-  );
-  assert.equal(
-    calculateFocusAltitude({ viewportWidth: 1440, availableWidth: 960 }),
-    180,
-  );
-});
-
-test("building camera reframes on layout resize and user input pauses automatic orbit", () => {
-  const movedTo = [];
-  const listeners = new Map();
-  let resizeCallback;
-  let frameCallback;
-  let now = 0;
-
-  class CoordZ {
-    constructor(longitude, latitude, altitude) {
-      Object.assign(this, { longitude, latitude, altitude });
-    }
-  }
-  class Direction {
-    constructor(heading, pitch, roll) {
-      Object.assign(this, { heading, pitch, roll });
-    }
-  }
-  class CameraPosition {
-    constructor(coordinate, direction) {
-      Object.assign(this, { coordinate, direction });
-    }
-  }
-
-  const viewport = {
-    clientWidth: 1440,
-    addEventListener(type, listener) { listeners.set(type, listener); },
-    removeEventListener(type) { listeners.delete(type); },
-  };
-  const availableArea = { clientWidth: 960 };
-  const controller = createBuildingCameraController({
-    map: { lookat: { moveTo: (position) => movedTo.push(position) } },
-    vw: { CoordZ, Direction, CameraPosition },
-    viewport,
-    availableArea,
-    ResizeObserverClass: class ResizeObserver {
-      constructor(callback) { resizeCallback = callback; }
-      observe() {}
-      disconnect() {}
-    },
-    requestFrame(callback) { frameCallback = callback; return 1; },
-    cancelFrame() {},
-    now: () => now,
-  });
-
-  controller.focus({ longitude: 127.4764043, latitude: 34.9700548 });
-  assert.equal(movedTo.at(-1).coordinate.altitude, 180);
-
-  availableArea.clientWidth = 1200;
-  resizeCallback();
-  assert.equal(movedTo.at(-1).coordinate.altitude, 144);
-  assert.equal(movedTo.at(-1).direction.heading, 0);
-
-  now = 1_000;
-  frameCallback(1_000);
-  const movesBeforeInput = movedTo.length;
-  listeners.get("pointerdown")();
-  now = 2_000;
-  frameCallback?.(2_000);
-  assert.equal(movedTo.length, movesBeforeInput);
-
-  availableArea.clientWidth = 1000;
-  resizeCallback();
-  assert.ok(Math.abs(movedTo.at(-1).coordinate.altitude - 172.8) < 0.001);
-  assert.equal(movedTo.at(-1).direction.heading, 0);
-
-  controller.dispose();
-  assert.equal(listeners.size, 0);
+test("cameraFocus has no automatic orbit or resize-driven camera controller", () => {
+  assert.deepEqual(Object.keys(cameraFocus), ["focusMapAt"]);
 });

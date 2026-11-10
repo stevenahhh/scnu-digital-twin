@@ -5,9 +5,12 @@
 //   클릭을 받지 않는다. 움직이는 화면에서 누른 건물은 사용자가 겨눈 건물이 아닐 수 있다.
 // - 드래그가 움직인 카메라(놓은 뒤 감쇠 포함)로는 근접 자동 열기와 마우스오버 강조를 하지 않는다.
 // 키보드로 누른 라벨(click.detail === 0)은 포인터 제스처가 아니므로 항상 받는다.
+import { SETTLE_MS } from "../labels/motionSettle.mjs";
+
 export const CLICK_MAX_DISTANCE_PX = 6;
 export const CLICK_MAX_DURATION_MS = 600;
-export const CAMERA_SETTLE_MS = 200;
+// 정착 시간은 라벨 층·해상도 복원과 같은 값 하나(--motion-settle)를 쓴다.
+export const CAMERA_SETTLE_MS = SETTLE_MS;
 // pointerup 뒤 같은 제스처의 click이 이 시간 안에 와야 한다(그보다 늦은 click은 짝이 없는 것으로 본다).
 export const RELEASE_MATCH_MS = 500;
 // 프레임당 카메라 이동(장면 단위)과 회전(1 - |q·q'|)이 이보다 크면 "움직이는 중"이다.

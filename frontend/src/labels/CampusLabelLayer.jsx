@@ -195,7 +195,7 @@ export function CampusLabelLayer({
       const pointer = slot?.kind === "zone" ? "none" : "auto";
       if (node.style.pointerEvents !== pointer) node.style.pointerEvents = pointer;
       const nextOpacity = opacity === 1 ? "" : String(opacity);
-      // 고른·올린 건물 뒤로 가려진 앵커의 칩(흐리게 그린다). 화면 검사가 가림 판정을 읽는다(V-F-55).
+      // 고른·올린 건물 뒤로 가려진 앵커의 칩(흐리게 그린다). 화면 검사가 가림 판정을 읽는다.
       const occluded = opacity < 1 ? "true" : "false";
       if (node.dataset.occluded !== occluded) node.dataset.occluded = occluded;
       if (node.style.opacity !== nextOpacity) node.style.opacity = nextOpacity;
@@ -431,7 +431,7 @@ export function CampusLabelLayer({
     >
       {ordered.map((slot) => {
         const kind = slot.kind === "zone" ? "zone" : view.kinds[slot.id] === "dot" ? "dot" : "chip";
-        // 건물 칩은 어디서나 같은 한 이름(displayName, AUDIT GAP-12). 구역·묶음 칩만 짧은 이름을 쓴다.
+        // 건물 칩은 어디서나 같은 한 이름(displayName). 구역·묶음 칩만 짧은 이름을 쓴다.
         const name = kind === "zone" || slot.cluster ? slot.shortName ?? slot.displayName : slot.displayName;
         return (
           <Fragment key={slot.id}>

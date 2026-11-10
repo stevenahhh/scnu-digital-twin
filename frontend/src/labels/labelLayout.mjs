@@ -37,7 +37,7 @@ function dotRect({ anchor }) {
 }
 
 // 선택·호버된 건물의 화면 경계 상자(depth = 카메라에서 그 건물까지 거리) 안에 투영되면서 그 건물보다 먼 앵커는
-// 건물 뒤에 가려졌다고 본다(AUDIT 5.6의 건물 가림 근사). anchorScreen = { x, y, depth }.
+// 건물 뒤에 가려졌다고 본다(건물 가림 근사). anchorScreen = { x, y, depth }.
 export function isAnchorBehindSelectedBox(anchorScreen, selectedBox) {
   if (!anchorScreen || !selectedBox) return false;
   return contains(selectedBox, anchorScreen.x, anchorScreen.y) && anchorScreen.depth > selectedBox.depth;

@@ -53,6 +53,17 @@ export function panPositions(position, target, right, forward) {
 
 const toArray = (vector) => [vector.x, vector.y, vector.z];
 
+// 궤도 관성(OrbitControls 감쇠)의 60fps 기준 값. three의 감쇠는 프레임마다 남은 양에 (1 - dampingFactor)를 곱하므로
+// 프레임이 느리면 끌기 뒤 관성이 몇 초씩 이어진다. 프레임 시간에 맞춘 값을 매 프레임 넣어 몇 fps든 같은 시간에 멈추게 한다.
+export const ORBIT_DAMPING_FACTOR = 0.05;
+const DAMPING_REFERENCE_FPS = 60;
+const DAMPING_MAX_DELTA_S = 0.5;
+export function frameDampingFactor(deltaSeconds, base = ORBIT_DAMPING_FACTOR) {
+  const delta = Math.min(Math.max(Number.isFinite(deltaSeconds) ? deltaSeconds : 0, 0), DAMPING_MAX_DELTA_S);
+  if (delta === 0) return base;
+  return 1 - (1 - base) ** (delta * DAMPING_REFERENCE_FPS);
+}
+
 // 앞선 드래그의 관성(감쇠로 남은 회전·이동)을 지운다. three의 OrbitControls는 감쇠를 끈 채 update하면 남은 양을 한 번에 쓰고
 // 0으로 만든다. 시점 비행은 이것으로 시작해야 도착한 자리에 그대로 멈춘다(관성이 비행 뒤에도 카메라를 계속 돌리지 않는다).
 export function clearOrbitInertia(controls) {
@@ -63,14 +74,20 @@ export function clearOrbitInertia(controls) {
   return true;
 }
 
-// 사용자 궤도 조작처럼 start/end를 보내 눌린 시점 표시와 투어가 풀리게 한다. 공유 링크의 카메라도 이 길로 놓는다(비행 없음).
+// 단추·키 한 단계 이동이 보내는 start/end 표식. 눌린 시점 표시와 투어, 진행 중인 비행은 사용자 조작처럼 풀리지만,
+// 한 번에 끝나는 이동이라 라벨 층 흐림과 조작 중 해상도 낮춤은 일어나지 않는다.
+export const CAMERA_STEP_START_EVENT = Object.freeze({ type: "start", step: true });
+export const CAMERA_STEP_END_EVENT = Object.freeze({ type: "end", step: true });
+export const isCameraStepEvent = (event) => Boolean(event?.step);
+
+// 한 번에 옮기는 이동. 공유 링크의 카메라도 이 길로 놓는다(비행 없음).
 export function applyMove(controls, { position, target }) {
   if (!controls) return false;
-  controls.dispatchEvent?.({ type: "start" });
+  controls.dispatchEvent?.({ ...CAMERA_STEP_START_EVENT });
   controls.object.position.set(...position);
   if (target) controls.target.set(...target);
   controls.update();
-  controls.dispatchEvent?.({ type: "end" });
+  controls.dispatchEvent?.({ ...CAMERA_STEP_END_EVENT });
   return true;
 }
 

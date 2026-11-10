@@ -1,9 +1,7 @@
 import { createPortal } from "react-dom";
-import { Button } from "../ui/Button.jsx";
 import { CAMERA_PRESETS, D4_CAMERA_OFFSET, OVERVIEW_PRESET_ID } from "../camera/cameraPresets.mjs";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
-import { MapPin, X } from "lucide-react";
-import { createBuildingCameraController, focusMapAt } from "./cameraFocus.mjs";
+import { focusMapAt } from "./cameraFocus.mjs";
 import { D4_COORDINATE_HIT_TOLERANCE_DEGREES, isCoordinateMarkerHit } from "./coordinateMarkerHit.mjs";
 import { D4_COORDINATE_MARKER } from "./d4CoordinateMarker.mjs";
 import { createD4VWorldModel, removeD4VWorldModel } from "./d4VWorldModel.mjs";
@@ -14,7 +12,6 @@ import {
 import { applyVWorldSunSimulation } from "./sunSimulation.mjs";
 import { clearRoadZoneOverlays, findRoadZoneAt, setRoadZoneHighlighted } from "./roadZones.mjs";
 import { loadVWorldWebGlSdk } from "./webglSdkLoader.mjs";
-import { VWorldCampusStatus } from "./VWorldCampusStatus";
 import { RepresentativePlanOverlayController } from "./RepresentativePlanOverlayController";
 import { CAMPUS_REPRESENTATIVE_BUILDING_IDS } from "./representativePlanOverlay.mjs";
 import { replaceRepresentativePlanObjects } from "./representativePlanVWorld.mjs";
@@ -36,12 +33,7 @@ import { StatusBadge } from "../ui/StatusBadge.jsx";
 
 const OVERVIEW_PRESET = CAMERA_PRESETS.find((preset) => preset.id === OVERVIEW_PRESET_ID);
 const PAN_STEP = 0.1;
-
-// 교통 시뮬레이션 연결 상태 문구(frontend/AGENTS.md 공용 어휘). 모르는 상태는 끊김으로 본다.
-const TRAFFIC_STATUS = {
-  live: { label: "교통 시뮬레이션 연결됨", tone: "success" },
-  connecting: { label: "교통 시뮬레이션 연결 중", tone: "neutral" },
-};
+const prefersReducedMotion = () => globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
 
 const D4SectionExperience = lazy(() =>
   import("./D4SectionExperience").then((module) => ({
@@ -50,7 +42,6 @@ const D4SectionExperience = lazy(() =>
 );
 
 const VWORLD_MAP_ID = "vmap";
-const VWORLD_AVAILABLE_AREA_ID = "vworld-available-area";
 const VWORLD_MAP_INSTANCE_KEY = "__scnuVWorldMapInstance";
 const CAMPUS_BOUNDARY_ID = "SCNU_CAMPUS_AREA";
 const D4_MARKER_ID = "SCNU_D4_COORDINATE_MARKER";
@@ -113,6 +104,11 @@ export default function VWorldRenderer({
   onD4SectionChange,
   d4PaneHost = null,
   d4CloseKey = 0,
+  // 인스펙터의 "실내 보기"가 바꾸는 값. 바뀌면 D4 좌표 표지를 누른 것과 같이 D4를 고르고 D4 상세를 연다.
+  d4OpenKey = 0,
+  // 대표 설치 계획 지도 표시(지붕 위 배열). 배열을 주면 그대로 그리고 []는 숨긴다. 주지 않으면 렌더러 안의 컨트롤러가
+  // 불러와 그린다(카드는 그리지 않는다).
+  representativeOverlays,
   overlaysHidden = false,
   overlayInsetRight = "0px",
   overlayInsetBottom = "0px",
@@ -133,8 +129,6 @@ export default function VWorldRenderer({
   labelPresetFromGround = false,
   // 라벨 항목(앵커 위치 포함)이 준비되면 받는다.
   onLabelEntries,
-  // 폰 화면(지도 위 상태 카드를 아래쪽 열로 옮긴다).
-  phone = false,
   presentation = false,
   // 시점 버튼이 쓰는 카메라(createVWorldCampusCamera). 준비되면 넘기고, 지도가 사라지면 null.
   onCampusCamera,
@@ -166,9 +160,6 @@ export default function VWorldRenderer({
   const [hoveredLabelId, setHoveredLabelId] = useState(null);
   const highlightRef = useRef(null);
   const leftStackRef = useRef(null);
-  // 폰: 왼쪽 위 열(검색)의 아래 끝(지도 칸 기준 px). 왼쪽 아래 열은 여기까지만 자란다(검색·HUD를 덮지 않게).
-  const [leftStackBottom, setLeftStackBottom] = useState(null);
-  const bottomStackRef = useRef(null);
   const simulationDateRef = useRef(simulationDate);
   const mapRef = useRef(null);
   const vwRef = useRef(null);
@@ -178,7 +169,6 @@ export default function VWorldRenderer({
   const highlightedRoadZoneIdsRef = useRef([]);
   const campusGltfModelRef = useRef(null);
   const trafficSimulationRef = useRef(null);
-  const cameraControllerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasLoadError, setHasLoadError] = useState(false);
   const [loadErrorMessage, setLoadErrorMessage] = useState("");
@@ -190,7 +180,6 @@ export default function VWorldRenderer({
     setLoadAttempt((value) => value + 1);
   };
   const [campusStatus, setCampusStatus] = useState(null);
-  const [trafficStatus, setTrafficStatus] = useState(null);
   const [isD4SectionOpen, setIsD4SectionOpen] = useState(false);
   const onClearSelectionRef = useRef(onClearSelection);
   onClearSelectionRef.current = onClearSelection;
@@ -208,10 +197,15 @@ export default function VWorldRenderer({
     closeKeyRef.current = d4CloseKey;
     closeD4Section();
   }, [closeD4Section, d4CloseKey]);
-  // D4 상세를 여는 버튼은 상세가 열린 동안 사라졌다가 닫히면 다시 그려지므로, 닫을 때 포커스를 돌려받을 새 버튼을 ref로 넘긴다.
-  const d4OpenerRef = useRef(null);
+  // 인스펙터의 "실내 보기"(d4OpenKey가 바뀌면): D4 좌표 표지와 같은 길로 D4를 고르고 상세를 연다(좌표 표지 폴백 유지).
+  const openKeyRef = useRef(d4OpenKey);
+  useEffect(() => {
+    if (openKeyRef.current === d4OpenKey) return;
+    openKeyRef.current = d4OpenKey;
+    activateCoordinateMarkerSelection(D4_COORDINATE_MARKER, onSelectionRef.current);
+    setIsD4SectionOpen(true);
+  }, [d4OpenKey]);
   const [detailRequest, setDetailRequest] = useState(null);
-  const [selectedRoadZoneName, setSelectedRoadZoneName] = useState(null);
 
   // D4 상세 화면은 자체 대화상자다. 열려 있는 동안 앱이 건물 팝업을 겹쳐 띄우지 않도록 상태를 알린다.
   useEffect(() => {
@@ -235,29 +229,33 @@ export default function VWorldRenderer({
     fallbackModelMatrixRef.current ??= createCampusModelMatrix(viewer, window.Cesium);
     return fallbackModelMatrixRef.current;
   }, []);
-  // 고른 건물을 지도 가운데로 옮긴다. 이미 화면 가운데 부분(가로·세로 가운데 60%)에 보이면 그대로 둔다(Legacy 칩처럼
-  // 가까이 보이는 건물을 눌러도 카메라가 움직이지 않는다).
-  const focusLabelPosition = useCallback((position) => {
-    if (!labelScene) return;
+  // 캠퍼스 카메라(Legacy 시점을 VWorld로 옮긴 것). 오버레이·GLB가 준비되면 아래 효과가 채운다.
+  const campusCameraRef = useRef(null);
+  // 고른 건물로 한 번 비행한다(라벨 칩·SDK 건물·D4 표지가 같은 길). 이미 화면 가운데 부분(가로·세로 가운데 60%)에 보이면
+  // 그대로 둔다. 도착하면 카메라는 멈춘다(자동 회전 없음). focus: 요소 id 목록, position: 장면 좌표, lonLat: 경위도.
+  const focusBuilding = useCallback(({ focus = null, position = null, lonLat = null }) => {
+    const camera = campusCameraRef.current;
+    if (!labelScene || !camera) return;
+    const target = camera.focusTarget({ focus, lonLat }) ?? position;
+    if (!target) return;
     const projector = createVWorldLabelProjector({ ...labelScene, getModelMatrix: getLabelModelMatrix });
     const area = labelScene.scene.canvas?.getBoundingClientRect?.();
-    const point = area ? projector.project([{ elementId: "focus", position }], area, { clip: false }).points.get("focus") : null;
+    const point = area ? projector.project([{ elementId: "focus", position: target }], area, { clip: false }).points.get("focus") : null;
     const central = point && area
       && Math.abs(point.x - (area.left + area.width / 2)) <= area.width * 0.3
       && Math.abs(point.y - (area.top + area.height / 2)) <= area.height * 0.3;
     if (central) return;
-    const target = projector.lonLatOf(position);
-    if (target) cameraControllerRef.current?.focus(target);
+    camera.flyToFocus(target, { reducedMotion: prefersReducedMotion() });
   }, [getLabelModelMatrix, labelScene]);
-  // 캠퍼스 카메라(Legacy 시점을 VWorld로 옮긴 것). 오버레이·GLB가 준비되면 아래 효과가 채운다.
-  const campusCameraRef = useRef(null);
+  const focusBuildingRef = useRef(focusBuilding);
+  focusBuildingRef.current = focusBuilding;
   // 칩으로 고르면 SDK 건물을 누른 것과 같은 선택(요소 id·건물 코드·이름)을 보내고 지도 가운데를 그 건물로 옮긴다(Legacy 칩과 같다).
   const handleLabelSelect = useCallback((entry) => {
     const elementId = entry.dataElementId ?? entry.elementId;
     onSelectionRef.current({ elementId, buildingId: elementId.replace(/^BLD_/, ""), displayName: entry.displayName });
     setSelectedLabelId(entry.elementId);
-    focusLabelPosition(entry.position);
-  }, [focusLabelPosition]);
+    focusBuilding({ focus: [entry.elementId], position: entry.position });
+  }, [focusBuilding]);
   // 검색으로 고르면 Legacy(camera.flyToBuilding)처럼 그 건물을 가까이 보는 시점(건물 경계 상자 + D4 시점과 같은 거리)으로
   // 날아간다. 캠퍼스 카메라 전에는 칩과 같이 지도 가운데만 옮긴다.
   const handleSearchPick = useCallback((entry) => {
@@ -266,24 +264,12 @@ export default function VWorldRenderer({
     setSelectedLabelId(entry.elementId);
     const flown = campusCameraRef.current?.flyTo(
       { id: `building:${entry.elementId}`, focus: [entry.elementId], offset: D4_CAMERA_OFFSET, position: OVERVIEW_PRESET.position, target: OVERVIEW_PRESET.target },
-      { reducedMotion: globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false },
+      { reducedMotion: prefersReducedMotion() },
     );
-    if (!flown) focusLabelPosition(entry.position);
-  }, [focusLabelPosition]);
-  const handleLabelCluster = useCallback((members) => focusLabelPosition(centroidOf(members)), [focusLabelPosition]);
-  const defaultChromeRefs = useRef([leftStackRef, bottomStackRef]).current;
-  useEffect(() => {
-    const stack = leftStackRef.current;
-    if (!phone || isD4SectionOpen || !stack || typeof ResizeObserver !== "function") {
-      setLeftStackBottom(null);
-      return undefined;
-    }
-    const measure = () => setLeftStackBottom(Math.round(stack.offsetTop + stack.offsetHeight));
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(stack);
-    return () => observer.disconnect();
-  }, [phone, isD4SectionOpen]);
+    if (!flown) focusBuilding({ position: entry.position });
+  }, [focusBuilding]);
+  const handleLabelCluster = useCallback((members) => focusBuilding({ position: centroidOf(members) }), [focusBuilding]);
+  const defaultChromeRefs = useRef([leftStackRef]).current;
   const onCampusCameraRef = useRef(onCampusCamera);
   onCampusCameraRef.current = onCampusCamera;
   const onUserCameraStartRef = useRef(onUserCameraStart);
@@ -309,7 +295,10 @@ export default function VWorldRenderer({
     if (!host) return undefined;
     const camera = () => campusCameraRef.current;
     return attachCameraGestures(host, {
-      start: () => onUserCameraStartRef.current?.(),
+      start: () => {
+        campusCameraRef.current?.cancelFlight();
+        onUserCameraStartRef.current?.();
+      },
       zoom: (factor) => camera()?.zoomBy(factor),
       rotate: (radians) => camera()?.rotateBy(radians),
       tilt: (radians) => camera()?.tiltBy(radians),
@@ -354,6 +343,11 @@ export default function VWorldRenderer({
     });
   }, []);
 
+  // 앱이 대표 설치 계획 표시를 직접 넘기면(에너지 탭이 불러온 것) 그대로 그린다. 지도가 준비되면 초기화가 다시 그린다.
+  useEffect(() => {
+    if (representativeOverlays !== undefined) handleOverlayDataChange(representativeOverlays);
+  }, [handleOverlayDataChange, representativeOverlays]);
+
   useEffect(() => {
     simulationDateRef.current = simulationDate;
     applyVWorldSunSimulation(simulationDate);
@@ -388,12 +382,6 @@ export default function VWorldRenderer({
         // current mount to it so StrictMode/remount overlay callbacks can render.
         mapRef.current = map;
         vwRef.current = vw;
-        cameraControllerRef.current = createBuildingCameraController({
-          map,
-          vw,
-          viewport: document.getElementById(VWORLD_MAP_ID),
-          availableArea: document.getElementById(VWORLD_AVAILABLE_AREA_ID),
-        });
         if (presentationMode) {
           focusMapAt(map, vw, {
             longitude: D4_COORDINATE_MARKER.longitude,
@@ -445,14 +433,8 @@ export default function VWorldRenderer({
         applyCampusZoomLimits(labelViewerScene);
         if (labelViewerScene && window.Cesium) setLabelScene({ Cesium: window.Cesium, scene: labelViewerScene });
         trafficSimulationRef.current?.dispose();
-        trafficSimulationRef.current = presentationMode ? null : createVWorldTrafficSimulation({
-          map,
-          // 끊긴 뒤 재시도하는 동안에는 "연결 끊김"을 유지해 배지가 깜빡이지 않게 한다.
-          onStatus: (status) =>
-            setTrafficStatus((previous) =>
-              status.state === "connecting" && previous?.state === "disconnected" ? previous : status,
-            ),
-        });
+        // 연결 상태는 시뮬레이션 탭 머리글이 알린다. 지도 위에는 배지를 두지 않는다.
+        trafficSimulationRef.current = presentationMode ? null : createVWorldTrafficSimulation({ map });
         handleOverlayDataChange(overlayDataRef.current);
         createD4CoordinateMarker(vw);
 
@@ -476,11 +458,10 @@ export default function VWorldRenderer({
           );
 
           if (nativeSelection) {
-            setSelectedRoadZoneName(null);
             clearRoadZoneHighlight();
-            cameraControllerRef.current.focus({
-              longitude: cartographic?.longitudeDD,
-              latitude: cartographic?.latitudeDD,
+            focusBuildingRef.current({
+              focus: [nativeSelection.elementId],
+              lonLat: { longitude: cartographic?.longitudeDD, latitude: cartographic?.latitudeDD },
             });
             return;
           }
@@ -492,16 +473,15 @@ export default function VWorldRenderer({
               D4_COORDINATE_HIT_TOLERANCE_DEGREES,
             )
           ) {
-            setSelectedRoadZoneName(null);
             clearRoadZoneHighlight();
-            activateCoordinateMarkerSelection(
+            const selection = activateCoordinateMarkerSelection(
               D4_COORDINATE_MARKER,
               onSelectionRef.current,
             );
             setIsD4SectionOpen(true);
-            cameraControllerRef.current.focus({
-              longitude: D4_COORDINATE_MARKER.longitude,
-              latitude: D4_COORDINATE_MARKER.latitude,
+            focusBuildingRef.current({
+              focus: [selection.elementId],
+              lonLat: { longitude: D4_COORDINATE_MARKER.longitude, latitude: D4_COORDINATE_MARKER.latitude },
             });
             return;
           }
@@ -518,7 +498,6 @@ export default function VWorldRenderer({
               highlightedRoadZoneRef.current = roadZone;
             }
           }
-          setSelectedRoadZoneName(roadZone?.name ?? null);
         };
         map.onClick.addEventListener(handleMapClick);
 
@@ -563,10 +542,14 @@ export default function VWorldRenderer({
       });
       mapRef.current = null;
       vwRef.current = null;
-      cameraControllerRef.current?.dispose();
-      cameraControllerRef.current = null;
     };
   }, [handleOverlayDataChange, loadAttempt, presentationMode]);
+
+  // 사람이 지도를 누르거나 휠을 돌리면 진행 중인 비행을 그 자리에서 끊고 앱에 알린다(시점 표시·투어를 멈춘다).
+  const handleUserCameraStart = () => {
+    campusCameraRef.current?.cancelFlight();
+    onUserCameraStart?.();
+  };
 
   // 지도(캔버스)에 포커스가 있을 때 방향키로 땅 위를 옮긴다(Legacy 장면과 같은 키보드 조작). 한 번에 화면 가운데까지 거리의 10%.
   const handleMapKey = (event) => {
@@ -577,42 +560,14 @@ export default function VWorldRenderer({
     campusCameraRef.current.panBy(...step);
   };
 
-  // 교통 시뮬레이션 배지와 대표 설치 계획 카드: 데스크톱은 왼쪽 위 열(검색 아래), 폰은 왼쪽 아래 열(D4 상세 보기 위)에 하나만 둔다.
-  // 폰 화면 위쪽은 Legacy처럼 검색만 남겨 정문 시점의 도서관처럼 위쪽에 보이는 건물 칩을 가리지 않는다.
-  const mapStatusCards = (
-    <>
-            {trafficStatus && (
-              <StatusBadge tone={TRAFFIC_STATUS[trafficStatus.state]?.tone ?? "warning"} role="status" className="text-caption">
-                {TRAFFIC_STATUS[trafficStatus.state]?.label ?? "교통 시뮬레이션 연결 끊김"}
-              </StatusBadge>
-            )}
-            <RepresentativePlanOverlayController
-              buildingIds={CAMPUS_REPRESENTATIVE_BUILDING_IDS}
-              refreshKey={representativeRefreshKey}
-              renderPanel={!presentationMode}
-              onOverlayDataChange={handleOverlayDataChange}
-              onBuildingSelect={(buildingId) => onSelectionRef.current({
-                elementId: `BLD_${buildingId}`,
-                buildingId,
-                displayName: buildingId,
-              })}
-              className="pointer-events-auto"
-              widthClassName="max-w-[18rem]"
-              feedDown={energyFeedDown}
-              fitHeight={phone}
-            />
-    </>
-  );
-
   const mapOverlays = (
     <>
-        {/* 지도 위 문구와 버튼은 열린 패널을 뺀 지도 영역 안에만 둔다. 상태 문구는 위쪽 왼쪽 열, 지도 조작은 아래쪽 왼쪽 열에
-            쌓는다. 절대 위치는 두 열에만 주어 화면이 좁아도 서로 겹치거나 패널 밑으로 들어가지 않는다. */}
+        {/* 지도 위에는 검색과 지도 로딩·오류 문구만 둔다. 열린 패널을 뺀 지도 영역 안의 왼쪽 위 열 하나에 쌓는다. */}
         <div
           data-qa="vworld-map-overlays"
           data-label-chrome-layer=""
           aria-hidden={overlaysHidden ? "true" : undefined}
-          className={`pointer-events-none absolute inset-y-0 left-0 transition-[right] duration-300 ${overlaysHidden ? "invisible" : ""}`}
+          className={`pointer-events-none absolute inset-y-0 left-0 ${overlaysHidden ? "invisible" : ""}`}
           style={{ right: overlayInsetRight, bottom: overlayInsetBottom }}
         >
           {!isD4SectionOpen && (
@@ -620,7 +575,7 @@ export default function VWorldRenderer({
               ref={leftStackRef}
               data-qa="vworld-left-stack"
               data-label-chrome-layer=""
-              className="pointer-events-none absolute left-4 z-20 flex max-w-[calc(100%-2rem)] flex-col items-start gap-3"
+              className="pointer-events-none absolute left-4 flex max-w-[calc(100%-2rem)] flex-col items-start gap-3"
               style={{ top: presentationMode ? "12rem" : "var(--vworld-hud-bottom, 4.5rem)" }}
             >
               {!presentationMode && labelEntries && <SearchField registry={labelEntries} onPick={handleSearchPick} />}
@@ -645,61 +600,6 @@ export default function VWorldRenderer({
                   {campusStatus.message}
                 </StatusBadge>
               )}
-              {!phone && mapStatusCards}
-            </div>
-          )}
-          {!presentationMode && !isD4SectionOpen && (
-            <div
-              ref={bottomStackRef}
-              data-qa="vworld-bottom-stack"
-              data-label-chrome-layer=""
-              className="pointer-events-none absolute bottom-6 left-6 z-10 flex max-w-[calc(100%-3rem)] flex-col items-start gap-3 [&>*]:shrink-0 [&>aside]:shrink"
-              // 폰: 상태 카드가 이 열로 오므로 열 높이를 왼쪽 위 열(검색) 아래까지로 묶는다(긴 설치 계획 목록은 카드 안에서 스크롤).
-              style={phone ? { maxHeight: leftStackBottom === null ? "calc(100% - var(--vworld-hud-bottom, 4.5rem) - 2.25rem)" : `calc(100% - ${leftStackBottom}px - 2.25rem)` } : undefined}
-            >
-              <VWorldCampusStatus
-                className="hidden max-w-[280px] lg:block"
-                feedDown={energyFeedDown}
-                onSelection={(selection) => onSelectionRef.current(selection)}
-              />
-              {phone && mapStatusCards}
-              {selectedRoadZoneName && (
-                <div
-                  role="status"
-                  className="pointer-events-auto flex items-center gap-2 rounded-control border border-hairline bg-surface-1 px-3 py-2 text-caption font-semibold text-ink"
-                >
-                  <MapPin size={14} className="text-[var(--colors-primary)]" />
-                  도로 구역 · {selectedRoadZoneName}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (highlightedRoadZoneRef.current && mapRef.current) {
-                        clearRoadZoneOverlays(mapRef.current, highlightedRoadZoneIdsRef.current);
-                      }
-                      highlightedRoadZoneRef.current = null;
-                      highlightedRoadZoneIdsRef.current = [];
-                      setSelectedRoadZoneName(null);
-                    }}
-                    aria-label="도로 구역 정보 닫기"
-                    className="ml-1 rounded p-0.5 text-[var(--colors-ink-subtle)] hover:text-[var(--colors-ink)]"
-                  >
-                    <X size={13} />
-                  </button>
-                </div>
-              )}
-              {/* 공용 Button(보조, 작은 크기): 지도 위 다른 단추와 같은 크기·굵기·모서리(V-F-35, 굵기 800 없음: V-F-23). */}
-              <Button
-                ref={d4OpenerRef}
-                size="sm"
-                variant="secondary"
-                className="pointer-events-auto"
-                onClick={() => {
-                  activateCoordinateMarkerSelection(D4_COORDINATE_MARKER, onSelectionRef.current);
-                  setIsD4SectionOpen(true);
-                }}
-              >
-                D4 공과대학 3호관 상세 보기
-              </Button>
             </div>
           )}
         </div>
@@ -709,7 +609,7 @@ export default function VWorldRenderer({
   return (
     <div className="relative h-full w-full">
       {/* 지도 자체에 Legacy 캔버스와 같은 이름을 준다(화면 읽기·랜드마크). */}
-      <div id={VWORLD_MAP_ID} role="region" aria-label="순천대 캠퍼스 3D 지도" data-qa="campus-map-layer" data-selected-id={selectedLabelId ?? undefined} className="h-full w-full" onPointerDown={() => onUserCameraStart?.()} onWheel={() => onUserCameraStart?.()} onKeyDown={handleMapKey} />
+      <div id={VWORLD_MAP_ID} role="region" aria-label="순천대 캠퍼스 3D 지도" data-qa="campus-map-layer" data-selected-id={selectedLabelId ?? undefined} className="h-full w-full" onPointerDown={handleUserCameraStart} onWheel={handleUserCameraStart} onKeyDown={handleMapKey} />
       {mapBackdrop}
       {labelScene && (
         <VWorldLabelLayer
@@ -733,17 +633,24 @@ export default function VWorldRenderer({
           }}
         />
       )}
-      {/* 지도 위 문구·버튼 묶음은 HUD 안의 자리(overlayHost)에 그린다: 탭 순서가 Legacy처럼 HUD -> 칩 -> 패널이 된다. */}
+      {/* 앱이 표시를 넘기지 않으면 대표 설치 계획을 여기서 불러와 지붕 위에만 그린다(카드는 에너지 탭 몫). */}
+      {representativeOverlays === undefined && (
+        <RepresentativePlanOverlayController
+          buildingIds={CAMPUS_REPRESENTATIVE_BUILDING_IDS}
+          refreshKey={representativeRefreshKey}
+          renderPanel={false}
+          onOverlayDataChange={handleOverlayDataChange}
+          feedDown={energyFeedDown}
+        />
+      )}
+      {/* 지도 위 문구 묶음은 HUD 안의 자리(overlayHost)에 그린다: 탭 순서가 Legacy처럼 HUD -> 칩 -> 패널이 된다. */}
       {overlayHost ? createPortal(mapOverlays, overlayHost) : mapOverlays}
       {/* D4 상세는 대시보드 셸의 패인 자리(d4PaneHost)에 그린다. 진입 경로(MODEL_NAME, D4 좌표 표지)는 그대로다. */}
       {isD4SectionOpen && d4PaneHost && createPortal(
         <Suspense
           fallback={
-            <div
-              className="absolute inset-0 z-30 grid place-items-center bg-slate-950/90 text-sm font-semibold text-slate-100"
-              role="status"
-            >
-              D4 단면 모델을 불러오는 중입니다.
+            <div className="absolute inset-0 grid place-items-center bg-surface-1">
+              <Spinner label="D4 단면 모델을 불러오는 중입니다." />
             </div>
           }
         >
@@ -757,7 +664,6 @@ export default function VWorldRenderer({
             onPlansChange={onInstallationPlansChange}
             onRepresentativeChange={onRepresentativeInstallationPlanChange}
             planRefreshKey={installationPlanRefreshKey}
-            returnFocusRef={d4OpenerRef}
             onClose={closeD4Section}
             presets={d4Presets}
             onSelectPreset={(preset) => {
