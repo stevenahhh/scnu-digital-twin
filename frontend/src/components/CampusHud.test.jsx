@@ -62,4 +62,13 @@ describe("CampusHud", () => {
     expect(hud.querySelector('[data-qa="hud-time-readout"]').textContent).toBe("장면 19:00");
     expect(hud.querySelector('[data-qa="time-slider"]')).toBeNull();
   });
+
+  it("opts the HUD root out of the global reduced-motion transition so its right edge reaches the panel in the same frame", () => {
+    // index.css clamps every element to transition-duration 0.01ms under prefers-reduced-motion. With the default
+    // transition-property (all) that turns the root's untransitioned \`right\` into a 0.01ms transition, and the HUD
+    // keeps its old edge until the next frame while the panel has already snapped open (IS-34 under reduced motion).
+    renderHud();
+    const hud = document.querySelector('[data-qa="campus-hud"]');
+    expect(hud.className.split(/\s+/)).toContain("motion-reduce:transition-none");
+  });
 });

@@ -11,7 +11,7 @@ import { HudToolbar } from "./HudToolbar";
 import { SearchField } from "./SearchField";
 import { TimeSlider } from "./TimeSlider";
 import { FeedStatusChip } from "./hud/FeedStatusChip";
-import { FOLLOW_MOTION, usePanelFollow } from "./hud/usePanelFollow.mjs";
+import { FOLLOW_MOTION, FOLLOW_ROOT, usePanelFollow } from "./hud/usePanelFollow.mjs";
 
 const PRESSED = "aria-pressed:bg-surface-2 aria-pressed:text-ink";
 
@@ -67,7 +67,7 @@ export const CampusHud = forwardRef(function CampusHud(
       data-qa="campus-hud"
       data-label-chrome-layer=""
       aria-hidden={sheetFull ? "true" : undefined}
-      className={cx("pointer-events-none absolute left-0 top-0 z-[6]", sheetFull && "invisible")}
+      className={cx("pointer-events-none absolute left-0 top-0 z-[6]", FOLLOW_ROOT, sheetFull && "invisible")}
       style={{ right: follow.right, bottom: phone ? `${SHELL_PEEK_HEIGHT}px` : "0px" }}
     >
       <div data-qa="hud-bar" className="absolute left-4 right-4 top-4 flex min-w-0 flex-nowrap items-center gap-2">

@@ -3,6 +3,10 @@ import { useLayoutEffect, useRef, useState } from "react";
 const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
 // 패널과 같은 transform, 같은 시간, 같은 곡선(DashboardShell의 표면 이동과 같은 토큰).
 export const FOLLOW_MOTION = "transition-transform duration-surface ease-[var(--motion-ease-standard)] motion-reduce:transition-none";
+// rootRef 요소(right를 바꾸는 HUD 루트)에 붙인다. 움직임 줄이기에서 index.css는 모든 요소의 transition-duration을 0.01ms로 누른다.
+// 기본 transition-property가 all이라 전환이 없던 right도 0.01ms 전환이 되고, 루트는 다음 프레임까지 예전 자리에 머문다.
+// 그동안 패널은 이미 열린 자리에 있어 HUD가 패널을 덮는다. 전환을 끄면 새 여백이 같은 프레임에 적용된다.
+export const FOLLOW_ROOT = "motion-reduce:transition-none";
 
 function surfaceMs() {
   const value = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--motion-surface"));
