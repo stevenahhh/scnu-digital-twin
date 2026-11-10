@@ -84,6 +84,7 @@ export const CampusScene = memo(function CampusScene({
           onDragStart={onDragStart}
           headlineById={headlineById}
           presentation={presentation}
+          quality={quality}
         />
         <CampusTrafficSimulation contactShadows={quality === "high"} />
         <ShadowBaker sunKey={sunVector.join(",")} />

@@ -135,6 +135,25 @@ export const WATER_REFLECTION_SHADER = Object.freeze({
     varying vec4 vUv;
     varying vec3 vWorld;
     #include <logdepthbuf_pars_fragment>
+    // The mirror pass stores display-referred colour like the main pass (three's Neutral tone mapping, then sRGB).
+    // This takes a decoded texel back to scene-linear light, without the tone mapper's highlight desaturation, so the
+    // reflection is mixed with the water colour in linear light and tone mapped once, by this material: a bright sky
+    // stays bright in the water.
+    vec3 sceneLinear(vec3 c) {
+      #ifdef TONE_MAPPING
+        const float start = 0.76;
+        const float range = 0.24;
+        float peak = max(c.r, max(c.g, c.b));
+        if (peak > start) {
+          float p = min(peak, 0.995);
+          c *= (range * range / (1.0 - p) - range + start) / p;
+        }
+        float low = min(c.r, min(c.g, c.b));
+        c += low < 0.04 ? sqrt(low / 6.25) - low : 0.04;
+        c /= toneMappingExposure;
+      #endif
+      return c;
+    }
     void main() {
       #include <logdepthbuf_fragment>
       vec2 p = vWorld.xz * rippleScale;
@@ -143,7 +162,7 @@ export const WATER_REFLECTION_SHADER = Object.freeze({
       vec2 d = (n1 + n2) * strength;
       vec4 uv = vUv;
       uv.xy += d * uv.w;
-      vec3 reflection = texture2DProj(tDiffuse, uv).rgb;
+      vec3 reflection = sceneLinear(sRGBTransferEOTF(texture2DProj(tDiffuse, uv)).rgb);
       vec3 n = normalize(vec3(d.x * 6.0, 1.0, d.y * 6.0));
       vec3 v = normalize(cameraPosition - vWorld);
       float fresnel = f0 + (1.0 - f0) * pow(1.0 - clamp(dot(n, v), 0.0, 1.0), 5.0);
