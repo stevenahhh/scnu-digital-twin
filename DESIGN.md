@@ -71,9 +71,9 @@ The phone step is larger than the audit's 13/16 px proposal on purpose, because 
 
 Layout lines (one per screen). The visual QA harness records every element that owns vertical scroll in each captured state (`scroll-owners.json` next to the frames), so these lines can be checked against the product:
 
-Layout: dashboard - fixed: scene canvas, HUD toolbar, time readout with freshness stamp, panel rail (desktop) / drawer (tablet) / bottom sheet (phone); scroll owner: the panel body; overlay stack: canvas < labels < hud < rail < modal
+Layout: dashboard - fixed: scene canvas, HUD toolbar, time card (phone: time chip, hidden while the sheet is at half; the whole HUD is hidden at full), panel rail (desktop) / drawer (tablet) / bottom sheet (phone); scroll owner: the panel body; overlay stack: canvas < labels < hud < rail < modal
 Layout: inspector - fixed: inspector header (name, code badge, close) pinned above the tabs (desktop) or at the sheet's half detent (phone); scroll owner: the panel body that contains it; overlay stack: canvas < labels < hud < rail < modal
-Layout: D4 pane - fixed: breadcrumb, floor picker and the scene beside the pane; scroll owner: the room list; overlay stack: canvas < labels < hud < rail < modal
+Layout: D4 pane - fixed: breadcrumb, floor picker (scene floor labels on a fine pointer, a 44px floor button list on touch and phone) and the scene beside the pane; scroll owner: the room list; overlay stack: canvas < labels < hud < rail < modal
 Layout: settings sheet - fixed: sheet header with close; scroll owner: the sheet body; overlay stack: canvas < labels < hud < rail < modal
 Layout: presentation mode - fixed: scene canvas, time readout, tour pager; scroll owner: none; overlay stack: canvas < labels < hud < rail < modal
 
@@ -130,11 +130,6 @@ Shared primitives live in `frontend/src/ui/` and both entries use them (Legacy `
 - **Structure**: tabular value plus unit, a `StatusBadge` reading `추정` when estimated, and a provenance line `<source> · HH:mm` in `--colors-estimate-ink`; `data-qa="estimate-value"`. Measured values use `data-qa="measured-value"` and no badge.
 - **States**: estimated, measured, stale, absent (`데이터 없음` + action), updated (a highlight lasting `--motion-state`).
 - **Accessibility**: a visually hidden `갱신됨` live-region note on change. An estimate never reads as a measurement.
-
-### FreshnessStamp
-- **Structure**: `갱신 HH:mm` or `갱신 없음` in `--text-caption`, with a refresh button inside. It carries `data-qa="freshness-stamp"` and `data-feed`.
-- **States**: fresh, stale, failed, refreshing.
-- **Accessibility**: the refresh button names the feed. The stamp stays visible in the failure state.
 
 ### Skeleton
 - **Structure**: block and line shapes in `surface-2`, matching the card they stand in for.
@@ -218,7 +213,7 @@ Transitional radius aliases: `--rounded-xs` (4px), `--rounded-md` (8px) and `--r
 ## 8. Accessibility Constraints & Accepted Debt
 
 - Contrast: 4.5:1 for all text and badge pairs in both themes, and 3:1 for focus rings and control boundaries against adjacent colours.
-- Touch: targets are at least 44x44px under `(pointer: coarse)`. That covers chips, preset buttons, slider thumbs (24px thumb inside a 28px track, grown hit area) and the sheet handle.
+- Touch: targets are at least 44x44px under `(pointer: coarse)`. That covers chips, preset buttons, slider thumbs (24px thumb inside a 44px tall hit area, also below 640px; 24px tall on a fine pointer) and the sheet handle.
 - Focus: every control has a visible focus ring, and the ring is never clipped. Tab order runs HUD, then visible scene labels by priority, then the panel.
 - Keyboard paths: orbit with arrow keys, zoom and rotate/reset buttons, `/` focuses search, ArrowLeft and ArrowRight move the time slider, and Esc closes popovers and sheets.
 - Selection: values, ids and error text are selectable. Only the map layer and the label layer disable text selection.
