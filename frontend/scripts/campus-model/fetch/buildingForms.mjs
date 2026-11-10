@@ -23,6 +23,7 @@ import { loadFurniture } from "../stages/furniture.mjs";
 import { loadInputs } from "../stages/sources.mjs";
 import { openSheet } from "../lib/ngiiSheet.mjs";
 import { DATA } from "./common.mjs";
+import { keepReplacedRecords } from "./curatedRecords.mjs";
 import { loadTmFootprints } from "../lib/footprints.mjs";
 import { encodeRoofGeometry, mapRoofGeometry } from "../lib/roofRelative.mjs";
 import { wgs84ToTm } from "../../../src/geo/epsg5186.mjs";
@@ -224,7 +225,7 @@ export async function writeBuildingForms() {
     const result = JSON.parse(await Bun.file(output).text());
     const geoRing = (ring) => ring.map(toGeo);
     const named = new Map(buildings.map((b) => [b.key, b]));
-    const records = result.buildings.map((r) => ({
+    const regenerated = result.buildings.map((r) => ({
       key: r.key,
       label: named.get(r.key)?.label ?? null,
       footprintSource: named.get(r.key)?.footprintSource ?? null,
@@ -249,9 +250,11 @@ export async function writeBuildingForms() {
       ...(r.droppedMasses ? { droppedMasses: r.droppedMasses } : {}),
       ...(r.clippedMasses ? { clippedMasses: r.clippedMasses } : {}),
     }));
+    const { records, kept } = keepReplacedRecords(regenerated, existsSync(OUTPUT) ? JSON.parse(readFileSync(OUTPUT, "utf8")).buildings : []);
     carryCurated(records);
     const footprints = await loadTmFootprints();
     for (const record of records) {
+      if (kept.includes(record.key)) continue;
       const selected = named.get(record.key);
       const footprint = footprints[record.key] ?? {
         polygons: selected.parts.map(p => [p.outer, ...p.holes].map(r => r.map(q => wgs84ToTm(...toGeo(q))))),

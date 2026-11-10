@@ -23,6 +23,7 @@ import { decimateDecal } from "../lib/decimate.mjs";
 import { EXTENT, SCENE_UNITS_PER_METRE } from "../lib/frame.mjs";
 import { LANDCOVER, D4_MATERIAL_SCOPE, splitD4GroundPolygon } from "../lib/landcover.mjs";
 import { encodePng } from "../lib/png.mjs";
+import { FUTSAL_HALF_M, TRACK_LANES, TRACK_LANE_M, trackPitchHalf } from "../lib/pitchLines.mjs";
 import { hashNoise, smoothNoise } from "../lib/raster.mjs";
 import { orientedFrame } from "../network/surfaces.mjs";
 import { pavingPattern, pavingTile } from "../lib/pavingPatterns.mjs";
@@ -259,19 +260,19 @@ function paintedUv(frame, layer) {
 
 // Running track fitted to the facility outline: semicircular ends, 8 lanes of 1.22 m with white lane lines and a
 // football pitch with standard markings inside (dimensions of the old ground shader; estimated layout).
-function trackShader(frame, cover) {
+function trackShader(frame, cover, pitchLocal) {
   const radius = frame.halfWidth;
   const straight = Math.max(0, frame.halfLength - radius);
-  const band = 8 * 1.22;
-  const inner = radius - band;
-  const pitchHalfWidth = Math.min(34, inner - 2);
-  const pitchHalfLength = Math.min(52.5, straight + Math.sqrt(Math.max(0, inner * inner - pitchHalfWidth * pitchHalfWidth)) - 1);
+  const band = TRACK_LANES * TRACK_LANE_M;
+  const { length: pitchHalfLength, width: pitchHalfWidth } = trackPitchHalf(frame.halfLength, frame.halfWidth);
   return (s, t, i, j) => {
     const depth = radius - (Math.abs(s) <= straight ? Math.abs(t) : Math.hypot(Math.abs(s) - straight, t));
     if (depth < band + LINE_HALF_WIDTH_M) {
-      const lane = depth / 1.22;
-      return mix(grain(SURFACE.track, i, j, 21), LINE_WHITE, cover((lane - Math.round(lane)) * 1.22) * 0.85);
+      const lane = depth / TRACK_LANE_M;
+      return mix(grain(SURFACE.track, i, j, 21), LINE_WHITE, cover((lane - Math.round(lane)) * TRACK_LANE_M) * 0.85);
     }
+    // from here on (s, t) are metres in the pitch's own frame where one is recorded: the outline is not parallel to it
+    if (pitchLocal) [s, t] = pitchLocal(s, t);
     if (Math.abs(s) > pitchHalfLength + 0.5 || Math.abs(t) > pitchHalfWidth + 0.5) return grain(SURFACE.track, i, j, 21);
     const stripe = Math.floor((s + pitchHalfLength) / ((pitchHalfLength * 2) / 18)) % 2 ? 1.05 : 0.95;
     const turf = grain(shadeBy(SURFACE.turf, stripe), i, j, 22, 0.06);
@@ -307,7 +308,8 @@ function courtShader(surfaceName, lines, cover) {
       };
     case "futsal":
       return (s, t, i, j) => {
-        const d = Math.min(rectOutline(s, t, 20, 10), Math.abs(t) <= 10 ? Math.abs(s) : Infinity, Math.abs(Math.hypot(s, t) - 3), Math.abs(Math.hypot(Math.abs(s) - 20, t) - 6));
+        const { length, width } = FUTSAL_HALF_M;
+        const d = Math.min(rectOutline(s, t, length, width), Math.abs(t) <= width ? Math.abs(s) : Infinity, Math.abs(Math.hypot(s, t) - 3), Math.abs(Math.hypot(Math.abs(s) - length, t) - 6));
         return mix(grain(SURFACE.futsal, i, j, 24, 0.06), LINE_WHITE, cover(d) * 0.8);
       };
     case "multi":
@@ -340,8 +342,13 @@ function paintShader(layer, frame, texel) {
   const toModel = (s, t) => [frame.cx + (frame.ux * s - frame.uz * t) * UNIT, frame.cz + (frame.uz * s + frame.ux * t) * UNIT];
   const paint = layer.paint;
   switch (paint.kind) {
-    case "track":
-      return trackShader(frame, cover);
+    case "track": {
+      if (!paint.pitch) return trackShader(frame, cover);
+      const [cx, cz] = tmToScene(...paint.pitch.point);
+      const heading = (paint.pitch.headingDegrees * Math.PI) / 180;
+      const own = { cx, cz, ux: Math.cos(heading), uz: Math.sin(heading) };
+      return trackShader(frame, cover, (s, t) => localOf(own, ...toModel(s, t)));
+    }
     case "pitch": {
       const colour = paint.surface === "clay" ? SURFACE.clayCourt : paint.sport === "tennis" ? SURFACE.tennisCourt : paint.sport === "basketball" ? SURFACE.basketball : SURFACE.turf;
       return (s, t, i, j) => mix(grain(colour, i, j, 32, 0.06), LINE_WHITE, cover(rectOutline(s, t, frame.halfLength - 1, frame.halfWidth - 1)) * 0.8);

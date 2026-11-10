@@ -152,6 +152,15 @@ export function checkPoles(poles, { onCarriageway, inBuilding }) {
   return { moved, offenders };
 }
 
+// Lamp type: the surveyed type, else by where the lamp stands. The city lamp list (method data.go.kr) is not a type:
+// it also holds lamps on campus roads and paths, which were all drawn as 8 m arterial cobra heads (41 of 50) while it
+// decided the type. Heights and forms stay estimates.
+export function lampTypeFor({ declared, styleForm, nearArterial, nearRoad }) {
+  if (LAMP_TYPES[declared]) return declared;
+  if (/arterial/.test(styleForm ?? "") || nearArterial) return "arterial";
+  return nearRoad ? "campusRoad" : "path";
+}
+
 // Lamp list: the survey's street lamps at their photo pole roots (stages/furniture.mjs applies data/photo/pole-roots.json).
 // groundInfo: the ground stage's surface-class raster. Also returns the site tests the furniture stage uses.
 export function placeLamps({ inputs, furniture, selectableBuildings, campusBuildings, offCampusLots, groundInfo }) {
@@ -194,7 +203,7 @@ export function placeLamps({ inputs, furniture, selectableBuildings, campusBuild
     const p = object.p;
     const nearArterial = distanceToLines(at, roads.arterials) < metres(30);
     const nearRoad = towardRoad(at, roads, 6) !== null;
-    const type = LAMP_TYPES[p.lamp_type] ? p.lamp_type : p.method === "data.go.kr" || /arterial/.test(p.style?.form ?? "") || nearArterial ? "arterial" : nearRoad ? "campusRoad" : "path";
+    const type = lampTypeFor({ declared: p.lamp_type, styleForm: p.style?.form, nearArterial, nearRoad });
     // the arm reaches over the nearest carriageway (OSM centreline or road-zone edge)
     const dir = towardRoad(at, roads) ?? [1, 0];
     lamps.push({ id: object.id, type, at, dir, heightM: LAMP_TYPES[type].heightM, source: p.method, pole: object.pole ?? { verdict: "unreviewed" } });

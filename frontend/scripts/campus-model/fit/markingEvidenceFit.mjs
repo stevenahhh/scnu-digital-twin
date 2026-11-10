@@ -56,6 +56,10 @@ const ARROW_SNAP_DEG = 25;
 const TEXT_BLOCK_M = 1.5;
 const TEXT_SEED_REACH_M = 5;
 const TEXT_LONG_WORD_M = 2.6;
+// A guessed word is written inside one lane. Blobs of worn text that span several lanes (campus lanes are about 3 m)
+// stand for the same word in each lane, not for one word stretched across the carriageway.
+const TEXT_LANE_M = 3;
+export const guessedTextLanes = (widthM) => Math.max(1, Math.round(widthM / TEXT_LANE_M));
 const TEXT_STALL_REACH_M = 3;
 // Text and crossings take the road's direction from a road line at least TEXT_ROAD_MIN_M long; a crossing's bars are
 // set parallel to it only when they already lie within ZEBRA_ROAD_SNAP_DEG (crossings may be skewed to the road).
@@ -980,6 +984,13 @@ export function regularise(drawn, ctx) {
       }
       const points = blob.flatMap((rings) => rings[0]);
       const box = orientedBox(points);
+      // No road word is painted inside a crossing: unread white blobs between its bars are worn bars, which the
+      // crossing fit already draws (ND_007: a 1.2 m guessed word stood on the zebra).
+      if (m.guessed && inCrossing(box.centre)) {
+        stats.dropped.textInCrossing = (stats.dropped.textInCrossing ?? 0) + 1;
+        stats.textInCrossing = [...(stats.textInCrossing ?? []), ...ids];
+        continue;
+      }
       const stall = m.guessed && chains.some((ch) => !ch.duplicate && ch.kind === "parking_line" && distanceToPolyline(box.centre, ch.path) <= TEXT_STALL_REACH_M);
       let f;
       let from;
@@ -1009,18 +1020,23 @@ export function regularise(drawn, ctx) {
       // a reading may fix the block width and the syllable length where the photo blobs miss part of the paint
       const width = m.widthM ?? Math.max(...across) - Math.min(...across);
       const height = m.lineHeightM ? m.lineHeightM * (m.lines.length + 0.25 * (m.lines.length - 1)) : Math.max(...along) - Math.min(...along);
-      const lines = m.lines ?? [stall ? "경차" : width < TEXT_LONG_WORD_M ? "서행" : "천천히"];
-      const middle = add(box.centre, add(scale(f, (Math.max(...along) + Math.min(...along)) / 2), scale(r, (Math.max(...across) + Math.min(...across)) / 2)));
-      const block = textBlock(lines, width, height, { charHeight: m.lineHeightM ?? null });
-      emitPoly(place(block.polys, middle, f), m.colour ?? list[m.members[0]].colour, "text", { glyph: lines.join("/"), guessed: Boolean(m.guessed),
-        construction: construction(middle, f, { type: "glyph", template: "text", args: [lines, width, height, { charHeight: m.lineHeightM ?? null }], centered: true }, ids) });
-      const label = `${lines.join("/")} (${m.guessed ? "추정" : m.source?.startsWith("VR") ? "VR 판독" : "사진 판독"})`;
-      glyphCount(`text ${label}`);
-      stats.textReadings.push({
-        id: m.id, ids, lines, read: !m.guessed, source: m.source ?? "추정 (statute text for its size)", centre: toScene(middle),
-        widthM: +width.toFixed(2), heightM: +height.toFixed(2), syllable: [+block.charWidth.toFixed(2), +block.charHeight.toFixed(2)],
-        up: f.map((v) => +v.toFixed(3)), travelFrom: from,
-      });
+      const blockMiddle = add(box.centre, add(scale(f, (Math.max(...along) + Math.min(...along)) / 2), scale(r, (Math.max(...across) + Math.min(...across)) / 2)));
+      const laneCount = m.guessed && !stall ? guessedTextLanes(Math.max(...across) - Math.min(...across)) : 1;
+      for (let lane = 0; lane < laneCount; lane += 1) {
+        const laneWidth = width / laneCount;
+        const lines = m.lines ?? [stall ? "경차" : laneWidth < TEXT_LONG_WORD_M ? "서행" : "천천히"];
+        const middle = add(blockMiddle, scale(r, (lane + 0.5 - laneCount / 2) * laneWidth));
+        const block = textBlock(lines, laneWidth, height, { charHeight: m.lineHeightM ?? null });
+        emitPoly(place(block.polys, middle, f), m.colour ?? list[m.members[0]].colour, "text", { glyph: lines.join("/"), guessed: Boolean(m.guessed),
+          construction: construction(middle, f, { type: "glyph", template: "text", args: [lines, laneWidth, height, { charHeight: m.lineHeightM ?? null }], centered: true }, ids) });
+        const label = `${lines.join("/")} (${m.guessed ? "추정" : m.source?.startsWith("VR") ? "VR 판독" : "사진 판독"})`;
+        glyphCount(`text ${label}`);
+        stats.textReadings.push({
+          id: m.id, ids, lines, read: !m.guessed, source: m.source ?? "추정 (statute text for its size)", centre: toScene(middle),
+          widthM: +laneWidth.toFixed(2), heightM: +height.toFixed(2), syllable: [+block.charWidth.toFixed(2), +block.charHeight.toFixed(2)],
+          up: f.map((v) => +v.toFixed(3)), travelFrom: from,
+        });
+      }
     }
   }
 

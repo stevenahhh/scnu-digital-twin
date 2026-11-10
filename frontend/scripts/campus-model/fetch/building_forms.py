@@ -827,6 +827,28 @@ def clip_to_footprint(masses, footprint, buffer=0.3):
     return out, dropped
 
 
+# A main mass that the clip drops whole leaves its part of the footprint without a roof: walls around bare ground
+# (BLD_A10: 297 m2 of 613). The footprint that the kept masses leave uncovered gets that main mass back at its top
+# height. Its outline is the footprint's, not the LOD4 roof's, so the mass is an estimate. Parts narrower than 1.5 m or
+# under MIN_RESTORED_M2 stay open, and nothing is added where no main mass was lost.
+MIN_RESTORED_M2 = 20.0
+
+
+def restore_lost_main(masses, dropped, footprint):
+    lost = [d for d in dropped if d["kind"] == "main" and d["reason"].startswith("wholly outside")]
+    if not lost:
+        return masses, []
+    top = max(lost, key=lambda d: d["areaSquareMetres"])["topMetres"]
+    covered = unary_union([m["poly"] for m in masses]) if masses else Polygon()
+    parts = [p for p in polys(shapely.set_precision(opening(footprint.difference(covered), 0.75), GRID)) if p.area >= MIN_RESTORED_M2]
+    floors = max((m.get("floors") or 0 for m in masses), default=0) or None
+    added = [{"poly": p, "base": 0.0, "top": top, "type": "flat", "parapet": DEFAULT_PARAPET, "parapetEstimated": True, "kind": "main", "floors": floors,
+              "roof": "flat", "heightSource": "main mass dropped by the footprint clip, restored on the uncovered footprint at its top height (estimated)"}
+             for p in parts]
+    restored = [{"kind": "main", "topMetres": top, "areaSquareMetres": round(p.area, 1)} for p in parts]
+    return (masses + added if added else masses), restored
+
+
 # ---------------------------------------------------------------- per building
 def ownership(models, plans, foot):
     owners = defaultdict(list)
@@ -1156,6 +1178,9 @@ def main():
         if use_lod4:
             storey = classify(masses, b.get("floors") or 0, label, b.get("tower"))
             masses, clipped = clip_to_footprint(masses, foot[j])
+            masses, restored = restore_lost_main(masses, clipped, foot[j])
+            for r in restored:
+                record["flags"].append(f"main mass restored on {r['areaSquareMetres']} m2 of uncovered footprint at {r['topMetres']} m (estimated)")
             if registration is not None and registration["atRotationBound"]:
                 record["flags"].append(f"registration rotation at the {registration['rotDeg']:+.1f} deg bound; the fit may need more rotation or a review")
                 print(f"WARN {b['key']}: registration rotation at the bound ({registration['rotDeg']:+.2f} deg)", file=sys.stderr)

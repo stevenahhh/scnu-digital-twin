@@ -2002,12 +2002,12 @@
       "RA_8b761f77d96dc762": {
         "line": [
           [
-            244002.5273272192,
-            263772.04388723744
+            244002.7243580881,
+            263770.7671741093
           ],
           [
-            243972.87762928643,
-            263767.4681484767
+            243973.07466015563,
+            263766.1914353468
           ]
         ],
         "evidence": {
@@ -2038,9 +2038,61 @@
         },
         "association": {
           "verified": false,
-          "distanceM": 5.403528690860249,
+          "distanceM": 4.220814611612463,
           "refs": [],
           "method": "unique reviewed road-zone containment",
+          "candidates": []
+        }
+      },
+      "RA_fee97c7b22a9b933": {
+        "line": [
+          [
+            244002.33029635015,
+            263773.32060036645
+          ],
+          [
+            243972.68059841738,
+            263768.7448616057
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX00484",
+            "MX00485",
+            "MX00486",
+            "MX00487",
+            "MX00488",
+            "MX00489"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "symbol:text",
+          "refs": [
+            "MX00484",
+            "MX00485",
+            "MX00486",
+            "MX00487",
+            "MX00488",
+            "MX00489"
+          ],
+          "component": 1
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 6.58624277011554,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX00484",
+            "photo/evidence/markings-extra.geojson#MX00485",
+            "photo/evidence/markings-extra.geojson#MX00486",
+            "photo/evidence/markings-extra.geojson#MX00487",
+            "photo/evidence/markings-extra.geojson#MX00488",
+            "photo/evidence/markings-extra.geojson#MX00489"
+          ],
+          "method": "reviewed evidence",
           "candidates": []
         }
       },
@@ -2116,6 +2168,43 @@
           "distanceM": 1.554466279072343,
           "refs": [],
           "method": "unique reviewed road-zone containment",
+          "candidates": []
+        }
+      },
+      "RA_728f30ece4168ddd": {
+        "line": [
+          [
+            243906.01778020905,
+            263784.9749105261
+          ],
+          [
+            243935.6090281961,
+            263780.03527336527
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01902"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01902"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 11.635618595865715,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01902"
+          ],
+          "method": "reviewed evidence",
           "candidates": []
         }
       }
@@ -4842,11 +4931,11 @@
         "alignment": "RA_8b761f77d96dc762",
         "pathIndex": 0,
         "fromM": 0,
-        "toM": 30.000699537025145,
+        "toM": 30.000699537003847,
         "lanes": [
           {
             "dir": "fwd",
-            "widthM": 5.167308896881073
+            "widthM": 3.25
           }
         ],
         "centre": {
@@ -4859,8 +4948,8 @@
         },
         "lateralOffsetM": 0,
         "kerbOffsetsM": {
-          "left": 2.5836544484405364,
-          "right": 2.5836544484405364
+          "left": 1.625,
+          "right": 1.625
         },
         "kerbNoParking": {
           "left": false,
@@ -4884,6 +4973,63 @@
           "verified": false,
           "refs": [],
           "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "RS_fee97c7b22a9b933",
+        "alignment": "RA_fee97c7b22a9b933",
+        "pathIndex": 0,
+        "fromM": 0,
+        "toM": 30.000699537025145,
+        "lanes": [
+          {
+            "dir": "fwd",
+            "widthM": 3.25
+          }
+        ],
+        "centre": {
+          "type": "none",
+          "widthM": 0.15
+        },
+        "edges": {
+          "left": "none",
+          "right": "none"
+        },
+        "lateralOffsetM": 0,
+        "kerbOffsetsM": {
+          "left": 1.625,
+          "right": 1.625
+        },
+        "kerbNoParking": {
+          "left": false,
+          "right": false
+        },
+        "humps": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX00484",
+            "MX00485",
+            "MX00486",
+            "MX00487",
+            "MX00488",
+            "MX00489"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX00484",
+            "photo/evidence/markings-extra.geojson#MX00485",
+            "photo/evidence/markings-extra.geojson#MX00486",
+            "photo/evidence/markings-extra.geojson#MX00487",
+            "photo/evidence/markings-extra.geojson#MX00488",
+            "photo/evidence/markings-extra.geojson#MX00489"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       },
@@ -4949,6 +5095,53 @@
           "verified": false,
           "refs": [],
           "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "RS_728f30ece4168ddd",
+        "alignment": "RA_728f30ece4168ddd",
+        "pathIndex": 0,
+        "fromM": 0,
+        "toM": 30.000699537054995,
+        "lanes": [
+          {
+            "dir": "fwd",
+            "widthM": 3.25
+          }
+        ],
+        "centre": {
+          "type": "none",
+          "widthM": 0.15
+        },
+        "edges": {
+          "left": "none",
+          "right": "none"
+        },
+        "lateralOffsetM": 0,
+        "kerbOffsetsM": {
+          "left": 1.625,
+          "right": 1.625
+        },
+        "kerbNoParking": {
+          "left": false,
+          "right": false
+        },
+        "humps": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01902"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01902"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       }
@@ -13148,6 +13341,80 @@
           "candidates": []
         }
       },
+      "RA_43d3a724a4d544dc": {
+        "line": [
+          [
+            243895.54713046714,
+            263832.88208228216
+          ],
+          [
+            243888.93782753224,
+            263803.61846857116
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01889"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01889"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 25.459981677144363,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01889"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_5861d1ee5692f82d": {
+        "line": [
+          [
+            243894.0282765488,
+            263834.36261315044
+          ],
+          [
+            243892.73172465424,
+            263804.3899435013
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01891"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01891"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 24.243736952545007,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01891"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
       "RA_a1ef2fc3570fed84": {
         "line": [
           [
@@ -14591,6 +14858,100 @@
           "verified": false,
           "refs": [],
           "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "RS_43d3a724a4d544dc",
+        "alignment": "RA_43d3a724a4d544dc",
+        "pathIndex": 0,
+        "fromM": 0,
+        "toM": 30.000699537037388,
+        "lanes": [
+          {
+            "dir": "fwd",
+            "widthM": 3.25
+          }
+        ],
+        "centre": {
+          "type": "none",
+          "widthM": 0.15
+        },
+        "edges": {
+          "left": "none",
+          "right": "none"
+        },
+        "lateralOffsetM": 0,
+        "kerbOffsetsM": {
+          "left": 1.625,
+          "right": 1.625
+        },
+        "kerbNoParking": {
+          "left": false,
+          "right": false
+        },
+        "humps": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01889"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01889"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "RS_5861d1ee5692f82d",
+        "alignment": "RA_5861d1ee5692f82d",
+        "pathIndex": 0,
+        "fromM": 0,
+        "toM": 30.000699537071384,
+        "lanes": [
+          {
+            "dir": "fwd",
+            "widthM": 3.25
+          }
+        ],
+        "centre": {
+          "type": "none",
+          "widthM": 0.15
+        },
+        "edges": {
+          "left": "none",
+          "right": "none"
+        },
+        "lateralOffsetM": 0,
+        "kerbOffsetsM": {
+          "left": 1.625,
+          "right": 1.625
+        },
+        "kerbNoParking": {
+          "left": false,
+          "right": false
+        },
+        "humps": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01891"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01891"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       },
@@ -16349,129 +16710,6 @@
           ]
         }
       },
-      "RA_8444a6a03aadf605": {
-        "line": [
-          [
-            243876.91797073692,
-            263770.019493741
-          ],
-          [
-            243895.48174074118,
-            263793.58702258766
-          ]
-        ],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00397"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "role": "inferred-road-centreline",
-        "seedIdentity": {
-          "role": "symbol:chevron",
-          "refs": [
-            "MX00397"
-          ],
-          "component": 0
-        },
-        "association": {
-          "verified": true,
-          "distanceM": 11.846632658505488,
-          "refs": [
-            "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-            "docs/assets/data/road_zones_wgs84.geojson#RZ-087",
-            "task-24-attempt-2/junction-owner-preview/JA_8444a6a03aadf605-paths.png",
-            "campus_transport_network.geojson#ND_006",
-            "VR scene_a3 f/r/b/l/d"
-          ],
-          "method": "photo-reviewed continuous approach to named road polygon",
-          "candidates": []
-        }
-      },
-      "RA_c2c80753c81f7a4c": {
-        "line": [
-          [
-            243888.4252307619,
-            263796.7741634099
-          ],
-          [
-            243878.9173176804,
-            263768.3199622869
-          ]
-        ],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00399"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "role": "inferred-road-centreline",
-        "seedIdentity": {
-          "role": "symbol:chevron",
-          "refs": [
-            "MX00399"
-          ],
-          "component": 0
-        },
-        "association": {
-          "verified": true,
-          "distanceM": 13.410929147233777,
-          "refs": [
-            "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-            "docs/assets/data/road_zones_wgs84.geojson#RZ-087",
-            "task-24-attempt-2/junction-owner-preview/JA_c2c80753c81f7a4c-paths.png",
-            "campus_transport_network.geojson#ND_006",
-            "VR scene_a3 f/r/b/l/d"
-          ],
-          "method": "photo-reviewed continuous approach to named road polygon",
-          "candidates": []
-        }
-      },
-      "RA_66fcac442192639a": {
-        "line": [
-          [
-            243874.40335105054,
-            263766.3011756515
-          ],
-          [
-            243892.238745451,
-            263790.42462232255
-          ]
-        ],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00400"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "role": "inferred-road-centreline",
-        "seedIdentity": {
-          "role": "symbol:chevron",
-          "refs": [
-            "MX00400"
-          ],
-          "component": 0
-        },
-        "association": {
-          "verified": true,
-          "distanceM": 16.21976980416264,
-          "refs": [
-            "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-            "docs/assets/data/road_zones_wgs84.geojson#RZ-087",
-            "task-24-attempt-2/junction-owner-preview/JA_66fcac442192639a-paths.png",
-            "campus_transport_network.geojson#ND_006",
-            "VR scene_a3 f/r/b/l/d"
-          ],
-          "method": "photo-reviewed continuous approach to named road polygon",
-          "candidates": []
-        }
-      },
       "RA_e0302f9f255a77e1": {
         "line": [
           [
@@ -18039,159 +18277,6 @@
             "task-24-network-chips/RD_033-photo.png"
           ],
           "reason": "Reviewed photo corridor and independent named polygon/incident edge agree. This verifies ownership only; widths and geometry remain estimates.",
-          "dimensionsVerified": false
-        }
-      },
-      {
-        "id": "RS_8444a6a03aadf605",
-        "alignment": "RA_8444a6a03aadf605",
-        "pathIndex": 0,
-        "fromM": 0,
-        "toM": 30.000699537006646,
-        "lanes": [
-          {
-            "dir": "fwd",
-            "widthM": 3.25
-          }
-        ],
-        "centre": {
-          "type": "none",
-          "widthM": 0.15
-        },
-        "edges": {
-          "left": "none",
-          "right": "none"
-        },
-        "lateralOffsetM": 0,
-        "kerbOffsetsM": {
-          "left": 1.625,
-          "right": 1.625
-        },
-        "kerbNoParking": {
-          "left": false,
-          "right": false
-        },
-        "humps": [],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00397"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "curation": {
-          "verified": true,
-          "refs": [
-            "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-            "docs/assets/data/road_zones_wgs84.geojson#RZ-087",
-            "task-24-attempt-2/junction-owner-preview/JA_8444a6a03aadf605-paths.png",
-            "campus_transport_network.geojson#ND_006",
-            "VR scene_a3 f/r/b/l/d"
-          ],
-          "reason": "Within RZ-079, photo inspection confirms a continuous paved approach to RD_033 along the source-marking direction (17 m to RZ-087). This establishes the road owner, not the source centreline or lane dimensions.",
-          "dimensionsVerified": false
-        }
-      },
-      {
-        "id": "RS_c2c80753c81f7a4c",
-        "alignment": "RA_c2c80753c81f7a4c",
-        "pathIndex": 0,
-        "fromM": 0,
-        "toM": 30.000699537048593,
-        "lanes": [
-          {
-            "dir": "fwd",
-            "widthM": 3.25
-          }
-        ],
-        "centre": {
-          "type": "none",
-          "widthM": 0.15
-        },
-        "edges": {
-          "left": "none",
-          "right": "none"
-        },
-        "lateralOffsetM": 0,
-        "kerbOffsetsM": {
-          "left": 1.625,
-          "right": 1.625
-        },
-        "kerbNoParking": {
-          "left": false,
-          "right": false
-        },
-        "humps": [],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00399"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "curation": {
-          "verified": true,
-          "refs": [
-            "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-            "docs/assets/data/road_zones_wgs84.geojson#RZ-087",
-            "task-24-attempt-2/junction-owner-preview/JA_c2c80753c81f7a4c-paths.png",
-            "campus_transport_network.geojson#ND_006",
-            "VR scene_a3 f/r/b/l/d"
-          ],
-          "reason": "Within RZ-079, photo inspection confirms a continuous paved approach to RD_033 along the source-marking direction (16 m to RZ-087). This establishes the road owner, not the source centreline or lane dimensions.",
-          "dimensionsVerified": false
-        }
-      },
-      {
-        "id": "RS_66fcac442192639a",
-        "alignment": "RA_66fcac442192639a",
-        "pathIndex": 0,
-        "fromM": 0,
-        "toM": 30.000699537035977,
-        "lanes": [
-          {
-            "dir": "fwd",
-            "widthM": 3.25
-          }
-        ],
-        "centre": {
-          "type": "none",
-          "widthM": 0.15
-        },
-        "edges": {
-          "left": "none",
-          "right": "none"
-        },
-        "lateralOffsetM": 0,
-        "kerbOffsetsM": {
-          "left": 1.625,
-          "right": 1.625
-        },
-        "kerbNoParking": {
-          "left": false,
-          "right": false
-        },
-        "humps": [],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00400"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "curation": {
-          "verified": true,
-          "refs": [
-            "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-            "docs/assets/data/road_zones_wgs84.geojson#RZ-087",
-            "task-24-attempt-2/junction-owner-preview/JA_66fcac442192639a-paths.png",
-            "campus_transport_network.geojson#ND_006",
-            "VR scene_a3 f/r/b/l/d"
-          ],
-          "reason": "Within RZ-079, photo inspection confirms a continuous paved approach to RD_033 along the source-marking direction (12 m to RZ-087). This establishes the road owner, not the source centreline or lane dimensions.",
           "dimensionsVerified": false
         }
       },
@@ -22730,12 +22815,12 @@
       "RA_d62c6e67fcf07678": {
         "line": [
           [
-            244230.89036222905,
-            263620.5939616266
+            244232.46215658405,
+            263620.9643988143
           ],
           [
-            244237.77232073536,
-            263591.3932660899
+            244239.34411509158,
+            263591.76370327786
           ]
         ],
         "evidence": {
@@ -22764,9 +22849,58 @@
         },
         "association": {
           "verified": false,
-          "distanceM": 4.819356509690687,
+          "distanceM": 6.434138040964089,
           "refs": [],
           "method": "unique reviewed road-zone containment",
+          "candidates": []
+        }
+      },
+      "RA_00467b0d567772e9": {
+        "line": [
+          [
+            244229.31856787342,
+            263620.22352443874
+          ],
+          [
+            244236.20052637972,
+            263591.02282890206
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX00784",
+            "MX00785",
+            "MX00786",
+            "MX00787",
+            "MX00788"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "symbol:text",
+          "refs": [
+            "MX00784",
+            "MX00785",
+            "MX00786",
+            "MX00787",
+            "MX00788"
+          ],
+          "component": 1
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 3.2045749783746564,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX00784",
+            "photo/evidence/markings-extra.geojson#MX00785",
+            "photo/evidence/markings-extra.geojson#MX00786",
+            "photo/evidence/markings-extra.geojson#MX00787",
+            "photo/evidence/markings-extra.geojson#MX00788"
+          ],
+          "method": "reviewed evidence",
           "candidates": []
         }
       },
@@ -28926,11 +29060,11 @@
         "alignment": "RA_d62c6e67fcf07678",
         "pathIndex": 0,
         "fromM": 0,
-        "toM": 30.00069953698485,
+        "toM": 30.000699537038628,
         "lanes": [
           {
             "dir": "fwd",
-            "widthM": 6.459425617224239
+            "widthM": 3.25
           }
         ],
         "centre": {
@@ -28943,8 +29077,8 @@
         },
         "lateralOffsetM": 0,
         "kerbOffsetsM": {
-          "left": 3.2297128086121196,
-          "right": 3.2297128086121196
+          "left": 1.625,
+          "right": 1.625
         },
         "kerbNoParking": {
           "left": false,
@@ -28967,6 +29101,61 @@
           "verified": false,
           "refs": [],
           "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "RS_00467b0d567772e9",
+        "alignment": "RA_00467b0d567772e9",
+        "pathIndex": 0,
+        "fromM": 0,
+        "toM": 30.00069953698485,
+        "lanes": [
+          {
+            "dir": "fwd",
+            "widthM": 3.25
+          }
+        ],
+        "centre": {
+          "type": "none",
+          "widthM": 0.15
+        },
+        "edges": {
+          "left": "none",
+          "right": "none"
+        },
+        "lateralOffsetM": 0,
+        "kerbOffsetsM": {
+          "left": 1.625,
+          "right": 1.625
+        },
+        "kerbNoParking": {
+          "left": false,
+          "right": false
+        },
+        "humps": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX00784",
+            "MX00785",
+            "MX00786",
+            "MX00787",
+            "MX00788"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX00784",
+            "photo/evidence/markings-extra.geojson#MX00785",
+            "photo/evidence/markings-extra.geojson#MX00786",
+            "photo/evidence/markings-extra.geojson#MX00787",
+            "photo/evidence/markings-extra.geojson#MX00788"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       },
@@ -36958,38 +37147,40 @@
           "candidates": []
         }
       },
-      "RA_bdf19eb6c5ff8450": {
+      "RA_01ae9ca9cc605cab": {
         "line": [
           [
-            243875.6567232691,
-            263811.3483621954
+            243887.61862866743,
+            263780.75466064014
           ],
           [
-            243905.2037385931,
-            263806.15068404516
+            243888.51558055036,
+            263780.1329574342
           ]
         ],
         "evidence": {
           "tier": "T1",
           "refs": [
-            "MK00857"
+            "MX00425"
           ]
         },
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "role": "inferred-road-centreline",
         "seedIdentity": {
-          "role": "symbol:chevron",
+          "role": "line:lane_line_dashed",
           "refs": [
-            "MK00857"
+            "MX00425"
           ],
           "component": 0
         },
         "association": {
           "verified": false,
-          "distanceM": 16.334961600022226,
-          "refs": [],
-          "method": "unique reviewed road-zone containment",
+          "distanceM": 11.012067641284226,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX00425"
+          ],
+          "method": "reviewed evidence",
           "candidates": []
         }
       },
@@ -37033,416 +37224,21 @@
           ]
         }
       },
-      "RA_cf1155f1588aba9b": {
+      "RA_967f22e80fc02992": {
         "line": [
           [
-            243879.13364143026,
-            263806.0777318587
+            243892.75886750504,
+            263822.87959094014
           ],
           [
-            243908.76309175565,
-            263810.78279786534
+            243887.81923034173,
+            263793.2883429535
           ]
         ],
         "evidence": {
           "tier": "T1",
           "refs": [
-            "MX00385"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "role": "inferred-road-centreline",
-        "seedIdentity": {
-          "role": "symbol:chevron",
-          "refs": [
-            "MX00385"
-          ],
-          "component": 0
-        },
-        "association": {
-          "verified": false,
-          "distanceM": 15.86740784675305,
-          "refs": [],
-          "method": "unique reviewed road-zone containment",
-          "candidates": []
-        }
-      },
-      "RA_752f8a63ca14219f": {
-        "line": [
-          [
-            243876.52383306267,
-            263809.7138080231
-          ],
-          [
-            243906.1363525269,
-            263804.90333365015
-          ]
-        ],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00388"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "role": "inferred-road-centreline",
-        "seedIdentity": {
-          "role": "symbol:chevron",
-          "refs": [
-            "MX00388"
-          ],
-          "component": 0
-        },
-        "association": {
-          "verified": false,
-          "distanceM": 14.790790746732759,
-          "refs": [],
-          "method": "unique reviewed road-zone containment",
-          "candidates": []
-        }
-      },
-      "RA_9169c3eb26e376c8": {
-        "line": [
-          [
-            243878.27603157287,
-            263804.0863238585
-          ],
-          [
-            243907.96453088234,
-            263808.4031492502
-          ]
-        ],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00389"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "role": "inferred-road-centreline",
-        "seedIdentity": {
-          "role": "symbol:chevron",
-          "refs": [
-            "MX00389"
-          ],
-          "component": 0
-        },
-        "association": {
-          "verified": false,
-          "distanceM": 13.647887246892049,
-          "refs": [],
-          "method": "unique reviewed road-zone containment",
-          "candidates": []
-        }
-      },
-      "RA_6e2eddf5e1b179de": {
-        "line": [
-          [
-            243892.14989356484,
-            263819.25047779956
-          ],
-          [
-            243892.16196518965,
-            263789.2497806912
-          ]
-        ],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00391"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "role": "inferred-road-centreline",
-        "seedIdentity": {
-          "role": "symbol:chevron",
-          "refs": [
-            "MX00391"
-          ],
-          "component": 0
-        },
-        "association": {
-          "verified": false,
-          "distanceM": 11.67348271414589,
-          "refs": [],
-          "method": "unique reviewed road-zone containment",
-          "candidates": []
-        }
-      },
-      "RA_b05917c96713b890": {
-        "line": [
-          [
-            243913.21591480373,
-            263798.65499901754
-          ],
-          [
-            243909.96183254,
-            263768.83130170597
-          ]
-        ],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00392"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "role": "inferred-road-centreline",
-        "seedIdentity": {
-          "role": "symbol:chevron",
-          "refs": [
-            "MX00392"
-          ],
-          "component": 0
-        },
-        "association": {
-          "verified": false,
-          "distanceM": 9.54874662139479,
-          "refs": [],
-          "method": "unique reviewed road-zone containment",
-          "candidates": []
-        }
-      },
-      "RA_a8f36b9da1027218": {
-        "line": [
-          [
-            243919.4711411695,
-            263783.52344521845
-          ],
-          [
-            243891.799800916,
-            263795.11391118355
-          ]
-        ],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00393"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "role": "inferred-road-centreline",
-        "seedIdentity": {
-          "role": "symbol:chevron",
-          "refs": [
-            "MX00393"
-          ],
-          "component": 0
-        },
-        "association": {
-          "verified": false,
-          "distanceM": 8.17798625112208,
-          "refs": [],
-          "method": "unique reviewed road-zone containment",
-          "candidates": []
-        }
-      },
-      "RA_e3f71fa643ba5e39": {
-        "line": [
-          [
-            243923.07216247008,
-            263785.6868552749
-          ],
-          [
-            243893.12668575405,
-            263787.5063049066
-          ]
-        ],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00394"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "role": "inferred-road-centreline",
-        "seedIdentity": {
-          "role": "symbol:chevron",
-          "refs": [
-            "MX00394"
-          ],
-          "component": 0
-        },
-        "association": {
-          "verified": false,
-          "distanceM": 8.49466409831607,
-          "refs": [],
-          "method": "unique reviewed road-zone containment",
-          "candidates": []
-        }
-      },
-      "RA_fd70e78dc1d17f8b": {
-        "line": [
-          [
-            243866.6752817369,
-            263780.3485456053
-          ],
-          [
-            243895.04542827097,
-            263770.5926879626
-          ]
-        ],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00395"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "role": "inferred-road-centreline",
-        "seedIdentity": {
-          "role": "symbol:chevron",
-          "refs": [
-            "MX00395"
-          ],
-          "component": 0
-        },
-        "association": {
-          "verified": false,
-          "distanceM": 19.928491738181908,
-          "refs": [],
-          "method": "unique reviewed road-zone containment",
-          "candidates": [
-            {
-              "segmentId": "RD_033",
-              "share": 0.25
-            }
-          ]
-        }
-      },
-      "RA_265983e51698ac73": {
-        "line": [
-          [
-            243870.0564321221,
-            263782.6725564073
-          ],
-          [
-            243894.02331904406,
-            263764.6273270105
-          ]
-        ],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00396"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "role": "inferred-road-centreline",
-        "seedIdentity": {
-          "role": "symbol:chevron",
-          "refs": [
-            "MX00396"
-          ],
-          "component": 0
-        },
-        "association": {
-          "verified": false,
-          "distanceM": 20.08983933265909,
-          "refs": [],
-          "method": "unique reviewed road-zone containment",
-          "candidates": []
-        }
-      },
-      "RA_4e43a374acc9b522": {
-        "line": [
-          [
-            243865.60327513007,
-            263775.46695798653
-          ],
-          [
-            243892.63009465465,
-            263762.44417030114
-          ]
-        ],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00398"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "role": "inferred-road-centreline",
-        "seedIdentity": {
-          "role": "symbol:chevron",
-          "refs": [
-            "MX00398"
-          ],
-          "component": 0
-        },
-        "association": {
-          "verified": false,
-          "distanceM": 25.256548988755878,
-          "refs": [],
-          "method": "unique reviewed road-zone containment",
-          "candidates": [
-            {
-              "segmentId": "RD_033",
-              "share": 0.25
-            }
-          ]
-        }
-      },
-      "RA_947d91f60d64f23e": {
-        "line": [
-          [
-            243907.90336309455,
-            263771.8066258429
-          ],
-          [
-            243919.3729801108,
-            263799.528275473
-          ]
-        ],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00434"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "role": "inferred-road-centreline",
-        "seedIdentity": {
-          "role": "symbol:chevron",
-          "refs": [
-            "MX00434"
-          ],
-          "component": 0
-        },
-        "association": {
-          "verified": false,
-          "distanceM": 12.344516545982872,
-          "refs": [],
-          "method": "unique reviewed road-zone containment",
-          "candidates": []
-        }
-      },
-      "RA_d18fc9482abce445": {
-        "line": [
-          [
-            243878.53066581636,
-            263800.8681190365
-          ],
-          [
-            243908.5313629247,
-            263800.8801906604
-          ]
-        ],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00386"
+            "MX01888"
           ]
         },
         "estimated": true,
@@ -37451,33 +37247,35 @@
         "seedIdentity": {
           "role": "area:chevron",
           "refs": [
-            "MX00386"
+            "MX01888"
           ],
           "component": 0
         },
         "association": {
           "verified": false,
-          "distanceM": 8.30088040717496,
-          "refs": [],
-          "method": "unique reviewed road-zone containment",
+          "distanceM": 15.699900286986885,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01888"
+          ],
+          "method": "reviewed evidence",
           "candidates": []
         }
       },
-      "RA_63d9b8a0f36cffc7": {
+      "RA_07d5f487f614c5a2": {
         "line": [
           [
-            243906.98012874884,
-            263803.4355859153
+            243891.6250530497,
+            263823.0135021729
           ],
           [
-            243877.1063913109,
-            263800.6784525854
+            243896.33011905482,
+            263793.3840518473
           ]
         ],
         "evidence": {
           "tier": "T1",
           "refs": [
-            "MX00390"
+            "MX01890"
           ]
         },
         "estimated": true,
@@ -37486,15 +37284,942 @@
         "seedIdentity": {
           "role": "area:chevron",
           "refs": [
-            "MX00390"
+            "MX01890"
           ],
           "component": 0
         },
         "association": {
           "verified": false,
-          "distanceM": 9.494783776262715,
-          "refs": [],
-          "method": "unique reviewed road-zone containment",
+          "distanceM": 15.638482415216123,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01890"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_449dead572f84eba": {
+        "line": [
+          [
+            243905.4827336296,
+            263803.44402113854
+          ],
+          [
+            243876.01078847132,
+            263797.8363102597
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01892"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01892"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 8.31880551888245,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01892"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_f7573d9192807ce3": {
+        "line": [
+          [
+            243908.95196109236,
+            263801.0781884358
+          ],
+          [
+            243878.9539922292,
+            263800.673420852
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01893"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01893"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 8.346320742384869,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01893"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_53447d4739ed6653": {
+        "line": [
+          [
+            243893.84798581296,
+            263822.1269467561
+          ],
+          [
+            243888.7792799037,
+            263792.5575336216
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01894"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01894"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 14.826003366399492,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01894"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_875964546e77b3ef": {
+        "line": [
+          [
+            243890.49270878272,
+            263822.2707251195
+          ],
+          [
+            243895.32701245515,
+            263792.6620865031
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01895"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01895"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 14.867439949690434,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01895"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_f9026fbe28a6a68e": {
+        "line": [
+          [
+            243907.2277068144,
+            263803.6890882868
+          ],
+          [
+            243877.4066379028,
+            263800.4110062742
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01896"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01896"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 9.467672488095234,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01896"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_afe4bf520ea8b28f": {
+        "line": [
+          [
+            243892.68666521268,
+            263819.2530374896
+          ],
+          [
+            243891.52090568852,
+            263789.27499590174
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01897"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01897"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 11.690681018616864,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01897"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_fb5210fdd68e6ab6": {
+        "line": [
+          [
+            243890.5119425048,
+            263819.09069118917
+          ],
+          [
+            243893.92011185805,
+            263789.28420943825
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01898"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01898"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 11.607342016417867,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01898"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_1ef8980ece4ed7fb": {
+        "line": [
+          [
+            243877.39388003544,
+            263804.89654092345
+          ],
+          [
+            243907.24483861635,
+            263801.9028401182
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01899"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01899"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 10.815128068120792,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01899"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_9b72dea7a038a2ac": {
+        "line": [
+          [
+            243928.34681505378,
+            263779.67044131365
+          ],
+          [
+            243900.52613095898,
+            263790.89770764206
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01900"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01900"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 12.748564909298112,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01900"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_01dae60117d9a751": {
+        "line": [
+          [
+            243891.5192680578,
+            263784.9383295545
+          ],
+          [
+            243921.48599513192,
+            263783.51100997673
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01901"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01901"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 5.788676708051126,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01901"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_0efe0c55195a6821": {
+        "line": [
+          [
+            243906.7975007478,
+            263803.1275155399
+          ],
+          [
+            243901.34217742857,
+            263773.62698299903
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01903"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01903"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 6.361734870918664,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01903"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_30a120a8f76d4552": {
+        "line": [
+          [
+            243908.79105071694,
+            263799.5903817662
+          ],
+          [
+            243897.6852815129,
+            263771.720974469
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01904"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01904"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 4.053751778446946,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01904"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_a17a20faaf9e4aea": {
+        "line": [
+          [
+            243908.15771494567,
+            263801.37251684594
+          ],
+          [
+            243901.54841201036,
+            263772.10890313506
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01905"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01905"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 5.99607035826551,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01905"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_c4659d0c4195d8e3": {
+        "line": [
+          [
+            243893.16594489574,
+            263785.94816025975
+          ],
+          [
+            243923.13861454485,
+            263784.6516083651
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01906"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01906"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 7.752738530484694,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01906"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_9f2bca0e0922d8d1": {
+        "line": [
+          [
+            243894.97628107673,
+            263793.0532539664
+          ],
+          [
+            243922.00310060132,
+            263780.030466281
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01907"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01907"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 8.772427627752588,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01907"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_674ad1fe1fc883eb": {
+        "line": [
+          [
+            243888.92277360163,
+            263794.6665360184
+          ],
+          [
+            243876.73141874754,
+            263767.25462547695
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01908"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01908"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 15.042560093842006,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01908"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_2d7c72535e5561cb": {
+        "line": [
+          [
+            243885.51297303653,
+            263789.73972693464
+          ],
+          [
+            243875.88099598433,
+            263761.3272826403
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01909"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01909"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 20.020592828467905,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01909"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_4e8d11691bc04bff": {
+        "line": [
+          [
+            243882.87468730548,
+            263784.55269208475
+          ],
+          [
+            243875.12159582053,
+            263755.571119575
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01910"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01910"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 24.68203835581179,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01910"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_60f2275b4f84056d": {
+        "line": [
+          [
+            243895.38716075852,
+            263789.26200747397
+          ],
+          [
+            243875.6154025965,
+            263766.69832976186
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01911"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01911"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 14.714616481293822,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01911"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_a5252e55bf02e74d": {
+        "line": [
+          [
+            243890.6904268416,
+            263785.7847688102
+          ],
+          [
+            243873.17232660262,
+            263761.4299307543
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01912"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01912"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 20.202011608483073,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01912"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_059b8dbae100e473": {
+        "line": [
+          [
+            243886.26054461827,
+            263782.7449721535
+          ],
+          [
+            243872.41847199356,
+            263756.1284547599
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01913"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01913"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 24.788150400177035,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01913"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_afe6bdfed12c01d1": {
+        "line": [
+          [
+            243874.4202506954,
+            263791.34071482957
+          ],
+          [
+            243897.7427682136,
+            263772.47004580783
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01914"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01914"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 11.879149514251452,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01914"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_6bd63e2d6a782bcd": {
+        "line": [
+          [
+            243873.7582713974,
+            263790.3289687554
+          ],
+          [
+            243896.747898197,
+            263771.0541397724
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01915"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01915"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 13.272912617001255,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01915"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_8bfb89dbd2c4d840": {
+        "line": [
+          [
+            243894.41670046336,
+            263788.7598152189
+          ],
+          [
+            243873.67954683697,
+            263767.08004510513
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01916"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01916"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 15.908484932829303,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01916"
+          ],
+          "method": "reviewed evidence",
+          "candidates": []
+        }
+      },
+      "RA_a32bb10430ae6bef": {
+        "line": [
+          [
+            243888.50661970503,
+            263792.58213876304
+          ],
+          [
+            243877.5225590643,
+            263764.66453885636
+          ]
+        ],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01917"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "role": "inferred-road-centreline",
+        "seedIdentity": {
+          "role": "area:chevron",
+          "refs": [
+            "MX01917"
+          ],
+          "component": 0
+        },
+        "association": {
+          "verified": false,
+          "distanceM": 16.30639498355614,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01917"
+          ],
+          "method": "reviewed evidence",
           "candidates": []
         }
       }
@@ -38744,15 +39469,21 @@
         }
       },
       {
-        "id": "RS_bdf19eb6c5ff8450",
-        "alignment": "RA_bdf19eb6c5ff8450",
+        "id": "RS_01ae9ca9cc605cab",
+        "alignment": "RA_01ae9ca9cc605cab",
         "pathIndex": 1,
         "fromM": 0,
-        "toM": 30.00069953701923,
+        "toM": 1.0913466711068742,
         "lanes": [
           {
             "dir": "fwd",
-            "widthM": 3.25
+            "widthM": 7.89,
+            "line": "white_dashed",
+            "lineWidthM": 0.12500291473764188
+          },
+          {
+            "dir": "fwd",
+            "widthM": 7.89
           }
         ],
         "centre": {
@@ -38765,8 +39496,8 @@
         },
         "lateralOffsetM": 0,
         "kerbOffsetsM": {
-          "left": 1.625,
-          "right": 1.625
+          "left": 7.89,
+          "right": 7.89
         },
         "kerbNoParking": {
           "left": false,
@@ -38776,15 +39507,22 @@
         "evidence": {
           "tier": "T1",
           "refs": [
-            "MK00857"
+            "MX00425"
           ]
         },
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "dashPhaseM": 1.9087232825624378,
+        "dashPattern": {
+          "dashM": 3.000069953703405,
+          "gapM": 5.000116589505676
+        },
         "curation": {
           "verified": false,
-          "refs": [],
-          "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX00425"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       },
@@ -38834,11 +39572,11 @@
         }
       },
       {
-        "id": "RS_cf1155f1588aba9b",
-        "alignment": "RA_cf1155f1588aba9b",
+        "id": "RS_967f22e80fc02992",
+        "alignment": "RA_967f22e80fc02992",
         "pathIndex": 1,
         "fromM": 0,
-        "toM": 30.00069953703436,
+        "toM": 30.000699537055628,
         "lanes": [
           {
             "dir": "fwd",
@@ -38866,24 +39604,26 @@
         "evidence": {
           "tier": "T1",
           "refs": [
-            "MX00385"
+            "MX01888"
           ]
         },
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "curation": {
           "verified": false,
-          "refs": [],
-          "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01888"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       },
       {
-        "id": "RS_752f8a63ca14219f",
-        "alignment": "RA_752f8a63ca14219f",
+        "id": "RS_07d5f487f614c5a2",
+        "alignment": "RA_07d5f487f614c5a2",
         "pathIndex": 1,
         "fromM": 0,
-        "toM": 30.00069953703795,
+        "toM": 30.00069953702696,
         "lanes": [
           {
             "dir": "fwd",
@@ -38911,24 +39651,26 @@
         "evidence": {
           "tier": "T1",
           "refs": [
-            "MX00388"
+            "MX01890"
           ]
         },
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "curation": {
           "verified": false,
-          "refs": [],
-          "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01890"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       },
       {
-        "id": "RS_9169c3eb26e376c8",
-        "alignment": "RA_9169c3eb26e376c8",
+        "id": "RS_449dead572f84eba",
+        "alignment": "RA_449dead572f84eba",
         "pathIndex": 1,
         "fromM": 0,
-        "toM": 30.00069953702992,
+        "toM": 30.000699537048824,
         "lanes": [
           {
             "dir": "fwd",
@@ -38956,24 +39698,26 @@
         "evidence": {
           "tier": "T1",
           "refs": [
-            "MX00389"
+            "MX01892"
           ]
         },
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "curation": {
           "verified": false,
-          "refs": [],
-          "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01892"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       },
       {
-        "id": "RS_6e2eddf5e1b179de",
-        "alignment": "RA_6e2eddf5e1b179de",
+        "id": "RS_f7573d9192807ce3",
+        "alignment": "RA_f7573d9192807ce3",
         "pathIndex": 1,
         "fromM": 0,
-        "toM": 30.00069953701375,
+        "toM": 30.000699537056633,
         "lanes": [
           {
             "dir": "fwd",
@@ -39001,24 +39745,26 @@
         "evidence": {
           "tier": "T1",
           "refs": [
-            "MX00391"
+            "MX01893"
           ]
         },
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "curation": {
           "verified": false,
-          "refs": [],
-          "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01893"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       },
       {
-        "id": "RS_b05917c96713b890",
-        "alignment": "RA_b05917c96713b890",
+        "id": "RS_53447d4739ed6653",
+        "alignment": "RA_53447d4739ed6653",
         "pathIndex": 1,
         "fromM": 0,
-        "toM": 30.000699537033732,
+        "toM": 30.0006995370427,
         "lanes": [
           {
             "dir": "fwd",
@@ -39046,24 +39792,26 @@
         "evidence": {
           "tier": "T1",
           "refs": [
-            "MX00392"
+            "MX01894"
           ]
         },
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "curation": {
           "verified": false,
-          "refs": [],
-          "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01894"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       },
       {
-        "id": "RS_a8f36b9da1027218",
-        "alignment": "RA_a8f36b9da1027218",
+        "id": "RS_875964546e77b3ef",
+        "alignment": "RA_875964546e77b3ef",
         "pathIndex": 1,
         "fromM": 0,
-        "toM": 30.000699537057667,
+        "toM": 30.00069953706937,
         "lanes": [
           {
             "dir": "fwd",
@@ -39091,24 +39839,26 @@
         "evidence": {
           "tier": "T1",
           "refs": [
-            "MX00393"
+            "MX01895"
           ]
         },
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "curation": {
           "verified": false,
-          "refs": [],
-          "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01895"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       },
       {
-        "id": "RS_e3f71fa643ba5e39",
-        "alignment": "RA_e3f71fa643ba5e39",
+        "id": "RS_f9026fbe28a6a68e",
+        "alignment": "RA_f9026fbe28a6a68e",
         "pathIndex": 1,
         "fromM": 0,
-        "toM": 30.000699537060797,
+        "toM": 30.00069953701441,
         "lanes": [
           {
             "dir": "fwd",
@@ -39136,24 +39886,26 @@
         "evidence": {
           "tier": "T1",
           "refs": [
-            "MX00394"
+            "MX01896"
           ]
         },
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "curation": {
           "verified": false,
-          "refs": [],
-          "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01896"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       },
       {
-        "id": "RS_fd70e78dc1d17f8b",
-        "alignment": "RA_fd70e78dc1d17f8b",
+        "id": "RS_afe4bf520ea8b28f",
+        "alignment": "RA_afe4bf520ea8b28f",
         "pathIndex": 1,
         "fromM": 0,
-        "toM": 30.00069953699815,
+        "toM": 30.00069953704098,
         "lanes": [
           {
             "dir": "fwd",
@@ -39181,24 +39933,26 @@
         "evidence": {
           "tier": "T1",
           "refs": [
-            "MX00395"
+            "MX01897"
           ]
         },
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "curation": {
           "verified": false,
-          "refs": [],
-          "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01897"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       },
       {
-        "id": "RS_265983e51698ac73",
-        "alignment": "RA_265983e51698ac73",
+        "id": "RS_fb5210fdd68e6ab6",
+        "alignment": "RA_fb5210fdd68e6ab6",
         "pathIndex": 1,
         "fromM": 0,
-        "toM": 30.000699537053315,
+        "toM": 30.00069953697995,
         "lanes": [
           {
             "dir": "fwd",
@@ -39226,21 +39980,352 @@
         "evidence": {
           "tier": "T1",
           "refs": [
-            "MX00396"
+            "MX01898"
           ]
         },
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "curation": {
           "verified": false,
-          "refs": [],
-          "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01898"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       },
       {
-        "id": "RS_4e43a374acc9b522",
-        "alignment": "RA_4e43a374acc9b522",
+        "id": "RS_1ef8980ece4ed7fb",
+        "alignment": "RA_1ef8980ece4ed7fb",
+        "pathIndex": 1,
+        "fromM": 0,
+        "toM": 30.000699537016686,
+        "lanes": [
+          {
+            "dir": "fwd",
+            "widthM": 3.25
+          }
+        ],
+        "centre": {
+          "type": "none",
+          "widthM": 0.15
+        },
+        "edges": {
+          "left": "none",
+          "right": "none"
+        },
+        "lateralOffsetM": 0,
+        "kerbOffsetsM": {
+          "left": 1.625,
+          "right": 1.625
+        },
+        "kerbNoParking": {
+          "left": false,
+          "right": false
+        },
+        "humps": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01899"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01899"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "RS_9b72dea7a038a2ac",
+        "alignment": "RA_9b72dea7a038a2ac",
+        "pathIndex": 1,
+        "fromM": 0,
+        "toM": 30.000699537036102,
+        "lanes": [
+          {
+            "dir": "fwd",
+            "widthM": 3.25
+          }
+        ],
+        "centre": {
+          "type": "none",
+          "widthM": 0.15
+        },
+        "edges": {
+          "left": "none",
+          "right": "none"
+        },
+        "lateralOffsetM": 0,
+        "kerbOffsetsM": {
+          "left": 1.625,
+          "right": 1.625
+        },
+        "kerbNoParking": {
+          "left": false,
+          "right": false
+        },
+        "humps": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01900"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01900"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "RS_01dae60117d9a751",
+        "alignment": "RA_01dae60117d9a751",
+        "pathIndex": 1,
+        "fromM": 0,
+        "toM": 30.000699537041843,
+        "lanes": [
+          {
+            "dir": "fwd",
+            "widthM": 3.25
+          }
+        ],
+        "centre": {
+          "type": "none",
+          "widthM": 0.15
+        },
+        "edges": {
+          "left": "none",
+          "right": "none"
+        },
+        "lateralOffsetM": 0,
+        "kerbOffsetsM": {
+          "left": 1.625,
+          "right": 1.625
+        },
+        "kerbNoParking": {
+          "left": false,
+          "right": false
+        },
+        "humps": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01901"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01901"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "RS_0efe0c55195a6821",
+        "alignment": "RA_0efe0c55195a6821",
+        "pathIndex": 1,
+        "fromM": 0,
+        "toM": 30.000699537023124,
+        "lanes": [
+          {
+            "dir": "fwd",
+            "widthM": 3.25
+          }
+        ],
+        "centre": {
+          "type": "none",
+          "widthM": 0.15
+        },
+        "edges": {
+          "left": "none",
+          "right": "none"
+        },
+        "lateralOffsetM": 0,
+        "kerbOffsetsM": {
+          "left": 1.625,
+          "right": 1.625
+        },
+        "kerbNoParking": {
+          "left": false,
+          "right": false
+        },
+        "humps": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01903"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01903"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "RS_30a120a8f76d4552",
+        "alignment": "RA_30a120a8f76d4552",
+        "pathIndex": 1,
+        "fromM": 0,
+        "toM": 30.000699537045485,
+        "lanes": [
+          {
+            "dir": "fwd",
+            "widthM": 3.25
+          }
+        ],
+        "centre": {
+          "type": "none",
+          "widthM": 0.15
+        },
+        "edges": {
+          "left": "none",
+          "right": "none"
+        },
+        "lateralOffsetM": 0,
+        "kerbOffsetsM": {
+          "left": 1.625,
+          "right": 1.625
+        },
+        "kerbNoParking": {
+          "left": false,
+          "right": false
+        },
+        "humps": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01904"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01904"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "RS_a17a20faaf9e4aea",
+        "alignment": "RA_a17a20faaf9e4aea",
+        "pathIndex": 1,
+        "fromM": 0,
+        "toM": 30.0006995370136,
+        "lanes": [
+          {
+            "dir": "fwd",
+            "widthM": 3.25
+          }
+        ],
+        "centre": {
+          "type": "none",
+          "widthM": 0.15
+        },
+        "edges": {
+          "left": "none",
+          "right": "none"
+        },
+        "lateralOffsetM": 0,
+        "kerbOffsetsM": {
+          "left": 1.625,
+          "right": 1.625
+        },
+        "kerbNoParking": {
+          "left": false,
+          "right": false
+        },
+        "humps": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01905"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01905"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "RS_c4659d0c4195d8e3",
+        "alignment": "RA_c4659d0c4195d8e3",
+        "pathIndex": 1,
+        "fromM": 0,
+        "toM": 30.000699537015745,
+        "lanes": [
+          {
+            "dir": "fwd",
+            "widthM": 3.25
+          }
+        ],
+        "centre": {
+          "type": "none",
+          "widthM": 0.15
+        },
+        "edges": {
+          "left": "none",
+          "right": "none"
+        },
+        "lateralOffsetM": 0,
+        "kerbOffsetsM": {
+          "left": 1.625,
+          "right": 1.625
+        },
+        "kerbNoParking": {
+          "left": false,
+          "right": false
+        },
+        "humps": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01906"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01906"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "RS_9f2bca0e0922d8d1",
+        "alignment": "RA_9f2bca0e0922d8d1",
         "pathIndex": 1,
         "fromM": 0,
         "toM": 30.000699537067305,
@@ -39271,24 +40356,26 @@
         "evidence": {
           "tier": "T1",
           "refs": [
-            "MX00398"
+            "MX01907"
           ]
         },
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "curation": {
           "verified": false,
-          "refs": [],
-          "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01907"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       },
       {
-        "id": "RS_947d91f60d64f23e",
-        "alignment": "RA_947d91f60d64f23e",
+        "id": "RS_674ad1fe1fc883eb",
+        "alignment": "RA_674ad1fe1fc883eb",
         "pathIndex": 1,
         "fromM": 0,
-        "toM": 30.000699537084916,
+        "toM": 30.00069953704453,
         "lanes": [
           {
             "dir": "fwd",
@@ -39316,24 +40403,26 @@
         "evidence": {
           "tier": "T1",
           "refs": [
-            "MX00434"
+            "MX01908"
           ]
         },
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "curation": {
           "verified": false,
-          "refs": [],
-          "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01908"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       },
       {
-        "id": "RS_d18fc9482abce445",
-        "alignment": "RA_d18fc9482abce445",
+        "id": "RS_2d7c72535e5561cb",
+        "alignment": "RA_2d7c72535e5561cb",
         "pathIndex": 1,
         "fromM": 0,
-        "toM": 30.000699537013404,
+        "toM": 30.000699537035825,
         "lanes": [
           {
             "dir": "fwd",
@@ -39361,24 +40450,26 @@
         "evidence": {
           "tier": "T1",
           "refs": [
-            "MX00386"
+            "MX01909"
           ]
         },
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "curation": {
           "verified": false,
-          "refs": [],
-          "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01909"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       },
       {
-        "id": "RS_63d9b8a0f36cffc7",
-        "alignment": "RA_63d9b8a0f36cffc7",
+        "id": "RS_4e8d11691bc04bff",
+        "alignment": "RA_4e8d11691bc04bff",
         "pathIndex": 1,
         "fromM": 0,
-        "toM": 30.000699537006625,
+        "toM": 30.000699537035604,
         "lanes": [
           {
             "dir": "fwd",
@@ -39406,15 +40497,346 @@
         "evidence": {
           "tier": "T1",
           "refs": [
-            "MX00390"
+            "MX01910"
           ]
         },
         "estimated": true,
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "curation": {
           "verified": false,
-          "refs": [],
-          "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01910"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "RS_60f2275b4f84056d",
+        "alignment": "RA_60f2275b4f84056d",
+        "pathIndex": 1,
+        "fromM": 0,
+        "toM": 30.000699537060427,
+        "lanes": [
+          {
+            "dir": "fwd",
+            "widthM": 3.25
+          }
+        ],
+        "centre": {
+          "type": "none",
+          "widthM": 0.15
+        },
+        "edges": {
+          "left": "none",
+          "right": "none"
+        },
+        "lateralOffsetM": 0,
+        "kerbOffsetsM": {
+          "left": 1.625,
+          "right": 1.625
+        },
+        "kerbNoParking": {
+          "left": false,
+          "right": false
+        },
+        "humps": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01911"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01911"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "RS_a5252e55bf02e74d",
+        "alignment": "RA_a5252e55bf02e74d",
+        "pathIndex": 1,
+        "fromM": 0,
+        "toM": 30.000699537055752,
+        "lanes": [
+          {
+            "dir": "fwd",
+            "widthM": 3.25
+          }
+        ],
+        "centre": {
+          "type": "none",
+          "widthM": 0.15
+        },
+        "edges": {
+          "left": "none",
+          "right": "none"
+        },
+        "lateralOffsetM": 0,
+        "kerbOffsetsM": {
+          "left": 1.625,
+          "right": 1.625
+        },
+        "kerbNoParking": {
+          "left": false,
+          "right": false
+        },
+        "humps": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01912"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01912"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "RS_059b8dbae100e473",
+        "alignment": "RA_059b8dbae100e473",
+        "pathIndex": 1,
+        "fromM": 0,
+        "toM": 30.00069953705327,
+        "lanes": [
+          {
+            "dir": "fwd",
+            "widthM": 3.25
+          }
+        ],
+        "centre": {
+          "type": "none",
+          "widthM": 0.15
+        },
+        "edges": {
+          "left": "none",
+          "right": "none"
+        },
+        "lateralOffsetM": 0,
+        "kerbOffsetsM": {
+          "left": 1.625,
+          "right": 1.625
+        },
+        "kerbNoParking": {
+          "left": false,
+          "right": false
+        },
+        "humps": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01913"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01913"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "RS_afe6bdfed12c01d1",
+        "alignment": "RA_afe6bdfed12c01d1",
+        "pathIndex": 1,
+        "fromM": 0,
+        "toM": 30.000699537078713,
+        "lanes": [
+          {
+            "dir": "fwd",
+            "widthM": 3.25
+          }
+        ],
+        "centre": {
+          "type": "none",
+          "widthM": 0.15
+        },
+        "edges": {
+          "left": "none",
+          "right": "none"
+        },
+        "lateralOffsetM": 0,
+        "kerbOffsetsM": {
+          "left": 1.625,
+          "right": 1.625
+        },
+        "kerbNoParking": {
+          "left": false,
+          "right": false
+        },
+        "humps": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01914"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01914"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "RS_6bd63e2d6a782bcd",
+        "alignment": "RA_6bd63e2d6a782bcd",
+        "pathIndex": 1,
+        "fromM": 0,
+        "toM": 30.00069953698898,
+        "lanes": [
+          {
+            "dir": "fwd",
+            "widthM": 3.25
+          }
+        ],
+        "centre": {
+          "type": "none",
+          "widthM": 0.15
+        },
+        "edges": {
+          "left": "none",
+          "right": "none"
+        },
+        "lateralOffsetM": 0,
+        "kerbOffsetsM": {
+          "left": 1.625,
+          "right": 1.625
+        },
+        "kerbNoParking": {
+          "left": false,
+          "right": false
+        },
+        "humps": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01915"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01915"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "RS_8bfb89dbd2c4d840",
+        "alignment": "RA_8bfb89dbd2c4d840",
+        "pathIndex": 1,
+        "fromM": 0,
+        "toM": 30.00069953703212,
+        "lanes": [
+          {
+            "dir": "fwd",
+            "widthM": 3.25
+          }
+        ],
+        "centre": {
+          "type": "none",
+          "widthM": 0.15
+        },
+        "edges": {
+          "left": "none",
+          "right": "none"
+        },
+        "lateralOffsetM": 0,
+        "kerbOffsetsM": {
+          "left": 1.625,
+          "right": 1.625
+        },
+        "kerbNoParking": {
+          "left": false,
+          "right": false
+        },
+        "humps": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01916"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01916"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "RS_a32bb10430ae6bef",
+        "alignment": "RA_a32bb10430ae6bef",
+        "pathIndex": 1,
+        "fromM": 0,
+        "toM": 30.0006995369912,
+        "lanes": [
+          {
+            "dir": "fwd",
+            "widthM": 3.25
+          }
+        ],
+        "centre": {
+          "type": "none",
+          "widthM": 0.15
+        },
+        "edges": {
+          "left": "none",
+          "right": "none"
+        },
+        "lateralOffsetM": 0,
+        "kerbOffsetsM": {
+          "left": 1.625,
+          "right": 1.625
+        },
+        "kerbNoParking": {
+          "left": false,
+          "right": false
+        },
+        "humps": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX01917"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX01917"
+          ],
+          "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       }
@@ -55896,43 +57318,6 @@
           "candidates": []
         }
       },
-      "RA_5694ef6bf3642ebb": {
-        "line": [
-          [
-            243948.98328540995,
-            263767.6035556499
-          ],
-          [
-            243977.7145727628,
-            263758.9690261458
-          ]
-        ],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MK01302",
-            "MK01303"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "role": "inferred-road-centreline",
-        "seedIdentity": {
-          "role": "symbol:text",
-          "refs": [
-            "MK01302",
-            "MK01303"
-          ],
-          "component": 0
-        },
-        "association": {
-          "verified": false,
-          "distanceM": 3.4740957710183484,
-          "refs": [],
-          "method": "unique reviewed road-zone containment",
-          "candidates": []
-        }
-      },
       "RA_fc3081303054b95f": {
         "line": [
           [
@@ -56151,52 +57536,6 @@
             ],
             "reason": "11 separate photo stripe ridges continue beyond the partial inherited grid. Expand the carriageway stripe span to 9.5402 m and shift its centre 1.35 m along the left normal; no stripe inferred beyond the observed run."
           }
-        }
-      },
-      {
-        "id": "RS_5694ef6bf3642ebb",
-        "alignment": "RA_5694ef6bf3642ebb",
-        "pathIndex": 2,
-        "fromM": 0,
-        "toM": 30.00069953700745,
-        "lanes": [
-          {
-            "dir": "fwd",
-            "widthM": 3.25
-          }
-        ],
-        "centre": {
-          "type": "none",
-          "widthM": 0.15
-        },
-        "edges": {
-          "left": "none",
-          "right": "none"
-        },
-        "lateralOffsetM": 0,
-        "kerbOffsetsM": {
-          "left": 1.625,
-          "right": 1.625
-        },
-        "kerbNoParking": {
-          "left": false,
-          "right": false
-        },
-        "humps": [],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MK01302",
-            "MK01303"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "curation": {
-          "verified": false,
-          "refs": [],
-          "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
-          "dimensionsVerified": false
         }
       },
       {
