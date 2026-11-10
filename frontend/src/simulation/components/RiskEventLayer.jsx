@@ -1,6 +1,7 @@
 import React from "react";
 import { useSimulationStore } from "../stores/simulationStore";
 import { simulationToThree } from "../utils/coordinateTransform";
+import { RISK_COLORS } from "../utils/riskColors.mjs";
 
 export function RiskEventLayer({ coordinateConfig, resolveHeight }) {
   const markers = useSimulationStore((state) => {
@@ -14,7 +15,7 @@ export function RiskEventLayer({ coordinateConfig, resolveHeight }) {
     return (
     <mesh key={`risk-${entity.id}`} position={[position.x, position.y + 2.8, position.z]}>
       <octahedronGeometry args={[0.38, 0]} />
-      <meshBasicMaterial color={entity.risk_level === "danger" ? "#ef233c" : "#f59e0b"} />
+      <meshBasicMaterial color={entity.risk_level === "danger" ? RISK_COLORS.danger : RISK_COLORS.warning} />
     </mesh>
     );
   });

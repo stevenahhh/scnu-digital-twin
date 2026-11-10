@@ -4,6 +4,7 @@ import * as THREE from "three";
 import { simulationHeadingToThree, simulationToThree } from "../utils/coordinateTransform";
 import { agentMatrix, createAgentParts, instanceCapacity, personBob, riskRingColor } from "../utils/agentInstances.mjs";
 import { contactShadowResources, contactShadowSize } from "./ContactShadow";
+import { SELECTION_HEX } from "../../ui/sceneTokens.mjs";
 
 // 교통 에이전트를 종류·부품마다 InstancedMesh 하나로 그린다. 에이전트가 몇 대든 드로우콜은 부품 수(차 3~4, 사람 2,
 // 킥보드 3)에 위험 고리·선택 고리·접촉 그림자 몇 개를 더한 만큼이다. 위치·방향 보간은 TrafficEntity와 같은 식이다.
@@ -59,7 +60,7 @@ export function InstancedTrafficAgents({ entities, coordinateConfig, resolveHeig
   }, [parts, capacity]);
   const selectedRing = useMemo(() => {
     const mesh = new THREE.Mesh(new THREE.RingGeometry(1.45, 1.62, 32).rotateX(-Math.PI / 2).translate(0, 0.07, 0),
-      new THREE.MeshBasicMaterial({ color: "#06b6d4", transparent: true, opacity: 0.95, depthWrite: false }));
+      new THREE.MeshBasicMaterial({ color: SELECTION_HEX, transparent: true, opacity: 0.95, depthWrite: false }));
     mesh.raycast = () => {};
     mesh.visible = false;
     return mesh;
