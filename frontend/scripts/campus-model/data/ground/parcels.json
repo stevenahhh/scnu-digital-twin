@@ -210126,6 +210126,188 @@
    ]
   },
   {
+   "id": "PARCEL_LINK_E244192_N263703_GAP",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     244185.96,
+     263706.26
+    ],
+    [
+     244193.44,
+     263697.93
+    ],
+    [
+     244193.98,
+     263697.95
+    ],
+    [
+     244195.29,
+     263701.74
+    ],
+    [
+     244195.59,
+     263702.91
+    ],
+    [
+     244195.6,
+     263703.79
+    ],
+    [
+     244195.34,
+     263704.09
+    ],
+    [
+     244193.77,
+     263704.81
+    ],
+    [
+     244187.51,
+     263706.34
+    ],
+    [
+     244186.48,
+     263706.56
+    ],
+    [
+     244185.97,
+     263706.53
+    ]
+   ],
+   "holes": [],
+   "precedence": 3,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "close the whole hole around the traffic island at the junction north-east of A17 as road; the raised island itself is not modelled (estimated)",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "lane/fix-markings 2026-11-11 defect2-parcel-gaps: enclosed 24.6 m2 with no ground parcel around a traffic island; the traced island ring alone left slivers of bare terrain"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_ASPHALT_WAY_366373738_9",
+    "PARCEL_ASPHALT_WAY_366373738_10",
+    "PARCEL_ASPHALT_WAY_366373738_11",
+    "PARCEL_ASPHALT_WAY_366373738_12",
+    "PARCEL_ASPHALT_WAY_366373738_13",
+    "PARCEL_ASPHALT_WAY_366373738_14",
+    "PARCEL_ASPHALT_WAY_366373738_15",
+    "PARCEL_ASPHALT_WAY_366373738_16",
+    "PARCEL_ASPHALT_WAY_366373738_17",
+    "PARCEL_ASPHALT_WAY_366373738_18",
+    "PARCEL_ASPHALT_WAY_366373738_19",
+    "PARCEL_ASPHALT_WAY_929202517_51",
+    "PARCEL_ASPHALT_WAY_929202517_52",
+    "PARCEL_ASPHALT_WAY_929202517_53",
+    "PARCEL_ASPHALT_WAY_929202517_54",
+    "PARCEL_ASPHALT_WAY_929202517_55",
+    "PARCEL_ASPHALT_WAY_929202517_56",
+    "PARCEL_ASPHALT_WAY_929202517_57",
+    "PARCEL_ASPHALT_WAY_929202517_58",
+    "PARCEL_ASPHALT_WAY_929202517_59",
+    "PARCEL_ASPHALT_WAY_929202517_60",
+    "PARCEL_ASPHALT_WAY_929202517_100",
+    "PARCEL_ASPHALT_WAY_929202517_101",
+    "PARCEL_ASPHALT_WAY_929202517_102",
+    "PARCEL_ASPHALT_WAY_929202517_103",
+    "PARCEL_ASPHALT_WAY_929202517_104",
+    "PARCEL_ASPHALT_WAY_929202517_105",
+    "PARCEL_ASPHALT_WAY_929202517_106",
+    "PARCEL_ASPHALT_WAY_929202517_107",
+    "PARCEL_ASPHALT_WAY_929202517_108",
+    "PARCEL_ASPHALT_WAY_929202517_109",
+    "PARCEL_ASPHALT_WAY_929202517_110",
+    "PARCEL_ASPHALT_WAY_929202517_111",
+    "PARCEL_ASPHALT_WAY_929202517_112",
+    "PARCEL_LINK_E244193_N263702_ISLAND"
+   ]
+  },
+  {
+   "id": "PARCEL_LINK_E244191_N263724_GAP",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     244185.92,
+     263722.35
+    ],
+    [
+     244186.69,
+     263722.03
+    ],
+    [
+     244192.83,
+     263720.25
+    ],
+    [
+     244193.93,
+     263720.33
+    ],
+    [
+     244193.95,
+     263720.6
+    ],
+    [
+     244192.53,
+     263727.28
+    ],
+    [
+     244192.19,
+     263728.32
+    ],
+    [
+     244191.63,
+     263728.34
+    ],
+    [
+     244185.91,
+     263722.63
+    ]
+   ],
+   "holes": [],
+   "precedence": 3,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "close the whole hole around the traffic island at the junction north-east of A17 as road; the raised island itself is not modelled (estimated)",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "lane/fix-markings 2026-11-11 defect2-parcel-gaps: enclosed 23.9 m2 with no ground parcel around a traffic island; the traced island ring alone left slivers of bare terrain"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_ASPHALT_WAY_975429314_157",
+    "PARCEL_ASPHALT_WAY_975429314_158",
+    "PARCEL_ASPHALT_WAY_975429314_159",
+    "PARCEL_ASPHALT_WAY_975429314_160",
+    "PARCEL_ASPHALT_WAY_975429314_161",
+    "PARCEL_ASPHALT_WAY_975429314_162",
+    "PARCEL_ASPHALT_WAY_975429314_163",
+    "PARCEL_ASPHALT_WAY_975429314_164",
+    "PARCEL_ASPHALT_WAY_975429314_165",
+    "PARCEL_ASPHALT_WAY_929202517_12",
+    "PARCEL_ASPHALT_WAY_929202517_13",
+    "PARCEL_ASPHALT_WAY_929202517_14",
+    "PARCEL_ASPHALT_WAY_929202517_15",
+    "PARCEL_ASPHALT_WAY_929202517_16",
+    "PARCEL_ASPHALT_WAY_929202517_17",
+    "PARCEL_ASPHALT_WAY_929202517_18",
+    "PARCEL_ASPHALT_WAY_929202517_19",
+    "PARCEL_ASPHALT_WAY_929202517_20",
+    "PARCEL_LINK_E244190_N263723_ISLAND"
+   ]
+  },
+  {
    "id": "PARCEL_SUPPORT_ROAD_244046_264016",
    "cls": "ASPHALT",
    "class": "road",
@@ -211240,7 +211422,8 @@
     "PARCEL_ASPHALT_WAY_929202517_22",
     "PARCEL_ASPHALT_WAY_929202517_23",
     "PARCEL_LINK_E244182_N263717_GAP",
-    "PARCEL_LINK_E244190_N263723_ISLAND"
+    "PARCEL_LINK_E244190_N263723_ISLAND",
+    "PARCEL_LINK_E244191_N263724_GAP"
    ]
   },
   {
@@ -213513,7 +213696,8 @@
     "PARCEL_ASPHALT_WAY_929202517_100",
     "PARCEL_ASPHALT_WAY_929202517_101",
     "PARCEL_LINK_E244199_N263693_GAP",
-    "PARCEL_LINK_E244193_N263702_ISLAND"
+    "PARCEL_LINK_E244193_N263702_ISLAND",
+    "PARCEL_LINK_E244192_N263703_GAP"
    ]
   },
   {

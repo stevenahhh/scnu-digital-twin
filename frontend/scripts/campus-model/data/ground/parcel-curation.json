@@ -4580,6 +4580,114 @@
    },
    "estimated": true,
    "reason": "traffic island of the junction north-east of A17, an unassigned hole that was drawn as bare terrain; filled as road because curated additions may only be road or lot, so the raised island itself is not modelled (estimated)"
+  },
+  {
+   "id": "PARCEL_LINK_E244192_N263703_GAP",
+   "class": "road",
+   "ring": [
+    [
+     244185.96,
+     263706.26
+    ],
+    [
+     244193.44,
+     263697.93
+    ],
+    [
+     244193.98,
+     263697.95
+    ],
+    [
+     244195.29,
+     263701.74
+    ],
+    [
+     244195.59,
+     263702.91
+    ],
+    [
+     244195.6,
+     263703.79
+    ],
+    [
+     244195.34,
+     263704.09
+    ],
+    [
+     244193.77,
+     263704.81
+    ],
+    [
+     244187.51,
+     263706.34
+    ],
+    [
+     244186.48,
+     263706.56
+    ],
+    [
+     244185.97,
+     263706.53
+    ]
+   ],
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "lane/fix-markings 2026-11-11 defect2-parcel-gaps: enclosed 24.6 m2 with no ground parcel around a traffic island; the traced island ring alone left slivers of bare terrain"
+    ]
+   },
+   "estimated": true,
+   "reason": "close the whole hole around the traffic island at the junction north-east of A17 as road; the raised island itself is not modelled (estimated)"
+  },
+  {
+   "id": "PARCEL_LINK_E244191_N263724_GAP",
+   "class": "road",
+   "ring": [
+    [
+     244185.92,
+     263722.35
+    ],
+    [
+     244186.69,
+     263722.03
+    ],
+    [
+     244192.83,
+     263720.25
+    ],
+    [
+     244193.93,
+     263720.33
+    ],
+    [
+     244193.95,
+     263720.6
+    ],
+    [
+     244192.53,
+     263727.28
+    ],
+    [
+     244192.19,
+     263728.32
+    ],
+    [
+     244191.63,
+     263728.34
+    ],
+    [
+     244185.91,
+     263722.63
+    ]
+   ],
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "lane/fix-markings 2026-11-11 defect2-parcel-gaps: enclosed 23.9 m2 with no ground parcel around a traffic island; the traced island ring alone left slivers of bare terrain"
+    ]
+   },
+   "estimated": true,
+   "reason": "close the whole hole around the traffic island at the junction north-east of A17 as road; the raised island itself is not modelled (estimated)"
   }
  ],
  "notAsphalt": [

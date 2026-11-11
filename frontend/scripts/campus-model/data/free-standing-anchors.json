@@ -44,9 +44,9 @@
     {
       "id": "OB0001",
       "anchor": {
-        "parcel": "PARCEL_LINK_E244190_N263723_ISLAND",
-        "uM": -2.433467000405132,
-        "vM": 2.4669293431665036,
+        "parcel": "PARCEL_LINK_E244191_N263724_GAP",
+        "uM": 1.1087876791602942,
+        "vM": -2.7183510508453548,
         "yawDeg": 0
       },
       "evidence": {
@@ -82,9 +82,9 @@
     {
       "id": "OB0002",
       "anchor": {
-        "parcel": "PARCEL_LINK_E244193_N263702_ISLAND",
-        "uM": 0.7297330536131181,
-        "vM": 0.07648402931431764,
+        "parcel": "PARCEL_LINK_E244192_N263703_GAP",
+        "uM": 2.42530070664991,
+        "vM": 0.7018958776977289,
         "yawDeg": 0
       },
       "evidence": {
