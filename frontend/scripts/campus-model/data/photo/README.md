@@ -684,9 +684,10 @@ The leftovers of the first pass, added to `site-detail.geojson` (231 features in
   land on what they mark (crossings, stall lines, bays, kerbs). Two faces were registered by least squares on four to
   six such points: scene_e6 (0.5-1.0 m) and scene_d4 (0.6-1.6 m). Faces that do not fit (scene_d3 f/r, scene_e2 b/l,
   scene_a5 r, the A10 plaza from scene_a10 l) were not used; items beyond 40 m were left out.
-- `hedge_text`: the hedge lettering 진리 정의 창조 on the scene_a16 slope (SD-A16-HT1), letter-shaped clipped hedges along
-  the road-marking Hangul strokes (lib/markingGlyphs.mjs), its baseline and extent traced on the NGII photo, where the
-  letters show (checked to about 1 m).
+- `hedge_text`: the hedge lettering 진리, the SCNU emblem and 창조 on the scene_a16 slope (SD-A16-HT1 진리, SD-A16-HT3 the
+  emblem's outer ring as a Latin O, SD-A16-HT2 창조), letter-shaped clipped hedges along the road-marking Hangul strokes
+  (lib/markingGlyphs.mjs), the glyphs fitted to the yellow shrub pixels of the NGII photo on one baseline (every glyph
+  edge within 0.4 m, 2026-11-11). The first reading, 진리 정의 창조 in one row, put 정의 where the emblem stands.
 - The first-pass leftovers: the E4 planter (the rough-stone kerb of the raised pine bed, SD-E4-K1) and the D4 planters
   (two forecourt tree pits, SD-D4-T1, T2) are placed now; the C3 west row (SD-C3-W1, five stalls on the aisle paint
   MK01402/MK01400); the E2 shrub balls stay out: scene_e2's nadir face still does not fit the pose.
@@ -729,7 +730,7 @@ The leftovers of the first pass, added to `site-detail.geojson` (231 features in
 | scene_a10 | pose (booth 1.9 m from SD-A6-K1, ramp rails 0.6 m from SD-A6-H1/H2: cross-checks) | SD-A10-S1, S2 |
 | scene_a12 | pose (solved in #89; stall markers on the lines) | SD-A12-HG1, HG2, SD-A12-H1, SD-A12-BR1 |
 | scene_a13 | pose (road-edge markers on the edge lines) | SD-A13-W1, SD-A13-F1, SD-A13-P1, SD-A13-S1, SD-A13-H1 |
-| scene_a16 | photo (the letters are visible on the NGII sheet; strokes overlaid and checked to about 1 m) | SD-A16-HT1 |
+| scene_a16 | photo (the letters are visible on the NGII sheet; glyphs fitted to the shrub pixels within 0.4 m) | SD-A16-HT1..HT3 |
 | scene_a15 | - | none |
 | scene_a17 | pose (lane-arrow and crossing markers fit) | SD-A17-BS1, SD-A17-B1, SD-A17-H1, H2, SD-A17-S1, S2, SD-A17-P1, P2, SD-A17-F1 |
 | scene_a19 | pose (fitted in the markings survey) | SD-A19-P1..P4, SD-A19-H1, SD-A19-B1, SD-A19-S1, SD-A19-F1, SD-A19-BIN1 |
