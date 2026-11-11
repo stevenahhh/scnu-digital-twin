@@ -72,6 +72,8 @@ const EXPORT_ROWS = [
 ];
 const cell = "border-b border-hairline px-2 py-2 text-right tabular-nums";
 const headCell = "border-b border-hairline px-1 py-1 text-right font-medium text-ink-muted";
+// 정렬 머리글 버튼의 누르는 영역: 포인터는 32px, 터치와 폰 폭에서는 44px(ui/SceneLabel의 LABEL_HIT와 같은 기준).
+const SORT_HIT = "min-h-8 [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:min-w-11 max-[639px]:min-h-11 max-[639px]:min-w-11";
 
 function sortRanked(ranked, { key, direction }) {
   const column = COLUMNS.find(([id]) => id === key) ?? COLUMNS[0];
@@ -102,7 +104,7 @@ function ComparisonTable({ ranked, status, onOpenRecommendation }) {
                   <button
                     type="button"
                     onClick={() => toggle(key)}
-                    className={`inline-flex min-h-8 items-center gap-1 rounded-control px-1 hover:text-ink ${active ? "text-ink" : ""} ${FOCUS_RING}`}
+                    className={`${SORT_HIT} inline-flex items-center justify-end gap-1 rounded-control px-1 hover:text-ink ${active ? "text-ink" : ""} ${FOCUS_RING}`}
                   >
                     {label}
                     {active && <Arrow aria-hidden="true" className="h-3 w-3" />}
