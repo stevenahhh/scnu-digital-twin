@@ -186,12 +186,8 @@
    "note": "outline on the photo feature within about 1 m (by eye)"
   },
   "OC0163": {
-   "verdict": "shift",
-   "offsetM": [
-    -1.8,
-    -1.9
-   ],
-   "note": "court shelter outline 2.6 m south-east of the blue roof it traces"
+   "verdict": "ok",
+   "note": "court shelter outline re-traced on its blue roof (objects-campus OC0163, segmented on the NGII 2025 sheet, 2026-11-11); the shift of [-1.8, -1.9] m that moved the old north-up trace onto the roof would now move it off (estimated)"
   },
   "OC0164": {
    "verdict": "shift",
