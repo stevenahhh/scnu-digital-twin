@@ -10177,38 +10177,44 @@
     "id": "OC0161",
     "kind": "fence",
     "subtype": "ball_stop_net",
-    "confidence": 0.5,
+    "confidence": 0.6,
     "method": "by-eye-photo",
     "source": "ngii-2025-ortho",
     "tile": "T0811",
     "height_m": 4.0,
     "height_source": "by eye / VR",
     "estimated": true,
-    "note": "tennis-court perimeter fence",
+    "note": "tennis-court perimeter fence (the staff courts, 교직원 테니스장)",
+    "windscreen_m": 2.0,
+    "windscreen_colour": "#13998a",
+    "post_colour": "#9ea4a8",
+    "mesh_colour": "#8d9499",
+    "fence_note": "VR scene_a16 f: galvanised posts and chain-link with a teal windscreen (sampled #05aea0 to #047760) over the lower half of the fence (estimated)",
+    "position_note": "re-traced 2026-11-11 on the NGII 2025 sheet: the clay surround of the two courts fitted as a rectangle (sides at bearing 76.2, 165.0, 77.1 and 167.1 deg, rms 0.31-0.44 m), each side moved out to the dark fence line beyond the clay (0.5 m south and east, 0.75 m north, 1.4 m west, where the green strip with the bench OC0162 and the shelter OC0163 lies inside); the old outline lay up to 8 m inside the court at its north-east corner (estimated)",
     "from_objects_geojson": false
    },
    "geometry": {
     "type": "LineString",
     "coordinates": [
      [
-      127.48296151,
-      34.96731984
+      127.48292311,
+      34.96732328
      ],
      [
-      127.48340497,
-      34.96731808
+      127.4833064,
+      34.96739394
      ],
      [
-      127.48338963,
-      34.96703646
+      127.48340514,
+      34.96708408
      ],
      [
-      127.48299805,
-      34.96701548
+      127.48300988,
+      34.9670056
      ],
      [
-      127.48296151,
-      34.96731984
+      127.48292311,
+      34.96732328
      ]
     ]
    }
@@ -10644,38 +10650,40 @@
     "id": "OC0173",
     "kind": "fence",
     "subtype": "ball_stop_net",
-    "confidence": 0.35,
+    "confidence": 0.5,
     "method": "by-eye-photo",
     "source": "ngii-2025-ortho",
     "tile": "T0911",
     "height_m": 3.0,
     "height_source": "by eye / VR",
     "estimated": true,
-    "note": "perimeter fence of the hard court (partly beyond EXTENT south edge)",
+    "note": "perimeter fence of the F3 student tennis court; its south part lies beyond the EXTENT south edge and is not drawn",
+    "windscreen_m": 1.0,
+    "windscreen_colour": "#13998a",
+    "post_colour": "#2f8a55",
+    "mesh_colour": "#2f8a55",
+    "fence_note": "VR scene_f3 r: green-coated posts and chain-link over a teal windscreen (sampled #099c85 to #02caae) about a third of the fence high (estimated)",
+    "position_note": "re-traced 2026-11-11 on the NGII 2025 sheet: the clay court fitted as a rectangle (sides at bearing 76.1, 166.9 and 76.4 deg, rms 0.31-0.38 m; the west side parallel to the east side through the clay edge clear of the F3 hut), each side moved out 0.5 m to the dark fence line; the line starts at the north wall of the hut BLD_SCNU_R138317 and ends where the east side meets the EXTENT south edge (scene z 1.9); the old closed outline drew a south side along the EXTENT edge that the photo does not show (estimated)",
     "from_objects_geojson": false
    },
    "geometry": {
     "type": "LineString",
     "coordinates": [
      [
-      127.48303848,
-      34.96644069
+      127.48305717,
+      34.96630654
      ],
      [
-      127.48339987,
-      34.96645052
+      127.48302887,
+      34.96640854
      ],
      [
-      127.48341197,
-      34.96618006
+      127.48337117,
+      34.96647526
      ],
      [
-      127.4830479,
-      34.96618151
-     ],
-     [
-      127.48303848,
-      34.96644069
+      127.48344655,
+      34.96620357
      ]
     ]
    }

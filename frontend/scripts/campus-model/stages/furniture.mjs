@@ -639,9 +639,79 @@ B.retaining_wall = (ctx, o) => {
   if (/railing/.test(o.p.note ?? "")) railing(ctx, o.line, 1.1, C.galvanised, { baseM: o.heightM, rails: [1, 0.5] });
 };
 
+// Court fences (ball_stop_net; VR scene_a16 f: the staff tennis courts, scene_f3 r: the student courts, scene_a16 l: the
+// futsal pitch): round posts at every vertex of the line and at most postSpacingM apart, a top and a bottom rail, a fabric
+// windscreen from the bottom rail up to windscreen_m where the record sets one (opaque, both faces) and the chain-link
+// above it as a diamond lattice of thin opaque wires. No translucent sheet: drawn as one, the mesh read as a glass box
+// round the courts. Colours per record (post_colour, mesh_colour, windscreen_colour), green-coated by default (the futsal
+// fence); every size is an estimate.
+export const COURT_FENCE = { postSpacingM: 2.5, postRadiusM: 0.04, railM: 0.05, wireM: 0.025, pitchM: 0.45, post: "#4f8f63", mesh: "#3b7a52", windscreen: "#1b8b7f" };
+
+// Wires of a chain-link panel lengthM long between heights bottomM and topM (metres along and above the panel): lines at
+// +45 and -45 degrees whose intercepts are pitchM apart along the panel, clipped to it. Returns [[s0, h0], [s1, h1]] pairs.
+export function diamondLattice(lengthM, bottomM, topM, pitchM) {
+  const height = topM - bottomM;
+  const wires = [];
+  if (!(lengthM > 0 && height > 0 && pitchM > 0)) return wires;
+  // rising wires h - bottomM = s - c, c in (-height, lengthM); falling wires h - bottomM = c - s, c in (0, lengthM + height)
+  for (let c = -height + pitchM / 2; c < lengthM; c += pitchM) {
+    const [s0, s1] = [Math.max(0, c), Math.min(lengthM, c + height)];
+    if (s1 - s0 > 1e-6) wires.push([[s0, bottomM + s0 - c], [s1, bottomM + s1 - c]]);
+  }
+  for (let c = pitchM / 2; c < lengthM + height; c += pitchM) {
+    const [s0, s1] = [Math.max(0, c - height), Math.min(lengthM, c)];
+    if (s1 - s0 > 1e-6) wires.push([[s0, bottomM + c - s0], [s1, bottomM + c - s1]]);
+  }
+  return wires;
+}
+
+// Post stations of a fence line: every vertex, and evenly between two vertices at most spacingM apart (scene units in, out).
+function postStations(line, spacingM) {
+  const out = [line[0]];
+  for (let i = 1; i < line.length; i += 1) {
+    const [a, b] = [line[i - 1], line[i]];
+    const n = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / M(spacingM)));
+    for (let k = 1; k <= n; k += 1) out.push([a[0] + ((b[0] - a[0]) * k) / n, a[1] + ((b[1] - a[1]) * k) / n]);
+  }
+  return out;
+}
+
+function courtFence(ctx, o) {
+  const h = o.heightM;
+  const { postRadiusM, railM, wireM, pitchM } = COURT_FENCE;
+  const post = paintOf(o.p.post_colour, rgb(COURT_FENCE.post), o.id);
+  const mesh = paintOf(o.p.mesh_colour, rgb(COURT_FENCE.mesh), o.id);
+  const screenM = o.p.windscreen_m ?? 0;
+  const screen = paintOf(o.p.windscreen_colour, rgb(COURT_FENCE.windscreen), o.id);
+  const stations = postStations(o.line, COURT_FENCE.postSpacingM);
+  const closed = Math.hypot(stations[0][0] - stations.at(-1)[0], stations[0][1] - stations.at(-1)[1]) < 1e-6;
+  for (const p of closed ? stations.slice(0, -1) : stations) {
+    const g = ctx.groundAt(...p);
+    ctx.solid.pole(p, g - M(0.1), g + M(h), postRadiusM, postRadiusM, post, { sides: 6 });
+  }
+  for (let i = 0; i + 1 < stations.length; i += 1) {
+    const [a, b] = [stations[i], stations[i + 1]];
+    const lengthM = Math.hypot(b[0] - a[0], b[1] - a[1]) / M(1);
+    if (lengthM < 0.05) continue;
+    const [ga, gb] = [ctx.groundAt(...a), ctx.groundAt(...b)];
+    const at = (s, hM) => [a[0] + ((b[0] - a[0]) * s) / lengthM, ga + ((gb - ga) * s) / lengthM + M(hM), a[1] + ((b[1] - a[1]) * s) / lengthM];
+    const normal = [-(b[1] - a[1]), 0, b[0] - a[0]];
+    for (const hM of [0.05 + railM / 2, h - railM / 2]) ctx.solid.beam(at(0, hM), at(lengthM, hM), railM, railM, post, { ends: false });
+    if (screenM > 0) {
+      twoSided(ctx, [at(0, 0.05), at(lengthM, 0.05), at(lengthM, screenM), at(0, screenM)], normal, screen);
+      ctx.solid.beam(at(0, screenM - railM / 2), at(lengthM, screenM - railM / 2), railM, railM, post, { ends: false });
+    }
+    for (const [[s0, h0], [s1, h1]] of diamondLattice(lengthM, Math.max(screenM, 0.05 + railM), h - railM, pitchM)) {
+      const l = Math.hypot(s1 - s0, h1 - h0);
+      const [ps, ph] = [(-(h1 - h0) / l) * (wireM / 2), ((s1 - s0) / l) * (wireM / 2)];
+      twoSided(ctx, [at(s0 - ps, h0 - ph), at(s1 - ps, h1 - ph), at(s1 + ps, h1 + ph), at(s0 + ps, h0 + ph)], normal, mesh);
+    }
+  }
+}
+
 B.fence = (ctx, o) => {
   const h = o.heightM;
-  if (o.subtype === "ball_stop_net") railing(ctx, o.line, h, C.galvanised, { stepM: 3, rails: [1, 0.5, 0.02], postM: 0.09, panel: GLASS.net });
+  if (o.subtype === "ball_stop_net") courtFence(ctx, o);
   else if (o.subtype === "mesh") railing(ctx, o.line, h, /teal/.test(o.p.note ?? "") ? C.railTeal : C.roofGreen, { stepM: 2.5, rails: [1, 0.03], panel: /teal/.test(o.p.note ?? "") ? GLASS.mesh : GLASS.net });
   else railing(ctx, o.line, Math.min(h, 1.2), C.white, { stepM: 2, rails: [1, 0.55, 0.12] });
 };
