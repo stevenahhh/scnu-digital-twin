@@ -49,8 +49,26 @@ export async function openPanelSection(ctx, tab = "dashboard") {
     await ctx.b.tap(selector);
     actions.push(`tab ${tab}`);
     await ctx.sleep(800);
+    await tabSettle(ctx);
   }
   return actions;
+}
+
+// A freshly selected tab mounts its sections over the next frames, and a loaded renderer may not finish within the fixed
+// 800 ms above. Wait (bounded) until two samples of the active tab panel (text length, alerts, buttons) agree.
+async function tabSettle(ctx, timeoutMs = 3000) {
+  const sample = () => ctx.inPage((qa) => {
+    const body = qa.all("[data-qa=dashboard-panel] [role=tabpanel]").find(qa.shown) ?? qa.one("[data-qa=dashboard-panel]");
+    return body ? `${qa.txt(body).length}|${body.querySelectorAll("[role=alert]").length}|${body.querySelectorAll("button").length}` : null;
+  });
+  const deadline = Date.now() + timeoutMs;
+  let last = await sample();
+  while (Date.now() < deadline) {
+    await ctx.sleep(200);
+    const now = await sample();
+    if (now === last) return;
+    last = now;
+  }
 }
 
 // Rail-first shell: rows that measure panel content (the audit captured them with the panel open) open the panel section

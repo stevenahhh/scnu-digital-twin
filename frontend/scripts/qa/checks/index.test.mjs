@@ -54,6 +54,15 @@ test("every check has a literal audit doc, runnable states and a run function", 
   }
 });
 
+// The capture pass shares one screenshot (ctx.png / ctx.image) between every check of a state, and withPanelOpen re-captures
+// it after opening the panel. A check that acts on the page outside the probe replay leaves later checks measuring a frame
+// the captured state never showed (GAP-03 left the panel-open frame behind for V-F-17).
+test("every check that acts on the page is marked mutates and runs in the probe replay", () => {
+  const acting = /\b(withPanelOpen|openPanelSection|openPanel|openTab|refreshImage|setTimeMinutes)\(|\.b\.(tap|key|mouse)\(/;
+  const unmarked = [...CHECKS.values()].filter((check) => !check.mutates && acting.test(check.run.toString())).map((check) => check.id);
+  assert.deepEqual(unmarked, []);
+});
+
 test("owners.json maps every check id to an owning todo", () => {
   const owners = JSON.parse(readFileSync(path.join(HERE, "owners.json"), "utf8"));
   for (const id of CHECKS.keys()) assert.match(String(owners[id] ?? ""), /^\d+$/, `${id} has no owner`);
