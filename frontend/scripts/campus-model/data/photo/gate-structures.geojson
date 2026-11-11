@@ -107,35 +107,44 @@
     "postColour": "#d9d7d0",
     "method": "by-eye-photo",
     "source": "ngii-2025-ortho",
-    "confidence": 0.5,
+    "confidence": 0.6,
     "estimated": true,
-    "height_m": 7.5,
-    "height_source": "west-cast shadow on the photo, about 4 m at sun elevation 62 deg (estimated)",
-    "note": "blue panelled canopy over the two lanes between the middle and south islands and the south lane, posts on the islands"
+    "height_m": 7.0,
+    "height_source": "crown of the vaults where two readings meet: on the NGII 2025 sheet the dark blocks west of the roof (one per bay) reach 3.8 m beyond the roof image, 7.9 m with the relief lean at the sun elevation of 62 deg and 7.0 m at its lower quartile 59 deg; in VR scene_a19 f the east end rib rises 67 px over the island where the 16.2 m road between the kerbs spans 172 px, about 6.3 m (5.9-6.8 m) (estimated)",
+    "eave_m": 6.3,
+    "eave_source": "spring line of each vault, a rise of about 0.7 m over its 3.7 m span as the curved end ribs show in VR scene_b1 d and r and scene_a19 f (estimated)",
+    "bays": 2,
+    "vault_axis_deg": 105,
+    "post_islands": [
+     "GT0002",
+     "GT0003"
+    ],
+    "note": "parking-gate canopy over the two inbound lanes south of the middle island: two blue barrel vaults on white ribs side by side, one over the lane between GT0002 and GT0003 and one over the south lane; posts on GT0002 and GT0003 and at the south kerb (VR scene_b1 d and r, scene_a19 f)",
+    "position_note": "roof re-traced 2026-11-11 on the NGII 2025 sheet: the pale ribbed roof from the middle island GT0002 (north edge) and 4.6 m along the lanes, squared to the islands' bearing 105 deg; south of GT0003 its second bay reaches over the south lane to the footway (VR scene_b1 d and r), so the outline's south edge lies 0.3 m behind the south kerb face read on the sheet (bright footway to asphalt at N 263725.9 at E 244108 to N 263722.4 at E 244122, bearing 104 deg) and the south posts stand on the footway. Moved back by the relief lean for its 7.5 m height (0.41 m east, 0.52 m north), the photo's own south roof edge would stop 0.3-0.4 m short of that kerb, within the lean and the kerb-reading uncertainty; the old outline was 6 m long and stopped 1.5 m short of the kerb (estimated)"
    },
    "geometry": {
     "type": "Polygon",
     "coordinates": [
      [
       [
-       127.4829961,
-       34.96873509
+       127.48300768,
+       34.96873724
       ],
       [
-       127.48305942,
-       34.9687265
+       127.48305673,
+       34.96872621
       ],
       [
-       127.48305399,
-       34.96866456
+       127.48303265,
+       34.96865363
       ],
       [
-       127.48299935,
-       34.96868303
+       127.4829836,
+       34.96866466
       ],
       [
-       127.4829961,
-       34.96873509
+       127.48300768,
+       34.96873724
       ]
      ]
     ]

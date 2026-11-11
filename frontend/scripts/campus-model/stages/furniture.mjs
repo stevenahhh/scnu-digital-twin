@@ -1330,19 +1330,125 @@ B.traffic_island = (ctx, o) => {
   ctx.solid.prism(inner, g, g + M(kerbM + 0.01), paintOf(o.p.fill, C.concreteDark, o.id), { walls: false });
 };
 
-// Gate canopy (main gate): a flat panelled roof over the lanes on four posts, roof outline = the photo outline moved back by
-// the relief lean (footprint), height from its shadow (estimated); colour the roof, postColour the posts and edge band.
+// Parking-gate canopy (GT0004; VR scene_b1 d and r, scene_a19 f): `bays` barrel vaults of blue panels on white ribs side by
+// side, one over each lane, their axis along vault_axis_deg (a bearing; default the outline's long side). Posts stand on
+// every bay line at both ends: on the nearest island named in post_islands, kerbInsetM clear of its kerb, when one lies
+// within snapM of the line, else at the outline's edge (the kerb side), with a bracket up to the spring beam, so no post
+// stands in a lane. The outline is the photo roof moved back by the relief lean (footprint); heightM is the crown, eave_m
+// the spring line (every value estimated).
+export const GATE_CANOPY = { ribM: 0.08, ribSpacingM: 1.6, segments: 10, postRadiusM: 0.11, kerbInsetM: 0.35, endInsetM: 0.4, beamM: 0.12, snapM: 2 };
+
+// Circular arc over the span from t = -halfWidthM to +halfWidthM, from the spring height springM up to the crown crownM:
+// segments + 1 points [t, h].
+export function vaultArc(halfWidthM, springM, crownM, segments) {
+  const rise = crownM - springM;
+  const radius = rise / 2 + (halfWidthM * halfWidthM) / (2 * rise);
+  const half = Math.asin(halfWidthM / radius);
+  return Array.from({ length: segments + 1 }, (_, k) => {
+    const a = -half + (2 * half * k) / segments;
+    return [radius * Math.sin(a), crownM - radius + radius * Math.cos(a)];
+  });
+}
+
+function nearestOnAxis(p, axis) {
+  let best = null;
+  for (let i = 0; i + 1 < axis.length; i += 1) {
+    const [a, b] = [axis[i], axis[i + 1]];
+    const [dx, dz] = [b[0] - a[0], b[1] - a[1]];
+    const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / (dx * dx + dz * dz || 1)));
+    const q = [a[0] + dx * t, a[1] + dz * t];
+    const d = Math.hypot(p[0] - q[0], p[1] - q[1]);
+    if (!best || d < best.d) best = { q, d };
+  }
+  return best;
+}
+
+// Where a post meant for plan point p stands on a traffic island (axis polyline, half width; any one plan unit): p itself
+// when it lies within halfWidth - inset of the axis, else the point that far from the nearest axis point towards p.
+export function postOnIsland(p, axis, halfWidth, inset) {
+  const best = nearestOnAxis(p, axis);
+  const reach = halfWidth - inset;
+  if (best.d <= reach) return p;
+  return [best.q[0] + ((p[0] - best.q[0]) * reach) / best.d, best.q[1] + ((p[1] - best.q[1]) * reach) / best.d];
+}
+
 B.gate_canopy = (ctx, o) => {
-  const r = orientedRect(o.footprint);
-  const f = frame([r.centre[0], ctx.minGround(o.footprint), r.centre[1]], r.u);
-  const h = o.heightM;
+  const base = ctx.minGround(o.footprint);
+  let f;
+  let hl;
+  let hw;
+  if (o.p.vault_axis_deg === undefined) {
+    const r = orientedRect(o.footprint);
+    f = frame([r.centre[0], base, r.centre[1]], r.u);
+    [hl, hw] = [r.halfLength, r.halfWidth];
+  } else {
+    // the outline's extent along and across the given axis
+    const c = ringCentroid(o.footprint);
+    const f0 = frame([c[0], base, c[1]], bearingDir(o.p.vault_axis_deg));
+    const st = o.footprint.map((p) => toLocal(f0, p));
+    const [s0, s1] = [Math.min(...st.map((q) => q[0])), Math.max(...st.map((q) => q[0]))];
+    const [t0, t1] = [Math.min(...st.map((q) => q[1])), Math.max(...st.map((q) => q[1]))];
+    const mid = localPlan(f0, (s0 + s1) / 2, (t0 + t1) / 2);
+    f = frame([mid[0], base, mid[1]], f0.u);
+    [hl, hw] = [(s1 - s0) / 2, (t1 - t0) / 2];
+  }
+  const crown = o.heightM;
+  const spring = o.p.eave_m ?? crown - 0.7;
   const roof = paintOf(o.p.colour, C.roofBlue, o.id);
-  const post = paintOf(o.p.postColour, C.offWhite, o.id);
-  const [hl, hw] = [r.halfLength, r.halfWidth];
-  for (const s of [-hl + 0.3, hl - 0.3]) for (const t of [-hw + 0.3, hw - 0.3]) ctx.solid.box(f, [s - 0.15, s + 0.15], [t - 0.15, t + 0.15], [-0.1, h - 0.35], post);
-  // edge band and roof slab are closed underneath: a driver looks up at the blue panels
-  ctx.solid.box(f, [-hl, hl], [-hw, hw], [h - 0.35, h - 0.2], { top: post, side: post, bottom: roof }, { bottom: true });
-  ctx.solid.box(f, [-hl, hl], [-hw, hw], [h - 0.2, h], { top: roof, side: post, bottom: roof }, { bottom: true });
+  const white = paintOf(o.p.postColour, C.offWhite, o.id);
+  const islands = (o.p.post_islands ?? []).map((id) => {
+    const island = ctx.byId.get(id);
+    if (island?.kind !== "traffic_island") throw new Error(`furniture: gate_canopy ${o.id}: post island ${id} is not a traffic_island`);
+    return island;
+  });
+  const { ribM, beamM, segments } = GATE_CANOPY;
+  const bays = o.p.bays ?? 1;
+  const bayW = (2 * hw) / bays;
+  const rise = crown - spring;
+  const radius = rise / 2 + (bayW * bayW) / 8 / rise;
+  const centreH = crown - radius;
+  const ribs = Math.max(2, Math.round((2 * hl) / GATE_CANOPY.ribSpacingM) + 1);
+  for (let bay = 0; bay < bays; bay += 1) {
+    const tc = -hw + bayW * (bay + 0.5);
+    const arc = vaultArc(bayW / 2, spring, crown, segments).map(([t, h]) => [tc + t, h]);
+    // vault panels, seen from above and from the lane
+    for (let k = 0; k + 1 < arc.length; k += 1) {
+      const [[t0, h0], [t1, h1]] = [arc[k], arc[k + 1]];
+      const out = sub(local(f, 0, (t0 + t1) / 2, (h0 + h1) / 2), local(f, 0, tc, centreH));
+      twoSided(ctx, [local(f, -hl, t0, h0), local(f, hl, t0, h0), local(f, hl, t1, h1), local(f, -hl, t1, h1)], out, roof);
+    }
+    // ribs on top of the panels (the end ribs frame the vault)
+    const lift = ([t, h]) => {
+      const l = Math.hypot(t - tc, h - centreH);
+      return [tc + (t - tc) * (1 + ribM / 2 / l), centreH + (h - centreH) * (1 + ribM / 2 / l)];
+    };
+    for (let i = 0; i < ribs; i += 1) {
+      const s = -hl + 0.03 + ((2 * hl - 0.06) * i) / (ribs - 1);
+      for (let k = 0; k + 1 < arc.length; k += 1) {
+        const [p, q] = [lift(arc[k]), lift(arc[k + 1])];
+        const up = sub(local(f, s, (p[0] + q[0]) / 2, (p[1] + q[1]) / 2), local(f, s, tc, centreH));
+        ctx.solid.beam(local(f, s, p[0], p[1]), local(f, s, q[0], q[1]), 0.05, ribM, white, { up });
+      }
+    }
+  }
+  // a spring beam on every bay line; posts on the islands (or at the outline's edge), brackets up to the spring beams
+  const postLines = Array.from({ length: bays + 1 }, (_, i) => -hw + bayW * i);
+  for (const t of postLines) ctx.solid.box(f, [-hl, hl], [t - beamM / 2, t + beamM / 2], [spring - beamM, spring], white);
+  for (const s of [-hl + GATE_CANOPY.endInsetM, hl - GATE_CANOPY.endInsetM]) {
+    for (const t of postLines) {
+      const corner = localPlan(f, s, t);
+      let foot = corner;
+      const nearest = islands.map((island) => ({ island, d: nearestOnAxis(corner, island.line).d })).sort((a, b) => a.d - b.d)[0];
+      if (nearest && nearest.d <= M(GATE_CANOPY.snapM)) {
+        foot = postOnIsland(corner, nearest.island.line, M((nearest.island.p.width_m ?? 1.5) / 2), M(GATE_CANOPY.kerbInsetM));
+      }
+      const g = ctx.groundAt(...foot);
+      ctx.solid.pole(foot, g - M(0.1), base + M(spring - beamM / 2), GATE_CANOPY.postRadiusM, GATE_CANOPY.postRadiusM, white);
+      if (Math.hypot(foot[0] - corner[0], foot[1] - corner[1]) > M(0.05)) {
+        ctx.solid.beam([foot[0], base + M(spring - beamM / 2), foot[1]], [corner[0], base + M(spring - beamM / 2), corner[1]], beamM, beamM, white);
+      }
+    }
+  }
 };
 
 B.bike_rack = (ctx, o) => {
