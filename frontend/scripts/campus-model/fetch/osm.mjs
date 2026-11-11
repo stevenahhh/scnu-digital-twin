@@ -50,6 +50,9 @@ const MCEE_CACHE = path.join(CACHE, "mcee");
 //               141 is generic, and OSM's 농구장 polygon (way 366373756) lies over the futsal/multi
 //               courts, not over the blue basketball courts. headingDegrees is the court's long axis
 //               in the scene frame (degrees from +x toward +z); court markings are drawn around `at`.
+//               `area` ({ at, lengthMetres along headingDegrees, widthMetres across }) is the part of the
+//               polygon the label paints: a pixel inside a label's area takes that label, a pixel in no area
+//               the nearest label (lib/pitchLines.mjs courtOwner), and no tree stands near an area.
 //   pitch       the football pitch inside the running track, in its own frame: the track facility outline that the
 //               lanes follow is not parallel to the painted pitch. Its lines and goals are placed around `at`.
 //   roundabout  the red-paved roundabout of the central intersection. OSM maps only its two oneway
@@ -63,11 +66,11 @@ const MCEE_CACHE = path.join(CACHE, "mcee");
 //               perpendicular, 6 m parallel). The three rows line the access road west of the stadium.
 // Positions and radii are estimates, not survey values; replace them once OSM maps the features.
 const SUPPLEMENTS = [
-  { kind: "surface", note: "blue basketball court (full court)", at: [127.4831566,34.9679874], surface: "basketball", headingDegrees: 12 },
-  { kind: "surface", note: "blue basketball court (half court)", at: [127.4831955,34.9678223], surface: "basketball", lines: false },
-  { kind: "surface", note: "futsal pitch west of the multi court (centre, long axis and 38.2 x 20.2 m outline read from the painted lines on the NGII 2025 orthophoto, 2026-11-10; estimated)", at: [127.4829971,34.9675887], surface: "futsal", headingDegrees: 104.4 },
-  { kind: "surface", note: "multi court (green apron, red court; long axis read from the red court's edges on the NGII 2025 orthophoto, 2026-11-10; estimated)", at: [127.483195,34.9675667], surface: "multi", headingDegrees: 104.4 },
-  { kind: "surface", note: "tennis courts (테니스장)", at: [127.4831938,34.9671985], surface: "tennis", headingDegrees: 102 },
+  { kind: "surface", note: "blue basketball court (full court): centre of its painted lines, 24.8 x 15.1 m (lib/pitchLines.mjs BASKETBALL_HALF_M), long axis square to the futsal pitch's, and area = its blue surface (28.9 x 17.95 m), read on the NGII 2025 orthophoto, 2026-11-11; it sat 0.7 m north and 2.4 degrees off (estimated)", at: [127.4831558,34.967981], surface: "basketball", headingDegrees: 14.4, area: { at: [127.4831549,34.967978], lengthMetres: 28.9, widthMetres: 17.95 } },
+  { kind: "surface", note: "blue basketball court (half court, hoop at its east end, lines not drawn): area = its blue surface south of the full court (14.35 x 15.1 m) on the NGII 2025 orthophoto, 2026-11-11, so the futsal pitch and the multi court apron keep their own paint (estimated)", at: [127.4831861,34.9678172], surface: "basketball", lines: false, headingDegrees: 14.4, area: { at: [127.4831861,34.9678172], lengthMetres: 14.35, widthMetres: 15.1 } },
+  { kind: "surface", note: "futsal pitch west of the multi court (centre, long axis and 38.2 x 20.2 m outline read from the painted lines on the NGII 2025 orthophoto, 2026-11-10); area = its green turf inside the ball-stop fence (42.55 x 22.4 m) on the same photo, 2026-11-11 (estimated)", at: [127.4829971,34.9675887], surface: "futsal", headingDegrees: 104.4, area: { at: [127.4829941,34.9675901], lengthMetres: 42.55, widthMetres: 22.4 } },
+  { kind: "surface", note: "multi court (green apron, red court; long axis read from the red court's edges on the NGII 2025 orthophoto, 2026-11-10); centre = the red court's (15.2 x 6.6 m, MULTI_COURT_HALF_M) and area = the green apron (32.9 x 14.4 m) on the same photo, 2026-11-11 (estimated)", at: [127.4831949,34.9675636], surface: "multi", headingDegrees: 104.4, area: { at: [127.4831939,34.9675635], lengthMetres: 32.9, widthMetres: 14.4 } },
+  { kind: "surface", note: "tennis courts (테니스장): two courts side by side, their centres 14.88 m apart (TENNIS_COURT_OFFSET_M); centre between the two green court surfaces and their long axis (grid bearing 166.2 degrees) fitted on the NGII 2025 orthophoto, 2026-11-11; heading 102 had them 26 degrees off the clay court and its fence (estimated)", at: [127.4831884,34.9672014], surface: "tennis", headingDegrees: 76.5 },
   { kind: "pitch", note: "football pitch inside the running track (대운동장): centre between the two goal mouths (0.15 m from the centre spot), long axis from goal to goal (105.2 m apart), read on the NGII 2025 orthophoto, 2026-11-10; the track facility outline is turned about 1.8 degrees from it (estimated)", at: [127.4823202,34.9677325], headingDegrees: 104.6 },
   { kind: "surface", note: "oval lawn in the central plaza", at: [127.4800853,34.9695595], surface: "lawn" },
   { kind: "roundabout", note: "central intersection roundabout (centre estimated; radius 10.7 m fitted to the painted rim on the NGII 2025 orthophoto, 2026-10-24)", centre: [127.4806378, 34.9692591], radiusMetres: 10.7 },

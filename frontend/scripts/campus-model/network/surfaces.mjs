@@ -90,6 +90,8 @@ export async function loadGroundFeatures() {
     ...(f.axis ? { axis: toModel(f.axis) } : {}),
     ...(f.ring ? { ring: toModel(f.ring) } : {}),
     ...(f.holes ? { holes: f.holes.map(toModel) } : {}),
+    // a surface label's court area: the part of its facility it paints (stages/surfaces.mjs, lib/pitchLines.mjs courtOwner)
+    ...(f.area ? { area: { ...f.area, point: geoToModel(...f.area.at) } } : {}),
   }));
   const areaM2 = (ring) => Math.abs(ringArea(ring)) / SCENE_UNITS_PER_METRE ** 2;
   const stadiums = osm.filter((f) => f.kind === "stadium");
@@ -403,7 +405,8 @@ export function buildSurfaces({ inputs, walkways, groundFeatures = null, offCamp
         }
         continue;
       }
-      const labels = facility.labels.map((l) => ({ surface: l.surface, point: tmPoint(l.point), headingDegrees: l.headingDegrees, lines: l.lines, note: l.note }));
+      const labels = facility.labels.map((l) => ({ surface: l.surface, point: tmPoint(l.point), headingDegrees: l.headingDegrees, lines: l.lines, note: l.note,
+        ...(l.area ? { area: { point: tmPoint(l.area.point), lengthMetres: l.area.lengthMetres, widthMetres: l.area.widthMetres } } : {}) }));
       add({ cls: "SPORTS", mesh: "Ground_Sports", label: SURFACE_CLASS.SPORTS, precedence: PRECEDENCE.SPORTS, source: "project-estimated", source_ref: ref, paint: { kind: "labels", labels }, estimated: true }, facility.rings);
     }
     for (const fountain of groundFeatures.supplements.filter((f) => f.kind === "fountain")) {

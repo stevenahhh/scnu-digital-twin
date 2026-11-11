@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { tmToScene } from "../../../src/geo/epsg5186.mjs";
+import { sceneToTm, tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { EXTENT } from "../lib/frame.mjs";
 import { SURFACE_CLASS } from "../lib/surfaceClass.mjs";
 import { PRECEDENCE, PX, buildSurfaces, discRing, offsetRing } from "./surfaces.mjs";
@@ -86,6 +86,16 @@ test("offsetRing moves a ring outward by the given distance whatever its orienta
     assert.deepEqual([Math.min(...xs), Math.max(...xs)].map((v) => Math.round(v * 1e9) / 1e9), [-1, 11]);
   }
   assert.equal(discRing([0, 0], 2, 16).length, 16);
+});
+
+test("a surface label's court area reaches the facility's paint labels in EPSG:5186", () => {
+  const court = { kind: "surface", surface: "basketball", point: [310, -90], headingDegrees: 14.4, note: "test court", area: { at: [127.48, 34.97], point: [312, -91], lengthMetres: 28.9, widthMetres: 17.95 } };
+  const open = { kind: "surface", surface: "futsal", point: [320, -90], headingDegrees: 104.4, note: "test pitch" };
+  const groundFeatures = { osm: [], lines: [], unlabelledLabels: [], supplements: [court, open], facilities: [{ index: 0, rings: [rect(300, -100, 330, -80)], labels: [court, open] }] };
+  const layer = buildSurfaces({ ...fixture(), groundFeatures }).layers.find((l) => l.paint?.kind === "labels");
+  const [E, N] = sceneToTm(312, -91);
+  assert.deepEqual(layer.paint.labels[0].area, { point: [E, N], lengthMetres: 28.9, widthMetres: 17.95 });
+  assert.equal("area" in layer.paint.labels[1], false, "a label without an area keeps the nearest-label paint");
 });
 
 test("a reclass to clay paints an OSM tennis pitch as a clay court; clay on a non-pitch area is an error", () => {
