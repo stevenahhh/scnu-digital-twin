@@ -40,9 +40,7 @@ describe("SceneLabel", () => {
   it("lets a long one-word name break inside the word below 640 px only", () => {
     render(<SceneLabel name="환경친화형물질공정연구센터" elementId="BLD_C4" code="C4" />);
     const name = screen.getByText("환경친화형물질공정연구센터");
-    expect(name.className.split(" ")).toEqual(expect.arrayContaining([
-      "line-clamp-2", "break-keep", "max-[639px]:[overflow-wrap:anywhere]", "max-[639px]:[text-wrap:balance]",
-    ]));
+    expect(name.className.split(" ")).toEqual(expect.arrayContaining(["line-clamp-2", "break-keep", "max-[639px]:[overflow-wrap:anywhere]"]));
   });
 
   it.each(SCENE_LABEL_STATES)("maps the %s state to data-state", (state) => {

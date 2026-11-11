@@ -15,9 +15,9 @@ const LABEL_HIT_COMPACT = "min-h-6 min-w-10";
 // 마우스를 올린 칩이 떠오르는 높이(-translate-y-0.5). 라벨 배치는 이만큼 HUD에서 더 띄운다.
 export const LABEL_HOVER_LIFT_PX = 2;
 // 폰(15 px)에서는 긴 한 단어 이름(환경친화형물질공정연구센터)이 칩 폭(max-w-40)을 넘어 글자 중간에서 잘렸다. 넘칠 때만
-// 단어 안에서 꺾어 두 줄(line-clamp-2)로 보인다. 두 줄의 길이는 맞춘다(천연물신약연구/소처럼 한 글자만 내려가지 않게).
-// 데스크톱 12 px에서는 기존 줄바꿈 그대로다.
-export const PHONE_NAME_WRAP = "max-[639px]:[overflow-wrap:anywhere] max-[639px]:[text-wrap:balance]";
+// 단어 안에서 꺾어 두 줄(line-clamp-2)로 보인다. 데스크톱 12 px에서는 기존 줄바꿈 그대로다.
+// text-wrap: balance는 line-clamp(-webkit-box) 아래에서 듣지 않는다. 두째 줄이 한 글자일 수 있다(천연물신약연구/소).
+export const PHONE_NAME_WRAP = "max-[639px]:[overflow-wrap:anywhere]";
 
 // 선택: 강조색 테두리와 강조색 글자. 글자는 강조색을 ink 쪽으로 섞어 두 테마 모두 4.5:1을 넘긴다.
 const SELECTED_INK = "text-[color:color-mix(in_srgb,var(--colors-primary)_75%,var(--colors-ink))]";
