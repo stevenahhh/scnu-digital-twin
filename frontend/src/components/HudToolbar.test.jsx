@@ -55,4 +55,18 @@ describe("HudToolbar", () => {
     const trigger = screen.getByRole("button", { name: "시점: 도서관" });
     expect(trigger.textContent).toBe("");
   });
+
+  // Phone: with the feed chip after it the trigger sits mid-row, so a menu aligned to the trigger ran off the left edge.
+  // The compact menu is positioned by the HUD row (no containing block of its own); desktop keeps the trigger anchor.
+  it("anchors the compact (phone) menu to the HUD row, not to the trigger", async () => {
+    const user = userEvent.setup();
+    for (const compact of [false, true]) {
+      const { unmount } = renderBar({ compact });
+      await user.click(screen.getByRole("button", { name: /시점/ }));
+      const menu = screen.getByRole("menu", { name: "시점" });
+      expect(menu.className.split(/\s+/)).toContain(compact ? "right-0" : "left-0");
+      expect(menu.parentElement.className.split(/\s+/).includes("relative")).toBe(!compact);
+      unmount();
+    }
+  });
 });
