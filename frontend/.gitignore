@@ -2,3 +2,6 @@
 scripts/campus-model/.build/
 # Parking row estimator output (fit/parkingRows.mjs): proposals for review, never committed
 scripts/campus-model/data/ground/parking.proposals.json
+# Precompressed copies of the shipped model, written by the publish gate (qa/candidate.mjs) and served by vite.config.js
+public/*.br
+public/*.gz

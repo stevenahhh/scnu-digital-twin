@@ -9690,31 +9690,31 @@
     "height_m": 4.0,
     "height_source": "by eye / VR",
     "estimated": true,
-    "note": "green ball-stop fence/net around the futsal pitch",
+    "note": "green ball-stop fence/net around the futsal pitch; outline retraced 2026-11-10 on the NGII 2025 orthophoto as the edge of the dark green surround, 1.9 m behind the end lines and 0.9 m outside the side lines of the painted pitch (estimated)",
     "from_objects_geojson": false
    },
    "geometry": {
     "type": "LineString",
     "coordinates": [
      [
-      127.48291488,
-      34.96777072
+      127.48293751,
+      34.9677967
      ],
      [
-      127.48315562,
-      34.96774272
+      127.48317086,
+      34.96774746
      ],
      [
-      127.48305491,
-      34.96737581
+      127.48305667,
+      34.96738074
      ],
      [
-      127.48281146,
-      34.96740607
+      127.48282332,
+      34.96742998
      ],
      [
-      127.48291488,
-      34.96777072
+      127.48293751,
+      34.9677967
      ]
     ]
    }

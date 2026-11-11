@@ -29661,73 +29661,6 @@
       "method": "lane C aerial corridor and authoritative network connectivity review"
     },
     {
-      "id": "RS_bdf19eb6c5ff8450",
-      "verified": false,
-      "segmentId": null,
-      "originalSegment": "RD_035",
-      "refs": [],
-      "method": "unique reviewed road-zone containment",
-      "candidates": [],
-      "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified."
-    },
-    {
-      "id": "JA_bdf19eb6c5ff8450",
-      "verified": false,
-      "nodeId": "ND_006",
-      "originalNode": "ND_006",
-      "refs": [
-        "photo/evidence/markings.geojson#MK00857",
-        "backend/simulation/data/road_segments.geojson#RD_035",
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-        "task-24-attempt-2/owner-source-probes.json#JA_bdf19eb6c5ff8450",
-        "VR scene_e1 f/r/b/l/d",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/.cache/ngii-ortho/(B060)정사영상_2025_34702020.tif",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/road_segments.geojson#RD_035",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-network-chips/RD_035-paths.png",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/.omo/evidence/task-24-attempt-2/owner-source-probes.json#/owners/199",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-vr-sheets/sheet-5.png#scene_e1",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/ground/road-curation.json#/owners/462",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#ND_006",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0308",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0350",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK00857"
-      ],
-      "reason": "JA_bdf19eb6c5ff8450: MK00857; EPSG:5186 (243890.43, 263808.75). 사진의 MK00857 표식은 RD_035 그룹에 놓였으나 RZ-079(중앙교차로) 영역 지분 1과 ND 후보 ND_006까지는 지지된다. 부모 RS_bdf19eb6c5ff8450의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_006는 사진 중심에서 18.527 m, 연결 도로는 RD_035/RD_088이며 대안 노드는 ND_006 18.527 m, ND_144 45.222 m, ND_138 46.469 m이다. 이 연결 목록만으로 해당 표식이 어느 진입부 ND에 속하는지 결정되지 않는다.",
-      "reviewEvidence": {
-        "centreTm": [
-          243890.43,
-          263808.75
-        ],
-        "sourceRefs": [
-          "MK00857"
-        ],
-        "namedRoadVertexShares": [],
-        "namedRoadCentreShares": [],
-        "namedJunctionShares": [
-          {
-            "segmentId": "RZ-079",
-            "share": 1
-          }
-        ],
-        "nearestVr": {
-          "scene": "scene_e1",
-          "distanceM": 28.36
-        },
-        "outputScores": [
-          {
-            "id": "JA_bdf19eb6c5ff8450/symbols/0/colour/yellow",
-            "support": 0.81,
-            "residualM": 1.611,
-            "occluded": false,
-            "unmeasurable": false
-          }
-        ],
-        "status": "unresolved",
-        "unresolvedQuestion": "The physical junction is localized to RZ-079=1.000, but its connecting road arm is not uniquely supported by the named road polygons and the source-marking direction."
-      },
-      "method": "lane C aerial corridor and authoritative network connectivity review"
-    },
-    {
       "id": "RS_55f96654f2887c53",
       "verified": false,
       "segmentId": null,
@@ -29802,951 +29735,6 @@
         ],
         "status": "unresolved",
         "unresolvedQuestion": "The physical junction is localized to RZ-079=0.750, but its connecting road arm is not uniquely supported by the named road polygons and the source-marking direction."
-      },
-      "method": "lane C aerial corridor and authoritative network connectivity review"
-    },
-    {
-      "id": "RS_cf1155f1588aba9b",
-      "verified": false,
-      "segmentId": null,
-      "originalSegment": "RD_035",
-      "refs": [],
-      "method": "unique reviewed road-zone containment",
-      "candidates": [],
-      "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified."
-    },
-    {
-      "id": "JA_cf1155f1588aba9b",
-      "verified": false,
-      "nodeId": "ND_006",
-      "originalNode": "ND_006",
-      "refs": [
-        "photo/evidence/markings-extra.geojson#MX00385",
-        "backend/simulation/data/road_segments.geojson#RD_035",
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-        "task-24-attempt-2/owner-source-probes.json#JA_cf1155f1588aba9b",
-        "VR scene_e1 f/r/b/l/d",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/.cache/ngii-ortho/(B060)정사영상_2025_34702020.tif",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/road_segments.geojson#RD_035",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-network-chips/RD_035-paths.png",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/.omo/evidence/task-24-attempt-2/owner-source-probes.json#/owners/213",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-vr-sheets/sheet-5.png#scene_e1",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/ground/road-curation.json#/owners/466",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#ND_006",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0308",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0350",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00385"
-      ],
-      "reason": "JA_cf1155f1588aba9b: MX00385; EPSG:5186 (243893.948, 263808.43). 사진의 MX00385 표식은 RD_035 그룹에 놓였으나 RZ-079(중앙교차로) 영역 지분 1과 ND 후보 ND_006까지는 지지된다. 부모 RS_cf1155f1588aba9b의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_006는 사진 중심에서 18.369 m, 연결 도로는 RD_035/RD_088이며 대안 노드는 ND_006 18.369 m, ND_144 41.792 m, ND_138 46.397 m이다. 이 연결 목록만으로 해당 표식이 어느 진입부 ND에 속하는지 결정되지 않는다.",
-      "reviewEvidence": {
-        "centreTm": [
-          243893.948,
-          263808.43
-        ],
-        "sourceRefs": [
-          "MX00385"
-        ],
-        "namedRoadVertexShares": [],
-        "namedRoadCentreShares": [],
-        "namedJunctionShares": [
-          {
-            "segmentId": "RZ-079",
-            "share": 1
-          }
-        ],
-        "nearestVr": {
-          "scene": "scene_e1",
-          "distanceM": 31.79
-        },
-        "outputScores": [
-          {
-            "id": "JA_cf1155f1588aba9b/symbols/0/colour/yellow",
-            "support": 0.894,
-            "residualM": 0.907,
-            "occluded": false,
-            "unmeasurable": false
-          }
-        ],
-        "status": "unresolved",
-        "unresolvedQuestion": "The physical junction is localized to RZ-079=1.000, but its connecting road arm is not uniquely supported by the named road polygons and the source-marking direction."
-      },
-      "method": "lane C aerial corridor and authoritative network connectivity review"
-    },
-    {
-      "id": "RS_752f8a63ca14219f",
-      "verified": false,
-      "segmentId": null,
-      "originalSegment": "RD_035",
-      "refs": [],
-      "method": "unique reviewed road-zone containment",
-      "candidates": [],
-      "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified."
-    },
-    {
-      "id": "JA_752f8a63ca14219f",
-      "verified": false,
-      "nodeId": "ND_006",
-      "originalNode": "ND_006",
-      "refs": [
-        "photo/evidence/markings-extra.geojson#MX00388",
-        "backend/simulation/data/road_segments.geojson#RD_035",
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-        "task-24-attempt-2/owner-source-probes.json#JA_752f8a63ca14219f",
-        "VR scene_e1 f/r/b/l/d",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/.cache/ngii-ortho/(B060)정사영상_2025_34702020.tif",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/road_segments.geojson#RD_035",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-network-chips/RD_035-paths.png",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/.omo/evidence/task-24-attempt-2/owner-source-probes.json#/owners/108",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-vr-sheets/sheet-5.png#scene_e1",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/ground/road-curation.json#/owners/468",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#ND_006",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0308",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0350",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00388"
-      ],
-      "reason": "JA_752f8a63ca14219f: MX00388; EPSG:5186 (243891.33, 263807.309). 사진의 MX00388 표식은 RD_035 그룹에 놓였으나 RZ-079(중앙교차로) 영역 지분 1과 ND 후보 ND_006까지는 지지된다. 부모 RS_752f8a63ca14219f의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_006는 사진 중심에서 17.063 m, 연결 도로는 RD_035/RD_088이며 대안 노드는 ND_006 17.063 m, ND_144 43.925 m, ND_138 47.773 m이다. 이 연결 목록만으로 해당 표식이 어느 진입부 ND에 속하는지 결정되지 않는다.",
-      "reviewEvidence": {
-        "centreTm": [
-          243891.33,
-          263807.309
-        ],
-        "sourceRefs": [
-          "MX00388"
-        ],
-        "namedRoadVertexShares": [],
-        "namedRoadCentreShares": [],
-        "namedJunctionShares": [
-          {
-            "segmentId": "RZ-079",
-            "share": 1
-          }
-        ],
-        "nearestVr": {
-          "scene": "scene_e1",
-          "distanceM": 29.04
-        },
-        "outputScores": [
-          {
-            "id": "JA_752f8a63ca14219f/symbols/0/colour/yellow",
-            "support": 1,
-            "residualM": 0.155,
-            "occluded": false,
-            "unmeasurable": false
-          }
-        ],
-        "status": "unresolved",
-        "unresolvedQuestion": "The physical junction is localized to RZ-079=1.000, but its connecting road arm is not uniquely supported by the named road polygons and the source-marking direction."
-      },
-      "method": "lane C aerial corridor and authoritative network connectivity review"
-    },
-    {
-      "id": "RS_9169c3eb26e376c8",
-      "verified": false,
-      "segmentId": null,
-      "originalSegment": "RD_035",
-      "refs": [],
-      "method": "unique reviewed road-zone containment",
-      "candidates": [],
-      "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified."
-    },
-    {
-      "id": "JA_9169c3eb26e376c8",
-      "verified": false,
-      "nodeId": "ND_006",
-      "originalNode": "ND_006",
-      "refs": [
-        "photo/evidence/markings-extra.geojson#MX00389",
-        "backend/simulation/data/road_segments.geojson#RD_035",
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-        "task-24-attempt-2/owner-source-probes.json#JA_9169c3eb26e376c8",
-        "VR scene_e1 f/r/b/l/d",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/.cache/ngii-ortho/(B060)정사영상_2025_34702020.tif",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/road_segments.geojson#RD_035",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-network-chips/RD_035-paths.png",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/.omo/evidence/task-24-attempt-2/owner-source-probes.json#/owners/142",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-vr-sheets/sheet-5.png#scene_e1",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/ground/road-curation.json#/owners/470",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#ND_006",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0308",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0350",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00389"
-      ],
-      "reason": "JA_9169c3eb26e376c8: MX00389; EPSG:5186 (243893.12, 263806.245). 사진의 MX00389 표식은 RD_035 그룹에 놓였으나 RZ-079(중앙교차로) 영역 지분 1과 ND 후보 ND_006까지는 지지된다. 부모 RS_9169c3eb26e376c8의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_006는 사진 중심에서 16.097 m, 연결 도로는 RD_035/RD_088이며 대안 노드는 ND_006 16.097 m, ND_144 41.905 m, ND_138 48.641 m이다. 이 연결 목록만으로 해당 표식이 어느 진입부 ND에 속하는지 결정되지 않는다.",
-      "reviewEvidence": {
-        "centreTm": [
-          243893.12,
-          263806.245
-        ],
-        "sourceRefs": [
-          "MX00389"
-        ],
-        "namedRoadVertexShares": [],
-        "namedRoadCentreShares": [],
-        "namedJunctionShares": [
-          {
-            "segmentId": "RZ-079",
-            "share": 1
-          }
-        ],
-        "nearestVr": {
-          "scene": "scene_e1",
-          "distanceM": 30.72
-        },
-        "outputScores": [
-          {
-            "id": "JA_9169c3eb26e376c8/symbols/0/colour/yellow",
-            "support": 0.949,
-            "residualM": 0.151,
-            "occluded": false,
-            "unmeasurable": false
-          }
-        ],
-        "status": "unresolved",
-        "unresolvedQuestion": "The physical junction is localized to RZ-079=1.000, but its connecting road arm is not uniquely supported by the named road polygons and the source-marking direction."
-      },
-      "method": "lane C aerial corridor and authoritative network connectivity review"
-    },
-    {
-      "id": "RS_6e2eddf5e1b179de",
-      "verified": false,
-      "segmentId": null,
-      "originalSegment": "RD_035",
-      "refs": [],
-      "method": "unique reviewed road-zone containment",
-      "candidates": [],
-      "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified."
-    },
-    {
-      "id": "JA_6e2eddf5e1b179de",
-      "verified": false,
-      "nodeId": "ND_006",
-      "originalNode": "ND_006",
-      "refs": [
-        "photo/evidence/markings-extra.geojson#MX00391",
-        "backend/simulation/data/road_segments.geojson#RD_035",
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-        "task-24-attempt-2/owner-source-probes.json#JA_6e2eddf5e1b179de",
-        "VR scene_e1 f/r/b/l/d",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/.cache/ngii-ortho/(B060)정사영상_2025_34702020.tif",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/road_segments.geojson#RD_035",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-network-chips/RD_035-paths.png",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/.omo/evidence/task-24-attempt-2/owner-source-probes.json#/owners/98",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-vr-sheets/sheet-5.png#scene_e1",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/ground/road-curation.json#/owners/472",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#ND_006",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0308",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0350",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00391"
-      ],
-      "reason": "JA_6e2eddf5e1b179de: MX00391; EPSG:5186 (243892.156, 263804.25). 사진의 MX00391 표식은 RD_035 그룹에 놓였으나 RZ-079(중앙교차로) 영역 지분 1과 ND 후보 ND_006까지는 지지된다. 부모 RS_6e2eddf5e1b179de의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_006는 사진 중심에서 14.027 m, 연결 도로는 RD_035/RD_088이며 대안 노드는 ND_006 14.027 m, ND_144 42.324 m, ND_138 50.718 m이다. 이 연결 목록만으로 해당 표식이 어느 진입부 ND에 속하는지 결정되지 않는다.",
-      "reviewEvidence": {
-        "centreTm": [
-          243892.156,
-          263804.25
-        ],
-        "sourceRefs": [
-          "MX00391"
-        ],
-        "namedRoadVertexShares": [],
-        "namedRoadCentreShares": [],
-        "namedJunctionShares": [
-          {
-            "segmentId": "RZ-079",
-            "share": 1
-          }
-        ],
-        "nearestVr": {
-          "scene": "scene_e1",
-          "distanceM": 29.67
-        },
-        "outputScores": [
-          {
-            "id": "JA_6e2eddf5e1b179de/symbols/0/colour/yellow",
-            "support": 1,
-            "residualM": 0.205,
-            "occluded": false,
-            "unmeasurable": false
-          }
-        ],
-        "status": "unresolved",
-        "unresolvedQuestion": "The physical junction is localized to RZ-079=1.000, but its connecting road arm is not uniquely supported by the named road polygons and the source-marking direction."
-      },
-      "method": "lane C aerial corridor and authoritative network connectivity review"
-    },
-    {
-      "id": "RS_b05917c96713b890",
-      "verified": false,
-      "segmentId": null,
-      "originalSegment": "RD_035",
-      "refs": [],
-      "method": "unique reviewed road-zone containment",
-      "candidates": [],
-      "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified."
-    },
-    {
-      "id": "JA_b05917c96713b890",
-      "verified": false,
-      "nodeId": "ND_006",
-      "originalNode": "ND_006",
-      "refs": [
-        "photo/evidence/markings-extra.geojson#MX00392",
-        "backend/simulation/data/road_segments.geojson#RD_035",
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-        "task-24-attempt-2/owner-source-probes.json#JA_b05917c96713b890",
-        "VR scene_a3 f/r/b/l/d",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/.cache/ngii-ortho/(B060)정사영상_2025_34702020.tif",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/road_segments.geojson#RD_035",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-network-chips/RD_035-paths.png",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/.omo/evidence/task-24-attempt-2/owner-source-probes.json#/owners/177",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-vr-sheets/sheet-0.png#scene_a3",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/ground/road-curation.json#/owners/474",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#ND_006",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0308",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0350",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00392"
-      ],
-      "reason": "JA_b05917c96713b890: MX00392; EPSG:5186 (243911.589, 263783.743). 사진의 MX00392 표식은 RD_035 그룹에 놓였으나 RZ-079(중앙교차로) 영역 지분 1과 ND 후보 ND_006까지는 지지된다. 부모 RS_b05917c96713b890의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_006는 사진 중심에서 21.259 m, 연결 도로는 RD_035/RD_088이며 대안 노드는 ND_006 21.259 m, ND_144 24.221 m, ND_007 52.943 m이다. 이 연결 목록만으로 해당 표식이 어느 진입부 ND에 속하는지 결정되지 않는다.",
-      "reviewEvidence": {
-        "centreTm": [
-          243911.589,
-          263783.743
-        ],
-        "sourceRefs": [
-          "MX00392"
-        ],
-        "namedRoadVertexShares": [],
-        "namedRoadCentreShares": [],
-        "namedJunctionShares": [
-          {
-            "segmentId": "RZ-079",
-            "share": 1
-          }
-        ],
-        "nearestVr": {
-          "scene": "scene_a3",
-          "distanceM": 43.92
-        },
-        "outputScores": [
-          {
-            "id": "JA_b05917c96713b890/symbols/0/colour/yellow",
-            "support": 0.975,
-            "residualM": 1.807,
-            "occluded": false,
-            "unmeasurable": false
-          }
-        ],
-        "status": "unresolved",
-        "unresolvedQuestion": "The physical junction is localized to RZ-079=1.000, but its connecting road arm is not uniquely supported by the named road polygons and the source-marking direction."
-      },
-      "method": "lane C aerial corridor and authoritative network connectivity review"
-    },
-    {
-      "id": "RS_a8f36b9da1027218",
-      "verified": false,
-      "segmentId": null,
-      "originalSegment": "RD_035",
-      "refs": [],
-      "method": "unique reviewed road-zone containment",
-      "candidates": [],
-      "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified."
-    },
-    {
-      "id": "JA_a8f36b9da1027218",
-      "verified": false,
-      "nodeId": "ND_006",
-      "originalNode": "ND_006",
-      "refs": [
-        "photo/evidence/markings-extra.geojson#MX00393",
-        "backend/simulation/data/road_segments.geojson#RD_035",
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-        "task-24-attempt-2/owner-source-probes.json#JA_a8f36b9da1027218",
-        "VR scene_a3 f/r/b/l/d",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/.cache/ngii-ortho/(B060)정사영상_2025_34702020.tif",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/road_segments.geojson#RD_035",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-network-chips/RD_035-paths.png",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/.omo/evidence/task-24-attempt-2/owner-source-probes.json#/owners/169",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-vr-sheets/sheet-0.png#scene_a3",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/ground/road-curation.json#/owners/476",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#ND_006",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0308",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0350",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00393"
-      ],
-      "reason": "JA_a8f36b9da1027218: MX00393; EPSG:5186 (243905.635, 263789.319). 사진의 MX00393 표식은 RD_035 그룹에 놓였으나 RZ-079(중앙교차로) 영역 지분 1과 ND 후보 ND_006까지는 지지된다. 부모 RS_a8f36b9da1027218의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_006는 사진 중심에서 14.316 m, 연결 도로는 RD_035/RD_088이며 대안 노드는 ND_006 14.316 m, ND_144 28.158 m, ND_007 60.416 m이다. 이 연결 목록만으로 해당 표식이 어느 진입부 ND에 속하는지 결정되지 않는다.",
-      "reviewEvidence": {
-        "centreTm": [
-          243905.635,
-          263789.319
-        ],
-        "sourceRefs": [
-          "MX00393"
-        ],
-        "namedRoadVertexShares": [],
-        "namedRoadCentreShares": [],
-        "namedJunctionShares": [
-          {
-            "segmentId": "RZ-079",
-            "share": 1
-          }
-        ],
-        "nearestVr": {
-          "scene": "scene_a3",
-          "distanceM": 39.33
-        },
-        "outputScores": [
-          {
-            "id": "JA_a8f36b9da1027218/symbols/0/colour/yellow",
-            "support": 0.5,
-            "residualM": 0.475,
-            "occluded": false,
-            "unmeasurable": false
-          }
-        ],
-        "status": "unresolved",
-        "unresolvedQuestion": "The physical junction is localized to RZ-079=1.000, but its connecting road arm is not uniquely supported by the named road polygons and the source-marking direction."
-      },
-      "method": "lane C aerial corridor and authoritative network connectivity review"
-    },
-    {
-      "id": "RS_e3f71fa643ba5e39",
-      "verified": false,
-      "segmentId": null,
-      "originalSegment": "RD_035",
-      "refs": [],
-      "method": "unique reviewed road-zone containment",
-      "candidates": [],
-      "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified."
-    },
-    {
-      "id": "JA_e3f71fa643ba5e39",
-      "verified": false,
-      "nodeId": "ND_006",
-      "originalNode": "ND_006",
-      "refs": [
-        "photo/evidence/markings-extra.geojson#MX00394",
-        "backend/simulation/data/road_segments.geojson#RD_035",
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-        "task-24-attempt-2/owner-source-probes.json#JA_e3f71fa643ba5e39",
-        "VR scene_a3 f/r/b/l/d",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/.cache/ngii-ortho/(B060)정사영상_2025_34702020.tif",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/road_segments.geojson#RD_035",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-network-chips/RD_035-paths.png",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/.omo/evidence/task-24-attempt-2/owner-source-probes.json#/owners/235",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-vr-sheets/sheet-0.png#scene_a3",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/ground/road-curation.json#/owners/478",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#ND_006",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0308",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0350",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00394"
-      ],
-      "reason": "JA_e3f71fa643ba5e39: MX00394; EPSG:5186 (243908.099, 263786.597). 사진의 MX00394 표식은 RD_035 그룹에 놓였으나 RZ-079(중앙교차로) 영역 지분 1과 ND 후보 ND_006까지는 지지된다. 부모 RS_e3f71fa643ba5e39의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_006는 사진 중심에서 17.143 m, 연결 도로는 RD_035/RD_088이며 대안 노드는 ND_006 17.143 m, ND_144 26.414 m, ND_007 57.162 m이다. 이 연결 목록만으로 해당 표식이 어느 진입부 ND에 속하는지 결정되지 않는다.",
-      "reviewEvidence": {
-        "centreTm": [
-          243908.099,
-          263786.597
-        ],
-        "sourceRefs": [
-          "MX00394"
-        ],
-        "namedRoadVertexShares": [],
-        "namedRoadCentreShares": [],
-        "namedJunctionShares": [
-          {
-            "segmentId": "RZ-079",
-            "share": 1
-          }
-        ],
-        "nearestVr": {
-          "scene": "scene_a3",
-          "distanceM": 41.01
-        },
-        "outputScores": [
-          {
-            "id": "JA_e3f71fa643ba5e39/symbols/0/colour/yellow",
-            "support": 0.448,
-            "residualM": 0.08,
-            "occluded": false,
-            "unmeasurable": false
-          }
-        ],
-        "status": "unresolved",
-        "unresolvedQuestion": "The physical junction is localized to RZ-079=1.000, but its connecting road arm is not uniquely supported by the named road polygons and the source-marking direction."
-      },
-      "method": "lane C aerial corridor and authoritative network connectivity review"
-    },
-    {
-      "id": "RS_fd70e78dc1d17f8b",
-      "verified": false,
-      "segmentId": null,
-      "originalSegment": "RD_035",
-      "refs": [],
-      "method": "unique reviewed road-zone containment",
-      "candidates": [
-        {
-          "segmentId": "RD_033",
-          "share": 0.25
-        }
-      ],
-      "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified."
-    },
-    {
-      "id": "JA_fd70e78dc1d17f8b",
-      "verified": false,
-      "nodeId": null,
-      "originalNode": "ND_006",
-      "refs": [
-        "photo/evidence/markings-extra.geojson#MX00395",
-        "backend/simulation/data/road_segments.geojson#RD_035",
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-087",
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-        "task-24-attempt-2/owner-source-probes.json#JA_fd70e78dc1d17f8b",
-        "VR scene_a3 f/r/b/l/d",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/.cache/ngii-ortho/(B060)정사영상_2025_34702020.tif",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/road_segments.geojson#RD_035",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-network-chips/RD_035-paths.png",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/.omo/evidence/task-24-attempt-2/owner-source-probes.json#/owners/271",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-vr-sheets/sheet-0.png#scene_a3",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/ground/road-curation.json#/owners/480",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#ND_006",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0308",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0350",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00395"
-      ],
-      "reason": "JA_fd70e78dc1d17f8b: MX00395; EPSG:5186 (243880.86, 263775.471). 사진의 MX00395 표식은 RD_035 그룹에 놓였으나 독립 교차로 폴리곤 대응은 RZ-079=0.75. 부모 RS_fd70e78dc1d17f8b의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_006는 사진 중심에서 18.12 m, 연결 도로는 RD_035/RD_088이며 대안 노드는 ND_006 18.12 m, ND_131 54.552 m, ND_132 55.056 m이다. 이 연결 목록만으로 해당 표식이 어느 진입부 ND에 속하는지 결정되지 않는다.",
-      "reviewEvidence": {
-        "centreTm": [
-          243880.86,
-          263775.471
-        ],
-        "sourceRefs": [
-          "MX00395"
-        ],
-        "namedRoadVertexShares": [
-          {
-            "segmentId": "RD_033",
-            "share": 0.25
-          }
-        ],
-        "namedRoadCentreShares": [],
-        "namedJunctionShares": [
-          {
-            "segmentId": "RZ-079",
-            "share": 0.75
-          }
-        ],
-        "nearestVr": {
-          "scene": "scene_a3",
-          "distanceM": 12.93
-        },
-        "outputScores": [
-          {
-            "id": "JA_fd70e78dc1d17f8b/symbols/0/colour/yellow",
-            "support": 1,
-            "residualM": 0.662,
-            "occluded": false,
-            "unmeasurable": false
-          }
-        ],
-        "status": "unresolved",
-        "unresolvedQuestion": "The physical junction is localized to RZ-079=0.750, but its connecting road arm is not uniquely supported by the named road polygons and the source-marking direction."
-      },
-      "method": "lane C aerial corridor and authoritative network connectivity review"
-    },
-    {
-      "id": "RS_265983e51698ac73",
-      "verified": false,
-      "segmentId": null,
-      "originalSegment": "RD_035",
-      "refs": [],
-      "method": "unique reviewed road-zone containment",
-      "candidates": [],
-      "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified."
-    },
-    {
-      "id": "JA_265983e51698ac73",
-      "verified": false,
-      "nodeId": "ND_006",
-      "originalNode": "ND_006",
-      "refs": [
-        "photo/evidence/markings-extra.geojson#MX00396",
-        "backend/simulation/data/road_segments.geojson#RD_035",
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-        "task-24-attempt-2/owner-source-probes.json#JA_265983e51698ac73",
-        "VR scene_a3 f/r/b/l/d",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/.cache/ngii-ortho/(B060)정사영상_2025_34702020.tif",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/road_segments.geojson#RD_035",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-network-chips/RD_035-paths.png",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/.omo/evidence/task-24-attempt-2/owner-source-probes.json#/owners/34",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-vr-sheets/sheet-0.png#scene_a3",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/ground/road-curation.json#/owners/482",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#ND_006",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0308",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0350",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00396"
-      ],
-      "reason": "JA_265983e51698ac73: MX00396; EPSG:5186 (243882.04, 263773.65). 사진의 MX00396 표식은 RD_035 그룹에 놓였으나 RZ-079(중앙교차로) 영역 지분 1과 ND 후보 ND_006까지는 지지된다. 부모 RS_265983e51698ac73의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_006는 사진 중심에서 19.029 m, 연결 도로는 RD_035/RD_088이며 대안 노드는 ND_006 19.029 m, ND_131 52.991 m, ND_132 53.484 m이다. 이 연결 목록만으로 해당 표식이 어느 진입부 ND에 속하는지 결정되지 않는다.",
-      "reviewEvidence": {
-        "centreTm": [
-          243882.04,
-          263773.65
-        ],
-        "sourceRefs": [
-          "MX00396"
-        ],
-        "namedRoadVertexShares": [],
-        "namedRoadCentreShares": [],
-        "namedJunctionShares": [
-          {
-            "segmentId": "RZ-079",
-            "share": 1
-          }
-        ],
-        "nearestVr": {
-          "scene": "scene_a3",
-          "distanceM": 14.48
-        },
-        "outputScores": [
-          {
-            "id": "JA_265983e51698ac73/symbols/0/colour/yellow",
-            "support": 1,
-            "residualM": 0.911,
-            "occluded": false,
-            "unmeasurable": false
-          }
-        ],
-        "status": "unresolved",
-        "unresolvedQuestion": "The physical junction is localized to RZ-079=1.000, but its connecting road arm is not uniquely supported by the named road polygons and the source-marking direction."
-      },
-      "method": "lane C aerial corridor and authoritative network connectivity review"
-    },
-    {
-      "id": "RS_8444a6a03aadf605",
-      "verified": true,
-      "segmentId": "RD_033",
-      "originalSegment": "RD_035",
-      "refs": [
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-087",
-        "task-24-attempt-2/junction-owner-preview/JA_8444a6a03aadf605-paths.png",
-        "campus_transport_network.geojson#ND_006",
-        "VR scene_a3 f/r/b/l/d"
-      ],
-      "method": "photo-reviewed continuous approach to named road polygon",
-      "candidates": [],
-      "reason": "Within RZ-079, photo inspection confirms a continuous paved approach to RD_033 along the source-marking direction (17 m to RZ-087). This establishes the road owner, not the source centreline or lane dimensions."
-    },
-    {
-      "id": "JA_8444a6a03aadf605",
-      "verified": true,
-      "nodeId": "ND_006",
-      "originalNode": "ND_006",
-      "refs": [
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-087",
-        "task-24-attempt-2/junction-owner-preview/JA_8444a6a03aadf605-paths.png",
-        "campus_transport_network.geojson#ND_006",
-        "VR scene_a3 f/r/b/l/d"
-      ],
-      "reason": "Photo crossing/approach lies inside named junction RZ-079 (ND_006) and joins the independently named RD_033 corridor. Dimensions remain estimated.",
-      "reviewEvidence": {
-        "centreTm": [
-          243886.2,
-          263781.803
-        ],
-        "sourceRefs": [
-          "MX00397"
-        ],
-        "namedRoadVertexShares": [],
-        "namedRoadCentreShares": [],
-        "namedJunctionShares": [
-          {
-            "segmentId": "RZ-079",
-            "share": 1
-          }
-        ],
-        "nearestVr": {
-          "scene": "scene_a3",
-          "distanceM": 18.59
-        },
-        "outputScores": [
-          {
-            "id": "JA_8444a6a03aadf605/symbols/0/colour/yellow",
-            "support": 1,
-            "residualM": 0.83,
-            "occluded": false,
-            "unmeasurable": false
-          }
-        ],
-        "status": "verified ownership only",
-        "unresolvedQuestion": null
-      }
-    },
-    {
-      "id": "RS_4e43a374acc9b522",
-      "verified": false,
-      "segmentId": null,
-      "originalSegment": "RD_035",
-      "refs": [],
-      "method": "unique reviewed road-zone containment",
-      "candidates": [
-        {
-          "segmentId": "RD_033",
-          "share": 0.25
-        }
-      ],
-      "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified."
-    },
-    {
-      "id": "JA_4e43a374acc9b522",
-      "verified": false,
-      "nodeId": null,
-      "originalNode": "ND_006",
-      "refs": [
-        "photo/evidence/markings-extra.geojson#MX00398",
-        "backend/simulation/data/road_segments.geojson#RD_035",
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-087",
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-        "task-24-attempt-2/owner-source-probes.json#JA_4e43a374acc9b522",
-        "VR scene_a3 f/r/b/l/d",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/.cache/ngii-ortho/(B060)정사영상_2025_34702020.tif",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/road_segments.geojson#RD_035",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-network-chips/RD_035-paths.png",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/.omo/evidence/task-24-attempt-2/owner-source-probes.json#/owners/66",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-vr-sheets/sheet-0.png#scene_a3",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/ground/road-curation.json#/owners/486",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#ND_006",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0308",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0350",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00398"
-      ],
-      "reason": "JA_4e43a374acc9b522: MX00398; EPSG:5186 (243879.117, 263768.956). 사진의 MX00398 표식은 RD_035 그룹에 놓였으나 독립 교차로 폴리곤 대응은 RZ-079=0.75. 부모 RS_4e43a374acc9b522의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_006는 사진 중심에서 24.554 m, 연결 도로는 RD_035/RD_088이며 대안 노드는 ND_006 24.554 m, ND_131 47.834 m, ND_132 48.343 m이다. 이 연결 목록만으로 해당 표식이 어느 진입부 ND에 속하는지 결정되지 않는다.",
-      "reviewEvidence": {
-        "centreTm": [
-          243879.117,
-          263768.956
-        ],
-        "sourceRefs": [
-          "MX00398"
-        ],
-        "namedRoadVertexShares": [
-          {
-            "segmentId": "RD_033",
-            "share": 0.25
-          }
-        ],
-        "namedRoadCentreShares": [],
-        "namedJunctionShares": [
-          {
-            "segmentId": "RZ-079",
-            "share": 0.75
-          }
-        ],
-        "nearestVr": {
-          "scene": "scene_a3",
-          "distanceM": 13.98
-        },
-        "outputScores": [
-          {
-            "id": "JA_4e43a374acc9b522/symbols/0/colour/yellow",
-            "support": 1,
-            "residualM": 0.5,
-            "occluded": false,
-            "unmeasurable": false
-          }
-        ],
-        "status": "unresolved",
-        "unresolvedQuestion": "The physical junction is localized to RZ-079=0.750, but its connecting road arm is not uniquely supported by the named road polygons and the source-marking direction."
-      },
-      "method": "lane C aerial corridor and authoritative network connectivity review"
-    },
-    {
-      "id": "RS_c2c80753c81f7a4c",
-      "verified": true,
-      "segmentId": "RD_033",
-      "originalSegment": "RD_035",
-      "refs": [
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-087",
-        "task-24-attempt-2/junction-owner-preview/JA_c2c80753c81f7a4c-paths.png",
-        "campus_transport_network.geojson#ND_006",
-        "VR scene_a3 f/r/b/l/d"
-      ],
-      "method": "photo-reviewed continuous approach to named road polygon",
-      "candidates": [],
-      "reason": "Within RZ-079, photo inspection confirms a continuous paved approach to RD_033 along the source-marking direction (16 m to RZ-087). This establishes the road owner, not the source centreline or lane dimensions."
-    },
-    {
-      "id": "JA_c2c80753c81f7a4c",
-      "verified": true,
-      "nodeId": "ND_006",
-      "originalNode": "ND_006",
-      "refs": [
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-087",
-        "task-24-attempt-2/junction-owner-preview/JA_c2c80753c81f7a4c-paths.png",
-        "campus_transport_network.geojson#ND_006",
-        "VR scene_a3 f/r/b/l/d"
-      ],
-      "reason": "Photo crossing/approach lies inside named junction RZ-079 (ND_006) and joins the independently named RD_033 corridor. Dimensions remain estimated.",
-      "reviewEvidence": {
-        "centreTm": [
-          243883.671,
-          263782.547
-        ],
-        "sourceRefs": [
-          "MX00399"
-        ],
-        "namedRoadVertexShares": [],
-        "namedRoadCentreShares": [],
-        "namedJunctionShares": [
-          {
-            "segmentId": "RZ-079",
-            "share": 1
-          }
-        ],
-        "nearestVr": {
-          "scene": "scene_a3",
-          "distanceM": 16.35
-        },
-        "outputScores": [
-          {
-            "id": "JA_c2c80753c81f7a4c/symbols/0/colour/yellow",
-            "support": 0.5,
-            "residualM": 0.249,
-            "occluded": false,
-            "unmeasurable": false
-          }
-        ],
-        "status": "verified ownership only",
-        "unresolvedQuestion": null
-      }
-    },
-    {
-      "id": "RS_66fcac442192639a",
-      "verified": true,
-      "segmentId": "RD_033",
-      "originalSegment": "RD_035",
-      "refs": [
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-087",
-        "task-24-attempt-2/junction-owner-preview/JA_66fcac442192639a-paths.png",
-        "campus_transport_network.geojson#ND_006",
-        "VR scene_a3 f/r/b/l/d"
-      ],
-      "method": "photo-reviewed continuous approach to named road polygon",
-      "candidates": [],
-      "reason": "Within RZ-079, photo inspection confirms a continuous paved approach to RD_033 along the source-marking direction (12 m to RZ-087). This establishes the road owner, not the source centreline or lane dimensions."
-    },
-    {
-      "id": "JA_66fcac442192639a",
-      "verified": true,
-      "nodeId": "ND_006",
-      "originalNode": "ND_006",
-      "refs": [
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-087",
-        "task-24-attempt-2/junction-owner-preview/JA_66fcac442192639a-paths.png",
-        "campus_transport_network.geojson#ND_006",
-        "VR scene_a3 f/r/b/l/d"
-      ],
-      "reason": "Photo crossing/approach lies inside named junction RZ-079 (ND_006) and joins the independently named RD_033 corridor. Dimensions remain estimated.",
-      "reviewEvidence": {
-        "centreTm": [
-          243883.321,
-          263778.363
-        ],
-        "sourceRefs": [
-          "MX00400"
-        ],
-        "namedRoadVertexShares": [],
-        "namedRoadCentreShares": [],
-        "namedJunctionShares": [
-          {
-            "segmentId": "RZ-079",
-            "share": 1
-          }
-        ],
-        "nearestVr": {
-          "scene": "scene_a3",
-          "distanceM": 15.24
-        },
-        "outputScores": [
-          {
-            "id": "JA_66fcac442192639a/symbols/0/colour/yellow",
-            "support": 0.556,
-            "residualM": 0.408,
-            "occluded": false,
-            "unmeasurable": false
-          }
-        ],
-        "status": "verified ownership only",
-        "unresolvedQuestion": null
-      }
-    },
-    {
-      "id": "RS_947d91f60d64f23e",
-      "verified": false,
-      "segmentId": null,
-      "originalSegment": "RD_035",
-      "refs": [],
-      "method": "unique reviewed road-zone containment",
-      "candidates": [],
-      "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified."
-    },
-    {
-      "id": "JA_947d91f60d64f23e",
-      "verified": false,
-      "nodeId": "ND_006",
-      "originalNode": "ND_144",
-      "refs": [
-        "photo/evidence/markings-extra.geojson#MX00434",
-        "backend/simulation/data/road_segments.geojson#RD_035",
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-        "task-24-attempt-2/owner-source-probes.json#JA_947d91f60d64f23e",
-        "VR scene_a3 f/r/b/l/d",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/.cache/ngii-ortho/(B060)정사영상_2025_34702020.tif",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/road_segments.geojson#RD_035",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-network-chips/RD_035-paths.png",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/.omo/evidence/task-24-attempt-2/owner-source-probes.json#/owners/146",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-vr-sheets/sheet-0.png#scene_a3",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/ground/road-curation.json#/owners/492",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#ND_144",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0170",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0171",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00434"
-      ],
-      "reason": "JA_947d91f60d64f23e: MX00434; EPSG:5186 (243913.638, 263785.667). 사진의 MX00434 표식은 RD_035 그룹에 놓였으나 RZ-079(중앙교차로) 영역 지분 1과 ND 후보 ND_006까지는 지지된다. 부모 RS_947d91f60d64f23e의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_144는 사진 중심에서 21.549 m, 연결 도로는 RD_004이며 대안 노드는 ND_144 21.549 m, ND_006 22.754 m, ND_007 51.638 m이다. 동일 RD만 연결하는 그래프 분할점이므로 실제 교차로 경계와 일치한다고 할 수 없다.",
-      "reviewEvidence": {
-        "centreTm": [
-          243913.638,
-          263785.667
-        ],
-        "sourceRefs": [
-          "MX00434"
-        ],
-        "namedRoadVertexShares": [],
-        "namedRoadCentreShares": [],
-        "namedJunctionShares": [
-          {
-            "segmentId": "RZ-079",
-            "share": 1
-          }
-        ],
-        "nearestVr": {
-          "scene": "scene_a3",
-          "distanceM": 46.25
-        },
-        "outputScores": [
-          {
-            "id": "JA_947d91f60d64f23e/symbols/0/colour/yellow",
-            "support": 1,
-            "residualM": 1.963,
-            "occluded": false,
-            "unmeasurable": false
-          }
-        ],
-        "status": "unresolved",
-        "unresolvedQuestion": "The physical junction is localized to RZ-079=1.000, but its connecting road arm is not uniquely supported by the named road polygons and the source-marking direction."
       },
       "method": "lane C aerial corridor and authoritative network connectivity review"
     },
@@ -30843,140 +29831,6 @@
         "status": "verified ownership only",
         "unresolvedQuestion": null
       }
-    },
-    {
-      "id": "RS_d18fc9482abce445",
-      "verified": false,
-      "segmentId": null,
-      "originalSegment": "RD_035",
-      "refs": [],
-      "method": "unique reviewed road-zone containment",
-      "candidates": [],
-      "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified."
-    },
-    {
-      "id": "JA_d18fc9482abce445",
-      "verified": false,
-      "nodeId": "ND_006",
-      "originalNode": "ND_006",
-      "refs": [
-        "photo/evidence/markings-extra.geojson#MX00386",
-        "backend/simulation/data/road_segments.geojson#RD_035",
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-        "task-24-attempt-2/owner-source-probes.json#JA_d18fc9482abce445",
-        "VR scene_e1 f/r/b/l/d",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/.cache/ngii-ortho/(B060)정사영상_2025_34702020.tif",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/road_segments.geojson#RD_035",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-network-chips/RD_035-paths.png",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/.omo/evidence/task-24-attempt-2/owner-source-probes.json#/owners/215",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-vr-sheets/sheet-5.png#scene_e1",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/ground/road-curation.json#/owners/496",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#ND_006",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0308",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0350",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00386"
-      ],
-      "reason": "JA_d18fc9482abce445: MX00386; EPSG:5186 (243893.531, 263800.874). 사진의 MX00386 표식은 RD_035 그룹에 놓였으나 RZ-079(중앙교차로) 영역 지분 1과 ND 후보 ND_006까지는 지지된다. 부모 RS_d18fc9482abce445의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_006는 사진 중심에서 10.85 m, 연결 도로는 RD_035/RD_088이며 대안 노드는 ND_006 10.85 m, ND_144 40.312 m, ND_138 53.964 m이다. 이 연결 목록만으로 해당 표식이 어느 진입부 ND에 속하는지 결정되지 않는다.",
-      "reviewEvidence": {
-        "centreTm": [
-          243893.531,
-          263800.874
-        ],
-        "sourceRefs": [
-          "MX00386"
-        ],
-        "namedRoadVertexShares": [],
-        "namedRoadCentreShares": [],
-        "namedJunctionShares": [
-          {
-            "segmentId": "RZ-079",
-            "share": 1
-          }
-        ],
-        "nearestVr": {
-          "scene": "scene_e1",
-          "distanceM": 31.19
-        },
-        "outputScores": [
-          {
-            "id": "JA_d18fc9482abce445/areas/0/colour/yellow",
-            "support": 1,
-            "residualM": 0.398,
-            "occluded": false,
-            "unmeasurable": false
-          }
-        ],
-        "status": "unresolved",
-        "unresolvedQuestion": "The physical junction is localized to RZ-079=1.000, but its connecting road arm is not uniquely supported by the named road polygons and the source-marking direction."
-      },
-      "method": "lane C aerial corridor and authoritative network connectivity review"
-    },
-    {
-      "id": "RS_63d9b8a0f36cffc7",
-      "verified": false,
-      "segmentId": null,
-      "originalSegment": "RD_035",
-      "refs": [],
-      "method": "unique reviewed road-zone containment",
-      "candidates": [],
-      "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified."
-    },
-    {
-      "id": "JA_63d9b8a0f36cffc7",
-      "verified": false,
-      "nodeId": "ND_006",
-      "originalNode": "ND_006",
-      "refs": [
-        "photo/evidence/markings-extra.geojson#MX00390",
-        "backend/simulation/data/road_segments.geojson#RD_035",
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-079",
-        "task-24-attempt-2/owner-source-probes.json#JA_63d9b8a0f36cffc7",
-        "VR scene_e1 f/r/b/l/d",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/.cache/ngii-ortho/(B060)정사영상_2025_34702020.tif",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/road_segments.geojson#RD_035",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-network-chips/RD_035-paths.png",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/.omo/evidence/task-24-attempt-2/owner-source-probes.json#/owners/83",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-vr-sheets/sheet-5.png#scene_e1",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/ground/road-curation.json#/owners/498",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#ND_006",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0308",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0350",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00390"
-      ],
-      "reason": "JA_63d9b8a0f36cffc7: MX00390; EPSG:5186 (243892.043, 263802.057). 사진의 MX00390 표식은 RD_035 그룹에 놓였으나 RZ-079(중앙교차로) 영역 지분 1과 ND 후보 ND_006까지는 지지된다. 부모 RS_63d9b8a0f36cffc7의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_006는 사진 중심에서 11.831 m, 연결 도로는 RD_035/RD_088이며 대안 노드는 ND_006 11.831 m, ND_144 41.981 m, ND_138 52.911 m이다. 이 연결 목록만으로 해당 표식이 어느 진입부 ND에 속하는지 결정되지 않는다.",
-      "reviewEvidence": {
-        "centreTm": [
-          243892.043,
-          263802.057
-        ],
-        "sourceRefs": [
-          "MX00390"
-        ],
-        "namedRoadVertexShares": [],
-        "namedRoadCentreShares": [],
-        "namedJunctionShares": [
-          {
-            "segmentId": "RZ-079",
-            "share": 1
-          }
-        ],
-        "nearestVr": {
-          "scene": "scene_e1",
-          "distanceM": 29.61
-        },
-        "outputScores": [
-          {
-            "id": "JA_63d9b8a0f36cffc7/areas/0/colour/yellow",
-            "support": 0.889,
-            "residualM": 0.188,
-            "occluded": false,
-            "unmeasurable": false
-          }
-        ],
-        "status": "unresolved",
-        "unresolvedQuestion": "The physical junction is localized to RZ-079=1.000, but its connecting road arm is not uniquely supported by the named road polygons and the source-marking direction."
-      },
-      "method": "lane C aerial corridor and authoritative network connectivity review"
     },
     {
       "id": "RS_0d57ac4b3ed5315e",
@@ -40230,76 +39084,6 @@
       }
     },
     {
-      "id": "RS_5694ef6bf3642ebb",
-      "verified": false,
-      "segmentId": null,
-      "originalSegment": "RD_032",
-      "refs": [],
-      "method": "unique reviewed road-zone containment",
-      "candidates": [],
-      "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified."
-    },
-    {
-      "id": "JA_5694ef6bf3642ebb",
-      "verified": false,
-      "nodeId": "ND_007",
-      "originalNode": "ND_007",
-      "refs": [
-        "photo/evidence/markings.geojson#MK01302",
-        "photo/evidence/markings.geojson#MK01303",
-        "backend/simulation/data/road_segments.geojson#RD_032",
-        "docs/assets/data/road_zones_wgs84.geojson#RZ-070",
-        "task-24-attempt-2/owner-source-probes.json#JA_5694ef6bf3642ebb",
-        "VR scene_a2 f/r/b/l/d",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/.cache/ngii-ortho/(B060)정사영상_2025_34702020.tif",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/road_segments.geojson#RD_032",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-network-chips/RD_032-paths.png",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/.omo/evidence/task-24-attempt-2/owner-source-probes.json#/owners/74",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-vr-sheets/sheet-0.png#scene_a2",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/ground/road-curation.json#/owners/735",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#ND_007",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0295",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0300",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01302",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01303"
-      ],
-      "reason": "JA_5694ef6bf3642ebb: MK01302, MK01303; EPSG:5186 (243963.342, 263763.147). 사진의 MK01302, MK01303 표식은 RD_032 그룹에 놓였으나 RZ-070(약대사거리) 영역 지분 1과 ND 후보 ND_007까지는 지지된다. 부모 RS_5694ef6bf3642ebb의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_007는 사진 중심에서 4.624 m, 연결 도로는 RD_091/RD_035이며 대안 노드는 ND_007 4.624 m, ND_144 43.355 m, ND_172 44.27 m이다. 이 연결 목록만으로 해당 표식이 어느 진입부 ND에 속하는지 결정되지 않는다.",
-      "reviewEvidence": {
-        "centreTm": [
-          243963.342,
-          263763.147
-        ],
-        "sourceRefs": [
-          "MK01302",
-          "MK01303"
-        ],
-        "namedRoadVertexShares": [],
-        "namedRoadCentreShares": [],
-        "namedJunctionShares": [
-          {
-            "segmentId": "RZ-070",
-            "share": 1
-          }
-        ],
-        "nearestVr": {
-          "scene": "scene_a2",
-          "distanceM": 23.56
-        },
-        "outputScores": [
-          {
-            "id": "JA_5694ef6bf3642ebb/text/0/colour/white",
-            "support": 0,
-            "residualM": 0.077,
-            "occluded": false,
-            "unmeasurable": false
-          }
-        ],
-        "status": "unresolved",
-        "unresolvedQuestion": "The physical junction is localized to RZ-070=1.000, but its connecting road arm is not uniquely supported by the named road polygons and the source-marking direction."
-      },
-      "method": "lane C aerial corridor and authoritative network connectivity review"
-    },
-    {
       "id": "RS_79b95d6b49a8c4d1",
       "verified": false,
       "segmentId": null,
@@ -48717,6 +47501,674 @@
       "method": "unique reviewed road-zone containment",
       "candidates": [],
       "reason": "No emitted logical paint for this section; no existence or ownership claim."
+    },
+    {
+      "id": "RS_fee97c7b22a9b933",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_109",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00484",
+        "photo/evidence/markings-extra.geojson#MX00485",
+        "photo/evidence/markings-extra.geojson#MX00486",
+        "photo/evidence/markings-extra.geojson#MX00487",
+        "photo/evidence/markings-extra.geojson#MX00488",
+        "photo/evidence/markings-extra.geojson#MX00489"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_fee97c7b22a9b933",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_007",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00484",
+        "photo/evidence/markings-extra.geojson#MX00485",
+        "photo/evidence/markings-extra.geojson#MX00486",
+        "photo/evidence/markings-extra.geojson#MX00487",
+        "photo/evidence/markings-extra.geojson#MX00488",
+        "photo/evidence/markings-extra.geojson#MX00489"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_00467b0d567772e9",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00784",
+        "photo/evidence/markings-extra.geojson#MX00785",
+        "photo/evidence/markings-extra.geojson#MX00786",
+        "photo/evidence/markings-extra.geojson#MX00787",
+        "photo/evidence/markings-extra.geojson#MX00788"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_00467b0d567772e9",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_202",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00784",
+        "photo/evidence/markings-extra.geojson#MX00785",
+        "photo/evidence/markings-extra.geojson#MX00786",
+        "photo/evidence/markings-extra.geojson#MX00787",
+        "photo/evidence/markings-extra.geojson#MX00788"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_728f30ece4168ddd",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_109",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01902"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_728f30ece4168ddd",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_144",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01902"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_43d3a724a4d544dc",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_088",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01889"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_43d3a724a4d544dc",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01889"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_5861d1ee5692f82d",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_088",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01891"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_5861d1ee5692f82d",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01891"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_01ae9ca9cc605cab",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00425"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_967f22e80fc02992",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01888"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_967f22e80fc02992",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01888"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_07d5f487f614c5a2",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01890"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_07d5f487f614c5a2",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01890"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_449dead572f84eba",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01892"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_449dead572f84eba",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01892"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_f7573d9192807ce3",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01893"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_f7573d9192807ce3",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01893"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_53447d4739ed6653",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01894"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_53447d4739ed6653",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01894"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_875964546e77b3ef",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01895"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_875964546e77b3ef",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01895"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_f9026fbe28a6a68e",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01896"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_f9026fbe28a6a68e",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01896"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_afe4bf520ea8b28f",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01897"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_afe4bf520ea8b28f",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01897"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_fb5210fdd68e6ab6",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01898"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_fb5210fdd68e6ab6",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01898"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_1ef8980ece4ed7fb",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01899"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_1ef8980ece4ed7fb",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01899"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_9b72dea7a038a2ac",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01900"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_9b72dea7a038a2ac",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_144",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01900"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_01dae60117d9a751",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01901"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_01dae60117d9a751",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01901"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_0efe0c55195a6821",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01903"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_0efe0c55195a6821",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01903"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_30a120a8f76d4552",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01904"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_30a120a8f76d4552",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01904"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_a17a20faaf9e4aea",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01905"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_a17a20faaf9e4aea",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01905"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_c4659d0c4195d8e3",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01906"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_c4659d0c4195d8e3",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01906"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_9f2bca0e0922d8d1",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01907"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_9f2bca0e0922d8d1",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01907"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_674ad1fe1fc883eb",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01908"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_674ad1fe1fc883eb",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01908"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_2d7c72535e5561cb",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01909"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_2d7c72535e5561cb",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01909"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_4e8d11691bc04bff",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01910"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_4e8d11691bc04bff",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01910"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_60f2275b4f84056d",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01911"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_60f2275b4f84056d",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01911"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_a5252e55bf02e74d",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01912"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_a5252e55bf02e74d",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01912"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_059b8dbae100e473",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01913"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_059b8dbae100e473",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01913"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_afe6bdfed12c01d1",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01914"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_afe6bdfed12c01d1",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01914"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_6bd63e2d6a782bcd",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01915"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_6bd63e2d6a782bcd",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01915"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_8bfb89dbd2c4d840",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01916"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_8bfb89dbd2c4d840",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01916"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_a32bb10430ae6bef",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01917"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "JA_a32bb10430ae6bef",
+      "verified": false,
+      "nodeId": null,
+      "originalNode": "ND_006",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01917"
+      ],
+      "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
     }
   ],
   "surfaceReviews": [

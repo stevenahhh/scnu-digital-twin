@@ -32,11 +32,13 @@ export function basisuArgs(slots, { normals = KTX2_DEFAULTS.normals, d4 = false 
   const args = ["-ktx2", "-mipmap"];
   const normal = slots.includes("normalTexture");
   // D-04/D-49: the D4 atlas and CC0 tiles keep their native detail. Scope is
-  // resolved from material ownership, never from a campus-wide option. Normal maps
-  // stay UASTC; the rest is max-quality ETC1S, since all-UASTC D4 maps pushed
-  // campus-v2.glb to 162 MB, past GitHub's 100 MB file limit.
-  if (d4 && normal) return [...args, "-uastc", "-uastc_rdo_l", "2", "-linear", "-normal_map"];
-  if (d4) return [...args, "-etc1s", "-q", "255", ...(!slots.every(slot => COLOUR_SLOTS.has(slot)) ? ["-linear"] : [])];
+  // resolved from material ownership, never from a campus-wide option. Every D4 map
+  // is max-quality ETC1S: all-UASTC D4 maps pushed campus-v2.glb to 162 MB, past
+  // GitHub's 100 MB file limit, and the 12 UASTC normal maps alone were 52.7 MB of
+  // the 93.4 MB file (user decision 2026-11-10).
+  if (d4) {
+    return [...args, "-etc1s", "-q", "255", ...(!slots.every(slot => COLOUR_SLOTS.has(slot)) ? ["-linear"] : []), ...(normal ? ["-normal_map"] : [])];
+  }
   if (normal && normals === "uastc") return [...args, "-uastc", "-uastc_rdo_l", "2", "-linear", "-normal_map"];
   args.push("-etc1s");
   if (!slots.every((slot) => COLOUR_SLOTS.has(slot))) args.push("-linear");

@@ -50,6 +50,8 @@ const MCEE_CACHE = path.join(CACHE, "mcee");
 //               141 is generic, and OSM's 농구장 polygon (way 366373756) lies over the futsal/multi
 //               courts, not over the blue basketball courts. headingDegrees is the court's long axis
 //               in the scene frame (degrees from +x toward +z); court markings are drawn around `at`.
+//   pitch       the football pitch inside the running track, in its own frame: the track facility outline that the
+//               lanes follow is not parallel to the painted pitch. Its lines and goals are placed around `at`.
 //   roundabout  the red-paved roundabout of the central intersection. OSM maps only its two oneway
 //               carriageways (ways 1364521191/1364521192), MCEE folds it into class 154 (road).
 //   fountain    the fountain at the west end of the plaza's oval lawn; mapped by neither source.
@@ -63,9 +65,10 @@ const MCEE_CACHE = path.join(CACHE, "mcee");
 const SUPPLEMENTS = [
   { kind: "surface", note: "blue basketball court (full court)", at: [127.4831566,34.9679874], surface: "basketball", headingDegrees: 12 },
   { kind: "surface", note: "blue basketball court (half court)", at: [127.4831955,34.9678223], surface: "basketball", lines: false },
-  { kind: "surface", note: "futsal pitch west of the multi court", at: [127.4829982,34.9675956], surface: "futsal", headingDegrees: 102 },
-  { kind: "surface", note: "multi court (green apron, red court)", at: [127.483195,34.9675667], surface: "multi", headingDegrees: 102 },
+  { kind: "surface", note: "futsal pitch west of the multi court (centre, long axis and 38.2 x 20.2 m outline read from the painted lines on the NGII 2025 orthophoto, 2026-11-10; estimated)", at: [127.4829971,34.9675887], surface: "futsal", headingDegrees: 104.4 },
+  { kind: "surface", note: "multi court (green apron, red court; long axis read from the red court's edges on the NGII 2025 orthophoto, 2026-11-10; estimated)", at: [127.483195,34.9675667], surface: "multi", headingDegrees: 104.4 },
   { kind: "surface", note: "tennis courts (테니스장)", at: [127.4831938,34.9671985], surface: "tennis", headingDegrees: 102 },
+  { kind: "pitch", note: "football pitch inside the running track (대운동장): centre between the two goal mouths (0.15 m from the centre spot), long axis from goal to goal (105.2 m apart), read on the NGII 2025 orthophoto, 2026-11-10; the track facility outline is turned about 1.8 degrees from it (estimated)", at: [127.4823202,34.9677325], headingDegrees: 104.6 },
   { kind: "surface", note: "oval lawn in the central plaza", at: [127.4800853,34.9695595], surface: "lawn" },
   { kind: "roundabout", note: "central intersection roundabout (centre estimated; radius 10.7 m fitted to the painted rim on the NGII 2025 orthophoto, 2026-10-24)", centre: [127.4806378, 34.9692591], radiusMetres: 10.7 },
   { kind: "fountain", note: "central plaza fountain (estimate)", centre: [127.4799993, 34.9695797], radiusMetres: 3.6 },

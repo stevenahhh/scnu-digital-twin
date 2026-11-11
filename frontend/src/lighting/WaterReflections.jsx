@@ -7,7 +7,7 @@
 // water mesh is hidden while the mirrors stand and shown again when they are removed.
 import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { BufferAttribute, BufferGeometry, Color, DataTexture, DoubleSide, LinearFilter, RepeatWrapping, Vector2, Vector3 } from "three";
+import { BufferAttribute, BufferGeometry, Color, DataTexture, DoubleSide, Frustum, LinearFilter, Matrix4, RepeatWrapping, SRGBColorSpace, Sphere, Vector2, Vector3 } from "three";
 import { Reflector } from "three/examples/jsm/objects/Reflector.js";
 import { WATER_MATERIAL_NAME } from "./water.mjs";
 import { WATER_BASE_COLOUR, WATER_REFLECTION_SHADER, mirrorDue, reflectionSizeFor, rippleNormalMap, splitPools } from "./waterReflection.mjs";
@@ -36,7 +36,6 @@ function buildMirrors(source, size, ripple, tier, clock) {
   const index = source.geometry.getIndex();
   const pools = splitPools(world, index ? Array.from(index.array) : null);
   const color = new Color(WATER_BASE_COLOUR);
-  let guard = false;
   return pools.map(({ triangles, planeY }) => {
     // the pool in the Reflector's local XY plane (normal +Z); the mesh turns it face-up at planeY
     const local = new Float32Array(triangles.length * 3);
@@ -53,29 +52,43 @@ function buildMirrors(source, size, ripple, tier, clock) {
     mirror.castShadow = false;
     mirror.receiveShadow = false;
     mirror.raycast = () => {};
-    // one mirror pass at a time: a pool seen inside another pool's reflection is not mirrored again
+    // The mirror pass runs from WaterReflections' useFrame, before the main render, with the main pass's output colour
+    // space and tone mapping (the target is marked like the composer's screen-referred buffer while it renders). Run
+    // from three's onBeforeRender it was a render nested in the main one, with its own light state and a linear target,
+    // so every lit material resolved its program again twice a frame: about 4 ms of main-thread time per frame on
+    // campus-v2 (measured). The pool shader takes the texture back to scene-linear light (waterReflection.mjs). A pool
+    // seen in another pool's reflection shows its last texture.
     const render = mirror.onBeforeRender;
-    const centre = new Vector3();
+    mirror.onBeforeRender = () => {};
+    const target = mirror.getRenderTarget();
+    const sphere = new Sphere();
     let rendered = false;
     const texPos = new Vector3();
     const texDir = new Vector3();
     const dir = new Vector3();
-    mirror.onBeforeRender = (...args) => {
-      if (guard) return;
-      const [renderer, , camera] = args;
+    mirror.userData.renderReflection = (renderer, scene, camera, frustum) => {
+      if (!mirror.visible) return;
       mirror.updateWorldMatrix(true, false);
-      centre.copy(geometry.boundingSphere.center).applyMatrix4(mirror.matrixWorld);
-      const radius = geometry.boundingSphere.radius;
+      sphere.copy(geometry.boundingSphere).applyMatrix4(mirror.matrixWorld);
+      // only while the pool is in view (three skipped onBeforeRender for a culled mirror)
+      if (!frustum.intersectsSphere(sphere)) return;
       // the first pass always runs, so a mirror never shows an empty texture
       camera.getWorldDirection(dir);
       const moved = rendered ? texPos.distanceTo(camera.position) : Infinity;
       const turned = rendered ? (Math.acos(Math.min(1, Math.max(-1, texDir.dot(dir)))) * 180) / Math.PI : Infinity;
-      if (rendered && !mirrorDue({ frame: clock.frame, tier, radius, distance: centre.distanceTo(camera.position), fovDeg: camera.fov, viewportPx: renderer.getDrawingBufferSize(buffer).y, movedSinceTexture: moved, turnedSinceTexture: turned, cameraAtRest: clock.atRest })) return;
+      if (rendered && !mirrorDue({ frame: clock.frame, tier, radius: sphere.radius, distance: sphere.center.distanceTo(camera.position), fovDeg: camera.fov, viewportPx: renderer.getDrawingBufferSize(buffer).y, movedSinceTexture: moved, turnedSinceTexture: turned, cameraAtRest: clock.atRest })) return;
       rendered = true;
       texPos.copy(camera.position);
       texDir.copy(dir);
-      guard = true;
-      try { render.apply(mirror, args); } finally { guard = false; }
+      const colorSpace = target.texture.colorSpace;
+      target.isXRRenderTarget = true;
+      target.texture.colorSpace = SRGBColorSpace;
+      try {
+        render.call(mirror, renderer, scene, camera);
+      } finally {
+        target.isXRRenderTarget = false;
+        target.texture.colorSpace = colorSpace;
+      }
     };
     return mirror;
   });
@@ -83,7 +96,7 @@ function buildMirrors(source, size, ripple, tier, clock) {
 
 export function WaterReflections({ quality = "low" }) {
   const { scene } = useThree();
-  const state = useRef({ source: null, mirrors: [], frames: 0, ripple: null, clock: { frame: 0, atRest: false }, lastCam: null });
+  const state = useRef({ source: null, mirrors: [], frames: 0, ripple: null, clock: { frame: 0, atRest: false }, lastCam: null, frustum: new Frustum(), projection: new Matrix4() });
 
   useEffect(() => {
     const s = state.current;
@@ -118,10 +131,15 @@ export function WaterReflections({ quality = "low" }) {
     s.clock.frame += 1;
     // at rest: the camera has not moved since the previous frame
     const cam = state3.camera;
+    cam.updateMatrixWorld();
     s.clock.atRest = s.lastCam ? s.lastCam.equals(cam.matrixWorld) : false;
     (s.lastCam ??= cam.matrixWorld.clone()).copy(cam.matrixWorld);
     const t = clock.elapsedTime;
-    for (const m of s.mirrors) m.material.uniforms.time.value = t;
+    s.frustum.setFromProjectionMatrix(s.projection.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse));
+    for (const m of s.mirrors) {
+      m.material.uniforms.time.value = t;
+      m.userData.renderReflection(state3.gl, scene, cam, s.frustum);
+    }
   });
   return null;
 }

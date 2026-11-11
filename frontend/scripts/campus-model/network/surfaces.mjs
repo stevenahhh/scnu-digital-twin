@@ -391,7 +391,9 @@ export function buildSurfaces({ inputs, walkways, groundFeatures = null, offCamp
     for (const facility of groundFeatures.facilities) {
       const ref = `MCEE class-141 facility ${facility.index}`;
       if (facility.track) {
-        add({ cls: "SPORTS", mesh: "Ground_Sports", label: SURFACE_CLASS.SPORTS, precedence: PRECEDENCE.SPORTS, source: "project-estimated", source_ref: ref, paint: { kind: "track" }, estimated: true }, facility.rings);
+        // the painted pitch has its own frame where one is recorded (supplement kind "pitch")
+        const pitch = groundFeatures.supplements.find((f) => f.kind === "pitch" && pointInRing(f.point, facility.rings[0]));
+        add({ cls: "SPORTS", mesh: "Ground_Sports", label: SURFACE_CLASS.SPORTS, precedence: PRECEDENCE.SPORTS, source: "project-estimated", source_ref: ref, paint: { kind: "track", ...(pitch ? { pitch: { point: tmPoint(pitch.point), headingDegrees: pitch.headingDegrees, note: pitch.note } } : {}) }, estimated: true }, facility.rings);
         continue;
       }
       if (facility.labels.every((l) => l.surface === "lawn")) {

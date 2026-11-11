@@ -20,6 +20,7 @@ import { simulationToTm, tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { METRES_PER_DEGREE_LAT, METRES_PER_DEGREE_LON, geoToModel, metres, modelToGeo } from "../lib/frame.mjs";
 import { pointInRing, ringArea, ringCentroid } from "../lib/geometry.mjs";
 import { glyphElements } from "../lib/markingGlyphs.mjs";
+import { FUTSAL_HALF_M, pitchRing, snapGoalToEndLine, trackPitchHalf } from "../lib/pitchLines.mjs";
 import { encodePng } from "../lib/png.mjs";
 import { mulberry32 } from "../lib/raster.mjs";
 import { Kit, along, bufferLine, frame, lineLength, local, localPlan, offsetLine, orientedRect, rgb, sub, toLocal } from "../lib/solids.mjs";
@@ -271,11 +272,29 @@ export function loadFurnitureSurvey({ wallSnapshots, anchorFootprints } = {}) {
     ...objects.filter((o) => o.footprint).map((o) => o.footprint),
     ...objects.filter((o) => ["pond", "fountain"].includes(o.subtype)).map((o) => o.ring),
   ];
-  const stadium = JSON.parse(readFileSync(GROUND_FEATURES, "utf8")).osm.features.find((f) => f.kind === "stadium");
+  const groundFeatures = JSON.parse(readFileSync(GROUND_FEATURES, "utf8"));
+  const stadium = groundFeatures.osm.features.find((f) => f.kind === "stadium");
   const fieldCentre = stadium ? ringCentroid(stadium.rings[0].map(([lon, lat]) => geoToModel(lon, lat))) : null;
+  // The painted pitches whose end lines the goals stand on (lib/pitchLines.mjs; stages/surfaces.mjs paints the same
+  // lines): the field inside the track and the futsal court. Plan scene units.
+  const pitches = [];
+  if (stadium) {
+    const r = orientedRect(stadium.rings[0].map(([lon, lat]) => geoToModel(lon, lat)));
+    const half = trackPitchHalf(r.halfLength / metres(1), r.halfWidth / metres(1));
+    // the pitch's own frame where one is recorded (supplement kind "pitch"), else the frame of the track outline
+    const own = groundFeatures.supplements.features.find((f) => f.kind === "pitch");
+    const heading = ((own?.headingDegrees ?? 0) * Math.PI) / 180;
+    pitches.push({ centre: own ? geoToModel(...own.at) : r.centre, axis: own ? [Math.cos(heading), Math.sin(heading)] : r.u, halfLength: metres(half.length), halfWidth: metres(half.width) });
+  }
+  for (const court of groundFeatures.supplements.features.filter((f) => f.kind === "surface" && f.surface === "futsal")) {
+    const heading = ((court.headingDegrees ?? 0) * Math.PI) / 180;
+    pitches.push({ centre: geoToModel(...court.at), axis: [Math.cos(heading), Math.sin(heading)], halfLength: metres(FUTSAL_HALF_M.length), halfWidth: metres(FUTSAL_HALF_M.width) });
+  }
+  // no tree stands on a playing surface: canopies that overhang a court were planted inside it
+  treeBlock.push(...pitches.map(pitchRing));
   // The 구령대 is also a GIS building record (운동장 본부석); the buildings stage leaves its generic mass out for it.
   const detailedStructures = objects.filter((o) => o.kind === "reviewing_stand").map((o) => o.footprint);
-  return { objects, excluded, retyped: RETYPED, treeBlock, detailedStructures, fieldCentre, sun };
+  return { objects, excluded, retyped: RETYPED, treeBlock, detailedStructures, fieldCentre, pitches, sun };
 }
 
 // The seed reads the survey above; production consumers only receive resolved parcel-local inputs.
@@ -304,7 +323,7 @@ export function loadFurniture(options = {}) {
 }
 
 // ---------------------------------------------------------------- building helpers
-export function makeContext({ groundAt, objects, roads, sites, fieldCentre }) {
+export function makeContext({ groundAt, objects, roads, sites, fieldCentre, pitches = [] }) {
   const solid = new Kit();
   const screen = new Kit({ uvs: true });
   const glass = new Kit();
@@ -313,7 +332,7 @@ export function makeContext({ groundAt, objects, roads, sites, fieldCentre }) {
   const samples = (ring) => [...ring, ringCentroid(ring), ...ring.map((p, i) => [(p[0] + ring[(i + 1) % ring.length][0]) / 2, (p[1] + ring[(i + 1) % ring.length][1]) / 2])];
   const heights = (ring) => samples(ring).map(([x, z]) => groundAt(x, z)).sort((a, b) => a - b);
   return {
-    solid, glass, water, glow, screen, screens: [], groundAt, objects, roads, sites, fieldCentre, colours: C,
+    solid, glass, water, glow, screen, screens: [], groundAt, objects, roads, sites, fieldCentre, pitches, colours: C,
     byId: new Map(objects.map((o) => [o.id, o])),
     minGround: (ring) => heights(ring)[0],
     maxGround: (ring) => heights(ring).at(-1),
@@ -1876,7 +1895,13 @@ B.sports_goal = (ctx, o) => {
   const width = football ? 7.32 : 3;
   const h = football ? 2.44 : 2;
   const depth = Math.max(1, Math.min(2.5, 2 * r.halfWidth));
-  const f = facingFrame(ctx, r.centre, r.u, toward);
+  // On a painted pitch the goal mouth stands on the middle of its end line, facing the pitch: the survey polygon is a
+  // by-eye outline that lies 1-2 m off the lines. A goal near no painted end line keeps its survey place (estimated).
+  const snapped = snapGoalToEndLine(r.centre, ctx.pitches, metres(8));
+  const f = snapped
+    ? facingFrame(ctx, [snapped.mouth[0] - snapped.inward[0] * metres(depth / 2), snapped.mouth[1] - snapped.inward[1] * metres(depth / 2)],
+      [-snapped.inward[1], snapped.inward[0]], [snapped.mouth[0] + snapped.inward[0], snapped.mouth[1] + snapped.inward[1]])
+    : facingFrame(ctx, r.centre, r.u, toward);
   const mouth = depth / 2;
   const back = -depth / 2;
   const w = width / 2;
@@ -2227,7 +2252,7 @@ function stepsOnTerrain(ctx, o) {
 // An object on a roof (site-detail `roof_m`, e.g. the A1 roof garden of VR scene_a5): built as on the terrain raised by
 // roof_m metres, into the same kits.
 export function onRoof(ctx, roofM) {
-  const lifted = makeContext({ groundAt: (x, z) => ctx.groundAt(x, z) + M(roofM), objects: ctx.objects, roads: ctx.roads, sites: ctx.sites, fieldCentre: ctx.fieldCentre });
+  const lifted = makeContext({ groundAt: (x, z) => ctx.groundAt(x, z) + M(roofM), objects: ctx.objects, roads: ctx.roads, sites: ctx.sites, fieldCentre: ctx.fieldCentre, pitches: ctx.pitches });
   return Object.assign(lifted, { solid: ctx.solid, glass: ctx.glass, glow: ctx.glow, screen: ctx.screen, screens: ctx.screens, skipped: ctx.skipped, signals: ctx.signals });
 }
 
@@ -2242,7 +2267,7 @@ export function appendWheelStops(ctx, stops) {
 export function buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs, groundAt, wheelStops = [] }) {
   const roads = roadNetwork(inputs);
   const parcels = Object.fromEntries(JSON.parse(readFileSync(path.join(HERE, "..", "data", "ground", "parcels.json"), "utf8")).parcels.map(p => [p.id, p]));
-  const ctx = makeContext({ groundAt, objects: furniture.objects, roads, sites, fieldCentre: furniture.fieldCentre });
+  const ctx = makeContext({ groundAt, objects: furniture.objects, roads, sites, fieldCentre: furniture.fieldCentre, pitches: furniture.pitches });
   const objectIds = new Map(furniture.objects.map((o, i) => [o.id, i + 1]));
   const vertexIds = new Map([ctx.solid, ctx.glass, ctx.water].map(kit => [kit, []]));
   const tagVertices = (id) => {

@@ -4,6 +4,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import * as THREE from "three";
+import { MeshBVH, acceleratedRaycast } from "three-mesh-bvh";
 import commonElements from "../../common/data/common_elemetns.json";
 import {
   CAMPUS_BLOCKED_ELEMENT_IDS,
@@ -52,6 +53,7 @@ import {
 import { WATER_ENV_INTENSITY, WATER_MATERIAL_NAME, patchWaterFresnel } from "./lighting/water.mjs";
 import { clipPolygonAhead } from "./render/clipPolygon.mjs";
 import { POINTER_EXCLUDED_LAYER } from "./render/canvasLifecycle.mjs";
+import { CampusGrass } from "./render/CampusGrass";
 
 // 클릭하지 않아도 카메라가 이 거리 안으로 들어오면 "가까이 간" 것으로 본다.
 // 클릭 시 자동으로 붙는 카메라 거리(D4_CAMERA_OFFSET 기준 약 94유닛)보다 살짝
@@ -81,6 +83,12 @@ const NON_CASTER_MATERIAL_NAME = "Ground";
 const NON_CASTER_PARENT_PATTERN = /^(Trees_.*_trunk|Context_Far_)/;
 // 그림자 카메라 밖의 먼 맥락 타일(건물·도로, Context_Far_*)은 그림자를 받아도 그려질 그림자가 없으므로 받지 않는다(셰이더 비용만 듦).
 const NON_RECEIVER_PARENT_PATTERN = /^Context_Far_/;
+// 연석(Kerb, 생성기 stages/kerbs.mjs)은 캠퍼스 전체에 걸친 4만 삼각형짜리 낮은 턱이고 고를 대상이 아니다. 포인터 판정에서 뺀다.
+const KERB_MATERIAL_NAME = "Kerb";
+// 지형(Topography_joined 10만, OuterTerrain 7만 삼각형)은 포인터·카메라 비행·교통 폴백이 레이캐스트한다. 삼각형을 하나씩
+// 검사하면 포인터가 한 번 움직일 때 두 메시에만 약 9 ms가 들었다(측정). 경계 상자 트리(three-mesh-bvh)로 검사한다.
+// indirect라 인덱스 버퍼 순서는 그대로다.
+const BVH_MESH_PATTERN = /^(Topography_joined|OuterTerrain)/;
 // 노면 표시(Road_Marking, 생성기 stages/markings.mjs): 항공사진에서 찾은 도색을 지형 삼각형 위 4 cm에 얹은 얇은 메시다.
 // 지면 층(Ground_*, 최대 3.6 cm)보다 높고, 먼 거리의 깊이 정밀도에서도 겹치지 않도록 폴리곤 오프셋으로 늘 지면 앞에 그린다.
 // 평평한 도색이라 그림자를 드리우지 않고, 캠퍼스 전체에 걸친 삼각형을 포인터가 움직일 때마다 검사하지 않도록 클릭 판정에서도 뺀다.
@@ -128,6 +136,29 @@ function disableEnvSpecular(material) {
   };
   const key = material.customProgramCacheKey;
   material.customProgramCacheKey = () => `${key ? key.call(material) : ""}|campus-no-env-specular`;
+  material.needsUpdate = true;
+}
+// 잔디 재질은 햇빛의 직접 반사(하이라이트)도 끄고 확산광만 받는다. 거칠기 맵(Grass004 ARM)의 낮은 값과 비스듬한 각의
+// 프레넬 항이 잔디밭을 번들거리게 했다. 대상은 자연 지면(Ground), 운동장 잔디(Ground_Sports paint "pitch"), D4 잔디(Ground_Grass_*)다.
+const isGrassMaterial = (material) =>
+  material.name === NON_CASTER_MATERIAL_NAME ||
+  /^Ground_Grass/.test(material.name) ||
+  (material.name === "Ground_Sports" && material.userData?.paint === "pitch");
+function disableSpecular(material) {
+  const previous = material.onBeforeCompile;
+  material.onBeforeCompile = (shader, renderer) => {
+    previous?.(shader, renderer);
+    shader.fragmentShader = shader.fragmentShader.replace(
+      "#include <lights_fragment_begin>",
+      "material.specularColor = vec3( 0.0 );\n  material.specularColorBlended = vec3( 0.0 );\n  material.specularF90 = 0.0;\n  #include <lights_fragment_begin>",
+    );
+  };
+  const key = material.customProgramCacheKey;
+  material.customProgramCacheKey = () => `${key ? key.call(material) : ""}|campus-no-specular`;
+  material.roughnessMap = null;
+  material.metalnessMap = null;
+  material.roughness = 1;
+  material.metalness = 0;
   material.needsUpdate = true;
 }
 // 포인터 선택에서 빼는 메시(지면 층·노면 표시·시설물·가로등): 포인터 레이캐스트(render/canvasLifecycle.mjs가 raycaster.layers에서
@@ -333,12 +364,14 @@ export function CityModel({
   onLabelRegistry,
   // 사용자가 캔버스를 드래그해 카메라를 움직이기 시작했을 때(휠·시점 비행은 아님).
   onDragStart,
+  // 렌더 품질 단계(낮음에서는 잔디 덤불을 심지 않는다).
+  quality = "medium",
   ...props
 }) {
   const { scene, asset } = useGLTF(CAMPUS_MODEL_URL, true, true, extendCampusLoader);
   // Frame v2 GLB는 asset.extras.frameVersion을 기록한다. 없으면 v1(uni.glb) 규칙으로 재중심화한다.
   const frameVersion = asset?.extras?.frameVersion;
-  const { camera, gl, scene: rootScene, invalidate } = useThree();
+  const { camera, gl, scene: rootScene, invalidate, setEvents } = useThree();
   // 건물·묶음 클릭 비행. 시점 버튼과 같은 시간 기반 비행(useFlyTo)이고, 사람의 조작이나 다른 비행이 끊는다.
   // focusFlightRef는 비행 중인지(근접 자동 열기 보류)를 렌더 없이 읽는다. 도착하거나 끊기면 내린다.
   const { flyTo: flyFocus } = useFlyTo({ controlsRef });
@@ -401,18 +434,36 @@ export function CityModel({
       if (target instanceof Element && target.closest('[data-qa="campus-label"],[data-qa="campus-dot"]')) return "label";
       return "other";
     };
+    // 드래그하는 동안에는 R3F의 포인터 레이캐스트를 끈다. 포인터가 움직일 때마다 장면을 검사해 프레임당 약 8 ms가 들었고(측정),
+    // 드래그 중에는 마우스오버 강조와 클릭을 어차피 받지 않는다. 놓으면 다시 켠다.
+    let raycastPaused = false;
+    const pauseRaycast = (paused) => {
+      if (raycastPaused === paused) return;
+      raycastPaused = paused;
+      setEvents({ enabled: !paused });
+    };
     const listeners = {
       pointerdown: (event) => pointerGuard.pointerDown(event, originOf(event.target)),
-      pointermove: (event) => pointerGuard.pointerMove(event),
-      pointerup: (event) => pointerGuard.pointerUp(event),
-      pointercancel: () => pointerGuard.pointerCancel(),
+      pointermove: (event) => {
+        pointerGuard.pointerMove(event);
+        if (pointerGuard.isDragging()) pauseRaycast(true);
+      },
+      pointerup: (event) => {
+        pointerGuard.pointerUp(event);
+        pauseRaycast(false);
+      },
+      pointercancel: () => {
+        pointerGuard.pointerCancel();
+        pauseRaycast(false);
+      },
     };
     const options = { capture: true, passive: true };
     for (const [type, listener] of Object.entries(listeners)) window.addEventListener(type, listener, options);
     return () => {
       for (const [type, listener] of Object.entries(listeners)) window.removeEventListener(type, listener, options);
+      pauseRaycast(false);
     };
-  }, [gl, pointerGuard]);
+  }, [gl, pointerGuard, setEvents]);
 
   // 높이 사이드카가 오면 라벨 패스를 한 번 더 돌려 언덕 뒤 라벨을 숨긴다(요청 루프라 invalidate로 프레임을 연다).
   useEffect(() => {
@@ -582,6 +633,11 @@ export function CityModel({
       const isRoadMarking = child.material?.name === ROAD_MARKING_MATERIAL_NAME;
       const isGroundLayer = GROUND_LAYER_PATTERN.test(child.material?.name ?? "");
       const isFurniture = FURNITURE_MATERIAL_PATTERN.test(child.material?.name ?? "");
+      const isKerb = child.material?.name === KERB_MATERIAL_NAME;
+      if (BVH_MESH_PATTERN.test(child.name) && !child.geometry.boundsTree) {
+        child.geometry.boundsTree = new MeshBVH(child.geometry, { indirect: true });
+        child.raycast = acceleratedRaycast;
+      }
       const isNonCaster =
         isRoadMarking ||
         isGroundLayer ||
@@ -594,7 +650,7 @@ export function CityModel({
       if (isNonCaster) nonCasterNames.push(child.name);
       child.receiveShadow = !(NON_RECEIVER_PARENT_PATTERN.test(child.parent?.name ?? "") || NON_RECEIVER_PARENT_PATTERN.test(child.name));
       child.material = child.material.clone();
-      if (isFurniture) skipPointer(child);
+      if (isFurniture || isKerb) skipPointer(child);
       // 연못 물(Furniture_Water): 하늘 환경맵을 비추고, 내려다보면 비치고 비스듬히 보면 거의 불투명(프레넬)
       if (child.material.name === WATER_MATERIAL_NAME) {
         child.material.onBeforeCompile = (shader) => patchWaterFresnel(shader);
@@ -679,6 +735,7 @@ export function CityModel({
       // 하늘 반사(specular 환경맵)는 유리와 물에만 남긴다(GLASS_MATERIAL_PATTERN).
       if (child.material.isMeshStandardMaterial && child.material.name !== WATER_MATERIAL_NAME && !GLASS_MATERIAL_PATTERN.test(child.material.name)) {
         disableEnvSpecular(child.material);
+        if (isGrassMaterial(child.material)) disableSpecular(child.material);
       }
       // campus-v2.glb: sharper ground/facade textures at grazing angles, and window glow only at night.
       if (child.material.map) child.material.map.anisotropy = anisotropy;
@@ -1347,6 +1404,7 @@ export function CityModel({
         onPointerOver={handlePointerOver}
         onPointerOut={handlePointerOut}
       />
+      {CAMPUS_MODEL_URL === CAMPUS_MODEL_URLS.detailed && <CampusGrass scene={scene} quality={quality} />}
     </group>
   );
 }

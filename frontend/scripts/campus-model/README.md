@@ -156,6 +156,7 @@ Evidence tiers and `estimated` flags describe confidence, not measured accuracy.
 | `pack.mjs` | after the stages: joins the Topography chunks, runs gltf-transform optimize (WebP textures, float geometry, no flatten/join), compresses with `compress.mjs`, re-encodes textures with `ktx2.mjs` and checks names and counts against the raw GLB |
 | `compress.mjs` | `EXT_meshopt_compression` of the packed buffers: positions, UVs, colours and indices bit for bit (no position quantization; `reorder()` for size), normals as 8-bit octahedral (meshopt filter, `KHR_mesh_quantization`). drei's `useGLTF` decodes it. 75,860,132 B -> 23,122,984 B on the 2026-10-26 build of dev-next d7adbd4 (docs/OPTIMIZATION-FORMULA.md) |
 | `ktx2.mjs` | pack step 4: every texture as KTX2 / Basis Universal ETC1S with mips (`KHR_texture_basisu`; `--normals uastc` for UASTC normal maps), so the GPU keeps them block-compressed. Needs the `basisu` CLI (`brew install basis_universal`); the dashboard transcodes with three's KTX2Loader and `public/basis/`. dev-next f4c0945 build: 24,116,320 B -> 24,836,240 B (71 textures), scene texture memory 264.9 -> 33.2 MB (추정) (docs/OPTIMIZATION-FORMULA.md) |
+| `serveCompressed.mjs` | Connect middleware for `vite.config.js` (dev and preview): sends `campus-v2.glb` from the `.br`/`.gz` copy the publish gate wrote beside it when the client accepts that encoding and the copy is not older than the model. `X-File-Size` carries the decoded size, so the dashboard's load progress still counts decoded bytes |
 
 ## Inputs
 

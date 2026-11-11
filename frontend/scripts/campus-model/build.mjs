@@ -77,6 +77,9 @@ async function render(candidate, identity) {
     root: FRONTEND, server: { host: "127.0.0.1", port: ports.server, strictPort: true, hmr: false },
     plugins: [{
       name: "qa-candidate",
+      // before the plugins of vite.config.js: its precompressed-model middleware answers /campus-v2.glb from the
+      // published public/campus-v2.glb.br, which made QA render the published model, not the candidate
+      enforce: "pre",
       configureServer(server) {
         server.middlewares.use((req, res, next) => {
           const file = assets.get(req.url?.split("?")[0]);
