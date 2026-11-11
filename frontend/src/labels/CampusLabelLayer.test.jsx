@@ -2,7 +2,7 @@
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { createRef } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { CampusLabelLayer, clearOfChrome } from "./CampusLabelLayer.jsx";
+import { CampusLabelLayer, clearOfChrome, measureLabelSlot } from "./CampusLabelLayer.jsx";
 import { HOLD_MS, resolveLabelBand } from "./labelBands.mjs";
 
 afterEach(cleanup);
@@ -271,6 +271,22 @@ describe("CampusLabelLayer", () => {
     expect(cluster.textContent).toContain("학생생활관 2동");
     fireEvent.click(cluster, { detail: 0 });
     expect(onSelectCluster.mock.calls[0][0].members).toEqual(["BLD_Dormitory_Building", "BLD_Dormitory_Building.001"]);
+  });
+});
+
+// GAP-21 at P: offsetWidth rounded a 112.06 px chip to 112, so a chip clamped to the 8 px edge margin ended 0.06 px past it.
+describe("measureLabelSlot", () => {
+  const box = (width, height) => () => ({ width, height, left: 0, top: 0, right: width, bottom: height, x: 0, y: 0 });
+  it("rounds the chip and hit-area boxes up to whole pixels", () => {
+    const slot = document.createElement("div");
+    const button = document.createElement("button");
+    const chip = document.createElement("span");
+    chip.setAttribute("data-qa", "label-chip");
+    button.appendChild(chip);
+    slot.appendChild(button);
+    button.getBoundingClientRect = box(112.06, 44);
+    chip.getBoundingClientRect = box(112.06, 31.5);
+    expect(measureLabelSlot(slot)).toEqual({ width: 113, height: 32, hitWidth: 113, hitHeight: 44 });
   });
 });
 

@@ -26,7 +26,9 @@ function writeRecents(storage, ids) {
 // 건물 검색칸: 이름·짧은 이름·코드·별칭으로 찾는 콤보박스. 결과는 계층별(주요 건물·건물·부속 시설·구역)로 묶고 최대 8개.
 // 칸에 포커스가 오면 최근 검색 5개를 보인다. Enter나 결과 클릭은 칩을 누른 것과 같은 선택(onPick(entry))이다.
 // registry: buildLabelRegistry 결과(Map) 또는 항목 배열. 지도에서 / 키를 누르면 이 칸으로 온다(useCameraKeys).
-export function SearchField({ registry, onPick, className = "", storage = globalThis.localStorage }) {
+// placeholder: 폰 HUD처럼 칸이 좁으면 부르는 쪽이 짧은 문구를 넘긴다(긴 예시 문구가 중간에서 잘리지 않게).
+export const SEARCH_PLACEHOLDER = "건물 이름, 코드 (예: 도서관, D4)";
+export function SearchField({ registry, onPick, className = "", placeholder = SEARCH_PLACEHOLDER, storage = globalThis.localStorage }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -98,7 +100,7 @@ export function SearchField({ registry, onPick, className = "", storage = global
           aria-autocomplete="list"
           aria-activedescendant={expanded && ordered.length > 0 ? optionId(Math.min(active, ordered.length - 1)) : undefined}
           aria-keyshortcuts="/"
-          placeholder="건물 이름, 코드 (예: 도서관, D4)"
+          placeholder={placeholder}
           value={query}
           onChange={(event) => {
             setQuery(event.target.value);

@@ -45,6 +45,31 @@ describe("CampusHud", () => {
     expect(onOpenStatus).toHaveBeenCalledTimes(1);
   });
 
+  // Phone: the search field gets about 80 px beside the 시점, chip and more buttons; the long example placeholder was cut mid-word.
+  it("uses the short search placeholder on the phone and keeps the example placeholder on the desktop", () => {
+    const search = { registry: [], onPick: vi.fn() };
+    const { unmount } = renderHud({ search });
+    expect(screen.getByRole("combobox", { name: "건물 검색" }).getAttribute("placeholder")).toBe("건물 이름, 코드 (예: 도서관, D4)");
+    unmount();
+    renderHud({ search, mode: "phone", feedIssueCount: 3 });
+    expect(screen.getByRole("combobox", { name: "건물 검색" }).getAttribute("placeholder")).toBe("건물 검색");
+  });
+
+  // Phone presentation: the read-only time, 투어 시작 and 발표 모드 끝내기 do not fit one 358 px row; the labels broke onto two lines.
+  it("keeps every presentation label on one line and lets the phone row wrap instead", () => {
+    const { unmount } = renderHud({ presenting: true, mode: "phone" });
+    const classes = (el) => el.className.split(/\s+/);
+    expect(classes(document.querySelector('[data-qa="hud-bar"]'))).toContain("flex-wrap");
+    for (const el of [
+      document.querySelector('[data-qa="hud-time-readout"]'),
+      screen.getByRole("button", { name: /투어 시작/ }),
+      screen.getByRole("button", { name: /발표 모드 끝내기/ }),
+    ]) expect(classes(el)).toContain("whitespace-nowrap");
+    unmount();
+    renderHud({ presenting: true });
+    expect(classes(document.querySelector('[data-qa="hud-bar"]'))).not.toContain("flex-wrap");
+  });
+
   it("mounts the VWorld camera through zoomBy and rotateBy and hides camera tools until it is ready", () => {
     const zoomBy = vi.fn();
     const camera = { ...legacyCamera(), controlsRef: undefined, zoomBy, rotateBy: vi.fn(), ready: true };

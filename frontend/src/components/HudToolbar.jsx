@@ -74,7 +74,8 @@ function PresetMenu({ presets, activeId, onSelect, close }) {
 }
 
 // HUD의 시점 메뉴 하나. presets는 cameraPresets.mjs의 CAMERA_PRESETS다. 전체 시점은 카메라 묶음의 `전체 보기`가 맡는다.
-// compact(폰): 글자 없이 아이콘 단추(44 px)로 놓고, 단추가 줄 오른쪽 끝에 있으므로 메뉴를 오른쪽에 맞춰 연다.
+// compact(폰): 글자 없이 아이콘 단추(44 px)로 놓고, 메뉴는 HUD 한 줄의 오른쪽 끝에 맞춰 연다. 끊긴 피드 칩이 있으면 단추가
+// 줄 가운데로 밀리므로, 단추에 맞추면 메뉴가 화면 왼쪽 밖으로 나간다.
 export function HudToolbar({ presets, activeId, onSelect, compact = false, className = "" }) {
   const named = presets.filter((preset) => preset.id !== OVERVIEW_PRESET_ID);
   const activeNamed = named.find((preset) => preset.id === activeId);
@@ -85,6 +86,7 @@ export function HudToolbar({ presets, activeId, onSelect, compact = false, class
         label="시점"
         role="menu"
         align={compact ? "end" : "start"}
+        anchor={compact ? "container" : "trigger"}
         qa="camera-view-menu-list"
         renderTrigger={(props) => (
           <Button

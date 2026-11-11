@@ -15,6 +15,8 @@ import { FOLLOW_MOTION, FOLLOW_ROOT, usePanelFollow } from "./hud/usePanelFollow
 
 const PRESSED = "aria-pressed:bg-surface-2 aria-pressed:text-ink";
 const sceneTimeReadout = (minuteOfDay) => `장면 ${formatMinuteOfDay(minuteOfDay)}`;
+// 폰 검색 칸은 시점·더보기 단추(와 끊긴 피드 칩) 옆에서 80 px 안팎이다. 긴 예시 문구 대신 이 문구를 쓴다.
+export const PHONE_SEARCH_PLACEHOLDER = "건물 검색";
 
 // 두 대시보드가 같이 쓰는 지도 위 조작. 위쪽 한 줄(hud-bar)은 검색, 시점 메뉴, 끊긴 피드가 있을 때만 상태 칩 하나,
 // 오른쪽 끝의 워드마크와 moreMenu다. 시간 카드는 왼쪽 아래, 카메라 묶음은 오른쪽 아래(폰은 토글 하나)에 놓인다.
@@ -49,8 +51,9 @@ export const CampusHud = forwardRef(function CampusHud(
   if (presenting) {
     return (
       <div ref={setRoot} data-qa="campus-hud" data-label-chrome-layer="" data-presenting="true" className="pointer-events-none absolute inset-0 z-[6] transition-none">
-        <div data-qa="hud-bar" className="absolute left-4 right-4 top-4 flex items-center gap-2">
-          <p data-qa="hud-time-readout" className="rounded-control border border-hairline bg-surface-1 px-3 py-2 text-body font-semibold tabular-nums text-ink">
+        {/* 폰에서는 세 조각이 한 줄에 다 들어가지 않는다. 글자를 두 줄로 꺾는 대신 단추 묶음을 다음 줄로 내린다. */}
+        <div data-qa="hud-bar" className={cx("absolute left-4 right-4 top-4 flex items-center gap-2", phone && "flex-wrap")}>
+          <p data-qa="hud-time-readout" className="whitespace-nowrap rounded-control border border-hairline bg-surface-1 px-3 py-2 text-body font-semibold tabular-nums text-ink">
             {sceneTimeReadout(clock.sceneMinuteOfDay)}
           </p>
           <div className="ml-auto flex items-center gap-2">
@@ -72,7 +75,14 @@ export const CampusHud = forwardRef(function CampusHud(
       style={{ right: follow.right, bottom: phone ? `${SHELL_PEEK_HEIGHT}px` : "0px" }}
     >
       <div data-qa="hud-bar" className="absolute left-4 right-4 top-4 flex min-w-0 flex-nowrap items-center gap-2">
-        {search && <SearchField registry={search.registry} onPick={search.onPick} className="min-w-0 shrink" />}
+        {search && (
+          <SearchField
+            registry={search.registry}
+            onPick={search.onPick}
+            className="min-w-0 shrink"
+            {...(phone ? { placeholder: PHONE_SEARCH_PLACEHOLDER } : {})}
+          />
+        )}
         {cameraReady && (
           <HudToolbar presets={CAMERA_PRESETS} activeId={camera.activePresetId} onSelect={camera.selectPreset} compact={phone} />
         )}
@@ -128,7 +138,7 @@ export function PresentationToggle({ presenting, onToggle, className }) {
       aria-keyshortcuts="P"
       icon={<Presentation aria-hidden="true" className="h-4 w-4" />}
       onClick={onToggle}
-      className={cx("pointer-events-auto", className)}
+      className={cx("pointer-events-auto whitespace-nowrap", className)}
     >
       {presenting ? "발표 모드 끝내기" : "발표 모드"}
     </Button>
@@ -145,7 +155,7 @@ function TourToggle({ touring, onToggle }) {
       title={touring ? "투어를 멈춥니다" : "시점을 6초마다 차례로 보여 줍니다"}
       icon={touring ? <Pause aria-hidden="true" className="h-4 w-4" /> : <Play aria-hidden="true" className="h-4 w-4" />}
       onClick={onToggle}
-      className={cx("pointer-events-auto", PRESSED)}
+      className={cx("pointer-events-auto whitespace-nowrap", PRESSED)}
     >
       {touring ? "투어 멈춤" : "투어 시작"}
     </Button>
