@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {tmToScene,sceneToTm} from "../../../src/geo/epsg5186.mjs";
 import {seedRoadMarkings} from "./roadMarkingsSeed.mjs";
+import {detectedDashLine} from "./markingEvidenceFit.mjs";
 import {roadMarkingPlan} from "../stages/roadMarkings.mjs";
 import {SCENE_UNITS_PER_METRE as U} from "../lib/frame.mjs";
 import {validate} from "../lib/schemas.mjs";
@@ -51,6 +52,27 @@ test("one fitted dashed run produces a repeated section pattern rather than save
   for(const p of result.pieces){const r=p.rings[0];assert.ok(Math.abs(Math.hypot(r[1][0]-r[0][0],r[1][1]-r[0][1])/U-3)<1e-7);}
 });
 
+test("a line drawn as its photo dashes reaches the canonical sections dash for dash",()=>{
+  const dashes=[[0.5,1.7],[3.9,5.1],[6.2,7.3],[13,14.1]];
+  const m=model();m.lines.push({path:[at(0),at(16)],kind:"lane_line_dashed",colour:"white",widthM:0.125,dashed:true,refs:["ring"],
+    ...detectedDashLine(dashes,16)});
+  const pieces=generate(seedRoadMarkings(m,[],context)).pieces;
+  assert.equal(pieces.length,4);
+  const spans=pieces.map(p=>{const e=p.rings[0].map(q=>sceneToTm(...q)[0]-243820);return [Math.min(...e),Math.max(...e)];}).sort((a,b)=>a[0]-b[0]);
+  dashes.forEach(([a,b],i)=>{assert.ok(Math.abs(spans[i][0]-a*metresPerModelMetre)<1e-6&&Math.abs(spans[i][1]-b*metresPerModelMetre)<1e-6,`dash ${i}: ${spans[i]}`);});
+});
+
+test("a line run on ground with no paint parcel stays out of the canonical sections",()=>{
+  // the build refuses paint on natural ground (design 10.3); a photo dash there waits for its ground parcel
+  const ctx={...context,parcels:[{id:"ROAD",ring:[[243819,263800],[243828,263800],[243828,263804],[243819,263804]],holes:[],paintAllowed:true,precedence:3}]};
+  const m=model();m.lines.push({path:[at(0),at(16)],kind:"lane_line_dashed",colour:"white",widthM:0.125,dashed:true,refs:["ring"],
+    ...detectedDashLine([[0.5,1.7],[3.9,5.1],[13,14.1]],16)});
+  const docs=seedRoadMarkings(m,[],ctx);
+  const pieces=roadMarkingPlan({...docs,context:ctx}).pieces;
+  assert.equal(pieces.length,2);
+  for(const p of pieces) for(const q of p.rings[0]) assert.ok(sceneToTm(...q)[0]<243828);
+});
+
 test("published schema rejects wrong line kinds, negative widths and missing alignments by section id",()=>{
   for(const mutate of [s=>{s.centre.type="purple";},s=>{s.lanes[0].widthM=-1;},s=>{s.alignment="MISSING";}]){
     const docs=seedRoadMarkings(fixture(),[],context),s=docs.sections.RD_TEST.sections[0];mutate(s);
@@ -66,6 +88,21 @@ test("hump seed uses a canonical hump and the cross-section width, preserving it
   assert.ok(Math.abs(plan.heightAt(...origin)-0.1)<1e-8);
   assert.ok(Math.abs(s.lanes[0].widthM-6*metresPerModelMetre)<1e-8);
   s.humps[0].heightM=0.2;assert.ok(Math.abs(generate(docs).heightAt(...origin)-0.2)<1e-8);
+});
+
+test("hump seed keeps the measured painted length, band pitch, phase and lean to the left of travel",()=>{
+  const lean=14*Math.PI/180,v=[-f[1],f[0]];
+  const stripe=[f[0]*Math.cos(lean)-v[0]*Math.sin(lean),f[1]*Math.cos(lean)-v[1]*Math.sin(lean)];
+  const docs=seedRoadMarkings(model(),[{id:"H_LEAN",centre:origin,u:f,widthM:6,lengthM:3.1,bands:13,stripe,
+    bandWidthM:0.5,bandOffsetM:0.2,bandStartColour:"white"}],context);
+  const h=docs.sections.RD_TEST.sections[0].humps[0];
+  assert.ok(Math.abs(h.bandAngleDeg-14)<1e-6,`lean ${h.bandAngleDeg}`);
+  assert.ok(Math.abs(h.lengthM-3.1*metresPerModelMetre)<1e-9);
+  assert.ok(Math.abs(h.bandWidthM-0.5*metresPerModelMetre)<1e-9&&Math.abs(h.bandOffsetM-0.2*metresPerModelMetre)<1e-9);
+  assert.equal(h.bandStartColour,"white");
+  const pieces=generate(docs).pieces.map(p=>p.rings[0].map(q=>sceneToTm(...q)));
+  const area=pieces.reduce((n,r)=>n+Math.abs(r.reduce((s,p,i)=>s+p[0]*r[(i+1)%r.length][1]-r[(i+1)%r.length][0]*p[1],0))/2,0);
+  assert.ok(Math.abs(area-3.1*6*metresPerModelMetre**2)<1e-6,`painted area ${area}`);
 });
 
 test("inserting unrelated evidence does not renumber an existing canonical section or alignment",()=>{

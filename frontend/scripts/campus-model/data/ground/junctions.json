@@ -3156,61 +3156,21 @@
           {
             "points": [
               [
-                244157.29864753582,
-                263944.0114633828
+                244156.30369899486,
+                263944.2541108252
               ],
               [
-                244159.16755106574,
-                263943.5556763315
-              ],
-              [
-                244159.4151851825,
-                263943.5005312603
-              ],
-              [
-                244159.66483523042,
-                263943.4553816393
-              ],
-              [
-                244159.91609792475,
-                263943.42030040355
-              ],
-              [
-                244160.16856737586,
-                263943.39534422307
-              ],
-              [
-                244162.30641126007,
-                263943.22732660733
-              ],
-              [
-                244163.34631631023,
-                263943.1662976902
-              ],
-              [
-                244164.38782265122,
-                263943.1465092173
-              ],
-              [
-                244165.42929541675,
-                263943.1679922509
-              ],
-              [
-                244166.46909979306,
-                263943.23071306874
-              ],
-              [
-                244172.4249463422,
-                263943.70854708616
+                244157.1132806783,
+                263944.05667053873
               ]
             ],
             "widthM": 0.19567541663079996,
             "colour": "white",
             "dashPattern": {
-              "dashM": 0.9338534229296575,
-              "gapM": 0.8771829959655831
+              "dashM": 16.248785840854516,
+              "gapM": 1.000023317901135
             },
-            "dashPhaseM": 0
+            "dashPhaseM": 3.004580909245405e-14
           }
         ],
         "symbols": [],
@@ -3264,6 +3224,502 @@
             "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00187"
           ],
           "reason": "JA_4b6ce6b74da5a1c6: MX00186, MX00189, MX00191, MX00194, MX00195, MX00193, MX00192, MX00187; EPSG:5186 (244164.027, 263943.424). 사진의 MX00186, MX00189, MX00191, MX00194, MX00195, MX00193, MX00192, MX00187 표식은 RD_107 그룹에 놓였으나 독립 교차로 폴리곤 대응은 없다. 부모 RS_4b6ce6b74da5a1c6의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_200는 사진 중심에서 64.3 m, 연결 도로는 RD_006이며 대안 노드는 ND_200 64.3 m, ND_201 64.368 m, ND_199 77.721 m이다. 동일 RD만 연결하는 그래프 분할점이므로 실제 교차로 경계와 일치한다고 할 수 없다.",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "JA_5d693b8b02b8c91b",
+        "segment": "RD_107",
+        "section": "RS_5d693b8b02b8c91b",
+        "alignment": "RA_5d693b8b02b8c91b",
+        "pathIndex": 0,
+        "end": "to",
+        "stopLineSetbackM": null,
+        "crossing": null,
+        "arrows": [],
+        "text": [],
+        "humps": [],
+        "signalArms": [],
+        "yieldTriangles": [],
+        "guideLines": [
+          {
+            "points": [
+              [
+                244159.24336744723,
+                263943.5387929561
+              ],
+              [
+                244159.4151851825,
+                263943.5005312603
+              ],
+              [
+                244159.66483523042,
+                263943.4553816393
+              ],
+              [
+                244159.91609792475,
+                263943.42030040355
+              ],
+              [
+                244160.13170941308,
+                263943.39898757066
+              ]
+            ],
+            "widthM": 0.19567541663079996,
+            "colour": "white",
+            "dashPattern": {
+              "dashM": 16.248785840854516,
+              "gapM": 1.000023317901135
+            },
+            "dashPhaseM": 3.0254624011030997
+          }
+        ],
+        "symbols": [],
+        "areas": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX00186",
+            "MX00189",
+            "MX00191",
+            "MX00194",
+            "MX00195",
+            "MX00193",
+            "MX00192",
+            "MX00187"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX00186",
+            "photo/evidence/markings-extra.geojson#MX00189",
+            "photo/evidence/markings-extra.geojson#MX00191",
+            "photo/evidence/markings-extra.geojson#MX00194",
+            "photo/evidence/markings-extra.geojson#MX00195",
+            "photo/evidence/markings-extra.geojson#MX00193",
+            "photo/evidence/markings-extra.geojson#MX00192",
+            "photo/evidence/markings-extra.geojson#MX00187"
+          ],
+          "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "JA_b71e9951d0d09a04",
+        "segment": "RD_107",
+        "section": "RS_b71e9951d0d09a04",
+        "alignment": "RA_b71e9951d0d09a04",
+        "pathIndex": 0,
+        "end": "to",
+        "stopLineSetbackM": null,
+        "crossing": null,
+        "arrows": [],
+        "text": [],
+        "humps": [],
+        "signalArms": [],
+        "yieldTriangles": [],
+        "guideLines": [
+          {
+            "points": [
+              [
+                244160.9362618566,
+                263943.3350095105
+              ],
+              [
+                244161.74783937875,
+                263943.27122593805
+              ]
+            ],
+            "widthM": 0.19567541663079996,
+            "colour": "white",
+            "dashPattern": {
+              "dashM": 16.248785840854516,
+              "gapM": 1.000023317901135
+            },
+            "dashPhaseM": 4.732650214889703
+          }
+        ],
+        "symbols": [],
+        "areas": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX00186",
+            "MX00189",
+            "MX00191",
+            "MX00194",
+            "MX00195",
+            "MX00193",
+            "MX00192",
+            "MX00187"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX00186",
+            "photo/evidence/markings-extra.geojson#MX00189",
+            "photo/evidence/markings-extra.geojson#MX00191",
+            "photo/evidence/markings-extra.geojson#MX00194",
+            "photo/evidence/markings-extra.geojson#MX00195",
+            "photo/evidence/markings-extra.geojson#MX00193",
+            "photo/evidence/markings-extra.geojson#MX00192",
+            "photo/evidence/markings-extra.geojson#MX00187"
+          ],
+          "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "JA_4220abd3f7d87a3e",
+        "segment": "RD_107",
+        "section": "RS_4220abd3f7d87a3e",
+        "alignment": "RA_4220abd3f7d87a3e",
+        "pathIndex": 0,
+        "end": "to",
+        "stopLineSetbackM": null,
+        "crossing": null,
+        "arrows": [],
+        "text": [],
+        "humps": [],
+        "signalArms": [],
+        "yieldTriangles": [],
+        "guideLines": [
+          {
+            "points": [
+              [
+                244162.62821496045,
+                263943.2084409106
+              ],
+              [
+                244163.34631631023,
+                263943.1662976902
+              ],
+              [
+                244163.5607941074,
+                263943.16222264245
+              ]
+            ],
+            "widthM": 0.19567541663079996,
+            "colour": "white",
+            "dashPattern": {
+              "dashM": 16.248785840854516,
+              "gapM": 1.000023317901135
+            },
+            "dashPhaseM": 6.4293820129334485
+          }
+        ],
+        "symbols": [],
+        "areas": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX00186",
+            "MX00189",
+            "MX00191",
+            "MX00194",
+            "MX00195",
+            "MX00193",
+            "MX00192",
+            "MX00187"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX00186",
+            "photo/evidence/markings-extra.geojson#MX00189",
+            "photo/evidence/markings-extra.geojson#MX00191",
+            "photo/evidence/markings-extra.geojson#MX00194",
+            "photo/evidence/markings-extra.geojson#MX00195",
+            "photo/evidence/markings-extra.geojson#MX00193",
+            "photo/evidence/markings-extra.geojson#MX00192",
+            "photo/evidence/markings-extra.geojson#MX00187"
+          ],
+          "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "JA_c1993e4e72055600",
+        "segment": "RD_107",
+        "section": "RS_c1993e4e72055600",
+        "alignment": "RA_c1993e4e72055600",
+        "pathIndex": 0,
+        "end": "to",
+        "stopLineSetbackM": null,
+        "crossing": null,
+        "arrows": [],
+        "text": [],
+        "humps": [],
+        "signalArms": [],
+        "yieldTriangles": [],
+        "guideLines": [
+          {
+            "points": [
+              [
+                244164.43701226544,
+                263943.1475238786
+              ],
+              [
+                244165.37455081719,
+                263943.1668630038
+              ]
+            ],
+            "widthM": 0.19567541663079996,
+            "colour": "white",
+            "dashPattern": {
+              "dashM": 16.248785840854516,
+              "gapM": 1.000023317901135
+            },
+            "dashPhaseM": 8.239613320726884
+          }
+        ],
+        "symbols": [],
+        "areas": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX00186",
+            "MX00189",
+            "MX00191",
+            "MX00194",
+            "MX00195",
+            "MX00193",
+            "MX00192",
+            "MX00187"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX00186",
+            "photo/evidence/markings-extra.geojson#MX00189",
+            "photo/evidence/markings-extra.geojson#MX00191",
+            "photo/evidence/markings-extra.geojson#MX00194",
+            "photo/evidence/markings-extra.geojson#MX00195",
+            "photo/evidence/markings-extra.geojson#MX00193",
+            "photo/evidence/markings-extra.geojson#MX00192",
+            "photo/evidence/markings-extra.geojson#MX00187"
+          ],
+          "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "JA_4b94b35341dc7918",
+        "segment": "RD_107",
+        "section": "RS_4b94b35341dc7918",
+        "alignment": "RA_4b94b35341dc7918",
+        "pathIndex": 0,
+        "end": "to",
+        "stopLineSetbackM": null,
+        "crossing": null,
+        "arrows": [],
+        "text": [],
+        "humps": [],
+        "signalArms": [],
+        "yieldTriangles": [],
+        "guideLines": [
+          {
+            "points": [
+              [
+                244166.2463525267,
+                263943.2172769926
+              ],
+              [
+                244166.46909979306,
+                263943.23071306874
+              ],
+              [
+                244167.31890380077,
+                263943.2988923376
+              ]
+            ],
+            "widthM": 0.19567541663079996,
+            "colour": "white",
+            "dashPattern": {
+              "dashM": 16.248785840854516,
+              "gapM": 1.000023317901135
+            },
+            "dashPhaseM": 10.050649739622125
+          }
+        ],
+        "symbols": [],
+        "areas": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX00186",
+            "MX00189",
+            "MX00191",
+            "MX00194",
+            "MX00195",
+            "MX00193",
+            "MX00192",
+            "MX00187"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX00186",
+            "photo/evidence/markings-extra.geojson#MX00189",
+            "photo/evidence/markings-extra.geojson#MX00191",
+            "photo/evidence/markings-extra.geojson#MX00194",
+            "photo/evidence/markings-extra.geojson#MX00195",
+            "photo/evidence/markings-extra.geojson#MX00193",
+            "photo/evidence/markings-extra.geojson#MX00192",
+            "photo/evidence/markings-extra.geojson#MX00187"
+          ],
+          "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "JA_e3bada9ba87d1255",
+        "segment": "RD_107",
+        "section": "RS_e3bada9ba87d1255",
+        "alignment": "RA_e3bada9ba87d1255",
+        "pathIndex": 0,
+        "end": "to",
+        "stopLineSetbackM": null,
+        "crossing": null,
+        "arrows": [],
+        "text": [],
+        "humps": [],
+        "signalArms": [],
+        "yieldTriangles": [],
+        "guideLines": [
+          {
+            "points": [
+              [
+                244168.11964437237,
+                263943.3631352762
+              ],
+              [
+                244169.00233870256,
+                263943.433953316
+              ]
+            ],
+            "widthM": 0.19567541663079996,
+            "colour": "white",
+            "dashPattern": {
+              "dashM": 16.248785840854516,
+              "gapM": 1.000023317901135
+            },
+            "dashPhaseM": 11.929650004869133
+          }
+        ],
+        "symbols": [],
+        "areas": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX00186",
+            "MX00189",
+            "MX00191",
+            "MX00194",
+            "MX00195",
+            "MX00193",
+            "MX00192",
+            "MX00187"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX00186",
+            "photo/evidence/markings-extra.geojson#MX00189",
+            "photo/evidence/markings-extra.geojson#MX00191",
+            "photo/evidence/markings-extra.geojson#MX00194",
+            "photo/evidence/markings-extra.geojson#MX00195",
+            "photo/evidence/markings-extra.geojson#MX00193",
+            "photo/evidence/markings-extra.geojson#MX00192",
+            "photo/evidence/markings-extra.geojson#MX00187"
+          ],
+          "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "JA_7a20907f458d020b",
+        "segment": "RD_107",
+        "section": "RS_7a20907f458d020b",
+        "alignment": "RA_7a20907f458d020b",
+        "pathIndex": 0,
+        "end": "to",
+        "stopLineSetbackM": null,
+        "crossing": null,
+        "arrows": [],
+        "text": [],
+        "humps": [],
+        "signalArms": [],
+        "yieldTriangles": [],
+        "guideLines": [
+          {
+            "points": [
+              [
+                244171.24086540643,
+                263943.6135489787
+              ],
+              [
+                244172.4249463422,
+                263943.70854708616
+              ]
+            ],
+            "widthM": 0.19567541663079996,
+            "colour": "white",
+            "dashPattern": {
+              "dashM": 16.248785840854516,
+              "gapM": 1.000023317901135
+            },
+            "dashPhaseM": 15.060900197011994
+          }
+        ],
+        "symbols": [],
+        "areas": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX00186",
+            "MX00189",
+            "MX00191",
+            "MX00194",
+            "MX00195",
+            "MX00193",
+            "MX00192",
+            "MX00187"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX00186",
+            "photo/evidence/markings-extra.geojson#MX00189",
+            "photo/evidence/markings-extra.geojson#MX00191",
+            "photo/evidence/markings-extra.geojson#MX00194",
+            "photo/evidence/markings-extra.geojson#MX00195",
+            "photo/evidence/markings-extra.geojson#MX00193",
+            "photo/evidence/markings-extra.geojson#MX00192",
+            "photo/evidence/markings-extra.geojson#MX00187"
+          ],
+          "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)",
           "dimensionsVerified": false
         }
       },
@@ -3400,17 +3856,17 @@
                 263942.6676484082
               ],
               [
-                244160.54097478447,
-                263938.4993017879
+                244168.3805740397,
+                263942.3206124092
               ]
             ],
             "widthM": 0.16902405879136384,
             "colour": "white",
             "dashPattern": {
-              "dashM": 0.8073443835390473,
-              "gapM": 2.182475925507826
+              "dashM": 9.732386169127214,
+              "gapM": 1.000023317901135
             },
-            "dashPhaseM": 0.26343093581508176
+            "dashPhaseM": 0
           }
         ],
         "symbols": [],
@@ -3459,6 +3915,254 @@
         }
       },
       {
+        "id": "JA_2d8f6de60c67f869",
+        "segment": "RD_107",
+        "section": "RS_2d8f6de60c67f869",
+        "alignment": "RA_2d8f6de60c67f869",
+        "pathIndex": 0,
+        "end": "to",
+        "stopLineSetbackM": null,
+        "crossing": null,
+        "arrows": [],
+        "text": [],
+        "humps": [],
+        "signalArms": [],
+        "yieldTriangles": [],
+        "guideLines": [
+          {
+            "points": [
+              [
+                244166.34879954084,
+                263941.3302503741
+              ],
+              [
+                244165.67967918672,
+                263941.0040963664
+              ]
+            ],
+            "widthM": 0.16902405879136384,
+            "colour": "white",
+            "dashPattern": {
+              "dashM": 9.732386169127214,
+              "gapM": 1.000023317901135
+            },
+            "dashPhaseM": 3.052329699403196
+          }
+        ],
+        "symbols": [],
+        "areas": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX00196",
+            "MX00197",
+            "MX00198",
+            "MX00199",
+            "MX00200"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX00196",
+            "photo/evidence/markings-extra.geojson#MX00197",
+            "photo/evidence/markings-extra.geojson#MX00198",
+            "photo/evidence/markings-extra.geojson#MX00199",
+            "photo/evidence/markings-extra.geojson#MX00200"
+          ],
+          "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "JA_2d58eb09121ae56d",
+        "segment": "RD_107",
+        "section": "RS_2d58eb09121ae56d",
+        "alignment": "RA_2d58eb09121ae56d",
+        "pathIndex": 0,
+        "end": "to",
+        "stopLineSetbackM": null,
+        "crossing": null,
+        "arrows": [],
+        "text": [],
+        "humps": [],
+        "signalArms": [],
+        "yieldTriangles": [],
+        "guideLines": [
+          {
+            "points": [
+              [
+                244164.97022148565,
+                263940.6582804439
+              ],
+              [
+                244164.2327310629,
+                263940.2988003361
+              ]
+            ],
+            "widthM": 0.16902405879136384,
+            "colour": "white",
+            "dashPattern": {
+              "dashM": 9.732386169127214,
+              "gapM": 1.000023317901135
+            },
+            "dashPhaseM": 4.58595972039921
+          }
+        ],
+        "symbols": [],
+        "areas": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX00196",
+            "MX00197",
+            "MX00198",
+            "MX00199",
+            "MX00200"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX00196",
+            "photo/evidence/markings-extra.geojson#MX00197",
+            "photo/evidence/markings-extra.geojson#MX00198",
+            "photo/evidence/markings-extra.geojson#MX00199",
+            "photo/evidence/markings-extra.geojson#MX00200"
+          ],
+          "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "JA_7527bdb0486d1eee",
+        "segment": "RD_107",
+        "section": "RS_7527bdb0486d1eee",
+        "alignment": "RA_7527bdb0486d1eee",
+        "pathIndex": 0,
+        "end": "to",
+        "stopLineSetbackM": null,
+        "crossing": null,
+        "arrows": [],
+        "text": [],
+        "humps": [],
+        "signalArms": [],
+        "yieldTriangles": [],
+        "guideLines": [
+          {
+            "points": [
+              [
+                244162.28267585178,
+                263939.34827130416
+              ],
+              [
+                244161.51690727388,
+                263938.9750073777
+              ]
+            ],
+            "widthM": 0.16902405879136384,
+            "colour": "white",
+            "dashPattern": {
+              "dashM": 9.732386169127214,
+              "gapM": 1.000023317901135
+            },
+            "dashPhaseM": 7.575780029446084
+          }
+        ],
+        "symbols": [],
+        "areas": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX00196",
+            "MX00197",
+            "MX00198",
+            "MX00199",
+            "MX00200"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX00196",
+            "photo/evidence/markings-extra.geojson#MX00197",
+            "photo/evidence/markings-extra.geojson#MX00198",
+            "photo/evidence/markings-extra.geojson#MX00199",
+            "photo/evidence/markings-extra.geojson#MX00200"
+          ],
+          "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)",
+          "dimensionsVerified": false
+        }
+      },
+      {
+        "id": "JA_2b534ad2a65b79b0",
+        "segment": "RD_107",
+        "section": "RS_2b534ad2a65b79b0",
+        "alignment": "RA_2b534ad2a65b79b0",
+        "pathIndex": 0,
+        "end": "to",
+        "stopLineSetbackM": null,
+        "crossing": null,
+        "arrows": [],
+        "text": [],
+        "humps": [],
+        "signalArms": [],
+        "yieldTriangles": [],
+        "guideLines": [
+          {
+            "points": [
+              [
+                244161.06982619298,
+                263938.7570835237
+              ],
+              [
+                244160.34410536406,
+                263938.40334035124
+              ]
+            ],
+            "widthM": 0.16902405879136384,
+            "colour": "white",
+            "dashPattern": {
+              "dashM": 9.732386169127214,
+              "gapM": 1.000023317901135
+            },
+            "dashPhaseM": 8.925041785588165
+          }
+        ],
+        "symbols": [],
+        "areas": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX00196",
+            "MX00197",
+            "MX00198",
+            "MX00199",
+            "MX00200"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX00196",
+            "photo/evidence/markings-extra.geojson#MX00197",
+            "photo/evidence/markings-extra.geojson#MX00198",
+            "photo/evidence/markings-extra.geojson#MX00199",
+            "photo/evidence/markings-extra.geojson#MX00200"
+          ],
+          "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)",
+          "dimensionsVerified": false
+        }
+      },
+      {
         "id": "JA_a058542ddff83281",
         "segment": "RD_120",
         "section": "RS_a058542ddff83281",
@@ -3487,7 +4191,7 @@
             "widthM": 0.169507867010549,
             "colour": "white",
             "dashPattern": {
-              "dashM": 0.5000116589505675,
+              "dashM": 0.874785013330746,
               "gapM": 1.000023317901135
             },
             "dashPhaseM": 0
@@ -3555,7 +4259,7 @@
             "widthM": 0.1368350776176616,
             "colour": "white",
             "dashPattern": {
-              "dashM": 0.5000116589505675,
+              "dashM": 0.8134180926243594,
               "gapM": 1.000023317901135
             },
             "dashPhaseM": 0
@@ -4587,21 +5291,21 @@
           {
             "points": [
               [
-                244137.25842320145,
-                263997.40694009914
+                244137.20845233405,
+                263997.6070192962
               ],
               [
-                244138.8334898892,
-                263991.10050407593
+                244138.88346075657,
+                263990.9004248789
               ]
             ],
             "widthM": 0.6000139907406811,
             "colour": "yellow",
             "dashPattern": {
-              "dashM": 0.5000116589505675,
+              "dashM": 6.912601673368208,
               "gapM": 1.000023317901135
             },
-            "dashPhaseM": 0
+            "dashPhaseM": 2.702238756027489e-14
           }
         ],
         "symbols": [],
@@ -5337,14 +6041,14 @@
                 263924.7503086086
               ],
               [
-                243734.89642718344,
-                263923.97112624673
+                243737.20650958276,
+                263924.51014448435
               ]
             ],
             "widthM": 0.3504389759991027,
             "colour": "white",
             "dashPattern": {
-              "dashM": 0.5000116589505675,
+              "dashM": 3.4290588199868663,
               "gapM": 1.000023317901135
             },
             "dashPhaseM": 0
@@ -5389,6 +6093,62 @@
         }
       },
       {
+        "id": "JA_3dda6bbdbbe6c1ef",
+        "segment": "RD_076",
+        "section": "RS_3dda6bbdbbe6c1ef",
+        "alignment": "RA_3dda6bbdbbe6c1ef",
+        "pathIndex": 1,
+        "end": "to",
+        "stopLineSetbackM": null,
+        "crossing": null,
+        "arrows": [],
+        "text": [],
+        "humps": [],
+        "signalArms": [],
+        "yieldTriangles": [],
+        "guideLines": [
+          {
+            "points": [
+              [
+                243735.89517600427,
+                263924.20416721073
+              ],
+              [
+                243734.89642718344,
+                263923.97112624673
+              ]
+            ],
+            "widthM": 0.3504389759991027,
+            "colour": "white",
+            "dashPattern": {
+              "dashM": 3.4290588199868663,
+              "gapM": 1.000023317901135
+            },
+            "dashPhaseM": 2.403482251409995
+          }
+        ],
+        "symbols": [],
+        "areas": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX00240",
+            "MX00242"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX00240",
+            "photo/evidence/markings-extra.geojson#MX00242"
+          ],
+          "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)",
+          "dimensionsVerified": false
+        }
+      },
+      {
         "id": "JA_a2c18dd4d1ec0e62",
         "segment": "RD_073",
         "section": "RS_a2c18dd4d1ec0e62",
@@ -5410,17 +6170,17 @@
                 263934.52698291896
               ],
               [
-                243733.7633236528,
-                263931.820644588
+                243734.2525018928,
+                263933.7587676463
               ]
             ],
             "widthM": 0.305293858047602,
             "colour": "white",
             "dashPattern": {
-              "dashM": 0.5000116589505675,
+              "dashM": 2.791210758643314,
               "gapM": 1.000023317901135
             },
-            "dashPhaseM": 0
+            "dashPhaseM": 1.9321937015882807e-14
           }
         ],
         "symbols": [],
@@ -5461,6 +6221,62 @@
         }
       },
       {
+        "id": "JA_40c39be86014c740",
+        "segment": "RD_073",
+        "section": "RS_40c39be86014c740",
+        "alignment": "RA_40c39be86014c740",
+        "pathIndex": 1,
+        "end": "to",
+        "stopLineSetbackM": null,
+        "crossing": null,
+        "arrows": [],
+        "text": [],
+        "humps": [],
+        "signalArms": [],
+        "yieldTriangles": [],
+        "guideLines": [
+          {
+            "points": [
+              [
+                243733.9971516742,
+                263932.7470706694
+              ],
+              [
+                243733.7633236528,
+                263931.820644588
+              ]
+            ],
+            "widthM": 0.305293858047602,
+            "colour": "white",
+            "dashPattern": {
+              "dashM": 2.791210758643314,
+              "gapM": 1.000023317901135
+            },
+            "dashPhaseM": 1.835731387923732
+          }
+        ],
+        "symbols": [],
+        "areas": [],
+        "evidence": {
+          "tier": "T1",
+          "refs": [
+            "MX00234",
+            "MX00235"
+          ]
+        },
+        "estimated": true,
+        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
+        "curation": {
+          "verified": false,
+          "refs": [
+            "photo/evidence/markings-extra.geojson#MX00234",
+            "photo/evidence/markings-extra.geojson#MX00235"
+          ],
+          "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)",
+          "dimensionsVerified": false
+        }
+      },
+      {
         "id": "JA_a5392906a5a86ff8",
         "segment": "RD_076",
         "section": "RS_a5392906a5a86ff8",
@@ -5489,7 +6305,7 @@
             "widthM": 0.2692401096021922,
             "colour": "white",
             "dashPattern": {
-              "dashM": 0.5000116589505675,
+              "dashM": 0.8125020282209617,
               "gapM": 1.000023317901135
             },
             "dashPhaseM": 0
@@ -5558,7 +6374,7 @@
             "widthM": 0.25366344303977545,
             "colour": "white",
             "dashPattern": {
-              "dashM": 0.5000116589505675,
+              "dashM": 0.7739940176013592,
               "gapM": 1.000023317901135
             },
             "dashPhaseM": 0
