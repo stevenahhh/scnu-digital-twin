@@ -36,6 +36,15 @@ describe("SceneLabel", () => {
     ]);
   });
 
+  // At P (15 px) a one-word name wider than max-w-40 was cut mid-letter (C4 환경친화형물질공정연구센터); below 640 px it breaks.
+  it("lets a long one-word name break inside the word below 640 px only", () => {
+    render(<SceneLabel name="환경친화형물질공정연구센터" elementId="BLD_C4" code="C4" />);
+    const name = screen.getByText("환경친화형물질공정연구센터");
+    expect(name.className.split(" ")).toEqual(expect.arrayContaining([
+      "line-clamp-2", "break-keep", "max-[639px]:[overflow-wrap:anywhere]", "max-[639px]:[text-wrap:balance]",
+    ]));
+  });
+
   it.each(SCENE_LABEL_STATES)("maps the %s state to data-state", (state) => {
     render(<SceneLabel name="학생회관" elementId="BLD_S" state={state} value="24.3 °C 추정" />);
     expect(screen.getByRole("button").dataset.state).toBe(state);

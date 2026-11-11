@@ -50,15 +50,17 @@ function buildSlots(entries) {
   return slots;
 }
 
-function defaultMeasure(slotElement) {
-  const hit = slotElement.firstElementChild;
-  const chip = slotElement.querySelector('[data-qa="label-chip"]') ?? hit;
-  return {
-    width: chip?.offsetWidth ?? 0,
-    height: chip?.offsetHeight ?? 0,
-    hitWidth: hit?.offsetWidth ?? 0,
-    hitHeight: hit?.offsetHeight ?? 0,
-  };
+// 크기는 소수 px 상자를 올림해 잰다. offsetWidth는 반올림한 정수라 112.06 px 칩을 112 px로 알고 가장자리에 붙이면
+// 칩이 가장자리 여백(8 px)을 소수점만큼 넘는다(폰 글자 15 px에서 생긴다).
+const boxSize = (el) => {
+  if (!el) return { w: 0, h: 0 };
+  const r = el.getBoundingClientRect();
+  return { w: Math.ceil(r.width), h: Math.ceil(r.height) };
+};
+export function measureLabelSlot(slotElement) {
+  const hit = boxSize(slotElement.firstElementChild);
+  const chip = slotElement.querySelector('[data-qa="label-chip"]') ? boxSize(slotElement.querySelector('[data-qa="label-chip"]')) : hit;
+  return { width: chip.w, height: chip.h, hitWidth: hit.w, hitHeight: hit.h };
 }
 
 function sameView(a, b) {
@@ -117,7 +119,7 @@ export function CampusLabelLayer({
   onClear,
   onRequestPass,
   controllerRef,
-  measure = defaultMeasure,
+  measure = measureLabelSlot,
 }) {
   const slots = useMemo(() => buildSlots(entries ?? []), [entries]);
   const slotById = useMemo(() => new Map(slots.map((slot) => [slot.id, slot])), [slots]);
