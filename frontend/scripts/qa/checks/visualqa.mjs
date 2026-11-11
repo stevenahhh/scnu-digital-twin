@@ -383,7 +383,9 @@ export const VISUALQA_CHECKS = [
         await ctx.sleep(600);
         expandedChip = true;
       }
-      const items = await textItems(ctx, "[data-qa=dashboard-panel] *, [data-qa=time-slider] *, [role=dialog] *", { maxPx: 14, limit: 200 });
+      // The probes are the small text (ticks, count badge, captions). Below 640 px the type scale lifts --text-caption from 12 to
+      // 15 px (tokens.css), so at P a 14 px cap selects nothing: cap at the phone caption step instead.
+      const items = await textItems(ctx, "[data-qa=dashboard-panel] *, [data-qa=time-slider] *, [role=dialog] *", { maxPx: ctx.viewport === "P" ? 15 : 14, limit: 200 });
       // Pixels from a fresh frame: this replay changes the page (opened sections, the chip), so the frame captured before
       // the checks would not match the text boxes measured now.
       const frame = await ctx.screenshot();
@@ -556,14 +558,24 @@ export const VISUALQA_CHECKS = [
     },
   }),
   defineCheck("V-Q-29", {
-    states: ["S09"], viewports: DP,
+    // At P the group rests as one `카메라 조작` toggle (ideal-state 폰 카메라 조작, 3.2): open it as a user would, count, then close it.
+    states: ["S09"], viewports: DP, mutates: true,
     async run(ctx) {
       if (!(await exists(ctx, HOOKS.cameraControls))) {
         const buttons = await ctx.inPage((qa) => qa.all("button").filter((el) => qa.visible(el) && /확대|축소|회전|초기화|재설정/.test(qa.txt(el) + (el.getAttribute("aria-label") ?? ""))).length);
         return missingHook(HOOKS.cameraControls, "zoom in/out, rotate and reset controls exist, are keyboard-operable and change the pose", { zoomRotateResetButtons: buttons });
       }
-      const count = await ctx.inPage((qa) => qa.all("[data-qa=camera-controls] button").filter(qa.visible).length);
-      return result(count >= 4, { controls: count }, "all four exist and are keyboard-operable");
+      const toggled = await ctx.inPage((qa) => qa.one("[data-qa=camera-controls-toggle]")?.getAttribute("aria-expanded") === "false");
+      if (toggled) {
+        await ctx.b.tap("[data-qa=camera-controls-toggle]");
+        await ctx.sleep(150);
+      }
+      const count = await ctx.inPage((qa) => qa.all("[data-qa=camera-controls] button:not([data-qa=camera-controls-toggle])").filter(qa.visible).length);
+      if (toggled && (await ctx.inPage((qa) => qa.one("[data-qa=camera-controls-toggle]")?.getAttribute("aria-expanded") === "true"))) {
+        await ctx.b.tap("[data-qa=camera-controls-toggle]");
+        await ctx.sleep(150);
+      }
+      return result(count >= 4, { controls: count, openedToggle: toggled }, "all four exist and are keyboard-operable");
     },
   }),
 ];
