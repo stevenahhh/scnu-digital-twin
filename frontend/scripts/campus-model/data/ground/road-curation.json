@@ -12565,7 +12565,7 @@
       ],
       "method": "lane C2 PART 1 full-marking aerial continuity plus located VR and named-network review",
       "candidates": [],
-      "reason": "RS_35d4e31b5928fa65: MK00904, MK00905, MK00906; EPSG:5186 (243938.48, 263774.787). MK00904~MK00906은 약대사거리 서측 동서 차선의 세 점선 조각이다. 두 시기 항공사진에서 같은 직진 차선을 확인했고 전체 도색은 RD_109 회랑 안이다. scene_a2 r은 수목에 가려 VR만으로 승인하지 않았다.",
+      "reason": "RS_35d4e31b5928fa65: MK00904, MK00905, MK00906; EPSG:5186 (243938.48, 263774.787). MK00904~MK00906은 약대사거리 서측 동서 차선의 세 점선 조각이다. 두 시기 항공사진에서 같은 직진 차선을 확인했고 전체 도색은 RD_109 회랑 안이다. scene_a2 r은 수목에 가려 VR만으로 승인하지 않았다. lane/fix-markings 2026-11-11: geometry edit toM 2 dropped. It trimmed the single 3 m statute dash the seed laid on MK00904-MK00906 to the 2 m dash the photo shows; the fit now lays the photo's own period (5.72 m, 1.83 m dashes) over the three detected dashes, so the section spans all three (estimated)",
       "reviewEvidence": {
         "centreTm": [
           243938.48,
@@ -12599,15 +12599,6 @@
         ],
         "status": "unresolved",
         "unresolvedQuestion": "The physical junction is localized to RZ-070=1.000, but its connecting road arm is not uniquely supported by the named road polygons and the source-marking direction."
-      },
-      "geometry": {
-        "toM": 2,
-        "refs": [
-          "NGII 2025 34702020",
-          ".omo/evidence/campus-ground-truth-redesign/task-24b-lane-B-lanes-existence.md#B11",
-          "task-24-attempt-2/chips/U17-photo.png"
-        ],
-        "reason": "B11: the first white dash ends at approximately station 2.0 m in NGII 2025; the remaining 2.0..3.00007 m is the unpainted gap. Keep the same start, axis and width; trim only the overlong dash. Estimated at 0.25 m source pixel resolution, not a surveyed endpoint."
       }
     },
     {
@@ -28728,7 +28719,7 @@
       }
     },
     {
-      "id": "RS_87df3f3f624a3f9b",
+      "id": "RS_980c55421e103605",
       "verified": false,
       "segmentId": null,
       "originalSegment": "RD_035",
@@ -28752,7 +28743,7 @@
       ],
       "method": "lane C aerial corridor and authoritative network connectivity review",
       "candidates": [],
-      "reason": "RS_87df3f3f624a3f9b: MX00411, MX00413, MX00414; EPSG:5186 (243885.36, 263797.74). 도색은 RZ-079 지분 1 교차부에 걸친다. line:lane_line_dashed owner의 접근·회전 구간 전체를 단일 RD_035로 묶을 경계가 없다.",
+      "reason": "RS_87df3f3f624a3f9b: MX00411, MX00413, MX00414; EPSG:5186 (243885.36, 263797.74). 도색은 RZ-079 지분 1 교차부에 걸친다. line:lane_line_dashed owner의 접근·회전 구간 전체를 단일 RD_035로 묶을 경계가 없다. Moved from RS_87df3f3f624a3f9b to RS_980c55421e103605 (lane/fix-markings 2026-11-11): MX00989 joined the same chain of marks (estimated)",
       "reviewEvidence": {
         "centreTm": [
           243885.36,
@@ -48169,6 +48160,1585 @@
         "photo/evidence/markings-extra.geojson#MX01917"
       ],
       "reason": "Unreviewed owner created by the 2026-11-10 marking re-fit (central roundabout islands retraced as single strokes, guessed text per lane); road ownership not reviewed."
+    },
+    {
+      "id": "RS_ada66efe96126365",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_109",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00580",
+        "photo/evidence/markings-extra.geojson#MX00582"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_8b87d8b2ac92ac3f",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_109",
+      "refs": [
+        "photo/evidence/markings.geojson#MK00898",
+        "photo/evidence/markings.geojson#MK00899"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_10a4a26555589f81",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_112",
+      "refs": [
+        "photo/evidence/markings.geojson#MK00746",
+        "photo/evidence/markings-extra.geojson#MX00112",
+        "photo/evidence/markings-extra.geojson#MX00111"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_9b1fbb3768c86890",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_112",
+      "refs": [
+        "photo/evidence/markings.geojson#MK00746",
+        "photo/evidence/markings-extra.geojson#MX00112",
+        "photo/evidence/markings-extra.geojson#MX00111"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_3bff45e1d22ed552",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_112",
+      "refs": [
+        "photo/evidence/markings.geojson#MK00665",
+        "photo/evidence/markings-extra.geojson#MX00046"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_620730705cfc76aa",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_112",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00019",
+        "photo/evidence/markings-extra.geojson#MX00020",
+        "photo/evidence/markings-extra.geojson#MX00021"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_1702b3e6a8814d8f",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_112",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00019",
+        "photo/evidence/markings-extra.geojson#MX00020",
+        "photo/evidence/markings-extra.geojson#MX00021"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_b754ef8f93b73c5b",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_112",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00044",
+        "photo/evidence/markings-extra.geojson#MX00045"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_2b38b8b8cb01706d",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_112",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00123",
+        "photo/evidence/markings-extra.geojson#MX00124"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_ebdd28ce3c236b88",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_088",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00325",
+        "photo/evidence/markings-extra.geojson#MX00326"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_befa34794c93905a",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00856",
+        "photo/evidence/markings.geojson#MK01172",
+        "photo/evidence/markings-extra.geojson#MX00854",
+        "photo/evidence/markings.geojson#MK01155",
+        "photo/evidence/markings-extra.geojson#MX00851",
+        "photo/evidence/markings-extra.geojson#MX00780",
+        "photo/evidence/markings.geojson#MK01044",
+        "photo/evidence/markings.geojson#MK01043",
+        "photo/evidence/markings.geojson#MK01042",
+        "photo/evidence/markings.geojson#MK01041",
+        "photo/evidence/markings.geojson#MK01040",
+        "photo/evidence/markings.geojson#MK01039",
+        "photo/evidence/markings.geojson#MK01038",
+        "photo/evidence/markings.geojson#MK01037",
+        "photo/evidence/markings.geojson#MK01036",
+        "photo/evidence/markings.geojson#MK01035",
+        "photo/evidence/markings.geojson#MK01034",
+        "photo/evidence/markings.geojson#MK01033",
+        "photo/evidence/markings.geojson#MK01032",
+        "photo/evidence/markings.geojson#MK01031"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_b671e91be2d6f94a",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00856",
+        "photo/evidence/markings.geojson#MK01172",
+        "photo/evidence/markings-extra.geojson#MX00854",
+        "photo/evidence/markings.geojson#MK01155",
+        "photo/evidence/markings-extra.geojson#MX00851",
+        "photo/evidence/markings-extra.geojson#MX00780",
+        "photo/evidence/markings.geojson#MK01044",
+        "photo/evidence/markings.geojson#MK01043",
+        "photo/evidence/markings.geojson#MK01042",
+        "photo/evidence/markings.geojson#MK01041",
+        "photo/evidence/markings.geojson#MK01040",
+        "photo/evidence/markings.geojson#MK01039",
+        "photo/evidence/markings.geojson#MK01038",
+        "photo/evidence/markings.geojson#MK01037",
+        "photo/evidence/markings.geojson#MK01036",
+        "photo/evidence/markings.geojson#MK01035",
+        "photo/evidence/markings.geojson#MK01034",
+        "photo/evidence/markings.geojson#MK01033",
+        "photo/evidence/markings.geojson#MK01032",
+        "photo/evidence/markings.geojson#MK01031"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_b128ea452b1d9ec7",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00856",
+        "photo/evidence/markings.geojson#MK01172",
+        "photo/evidence/markings-extra.geojson#MX00854",
+        "photo/evidence/markings.geojson#MK01155",
+        "photo/evidence/markings-extra.geojson#MX00851",
+        "photo/evidence/markings-extra.geojson#MX00780",
+        "photo/evidence/markings.geojson#MK01044",
+        "photo/evidence/markings.geojson#MK01043",
+        "photo/evidence/markings.geojson#MK01042",
+        "photo/evidence/markings.geojson#MK01041",
+        "photo/evidence/markings.geojson#MK01040",
+        "photo/evidence/markings.geojson#MK01039",
+        "photo/evidence/markings.geojson#MK01038",
+        "photo/evidence/markings.geojson#MK01037",
+        "photo/evidence/markings.geojson#MK01036",
+        "photo/evidence/markings.geojson#MK01035",
+        "photo/evidence/markings.geojson#MK01034",
+        "photo/evidence/markings.geojson#MK01033",
+        "photo/evidence/markings.geojson#MK01032",
+        "photo/evidence/markings.geojson#MK01031"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_4baa89ac2ed725cc",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00856",
+        "photo/evidence/markings.geojson#MK01172",
+        "photo/evidence/markings-extra.geojson#MX00854",
+        "photo/evidence/markings.geojson#MK01155",
+        "photo/evidence/markings-extra.geojson#MX00851",
+        "photo/evidence/markings-extra.geojson#MX00780",
+        "photo/evidence/markings.geojson#MK01044",
+        "photo/evidence/markings.geojson#MK01043",
+        "photo/evidence/markings.geojson#MK01042",
+        "photo/evidence/markings.geojson#MK01041",
+        "photo/evidence/markings.geojson#MK01040",
+        "photo/evidence/markings.geojson#MK01039",
+        "photo/evidence/markings.geojson#MK01038",
+        "photo/evidence/markings.geojson#MK01037",
+        "photo/evidence/markings.geojson#MK01036",
+        "photo/evidence/markings.geojson#MK01035",
+        "photo/evidence/markings.geojson#MK01034",
+        "photo/evidence/markings.geojson#MK01033",
+        "photo/evidence/markings.geojson#MK01032",
+        "photo/evidence/markings.geojson#MK01031"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_6b00048a6adc7ea5",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00856",
+        "photo/evidence/markings.geojson#MK01172",
+        "photo/evidence/markings-extra.geojson#MX00854",
+        "photo/evidence/markings.geojson#MK01155",
+        "photo/evidence/markings-extra.geojson#MX00851",
+        "photo/evidence/markings-extra.geojson#MX00780",
+        "photo/evidence/markings.geojson#MK01044",
+        "photo/evidence/markings.geojson#MK01043",
+        "photo/evidence/markings.geojson#MK01042",
+        "photo/evidence/markings.geojson#MK01041",
+        "photo/evidence/markings.geojson#MK01040",
+        "photo/evidence/markings.geojson#MK01039",
+        "photo/evidence/markings.geojson#MK01038",
+        "photo/evidence/markings.geojson#MK01037",
+        "photo/evidence/markings.geojson#MK01036",
+        "photo/evidence/markings.geojson#MK01035",
+        "photo/evidence/markings.geojson#MK01034",
+        "photo/evidence/markings.geojson#MK01033",
+        "photo/evidence/markings.geojson#MK01032",
+        "photo/evidence/markings.geojson#MK01031"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_fcd28919a431a569",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00856",
+        "photo/evidence/markings.geojson#MK01172",
+        "photo/evidence/markings-extra.geojson#MX00854",
+        "photo/evidence/markings.geojson#MK01155",
+        "photo/evidence/markings-extra.geojson#MX00851",
+        "photo/evidence/markings-extra.geojson#MX00780",
+        "photo/evidence/markings.geojson#MK01044",
+        "photo/evidence/markings.geojson#MK01043",
+        "photo/evidence/markings.geojson#MK01042",
+        "photo/evidence/markings.geojson#MK01041",
+        "photo/evidence/markings.geojson#MK01040",
+        "photo/evidence/markings.geojson#MK01039",
+        "photo/evidence/markings.geojson#MK01038",
+        "photo/evidence/markings.geojson#MK01037",
+        "photo/evidence/markings.geojson#MK01036",
+        "photo/evidence/markings.geojson#MK01035",
+        "photo/evidence/markings.geojson#MK01034",
+        "photo/evidence/markings.geojson#MK01033",
+        "photo/evidence/markings.geojson#MK01032",
+        "photo/evidence/markings.geojson#MK01031"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_d892b8df82c9f97d",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00856",
+        "photo/evidence/markings.geojson#MK01172",
+        "photo/evidence/markings-extra.geojson#MX00854",
+        "photo/evidence/markings.geojson#MK01155",
+        "photo/evidence/markings-extra.geojson#MX00851",
+        "photo/evidence/markings-extra.geojson#MX00780",
+        "photo/evidence/markings.geojson#MK01044",
+        "photo/evidence/markings.geojson#MK01043",
+        "photo/evidence/markings.geojson#MK01042",
+        "photo/evidence/markings.geojson#MK01041",
+        "photo/evidence/markings.geojson#MK01040",
+        "photo/evidence/markings.geojson#MK01039",
+        "photo/evidence/markings.geojson#MK01038",
+        "photo/evidence/markings.geojson#MK01037",
+        "photo/evidence/markings.geojson#MK01036",
+        "photo/evidence/markings.geojson#MK01035",
+        "photo/evidence/markings.geojson#MK01034",
+        "photo/evidence/markings.geojson#MK01033",
+        "photo/evidence/markings.geojson#MK01032",
+        "photo/evidence/markings.geojson#MK01031"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_308b8bec8a3a6a06",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00856",
+        "photo/evidence/markings.geojson#MK01172",
+        "photo/evidence/markings-extra.geojson#MX00854",
+        "photo/evidence/markings.geojson#MK01155",
+        "photo/evidence/markings-extra.geojson#MX00851",
+        "photo/evidence/markings-extra.geojson#MX00780",
+        "photo/evidence/markings.geojson#MK01044",
+        "photo/evidence/markings.geojson#MK01043",
+        "photo/evidence/markings.geojson#MK01042",
+        "photo/evidence/markings.geojson#MK01041",
+        "photo/evidence/markings.geojson#MK01040",
+        "photo/evidence/markings.geojson#MK01039",
+        "photo/evidence/markings.geojson#MK01038",
+        "photo/evidence/markings.geojson#MK01037",
+        "photo/evidence/markings.geojson#MK01036",
+        "photo/evidence/markings.geojson#MK01035",
+        "photo/evidence/markings.geojson#MK01034",
+        "photo/evidence/markings.geojson#MK01033",
+        "photo/evidence/markings.geojson#MK01032",
+        "photo/evidence/markings.geojson#MK01031"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_69d74ead1e0c6e25",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00856",
+        "photo/evidence/markings.geojson#MK01172",
+        "photo/evidence/markings-extra.geojson#MX00854",
+        "photo/evidence/markings.geojson#MK01155",
+        "photo/evidence/markings-extra.geojson#MX00851",
+        "photo/evidence/markings-extra.geojson#MX00780",
+        "photo/evidence/markings.geojson#MK01044",
+        "photo/evidence/markings.geojson#MK01043",
+        "photo/evidence/markings.geojson#MK01042",
+        "photo/evidence/markings.geojson#MK01041",
+        "photo/evidence/markings.geojson#MK01040",
+        "photo/evidence/markings.geojson#MK01039",
+        "photo/evidence/markings.geojson#MK01038",
+        "photo/evidence/markings.geojson#MK01037",
+        "photo/evidence/markings.geojson#MK01036",
+        "photo/evidence/markings.geojson#MK01035",
+        "photo/evidence/markings.geojson#MK01034",
+        "photo/evidence/markings.geojson#MK01033",
+        "photo/evidence/markings.geojson#MK01032",
+        "photo/evidence/markings.geojson#MK01031"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_fd59321aa3f1845d",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00856",
+        "photo/evidence/markings.geojson#MK01172",
+        "photo/evidence/markings-extra.geojson#MX00854",
+        "photo/evidence/markings.geojson#MK01155",
+        "photo/evidence/markings-extra.geojson#MX00851",
+        "photo/evidence/markings-extra.geojson#MX00780",
+        "photo/evidence/markings.geojson#MK01044",
+        "photo/evidence/markings.geojson#MK01043",
+        "photo/evidence/markings.geojson#MK01042",
+        "photo/evidence/markings.geojson#MK01041",
+        "photo/evidence/markings.geojson#MK01040",
+        "photo/evidence/markings.geojson#MK01039",
+        "photo/evidence/markings.geojson#MK01038",
+        "photo/evidence/markings.geojson#MK01037",
+        "photo/evidence/markings.geojson#MK01036",
+        "photo/evidence/markings.geojson#MK01035",
+        "photo/evidence/markings.geojson#MK01034",
+        "photo/evidence/markings.geojson#MK01033",
+        "photo/evidence/markings.geojson#MK01032",
+        "photo/evidence/markings.geojson#MK01031"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_ea03b3819bd2cfb0",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00856",
+        "photo/evidence/markings.geojson#MK01172",
+        "photo/evidence/markings-extra.geojson#MX00854",
+        "photo/evidence/markings.geojson#MK01155",
+        "photo/evidence/markings-extra.geojson#MX00851",
+        "photo/evidence/markings-extra.geojson#MX00780",
+        "photo/evidence/markings.geojson#MK01044",
+        "photo/evidence/markings.geojson#MK01043",
+        "photo/evidence/markings.geojson#MK01042",
+        "photo/evidence/markings.geojson#MK01041",
+        "photo/evidence/markings.geojson#MK01040",
+        "photo/evidence/markings.geojson#MK01039",
+        "photo/evidence/markings.geojson#MK01038",
+        "photo/evidence/markings.geojson#MK01037",
+        "photo/evidence/markings.geojson#MK01036",
+        "photo/evidence/markings.geojson#MK01035",
+        "photo/evidence/markings.geojson#MK01034",
+        "photo/evidence/markings.geojson#MK01033",
+        "photo/evidence/markings.geojson#MK01032",
+        "photo/evidence/markings.geojson#MK01031"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_8fa7e146f84dd77d",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00856",
+        "photo/evidence/markings.geojson#MK01172",
+        "photo/evidence/markings-extra.geojson#MX00854",
+        "photo/evidence/markings.geojson#MK01155",
+        "photo/evidence/markings-extra.geojson#MX00851",
+        "photo/evidence/markings-extra.geojson#MX00780",
+        "photo/evidence/markings.geojson#MK01044",
+        "photo/evidence/markings.geojson#MK01043",
+        "photo/evidence/markings.geojson#MK01042",
+        "photo/evidence/markings.geojson#MK01041",
+        "photo/evidence/markings.geojson#MK01040",
+        "photo/evidence/markings.geojson#MK01039",
+        "photo/evidence/markings.geojson#MK01038",
+        "photo/evidence/markings.geojson#MK01037",
+        "photo/evidence/markings.geojson#MK01036",
+        "photo/evidence/markings.geojson#MK01035",
+        "photo/evidence/markings.geojson#MK01034",
+        "photo/evidence/markings.geojson#MK01033",
+        "photo/evidence/markings.geojson#MK01032",
+        "photo/evidence/markings.geojson#MK01031"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_91e5f3dc4b855f8c",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00856",
+        "photo/evidence/markings.geojson#MK01172",
+        "photo/evidence/markings-extra.geojson#MX00854",
+        "photo/evidence/markings.geojson#MK01155",
+        "photo/evidence/markings-extra.geojson#MX00851",
+        "photo/evidence/markings-extra.geojson#MX00780",
+        "photo/evidence/markings.geojson#MK01044",
+        "photo/evidence/markings.geojson#MK01043",
+        "photo/evidence/markings.geojson#MK01042",
+        "photo/evidence/markings.geojson#MK01041",
+        "photo/evidence/markings.geojson#MK01040",
+        "photo/evidence/markings.geojson#MK01039",
+        "photo/evidence/markings.geojson#MK01038",
+        "photo/evidence/markings.geojson#MK01037",
+        "photo/evidence/markings.geojson#MK01036",
+        "photo/evidence/markings.geojson#MK01035",
+        "photo/evidence/markings.geojson#MK01034",
+        "photo/evidence/markings.geojson#MK01033",
+        "photo/evidence/markings.geojson#MK01032",
+        "photo/evidence/markings.geojson#MK01031"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_af5c21c325e1ba71",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00856",
+        "photo/evidence/markings.geojson#MK01172",
+        "photo/evidence/markings-extra.geojson#MX00854",
+        "photo/evidence/markings.geojson#MK01155",
+        "photo/evidence/markings-extra.geojson#MX00851",
+        "photo/evidence/markings-extra.geojson#MX00780",
+        "photo/evidence/markings.geojson#MK01044",
+        "photo/evidence/markings.geojson#MK01043",
+        "photo/evidence/markings.geojson#MK01042",
+        "photo/evidence/markings.geojson#MK01041",
+        "photo/evidence/markings.geojson#MK01040",
+        "photo/evidence/markings.geojson#MK01039",
+        "photo/evidence/markings.geojson#MK01038",
+        "photo/evidence/markings.geojson#MK01037",
+        "photo/evidence/markings.geojson#MK01036",
+        "photo/evidence/markings.geojson#MK01035",
+        "photo/evidence/markings.geojson#MK01034",
+        "photo/evidence/markings.geojson#MK01033",
+        "photo/evidence/markings.geojson#MK01032",
+        "photo/evidence/markings.geojson#MK01031"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_0e71e63a51a35a9e",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00856",
+        "photo/evidence/markings.geojson#MK01172",
+        "photo/evidence/markings-extra.geojson#MX00854",
+        "photo/evidence/markings.geojson#MK01155",
+        "photo/evidence/markings-extra.geojson#MX00851",
+        "photo/evidence/markings-extra.geojson#MX00780",
+        "photo/evidence/markings.geojson#MK01044",
+        "photo/evidence/markings.geojson#MK01043",
+        "photo/evidence/markings.geojson#MK01042",
+        "photo/evidence/markings.geojson#MK01041",
+        "photo/evidence/markings.geojson#MK01040",
+        "photo/evidence/markings.geojson#MK01039",
+        "photo/evidence/markings.geojson#MK01038",
+        "photo/evidence/markings.geojson#MK01037",
+        "photo/evidence/markings.geojson#MK01036",
+        "photo/evidence/markings.geojson#MK01035",
+        "photo/evidence/markings.geojson#MK01034",
+        "photo/evidence/markings.geojson#MK01033",
+        "photo/evidence/markings.geojson#MK01032",
+        "photo/evidence/markings.geojson#MK01031"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_427b1f707a07a934",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00856",
+        "photo/evidence/markings.geojson#MK01172",
+        "photo/evidence/markings-extra.geojson#MX00854",
+        "photo/evidence/markings.geojson#MK01155",
+        "photo/evidence/markings-extra.geojson#MX00851",
+        "photo/evidence/markings-extra.geojson#MX00780",
+        "photo/evidence/markings.geojson#MK01044",
+        "photo/evidence/markings.geojson#MK01043",
+        "photo/evidence/markings.geojson#MK01042",
+        "photo/evidence/markings.geojson#MK01041",
+        "photo/evidence/markings.geojson#MK01040",
+        "photo/evidence/markings.geojson#MK01039",
+        "photo/evidence/markings.geojson#MK01038",
+        "photo/evidence/markings.geojson#MK01037",
+        "photo/evidence/markings.geojson#MK01036",
+        "photo/evidence/markings.geojson#MK01035",
+        "photo/evidence/markings.geojson#MK01034",
+        "photo/evidence/markings.geojson#MK01033",
+        "photo/evidence/markings.geojson#MK01032",
+        "photo/evidence/markings.geojson#MK01031"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_db4dcc68c4f90a93",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00856",
+        "photo/evidence/markings.geojson#MK01172",
+        "photo/evidence/markings-extra.geojson#MX00854",
+        "photo/evidence/markings.geojson#MK01155",
+        "photo/evidence/markings-extra.geojson#MX00851",
+        "photo/evidence/markings-extra.geojson#MX00780",
+        "photo/evidence/markings.geojson#MK01044",
+        "photo/evidence/markings.geojson#MK01043",
+        "photo/evidence/markings.geojson#MK01042",
+        "photo/evidence/markings.geojson#MK01041",
+        "photo/evidence/markings.geojson#MK01040",
+        "photo/evidence/markings.geojson#MK01039",
+        "photo/evidence/markings.geojson#MK01038",
+        "photo/evidence/markings.geojson#MK01037",
+        "photo/evidence/markings.geojson#MK01036",
+        "photo/evidence/markings.geojson#MK01035",
+        "photo/evidence/markings.geojson#MK01034",
+        "photo/evidence/markings.geojson#MK01033",
+        "photo/evidence/markings.geojson#MK01032",
+        "photo/evidence/markings.geojson#MK01031"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_5bb6b2b9ba581263",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00856",
+        "photo/evidence/markings.geojson#MK01172",
+        "photo/evidence/markings-extra.geojson#MX00854",
+        "photo/evidence/markings.geojson#MK01155",
+        "photo/evidence/markings-extra.geojson#MX00851",
+        "photo/evidence/markings-extra.geojson#MX00780",
+        "photo/evidence/markings.geojson#MK01044",
+        "photo/evidence/markings.geojson#MK01043",
+        "photo/evidence/markings.geojson#MK01042",
+        "photo/evidence/markings.geojson#MK01041",
+        "photo/evidence/markings.geojson#MK01040",
+        "photo/evidence/markings.geojson#MK01039",
+        "photo/evidence/markings.geojson#MK01038",
+        "photo/evidence/markings.geojson#MK01037",
+        "photo/evidence/markings.geojson#MK01036",
+        "photo/evidence/markings.geojson#MK01035",
+        "photo/evidence/markings.geojson#MK01034",
+        "photo/evidence/markings.geojson#MK01033",
+        "photo/evidence/markings.geojson#MK01032",
+        "photo/evidence/markings.geojson#MK01031"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_6c3e49467e51c19d",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00856",
+        "photo/evidence/markings.geojson#MK01172",
+        "photo/evidence/markings-extra.geojson#MX00854",
+        "photo/evidence/markings.geojson#MK01155",
+        "photo/evidence/markings-extra.geojson#MX00851",
+        "photo/evidence/markings-extra.geojson#MX00780",
+        "photo/evidence/markings.geojson#MK01044",
+        "photo/evidence/markings.geojson#MK01043",
+        "photo/evidence/markings.geojson#MK01042",
+        "photo/evidence/markings.geojson#MK01041",
+        "photo/evidence/markings.geojson#MK01040",
+        "photo/evidence/markings.geojson#MK01039",
+        "photo/evidence/markings.geojson#MK01038",
+        "photo/evidence/markings.geojson#MK01037",
+        "photo/evidence/markings.geojson#MK01036",
+        "photo/evidence/markings.geojson#MK01035",
+        "photo/evidence/markings.geojson#MK01034",
+        "photo/evidence/markings.geojson#MK01033",
+        "photo/evidence/markings.geojson#MK01032",
+        "photo/evidence/markings.geojson#MK01031"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_2304384e91c2613e",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings.geojson#MK00911",
+        "photo/evidence/markings.geojson#MK00910",
+        "photo/evidence/markings.geojson#MK00909",
+        "photo/evidence/markings.geojson#MK00908",
+        "photo/evidence/markings-extra.geojson#MX00519"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_e77ddf74fffdefa7",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings.geojson#MK00911",
+        "photo/evidence/markings.geojson#MK00910",
+        "photo/evidence/markings.geojson#MK00909",
+        "photo/evidence/markings.geojson#MK00908",
+        "photo/evidence/markings-extra.geojson#MX00519"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_7f4e9700f3e02710",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings.geojson#MK00911",
+        "photo/evidence/markings.geojson#MK00910",
+        "photo/evidence/markings.geojson#MK00909",
+        "photo/evidence/markings.geojson#MK00908",
+        "photo/evidence/markings-extra.geojson#MX00519"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_2f85f467e56f2c17",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings.geojson#MK00911",
+        "photo/evidence/markings.geojson#MK00910",
+        "photo/evidence/markings.geojson#MK00909",
+        "photo/evidence/markings.geojson#MK00908",
+        "photo/evidence/markings-extra.geojson#MX00519"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_51340959620ac749",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01834",
+        "photo/evidence/markings-extra.geojson#MX01841",
+        "photo/evidence/markings-extra.geojson#MX01845",
+        "photo/evidence/markings-extra.geojson#MX01850"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_1cd7db1c1799c343",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01834",
+        "photo/evidence/markings-extra.geojson#MX01841",
+        "photo/evidence/markings-extra.geojson#MX01845",
+        "photo/evidence/markings-extra.geojson#MX01850"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_92209346d646f679",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01834",
+        "photo/evidence/markings-extra.geojson#MX01841",
+        "photo/evidence/markings-extra.geojson#MX01845",
+        "photo/evidence/markings-extra.geojson#MX01850"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_02536d2eed621734",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00722",
+        "photo/evidence/markings-extra.geojson#MX00721",
+        "photo/evidence/markings.geojson#MK01054"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_a6d5f7d7c8ea11ff",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00722",
+        "photo/evidence/markings-extra.geojson#MX00721",
+        "photo/evidence/markings.geojson#MK01054"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_774319f5eee928a7",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00286",
+        "photo/evidence/markings-extra.geojson#MX00287"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_52f6be25068db7a4",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_137",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX01840",
+        "photo/evidence/markings-extra.geojson#MX01842"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_5d693b8b02b8c91b",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_107",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00186",
+        "photo/evidence/markings-extra.geojson#MX00189",
+        "photo/evidence/markings-extra.geojson#MX00191",
+        "photo/evidence/markings-extra.geojson#MX00194",
+        "photo/evidence/markings-extra.geojson#MX00195",
+        "photo/evidence/markings-extra.geojson#MX00193",
+        "photo/evidence/markings-extra.geojson#MX00192",
+        "photo/evidence/markings-extra.geojson#MX00187"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_b71e9951d0d09a04",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_107",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00186",
+        "photo/evidence/markings-extra.geojson#MX00189",
+        "photo/evidence/markings-extra.geojson#MX00191",
+        "photo/evidence/markings-extra.geojson#MX00194",
+        "photo/evidence/markings-extra.geojson#MX00195",
+        "photo/evidence/markings-extra.geojson#MX00193",
+        "photo/evidence/markings-extra.geojson#MX00192",
+        "photo/evidence/markings-extra.geojson#MX00187"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_4220abd3f7d87a3e",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_107",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00186",
+        "photo/evidence/markings-extra.geojson#MX00189",
+        "photo/evidence/markings-extra.geojson#MX00191",
+        "photo/evidence/markings-extra.geojson#MX00194",
+        "photo/evidence/markings-extra.geojson#MX00195",
+        "photo/evidence/markings-extra.geojson#MX00193",
+        "photo/evidence/markings-extra.geojson#MX00192",
+        "photo/evidence/markings-extra.geojson#MX00187"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_c1993e4e72055600",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_107",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00186",
+        "photo/evidence/markings-extra.geojson#MX00189",
+        "photo/evidence/markings-extra.geojson#MX00191",
+        "photo/evidence/markings-extra.geojson#MX00194",
+        "photo/evidence/markings-extra.geojson#MX00195",
+        "photo/evidence/markings-extra.geojson#MX00193",
+        "photo/evidence/markings-extra.geojson#MX00192",
+        "photo/evidence/markings-extra.geojson#MX00187"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_4b94b35341dc7918",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_107",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00186",
+        "photo/evidence/markings-extra.geojson#MX00189",
+        "photo/evidence/markings-extra.geojson#MX00191",
+        "photo/evidence/markings-extra.geojson#MX00194",
+        "photo/evidence/markings-extra.geojson#MX00195",
+        "photo/evidence/markings-extra.geojson#MX00193",
+        "photo/evidence/markings-extra.geojson#MX00192",
+        "photo/evidence/markings-extra.geojson#MX00187"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_e3bada9ba87d1255",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_107",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00186",
+        "photo/evidence/markings-extra.geojson#MX00189",
+        "photo/evidence/markings-extra.geojson#MX00191",
+        "photo/evidence/markings-extra.geojson#MX00194",
+        "photo/evidence/markings-extra.geojson#MX00195",
+        "photo/evidence/markings-extra.geojson#MX00193",
+        "photo/evidence/markings-extra.geojson#MX00192",
+        "photo/evidence/markings-extra.geojson#MX00187"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_7a20907f458d020b",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_107",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00186",
+        "photo/evidence/markings-extra.geojson#MX00189",
+        "photo/evidence/markings-extra.geojson#MX00191",
+        "photo/evidence/markings-extra.geojson#MX00194",
+        "photo/evidence/markings-extra.geojson#MX00195",
+        "photo/evidence/markings-extra.geojson#MX00193",
+        "photo/evidence/markings-extra.geojson#MX00192",
+        "photo/evidence/markings-extra.geojson#MX00187"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_1a8f240fad71d66a",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_107",
+      "refs": [
+        "photo/evidence/markings.geojson#MK00761",
+        "photo/evidence/markings-extra.geojson#MX00207"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_2d8f6de60c67f869",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_107",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00196",
+        "photo/evidence/markings-extra.geojson#MX00197",
+        "photo/evidence/markings-extra.geojson#MX00198",
+        "photo/evidence/markings-extra.geojson#MX00199",
+        "photo/evidence/markings-extra.geojson#MX00200"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_2d58eb09121ae56d",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_107",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00196",
+        "photo/evidence/markings-extra.geojson#MX00197",
+        "photo/evidence/markings-extra.geojson#MX00198",
+        "photo/evidence/markings-extra.geojson#MX00199",
+        "photo/evidence/markings-extra.geojson#MX00200"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_7527bdb0486d1eee",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_107",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00196",
+        "photo/evidence/markings-extra.geojson#MX00197",
+        "photo/evidence/markings-extra.geojson#MX00198",
+        "photo/evidence/markings-extra.geojson#MX00199",
+        "photo/evidence/markings-extra.geojson#MX00200"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_2b534ad2a65b79b0",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_107",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00196",
+        "photo/evidence/markings-extra.geojson#MX00197",
+        "photo/evidence/markings-extra.geojson#MX00198",
+        "photo/evidence/markings-extra.geojson#MX00199",
+        "photo/evidence/markings-extra.geojson#MX00200"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_d8690ebdadbb5dfd",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings.geojson#MK00915",
+        "photo/evidence/markings.geojson#MK00897",
+        "photo/evidence/markings.geojson#MK00896",
+        "photo/evidence/markings-extra.geojson#MX00985"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_bd1347f2c10b4b11",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings.geojson#MK00915",
+        "photo/evidence/markings.geojson#MK00897",
+        "photo/evidence/markings.geojson#MK00896",
+        "photo/evidence/markings-extra.geojson#MX00985"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_66f64125eb9567b9",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00989",
+        "photo/evidence/markings-extra.geojson#MX00411",
+        "photo/evidence/markings-extra.geojson#MX00413",
+        "photo/evidence/markings-extra.geojson#MX00414"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_81adabcc3da661a4",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00989",
+        "photo/evidence/markings-extra.geojson#MX00411",
+        "photo/evidence/markings-extra.geojson#MX00413",
+        "photo/evidence/markings-extra.geojson#MX00414"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_775943bec1362270",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00989",
+        "photo/evidence/markings-extra.geojson#MX00411",
+        "photo/evidence/markings-extra.geojson#MX00413",
+        "photo/evidence/markings-extra.geojson#MX00414"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_9847b174ff6d1b41",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00421",
+        "photo/evidence/markings.geojson#MK00880",
+        "photo/evidence/markings-extra.geojson#MX00419"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_7d58f3b7ebd7ace6",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00421",
+        "photo/evidence/markings.geojson#MK00880",
+        "photo/evidence/markings-extra.geojson#MX00419"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_0eea3d655e3d27db",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00415",
+        "photo/evidence/markings-extra.geojson#MX00416",
+        "photo/evidence/markings-extra.geojson#MX00418"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_a8d81b5847f4a47a",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00415",
+        "photo/evidence/markings-extra.geojson#MX00416",
+        "photo/evidence/markings-extra.geojson#MX00418"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_f7528710bbf42e1a",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00410",
+        "photo/evidence/markings-extra.geojson#MX00412"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_69964785f9f56efe",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_035",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00427",
+        "photo/evidence/markings-extra.geojson#MX00984"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_05f1c6e7773c840c",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_135",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00160",
+        "photo/evidence/markings-extra.geojson#MX00158",
+        "photo/evidence/markings-extra.geojson#MX00155",
+        "photo/evidence/markings-extra.geojson#MX00153",
+        "photo/evidence/markings.geojson#MK00703",
+        "photo/evidence/markings.geojson#MK00702",
+        "photo/evidence/markings.geojson#MK00701",
+        "photo/evidence/markings-extra.geojson#MX00062"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_edb306cbe8d7e1f2",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_135",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00160",
+        "photo/evidence/markings-extra.geojson#MX00158",
+        "photo/evidence/markings-extra.geojson#MX00155",
+        "photo/evidence/markings-extra.geojson#MX00153",
+        "photo/evidence/markings.geojson#MK00703",
+        "photo/evidence/markings.geojson#MK00702",
+        "photo/evidence/markings.geojson#MK00701",
+        "photo/evidence/markings-extra.geojson#MX00062"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_41c9396c6d57ca5a",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_135",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00160",
+        "photo/evidence/markings-extra.geojson#MX00158",
+        "photo/evidence/markings-extra.geojson#MX00155",
+        "photo/evidence/markings-extra.geojson#MX00153",
+        "photo/evidence/markings.geojson#MK00703",
+        "photo/evidence/markings.geojson#MK00702",
+        "photo/evidence/markings.geojson#MK00701",
+        "photo/evidence/markings-extra.geojson#MX00062"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_768e15c37a4eacc5",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_135",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00160",
+        "photo/evidence/markings-extra.geojson#MX00158",
+        "photo/evidence/markings-extra.geojson#MX00155",
+        "photo/evidence/markings-extra.geojson#MX00153",
+        "photo/evidence/markings.geojson#MK00703",
+        "photo/evidence/markings.geojson#MK00702",
+        "photo/evidence/markings.geojson#MK00701",
+        "photo/evidence/markings-extra.geojson#MX00062"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_a23ce3b2c8c19771",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_135",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00160",
+        "photo/evidence/markings-extra.geojson#MX00158",
+        "photo/evidence/markings-extra.geojson#MX00155",
+        "photo/evidence/markings-extra.geojson#MX00153",
+        "photo/evidence/markings.geojson#MK00703",
+        "photo/evidence/markings.geojson#MK00702",
+        "photo/evidence/markings.geojson#MK00701",
+        "photo/evidence/markings-extra.geojson#MX00062"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_8326319fd6b1e2d9",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_135",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00160",
+        "photo/evidence/markings-extra.geojson#MX00158",
+        "photo/evidence/markings-extra.geojson#MX00155",
+        "photo/evidence/markings-extra.geojson#MX00153",
+        "photo/evidence/markings.geojson#MK00703",
+        "photo/evidence/markings.geojson#MK00702",
+        "photo/evidence/markings.geojson#MK00701",
+        "photo/evidence/markings-extra.geojson#MX00062"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_b4e364cd0daa4dfc",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_135",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00160",
+        "photo/evidence/markings-extra.geojson#MX00158",
+        "photo/evidence/markings-extra.geojson#MX00155",
+        "photo/evidence/markings-extra.geojson#MX00153",
+        "photo/evidence/markings.geojson#MK00703",
+        "photo/evidence/markings.geojson#MK00702",
+        "photo/evidence/markings.geojson#MK00701",
+        "photo/evidence/markings-extra.geojson#MX00062"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_24fa4c76038f75f1",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_102",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00866",
+        "photo/evidence/markings-extra.geojson#MX00865"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_60fcded052ca2e47",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_102",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00884",
+        "photo/evidence/markings-extra.geojson#MX00885"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_7518c6cde344ed47",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_010",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00503",
+        "photo/evidence/markings-extra.geojson#MX00504",
+        "photo/evidence/markings-extra.geojson#MX00505"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_eb829112f7549aa9",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_010",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00503",
+        "photo/evidence/markings-extra.geojson#MX00504",
+        "photo/evidence/markings-extra.geojson#MX00505"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_b6c0c3b5775c2e2b",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_086",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00241",
+        "photo/evidence/markings-extra.geojson#MX00243"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_06ea05b278966e0e",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_120",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00157",
+        "photo/evidence/markings-extra.geojson#MX00156",
+        "photo/evidence/markings.geojson#MK00723"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_f1bf601d60ac228d",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_120",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00157",
+        "photo/evidence/markings-extra.geojson#MX00156",
+        "photo/evidence/markings.geojson#MK00723"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_09e165f514d5f95a",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_023",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00755",
+        "photo/evidence/markings-extra.geojson#MX00756"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_40c39be86014c740",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_073",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00234",
+        "photo/evidence/markings-extra.geojson#MX00235"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_e8296694390fd461",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_073",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00228",
+        "photo/evidence/markings-extra.geojson#MX00229"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_3dda6bbdbbe6c1ef",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_076",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00240",
+        "photo/evidence/markings-extra.geojson#MX00242"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "RS_a00d452a2857e8d1",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_017",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00809",
+        "photo/evidence/markings-extra.geojson#MX00810"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
+    },
+    {
+      "id": "JA_5d693b8b02b8c91b",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_107",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00186",
+        "photo/evidence/markings-extra.geojson#MX00189",
+        "photo/evidence/markings-extra.geojson#MX00191",
+        "photo/evidence/markings-extra.geojson#MX00194",
+        "photo/evidence/markings-extra.geojson#MX00195",
+        "photo/evidence/markings-extra.geojson#MX00193",
+        "photo/evidence/markings-extra.geojson#MX00192",
+        "photo/evidence/markings-extra.geojson#MX00187"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)"
+    },
+    {
+      "id": "JA_b71e9951d0d09a04",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_107",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00186",
+        "photo/evidence/markings-extra.geojson#MX00189",
+        "photo/evidence/markings-extra.geojson#MX00191",
+        "photo/evidence/markings-extra.geojson#MX00194",
+        "photo/evidence/markings-extra.geojson#MX00195",
+        "photo/evidence/markings-extra.geojson#MX00193",
+        "photo/evidence/markings-extra.geojson#MX00192",
+        "photo/evidence/markings-extra.geojson#MX00187"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)"
+    },
+    {
+      "id": "JA_4220abd3f7d87a3e",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_107",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00186",
+        "photo/evidence/markings-extra.geojson#MX00189",
+        "photo/evidence/markings-extra.geojson#MX00191",
+        "photo/evidence/markings-extra.geojson#MX00194",
+        "photo/evidence/markings-extra.geojson#MX00195",
+        "photo/evidence/markings-extra.geojson#MX00193",
+        "photo/evidence/markings-extra.geojson#MX00192",
+        "photo/evidence/markings-extra.geojson#MX00187"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)"
+    },
+    {
+      "id": "JA_c1993e4e72055600",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_107",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00186",
+        "photo/evidence/markings-extra.geojson#MX00189",
+        "photo/evidence/markings-extra.geojson#MX00191",
+        "photo/evidence/markings-extra.geojson#MX00194",
+        "photo/evidence/markings-extra.geojson#MX00195",
+        "photo/evidence/markings-extra.geojson#MX00193",
+        "photo/evidence/markings-extra.geojson#MX00192",
+        "photo/evidence/markings-extra.geojson#MX00187"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)"
+    },
+    {
+      "id": "JA_4b94b35341dc7918",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_107",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00186",
+        "photo/evidence/markings-extra.geojson#MX00189",
+        "photo/evidence/markings-extra.geojson#MX00191",
+        "photo/evidence/markings-extra.geojson#MX00194",
+        "photo/evidence/markings-extra.geojson#MX00195",
+        "photo/evidence/markings-extra.geojson#MX00193",
+        "photo/evidence/markings-extra.geojson#MX00192",
+        "photo/evidence/markings-extra.geojson#MX00187"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)"
+    },
+    {
+      "id": "JA_e3bada9ba87d1255",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_107",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00186",
+        "photo/evidence/markings-extra.geojson#MX00189",
+        "photo/evidence/markings-extra.geojson#MX00191",
+        "photo/evidence/markings-extra.geojson#MX00194",
+        "photo/evidence/markings-extra.geojson#MX00195",
+        "photo/evidence/markings-extra.geojson#MX00193",
+        "photo/evidence/markings-extra.geojson#MX00192",
+        "photo/evidence/markings-extra.geojson#MX00187"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)"
+    },
+    {
+      "id": "JA_7a20907f458d020b",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_107",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00186",
+        "photo/evidence/markings-extra.geojson#MX00189",
+        "photo/evidence/markings-extra.geojson#MX00191",
+        "photo/evidence/markings-extra.geojson#MX00194",
+        "photo/evidence/markings-extra.geojson#MX00195",
+        "photo/evidence/markings-extra.geojson#MX00193",
+        "photo/evidence/markings-extra.geojson#MX00192",
+        "photo/evidence/markings-extra.geojson#MX00187"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)"
+    },
+    {
+      "id": "JA_2d8f6de60c67f869",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_107",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00196",
+        "photo/evidence/markings-extra.geojson#MX00197",
+        "photo/evidence/markings-extra.geojson#MX00198",
+        "photo/evidence/markings-extra.geojson#MX00199",
+        "photo/evidence/markings-extra.geojson#MX00200"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)"
+    },
+    {
+      "id": "JA_2d58eb09121ae56d",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_107",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00196",
+        "photo/evidence/markings-extra.geojson#MX00197",
+        "photo/evidence/markings-extra.geojson#MX00198",
+        "photo/evidence/markings-extra.geojson#MX00199",
+        "photo/evidence/markings-extra.geojson#MX00200"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)"
+    },
+    {
+      "id": "JA_7527bdb0486d1eee",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_107",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00196",
+        "photo/evidence/markings-extra.geojson#MX00197",
+        "photo/evidence/markings-extra.geojson#MX00198",
+        "photo/evidence/markings-extra.geojson#MX00199",
+        "photo/evidence/markings-extra.geojson#MX00200"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)"
+    },
+    {
+      "id": "JA_2b534ad2a65b79b0",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_107",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00196",
+        "photo/evidence/markings-extra.geojson#MX00197",
+        "photo/evidence/markings-extra.geojson#MX00198",
+        "photo/evidence/markings-extra.geojson#MX00199",
+        "photo/evidence/markings-extra.geojson#MX00200"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)"
+    },
+    {
+      "id": "JA_3dda6bbdbbe6c1ef",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_076",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00240",
+        "photo/evidence/markings-extra.geojson#MX00242"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)"
+    },
+    {
+      "id": "JA_40c39be86014c740",
+      "verified": false,
+      "segmentId": null,
+      "originalSegment": "RD_073",
+      "refs": [
+        "photo/evidence/markings-extra.geojson#MX00234",
+        "photo/evidence/markings-extra.geojson#MX00235"
+      ],
+      "reason": "lane/fix-markings 2026-11-11: new junction approach owner of a seed section added for a photo dash drawn as detected; junction association unreviewed (estimated)"
     }
   ],
   "surfaceReviews": [
