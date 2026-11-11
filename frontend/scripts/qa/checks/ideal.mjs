@@ -560,8 +560,19 @@ export const IDEAL_CHECKS_LIST = [
       mutates: true,
       async run(ctx) {
         const wasOpen = (await panelState(ctx.b)).open;
-        if (wasOpen && await tapVisible(ctx, PANEL_CLOSE)) await sleepMs(900);
-        const names = await ip(ctx, (I) => { const rail = document.querySelector("[data-qa=dashboard-rail]"); return rail ? [...rail.querySelectorAll("button")].filter(I.isVisible).map(I.nameOf) : null; });
+        const railNames = () => ip(ctx, (I) => { const rail = document.querySelector("[data-qa=dashboard-rail]"); return rail ? [...rail.querySelectorAll("button")].filter(I.isVisible).map(I.nameOf) : null; });
+        let names = null;
+        if (wasOpen && await tapVisible(ctx, PANEL_CLOSE)) {
+          // The rail mounts once the close slide has settled (useSettledOpen's timer). A loaded renderer delivers that timer
+          // late, so wait for it (bounded) instead of a fixed 900 ms; a rail that never appears still fails below.
+          const deadline = Date.now() + 5000;
+          await sleepMs(900);
+          names = await railNames();
+          while (!names && Date.now() < deadline) {
+            await sleepMs(200);
+            names = await railNames();
+          }
+        } else names = await railNames();
         if (wasOpen) await openPanel(ctx);
         if (!names) return verdict(false, "no [data-qa=dashboard-rail] shown after closing the panel", "rail with 4 tab buttons, none named 패널 열기");
         return verdict(names.length === 4 && !names.includes("패널 열기"), { buttons: names, closedForMeasure: wasOpen }, "rail with 4 tab buttons, none named 패널 열기");

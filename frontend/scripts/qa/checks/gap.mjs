@@ -1,5 +1,5 @@
 // GAP-01..GAP-37 (DESIGN-AUDIT section 3 rows as section-7 checks). Each `doc` holds the literal row.
-import { openPanel } from "../lib/tabs.mjs";
+import { openPanel, panelState } from "../lib/tabs.mjs";
 import {
   sheetSettle,
   HOOKS, canvasRect, chipByText, chips, contrasts, defineCheck, exists, hasUpperEyebrow, hudRects, intersection,
@@ -60,7 +60,9 @@ export const GAP_CHECKS = [
         const retries = qa.all("button").filter((el) => qa.visible(el) && qa.txt(el).includes("다시 시도")).length;
         const dashes = qa.textNodesShown(qa.one("[data-qa=dashboard-panel]") ?? document.body).filter((item) => /^-(\s|°|m\/s|%|$)/.test(item.value)).map((item) => item.value).slice(0, 8);
         const modals = qa.all("[aria-modal=true]").filter(qa.visible).length;
-        return { statusRows, retries, bareDashValues: dashes, modals };
+        // Which feed rows the tab showed and whether each carried its alert (names the row behind a count mismatch).
+        const feeds = qa.all("[data-feed]").filter(qa.visible).map((el) => `${el.getAttribute("data-feed")}:${el.querySelector("[role=alert]") ? "alert" : qa.txt(el).slice(0, 30)}`);
+        return { statusRows, retries, bareDashValues: dashes, modals, feeds };
       });
       const status = await withPanelOpen(ctx, "home", measure);
       const energy = await withPanelOpen(ctx, "energy", measure);
@@ -76,7 +78,9 @@ export const GAP_CHECKS = [
     },
   }),
   defineCheck("GAP-03", {
-    states: ["S01"], viewports: D,
+    // It opens the 현황 tab, which re-captures the shared frame: only the probe replay may do that, or the later S01
+    // capture checks measure the panel-open frame (V-F-17 read the B3 badge against the panel).
+    states: ["S01"], viewports: D, mutates: true,
     async run(ctx) {
       // The weather status row sits in the 현황 tab of the rail-first shell (ideal-state INV-084): open it first.
       const m = await withPanelOpen(ctx, "home", () => ctx.inPage((qa) => {
@@ -110,7 +114,9 @@ export const GAP_CHECKS = [
         if (!panel?.toggle) return result(false, { toggle: null }, "패널 닫기 control collapses the panel to <= 72 px");
         // The rail-first shell may start collapsed: open it first, collapse it with 패널 닫기, then leave it as it was found
         // (the probe replay's later S01 checks expect the start state).
-        const startedOpen = panel.toggle.label === "패널 닫기";
+        // Read the panel's own open state: the collapsed rail shell keeps its (invisible) 패널 닫기 header button in the DOM,
+        // so the first toggle's label says nothing about whether the panel is open.
+        const startedOpen = (await panelState(ctx.b)).open;
         // Wait for the slide to finish (bounded) instead of a fixed delay a loaded renderer may not meet.
         const settle = async (wantOpen) => {
           const deadline = Date.now() + 4000;
@@ -356,6 +362,7 @@ export const GAP_CHECKS = [
       const box = await sceneBox();
       const startCamera = await saveCamera(ctx);
       const startDetent = await ctx.inPage((qa) => qa.one("[data-qa=dashboard-panel]")?.getAttribute("data-detent") ?? null);
+      const startPanel = await panelState(ctx.b);
       const before = await ctx.screenshot();
       const focused = (await ctx.b.tap(selector)).ok;
       await ctx.b.view.cdp("Input.insertText", { text: "도서관" });
@@ -372,6 +379,19 @@ export const GAP_CHECKS = [
       // Put the page back (no selection, the S01 camera) so the probe replay's later S01 checks start from S01.
       if (await ctx.b.center('[data-qa=selection-inspector] button[aria-label="닫기"]')) await ctx.b.tap('[data-qa=selection-inspector] button[aria-label="닫기"]');
       await restoreCamera(ctx, startCamera);
+      // Desktop: the selection switched the panel to the 건물 tab and opened it; put back the tab and the collapsed rail the
+      // state had, or the later S01 checks measure the 건물 tab's empty state behind an open panel (V-F-32, V-F-36).
+      if (ctx.viewport !== "P") {
+        const now = await panelState(ctx.b);
+        if (startPanel.active && now.active !== startPanel.active && await ctx.b.center(`[data-qa=dashboard-tab-${startPanel.active}]`)) {
+          await ctx.b.tap(`[data-qa=dashboard-tab-${startPanel.active}]`);
+          await ctx.sleep(600);
+        }
+        if (!startPanel.open && (await panelState(ctx.b)).open && await ctx.b.center('[aria-label="패널 닫기"]')) {
+          await ctx.b.tap('[aria-label="패널 닫기"]');
+          await ctx.sleep(900);
+        }
+      }
       // Phone: the selection raised the sheet to half; lower it back to where S01 had it (the time chip sits under it).
       if (startDetent === "peek" && await ctx.inPage((qa) => qa.one("[data-qa=dashboard-panel]")?.getAttribute("data-detent") !== "peek")
         && await ctx.b.center('[aria-label="패널 닫기"]')) {
