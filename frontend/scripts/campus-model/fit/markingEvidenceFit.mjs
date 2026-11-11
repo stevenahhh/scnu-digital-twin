@@ -66,6 +66,18 @@ export const guessedTextLanes = (widthM) => Math.max(1, Math.round(widthM / TEXT
 const STATUTE_DASH_SHARE = 0.6;
 export const keepsDetectedDashes = (lengthsM, statuteDashM, periodM) =>
   !periodM && lengthsM.length > 0 && Math.max(...lengthsM) <= statuteDashM * STATUTE_DASH_SHARE;
+// Whether laid dashes paint at least half of every detected dash (arc-length intervals, metres). A pattern that leaves a
+// dash of the photo unpainted (a statute phase between three 2.3 m dashes about 6 m apart) is not the photo's line.
+export const coversDetected = (laid, detected) => detected.every(([a, b]) =>
+  laid.reduce((sum, [c, d]) => sum + Math.max(0, Math.min(b, d) - Math.max(a, c)), 0) >= 0.5 * (b - a) - 1e-9);
+// The seed's line for a chain drawn as its photo dashes: one run per dash (cut where the line is blocked) and one dash
+// as long as the line from the start of each run, so every canonical section paints its run whole. A repeated pattern
+// (the statute 3 m / 5 m the seed fell back to) would draw long dashes where the photo shows short ones, and none
+// where it shows several (the dashed ring of the central roundabout).
+export function detectedDashLine(intervals, length, unblocked = [[0, length]]) {
+  const runs = intervals.flatMap(([a, b]) => unblocked.map(([c, d]) => [Math.max(a, c), Math.min(b, d)]).filter(([x, y]) => y - x > 1e-9));
+  return { pattern: [length, 1], phaseM: 0, paintRange: [intervals[0][0], intervals.at(-1)[1]], runs, dashRuns: true };
+}
 const TEXT_STALL_REACH_M = 3;
 // Text and crossings take the road's direction from a road line at least TEXT_ROAD_MIN_M long; a crossing's bars are
 // set parallel to it only when they already lie within ZEBRA_ROAD_SNAP_DEG (crossings may be skewed to the road).
@@ -525,6 +537,8 @@ export function regularise(drawn, ctx) {
     if (ch.fit.lines.length === 1) stats.straightness.push(straightness(ch.path));
     const length = polylineLength(ch.path);
     let intervals = [[0, length]];
+    // the drawn dashes are the photo's own, not a repeated pattern
+    let asDetected = false;
     if (ch.dashed) {
       // statute pattern of the kind (guide dots for dotted lines); kinds without one keep the photo's period, or
       // their detected dashes when there are too few to measure it
@@ -547,10 +561,16 @@ export function regularise(drawn, ctx) {
         const period = Math.max(dash + 0.2, median(spacing));
         intervals = layDashes({ length, detected: spans, dash, gap: period - dash }).dashes;
         stats.dashPeriods.push({ kind: ch.kind, colour: ch.colour, dotted: ch.dotted, dashes: spans.length, measured: period, used: period, dash, source: "photo guide", ids: ch.ids });
+        if (!coversDetected(intervals, spans)) {
+          intervals = spans;
+          asDetected = true;
+          Object.assign(stats.dashPeriods.at(-1), { used: null, source: "photo short dashes (guide pattern missed paint)" });
+        }
       } else if (short) {
         // short dashes whose period cannot be measured (too few, or gaps where dashes are worn or hidden): the photo's
         // own dashes as detected (a statute 3 m dash would draw paint the photo does not show)
         intervals = spans;
+        asDetected = true;
         stats.dashPeriods.push({ kind: ch.kind, colour: ch.colour, dotted: ch.dotted, dashes: spans.length, measured: null, used: null, dash: median(lengths), source: "photo short dashes", ids: ch.ids });
       } else if (detected.length) {
         const statutePeriod = nominal ? nominal[0] + nominal[1] : null;
@@ -558,12 +578,27 @@ export function regularise(drawn, ctx) {
         const usePhoto = Boolean(period) && (!nominal || (detected.length >= 4 && Math.abs(period - statutePeriod) / statutePeriod > 0.15));
         if ((!nominal && !period) || (nominal && keepsDetectedDashes(detected.map(([a, b]) => b - a), nominal[0], period))) {
           intervals = detected;
+          asDetected = true;
           stats.dashPeriods.push({ kind: ch.kind, colour: ch.colour, dotted: ch.dotted, dashes: detected.length, measured: null, used: null, dash: null, source: "detected dashes", ids: ch.ids });
         } else {
           const dash = usePhoto ? Math.min(period * 0.6, Math.max(ch.dotted ? 0.2 : 1, median(detected.map(([a, b]) => b - a)))) : nominal[0];
           const gap = usePhoto ? period - dash : nominal[1];
           intervals = layDashes({ length, detected, dash, gap }).dashes;
           stats.dashPeriods.push({ kind: ch.kind, colour: ch.colour, dotted: ch.dotted, dashes: detected.length, measured: period, used: dash + gap, dash, source: usePhoto ? "photo" : "statute", ids: ch.ids });
+          if (!coversDetected(intervals, detected)) {
+            // the photo's own period when it paints every detected dash (a statute phase drifts off a line whose
+            // period is a little shorter), else the detected dashes as they are
+            const photoDash = period ? Math.min(period * 0.6, Math.max(ch.dotted ? 0.2 : 1, median(detected.map(([a, b]) => b - a)))) : null;
+            const photo = period && !usePhoto ? layDashes({ length, detected, dash: photoDash, gap: period - photoDash }).dashes : null;
+            if (photo && coversDetected(photo, detected)) {
+              intervals = photo;
+              Object.assign(stats.dashPeriods.at(-1), { used: period, dash: photoDash, source: "photo (statute pattern missed paint)" });
+            } else {
+              intervals = detected;
+              asDetected = true;
+              Object.assign(stats.dashPeriods.at(-1), { used: null, source: `detected dashes (${usePhoto ? "photo" : "statute"} pattern missed paint)` });
+            }
+          }
         }
       }
     }
@@ -589,7 +624,8 @@ export function regularise(drawn, ctx) {
       model.lines.push({path:ch.path.map(toScene),kind:ch.dotted?"give_way_line":ch.kind,colour:ch.colour,widthM:width,
         dashed:ch.dashed,double:ch.double,pattern,phaseM,refs:ch.ids,
         paintRange:intervals.length?[intervals[0][0],intervals.at(-1)[1]]:null,
-        runs:clear?[[0,length]]:spans});
+        runs:clear?[[0,length]]:spans,
+        ...(asDetected && intervals.length ? detectedDashLine(intervals, length, clear ? [[0, length]] : spans) : {})});
     }
     const offsets = ch.double ? [ctx.statute.doubleOffsetM, -ctx.statute.doubleOffsetM] : [0];
     for (const [a, b] of intervals) {
