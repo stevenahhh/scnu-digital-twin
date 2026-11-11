@@ -1,10 +1,10 @@
 // Geometry checks for the main-gate builders of stages/furniture.mjs on flat ground: the parking-gate canopy over the
-// lane between two traffic islands (gate_canopy).
+// lane between two traffic islands (gate_canopy) and the SCNU letter sign of the gate plaza (gate_sign).
 import assert from "node:assert/strict";
 import test from "node:test";
 import { metres } from "../lib/frame.mjs";
 import { rgb } from "../lib/solids.mjs";
-import { B, GATE_CANOPY, makeContext, postOnIsland, vaultArc } from "./furniture.mjs";
+import { B, GATE_CANOPY, letterStrokes, makeContext, postOnIsland, vaultArc } from "./furniture.mjs";
 
 const M = metres;
 const near = (actual, expected, tolerance, label) => assert.ok(Math.abs(actual - expected) <= tolerance, `${label}: ${actual} vs ${expected}`);
@@ -84,4 +84,44 @@ test("gate_canopy: bays side by side across a vault axis, posts on the islands u
   // the vault axis runs along x (bearing 90): ribs stand across it, so every rib vertex keeps one x
   const ribXs = new Set(vertices(ctx.solid.mesh, "#d9d7d0").filter(([, y]) => y > 6.85).map(([x]) => Math.round(x * 10)));
   assert.ok(ribXs.size <= 12, `ribs across the axis: ${ribXs.size} distinct x`);
+});
+
+test("letterStrokes: lines of text fill their slots left to right inside the given box", () => {
+  const strokes = letterStrokes("SCNU", { lengthM: 9, heightM: 2.7 });
+  assert.equal(strokes.length, 4, "one stroke each for S, C, N and U");
+  for (const s of strokes) for (const [x, h] of s.points) assert.ok(x >= -1e-9 && x <= 9 + 1e-9 && h >= -1e-9 && h <= 2.7 + 1e-9, `inside: ${x}, ${h}`);
+  const centres = strokes.map((s) => s.points.reduce((sum, p) => sum + p[0], 0) / s.points.length);
+  assert.deepEqual(strokes.map((s) => s.char), ["S", "C", "N", "U"]);
+  for (let i = 1; i < centres.length; i += 1) assert.ok(centres[i] > centres[i - 1], "left to right");
+  const hangul = letterStrokes("국립순천대학교", { lengthM: 9, heightM: 1.1 });
+  assert.equal(new Set(hangul.map((s) => s.char)).size, 7, "seven syllables");
+  assert.throws(() => letterStrokes("S$", { lengthM: 2, heightM: 1 }), /no glyph for \$/);
+});
+
+test("gate_sign: letters read left to right from the side the sign faces, on a stone bed", () => {
+  // axis west-east (scene +x = east), facing north (bearing 0): seen from the north, left is east, so S stands east
+  const sign = (facing) => {
+    const ctx = makeContext({ groundAt: () => 0, objects: [], roads: { arterials: [], connectors: [], zoneRings: [] }, sites: null, fieldCentre: null });
+    const result = B.gate_sign(ctx, { id: "T1", kind: "gate_sign", heightM: 4.7, line: [[0, 0], [M(9), 0]], p: { text: "SCNU", subtext: "국립순천대학교", facing_deg: facing, length_m: 9, letter_m: 2.5, plinth_m: 0.9, depth_m: 0.4, colour: "#f4f3ee", bedColour: "#5b5d5f" } });
+    return { ctx, result };
+  };
+  const { ctx, result } = sign(0);
+  const letters = vertices(ctx.solid.mesh, "#f4f3ee");
+  assert.ok(letters.length > 100, "white letters");
+  // the letters stand on the bed top; their stroke joints may reach a little into the solid bed, never above it
+  const foot = Math.min(...letters.map((v) => v[1]));
+  assert.ok(foot >= 0.9 - 0.1 && foot <= 0.9 + 0.01, `letters stand on the bed: foot ${foot}`);
+  near(Math.max(...letters.map((v) => v[1])), 4.7, 0.05, "top of the upper line");
+  const sLetter = letters.filter(([, y]) => y < 0.9 + 2.5).map((v) => v[0]);
+  assert.ok(Math.max(...sLetter) <= 9 + 0.3 && Math.min(...sLetter) >= -0.3, "within the traced length");
+  // the first letter (S) stands at the east end when the sign faces north, at the west end when it faces south
+  const xOf = (r, ch) => r.letters.find((l) => l.char === ch).at[0];
+  assert.deepEqual(result.letters.slice(0, 4).map((l) => l.char), ["S", "C", "N", "U"]);
+  assert.ok(xOf(result, "S") > xOf(result, "C") && xOf(result, "C") > xOf(result, "N") && xOf(result, "N") > xOf(result, "U"), "facing north: S east of U");
+  const south = sign(180).result;
+  assert.ok(xOf(south, "S") < xOf(south, "U"), "facing south: S west of U");
+  assert.throws(() => B.gate_sign(ctx, { id: "T2", kind: "gate_sign", heightM: 4.7, line: [[0, 0], [M(9), 0]], p: { text: "SCNU" } }), /gate_sign T2 needs facing_deg/);
+  const bed = vertices(ctx.solid.mesh, "#5b5d5f");
+  assert.ok(bed.length > 0, "a stone bed");
+  near(Math.max(...bed.map((v) => v[1])), 0.9, 0.09, "bed top");
 });

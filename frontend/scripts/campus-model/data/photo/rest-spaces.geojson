@@ -9,15 +9,22 @@
         "id": "RS-GATE-A19",
         "kind": "gate_sign",
         "subtype": "letter_sign",
-        "confidence": 0.4,
-        "method": "vr-resection",
-        "length_m": 7,
+        "confidence": 0.6,
+        "method": "photo-trace + vr",
+        "position_method": "letters' axis traced on the NGII 2025 sheet: the white band of the letter tops and the bed's coping along the south edge of the striped paving (bright pixels within 1.5 m of the axis, bearing 98.5 deg, rms 0.19 m; the band runs 11.5 m, the bed 0.8 m past the letters at both ends), identified as the sign in VR scene_a19 l (white SCNU letters on a stone-faced bed at the south end of the striped paving, the stepped arc starting beside it) and scene_001 d (the letters seen from above along the bed's front kerb); from the scene_a19 station (scripts/perf/vr-stations.json) the traced sign spans bearings 180.8-192.2 deg against 176.1-191.6 deg for the letters on face l cols 693-981, where the old VR-only position spanned 207.5-218.5 deg (estimated)",
+        "photo_support": "outline",
+        "text": "SCNU",
+        "subtext": "국립순천대학교",
+        "facing_deg": 8.5,
+        "length_m": 10,
+        "letter_m": 3,
         "depth_m": 0.45,
-        "height_m": 3.7,
-        "plinth_m": 0.6,
+        "plinth_m": 1.2,
+        "height_m": 5.7,
         "colour": "#f4f3ee",
-        "bandColour": "#f4f3ee",
-        "height_source": "VR scene_a19 + scene_001 (estimated)",
+        "bedColour": "#5b5d5f",
+        "height_source": "VR scene_a19 l proportions scaled to the 10 m traced lettering: SCNU 3.33 times as long as it is tall (3.0 m), the upper line 0.47 of that (1.4 m) on a thin rail, the stone-faced bed 0.4 of it (1.2 m) (estimated)",
+        "facing_source": "the letters read SCNU from the striped paving to the north (VR scene_a19 l), so the sign faces bearing 8.5 deg, square to its traced axis (estimated)",
         "estimated": true,
         "vr_scene": "scene_a19",
         "vr_face": "l",
@@ -25,22 +32,22 @@
           693,
           981
         ],
-        "note": "국립순천대학교 / SCNU letter sign on a planted stone bed at the road edge of the A19 gate plaza. From the scene_a19 camera over the gate crossing (about 244182, 263716, 11.7 m from the car scale on the d face) the letters span l cols 693-981 (bearings 176-192 deg) and their base sits about 21 deg below the horizon, and the slab subtends about 16 deg: about 25 m south of the camera, just inside the plaza edge wall OC0128. Lettering not modelled (plain white slab and name band). Supersedes the survey point OC0111 (left out).",
         "style": {
-          "colour": "white letters, white name band",
-          "form": "free-standing letter slab on a planted stone bed"
-        }
+          "colour": "white letters on a dark stone-faced bed with a light coping",
+          "form": "free-standing 3D block letters SCNU with the line 국립순천대학교 above them on a thin rail, on a planted bed"
+        },
+        "note": "국립순천대학교 / SCNU letter sign at the south end of the striped paving of the A19 gate plaza, on the bed at the north edge of the planted bank. Moved 2026-11-11 from a VR-only resection about 13 m north-west (inside the plaza) onto its photo trace, where the survey had drawn the white letter tops as the parapet wall OC0129 (left out). Supersedes the survey point OC0111 (left out)."
       },
       "geometry": {
         "type": "LineString",
         "coordinates": [
           [
-            127.4837136,
-            34.96836267
+            127.48382545,
+            34.96815725
           ],
           [
-            127.48379023,
-            34.96835876
+            127.48393367,
+            34.96814349
           ]
         ]
       }
